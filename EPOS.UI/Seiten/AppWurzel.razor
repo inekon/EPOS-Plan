@@ -295,6 +295,16 @@ else if (_ansicht == Seitenschluessel.StromspeicherAuslegung && _auslegung is no
                                                       @attributes="_auslegung"
                                                       Geschlossen="ZurueckZumAufrufer" />
 }
+else if (_ansicht == Seitenschluessel.PufferAuslegung && _pufferAuslegung is not null)
+{
+    @* DIE PUFFERSPEICHER-AUSLEGUNG als freie Ansicht (Konzept Pufferspeicher-Auslegung, Stufe P2) -
+       dieselbe Bauart wie die Stromspeicher-Auslegung: Der Einstieg meldet seinen Arbeitsgang bei
+       PufferAuslegungHuelle an, die Wurzel holt beim Betreten den Parametersatz, und „← zurück"
+       fuehrt ueber den Rueckwegstapel dorthin, woher man kam. Eine Rueckfrage beim Verlassen gibt
+       es nicht: Geschrieben wird nur mit „Auslegung speichern" und „Uebernehmen". *@
+    <EPOS.UI.Seiten.Pufferspeicher.PufferAuslegungSeite @attributes="_pufferAuslegung"
+                                                       Geschlossen="ZurueckVonPufferAuslegung" />
+}
 else if (_ansicht == Seitenschluessel.KiAssistent && _kiAssistent is not null)
 {
     @* Der KI-Hilfe-Assistent (iU9-W15b.7, Entscheid E-10). Unter Windows steht
@@ -338,6 +348,9 @@ else
     private IReadOnlyDictionary<string, object>? _kiAssistent;
     private IReadOnlyDictionary<string, object>? _assistent;
     private IReadOnlyDictionary<string, object>? _auslegung;
+
+    /// <summary>Der Parametersatz der stehenden Pufferspeicher-Auslegung (Stufe P2).</summary>
+    private IReadOnlyDictionary<string, object>? _pufferAuslegung;
 
     /// <summary>
     /// Die stehende Auslegungsansicht — sie beantwortet, ob der Stand ungespeichert
@@ -617,6 +630,14 @@ else
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? StromspeicherAuslegungGaben { get; set; }
 
     /// <summary>
+    /// Der Parametersatz der Ansicht „Pufferspeicher-Auslegung" (Stufe P2) zum Projekt der Wurzel,
+    /// wenn ihn die Hülle stellt (Windows: <c>PufferAuslegungHuelle.AnsichtGaben</c>). Ohne ihn
+    /// fragt die Wurzel <c>IProjektQuelle.PufferAuslegungGaben</c> — der iOS-Weg. Ein Delegat je
+    /// Betreten: Der Arbeitsgang (Zielpuffer, Einstieg) ist vorher angemeldet.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? PufferAuslegungGaben { get; set; }
+
+    /// <summary>
     /// Der Parametersatz der Ansicht „Simulation", wenn ihn die Hülle stellt
     /// (Windows: <c>SimulationHuelle.AnsichtGaben</c>). Ohne ihn fragt die Wurzel
     /// <c>IProjektQuelle.SimulationGaben</c> — der iOS-Weg (Stufe S2, Auftrag #208).
@@ -836,6 +857,7 @@ else
         || ziel == Seitenschluessel.SimulationKonfiguration
         || ziel == Seitenschluessel.SimulationErgebnis
         || ziel == Seitenschluessel.StromspeicherAuslegung
+        || ziel == Seitenschluessel.PufferAuslegung
         || ziel == Seitenschluessel.KiAssistent;
 
     /// <summary>Die Marke der STEHENDEN Ansicht; leer = sie führt keine.</summary>
@@ -1409,6 +1431,21 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.PufferAuslegung)
+        {
+            // Wie die Stromspeicher-Auslegung: der Delegat der Huelle vor der Projektquelle (iOS).
+            int idProjekt = _projekt?.Id ?? 0;
+            _pufferAuslegung = PufferAuslegungGaben?.Invoke(idProjekt) ?? Quelle.PufferAuslegungGaben(idProjekt);
+            if (_pufferAuslegung is null)
+            {
+                _statuszeile = KeinePufferAuslegungText;
+                return false;
+            }
+            if (merken) RueckwegMerken();
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.KiAssistent)
         {
             IReadOnlyDictionary<string, object>? gaben = Quelle.KiAssistentGaben(_projekt?.Id ?? 0);
@@ -1670,6 +1707,14 @@ else
         ZurueckZurListe();
     }
 
+    /// <summary>Die Pufferspeicher-Auslegung ist zu — zurück dorthin, woher sie kam.</summary>
+    private void ZurueckVonPufferAuslegung()
+    {
+        _pufferAuslegung = null;
+        if (Zurueck()) return;
+        ZurueckZurListe();
+    }
+
     /// <summary>Fragt die stehende Simulationsansicht und wechselt DANACH — oder gar nicht.</summary>
     private async Task SimulationVerlassenUndZeigen(string maske, int? betriebsart)
     {
@@ -1831,6 +1876,7 @@ else
            || maske == Seitenschluessel.Startseite
            || maske == Seitenschluessel.BerichteKosten
            || maske == Seitenschluessel.StromspeicherAuslegung
+           || maske == Seitenschluessel.PufferAuslegung
            || maske == Seitenschluessel.Projektliste
 
            // Die fuenf Masken aus KI-D-Q8. „Bekannt" heisst hier nur „die
@@ -2084,6 +2130,9 @@ else
 
     /// <summary>Meldung, wenn die Verwaltung der Betriebskalender nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBetriebskalenderText { get; set; } = Resource.BKAL_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn die Pufferspeicher-Auslegung nicht aufzubauen ist (kein Projekt, keine Quelle).</summary>
+    [Parameter] public string KeinePufferAuslegungText { get; set; } = Resource.PAUS_KEINE_ANSICHT;
 
     // ---- Der Katalog der Brauchwasser-Nutzungsarten (ZU26) --------------
 

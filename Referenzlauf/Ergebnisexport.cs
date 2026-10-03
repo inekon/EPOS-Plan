@@ -376,8 +376,14 @@ namespace WindowsFormsApplication1.Referenzlauf
                     skalare.Add(Neu(s.Key, Zahl(s.Value)));
                     // Der Rechenweg als Text steht gleich hinter der Kennung.
                     if (k == 0)
+                    {
                         skalare.Add(Neu("Geb[" + satz.Index.ToString(CultureInfo.InvariantCulture) + "].Modell",
                                         satz.Modell));
+                        // Stufe KP3 (Festlegung 28): Zustand, Bemessung und Quelle der Aufheizoptimierung als
+                        // Text daneben - nur bei eingeschalteter Aufheizoptimierung, sonst kein Schluessel.
+                        foreach (var t in satz.Texte)
+                            skalare.Add(Neu(t.Key, t.Value));
+                    }
                 }
             }
 

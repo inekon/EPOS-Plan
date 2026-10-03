@@ -1,7 +1,8 @@
 # Protokoll KP3 — Aufheizoptimierung, Ergebnisse, Referenzprojekt und neue Basis der Konditionierungsprofile
 
-**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4 gebaut; die Basis heißt R34, weil R31 und R34 am 02.10.2026 für die Rechenwegbefunde und die Solarthermie vergeben wurden).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
-(zwölf Wellen in vier Spuren, Festlegungen nach der Umsetzung als N1.68), Entscheid E58 (Leitkonzept N1.67, Teilkonzept 9.8),
+**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4, D2 gebaut; die Basis heißt R34, weil R31, R32 und R33 am 02.10.2026 für die Rechenwegbefunde, die Solarthermie und die Viertelstunden vergeben wurden).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
+(zwölf Wellen in vier Spuren, Festlegungen nach der Umsetzung als N1.69), Entscheid E58 (Leitkonzept N1.67, Teilkonzept 9.8),
+Entscheide E59 und E60 (Leitkonzept N1.68, Teilkonzept 9.9),
 [Protokoll KP2](2026-09-30_KP2_Konditionierung_Oberflaeche.md). Je Welle ein Agent im eigenen Worktree mit eigenem Gate
 (`Werkzeuge/Gate/gate_linux.sh`), Merge durch die Orchestrierung, Gate über den gemeinsamen Stand, Statuszeile, Push.
 
@@ -10,6 +11,20 @@
 Wie bei KP2: Auftrag als Datei, Agent im eigenen Worktree (`model: opus`), Abnahme mit vollem Gate im Worktree, danach
 Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachweis. Bis RP1 gilt die Basis R30 (16 Projekte,
 487 CSV byte-gleich), ab RP2 die Basis R34 mit 17 Projekten.
+
+**Zweiter Entscheid E59 (02.10.2026)** — nach E58 eine Vorgabe des Anwenders mit drei Rückfragen: die Rampe je Gebäude
+(rechnet der Rechenweg schon), ein Aufschlag je Projekt in Stunden und Prozent (es gilt das Maximum), eine manuelle
+Aufheizzeit je Gebäude mit Vorschlägen; Umsetzung nach D2, vor RP1. Die Papiere schrieb ein Agent im Worktree `kp3-e59`
+(kein Code): Entwurf KP3 (Wellen R5 und O1b, Schritt KP-S4 mit Platzhalter 171, Festlegungen 34–43, F9, N-AH11 und
+N-AH12, 16,75–21,75 PT), Teilkonzept 9.9, Leitkonzept N1.68 — die Festlegungen der Wellen werden damit **N1.69** —,
+Register (P15–P17), Statusdateien, Glossar. **E60 (03.10.2026)** aus dem
+[Konzept Heizlastspitzen](../../../aktuell/Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md):
+Auslegungsgröße stationäre Auslegungsheizlast plus P_auf, in O2 und O3 neben ideale Spitze und Tagesmittel gestellt, kein
+Filter im Rechenweg; in denselben Papieren eingetragen. **Folgeentscheide am 03.10.2026:** P16 — der Aufschlag gilt nur
+kalenderbezogen an Rampen mit n > 1; P17 (b) — Auslegungsgröße = Auslegungsheizlast + Aufheizzuschlag P_auf − Φ_stat
+(Muster Φ_RH der DIN EN 12831-1); P15 (b) — Vorschlagsspanne aus τ₂ des Gebäudes,
+[max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] h; Schemaweg A1 — Ergebnisspalte `Aufheiz_Art` ohne Neubau von
+`Tab_ErgebnisGebaeude`, `GEKOPPELT` an der Zone als Neubau von `Tab_ErgebnisZone`. Nachgetragen im selben Worktree.
 
 ## 2. Was gebaut ist
 
@@ -129,6 +144,31 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
 - Commits `a302b3de` (Kappungsreihe, W3, Ergebnis, Maske, Hinweise), `0a3dd371` (N-AH3), `49689037` (Orakel), `50dcd756`
   (Nutzungszeit, Skalierung), `15d06d3f` (Hinweise), `389d56cf` (N-AH7), `2acc65ba` (BOM); Gate 669 im Worktree.
 
+### D2 — Kennzahlen, Export, Auskunft
+
+- **Kennzahlen:** `GebaeudeKennzahlen.Aufheizwerte` (Record `Aufheizkennzahlen`) ist die eine Stelle der NULL-Regeln; Gebäude- und Zonenzeile
+  tragen alle 14 Aufheizspalten (Festlegung 25) und `Sommerlueftungsstunden_H` NULL ohne Sommerlüftung (Festlegung 26, auch je Zone;
+  `ErgebnisGebaeudeTests:260`, `GebaeudeBedarfNachtauskuehlungTests:98` nachgezogen). P_auf nur endlich und > 0 (Testnaht +∞ und
+  `Heizleistung_Max` = 0 → NULL, auch im Export ohne Schlüssel); Rundreise über `ErgebnisCtrl` je Gebäude und Zone.
+- **Export nach E32 (Festlegungen 27, 28):** Texte `Aufheizzustand`, `Aufheizbemessung`, `Aufheizleistungsquelle` hinter `Geb[n].Modell`,
+  elf Zahlen nur bei Zustand, Zonenschlüssel `Geb[n].Zone[k].*` (Aufheiz-, Nachtauskühl-, Sommerlüftungswerte), `heizsollwert_<n>.csv` bei
+  Heizkalender oder Aufheizung ≠ null (auch GEKOPPELT), Nachtauskühlung nur gesetzt — in den 16 Referenzprojekten unverändert.
+- **Bedarfsauskunft:** `GebaeudeBedarfErgebnis.Ergebniszeile` und `GebaeudeBedarfZone.Ergebniszeile` statt Einzelfelder, aus derselben Stelle
+  wie der Lauf (O2 stellt dar).
+- **Auskunft der Aufheizbemessung ohne Jahreslauf** (Grundsatz 3, B14): baut mit dem Konditionierungssatz wie der Lauf, ruft `Bemessen`; Faktor
+  Flächenangabe wie der Lauf, Gebäude mit Zone 1, Verbrauchsangabe `null` („erst der Lauf“); Mehrzonen mit Regelpaaren brauchen den adiabaten
+  Vorlauf (je Zone ein Jahr). **Herleitungszeile** in `SimulationErgebnisHuelle.ParameterGaben` (`AufheizHerleitung`), de/en, auch für
+  Tagesbilanz-Gebäude und Fehler des Eingangsbauers, ohne C_w; elf Schlüssel `SIMKONF_AUFH_HRL_*`/`SIMKONF_AUFH_QUELLE_*`.
+- **Hinweis `SIMENG_AUFH_VERBRAUCH`** (B11) einmal je Gebäude mit Verbrauchsangabe, nur bei geplantem Zustand mit Rampentag.
+- **Außerhalb der Spurenregel, bestätigt:** Kennzeichen `SommerlueftungGesetzt` und `HeizkalenderWirksam` als init-Eigenschaften in
+  `GebaeudeModellErgebnis` (gesetzt in `Vdi6007Rechenweg.Laufen`, `Zonenlauf.Ergebnis`, `Zonenrechnung.Gebaeudeergebnis`, von `Skaliert`
+  getragen); Auslagerungen `Vdi6007Rechenweg.EingangBauen`/`ZonenBauen`/`Mehrzonenweg`/`Zonenklima`/`Zonenkonditionierung` und
+  `Zonenrechnung.ZonenBauen`, die der Lauf selbst ruft (Regel „Auskunft ruft den Rechenweg“), Referenzlauf byte-gleich.
+- **Tests:** `AufheizExportTests`, `AufheizAuskunftTests`, `AufheizDeterminismusTests` (N-AH7 Zeile/Export), `GebaeudeBedarfCtrlTests`,
+  `ErgebnisGebaeudeTests`, Hüllentest der Herleitungszeile (16 Fälle, beide Kulturen), Hinweistest.
+- Commits `ed7bf075` (Ergebniszeile), `33ea28be` (Export), `bdd08341` (Auskunft, Herleitungszeile), `7fb53e94` (Hinweis), `5ac9377e` (N-AH7);
+  Gate 670 im Worktree.
+
 ## 3. Schemaschritte
 
 | Schritt | Klasse | Inhalt | Testdatenbank |
@@ -179,7 +219,12 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
 - **W3 schlägt am Bürogebäude nie an (R4),** auch nicht bei Grenze 1,02·Φ_stat und ρ 2 %: die Formel liegt wegen Sonne und
   Gewinnen auf der sicheren Seite; erst ein Kälteeinbruch in den zwei Stunden nach dem Sprung löst W3 aus (sechs Einbruchstage).
 
-## 5. Festlegungen der Wellen (für N1.68)
+- **GEKOPPELT an der Zone (D2):** `Tab_ErgebnisZone.Aufheiz_Zustand` kennt GEKOPPELT laut CHECK nicht, obwohl R3 eine Zone im
+  Mehrzonenweg (AK1 als ideale Last, 1047) so setzt; D2 hält die Zonenzeile ohne Aufheizwerte, der Zustand steht am Gebäude —
+  Schemanachtrag mit dem E59-Schritt (R5). **B14 bleibt für die Übergabe-Auskunft (H10) offen:** `UebergabeEingang`/`KuehluebergabeEingang`
+  bauen ohne Konditionierungssatz. **B11:** mit Verbrauchsangabe bleibt der Faktor bis zum Lauf offen.
+
+## 5. Festlegungen der Wellen (für N1.69)
 
 - R1: Index 1 der schnelle, Index 2 der langsame Modus (Teilkonzept 4.2); im zusammenfallenden Zweig r_k, C_k NaN, τ₁ = τ₂ =
   −1/μ, C_w endlich; erste Ordnung als `double` (mindestens 1, +∞ bei P ≤ Φ_stat); unerreichbar = N = 0 mit der Leistung bei
@@ -213,6 +258,11 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
   `ZonenAnhaengen` unverändert; W1 meldet auch bei unerreichbarer Bemessung ohne W1-Tag (Zahl 0); die Hinweise nennen Zahlen ohne
   kW, weil sie vor der Skalierung entstehen; `AufheizBemessung` steht auch an der Zone, D2 übernimmt es nur am Gebäude.
 
+- D2: P_auf in Spalte und Export nur endlich und > 0, die Auskunft behält +∞ roh; NULL-Regeln allein in `GebaeudeKennzahlen.Aufheizwerte`;
+  Export „vollständig“ schließt die Texte ein, Zonenschlüssel auch für Nachtauskühlung und Sommerlüftung; `heizsollwert_<n>.csv` bei
+  Heizkalender oder Aufheizung ≠ null; Faktor der Auskunft (Fläche wie der Lauf, Zone 1, Verbrauch `null`); feste Nennleistung geht nicht
+  ein; C_w nicht in der Herleitungszeile; Hinweis Verbrauchsangabe nur bei geplantem Zustand mit Rampentag; `AufheizBemessung` nur am Gebäude.
+
 ## 6. Nachweise
 
 | Nachweis | Ergebnis |
@@ -242,15 +292,33 @@ Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachwe
 | Gate im Hauptbaum nach dem Merge R4 (`7ba61a6b`) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte (200), Kern 10 051 (1 übersprungen), UI 7 256, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen) — alle grün, Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R31**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer unverändert (13 643 Einträge), kein BOM in Markdown, kein Konfliktmarker |
 | Gate im Hauptbaum nach dem Merge `origin` #665–#667 (`4b4a84e2`, Testdatenbank 164) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte (200), Kern 10 090 (1 übersprungen), UI 7 268, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen) — alle grün, Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R31**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer unverändert (13 677 Einträge) |
 | Gate 669 im Hauptbaum nach dem Merge `origin` #668 (`8a73e236`, Welle M2, Testdatenbank 165, Basis R32) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte (200), Kern 10 111 (1 übersprungen), UI 7 272, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen) — alle grün, Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R32**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer unverändert (13 700 Einträge) |
+| Export, Auskunft (D2) | aus: in allen 16 Projekten (17 Gebäudesätze, 123 Schlüssel) jeder Schlüssel und jede Reihe schon in der Basis, kein `heizsollwert_`; an (1018): drei Texte, elf Zahlen gleich der Ergebniszeile (t_auf,max 5 h, T_a,B −9,26 °C, P_auf 34,641 kW, 19 Rampentage), `heizsollwert_0.csv` mit 34 Rampenstunden, wieder aus → weg; Heizkalender ohne Schalter: Datei mit 2 496 NaN ohne Aufheizschlüssel; Auskunft = Lauf bitgleich an 17 VDI-Gebäuden (1 GEKOPPELT, 6 mit Faktor ≠ 1, 1040 Tagesbilanz), 1018 in fünf Varianten, Mehrzonen in drei Fällen, 10632 mit Heizkalender 14 h/182 Sprünge (ohne Satz 5 h/365 — B14) |
+| N-AH7 Zeile und Export (D2) | 1018 einzonig, 1018 Mehrzonenfassung, 1008: zwei Läufe und de-DE/en-US bitgleich; gestörter Lauf mit gleichen Zuständen, Zählern und Schlüsseln (365, 730, 365 Sprünge mit gleichem n) |
+| Sommerlüftung NULL (D2) | ohne Sommerlüftung NULL (1039, 1018, 1007) in Zeile und Auskunft; mit Sommerlüftung die Zahl des Modells, auch je Zone |
+| Abnahme D2 im Worktree (`5ac9377e`, Gate 670) | Kern-Filter 0 Fehler, ChartProben JA (200), Kern 10 116 (1 übersprungen), UI 7 284, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R31**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer ohne Abweichung, beide `.resx` je 13 688 Einträge ohne Dubletten, SqlDialektPruefer 2 151 Texte 0 Fundstellen |
+| Gate im Hauptbaum nach dem Merge D2 (`221da584`, Basis **R33**, Testdatenbank 170) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte (200), Kern 10 281 (1 übersprungen), UI 7 320, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen) — alle grün, Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R33**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer unverändert (13 863 Einträge), kein BOM in Markdown, kein Konfliktmarker |
 ## 7. Offen
 
 - ~~R2~~, ~~R3~~, ~~R4~~ erledigt (siehe Abschnitt 2); R3 war (Mehrzonen): Nachbarform von `AequivalentN` (B4), Luftkopplungen in Φ_stat, `Aufheizzone.Aus` für gekoppelte Zonen, θ_T,max je Zone (B5), Zustand UNBEHEIZT, Einbau am Ende von `ZonenEingang.Bauen` in beiden Aufbauten, Gebäudewerte nach Festlegung 22, `LetzterAufheizplan` im Mehrzonenweg. **R4:** Pläne und `Aufheizgebaeude` in `GebaeudeModellErgebnis` samt `Skaliert` und Zonen, `HeizleistungMaxStundenH` aus den Kappungsanteilen beider Jahresschleifen, W3 je Zone und Gebäude, vereinigte Rampenmaske in `NutzungBei`, Laufhinweise auch im Mehrzonenweg, Rücksetzen von `LetztesMehrzonenergebnis` bei Fehler entscheiden; G6d: echte Zonenkalender in der Testdatenbank für N-AH8 mit Zonen. Aus dem Wortlaut R4: P_auf skalieren (Festlegung 16), W3 aus den Sprüngen über [h_s − n + 1, h_s + 2], Kappungsreihe in beiden Jahresschleifen, Rampenmaske in `NutzungBei`, Laufhinweise `SIMENG_AUFH_W1…W5`. Aus R2 übernommen: `_vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt` neben `Kuehlbetrieb`; W1 und Deckel aus
   `Aufheizwahl` (N = 0); θ_N nach F2 (b); Φ_stat mit `AequivalentN` statt θ_eq = T_a; Antwort mit dem unbedingten
   Zusatzleitwert der Sprungstunde (`ZusatzleitwertWK(h_s, false, false)`); „fest ≥ täglich“ in N-AH5.
-- **D2:** `GebaeudeKennzahlen` übernimmt `GebaeudeModellErgebnis.Aufheizung` in Gebäude- und Zonenzeile (P_auf = +∞ der Testnaht: Umgang in Spalte und Export), Export nach E32 mit `Aufheizzustand`, Auskunft und Herleitungszeile mit Konditionierungssatz (B14; bei Faktor ≠ 1 Eingabe und Faktor), Hinweis bei Verbrauchsangabe in `SimulationWaermebedarf` (B11), N-AH7 für Ergebniszeile und Export; aus dem Wortlaut: füllt die neuen Modellfelder (auch `SommerlueftungsstundenH` der Zone, `HeizleistungMaxStundenH`
+- ~~D2~~ erledigt (siehe Abschnitt 2); D2 war: `GebaeudeKennzahlen` übernimmt `GebaeudeModellErgebnis.Aufheizung` in Gebäude- und Zonenzeile (P_auf = +∞ der Testnaht: Umgang in Spalte und Export), Export nach E32 mit `Aufheizzustand`, Auskunft und Herleitungszeile mit Konditionierungssatz (B14; bei Faktor ≠ 1 Eingabe und Faktor), Hinweis bei Verbrauchsangabe in `SimulationWaermebedarf` (B11), N-AH7 für Ergebniszeile und Export; aus dem Wortlaut: füllt die neuen Modellfelder (auch `SommerlueftungsstundenH` der Zone, `HeizleistungMaxStundenH`
   als Σ der Anteile aus R4), Festlegung 25/26, Export nach E32.
-- ~~O1~~ erledigt; offen: `AufheizHerleitung` in `SimulationErgebnisHuelle.ParameterGaben` nach D2 belegen; Wiki-Anker `#aufheizoptimierung` und `help_mapping.txt` mit KP4.
+- ~~O1~~ erledigt; ~~`AufheizHerleitung` belegen~~ mit D2 erledigt; offen: Wiki-Anker `#aufheizoptimierung` und `help_mapping.txt` mit KP4.
 - **Abschluss A:** Teilkonzept 4.3 (n = 37 bei a = 0,3 in der Augenblicksform), 10.3 „elfte“ Einfrierregel, 5.3 `GEMISCHT`,
-  4.7 Residuen je Luftwechsel, Glossar „Nachweisband“ je Quelle, Liste in `GebaeudeRueckwegTests.cs`; N1.68.
+  4.7 Residuen je Luftwechsel, Glossar „Nachweisband“ je Quelle, Liste in `GebaeudeRueckwegTests.cs`; N1.69.
 - **RP1:** ρ_min (P14) an allen 17 VDI-Gebäuden messen; 1051 im gestörten Lauf (Ladekopie-Muster aus `AufheizDeterminismusTests`); Bauwahl mit B11: knappe `Heizleistung_Max` im Rahmen des Katalogbaus.
+- **R5 (E59, nach D2, vor RP1):** Schemaschritt `AufheizManuellSchema` (Nummer spät gegen origin, Platzhalter 171; drei
+  Eingabespalten, `Aufheiz_Art` an Gebäude und Zone, `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw` am Gebäude, alles
+  per `ADD COLUMN`; Neubau nur von `Tab_ErgebnisZone` für `GEKOPPELT`; Sicht `Abfrage_Projektgebaeude`), Testdatenbank
+  anheben, Aufschlag nach Festlegung 35 (nur Rampen mit n > 1), Art „manuell“ samt Vererbung und Kopierwegen
+  (Festlegungen 37, 38), Ergebniszeile, Auslegungsgröße und Export `Geb[n].Aufheizart` (Festlegungen 39, 41), τ₂ in der
+  Auskunft (Festlegung 40), N-AH11, N-AH12.
+- **O1b (E59):** zwei Aufschlagfelder in der Projekteinstellung, `SIMKONF_AUFH_AUFSCHLAG_*`, zwei KI-Felder, Glossar.
+- **O2 erweitert (E59, E60):** Feld „Aufheizzeit manuell (h)“ im Reiter „Konditionierung“ des Gebäudedialogs mit Vorschlägen
+  (bemessene Zeit, Spanne aus τ₂) und weicher Sperre; Auslegungsgröße Auslegungsheizlast + Aufheizzuschlag mit ihren
+  Teilen, daneben ideale Spitze, Tagesmittel und P_auf mit Quelle.
+- **O3 erweitert (E59, E60):** Abweichungsmerkmale „Art“, „Aufheizzeit manuell (h)“, „Aufschlag (h)“, „Aufschlag (%)“;
+  Auslegungsgröße in der Gebäudetafel.
+- Reihenfolge der offenen Wellen: D2 → R5 → O1b/O2 → O3 → RP1 → RP2 → A (Alternative: RP1/RP2 nach R5 parallel zu O1b–O3).
 - Beim Anwender: P14 (ρ nach der Messung in RP1), SA1 der KP2-Oberfläche, SA-KP3 am Ende.

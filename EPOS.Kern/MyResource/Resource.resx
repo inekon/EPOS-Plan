@@ -26830,7 +26830,7 @@ Möchten Sie das zulassen?</value>
     <value>An Speicherauslegung übergeben…</value>
   </data>
   <data name="ZPG_AUS_GRUND_UEBERGEBEN" xml:space="preserve">
-    <value>Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.</value>
+    <value>Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.</value>
   </data>
   <data name="ZPG_AUS_WARNLISTE" xml:space="preserve">
     <value>Hinweise und Warnungen der Auslegung</value>
@@ -42384,6 +42384,825 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="PARV_LBL_KATALOG_AUSGELAUFEN" xml:space="preserve">
     <value>Ausgelaufen:</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_RUECKFALL" xml:space="preserve">
+    <value>Pset_BuildingCommon.YearOfConstruction fehlt; Baujahr aus „{0}.{1}“ = „{2}“ gelesen: {3}.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE" xml:space="preserve">
+    <value>{0}: t_auf,max {1} h bei {2} °C ({3}) · P_auf {4} kW {5}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR" xml:space="preserve">
+    <value>{0}: Die Aufheizleistung reicht nicht — bei {1} °C ({2}) hält keine Rampe bis 48 h · P_auf {3} kW {4}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT" xml:space="preserve">
+    <value>{0}: Heizkreis gekoppelt (AK1) — wird nicht optimiert</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ" xml:space="preserve">
+    <value>{0}: Tagesbilanz — ohne Aufheizoptimierung</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_FEHLER" xml:space="preserve">
+    <value>{0}: keine Bemessung — {1}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_GRENZE" xml:space="preserve">
+    <value>(Eingabe {0} kW gilt dem Katalogbau, × Faktor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR" xml:space="preserve">
+    <value>(Katalogbau {0} kW × Faktor {1})</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_FAKTOR_LAUF" xml:space="preserve">
+    <value>(am Katalogbau; den Faktor der Verbrauchsangabe bestimmt erst der Lauf)</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GRENZE" xml:space="preserve">
+    <value>Heizleistungsgrenze</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_ZIEL" xml:space="preserve">
+    <value>Zielleistung</value>
+  </data>
+  <data name="SIMKONF_AUFH_QUELLE_GEMISCHT" xml:space="preserve">
+    <value>Grenze und Zielleistung je Zone</value>
+  </data>
+  <data name="SIMENG_AUFH_VERBRAUCH" xml:space="preserve">
+    <value>Aufheizoptimierung (Verbrauchsangabe): Das Gebäude rechnet mit Verbrauchsangabe. Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Aufheizrampen an {0} Tagen in den Skalierungsfaktor auf; die Jahreswärme bleibt der angegebene Verbrauch. Die Mehrwärme der Rampen zeigt nur eine Flächenangabe.</value>
+  </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_REFERENZ" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt keine Raumgrenzen, aber Raumbezüge der Bauteile (IfcRelReferencedInSpatialStructure): {1} Decken trennen die Geschosse {2} und koppeln deren Zonen (Regel Z4); {3} Innenwände zwischen Räumen eines Geschosses zählen als innere Masse. Die Flächen kommen aus den Mengen der Bauteile, je Geschosspaar, nicht je Raum.</value>
+  </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
+    <value>Die Trenndecke zwischen {0} und {1} trägt aus den Raumbezügen nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %) — die Datei referenziert nicht alle Deckenteile. Das Geschosspaar gilt nicht als gekoppelt; die Trennfläche bitte prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
+    <value>{0} Innenwände ohne Nachbarraum (innen nach IsExternal oder Angrenzung) zählen einseitig als innere Masse: {1} m² Bruttofläche.</value>
+  </data>
+  <data name="IMP_IFC_PROT_NAME_PLATZHALTER" xml:space="preserve">
+    <value>Das Gebäude heißt in der Datei „{0}“ — ein Platzhalter; als Name vorgeschlagen wird der Dateiname „{1}“.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_DATEINAME" xml:space="preserve">
+    <value>Der Dateiname nennt {0}; die Datei führt kein Baujahr. Das Jahr wird nicht übernommen — Baujahr bzw. Baualtersklasse bitte selbst prüfen.</value>
+  </data>
+  <data name="PAUS_TITEL" xml:space="preserve">
+    <value>Pufferspeicher-Auslegung</value>
+  </data>
+  <data name="PAUS_ZURUECK" xml:space="preserve">
+    <value>← zurück</value>
+  </data>
+  <data name="PAUS_ABLAUF" xml:space="preserve">
+    <value>Ablauf der Auslegung</value>
+  </data>
+  <data name="PAUS_SCHRITT_ANLAGE" xml:space="preserve">
+    <value>Klasse und Erzeuger</value>
+  </data>
+  <data name="PAUS_SCHRITT_BEDARF" xml:space="preserve">
+    <value>Bedarf und Randbedingungen</value>
+  </data>
+  <data name="PAUS_SCHRITT_KRITERIEN" xml:space="preserve">
+    <value>Kriterien</value>
+  </data>
+  <data name="PAUS_SCHRITT_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis und Übernahme</value>
+  </data>
+  <data name="PAUS_VERALTET" xml:space="preserve">
+    <value>veraltet</value>
+  </data>
+  <data name="PAUS_STUFE" xml:space="preserve">
+    <value>Tiefe</value>
+  </data>
+  <data name="PAUS_STUFE_SCHNELL" xml:space="preserve">
+    <value>Schnell</value>
+  </data>
+  <data name="PAUS_STUFE_STANDARD" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="PAUS_STUFE_EXPERTE" xml:space="preserve">
+    <value>Experte</value>
+  </data>
+  <data name="PAUS_KONTEXT_PUFFER" xml:space="preserve">
+    <value>Projekt „{0}“ · Speicher „{1}“</value>
+  </data>
+  <data name="PAUS_KONTEXT_NEU" xml:space="preserve">
+    <value>Projekt „{0}“ · neuer Pufferspeicher</value>
+  </data>
+  <data name="PAUS_GESPEICHERTE_AUSLEGUNG" xml:space="preserve">
+    <value>Die gespeicherte Auslegung dieses Speichers ist geladen.</value>
+  </data>
+  <data name="PAUS_WEITER" xml:space="preserve">
+    <value>Weiter ›</value>
+  </data>
+  <data name="PAUS_ZURUECK_SCHRITT" xml:space="preserve">
+    <value>‹ Zurück</value>
+  </data>
+  <data name="PAUS_RECHNEN" xml:space="preserve">
+    <value>Auslegen und Ergebnis zeigen</value>
+  </data>
+  <data name="PAUS_NEU_RECHNEN" xml:space="preserve">
+    <value>Neu rechnen</value>
+  </data>
+  <data name="PAUS_ZURUECKSETZEN" xml:space="preserve">
+    <value>Auf Vorbelegung zurücksetzen</value>
+  </data>
+  <data name="PAUS_VERALTET_HINWEIS" xml:space="preserve">
+    <value>Eingaben geändert — das Ergebnis rechnet beim Wechsel in Schritt 4 oder mit „Neu rechnen“ nach.</value>
+  </data>
+  <data name="PAUS_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="PAUS_QUELLE_PUFFER" xml:space="preserve">
+    <value>Puffer</value>
+  </data>
+  <data name="PAUS_QUELLE_KASKADE" xml:space="preserve">
+    <value>Kaskade</value>
+  </data>
+  <data name="PAUS_QUELLE_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="PAUS_QUELLE_ZAPFPROFIL" xml:space="preserve">
+    <value>Zapfprofil</value>
+  </data>
+  <data name="PAUS_QUELLE_REIHE" xml:space="preserve">
+    <value>Bedarfsreihe</value>
+  </data>
+  <data name="PAUS_QUELLE_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="PAUS_QUELLE_PARAMETER" xml:space="preserve">
+    <value>Vorgabetabelle</value>
+  </data>
+  <data name="PAUS_QUELLE_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="PAUS_QUELLE_GESPEICHERT" xml:space="preserve">
+    <value>gespeichert</value>
+  </data>
+  <data name="PAUS_QUELLE_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>überschrieben</value>
+  </data>
+  <data name="PAUS_QUELLE_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="PAUS_QUELLE_UEBERGEBEN" xml:space="preserve">
+    <value>übergeben</value>
+  </data>
+  <data name="PAUS_GRUPPE_KLASSE" xml:space="preserve">
+    <value>Speicherklasse und Nutzung</value>
+  </data>
+  <data name="PAUS_KLASSE_HEIZUNG" xml:space="preserve">
+    <value>Heizung</value>
+  </data>
+  <data name="PAUS_KLASSE_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="PAUS_KLASSE_PROZESS" xml:space="preserve">
+    <value>Prozess</value>
+  </data>
+  <data name="PAUS_KLASSE_HINWEIS" xml:space="preserve">
+    <value>Je Klasse eine Zone mit eigenem Verfahren: Heizzone nach den Kriterien, Brauchwasserzone aus dem Zapfprofil, Prozesszone auf der Prozessreihe; Kombi = Heizung + Brauchwasser.</value>
+  </data>
+  <data name="PAUS_KLASSE_LEER" xml:space="preserve">
+    <value>Mindestens eine Speicherklasse wählen — ohne Klasse gibt es keine Zone.</value>
+  </data>
+  <data name="PAUS_NUTZUNGSPROFIL" xml:space="preserve">
+    <value>Nutzungsprofil</value>
+  </data>
+  <data name="PAUS_NP_HINWEIS" xml:space="preserve">
+    <value>nur Anzeige: Das Profil prägt die Bedarfsreihen, aus denen bemessen wird; es ist kein Rechenwert.</value>
+  </data>
+  <data name="PAUS_NP_WOHNEN" xml:space="preserve">
+    <value>Wohnen</value>
+  </data>
+  <data name="PAUS_NP_BEHERBERGUNG" xml:space="preserve">
+    <value>Beherbergung</value>
+  </data>
+  <data name="PAUS_NP_PFLEGE" xml:space="preserve">
+    <value>Pflege/Krankenhaus</value>
+  </data>
+  <data name="PAUS_NP_BUERO_SCHULE" xml:space="preserve">
+    <value>Büro/Schule</value>
+  </data>
+  <data name="PAUS_NP_GEWERBE" xml:space="preserve">
+    <value>Gewerbe/Prozess</value>
+  </data>
+  <data name="PAUS_GRUPPE_VORLAGE" xml:space="preserve">
+    <value>Vorlage der Anlage</value>
+  </data>
+  <data name="PAUS_VORLAGE_HINWEIS" xml:space="preserve">
+    <value>Die Vorlage schaltet die Kriterien der Heizzone und belegt Beispielwerte; die Brauchwasserzone hat keine Vorlage — sie kommt aus dem Zapfprofil.</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO_UNTER" xml:space="preserve">
+    <value>monovalent</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_MONO_TEXT" xml:space="preserve">
+    <value>Die Wärmepumpe deckt allein: Gerätetyp und Mindestlaufzeit, Sperrzeit nach VDI 4645, Taktziel.</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT_UNTER" xml:space="preserve">
+    <value>bivalent</value>
+  </data>
+  <data name="PAUS_VORLAGE_WP_BIVALENT_TEXT" xml:space="preserve">
+    <value>Ein Zweiterzeuger frei in der Sperre lässt die Sperrzeit entfallen; ein Heizstab ist mitgesperrt.</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW_UNTER" xml:space="preserve">
+    <value>lange Laufzeiten</value>
+  </data>
+  <data name="PAUS_VORLAGE_BHKW_TEXT" xml:space="preserve">
+    <value>Mindestlaufzeit und wenige Starts je Tag; Verschiebedauer und Faustwert als Gegenprobe.</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL" xml:space="preserve">
+    <value>Kessel</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL_UNTER" xml:space="preserve">
+    <value>Gas/Öl</value>
+  </data>
+  <data name="PAUS_VORLAGE_KESSEL_TEXT" xml:space="preserve">
+    <value>Mindestleistung und Mindestlaufzeit aus der Kesselkennlinie; kleiner Puffer gegen Takten.</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF" xml:space="preserve">
+    <value>Festbrennstoff</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF_UNTER" xml:space="preserve">
+    <value>Scheitholz, Pellets</value>
+  </data>
+  <data name="PAUS_VORLAGE_FESTBRENNSTOFF_TEXT" xml:space="preserve">
+    <value>Mindestvolumen nach Vorschrift aus dem Brennstoff des Kessels — bemessend.</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR_UNTER" xml:space="preserve">
+    <value>Kollektorfeld am Puffer</value>
+  </data>
+  <data name="PAUS_VORLAGE_SOLAR_TEXT" xml:space="preserve">
+    <value>Volumen je m² Aperturfläche als Tagesspeicher.</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS" xml:space="preserve">
+    <value>Prozess</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS_UNTER" xml:space="preserve">
+    <value>Prozesspuffer</value>
+  </data>
+  <data name="PAUS_VORLAGE_PROZESS_TEXT" xml:space="preserve">
+    <value>Deckung und Taktziel auf der Prozessreihe, Spreizung aus dem Puffer; Temperaturniveau prüfen.</value>
+  </data>
+  <data name="PAUS_FAUSTWERT" xml:space="preserve">
+    <value>Faustwert {0} {1}</value>
+  </data>
+  <data name="PAUS_GERAETETYP" xml:space="preserve">
+    <value>Gerätetyp</value>
+  </data>
+  <data name="PAUS_FIXED_SPEED" xml:space="preserve">
+    <value>Fixed-Speed</value>
+  </data>
+  <data name="PAUS_GEREGELT" xml:space="preserve">
+    <value>leistungsgeregelt</value>
+  </data>
+  <data name="PAUS_ZWEITERZEUGER" xml:space="preserve">
+    <value>Zweiterzeuger in der Sperre</value>
+  </data>
+  <data name="PAUS_ZWEIT_FREI" xml:space="preserve">
+    <value>Zweiterzeuger frei in der Sperre</value>
+  </data>
+  <data name="PAUS_ZWEIT_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab (gesperrt)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger am Puffer</value>
+  </data>
+  <data name="PAUS_ERZEUGER_KEINER" xml:space="preserve">
+    <value>Kein Wärmeerzeuger im Projekt — die Vorlage rechnet mit ihren Vorgabewerten.</value>
+  </data>
+  <data name="PAUS_GRUPPE_TEMPERATUR" xml:space="preserve">
+    <value>Temperaturen und Schwellen am Puffer</value>
+  </data>
+  <data name="PAUS_TEMPERATURPAAR" xml:space="preserve">
+    <value>Vorlauf / Rücklauf</value>
+  </data>
+  <data name="PAUS_SCHWELLEN" xml:space="preserve">
+    <value>Schwellen ein / aus</value>
+  </data>
+  <data name="PAUS_NUTZANTEIL_TEXT" xml:space="preserve">
+    <value>nutzbarer Anteil {0} %</value>
+  </data>
+  <data name="PAUS_TEMPERATUR_BLEIBT" xml:space="preserve">
+    <value>Temperaturpaar und Schwellen kommen aus dem Puffer; die Auslegung ändert sie nicht.</value>
+  </data>
+  <data name="PAUS_GRUPPE_REIHEN" xml:space="preserve">
+    <value>Bedarfsreihen</value>
+  </data>
+  <data name="PAUS_REIHEN_HINWEIS" xml:space="preserve">
+    <value>Bemessen wird gegen die stündlichen Bedarfsreihen des Projekts — ohne neuen Simulationslauf.</value>
+  </data>
+  <data name="PAUS_REIHEN_FEHLER" xml:space="preserve">
+    <value>Die Bedarfsreihen sind nicht rechenbar: {0}</value>
+  </data>
+  <data name="PAUS_SPALTE_KANAL" xml:space="preserve">
+    <value>Kanal</value>
+  </data>
+  <data name="PAUS_SPALTE_SPITZE" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
+  <data name="PAUS_SPALTE_JAHR" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="PAUS_GRUPPE_UEBERGABE" xml:space="preserve">
+    <value>Übergabe und Anlage</value>
+  </data>
+  <data name="PAUS_UEBERGABEART" xml:space="preserve">
+    <value>Übergabeart</value>
+  </data>
+  <data name="PAUS_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>keine Angabe (rechnet wie Flächenheizung)</value>
+  </data>
+  <data name="PAUS_UEBERGABE_RADIATOR" xml:space="preserve">
+    <value>Heizkörper</value>
+  </data>
+  <data name="PAUS_UEBERGABE_FLAECHE" xml:space="preserve">
+    <value>Flächenheizung</value>
+  </data>
+  <data name="PAUS_UEBERGABE_KONVEKTOR" xml:space="preserve">
+    <value>Konvektor</value>
+  </data>
+  <data name="PAUS_UEBERGABE_LUEFTER" xml:space="preserve">
+    <value>Lüfter</value>
+  </data>
+  <data name="PAUS_HEIZGRENZE" xml:space="preserve">
+    <value>Heizgrenze</value>
+  </data>
+  <data name="PAUS_HEIZLAST" xml:space="preserve">
+    <value>Auslegungsheizlast</value>
+  </data>
+  <data name="PAUS_ANLAGENVOLUMEN" xml:space="preserve">
+    <value>Anlagenvolumen, nicht absperrbar</value>
+  </data>
+  <data name="PAUS_LEER_VORGABE" xml:space="preserve">
+    <value>leer = Vorgabe</value>
+  </data>
+  <data name="PAUS_HEIZLAST_LEER" xml:space="preserve">
+    <value>leer = Maximum der Heizreihe</value>
+  </data>
+  <data name="PAUS_ANLAGENVOLUMEN_LEER" xml:space="preserve">
+    <value>leer = Übergabeart × Heizlast</value>
+  </data>
+  <data name="PAUS_GRUPPE_SPERRE" xml:space="preserve">
+    <value>Sperrzeiten</value>
+  </data>
+  <data name="PAUS_SPERRPROFIL" xml:space="preserve">
+    <value>Sperrprofil</value>
+  </data>
+  <data name="PAUS_SPERRE_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="PAUS_SPERRE_ZWEI_MAL_ZWEI" xml:space="preserve">
+    <value>2 × 2 h (11–13 und 17–19 Uhr)</value>
+  </data>
+  <data name="PAUS_SPERRE_DREI_MAL_ZWEI" xml:space="preserve">
+    <value>3 × 2 h (6–8, 11–13 und 17–19 Uhr)</value>
+  </data>
+  <data name="PAUS_SPERRE_EIGEN" xml:space="preserve">
+    <value>eigenes Fenster</value>
+  </data>
+  <data name="PAUS_SPERRBEGINN" xml:space="preserve">
+    <value>Beginn der Sperre</value>
+  </data>
+  <data name="PAUS_SPERRDAUER" xml:space="preserve">
+    <value>Dauer der Sperre</value>
+  </data>
+  <data name="PAUS_SPERRE_HINWEIS" xml:space="preserve">
+    <value>Neutrale Eingabe der Sperrdauer und ihrer Lage je Tag; die Übernahme schreibt die Sperrannahme nicht in die Wärmepumpe.</value>
+  </data>
+  <data name="PAUS_EXPERTENWEG" xml:space="preserve">
+    <value>Sperrzeit aus dem Lastgang bemessen (Expertenweg)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZIELE" xml:space="preserve">
+    <value>Betriebsziel</value>
+  </data>
+  <data name="PAUS_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit je Start</value>
+  </data>
+  <data name="PAUS_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Kleinste Dauerleistung</value>
+  </data>
+  <data name="PAUS_STARTZIEL" xml:space="preserve">
+    <value>Startziel</value>
+  </data>
+  <data name="PAUS_DECKUNGSZIEL" xml:space="preserve">
+    <value>Ziel-Deckungsgrad</value>
+  </data>
+  <data name="PAUS_EINHEIT_JE_TAG" xml:space="preserve">
+    <value>je Tag</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZAPF" xml:space="preserve">
+    <value>Brauchwasserzone aus dem Zapfprofil</value>
+  </data>
+  <data name="PAUS_ZAPF_TOPOLOGIE" xml:space="preserve">
+    <value>Topologie</value>
+  </data>
+  <data name="PAUS_TOPO_SPEICHER" xml:space="preserve">
+    <value>Trinkwasserspeicher</value>
+  </data>
+  <data name="PAUS_TOPO_FRISCHWASSER" xml:space="preserve">
+    <value>Frischwasserstation</value>
+  </data>
+  <data name="PAUS_TOPO_WOHNUNGSSTATION" xml:space="preserve">
+    <value>Wohnungsstationen</value>
+  </data>
+  <data name="PAUS_TOPO_DURCHFLUSS" xml:space="preserve">
+    <value>Durchfluss ohne Speicher</value>
+  </data>
+  <data name="PAUS_ZAPF_DMAX" xml:space="preserve">
+    <value>Größtes Defizit D_max</value>
+  </data>
+  <data name="PAUS_ZAPF_PERSONEN" xml:space="preserve">
+    <value>Personen</value>
+  </data>
+  <data name="PAUS_ZAPF_TAGESBEDARF" xml:space="preserve">
+    <value>Tagesbedarf bei 60 °C</value>
+  </data>
+  <data name="PAUS_ZAPF_KEIN" xml:space="preserve">
+    <value>Kein Zapfprofil-Ergebnis: Die Brauchwasserzone bleibt leer.</value>
+  </data>
+  <data name="PAUS_ZIRKULATION" xml:space="preserve">
+    <value>Zirkulationszuschlag</value>
+  </data>
+  <data name="PAUS_ZIRK_AUTOMATIK" xml:space="preserve">
+    <value>automatisch (Zapfprofil, sonst Projekt, sonst Anteil)</value>
+  </data>
+  <data name="PAUS_ZIRK_ZAPFPROFIL" xml:space="preserve">
+    <value>aus dem Zapfprofil</value>
+  </data>
+  <data name="PAUS_ZIRK_PROJEKT" xml:space="preserve">
+    <value>Zirkulationsleistung des Projekts</value>
+  </data>
+  <data name="PAUS_ZIRK_ANTEIL" xml:space="preserve">
+    <value>Anteil am Tagesbedarf</value>
+  </data>
+  <data name="PAUS_ZIRK_JE_WE" xml:space="preserve">
+    <value>je Wohneinheit</value>
+  </data>
+  <data name="PAUS_WOHNEINHEITEN" xml:space="preserve">
+    <value>Wohneinheiten</value>
+  </data>
+  <data name="PAUS_DELTA_TB" xml:space="preserve">
+    <value>Spreizung Brauchwasser ΔT_B</value>
+  </data>
+  <data name="PAUS_T_OBEN" xml:space="preserve">
+    <value>Temperatur oben im Puffer</value>
+  </data>
+  <data name="PAUS_KRITERIEN_HINWEIS" xml:space="preserve">
+    <value>Je Zone bemisst das größte aktive Kriterium. Die Vorlage hat vorgewählt, was zur Anlage passt; Kriterien lassen sich zu- oder abschalten.</value>
+  </data>
+  <data name="PAUS_KRIT_AN" xml:space="preserve">
+    <value>bemisst mit</value>
+  </data>
+  <data name="PAUS_KRIT_BEMESSEND" xml:space="preserve">
+    <value>bemessend</value>
+  </data>
+  <data name="PAUS_KRIT_NICHT_GUELTIG" xml:space="preserve">
+    <value>nicht erreichbar</value>
+  </data>
+  <data name="PAUS_KRIT_AUS" xml:space="preserve">
+    <value>abgeschaltet</value>
+  </data>
+  <data name="PAUS_KRIT_NOCH_NICHT" xml:space="preserve">
+    <value>noch nicht gerechnet</value>
+  </data>
+  <data name="PAUS_KRIT_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg</value>
+  </data>
+  <data name="PAUS_KRIT_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasserzone</value>
+  </data>
+  <data name="PAUS_KRIT_K1" xml:space="preserve">
+    <value>Vorprüfung Anlagenvolumen</value>
+  </data>
+  <data name="PAUS_KRIT_K2" xml:space="preserve">
+    <value>Faustwert nach Gerätetyp</value>
+  </data>
+  <data name="PAUS_KRIT_K3" xml:space="preserve">
+    <value>Mindestlaufzeit</value>
+  </data>
+  <data name="PAUS_KRIT_K4" xml:space="preserve">
+    <value>Sperrzeit</value>
+  </data>
+  <data name="PAUS_KRIT_K4E" xml:space="preserve">
+    <value>Sperrzeit aus dem Lastgang</value>
+  </data>
+  <data name="PAUS_KRIT_D1" xml:space="preserve">
+    <value>Deckungsgrad</value>
+  </data>
+  <data name="PAUS_KRIT_D2" xml:space="preserve">
+    <value>Taktziel</value>
+  </data>
+  <data name="PAUS_KRIT_K9" xml:space="preserve">
+    <value>Festbrennstoff</value>
+  </data>
+  <data name="PAUS_KRIT_K9E" xml:space="preserve">
+    <value>Festbrennstoff nach DIN EN 303-5</value>
+  </data>
+  <data name="PAUS_KRIT_K10" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="PAUS_KRIT_KV" xml:space="preserve">
+    <value>Verschiebedauer BHKW</value>
+  </data>
+  <data name="PAUS_KRIT_B_SPEICHER" xml:space="preserve">
+    <value>Trinkwasserspeicher aus dem Zapfprofil</value>
+  </data>
+  <data name="PAUS_KRIT_B_FRISCHWASSER" xml:space="preserve">
+    <value>Brauchwasser am Puffer (Station)</value>
+  </data>
+  <data name="PAUS_GRUPPE_ZONEN" xml:space="preserve">
+    <value>Vorschlag je Zone</value>
+  </data>
+  <data name="PAUS_SPALTE_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="PAUS_SPALTE_BEMESSEND" xml:space="preserve">
+    <value>bemessend</value>
+  </data>
+  <data name="PAUS_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="PAUS_ZONE_HEIZUNG" xml:space="preserve">
+    <value>Heizzone</value>
+  </data>
+  <data name="PAUS_ZONE_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasserzone</value>
+  </data>
+  <data name="PAUS_ZONE_PROZESS" xml:space="preserve">
+    <value>Prozesszone</value>
+  </data>
+  <data name="PAUS_SUMME" xml:space="preserve">
+    <value>Summe der Zonen</value>
+  </data>
+  <data name="PAUS_EMPFEHLUNG" xml:space="preserve">
+    <value>Empfehlung</value>
+  </data>
+  <data name="PAUS_EMPFEHLUNG_ZEILE" xml:space="preserve">
+    <value>{0} l · {1} kWh nutzbar</value>
+  </data>
+  <data name="PAUS_KEIN_PUFFER" xml:space="preserve">
+    <value>kein Puffer erforderlich</value>
+  </data>
+  <data name="PAUS_UEBER_LISTENENDE" xml:space="preserve">
+    <value>über der Nenninhaltsliste auf das Raster gerundet</value>
+  </data>
+  <data name="PAUS_AN_PRAXISGRENZE" xml:space="preserve">
+    <value>an der Praxisgrenze gestoppt</value>
+  </data>
+  <data name="PAUS_KATALOGVORSCHLAG" xml:space="preserve">
+    <value>Katalogvorschlag</value>
+  </data>
+  <data name="PAUS_KATALOG_KEINER" xml:space="preserve">
+    <value>kein Katalogpuffer groß genug</value>
+  </data>
+  <data name="PAUS_GRUPPE_KENNZAHLEN" xml:space="preserve">
+    <value>Kennzahlen</value>
+  </data>
+  <data name="PAUS_KZ_STARTS_TAG" xml:space="preserve">
+    <value>Starts je Tag</value>
+  </data>
+  <data name="PAUS_KZ_STARTS_JAHR" xml:space="preserve">
+    <value>Starts je Heizperiode</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_TAG" xml:space="preserve">
+    <value>Bereitschaftsverlust bei 45 K</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_WK" xml:space="preserve">
+    <value>Wärmeverlustrate</value>
+  </data>
+  <data name="PAUS_KZ_VERLUST_JAHR" xml:space="preserve">
+    <value>Betriebsverlust</value>
+  </data>
+  <data name="PAUS_KZ_KAPAZITAET" xml:space="preserve">
+    <value>Nutzbare Kapazität</value>
+  </data>
+  <data name="PAUS_KZ_NUTZANTEIL" xml:space="preserve">
+    <value>Nutzbarer Anteil</value>
+  </data>
+  <data name="PAUS_KZ_FAUSTWERT" xml:space="preserve">
+    <value>Faustwert der Vorlage (Gegenprobe)</value>
+  </data>
+  <data name="PAUS_KZ_JE_PERSON" xml:space="preserve">
+    <value>Tagesbedarf je Person bei 60 °C</value>
+  </data>
+  <data name="PAUS_KZ_ZONENANTEIL" xml:space="preserve">
+    <value>Zonenanteil Heizung</value>
+  </data>
+  <data name="PAUS_KZ_SCHICHTEN" xml:space="preserve">
+    <value>Schichten mindestens</value>
+  </data>
+  <data name="PAUS_KZ_AUS_KATALOG" xml:space="preserve">
+    <value>aus dem Katalogsatz</value>
+  </data>
+  <data name="PAUS_KZ_KLASSE_C" xml:space="preserve">
+    <value>Grenze Klasse C</value>
+  </data>
+  <data name="PAUS_KZ_EXTRAPOLIERT" xml:space="preserve">
+    <value>extrapoliert</value>
+  </data>
+  <data name="PAUS_BAND" xml:space="preserve">
+    <value>Plausibilitätsband nach Übergabeart: {0}–{1} l</value>
+  </data>
+  <data name="PAUS_BAND_WP" xml:space="preserve">
+    <value>Band nach Wärmepumpenleistung: {0}–{1} l</value>
+  </data>
+  <data name="PAUS_GRUPPE_WARNUNGEN" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="PAUS_SPALTE_CODE" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="PAUS_SPALTE_STUFE" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="PAUS_SPALTE_TEXT" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="PAUS_SPALTE_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="PAUS_STUFE_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="PAUS_STUFE_WARNUNG" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="PAUS_WARNUNGEN_LEER" xml:space="preserve">
+    <value>keine Hinweise</value>
+  </data>
+  <data name="PAUS_ERGEBNIS_LEER" xml:space="preserve">
+    <value>Noch nicht gerechnet — „Auslegen und Ergebnis zeigen“ rechnet die Zonen.</value>
+  </data>
+  <data name="PAUS_GRUPPE_UEBERNAHME" xml:space="preserve">
+    <value>Übernahme in den Projektpuffer</value>
+  </data>
+  <data name="PAUS_ZIEL" xml:space="preserve">
+    <value>Ziel</value>
+  </data>
+  <data name="PAUS_ZIEL_AENDERN" xml:space="preserve">
+    <value>„{0}“ ändern</value>
+  </data>
+  <data name="PAUS_ZIEL_NEU" xml:space="preserve">
+    <value>neuen Pufferspeicher anlegen</value>
+  </data>
+  <data name="PAUS_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="PAUS_BEZEICHNER_MUSTER" xml:space="preserve">
+    <value>Pufferspeicher {0} l</value>
+  </data>
+  <data name="PAUS_UEBERNAHME_BLEIBT" xml:space="preserve">
+    <value>Schwellen und Temperaturpaar bleiben. Übernommen werden Volumen, Bereitschaftsverlust und Nutzung, beim Kombipuffer Schichten und Zonenanteile; die Sperrannahme nicht.</value>
+  </data>
+  <data name="PAUS_BTN_SPEICHERN" xml:space="preserve">
+    <value>Auslegung speichern</value>
+  </data>
+  <data name="PAUS_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PAUS_MELDUNG_GESPEICHERT" xml:space="preserve">
+    <value>Auslegung gespeichert.</value>
+  </data>
+  <data name="PAUS_MELDUNG_UEBERNOMMEN" xml:space="preserve">
+    <value>Übernommen: „{0}“ mit {1} l.</value>
+  </data>
+  <data name="PAUS_GRUND_KEINE_EMPFEHLUNG" xml:space="preserve">
+    <value>Die Auslegung empfiehlt keinen Puffer — es gibt nichts zu übernehmen.</value>
+  </data>
+  <data name="PAUS_GRUND_BEZEICHNER" xml:space="preserve">
+    <value>Für einen neuen Speicher eine Bezeichnung eingeben.</value>
+  </data>
+  <data name="PAUS_GRUND_SCHREIBFEHLER" xml:space="preserve">
+    <value>Der Pufferspeicher konnte nicht geschrieben werden.</value>
+  </data>
+  <data name="PAUS_GRUND_SPEICHERN" xml:space="preserve">
+    <value>Die Auslegung konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="PAUS_FEHLER_RECHNEN" xml:space="preserve">
+    <value>Die Auslegung ist nicht rechenbar: {0}</value>
+  </data>
+  <data name="PAUS_FEHLER_START" xml:space="preserve">
+    <value>Die Auslegung kann nicht vorbelegt werden: {0}</value>
+  </data>
+  <data name="PAUS_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Pufferspeicher-Auslegung ist hier nicht verfügbar.</value>
+  </data>
+  <data name="PAUS_BTN_AUSLEGEN" xml:space="preserve">
+    <value>Auslegen…</value>
+  </data>
+  <data name="PAUS_AUSLEGEN_VERWIRFT" xml:space="preserve">
+    <value>„Auslegen…“ verlässt diesen Dialog ohne zu speichern und öffnet die Pufferspeicher-Auslegung.</value>
+  </data>
+  <data name="PAUS_BTN_KONFIG" xml:space="preserve">
+    <value>Pufferspeicher auslegen…</value>
+  </data>
+  <data name="PAUS_EINSTIEG_KONFIG" xml:space="preserve">
+    <value>geöffnet aus ① Konfiguration</value>
+  </data>
+  <data name="PAUS_EINSTIEG_VERWALTUNG" xml:space="preserve">
+    <value>geöffnet aus der Pufferverwaltung</value>
+  </data>
+  <data name="PAUS_EINSTIEG_ZAPFPROFIL" xml:space="preserve">
+    <value>geöffnet aus der Zapfprofil-Auslegung</value>
+  </data>
+  <data name="PAUS_ZAPF_UEBERGEBEN" xml:space="preserve">
+    <value>Zapfprofil-Auslegung übergeben ({0})</value>
+  </data>
+  <data name="PAUS_UEBERGABE_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>ein Pufferspeicher wurde aus der Auslegung übernommen</value>
+  </data>
+  <data name="PA_KEIN_PUFFER" xml:space="preserve">
+    <value>Das nicht absperrbare Anlagenvolumen reicht: kein Heizungspuffer erforderlich.</value>
+  </data>
+  <data name="PA_BAND_UNTER" xml:space="preserve">
+    <value>Das Volumen der Heizzone liegt unter dem Plausibilitätsband der Übergabeart.</value>
+  </data>
+  <data name="PA_BAND_UEBER" xml:space="preserve">
+    <value>Das Volumen der Heizzone liegt über dem Plausibilitätsband der Übergabeart.</value>
+  </data>
+  <data name="PA_ABTAU_VORRANG" xml:space="preserve">
+    <value>Trinkwasservorrang: Es fehlt Abtaureserve für die Heizung.</value>
+  </data>
+  <data name="PA_STARTS_TAG" xml:space="preserve">
+    <value>Die Starts je Tag liegen über der Warnschwelle.</value>
+  </data>
+  <data name="PA_STARTS_JAHR" xml:space="preserve">
+    <value>Die Starts je Heizperiode liegen über der Hinweisschwelle.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE" xml:space="preserve">
+    <value>Die Praxisgrenze ist erreicht: Ein Ziel ist mit dem größten Puffer nicht zu halten, oder die Summe ist ein Saisonalspeicher.</value>
+  </data>
+  <data name="PA_EXTRAPOLATION" xml:space="preserve">
+    <value>Der Bereitschaftsverlust ist über den Geltungsbereich der Klasse-C-Grenze hinaus extrapoliert.</value>
+  </data>
+  <data name="PA_TANK_IM_TANK" xml:space="preserve">
+    <value>Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau).</value>
+  </data>
+  <data name="PA_OHNE_PUFFER_GEREGELT" xml:space="preserve">
+    <value>Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt.</value>
+  </data>
+  <data name="PA_HYGIENE_W551" xml:space="preserve">
+    <value>Trinkwasserspeicher einer Großanlage: Anforderungen an die Trinkwasserhygiene beachten.</value>
+  </data>
+  <data name="PA_HYGIENE_TEMPERATUR" xml:space="preserve">
+    <value>Puffer oben zu kalt für die Frischwasserbereitung; periodisches Aufheizen ist kein Ersatz.</value>
+  </data>
+  <data name="PA_BW_UEBERDIMENSIONIERT" xml:space="preserve">
+    <value>Die Brauchwasserzone übersteigt ein Vielfaches des Tagesbedarfs.</value>
+  </data>
+  <data name="PA_UEBERGABE_UNBEKANNT" xml:space="preserve">
+    <value>Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung.</value>
+  </data>
+  <data name="PA_ZWEITERZEUGER_FREI" xml:space="preserve">
+    <value>Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht.</value>
+  </data>
+  <data name="PA_HEIZSTAB_GESPERRT" xml:space="preserve">
+    <value>Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer.</value>
+  </data>
+  <data name="PA_KEINE_REIHE" xml:space="preserve">
+    <value>Eine Bedarfsreihe ist leer: Die Kriterien auf dem Lastgang entfallen für diese Zone.</value>
+  </data>
+  <data name="KI_DLG_PAUS_KLASSE_ERL" xml:space="preserve">
+    <value>Schaltet die Zone der Speicherklasse ein oder aus; jede Klasse bemisst ihre Zone nach eigenem Verfahren.</value>
+  </data>
+  <data name="KI_DLG_PAUS_VORLAGE_ERL" xml:space="preserve">
+    <value>Die Vorlage der Anlage schaltet die Kriterien der Heizzone und belegt Beispielwerte.</value>
+  </data>
+  <data name="KI_DLG_PAUS_GEREGELT_ERL" xml:space="preserve">
+    <value>Leistungsgeregelte Wärmepumpen brauchen kleinere Puffer (Faustwert 3 statt 20 l je kW).</value>
+  </data>
+  <data name="KI_DLG_PAUS_ZWEIT_ERL" xml:space="preserve">
+    <value>Ein in der Sperre freigegebener Zweiterzeuger lässt das Sperrzeitkriterium entfallen; ein Heizstab ist mitgesperrt.</value>
+  </data>
+  <data name="KI_DLG_PAUS_UEBERGABE_ERL" xml:space="preserve">
+    <value>Die Übergabeart wählt Stillstandzeit und Untergrenze der Sperrzeitformel und das Plausibilitätsband.</value>
+  </data>
+  <data name="KI_DLG_PAUS_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Die Heizgrenze wählt die akzeptable Stillstandzeit der Sperrzeitformel; leer = 15 °C.</value>
+  </data>
+  <data name="KI_DLG_PAUS_ANLAGENVOLUMEN_ERL" xml:space="preserve">
+    <value>Das dauerhaft durchströmte Volumen der Anlage wird von der Sperrzeit abgezogen; leer = Vorgabe nach Übergabeart.</value>
+  </data>
+  <data name="KI_DLG_PAUS_SPERRPROFIL_ERL" xml:space="preserve">
+    <value>Die Sperrzeiten des Netzbetreibers je Tag als neutrales Profil.</value>
+  </data>
+  <data name="KI_DLG_PAUS_STARTZIEL_ERL" xml:space="preserve">
+    <value>Höchstens so viele Starts je Tag soll der Erzeuger mit dem Puffer machen; leer = Vorgabe der Vorlage.</value>
+  </data>
+  <data name="KI_DLG_PAUS_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Mindestlaufzeit je Start des Erzeugers für das Kriterium Mindestlaufzeit; leer = Vorgabe der Vorlage.</value>
+  </data>
+  <data name="KI_DLG_PAUS_DECKUNG_ERL" xml:space="preserve">
+    <value>Der Deckungsgrad, den die Durchlaufbilanz mit dem Puffer erreichen soll, in Prozent; leer = 100 %.</value>
   </data>
 </root>
 

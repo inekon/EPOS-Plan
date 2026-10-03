@@ -11,12 +11,14 @@ namespace WindowsFormsApplication1
     public sealed class GebaeudeExportsatz
     {
         internal GebaeudeExportsatz(int index, string modell, IReadOnlyList<KeyValuePair<string, double[]>> reihen,
-                                    IReadOnlyList<KeyValuePair<string, double>> skalare)
+                                    IReadOnlyList<KeyValuePair<string, double>> skalare,
+                                    IReadOnlyList<KeyValuePair<string, string>> texte = null)
         {
             Index = index;
             Modell = modell;
             Reihen = reihen;
             Skalare = skalare;
+            Texte = texte ?? Array.Empty<KeyValuePair<string, string>>();
         }
 
         /// <summary>Der Rechenweg (<c>DbWerte.GEBAEUDE_MODELL_*</c>) — der Skalar <c>Geb[i].Modell</c> als Text.</summary>
@@ -37,6 +39,14 @@ namespace WindowsFormsApplication1
         /// damit sie der übrigen <c>aggregate.csv</c> gleicht.
         /// </summary>
         public IReadOnlyList<KeyValuePair<string, double>> Skalare { get; }
+
+        /// <summary>
+        /// <b>Die Textskalare der Aufheizoptimierung</b> (Entwurf KP3, Festlegung 28, Muster E32) in fester
+        /// Reihenfolge: Schlüssel (mit Präfix <c>Geb[i].</c>) → Text — Zustand, Bemessung und Quelle des Gebäudes,
+        /// danach Zustand und Quelle je Zone. Der Export schreibt sie gleich hinter <c>Geb[i].Modell</c>. Leer bei
+        /// ausgeschalteter Aufheizoptimierung — dann entsteht kein Schlüssel.
+        /// </summary>
+        public IReadOnlyList<KeyValuePair<string, string>> Texte { get; }
     }
 
     /// <summary>
@@ -68,6 +78,17 @@ namespace WindowsFormsApplication1
     /// und ein Gebäude mit höchstens einer Zone schreibt keinen Zonenschlüssel. Die Energie nur für
     /// eine beheizte Zone, die Kühlenergie nur bei wirksamer Kühlung, Δϑ_max nur mit Nachbarzone —
     /// wie in <c>Tab_ErgebnisZone</c> nie mit Nullen gefüllt.</para>
+    ///
+    /// <para><b>Aufheizoptimierung, Nachtauskühlung, Sommerlüftung nur, wenn sie wirken</b> (Entwurf KP3,
+    /// Festlegungen 27, 28; Muster E32): <c>Geb[n].Aufheizzustand</c> (Text, mit Bemessung und Quelle) und die
+    /// Zahlen der Ergebniszeile (<c>Geb[n].AufheizzeitMaxH</c> … <c>Geb[n].HeizleistungMaxStundenH</c>, die
+    /// Feldnamen von <see cref="ErgebnisGebaeudeModel"/>) nur bei Zustand ≠ NULL — dieselben Werte und
+    /// NULL-Regeln wie die Ergebniszeile (<see cref="GebaeudeKennzahlen.Aufheizwerte"/>): Eine Zahl, die dort
+    /// NULL ist, hat hier keinen Schlüssel (so auch P_auf = +∞ der Testnaht). <c>Geb[n].Nachtauskuehlstunden</c>
+    /// nur mit Nachtauskühlung, <c>Geb[n].Sommerlueftungsstunden</c> nur mit Sommerlüftung — je Zone ebenso.
+    /// Die Sollwertreihe <c>heizsollwert_&lt;n&gt;.csv</c> in °C (NaN = „aus", Muster <c>vorlauf_&lt;n&gt;.csv</c>)
+    /// nur mit Heizkalender oder eingeschalteter Aufheizoptimierung. Keines der Referenzprojekte erfüllt eine
+    /// dieser Bedingungen; ihre Ordner bleiben byte-gleich.</para>
     ///
     /// <para><b>Wer schreibt.</b> Die CSV-Dateien und die Skalare in <c>aggregate.csv</c>
     /// schreibt <c>Referenzlauf/Ergebnisexport.cs</c> (beide Referenzlauf-Werkzeuge und die
@@ -109,6 +130,11 @@ namespace WindowsFormsApplication1
                 reihen.Add(new KeyValuePair<string, double[]>("uebergabe_" + n + ".csv", e.Heizkreis.UebergabeBegrenztAnteil));
             }
 
+            // Stufe KP3 (Festlegung 28): die Sollwertreihe nur mit Heizkalender oder eingeschalteter
+            // Aufheizoptimierung - NaN heisst "aus" wie im Vorlauf des Heizkreises.
+            if (e.Heizsollwert != null && (e.HeizkalenderWirksam || e.Aufheizung != null))
+                reihen.Add(new KeyValuePair<string, double[]>("heizsollwert_" + n + ".csv", e.Heizsollwert));
+
             // Kälteseite (E37, 8.3): die drei Reihen des Kältekreises nur mit wirksamer Kühlkopplung.
             if (e.Kuehlkreis != null)
             {
@@ -130,6 +156,9 @@ namespace WindowsFormsApplication1
             if (e.StundenMitKuehlbedarf is int kuehlStunden) skalare.Add(Paar(p + "StundenMitKuehlbedarf", kuehlStunden));
             skalare.Add(Paar(p + "MittlereRaumtemperaturHeizzeit", e.MittlereRaumtemperaturHeizzeit));
             skalare.Add(Paar(p + "Ueberhitzungsstunden", e.Ueberhitzungsstunden));
+            // Stufe KP3 (Festlegung 28): Lüftungsstunden und Aufheizwerte nur, wenn sie wirken (E32).
+            var texte = new List<KeyValuePair<string, string>>();
+            Wirkend(p, e, GebaeudeKennzahlen.Aufheizwerte(e.Aufheizung, zone: false), skalare, texte);
 
             // Stufe G6b (W5): je Zone die Kennzahlen, nur ab zwei Zonen.
             if (e.Zonen != null)
@@ -149,8 +178,29 @@ namespace WindowsFormsApplication1
                     skalare.Add(Paar(q + "MittlereRaumtemperaturHeizzeit", r.MittlereRaumtemperaturHeizzeit));
                     skalare.Add(Paar(q + "Ueberhitzungsstunden", r.Ueberhitzungsstunden));
                     if (!double.IsNaN(z.DeltaThetaMaxK)) skalare.Add(Paar(q + "DeltaThetaMaxK", z.DeltaThetaMaxK));
+                    Wirkend(q, r, GebaeudeKennzahlen.Aufheizwerte(r.Aufheizung, zone: true), skalare, texte);
                 }
-            return new GebaeudeExportsatz(e.Index, e.Modell ?? "", reihen, skalare);
+            return new GebaeudeExportsatz(e.Index, e.Modell ?? "", reihen, skalare, texte);
+        }
+
+        /// <summary>
+        /// Die Schlüssel, die nur bei Wirkung entstehen (Festlegung 28): Nachtauskühl- und Sommerlüftungsstunden,
+        /// dann die Zahlen der Aufheizwerte in der Reihenfolge der Ergebniszeile; Zustand, Bemessung und Quelle als
+        /// Text. <paramref name="a"/> <c>null</c> = Schalter aus: kein Aufheizschlüssel.
+        /// </summary>
+        private static void Wirkend(string praefix, GebaeudeModellErgebnis e, Aufheizkennzahlen a,
+                                    List<KeyValuePair<string, double>> skalare, List<KeyValuePair<string, string>> texte)
+        {
+            if (e.StundenMitNachtauskuehlung is int nacht) skalare.Add(Paar(praefix + "Nachtauskuehlstunden", nacht));
+            if (GebaeudeKennzahlen.Sommerlueftungsstunden(e) is int sommer) skalare.Add(Paar(praefix + "Sommerlueftungsstunden", sommer));
+            if (a == null) return;
+            texte.Add(new KeyValuePair<string, string>(praefix + "Aufheizzustand", a.AufheizZustand));
+            if (a.AufheizBemessung != null)
+                texte.Add(new KeyValuePair<string, string>(praefix + "Aufheizbemessung", a.AufheizBemessung));
+            if (a.AufheizLeistungsquelle != null)
+                texte.Add(new KeyValuePair<string, string>(praefix + "Aufheizleistungsquelle", a.AufheizLeistungsquelle));
+            foreach (KeyValuePair<string, double> z in a.Zahlen())
+                skalare.Add(Paar(praefix + z.Key, z.Value));
         }
 
         private static KeyValuePair<string, double> Paar(string k, double v) => new KeyValuePair<string, double>(k, v);

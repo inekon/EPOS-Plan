@@ -199,7 +199,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Gegenprobe_die_uebrigen_Proben_bleiben_ohne_die_neuen_Meldungen()
         {
-            IEnumerable<string> proben = IfcProbenErzeuger.Alle().Keys.Where(k => k != PROBE).Append("ifc4_verlust.ifc");
+            IEnumerable<string> proben = IfcProbenErzeuger.Alle().Keys.Where(k => k != PROBE && k != "ifc2x3_referenzen.ifc").Append("ifc4_verlust.ifc");
             foreach (string probe in proben)
             {
                 string pfad = Path.Combine(IfcProbenTests.Ordner(), probe);

@@ -120,7 +120,8 @@ namespace WindowsFormsApplication1
         public const string BAUALTERSKLASSE = "BAUALTERSKLASSE";
         /// <summary>
         /// Baujahr, Jahreszahl 1500 … 2100 (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) —
-        /// IFC liefert es aus <c>Pset_BuildingCommon.YearOfConstruction</c>, gbXML nicht; steuert keine Vorgabe.
+        /// IFC liefert es aus <c>Pset_BuildingCommon.YearOfConstruction</c> (sonst aus dem Baujahr-Rückfall
+        /// des Lesers), gbXML nicht; steuert keine Vorgabe.
         /// </summary>
         public const string BAUJAHR = "BAUJAHR";
         /// <summary>Bauart <see cref="BAUART_LEICHT"/>/<see cref="BAUART_SCHWER"/>/<see cref="BAUART_SEHR_SCHWER"/>; der Editor bildet daraus die <c>Bauweise</c>.</summary>

@@ -742,6 +742,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Herleitungszeilen der Aufheizoptimierung</b> (Entwurf KP3, Welle D2; Teilkonzept 7.6) — je
+        /// Gebäude eine Zeile aus <see cref="GebaeudeBedarfCtrl.Aufheizbemessung"/> (ohne Jahreslauf, dieselben
+        /// Zahlen wie der Lauf), in der Oberflächensprache; leer mit ausgeschalteter Optimierung oder ohne
+        /// Klimaregion.
+        /// </summary>
+        private IReadOnlyList<string> AufheizHerleitungszeilen()
+        {
+            projektCtrl.ReadSingle(m_ID_Projekt);
+            CultureInfo k = CultureInfo.CurrentCulture;
+            return GebaeudeBedarfCtrl.Aufheizbemessung(m_ID_Projekt, projektCtrl.m_ID_Klimaregion)
+                                     .Select(a => AufheizHerleitungszeile.Zeile(AufheizHerleitungszeile.Aus(a), k))
+                                     .Where(z => z != null)
+                                     .ToList();
+        }
+
+        /// <summary>
         /// Die fuenf Laufparameter fuer SCHRITT ① (Auftrag #216) — <b>derselbe
         /// Lese- und Schreibweg</b>, den bis #216 der Reiter „Parameter" der
         /// Ergebnisseite nahm.
@@ -790,8 +806,7 @@ namespace WindowsFormsApplication1
                 AnlagenkopplungSchreiben = stufe => KonfigurationCtrl.AnlagenkopplungSetzen(m_ID_Projekt, stufe),
                 // AUFHEIZOPTIMIERUNG (Entwurf KP3, Grundsatz 5; Welle O1): der eine Schreibweg der
                 // Projekteinstellung - die ganze Einstellung in einem UPDATE, nach der Regel des
-                // Kuehlschalters (Vormerksatz ohne Satz). Die Herleitungszeilen je Gebaeude
-                // (AufheizHerleitung) kommen mit der Welle D2; bis dahin steht keine Zeile da.
+                // Kuehlschalters (Vormerksatz ohne Satz).
                 AufheizvorgabeSchreiben = vorgabe => KonfigurationCtrl.AufheizvorgabeSetzen(m_ID_Projekt, vorgabe),
                 // NETZVERLUSTE JE KANAL UND ZIRKULATION (BW4): die ganze Vorgabe in einem UPDATE, nach
                 // der Regel des Kuehlschalters (Vormerksatz ohne Satz).
@@ -802,6 +817,9 @@ namespace WindowsFormsApplication1
                 // THERMISCHE DESINFEKTION (Welle M7, BW5): die ganze Vorgabe in einem UPDATE, nach der Regel
                 // des Kuehlschalters (Vormerksatz ohne Satz).
                 DesinfektionSchreiben = vorgabe => KonfigurationCtrl.DesinfektionSetzen(m_ID_Projekt, vorgabe),
+                // Die Herleitungszeilen je Gebaeude (Welle D2; Festlegung 3, B14): die Aufheizbemessung ohne
+                // Jahreslauf, mit dem Konditionierungssatz wie der Lauf - dieselben Zahlen wie die Ergebniszeile.
+                AufheizHerleitung = AufheizHerleitungszeilen,
                 NetzverlusteSchreiben = (wert, einheit) => KonfigSchreiben(m =>
                 {
                     m.m_Netzverluste = wert;
@@ -1527,5 +1545,73 @@ namespace WindowsFormsApplication1
                 ok ? MyResource.Resource.SIM_MSG_ERGEBNIS_GESPEICHERT
                    : MyResource.Resource.SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT);
         }
+    }
+
+    /// <summary>
+    /// Die Angaben einer Herleitungszeile der Aufheizoptimierung (Entwurf KP3, Welle D2) — die Auskunft
+    /// <see cref="Aufheizauskunft"/> des Kerns ohne seine Typen, damit die Zeile auch ohne Datenbank geprüft
+    /// werden kann (Hüllentest, beide Kulturen).
+    /// </summary>
+    internal sealed record AufheizHerleitungsdaten(
+        string Gebaeude, string Zustand, string Bemessung, int? AufheizzeitMaxH, double? AussenC,
+        double? LeistungKw, double? LeistungUnskaliertKw, double? Skalierungsfaktor, string Quelle,
+        bool Tagesbilanz = false, string Befund = null);
+
+    /// <summary>
+    /// <b>Die Herleitungszeile eines Gebäudes</b> (Teilkonzept 7.6; Entwurf KP3, Festlegung 16): „Name: t_auf,max
+    /// 5 h bei −9,3 °C (kälteste Stunde) · P_auf 34,6 kW Zielleistung", bei UNERREICHBAR der Hinweis, dass keine
+    /// Rampe bis 48 h hält, bei GEKOPPELT „nicht optimiert", auf dem Tagesbilanz-Weg „ohne Aufheizoptimierung",
+    /// bei einem Fehler des Eingangsbauers sein Grund. <b>Faktor ≠ 1</b> (B11): Eingabe bzw. Wert am Katalogbau
+    /// und Faktor; mit Verbrauchsangabe P_auf am Katalogbau und der Satz, dass erst der Lauf den Faktor kennt.
+    /// Zahlen in der Kultur der Oberfläche, Texte aus <c>SIMKONF_AUFH_*</c>.
+    /// </summary>
+    internal static class AufheizHerleitungszeile
+    {
+        /// <summary>Die Angaben aus der Auskunft des Kerns.</summary>
+        internal static AufheizHerleitungsdaten Aus(Aufheizauskunft a)
+            => new AufheizHerleitungsdaten(
+                string.IsNullOrEmpty(a.Gebaeudename) ? a.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) : a.Gebaeudename,
+                a.Zustand, a.Bemessung, a.AufheizzeitMaxH, a.AussenC, a.LeistungKw, a.LeistungUnskaliertKw,
+                a.Skalierungsfaktor, a.Quelle, a.Tagesbilanz, a.Befund);
+
+        /// <summary>Die Zeile; <c>null</c> ohne Bemessung (Schalter aus).</summary>
+        internal static string Zeile(AufheizHerleitungsdaten d, CultureInfo k)
+        {
+            if (d == null) return null;
+            if (!string.IsNullOrEmpty(d.Befund))
+                return string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_FEHLER, d.Gebaeude, d.Befund);
+            if (d.Tagesbilanz)
+                return string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ, d.Gebaeude);
+            if (d.Zustand == null) return null;
+            if (d.Zustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT)
+                return string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT, d.Gebaeude);
+
+            string variante = d.Bemessung == DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG
+                ? MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG
+                : MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE;
+            string quelle = d.Quelle == DbWerte.AUFHEIZ_QUELLE_GRENZE ? MyResource.Resource.SIMKONF_AUFH_QUELLE_GRENZE
+                          : d.Quelle == DbWerte.AUFHEIZ_QUELLE_GEMISCHT ? MyResource.Resource.SIMKONF_AUFH_QUELLE_GEMISCHT
+                          : MyResource.Resource.SIMKONF_AUFH_QUELLE_ZIEL;
+            string aussen = Zahl(d.AussenC, "0.0", k);
+            string leistung = Zahl(d.LeistungKw ?? d.LeistungUnskaliertKw, "0.0", k);
+            string zeile = d.Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR
+                ? string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR, d.Gebaeude, aussen, variante, leistung, quelle)
+                : string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE, d.Gebaeude, Zahl(d.AufheizzeitMaxH, k), aussen, variante,
+                                leistung, quelle);
+
+            // B11, Festlegung 16: P_auf gilt dem Katalogbau; der Lauf skaliert es wie die Spitzen.
+            if (!d.Skalierungsfaktor.HasValue && d.LeistungUnskaliertKw.HasValue)
+                return zeile + " " + MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR_LAUF;
+            if (d.Skalierungsfaktor is double f && f != 1.0 && d.LeistungUnskaliertKw.HasValue)
+                return zeile + " " + string.Format(k, d.Quelle == DbWerte.AUFHEIZ_QUELLE_GRENZE
+                                                          ? MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR_GRENZE
+                                                          : MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR,
+                                                      Zahl(d.LeistungUnskaliertKw, "0.0", k), Zahl(f, "0.###", k));
+            return zeile;
+        }
+
+        private static string Zahl(double? x, string format, CultureInfo k) => x.HasValue ? x.Value.ToString(format, k) : "—";
+
+        private static string Zahl(int? x, CultureInfo k) => x.HasValue ? x.Value.ToString(k) : "—";
     }
 }

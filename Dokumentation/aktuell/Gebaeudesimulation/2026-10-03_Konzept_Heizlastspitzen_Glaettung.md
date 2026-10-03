@@ -85,5 +85,9 @@ rechnet ihn aus dem Modell statt aus einer Tabelle.
   KP3-Bemessung; Bedarfsdialog (O2) und Bericht (O3) weisen ideale Spitze, Tagesmittel und P_auf nebeneinander aus. Kein Filter im
   Rechenweg; Vorschlag 2 (Kennzahl „Spitze als n-h-Mittel“) nicht beauftragt. Nachzug in Register, Statusdatei, Teilkonzept und Entwurf
   KP3 (Wellen O2/O3) mit den E59-Papieren.
+- **Lesart der Summe (Register P17, entschieden 03.10.2026: (b)):** Weil P_auf die stationäre Last am Bemessungspunkt schon
+  enthält, ist die Auslegungsgröße die Auslegungsheizlast plus der **Aufheizzuschlag** P_auf − Φ_stat (nach unten bei 0
+  begrenzt), nach dem Muster des Aufheizzuschlags Φ_RH der DIN EN 12831-1; die Teile stehen daneben (Entwurf KP3,
+  Festlegung 41).
 - Die ursprüngliche Frage: Soll die Kennzahl „Spitze als n-h-Mittel“ mit wählbarer Dauer kommen (Vorschlag 2), oder genügen `SpitzeTagesmittelKw`
   und die Aufheizleistung aus KP3? Empfehlung: Vorschlag 1 sofort mit O2/O3, Vorschlag 2 nur auf Wunsch als kleine Welle nach KP3.

@@ -417,6 +417,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string BETRIEBSKALENDER = "Form_Betriebskalender";
 
+        /// <summary>
+        /// Die Pufferspeicher-Auslegung (<c>PufferAuslegungSeite</c>; Konzept Pufferspeicher-Auslegung,
+        /// Stufe P2) — eine freie Ansicht der Wurzel wie die Stromspeicher-Auslegung.
+        /// </summary>
+        public const string PUFFER_AUSLEGUNG = "Form_PufferAuslegung";
+
         /// <summary>Der Zeileneditor einer Kostenposition (<c>VorlagenPositionDialog</c>).</summary>
         public const string VORLAGENPOSITION = "Form_VorlagenPosition";
 
@@ -814,6 +820,7 @@ namespace WindowsFormsApplication1
                 Emissionskatalog(),
                 Nutzungsdauer(),
                 Betriebskalender(),
+                PufferAuslegung(),
                 Vorlagenposition(),
                 CaseEingabe(),
                 WirtschaftlichkeitParameter(),
@@ -2848,6 +2855,74 @@ namespace WindowsFormsApplication1
                     new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
                     new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_PufferAuslegung  ->  PufferAuslegungSeite   (Konzept Pufferspeicher-Auslegung, Stufe P2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Pufferspeicher-Auslegung — die Felder aus
+        /// <c>EPOS.UI.Seiten.Pufferspeicher.PufferAuslegungKiSicht</c>: das Klassen-Set, die Vorlage,
+        /// Gerätetyp und Zweiterzeuger der Wärmepumpe, Übergabeart, Heizgrenze, Anlagenvolumen,
+        /// Sperrprofil und die drei Ziele.
+        /// </summary>
+        /// <remarks>
+        /// <b>Keine Knöpfe.</b> „Auslegung speichern" und „Übernehmen" schreiben in die Datenbank —
+        /// sie bleiben dem Anwender. Ein gesetzter Schalter rechnet die Auslegung neu, ein gesetztes
+        /// Zahlenfeld markiert das Ergebnis als veraltet.
+        /// </remarks>
+        private static KiDialog PufferAuslegung()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PUFFER_AUSLEGUNG,
+                anzeigename: KiDialogTexte.MaskePufferAuslegung,
+                felder: new[]
+                {
+                    new KiDialogFeld("klasse_heizung", "PufferAuslegungKiSicht.KlasseHeizung",
+                                     KiDialogTexte.PausKlasseHeizungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausKlasseErl),
+                    new KiDialogFeld("klasse_brauchwasser", "PufferAuslegungKiSicht.KlasseBrauchwasser",
+                                     KiDialogTexte.PausKlasseBrauchwasserName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausKlasseErl),
+                    new KiDialogFeld("klasse_prozess", "PufferAuslegungKiSicht.KlasseProzess",
+                                     KiDialogTexte.PausKlasseProzessName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausKlasseErl),
+                    new KiDialogFeld("vorlage", "PufferAuslegungKiSicht.Vorlage",
+                                     KiDialogTexte.PausVorlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PausVorlageErl),
+                    new KiDialogFeld("geregelt", "PufferAuslegungKiSicht.Geregelt",
+                                     KiDialogTexte.PausGeregeltName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausGeregeltErl),
+                    new KiDialogFeld("zweiterzeuger_frei", "PufferAuslegungKiSicht.ZweiterzeugerFrei",
+                                     KiDialogTexte.PausZweitName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PausZweitErl),
+                    new KiDialogFeld("uebergabeart", "PufferAuslegungKiSicht.Uebergabeart",
+                                     KiDialogTexte.PausUebergabeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PausUebergabeErl, leerErlaubt: true),
+                    new KiDialogFeld("heizgrenze", "PufferAuslegungKiSicht.Heizgrenze",
+                                     KiDialogTexte.PausHeizgrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausHeizgrenzeErl, einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("anlagenvolumen", "PufferAuslegungKiSicht.Anlagenvolumen",
+                                     KiDialogTexte.PausAnlagenvolumenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausAnlagenvolumenErl, einheit: KiDialogTexte.EINHEIT_LITER,
+                                     leerErlaubt: true, min: 0),
+                    new KiDialogFeld("sperrprofil", "PufferAuslegungKiSicht.Sperrprofil",
+                                     KiDialogTexte.PausSperrprofilName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PausSperrprofilErl),
+                    new KiDialogFeld("mindestlaufzeit", "PufferAuslegungKiSicht.Mindestlaufzeit",
+                                     KiDialogTexte.PausMindestlaufzeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausMindestlaufzeitErl, einheit: "min",
+                                     leerErlaubt: true, min: 0),
+                    new KiDialogFeld("startziel", "PufferAuslegungKiSicht.Startziel",
+                                     KiDialogTexte.PausStartzielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausStartzielErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("deckungsziel", "PufferAuslegungKiSicht.Deckungsziel",
+                                     KiDialogTexte.PausDeckungszielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PausDeckungErl, einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     leerErlaubt: true, min: 0, max: 100)
                 });
         }
 

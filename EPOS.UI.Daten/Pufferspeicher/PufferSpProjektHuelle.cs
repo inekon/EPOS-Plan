@@ -39,12 +39,26 @@ namespace WindowsFormsApplication1
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn die beiden
         /// Überlagerungen der Wellen W10a.5 und W10a.7 nehmen können.
         /// </summary>
+        /// <param name="auslegen">
+        /// Der Weg des Knopfs „Auslegen…" (Stufe P2, Puffer-ID, <c>0</c> = neuer Speicher); <c>null</c> =
+        /// die freie Ansicht ohne Nachzug (Überlagerungen in Quellen- und Senkendialog).
+        /// </param>
         internal static IReadOnlyDictionary<string, object> Gaben(
-            int idProjekt, string verwendung, int idPuffer)
+            int idProjekt, string verwendung, int idPuffer, Action<int> auslegen = null)
         {
             return new Dictionary<string, object>
             {
                 ["IdProjekt"] = idProjekt,
+                // Stufe P2: „Auslegen…" oeffnet die Pufferspeicher-Auslegung als freie Ansicht der
+                // Wurzel fuer den gewaehlten Speicher; der Dialog verlaesst sich dabei wie Abbrechen.
+                ["AuslegenOeffnen"] = auslegen ?? (id => PufferAuslegungHuelle.Oeffnen(new PufferAuslegungAuftrag
+                {
+                    IdProjekt = idProjekt,
+                    IdPuffer = id > 0 ? id : (int?)null,
+                    Einstieg = MyResource.Resource.PAUS_EINSTIEG_VERWALTUNG
+                })),
+                ["BtnAuslegen"] = MyResource.Resource.PAUS_BTN_AUSLEGEN,
+                ["HinweisAuslegen"] = MyResource.Resource.PAUS_AUSLEGEN_VERWIRFT,
                 ["Verwendung"] = verwendung ?? "",
                 ["IdPuffer"] = idPuffer,
                 ["Dienste"] = Dienste(idProjekt),

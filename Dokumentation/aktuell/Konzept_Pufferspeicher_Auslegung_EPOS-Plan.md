@@ -8,6 +8,8 @@
 > (E-P12, E-P17, E-P31, E-P32, Freigabe P1, Einstiege) stehen in 9; alle übrigen Entscheide der Recherche gelten nach
 > Empfehlung (E61).
 >
+> **Rev. 3 (03.10.2026, nach P2).** Die Oberfläche ist gebaut: `PufferAuslegungSeite` als freie Ansicht mit Hülle, drei Einstiege (Konfiguration, Pufferdialoge, Zapfprofil-Übergabe), KI-Maske `Form_PufferAuslegung`, 255 Ressourcenschlüssel de/en; Abweichungen von Abschnitt 6 (Rechnen auf Zuruf bei Zahlenfeldern, keine Nutzen-Aufwand-Zeile, Zapfprofil-Übergabe unter iOS gesperrt) im Protokoll [`2026-10-03_P2_Pufferauslegung_Oberflaeche.md`](../ueberholt/Protokolle/Simulation/2026-10-03_P2_Pufferauslegung_Oberflaeche.md). Offen ist P3.
+>
 > **Rev. 2 (03.10.2026, nach dem Bau P1).** Schemaschritt **169** statt 167 und Basis **R33** statt R32, weil der Arbeitszweig am selben Tag die Schritte 167 (Teillast WP/BHKW, M4) und 168 (Strom in Viertelstunden, M5) und die Basis R33 vergeben hat. P1 ist gebaut; Festlegungen beim Bau, Abweichungen und Nachweise stehen im Protokoll [`2026-10-03_P1_Pufferauslegung.md`](../ueberholt/Protokolle/Simulation/2026-10-03_P1_Pufferauslegung.md), die Ergänzungen zu 4.1 in 10.
 
 
@@ -288,7 +290,7 @@ Nutzen-Aufwand-Zeile mit JAZ-Hinweis, Warnliste, Übernahme als Ändern/Neuanleg
 |---|---|---|---|
 | **P0** | Recherche (vier Runden), Mockup, dieses Konzept — abgeschlossen 03.10.2026 | Wachen grün | 3 |
 | **P1** | Schemaschritt 169 mit Vorgabetabelle und Saat, Rechenkern, Controller, Tests, Testdatenbank 169 — **heute** | Kern-Filter 0 Fehler, Tests grün, Referenzlauf 16/16 byte-gleich gegen R33, Windows-Schale 0 Fehler | 5–7 |
-| **P2** | Oberfläche, drei Einstiege, Hülle, Texte, KI-Maske, bunit | UI-Tests, Sichtabnahme Windows, iOS nach Rückfrage | 4–6 |
+| **P2** | Oberfläche, drei Einstiege, Hülle, Texte, KI-Maske, bunit — **gebaut 03.10.2026** (Protokoll P2) | UI-Tests grün, Sichtabnahme Windows und iOS-Lauf offen | 4–6 |
 | **P3** | Bericht (Abschnitt Pufferauslegung), Wiki-Seite, Logbuch-Satz, Export/Import der Zeile | Wiki-Suchmuster, Berichtstests | 1–2 |
 | **Summe** | | | **13–18** |
 

@@ -513,8 +513,19 @@
                             }
                             <p class="epos-leisezeile">@Texte.PunktBleibt</p>
                             <div class="epos-zapfausl-uebergabe">
-                                <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundUebergeben"
-                                        @onclick="UebergabeGesperrt">@Texte.KnopfUebergeben</button>
+                                @* Stufe P2 der Pufferspeicher-Auslegung: Mit Weg uebergibt der Knopf den
+                                   Arbeitsstand (Summe aller Topologiegruppen) und oeffnet die Auslegung in
+                                   einem eigenen Fenster; ohne Weg bleibt er weich gesperrt mit dem Grund. *@
+                                @if (Uebergeben is not null)
+                                {
+                                    <button type="button" class="epos-knopf epos-zapfausl-uebergeben"
+                                            @onclick="Uebergabe">@Texte.KnopfUebergeben</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundUebergeben"
+                                            @onclick="UebergabeGesperrt">@Texte.KnopfUebergeben</button>
+                                }
                             </div>
                         </section>
                     }
@@ -706,6 +717,13 @@
     /// Bezug); kein Delegat = kein Knopf „Bedarfstag konstruieren…".
     /// </summary>
     [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
+
+    /// <summary>
+    /// „An Speicherauslegung übergeben…" (Konzept Pufferspeicher-Auslegung, Stufe P2): übergibt die
+    /// Eingaben der Auslegung und öffnet die Pufferspeicher-Auslegung; die Antwort ist <c>null</c>
+    /// oder der Grund, warum es nicht ging. Ohne Delegat bleibt der Knopf weich gesperrt.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilAuslegungEingabeDaten, Task<string?>>? Uebergeben { get; set; }
 
     /// <summary>Hilfeschlüssel der Bedienung.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil.btn_Help";
@@ -1268,6 +1286,15 @@
 
     /// <summary>Ein gesperrter Versuch (Übergabe): der Grund als leise Zeile.</summary>
     private void UebergabeGesperrt() => _hinweis = Texte.GrundUebergeben;
+
+    /// <summary>Übergibt den Arbeitsstand an die Pufferspeicher-Auslegung (Stufe P2); ein Grund steht im Hinweis.</summary>
+    private async Task Uebergabe()
+    {
+        if (Uebergeben is null) return;
+        _hinweis = "";
+        string? grund = await Uebergeben(_eingabe.Kopie());
+        _hinweis = grund ?? "";
+    }
 
     private void KonstruktorOeffnen()
     {

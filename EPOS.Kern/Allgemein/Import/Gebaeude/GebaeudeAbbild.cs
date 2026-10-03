@@ -145,7 +145,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Baujahr, wie es aus der Datei gezogen ist (IFC: <c>Pset_BuildingCommon.YearOfConstruction</c>,
-        /// erste vierstellige Zahl, <see cref="Baujahrregel"/>); <c>null</c> = keines. Die Zuordnung leitet
+        /// ohne ihn der Baujahr-Rückfall des Lesers, erste vierstellige Zahl, <see cref="Baujahrregel"/>); <c>null</c> = keines. Die Zuordnung leitet
         /// daraus die Baualtersklasse ab, wenn der Anwender keine vorgibt.
         /// </summary>
         public int? Baujahr { get; set; }
@@ -187,6 +187,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>Davon die der 2. Ebene (IFC; <c>IfcRelSpaceBoundary2ndLevel</c> oder nach Name/Beschreibung).</summary>
         public int ZahlGrenzenZweiteEbene { get; set; }
+
+        /// <summary>
+        /// Zahl der Trenndecken, die der IFC-Leser ohne Raumgrenzen aus den Raumbezügen
+        /// (<c>IfcRelReferencedInSpatialStructure</c>) bildet — Decken und Dächer innen, die Räume zweier
+        /// Geschosse referenzieren (Mehrzonenkonzept 6.5). Mit ihnen sind die Geschosszonen (Z4) gekoppelt;
+        /// gbXML führt 0.
+        /// </summary>
+        public int ZahlTrenndeckenReferenz { get; set; }
+
+        /// <summary>
+        /// Koppeln die Trenndecken aus den Raumbezügen (<see cref="ZahlTrenndeckenReferenz"/>) alle Geschosse mit
+        /// beheizten Räumen zu einem Verbund (auch über ein unbeheiztes Geschoss)? Ein Geschosspaar trägt, wenn seine
+        /// Trenndeckenfläche mindestens <see cref="IfcAbbildBauer.TRENNDECKE_ANTEIL_MIN"/> der beheizten Grundfläche des
+        /// kleineren Geschosses erreicht. Dann ist die Geschosszonierung (Z4) ohne Raumgrenzen die Vorgabe (M7); sonst
+        /// bleibt eine Zone vorgegeben (6.5).
+        /// </summary>
+        public bool GeschosseGekoppelt { get; set; }
 
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
@@ -398,6 +415,15 @@ namespace WindowsFormsApplication1
         /// oder Decke (<c>false</c>, die oberste Geschossdecke)? <c>null</c> = nach der Bauteilart.
         /// </summary>
         public bool? ZonenbodenOhneNachbar { get; set; }
+
+        /// <summary>
+        /// Eine Innenwand ohne jeden Nachbarraum, die einseitig als innere Masse zählt (Mehrzonenkonzept 6.5): Der
+        /// IFC-Leser setzt es für eine Wand innen (<c>IsExternal = FALSE</c> oder die Angrenzung „beheizt" eines
+        /// CAD-Exports) in einem Gebäude ohne Raumgrenzen, der weder Raumgrenzen noch Raumbezüge einen Nachbarn
+        /// geben. Sie zählt mit ihrer Fläche einmal (eine Seite) zur inneren Masse — in der Zonierung in der Zone
+        /// ihres Geschosses. gbXML setzt es nie.
+        /// </summary>
+        public bool InnenEinseitig { get; set; }
 
         /// <summary>Azimut [°], 0 = Nord, im Uhrzeigersinn; <c>null</c> = unbestimmt (auch bei waagerechten Flächen).</summary>
         public double? AzimutGrad { get; set; }
