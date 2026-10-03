@@ -456,6 +456,48 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool[] WP_MitHeizstab = new bool[MAX_WP];
 
+        /// <summary>
+        /// Das Sperrprofil je Modul (Welle V14, <see cref="Sperrprofil"/>): Altfenster der Anlage plus
+        /// die Zeilen von <c>Tab_Sperrfenster</c>. Gebaut in <see cref="ModuleAufbauen"/>; ohne Zeilen
+        /// ist es genau das Altfenster, das hier bis dahin inline stand.
+        /// </summary>
+        private readonly Sperrprofil[] _sperrprofil = new Sperrprofil[MAX_WP];
+
+        /// <summary>
+        /// Wochentag des 1. Januar (Montag = 0) für die Wochentagsmaske der Sperrfenster — gesetzt von
+        /// <c>SimulationControl</c> aus dem Kalender der Wärmerechnung; -1 = aus der Klimaregion des
+        /// Projekts lesen (nur, wenn eine Anlage Fenster trägt).
+        /// </summary>
+        public int SperrWochentagJan1 = -1;
+
+        /// <summary>Das Sperrprofil des Moduls <paramref name="index"/>; <c>null</c>, solange keines gebaut ist.</summary>
+        public Sperrprofil SperrprofilDesModuls(int index)
+            => index >= 0 && index < MAX_WP ? _sperrprofil[index] : null;
+
+        /// <summary>Baut das Sperrprofil einer Anlage und schreibt bei Fenstern eine Protokollzeile.</summary>
+        private Sperrprofil SperrprofilBauen(WErzeugerModel model, int idAnlage)
+        {
+            List<Sperrfenster> fenster = Sperrprofil.Lesen(idAnlage);
+            int wt = 0;
+            if (fenster.Count > 0)
+            {
+                wt = SperrWochentagJan1;
+                if (wt < 0)
+                {
+                    var projekt = new ProjektCtrl();
+                    if (model.ID_Projekt > 0) projekt.ReadSingle(model.ID_Projekt);
+                    wt = ProfilBedarf.WochentagJan1AusKlimaregion(projekt.m_ID_Klimaregion);
+                }
+            }
+            Sperrprofil p = Sperrprofil.Bilden(model.Sperrung, model.Sperrzeit_von, model.Sperrzeit_bis, fenster, wt);
+            // Nur mit Fenstern eine Zeile - ohne bleibt das Laufprotokoll wie zuvor.
+            if (p.FensterAnzahl > 0)
+                SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                    CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_SPERRPROFIL_ZEILE,
+                    model.Bezeichner, p.FensterAnzahl, p.GesperrteStunden));
+            return p;
+        }
+
         public double Volumen_Pufferspeicher = 0;
 
         // Senkenspeicher der Wärmepumpe (Alias puffer_wp), von SimulationControl aus der
@@ -834,6 +876,8 @@ namespace WindowsFormsApplication1
                 // Anlage. Bis dahin reichte SimulationControl die Projekteinstellung
                 // Tab_Einstellungen.WP_Heizstab an das ganze Modul durch.
                 WP_MitHeizstab[i] = model.Heizstab;
+                // V14: das Sperrprofil der Anlage (Altfenster plus Tab_Sperrfenster).
+                _sperrprofil[i] = SperrprofilBauen(model, wp_list[i]);
 
                 if (model.Volumen > 0) Volumen_Pufferspeicher = model.Volumen; 
 
@@ -1691,9 +1735,12 @@ namespace WindowsFormsApplication1
                         }
                     }
 
-                    // Sperrzeiten berücksichtigen
-                    int std = stunde % 24;
-                    if (std >= model.Sperrzeit_von && std < model.Sperrzeit_bis && model.Sperrung)
+                    // Sperrzeiten berücksichtigen (V14: das Sperrprofil des Moduls; ohne Zeilen in
+                    // Tab_Sperrfenster genau das Altfenster std >= von && std < bis bei Sperrung).
+                    Sperrprofil sperre = _sperrprofil[index];
+                    if (sperre != null
+                            ? sperre.Gesperrt(stunde)
+                            : (model.Sperrung && stunde % 24 >= model.Sperrzeit_von && stunde % 24 < model.Sperrzeit_bis))
                     {
                         result[PTHERM] = 0;
                         result[PEL] = 0;
@@ -2333,6 +2380,9 @@ namespace WindowsFormsApplication1
                 if (offen <= 0) break;
                 if (!WP_MitHeizstab[index]) continue;
                 if (WP_Heizung[index] <= 0) continue;
+                // V14: Ein Sperrfenster mit Heizstab_gesperrt sperrt auch den Heizstab. Das Altfenster
+                // (Tab_Energieanlagen.Sperrung) sperrt ihn nicht - so rechnete der Bestand.
+                if (_sperrprofil[index] != null && _sperrprofil[index].HeizstabGesperrt(stunde)) continue;
 
                 // KU2 (K8a, 5.2): Am Kühltag ist der Heizkanal dieses Moduls gesperrt - sein
                 // Heizstab bedient dann nur das Brauchwasser.

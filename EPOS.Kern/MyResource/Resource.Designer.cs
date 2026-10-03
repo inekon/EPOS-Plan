@@ -85062,6 +85062,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrprofil {0}: {1} Fenster, {2} gesperrte Stunden ähnelt.
+        /// </summary>
+        public static string SIMENG_SPERRPROFIL_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMENG_SPERRPROFIL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Die Stromprofile konnten nicht berechnet werden{0} - {1} ähnelt.
         /// </summary>
         public static string SIMENG_STROMPROFILE_DIAGNOSE {
