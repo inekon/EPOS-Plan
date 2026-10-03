@@ -28,7 +28,15 @@ namespace WindowsFormsApplication1
     /// (<see cref="Nachtzeit"/>, Entscheid E43; ohne Angabe Stunde des Tages 7 … 22, 1-basiert), an allen
     /// 365 Tagen (Rechenschritte 8.2). <b>Mit Personenkalender</b> (Stufe KP1b, F16, Konzept 3.4)
     /// zählt stattdessen die <see cref="Nutzungsmaske"/>: Anwesenheit über null. Sie wirkt allein
-    /// hier, in den Kennzahlen — der Sollwertfahrplan bleibt an der Nachtzeit.</para>
+    /// hier, in den Kennzahlen — der Sollwertfahrplan bleibt an der Nachtzeit. <b>Mit Aufheizrampe</b>
+    /// (Entwurf KP3, Festlegung 10, Teilkonzept F16) fallen die Rampenstunden (s'(h) &gt; s(h),
+    /// <see cref="Rampenmaske"/>) aus der Nutzungszeit — für Mittel und Überhitzung, getragen durch
+    /// <see cref="Skaliert"/> und die Zonen.</para>
+    ///
+    /// <para><b>Aufheizoptimierung</b> (Entwurf KP3, Welle R4): <see cref="Aufheizung"/> trägt die Werte der
+    /// Ergebnisspalten des Schritts 161 (<c>null</c> = Schalter aus); <see cref="HeizleistungMaxAnteil"/> ist
+    /// der Kappungsanteil von <c>Heizleistung_Max</c> je Stunde, auch ohne Kopplung (B1, B22) — ein neues
+    /// Feld aus einem eigenen Akkumulator der Jahresschleifen, keine geänderte Zahl.</para>
     ///
     /// <para>Unveränderlich; ohne Datenbank, ohne Anzeige.</para>
     /// </summary>
@@ -43,11 +51,21 @@ namespace WindowsFormsApplication1
             double[] heizsollwert = null, int stundenMitSommerlueftung = 0,
             double? kuehlSollwert = null, HeizkreisErgebnis heizkreis = null,
             KuehlkreisErgebnis kuehlkreis = null, Nachtzeit nachtzeit = null,
-            int? stundenMitNachtauskuehlung = null, bool[] nutzungsmaske = null)
+            int? stundenMitNachtauskuehlung = null, bool[] nutzungsmaske = null,
+            double[] heizleistungMaxAnteil = null, double heizleistungMaxStundenH = double.NaN,
+            Aufheizergebnis aufheizung = null)
         {
             if (nutzungsmaske != null && nutzungsmaske.Length != 8760)
                 throw new ArgumentException("8760 Werte erwartet.", nameof(nutzungsmaske));
+            if (heizleistungMaxAnteil != null && heizleistungMaxAnteil.Length != 8760)
+                throw new ArgumentException("8760 Werte erwartet.", nameof(heizleistungMaxAnteil));
+            if (aufheizung?.Rampenmaske != null && aufheizung.Rampenmaske.Length != 8760)
+                throw new ArgumentException("8760 Werte erwartet.", nameof(aufheizung));
             Nutzungsmaske = nutzungsmaske;
+            // Stufe KP3 (Festlegung 10): vor der Nutzungszeit gesetzt - NutzungBei liest die Rampenmaske.
+            Aufheizung = aufheizung;
+            HeizleistungMaxAnteil = heizleistungMaxAnteil;
+            HeizleistungMaxStundenH = heizleistungMaxStundenH;
             StundenMitNachtauskuehlung = stundenMitNachtauskuehlung;
             Nachtzeit = nachtzeit ?? Nachtzeit.Vorgabe;
             Heizkreis = heizkreis;
@@ -144,8 +162,40 @@ namespace WindowsFormsApplication1
         /// <b>Ist die Stunde Nutzungszeit?</b> (F16) Ohne Personenkalender steht hier Zeichen für
         /// Zeichen der Bestandsausdruck <c>Nachtzeit.Nutzungszeit(h)</c>; mit ihm gilt die Maske.
         /// Keine Maske wird aus der Nachtzeit gebaut — es ist eine echte Verzweigung (N1.61 Nr. 11).
+        /// <b>Rampenstunden</b> (Entwurf KP3, Festlegung 10, F16) fallen heraus; ohne Rampenmaske — Schalter
+        /// aus, gekoppelt, unbeheizt — bleibt der Ausdruck, wie er war.
         /// </summary>
-        internal bool NutzungBei(int h) => Nutzungsmaske == null ? Nachtzeit.Nutzungszeit(h) : Nutzungsmaske[h];
+        internal bool NutzungBei(int h)
+            => (Nutzungsmaske == null ? Nachtzeit.Nutzungszeit(h) : Nutzungsmaske[h])
+               && (Rampenmaske == null || !Rampenmaske[h]);
+
+        /// <summary>
+        /// <b>Die Aufheizwerte</b> (Entwurf KP3, Welle R4; Ergebnisspalten des Schritts 161) — je Gebäude
+        /// bzw. je Zone; <c>null</c> heißt „Schalter aus" (Grundsatz 3, Muster E30). Der Tagesbilanz-Weg
+        /// hat kein Ergebnis dieser Art, also auch keine Aufheizwerte.
+        /// </summary>
+        internal Aufheizergebnis Aufheizung { get; }
+
+        /// <summary>
+        /// Die Rampenmaske (Festlegung 10): wahr, wo die Reihe mit Rampe über der ohne liegt. Beim Gebäude
+        /// eines Mehrzonenlaufs die Vereinigung über die Zonen (Festlegung 22). <c>null</c> ohne Rampe.
+        /// </summary>
+        internal bool[] Rampenmaske => Aufheizung?.Rampenmaske;
+
+        /// <summary>
+        /// <b>Der Kappungsanteil von <c>Heizleistung_Max</c> je Stunde</b> [h je Stunde] (Entwurf KP3,
+        /// Festlegung 20, B1) — die Zeit im Betriebsfall Heizgrenze, auch ohne Kopplung, aus einem
+        /// eigenen Akkumulator beider Jahresschleifen. <c>null</c> am Gebäude eines Mehrzonenlaufs (dort
+        /// gilt Σ_h max_z, Festlegung 22) und außerhalb der Jahresschleifen.
+        /// </summary>
+        internal double[] HeizleistungMaxAnteil { get; }
+
+        /// <summary>
+        /// Σ der Kappungsanteile über das Jahr [h] (Muster <see cref="HeizkreisErgebnis.HeizleistungMaxStundenH"/>,
+        /// B22) — in Stundenfolge summiert wie der Akkumulator des Heizkreises; NaN ohne
+        /// <see cref="HeizleistungMaxAnteil"/>.
+        /// </summary>
+        internal double HeizleistungMaxStundenH { get; }
 
         /// <summary>
         /// Die Zonen eines Mehrzonengebäudes (Stufe G6b, W5), in der Rechenreihenfolge; <c>null</c> bei
@@ -304,7 +354,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Dasselbe Ergebnis mit der Heizlast- und Kühlreihe mal <paramref name="faktor"/>
         /// (E8, Nachmultiplikation der Fassade); die Kennzahlen entstehen neu aus den
-        /// skalierten Reihen.
+        /// skalierten Reihen. Die Aufheizwerte gehen mit (Entwurf KP3, Festlegung 16): P_auf wie die
+        /// Spitzen mal <paramref name="faktor"/>, Zeiten, Zählungen, T_a,B und die Rampenmaske nicht —
+        /// also zählt die Nutzungszeit der skalierten Kennzahlen ohne die Rampenstunden wie das Original.
         /// </summary>
         internal GebaeudeModellErgebnis Skaliert(double faktor)
         {
@@ -320,7 +372,222 @@ namespace WindowsFormsApplication1
                                               StundenMitUmschaltung, StundenHeizenUndKuehlen,
                                               Heizsollwert, StundenMitSommerlueftung, KuehlSollwert,
                                               Heizkreis?.Skaliert(faktor), Kuehlkreis?.Skaliert(faktor), Nachtzeit,
-                                              StundenMitNachtauskuehlung, Nutzungsmaske);
+                                              StundenMitNachtauskuehlung, Nutzungsmaske,
+                                              HeizleistungMaxAnteil, HeizleistungMaxStundenH, Aufheizung?.Skaliert(faktor));
+        }
+    }
+
+    /// <summary>
+    /// <b>Die Aufheizwerte eines Gebäudes oder einer Zone</b> (Entwurf KP3, Welle R4; Abschnitt 4, Ergebnisspalten
+    /// des Schritts 161; Festlegungen 16–22, 25) — gebaut aus dem Aufheizplan (Wellen R2, R3) und dem Lauf
+    /// (W3, Kappungsanteil). Die Namen folgen den Feldern von <c>ErgebnisGebaeudeModel</c> und
+    /// <c>ErgebnisZoneModel</c>, die D2 in <c>GebaeudeKennzahlen</c> füllt; R4 schreibt nichts in die
+    /// Datenbank.
+    ///
+    /// <para><b>NULL-Semantik</b> (Festlegung 25, Muster E30): Schalter aus und Tagesbilanz-Weg haben kein
+    /// <see cref="Aufheizergebnis"/>. GEKOPPELT (W5) und UNBEHEIZT tragen nur den Zustand und
+    /// <see cref="HeizleistungMaxStundenH"/>; UNERREICHBAR trägt <see cref="AufheizzeitMaxH"/> <c>null</c>, die
+    /// Tageszählungen laufen. <see cref="AufheizBemessung"/> füllt D2 nur am Gebäude.</para>
+    ///
+    /// <para><b>Skalierung</b> (Festlegung 16, B11): <see cref="AufheizLeistungKw"/> gilt dem Katalogbau und
+    /// wird über <see cref="Skaliert"/> wie die Spitzen mit dem Faktor nach E8 multipliziert; Zeiten,
+    /// Zählungen und T_a,B nicht.</para>
+    /// </summary>
+    internal sealed record Aufheizergebnis
+    {
+        /// <summary>W3: das Nachweisband der Zielleistung, 1,01·P_auf (Teilkonzept 4.3, Festlegung 19).</summary>
+        internal const double NACHWEISBAND = 1.01;
+
+        /// <summary>Der Zustand (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c>, Festlegung 25).</summary>
+        internal string AufheizZustand { get; init; }
+
+        /// <summary>Die Bemessungsvariante des Laufs (<see cref="DbWerte.AUFHEIZ_BEMESSUNGEN"/>); <c>null</c> bei GEKOPPELT und UNBEHEIZT.</summary>
+        internal string AufheizBemessung { get; init; }
+
+        /// <summary>t_auf,max [h], 0 … 47; <c>null</c> bei UNERREICHBAR, GEKOPPELT und UNBEHEIZT (Festlegung 17).</summary>
+        internal int? AufheizzeitMaxH { get; init; }
+
+        /// <summary>T_a,B [°C]: kälteste Stunde mit Heizsollwert, bei (b) abzüglich ΔT_K; nicht skaliert.</summary>
+        internal double? AufheizAussenC { get; init; }
+
+        /// <summary>P_auf [kW], skaliert wie die Spitzen (Festlegung 16); +∞ nur in der Grenzfallprobe (N-AH8).</summary>
+        internal double? AufheizLeistungKw { get; init; }
+
+        /// <summary>Die Quelle von P_auf: GRENZE, ZIEL oder — nur am Gebäude — GEMISCHT.</summary>
+        internal string AufheizLeistungsquelle { get; init; }
+
+        /// <summary>Tage mit einer Rampe (n &gt; 1), nach dem Tag der Sprungstunde.</summary>
+        internal int? Aufheiztage { get; init; }
+
+        /// <summary>W2: Tage mit n − 1 = D bei größerem Bedarf (Festlegung 18).</summary>
+        internal int? AufheiztageBegrenzt { get; init; }
+
+        /// <summary>W1: Tage, an denen kein n ≤ 48 hält (Festlegung 17).</summary>
+        internal int? AufheiztageUnerreichbar { get; init; }
+
+        /// <summary>W3: Tage ohne W1/W2, an denen der Lauf das Nachweisband verlässt (Festlegung 19).</summary>
+        internal int? AufheiztageNachweisband { get; init; }
+
+        /// <summary>Σ (n − 1) [h]; am Gebäude eines Mehrzonenlaufs die Vereinigung der Rampenfenster (Festlegung 22).</summary>
+        internal int? AufheizstundenH { get; init; }
+
+        /// <summary>Die längste Rampe, größtes n − 1 [h].</summary>
+        internal int? AufheizzeitLaengsteH { get; init; }
+
+        /// <summary>W4: Übergänge aus „aus" ohne Rampe, darunter der Beginn der Heizperiode.</summary>
+        internal int? AufheizspruengeAus { get; init; }
+
+        /// <summary>
+        /// Σ der Kappungsanteile von <c>Heizleistung_Max</c> [h], auch ohne Kopplung (Festlegung 20, B22); am
+        /// Gebäude eines Mehrzonenlaufs Σ_h max_z Anteil (Festlegung 22). In jedem Zustand gesetzt.
+        /// </summary>
+        internal double HeizleistungMaxStundenH { get; init; }
+
+        // ---- Unterzahlen und Wachen der Hinweise (nicht in der Ergebniszeile) ----
+
+        /// <summary>W1, Unterzahl: Tage mit P_auf ≤ Φ_stat bei T_a des Tages.</summary>
+        internal int? TageUnterStationaer { get; init; }
+
+        /// <summary>W4, Unterzahl: davon am Beginn der Heizperiode.</summary>
+        internal int? SpruengeAusHeizperiode { get; init; }
+
+        /// <summary>Die kürzeste Absenkdauer der gerampten Sprünge [h] (Bemessungshinweis, Festlegung 18).</summary>
+        internal int? KuerzesteAbsenkdauerH { get; init; }
+
+        /// <summary>Wache: Tage, an denen t_auf,max eine tägliche Rampe begrenzt hat (erwartet: nie).</summary>
+        internal int? TageBemessungBegrenzt { get; init; }
+
+        /// <summary>Stunden der Rampenmaske [h].</summary>
+        internal int? MaskenstundenH { get; init; }
+
+        /// <summary>Stunden mit einem an θ_K − 1 K gekappten Rampenwert [h].</summary>
+        internal int? KuehlgekappteStundenH { get; init; }
+
+        /// <summary>Die Rampenmaske (Festlegung 10); <c>null</c> bei GEKOPPELT und UNBEHEIZT.</summary>
+        internal bool[] Rampenmaske { get; init; }
+
+        /// <summary>Die W3-Tage (365 Merker), aus denen das Gebäude die Vereinigung bildet; <c>null</c> ohne Planung.</summary>
+        internal bool[] Nachweisbandtage { get; init; }
+
+        /// <summary>Der angewandte Skalierungsfaktor von <see cref="AufheizLeistungKw"/> [–]; 1 = unskaliert.</summary>
+        internal double Skalierungsfaktor { get; init; } = 1.0;
+
+        /// <summary>W5: gekoppelt, nicht optimiert.</summary>
+        internal bool Gekoppelt => AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT;
+
+        /// <summary>Unbeheizte Zone: keine Rampe.</summary>
+        internal bool Unbeheizt => AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT;
+
+        /// <summary>Hat die Planung gerechnet (BEMESSEN oder UNERREICHBAR)?</summary>
+        internal bool Geplant => !Gekoppelt && !Unbeheizt;
+
+        /// <summary>Dieselben Werte mit P_auf mal <paramref name="faktor"/> (Festlegung 16).</summary>
+        internal Aufheizergebnis Skaliert(double faktor)
+            => this with
+            {
+                AufheizLeistungKw = AufheizLeistungKw * faktor,
+                Skalierungsfaktor = Skalierungsfaktor * faktor,
+            };
+
+        /// <summary>
+        /// <b>Die Aufheizwerte einer Zone bzw. eines Einzonengebäudes</b> aus ihrem Plan und dem Lauf: W3 über
+        /// <see cref="Aufheizoptimierung.Nachweisbandtage"/>, <see cref="HeizleistungMaxStundenH"/> aus dem
+        /// Akkumulator der Jahresschleife.
+        /// </summary>
+        /// <param name="plan">Der Plan der Zone (Wellen R2, R3).</param>
+        /// <param name="heizlastW">Die unskalierte Heizlast des Laufs [W].</param>
+        /// <param name="kappungsanteil">Der Kappungsanteil je Stunde aus dem Lauf.</param>
+        /// <param name="kappungsstundenH">Σ der Kappungsanteile in Stundenfolge [h].</param>
+        internal static Aufheizergebnis Bilden(Aufheizplan plan, double[] heizlastW, double[] kappungsanteil,
+                                               double kappungsstundenH)
+        {
+            if (plan == null) throw new ArgumentNullException(nameof(plan));
+            if (plan.Gekoppelt || plan.Unbeheizt || plan.Bemessung == null)
+                return new Aufheizergebnis { AufheizZustand = plan.Zustand, HeizleistungMaxStundenH = kappungsstundenH };
+
+            Aufheizbemessung b = plan.Bemessung;
+            bool[] w3 = Aufheizoptimierung.Nachweisbandtage(plan, heizlastW, kappungsanteil);
+            return new Aufheizergebnis
+            {
+                AufheizZustand = plan.Zustand,
+                AufheizBemessung = b.Bemessung,
+                AufheizzeitMaxH = b.Wirksam.AufheizzeitMaxH,
+                AufheizAussenC = Wert(b.Wirksam.AussenC),
+                AufheizLeistungKw = Wert(b.AufheizleistungW / 1000.0),
+                AufheizLeistungsquelle = b.Quelle,
+                Aufheiztage = plan.Aufheiztage,
+                AufheiztageBegrenzt = plan.TageBegrenzt,
+                AufheiztageUnerreichbar = plan.TageUnerreichbar,
+                AufheiztageNachweisband = Zaehlen(w3),
+                AufheizstundenH = plan.AufheizstundenH,
+                AufheizzeitLaengsteH = plan.LaengsteRampeH,
+                AufheizspruengeAus = plan.SpruengeAus,
+                HeizleistungMaxStundenH = kappungsstundenH,
+                TageUnterStationaer = plan.TageUnterStationaer,
+                SpruengeAusHeizperiode = plan.SpruengeAusHeizperiode,
+                KuerzesteAbsenkdauerH = plan.KuerzesteAbsenkdauerH,
+                TageBemessungBegrenzt = plan.TageBemessungBegrenzt,
+                MaskenstundenH = plan.MaskenstundenH,
+                KuehlgekappteStundenH = plan.KuehlgekappteStundenH,
+                Rampenmaske = plan.Rampenmaske,
+                Nachweisbandtage = w3,
+            };
+        }
+
+        /// <summary>
+        /// <b>Die Aufheizwerte des Gebäudes im Mehrzonenweg</b> (Festlegung 22) aus den Gebäudewerten der Pläne
+        /// (<see cref="Aufheizoptimierung.Gebaeudewerte"/>) und den Zonenergebnissen des Laufs: W3 als
+        /// Vereinigung der W3-Tage der Zonen, <see cref="HeizleistungMaxStundenH"/> als Σ_h max_z Anteil.
+        /// </summary>
+        internal static Aufheizergebnis Gebaeude(Aufheizgebaeude g, IReadOnlyList<GebaeudeModellErgebnis> zonen)
+        {
+            if (g == null) throw new ArgumentNullException(nameof(g));
+            if (zonen == null || zonen.Count == 0) throw new ArgumentException("Die Zonenergebnisse fehlen.", nameof(zonen));
+            double kappung = Aufheizoptimierung.HeizleistungMaxStundenH(zonen.Select(z => z.HeizleistungMaxAnteil).ToList());
+            if (g.Gekoppelt)
+                return new Aufheizergebnis { AufheizZustand = g.Zustand, HeizleistungMaxStundenH = kappung };
+
+            var w3 = new bool[365];
+            foreach (GebaeudeModellErgebnis z in zonen)
+            {
+                bool[] t = z.Aufheizung?.Nachweisbandtage;
+                if (t == null) continue;
+                for (int d = 0; d < 365; d++) if (t[d]) w3[d] = true;
+            }
+            return new Aufheizergebnis
+            {
+                AufheizZustand = g.Zustand,
+                AufheizBemessung = g.Bemessung,
+                AufheizzeitMaxH = g.AufheizzeitMaxH,
+                AufheizAussenC = Wert(g.AussenBC),
+                AufheizLeistungKw = Wert(g.AufheizleistungW / 1000.0),
+                AufheizLeistungsquelle = g.Quelle,
+                Aufheiztage = g.Aufheiztage,
+                AufheiztageBegrenzt = g.TageBegrenzt,
+                AufheiztageUnerreichbar = g.TageUnerreichbar,
+                AufheiztageNachweisband = Zaehlen(w3),
+                AufheizstundenH = g.AufheizstundenH,
+                AufheizzeitLaengsteH = g.LaengsteRampeH,
+                AufheizspruengeAus = g.SpruengeAus,
+                HeizleistungMaxStundenH = kappung,
+                TageUnterStationaer = g.TageUnterStationaer,
+                SpruengeAusHeizperiode = g.SpruengeAusHeizperiode,
+                KuerzesteAbsenkdauerH = g.KuerzesteAbsenkdauerH,
+                TageBemessungBegrenzt = g.TageBemessungBegrenzt,
+                MaskenstundenH = g.MaskenstundenH,
+                KuehlgekappteStundenH = g.KuehlgekappteStundenH,
+                Rampenmaske = g.Rampenmaske,
+                Nachweisbandtage = w3,
+            };
+        }
+
+        private static double? Wert(double x) => double.IsNaN(x) ? (double?)null : x;
+
+        private static int Zaehlen(bool[] t)
+        {
+            int n = 0;
+            foreach (bool x in t) if (x) n++;
+            return n;
         }
     }
 

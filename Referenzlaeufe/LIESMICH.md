@@ -547,10 +547,11 @@ plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefrore
 `Kenndaten_Test.sqlite` (Fassung mit den Feldern des Kollektorfelds, 81 174 528 Byte, LFS-SHA-256
 `486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`). Die Testdatenbank trägt seither dazu die
 Albedo-Spalte der Anlagenzeile (Schemaschritt 163) und das Temperaturpaar je Prozess samt Saat der acht
-Betriebsweisen (Schemaschritt 164) — Schemastand **165**, 81 186 816 Byte, LFS-SHA-256
-`7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af` (Nachtrag „Testdatenbank“ unten). **Die Basis
+Betriebsweisen (Schemaschritt 164) und die Felder für Netzverluste je Kanal, Zirkulation und Betriebskalender
+(Schemaschritt 166, Nachtrag „Schemaschritt 166“ unten) — Schemastand **166**, 81 195 008 Byte, LFS-SHA-256
+`58d9ba47bd60be5e9878256d2c08d5c080a565aa352e1d30d5d5bb71176ec693` (Nachtrag „Testdatenbank“ unten). **Die Basis
 bleibt**, weil kein Rechenwert betroffen ist: Leere Albedo rechnet 0,2, kein Referenzprojekt ordnet einen
-gesäten Prozesssatz zu oder trägt ein Temperaturpaar. Gegen diese Basis hält
+gesäten Prozesssatz zu, trägt ein Temperaturpaar, Kanal-Netzverluste, eine Zirkulation oder einen Betriebskalender. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -646,6 +647,16 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > berührt.
 > [`Skripte/referenzprojekt_1049_solarthermie.cs`](Skripte/referenzprojekt_1049_solarthermie.cs) legt die Felder mit
 > an und prüft sie (auf der neuen Fassung: „steht schon mit allen Zielzellen“).
+
+> **Nachtrag — Schemaschritt 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender), Basis unverändert.**
+> `BedarfNetzKalenderSchema` (Nummer `SolarthermieFelderSchema.SCHRITT + 1`): an `Tab_Einstellungen` acht nullbare
+> Spalten (`Netzverluste_Heizung/_Brauchwasser/_Prozess` je mit `_Einheit`, `Zirkulation_Leistung_kW`,
+> `Zirkulation_Laufzeit_h_d`), die Tabelle `Tab_Betriebskalender` (STRICT, leer) und `ID_Betriebskalender` (nullbar,
+> `ON DELETE SET NULL`) an `Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme`, `Z_Projekt_Stromverbraucher`. Die
+> Testdatenbank ist aus der Fassung `7debfd8a…` (165) mit `Werkzeuge/Testdatenbankschema` auf **166** gezogen, alle
+> neuen Zellen leer. Neue Fassung **81 195 008 Byte, LFS-SHA-256 `58d9ba47bd60be5e9878256d2c08d5c080a565aa352e1d30d5d5bb71176ec693`**.
+> **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R32 GESAMT PASS mit 487/487
+> CSV byte-gleich. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R31 `2026-10-02_R31_Rechenwegbefunde`
 

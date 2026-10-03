@@ -1,0 +1,39 @@
+﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Betriebskalender
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Betriebskalender.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Ein '''Betriebskalender''' legt Feiertage und Betriebsferien auf das Wochenprofil eines Bedarfsprofils. Ohne Kalender gilt dasselbe 168-Stunden-Muster für alle Wochen des Jahres; mit Kalender trägt ein Feiertag den Sonntag des Wochenprofils, und an Ferientagen sinkt der Bedarf auf einen wählbaren Anteil. Ein Kalender gilt für Brauchwasser-, Prozesswärme- und Stromprofile gleichermaßen.
+
+Die Kalender pflegen Sie über das Menü '''Administration''' › ''Wärmebedarf & Heizung'' › ''Profile & Lastgänge'' › ''Betriebskalender''. Gewählt wird ein Kalender je Profilzuordnung im Bedarfsprofil-Dialog des Projekts.
+
+== Einen Kalender anlegen und ändern ==
+{{Anker|verwaltung}}
+
+Oben steht die Auswahl ''Kalender'' mit den Knöpfen ''Neu'' und ''Löschen'', darunter die Felder des gewählten Kalenders:
+
+{| class="wikitable"
+! Feld !! Bedeutung
+|-
+| ''Bezeichnung'' || Name des Kalenders, höchstens 100 Zeichen.
+|-
+| ''Bundesland'' || Die neun bundeseinheitlichen Feiertage gelten immer; mit einem Bundesland kommen dessen landesweite Feiertage dazu (etwa Fronleichnam oder Reformationstag). Feiertage, die nur in Teilen eines Landes gelten, sind nicht enthalten.
+|-
+| ''Feiertag wie Sonntag'' || Ein Feiertag trägt die 24 Stunden des Sonntags im Wochenprofil. Aus: Feiertage wirken nicht.
+|-
+| ''Betriebsferien 1 bis 4 von / bis'' || Bis zu vier Zeiträume als Datum ohne Jahr (TT.MM.). Liegt der Beginn nach dem Ende, reicht der Zeitraum über den Jahreswechsel. Der 29. Februar ist kein gültiges Datum.
+|-
+| ''Ferienfaktor'' || Anteil des Tagesmittels des Wochenprofils, den ein Ferientag je Stunde trägt; 0 % heißt Stillstand.
+|-
+| ''Ferien kürzen die Monatsmenge'' || Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage des Monats. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.
+|}
+
+Unter den Feldern nennt eine Zeile, wie viele Feiertage und Ferientage der Kalender in einem Beispieljahr trägt; im Simulationslauf gilt das Referenzjahr des Projekts. ''Speichern'' schreibt den Kalender, ''OK'' schreibt und schließt, ''Abbrechen'' verwirft die Eingaben. ''Löschen'' fragt zurück und nennt, wie viele Profilzuordnungen den Kalender nutzen; sie rechnen danach ohne Kalender.
+
+== Einen Kalender zuordnen ==
+{{Anker|zuordnung}}
+
+Im Bedarfsprofil-Dialog von Brauchwasser, Prozesswärme oder Strombedarf wählen Sie links eine Zuordnung des Projekts; in der Gruppe ''Betriebskalender'' steht dann ''Kalender der Zuordnung''. Die Wahl gilt nur für diese Zuordnung und wird mit ''OK'' gespeichert. ''ohne Kalender'' lässt das Wochenprofil unverändert.
+
+== Wie gerechnet wird ==
+{{Anker|rechenweg}}
+
+Das Wochenprofil wird ab dem Wochentag des 1. Januar über das Jahr gelegt; danach ersetzt der Kalender ganze Tage: Feiertage durch den Sonntag des Wochenprofils, Ferientage durch den Ferienfaktor mal dem Tagesmittel. Ferien gehen Feiertagen vor. Anschließend wird jeder Monat auf seinen Monatswert gebracht. Feiertage verschieben deshalb nur Bedarf innerhalb des Monats; Ferien ebenso, außer der Schalter ''Ferien kürzen die Monatsmenge'' ist gesetzt. Hat ein Monat ohne diesen Schalter keine Stunde mit Bedarf mehr, rechnet er ohne Ferien, und das Laufprotokoll nennt es. Die Formeln stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Schritt 3.

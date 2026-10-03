@@ -217,7 +217,7 @@ Konzept: [`Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md`](Umsetzungskonzep
   Kalenderschicht** für alle drei Profilarten (Brauchwasser, Prozesswärme, Strom), die
   Feiertage und Betriebsferien auf das Wochenprofil legt.
 - **Empfehlung: über PW2** (dort entschieden). Für Wohngebäude ist der Generator der Weg.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M3b über PW2)** — Betriebskalender je Zuordnung auch für die Brauchwasserprofile. Regeln: [Konzept Simulationsablauf, Abschnitt 17](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### BW3 Keine Temperaturen im Rechenweg
 
@@ -260,7 +260,7 @@ Konzept: [`Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md`](Umsetzungskonzep
 - **Empfehlung: ja**, Aufwand M. Die Zirkulation ist in Mehrfamilienhäusern oft ein Drittel bis
   die Hälfte der Brauchwasserwärme und bestimmt Wärmepumpen- und Solarauslegung mit. Vorgabe
   leer → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M3b)** — Netzverluste je Kanal an `Tab_Einstellungen` (`Netzverluste_Heizung`/`_Brauchwasser`/`_Prozess` samt Einheit; alle leer = Projektwert wie zuvor) und Zirkulation im Bestandsweg (`Zirkulation_Leistung_kW`, `Zirkulation_Laufzeit_h_d`, Formel der Methode „manuell“), Schemaschritt `BedarfNetzKalenderSchema`. Regeln: [Konzept Simulationsablauf, Abschnitt 17](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### BW5 Kein Legionellenbetrieb, keine Nachheizung
 
@@ -336,7 +336,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
 - **Empfehlung: ja**, Aufwand M. Ein Werk mit drei Wochen Sommerstillstand ist der Normalfall der
   Industrieplanung; heute muss der Anwender das über Monatswerte von Hand nachbilden und verliert
   die Stundenstruktur. Ohne Kalender → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M3b)** — `Tab_Betriebskalender` (Bundesland, vier Betriebsferien, Ferienfaktor, Feiertag wie Sonntag, Ferien kürzen) und `ID_Betriebskalender` an den drei Zuordnungstabellen; die Kalenderschicht sitzt in `ProfilBedarf.Rechnen` zwischen Kachelung und Monatsnormierung. Regeln: [Konzept Simulationsablauf, Abschnitt 17](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### PW3 Monatsmenge unantastbar; unterschiedliche Monatsprofile
 
@@ -492,7 +492,7 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs`.
   Datenblatt, der Effekt trifft genau die Übergangszeit, in der überdimensionierte Geräte schlecht
   laufen. Vorgabe leer → Basis unberührt.
 - **Umgesetzt (Welle M4):** Spalten `Mindestleistung_kW` und `Taktverlustfaktor_Cd` in
-  `Tab_WP_STAMM` und `Tab_WP` (Schemaschritt 166, leer = keine Taktrechnung bzw. 0,9). Je Stunde
+  `Tab_WP_STAMM` und `Tab_WP` (Schemaschritt 167, leer = keine Taktrechnung bzw. 0,9). Je Stunde
   und Modul Lastverhältnis aus Verdichterwärme von Deckung und Ladung, Mehrstrom
   `P · (1/f − 1)` in Strombedarf und JAZ, Starts nach der Kesselregel mit fest 10 min; im
   Kühlbetrieb dieselbe Rechnung in der Kältekaskade. Ausweis Starts und Mehrstrom im Reiter
@@ -1014,10 +1014,10 @@ Umstellen eines Referenzprojekts.
 |---|---|---|---|---|
 | ST2 Arbeitstemperatur aus dem Speicher (mit ST4 Grädigkeit) | umgesetzt (M2) | M | ja, 1049 (R32) | ☑ |
 | PW1 Temperaturniveau je Prozess (Stufe 1) | umgesetzt (Welle M3a; Stufe 2 später) | M | nein (Option) | ☑ |
-| BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | ja | M | nein (Option) | ☐ |
+| BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
 | SB1 (a) PV-Bilanz im Viertelstundenraster | ja | M | ja, alle Referenzprojekte mit PV | ☐ |
 | KU1 Katalogabgleich mit Katalogfassung | ja | L | nein (Projektkopien unberührt) | ☐ |
-| PW2 Kalenderschicht für alle Profile | ja | M | nein (Option) | ☐ |
+| PW2 Kalenderschicht für alle Profile (mit BW2) | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
 | WP1 Taktverlust nach EN 14825, Starts | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
 | BH1 BHKW-Teillastkennlinie | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
 | BH2 BHKW-Takten mit Folgeauftrag 6 | umgesetzt (Welle M4) | M | nein (Option; kein Referenzprojekt pflegt die Felder) | ☑ |

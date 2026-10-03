@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using EPOS.UI.Dialoge.Import;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
@@ -140,6 +141,18 @@ namespace EPOS.Kern.Tests
                     GebaeudeBauteilvorschlag z = GebaeudeBauteilvorschlag.BildenMitZonen(a, gi, 'E', null, null, mit);
                     Assert.False(v.Abgelehnt, Text(v.Meldungen));
                     Assert.False(z.Abgelehnt, Text(z.Meldungen));
+
+                    // Die Bauteilliste des Dialogs (Katalogliste mit Suche und Trichtern): eine Zeile je Bauteil mit
+                    // eindeutigem Schlüssel; Sortierung nach der Fläche und Suche laufen über alle Zeilen.
+                    GebaeudeBauteileDaten daten = GebaeudeImportHuelle.BauteileDaten(v);
+                    Assert.NotNull(daten.Profil);
+                    Assert.Equal(v.Zeilen.Count, daten.Liste.Count);
+                    Assert.Equal(daten.Liste.Count, daten.Liste.Select(l => l.Schluessel).Distinct(StringComparer.Ordinal).Count());
+                    var sortiert = new Katalogfilterstand { Sortierspalte = GebaeudeImportZonen.SP_FLAECHE, Aufsteigend = false };
+                    Assert.Equal(daten.Liste.Count, Katalogfilter.Anwenden(daten.Profil, daten.Liste, sortiert).Count);
+                    string erster = daten.Liste[0].Bezeichner;
+                    var gesucht = new Katalogfilterstand { Suche = erster };
+                    Assert.Contains(Katalogfilter.Anwenden(daten.Profil, daten.Liste, gesucht), l => l.Bezeichner == erster);
                     _aus.WriteLine(datei + (mit == null ? " ohne" : " mit") + " Abgleich: " + v.Aufbauten.Count + " Aufbauten, "
                                    + v.Zeilen.Count + " Zeilen; " + Text(v.Meldungen.Where(m => m.Stufe != PruefStufe.Info)));
                 }

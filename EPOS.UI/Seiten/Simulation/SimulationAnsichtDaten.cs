@@ -353,6 +353,14 @@ public sealed class SimulationParameterDienste
     public Func<WindowsFormsApplication1.Aufheizvorgabe, bool>? AufheizvorgabeSchreiben;
 
     /// <summary>
+    /// Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage Modellgrenzen BW4) —
+    /// schreibt SOFORT die ganze Vorgabe wie die Aufheizoptimierung und meldet, ob sie danach steht
+    /// (<c>KonfigurationCtrl.NetzverlustvorgabeSetzen</c>). <c>null</c> = die Plattform bietet die
+    /// Felder nicht an; dann steht der Abschnitt nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Netzverlustvorgabe, bool>? NetzkanaeleSchreiben;
+
+    /// <summary>
     /// Die Herleitungszeilen der Aufheizoptimierung, eine je Gebäude („Gebäude: t_auf,max … bei … ·
     /// P_auf … · C_w …"), in der Oberflächensprache — die Bemessung ohne Jahreslauf (Entwurf KP3,
     /// Festlegung 3; verdrahtet mit der Welle D2). <c>null</c> = kein Weg; dann steht keine Zeile da.

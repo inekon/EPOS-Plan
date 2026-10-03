@@ -364,6 +364,13 @@ public static class Seitenschluessel
     /// </summary>
     public const string BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG";
 
+    /// <summary>
+    /// Menue „Administration -> Wärmebedarf &amp; Heizung -> Profile &amp; Lastgänge -> Betriebskalender"
+    /// (<c>BetriebskalenderDialog</c>; Entscheidungsvorlage Modellgrenzen PW2, BW2) — eine freie
+    /// Ansicht der Wurzel wie die Kataloge der Gebäudesimulation.
+    /// </summary>
+    public const string Betriebskalender = "BETRIEBSKALENDER";
+
     /// <summary>Menue „Administration -> Kosten -> Kostenverwaltung…" (<c>KostenKomponenteDialog</c>, W4.2).</summary>
     public const string Kostenverwaltung = "KOSTENVERWALTUNG";
 
@@ -433,7 +440,7 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
-        BaustoffKatalog, BauteilaufbauKatalog,
+        BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender,
         Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, KatalogDubletten, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch

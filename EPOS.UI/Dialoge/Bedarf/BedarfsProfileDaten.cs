@@ -38,6 +38,12 @@ public sealed class BedarfsProfilZeile
     /// Speichern (OK) es in die Projektkopie.
     /// </summary>
     public bool TemperaturGeaendert { get; set; }
+
+    /// <summary>
+    /// Der Betriebskalender dieser Zuordnung (PW2/BW2); <c>null</c> = keiner — das Wochenprofil
+    /// gilt für alle Wochen. Gewählt im Dialog, geschrieben mit OK wie der Jahresverbrauch.
+    /// </summary>
+    public int? KalenderId { get; set; }
 }
 
 /// <summary>

@@ -30,11 +30,11 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Nummer, Stufe und Prüfklauseln (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Der Schritt folgt auf die Felder des Kollektorfelds, ist das Ziel und eine DDL-Stufe.</summary>
+        /// <summary>Der Schritt folgt auf Netzverluste und Betriebskalender, ist das Ziel und eine DDL-Stufe.</summary>
         [Fact]
         public void Nummer_Ziel_und_Paketstufe()
         {
-            Assert.Equal(SolarthermieFelderSchema.SCHRITT + 1, ErzeugerTeillastSchema.SCHRITT);
+            Assert.Equal(BedarfNetzKalenderSchema.SCHRITT + 1, ErzeugerTeillastSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= ErzeugerTeillastSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + ErzeugerTeillastSchema.SCHRITT + ".");
 
@@ -129,7 +129,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Migration der Schale, Werkzeug <c>Testdatenbankschema</c> und Testkopie führen den Schritt
-        /// aus derselben Quelle, hinter den Feldern des Kollektorfelds.
+        /// aus derselben Quelle, hinter Netzverlusten und Betriebskalender.
         /// </summary>
         [Fact]
         public void Werkzeug_Migration_und_Testkopie_fuehren_den_Schritt()
@@ -139,18 +139,18 @@ namespace EPOS.Kern.Tests
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
             Assert.True(werkzeug.IndexOf("ErzeugerTeillastSchema.Ausfuehren(", StringComparison.Ordinal) >
-                        werkzeug.IndexOf("SolarthermieFelderSchema.Ausfuehren(", StringComparison.Ordinal));
+                        werkzeug.IndexOf("BedarfNetzKalenderSchema.Ausfuehren(", StringComparison.Ordinal));
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
                                                              "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_ERZEUGER_TEILLAST = ErzeugerTeillastSchema.SCHRITT", migration);
             Assert.True(migration.IndexOf("new Schritt(SCHRITT_ERZEUGER_TEILLAST", StringComparison.Ordinal) >
-                        migration.IndexOf("new Schritt(SCHRITT_SOLARTHERMIE_FELDER", StringComparison.Ordinal));
+                        migration.IndexOf("new Schritt(SCHRITT_BEDARF_NETZ_KALENDER", StringComparison.Ordinal));
             Assert.Contains("ErzeugerTeillastSchema.Anweisungen", migration);
 
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
             Assert.True(vorrichtung.IndexOf("ErzeugerTeillastSchema.Ausfuehren(null)", StringComparison.Ordinal) >
-                        vorrichtung.IndexOf("SolarthermieFelderSchema.Ausfuehren(null)", StringComparison.Ordinal));
+                        vorrichtung.IndexOf("BedarfNetzKalenderSchema.Ausfuehren(null)", StringComparison.Ordinal));
         }
 
         // -----------------------------------------------------------------------------

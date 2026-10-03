@@ -91,6 +91,20 @@ namespace WindowsFormsApplication1
                         k.F(stamm.Details.ProzessVorlaufMax.Value, 0) + " / " +
                         k.F(stamm.Details.ProzessRuecklaufMin.Value, 0) + " °C");
 
+                // BW4: Netzverluste je Kanal und die Zirkulation des Bestandswegs - nur, wenn das
+                // Projekt sie fuehrt; sonst bleibt die Tafel, wie sie war.
+                Netzverlustvorgabe nv = stamm.Details?.Netzkanaele;
+                if (nv != null && nv.JeKanal)
+                    k.Eigenschaften(
+                        "Netzverluste Heizung", NetzKanalWert(k, nv.HeizungWert, nv.HeizungEinheit),
+                        "Netzverluste Brauchwasser", NetzKanalWert(k, nv.BrauchwasserWert, nv.BrauchwasserEinheit),
+                        "Netzverluste Prozesswärme", NetzKanalWert(k, nv.ProzessWert, nv.ProzessEinheit));
+                if (nv != null && nv.MitZirkulation && !stamm.Details.Zapfprofilweg)
+                    k.Eigenschaften(
+                        "Zirkulation Brauchwasser",
+                        k.F(nv.ZirkulationLeistungKw.Value, 1) + " kW · " + k.F(nv.ZirkulationLaufzeitHd.Value, 1) +
+                        " h/d = " + k.F(Energieeinheit.MWh.AusKWh(nv.ZirkulationJahresKwh), 1) + " MWh/a");
+
                 k.Ueberschrift2("Deckungsgrade je Bedarfsart");
                 k.Eigenschaften(
                     "Deckungsgrad Heizung", DeckungWert(k, stamm, "energie.deckung_heizung"),
@@ -651,6 +665,10 @@ namespace WindowsFormsApplication1
         private static string Oder(string a, string b) { return string.IsNullOrWhiteSpace(a) ? b : a; }
 
         /// <summary>PAKET E1: Bedarf eines Kanals [MWh/a]; „—", wenn die Zeile ihn nicht führt.</summary>
+        /// <summary>Ein Kanalwert der Netzverluste (BW4) mit Einheit; ohne Wert „0".</summary>
+        private static string NetzKanalWert(WordKontext k, double? wert, string einheit)
+            => wert.HasValue ? k.F(wert.Value, 1) + " " + (einheit ?? "%") : "0";
+
         private static string KanalWert(WordKontext k, ErgebnisEnergiebedarfModel e, int kanal)
         {
             if (e.Waermebedarf_Kanal == null || kanal >= e.Waermebedarf_Kanal.Length) return "—";

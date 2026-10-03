@@ -50,9 +50,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste
-        /// Schritt hinter den Feldern des Kollektorfelds.
+        /// Schritt hinter den Netzverlusten je Kanal und dem Betriebskalender der Bedarfsprofile.
         /// </summary>
-        public const int SCHRITT = SolarthermieFelderSchema.SCHRITT + 1;
+        public const int SCHRITT = BedarfNetzKalenderSchema.SCHRITT + 1;
 
         /// <summary>Der Wärmepumpenkatalog der Auslieferung.</summary>
         public const string TAB_WP_STAMM = "Tab_WP_STAMM";

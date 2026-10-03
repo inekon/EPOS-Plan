@@ -2453,6 +2453,26 @@ namespace Testdatenbankschema
                                   SolarthermieFelderSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste
+            //      je Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die
+            //      Kalenderspalte der drei Zuordnungstabellen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_BedarfNetzKalender bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alles bleibt leer.
+            string nrBedarf = BedarfNetzKalenderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBedarf + " - Netzverluste je Kanal, Zirkulation, Betriebskalender: " +
+                              (BedarfNetzKalenderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBedarf = new List<string>();
+                angelegt += BedarfNetzKalenderSchema.Ausfuehren(berichtBedarf);
+                foreach (string zeile in berichtBedarf)
+                    Console.WriteLine("Schritt " + nrBedarf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBedarf + " - vollstaendig: " +
+                                  BedarfNetzKalenderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder der
             //      Waermepumpe an Tab_WP_STAMM und Tab_WP (Mindestleistung_kW, Taktverlustfaktor_Cd) und
             //      des BHKW an Tab_BHKW_STAMM und Tab_BHKW (Wirkungsgrad_el_Teillast50,

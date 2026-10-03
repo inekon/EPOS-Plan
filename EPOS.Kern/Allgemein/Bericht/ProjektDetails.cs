@@ -61,6 +61,15 @@ namespace WindowsFormsApplication1
         /// <summary>Zahl der zugeordneten Prozesswärmesätze mit Temperaturpaar.</summary>
         public int ProzessMitTemperatur;
 
+        /// <summary>
+        /// Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4); leer, wenn
+        /// das Projekt keine führt (dann führt der Bericht keine Zeile).
+        /// </summary>
+        public Netzverlustvorgabe Netzkanaele = Netzverlustvorgabe.Leer;
+
+        /// <summary>Rechnet das Projekt sein Brauchwasser über den Zapfprofilgenerator? (Dann gilt dessen Zirkulation.)</summary>
+        public bool Zapfprofilweg;
+
         /// <summary>Gewerk → erste Komponentenzeile des Projekts (fehlt das Gewerk: kein Eintrag).</summary>
         public Dictionary<string, DataRow> Komponenten = new Dictionary<string, DataRow>();
 
@@ -239,6 +248,10 @@ namespace WindowsFormsApplication1
 
             // PW1 Stufe 1: das Temperaturniveau des Prozesskanals.
             LadeProzesstemperatur(d);
+
+            // BW4: Netzverluste je Kanal und Zirkulation im Bestandsweg.
+            d.Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(d.IdProjekt);
+            d.Zapfprofilweg = ZapfprofilCtrl.Weg(d.IdProjekt) == BrauchwasserWeg.Generator;
             return d;
         }
 

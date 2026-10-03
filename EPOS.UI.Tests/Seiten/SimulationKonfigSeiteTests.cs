@@ -2405,4 +2405,73 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(_entfernt);
         Assert.False(cut.Instance.Ungespeichert);
     }
+
+    // =====================================================================
+    //  Welle M3b (BW4) — Netzverluste je Kanal und Zirkulation
+    // =====================================================================
+
+    private readonly List<WindowsFormsApplication1.Netzverlustvorgabe> _netzGeschrieben = new();
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitNetzkanaelen(WindowsFormsApplication1.Netzverlustvorgabe stand)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Netzkanaele = stand;
+            return p;
+        };
+        wege.NetzkanaeleSchreiben = v =>
+        {
+            _netzGeschrieben.Add(v);
+            return true;
+        };
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+    }
+
+    /// <summary>
+    /// Leer: Der Abschnitt nennt, dass der Projektwert gilt; ein Kanalwert schreibt die ganze Vorgabe
+    /// mit der gewählten Einheit, danach sagt die Seite, dass der Projektwert nicht gilt. Leistung und
+    /// Laufzeit der Zirkulation schreiben ebenso und nennen die Jahresmenge.
+    /// </summary>
+    [Fact]
+    public void Netzverluste_je_Kanal_und_Zirkulation_schreiben_sofort()
+    {
+        var seite = SeiteMitNetzkanaelen(WindowsFormsApplication1.Netzverlustvorgabe.Leer);
+        IElement abschnitt = seite.Find("section.epos-simkonfig-netzkanaele");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_NV_KANAL_AUS, abschnitt.TextContent);
+        Assert.Empty(_netzGeschrieben);
+
+        // Brauchwasser auf kWh/a, dann der Wert.
+        seite.Find("section.epos-simkonfig-netzkanaele").QuerySelectorAll("select")[1].Change("1");
+        seite.Find("section.epos-simkonfig-netzkanaele").QuerySelectorAll("input[inputmode=decimal]")[1].Input("500");
+        WindowsFormsApplication1.Netzverlustvorgabe v = _netzGeschrieben.Last();
+        Assert.Equal(500, v.BrauchwasserWert);
+        Assert.Equal("kWh/a", v.BrauchwasserEinheit);
+        Assert.Null(v.HeizungWert);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_NV_KANAL_AN, seite.Markup);
+
+        var felder = seite.Find("section.epos-simkonfig-netzkanaele").QuerySelectorAll("input[inputmode=decimal]");
+        felder[3].Input("2");
+        seite.Find("section.epos-simkonfig-netzkanaele").QuerySelectorAll("input[inputmode=decimal]")[4].Input("10");
+        v = _netzGeschrieben.Last();
+        Assert.Equal(2, v.ZirkulationLeistungKw);
+        Assert.Equal(10, v.ZirkulationLaufzeitHd);
+        Assert.Contains("7,3", seite.Find("section.epos-simkonfig-netzkanaele").TextContent);
+    }
+
+    /// <summary>Ohne Schreibweg der Plattform steht der Abschnitt nicht da.</summary>
+    [Fact]
+    public void Ohne_Schreibweg_kein_Abschnitt_Netzkanaele()
+    {
+        var seite = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, Parameterdienste())
+            .Add(x => x.StartProjekt, 1030));
+        Assert.Empty(seite.FindAll("section.epos-simkonfig-netzkanaele"));
+    }
 }

@@ -411,6 +411,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Nutzungsdauern (AfA) (<c>NutzungsdauerDialog</c>).</summary>
         public const string NUTZUNGSDAUER = "Form_Nutzungsdauer";
 
+        /// <summary>
+        /// Die Betriebskalender der Bedarfsprofile (<c>BetriebskalenderDialog</c>;
+        /// Entscheidungsvorlage Modellgrenzen PW2, BW2).
+        /// </summary>
+        public const string BETRIEBSKALENDER = "Form_Betriebskalender";
+
         /// <summary>Der Zeileneditor einer Kostenposition (<c>VorlagenPositionDialog</c>).</summary>
         public const string VORLAGENPOSITION = "Form_VorlagenPosition";
 
@@ -807,6 +813,7 @@ namespace WindowsFormsApplication1
                 Kostenfaktorkatalog(),
                 Emissionskatalog(),
                 Nutzungsdauer(),
+                Betriebskalender(),
                 Vorlagenposition(),
                 CaseEingabe(),
                 WirtschaftlichkeitParameter(),
@@ -2771,6 +2778,79 @@ namespace WindowsFormsApplication1
                 });
         }
 
+        // =====================================================================
+        // Form_Betriebskalender  ->  BetriebskalenderDialog   (Entscheidungsvorlage PW2, BW2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Betriebskalender der Bedarfsprofile — die Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BetriebskalenderKiSicht</c>: die Wahl des Kalenders, Bezeichnung,
+        /// Bundesland, Feiertagsregel, vier Ferienzeiträume als Jahrestag, Ferienfaktor in Prozent und
+        /// der Schalter „Ferien kürzen die Monatsmenge".
+        /// </summary>
+        /// <remarks>
+        /// <b>Geschrieben wird mit „Speichern" oder OK</b> über <c>dialog_speichern</c>; „Löschen" bleibt
+        /// dem Anwender (Rückfrage mit der Zahl der Zuordnungen, die den Kalender nutzen).
+        /// </remarks>
+        private static KiDialog Betriebskalender()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BETRIEBSKALENDER,
+                anzeigename: KiDialogTexte.MaskeBetriebskalender,
+                felder: new[]
+                {
+                    new KiDialogFeld("kalender", "BetriebskalenderKiSicht.Kalender",
+                                     KiDialogTexte.BkalKalenderName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkalKalenderErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichnung", "BetriebskalenderKiSicht.Bezeichnung",
+                                     KiDialogTexte.BkalBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkalBezeichnungErl),
+                    new KiDialogFeld("bundesland", "BetriebskalenderKiSicht.Bundesland",
+                                     KiDialogTexte.BkalBundeslandName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkalBundeslandErl, leerErlaubt: true),
+                    new KiDialogFeld("feiertag_wie_sonntag", "BetriebskalenderKiSicht.FeiertagWieSonntag",
+                                     KiDialogTexte.BkalFeiertagName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BkalFeiertagErl),
+                    new KiDialogFeld("ferien1_von", "BetriebskalenderKiSicht.Ferien1Von",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalVonName, 1), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien1_bis", "BetriebskalenderKiSicht.Ferien1Bis",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 1), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien2_von", "BetriebskalenderKiSicht.Ferien2Von",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalVonName, 2), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien2_bis", "BetriebskalenderKiSicht.Ferien2Bis",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 2), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien3_von", "BetriebskalenderKiSicht.Ferien3Von",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalVonName, 3), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien3_bis", "BetriebskalenderKiSicht.Ferien3Bis",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 3), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien4_von", "BetriebskalenderKiSicht.Ferien4Von",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalVonName, 4), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferien4_bis", "BetriebskalenderKiSicht.Ferien4Bis",
+                                     string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 4), KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    new KiDialogFeld("ferienfaktor", "BetriebskalenderKiSicht.Ferienfaktor",
+                                     KiDialogTexte.BkalFaktorName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BkalFaktorErl, einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     leerErlaubt: true, min: 0, max: 100),
+                    new KiDialogFeld("ferien_kuerzen", "BetriebskalenderKiSicht.FerienKuerzen",
+                                     KiDialogTexte.BkalKuerzenName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BkalKuerzenErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
         /// <summary>
         /// Die Eigenschaft, aus der eine Zeile der Nutzungsdauertabelle ihren
         /// Klartextnamen bekommt — „Nutzungsdauer (Waermeerzeuger)" statt
@@ -3551,6 +3631,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("rechenweg", "BedarfsProfileKiSicht.Rechenweg",
                                      KiDialogTexte.BpfRechenwegName, KiParameterTyp.Wahl,
                                      KiDialogTexte.BpfRechenwegErl),
+                    // PW2/BW2: der Betriebskalender der markierten Zuordnung (geschrieben mit OK).
+                    new KiDialogFeld("betriebskalender", "BedarfsProfileKiSicht.Betriebskalender",
+                                     KiDialogTexte.BpfKalenderName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BpfKalenderErl, leerErlaubt: true),
                     new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
                                      KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
                                      KiDialogTexte.BpfProfilErl,
@@ -8173,6 +8257,36 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehlbetrieb", "SimulationKiSicht.Kuehlbetrieb",
                                      KiDialogTexte.SimKuehlbetriebName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SimKuehlbetriebErl),
+
+                    // ---- Netzverluste je Kanal und Zirkulation (Entscheidungsvorlage BW4) ----
+                    //
+                    // Unter den Netzverlusten und wie sie SOFORT geschrieben - ueber EINEN Delegaten
+                    // (NetzkanaeleSchreiben) fuer die ganze Vorgabe. Alle drei Kanalwerte leer = der
+                    // Projektwert gilt.
+                    new KiDialogFeld("netzverlust_heizung", "SimulationKiSicht.NetzverlustHeizung",
+                                     KiDialogTexte.SimNvHeizungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimNvKanalErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("netzverlust_heizung_einheit", "SimulationKiSicht.NetzverlustHeizungEinheit",
+                                     KiDialogTexte.SimNvEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimNvEinheitErl),
+                    new KiDialogFeld("netzverlust_brauchwasser", "SimulationKiSicht.NetzverlustBrauchwasser",
+                                     KiDialogTexte.SimNvBrauchwasserName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimNvKanalErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("netzverlust_brauchwasser_einheit", "SimulationKiSicht.NetzverlustBrauchwasserEinheit",
+                                     KiDialogTexte.SimNvEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimNvEinheitErl),
+                    new KiDialogFeld("netzverlust_prozess", "SimulationKiSicht.NetzverlustProzess",
+                                     KiDialogTexte.SimNvProzessName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimNvKanalErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("netzverlust_prozess_einheit", "SimulationKiSicht.NetzverlustProzessEinheit",
+                                     KiDialogTexte.SimNvEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimNvEinheitErl),
+                    new KiDialogFeld("zirkulation_leistung", "SimulationKiSicht.ZirkulationLeistung",
+                                     KiDialogTexte.SimZirkLeistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimZirkErl, einheit: "kW", leerErlaubt: true, min: 0, max: 100),
+                    new KiDialogFeld("zirkulation_laufzeit", "SimulationKiSicht.ZirkulationLaufzeit",
+                                     KiDialogTexte.SimZirkLaufzeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimZirkErl, einheit: "h/d", leerErlaubt: true, min: 0, max: 24),
 
                     // ---- Die Projektstufe der Anlagenkopplung (Konzept Anlagenkopplung 9.4) ----
                     //

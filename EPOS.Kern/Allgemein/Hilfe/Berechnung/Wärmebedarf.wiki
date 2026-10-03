@@ -398,6 +398,8 @@ Der Netzverlust ist ein '''konstanter Betrag je Stunde''', gebildet aus dem Beda
 :: <math>Q_{\mathrm{Hzg}}(t)</math>, <math>Q_{\mathrm{TWW}}(t)</math>, <math>Q_{\mathrm{Pro}}(t)</math> – Stundenwerte der Kanaele Heizung, Brauchwasser und Prozesswaerme [kWh]
 :: <math>c</math> – Kanal, hier Brauchwasser oder Prozesswaerme [–] Der Heizkanal bekommt den '''Rest''' — also <math>q_{\mathrm{NV}}</math> minus die zwei nach (21) vergebenen Anteile —, damit sich die Summe exakt schliesst. Sind in einer Stunde alle drei Kanaele null, geht der ganze Betrag auf den Heizkanal.
 
+'''Netzverluste je Kanal.''' Fuehrt die Simulationskonfiguration fuer mindestens einen Kanal einen eigenen Wert (Heizung, Brauchwasser, Prozesswaerme; je in % oder kWh/a), gelten (18) bis (21) nicht: Jeder Kanal bekommt seinen eigenen konstanten Betrag je Stunde — in Prozent aus dem Jahresbedarf DIESES Kanals vor dem Aufschlag (<math>Q_{c,\mathrm{vor}} \cdot p_c / 876\,000</math>), als Jahresmenge <math>Q_{c,\mathrm{ein}} / 8\,760</math> —, ein Kanal ohne Wert traegt 0, und zwischen den Kanaelen wird nichts verteilt. Der Projektwert der Netzverluste gilt dann nicht; ausgewiesen wird die Summe der drei Jahresmengen.
+
 === 8. Summenvektor, Spitze und Dauerlinie ===
 
 : <math>\displaystyle Q_{\mathrm{Bed}}(t) = Q_{\mathrm{Hzg}}(t) + Q_{\mathrm{TWW}}(t) + Q_{\mathrm{Pro}}(t)</math> &nbsp;&nbsp;(22)

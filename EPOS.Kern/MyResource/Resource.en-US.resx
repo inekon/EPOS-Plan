@@ -14626,6 +14626,39 @@ Please check all entries!</value>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Add the building selected in “Buildings in DB” to the project list</value>
   </data>
+  <data name="GEB_BTN_IN_DB" xml:space="preserve">
+    <value>Save to DB</value>
+  </data>
+  <data name="GEB_BTN_IN_DB_HINWEIS" xml:space="preserve">
+    <value>Save the building selected in the project list as a new record in the database</value>
+  </data>
+  <data name="GEB_TITEL_IN_DB" xml:space="preserve">
+    <value>Save building to the database</value>
+  </data>
+  <data name="GEB_LBL_IN_DB_NAME" xml:space="preserve">
+    <value>Name in the database:</value>
+  </data>
+  <data name="GEB_TEXT_IN_DB_REGEL" xml:space="preserve">
+    <value>All building values and the building's conditioning are saved. Zones and components remain in the project – the database does not hold zones.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_UEBERNOMMEN" xml:space="preserve">
+    <value>Building “{0}” saved to the database.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_ZONEN" xml:space="preserve">
+    <value>Building “{0}” saved to the database. Its {1} zones with {2} components remain in the project.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>No saved building is selected in the project.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
+    <value>Please enter a name.</value>
+  </data>
+  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
+    <value>The building has not been saved in the project yet – it can be saved to the database after OK.</value>
+  </data>
+  <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>from project {0}, {1}</value>
+  </data>
   <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
     <value>Building: consumption</value>
   </data>
@@ -41507,6 +41540,264 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KI_DLG_SKK_BEZUGSFLAECHE_ERL" xml:space="preserve">
     <value>The area to which h0, k1 and k2 refer: apertur (aperture, default) or brutto (gross). The simulation calculates with this area times the number of modules.</value>
+  </data>
+  <data name="NETZKANAL_MSG_NEGATIV" xml:space="preserve">
+    <value>A network loss per channel must not be negative.</value>
+  </data>
+  <data name="NETZKANAL_MSG_PROZENT" xml:space="preserve">
+    <value>A network loss in % must not exceed 100.</value>
+  </data>
+  <data name="NETZKANAL_MSG_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>The circulation power lies between 0 and 100 kW.</value>
+  </data>
+  <data name="NETZKANAL_MSG_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>The circulation running time lies between 0 and 24 h/d.</value>
+  </data>
+  <data name="SIMENG_NETZVERLUSTE_JE_KANAL" xml:space="preserve">
+    <value>Network losses per channel: heating {0:0.###} MWh, domestic hot water {1:0.###} MWh, process heat {2:0.###} MWh; the project value does not apply.</value>
+  </data>
+  <data name="SIMENG_ZIRKULATION_BESTANDSWEG" xml:space="preserve">
+    <value>circulation {0:0.##} kW for {1:0.##} h/d, annual amount {2:0.###} MWh.</value>
+  </data>
+  <data name="SIMENG_KALENDER_MONAT_OHNE_BETRIEB" xml:space="preserve">
+    <value>{0}profile "{1}": in the operating calendar "{2}" at least one month has no hour with demand; this month is calculated without company holidays.</value>
+  </data>
+  <data name="BKAL_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Please enter a name for the operating calendar.</value>
+  </data>
+  <data name="BKAL_MSG_NAME_LANG" xml:space="preserve">
+    <value>The name must not exceed 100 characters.</value>
+  </data>
+  <data name="BKAL_MSG_BUNDESLAND" xml:space="preserve">
+    <value>The federal state is unknown.</value>
+  </data>
+  <data name="BKAL_MSG_FAKTOR" xml:space="preserve">
+    <value>The holiday factor lies between 0 and 100 %.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_ANZAHL" xml:space="preserve">
+    <value>An operating calendar holds at most four holiday periods.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_DATUM" xml:space="preserve">
+    <value>A holiday period needs a start and an end as a valid date (without 29 February).</value>
+  </data>
+  <data name="SIMKONF_GRP_NV_KANAL" xml:space="preserve">
+    <value>Network losses per channel and circulation</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_HEIZUNG" xml:space="preserve">
+    <value>Network losses space heating</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_BRAUCHWASSER" xml:space="preserve">
+    <value>Network losses domestic hot water</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_PROZESS" xml:space="preserve">
+    <value>Network losses process heat</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="SIMKONF_HRL_NV_KANAL_AUS" xml:space="preserve">
+    <value>Channel values empty: the project value of the network losses applies, distributed hourly pro rata across space heating, domestic hot water and process heat.</value>
+  </data>
+  <data name="SIMKONF_HRL_NV_KANAL_AN" xml:space="preserve">
+    <value>Channel values set: each channel uses its own value as a constant hourly amount (empty = 0); the project value of the network losses does not apply.</value>
+  </data>
+  <data name="SIMKONF_LBL_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>Circulation power</value>
+  </data>
+  <data name="SIMKONF_LBL_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Circulation running time</value>
+  </data>
+  <data name="SIMKONF_HRL_ZIRK" xml:space="preserve">
+    <value>Circulation of the existing profiles: constant power during the running hours around the middle of the draw-off day, annual amount = power × running time × 365; with a draw-off profile its own circulation applies.</value>
+  </data>
+  <data name="SIMKONF_HRL_ZIRK_MENGE" xml:space="preserve">
+    <value>Annual amount {0:0.###} MWh/a.</value>
+  </data>
+  <data name="SIMKONF_MSG_NV_KANAL_FEHLER" xml:space="preserve">
+    <value>The network losses per channel could not be saved.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_KANAL_ERL" xml:space="preserve">
+    <value>Network loss of this channel in its unit (% of the annual demand of the channel or kWh/a); empty = no channel value. If all three are empty, the project value of the network losses applies.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_EINHEIT_ERL" xml:space="preserve">
+    <value>Unit of the channel value: % or kWh/a.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>The unit "{0}" does not exist; available are % and kWh/a.</value>
+  </data>
+  <data name="KI_DLG_SIM_ZIRK_ERL" xml:space="preserve">
+    <value>Circulation of the domestic hot water profiles: power in kW (0 to 100) and running time in h/d (0 to 24); empty = no circulation. With a draw-off profile its own circulation applies.</value>
+  </data>
+  <data name="KI_DLG_BKAL_KALENDER_ERL" xml:space="preserve">
+    <value>The operating calendar shown; empty = a new one not yet saved.</value>
+  </data>
+  <data name="KI_DLG_BKAL_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Name of the operating calendar, at most 100 characters.</value>
+  </data>
+  <data name="KI_DLG_BKAL_BUNDESLAND_ERL" xml:space="preserve">
+    <value>Federal state for the state holidays (BW … TH); empty = only the nine nationwide holidays.</value>
+  </data>
+  <data name="KI_DLG_BKAL_FERIEN_ERL" xml:space="preserve">
+    <value>Start or end of a holiday period as day of the year (1 to 365, without 29 February); start after end = across the turn of the year; empty = no period.</value>
+  </data>
+  <data name="MENU_BETRIEBSKALENDER" xml:space="preserve">
+    <value>Operating calendars</value>
+  </data>
+  <data name="BKAL_TITEL" xml:space="preserve">
+    <value>Operating calendars</value>
+  </data>
+  <data name="BKAL_KONTEXT" xml:space="preserve">
+    <value>Holidays and company holidays for the weekly profiles of domestic hot water, process heat and electricity. A calendar is chosen per profile assignment in the project.</value>
+  </data>
+  <data name="BKAL_LBL_LISTE" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="BKAL_LEER" xml:space="preserve">
+    <value>no calendar created yet</value>
+  </data>
+  <data name="BKAL_NEU_PLATZHALTER" xml:space="preserve">
+    <value>new calendar</value>
+  </data>
+  <data name="BKAL_BTN_NEU" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="BKAL_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="BKAL_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BKAL_LBL_BUNDESLAND" xml:space="preserve">
+    <value>Federal state</value>
+  </data>
+  <data name="BKAL_BUNDESLAND_KEINES" xml:space="preserve">
+    <value>nationwide holidays only</value>
+  </data>
+  <data name="BKAL_LBL_FEIERTAG" xml:space="preserve">
+    <value>Holiday like Sunday</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_VON" xml:space="preserve">
+    <value>Company holidays {0} from</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_BIS" xml:space="preserve">
+    <value>Company holidays {0} to</value>
+  </data>
+  <data name="BKAL_LBL_FAKTOR" xml:space="preserve">
+    <value>Holiday factor</value>
+  </data>
+  <data name="BKAL_LBL_KUERZEN" xml:space="preserve">
+    <value>Holidays reduce the monthly amount</value>
+  </data>
+  <data name="BKAL_HRL_FEIERTAG" xml:space="preserve">
+    <value>A holiday outside the company holidays takes the Sunday of the weekly profile; off = holidays have no effect.</value>
+  </data>
+  <data name="BKAL_HRL_FAKTOR" xml:space="preserve">
+    <value>A holiday carries this share of the daily mean of the weekly profile in every hour; 0 % = standstill.</value>
+  </data>
+  <data name="BKAL_HRL_KUERZEN" xml:space="preserve">
+    <value>Off: the monthly amount stays and is spread over the remaining days. On: the monthly amount decreases in proportion to the holiday hours.</value>
+  </data>
+  <data name="BKAL_HRL_JAHR" xml:space="preserve">
+    <value>In {0}: {1} holidays like Sunday, {2} holiday days. The run uses the reference year of the project.</value>
+  </data>
+  <data name="BKAL_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Operating calendar saved.</value>
+  </data>
+  <data name="BKAL_MSG_GELOESCHT" xml:space="preserve">
+    <value>Operating calendar deleted.</value>
+  </data>
+  <data name="BKAL_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The calendar has not been saved yet.</value>
+  </data>
+  <data name="BKAL_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the operating calendar "{0}"? {1} profile assignment(s) will then be calculated without a calendar.</value>
+  </data>
+  <data name="BKAL_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>The operating calendar could not be deleted.</value>
+  </data>
+  <data name="BKAL_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The operating calendar could not be saved.</value>
+  </data>
+  <data name="BKAL_KEINE_ANSICHT" xml:space="preserve">
+    <value>The operating calendars are not available on this platform.</value>
+  </data>
+  <data name="BPF_GRP_KALENDER" xml:space="preserve">
+    <value>Operating calendar</value>
+  </data>
+  <data name="BPF_LBL_KALENDER" xml:space="preserve">
+    <value>Calendar of the assignment</value>
+  </data>
+  <data name="BPF_KALENDER_KEINER" xml:space="preserve">
+    <value>without calendar</value>
+  </data>
+  <data name="BPF_HINW_KALENDER" xml:space="preserve">
+    <value>Holidays and company holidays of the calendar are applied to the weekly profile of the selected assignment; saved with OK. Calendars are created under "Operating calendars" in "Profiles &amp; load curves".</value>
+  </data>
+  <data name="BKAL_LAND_BW" xml:space="preserve">
+    <value>Baden-Württemberg</value>
+  </data>
+  <data name="BKAL_LAND_BY" xml:space="preserve">
+    <value>Bavaria</value>
+  </data>
+  <data name="BKAL_LAND_BE" xml:space="preserve">
+    <value>Berlin</value>
+  </data>
+  <data name="BKAL_LAND_BB" xml:space="preserve">
+    <value>Brandenburg</value>
+  </data>
+  <data name="BKAL_LAND_HB" xml:space="preserve">
+    <value>Bremen</value>
+  </data>
+  <data name="BKAL_LAND_HH" xml:space="preserve">
+    <value>Hamburg</value>
+  </data>
+  <data name="BKAL_LAND_HE" xml:space="preserve">
+    <value>Hesse</value>
+  </data>
+  <data name="BKAL_LAND_MV" xml:space="preserve">
+    <value>Mecklenburg-Western Pomerania</value>
+  </data>
+  <data name="BKAL_LAND_NI" xml:space="preserve">
+    <value>Lower Saxony</value>
+  </data>
+  <data name="BKAL_LAND_NW" xml:space="preserve">
+    <value>North Rhine-Westphalia</value>
+  </data>
+  <data name="BKAL_LAND_RP" xml:space="preserve">
+    <value>Rhineland-Palatinate</value>
+  </data>
+  <data name="BKAL_LAND_SL" xml:space="preserve">
+    <value>Saarland</value>
+  </data>
+  <data name="BKAL_LAND_SN" xml:space="preserve">
+    <value>Saxony</value>
+  </data>
+  <data name="BKAL_LAND_ST" xml:space="preserve">
+    <value>Saxony-Anhalt</value>
+  </data>
+  <data name="BKAL_LAND_SH" xml:space="preserve">
+    <value>Schleswig-Holstein</value>
+  </data>
+  <data name="BKAL_LAND_TH" xml:space="preserve">
+    <value>Thuringia</value>
+  </data>
+  <data name="SIMENG_AUFH_W1" xml:space="preserve">
+    <value>Preheat optimisation (W1): the preheat power is insufficient — on {0} days no ramp of up to 48 h holds, on {1} of them it does not exceed the steady-state heating load. The ramp fills the setback there; the run continues.</value>
+  </data>
+  <data name="SIMENG_AUFH_W2" xml:space="preserve">
+    <value>Preheat optimisation (W2): on {0} days the setback duration limits the ramp — the setback is largely ineffective there.</value>
+  </data>
+  <data name="SIMENG_AUFH_W2_BEMESSUNG" xml:space="preserve">
+    <value>Preheat optimisation (W2): the maximum preheat time of {0} h reaches the shortest setback duration of the ramped steps ({1} h) — in design weather the setback is largely ineffective.</value>
+  </data>
+  <data name="SIMENG_AUFH_W3" xml:space="preserve">
+    <value>Preheat optimisation (W3): on {0} days the run leaves the verification band of the ramp (capping by the heating power limit or hourly output above 1.01 × preheat power). The prediction does not know the preceding history, sun, internal gains or ventilation changes; the run continues.</value>
+  </data>
+  <data name="SIMENG_AUFH_W4" xml:space="preserve">
+    <value>Preheat optimisation (W4): {0} transitions from “off” receive no ramp, {1} of them at the start of the heating period — the initial value of the free-floating zone is unknown before the run.</value>
+  </data>
+  <data name="SIMENG_AUFH_W5" xml:space="preserve">
+    <value>Preheat optimisation (W5): the building is calculated with system coupling and is not optimised; the heat emitter limits the output after the step.</value>
   </data>
   <data name="BHKWK_GRP_TEILLAST" xml:space="preserve">
     <value>Part load and cycling</value>

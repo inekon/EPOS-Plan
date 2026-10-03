@@ -63,6 +63,7 @@
                SimulationGaben="@SimulationGaben"
                BaustoffKatalogGaben="@BaustoffKatalogGaben"
                BauteilaufbauKatalogGaben="@BauteilaufbauKatalogGaben"
+               BetriebskalenderGaben="@BetriebskalenderGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
@@ -250,6 +251,9 @@
 
     /// <summary>Siehe <see cref="BaustoffKatalogGaben"/>.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
+
+    /// <summary>Der Parametersatz der Betriebskalender (Windows: <c>BetriebskalenderHuelle.Gaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }
 
     /// <summary>
     /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt

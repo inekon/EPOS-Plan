@@ -6967,6 +6967,438 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string BKAL_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BKAL_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu ähnelt.
+        /// </summary>
+        public static string BKAL_BTN_NEU {
+            get {
+                return ResourceManager.GetString("BKAL_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur bundeseinheitliche Feiertage ähnelt.
+        /// </summary>
+        public static string BKAL_BUNDESLAND_KEINES {
+            get {
+                return ResourceManager.GetString("BKAL_BUNDESLAND_KEINES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Betriebskalender „{0}“ löschen? {1} Profilzuordnung(en) rechnen danach ohne Kalender. ähnelt.
+        /// </summary>
+        public static string BKAL_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BKAL_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ferientag trägt je Stunde diesen Anteil des Tagesmittels des Wochenprofils; 0 % = Stillstand. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_FAKTOR {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Feiertag außerhalb der Ferien trägt den Sonntag des Wochenprofils; aus = Feiertage wirken nicht. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_FEIERTAG {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Jahr {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Referenzjahr des Projekts. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_JAHR {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_KUERZEN {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_KUERZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebskalender stehen auf dieser Plattform nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string BKAL_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("BKAL_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt. ähnelt.
+        /// </summary>
+        public static string BKAL_KONTEXT {
+            get {
+                return ResourceManager.GetString("BKAL_KONTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brandenburg ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_BB {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_BB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berlin ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_BE {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_BE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baden-Württemberg ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_BW {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bayern ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_BY {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_BY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bremen ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_HB {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_HB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hessen ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_HE {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_HE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hamburg ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_HH {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_HH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mecklenburg-Vorpommern ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_MV {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_MV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niedersachsen ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_NI {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_NI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nordrhein-Westfalen ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_NW {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_NW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rheinland-Pfalz ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_RP {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_RP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schleswig-Holstein ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_SH {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_SH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saarland ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_SL {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_SL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sachsen ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_SN {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_SN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sachsen-Anhalt ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_ST {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_ST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thüringen ähnelt.
+        /// </summary>
+        public static string BKAL_LAND_TH {
+            get {
+                return ResourceManager.GetString("BKAL_LAND_TH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bundesland ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_BUNDESLAND {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_BUNDESLAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienfaktor ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_FAKTOR {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertag wie Sonntag ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_FEIERTAG {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsferien {0} bis ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_FERIEN_BIS {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_FERIEN_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsferien {0} von ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_FERIEN_VON {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_FERIEN_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien kürzen die Monatsmenge ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_KUERZEN {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_KUERZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_LISTE {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch kein Kalender angelegt ähnelt.
+        /// </summary>
+        public static string BKAL_LEER {
+            get {
+                return ResourceManager.GetString("BKAL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bundesland ist unbekannt. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_BUNDESLAND {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_BUNDESLAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ferienfaktor liegt zwischen 0 und 100 %. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FAKTOR {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Betriebskalender führt höchstens vier Ferienzeiträume. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FERIEN_ANZAHL {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FERIEN_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ferienzeitraum braucht Beginn und Ende als gültiges Datum (ohne 29. Februar). ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FERIEN_DATUM {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FERIEN_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender gelöscht. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender gespeichert. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Betriebskalender konnte nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_LOESCHEN_FEHLER {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_LOESCHEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Bezeichnung für den Betriebskalender eingeben. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezeichnung darf höchstens 100 Zeichen lang sein. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_NAME_LANG {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_NAME_LANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender ist noch nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Betriebskalender konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_SPEICHERN_FEHLER {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_SPEICHERN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neuer Kalender ähnelt.
+        /// </summary>
+        public static string BKAL_NEU_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("BKAL_NEU_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender ähnelt.
+        /// </summary>
+        public static string BKAL_TITEL {
+            get {
+                return ResourceManager.GetString("BKAL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BKS_BTN_ANLEGEN {
@@ -10346,11 +10778,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender ähnelt.
+        /// </summary>
+        public static string BPF_GRP_KALENDER {
+            get {
+                return ResourceManager.GetString("BPF_GRP_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ändern des Jahresverbrauchs ähnelt.
         /// </summary>
         public static string BPF_GRP_VERBRAUCH {
             get {
                 return ResourceManager.GetString("BPF_GRP_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil der gewählten Zuordnung; gespeichert wird mit OK. Kalender legt „Betriebskalender“ unter „Profile &amp; Lastgänge“ an. ähnelt.
+        /// </summary>
+        public static string BPF_HINW_KALENDER {
+            get {
+                return ResourceManager.GetString("BPF_HINW_KALENDER", resourceCulture);
             }
         }
         
@@ -10382,6 +10832,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Kalender ähnelt.
+        /// </summary>
+        public static string BPF_KALENDER_KEINER {
+            get {
+                return ResourceManager.GetString("BPF_KALENDER_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die jährlicher Wärmebedarf: ähnelt.
         /// </summary>
         public static string BPF_LBL_JAHRESVERBRAUCH_BW {
@@ -10405,6 +10864,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPF_LBL_JAHRESVERBRAUCH_STROM {
             get {
                 return ResourceManager.GetString("BPF_LBL_JAHRESVERBRAUCH_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender der Zuordnung ähnelt.
+        /// </summary>
+        public static string BPF_LBL_KALENDER {
+            get {
+                return ResourceManager.GetString("BPF_LBL_KALENDER", resourceCulture);
             }
         }
         
@@ -28306,6 +28774,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In DB übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_IN_DB {
+            get {
+                return ResourceManager.GetString("GEB_BTN_IN_DB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_IN_DB_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_IN_DB_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
         /// </summary>
         public static string GEB_BTN_SIMULATION {
@@ -28504,6 +28990,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name in der Datenbank: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_IN_DB_NAME {
+            get {
+                return ResourceManager.GetString("GEB_LBL_IN_DB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB: ähnelt.
         /// </summary>
         public static string GEB_LBL_KATALOG {
@@ -28594,6 +29089,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt ist kein gespeichertes Gebäude gewählt. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen eingeben. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_DB_UEBERNAHME_NAME_LEER {
+            get {
+                return ResourceManager.GetString("GEB_MSG_DB_UEBERNAHME_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude gelöscht! ähnelt.
         /// </summary>
         public static string GEB_MSG_GELOESCHT {
@@ -28608,6 +29121,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_IMPORT_AUFGENOMMEN {
             get {
                 return ResourceManager.GetString("GEB_MSG_IMPORT_AUFGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ in die Datenbank übernommen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_IN_DB_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_IN_DB_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ in die Datenbank übernommen. Seine {1} Zonen mit {2} Bauteilen bleiben im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_IN_DB_ZONEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_IN_DB_ZONEN", resourceCulture);
             }
         }
         
@@ -28720,11 +29251,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_IN_DB_NEUE_ZEILE {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_IN_DB_NEUE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg ähnelt.
         /// </summary>
         public static string GEB_SP_RECHENWEG {
             get {
                 return ResourceManager.GetString("GEB_SP_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Projekt {0}, {1} ähnelt.
+        /// </summary>
+        public static string GEB_TEXT_HERKUNFT_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEB_TEXT_HERKUNFT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden alle Gebäudewerte und die Konditionierung des Gebäudes. Zonen und Bauteile bleiben im Projekt – die Datenbank führt keine Zonen. ähnelt.
+        /// </summary>
+        public static string GEB_TEXT_IN_DB_REGEL {
+            get {
+                return ResourceManager.GetString("GEB_TEXT_IN_DB_REGEL", resourceCulture);
             }
         }
         
@@ -28743,6 +29301,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_TITEL {
             get {
                 return ResourceManager.GetString("GEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_TITEL_IN_DB {
+            get {
+                return ResourceManager.GetString("GEB_TITEL_IN_DB", resourceCulture);
             }
         }
         
@@ -43869,6 +44436,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Betriebskalenders, höchstens 100 Zeichen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKAL_BEZEICHNUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKAL_BEZEICHNUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bundesland für die Landesfeiertage (BW … TH); leer = nur die neun bundeseinheitlichen Feiertage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKAL_BUNDESLAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKAL_BUNDESLAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn bzw. Ende eines Ferienzeitraums als Tag im Jahr (1 bis 365, ohne 29. Februar); Beginn nach Ende = über den Jahreswechsel; leer = kein Zeitraum. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKAL_FERIEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKAL_FERIEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gezeigte Betriebskalender; leer = ein neuer, noch nicht gespeicherter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKAL_KALENDER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKAL_KALENDER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die In welchem Format der Bericht entsteht: Word, Excel oder beides. ähnelt.
         /// </summary>
         public static string KI_DLG_BKB_AUSGABE_ERL {
@@ -50610,6 +51213,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit des Kanalwerts: % oder kWh/a. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_NV_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_NV_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit „{0}“ gibt es nicht; wählbar sind % und kWh/a. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_NV_EINHEIT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_NV_EINHEIT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverlust dieses Kanals in seiner Einheit (% des Jahresbedarfs des Kanals oder kWh/a); leer = kein Kanalwert. Sind alle drei leer, gilt der Projektwert der Netzverluste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_NV_KANAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_NV_KANAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen, die das Projekt führt, die aber auf keinem Platz der Simulation stehen. Sie rechnen nicht und erscheinen in der Übersicht mit 0,00. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_OHNE_PLATZ_ERL {
@@ -51056,6 +51686,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_WREST_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_WREST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation der Bestandsprofile des Brauchwassers: Leistung in kW (0 bis 100) und Laufzeit in h/d (0 bis 24); leer = keine Zirkulation. Mit Zapfprofil gilt dessen Zirkulation. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ZIRK_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ZIRK_ERL", resourceCulture);
             }
         }
         
@@ -66757,6 +67396,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender ähnelt.
+        /// </summary>
+        public static string MENU_BETRIEBSKALENDER {
+            get {
+                return ResourceManager.GetString("MENU_BETRIEBSKALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string MENU_BHKW {
@@ -68265,6 +68913,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ND_ZEILE_HERLEITUNG {
             get {
                 return ResourceManager.GetString("ND_ZEILE_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Netzverlust je Kanal darf nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string NETZKANAL_MSG_NEGATIV {
+            get {
+                return ResourceManager.GetString("NETZKANAL_MSG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Netzverlust in % darf höchstens 100 betragen. ähnelt.
+        /// </summary>
+        public static string NETZKANAL_MSG_PROZENT {
+            get {
+                return ResourceManager.GetString("NETZKANAL_MSG_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufzeit der Zirkulation liegt zwischen 0 und 24 h/d. ähnelt.
+        /// </summary>
+        public static string NETZKANAL_MSG_ZIRK_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("NETZKANAL_MSG_ZIRK_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zirkulationsleistung liegt zwischen 0 und 100 kW. ähnelt.
+        /// </summary>
+        public static string NETZKANAL_MSG_ZIRK_LEISTUNG {
+            get {
+                return ResourceManager.GetString("NETZKANAL_MSG_ZIRK_LEISTUNG", resourceCulture);
             }
         }
         
@@ -77304,6 +77988,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W1): Die Aufheizleistung reicht nicht — an {0} Tagen hält keine Rampe bis 48 h, an {1} davon liegt sie nicht über der stationären Heizlast. Die Rampe füllt dort die Absenkung; der Lauf rechnet weiter. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W1 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W2): An {0} Tagen begrenzt die Absenkdauer die Rampe — die Absenkung ist dort weitgehend wirkungslos. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W2 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W2): Die maximale Aufheizzeit von {0} h erreicht die kürzeste Absenkdauer der gerampten Sprünge ({1} h) — bei Bemessungswetter ist die Absenkung weitgehend wirkungslos. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W2_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W2_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W3): An {0} Tagen verlässt der Lauf das Nachweisband der Rampe (Kappung durch die Heizleistungsgrenze bzw. Stundenleistung über 1,01 · Aufheizleistung). Die Vorhersage kennt Vorgeschichte, Sonne, innere Gewinne und Lüftungswechsel nicht; der Lauf rechnet weiter. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W3 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W4): {0} Übergänge aus „aus“ bekommen keine Rampe, davon {1} am Beginn der Heizperiode — der Anfangswert der frei schwingenden Zone ist vor dem Lauf unbekannt. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W4 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (W5): Das Gebäude rechnet mit Anlagenkopplung und wird nicht optimiert; die Übergabe begrenzt die Leistung nach dem Sprung. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_W5 {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_W5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW (alle Module) ähnelt.
         /// </summary>
         public static string SIMENG_BHKW_GRENZE_ALLE_MODULE {
@@ -78150,6 +78888,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Im Betriebskalender „{2}“ hat mindestens ein Monat keine Stunde mit Bedarf; dieser Monat rechnet ohne Betriebsferien. ähnelt.
+        /// </summary>
+        public static string SIMENG_KALENDER_MONAT_OHNE_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMENG_KALENDER_MONAT_OHNE_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalender: In den Klimadaten ist in den ersten 14 Tagen kein Wochenende (Samstag und Sonntag) erkennbar. Die Bedarfsprofile werden deshalb wie bisher ab Sonntag als 1. Januar über das Jahr verteilt. ähnelt.
         /// </summary>
         public static string SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT {
@@ -78533,6 +79280,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_NACHTZEIT_NUR_EINE {
             get {
                 return ResourceManager.GetString("SIMENG_NACHTZEIT_NUR_EINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverluste je Kanal: Heizung {0:0.###} MWh, Brauchwasser {1:0.###} MWh, Prozesswärme {2:0.###} MWh; der Projektwert gilt nicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_NETZVERLUSTE_JE_KANAL {
+            get {
+                return ResourceManager.GetString("SIMENG_NETZVERLUSTE_JE_KANAL", resourceCulture);
             }
         }
         
@@ -79181,6 +79937,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_ZU_VIELE_MODULE {
             get {
                 return ResourceManager.GetString("SIMENG_WP_ZU_VIELE_MODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation {0:0.##} kW in {1:0.##} h/d, Jahresmenge {2:0.###} MWh. ähnelt.
+        /// </summary>
+        public static string SIMENG_ZIRKULATION_BESTANDSWEG {
+            get {
+                return ResourceManager.GetString("SIMENG_ZIRKULATION_BESTANDSWEG", resourceCulture);
             }
         }
         
@@ -80722,6 +81487,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverluste je Kanal und Zirkulation ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_NV_KANAL {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_NV_KANAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
         /// </summary>
         public static string SIMKONF_GRP_WAERMEBEDARF {
@@ -80794,11 +81568,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanalwerte gesetzt: Je Kanal gilt sein Wert als fester Stundenbetrag (leer = 0); der Projektwert der Netzverluste gilt nicht. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_NV_KANAL_AN {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_NV_KANAL_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanalwerte leer: Es gilt der Projektwert der Netzverluste, je Stunde anteilig auf Heizung, Brauchwasser und Prozesswärme verteilt. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_NV_KANAL_AUS {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_NV_KANAL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung — sie gilt für alle Anlagen dieser Art im Projekt. ähnelt.
         /// </summary>
         public static string SIMKONF_HRL_PROJEKTWEIT {
             get {
                 return ResourceManager.GetString("SIMKONF_HRL_PROJEKTWEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation der Bestandsprofile: feste Leistung in den Laufstunden um die Tagesmitte der Zapfung, Jahresmenge = Leistung × Laufzeit × 365; mit Zapfprofil gilt dessen Zirkulation. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_ZIRK {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_ZIRK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresmenge {0:0.###} MWh/a. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_ZIRK_MENGE {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_ZIRK_MENGE", resourceCulture);
             }
         }
         
@@ -80848,6 +81658,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverluste Brauchwasser ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_NV_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_NV_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_NV_EINHEIT {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_NV_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverluste Heizung ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_NV_HEIZUNG {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_NV_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverluste Prozesswärme ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_NV_PROZESS {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_NV_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation Laufzeit ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_ZIRK_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_ZIRK_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation Leistung ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_ZIRK_LEISTUNG {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_ZIRK_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlagenkopplung konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER {
@@ -80871,6 +81735,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_MSG_KUEHLBETRIEB_FEHLER {
             get {
                 return ResourceManager.GetString("SIMKONF_MSG_KUEHLBETRIEB_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Netzverluste je Kanal konnten nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string SIMKONF_MSG_NV_KANAL_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_MSG_NV_KANAL_FEHLER", resourceCulture);
             }
         }
         

@@ -46,6 +46,16 @@ public sealed class BedarfsProfileKiSicht
     public IReadOnlyList<KiWahleintrag> EinheitWahl
         => EinheitEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
+    public Func<int?>? KalenderLesen { get; init; }
+    public Action<int?>? KalenderSetzen { get; init; }
+
+    /// <summary>Liefert die Betriebskalender der Wahl (0 = ohne Kalender).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? KalenderEintraege { get; init; }
+
+    /// <summary>Die Betriebskalender der Wahl.</summary>
+    public IReadOnlyList<KiWahleintrag> BetriebskalenderWahl
+        => KalenderEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
     public Func<int?>? RechenwegLesen { get; init; }
 
     /// <summary>
@@ -101,6 +111,16 @@ public sealed class BedarfsProfileKiSicht
                 : RechenwegSetzen(value);
             if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
         }
+    }
+
+    /// <summary>
+    /// Der Betriebskalender der markierten Zuordnung (PW2/BW2): Feiertage und Betriebsferien auf ihrem
+    /// Wochenprofil; 0 oder leer = ohne Kalender. Geschrieben wird mit OK.
+    /// </summary>
+    public int? Betriebskalender
+    {
+        get => KalenderLesen?.Invoke();
+        set => KalenderSetzen?.Invoke(value);
     }
 
     /// <summary>Der Bezeichner des markierten Profils.</summary>

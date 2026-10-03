@@ -81,6 +81,10 @@
                 <span class="epos-zweispalten-pfeil" aria-hidden="true">▼</span>
                 <span class="epos-zweispalten-knopftext">@EntfernenText</span>
             </button>
+
+            @* Ein Wirt kann der Leiste weitere Knoepfe anhaengen, die auf dieselbe
+               Auswahl wirken (Gebaeudedialog: "In DB uebernehmen"). *@
+            @Leistenzusatz
         </div>
     }
 
@@ -166,6 +170,12 @@
 
     /// <summary>Der Klick auf „aus dem Projekt entfernen".</summary>
     [Parameter] public EventCallback Entfernen { get; set; }
+
+    /// <summary>
+    /// Weitere Knöpfe der Übernahmeleiste, hinter den zwei Richtungsknöpfen — etwa
+    /// „In DB übernehmen" des Gebäudedialogs. Ohne Inhalt bleibt die Leiste, wie sie ist.
+    /// </summary>
+    [Parameter] public RenderFragment? Leistenzusatz { get; set; }
 
     /// <summary>
     /// Name der Knopfgruppe fuer die Sprachausgabe — <c>AUSWAHL_GRP_PFEILE</c>.

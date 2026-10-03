@@ -230,6 +230,8 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Kosten.EmissionskatalogKiSicht) },
         { KiMaskennamen.NUTZUNGSDAUER,
           typeof(EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht) },
+        { KiMaskennamen.BETRIEBSKALENDER,
+          typeof(EPOS.UI.Dialoge.Bedarf.BetriebskalenderKiSicht) },
         { KiMaskennamen.VORLAGENPOSITION,
           typeof(EPOS.UI.Dialoge.Kosten.VorlagenPositionKiSicht) },
         { KiMaskennamen.CASE_EINGABE,
@@ -458,7 +460,8 @@ public class KiDialogkatalogTests : IDisposable
         // Gebaeudesimulation G3, Welle C: die Verwaltungen der Baustoffe und der
         // Bauteilaufbauten. Welle D2: Zone und Bauteil des Gebaeudeeditors. Stufe G6b, Welle W2:
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
-        Assert.Equal(88, katalog.Anzahl);
+        // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender.
+        Assert.Equal(89, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -871,6 +874,8 @@ public class KiDialogkatalogTests : IDisposable
                      KiMaskenziele.BAUTEILAUFBAU_KATALOG);
         Assert.Equal(KiMaskenziele.BAUSTOFF_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUSTOFF_KATALOG));
         Assert.Equal(KiMaskenziele.BAUTEILAUFBAU_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUTEILAUFBAU));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Betriebskalender, KiMaskenziele.BETRIEBSKALENDER);
+        Assert.Equal(KiMaskenziele.BETRIEBSKALENDER, KiMaskenziele.Ziel(KiMaskennamen.BETRIEBSKALENDER));
     }
 
     /// <summary>
@@ -1696,6 +1701,9 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.NUTZUNGSDAUER] =
             "bindet über die Sichtklasse NutzungsdauerKiSicht auf Kopffelder und die " +
             "lebende Zeilenliste; Zeuge ist NutzungsdauerDialogTests",
+        [KiMaskennamen.BETRIEBSKALENDER] =
+            "bindet über die Sichtklasse BetriebskalenderKiSicht auf den Arbeitsstand des " +
+            "gewählten Kalenders; Zeuge ist BetriebskalenderDialogTests",
         [KiMaskennamen.VORLAGENPOSITION] =
             "bindet über die Sichtklasse VorlagenPositionKiSicht auf die neun " +
             "lebenden Felder; Zeuge ist VorlagenPositionDialogTests",

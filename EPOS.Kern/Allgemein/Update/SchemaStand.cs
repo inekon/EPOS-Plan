@@ -778,6 +778,13 @@ namespace WindowsFormsApplication1
         /// (<see cref="SolarthermieFelderSchema"/>). <b>Ergebnisneutral:</b> Die Anlagenspalten entstehen
         /// leer und rechnen ihre Vorgaben, jeder Kollektorsatz bekommt die Aperturfläche. Die Nummer steht
         /// allein bei <see cref="SolarthermieFelderSchema.SCHRITT"/>.
+        /// Danach, mit den NETZVERLUSTEN JE KANAL, der ZIRKULATION IM BESTANDSWEG und dem
+        /// BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen BW4, PW2, BW2,
+        /// Welle M3b), steht das Ziel auf <see cref="BedarfNetzKalenderSchema.SCHRITT"/>: acht nullbare
+        /// Spalten an <c>Tab_Einstellungen</c>, die Tabelle <c>Tab_Betriebskalender</c> und je
+        /// Zuordnungstabelle die nullbare Spalte <c>ID_Betriebskalender</c>
+        /// (<see cref="BedarfNetzKalenderSchema"/>). <b>Ergebnisneutral:</b> Alles bleibt leer, und leer
+        /// rechnet wie zuvor. Die Nummer steht allein bei <see cref="BedarfNetzKalenderSchema.SCHRITT"/>.
         /// Danach, mit den TEILLASTFELDERN VON WÄRMEPUMPE UND BHKW (Welle M4 der Entscheidungsvorlage
         /// Modellgrenzen: WP1, BH1, BH2), steht das Ziel auf <see cref="ErzeugerTeillastSchema.SCHRITT"/>:
         /// an <c>Tab_WP_STAMM</c> und <c>Tab_WP</c> die nullbaren Spalten <c>Mindestleistung_kW</c> und

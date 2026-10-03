@@ -212,8 +212,9 @@ namespace EPOS.Kern.Tests
             Assert.Empty(KostenStempelSchema.FehlendeTrigger());
 
             List<string> einst = DataRepository.SpaltenVonTabelle("Tab_Einstellungen");
-            Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL, einst.Count);
-            Assert.Equal(SPALTEN_VORGABE, einst.Skip(AufheizvorgabeSchema.SPALTENZAHL_VORHER).ToArray());
+            // Hinter den fünf Spalten folgen die acht des Schritts BedarfNetzKalenderSchema (Welle M3b).
+            Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL + BedarfNetzKalenderSchema.SPALTEN_EINSTELLUNGEN.Count, einst.Count);
+            Assert.Equal(SPALTEN_VORGABE, einst.Skip(AufheizvorgabeSchema.SPALTENZAHL_VORHER).Take(SPALTEN_VORGABE.Length).ToArray());
             List<string> geb = DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude");
             Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
             Assert.Equal(SPALTEN_GEBAEUDE, geb.Skip(geb.Count - 14).ToArray());
@@ -277,6 +278,9 @@ namespace EPOS.Kern.Tests
 
             List<string> vorher = Bestand("SELECT ID, ID_Projekt, Tool_1, Kuehlbetrieb, Anlagenkopplung, Kessel_Heizgrenze " +
                                           "FROM Tab_Einstellungen ORDER BY ID");
+            // Der Stand VOR KP-S2 kennt auch die acht späteren Spalten (BedarfNetzKalenderSchema) nicht.
+            foreach (KeyValuePair<string, string> sp in BedarfNetzKalenderSchema.SPALTEN_EINSTELLUNGEN.Reverse())
+                DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"" + sp.Key + "\"");
             foreach (string sp in SPALTEN_VORGABE)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"" + sp + "\"");
             Assert.False(AufheizvorgabeSchema.Vollstaendig());
