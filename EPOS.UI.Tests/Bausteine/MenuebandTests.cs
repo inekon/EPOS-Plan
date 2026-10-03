@@ -184,7 +184,11 @@ public class MenuebandTests : EposBunitContext
         // GEBAEUDESIMULATION G3 (Softwarearchitektur 3.1): „Gebaeude" fuehrt
         // hinter „Gebaeudetypen" die zwei Kataloge „Baustoffe" und
         // „Bauteilaufbauten" - zwei neue Wege. Also 63 Punkte und 49 Handlungen.
-        Assert.Equal(63, Punkte.Count);
+        //
+        // BETRIEBSKALENDER (Entscheidungsvorlage Modellgrenzen PW2, BW2): „Profile &
+        // Lastgaenge" fuehrt die Verwaltung der Betriebskalender - ein neuer Weg.
+        // Also 64 Punkte und 50 Handlungen.
+        Assert.Equal(64, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -289,7 +293,7 @@ public class MenuebandTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_drei_Punkte_in_dieser_Reihenfolge()
+    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_vier_Punkte_in_dieser_Reihenfolge()
     {
         // "Erstelle in 'Waermebedarf & Heizung' Unterrubrik 'Profile &
         // Lastgaenge'; verschiebe in diese Rubrik: 'Waermebedarf Lastgang',
@@ -311,6 +315,8 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_WaermebedarfExtern",
             "MenuItem_Prozesswaerme",
             "MenuItem_SolThermGanglinie",
+            // PW2/BW2: die Betriebskalender der Bedarfsprofile.
+            "MenuItem_Betriebskalender",
         }, Kinder(rubrik));
     }
 
@@ -849,6 +855,8 @@ public class MenuebandTests : EposBunitContext
             // Kataloge der Baustoffe und der Bauteilaufbauten.
             Seitenschluessel.BaustoffKatalog,
             Seitenschluessel.BauteilaufbauKatalog,
+            // PW2/BW2: die Betriebskalender der Bedarfsprofile - ein neuer Weg.
+            Seitenschluessel.Betriebskalender,
             Seitenschluessel.BhkwAdmin,
             Seitenschluessel.BrauchwasserAdmin,
             // Zapfprofilgenerator 5.4: das NEUE Ziel - der Katalog der
@@ -1213,8 +1221,11 @@ public class MenuebandTests : EposBunitContext
         //
         // Die Gebaeudesimulation G3 legt zwei echte Wege an - die Kataloge der
         // Baustoffe und der Bauteilaufbauten unter „Gebaeude" (47 -> 49).
+        //
+        // Die Betriebskalender (PW2/BW2) legen unter „Profile & Lastgaenge" einen
+        // echten Weg an (49 -> 50).
         Assert.Equal(14, Punkte.Count(p => p.Klappt));
-        Assert.Equal(49, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(50, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

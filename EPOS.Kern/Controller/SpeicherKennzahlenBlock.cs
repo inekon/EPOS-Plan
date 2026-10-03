@@ -156,6 +156,19 @@ namespace WindowsFormsApplication1
             // im Entladungssummenwert enthalten und wird hier eigens ausgewiesen.
             Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.ARB_ERG_VERKAUF, VerkaufKwh(kontext), null, "N0", KWH);
             Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.SP_ERG_VERLUSTE, k.Verluste_Gesamt, Vgl(kv, x => x.Verluste_Gesamt), "N0", KWH);
+            // SP1 (Welle M5): die Selbstentladung (ein Teil der Verluste) und der Eigenverbrauch des
+            // Speichersystems - beide nur, wenn der Lauf sie hat; sonst bleibt der Block, wie er war.
+            if (ein.SelbstentladungKwh > 0.0)
+                Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.SP_ERG_SELBSTENTLADUNG, ein.SelbstentladungKwh,
+                     einVgl != null ? einVgl.SelbstentladungKwh : (double?)null, "N0", KWH);
+            if (kontext?.Standby != null && kontext.Standby.GesamtKwh > 0.0)
+            {
+                Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.SP_ERG_EIGENVERBRAUCH_SYSTEM,
+                     kontext.Standby.GesamtKwh, null, "N0", KWH,
+                     hinweis: MyResource.Resource.SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM);
+                Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ,
+                     kontext.Standby.AusNetzKwh, null, "N0", KWH);
+            }
             Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.SP_ERG_NETZBEZUG_OHNE, k.Netzbezug_Ohne, Vgl(kv, x => x.Netzbezug_Ohne), "N0", KWH);
             Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.SP_ERG_NETZBEZUG_MIT, k.Netzbezug_Mit, Vgl(kv, x => x.Netzbezug_Mit), "N0", KWH);
             Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.SP_ERG_EINSPEISUNG_OHNE, k.Einspeisung_Ohne, Vgl(kv, x => x.Einspeisung_Ohne), "N0", KWH);

@@ -217,7 +217,7 @@ Konzept: [`Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md`](Umsetzungskonzep
   Kalenderschicht** für alle drei Profilarten (Brauchwasser, Prozesswärme, Strom), die
   Feiertage und Betriebsferien auf das Wochenprofil legt.
 - **Empfehlung: über PW2** (dort entschieden). Für Wohngebäude ist der Generator der Weg.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M3b über PW2)** — Betriebskalender je Zuordnung auch für die Brauchwasserprofile. Regeln: [Konzept Simulationsablauf, Abschnitt 17](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### BW3 Keine Temperaturen im Rechenweg
 
@@ -260,7 +260,7 @@ Konzept: [`Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md`](Umsetzungskonzep
 - **Empfehlung: ja**, Aufwand M. Die Zirkulation ist in Mehrfamilienhäusern oft ein Drittel bis
   die Hälfte der Brauchwasserwärme und bestimmt Wärmepumpen- und Solarauslegung mit. Vorgabe
   leer → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M3b)** — Netzverluste je Kanal an `Tab_Einstellungen` (`Netzverluste_Heizung`/`_Brauchwasser`/`_Prozess` samt Einheit; alle leer = Projektwert wie zuvor) und Zirkulation im Bestandsweg (`Zirkulation_Leistung_kW`, `Zirkulation_Laufzeit_h_d`, Formel der Methode „manuell“), Schemaschritt `BedarfNetzKalenderSchema`. Regeln: [Konzept Simulationsablauf, Abschnitt 17](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### BW5 Kein Legionellenbetrieb, keine Nachheizung
 
@@ -336,7 +336,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
 - **Empfehlung: ja**, Aufwand M. Ein Werk mit drei Wochen Sommerstillstand ist der Normalfall der
   Industrieplanung; heute muss der Anwender das über Monatswerte von Hand nachbilden und verliert
   die Stundenstruktur. Ohne Kalender → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Entscheidung des Anwenders: ☑ (umgesetzt in Welle M3b)** — `Tab_Betriebskalender` (Bundesland, vier Betriebsferien, Ferienfaktor, Feiertag wie Sonntag, Ferien kürzen) und `ID_Betriebskalender` an den drei Zuordnungstabellen; die Kalenderschicht sitzt in `ProfilBedarf.Rechnen` zwischen Kachelung und Monatsnormierung. Regeln: [Konzept Simulationsablauf, Abschnitt 17](Konzept_Simulationsablauf_EPOS-Plan.md).
 
 ### PW3 Monatsmenge unantastbar; unterschiedliche Monatsprofile
 
@@ -474,7 +474,7 @@ jedes Referenzprojekt, das eine Prozesswärme-Zuordnung trägt.
 
 Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs`.
 
-### WP1 Keine Taktung innerhalb der Stunde
+### WP1 Keine Taktung innerhalb der Stunde — umgesetzt
 
 - **Stand heute:** Eine Stunde ist voll, moduliert oder aus; Mindestlaufzeit, Mindestpause und
   Anlaufverluste fehlen (Hilfeseite Wärmepumpe, Grenzen). Moduliert heißt heute: jede Teillast bis
@@ -491,7 +491,15 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs`.
 - **Empfehlung: ja**, Aufwand M. Gleiche Bauart wie Kessel E4, die Mindestleistung steht in jedem
   Datenblatt, der Effekt trifft genau die Übergangszeit, in der überdimensionierte Geräte schlecht
   laufen. Vorgabe leer → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M4):** Spalten `Mindestleistung_kW` und `Taktverlustfaktor_Cd` in
+  `Tab_WP_STAMM` und `Tab_WP` (Schemaschritt 167, leer = keine Taktrechnung bzw. 0,9). Je Stunde
+  und Modul Lastverhältnis aus Verdichterwärme von Deckung und Ladung, Mehrstrom
+  `P · (1/f − 1)` in Strombedarf und JAZ, Starts nach der Kesselregel mit fest 10 min; im
+  Kühlbetrieb dieselbe Rechnung in der Kältekaskade. Ausweis Starts und Mehrstrom im Reiter
+  „Wärmepumpe“. Der VDI-3805-Import setzt keine der Spalten (Blatt 22 nennt einen
+  Modulationsbereich in %, keine Mindestleistung in kW, kein C_d).
+  [Konzept Simulationsablauf, Abschnitt 18](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### WP2 Extrapolation nach oben gekappt, nach unten vorhanden
 
@@ -530,7 +538,7 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs`.
 
 Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs`.
 
-### BH1 Teillastkennlinie
+### BH1 Teillastkennlinie — umgesetzt
 
 - **Stand heute:** Ein elektrischer und ein thermischer Wirkungsgrad für jede Auslastung; die
   „Laufzeit“ ist eine thermische Vollbenutzungsstundenzahl, keine Betriebsstundenzahl
@@ -546,9 +554,16 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs`.
 - **Empfehlung: ja**, Aufwand M. Wärmegeführte Module laufen im Sommer lange in Teillast; die
   KWKG-Strommenge und der Brennstoff hängen daran. Herstellerblätter nennen Werte bei 50 % und
   75 %. Vorgabe leer → Basis unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M4):** Spalten `Wirkungsgrad_el_Teillast50` und `Wirkungsgrad_th_Teillast50`
+  (Faktor 0 … 1 wie die Volllastwerte) in `Tab_BHKW_STAMM` und `Tab_BHKW`. η_el,100 und η_th,100
+  teilen den Gesamtwirkungsgrad im Verhältnis der Nennleistungen; unter β = 0,5 gilt der Wert
+  bei 0,5. Die Motorläufe rechnen Wärme und Strom über die Stromkennzahl an der Auslastung, der
+  Brennstoff je Stunde ist `P/η_el(β)`, die Abweichung gegen `(Q + P)/η` steht als
+  Teillast-Mehrbrennstoff im Reiter „BHKW“ und geht in Brennstoff und Emissionen. Editor mit
+  kleiner Kurve. [Konzept Simulationsablauf, Abschnitt 18](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
-### BH2 Taktung, Mindestlaufzeit, Anfahrverluste
+### BH2 Taktung, Mindestlaufzeit, Anfahrverluste — umgesetzt
 
 - **Stand heute:** Keine Taktung (`SimulationBHKW.cs:109-113`). Die „Untere Grenzleistung“ wirkt
   nicht (Befund in Folgeauftrag 6 der
@@ -563,7 +578,15 @@ Quelle: `EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs`.
   bereit. Basis: Folgeauftrag 6 berührt BHKW-Projekte der Referenzbasis (die Testdatenbank führt
   Grenzleistungen von 468 bis 1 027 % — Datenbefund, vor der Umsetzung zu bereinigen); mit
   Vorgabe leer sonst unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M4):** Spalten `Anfahrverlust_kWh` und `Mindestlaufzeit_min` in
+  `Tab_BHKW_STAMM` und `Tab_BHKW`. Mit einem der beiden Felder und einer Untergrenze > 0 taktet
+  ein Modul unter der Untergrenze in allen drei Fahrweisen, statt auszubleiben; Starts nach der
+  Kesselregel gegen die Wärme der Untergrenze (Mindestlaufzeit leer = 10 min), je Start der
+  Anfahrverlust (leer = 0) auf den Brennstoff. Ausweis Starts und Anfahrverlust im Reiter
+  „BHKW“. Die Untergrenze selbst ist wirksam (Folgeauftrag 6). Kein Referenzprojekt pflegt die
+  Felder; die Basis R32 bleibt bitgleich.
+  [Konzept Simulationsablauf, Abschnitt 18](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### BH3 Erläuterung Energieprobe
 
@@ -662,7 +685,7 @@ Abschnitt 3.
 
 ## 8. Strombedarf
 
-### SB1 Viertelstunden ohne Unterstruktur — PV und Stromspeicher in 15 Minuten
+### SB1 Viertelstunden ohne Unterstruktur — PV und Stromspeicher in 15 Minuten — (a) umgesetzt
 
 - **Stand heute — wo gemittelt, wo viertelstündlich gerechnet wird:**
   1. **Strombedarf:** Profile liefern Stundenwerte und werden auf vier gleiche Viertel gespreizt
@@ -695,7 +718,12 @@ Abschnitt 3.
   hängen an der Viertelstunde; die Flotte gewinnt eine glatte PV-Reihe. **Basis neu** für jedes
   Referenzprojekt mit PV — Einfrierregel, eigene Welle. **(b) später** (M), **(c) nein**
   (Datenlage, Rechenzeit, Nutzen klein gegen (a)).
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M5), (a):** Die PV-Erzeugung wird je Stunde nach dem Kosinus des Zenitwinkels in
+  der Mitte jeder Viertelstunde verteilt (energieerhaltend, ohne Sonne gleichmäßig); Direktverbrauch,
+  Überschuss, Reststrom und Abregelung entstehen je Viertelstunde, Stromspeicher und Flotte rechnen mit
+  der glatten Reihe. Basis R33: Direktverbrauch der vier Referenzprojekte mit PV-Ertrag −0,05 bis
+  −0,1 %. [Konzept Simulationsablauf, Abschnitt 19](Konzept_Simulationsablauf_EPOS-Plan.md).
+- **Entscheidung des Anwenders: ☑ (a) entschieden, umgesetzt; (b), (c) offen**
 
 ### SB2 Projektfilter im Stromzweig — erledigt
 
@@ -746,7 +774,7 @@ Abschnitt 3.
   rechnen; die Warnung genügt.
 - **Entscheidung des Anwenders: ☐**
 
-### PV3 Keine Netzeinspeisebegrenzung im Stundenlauf
+### PV3 Keine Netzeinspeisebegrenzung im Stundenlauf — umgesetzt
 
 - **Stand heute:** Der PV-Lauf kappt die Einspeisung nicht. Die Flotte kennt eine **harte**
   Einspeisegrenze, die eine Variante unzulässig macht (`SpeicherEngine/FlottenModel.cs:827`,
@@ -758,7 +786,12 @@ Abschnitt 3.
   Planungsalltag, und der Speicher wird oft genau dafür gekauft.
 - **Empfehlung: ja**, Aufwand M (S für den PV-Lauf, Rest Flotte). Vorgabe leer → Basis
   unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M5):** `Tab_Einstellungen.Einspeisegrenze_Wert` und `Einspeisegrenze_Einheit`
+  (kW oder % der kWp, Schemaschritt 166), Abschnitt „Einspeisegrenze" der Simulationskonfiguration.
+  Abregelung je Viertelstunde nach Speicherladung und Standby; Reiter „Photovoltaik", Bericht (Reihe und
+  Monatstafel), Referenzskalar `Photovoltaik.AbregelungMwh` nur bei > 0. Die Flotte liest den Wert als
+  weiche Grenze; ihre harte Grenze wird bei einer neuen Flotte damit vorbelegt und im Netzblock benannt.
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### PV4 Albedo fest 0,2
 
@@ -780,7 +813,7 @@ Engine `SpeicherEngine`, Planer `SpeicherPlanung`; Konzept
 [`Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](Doku_Mehrspeicher_Konzept_und_Umsetzung.md).
 Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
 
-### SP1 Standby-Verbrauch nicht berücksichtigt
+### SP1 Standby-Verbrauch nicht berücksichtigt — umgesetzt
 
 - **Stand heute:** Weder Standby noch Selbstentladung in der Engine (keine Fundstelle in
   `SpeicherEngine/*.cs`).
@@ -791,7 +824,13 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
 - **Empfehlung: ja**, Aufwand S–M. Kleine Speicher mit einigen zehn Watt Leerlauf verlieren damit
   einen merklichen Teil ihres Nutzens — eine Aussage, die Kunden interessiert. Vorgabe 0 → Basis
   unberührt.
-- **Entscheidung des Anwenders: ☐**
+- **Umgesetzt (Welle M5):** Standby aus `Tab_Stromspeicher(_STAMM).Standby_Verbrauch` [W] (0 … 1 000),
+  Selbstentladung `Selbstentladung_Prozent_Monat` (0 … 20, Schemaschritt 166). In `SpeicherEngine`
+  Parameter des Speichers und der Flotteneinheit (`Speichersystem.Standby`, `Speichersystem.Selbstentladung`);
+  Ausweis „Eigenverbrauch Speichersystem" im Reiter „Stromspeicher", im Bericht (Monatstafel) und als
+  Referenzskalar `Stromspeicher.EigenverbrauchSystemMwh` (nur bei > 0). In der Flotte ist der Standby der
+  Hilfsverbrauch der Einheit (Standortlast).
+- **Entscheidung des Anwenders: ☑ (entschieden, umgesetzt)**
 
 ### SP2 Auslegungsoptimierung schreibt nichts ins Simulationsergebnis
 
@@ -991,19 +1030,19 @@ Umstellen eines Referenzprojekts.
 |---|---|---|---|---|
 | ST2 Arbeitstemperatur aus dem Speicher (mit ST4 Grädigkeit) | umgesetzt (M2) | M | ja, 1049 (R32) | ☑ |
 | PW1 Temperaturniveau je Prozess (Stufe 1) | umgesetzt (Welle M3a; Stufe 2 später) | M | nein (Option) | ☑ |
-| BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | ja | M | nein (Option) | ☐ |
-| SB1 (a) PV-Bilanz im Viertelstundenraster | ja | M | ja, alle Referenzprojekte mit PV | ☐ |
+| BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
+| SB1 (a) PV-Bilanz im Viertelstundenraster | umgesetzt (M5) | M | ja, alle Referenzprojekte mit PV (R33) | ☑ |
 | KU1 Katalogabgleich mit Katalogfassung | ja | L | nein (Projektkopien unberührt) | ☐ |
-| PW2 Kalenderschicht für alle Profile | ja | M | nein (Option) | ☐ |
-| WP1 Taktverlust nach EN 14825, Starts | ja | M | nein (Option) | ☐ |
-| BH1 BHKW-Teillastkennlinie | ja | M | nein (Option) | ☐ |
-| BH2 BHKW-Takten mit Folgeauftrag 6 | ja | M | ja, wenn die Untergrenze in Referenzprojekten wirksam wird | ☐ |
-| PV3 Einspeisebegrenzung mit Abregelung | ja | M | nein (Option) | ☐ |
+| PW2 Kalenderschicht für alle Profile (mit BW2) | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
+| WP1 Taktverlust nach EN 14825, Starts | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
+| BH1 BHKW-Teillastkennlinie | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
+| BH2 BHKW-Takten mit Folgeauftrag 6 | umgesetzt (Welle M4) | M | nein (Option; kein Referenzprojekt pflegt die Felder) | ☑ |
+| PV3 Einspeisebegrenzung mit Abregelung | umgesetzt (M5) | M | nein (Option) | ☑ |
 | ST5 Diffus-IAM mit K_dfu | umgesetzt (M2) | S | nein (1049 führt kein K_dfu) | ☑ |
 | PS1 (c) Bereitschaftsverlust temperaturabhängig | ja | S–M | ja für Pufferprojekte (als Option erst beim Umstellen) | ☐ |
 | PW6 Profil ohne Typ überspringen | ja | S | nein (durch Referenzlauf zu bestätigen) | ☐ |
 | PW5 Katalog typischer Betriebsweisen | umgesetzt (Welle M3a) | S | nein | ☑ |
-| SP1 Standby des Speichersystems | ja | S–M | nein (Option) | ☐ |
+| SP1 Standby des Speichersystems | umgesetzt (M5) | S–M | nein (Option) | ☑ |
 | EQ1 Erdreichprüfung speichern | ja | S–M | nein | ☐ |
 | ST1 Pumpenstrom Solarkreis | umgesetzt (M2) | S | nein (Option) | ☑ |
 | ST6 Bezugsfläche der Kennwerte | umgesetzt (M2) | S | nein (Option) | ☑ |
@@ -1051,7 +1090,7 @@ zuerst, Rechenwegänderungen an Referenzprojekten gebündelt.
 | **M2 Solarthermie** | ST5, ST2 mit ST4, danach ST8 (Folgeauftrag 4) | **neu** (1049), einmal für alle drei | alle Änderungen am selben Referenzprojekt in einem Schritt |
 | **M3 Bedarf** | BW4, PW1 Stufe 1, PW2, PW5 | unberührt (Optionen) | gemeinsame Profilroutine und Kanäle; PW5 liefert die Sätze, mit denen PW1 und PW2 sofort sichtbar werden |
 | **M4 Erzeuger in Teillast** | WP1, BH1, BH2 mit Folgeauftrag 6 | neu nur, wenn die BHKW-Untergrenze in Referenzprojekten wirksam wird | dieselbe Bauart wie Kessel E2/E4, Tests und Editor wiederverwendbar |
-| **M5 Strom in Viertelstunden** | SB1 (a), PV3, SP1 | **neu** (Referenzprojekte mit PV) | PV-Bilanz, Abregelung und Standby greifen in dieselbe Viertelstundenbilanz |
+| **M5 Strom in Viertelstunden** | SB1 (a), PV3, SP1 | **neu** (Referenzprojekte mit PV), umgesetzt mit Basis R33 | PV-Bilanz, Abregelung und Standby greifen in dieselbe Viertelstundenbilanz |
 | **M6 Katalog-Update** | KU1 Stufe 1 (laufend gepflegte Kataloge), EQ1 | unberührt | Schema und Werkzeug, eigene Abnahme mit einer Bestandsdatenbank des Anwenders |
 | **M7 Speicher** | PS1 (c), danach nach Bedarf PS1 (a), PS5 (a), BW5 | neu für Pufferprojekte, falls als Vorgabe gesetzt | zusammen mit der Pufferauslegung (Recherchen unter `Pufferspeicher/`) |
 | später | BW3, PW3, PW4 je Prozess, WP3, PS2, SB1 (b), SP3, SP6, SP8, SP10, PV2, SP5 | — | nach Anlass und Rückmeldung der Anwender |

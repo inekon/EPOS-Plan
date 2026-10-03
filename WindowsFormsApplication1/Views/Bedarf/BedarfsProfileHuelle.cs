@@ -79,7 +79,8 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.m_ID_Z, IdStamm = m.m_ID_Stromverbraucher,
-                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe
+                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe,
+                    KalenderId = m.ID_Betriebskalender
                 });
 
             Action geaendert = () =>
@@ -89,7 +90,8 @@ namespace WindowsFormsApplication1
                     modelle.Add(new Z_ProjektStromverbraucherModel
                     {
                         m_ID_Z = z.IdZ, m_ID_Projekt = projektId, m_ID_Stromverbraucher = z.IdStamm,
-                        m_szVerbraucher = z.Name, m_Summe = z.Summe
+                        m_szVerbraucher = z.Name, m_Summe = z.Summe,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
 
@@ -112,7 +114,8 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
-                    Name = m.szBezeichner ?? "", Summe = m.Summe
+                    Name = m.szBezeichner ?? "", Summe = m.Summe,
+                    KalenderId = m.ID_Betriebskalender
                 });
 
             Action geaendert = () =>
@@ -122,7 +125,8 @@ namespace WindowsFormsApplication1
                     modelle.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
-                        szBezeichner = z.Name, Summe = z.Summe
+                        szBezeichner = z.Name, Summe = z.Summe,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
 
@@ -160,7 +164,8 @@ namespace WindowsFormsApplication1
                     IdZ = m.ID_Z, IdStamm = m.ID_Prozesswaerme,
                     Name = m.szProzessname ?? "", Summe = m.Summe,
                     Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf,
-                    TemperaturGeaendert = m.TemperaturGeaendert
+                    TemperaturGeaendert = m.TemperaturGeaendert,
+                    KalenderId = m.ID_Betriebskalender
                 });
             return zeilen;
         }
@@ -183,7 +188,8 @@ namespace WindowsFormsApplication1
                         ID_Prozesswaerme = z.IdStamm,
                         szProzessname = z.Name, Summe = z.Summe,
                         Vorlauf = z.Vorlauf, Ruecklauf = z.Ruecklauf,
-                        TemperaturGeaendert = z.TemperaturGeaendert
+                        TemperaturGeaendert = z.TemperaturGeaendert,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
         }
@@ -197,7 +203,8 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.m_ID_Z, IdStamm = m.m_ID_Stromverbraucher,
-                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe
+                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe,
+                    KalenderId = m.ID_Betriebskalender
                 });
 
             Action geaendert = () =>
@@ -208,7 +215,8 @@ namespace WindowsFormsApplication1
                     {
                         m_ID_Z = z.IdZ, m_ID_Projekt = projektId,
                         m_ID_Stromverbraucher = z.IdStamm,
-                        m_szVerbraucher = z.Name, m_Summe = z.Summe
+                        m_szVerbraucher = z.Name, m_Summe = z.Summe,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
 
@@ -394,6 +402,10 @@ namespace WindowsFormsApplication1
                 ["HilfeSchluesselBerechnung"] = BerechnungsSchluessel(art),
                 ["HilfeKurztextBerechnung"] = BerechnungsKurztext(art)
             };
+
+            // PW2/BW2: die Betriebskalender zur Wahl je Zuordnung - nur, wenn es die Tabelle gibt.
+            if (BetriebskalenderCtrl.TabelleVorhanden())
+                BetriebskalenderHuelle.WahlEinhaengen(gaben);
 
             // PW1 Stufe 1: das Temperaturpaar je Prozess - die Pruefung steht im Kern
             // (Prozesstemperatur.Paarpruefung), dieselbe wie die Pruefklauseln des Schemas.

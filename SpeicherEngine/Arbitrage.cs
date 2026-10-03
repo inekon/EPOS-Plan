@@ -238,8 +238,19 @@ namespace SpeicherEngine
             double startSoC = p.StartSoCEffektivKwh;
             double prev = startSoC;
 
+            // SP1 (Welle M5): die Selbstentladung je Intervall; 0 = keine, der Lauf bleibt bitgleich.
+            double selbstAnteil = p.SelbstentladungJeIntervall;
+            double selbstentladung = 0.0;
+
             for (int k = 0; k < n; k++)
             {
+                if (selbstAnteil > 0.0)
+                {
+                    double v = Speichersystem.Selbstentladung(prev, minLevel, selbstAnteil);
+                    prev -= v;
+                    selbstentladung += v;
+                }
+
                 double bhkwKw = bhkwReihe == null ? 0.0 : bhkwReihe[k];
                 IntervallEnergien e = Vorverarbeitung.Berechne(
                     b[k], c[k], bhkwKw, dt, pvZulaessig, bhkwZulaessig);
@@ -402,6 +413,7 @@ namespace SpeicherEngine
                 SpeicherverlusteKwh = ladeenergie + ladeenergieNetz
                                       - entladeenergie - verkaufenergie
                                       - (prev - startSoC),
+                SelbstentladungKwh = selbstentladung,
                 LastKwh = summeLast,
                 ErzeugungPvKwh = summePv,
                 ErzeugungBhkwKwh = summeBhkw,

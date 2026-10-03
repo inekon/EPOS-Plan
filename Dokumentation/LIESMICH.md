@@ -279,7 +279,7 @@ Der Wegweiser des Ordners ist
 [`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) mit der Tabelle
 Basis → Datum → Zweck; hier stehen die Dateien selbst. Sie sind **byte-gleiche Kopien** — auch
 in ihren Verweisen, von denen fünf ins Leere zeigen (die Wache führt sie als vorbestehende
-Lücken). Die aktuelle, lauffähige Basis `2026-10-02_R32_Solarthermie` ist noch nicht abgelöst und
+Lücken). Die aktuelle, lauffähige Basis `2026-10-02_R33_Viertelstunden` ist noch nicht abgelöst und
 liegt deshalb nicht hier, sondern unter [`Referenzlaeufe/`](../Referenzlaeufe/LIESMICH.md).
 
 | Basis | gesichertes Protokoll |

@@ -2453,6 +2453,71 @@ namespace Testdatenbankschema
                                   SolarthermieFelderSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste
+            //      je Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die
+            //      Kalenderspalte der drei Zuordnungstabellen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_BedarfNetzKalender bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alles bleibt leer.
+            string nrBedarf = BedarfNetzKalenderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBedarf + " - Netzverluste je Kanal, Zirkulation, Betriebskalender: " +
+                              (BedarfNetzKalenderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBedarf = new List<string>();
+                angelegt += BedarfNetzKalenderSchema.Ausfuehren(berichtBedarf);
+                foreach (string zeile in berichtBedarf)
+                    Console.WriteLine("Schritt " + nrBedarf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBedarf + " - vollstaendig: " +
+                                  BedarfNetzKalenderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder der
+            //      Waermepumpe an Tab_WP_STAMM und Tab_WP (Mindestleistung_kW, Taktverlustfaktor_Cd) und
+            //      des BHKW an Tab_BHKW_STAMM und Tab_BHKW (Wirkungsgrad_el_Teillast50,
+            //      Wirkungsgrad_th_Teillast50, Anfahrverlust_kWh, Mindestlaufzeit_min), alle nullbar mit
+            //      Pruefklausel. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ErzeugerTeillast bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Felder rechnen wie zuvor.
+            string nrTeillast = ErzeugerTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrTeillast + " - Teillastfelder von Waermepumpe und BHKW: " +
+                              (ErzeugerTeillastSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtTeillast = new List<string>();
+                angelegt += ErzeugerTeillastSchema.Ausfuehren(berichtTeillast);
+                foreach (string zeile in berichtTeillast)
+                    Console.WriteLine("Schritt " + nrTeillast + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrTeillast + " - vollstaendig: " +
+                                  ErzeugerTeillastSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+            //      Einspeisegrenze an Tab_Einstellungen (Einspeisegrenze_Wert, Einspeisegrenze_Einheit;
+            //      nullbar) und die Selbstentladung an Tab_Stromspeicher_STAMM und Tab_Stromspeicher
+            //      (Selbstentladung_Prozent_Monat; nullbar). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_StromViertelstunden bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder heissen keine Einspeisegrenze und keine
+            //      Selbstentladung.
+            string nrStromViertel = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStromViertel + " - Einspeisegrenze und Selbstentladung: " +
+                              (StromViertelstundenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtStromViertel = new List<string>();
+                angelegt += StromViertelstundenSchema.Ausfuehren(berichtStromViertel);
+                foreach (string zeile in berichtStromViertel)
+                    Console.WriteLine("Schritt " + nrStromViertel + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrStromViertel + " - vollstaendig: " +
+                                  StromViertelstundenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

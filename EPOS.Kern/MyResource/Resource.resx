@@ -14633,6 +14633,39 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen</value>
   </data>
+  <data name="GEB_BTN_IN_DB" xml:space="preserve">
+    <value>In DB übernehmen</value>
+  </data>
+  <data name="GEB_BTN_IN_DB_HINWEIS" xml:space="preserve">
+    <value>Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen</value>
+  </data>
+  <data name="GEB_TITEL_IN_DB" xml:space="preserve">
+    <value>Gebäude in die Datenbank übernehmen</value>
+  </data>
+  <data name="GEB_LBL_IN_DB_NAME" xml:space="preserve">
+    <value>Name in der Datenbank:</value>
+  </data>
+  <data name="GEB_TEXT_IN_DB_REGEL" xml:space="preserve">
+    <value>Übernommen werden alle Gebäudewerte und die Konditionierung des Gebäudes. Zonen und Bauteile bleiben im Projekt – die Datenbank führt keine Zonen.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_UEBERNOMMEN" xml:space="preserve">
+    <value>Gebäude „{0}“ in die Datenbank übernommen.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_ZONEN" xml:space="preserve">
+    <value>Gebäude „{0}“ in die Datenbank übernommen. Seine {1} Zonen mit {2} Bauteilen bleiben im Projekt.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Im Projekt ist kein gespeichertes Gebäude gewählt.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
+    <value>Bitte einen Namen eingeben.</value>
+  </data>
+  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen.</value>
+  </data>
+  <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>aus Projekt {0}, {1}</value>
+  </data>
   <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
     <value>Gebäude: Verbrauch</value>
   </data>
@@ -41515,6 +41548,246 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_SKK_BEZUGSFLAECHE_ERL" xml:space="preserve">
     <value>Die Fläche, auf die h0, k1 und k2 bezogen sind: apertur (Vorgabe) oder brutto. Die Simulation rechnet mit dieser Fläche mal Modulanzahl.</value>
   </data>
+  <data name="NETZKANAL_MSG_NEGATIV" xml:space="preserve">
+    <value>Ein Netzverlust je Kanal darf nicht negativ sein.</value>
+  </data>
+  <data name="NETZKANAL_MSG_PROZENT" xml:space="preserve">
+    <value>Ein Netzverlust in % darf höchstens 100 betragen.</value>
+  </data>
+  <data name="NETZKANAL_MSG_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>Die Zirkulationsleistung liegt zwischen 0 und 100 kW.</value>
+  </data>
+  <data name="NETZKANAL_MSG_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Die Laufzeit der Zirkulation liegt zwischen 0 und 24 h/d.</value>
+  </data>
+  <data name="SIMENG_NETZVERLUSTE_JE_KANAL" xml:space="preserve">
+    <value>Netzverluste je Kanal: Heizung {0:0.###} MWh, Brauchwasser {1:0.###} MWh, Prozesswärme {2:0.###} MWh; der Projektwert gilt nicht.</value>
+  </data>
+  <data name="SIMENG_ZIRKULATION_BESTANDSWEG" xml:space="preserve">
+    <value>Zirkulation {0:0.##} kW in {1:0.##} h/d, Jahresmenge {2:0.###} MWh.</value>
+  </data>
+  <data name="SIMENG_KALENDER_MONAT_OHNE_BETRIEB" xml:space="preserve">
+    <value>{0}Profil „{1}“: Im Betriebskalender „{2}“ hat mindestens ein Monat keine Stunde mit Bedarf; dieser Monat rechnet ohne Betriebsferien.</value>
+  </data>
+  <data name="BKAL_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte eine Bezeichnung für den Betriebskalender eingeben.</value>
+  </data>
+  <data name="BKAL_MSG_NAME_LANG" xml:space="preserve">
+    <value>Die Bezeichnung darf höchstens 100 Zeichen lang sein.</value>
+  </data>
+  <data name="BKAL_MSG_BUNDESLAND" xml:space="preserve">
+    <value>Das Bundesland ist unbekannt.</value>
+  </data>
+  <data name="BKAL_MSG_FAKTOR" xml:space="preserve">
+    <value>Der Ferienfaktor liegt zwischen 0 und 100 %.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_ANZAHL" xml:space="preserve">
+    <value>Ein Betriebskalender führt höchstens vier Ferienzeiträume.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_DATUM" xml:space="preserve">
+    <value>Ein Ferienzeitraum braucht Beginn und Ende als gültiges Datum (ohne 29. Februar).</value>
+  </data>
+  <data name="SIMKONF_GRP_NV_KANAL" xml:space="preserve">
+    <value>Netzverluste je Kanal und Zirkulation</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_HEIZUNG" xml:space="preserve">
+    <value>Netzverluste Heizung</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_BRAUCHWASSER" xml:space="preserve">
+    <value>Netzverluste Brauchwasser</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_PROZESS" xml:space="preserve">
+    <value>Netzverluste Prozesswärme</value>
+  </data>
+  <data name="SIMKONF_LBL_NV_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="SIMKONF_HRL_NV_KANAL_AUS" xml:space="preserve">
+    <value>Kanalwerte leer: Es gilt der Projektwert der Netzverluste, je Stunde anteilig auf Heizung, Brauchwasser und Prozesswärme verteilt.</value>
+  </data>
+  <data name="SIMKONF_HRL_NV_KANAL_AN" xml:space="preserve">
+    <value>Kanalwerte gesetzt: Je Kanal gilt sein Wert als fester Stundenbetrag (leer = 0); der Projektwert der Netzverluste gilt nicht.</value>
+  </data>
+  <data name="SIMKONF_LBL_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>Zirkulation Leistung</value>
+  </data>
+  <data name="SIMKONF_LBL_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Zirkulation Laufzeit</value>
+  </data>
+  <data name="SIMKONF_HRL_ZIRK" xml:space="preserve">
+    <value>Zirkulation der Bestandsprofile: feste Leistung in den Laufstunden um die Tagesmitte der Zapfung, Jahresmenge = Leistung × Laufzeit × 365; mit Zapfprofil gilt dessen Zirkulation.</value>
+  </data>
+  <data name="SIMKONF_HRL_ZIRK_MENGE" xml:space="preserve">
+    <value>Jahresmenge {0:0.###} MWh/a.</value>
+  </data>
+  <data name="SIMKONF_MSG_NV_KANAL_FEHLER" xml:space="preserve">
+    <value>Die Netzverluste je Kanal konnten nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_KANAL_ERL" xml:space="preserve">
+    <value>Netzverlust dieses Kanals in seiner Einheit (% des Jahresbedarfs des Kanals oder kWh/a); leer = kein Kanalwert. Sind alle drei leer, gilt der Projektwert der Netzverluste.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_EINHEIT_ERL" xml:space="preserve">
+    <value>Einheit des Kanalwerts: % oder kWh/a.</value>
+  </data>
+  <data name="KI_DLG_SIM_NV_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>Die Einheit „{0}“ gibt es nicht; wählbar sind % und kWh/a.</value>
+  </data>
+  <data name="KI_DLG_SIM_ZIRK_ERL" xml:space="preserve">
+    <value>Zirkulation der Bestandsprofile des Brauchwassers: Leistung in kW (0 bis 100) und Laufzeit in h/d (0 bis 24); leer = keine Zirkulation. Mit Zapfprofil gilt dessen Zirkulation.</value>
+  </data>
+  <data name="KI_DLG_BKAL_KALENDER_ERL" xml:space="preserve">
+    <value>Der gezeigte Betriebskalender; leer = ein neuer, noch nicht gespeicherter.</value>
+  </data>
+  <data name="KI_DLG_BKAL_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Name des Betriebskalenders, höchstens 100 Zeichen.</value>
+  </data>
+  <data name="KI_DLG_BKAL_BUNDESLAND_ERL" xml:space="preserve">
+    <value>Bundesland für die Landesfeiertage (BW … TH); leer = nur die neun bundeseinheitlichen Feiertage.</value>
+  </data>
+  <data name="KI_DLG_BKAL_FERIEN_ERL" xml:space="preserve">
+    <value>Beginn bzw. Ende eines Ferienzeitraums als Tag im Jahr (1 bis 365, ohne 29. Februar); Beginn nach Ende = über den Jahreswechsel; leer = kein Zeitraum.</value>
+  </data>
+  <data name="MENU_BETRIEBSKALENDER" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BKAL_TITEL" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BKAL_KONTEXT" xml:space="preserve">
+    <value>Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt.</value>
+  </data>
+  <data name="BKAL_LBL_LISTE" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="BKAL_LEER" xml:space="preserve">
+    <value>noch kein Kalender angelegt</value>
+  </data>
+  <data name="BKAL_NEU_PLATZHALTER" xml:space="preserve">
+    <value>neuer Kalender</value>
+  </data>
+  <data name="BKAL_BTN_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="BKAL_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="BKAL_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="BKAL_LBL_BUNDESLAND" xml:space="preserve">
+    <value>Bundesland</value>
+  </data>
+  <data name="BKAL_BUNDESLAND_KEINES" xml:space="preserve">
+    <value>nur bundeseinheitliche Feiertage</value>
+  </data>
+  <data name="BKAL_LBL_FEIERTAG" xml:space="preserve">
+    <value>Feiertag wie Sonntag</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_VON" xml:space="preserve">
+    <value>Betriebsferien {0} von</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_BIS" xml:space="preserve">
+    <value>Betriebsferien {0} bis</value>
+  </data>
+  <data name="BKAL_LBL_FAKTOR" xml:space="preserve">
+    <value>Ferienfaktor</value>
+  </data>
+  <data name="BKAL_LBL_KUERZEN" xml:space="preserve">
+    <value>Ferien kürzen die Monatsmenge</value>
+  </data>
+  <data name="BKAL_HRL_FEIERTAG" xml:space="preserve">
+    <value>Ein Feiertag außerhalb der Ferien trägt den Sonntag des Wochenprofils; aus = Feiertage wirken nicht.</value>
+  </data>
+  <data name="BKAL_HRL_FAKTOR" xml:space="preserve">
+    <value>Ein Ferientag trägt je Stunde diesen Anteil des Tagesmittels des Wochenprofils; 0 % = Stillstand.</value>
+  </data>
+  <data name="BKAL_HRL_KUERZEN" xml:space="preserve">
+    <value>Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.</value>
+  </data>
+  <data name="BKAL_HRL_JAHR" xml:space="preserve">
+    <value>Im Jahr {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Referenzjahr des Projekts.</value>
+  </data>
+  <data name="BKAL_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Betriebskalender gespeichert.</value>
+  </data>
+  <data name="BKAL_MSG_GELOESCHT" xml:space="preserve">
+    <value>Betriebskalender gelöscht.</value>
+  </data>
+  <data name="BKAL_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Der Kalender ist noch nicht gespeichert.</value>
+  </data>
+  <data name="BKAL_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Den Betriebskalender „{0}“ löschen? {1} Profilzuordnung(en) rechnen danach ohne Kalender.</value>
+  </data>
+  <data name="BKAL_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Der Betriebskalender konnte nicht gelöscht werden.</value>
+  </data>
+  <data name="BKAL_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Der Betriebskalender konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="BKAL_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Betriebskalender stehen auf dieser Plattform nicht zur Verfügung.</value>
+  </data>
+  <data name="BPF_GRP_KALENDER" xml:space="preserve">
+    <value>Betriebskalender</value>
+  </data>
+  <data name="BPF_LBL_KALENDER" xml:space="preserve">
+    <value>Kalender der Zuordnung</value>
+  </data>
+  <data name="BPF_KALENDER_KEINER" xml:space="preserve">
+    <value>ohne Kalender</value>
+  </data>
+  <data name="BPF_HINW_KALENDER" xml:space="preserve">
+    <value>Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil der gewählten Zuordnung; gespeichert wird mit OK. Kalender legt „Betriebskalender“ unter „Profile &amp; Lastgänge“ an.</value>
+  </data>
+  <data name="BKAL_LAND_BW" xml:space="preserve">
+    <value>Baden-Württemberg</value>
+  </data>
+  <data name="BKAL_LAND_BY" xml:space="preserve">
+    <value>Bayern</value>
+  </data>
+  <data name="BKAL_LAND_BE" xml:space="preserve">
+    <value>Berlin</value>
+  </data>
+  <data name="BKAL_LAND_BB" xml:space="preserve">
+    <value>Brandenburg</value>
+  </data>
+  <data name="BKAL_LAND_HB" xml:space="preserve">
+    <value>Bremen</value>
+  </data>
+  <data name="BKAL_LAND_HH" xml:space="preserve">
+    <value>Hamburg</value>
+  </data>
+  <data name="BKAL_LAND_HE" xml:space="preserve">
+    <value>Hessen</value>
+  </data>
+  <data name="BKAL_LAND_MV" xml:space="preserve">
+    <value>Mecklenburg-Vorpommern</value>
+  </data>
+  <data name="BKAL_LAND_NI" xml:space="preserve">
+    <value>Niedersachsen</value>
+  </data>
+  <data name="BKAL_LAND_NW" xml:space="preserve">
+    <value>Nordrhein-Westfalen</value>
+  </data>
+  <data name="BKAL_LAND_RP" xml:space="preserve">
+    <value>Rheinland-Pfalz</value>
+  </data>
+  <data name="BKAL_LAND_SL" xml:space="preserve">
+    <value>Saarland</value>
+  </data>
+  <data name="BKAL_LAND_SN" xml:space="preserve">
+    <value>Sachsen</value>
+  </data>
+  <data name="BKAL_LAND_ST" xml:space="preserve">
+    <value>Sachsen-Anhalt</value>
+  </data>
+  <data name="BKAL_LAND_SH" xml:space="preserve">
+    <value>Schleswig-Holstein</value>
+  </data>
+  <data name="BKAL_LAND_TH" xml:space="preserve">
+    <value>Thüringen</value>
+  </data>
   <data name="SIMENG_AUFH_W1" xml:space="preserve">
     <value>Aufheizoptimierung (W1): Die Aufheizleistung reicht nicht — an {0} Tagen hält keine Rampe bis 48 h, an {1} davon liegt sie nicht über der stationären Heizlast. Die Rampe füllt dort die Absenkung; der Lauf rechnet weiter.</value>
   </data>
@@ -41532,6 +41805,183 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="SIMENG_AUFH_W5" xml:space="preserve">
     <value>Aufheizoptimierung (W5): Das Gebäude rechnet mit Anlagenkopplung und wird nicht optimiert; die Übergabe begrenzt die Leistung nach dem Sprung.</value>
+  </data>
+  <data name="BHKWK_GRP_TEILLAST" xml:space="preserve">
+    <value>Teillast und Takten</value>
+  </data>
+  <data name="BHKWK_LBL_ETA_EL50" xml:space="preserve">
+    <value>El. Wirkungsgrad bei 50 % Last:</value>
+  </data>
+  <data name="BHKWK_FELD_ETA_EL50" xml:space="preserve">
+    <value>elektrischer Wirkungsgrad bei 50 % Last</value>
+  </data>
+  <data name="BHKWK_HINT_ETA_EL50" xml:space="preserve">
+    <value>(Faktor, z. B. 0,27)</value>
+  </data>
+  <data name="BHKWK_LBL_ETA_TH50" xml:space="preserve">
+    <value>Th. Wirkungsgrad bei 50 % Last:</value>
+  </data>
+  <data name="BHKWK_FELD_ETA_TH50" xml:space="preserve">
+    <value>thermischer Wirkungsgrad bei 50 % Last</value>
+  </data>
+  <data name="BHKWK_HINT_ETA_TH50" xml:space="preserve">
+    <value>(Faktor, z. B. 0,64)</value>
+  </data>
+  <data name="BHKWK_LBL_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust je Start:</value>
+  </data>
+  <data name="BHKWK_FELD_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust je Start</value>
+  </data>
+  <data name="BHKWK_LBL_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit:</value>
+  </data>
+  <data name="BHKWK_FELD_MINDESTLAUFZEIT" xml:space="preserve">
+    <value>Mindestlaufzeit</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_VOLLLAST" xml:space="preserve">
+    <value>wie Volllast</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_OHNE_TAKTEN" xml:space="preserve">
+    <value>kein Takten</value>
+  </data>
+  <data name="BHKWK_HINWEIS_TEILLAST" xml:space="preserve">
+    <value>Leer = wie Volllast bzw. kein Takten. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben.</value>
+  </data>
+  <data name="BHKWK_BILD_KENNLINIE" xml:space="preserve">
+    <value>Wirkungsgrad über der elektrischen Last</value>
+  </data>
+  <data name="BHKWK_BILD_ACHSE_LAST" xml:space="preserve">
+    <value>Elektrische Last [%]</value>
+  </data>
+  <data name="BHKWK_BILD_ELEKTRISCH" xml:space="preserve">
+    <value>elektrisch</value>
+  </data>
+  <data name="BHKWK_BILD_THERMISCH" xml:space="preserve">
+    <value>thermisch</value>
+  </data>
+  <data name="WPS_LBL_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung</value>
+  </data>
+  <data name="WPS_FELD_MINDESTLEISTUNG" xml:space="preserve">
+    <value>Mindestleistung</value>
+  </data>
+  <data name="WPS_LBL_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Teillastkoeffizient C_d</value>
+  </data>
+  <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Teillastkoeffizient C_d</value>
+  </data>
+  <data name="WPS_HINT_TAKTVERLUST_CD" xml:space="preserve">
+    <value>(Vorgabe 0,9 nach EN 14825)</value>
+  </data>
+  <data name="WPS_PLATZHALTER_OHNE_TAKT" xml:space="preserve">
+    <value>keine Taktrechnung</value>
+  </data>
+  <data name="WPS_PLATZHALTER_CD_VORGABE" xml:space="preserve">
+    <value>0,9</value>
+  </data>
+  <data name="SIM_SPALTE_TAKTSTROM" xml:space="preserve">
+    <value>Mehrstrom Takten [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_ANFAHRVERLUST" xml:space="preserve">
+    <value>Anfahrverlust [kWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF" xml:space="preserve">
+    <value>Mehrbrennstoff Teillast [kWh/a]</value>
+  </data>
+  <data name="KI_DLG_BHKK_ETA_EL50_ERL" xml:space="preserve">
+    <value>Elektrischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (z. B. 0,27). Mit ihm rechnet das Modul eine Teillastkennlinie: zwischen 50 % und Volllast linear, darunter der Wert bei 50 %. Leer = wie Volllast.</value>
+  </data>
+  <data name="KI_DLG_BHKK_ETA_TH50_ERL" xml:space="preserve">
+    <value>Thermischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (z. B. 0,64). Zusammen mit dem elektrischen Wert bestimmt er die Stromkennzahl in Teillast. Leer = wie Volllast.</value>
+  </data>
+  <data name="KI_DLG_BHKK_ANFAHRVERLUST_ERL" xml:space="preserve">
+    <value>Brennstoff je Start in kWh. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze statt auszubleiben; jeder Start kostet diesen Brennstoff. Leer = kein Takten (ohne Mindestlaufzeit) bzw. 0 kWh.</value>
+  </data>
+  <data name="KI_DLG_BHKK_MINDESTLAUFZEIT_ERL" xml:space="preserve">
+    <value>Mindestlaufzeit je Start in Minuten (1 bis 60). Sie begrenzt die Starts einer Taktstunde auf 60 geteilt durch die Mindestlaufzeit. Leer = kein Takten (ohne Anfahrverlust) bzw. 10 min.</value>
+  </data>
+  <data name="KI_DLG_WP_MINDESTLEISTUNG_ERL" xml:space="preserve">
+    <value>Kleinste Modulationsleistung der Wärmepumpe in kW. Unterhalb taktet das Gerät, und die Leistungszahl sinkt nach EN 14825. Leer = keine Taktrechnung.</value>
+  </data>
+  <data name="KI_DLG_WP_TAKTVERLUST_CD_ERL" xml:space="preserve">
+    <value>Teillastkoeffizient C_d nach EN 14825 (0 bis 1). Er bestimmt den Taktverlust: COP_takt = COP · CR / (C_d · CR + 1 − C_d). Leer = Vorgabe 0,9.</value>
+  </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_OHNE_KWP" xml:space="preserve">
+    <value>Photovoltaik: Die Einspeisegrenze von {0:N1} % braucht die installierte PV-Leistung (kWp) als Bezug; das Projekt führt keine. Gerechnet wird ohne Einspeisegrenze.</value>
+  </data>
+  <data name="SIM_PV_EINSPEISEGRENZE_HINWEIS" xml:space="preserve">
+    <value>Photovoltaik: Einspeisegrenze {0:N1} kW - ohne Speicher abgeregelt {1:N0} kWh/a ({2:N1} % des Ertrags). Ein Stromspeicher lädt vor dem Abregeln.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_STANDBY_AUSSERHALB" xml:space="preserve">
+    <value>Stromspeicher: Ein Standby-Verbrauch außerhalb 0 … 1 000 W wird nicht gerechnet.</value>
+  </data>
+  <data name="SP_LABEL_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Selbstentladung</value>
+  </data>
+  <data name="SP_HINWEIS_STANDBY" xml:space="preserve">
+    <value>Batteriemanagement und Wechselrichter im Leerlauf. Gedeckt aus PV-Überschuss, sonst aus dem Netz; leer = 0.</value>
+  </data>
+  <data name="SP_HINWEIS_SELBSTENTLADUNG" xml:space="preserve">
+    <value>Verlust des Speicherinhalts je Monat, 0 … 20 %; leer = keine.</value>
+  </data>
+  <data name="SP_ERG_SELBSTENTLADUNG" xml:space="preserve">
+    <value>davon Selbstentladung</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Eigenverbrauch Speichersystem</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH_SYSTEM_NETZ" xml:space="preserve">
+    <value>davon aus dem Netz</value>
+  </data>
+  <data name="SP_ERG_TIP_EIGENVERBRAUCH_SYSTEM" xml:space="preserve">
+    <value>Standby-Verbrauch des Speichersystems: gedeckt aus PV-Überschuss nach der Ladung, sonst aus dem Netz, nie aus der Batterie.</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG" xml:space="preserve">
+    <value>Abregelung an der Einspeisegrenze</value>
+  </data>
+  <data name="SIMERG_LBL_PV_ABREGELUNG_ANTEIL" xml:space="preserve">
+    <value>Abregelung in % der Erzeugung</value>
+  </data>
+  <data name="SIMERG_LBL_PV_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_GRP_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT" xml:space="preserve">
+    <value>Einheit der Einspeisegrenze</value>
+  </data>
+  <data name="SIMKONF_HRL_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Höchste PV-Einspeisung am Netzanschluss, in kW oder in % der installierten PV-Leistung. Was der Speicher nicht lädt und darüber liegt, wird abgeregelt. Leer = keine Grenze.</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_KW" xml:space="preserve">
+    <value>kW am Netzanschluss</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% der installierten PV-Leistung</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_LEER" xml:space="preserve">
+    <value>keine Grenze</value>
+  </data>
+  <data name="SIMKONF_EINSPEISEGRENZE_FEHLER" xml:space="preserve">
+    <value>Die Einspeisegrenze konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_DLG_MODK_SELBSTENTLADUNG_ERL" xml:space="preserve">
+    <value>Verlust des Speicherinhalts je Monat in Prozent, 0 bis 20; leer heißt keine Selbstentladung. Die Simulation zehrt ihn je Viertelstunde vom Inhalt, höchstens bis zur unteren Ladegrenze.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_ERL" xml:space="preserve">
+    <value>Höchste PV-Einspeisung am Netzanschluss in der gewählten Einheit; leer heißt keine Grenze. Darüber wird abgeregelt, nachdem ein Speicher geladen hat.</value>
+  </data>
+  <data name="KI_DLG_SIM_EINSPEISEGRENZE_EINHEIT_ERL" xml:space="preserve">
+    <value>Einheit der Einspeisegrenze: kW am Netzanschluss oder % der installierten PV-Leistung (kWp).</value>
+  </data>
+  <data name="FLOTTE_ED_EINSPEISEGRENZE_PROJEKT" xml:space="preserve">
+    <value>Projekteinstellung Einspeisegrenze: {0:N1} kW. Sie belegt die harte Grenze einer neuen Flotte vor und regelt im Projektlauf PV-Einspeisung darüber ab, nachdem die Flotte geladen hat.</value>
   </data>
 </root>
 

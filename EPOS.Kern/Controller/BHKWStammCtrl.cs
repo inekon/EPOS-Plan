@@ -257,10 +257,15 @@ namespace WindowsFormsApplication1
                     // StilleDb statt DataRepository: Diese Methode meldet ihre Fehler
                     // selbst auf die Konsole (catch unten) und darf keinen Dialog zeigen.
                     if (StilleDb.NonQuery(sql, werte.ToArray()) < 0) return false;
+                    // Welle M4: die Teillastfelder (eigener Schritt, nur mit den Spalten).
+                    ErzeugerTeillastWerte.BhkwSchreiben(TABLE, "Bezeichner", model.m_szBezeichner ?? "",
+                                                        ErzeugerTeillastWerte.Bhkw(model));
                     return true;
                 }
 
                 Vorgang.Ausfuehren(sql, werte.ToArray());
+                ErzeugerTeillastWerte.BhkwSchreiben(TABLE, "Bezeichner", model.m_szBezeichner ?? "",
+                                                    ErzeugerTeillastWerte.Bhkw(model), Vorgang);
 
                 return true;
             }
@@ -326,6 +331,8 @@ namespace WindowsFormsApplication1
             m.m_bReadOnly = row.Table.Columns.Contains("ReadOnly") && row["ReadOnly"] != DBNull.Value && Convert.ToBoolean(row["ReadOnly"]);
             m.m_Vorlauf = row["Vorlauf"] != DBNull.Value ? Convert.ToInt32(row["Vorlauf"]) : 0;
             m.m_Ruecklauf = row["Ruecklauf"] != DBNull.Value ? Convert.ToInt32(row["Ruecklauf"]) : 0;
+            // Welle M4: die Teillastfelder; eine nicht migrierte Datenbank liefert sie leer.
+            ErzeugerTeillastWerte.BhkwAusZeile(m, row);
 
             return m;
         }
@@ -383,6 +390,7 @@ namespace WindowsFormsApplication1
             this.m_Vorlauf = m.m_Vorlauf;
             this.m_Ruecklauf = m.m_Ruecklauf;
             this.m_bReadOnly = m.m_bReadOnly;
+            ErzeugerTeillastWerte.BhkwUebertragen(m, this);
         }
 
         #endregion
@@ -617,6 +625,10 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
                     "Fehler beim Überschreiben des Datensatzes!"), "");
 
+            // Welle M4: die Teillastfelder im Band - benannt, bevor etwas geschrieben wird.
+            string teillast = ErzeugerTeillastWerte.BhkwVerstoss(ErzeugerTeillastWerte.Bhkw(daten));
+            if (teillast != null) return new SpeicherErgebnis(false, teillast, "");
+
             try
             {
                 var ctrl = new BHKWStammCtrl { model = daten, SchreibschutzUebergehen = schreibschutzUebergehen };
@@ -665,6 +677,10 @@ namespace WindowsFormsApplication1
                     "Bitte einen gültigen Namen eingeben!"), "");
 
             string bezeichner = name.Trim();
+
+            // Welle M4: die Teillastfelder im Band - benannt, bevor etwas geschrieben wird.
+            string teillast = ErzeugerTeillastWerte.BhkwVerstoss(ErzeugerTeillastWerte.Bhkw(daten));
+            if (teillast != null) return new SpeicherErgebnis(false, teillast, "");
 
             try
             {
@@ -796,6 +812,11 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldWirkungsgradTh] = Feld(r, BhkwWirkungsgrad.SPALTE_TH);
             werte[KatalogBrowserProfil.FeldWirkungsgrad] =
                 BhkwWirkungsgrad.GesamtAnzeige(wirkEl, wirkTh, AnteilAus(r, "Wirkungsgrad"));
+            // Teillast und Takten (Welle M4: BH1, BH2): roh, leer bleibt leer (= nicht gepflegt).
+            werte[KatalogBrowserProfil.FeldTeillastEl50] = Feld(r, "Wirkungsgrad_el_Teillast50");
+            werte[KatalogBrowserProfil.FeldTeillastTh50] = Feld(r, "Wirkungsgrad_th_Teillast50");
+            werte[KatalogBrowserProfil.FeldAnfahrverlust] = Feld(r, "Anfahrverlust_kWh");
+            werte[KatalogBrowserProfil.FeldMindestlaufzeit] = Feld(r, "Mindestlaufzeit_min");
             werte[KatalogBrowserProfil.FeldMotortyp] = Feld(r, "Motortyp");
             werte[KatalogBrowserProfil.FeldRaumbedarf] = Feld(r, "Raumbedarf");
             werte[KatalogBrowserProfil.FeldKostenModul] = Feld(r, "Kosten_Modul");
@@ -911,7 +932,11 @@ namespace WindowsFormsApplication1
                                                int? CO = null, int? CO2 = null,
                                                int? Staub = null,
                                                double? WirkungsgradEl = null,
-                                               double? WirkungsgradTh = null);
+                                               double? WirkungsgradTh = null,
+                                               string WirkungsgradEl50 = null,
+                                               string WirkungsgradTh50 = null,
+                                               string AnfahrverlustKwh = null,
+                                               string MindestlaufzeitMin = null);
 
         /// <summary>
         /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
@@ -1027,6 +1052,26 @@ namespace WindowsFormsApplication1
             grund = BhkwWirkungsgrad.Pruefen(wirkEl, wirkTh);
             if (!string.IsNullOrEmpty(grund)) return grund;
 
+            // 1b. TEILLAST UND TAKTEN (Welle M4: BH1, BH2). Hier heisst ein LEERES Feld nicht
+            //     „unveraendert", sondern „nicht gepflegt" (NULL) - sonst liesse sich ein
+            //     gepflegter Wert nie wieder zuruecknehmen; null (nicht uebergeben) laesst die
+            //     Spalte stehen. Dieselbe Regel wie die Kesselkennlinie im Aufklapper.
+            grund = KatalogFeldPruefung.ErsterGrund(
+                Leerbar(KatalogBrowserProfil.FeldTeillastEl50, f.WirkungsgradEl50, false, out var el50),
+                Leerbar(KatalogBrowserProfil.FeldTeillastTh50, f.WirkungsgradTh50, false, out var th50),
+                Leerbar(KatalogBrowserProfil.FeldAnfahrverlust, f.AnfahrverlustKwh, false, out var anfahr),
+                Leerbar(KatalogBrowserProfil.FeldMindestlaufzeit, f.MindestlaufzeitMin, true, out var mindestlauf));
+            if (!string.IsNullOrEmpty(grund)) return grund;
+            var teillast = new ErzeugerTeillastWerte.BhkwFelder(
+                el50.Gesetzt ? el50.Wert : satz.m_Wirkungsgrad_el_Teillast50,
+                th50.Gesetzt ? th50.Wert : satz.m_Wirkungsgrad_th_Teillast50,
+                anfahr.Gesetzt ? anfahr.Wert : satz.m_Anfahrverlust_kWh,
+                mindestlauf.Gesetzt
+                    ? (mindestlauf.Wert.HasValue ? (int?)Convert.ToInt32(mindestlauf.Wert.Value) : null)
+                    : satz.m_Mindestlaufzeit_min);
+            grund = ErzeugerTeillastWerte.BhkwVerstoss(teillast);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
             // 2. Der Nachschlagewert.
             string brennstoff;
             grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldBrennstoff,
@@ -1057,6 +1102,7 @@ namespace WindowsFormsApplication1
             if (f.Staub.HasValue) satz.m_Staub = f.Staub.Value;
             satz.m_Wirkungsgrad_el = wirkEl;
             satz.m_Wirkungsgrad_th = wirkTh;
+            ErzeugerTeillastWerte.Setzen(satz, teillast);
 
             // 4. Die abgeleitete Spalte nachziehen.
             satz.m_Investition_KWel = BHKWKosten.JeKWel(
@@ -1085,6 +1131,26 @@ namespace WindowsFormsApplication1
                     ? KatalogFeldPruefung.NichtNegativ(KatalogBrowserArt.Bhkw,
                                                        schluessel, wert.Value)
                     : null;
+
+            // Ein Feld, dessen Leere „nicht gepflegt" heisst: null = nicht uebergeben
+            // (Gesetzt = false), "" = leeren (Wert = null), sonst eine Zahl (Komma oder
+            // Punkt) - ein unlesbarer Text wird benannt abgelehnt.
+            static string Leerbar(string schluessel, string text, bool ganzzahlig,
+                                  out (bool Gesetzt, double? Wert) ergebnis)
+            {
+                ergebnis = (false, null);
+                if (text == null) return null;
+                string s = text.Trim();
+                if (s.Length == 0) { ergebnis = (true, null); return null; }
+                double wert;
+                if (!ZahlText.Parsen(s, out wert) || !double.IsFinite(wert) ||
+                    (ganzzahlig && (Math.Abs(wert - Math.Round(wert)) > 1e-9 || Math.Abs(wert) > int.MaxValue)))
+                    return string.Format(
+                        Text("KBROW_MSG_WERT_KEINE_ZAHL", "„{0}“: „{1}“ ist keine gültige Zahl."),
+                        KatalogFeldPruefung.Feldname(KatalogBrowserArt.Bhkw, schluessel), s);
+                ergebnis = (true, wert);
+                return null;
+            }
         }
         // =================================================================================
         // Der Brennstoffbefund der Ergebnisseite (Auftrag BH-1)

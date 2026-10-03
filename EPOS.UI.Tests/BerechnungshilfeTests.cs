@@ -489,10 +489,17 @@ public sealed class BerechnungshilfeTests : EposBunitContext
             // Fassung 6 mit dem Abschnitt "Adaptive Entladeschwelle - die kausale
             // Ratsche" (Spezifikation 5.1.1). Auftrag #247: Fassung 7 - der
             // Abschnitt "Rastersuche" nennt die zwei Suchmethoden.
-            { "Stromspeicher", "Fassung 7" },
+            // Welle M5: Standby und Selbstentladung (Stromspeicher), Viertelstundenbilanz
+            // und Einspeisegrenze (Photovoltaik), Viertelstunden-Abzug (Strombedarf).
+            { "Stromspeicher", "Fassung 8" },
+            { "Photovoltaik", "Fassung 4" },
+            { "Strombedarf", "Fassung 4" },
             // Welle M2: Arbeitstemperatur aus dem Speicher, Diffus-IAM, Bezugsflaeche
             // und Solarkreis (Pumpenstrom, Verluste).
-            { "Solarthermie", "Fassung 4" }
+            { "Solarthermie", "Fassung 4" },
+            // Welle M4: Takten der Waermepumpe (WP1), Teillast und Takten des BHKW (BH1, BH2).
+            { "Wärmepumpe", "Fassung 4" },
+            { "BHKW", "Fassung 4" }
         };
 
     /// <summary>

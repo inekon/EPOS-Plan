@@ -59,6 +59,27 @@ public sealed class WaermepumpeStammFelderTexte
     /// <summary>WPS_LBL_KUEHLLEISTUNG</summary>
     public string LabelKuehlleistung { get; set; } = T("WPS_LBL_KUEHLLEISTUNG", "Kühlleistung");
 
+    /// <summary>WPS_LBL_MINDESTLEISTUNG — die kleinste Modulationsleistung (Welle M4, WP1).</summary>
+    public string LabelMindestleistung { get; set; } = T("WPS_LBL_MINDESTLEISTUNG", "Mindestleistung");
+
+    /// <summary>WPS_FELD_MINDESTLEISTUNG — der Feldname in Meldungen.</summary>
+    public string FeldMindestleistung { get; set; } = T("WPS_FELD_MINDESTLEISTUNG", "Mindestleistung");
+
+    /// <summary>WPS_LBL_TAKTVERLUST_CD — der Teillastkoeffizient nach EN 14825 (Welle M4, WP1).</summary>
+    public string LabelTaktverlustCd { get; set; } = T("WPS_LBL_TAKTVERLUST_CD", "Teillastkoeffizient C_d");
+
+    /// <summary>WPS_FELD_TAKTVERLUST_CD — der Feldname in Meldungen.</summary>
+    public string FeldTaktverlustCd { get; set; } = T("WPS_FELD_TAKTVERLUST_CD", "Teillastkoeffizient C_d");
+
+    /// <summary>WPS_HINT_TAKTVERLUST_CD — der Hinweis hinter dem Feld.</summary>
+    public string HinweisTaktverlustCd { get; set; } = T("WPS_HINT_TAKTVERLUST_CD", "(Vorgabe 0,9 nach EN 14825)");
+
+    /// <summary>WPS_PLATZHALTER_OHNE_TAKT — leere Mindestleistung: keine Taktrechnung.</summary>
+    public string PlatzhalterOhneTakt { get; set; } = T("WPS_PLATZHALTER_OHNE_TAKT", "keine Taktrechnung");
+
+    /// <summary>WPS_PLATZHALTER_CD_VORGABE — leeres C_d: die Vorgabe.</summary>
+    public string PlatzhalterCdVorgabe { get; set; } = T("WPS_PLATZHALTER_CD_VORGABE", "0,9");
+
     /// <summary>
     /// MODK_LBL_MODULKOSTEN — derselbe Schlüssel, den der Verwendungskatalog für diese
     /// Spalte führt (<c>ParameterVerwendung.Waermepumpe</c>); Raster und Aufklapper

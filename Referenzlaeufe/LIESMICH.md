@@ -409,6 +409,19 @@ Brennstoff, die Kesselwärme dahinter und alle Emissionen.
 > Katalogspalte ihrer Projektmodule (gepflegt allein die zwei Module von 1030 mit 15 %) und der Projektwert (30 %,
 > in 1024 10 %). Gehalten wird die Rangfolge von `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests`.
 
+## Die Einfrierregel „gesäte Strom-Viertelstundenfelder“
+
+Elfter Ort derselben Falle. Die Einspeisegrenze eines Projekts (`Tab_Einstellungen.Einspeisegrenze_Wert` und
+`Einspeisegrenze_Einheit`) regelt PV-Einspeisung ab und verschiebt Einspeisung, Abregelung, die Eigenverbrauchsquote
+des Berichts und im Flottenpfad Ladung, Abregelung und Netzbilanz der Flotte; der Standby eines Stromspeichers
+(`Tab_Stromspeicher(_STAMM).Standby_Verbrauch`) verschiebt Restbezug und Einspeisung, seine Selbstentladung
+(`Selbstentladung_Prozent_Monat`) Ladezustand, Entladung und Restbezug. In der Testdatenbank sind alle drei bei jedem
+Referenzprojekt leer.
+
+> **Wer eines dieser Felder an einem Referenzprojekt oder an der Projektkopie eines seiner Stromspeicher setzt, friert
+> im selben Schritt die Basis neu ein und begründet den Wechsel hier.** Gehalten werden die Rechenwege von
+> `EPOS.Kern.Tests/StromViertelstundenTests` (auf einer Kopie) und `SpeicherEngine.Tests/SpeichersystemTests`.
+
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
 
 Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
@@ -512,7 +525,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-02_R32_Solarthermie`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-02_R33_Viertelstunden`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -526,12 +539,12 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege`, `2026-09-25_R18_PvAusweis` am 25.09.2026, `2026-09-25_R19_BhkwNetzbezug`, `2026-09-26_R20_Zapfprofil`, `2026-09-26_R21_BhkwDeckung` und
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
-`2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher` und
-`2026-10-02_R31_Rechenwegbefunde` am 02.10.2026**
-(49 Basen, alle dreiundzwanzig Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026**
+(50 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 49 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 50 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -541,22 +554,20 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-02_R32_Solarthermie/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 081 Skalare**, gerechnet mit dem
+**`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Fassung mit den Feldern des Kollektorfelds, 81 174 528 Byte, LFS-SHA-256
-`486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`). Die Testdatenbank trägt seither dazu die
-Albedo-Spalte der Anlagenzeile (Schemaschritt 163) und das Temperaturpaar je Prozess samt Saat der acht
-Betriebsweisen (Schemaschritt 164) — Schemastand **165**, 81 186 816 Byte, LFS-SHA-256
-`7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af` (Nachtrag „Testdatenbank“ unten). **Die Basis
-bleibt**, weil kein Rechenwert betroffen ist: Leere Albedo rechnet 0,2, kein Referenzprojekt ordnet einen
-gesäten Prozesssatz zu oder trägt ein Temperaturpaar. Gegen diese Basis hält
+`Kenndaten_Test.sqlite` (Schemastand **168**, 81 195 008 Byte, LFS-SHA-256
+`6e5d24aa5da7dafdad6ed1c1b4dabb3eeb13744f100cee8fc201b7f16b9aceae`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
+und BHKW) legen nur leere Felder an und wirken nicht auf die Basis. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
 `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
-`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker dieser Basis (genutzte
-Solarwärme, Überschuss, mittlere Arbeitstemperatur des Felds),
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
 `EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
 die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
 das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
@@ -566,94 +577,84 @@ das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des 
 Projekt) in allen drei Betriebsarten. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet
 alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Welle M2 Solarthermie der
+> **Anlass: Welle M5 „Strom in Viertelstunden“ der
 > [Entscheidungsvorlage Modellgrenzen](../Dokumentation/aktuell/Entscheidungsvorlage_Modellgrenzen_Rechenwege.md)**
-> (ST1 bis ST6, Wellenplan vom Anwender freigegeben). Gebaut sind fünf Teile, eine Zahl der Basis verschiebt allein
-> der letzte:
+> (SB1 (a), PV3, SP1; Wellenplan vom Anwender freigegeben). Gebaut sind vier Teile, die Zahlen der Basis verschiebt
+> allein der erste:
 >
-> - **Schemaschritt 165** (`SolarthermieFelderSchema`): an `Tab_Energieanlagen` die nullbaren Felder
->   `Pumpenleistung_W`, `Solarkreisverluste_Prozent`, `Uebertrager_Graedigkeit_K`, `Kollektor_Spreizung_K` und
->   `Arbeitstemperatur_Weg`, an `Tab_Solarkollektoren(_STAMM)` die Bezugsfläche der Kennwerte (`Bezugsflaeche`,
->   Vorgabe `apertur`). Leere Felder rechnen ihre Vorgaben.
-> - **ST3 Stufe 1 und ST1:** Verluste des Solarkreises als Feld (leer = 8 %, bitgleich zum früheren Faktor 0,92);
->   Pumpenstrom je Stunde mit Abgabe des Felds als Verbraucher im Strombedarf. Kein Referenzprojekt pflegt eine
->   Pumpe oder einen Hilfsenergieanteil an einem Kollektorfeld: byte-gleich.
-> - **ST6:** Der Lauf rechnet mit der Fläche, auf die η₀, a₁, a₂ bezogen sind. Alle Kollektorsätze der
->   Testdatenbank stehen auf `apertur`: byte-gleich.
-> - **ST5:** Diffus- und Bodenreflexstrahlung bekommen `K_dfu` statt `K_b(θ)`, sobald der Satz `K_dfu > 0` führt.
->   Kein Kollektorsatz eines Referenzprojekts führt `K_dfu` (1049: 0; 1018 hat kein Kollektorfeld): byte-gleich.
-> - **ST2 mit ST4:** Die Kennlinie rechnet je Stunde in der Stundenschleife; mit `Arbeitstemperatur_Weg = 'speicher'`
->   ist die mittlere Fluidtemperatur `ϑ_unten + ΔT_WT + ΔT_Koll/2` aus der untersten Zone des Senkenpuffers am Ende
->   der Vorstunde. Mit fester Arbeitstemperatur rechneten die sechzehn Projekte auf der gehobenen Testdatenbank gegen
->   R31 GESAMT PASS mit **487/487 CSV byte-gleich** (Nachweis vor der Umstellung).
+> - **SB1 (a) PV-Bilanz auf 35 040 Viertelstunden:** Der Stundenertrag der Photovoltaik wird energieerhaltend nach
+>   dem Sonnenstand auf die vier Viertel verteilt (`P_q = P_h · 4 · cos θ_z,q / Σ cos θ_z`, Sonnenstand in der
+>   Mitte jeder Viertelstunde auf der UTC-Herkunft der Klimazeile; ohne Sonne gleichmäßig). Direktverbrauch
+>   `min(P_q, Last_q)`, Überschuss und Reststrom entstehen je Viertel aus **einer** Auflösung; die Stundenreihen
+>   (`pv_produktion.csv`, `pv_ueberschuss.csv`, `pv_reststrom.csv`) sind die Mittel ihrer vier Viertel. Stromspeicher
+>   und Flotte rechnen mit der glatten Reihe.
+> - **Schemaschritt 168** (`StromViertelstundenSchema`): an `Tab_Einstellungen` die nullbaren Felder
+>   `Einspeisegrenze_Wert` und `Einspeisegrenze_Einheit`, an `Tab_Stromspeicher(_STAMM)`
+>   `Selbstentladung_Prozent_Monat`. Kein Referenzprojekt setzt sie.
+> - **PV3 Einspeisegrenze:** Abregelung über der Grenze nach der Speicherladung; die Flotte liest sie als weiche
+>   Grenze. Ohne Grenze kein Schlüssel `Photovoltaik.AbregelungMwh`: byte-gleich.
+> - **SP1 Standby und Selbstentladung:** Standby aus `Standby_Verbrauch` (in der Testdatenbank überall leer),
+>   Selbstentladung leer. Neu ist allein der Skalar `Stromspeicher.EigenverbrauchSystemMwh` von **1046** (0,438):
+>   Im Flottenpfad ist der Eigenverbrauch des Speichersystems der Hilfsverbrauch der Einheiten, den die Flotte
+>   von 1046 schon rechnete.
 >
-> **Die Umstellung:** Das Kollektorfeld von **1049** steht auf `Arbeitstemperatur_Weg = 'speicher'` mit Grädigkeit
-> 5 K und Spreizung 10 K, Verluste und Pumpe leer (8 %, kein Pumpenstrom). Sein Puffer „Pufferspeicher 3000 l“
-> (60/35 °C, eine Zone) liefert die unterste Temperatur.
+> **A/B gegen R32** (beide auf Linux): **16/16 PASS**, 459/487 CSV byte-gleich. Abgewichen sind genau die vier
+> Projekte mit PV-Ertrag — 1007 (7 Dateien), 1040 (5), 1045 (5), 1046 (11): `aggregate.csv`, `pv_produktion.csv`,
+> `pv_ueberschuss.csv`, `pv_reststrom.csv`, `reststrom_viertelstunde.csv`, mit Speicher dazu
+> `pv_speicherfuellstand.csv` und `ssp_gespeichert_viertelstunde.csv`, bei 1046 die vier Flottenreihen.
+> `pv_produktion_theoretisch.csv` und `pv_strombedarf.csv` bleiben byte-gleich. 1041 und 1042 führen eine
+> PV-Anlage ohne Ertrag und bleiben wie alle Projekte ohne PV byte-gleich.
 >
-> **A/B gegen R31** (beide auf Linux): **15/16 PASS**, 475/487 CSV byte-gleich. Abgewichen ist allein 1049 mit zwölf
-> Dateien (`aggregate.csv`, `solar_produktion.csv`, `solar_restwaerme.csv`, `solar_ueberschuss.csv`, `bhkw_waerme.csv`,
-> `bhkw_strom.csv`, `bhkw_restwaerme.csv`, `kessel_leistung.csv`, `kessel_restwaerme.csv`, `puffer_ladung.csv`,
-> `puffer_entladung.csv`, `puffer_soc.csv`); `aggregate.csv` führt den neuen Skalar
-> `Solarthermie.Feld[0].ArbeitstemperaturMittelC` (nur für Felder mit Arbeitstemperatur aus dem Speicher).
+> | Größe (kWh/a) | 1007 (Speicher) | 1040 | 1045 | 1046 (Flotte) |
+> |---|---|---|---|---|
+> | Erzeugung der Module | 6 014,3 → 6 014,3 | 6 713,5 → 6 713,5 | 3 545,5 → 3 545,5 | 6 014,3 → 6 014,3 |
+> | Direktverbrauch | 5 081,0 → 5 076,2 | 4 440,7 → 4 436,6 | 2 763,8 → 2 762,1 | 5 081,0 → 5 076,2 |
+> | Überschuss vor Speicher | 933,3 → 938,1 | 2 272,7 → 2 276,9 | 781,6 → 783,4 | 933,3 → 938,1 |
+> | Einspeisung | 330 → 330 (gerundet) | 2 272,7 → 2 276,9 | 781,6 → 783,4 | 894,9 → 899,9 |
+> | Eigenverbrauch (Erzeugung − Einspeisung) | 5 684 → 5 684 (gerundet) | 4 440,7 → 4 436,6 | 2 763,8 → 2 762,1 | 5 119,4 → 5 114,4 |
+> | Restbezug | 62 784,0 → 62 786,1 | 22 986,3 → 22 990,5 | 28 745,2 → 28 747,0 | 63 896,1 → 63 901,1 |
+> | Autarkie % (Bedarf − Restbezug)/Bedarf | 8,237 → 8,234 | 16,191 → 16,176 | 8,772 → 8,766 | 6,611 → 6,604 |
 >
-> | Größe | 1049 R31 → R32 |
-> |---|---|
-> | Mittlere Arbeitstemperatur des Felds °C (potenzialgewichtet) | 50 (fest) → 65,32 |
-> | Kollektorertrag brutto MWh/a (genutzt + Überschuss) | 37,86 → 29,11 |
-> | davon genutzt MWh/a (`Solarthermie.Waermeproduktion`) | 10,73 → 9,38 |
-> | Überschuss MWh/a (`Solarthermie.Ueberschuss`) | 27,13 → 19,73 |
-> | Solare Deckung % (`Solarthermie.Waermebedarfsdeckung`) | 15,06 → 13,11 |
-> | BHKW-Wärme MWh/a | 49,09 → 49,82 |
-> | Betriebsstunden des BHKW h/a | 1 593,84 → 1 617,39 |
-> | Kesselwärme MWh/a | 9,23 → 9,89 |
-> | Kesselstarts (`Kessel[0].Starts`) | 3 242 → 3 449 |
-> | Mittlerer Ladezustand des Puffers % | 55,36 → 57,57 |
-> | CO₂ des BHKW t/a | 18,80 → 19,08 |
-> | CO₂ des Kessels t/a | 2,22 → 2,37 |
->
-> **Plausibel:** Der Puffer liegt zwischen 35 und 60 °C; mit 5 K Grädigkeit und 5 K halber Spreizung arbeitet der
-> Kollektor im Mittel bei rund 65 °C statt 50 °C, die Wärmeverluste des Kollektors steigen, der Bruttoertrag sinkt
-> um rund 23 %. BHKW und Kessel decken die Lücke. **Gegenprobe:** Solar genutzt + BHKW + Kessel 69,05 → 69,09 MWh/a
-> (Bedarf 68,25 MWh/a plus Pufferverluste 0,78 → 0,81 MWh/a).
+> **Plausibel:** Die Lastgänge der Referenzprojekte sind Stundenprofile, gleichmäßig auf die Viertel gespreizt; die
+> PV-Reihe folgt jetzt dem Sonnenstand innerhalb der Stunde. In Viertelstunden, in denen die PV über dem Mittel
+> liegt, entsteht Überschuss, den das Stundenmittel verdeckt hatte — der Direktverbrauch sinkt um 0,05 bis 0,1 %,
+> Einspeisung und Restbezug steigen um denselben Betrag. Die Erzeugung bleibt Stunde für Stunde gleich
+> (Energieerhaltung). Größer wird der Unterschied bei Lastgängen mit echten Viertelstundenspitzen
+> (Gewerbelast, Ganglinien mit 35 040 Werten).
 >
 > **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem
 > Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:** gestört gegen die Basis 16/16 PASS, 480/487 CSV
-> byte-gleich — dieselben sieben Dateien wie mit R31. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
+> byte-gleich. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
->   --ziel Referenzlaeufe/2026-10-02_R32_Solarthermie
+>   --ziel Referenzlaeufe/2026-10-02_R33_Viertelstunden
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Regeln im
-> [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 16.
+> [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 19.
 
-> **Testdatenbank — Schemaschritte 163 bis 165 und Umstellung von 1049.** Eingefroren ist R32 gegen eine Fassung
-> mit den Feldern des Kollektorfelds und dem umgestellten 1049 (81 174 528 Byte, `486d5b0c…`). Gültig ist die
-> Fassung aus `be9d733c…` (Schemastand 163: Albedo-Spalte an `Tab_Energieanlagen`, jede Zeile leer), mit
-> `Werkzeuge/Testdatenbankschema` auf **165** gezogen: 164 legt das Temperaturpaar je Prozess an
-> `Tab_Prozesswaerme(_STAMM)` an (leer) und sät die acht Betriebsweisen (`ReadOnly = 1`), 165 die Felder des
-> Kollektorfelds (Anlagenspalten leer, jeder Kollektorsatz `apertur`). Danach ist allein die Anlagenzeile des
-> Kollektorfelds von 1049 geändert (`Arbeitstemperatur_Weg = 'speicher'`, `Uebertrager_Graedigkeit_K = 5`,
-> `Kollektor_Spreizung_K = 10`) und die Datei verdichtet. `integrity_check` ok, `foreign_key_check` leer, kein
-> Stempel gesetzt. Neue Fassung **81 186 816 Byte, LFS-SHA-256
-> `7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af`**. **Die Basis bleibt:** Die sechzehn
-> Projekte rechnen auf dieser Fassung gegen R32 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist
-> berührt.
-> [`Skripte/referenzprojekt_1049_solarthermie.cs`](Skripte/referenzprojekt_1049_solarthermie.cs) legt die Felder mit
-> an und prüft sie (auf der neuen Fassung: „steht schon mit allen Zielzellen“).
+> **Testdatenbank — Schemaschritt 168.** Eingefroren ist R33 auf der Fassung `2b0dc246…` (aus `7debfd8a…`, Schemastand
+> 165, gehoben um die Spalten der Einspeisegrenze und der Selbstentladung). Die gültige Fassung kommt aus
+> `58d9ba47…` (Schemastand 166, Netzverluste je Kanal, Zirkulation, Betriebskalender) und ist mit
+> `Werkzeuge/Testdatenbankschema` auf **168** gezogen: Schritt 167 legt die leeren Teillastspalten an `Tab_WP(_STAMM)`
+> und `Tab_BHKW(_STAMM)` an, Schritt 168 zwei leere Spalten an `Tab_Einstellungen`, je eine leere
+> Spalte an `Tab_Stromspeicher_STAMM` und `Tab_Stromspeicher`; keine Datenänderung, kein Stempel gesetzt.
+> `integrity_check` ok, `foreign_key_check` leer. Neue Fassung **81 195 008 Byte, LFS-SHA-256
+> `6e5d24aa5da7dafdad6ed1c1b4dabb3eeb13744f100cee8fc201b7f16b9aceae`**. Die sechzehn Projekte rechnen auf ihr gegen R33
+> GESAMT PASS mit 487/487 CSV byte-gleich; keine Einfrierregel ist berührt.
 
-### Die Vorgängerbasis R31 `2026-10-02_R31_Rechenwegbefunde`
+### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 
-Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testdatenbank `a50f1f49…` (Schemastand
-159), getragen bis zur Fassung `05783be1…` (Schemastand 162); mit R32 aus dem Arbeitsbaum gefallen, Protokoll und
-Anlass (BHKW-Untergrenze aus dem Anlagenfeld, RB1) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen R31 und
-R32 hat die Testdatenbank die Felder des Kollektorfelds und die Umstellung des Kollektorfelds von 1049 bekommen.
+Sechzehn Projekte, 487 CSV, 3 081 Skalare, auf Linux eingefroren gegen die Testdatenbank `486d5b0c…`, getragen
+bis zur Fassung `7debfd8a…` (Schemastand 165); mit R33 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
+(Welle M2 Solarthermie, Arbeitstemperatur des Kollektorfelds von 1049 aus dem Speicher) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen R32 und
+R33 hat die Testdatenbank die Schemaschritte 166 bis 168 bekommen (leere Felder); der Wechsel ist allein der Rechenweg der
+PV-Bilanz (SB1 a).
 
 ## Was hier liegt
 

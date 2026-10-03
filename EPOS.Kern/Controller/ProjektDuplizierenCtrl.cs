@@ -101,6 +101,9 @@ namespace WindowsFormsApplication1
             // Beziehungen zielen ohnehin auf *_STAMM (nie im Plan) - der Eintrag haelt die
             // Regel auch dann, wenn die Schemaauskunft leer bleibt.
             "ID_Nutzungsart", "ID_Tagesgangsatz", "ID_Bedarfstag", "ID_Ausstattung",
+            // Betriebskalender der Bedarfsprofile (Schritt BedarfNetzKalenderSchema, PW2/BW2): Die
+            // Kalender sind projektuebergreifend wie ein Katalog; die Kopie zeigt auf DENSELBEN.
+            BedarfNetzKalenderSchema.SPALTE_ID_KALENDER,
             // Katalogverweis des Projektgebaeudes (Schemaschritt 121): Kopie und Variante
             // zeigen auf DENSELBEN Katalogsatz. Die deklarierte Beziehung zielt auf
             // Tab_Gebaeude_STAMM (nie im Plan) - der Eintrag haelt die Regel auch ohne sie.

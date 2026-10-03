@@ -8,7 +8,7 @@
 
 Der '''Brauchwasserwaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der zweite der drei Bedarfskanaele. Grundlage ist je Profil ein Satz aus '''zwoelf Monatswerten''' und einem '''Wochenprofil mit 168 Stundenwerten'''; daraus entsteht der Jahresgang.
 
-Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des Trinkwassers, die Zirkulation und die Speicherverluste rechnet '''dieser''' Weg nicht — sie stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
+Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des Trinkwassers und die Speicherverluste rechnet '''dieser''' Weg nicht — sie stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher. Eine '''Zirkulation''' rechnet er, wenn die Simulationskonfiguration Leistung und Laufzeit dafuer fuehrt (Schritt 5).
 
 Diese Seite beschreibt den '''Bestandsweg''': Rechenweg ''Bestandsprofile'' im Bedarfsprofil-Dialog ''Brauchwasserwärme''. Steht dort der Rechenweg ''Zapfprofil'', entsteht die Reihe stattdessen im '''Zapfprofilgenerator''' aus den Nutzungszonen des Projekts — die Zapfenergie je Zone aus Tagesbedarf, Tagesgang, Wochen- und Monatsanteilen bzw. aus gezogenen Zapfereignissen, die '''Zirkulation''' als eigene Teilreihe daneben; beide zusammen bilden den Brauchwasserkanal, und die Bestandsprofile rechnen nicht mit. Eingaben und Rechenweg des Generators beschreibt die Seite [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]].
 
@@ -134,6 +134,8 @@ Das 168-Stunden-Profil wird ab dem '''tatsaechlichen Wochentag des 1. Januar''' 
 
 Ein Wochenprofil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet — der naechste Schritt teilte sonst durch null.
 
+Mit einem '''Betriebskalender''' an der Zuordnung (Auswahl im Bedarfsprofil-Dialog, gepflegt unter ''Betriebskalender'') wird <math>x(t)</math> vor der Normierung tageweise ersetzt: Ein '''Feiertag''' traegt die 24 Werte des Sonntags im Wochenprofil (<math>j = 144 \dots 167</math>), sofern der Kalender „Feiertag wie Sonntag" fuehrt; ein '''Ferientag''' traegt je Stunde <math>s</math> den Ferienfaktor <math>f</math> mal dem Tagesmittel des Wochenprofils, <math>f \cdot \frac{1}{7} \sum_{d=0}^{6} P_{\mathrm{W}}(24 d + s)</math>. Ferien gehen Feiertagen vor. Die Feiertage sind die neun bundeseinheitlichen und, mit gewaehltem Bundesland, die landesweiten Feiertage dieses Landes im Referenzjahr des Projekts. Normiert wird danach wie in (4) und (5): Die Monatsmenge bleibt erhalten und verteilt sich auf die uebrigen Tage. Mit „Ferien kuerzen die Monatsmenge" steht im Nenner von (5) statt <math>S(m)</math> die Monatssumme OHNE die Ferientage — die Menge des Monats sinkt dann im Verhaeltnis der Ferienstunden; Feiertage verteilen stets nur um. Ohne Kalender bleibt <math>x(t)</math>, wie es (3) bildet.
+
 === 4. Monatsweise auf die Monatswerte normieren ===
 
 Erst dieser Schritt macht aus der Form eine Energiemenge:
@@ -162,6 +164,8 @@ Der fertige Vektor geht in den '''Brauchwasserkanal'''. Ausgewiesen wird die Jah
 :: <math>Q_{\mathrm{a}}</math> – ausgewiesene Jahresmenge des Kanals [MWh]
 :: <math>Q_{\mathrm{TWW}}(t)</math> – Brauchwasserbedarf der Stunde nach (5) [kWh]
 :: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh] und zwar '''vor''' der Verteilung der Netzverluste. Der Stundenvektor bekommt seinen anteiligen Netzverlust danach dazu (siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und Gleichung (21) dort) — die Waermepumpe rechnet mit dem Vektor, nicht mit der ausgewiesenen Menge.
+
+'''Zirkulation.''' Fuehrt die Simulationskonfiguration eine Zirkulationsleistung <math>P_{\mathrm{zirk}}</math> [kW] und eine Laufzeit <math>t_{\mathrm{Lauf}}</math> [h/d], kommt auf den Brauchwasserkanal eine eigene Teilreihe: in <math>t_{\mathrm{Lauf}}</math> zusammenhaengenden Stunden um die Tagesmitte der Zapfung die Leistung <math>P_{\mathrm{zirk}}</math>, sonst null; die Jahresmenge ist <math>P_{\mathrm{zirk}} \cdot t_{\mathrm{Lauf}} \cdot 365</math> — dieselbe Regel wie die Methode „manuell" des Zapfprofilgenerators. Ausgewiesen wird sie als „davon Zirkulation" neben dem Brauchwasser, das Monatsbild stapelt Zapfung und Zirkulation. Verteilverluste der Trinkwassererwaermung behandeln DIN EN 15316-3 und DIN V 18599-8, den Betrieb der Zirkulation DVGW W 551.
 
 === 6. Der mitgelieferte Katalog ===
 
@@ -198,9 +202,9 @@ Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang 
 
 * '''Auf dem Bestandsweg kein Zapfmodell.''' Gerechnet werden Stundenmittelwerte, keine einzelnen Zapfungen. Gleichzeitigkeit, Spitzenzapfung und Bereitschaftsvolumen nach VDI 6002 deckt dieser Weg '''nicht''' ab — einzelne Zapfereignisse und die Auslegung des Speichers rechnet der Zapfprofilgenerator (Rechenweg ''Zapfprofil'').
 * '''Keine Temperaturen im Rechenweg.''' In (1) bis (6) kommt keine Temperatur vor: Der Bedarf kommt als Energiemenge herein. Trinkwarmwassertemperatur, Kaltwassertemperatur und Spreizung stecken in den Katalogwerten — sie stehen nur in (7), also in der HERLEITUNG der Monatswerte. Wer bei anderer Spreizung rechnet, aendert die Monatswerte.
-* '''Auf dem Bestandsweg keine Zirkulationsverluste als eigener Posten.''' Sie sind entweder in den Katalogwerten enthalten oder ueber die Netzverluste abzubilden. Der Zapfprofilgenerator fuehrt die Zirkulation als eigene Teilreihe im Brauchwasserkanal.
+* '''Die Zirkulation des Bestandswegs ist eine feste Leistung.''' Sie haengt nicht an Temperatur, Leitungslaenge oder Zapfmenge; wer sie aus Leitungsdaten schaetzen will, nimmt den Zapfprofilgenerator mit seinen Methoden.
 * '''Kein Legionellenbetrieb, keine Nachheizung''' als eigener Vorgang.
-* '''Der Wochengang ist starr.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen; Feiertage, Betriebsferien und Belegungsschwankungen bildet allein der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab.
+* '''Der Wochengang ist ein Muster.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen; Feiertage und Betriebsferien legt ein Betriebskalender darauf, Belegungsschwankungen bildet der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab.
 * '''Die Monatsnormierung glaettet.''' Wegen (4) und (5) verschiebt der Kalender innerhalb eines Monats nur die Verteilung; die Monatsmenge bleibt, unabhaengig davon, wie viele Wochenenden im Monat liegen.
 * '''EINE Einheit fuer beide Wege.''' Die Brauchwassermenge steht nach (6) in MWh — im '''Lauf''' wie in der '''Vorschau''' der Bedarfsdialoge. Beide Wege gehen durch dieselbe Kernmethode, und die Anzeige rechnet nur noch von MWh auf die gewaehlte Anzeigeeinheit um.
 * '''Ein Programm-Update laesst den Katalog, wie er ist.''' Setup und Programmstart ueberschreiben keinen Katalogsatz und saeen keinen nach: Ein angepasster oder entsperrter Satz bleibt, wie er ist, und neu ausgelieferte Profile kommen in eine bestehende Datenbank nicht von selbst. Die ausgelieferten Werte eines angepassten Satzes gibt es danach nur noch in einer Datenbanksicherung.

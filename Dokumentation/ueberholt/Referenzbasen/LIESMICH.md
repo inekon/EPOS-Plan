@@ -1,9 +1,9 @@
-# Die Protokolle der 49 entfernten Referenzbasen
+# Die Protokolle der 50 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **49 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **50 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30 und das von R31 am 02.10.2026. **50 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30, das von R31 und das von R32 am 02.10.2026. **51 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-02_R32_Solarthermie`](../../../Referenzlaeufe/2026-10-02_R32_Solarthermie/);
+> [`Referenzlaeufe/2026-10-02_R33_Viertelstunden`](../../../Referenzlaeufe/2026-10-02_R33_Viertelstunden/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -77,6 +77,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-30_R29_Kesseltakten` | 30.09.2026 | Basis nach der Etappe E4 der Kesselkennlinie (Takten des Heizkessels unter seiner Mindestleistung: Starts je Taktstunde, Anfahrverlust je Start, Normvorgaben für leere Taktfelder; `Kessel[i].Starts` zählt nach Konzept 4.2), auf Linux eingefroren; Testdatenbank `5d59041f…` (Schemastand 158); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R30 am 30.09.2026 | [`2026-09-30_R29_Kesseltakten/protokoll.txt`](2026-09-30_R29_Kesseltakten/protokoll.txt) |
 | `2026-09-30_R30_Stromverbraucher` | 30.09.2026 | Basis nach SV1 (Zuordnung Projekt ↔ Stromverbraucher über die ID: gepflegte Jahressumme der Zuordnungszeile, Kopf- und Typsatz nur im eigenen Projekt), auf Linux eingefroren; Testdatenbank `5d59041f…` (Schemastand 158), getragen bis zur Fassung `a50f1f49…` (Schemastand 159); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R31 am 02.10.2026 | [`2026-09-30_R30_Stromverbraucher/protokoll.txt`](2026-09-30_R30_Stromverbraucher/protokoll.txt) |
 | `2026-10-02_R31_Rechenwegbefunde` | 02.10.2026 | Basis nach RB1 (untere Grenzleistung des BHKW aus dem Anlagenfeld vor Katalog vor Projekt, in allen drei Betriebsarten; Autarkie ohne Stromspeicher mit 0 kWh; Bedarfsprofil ohne Typbezug übersprungen), auf Linux eingefroren; Testdatenbank `a50f1f49…` (Schemastand 159), getragen bis zur Fassung `05783be1…` (Schemastand 162); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R32 am 02.10.2026 | [`2026-10-02_R31_Rechenwegbefunde/protokoll.txt`](2026-10-02_R31_Rechenwegbefunde/protokoll.txt) |
+| `2026-10-02_R32_Solarthermie` | 02.10.2026 | Basis nach der Welle M2 Solarthermie (Arbeitstemperatur des Kollektorfelds von 1049 aus dem Speicher, Diffus-Einfallswinkelkorrektur, Solarkreisfelder, Bezugsfläche), auf Linux eingefroren; Testdatenbank `486d5b0c…`, getragen bis zur Fassung `7debfd8a…` (Schemastand 165); sechzehn Projekte, 487 CSV, 3 081 Skalare — abgelöst durch R33 am 02.10.2026 | [`2026-10-02_R32_Solarthermie/protokoll.txt`](2026-10-02_R32_Solarthermie/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4064,5 +4065,129 @@ Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testd
 Anlass (Stromverbraucher-Zuordnung über die ID, SV1) unter
 [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R30 und
 R31 hat sich die Testdatenbank nicht geändert; der Wechsel ist allein der Rechenweg der BHKW-Untergrenze (RB1).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R32 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 02.10.2026 die Basis R32 beschrieben — den Anlass (Welle M2 Solarthermie der Entscheidungsvorlage Modellgrenzen, ST1 bis ST6), das A/B gegen R31 mit der Tafel für 1049, den Nachtrag zu den Schemaschritten 163 bis 165 —, darunter den Abschnitt zur Vorgängerbasis R31. Beides steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R32 durch `2026-10-02_R33_Viertelstunden`** (Welle M5 „Strom in Viertelstunden“ der Entscheidungsvorlage Modellgrenzen, SB1 (a), PV3, SP1): Die PV bilanziert je Viertelstunde mit einer nach dem Sonnenstand verteilten Erzeugungsreihe; Schemaschritt 166 legt Einspeisegrenze und Selbstentladung an (leer). A/B gegen R32: 16/16 PASS, 459/487 CSV byte-gleich — abgewichen sind die vier Projekte mit PV-Ertrag (1007, 1040, 1045, 1046; Direktverbrauch −0,05 bis −0,1 %). Die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-02_R32_Solarthermie/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 081 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
+`Kenndaten_Test.sqlite` (Fassung mit den Feldern des Kollektorfelds, 81 174 528 Byte, LFS-SHA-256
+`486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`). Die Testdatenbank trägt seither dazu die
+Albedo-Spalte der Anlagenzeile (Schemaschritt 163) und das Temperaturpaar je Prozess samt Saat der acht
+Betriebsweisen (Schemaschritt 164) — Schemastand **165**, 81 186 816 Byte, LFS-SHA-256
+`7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af` (Nachtrag „Testdatenbank“ unten). **Die Basis
+bleibt**, weil kein Rechenwert betroffen ist: Leere Albedo rechnet 0,2, kein Referenzprojekt ordnet einen
+gesäten Prozesssatz zu oder trägt ein Temperaturpaar. Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker dieser Basis (genutzte
+Solarwärme, Überschuss, mittlere Arbeitstemperatur des Felds),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046 und `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet
+alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Welle M2 Solarthermie der
+> [Entscheidungsvorlage Modellgrenzen](../../aktuell/Entscheidungsvorlage_Modellgrenzen_Rechenwege.md)**
+> (ST1 bis ST6, Wellenplan vom Anwender freigegeben). Gebaut sind fünf Teile, eine Zahl der Basis verschiebt allein
+> der letzte:
+>
+> - **Schemaschritt 165** (`SolarthermieFelderSchema`): an `Tab_Energieanlagen` die nullbaren Felder
+>   `Pumpenleistung_W`, `Solarkreisverluste_Prozent`, `Uebertrager_Graedigkeit_K`, `Kollektor_Spreizung_K` und
+>   `Arbeitstemperatur_Weg`, an `Tab_Solarkollektoren(_STAMM)` die Bezugsfläche der Kennwerte (`Bezugsflaeche`,
+>   Vorgabe `apertur`). Leere Felder rechnen ihre Vorgaben.
+> - **ST3 Stufe 1 und ST1:** Verluste des Solarkreises als Feld (leer = 8 %, bitgleich zum früheren Faktor 0,92);
+>   Pumpenstrom je Stunde mit Abgabe des Felds als Verbraucher im Strombedarf. Kein Referenzprojekt pflegt eine
+>   Pumpe oder einen Hilfsenergieanteil an einem Kollektorfeld: byte-gleich.
+> - **ST6:** Der Lauf rechnet mit der Fläche, auf die η₀, a₁, a₂ bezogen sind. Alle Kollektorsätze der
+>   Testdatenbank stehen auf `apertur`: byte-gleich.
+> - **ST5:** Diffus- und Bodenreflexstrahlung bekommen `K_dfu` statt `K_b(θ)`, sobald der Satz `K_dfu > 0` führt.
+>   Kein Kollektorsatz eines Referenzprojekts führt `K_dfu` (1049: 0; 1018 hat kein Kollektorfeld): byte-gleich.
+> - **ST2 mit ST4:** Die Kennlinie rechnet je Stunde in der Stundenschleife; mit `Arbeitstemperatur_Weg = 'speicher'`
+>   ist die mittlere Fluidtemperatur `ϑ_unten + ΔT_WT + ΔT_Koll/2` aus der untersten Zone des Senkenpuffers am Ende
+>   der Vorstunde. Mit fester Arbeitstemperatur rechneten die sechzehn Projekte auf der gehobenen Testdatenbank gegen
+>   R31 GESAMT PASS mit **487/487 CSV byte-gleich** (Nachweis vor der Umstellung).
+>
+> **Die Umstellung:** Das Kollektorfeld von **1049** steht auf `Arbeitstemperatur_Weg = 'speicher'` mit Grädigkeit
+> 5 K und Spreizung 10 K, Verluste und Pumpe leer (8 %, kein Pumpenstrom). Sein Puffer „Pufferspeicher 3000 l“
+> (60/35 °C, eine Zone) liefert die unterste Temperatur.
+>
+> **A/B gegen R31** (beide auf Linux): **15/16 PASS**, 475/487 CSV byte-gleich. Abgewichen ist allein 1049 mit zwölf
+> Dateien (`aggregate.csv`, `solar_produktion.csv`, `solar_restwaerme.csv`, `solar_ueberschuss.csv`, `bhkw_waerme.csv`,
+> `bhkw_strom.csv`, `bhkw_restwaerme.csv`, `kessel_leistung.csv`, `kessel_restwaerme.csv`, `puffer_ladung.csv`,
+> `puffer_entladung.csv`, `puffer_soc.csv`); `aggregate.csv` führt den neuen Skalar
+> `Solarthermie.Feld[0].ArbeitstemperaturMittelC` (nur für Felder mit Arbeitstemperatur aus dem Speicher).
+>
+> | Größe | 1049 R31 → R32 |
+> |---|---|
+> | Mittlere Arbeitstemperatur des Felds °C (potenzialgewichtet) | 50 (fest) → 65,32 |
+> | Kollektorertrag brutto MWh/a (genutzt + Überschuss) | 37,86 → 29,11 |
+> | davon genutzt MWh/a (`Solarthermie.Waermeproduktion`) | 10,73 → 9,38 |
+> | Überschuss MWh/a (`Solarthermie.Ueberschuss`) | 27,13 → 19,73 |
+> | Solare Deckung % (`Solarthermie.Waermebedarfsdeckung`) | 15,06 → 13,11 |
+> | BHKW-Wärme MWh/a | 49,09 → 49,82 |
+> | Betriebsstunden des BHKW h/a | 1 593,84 → 1 617,39 |
+> | Kesselwärme MWh/a | 9,23 → 9,89 |
+> | Kesselstarts (`Kessel[0].Starts`) | 3 242 → 3 449 |
+> | Mittlerer Ladezustand des Puffers % | 55,36 → 57,57 |
+> | CO₂ des BHKW t/a | 18,80 → 19,08 |
+> | CO₂ des Kessels t/a | 2,22 → 2,37 |
+>
+> **Plausibel:** Der Puffer liegt zwischen 35 und 60 °C; mit 5 K Grädigkeit und 5 K halber Spreizung arbeitet der
+> Kollektor im Mittel bei rund 65 °C statt 50 °C, die Wärmeverluste des Kollektors steigen, der Bruttoertrag sinkt
+> um rund 23 %. BHKW und Kessel decken die Lücke. **Gegenprobe:** Solar genutzt + BHKW + Kessel 69,05 → 69,09 MWh/a
+> (Bedarf 68,25 MWh/a plus Pufferverluste 0,78 → 0,81 MWh/a).
+>
+> **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem
+> Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:** gestört gegen die Basis 16/16 PASS, 480/487 CSV
+> byte-gleich — dieselben sieben Dateien wie mit R31. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-10-02_R32_Solarthermie
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Regeln im
+> [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 16.
+
+> **Testdatenbank — Schemaschritte 163 bis 165 und Umstellung von 1049.** Eingefroren ist R32 gegen eine Fassung
+> mit den Feldern des Kollektorfelds und dem umgestellten 1049 (81 174 528 Byte, `486d5b0c…`). Gültig ist die
+> Fassung aus `be9d733c…` (Schemastand 163: Albedo-Spalte an `Tab_Energieanlagen`, jede Zeile leer), mit
+> `Werkzeuge/Testdatenbankschema` auf **165** gezogen: 164 legt das Temperaturpaar je Prozess an
+> `Tab_Prozesswaerme(_STAMM)` an (leer) und sät die acht Betriebsweisen (`ReadOnly = 1`), 165 die Felder des
+> Kollektorfelds (Anlagenspalten leer, jeder Kollektorsatz `apertur`). Danach ist allein die Anlagenzeile des
+> Kollektorfelds von 1049 geändert (`Arbeitstemperatur_Weg = 'speicher'`, `Uebertrager_Graedigkeit_K = 5`,
+> `Kollektor_Spreizung_K = 10`) und die Datei verdichtet. `integrity_check` ok, `foreign_key_check` leer, kein
+> Stempel gesetzt. Neue Fassung **81 186 816 Byte, LFS-SHA-256
+> `7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af`**. **Die Basis bleibt:** Die sechzehn
+> Projekte rechnen auf dieser Fassung gegen R32 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist
+> berührt.
+> [`Skripte/referenzprojekt_1049_solarthermie.cs`](../../../Referenzlaeufe/Skripte/referenzprojekt_1049_solarthermie.cs) legt die Felder mit
+> an und prüft sie (auf der neuen Fassung: „steht schon mit allen Zielzellen“).
+
+### Die Vorgängerbasis R31 `2026-10-02_R31_Rechenwegbefunde`
+
+Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testdatenbank `a50f1f49…` (Schemastand
+159), getragen bis zur Fassung `05783be1…` (Schemastand 162); mit R32 aus dem Arbeitsbaum gefallen, Protokoll und
+Anlass (BHKW-Untergrenze aus dem Anlagenfeld, RB1) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R31 und
+R32 hat die Testdatenbank die Felder des Kollektorfelds und die Umstellung des Kollektorfelds von 1049 bekommen.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

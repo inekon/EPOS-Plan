@@ -77,8 +77,9 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
-                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                             Selbstentladung_Prozent_Monat)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -96,7 +97,8 @@ namespace WindowsFormsApplication1
                 new DbParam("@cver", this.m_Verschleisskosten),
                 new DbParam("@cpow", this.m_Leistungskosten),
                 new DbParam("@ifix", this.m_InvestitionFix),
-                new DbParam("@stby", this.m_StandbyVerbrauch)
+                new DbParam("@stby", this.m_StandbyVerbrauch),
+                new DbParam("@selbst", this.m_Selbstentladung)
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -121,7 +123,8 @@ namespace WindowsFormsApplication1
                             Bezeichner = ?, Firma = ?, Typ = ?, Leistung = ?, Energie = ?,
                             Degradation = ?, Ladezustand = ?, Modulkosten = ?,
                             Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
-                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?
+                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?,
+                            Selbstentladung_Prozent_Monat = ?
                           WHERE Bezeichner = ?";
 
             DbParam[] ps = {
@@ -139,6 +142,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@cpow", this.m_Leistungskosten),
                 new DbParam("@ifix", this.m_InvestitionFix),
                 new DbParam("@stby", this.m_StandbyVerbrauch),
+                new DbParam("@selbst", this.m_Selbstentladung),
                 new DbParam("@key", szKey ?? "")
             };
 
@@ -193,8 +197,9 @@ namespace WindowsFormsApplication1
 
                     string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
-                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                             Selbstentladung_Prozent_Monat)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -212,7 +217,8 @@ namespace WindowsFormsApplication1
                         new DbParam("@cver", model.m_Verschleisskosten),
                         new DbParam("@cpow", model.m_Leistungskosten),
                         new DbParam("@ifix", model.m_InvestitionFix),
-                        new DbParam("@stby", model.m_StandbyVerbrauch)
+                        new DbParam("@stby", model.m_StandbyVerbrauch),
+                        new DbParam("@selbst", model.m_Selbstentladung)
                     };
 
                     v.Ausfuehren(sql, ps);
@@ -291,7 +297,7 @@ namespace WindowsFormsApplication1
             m_ID = 0; m_szBezeichner = string.Empty; m_szTyp = string.Empty;
             m_Leistung = 0; m_Energie = 0; m_Degradation = 0; m_Ladezustand = 0; m_Modulkosten = 0;
             m_WirkungsgradRT = 0; m_ZyklenZugesichert = 0; m_Verschleisskosten = 0;
-            m_Leistungskosten = 0; m_InvestitionFix = 0; m_StandbyVerbrauch = 0;
+            m_Leistungskosten = 0; m_InvestitionFix = 0; m_StandbyVerbrauch = 0; m_Selbstentladung = 0;
             m_bReadOnly = false;
         }
 
@@ -325,6 +331,10 @@ namespace WindowsFormsApplication1
             if (row.Table.Columns.Contains("Leistungskosten") && row["Leistungskosten"] != DBNull.Value) t.m_Leistungskosten = Convert.ToDouble(row["Leistungskosten"]);
             if (row.Table.Columns.Contains("Investition_Fix") && row["Investition_Fix"] != DBNull.Value) t.m_InvestitionFix = Convert.ToDouble(row["Investition_Fix"]);
             if (row.Table.Columns.Contains("Standby_Verbrauch") && row["Standby_Verbrauch"] != DBNull.Value) t.m_StandbyVerbrauch = Convert.ToDouble(row["Standby_Verbrauch"]);
+            // Welle M5 (SP1): dieselbe Wache - vor dem Schemaschritt fehlt die Spalte.
+            if (row.Table.Columns.Contains(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG) &&
+                row[StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG] != DBNull.Value)
+                t.m_Selbstentladung = Convert.ToDouble(row[StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG]);
         }
 
         private StromspeicherModel MapRowToModel(DataRow row)
@@ -813,6 +823,7 @@ namespace WindowsFormsApplication1
             ziel.m_Leistungskosten = m.m_Leistungskosten;
             ziel.m_InvestitionFix = m.m_InvestitionFix;
             ziel.m_StandbyVerbrauch = m.m_StandbyVerbrauch;
+            ziel.m_Selbstentladung = m.m_Selbstentladung;
         }
 
         /// <summary>
@@ -852,6 +863,7 @@ namespace WindowsFormsApplication1
             werte[ModulKatalogProfil.FeldLeistungskosten] = Spaltentext(r, "Leistungskosten");
             werte[ModulKatalogProfil.FeldInvestitionFix] = Spaltentext(r, "Investition_Fix");
             werte[ModulKatalogProfil.FeldStandby] = Spaltentext(r, "Standby_Verbrauch");
+            werte[ModulKatalogProfil.FeldSelbstentladung] = Spaltentext(r, StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG);
 
             return werte;
         }

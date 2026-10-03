@@ -58,6 +58,12 @@
    das Projekt, nicht fuer die markierte Zeile - deshalb hier und nicht im Import. Kein Delegat, kein
    Knopf.
 
+   "IN DB UEBERNEHMEN": der dritte Knopf der Uebernahmeleiste schreibt die Projektkopie der
+   markierten Projektzeile als neuen Anwendersatz in den Katalog - nach einer kleinen
+   Namensabfrage (neunte Ueberlagerung, Muster "Kopieren nach ..."), sofort und nicht erst mit
+   dem OK dieses Dialogs. Danach steht der neue Satz gewaehlt in der Katalogliste. Kein
+   Delegat, kein Knopf.
+
    TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt.
 
@@ -98,6 +104,31 @@
                         UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText" EntfernenHinweis="@BtnEntfernenHinweis"
                         EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
+
+        @* "In DB uebernehmen": die Projektkopie des markierten Projektgebaeudes als neuer
+           Anwendersatz im Katalog - der Gegenweg zu "In das Projekt uebernehmen". Eine noch
+           nicht gespeicherte Zeile hat keine Projektkopie: weich gesperrt, der Versuch nennt den
+           Grund. Kein Delegat, kein Knopf. *@
+        <Leistenzusatz>
+            @if (InDbUebernehmen is not null)
+            {
+                @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie)
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-in-db"
+                            aria-disabled="true" title="@SperreInDb"
+                            @onclick="() => Melden(SperreInDb, WarnStufe.Hinweis)">
+                        <span class="epos-zweispalten-knopftext">@BtnInDbText</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-in-db"
+                            title="@BtnInDbHinweis" disabled="@(_gewaehlt is null)" @onclick="BeiInDb">
+                        <span class="epos-zweispalten-knopftext">@BtnInDbText</span>
+                    </button>
+                }
+            }
+        </Leistenzusatz>
 
         <Links>
             <div class="epos-raster-huelle">
@@ -376,6 +407,35 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* --- Ueberlagerung 9: "In DB uebernehmen" - die Namensabfrage ------------
+       Muster "Kopieren nach ..." der Vorlagenverwaltung: Name vorbelegt (eindeutig mit
+       Zaehler), ein leerer oder vergebener Name steht AM FELD, die Abfrage bleibt offen.
+       Das OK schreibt SOFORT in den Katalog - nicht erst das OK dieses Dialogs. *@
+    <Ueberlagerung Offen="@_inDbOffen" Titel="@TitelInDb" Geschlossen="InDbAbbrechen">
+        <KindInhalt>
+            <div class="epos-gebaeude-in-db-abfrage">
+                <Formularraster Einspaltig="true">
+                    <KindInhalt>
+                        <div class="epos-gebaeude-in-db-name @(_inDbNameFehler is null ? "" : "epos-kond-feldfehler")">
+                            <Textfeld Bezeichnung="@LabelInDbName" Wert="@_inDbName"
+                                      WertChanged="InDbNameGeaendert" />
+                            @if (_inDbNameFehler is not null)
+                            {
+                                <p class="epos-kond-feldmeldung" role="alert">@_inDbNameFehler</p>
+                            }
+                        </div>
+                    </KindInhalt>
+                </Formularraster>
+                @if (_inDbFehler is not null)
+                {
+                    <p class="epos-kond-feldmeldung epos-gebaeude-in-db-fehler" role="alert">@_inDbFehler</p>
+                }
+                <p class="epos-leisezeile epos-gebaeude-in-db-regel">@TextInDbRegel</p>
+                <SpeichernLeiste OkText="@BtnInDbText" AbbrechenText="@AbbrechenText" Ergebnis="InDbErgebnis" />
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
+
     @* --- Rueckfrage vor dem Loeschen eines Katalogsatzes ------------------- *@
     @* --- Rueckfrage vor dem Entfernen eines Gebaeudes mit Zonen (G6a, A2) --- *@
     <Rueckfrage Offen="@_ausProjektFrage" TitelText="@BtnEntfernenText" Frage="@AusProjektFrage"
@@ -514,6 +574,37 @@
     public Func<IReadOnlyDictionary<string, object>>? BaustoffzuordnungenGaben { get; set; }
 
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    /// <summary>
+    /// <b>„In DB übernehmen"</b>: der Namensvorschlag zur markierten Projektzeile — ihr Name, im
+    /// Katalog schon vergeben mit Zähler („… (2)"). Gerufen beim Öffnen der Namensabfrage.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, string>? InDbVorschlag { get; set; }
+
+    /// <summary>
+    /// <b>„In DB übernehmen"</b>: schreibt die Projektkopie der Zeile unter dem Namen als neuen
+    /// Katalogsatz (Kern: <c>GebaeudeStammCtrl.AusProjektUebernehmen</c>) — SOFORT, nicht erst mit
+    /// dem OK dieses Dialogs. Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, string, GebaeudeDbUebernahme>? InDbUebernehmen { get; set; }
+
+    /// <summary>Beschriftung — <c>GEB_BTN_IN_DB</c>; zugleich das OK der Namensabfrage.</summary>
+    [Parameter] public string BtnInDbText { get; set; } = Resource.GEB_BTN_IN_DB;
+
+    /// <summary>Kurztext — <c>GEB_BTN_IN_DB_HINWEIS</c>.</summary>
+    [Parameter] public string BtnInDbHinweis { get; set; } = Resource.GEB_BTN_IN_DB_HINWEIS;
+
+    /// <summary>Titel der Namensabfrage — <c>GEB_TITEL_IN_DB</c>.</summary>
+    [Parameter] public string TitelInDb { get; set; } = Resource.GEB_TITEL_IN_DB;
+
+    /// <summary>Beschriftung des Namensfeldes — <c>GEB_LBL_IN_DB_NAME</c>.</summary>
+    [Parameter] public string LabelInDbName { get; set; } = Resource.GEB_LBL_IN_DB_NAME;
+
+    /// <summary>Was übernommen wird und was im Projekt bleibt — <c>GEB_TEXT_IN_DB_REGEL</c>.</summary>
+    [Parameter] public string TextInDbRegel { get; set; } = Resource.GEB_TEXT_IN_DB_REGEL;
+
+    /// <summary>Grund der weichen Sperre bei einer noch nicht gespeicherten Zeile — <c>GEB_SPERRE_IN_DB_NEUE_ZEILE</c>.</summary>
+    [Parameter] public string SperreInDb { get; set; } = Resource.GEB_SPERRE_IN_DB_NEUE_ZEILE;
+
     [Parameter] public bool Wizard { get; set; }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
@@ -1090,6 +1181,86 @@
     }
 
     // =================================================================================
+    // "In DB uebernehmen" - die Projektkopie als neuer Katalogsatz
+    // =================================================================================
+
+    private bool _inDbOffen;
+    private GebaeudeProjektZeile? _inDbZeile;
+    private string _inDbName = "";
+    private string? _inDbNameFehler;
+    private string? _inDbFehler;
+
+    /// <summary>Steht die Namensabfrage „In DB übernehmen"? Prüfhilfe für die Tests.</summary>
+    public bool InDbOffen => _inDbOffen;
+
+    /// <summary>Der Name im Feld der Abfrage — Prüfhilfe für die Tests.</summary>
+    public string InDbName => _inDbName;
+
+    /// <summary>Die Absage am Namensfeld; <c>null</c> = keine. Prüfhilfe für die Tests.</summary>
+    public string? InDbNameFehler => _inDbNameFehler;
+
+    /// <summary>Öffnet die Namensabfrage, vorbelegt mit dem Vorschlag der Hülle.</summary>
+    private void BeiInDb()
+    {
+        if (_gewaehlt is null || InDbUebernehmen is null) return;
+        if (!_gewaehlt.HatProjektkopie) { Melden(SperreInDb, WarnStufe.Hinweis); return; }
+
+        _meldung = "";
+        _inDbZeile = _gewaehlt;
+        _inDbName = InDbVorschlag?.Invoke(_gewaehlt) ?? _gewaehlt.Name;
+        _inDbNameFehler = null;
+        _inDbFehler = null;
+        _inDbOffen = true;
+    }
+
+    private void InDbNameGeaendert(string w)
+    {
+        _inDbName = w ?? "";
+        _inDbNameFehler = null;
+        _inDbFehler = null;
+    }
+
+    /// <summary>Abbrechen, Esc und das Kreuz: Die Abfrage geht zu, geschrieben wird nichts.</summary>
+    private void InDbAbbrechen()
+    {
+        _inDbOffen = false;
+        _inDbZeile = null;
+        _inDbName = "";
+        _inDbNameFehler = null;
+        _inDbFehler = null;
+    }
+
+    private void InDbErgebnis(bool ok)
+    {
+        if (ok) InDbSchreiben();
+        else InDbAbbrechen();
+    }
+
+    /// <summary>
+    /// Das OK der Abfrage schreibt SOFORT. Eine Absage am Namen steht am Feld, jede andere in der
+    /// Abfrage; sie bleibt dann offen. Danach liest die Katalogliste neu, der neue Satz ist gewählt
+    /// und steht im Detailblock, die Statuszeile meldet die Übernahme.
+    /// </summary>
+    private void InDbSchreiben()
+    {
+        if (_inDbZeile is null || InDbUebernehmen is null) { InDbAbbrechen(); return; }
+
+        GebaeudeDbUebernahme e = InDbUebernehmen(_inDbZeile, _inDbName);
+        if (!e.Ok)
+        {
+            if (e.AmNamen) _inDbNameFehler = e.Meldung;
+            else _inDbFehler = e.Meldung;
+            return;
+        }
+
+        InDbAbbrechen();
+        KatalogLaden();
+        foreach (Katalogfilterzeile k in _katalog)
+            if (string.Equals(k.Bezeichner, e.Name, StringComparison.Ordinal)) { KatalogzeileWaehlen(k.Schluessel); break; }
+        Melden(e.Meldung, WarnStufe.Erfolg);
+    }
+
+    // =================================================================================
     // Ueberlagerungen
     // =================================================================================
 
@@ -1353,7 +1524,7 @@
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
             _loeschfrage || _ausProjektFrage || _projektGaben is not null || _exportGaben is not null ||
-            _baustoffzuordnungenGaben is not null) return Task.CompletedTask;
+            _baustoffzuordnungenGaben is not null || _inDbOffen) return Task.CompletedTask;
         return Abbrechen();
     }
 }

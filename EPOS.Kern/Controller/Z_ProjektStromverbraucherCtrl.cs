@@ -77,6 +77,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
             if (dt == null) return liste;
+            // PW2/BW2: der Betriebskalender je Zuordnungszeile (spaltentolerant).
+            Dictionary<int, int?> kalender = BetriebskalenderCtrl.KalenderDerZuordnungen("Z_Projekt_Stromverbraucher", idProjekt);
 
             foreach (DataRow row in dt.Rows)
             {
@@ -86,6 +88,7 @@ namespace WindowsFormsApplication1
                 item.m_ID_Stromverbraucher = Convert.ToInt32(row["ID_Stromverbraucher"]);
                 item.m_szVerbraucher = row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString();
                 item.m_Summe = row["Summe"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["Summe"]);
+                item.ID_Betriebskalender = kalender.TryGetValue(item.m_ID_Z, out int? k) ? k : null;
                 liste.Add(item);
             }
             return liste;

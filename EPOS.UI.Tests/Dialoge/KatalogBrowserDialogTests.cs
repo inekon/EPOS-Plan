@@ -166,7 +166,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
     // KatalogBrowserProfil; hier steht nur die Zahl.
     [Theory]
     [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 27)]
-    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 27)]
+    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 31)]   // mit Teillast und Takten (Welle M4)
     [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 13)]   // mit der Bezugsfläche (Welle M2)
     [InlineData(KatalogBrowserArt.Pufferspeicher, "Administration Pufferspeicher", 6)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Detailfelder(

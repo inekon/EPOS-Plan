@@ -633,10 +633,20 @@ namespace EPOS.Kern.Tests
                 // (Speicherflotte)", die adaptive Entladeschwelle und den Abschnitt
                 // "Rastersuche" mit den zwei Suchmethoden - vier Uploads mehr als die
                 // uebrigen Seiten.
-                { "Stromspeicher", 7 },
+                // Welle M5: Standby und Selbstentladung (Stromspeicher), Viertelstundenbilanz
+                // und Einspeisegrenze (Photovoltaik), Viertelstunden-Abzug (Strombedarf).
+                { "Stromspeicher", 8 },
+                { "Photovoltaik", 4 },
+                { "Strombedarf", 4 },
                 // Die Solarthermieseite traegt Arbeitstemperatur aus dem Speicher,
                 // Diffus-IAM, Bezugsflaeche und den Solarkreis (Pumpenstrom, Verluste).
-                { "Solarthermie", 4 }
+                { "Solarthermie", 4 },
+                // Die Waermepumpenseite traegt das Takten unter der Mindestleistung nach
+                // EN 14825 (Welle M4, WP1).
+                { "Wärmepumpe", 4 },
+                // Die BHKW-Seite traegt Teillastkennlinie und Takten mit Anfahrverlust
+                // (Welle M4, BH1 und BH2).
+                { "BHKW", 4 }
             };
 
         /// <summary>

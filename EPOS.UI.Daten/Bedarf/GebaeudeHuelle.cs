@@ -151,6 +151,14 @@ namespace WindowsFormsApplication1
                     z => { idsNachziehen(); return z == null || !z.HatProjektkopie ? null : GebaeudeKatalogHuelle.ProjektGaben(projektId, z.IdZ); }),
                 ["ZeileAuffrischen"] = new Action<GebaeudeProjektZeile>(z => KennwerteSetzen(z, projektId)),
 
+                // "In DB uebernehmen": die Projektkopie der Zeile als neuer Anwendersatz im Katalog
+                // (GebaeudeStammCtrl.AusProjektUebernehmen) - schreibt sofort; die Projektliste
+                // bleibt unberuehrt. Eine Zeile ohne Projektkopie wird benannt abgelehnt.
+                ["InDbVorschlag"] = new Func<GebaeudeProjektZeile, string>(
+                    z => { idsNachziehen(); return z == null || !z.HatProjektkopie ? "" : GebaeudeStammCtrl.NamensvorschlagAusProjekt(z.IdZ); }),
+                ["InDbUebernehmen"] = new Func<GebaeudeProjektZeile, string, GebaeudeDbUebernahme>(
+                    (z, name) => { idsNachziehen(); return InDbUebernehmen(z, name); }),
+
                 // Die Gebaeudetypen-Verwaltung liegt noch in der Windows-Schale - ein
                 // Haken der Naht (Gebaeudewege); ohne ihn kein Knopf.
                 ["GebaeudetypGaben"] = Gebaeudewege.GebaeudetypGaben,
@@ -288,6 +296,26 @@ namespace WindowsFormsApplication1
                 Rechenweg = Rechenwegtext(m.Gebaeude_Modell),
                 HgesWK = Gebaeudehuellbilanz.GesamtWK(m)
             };
+        }
+
+        /// <summary>
+        /// „In DB übernehmen" — der Weg des Kerns (<see cref="GebaeudeStammCtrl.AusProjektUebernehmen"/>)
+        /// als Antwort für den Dialog: bei Erfolg die Statuszeile (mit Zonen: dazu, dass sie im
+        /// Projekt bleiben), sonst die benannte Absage, am Namensfeld oder in der Abfrage.
+        /// </summary>
+        internal static GebaeudeDbUebernahme InDbUebernehmen(GebaeudeProjektZeile z, string name)
+        {
+            if (z == null || !z.HatProjektkopie)
+                return new GebaeudeDbUebernahme(false, "", MyResource.Resource.GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE);
+
+            GebaeudeStammCtrl.ProjektuebernahmeErgebnis e = GebaeudeStammCtrl.AusProjektUebernehmen(z.IdZ, name);
+            if (!e.Ok) return new GebaeudeDbUebernahme(false, "", e.Meldung, e.AmNamen);
+
+            string text = e.ZonenImProjekt > 0
+                ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_ZONEN,
+                                e.Name, e.ZonenImProjekt, e.BauteileImProjekt)
+                : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_UEBERNOMMEN, e.Name);
+            return new GebaeudeDbUebernahme(true, e.Name, text);
         }
 
         // =================================================================================

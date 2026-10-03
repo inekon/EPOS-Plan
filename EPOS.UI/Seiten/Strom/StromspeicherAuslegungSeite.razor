@@ -276,7 +276,8 @@
                Bis #224 stand der Block unter den Einheiten in Schritt 1. *@
             <SpeicherFlottenNetzBlock Wert="@Flotte.Optionen" Einheiten="@Flotte.Einheiten"
                                       Aktiv="@(!_laeuft)" Geaendert="FlotteGeschrieben"
-                                      PrognoseHinweis="@PrognoseHinweis" />
+                                      PrognoseHinweis="@PrognoseHinweis"
+                                      ProjektEinspeisegrenzeKw="@(Dienste?.ProjektEinspeisegrenzeKw?.Invoke())" />
         }
         else if (_schritt == AuslegungSchritt.Optimierung)
         {

@@ -217,10 +217,13 @@ namespace WindowsFormsApplication1
                     // ExecuteNonQuery statt ExecuteSQL: Diese Methode meldet ihre Fehler
                     // selbst auf die Konsole (catch unten) und darf keinen Dialog zeigen.
                     if (StilleDb.NonQuery(sql, werte.ToArray()) < 0) return false;
+                    // Welle M4: die Teillastfelder (eigener Schritt, nur mit den Spalten).
+                    ErzeugerTeillastWerte.BhkwSchreiben(ErzeugerTeillastSchema.TAB_BHKW, model.m_ID, model);
                     return true;
                 }
 
                 Vorgang.Ausfuehren(sql, werte.ToArray());
+                ErzeugerTeillastWerte.BhkwSchreiben(ErzeugerTeillastSchema.TAB_BHKW, model.m_ID, model, Vorgang);
 
                 return true;
             }
@@ -332,6 +335,8 @@ namespace WindowsFormsApplication1
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
+                // Welle M4: Teillastkennlinie und Takten reisen mit - leer bleibt leer.
+                if (ok) ErzeugerTeillastWerte.BhkwKopieren(s, neueId);
                 return ok ? neueId : -1;
             }
             catch (Exception ex)
@@ -421,6 +426,8 @@ namespace WindowsFormsApplication1
             m.m_Kosten_Lieferung = row["Kosten_Lieferung"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Lieferung"]) : 0;
             m.m_Kosten_Schallschutzhaube = row["Kosten_Schallschutzhaube"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Schallschutzhaube"]) : 0;
             m.m_Kosten_Abgasreinigung = row["Kosten_Abgasreinigung"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Abgasreinigung"]) : 0;
+            // Welle M4: die Teillastfelder; eine nicht migrierte Datenbank liefert sie leer.
+            ErzeugerTeillastWerte.BhkwAusZeile(m, row);
             return m;
         }
 
@@ -454,6 +461,7 @@ namespace WindowsFormsApplication1
             this.m_Kosten_Lieferung = m.m_Kosten_Lieferung;
             this.m_Kosten_Schallschutzhaube = m.m_Kosten_Schallschutzhaube;
             this.m_Kosten_Abgasreinigung = m.m_Kosten_Abgasreinigung;
+            ErzeugerTeillastWerte.BhkwUebertragen(m, this);
         }
 
         #endregion
@@ -466,8 +474,12 @@ namespace WindowsFormsApplication1
         /// Die fuenf Anzeigefelder eines BHKW - der Detailblock von
         /// <c>Form_BHKWEing.FillDetailControls</c> (Z. 350-359).
         /// </summary>
+        /// <param name="Teillast">
+        /// Welle M4 (BH1, BH2): die vier Teillastfelder des Satzes — der Detailblock zeigt die gepflegten.
+        /// </param>
         public sealed record BhkwDetail(string Bezeichner, string Firma, string Beschreibung,
-                                        double Ptherm, double Pel);
+                                        double Ptherm, double Pel,
+                                        ErzeugerTeillastWerte.BhkwFelder Teillast = default);
 
         /// <summary>
         /// Die Anzeigefelder der PROJEKTKOPIE ueber Bezeichner und Projekt; <c>null</c>,
@@ -481,8 +493,7 @@ namespace WindowsFormsApplication1
         public static BhkwDetail ProjektDetail(string szName, int idProjekt)
         {
             return AusZeile(DataRepository.GetDataTable(
-                "SELECT Bezeichner, Firma, Beschreibung, Ptherm, Pel FROM Tab_BHKW " +
-                "WHERE Bezeichner = ? AND ID_Projekt = ?",
+                "SELECT * FROM Tab_BHKW WHERE Bezeichner = ? AND ID_Projekt = ?",
                 new DbParam("@name", szName ?? ""),
                 new DbParam("@idProj", idProjekt)));
         }
@@ -494,8 +505,7 @@ namespace WindowsFormsApplication1
         public static BhkwDetail StammDetail(string szName)
         {
             return AusZeile(DataRepository.GetDataTable(
-                "SELECT Bezeichner, Firma, Beschreibung, Ptherm, Pel FROM " + BHKWStammCtrl.TABLE +
-                " WHERE Bezeichner = ? ORDER BY ID",
+                "SELECT * FROM " + BHKWStammCtrl.TABLE + " WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@name", szName ?? "")));
         }
 
@@ -508,7 +518,8 @@ namespace WindowsFormsApplication1
                 r["Firma"] == DBNull.Value ? "" : r["Firma"].ToString(),
                 r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString(),
                 r["Ptherm"] == DBNull.Value ? 0 : Convert.ToDouble(r["Ptherm"]),
-                r["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(r["Pel"]));
+                r["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(r["Pel"]),
+                ErzeugerTeillastWerte.BhkwAusZeile(r));
         }
     }
 }

@@ -166,6 +166,18 @@
                         <th scope="col">@Resource.SIM_SPALTE_NAME</th>
                         <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
                         <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                        @* Welle M4 (BH1, BH2): Mehrbrennstoff der Teillastkennlinie, Starts und
+                           Anfahrverlust - nur, wenn ein Modul sie rechnet; sonst bleibt die
+                           Tabelle, wie sie war. *@
+                        @if (MitKennlinie)
+                        {
+                            <th scope="col">@Resource.SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF</th>
+                        }
+                        @if (MitTakten)
+                        {
+                            <th scope="col">@Resource.SIM_SPALTE_STARTS</th>
+                            <th scope="col">@Resource.SIM_SPALTE_ANFAHRVERLUST</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -179,6 +191,15 @@
                             <td>@(string.IsNullOrEmpty(m.Name) ? Resource.SIM_BHKW_MODUL_STANDARD : m.Name)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.WaermeMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.StromMwh)</td>
+                            @if (MitKennlinie)
+                            {
+                                <td class="epos-simerg-zahl">@(m.MitKennlinie ? m.TeillastMehrbrennstoffKwh.ToString("N0", Kultur) : "—")</td>
+                            }
+                            @if (MitTakten)
+                            {
+                                <td class="epos-simerg-zahl">@(m.MitTakten ? m.Starts.ToString("N0", Kultur) : "—")</td>
+                                <td class="epos-simerg-zahl">@(m.MitTakten ? m.AnfahrverlustKwh.ToString("N0", Kultur) : "—")</td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -309,6 +330,12 @@
     /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
+
+    /// <summary>Rechnet ein Modul mit Teillastkennlinie (Welle M4, BH1)?</summary>
+    private bool MitKennlinie => Daten?.Module?.Any(m => m.MitKennlinie) == true;
+
+    /// <summary>Taktet ein Modul unter seiner Untergrenze (Welle M4, BH2)?</summary>
+    private bool MitTakten => Daten?.Module?.Any(m => m.MitTakten) == true;
 
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet

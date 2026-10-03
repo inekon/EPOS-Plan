@@ -47,6 +47,7 @@
 @using EPOS.UI.Dialoge.Kosten
 @* Der Namensraum des Kerns - KatalogModus, Ergebnisrecords und Standardfelder. *@
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -125,6 +126,44 @@
                               FehlerZustand="BeiFehlerZustand" />
                 </KindInhalt>
             </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* TEILLAST UND TAKTEN (Welle M4 der Entscheidungsvorlage Modellgrenzen: BH1, BH2). Die
+       Wirkungsgrade bei 50 % elektrischer Last stuetzen die Teillastkennlinie (EN 15316-4-4), als
+       FAKTOR wie die Volllastwerte darueber; Anfahrverlust und Mindestlaufzeit lassen das Modul unter
+       seiner Untergrenze takten. Ein LEERES Feld ist nicht 0, sondern "nicht gepflegt": wie Volllast
+       bzw. kein Takten - der Platzhalter sagt es im Feld. Die kleine Kurve folgt dem Arbeitsstand wie
+       beim Heizkessel; die Huelle rechnet sie im Kern aus derselben Funktion wie der Lauf. *@
+    <Gruppenkopf Titel="@GruppeTeillast">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LabelEtaEl50" Einheit="@HinweisEtaEl50" Feldname="@FeldEtaEl50"
+                            Platzhalter="@PlatzhalterVolllast" Min="0" Max="1"
+                            Wert="@Daten.WirkungsgradEl50" WertChanged="w => Daten.WirkungsgradEl50 = w"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelEtaTh50" Einheit="@HinweisEtaTh50" Feldname="@FeldEtaTh50"
+                            Platzhalter="@PlatzhalterVolllast" Min="0" Max="1"
+                            Wert="@Daten.WirkungsgradTh50" WertChanged="w => Daten.WirkungsgradTh50 = w"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelAnfahrverlust" Einheit="kWh" Feldname="@FeldAnfahrverlust"
+                            Platzhalter="@PlatzhalterOhneTakten" Min="0" Max="100"
+                            Wert="@Daten.AnfahrverlustKwh" WertChanged="w => Daten.AnfahrverlustKwh = w"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Ganzzahlfeld Bezeichnung="@LabelMindestlaufzeit" Einheit="min" Feldname="@FeldMindestlaufzeit"
+                              Platzhalter="@PlatzhalterOhneTakten" Min="0" Max="60"
+                              Wert="@Daten.MindestlaufzeitMin" WertChanged="w => Daten.MindestlaufzeitMin = w"
+                              FehlerZustand="BeiFehlerZustand" />
+                </KindInhalt>
+            </Formularraster>
+            <p class="epos-leisezeile">@HinweisTeillast</p>
+
+            @if (Kennlinienbild is not null)
+            {
+                <DiagrammSvg Modell="@AktuellesKennlinienbild()" Kennung="bhkwk-kennlinie"
+                             Bezeichnung="@BildKennlinieText" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -260,6 +299,61 @@
     [Parameter] public string FeldVorlauf { get; set; } = "Vorlauftemperatur";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
     [Parameter] public string FeldRuecklauf { get; set; } = "Rücklauftemperatur";
+
+    // --- Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ---------------------
+
+    [Parameter] public string GruppeTeillast { get; set; } = "Teillast und Takten";
+    [Parameter] public string LabelEtaEl50 { get; set; } = "El. Wirkungsgrad bei 50 % Last:";
+    [Parameter] public string FeldEtaEl50 { get; set; } = "elektrischer Wirkungsgrad bei 50 % Last";
+    [Parameter] public string HinweisEtaEl50 { get; set; } = "(Faktor, z. B. 0,27)";
+    [Parameter] public string LabelEtaTh50 { get; set; } = "Th. Wirkungsgrad bei 50 % Last:";
+    [Parameter] public string FeldEtaTh50 { get; set; } = "thermischer Wirkungsgrad bei 50 % Last";
+    [Parameter] public string HinweisEtaTh50 { get; set; } = "(Faktor, z. B. 0,64)";
+    [Parameter] public string LabelAnfahrverlust { get; set; } = "Anfahrverlust je Start:";
+    [Parameter] public string FeldAnfahrverlust { get; set; } = "Anfahrverlust je Start";
+    [Parameter] public string LabelMindestlaufzeit { get; set; } = "Mindestlaufzeit:";
+    [Parameter] public string FeldMindestlaufzeit { get; set; } = "Mindestlaufzeit";
+    [Parameter] public string PlatzhalterVolllast { get; set; } = "wie Volllast";
+    [Parameter] public string PlatzhalterOhneTakten { get; set; } = "kein Takten";
+    [Parameter] public string HinweisTeillast { get; set; } =
+        "Leer = wie Volllast bzw. kein Takten. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul " +
+        "unter seiner Untergrenze, statt in der Stunde auszubleiben.";
+
+    /// <summary>
+    /// Das Bild der Gruppe „Teillast und Takten“ zum Arbeitsstand: elektrischer und thermischer
+    /// Wirkungsgrad über der elektrischen Last (BH1). Die Hülle rechnet es im Kern — dieselbe Kennlinie wie
+    /// der Lauf. Ohne Delegat steht kein Bild.
+    /// </summary>
+    [Parameter] public Func<BhkwKatalogDaten, Zeichenmodell?>? Kennlinienbild { get; set; }
+
+    /// <summary>Die Bezeichnung des Bilds für die Sprachausgabe.</summary>
+    [Parameter] public string BildKennlinieText { get; set; } = "Wirkungsgrad über der elektrischen Last";
+
+    /// <summary>Die Felder, die die Kurve bestimmen, beim letzten Holen des Bilds.</summary>
+    private (double? Pel, double? Ptherm, double? Wirkungsgrad, double? El, double? Th, double? El50,
+             double? Th50)? _kurvenstand;
+
+    private Zeichenmodell? _kennlinienbild;
+
+    /// <summary>Wie oft das Bild geholt wurde (Pruefhilfe fuer Tests).</summary>
+    public int Kennlinienbilder { get; private set; }
+
+    /// <summary>
+    /// Das Bild zum Arbeitsstand, zwischengespeichert: neu geholt nur, wenn sich Leistungen, Wirkungsgrade
+    /// oder die Teillastwirkungsgrade geändert haben - sonst verwürfe jeder Tastendruck in einem fremden Feld
+    /// mit dem Knotenbaum auch die abgewählten Linien der Legende.
+    /// </summary>
+    private Zeichenmodell? AktuellesKennlinienbild()
+    {
+        if (Kennlinienbild is null) return null;
+        var stand = (Daten.Pel, Daten.Ptherm, Daten.Wirkungsgrad, Daten.WirkungsgradEl, Daten.WirkungsgradTh,
+                     Daten.WirkungsgradEl50, Daten.WirkungsgradTh50);
+        if (_kurvenstand == stand) return _kennlinienbild;
+        _kurvenstand = stand;
+        _kennlinienbild = Kennlinienbild(Daten);
+        Kennlinienbilder++;
+        return _kennlinienbild;
+    }
 
     // OHNE die Beschriftungen der Gruppen "Kosten", "BEHG" und "Emissionen" seit dem
     // 15.09.2026 - samt ihren Feldnamen, den vier Hinweiszeilen der Investition und
@@ -410,7 +504,22 @@
             return false;
         }
 
-        return WirkungsgradPruefen();
+        return WirkungsgradPruefen() && TeillastPruefen();
+    }
+
+    /// <summary>
+    /// Die Teillastfelder im Band (Welle M4) — die Regel steht im Kern
+    /// (<see cref="ErzeugerTeillastWerte.BhkwVerstoss"/>), der Dialog zeigt nur ihre Meldung.
+    /// </summary>
+    private bool TeillastPruefen()
+    {
+        string grund = ErzeugerTeillastWerte.BhkwVerstoss(new ErzeugerTeillastWerte.BhkwFelder(
+            Daten.WirkungsgradEl50, Daten.WirkungsgradTh50, Daten.AnfahrverlustKwh, Daten.MindestlaufzeitMin));
+        if (string.IsNullOrEmpty(grund)) return true;
+
+        _meldung = grund;
+        _meldungStufe = WarnStufe.Warnung;
+        return false;
     }
 
     /// <summary>

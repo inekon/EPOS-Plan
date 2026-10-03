@@ -405,6 +405,121 @@ public sealed class SimulationKiSicht
                .ToList();
 
     // =====================================================================
+    //  Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4)
+    // =====================================================================
+    //
+    // Acht Felder über EINEN Delegaten (NetzkanaeleSchreiben): Jede Setzung schreibt die ganze
+    // Vorgabe sofort, wie ein Feld des Abschnitts. Leer = kein Kanalwert; sind alle drei leer, gilt
+    // der Projektwert „netzverluste". Eine Einheit ohne Wert bleibt im Arbeitsstand, bis ein Wert
+    // dazukommt.
+
+    /// <summary>Netzverlust des Heizkanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustHeizung
+    {
+        get => Netzkanaele.HeizungWert;
+        set => NetzkanalSetzen(v => v with { HeizungWert = value });
+    }
+
+    /// <summary>Einheit des Heizkanalwerts: <c>%</c> oder <c>kWh/a</c>.</summary>
+    public string NetzverlustHeizungEinheit
+    {
+        get => Netzkanaele.HeizungEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { HeizungEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Netzverlust des Brauchwasserkanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustBrauchwasser
+    {
+        get => Netzkanaele.BrauchwasserWert;
+        set => NetzkanalSetzen(v => v with { BrauchwasserWert = value });
+    }
+
+    /// <summary>Einheit des Brauchwasserkanalwerts.</summary>
+    public string NetzverlustBrauchwasserEinheit
+    {
+        get => Netzkanaele.BrauchwasserEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { BrauchwasserEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Netzverlust des Prozesskanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustProzess
+    {
+        get => Netzkanaele.ProzessWert;
+        set => NetzkanalSetzen(v => v with { ProzessWert = value });
+    }
+
+    /// <summary>Einheit des Prozesskanalwerts.</summary>
+    public string NetzverlustProzessEinheit
+    {
+        get => Netzkanaele.ProzessEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { ProzessEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Die Zirkulationsleistung des Bestandswegs [kW]; leer = keine Zirkulation.</summary>
+    public double? ZirkulationLeistung
+    {
+        get => Netzkanaele.ZirkulationLeistungKw;
+        set => NetzkanalSetzen(v => v with { ZirkulationLeistungKw = value });
+    }
+
+    /// <summary>Die Laufzeit der Zirkulation [h/d]; leer = keine Zirkulation.</summary>
+    public double? ZirkulationLaufzeit
+    {
+        get => Netzkanaele.ZirkulationLaufzeitHd;
+        set => NetzkanalSetzen(v => v with { ZirkulationLaufzeitHd = value });
+    }
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustHeizungEinheitWahl => Kanaleinheiten;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustBrauchwasserEinheitWahl => Kanaleinheiten;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustProzessEinheitWahl => Kanaleinheiten;
+
+    private static readonly IReadOnlyList<KiWahleintrag> Kanaleinheiten = new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT,
+                          WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT),
+        new KiWahleintrag(WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH,
+                          WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH)
+    };
+
+    private WindowsFormsApplication1.Netzverlustvorgabe Netzkanaele
+        => Parameter?.Netzkanaele ?? WindowsFormsApplication1.Netzverlustvorgabe.Leer;
+
+    /// <summary>Eine Einheit aus der Wahl; eine fremde lehnt die Sicht benannt ab.</summary>
+    private static string KanalEinheit(string? wert)
+    {
+        string w = (wert ?? "").Trim();
+        if (w == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT ||
+            w == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH) return w;
+        throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_NV_EINHEIT_UNBEKANNT, w));
+    }
+
+    /// <summary>Schreibt die ganze Vorgabe sofort; scheitert es, steht der Grund in der Ausnahme.</summary>
+    private void NetzkanalSetzen(Func<WindowsFormsApplication1.Netzverlustvorgabe, WindowsFormsApplication1.Netzverlustvorgabe> aenderung)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Netzverlustvorgabe, bool>? schreiben = Wege?.NetzkanaeleSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        WindowsFormsApplication1.Netzverlustvorgabe neu = aenderung(p.Netzkanaele);
+        WindowsFormsApplication1.Netzverlustvorgabe gespeichert = neu.Normalisiert();
+        string? grund = gespeichert.Pruefen();
+        if (grund is not null) throw new InvalidOperationException(grund);
+        if (!schreiben(gespeichert))
+            throw new InvalidOperationException(Resource.SIMKONF_MSG_NV_KANAL_FEHLER);
+        p.Netzkanaele = gespeichert with
+        {
+            HeizungEinheit = gespeichert.HeizungEinheit ?? neu.HeizungEinheit,
+            BrauchwasserEinheit = gespeichert.BrauchwasserEinheit ?? neu.BrauchwasserEinheit,
+            ProzessEinheit = gespeichert.ProzessEinheit ?? neu.ProzessEinheit
+        };
+    }
+
+    // =====================================================================
     //  Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1)
     // =====================================================================
     //
@@ -501,6 +616,60 @@ public sealed class SimulationKiSicht
         new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH, Resource.SIMKONF_AUFH_ART_TAEGLICH),
         new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, Resource.SIMKONF_AUFH_ART_FEST)
     };
+
+    // =====================================================================
+    //  Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3)
+    // =====================================================================
+
+    /// <summary>Der Zahlenwert der Einspeisegrenze in ihrer Einheit; <c>null</c> = keine Grenze.</summary>
+    public double? Einspeisegrenze
+    {
+        get => Einspeisestand.Wert;
+        set
+        {
+            if (value is double w && (double.IsNaN(w) || w < 0))
+                Bereich(value, 0.0, double.MaxValue, Resource.SIMKONF_LBL_EINSPEISEGRENZE);
+            EinspeisegrenzeSetzen(new WindowsFormsApplication1.Einspeisegrenze(value, Einspeisestand.Einheit));
+        }
+    }
+
+    /// <summary>
+    /// Die Einheit als Steuerwert (<c>DbWerte.EINSPEISEGRENZE_*</c>): <c>kW</c> (Vorgabe) oder <c>%</c>
+    /// der installierten PV-Leistung; leer heißt die Vorgabe.
+    /// </summary>
+    public string EinspeisegrenzeEinheit
+    {
+        get => Einspeisestand.EinheitWirksam;
+        set
+        {
+            string wert = Steuerwert(value, new[] { WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW,
+                                                    WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT },
+                                     WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW);
+            EinspeisegrenzeSetzen(new WindowsFormsApplication1.Einspeisegrenze(Einspeisestand.Wert, wert));
+        }
+    }
+
+    /// <summary>Die zwei Einheiten mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> EinspeisegrenzeEinheitWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_KW),
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT)
+    };
+
+    private WindowsFormsApplication1.Einspeisegrenze Einspeisestand
+        => Parameter?.Einspeisegrenze ?? WindowsFormsApplication1.Einspeisegrenze.Keine;
+
+    /// <summary>Schreibt über den Delegaten des Abschnitts; ohne Weg und bei Fehlschlag benannt.</summary>
+    private void EinspeisegrenzeSetzen(WindowsFormsApplication1.Einspeisegrenze neu)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Einspeisegrenze, bool>? schreiben = Wege?.EinspeisegrenzeSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        if (!schreiben(neu))
+            throw new InvalidOperationException(Resource.SIMKONF_EINSPEISEGRENZE_FEHLER);
+        p.Einspeisegrenze = neu;
+    }
 
     /// <summary>Die gespeicherte Einstellung; ohne Stand „aus".</summary>
     private WindowsFormsApplication1.Aufheizvorgabe Aufheizstand

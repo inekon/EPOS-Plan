@@ -180,7 +180,7 @@ namespace EPOS.Kern.Tests
                 double[] p = w.DeckungMonatProzent;
                 Assert.True(p[6] > p[0], "Juli " + p[6] + " %, Januar " + p[0] + " %");
 
-                // Anker der Basis R32 (2026-10-02_R32_Solarthermie, Toleranz der Referenzsuite 1e-4
+                // Anker der Basis R32, in R33 unverändert (2026-10-02_R32_Solarthermie, Toleranz der Referenzsuite 1e-4
                 // relativ): genutzte Solarwärme, Überschuss und mittlere Arbeitstemperatur des Felds.
                 Assert.Equal(9382.4459, st.WaermeproduktionGesamtKwh, 9382.4459 * 1e-4);
                 Assert.Equal(19730.2372, st.UeberschussSummeKwh, 19730.2372 * 1e-4);

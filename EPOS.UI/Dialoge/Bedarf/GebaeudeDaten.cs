@@ -139,3 +139,13 @@ public sealed class GebaeudeImportweg
 public sealed record GebaeudeStammDetail(
     string Name, string Art, string Beschreibung, string Wohnflaeche,
     string Rechenweg = "", double? HgesWK = null);
+
+/// <summary>
+/// Was „In DB übernehmen" ergeben hat — die Antwort der Hülle auf den Weg
+/// <c>GebaeudeStammCtrl.AusProjektUebernehmen</c>.
+/// </summary>
+/// <param name="Ok">Steht der neue Satz im Katalog?</param>
+/// <param name="Name">Der Name des neuen Katalogsatzes (der Schlüssel der Katalogliste).</param>
+/// <param name="Meldung">Bei Erfolg die Statuszeile, sonst die benannte Absage.</param>
+/// <param name="AmNamen">Steht die Absage am Namensfeld (leer oder vergeben)?</param>
+public sealed record GebaeudeDbUebernahme(bool Ok, string Name, string Meldung, bool AmNamen = false);
