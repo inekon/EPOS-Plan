@@ -36268,6 +36268,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die unbeheizte Zone „{0}“ ({1} m²) hat weder Hülle noch Trennfläche — sie entfällt, ihre Räume bleiben außerhalb der Zonen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_OHNE_FLAECHEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_OHNE_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße und geht an „{2}“ (gemeinsame Trennfläche {3} m²). ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_ZONE_ZUGESCHLAGEN {
@@ -36750,6 +36759,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_BEHAELTER_UNLESBAR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_BEHAELTER_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume beheizt und {1} unbeheizt nach der Beheizungsart der Datei ({2}) — sie gilt vor Namensregel und Lage. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BEHEIZUNGSART {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BEHEIZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen {1} = {2} — die Datei legt damit nicht fest, ob der Raum in der Hülle liegt; es gelten Namensregel, Lage und Annahme. Bitte die Beheizung dieser Räume prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BEHEIZUNGSART_OFFEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BEHEIZUNGSART_OFFEN", resourceCulture);
             }
         }
         
@@ -37276,6 +37303,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile: {1}.{2} = {3} ist kein U-Wert (null oder kleiner) — sie bleiben ohne U-Wert aus der Datei. Ohne Aufbau gelten sie als nicht bewertet (Bodenöffnung, Hilfsbauteil) und trennen keine Geschosse. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UWERT_NICHT_POSITIV {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UWERT_NICHT_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Pset_*Common.ThermalTransmittance — der U-Wert stammt aus {1}.{2}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_UWERT_RUECKFALL {
@@ -37326,6 +37362,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZONE_OHNE_AUSSEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZONE_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die unbeheizte Zone „{0}“ ({1} m²) hat weder Hülle noch Trennfläche — sie entfällt, ihre Räume bleiben außerhalb der Zonen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_OHNE_FLAECHEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_OHNE_FLAECHEN", resourceCulture);
             }
         }
         
