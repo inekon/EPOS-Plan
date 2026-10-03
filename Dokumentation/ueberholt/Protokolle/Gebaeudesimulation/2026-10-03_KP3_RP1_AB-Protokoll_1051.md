@@ -126,6 +126,8 @@ Bei 20 % sind W1 und W3 überall 0.
 **Empfehlung: 20 % behalten.** Das größte ρ_min liegt bei 8,75 % (1051), mit ρ_bem bei 13,75 % (1051, Bemessung
 (b)); beide bleiben unter 20 %.
 
+Entscheid des Anwenders (03.10.2026): keine pauschale Programmvorgabe, die Reserve ist immer Nutzereingabe; bleibt sie leer, gilt 20 % mit Laufhinweis (E64).
+
 ## 9 Befunde
 
 **Aus RP1b**
