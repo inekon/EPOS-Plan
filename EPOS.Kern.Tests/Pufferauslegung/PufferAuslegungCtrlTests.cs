@@ -610,5 +610,63 @@ namespace EPOS.Kern.Tests.Pufferauslegung
                 Assert.Equal(m, PufferAuslegungCtrl.KriterienMaske(p, PufferVorlage.BHKW));
             }
         }
+
+        // =============================================================================
+        //  Konditionierungsvorlage am Gebäude, Katalogverweis am Puffer (Welle P4c)
+        // =============================================================================
+
+        /// <summary>
+        /// Übernimmt die Auslegung den Katalogsatz, merkt der Puffer ihn (<c>ID_Stamm</c>) und nennt ihn als
+        /// Herkunft; ohne den Schalter wird der Verweis leer. Nur auf einer Projektkopie von 1045.
+        /// </summary>
+        [Fact]
+        public void Uebernehmen_merkt_den_Katalogsatz_am_Puffer()
+        {
+            if (!_db.Vorhanden) return;
+            string name = Projektname(P_ZAPF);
+            int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Katalogverweis");
+            Assert.True(kopie > 0, "Duplizieren fehlgeschlagen.");
+            int puffer = PufferDerKopie(kopie, PUFFER_1045_HEIZUNG);
+            PufferKatalogsatz satz = PufferAuslegungCtrl.Katalog().First();
+            PufferAuslegungErgebnis r = Ergebnis(1500, false) with { Katalogvorschlag = satz };
+
+            Assert.Equal(puffer, PufferAuslegungCtrl.Uebernehmen(kopie, puffer, r, null));
+            Assert.Equal((long)satz.Id, Convert.ToInt64(Wert("SELECT ID_Stamm FROM Tab_Pufferspeicher WHERE ID = ?", puffer)));
+            Assert.Equal(satz.Bezeichner, PufferSpCtrl.Katalogherkunft(puffer));
+
+            Assert.Equal(puffer, PufferAuslegungCtrl.Uebernehmen(kopie, puffer, r, null, katalogsatz: false));
+            Assert.True(Leer(Wert("SELECT ID_Stamm FROM Tab_Pufferspeicher WHERE ID = ?", puffer)));
+            Assert.Null(PufferSpCtrl.Katalogherkunft(puffer));
+
+            // Das Referenzprojekt bleibt ohne Verweis.
+            Assert.Equal(0L, Convert.ToInt64(Wert("SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND ID_Stamm IS NOT NULL", P_ZAPF)));
+        }
+
+        /// <summary>
+        /// Die Nutzungsprofil-Ableitung liest zuerst den Verweis <c>ID_Konditionierungsvorlage</c> am Gebäude
+        /// (Büro → Büro/Schule), ohne ihn wie bisher die Bemerkung der Kalender. Auf einer Projektkopie von 1007.
+        /// </summary>
+        [Fact]
+        public void Nutzungsprofil_liest_zuerst_die_Konditionierungsvorlage_am_Gebaeude()
+        {
+            if (!_db.Vorhanden) return;
+            string name = Projektname(1007);
+            int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Konditionierungsvorlage");
+            Assert.True(kopie > 0, "Duplizieren fehlgeschlagen.");
+            PufferNutzungsprofilAbleitung ohne = PufferAuslegungCtrl.Vorbelegen(kopie, null).Nutzungsprofil;
+
+            object buero = Wert("SELECT ID FROM Tab_Konditionierungsvorlage_STAMM WHERE Nutzung = 'BUERO' ORDER BY ID");
+            Assert.False(Leer(buero));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET ID_Konditionierungsvorlage = ? WHERE ID_Projekt = ?",
+                                           new DbParam("@v", Convert.ToInt64(buero)), new DbParam("@p", kopie));
+            PufferNutzungsprofilAbleitung mit = PufferAuslegungCtrl.Vorbelegen(kopie, null).Nutzungsprofil;
+            Assert.Equal(PufferNutzungsprofil.BUERO_SCHULE, mit.Profil);
+            Assert.Contains("BUERO", mit.Herkunft);
+
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET ID_Konditionierungsvorlage = NULL WHERE ID_Projekt = ?",
+                                           new DbParam("@p", kopie));
+            Assert.Equal(ohne.Profil, PufferAuslegungCtrl.Vorbelegen(kopie, null).Nutzungsprofil.Profil);
+            Assert.Equal(0L, Convert.ToInt64(Wert("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ? AND ID_Konditionierungsvorlage IS NOT NULL", 1007)));
+        }
     }
 }

@@ -43881,5 +43881,11 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PAUS_PROBELAUF_AUS_REIHE" xml:space="preserve">
     <value>Starts from the hourly heat (switch-on edges): the unit has no minimum output, the run counts no cycles.</value>
   </data>
+  <data name="PAUS_KATALOGSATZ_UEBERNEHMEN" xml:space="preserve">
+    <value>Record the catalogue entry as the buffer’s origin</value>
+  </data>
+  <data name="PSP_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>from catalogue: {0}</value>
+  </data>
 </root>
 

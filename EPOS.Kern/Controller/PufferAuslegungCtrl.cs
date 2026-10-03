@@ -211,8 +211,11 @@ namespace WindowsFormsApplication1
             "SELECT n.Bezeichner FROM " + TwwSchema.TAB_TWW_ZONE + " z JOIN " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
             " n ON n.ID = z.ID_Nutzungsart WHERE z.ID_Projekt = ? ORDER BY z.Reihenfolge, z.ID";
         internal const string SQL_KONDITIONIERUNG =
-            "SELECT k.Groesse, k.Bemerkung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
+            "SELECT k.ID_Gebaeude, k.Groesse, k.Bemerkung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
             "ON g.ID = k.ID_Gebaeude WHERE g.ID_Projekt = ? AND k.Bemerkung IS NOT NULL ORDER BY g.ID, k.ID";
+        internal const string SQL_KONDITIONIERUNG_VERWEIS =
+            "SELECT g.ID, v.Nutzung FROM Tab_Gebaeude g JOIN " + KonditionierungVorlagenSchema.TAB_VORLAGE + " v " +
+            "ON v.ID = g." + PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE + " WHERE g.ID_Projekt = ? ORDER BY g.ID";
         internal const string SQL_KONDITIONIERUNG_NUTZUNG =
             "SELECT Nutzung FROM " + KonditionierungVorlagenSchema.TAB_VORLAGE + " WHERE Bezeichner = ? AND Groesse = ?";
         internal const string SQL_KATALOG =
@@ -936,18 +939,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Nutzung der Konditionierungsvorlagen, aus denen die Kalender der Projektgebäude stammen
-        /// (Herkunft in <c>Bemerkung</c>, <see cref="Kalenderherkunft.AusBemerkung"/>).
+        /// Die Nutzung der Konditionierungsvorlagen, aus denen die Kalender der Projektgebäude stammen:
+        /// zuerst über den Verweis <c>Tab_Gebaeude.ID_Konditionierungsvorlage</c> (Welle P4c), für ein
+        /// Gebäude ohne Verweis als Rückfall über die Herkunft in <c>Bemerkung</c>
+        /// (<see cref="Kalenderherkunft.AusBemerkung"/>, Altdaten).
         /// </summary>
         private static IEnumerable<string> Konditionierungsnutzungen(int idProjekt)
         {
             var l = new List<string>();
-            if (!DataRepository.TabelleVorhanden(KonditionierungSchema.TAB_KALENDER) ||
-                !DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE)) return l;
+            if (!DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE)) return l;
+            var mitVerweis = new HashSet<long>();
+            if (DataRepository.SpalteVorhanden("Tab_Gebaeude", PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE))
+            {
+                DataTable tv = DataRepository.GetDataTable(SQL_KONDITIONIERUNG_VERWEIS, P("@projekt", idProjekt));
+                if (tv != null)
+                    foreach (DataRow r in tv.Rows)
+                    {
+                        mitVerweis.Add(Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture));
+                        string n = Text(r, "Nutzung");
+                        if (n != null) l.Add(n);
+                    }
+            }
+            if (!DataRepository.TabelleVorhanden(KonditionierungSchema.TAB_KALENDER)) return l;
             DataTable t = DataRepository.GetDataTable(SQL_KONDITIONIERUNG, P("@projekt", idProjekt));
             if (t == null) return l;
             foreach (DataRow r in t.Rows)
             {
+                if (r["ID_Gebaeude"] != DBNull.Value && mitVerweis.Contains(Convert.ToInt64(r["ID_Gebaeude"], CultureInfo.InvariantCulture)))
+                    continue;
                 string vorlage = Kalenderherkunft.AusBemerkung(Text(r, "Bemerkung")).Vorlage;
                 if (string.IsNullOrEmpty(vorlage)) continue;
                 object n = DataRepository.ExecuteScalar(SQL_KONDITIONIERUNG_NUTZUNG, P("@bez", vorlage), P("@groesse", Text(r, "Groesse") ?? ""));
@@ -1353,11 +1372,21 @@ namespace WindowsFormsApplication1
         /// Kombipuffer Schichtung mit mindestens zwei Schichten und den Zonenanteilen als Entnahmehöhen.
         /// Schwellen, Temperaturpaar, Hersteller, Speichertyp und Kosten bleiben beim Ändern unverändert
         /// (eine leere Schwelle wird mit ihrer Vorgabe geschrieben, mit der die Simulation sie ohnehin
-        /// liest); beim Neuanlegen gelten die Vorgaben. Der Puffer führt keinen Katalogverweis — der
-        /// Vorschlag fließt nur über den Verlust ein. Liefert die Puffer-ID; -1, wenn nichts übernommen
+        /// liest); beim Neuanlegen gelten die Vorgaben. Mit <paramref name="katalogsatz"/> und einem
+        /// Katalogvorschlag merkt der Puffer den Katalogsatz (<c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c),
+        /// sonst wird der Verweis leer. Liefert die Puffer-ID; -1, wenn nichts übernommen
         /// wurde (keine Empfehlung, Puffer nicht im Projekt, Schreibfehler).
         /// </summary>
-        public static int Uebernehmen(int idProjekt, int? idPuffer, PufferAuslegungErgebnis ergebnis, string bezeichner)
+        public static int Uebernehmen(int idProjekt, int? idPuffer, PufferAuslegungErgebnis ergebnis, string bezeichner,
+                                      bool katalogsatz = true)
+        {
+            int id = UebernehmenOhneVerweis(idProjekt, idPuffer, ergebnis, bezeichner);
+            if (id <= 0) return id;
+            int? stamm = katalogsatz && ergebnis.Katalogvorschlag?.Id > 0 ? ergebnis.Katalogvorschlag.Id : null;
+            return PufferSpCtrl.KatalogverweisSetzen(id, idProjekt, stamm) ? id : -1;
+        }
+
+        private static int UebernehmenOhneVerweis(int idProjekt, int? idPuffer, PufferAuslegungErgebnis ergebnis, string bezeichner)
         {
             if (ergebnis == null || idProjekt <= 0 || !(ergebnis.EmpfehlungL > 0)) return -1;
             int volumen = (int)Math.Round(ergebnis.EmpfehlungL, MidpointRounding.AwayFromZero);

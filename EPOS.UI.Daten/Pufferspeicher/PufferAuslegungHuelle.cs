@@ -608,7 +608,7 @@ namespace WindowsFormsApplication1
             int? ziel = neu ? (int?)null : _idPuffer;
             string name = neu ? (u?.Bezeichner ?? "").Trim() : "";
             PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, ziel, e, r, Stufe(d));
-            int id = PufferAuslegungCtrl.Uebernehmen(_auftrag.IdProjekt, ziel, r, name);
+            int id = PufferAuslegungCtrl.Uebernehmen(_auftrag.IdProjekt, ziel, r, name, u?.Katalogsatz ?? true);
             if (id <= 0)
                 return new PufferUebernahmeErgebnis(false, MyResource.Resource.PAUS_GRUND_SCHREIBFEHLER, 0);
 

@@ -43888,5 +43888,11 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PAUS_PROBELAUF_AUS_REIHE" xml:space="preserve">
     <value>Starts aus der stündlichen Wärme (Einschaltflanken): Das Gerät hat keine Mindestleistung, der Lauf zählt keine Takte.</value>
   </data>
+  <data name="PAUS_KATALOGSATZ_UEBERNEHMEN" xml:space="preserve">
+    <value>Katalogsatz als Herkunft am Puffer merken</value>
+  </data>
+  <data name="PSP_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>aus Katalog: {0}</value>
+  </data>
 </root>
 

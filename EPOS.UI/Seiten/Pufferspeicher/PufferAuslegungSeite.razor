@@ -145,6 +145,7 @@
     private int? _idPuffer;
     private string _pufferName = "";
     private int _ziel;
+    private bool _katalogsatz = true;
     private string _bezeichner = "";
     private string _meldung = "";
     private bool _meldungErfolg;
@@ -933,6 +934,9 @@
 
     private bool Neuanlage => !_idPuffer.HasValue || _ziel == 1;
 
+    /// <summary>Hat das Ergebnis einen Katalogvorschlag (dann steht der Schalter „Katalogsatz übernehmen")?</summary>
+    private bool HatKatalogvorschlag => _ergebnis is { } e && !string.IsNullOrEmpty(e.Katalogvorschlag);
+
     private bool UebernahmeFrei => _ergebnis is { Zustand: PufferErgebnisZustand.Gerechnet, EmpfehlungL: > 0 } && !_veraltet;
 
     private void Speichern()
@@ -959,7 +963,8 @@
             Melden(Texte.GrundBezeichner, false);
             return;
         }
-        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(), new PufferUebernahmeDaten(neu, name));
+        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(),
+            new PufferUebernahmeDaten(neu, name, _katalogsatz && HatKatalogvorschlag));
         Melden(r.Text, r.Erfolg);
         if (r.Erfolg && r.IdPuffer > 0)
         {
@@ -1249,6 +1254,11 @@
                                           WertChanged="@((string w) => _bezeichner = w ?? "")" />
                             </KindInhalt>
                         </Formularraster>
+                    }
+                    @if (HatKatalogvorschlag)
+                    {
+                        <Schalter Bezeichnung="@Texte.KatalogsatzUebernehmen" Wert="@_katalogsatz"
+                                  WertChanged="@((bool w) => _katalogsatz = w)" />
                     }
                     <p class="epos-leisezeile epos-pausl-bleibt">@Texte.UebernahmeBleibt</p>
                     <div class="epos-pausl-uebernahme-knoepfe">

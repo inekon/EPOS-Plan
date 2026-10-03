@@ -69,7 +69,8 @@ public sealed record PspPufferstand(
     bool Heizung,
     bool Brauchwasser,
     bool Prozess,
-    PspSchichtdaten Schicht);
+    PspSchichtdaten Schicht,
+    string? Katalogherkunft = null);
 
 /// <summary>
 /// Was der Dialog beim Übernehmen aus seinen Feldern liest — der Satz, der an

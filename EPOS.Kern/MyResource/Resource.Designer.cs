@@ -72026,6 +72026,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz als Herkunft am Puffer merken ähnelt.
+        /// </summary>
+        public static string PAUS_KATALOGSATZ_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PAUS_KATALOGSATZ_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalogvorschlag ähnelt.
         /// </summary>
         public static string PAUS_KATALOGVORSCHLAG {
@@ -77920,6 +77929,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_GRUPPE_VOLUMEN {
             get {
                 return ResourceManager.GetString("PSP_GRUPPE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Katalog: {0} ähnelt.
+        /// </summary>
+        public static string PSP_HERKUNFT_KATALOG {
+            get {
+                return ResourceManager.GetString("PSP_HERKUNFT_KATALOG", resourceCulture);
             }
         }
         

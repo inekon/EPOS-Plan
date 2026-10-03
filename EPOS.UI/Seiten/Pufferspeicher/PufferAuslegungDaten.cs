@@ -313,7 +313,8 @@ public sealed class PufferAuslegungErgebnisDaten
 }
 
 /// <summary>Was übernommen werden soll: neuer Speicher oder der gewählte, mit Bezeichnung.</summary>
-public sealed record PufferUebernahmeDaten(bool Neu, string Bezeichner);
+/// <summary>Was die Übernahme braucht: neu anlegen, Bezeichner, den Katalogsatz als Herkunft merken.</summary>
+public sealed record PufferUebernahmeDaten(bool Neu, string Bezeichner, bool Katalogsatz = true);
 
 /// <summary>Die Antwort der Übernahme: Erfolg, Text der Statuszeile, Puffer-ID (bei Erfolg).</summary>
 public sealed record PufferUebernahmeErgebnis(bool Erfolg, string Text, int IdPuffer);
