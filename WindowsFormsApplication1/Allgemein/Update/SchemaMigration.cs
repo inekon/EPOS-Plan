@@ -4935,12 +4935,48 @@ namespace WindowsFormsApplication1
         /// Einspeisegrenze und keine Selbstentladung.</para>
         /// </summary>
         public const int SCHRITT_STROM_VIERTELSTUNDEN = StromViertelstundenSchema.SCHRITT;
+        // ---- Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung, Stufe P1, Welle W1) ----
+
+        /// <summary>
+        /// Schritt <see cref="PufferAuslegungSchema.SCHRITT"/> — <b>Pufferspeicher-Auslegung</b>. Er
+        /// folgt auf <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL und Saat:</b> die STRICT-Tabellen <c>Tab_PufferAuslegung</c> (je
+        /// Projektpuffer, NULL = Vorgabe) und <c>Tab_PufferAuslegungParameter_STAMM</c>, dazu die
+        /// Vorgabewerte per <c>INSERT OR IGNORE</c>. Die Anweisungen stehen bei
+        /// <see cref="PufferAuslegungSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Keine Bestandszeile wird angefasst; die
+        /// Auslegung rechnet und schreibt nur auf Zuruf.</para>
+        /// </summary>
+        public const int SCHRITT_PUFFER_AUSLEGUNG = PufferAuslegungSchema.SCHRITT;
+
+        // ---- Auftrag P671 (Register E30‑Q12, EZ‑24): Katalogempfehlung der Hilfsenergie auf Weg B ----
+
+        /// <summary>
+        /// Schritt <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/> — <b>die Katalogempfehlung der
+        /// Hilfsenergie auf Weg B</b> (Auftrag P671, Register E30‑Q12, EZ‑24). Er folgt auf
+        /// <see cref="SCHRITT_PUFFER_AUSLEGUNG"/> ohne Reihenfolgebedingung (er berührt keine Spalte der
+        /// Teillastfelder, der Einspeisegrenze, der Selbstentladung und keine Tabelle der
+        /// Pufferauslegung); er setzt Schritt 94
+        /// (Bemessung Weg B der Saat) voraus, der immer vor ihm läuft.
+        ///
+        /// <para><b>Reines DML:</b> <c>Empfehlung_von</c>/<c>Empfehlung_bis</c> der Pflichtzeilen
+        /// „Hilfsenergiekosten“ (BHKW, 2–4 % → 0,5–1,5 %) und „Hilfsenergiekosten (Strom)“ (Heizkessel,
+        /// 4–8 % → 1–2 %) in den Auslieferungsvorlagen (<c>ReadOnly = 1</c>), nur wo noch die alte
+        /// Spanne aus Weg A steht. Projektzeilen und eigene Vorlagen bleiben unberührt. Quelle
+        /// <see cref="HilfsenergieEmpfehlungNachzug"/>; die Nummer steht allein dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (die Empfehlung ist Hinweis am Satzfeld), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_HILFSENERGIE_EMPFEHLUNG = HilfsenergieEmpfehlungNachzug.SCHRITT;
+
         // ---- Welle M7 Speicher: Optionen des Pufferspeichers und thermische Desinfektion ----
 
         /// <summary>
         /// Schritt <see cref="PufferOptionenSchema.SCHRITT"/> — <b>die Optionen des Pufferspeichers und die
         /// thermische Desinfektion</b> (Welle M7 der Entscheidungsvorlage Modellgrenzen: PS1 (c), PS1 (a),
-        /// PS5 (a), BW5). Er folgt auf <see cref="SCHRITT_STROM_VIERTELSTUNDEN"/> ohne Reihenfolgebedingung.
+        /// PS5 (a), BW5). Er folgt auf <see cref="SCHRITT_HILFSENERGIE_EMPFEHLUNG"/> ohne Reihenfolgebedingung.
         ///
         /// <para><b>Reines DDL:</b> an <c>Tab_Pufferspeicher</c> die nullbaren Spalten <c>Bereitschaft_Weg</c>,
         /// <c>Aufstellraum_Temperatur_C</c>, <c>Schicht_Anteile</c>, <c>Frischwassermodul</c> und
@@ -7139,6 +7175,25 @@ namespace WindowsFormsApplication1
                         "haetten keinen Ort. KEIN Rechenergebnis aendert sich - die Felder entstehen leer " +
                         "und heissen keine Grenze und keine Selbstentladung.",
                         Schritt_StromViertelstunden),
+            // PUFFERSPEICHER-AUSLEGUNG (P1, W1) - Auslegungstabelle und Vorgabetabelle samt Saat.
+            // Die Quelle ist PufferAuslegungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PUFFER_AUSLEGUNG,
+                        "Tab_PufferAuslegung und Tab_PufferAuslegungParameter_STAMM: Pufferspeicher-Auslegung " +
+                        "je Projektpuffer und ihre Vorgabewerte",
+                        "Die Pufferspeicher-Auslegung haette keinen Ort fuer Eingaben, Ergebnis und Vorgabewerte. " +
+                        "KEIN Rechenergebnis aendert sich - die Auslegungstabelle entsteht leer, die Vorgaben " +
+                        "werden nur gesaet.",
+                        Schritt_PufferAuslegung),
+            // AUFTRAG P671 (E30-Q12, EZ-24) - die Empfehlungsspannen der Hilfsenergie von BHKW und
+            // Heizkessel in den Auslieferungsvorlagen auf Weg B. Reines DML; die Quelle ist
+            // HilfsenergieEmpfehlungNachzug, die Nummer steht allein dort.
+            new Schritt(SCHRITT_HILFSENERGIE_EMPFEHLUNG,
+                        "Tab_KostenVorlagePosition: Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel " +
+                        "auf den Endenergiebedarf (Weg B)",
+                        "Die Empfehlung am Satzfeld der Hilfsenergie nennte die Spanne aus Weg A (Anteil der " +
+                        "Brennstoffkosten) - in Weg B um das Preisverhaeltnis Strom zu Brennstoff zu hoch. KEIN " +
+                        "Rechenergebnis aendert sich - die Empfehlung ist ein Hinweis, Projektzeilen bleiben.",
+                        Schritt_HilfsenergieEmpfehlung),
             // WELLE M7 SPEICHER - die Optionen des Pufferspeichers und die thermische Desinfektion.
             // REIN DDL; die Quelle ist PufferOptionenSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_PUFFER_OPTIONEN,
@@ -12804,6 +12859,125 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        /// <summary>
+        /// Der Schritt „Pufferspeicher-Auslegung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PUFFER_AUSLEGUNG"/>, Anweisungen und Saat bei
+        /// <see cref="PufferAuslegungSchema"/>. <b>Wiederholbar</b>: angelegt wird nur, was fehlt,
+        /// gesät nur, was nicht steht. Fehlen Tab_Projekt oder Tab_Pufferspeicher, ist das ein Fehler.
+        /// </summary>
+        private static bool Schritt_PufferAuslegung(Lauf l)
+        {
+            string nr = PufferAuslegungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in new[] { SchemaKatalog.TAB_PROJEKT, SchemaKatalog.TAB_PUFFERSPEICHER })
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = PufferAuslegungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!PufferAuslegungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tabelle " + PufferAuslegungSchema.TAB + ", " + PufferAuslegungSchema.TAB_PARAMETER +
+                                  " oder ihre Saat stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Pufferspeicher-Auslegung - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e) (Tabellen und Saat).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogempfehlung der Hilfsenergie auf Weg B" — Anlass und Regel stehen bei
+        /// <see cref="SCHRITT_HILFSENERGIE_EMPFEHLUNG"/>, die Anweisungen bei
+        /// <see cref="HilfsenergieEmpfehlungNachzug"/>: über den KERN mit <c>?</c>-Parametern in einem
+        /// <c>try</c> — dieser Zweig läuft vor dem ersten Fenster und muss still bleiben. Jede
+        /// Berichtszeile des Kerns geht ins Migrationsprotokoll. <b>Wiederholbar</b>; die Nachprobe
+        /// fragt <see cref="HilfsenergieEmpfehlungNachzug.Vollstaendig"/>. Fehlt eine der drei
+        /// Kostentabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_HilfsenergieEmpfehlung(Lauf l)
+        {
+            string nr = HilfsenergieEmpfehlungNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { HilfsenergieEmpfehlungNachzug.TABELLE, SchemaKatalog.TAB_KOSTENVORLAGE,
+                                         SchemaKatalog.TAB_KOSTENKOMPONENTE })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    HilfsenergieEmpfehlungNachzug.Ausfuehren(zeilen);
+                    vollstaendig = HilfsenergieEmpfehlungNachzug.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Nach dem Schritt traegt noch eine Auslieferungsvorlage die Hilfsenergie-Empfehlung aus Weg A.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogempfehlung der Hilfsenergie auf Weg B - KEIN Rechenergebnis aendert sich, " +
+                    "Projektzeilen bleiben unberuehrt, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
 
         /// <summary>
         /// Der Schritt „Pufferoptionen und Desinfektion" — Anlass und Wirkung stehen bei

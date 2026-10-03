@@ -133,6 +133,15 @@ public sealed class KostenPositionZeile
     /// </summary>
     public string SatzHerleitung { get; set; } = "";
 
+    /// <summary>
+    /// AUFTRAG P671 (E30-Rest 1): Das Satzfeld zeigt einen WIRKSAMEN Satz, den die Zeile nicht
+    /// selbst trägt — den Hilfsenergieanteil ihrer Anlage (Konzept Wirtschaftlichkeit § 3.4). Es
+    /// ist dann schreibgeschützt, und <see cref="SatzHerleitung"/> nennt die Herkunft („2 % · Satz
+    /// aus dem Hilfsenergieanteil der Anlage"). Die Hülle schreibt diesen Satz nie in die Position
+    /// zurück: Ein eigener Satz hätte Vorrang vor dem Anteil. Gepflegt wird er an der Anlage.
+    /// </summary>
+    public bool SatzGesperrt { get; set; }
+
     /// <summary>Darf die Zeile bearbeitet werden? (Auslieferungsvorlagen nicht.)</summary>
     public bool Schreibbar { get; set; } = true;
 }
