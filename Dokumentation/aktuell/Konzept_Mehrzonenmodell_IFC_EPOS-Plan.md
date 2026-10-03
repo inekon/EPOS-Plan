@@ -1125,7 +1125,8 @@ ersatzweise unter dem Geschoss mit der kleinsten Elevation ≥ −0,5 m (§ 1.6)
 `Pset_SpaceThermalRequirements` mit `SpaceTemperatureWinterMin` > 12 °C (nur IFC2x3/IFC4, in 4.3
 entfallen) — **der Wert ist vor dem Vergleich über die `THERMODYNAMICTEMPERATUREUNIT` aus
 `UnitsInContext` auf °C zu bringen** (KELVIN und DEGREE_CELSIUS sind beide zulässig, und in Kelvin
-ist jede Raumtemperatur größer 12); ohne auflösbare Einheit greift B3 nicht, sondern B4
+ist jede Raumtemperatur größer 12); ohne auflösbare Einheit greift B3 nicht. Fehlt der Standard, gilt als
+Rückfall zu B3 die Beheizungsart eines CAD-Exports (`HeatingType`, 6.5). Dann B4
 Nutzungsmuster im Namen (`Keller|Garage|Dachboden|Technik|Treppenhaus` und englische
 Entsprechungen), B5 Untergeschoss ohne `EXTERNAL`-Grenze, B6 sonst beheizt.
 
@@ -1364,7 +1365,9 @@ nicht je Raumpaar (ADR-003):
   sonst fiele die oberste Geschossdecke aus der Hülle, während die Datei die Dachfläche darüber nicht zur
   Hülle zählt (bestätigt mit dem Anwenderentscheid 03.10.2026). Der Widerspruch wird benannt
   (`IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG`, W, mit Bauteil und dem Raum der Seite, die die Datei unbeheizt
-  nennt, und dem Rat, die Beheizung des Raums zu prüfen).
+  nennt, und dem Rat, die Beheizung des Raums zu prüfen). Eine Platte, deren U-Wert die Datei mit null oder
+  kleiner angibt und die keinen Aufbau trägt (eine Bodenöffnung, ein Hilfsbauteil), ist nicht bewertet und
+  trennt keine Geschosse (`IMP_IFC_PROT_UWERT_NICHT_POSITIV`).
 - **Fläche aus den Raummengen** (Anwenderentscheid 03.10.2026): Bleibt die Summe der referenzierten
   Deckenteile eines Geschosspaars unter der kleineren beheizten Grundfläche der beiden Geschosse (Summe
   der Raumflächen aus den Raummengen), referenziert die Datei nicht alle Deckenteile. Dann gilt diese
@@ -1382,12 +1385,21 @@ nicht je Raumpaar (ADR-003):
   (`IMP_IFC_PROT_TRENNDECKE_KLEIN`, W, mit Fläche, Grundfläche und Anteil). Der Wächter bleibt (bestätigt
   mit dem Anwenderentscheid 03.10.2026); nach der Schätzung aus den Raummengen erreicht jedes Paar mit
   referenziertem Deckenteil und beheizten Räumen auf beiden Seiten die Hälfte — er wirkt nur noch, wo kein
-  Deckenteil referenziert ist und deshalb keine Trenndecke entsteht. Verbinden tragende Paare alle Geschosse mit beheizten Räumen (auch über ein unbeheiztes
+  Deckenteil referenziert ist und deshalb keine Trenndecke entsteht. Grenzt jedes Deckenteil eines Paars auf
+  einer Seite an einen unbeheizten Raum eines Geschosses, das auch beheizte Räume hat, liegt die Decke unter Z4
+  an der unbeheizten Gruppe dieses Geschosses: Das Paar verbindet dessen beheizte Räume nicht, wird nicht
+  geschätzt und trägt nicht (ein Geschoss ganz ohne beheizten Raum verbindet weiter). Verbinden tragende Paare alle Geschosse mit beheizten Räumen (auch über ein unbeheiztes
   Geschoss), ist **Z4 die Vorgabe** ohne `KEINE_GRENZEN` und ohne `GRENZEN_ENTKOPPELT`; ist unter Z4
   dennoch eine beheizte Zone ohne Verbindung (etwa nach den Haken der Raumliste), warnt
   `GRENZEN_ENTKOPPELT`. Sonst bleibt Z5 die Vorgabe mit dem bisherigen Hinweis.
 - **Meldung:** je Gebäude `IMP_IFC_PROT_TRENNDECKE_REFERENZ` (I) mit der Zahl der Trenndecken, den
   Geschosspaaren von unten nach oben und der Zahl der Innenwände mit zwei Nachbarn.
+
+**Unbeheizte Zone ohne Fläche.** Ohne Raumgrenzen kann eine unbeheizte Zone ohne jede Fläche entstehen: Die
+Datei zählt die Hüllbauteile ihrer Räume nicht zur Hülle, und kein Bezug verbindet sie mit einem beheizten Raum.
+Der Bauteilweg rechnet keine Zone ohne Bauteil, und sie koppelt an nichts — sie entfällt deshalb aus der
+Zonierung, ihre Räume bleiben außerhalb der Zonen (unbeheizt), benannt (`ZONE_OHNE_FLAECHEN`, I, mit Name und
+Fläche). Eine von Hand gebildete Zone bleibt.
 
 **Innenwände ohne Nachbarraum** (Anwenderentscheid 03.10.2026). Eine Wand innen (`IsExternal = FALSE`
 oder Angrenzung `btaHeated`) in einem Gebäude ohne Raumgrenzen, der auch die Raumbezüge keine zwei
@@ -1403,16 +1415,18 @@ Dateiname genau eine vierstellige Zahl von 1500 bis 2100 und führt die Datei ke
 Protokoll das Jahr (`IMP_IFC_PROT_BAUJAHR_DATEINAME`, I) — **übernommen wird es nie**: Ein Name wie
 „…EG55-2026" nennt das Planungsjahr, nicht das Baujahr.
 
-**Gemessen an der Anwenderdatei MFH 1964** (IFC2X3, 30 Räume, keine Raumgrenzen, 30 Raumbezüge): drei
-Trenndecken. Die Datei referenziert je Geschossdecke nur das erste Deckenteil (die übrigen 46 Teile
-„Boden OG1-2" … tragen keinen Bezug): EG/OG1 23,75 m² und OG1/DG1 2,26 m² werden aus den Raummengen auf
-je 96,42 m² geschätzt, Keller/EG bleibt 11,84 m² (der Keller ist unbeheizt; die übrigen Kellerdeckenteile
-zählen als Hülle gegen unbeheizt). Die Decke DG1/DG2 („Boden DG2") bleibt als oberste Geschossdecke
-Hülle, der Widerspruch zum Spitzboden „Wohnraum" wird benannt; das beheizte DG2 bleibt damit ungekoppelt,
-und die Vorgabe bleibt Z5 (unter Z4 mit `GRENZEN_ENTKOPPELT`). 51 Innenwände liegen zwischen zwei Räumen,
-19 (89,9 m²) zählen einseitig; der Innenflächenfaktor ist 2,91 statt leer. Die Produktionsdatei
-(EG55-2026): EG/OG1 aus 31,8 m² referenziert auf 7 343,89 m² geschätzt, die Geschosse sind gekoppelt —
-**Vorgabe Z4**; Innenflächenfaktor 1,34.
+**Gemessen an den sechs Anwenderdateien** unter `Quellen/` (HottCAD-Exporte, IFC2X3 und IFC4, ohne Raumgrenzen,
+mit Raumbezügen und Beheizungsart je Raum; `IfcQuelldateienDiagnoseTests` mit Kennzahlen und Durchgang bis zur
+Rechnung je Datei): **MFH 1964** — Spitzboden „Wohnraum" und Kellerraum laut Datei unbeheizt, zehn Räume „getrennt
+beheizt" nach Name bzw. Annahme; vier Trenndecken, EG/OG1 und OG1/DG1 aus 23,75 bzw. 2,26 m² auf 96,42 m²
+geschätzt; die beheizten Geschosse sind gekoppelt, **Vorgabe Z4** (7 Zonen); 19 Innenwände (89,9 m²) einseitig,
+Innenflächenfaktor 3,38. **Produktion EG55-2026** — allein der Entsorgungsraum unbeheizt, seine Zone ohne Fläche
+entfällt; EG/OG1 aus 31,8 m² auf 8 794,25 m² geschätzt, **Vorgabe Z4** (2 Zonen). **MFH 1984** — die Praxisräume im
+Keller laut Datei beheizt; die Decke über dem Fitnessraum erklärt die Datei als Kellerdecke (Erklärung vor Bezug),
+das beheizte Kellerteil bleibt ungekoppelt: **Vorgabe Z5**. **Sportheim** — die Decke UG/EG grenzt nur an
+unbeheizte Räume des UG, die beheizten UG-Räume bleiben ungekoppelt: **Vorgabe Z5**. **Verwaltung** — das Paar
+OG1/OG2 trägt keinen Bezug: **Vorgabe Z5**. **WG EH55** — alle Räume beheizt, fünf Bodenöffnungen (U 0, ohne Aufbau)
+trennen nicht, Keller/EG und EG/DG geschätzt: **Vorgabe Z4** (3 Zonen).
 
 **Räume über das Enthaltensein.** Manche CAD-Exporte hängen Geschosse und Räume nicht über
 `IfcRelAggregates`, sondern über `IfcRelContainedInSpatialStructure` an Gebäude bzw. Geschoss — das
@@ -1450,7 +1464,9 @@ Geometrierechnung (ADR-003):
   Verglichen wird der Name ohne angehängte Einheit in Klammern, Groß-/Kleinschreibung egal. Nennt
   der Name eine andere Einheit als W/(m²K) — der Export schreibt `ThermalTransmittance (W/(m K))` —,
   gilt der Wert nicht als U-Wert (`IMP_IFC_PROT_UWERT_EINHEIT`, I; W, wenn ein Bauteil dadurch ohne
-  U-Wert bleibt).
+  U-Wert bleibt). Ein Wert null oder kleiner ist kein U-Wert — der Export schreibt 0 oder −1 an Bauteile ohne
+  energetische Bewertung —, er wird übergangen; bleibt das Bauteil dadurch ohne U-Wert, nennt es
+  `IMP_IFC_PROT_UWERT_NICHT_POSITIV` (I, je Satz, Name und Wert mit der Zahl der Bauteile).
 - **Außen/innen:** Ohne `IsExternal` und ohne Raumgrenze gilt die Angrenzung `AdjacentType` aus einem
   beliebigen Satz (Aufzählung oder Text, Präfix `bta` ohne Belang), je Wert benannt
   (`IMP_IFC_PROT_ANGRENZUNG_*`):
@@ -1476,6 +1492,13 @@ Geometrierechnung (ADR-003):
   Zahl oder Text mit Dezimalkomma in [0°, 360°], 0° = Nord, im Uhrzeigersinn, als geografische
   Richtung ohne Nordwinkel des Modells (`IMP_IFC_PROT_AZIMUT_RUECKFALL`, I); der Platzhalter
   −987654321,99 liegt außerhalb und bleibt unbestimmt (`SEITE_UNBESTIMMT`).
+- **Beheizungsart der Räume:** Ohne Standardangabe (B1–B3) gilt die Eigenschaft `HeatingType` aus einem
+  beliebigen Satz des Raums (der Export schreibt sie in `HSETU_RaumAllgemein`; Aufzählung oder Text, Präfix
+  `bht` ohne Belang): `bhtHeated` beheizt, `bhtUnHeated` unbeheizt — als Regel B3 mit dem Beleg „Satz.Name =
+  Wert", vor Namensregel (B4) und Lage (B5); je Gebäude gezählt (`IMP_IFC_PROT_BEHEIZUNGSART`, I).
+  `bhtSeparatelyHeated` (getrennt beheizt) und jeder andere Wert sagen nicht, ob der Raum in der Hülle liegt;
+  es gelten B4 bis B6, benannt (`IMP_IFC_PROT_BEHEIZUNGSART_OFFEN`, I, mit Zahl und Wert). Die Raumtemperatur
+  des Exports (`InsideTemperature (°C)`) wird nicht gelesen.
 - **Baujahr:** Fehlt `Pset_BuildingCommon.YearOfConstruction` am Gebäude, gilt `YearOfConstruction` aus
   einem beliebigen Satz (Name ohne angehängte Einheit, der Export schreibt `YearOfConstruction (Datum)`
   mit einem Datum als Text), sonst `Constructed` (Ganzzahl); es zählt der erste Wert, aus dem sich ein

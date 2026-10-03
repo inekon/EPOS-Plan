@@ -38911,6 +38911,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_ZONE_OHNE_AUSSEN" xml:space="preserve">
     <value>Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich.</value>
   </data>
+  <data name="IMP_IFC_PROT_ZONE_OHNE_FLAECHEN" xml:space="preserve">
+    <value>Die unbeheizte Zone „{0}“ ({1} m²) hat weder Hülle noch Trennfläche — sie entfällt, ihre Räume bleiben außerhalb der Zonen.</value>
+  </data>
   <data name="IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG" xml:space="preserve">
     <value>Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht. Vorschlag: Regel {2} ({3} Zonen).</value>
   </data>
@@ -38959,6 +38962,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_UWERT_EINHEIT" xml:space="preserve">
     <value>{0} Bauteile: {1}.{2} nennt die Einheit {3} statt W/(m²K) — der Wert gilt nicht als U-Wert; {4} davon bleiben ohne U-Wert aus der Datei.</value>
   </data>
+  <data name="IMP_IFC_PROT_UWERT_NICHT_POSITIV" xml:space="preserve">
+    <value>{0} Bauteile: {1}.{2} = {3} ist kein U-Wert (null oder kleiner) — sie bleiben ohne U-Wert aus der Datei. Ohne Aufbau gelten sie als nicht bewertet (Bodenöffnung, Hilfsbauteil) und trennen keine Geschosse.</value>
+  </data>
   <data name="IMP_IFC_PROT_ANGRENZUNG_AUSSEN" xml:space="preserve">
     <value>{0} Bauteile ohne IsExternal und ohne Raumgrenze: {1} = {2} — als Außenbauteil an Außenluft übernommen.</value>
   </data>
@@ -38976,6 +38982,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_IFC_PROT_NICHT_HUELLE" xml:space="preserve">
     <value>{0} Bauteile ohne Raumgrenze tragen {1} = FALSE — sie zählen nicht zur Hüllfläche.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHEIZUNGSART" xml:space="preserve">
+    <value>{0} Räume beheizt und {1} unbeheizt nach der Beheizungsart der Datei ({2}) — sie gilt vor Namensregel und Lage.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHEIZUNGSART_OFFEN" xml:space="preserve">
+    <value>{0} Räume tragen {1} = {2} — die Datei legt damit nicht fest, ob der Raum in der Hülle liegt; es gelten Namensregel, Lage und Annahme. Bitte die Beheizung dieser Räume prüfen.</value>
   </data>
   <data name="IMP_IFC_PROT_AZIMUT_RUECKFALL" xml:space="preserve">
     <value>{0} Außenbauteile ohne Raumgrenze: Die Himmelsrichtung stammt aus {1}, wie die Datei sie am Bauteil nennt (0° = Nord, im Uhrzeigersinn, ohne Nordwinkel des Modells).</value>
@@ -39018,6 +39030,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_GBXML_PROT_ZONE_OHNE_AUSSEN" xml:space="preserve">
     <value>Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_OHNE_FLAECHEN" xml:space="preserve">
+    <value>Die unbeheizte Zone „{0}“ ({1} m²) hat weder Hülle noch Trennfläche — sie entfällt, ihre Räume bleiben außerhalb der Zonen.</value>
   </data>
   <data name="IMP_GBXML_PROT_ZU_VIELE_ZONEN_VORSCHLAG" xml:space="preserve">
     <value>Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht. Vorschlag: Regel {2} ({3} Zonen).</value>

@@ -550,8 +550,18 @@ namespace EPOS.Kern.Tests
         /// <paramref name="spitzboden"/> — ein Geschoss DG (5200 mm) mit dem Raum „Spitzboden" (20 m², nach dem Namen
         /// beheizt), der die „Oberste Decke" mitreferenziert: Die Datei erklärt sie gegen unbeheizt, die Erklärung gilt vor
         /// dem Bezug und wird benannt.</para>
+        ///
+        /// <para>Drei weitere Abwandlungen nach den Anwenderdateien eines CAD-Exports (Mehrzonenkonzept 6.5):
+        /// <paramref name="beheizungsart"/> — die Beheizungsart <c>HeatingType</c> im Satz <c>CAD_RaumAllgemein</c>: Keller
+        /// <c>bhtUnHeated</c>, Wohnen und Abstellraum <c>bhtHeated</c>, Kind <c>bhtSeparatelyHeated</c>;
+        /// <paramref name="kellerTeil"/> — ein „Hobbyraum" im KG (15 m², <c>bhtHeated</c>), der nur die Kellerwand
+        /// referenziert: Das KG hat beheizte Räume, die Kellerdecke grenzt aber nur an den unbeheizten Keller;
+        /// <paramref name="bodenoeffnung"/> — eine „Bodenöffnung" (Platte, <c>btaHeated</c>, U 0, ohne Aufbau, 8 m²), die
+        /// Wohnen und Schlafen referenzieren; <paramref name="speicher"/> — ein „Speicher" im OG (6 m², <c>bhtUnHeated</c>)
+        /// ohne jeden Bezug: unter Z4 eine unbeheizte Zone ohne Fläche.</para>
         /// </summary>
-        public static byte[] Referenzen(bool schwach = false, bool spitzboden = false)
+        public static byte[] Referenzen(bool schwach = false, bool spitzboden = false, bool beheizungsart = false,
+                                        bool kellerTeil = false, bool bodenoeffnung = false, bool speicher = false)
         {
             using (var b = new Bau(XbimSchemaVersion.Ifc2X3, "ifc2x3_referenzen.ifc"))
             {
@@ -593,6 +603,30 @@ namespace EPOS.Kern.Tests
                     IIfcBuildingStorey dg = b.GeschossEnthalten(g, "DG", 5200);
                     IIfcSpace sb = b.RaumEnthalten(dg, "Spitzboden", 150, 150, 20, 30, 1500, zerlegt: false);
                     b.Bezug(sb, oberste);
+                }
+                if (beheizungsart)
+                {
+                    b.Beheizungsart(keller, "bhtUnHeated");
+                    b.Beheizungsart(wohnen, "bhtHeated");
+                    b.Beheizungsart(abstell, "bhtHeated");
+                    b.Beheizungsart(kind, "bhtSeparatelyHeated");
+                }
+                if (kellerTeil)
+                {
+                    IIfcSpace hobby = b.RaumEnthalten(kg, "Hobbyraum", 6150, 150, 15, 37.5, 2500, zerlegt: false);
+                    b.Beheizungsart(hobby, "bhtHeated");
+                    b.Bezug(hobby, kellerwand);
+                }
+                if (speicher)
+                {
+                    IIfcSpace sp = b.RaumEnthalten(og, "Speicher", 6150, 4150, 6, 15, 2500, zerlegt: false);
+                    b.Beheizungsart(sp, "bhtUnHeated");
+                }
+                if (bodenoeffnung)
+                {
+                    IIfcSlab loch = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Bodenöffnung", "btaHeated", false, 0.0, null, null, 8, 8, null, null);
+                    b.Bezug(wohnen, loch);
+                    b.Bezug(schlafen, loch);
                 }
                 return b.Speichern();
             }
@@ -1003,6 +1037,9 @@ namespace EPOS.Kern.Tests
                     Mengen(f, "CAD_BauteilQuantities", Flaeche("GrossArea", grossArea.Value), Laenge("Width", 5000), Laenge("Length", 5000));
                 return f;
             }
+
+            /// <summary>Die Beheizungsart eines Raums nach dem Muster des CAD-Exports (<c>HeatingType</c>, Aufzählung).</summary>
+            public void Beheizungsart(IIfcSpace r, string wert) => SatzMit(r, "CAD_RaumAllgemein", new[] { Aufzaehlung("HeatingType", wert) });
 
             private void CadEigenschaften(IIfcElement e, string klasse, string angrenzung, bool huelle, double? u,
                                           double? uFalscheEinheit, double? orientierungGrad)

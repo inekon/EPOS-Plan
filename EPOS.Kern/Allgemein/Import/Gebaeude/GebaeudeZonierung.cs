@@ -236,6 +236,8 @@ namespace WindowsFormsApplication1
         internal const string ZONE_ZU_KLEIN = "ZONE_ZU_KLEIN";
         /// <summary>I — {0} Zone: keine Fläche gegen Außenluft oder Erdreich.</summary>
         internal const string ZONE_OHNE_AUSSEN = "ZONE_OHNE_AUSSEN";
+        /// <summary>I — {0} Zone, {1} Fläche: unbeheizt ohne jede Fläche — entfällt, die Räume bleiben außerhalb der Zonen.</summary>
+        internal const string ZONE_OHNE_FLAECHEN = "ZONE_OHNE_FLAECHEN";
         /// <summary>W — {0} Zahl der Zonen, {1} Grenze, {2} vorgeschlagene Regel, {3} deren Zonenzahl: zu viele Zonen.</summary>
         internal const string ZU_VIELE_ZONEN_VORSCHLAG = "ZU_VIELE_ZONEN_VORSCHLAG";
         /// <summary>I — {0} Zone A, {1} Zone B, {2} Fläche: virtuelle Grenze — Vorschlag eines Luftaustauschs.</summary>
@@ -495,6 +497,7 @@ namespace WindowsFormsApplication1
             z.Seiten(melden: false);
             z.Zuschlagen();
             z.HandzuordnungAnwenden();
+            z.OhneFlaechenEntfallen();
             z.KleineMelden();
             z.Seiten(melden: true);
             if (bezug && !z.BeheizteVerbunden())
@@ -981,6 +984,29 @@ namespace WindowsFormsApplication1
                 ZuordnungNeu();
                 Seiten(melden: false);
             }
+        }
+
+        /// <summary>
+        /// <b>Eine unbeheizte Zone ohne jede Fläche entfällt</b> (Mehrzonenkonzept 6.5): keine Hülle, keine Trennfläche, keine
+        /// innere Masse — der Bauteilweg rechnet keine Zone ohne Bauteil, und sie koppelt an nichts. Ihre Räume bleiben
+        /// außerhalb der Zonen (unbeheizt), benannt (<see cref="ZONE_OHNE_FLAECHEN"/>, I). Das tritt ohne Raumgrenzen auf, wenn
+        /// die Datei die Hüllbauteile eines unbeheizten Raums nicht zur Hülle zählt und kein Bezug ihn mit einem beheizten
+        /// Raum verbindet. Eine von Hand gebildete Zone bleibt.
+        /// </summary>
+        private void OhneFlaechenEntfallen()
+        {
+            bool entfallen = false;
+            for (int i = Zonen.Count - 1; i >= 0; i--)
+            {
+                if (Zonen[i].IstBeheizt || Zonen[i].Handgeaendert) continue;
+                if (Flaechen.Any(f => f.Zone == i || (f.Rand == Zonenrand.Zone && f.Nachbarzone == i))) continue;
+                Melden(PruefStufe.Info, ZONE_OHNE_FLAECHEN, Zonen[i].Name, Zahl(Zonen[i].FlaecheM2 ?? 0.0));
+                Zonen.RemoveAt(i);
+                entfallen = true;
+            }
+            if (!entfallen) return;
+            ZuordnungNeu();
+            Seiten(melden: false);
         }
 
         /// <summary>
