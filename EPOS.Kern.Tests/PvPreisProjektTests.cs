@@ -63,9 +63,11 @@ namespace EPOS.Kern.Tests
         // −202.123,0925563547 / −277.543,44727093074.
         // Welle M5 (SB1 a, Basis R33): die PV-Bilanz je Viertelstunde - weniger Direktverbrauch, mehr
         // Einspeisung; vorher -236.955,12368351375 / -203.836,20702448947 / -279.649,33479979425.
-        private const double KW_ERWARTET = -237037.6798966473;
-        private const double KW_BEST = -203893.2343538603;
-        private const double KW_WORST = -279761.1716219004;
+        // RP2a (Erdreich nach DIN EN ISO 13370): weniger Heizwärme; vorher -237.037,6798966473 /
+        // -203.893,2343538603 / -279.761,1716219004.
+        private const double KW_ERWARTET = -233268.8052907059;
+        private const double KW_BEST = -200453.20166795506;
+        private const double KW_WORST = -275444.28444738826;
 
         /// <summary>Die kopierten Investitionszeilen der Vorlage 1040 (20 Zeilen, Erwartet).</summary>
         private const double INVEST_KOPIE = 54975.5;

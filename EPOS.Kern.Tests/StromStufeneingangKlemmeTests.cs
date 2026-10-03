@@ -129,10 +129,10 @@ namespace EPOS.Kern.Tests
         /// wie das BHKW und sieht den Eingang vor dem BHKW. Alle vier bleiben, was R30 führt.
         /// </summary>
         [Theory]
-        [InlineData(1017, 7.35)]
+        [InlineData(1017, 8.17)]
         [InlineData(1018, 0.0)]
         [InlineData(1030, 4790.09)]
-        [InlineData(1047, 8.25)]
+        [InlineData(1047, 9.25)]
         public void Die_Kesselzeile_der_BHKW_Projekte_bleibt_bitgleich(int idProjekt, double strombedarfMwh)
         {
             if (!_db.Vorhanden) return;
@@ -178,7 +178,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, e.Photovoltaik.Strombedarf);
             Assert.Equal(0.0, SimulationErgebnisCtrl.Photovoltaik(r.sim).StrombedarfMwh);
             // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27 457,510347756746 kWh.
-            Assert.Equal(25554.297666056369, r.sim.simulation_pv.BhkwUeberschussGesamtKwh, 6);
+            Assert.Equal(18068.781081846886, r.sim.simulation_pv.BhkwUeberschussGesamtKwh, 6);
         }
 
         private static void Kopiere(string tabelle, string bedingung)

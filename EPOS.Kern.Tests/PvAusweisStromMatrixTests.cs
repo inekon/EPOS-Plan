@@ -120,9 +120,9 @@ namespace EPOS.Kern.Tests
 
             ErgebnisPhotovoltaikModel b = Rechne(1026).Ergebnis.Photovoltaik;
             Assert.Equal(6.713, b.Stromproduktion, 3);     // vor E26 4,197
-            // Welle M5 (SB1 a, Basis R33): vorher 1,246 / 5,467.
-            Assert.Equal(1.249, b.Ueberschuss, 3);
-            Assert.Equal(5.465, b.Stromproduktion - b.Ueberschuss, 3);   // vor E26 2,950
+            // Welle M5 (SB1 a, Basis R33): vorher 1,246 / 5,467. RP2a (Erdreich ISO 13370): vorher 1,249 / 5,465.
+            Assert.Equal(1.268, b.Ueberschuss, 3);
+            Assert.Equal(5.445, b.Stromproduktion - b.Ueberschuss, 3);   // vor E26 2,950
         }
 
         // =====================================================================
@@ -182,8 +182,8 @@ namespace EPOS.Kern.Tests
             {
                 // Welle M5 (SB1 a, Basis R33): vorher 4,441 und 5,348.
                 [1040] = (27.427, 4.437),     // vor E26 8,000 / −14,986
-                [1026] = (31.351, 5.345),     // vor E26 8,000 / −18,004
-                [1042] = (41.345, 0.000)      // vor E26 8,000 / −33,345
+                [1026] = (30.994, 5.324),     // vor E26 8,000 / −18,004; RP2a (Erdreich): vorher 31,351 / 5,345
+                [1042] = (41.206, 0.000)      // vor E26 8,000 / −33,345; RP2a (Erdreich): vorher 41,345
             };
             var rolle = new TarifRolle
             {
@@ -238,8 +238,8 @@ namespace EPOS.Kern.Tests
 
         public static IEnumerable<object[]> Kapitalwertanker()
         {
-            yield return new object[] { 1024, WirtschaftlichkeitSzenario.ERWARTET, -2772642.2674731365 };
-            yield return new object[] { 1024, WirtschaftlichkeitSzenario.BEST, -2801567.756181355 };
+            yield return new object[] { 1024, WirtschaftlichkeitSzenario.ERWARTET, -2760892.3849764639 };
+            yield return new object[] { 1024, WirtschaftlichkeitSzenario.BEST, -2789110.7408091105 };
             // E27 (Entscheid E27‑Q2 a): Anker neu gesetzt. Die zwölf BHKW-Überschussstunden
             // minderten den Netzbezug nicht mehr (4.357,78 → 4.358,17 MWh, +0,39 MWh ×
             // 0,25 €/kWh = +97,50 €/a Energiekosten); vor E27 −31.141.242,708693754.

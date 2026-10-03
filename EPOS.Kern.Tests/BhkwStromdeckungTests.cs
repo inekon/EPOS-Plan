@@ -31,11 +31,11 @@ namespace EPOS.Kern.Tests
         }
 
         [Theory]
-        [InlineData(1017, 55.15)]
+        [InlineData(1017, 49.98)]
         [InlineData(1018, 0.0)]
-        [InlineData(1024, 20.94)]
+        [InlineData(1024, 19.88)]
         [InlineData(1030, 9.02)]
-        [InlineData(1047, 56.20)]
+        [InlineData(1047, 49.54)]
         public void Die_Stromdeckung_ist_der_Eigenverbrauch_am_Gesamtbedarf(int projekt, double gerundet)
         {
             if (!_db.Vorhanden) return;
@@ -78,8 +78,8 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             SimulationControl sim = Lauf(1018).sim;
-            // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): > 27 MWh; jetzt 25,55 MWh.
-            Assert.True(sim.simulation_bhkw.Stromproduktion_BHKW_MWh > 25);
+            // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): > 27 MWh; R33 25,55 MWh; mit dem Erdreich nach ISO 13370 18,07 MWh.
+            Assert.True(sim.simulation_bhkw.Stromproduktion_BHKW_MWh > 18);
             Assert.Equal(0.0, SimulationErgebnisCtrl.BhkwEigenverbrauchMwh(sim), 6);
             Assert.Equal(0.0, SimulationErgebnisCtrl.BhkwStromdeckungProzent(sim), 9);
         }

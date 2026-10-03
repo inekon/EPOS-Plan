@@ -121,12 +121,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, l.Ergebnis.Energiebedarf.Stromrestbedarf);
             Assert.Equal(0.0, l.Ergebnis.BHKW.Reststrombedarf);
             // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575 MWh BHKW-Strom.
-            Assert.Equal(25.5543, l.Ergebnis.BHKW.Stromproduktion, 4);
+            Assert.Equal(18.0688, l.Ergebnis.BHKW.Stromproduktion, 4);
 
             StromMatrix m = StromMatrix.Baue(l.Reihen, new TarifParameter());
             Assert.Equal(0.0, m.BezugGesamtMWh);
             Assert.Equal(0.0, m.KwkEigenGesamtMWh);
-            Assert.Equal(25.5543, m.KwkEinspeisungGesamtMWh, 4);
+            Assert.Equal(18.0688, m.KwkEinspeisungGesamtMWh, 4);
 
             // Rollentarif 0,30 €/kWh: vor E27 −8.237,25 €/a Reststromkosten (Gutschrift).
             StromErloesErgebnis r = Rollentarif(m);
@@ -147,7 +147,7 @@ namespace EPOS.Kern.Tests
             // seiner Nennleistung, taktet in fast jeder Laufstunde und zahlt je Start den
             // Anfahrverlust (+1,11 MWh Gas); vor E4 24,8496 t/a. RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): Das BHKW
             // läuft weniger (Strom 27,46 → 25,55 MWh), der Kessel deckt mehr; vor RB1 25,116 t/a.
-            Assert.Equal(24.5304, v.CO2Gesamt.Value, 4);
+            Assert.Equal(18.5568, v.CO2Gesamt.Value, 4);
         }
 
         // =====================================================================
@@ -197,11 +197,11 @@ namespace EPOS.Kern.Tests
             Assert.True(rest.All(x => x == 0.0 && !double.IsNegative(x)));
             Assert.Equal(0.0, l.Sim.ReststromMwh);
             // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27 457,510347756746 kWh.
-            Assert.Equal(25554.297666056369, l.Sim.simulation_pv.BhkwUeberschussGesamtKwh, 6);
+            Assert.Equal(18068.781081846886, l.Sim.simulation_pv.BhkwUeberschussGesamtKwh, 6);
             Assert.Equal(0.0, l.Ergebnis.BHKW.Reststrombedarf);
 
             StromMatrix m = StromMatrix.Baue(l.Reihen, new TarifParameter());
-            Assert.Equal(25.5543, m.KwkEinspeisungGesamtMWh, 4);
+            Assert.Equal(18.0688, m.KwkEinspeisungGesamtMWh, 4);
             Assert.Equal(6.5997, m.EinspeisungPvGesamtMWh, 4);
         }
 
