@@ -15,7 +15,7 @@ Umsetzungskonzept) liegen in
 **Referenzbasis angemeldet:** **R34 — Sitzung Gebäudesimulation (KP3)**, Anwenderentscheid 03.10.2026; gegenwärtig gilt R33.
 Wer eine Basis neu einfriert, nimmt die nächste freie Nummer nach der angemeldeten (R35) und trägt sie hier ein.
 
-**Schemaschritt angemeldet:** **176 — Sitzung Dialoge und Korrekturen, Welle Konditionierungsnutzung an der Kalenderkopie (Nachzug zu #687), 03.10.2026 17:35 UTC** — hängt an 175; **177 — frei** (zuletzt vergeben: 175 `ProjektkopienKatalogeSchema`, Sitzung Dialoge und Korrekturen, Projektkopien der Kataloge, #687; 174 `AufheizManuellSchema`, Sitzung Gebäudesimulation, KP3 R5, #686; 173 `KatalogfassungStufe2Schema`, Sitzung Dialoge und Korrekturen, KU1 Stufe 2, #685; 172 `KatalogfassungSchema`,
+**Schemaschritt angemeldet:** **176 — Sitzung Dialoge und Korrekturen, Welle Konditionierungsnutzung an der Kalenderkopie (Nachzug zu #687), 03.10.2026 17:35 UTC** — hängt an 175; **177 — Sitzung Simulation Pufferspeicher, Welle V14 Sperrprofil der Wärmepumpe (mehrere Fenster, Mitternachtsübertrag), 03.10.2026 17:41 UTC** — hängt an 176, sobald 176 auf origin liegt; **178 — frei** (zuletzt vergeben: 175 `ProjektkopienKatalogeSchema`, Sitzung Dialoge und Korrekturen, Projektkopien der Kataloge, #687; 174 `AufheizManuellSchema`, Sitzung Gebäudesimulation, KP3 R5, #686; 173 `KatalogfassungStufe2Schema`, Sitzung Dialoge und Korrekturen, KU1 Stufe 2, #685; 172 `KatalogfassungSchema`,
 Sitzung Dialoge und Korrekturen, Welle M6; 171 `PufferOptionenSchema`, Welle M7, #677). Wer eine
 Welle mit Schemaschritt beginnt, trägt hier **vor dem Bau**
 „<Nr> — <Sitzung>, <Welle>, <Datum, Uhrzeit UTC>" ein und pusht allein diese Zeile sofort (`git fetch`,
