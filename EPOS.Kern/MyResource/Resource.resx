@@ -14633,6 +14633,39 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen</value>
   </data>
+  <data name="GEB_BTN_IN_DB" xml:space="preserve">
+    <value>In DB übernehmen</value>
+  </data>
+  <data name="GEB_BTN_IN_DB_HINWEIS" xml:space="preserve">
+    <value>Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen</value>
+  </data>
+  <data name="GEB_TITEL_IN_DB" xml:space="preserve">
+    <value>Gebäude in die Datenbank übernehmen</value>
+  </data>
+  <data name="GEB_LBL_IN_DB_NAME" xml:space="preserve">
+    <value>Name in der Datenbank:</value>
+  </data>
+  <data name="GEB_TEXT_IN_DB_REGEL" xml:space="preserve">
+    <value>Übernommen werden alle Gebäudewerte und die Konditionierung des Gebäudes. Zonen und Bauteile bleiben im Projekt – die Datenbank führt keine Zonen.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_UEBERNOMMEN" xml:space="preserve">
+    <value>Gebäude „{0}“ in die Datenbank übernommen.</value>
+  </data>
+  <data name="GEB_MSG_IN_DB_ZONEN" xml:space="preserve">
+    <value>Gebäude „{0}“ in die Datenbank übernommen. Seine {1} Zonen mit {2} Bauteilen bleiben im Projekt.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Im Projekt ist kein gespeichertes Gebäude gewählt.</value>
+  </data>
+  <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
+    <value>Bitte einen Namen eingeben.</value>
+  </data>
+  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen.</value>
+  </data>
+  <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>aus Projekt {0}, {1}</value>
+  </data>
   <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
     <value>Gebäude: Verbrauch</value>
   </data>

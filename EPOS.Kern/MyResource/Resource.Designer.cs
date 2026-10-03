@@ -28612,6 +28612,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In DB übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_IN_DB {
+            get {
+                return ResourceManager.GetString("GEB_BTN_IN_DB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_IN_DB_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_IN_DB_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
         /// </summary>
         public static string GEB_BTN_SIMULATION {
@@ -28810,6 +28828,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name in der Datenbank: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_IN_DB_NAME {
+            get {
+                return ResourceManager.GetString("GEB_LBL_IN_DB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB: ähnelt.
         /// </summary>
         public static string GEB_LBL_KATALOG {
@@ -28900,6 +28927,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt ist kein gespeichertes Gebäude gewählt. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen eingeben. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_DB_UEBERNAHME_NAME_LEER {
+            get {
+                return ResourceManager.GetString("GEB_MSG_DB_UEBERNAHME_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude gelöscht! ähnelt.
         /// </summary>
         public static string GEB_MSG_GELOESCHT {
@@ -28914,6 +28959,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_IMPORT_AUFGENOMMEN {
             get {
                 return ResourceManager.GetString("GEB_MSG_IMPORT_AUFGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ in die Datenbank übernommen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_IN_DB_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_IN_DB_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ in die Datenbank übernommen. Seine {1} Zonen mit {2} Bauteilen bleiben im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_IN_DB_ZONEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_IN_DB_ZONEN", resourceCulture);
             }
         }
         
@@ -29026,11 +29089,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_IN_DB_NEUE_ZEILE {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_IN_DB_NEUE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg ähnelt.
         /// </summary>
         public static string GEB_SP_RECHENWEG {
             get {
                 return ResourceManager.GetString("GEB_SP_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Projekt {0}, {1} ähnelt.
+        /// </summary>
+        public static string GEB_TEXT_HERKUNFT_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEB_TEXT_HERKUNFT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden alle Gebäudewerte und die Konditionierung des Gebäudes. Zonen und Bauteile bleiben im Projekt – die Datenbank führt keine Zonen. ähnelt.
+        /// </summary>
+        public static string GEB_TEXT_IN_DB_REGEL {
+            get {
+                return ResourceManager.GetString("GEB_TEXT_IN_DB_REGEL", resourceCulture);
             }
         }
         
@@ -29049,6 +29139,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_TITEL {
             get {
                 return ResourceManager.GetString("GEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_TITEL_IN_DB {
+            get {
+                return ResourceManager.GetString("GEB_TITEL_IN_DB", resourceCulture);
             }
         }
         
