@@ -654,15 +654,15 @@ namespace EPOS.Kern.Tests
                 ["MFH_mittel_1984.ifc"] = ("Z5", 1, 59.57, 27.03, 18.6, 62.46, 22.26),
                 ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 41.54, 29.86, 17.14, 43.79, 21.01),
                 ["Sportheim_1970_unsaniert.ifc"] = ("Z5", 1, 67.47, 50.17, 28.33, 72.13, 37.18),
-                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z5", 1, 257.44, 253.34, 137.31, double.NaN, 192.95),
+                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z5", 1, 257.44, 253.34, 137.31, 278.99, 192.95),
                 ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 18.73, 24.0, 10.09, 18.16, 14.33),
                 ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 2, 4163.69, 1906.05, 1362.14, 3991.83, 1473.02),
             };
 
         /// <summary>
         /// <b>Je Anwenderdatei der Durchgang mit der Vorgabe und mit der anderen Regel</b>: Die Vorgabe rechnet fehlerfrei,
-        /// mit den gemessenen Werten (relativ 1 %); der Vergleich rechnet ebenso — außer bei der Verwaltung, deren Z4-Lauf
-        /// der Rechenweg mit verletzter Abschnittsregel ablehnt (Befund, nicht Sache des Imports; im Protokoll).
+        /// mit den gemessenen Werten (relativ 1 %); der Vergleich rechnet ebenso, die Verwaltung unter Z4 mit der
+        /// Lastumkehr im Innern eines geregelten Abschnitts (Rechenbefund RB-Z4, <see cref="ZonenkopplungAbschnittsregelTests"/>).
         /// </summary>
         [Theory]
         [InlineData("MFH_mittel_1984.ifc")]
