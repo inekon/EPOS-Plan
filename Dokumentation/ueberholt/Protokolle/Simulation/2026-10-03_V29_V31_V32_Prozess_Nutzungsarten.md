@@ -1,7 +1,7 @@
 # Protokoll V29/V31/V32 — Prozesstemperatur, Zapf-Nutzungsarten, Nutzungsprofil über IDs (Schemaschritt 178, 03.10.2026)
 
 Anwenderauftrag 03.10.2026 (Folgeauftrag 10). Opus-Agent im Worktree, Zweig `claude/v29-v31-v32` auf `d9b37b11`;
-Merge `edfaaf84`; Kette umgehängt in `46178493`. Statuszeile **#699**.
+Merge `edfaaf84`; Kette umgehängt in `46178493`. Statuszeile **#700**.
 
 ## 1 Was gebaut ist
 

@@ -61,7 +61,7 @@ namespace EPOS.Kern.Tests
     /// bitgleich), mit einem Aufheizplan je Zone (R3), und <b>ein Lauf schreibt drei Zonenzeilen</b> nach
     /// <c>Tab_ErgebnisZone</c>.</item>
     /// </list>
-    /// 1052 steht nicht in der Basis R33; eingefroren wird es mit RP2 (Einfrierregel „gesäte Zonendaten",
+    /// 1052 steht in der Basis R34 (Einfrierregel „gesäte Zonendaten",
     /// <c>Referenzlaeufe/LIESMICH.md</c>).
     /// </summary>
     [Collection("Testdatenbank")]

@@ -2,7 +2,7 @@
 
 Anwenderauftrag 03.10.2026 (Folgeauftrag 4, V47/E-P32, und V30 aus Folgeauftrag 10). Opus-Agent im Worktree, Zweig
 `claude/p4d-pufferauslegung` auf `3766779a`; Merge (Fast-Forward) auf `2bd36693`. Kein Schemaschritt; die Saat der
-neuen Vorgabeschlüssel ist mit der Bereinigung von Schritt 179 nachgetragen. Statuszeile **#701**. Dieses Protokoll
+neuen Vorgabeschlüssel ist mit der Bereinigung von Schritt 179 nachgetragen. Statuszeile **#702**. Dieses Protokoll
 trägt auch das **Gate über alle Wellen** des Tages ab P4b (Abschnitt 4).
 
 ## 1 Was gebaut ist

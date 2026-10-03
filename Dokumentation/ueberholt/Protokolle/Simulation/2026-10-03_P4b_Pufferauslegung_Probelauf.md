@@ -2,7 +2,7 @@
 
 Auftrag „V13 Startzähler Wärmepumpe und BHKW: Umsetzung nach Idee aus Runde 1“ (Anwender, 03.10.2026). Vorgänger
 [`2026-10-03_P4a_Pufferauslegung_Ressourcen_Teillast.md`](2026-10-03_P4a_Pufferauslegung_Ressourcen_Teillast.md).
-Opus-Agent im Worktree, Zweig `claude/p4b-pufferauslegung` auf `73f18c19`; Merge `4793d349`. Statuszeile **#697**.
+Opus-Agent im Worktree, Zweig `claude/p4b-pufferauslegung` auf `73f18c19`; Merge `4793d349`. Statuszeile **#698**.
 
 ## 1 Was gebaut ist
 

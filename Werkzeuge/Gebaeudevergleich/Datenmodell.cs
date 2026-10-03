@@ -59,6 +59,12 @@ namespace Gebaeudevergleich
         internal bool KuehlungAktiv;
         internal bool Gekoppelt;
 
+        /// <summary>Erdreichwiderstand R_g nach DIN EN ISO 13370 [m²K/W] (nur VDI-Weg); NaN = kein Bauteil am Erdreich.</summary>
+        internal double ErdreichRgM2KW = double.NaN;
+
+        /// <summary>Charakteristisches Bodenplattenmaß B′ [m] (nur VDI-Weg); NaN = kein Bauteil am Erdreich.</summary>
+        internal double ErdreichBM = double.NaN;
+
         /// <summary>Die Rechenzeit [s] — nur fürs Protokoll, nie in eine CSV (T11).</summary>
         internal double Sekunden;
     }

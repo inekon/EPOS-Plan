@@ -109,7 +109,7 @@ dotnet build WP-Plan.sln -c Debug -p:Platform=x64          # Windows-Anwendung s
 dotnet build WP-Plan.Kern.slnf -c Release                  # nur die plattformfreien Projekte
 dotnet test  WP-Plan.Kern.slnf -c Release --no-build -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2
 dotnet run --project Proben/ChartProben -c Release          # Diagramm-Renderer ohne Windows
-dotnet run --project EPOS.Referenzlauf -c Release -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049 --ziel <ordner>
+dotnet run --project EPOS.Referenzlauf -c Release -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051 --ziel <ordner>
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis> <neu>
 ```
 
@@ -165,7 +165,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-02_R33_Viertelstunden`, sechzehn Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-03_R34_Erdreich`, achtzehn Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -180,10 +180,16 @@ Katalog, Projekt, gehalten von `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests`),
 Projekt 1050 rechnet als Kopie von 1023 einen Brennwertkessel mit gepflegter Kennlinie,
 Brennwertkennlinie am Rückfall-Rücklauf und gepflegten Taktwerten, gehalten von
 `EPOS.Kern.Tests/KesselKennlinieTests`, und steht nicht in der CI-Auswahl,
+die Gebäude rechnen Bauteile am Erdreich mit dem Erdreichwiderstand nach DIN EN ISO 13370,
+Projekt 1051 rechnet als Kopie von 1007 einen Bürobau mit Konditionierungskalendern (Nachtzeile der
+Lüftung, Ferien, Heizperiode) und Aufheizoptimierung, gehalten von
+`EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests`, Projekt 1052 rechnet als Kopie von 1018 das Hotel in
+drei Zonen mit Zonenkalendern, gehalten von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests`, und steht nicht in
+der CI-Auswahl,
 allein Projekt 1040 bis zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
-1030, 1007, 1017, 1045, 1046, 1047 und 1049; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
+1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
 
 **Einfrierregeln** — wer eines davon ändert, friert im selben Schritt die Basis neu ein und
@@ -242,7 +248,21 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Tab_Einstellungen.Leistungsgrenze`;
 - gesäte Stromfelder der Referenzprojekte: die Einspeisegrenze `Tab_Einstellungen.Einspeisegrenze_Wert` und
   `Einspeisegrenze_Einheit`, an den Projektkopien ihrer Stromspeicher `Standby_Verbrauch` und
-  `Selbstentladung_Prozent_Monat`.
+  `Selbstentladung_Prozent_Monat`;
+- gesäte Zonendaten eines Referenzprojekts: seine Zonen in `Tab_Zone` (jede Spalte), ihre Bauteile in `Tab_Bauteil`
+  samt Fläche, U-Wert, Neigung, Azimut, Randbedingung, ψ·L, Aufbau und den Trennflächen (`ID_Nachbarzone`,
+  `Trennflaeche_Zuordnung`), die Luftströme in `Tab_Zonenluftstrom`, die Zonenkalender (Vorgabezeilen, Kalender und
+  Perioden mit `ID_Zone`) und die Aufheizvorgabe des Projekts (`Tab_Einstellungen.Aufheizoptimierung` und
+  `Aufheiz_*`), dazu das Anlegen oder Entfernen eines Zonen-Referenzprojekts;
+- gesäte Konditionierungsdaten eines Referenzprojekts: der Referenzkatalogbau „Referenzbau Konditionierung“ (Bauwerte,
+  `Kuehlung_Aktiv`, `Sommerlueftung`, die Kalender mit Perioden und Vorgabezeilen — Ferien, Heizperiode, Nachtzeile der
+  Lüftung mit `Bedingt_K`), das Gebäude von 1051 (alle Gebäudezellen, Zuordnung, manuelle Aufheizzeit), an
+  `Tab_Einstellungen` die Aufheizvorgabe (`Aufheizoptimierung`, `Aufheiz_*`), die Ferien, die Heizperiode und der
+  Schalter `Kuehlbetrieb`, dazu das Anlegen oder Entfernen eines Referenzprojekts mit Konditionierung;
+- gesäte Erdreichdaten der Referenzgebäude: Grundfläche und `k_Wert_Grundflaeche` sowie die U-Werte der Bauteile am
+  Erdreich, die Randbedingung der Grundfläche, das Umfangsfeld `Abmessung_Anschluß_Außenwand_Kellerdecke` und die
+  Wände am Erdreich (Neigung 45° bis 135°); dazu die Festwerte λ_Erd, w und R_se und die Abschnittsobergrenze 8 in
+  `GebaeudeFestwerte`.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
