@@ -580,8 +580,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **176**, 82 296 832 Byte, LFS-SHA-256
-`7cf9aadad95ddc0f11f10de81d692c3c4df148d275a1e56178b606a2c8ef1c35`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+`Kenndaten_Test.sqlite` (Schemastand **176**, 83 120 128 Byte, LFS-SHA-256
+`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
 Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
 und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
 Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
@@ -775,6 +775,16 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Bemerkung; `integrity_check` ok). Neue Fassung **82 296 832 Byte, LFS-SHA-256
 > `7cf9aadad95ddc0f11f10de81d692c3c4df148d275a1e56178b606a2c8ef1c35`**. **Die Basis bleibt:** Kein Rechenweg liest die Spalte; die sechzehn Projekte
 > rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Testdatenbank: Konditionierungsprojekt 1051 gesät, 1052 neu gezogen (176), Basis unverändert.** Auf der
+> Fassung ohne 1052 (175) legt `Skripte/referenzprojekt_1051_konditionierung.cs` das Projekt 1051 „Referenzprojekt
+> Konditionierung“ an (Kopie 1007 auf dem Kopierweg des Programms, Referenzkatalogbau aus dem per Probe gewählten
+> Katalogbau, Bauplan am Projekt); danach zieht `Skripte/referenzprojekt_1052_zonen.cs` das Projekt 1052 erneut (Kopie
+> 1018). Diese Fassung `0c1e193e…` (175) ist mit `Werkzeuge/Testdatenbankschema` auf **176** gezogen (eine Spalte; 12
+> Kalender aus der Herkunftsvorlage gesät). Beide Skripte danach `--trocken` ohne Änderung, `integrity_check` ok,
+> `foreign_key_check` leer. Neue Fassung **83 120 128 Byte, LFS-SHA-256
+> `bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`**. **Die Basis bleibt:** Die Vorlagen 1007 und 1018
+> sind zeilengleich, die sechzehn Projekte unberührt; 1051 und 1052 kommen mit RP2 in die Basis.
 
 ### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 
