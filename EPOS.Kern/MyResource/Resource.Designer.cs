@@ -99275,6 +99275,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Stromlast des BHKW“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__BHKW_STROM {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__BHKW_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Stromdeckung“ (Stand bzw. irgendein Stand)? ähnelt.
         /// </summary>
         public static string VF_HAT__BILD__DECKUNG_STROM {
@@ -99298,6 +99307,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_HAT__BILD__HEIZKESSEL {
             get {
                 return ResourceManager.GetString("VF_HAT__BILD__HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Kälteproduktion“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__KAELTE_PRODUKTION {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__KAELTE_PRODUKTION", resourceCulture);
             }
         }
         
@@ -102407,6 +102425,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Stromlast des BHKW — Stromproduktion als Säule, Einspeisung, Reststrombedarf und Strombedarf als Linien im Jahresverlauf — wie das Bild „Stromlast“ des Reiters „BHKW“; leer ohne BHKW. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__BHKW_STROM {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__BHKW_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Anteile an der Stromdeckung (Kuchen; der Rest ist Netzbezug). ähnelt.
         /// </summary>
         public static string VF_STAND__BILD__DECKUNG_STROM {
@@ -102430,6 +102457,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__BILD__HEIZKESSEL {
             get {
                 return ResourceManager.GetString("VF_STAND__BILD__HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Kälteproduktion — je Wärmepumpe im Kühlbetrieb die gedeckte Kälte als Säule, die ungedeckte Kälte grau, der Kältebedarf als Linie im Jahresverlauf — wie das Blatt „Kälte“ des Reiters „Ergebnis“; leer, wenn das Projekt keine Kälte rechnet. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__KAELTE_PRODUKTION {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__KAELTE_PRODUKTION", resourceCulture);
             }
         }
         

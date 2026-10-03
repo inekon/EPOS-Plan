@@ -8,7 +8,8 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Katalog v10 — die Stellen des Simulationsergebnisses</b>: die zehn Ergebnisbilder je Stand
+    /// <b>Katalog v10 — die Stellen des Simulationsergebnisses</b>: die Ergebnisbilder je Stand (zehn der Fassung 10, zwei der
+    /// Fassung 12)
     /// (<see cref="Berichtsbilder.Ergebnisbilder"/>) als Bild und als Excel-Diagramm, ihre Schalter, die Kennwerte des
     /// Speicherlaufs und die solare Deckung — alle aus dem Wertesatz, ohne Datenbank.
     /// </summary>
@@ -31,6 +32,16 @@ namespace EPOS.Kern.Tests
             z.Reihen[ZeitreihenSatz.BedarfSchluessel(Kanal.HEIZUNG)] = bedarf.Select(x => x * 0.8).ToArray();
             z.Reihen[ZeitreihenSatz.BedarfSchluessel(Kanal.BRAUCHWASSER)] = bedarf.Select(x => x * 0.2).ToArray();
             z.Reihen[ZeitreihenSatz.BedarfSchluessel(Kanal.KUEHLUNG)] = bedarf.Select(x => Math.Max(0.0, 200.0 - x)).ToArray();
+            // Katalog v12: Stromlast des BHKW und Kälteproduktion.
+            double[] strom = z.Hole(ZeitreihenSatz.STROMBEDARF);
+            double[] bhkw = z.Hole(ZeitreihenSatz.BHKW_STROM);
+            z.Reihen[ZeitreihenSatz.BHKW_STROMBEDARF] = (double[])strom.Clone();
+            z.Reihen[ZeitreihenSatz.BHKW_RESTSTROM] = strom.Select((x, i) => Math.Max(0.0, x - bhkw[i])).ToArray();
+            double[] kuehl = z.Hole(ZeitreihenSatz.BedarfSchluessel(Kanal.KUEHLUNG));
+            z.Reihen[ZeitreihenSatz.KAELTE_PRAEFIX + "1"] = kuehl.Select(x => 0.7 * x).ToArray();
+            z.Beschriftungen[ZeitreihenSatz.KAELTE_PRAEFIX + "1"] = "WP Kälte";
+            z.Kaeltereihen.Add(ZeitreihenSatz.KAELTE_PRAEFIX + "1");
+            z.Reihen[ZeitreihenSatz.KAELTEREST] = kuehl.Select(x => 0.3 * x).ToArray();
             return z;
         }
 
@@ -38,7 +49,7 @@ namespace EPOS.Kern.Tests
         public void Jedes_Ergebnisbild_hat_mit_seinen_Reihen_ein_Modell_und_ohne_sie_keins()
         {
             ZeitreihenSatz z = Satz();
-            Assert.Equal(10, Berichtsbilder.Ergebnisbilder.Count);
+            Assert.Equal(12, Berichtsbilder.Ergebnisbilder.Count);
             foreach (string name in Berichtsbilder.Ergebnisbilder)
             {
                 Zeichenmodell m = Berichtsbilder.Ergebnisbild(name, z);
@@ -57,7 +68,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_Ergebnisbilder_stehen_in_Fassung_10_Word_und_Excel_die_Streuwolke_nur_Word()
+        public void Die_Ergebnisbilder_stehen_in_Fassung_10_bzw_12_Word_und_Excel_die_Streuwolke_nur_Word()
         {
             foreach (string name in Berichtsbilder.Ergebnisbilder)
             {
@@ -65,8 +76,9 @@ namespace EPOS.Kern.Tests
                 Vorlagenfeld schalter = Vorlagenfeldkatalog.Finde("hat.bild." + name);
                 Assert.NotNull(bild);
                 Assert.NotNull(schalter);
-                Assert.Equal(10, bild.Seit);
-                Assert.Equal(10, schalter.Seit);
+                int fassung = Berichtsbilder.ErgebnisbilderFassung12.Contains(name) ? 12 : 10;
+                Assert.Equal(fassung, bild.Seit);
+                Assert.Equal(fassung, schalter.Seit);
                 Assert.Equal(Vorlagenfeldart.Bild, bild.Art);
                 Assert.Equal(Vorlagenfeldkontext.Stand, bild.Kontext);
                 Assert.Equal(Vorlagenbedarf.Zeitreihen, bild.Bedarf);

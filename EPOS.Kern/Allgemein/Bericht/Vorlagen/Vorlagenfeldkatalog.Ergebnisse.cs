@@ -17,6 +17,9 @@ namespace WindowsFormsApplication1
     /// „Stromspeicher“) und ihr Schalter <c>stand.hat_speicherlauf</c>;</item>
     /// <item>die <b>solare Deckung</b> <c>stand.solarthermie.deckung</c> (die Solarthermie-Kachel der Autarkieanalyse).</item>
     /// </list>
+    /// <b>Katalog v12</b> ergänzt zwei Ergebnisbilder (<see cref="Berichtsbilder.ErgebnisbilderFassung12"/>): die Stromlast
+    /// des BHKW (<c>stand.bild.bhkw_strom</c>) und die Kälteproduktion (<c>stand.bild.kaelte_produktion</c>, leer ohne
+    /// Kälte), Word und Excel.
     /// Alle im Kontext Stand, ohne Zwilling der Paarsicht; die Positionsform <c>stand.&lt;n&gt;.*</c> gilt für sie wie
     /// für jeden Standwert. Die Quellen lesen nur den Wertesatz — das gespeicherte Ergebnis und den Zeitreihensatz des
     /// Laufs —, nie die Datenbank.
@@ -25,6 +28,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Die Fassung der Ergebnisstellen (Katalog v10).</summary>
         internal const int FASSUNG_ERGEBNISSE = 10;
+
+        /// <summary>Die Fassung der Stromlast des BHKW und der Kälteproduktion (Katalog v12).</summary>
+        internal const int FASSUNG_STROM_KAELTE = 12;
 
         /// <summary>Die Einträge der Fassung 10 in Katalogfolge.</summary>
         private static IEnumerable<Vorlagenfeld> Ergebnisse()
@@ -37,8 +43,10 @@ namespace WindowsFormsApplication1
             {
                 string bild = name;
                 string schluessel = "stand.bild." + bild;
+                int seit = Berichtsbilder.ErgebnisbilderFassung12.Contains(bild, StringComparer.Ordinal)
+                    ? FASSUNG_STROM_KAELTE : FASSUNG_ERGEBNISSE;
                 l.AddRange(Bild(schluessel, S, Vorlagenbedarf.Zeitreihen, true,
-                                w => MitStand(w, v => Ergebnisbild(w, v, bild)), FASSUNG_ERGEBNISSE));
+                                w => MitStand(w, v => Ergebnisbild(w, v, bild)), seit));
                 _bildgroessen[schluessel] = (FAKTOR_BREIT, Bildmass.MIN_BREITE);
             }
 

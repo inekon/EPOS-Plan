@@ -65,7 +65,8 @@ namespace EPOS.Kern.Tests
             Assert.All(Vorlagenfeldkatalog.Alle.Where(f => f.Schluessel.StartsWith("hat.tabelle.", StringComparison.Ordinal)
                                                            && f.Schluessel != SCHALTER),
                        f => Assert.Equal(4, f.Seit));
-            Assert.Equal(11, Vorlagenfeldkatalog.KatalogfassungWord);
+            // Die Fassung 11 brachte Word-Schlüssel; spätere Fassungen heben die Word-Fassung weiter (v12: Strom- und Kältebild).
+            Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 11);
         }
 
         [Fact]
