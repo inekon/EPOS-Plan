@@ -42208,5 +42208,11 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
     <value>{0} Innenwände ohne Nachbarraum (innen nach IsExternal oder Angrenzung) zählen einseitig als innere Masse: {1} m² Bruttofläche.</value>
   </data>
+  <data name="IMP_IFC_PROT_NAME_PLATZHALTER" xml:space="preserve">
+    <value>Das Gebäude heißt in der Datei „{0}“ — ein Platzhalter; als Name vorgeschlagen wird der Dateiname „{1}“.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_DATEINAME" xml:space="preserve">
+    <value>Der Dateiname nennt {0}; die Datei führt kein Baujahr. Das Jahr wird nicht übernommen — Baujahr bzw. Baualtersklasse bitte selbst prüfen.</value>
+  </data>
 </root>
 

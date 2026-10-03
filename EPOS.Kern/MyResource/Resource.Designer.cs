@@ -36682,6 +36682,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Dateiname nennt {0}; die Datei führt kein Baujahr. Das Jahr wird nicht übernommen — Baujahr bzw. Baualtersklasse bitte selbst prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUJAHR_DATEINAME {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_DATEINAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pset_BuildingCommon.YearOfConstruction fehlt; Baujahr aus „{0}.{1}“ = „{2}“ gelesen: {3}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUJAHR_RUECKFALL {
@@ -36957,6 +36966,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_MENGE_RUECKFALL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_MENGE_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude heißt in der Datei „{0}“ — ein Platzhalter; als Name vorgeschlagen wird der Dateiname „{1}“. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_NAME_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_NAME_PLATZHALTER", resourceCulture);
             }
         }
         

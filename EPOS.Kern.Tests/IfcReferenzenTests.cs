@@ -16,7 +16,9 @@ namespace EPOS.Kern.Tests
     /// die Räume zweier Geschosse referenzieren, trennt diese Geschosse — mit der Fläche ihrer Menge, je Geschosspaar,
     /// ohne Geometrie (ADR-003) —, und die Geschosszonen (Z4) sind damit ohne Handeingabe gekoppelt; Wände zwischen
     /// zwei bis vier Räumen eines Geschosses sind innere Masse, Innenwände ohne Nachbarraum zählen einseitig. Ohne
-    /// Raumbezüge bleibt Z5 mit dem bisherigen Hinweis; die übrigen Proben bleiben ohne die neuen Meldungen.
+    /// Raumbezüge bleibt Z5 mit dem bisherigen Hinweis; die übrigen Proben bleiben ohne die neuen Meldungen. Dazu
+    /// die zwei Hinweise aus dem Dateinamen: Ein Platzhaltername des Gebäudes weicht im Namensvorschlag dem
+    /// Dateinamen, und ein Jahr im Dateinamen wird nur genannt, nie als Baujahr übernommen.
     /// </summary>
     public sealed class IfcReferenzenTests : IDisposable
     {
@@ -239,6 +241,80 @@ namespace EPOS.Kern.Tests
             Assert.True(Hat(GebaeudeZonierung.Bilden(a.Abbild, 0, "Z4").Meldungen, "GRENZEN_ENTKOPPELT"));
         }
 
+        // ==================================================================
+        //  Dateiname: Platzhaltername und Jahr — nur Hinweise
+        // ==================================================================
+
+        [Theory]
+        [InlineData("Gebäude", true)]
+        [InlineData(" gebäude ", true)]
+        [InlineData("Gebaeude", true)]
+        [InlineData("Building", true)]
+        [InlineData("DEFAULT BUILDING", true)]
+        [InlineData("Haus", true)]
+        [InlineData("Haus A", false)]
+        [InlineData("Probengebäude", false)]
+        [InlineData("", false)]
+        [InlineData(null, false)]
+        public void Platzhalternamen_werden_ohne_Gross_und_Kleinschreibung_erkannt(string name, bool platzhalter)
+            => Assert.Equal(platzhalter, GebaeudeZuordnungsModell.IstPlatzhaltername(name));
+
+        [Fact]
+        public void Ein_Platzhaltername_weicht_im_Vorschlag_dem_Dateinamen_mit_Hinweis()
+        {
+            GebaeudeImportAblauf a = Lesen(PROBE);
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.Equal("Gebäude", g.Name);
+            PruefMeldung m = Assert.Single(g.Meldungen, x => x.Schluessel == P + "NAME_PLATZHALTER");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "Gebäude", "ifc2x3_referenzen" }, m.Werte);
+            GebaeudeImportSatz satz = a.Zuordnen(0, null);
+            Assert.Equal("ifc2x3_referenzen", GebaeudeZuordnungsModell.Vorschlagsname(satz));
+            Assert.Contains(satz.Meldungen, x => x.Schluessel == P + "NAME_PLATZHALTER");
+
+            // Ein eigener Name bleibt, ohne Hinweis.
+            GebaeudeImportAblauf e = Lesen("ifc2x3_enthaltensein.ifc");
+            Assert.Equal("Probengebäude", GebaeudeZuordnungsModell.Vorschlagsname(e.Zuordnen(0, null)));
+            Assert.False(Hat(e.Abbild.Gebaeude.Single().Meldungen, "NAME_PLATZHALTER"));
+        }
+
+        [Theory]
+        [InlineData("MFH_mittel_1984.ifc", 1984)]
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc", 2026)]
+        [InlineData("/daten/2019/Haus_1984.ifc", 1984)]
+        [InlineData("Haus_1984_2020.ifc", null)]
+        [InlineData("Haus_19845.ifc", null)]
+        [InlineData("Haus_1499.ifc", null)]
+        [InlineData("ifc2x3_referenzen.ifc", null)]
+        [InlineData("", null)]
+        public void Der_Dateiname_nennt_genau_ein_Jahr_oder_keines(string datei, int? jahr)
+            => Assert.Equal(jahr, Baujahrregel.JahrImDateinamen(datei));
+
+        [Fact]
+        public void Das_Jahr_im_Dateinamen_ist_nur_ein_Hinweis_wenn_die_Datei_kein_Baujahr_fuehrt()
+        {
+            GebaeudeImportAblauf a;
+            using (var s = new MemoryStream(File.ReadAllBytes(Path.Combine(IfcProbenTests.Ordner(), PROBE))))
+                a = Lesen(s, "Haus_1984.ifc");
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.Null(g.Baujahr);
+            PruefMeldung m = Assert.Single(g.Meldungen, x => x.Schluessel == P + "BAUJAHR_DATEINAME");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "1984" }, m.Werte);
+            GebaeudeImportSatz satz = a.Zuordnen(0, null);
+            Assert.Null(satz.Baujahr);
+            Assert.False(satz.Zeile(GebaeudeZielfelder.BAUJAHR).HatWert);   // nie übernommen
+            Assert.Null(GebaeudeZuordnungsModell.KlasseDerDatei(satz));
+            Assert.Equal("Haus_1984", GebaeudeZuordnungsModell.Vorschlagsname(satz));
+
+            // Die Datei führt ein Baujahr: kein Hinweis aus dem Dateinamen.
+            GebaeudeImportAblauf e;
+            using (var s = new MemoryStream(File.ReadAllBytes(Path.Combine(IfcProbenTests.Ordner(), "ifc2x3_enthaltensein.ifc"))))
+                e = Lesen(s, "Haus_1990.ifc");
+            Assert.Equal(1984, e.Abbild.Gebaeude.Single().Baujahr);
+            Assert.False(Hat(e.Abbild.Gebaeude.Single().Meldungen, "BAUJAHR_DATEINAME"));
+        }
+
         [Fact]
         public void Gegenprobe_die_uebrigen_Proben_bleiben_ohne_die_neuen_Meldungen()
         {
@@ -253,6 +329,8 @@ namespace EPOS.Kern.Tests
                 var alle = a.Meldungen.Concat(a.Abbild?.Gebaeude.SelectMany(g => g.Meldungen) ?? Enumerable.Empty<PruefMeldung>()).ToList();
                 Assert.False(Hat(alle, "TRENNDECKE_REFERENZ"), probe);
                 Assert.False(Hat(alle, "TRENNDECKE_KLEIN"), probe);
+                Assert.False(Hat(alle, "BAUJAHR_DATEINAME"), probe);
+                Assert.False(Hat(alle, "NAME_PLATZHALTER"), probe);
                 if (a.Abbild == null) continue;
                 Assert.All(a.Abbild.Gebaeude, g => Assert.Equal(0, g.ZahlTrenndeckenReferenz));
                 // Die einseitige Innenwand trägt allein die CAD-Probe ohne Raumgrenzen („Innenwand CAD", 12 m²).

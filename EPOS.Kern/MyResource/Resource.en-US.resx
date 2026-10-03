@@ -42201,5 +42201,11 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
     <value>{0} interior walls without an adjacent space (interior by IsExternal or adjacency) count one-sided as internal mass: {1} m² gross area.</value>
   </data>
+  <data name="IMP_IFC_PROT_NAME_PLATZHALTER" xml:space="preserve">
+    <value>The building is named "{0}" in the file — a placeholder; the file name "{1}" is suggested as name.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_DATEINAME" xml:space="preserve">
+    <value>The file name mentions {0}; the file carries no year of construction. The year is not adopted — please check the year of construction or age class yourself.</value>
+  </data>
 </root>
 

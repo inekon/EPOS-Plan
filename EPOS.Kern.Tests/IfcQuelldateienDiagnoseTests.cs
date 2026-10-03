@@ -153,6 +153,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Gebäude", "3", "Keller/EG, EG/OG1, OG1/DG1", "51" }, bezug.Werte);
             Assert.Equal(new[] { "EG;OG1;23.75;96.42;25", "OG1;DG1;2.26;96.42;2" },
                          g.Meldungen.Where(m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_KLEIN").Select(m => string.Join(";", m.Werte)));
+            // Der Platzhaltername „Gebäude" weicht dem Dateinamen; das Baujahr führt die Datei, kein Jahreshinweis.
+            Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_NAME_PLATZHALTER");
+            Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_DATEINAME");
+            Assert.Equal("MFH-Klein-unsaniert-1964", GebaeudeZuordnungsModell.Vorschlagsname(a.Zuordnen(0, null)));
             PruefMeldung einseitig = Assert.Single(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_INNEN_EINSEITIG");
             Assert.Equal(new[] { "19", "89.9" }, einseitig.Werte);
 
