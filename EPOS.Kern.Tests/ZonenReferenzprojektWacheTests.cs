@@ -11,6 +11,36 @@ using Xunit.Abstractions;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
+    /// <b>Der Zonenbestand ohne das Zonenprojekt 1052</b> (G6d): Tests, die auf einer Arbeitskopie eigene Zonen,
+    /// Bauteile, Luftströme oder Zonenkalender anlegen und die Tabellen im Ganzen zählen, zählen ohne die Zeilen von
+    /// 1052 — dem einzigen Projekt der Testdatenbank mit Zonen (<see cref="ZonenReferenzprojektWacheTests"/>). Ohne
+    /// 1052 ist jede Abfrage die Zählung der ganzen Tabelle.
+    /// </summary>
+    internal static class Zonenbestand
+    {
+        /// <summary>Die Gebäude des Zonenprojekts.</summary>
+        internal const string GEBAEUDE_1052 = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1052";
+
+        /// <summary>Die Zonen des Zonenprojekts.</summary>
+        internal const string ZONEN_1052 = "SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (" + GEBAEUDE_1052 + ")";
+
+        /// <summary>Zonen ohne die von 1052.</summary>
+        internal const string ZONEN = "SELECT COUNT(*) FROM Tab_Zone WHERE ID NOT IN (" + ZONEN_1052 + ")";
+
+        /// <summary>Bauteile ohne die von 1052.</summary>
+        internal const string BAUTEILE = "SELECT COUNT(*) FROM Tab_Bauteil WHERE ID_Zone NOT IN (" + ZONEN_1052 + ")";
+
+        /// <summary>Luftströme ohne die von 1052.</summary>
+        internal const string LUFTSTROEME = "SELECT COUNT(*) FROM Tab_Zonenluftstrom WHERE ID_ZoneA NOT IN (" + ZONEN_1052 + ")";
+
+        /// <summary>Die Bedingung „kein Eigentum des Zonenprojekts" an Kalender- und Vorgabezeilen (Spalte <c>ID_Gebaeude</c>).</summary>
+        internal const string NICHT_1052 = "(ID_Gebaeude IS NULL OR ID_Gebaeude NOT IN (" + GEBAEUDE_1052 + "))";
+
+        /// <summary>Die Kalender des Zonenprojekts (die Heizkalender seiner beiden beheizten Zonen).</summary>
+        internal const string KALENDER_1052 = "SELECT ID FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IN (" + GEBAEUDE_1052 + ")";
+    }
+
+    /// <summary>
     /// <b>Wache des Referenzprojekts 1052 „Referenzprojekt Zonen"</b> (Mehrzonenkonzept 9, Stufe G6d) — das
     /// einzige Projekt der Testdatenbank mit Zonen: drei Zonen am Gebäude der Kopie von 1018 (Gästezimmer und
     /// Gastronomie beheizt, Keller unbeheizt am Erdreich), Trennwand, Kellerdecken, ein Luftstrom, ein

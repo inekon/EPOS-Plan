@@ -125,8 +125,8 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Aus dem Stand davor (jede Projektkopie ohne Kennzeichen): 22 Kopien bekommen das Kennzeichen
-        /// nach ihrem Katalogsatz, die Kopie ohne Katalogsatz nach ihrer Beschreibung; die drei
+        /// Aus dem Stand davor (jede Projektkopie ohne Kennzeichen): 23 Kopien bekommen das Kennzeichen
+        /// nach ihrem Katalogsatz (darin die Kopie des Kessels von 1018 im Zonenprojekt 1052, G6d), die Kopie ohne Katalogsatz nach ihrer Beschreibung; die drei
         /// Elektrokessel bleiben (ihr Katalogsatz ist keiner). Ein zweiter Lauf setzt nichts mehr.
         /// </summary>
         [Fact]
@@ -142,13 +142,13 @@ namespace EPOS.Kern.Tests
             var zeilen = new List<string>();
             KesselBrennwertNachzug.Bericht b = KesselBrennwertNachzug.Ausfuehren(zeilen);
             Assert.Equal(kopien, b.Geprueft);
-            Assert.Equal(22, b.AusKatalog.Count);
+            Assert.Equal(23, b.AusKatalog.Count);
             Assert.Single(b.AusBeschreibung);
             Assert.Contains("Kessel " + OHNE_KATALOG, b.AusBeschreibung[0]);
             Assert.Empty(b.OhneZuordnung);
             Assert.Empty(b.Mehrdeutig);
-            Assert.Equal(23, b.Gesetzt);
-            Assert.StartsWith("23 von " + kopien, zeilen[0]);
+            Assert.Equal(24, b.Gesetzt);
+            Assert.StartsWith("24 von " + kopien, zeilen[0]);
             Assert.Contains(zeilen, z => z.Contains(OHNE_KATALOG.ToString(CultureInfo.InvariantCulture)));
 
             Assert.Equal(kopien - ELEKTROKESSEL.Length, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 1"));
