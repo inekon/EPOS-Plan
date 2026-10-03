@@ -907,6 +907,9 @@ namespace EPOS.Kern.Tests
                 // Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat.
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
                 ProjektkopienKatalogeSchema.Ausfuehren(null);
+                // Schritt WaermepumpeSperrprofilSchema.SCHRITT (Welle V14): die Tabelle Tab_Sperrfenster,
+                // leer. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
+                WaermepumpeSperrprofilSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

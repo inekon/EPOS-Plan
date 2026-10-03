@@ -275,6 +275,9 @@ namespace WindowsFormsApplication1
             // mit; die Projektanlage und der Paketimport legen sie aus dem Katalog des Ziels an.
             new Stufe(ProjektkopienKatalogeSchema.SCHRITT, Art.Ddl,
                       "Projektkopien der Brennstoffe und der Vorgaben der Pufferauslegung"),
+            // Die Tabelle kommt leer an; ein Paket ohne Sperrfenster rechnet mit dem Altfenster wie zuvor.
+            new Stufe(WaermepumpeSperrprofilSchema.SCHRITT, Art.Ddl,
+                      "Sperrfenster der Wärmepumpe (Beginn, Dauer, Wochentage, Heizstab)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

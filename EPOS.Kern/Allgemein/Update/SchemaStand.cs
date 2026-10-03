@@ -855,11 +855,15 @@ namespace WindowsFormsApplication1
         /// und ihre wertgleiche Saat; die Konditionierungsvorlagen werden schon bei der Übernahme kopiert
         /// (<see cref="ProjektkopienKatalogeSchema"/>). <b>Ergebnisneutral:</b> Die Kopien tragen die Werte
         /// des Stamms. Die Nummer steht allein bei <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>.
+        /// Danach, mit dem SPERRPROFIL DER WÄRMEPUMPE (Anwenderentscheid 03.10.2026), steht das Ziel auf
+        /// <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/>: die Tabelle <c>Tab_Sperrfenster</c> (STRICT,
+        /// je Anlagenzeile). <b>Ergebnisneutral:</b> Sie kommt leer an. Die Nummer steht allein bei
+        /// <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ProjektkopienKatalogeSchema.SCHRITT;
+        public const int Zielversion = WaermepumpeSperrprofilSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -2674,6 +2674,24 @@ namespace Testdatenbankschema
                                   ProjektkopienKatalogeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt WaermepumpeSperrprofilSchema.SCHRITT (Welle V14): die Tabelle Tab_Sperrfenster,
+            //      leer. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_WaermepumpeSperrprofil bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Ohne Zeilen rechnet allein das Altfenster.
+            string nrSperr = WaermepumpeSperrprofilSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSperr + " - Sperrfenster der Waermepumpe: " +
+                              (WaermepumpeSperrprofilSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSperr = new List<string>();
+                tabellen += WaermepumpeSperrprofilSchema.Ausfuehren(berichtSperr) > 0 ? 1 : 0;
+                foreach (string zeile in berichtSperr)
+                    Console.WriteLine("Schritt " + nrSperr + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSperr + " - vollstaendig: " +
+                                  WaermepumpeSperrprofilSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
