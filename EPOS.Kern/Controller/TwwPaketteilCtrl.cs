@@ -286,6 +286,35 @@ namespace WindowsFormsApplication1
         internal static bool Einspielen(IReadOnlyList<TwwPaketdatei> dateien, string quelle, string vorrang,
                                         bool nurOhneKatalogversion, Action<string> zeile,
                                         out string fehler, out TwwPaketteilZahlen zahlen)
+            => Einspielen(dateien, quelle, vorrang, nurOhneKatalogversion, zeile, null, out fehler, out zahlen);
+
+        /// <summary>
+        /// <b>Trägt einzelne Nutzungsarten des freien Paketteils in einen Katalog nach, der schon eine
+        /// Katalogversion führt</b> (V31, Schemaschritt <see cref="ProzessNutzungSchema"/>): nur die genannten
+        /// Nutzungsarten samt ihren Tagesgangsätzen und Tagesgängen und dem Vorgabesatz der Zapfkategorien
+        /// ihrer Gruppe — kein Parameter, kein Bedarfstag, keine andere Nutzungsart. Eine gleiche Zeile der
+        /// Datenbank bleibt (<see cref="VORRANG_DATENBANK"/>), keine Zeile wird geändert oder gelöscht.
+        /// Ohne Tww-Tabellen oder ohne Katalogversion geschieht nichts — dann bringt
+        /// <see cref="Nachladen"/> den ganzen Paketteil samt dieser Nutzungsarten.
+        /// </summary>
+        /// <returns>Die Zahl der angelegten Nutzungsarten; −1 bei einem Fehler (Grund in <paramref name="fehler"/>).</returns>
+        internal static int NutzungsartenNachtragen(IReadOnlyCollection<string> bezeichner, Action<string> zeile, out string fehler)
+        {
+            fehler = null;
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+                if (!DataRepository.TabelleVorhanden(a.Key)) return 0;
+            if (ZapfprofilCtrl.AktuelleKatalogversion() == null) return 0;
+            var filter = new HashSet<string>(bezeichner ?? Array.Empty<string>(), StringComparer.Ordinal);
+            if (filter.Count == 0) return 0;
+            if (!Einspielen(Eingebettet(), QUELLE_EINGEBETTET, VORRANG_DATENBANK, false, zeile, filter, out fehler,
+                            out TwwPaketteilZahlen zahlen))
+                return -1;
+            return zahlen?.Nutzungsarten ?? 0;
+        }
+
+        private static bool Einspielen(IReadOnlyList<TwwPaketdatei> dateien, string quelle, string vorrang,
+                                       bool nurOhneKatalogversion, Action<string> zeile, ISet<string> nurNutzungsarten,
+                                       out string fehler, out TwwPaketteilZahlen zahlen)
         {
             fehler = null;
             zahlen = null;
@@ -329,6 +358,34 @@ namespace WindowsFormsApplication1
                                                          orte[TwwSchema.TAB_TWW_PARAMETER_STAMM]);
                 Z("ok      jeder Parameter des Paketteils ist ein Schluessel des Programms, in Einheit und Bereich (" +
                   bekannteParameter.ToString(CultureInfo.InvariantCulture) + ")");
+                if (nurNutzungsarten != null)
+                {
+                    // Nur die genannten Nutzungsarten samt ihren Saetzen; alles andere bleibt aussen vor.
+                    List<Dictionary<string, object>> arten = zeilen[TwwSchema.TAB_TWW_NUTZUNGSART_STAMM]
+                        .Where(z => nurNutzungsarten.Contains(Convert.ToString(z["Bezeichner"], CultureInfo.InvariantCulture))).ToList();
+                    var saetze = new HashSet<long>(arten.Where(z => z.TryGetValue("ID_Tagesgangsatz", out object r) && r is long)
+                                                        .Select(z => (long)z["ID_Tagesgangsatz"]));
+                    bool ImSatz(Dictionary<string, object> z, string spalte) => z.TryGetValue(spalte, out object r) && r is long l && saetze.Contains(l);
+                    foreach (string t in new[] { TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, TwwSchema.TAB_TWW_TAGESGANG_STAMM })
+                    {
+                        string spalte = t == TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM ? "ID" : "ID_Tagesgangsatz";
+                        var behalten = Enumerable.Range(0, zeilen[t].Count).Where(i => ImSatz(zeilen[t][i], spalte)).ToList();
+                        zeilen[t] = behalten.Select(i => zeilen[t][i]).ToList();
+                        orte[t] = behalten.Select(i => orte[t][i]).ToList();
+                    }
+                    var artIdx = Enumerable.Range(0, zeilen[TwwSchema.TAB_TWW_NUTZUNGSART_STAMM].Count)
+                        .Where(i => nurNutzungsarten.Contains(Convert.ToString(zeilen[TwwSchema.TAB_TWW_NUTZUNGSART_STAMM][i]["Bezeichner"],
+                                                                              CultureInfo.InvariantCulture))).ToList();
+                    orte[TwwSchema.TAB_TWW_NUTZUNGSART_STAMM] = artIdx.Select(i => orte[TwwSchema.TAB_TWW_NUTZUNGSART_STAMM][i]).ToList();
+                    zeilen[TwwSchema.TAB_TWW_NUTZUNGSART_STAMM] = arten;
+                    foreach (string t in new[] { TwwSchema.TAB_TWW_PARAMETER_STAMM, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
+                                                 TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM })
+                    {
+                        zeilen[t] = new List<Dictionary<string, object>>();
+                        orte[t] = new List<string>();
+                    }
+                    Z("Auswahl: " + arten.Count + " Nutzungsart(en), " + saetze.Count + " Tagesgangsatz/-saetze");
+                }
             }
             catch (InvalidDataException ex)
             {
@@ -363,6 +420,7 @@ namespace WindowsFormsApplication1
                     // (der Katalog führt ihn), treten seine Tagesgänge und die Nutzungsarten,
                     // die auf ihn zeigen, mit ihm zurück — benannt, nie still.
                     var satzIds = new Dictionary<long, long?>();
+                    var neueArten = new HashSet<long>();
                     int nSaetze = 0, nGaenge = 0, nArten = 0;
                     List<Dictionary<string, object>> saetzeZ = zeilen[TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM];
                     for (int i = 0; i < saetzeZ.Count; i++)
@@ -409,8 +467,8 @@ namespace WindowsFormsApplication1
                         }
                         if (Gleich(v, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bezeichner", artname, version, vorrang, meldungen))
                             continue;
-                        Einfuegen(v, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
-                                  new Dictionary<string, object>(artenZ[i], StringComparer.Ordinal) { ["ID_Tagesgangsatz"] = neu.Value }, version);
+                        neueArten.Add(Einfuegen(v, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
+                                                new Dictionary<string, object>(artenZ[i], StringComparer.Ordinal) { ["ID_Tagesgangsatz"] = neu.Value }, version));
                         nArten++;
                     }
 
@@ -478,6 +536,7 @@ namespace WindowsFormsApplication1
                     var jeGruppe = new Dictionary<string, int>(StringComparer.Ordinal);
                     foreach ((long art, string gruppe) in arten)
                     {
+                        if (nurNutzungsarten != null && !neueArten.Contains(art)) continue;   // Nachtrag: nur die neuen
                         List<Dictionary<string, object>> satz = Vorgabesatz(k, gruppe);
                         if (satz.Count == 0)
                         {

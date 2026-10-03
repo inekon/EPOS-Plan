@@ -57,6 +57,17 @@ namespace WindowsFormsApplication1
         /// <summary>Liter je kWh nutzbarer Energie: 1000 / (c · Δϑ · η_s).</summary>
         public double LiterJeKwhNutzbar => 1000.0 / (C * DeltaT * Eta);
 
+        /// <summary>
+        /// Eine Kopie mit anderer Spreizung (Prozesszone mit eigenem Temperaturpaar); Warnliste und
+        /// Maske bleiben geteilt, damit Warnungen der Kopie im Ergebnis ankommen.
+        /// </summary>
+        public PufferRechengroessen MitSpreizung(double deltaT)
+        {
+            var k = (PufferRechengroessen)MemberwiseClone();
+            k.DeltaT = deltaT;
+            return k;
+        }
+
         public void Warnung(string code, PufferStufe stufe, string text, Textbaustein herkunft, PufferZone? zone)
         {
             foreach (PufferWarnung w in Warnungen)

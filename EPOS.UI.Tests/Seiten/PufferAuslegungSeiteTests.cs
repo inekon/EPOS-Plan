@@ -681,7 +681,7 @@ public class PufferAuslegungSeiteEnglischTests : EposBunitContext
             new PufferHerkunftDaten("Erzeuger", "Kaskade", "Cascade", erzeuger)
         };
         start.Erzeuger = new[] { erzeuger };
-        start.NutzungsprofilHerkunft = WindowsFormsApplication1.Nutzungsprofil.Ableiten(new[] { "Mehrfamilienhaus" }, false, null)
+        start.NutzungsprofilHerkunft = WindowsFormsApplication1.Nutzungsprofil.Ableiten(new[] { "Wohnen groß (abgeleitet)" }, false, null)
             .HerkunftBaustein.Aufloesen();
         start.Ergebnis = ergebnis;
 

@@ -50,6 +50,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(AufheizManuellSchema.SCHRITT + 1, ProjektkopienKatalogeSchema.SCHRITT);
             Assert.Equal(175, ProjektkopienKatalogeSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= ProjektkopienKatalogeSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= ProjektkopienKatalogeSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl,
                          Paketanhebung.Stufen.Single(x => x.Nr == ProjektkopienKatalogeSchema.SCHRITT).Wirkung);
         }

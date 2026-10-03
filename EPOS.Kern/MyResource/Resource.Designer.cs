@@ -71099,6 +71099,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die höchster Vorlauf der Erzeuger an der Kaskade ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ERZEUGER_VORLAUF {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ERZEUGER_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Erzeugervorlauf gepflegt: Prüfung nur gegen 95 °C ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ERZEUGER_VORLAUF_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ERZEUGER_VORLAUF_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1 ähnelt.
         /// </summary>
         public static string PAUS_HERK_FRISCHWASSER {
@@ -71365,6 +71383,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_HERK_PARAMETER_TABELLE {
             get {
                 return ResourceManager.GetString("PAUS_HERK_PARAMETER_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturpaar der Prozesswärme ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_PROZESS_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_PROZESS_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Temperaturpaar der Prozesswärme gepflegt: Temperaturpaar des Puffers ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_PROZESS_TEMPERATUR_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_PROZESS_TEMPERATUR_KEINE", resourceCulture);
             }
         }
         
@@ -74254,6 +74290,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PA_PRAXISGRENZE {
             get {
                 return ResourceManager.GetString("PA_PRAXISGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Prozessvorlauf liegt über 95 °C oder über dem höchsten Erzeugervorlauf: Der Puffer kann ihn nicht sicher liefern. ähnelt.
+        /// </summary>
+        public static string PA_PROZESS_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PA_PROZESS_TEMPERATUR", resourceCulture);
             }
         }
         

@@ -5055,6 +5055,46 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="ProzessNutzungSchema.SCHRITT"/> — <b>die Zuordnung der Nutzungsprofile über IDs
+        /// und die Zapf-Nutzungsarten Büro, Schule, Gewerbe</b> (V31/V32). DDL <c>Tab_Nutzungsprofil_STAMM</c>
+        /// und <c>Z_Nutzungsprofil</c> (STRICT), Saat per INSERT OR IGNORE, Nachtrag der drei Nutzungsarten in
+        /// einen versionierten Zapfkatalog. Wiederholbar, ergebnisneutral.
+        /// </summary>
+        public const int SCHRITT_PROZESS_NUTZUNG = ProzessNutzungSchema.SCHRITT;
+        // ---- Stufe KP3, Welle R5: Aufschlag und manuelle Aufheizzeit (E59, E60; KP-S4) ----
+
+        /// <summary>
+        /// Schritt <see cref="AufheizManuellSchema.SCHRITT"/> — <b>Aufschlag und manuelle Aufheizzeit der
+        /// Aufheizoptimierung</b> (Entscheid E59 samt Folgeentscheiden, E60; Entwurf KP3 Abschnitt 4). Er
+        /// folgt auf <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/> und läuft als LETZTER Sichtdurchgang: Er baut die
+        /// Sicht <c>Abfrage_Projektgebaeude</c> zum achten Mal (103 Spalten).
+        ///
+        /// <para><b>DDL:</b> an <c>Tab_Einstellungen</c> <c>Aufheiz_Aufschlag_H</c> und
+        /// <c>Aufheiz_Aufschlag_Prozent</c>, an <c>Tab_Gebaeude</c> <c>Aufheizzeit_Manuell_H</c>, an
+        /// <c>Tab_ErgebnisGebaeude</c> <c>Aufheiz_Art</c>, <c>Auslegungsheizlast_Kw</c> und
+        /// <c>Aufheizzuschlag_Kw</c>, an <c>Tab_ErgebnisZone</c> <c>Aufheiz_Art</c>; der Zustand
+        /// <c>GEKOPPELT</c> der Zone per kleinem Neubau dieser einen Tabelle. Die Anweisungen stehen bei
+        /// <see cref="AufheizManuellSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Felder entstehen leer; KEIN DML an
+        /// Bestandsdaten.</para>
+        /// </summary>
+        public const int SCHRITT_AUFHEIZ_MANUELL = AufheizManuellSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ProjektkopienKatalogeSchema.SCHRITT"/> — <b>die Projektkopien der Brennstoffe
+        /// und der Vorgaben der Pufferauslegung</b> (Anwenderentscheid 03.10.2026). Er folgt auf
+        /// <see cref="SCHRITT_AUFHEIZ_MANUELL"/> und vermerkt an jeder Kopie die Katalogfassung.
+        ///
+        /// <para><b>DDL und Saat:</b> <c>Tab_Brennstoff</c> und <c>Tab_PufferAuslegungParameter</c> (STRICT,
+        /// je Projekt), dann die wertgleichen Kopien aller Projekte. Die Konditionierungsvorlagen brauchen
+        /// keine Tabelle: „Vorlage übernehmen" kopiert ihren Inhalt in das Projektgebäude.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Kopien tragen die Werte des Stamms.</para>
+        /// </summary>
+        public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
+
+        /// <summary>
         /// Schritt <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/> — <b>das Sperrprofil der Wärmepumpe</b>
         /// (Anwenderentscheid 03.10.2026): die Tabelle <c>Tab_Sperrfenster</c> (STRICT, je Anlagenzeile).
         ///
@@ -7315,6 +7355,13 @@ namespace WindowsFormsApplication1
                         "Ein Katalogabgleich aenderte die Werte der Brennstoffe und der Pufferauslegungs-Vorgaben, die " +
                         "ein Projekt liest. KEIN Rechenergebnis aendert sich - die Kopien tragen die Werte des Stamms.",
                         Schritt_ProjektkopienKataloge),
+            // ZUORDNUNG DER NUTZUNGSPROFILE über IDs und Zapf-Nutzungsarten Büro/Schule/Gewerbe (V31/V32). Die
+            // Quelle ist ProzessNutzungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PROZESS_NUTZUNG,
+                        "Tab_Nutzungsprofil_STAMM, Z_Nutzungsprofil, Zapf-Nutzungsarten Buero/Schule/Gewerbe",
+                        "Die Pufferauslegung leitete ihr Nutzungsprofil ueber die Vorgabe im Code ab; die Nutzungsarten " +
+                        "Buero, Schule und Gewerbe fehlten im Zapfkatalog. KEIN Rechenergebnis aendert sich.",
+                        Schritt_ProzessNutzung),
             // SPERRPROFIL der Waermepumpe: die Tabelle der Sperrfenster. Die Quelle ist
             // WaermepumpeSperrprofilSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_WAERMEPUMPE_SPERRPROFIL,
@@ -13414,6 +13461,62 @@ namespace WindowsFormsApplication1
 
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben - " +
+                    (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        private static bool Schritt_ProzessNutzung(Lauf l)
+        {
+            string nr = ProzessNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProzessNutzungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ProzessNutzungSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ProzessNutzungSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Tabellen der Nutzungsprofil-Zuordnung stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern.
+            var zeilen = new List<string>();
+            try
+            {
+                ProzessNutzungSchema.Saat(zeilen);
+            }
+            catch (Exception ex)
+            {
+                foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (!ProzessNutzungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Nach der Saat fehlen Nutzungsprofile oder Zuordnungen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Nutzungsprofil-Zuordnung und Zapf-Nutzungsarten - " +
                     (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

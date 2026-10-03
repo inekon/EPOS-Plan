@@ -278,6 +278,10 @@ namespace WindowsFormsApplication1
             // Die Tabelle kommt leer an; ein Paket ohne Sperrfenster rechnet mit dem Altfenster wie zuvor.
             new Stufe(WaermepumpeSperrprofilSchema.SCHRITT, Art.Ddl,
                       "Sperrfenster der Wärmepumpe (Beginn, Dauer, Wochentage, Heizstab)"),
+            // Ein älteres Paket bringt die Zuordnung der Nutzungsprofile nicht mit; die Auslegung fällt auf
+            // die Vorgabe im Code zurück, bis die Datenbank des Ziels den Schritt trägt.
+            new Stufe(ProzessNutzungSchema.SCHRITT, Art.Ddl,
+                      "Zuordnung der Nutzungsprofile über IDs, Zapf-Nutzungsarten Büro, Schule und Gewerbe"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

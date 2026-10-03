@@ -159,16 +159,16 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             PufferAuslegungGespeichert g = Probe() with
             {
                 BemessendHerkunft = HeizzoneRechner.HERKUNFT_K4,
-                NutzungsprofilHerkunft = Nutzungsprofil.Ableiten(new[] { "Mehrfamilienhaus" }, false, null).HerkunftBaustein
+                NutzungsprofilHerkunft = Nutzungsprofil.Ableiten(new[] { "Wohnen groß (abgeleitet)" }, false, null).HerkunftBaustein
             };
             string de = string.Join("\n", Schreibe(Daten(new List<PufferAuslegungGespeichert> { g })));
             Assert.Contains("VDI 4645 E 2026-03, Gleichung 23 mit Tabellen 14 und 15", de);
-            Assert.Contains(R.PAUS_NP_WOHNEN + " — Zapf-Nutzungsart „Mehrfamilienhaus“", de);
+            Assert.Contains(R.PAUS_NP_WOHNEN + " — Zapf-Nutzungsart „Wohnen groß (abgeleitet)“", de);
 
             string en;
             using (BerichtTexte.ImLauf(true)) en = string.Join("\n", Schreibe(Daten(new List<PufferAuslegungGespeichert> { g })));
             Assert.Contains("VDI 4645 draft 2026-03, equation 23 with tables 14 and 15", en);
-            Assert.Contains("Draw-off use type “Mehrfamilienhaus”", en);
+            Assert.Contains("Draw-off use type “Wohnen groß (abgeleitet)”", en);
             foreach (string marke in new[] { "Gleichung", "Tabellen", "Zapf-Nutzungsart", "Wärmespeicher-Tool", "Vorgabe" })
                 Assert.DoesNotContain(marke, en);
         }

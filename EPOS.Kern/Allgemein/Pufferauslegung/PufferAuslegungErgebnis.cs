@@ -47,13 +47,16 @@ namespace WindowsFormsApplication1
         /// (<see cref="ALLE"/>) — er entsteht erst mit einem Lauf.
         /// </summary>
         public const string STARTS_ABWEICHUNG = "PA-STARTS-ABWEICHUNG";
+        /// <summary>Der Prozessvorlauf liegt über 95 °C oder über dem Vorlauf aller Erzeuger an der Kaskade.</summary>
+        public const string PROZESS_TEMPERATUR = "PA-PROZESS-TEMPERATUR";
 
         /// <summary>Alle Codes der Liste.</summary>
         public static readonly IReadOnlyList<string> ALLE = new[]
         {
             KEIN_PUFFER, BAND_UNTER, BAND_UEBER, ABTAU_VORRANG, STARTS_TAG, STARTS_JAHR, PRAXISGRENZE,
             EXTRAPOLATION, TANK_IM_TANK, OHNE_PUFFER_GEREGELT, HYGIENE_W551, HYGIENE_TEMPERATUR,
-            BW_UEBERDIMENSIONIERT, UEBERGABE_UNBEKANNT, ZWEITERZEUGER_FREI, HEIZSTAB_GESPERRT, KEINE_REIHE
+            BW_UEBERDIMENSIONIERT, UEBERGABE_UNBEKANNT, ZWEITERZEUGER_FREI, HEIZSTAB_GESPERRT, KEINE_REIHE,
+            PROZESS_TEMPERATUR
         };
     }
 

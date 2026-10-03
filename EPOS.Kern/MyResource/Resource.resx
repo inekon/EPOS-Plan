@@ -43957,5 +43957,20 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_WPA_SPERRFENSTER_ERL" xml:space="preserve">
     <value>Sperrfenster der Wärmepumpe als Liste „Beginn-Ende“ in Stunden, getrennt durch Semikolon (z. B. „11-13; 17-19“); jeden Tag, Heizstab mitgesperrt. Ein Fenster über Mitternacht („22-2“) läuft in den Folgetag; leer = keine Sperrzeiten.</value>
   </data>
+  <data name="PA_PROZESS_TEMPERATUR" xml:space="preserve">
+    <value>Der Prozessvorlauf liegt über 95 °C oder über dem höchsten Erzeugervorlauf: Der Puffer kann ihn nicht sicher liefern.</value>
+  </data>
+  <data name="PAUS_HERK_PROZESS_TEMPERATUR" xml:space="preserve">
+    <value>Temperaturpaar der Prozesswärme</value>
+  </data>
+  <data name="PAUS_HERK_PROZESS_TEMPERATUR_KEINE" xml:space="preserve">
+    <value>kein Temperaturpaar der Prozesswärme gepflegt: Temperaturpaar des Puffers</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_VORLAUF" xml:space="preserve">
+    <value>höchster Vorlauf der Erzeuger an der Kaskade</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_VORLAUF_KEINE" xml:space="preserve">
+    <value>kein Erzeugervorlauf gepflegt: Prüfung nur gegen 95 °C</value>
+  </data>
 </root>
 

@@ -212,7 +212,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains(b.Hinweise, h => h.Kennung == "KATALOGIMPORT_OHNE_KATALOGVERSION" && h.Nennt(ziel));
             Assert.All(b.Zeilen, z => Assert.Equal(ziel, z.Katalogversion));
             // Jede Zeile steht schon so im Katalog - nichts angelegt, nichts ersetzt.
-            Assert.Equal(6, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count);
+            Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count);
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Bedarfstag).Count);
             Assert.Equal(42, b.ZeilenVon(TwwImportbereich.Parameter).Count);
             Assert.Equal(0, b.Angelegt);
@@ -278,12 +278,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(b.Zeilen.Count, b.Angelegt);
             Assert.All(b.Zeilen, z => Assert.Equal(RUECKFALL, z.Katalogversion));
 
-            // Die sechs Nutzungsarten, die neun Ecodesign-Bedarfstage und die 42 Parameter.
-            Assert.Equal(6, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count);
+            // Die neun Nutzungsarten (sechs, dazu Büro/Schule/Gewerbe, V31), die neun Ecodesign-Bedarfstage und die 42 Parameter.
+            Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count);
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Bedarfstag).Count);
             Assert.Equal(42, b.ZeilenVon(TwwImportbereich.Parameter).Count);
-            Assert.Equal(5L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
-            Assert.Equal(20L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM));
+            Assert.Equal(8L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
+            Assert.Equal(32L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM));
             Assert.Equal(161L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM));
 
             // Jede Nutzungsart bekommt den Vorgabesatz IHRER Gruppe (Wohnen 4, Nichtwohnen 2).
