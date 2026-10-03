@@ -141,15 +141,31 @@ namespace WindowsFormsApplication1
             if (t == null) return l;
             foreach (DataRow r in t.Rows)
             {
-                string name = Kalenderherkunft.AusBemerkung(Convert.ToString(r["Bemerkung"], CultureInfo.InvariantCulture)).Vorlage;
-                if (string.IsNullOrEmpty(name)) continue;
-                object n = v.Skalar(SQL_VORLAGE_NUTZUNG, new DbParam("@b", name),
-                                    new DbParam("@g", Convert.ToString(r["Groesse"], CultureInfo.InvariantCulture) ?? ""));
-                string nutzung = n == null || n == DBNull.Value ? null : Convert.ToString(n, CultureInfo.InvariantCulture);
-                if (nutzung == null || !DbWerte.KOND_NUTZUNGEN.Contains(nutzung)) continue;
+                string nutzung = NutzungDerHerkunft(v, Convert.ToString(r["Bemerkung"], CultureInfo.InvariantCulture),
+                                                    Convert.ToString(r["Groesse"], CultureInfo.InvariantCulture));
+                if (nutzung == null) continue;
                 l.Add(new KeyValuePair<long, string>(Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture), nutzung));
             }
             return l;
+        }
+
+        /// <summary>
+        /// Die Nutzung der Vorlage, die die <paramref name="bemerkung"/> eines Kalenders der Größe
+        /// <paramref name="groesse"/> als Herkunft nennt — dieselbe Regel wie die Saat dieses Schritts, damit
+        /// ein geschriebener Kalender keinen Stand hinterlässt, den die Saat danach noch füllen müsste.
+        /// <c>null</c> ohne Herkunft, ohne Vorlagentabelle oder ohne gültige Nutzung an der Vorlage.
+        /// </summary>
+        internal static string NutzungDerHerkunft(DbVorgang v, string bemerkung, string groesse)
+        {
+            string name = Kalenderherkunft.AusBemerkung(bemerkung).Vorlage;
+            if (string.IsNullOrEmpty(name)) return null;
+            object vorlagen = v.Skalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?",
+                                       new DbParam("@t", TAB_VORLAGE));
+            if (vorlagen == null || vorlagen == DBNull.Value ||
+                Convert.ToInt64(vorlagen, CultureInfo.InvariantCulture) == 0) return null;
+            object n = v.Skalar(SQL_VORLAGE_NUTZUNG, new DbParam("@b", name), new DbParam("@g", groesse ?? ""));
+            string nutzung = n == null || n == DBNull.Value ? null : Convert.ToString(n, CultureInfo.InvariantCulture);
+            return nutzung != null && DbWerte.KOND_NUTZUNGEN.Contains(nutzung) ? nutzung : null;
         }
 
         /// <summary>Wie viele Kalenderzeilen die Saat noch füllen würde.</summary>

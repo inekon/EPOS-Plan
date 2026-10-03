@@ -101,10 +101,11 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// Das gbXML-Haus nach Geschossen: Zeilen, Aufbauten und Trennflächen stehen — und die Probe lehnt
-        /// den Vorschlag benannt ab, weil der unbeheizte Keller als eigene Zone nur Betonwände ohne Dämmung
-        /// gegen Erdreich trägt: Ihr Leitwert übersteigt den der inneren Oberfläche, Gl. (28) der VDI 6007
-        /// hat dafür keinen Setzwert (im Einzonenweg liegt der Keller außerhalb der Zone).
+        /// Das gbXML-Haus nach Geschossen: Zeilen, Aufbauten und Trennflächen stehen, und die Probe nimmt den
+        /// Vorschlag an. Der unbeheizte Keller trägt als eigene Zone nur Betonwände ohne Dämmung gegen Erdreich;
+        /// ohne Erdreichwiderstand überstieg ihr Leitwert den der inneren Oberfläche (Gl. (28) der VDI 6007 hat
+        /// dafür keinen Setzwert). Mit dem Erdreichwiderstand nach DIN EN ISO 13370 (Rechenweg RP2a) in Reihe
+        /// bleibt der Leitwert darunter.
         /// </summary>
         [Fact]
         public void Das_gbXML_Haus_nach_Geschossen_traegt_Aufbauten_und_Trennflaechen()
@@ -112,9 +113,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportAblauf a = BauteilvorschlagProbe.Lesen("gbxml_haus_si.xml");
             GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.BildenMitZonen(a, 0, null, "X2");
             Zeigen(v);
-            PruefMeldung f = Assert.Single(v.Meldungen, m => m.Stufe == PruefStufe.Fehler);
-            Assert.Equal(GebaeudeBauteilvorschlag.BAUTEILWEG, f.Schluessel);
-            Assert.StartsWith("Keller:", f.Werte[0], StringComparison.Ordinal);
+            Assert.DoesNotContain(v.Meldungen, m => m.Stufe == PruefStufe.Fehler);
             Assert.Equal(new[] { "Erdgeschoss", "Obergeschoss", "Keller" }, v.Zonen.Select(z => z.Bezeichner));
             Assert.Equal(new[] { true, true, false }, v.Zonen.Select(z => z.IstBeheizt));
             List<GebaeudeBauteilzeile> trenn = Trennzeilen(v);

@@ -2,7 +2,7 @@
 
 Anwenderauftrag 03.10.2026 (Folgeauftrag 4, V47/E-P32, und V30 aus Folgeauftrag 10). Opus-Agent im Worktree, Zweig
 `claude/p4d-pufferauslegung` auf `3766779a`; Merge (Fast-Forward) auf `2bd36693`. Kein Schemaschritt; die Saat der
-neuen Vorgabeschlüssel ist mit der Bereinigung von Schritt 179 nachgetragen. Statuszeile **#699**. Dieses Protokoll
+neuen Vorgabeschlüssel ist mit der Bereinigung von Schritt 179 nachgetragen. Statuszeile **#701**. Dieses Protokoll
 trägt auch das **Gate über alle Wellen** des Tages ab P4b (Abschnitt 4).
 
 ## 1 Was gebaut ist
@@ -31,7 +31,7 @@ Nutzung, die seit Schritt 176 als Kopie in `Tab_Konditionierungskalender.Nutzung
 KP1b, #687, 176); ein Fremdschlüssel auf die Vorlagentabelle würde Katalogabgleich und Vorlagenlöschen auf Projektdaten
 durchschlagen lassen. Schritt 179 trägt damit sechs Spalten (`Tab_PufferAuslegung` fünf, `Tab_Pufferspeicher.ID_Stamm`)
 und sät die Vorgabeschlüssel `Pufferauslegung.Aufheiz.*` (Saat 148 → 154). Testdatenbank aus der Fassung 176 neu
-gehoben: 82 345 984 Byte, LFS-SHA-256 `d882e060b01509f1a62c1906ee4954de797f0f243dba78ef1b138139ade71057` (Fassung 176 → Zapfkatalog-Skript 24 Zeilen → Schemawerkzeug 176 → 179; `integrity_check` ok, `foreign_key_check` leer, Saat 154, STRICT 163)
+gehoben: 83 169 280 Byte, LFS-SHA-256 `799da43afcbd99469445311e8c5168109df5fed5a87f7da69d8a984fbadf57f2` (origin-Fassung 176 `bb8dd3dc…` mit den Referenzprojekten 1051 und 1052 → Zapfkatalog-Skript 24 Zeilen → Schemawerkzeug 176 → 179; `integrity_check` ok, `foreign_key_check` leer, Saat 154, STRICT 163)
 
 ## 4 Gate über alle Wellen des Tages ab P4b (Stand `80e1e5b9` plus Papiere)
 

@@ -673,7 +673,9 @@ namespace EPOS.Kern.Tests
         /// BHKW) — zusammen 126 von 133, 33 von 40. Das Referenzprojekt Kesselkennlinie 1050 (Kopie
         /// von 1023) bringt dessen 2 Positionen mit (Wärmepumpe und Kessel), beide ohne Dauer und
         /// betragstragend — zusammen 128 von 135, 35 von 42. Das Zonenprojekt 1052 (Kopie von 1018, G6d)
-        /// bringt wie 1049 dessen 11 Positionen mit — zusammen 139 von 146, 36 von 43.
+        /// bringt wie 1049 dessen 11 Positionen mit — zusammen 139 von 146, 36 von 43. Das Referenzprojekt
+        /// Konditionierung 1051 (Kopie von 1007, KP3) bringt dessen 8 Positionen mit, alle ohne Dauer —
+        /// zusammen 147 von 154.
         /// </summary>
         [Fact]
         public void Die_Testdatenbank_traegt_27_von_33_betragstragenden_Positionen_ohne_Dauer()
@@ -681,8 +683,8 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.Equal(146, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
-            Assert.Equal(139, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
+            Assert.Equal(154, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
+            Assert.Equal(147, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
                                   "AND (Nutzungsdauer IS NULL OR Nutzungsdauer < 1)"));
 
             int ohne = 0, alle = 0, hinweise = 0;

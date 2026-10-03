@@ -34041,6 +34041,12 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_G6_MUSTERWECHSEL" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} – in {1} Zonenstunden wechselte die Regelungslage zwischen zwei Durchläufen; das Muster des ersten Durchlaufs wurde gehalten ({2}-mal war es nicht haltbar).</value>
   </data>
+  <data name="SIMENG_ZONE_ABSCHNITTE" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – in {1} Stunden kehrte ein Abschnitt im Innern um, nachdem die Stunde schon {2} Abschnitte hatte; an dieser Umkehr wurde nicht mehr geschnitten (Obergrenze der Innenprüfung).</value>
+  </data>
+  <data name="SIMENG_ERDREICH_UMFANG" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – der freiliegende Umfang der Bodenplatte fehlt oder ist kleiner als der Umfang des flächengleichen Kreises; der Erdreichwiderstand nach DIN EN ISO 13370 rechnet mit dem flächengleichen Quadrat P = {1} m (B′ = {2} m, U_g = {3} W/(m²K)).</value>
+  </data>
   <data name="SIMENG_G6_MEHRZONEN_EINZELWEG" xml:space="preserve">
     <value>{0}: Mit {1} Zonen rechnet das Gebäude Heizung und Kühlung je Zone ideal und ohne Anlagenkopplung; diese Auskunft gilt nur für ein Gebäude mit höchstens einer Zone.</value>
   </data>

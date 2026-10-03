@@ -34034,6 +34034,12 @@ Do you want to allow this?</value>
   <data name="SIMENG_G6_MUSTERWECHSEL" xml:space="preserve">
     <value>VDI 6007 building model: {0} – in {1} zone hours the control state changed between two passes; the pattern of the first pass was kept ({2} times it could not be kept).</value>
   </data>
+  <data name="SIMENG_ZONE_ABSCHNITTE" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – in {1} hours a section reversed in its interior after the hour already had {2} sections; this reversal was not split any more (limit of the interior check).</value>
+  </data>
+  <data name="SIMENG_ERDREICH_UMFANG" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – the exposed perimeter of the ground floor is missing or smaller than that of the circle of equal area; the ground resistance to EN ISO 13370 uses the square of equal area P = {1} m (B′ = {2} m, U_g = {3} W/(m²K)).</value>
+  </data>
   <data name="SIMENG_G6_MEHRZONEN_EINZELWEG" xml:space="preserve">
     <value>{0}: with {1} zones the building calculates heating and cooling ideally per zone and without plant coupling; this information applies only to a building with at most one zone.</value>
   </data>

@@ -323,5 +323,30 @@
 
         /// <summary>War die Kühlübergabe in dieser Stunde die Grenze — ja/nein?</summary>
         internal bool KuehlUebergabeBegrenzt => KuehlUebergabeBegrenztAnteil > 0.0;
+
+        /// <summary>
+        /// <b>Messung der inneren Lastumkehr</b> (Rechenweg RP2a; nur mit eingeschalteter Messung, sonst 0):
+        /// die Leistung mit falschem Vorzeichen [J], die geregelte Abschnitte dieser Stunde im Innern
+        /// verrechnet haben, obwohl Mittel und Endpunkt zulässig waren.
+        /// </summary>
+        internal double MessungUmkehrJ { get; init; }
+
+        /// <summary>Zahl der Abschnitte dieser Stunde mit innerer Lastumkehr (Messung RP2a).</summary>
+        internal int MessungUmkehrAbschnitte { get; init; }
+
+        /// <summary>
+        /// Die Bandverletzung im Innern der Totband-Abschnitte dieser Stunde [K·s] (Messung RP2a): das
+        /// Integral, um das die Raumluft das Band [θ_soll; θ_max] verlässt, obwohl Anfang und Ende im Band liegen.
+        /// </summary>
+        internal double MessungBandKs { get; init; }
+
+        /// <summary>Zahl der Totband-Abschnitte dieser Stunde mit innerer Bandverletzung (Messung RP2a).</summary>
+        internal int MessungBandAbschnitte { get; init; }
+
+        /// <summary>
+        /// Hat die Stunde eine innere Umkehr erkannt, an der sie wegen der Obergrenze
+        /// (<see cref="Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE"/>) nicht mehr geschnitten hat (Rechenweg RP2a)?
+        /// </summary>
+        internal bool InnenpruefungGedeckelt { get; init; }
     }
 }

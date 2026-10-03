@@ -111,11 +111,11 @@ namespace EPOS.Kern.Tests
         /// 15 MWh/a (SV1, R30) 17,1 bzw. 24,6 MWh, 1024 nichts — dort fehlt die Reihe (Schwelle 0,5 kWh).
         /// </summary>
         [Theory]
-        [InlineData(1018, 25.5543)]   // vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575
+        [InlineData(1018, 18.0688)]   // vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575
         [InlineData(1030, 0.392)]
-        [InlineData(1017, 17.1199)]
+        [InlineData(1017, 16.5686)]
         [InlineData(1024, 0.0)]
-        [InlineData(1047, 24.5972)]
+        [InlineData(1047, 21.8424)]
         public void Reiter_Reihe_und_KWK_Split_fuehren_dieselbe_Einspeisung(int idProjekt, double erwartetMwh)
         {
             if (!_db.Vorhanden) return;
@@ -167,7 +167,7 @@ namespace EPOS.Kern.Tests
 
             var bh = SimulationErgebnisCtrl.Bhkw(r.sim, r.simulation_Waermebedarf, r.simulation_Strombedarf);
             // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575 MWh.
-            Assert.Equal(25.5543, bh.EinspeisungMwh, 4);
+            Assert.Equal(18.0688, bh.EinspeisungMwh, 4);
 
             // E29‑Q10 a: der PV-Deckungsgrad bleibt ≤ 100 % und ist in Ergebnis und Ansicht gleich.
             ErgebnisModel e = SimulationRunner.BaueErgebnis(1018, r.simulation_Waermebedarf,
@@ -283,11 +283,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Stromgang (Bild, Summenlinie, CSV) stapelt als „Heizkessel" den Stromverbrauch
-        /// des Kessels — 1017: 20,12 MWh, nicht den Strom-Stufeneingang 7,35 MWh; 1030: 0 statt
+        /// des Kessels — 1017: 14,78 MWh, nicht den Strom-Stufeneingang 8,17 MWh; 1030: 0 statt
         /// 4.790,09 MWh.
         /// </summary>
         [Theory]
-        [InlineData(1017, 20.12, 7.35)]
+        [InlineData(1017, 14.78, 8.17)]
         [InlineData(1030, 0.0, 4790.09)]
         public void Der_Stromgang_fuehrt_den_Stromverbrauch_des_Kessels(int idProjekt, double verbrauchMwh,
                                                                        double stufeneingangMwh)

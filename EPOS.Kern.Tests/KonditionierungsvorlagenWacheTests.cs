@@ -500,9 +500,9 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL("DELETE FROM \"Tab_Konditionierungsvorlage_STAMM\""));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorgabe\" WHERE \"ID_Vorlage\" IS NOT NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungskalender\" WHERE \"ID_Vorlage\" IS NOT NULL"));
-            // Ohne die Perioden der Zonenkalender von 1052 (G6d, Zonenbestand).
+            // Ohne die Perioden der Zonenkalender von 1052 (G6d, Zonenbestand) und der Kalender von 1051 (KP3, RP1).
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsperiode\" WHERE \"ID_Kalender\" NOT IN (" +
-                                  Zonenbestand.KALENDER_1052 + ")"));
+                                  Zonenbestand.KALENDER_1052 + ") AND \"ID_Kalender\" NOT IN (" + Konditionierungsbestand.KALENDER_1051 + ")"));
             Assert.False(KonditionierungsvorlagenSaatSchema.Vollstaendig());
 
             KonditionierungsvorlagenSaatSchema.Bericht b = KonditionierungsvorlagenSaatSchema.Ausfuehren(null);
@@ -514,7 +514,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(46L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorgabe\" WHERE \"ID_Vorlage\" IS NOT NULL"));
             Assert.Equal(10L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungskalender\" WHERE \"ID_Vorlage\" IS NOT NULL"));
             Assert.Equal(90L, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsperiode\" WHERE \"ID_Kalender\" NOT IN (" +
-                                   Zonenbestand.KALENDER_1052 + ")"));
+                                   Zonenbestand.KALENDER_1052 + ") AND \"ID_Kalender\" NOT IN (" + Konditionierungsbestand.KALENDER_1051 + ")"));
         }
 
         // =============================================================================

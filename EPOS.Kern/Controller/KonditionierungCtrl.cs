@@ -669,9 +669,11 @@ namespace WindowsFormsApplication1
             string groesse = Konditionierungsgroessen.Kennwort(kalender.Groesse);
 
             // Die Nutzung der Herkunftsvorlage (Schemaschritt KonditionierungNutzungSchema) reist mit,
-            // solange die Herkunft dieselbe Vorlage nennt; eine neue Herkunft setzt der Aufrufer
-            // („Vorlage übernehmen"), ohne Herkunft bleibt sie leer.
+            // solange die Herkunft dieselbe Vorlage nennt; eine neue Herkunft nimmt die Nutzung ihrer
+            // Vorlage nach der Regel der Saat (auch im OK-Weg des Arbeitsstands), ohne Herkunft bleibt sie leer.
             string nutzung = BleibendeNutzung(v, eigner, groesse, zeile.Bemerkung);
+            if (nutzung == null && KonditionierungNutzungSchema.SpalteDa(v))
+                nutzung = KonditionierungNutzungSchema.NutzungDerHerkunft(v, zeile.Bemerkung, groesse);
 
             // Der vorhandene Kalender dieser Groesse faellt samt Perioden (Kaskade); so laeuft
             // das Ersetzen nicht in den Teilindex der Eindeutigkeit (Konzept 5.1).
