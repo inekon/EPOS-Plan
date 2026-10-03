@@ -236,6 +236,9 @@ public static class Vorlagenfeldorte
         O("stand.tabelle.heizkessel", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_HEIZKESSEL), "tafel.kessel");
         O("stand.bild.solarthermie", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_SOLARTHERMIE), "bild.solarthermie");
         O("stand.bild.bhkw", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BHKW), "bild.bhkw");
+        // Katalog v12: die Stromlast des BHKW und die Kälteproduktion des Blatts „Kälte“ im Reiter „Ergebnis“ (ähnlich).
+        O("stand.bild.bhkw_strom", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BHKW), "bild.bhkw_strom");
+        O("stand.bild.kaelte_produktion", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "bild.kaelte_produktion");
         O("stand.bild.photovoltaik", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_PHOTOVOLTAIK), "bild.photovoltaik");
 
         // ---- Simulation › Ergebnis › Wärmepumpe und Stromspeicher ------------------------
