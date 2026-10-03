@@ -52,6 +52,12 @@ namespace Auslieferungsvorlage.Tests
         {
             get
             {
+                // Ein GEHOBENER Stand der Testdatenbank (Werkzeuge/Testdatenbankschema auf einer Kopie),
+                // solange ein neuer Schemaschritt die Datei im Repository noch nicht erreicht hat: Die
+                // Abnahme des Werkzeugs verlangt den Zielstand. Die Datei im Repository bleibt unberuehrt.
+                string umweg = Environment.GetEnvironmentVariable("EPOS_TESTDATENBANK");
+                if (!string.IsNullOrEmpty(umweg) && File.Exists(umweg)) return umweg;
+
                 string p = Path.Combine(Repowurzel, "Referenzlaeufe", "Kenndaten_Test.sqlite");
                 return File.Exists(p) ? p : null;
             }

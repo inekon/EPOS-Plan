@@ -198,7 +198,13 @@ namespace Auslieferungsvorlage.Tests
             // 153 seit KP1b der Gebaeudesimulation (Schemaschritt 152, KonditionierungVorlagenSchema):
             // Tab_Konditionierungsvorlage_STAMM, STRICT von ihrer ersten Zeile an; Kalender- und
             // Vorgabetabelle bleiben nach ihrem Neubau STRICT (der Zieltext traegt ") STRICT" weiter).
-            Assert.Equal(153, befund.Strict);
+            //
+            // 154 seit dem Betriebskalender der Bedarfsprofile (BedarfNetzKalenderSchema, Welle M3b):
+            // Tab_Betriebskalender, STRICT von ihrer ersten Zeile an.
+            //
+            // 156 seit dem Schemaschritt der Katalogfassung (KatalogfassungSchema, Welle M6: KU1 Stufe 1
+            // und EQ1): Tab_Katalogabgleich und Tab_ErgebnisErdreich, STRICT von ihrer ersten Zeile an.
+            Assert.Equal(156, befund.Strict);
         }
 
         // =============================================================================

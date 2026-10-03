@@ -49,6 +49,16 @@ namespace Auslieferungsvorlage
         /// </summary>
         internal string Kesselkatalog { get; private set; }
 
+        /// <summary>
+        /// Die Katalogfassung des Katalogpakets (<c>--katalogfassung</c>, Entscheidungsvorlage
+        /// Modellgrenzen KU1 Stufe 1): eine ganze Zahl ≥ 1, die mit jeder Auslieferung wächst.
+        /// Vorgabe ist das Datum des Laufs als <c>JJJJMMTT</c> — damit ist die Fassung einer späteren
+        /// Freigabe immer größer, ohne dass jemand zählen muss.
+        /// </summary>
+        internal int Katalogfassung { get; private set; } =
+            int.Parse(DateTime.Now.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
+                      System.Globalization.CultureInfo.InvariantCulture);
+
         /// <summary>Der Grund, warum die Zeile nicht taugt; <c>null</c> = in Ordnung.</summary>
         internal string Fehler { get; private set; }
 
@@ -81,6 +91,10 @@ namespace Auslieferungsvorlage
             Console.WriteLine("  --katalogleerung-zulassen");
             Console.WriteLine("                    Nur mit --kataloge readonly wirksam: nicht abbrechen, wenn");
             Console.WriteLine("                    die ReadOnly-Regel eine Katalogtabelle vollstaendig leert.");
+            Console.WriteLine("  --katalogfassung <n>");
+            Console.WriteLine("                    Die Fassung des Katalogpakets (ganze Zahl ab 1), das neben der");
+            Console.WriteLine("                    Vorlage als Katalogpaket.json entsteht (KU1 Stufe 1). Vorgabe:");
+            Console.WriteLine("                    das Datum des Laufs als JJJJMMTT.");
             Console.WriteLine("  --katalogpaket <ordner>");
             Console.WriteLine("                    Das Tww-Katalogpaket des Zapfprofilgenerators: je Tabelle eine");
             Console.WriteLine("                    Datei <Tab_Tww..._STAMM>.csv (UTF-8, Kopfzeile, Status AUSLIEFERUNG).");
@@ -135,6 +149,13 @@ namespace Auslieferungsvorlage
                         if (++i >= args.Length) return a.Mit("--katalogpaket braucht einen Ordner.");
                         string paketgrund = a.KatalogpaketPruefen(args[i]);
                         if (paketgrund != null) return a.Mit(paketgrund);
+                        break;
+                    case "--katalogfassung":
+                        if (++i >= args.Length) return a.Mit("--katalogfassung braucht eine ganze Zahl.");
+                        if (!int.TryParse(args[i], System.Globalization.NumberStyles.None,
+                                          System.Globalization.CultureInfo.InvariantCulture, out int fassung) || fassung < 1)
+                            return a.Mit("--katalogfassung braucht eine ganze Zahl ab 1: " + args[i]);
+                        a.Katalogfassung = fassung;
                         break;
                     case "--kesselkatalog":
                         if (++i >= args.Length) return a.Mit("--kesselkatalog braucht einen Ordner.");
