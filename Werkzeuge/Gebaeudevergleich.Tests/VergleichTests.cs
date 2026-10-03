@@ -83,12 +83,13 @@ namespace Gebaeudevergleich.Tests
             _aus.WriteLine("T1: " + Id(geprueft) + " Gebäude der Basis auf dem VDI-Weg geprüft.");
             Assert.True(geprueft >= 15, "Zu wenige Gebäude in der Basis: " + Id(geprueft));
 
-            // Der Anker aus dem Auftrag: 1045/10651.
+            // Der Anker aus dem Auftrag: 1045/10651 — Basis R34 (Erdreichwiderstand).
             Dictionary<string, string> anker = a.Zeile(1045, 10651);
-            Relativ(75.9406927, Werkzeuglauf.Zahl(anker["Jahr_MWh_neu"]), "1045 Jahr");
-            Relativ(39.6751852, Werkzeuglauf.Zahl(anker["Spitze_Stunde_kW_neu"]), "1045 Spitze");
-            Relativ(28.9795791, Werkzeuglauf.Zahl(anker["Spitze_24h_Mittel_kW_neu"]), "1045 24-h-Mittel");
-            Relativ(21.6898285, Werkzeuglauf.Zahl(anker["Q95_kW_neu"]), "1045 Q95");
+            Relativ(73.545298, Werkzeuglauf.Zahl(anker["Jahr_MWh_neu"]), "1045 Jahr");
+            Relativ(39.2363252, Werkzeuglauf.Zahl(anker["Spitze_Stunde_kW_neu"]), "1045 Spitze");
+            Relativ(28.5007901, Werkzeuglauf.Zahl(anker["Spitze_24h_Mittel_kW_neu"]), "1045 24-h-Mittel");
+            Relativ(21.2389902, Werkzeuglauf.Zahl(anker["Q95_kW_neu"]), "1045 Q95");
+            Assert.Contains("U-ERD", anker["Regeln"].Split(' '));
         }
 
         [Fact]
@@ -116,7 +117,8 @@ namespace Gebaeudevergleich.Tests
             Assert.NotNull(z);
             Relativ(59.354116, Werkzeuglauf.Zahl(z["Jahr_MWh_alt"]), "1045 alt");
             double delta = Werkzeuglauf.Zahl(z["Jahr_MWh_delta_proz"]);
-            Assert.InRange(delta, 27.5, 28.5);
+            // Basis R34 (Erdreichwiderstand): Δ 23,91 %.
+            Assert.InRange(delta, 23.4, 24.4);
             Assert.Equal("erklärt", z["Ampel"]);
             Assert.Contains("U-MW", z["Regeln"].Split(' '));
             Assert.Equal("kein Katalogwert", z["Katalogtreffer"]);
@@ -189,7 +191,8 @@ namespace Gebaeudevergleich.Tests
             // 1017 (und jedes gekühlte Basisgebäude): U-KU und die Kälte des Laufs.
             Dictionary<string, string> k = a.Zeile(1017, 10599);
             Assert.Contains("U-KU", k["Regeln"].Split(' '));
-            Relativ(2.52168642, Werkzeuglauf.Zahl(k["Kaelte_neu_MWh"]), "1017 Kälte");
+            Relativ(4.08260404, Werkzeuglauf.Zahl(k["Kaelte_neu_MWh"]), "1017 Kälte"); // Basis R34 (Erdreichwiderstand)
+            Assert.Contains("U-ERD", k["Regeln"].Split(' '));
             foreach ((int projekt, int i, Dictionary<string, string> agg) in BasisGebaeude())
             {
                 if (!agg.ContainsKey("Geb[" + Id(i) + "].KuehlenergieMwh")) continue;

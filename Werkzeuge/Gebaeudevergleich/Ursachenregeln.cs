@@ -17,6 +17,9 @@ namespace Gebaeudevergleich
         internal bool IstNwg;
         internal bool SpalteTagesbilanz;
 
+        /// <summary>Erdreichwiderstand R_g des neuen Wegs [m²K/W] (DIN EN ISO 13370); NaN = kein Bauteil am Erdreich.</summary>
+        internal double ErdreichRgM2KW = double.NaN;
+
         /// <summary>Δ Jahreswärme neu gegen alt [%].</summary>
         internal double DeltaJahrProzent = double.NaN;
 
@@ -45,7 +48,7 @@ namespace Gebaeudevergleich
     /// [<see cref="MW_UNTEN_PROZENT"/>; <see cref="MW_OBEN_PROZENT"/>] und entweder ohne
     /// Katalogwert oder mit einem Katalogtreffer in [<see cref="KAT_UNTEN_PROZENT"/>;
     /// <see cref="KAT_OBEN_PROZENT"/>]. <see cref="Ampel.ZuPruefen"/>: alles andere. Die
-    /// Spitzenregeln und U‑KU verschieben die Ampel nicht.</para>
+    /// Spitzenregeln, U‑KU und U‑ERD verschieben die Ampel nicht.</para>
     /// </summary>
     internal static class Ursachenregeln
     {
@@ -64,9 +67,10 @@ namespace Gebaeudevergleich
         internal const string U_AK = "U-AK";
         internal const string U_KU = "U-KU";
         internal const string U_TB = "U-TB";
+        internal const string U_ERD = "U-ERD";
 
         internal static readonly string[] ALLE =
-            { U_E8, U_E8Z, U_NN, U_MW, U_KAT, U_SP, U_NG, U_SOL, U_BW, U_IL, U_ZO, U_AK, U_KU, U_TB };
+            { U_E8, U_E8Z, U_NN, U_MW, U_KAT, U_SP, U_NG, U_SOL, U_BW, U_IL, U_ZO, U_AK, U_KU, U_TB, U_ERD };
 
         internal const string VERMERK_DATENFEHLER = "Datenfehler";
 
@@ -171,6 +175,14 @@ namespace Gebaeudevergleich
             => e.IstNwg || (e.InnereGewinneWm2.HasValue
                             && (e.InnereGewinneWm2.Value < IL_MIN_W_M2 || e.InnereGewinneWm2.Value > IL_MAX_W_M2));
 
+        /// <summary>
+        /// Erdreichwiderstand: der VDI-Weg setzt an Bauteilen am Erdreich R_g nach DIN EN ISO 13370 in Reihe
+        /// (wirksamer U-Wert 1/(1/U + R_g)), der Tagesbilanz-Weg und der Katalogwert nicht — der neue Weg liegt
+        /// dadurch tiefer. Kennzeichen wie U‑KU: es benennt die Ursache und verschiebt die Ampel nicht.
+        /// </summary>
+        internal static bool ERD(Regeleingang e)
+            => Kennzahlen.Endlich(e.ErdreichRgM2KW) && e.ErdreichRgM2KW > 0.0;
+
         /// <summary>Alle Regeln und die Ampel.</summary>
         internal static Regelbefund Anwenden(Regeleingang e)
         {
@@ -191,6 +203,7 @@ namespace Gebaeudevergleich
             Wenn(e.HeizkreisAktiv, U_AK);
             Wenn(e.KuehlungWirksam, U_KU);
             Wenn(e.SpalteTagesbilanz, U_TB);
+            Wenn(ERD(e), U_ERD);
 
             b.Ampel = AmpelBilden(e, b.Codes);
             if (b.Codes.Contains(U_BW)) b.Vermerk = VERMERK_DATENFEHLER;
@@ -231,6 +244,7 @@ namespace Gebaeudevergleich
             U_AK => "Heizkreis aktiv: nur der VDI-Weg rechnet die Anlagenkopplung",
             U_KU => "Kühlung wirksam: der VDI-Weg rechnet Kälte, der Tagesbilanz-Weg hat keine Kühlreihe; Kälte ist ausgewiesen",
             U_TB => "Spalte Gebaeude_Modell = TAGESBILANZ: rechnet heute auf dem Bestandsweg",
+            U_ERD => "Erdreichwiderstand nach DIN EN ISO 13370: nur der VDI-Weg setzt R_g an Bauteilen am Erdreich in Reihe; der Katalogwert kennt ihn nicht",
             _ => "",
         };
 
