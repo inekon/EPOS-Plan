@@ -2631,6 +2631,25 @@ namespace Testdatenbankschema
                                   KatalogfassungStufe2Schema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ProjektkopienKatalogeSchema.SCHRITT (Anwenderentscheid 03.10.2026): die
+            //      Projektkopien Tab_Brennstoff und Tab_PufferAuslegungParameter samt wertgleicher Saat.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_ProjektkopienKataloge bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Kopien tragen die Werte des Stamms.
+            string nrKopien = ProjektkopienKatalogeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKopien + " - Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben: " +
+                              (ProjektkopienKatalogeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKopien = new List<string>();
+                tabellen += ProjektkopienKatalogeSchema.Ausfuehren(berichtKopien);
+                foreach (string zeile in berichtKopien)
+                    Console.WriteLine("Schritt " + nrKopien + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKopien + " - vollstaendig: " +
+                                  ProjektkopienKatalogeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

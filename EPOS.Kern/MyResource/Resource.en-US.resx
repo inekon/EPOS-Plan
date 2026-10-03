@@ -43197,5 +43197,116 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KI_DLG_PAUS_DECKUNG_ERL" xml:space="preserve">
     <value>The coverage the throughput balance should reach with the buffer, in percent; empty = 100 %.</value>
   </data>
+  <data name="PBRS_MENUE" xml:space="preserve">
+    <value>Project fuels…</value>
+  </data>
+  <data name="PBRS_TITEL" xml:space="preserve">
+    <value>Project fuels</value>
+  </data>
+  <data name="PBRS_EINLEITUNG" xml:space="preserve">
+    <value>The project calculates with its own copies of the fuels: heating values, emission factors and default prices. A catalogue update does not change them; “Reset to catalogue” takes over the current catalogue values.</value>
+  </data>
+  <data name="PBRS_KEIN_PROJEKT" xml:space="preserve">
+    <value>No project open.</value>
+  </data>
+  <data name="PBRS_LEER" xml:space="preserve">
+    <value>The project has no fuels yet.</value>
+  </data>
+  <data name="PBRS_SP_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="PBRS_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="PBRS_SP_HI" xml:space="preserve">
+    <value>LHV [kWh/unit]</value>
+  </data>
+  <data name="PBRS_SP_HS" xml:space="preserve">
+    <value>HHV [kWh/unit]</value>
+  </data>
+  <data name="PBRS_SP_CO2" xml:space="preserve">
+    <value>CO₂ [g/kWh]</value>
+  </data>
+  <data name="PBRS_SP_SO2" xml:space="preserve">
+    <value>SO₂ [mg/kWh]</value>
+  </data>
+  <data name="PBRS_SP_NOX" xml:space="preserve">
+    <value>NOₓ [mg/kWh]</value>
+  </data>
+  <data name="PBRS_SP_STAUB" xml:space="preserve">
+    <value>Dust [mg/kWh]</value>
+  </data>
+  <data name="PBRS_SP_PE" xml:space="preserve">
+    <value>Primary energy factor</value>
+  </data>
+  <data name="PBRS_SP_GRUNDPREIS" xml:space="preserve">
+    <value>Base price [€/a]</value>
+  </data>
+  <data name="PBRS_SP_ARBEITSPREIS" xml:space="preserve">
+    <value>Energy price [€/unit]</value>
+  </data>
+  <data name="PBRS_SP_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Demand price [€/kW]</value>
+  </data>
+  <data name="PBRS_SP_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="PBRS_SP_AKTIONEN" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="PBRS_STAND_WIE_KATALOG" xml:space="preserve">
+    <value>as catalogue</value>
+  </data>
+  <data name="PBRS_STAND_ABWEICHEND" xml:space="preserve">
+    <value>differs</value>
+  </data>
+  <data name="PBRS_STAND_OHNE_KATALOG" xml:space="preserve">
+    <value>no longer in catalogue</value>
+  </data>
+  <data name="PBRS_TIP_KATALOGWERT" xml:space="preserve">
+    <value>Catalogue value: {0}</value>
+  </data>
+  <data name="PBRS_BEARBEITEN" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PBRS_BEARBEITEN_TITEL" xml:space="preserve">
+    <value>Values of “{0}”</value>
+  </data>
+  <data name="PBRS_ZURUECKSETZEN" xml:space="preserve">
+    <value>Reset to catalogue</value>
+  </data>
+  <data name="PBRS_FRAGE_ZURUECKSETZEN" xml:space="preserve">
+    <value>Reset the values of “{0}” to the current catalogue?</value>
+  </data>
+  <data name="PBRS_UEBERNEHMEN" xml:space="preserve">
+    <value>Take over from catalogue</value>
+  </data>
+  <data name="PBRS_UEBERNEHMEN_WAHL" xml:space="preserve">
+    <value>Catalogue fuel</value>
+  </data>
+  <data name="PBRS_UEBERNEHMEN_LEER" xml:space="preserve">
+    <value>All catalogue fuels are in the project.</value>
+  </data>
+  <data name="PBRS_MSG_KEINE_KOPIE" xml:space="preserve">
+    <value>The project has no copy of this fuel.</value>
+  </data>
+  <data name="PBRS_MSG_FELD_UNBEKANNT" xml:space="preserve">
+    <value>The field {0} cannot be edited.</value>
+  </data>
+  <data name="PBRS_MSG_WERT_UNGUELTIG" xml:space="preserve">
+    <value>The value for {0} is invalid.</value>
+  </data>
+  <data name="PBRS_MSG_GESPEICHERT" xml:space="preserve">
+    <value>The values of “{0}” have been saved.</value>
+  </data>
+  <data name="PBRS_MSG_ZURUECKGESETZT" xml:space="preserve">
+    <value>“{0}” is back at the catalogue values.</value>
+  </data>
+  <data name="PBRS_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>“{0}” has been taken over from the catalogue.</value>
+  </data>
+  <data name="PBRS_MSG_NICHT_ZURUECKGESETZT" xml:space="preserve">
+    <value>The fuel is no longer in the catalogue; the project values remain.</value>
+  </data>
 </root>
 

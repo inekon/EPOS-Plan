@@ -5021,6 +5021,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KATALOGFASSUNG_STUFE2 = KatalogfassungStufe2Schema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ProjektkopienKatalogeSchema.SCHRITT"/> — <b>die Projektkopien der Brennstoffe
+        /// und der Vorgaben der Pufferauslegung</b> (Anwenderentscheid 03.10.2026). Er folgt auf
+        /// <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/>, dessen Katalogfassung er an jeder Kopie vermerkt.
+        ///
+        /// <para><b>DDL und Saat:</b> <c>Tab_Brennstoff</c> und <c>Tab_PufferAuslegungParameter</c> (STRICT,
+        /// je Projekt), dann die wertgleichen Kopien aller Projekte. Die Konditionierungsvorlagen brauchen
+        /// keine Tabelle: „Vorlage übernehmen" kopiert ihren Inhalt in das Projektgebäude.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Kopien tragen die Werte des Stamms.</para>
+        /// </summary>
+        public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7255,6 +7268,13 @@ namespace WindowsFormsApplication1
                         "abgleichen, ohne eigene Anpassungen zu ueberschreiben. KEIN Rechenergebnis aendert sich - die " +
                         "Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
                         Schritt_KatalogfassungStufe2),
+            // PROJEKTKOPIEN der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat. Die
+            // Quelle ist ProjektkopienKatalogeSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PROJEKTKOPIEN_KATALOGE,
+                        "Tab_Brennstoff, Tab_PufferAuslegungParameter (Projektkopien)",
+                        "Ein Katalogabgleich aenderte die Werte der Brennstoffe und der Pufferauslegungs-Vorgaben, die " +
+                        "ein Projekt liest. KEIN Rechenergebnis aendert sich - die Kopien tragen die Werte des Stamms.",
+                        Schritt_ProjektkopienKataloge),
         };
 
         /// <summary>
@@ -13224,6 +13244,67 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Katalogfassung der uebrigen Kataloge - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben" — Anlass und
+        /// Wirkung stehen bei <see cref="SCHRITT_PROJEKTKOPIEN_KATALOGE"/>, die Anweisungen bei
+        /// <see cref="ProjektkopienKatalogeSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ProjektkopienKataloge(Lauf l)
+        {
+            string nr = ProjektkopienKatalogeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProjektkopienKatalogeSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ProjektkopienKatalogeSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ProjektkopienKatalogeSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Projektkopietabellen stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, in EINEM Vorgang.
+            var zeilen = new List<string>();
+            try
+            {
+                ProjektkopienKatalogeSchema.Saat(zeilen);
+            }
+            catch (Exception ex)
+            {
+                foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (!ProjektkopienKatalogeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Nach der Saat fehlen Projektkopien.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben - " +
+                    (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
