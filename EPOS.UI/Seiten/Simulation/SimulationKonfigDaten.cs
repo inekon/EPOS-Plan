@@ -293,6 +293,14 @@ public sealed class SimulationKonfigDienste
     /// ueber den Rueckwegstapel der <c>AppWurzel</c> hierher zurueck, nach ①.
     /// </remarks>
     public Action? AuslegungOeffnen;
+
+    /// <summary>
+    /// Wechselt auf die Ansicht „Pufferspeicher-Auslegung" (Konzept Pufferspeicher-Auslegung,
+    /// Stufe P2) — der Knopf „Pufferspeicher auslegen…" unter „Pufferspeicher anlegen /
+    /// verwalten…". Das Argument ist der Projektpuffer (<c>0</c> = keiner: die Klasse kommt aus
+    /// dem Projekt, die Übernahme legt einen neuen an). <b>Ohne Delegat kein Knopf.</b>
+    /// </summary>
+    public Action<int>? PufferAuslegungOeffnen;
 }
 
 /// <summary>Ein waehlbarer Quellentyp: Steuerwert und Anzeigetext.</summary>

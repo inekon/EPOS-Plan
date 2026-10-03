@@ -172,6 +172,9 @@ Form_Prozesswaerme.btn_Help         = Prozesswärme
 Form_Zapfprofil.btn_Help            = Brauchwasser-Zapfprofil
 # Betriebskalender der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2).
 Form_Betriebskalender.btn_Help      = Betriebskalender
+# Die Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung, Stufe P2); die eigene Bedienseite
+# „Pufferspeicher auslegen" folgt mit Stufe P3 (Wiki), bis dahin die Seite Pufferspeicher.
+Form_PufferAuslegung.btn_Help       = Pufferspeicher
 Form_Zapfprofil.grp_Belegung        = Brauchwasser-Zapfprofil#belegung
 Form_Zapfprofil.grp_Schaetzhilfen   = Brauchwasser-Zapfprofil#schaetzhilfen
 Form_Zapfprofil.grp_Fachwerte       = Brauchwasser-Zapfprofil#fachwerte

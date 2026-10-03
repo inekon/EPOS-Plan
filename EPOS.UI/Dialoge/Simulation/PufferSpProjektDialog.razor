@@ -111,7 +111,20 @@
                 {
                     <button type="button" class="epos-knopf" @onclick="KatalogAnsehen">@BtnKatalog</button>
                 }
+                @* Stufe P2 (Konzept Pufferspeicher-Auslegung, Abschnitt 6): „Auslegen…" oeffnet die
+                   Auslegung fuer den gewaehlten Speicher (ohne Wahl: fuer einen neuen) als freie Ansicht.
+                   Der Knopf VERLAESST den Dialog wie Abbrechen - die Zeile darunter sagt es; nach der
+                   Uebernahme liest die Konfiguration den Speicher frisch. Kein Delegat, kein Knopf. *@
+                @if (AuslegenOeffnen is not null)
+                {
+                    <button type="button" class="epos-knopf epos-psp-auslegen" title="@HinweisAuslegen"
+                            @onclick="Auslegen">@BtnAuslegen</button>
+                }
             </div>
+            @if (AuslegenOeffnen is not null)
+            {
+                <p class="epos-leisezeile epos-psp-auslegen-hinweis">@HinweisAuslegen</p>
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -397,6 +410,19 @@
     /// und <c>Form_PufferSp_Admin.m_bReadOnly</c>). Ohne Delegat fehlt der Knopf.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
+
+    /// <summary>
+    /// „Auslegen…" (Stufe P2): öffnet die Pufferspeicher-Auslegung für den gewählten Speicher
+    /// (<c>0</c> = einen neuen). Ohne Delegat fehlt der Knopf.
+    /// </summary>
+    [Parameter] public Action<int>? AuslegenOeffnen { get; set; }
+
+    /// <summary>„Auslegen…" (<c>PAUS_BTN_AUSLEGEN</c>).</summary>
+    [Parameter] public string BtnAuslegen { get; set; } = "Auslegen…";
+
+    /// <summary>Die Zeile unter dem Knopf: er verlässt den Dialog ohne zu speichern (<c>PAUS_AUSLEGEN_VERWIRFT</c>).</summary>
+    [Parameter] public string HinweisAuslegen { get; set; } =
+        "„Auslegen…“ verlässt diesen Dialog ohne zu speichern und öffnet die Pufferspeicher-Auslegung.";
 
     /// <summary>
     /// Der Dialog ist zu Ende. Nach OK ist der Arbeitsstand geschrieben und geliefert
@@ -1550,6 +1576,9 @@
 
     /// <summary>Steht der Auslieferungskatalog? (Prüfhilfe für Tests.)</summary>
     public bool VerwaltungOffen => _verwaltungGaben is not null;
+
+    /// <summary>„Auslegen…" — verlässt den Dialog wie Abbrechen und öffnet die Auslegung (Stufe P2).</summary>
+    private void Auslegen() => AuslegenOeffnen?.Invoke(_bearbeiteteId > 0 ? _bearbeiteteId : 0);
 
     private Task KatalogAnsehen()
     {

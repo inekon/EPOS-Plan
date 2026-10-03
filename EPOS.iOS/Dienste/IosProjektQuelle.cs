@@ -426,6 +426,17 @@ public sealed class IosProjektQuelle : IProjektQuelle
     // Ladeweg antwortet die Quelle null, und die Wurzel nennt den Grund im
     // Banner, statt vor einer leeren Flaeche zu stehen.
 
+    /// <summary>
+    /// Die Pufferspeicher-Auslegung (Stufe P2) - dieselbe plattformfreie Huelle wie unter Windows;
+    /// sie holt den Arbeitsgang ab, den Konfiguration oder Pufferverwaltung angemeldet haben. Ein
+    /// eigenes Fenster gibt es hier nicht: Die Uebergabe aus dem Zapfprofil lehnt benannt ab.
+    /// </summary>
+    public IReadOnlyDictionary<string, object>? PufferAuslegungGaben(int idProjekt)
+    {
+        try { return PufferAuslegungHuelle.AnsichtGaben(idProjekt); }
+        catch (Exception) { return null; }
+    }
+
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object>? KlimadatenGaben()
     {

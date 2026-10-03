@@ -619,6 +619,18 @@ namespace WindowsFormsApplication1
                 throw new InvalidOperationException("Kein Klimakalender für das Projekt.");
             ZapfprofilStand stand = ZapfprofilCtrl.Lies(idProjekt);
             Auslegungsrechnung r = ZapfprofilCtrl.Auslegung(idProjekt, stand, jan1, we, new Auslegungslauf(null, null));
+            return ZapfprofilAus(r, out text);
+        }
+
+        /// <summary>
+        /// Das Ergebnis einer Zapfprofil-Auslegung als Eingang der Brauchwasserzone, über die
+        /// Topologiegruppen summiert — derselbe Weg für den gespeicherten Stand (Vorbelegung) und für
+        /// den Arbeitsstand, den der Zapfprofil-Auslegungsdialog mit „An Speicherauslegung übergeben…"
+        /// herüberreicht (Stufe P2). Ohne Topologiegruppe wird benannt abgelehnt.
+        /// </summary>
+        internal static PufferZapfprofil ZapfprofilAus(Auslegungsrechnung r, out string text)
+        {
+            if (r?.Ergebnis == null) throw new ArgumentNullException(nameof(r));
             IReadOnlyList<Auslegungsgruppe> gruppen = r.Ergebnis.Gruppen;
             if (gruppen.Count == 0) throw new InvalidOperationException("Die Zapfprofil-Auslegung liefert keine Topologiegruppe.");
 

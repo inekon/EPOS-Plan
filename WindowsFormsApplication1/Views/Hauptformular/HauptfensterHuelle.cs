@@ -115,6 +115,12 @@ namespace WindowsFormsApplication1
                     new Func<IReadOnlyDictionary<string, object>>(
                         StromspeicherAuslegungHuelle.AnsichtGaben),
 
+                // DIE PUFFERSPEICHER-AUSLEGUNG (Stufe P2) - ein Delegat je Betreten wie die
+                // Stromspeicher-Auslegung; die Huelle ist plattformfrei und holt den
+                // angemeldeten Arbeitsgang ab.
+                ["PufferAuslegungGaben"] =
+                    new Func<int, IReadOnlyDictionary<string, object>>(PufferAuslegungHuelle.AnsichtGaben),
+
                 // DIE SIMULATION als EINE freie Ansicht (Auftrag #207, SIM-Q1).
                 // Wie die zwei darueber ein DELEGAT je Betreten: Der Satz bringt
                 // den Stand der zwei Huelleninstanzen mit - den gerechneten Lauf,
