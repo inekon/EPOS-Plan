@@ -5008,6 +5008,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KATALOGFASSUNG = KatalogfassungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KatalogfassungStufe2Schema.SCHRITT"/> — <b>die Katalogfassung der übrigen
+        /// Kataloge</b> (Entscheidungsvorlage Modellgrenzen KU1 Stufe 2). Er folgt auf
+        /// <see cref="SCHRITT_KATALOGFASSUNG"/>, dessen Protokoll und Fassungsspalte er mitbenutzt.
+        ///
+        /// <para><b>DDL und Saat:</b> an den sechzehn Katalogtabellen der Stufe 2 dieselben drei
+        /// Katalogspalten samt Teilindex; danach belegt die Saat Schlüssel und Prüfsumme der
+        /// ausgelieferten Sätze. Klima- und Zapfprofilkatalog bleiben benannt ausgenommen.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGFASSUNG_STUFE2 = KatalogfassungStufe2Schema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7234,6 +7247,14 @@ namespace WindowsFormsApplication1
                         "und die Erdreichpruefung ginge mit dem Programmende verloren. KEIN Rechenergebnis aendert " +
                         "sich - die Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
                         Schritt_Katalogfassung),
+            // KU1 STUFE 2 - dieselben Katalogspalten an den uebrigen Katalogen samt Saat. Die Quelle ist
+            // KatalogfassungStufe2Schema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KATALOGFASSUNG_STUFE2,
+                        "Katalogtabellen der Stufe 2: Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen",
+                        "Ein Update koennte die uebrigen Kataloge (Baustoffe, Gebaeude, Brennstoffe, Ganglinien ...) nicht " +
+                        "abgleichen, ohne eigene Anpassungen zu ueberschreiben. KEIN Rechenergebnis aendert sich - die " +
+                        "Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
+                        Schritt_KatalogfassungStufe2),
         };
 
         /// <summary>
@@ -13099,8 +13120,8 @@ namespace WindowsFormsApplication1
                 DataRepository.StilleFehlerAbholen();          // Sammlung leeren
                 try
                 {
-                    KatalogSchluesselSaat.Ausfuehren(zeilen);
-                    offen = KatalogSchluesselSaat.OffeneSaetze();
+                    KatalogSchluesselSaat.Ausfuehren(zeilen, Katalogfassung.Stufe1);
+                    offen = KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe1);
                 }
                 catch (Exception ex)
                 {
@@ -13129,6 +13150,80 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Katalogfassung und Erdreichpruefung - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogfassung der übrigen Kataloge" (KU1 Stufe 2) — Anlass und Wirkung stehen
+        /// bei <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/>, die Anweisungen bei
+        /// <see cref="KatalogfassungStufe2Schema"/>. <b>Wiederholbar</b> wie der Schritt der Stufe 1.
+        /// </summary>
+        private static bool Schritt_KatalogfassungStufe2(Lauf l)
+        {
+            string nr = KatalogfassungStufe2Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogfassungStufe2Schema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KatalogfassungStufe2Schema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KatalogfassungStufe2Schema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Katalogspalten der Stufe 2 stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, still wie beim Schritt der Stufe 1.
+            var zeilen = new List<string>();
+            int offen;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    KatalogSchluesselSaat.Ausfuehren(zeilen, Katalogfassung.Stufe2);
+                    offen = KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe2);
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die belegten Schluessel bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || offen > 0)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : offen + " ausgelieferte(r) Satz/Saetze der Stufe 2 ohne Schluessel oder Pruefsumme nach dem Schritt.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogfassung der uebrigen Kataloge - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

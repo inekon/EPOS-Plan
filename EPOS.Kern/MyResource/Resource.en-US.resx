@@ -42318,6 +42318,54 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KABG_KATALOG_PWT" xml:space="preserve">
     <value>Process-heat weekly profiles</value>
   </data>
+  <data name="KABG_KATALOG_BAUSTOFF" xml:space="preserve">
+    <value>Building materials</value>
+  </data>
+  <data name="KABG_KATALOG_BAUTEILAUFBAU" xml:space="preserve">
+    <value>Component build-ups</value>
+  </data>
+  <data name="KABG_KATALOG_BRENNSTOFF" xml:space="preserve">
+    <value>Fuels</value>
+  </data>
+  <data name="KABG_KATALOG_TAGESVERTEILUNG" xml:space="preserve">
+    <value>Daily distributions</value>
+  </data>
+  <data name="KABG_KATALOG_GEBAEUDE" xml:space="preserve">
+    <value>Buildings</value>
+  </data>
+  <data name="KABG_KATALOG_KONDITIONIERUNGSVORLAGE" xml:space="preserve">
+    <value>Conditioning templates</value>
+  </data>
+  <data name="KABG_KATALOG_PUFFER" xml:space="preserve">
+    <value>Buffer storage tanks</value>
+  </data>
+  <data name="KABG_KATALOG_PUFFERVORGABE" xml:space="preserve">
+    <value>Buffer sizing defaults</value>
+  </data>
+  <data name="KABG_KATALOG_SOLARKOLLEKTOR" xml:space="preserve">
+    <value>Solar collectors</value>
+  </data>
+  <data name="KABG_KATALOG_SOLARGANGLINIE" xml:space="preserve">
+    <value>Solar load profiles</value>
+  </data>
+  <data name="KABG_KATALOG_STROMSPEICHER" xml:space="preserve">
+    <value>Battery storage</value>
+  </data>
+  <data name="KABG_KATALOG_STROMVERBRAUCHERTYP" xml:space="preserve">
+    <value>Electricity consumer weekly profiles</value>
+  </data>
+  <data name="KABG_KATALOG_STROMVERBRAUCHER" xml:space="preserve">
+    <value>Electricity consumer profiles</value>
+  </data>
+  <data name="KABG_KATALOG_STROMGANGLINIE" xml:space="preserve">
+    <value>Electricity load profiles</value>
+  </data>
+  <data name="KABG_KATALOG_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand load profiles</value>
+  </data>
+  <data name="KABG_KATALOG_WECHSELRICHTER" xml:space="preserve">
+    <value>Inverters</value>
+  </data>
   <data name="SIMQ_ERDREICH_STAND_LAUF" xml:space="preserve">
     <value>Result of the run on {0}.</value>
   </data>

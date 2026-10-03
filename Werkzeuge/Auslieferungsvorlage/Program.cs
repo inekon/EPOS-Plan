@@ -218,7 +218,7 @@ namespace Auslieferungsvorlage
                 return FACHLICH;
             }
 
-            // ---- Schritt 4b: das Katalogpaket der Programmfassung (KU1 Stufe 1) -----
+            // ---- Schritt 4b: das Katalogpaket der Programmfassung (KU1 Stufe 1 und 2) 
             //      Die Vorlage bekommt den Auslieferungsstand festgeschrieben (Schluessel,
             //      Pruefsumme, Katalogfassung), das Paket entsteht aus genau diesem Stand und
             //      liegt spaeter neben der Vorlage. Geschrieben wird es erst mit der Vorlage.
@@ -228,12 +228,20 @@ namespace Auslieferungsvorlage
             Katalogpaket paket = Katalogpaket.Festschreiben(arg.Katalogfassung, paketbericht);
             foreach (string zeile in paketbericht) bericht.Zeile(zeile);
             foreach (Katalogpakettabelle pt in paket.Tabellen)
-                bericht.Zeile(pt.Tabelle.PadRight(28) + pt.Saetze.Count.ToString(CultureInfo.InvariantCulture) +
+                bericht.Zeile(pt.Tabelle.PadRight(34) + " " + pt.Saetze.Count.ToString(CultureInfo.InvariantCulture) +
                               " ausgelieferte(r) Satz/Saetze");
             if (paket.Tabellen.Count == 0)
                 bericht.Zeile("WARNUNG Die Quelle fuehrt die Katalogspalten nicht (Schemastand vor der Katalogfassung) - " +
                               "das Paket bleibt leer.");
+            // KU1 Stufe 2: Kataloge ausserhalb des Registers stehen benannt im Bericht.
+            foreach (var grund in Katalogfassung.Ausgenommen.GroupBy(kv => kv.Value))
+                bericht.Zeile("ausgenommen " + string.Join(", ", grund.Select(kv => kv.Key)) + " - " + grund.Key);
             byte[] paketBytes = paket.Bytes();
+            bericht.Zeile("Paketgroesse " + Vorlagenbau.Mb(paketBytes.Length) +
+                          (paketBytes.Length > Katalogpaket.GROESSE_WARNUNG
+                              ? "   WARNUNG ueber " + Vorlagenbau.Mb(Katalogpaket.GROESSE_WARNUNG) +
+                                " - die Reihen (Ganglinien) waeren benannt auszunehmen"
+                              : ""));
 
             // ---- Schritt 5: verdichten und pruefen ---------------------------------
             bau.Verdichten();
