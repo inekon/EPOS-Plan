@@ -449,7 +449,11 @@ namespace EPOS.Kern.Tests
                                    "Kosten_Montage", "Kosten_Lieferung", "Kosten_Schallschutzhaube",
                                    "Kosten_Abgasreinigung", "Raumbedarf", "Wartungskosten_kwhel",
                                    "Nutzungsdauer", "NOX", "SO2", "CO", "CO2", "Staub",
-                                   "Vorlauf", "Ruecklauf" };
+                                   "Vorlauf", "Ruecklauf",
+                                   // Welle M4 (BH1, BH2): die Gruppe „Teillast und Takten" des
+                                   // Katalogeditors (BHKWStammCtrl.Update).
+                                   "Wirkungsgrad_el_Teillast50", "Wirkungsgrad_th_Teillast50",
+                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min" };
 
                 case Anlagenart.Waermepumpe:
                     // ELF von achtzehn Fachspalten. maxPtherm laeuft verborgen mit,
@@ -459,7 +463,10 @@ namespace EPOS.Kern.Tests
                     // Masse zeigt die Maske gar nicht. Diese Liste fuehrt, was die
                     // Verwaltung ZURUECKSCHREIBT - ein Lesewert gehoert nicht hinein.
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr",
-                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart" };
+                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart",
+                                   // Welle M4 (WP1): Mindestleistung und C_d schreibt die
+                                   // Katalogpflege zurueck (WPStammCtrl.Speichern).
+                                   "Mindestleistung_kW", "Taktverlustfaktor_Cd" };
 
                 case Anlagenart.Solarkollektoren:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Kollektortyp",

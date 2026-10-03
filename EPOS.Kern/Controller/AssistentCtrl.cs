@@ -627,6 +627,7 @@ namespace WindowsFormsApplication1
                 item.Summe = zeile.Summe;
                 item.Vorlauf = zeile.Vorlauf;          // PW1 Stufe 1: Anzeige; geschrieben nur nach Änderung
                 item.Ruecklauf = zeile.Ruecklauf;
+                item.ID_Betriebskalender = zeile.ID_Betriebskalender;   // PW2: reist mit
 
                 Prozess.Add(item);
             }
@@ -726,6 +727,7 @@ namespace WindowsFormsApplication1
                 item.m_szVerbraucher = zeile.m_szVerbraucher;
                 item.m_ID_Stromverbraucher = zeile.m_ID_Stromverbraucher;
                 item.m_Summe = zeile.m_Summe;
+                item.ID_Betriebskalender = zeile.ID_Betriebskalender;   // PW2: reist mit
 
                 Stromverbraucher.Add(item);
             }

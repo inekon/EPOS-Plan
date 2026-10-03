@@ -218,10 +218,13 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>KP3 O1: dreiundfünfzig — die Projekteinstellung „Aufheizoptimierung" mit Schalter,
     /// Bemessung, ΔT_K, Aufheizreserve und Art.</para>
     ///
-    /// <para>Welle M5 (PV3): fünfundfünfzig — die Einspeisegrenze mit Wert und Einheit.</para>
+    /// <para>Welle M3b (BW4): einundsechzig — Netzverluste je Kanal mit Einheit und die Zirkulation
+    /// des Bestandswegs.</para>
+    ///
+    /// <para>Welle M5 (PV3): dreiundsechzig — die Einspeisegrenze mit Wert und Einheit.</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_fuenfundfuenfzig_Felder_an()
+    public void Die_Ansicht_meldet_dreiundsechzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -230,7 +233,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(55, felder.Count);
+        Assert.Equal(63, felder.Count);
     }
 
     /// <summary>
@@ -415,7 +418,10 @@ public class KiSimulationMaskeTests : IDisposable
         {
             "reiter",
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "kessel_bereitschaft", "kessel_heizgrenze", "kuehlbetrieb", "anlagenkopplung",
+            "kessel_bereitschaft", "kessel_heizgrenze", "kuehlbetrieb",
+            "netzverlust_heizung", "netzverlust_heizung_einheit", "netzverlust_brauchwasser",
+            "netzverlust_brauchwasser_einheit", "netzverlust_prozess", "netzverlust_prozess_einheit",
+            "zirkulation_leistung", "zirkulation_laufzeit", "anlagenkopplung",
             "aufheizoptimierung", "aufheiz_bemessung", "aufheiz_abzug", "aufheiz_reserve", "aufheiz_art",
             "einspeisegrenze", "einspeisegrenze_einheit",
             "quellanlage", "waermequelle",

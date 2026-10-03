@@ -496,7 +496,10 @@ public sealed class BerechnungshilfeTests : EposBunitContext
             { "Strombedarf", "Fassung 4" },
             // Welle M2: Arbeitstemperatur aus dem Speicher, Diffus-IAM, Bezugsflaeche
             // und Solarkreis (Pumpenstrom, Verluste).
-            { "Solarthermie", "Fassung 4" }
+            { "Solarthermie", "Fassung 4" },
+            // Welle M4: Takten der Waermepumpe (WP1), Teillast und Takten des BHKW (BH1, BH2).
+            { "Wärmepumpe", "Fassung 4" },
+            { "BHKW", "Fassung 4" }
         };
 
     /// <summary>

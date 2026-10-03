@@ -1216,6 +1216,150 @@ Gehalten von `EPOS.Kern.Tests/SolarkreisTests`, `SolarthermieModellgrenzenTests`
 `SolarthermieFelderSchemaTests` und `SolarWaermeMonateTests` (Referenzprojekt 1049 mit `speicher`,
 Grädigkeit 5 K, Spreizung 10 K, ohne Pumpe und mit der Vorgabe der Verluste).
 
+## 17. Bedarf: Netzverluste je Kanal, Zirkulation, Betriebskalender
+
+Drei Optionen der Bedarfsrechnung, alle mit der Vorgabe „leer = wie ohne sie“ (Schemaschritt
+`BedarfNetzKalenderSchema`; Punkte BW4, PW2 und BW2 der Entscheidungsvorlage Modellgrenzen). Kein
+Referenzprojekt setzt eine davon; die Basis bleibt unberührt.
+
+**Netzverluste je Kanal.** `Tab_Einstellungen` führt je Wärmekanal Wert und Einheit:
+`Netzverluste_Heizung`, `Netzverluste_Brauchwasser`, `Netzverluste_Prozess` (REAL ≥ 0) mit
+`…_Einheit` (`%` oder `kWh/a`, paarweise, ein Prozentwert höchstens 100). Die Regel
+(`SimulationWaermebedarf`, `Netzverlustvorgabe`):
+
+| Stand | Wirkung |
+|---|---|
+| alle drei Kanalwerte leer | der Projektwert `Netzverluste`/`NetzverlusteEinheit` als konstanter Stundenbetrag, je Stunde anteilig auf Heizung, Brauchwasser und Prozess verteilt (`Kanalsatz.NetzverlusteVerteilen`) |
+| mindestens ein Kanalwert gesetzt | je Kanal sein eigener Wert als fester Stundenbetrag auf genau diesen Kanal, ein leerer Kanal trägt 0; der Projektwert gilt nicht, und es wird nichts zwischen den Kanälen verteilt |
+
+Ein Kanalwert in % bezieht sich auf den Jahresbedarf des Kanals vor dem Aufschlag
+(`Q_k · p_k / 100 / 8760` je Stunde; beim Brauchwasser samt Zirkulation), ein Wert in kWh/a gilt
+fest (`W_k / 8760`). Die Kanäle sind die Wärmekanäle; der Kühlkanal trägt keinen Netzverlust.
+`Waermebedarf_Netzverluste` weist die Summe der drei Jahresmengen aus, das Laufprotokoll die drei
+Posten. Bedient im Abschnitt „Wärmebedarf“ der Simulationskonfiguration; sobald ein Kanalwert
+steht, sagt die Zeile unter den Netzverlusten, dass der Projektwert nicht gilt.
+
+**Zirkulation im Bestandsweg.** `Zirkulation_Leistung_kW` (0 … 100) und `Zirkulation_Laufzeit_h_d`
+(0 … 24) an `Tab_Einstellungen`. Rechnet das Projekt sein Brauchwasser aus den Bestandsprofilen,
+kommt eine Zirkulation als eigene Teilreihe in den Brauchwasserkanal — dieselbe Formel wie die
+Methode „manuell“ des Zapfprofilgenerators (Umsetzungskonzept Zapfprofilgenerator 4.3):
+
+```
+q_zirk,h = P in den Laufzeitstunden, sonst 0;   Q_zirk = P · t_Lauf · 365
+```
+
+Die Laufstunden liegen zusammenhängend um die Tagesmitte der Brauchwasserreihe
+(`Zirkulationskanal.Laufzeitfenster`), eine gebrochene Laufzeit belegt die letzte Stunde anteilig.
+Ohne Leistung oder ohne Laufzeit gibt es keine Zirkulation. Auf dem Generatorweg gilt dessen
+Zirkulation, die Projekteinstellung wirkt dort nicht; die Vorschau mit Namensliste rechnet keine.
+Ausgewiesen wird sie wie beim Generator: `Brauchwasser_Zirkulation_Mwh`, getrennte Monatsschichten
+Zapfung und Zirkulation, der Posten „davon Zirkulation“ und das gestapelte Monatsbild im Reiter
+Wärmebedarf. Normbezug: Verteilverluste der Trinkwassererwärmung nach DIN EN 15316-3 und
+DIN V 18599-8, Betrieb der Zirkulation nach DVGW W 551.
+
+**Betriebskalender.** `Tab_Betriebskalender` (STRICT) hält Kalender projektübergreifend wie einen
+Katalog: Bezeichnung, Bundesland (leer = nur die neun bundeseinheitlichen Feiertage), bis vier
+Betriebsferien als Tag im Jahr (Beginn nach Ende = über den Jahreswechsel), Ferienfaktor
+f (0 … 1), `Feiertag_wie_Sonntag` und `Ferien_kuerzen` (0/1). Je Zuordnungszeile
+(`Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme`, `Z_Projekt_Stromverbraucher`) zeigt die
+nullbare Spalte `ID_Betriebskalender` auf einen Kalender (`ON DELETE SET NULL`); leer = das
+Wochenprofil gilt für alle Wochen.
+
+Die Kalenderschicht (`Betriebskalenderschicht`) sitzt in `ProfilBedarf.Rechnen` zwischen der
+Kachelung des Wochenprofils und der Monatsnormierung — dieselbe Routine für alle drei Profilarten:
+
+```
+t(h) = w((24 · w₀ + h) mod 168)                      Kachelung ab dem Wochentag des 1. Januar
+a(h) = w(144 + s) an einem Feiertag, sonst t(h)       Sonntag des Wochenprofils
+b(h) = f · m_s an einem Ferientag, sonst a(h)         m_s = (1/7) · Σ_d w(24 d + s)
+q(h) = b(h) / Σ_M b · M_m · 1000                     Vorgabe: Ferien verteilen die Monatsmenge um
+q(h) = b(h) / Σ_M a · M_m · 1000                     „Ferien kürzen die Monatsmenge“
+```
+
+h = 24 d + s, M die Stunden des Monats m, M_m seine Menge [MWh]. Ferien gehen Feiertagen vor;
+Feiertage verteilen stets nur um. Die Feiertage kommen aus `Feiertage` (die neun
+bundeseinheitlichen, Ostern als Rechenvorschrift) und `Landesfeiertage` (die landesweiten
+Feiertage des gewählten Landes), aufgelöst gegen das Referenzjahr des Projekts
+(`SolardatenCtrl.Referenzjahr`) und als Tag im Gemeinjahr abgebildet. Hat ein Monat ohne Kürzen
+keine Stunde mit Bedarf mehr, rechnet er ohne Ferien und das Laufprotokoll nennt es. Ohne Kalender
+ruft die Routine die Kachelung `BhkwPlan.StromWocheToJahr` wie zuvor.
+
+Der Lauf liest den Kalender je Zuordnungszeile, die Projektvorschau über die ID des Kopfsatzes;
+Zuordnungsdialog, Assistent und Speichern tragen ihn mit (`LiesProjekt`, `WizardCtrl.Add_*`),
+Duplizieren behält die ID, Export und Import finden den Kalender über seinen Bezeichner. Bedient
+wird er in der Verwaltung „Betriebskalender“ (Administration → Wärmebedarf & Heizung → Profile &
+Lastgänge) und je Zuordnung in den Bedarfsprofil-Dialogen von Brauchwasser, Prozesswärme und
+Strom.
+
+Gehalten von `EPOS.Kern.Tests/BedarfNetzKalenderSchemaTests`, `NetzverlusteJeKanalTests`,
+`ZirkulationBestandswegTests` (Läufe auf Kopien von 1041 und 1045), `BetriebskalenderTests` und
+`EPOS.UI.Tests/Dialoge/BetriebskalenderDialogTests`.
+
+## 18. Erzeuger in Teillast: Wärmepumpe und BHKW
+
+Wärmepumpe und BHKW rechnen ihr Verhalten unter der Volllast aus Katalogfeldern; leer heißt
+„nicht gepflegt", und ohne gepflegten Wert rechnet ein Gerät bitgleich ohne diesen
+Abschnitt. Schemaschritt `ErzeugerTeillastSchema` (167), alle Spalten nullbar mit `CHECK`,
+in Katalog und Projektkopie gleich; die Projektkopie entsteht beim Übernehmen aus dem Katalog
+(`ErzeugerTeillastWerte`).
+
+| Tabelle | Spalte | Bedeutung | leer |
+|---|---|---|---|
+| `Tab_WP(_STAMM)` | `Mindestleistung_kW` (0 … 1000) | kleinste Modulationsleistung P_min | kein Takten |
+| `Tab_WP(_STAMM)` | `Taktverlustfaktor_Cd` (0 … 1) | Teillastkoeffizient C_d nach EN 14825 | 0,9 |
+| `Tab_BHKW(_STAMM)` | `Wirkungsgrad_el_Teillast50` (0 … 1) | η_el bei 50 % elektrischer Last, Faktor | wie Volllast |
+| `Tab_BHKW(_STAMM)` | `Wirkungsgrad_th_Teillast50` (0 … 1) | η_th bei 50 % elektrischer Last, Faktor | wie Volllast |
+| `Tab_BHKW(_STAMM)` | `Anfahrverlust_kWh` (0 … 100) | Brennstoff je Start | 0 |
+| `Tab_BHKW(_STAMM)` | `Mindestlaufzeit_min` (0 … 60) | Mindestlaufzeit je Start | 10 min |
+
+**Wärmepumpe: Taktverlust (`Waermepumpentakt`).** Am Ende jeder Stunde
+(`Zweikanalig_StundeEnde`) sammelt der Lauf je Modul die Verdichterwärme Q und den
+Verdichterstrom P der Stunde aus Bedarfsdeckung und Ladung. Bei 0 < Q < P_min · 1 h taktet das
+Gerät: CR = Q / P_min, f = CR / (C_d · CR + 1 − C_d), COP_takt = f · COP; die Wärme bleibt, der
+Strom steigt um P · (1/f − 1) — in die Stundenreihe, die Modulsumme und den Jahresstrom, damit
+auch in die JAZ. Die Starts folgen der Kesselregel (`Kesselkennlinie.StartsImTakt`) mit fest
+10 min; außerhalb des Takts ist ein Start der Übergang aus einer Stillstandsstunde. Die
+Quellentnahme der Stunde wird nicht nachgezogen. Im Kühlbetrieb rechnet die Kältekaskade
+dasselbe mit der Mindestkühlleistung P_min / P_nenn · P_kühl(t) (`Kaeltekaskade.Mindestanteil`).
+
+**BHKW: Teillastkennlinie (`BhkwTeillast`).** η_el,100 und η_th,100 teilen den
+Gesamtwirkungsgrad im Verhältnis P_el : P_th, so dass Volllast unverändert bleibt. Zwischen
+β = 0,5 und 1 verlaufen beide Wirkungsgrade linear, darunter gilt der Wert bei 0,5. Die
+Motorläufe rechnen Wärme aus Strom über η_th(β)/η_el(β) mit β = P/P_el, Strom aus Wärme durch
+Intervallhalbierung über β; ohne Kennlinie bleibt es der Dreisatz des Bestands, bitgleich. Der
+Brennstoff einer Laufstunde ist P / η_el(β); die Abweichung gegen (Q + P)/η geht als
+Teillast-Mehrbrennstoff in den Brennstoffverbrauch und die Emissionen.
+
+**BHKW: Takten (`BhkwTeillast`, `SimulationBHKW.TeillastStundeAbschliessen`).** Nur mit
+Anfahrverlust oder Mindestlaufzeit und einer Untergrenze x_min > 0. Unter der Untergrenze bleibt
+das Modul nicht aus, sondern liefert in allen drei Fahrweisen den Wärmeraum, den Reststrom oder
+— ohne Einspeisung — das Kleinere von beiden mit der Stromkennzahl an x_min. Die Starts zählt
+die Kesselregel gegen die Wärme der Untergrenze Q_min = x_min · P_el · η_th(x_min)/η_el(x_min);
+je Start kommt der Anfahrverlust auf den Brennstoff. Der Brennstoff einer Taktstunde rechnet mit
+η_el(x_min). Getaktet wird nur, wenn der Wärmeraum der Stunde (offener Bedarf plus freier
+Pufferraum) mindestens einen Mindestlauf Q_min · t_min / 60 aufnimmt (t_min leer = 10 min;
+`BhkwTeillast.NimmtMindestlaufWaerme`); stromgeführt muss der Reststrom den Strom eines
+Mindestlaufs tragen, ohne Einspeisung beides — sonst bleibt das Modul aus. Der Heizkessel zählt
+sein Takten (`Kesselkennlinie.Taktet`) dagegen schon ab jeder Wärme über dem Zahlenrand, denn er
+deckt als letzter Erzeuger auch einen kleinen Rest.
+
+**Ergebnis.** Die Reiter Wärmepumpe und BHKW zeigen Starts, Mehrstrom, Anfahrverlust und
+Teillast-Mehrbrennstoff nur, wenn ein Modul sie rechnet; ebenso die Referenzskalare
+`Takt.Waermepumpe[i].*`, `Takt.Kaelte[k].*`, `Takt.Bhkw[i].*` und
+`Teillast.Bhkw[i].MehrbrennstoffKwh`, nur bei Werten größer null — die Basis bleibt damit
+unberührt, solange kein Referenzprojekt die Felder pflegt.
+
+**Pflege.** Der BHKW-Katalogeditor führt die Gruppe „Teillast und Takten" mit kleiner
+Kennlinie, die BHKW-Verwaltung dieselben vier Felder (leer schreibt NULL); der
+Wärmepumpenkatalog führt Mindestleistung und C_d mit dem Hinweis „Vorgabe 0,9 nach EN 14825",
+die Projektdialoge zeigen die Werte lesend. Der VDI-3805-Import (Blatt 22) setzt keine der
+Spalten: Die Lastangaben der Datei nennen einen Modulationsbereich, aber keine Mindestleistung
+in kW, und C_d steht nicht in der Datei; das BHKW hat keinen VDI-Import.
+
+Gehalten von `EPOS.Kern.Tests/ErzeugerTeillastTests` (Formeln ohne Datenbank, Rechnungen auf
+Kopien der Projekte 1039, 1017, 1018 und 1024), `ErzeugerTeillastSchemaTests`,
+`KatalogAufklapperTests` und den bunit-Fällen `BhkwKatalogDialogTests`,
+`WaermepumpeStammFelderTests`.
 ## 19. Strom in Viertelstunden: PV-Bilanz, Einspeisegrenze, Standby
 
 Die Strombilanz der Photovoltaik und der Stromspeicher laufen auf den 35 040 Viertelstunden des

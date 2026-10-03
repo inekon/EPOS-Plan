@@ -1945,6 +1945,7 @@ namespace WindowsFormsApplication1
             bool kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt);
             string anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt);
             Aufheizvorgabe aufheizvorgabe = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
+            Netzverlustvorgabe netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt);
             Einspeisegrenze einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt);
 
             ctrl.model = _konfiguration;
@@ -1973,6 +1974,10 @@ namespace WindowsFormsApplication1
             if (!aufheizvorgabe.Equals(Aufheizvorgabe.Aus))
                 KonfigurationCtrl.AufheizvorgabeSchreiben(m_ID_Projekt, aufheizvorgabe);
 
+            // NETZVERLUSTE JE KANAL UND ZIRKULATION REISEN MIT (Schritt BedarfNetzKalenderSchema, BW4):
+            // Die neue Zeile traegt leere Spalten - nachgereicht wird der Stand VOR dem Delete.
+            if (!netzkanaele.Equals(Netzverlustvorgabe.Leer))
+                KonfigurationCtrl.NetzverlustvorgabeSchreiben(m_ID_Projekt, netzkanaele);
             // DIE EINSPEISEGRENZE REIST MIT (Welle M5, PV3): Die neue Zeile traegt zwei NULL (= keine
             // Grenze) - nachgereicht wird der Stand VOR dem Delete.
             if (einspeisegrenze.Gesetzt)

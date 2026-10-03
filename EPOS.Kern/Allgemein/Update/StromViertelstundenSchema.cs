@@ -42,9 +42,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der nächste
-        /// Schritt hinter den Feldern des Kollektorfelds.
+        /// Schritt hinter den Teillastfeldern von Wärmepumpe und BHKW.
         /// </summary>
-        public const int SCHRITT = SolarthermieFelderSchema.SCHRITT + 1;
+        public const int SCHRITT = ErzeugerTeillastSchema.SCHRITT + 1;
 
         /// <summary>Die Projekteinstellungen, an denen die Einspeisegrenze steht.</summary>
         public const string TAB_EINSTELLUNGEN = SchemaKatalog.TAB_EINSTELLUNGEN;

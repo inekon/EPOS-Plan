@@ -31,9 +31,12 @@ namespace WindowsFormsApplication1
         public double Waermebedarf_Brauchwasser = 0;
 
         /// <summary>
-        /// Zapfprofilgenerator (Umsetzungskonzept Zapfprofilgenerator 2.2): Jahresverlust der
-        /// Zirkulation [MWh], die im Brauchwasserkanal als eigene Teilreihe mitläuft — auf dem
-        /// Bestandsweg 0. <see cref="Waermebedarf_Brauchwasser"/> trägt Zapfung UND Zirkulation.
+        /// Jahresverlust der Zirkulation [MWh], die im Brauchwasserkanal als eigene Teilreihe
+        /// mitläuft: auf dem Generatorweg die Zirkulation des Zapfprofilgenerators
+        /// (Umsetzungskonzept Zapfprofilgenerator 2.2), auf dem Bestandsweg die feste Leistung in
+        /// Laufstunden aus der Projekteinstellung (<see cref="Netzverlustvorgabe"/>, Konzept
+        /// Simulationsablauf 17), sonst 0. <see cref="Waermebedarf_Brauchwasser"/> trägt Zapfung UND
+        /// Zirkulation.
         /// </summary>
         public double Brauchwasser_Zirkulation_Mwh = 0;
 
@@ -288,6 +291,27 @@ namespace WindowsFormsApplication1
         }
 
         private Aufheizvorgabe _aufheizvorgabeProjekt;
+
+        /// <summary>
+        /// Netzverluste je Kanal und Zirkulation im Bestandsweg dieses Projekts
+        /// (<c>Tab_Einstellungen</c>, <see cref="BedarfNetzKalenderSchema"/>; Entscheidungsvorlage
+        /// Modellgrenzen BW4) — gelesen EINMAL je Lauf und Auskunft (zurückgesetzt in
+        /// <see cref="KlimakalenderLesen"/>), dialogfrei; fehlende Zeile und fehlende Spalte heißen
+        /// „leer", und leer rechnet wie zuvor (<see cref="KonfigurationCtrl.NetzverlustvorgabeLesen"/>).
+        /// Der Setter dient als Testnaht; <c>null</c> setzt „leer".
+        /// </summary>
+        internal Netzverlustvorgabe NetzverlustvorgabeProjekt
+        {
+            get
+            {
+                if (_netzverlustvorgabeProjekt == null)
+                    _netzverlustvorgabeProjekt = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt);
+                return _netzverlustvorgabeProjekt;
+            }
+            set { _netzverlustvorgabeProjekt = value ?? Netzverlustvorgabe.Leer; }
+        }
+
+        private Netzverlustvorgabe _netzverlustvorgabeProjekt;
 
         /// <summary>
         /// Der projektierte Vorlauf des Heizkanals [°C] — der feste Vorlauf gekoppelter Gebäude
@@ -665,30 +689,42 @@ namespace WindowsFormsApplication1
             Waermebedarf_Gesamt = Waermebedarf.Sum() / 1000;
 
 
-            double stundl_netzverluste = 0;
-            if (Netzverluste_Einheit == "%")
+            // NETZVERLUSTE JE KANAL (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+            // Simulationsablauf 17): Ist mindestens ein Kanalwert gesetzt, gilt je Kanal sein Wert
+            // als fester Stundenbetrag auf diesen Kanal - ein leerer Kanal traegt 0 -, und der
+            // Projektwert gilt nicht. Ohne Kanalwert laeuft der Zweig darunter wie zuvor.
+            Netzverlustvorgabe kanalvorgabe = NetzverlustvorgabeProjekt;
+            if (kanalvorgabe.JeKanal)
             {
-                stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / (double)876000;
-                Waermebedarf_Netzverluste = (Waermebedarf_Gesamt * Netzverluste) / 100;
+                NetzverlusteJeKanal(kanalvorgabe, probe);
             }
             else
             {
-                stundl_netzverluste = (double)Netzverluste / (double)8760;
+                double stundl_netzverluste = 0;
+                if (Netzverluste_Einheit == "%")
+                {
+                    stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / (double)876000;
+                    Waermebedarf_Netzverluste = (Waermebedarf_Gesamt * Netzverluste) / 100;
+                }
+                else
+                {
+                    stundl_netzverluste = (double)Netzverluste / (double)8760;
 
-                // V0-8: Auch bei absoluter Einheit ("kWh/a") die tatsächlich
-                // aufgeschlagene Jahresmenge ausweisen - in MWh, derselben Einheit wie im
-                // Prozent-Zweig. Bisher blieb das Feld hier auf 0, obwohl NetzverlusteC die
-                // Energie auf alle 8760 Stunden addierte: der Bilanzausweis war falsch.
-                Waermebedarf_Netzverluste = (double)stundl_netzverluste * 8760 / 1000;
+                    // V0-8: Auch bei absoluter Einheit ("kWh/a") die tatsächlich
+                    // aufgeschlagene Jahresmenge ausweisen - in MWh, derselben Einheit wie im
+                    // Prozent-Zweig. Bisher blieb das Feld hier auf 0, obwohl NetzverlusteC die
+                    // Energie auf alle 8760 Stunden addierte: der Bilanzausweis war falsch.
+                    Waermebedarf_Netzverluste = (double)stundl_netzverluste * 8760 / 1000;
+                }
+
+                //com.I_netzverlustec(Waermebedarf, stundl_netzverluste);
+                // F2 (entschieden 27.08.2026): Der konstante Stundenbetrag ist derselbe wie
+                // bisher, er geht aber nicht mehr geschlossen in den (Heiz-)Summenvektor,
+                // sondern je Stunde ANTEILIG auf die drei Kanäle. Bei Kanalsumme 0 vollständig
+                // auf den Heizkanal - siehe Kanalsatz.NetzverlusteVerteilen.
+                _kanaele.NetzverlusteVerteilen(stundl_netzverluste);
+                for (int h = 0; h < 8760; h++) probe[h] += stundl_netzverluste;
             }
-
-            //com.I_netzverlustec(Waermebedarf, stundl_netzverluste);
-            // F2 (entschieden 27.08.2026): Der konstante Stundenbetrag ist derselbe wie
-            // bisher, er geht aber nicht mehr geschlossen in den (Heiz-)Summenvektor,
-            // sondern je Stunde ANTEILIG auf die drei Kanäle. Bei Kanalsumme 0 vollständig
-            // auf den Heizkanal - siehe Kanalsatz.NetzverlusteVerteilen.
-            _kanaele.NetzverlusteVerteilen(stundl_netzverluste);
-            for (int h = 0; h < 8760; h++) probe[h] += stundl_netzverluste;
 
             // Die beiden öffentlichen Bedarfsvektoren sind ab jetzt die KANÄLE inklusive
             // ihres Netzverlustanteils (gewollte F2-Wirkung, siehe Feldkommentare). Die
@@ -759,6 +795,40 @@ namespace WindowsFormsApplication1
         /// (<c>SimulationControl</c>, <c>Form_Simulation_Detail</c>), und eine
         /// Neubelegung würde dort auf einen veralteten Vektor zeigen lassen.
         /// </summary>
+        /// <summary>
+        /// <b>Netzverluste je Kanal</b> (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+        /// Simulationsablauf 17). Je Wärmekanal k (Heizung, Brauchwasser, Prozess) ein fester
+        /// Stundenbetrag auf genau diesen Kanal: in Prozent <c>Q_k · p_k / 100 / 8760</c> mit dem
+        /// Jahresbedarf Q_k des Kanals VOR dem Aufschlag (beim Brauchwasser samt Zirkulation), als
+        /// feste Menge <c>W_k / 8760</c>; ein leerer Kanal trägt 0. Der Projektwert
+        /// (<see cref="Netzverluste"/>) gilt nicht, und es wird nichts zwischen den Kanälen verteilt.
+        /// <see cref="Waermebedarf_Netzverluste"/> weist die Summe der drei Jahresmengen in MWh aus.
+        /// </summary>
+        private void NetzverlusteJeKanal(Netzverlustvorgabe vorgabe, double[] probe)
+        {
+            int[] kanaele = { Kanal.HEIZUNG, Kanal.BRAUCHWASSER, Kanal.PROZESS };
+            double[] betrag = new double[kanaele.Length];
+            double summe = 0;
+            for (int i = 0; i < kanaele.Length; i++)
+            {
+                double jahresbedarf = 0;
+                double[] reihe = _kanaele.Bedarf[kanaele[i]];
+                for (int h = 0; h < 8760; h++) jahresbedarf += reihe[h];
+                betrag[i] = vorgabe.BetragJeStunde(kanaele[i], jahresbedarf);
+                summe += betrag[i];
+            }
+            for (int i = 0; i < kanaele.Length; i++)
+            {
+                _kanaele.KanalverlustAufschlagen(kanaele[i], betrag[i]);
+                for (int h = 0; h < 8760; h++) probe[h] += betrag[i];
+            }
+            Waermebedarf_Netzverluste = summe * 8760 / 1000;
+
+            SimulationProtokoll.Aktuell.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_NETZVERLUSTE_JE_KANAL,
+                betrag[0] * 8760 / 1000, betrag[1] * 8760 / 1000, betrag[2] * 8760 / 1000));
+        }
+
         private void SummenvektorAusKanaelen()
         {
             double[] summe = _kanaele.Summe();
@@ -892,6 +962,9 @@ namespace WindowsFormsApplication1
             // AUFHEIZOPTIMIERUNG (KP3): die Projekteinstellung gilt je Lauf bzw. Auskunft - hier neu,
             // aus demselben Grund.
             _aufheizvorgabeProjekt = null;
+
+            // NETZVERLUSTE JE KANAL UND ZIRKULATION (BW4): je Lauf bzw. Auskunft neu, aus demselben Grund.
+            _netzverlustvorgabeProjekt = null;
             _anlagenVorlaufGelesen = false;
             _anlagenVorlaufC = double.NaN;
             _kuehlVorlaufGelesen = false;
@@ -1440,9 +1513,56 @@ namespace WindowsFormsApplication1
                 ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
                                      brauchwasserwerte, Waermebedarf_Brauchwasser_Monat);
+
+                // ZIRKULATION IM BESTANDSWEG (BW4): nur in der Projektrechnung und nur, wenn das
+                // Projekt sie mit Leistung und Laufzeit führt; ohne sie bleibt der Kanal, wie er ist.
+                if (modus == ProfilQuellmodus.Projektrechnung)
+                    BestandswegZirkulation(NetzverlustvorgabeProjekt);
             }
             // Protokollkanal-Nachzug: WARNUNG, siehe Prozesswärme-Zweig.
             catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
+        }
+
+        /// <summary>
+        /// <b>Die Zirkulation des Bestandswegs</b> (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+        /// Simulationsablauf 17): eine feste Leistung P [kW] in t_Lauf Laufstunden je Tag als eigene
+        /// Teilreihe des Brauchwasserkanals — dieselbe Formel wie die Methode „manuell" des
+        /// Zapfprofilgenerators (Umsetzungskonzept Zapfprofilgenerator 4.3):
+        /// <code>
+        /// q_zirk,h = P in den Laufzeitstunden, sonst 0;   Q_zirk = P · t_Lauf · 365
+        /// </code>
+        /// Das Laufzeitfenster liegt wie beim Generator zusammenhängend um die Tagesmitte der
+        /// Zapfung (hier: der Brauchwasserreihe der Profile), eine gebrochene Laufzeit belegt die
+        /// letzte Stunde anteilig (<see cref="Zirkulationskanal.Laufzeitfenster"/>). Normbezug:
+        /// Verteilverluste der Trinkwassererwärmung nach DIN EN 15316-3 und DIN V 18599-8, Betrieb
+        /// der Zirkulation (Unterbrechung höchstens 8 h am Tag) nach DVGW W 551.
+        ///
+        /// <para>Ohne Zirkulation (<see cref="Netzverlustvorgabe.MitZirkulation"/> falsch) bleibt
+        /// alles, wie es war: kein Posten, keine Monatsschichten. Mit ihr tragen
+        /// <see cref="Brauchwasser_Zirkulation_Mwh"/>, die Monatsschichten Zapfung und Zirkulation
+        /// und die Monatssummen des Kanals die Teilreihe — derselbe Ausweis wie beim Generator.</para>
+        /// </summary>
+        internal void BestandswegZirkulation(Netzverlustvorgabe vorgabe)
+        {
+            if (vorgabe == null || !vorgabe.MitZirkulation) return;
+
+            double laufzeit = vorgabe.ZirkulationLaufzeitHd.Value;
+            double[] zapfung = (double[])brauchwasserwerte.Clone();
+            double mitte = Zirkulationskanal.Tagesmitte(new IReadOnlyList<double>[] { zapfung });
+            double[] fenster = Zirkulationskanal.Laufzeitfenster(laufzeit, mitte);
+            double[] zirkulation = Zirkulationskanal.Reihe(vorgabe.ZirkulationJahresKwh, laufzeit, fenster)
+                                                    .KopieStundenKwh();
+
+            WPPlan.Core.BhkwPlan.VectorenAddieren(zirkulation, brauchwasserwerte);
+            Brauchwasser_Zirkulation_Mwh = Energieeinheit.MWh.AusKWh(zirkulation.Sum());
+            WPPlan.Core.BhkwPlan.MonatsSumme(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zapfung, Waermebedarf_Brauchwasser_Zapfung_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zirkulation, Waermebedarf_Brauchwasser_Zirkulation_Monat, mo_anfang, mo_ende);
+
+            SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_BRAUCHWASSER + string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_ZIRKULATION_BESTANDSWEG,
+                vorgabe.ZirkulationLeistungKw.Value, laufzeit, Brauchwasser_Zirkulation_Mwh));
         }
 
         // =====================================================================

@@ -968,6 +968,104 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
+        // --- Netzverluste je Kanal und Zirkulation im Bestandsweg (Schritt BedarfNetzKalenderSchema; BW4)
+
+        /// <summary>Die acht Spalten in Lesereihenfolge.</summary>
+        private static readonly string[] NETZKANAL_SPALTEN =
+        {
+            BedarfNetzKalenderSchema.SPALTE_NV_HEIZUNG, BedarfNetzKalenderSchema.SPALTE_NV_HEIZUNG_EINHEIT,
+            BedarfNetzKalenderSchema.SPALTE_NV_BRAUCHWASSER, BedarfNetzKalenderSchema.SPALTE_NV_BRAUCHWASSER_EINHEIT,
+            BedarfNetzKalenderSchema.SPALTE_NV_PROZESS, BedarfNetzKalenderSchema.SPALTE_NV_PROZESS_EINHEIT,
+            BedarfNetzKalenderSchema.SPALTE_ZIRK_LEISTUNG, BedarfNetzKalenderSchema.SPALTE_ZIRK_LAUFZEIT
+        };
+
+        /// <summary>
+        /// Netzverluste je Kanal und Zirkulation eines Projekts (<see cref="Netzverlustvorgabe"/>) —
+        /// DIALOGFREI und NULL-ERHALTEND in EINER Abfrage der acht Spalten gelesen. <b>Fehlende
+        /// Zeile, fehlende Spalte und ein unlesbarer Satz heißen „leer"</b>
+        /// (<see cref="Netzverlustvorgabe.Leer"/>): Dann gilt der Projektwert wie zuvor.
+        /// </summary>
+        public static Netzverlustvorgabe NetzverlustvorgabeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Netzverlustvorgabe.Leer;
+            HashSet<string> spalten = StilleDb.SpaltenNamen(BedarfNetzKalenderSchema.TAB_EINSTELLUNGEN);
+            if (spalten == null || !spalten.Contains(BedarfNetzKalenderSchema.SPALTE_ZIRK_LAUFZEIT))
+                return Netzverlustvorgabe.Leer;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + string.Join("], [", NETZKANAL_SPALTEN) + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < NETZKANAL_SPALTEN.Length)
+                return Netzverlustvorgabe.Leer;
+
+            DataRow r = dt.Rows[0];
+            return new Netzverlustvorgabe
+            {
+                HeizungWert = HeizgrenzeOderLeer(r[0]),
+                HeizungEinheit = TextOderLeer(r[1]),
+                BrauchwasserWert = HeizgrenzeOderLeer(r[2]),
+                BrauchwasserEinheit = TextOderLeer(r[3]),
+                ProzessWert = HeizgrenzeOderLeer(r[4]),
+                ProzessEinheit = TextOderLeer(r[5]),
+                ZirkulationLeistungKw = HeizgrenzeOderLeer(r[6]),
+                ZirkulationLaufzeitHd = HeizgrenzeOderLeer(r[7])
+            }.Normalisiert();
+        }
+
+        /// <summary>
+        /// Schreibt Netzverluste je Kanal und Zirkulation in EINEM, zielgenauen <c>UPDATE</c> der acht
+        /// Spalten — wie <see cref="AufheizvorgabeSchreiben"/> und aus demselben Grund (die
+        /// Spaltenlisten von <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette).
+        /// Geschrieben wird die normalisierte Form; ein Wert außerhalb der Prüfklauseln scheitert an der
+        /// Spalte und liefert <c>false</c>, ebenso eine fehlende Zeile.
+        /// </summary>
+        public static bool NetzverlustvorgabeSchreiben(int idProjekt, Netzverlustvorgabe vorgabe)
+        {
+            if (idProjekt <= 0 || vorgabe == null) return false;
+            Netzverlustvorgabe v = vorgabe.Normalisiert();
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + string.Join("] = ?, [", NETZKANAL_SPALTEN) + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@nvh", DbParamTyp.Double, (object)v.HeizungWert ?? DBNull.Value),
+                StilleDb.Par("@nvhe", DbParamTyp.VarWChar, (object)v.HeizungEinheit ?? DBNull.Value),
+                StilleDb.Par("@nvb", DbParamTyp.Double, (object)v.BrauchwasserWert ?? DBNull.Value),
+                StilleDb.Par("@nvbe", DbParamTyp.VarWChar, (object)v.BrauchwasserEinheit ?? DBNull.Value),
+                StilleDb.Par("@nvp", DbParamTyp.Double, (object)v.ProzessWert ?? DBNull.Value),
+                StilleDb.Par("@nvpe", DbParamTyp.VarWChar, (object)v.ProzessEinheit ?? DBNull.Value),
+                StilleDb.Par("@zl", DbParamTyp.Double, (object)v.ZirkulationLeistungKw ?? DBNull.Value),
+                StilleDb.Par("@zt", DbParamTyp.Double, (object)v.ZirkulationLaufzeitHd ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>
+        /// <b>Netzverluste je Kanal und Zirkulation</b> — der Schreibweg der Oberfläche (Abschnitt
+        /// „Wärmebedarf" der Simulationskonfiguration) und des Assistenten, nach der Regel von
+        /// <see cref="KuehlbetriebSetzen"/>: <b>Steht ein Einstellungssatz</b>, werden die acht Spalten
+        /// geschrieben. <b>Steht keiner</b>, ist <see cref="Netzverlustvorgabe.Leer"/> schon wahr —
+        /// dann wird nichts geschrieben; jede andere Vorgabe legt den <b>Vormerksatz</b> an
+        /// (<see cref="IstVormerksatz"/>), den das erste Speichern der Kaskade zum Einstellungssatz
+        /// macht (die Vorgabe reist dort mit).
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Vorgabe trägt.</returns>
+        public static bool NetzverlustvorgabeSetzen(int idProjekt, Netzverlustvorgabe vorgabe)
+        {
+            if (idProjekt <= 0 || vorgabe == null) return false;
+            Netzverlustvorgabe v = vorgabe.Normalisiert();
+            if (v.Pruefen() != null) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (v.Equals(Netzverlustvorgabe.Leer)) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return NetzverlustvorgabeSchreiben(idProjekt, v);
+        }
+
         /// <summary>Ein gelesenes Textfeld: <c>null</c> und <c>DBNull</c> ergeben <c>null</c>.</summary>
         private static string TextOderLeer(object feld)
             => feld == null || feld == DBNull.Value

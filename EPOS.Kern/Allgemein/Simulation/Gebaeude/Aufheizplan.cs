@@ -309,8 +309,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Der Aufheizplan einer Zone</b> (Entwurf KP3, Wellen R2 und R3) — unveränderlich: die Reihe mit
-    /// Rampe, die Rampenmaske (Festlegung 10; die Wirkung auf <c>NutzungBei</c> kommt mit R4), die Zähler
-    /// W1/W2/W4/W5 (W3 zählt der Lauf, R4), die Bemessung beider Varianten, P_auf samt Quelle, T_a,B
+    /// Rampe, die Rampenmaske (Festlegung 10; sie wirkt über <see cref="GebaeudeModellErgebnis.NutzungBei"/>), die Zähler
+    /// W1/W2/W4/W5 (W3 zählt der Lauf, <see cref="Aufheizoptimierung.Nachweisbandtage"/>), die Bemessung beider Varianten, P_auf samt Quelle, T_a,B
     /// und der Zustand nach Festlegung 25. Ohne Datenbank, ohne Kultur.
     /// </summary>
     internal sealed record Aufheizplan

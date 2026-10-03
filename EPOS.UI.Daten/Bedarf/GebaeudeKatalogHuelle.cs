@@ -879,7 +879,8 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
-                    Name = m.szBezeichner ?? "", Summe = m.Summe
+                    Name = m.szBezeichner ?? "", Summe = m.Summe,
+                    KalenderId = m.ID_Betriebskalender
                 });
 
             Action geaendert = () =>
@@ -889,7 +890,8 @@ namespace WindowsFormsApplication1
                     ziel.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
-                        szBezeichner = z.Name, Summe = z.Summe
+                        szBezeichner = z.Name, Summe = z.Summe,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
 

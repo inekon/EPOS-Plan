@@ -307,9 +307,16 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>Eine Zeile der WP-Modultabelle.</summary>
+        /// <param name="MitTakt">
+        /// Welle M4, WP1: rechnet das Modul den Taktverlust (Mindestleistung gepflegt)? Nur dann
+        /// zeigt der Reiter <paramref name="Starts"/> und <paramref name="TaktstromMwh"/>.
+        /// </param>
+        /// <param name="Starts">Starts im Jahr [1/a], Heiz- und Kühlbetrieb zusammen.</param>
+        /// <param name="TaktstromMwh">Mehrstrom aus Taktverlust [MWh/a], Teil des Strombedarfs.</param>
         public sealed record WpModulZeile(string Name, double GrenzleistungKw,
                                           double WaermeproduktionMwh, double StrombedarfMwh,
-                                          double HeizstabMwh, double LaufzeitStunden);
+                                          double HeizstabMwh, double LaufzeitStunden,
+                                          bool MitTakt = false, int Starts = 0, double TaktstromMwh = 0);
 
         /// <summary>Eine Zeile der Pufferspeichertabelle (Konzept 6.6).</summary>
         public sealed record PufferZeile(string Bezeichner, string Rolle, double KapazitaetKwh,
@@ -397,14 +404,32 @@ namespace WindowsFormsApplication1
                 if (wp.waermerestbedarf_stuendlich[i] > maxSpk) maxSpk = wp.waermerestbedarf_stuendlich[i];
             e.MinSpkLeistungKw = maxSpk;
 
+            // Welle M4, WP1: die Kälteerzeuger desselben Moduls - ihre Starts und ihr Mehrstrom
+            // aus Taktverlust zählen zur Modulzeile.
+            Kaeltekaskade kaskade = wb?.Kaelteseite?.Kaskade;
+
             for (int i = 0; i < wp.wp_list.Count; i++)
+            {
+                int starts = i < SimulationWaermepumpe.MAX_WP ? wp.Starts_WP[i] : 0;
+                double taktKwh = i < SimulationWaermepumpe.MAX_WP ? wp.Taktstrom_KWh_WP[i] : 0.0;
+                if (kaskade != null)
+                    foreach (Kaelteerzeuger z in kaskade.Erzeuger)
+                        if (z != null && z.Modulindex == i)
+                        {
+                            starts += z.Starts;
+                            taktKwh += z.TaktstromKwh;
+                        }
                 e.Module.Add(new WpModulZeile(
                     wp.WP_Modul[i],
                     wp.wp_model[i].Grenzleistung,
                     wp.Modul_WP_Waermeproduktion[i] / 1000.0,
                     wp.Modul_WP_Strombedarf[i] / 1000.0,
                     wp.Modul_Heizstab[i] / 1000.0,
-                    wp.Modul_WP_Laufzeit[i]));
+                    wp.Modul_WP_Laufzeit[i],
+                    wp.RechnetMitTakt(i),
+                    starts,
+                    taktKwh / 1000.0));
+            }
 
             e.Puffer.AddRange(Pufferzeilen(sim));
             e.PufferVolumenKwh = PufferVolumenKwh(sim);
@@ -961,7 +986,14 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>Eine Zeile der BHKW-Modultabelle.</summary>
-        public sealed record BhkwModulZeile(string Name, double WaermeMwh, double StromMwh);
+        /// <param name="MitTakten">Welle M4, BH2: taktet das Modul (Anfahrverlust oder Mindestlaufzeit gepflegt)?</param>
+        /// <param name="Starts">Starts im Jahr [1/a]; nur mit Takten.</param>
+        /// <param name="AnfahrverlustKwh">Anfahrverlust im Jahr [kWh/a] — Teil des Brennstoffs.</param>
+        /// <param name="MitKennlinie">Welle M4, BH1: rechnet das Modul mit Teillastkennlinie?</param>
+        /// <param name="TeillastMehrbrennstoffKwh">Mehrbrennstoff der Kennlinie gegenüber dem Gesamtwirkungsgrad [kWh/a].</param>
+        public sealed record BhkwModulZeile(string Name, double WaermeMwh, double StromMwh,
+                                            bool MitTakten = false, int Starts = 0, double AnfahrverlustKwh = 0,
+                                            bool MitKennlinie = false, double TeillastMehrbrennstoffKwh = 0);
 
         public sealed class BhkwErgebnis
         {
@@ -1034,8 +1066,16 @@ namespace WindowsFormsApplication1
             e.StromdeckungProzent = BhkwStromdeckungProzent(sim);
 
             for (int i = 0; i < bh.bhkw_list.Count; i++)
+            {
+                // Welle M4 (BH1, BH2): der Ausweis der Teillastrechnung - nur für ein Modul, das sie führt.
+                BhkwTeillast t = bh.Teillast(i);
+                bool takt = t != null && t.MitTakten;
+                bool kennlinie = t != null && t.MitKennlinie;
                 e.Module.Add(new BhkwModulZeile(
-                    bh.bhkw_list_Namen[i], bh.s_waerme_MWh[i], bh.s_strom_MWh[i]));
+                    bh.bhkw_list_Namen[i], bh.s_waerme_MWh[i], bh.s_strom_MWh[i],
+                    takt, takt ? bh.Starts_BHKW[i] : 0, takt ? bh.Anfahrverlust_KWh_BHKW[i] : 0.0,
+                    kennlinie, kennlinie ? bh.TeillastMehrbrennstoff_KWh_BHKW[i] : 0.0));
+            }
 
             return e;
         }
@@ -1379,6 +1419,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Eigener Zähler (E34, Wahl 2)?</summary>
             public bool EigenerZaehler;
+
+            /// <summary>Starts im Kühlbetrieb [1/a] (Welle M4, WP1); 0 ohne Mindestleistung.</summary>
+            public int Starts;
+
+            /// <summary>Mehrstrom aus Taktverlust im Kühlbetrieb [MWh/a] (Welle M4, WP1).</summary>
+            public double TaktstromMwh;
         }
 
         /// <summary>
@@ -1429,7 +1475,9 @@ namespace WindowsFormsApplication1
                         Eer = z.StromGesamtKwh > 0 ? z.EerJahreswert : (double?)null,
                         NetzbezugMwh = z.NetzbezugKwh / 1000.0,
                         Kuehltraeger = z.Kuehltraeger,
-                        EigenerZaehler = z.NebenDerStufenrechnung
+                        EigenerZaehler = z.NebenDerStufenrechnung,
+                        Starts = z.Starts,
+                        TaktstromMwh = z.TaktstromKwh / 1000.0
                     });
                 }
                 e.KaeltestromNetzbezugMwh = netz / 1000.0;

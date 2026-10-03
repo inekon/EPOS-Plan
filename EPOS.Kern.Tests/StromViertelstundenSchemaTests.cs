@@ -30,11 +30,11 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Nummer, Stufe und Prüfklauseln (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Der Schritt folgt auf die Felder des Kollektorfelds, ist das Ziel und eine DDL-Stufe.</summary>
+        /// <summary>Der Schritt folgt auf die Teillastfelder der Erzeuger, ist das Ziel und eine DDL-Stufe.</summary>
         [Fact]
         public void Nummer_Ziel_und_Paketstufe()
         {
-            Assert.Equal(SolarthermieFelderSchema.SCHRITT + 1, StromViertelstundenSchema.SCHRITT);
+            Assert.Equal(ErzeugerTeillastSchema.SCHRITT + 1, StromViertelstundenSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= StromViertelstundenSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + StromViertelstundenSchema.SCHRITT + ".");
 
@@ -125,7 +125,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Migration der Schale, Werkzeug <c>Testdatenbankschema</c> und Testkopie führen den Schritt
-        /// aus derselben Quelle, hinter den Feldern des Kollektorfelds.
+        /// aus derselben Quelle, hinter den Teillastfeldern der Erzeuger.
         /// </summary>
         [Fact]
         public void Werkzeug_Migration_und_Testkopie_fuehren_den_Schritt()
@@ -135,18 +135,18 @@ namespace EPOS.Kern.Tests
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
             Assert.True(werkzeug.IndexOf("StromViertelstundenSchema.Ausfuehren(", StringComparison.Ordinal) >
-                        werkzeug.IndexOf("SolarthermieFelderSchema.Ausfuehren(", StringComparison.Ordinal));
+                        werkzeug.IndexOf("ErzeugerTeillastSchema.Ausfuehren(", StringComparison.Ordinal));
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
                                                              "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_STROM_VIERTELSTUNDEN = StromViertelstundenSchema.SCHRITT", migration);
             Assert.True(migration.IndexOf("new Schritt(SCHRITT_STROM_VIERTELSTUNDEN", StringComparison.Ordinal) >
-                        migration.IndexOf("new Schritt(SCHRITT_SOLARTHERMIE_FELDER", StringComparison.Ordinal));
+                        migration.IndexOf("new Schritt(SCHRITT_ERZEUGER_TEILLAST", StringComparison.Ordinal));
             Assert.Contains("StromViertelstundenSchema.Anweisungen", migration);
 
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
             Assert.True(vorrichtung.IndexOf("StromViertelstundenSchema.Ausfuehren(null)", StringComparison.Ordinal) >
-                        vorrichtung.IndexOf("SolarthermieFelderSchema.Ausfuehren(null)", StringComparison.Ordinal));
+                        vorrichtung.IndexOf("ErzeugerTeillastSchema.Ausfuehren(null)", StringComparison.Ordinal));
         }
 
         // -----------------------------------------------------------------------------

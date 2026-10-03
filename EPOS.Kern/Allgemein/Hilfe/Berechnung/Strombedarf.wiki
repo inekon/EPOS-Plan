@@ -109,7 +109,7 @@ Der Profilanteil <math>P_{\mathrm{h}}(t)</math> entsteht als '''Stundenreihe''' 
 # das 168-Stunden-Wochenprofil ab dem Wochentag des 1. Januar ueber das Jahr kacheln,
 # je Monat auf den Monatswert normieren (mal 1 000, MWh nach kWh).
 
-Die Formeln dazu stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Gleichungen (1) bis (5) — es sind dieselben, mit demselben Zeichenvorrat.
+Die Formeln dazu stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Gleichungen (1) bis (5) — es sind dieselben, mit demselben Zeichenvorrat. Auch der '''Betriebskalender''' an der Zuordnung — Feiertage wie Sonntag, Betriebsferien mit Ferienfaktor, wahlweise mit gekuerzter Monatsmenge — wirkt hier genau wie dort.
 
 '''Die Zuordnung gilt über die ID.''' Jede Zuordnungszeile des Projekts zeigt auf ihre Projektkopie — wie bei Brauchwasser und Prozesswaerme. Kopf- und Typsatz werden nur im eigenen Projekt gelesen, und die gepflegte Jahressumme der Zuordnungszeile skaliert genau diese Kopie; ein gleichnamiges Profil eines anderen Projekts rechnet nicht mit.
 
@@ -213,7 +213,7 @@ Die Peak-Shaving-Maske sucht die '''kleinste erreichbare Netzbezugsspitze''' zu 
 * '''Profile ohne Unterstruktur.''' Gleichung (1) setzt alle vier Viertel gleich hoch; eine Spitze von 15 Minuten Dauer, die in einer Stundenreihe steckt, laesst sich daraus nicht zurueckgewinnen. Echte Viertelstundenspitzen bringt eine Ganglinie mit 35 040 Werten; gegen sie rechnet die Photovoltaik Viertelstunde fuer Viertelstunde.
 * '''Keine Blindleistung, keine Phasen, keine Spannungsebene.''' <math>P(k)</math> ist Wirkleistung.
 * '''Kein Gleichzeitigkeitsfaktor.''' Die Summe in (2) ist ungedaempft; wer eine Gleichzeitigkeit abbilden will, tut es ueber die Jahressummen.
-* '''Der Wochengang ist starr''' und die Monatsmenge unantastbar — wie bei den beiden Waermeprofilen.
+* '''Der Wochengang ist ein Muster''' — wie bei den beiden Waermeprofilen: Feiertage und Betriebsferien legt ein Betriebskalender darauf; die Monatsmenge aendert allein dessen Schalter „Ferien kuerzen die Monatsmenge".
 * '''Die Vorschau ist nicht der Lauf.''' Der Knopf „Simulation…" des Profildialogs rechnet die AUSGEWAEHLTEN Profile und zaehlt die Stromganglinien bewusst nicht mit; die Gesamtsumme ist dort die Summe der Profile allein, also (4) ohne den zweiten Summanden von (2). Er belegt ausserdem nur die ersten 8 760 der 35 040 Plaetze, weil er das Stundenraster fuehrt — die Bilder wissen das und zeichnen entsprechend.
 * '''Die Peak-Shaving-Maske schreibt keinen Bedarf.''' Sie schreibt allein ueber „In Variante übernehmen“ Zielschwelle und Adaptiv-Kennzeichen in die aktive Speichervariante (siehe Schritt 7).
 

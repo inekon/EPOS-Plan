@@ -235,6 +235,14 @@ public sealed class ParameterDaten
     /// </summary>
     public WindowsFormsApplication1.Aufheizvorgabe Aufheizung = WindowsFormsApplication1.Aufheizvorgabe.Aus;
 
+    // ---- Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4) ----
+
+    /// <summary>
+    /// Netzverluste je Kanal und Zirkulation (<c>Tab_Einstellungen</c>, Schritt
+    /// <c>BedarfNetzKalenderSchema</c>) in der gespeicherten, normalisierten Form; alle Kanalwerte
+    /// leer = der Projektwert <see cref="Netzverluste"/> gilt.
+    /// </summary>
+    public WindowsFormsApplication1.Netzverlustvorgabe Netzkanaele = WindowsFormsApplication1.Netzverlustvorgabe.Leer;
     // ---- Einspeisegrenze (Welle M5, PV3) ----
 
     /// <summary>
@@ -264,6 +272,7 @@ public sealed class ParameterDaten
         Kuehlbetrieb = Kuehlbetrieb,
         Anlagenkopplung = Anlagenkopplung,
         Aufheizung = Aufheizung,
+        Netzkanaele = Netzkanaele,
         Einspeisegrenze = Einspeisegrenze
     };
 }

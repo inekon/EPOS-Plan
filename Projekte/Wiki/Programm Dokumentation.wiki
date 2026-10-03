@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation
+﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Der Bereich '''Programm Dokumentation''' enthält die Hilfeseiten, die EPOS-Plan direkt aus dem Programm heraus aufruft – über die Kurzhinweise an den Eingabefeldern, den Menüpunkt {{Menü|Dokumentation}} und den [[Hilfe-Assistent]]en. Die Seiten sind wie die gesamte Dokumentation ohne Anmeldung lesbar, damit die Software sie jederzeit öffnen kann. Nur die Kachel auf der [[Hauptseite]] erscheint ausschließlich für angemeldete Benutzer, weil dieser Bereich in erster Linie der Pflege der Hilfetexte dient.
@@ -15,7 +15,7 @@ Die Hilfeseiten dieses Bereichs sind in sieben Unterrubriken geordnet. Jede Seit
 |-
 | [[#programm-projekt-und-hilfe|Programm, Projekt und Hilfe]] || [[Programm Dokumentation/Programmablauf|Programmablauf]] · [[Programm Dokumentation/Kurzanleitung|Kurzanleitung]] · [[Programm Dokumentation/Projektverwaltung|Projektverwaltung]] · [[Programm Dokumentation/Varianten|Varianten]] · [[Programm Dokumentation/Hilfe-Assistent|Hilfe-Assistent]] · [[Programm Dokumentation/Lizenz|Lizenz]] || Einstieg, Projektverwaltung und Varianten, dazu Hilfe-Assistent und Lizenz.
 |-
-| [[#bedarf|Bedarf]] || [[Programm Dokumentation/Gebäude|Gebäude]] · [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] · [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]] · [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] · [[Programm Dokumentation/Kühlung|Kühlung]] · [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]] · [[Programm Dokumentation/Brauchwasser|Brauchwasser]] · [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] · [[Programm Dokumentation/Prozesswärme|Prozesswärme]] · [[Programm Dokumentation/Strombedarf|Strombedarf]] · [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]] || Wärme- und Strombedarf des Projekts: Gebäude, Lastgänge, Brauchwasser, Prozesswärme, Verbraucher.
+| [[#bedarf|Bedarf]] || [[Programm Dokumentation/Gebäude|Gebäude]] · [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] · [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]] · [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] · [[Programm Dokumentation/Kühlung|Kühlung]] · [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]] · [[Programm Dokumentation/Brauchwasser|Brauchwasser]] · [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] · [[Programm Dokumentation/Betriebskalender|Betriebskalender]] · [[Programm Dokumentation/Prozesswärme|Prozesswärme]] · [[Programm Dokumentation/Strombedarf|Strombedarf]] · [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]] || Wärme- und Strombedarf des Projekts: Gebäude, Lastgänge, Brauchwasser, Prozesswärme, Verbraucher.
 |-
 | [[#erzeuger-und-speicher|Erzeuger und Speicher]] || [[Programm Dokumentation/Energieerzeuger|Energieerzeuger]] · [[Programm Dokumentation/Gerätekataloge|Gerätekataloge]] · [[Programm Dokumentation/Heizkessel|Heizkessel]] · [[Programm Dokumentation/BHKW|BHKW]] · [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] · [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]] · [[Programm Dokumentation/Solarthermie|Solarthermie]] · [[Programm Dokumentation/Photovoltaik|Photovoltaik]] · [[Programm Dokumentation/Wechselrichter|Wechselrichter]] · [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] · [[Programm Dokumentation/Stromspeicher|Stromspeicher]] || Die Anlagen des Projekts und ihre Kataloge.
 |-
@@ -31,7 +31,7 @@ Die Hilfeseiten dieses Bereichs sind in sieben Unterrubriken geordnet. Jede Seit
 == Hilfeseiten ==
 {{Anker|hilfeseiten|seiten}}
 
-Die folgenden Tabellen sind die Zuordnung, an die sich das Programm hält: 136 Aufrufstellen verweisen auf 38 Unterseiten dieses Bereichs. Wer eine Seite umbenennen möchte, sieht hier, welche Programmstellen daran hängen – die Spalte ''Formular / Schaltfläche'' entspricht der Zuordnungsdatei in der Anwendung. Die Zeilen sind nach Unterrubrik gruppiert und innerhalb der Gruppe nach Hilfeseite geordnet; jede Tabelle lässt sich über die Spaltenköpfe umsortieren.
+Die folgenden Tabellen sind die Zuordnung, an die sich das Programm hält: 137 Aufrufstellen verweisen auf 39 Unterseiten dieses Bereichs. Wer eine Seite umbenennen möchte, sieht hier, welche Programmstellen daran hängen – die Spalte ''Formular / Schaltfläche'' entspricht der Zuordnungsdatei in der Anwendung. Die Zeilen sind nach Unterrubrik gruppiert und innerhalb der Gruppe nach Hilfeseite geordnet; jede Tabelle lässt sich über die Spaltenköpfe umsortieren.
 
 Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen neben dem Hilfeknopf zwei weitere: ''Berechnungsweg'' führt in die zugehörige Seite der Unterrubrik [[Programm Dokumentation/Berechnung|Berechnung]], ''Grundlagen'' in die gleichnamige Rubrik [[Grundlagen]]. Beide stehen nicht in den folgenden Tabellen; ihr Ziel legt dieselbe Zuordnungsdatei fest wie der Hilfeknopf.
 
@@ -93,6 +93,8 @@ Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen ne
 | Überlagerung ''VDI-4655-Typtage'' || <code>Form_Brauchwasser_Typtage.btn_Help</code> || [[Programm Dokumentation/Brauchwasser-Zapfprofil#typtage|Brauchwasser-Zapfprofil]]
 |-
 | Überlagerung ''Messdaten'' des Zapfprofils || <code>Form_Brauchwasser_Messreihen.btn_Help</code> || [[Programm Dokumentation/Brauchwasser-Zapfprofil#messdaten|Brauchwasser-Zapfprofil]]
+|-
+| Verwaltung ''Betriebskalender'' (Administration) || <code>Form_Betriebskalender.btn_Help</code> || [[Programm Dokumentation/Betriebskalender|Betriebskalender]]
 |-
 | Dialog ''Eingabe der Gebäudedaten'' || <code>Form_Gebaeude.btn_Help</code> || [[Programm Dokumentation/Gebäude|Gebäude]]
 |-

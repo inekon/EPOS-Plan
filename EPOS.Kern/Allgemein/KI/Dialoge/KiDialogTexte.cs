@@ -361,6 +361,12 @@
         internal static string WpKuehlleistungName => MyResource.Resource.WPS_LBL_KUEHLLEISTUNG;
         internal static string WpKuehlleistungErl => MyResource.Resource.KI_DLG_WP_KUEHLLEISTUNG_ERL;
 
+        // ---- Welle M4 (WP1): Taktverlust nach EN 14825 in der Wärmepumpenpflege
+        internal static string WpMindestleistungName => MyResource.Resource.WPS_LBL_MINDESTLEISTUNG;
+        internal static string WpMindestleistungErl => MyResource.Resource.KI_DLG_WP_MINDESTLEISTUNG_ERL;
+        internal static string WpTaktverlustCdName => MyResource.Resource.WPS_LBL_TAKTVERLUST_CD;
+        internal static string WpTaktverlustCdErl => MyResource.Resource.KI_DLG_WP_TAKTVERLUST_CD_ERL;
+
         // ========================================= Welle KI-F1: Erzeuger im Projekt
         //
         // DIE ANZEIGENAMEN SIND DIE BESCHRIFTUNGEN DER MASKE, nicht eigene KI-Texte:
@@ -1501,6 +1507,17 @@
 
         /// <summary>Die Optionsgruppe „Rechenweg Brauchwasser" (Welle #458, Stufe 3a).</summary>
         internal static string BpfRechenwegName => MyResource.Resource.BPF_LBL_RECHENWEG_BW;
+
+        // ---- Netzverluste je Kanal und Zirkulation (Simulationskonfiguration, BW4) ----
+        internal static string SimNvHeizungName => MyResource.Resource.SIMKONF_LBL_NV_HEIZUNG;
+        internal static string SimNvBrauchwasserName => MyResource.Resource.SIMKONF_LBL_NV_BRAUCHWASSER;
+        internal static string SimNvProzessName => MyResource.Resource.SIMKONF_LBL_NV_PROZESS;
+        internal static string SimNvKanalErl => MyResource.Resource.KI_DLG_SIM_NV_KANAL_ERL;
+        internal static string SimNvEinheitName => MyResource.Resource.SIMKONF_LBL_NV_EINHEIT;
+        internal static string SimNvEinheitErl => MyResource.Resource.KI_DLG_SIM_NV_EINHEIT_ERL;
+        internal static string SimZirkLeistungName => MyResource.Resource.SIMKONF_LBL_ZIRK_LEISTUNG;
+        internal static string SimZirkLaufzeitName => MyResource.Resource.SIMKONF_LBL_ZIRK_LAUFZEIT;
+        internal static string SimZirkErl => MyResource.Resource.KI_DLG_SIM_ZIRK_ERL;
         internal static string BpfRechenwegErl => MyResource.Resource.KI_DLG_BPF_RECHENWEG_ERL;
 
         // =========== Brauchwasser-Zapfprofil und seine Ueberlagerungen (Welle #458, Stufe 3a)
@@ -2122,6 +2139,26 @@
 
         // ---- Form_Nutzungsdauer
         internal static string MaskeNutzungsdauer => MyResource.Resource.KI_DLG_MASKE_NUD;
+
+        // ---- Betriebskalender (PW2, BW2) ----
+        internal static string MaskeBetriebskalender => MyResource.Resource.BKAL_TITEL;
+        internal static string BkalKalenderName => MyResource.Resource.BKAL_LBL_LISTE;
+        internal static string BkalKalenderErl => MyResource.Resource.KI_DLG_BKAL_KALENDER_ERL;
+        internal static string BkalBezeichnungName => MyResource.Resource.BKAL_LBL_BEZEICHNER;
+        internal static string BkalBezeichnungErl => MyResource.Resource.KI_DLG_BKAL_BEZEICHNUNG_ERL;
+        internal static string BkalBundeslandName => MyResource.Resource.BKAL_LBL_BUNDESLAND;
+        internal static string BkalBundeslandErl => MyResource.Resource.KI_DLG_BKAL_BUNDESLAND_ERL;
+        internal static string BkalFeiertagName => MyResource.Resource.BKAL_LBL_FEIERTAG;
+        internal static string BkalFeiertagErl => MyResource.Resource.BKAL_HRL_FEIERTAG;
+        internal static string BkalVonName => MyResource.Resource.BKAL_LBL_FERIEN_VON;
+        internal static string BkalBisName => MyResource.Resource.BKAL_LBL_FERIEN_BIS;
+        internal static string BkalFerienErl => MyResource.Resource.KI_DLG_BKAL_FERIEN_ERL;
+        internal static string BkalFaktorName => MyResource.Resource.BKAL_LBL_FAKTOR;
+        internal static string BkalFaktorErl => MyResource.Resource.BKAL_HRL_FAKTOR;
+        internal static string BkalKuerzenName => MyResource.Resource.BKAL_LBL_KUERZEN;
+        internal static string BkalKuerzenErl => MyResource.Resource.BKAL_HRL_KUERZEN;
+        internal static string BpfKalenderName => MyResource.Resource.BPF_LBL_KALENDER;
+        internal static string BpfKalenderErl => MyResource.Resource.BPF_HINW_KALENDER;
         internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
         internal static string NudSucheErl => MyResource.Resource.KI_DLG_NUD_SUCHE_ERL;
         internal static string NudTechnikName => MyResource.Resource.KI_DLG_NUD_TECHNIK_NAME;
@@ -2549,6 +2586,16 @@
         internal static string BhkkVorlaufErl => MyResource.Resource.KI_DLG_BHKK_VORLAUF_ERL;
         internal static string BhkkRuecklaufName => MyResource.Resource.BHKWK_LBL_RUECKLAUF;
         internal static string BhkkRuecklaufErl => MyResource.Resource.KI_DLG_BHKK_RUECKLAUF_ERL;
+
+        // ---- Welle M4 (BH1, BH2): Teillast und Takten im BHKW-Katalogeditor
+        internal static string BhkkEtaEl50Name => MyResource.Resource.BHKWK_LBL_ETA_EL50;
+        internal static string BhkkEtaEl50Erl => MyResource.Resource.KI_DLG_BHKK_ETA_EL50_ERL;
+        internal static string BhkkEtaTh50Name => MyResource.Resource.BHKWK_LBL_ETA_TH50;
+        internal static string BhkkEtaTh50Erl => MyResource.Resource.KI_DLG_BHKK_ETA_TH50_ERL;
+        internal static string BhkkAnfahrverlustName => MyResource.Resource.BHKWK_LBL_ANFAHRVERLUST;
+        internal static string BhkkAnfahrverlustErl => MyResource.Resource.KI_DLG_BHKK_ANFAHRVERLUST_ERL;
+        internal static string BhkkMindestlaufzeitName => MyResource.Resource.BHKWK_LBL_MINDESTLAUFZEIT;
+        internal static string BhkkMindestlaufzeitErl => MyResource.Resource.KI_DLG_BHKK_MINDESTLAUFZEIT_ERL;
 
         // ---- Der Solarkollektor-Katalogeditor (Form_SolarDB)
         internal static string SkkNameName => MyResource.Resource.SKK_LBL_NAME;
@@ -3082,6 +3129,10 @@
                         case KatalogBrowserProfil.FeldWirkungsgradEl: return BhkkWgElErl;
                         case KatalogBrowserProfil.FeldWirkungsgradTh: return BhkkWgThErl;
                         case KatalogBrowserProfil.FeldWirkungsgrad: return BhkkWgGesamtErl;
+                        case KatalogBrowserProfil.FeldTeillastEl50: return BhkkEtaEl50Erl;
+                        case KatalogBrowserProfil.FeldTeillastTh50: return BhkkEtaTh50Erl;
+                        case KatalogBrowserProfil.FeldAnfahrverlust: return BhkkAnfahrverlustErl;
+                        case KatalogBrowserProfil.FeldMindestlaufzeit: return BhkkMindestlaufzeitErl;
                         case KatalogBrowserProfil.FeldInvestitionJeKwel:
                             return MyResource.Resource.KI_DLG_KBROW_INVEST_KWEL_ERL;
                         case KatalogBrowserProfil.FeldWartungJeKwhel:

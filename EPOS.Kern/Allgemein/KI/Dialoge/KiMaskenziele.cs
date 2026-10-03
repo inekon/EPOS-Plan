@@ -202,6 +202,13 @@ namespace WindowsFormsApplication1
         public const string BAUTEILAUFBAU_KATALOG = "BAUTEILAUFBAU_KATALOG";
 
         /// <summary>
+        /// Der Seitenschluessel der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) —
+        /// dieselbe Lage wie <see cref="BAUSTOFF_KATALOG"/>: eine freie Ansicht der Wurzel
+        /// (<c>Seitenschluessel.Betriebskalender</c>, dieselbe Zeichenkette).
+        /// </summary>
+        public const string BETRIEBSKALENDER = "BETRIEBSKALENDER";
+
+        /// <summary>
         /// Der Seitenschluessel des Dialogs „Als Variante speichern" (Welle KI‑F6).
         /// </summary>
         /// <remarks>
@@ -382,6 +389,10 @@ namespace WindowsFormsApplication1
                 // Menuepunkte - freie Ansichten der Wurzel.
                 { KiMaskennamen.BAUSTOFF_KATALOG, BAUSTOFF_KATALOG },
                 { KiMaskennamen.BAUTEILAUFBAU, BAUTEILAUFBAU_KATALOG },
+
+                // Die Betriebskalender der Bedarfsprofile (PW2, BW2) - eine freie Ansicht wie die
+                // zwei Kataloge darueber.
+                { KiMaskennamen.BETRIEBSKALENDER, BETRIEBSKALENDER },
 
                 // Profil und Kopfsatz eines Bedarfstyps gehen als Ueberlagerung aus den
                 // drei Bedarfsverwaltungen auf. Eine Komponente bedient alle drei

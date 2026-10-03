@@ -195,6 +195,14 @@ else if (_ansicht == Seitenschluessel.BauteilaufbauKatalog && _bauteilaufbauKata
     <EPOS.UI.Dialoge.Bedarf.BauteilaufbauDialog @attributes="_bauteilaufbauKatalog"
                                                 Geschlossen="BeiBauteilaufbauKatalogFertig" />
 }
+@* DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2): eine
+   freie Ansicht wie die Kataloge der Gebaeudesimulation - die Huelle liegt plattformfrei in
+   EPOS.UI.Daten (BetriebskalenderHuelle). *@
+else if (_ansicht == Seitenschluessel.Betriebskalender && _betriebskalender is not null)
+{
+    <EPOS.UI.Dialoge.Bedarf.BetriebskalenderDialog @attributes="_betriebskalender"
+                                                   Geschlossen="BeiBetriebskalenderFertig" />
+}
 @* DER KATALOG DER BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26): der EINZIGE
    Katalog, der auf iOS aufgeht - die acht uebrigen Katalogverwaltungen bleiben dort
    geschlossen (KI-D-Q10). Unter Windows kommt die Wurzel hier nicht an die Reihe: Die
@@ -425,6 +433,7 @@ else
     private IReadOnlyDictionary<string, object>? _nutzungsartKatalog;
     private IReadOnlyDictionary<string, object>? _baustoffKatalog;
     private IReadOnlyDictionary<string, object>? _bauteilaufbauKatalog;
+    private IReadOnlyDictionary<string, object>? _betriebskalender;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -637,6 +646,13 @@ else
     /// <c>IProjektQuelle.BauteilaufbauKatalogGaben</c>.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) — dieselbe
+    /// Form wie <see cref="BaustoffKatalogGaben"/>; ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.BetriebskalenderGaben</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }
 
     // =====================================================================
     // Das Lizenzbanner (Welle iF30)
@@ -1251,6 +1267,15 @@ else
             return true;
         }
 
+        // ---- Die Betriebskalender der Bedarfsprofile (PW2, BW2) ------------------
+        if (maske == Seitenschluessel.Betriebskalender)
+        {
+            _betriebskalender = BetriebskalenderGaben?.Invoke() ?? Quelle.BetriebskalenderGaben();
+            if (_betriebskalender is null) { _statuszeile = KeinBetriebskalenderText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         // ---- Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (ZU26) -----------------
         // ALLEIN die Quelle, ohne Delegat der Huelle: Unter Windows faengt die Schale
         // den Maskenschluessel ab und oeffnet ihr Fenster - die Wurzel kommt dort nicht
@@ -1457,6 +1482,7 @@ else
         // Brauchwasser-Nutzungsarten (ZU26).
         _baustoffKatalog = null;
         _bauteilaufbauKatalog = null;
+        _betriebskalender = null;
         _nutzungsartKatalog = null;
         _auslegungGeklaert = true;
         _rueckweg.Clear();
@@ -1523,6 +1549,9 @@ else
 
     /// <summary>Die Aufbauverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiBauteilaufbauKatalogFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Die Betriebskalender sind zu — sie schreiben in ihrem Speicherweg.</summary>
+    private void BeiBetriebskalenderFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>
     /// Der Katalog der Brauchwasser-Nutzungsarten ist zu (ZU26) — er schreibt in EINER
@@ -1827,6 +1856,7 @@ else
            // Assistent (dialog_oeffnen) erreichen sie auf beiden Plattformen.
            || maske == Seitenschluessel.BaustoffKatalog
            || maske == Seitenschluessel.BauteilaufbauKatalog
+           || maske == Seitenschluessel.Betriebskalender
 
            // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
            // ZU26) - der einzige Katalog, der auf iOS aufgeht. Unter Windows
@@ -2051,6 +2081,9 @@ else
 
     /// <summary>Meldung, wenn die Aufbauverwaltung nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBauteilaufbauKatalogText { get; set; } = Resource.BTA_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn die Verwaltung der Betriebskalender nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinBetriebskalenderText { get; set; } = Resource.BKAL_KEINE_ANSICHT;
 
     // ---- Der Katalog der Brauchwasser-Nutzungsarten (ZU26) --------------
 

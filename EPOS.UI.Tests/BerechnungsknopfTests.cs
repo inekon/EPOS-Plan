@@ -113,7 +113,10 @@ public sealed class BerechnungsknopfTests
             { "Stromspeicher", "Fassung 8" },
             { "Photovoltaik", "Fassung 4" },
             { "Strombedarf", "Fassung 4" },
-            { "Solarthermie", "Fassung 4" }
+            { "Solarthermie", "Fassung 4" },
+            // Welle M4: Takten der Waermepumpe (WP1), Teillast und Takten des BHKW (BH1, BH2).
+            { "Wärmepumpe", "Fassung 4" },
+            { "BHKW", "Fassung 4" }
         };
 
     /// <summary>

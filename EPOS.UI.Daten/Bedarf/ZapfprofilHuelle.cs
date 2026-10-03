@@ -1484,7 +1484,8 @@ namespace WindowsFormsApplication1
                 liste.Add(new Z_ProjektBrauchwasserModel
                 {
                     ID_Z = z.IdZ, ID_Projekt = idProjekt, ID_Brauchwasser = z.IdStamm,
-                    szBezeichner = z.Name, Summe = z.Summe
+                    szBezeichner = z.Name, Summe = z.Summe,
+                    ID_Betriebskalender = z.KalenderId
                 });
 
             ZapfprofilSpeicherergebnis e;

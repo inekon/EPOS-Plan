@@ -134,6 +134,11 @@ namespace WindowsFormsApplication1
                 ["BauteilaufbauKatalogGaben"] =
                     new Func<IReadOnlyDictionary<string, object>>(BauteilaufbauHuelle.Gaben),
 
+                // DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage PW2, BW2) als freie
+                // Ansicht der Wurzel - dieselbe Bauart wie die Kataloge darueber.
+                ["BetriebskalenderGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(BetriebskalenderHuelle.Gaben),
+
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
                 // Katalog, der Produktname bleibt eine Konstante — ein Markenname
