@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-09-30.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-10-03.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-09-30.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-10-03.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -57,10 +57,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **237 Bilder**; **200** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **242 Bilder**; **206** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-30.sha256` nennt alle 200 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-03.sha256` nennt alle 206 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -540,3 +540,25 @@ Das sind zwei Maßproben und zwei Gegenproben — **6 neue Bilder** — und zwei
 Die 194 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-09-30.sha256`, dazu die sechs neuen. Die
 Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: sechs Zeilen neu, alle übrigen
 gleich.
+
+## Die Stromlast des BHKW: das zweite Bild des BHKW-Reiters
+
+Unter der Wärmelast zeigt der BHKW-Reiter die „Stromlast Jahresganglinie“ (`Bilder.BhkwStrom`): die
+Stromproduktion als Säule, darüber Stromeinspeisung, Reststrombedarf und Strombedarf als Linien, in den
+Farbrollen des Stromgangs (`STROM_BHKW`, `UEBERSCHUSS`, `REST`, `BEDARF`). Gezeichnet wird über
+`ChartRenderer.ErzeugerStapel` wie die Wärmelast; die synthetischen Reihen stehen zueinander wie im Lauf
+(Einspeisung = Produktion über dem Bedarf, Reststrom = Bedarf über der Produktion). Die Proben stehen in
+`Program.BhkwStrom.cs`:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `bhkw_strom_ganglinie` | vier Reihen über den Monaten in den vier Farbrollen |
+| Maßprobe | `bhkw_strom_sortiert` | dieselben Reihen als Dauerlinie über den Jahresstunden |
+| Gegenprobe | `bhkw_strom_reihenwahl_wirkt` | die Abwahl der Einspeisung kommt im Bild an |
+| Gegenprobe | `bhkw_strom_sortiert_wirkt` | „sortiert“ zeichnet anders als die Ganglinie |
+| SVG-Probe | `svg_bhkw_strom_ganglinie` | das Modell der Zeichenfläche: Flächen, Linien, Datenreihen |
+
+Das sind zwei Maßproben und zwei Gegenproben — **6 neue Bilder** — und eine SVG-Probe. Kein Bild von vorher ändert
+sich: Die 200 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-10-03.sha256`, dazu die sechs
+neuen. Die Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: sechs Zeilen
+neu, alle übrigen gleich.
