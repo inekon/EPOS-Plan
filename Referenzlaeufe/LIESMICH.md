@@ -557,13 +557,14 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **170**, 81 240 064 Byte, LFS-SHA-256
-`bd624ace4a02fb3f146c688018594af03020ed67023cf351afed14d09b4b70c2`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+`Kenndaten_Test.sqlite` (Schemastand **171**, 81 235 968 Byte, LFS-SHA-256
+`4055798699076f008b90417d47efe726a71d203cd8c4f2d70b2c67580890c8a6`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
 Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
 und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
 Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
 Hilfsenergie von BHKW und Heizkessel in den Auslieferungsvorlagen auf Weg B, Nachtrag „Schemaschritt 170“ unten)
-ändert nur einen Hinweis am Satzfeld der Kostenvorlagen, den der Referenzlauf nicht liest. Gegen diese Basis hält
+ändert nur einen Hinweis am Satzfeld der Kostenvorlagen, den der Referenzlauf nicht liest; Schemaschritt 171
+(Pufferoptionen und thermische Desinfektion) legt nur leere Felder an. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -670,6 +671,16 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `foreign_key_check` leer). Neue Fassung **81 240 064 Byte, LFS-SHA-256
 > `bd624ace4a02fb3f146c688018594af03020ed67023cf351afed14d09b4b70c2`**. **Die Basis R33 bleibt:** Der Referenzlauf liest
 > keine Kostenvorlage. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 171 (Pufferoptionen und thermische Desinfektion), Basis unverändert.**
+> `PufferOptionenSchema` (Nummer `HilfsenergieEmpfehlungNachzug.SCHRITT + 1`): an `Tab_Pufferspeicher` (Projektkopie) die
+> nullbaren Spalten `Bereitschaft_Weg` ('tag'/'temperatur'), `Aufstellraum_Temperatur_C`, `Schicht_Anteile`,
+> `Frischwassermodul`, `FWM_Graedigkeit_K`; an `Tab_Einstellungen` `Desinfektion_Aktiv`, `_Intervall_Tage`, `_Stunde`,
+> `_Zieltemperatur_C`, `_Volumen_l`, reines DDL. Die Testdatenbank ist aus der Fassung `bd624ace…` (170) mit
+> `Werkzeuge/Testdatenbankschema` auf **171** gezogen, alle neuen Zellen leer (`integrity_check` ok,
+> `foreign_key_check` leer). Neue Fassung **81 235 968 Byte, LFS-SHA-256
+> `4055798699076f008b90417d47efe726a71d203cd8c4f2d70b2c67580890c8a6`**. **Die Basis bleibt:** Die Projekte der CI-Auswahl
+> rechnen auf ihr gegen R33 GESAMT PASS, alle CSV byte-gleich. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 

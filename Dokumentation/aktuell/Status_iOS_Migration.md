@@ -12,8 +12,9 @@ Datei hineinkopiert. Die vollständigen Statusblöcke bis zum 12.09.2026 (sie st
 Umsetzungskonzept) liegen in
 [`../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md`](../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md).
 
-**Schemaschritt angemeldet:** **171 — frei** (zuletzt vergeben: 170 `HilfsenergieEmpfehlungNachzug`,
-Sitzung Wirtschaftlichkeit, #676). Wer eine Welle mit Schemaschritt beginnt, trägt hier **vor dem Bau**
+**Schemaschritt angemeldet:** **173 — frei** (zuletzt vergeben: 172 `KatalogfassungSchema`,
+Sitzung Dialoge und Korrekturen, Welle M6; 171 `PufferOptionenSchema`, Welle M7, #677). Wer eine
+Welle mit Schemaschritt beginnt, trägt hier **vor dem Bau**
 „<Nr> — <Sitzung>, <Welle>, <Datum, Uhrzeit UTC>" ein und pusht allein diese Zeile sofort (`git fetch`,
 Zeile setzen, Dokumentationswachen, Push, kein Gate nötig). Eine angemeldete Nummer vergibt keine
 andere Sitzung; wer eine fremde Anmeldung vorfindet, nimmt die nächste Nummer, meldet sie ebenso an und
