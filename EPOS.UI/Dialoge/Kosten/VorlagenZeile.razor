@@ -80,8 +80,10 @@
     </div>
 
     <div class="epos-zr-zelle" title="@EmpfehlungKurztext">
+        @* AUFTRAG P671 (E30-Rest 1): Ein Satz aus dem Hilfsenergieanteil der Anlage steht
+           schreibgeschuetzt im Feld; die Herkunft nennt die Zeile darunter (SatzHerleitung). *@
         <Zahlenfeld Wert="@Satz" WertChanged="@SatzChanged" Einheit="@Einheit"
-                    Aktiv="@(Schreibbar && !Neuzeile)" />
+                    Aktiv="@(Schreibbar && !Neuzeile && !SatzGesperrt)" />
         @* U31: Der EMPFEHLUNGSBEREICH steht sichtbar unter dem Satzfeld - bis
            dahin nur im Werkzeugtipp, den niemand sieht, der nicht mit der Maus
            stehen bleibt. Dieselbe leise Zeile wie die Herleitung unter dem
@@ -200,6 +202,12 @@
 
     /// <summary>Meldet den neuen Satz.</summary>
     [Parameter] public EventCallback<double?> SatzChanged { get; set; }
+
+    /// <summary>
+    /// AUFTRAG P671: Der Satz ist ein wirksamer Satz, den die Zeile nicht selbst trägt (aus dem
+    /// Hilfsenergieanteil der Anlage) — das Feld zeigt ihn und ist schreibgeschützt.
+    /// </summary>
+    [Parameter] public bool SatzGesperrt { get; set; }
 
     /// <summary>Einheit der Bemessung, rechts am Satzfeld (<c>lblEinheit</c>).</summary>
     [Parameter] public string Einheit { get; set; } = "";
