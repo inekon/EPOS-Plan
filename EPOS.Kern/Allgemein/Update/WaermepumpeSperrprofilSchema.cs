@@ -32,8 +32,7 @@ namespace WindowsFormsApplication1
     public static class WaermepumpeSperrprofilSchema
     {
         /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht.</summary>
-        // Kette: beim Merge auf <Klasse 176>.SCHRITT + 1 umhängen
-        public const int SCHRITT = ProjektkopienKatalogeSchema.SCHRITT + 2;
+        public const int SCHRITT = KonditionierungNutzungSchema.SCHRITT + 1;
 
         /// <summary>Die Tabelle der Sperrfenster.</summary>
         public const string TAB = "Tab_Sperrfenster";

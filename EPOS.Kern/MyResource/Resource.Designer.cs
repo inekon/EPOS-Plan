@@ -37285,7 +37285,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten unter 0,5 mm übergangen: {1} — sie tragen keine Wärmewirkung. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_SCHICHT_DUENN {
             get {
@@ -45822,7 +45822,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dicke der Schicht in mm, zulässig 1 bis 1 000 (eine ruhende Luftschicht bis 300). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dicke der Schicht in mm, zulässig 0,5 bis 1 000 (eine ruhende Luftschicht bis 300). ähnelt.
         /// </summary>
         public static string KI_DLG_BTA_SCHICHT_DICKE_ERL {
             get {

@@ -580,8 +580,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **175**, 81 494 016 Byte, LFS-SHA-256
-`551a288deae7562b316a798f0c7b669e3b453ce8d22ad01fe6cebbd733c73951`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+`Kenndaten_Test.sqlite` (Schemastand **176**, 82 296 832 Byte, LFS-SHA-256
+`7cf9aadad95ddc0f11f10de81d692c3c4df148d275a1e56178b606a2c8ef1c35`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
 Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
 und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
 Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
@@ -765,6 +765,16 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > bleibt:** Die Vorlage 1018 ist zeilengleich (Abdruck samt Schlüsseln), kein Referenzprojekt trägt eine Zone oder einen
 > Zonenkalender, und die sechzehn Projekte rechnen gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel
 > ist berührt; 1052 kommt mit RP2 in die Basis.
+
+> **Nachtrag — Schemaschritt 176 (Konditionierungsnutzung an der Kalenderkopie), Basis unverändert.**
+> `KonditionierungNutzungSchema` (Nummer `ProjektkopienKatalogeSchema.SCHRITT + 1`): Spalte `Nutzung` (nullbar, Prüfklausel
+> auf die vier Nutzungen) an `Tab_Konditionierungskalender`. „Vorlage übernehmen“ und der Paketimport setzen sie aus der
+> Vorlage, die Saat füllt bestehende Kalender einmalig aus der Herkunft in `Bemerkung`; die Pufferauslegung liest ihre
+> Vorbelegung seither aus der Kopie statt aus dem Stamm. Die Testdatenbank ist aus der Fassung `d3376667…` (175, mit dem Zonenprojekt 1052) mit
+> `Werkzeuge/Testdatenbankschema` auf **176** gezogen (eine Spalte; 2 der 12 Kalender gesät — die beiden Zonenkalender von 1052 nennen ihre Vorlage in der
+> Bemerkung; `integrity_check` ok). Neue Fassung **82 296 832 Byte, LFS-SHA-256
+> `7cf9aadad95ddc0f11f10de81d692c3c4df148d275a1e56178b606a2c8ef1c35`**. **Die Basis bleibt:** Kein Rechenweg liest die Spalte; die sechzehn Projekte
+> rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 

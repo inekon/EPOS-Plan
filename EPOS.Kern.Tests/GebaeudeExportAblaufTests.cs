@@ -325,7 +325,7 @@ namespace EPOS.Kern.Tests
             double r = 1.0 / u - rSi - rSe;
             Assert.Equal(u, 1.0 / (rSi + w.DickeM / w.LambdaWmK + rSe), 12);
             Assert.Equal(kappa, w.RhoKgM3 * w.CpJkgK * w.DickeM, 6);
-            Assert.InRange(w.DickeM, 0.001, 1.0);
+            Assert.InRange(w.DickeM, GebaeudeFestwerte.SCHICHT_DICKE_MIN_M, GebaeudeFestwerte.SCHICHT_DICKE_MAX_M);
             Assert.InRange(w.LambdaWmK, GebaeudeFestwerte.LAMBDA_MIN_WMK, GebaeudeFestwerte.LAMBDA_MAX_WMK);
             Assert.InRange(w.RhoKgM3, GebaeudeFestwerte.ROHDICHTE_MIN_KGM3, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3);
             double vorzug = kappa / (GebaeudeExportAblauf.RHO_VORZUG_KGM3 * GebaeudeExportAblauf.CP_ERSATZ_JKGK);

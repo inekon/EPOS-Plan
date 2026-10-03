@@ -22,6 +22,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Ziel_und_Register()
         {
+            Assert.Equal(KonditionierungNutzungSchema.SCHRITT + 1, WaermepumpeSperrprofilSchema.SCHRITT);
             Assert.Equal(177, WaermepumpeSperrprofilSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= WaermepumpeSperrprofilSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == WaermepumpeSperrprofilSchema.SCHRITT);

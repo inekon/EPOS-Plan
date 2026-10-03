@@ -276,6 +276,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Prüfung der Wärmequelle Erdreich bleibt mit dem Simulationsergebnis gespeichert. (#678)
 - Der Katalogabgleich beim Programmupdate umfasst alle Gerätekataloge, Baustoffe und Bauteilaufbauten, Brennstoffe, Tagesverteilungen, Gebäude, Konditionierungsvorlagen, Pufferspeicher und Ganglinien; Klimadaten und der Zapfprofilkatalog behalten ihre eigenen Importwege. (#685)
 - Brennstoffe und Pufferauslegungs-Vorgaben liegen je Projekt als Kopie vor; ein Katalogupdate ändert laufende Projekte nicht mehr, und der Dialog „Brennstoffe des Projekts“ zeigt Abweichungen vom Katalog und setzt sie auf Wunsch zurück. (#687)
+- Bauteilschichten sind ab 0,5 mm Dicke zulässig; der IFC-Import übernimmt damit Bleche ab 0,5 mm und übergeht nur noch Folien und Anstriche darunter. (#693)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

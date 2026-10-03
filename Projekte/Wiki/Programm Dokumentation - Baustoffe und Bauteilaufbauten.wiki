@@ -39,7 +39,7 @@ Die '''Bauteilart''' (Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, D
 Die Gruppe ''Schichten'' im Stammblatt ist eine Liste, in der jede Zeile eine Schicht ist – von innen (Schicht 1) nach außen. Je Schicht:
 
 * '''Baustoff''' – die Wahl aus dem Baustoffkatalog. Sie übernimmt <math>\lambda</math>, <math>\rho</math> und <math>c_{p}</math> des Stoffes als Kopie; danach können Sie jeden Wert überschreiben. ''(freie Eingabe)'' lässt die Werte stehen und löst die Zuordnung.
-* '''Dicke''' in mm, zulässig 1 bis 1 000 mm.
+* '''Dicke''' in mm, zulässig 0,5 bis 1 000 mm.
 * '''<math>\lambda</math>, <math>\rho</math>, <math>c_{p}</math>''' – die Werte der Schicht. Eine Schicht aus Stoff braucht alle drei; der Bauteilweg rechnet mit ihnen die Speichermasse.
 * '''Luftschicht''' – ohne <math>\lambda</math> ist die Schicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8 (bis 300 mm), und sie trägt keine Speichermasse. Mit <math>\lambda</math> rechnet sie wie eine Stoffschicht mit dieser äquivalenten Leitfähigkeit.
 * '''<math>R</math>''' – der Wärmedurchlasswiderstand der Schicht in m²K/W, gerechnet.

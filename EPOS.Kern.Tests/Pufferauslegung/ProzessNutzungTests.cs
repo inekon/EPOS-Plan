@@ -73,10 +73,9 @@ namespace EPOS.Kern.Tests.Pufferauslegung
         [Fact]
         public void Nummer_Ziel_und_Paketstufe()
         {
-            // Vorläufig hinter 175 (176 und 177 liegen bei anderen Sitzungen); beim Merge umhängen.
-            Assert.Equal(ProjektkopienKatalogeSchema.SCHRITT + 3, ProzessNutzungSchema.SCHRITT);
+            Assert.Equal(WaermepumpeSperrprofilSchema.SCHRITT + 1, ProzessNutzungSchema.SCHRITT);
             Assert.Equal(178, ProzessNutzungSchema.SCHRITT);
-            Assert.Equal(ProzessNutzungSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= ProzessNutzungSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, Paketanhebung.Stufen.Single(x => x.Nr == ProzessNutzungSchema.SCHRITT).Wirkung);
         }
 

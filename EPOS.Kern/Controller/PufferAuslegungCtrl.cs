@@ -219,14 +219,17 @@ namespace WindowsFormsApplication1
         internal const string SQL_ZAPFNUTZUNGEN =
             "SELECT n.Bezeichner FROM " + TwwSchema.TAB_TWW_ZONE + " z JOIN " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
             " n ON n.ID = z.ID_Nutzungsart WHERE z.ID_Projekt = ? ORDER BY z.Reihenfolge, z.ID";
+        /// <summary>
+        /// Die Nutzung an den Kalendern der Projektgebäude und ihrer Zonen (am Zonenkalender ist
+        /// <c>ID_Gebaeude</c> das Gebäude der Zone) — die Kopie trägt sie selbst
+        /// (<see cref="KonditionierungNutzungSchema"/>); gelesen für Gebäude ohne Verweis <c>ID_Konditionierungsvorlage</c>.
+        /// </summary>
         internal const string SQL_KONDITIONIERUNG =
-            "SELECT k.ID_Gebaeude, k.Groesse, k.Bemerkung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
-            "ON g.ID = k.ID_Gebaeude WHERE g.ID_Projekt = ? AND k.Bemerkung IS NOT NULL ORDER BY g.ID, k.ID";
+            "SELECT k.ID_Gebaeude, k.Nutzung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
+            "ON g.ID = k.ID_Gebaeude WHERE g.ID_Projekt = ? AND k.Nutzung IS NOT NULL ORDER BY g.ID, k.ID";
         internal const string SQL_KONDITIONIERUNG_VERWEIS =
             "SELECT g.ID, v.Nutzung FROM Tab_Gebaeude g JOIN " + KonditionierungVorlagenSchema.TAB_VORLAGE + " v " +
             "ON v.ID = g." + PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE + " WHERE g.ID_Projekt = ? ORDER BY g.ID";
-        internal const string SQL_KONDITIONIERUNG_NUTZUNG =
-            "SELECT Nutzung FROM " + KonditionierungVorlagenSchema.TAB_VORLAGE + " WHERE Bezeichner = ? AND Groesse = ?";
         internal const string SQL_KATALOG =
             "SELECT ID, Bezeichner, Speichertyp, Gesamtvolumen, Bereitschaftsverluste FROM Tab_Pufferspeicher_STAMM " +
             "WHERE Gesamtvolumen > 0 ORDER BY Gesamtvolumen, ID";
@@ -978,17 +981,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Nutzung der Konditionierungsvorlagen, aus denen die Kalender der Projektgebäude stammen:
-        /// zuerst über den Verweis <c>Tab_Gebaeude.ID_Konditionierungsvorlage</c> (Welle P4c), für ein
-        /// Gebäude ohne Verweis als Rückfall über die Herkunft in <c>Bemerkung</c>
-        /// (<see cref="Kalenderherkunft.AusBemerkung"/>, Altdaten).
+        /// Die Nutzung der Konditionierung der Projektgebäude: zuerst über den Verweis
+        /// <c>Tab_Gebaeude.ID_Konditionierungsvorlage</c> (Schemaschritt <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>),
+        /// für ein Gebäude ohne Verweis aus der Kopie an seinen Kalendern und denen seiner Zonen
+        /// (<c>Tab_Konditionierungskalender.Nutzung</c>, Schemaschritt <see cref="KonditionierungNutzungSchema.SCHRITT"/>).
+        /// Umbenennen einer Vorlage ändert die Vorbelegung nicht; der Verweis geht über die ID.
         /// </summary>
         private static IEnumerable<string> Konditionierungsnutzungen(int idProjekt)
         {
             var l = new List<string>();
-            if (!DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE)) return l;
             var mitVerweis = new HashSet<long>();
-            if (DataRepository.SpalteVorhanden("Tab_Gebaeude", PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE))
+            if (DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE) &&
+                DataRepository.SpalteVorhanden("Tab_Gebaeude", PufferAuslegungErgaenzungSchema.SPALTE_KONDITIONIERUNGSVORLAGE))
             {
                 DataTable tv = DataRepository.GetDataTable(SQL_KONDITIONIERUNG_VERWEIS, P("@projekt", idProjekt));
                 if (tv != null)
@@ -999,17 +1003,15 @@ namespace WindowsFormsApplication1
                         if (n != null) l.Add(n);
                     }
             }
-            if (!DataRepository.TabelleVorhanden(KonditionierungSchema.TAB_KALENDER)) return l;
+            if (!KonditionierungNutzungSchema.SchemaVollstaendig()) return l;
             DataTable t = DataRepository.GetDataTable(SQL_KONDITIONIERUNG, P("@projekt", idProjekt));
             if (t == null) return l;
             foreach (DataRow r in t.Rows)
             {
                 if (r["ID_Gebaeude"] != DBNull.Value && mitVerweis.Contains(Convert.ToInt64(r["ID_Gebaeude"], CultureInfo.InvariantCulture)))
                     continue;
-                string vorlage = Kalenderherkunft.AusBemerkung(Text(r, "Bemerkung")).Vorlage;
-                if (string.IsNullOrEmpty(vorlage)) continue;
-                object n = DataRepository.ExecuteScalar(SQL_KONDITIONIERUNG_NUTZUNG, P("@bez", vorlage), P("@groesse", Text(r, "Groesse") ?? ""));
-                if (n != null && n != DBNull.Value) l.Add(Convert.ToString(n, CultureInfo.InvariantCulture));
+                string n = Text(r, "Nutzung");
+                if (!string.IsNullOrEmpty(n)) l.Add(n);
             }
             return l;
         }

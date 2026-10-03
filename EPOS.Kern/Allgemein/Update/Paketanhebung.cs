@@ -275,6 +275,10 @@ namespace WindowsFormsApplication1
             // mit; die Projektanlage und der Paketimport legen sie aus dem Katalog des Ziels an.
             new Stufe(ProjektkopienKatalogeSchema.SCHRITT, Art.Ddl,
                       "Projektkopien der Brennstoffe und der Vorgaben der Pufferauslegung"),
+            // Ein älteres Paket bringt die Nutzung seiner Kalender nicht mit; sie bleibt leer, bis
+            // „Vorlage übernehmen" sie setzt - die Vorbelegung der Pufferauslegung kennt dann keine.
+            new Stufe(KonditionierungNutzungSchema.SCHRITT, Art.Ddl,
+                      "Nutzung der Konditionierungsvorlage am Kalender des Projekts"),
             // Die Tabelle kommt leer an; ein Paket ohne Sperrfenster rechnet mit dem Altfenster wie zuvor.
             new Stufe(WaermepumpeSperrprofilSchema.SCHRITT, Art.Ddl,
                       "Sperrfenster der Wärmepumpe (Beginn, Dauer, Wochentage, Heizstab)"),

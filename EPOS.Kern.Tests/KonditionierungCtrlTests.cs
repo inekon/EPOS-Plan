@@ -104,7 +104,7 @@ namespace EPOS.Kern.Tests
             if (!Bereit()) return;
             foreach (var (tabelle, spalten) in new[]
                      {
-                         (KonditionierungSchema.TAB_KALENDER, KonditionierungSchema.SPALTENZAHL_KALENDER),
+                         (KonditionierungSchema.TAB_KALENDER, KonditionierungNutzungSchema.SPALTENZAHL_KALENDER),
                          (KonditionierungSchema.TAB_PERIODE, KonditionierungSchema.SPALTENZAHL_PERIODE),
                          (KonditionierungSchema.TAB_VORGABE, KonditionierungSchema.SPALTENZAHL_VORGABE),
                      })

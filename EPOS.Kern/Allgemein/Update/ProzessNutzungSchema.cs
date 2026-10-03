@@ -35,8 +35,8 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class ProzessNutzungSchema
     {
-        /// <summary><b>Die Nummer des Schemaschritts</b> (angemeldet 178) — die EINE Stelle, an der sie steht.</summary>
-        public const int SCHRITT = ProjektkopienKatalogeSchema.SCHRITT + 3; // Kette: beim Merge auf WaermepumpeSperrprofilSchema.SCHRITT + 1 umhängen
+        /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht.</summary>
+        public const int SCHRITT = WaermepumpeSperrprofilSchema.SCHRITT + 1;
 
         /// <summary>Der Katalog der Nutzungsprofile.</summary>
         public const string TAB_PROFIL = "Tab_Nutzungsprofil_STAMM";

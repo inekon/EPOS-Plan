@@ -2674,6 +2674,25 @@ namespace Testdatenbankschema
                                   ProjektkopienKatalogeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KonditionierungNutzungSchema.SCHRITT: die Nutzung der Vorlage am Kalender des
+            //      Projekts (Tab_Konditionierungskalender.Nutzung) samt Saat aus der Herkunft in Bemerkung.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_KonditionierungNutzung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Lauf liest die Nutzung nicht.
+            string nrKondNutzung = KonditionierungNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKondNutzung + " - Konditionierungsnutzung an der Kalenderkopie: " +
+                              (KonditionierungNutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKondNutzung = new List<string>();
+                angelegt += KonditionierungNutzungSchema.Ausfuehren(berichtKondNutzung);
+                foreach (string zeile in berichtKondNutzung)
+                    Console.WriteLine("Schritt " + nrKondNutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKondNutzung + " - vollstaendig: " +
+                                  KonditionierungNutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt WaermepumpeSperrprofilSchema.SCHRITT (Welle V14): die Tabelle Tab_Sperrfenster,
             //      leer. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_WaermepumpeSperrprofil bedient.
             //

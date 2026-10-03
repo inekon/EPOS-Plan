@@ -22,8 +22,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Ziel_und_Register()
         {
-            Assert.True(PufferAuslegungErgaenzungSchema.SCHRITT > ProjektkopienKatalogeSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion >= PufferAuslegungErgaenzungSchema.SCHRITT);
+            Assert.Equal(ProzessNutzungSchema.SCHRITT + 1, PufferAuslegungErgaenzungSchema.SCHRITT);
+            Assert.Equal(179, PufferAuslegungErgaenzungSchema.SCHRITT);
+            Assert.Equal(PufferAuslegungErgaenzungSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.Equal(Paketanhebung.Art.Ddl,
                          Paketanhebung.Stufen.Single(x => x.Nr == PufferAuslegungErgaenzungSchema.SCHRITT).Wirkung);
             Assert.Equal(7, PufferAuslegungErgaenzungSchema.SPALTEN.Count);

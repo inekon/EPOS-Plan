@@ -34,8 +34,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht.
         /// </summary>
-        // Kette: beim Merge auf ProzessNutzungSchema.SCHRITT + 1 umhängen
-        public const int SCHRITT = ProjektkopienKatalogeSchema.SCHRITT + 4;
+        public const int SCHRITT = ProzessNutzungSchema.SCHRITT + 1;
 
         /// <summary>Die Gebäudetabelle (Projektkopie).</summary>
         public const string TAB_GEBAEUDE = "Tab_Gebaeude";

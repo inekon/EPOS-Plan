@@ -5055,6 +5055,18 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="KonditionierungNutzungSchema.SCHRITT"/> — <b>die Konditionierungsnutzung an der
+        /// Kalenderkopie</b>. Er folgt auf <see cref="SCHRITT_PROJEKTKOPIEN_KATALOGE"/>.
+        ///
+        /// <para><b>DDL und Saat:</b> die Spalte <c>Nutzung</c> an <c>Tab_Konditionierungskalender</c>, dann
+        /// je Kalender, dessen Bemerkung eine Herkunftsvorlage nennt, die Nutzung dieser Vorlage. Danach liest
+        /// die Pufferauslegung die Nutzung an der Kopie statt am Vorlagenkatalog.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Lauf liest die Nutzung nicht.</para>
+        /// </summary>
+        public const int SCHRITT_KONDITIONIERUNG_NUTZUNG = KonditionierungNutzungSchema.SCHRITT;
+
+        /// <summary>
         /// Schritt <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/> — <b>das Sperrprofil der Wärmepumpe</b>
         /// (Anwenderentscheid 03.10.2026): die Tabelle <c>Tab_Sperrfenster</c> (STRICT, je Anlagenzeile).
         ///
@@ -5070,7 +5082,6 @@ namespace WindowsFormsApplication1
         /// einen versionierten Zapfkatalog. Wiederholbar, ergebnisneutral.
         /// </summary>
         public const int SCHRITT_PROZESS_NUTZUNG = ProzessNutzungSchema.SCHRITT;
-
 
         /// <summary>
         /// Schritt <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/> — <b>die Ergänzungen der
@@ -7333,6 +7344,13 @@ namespace WindowsFormsApplication1
                         "Ein Katalogabgleich aenderte die Werte der Brennstoffe und der Pufferauslegungs-Vorgaben, die " +
                         "ein Projekt liest. KEIN Rechenergebnis aendert sich - die Kopien tragen die Werte des Stamms.",
                         Schritt_ProjektkopienKataloge),
+            // KONDITIONIERUNGSNUTZUNG an der Kalenderkopie samt Saat aus der Herkunftsvorlage. Die Quelle
+            // ist KonditionierungNutzungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KONDITIONIERUNG_NUTZUNG,
+                        "Tab_Konditionierungskalender: Nutzung",
+                        "Die Vorbelegung der Pufferauslegung laese die Nutzung weiter am Vorlagenkatalog; Umbenennen, " +
+                        "Loeschen oder Katalogabgleich einer Vorlage aenderten sie. KEIN Rechenergebnis aendert sich.",
+                        Schritt_KonditionierungNutzung),
             // SPERRPROFIL der Waermepumpe: die Tabelle der Sperrfenster. Die Quelle ist
             // WaermepumpeSperrprofilSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_WAERMEPUMPE_SPERRPROFIL,
@@ -13449,6 +13467,60 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben - " +
                     (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Konditionierungsnutzung an der Kalenderkopie" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KONDITIONIERUNG_NUTZUNG"/>, die Anweisungen bei
+        /// <see cref="KonditionierungNutzungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KonditionierungNutzung(Lauf l)
+        {
+            string nr = KonditionierungNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KonditionierungNutzungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KonditionierungNutzungSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KonditionierungNutzungSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte Nutzung steht nach dem Schritt nicht an Tab_Konditionierungskalender.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, in EINEM Vorgang.
+            var zeilen = new List<string>();
+            try
+            {
+                KonditionierungNutzungSchema.Saat(zeilen);
+            }
+            catch (Exception ex)
+            {
+                foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Konditionierungsnutzung an der Kalenderkopie - " +
+                    (angelegt == 0 ? "Spalte stand bereits." : "Spalte angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

@@ -495,9 +495,9 @@ namespace EPOS.Kern.Tests
         /// mehrzonig. Fehlt die Datei (oder liegt nur ein LFS-Zeiger), endet der Fall ohne Prüfung.
         /// </summary>
         [Theory]
-        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc")]
-        [InlineData("MFH-Klein-unsaniert-1964.ifc")]
-        public void Schichtdicken_in_Millimetern_laufen_bis_zum_Bauteilvorschlag(string datei)
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc", 9)]
+        [InlineData("MFH-Klein-unsaniert-1964.ifc", 1)]
+        public void Schichtdicken_in_Millimetern_laufen_bis_zum_Bauteilvorschlag(string datei, int uebergangen)
         {
             string pfad = Quellen() == null ? null : Path.Combine(Quellen(), datei);
             if (pfad == null || !File.Exists(pfad) || new FileInfo(pfad).Length < 1024) { _aus.WriteLine(datei + " fehlt — übersprungen."); return; }
@@ -511,6 +511,9 @@ namespace EPOS.Kern.Tests
             PruefMeldung duenn = Assert.Single(a.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_SCHICHT_DUENN");
             Assert.Equal(PruefStufe.Info, duenn.Stufe);
             _aus.WriteLine(datei + ": " + Text(new[] { mm, duenn }));
+            // Übergangen werden nur Schichten unter 0,5 mm (Folien); das 0,9-mm-Blech der Sandwichelemente bleibt.
+            Assert.Equal(uebergangen.ToString(CultureInfo.InvariantCulture), duenn.Werte[0]);
+            Assert.DoesNotContain("(0.9 mm)", duenn.Werte[1]);
 
             var abgleich = new Baustoffabgleich(BaustoffabgleichDaten.AusSaat());
             for (int gi = 0; gi < a.Abbild.Gebaeude.Count; gi++)
