@@ -341,6 +341,10 @@ public static class Menuetabelle
             {
                 new Menuepunkt("MenuItem_Kostenvorlagen", "KDLG_MENUE_VORLAGEN", Seitenschluessel.Kostenverwaltung),
                 new Menuepunkt("MenuItem_Energietraeger", "KDLG_MENUE_ENERGIETRAEGER", Seitenschluessel.EnergietraegerVerwaltung),
+                // Anwenderentscheid 03.10.2026: die Projektkopie des Brennstoffkatalogs, gleich
+                // hinter den Energietraegern - sie liefert deren Heizwerte, Emissionsfaktoren und
+                // Preisvorgaben im Projekt.
+                new Menuepunkt("MenuItem_ProjektBrennstoffe", "PBRS_MENUE", Seitenschluessel.ProjektBrennstoffe),
                 // ANWENDERENTSCHEID ND-Q3 (14.09.2026), Stufe S1 des Konzepts
                 // "Nutzungsdauer je Technik und Positionsart": die
                 // Nutzungsdauertabelle als DRITTER Eintrag der Rubrik, neben

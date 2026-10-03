@@ -2534,15 +2534,22 @@ namespace WindowsFormsApplication1
 
             // Default-Werte aus dem Brennstoff-Stamm (nur noch PREISE — zu den
             // Emissionen siehe den Block vor dem INSERT der Projekt-Einstellungen)
-            double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", idBrennstoff));
-            double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", idBrennstoff));
-            double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", idBrennstoff));
+            // Die Vorgaben des Brennstoffs in der Sicht des Projekts (Projektkopie, ProjektBrennstoffe.Sicht).
+            string quelle = ProjektBrennstoffe.Sicht(projektID, out DbParam[] sicht);
+            DataTable dtBs = DataRepository.GetDataTable(
+                "SELECT bs.Standard_Arbeitspreis, bs.Standard_Grundpreis, bs.Standard_Leistungspreis, bs.Hi, bs.Hs, bs.Einheit " +
+                "FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                ProjektBrennstoffe.Mit(sicht, new DbParam("@bs", idBrennstoff)));
+            DataRow rBs = dtBs != null && dtBs.Rows.Count > 0 ? dtBs.Rows[0] : null;
+            double default_arbeitspreis = ToDouble(rBs?["Standard_Arbeitspreis"]);
+            double default_grundpreis = ToDouble(rBs?["Standard_Grundpreis"]);
+            double default_leistungspreis = ToDouble(rBs?["Standard_Leistungspreis"]);
 
             // Hi, Hs und Abrechnungseinheit - im Kosten-Dialog die Felder
-            // SelectedHi / SelectedHs / SelectedBillingUnit aus derselben Stammzeile
-            double hi = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Hi", idBrennstoff));
-            double hs = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Hs", idBrennstoff));
-            object oEinheit = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Einheit", idBrennstoff);
+            // SelectedHi / SelectedHs / SelectedBillingUnit aus derselben Zeile
+            double hi = ToDouble(rBs?["Hi"]);
+            double hs = ToDouble(rBs?["Hs"]);
+            object oEinheit = rBs?["Einheit"];
             string einheit = (oEinheit != null) ? oEinheit.ToString() : "";
 
             int convId = ConvIdErmitteln(idBrennstoff, einheit);
@@ -3106,6 +3113,10 @@ namespace WindowsFormsApplication1
                 // zweiten Anlageweg (ProjektCtrl.Insert). Innerhalb der Klammer des Laufs:
                 // Ein Rollback nimmt den Einstellungssatz mit.
                 KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(projektID);
+
+                // Die Brennstoffe des Projekts entstehen mit ihm - wertgleich zum heutigen Katalog,
+                // innerhalb der Klammer des Laufs (ein Rollback nimmt sie mit).
+                ProjektBrennstoffe.Sichern(projektID);
 
                 return true;
             }

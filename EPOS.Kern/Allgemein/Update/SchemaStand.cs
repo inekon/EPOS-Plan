@@ -849,11 +849,17 @@ namespace WindowsFormsApplication1
         /// (<see cref="AufheizManuellSchema"/>). <b>Ergebnisneutral:</b> Alle Felder entstehen leer, leer
         /// heißt kein Aufschlag und keine manuelle Zeit. Die Nummer steht allein bei
         /// <see cref="AufheizManuellSchema.SCHRITT"/>.
+        /// Danach, mit den PROJEKTKOPIEN DER BRENNSTOFFE UND DER PUFFERAUSLEGUNGS-VORGABEN
+        /// (Anwenderentscheid 03.10.2026), steht das Ziel auf <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>:
+        /// die Tabellen <c>Tab_Brennstoff</c> und <c>Tab_PufferAuslegungParameter</c> (STRICT, je Projekt)
+        /// und ihre wertgleiche Saat; die Konditionierungsvorlagen werden schon bei der Übernahme kopiert
+        /// (<see cref="ProjektkopienKatalogeSchema"/>). <b>Ergebnisneutral:</b> Die Kopien tragen die Werte
+        /// des Stamms. Die Nummer steht allein bei <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = AufheizManuellSchema.SCHRITT;
+        public const int Zielversion = ProjektkopienKatalogeSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

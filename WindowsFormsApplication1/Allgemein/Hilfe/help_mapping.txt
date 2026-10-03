@@ -326,6 +326,8 @@ Form_KiEinstellungen.btn_Help = Hilfe-Assistent
 # Dialog - die Anker gibt es auf der Seite, sie waren nur nicht verdrahtet.
 Form_CaseEingabe.btn_Help = Kosten
 Form_Energietraeger.btn_Help = Kosten#energietraegerverwaltung
+# Brennstoffe des Projekts (Projektkopie des Brennstoffkatalogs): eigener Abschnitt der Seite Kosten.
+Form_ProjektBrennstoffe.btn_Help = Kosten#brennstoffe-des-projekts
 Form_KostenAdmin.btn_Help = Kosten
 Form_KostenKomponente.btn_Help = Kosten#komponentenliste
 Form_Kostenprofil.btn_Help = Kosten

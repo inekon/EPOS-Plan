@@ -421,6 +421,17 @@ public static class Seitenschluessel
     /// </remarks>
     public const string Katalogabgleich = "KATALOGABGLEICH";
 
+    /// <summary>
+    /// Menue „Administration -> Kosten -> Brennstoffe des Projekts…"
+    /// (<c>ProjektBrennstoffeDialog</c>, Anwenderentscheid 03.10.2026: Projektkopie des Brennstoffkatalogs).
+    /// </summary>
+    /// <remarks>
+    /// Der Weg fuehrt ueber die Windows-Huelle (<c>HauptfensterHuelle.Weg</c>) in ein modales
+    /// Fenster. Auf iOS faellt der Schluessel durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort liest das Projekt seine Kopien, gepflegt werden sie unter Windows.
+    /// </remarks>
+    public const string ProjektBrennstoffe = "PROJEKT_BRENNSTOFFE";
+
     /// <summary>Menue „Administration -> Lizenz…" (<c>LizenzVerwaltungDialog</c>, W15c.5).</summary>
     public const string LizenzVerwaltung = "LIZENZ_VERWALTUNG";
 
@@ -462,7 +473,7 @@ public static class Seitenschluessel
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
         BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender,
-        Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
+        Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
     };

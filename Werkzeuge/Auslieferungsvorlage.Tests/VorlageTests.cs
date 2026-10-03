@@ -213,7 +213,10 @@ namespace Auslieferungsvorlage.Tests
             // 158 seit dem Schemaschritt der Katalogfassung (Schritt 172, KatalogfassungSchema, Welle M6:
             // KU1 Stufe 1 und EQ1): Tab_Katalogabgleich und Tab_ErgebnisErdreich, STRICT von ihrer ersten
             // Zeile an.
-            Assert.Equal(158, befund.Strict);
+            //
+            // 160 seit dem Schemaschritt der Projektkopien (ProjektkopienKatalogeSchema, Anwenderentscheid
+            // 03.10.2026): Tab_Brennstoff und Tab_PufferAuslegungParameter, STRICT von ihrer ersten Zeile an.
+            Assert.Equal(160, befund.Strict);
         }
 
         // =============================================================================

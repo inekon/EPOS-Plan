@@ -23,7 +23,10 @@ namespace WindowsFormsApplication1
     //
     // NIE ANGEFASST: Anwenderzeilen (ohne Schlüssel) und jede Projektkopie (Tab_* mit ID_Projekt;
     // die Kühlkennlinie trägt eine Projektspalte und wird nur mit ID_Projekt 0 oder leer gelesen und
-    // geschrieben). Projekte rechnen nach dem Abgleich wie vorher.
+    // geschrieben). Brennstoffe und Vorgaben der Pufferauslegung haben ihre Projektkopie in eigenen
+    // Tabellen (Tab_Brennstoff, Tab_PufferAuslegungParameter); vor dem ersten Schreiben legt der Abgleich
+    // die fehlenden Kopien wertgleich an. Konditionierungsvorlagen werden bei der Übernahme kopiert.
+    // Projekte rechnen nach dem Abgleich wie vorher.
     //
     // TRANSAKTIONAL UND WIEDERHOLBAR. Alles in EINEM Vorgang, samt Protokoll und neuer Fassung an
     // Tab_Applikation. Steht die Datenbank schon auf der Fassung des Pakets, tut ein zweiter Lauf
@@ -287,10 +290,14 @@ namespace WindowsFormsApplication1
             e.Ausgefuehrt = true;
             if (nurPruefen) return e;
 
+            bool kopien = ProjektkopienBereit();
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
+                    // Vor dem ersten Schreiben: die Projektkopien der Kataloge ohne eigene Projekttabelle
+                    // (Brennstoffe, Vorgaben der Pufferauslegung) sichern - wertgleich zum alten Stamm.
+                    if (kopien && e.EtwasZuTun) ProjektkopienSichern(v);
                     foreach (KatalogabgleichEintrag z in e.Eintraege)
                     {
                         Katalogtabelle t = Katalogfassung.Tabelle(z.Tabelle);
@@ -595,10 +602,12 @@ namespace WindowsFormsApplication1
             if (r == null && Bezeichner(t).Contains(s.Bezeichner))
                 return (false, string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KABG_HINWEIS_NAME_BELEGT, s.Bezeichner));
 
+            bool kopien = ProjektkopienBereit();
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
+                    if (kopien) ProjektkopienSichern(v);
                     if (r == null) Einfuegen(v, t, s);
                     else Schreiben(v, t, Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture), s);
                     Protokollieren(v, paket.Fassung, t.Tabelle, s.Schluessel, AKTION_WIEDERHERGESTELLT,
@@ -612,6 +621,21 @@ namespace WindowsFormsApplication1
                 }
             }
             return (true, MyResource.Resource.KABG_WIEDERHERGESTELLT);
+        }
+
+        /// <summary>Stehen die Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben (Schritt 175)?</summary>
+        private static bool ProjektkopienBereit() => ProjektkopienKatalogeSchema.SchemaVollstaendig();
+
+        /// <summary>
+        /// <b>Die Vorstufe des Abgleichs:</b> legt im Vorgang die fehlenden Projektkopien an — je Projekt
+        /// jede Brennstoffart, je Projekt mit Pufferauslegung jede Vorgabe —, wertgleich zum Stamm VOR dem
+        /// Abgleich. Danach fasst der Abgleich nur den Stamm an, und kein Projekt liest einen geänderten
+        /// Stammwert. (Die Konditionierungsvorlagen brauchen das nicht: „Vorlage übernehmen" kopiert.)
+        /// </summary>
+        private static void ProjektkopienSichern(DbVorgang v)
+        {
+            ProjektBrennstoffe.Sichern(v, null);
+            ProjektPufferparameter.Sichern(v, null);
         }
 
         /// <summary>Die jüngsten Zeilen des Protokolls, neueste zuerst.</summary>

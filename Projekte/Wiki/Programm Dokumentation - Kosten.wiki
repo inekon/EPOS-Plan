@@ -132,6 +132,19 @@ Ist in der Tabelle ''Investitionskosten je Anlage'' eine Zeile gewählt, öffnet
 *: Die Bestandteile sind '''Ausweis''', keine Rechengröße: Gerechnet wird mit dem Arbeitspreis. Sie sind zugleich die Grundlage der Kohärenzprüfung – eine Steuerentlastung ist nur dann schlüssig, wenn dieselbe Steuer im Preis als Belastung ausgewiesen ist.
 * {{Anker|traeger-je-anlage}}'''Träger je Anlage''' – in den Dialogen [[Programm Dokumentation/Wärmepumpe#energietraeger|Wärmepumpe]], [[Programm Dokumentation/Photovoltaik#energietraeger|Photovoltaik]] und [[Programm Dokumentation/Stromspeicher#energietraeger|Stromspeicher]] wird der Träger der einzelnen Anlage in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Angeboten werden nur die Gruppen, die zur Anlage passen – bei diesen drei Anlagen also die Gruppe Strom. Vorbelegt ist der Stromträger des Projekts. Preis, Aufschläge und Emissionsfaktor des Strombezugs folgen dieser Wahl.
 
+== Brennstoffe des Projekts ==
+{{Anker|brennstoffe-des-projekts|brennstoffe}}
+
+Jedes Projekt rechnet mit '''eigenen Kopien der Brennstoffe''': Heizwerte, Emissionsfaktoren (CO₂, SO₂, NOₓ, Staub), Primärenergiefaktor und Preisvorgaben. Die Kopien entstehen mit dem Projekt aus dem Brennstoffkatalog. Ein Katalog-Update ändert nur den Katalog; das Projekt rechnet mit seinen Kopien unverändert weiter.
+
+Der Dialog öffnet sich über {{Menü|Administration|Kosten|Brennstoffe des Projekts…}} für das geöffnete Projekt. Die Liste zeigt je Brennstoff seine Werte und in der Spalte ''Stand'', ob die Kopie dem heutigen Katalog entspricht (''wie Katalog''), von ihm abweicht (''abweichend'') oder der Brennstoff nicht mehr im Katalog steht. Eine abweichende Zelle ist hervorgehoben; ihr Tooltip nennt den Katalogwert.
+
+* '''Bearbeiten''' öffnet die Werte des Brennstoffs im selben Fenster. ''Speichern'' schreibt sie sofort in das Projekt; Kategorie, Name und Einheit bleiben, wie der Katalog sie führt.
+* '''Auf Katalog zurücksetzen''' übernimmt nach einer Rückfrage die heutigen Katalogwerte in die Kopie – so kommt ein neuer Auslieferungsstand in das Projekt.
+* '''Aus Katalog übernehmen''' legt für einen Brennstoff des Katalogs, den das Projekt noch nicht führt, eine Kopie an.
+
+Die Energieträger des Projekts lesen ihre Brennstoffwerte aus diesen Kopien, ebenso die Emissionsbilanz, die Einstufung nach BEHG und die Vorbelegung neuer Preise. Duplizieren, Varianten und der Projekttransfer nehmen die Kopien mit.
+
 == Nutzungsdauern (AfA) ==
 {{Anker|nutzungsdauern|afa}}
 

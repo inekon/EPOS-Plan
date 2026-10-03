@@ -471,12 +471,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(wohnen.ID, rest.ID);
             Assert.Equal(1, rest.Rang);
             Assert.Equal(new[] { wand, boden }, rest.Bauteile.Select(b => b.ID));
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil"));
+            Assert.Equal(2L, Zahl(Zonenbestand.BAUTEILE));
 
             // Eine leere Liste nimmt alle Zonen - das Gebaeude rechnet wieder den Klassenweg.
             Assert.True(ctrl.SpeichernJeGebaeude(GEBAEUDE, new List<ZoneModel>()).Ok);
             Assert.Empty(ctrl.LesenJeGebaeude(GEBAEUDE));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil"));
+            Assert.Equal(0L, Zahl(Zonenbestand.BAUTEILE));
         }
 
         /// <summary>Fremde Ids, fremde Aufbauten, ein fehlendes Gebäude und ein Prüfbefund: abgelehnt, nichts geschrieben.</summary>
@@ -587,7 +587,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID_Gebaeude = 10643"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil b WHERE NOT EXISTS (SELECT 1 FROM Tab_Zone z WHERE z.ID = b.ID_Zone)"));
             Assert.Equal(new[] { 10642, 10644 }, ctrl.LesenJeProjekt(MEHRGEBAEUDE).Keys.OrderBy(k => k));
-            Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil"));
+            Assert.Equal(4L, Zahl(Zonenbestand.BAUTEILE));
         }
 
         /// <summary>
@@ -600,12 +600,19 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(GEBAEUDE, ZweiZonen(ProjektAufbau())).Ok);
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Zone"));
+            Assert.Equal(2L, Zahl(Zonenbestand.ZONEN));
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau"));
 
             ProjektCtrl.LoeschenMitVorarbeiten(PROJEKT, PROJEKTNAME);
-            foreach (string t in new[] { "Tab_Zone", "Tab_Bauteil", "Tab_Bauteilaufbau", "Tab_Bauteilschicht", "Tab_Baustoff" })
-                Assert.True(Zahl("SELECT COUNT(*) FROM " + t) == 0, t + " traegt nach dem Loeschen des Projekts noch Zeilen.");
+            // Zonen und Bauteile ohne die des Zonenprojekts 1052 (G6d, Zonenbestand).
+            foreach ((string t, string sql) in new[]
+                     {
+                         ("Tab_Zone", Zonenbestand.ZONEN), ("Tab_Bauteil", Zonenbestand.BAUTEILE),
+                         ("Tab_Bauteilaufbau", "SELECT COUNT(*) FROM Tab_Bauteilaufbau"),
+                         ("Tab_Bauteilschicht", "SELECT COUNT(*) FROM Tab_Bauteilschicht"),
+                         ("Tab_Baustoff", "SELECT COUNT(*) FROM Tab_Baustoff"),
+                     })
+                Assert.True(Zahl(sql) == 0, t + " traegt nach dem Loeschen des Projekts noch Zeilen.");
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
             Assert.Equal((long)BaustoffSchema.Saat.Count, Zahl("SELECT COUNT(*) FROM Tab_Baustoff_STAMM"));
         }

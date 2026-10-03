@@ -543,6 +543,16 @@ namespace WindowsFormsApplication1
         internal int ImportierenIntern(string quellPfad, string gewuenschterName, BeiVorhandenem modus,
             IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, Sammelstand stand, out string fehler)
         {
+            int neu = ImportierenPaket(quellPfad, gewuenschterName, modus, fortschritt, stand, out fehler);
+            // Ein Paket ohne Brennstoffkopien (aelterer Stand) bekommt sie sofort aus dem Katalog des Ziels -
+            // je eingespieltem Projekt jede fehlende Brennstoffart, stehende Kopien bleiben.
+            if (neu > 0) ProjektBrennstoffe.SichernAlle();
+            return neu;
+        }
+
+        private int ImportierenPaket(string quellPfad, string gewuenschterName, BeiVorhandenem modus,
+            IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, Sammelstand stand, out string fehler)
+        {
             fehler = null;
             Manifest man;
             var tableRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();

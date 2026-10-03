@@ -457,7 +457,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { 1, 2 }, rest.Select(z => z.Rang));
             Assert.All(rest, z => Assert.Single(z.Bauteile));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil WHERE ID_Zone = ?", new DbParam("@z", ids[1])));
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil"));
+            Assert.Equal(2L, Zahl(Zonenbestand.BAUTEILE));
         }
 
         [Fact]

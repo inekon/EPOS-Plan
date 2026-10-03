@@ -282,6 +282,8 @@ namespace WindowsFormsApplication1
 
             m_ID = neueId;
             KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(neueId);
+            // Die Brennstoffe des Projekts entstehen mit ihm - wertgleich zum heutigen Katalog.
+            ProjektBrennstoffe.Sichern(neueId);
             return true;
         }
 

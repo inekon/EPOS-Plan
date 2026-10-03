@@ -107,7 +107,16 @@ namespace WindowsFormsApplication1
             // Katalogverweis des Projektgebaeudes (Schemaschritt 121): Kopie und Variante
             // zeigen auf DENSELBEN Katalogsatz. Die deklarierte Beziehung zielt auf
             // Tab_Gebaeude_STAMM (nie im Plan) - der Eintrag haelt die Regel auch ohne sie.
-            GebaeudeKatalogverweis.SPALTE
+            GebaeudeKatalogverweis.SPALTE,
+            // Stammverweis einer Variante (Tab_Variante.ID_ProjektRef): Die Kopie einer Variante
+            // bleibt Variante DESSELBEN Stamms - kopiert wird das Projekt, nicht der Stamm. Die
+            // deklarierte Beziehung zielt auf Tab_Projekt; ohne diesen Eintrag bekaeme der Verweis
+            // den Projektversatz und zeigte auf ein anderes Projekt (Stamm-ID + Versatz) oder
+            // scheiterte am Fremdschluessel, wenn es diese ID nicht gibt. ID_Projekt der
+            // Variantenzeile wird weiter versetzt (eigene Projekt-ID der Kopie). Ist die Quelle
+            // selbst ein Stamm, fuehrt sie keine eigene Variantenzeile; ihre Varianten kommen
+            // nicht mit (Filter ueber ID_Projekt).
+            "ID_ProjektRef"
         };
 
         // Interne Fremdschluessel mit eindeutigem Zielnamen (Spalte -> Zieltabelle).

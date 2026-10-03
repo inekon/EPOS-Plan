@@ -1470,11 +1470,11 @@ Verweisziel steht vor seinem Verweiser, und jede `_STAMM`-Tabelle der Testdatenb
 Register oder in den Ausnahmen.
 
 **Was ein Abgleich der Stufe 2 bewirkt.** Brennstoffe, Konditionierungsvorlagen und die Vorgaben
-der Pufferauslegung haben keine Projektkopie; ein Projekt liest sie aus dem Katalog. Ein
-aktualisierter Satz ändert dort also das Ergebnis eines Projekts, das ihn benutzt (etwa die
-Emissionsfaktoren eines Brennstoffs) — genau das ist der Zweck einer Auslieferung. Ein vom Anwender
-angepasster oder entsperrter Satz bleibt wie in Stufe 1 stehen. Die Testdatenbank wird nie
-abgeglichen; die Saat setzt dort nur Schlüssel und Prüfsumme.
+der Pufferauslegung haben wie die Gerätekataloge eine Projektkopie (Abschnitt 22): Der Abgleich
+ändert nur den Katalog, ein Projekt rechnet danach wie vorher. Vor dem ersten Schreiben legt er die
+fehlenden Kopien der Brennstoffe und der Pufferauslegungs-Vorgaben wertgleich zum alten Stand an.
+Ein vom Anwender angepasster oder entsperrter Satz bleibt wie in Stufe 1 stehen. Die Testdatenbank
+wird nie abgeglichen; die Saat setzt dort nur Schlüssel und Prüfsumme.
 
 **Prüfsumme.** SHA-256 über die Fachspalten in der festen Folge der Liste, je Spalte
 „Name=Wert"; Zahlen invariant und rundlauffest (eine ganzzahlige Gleitkommazahl wie die Ganzzahl,
@@ -1628,3 +1628,62 @@ Kein Referenzprojekt setzt eines der Felder; die Basis R33 bleibt byte-gleich. G
 `EPOS.Kern.Tests/PufferOptionenSchemaTests`, `PufferOptionenTests`, `PufferOptionenLaufTests`
 (Läufe auf Kopien von 1049 und 1045), `DesinfektionTests` und den bunit-Fällen in
 `EPOS.UI.Tests/Dialoge/PufferSpProjektDialogTests` und `Seiten/SimulationKonfigSeiteTests`.
+
+## 22. Projektkopien der Brennstoffe, Konditionierungsvorlagen und Pufferauslegungs-Vorgaben
+
+Jedes Projekt rechnet mit eigenen Kopien der drei Kataloge, die der Katalogabgleich (Abschnitt 20)
+aktualisiert. Der Abgleich fasst nur den Stamm an; ein Projekt rechnet nach einem Update wie vorher,
+bis der Anwender eine Kopie bewusst auf den Katalog zurücksetzt.
+
+| Katalog | Projektkopie | Entsteht | Gelesen über |
+|---|---|---|---|
+| `Tab_Brennstoff_Stamm` | `Tab_Brennstoff` (STRICT, je Projekt und Brennstoffart) | Schemaschritt (je Projekt jede Brennstoffart), Vorstufe des Abgleichs, „Aus Katalog übernehmen" | `ProjektBrennstoffe.Sicht(idProjekt)` |
+| `Tab_Konditionierungsvorlage_STAMM` samt Vorgaben, Kalender, Perioden | Matrix und Kalender des Projektgebäudes bzw. der Zone (`ID_Gebaeude`, `ID_Zone`) | „Vorlage übernehmen" kopiert den Inhalt | `Konditionierungdatenweg` (nur Projektzeilen) |
+| `Tab_PufferAuslegungParameter_STAMM` | `Tab_PufferAuslegungParameter` (STRICT, je Projekt und Schlüssel) | erste gespeicherte Auslegung, Vorstufe des Abgleichs | `PufferAuslegungParameter.Lesen(idProjekt)` |
+
+**Brennstoffe.** Die Brennstoffart bleibt die ID des Stammsatzes: Gerät (`Tab_Heizkessel.Brennstoff`,
+`Tab_BHKW.Brennstoff`), Träger (`energy_carrier.ID_Brennstoff`), Umrechnung und Referenzkessel
+(`Tab_ProjektWirtschaftlichkeit.RefKessel_ID_Brennstoff`) führen sie, und der Kern verzweigt über ihre
+Nummernbereiche (Gas, Öl, Strom). Die Kopie hängt über `(ID_Projekt, ID_Brennstoff)` am Projekt und
+trägt alle Fachspalten des Stamms — Kategorie, Name, Einheiten, Heizwerte, Emissionsfaktoren
+(CO₂, SO₂, NOₓ, Staub), Primärenergiefaktor, Preisvorgaben — und `Katalogfassung_Herkunft`. Wer im
+Projekt einen Wert des Brennstoffs liest, nimmt `ProjektBrennstoffe.Sicht`: die Kopie des Projekts,
+für eine dem Projekt noch unbekannte Brennstoffart der Stamm. So lesen die Ebene STAMM der
+Emissionskette (`EmissionsFaktorLader`, Gerätebrennstoff in `Emissionsquelle`), die
+Emissionsbilanz (biogene Einstufung, Referenzkessel), die BEHG-Einstufung des Berichts
+(`KostenEmissionRechner`), die Wirtschaftlichkeit (Kategorie je Anlage, Heizöl-BHKW,
+Referenzkessel), die KWKG-Anlagenliste, die Vorgabepreise eines neuen Trägers (Assistent,
+Trägervariante) und die Pufferauslegung (Brennstoff des Kessels). Ohne Projekt — Katalogpflege,
+Energieträgerkatalog — gilt der Stamm. Die Kopie ist vollständig (je Projekt jede Brennstoffart),
+weil sich die benutzte Brennstoffart eines Projekts über die Rückfallketten (Stromträger,
+Referenzkessel-Vorgabe, Gerätebrennstoff ohne Träger) nicht abschließend bestimmen lässt.
+
+**Verwaltung:** Administration → Kosten → „Brennstoffe des Projekts…" (`ProjektBrennstoffeDialog`,
+Hülle `ProjektBrennstoffeHuelle`): Liste mit Abweichung vom heutigen Katalog je Feld, „Bearbeiten"
+(Heizwerte, Emissionsfaktoren, Primärenergiefaktor, Preisvorgaben; Kategorie, Name und Einheiten
+bleiben), „Auf Katalog zurücksetzen" und „Aus Katalog übernehmen" für eine Brennstoffart, die das
+Projekt noch nicht führt. Jede Handlung schreibt sofort und je Satz.
+
+**Konditionierungsvorlagen.** Kein Projektgebäude und keine Zone verweist über eine ID auf eine
+Vorlage. „Vorlage übernehmen" kopiert ihren Inhalt in die Matrix und den Kalender des Ziels; die
+Herkunft steht nur als Text in `Bemerkung`. Der Lauf liest ausschließlich diese Projektzeilen. Die
+Projektkopie besteht damit schon, eine eigene Tabelle braucht es nicht; das Kennzeichen `ReadOnly`
+bleibt am Stamm.
+
+**Vorgaben der Pufferauslegung.** Die Kopie entsteht mit der ersten gespeicherten Auslegung eines
+Projekts (`PufferAuslegungCtrl.Speichern`). `PufferAuslegungParameter.Lesen(idProjekt)` legt die
+eingebauten Vorgaben, darüber den Stamm und darüber die Kopie; die Herkunftszeile der Vorbelegung
+nennt die Projektkopie.
+
+**Schema und Migration.** Schemaschritt `ProjektkopienKatalogeSchema` (175): beide Tabellen
+(`ON DELETE CASCADE` mit dem Projekt, eindeutig je Projekt und Brennstoffart bzw. Schlüssel), dann
+die Saat — wertgleich, typgleich, wiederholbar. Duplizieren und Projektpaket tragen die Kopien über
+den generischen Plan (`ID_Brennstoff` zeigt in beiden Wegen auf die Brennstoffart, im Paket über
+den Namen); ein älteres Paket bringt keine Kopien mit, das Projekt liest dann den Katalog des Ziels,
+bis die Vorstufe des Abgleichs oder der Projektdialog die Kopie anlegt (Paketanhebung `Ddl`).
+
+**Referenzlauf.** Die Kopien tragen die Werte des Stamms; die sechzehn Projekte rechnen gegen R33
+byte-gleich. Gehalten von `EPOS.Kern.Tests/ProjektkopienKatalogeTests` (Saat je Referenzprojekt,
+zweiter Lauf, Sicht, Emissionsquelle, Abgleich mit Paket, Jahressummen von 1030 und 1017 vor und nach
+einer Katalogänderung, Übernehmen und Zurücksetzen, Duplizieren und Projektpaket) und
+`EPOS.UI.Tests/Dialoge/ProjektBrennstoffeDialogTests`.

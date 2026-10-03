@@ -903,6 +903,10 @@ namespace EPOS.Kern.Tests
                 // damit kein aelterer Sichtdurchgang oben (Energiestandard) die Spalte wieder aus der Sicht
                 // schneidet; wiederholbar, KEIN DML an Bestandsdaten.
                 AufheizManuellSchema.Ausfuehren(null);
+                // Schritt ProjektkopienKatalogeSchema.SCHRITT (Anwenderentscheid 03.10.2026, nach 174): die
+                // Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
+                ProjektkopienKatalogeSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

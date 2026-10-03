@@ -43219,6 +43219,117 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_PAUS_DECKUNG_ERL" xml:space="preserve">
     <value>Der Deckungsgrad, den die Durchlaufbilanz mit dem Puffer erreichen soll, in Prozent; leer = 100 %.</value>
   </data>
+  <data name="PBRS_MENUE" xml:space="preserve">
+    <value>Brennstoffe des Projekts…</value>
+  </data>
+  <data name="PBRS_TITEL" xml:space="preserve">
+    <value>Brennstoffe des Projekts</value>
+  </data>
+  <data name="PBRS_EINLEITUNG" xml:space="preserve">
+    <value>Das Projekt rechnet mit seinen eigenen Kopien der Brennstoffe: Heizwerte, Emissionsfaktoren und Preisvorgaben. Ein Katalog-Update ändert sie nicht; „Auf Katalog zurücksetzen“ übernimmt den heutigen Katalogstand.</value>
+  </data>
+  <data name="PBRS_KEIN_PROJEKT" xml:space="preserve">
+    <value>Kein Projekt geöffnet.</value>
+  </data>
+  <data name="PBRS_LEER" xml:space="preserve">
+    <value>Das Projekt führt noch keine Brennstoffe.</value>
+  </data>
+  <data name="PBRS_SP_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="PBRS_SP_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="PBRS_SP_HI" xml:space="preserve">
+    <value>Hi [kWh/Einheit]</value>
+  </data>
+  <data name="PBRS_SP_HS" xml:space="preserve">
+    <value>Hs [kWh/Einheit]</value>
+  </data>
+  <data name="PBRS_SP_CO2" xml:space="preserve">
+    <value>CO₂ [g/kWh]</value>
+  </data>
+  <data name="PBRS_SP_SO2" xml:space="preserve">
+    <value>SO₂ [mg/kWh]</value>
+  </data>
+  <data name="PBRS_SP_NOX" xml:space="preserve">
+    <value>NOₓ [mg/kWh]</value>
+  </data>
+  <data name="PBRS_SP_STAUB" xml:space="preserve">
+    <value>Staub [mg/kWh]</value>
+  </data>
+  <data name="PBRS_SP_PE" xml:space="preserve">
+    <value>Primärenergiefaktor</value>
+  </data>
+  <data name="PBRS_SP_GRUNDPREIS" xml:space="preserve">
+    <value>Grundpreis [€/a]</value>
+  </data>
+  <data name="PBRS_SP_ARBEITSPREIS" xml:space="preserve">
+    <value>Arbeitspreis [€/Einheit]</value>
+  </data>
+  <data name="PBRS_SP_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Leistungspreis [€/kW]</value>
+  </data>
+  <data name="PBRS_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="PBRS_SP_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="PBRS_STAND_WIE_KATALOG" xml:space="preserve">
+    <value>wie Katalog</value>
+  </data>
+  <data name="PBRS_STAND_ABWEICHEND" xml:space="preserve">
+    <value>abweichend</value>
+  </data>
+  <data name="PBRS_STAND_OHNE_KATALOG" xml:space="preserve">
+    <value>nicht mehr im Katalog</value>
+  </data>
+  <data name="PBRS_TIP_KATALOGWERT" xml:space="preserve">
+    <value>Katalogwert: {0}</value>
+  </data>
+  <data name="PBRS_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="PBRS_BEARBEITEN_TITEL" xml:space="preserve">
+    <value>Werte von „{0}“</value>
+  </data>
+  <data name="PBRS_ZURUECKSETZEN" xml:space="preserve">
+    <value>Auf Katalog zurücksetzen</value>
+  </data>
+  <data name="PBRS_FRAGE_ZURUECKSETZEN" xml:space="preserve">
+    <value>Die Werte von „{0}“ auf den heutigen Katalogstand zurücksetzen?</value>
+  </data>
+  <data name="PBRS_UEBERNEHMEN" xml:space="preserve">
+    <value>Aus Katalog übernehmen</value>
+  </data>
+  <data name="PBRS_UEBERNEHMEN_WAHL" xml:space="preserve">
+    <value>Brennstoff des Katalogs</value>
+  </data>
+  <data name="PBRS_UEBERNEHMEN_LEER" xml:space="preserve">
+    <value>Alle Brennstoffe des Katalogs sind im Projekt.</value>
+  </data>
+  <data name="PBRS_MSG_KEINE_KOPIE" xml:space="preserve">
+    <value>Das Projekt führt keine Kopie dieses Brennstoffs.</value>
+  </data>
+  <data name="PBRS_MSG_FELD_UNBEKANNT" xml:space="preserve">
+    <value>Das Feld {0} lässt sich nicht bearbeiten.</value>
+  </data>
+  <data name="PBRS_MSG_WERT_UNGUELTIG" xml:space="preserve">
+    <value>Der Wert für {0} ist ungültig.</value>
+  </data>
+  <data name="PBRS_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Die Werte von „{0}“ sind gespeichert.</value>
+  </data>
+  <data name="PBRS_MSG_ZURUECKGESETZT" xml:space="preserve">
+    <value>„{0}“ steht wieder auf dem Katalogstand.</value>
+  </data>
+  <data name="PBRS_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>„{0}“ ist aus dem Katalog übernommen.</value>
+  </data>
+  <data name="PBRS_MSG_NICHT_ZURUECKGESETZT" xml:space="preserve">
+    <value>Der Brennstoff steht nicht mehr im Katalog; die Projektwerte bleiben.</value>
+  </data>
   <data name="IMP_IFC_PROT_TRENNDECKE_GESCHAETZT" xml:space="preserve">
     <value>Trenndecke {0}/{1}: Die Datei referenziert nicht alle Deckenteile — Fläche aus den Raummengen geschätzt: {2} m² (kleinere beheizte Grundfläche der beiden Geschosse) statt {3} m² referenziert; U-Wert und Aufbau aus den referenzierten Teilen.</value>
   </data>
