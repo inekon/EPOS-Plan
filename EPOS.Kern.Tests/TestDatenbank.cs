@@ -869,6 +869,18 @@ namespace EPOS.Kern.Tests
                 // Tab_Stromspeicher(_STAMM), leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
                 // wiederholbar, KEIN DML.
                 StromViertelstundenSchema.Ausfuehren(null);
+
+                // Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
+                // Auslegungstabelle (leer) und die Vorgabetabelle samt Saat. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar.
+                PufferAuslegungSchema.Ausfuehren(null);
+
+                // Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, E30-Q12, EZ-24): die
+                // Empfehlungsspannen der Hilfsenergie von BHKW und Heizkessel in den
+                // Auslieferungsvorlagen auf Weg B. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // reines DML, wiederholbar, Projektzeilen unberuehrt.
+                HilfsenergieEmpfehlungNachzug.Ausfuehren(null);
+
                 // Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
                 // Pufferspeichers an Tab_Pufferspeicher und die thermische Desinfektion an
                 // Tab_Einstellungen, leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;

@@ -250,6 +250,13 @@ namespace WindowsFormsApplication1
             // rechnet wie zuvor.
             new Stufe(StromViertelstundenSchema.SCHRITT, Art.Ddl,
                       "Einspeisegrenze des Projekts (kW oder % der PV-Leistung) und Selbstentladung des Stromspeichers"),
+            // Die Auslegungstabelle kommt leer an, die Vorgabetabelle mit ihrer Saat - die Auslegung
+            // rechnet nur auf Zuruf, der Paketstand rechnet wie zuvor.
+            new Stufe(PufferAuslegungSchema.SCHRITT, Art.Ddl,
+                      "Pufferspeicher-Auslegung: Auslegungstabelle je Projektpuffer und Vorgabewerte"),
+            // Ein Paket fuehrt keine Kostenvorlagen; die Empfehlung ist Hinweis, kein Projektwert.
+            new Stufe(HilfsenergieEmpfehlungNachzug.SCHRITT, Art.Katalog,
+                      "Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel auf den Endenergiebedarf (Weg B)"),
             // Die Spalten kommen leer an - Bereitschaft als Tageswert, gleich große Zonen, kein
             // Frischwassermodul, keine Desinfektion; ein Paketsatz rechnet wie zuvor.
             new Stufe(PufferOptionenSchema.SCHRITT, Art.Ddl,

@@ -30,11 +30,11 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Nummer, Stufe und Prüfklauseln (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Der Schritt folgt auf die Einspeisegrenze, ist das Ziel und eine DDL-Stufe.</summary>
+        /// <summary>Der Schritt folgt auf die Hilfsenergie-Empfehlung, ist das Ziel und eine DDL-Stufe.</summary>
         [Fact]
         public void Nummer_Ziel_und_Paketstufe()
         {
-            Assert.Equal(StromViertelstundenSchema.SCHRITT + 1, PufferOptionenSchema.SCHRITT);
+            Assert.Equal(HilfsenergieEmpfehlungNachzug.SCHRITT + 1, PufferOptionenSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= PufferOptionenSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + PufferOptionenSchema.SCHRITT + ".");
 
@@ -146,7 +146,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Migration der Schale, Werkzeug <c>Testdatenbankschema</c> und Testkopie führen den Schritt
-        /// aus derselben Quelle, hinter der Einspeisegrenze.
+        /// aus derselben Quelle, hinter der Hilfsenergie-Empfehlung.
         /// </summary>
         [Fact]
         public void Werkzeug_Migration_und_Testkopie_fuehren_den_Schritt()
@@ -156,18 +156,18 @@ namespace EPOS.Kern.Tests
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
             Assert.True(werkzeug.IndexOf("PufferOptionenSchema.Ausfuehren(", StringComparison.Ordinal) >
-                        werkzeug.IndexOf("StromViertelstundenSchema.Ausfuehren(", StringComparison.Ordinal));
+                        werkzeug.IndexOf("HilfsenergieEmpfehlungNachzug.Ausfuehren(", StringComparison.Ordinal));
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
                                                              "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_PUFFER_OPTIONEN = PufferOptionenSchema.SCHRITT", migration);
             Assert.True(migration.IndexOf("new Schritt(SCHRITT_PUFFER_OPTIONEN", StringComparison.Ordinal) >
-                        migration.IndexOf("new Schritt(SCHRITT_STROM_VIERTELSTUNDEN", StringComparison.Ordinal));
+                        migration.IndexOf("new Schritt(SCHRITT_HILFSENERGIE_EMPFEHLUNG", StringComparison.Ordinal));
             Assert.Contains("PufferOptionenSchema.Anweisungen", migration);
 
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
             Assert.True(vorrichtung.IndexOf("PufferOptionenSchema.Ausfuehren(null)", StringComparison.Ordinal) >
-                        vorrichtung.IndexOf("StromViertelstundenSchema.Ausfuehren(null)", StringComparison.Ordinal));
+                        vorrichtung.IndexOf("HilfsenergieEmpfehlungNachzug.Ausfuehren(null)", StringComparison.Ordinal));
         }
 
         // -----------------------------------------------------------------------------

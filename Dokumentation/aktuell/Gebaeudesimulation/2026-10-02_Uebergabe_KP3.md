@@ -15,11 +15,11 @@ Regeln: [`CLAUDE.md`](../../../CLAUDE.md), [Entwurf KP3](2026-10-02_Entwurf_KP3.
 | R2, O1 | Aufheizplan Einzone, Einbau; Projekteinstellung, Hülle, Assistent | gepusht, #663 |
 | R3 | Mehrzonen: Nachbarform, Zonenzustände, `Aufheizgebaeude` | gepusht, CI grün, #664 |
 | R4 | Kappungsreihe, W3, Rampenmaske, `Aufheizergebnis`, Hinweise `SIMENG_AUFH_*` | gemergt, Gate 665 und Gate 668 grün; Statuszeile **#669** (origin hat #665–#668 vergeben) |
-| Merge origin | #665–#668 (Solarthermie-Ganglinie, M1a, M3a, **M2 mit Basis R32**, Testdatenbank 165) | gemergt (`8a73e236`); KP3 friert künftig als **R33** ein (`df81974b`) |
+| Merge origin | #665–#668 (Solarthermie-Ganglinie, M1a, M3a, **M2 mit Basis R32**, Testdatenbank 165) | gemergt (`8a73e236`); KP3 friert künftig als **R34** ein (`df81974b`) |
 | Gate 669 | volles Gate im Hauptbaum auf dem Merge-Stand | siehe Abschnitt 2 |
 | D2 | Kennzahlen je Gebäude und Zone, Sommerlüftung NULL, Export E32, Bedarfsergebnis, Auskunft, Herleitungszeile, Hinweis Verbrauchsangabe | Agent fertig gebaut (fünf Commits im Worktree `kp3-d2`, Zweig `kp3-d2` auf `4b4a84e2`), Gate 670 im Worktree grün (Abschnitt 6); **Abnahme offen** |
 | E59 | individuelle Rampe, Aufschlag (h und %), manuelle Aufheizzeit je Gebäude mit Vorschlägen | **entschieden 02.10.2026**, Papiere noch nicht geschrieben (Auftrag in Abschnitt 5), Welle R5/O1b vor RP1 |
-| O2, O3, RP1, RP2, A | Bedarfsdialog; Bericht; Referenzprojekt 1051 mit Messung ρ_min; Basis R33; Abschluss | offen |
+| O2, O3, RP1, RP2, A | Bedarfsdialog; Bericht; Referenzprojekt 1051 mit Messung ρ_min; Basis R34; Abschluss | offen |
 
 **Beim Anwender offen:** SA1 (KP2) und SA-KP3 unter Windows, Logbuch-Versionsnummer („noch offen“ → Platzhalter „Version <vom
 Anwender>“), Entscheid P14 (ρ) nach der Messung in RP1.
@@ -32,7 +32,7 @@ Anwender>“), Entscheid P14 (ρ) nach der Messung in RP1.
   `ed7bf075` Ergebniszeile, `33ea28be` Export, `bdd08341` Auskunft und Herleitungszeile, `7fb53e94` Hinweis Verbrauchsangabe,
   `5ac9377e` N-AH7 Zeile/Export. Gate-Ablage `/tmp/gate_d2/GATE670`. Abnahme morgen: Bericht lesen, `git merge --no-ff kp3-d2`
   (Konflikte an `.resx` wie gehabt: origin-Stand plus neue Schlüssel, `designer_neu.py schreiben`), Gate im Hauptbaum gegen die
-  Basis R32 (16 Projekte, `Referenzlaeufe/2026-10-02_R32_Solarthermie`), Statuszeile (nächste freie Nummer **spät gegen origin**),
+  Basis **R33** (16 Projekte, `Referenzlaeufe/2026-10-02_R33_Viertelstunden`, Testdatenbank Schemastand 168; origin #670–#674 am 03.10. gemergt), Statuszeile (nächste freie Nummer **spät gegen origin**),
   Push, CI-Vermerk.
 - Vor jeder neuen Agentenwelle: Nachfrage zur Wochennutzung (Halt bei 90 %); macOS-, iOS- und Setup-Läufe nur nach Rückfrage.
 - Testdatenbank in Worktrees: `cp` aus dem Hauptbaum, `git update-index --refresh`; `git status` zeigt sie trotzdem als geändert
@@ -65,6 +65,11 @@ Fachliche Ausgestaltung im Auftrag (Abschnitt 5): Spalten `Tab_Einstellungen.Auf
 Bauweise (leicht 1–2 h, mittel 2–4 h, schwer 4–8 h), außerhalb Hinweis statt Sperre; Ergebniszeile `Aufheiz_Bemessung = MANUELL`;
 ein Schemaschritt (Nummer spät gegen origin); Wellen R5, O1b, Erweiterung O2/O3; Leitkonzept N1.68 = E59, Festlegungen der
 Umsetzung werden N1.69.
+
+**E60 (03.10.2026, Vorschlag 1 des [Konzepts Heizlastspitzen](2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)):** Auslegungsgröße =
+stationäre Auslegungsheizlast + Aufheizleistung aus der KP3-Bemessung; O2 und O3 zeigen ideale Spitze, Tagesmittel und P_auf nebeneinander;
+kein Filter im Rechenweg. Der E59-Papierauftrag trägt E60 mit ein (Register, Statusdatei Zeile E60, Teilkonzept 4.8/7.6, Entwurf KP3 Zeilen
+O2/O3).
 
 ## 5. Auftrag KP3-E59 (Papiere) — Wortlaut für den Agenten
 

@@ -74,7 +74,10 @@ Filter `WP-Plan.Kern.slnf` (die plattformfreien Projekte samt Tests — Grundlag
   = gehört zur Auslieferung), `Z_*` Zuordnung Projekt ↔ Katalog. Fachtabellen sind `STRICT`.
   **Neue Beziehungen über IDs**, nicht über Textfelder. Schemaänderungen laufen als
   nummerierte Schritte über `SchemaMigration`
-  ([`ADR-001`](Dokumentation/aktuell/ADR-001_Schema-Ausrollung.md)); der Rechenkern arbeitet
+  ([`ADR-001`](Dokumentation/aktuell/ADR-001_Schema-Ausrollung.md)); die nächste Nummer meldet jede Sitzung **vor dem Bau** in der
+  Zeile „Schemaschritt angemeldet" im Kopf der Statusdatei an und pusht allein diese Zeile sofort —
+  eine angemeldete Nummer vergibt keine andere Sitzung, die Kette hängt immer über `+ 1` an der
+  Vorgängerklasse, und beim Push der Welle wird die Zeile auf die nächste freie Nummer gesetzt; der Rechenkern arbeitet
   mit festen Rastern (8760 Stunden, 168 Wochenstunden, 365 Tage, 12 Monate, kein Schaltjahr).
 - **SQL-Dialekt:** Regeln in BETRIEB_SQLITE.md Abschnitt 6 (Umlautregel, Verbotsliste der
   Access-Schreibweisen, Boolean-Spalten als 0/1 — neue Spalten mit `CHECK (spalte IN (0,1))`, Sortierung über `IIF`/`CASE`). Zugriffe über `DataRepository` mit

@@ -141,6 +141,7 @@ namespace EPOS.Kern.Tests
         public void Nummer_Ziel_und_Paketstufe()
         {
             Assert.Equal(PufferOptionenSchema.SCHRITT + 1, KatalogfassungSchema.SCHRITT);
+            Assert.Equal(172, KatalogfassungSchema.SCHRITT);   // 170 Hilfsenergie, 171 Pufferoptionen
             Assert.True(SchemaStand.Zielversion >= KatalogfassungSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog, Paketanhebung.Stufen.Single(x => x.Nr == KatalogfassungSchema.SCHRITT).Wirkung);
             Assert.Equal(8, Katalogfassung.Stufe1.Count);
