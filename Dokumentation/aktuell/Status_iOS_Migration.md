@@ -12,6 +12,16 @@ Datei hineinkopiert. Die vollständigen Statusblöcke bis zum 12.09.2026 (sie st
 Umsetzungskonzept) liegen in
 [`../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md`](../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md).
 
+**Schemaschritt angemeldet:** **171 — frei** (zuletzt vergeben: 170 `HilfsenergieEmpfehlungNachzug`,
+Sitzung Wirtschaftlichkeit, #676). Wer eine Welle mit Schemaschritt beginnt, trägt hier **vor dem Bau**
+„<Nr> — <Sitzung>, <Welle>, <Datum, Uhrzeit UTC>" ein und pusht allein diese Zeile sofort (`git fetch`,
+Zeile setzen, Dokumentationswachen, Push, kein Gate nötig). Eine angemeldete Nummer vergibt keine
+andere Sitzung; wer eine fremde Anmeldung vorfindet, nimmt die nächste Nummer, meldet sie ebenso an und
+hängt seine Kette (`SCHRITT = <Vorgängerklasse>.SCHRITT + 1`) an die angemeldete Klasse, sobald sie
+auf origin liegt. Beim Push der Welle setzt die Sitzung die Zeile auf „<Nr>+1 — frei (zuletzt
+vergeben: …)". Anlass: Am 02./03.10.2026 haben vier Sitzungen dieselbe Nummer vergeben (167 bis 169),
+jede Kreuzung kostete Merge, neu abgeleitete Testdatenbank und Umnummerierung.
+
 **Keine Commit-Kennungen in dieser Datei.** Mit Auftrag #244 ist die Git-Geschichte am 12.09.2026
 umgeschrieben worden; **jede Kennung, die vor diesem Tag notiert wurde, ist eine alte Kennung** und
 zeigt im heutigen Zweig auf nichts mehr. Die Zuordnung alt → neu steht in

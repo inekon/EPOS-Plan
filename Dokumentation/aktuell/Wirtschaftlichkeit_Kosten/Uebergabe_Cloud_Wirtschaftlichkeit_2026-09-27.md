@@ -57,7 +57,9 @@ Protokollen, Register und Konzept. Das Gedächtnis der Desktop-App liegt je Rech
    CI-Projekte, `vergleich` gegen die Basis — die sieben Projekte PASS, `GESAMT: FAIL` wegen der nicht gerechneten Basisprojekte ist normal.
    Windows-Schale `dotnet build WindowsFormsApplication1/… -c Debug -p:Platform=x64` durch den Agenten. Tests nur mit
    `-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2`, nie parallel zu fremden Testprozessen (`tasklist | grep -i testhost`).
-3. **Nummern:** Statusnummer und Schemaschritt erst beim Push gegen origin endgültig. Wird umnummeriert, nur die eigenen Fundstellen
+3. **Nummern:** Statusnummer und Schemaschritt erst beim Push gegen origin endgültig. Ein Schemaschritt wird außerdem **vor dem Bau** in der Zeile
+   „Schemaschritt angemeldet" im Kopf der Statusdatei angemeldet und die Zeile allein sofort gepusht (Regel in `CLAUDE.md`, seit #676);
+   angemeldete Nummern vergibt keine andere Sitzung. Wird umnummeriert, nur die eigenen Fundstellen
    ändern — Anwenderzitate mit der alten Nummer und fremde Zeilen, die durch einen Merge schon im Baum liegen, vorher ausschließen
    (Lehre aus #633: die fremde #630 wurde mit ersetzt und musste wiederhergestellt werden). CI-Nachweis ist der erste grüne Kern-Lauf,
    dessen Commit den eigenen enthält (`git merge-base --is-ancestor <eigener> <Lauf-Commit>`); Folge-Pushes brechen laufende Läufe ab.
