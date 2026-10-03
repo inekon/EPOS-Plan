@@ -120,8 +120,10 @@ namespace EPOS.Kern.Tests
             {
                 new KeyValuePair<string, string>("Geb[0].Aufheizzustand", DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN),
                 new KeyValuePair<string, string>("Geb[0].Aufheizbemessung", DbWerte.AUFHEIZ_BEMESSUNG_STUNDE),
+                new KeyValuePair<string, string>("Geb[0].Aufheizart", DbWerte.AUFHEIZ_ART_TAEGLICH),
                 new KeyValuePair<string, string>("Geb[0].Aufheizleistungsquelle", DbWerte.AUFHEIZ_QUELLE_ZIEL),
             }, satz.Texte);
+            Assert.DoesNotContain(satz.Skalare, p => p.Key == "Geb[0].Aufheizzeit_Manuell");
             Dictionary<string, double> z = satz.Skalare.ToDictionary(p => p.Key, p => p.Value);
             Assert.Equal((double)zeile.AufheizzeitMaxH, z["Geb[0].AufheizzeitMaxH"]);
             Assert.Equal(zeile.AufheizAussenC, z["Geb[0].AufheizAussenC"]);

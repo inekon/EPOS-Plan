@@ -282,6 +282,12 @@ namespace WindowsFormsApplication1
         internal double HeizungStrahlungsanteil { get; private set; }
         /// <summary>Heizleistungsgrenze [W]; NaN = unbegrenzt.</summary>
         internal double HeizleistungMaxW { get; private set; }
+        /// <summary>
+        /// Die manuelle Aufheizzeit t [h] des Gebäudes (E59, Festlegung 37; <c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c>),
+        /// 1 … 47; <c>null</c> = die Art des Projekts. Jede Zone des Gebäudes trägt denselben Wert (Festlegung 38,
+        /// Teilkonzept 3.4: Zonen erben, ein Zonenfeld gibt es nicht). Gelesen nur von <see cref="Aufheizoptimierung"/>.
+        /// </summary>
+        internal int? AufheizzeitManuellH { get; private set; }
         /// <summary>Randbedingung der Grundfläche (<c>DbWerte.GRUND_*</c>).</summary>
         internal string GrundRandbedingung { get; private set; }
         /// <summary>Kellertemperatur [°C].</summary>
@@ -2032,6 +2038,7 @@ namespace WindowsFormsApplication1
                 Innenflaechenfaktor = g.Innenflaechenfaktor ?? GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR,
                 HeizungStrahlungsanteil = g.Heizung_Strahlungsanteil ?? GebaeudeFestwerte.VORGABE_HEIZUNG_STRAHLUNGSANTEIL,
                 HeizleistungMaxW = g.Heizleistung_Max.HasValue ? 1000.0 * g.Heizleistung_Max.Value : double.NaN,
+                AufheizzeitManuellH = g.Aufheizzeit_Manuell_H,
                 GrundRandbedingung = string.IsNullOrEmpty(g.Grundflaeche_Randbedingung)
                     ? DbWerte.GRUND_ERDREICH : g.Grundflaeche_Randbedingung,
                 Kellertemperatur = g.Kellertemperatur ?? GebaeudeFestwerte.VORGABE_KELLERTEMPERATUR,
@@ -2047,6 +2054,11 @@ namespace WindowsFormsApplication1
                 e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Infiltration " + Text(nInf) + " 1/h ist nicht größer null.");
             if (g.Luftwechsel_Nutzer is double nNutz && (!Endlich(nNutz) || nNutz < 0.0))
                 e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Nutzerlüftung " + Text(nNutz) + " 1/h ist negativ oder nicht endlich.");
+            // E59: die manuelle Aufheizzeit nur im Bereich der Pruefklausel (1 bis 47 h).
+            if (g.Aufheizzeit_Manuell_H is int tManuell &&
+                (tManuell < AufheizManuellSchema.MANUELL_MIN_H || tManuell > AufheizManuellSchema.MANUELL_MAX_H))
+                e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die manuelle Aufheizzeit " +
+                         tManuell.ToString(CultureInfo.InvariantCulture) + " h liegt nicht zwischen 1 und 47 h.");
             e.SommerlueftungBilden();
 
             // Ost/West: die NULL-Vorgabe aus dem Bestandsfeld bildet der Vorbereitungsschritt.

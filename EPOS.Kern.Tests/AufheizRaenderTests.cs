@@ -24,16 +24,16 @@ namespace EPOS.Kern.Tests
     /// </summary>
     public class AufheizRaenderTests
     {
-        private const double ANTEIL = 0.3;
+        internal const double ANTEIL = 0.3;
         private const int STUNDEN = 8760;
 
         // =====================================================================
         //  Bausteine
         // =====================================================================
 
-        private static Zonenmodell2K Modell() => new Zonenmodell2K(AufheizantwortTests.Pruefsatz(), "Prüfsatz");
+        internal static Zonenmodell2K Modell() => new Zonenmodell2K(AufheizantwortTests.Pruefsatz(), "Prüfsatz");
 
-        private static double[] Konstant(double wert)
+        internal static double[] Konstant(double wert)
         {
             var r = new double[STUNDEN];
             for (int h = 0; h < STUNDEN; h++) r[h] = wert;
@@ -41,14 +41,14 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Tag/Nacht: <paramref name="tag"/> in [<paramref name="beginn"/>, <paramref name="ende"/>), sonst <paramref name="nacht"/>.</summary>
-        private static double[] TagNacht(double tag, double nacht, int beginn, int ende)
+        internal static double[] TagNacht(double tag, double nacht, int beginn, int ende)
         {
             var r = new double[STUNDEN];
             for (int h = 0; h < STUNDEN; h++) r[h] = h % 24 >= beginn && h % 24 < ende ? tag : nacht;
             return r;
         }
 
-        private static Aufheizzone Zone(double[] soll, double aussenC = -12.0, double heizMaxW = double.NaN,
+        internal static Aufheizzone Zone(double[] soll, double aussenC = -12.0, double heizMaxW = double.NaN,
                                         double[] kuehl = null, double[] aussen = null)
             => new Aufheizzone
             {
@@ -66,24 +66,24 @@ namespace EPOS.Kern.Tests
                 Modell = Modell(),
             };
 
-        private static Aufheizvorgabe An(bool fest = false, bool abzug = false)
+        internal static Aufheizvorgabe An(bool fest = false, bool abzug = false)
             => new Aufheizvorgabe(true, abzug ? DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG : null, null, null,
                                   fest ? DbWerte.AUFHEIZ_ART_FEST : null);
 
-        private static double PhiStat(double thetaT, double ta) => Modell().StationaereHeizlastW(thetaT, ta, ta, ANTEIL, 0.0);
+        internal static double PhiStat(double thetaT, double ta) => Modell().StationaereHeizlastW(thetaT, ta, ta, ANTEIL, 0.0);
 
         /// <summary>Die Grenze, bei der ein Sprung um <paramref name="deltaT"/> genau n Stufen braucht (Augenblicksform).</summary>
-        private static double Grenze(double thetaT, double deltaT, double ta, int n)
+        internal static double Grenze(double thetaT, double deltaT, double ta, int n)
             => Aufheizstufen.AugenblickW(Modell().Aufheizantwort(ANTEIL, 0.0), PhiStat(thetaT, ta), deltaT, n);
 
-        private static int Ring(int h) => ((h % STUNDEN) + STUNDEN) % STUNDEN;
+        internal static int Ring(int h) => ((h % STUNDEN) + STUNDEN) % STUNDEN;
 
         /// <summary>
         /// Die Vorschrift der Festlegung 8, aus der Sprungliste nachgerechnet: s'(h) = max(s(h), min(θ_N +
         /// ΔT·j/n, θ_K(h) − 1 K)), Überlappung über max; die Sprungstunde und jede Stunde „aus" bleiben;
         /// die Rampenmaske ist s' &gt; s; die Kühlprüfung θ_K ≥ s' + 1 K hält, wo beide endlich sind.
         /// </summary>
-        private static void Vorschrift(Aufheizzone z, Aufheizplan p)
+        internal static void Vorschrift(Aufheizzone z, Aufheizplan p)
         {
             double[] s = z.Soll;
             var e = (double[])s.Clone();
@@ -125,7 +125,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Der Büro-Kalender: werktags 7–18 Uhr <paramref name="tag"/>, sonst <paramref name="absenkung"/>; Wochenende ganztägig abgesenkt.</summary>
-        private static double[] Buero(double tag, double absenkung, out bool[] wochenende)
+        internal static double[] Buero(double tag, double absenkung, out bool[] wochenende)
         {
             wochenende = Vdi6007Probe.Wochenende();
             var r = new double[STUNDEN];
@@ -134,7 +134,7 @@ namespace EPOS.Kern.Tests
             return r;
         }
 
-        private static bool IstMontag(bool[] wochenende, int tag) => !wochenende[tag] && wochenende[(tag + 364) % 365];
+        internal static bool IstMontag(bool[] wochenende, int tag) => !wochenende[tag] && wochenende[(tag + 364) % 365];
 
         // =====================================================================
         //  N-AH6 Unerreichbar

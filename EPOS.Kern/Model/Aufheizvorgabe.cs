@@ -3,9 +3,9 @@
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Die Projekteinstellung der Aufheizoptimierung</b> (Entwurf KP3, Grundsatz 5; Schemaschritt
-    /// KP-S2, <see cref="AufheizvorgabeSchema"/>) — unveränderlich: Schalter, Bemessung, Abzug, Reserve,
-    /// Art. Gelesen je Lauf und Auskunft einmal (<see cref="KonfigurationCtrl.AufheizvorgabeLesen"/>),
+    /// <b>Die Projekteinstellung der Aufheizoptimierung</b> (Entwurf KP3, Grundsatz 5; Schemaschritte
+    /// KP-S2, <see cref="AufheizvorgabeSchema"/>, und KP-S4, <see cref="AufheizManuellSchema"/>) — unveränderlich:
+    /// Schalter, Bemessung, Abzug, Reserve, Art und der Aufschlag in Stunden und Prozent (E59). Gelesen je Lauf und Auskunft einmal (<see cref="KonfigurationCtrl.AufheizvorgabeLesen"/>),
     /// geschrieben in einem <c>UPDATE</c> (<see cref="KonfigurationCtrl.AufheizvorgabeSchreiben"/>).
     ///
     /// <para><b>Normalisierung (Festlegung 24).</b> Der Konstruktor hält die Form, in der die Datenbank
@@ -16,6 +16,11 @@ namespace WindowsFormsApplication1
     /// <c>Kessel_Heizgrenze</c>). Der Schalter „aus" behält die übrigen Werte. Werte außerhalb der
     /// Prüfklauseln lässt der Konstruktor stehen — das Schreiben scheitert dann an der Spalte.</para>
     ///
+    /// <para><b>Aufschlag (E59, Festlegungen 35, 36).</b> <see cref="AufschlagH"/> (0 … 24 h) und
+    /// <see cref="AufschlagProzent"/> (0 … 100 %): 0 und ein leeres Feld werden <c>null</c> — 0 hat keine
+    /// eigene Bedeutung, gespeichert wird NULL; der Schalter „aus" behält beide. Es gilt das Maximum beider
+    /// (<c>Aufheizoptimierung.MitAufschlag</c>), nur auf Rampen mit n &gt; 1 (P16).</para>
+    ///
     /// <para><b>Wirksame Werte.</b> <see cref="BemessungWirksam"/>, <see cref="AbzugWirksamK"/>,
     /// <see cref="ReserveWirksam"/> und <see cref="ArtWirksam"/> setzen die Vorgaben ein; die
     /// Rechnung liest nur sie.</para>
@@ -25,19 +30,31 @@ namespace WindowsFormsApplication1
         /// <summary>Die Einstellung „aus" ohne gepflegte Werte — so liest sich eine fehlende Zeile oder Spalte.</summary>
         public static readonly Aufheizvorgabe Aus = new Aufheizvorgabe(false, null, null, null, null);
 
+        /// <summary>Der größte Aufschlag in Stunden (Prüfklausel).</summary>
+        public const int AUFSCHLAG_H_MAX = AufheizManuellSchema.AUFSCHLAG_H_MAX;
+
+        /// <summary>Der größte Aufschlag in Prozent (Prüfklausel).</summary>
+        public const double AUFSCHLAG_PROZENT_MAX = AufheizManuellSchema.AUFSCHLAG_PROZENT_MAX;
+
         /// <summary>Legt eine Einstellung an und normalisiert sie nach Festlegung 24.</summary>
         /// <param name="an">Der Projektschalter.</param>
         /// <param name="bemessung"><see cref="DbWerte.AUFHEIZ_BEMESSUNGEN"/>; <c>null</c> = (a).</param>
         /// <param name="abzugK">ΔT_K [K] der Bemessung (b); <c>null</c> = Vorgabe.</param>
         /// <param name="reserve">Die Aufheizreserve ρ als Anteil; <c>null</c> = Vorgabe.</param>
         /// <param name="art"><see cref="DbWerte.AUFHEIZ_ARTEN"/>; <c>null</c> = täglich.</param>
-        public Aufheizvorgabe(bool an, string bemessung, double? abzugK, double? reserve, string art)
+        /// <param name="aufschlagH">Aufschlag [h] 0 … 24 (E59); <c>null</c> und 0 = keiner.</param>
+        /// <param name="aufschlagProzent">Aufschlag [%] 0 … 100 (E59); <c>null</c> und 0 = keiner.</param>
+        public Aufheizvorgabe(bool an, string bemessung, double? abzugK, double? reserve, string art,
+                              int? aufschlagH = null, double? aufschlagProzent = null)
         {
             An = an;
             Bemessung = Text(bemessung, DbWerte.AUFHEIZ_BEMESSUNG_STUNDE);
             AbzugK = Zahl(abzugK);
             Reserve = Zahl(reserve);
             Art = Text(art, DbWerte.AUFHEIZ_ART_TAEGLICH);
+            AufschlagH = aufschlagH == 0 ? null : aufschlagH;
+            double? prozent = Zahl(aufschlagProzent);
+            AufschlagProzent = prozent == 0.0 ? null : prozent;
         }
 
         /// <summary>Der Projektschalter (<c>Tab_Einstellungen.Aufheizoptimierung</c>).</summary>
@@ -54,6 +71,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Art, wie gespeichert: <c>null</c> = täglich, sonst <see cref="DbWerte.AUFHEIZ_ART_FEST"/>.</summary>
         public string Art { get; }
+
+        /// <summary>Der Aufschlag in Stunden, wie gespeichert (<c>Aufheiz_Aufschlag_H</c>); <c>null</c> = 0 (Festlegung 36).</summary>
+        public int? AufschlagH { get; }
+
+        /// <summary>Der Aufschlag in Prozent von n, wie gespeichert (<c>Aufheiz_Aufschlag_Prozent</c>); <c>null</c> = 0 (Festlegung 36).</summary>
+        public double? AufschlagProzent { get; }
+
+        /// <summary>Der wirksame Aufschlag in Stunden (0 statt <c>null</c>).</summary>
+        public int AufschlagHWirksam => AufschlagH ?? 0;
+
+        /// <summary>Der wirksame Aufschlag in Prozent (0 statt <c>null</c>).</summary>
+        public double AufschlagProzentWirksam => AufschlagProzent ?? 0.0;
+
+        /// <summary>Trägt die Einstellung einen Aufschlag? Ohne ihn rechnet der Plan bitgleich wie vor E59 (Grundsatz 3).</summary>
+        public bool HatAufschlag => AufschlagHWirksam > 0 || AufschlagProzentWirksam > 0.0;
 
         /// <summary>Die wirksame Bemessung (<see cref="DbWerte.AUFHEIZ_BEMESSUNG_STUNDE"/> statt <c>null</c>).</summary>
         public string BemessungWirksam => Bemessung ?? DbWerte.AUFHEIZ_BEMESSUNG_STUNDE;

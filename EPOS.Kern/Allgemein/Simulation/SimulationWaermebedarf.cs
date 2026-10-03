@@ -1216,11 +1216,13 @@ namespace WindowsFormsApplication1
                     Aufheizgebaeude g = Aufheizoptimierung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan).ToList());
                     double? p = Endlich(g.AufheizleistungW / 1000.0);
                     // Ein Gebäude mit Zonen trägt seine echte Hülle: Faktor 1, P_auf unskaliert wie im Lauf.
+                    // E59: Zustand und t_auf,max der BEMESSUNG, daneben Art, manuelle Zeit und τ₂ (Festlegungen 39, 40).
                     return leer with
                     {
-                        Zustand = g.Zustand, Bemessung = g.Bemessung, AufheizzeitMaxH = g.AufheizzeitMaxH,
+                        Zustand = g.Gekoppelt ? g.Zustand : g.BemessungZustand, Bemessung = g.Bemessung,
+                        AufheizzeitMaxH = g.Gekoppelt ? g.AufheizzeitMaxH : g.AufheizzeitBemessenH,
                         AussenC = Endlich(g.AussenBC), LeistungUnskaliertKw = p, Skalierungsfaktor = 1.0, LeistungKw = p,
-                        Quelle = g.Quelle,
+                        Quelle = g.Quelle, Art = g.Art, AufheizzeitManuellH = g.ManuellH, Tau2H = Endlich(g.Tau2S / 3600.0),
                     };
                 }
 
@@ -1235,11 +1237,13 @@ namespace WindowsFormsApplication1
                     : GebaeudeVorbereitung.Bilden(_kalender, item).IstFlaeche ? item.Z_AuswahlWohnflaeche / item.Nutzflaeche
                     : (double?)null;
                 double? unskaliert = Endlich(b.AufheizleistungW / 1000.0);
+                // E59: Zustand und t_auf,max der BEMESSUNG, daneben Art, manuelle Zeit und τ₂ (Festlegungen 39, 40).
                 return leer with
                 {
-                    Zustand = plan.Zustand, Bemessung = b.Bemessung, AufheizzeitMaxH = b.Wirksam.AufheizzeitMaxH,
+                    Zustand = b.Zustand, Bemessung = b.Bemessung, AufheizzeitMaxH = b.Wirksam.AufheizzeitMaxH,
                     AussenC = Endlich(b.Wirksam.AussenC), LeistungUnskaliertKw = unskaliert, Skalierungsfaktor = faktor,
                     LeistungKw = faktor.HasValue ? unskaliert * faktor.Value : null, Quelle = b.Quelle,
+                    Art = plan.Art, AufheizzeitManuellH = plan.ManuellH, Tau2H = Endlich(b.Wirksam.Tau2S / 3600.0),
                 };
             }
             catch (GebaeudeModellException ex)

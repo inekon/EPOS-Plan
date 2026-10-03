@@ -211,6 +211,19 @@ namespace WindowsFormsApplication1
         public string Energiestandard;
 
         // =====================================================================
+        //  Die manuelle Aufheizzeit (E59, Festlegungen 37, 38; achter
+        //  Sichtneubau) — NULL-ERHALTEND. Nur am Projektgebäude, der Katalog
+        //  führt sie nicht; null = das Gebäude folgt der Art des Projekts.
+        // =====================================================================
+
+        /// <summary>
+        /// Die manuelle Aufheizzeit t [h], 1 … 47 (<c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c>): Mit eingeschalteter
+        /// Aufheizoptimierung rampt das Gebäude an jedem Sprung mit n = t + 1; seine Zonen erben den Wert.
+        /// <c>null</c> = die Art des Projekts (täglich oder fest).
+        /// </summary>
+        public int? Aufheizzeit_Manuell_H;
+
+        // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der
         //  Gebäudezeile. Bewusst internal und eine Eigenschaft: Die Feldspiegel

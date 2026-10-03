@@ -99,7 +99,8 @@ namespace EPOS.Kern.Tests
             Aufheizkennzahlen k = GebaeudeKennzahlen.Aufheizwerte(gekoppelt, zone: false);
             Assert.Equal(new Aufheizkennzahlen { AufheizZustand = DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, HeizleistungMaxStundenH = 3.5 }, k);
             Assert.Equal(new[] { "HeizleistungMaxStundenH" }, k.Zahlen().Select(p => p.Key));
-            Assert.Null(GebaeudeKennzahlen.Aufheizwerte(gekoppelt, zone: true));
+            // Die gekoppelte Zone traegt seit KP-S4 ihren Zustand wie das Gebaeude (Befund D2, E59).
+            Assert.Equal(k, GebaeudeKennzahlen.Aufheizwerte(gekoppelt, zone: true));
 
             var unbeheizt = new Aufheizergebnis { AufheizZustand = DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT, HeizleistungMaxStundenH = 0.0 };
             Assert.Equal(new Aufheizkennzahlen { AufheizZustand = DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT, HeizleistungMaxStundenH = 0.0 },

@@ -5021,10 +5021,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KATALOGFASSUNG_STUFE2 = KatalogfassungStufe2Schema.SCHRITT;
 
+        // ---- Stufe KP3, Welle R5: Aufschlag und manuelle Aufheizzeit (E59, E60; KP-S4) ----
+
+        /// <summary>
+        /// Schritt <see cref="AufheizManuellSchema.SCHRITT"/> — <b>Aufschlag und manuelle Aufheizzeit der
+        /// Aufheizoptimierung</b> (Entscheid E59 samt Folgeentscheiden, E60; Entwurf KP3 Abschnitt 4). Er
+        /// folgt auf <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/> und läuft als LETZTER Sichtdurchgang: Er baut die
+        /// Sicht <c>Abfrage_Projektgebaeude</c> zum achten Mal (103 Spalten).
+        ///
+        /// <para><b>DDL:</b> an <c>Tab_Einstellungen</c> <c>Aufheiz_Aufschlag_H</c> und
+        /// <c>Aufheiz_Aufschlag_Prozent</c>, an <c>Tab_Gebaeude</c> <c>Aufheizzeit_Manuell_H</c>, an
+        /// <c>Tab_ErgebnisGebaeude</c> <c>Aufheiz_Art</c>, <c>Auslegungsheizlast_Kw</c> und
+        /// <c>Aufheizzuschlag_Kw</c>, an <c>Tab_ErgebnisZone</c> <c>Aufheiz_Art</c>; der Zustand
+        /// <c>GEKOPPELT</c> der Zone per kleinem Neubau dieser einen Tabelle. Die Anweisungen stehen bei
+        /// <see cref="AufheizManuellSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Felder entstehen leer; KEIN DML an
+        /// Bestandsdaten.</para>
+        /// </summary>
+        public const int SCHRITT_AUFHEIZ_MANUELL = AufheizManuellSchema.SCHRITT;
+
         /// <summary>
         /// Schritt <see cref="ProjektkopienKatalogeSchema.SCHRITT"/> — <b>die Projektkopien der Brennstoffe
         /// und der Vorgaben der Pufferauslegung</b> (Anwenderentscheid 03.10.2026). Er folgt auf
-        /// <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/>, dessen Katalogfassung er an jeder Kopie vermerkt.
+        /// <see cref="SCHRITT_AUFHEIZ_MANUELL"/> und vermerkt an jeder Kopie die Katalogfassung.
         ///
         /// <para><b>DDL und Saat:</b> <c>Tab_Brennstoff</c> und <c>Tab_PufferAuslegungParameter</c> (STRICT,
         /// je Projekt), dann die wertgleichen Kopien aller Projekte. Die Konditionierungsvorlagen brauchen
@@ -7268,6 +7288,17 @@ namespace WindowsFormsApplication1
                         "abgleichen, ohne eigene Anpassungen zu ueberschreiben. KEIN Rechenergebnis aendert sich - die " +
                         "Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
                         Schritt_KatalogfassungStufe2),
+            // STUFE KP3, WELLE R5 (E59, E60) - Aufschlag und manuelle Aufheizzeit der
+            // Aufheizoptimierung, Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, GEKOPPELT an
+            // der Zone; der achte Sichtneubau. Die Quelle ist AufheizManuellSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_AUFHEIZ_MANUELL,
+                        "Tab_Einstellungen: Aufheiz_Aufschlag_H, Aufheiz_Aufschlag_Prozent; Tab_Gebaeude: " +
+                        "Aufheizzeit_Manuell_H (Sicht Abfrage_Projektgebaeude neu); Tab_ErgebnisGebaeude: Aufheiz_Art, " +
+                        "Auslegungsheizlast_Kw, Aufheizzuschlag_Kw; Tab_ErgebnisZone: Aufheiz_Art, Zustand GEKOPPELT",
+                        "Aufschlag und manuelle Aufheizzeit haetten keinen Ort, und eine gekoppelte Zone liesse sich " +
+                        "nicht ablegen. KEIN Rechenergebnis aendert sich - die Felder entstehen leer.",
+                        Schritt_AufheizManuell),
             // PROJEKTKOPIEN der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat. Die
             // Quelle ist ProjektkopienKatalogeSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_PROJEKTKOPIEN_KATALOGE,
@@ -13245,6 +13276,69 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Katalogfassung der uebrigen Kataloge - " +
                     (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e).") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Aufschlag und manuelle Aufheizzeit" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_AUFHEIZ_MANUELL"/>, Rezept und Anweisungen bei <see cref="AufheizManuellSchema"/>.
+        ///
+        /// <para><b>Wie Schritt 152:</b> Der kleine Neubau von <c>Tab_ErgebnisZone</c> braucht die
+        /// Transaktionsklammer MIT ABGESCHALTETEN FREMDSCHLÜSSELN, die nur
+        /// <c>DataRepository.VorgangOhneFremdschluessel</c> spannt — der Schritt läuft deshalb ganz im Kern.
+        /// Jede Berichtszeile geht ins Protokoll; ein benannter Abbruch lässt die Datei, wie sie war, und der
+        /// nächste Lauf versucht es wieder. <b>Wiederholbar</b>; die Nachprobe fragt
+        /// <see cref="AufheizManuellSchema.Vollstaendig"/>.</para>
+        /// </summary>
+        private static bool Schritt_AufheizManuell(Lauf l)
+        {
+            string nr = AufheizManuellSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in AufheizManuellSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    AufheizManuellSchema.Ausfuehren(zeilen);
+                    vollstaendig = AufheizManuellSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Aufschlag, manuelle Aufheizzeit, Ergebnisspalten, GEKOPPELT an der Zone oder die Sicht " +
+                      GebaeudeSchema.VIEW + " stehen nach dem Schritt nicht auf dem Zielstand.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Aufschlag und manuelle Aufheizzeit - KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

@@ -214,17 +214,18 @@ namespace EPOS.Kern.Tests
             List<string> einst = DataRepository.SpaltenVonTabelle("Tab_Einstellungen");
             // Hinter den fünf Spalten folgen die acht des Schritts BedarfNetzKalenderSchema (Welle M3b)
             // und die zwei der Einspeisegrenze (StromViertelstundenSchema, Welle M5) und die fünf der
-            // Desinfektion (PufferOptionenSchema, Welle M7).
+            // Desinfektion (PufferOptionenSchema, Welle M7) und die zwei des Aufschlags (KP-S4).
             Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL + BedarfNetzKalenderSchema.SPALTEN_EINSTELLUNGEN.Count +
                          StromViertelstundenSchema.EINSTELLUNGSSPALTEN.Length +
-                         PufferOptionenSchema.EINSTELLUNGSSPALTEN.Length, einst.Count);
+                         PufferOptionenSchema.EINSTELLUNGSSPALTEN.Length + AufheizManuellSchema.EINSTELLUNGSSPALTEN, einst.Count);
             Assert.Equal(SPALTEN_VORGABE, einst.Skip(AufheizvorgabeSchema.SPALTENZAHL_VORHER).Take(SPALTEN_VORGABE.Length).ToArray());
             List<string> geb = DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude");
-            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
-            Assert.Equal(SPALTEN_GEBAEUDE, geb.Skip(geb.Count - 14).ToArray());
+            // Hinter den vierzehn Spalten folgen die drei bzw. eine des Schritts KP-S4.
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
+            Assert.Equal(SPALTEN_GEBAEUDE, geb.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE - 14).Take(14).ToArray());
             List<string> zone = DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone");
-            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
-            Assert.Equal(SPALTEN_ZONE, zone.Skip(zone.Count - 14).ToArray());
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
+            Assert.Equal(SPALTEN_ZONE, zone.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE - 14).Take(14).ToArray());
 
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Einstellungen") > 0);
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Aufheizoptimierung <> 0"));
@@ -282,7 +283,10 @@ namespace EPOS.Kern.Tests
 
             List<string> vorher = Bestand("SELECT ID, ID_Projekt, Tool_1, Kuehlbetrieb, Anlagenkopplung, Kessel_Heizgrenze " +
                                           "FROM Tab_Einstellungen ORDER BY ID");
-            // Der Stand VOR KP-S2 kennt auch die acht späteren Spalten (BedarfNetzKalenderSchema) nicht.
+            // Der Stand VOR KP-S2 kennt auch die acht späteren Spalten (BedarfNetzKalenderSchema) und die
+            // zwei des Aufschlags (KP-S4) nicht.
+            DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"Aufheiz_Aufschlag_Prozent\"");
+            DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"Aufheiz_Aufschlag_H\"");
             foreach (KeyValuePair<string, string> sp in BedarfNetzKalenderSchema.SPALTEN_EINSTELLUNGEN.Reverse())
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"" + sp.Key + "\"");
             foreach (string sp in SPALTEN_VORGABE)
@@ -327,6 +331,10 @@ namespace EPOS.Kern.Tests
 
             long gebaeudeZeilen = Zahl("SELECT COUNT(*) FROM Tab_ErgebnisGebaeude");
             long zonenZeilen = Zahl("SELECT COUNT(*) FROM Tab_ErgebnisZone");
+            // Der Stand VOR KP-S3 kennt die Spalten des späteren Schritts KP-S4 nicht.
+            foreach ((string tabelle, string spalte, string _) in AufheizManuellSchema.SPALTEN)
+                if (tabelle == "Tab_ErgebnisGebaeude" || tabelle == "Tab_ErgebnisZone")
+                    DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
             foreach (string sp in SPALTEN_GEBAEUDE)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_ErgebnisGebaeude\" DROP COLUMN \"" + sp + "\"");
             foreach (string sp in SPALTEN_ZONE)
@@ -409,9 +417,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_Einstellungen') " +
                                               "WHERE name = 'Aufheizoptimierung' AND type = 'INTEGER' AND \"notnull\" = 1 " +
                                               "AND dflt_value = '0'"));
-            Assert.Equal(4L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_Einstellungen') " +
+            // Dazu die zwei des Aufschlags (KP-S4), ebenso nullbar.
+            Assert.Equal(6L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_Einstellungen') " +
                                               "WHERE name LIKE 'Aufheiz\\_%' ESCAPE '\\' AND \"notnull\" = 0 AND dflt_value IS NULL"));
-            Assert.Equal(14L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_ErgebnisGebaeude') " +
+            // Dazu Aufheiz_Art und Aufheizzuschlag_Kw des Schritts KP-S4.
+            Assert.Equal(16L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_ErgebnisGebaeude') " +
                                                "WHERE (name LIKE 'Aufheiz%' OR name = 'HeizleistungMax_H') AND \"notnull\" = 0"));
             Assert.Equal(1L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_ErgebnisZone') " +
                                               "WHERE name = 'Sommerlueftungsstunden_H' AND type = 'INTEGER'"));

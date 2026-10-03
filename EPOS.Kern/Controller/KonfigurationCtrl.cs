@@ -911,31 +911,47 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Aufheizoptimierung eines Projekts — DIALOGFREI und NULL-ERHALTEND gelesen, in EINER
-        /// Abfrage der fünf Spalten (<see cref="AufheizvorgabeSchema"/>). <b>Fehlende Zeile, fehlende
-        /// Spalte und ein unlesbarer Satz heißen „aus"</b> (<see cref="Aufheizvorgabe.Aus"/>); ein
-        /// Schalter auf 0 behält die übrigen Werte (Festlegung 24). Die Werte durchlaufen die
-        /// Normalisierung des Records.
+        /// Abfrage der fünf Spalten (<see cref="AufheizvorgabeSchema"/>) und — wo sie stehen — der zwei
+        /// Spalten des Aufschlags (<see cref="AufheizManuellSchema"/>, E59). <b>Fehlende Zeile, fehlende
+        /// Spalte und ein unlesbarer Satz heißen „aus"</b> (<see cref="Aufheizvorgabe.Aus"/>); fehlen nur
+        /// die Aufschlagspalten, gilt kein Aufschlag. Ein Schalter auf 0 behält die übrigen Werte
+        /// (Festlegungen 24, 36). Die Werte durchlaufen die Normalisierung des Records.
         /// </summary>
         public static Aufheizvorgabe AufheizvorgabeLesen(int idProjekt)
         {
             if (idProjekt <= 0) return Aufheizvorgabe.Aus;
 
+            bool mitAufschlag = AufschlagspaltenVorhanden();
             DataTable dt = StilleDb.Tabelle(
                 "SELECT [" + AufheizvorgabeSchema.SPALTE_SCHALTER + "], [" + AufheizvorgabeSchema.SPALTE_BEMESSUNG +
                 "], [" + AufheizvorgabeSchema.SPALTE_ABZUG + "], [" + AufheizvorgabeSchema.SPALTE_RESERVE +
-                "], [" + AufheizvorgabeSchema.SPALTE_ART + "] " +
-                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                "], [" + AufheizvorgabeSchema.SPALTE_ART + "]" +
+                (mitAufschlag
+                    ? ", [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_H + "], [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT + "]"
+                    : "") +
+                " FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < AufheizvorgabeSchema.SPALTEN.Count)
                 return Aufheizvorgabe.Aus;
 
             DataRow r = dt.Rows[0];
+            double? aufschlagH = mitAufschlag && dt.Columns.Count > 6 ? HeizgrenzeOderLeer(r[5]) : null;
             return new Aufheizvorgabe(
                 WahrOderFalsch(r[0]),
                 TextOderLeer(r[1]),
                 HeizgrenzeOderLeer(r[2]),
                 HeizgrenzeOderLeer(r[3]),
-                TextOderLeer(r[4]));
+                TextOderLeer(r[4]),
+                aufschlagH.HasValue ? (int?)Math.Round(aufschlagH.Value) : null,
+                mitAufschlag && dt.Columns.Count > 6 ? HeizgrenzeOderLeer(r[6]) : null);
+        }
+
+        /// <summary>Stehen die zwei Spalten des Aufschlags (Schemaschritt KP-S4)?</summary>
+        private static bool AufschlagspaltenVorhanden()
+        {
+            HashSet<string> spalten = StilleDb.SpaltenNamen(AufheizManuellSchema.TAB_EINSTELLUNGEN);
+            return spalten != null && spalten.Contains(AufheizManuellSchema.SPALTE_AUFSCHLAG_H)
+                                   && spalten.Contains(AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT);
         }
 
         /// <summary>
@@ -945,6 +961,9 @@ namespace WindowsFormsApplication1
         /// Geschrieben wird die normalisierte Form des Records (Festlegung 24): der Schalter als 0/1,
         /// (a) und „täglich" als NULL, ein leeres Zahlenfeld als NULL, ein getippter Wert, wie er ist.
         /// Ein Wert außerhalb der Prüfklauseln scheitert an der Spalte und liefert <c>false</c>.
+        /// Der Aufschlag (E59) geht in derselben Anweisung mit, 0 und leer als NULL (Festlegung 36); auf
+        /// einer Datei ohne seine Spalten schreibt der Weg die fünf Spalten, solange kein Aufschlag gesetzt
+        /// ist — mit Aufschlag liefert er <c>false</c>.
         ///
         /// Rückgabe <c>false</c> ohne Einstellung (<c>null</c>), wenn keine Zeile getroffen wurde oder
         /// eine Spalte fehlt.
@@ -953,17 +972,32 @@ namespace WindowsFormsApplication1
         {
             if (idProjekt <= 0 || vorgabe == null) return false;
 
-            int betroffen = StilleDb.NonQuery(
-                "UPDATE Tab_Einstellungen SET [" + AufheizvorgabeSchema.SPALTE_SCHALTER + "] = ?, [" +
-                AufheizvorgabeSchema.SPALTE_BEMESSUNG + "] = ?, [" + AufheizvorgabeSchema.SPALTE_ABZUG + "] = ?, [" +
-                AufheizvorgabeSchema.SPALTE_RESERVE + "] = ?, [" + AufheizvorgabeSchema.SPALTE_ART + "] = ? " +
-                "WHERE ID_Projekt = ?",
+            bool mitAufschlag = AufschlagspaltenVorhanden();
+            if (!mitAufschlag && vorgabe.HatAufschlag) return false;
+            var parameter = new List<DbParam>
+            {
                 StilleDb.Par("@an", DbParamTyp.Integer, vorgabe.An ? 1 : 0),
                 StilleDb.Par("@bemessung", DbParamTyp.VarWChar, (object)vorgabe.Bemessung ?? DBNull.Value),
                 StilleDb.Par("@abzug", DbParamTyp.Double, (object)vorgabe.AbzugK ?? DBNull.Value),
                 StilleDb.Par("@reserve", DbParamTyp.Double, (object)vorgabe.Reserve ?? DBNull.Value),
                 StilleDb.Par("@art", DbParamTyp.VarWChar, (object)vorgabe.Art ?? DBNull.Value),
-                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            };
+            if (mitAufschlag)
+            {
+                parameter.Add(StilleDb.Par("@aufschlagH", DbParamTyp.Integer, (object)vorgabe.AufschlagH ?? DBNull.Value));
+                parameter.Add(StilleDb.Par("@aufschlagP", DbParamTyp.Double, (object)vorgabe.AufschlagProzent ?? DBNull.Value));
+            }
+            parameter.Add(StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + AufheizvorgabeSchema.SPALTE_SCHALTER + "] = ?, [" +
+                AufheizvorgabeSchema.SPALTE_BEMESSUNG + "] = ?, [" + AufheizvorgabeSchema.SPALTE_ABZUG + "] = ?, [" +
+                AufheizvorgabeSchema.SPALTE_RESERVE + "] = ?, [" + AufheizvorgabeSchema.SPALTE_ART + "] = ?" +
+                (mitAufschlag
+                    ? ", [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_H + "] = ?, [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT + "] = ?"
+                    : "") +
+                " WHERE ID_Projekt = ?",
+                parameter.ToArray());
 
             return betroffen > 0;
         }

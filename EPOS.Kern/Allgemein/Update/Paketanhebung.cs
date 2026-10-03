@@ -269,8 +269,10 @@ namespace WindowsFormsApplication1
             // Dieselben Katalogspalten an den übrigen Katalogen; ein Paket führt keine Kataloge.
             new Stufe(KatalogfassungStufe2Schema.SCHRITT, Art.Katalog,
                       "Katalogfassung der übrigen Kataloge (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze)"),
+            new Stufe(AufheizManuellSchema.SCHRITT, Art.Ddl,
+                      "Aufschlag und manuelle Aufheizzeit der Aufheizoptimierung, Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, Zustand GEKOPPELT der Zone"),
             // Ein älteres Paket bringt keine Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben
-            // mit; das Projekt liest den Katalog des Ziels, bis der Abgleich oder der Projektdialog sie anlegt.
+            // mit; die Projektanlage und der Paketimport legen sie aus dem Katalog des Ziels an.
             new Stufe(ProjektkopienKatalogeSchema.SCHRITT, Art.Ddl,
                       "Projektkopien der Brennstoffe und der Vorgaben der Pufferauslegung"),
         };

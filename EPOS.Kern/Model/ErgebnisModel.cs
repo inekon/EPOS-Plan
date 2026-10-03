@@ -184,6 +184,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die Bemessungsvariante des Laufs (<see cref="DbWerte.AUFHEIZ_BEMESSUNGEN"/>) — der Bericht liest nicht die Projekteinstellung.</summary>
         public string AufheizBemessung;
 
+        /// <summary>
+        /// Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>, E59, Schritt KP-S4): MANUELL mit manueller
+        /// Aufheizzeit des Gebäudes (dann ist <see cref="AufheizzeitMaxH"/> der manuelle Wert), sonst die Art des
+        /// Projekts; <c>null</c> bei GEKOPPELT und ohne Aufheizrechnung.
+        /// </summary>
+        public string AufheizArt;
+
+        /// <summary>Φ_HL — die stationäre Auslegungsheizlast [kW], skaliert wie P_auf (E60, Festlegung 41); <c>null</c> ohne Herleitung.</summary>
+        public double? AuslegungsheizlastKw;
+
+        /// <summary>Φ_RH — der Aufheizzuschlag max(0, P_auf − Φ_stat) [kW], skaliert wie P_auf (E60, Festlegung 41).</summary>
+        public double? AufheizzuschlagKw;
+
         /// <summary>t_auf,max — die bemessene Aufheizzeit [h], 0 bis 47; <c>null</c> auch bei UNERREICHBAR.</summary>
         public int? AufheizzeitMaxH;
 
@@ -291,10 +304,13 @@ namespace WindowsFormsApplication1
         // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
 
         /// <summary>
-        /// Der Zustand der Aufheizrechnung (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c> ohne GEKOPPELT, Festlegung 25); <c>null</c> heißt
-        /// „Schalter aus" oder Tagesbilanz-Weg — dann sind alle Aufheizwerte <c>null</c> (Grundsatz 4).
+        /// Der Zustand der Aufheizrechnung (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c>, Festlegung 25; GEKOPPELT ab Schritt KP-S4);
+        /// <c>null</c> heißt „Schalter aus" oder Tagesbilanz-Weg — dann sind alle Aufheizwerte <c>null</c> (Grundsatz 4).
         /// </summary>
         public string AufheizZustand;
+
+        /// <summary>Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>) — die Art des Gebäudes (E59, Festlegung 39).</summary>
+        public string AufheizArt;
 
         /// <summary>t_auf,max — die bemessene Aufheizzeit [h], 0 bis 47; <c>null</c> auch bei UNERREICHBAR.</summary>
         public int? AufheizzeitMaxH;

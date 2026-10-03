@@ -1,6 +1,6 @@
 # Protokoll KP3 — Aufheizoptimierung, Ergebnisse, Referenzprojekt und neue Basis der Konditionierungsprofile
 
-**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4, D2 gebaut; die Basis heißt R34, weil R31, R32 und R33 am 02.10.2026 für die Rechenwegbefunde, die Solarthermie und die Viertelstunden vergeben wurden).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
+**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4, D2, R5 gebaut; die Basis heißt R34, weil R31, R32 und R33 am 02.10.2026 für die Rechenwegbefunde, die Solarthermie und die Viertelstunden vergeben wurden).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
 (zwölf Wellen in vier Spuren, Festlegungen nach der Umsetzung als N1.69), Entscheid E58 (Leitkonzept N1.67, Teilkonzept 9.8),
 Entscheide E59 und E60 (Leitkonzept N1.68, Teilkonzept 9.9),
 [Protokoll KP2](2026-09-30_KP2_Konditionierung_Oberflaeche.md). Je Welle ein Agent im eigenen Worktree mit eigenem Gate
@@ -169,12 +169,32 @@ kalenderbezogen an Rampen mit n > 1; P17 (b) — Auslegungsgröße = Auslegungsh
 - Commits `ed7bf075` (Ergebniszeile), `33ea28be` (Export), `bdd08341` (Auskunft, Herleitungszeile), `7fb53e94` (Hinweis), `5ac9377e` (N-AH7);
   Gate 670 im Worktree.
 
+### R5 — Aufschlag und manuelle Aufheizzeit (E59), Schemaschritt 174
+
+- **Schema KP-S4** `AufheizManuellSchema` (`SCHRITT = KatalogfassungStufe2Schema.SCHRITT + 1` = 174): `Tab_Einstellungen.Aufheiz_Aufschlag_H` (INTEGER 0–24) und
+  `Aufheiz_Aufschlag_Prozent` (REAL 0–100), `Tab_Gebaeude.Aufheizzeit_Manuell_H` (INTEGER 1–47, nur Projektgebäude), `Aufheiz_Art` TEXT
+  TAEGLICH/FEST/MANUELL per ADD COLUMN an `Tab_ErgebnisGebaeude` und `Tab_ErgebnisZone`, E60-Spalten `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw`,
+  GEKOPPELT im CHECK von `Tab_ErgebnisZone` (kleiner Neubau), `Abfrage_Projektgebaeude` neu (103 Spalten); `DbWerte`, `SchemaStand`, `Paketanhebung`,
+  Schalen-Migration, `Werkzeuge/Testdatenbankschema`, `TestDatenbank.cs`; Testdatenbank 174 (81 412 096 Byte, LFS `e85c3bdb…`), LIESMICH-Nachtrag.
+- **Record `Aufheizvorgabe`:** `AufschlagH`/`AufschlagProzent` (0 und leer → NULL), `KonfigurationCtrl` Lesen/Schreiben nach Vorhandensein der Spalten.
+- **Rechenweg:** n' = min(48, n + max(AufschlagH, ⌈n·p/100⌉)) nur auf Rampen, die ein Kalendersprung auslöst (n > 1; P16), Aufrundung über `Rechenrand.Zu`;
+  Begrenzung D + 1, W2 zählt mit n'; manuelle Zeit t: n = t + 1 an jedem Sprung, Fenstergrenze W = min(D, t + 1), Bemessung läuft weiter (Herleitung),
+  Aufschlag wirkt nicht auf t; Zonen erben; Katalogkopie NULL, Duplikat und Variante kopieren; Eingangsbauer lehnt t außerhalb 1–47 benannt ab.
+- **Ergebnis, Kennzahlen, Export, Auskunft:** `Aufheiz_Art` (NULL bei GEKOPPELT/UNBEHEIZT), Zuschlag = max(0, P_auf − Φ_stat(θ_T,max, T_a,B)), bei W1 0,
+  skaliert wie P_auf, Mehrzonen als Summe; Φ_HL aus `GebaeudeModellEingang.AuslegungsheizlastW` (NULL ohne Übergabe); Zonenzeile schreibt GEKOPPELT;
+  Export `Geb[n].Aufheizart` (nur Gebäude) und `Geb[n].Aufheizzeit_Manuell` nur gesetzt, E60-Werte nicht im Export (kein Schlüssel im Papier);
+  `Aufheizauskunft` mit `Art`, `AufheizzeitManuellH`, `Tau2H`; `GebaeudeExportVerluste` stuft `Aufheizzeit_Manuell_H` als benannten Verlust ein.
+- **Tests:** `AufheizManuellSchemaTests` (Kette, Reihenfolgeanker), `AufheizvorgabeTests`, `AufheizAufschlagTests` (N-AH11), `AufheizManuellTests` (N-AH12),
+  neun Bestandstests mit Spaltenzahlen nachgezogen; `AnlagenkopplungDialogKernTests` führt das Projektfeld.
+- Commits `a894c495`, `34ec3418` (173, vor dem Umhängen), `b03bf720`, `6030b1a8`, `f5c8bb42`, Merge `863419b2`, `3107548f` (Testdatenbank 174); Gate 682 und 686.
+
 ## 3. Schemaschritte
 
 | Schritt | Klasse | Inhalt | Testdatenbank |
 |---|---|---|---|
 | 160 | `AufheizvorgabeSchema` | `Aufheizoptimierung`, `Aufheiz_Bemessung`, `Aufheiz_Abzug_K`, `Aufheiz_Reserve`, `Aufheiz_Art` an `Tab_Einstellungen` | 161 (`117f44f9`) |
 | 161 | `AufheizErgebnisSchema` | 14 Ergebnisspalten je Gebäude und Zone, `Sommerlueftungsstunden_H` an der Zone | 161 |
+| 174 | `AufheizManuellSchema` | Aufschläge am Projekt, manuelle Aufheizzeit am Gebäude, `Aufheiz_Art` und E60-Spalten im Ergebnis, GEKOPPELT an der Zone, Sicht neu | 174 (`3107548f`) |
 
 ## 4. Befunde der Umsetzung
 
@@ -224,6 +244,11 @@ kalenderbezogen an Rampen mit n > 1; P17 (b) — Auslegungsgröße = Auslegungsh
   Schemanachtrag mit dem E59-Schritt (R5). **B14 bleibt für die Übergabe-Auskunft (H10) offen:** `UebergabeEingang`/`KuehluebergabeEingang`
   bauen ohne Konditionierungssatz. **B11:** mit Verbrauchsangabe bleibt der Faktor bis zum Lauf offen.
 
+- **O1b-Datenverlust (R5):** `SimulationKonfigSeite.razor` baut die `Aufheizvorgabe` bei jeder Feldänderung mit fünf Argumenten neu; ein gespeicherter
+  Aufschlag fiele still auf NULL zurück — O1b reicht `AufschlagH`/`AufschlagProzent` in allen Settern und in `SimulationKiSicht` durch. **O2:**
+  `GebaeudeStammCtrl.SET_SPALTEN` führt `Aufheizzeit_Manuell_H` nicht (Setzweg fehlt). **Auslegungsheizlast ohne Übergabe NULL** (O2/O3).
+  `BETRIEB_SQLITE.md` 6.5 nennt noch 172 (Welle A).
+
 ## 5. Festlegungen der Wellen (für N1.69)
 
 - R1: Index 1 der schnelle, Index 2 der langsame Modus (Teilkonzept 4.2); im zusammenfallenden Zweig r_k, C_k NaN, τ₁ = τ₂ =
@@ -263,6 +288,10 @@ kalenderbezogen an Rampen mit n > 1; P17 (b) — Auslegungsgröße = Auslegungsh
   Heizkalender oder Aufheizung ≠ null; Faktor der Auskunft (Fläche wie der Lauf, Zone 1, Verbrauch `null`); feste Nennleistung geht nicht
   ein; C_w nicht in der Herleitungszeile; Hinweis Verbrauchsangabe nur bei geplantem Zustand mit Rampentag; `AufheizBemessung` nur am Gebäude.
 
+- R5: manuelle Zeit ersetzt auch die Fenstergrenze W = min(D, t + 1); Aufrundung ⌈n·p/100⌉ trägt `Rechenrand.Zu`; `Aufheiz_Art` NULL bei GEKOPPELT und
+  UNBEHEIZT; Export `Aufheizart` nur am Gebäude; E60-Werte nicht im Export; Auskunft behält Zustand und t_auf,max der Bemessung, die Ergebniszeile hat bei
+  MANUELL Zustand BEMESSEN mit t; Eingangsbauer lehnt t außerhalb 1–47 ab; Sicht `Abfrage_Projektgebaeude` neu gebaut (Festlegung 43), `Tab_ErgebnisGebaeude` nicht.
+
 ## 6. Nachweise
 
 | Nachweis | Ergebnis |
@@ -297,6 +326,9 @@ kalenderbezogen an Rampen mit n > 1; P17 (b) — Auslegungsgröße = Auslegungsh
 | Sommerlüftung NULL (D2) | ohne Sommerlüftung NULL (1039, 1018, 1007) in Zeile und Auskunft; mit Sommerlüftung die Zahl des Modells, auch je Zone |
 | Abnahme D2 im Worktree (`5ac9377e`, Gate 670) | Kern-Filter 0 Fehler, ChartProben JA (200), Kern 10 116 (1 übersprungen), UI 7 284, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R31**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer ohne Abweichung, beide `.resx` je 13 688 Einträge ohne Dubletten, SqlDialektPruefer 2 151 Texte 0 Fundstellen |
 | Gate im Hauptbaum nach dem Merge D2 (`221da584`, Basis **R33**, Testdatenbank 170) | Kern-Filter 0 Fehler, ChartProben gleich der Messlatte (200), Kern 10 281 (1 übersprungen), UI 7 320, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen) — alle grün, Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R33**, gestörter Lauf PASS, Windows-Schale 0 Fehler, Designer unverändert (13 863 Einträge), kein BOM in Markdown, kein Konfliktmarker |
+| N-AH11 Aufschlag (R5) | Formel n = 4: (0,0)→4, (2,0)→6, (0,50)→6, (2,50)→6, (3,50)→7, (1,75)→7, (24,100)→28; Aufrundung 30 % → 6, ganzzahlige Anteile ohne weitere Rundung; Deckel 48 bei (24,100) mit n = 30 und (0,100) mit n = 47; n = 1 bleibt 1; Zone D = 8: n' höchstens 9, W2 = 365 genau am Deckel D + 1, Bemessung, t_auf,max, Rampentage, W1, W4 unverändert; kein Aufschlag ohne Sprung; Büro-Montag D = 61: 30 → 48; (0,0) und NULL = ohne Felder, Schalter aus bitgleich (1018); 1018 mit (2,50): 19 Rampentage, 34 → 74 Rampenstunden, längste Rampe 5 → 8 h; Mehrzonen je Zone, Keller UNBEHEIZT; N-AH8 grün |
+| N-AH12 manuell (R5) | t ∈ {1, 5, 47} mit/ohne Aufschlag, täglich/fest: n = 2, 6, 9 (47 begrenzt D), BEMESSEN, MANUELL, kein W1, Bemessung identisch; unerreichbare Bemessung rampt mit t + 1, 0 W1-Tage (ohne Wert 365), Zuschlag 0; Deckel am Montag 47 → 48; AK1 bleibt W5; Dreizonengebäude t = 5: 730 Sprünge, 1 825 h (ohne 2 920 h); 1018 ohne Wert TAEGLICH 5 h/19 Tage/34 h, mit t = 5: 365 Tage, 1 825 h, τ₂ 3,91 h, P_auf 34,64 kW, Zuschlag 5,77 kW, Φ_HL NULL (keine Übergabe); Export nur gesetzt; Datenbank-Rundreise mit GEKOPPELT an der Zone; Katalogkopie NULL, Duplikat und Variante 7 |
+| Abnahme R5 im Worktree (`3107548f`, Gate 686; Gate 682 auf `f5c8bb42` vor dem Umhängen) | Kern-Filter 0 Fehler, ChartProben JA (200), Kern 10 428 (1 übersprungen), UI 7 357, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), Wachen 35/35, Referenzlauf 16/16 **PASS, 487/487 CSV byte-gleich gegen R33**, gestörter Lauf PASS, SqlDialektPruefer 2 255 Texte 0 Fundstellen, Windows-Schale 0 Fehler, Designer unverändert, `Auslieferungsvorlage.Tests` 47/47 |
 ## 7. Offen
 
 - ~~R2~~, ~~R3~~, ~~R4~~ erledigt (siehe Abschnitt 2); R3 war (Mehrzonen): Nachbarform von `AequivalentN` (B4), Luftkopplungen in Φ_stat, `Aufheizzone.Aus` für gekoppelte Zonen, θ_T,max je Zone (B5), Zustand UNBEHEIZT, Einbau am Ende von `ZonenEingang.Bauen` in beiden Aufbauten, Gebäudewerte nach Festlegung 22, `LetzterAufheizplan` im Mehrzonenweg. **R4:** Pläne und `Aufheizgebaeude` in `GebaeudeModellErgebnis` samt `Skaliert` und Zonen, `HeizleistungMaxStundenH` aus den Kappungsanteilen beider Jahresschleifen, W3 je Zone und Gebäude, vereinigte Rampenmaske in `NutzungBei`, Laufhinweise auch im Mehrzonenweg, Rücksetzen von `LetztesMehrzonenergebnis` bei Fehler entscheiden; G6d: echte Zonenkalender in der Testdatenbank für N-AH8 mit Zonen. Aus dem Wortlaut R4: P_auf skalieren (Festlegung 16), W3 aus den Sprüngen über [h_s − n + 1, h_s + 2], Kappungsreihe in beiden Jahresschleifen, Rampenmaske in `NutzungBei`, Laufhinweise `SIMENG_AUFH_W1…W5`. Aus R2 übernommen: `_vdi6007.Aufheizvorgabe = AufheizvorgabeProjekt` neben `Kuehlbetrieb`; W1 und Deckel aus
