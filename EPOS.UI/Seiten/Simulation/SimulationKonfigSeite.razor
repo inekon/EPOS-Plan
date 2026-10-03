@@ -507,6 +507,41 @@
                     </Formularraster>
                 </section>
             }
+
+            @* „Thermische Desinfektion" (Welle M7, BW5): Schalter, Intervall, Stunde, Zieltemperatur und
+               Volumen schreiben SOFORT die ganze Einstellung (DesinfektionSchreiben); leer heisst die
+               Vorgabe. Scheitert das Schreiben, kehrt der Abschnitt zurueck (@key). *@
+            @if (Parameter.DesinfektionSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-desinfektion" aria-label="@Resource.SIMKONF_GRP_DESINFEKTION">
+                    <Formularraster Einspaltig="true" @key="_desinfektionSchluessel">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@Resource.SIMKONF_LBL_DESINFEKTION" Wert="@Desinfektion.Aktiv"
+                                      Aktiv="@(!_daten.Gesperrt)" WertChanged="DesinfektionSchalterGesetzt" />
+                            @if (Desinfektion.Aktiv)
+                            {
+                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_INTERVALL" Einheit="d"
+                                              Wert="@Desinfektion.IntervallTage" Min="1" Max="31"
+                                              Platzhalter="7" Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="w => DesinfektionSchreiben(Desinfektion with { IntervallTage = w })" />
+                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_STUNDE" Einheit="h"
+                                              Wert="@Desinfektion.Stunde" Min="0" Max="23"
+                                              Platzhalter="2" Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="w => DesinfektionSchreiben(Desinfektion with { Stunde = w })" />
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_ZIEL" Einheit="°C"
+                                            Wert="@Desinfektion.ZielC" Min="55" Max="90"
+                                            Platzhalter="70" Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="w => DesinfektionSchreiben(Desinfektion with { ZielC = w })" />
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_VOLUMEN" Einheit="l"
+                                            Wert="@Desinfektion.VolumenL" Min="0" Max="100000"
+                                            Platzhalter="@Resource.SIMKONF_DESINF_VOLUMEN_LEER" Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="w => DesinfektionSchreiben(Desinfektion with { VolumenL = w })" />
+                            }
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_DESINFEKTION" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
         </fieldset>
     }
 
@@ -1375,6 +1410,45 @@
         {
             _einspeisegrenzeSchluessel++;
             Melden(Resource.SIMKONF_EINSPEISEGRENZE_FEHLER, WarnStufe.Warnung);
+        }
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5)
+    // =====================================================================
+
+    /// <summary>Schlüssel des Abschnitts — er wechselt, wenn ein Schreiben scheitert.</summary>
+    private int _desinfektionSchluessel;
+
+    private WindowsFormsApplication1.Desinfektionsvorgabe Desinfektion
+        => _parameter.Desinfektion ?? WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
+
+    private void DesinfektionSchalterGesetzt(bool an)
+        => DesinfektionSchreiben(Desinfektion with { Aktiv = an });
+
+    /// <summary>
+    /// Schreibt die ganze Vorgabe; ein Wert außerhalb der Grenzen wird benannt abgelehnt
+    /// (<c>Desinfektionsvorgabe.Pruefen</c>), ein gescheitertes Schreiben setzt den Abschnitt zurück.
+    /// </summary>
+    private void DesinfektionSchreiben(WindowsFormsApplication1.Desinfektionsvorgabe neu)
+    {
+        if (Parameter?.DesinfektionSchreiben is null) return;
+        string? fehler = WindowsFormsApplication1.Desinfektionsvorgabe.Pruefen(neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (fehler != null)
+        {
+            _desinfektionSchluessel++;
+            Melden(fehler, WarnStufe.Warnung);
+            return;
+        }
+        var normal = new WindowsFormsApplication1.Desinfektionsvorgabe(neu.Aktiv, neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (Parameter.DesinfektionSchreiben(normal))
+        {
+            _parameter.Desinfektion = normal;
+        }
+        else
+        {
+            _desinfektionSchluessel++;
+            Melden(Resource.SIMKONF_DESINFEKTION_FEHLER, WarnStufe.Warnung);
         }
     }
 

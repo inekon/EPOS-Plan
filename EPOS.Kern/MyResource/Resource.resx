@@ -42046,5 +42046,119 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="SIMENG_DESINF_HEIZSTAB" xml:space="preserve">
     <value>Heizstab</value>
   </data>
+  <data name="PSP_GRUPPE_OPTIONEN" xml:space="preserve">
+    <value>Bereitschaft und Frischwassermodul</value>
+  </data>
+  <data name="PSP_LABEL_BEREITSCHAFT_WEG" xml:space="preserve">
+    <value>Bereitschaftsverlust:</value>
+  </data>
+  <data name="PSP_BEREITSCHAFT_TAG" xml:space="preserve">
+    <value>Tageswert anteilig zum Füllstand</value>
+  </data>
+  <data name="PSP_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>nach Temperatur je Zone</value>
+  </data>
+  <data name="PSP_LABEL_AUFSTELLRAUM" xml:space="preserve">
+    <value>Aufstellraum:</value>
+  </data>
+  <data name="PSP_HINWEIS_AUFSTELLRAUM" xml:space="preserve">
+    <value>Nur beim Weg nach Temperatur: H = Q_B · 1000 / (24 · 45 K), je Zone H · a_i · (ϑ_i − ϑ_Raum); leer = 20 °C.</value>
+  </data>
+  <data name="PSP_LABEL_SCHICHT_ANTEILE" xml:space="preserve">
+    <value>Zonenanteile von oben:</value>
+  </data>
+  <data name="PSP_BTN_VORSCHLAG_KOMBI" xml:space="preserve">
+    <value>Vorschlag Kombispeicher</value>
+  </data>
+  <data name="PSP_HINWEIS_ANTEILE" xml:space="preserve">
+    <value>Volumenanteile durch Semikolon getrennt, Summe 1; leer = gleich große Zonen. Vorschlag Kombispeicher: 0,10;0,16;0,37;0,37 (vier Zonen).</value>
+  </data>
+  <data name="PSP_LABEL_FRISCHWASSERMODUL" xml:space="preserve">
+    <value>Frischwassermodul</value>
+  </data>
+  <data name="PSP_LABEL_FWM_GRAEDIGKEIT" xml:space="preserve">
+    <value>Grädigkeit Frischwassermodul:</value>
+  </data>
+  <data name="PSP_HINWEIS_FWM" xml:space="preserve">
+    <value>Brauchwasser aus der obersten Zone nur ab Zapftemperatur + Grädigkeit; sonst deckt die nächste Stufe der Kaskade. Leer = 5 K.</value>
+  </data>
+  <data name="PSP_HINWEIS_UEBERTRAGER" xml:space="preserve">
+    <value>Übertrager: Leistung als Entladegrenze eintragen.</value>
+  </data>
+  <data name="PSP_FEHLER_AUFSTELLRAUM" xml:space="preserve">
+    <value>Der Aufstellraum muss zwischen 0 und 35 °C liegen.</value>
+  </data>
+  <data name="PSP_FEHLER_FWM_GRAEDIGKEIT" xml:space="preserve">
+    <value>Die Grädigkeit des Frischwassermoduls muss zwischen 0 und 20 K liegen.</value>
+  </data>
+  <data name="PSP_FEHLER_ANTEILE" xml:space="preserve">
+    <value>Zonenanteile: {0}</value>
+  </data>
+  <data name="KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Wahr = Bereitschaftsverlust je Zone nach Temperatur (H aus dem Bereitschaftswert bei 45 K, gegen den Aufstellraum); falsch = Tageswert anteilig zum Füllstand.</value>
+  </data>
+  <data name="KI_DLG_PSPV_AUFSTELLRAUM_ERL" xml:space="preserve">
+    <value>Temperatur des Aufstellraums für den Bereitschaftsverlust nach Temperatur, 0 bis 35 °C; leer = 20 °C.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ANTEILE_ERL" xml:space="preserve">
+    <value>Volumenanteile der Zonen von oben, durch Semikolon getrennt, Summe 1, Anzahl gleich der Schichtenzahl; leer = gleich große Zonen.</value>
+  </data>
+  <data name="KI_DLG_PSPV_FWM_ERL" xml:space="preserve">
+    <value>Wahr = Brauchwasser über ein Frischwassermodul aus der obersten Zone, nur ab Zapftemperatur plus Grädigkeit.</value>
+  </data>
+  <data name="KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Grädigkeit des Frischwassermoduls, 0 bis 20 K; leer = 5 K.</value>
+  </data>
+  <data name="SIMKONF_GRP_DESINFEKTION" xml:space="preserve">
+    <value>Thermische Desinfektion</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINFEKTION" xml:space="preserve">
+    <value>Thermische Desinfektion</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_INTERVALL" xml:space="preserve">
+    <value>Intervall:</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_STUNDE" xml:space="preserve">
+    <value>Uhrzeit (Stunde):</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_ZIEL" xml:space="preserve">
+    <value>Zieltemperatur:</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_VOLUMEN" xml:space="preserve">
+    <value>Volumen:</value>
+  </data>
+  <data name="SIMKONF_DESINF_VOLUMEN_LEER" xml:space="preserve">
+    <value>Brauchwasserspeicher</value>
+  </data>
+  <data name="SIMKONF_HRL_DESINFEKTION" xml:space="preserve">
+    <value>Zusatzbedarf je Ereignis Q = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) im Brauchwasserkanal, gedeckt vom Erzeuger, der die Zieltemperatur erreicht, sonst vom Heizstab oder als Zusatzstrom. Leer: alle 7 Tage um 2 Uhr, 70 °C, Volumen der Brauchwasserspeicher.</value>
+  </data>
+  <data name="SIMKONF_DESINFEKTION_FEHLER" xml:space="preserve">
+    <value>Die thermische Desinfektion konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_SIM_DESINFEKTION_ERL" xml:space="preserve">
+    <value>Wahr = thermische Desinfektion des Brauchwassers im Lauf (Zusatzbedarf in der gewählten Stunde).</value>
+  </data>
+  <data name="KI_SIM_DESINF_INTERVALL_ERL" xml:space="preserve">
+    <value>Abstand zweier Desinfektionen in Tagen, 1 bis 31; leer = 7.</value>
+  </data>
+  <data name="KI_SIM_DESINF_STUNDE_ERL" xml:space="preserve">
+    <value>Stunde des Tages, in der die Desinfektion läuft, 0 bis 23; leer = 2.</value>
+  </data>
+  <data name="KI_SIM_DESINF_ZIEL_ERL" xml:space="preserve">
+    <value>Zieltemperatur der Desinfektion, 55 bis 90 °C; leer = 70 °C.</value>
+  </data>
+  <data name="KI_SIM_DESINF_VOLUMEN_ERL" xml:space="preserve">
+    <value>Aufgeheiztes Volumen in Litern, 0 bis 100 000; leer = Volumen der Speicher, die Brauchwasser führen.</value>
+  </data>
+  <data name="BERG_LBL_DAVON_DESINFEKTION" xml:space="preserve">
+    <value>davon thermische Desinfektion:</value>
+  </data>
+  <data name="PSP_ERG_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>{0}: Bereitschaftsverlust nach Temperatur je Zone.</value>
+  </data>
+  <data name="PSP_ERG_FWM_STUNDEN" xml:space="preserve">
+    <value>{0}: Frischwassermodul – {1} Stunden ohne ausreichende Puffertemperatur; dort deckt die nächste Stufe der Kaskade.</value>
+  </data>
 </root>
 

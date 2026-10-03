@@ -105,6 +105,15 @@ namespace WindowsFormsApplication1
                         k.F(nv.ZirkulationLeistungKw.Value, 1) + " kW · " + k.F(nv.ZirkulationLaufzeitHd.Value, 1) +
                         " h/d = " + k.F(Energieeinheit.MWh.AusKWh(nv.ZirkulationJahresKwh), 1) + " MWh/a");
 
+                // BW5: die thermische Desinfektion - nur, wenn das Projekt sie fuehrt.
+                Desinfektionsvorgabe dv = stamm.Details?.Desinfektion;
+                if (dv != null && dv.Aktiv)
+                    k.Eigenschaften(
+                        "Thermische Desinfektion",
+                        k.F(dv.IntervallWirksam, 0) + " d · " + k.F(dv.StundeWirksam, 0) + " h · " +
+                        k.F(stamm.Details.DesinfektionVolumenL, 0) + " l · " + k.F(dv.ZielWirksamC, 0) + " °C = " +
+                        k.F(stamm.Details.DesinfektionMwh, 2) + " MWh/a");
+
                 k.Ueberschrift2("Deckungsgrade je Bedarfsart");
                 k.Eigenschaften(
                     "Deckungsgrad Heizung", DeckungWert(k, stamm, "energie.deckung_heizung"),

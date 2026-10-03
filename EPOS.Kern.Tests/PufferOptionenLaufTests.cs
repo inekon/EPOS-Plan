@@ -64,6 +64,45 @@ namespace EPOS.Kern.Tests
                                          new DbParam("@w", wert ?? DBNull.Value), new DbParam("@p", projekt));
 
         /// <summary>
+        /// Schreib- und Lesewege: Die Optionen gehen über <c>PufferSpCtrl.SchichtdatenSchreiben</c> hin und
+        /// kommen über <c>SchichtdatenLesen</c> zurück; leer schreibt NULL. Die Desinfektion geht über
+        /// <c>KonfigurationCtrl.DesinfektionSetzen</c> hin und über <c>DesinfektionLesen</c> zurück.
+        /// </summary>
+        [Fact]
+        public void Optionen_und_Desinfektion_gehen_hin_und_zurueck()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            PufferSpCtrl.Schichtdaten d = PufferSpCtrl.SchichtdatenLesen(PUFFER_1049);
+            Assert.True(d.OptionenLeer);
+            d.Schichten = 4;
+            d.BereitschaftWeg = DbWerte.PSP_BEREITSCHAFT_TEMPERATUR;
+            d.AufstellraumC = 15;
+            d.SchichtAnteile = "0,10;0,16;0,37;0,37";
+            d.Frischwassermodul = true;
+            d.FwmGraedigkeitK = 7;
+            Assert.True(PufferSpCtrl.SchichtdatenSchreiben(PUFFER_1049, d));
+
+            PufferSpCtrl.Schichtdaten z = PufferSpCtrl.SchichtdatenLesen(PUFFER_1049);
+            Assert.Equal(DbWerte.PSP_BEREITSCHAFT_TEMPERATUR, z.BereitschaftWeg);
+            Assert.Equal(15.0, z.AufstellraumC);
+            Assert.Equal("0,10;0,16;0,37;0,37", z.SchichtAnteile);
+            Assert.True(z.Frischwassermodul);
+            Assert.Equal(7.0, z.FwmGraedigkeitK);
+
+            Assert.True(PufferSpCtrl.SchichtdatenSchreiben(PUFFER_1049, new PufferSpCtrl.Schichtdaten()));
+            Assert.True(PufferSpCtrl.SchichtdatenLesen(PUFFER_1049).OptionenLeer);
+
+            Assert.False(KonfigurationCtrl.DesinfektionLesen(PROJEKT_BW).Aktiv);
+            var v = new Desinfektionsvorgabe(true, 14, 3, 65, 800);
+            Assert.True(KonfigurationCtrl.DesinfektionSetzen(PROJEKT_BW, v));
+            Assert.Equal(v, KonfigurationCtrl.DesinfektionLesen(PROJEKT_BW));
+            Assert.True(KonfigurationCtrl.DesinfektionSetzen(PROJEKT_BW, Desinfektionsvorgabe.Aus));
+            Assert.Equal(Desinfektionsvorgabe.Aus, KonfigurationCtrl.DesinfektionLesen(PROJEKT_BW));
+        }
+
+        /// <summary>
         /// 1049: Ausdrücklich „tag", kein Modul und Desinfektion aus rechnen bitgleich wie leer; der Weg
         /// „temperatur" verliert anders, und ein Aufstellraum von 30 °C verliert weniger als 20 °C.
         /// </summary>

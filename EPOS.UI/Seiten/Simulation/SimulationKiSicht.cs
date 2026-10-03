@@ -671,6 +671,63 @@ public sealed class SimulationKiSicht
         p.Einspeisegrenze = neu;
     }
 
+    // =====================================================================
+    //  Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5)
+    // =====================================================================
+
+    /// <summary>Läuft die thermische Desinfektion?</summary>
+    public bool Desinfektion
+    {
+        get => Desinfektionsstand.Aktiv;
+        set => DesinfektionSetzen(Desinfektionsstand with { Aktiv = value });
+    }
+
+    /// <summary>Intervall [Tage], 1 … 31; leer heißt 7.</summary>
+    public int? DesinfektionIntervall
+    {
+        get => Desinfektionsstand.IntervallTage;
+        set => DesinfektionSetzen(Desinfektionsstand with { IntervallTage = value });
+    }
+
+    /// <summary>Stunde des Tages, 0 … 23; leer heißt 2.</summary>
+    public int? DesinfektionStunde
+    {
+        get => Desinfektionsstand.Stunde;
+        set => DesinfektionSetzen(Desinfektionsstand with { Stunde = value });
+    }
+
+    /// <summary>Zieltemperatur [°C], 55 … 90; leer heißt 70.</summary>
+    public double? DesinfektionZieltemperatur
+    {
+        get => Desinfektionsstand.ZielC;
+        set => DesinfektionSetzen(Desinfektionsstand with { ZielC = value });
+    }
+
+    /// <summary>Volumen [l], 0 … 100 000; leer heißt das Volumen der Brauchwasserspeicher.</summary>
+    public double? DesinfektionVolumen
+    {
+        get => Desinfektionsstand.VolumenL;
+        set => DesinfektionSetzen(Desinfektionsstand with { VolumenL = value });
+    }
+
+    private WindowsFormsApplication1.Desinfektionsvorgabe Desinfektionsstand
+        => Parameter?.Desinfektion ?? WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
+
+    /// <summary>Prüft und schreibt über den Delegaten des Abschnitts; ohne Weg und bei Fehlschlag benannt.</summary>
+    private void DesinfektionSetzen(WindowsFormsApplication1.Desinfektionsvorgabe neu)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Desinfektionsvorgabe, bool>? schreiben = Wege?.DesinfektionSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        string? fehler = WindowsFormsApplication1.Desinfektionsvorgabe.Pruefen(neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (fehler != null) throw new ArgumentOutOfRangeException(nameof(neu), fehler);
+        var normal = new WindowsFormsApplication1.Desinfektionsvorgabe(neu.Aktiv, neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (!schreiben(normal))
+            throw new InvalidOperationException(Resource.SIMKONF_DESINFEKTION_FEHLER);
+        p.Desinfektion = normal;
+    }
+
     /// <summary>Die gespeicherte Einstellung; ohne Stand „aus".</summary>
     private WindowsFormsApplication1.Aufheizvorgabe Aufheizstand
         => Parameter?.Aufheizung ?? WindowsFormsApplication1.Aufheizvorgabe.Aus;

@@ -42039,5 +42039,119 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMENG_DESINF_HEIZSTAB" xml:space="preserve">
     <value>Electric heater</value>
   </data>
+  <data name="PSP_GRUPPE_OPTIONEN" xml:space="preserve">
+    <value>Standby loss and fresh water module</value>
+  </data>
+  <data name="PSP_LABEL_BEREITSCHAFT_WEG" xml:space="preserve">
+    <value>Standby loss:</value>
+  </data>
+  <data name="PSP_BEREITSCHAFT_TAG" xml:space="preserve">
+    <value>Daily value pro rata to the charge level</value>
+  </data>
+  <data name="PSP_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>By temperature per zone</value>
+  </data>
+  <data name="PSP_LABEL_AUFSTELLRAUM" xml:space="preserve">
+    <value>Installation room:</value>
+  </data>
+  <data name="PSP_HINWEIS_AUFSTELLRAUM" xml:space="preserve">
+    <value>Only for the temperature method: H = Q_B · 1000 / (24 · 45 K), per zone H · a_i · (ϑ_i − ϑ_room); empty = 20 °C.</value>
+  </data>
+  <data name="PSP_LABEL_SCHICHT_ANTEILE" xml:space="preserve">
+    <value>Zone shares from the top:</value>
+  </data>
+  <data name="PSP_BTN_VORSCHLAG_KOMBI" xml:space="preserve">
+    <value>Suggestion combi storage</value>
+  </data>
+  <data name="PSP_HINWEIS_ANTEILE" xml:space="preserve">
+    <value>Volume shares separated by semicolons, sum 1; empty = equal zones. Suggestion combi storage: 0.10;0.16;0.37;0.37 (four zones).</value>
+  </data>
+  <data name="PSP_LABEL_FRISCHWASSERMODUL" xml:space="preserve">
+    <value>Fresh water module</value>
+  </data>
+  <data name="PSP_LABEL_FWM_GRAEDIGKEIT" xml:space="preserve">
+    <value>Approach of the fresh water module:</value>
+  </data>
+  <data name="PSP_HINWEIS_FWM" xml:space="preserve">
+    <value>Domestic hot water from the top zone only at tapping temperature + approach or above; otherwise the next cascade stage covers it. Empty = 5 K.</value>
+  </data>
+  <data name="PSP_HINWEIS_UEBERTRAGER" xml:space="preserve">
+    <value>Heat exchanger: enter its capacity as the discharge limit.</value>
+  </data>
+  <data name="PSP_FEHLER_AUFSTELLRAUM" xml:space="preserve">
+    <value>The installation room must be between 0 and 35 °C.</value>
+  </data>
+  <data name="PSP_FEHLER_FWM_GRAEDIGKEIT" xml:space="preserve">
+    <value>The approach of the fresh water module must be between 0 and 20 K.</value>
+  </data>
+  <data name="PSP_FEHLER_ANTEILE" xml:space="preserve">
+    <value>Zone shares: {0}</value>
+  </data>
+  <data name="KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL" xml:space="preserve">
+    <value>True = standby loss per zone by temperature (H from the standby value at 45 K, against the installation room); false = daily value pro rata to the charge level.</value>
+  </data>
+  <data name="KI_DLG_PSPV_AUFSTELLRAUM_ERL" xml:space="preserve">
+    <value>Installation room temperature for the standby loss by temperature, 0 to 35 °C; empty = 20 °C.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ANTEILE_ERL" xml:space="preserve">
+    <value>Volume shares of the zones from the top, separated by semicolons, sum 1, count equal to the number of layers; empty = equal zones.</value>
+  </data>
+  <data name="KI_DLG_PSPV_FWM_ERL" xml:space="preserve">
+    <value>True = domestic hot water via a fresh water module from the top zone, only at tapping temperature plus approach or above.</value>
+  </data>
+  <data name="KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Approach of the fresh water module, 0 to 20 K; empty = 5 K.</value>
+  </data>
+  <data name="SIMKONF_GRP_DESINFEKTION" xml:space="preserve">
+    <value>Thermal disinfection</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINFEKTION" xml:space="preserve">
+    <value>Thermal disinfection</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_INTERVALL" xml:space="preserve">
+    <value>Interval:</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_STUNDE" xml:space="preserve">
+    <value>Time (hour):</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_ZIEL" xml:space="preserve">
+    <value>Target temperature:</value>
+  </data>
+  <data name="SIMKONF_LBL_DESINF_VOLUMEN" xml:space="preserve">
+    <value>Volume:</value>
+  </data>
+  <data name="SIMKONF_DESINF_VOLUMEN_LEER" xml:space="preserve">
+    <value>DHW storage</value>
+  </data>
+  <data name="SIMKONF_HRL_DESINFEKTION" xml:space="preserve">
+    <value>Additional demand per event Q = V · 1.163 kWh/(m³·K) · (ϑ_target − ϑ_set) in the domestic hot water channel, covered by the generator that reaches the target temperature, otherwise by the electric heater or as additional electricity. Empty: every 7 days at 2:00, 70 °C, volume of the DHW storage.</value>
+  </data>
+  <data name="SIMKONF_DESINFEKTION_FEHLER" xml:space="preserve">
+    <value>The thermal disinfection could not be saved.</value>
+  </data>
+  <data name="KI_SIM_DESINFEKTION_ERL" xml:space="preserve">
+    <value>True = thermal disinfection of the domestic hot water in the run (additional demand in the chosen hour).</value>
+  </data>
+  <data name="KI_SIM_DESINF_INTERVALL_ERL" xml:space="preserve">
+    <value>Interval between two disinfections in days, 1 to 31; empty = 7.</value>
+  </data>
+  <data name="KI_SIM_DESINF_STUNDE_ERL" xml:space="preserve">
+    <value>Hour of the day in which the disinfection runs, 0 to 23; empty = 2.</value>
+  </data>
+  <data name="KI_SIM_DESINF_ZIEL_ERL" xml:space="preserve">
+    <value>Target temperature of the disinfection, 55 to 90 °C; empty = 70 °C.</value>
+  </data>
+  <data name="KI_SIM_DESINF_VOLUMEN_ERL" xml:space="preserve">
+    <value>Heated volume in litres, 0 to 100,000; empty = volume of the storages serving domestic hot water.</value>
+  </data>
+  <data name="BERG_LBL_DAVON_DESINFEKTION" xml:space="preserve">
+    <value>of which thermal disinfection:</value>
+  </data>
+  <data name="PSP_ERG_BEREITSCHAFT_TEMPERATUR" xml:space="preserve">
+    <value>{0}: standby loss by temperature per zone.</value>
+  </data>
+  <data name="PSP_ERG_FWM_STUNDEN" xml:space="preserve">
+    <value>{0}: fresh water module – {1} hours without sufficient storage temperature; there the next cascade stage covers.</value>
+  </data>
 </root>
 

@@ -44,19 +44,19 @@ namespace WindowsFormsApplication1
         private static bool Endlich(double? w) => w.HasValue && !double.IsNaN(w.Value) && !double.IsInfinity(w.Value);
 
         /// <summary>Läuft die Desinfektion?</summary>
-        public bool Aktiv { get; }
+        public bool Aktiv { get; init; }
 
         /// <summary>Intervall [Tage]; <c>null</c> = 7.</summary>
-        public int? IntervallTage { get; }
+        public int? IntervallTage { get; init; }
 
         /// <summary>Stunde des Tages 0 … 23; <c>null</c> = 2.</summary>
-        public int? Stunde { get; }
+        public int? Stunde { get; init; }
 
         /// <summary>Zieltemperatur [°C]; <c>null</c> = 70.</summary>
-        public double? ZielC { get; }
+        public double? ZielC { get; init; }
 
         /// <summary>Aufgeheiztes Volumen [l]; <c>null</c> = Volumen der Brauchwasserspeicher.</summary>
-        public double? VolumenL { get; }
+        public double? VolumenL { get; init; }
 
         /// <summary>Das Intervall, wie es wirkt.</summary>
         public int IntervallWirksam => IntervallTage ?? INTERVALL_VORGABE;

@@ -41,6 +41,20 @@ namespace WindowsFormsApplication1
         /// <summary>Zahl der Ereignisse im Jahr (365 Tage) — <c>⌊365 / Intervall⌋</c>.</summary>
         public static int EreignisseImJahr(int intervallTage) => intervallTage >= 1 ? 365 / intervallTage : 0;
 
+        /// <summary>
+        /// Die Jahresmenge eines Projekts [kWh] mit aufgelöstem Volumen und Speichersolltemperatur — dieselben
+        /// Regeln wie im Lauf (<c>SimulationWaermebedarf.BrauchwasserDesinfektion</c>), für Auskünfte außerhalb
+        /// des Laufs (Bericht). 0 ohne Desinfektion, ohne Volumen oder ohne Übertemperatur.
+        /// </summary>
+        public static double JahresmengeKwh(int idProjekt, Desinfektionsvorgabe v, out double volumenL, out double sollC)
+        {
+            volumenL = 0;
+            sollC = TwwTemperaturen.SpeicherSollC(idProjekt) ?? SOLL_VORGABE_C;
+            if (v == null || !v.Aktiv) return 0;
+            volumenL = v.VolumenL ?? TwwTemperaturen.BrauchwasserspeicherVolumenL(idProjekt) ?? 0;
+            return EreignisseImJahr(v.IntervallWirksam) * ZusatzbedarfKwh(volumenL, v.ZielWirksamC, sollC);
+        }
+
         /// <summary>Die Stundenreihe des Zusatzbedarfs [kWh] — 8 760 Werte, je Ereignis <paramref name="jeEreignisKwh"/>.</summary>
         public static double[] Reihe(int intervallTage, int uhrStunde, double jeEreignisKwh)
         {
