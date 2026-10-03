@@ -1,6 +1,6 @@
 # Protokoll KP3 — Aufheizoptimierung, Ergebnisse, Referenzprojekt und neue Basis der Konditionierungsprofile
 
-**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4 gebaut; die Basis heißt R33, weil R31 und R33 am 02.10.2026 für die Rechenwegbefunde und die Solarthermie vergeben wurden).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
+**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4 gebaut; die Basis heißt R34, weil R31 und R34 am 02.10.2026 für die Rechenwegbefunde und die Solarthermie vergeben wurden).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
 (zwölf Wellen in vier Spuren, Festlegungen nach der Umsetzung als N1.68), Entscheid E58 (Leitkonzept N1.67, Teilkonzept 9.8),
 [Protokoll KP2](2026-09-30_KP2_Konditionierung_Oberflaeche.md). Je Welle ein Agent im eigenen Worktree mit eigenem Gate
 (`Werkzeuge/Gate/gate_linux.sh`), Merge durch die Orchestrierung, Gate über den gemeinsamen Stand, Statuszeile, Push.
@@ -9,7 +9,7 @@
 
 Wie bei KP2: Auftrag als Datei, Agent im eigenen Worktree (`model: opus`), Abnahme mit vollem Gate im Worktree, danach
 Merge → Gate im Hauptbaum → Statuszeile und Protokoll → Push → CI-Nachweis. Bis RP1 gilt die Basis R30 (16 Projekte,
-487 CSV byte-gleich), ab RP2 die Basis R33 mit 17 Projekten.
+487 CSV byte-gleich), ab RP2 die Basis R34 mit 17 Projekten.
 
 ## 2. Was gebaut ist
 
