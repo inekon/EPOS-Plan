@@ -1766,7 +1766,8 @@ Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix mit Heiz- und Kühlperiode, V
 und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das eigene Papier
 [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 3; P1–P8 entschieden mit E52, N1.59,
 P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0 bis KP2 umgesetzt (Festlegungen der Umsetzung N1.61, N1.63 und
-N1.66), KP3 entworfen und entschieden (E58, N1.67), Umsetzung läuft; KP4 auf Auftrag; kein Bestandteil der Stufen
+N1.66), KP3 entworfen und entschieden (E58, N1.67; Aufschlag, manuelle Aufheizzeit und Auslegungsgröße mit E59 und
+E60, N1.68), Umsetzung läuft; KP4 auf Auftrag; kein Bestandteil der Stufen
 G0 bis GA.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
@@ -4966,4 +4967,40 @@ Auswahl: F1, F2, F5, F6 und F8 nach Empfehlung, **F3, F4 und F7 abweichend**.
 den Entscheid. F3 (c) und F4 (b) heben die Welle O3 auf 2,5–3 PT und KP3 auf **14–18,25 PT** (Entwurf 13–17,25 PT,
 Teilkonzept 6–9 PT). F7 bleibt bis zur Messung in RP1 offen; das [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
 zählt danach **2 offene Punkte** (M11, P14). Die Festlegungen der Umsetzung — im Entwurf Abschnitt 5 benannt — folgen
-mit der Umsetzung als **N1.68**.
+mit der Umsetzung als **N1.69**; N1.68 hält E59 und E60.
+
+### N1.68 Entscheide E59 und E60 — Konditionierungsprofile: individuelle Rampe mit Aufschlag, manuelle Aufheizzeit je Gebäude, Auslegungsgröße
+
+**Anlass E59.** Nach E58 gibt der Anwender am 02.10.2026 eine Vorgabe zur Aufheizoptimierung: „Die Rampe soll jeweils
+individuell für ein Gebäude ermittelt werden und nicht pauschal. Ein Aufschlag auf diesen Wert könnte sinnvoll sein
+(Benutzervorgabe). Außerdem soll es einen manuellen Wert als Eingabe geben — mit plausiblen Vorschlägen." Drei Rückfragen
+beantwortet er am selben Tag. Der [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) führt die Vorgabe als F9
+(Abschnitt 6) und ihre Ausgestaltung als Festlegungen 34–40, 42 und 43 (Abschnitt 5).
+
+| Frage | Entscheid |
+|---|---|
+| (1) Wo liegt der manuelle Wert? | **Je Gebäude.** Eine dritte Art „manuell" neben täglich und fest, am Gebäude statt am Projekt: `Tab_Gebaeude.Aufheizzeit_Manuell_H` (1–47 h, NULL = Art des Projekts). Ein Gebäude mit Wert rampt an jedem Sprung mit n = Wert + 1 (der Wert ist die Aufheizzeit t = n − 1), begrenzt auf Absenkdauer und Deckel 48, gekappt an θ_K − 1 K; die Bemessung läuft weiter und liefert die Herleitungszeile, entscheidet aber nicht. Zonen erben den Wert ihres Gebäudes, der Katalog trägt kein Feld, die Übernahme Katalog → Projekt lässt NULL. Ergebniszeile `Aufheiz_Bemessung` = `MANUELL`, `Aufheizzeit_Max_H` = Wert, Zustand BEMESSEN; der Export nennt `Geb[n].Aufheizzeit_Manuell` nur, wenn gesetzt |
+| (2) In welcher Einheit wird der Aufschlag eingegeben? | **Stunden und Prozent, es gilt das Maximum.** Projektvorgabe in `Tab_Einstellungen`: `Aufheiz_Aufschlag_H` (0–24) und `Aufheiz_Aufschlag_Prozent` (0–100), NULL = 0, beim Schreiben wird 0 zu NULL. Wirksam ist n' = min(48, n + max(Aufschlag_H, ⌈n · Prozent/100⌉)) auf jedes ermittelte n der Arten täglich und fest, nicht auf den manuellen Wert; die Rampe beginnt entsprechend früher, die Absenkdauer begrenzt n' wie jedes n (W2 zählt mit n'), t_auf,max bleibt die bemessene Zeit |
+| (3) Wann wird umgesetzt? | **Nach D2, vor RP1.** Welle R5 (Rechenweg, ein Schemaschritt `AufheizManuellSchema` mit den drei Spalten und dem um `MANUELL` erweiterten `CHECK` von `Tab_ErgebnisGebaeude.Aufheiz_Bemessung`, Testdatenbank, Export; Nachweise N-AH11 Aufschlag und N-AH12 manuell), O1b (zwei Aufschlagfelder in der Projekteinstellung, KI-Felder), Erweiterung von O2 (Feld „Aufheizzeit manuell" im Gebäudedialog mit zwei Vorschlägen: die bemessene Zeit des Gebäudes zum Übernehmen und die Spanne nach Bauart, leicht 1–2 h, schwer 2–4 h, sehr schwer 4–8 h; außerhalb Hinweis, keine Sperre) und O3 (Abweichungsmerkmale). Reihenfolge D2 → R5 → O1b/O2 → O3 → RP1 → RP2 → A |
+
+**„Individuell, nicht pauschal".** Der Rechenweg ermittelt die Rampe schon je Gebäude und Zone — Stufenformel, Bemessung und
+P_auf mit eigenen Massen, eigenem Φ_stat und eigener Quelle. Pauschal je Projekt bleiben allein die Aufheizreserve ρ (offen
+bis zur Messung, P14), die Art täglich/fest und der neue Aufschlag; E59 benennt das ausdrücklich und ändert daran nichts.
+
+**Anlass E60.** Am 03.10.2026 fragt der Anwender, ob ein Filter (FFT, Z-Transformation, Tiefpass in einem zweiten Durchlauf)
+die Heizlastspitzen nach Sollwertsprüngen glätten soll, weil sie eine zu hohe Spitzenleistung für die Auslegung ergeben. Das
+[Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md) prüft beide Filterwege und
+schlägt vor, die Frage in der Auswertung zu beantworten. **Entschieden: Vorschlag 1.** Auslegungsgröße der Heizung ist die
+stationäre Auslegungsheizlast plus die Aufheizleistung P_auf aus der KP3-Bemessung; Bedarfsdialog (O2) und Bericht (O3)
+weisen ideale Spitze (`SpitzeKw`), Tagesmittel (`SpitzeTagesmittelKw`) und P_auf mit Quelle nebeneinander aus, mit dem
+Hinweis, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist. Kein Filter im Rechenweg; die Kennzahl „Spitze
+als n-h-Mittel" (Vorschlag 2) ist nicht beauftragt. Entwurf Festlegung 41.
+
+**Folgen.** Das [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) ist in 3.4,
+4.6, 4.8, 4.9, 5.3, 5.4, 5.5, 7.6, 7.7, 8, 10.3 und 13 fortgeschrieben, die Entscheide stehen in 9.9. KP3 wächst um
+R5 (1,25–1,75 PT) und O1b (0,25–0,5 PT), O2 um 0,75 PT, O3 um 0,5 PT, auf **16,75–21,75 PT**; die Basis R34 sieht weder
+Aufschlag noch Art „manuell", ihr Netz sind N-AH11 und N-AH12. Das
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) führt drei neue offene Punkte: **P15** (die Spanne nach
+Bauart als Zahlen bestätigen, fällig vor O2), **P16** (ob der Aufschlag auch Sprünge ohne Rampe trifft, fällig vor R5)
+und **P17** (Lesart der Summe in der Auslegungsgröße, fällig vor O2) — mit M11 und P14 **5 offene Punkte**. Die
+Festlegungen der Umsetzung KP3 folgen als **N1.69**.
