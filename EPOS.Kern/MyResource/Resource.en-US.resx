@@ -33656,6 +33656,9 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_BAUJAHR_TEXT" xml:space="preserve">
     <value>Year of construction read from "{0}": {1}.</value>
   </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_RUECKFALL" xml:space="preserve">
+    <value>Pset_BuildingCommon.YearOfConstruction is missing; year of construction read from "{0}.{1}" = "{2}": {3}.</value>
+  </data>
   <data name="IMP_IFC_PROT_GELESEN" xml:space="preserve">
     <value>{0} buildings, {1} spaces, {2} building components read.</value>
   </data>
