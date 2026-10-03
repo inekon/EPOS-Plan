@@ -557,8 +557,10 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **166**, 81 186 816 Byte, LFS-SHA-256
-`2b0dc246ef450f7feab529876fc7fe41e88b56d236cb7a94d6748713c254f6a6`). Gegen diese Basis hält
+`Kenndaten_Test.sqlite` (Schemastand **168**, 81 195 008 Byte, LFS-SHA-256
+`6e5d24aa5da7dafdad6ed1c1b4dabb3eeb13744f100cee8fc201b7f16b9aceae`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
+und BHKW) legen nur leere Felder an und wirken nicht auf die Basis. Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -586,7 +588,7 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 >   `min(P_q, Last_q)`, Überschuss und Reststrom entstehen je Viertel aus **einer** Auflösung; die Stundenreihen
 >   (`pv_produktion.csv`, `pv_ueberschuss.csv`, `pv_reststrom.csv`) sind die Mittel ihrer vier Viertel. Stromspeicher
 >   und Flotte rechnen mit der glatten Reihe.
-> - **Schemaschritt 166** (`StromViertelstundenSchema`): an `Tab_Einstellungen` die nullbaren Felder
+> - **Schemaschritt 168** (`StromViertelstundenSchema`): an `Tab_Einstellungen` die nullbaren Felder
 >   `Einspeisegrenze_Wert` und `Einspeisegrenze_Einheit`, an `Tab_Stromspeicher(_STAMM)`
 >   `Selbstentladung_Prozent_Monat`. Kein Referenzprojekt setzt sie.
 > - **PV3 Einspeisegrenze:** Abregelung über der Grenze nach der Speicherladung; die Flotte liest sie als weiche
@@ -635,11 +637,15 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Regeln im
 > [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 19.
 
-> **Testdatenbank — Schemaschritt 166.** Die Fassung aus `7debfd8a…` (Schemastand 165) ist mit
-> `Werkzeuge/Testdatenbankschema` auf **166** gezogen: zwei leere Spalten an `Tab_Einstellungen`, je eine leere
+> **Testdatenbank — Schemaschritt 168.** Eingefroren ist R33 auf der Fassung `2b0dc246…` (aus `7debfd8a…`, Schemastand
+> 165, gehoben um die Spalten der Einspeisegrenze und der Selbstentladung). Die gültige Fassung kommt aus
+> `58d9ba47…` (Schemastand 166, Netzverluste je Kanal, Zirkulation, Betriebskalender) und ist mit
+> `Werkzeuge/Testdatenbankschema` auf **168** gezogen: Schritt 167 legt die leeren Teillastspalten an `Tab_WP(_STAMM)`
+> und `Tab_BHKW(_STAMM)` an, Schritt 168 zwei leere Spalten an `Tab_Einstellungen`, je eine leere
 > Spalte an `Tab_Stromspeicher_STAMM` und `Tab_Stromspeicher`; keine Datenänderung, kein Stempel gesetzt.
-> `integrity_check` ok, `foreign_key_check` leer. Neue Fassung **81 186 816 Byte, LFS-SHA-256
-> `2b0dc246ef450f7feab529876fc7fe41e88b56d236cb7a94d6748713c254f6a6`**; gegen sie ist R33 eingefroren.
+> `integrity_check` ok, `foreign_key_check` leer. Neue Fassung **81 195 008 Byte, LFS-SHA-256
+> `6e5d24aa5da7dafdad6ed1c1b4dabb3eeb13744f100cee8fc201b7f16b9aceae`**. Die sechzehn Projekte rechnen auf ihr gegen R33
+> GESAMT PASS mit 487/487 CSV byte-gleich; keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 
@@ -647,7 +653,7 @@ Sechzehn Projekte, 487 CSV, 3 081 Skalare, auf Linux eingefroren gegen die Testd
 bis zur Fassung `7debfd8a…` (Schemastand 165); mit R33 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
 (Welle M2 Solarthermie, Arbeitstemperatur des Kollektorfelds von 1049 aus dem Speicher) unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen R32 und
-R33 hat die Testdatenbank den Schemaschritt 166 bekommen (leere Spalten); der Wechsel ist allein der Rechenweg der
+R33 hat die Testdatenbank die Schemaschritte 166 bis 168 bekommen (leere Felder); der Wechsel ist allein der Rechenweg der
 PV-Bilanz (SB1 a).
 
 ## Was hier liegt
