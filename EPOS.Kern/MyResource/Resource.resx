@@ -43813,5 +43813,20 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
     <value>Aufbau „{0}“: {1} Schichten tragen Dichte und Wärmeleitfähigkeit, aber keine spezifische Wärmekapazität; c [J/(kg·K)] kommt aus dem Baustoffkatalog bzw. nach DIN EN ISO 10456 — {2}.</value>
   </data>
+  <data name="SIM_NAV_KAELTEPRODUKTION_CHART" xml:space="preserve">
+    <value>❄️ 
+Kälte
+Produktion
+Chart</value>
+  </data>
+  <data name="CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Kälteproduktion Jahresganglinie</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTEBEDARF" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Ungedeckte Kälte</value>
+  </data>
 </root>
 
