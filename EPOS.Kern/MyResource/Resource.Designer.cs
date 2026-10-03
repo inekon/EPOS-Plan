@@ -70649,6 +70649,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe {0} l: Deckung {1}, {2} Starts je Tag, Verlust {3} kWh/a ähnelt.
+        /// </summary>
+        public static string PAUS_BERICHT_NA_ZEILE {
+            get {
+                return ResourceManager.GetString("PAUS_BERICHT_NA_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
         /// </summary>
         public static string PAUS_BEZEICHNER {
@@ -71315,11 +71324,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ecosizer (Ecotope 2020), Speicher gegen Leistung: Laufvolumen des Spitzenereignisses ÷ η_s ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KURVE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KURVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fachportal KWK-Flexibilisierung (Sekundärquelle) ähnelt.
         /// </summary>
         public static string PAUS_HERK_KV {
             get {
                 return ResourceManager.GetString("PAUS_HERK_KV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NACHBARSTUFEN {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NACHBARSTUFEN", resourceCulture);
             }
         }
         
@@ -72089,6 +72116,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größerer Speicher: mehr Bereitschaftsverlust und höhere mittlere Puffertemperatur, JAZ sinkt ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_GROESSER {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_GROESSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größerer Speicher: mehr Bereitschaftsverlust, weniger Starts ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_GROESSER_OHNE_WP {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_GROESSER_OHNE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kleinerer Speicher: weniger Bereitschaftsverlust, aber mehr Starts — häufiges Takten belastet Verdichter und JAZ ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_KLEINER {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_KLEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kleinerer Speicher: weniger Bereitschaftsverlust, mehr Starts ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_KLEINER_OHNE_WP {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_KLEINER_OHNE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz als Herkunft am Puffer merken ähnelt.
         /// </summary>
         public static string PAUS_KATALOGSATZ_UEBERNEHMEN {
@@ -72386,6 +72458,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laufvolumen bei {0} kW = D_max {1} kWh; die Zapfreihe trägt die Änderung mit der Leistung; Volumen bei ΔT_B {2} K und η_s {3} ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Kurve: kein Zapfprofil-Ergebnis ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_KEIN_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_KEIN_ZAPFPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Kurve: Das Zapfprofil liefert keine Ladeleistung oder kein D_max ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_OHNE_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_OHNE_LADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Kurve: Die Zapfreihe ist leer ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_OHNE_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_OHNE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil Ladeleistung ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_SPALTE_ANTEIL {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_SPALTE_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laufzeit je Tag ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_SPALTE_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_SPALTE_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_SPALTE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_SPALTE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_SPALTE_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_SPALTE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher gegen Leistung (Brauchwasser) ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_TITEL {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Katalogsatz ähnelt.
         /// </summary>
         public static string PAUS_KZ_AUS_KATALOG {
@@ -72562,6 +72715,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_MINDESTLEISTUNG {
             get {
                 return ResourceManager.GetString("PAUS_MINDESTLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung ähnelt.
+        /// </summary>
+        public static string PAUS_NA_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("PAUS_NA_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegung rechnete länger als eine Sekunde: Die Nachbarstufen rechnen auf Zuruf. ähnelt.
+        /// </summary>
+        public static string PAUS_NA_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("PAUS_NA_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzen und Aufwand der Nachbarstufen ähnelt.
+        /// </summary>
+        public static string PAUS_NA_GRUPPE {
+            get {
+                return ResourceManager.GetString("PAUS_NA_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachbarstufen rechnen ähnelt.
+        /// </summary>
+        public static string PAUS_NA_KNOPF {
+            get {
+                return ResourceManager.GetString("PAUS_NA_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Reihe (nur Volumen und Verlust) ähnelt.
+        /// </summary>
+        public static string PAUS_NA_OHNE_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_NA_OHNE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_DECKUNG {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_JAZ {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_JAZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrvolumen ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_MEHR {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts je Tag ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_STARTS {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_STARTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_STUFE {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust kWh/a ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_VERLUST {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gerechnet in {0} ms; Simulation: {1} ähnelt.
+        /// </summary>
+        public static string PAUS_NA_STAND {
+            get {
+                return ResourceManager.GetString("PAUS_NA_STAND", resourceCulture);
             }
         }
         

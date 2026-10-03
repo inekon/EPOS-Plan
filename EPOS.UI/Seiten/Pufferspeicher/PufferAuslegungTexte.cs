@@ -555,4 +555,60 @@ public sealed class PufferAuslegungTexte
 
     /// <summary><c>PAUS_PROBELAUF_AUS_REIHE</c>.</summary>
     public string ProbelaufAusReihe { get; set; } = Resource.PAUS_PROBELAUF_AUS_REIHE;
+
+    // ---- Nutzen-Aufwand-Zeile und Speicher-gegen-Leistung-Kurve (Welle P4d) ----
+
+    /// <summary><c>PAUS_NA_GRUPPE</c>.</summary>
+    public string NaGruppe { get; set; } = Resource.PAUS_NA_GRUPPE;
+
+    /// <summary><c>PAUS_NA_SPALTE_STUFE</c>.</summary>
+    public string NaSpalteStufe { get; set; } = Resource.PAUS_NA_SPALTE_STUFE;
+
+    /// <summary><c>PAUS_NA_SPALTE_VOLUMEN</c>.</summary>
+    public string NaSpalteVolumen { get; set; } = Resource.PAUS_NA_SPALTE_VOLUMEN;
+
+    /// <summary><c>PAUS_NA_SPALTE_MEHR</c>.</summary>
+    public string NaSpalteMehr { get; set; } = Resource.PAUS_NA_SPALTE_MEHR;
+
+    /// <summary><c>PAUS_NA_SPALTE_DECKUNG</c>.</summary>
+    public string NaSpalteDeckung { get; set; } = Resource.PAUS_NA_SPALTE_DECKUNG;
+
+    /// <summary><c>PAUS_NA_SPALTE_STARTS</c>.</summary>
+    public string NaSpalteStarts { get; set; } = Resource.PAUS_NA_SPALTE_STARTS;
+
+    /// <summary><c>PAUS_NA_SPALTE_VERLUST</c>.</summary>
+    public string NaSpalteVerlust { get; set; } = Resource.PAUS_NA_SPALTE_VERLUST;
+
+    /// <summary><c>PAUS_NA_SPALTE_JAZ</c>.</summary>
+    public string NaSpalteJaz { get; set; } = Resource.PAUS_NA_SPALTE_JAZ;
+
+    /// <summary><c>PAUS_NA_EMPFEHLUNG</c>.</summary>
+    public string NaEmpfehlung { get; set; } = Resource.PAUS_NA_EMPFEHLUNG;
+
+    /// <summary><c>PAUS_NA_KNOPF</c>.</summary>
+    public string NaKnopf { get; set; } = Resource.PAUS_NA_KNOPF;
+
+    /// <summary><c>PAUS_NA_ERKLAERUNG</c>.</summary>
+    public string NaErklaerung { get; set; } = Resource.PAUS_NA_ERKLAERUNG;
+
+    /// <summary><c>PAUS_NA_STAND</c>.</summary>
+    public string NaStand { get; set; } = Resource.PAUS_NA_STAND;
+
+    /// <summary><c>PAUS_NA_OHNE_REIHE</c>.</summary>
+    public string NaOhneReihe { get; set; } = Resource.PAUS_NA_OHNE_REIHE;
+
+    /// <summary><c>PAUS_KURVE_TITEL</c>.</summary>
+    public string KurveTitel { get; set; } = Resource.PAUS_KURVE_TITEL;
+
+    /// <summary><c>PAUS_KURVE_SPALTE_LEISTUNG</c>.</summary>
+    public string KurveSpalteLeistung { get; set; } = Resource.PAUS_KURVE_SPALTE_LEISTUNG;
+
+    /// <summary><c>PAUS_KURVE_SPALTE_ANTEIL</c>.</summary>
+    public string KurveSpalteAnteil { get; set; } = Resource.PAUS_KURVE_SPALTE_ANTEIL;
+
+    /// <summary><c>PAUS_KURVE_SPALTE_VOLUMEN</c>.</summary>
+    public string KurveSpalteVolumen { get; set; } = Resource.PAUS_KURVE_SPALTE_VOLUMEN;
+
+    /// <summary><c>PAUS_KURVE_SPALTE_LAUFZEIT</c>.</summary>
+    public string KurveSpalteLaufzeit { get; set; } = Resource.PAUS_KURVE_SPALTE_LAUFZEIT;
 }

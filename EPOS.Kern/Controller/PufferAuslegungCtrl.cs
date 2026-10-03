@@ -144,6 +144,8 @@ namespace WindowsFormsApplication1
         public double? VerlustKwhJeTag { get; init; }
         public double? VerlustWJeK { get; init; }
         public IReadOnlyList<PufferWarnung> Warnungen { get; init; } = Array.Empty<PufferWarnung>();
+        /// <summary>Die Nutzen-Aufwand-Zeile der Nachrechnung (Welle P4d); leer = nicht gerechnet.</summary>
+        public IReadOnlyList<PufferNachbarstufe> Nachbarstufen { get; init; } = Array.Empty<PufferNachbarstufe>();
         /// <summary>Warum die Nachrechnung nicht möglich war; <c>null</c> = sie lief (oder war nicht verlangt).</summary>
         public string Fehlertext { get; init; }
 
@@ -1401,7 +1403,8 @@ namespace WindowsFormsApplication1
                 ProbelaufAm = PufferProbelaufCtrl.Letzter(idProjekt, g.IdPuffer)?.Zeitpunkt,
                 VerlustKwhJeTag = r.Kennzahlen?.Verlust?.KwhJeTag,
                 VerlustWJeK = r.Kennzahlen?.Verlust?.WJeK,
-                Warnungen = r.Warnungen ?? Array.Empty<PufferWarnung>()
+                Warnungen = r.Warnungen ?? Array.Empty<PufferWarnung>(),
+                Nachbarstufen = PufferAuslegung.Nachbarstufen(v.Eingang, r).Stufen
             };
         }
 

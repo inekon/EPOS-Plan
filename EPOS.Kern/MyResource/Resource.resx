@@ -44056,5 +44056,95 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
     <value>Tabelle der gespeicherten Pufferauslegungen des Stammprojekts: je Auslegung eine Gruppenzeile, darunter Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina, bemessendes Kriterium, Empfehlung, Kennzahlen und Hinweise. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt.</value>
   </data>
+  <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
+    <value>Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze</value>
+  </data>
+  <data name="PAUS_HERK_KURVE" xml:space="preserve">
+    <value>Ecosizer (Ecotope 2020), Speicher gegen Leistung: Laufvolumen des Spitzenereignisses ÷ η_s</value>
+  </data>
+  <data name="PAUS_JAZ_EMPFEHLUNG" xml:space="preserve">
+    <value>Empfehlung</value>
+  </data>
+  <data name="PAUS_JAZ_GROESSER" xml:space="preserve">
+    <value>größerer Speicher: mehr Bereitschaftsverlust und höhere mittlere Puffertemperatur, JAZ sinkt</value>
+  </data>
+  <data name="PAUS_JAZ_GROESSER_OHNE_WP" xml:space="preserve">
+    <value>größerer Speicher: mehr Bereitschaftsverlust, weniger Starts</value>
+  </data>
+  <data name="PAUS_JAZ_KLEINER" xml:space="preserve">
+    <value>kleinerer Speicher: weniger Bereitschaftsverlust, aber mehr Starts — häufiges Takten belastet Verdichter und JAZ</value>
+  </data>
+  <data name="PAUS_JAZ_KLEINER_OHNE_WP" xml:space="preserve">
+    <value>kleinerer Speicher: weniger Bereitschaftsverlust, mehr Starts</value>
+  </data>
+  <data name="PAUS_KURVE_KEIN_ZAPFPROFIL" xml:space="preserve">
+    <value>keine Kurve: kein Zapfprofil-Ergebnis</value>
+  </data>
+  <data name="PAUS_KURVE_OHNE_LADELEISTUNG" xml:space="preserve">
+    <value>keine Kurve: Das Zapfprofil liefert keine Ladeleistung oder kein D_max</value>
+  </data>
+  <data name="PAUS_KURVE_OHNE_REIHE" xml:space="preserve">
+    <value>keine Kurve: Die Zapfreihe ist leer</value>
+  </data>
+  <data name="PAUS_KURVE_HINWEIS" xml:space="preserve">
+    <value>Laufvolumen bei {0} kW = D_max {1} kWh; die Zapfreihe trägt die Änderung mit der Leistung; Volumen bei ΔT_B {2} K und η_s {3}</value>
+  </data>
+  <data name="PAUS_NA_GRUPPE" xml:space="preserve">
+    <value>Nutzen und Aufwand der Nachbarstufen</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_STUFE" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_MEHR" xml:space="preserve">
+    <value>Mehrvolumen</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_DECKUNG" xml:space="preserve">
+    <value>Deckung</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_STARTS" xml:space="preserve">
+    <value>Starts je Tag</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_VERLUST" xml:space="preserve">
+    <value>Verlust kWh/a</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_JAZ" xml:space="preserve">
+    <value>Wirkung</value>
+  </data>
+  <data name="PAUS_NA_EMPFEHLUNG" xml:space="preserve">
+    <value>Empfehlung</value>
+  </data>
+  <data name="PAUS_NA_KNOPF" xml:space="preserve">
+    <value>Nachbarstufen rechnen</value>
+  </data>
+  <data name="PAUS_NA_ERKLAERUNG" xml:space="preserve">
+    <value>Die Auslegung rechnete länger als eine Sekunde: Die Nachbarstufen rechnen auf Zuruf.</value>
+  </data>
+  <data name="PAUS_NA_STAND" xml:space="preserve">
+    <value>gerechnet in {0} ms; Simulation: {1}</value>
+  </data>
+  <data name="PAUS_NA_OHNE_REIHE" xml:space="preserve">
+    <value>ohne Reihe (nur Volumen und Verlust)</value>
+  </data>
+  <data name="PAUS_KURVE_TITEL" xml:space="preserve">
+    <value>Speicher gegen Leistung (Brauchwasser)</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_ANTEIL" xml:space="preserve">
+    <value>Anteil Ladeleistung</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_LAUFZEIT" xml:space="preserve">
+    <value>Laufzeit je Tag</value>
+  </data>
+  <data name="PAUS_BERICHT_NA_ZEILE" xml:space="preserve">
+    <value>Stufe {0} l: Deckung {1}, {2} Starts je Tag, Verlust {3} kWh/a</value>
+  </data>
 </root>
 

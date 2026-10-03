@@ -915,6 +915,13 @@
     /// <summary>„kein Lauf", solange kein erfolgreicher Probelauf vorliegt.</summary>
     private string ProbelaufLeer => _probelauf is { Erfolg: true } ? "—" : Texte.ProbelaufKeinLauf;
 
+    /// <summary>Rechnet die Nutzen-Aufwand-Zeile auf Zuruf (die Auslegung lag über einer Sekunde).</summary>
+    public void NachbarstufenRechnen()
+    {
+        if (Dienste?.Nachbarstufen is null || _ergebnis is null) return;
+        _ergebnis.Nachbarstufen = Dienste.Nachbarstufen(_eingabe.Kopie());
+    }
+
     /// <summary>Startet den Probelauf mit der Empfehlung — nichts wird gespeichert oder übernommen.</summary>
     public async Task ProbelaufStarten()
     {
@@ -1098,6 +1105,90 @@
                     }
                 </KindInhalt>
             </Gruppenkopf>
+
+            @if (e.EmpfehlungL > 0)
+            {
+                <Gruppenkopf Titel="@Texte.NaGruppe">
+                    <KindInhalt>
+                        @if (e.Nachbarstufen is PufferNachbarstufenDaten na)
+                        {
+                            @if (na.Stufen.Count > 0)
+                            {
+                                <table class="epos-raster epos-pausl-nachbarstufen">
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.NaSpalteStufe</th>
+                                            <th>@Texte.NaSpalteVolumen</th>
+                                            <th>@Texte.NaSpalteMehr</th>
+                                            <th>@Texte.NaSpalteDeckung</th>
+                                            <th>@Texte.NaSpalteStarts</th>
+                                            <th>@Texte.NaSpalteVerlust</th>
+                                            <th>@Texte.NaSpalteJaz</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (PufferNachbarstufeDaten s in na.Stufen)
+                                        {
+                                            <tr @key="s.Abstand" data-abstand="@s.Abstand"
+                                                class="@(s.Empfehlung ? "epos-pausl-nachbarstufe--empfehlung" : "")">
+                                                <td>@(s.Empfehlung ? Texte.NaEmpfehlung : (s.Abstand > 0 ? "+" : "−") + Z(Math.Abs(s.Abstand)))</td>
+                                                <td>@(Z(s.VolumenL) + " l")</td>
+                                                <td>@(s.Empfehlung ? "—" : (s.MehrvolumenL > 0 ? "+" : "−") + Z(Math.Abs(s.MehrvolumenL)) + " l")</td>
+                                                <td>@(s.Deckungsgrad is double dg ? Z(dg * 100, "N1") + " %" : "—")</td>
+                                                <td>@(s.StartsJeTag is double st ? Z(st, "N1") : "—")</td>
+                                                <td>@Z(s.VerlustKwhJeJahr)</td>
+                                                <td class="epos-pausl-nachbarstufe-jaz">@s.JazHinweis</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                <p class="epos-leisezeile epos-pausl-nachbarstufen-stand">@Format(Texte.NaStand, Z(na.DauerMs), na.Simulationszone.Length > 0 ? na.Simulationszone : Texte.NaOhneReihe)</p>
+                                @if (AbStandard && na.Herkunft.Length > 0)
+                                {
+                                    <Herleitungszeile Text="@na.Herkunft" />
+                                }
+                            }
+                            @if (na.Kurve.Count > 0)
+                            {
+                                <table class="epos-raster epos-pausl-kurve">
+                                    <caption>@Texte.KurveTitel</caption>
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.KurveSpalteLeistung</th>
+                                            <th>@Texte.KurveSpalteAnteil</th>
+                                            <th>@Texte.KurveSpalteVolumen</th>
+                                            <th>@Texte.KurveSpalteLaufzeit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (PufferLeistungspunktDaten pk in na.Kurve)
+                                        {
+                                            <tr @key="pk.Anteil" class="@(pk.ImLaufzeitband ? "epos-pausl-kurve--band" : "")">
+                                                <td>@(Z(pk.LeistungKw, "N1") + " kW")</td>
+                                                <td>@(Z(pk.Anteil * 100) + " %")</td>
+                                                <td>@(Z(pk.VolumenL) + " l")</td>
+                                                <td>@(pk.LaufzeitH is double lz ? Z(lz, "N1") + " h" : "—")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            @if (na.KurveHinweis.Length > 0)
+                            {
+                                <p class="epos-leisezeile epos-pausl-kurve-hinweis">@na.KurveHinweis</p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="epos-leisezeile">@Texte.NaErklaerung</p>
+                            @if (Dienste?.Nachbarstufen is not null)
+                            {
+                                <button type="button" class="epos-knopf epos-pausl-nachbarstufen-knopf" @onclick="NachbarstufenRechnen">@Texte.NaKnopf</button>
+                            }
+                        }
+                    </KindInhalt>
+                </Gruppenkopf>
+            }
 
             <Gruppenkopf Titel="@Texte.ProbelaufGruppe">
                 <KindInhalt>

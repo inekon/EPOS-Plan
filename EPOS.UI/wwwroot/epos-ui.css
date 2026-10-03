@@ -11449,6 +11449,15 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     border: 2px solid var(--epos-karte-rahmen-hover);
 }
 
+/* Nutzen-Aufwand-Zeile: die Empfehlung hervorgehoben, das Laufzeitband der Kurve leise markiert. */
+.epos-pausl-nachbarstufe--empfehlung td {
+    font-weight: 600;
+    background: var(--epos-karte-flaeche-hover);
+}
+.epos-pausl-kurve--band td {
+    font-style: italic;
+}
+
 .epos-pausl-karte-kopf {
     display: flex;
     flex-wrap: wrap;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -215,7 +216,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = Start(),
-                ["Dienste"] = new PufferAuslegungDienste(Rechnen, Speichern, Uebernehmen, ProbelaufImHintergrund),
+                ["Dienste"] = new PufferAuslegungDienste(Rechnen, Speichern, Uebernehmen, ProbelaufImHintergrund, Nachbarstufen),
                 ["Texte"] = new PufferAuslegungTexte(),
                 ["HilfeSchluessel"] = HILFE
             };
@@ -455,12 +456,66 @@ namespace WindowsFormsApplication1
                 return PufferAuslegungErgebnisDaten.MitFehler(Format(MyResource.Resource.PAUS_REIHEN_FEHLER, _reihen.Fehlertext ?? ""));
             try
             {
-                return Abbilden(PufferAuslegungCtrl.Rechnen(EingangAus(d)));
+                PufferAuslegungEingang e = EingangAus(d);
+                var uhr = Stopwatch.StartNew();
+                PufferAuslegungErgebnis r = PufferAuslegungCtrl.Rechnen(e);
+                uhr.Stop();
+                PufferAuslegungErgebnisDaten daten = Abbilden(r);
+                // Die Nutzen-Aufwand-Zeile rechnet mit, wenn die Auslegung samt Betriebssimulation unter einer Sekunde lag;
+                // sonst nur auf Zuruf („Nachbarstufen rechnen").
+                if (uhr.Elapsed.TotalMilliseconds < NACHBARSTUFEN_AUTOMATISCH_MS)
+                    daten.Nachbarstufen = NachbarstufenGemessen(e, r, true);
+                return daten;
             }
             catch (ArgumentException ex)
             {
                 return PufferAuslegungErgebnisDaten.MitFehler(Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, ex.Message));
             }
+        }
+
+        /// <summary>Unter dieser Rechenzeit der Auslegung [ms] rechnet die Nutzen-Aufwand-Zeile mit.</summary>
+        internal const double NACHBARSTUFEN_AUTOMATISCH_MS = 1000;
+
+        /// <summary>Die Nutzen-Aufwand-Zeile auf Zuruf: rechnet die Auslegung und die Nachbarstufen des Arbeitsstands.</summary>
+        internal PufferNachbarstufenDaten Nachbarstufen(PufferAuslegungEingabeDaten d)
+        {
+            if (_vorbelegung == null || !_reihen.Vorhanden) return new PufferNachbarstufenDaten();
+            try
+            {
+                PufferAuslegungEingang e = EingangAus(d);
+                return NachbarstufenGemessen(e, PufferAuslegungCtrl.Rechnen(e), false);
+            }
+            catch (ArgumentException ex)
+            {
+                return new PufferNachbarstufenDaten { KurveHinweis = Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, ex.Message) };
+            }
+        }
+
+        private static PufferNachbarstufenDaten NachbarstufenGemessen(PufferAuslegungEingang e, PufferAuslegungErgebnis r, bool automatisch)
+        {
+            var uhr = Stopwatch.StartNew();
+            PufferNachbarstufen n = PufferAuslegung.Nachbarstufen(e, r);
+            uhr.Stop();
+            PufferNachbarstufenDaten daten = Abbilden(n);
+            daten.DauerMs = uhr.Elapsed.TotalMilliseconds;
+            daten.Automatisch = automatisch;
+            return daten;
+        }
+
+        /// <summary>Die Nutzen-Aufwand-Zeile des Kerns als Anzeige (Texte in der Oberflächensprache).</summary>
+        internal static PufferNachbarstufenDaten Abbilden(PufferNachbarstufen n)
+        {
+            if (n == null) return new PufferNachbarstufenDaten();
+            return new PufferNachbarstufenDaten
+            {
+                Stufen = n.Stufen.Select(s => new PufferNachbarstufeDaten(
+                    s.Abstand, s.VolumenL, s.MehrvolumenL, s.Deckungsgrad, s.StartsJeTag, s.StartsHeizperiode,
+                    s.Verlust?.KwhJeJahr ?? 0, Textbaustein.Aufloesen(s.JazHinweis))).ToList(),
+                Kurve = n.Kurve.Select(k => new PufferLeistungspunktDaten(k.LeistungKw, k.Anteil, k.VolumenL, k.LaufzeitH, k.ImLaufzeitband)).ToList(),
+                KurveHinweis = Textbaustein.Aufloesen(n.KurveHinweis),
+                Herkunft = Textbaustein.Aufloesen(n.HerkunftBaustein),
+                Simulationszone = n.Simulationszone.HasValue ? PufferAuslegungTexte.Nach("PAUS_ZONE_", n.Simulationszone.Value.ToString()) : ""
+            };
         }
 
         // =================================================================

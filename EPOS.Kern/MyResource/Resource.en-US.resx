@@ -44049,5 +44049,95 @@ This folder holds the standard template, the short report, the detailed template
   <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
     <value>Table of the saved buffer designs of the base project: one group row per design, below it storage class, template, usage profile, zone volumes, sizing criterion, recommendation, key figures and notes. If it is in the template, the section in the project chapter is omitted.</value>
   </data>
+  <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
+    <value>Buffer sizing concept 6 (benefit-effort line); pass-through D1 and two-point D2 with fixed volume, loss K11 by class C limit</value>
+  </data>
+  <data name="PAUS_HERK_KURVE" xml:space="preserve">
+    <value>Ecosizer (Ecotope 2020), storage versus capacity: running volume of the peak event ÷ η_s</value>
+  </data>
+  <data name="PAUS_JAZ_EMPFEHLUNG" xml:space="preserve">
+    <value>Recommendation</value>
+  </data>
+  <data name="PAUS_JAZ_GROESSER" xml:space="preserve">
+    <value>larger tank: more standby loss and higher mean buffer temperature, SPF decreases</value>
+  </data>
+  <data name="PAUS_JAZ_GROESSER_OHNE_WP" xml:space="preserve">
+    <value>larger tank: more standby loss, fewer starts</value>
+  </data>
+  <data name="PAUS_JAZ_KLEINER" xml:space="preserve">
+    <value>smaller tank: less standby loss but more starts — frequent cycling strains compressor and SPF</value>
+  </data>
+  <data name="PAUS_JAZ_KLEINER_OHNE_WP" xml:space="preserve">
+    <value>smaller tank: less standby loss, more starts</value>
+  </data>
+  <data name="PAUS_KURVE_KEIN_ZAPFPROFIL" xml:space="preserve">
+    <value>no curve: no draw-off profile result</value>
+  </data>
+  <data name="PAUS_KURVE_OHNE_LADELEISTUNG" xml:space="preserve">
+    <value>no curve: the draw-off profile provides no charging capacity or no D_max</value>
+  </data>
+  <data name="PAUS_KURVE_OHNE_REIHE" xml:space="preserve">
+    <value>no curve: the draw-off series is empty</value>
+  </data>
+  <data name="PAUS_KURVE_HINWEIS" xml:space="preserve">
+    <value>Running volume at {0} kW = D_max {1} kWh; the draw-off series carries the change with capacity; volume at ΔT_B {2} K and η_s {3}</value>
+  </data>
+  <data name="PAUS_NA_GRUPPE" xml:space="preserve">
+    <value>Benefit and effort of neighbouring sizes</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_STUFE" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_MEHR" xml:space="preserve">
+    <value>Additional volume</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_DECKUNG" xml:space="preserve">
+    <value>Coverage</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_STARTS" xml:space="preserve">
+    <value>Starts per day</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_VERLUST" xml:space="preserve">
+    <value>Loss kWh/a</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_JAZ" xml:space="preserve">
+    <value>Effect</value>
+  </data>
+  <data name="PAUS_NA_EMPFEHLUNG" xml:space="preserve">
+    <value>Recommendation</value>
+  </data>
+  <data name="PAUS_NA_KNOPF" xml:space="preserve">
+    <value>Calculate neighbouring sizes</value>
+  </data>
+  <data name="PAUS_NA_ERKLAERUNG" xml:space="preserve">
+    <value>The sizing took longer than one second: neighbouring sizes are calculated on request.</value>
+  </data>
+  <data name="PAUS_NA_STAND" xml:space="preserve">
+    <value>calculated in {0} ms; simulation: {1}</value>
+  </data>
+  <data name="PAUS_NA_OHNE_REIHE" xml:space="preserve">
+    <value>without series (volume and loss only)</value>
+  </data>
+  <data name="PAUS_KURVE_TITEL" xml:space="preserve">
+    <value>Storage versus capacity (domestic hot water)</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_LEISTUNG" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_ANTEIL" xml:space="preserve">
+    <value>Share of charging capacity</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_LAUFZEIT" xml:space="preserve">
+    <value>Run time per day</value>
+  </data>
+  <data name="PAUS_BERICHT_NA_ZEILE" xml:space="preserve">
+    <value>Size {0} l: coverage {1}, {2} starts per day, loss {3} kWh/a</value>
+  </data>
 </root>
 

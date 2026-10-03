@@ -702,6 +702,14 @@ namespace WindowsFormsApplication1
                 string abweichung = PufferauslegungNachrechnung(g, k.Kultur);
                 if (abweichung != null) k.HinweisRoh(abweichung);
 
+                // Welle P4d: die Nutzen-Aufwand-Zeile - nur, wenn die gespeicherte Auslegung nachgerechnet wurde.
+                List<string> stufen = PufferauslegungNachbarstufenzeilen(g, k.Kultur);
+                if (stufen.Count > 0)
+                {
+                    k.TextRoh(MyResource.Resource.PAUS_NA_GRUPPE);
+                    foreach (string z in stufen) k.HinweisRoh("• " + z);
+                }
+
                 k.TextRoh(MyResource.Resource.PAUS_GRUPPE_WARNUNGEN);
                 foreach (string w in PufferauslegungWarnzeilen(g, k.Kultur)) k.HinweisRoh("• " + w);
             }
@@ -765,6 +773,27 @@ namespace WindowsFormsApplication1
             paare.Add(MyResource.Resource.BER_PAUS_BERECHNET_AM);
             paare.Add(g.BerechnetAm.HasValue ? g.BerechnetAm.Value.ToString("dd.MM.yyyy HH:mm", kultur) : "—");
             return paare;
+        }
+
+        /// <summary>
+        /// Die Zeilen der Nutzen-Aufwand-Zeile („Stufe 800 l: Deckung …, Starts …, Verlust … — Hinweis“), die
+        /// Empfehlung markiert; leer, wenn die gespeicherte Auslegung nicht nachgerechnet wurde.
+        /// </summary>
+        internal static List<string> PufferauslegungNachbarstufenzeilen(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            var l = new List<string>();
+            if (g?.Nachbarstufen == null || g.Fehlertext != null) return l;
+            foreach (PufferNachbarstufe s in g.Nachbarstufen)
+            {
+                string zeile = string.Format(kultur, MyResource.Resource.PAUS_BERICHT_NA_ZEILE,
+                    s.VolumenL.ToString("N0", kultur),
+                    s.Deckungsgrad.HasValue ? (s.Deckungsgrad.Value * 100).ToString("N1", kultur) + " %" : "—",
+                    s.StartsJeTag.HasValue ? s.StartsJeTag.Value.ToString("N1", kultur) : "—",
+                    (s.Verlust?.KwhJeJahr ?? 0).ToString("N0", kultur));
+                string hinweis = Textbaustein.Aufloesen(s.JazHinweis, kultur);
+                l.Add(hinweis.Length > 0 ? zeile + " — " + hinweis : zeile);
+            }
+            return l;
         }
 
         /// <summary>Der Hinweis zur Nachrechnung (fehlt oder weicht ab); <c>null</c> = keiner.</summary>

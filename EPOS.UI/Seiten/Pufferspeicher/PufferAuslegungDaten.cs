@@ -295,6 +295,9 @@ public sealed class PufferAuslegungErgebnisDaten
     public PufferKennzahlDaten Kennzahlen { get; set; } = new();
     public IReadOnlyList<PufferWarnungDaten> Warnungen { get; set; } = Array.Empty<PufferWarnungDaten>();
 
+    /// <summary>Die Nutzen-Aufwand-Zeile (Nachbarstufen und Kurve); <c>null</c> = nicht gerechnet (nur auf Zuruf).</summary>
+    public PufferNachbarstufenDaten? Nachbarstufen { get; set; }
+
     /// <summary>Das Kriterium mit der Kennung aus der ersten Zone, die es führt; <c>null</c> = keine.</summary>
     public PufferKriteriumDaten? Kriterium(string kennung)
     {
@@ -310,6 +313,34 @@ public sealed class PufferAuslegungErgebnisDaten
     /// <summary>Ein Ergebnis im Zustand <see cref="PufferErgebnisZustand.Fehler"/>.</summary>
     public static PufferAuslegungErgebnisDaten MitFehler(string grund)
         => new() { Zustand = PufferErgebnisZustand.Fehler, Grund = grund ?? "" };
+}
+
+/// <summary>Eine Stufe der Nutzen-Aufwand-Zeile: Abstand zur Empfehlung, Volumen, Deckung, Starts, Verlust, JAZ-Hinweis.</summary>
+public sealed record PufferNachbarstufeDaten(int Abstand, double VolumenL, double MehrvolumenL, double? Deckungsgrad,
+                                             double? StartsJeTag, int? StartsHeizperiode, double VerlustKwhJeJahr, string JazHinweis)
+{
+    /// <summary>Ist die Stufe die Empfehlung?</summary>
+    public bool Empfehlung => Abstand == 0;
+}
+
+/// <summary>Ein Punkt der Speicher-gegen-Leistung-Kurve (Brauchwasserzone, Ecosizer-Weg).</summary>
+public sealed record PufferLeistungspunktDaten(double LeistungKw, double Anteil, double VolumenL, double? LaufzeitH, bool ImLaufzeitband);
+
+/// <summary>Die Nutzen-Aufwand-Zeile der Ergebnisansicht samt Kurve und Rechendauer.</summary>
+public sealed class PufferNachbarstufenDaten
+{
+    public IReadOnlyList<PufferNachbarstufeDaten> Stufen { get; set; } = Array.Empty<PufferNachbarstufeDaten>();
+    public IReadOnlyList<PufferLeistungspunktDaten> Kurve { get; set; } = Array.Empty<PufferLeistungspunktDaten>();
+    /// <summary>Wie die Kurve entstand bzw. warum es keine gibt.</summary>
+    public string KurveHinweis { get; set; } = "";
+    /// <summary>Die Herkunft der Zeile.</summary>
+    public string Herkunft { get; set; } = "";
+    /// <summary>Die Zone, deren Reihe die Simulation trug; leer = ohne Reihe.</summary>
+    public string Simulationszone { get; set; } = "";
+    /// <summary>Rechendauer [ms].</summary>
+    public double DauerMs { get; set; }
+    /// <summary>Mit der Auslegung gerechnet (unter einer Sekunde) statt auf Zuruf.</summary>
+    public bool Automatisch { get; set; }
 }
 
 /// <summary>Was übernommen werden soll: neuer Speicher oder der gewählte, mit Bezeichnung.</summary>
@@ -329,11 +360,13 @@ public sealed record PufferUebernahmeErgebnis(bool Erfolg, string Text, int IdPu
 /// <param name="Speichern">Speichert Eingaben und Ergebnis; <c>null</c> = gespeichert, sonst der Grund.</param>
 /// <param name="Uebernehmen">Speichert und übernimmt die Empfehlung in den Projektpuffer.</param>
 /// <param name="Probelauf">Rechnet das Projekt einmal mit der Empfehlung (Jahressimulation, nichts wird gespeichert).</param>
+/// <param name="Nachbarstufen">Rechnet die Nutzen-Aufwand-Zeile auf Zuruf; <c>null</c> = kein Knopf.</param>
 public sealed record PufferAuslegungDienste(
     Func<PufferAuslegungEingabeDaten, PufferAuslegungErgebnisDaten> Rechnen,
     Func<PufferAuslegungEingabeDaten, string?>? Speichern = null,
     Func<PufferAuslegungEingabeDaten, PufferUebernahmeDaten, PufferUebernahmeErgebnis>? Uebernehmen = null,
-    Func<PufferAuslegungEingabeDaten, System.Threading.Tasks.Task<PufferProbelaufDaten>>? Probelauf = null);
+    Func<PufferAuslegungEingabeDaten, System.Threading.Tasks.Task<PufferProbelaufDaten>>? Probelauf = null,
+    Func<PufferAuslegungEingabeDaten, PufferNachbarstufenDaten>? Nachbarstufen = null);
 
 /// <summary>Die Starts eines Erzeugertyps im Probelauf (Name aus den Ressourcen).</summary>
 /// <param name="AusReihe">Der Lauf zählt keine Starts (Gerät ohne Mindestleistung); gezählt sind die Einschaltflanken.</param>

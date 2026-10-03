@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     // ====================================================================================
 
     /// <summary>Die Pufferspeicher-Auslegung (Konzept 5) — <see cref="Rechnen"/> ist der einzige Einstieg.</summary>
-    public static class PufferAuslegung
+    public static partial class PufferAuslegung
     {
         /// <summary>Die feste Nenninhaltsliste [l] — gleich den gesäten Schlüsseln <c>Speicherauslegung.Nenninhalt.Liste.*</c>.</summary>
         public static readonly IReadOnlyList<double> NENNINHALTE_VORGABE = new double[]
