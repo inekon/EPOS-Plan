@@ -206,25 +206,60 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Eine_zu_kleine_Trenndecke_koppelt_nicht_dann_bleibt_Z5_mit_Hinweis()
+        public void Referenziert_die_Datei_nicht_alle_Deckenteile_kommt_die_Flaeche_aus_den_Raummengen()
         {
             GebaeudeImportAblauf a;
             using (var s = new MemoryStream(IfcProbenErzeuger.Referenzen(schwach: true)))
                 a = Lesen(s, "referenzen_schwach.ifc");
             AbbildGebaeude g = a.Abbild.Gebaeude.Single();
             Assert.Equal(2, g.ZahlTrenndeckenReferenz);
-            Assert.False(g.GeschosseGekoppelt);
-            PruefMeldung klein = Assert.Single(g.Meldungen, x => x.Schluessel == P + "TRENNDECKE_KLEIN");
-            Assert.Equal(PruefStufe.Warnung, klein.Stufe);
-            Assert.Equal(new[] { "EG", "OG", "10", "60", "17" }, klein.Werte);
+            PruefMeldung m = Assert.Single(g.Meldungen, x => x.Schluessel == P + "TRENNDECKE_GESCHAETZT");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "EG", "OG", "60", "10" }, m.Werte);   // die kleinere beheizte Grundfläche statt der referenzierten
+            Assert.False(Hat(g.Meldungen, "TRENNDECKE_KLEIN"));
+            AbbildBauteil decke = Bauteil(a, "Decke EG/OG");
+            Nah(60.0, decke.BruttoflaecheM2);
+            Nah(60.0, decke.NettoflaecheM2);
+            Nah(1.0, decke.UWertWm2K);                                  // U-Wert des referenzierten Teils
 
+            // Das Paar koppelt: Z4 ist die Vorgabe, die Trennfläche trägt die geschätzte Fläche.
+            Assert.True(g.GeschosseGekoppelt);
             GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0);
-            Assert.Equal("Z5", z.Vorgabe);
-            Assert.True(Hat(z.Meldungen, "KEINE_GRENZEN"));
-            GebaeudeZonierung z4 = GebaeudeZonierung.Bilden(a.Abbild, 0, "Z4");
-            Assert.False(z4.Abgelehnt);
-            Assert.True(Hat(z4.Meldungen, "GRENZEN_ENTKOPPELT"));
-            Assert.Contains(z4.Trennungen, t => z4.Zonen[t.ZoneA].Name == "EG" && z4.Zonen[t.ZoneB].Name == "OG" && t.FlaecheA == 10.0);
+            Assert.Equal("Z4", z.Vorgabe);
+            Assert.False(Hat(z.Meldungen, "GRENZEN_ENTKOPPELT"));
+            Assert.Contains(z.Trennungen, t => z.Zonen[t.ZoneA].Name == "EG" && z.Zonen[t.ZoneB].Name == "OG" && t.FlaecheA == 60.0);
+            // Die Kellerdecke grenzt an ein Geschoss ohne beheizten Raum: nicht geschätzt.
+            Nah(65.0, Bauteil(a, "Kellerdecke").BruttoflaecheM2);
+        }
+
+        [Fact]
+        public void Bei_vollstaendigen_Bezuegen_wird_nicht_geschaetzt()
+        {
+            GebaeudeImportAblauf a = Lesen(PROBE);
+            Assert.False(Hat(a.Abbild.Gebaeude.Single().Meldungen, "TRENNDECKE_GESCHAETZT"));
+            Nah(60.0, Bauteil(a, "Decke EG/OG").BruttoflaecheM2);
+        }
+
+        [Fact]
+        public void Die_Erklaerung_der_Datei_gilt_vor_dem_Bezug_und_der_Widerspruch_wird_benannt()
+        {
+            GebaeudeImportAblauf a;
+            using (var s = new MemoryStream(IfcProbenErzeuger.Referenzen(spitzboden: true)))
+                a = Lesen(s, "referenzen_spitzboden.ifc");
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            Assert.True(g.Raeume.Single(r => r.Name == "Spitzboden").Beheizt);
+            AbbildBauteil oben = Bauteil(a, "Oberste Decke");
+            Assert.Empty(oben.Nachbarn);                 // keine Trenndecke OG/DG
+            Assert.True(oben.HuelleOhneNachbar);         // die Hülle gegen unbeheizt bleibt
+            Assert.Equal(2, g.ZahlTrenndeckenReferenz);
+            PruefMeldung m = Assert.Single(g.Meldungen, x => x.Schluessel == P + "ERKLAERUNG_VOR_BEZUG");
+            Assert.Equal(PruefStufe.Warnung, m.Stufe);
+            Assert.Equal(new[] { "Oberste Decke", "Spitzboden" }, m.Werte);   // der Raum der Seite, die die Datei unbeheizt nennt
+            // Das beheizte DG ist nicht gekoppelt: Z5 bleibt die Vorgabe.
+            Assert.False(g.GeschosseGekoppelt);
+            Assert.Equal("Z5", GebaeudeZonierung.Bilden(a.Abbild, 0).Vorgabe);
+            // Ohne Spitzboden kein Hinweis.
+            Assert.False(Hat(Lesen(PROBE).Abbild.Gebaeude.Single().Meldungen, "ERKLAERUNG_VOR_BEZUG"));
         }
 
         [Fact]
@@ -329,6 +364,8 @@ namespace EPOS.Kern.Tests
                 var alle = a.Meldungen.Concat(a.Abbild?.Gebaeude.SelectMany(g => g.Meldungen) ?? Enumerable.Empty<PruefMeldung>()).ToList();
                 Assert.False(Hat(alle, "TRENNDECKE_REFERENZ"), probe);
                 Assert.False(Hat(alle, "TRENNDECKE_KLEIN"), probe);
+                Assert.False(Hat(alle, "TRENNDECKE_GESCHAETZT"), probe);
+                Assert.False(Hat(alle, "ERKLAERUNG_VOR_BEZUG"), probe);
                 Assert.False(Hat(alle, "BAUJAHR_DATEINAME"), probe);
                 Assert.False(Hat(alle, "NAME_PLATZHALTER"), probe);
                 if (a.Abbild == null) continue;

@@ -200,7 +200,8 @@ namespace WindowsFormsApplication1
         /// Koppeln die Trenndecken aus den Raumbezügen (<see cref="ZahlTrenndeckenReferenz"/>) alle Geschosse mit
         /// beheizten Räumen zu einem Verbund (auch über ein unbeheiztes Geschoss)? Ein Geschosspaar trägt, wenn seine
         /// Trenndeckenfläche mindestens <see cref="IfcAbbildBauer.TRENNDECKE_ANTEIL_MIN"/> der beheizten Grundfläche des
-        /// kleineren Geschosses erreicht. Dann ist die Geschosszonierung (Z4) ohne Raumgrenzen die Vorgabe (M7); sonst
+        /// kleineren Geschosses erreicht — nach der Schätzung aus den Raummengen (unvollständige Bezüge) gilt das für jedes
+        /// Paar mit beheizten Räumen auf beiden Seiten. Dann ist die Geschosszonierung (Z4) ohne Raumgrenzen die Vorgabe (M7); sonst
         /// bleibt eine Zone vorgegeben (6.5).
         /// </summary>
         public bool GeschosseGekoppelt { get; set; }
