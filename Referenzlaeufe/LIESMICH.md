@@ -557,8 +557,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **175**, 81 494 016 Byte, LFS-SHA-256
-`551a288deae7562b316a798f0c7b669e3b453ce8d22ad01fe6cebbd733c73951`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+`Kenndaten_Test.sqlite` (Schemastand **176**, 81 494 016 Byte, LFS-SHA-256
+`4db1fadcfce4ba499bf99abbb4c83d9c19b3cbad2ac6b71a456cc2e24a5f968b`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
 Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
 und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
 Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
@@ -733,6 +733,16 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Werte wie der Stamm; die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV
 > byte-gleich. Berührt ist die Einfrierregel „gesäte Bedarfsdaten“ nur im Wortlaut (`Tab_Brennstoff` der Referenzprojekte
 > gehört seither dazu, siehe `CLAUDE.md`), nicht im Wert.
+
+> **Nachtrag — Schemaschritt 176 (Konditionierungsnutzung an der Kalenderkopie), Basis unverändert.**
+> `KonditionierungNutzungSchema` (Nummer `ProjektkopienKatalogeSchema.SCHRITT + 1`): Spalte `Nutzung` (nullbar, Prüfklausel
+> auf die vier Nutzungen) an `Tab_Konditionierungskalender`. „Vorlage übernehmen“ und der Paketimport setzen sie aus der
+> Vorlage, die Saat füllt bestehende Kalender einmalig aus der Herkunft in `Bemerkung`; die Pufferauslegung liest ihre
+> Vorbelegung seither aus der Kopie statt aus dem Stamm. Die Testdatenbank ist aus der Fassung `551a288d…` (175) mit
+> `Werkzeuge/Testdatenbankschema` auf **176** gezogen (eine Spalte, 0 Kalender gesät: keiner der 10 Kalender trägt eine
+> Bemerkung; `integrity_check` ok). Neue Fassung **81 494 016 Byte, LFS-SHA-256
+> `4db1fadcfce4ba499bf99abbb4c83d9c19b3cbad2ac6b71a456cc2e24a5f968b`**. **Die Basis bleibt:** Kein Rechenweg liest die Spalte; die sechzehn Projekte
+> rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
 
