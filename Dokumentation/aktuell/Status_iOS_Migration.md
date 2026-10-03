@@ -15,7 +15,7 @@ Umsetzungskonzept) liegen in
 **Referenzbasis angemeldet:** **R34 — Sitzung Gebäudesimulation (KP3)**, Anwenderentscheid 03.10.2026; gegenwärtig gilt R33.
 Wer eine Basis neu einfriert, nimmt die nächste freie Nummer nach der angemeldeten (R35) und trägt sie hier ein.
 
-**Schemaschritt angemeldet:** **173 — frei** (zuletzt vergeben: 172 `KatalogfassungSchema`,
+**Schemaschritt angemeldet:** **173 — Sitzung Dialoge und Korrekturen, Welle KU1 Stufe 2 (Katalogabgleich übrige Kataloge), 03.10.2026 08:45 UTC** (zuletzt vergeben: 172 `KatalogfassungSchema`,
 Sitzung Dialoge und Korrekturen, Welle M6; 171 `PufferOptionenSchema`, Welle M7, #677). Wer eine
 Welle mit Schemaschritt beginnt, trägt hier **vor dem Bau**
 „<Nr> — <Sitzung>, <Welle>, <Datum, Uhrzeit UTC>" ein und pusht allein diese Zeile sofort (`git fetch`,
