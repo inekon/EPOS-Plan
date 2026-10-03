@@ -165,6 +165,12 @@ namespace WindowsFormsApplication1
         internal bool KuehlungAktiv;
 
         /// <summary>
+        /// Die Erdreichkennwerte nach DIN EN ISO 13370 des VDI-Laufs (B′, U_g, R_g);
+        /// <c>null</c> ohne VDI-Lauf oder ohne Bauteil am Erdreich.
+        /// </summary>
+        internal Erdreichkennwerte Erdreich;
+
+        /// <summary>
         /// Der wirksame Kühlsollwert [°C] — gesetzt genau dann, wenn der Lauf das Gebäude kühlt
         /// (Projektschalter, Haken und Sollwert); <c>null</c> = das Gebäude läuft frei (E32).
         /// </summary>
@@ -446,6 +452,7 @@ namespace WindowsFormsApplication1
             if (vdi != null)
             {
                 ergebnis.KuehlenergieMwh = vdi.KuehlenergieMwh;
+                ergebnis.Erdreich = vdi.Erdreich;
                 ergebnis.KuehlstundenH = vdi.StundenMitKuehlbedarf;
                 ergebnis.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
                 ergebnis.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
