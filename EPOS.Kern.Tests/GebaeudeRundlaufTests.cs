@@ -354,7 +354,8 @@ namespace EPOS.Kern.Tests
             DataTable dt = DataRepository.GetDataTable("SELECT * FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", id));
             Assert.Single(dt.Rows);
             var zeile = new Dictionary<string, object>(StringComparer.Ordinal);
-            foreach (DataColumn c in dt.Columns) zeile[c.ColumnName] = dt.Rows[0][c];
+            foreach (DataColumn c in dt.Columns)
+                if (!Katalogfassung.IstKatalogspalte(c.ColumnName)) zeile[c.ColumnName] = dt.Rows[0][c];   // KU1: kein Fachwert
             return zeile;
         }
 

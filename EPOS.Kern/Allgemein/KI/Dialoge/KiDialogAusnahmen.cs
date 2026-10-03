@@ -197,6 +197,10 @@ namespace WindowsFormsApplication1
             new KiAusnahme("KatalogDublettenDialog", KiAusnahmegrund.Werkzeug,
                            "Das Dublettenwerkzeug führt Katalogsätze zusammen; der Eingriff bleibt beim Anwender.",
                            hilfeschluessel: "Form_KatalogDubletten.btn_Help"),
+            new KiAusnahme("ProjektBrennstoffeDialog", KiAusnahmegrund.Werkzeug,
+                           "Die Brennstoffe des Projekts schreiben je Satz sofort; Bearbeiten, Zurücksetzen auf den " +
+                           "Katalog und Übernehmen bleiben beim Anwender.",
+                           hilfeschluessel: "Form_ProjektBrennstoffe.btn_Help"),
 
             // ---- Überlagerung, deren Wert der Wirt führt -----------------------------
             new KiAusnahme("BetriebsmodusDialog", KiAusnahmegrund.FeldDesWirts,

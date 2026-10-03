@@ -70,7 +70,7 @@ namespace WindowsFormsApplication1
         /// vor dem Schemacommit gegen <c>origin</c> (Festlegung 43, ADR-001 A11): der Schritt hinter der
         /// zuletzt auf <c>origin</c> liegenden Klasse.
         /// </summary>
-        public const int SCHRITT = KatalogfassungSchema.SCHRITT + 1;
+        public const int SCHRITT = KatalogfassungStufe2Schema.SCHRITT + 1;
 
         /// <summary>Die Projekteinstellungen.</summary>
         public const string TAB_EINSTELLUNGEN = SchemaKatalog.TAB_EINSTELLUNGEN;

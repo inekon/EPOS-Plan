@@ -9,7 +9,8 @@ namespace WindowsFormsApplication1
     /// Der Parametersatz der Pufferspeicher-Auslegung (Konzept 4.1, 5): die Werte der Vorgabetabelle
     /// <c>Tab_PufferAuslegungParameter_STAMM</c>, für jeden fehlenden Schlüssel der eingebaute Wert aus
     /// <see cref="PufferAuslegungVorgaben"/> — derselben Liste, aus der die Saat stammt. Der Rechenkern
-    /// bekommt den Satz fertig im Eingang und liest selbst keine Datenbank.
+    /// bekommt den Satz fertig im Eingang und liest selbst keine Datenbank. Ein Projekt liest seine
+    /// Projektkopie (<see cref="ProjektPufferparameter"/>, <see cref="Lesen(int)"/>).
     /// </summary>
     public sealed class PufferAuslegungParameter
     {
@@ -70,6 +71,30 @@ namespace WindowsFormsApplication1
             PufferAuslegungParameter p = Vorgabe();
             if (!DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB_PARAMETER)) return p;
             DataTable t = DataRepository.GetDataTable(SQL_LESEN, new DbParam("@s", PufferAuslegungVorgaben.PRAEFIX + "%"));
+            if (t == null) return p;
+            foreach (DataRow r in t.Rows)
+            {
+                if (!(r["Schluessel"] is string s) || r["Wert"] == DBNull.Value) continue;
+                double w = Convert.ToDouble(r["Wert"], CultureInfo.InvariantCulture);
+                if (double.IsNaN(w) || double.IsInfinity(w)) continue;
+                p._werte[s] = w;
+                if (r["Quelle"] is string q && q.Length > 0) p._quellen[s] = q;
+                p._ausTabelle.Add(s);
+            }
+            return p;
+        }
+
+        /// <summary>
+        /// Liest den Satz eines Projekts: eingebaute Vorgaben, darüber die Vorgabetabelle, darüber die
+        /// Projektkopie (<see cref="ProjektPufferparameter"/>), sobald das Projekt eine führt. Ohne
+        /// Projekt (<paramref name="idProjekt"/> ≤ 0) wie <see cref="Lesen()"/>.
+        /// </summary>
+        public static PufferAuslegungParameter Lesen(int idProjekt)
+        {
+            PufferAuslegungParameter p = Lesen();
+            if (idProjekt <= 0 || !ProjektPufferparameter.Vorhanden()) return p;
+            DataTable t = DataRepository.GetDataTable(ProjektPufferparameter.SQL_LESEN, new DbParam("@p", idProjekt),
+                                                      new DbParam("@s", PufferAuslegungVorgaben.PRAEFIX + "%"));
             if (t == null) return p;
             foreach (DataRow r in t.Rows)
             {

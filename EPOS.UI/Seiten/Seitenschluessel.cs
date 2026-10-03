@@ -193,6 +193,16 @@ public static class Seitenschluessel
     /// </remarks>
     public const string StromspeicherAuslegung = "STROMSPEICHER_AUSLEGUNG";
 
+    /// <summary>
+    /// Die Ansicht „Pufferspeicher-Auslegung" (<c>Seiten.Pufferspeicher.PufferAuslegungSeite</c>;
+    /// Konzept Pufferspeicher-Auslegung, Stufe P2) — eine freie Ansicht nach dem Muster der
+    /// Stromspeicher-Auslegung, ohne Menüpunkt und ohne <c>Masken.*</c>-Zwilling. Die Wege hinein:
+    /// „Pufferspeicher auslegen…" in ① Konfiguration, „Auslegen…" in der Pufferverwaltung und in der
+    /// Kachel Pufferspeicher; der Arbeitsgang (Projekt, Zielpuffer) ist vorher bei
+    /// <c>PufferAuslegungHuelle</c> angemeldet.
+    /// </summary>
+    public const string PufferAuslegung = "PUFFER_AUSLEGUNG";
+
     // =====================================================================
     //  K7 (iU9-W16c.0, Entscheid E-2) - die 25 Maskenschluessel des Kerns
     //
@@ -411,6 +421,17 @@ public static class Seitenschluessel
     /// </remarks>
     public const string Katalogabgleich = "KATALOGABGLEICH";
 
+    /// <summary>
+    /// Menue „Administration -> Kosten -> Brennstoffe des Projekts…"
+    /// (<c>ProjektBrennstoffeDialog</c>, Anwenderentscheid 03.10.2026: Projektkopie des Brennstoffkatalogs).
+    /// </summary>
+    /// <remarks>
+    /// Der Weg fuehrt ueber die Windows-Huelle (<c>HauptfensterHuelle.Weg</c>) in ein modales
+    /// Fenster. Auf iOS faellt der Schluessel durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort liest das Projekt seine Kopien, gepflegt werden sie unter Windows.
+    /// </remarks>
+    public const string ProjektBrennstoffe = "PROJEKT_BRENNSTOFFE";
+
     /// <summary>Menue „Administration -> Lizenz…" (<c>LizenzVerwaltungDialog</c>, W15c.5).</summary>
     public const string LizenzVerwaltung = "LIZENZ_VERWALTUNG";
 
@@ -438,7 +459,7 @@ public static class Seitenschluessel
         Projektliste, Energietraeger, BhkwWirtschaftlichkeit,
         SimulationKonfiguration, SimulationErgebnis, Simulation,
         KiAssistent, Assistent,
-        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung,
+        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,
@@ -452,7 +473,7 @@ public static class Seitenschluessel
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
         BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender,
-        Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
+        Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
     };

@@ -281,6 +281,11 @@ namespace WindowsFormsApplication1
             // "Katalog ansehen" nicht - genau der Stand auf iOS.
             Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
 
+            // Stufe P2 der Pufferspeicher-Auslegung: Die Uebergabe aus dem Zapfprofil (das selbst in
+            // einem Fenster steht) oeffnet die Auslegung in einem eigenen Fenster. Ohne diesen Haken
+            // lehnt die Uebergabe benannt ab - genau der Stand auf iOS.
+            PufferAuslegungFenster.Einhaengen();
+
             // Berichtsvorlagen BV-E1 (Konzept 10.3): die Wege um eine Vorlagendatei, die nur
             // Windows kennt - "Im Ordner zeigen" (Explorer), "In Word oeffnen" und
             // "Schreibgeschuetzt oeffnen" (Word selbst) und die Wahl des Vorlagenordners. Ohne

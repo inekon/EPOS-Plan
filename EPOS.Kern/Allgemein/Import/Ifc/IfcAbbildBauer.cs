@@ -135,7 +135,9 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < gebaeude.Count; i++) Flaechenart(i);
             Melden(0.2);
 
+            Raumbezuege();
             Bauteile();
+            ReferenzenMelden();
             Melden(0.9);
 
             Abschluss();
@@ -1037,7 +1039,10 @@ namespace WindowsFormsApplication1
             UWert(e, satz, b);
             b.Aufbau = Aufbau(e, out IIfcMaterialLayerSetUsage nutzung);
 
-            Nachbarn(b, rand, grenzen, gi, platte != null || e is IIfcRoof);
+            // Ohne Raumgrenzen im ganzen Gebäude: die Raumbezüge (IfcRelReferencedInSpatialStructure, Mehrzonenkonzept 6.5).
+            bool ohneGrenzen = grenzen.Count == 0 && gi >= 0 && _abbild.Gebaeude[gi].ZahlGrenzen == 0;
+            if (!ohneGrenzen || !ReferenzNachbarn(e, b, rand, gi, platte != null || e is IIfcRoof, angrenzung?.Zonenboden))
+                Nachbarn(b, rand, grenzen, gi, platte != null || e is IIfcRoof);
             bool huelle = rand == Randbedingung.Aussenluft || rand == Randbedingung.Erdreich
                           || (rand == Randbedingung.Unbeheizt && angrenzung.HasValue);
             if (b.Nachbarn.Count == 0 && huelle && Huellkennung(e, out string kennung) == false)
@@ -1048,6 +1053,8 @@ namespace WindowsFormsApplication1
             }
             b.HuelleOhneNachbar = b.Nachbarn.Count == 0 && huelle;
             if (b.HuelleOhneNachbar && rand == Randbedingung.Unbeheizt) b.ZonenbodenOhneNachbar = angrenzung?.Zonenboden;
+            // Eine Innenwand ohne Nachbarraum: einseitig innere Masse statt übergangen (Mehrzonenkonzept 6.5).
+            b.InnenEinseitig = ohneGrenzen && e is IIfcWall && rand == Randbedingung.Innen && b.Nachbarn.Count == 0;
 
             if (senkrecht) Azimut(e, b, grenzen, gi);
             if (b.Aufbau != null) Schichtfolge(e, b, nutzung, grenzen, gi);
@@ -1081,6 +1088,12 @@ namespace WindowsFormsApplication1
                 else continue;
                 _gefuellt.Add(t.EntityLabel);
                 _dachteilOeffnungen++;
+            }
+
+            if (b.InnenEinseitig)
+            {
+                _innenEinseitig++;
+                _innenEinseitigM2 += b.BruttoflaecheM2 ?? 0.0;
             }
 
             if (gi < 0)
@@ -1203,6 +1216,233 @@ namespace WindowsFormsApplication1
             else
                 foreach (int r in beheizt.Concat(unbeheizt).Take(2))
                     b.Nachbarn.Add(new AbbildNachbar(_raum[r].Kennung, null));
+        }
+
+        // ==================================================================
+        //  Raumbezüge ohne Raumgrenzen (Mehrzonenkonzept 6.5)
+        // ==================================================================
+
+        /// <summary>Kleinste und größte Zahl der Räume eines Geschosses, die eine Wand referenzieren müssen, damit sie innere Masse ist.</summary>
+        internal const int WAND_BEZUG_MIN = 2, WAND_BEZUG_MAX = 4;
+
+        /// <summary>Bauteil → die Räume (bekannt, nach Kennzahl), die es über <c>IfcRelReferencedInSpatialStructure</c> referenzieren.</summary>
+        private readonly Dictionary<int, List<int>> _raumbezug = new Dictionary<int, List<int>>();
+
+        /// <summary>
+        /// Kleinster Anteil der Trenndeckenfläche eines Geschosspaars an der beheizten Grundfläche des kleineren der
+        /// beiden Geschosse, ab dem das Paar als gekoppelt gilt (<see cref="AbbildGebaeude.GeschosseGekoppelt"/>); darunter
+        /// nennen die Raumbezüge nicht alle Deckenteile, und das Paar ist benannt schwach gekoppelt.
+        /// </summary>
+        internal const double TRENNDECKE_ANTEIL_MIN = 0.5;
+
+        /// <summary>Gebäude → Trenndecken je Geschosspaar (Geschosskennungen unten, oben): die referenzierten Deckenteile.</summary>
+        private readonly Dictionary<int, SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>>> _trenndecken
+            = new Dictionary<int, SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>>>();
+
+        /// <summary>Gebäude → Platten, deren Erklärung gegen unbeheizt vor dem Raumbezug gilt, obwohl der Raum dieser Seite beheizt ist: Bauteil, Raum.</summary>
+        private readonly Dictionary<int, List<(string Bauteil, string Raum)>> _erklaerungVorBezug = new Dictionary<int, List<(string, string)>>();
+
+        /// <summary>Gebäude → Zahl der Innenwände, die über die Raumbezüge zwei Nachbarn bekommen.</summary>
+        private readonly Dictionary<int, int> _bezugswaende = new Dictionary<int, int>();
+
+        private int _innenEinseitig;
+        private double _innenEinseitigM2;
+
+        /// <summary>
+        /// <b>Die Raumbezüge</b> eines CAD-Exports ohne Raumgrenzen (HottCAD-Muster): Je Raum nennt ein
+        /// <c>IfcRelReferencedInSpatialStructure</c> die angrenzenden Bauteile. Gesammelt wird je Bauteil, welche
+        /// bekannten Räume es referenzieren — einmal je Modell, linear.
+        /// </summary>
+        private void Raumbezuege()
+        {
+            foreach (IIfcRelReferencedInSpatialStructure rel in Sortiert<IIfcRelReferencedInSpatialStructure>())
+            {
+                if (!(rel.RelatingStructure is IIfcSpace raum) || !_raum.ContainsKey(raum.EntityLabel)) continue;
+                foreach (IIfcProduct p in rel.RelatedElements)
+                {
+                    if (!(p is IIfcElement)) continue;
+                    if (!_raumbezug.TryGetValue(p.EntityLabel, out List<int> liste)) _raumbezug[p.EntityLabel] = liste = new List<int>();
+                    if (!liste.Contains(raum.EntityLabel)) liste.Add(raum.EntityLabel);
+                }
+            }
+            foreach (List<int> liste in _raumbezug.Values) liste.Sort();
+        }
+
+        /// <summary>
+        /// <b>Die Nachbarn aus den Raumbezügen</b> eines Bauteils ohne Raumgrenzen (Mehrzonenkonzept 6.5); <c>false</c> =
+        /// die Regel greift nicht, es gilt der bisherige Weg. Flächen werden nicht je Raumpaar gerechnet (ADR-003) —
+        /// das Bauteil trägt seine Menge einmal, zwischen genau zwei Räumen:
+        /// <list type="bullet">
+        /// <item><b>Trenndecke:</b> Eine Platte oder ein Dach, nicht außen, das Räume genau zweier Geschosse
+        /// referenzieren, trennt diese Geschosse — Nachbarn sind je Geschoss der erste beheizte Raum (sonst der erste),
+        /// mit der Sicht aus der Geschosslage (oben Boden, unten Decke). Erklärt die Datei die Platte gegen unbeheizt
+        /// (<c>btaCellarCeiling</c>, <c>btaUppermostStorey</c>), liegen aber beiderseits beheizte Räume, gilt die
+        /// Erklärung der Datei, nicht der Bezug.</item>
+        /// <item><b>Innenwand:</b> Eine Wand innen oder ohne Angabe, die <see cref="WAND_BEZUG_MIN"/> bis
+        /// <see cref="WAND_BEZUG_MAX"/> Räume desselben Geschosses referenzieren, liegt zwischen zwei von ihnen — zwei
+        /// beheizten, wenn es sie gibt (innere Masse), sonst einem beheizten und einem unbeheizten.</item>
+        /// </list>
+        /// </summary>
+        private bool ReferenzNachbarn(IIfcElement e, AbbildBauteil b, Randbedingung rand, int gi, bool waagerecht, bool? zonenboden)
+        {
+            if (rand == Randbedingung.Aussenluft || rand == Randbedingung.Erdreich) return false;
+            if (!_raumbezug.TryGetValue(e.EntityLabel, out List<int> alle)) return false;
+            List<int> raeume = alle.Where(r => _raumGebaeude[r] == gi).ToList();
+            if (raeume.Count < 2) return false;
+            List<IGrouping<string, int>> geschosse = raeume.GroupBy(r => _raum[r].GeschossKennung ?? "", StringComparer.Ordinal).ToList();
+
+            if (waagerecht)
+            {
+                if (geschosse.Count != 2 || geschosse.Any(x => x.Key.Length == 0)) return false;
+                int a = Erster(geschosse[0]), c = Erster(geschosse[1]);
+                if (!_raumLage[a].HasValue || !_raumLage[c].HasValue || _raumLage[a].Value == _raumLage[c].Value) return false;
+                (int unten, int oben) = _raumLage[a].Value < _raumLage[c].Value ? (a, c) : (c, a);
+                if (rand == Randbedingung.Unbeheizt && _raum[a].Beheizt && _raum[c].Beheizt)
+                {
+                    // Die Erklärung der Datei gilt vor dem Bezug; der Widerspruch zur Beheizung des Raums wird benannt —
+                    // der Raum der Seite, die die Datei unbeheizt nennt (Kellerdecke: unten, oberste Decke: oben).
+                    string raum = zonenboden == true ? Anzeige(unten) : zonenboden == false ? Anzeige(oben) : Anzeige(unten) + " / " + Anzeige(oben);
+                    if (!_erklaerungVorBezug.TryGetValue(gi, out List<(string, string)> liste)) _erklaerungVorBezug[gi] = liste = new List<(string, string)>();
+                    liste.Add((string.IsNullOrWhiteSpace(b.Name) ? b.Kennung : b.Name.Trim(), raum));
+                    return false;
+                }
+                // Der beheizte Raum zuerst (die gemeinsame Zuordnung liest die Sicht des ersten), sonst der untere.
+                bool obenZuerst = _raum[oben].Beheizt && !_raum[unten].Beheizt;
+                AbbildNachbar nOben = new AbbildNachbar(_raum[oben].Kennung, GebaeudeAggregation.SICHT_BODEN);
+                AbbildNachbar nUnten = new AbbildNachbar(_raum[unten].Kennung, GebaeudeAggregation.SICHT_DECKE);
+                b.Nachbarn.Add(obenZuerst ? nOben : nUnten);
+                b.Nachbarn.Add(obenZuerst ? nUnten : nOben);
+                if (!_trenndecken.TryGetValue(gi, out SortedDictionary<(string, string), List<AbbildBauteil>> paare))
+                    _trenndecken[gi] = paare = new SortedDictionary<(string, string), List<AbbildBauteil>>();
+                (string, string) paar = (_raum[unten].GeschossKennung, _raum[oben].GeschossKennung);
+                if (!paare.TryGetValue(paar, out List<AbbildBauteil> teile)) paare[paar] = teile = new List<AbbildBauteil>();
+                teile.Add(b);
+                return true;
+            }
+
+            if (!(e is IIfcWall) || rand == Randbedingung.Unbeheizt) return false;
+            if (geschosse.Count != 1 || raeume.Count > WAND_BEZUG_MAX || raeume.Count < WAND_BEZUG_MIN) return false;
+            List<int> beheizt = raeume.Where(r => _raum[r].Beheizt).ToList();
+            List<int> unbeheizt = raeume.Where(r => !_raum[r].Beheizt).ToList();
+            List<int> wahl = beheizt.Count >= 2 ? beheizt.Take(2).ToList()
+                           : beheizt.Count == 1 ? new List<int> { beheizt[0], unbeheizt[0] }
+                           : unbeheizt.Take(2).ToList();
+            foreach (int r in wahl) b.Nachbarn.Add(new AbbildNachbar(_raum[r].Kennung, null));
+            _bezugswaende[gi] = _bezugswaende.TryGetValue(gi, out int w) ? w + 1 : 1;
+            return true;
+        }
+
+        /// <summary>Der Name eines Raums, sonst seine Kennung.</summary>
+        private string Anzeige(int raum) => string.IsNullOrWhiteSpace(_raum[raum].Name) ? _raum[raum].Kennung : _raum[raum].Name.Trim();
+
+        /// <summary>Der erste beheizte Raum einer Gruppe, sonst der erste.</summary>
+        private int Erster(IEnumerable<int> raeume)
+        {
+            List<int> liste = raeume.ToList();
+            foreach (int r in liste) if (_raum[r].Beheizt) return r;
+            return liste[0];
+        }
+
+        /// <summary>
+        /// Die Meldungen der Raumbezüge und die <b>Schätzung der Trenndeckenfläche</b> (Anwenderentscheid 03.10.2026):
+        /// <list type="bullet">
+        /// <item>Je Gebäude die Trenndecken je Geschosspaar und die Innenwände (<c>IMP_IFC_PROT_TRENNDECKE_REFERENZ</c>, I).</item>
+        /// <item>Bleibt die Summe der referenzierten Deckenteile eines Geschosspaars unter der kleineren beheizten
+        /// Grundfläche der beiden Geschosse (aus den Raummengen), referenziert die Datei nicht alle Deckenteile: Die
+        /// Trenndeckenfläche ist dann diese Grundfläche, auf die referenzierten Teile im Verhältnis ihrer Flächen verteilt
+        /// (ohne Flächen zu gleichen Teilen) — U-Wert und Aufbau bleiben die der Teile, über die Fläche gewichtet
+        /// (<c>IMP_IFC_PROT_TRENNDECKE_GESCHAETZT</c>, I, mit geschätzter und referenzierter Fläche). Ohne beheizten Raum
+        /// in einem der Geschosse wird nicht geschätzt.</item>
+        /// <item>Der Kopplungswächter: Ein Paar unter <see cref="TRENNDECKE_ANTEIL_MIN"/> der Grundfläche des kleineren
+        /// Geschosses koppelt nicht (<c>IMP_IFC_PROT_TRENNDECKE_KLEIN</c>, W); nach der Schätzung greift er nur, wenn ein
+        /// Paar keine Grundfläche zum Schätzen hat.</item>
+        /// <item>Je Platte, deren Erklärung gegen unbeheizt vor dem Bezug gilt, obwohl der Raum der unbeheizten Seite als
+        /// beheizt gilt, ein Hinweis (<c>IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG</c>, W).</item>
+        /// <item>Dateiweit die Innenwände, die einseitig als innere Masse zählen (<c>IMP_IFC_PROT_INNEN_EINSEITIG</c>, I).</item>
+        /// </list>
+        /// </summary>
+        private void ReferenzenMelden()
+        {
+            for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
+            {
+                AbbildGebaeude g = _abbild.Gebaeude[gi];
+                if (_erklaerungVorBezug.TryGetValue(gi, out List<(string Bauteil, string Raum)> erklaert))
+                    foreach ((string bauteil, string raum) in erklaert)
+                        g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "ERKLAERUNG_VOR_BEZUG", bauteil, raum));
+                _trenndecken.TryGetValue(gi, out SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>> paare);
+                _bezugswaende.TryGetValue(gi, out int waende);
+                int decken = paare?.Values.Sum(p => p.Count) ?? 0;
+                if (decken == 0 && waende == 0) continue;
+                g.ZahlTrenndeckenReferenz = decken;
+                string Name(string kennung) => g.Geschosse.FirstOrDefault(x => x.Kennung == kennung)?.Anzeigename ?? kennung;
+                double Hoehe(string kennung) => g.Geschosse.FirstOrDefault(x => x.Kennung == kennung)?.LageM ?? 0.0;
+                List<KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>>> geordnet = paare == null
+                    ? new List<KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>>>()
+                    : paare.OrderBy(p => Hoehe(p.Key.Unten)).ThenBy(p => Hoehe(p.Key.Oben)).ToList();
+                string liste = geordnet.Count == 0 ? "—"
+                    : string.Join(", ", geordnet.Select(p => Name(p.Key.Unten) + "/" + Name(p.Key.Oben) + (p.Value.Count > 1 ? " (" + Ganz(p.Value.Count) + ")" : "")));
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "TRENNDECKE_REFERENZ", g.Anzeigename, Ganz(decken), liste, Ganz(waende)));
+                if (geordnet.Count == 0) continue;
+
+                // Die beheizte Grundfläche je Geschoss aus den Raummengen — Maßstab der Schätzung und der Kopplung.
+                var warm = g.Raeume.Where(r => r.Beheizt && r.GeschossKennung != null)
+                                   .GroupBy(r => r.GeschossKennung, StringComparer.Ordinal)
+                                   .ToDictionary(x => x.Key, x => x.Sum(r => r.FlaecheM2 ?? 0.0), StringComparer.Ordinal);
+                var tragend = new List<(string Unten, string Oben)>();
+                foreach (KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>> p in geordnet)
+                {
+                    double kleiner = Math.Min(warm.TryGetValue(p.Key.Unten, out double u) ? u : 0.0, warm.TryGetValue(p.Key.Oben, out double o) ? o : 0.0);
+                    double referenziert = p.Value.Sum(t => t.BruttoflaecheM2 ?? 0.0);
+                    double flaeche = referenziert;
+                    if (kleiner > 0.0 && referenziert < kleiner)
+                    {
+                        Schaetzen(p.Value, referenziert, kleiner);
+                        flaeche = kleiner;
+                        g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "TRENNDECKE_GESCHAETZT", Name(p.Key.Unten), Name(p.Key.Oben),
+                            Zahl(Math.Round(kleiner, 2)), Zahl(Math.Round(referenziert, 2))));
+                    }
+                    if (flaeche >= TRENNDECKE_ANTEIL_MIN * kleiner) { tragend.Add(p.Key); continue; }
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "TRENNDECKE_KLEIN", Name(p.Key.Unten), Name(p.Key.Oben),
+                        Zahl(Math.Round(flaeche, 2)), Zahl(Math.Round(kleiner, 2)), Ganz((int)Math.Round(100.0 * flaeche / kleiner))));
+                }
+                g.GeschosseGekoppelt = Gekoppelt(warm.Keys, tragend);
+            }
+            if (_innenEinseitig > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "INNEN_EINSEITIG", Ganz(_innenEinseitig),
+                    Zahl(Math.Round(_innenEinseitigM2, 2))));
+        }
+
+        /// <summary>
+        /// Verteilt die geschätzte Trenndeckenfläche auf die referenzierten Teile: im Verhältnis ihrer Bruttoflächen
+        /// (die flächengewichteten U-Werte und Aufbauten bleiben), ohne Flächen zu gleichen Teilen; eine Nettofläche der
+        /// Datei wird im selben Verhältnis mitgeführt.
+        /// </summary>
+        private static void Schaetzen(List<AbbildBauteil> teile, double referenziert, double ziel)
+        {
+            foreach (AbbildBauteil t in teile)
+            {
+                double faktor = referenziert > 0.0 ? ziel / referenziert : 0.0;
+                if (referenziert > 0.0 && !t.BruttoflaecheM2.HasValue) continue;
+                double alt = t.BruttoflaecheM2 ?? 0.0;
+                t.BruttoflaecheM2 = referenziert > 0.0 ? alt * faktor : ziel / teile.Count;
+                if (t.NettoflaecheM2.HasValue && alt > 0.0) t.NettoflaecheM2 = t.NettoflaecheM2.Value * t.BruttoflaecheM2.Value / alt;
+            }
+        }
+
+        /// <summary>Liegen alle Geschosse mit beheizten Räumen über die Geschosspaare in einem Verbund (auch über ein unbeheiztes Geschoss)?</summary>
+        private static bool Gekoppelt(IEnumerable<string> beheizteGeschosse, List<(string Unten, string Oben)> paare)
+        {
+            var warm = new HashSet<string>(beheizteGeschosse, StringComparer.Ordinal);
+            if (warm.Count < 2) return false;
+            var erreicht = new HashSet<string>(StringComparer.Ordinal) { warm.First() };
+            bool weiter = true;
+            while (weiter)
+            {
+                weiter = false;
+                foreach ((string u, string o) in paare)
+                    if (erreicht.Contains(u) != erreicht.Contains(o)) { erreicht.Add(u); erreicht.Add(o); weiter = true; }
+            }
+            return warm.All(erreicht.Contains);
         }
 
         /// <summary>

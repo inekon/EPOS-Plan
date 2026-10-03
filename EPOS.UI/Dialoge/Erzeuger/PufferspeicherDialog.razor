@@ -112,7 +112,20 @@
                 {
                     <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
                 }
+                @* Stufe P2 (Konzept Pufferspeicher-Auslegung, Abschnitt 6, Einstieg A): „Auslegen…"
+                   oeffnet die Pufferspeicher-Auslegung fuer den gewaehlten Projektspeicher (ohne
+                   Projektkopie: fuer einen neuen). Der Knopf VERLAESST diese Verwaltung wie
+                   Abbrechen - die Zeile darunter sagt es. Kein Delegat, kein Knopf. *@
+                @if (AuslegenOeffnen is not null)
+                {
+                    <button type="button" class="epos-knopf epos-pspd-auslegen" title="@HinweisAuslegenText"
+                            @onclick="BeiAuslegen">@BtnAuslegenText</button>
+                }
             </div>
+            @if (AuslegenOeffnen is not null)
+            {
+                <p class="epos-leisezeile epos-pspd-auslegen-hinweis">@HinweisAuslegenText</p>
+            }
 
             @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
                weil dieser Abschnitt die Geraetewerte zeigt, aus denen die nutzbare
@@ -360,6 +373,20 @@
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_PufferSp.btn_Help";
+
+    /// <summary>
+    /// „Auslegen…" (Stufe P2): öffnet die Pufferspeicher-Auslegung für die Gerätenummer der
+    /// gewählten Projektzeile (<c>0</c> = keine Wahl). Die Hülle schließt dafür die Verwaltung wie
+    /// Abbrechen. Ohne Delegat fehlt der Knopf.
+    /// </summary>
+    [Parameter] public Func<int, Task>? AuslegenOeffnen { get; set; }
+
+    /// <summary>„Auslegen…" (<c>PAUS_BTN_AUSLEGEN</c>).</summary>
+    [Parameter] public string BtnAuslegenText { get; set; } = "Auslegen…";
+
+    /// <summary>Die Zeile unter dem Knopf (<c>PAUS_AUSLEGEN_VERWIRFT</c>).</summary>
+    [Parameter] public string HinweisAuslegenText { get; set; } =
+        "„Auslegen…“ verlässt diesen Dialog ohne zu speichern und öffnet die Pufferspeicher-Auslegung.";
 
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
@@ -740,6 +767,10 @@
         // offen, bekommt er den NEUEN Stand.
         if (_parameterOffen) FelderHolen();
     }
+
+    /// <summary>„Auslegen…" — die Gerätenummer der gewählten Projektzeile geht an die Hülle (Stufe P2).</summary>
+    private Task BeiAuslegen()
+        => AuslegenOeffnen is null ? Task.CompletedTask : AuslegenOeffnen(_projektZeile?.GeraetId ?? 0);
 
     private async Task BeiBearbeiten()
     {

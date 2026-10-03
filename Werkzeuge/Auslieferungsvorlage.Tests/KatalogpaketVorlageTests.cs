@@ -9,12 +9,12 @@ using Xunit;
 namespace Auslieferungsvorlage.Tests
 {
     /// <summary>
-    /// <b>Das Katalogpaket neben der Vorlage</b> (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1) —
+    /// <b>Das Katalogpaket neben der Vorlage</b> (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1 und 2) —
     /// am Ergebnis desselben Laufs wie <see cref="VorlageTests"/>.
     ///
     /// <para><b>Die Probe</b> <c>Referenzlaeufe/Importproben/Katalogpaket_Probe.json</c> ist der
-    /// Prozesswärme-Teil des Pakets der Testdatenbank (Kopfsätze und Wochenprofile der acht
-    /// ausgelieferten Betriebsweisen, Fassung 1) — neutrale Namen, runde Werte, kein Herstellerdatum.
+    /// Ausschnitt des Pakets der Testdatenbank (Prozesswärme-Betriebsweisen samt Wochenprofilen aus der Stufe 1,
+    /// Konditionierungsvorlagen samt Perioden und der Muster-Wechselrichter aus der Stufe 2, Fassung 1) — neutrale Namen, runde Werte, kein Herstellerdatum.
     /// Sie muss mit dem Teil des geschriebenen Pakets byte-gleich sein; dieselbe Probe nehmen die
     /// Abgleichsfälle in <c>EPOS.Kern.Tests/KatalogabgleichTests</c>.</para>
     /// </summary>
@@ -22,7 +22,10 @@ namespace Auslieferungsvorlage.Tests
     public sealed class KatalogpaketVorlageTests : IClassFixture<Vorlage>
     {
         /// <summary>Die Tabellen der Probe.</summary>
-        internal static readonly string[] PROBENTABELLEN = { "Tab_Prozesswaerme_STAMM", "Tab_Prozesstyp_STAMM" };
+        internal static readonly string[] PROBENTABELLEN =
+        {
+            "Tab_Prozesswaerme_STAMM", "Tab_Prozesstyp_STAMM", "Tab_Konditionierungsvorlage_STAMM", "Tab_Wechselrichter_STAMM"
+        };
 
         private readonly Vorlage _v;
         public KatalogpaketVorlageTests(Vorlage v) { _v = v; }
@@ -46,7 +49,7 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("Schritt 4b — Katalogpaket", File.ReadAllText(_v.Ziel + ".bericht.txt"));
         }
 
-        /// <summary>Der Prozesswärme-Teil des Pakets ist byte-gleich mit der Probe im Repositorium.</summary>
+        /// <summary>Der Probenteil des Pakets (Stufe 1 und 2) ist byte-gleich mit der Probe im Repositorium.</summary>
         [Fact]
         public void K2_Der_Prozesswaermeteil_ist_byte_gleich_mit_der_Probe()
         {
@@ -55,13 +58,13 @@ namespace Auslieferungsvorlage.Tests
             Katalogpaket paket = Katalogpaket.Lesen(Paketdatei);
             var teil = new Katalogpaket { Fassung = 1 };
             teil.Tabellen.AddRange(paket.Tabellen.Where(t => PROBENTABELLEN.Contains(t.Tabelle)));
-            Assert.Equal(2, teil.Tabellen.Count);
+            Assert.Equal(PROBENTABELLEN.Length, teil.Tabellen.Count);
             Assert.Equal(File.ReadAllBytes(Probe), teil.Bytes());
         }
 
         /// <summary>
         /// Die Vorlage trägt genau den Stand des Pakets: dieselbe Katalogfassung, und jeder gesperrte
-        /// Satz der Stufe 1 mit Schlüssel und der Prüfsumme des Pakets. Eine Neuinstallation gleicht
+        /// Satz des Registers mit Schlüssel und der Prüfsumme des Pakets. Eine Neuinstallation gleicht
         /// deshalb beim ersten Start nichts ab.
         /// </summary>
         [Fact]
@@ -75,7 +78,7 @@ namespace Auslieferungsvorlage.Tests
                 int? fassung = Katalogabgleich.FassungDerDatenbank();
                 KatalogabgleichErgebnis plan = Katalogabgleich.Ausfuehren(paket, nurPruefen: true, erzwingen: true);
                 var ohneSchluessel = new List<string>();
-                foreach (Katalogtabelle t in Katalogfassung.Stufe1)
+                foreach (Katalogtabelle t in Katalogfassung.Alle)
                 {
                     object n = DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + t.Tabelle +
                                                             "\" WHERE \"ReadOnly\" = 1 AND \"Katalog_Schluessel\" IS NULL");

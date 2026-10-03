@@ -222,6 +222,7 @@ namespace WindowsFormsApplication1
             { "Form_ImportKonflikte",          B_PROJEKT },
             { "Form_KatalogDubletten",         B_ADMIN },
             { "Form_Katalogabgleich",          B_ADMIN },
+            { "Form_ProjektBrennstoffe",       B_ADMIN },
             { "Form_KiChat",                   B_HILFE },
             { "Form_KiEinstellungen",          B_HILFE },
             { "Form_Klimadaten",               B_KLIMADATEN },
@@ -259,6 +260,8 @@ namespace WindowsFormsApplication1
             // Die Betriebskalender gelten fuer Brauchwasser, Prozesswaerme und Strom; ihr Bereich
             // ist der des Simulationslaufs, in dem sie wirken.
             { "Form_Betriebskalender",         B_SIMULATION },
+            // Die Pufferspeicher-Auslegung (Stufe P2) gehoert zum Pufferspeicher.
+            { "Form_PufferAuslegung",          B_PUFFERSPEICHER },
             { "GebaeudeExport",                B_GEBAEUDE },
             { "GebaeudeProjekt",               B_GEBAEUDE },
             { "Hauptfenster",                  B_HAUPTFENSTER },

@@ -8,7 +8,7 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     // ====================================================================================
-    // DER KATALOGABGLEICH NACH DER SCHEMAMIGRATION - Entscheidungsvorlage Modellgrenzen KU1 Stufe 1.
+    // DER KATALOGABGLEICH NACH DER SCHEMAMIGRATION - Entscheidungsvorlage Modellgrenzen KU1 Stufe 1 und 2.
     //
     // JE SATZ DES PAKETS (Tabelle, Schlüssel):
     //   Schlüssel fehlt in der Datenbank                → EINFÜGEN (ReadOnly = 1, Schlüssel, Prüfsumme)
@@ -23,7 +23,10 @@ namespace WindowsFormsApplication1
     //
     // NIE ANGEFASST: Anwenderzeilen (ohne Schlüssel) und jede Projektkopie (Tab_* mit ID_Projekt;
     // die Kühlkennlinie trägt eine Projektspalte und wird nur mit ID_Projekt 0 oder leer gelesen und
-    // geschrieben). Projekte rechnen nach dem Abgleich wie vorher.
+    // geschrieben). Brennstoffe und Vorgaben der Pufferauslegung haben ihre Projektkopie in eigenen
+    // Tabellen (Tab_Brennstoff, Tab_PufferAuslegungParameter); vor dem ersten Schreiben legt der Abgleich
+    // die fehlenden Kopien wertgleich an. Konditionierungsvorlagen werden bei der Übernahme kopiert.
+    // Projekte rechnen nach dem Abgleich wie vorher.
     //
     // TRANSAKTIONAL UND WIEDERHOLBAR. Alles in EINEM Vorgang, samt Protokoll und neuer Fassung an
     // Tab_Applikation. Steht die Datenbank schon auf der Fassung des Pakets, tut ein zweiter Lauf
@@ -287,10 +290,14 @@ namespace WindowsFormsApplication1
             e.Ausgefuehrt = true;
             if (nurPruefen) return e;
 
+            bool kopien = ProjektkopienBereit();
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
+                    // Vor dem ersten Schreiben: die Projektkopien der Kataloge ohne eigene Projekttabelle
+                    // (Brennstoffe, Vorgaben der Pufferauslegung) sichern - wertgleich zum alten Stamm.
+                    if (kopien && e.EtwasZuTun) ProjektkopienSichern(v);
                     foreach (KatalogabgleichEintrag z in e.Eintraege)
                     {
                         Katalogtabelle t = Katalogfassung.Tabelle(z.Tabelle);
@@ -359,7 +366,7 @@ namespace WindowsFormsApplication1
                     string gespeichert = r[Katalogfassung.SPALTE_PRUEFSUMME] as string ?? "";
                     bool gesperrt = Gesperrt(r);
                     bool ausgelaufen = Ganz(r[Katalogfassung.SPALTE_AUSGELAUFEN]) != 0;
-                    string bezeichner = Convert.ToString(r[Katalogfassung.SPALTE_BEZEICHNER], CultureInfo.InvariantCulture);
+                    string bezeichner = Katalogfassung.Name(t, r);
 
                     bool gleichNeu = string.Equals(ist, s.Pruefsumme, StringComparison.Ordinal);
                     if (gesperrt)
@@ -396,7 +403,7 @@ namespace WindowsFormsApplication1
                     if (Ganz(kv.Value[Katalogfassung.SPALTE_AUSGELAUFEN]) != 0) continue;
                     e.Ausgelaufen++;
                     e.Eintraege.Add(new KatalogabgleichEintrag(t.Tabelle, kv.Key,
-                        Convert.ToString(kv.Value[Katalogfassung.SPALTE_BEZEICHNER], CultureInfo.InvariantCulture),
+                        Katalogfassung.Name(t, kv.Value),
                         AKTION_AUSGELAUFEN, MyResource.Resource.KABG_HINWEIS_AUSGELAUFEN)
                     { Id = Convert.ToInt64(kv.Value["ID"], CultureInfo.InvariantCulture) });
                 }
@@ -426,14 +433,19 @@ namespace WindowsFormsApplication1
             return d;
         }
 
-        /// <summary>Alle Bezeichner einer Tabelle (der Bezeichner ist eindeutig).</summary>
+        /// <summary>
+        /// Alle Namen einer Tabelle (aus ihren Namensspalten, eindeutig). Ohne Unterschied von Groß- und
+        /// Kleinschreibung: Ein Name, der sich nur darin unterscheidet, gilt als belegt — so stößt ein
+        /// eingefügter Satz nie an einen Index mit <c>COLLATE NOCASE</c>.
+        /// </summary>
         private static HashSet<string> Bezeichner(Katalogtabelle t)
         {
-            var h = new HashSet<string>(StringComparer.Ordinal);
-            DataTable dt = DataRepository.GetDataTable("SELECT \"Bezeichner\" FROM \"" + t.Tabelle + "\"");
+            var h = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            List<string> spalten = t.Namensspalten.Where(s => DataRepository.SpalteVorhanden(t.Tabelle, s)).ToList();
+            if (spalten.Count == 0) return h;
+            DataTable dt = DataRepository.GetDataTable("SELECT " + Katalogfassung.Spaltentext(spalten) + " FROM \"" + t.Tabelle + "\"");
             if (dt != null)
-                foreach (DataRow r in dt.Rows)
-                    if (r[0] != DBNull.Value) h.Add(Convert.ToString(r[0], CultureInfo.InvariantCulture));
+                foreach (DataRow r in dt.Rows) h.Add(Katalogfassung.Name(t, r));
             return h;
         }
 
@@ -447,7 +459,7 @@ namespace WindowsFormsApplication1
             List<string> spalten = Katalogfassung.VorhandeneFachspalten(t);
             var p = new List<DbParam>();
             foreach (string sp in spalten)
-                p.Add(new DbParam("@p" + p.Count.ToString(CultureInfo.InvariantCulture), Wert(s.Werte, sp)));
+                p.Add(new DbParam("@p" + p.Count.ToString(CultureInfo.InvariantCulture), Wert(v, t.Verweise, s.Werte, sp)));
             p.Add(new DbParam("@s", s.Schluessel));
             p.Add(new DbParam("@h", s.Pruefsumme));
             string sql = "INSERT INTO \"" + t.Tabelle + "\" (" + Katalogfassung.Spaltentext(spalten) + ", \"ReadOnly\", \"" +
@@ -465,7 +477,7 @@ namespace WindowsFormsApplication1
             List<string> spalten = Katalogfassung.VorhandeneFachspalten(t);
             var p = new List<DbParam>();
             foreach (string sp in spalten)
-                p.Add(new DbParam("@p" + p.Count.ToString(CultureInfo.InvariantCulture), Wert(s.Werte, sp)));
+                p.Add(new DbParam("@p" + p.Count.ToString(CultureInfo.InvariantCulture), Wert(v, t.Verweise, s.Werte, sp)));
             p.Add(new DbParam("@s", s.Schluessel));
             p.Add(new DbParam("@h", s.Pruefsumme));
             p.Add(new DbParam("@id", id));
@@ -473,39 +485,69 @@ namespace WindowsFormsApplication1
                          ", \"ReadOnly\" = 1, \"" + Katalogfassung.SPALTE_SCHLUESSEL + "\" = ?, \"" +
                          Katalogfassung.SPALTE_PRUEFSUMME + "\" = ?, \"" + Katalogfassung.SPALTE_AUSGELAUFEN +
                          "\" = 0 WHERE ID = ?", p.ToArray());
-            foreach (Katalogkind k in t.Kinder)
-            {
-                if (!DataRepository.TabelleVorhanden(k.Tabelle)) continue;
-                v.Ausfuehren("DELETE FROM \"" + k.Tabelle + "\" WHERE \"" + k.Fremdschluessel + "\" = ?" + k.Katalogbedingung,
-                             new DbParam("@id", id));
-            }
+            foreach (Katalogkind k in t.Kinder) KinderLoeschen(v, k, id);
             KinderSchreiben(v, t, id, s);
+        }
+
+        /// <summary>Löscht die Katalogzeilen eines Kindes zu einer Eigentümer-ID, seine Enkel zuerst.</summary>
+        private static void KinderLoeschen(DbVorgang v, Katalogkind k, long id)
+        {
+            if (!DataRepository.TabelleVorhanden(k.Tabelle)) return;
+            if (k.Enkel.Count > 0)
+            {
+                DataTable dt = v.Lese("SELECT ID FROM \"" + k.Tabelle + "\" WHERE \"" + k.Fremdschluessel + "\" = ?" +
+                                      k.Katalogbedingung, new DbParam("@id", id));
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                        foreach (Katalogkind e in k.Enkel)
+                            KinderLoeschen(v, e, Convert.ToInt64(r[0], CultureInfo.InvariantCulture));
+            }
+            v.Ausfuehren("DELETE FROM \"" + k.Tabelle + "\" WHERE \"" + k.Fremdschluessel + "\" = ?" + k.Katalogbedingung,
+                         new DbParam("@id", id));
         }
 
         private static void KinderSchreiben(DbVorgang v, Katalogtabelle t, long id, Katalogpaketsatz s)
         {
             foreach (Katalogkind k in t.Kinder)
             {
-                if (!DataRepository.TabelleVorhanden(k.Tabelle)) continue;
                 if (!s.Kinder.TryGetValue(k.Tabelle, out List<Dictionary<string, object>> zeilen)) continue;
-                List<string> spalten = k.Fachspalten.Where(sp => DataRepository.SpalteVorhanden(k.Tabelle, sp)).ToList();
-                string sql = "INSERT INTO \"" + k.Tabelle + "\" (\"" + k.Fremdschluessel + "\"" +
-                             (k.Projektspalte != null ? ", \"" + k.Projektspalte + "\"" : "") +
-                             (spalten.Count > 0 ? ", " + Katalogfassung.Spaltentext(spalten) : "") + ") VALUES (?" +
-                             (k.Projektspalte != null ? ", 0" : "") +
-                             string.Concat(spalten.Select(_ => ", ?")) + ")";
-                foreach (Dictionary<string, object> z in zeilen)
-                {
-                    var p = new List<DbParam> { new DbParam("@fk", id) };
-                    foreach (string sp in spalten)
-                        p.Add(new DbParam("@p" + p.Count.ToString(CultureInfo.InvariantCulture), Wert(z, sp)));
-                    v.Ausfuehren(sql, p.ToArray());
-                }
+                Kindzeilen(v, k, id, zeilen);
             }
         }
 
-        private static object Wert(IReadOnlyDictionary<string, object> werte, string spalte) =>
-            werte != null && werte.TryGetValue(spalte, out object w) && w != null ? w : DBNull.Value;
+        /// <summary>Fügt die Zeilen eines Kindes zu einer Eigentümer-ID ein, je Zeile danach ihre Enkel.</summary>
+        private static void Kindzeilen(DbVorgang v, Katalogkind k, long id, IEnumerable<IReadOnlyDictionary<string, object>> zeilen)
+        {
+            if (!DataRepository.TabelleVorhanden(k.Tabelle)) return;
+            List<string> spalten = Katalogfassung.VorhandeneFachspalten(k);
+            bool sperren = k.GesperrtEinfuegen && DataRepository.SpalteVorhanden(k.Tabelle, Katalogfassung.SPALTE_READONLY);
+            string sql = "INSERT INTO \"" + k.Tabelle + "\" (\"" + k.Fremdschluessel + "\"" +
+                         (k.Projektspalte != null ? ", \"" + k.Projektspalte + "\"" : "") +
+                         (sperren ? ", \"" + Katalogfassung.SPALTE_READONLY + "\"" : "") +
+                         (spalten.Count > 0 ? ", " + Katalogfassung.Spaltentext(spalten) : "") + ") VALUES (?" +
+                         (k.Projektspalte != null ? ", 0" : "") +
+                         (sperren ? ", 1" : "") +
+                         string.Concat(spalten.Select(_ => ", ?")) + ")";
+            foreach (IReadOnlyDictionary<string, object> z in zeilen)
+            {
+                var p = new List<DbParam> { new DbParam("@fk", id) };
+                foreach (string sp in spalten)
+                    p.Add(new DbParam("@p" + p.Count.ToString(CultureInfo.InvariantCulture), Wert(v, k.Verweise, z, sp)));
+                if (k.Enkel.Count == 0)
+                {
+                    v.Ausfuehren(sql, p.ToArray());
+                    continue;
+                }
+                long kindId = v.EinfuegenUndId(sql, p.ToArray());
+                foreach (Katalogkind e in k.Enkel)
+                    Kindzeilen(v, e, kindId, Katalogfassung.Enkelzeilen(z, e.Tabelle));
+            }
+        }
+
+        /// <summary>Der Schreibwert einer Spalte — ein Verweis als ID des Ziels, gelesen im selben Vorgang.</summary>
+        private static object Wert(DbVorgang v, IReadOnlyList<Katalogverweis> verweise,
+                                   IReadOnlyDictionary<string, object> werte, string spalte) =>
+            Katalogfassung.Schreibwert(verweise, werte, spalte, (sql, p) => v.Lese(sql, p));
 
         /// <summary>
         /// Eine Protokollzeile; mit <paramref name="doppeltPruefen"/> nur, wenn dieselbe (Fassung,
@@ -560,10 +602,12 @@ namespace WindowsFormsApplication1
             if (r == null && Bezeichner(t).Contains(s.Bezeichner))
                 return (false, string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KABG_HINWEIS_NAME_BELEGT, s.Bezeichner));
 
+            bool kopien = ProjektkopienBereit();
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
+                    if (kopien) ProjektkopienSichern(v);
                     if (r == null) Einfuegen(v, t, s);
                     else Schreiben(v, t, Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture), s);
                     Protokollieren(v, paket.Fassung, t.Tabelle, s.Schluessel, AKTION_WIEDERHERGESTELLT,
@@ -577,6 +621,21 @@ namespace WindowsFormsApplication1
                 }
             }
             return (true, MyResource.Resource.KABG_WIEDERHERGESTELLT);
+        }
+
+        /// <summary>Stehen die Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben (Schritt 175)?</summary>
+        private static bool ProjektkopienBereit() => ProjektkopienKatalogeSchema.SchemaVollstaendig();
+
+        /// <summary>
+        /// <b>Die Vorstufe des Abgleichs:</b> legt im Vorgang die fehlenden Projektkopien an — je Projekt
+        /// jede Brennstoffart, je Projekt mit Pufferauslegung jede Vorgabe —, wertgleich zum Stamm VOR dem
+        /// Abgleich. Danach fasst der Abgleich nur den Stamm an, und kein Projekt liest einen geänderten
+        /// Stammwert. (Die Konditionierungsvorlagen brauchen das nicht: „Vorlage übernehmen" kopiert.)
+        /// </summary>
+        private static void ProjektkopienSichern(DbVorgang v)
+        {
+            ProjektBrennstoffe.Sichern(v, null);
+            ProjektPufferparameter.Sichern(v, null);
         }
 
         /// <summary>Die jüngsten Zeilen des Protokolls, neueste zuerst.</summary>

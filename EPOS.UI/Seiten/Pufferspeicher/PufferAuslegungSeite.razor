@@ -1,0 +1,1206 @@
+﻿@* DIE ANSICHT „PUFFERSPEICHER-AUSLEGUNG" (Seitenschluessel PUFFER_AUSLEGUNG; Konzept
+   Pufferspeicher-Auslegung, Abschnitt 6, Stufe P2; Gestalt nach dem abgenommenen Mockup
+   Dokumentation/aktuell/Mockups/Pufferspeicher_Auslegung_Mockup.html).
+
+   EINE FREIE ANSICHT DER APPWURZEL, kein Fenster im Fenster: dieselbe Bauart wie die
+   Stromspeicher-Auslegung - Kopf mit Titel, Kontext, Rueckweg und Kreuz, darunter die
+   Ablaufleiste mit vier Schritten (1 Klasse und Erzeuger, 2 Bedarf und Randbedingungen,
+   3 Kriterien, 4 Ergebnis und Uebernahme) und der Umschalter der Tiefe (Schnell, Standard,
+   Experte). Unter Windows zeigt sie dieselbe Komponente auch in einem eigenen Fenster - der
+   Weg aus dem Zapfprofil, das selbst in einem Fenster steht.
+
+   RECHNEN. Jeder Schalter (Klasse, Vorlage, Geraetetyp, Zweiterzeuger, Kriterium, Uebergabe,
+   Sperrprofil, Zirkulationsweg) rechnet sofort neu - der Kern rechnet ohne Datenbank, die
+   Reihen haelt die Huelle. Ein Zahlenfeld rechnet NICHT je Tastendruck (Betriebssimulation
+   ueber 8 760 h mit Bisektion): Es markiert das Ergebnis als veraltet, gerechnet wird beim
+   Wechsel in Schritt 4 oder mit „Neu rechnen".
+
+   KEINE DATENBANK (Hausregel EPOS.UI). Alles, was liest oder schreibt, steht als Delegat in
+   PufferAuslegungDienste und fuehrt in PufferAuslegungCtrl. Herkunft je Feld kommt aus der
+   Vorbelegung des Kerns; was der Anwender aendert, traegt die Marke „ueberschrieben". *@
+
+@namespace EPOS.UI.Seiten.Pufferspeicher
+@using System.Globalization
+@using EPOS.UI.Seiten.Strom
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-seite epos-pausl">
+
+    @* ---------------------------------------------------------------- Kopf *@
+    <div class="epos-seite-kopf epos-pausl-kopf">
+        <h1 class="epos-seite-titel">@Texte.Titel</h1>
+        @if (Kontextzeile.Length > 0)
+        {
+            <span class="epos-pausl-kontext">@Kontextzeile</span>
+        }
+        <span class="epos-pausl-kopfaktionen">
+            @if (!HilfePilleImKopfband)
+            {
+                <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+            }
+            <button type="button" class="epos-knopf epos-pausl-zurueck" @onclick="Verlassen">@Texte.Zurueck</button>
+            <Schliesskreuz Geschlossen="Verlassen" />
+        </span>
+    </div>
+
+    @if (Daten.Fehler.Length > 0)
+    {
+        @* Ohne Vorbelegung gibt es nichts zu zeigen - der Grund steht benannt da. *@
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Daten.Fehler" />
+    }
+    else
+    {
+        <div class="epos-pausl-leiste">
+            <Ablaufleiste Vorne="@Schritte" Aktiv="@_schritt" Gewaehlt="SchrittGewaehlt"
+                          MitAktion="false" Bezeichnung="@Texte.Ablauf" VeraltetText="@Texte.Veraltet" Buendig="true" />
+            <Optionsgruppe Bezeichnung="@Texte.Stufe" Eintraege="@Stufeneintraege"
+                           Auswahl="@((int)_stufe)" AuswahlChanged="StufeGewaehlt" />
+        </div>
+
+        @if (Daten.Gespeichert)
+        {
+            <p class="epos-leisezeile epos-pausl-gespeichert">@Texte.GespeicherteAuslegung</p>
+        }
+
+        @if (_meldung.Length > 0)
+        {
+            <Warnbanner Stufe="@(_meldungErfolg ? WarnStufe.Erfolg : WarnStufe.Fehler)" Text="@_meldung" />
+        }
+
+        <div class="epos-pausl-blatt">
+            @if (_schritt == PufferAuslegungSchritt.Anlage)
+            {
+                @SchrittAnlage
+            }
+            else if (_schritt == PufferAuslegungSchritt.Bedarf)
+            {
+                @SchrittBedarf
+            }
+            else if (_schritt == PufferAuslegungSchritt.Kriterien)
+            {
+                @SchrittKriterien
+            }
+            else
+            {
+                @SchrittErgebnis
+            }
+        </div>
+
+        @* Der Weg durch die Schritte - eine Zeile am Ende des Blattes. *@
+        <div class="epos-pausl-fuss">
+            @if (_schritt != PufferAuslegungSchritt.Anlage)
+            {
+                <button type="button" class="epos-knopf epos-pausl-vorher" @onclick="SchrittZurueck">@Texte.ZurueckSchritt</button>
+            }
+            @if (_schritt == PufferAuslegungSchritt.Kriterien)
+            {
+                <button type="button" class="epos-knopf epos-knopf--primaer epos-pausl-rechnen" @onclick="ZumErgebnis">@Texte.Rechnen</button>
+            }
+            else if (_schritt != PufferAuslegungSchritt.Ergebnis)
+            {
+                <button type="button" class="epos-knopf epos-knopf--primaer epos-pausl-weiter" @onclick="SchrittWeiter">@Texte.Weiter</button>
+            }
+            <button type="button" class="epos-knopf epos-pausl-zuruecksetzen" @onclick="Zuruecksetzen">@Texte.Zuruecksetzen</button>
+        </div>
+    }
+</div>
+
+@code {
+    // =====================================================================
+    //  Parameter
+    // =====================================================================
+
+    /// <summary>Der Startstand; ohne Gaben ein leerer Stand (die Ansicht zeichnet trotzdem).</summary>
+    [Parameter] public PufferAuslegungStartDaten Daten { get; set; } = new();
+
+    /// <summary>Die Wege in den Kern; ohne sie rechnet die Ansicht nicht und zeigt keine Knöpfe zum Schreiben.</summary>
+    [Parameter] public PufferAuslegungDienste? Dienste { get; set; }
+
+    /// <summary>Das Textbündel.</summary>
+    [Parameter] public PufferAuslegungTexte Texte { get; set; } = new();
+
+    /// <summary>Der Hilfeschlüssel der Ansicht.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_PufferAuslegung.btn_Help";
+
+    /// <summary>„← zurück" und das Kreuz — die Wurzel kehrt dorthin zurück, woher die Ansicht kam.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Führt ein Kopfband schon eine Hilfe-Pille? Dann zeichnet die Ansicht keine zweite.</summary>
+    [CascadingParameter(Name = "HilfePilleImKopfband")]
+    public bool HilfePilleImKopfband { get; set; }
+
+    /// <summary>Der Weg nach oben; <c>null</c> = niemand hört zu.</summary>
+    [CascadingParameter] public Hilfekontextmelder? Hilfemelder { get; set; }
+
+    // =====================================================================
+    //  Zustand
+    // =====================================================================
+
+    private string _schritt = PufferAuslegungSchritt.Anlage;
+    private PufferAuslegungStufe _stufe = PufferAuslegungStufe.Standard;
+    private PufferAuslegungEingabeDaten _eingabe = new();
+    private PufferAuslegungErgebnisDaten? _ergebnis;
+    private bool _veraltet;
+    private int? _idPuffer;
+    private string _pufferName = "";
+    private int _ziel;
+    private string _bezeichner = "";
+    private string _meldung = "";
+    private bool _meldungErfolg;
+    private Hilfekontext? _gemeldet;
+    private KiMaskenanmeldung? _kiMaske;
+    private PufferAuslegungKiSicht? _kiSicht;
+
+    // ---- Prüfhilfen (bunit) ----
+    public string Schritt => _schritt;
+    public PufferAuslegungStufe Stufe => _stufe;
+    public PufferAuslegungEingabeDaten Arbeitsstand => _eingabe;
+    public PufferAuslegungErgebnisDaten? Ergebnis => _ergebnis;
+    public string Meldung => _meldung;
+    public bool Veraltet => _veraltet;
+
+    /// <summary>Wo der Anwender steht: Hilfeschlüssel, Name der Ansicht und ihr Schritt.</summary>
+    public Hilfekontext Kontext => new Hilfekontext(HilfeSchluessel, Texte.Titel, Schrittname(_schritt));
+
+    protected override void OnInitialized()
+    {
+        _eingabe = (Daten.Eingabe ?? new PufferAuslegungEingabeDaten()).Kopie();
+        _ergebnis = Daten.Ergebnis;
+        _idPuffer = Daten.IdPuffer;
+        _pufferName = Daten.PufferBezeichner ?? "";
+        _ziel = _idPuffer.HasValue ? 0 : 1;
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PUFFER_AUSLEGUNG, () => KiSicht(), KiHaken());
+    }
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Hilfekontextmelder? melder = Hilfemelder;
+        if (melder is null) return;
+        Hilfekontext jetzt = Kontext;
+        if (_gemeldet is not null && _gemeldet.Equals(jetzt)) return;
+        _gemeldet = jetzt;
+        melder.Melden(jetzt);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => _kiMaske?.Dispose();
+
+    private Task Verlassen() => Geschlossen.InvokeAsync();
+
+    // =====================================================================
+    //  Kopf und Ablauf
+    // =====================================================================
+
+    /// <summary>„Projekt „…" · Speicher „…"" samt Einstieg.</summary>
+    private string Kontextzeile
+    {
+        get
+        {
+            string projekt = Daten.Projektname ?? "";
+            string z = _idPuffer.HasValue && _pufferName.Length > 0
+                ? Format(Texte.KontextPuffer, projekt, _pufferName)
+                : projekt.Length > 0 ? Format(Texte.KontextNeu, projekt) : "";
+            if (!string.IsNullOrEmpty(Daten.Einstieg)) z = z.Length > 0 ? z + " · " + Daten.Einstieg : Daten.Einstieg;
+            return z;
+        }
+    }
+
+    private IReadOnlyList<Ablaufeintrag> Schritte => new[]
+    {
+        new Ablaufeintrag(PufferAuslegungSchritt.Anlage, Texte.SchrittAnlage, true, false, ""),
+        new Ablaufeintrag(PufferAuslegungSchritt.Bedarf, Texte.SchrittBedarf, true, false, ""),
+        new Ablaufeintrag(PufferAuslegungSchritt.Kriterien, Texte.SchrittKriterien, true, false, ""),
+        new Ablaufeintrag(PufferAuslegungSchritt.Ergebnis, Texte.SchrittErgebnis, true, _veraltet && _ergebnis is not null, "")
+    };
+
+    private string Schrittname(string schritt) => schritt switch
+    {
+        PufferAuslegungSchritt.Anlage => Texte.SchrittAnlage,
+        PufferAuslegungSchritt.Bedarf => Texte.SchrittBedarf,
+        PufferAuslegungSchritt.Kriterien => Texte.SchrittKriterien,
+        _ => Texte.SchrittErgebnis
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Stufeneintraege => new[]
+    {
+        ((int)PufferAuslegungStufe.Schnell, Texte.StufeSchnell),
+        ((int)PufferAuslegungStufe.Standard, Texte.StufeStandard),
+        ((int)PufferAuslegungStufe.Experte, Texte.StufeExperte)
+    };
+
+    private void StufeGewaehlt(int? id)
+    {
+        if (id is int i && Enum.IsDefined(typeof(PufferAuslegungStufe), i)) _stufe = (PufferAuslegungStufe)i;
+    }
+
+    private bool AbStandard => _stufe != PufferAuslegungStufe.Schnell;
+    private bool Experte => _stufe == PufferAuslegungStufe.Experte;
+
+    private void SchrittGewaehlt(string schritt)
+    {
+        if (schritt == PufferAuslegungSchritt.Ergebnis && (_veraltet || _ergebnis is null)) NeuRechnen();
+        _schritt = schritt;
+    }
+
+    private void SchrittWeiter()
+    {
+        int i = IndexVon(_schritt);
+        if (i < PufferAuslegungSchritt.Alle.Count - 1) SchrittGewaehlt(PufferAuslegungSchritt.Alle[i + 1]);
+    }
+
+    private void SchrittZurueck()
+    {
+        int i = IndexVon(_schritt);
+        if (i > 0) _schritt = PufferAuslegungSchritt.Alle[i - 1];
+    }
+
+    private static int IndexVon(string schritt)
+    {
+        for (int i = 0; i < PufferAuslegungSchritt.Alle.Count; i++)
+            if (PufferAuslegungSchritt.Alle[i] == schritt) return i;
+        return 0;
+    }
+
+    private void ZumErgebnis()
+    {
+        NeuRechnen();
+        _schritt = PufferAuslegungSchritt.Ergebnis;
+    }
+
+    /// <summary>„Auf Vorbelegung zurücksetzen" — der Startstand, neu gerechnet.</summary>
+    private void Zuruecksetzen()
+    {
+        _eingabe = (Daten.Eingabe ?? new PufferAuslegungEingabeDaten()).Kopie();
+        _meldung = "";
+        NeuRechnen();
+    }
+
+    // =====================================================================
+    //  Rechnen
+    // =====================================================================
+
+    private bool KlasseGewaehlt => _eingabe.KlasseHeizung || _eingabe.KlasseBrauchwasser || _eingabe.KlasseProzess;
+
+    /// <summary>Rechnet den Arbeitsstand über die Hülle; ein Fehler steht benannt im Ergebnis.</summary>
+    public void NeuRechnen()
+    {
+        _veraltet = false;
+        if (!KlasseGewaehlt)
+        {
+            _ergebnis = PufferAuslegungErgebnisDaten.MitFehler(Texte.KlasseLeer);
+            return;
+        }
+        if (Dienste?.Rechnen is null) return;
+        try
+        {
+            _ergebnis = Dienste.Rechnen(_eingabe.Kopie());
+        }
+        catch (Exception ex)
+        {
+            _ergebnis = PufferAuslegungErgebnisDaten.MitFehler(ex.Message);
+        }
+    }
+
+    /// <summary>Ein Schalter: setzen und sofort rechnen.</summary>
+    private void Schalten(Action setzen)
+    {
+        setzen();
+        _meldung = "";
+        NeuRechnen();
+    }
+
+    /// <summary>Ein Zahlenfeld: setzen und das Ergebnis als veraltet markieren.</summary>
+    private void Zahl(Action setzen)
+    {
+        setzen();
+        _meldung = "";
+        _veraltet = true;
+    }
+
+    // =====================================================================
+    //  Herkunft
+    // =====================================================================
+
+    /// <summary>Weicht das Feld vom Startstand ab?</summary>
+    private bool Geaendert(string feld)
+    {
+        PufferAuslegungEingabeDaten a = Daten.Eingabe ?? new PufferAuslegungEingabeDaten(), e = _eingabe;
+        return feld switch
+        {
+            "Klassen" => a.KlasseHeizung != e.KlasseHeizung || a.KlasseBrauchwasser != e.KlasseBrauchwasser
+                         || a.KlasseProzess != e.KlasseProzess,
+            "Vorlage" => a.Vorlage != e.Vorlage,
+            "Erzeuger" => a.WpGeregelt != e.WpGeregelt || a.ZweiterzeugerFrei != e.ZweiterzeugerFrei
+                          || a.MindestleistungKw != e.MindestleistungKw,
+            "Uebergabeart" => (a.Uebergabeart ?? "") != (e.Uebergabeart ?? ""),
+            "HeizgrenzeC" => a.HeizgrenzeC != e.HeizgrenzeC,
+            "AuslegungsheizlastKw" => a.AuslegungsheizlastKw != e.AuslegungsheizlastKw,
+            "AnlagenvolumenL" => a.AnlagenvolumenL != e.AnlagenvolumenL,
+            "Sperrfenster" => a.Sperrprofil != e.Sperrprofil || a.SperrbeginnH != e.SperrbeginnH
+                              || a.SperrdauerH != e.SperrdauerH || a.SperrzeitExpertenweg != e.SperrzeitExpertenweg,
+            "MindestlaufzeitMin" => a.MindestlaufzeitMin != e.MindestlaufzeitMin,
+            "StartzielJeTag" => a.StartzielJeTag != e.StartzielJeTag,
+            "Deckungsziel" => a.DeckungszielProzent != e.DeckungszielProzent,
+            "DeltaTBK" => a.DeltaTBK != e.DeltaTBK,
+            "TPufferObenC" => a.TPufferObenC != e.TPufferObenC,
+            "ZirkulationWeg" => (a.ZirkulationWeg ?? "") != (e.ZirkulationWeg ?? "") || a.Wohneinheiten != e.Wohneinheiten,
+            _ => false
+        };
+    }
+
+    /// <summary>Die Herkunftsmarke eines Felds: „überschrieben", sonst die Quelle des Kerns, sonst die Vorgabe.</summary>
+    private RenderFragment Marke(string feld, string? rueckfall = null)
+    {
+        bool ueber = Geaendert(feld);
+        PufferHerkunftDaten? h = Daten.HerkunftVon(feld);
+        string text = ueber ? Texte.QuelleUeberschrieben : h?.Marke ?? rueckfall ?? Texte.QuelleVorgabe;
+        string titel = string.Join(" · ", Daten.HerkunftAlle(feld).Select(z => z.Text).Where(t => t.Length > 0));
+        string klasse = "epos-pausl-marke" + (ueber ? " epos-pausl-marke--ueberschrieben" : "");
+        return @<span class="@klasse" data-feld="@feld" title="@(titel.Length > 0 ? titel : null)">@text</span>;
+    }
+
+    // =====================================================================
+    //  Schritt 1 — Klasse, Vorlage, Erzeuger
+    // =====================================================================
+
+    private PufferVorlageDaten? GewaehlteVorlage => Daten.Vorlagen.FirstOrDefault(v => v.Schluessel == _eingabe.Vorlage);
+
+    private bool IstWpVorlage => _eingabe.Vorlage is "WP_MONO" or "WP_BIVALENT";
+
+    private void VorlageWaehlen(string schluessel)
+    {
+        if (_eingabe.Vorlage == schluessel) return;
+        Schalten(() =>
+        {
+            _eingabe.Vorlage = schluessel;
+            _eingabe.Kriterien.Clear();
+        });
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Geraetetypen => new[] { (0, Texte.FixedSpeed), (1, Texte.Geregelt) };
+
+    private IReadOnlyList<(int Id, string Text)> Zweiterzeugerwege => new[] { (1, Texte.ZweitFrei), (0, Texte.ZweitHeizstab) };
+
+    private RenderFragment SchrittAnlage => @<div class="epos-pausl-schritt epos-pausl-schritt--anlage">
+        <Gruppenkopf Titel="@Texte.GruppeKlasse">
+            <KindInhalt>
+                <div class="epos-pausl-klassen">
+                    <Schalter Bezeichnung="@Texte.KlasseHeizung" Wert="@_eingabe.KlasseHeizung"
+                              WertChanged="@((bool w) => Schalten(() => _eingabe.KlasseHeizung = w))" />
+                    <Schalter Bezeichnung="@Texte.KlasseBrauchwasser" Wert="@_eingabe.KlasseBrauchwasser"
+                              WertChanged="@((bool w) => Schalten(() => _eingabe.KlasseBrauchwasser = w))" />
+                    <Schalter Bezeichnung="@Texte.KlasseProzess" Wert="@_eingabe.KlasseProzess"
+                              WertChanged="@((bool w) => Schalten(() => _eingabe.KlasseProzess = w))" />
+                    @Marke("Klassen")
+                </div>
+                @if (!KlasseGewaehlt)
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Texte.KlasseLeer" />
+                }
+                <p class="epos-leisezeile">@Texte.KlasseHinweis</p>
+                <div class="epos-pausl-zeile epos-pausl-nutzungsprofil">
+                    <span class="epos-pausl-beschriftung">@Texte.Nutzungsprofil</span>
+                    <strong>@Daten.Nutzungsprofil</strong>
+                    <span class="epos-pausl-marke" title="@Daten.NutzungsprofilHerkunft">@(Daten.NutzungsprofilVorgabe ? Texte.QuelleVorgabe : Texte.QuelleProjekt)</span>
+                </div>
+                <p class="epos-leisezeile">@Texte.NutzungsprofilHinweis</p>
+            </KindInhalt>
+        </Gruppenkopf>
+
+        <Gruppenkopf Titel="@Texte.GruppeVorlage">
+            <KindInhalt>
+                <div class="epos-pausl-vorlagen" role="radiogroup" aria-label="@Texte.GruppeVorlage">
+                    @foreach (PufferVorlageDaten v in Daten.Vorlagen)
+                    {
+                        string schluessel = v.Schluessel;
+                        bool gewaehlt = schluessel == _eingabe.Vorlage;
+                        <button type="button" @key="schluessel" role="radio" aria-checked="@(gewaehlt ? "true" : "false")"
+                                class="@("epos-pausl-vorlage" + (gewaehlt ? " epos-pausl-vorlage--gewaehlt" : ""))"
+                                data-vorlage="@schluessel" @onclick="() => VorlageWaehlen(schluessel)">
+                            <span class="epos-pausl-vorlage-titel">@v.Titel</span>
+                            <span class="epos-pausl-vorlage-unter">@v.Untertitel</span>
+                            <span class="epos-pausl-vorlage-text">@v.Beschreibung</span>
+                            @if (v.Faustwert.Length > 0)
+                            {
+                                <span class="epos-pausl-vorlage-faust">@v.Faustwert</span>
+                            }
+                        </button>
+                    }
+                </div>
+                <div class="epos-pausl-zeile">@Marke("Vorlage")</div>
+                <p class="epos-leisezeile">@Texte.VorlageHinweis</p>
+                @if (IstWpVorlage)
+                {
+                    <div class="epos-pausl-geraetetyp">
+                        <Optionsgruppe Bezeichnung="@Texte.Geraetetyp" Eintraege="@Geraetetypen"
+                                       Auswahl="@(_eingabe.WpGeregelt ? 1 : 0)"
+                                       AuswahlChanged="@((int? w) => Schalten(() => _eingabe.WpGeregelt = w == 1))" />
+                        @Marke("Erzeuger")
+                    </div>
+                }
+                @if (_eingabe.Vorlage == "WP_BIVALENT")
+                {
+                    <div class="epos-pausl-zweiterzeuger">
+                        <Optionsgruppe Bezeichnung="@Texte.Zweiterzeuger" Eintraege="@Zweiterzeugerwege"
+                                       Auswahl="@(_eingabe.ZweiterzeugerFrei ? 1 : 0)"
+                                       AuswahlChanged="@((int? w) => Schalten(() => _eingabe.ZweiterzeugerFrei = w == 1))" />
+                    </div>
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+
+        <Gruppenkopf Titel="@Texte.GruppeErzeuger">
+            <KindInhalt>
+                @if (Daten.Erzeuger.Count == 0)
+                {
+                    <p class="epos-leisezeile epos-pausl-erzeuger-keiner">@Texte.ErzeugerKeiner</p>
+                }
+                else
+                {
+                    <ul class="epos-pausl-erzeuger">
+                        @foreach (string z in Daten.Erzeuger)
+                        {
+                            <li>@z</li>
+                        }
+                    </ul>
+                    <div class="epos-pausl-zeile">@Marke("Erzeuger", Texte.QuelleKaskade)</div>
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+
+        @if (AbStandard)
+        {
+            <Gruppenkopf Titel="@Texte.GruppeTemperatur">
+                <KindInhalt>
+                    <div class="epos-pausl-zeile">
+                        <span class="epos-pausl-beschriftung">@Texte.Temperaturpaar</span>
+                        <span>@(Z(Daten.VorlaufC) + " / " + Z(Daten.RuecklaufC) + " °C")</span>
+                        @Marke("VorlaufC")
+                    </div>
+                    <div class="epos-pausl-zeile">
+                        <span class="epos-pausl-beschriftung">@Texte.Schwellen</span>
+                        <span>@(Z(Daten.SchwelleEin * 100) + " % / " + Z(Daten.SchwelleAus * 100) + " % → "
+                                + Format(Texte.NutzanteilText, Z((Daten.SchwelleAus - Daten.SchwelleEin) * 100)))</span>
+                        @Marke("SchwelleEin")
+                    </div>
+                    <p class="epos-leisezeile">@Texte.TemperaturBleibt</p>
+                </KindInhalt>
+            </Gruppenkopf>
+        }
+    </div>;
+
+    // =====================================================================
+    //  Schritt 2 — Bedarf und Randbedingungen
+    // =====================================================================
+
+    private IReadOnlyList<(int Id, string Text)> Uebergabeeintraege
+        => Daten.Uebergabearten.Select((u, i) => (i, u.Text)).ToList();
+
+    private int? UebergabeIndex
+    {
+        get
+        {
+            for (int i = 0; i < Daten.Uebergabearten.Count; i++)
+                if (Daten.Uebergabearten[i].Wert == (_eingabe.Uebergabeart ?? "")) return i;
+            return Daten.Uebergabearten.Count > 0 ? 0 : null;
+        }
+    }
+
+    private void UebergabeGewaehlt(int? i)
+    {
+        if (i is int k && k >= 0 && k < Daten.Uebergabearten.Count)
+            Schalten(() => _eingabe.Uebergabeart = Daten.Uebergabearten[k].Wert);
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Sperreintraege
+        => PufferSperrprofilWert.Alle.Select((p, i) => (i, Texte.SperrprofilText(p))).ToList();
+
+    private int? SperrIndex
+    {
+        get
+        {
+            for (int i = 0; i < PufferSperrprofilWert.Alle.Count; i++)
+                if (PufferSperrprofilWert.Alle[i] == _eingabe.Sperrprofil) return i;
+            return 0;
+        }
+    }
+
+    private void SperrprofilGewaehlt(int? i)
+    {
+        if (i is int k && k >= 0 && k < PufferSperrprofilWert.Alle.Count)
+            Schalten(() => _eingabe.Sperrprofil = PufferSperrprofilWert.Alle[k]);
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Zirkulationseintraege
+        => Daten.Zirkulationswege.Select((z, i) => (i, z.Text)).ToList();
+
+    private int? ZirkulationIndex
+    {
+        get
+        {
+            for (int i = 0; i < Daten.Zirkulationswege.Count; i++)
+                if (Daten.Zirkulationswege[i].Wert == (_eingabe.ZirkulationWeg ?? "")) return i;
+            return Daten.Zirkulationswege.Count > 0 ? 0 : null;
+        }
+    }
+
+    private void ZirkulationGewaehlt(int? i)
+    {
+        if (i is int k && k >= 0 && k < Daten.Zirkulationswege.Count)
+            Schalten(() => _eingabe.ZirkulationWeg = Daten.Zirkulationswege[k].Wert);
+    }
+
+    private RenderFragment SchrittBedarf => @<div class="epos-pausl-schritt epos-pausl-schritt--bedarf">
+        <Gruppenkopf Titel="@Texte.GruppeReihen">
+            <KindInhalt>
+                @if (Daten.ReihenFehler.Length > 0)
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Format(Texte.ReihenFehler, Daten.ReihenFehler)" />
+                }
+                else
+                {
+                    <table class="epos-raster epos-pausl-reihen">
+                        <thead>
+                            <tr>
+                                <th>@Texte.SpalteKanal</th>
+                                <th>@Texte.SpalteSpitze</th>
+                                <th>@Texte.SpalteJahr</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (PufferReiheDaten r in Daten.Reihen)
+                            {
+                                <tr @key="r.Kanal">
+                                    <td>@r.Kanal</td>
+                                    <td>@(Z(r.SpitzeKw, "N1") + " kW")</td>
+                                    <td>@(Energieeinheit.MWh.Formatiere(Energieeinheit.MWh.AusKWh(r.JahrKwh)) + " " + Energieeinheit.MWh.Text)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @Marke("Reihen", Texte.QuelleReihe)
+                }
+                <p class="epos-leisezeile">@Texte.ReihenHinweis</p>
+            </KindInhalt>
+        </Gruppenkopf>
+
+        @if (_eingabe.KlasseHeizung)
+        {
+            <Gruppenkopf Titel="@Texte.GruppeUebergabe">
+                <KindInhalt>
+                    <Formularraster>
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@Texte.Uebergabeart" Eintraege="@Uebergabeeintraege"
+                                         Auswahl="@UebergabeIndex" AuswahlChanged="UebergabeGewaehlt" />
+                            @Marke("Uebergabeart")
+                            <Zahlenfeld Bezeichnung="@Texte.Heizgrenze" Einheit="°C" Wert="@_eingabe.HeizgrenzeC"
+                                        Platzhalter="@Texte.LeerVorgabe"
+                                        WertChanged="@((double? w) => Zahl(() => _eingabe.HeizgrenzeC = w))" />
+                            @Marke("HeizgrenzeC")
+                            @if (AbStandard)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.Heizlast" Einheit="kW" Wert="@_eingabe.AuslegungsheizlastKw"
+                                            Platzhalter="@Texte.HeizlastLeer" Min="0"
+                                            WertChanged="@((double? w) => Zahl(() => _eingabe.AuslegungsheizlastKw = w))" />
+                                @Marke("AuslegungsheizlastKw", Texte.QuelleReihe)
+                                <Zahlenfeld Bezeichnung="@Texte.Anlagenvolumen" Einheit="l" Wert="@_eingabe.AnlagenvolumenL"
+                                            Platzhalter="@Texte.AnlagenvolumenLeer" Min="0"
+                                            WertChanged="@((double? w) => Zahl(() => _eingabe.AnlagenvolumenL = w))" />
+                                @Marke("AnlagenvolumenL")
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                </KindInhalt>
+            </Gruppenkopf>
+
+            <Gruppenkopf Titel="@Texte.GruppeSperre">
+                <KindInhalt>
+                    <Formularraster>
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@Texte.Sperrprofil" Eintraege="@Sperreintraege"
+                                         Auswahl="@SperrIndex" AuswahlChanged="SperrprofilGewaehlt" />
+                            @Marke("Sperrfenster")
+                            @if (_eingabe.Sperrprofil == PufferSperrprofilWert.Eigen)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.Sperrbeginn" Einheit="h" Wert="@_eingabe.SperrbeginnH" Min="0" Max="24"
+                                            WertChanged="@((double? w) => Zahl(() => _eingabe.SperrbeginnH = w))" />
+                                <Zahlenfeld Bezeichnung="@Texte.Sperrdauer" Einheit="h" Wert="@_eingabe.SperrdauerH" Min="0" Max="24"
+                                            WertChanged="@((double? w) => Zahl(() => _eingabe.SperrdauerH = w))" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    @if (Experte)
+                    {
+                        <Schalter Bezeichnung="@Texte.Expertenweg" Wert="@_eingabe.SperrzeitExpertenweg"
+                                  WertChanged="@((bool w) => Schalten(() => _eingabe.SperrzeitExpertenweg = w))" />
+                    }
+                    <p class="epos-leisezeile">@Texte.SperreHinweis</p>
+                </KindInhalt>
+            </Gruppenkopf>
+        }
+
+        @if (AbStandard && (_eingabe.KlasseHeizung || _eingabe.KlasseProzess))
+        {
+            <Gruppenkopf Titel="@Texte.GruppeZiele">
+                <KindInhalt>
+                    <Formularraster>
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Texte.Mindestlaufzeit" Einheit="min" Wert="@_eingabe.MindestlaufzeitMin"
+                                        Platzhalter="@Texte.LeerVorgabe" Min="0"
+                                        WertChanged="@((double? w) => Zahl(() => _eingabe.MindestlaufzeitMin = w))" />
+                            @Marke("MindestlaufzeitMin", Texte.QuelleVorlage)
+                            <Zahlenfeld Bezeichnung="@Texte.Startziel" Einheit="@Texte.EinheitJeTag" Wert="@_eingabe.StartzielJeTag"
+                                        Platzhalter="@Texte.LeerVorgabe" Min="0"
+                                        WertChanged="@((double? w) => Zahl(() => _eingabe.StartzielJeTag = w))" />
+                            @Marke("StartzielJeTag", Texte.QuelleVorlage)
+                            <Zahlenfeld Bezeichnung="@Texte.Deckungsziel" Einheit="%" Wert="@_eingabe.DeckungszielProzent"
+                                        Platzhalter="@Texte.LeerVorgabe" Min="0" Max="100"
+                                        WertChanged="@((double? w) => Zahl(() => _eingabe.DeckungszielProzent = w))" />
+                            @Marke("Deckungsziel")
+                            @if (Experte)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.Mindestleistung" Einheit="kW" Wert="@_eingabe.MindestleistungKw"
+                                            Platzhalter="@Texte.LeerVorgabe" Min="0"
+                                            WertChanged="@((double? w) => Zahl(() => _eingabe.MindestleistungKw = w))" />
+                                @Marke("Erzeuger", Texte.QuelleKaskade)
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                </KindInhalt>
+            </Gruppenkopf>
+        }
+
+        @if (_eingabe.KlasseBrauchwasser)
+        {
+            <Gruppenkopf Titel="@Texte.GruppeZapf">
+                <KindInhalt>
+                    @if (!Daten.ZapfVorhanden)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Texte.ZapfKein" />
+                    }
+                    else
+                    {
+                        <div class="epos-pausl-zeile">
+                            <span class="epos-pausl-beschriftung">@Texte.ZapfTopologie</span>
+                            <span class="epos-pausl-topologie">@Texte.Topologie(Daten.ZapfTopologie)</span>
+                            @Marke("Zapfprofil", Texte.QuelleZapfprofil)
+                        </div>
+                        @if (Daten.ZapfDmaxKwh is double dmax)
+                        {
+                            <div class="epos-pausl-zeile">
+                                <span class="epos-pausl-beschriftung">@Texte.ZapfDmax</span>
+                                <span>@(Z(dmax, "N1") + " kWh")</span>
+                            </div>
+                        }
+                        @if (Daten.ZapfPersonen is double personen)
+                        {
+                            <div class="epos-pausl-zeile">
+                                <span class="epos-pausl-beschriftung">@Texte.ZapfPersonen</span>
+                                <span>@Z(personen)</span>
+                            </div>
+                        }
+                        @if (Daten.ZapfTagesbedarfL is double tag)
+                        {
+                            <div class="epos-pausl-zeile">
+                                <span class="epos-pausl-beschriftung">@Texte.ZapfTagesbedarf</span>
+                                <span>@(Z(tag) + " l")</span>
+                            </div>
+                        }
+                    }
+                    @if (Experte)
+                    {
+                        <Formularraster>
+                            <KindInhalt>
+                                <Auswahlfeld Bezeichnung="@Texte.Zirkulation" Eintraege="@Zirkulationseintraege"
+                                             Auswahl="@ZirkulationIndex" AuswahlChanged="ZirkulationGewaehlt" />
+                                @Marke("ZirkulationWeg")
+                                @if (_eingabe.ZirkulationWeg == "JE_WE")
+                                {
+                                    <Zahlenfeld Bezeichnung="@Texte.Wohneinheiten" Wert="@_eingabe.Wohneinheiten" Min="0"
+                                                WertChanged="@((double? w) => Zahl(() => _eingabe.Wohneinheiten = w))" />
+                                }
+                                <Zahlenfeld Bezeichnung="@Texte.TOben" Einheit="°C" Wert="@_eingabe.TPufferObenC"
+                                            Platzhalter="@Texte.LeerVorgabe"
+                                            WertChanged="@((double? w) => Zahl(() => _eingabe.TPufferObenC = w))" />
+                                @Marke("TPufferObenC")
+                                <Zahlenfeld Bezeichnung="@Texte.DeltaTB" Einheit="K" Wert="@_eingabe.DeltaTBK"
+                                            Platzhalter="@Texte.LeerVorgabe" Min="0"
+                                            WertChanged="@((double? w) => Zahl(() => _eingabe.DeltaTBK = w))" />
+                                @Marke("DeltaTBK")
+                            </KindInhalt>
+                        </Formularraster>
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+        }
+
+        @if (_veraltet)
+        {
+            <div class="epos-pausl-veraltet">
+                <p class="epos-leisezeile">@Texte.VeraltetHinweis</p>
+                <button type="button" class="epos-knopf epos-pausl-neurechnen" @onclick="NeuRechnen">@Texte.NeuRechnen</button>
+            </div>
+        }
+    </div>;
+
+    // =====================================================================
+    //  Schritt 3 — Kriterien
+    // =====================================================================
+
+    /// <summary>Der Schalter der Vorlage für das Kriterium (ohne Abweichung des Anwenders).</summary>
+    private bool VorlageAn(string kennung)
+        => GewaehlteVorlage?.Kriterien is { } k && k.TryGetValue(kennung, out bool an) && an;
+
+    /// <summary>Gilt das Kriterium — Abweichung des Anwenders vor dem Schalter der Vorlage?</summary>
+    private bool KriteriumAn(string kennung)
+        => _eingabe.Kriterien.TryGetValue(kennung, out bool an) ? an : VorlageAn(kennung);
+
+    private void KriteriumSetzen(string kennung, bool an)
+    {
+        Schalten(() =>
+        {
+            if (an == VorlageAn(kennung)) _eingabe.Kriterien.Remove(kennung);
+            else _eingabe.Kriterien[kennung] = an;
+        });
+    }
+
+    /// <summary>Die Karten in der Reihenfolge der Vorlage; Schnell zeigt nur die eingeschalteten.</summary>
+    private IEnumerable<string> Karten
+        => (GewaehlteVorlage?.Kriterien.Keys ?? Enumerable.Empty<string>())
+           .Where(k => AbStandard || KriteriumAn(k));
+
+    private string Kriteriumswert(PufferKriteriumDaten? k)
+    {
+        if (k is null) return _ergebnis is null ? Texte.KritNochNicht : "—";
+        if (!k.Gueltig) return Texte.KritNichtGueltig;
+        return k.VolumenL is double v ? Z(v) + " l" : "—";
+    }
+
+    private RenderFragment Karte(string kennung) => @<section @key="kennung" data-kriterium="@kennung"
+            class="@("epos-pausl-karte" + (KriteriumAn(kennung) ? "" : " epos-pausl-karte--aus")
+                     + (_ergebnis?.Bemisst(kennung) == true ? " epos-pausl-karte--bemessend" : ""))">
+        @{
+            PufferKriteriumDaten? k = _ergebnis?.Kriterium(kennung);
+            bool ueber = _eingabe.Kriterien.ContainsKey(kennung);
+        }
+        <header class="epos-pausl-karte-kopf">
+            <span class="epos-pausl-kennung">@kennung</span>
+            <h3 class="epos-pausl-karte-titel">@Texte.Kriterium(kennung)</h3>
+            <span class="epos-pausl-karte-wert">@Kriteriumswert(k)</span>
+            @if (_ergebnis?.Bemisst(kennung) == true)
+            {
+                <span class="epos-pausl-bemessend">@Texte.KritBemessend</span>
+            }
+            <span class="@("epos-pausl-marke" + (ueber ? " epos-pausl-marke--ueberschrieben" : ""))">@(ueber ? Texte.QuelleUeberschrieben : Texte.QuelleVorlage)</span>
+        </header>
+        <Schalter Bezeichnung="@Texte.KritAn" Wert="@KriteriumAn(kennung)"
+                  WertChanged="@((bool w) => KriteriumSetzen(kennung, w))" />
+        @if (k is not null && k.Herkunft.Length > 0)
+        {
+            <p class="epos-pausl-karte-herkunft">@k.Herkunft</p>
+        }
+        @if (AbStandard && k is not null && k.Rechenweg.Length > 0)
+        {
+            <p class="epos-pausl-rechenweg"><span class="epos-pausl-beschriftung">@Texte.KritRechenweg</span> @k.Rechenweg</p>
+        }
+        @if (Experte && kennung == "K4")
+        {
+            PufferKriteriumDaten? e = _ergebnis?.Kriterium("K4e");
+            <div class="epos-pausl-expertenzeile" data-kriterium="K4e">
+                <span class="epos-pausl-beschriftung">@Texte.Kriterium("K4e")</span>
+                <span>@Kriteriumswert(e)</span>
+                @if (e is not null && e.Rechenweg.Length > 0)
+                {
+                    <span class="epos-pausl-rechenweg">@e.Rechenweg</span>
+                }
+                <Schalter Bezeichnung="@Texte.Expertenweg" Wert="@_eingabe.SperrzeitExpertenweg"
+                          WertChanged="@((bool w) => Schalten(() => _eingabe.SperrzeitExpertenweg = w))" />
+            </div>
+        }
+        @if (Experte && kennung == "K9")
+        {
+            PufferKriteriumDaten? e = _ergebnis?.Kriterium("K9e");
+            <div class="epos-pausl-expertenzeile" data-kriterium="K9e">
+                <span class="epos-pausl-beschriftung">@Texte.Kriterium("K9e")</span>
+                <span>@Kriteriumswert(e)</span>
+            </div>
+        }
+    </section>;
+
+    private RenderFragment SchrittKriterien => @<div class="epos-pausl-schritt epos-pausl-schritt--kriterien">
+        <p class="epos-leisezeile">@Texte.KriterienHinweis</p>
+        @if (_eingabe.KlasseHeizung || _eingabe.KlasseProzess)
+        {
+            <div class="epos-pausl-karten">
+                @foreach (string kennung in Karten)
+                {
+                    @Karte(kennung)
+                }
+            </div>
+        }
+        @if (_eingabe.KlasseBrauchwasser && _ergebnis?.Zonen.FirstOrDefault(z => z.Zone == "Brauchwasser") is PufferZoneDaten bw)
+        {
+            <Gruppenkopf Titel="@Texte.KritBrauchwasser">
+                <KindInhalt>
+                    @foreach (PufferKriteriumDaten k in bw.Kriterien)
+                    {
+                        <div class="epos-pausl-zeile" @key="k.Kennung" data-kriterium="@k.Kennung">
+                            <span class="epos-pausl-beschriftung">@Texte.Kriterium(k.Kennung)</span>
+                            <span>@Kriteriumswert(k)</span>
+                            @if (AbStandard && k.Rechenweg.Length > 0)
+                            {
+                                <span class="epos-pausl-rechenweg">@k.Rechenweg</span>
+                            }
+                        </div>
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+        }
+        @if (_veraltet)
+        {
+            <div class="epos-pausl-veraltet">
+                <p class="epos-leisezeile">@Texte.VeraltetHinweis</p>
+                <button type="button" class="epos-knopf epos-pausl-neurechnen" @onclick="NeuRechnen">@Texte.NeuRechnen</button>
+            </div>
+        }
+    </div>;
+
+    // =====================================================================
+    //  Schritt 4 — Ergebnis und Übernahme
+    // =====================================================================
+
+    private PufferBetriebsbildDaten? Betriebsbild
+        => _ergebnis?.Zonen.FirstOrDefault(z => z.Zone == "Heizung")?.Betriebsbild
+           ?? _ergebnis?.Zonen.FirstOrDefault(z => z.Zone == "Prozess")?.Betriebsbild;
+
+    private string Vorschlagsname
+        => _ergebnis is { EmpfehlungL: > 0 } e && !string.IsNullOrEmpty(Daten.BezeichnerMuster)
+            ? Format(Daten.BezeichnerMuster, Z(e.EmpfehlungL))
+            : "";
+
+    private IReadOnlyList<(int Id, string Text)> Zieleintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (_idPuffer.HasValue) l.Add((0, Format(Texte.ZielAendern, _pufferName)));
+            l.Add((1, Texte.ZielNeu));
+            return l;
+        }
+    }
+
+    private bool Neuanlage => !_idPuffer.HasValue || _ziel == 1;
+
+    private bool UebernahmeFrei => _ergebnis is { Zustand: PufferErgebnisZustand.Gerechnet, EmpfehlungL: > 0 } && !_veraltet;
+
+    private void Speichern()
+    {
+        if (Dienste?.Speichern is null) return;
+        if (_veraltet) NeuRechnen();
+        string? fehler = Dienste.Speichern(_eingabe.Kopie());
+        Melden(fehler ?? Texte.MeldungGespeichert, fehler is null);
+    }
+
+    private void Uebernehmen()
+    {
+        if (Dienste?.Uebernehmen is null) return;
+        if (_veraltet || _ergebnis is null) NeuRechnen();
+        if (_ergebnis is not { Zustand: PufferErgebnisZustand.Gerechnet, EmpfehlungL: > 0 })
+        {
+            Melden(Texte.GrundKeineEmpfehlung, false);
+            return;
+        }
+        bool neu = Neuanlage;
+        string name = neu ? (_bezeichner.Trim().Length > 0 ? _bezeichner.Trim() : Vorschlagsname) : "";
+        if (neu && name.Length == 0)
+        {
+            Melden(Texte.GrundBezeichner, false);
+            return;
+        }
+        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(), new PufferUebernahmeDaten(neu, name));
+        Melden(r.Text, r.Erfolg);
+        if (r.Erfolg && r.IdPuffer > 0)
+        {
+            _idPuffer = r.IdPuffer;
+            if (neu) _pufferName = name;
+            _ziel = 0;
+            _bezeichner = "";
+        }
+    }
+
+    /// <summary>Ein weich gesperrter Übernahme-Knopf meldet seinen Grund.</summary>
+    private void UebernahmeVerweigert() => Melden(Texte.GrundKeineEmpfehlung, false);
+
+    private void Melden(string text, bool erfolg)
+    {
+        _meldung = text ?? "";
+        _meldungErfolg = erfolg;
+    }
+
+    private string Verlustzeile(PufferKennzahlDaten k)
+    {
+        if (k.VerlustKwhJeTag is not double tag) return "—";
+        string z = Z(tag, "N2") + " kWh/d";
+        if (k.VerlustWJeK is double wk) z += " · " + Z(wk, "N2") + " W/K";
+        z += " · " + (k.VerlustAusKatalog ? Texte.KzAusKatalog : Texte.KzKlasseC);
+        if (k.VerlustExtrapoliert) z += " · " + Texte.KzExtrapoliert;
+        return z;
+    }
+
+    private RenderFragment Kennzahl(string titel, string wert, string klasse) => @<div class="@("epos-pausl-kennzahl " + klasse)">
+        <span class="epos-pausl-beschriftung">@titel</span>
+        <span class="epos-pausl-kennzahl-wert">@wert</span>
+    </div>;
+
+    private RenderFragment SchrittErgebnis => @<div class="epos-pausl-schritt epos-pausl-schritt--ergebnis">
+        @if (_ergebnis is null || _ergebnis.Zustand == PufferErgebnisZustand.NichtGerechnet)
+        {
+            <p class="epos-leisezeile epos-pausl-ergebnis-leer">@Texte.ErgebnisLeer</p>
+        }
+        else if (_ergebnis.Zustand == PufferErgebnisZustand.Fehler)
+        {
+            <Warnbanner Stufe="WarnStufe.Fehler" Text="@_ergebnis.Grund" />
+        }
+        else
+        {
+            PufferAuslegungErgebnisDaten e = _ergebnis;
+            PufferKennzahlDaten kz = e.Kennzahlen;
+            <Gruppenkopf Titel="@Texte.GruppeZonen" Summe="@(Z(e.EmpfehlungL) + " l")">
+                <KindInhalt>
+                    <table class="epos-raster epos-pausl-zonen">
+                        <thead>
+                            <tr>
+                                <th>@Texte.SpalteZone</th>
+                                <th>@Texte.SpalteBemessend</th>
+                                <th>@Texte.SpalteVolumen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (PufferZoneDaten z in e.Zonen)
+                            {
+                                <tr @key="z.Zone" data-zone="@z.Zone">
+                                    <td>@z.Name</td>
+                                    <td>@(z.KeinPuffer ? Texte.KeinPuffer : z.BemessendName)</td>
+                                    <td>@(Z(z.VolumenL) + " l")</td>
+                                </tr>
+                            }
+                            <tr class="epos-pausl-summe">
+                                <td>@Texte.Summe</td>
+                                <td></td>
+                                <td>@(Z(e.SummeL) + " l")</td>
+                            </tr>
+                            <tr class="epos-pausl-empfehlung">
+                                <td>@Texte.Empfehlung</td>
+                                <td>@e.Bemessend</td>
+                                <td>@(e.EmpfehlungL > 0 ? Format(Texte.EmpfehlungZeile, Z(e.EmpfehlungL), Z(kz.KapazitaetKwh, "N1")) : Texte.KeinPuffer)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    @if (e.UeberListenende)
+                    {
+                        <p class="epos-leisezeile">@Texte.UeberListenende</p>
+                    }
+                    @if (e.AnPraxisgrenze)
+                    {
+                        <p class="epos-leisezeile epos-pausl-praxisgrenze">@Texte.AnPraxisgrenze</p>
+                    }
+                    <div class="epos-pausl-zeile epos-pausl-katalog">
+                        <span class="epos-pausl-beschriftung">@Texte.Katalogvorschlag</span>
+                        <span>@(e.Katalogvorschlag.Length > 0 ? e.Katalogvorschlag : Texte.KatalogKeiner)</span>
+                    </div>
+                </KindInhalt>
+            </Gruppenkopf>
+
+            <Gruppenkopf Titel="@Texte.GruppeKennzahlen">
+                <KindInhalt>
+                    <div class="epos-pausl-kennzahlen">
+                        @if (Betriebsbild is PufferBetriebsbildDaten b)
+                        {
+                            @Kennzahl(Texte.KzStartsTag, Z(b.StartsJeTag, "N1"), "epos-pausl-kz-starts-tag")
+                            @Kennzahl(Texte.KzStartsJahr, Z(b.StartsHeizperiode), "epos-pausl-kz-starts-jahr")
+                        }
+                        @Kennzahl(Texte.KzVerlustTag, Verlustzeile(kz), "epos-pausl-kz-verlust")
+                        @Kennzahl(Texte.KzVerlustJahr, kz.VerlustKwhJeJahr is double ja ? Z(ja) + " kWh/a" : "—", "epos-pausl-kz-betriebsverlust")
+                        @Kennzahl(Texte.KzKapazitaet, Z(kz.KapazitaetKwh, "N1") + " kWh", "epos-pausl-kz-kapazitaet")
+                        @Kennzahl(Texte.KzNutzanteil, Z(kz.Nutzanteil * 100) + " %", "epos-pausl-kz-nutzanteil")
+                        @if (AbStandard && kz.FaustwertL is double f)
+                        {
+                            @Kennzahl(Texte.KzFaustwert, Z(f) + " l", "epos-pausl-kz-faustwert")
+                        }
+                        @if (kz.LiterJePerson is double lp)
+                        {
+                            @Kennzahl(Texte.KzJePerson, Z(lp) + " l", "epos-pausl-kz-je-person")
+                        }
+                        @if (kz.ZonenanteilHeizung is double anteil)
+                        {
+                            @Kennzahl(Texte.KzZonenanteil, Z(anteil * 100) + " %", "epos-pausl-kz-zonenanteil")
+                            @Kennzahl(Texte.KzSchichten, Z(kz.SchichtenMindest), "epos-pausl-kz-schichten")
+                        }
+                    </div>
+                    @if (kz.BandMinL is double bmin && kz.BandMaxL is double bmax)
+                    {
+                        <Herleitungszeile Text="@Format(Texte.Band, Z(bmin), Z(bmax))" />
+                    }
+                    @if (kz.BandWpMinL is double wmin && kz.BandWpMaxL is double wmax)
+                    {
+                        <Herleitungszeile Text="@Format(Texte.BandWp, Z(wmin), Z(wmax))" />
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+
+            <Gruppenkopf Titel="@Texte.GruppeWarnungen" Summe="@(e.Warnungen.Count > 0 ? Z(e.Warnungen.Count) : "")">
+                <KindInhalt>
+                    @if (e.Warnungen.Count == 0)
+                    {
+                        <p class="epos-leisezeile">@Texte.WarnungenLeer</p>
+                    }
+                    else
+                    {
+                        <table class="epos-raster epos-pausl-warnungen">
+                            <thead>
+                                <tr>
+                                    <th>@Texte.SpalteCode</th>
+                                    <th>@Texte.SpalteStufe</th>
+                                    <th>@Texte.SpalteText</th>
+                                    <th>@Texte.SpalteHerkunft</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < e.Warnungen.Count; i++)
+                                {
+                                    PufferWarnungDaten w = e.Warnungen[i];
+                                    <tr @key="i" data-code="@w.Code" class="@(w.Warnung ? "epos-pausl-warnung" : "epos-pausl-hinweis")">
+                                        <td>@w.Code</td>
+                                        <td>@(w.Warnung ? Texte.StufeWarnung : Texte.StufeHinweis)</td>
+                                        <td title="@(w.Klartext.Length > 0 && w.Klartext != w.Text ? w.Klartext : null)">@w.Text</td>
+                                        <td>@w.Herkunft</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+
+            <Gruppenkopf Titel="@Texte.GruppeUebernahme">
+                <KindInhalt>
+                    @if (_idPuffer.HasValue)
+                    {
+                        <Optionsgruppe Bezeichnung="@Texte.Ziel" Eintraege="@Zieleintraege" Auswahl="@_ziel"
+                                       AuswahlChanged="@((int? w) => _ziel = w ?? 0)" />
+                    }
+                    @if (Neuanlage)
+                    {
+                        <Formularraster>
+                            <KindInhalt>
+                                <Textfeld Bezeichnung="@Texte.Bezeichner" Wert="@_bezeichner" Platzhalter="@Vorschlagsname"
+                                          WertChanged="@((string w) => _bezeichner = w ?? "")" />
+                            </KindInhalt>
+                        </Formularraster>
+                    }
+                    <p class="epos-leisezeile epos-pausl-bleibt">@Texte.UebernahmeBleibt</p>
+                    <div class="epos-pausl-uebernahme-knoepfe">
+                        @if (Dienste?.Speichern is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-pausl-speichern" @onclick="Speichern">@Texte.BtnSpeichern</button>
+                        }
+                        @if (Dienste?.Uebernehmen is not null)
+                        {
+                            @if (UebernahmeFrei)
+                            {
+                                <button type="button" class="epos-knopf epos-knopf--primaer epos-pausl-uebernehmen"
+                                        @onclick="Uebernehmen">@Texte.BtnUebernehmen</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="epos-knopf epos-pausl-uebernehmen" aria-disabled="true"
+                                        title="@Texte.GrundKeineEmpfehlung" @onclick="UebernahmeVerweigert">@Texte.BtnUebernehmen</button>
+                            }
+                        }
+                    </div>
+                </KindInhalt>
+            </Gruppenkopf>
+        }
+        @if (_veraltet)
+        {
+            <div class="epos-pausl-veraltet">
+                <p class="epos-leisezeile">@Texte.VeraltetHinweis</p>
+                <button type="button" class="epos-knopf epos-pausl-neurechnen" @onclick="NeuRechnen">@Texte.NeuRechnen</button>
+            </div>
+        }
+    </div>;
+
+    // =====================================================================
+    //  Der Hilfe-Assistent
+    // =====================================================================
+
+    private PufferAuslegungKiSicht KiSicht()
+    {
+        return _kiSicht ??= new PufferAuslegungKiSicht
+        {
+            KlasseLesen = k => k switch
+            {
+                PufferAuslegungKiSicht.HEIZUNG => _eingabe.KlasseHeizung,
+                PufferAuslegungKiSicht.BRAUCHWASSER => _eingabe.KlasseBrauchwasser,
+                _ => _eingabe.KlasseProzess
+            },
+            KlasseSetzen = (k, w) => Schalten(() =>
+            {
+                if (k == PufferAuslegungKiSicht.HEIZUNG) _eingabe.KlasseHeizung = w;
+                else if (k == PufferAuslegungKiSicht.BRAUCHWASSER) _eingabe.KlasseBrauchwasser = w;
+                else _eingabe.KlasseProzess = w;
+            }),
+            VorlageLesen = () => _eingabe.Vorlage,
+            VorlageSetzen = v => { if (Daten.Vorlagen.Any(x => x.Schluessel == v)) VorlageWaehlen(v); },
+            VorlageEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Vorlagen, v => v.Schluessel, v => v.Titel + " " + v.Untertitel),
+            GeregeltLesen = () => _eingabe.WpGeregelt,
+            GeregeltSetzen = w => Schalten(() => _eingabe.WpGeregelt = w),
+            ZweiterzeugerFreiLesen = () => _eingabe.ZweiterzeugerFrei,
+            ZweiterzeugerFreiSetzen = w => Schalten(() => _eingabe.ZweiterzeugerFrei = w),
+            UebergabeartLesen = () => _eingabe.Uebergabeart ?? "",
+            UebergabeartSetzen = w => { if (Daten.Uebergabearten.Any(u => u.Wert == (w ?? ""))) Schalten(() => _eingabe.Uebergabeart = w ?? ""); },
+            UebergabeartEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Uebergabearten, u => u.Wert, u => u.Text),
+            SperrprofilLesen = () => _eingabe.Sperrprofil,
+            SperrprofilSetzen = w => { if (PufferSperrprofilWert.Alle.Contains(w)) Schalten(() => _eingabe.Sperrprofil = w); },
+            SperrprofilEintraege = () => KiMaskenanmeldung.Eintraege(PufferSperrprofilWert.Alle, p => p, p => Texte.SperrprofilText(p)),
+            ZahlLesen = f => f switch
+            {
+                PufferAuslegungKiSicht.HEIZGRENZE => _eingabe.HeizgrenzeC,
+                PufferAuslegungKiSicht.ANLAGENVOLUMEN => _eingabe.AnlagenvolumenL,
+                PufferAuslegungKiSicht.STARTZIEL => _eingabe.StartzielJeTag,
+                PufferAuslegungKiSicht.MINDESTLAUFZEIT => _eingabe.MindestlaufzeitMin,
+                _ => _eingabe.DeckungszielProzent
+            },
+            ZahlSetzen = (f, w) => Zahl(() =>
+            {
+                switch (f)
+                {
+                    case PufferAuslegungKiSicht.HEIZGRENZE: _eingabe.HeizgrenzeC = w; break;
+                    case PufferAuslegungKiSicht.ANLAGENVOLUMEN: _eingabe.AnlagenvolumenL = w; break;
+                    case PufferAuslegungKiSicht.STARTZIEL: _eingabe.StartzielJeTag = w; break;
+                    case PufferAuslegungKiSicht.MINDESTLAUFZEIT: _eingabe.MindestlaufzeitMin = w; break;
+                    default: _eingabe.DeckungszielProzent = w; break;
+                }
+            })
+        };
+    }
+
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    // =====================================================================
+    //  Hilfen
+    // =====================================================================
+
+    private static string Z(double wert, string format = "N0") => wert.ToString(format, CultureInfo.CurrentCulture);
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+}

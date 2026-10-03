@@ -34,6 +34,13 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
   Dateiabzüge.
 - Unabhängige Agenten und Werkzeugaufrufe parallel starten; Ergebnisse abnehmen, indem alle
   plausiblen Schreiborte geprüft werden (Hauptbaum, Worktree, Commits — auch Sync-Commits).
+- **Aufwand nach Aufgabe:** Die Kosten einer Welle wachsen mit Runden × Kontextgröße. Deshalb
+  die Agentendefinitionen unter `.claude/agents/` nutzen (`opus-umsetzung` mittlerer, `sonnet-mechanik`
+  und `haiku-pruefung` niedriger Denkaufwand), einen Auftrag so schneiden, dass ein Agent mit
+  höchstens rund 150 Werkzeugaufrufen auskommt (sonst in Teilaufträge mit frischem Kontext zerlegen),
+  Agenten kein vollständiges Gate fahren lassen — sie bauen, prüfen den SQL-Dialekt und laufen die
+  betroffenen Tests mit `--filter`; das Gate fährt die Orchestrierung einmal nach dem Merge —, und
+  lange Läufe mit genau einem wartenden Befehl im Hintergrund abwarten statt das Protokoll wiederholt zu lesen.
 - **Vor Agentenarbeit im Hauptbaum** die Datei `AGENT_LAEUFT` in der Repowurzel anlegen
   (Auftrag, Sitzung, Beginn; sie steht in `.gitignore`) und **nach der Abnahme löschen**.
   `GitHub_Sync.bat` bricht ab, solange sie liegt — so wandert kein halbfertiger Stand in
@@ -183,15 +190,16 @@ der Byte-Vergleich ist nur Information.
 begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 
 - gesäte Emissionsfaktoren der Testdatenbank (`emissionsart`, aktive `emissionswert`,
-  `Tab_Brennstoff_Stamm.CO2/SO2/NOx/Staub`, `energy_project_settings.co2/so2/nox`,
-  Berechnungsmodus eines Referenzprojekts);
+  `Tab_Brennstoff_Stamm.CO2/SO2/NOx/Staub` und die Projektkopien `Tab_Brennstoff` der
+  Referenzprojekte, `energy_project_settings.co2/so2/nox`, Berechnungsmodus eines Referenzprojekts);
 - gesäte PV-Modulkoeffizienten (`alpha_SC`, `beta_OC`, `gamma_PMP`, `T_NOCT`) oder ein neues
   Modul, das ein Referenzprojekt benutzt;
 - der Flottenstand `@Projektflotte` des Projekts 1046 in `Tab_SpeicherAuslegung` und dessen
   Projektzeilen;
 - gesäte Gebäudedaten: `Tab_Gebaeude(_STAMM)` mit `Bauweise`, U-Werten, Flächen, Sollwerten,
   `Luftwechselrate`, `Fensterdurchlassgrad`, `Gebaeude_Modell` und den übrigen Spalten des
-  Gebäudemodells, die Gebäudezuordnungen der Referenzprojekte und
+  Gebäudemodells, die Gebäudezuordnungen der Referenzprojekte, die Konditionierung ihrer Gebäude
+  und Zonen (übernommene Vorlagen sind Kopien am Gebäude) und
   das Anlegen oder Entfernen eines ihrer Gebäude;
 - gesäte Kältedaten: der Projektschalter `Tab_Einstellungen.Kuehlbetrieb` eines Referenzprojekts,
   die Kühleingaben seiner Gebäude (`Kuehlung_Aktiv`, `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht`,

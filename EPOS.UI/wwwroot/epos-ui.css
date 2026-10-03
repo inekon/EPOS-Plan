@@ -11305,6 +11305,221 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 }
 
 /* ==================================================================== */
+/* DIE ANSICHT „PUFFERSPEICHER-AUSLEGUNG" (Konzept Pufferspeicher-      */
+/* Auslegung, Stufe P2). Derselbe Aufbau wie die Stromspeicher-         */
+/* Auslegung: Kopf in einer Zeile, darunter Ablaufleiste und Tiefe,     */
+/* das Blatt des Schritts und eine Fusszeile mit dem Weg durch die      */
+/* Schritte. Die Vorlagen stehen als Karten im Raster, die Kriterien    */
+/* als Karten mit Schalter, Wert und Herkunftsmarke.                    */
+/* ==================================================================== */
+.epos-pausl {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-pausl-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 16px;
+}
+
+.epos-pausl-kontext {
+    color: var(--epos-text-leise);
+}
+
+.epos-pausl-kopfaktionen {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.epos-pausl-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+}
+
+.epos-pausl-blatt,
+.epos-pausl-schritt {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-pausl-fuss,
+.epos-pausl-uebernahme-knoepfe,
+.epos-pausl-veraltet {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-pausl-zeile,
+.epos-pausl-klassen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+}
+
+.epos-pausl-beschriftung {
+    color: var(--epos-text-leise);
+}
+
+/* Die Herkunftsmarke: eine kleine Kapsel hinter dem Wert. „ueberschrieben"
+   traegt die Warnfarben der Plakette - sichtbar verschieden von der Quelle. */
+.epos-pausl-marke {
+    display: inline-block;
+    padding: 1px 8px;
+    font-size: 12px;
+    color: var(--epos-text-leise);
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 10px;
+}
+
+.epos-pausl-marke--ueberschrieben {
+    color: var(--epos-badge-text);
+    background: var(--epos-badge-flaeche);
+    border-color: var(--epos-senke-rahmen);
+}
+
+.epos-pausl-vorlagen {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 8px;
+}
+
+.epos-pausl-vorlage {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: var(--epos-touchziel);
+    padding: 10px;
+    font: inherit;
+    text-align: left;
+    color: var(--epos-karte-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-pausl-vorlage--gewaehlt {
+    background: var(--epos-karte-flaeche-hover);
+    border: 2px solid var(--epos-karte-rahmen-hover);
+}
+
+.epos-pausl-vorlage-titel {
+    font-weight: 600;
+    color: var(--epos-karte-titel);
+}
+
+.epos-pausl-vorlage-faust {
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+.epos-pausl-karten {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 8px;
+}
+
+.epos-pausl-karte {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-pausl-karte--aus {
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+}
+
+.epos-pausl-karte--bemessend {
+    border: 2px solid var(--epos-karte-rahmen-hover);
+}
+
+.epos-pausl-karte-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+}
+
+.epos-pausl-karte-titel {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+}
+
+.epos-pausl-kennung {
+    font-weight: 600;
+    color: var(--epos-quelle-text);
+}
+
+.epos-pausl-karte-wert {
+    margin-left: auto;
+    font-weight: 600;
+}
+
+.epos-pausl-bemessend {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--epos-quelle-text);
+}
+
+.epos-pausl-rechenweg,
+.epos-pausl-karte-herkunft {
+    margin: 0;
+    font-size: 12px;
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
+}
+
+.epos-pausl-expertenzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--epos-rahmen-leise);
+}
+
+.epos-pausl-kennzahlen {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 6px 16px;
+}
+
+.epos-pausl-kennzahl {
+    display: flex;
+    flex-direction: column;
+}
+
+.epos-pausl-kennzahl-wert {
+    font-weight: 600;
+}
+
+.epos-pausl-empfehlung td {
+    font-weight: 600;
+}
+
+.epos-pausl-warnung td:nth-child(2) {
+    color: var(--epos-stufe-warnung);
+    font-weight: 600;
+}
+
+/* ==================================================================== */
 /* DIE ANSICHT „SIMULATION" (Auftrag #207, Anwenderentscheid SIM-Q1)    */
 /*                                                                      */
 /* Derselbe Aufbau wie die Auslegungsansicht: Kopf mit Titel,           */
@@ -12019,6 +12234,28 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 .epos-raster-leer td {
     color: var(--epos-text-leise);
     font-style: italic;
+}
+
+/* ==========================================================================
+   BRENNSTOFFE DES PROJEKTS (Dialoge/Kosten/ProjektBrennstoffeDialog.razor):
+   Eine Zelle, deren Wert vom heutigen Katalog abweicht, steht auf der
+   Warnflaeche (WARN_TEXT auf WARN_FLAECHE haelt 4,5:1); der Katalogwert
+   steht im title der Zelle.
+   ========================================================================== */
+.epos-pbrs-zelle--abweichend {
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+.epos-pbrs-uebernahme {
+    align-items: flex-end;
+}
+
+@media (forced-colors: active) {
+
+    .epos-pbrs-zelle--abweichend {
+        outline: 1px solid CanvasText;
+    }
 }
 
 /* ==========================================================================

@@ -1,4 +1,6 @@
-# Übergabe KP3 — Stand beim Anhalten am 02.10.2026, Fortsetzung am 03.10.2026 um 10 Uhr
+# Übergabe KP3 — Stand beim Anhalten am 02.10.2026, fortgeschrieben am 03.10.2026
+
+**Gültig ist Abschnitt 7 (Stand 03.10.2026); die Abschnitte 1–6 beschreiben den Stand vom 02.10.2026 und bleiben als Herleitung.**
 
 Sitzung „Gebäudesimulation“ (Cloud, Orchestrierung Fable 5.1, Agenten Opus 5.5), Zweig `ios_migration_september`. Dieses Papier
 hält alles, was die Fortsetzung braucht; es wandert nach `Dokumentation/ueberholt/` sobald KP3 abgeschlossen ist. Grundlage und
@@ -124,3 +126,23 @@ nicht ein; C_w nicht in der Herleitungszeile; je eine Zeile auch für Tagesbilan
 **Offen für O2:** Darstellung aus `Ergebniszeile` (Gebäude, Zonen), Sommerlüftung je Zone, „—“ für NULL, KI-Sicht. **O3:** Bericht und
 Vergleich lesen die Spalten, Abweichungsmerkmale B21, gekoppelte Zone ohne Zonenzeile. **RP1:** 1051 erzeugt `heizsollwert_<n>.csv` und
 die Aufheizschlüssel — erwartet, kein Befund.
+
+## 7. Stand 03.10.2026 (fortgeschrieben, gilt)
+
+| Welle | Stand |
+|---|---|
+| D2 | gemergt und gepusht, Statuszeile **#679** (Gate 677/678 grün gegen R33), CI-Lauf 37114265194 grün |
+| IFC-Befund | #680: Baujahr-Rückfall, Dateiname als Namensvorschlag, Hinweis ohne Raumgrenzen |
+| E59/E60-Papiere | #681: Entwurf KP3 (R5, O1b, KP-S4 mit `Aufheiz_Art`, Festlegungen 34–43, F9, N-AH11/12), Teilkonzept 9.9, Leitkonzept N1.68 (Festlegungen der Umsetzung → N1.69), Register; Folgeentscheide P15 (Spanne aus τ₂), P16 (Aufschlag nur auf Rampen eines Kalendersprungs, n > 1), P17 (Auslegungsgröße = Auslegungsheizlast + (P_auf − Φ_stat)), Schema A1 |
+| IFC-Folgewelle | #682 (Trenndecken und innere Masse über Raumbezüge, Platzhaltername, Jahr im Dateinamen) und **#684** (Trenndeckenfläche aus Raummengen, Erklärung der Datei vor Bezug); #683 ist die Pufferauslegung P2 einer anderen Sitzung |
+| R5 | **läuft** (Opus, Worktree `kp3-r5`, Zweig `kp3-r5` auf `51fb613d`): Schemaschritt **174** angemeldet (173 gehört KU1 Stufe 2; Testdatenbank im Worktree auf 173 gehoben — beim Merge gegen origin prüfen, ob 173 schon liegt, sonst Kette und Nummer nachziehen), Commits bis `f5c8bb42`, Gate 682 im Worktree läuft; Auftrag `scratchpad/kp3/Auftrag_KP3_R5.md` |
+| G6d | **nächste Welle** nach R5: Auftrag `scratchpad/kp3/Auftrag_G6d.md` (Zonenprojekt 1052 als Kopie von 1018 mit drei Zonen, Wache, Regeltext, kein Einfrieren); vorher Wochennutzung erfragen |
+| danach | RP1 (1051, Messung ρ_min → P14), RP2 (Basis **R34** mit 18 Projekten — R34 ist im Kopf der Statusdatei für KP3 angemeldet), O1b/O2/O3, A |
+
+**Regeln, die heute dazukamen (Kopf der Statusdatei):** Schemaschritte und Referenzbasen werden **vor dem Bau angemeldet** (Zeile im Kopf von
+`Status_iOS_Migration.md`, sofort gepusht); Statusnummern spät gegen origin — heute waren #665–#668, #677, #678, #683 fremd vergeben.
+Merges mit origin mehrmals täglich; die `.resx` werden bei Konflikt aus dem origin-Stand plus den eigenen Schlüsseln neu gebaut
+(`designer_neu.py schreiben`), die Testdatenbank per `git lfs smudge` aus dem origin-Zeiger geladen.
+
+**Beim Anwender offen:** `MFH_mittel_1984.ifc` unter `Quellen/`, Logbuch-Version (zwei Logbuchsätze des Gebäudeimports in #680/#684),
+Wiki-Upload Gebäudeimport, Sichtproben unter Windows (KP2, KP3, IFC mit beiden Dateien), Spitzboden „Wohnraum“ der 1964er Datei, P14 nach RP1.

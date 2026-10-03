@@ -5008,12 +5008,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KATALOGFASSUNG = KatalogfassungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KatalogfassungStufe2Schema.SCHRITT"/> — <b>die Katalogfassung der übrigen
+        /// Kataloge</b> (Entscheidungsvorlage Modellgrenzen KU1 Stufe 2). Er folgt auf
+        /// <see cref="SCHRITT_KATALOGFASSUNG"/>, dessen Protokoll und Fassungsspalte er mitbenutzt.
+        ///
+        /// <para><b>DDL und Saat:</b> an den sechzehn Katalogtabellen der Stufe 2 dieselben drei
+        /// Katalogspalten samt Teilindex; danach belegt die Saat Schlüssel und Prüfsumme der
+        /// ausgelieferten Sätze. Klima- und Zapfprofilkatalog bleiben benannt ausgenommen.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGFASSUNG_STUFE2 = KatalogfassungStufe2Schema.SCHRITT;
+
         // ---- Stufe KP3, Welle R5: Aufschlag und manuelle Aufheizzeit (E59, E60; KP-S4) ----
 
         /// <summary>
         /// Schritt <see cref="AufheizManuellSchema.SCHRITT"/> — <b>Aufschlag und manuelle Aufheizzeit der
         /// Aufheizoptimierung</b> (Entscheid E59 samt Folgeentscheiden, E60; Entwurf KP3 Abschnitt 4). Er
-        /// folgt auf <see cref="SCHRITT_KATALOGFASSUNG"/> und läuft als LETZTER Sichtdurchgang: Er baut die
+        /// folgt auf <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/> und läuft als LETZTER Sichtdurchgang: Er baut die
         /// Sicht <c>Abfrage_Projektgebaeude</c> zum achten Mal (103 Spalten).
         ///
         /// <para><b>DDL:</b> an <c>Tab_Einstellungen</c> <c>Aufheiz_Aufschlag_H</c> und
@@ -5027,6 +5040,19 @@ namespace WindowsFormsApplication1
         /// Bestandsdaten.</para>
         /// </summary>
         public const int SCHRITT_AUFHEIZ_MANUELL = AufheizManuellSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ProjektkopienKatalogeSchema.SCHRITT"/> — <b>die Projektkopien der Brennstoffe
+        /// und der Vorgaben der Pufferauslegung</b> (Anwenderentscheid 03.10.2026). Er folgt auf
+        /// <see cref="SCHRITT_AUFHEIZ_MANUELL"/> und vermerkt an jeder Kopie die Katalogfassung.
+        ///
+        /// <para><b>DDL und Saat:</b> <c>Tab_Brennstoff</c> und <c>Tab_PufferAuslegungParameter</c> (STRICT,
+        /// je Projekt), dann die wertgleichen Kopien aller Projekte. Die Konditionierungsvorlagen brauchen
+        /// keine Tabelle: „Vorlage übernehmen" kopiert ihren Inhalt in das Projektgebäude.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Kopien tragen die Werte des Stamms.</para>
+        /// </summary>
+        public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -7254,6 +7280,14 @@ namespace WindowsFormsApplication1
                         "und die Erdreichpruefung ginge mit dem Programmende verloren. KEIN Rechenergebnis aendert " +
                         "sich - die Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
                         Schritt_Katalogfassung),
+            // KU1 STUFE 2 - dieselben Katalogspalten an den uebrigen Katalogen samt Saat. Die Quelle ist
+            // KatalogfassungStufe2Schema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KATALOGFASSUNG_STUFE2,
+                        "Katalogtabellen der Stufe 2: Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen",
+                        "Ein Update koennte die uebrigen Kataloge (Baustoffe, Gebaeude, Brennstoffe, Ganglinien ...) nicht " +
+                        "abgleichen, ohne eigene Anpassungen zu ueberschreiben. KEIN Rechenergebnis aendert sich - die " +
+                        "Saat setzt nur Schluessel und Pruefsumme der ausgelieferten Saetze.",
+                        Schritt_KatalogfassungStufe2),
             // STUFE KP3, WELLE R5 (E59, E60) - Aufschlag und manuelle Aufheizzeit der
             // Aufheizoptimierung, Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, GEKOPPELT an
             // der Zone; der achte Sichtneubau. Die Quelle ist AufheizManuellSchema, die Nummer steht
@@ -7265,6 +7299,13 @@ namespace WindowsFormsApplication1
                         "Aufschlag und manuelle Aufheizzeit haetten keinen Ort, und eine gekoppelte Zone liesse sich " +
                         "nicht ablegen. KEIN Rechenergebnis aendert sich - die Felder entstehen leer.",
                         Schritt_AufheizManuell),
+            // PROJEKTKOPIEN der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat. Die
+            // Quelle ist ProjektkopienKatalogeSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PROJEKTKOPIEN_KATALOGE,
+                        "Tab_Brennstoff, Tab_PufferAuslegungParameter (Projektkopien)",
+                        "Ein Katalogabgleich aenderte die Werte der Brennstoffe und der Pufferauslegungs-Vorgaben, die " +
+                        "ein Projekt liest. KEIN Rechenergebnis aendert sich - die Kopien tragen die Werte des Stamms.",
+                        Schritt_ProjektkopienKataloge),
         };
 
         /// <summary>
@@ -13130,8 +13171,8 @@ namespace WindowsFormsApplication1
                 DataRepository.StilleFehlerAbholen();          // Sammlung leeren
                 try
                 {
-                    KatalogSchluesselSaat.Ausfuehren(zeilen);
-                    offen = KatalogSchluesselSaat.OffeneSaetze();
+                    KatalogSchluesselSaat.Ausfuehren(zeilen, Katalogfassung.Stufe1);
+                    offen = KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe1);
                 }
                 catch (Exception ex)
                 {
@@ -13160,6 +13201,80 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Katalogfassung und Erdreichpruefung - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogfassung der übrigen Kataloge" (KU1 Stufe 2) — Anlass und Wirkung stehen
+        /// bei <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/>, die Anweisungen bei
+        /// <see cref="KatalogfassungStufe2Schema"/>. <b>Wiederholbar</b> wie der Schritt der Stufe 1.
+        /// </summary>
+        private static bool Schritt_KatalogfassungStufe2(Lauf l)
+        {
+            string nr = KatalogfassungStufe2Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogfassungStufe2Schema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KatalogfassungStufe2Schema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KatalogfassungStufe2Schema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Katalogspalten der Stufe 2 stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, still wie beim Schritt der Stufe 1.
+            var zeilen = new List<string>();
+            int offen;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    KatalogSchluesselSaat.Ausfuehren(zeilen, Katalogfassung.Stufe2);
+                    offen = KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe2);
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (die belegten Schluessel bleiben; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || offen > 0)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : offen + " ausgelieferte(r) Satz/Saetze der Stufe 2 ohne Schluessel oder Pruefsumme nach dem Schritt.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogfassung der uebrigen Kataloge - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Handgriff(e).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
@@ -13224,6 +13339,67 @@ namespace WindowsFormsApplication1
 
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Aufschlag und manuelle Aufheizzeit - KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben" — Anlass und
+        /// Wirkung stehen bei <see cref="SCHRITT_PROJEKTKOPIEN_KATALOGE"/>, die Anweisungen bei
+        /// <see cref="ProjektkopienKatalogeSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ProjektkopienKataloge(Lauf l)
+        {
+            string nr = ProjektkopienKatalogeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProjektkopienKatalogeSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ProjektkopienKatalogeSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ProjektkopienKatalogeSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Projektkopietabellen stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, in EINEM Vorgang.
+            var zeilen = new List<string>();
+            try
+            {
+                ProjektkopienKatalogeSchema.Saat(zeilen);
+            }
+            catch (Exception ex)
+            {
+                foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (!ProjektkopienKatalogeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Nach der Saat fehlen Projektkopien.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben - " +
+                    (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

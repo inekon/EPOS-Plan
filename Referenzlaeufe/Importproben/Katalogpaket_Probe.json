@@ -1,6 +1,6 @@
 {
   "Format": "EPOS-Katalogpaket",
-  "Formatversion": 1,
+  "Formatversion": 2,
   "Katalogfassung": 1,
   "Tabellen": [
     {
@@ -1603,6 +1603,1891 @@
             "166": 0,
             "167": 0,
             "168": 0
+          }
+        }
+      ]
+    },
+    {
+      "Tabelle": "Tab_Konditionierungsvorlage_STAMM",
+      "Kuerzel": "KV",
+      "Saetze": [
+        {
+          "Schluessel": "KV:GERAETE_BUERO",
+          "Pruefsumme": "4b0ad5a011bcdd1bc146b5deb67a1c48737f0c2352d6e17842a9e01cc4aecd91",
+          "Werte": {
+            "Groesse": "GERAETE",
+            "Bezeichner": "B\u00FCro",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "BUERO"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "FERIEN",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "NACHT",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": 18,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "TAG",
+                "Wert": 1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "WOCHENENDE",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "GERAETE",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:GERAETE_SCHULE",
+          "Pruefsumme": "0c72b70f9fed68833ec8c25bec8eca80b1eeef54fc5346a0c5d7d326727fc29a",
+          "Werte": {
+            "Groesse": "GERAETE",
+            "Bezeichner": "Schule",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "SCHULE"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "FERIEN",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "NACHT",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": 15,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "TAG",
+                "Wert": 1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "WOCHENENDE",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "GERAETE",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:GERAETE_WOHNEN",
+          "Pruefsumme": "a9739f826ef44cc4088d1f8c853a59f20eeab1c57bf4b248f9a6437307fbf411",
+          "Werte": {
+            "Groesse": "GERAETE",
+            "Bezeichner": "Wohnen",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "WOHNEN"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "GERAETE",
+                "Zeile": "TAG",
+                "Wert": 1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": []
+          }
+        },
+        {
+          "Schluessel": "KV:HEIZSOLL_BUERO",
+          "Pruefsumme": "b56bad05ede204ef853fc40f543f6723bd9af2ff8855840a1cc54385ecd60e8c",
+          "Werte": {
+            "Groesse": "HEIZSOLL",
+            "Bezeichner": "B\u00FCro",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "BUERO"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "FERIEN",
+                "Wert": 16,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "NACHT",
+                "Wert": 16,
+                "Aus": 0,
+                "Von": 18,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "TAG",
+                "Wert": 20,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "WOCHENENDE",
+                "Wert": 16,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "HEIZSOLL",
+                "Wert": 16,
+                "Aus": 0,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:HEIZSOLL_SCHULE",
+          "Pruefsumme": "2ae3a43d27bbd7d645b8a7751f60840b68497452cc04e80b14ca2a3cde96921b",
+          "Werte": {
+            "Groesse": "HEIZSOLL",
+            "Bezeichner": "Schule",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "SCHULE"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "FERIEN",
+                "Wert": 16,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "NACHT",
+                "Wert": 16,
+                "Aus": 0,
+                "Von": 15,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "TAG",
+                "Wert": 20,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "WOCHENENDE",
+                "Wert": 16,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "HEIZSOLL",
+                "Wert": 16,
+                "Aus": 0,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:HEIZSOLL_WOHNEN",
+          "Pruefsumme": "19f5ca7e4f539c225c4de8903f00d1e842917fc12a85a066dbaa3e4f23f40a3f",
+          "Werte": {
+            "Groesse": "HEIZSOLL",
+            "Bezeichner": "Wohnen",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "WOHNEN"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "NACHT",
+                "Wert": 18,
+                "Aus": 0,
+                "Von": 22,
+                "Bis": 6,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "HEIZSOLL",
+                "Zeile": "TAG",
+                "Wert": 20,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": []
+          }
+        },
+        {
+          "Schluessel": "KV:KUEHLSOLL_BUERO",
+          "Pruefsumme": "4ff7df31068e861d7a643814df8971baeb1b67be07ea16b6a2cb85b66f2ef633",
+          "Werte": {
+            "Groesse": "KUEHLSOLL",
+            "Bezeichner": "B\u00FCro",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "BUERO"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "FERIEN",
+                "Wert": null,
+                "Aus": 1,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "NACHT",
+                "Wert": null,
+                "Aus": 1,
+                "Von": 18,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "TAG",
+                "Wert": 26,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "WOCHENENDE",
+                "Wert": null,
+                "Aus": 1,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "KUEHLSOLL",
+                "Wert": null,
+                "Aus": 1,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:KUEHLSOLL_SCHULE",
+          "Pruefsumme": "7837efbf10bef5d158b2a23d624526970776b4df7c2b5d8896992ddad5861166",
+          "Werte": {
+            "Groesse": "KUEHLSOLL",
+            "Bezeichner": "Schule",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "SCHULE"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "FERIEN",
+                "Wert": null,
+                "Aus": 1,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "NACHT",
+                "Wert": null,
+                "Aus": 1,
+                "Von": 15,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "TAG",
+                "Wert": 26,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "WOCHENENDE",
+                "Wert": null,
+                "Aus": 1,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "KUEHLSOLL",
+                "Wert": null,
+                "Aus": 1,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:KUEHLSOLL_WOHNEN",
+          "Pruefsumme": "38d07c01740a1158f830af9129db9c1a3d2902a42974b8ddcac4cb4947e81df9",
+          "Werte": {
+            "Groesse": "KUEHLSOLL",
+            "Bezeichner": "Wohnen",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "WOHNEN"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "NACHT",
+                "Wert": 28,
+                "Aus": 0,
+                "Von": 22,
+                "Bis": 6,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "KUEHLSOLL",
+                "Zeile": "TAG",
+                "Wert": 26,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": []
+          }
+        },
+        {
+          "Schluessel": "KV:LUEFTUNG_BUERO",
+          "Pruefsumme": "5f35b7a35c5ba3c93a7597bf3f9c8a4e41032d1447c3658a407c90f1726481bf",
+          "Werte": {
+            "Groesse": "LUEFTUNG",
+            "Bezeichner": "B\u00FCro",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "BUERO"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "LUEFTUNG",
+                "Zeile": "FERIEN",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "LUEFTUNG",
+                "Zeile": "NACHT",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": 18,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "LUEFTUNG",
+                "Zeile": "WOCHENENDE",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "LUEFTUNG",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:LUEFTUNG_SCHULE",
+          "Pruefsumme": "87e9a98ae011f206fd152de115fb4928540e0d9e61162919fb12ff2dbf1a3a14",
+          "Werte": {
+            "Groesse": "LUEFTUNG",
+            "Bezeichner": "Schule",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "SCHULE"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "LUEFTUNG",
+                "Zeile": "FERIEN",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "LUEFTUNG",
+                "Zeile": "NACHT",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": 15,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "LUEFTUNG",
+                "Zeile": "WOCHENENDE",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "LUEFTUNG",
+                "Wert": 0.1,
+                "Aus": 0,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:PERSONEN_BUERO",
+          "Pruefsumme": "950f04f1c6587a6dbcb73de4413f2a33f7e6f958c9f9265bf2bfdb354839fde5",
+          "Werte": {
+            "Groesse": "PERSONEN",
+            "Bezeichner": "B\u00FCro",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "BUERO"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "FERIEN",
+                "Wert": 0,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "NACHT",
+                "Wert": 0,
+                "Aus": 0,
+                "Von": 17,
+                "Bis": 8,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "TAG",
+                "Wert": 1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "WOCHENENDE",
+                "Wert": 0,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "PERSONEN",
+                "Wert": 0,
+                "Aus": 0,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:PERSONEN_SCHULE",
+          "Pruefsumme": "aadfd4a4f9db4a4ac3578e6bae7b791276846408fc237da172c286dc11c2334c",
+          "Werte": {
+            "Groesse": "PERSONEN",
+            "Bezeichner": "Schule",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "SCHULE"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "FERIEN",
+                "Wert": 0,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "NACHT",
+                "Wert": 0,
+                "Aus": 0,
+                "Von": 14,
+                "Bis": 8,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "TAG",
+                "Wert": 1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "WOCHENENDE",
+                "Wert": 0,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": [
+              {
+                "Groesse": "PERSONEN",
+                "Wert": 0,
+                "Aus": 0,
+                "Woche": null,
+                "Nennwert": null,
+                "Bemerkung": null,
+                "Kinder": {
+                  "Tab_Konditionierungsperiode": [
+                    {
+                      "Rang": 100,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Neujahr",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "NEUJAHR",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 101,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Karfreitag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "KARFREITAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 102,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Ostermontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "OSTERMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 103,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Mai",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "ERSTER_MAI",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 104,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Christi Himmelfahrt",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "HIMMELFAHRT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 105,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Pfingstmontag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "PFINGSTMONTAG",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 106,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Tag der Deutschen Einheit",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "EINHEIT",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 107,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Erster Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_1",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    },
+                    {
+                      "Rang": 108,
+                      "Art": "FEIERTAG",
+                      "Bezeichner": "Zweiter Weihnachtstag",
+                      "Beginn": null,
+                      "Ende": null,
+                      "Feiertagsregel": "WEIHNACHTEN_2",
+                      "Wert": null,
+                      "Aus": 0,
+                      "Woche": null,
+                      "WieWochentag": 7
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Schluessel": "KV:PERSONEN_WOHNEN",
+          "Pruefsumme": "03f82c29b9d43240db0b7704a0e0846873f81e280a2cbc6924074d40e3b0ad30",
+          "Werte": {
+            "Groesse": "PERSONEN",
+            "Bezeichner": "Wohnen",
+            "Beschreibung": "EPOS-Muster mit runden Werten, weder Norm- noch Messwerte",
+            "Nutzung": "WOHNEN"
+          },
+          "Kinder": {
+            "Tab_Konditionierungsvorgabe": [
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "NACHT",
+                "Wert": 1,
+                "Aus": 0,
+                "Von": 17,
+                "Bis": 7,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "TAG",
+                "Wert": 0.5,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              },
+              {
+                "Groesse": "PERSONEN",
+                "Zeile": "WOCHENENDE",
+                "Wert": 1,
+                "Aus": 0,
+                "Von": null,
+                "Bis": null,
+                "Bedingt_K": null
+              }
+            ],
+            "Tab_Konditionierungskalender": []
+          }
+        }
+      ]
+    },
+    {
+      "Tabelle": "Tab_Wechselrichter_STAMM",
+      "Kuerzel": "WR",
+      "Saetze": [
+        {
+          "Schluessel": "WR:MUSTER_2500TL",
+          "Pruefsumme": "911570ea10053c1846914397455c48bf3e977789ed1869856526ce50d83f4b05",
+          "Werte": {
+            "Bezeichner": "Muster 2500TL",
+            "Firma": "Muster",
+            "Beschreibung": "Pr\u00FCfmuster aus Anhang A des Wechselrichterkonzepts (W6). Zwei MPP-Tracker statt einem: Zwei Str\u00E4nge an EINEM Tracker sind dort die Gegenprobe zu P4 (19,1 A \u003E 12,0 A). Die Clipping-Grenze bleibt eine (Q7).",
+            "P_AC_Nenn": 2.5,
+            "S_AC_Max": 2.5,
+            "P_DC_Max": 3.75,
+            "U_Mpp_Min": 80,
+            "U_Mpp_Max": 500,
+            "U_Dc_Max": 600,
+            "U_Start": 120,
+            "I_Dc_Max": 12,
+            "Anzahl_Mppt": 2,
+            "Straenge_Je_Mppt": 2,
+            "Eta05": 0.9,
+            "Eta10": 0.94,
+            "Eta20": 0.962,
+            "Eta30": 0.97,
+            "Eta50": 0.975,
+            "Eta100": 0.97,
+            "Eta_Euro": 0.968,
+            "Eta_Max": 0.975,
+            "P_Standby": 10,
+            "P_Nacht": 2,
+            "Kosten": 1200,
+            "Sandia_Pdco": null,
+            "Sandia_Vdco": null,
+            "Sandia_Pso": null,
+            "Sandia_C0": null,
+            "Sandia_C1": null,
+            "Sandia_C2": null,
+            "Sandia_C3": null,
+            "Herkunft": "HAND",
+            "I_Sc_Max": null
           }
         }
       ]

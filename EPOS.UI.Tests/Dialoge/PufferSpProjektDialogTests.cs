@@ -1314,4 +1314,35 @@ public class PufferSpProjektDialogTests : EposBunitContext
         Assert.Contains(0, cut.Instance.KlassenSet);
         Assert.Contains(1, cut.Instance.KlassenSet);
     }
+
+    // =========================================================================
+    //  Stufe P2 — „Auslegen…" öffnet die Pufferspeicher-Auslegung
+    // =========================================================================
+
+    /// <summary>
+    /// Konzept Pufferspeicher-Auslegung, Abschnitt 6: „Auslegen…" reicht den gewählten Speicher an
+    /// die Hülle; die Zeile darunter sagt, dass der Knopf den Dialog ohne Speichern verlässt. Ohne
+    /// Delegat fehlt der Knopf.
+    /// </summary>
+    [Fact]
+    public void Auslegen_reicht_den_gewaehlten_Speicher_an_die_Huelle()
+    {
+        var stand = MitZwei();
+        var geoeffnet = new List<int>();
+        var cut = Render<PufferSpProjektDialog>(p =>
+        {
+            p.Add(x => x.IdProjekt, 1030);
+            p.Add(x => x.IdPuffer, 12);
+            p.Add(x => x.Dienste, stand.Dienste());
+            p.Add(x => x.AuslegenOeffnen, id => geoeffnet.Add(id));
+        });
+
+        Assert.Contains("ohne zu speichern", cut.Find(".epos-psp-auslegen-hinweis").TextContent);
+        cut.Find("button.epos-psp-auslegen").Click();
+        Assert.Equal(new[] { 12 }, geoeffnet);
+        Assert.Equal(0, stand.Schreibzugriffe);
+
+        var ohne = Zeige(MitZwei());
+        Assert.Empty(ohne.FindAll("button.epos-psp-auslegen"));
+    }
 }

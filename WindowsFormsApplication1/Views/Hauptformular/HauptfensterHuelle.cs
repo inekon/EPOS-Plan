@@ -115,6 +115,12 @@ namespace WindowsFormsApplication1
                     new Func<IReadOnlyDictionary<string, object>>(
                         StromspeicherAuslegungHuelle.AnsichtGaben),
 
+                // DIE PUFFERSPEICHER-AUSLEGUNG (Stufe P2) - ein Delegat je Betreten wie die
+                // Stromspeicher-Auslegung; die Huelle ist plattformfrei und holt den
+                // angemeldeten Arbeitsgang ab.
+                ["PufferAuslegungGaben"] =
+                    new Func<int, IReadOnlyDictionary<string, object>>(PufferAuslegungHuelle.AnsichtGaben),
+
                 // DIE SIMULATION als EINE freie Ansicht (Auftrag #207, SIM-Q1).
                 // Wie die zwei darueber ein DELEGAT je Betreten: Der Satz bringt
                 // den Stand der zwei Huelleninstanzen mit - den gerechneten Lauf,
@@ -324,6 +330,12 @@ namespace WindowsFormsApplication1
 
                 case Seitenschluessel.EnergietraegerVerwaltung:
                     return () => EnergietraegerFenster.Oeffnen(_besitzer?.Invoke(), 0);
+
+                // Anwenderentscheid 03.10.2026: die Brennstoffe des Projekts (Projektkopie des
+                // Brennstoffkatalogs) - die Datenseite liegt plattformfrei in
+                // ProjektBrennstoffeHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.ProjektBrennstoffe:
+                    return () => ProjektBrennstoffeFenster.Oeffnen(_besitzer?.Invoke());
 
                 // ANWENDERENTSCHEID ND-Q3 (14.09.2026): die Nutzungsdauern (AfA) als
                 // dritter Punkt der Rubrik Kostenverwaltung. Der Adapter ist duenn -

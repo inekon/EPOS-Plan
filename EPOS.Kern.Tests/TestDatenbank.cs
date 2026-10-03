@@ -891,6 +891,10 @@ namespace EPOS.Kern.Tests
                 // Tab_Applikation.Katalogfassung, Tab_Katalogabgleich und Tab_ErgebnisErdreich. Aus
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
                 KatalogfassungSchema.Ausfuehren(null);
+                // Schritt KatalogfassungStufe2Schema.SCHRITT (KU1 Stufe 2): dieselben Katalogspalten an
+                // den uebrigen Katalogen samt Saat. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN Fachwert aendert sich.
+                KatalogfassungStufe2Schema.Ausfuehren(null);
 
                 // Schritt AufheizManuellSchema.SCHRITT (KP-S4, Entscheid E59, E60; Entwurf KP3 Abschnitt
                 // 4): Aufschlag an Tab_Einstellungen, manuelle Aufheizzeit an Tab_Gebaeude samt achtem
@@ -899,6 +903,10 @@ namespace EPOS.Kern.Tests
                 // damit kein aelterer Sichtdurchgang oben (Energiestandard) die Spalte wieder aus der Sicht
                 // schneidet; wiederholbar, KEIN DML an Bestandsdaten.
                 AufheizManuellSchema.Ausfuehren(null);
+                // Schritt ProjektkopienKatalogeSchema.SCHRITT (Anwenderentscheid 03.10.2026, nach 174): die
+                // Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
+                ProjektkopienKatalogeSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

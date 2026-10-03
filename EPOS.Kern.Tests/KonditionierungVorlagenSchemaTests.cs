@@ -176,7 +176,8 @@ namespace EPOS.Kern.Tests
         {
             if (!Bereit()) return;
 
-            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_VORLAGE,
+            // Dazu die drei Katalogspalten (KU1 Stufe 2), sobald der Schritt der Katalogfassung gelaufen ist.
+            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_VORLAGE + (Katalogfassung.SpaltenVorhanden(VLG) ? 3 : 0),
                          (int)Zahl("SELECT COUNT(*) FROM pragma_table_info(?)", new DbParam("@t", VLG)));
             Assert.EndsWith(") STRICT", Sql("table", VLG), StringComparison.Ordinal);
             foreach (string t in new[] { KAL, PER, VOR, VLG })

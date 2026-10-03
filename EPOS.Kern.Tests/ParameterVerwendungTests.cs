@@ -376,8 +376,9 @@ namespace EPOS.Kern.Tests
 
             // Die sieben Sandia-Spalten sind mitgeschriebenes Katalogwissen und haben
             // auch nach S3 GAR KEINEN Leser (Konzept 3.3.3).
-            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine)));
-            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine)),
+            // Ohne die drei Katalogspalten (KU1), die kein Fachwert sind und ebenfalls keinen Leser haben.
+            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine) && !Katalogfassung.IstKatalogspalte(e.Spalte)));
+            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine) && !Katalogfassung.IstKatalogspalte(e.Spalte)),
                        e => Assert.StartsWith("Sandia_", e.Spalte, StringComparison.Ordinal));
         }
 

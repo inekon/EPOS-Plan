@@ -949,7 +949,7 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
 
 ## 12. Programm-Update und Katalog
 
-### KU1 Ein Update lässt den Katalog, wie er ist — Stufe 1 umgesetzt
+### KU1 Ein Update lässt den Katalog, wie er ist — Stufen 1 und 2 umgesetzt
 
 - **Stand heute:** Setup und Programmstart überschreiben keinen Katalogsatz und säen keinen nach
   (Hilfeseite Brauchwasser, Grenzen). Die Datenbank kommt nur bei der **Neuinstallation** aus der
@@ -997,7 +997,27 @@ Referenzprojekt 1046 (Einfrierregel „Flottenstand @Projektflotte“).
   wiederherstellen". „Ausgelaufen" ist eine Spalte (`Katalog_Ausgelaufen`), kein Löschen. Die
   Testdatenbank wird nicht abgeglichen; die Saat setzt nur Schlüssel und Prüfsumme. Konzept
   Simulationsablauf, Abschnitt 20; `BETRIEB_SQLITE.md`, Abschnitt 8a.
-- **Entscheidung des Anwenders:** Stufe 1 ☑ · Stufe 2 (übrige Kataloge) ☐
+- **Stufe 2 umgesetzt:** die übrigen sechzehn Kataloge — Baustoffe samt Synonymen,
+  Bauteilaufbauten samt Schichten (Verweis auf den Baustoff über dessen Schlüssel), Brennstoffe
+  (Verweis auf die Kategorie über ihren Namen), Tagesverteilungen, Gebäude und
+  Konditionierungsvorlagen samt Vorgaben, Kalendern und Perioden, Pufferspeicher und Vorgaben der
+  Pufferauslegung, Solarkollektoren, Solar-, Strom- und Wärmebedarfsganglinien (Werte als Reihe im
+  Paket), Stromspeicher, Stromverbraucherprofile samt Wochenprofilen, Wechselrichter.
+  Schemaschritt `KatalogfassungStufe2Schema`, Paket in Formatversion 2 (liest Fassung 1), Dialog
+  und Wiederherstellen aus dem Register. **Benannt ausgenommen:** der Klimakatalog (Stundenreihen je
+  Region sprengen das Paket; Pflege über den Klimaimport) und der Zapfprofilkatalog (eigene
+  Katalogversion und eigener Paketweg, Verweise über IDs). Konzept Simulationsablauf, Abschnitt 20;
+  `BETRIEB_SQLITE.md`, Abschnitt 8a.
+- **Projektkopien der Stufe-2-Kataloge, die ein Projekt liest** (Anwenderentscheid 03.10.2026: „Die
+  drei Kataloge sollten ebenfalls eine Projektkopie besitzen“): Brennstoffe (`Tab_Brennstoff`, je
+  Projekt und Brennstoffart), Vorgaben der Pufferauslegung (`Tab_PufferAuslegungParameter`, je
+  Projekt mit Auslegung); Konditionierungsvorlagen werden bei der Übernahme in das Projektgebäude
+  kopiert. Schemaschritt `ProjektkopienKatalogeSchema` mit wertgleicher Saat; vor dem ersten
+  Schreiben legt der Abgleich fehlende Kopien an. Damit gilt die Basis „Der Abgleich ändert keine
+  Projektkopie“ für alle Kataloge, die ein Projekt liest. Konzept Simulationsablauf, Abschnitt 22.
+- **Entscheidung des Anwenders:** Stufe 1 ☑ · Stufe 2 (übrige Kataloge) ☑ — Klima- und
+  Zapfprofilkatalog benannt ausgenommen · Projektkopien der Brennstoffe, Konditionierungsvorlagen und
+  Pufferauslegungs-Vorgaben ☑
 
 ---
 
@@ -1044,7 +1064,7 @@ Umstellen eines Referenzprojekts.
 | PW1 Temperaturniveau je Prozess (Stufe 1) | umgesetzt (Welle M3a; Stufe 2 später) | M | nein (Option) | ☑ |
 | BW4 Netzverluste je Kanal, Zirkulation im Bestandsweg | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
 | SB1 (a) PV-Bilanz im Viertelstundenraster | umgesetzt (M5) | M | ja, alle Referenzprojekte mit PV (R33) | ☑ |
-| KU1 Katalogabgleich mit Katalogfassung | Stufe 1 umgesetzt (Welle M6); Stufe 2 offen | L | nein (Projektkopien unberührt) | Stufe 1 ☑ · Stufe 2 ☐ |
+| KU1 Katalogabgleich mit Katalogfassung | Stufe 1 umgesetzt (Welle M6), Stufe 2 umgesetzt (Klima und Zapfprofil benannt ausgenommen) | L | nein (Projektkopien unberührt) | Stufe 1 ☑ · Stufe 2 ☑ |
 | PW2 Kalenderschicht für alle Profile (mit BW2) | umgesetzt (Welle M3b) | M | nein (Option) | ☑ |
 | WP1 Taktverlust nach EN 14825, Starts | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
 | BH1 BHKW-Teillastkennlinie | umgesetzt (Welle M4) | M | nein (Option) | ☑ |
@@ -1103,7 +1123,7 @@ zuerst, Rechenwegänderungen an Referenzprojekten gebündelt.
 | **M3 Bedarf** | BW4, PW1 Stufe 1, PW2, PW5 | unberührt (Optionen) | gemeinsame Profilroutine und Kanäle; PW5 liefert die Sätze, mit denen PW1 und PW2 sofort sichtbar werden |
 | **M4 Erzeuger in Teillast** | WP1, BH1, BH2 mit Folgeauftrag 6 | neu nur, wenn die BHKW-Untergrenze in Referenzprojekten wirksam wird | dieselbe Bauart wie Kessel E2/E4, Tests und Editor wiederverwendbar |
 | **M5 Strom in Viertelstunden** | SB1 (a), PV3, SP1 | **neu** (Referenzprojekte mit PV), umgesetzt mit Basis R33 | PV-Bilanz, Abregelung und Standby greifen in dieselbe Viertelstundenbilanz |
-| **M6 Katalog-Update** | KU1 Stufe 1 (laufend gepflegte Kataloge), EQ1 | unberührt | Schema und Werkzeug, eigene Abnahme mit einer Bestandsdatenbank des Anwenders |
+| **M6 Katalog-Update** | KU1 Stufe 1 (laufend gepflegte Kataloge) und Stufe 2 (übrige Kataloge), EQ1 | unberührt | Schema und Werkzeug, eigene Abnahme mit einer Bestandsdatenbank des Anwenders |
 | **M7 Speicher** | PS1 (c), PS1 (a), PS5 (a), BW5, Hinweis HK4 — umgesetzt (Schemaschritt `PufferOptionenSchema`) | unberührt (alle als Option) | zusammen mit der Pufferauslegung (Recherchen unter `Pufferspeicher/`) |
 | später | BW3, PW3, PW4 je Prozess, WP3, PS2, SB1 (b), SP3, SP6, SP8, SP10, PV2, SP5 | — | nach Anlass und Rückmeldung der Anwender |
 

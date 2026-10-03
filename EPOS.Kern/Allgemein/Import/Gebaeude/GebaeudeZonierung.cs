@@ -167,8 +167,10 @@ namespace WindowsFormsApplication1
     /// <item><b>Regeln</b> in der Rangfolge der Konzepte — IFC: Z1 nach den Zonen der Datei, Z2 nach der
     /// Klassifikation, Z3 nach der Nutzung, Z4 je Geschoss, Z5 eine Zone; gbXML: X1 nach <c>Zone</c> (nur
     /// bei weniger Zonen als Räumen), X2 je Geschoss, X3 je Raum, X4 eine Zone. <b>Vorgabe</b> (M7): IFC Z4,
-    /// wenn mehr als ein Geschoss Räume trägt und die Datei Raumgrenzen führt, sonst Z5; gbXML X1, sonst
-    /// X2, sonst X4. Ohne Raumgrenzen ist Z4 nur auf ausdrückliche Wahl zu haben, mit Warnung — die
+    /// wenn mehr als ein Geschoss Räume trägt und die Datei Raumgrenzen führt oder — ohne sie — die
+    /// Trenndecken aus den Raumbezügen alle beheizten Geschosse koppeln
+    /// (<see cref="AbbildGebaeude.GeschosseGekoppelt"/>), sonst Z5; gbXML X1, sonst X2, sonst X4. Ohne
+    /// Raumgrenzen und ohne solche Kopplung ist Z4 nur auf ausdrückliche Wahl zu haben, mit Warnung — die
     /// Geschosszonen wären entkoppelt (6.5); Z1 bis Z3 brauchen die Grenzen.</item>
     /// <item><b>Beheizung:</b> Eine Zone fasst nur Räume gleichen Zustands (Regeln B1…B6 des Lesers bzw.
     /// <c>@conditionType</c>, übersteuert durch die Haken der Raumliste); die unbeheizten Räume einer Gruppe
@@ -393,7 +395,7 @@ namespace WindowsFormsApplication1
                     regeln.Add(IfcImportProfil.ZONENREGEL_Z3);
                 if (geschosse > 1) regeln.Add(IfcImportProfil.ZONENREGEL_Z4);
                 regeln.Add(IfcImportProfil.ZONENREGEL_Z5);
-                string vorgabe = grenzen && geschosse > 1 ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
+                string vorgabe = (grenzen || g.GeschosseGekoppelt) && geschosse > 1 ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
                 return (regeln, vorgabe, grenzen);
             }
             int zonen = g.Raeume.Select(r => r.ZonenKennung).Where(z => z != null).Distinct(StringComparer.Ordinal).Count();
@@ -463,9 +465,9 @@ namespace WindowsFormsApplication1
             z.Vorgabe = vorgabe;
             z.HatRaumgrenzen = grenzen;
             z.Regel = regel ?? vorgabe;
-            if (!grenzen)
+            if (!grenzen && !z.Gebaeude.GeschosseGekoppelt)
                 z.Melden(PruefStufe.Warnung, KEINE_GRENZEN, z.Gebaeude.Anzeigename);
-            else if (string.Equals(z.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) && z.Gebaeude.ZahlGrenzenZweiteEbene == 0)
+            else if (grenzen && string.Equals(z.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) && z.Gebaeude.ZahlGrenzenZweiteEbene == 0)
                 z.Melden(PruefStufe.Warnung, NUR_1STLEVEL, z.Gebaeude.Anzeigename, Ganz(z.Gebaeude.ZahlGrenzen));
             if (!regeln.Contains(z.Regel))
             {
@@ -484,7 +486,10 @@ namespace WindowsFormsApplication1
                 z.Melden(PruefStufe.Info, ZONENREGEL, z.Regel, Ganz(z.Zonen.Count), z.Vorgabe);
                 return z;
             }
-            if (!grenzen)
+            // Ohne Raumgrenzen und ohne tragende Trenndecken aus den Raumbezügen sind die Zonen entkoppelt (6.5); mit
+            // ihnen nur, wenn sie nicht alle beheizten Zonen verbinden (geprüft nach den Seiten, mit den Haken).
+            bool bezug = !grenzen && z.Gebaeude.GeschosseGekoppelt;
+            if (!grenzen && !bezug)
                 z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
 
             z.Seiten(melden: false);
@@ -492,6 +497,8 @@ namespace WindowsFormsApplication1
             z.HandzuordnungAnwenden();
             z.KleineMelden();
             z.Seiten(melden: true);
+            if (bezug && !z.BeheizteVerbunden())
+                z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
             z.Abschluss();
             return z;
         }
@@ -688,8 +695,7 @@ namespace WindowsFormsApplication1
                                         || s.Randbedingung == Randbedingung.Unbeheizt))
             {
                 // Ohne Raumgrenze: die Zone des Geschosses (Z4), sonst die erste beheizte Zone.
-                int zone = Zonen.FindIndex(z => z.IstBeheizt && s.GeschossKennung != null && z.Raeume.Any(r => r.GeschossKennung == s.GeschossKennung));
-                if (zone < 0) zone = Zonen.FindIndex(z => z.IstBeheizt);
+                int zone = Geschosszone(s);
                 if (zone >= 0) seiten.Add(new Seite { Kennung = s.Kennung, Zone = zone, Lage = s.Randbedingung });
             }
             return seiten;
@@ -697,8 +703,38 @@ namespace WindowsFormsApplication1
 
         private static bool Aussen(Randbedingung r) => r == Randbedingung.Aussenluft || r == Randbedingung.Erdreich;
 
+        /// <summary>Die Zone eines Bauteils ohne Raum: die beheizte Zone seines Geschosses (Z4), sonst die erste beheizte; −1 = keine.</summary>
+        private int Geschosszone(AbbildBauteil s)
+        {
+            int zone = Zonen.FindIndex(z => z.IstBeheizt && s.GeschossKennung != null && z.Raeume.Any(r => r.GeschossKennung == s.GeschossKennung));
+            return zone >= 0 ? zone : Zonen.FindIndex(z => z.IstBeheizt);
+        }
+
+        /// <summary>Hängen alle beheizten Zonen über Trennflächen (auch über unbeheizte Zonen) zusammen?</summary>
+        private bool BeheizteVerbunden()
+        {
+            var warm = Enumerable.Range(0, Zonen.Count).Where(i => Zonen[i].IstBeheizt).ToList();
+            if (warm.Count < 2) return true;
+            var erreicht = new HashSet<int> { warm[0] };
+            bool weiter = true;
+            while (weiter)
+            {
+                weiter = false;
+                foreach (Zonenflaeche f in Flaechen.Where(f => f.Rand == Zonenrand.Zone && f.Nachbarzone >= 0))
+                    if (erreicht.Contains(f.Zone) != erreicht.Contains(f.Nachbarzone)) { erreicht.Add(f.Zone); erreicht.Add(f.Nachbarzone); weiter = true; }
+            }
+            return warm.All(erreicht.Contains);
+        }
+
         private void Bauteil(AbbildBauteil s, List<Zonenflaeche> teile, Dictionary<(int, int), double> luft)
         {
+            // Eine Innenwand ohne Nachbarraum (IFC ohne Raumgrenzen): einseitig innere Masse in der Zone ihres Geschosses (6.5).
+            if (s.InnenEinseitig && s.Nachbarn.Count == 0 && s.Grenzen.Count == 0)
+            {
+                int zone = Geschosszone(s);
+                if (zone >= 0) teile.Add(new Zonenflaeche { Bauteil = s, Zone = zone, Rand = Zonenrand.Innen, BruttoM2 = s.BruttoflaecheM2 });
+                return;
+            }
             List<Seite> seiten = SeitenVon(s, luft, out bool geometrie);
             if (seiten.Count == 0) return;
             double? brutto = s.BruttoflaecheM2;

@@ -36682,6 +36682,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Dateiname nennt {0}; die Datei führt kein Baujahr. Das Jahr wird nicht übernommen — Baujahr bzw. Baualtersklasse bitte selbst prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUJAHR_DATEINAME {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_DATEINAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pset_BuildingCommon.YearOfConstruction fehlt; Baujahr aus „{0}.{1}“ = „{2}“ gelesen: {3}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUJAHR_RUECKFALL {
@@ -36790,6 +36799,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Decke „{0}“ grenzt laut Datei an einen unbeheizten Raum, der Raum „{1}“ auf dieser Seite gilt aber als beheizt. Es gilt die Erklärung der Datei, die Decke bleibt Hülle und keine Trenndecke — Beheizung des Raums prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Räume tragen teils Netto-, teils nur Bruttoflächen ({0} netto, {1} nur brutto, {2} ohne) — eine gemischte Summe wird nicht gebildet, die Nutzfläche bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_FLAECHENART_GEMISCHT {
@@ -36849,6 +36867,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_GRENZEN_ENTKOPPELT {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_GRENZEN_ENTKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Innenwände ohne Nachbarraum (innen nach IsExternal oder Angrenzung) zählen einseitig als innere Masse: {1} m² Bruttofläche. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_INNEN_EINSEITIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_INNEN_EINSEITIG", resourceCulture);
             }
         }
         
@@ -36948,6 +36975,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_MENGE_RUECKFALL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_MENGE_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude heißt in der Datei „{0}“ — ein Platzhalter; als Name vorgeschlagen wird der Dateiname „{1}“. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_NAME_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_NAME_PLATZHALTER", resourceCulture);
             }
         }
         
@@ -37137,6 +37173,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_STRUKTUR_ENTHALTEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_STRUKTUR_ENTHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trenndecke {0}/{1}: Die Datei referenziert nicht alle Deckenteile — Fläche aus den Raummengen geschätzt: {2} m² (kleinere beheizte Grundfläche der beiden Geschosse) statt {3} m² referenziert; U-Wert und Aufbau aus den referenzierten Teilen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_TRENNDECKE_GESCHAETZT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_TRENNDECKE_GESCHAETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Trenndecke zwischen {0} und {1} trägt aus den Raumbezügen nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %) — die Datei referenziert nicht alle Deckenteile. Das Geschosspaar gilt nicht als gekoppelt; die Trennfläche bitte prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_TRENNDECKE_KLEIN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_TRENNDECKE_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt keine Raumgrenzen, aber Raumbezüge der Bauteile (IfcRelReferencedInSpatialStructure): {1} Decken trennen die Geschosse {2} und koppeln deren Zonen (Regel Z4); {3} Innenwände zwischen Räumen eines Geschosses zählen als innere Masse. Die Flächen kommen aus den Mengen der Bauteile, je Geschosspaar, nicht je Raum. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_TRENNDECKE_REFERENZ {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_TRENNDECKE_REFERENZ", resourceCulture);
             }
         }
         
@@ -38617,11 +38680,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbauten ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BAUTEILAUFBAU {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BAUTEILAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string KABG_KATALOG_BHKW {
             get {
                 return ResourceManager.GetString("KABG_KATALOG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffe ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BRENNSTOFF", resourceCulture);
             }
         }
         
@@ -38644,11 +38734,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
         /// </summary>
         public static string KABG_KATALOG_KESSEL {
             get {
                 return ResourceManager.GetString("KABG_KATALOG_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierungsvorlagen ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KONDITIONIERUNGSVORLAGE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KONDITIONIERUNGSVORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_PUFFER {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben der Pufferauslegung ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_PUFFERVORGABE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_PUFFERVORGABE", resourceCulture);
             }
         }
         
@@ -38676,6 +38802,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KABG_KATALOG_PWT {
             get {
                 return ResourceManager.GetString("KABG_KATALOG_PWT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarganglinien ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_SOLARGANGLINIE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_SOLARGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarkollektoren ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_SOLARKOLLEKTOR {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_SOLARKOLLEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinien ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_STROMGANGLINIE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_STROMGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucherprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_STROMVERBRAUCHER {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_STROMVERBRAUCHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher-Wochenprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_STROMVERBRAUCHERTYP {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_STROMVERBRAUCHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesverteilungen ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_TAGESVERTEILUNG {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_TAGESVERTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsganglinien ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_WECHSELRICHTER", resourceCulture);
             }
         }
         
@@ -50138,6 +50345,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_OHNE_AENDERUNG {
             get {
                 return ResourceManager.GetString("KI_DLG_OHNE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das dauerhaft durchströmte Volumen der Anlage wird von der Sperrzeit abgezogen; leer = Vorgabe nach Übergabeart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_ANLAGENVOLUMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_ANLAGENVOLUMEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Deckungsgrad, den die Durchlaufbilanz mit dem Puffer erreichen soll, in Prozent; leer = 100 %. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_DECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_DECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungsgeregelte Wärmepumpen brauchen kleinere Puffer (Faustwert 3 statt 20 l je kW). ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_GEREGELT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_GEREGELT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizgrenze wählt die akzeptable Stillstandzeit der Sperrzeitformel; leer = 15 °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_HEIZGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_HEIZGRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schaltet die Zone der Speicherklasse ein oder aus; jede Klasse bemisst ihre Zone nach eigenem Verfahren. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_KLASSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit je Start des Erzeugers für das Kriterium Mindestlaufzeit; leer = Vorgabe der Vorlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_MINDESTLAUFZEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_MINDESTLAUFZEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Sperrzeiten des Netzbetreibers je Tag als neutrales Profil. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_SPERRPROFIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_SPERRPROFIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstens so viele Starts je Tag soll der Erzeuger mit dem Puffer machen; leer = Vorgabe der Vorlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_STARTZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_STARTZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabeart wählt Stillstandzeit und Untergrenze der Sperrzeitformel und das Plausibilitätsband. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_UEBERGABE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_UEBERGABE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage der Anlage schaltet die Kriterien der Heizzone und belegt Beispielwerte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_VORLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_VORLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein in der Sperre freigegebener Zweiterzeuger lässt das Sperrzeitkriterium entfallen; ein Heizstab ist mitgesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PAUS_ZWEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PAUS_ZWEIT_ERL", resourceCulture);
             }
         }
         
@@ -70091,6 +70397,2049 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ablauf der Auslegung ähnelt.
+        /// </summary>
+        public static string PAUS_ABLAUF {
+            get {
+                return ResourceManager.GetString("PAUS_ABLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenvolumen, nicht absperrbar ähnelt.
+        /// </summary>
+        public static string PAUS_ANLAGENVOLUMEN {
+            get {
+                return ResourceManager.GetString("PAUS_ANLAGENVOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Übergabeart × Heizlast ähnelt.
+        /// </summary>
+        public static string PAUS_ANLAGENVOLUMEN_LEER {
+            get {
+                return ResourceManager.GetString("PAUS_ANLAGENVOLUMEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die an der Praxisgrenze gestoppt ähnelt.
+        /// </summary>
+        public static string PAUS_AN_PRAXISGRENZE {
+            get {
+                return ResourceManager.GetString("PAUS_AN_PRAXISGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Auslegen…“ verlässt diesen Dialog ohne zu speichern und öffnet die Pufferspeicher-Auslegung. ähnelt.
+        /// </summary>
+        public static string PAUS_AUSLEGEN_VERWIRFT {
+            get {
+                return ResourceManager.GetString("PAUS_AUSLEGEN_VERWIRFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Plausibilitätsband nach Übergabeart: {0}–{1} l ähnelt.
+        /// </summary>
+        public static string PAUS_BAND {
+            get {
+                return ResourceManager.GetString("PAUS_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Band nach Wärmepumpenleistung: {0}–{1} l ähnelt.
+        /// </summary>
+        public static string PAUS_BAND_WP {
+            get {
+                return ResourceManager.GetString("PAUS_BAND_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string PAUS_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("PAUS_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher {0} l ähnelt.
+        /// </summary>
+        public static string PAUS_BEZEICHNER_MUSTER {
+            get {
+                return ResourceManager.GetString("PAUS_BEZEICHNER_MUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegen… ähnelt.
+        /// </summary>
+        public static string PAUS_BTN_AUSLEGEN {
+            get {
+                return ResourceManager.GetString("PAUS_BTN_AUSLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher auslegen… ähnelt.
+        /// </summary>
+        public static string PAUS_BTN_KONFIG {
+            get {
+                return ResourceManager.GetString("PAUS_BTN_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung speichern ähnelt.
+        /// </summary>
+        public static string PAUS_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("PAUS_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string PAUS_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PAUS_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel-Deckungsgrad ähnelt.
+        /// </summary>
+        public static string PAUS_DECKUNGSZIEL {
+            get {
+                return ResourceManager.GetString("PAUS_DECKUNGSZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung Brauchwasser ΔT_B ähnelt.
+        /// </summary>
+        public static string PAUS_DELTA_TB {
+            get {
+                return ResourceManager.GetString("PAUS_DELTA_TB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Tag ähnelt.
+        /// </summary>
+        public static string PAUS_EINHEIT_JE_TAG {
+            get {
+                return ResourceManager.GetString("PAUS_EINHEIT_JE_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geöffnet aus ① Konfiguration ähnelt.
+        /// </summary>
+        public static string PAUS_EINSTIEG_KONFIG {
+            get {
+                return ResourceManager.GetString("PAUS_EINSTIEG_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geöffnet aus der Pufferverwaltung ähnelt.
+        /// </summary>
+        public static string PAUS_EINSTIEG_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("PAUS_EINSTIEG_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geöffnet aus der Zapfprofil-Auslegung ähnelt.
+        /// </summary>
+        public static string PAUS_EINSTIEG_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("PAUS_EINSTIEG_ZAPFPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung ähnelt.
+        /// </summary>
+        public static string PAUS_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("PAUS_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} l · {1} kWh nutzbar ähnelt.
+        /// </summary>
+        public static string PAUS_EMPFEHLUNG_ZEILE {
+            get {
+                return ResourceManager.GetString("PAUS_EMPFEHLUNG_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch nicht gerechnet — „Auslegen und Ergebnis zeigen“ rechnet die Zonen. ähnelt.
+        /// </summary>
+        public static string PAUS_ERGEBNIS_LEER {
+            get {
+                return ResourceManager.GetString("PAUS_ERGEBNIS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wärmeerzeuger im Projekt — die Vorlage rechnet mit ihren Vorgabewerten. ähnelt.
+        /// </summary>
+        public static string PAUS_ERZEUGER_KEINER {
+            get {
+                return ResourceManager.GetString("PAUS_ERZEUGER_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit aus dem Lastgang bemessen (Expertenweg) ähnelt.
+        /// </summary>
+        public static string PAUS_EXPERTENWEG {
+            get {
+                return ResourceManager.GetString("PAUS_EXPERTENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faustwert {0} {1} ähnelt.
+        /// </summary>
+        public static string PAUS_FAUSTWERT {
+            get {
+                return ResourceManager.GetString("PAUS_FAUSTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegung ist nicht rechenbar: {0} ähnelt.
+        /// </summary>
+        public static string PAUS_FEHLER_RECHNEN {
+            get {
+                return ResourceManager.GetString("PAUS_FEHLER_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegung kann nicht vorbelegt werden: {0} ähnelt.
+        /// </summary>
+        public static string PAUS_FEHLER_START {
+            get {
+                return ResourceManager.GetString("PAUS_FEHLER_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fixed-Speed ähnelt.
+        /// </summary>
+        public static string PAUS_FIXED_SPEED {
+            get {
+                return ResourceManager.GetString("PAUS_FIXED_SPEED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätetyp ähnelt.
+        /// </summary>
+        public static string PAUS_GERAETETYP {
+            get {
+                return ResourceManager.GetString("PAUS_GERAETETYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leistungsgeregelt ähnelt.
+        /// </summary>
+        public static string PAUS_GEREGELT {
+            get {
+                return ResourceManager.GetString("PAUS_GEREGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gespeicherte Auslegung dieses Speichers ist geladen. ähnelt.
+        /// </summary>
+        public static string PAUS_GESPEICHERTE_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("PAUS_GESPEICHERTE_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für einen neuen Speicher eine Bezeichnung eingeben. ähnelt.
+        /// </summary>
+        public static string PAUS_GRUND_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("PAUS_GRUND_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegung empfiehlt keinen Puffer — es gibt nichts zu übernehmen. ähnelt.
+        /// </summary>
+        public static string PAUS_GRUND_KEINE_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("PAUS_GRUND_KEINE_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher konnte nicht geschrieben werden. ähnelt.
+        /// </summary>
+        public static string PAUS_GRUND_SCHREIBFEHLER {
+            get {
+                return ResourceManager.GetString("PAUS_GRUND_SCHREIBFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegung konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string PAUS_GRUND_SPEICHERN {
+            get {
+                return ResourceManager.GetString("PAUS_GRUND_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger am Puffer ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherklasse und Nutzung ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_KLASSE {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsreihen ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_REIHEN {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_REIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeiten ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_SPERRE {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturen und Schwellen am Puffer ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe und Anlage ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_UEBERGABE {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme in den Projektpuffer ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_UEBERNAHME {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_UEBERNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage der Anlage ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_VORLAGE {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_WARNUNGEN {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_WARNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserzone aus dem Zapfprofil ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_ZAPF {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_ZAPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsziel ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_ZIELE {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_ZIELE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag je Zone ähnelt.
+        /// </summary>
+        public static string PAUS_GRUPPE_ZONEN {
+            get {
+                return ResourceManager.GetString("PAUS_GRUPPE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizgrenze ähnelt.
+        /// </summary>
+        public static string PAUS_HEIZGRENZE {
+            get {
+                return ResourceManager.GetString("PAUS_HEIZGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsheizlast ähnelt.
+        /// </summary>
+        public static string PAUS_HEIZLAST {
+            get {
+                return ResourceManager.GetString("PAUS_HEIZLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Maximum der Heizreihe ähnelt.
+        /// </summary>
+        public static string PAUS_HEIZLAST_LEER {
+            get {
+                return ResourceManager.GetString("PAUS_HEIZLAST_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogvorschlag ähnelt.
+        /// </summary>
+        public static string PAUS_KATALOGVORSCHLAG {
+            get {
+                return ResourceManager.GetString("PAUS_KATALOGVORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Katalogpuffer groß genug ähnelt.
+        /// </summary>
+        public static string PAUS_KATALOG_KEINER {
+            get {
+                return ResourceManager.GetString("PAUS_KATALOG_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Pufferspeicher-Auslegung ist hier nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string PAUS_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("PAUS_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Puffer erforderlich ähnelt.
+        /// </summary>
+        public static string PAUS_KEIN_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_KEIN_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser ähnelt.
+        /// </summary>
+        public static string PAUS_KLASSE_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("PAUS_KLASSE_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizung ähnelt.
+        /// </summary>
+        public static string PAUS_KLASSE_HEIZUNG {
+            get {
+                return ResourceManager.GetString("PAUS_KLASSE_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Klasse eine Zone mit eigenem Verfahren: Heizzone nach den Kriterien, Brauchwasserzone aus dem Zapfprofil, Prozesszone auf der Prozessreihe; Kombi = Heizung + Brauchwasser. ähnelt.
+        /// </summary>
+        public static string PAUS_KLASSE_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_KLASSE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Speicherklasse wählen — ohne Klasse gibt es keine Zone. ähnelt.
+        /// </summary>
+        public static string PAUS_KLASSE_LEER {
+            get {
+                return ResourceManager.GetString("PAUS_KLASSE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess ähnelt.
+        /// </summary>
+        public static string PAUS_KLASSE_PROZESS {
+            get {
+                return ResourceManager.GetString("PAUS_KLASSE_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt „{0}“ · neuer Pufferspeicher ähnelt.
+        /// </summary>
+        public static string PAUS_KONTEXT_NEU {
+            get {
+                return ResourceManager.GetString("PAUS_KONTEXT_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt „{0}“ · Speicher „{1}“ ähnelt.
+        /// </summary>
+        public static string PAUS_KONTEXT_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_KONTEXT_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Zone bemisst das größte aktive Kriterium. Die Vorlage hat vorgewählt, was zur Anlage passt; Kriterien lassen sich zu- oder abschalten. ähnelt.
+        /// </summary>
+        public static string PAUS_KRITERIEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_KRITERIEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bemisst mit ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_AN {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeschaltet ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_AUS {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bemessend ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_BEMESSEND {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_BEMESSEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserzone ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser am Puffer (Station) ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_B_FRISCHWASSER {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_B_FRISCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trinkwasserspeicher aus dem Zapfprofil ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_B_SPEICHER {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_B_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsgrad ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_D1 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_D1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktziel ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_D2 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_D2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorprüfung Anlagenvolumen ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K1 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K10 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faustwert nach Gerätetyp ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K2 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K3 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K4 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit aus dem Lastgang ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K4E {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K4E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festbrennstoff ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K9 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K9", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festbrennstoff nach DIN EN 303-5 ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K9E {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K9E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verschiebedauer BHKW ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_KV {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_KV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht erreichbar ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_NICHT_GUELTIG {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_NICHT_GUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nicht gerechnet ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_NOCH_NICHT {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_NOCH_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_RECHENWEG {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Katalogsatz ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_AUS_KATALOG {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_AUS_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die extrapoliert ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_EXTRAPOLIERT {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_EXTRAPOLIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faustwert der Vorlage (Gegenprobe) ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_FAUSTWERT {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_FAUSTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbedarf je Person bei 60 °C ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_JE_PERSON {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_JE_PERSON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzbare Kapazität ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grenze Klasse C ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_KLASSE_C {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_KLASSE_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzbarer Anteil ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_NUTZANTEIL {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_NUTZANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten mindestens ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts je Heizperiode ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_STARTS_JAHR {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_STARTS_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts je Tag ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_STARTS_TAG {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_STARTS_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsverlust ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_VERLUST_JAHR {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_VERLUST_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverlust bei 45 K ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_VERLUST_TAG {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_VERLUST_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeverlustrate ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_VERLUST_WK {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_VERLUST_WK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenanteil Heizung ähnelt.
+        /// </summary>
+        public static string PAUS_KZ_ZONENANTEIL {
+            get {
+                return ResourceManager.GetString("PAUS_KZ_ZONENANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe ähnelt.
+        /// </summary>
+        public static string PAUS_LEER_VORGABE {
+            get {
+                return ResourceManager.GetString("PAUS_LEER_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung gespeichert. ähnelt.
+        /// </summary>
+        public static string PAUS_MELDUNG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PAUS_MELDUNG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen: „{0}“ mit {1} l. ähnelt.
+        /// </summary>
+        public static string PAUS_MELDUNG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("PAUS_MELDUNG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit je Start ähnelt.
+        /// </summary>
+        public static string PAUS_MINDESTLAUFZEIT {
+            get {
+                return ResourceManager.GetString("PAUS_MINDESTLAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Dauerleistung ähnelt.
+        /// </summary>
+        public static string PAUS_MINDESTLEISTUNG {
+            get {
+                return ResourceManager.GetString("PAUS_MINDESTLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu rechnen ähnelt.
+        /// </summary>
+        public static string PAUS_NEU_RECHNEN {
+            get {
+                return ResourceManager.GetString("PAUS_NEU_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beherbergung ähnelt.
+        /// </summary>
+        public static string PAUS_NP_BEHERBERGUNG {
+            get {
+                return ResourceManager.GetString("PAUS_NP_BEHERBERGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Büro/Schule ähnelt.
+        /// </summary>
+        public static string PAUS_NP_BUERO_SCHULE {
+            get {
+                return ResourceManager.GetString("PAUS_NP_BUERO_SCHULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerbe/Prozess ähnelt.
+        /// </summary>
+        public static string PAUS_NP_GEWERBE {
+            get {
+                return ResourceManager.GetString("PAUS_NP_GEWERBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Anzeige: Das Profil prägt die Bedarfsreihen, aus denen bemessen wird; es ist kein Rechenwert. ähnelt.
+        /// </summary>
+        public static string PAUS_NP_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_NP_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflege/Krankenhaus ähnelt.
+        /// </summary>
+        public static string PAUS_NP_PFLEGE {
+            get {
+                return ResourceManager.GetString("PAUS_NP_PFLEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnen ähnelt.
+        /// </summary>
+        public static string PAUS_NP_WOHNEN {
+            get {
+                return ResourceManager.GetString("PAUS_NP_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nutzbarer Anteil {0} % ähnelt.
+        /// </summary>
+        public static string PAUS_NUTZANTEIL_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_NUTZANTEIL_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil ähnelt.
+        /// </summary>
+        public static string PAUS_NUTZUNGSPROFIL {
+            get {
+                return ResourceManager.GetString("PAUS_NUTZUNGSPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gespeichert ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskade ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_KASKADE {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_KATALOG {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabetabelle ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_PARAMETER {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_PROJEKT {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_PUFFER {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsreihe ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übergeben ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_UEBERGEBEN {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_UEBERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die überschrieben ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_UEBERSCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_VORGABE {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_VORLAGE {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil ähnelt.
+        /// </summary>
+        public static string PAUS_QUELLE_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("PAUS_QUELLE_ZAPFPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegen und Ergebnis zeigen ähnelt.
+        /// </summary>
+        public static string PAUS_RECHNEN {
+            get {
+                return ResourceManager.GetString("PAUS_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bedarfsreihen sind nicht rechenbar: {0} ähnelt.
+        /// </summary>
+        public static string PAUS_REIHEN_FEHLER {
+            get {
+                return ResourceManager.GetString("PAUS_REIHEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessen wird gegen die stündlichen Bedarfsreihen des Projekts — ohne neuen Simulationslauf. ähnelt.
+        /// </summary>
+        public static string PAUS_REIHEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_REIHEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse und Erzeuger ähnelt.
+        /// </summary>
+        public static string PAUS_SCHRITT_ANLAGE {
+            get {
+                return ResourceManager.GetString("PAUS_SCHRITT_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf und Randbedingungen ähnelt.
+        /// </summary>
+        public static string PAUS_SCHRITT_BEDARF {
+            get {
+                return ResourceManager.GetString("PAUS_SCHRITT_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis und Übernahme ähnelt.
+        /// </summary>
+        public static string PAUS_SCHRITT_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("PAUS_SCHRITT_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kriterien ähnelt.
+        /// </summary>
+        public static string PAUS_SCHRITT_KRITERIEN {
+            get {
+                return ResourceManager.GetString("PAUS_SCHRITT_KRITERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwellen ein / aus ähnelt.
+        /// </summary>
+        public static string PAUS_SCHWELLEN {
+            get {
+                return ResourceManager.GetString("PAUS_SCHWELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bemessend ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_BEMESSEND {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_BEMESSEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Code ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_CODE {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_CODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_HERKUNFT {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_JAHR {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_KANAL {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_KANAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitze ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_SPITZE {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_STUFE {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string PAUS_SPALTE_ZONE {
+            get {
+                return ResourceManager.GetString("PAUS_SPALTE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn der Sperre ähnelt.
+        /// </summary>
+        public static string PAUS_SPERRBEGINN {
+            get {
+                return ResourceManager.GetString("PAUS_SPERRBEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauer der Sperre ähnelt.
+        /// </summary>
+        public static string PAUS_SPERRDAUER {
+            get {
+                return ResourceManager.GetString("PAUS_SPERRDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 3 × 2 h (6–8, 11–13 und 17–19 Uhr) ähnelt.
+        /// </summary>
+        public static string PAUS_SPERRE_DREI_MAL_ZWEI {
+            get {
+                return ResourceManager.GetString("PAUS_SPERRE_DREI_MAL_ZWEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigenes Fenster ähnelt.
+        /// </summary>
+        public static string PAUS_SPERRE_EIGEN {
+            get {
+                return ResourceManager.GetString("PAUS_SPERRE_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neutrale Eingabe der Sperrdauer und ihrer Lage je Tag; die Übernahme schreibt die Sperrannahme nicht in die Wärmepumpe. ähnelt.
+        /// </summary>
+        public static string PAUS_SPERRE_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_SPERRE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string PAUS_SPERRE_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_SPERRE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 2 × 2 h (11–13 und 17–19 Uhr) ähnelt.
+        /// </summary>
+        public static string PAUS_SPERRE_ZWEI_MAL_ZWEI {
+            get {
+                return ResourceManager.GetString("PAUS_SPERRE_ZWEI_MAL_ZWEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrprofil ähnelt.
+        /// </summary>
+        public static string PAUS_SPERRPROFIL {
+            get {
+                return ResourceManager.GetString("PAUS_SPERRPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Startziel ähnelt.
+        /// </summary>
+        public static string PAUS_STARTZIEL {
+            get {
+                return ResourceManager.GetString("PAUS_STARTZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tiefe ähnelt.
+        /// </summary>
+        public static string PAUS_STUFE {
+            get {
+                return ResourceManager.GetString("PAUS_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Experte ähnelt.
+        /// </summary>
+        public static string PAUS_STUFE_EXPERTE {
+            get {
+                return ResourceManager.GetString("PAUS_STUFE_EXPERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string PAUS_STUFE_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_STUFE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnell ähnelt.
+        /// </summary>
+        public static string PAUS_STUFE_SCHNELL {
+            get {
+                return ResourceManager.GetString("PAUS_STUFE_SCHNELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard ähnelt.
+        /// </summary>
+        public static string PAUS_STUFE_STANDARD {
+            get {
+                return ResourceManager.GetString("PAUS_STUFE_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warnung ähnelt.
+        /// </summary>
+        public static string PAUS_STUFE_WARNUNG {
+            get {
+                return ResourceManager.GetString("PAUS_STUFE_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Zonen ähnelt.
+        /// </summary>
+        public static string PAUS_SUMME {
+            get {
+                return ResourceManager.GetString("PAUS_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf / Rücklauf ähnelt.
+        /// </summary>
+        public static string PAUS_TEMPERATURPAAR {
+            get {
+                return ResourceManager.GetString("PAUS_TEMPERATURPAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturpaar und Schwellen kommen aus dem Puffer; die Auslegung ändert sie nicht. ähnelt.
+        /// </summary>
+        public static string PAUS_TEMPERATUR_BLEIBT {
+            get {
+                return ResourceManager.GetString("PAUS_TEMPERATUR_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher-Auslegung ähnelt.
+        /// </summary>
+        public static string PAUS_TITEL {
+            get {
+                return ResourceManager.GetString("PAUS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchfluss ohne Speicher ähnelt.
+        /// </summary>
+        public static string PAUS_TOPO_DURCHFLUSS {
+            get {
+                return ResourceManager.GetString("PAUS_TOPO_DURCHFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Frischwasserstation ähnelt.
+        /// </summary>
+        public static string PAUS_TOPO_FRISCHWASSER {
+            get {
+                return ResourceManager.GetString("PAUS_TOPO_FRISCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trinkwasserspeicher ähnelt.
+        /// </summary>
+        public static string PAUS_TOPO_SPEICHER {
+            get {
+                return ResourceManager.GetString("PAUS_TOPO_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnungsstationen ähnelt.
+        /// </summary>
+        public static string PAUS_TOPO_WOHNUNGSSTATION {
+            get {
+                return ResourceManager.GetString("PAUS_TOPO_WOHNUNGSSTATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur oben im Puffer ähnelt.
+        /// </summary>
+        public static string PAUS_T_OBEN {
+            get {
+                return ResourceManager.GetString("PAUS_T_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart ähnelt.
+        /// </summary>
+        public static string PAUS_UEBERGABEART {
+            get {
+                return ResourceManager.GetString("PAUS_UEBERGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächenheizung ähnelt.
+        /// </summary>
+        public static string PAUS_UEBERGABE_FLAECHE {
+            get {
+                return ResourceManager.GetString("PAUS_UEBERGABE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe (rechnet wie Flächenheizung) ähnelt.
+        /// </summary>
+        public static string PAUS_UEBERGABE_IDEAL {
+            get {
+                return ResourceManager.GetString("PAUS_UEBERGABE_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konvektor ähnelt.
+        /// </summary>
+        public static string PAUS_UEBERGABE_KONVEKTOR {
+            get {
+                return ResourceManager.GetString("PAUS_UEBERGABE_KONVEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lüfter ähnelt.
+        /// </summary>
+        public static string PAUS_UEBERGABE_LUEFTER {
+            get {
+                return ResourceManager.GetString("PAUS_UEBERGABE_LUEFTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“. ähnelt.
+        /// </summary>
+        public static string PAUS_UEBERGABE_NICHT_MOEGLICH {
+            get {
+                return ResourceManager.GetString("PAUS_UEBERGABE_NICHT_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkörper ähnelt.
+        /// </summary>
+        public static string PAUS_UEBERGABE_RADIATOR {
+            get {
+                return ResourceManager.GetString("PAUS_UEBERGABE_RADIATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwellen und Temperaturpaar bleiben. Übernommen werden Volumen, Bereitschaftsverlust und Nutzung, beim Kombipuffer Schichten und Zonenanteile; die Sperrannahme nicht. ähnelt.
+        /// </summary>
+        public static string PAUS_UEBERNAHME_BLEIBT {
+            get {
+                return ResourceManager.GetString("PAUS_UEBERNAHME_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über der Nenninhaltsliste auf das Raster gerundet ähnelt.
+        /// </summary>
+        public static string PAUS_UEBER_LISTENENDE {
+            get {
+                return ResourceManager.GetString("PAUS_UEBER_LISTENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die veraltet ähnelt.
+        /// </summary>
+        public static string PAUS_VERALTET {
+            get {
+                return ResourceManager.GetString("PAUS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingaben geändert — das Ergebnis rechnet beim Wechsel in Schritt 4 oder mit „Neu rechnen“ nach. ähnelt.
+        /// </summary>
+        public static string PAUS_VERALTET_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_VERALTET_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_BHKW {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestlaufzeit und wenige Starts je Tag; Verschiebedauer und Faustwert als Gegenprobe. ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_BHKW_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_BHKW_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die lange Laufzeiten ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_BHKW_UNTER {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_BHKW_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festbrennstoff ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_FESTBRENNSTOFF {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_FESTBRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestvolumen nach Vorschrift aus dem Brennstoff des Kessels — bemessend. ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_FESTBRENNSTOFF_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_FESTBRENNSTOFF_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Scheitholz, Pellets ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_FESTBRENNSTOFF_UNTER {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_FESTBRENNSTOFF_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage schaltet die Kriterien der Heizzone und belegt Beispielwerte; die Brauchwasserzone hat keine Vorlage — sie kommt aus dem Zapfprofil. ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_KESSEL {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestleistung und Mindestlaufzeit aus der Kesselkennlinie; kleiner Puffer gegen Takten. ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_KESSEL_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_KESSEL_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gas/Öl ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_KESSEL_UNTER {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_KESSEL_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_PROZESS {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung und Taktziel auf der Prozessreihe, Spreizung aus dem Puffer; Temperaturniveau prüfen. ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_PROZESS_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_PROZESS_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesspuffer ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_PROZESS_UNTER {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_PROZESS_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_SOLAR {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen je m² Aperturfläche als Tagesspeicher. ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_SOLAR_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_SOLAR_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektorfeld am Puffer ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_SOLAR_UNTER {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_SOLAR_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_WP_BIVALENT {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_WP_BIVALENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Zweiterzeuger frei in der Sperre lässt die Sperrzeit entfallen; ein Heizstab ist mitgesperrt. ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_WP_BIVALENT_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_WP_BIVALENT_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bivalent ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_WP_BIVALENT_UNTER {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_WP_BIVALENT_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_WP_MONO {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_WP_MONO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe deckt allein: Gerätetyp und Mindestlaufzeit, Sperrzeit nach VDI 4645, Taktziel. ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_WP_MONO_TEXT {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_WP_MONO_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die monovalent ähnelt.
+        /// </summary>
+        public static string PAUS_VORLAGE_WP_MONO_UNTER {
+            get {
+                return ResourceManager.GetString("PAUS_VORLAGE_WP_MONO_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Hinweise ähnelt.
+        /// </summary>
+        public static string PAUS_WARNUNGEN_LEER {
+            get {
+                return ResourceManager.GetString("PAUS_WARNUNGEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weiter › ähnelt.
+        /// </summary>
+        public static string PAUS_WEITER {
+            get {
+                return ResourceManager.GetString("PAUS_WEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohneinheiten ähnelt.
+        /// </summary>
+        public static string PAUS_WOHNEINHEITEN {
+            get {
+                return ResourceManager.GetString("PAUS_WOHNEINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größtes Defizit D_max ähnelt.
+        /// </summary>
+        public static string PAUS_ZAPF_DMAX {
+            get {
+                return ResourceManager.GetString("PAUS_ZAPF_DMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zapfprofil-Ergebnis: Die Brauchwasserzone bleibt leer. ähnelt.
+        /// </summary>
+        public static string PAUS_ZAPF_KEIN {
+            get {
+                return ResourceManager.GetString("PAUS_ZAPF_KEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen ähnelt.
+        /// </summary>
+        public static string PAUS_ZAPF_PERSONEN {
+            get {
+                return ResourceManager.GetString("PAUS_ZAPF_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbedarf bei 60 °C ähnelt.
+        /// </summary>
+        public static string PAUS_ZAPF_TAGESBEDARF {
+            get {
+                return ResourceManager.GetString("PAUS_ZAPF_TAGESBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Topologie ähnelt.
+        /// </summary>
+        public static string PAUS_ZAPF_TOPOLOGIE {
+            get {
+                return ResourceManager.GetString("PAUS_ZAPF_TOPOLOGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil-Auslegung übergeben ({0}) ähnelt.
+        /// </summary>
+        public static string PAUS_ZAPF_UEBERGEBEN {
+            get {
+                return ResourceManager.GetString("PAUS_ZAPF_UEBERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel ähnelt.
+        /// </summary>
+        public static string PAUS_ZIEL {
+            get {
+                return ResourceManager.GetString("PAUS_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ändern ähnelt.
+        /// </summary>
+        public static string PAUS_ZIEL_AENDERN {
+            get {
+                return ResourceManager.GetString("PAUS_ZIEL_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neuen Pufferspeicher anlegen ähnelt.
+        /// </summary>
+        public static string PAUS_ZIEL_NEU {
+            get {
+                return ResourceManager.GetString("PAUS_ZIEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulationszuschlag ähnelt.
+        /// </summary>
+        public static string PAUS_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("PAUS_ZIRKULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil am Tagesbedarf ähnelt.
+        /// </summary>
+        public static string PAUS_ZIRK_ANTEIL {
+            get {
+                return ResourceManager.GetString("PAUS_ZIRK_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch (Zapfprofil, sonst Projekt, sonst Anteil) ähnelt.
+        /// </summary>
+        public static string PAUS_ZIRK_AUTOMATIK {
+            get {
+                return ResourceManager.GetString("PAUS_ZIRK_AUTOMATIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Wohneinheit ähnelt.
+        /// </summary>
+        public static string PAUS_ZIRK_JE_WE {
+            get {
+                return ResourceManager.GetString("PAUS_ZIRK_JE_WE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulationsleistung des Projekts ähnelt.
+        /// </summary>
+        public static string PAUS_ZIRK_PROJEKT {
+            get {
+                return ResourceManager.GetString("PAUS_ZIRK_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Zapfprofil ähnelt.
+        /// </summary>
+        public static string PAUS_ZIRK_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("PAUS_ZIRK_ZAPFPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserzone ähnelt.
+        /// </summary>
+        public static string PAUS_ZONE_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("PAUS_ZONE_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizzone ähnelt.
+        /// </summary>
+        public static string PAUS_ZONE_HEIZUNG {
+            get {
+                return ResourceManager.GetString("PAUS_ZONE_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesszone ähnelt.
+        /// </summary>
+        public static string PAUS_ZONE_PROZESS {
+            get {
+                return ResourceManager.GetString("PAUS_ZONE_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ← zurück ähnelt.
+        /// </summary>
+        public static string PAUS_ZURUECK {
+            get {
+                return ResourceManager.GetString("PAUS_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf Vorbelegung zurücksetzen ähnelt.
+        /// </summary>
+        public static string PAUS_ZURUECKSETZEN {
+            get {
+                return ResourceManager.GetString("PAUS_ZURUECKSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ‹ Zurück ähnelt.
+        /// </summary>
+        public static string PAUS_ZURUECK_SCHRITT {
+            get {
+                return ResourceManager.GetString("PAUS_ZURUECK_SCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zweiterzeuger in der Sperre ähnelt.
+        /// </summary>
+        public static string PAUS_ZWEITERZEUGER {
+            get {
+                return ResourceManager.GetString("PAUS_ZWEITERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zweiterzeuger frei in der Sperre ähnelt.
+        /// </summary>
+        public static string PAUS_ZWEIT_FREI {
+            get {
+                return ResourceManager.GetString("PAUS_ZWEIT_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab (gesperrt) ähnelt.
+        /// </summary>
+        public static string PAUS_ZWEIT_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("PAUS_ZWEIT_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trinkwasservorrang: Es fehlt Abtaureserve für die Heizung. ähnelt.
+        /// </summary>
+        public static string PA_ABTAU_VORRANG {
+            get {
+                return ResourceManager.GetString("PA_ABTAU_VORRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ausgewählt ähnelt.
         /// </summary>
         public static string PA_AUSGEWAEHLT {
@@ -70100,11 +72449,488 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Heizzone liegt über dem Plausibilitätsband der Übergabeart. ähnelt.
+        /// </summary>
+        public static string PA_BAND_UEBER {
+            get {
+                return ResourceManager.GetString("PA_BAND_UEBER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Heizzone liegt unter dem Plausibilitätsband der Übergabeart. ähnelt.
+        /// </summary>
+        public static string PA_BAND_UNTER {
+            get {
+                return ResourceManager.GetString("PA_BAND_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brauchwasserzone übersteigt ein Vielfaches des Tagesbedarfs. ähnelt.
+        /// </summary>
+        public static string PA_BW_UEBERDIMENSIONIERT {
+            get {
+                return ResourceManager.GetString("PA_BW_UEBERDIMENSIONIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereitschaftsverlust ist über den Geltungsbereich der Klasse-C-Grenze hinaus extrapoliert. ähnelt.
+        /// </summary>
+        public static string PA_EXTRAPOLATION {
+            get {
+                return ResourceManager.GetString("PA_EXTRAPOLATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer. ähnelt.
+        /// </summary>
+        public static string PA_HEIZSTAB_GESPERRT {
+            get {
+                return ResourceManager.GetString("PA_HEIZSTAB_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer oben zu kalt für die Frischwasserbereitung; periodisches Aufheizen ist kein Ersatz. ähnelt.
+        /// </summary>
+        public static string PA_HYGIENE_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PA_HYGIENE_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trinkwasserspeicher einer Großanlage: Anforderungen an die Trinkwasserhygiene beachten. ähnelt.
+        /// </summary>
+        public static string PA_HYGIENE_W551 {
+            get {
+                return ResourceManager.GetString("PA_HYGIENE_W551", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Bedarfsreihe ist leer: Die Kriterien auf dem Lastgang entfallen für diese Zone. ähnelt.
+        /// </summary>
+        public static string PA_KEINE_REIHE {
+            get {
+                return ResourceManager.GetString("PA_KEINE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das nicht absperrbare Anlagenvolumen reicht: kein Heizungspuffer erforderlich. ähnelt.
+        /// </summary>
+        public static string PA_KEIN_PUFFER {
+            get {
+                return ResourceManager.GetString("PA_KEIN_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt. ähnelt.
+        /// </summary>
+        public static string PA_OHNE_PUFFER_GEREGELT {
+            get {
+                return ResourceManager.GetString("PA_OHNE_PUFFER_GEREGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Praxisgrenze ist erreicht: Ein Ziel ist mit dem größten Puffer nicht zu halten, oder die Summe ist ein Saisonalspeicher. ähnelt.
+        /// </summary>
+        public static string PA_PRAXISGRENZE {
+            get {
+                return ResourceManager.GetString("PA_PRAXISGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Starts je Heizperiode liegen über der Hinweisschwelle. ähnelt.
+        /// </summary>
+        public static string PA_STARTS_JAHR {
+            get {
+                return ResourceManager.GetString("PA_STARTS_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Starts je Tag liegen über der Warnschwelle. ähnelt.
+        /// </summary>
+        public static string PA_STARTS_TAG {
+            get {
+                return ResourceManager.GetString("PA_STARTS_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau). ähnelt.
+        /// </summary>
+        public static string PA_TANK_IM_TANK {
+            get {
+                return ResourceManager.GetString("PA_TANK_IM_TANK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung. ähnelt.
+        /// </summary>
+        public static string PA_UEBERGABE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("PA_UEBERGABE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante von: {0} ähnelt.
         /// </summary>
         public static string PA_VARIANTE_VON {
             get {
                 return ResourceManager.GetString("PA_VARIANTE_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht. ähnelt.
+        /// </summary>
+        public static string PA_ZWEITERZEUGER_FREI {
+            get {
+                return ResourceManager.GetString("PA_ZWEITERZEUGER_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string PBRS_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("PBRS_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte von „{0}“ ähnelt.
+        /// </summary>
+        public static string PBRS_BEARBEITEN_TITEL {
+            get {
+                return ResourceManager.GetString("PBRS_BEARBEITEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet mit seinen eigenen Kopien der Brennstoffe: Heizwerte, Emissionsfaktoren und Preisvorgaben. Ein Katalog-Update ändert sie nicht; „Auf Katalog zurücksetzen“ übernimmt den heutigen Katalogstand. ähnelt.
+        /// </summary>
+        public static string PBRS_EINLEITUNG {
+            get {
+                return ResourceManager.GetString("PBRS_EINLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte von „{0}“ auf den heutigen Katalogstand zurücksetzen? ähnelt.
+        /// </summary>
+        public static string PBRS_FRAGE_ZURUECKSETZEN {
+            get {
+                return ResourceManager.GetString("PBRS_FRAGE_ZURUECKSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Projekt geöffnet. ähnelt.
+        /// </summary>
+        public static string PBRS_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("PBRS_KEIN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt noch keine Brennstoffe. ähnelt.
+        /// </summary>
+        public static string PBRS_LEER {
+            get {
+                return ResourceManager.GetString("PBRS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffe des Projekts… ähnelt.
+        /// </summary>
+        public static string PBRS_MENUE {
+            get {
+                return ResourceManager.GetString("PBRS_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld {0} lässt sich nicht bearbeiten. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_FELD_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_FELD_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte von „{0}“ sind gespeichert. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt keine Kopie dieses Brennstoffs. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_KEINE_KOPIE {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_KEINE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Brennstoff steht nicht mehr im Katalog; die Projektwerte bleiben. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_NICHT_ZURUECKGESETZT {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_NICHT_ZURUECKGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist aus dem Katalog übernommen. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert für {0} ist ungültig. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_WERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_WERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht wieder auf dem Katalogstand. ähnelt.
+        /// </summary>
+        public static string PBRS_MSG_ZURUECKGESETZT {
+            get {
+                return ResourceManager.GetString("PBRS_MSG_ZURUECKGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
+        /// </summary>
+        public static string PBRS_SP_AKTIONEN {
+            get {
+                return ResourceManager.GetString("PBRS_SP_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis [€/Einheit] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("PBRS_SP_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string PBRS_SP_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("PBRS_SP_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ [g/kWh] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_CO2 {
+            get {
+                return ResourceManager.GetString("PBRS_SP_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string PBRS_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("PBRS_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_GRUNDPREIS {
+            get {
+                return ResourceManager.GetString("PBRS_SP_GRUNDPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hi [kWh/Einheit] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_HI {
+            get {
+                return ResourceManager.GetString("PBRS_SP_HI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hs [kWh/Einheit] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_HS {
+            get {
+                return ResourceManager.GetString("PBRS_SP_HS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis [€/kW] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("PBRS_SP_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die NOₓ [mg/kWh] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_NOX {
+            get {
+                return ResourceManager.GetString("PBRS_SP_NOX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Primärenergiefaktor ähnelt.
+        /// </summary>
+        public static string PBRS_SP_PE {
+            get {
+                return ResourceManager.GetString("PBRS_SP_PE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SO₂ [mg/kWh] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_SO2 {
+            get {
+                return ResourceManager.GetString("PBRS_SP_SO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string PBRS_SP_STAND {
+            get {
+                return ResourceManager.GetString("PBRS_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staub [mg/kWh] ähnelt.
+        /// </summary>
+        public static string PBRS_SP_STAUB {
+            get {
+                return ResourceManager.GetString("PBRS_SP_STAUB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abweichend ähnelt.
+        /// </summary>
+        public static string PBRS_STAND_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("PBRS_STAND_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht mehr im Katalog ähnelt.
+        /// </summary>
+        public static string PBRS_STAND_OHNE_KATALOG {
+            get {
+                return ResourceManager.GetString("PBRS_STAND_OHNE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Katalog ähnelt.
+        /// </summary>
+        public static string PBRS_STAND_WIE_KATALOG {
+            get {
+                return ResourceManager.GetString("PBRS_STAND_WIE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwert: {0} ähnelt.
+        /// </summary>
+        public static string PBRS_TIP_KATALOGWERT {
+            get {
+                return ResourceManager.GetString("PBRS_TIP_KATALOGWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffe des Projekts ähnelt.
+        /// </summary>
+        public static string PBRS_TITEL {
+            get {
+                return ResourceManager.GetString("PBRS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Katalog übernehmen ähnelt.
+        /// </summary>
+        public static string PBRS_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PBRS_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Brennstoffe des Katalogs sind im Projekt. ähnelt.
+        /// </summary>
+        public static string PBRS_UEBERNEHMEN_LEER {
+            get {
+                return ResourceManager.GetString("PBRS_UEBERNEHMEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff des Katalogs ähnelt.
+        /// </summary>
+        public static string PBRS_UEBERNEHMEN_WAHL {
+            get {
+                return ResourceManager.GetString("PBRS_UEBERNEHMEN_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf Katalog zurücksetzen ähnelt.
+        /// </summary>
+        public static string PBRS_ZURUECKSETZEN {
+            get {
+                return ResourceManager.GetString("PBRS_ZURUECKSETZEN", resourceCulture);
             }
         }
         
@@ -82293,6 +85119,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_ZUSTAND_ANLASS_PROJEKT {
             get {
                 return ResourceManager.GetString("SIMERG_ZUSTAND_ANLASS_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ein Pufferspeicher wurde aus der Auslegung übernommen ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_ANLASS_PUFFERAUSLEGUNG", resourceCulture);
             }
         }
         
@@ -113163,7 +115998,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“. ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRUND_UEBERGEBEN {
             get {

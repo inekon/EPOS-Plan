@@ -127,6 +127,7 @@ namespace WindowsFormsApplication1
                                             Uhr().ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture),
                                             Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten);
                 foreach (AbbildGebaeude g in abbild.Gebaeude) _gebaeude.Add(g.Anzeigename);
+                Dateihinweise(abbild, Quelle.Dateiname);
             }
             catch (OperationCanceledException)
             {
@@ -153,6 +154,28 @@ namespace WindowsFormsApplication1
         /// Liest den Strom vollständig in einen Puffer — höchstens <c>MaxBytes</c> + 1 Byte, damit
         /// auch ein Strom ohne Längenangabe die Grenze nicht unterläuft. <c>null</c> = zu groß.
         /// </summary>
+        /// <summary>
+        /// <b>Was der Dateiname einer IFC-Datei sagt</b> — je Gebäude als Hinweis, übernommen wird nichts davon: Trägt
+        /// das Gebäude einen Platzhalternamen (<see cref="GebaeudeZuordnungsModell.PLATZHALTERNAMEN"/>), schlägt der
+        /// Dialog den Dateinamen vor (<c>IMP_IFC_PROT_NAME_PLATZHALTER</c>, I); nennt der Dateiname genau ein Jahr
+        /// (<see cref="Baujahrregel.JahrImDateinamen"/>) und führt die Datei kein Baujahr, nennt das Protokoll das Jahr
+        /// (<c>IMP_IFC_PROT_BAUJAHR_DATEINAME</c>, I) — es wird NIE als Baujahr übernommen.
+        /// </summary>
+        private static void Dateihinweise(GebaeudeAbbild abbild, string dateiname)
+        {
+            if (!string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) || string.IsNullOrWhiteSpace(dateiname)) return;
+            string ohneEndung = Path.GetFileNameWithoutExtension(dateiname.Trim()).Trim();
+            int? jahr = Baujahrregel.JahrImDateinamen(dateiname);
+            foreach (AbbildGebaeude g in abbild.Gebaeude)
+            {
+                if (ohneEndung.Length > 0 && GebaeudeZuordnungsModell.IstPlatzhaltername(g.Name))
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, IfcImportProfil.MELDUNGSPRAEFIX + "NAME_PLATZHALTER", g.Name.Trim(), ohneEndung));
+                if (jahr.HasValue && !g.Baujahr.HasValue)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, IfcImportProfil.MELDUNGSPRAEFIX + "BAUJAHR_DATEINAME",
+                        jahr.Value.ToString(CultureInfo.InvariantCulture)));
+            }
+        }
+
         private byte[] Einlesen(Stream quelle, GebaeudeImportProfil profil, CancellationToken abbruch)
         {
             long grenze = profil.MaxBytes > 0 ? profil.MaxBytes : long.MaxValue;
