@@ -581,7 +581,7 @@ danach im Wegweiser desselben Ordners.
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
 `Kenndaten_Test.sqlite` (Schemastand **179**, 82 345 984 Byte, LFS-SHA-256
-`93d4066ad8af6e7fb6bdc7c86e312963a688385d521acf882097946263f71a57`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+`d882e060b01509f1a62c1906ee4954de797f0f243dba78ef1b138139ade71057`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
 Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
 und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
 Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
@@ -780,12 +780,14 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):
 > Tabelle `Tab_Sperrfenster` (STRICT, leer). `ProzessNutzungSchema` (178): Tabellen `Tab_Nutzungsprofil_STAMM` und
 > `Z_Nutzungsprofil` (STRICT) mit 5 Profilen und 26 Zuordnungen. `PufferAuslegungErgaenzungSchema` (179): an
-> `Tab_PufferAuslegung` die fünf Spalten der Sitzungseingaben, an `Tab_Gebaeude` `ID_Konditionierungsvorlage`, an
-> `Tab_Pufferspeicher` `ID_Stamm`, alle leer. Die Testdatenbank ist aus der Fassung `7cf9aada…` (176) zuerst mit
+> `Tab_PufferAuslegung` die fünf Spalten der Sitzungseingaben und an `Tab_Pufferspeicher` `ID_Stamm`, sechs Spalten,
+> alle leer, dazu die Saat der sechs Vorgaben des Aufheizkriteriums K12 (`Pufferauslegung.Aufheiz.*`). Einen Verweis
+> des Gebäudes auf die Konditionierungsvorlage gibt es nicht (Anwenderentscheid 03.10.2026: die Nutzung steht als
+> Kopie am Kalender, ein Fremdschlüssel auf den Katalog schlüge auf Projektdaten durch). Die Testdatenbank ist aus der Fassung `7cf9aada…` (176) zuerst mit
 > `Skripte/tww_testkatalog_fiktiv.py` um die Zapf-Nutzungsarten Büro, Schule und Gewerbe nach der Regel der Testdatenbank
-> (EIGEN, 24 Zeilen) ergänzt und dann mit `Werkzeuge/Testdatenbankschema` auf **179** gezogen (3 Tabellen, 7 Spalten;
-> 148 Pufferparameter im Stamm, 0 Projektkopien; `integrity_check` ok, `foreign_key_check` leer, 163 STRICT-Tabellen).
-> Neue Fassung **82 345 984 Byte, LFS-SHA-256 `93d4066ad8af6e7fb6bdc7c86e312963a688385d521acf882097946263f71a57`**.
+> (EIGEN, 24 Zeilen) ergänzt und dann mit `Werkzeuge/Testdatenbankschema` auf **179** gezogen (3 Tabellen, 6 Spalten;
+> 154 Pufferparameter im Stamm, 0 Projektkopien; `integrity_check` ok, `foreign_key_check` leer, 163 STRICT-Tabellen).
+> Neue Fassung **82 345 984 Byte, LFS-SHA-256 `d882e060b01509f1a62c1906ee4954de797f0f243dba78ef1b138139ade71057`**.
 > **Die Basis bleibt:** Es entstehen nur leere Spalten, leere Tabellen und Saat, die kein Rechenweg eines
 > Referenzprojekts liest; keine Einfrierregel ist berührt.
 
