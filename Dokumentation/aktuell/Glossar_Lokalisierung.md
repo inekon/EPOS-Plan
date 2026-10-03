@@ -449,6 +449,9 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Bemessung (der Aufheizzeit) | design basis | woran die längste Aufheizzeit bemessen wird: „kälteste Stunde" → „coldest hour" (Vorgabe), „kälteste Stunde − ΔT_K" → „coldest hour − ΔT_K"; die Persistenzwerte `STUNDE`, `STUNDE_ABZUG` bleiben (§ 10); Bemessungsfall → design case |
 | Abzug ΔT_K | deduction ΔT_K | um wie viel K die Bemessung (b) kälter rechnet als die kälteste Stunde (0 … 10 K, Vorgabe 2 K) |
 | Art der Aufheizzeit | preheat time mode | „täglich" → „daily" (Vorgabe: jeder Tag nach seiner Außentemperatur), „fest" → „fixed" (jeder Tag so lange wie der Bemessungsfall); die Persistenzwerte `TAEGLICH`, `FEST` bleiben (§ 10) |
+| Aufschlag (der Aufheizzeit) | surcharge | Projektvorgabe in Stunden und in Prozent, um die jede ermittelte Rampe länger wird, es gilt der größere Wert (Stufe KP3); Felder „Aufschlag (h)" → „Surcharge (h)", „Aufschlag (%)" → „Surcharge (%)" (`SIMKONF_AUFH_AUFSCHLAG_*`) |
+| Aufheizzeit manuell | manual preheat time | je Gebäude eingegebene Aufheizzeit in h, dritte Art neben „täglich" und „fest" → „manual"; Persistenzwert `MANUELL` bleibt (§ 10) |
+| Vorschlag | suggestion | Wert neben einem Feld, den der Anwender übernehmen kann, hier die bemessene Aufheizzeit und die Spanne nach Bauart; „Übernehmen" → „Apply" (§ 8); nicht „proposal" |
 | Herleitungszeile | derivation line | leise Zeile unter einem Feld oder Abschnitt, die sagt, woraus ein Wert folgt — bei der Aufheizoptimierung je Gebäude „t_auf,max … bei … · P_auf … · C_w …"; das Wort selbst steht in keiner Beschriftung |
 | Ferien | holidays | Zeile der Matrix und Art der Periode; Bestand „Holiday setpoint (all day)" (`GEBK_LBL_SOLL_FERIEN`); **nicht** „vacation" |
 | Ferienzeitraum | holiday period | datierter Zeitraum (`Ferienbeginn_1` … `Ferienende_4`) des Gebäudes, gilt für alle Spalten; Datum im Gemeinjahr; Bestand „Holiday start" / „Holiday end" |
