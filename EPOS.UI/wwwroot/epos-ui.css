@@ -12237,6 +12237,28 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 }
 
 /* ==========================================================================
+   BRENNSTOFFE DES PROJEKTS (Dialoge/Kosten/ProjektBrennstoffeDialog.razor):
+   Eine Zelle, deren Wert vom heutigen Katalog abweicht, steht auf der
+   Warnflaeche (WARN_TEXT auf WARN_FLAECHE haelt 4,5:1); der Katalogwert
+   steht im title der Zelle.
+   ========================================================================== */
+.epos-pbrs-zelle--abweichend {
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+.epos-pbrs-uebernahme {
+    align-items: flex-end;
+}
+
+@media (forced-colors: active) {
+
+    .epos-pbrs-zelle--abweichend {
+        outline: 1px solid CanvasText;
+    }
+}
+
+/* ==========================================================================
    DIE DURCHSUCHBARE AUSWAHLLISTE (Standards/Suchauswahl.razor, Auftrag KL-4,
    Anwenderwunsch 19.09.2026: "Das Dropdown soll auch durchsuchbar sein").
 

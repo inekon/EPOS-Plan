@@ -1,0 +1,338 @@
+﻿@* BRENNSTOFFE DES PROJEKTS (Anwenderentscheid 03.10.2026: Projektkopie des Brennstoffkatalogs).
+
+   WOZU. Das Projekt rechnet mit seinen eigenen Kopien der Brennstoffe (Tab_Brennstoff): Heizwerte,
+   Emissionsfaktoren und Preisvorgaben. Ein Katalog-Update fasst nur den Katalog an; dieser Dialog
+   zeigt je Brennstoff, ob die Kopie vom heutigen Katalog abweicht, lässt ihre Werte bearbeiten,
+   setzt sie auf den Katalogstand zurück und übernimmt einen Brennstoff, den das Projekt noch nicht
+   führt, aus dem Katalog.
+
+   EIN WERKZEUGDIALOG wie „Katalog aktualisieren": Jede Handlung schreibt SOFORT und je Satz —
+   Bearbeiten nach „Speichern" der Überlagerung, Zurücksetzen nach einer Rückfrage mit Vorgabe
+   „Nein", Übernehmen auf Knopfdruck. Es gibt keinen Arbeitsstand über mehrere Sätze und deshalb
+   keine SpeichernLeiste, nur „Schließen". Enter ist nicht belegt.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Alles kommt als Delegat aus der Hülle
+   (EPOS.UI.Daten/Kosten/ProjektBrennstoffeHuelle.cs). Ohne Gaben zeichnet der Dialog den leeren
+   Stand und bietet keinen Knopf an, der nichts tun könnte. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+@using System.Globalization
+@using EPOS.UI.Standards
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-projektbrennstoffe" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@T.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@T.Titel" />
+        @if (!_laeuft)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
+    </div>
+
+    <p class="epos-dialog-einleitung">@T.Einleitung</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @if (_stand.Projekt.Length == 0)
+    {
+        <p class="epos-leerzustand epos-pbrs-kein-projekt">@T.KeinProjekt</p>
+    }
+    else
+    {
+        <p class="epos-pbrs-projekt"><strong>@_stand.Projekt</strong></p>
+
+        @if (_stand.Zeilen.Count == 0)
+        {
+            <p class="epos-leerzustand">@T.Leer</p>
+        }
+        else
+        {
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-pbrs-liste">
+                    <thead>
+                        <tr>
+                            <th>@T.SpalteBrennstoff</th>
+                            <th>@T.SpalteEinheit</th>
+                            @foreach (string f in ProjektBrennstoffFelder.Alle)
+                            {
+                                <th class="epos-zahl">@Feldtext(f)</th>
+                            }
+                            <th>@T.SpalteStand</th>
+                            <th>@T.SpalteAktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ProjektBrennstoffZeile z in _stand.Zeilen)
+                        {
+                            <tr @key="z.IdBrennstoff" class="@(z.WeichtAb ? "epos-pbrs-abweichend" : null)">
+                                <td>@z.Bezeichner</td>
+                                <td>@z.Einheit</td>
+                                @foreach (string f in ProjektBrennstoffFelder.Alle)
+                                {
+                                    bool abw = z.Abweichungen.Contains(f);
+                                    <td class="epos-zahl @(abw ? "epos-pbrs-zelle--abweichend" : "")"
+                                        title="@(abw ? string.Format(CultureInfo.CurrentCulture, T.TipKatalogwert, Zahlen.Anzeigetext(z.Katalogwert(f))) : null)">
+                                        @Zahlen.Anzeigetext(z.Wert(f))
+                                    </td>
+                                }
+                                <td class="epos-pbrs-stand">@Standtext(z)</td>
+                                <td>
+                                    <div class="epos-zeilenknoepfe">
+                                        @if (Speichern is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-pbrs-bearbeiten" disabled="@_laeuft"
+                                                    @onclick="() => BeiBearbeiten(z)">@T.Bearbeiten</button>
+                                        }
+                                        @if (Zuruecksetzen is not null && z.KatalogVorhanden)
+                                        {
+                                            <button type="button" class="epos-knopf epos-pbrs-zuruecksetzen" disabled="@_laeuft"
+                                                    @onclick="() => BeiZuruecksetzen(z)">@T.Zuruecksetzen</button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (Uebernehmen is not null)
+        {
+            <div class="epos-kontextleiste epos-pbrs-uebernahme">
+                @if (_stand.Katalog.Count == 0)
+                {
+                    <span class="epos-status">@T.UebernehmenLeer</span>
+                }
+                else
+                {
+                    <label class="epos-feld">
+                        <span class="epos-feld-text">@T.UebernehmenWahl</span>
+                        <select class="epos-eingabe epos-pbrs-katalogwahl" disabled="@_laeuft" @onchange="BeiKatalogwahl">
+                            @foreach (ProjektBrennstoffKatalogsatz k in _stand.Katalog)
+                            {
+                                <option @key="k.IdBrennstoff" value="@k.IdBrennstoff" selected="@(k.IdBrennstoff == _katalogwahl)">@k.Bezeichner</option>
+                            }
+                        </select>
+                    </label>
+                    <button type="button" class="epos-knopf epos-pbrs-uebernehmen" disabled="@_laeuft"
+                            @onclick="BeiUebernehmen">@T.Uebernehmen</button>
+                }
+            </div>
+        }
+    }
+
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                @onclick="Schliessen">@T.Schliessen</button>
+    </div>
+
+    <Ueberlagerung Offen="@(_bearbeiten is not null)"
+                   Titel="@(_bearbeiten is null ? "" : string.Format(CultureInfo.CurrentCulture, T.BearbeitenTitel, _bearbeiten.Bezeichner))"
+                   Geschlossen="BearbeitenSchliessen">
+        <KindInhalt>
+            @if (_bearbeiten is not null)
+            {
+                <Formularraster>
+                    <KindInhalt>
+                        @foreach (string f in ProjektBrennstoffFelder.Alle)
+                        {
+                            string feld = f;
+                            <Zahlenfeld @key="feld" Bezeichnung="@Feldtext(feld)" Wert="@Arbeitswert(feld)" Min="0"
+                                        Feldname="@feld" Titel="@KatalogTitel(feld)"
+                                        WertChanged="@(w => _arbeit[feld] = w)" />
+                        }
+                    </KindInhalt>
+                </Formularraster>
+                <div class="epos-leiste">
+                    <span class="epos-leiste-fueller"></span>
+                    <button type="button" class="epos-knopf" @onclick="BearbeitenSchliessen">@T.Abbrechen</button>
+                    <button type="button" class="epos-knopf epos-knopf--primaer epos-pbrs-speichern" disabled="@_laeuft"
+                            @onclick="BeiSpeichern">@T.Speichern</button>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@(_zuruecksetzen is not null)" Frage="@_frage" TitelText="@T.Titel" VorgabeNein="true"
+                JaText="@T.Ja" NeinText="@T.Nein" Beantwortet="ZuruecksetzenBeantwortet" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle
+    // =====================================================================
+
+    /// <summary>Der Stand beim Öffnen (Projekt, Kopien, noch nicht übernommene Katalogsätze).</summary>
+    [Parameter] public ProjektBrennstoffeStand? Stand { get; set; }
+
+    /// <summary>Speichert die Werte EINES Brennstoffs (Brennstoffart, Feld → Wert).</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, double?>, Task<ProjektBrennstoffeAntwort>>? Speichern { get; set; }
+
+    /// <summary>Setzt die Kopie EINES Brennstoffs auf den heutigen Katalogstand zurück.</summary>
+    [Parameter] public Func<int, Task<ProjektBrennstoffeAntwort>>? Zuruecksetzen { get; set; }
+
+    /// <summary>Übernimmt EINEN Brennstoff des Katalogs in das Projekt.</summary>
+    [Parameter] public Func<int, Task<ProjektBrennstoffeAntwort>>? Uebernehmen { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende; <c>true</c> = es wurde etwas geschrieben.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Das Textbündel.</summary>
+    [Parameter] public ProjektBrennstoffeTexte? Texte { get; set; }
+
+    /// <summary>Der Hilfeschlüssel (Seite Kosten, Abschnitt Brennstoffe des Projekts).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_ProjektBrennstoffe.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ProjektBrennstoffeTexte T => Texte ?? _vorgabeTexte;
+    private readonly ProjektBrennstoffeTexte _vorgabeTexte = new();
+
+    private ProjektBrennstoffeStand _stand = ProjektBrennstoffeStand.Leer;
+    private bool _laeuft;
+    private bool _geschrieben;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private ProjektBrennstoffZeile? _bearbeiten;
+    private Dictionary<string, double?> _arbeit = new();
+    private ProjektBrennstoffZeile? _zuruecksetzen;
+    private string _frage = "";
+    private int _katalogwahl;
+
+    /// <summary>Der angezeigte Stand (Prüfhilfe für Tests).</summary>
+    public ProjektBrennstoffeStand AktuellerStand => _stand;
+
+    /// <summary>Hat der Dialog geschrieben (Prüfhilfe für Tests)?</summary>
+    public bool Geschrieben => _geschrieben;
+
+    protected override void OnInitialized()
+    {
+        _stand = Stand ?? ProjektBrennstoffeStand.Leer;
+        _katalogwahl = _stand.Katalog.Count > 0 ? _stand.Katalog[0].IdBrennstoff : 0;
+    }
+
+    private string Feldtext(string feld) => T.Felder.TryGetValue(feld, out string? t) ? t : feld;
+
+    private string Standtext(ProjektBrennstoffZeile z) =>
+        !z.KatalogVorhanden ? T.OhneKatalog : z.WeichtAb ? T.Abweichend : T.WieKatalog;
+
+    private double? Arbeitswert(string feld) => _arbeit.TryGetValue(feld, out double? w) ? w : null;
+
+    private string KatalogTitel(string feld)
+    {
+        if (_bearbeiten is null || !_bearbeiten.KatalogVorhanden) return "";
+        return string.Format(CultureInfo.CurrentCulture, T.TipKatalogwert,
+                             Zahlen.Anzeigetext(_bearbeiten.Katalogwert(feld)));
+    }
+
+    // =====================================================================
+    // Handlungen
+    // =====================================================================
+
+    private void BeiBearbeiten(ProjektBrennstoffZeile z)
+    {
+        if (Speichern is null || _laeuft) return;
+        _arbeit = ProjektBrennstoffFelder.Alle.ToDictionary(f => f, f => z.Wert(f));
+        _bearbeiten = z;
+    }
+
+    private void BearbeitenSchliessen()
+    {
+        _bearbeiten = null;
+        _arbeit = new();
+    }
+
+    private async Task BeiSpeichern()
+    {
+        ProjektBrennstoffZeile? z = _bearbeiten;
+        if (z is null || Speichern is null || _laeuft) return;
+        var werte = new Dictionary<string, double?>();
+        foreach (string f in ProjektBrennstoffFelder.Alle)
+        {
+            double? neu = Arbeitswert(f);
+            if (!Gleich(neu, z.Wert(f))) werte[f] = neu;
+        }
+        if (werte.Count == 0) { BearbeitenSchliessen(); return; }
+        bool ok = await Ausfuehren(() => Speichern(z.IdBrennstoff, werte));
+        if (ok) BearbeitenSchliessen();
+    }
+
+    private void BeiZuruecksetzen(ProjektBrennstoffZeile z)
+    {
+        if (Zuruecksetzen is null || _laeuft) return;
+        _zuruecksetzen = z;
+        _frage = string.Format(CultureInfo.CurrentCulture, T.FrageZuruecksetzen, z.Bezeichner);
+    }
+
+    private async Task ZuruecksetzenBeantwortet(bool? ja)
+    {
+        ProjektBrennstoffZeile? z = _zuruecksetzen;
+        _zuruecksetzen = null;
+        if (ja != true || z is null || Zuruecksetzen is null) return;
+        await Ausfuehren(() => Zuruecksetzen(z.IdBrennstoff));
+    }
+
+    private void BeiKatalogwahl(ChangeEventArgs e)
+    {
+        if (int.TryParse(Convert.ToString(e.Value, CultureInfo.InvariantCulture), NumberStyles.Integer,
+                         CultureInfo.InvariantCulture, out int id))
+            _katalogwahl = id;
+    }
+
+    private async Task BeiUebernehmen()
+    {
+        if (Uebernehmen is null || _laeuft || _katalogwahl <= 0) return;
+        int id = _katalogwahl;
+        await Ausfuehren(() => Uebernehmen(id));
+    }
+
+    private async Task<bool> Ausfuehren(Func<Task<ProjektBrennstoffeAntwort>> weg)
+    {
+        _laeuft = true;
+        _meldung = "";
+        try
+        {
+            ProjektBrennstoffeAntwort a = await weg();
+            _meldungStufe = a.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung;
+            _meldung = a.Meldung ?? "";
+            if (a.Ok) _geschrieben = true;
+            if (a.Stand is not null)
+            {
+                _stand = a.Stand;
+                if (!_stand.Katalog.Any(k => k.IdBrennstoff == _katalogwahl))
+                    _katalogwahl = _stand.Katalog.Count > 0 ? _stand.Katalog[0].IdBrennstoff : 0;
+            }
+            return a.Ok;
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private static bool Gleich(double? a, double? b) =>
+        a.HasValue == b.HasValue && (!a.HasValue || a.Value.Equals(b!.Value));
+
+    private async Task Schliessen()
+    {
+        if (_laeuft) return;
+        await Geschlossen.InvokeAsync(_geschrieben);
+    }
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+        if (_bearbeiten is not null || _zuruecksetzen is not null) return;   // Überlagerung und Frage halten Esc selbst
+        await Schliessen();
+    }
+}

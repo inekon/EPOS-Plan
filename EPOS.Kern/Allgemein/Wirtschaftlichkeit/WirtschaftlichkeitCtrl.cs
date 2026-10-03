@@ -54,11 +54,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die beiden Nachschlagewerke des Heizöl-Ausschlusses (Nachtrag 2 zu E2), je
-        /// Berechne-Lauf einmal gelesen — sie sind projektunabhängige Katalogtabellen:
-        /// <c>Tab_Brennstoff_Stamm.ID → ID_Kategorie</c> und
+        /// Berechne-Lauf einmal gelesen: <c>Brennstoffart → ID_Kategorie</c> je Projekt aus der
+        /// Projektkopie (<see cref="ProjektBrennstoffe.Sicht"/>) und
         /// <c>energy_carrier.id → ID_Brennstoff</c>. <c>null</c> = noch nicht gelesen.
         /// </summary>
-        private Dictionary<int, int> _brennstoffKategorie;
+        private Dictionary<int, Dictionary<int, int>> _brennstoffKategorie;
 
         /// <inheritdoc cref="_brennstoffKategorie"/>
         private Dictionary<int, int> _carrierBrennstoff;
@@ -813,9 +813,11 @@ namespace WindowsFormsApplication1
                 bool oel = false;
                 if (idBrennstoff > 0)
                 {
+                    // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                    string quelle = ProjektBrennstoffe.Sicht(idStamm, out DbParam[] sicht);
                     DataTable bs = DataRepository.GetDataTable(
-                        "SELECT ID_Kategorie, Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                        new DbParam("@b", idBrennstoff));
+                        "SELECT b.ID_Kategorie, b.Bezeichner FROM " + quelle + " AS b WHERE b.ID = ?",
+                        ProjektBrennstoffe.Mit(sicht, new DbParam("@b", idBrennstoff)));
                     if (bs == null || bs.Rows.Count == 0)
                     {
                         // FK zeigt ins Leere (Träger gelöscht) — kein stiller Gas-Default
@@ -4481,7 +4483,7 @@ namespace WindowsFormsApplication1
             // Der Träger der ERGEBNISZEILE hat Vorrang: Er ist der, mit dem der Lauf
             // gerechnet hat. Erst wenn er fehlt, gilt der Träger der Anlagenzeile.
             int carrier = modul != null && modul.CarrierId > 0 ? modul.CarrierId : idCarrierAnlage;
-            int brennstoff = carrier > 0 ? BrennstoffId(carrier, idBrennstoffAnlage)
+            int brennstoff = carrier > 0 ? BrennstoffId(idProjekt, carrier, idBrennstoffAnlage)
                                          : idBrennstoffAnlage;
 
             SteuerschluesselSetzen(idProjekt, a, carrier, brennstoff);
@@ -4503,7 +4505,7 @@ namespace WindowsFormsApplication1
             a.SchluesselSatz53a = EnergiesteuerSchluessel(brennstoff, true);
             a.SchluesselSatz54 = Energiesteuer54Schluessel(brennstoff);     // K6
             a.SchluesselCo2 = Co2Schluessel(brennstoff);
-            a.Fossil = FossilerBrennstoff(brennstoff);
+            a.Fossil = FossilerBrennstoff(idProjekt, brennstoff);
 
             TraegerEinheit t = Traeger(idProjekt, carrier);
             a.EffHi = t.EffHi;
@@ -4583,7 +4585,7 @@ namespace WindowsFormsApplication1
             }
 
             int carrier = modul != null && modul.CarrierId > 0 ? modul.CarrierId : idCarrierAnlage;
-            int brennstoff = carrier > 0 ? BrennstoffId(carrier, idBrennstoffAnlage)
+            int brennstoff = carrier > 0 ? BrennstoffId(idProjekt, carrier, idBrennstoffAnlage)
                                          : idBrennstoffAnlage;
             SteuerschluesselSetzen(idProjekt, a, carrier, brennstoff);
 
@@ -4902,11 +4904,11 @@ namespace WindowsFormsApplication1
         /// Sonstige), abzüglich Biogas — eine zweite Einstufung derselben Frage wäre eine
         /// doppelte Wahrheit.
         /// </summary>
-        private bool FossilerBrennstoff(int idBrennstoff)
+        private bool FossilerBrennstoff(int idProjekt, int idBrennstoff)
         {
             if (idBrennstoff <= 0) return false;
             if (idBrennstoff == 14) return false;               // Biogas
-            int k = BrennstoffKategorie(0, idBrennstoff);
+            int k = BrennstoffKategorie(idProjekt, 0, idBrennstoff);
             return k == 1 || k == 2 || k == 3 || k == 4 || k == 11;
         }
 
@@ -5747,8 +5749,8 @@ namespace WindowsFormsApplication1
                     anl.IdCarrier = Ganzzahl(r, "ID_Carrier");
                     anl.IdAnlage = Ganzzahl(r, "ID");
                     anl.IdProjekt = Ganzzahl(r, "ID_Projekt");
-                    anl.IdBrennstoff = BrennstoffId(anl.IdCarrier, Ganzzahl(r, "Brennstoff"));
-                    anl.Heizoel = BrennstoffKategorie(anl.IdCarrier, Ganzzahl(r, "Brennstoff"))
+                    anl.IdBrennstoff = BrennstoffId(anl.IdProjekt, anl.IdCarrier, Ganzzahl(r, "Brennstoff"));
+                    anl.Heizoel = BrennstoffKategorie(anl.IdProjekt, anl.IdCarrier, Ganzzahl(r, "Brennstoff"))
                                   == BRENNSTOFF_KATEGORIE_OEL;
 
                     if (mitE6)
@@ -5917,11 +5919,27 @@ namespace WindowsFormsApplication1
         /// Gerätezeile. 0 = nicht ermittelbar (dann gilt die Anlage als nicht ölbetrieben,
         /// wie im Altstand: <c>BhkwMitHeizoel</c> zählte nur Zeilen mit gültigem Verbund).
         /// </summary>
-        private int BrennstoffKategorie(int idCarrier, int idBrennstoff)
+        private int BrennstoffKategorie(int idProjekt, int idCarrier, int idBrennstoff)
         {
-            int bs = BrennstoffId(idCarrier, idBrennstoff);
+            int bs = BrennstoffId(idProjekt, idCarrier, idBrennstoff);
             int kategorie;
-            return bs > 0 && _brennstoffKategorie.TryGetValue(bs, out kategorie) ? kategorie : 0;
+            return bs > 0 && KategorienDesProjekts(idProjekt).TryGetValue(bs, out kategorie) ? kategorie : 0;
+        }
+
+        /// <summary>
+        /// Brennstoffart → Kategorie in der Sicht des Projekts (Projektkopie, für eine dem Projekt
+        /// unbekannte Art der Katalog; <see cref="ProjektBrennstoffe.Sicht"/>), je Lauf einmal je Projekt.
+        /// </summary>
+        private Dictionary<int, int> KategorienDesProjekts(int idProjekt)
+        {
+            if (_brennstoffKategorie == null) _brennstoffKategorie = new Dictionary<int, Dictionary<int, int>>();
+            if (!_brennstoffKategorie.TryGetValue(idProjekt, out Dictionary<int, int> k))
+            {
+                string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
+                k = LiesZuordnung("SELECT bs.ID, bs.ID_Kategorie FROM " + quelle + " AS bs", sicht);
+                _brennstoffKategorie[idProjekt] = k;
+            }
+            return k;
         }
 
         /// <summary>
@@ -5936,21 +5954,19 @@ namespace WindowsFormsApplication1
         /// Gerätezeile. Damit liefert <see cref="BrennstoffKategorie"/> Zeile für Zeile
         /// dasselbe wie vorher, und E4 kann zusätzlich den Brennstoff selbst verwenden.</para>
         /// </summary>
-        private int BrennstoffId(int idCarrier, int idBrennstoff)
+        private int BrennstoffId(int idProjekt, int idCarrier, int idBrennstoff)
         {
-            if (_brennstoffKategorie == null)
-            {
-                _brennstoffKategorie = LiesZuordnung("SELECT ID, ID_Kategorie FROM Tab_Brennstoff_Stamm");
+            Dictionary<int, int> kategorien = KategorienDesProjekts(idProjekt);
+            if (_carrierBrennstoff == null)
                 _carrierBrennstoff = LiesZuordnung("SELECT id, ID_Brennstoff FROM energy_carrier");
-            }
 
             int kategorie;
             int brennstoffAusTraeger;
             if (idCarrier > 0 && _carrierBrennstoff.TryGetValue(idCarrier, out brennstoffAusTraeger)
-                              && _brennstoffKategorie.TryGetValue(brennstoffAusTraeger, out kategorie))
+                              && kategorien.TryGetValue(brennstoffAusTraeger, out kategorie))
                 return brennstoffAusTraeger;
 
-            if (idBrennstoff > 0 && _brennstoffKategorie.ContainsKey(idBrennstoff))
+            if (idBrennstoff > 0 && kategorien.ContainsKey(idBrennstoff))
                 return idBrennstoff;
 
             return 0;
@@ -5961,12 +5977,12 @@ namespace WindowsFormsApplication1
         /// die Tabelle fehlt (alte Datenbank ohne <c>energy_carrier</c>) oder die Abfrage
         /// scheitert. Zeilen mit NULL in einer der beiden Spalten werden übergangen.
         /// </summary>
-        private static Dictionary<int, int> LiesZuordnung(string sql)
+        private static Dictionary<int, int> LiesZuordnung(string sql, params DbParam[] parameter)
         {
             var zuordnung = new Dictionary<int, int>();
             try
             {
-                DataTable dt = DataRepository.GetDataTable(sql);
+                DataTable dt = DataRepository.GetDataTable(sql, parameter);
                 if (dt == null) return zuordnung;
                 foreach (DataRow r in dt.Rows)
                 {
@@ -6061,11 +6077,13 @@ namespace WindowsFormsApplication1
             try
             {
                 // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
                 object o = StilleDb.ScalarStreng(
                     "SELECT COUNT(*) FROM Tab_BHKW AS b " +
-                    "INNER JOIN Tab_Brennstoff_Stamm AS bs ON b.Brennstoff = bs.ID " +
+                    "INNER JOIN " + quelle + " AS bs ON b.Brennstoff = bs.ID " +
                     "WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = " + BRENNSTOFF_KATEGORIE_OEL,
-                    new DbParam("@p", idProjekt));
+                    ProjektBrennstoffe.Mit(sicht, new DbParam("@p", idProjekt)));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o) > 0;
             }
             catch (Exception ex)

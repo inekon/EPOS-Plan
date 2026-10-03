@@ -266,12 +266,19 @@ namespace WindowsFormsApplication1
             EnergietraegerDaten daten = Ergaenzen(brennstoffId);
 
             // Default-Werte (reine Lesezugriffe) VOR der Transaktion ermitteln.
-            double default_arbeitspreis = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", brennstoffId));
-            double default_grundpreis = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", brennstoffId));
-            double default_leistungspreis = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", brennstoffId));
-            double default_co2 = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", brennstoffId));
-            double default_so2 = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", brennstoffId));
-            double default_nox = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", brennstoffId));
+            // In einem Projekt die Vorgaben der Projektkopie (ProjektBrennstoffe.Sicht), sonst des Katalogs.
+            string quelle = ProjektBrennstoffe.Sicht(projektId, out DbParam[] sicht);
+            DataTable dtBs = DataRepository.GetDataTable(
+                "SELECT bs.Standard_Arbeitspreis, bs.Standard_Grundpreis, bs.Standard_Leistungspreis, bs.CO2, bs.SO2, bs.NOx " +
+                "FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                ProjektBrennstoffe.Mit(sicht, new DbParam("@bs", brennstoffId)));
+            DataRow rBs = dtBs != null && dtBs.Rows.Count > 0 ? dtBs.Rows[0] : null;
+            double default_arbeitspreis = ZuDouble(rBs?["Standard_Arbeitspreis"]);
+            double default_grundpreis = ZuDouble(rBs?["Standard_Grundpreis"]);
+            double default_leistungspreis = ZuDouble(rBs?["Standard_Leistungspreis"]);
+            double default_co2 = ZuDouble(rBs?["CO2"]);
+            double default_so2 = ZuDouble(rBs?["SO2"]);
+            double default_nox = ZuDouble(rBs?["NOx"]);
 
             int carrierId;
 
