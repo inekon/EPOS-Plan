@@ -5061,38 +5061,6 @@ namespace WindowsFormsApplication1
         /// einen versionierten Zapfkatalog. Wiederholbar, ergebnisneutral.
         /// </summary>
         public const int SCHRITT_PROZESS_NUTZUNG = ProzessNutzungSchema.SCHRITT;
-        // ---- Stufe KP3, Welle R5: Aufschlag und manuelle Aufheizzeit (E59, E60; KP-S4) ----
-
-        /// <summary>
-        /// Schritt <see cref="AufheizManuellSchema.SCHRITT"/> — <b>Aufschlag und manuelle Aufheizzeit der
-        /// Aufheizoptimierung</b> (Entscheid E59 samt Folgeentscheiden, E60; Entwurf KP3 Abschnitt 4). Er
-        /// folgt auf <see cref="SCHRITT_KATALOGFASSUNG_STUFE2"/> und läuft als LETZTER Sichtdurchgang: Er baut die
-        /// Sicht <c>Abfrage_Projektgebaeude</c> zum achten Mal (103 Spalten).
-        ///
-        /// <para><b>DDL:</b> an <c>Tab_Einstellungen</c> <c>Aufheiz_Aufschlag_H</c> und
-        /// <c>Aufheiz_Aufschlag_Prozent</c>, an <c>Tab_Gebaeude</c> <c>Aufheizzeit_Manuell_H</c>, an
-        /// <c>Tab_ErgebnisGebaeude</c> <c>Aufheiz_Art</c>, <c>Auslegungsheizlast_Kw</c> und
-        /// <c>Aufheizzuschlag_Kw</c>, an <c>Tab_ErgebnisZone</c> <c>Aufheiz_Art</c>; der Zustand
-        /// <c>GEKOPPELT</c> der Zone per kleinem Neubau dieser einen Tabelle. Die Anweisungen stehen bei
-        /// <see cref="AufheizManuellSchema"/>, die Nummer allein dort.</para>
-        ///
-        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Felder entstehen leer; KEIN DML an
-        /// Bestandsdaten.</para>
-        /// </summary>
-        public const int SCHRITT_AUFHEIZ_MANUELL = AufheizManuellSchema.SCHRITT;
-
-        /// <summary>
-        /// Schritt <see cref="ProjektkopienKatalogeSchema.SCHRITT"/> — <b>die Projektkopien der Brennstoffe
-        /// und der Vorgaben der Pufferauslegung</b> (Anwenderentscheid 03.10.2026). Er folgt auf
-        /// <see cref="SCHRITT_AUFHEIZ_MANUELL"/> und vermerkt an jeder Kopie die Katalogfassung.
-        ///
-        /// <para><b>DDL und Saat:</b> <c>Tab_Brennstoff</c> und <c>Tab_PufferAuslegungParameter</c> (STRICT,
-        /// je Projekt), dann die wertgleichen Kopien aller Projekte. Die Konditionierungsvorlagen brauchen
-        /// keine Tabelle: „Vorlage übernehmen" kopiert ihren Inhalt in das Projektgebäude.</para>
-        ///
-        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Kopien tragen die Werte des Stamms.</para>
-        /// </summary>
-        public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
 
         /// <summary>
         /// Schritt <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/> — <b>das Sperrprofil der Wärmepumpe</b>
