@@ -335,6 +335,7 @@ namespace WindowsFormsApplication1
                 string werZone = wer + ", " + m.Eingaenge[z].Bezeichnung;
                 HinweisNutzungsmaske(m.Eingaenge[z].Eingang, werZone);
                 HinweisUntertemperatur(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
+                HinweisAbschnitte(m.Zonen[z], werZone);
                 HinweisKuehlNachtwert(m.Eingaenge[z].Eingang, werZone);
                 HinweisNachtauskuehlung(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
             }
@@ -448,6 +449,20 @@ namespace WindowsFormsApplication1
                 string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_NACHTKUEHL_STUNDEN,
                               e.Nachtauskuehlung.ToString(),
                               r.StundenMitNachtauskuehlung.Value.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// <b>Der Laufhinweis der Obergrenze der Innenprüfung</b> (Rechenweg RP2a, <c>SIMENG_ZONE_ABSCHNITTE</c>):
+        /// einmal je Gebäude bzw. Zone, wenn Stunden eine innere Umkehr erkannt, aber wegen
+        /// <see cref="Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE"/> nicht mehr an ihr geschnitten haben. Sonst still.
+        /// </summary>
+        internal static void HinweisAbschnitte(GebaeudeModellErgebnis r, string wer)
+        {
+            if (r == null || r.StundenInnenpruefungGedeckelt == 0) return;
+            SimulationProtokoll.Aktuell.HinweisEinmal("zone-abschnitte-" + wer,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_ZONE_ABSCHNITTE, wer,
+                              r.StundenInnenpruefungGedeckelt.ToString(CultureInfo.InvariantCulture),
+                              Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE.ToString(CultureInfo.InvariantCulture)));
         }
 
         /// <summary>
@@ -582,6 +597,7 @@ namespace WindowsFormsApplication1
 
             var modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
             Innenumkehrzaehler messung = modell.Innenumkehrmessung ? new Innenumkehrzaehler() : null;   // Messung RP2a
+            int gedeckelt = 0;                                                                              // RP2a, Obergrenze
 
             // Sommerlüftung (G2, Rechenschritte 7.2): einmal je Stunde am Stundenbeginn aus
             // Raumluft und Außenluft der Vorstunde; ohne Schalter bleibt sie aus. Mit wirksamer
@@ -659,6 +675,7 @@ namespace WindowsFormsApplication1
                 kappung[h] = s.HeizleistungMaxAnteil;
                 kappungH += s.HeizleistungMaxAnteil;
                 messung?.Aufnehmen(in s);
+                if (s.InnenpruefungGedeckelt) gedeckelt++;
 
                 if (!Endlich(heiz[h]) || heiz[h] < 0.0 || !Endlich(kuehl[h]) || kuehl[h] < 0.0
                     || !Endlich(luft[h]) || !Endlich(op[h]))
@@ -754,6 +771,7 @@ namespace WindowsFormsApplication1
                 SommerlueftungGesetzt = eingang.Sommerlueftung,
                 HeizkalenderWirksam = eingang.HeizkalenderWirksam,
                 Innenumkehr = messung?.Ergebnis(),
+                StundenInnenpruefungGedeckelt = gedeckelt,
             };
         }
 
@@ -904,6 +922,7 @@ namespace WindowsFormsApplication1
             HinweisNachtauskuehlung(e, r, wer);
             HinweisNutzungsmaske(e, wer);
             HinweisUntertemperatur(e, r, wer);
+            HinweisAbschnitte(r, wer);
             HinweisAufheizung(r.Aufheizung, wer);
             if (e.Bauteilweg)
             {

@@ -342,5 +342,11 @@
 
         /// <summary>Zahl der Totband-Abschnitte dieser Stunde mit innerer Bandverletzung (Messung RP2a).</summary>
         internal int MessungBandAbschnitte { get; init; }
+
+        /// <summary>
+        /// Hat die Stunde eine innere Umkehr erkannt, an der sie wegen der Obergrenze
+        /// (<see cref="Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE"/>) nicht mehr geschnitten hat (Rechenweg RP2a)?
+        /// </summary>
+        internal bool InnenpruefungGedeckelt { get; init; }
     }
 }

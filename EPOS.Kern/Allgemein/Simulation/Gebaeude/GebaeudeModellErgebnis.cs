@@ -380,6 +380,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Innenumkehrmessung Innenumkehr { get; init; }
 
+        /// <summary>
+        /// Die Stunden, die eine innere Umkehr erkannt, aber wegen der Obergrenze der Innenprüfung
+        /// (<see cref="Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE"/>) nicht mehr an ihr geschnitten haben (Rechenweg
+        /// RP2a); am Mehrzonengebäude Zonenstunden. Grundlage des Laufhinweises <c>SIMENG_ZONE_ABSCHNITTE</c>.
+        /// </summary>
+        internal int StundenInnenpruefungGedeckelt { get; init; }
+
         internal GebaeudeModellErgebnis Skaliert(double faktor)
         {
             var heiz = new double[8760];
@@ -400,6 +407,7 @@ namespace WindowsFormsApplication1
                 SommerlueftungGesetzt = SommerlueftungGesetzt,
                 HeizkalenderWirksam = HeizkalenderWirksam,
                 Innenumkehr = Innenumkehr?.Skaliert(faktor),
+                StundenInnenpruefungGedeckelt = StundenInnenpruefungGedeckelt,
             };
         }
     }

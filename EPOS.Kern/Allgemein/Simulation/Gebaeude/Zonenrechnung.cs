@@ -286,6 +286,7 @@ namespace WindowsFormsApplication1
                 SommerlueftungGesetzt = zonen.Any(z => z.Eingang.Sommerlueftung),
                 HeizkalenderWirksam = zonen.Any(z => z.IstBeheizt && z.Eingang.HeizkalenderWirksam),
                 Innenumkehr = Innenumkehrmessung.Summe(ergebnisse.Select(e => e.Innenumkehr)),
+                StundenInnenpruefungGedeckelt = ergebnisse.Sum(e => e.StundenInnenpruefungGedeckelt),
             };
         }
 

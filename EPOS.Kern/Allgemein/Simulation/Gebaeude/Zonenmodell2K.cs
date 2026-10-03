@@ -147,6 +147,15 @@ namespace WindowsFormsApplication1
         /// <summary>Halbierungen der Bisektion eines Umschaltzeitpunkts.</summary>
         internal const int HALBIERUNGEN = 60;
 
+        /// <summary>
+        /// <b>Obergrenze der allgemeinen Innenprüfung</b> (Rechenweg RP2a, Entscheid E62): Nur die ersten
+        /// Abschnitte einer Stunde suchen eine innere Umkehr und schneiden an ihr; ab diesem Abschnitt bleibt die
+        /// Stunde, wie die Endpunktprüfung sie lässt (und das Netz des Rechenbefunds RB-Z4 bei verletztem Mittel),
+        /// und zählt als gedeckelt (<see cref="Stundenergebnis.InnenpruefungGedeckelt"/>, Laufhinweis
+        /// <c>SIMENG_ZONE_ABSCHNITTE</c>). Das hält ein Pendeln an einer Grenze endlich.
+        /// </summary>
+        internal const int INNENPRUEFUNG_ABSCHNITTE = 8;
+
         private readonly ErsatzparameterRC _p;
         private readonly string _bezeichnung;
         private readonly int _deckel;
@@ -220,6 +229,12 @@ namespace WindowsFormsApplication1
         /// <see cref="SCHALTER_INNENUMKEHR"/>; die Proben setzen ihn je Modell.
         /// </summary>
         internal bool Innenumkehrmessung { get; set; }
+
+        /// <summary>
+        /// Die Obergrenze der Innenprüfung je Stunde — <b>nur für die Probe</b>: 0 schaltet die allgemeine
+        /// Innenprüfung ab (der Rechenweg vor RP2a), <see cref="INNENPRUEFUNG_ABSCHNITTE"/> ist der Lauf.
+        /// </summary>
+        internal int InnenpruefungObergrenzeFuerProbe { get; set; } = INNENPRUEFUNG_ABSCHNITTE;
 
         // Der Zustand: die beiden Massentemperaturen [°C].
         private double _thetaMAw;
@@ -349,6 +364,7 @@ namespace WindowsFormsApplication1
             // Messung RP2a (nur mit Innenumkehrmessung): innere Lastumkehr [J] und Bandverletzung [K·s].
             double mUmkehrJ = 0.0, mBandKs = 0.0;
             int mUmkehrAb = 0, mBandAb = 0;
+            bool gedeckelt = false;
 
             while (t < STUNDE_S)
             {
@@ -381,6 +397,26 @@ namespace WindowsFormsApplication1
                     if (tau < rest) u = ab.System.Rechner.Bei(tau);
                 }
                 if (abschnitte <= dauer.Length) dauer[abschnitte - 1] = tau;
+
+                // Die allgemeine Innenprüfung (Rechenweg RP2a, Entscheid E62): Jeder geregelte Abschnitt, dessen
+                // Leistung im Innern das Vorzeichen wechselt, und jeder Totband-Abschnitt, dessen Raumluft das Band
+                // im Innern verlässt, endet am ersten Austritt — auch bei zulässigem Mittel und Endpunkt. Gesucht
+                // wird nur, wenn die Ableitung an Anfang und Ende verschiedene Vorzeichen trägt und das Extremum
+                // die Grenze verletzt (InnenUmkehr); jeder andere Abschnitt bleibt Zeichen für Zeichen.
+                if (InnenUmkehr(fall, in ab, x, u.Ende(x, ab.B), tau, in r, out double tExtremum, out double grenze, out double richtung))
+                {
+                    if (abschnitte < InnenpruefungObergrenzeFuerProbe)
+                    {
+                        double tauInnen = Austritt(in ab, x, 0.0, tExtremum, grenze, richtung, vorwaerts: true);
+                        if (tauInnen < tau)
+                        {
+                            tau = tauInnen;
+                            u = ab.System.Rechner.Bei(tau);
+                            if (abschnitte <= dauer.Length) dauer[abschnitte - 1] = tau;
+                        }
+                    }
+                    else gedeckelt = true;
+                }
 
                 Vektor2 xMittel = u.Mittel(x, ab.B);
                 // Die Verletzung im Innern des Abschnitts (Rechenbefund RB-Z4): Die Bisektion prüft den
@@ -487,6 +523,7 @@ namespace WindowsFormsApplication1
                     MessungUmkehrAbschnitte = mUmkehrAb,
                     MessungBandKs = mBandKs,
                     MessungBandAbschnitte = mBandAb,
+                    InnenpruefungGedeckelt = gedeckelt,
                 };
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
@@ -541,6 +578,7 @@ namespace WindowsFormsApplication1
                 MessungUmkehrAbschnitte = mUmkehrAb,
                 MessungBandKs = mBandKs,
                 MessungBandAbschnitte = mBandAb,
+                InnenpruefungGedeckelt = gedeckelt,
             };
         }
 
@@ -647,6 +685,13 @@ namespace WindowsFormsApplication1
                 if (tau < rest) u = ab.System.Rechner.Bei(tau);
 
                 Vektor2 xMittel = u.Mittel(x, ab.B);
+                // Die allgemeine Innenprüfung (RP2a, E62) im festen Muster: Kehrt ein Abschnitt im Innern um, ist
+                // das Muster nicht haltbar — die Zonenschleife rechnet die Stunde dann frei (Schritt).
+                if (InnenpruefungObergrenzeFuerProbe > 0
+                    && InnenUmkehr(fall, in ab, x, u.Ende(x, ab.B), tau, in r, out double tExtremum, out _, out _))
+                    throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt,
+                        _bezeichnung + ": Der Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture) + " im Betriebsfall " + fall +
+                        " kehrt nach " + tExtremum.ToString("F1", CultureInfo.InvariantCulture) + " s im Innern um; das Muster ist nicht haltbar.");
                 if (Innenumkehrmessung)
                     Messen(fall, in ab, x, u.Ende(x, ab.B), tau, in r, ref mUmkehrJ, ref mUmkehrAb, ref mBandKs, ref mBandAb);
                 double s1 = ab.Ausgang(0, xMittel);

@@ -48,6 +48,7 @@ namespace WindowsFormsApplication1
         private readonly double[] _kappung = new double[8760];
         private double _kappungH;
         private readonly Innenumkehrzaehler _messung;      // Messung RP2a, nur mit Schalter
+        private int _gedeckelt;                             // RP2a: Stunden über der Obergrenze der Innenprüfung
 
         internal Zonenlauf(ZonenEingang zone)
         {
@@ -140,6 +141,7 @@ namespace WindowsFormsApplication1
             _kappung[h] = s.HeizleistungMaxAnteil;
             _kappungH += s.HeizleistungMaxAnteil;
             _messung?.Aufnehmen(in s);
+            if (s.InnenpruefungGedeckelt) _gedeckelt++;
 
             if (!Endlich(_heiz[h]) || _heiz[h] < 0.0 || !Endlich(_kuehl[h]) || _kuehl[h] < 0.0
                 || !Endlich(_luft[h]) || !Endlich(_op[h]))
@@ -237,6 +239,7 @@ namespace WindowsFormsApplication1
                 SommerlueftungGesetzt = eingang.Sommerlueftung,
                 HeizkalenderWirksam = eingang.HeizkalenderWirksam,
                 Innenumkehr = _messung?.Ergebnis(),
+                StundenInnenpruefungGedeckelt = _gedeckelt,
             };
         }
 
