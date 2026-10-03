@@ -38608,11 +38608,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbauten ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BAUTEILAUFBAU {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BAUTEILAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string KABG_KATALOG_BHKW {
             get {
                 return ResourceManager.GetString("KABG_KATALOG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffe ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_BRENNSTOFF", resourceCulture);
             }
         }
         
@@ -38635,11 +38662,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
         /// </summary>
         public static string KABG_KATALOG_KESSEL {
             get {
                 return ResourceManager.GetString("KABG_KATALOG_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierungsvorlagen ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KONDITIONIERUNGSVORLAGE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KONDITIONIERUNGSVORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_PUFFER {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben der Pufferauslegung ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_PUFFERVORGABE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_PUFFERVORGABE", resourceCulture);
             }
         }
         
@@ -38667,6 +38730,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KABG_KATALOG_PWT {
             get {
                 return ResourceManager.GetString("KABG_KATALOG_PWT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarganglinien ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_SOLARGANGLINIE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_SOLARGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarkollektoren ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_SOLARKOLLEKTOR {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_SOLARKOLLEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinien ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_STROMGANGLINIE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_STROMGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucherprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_STROMVERBRAUCHER {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_STROMVERBRAUCHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher-Wochenprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_STROMVERBRAUCHERTYP {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_STROMVERBRAUCHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesverteilungen ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_TAGESVERTEILUNG {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_TAGESVERTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsganglinien ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_WECHSELRICHTER", resourceCulture);
             }
         }
         

@@ -42325,6 +42325,54 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KABG_KATALOG_PWT" xml:space="preserve">
     <value>Prozesswärme-Wochenprofile</value>
   </data>
+  <data name="KABG_KATALOG_BAUSTOFF" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="KABG_KATALOG_BAUTEILAUFBAU" xml:space="preserve">
+    <value>Bauteilaufbauten</value>
+  </data>
+  <data name="KABG_KATALOG_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffe</value>
+  </data>
+  <data name="KABG_KATALOG_TAGESVERTEILUNG" xml:space="preserve">
+    <value>Tagesverteilungen</value>
+  </data>
+  <data name="KABG_KATALOG_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="KABG_KATALOG_KONDITIONIERUNGSVORLAGE" xml:space="preserve">
+    <value>Konditionierungsvorlagen</value>
+  </data>
+  <data name="KABG_KATALOG_PUFFER" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="KABG_KATALOG_PUFFERVORGABE" xml:space="preserve">
+    <value>Vorgaben der Pufferauslegung</value>
+  </data>
+  <data name="KABG_KATALOG_SOLARKOLLEKTOR" xml:space="preserve">
+    <value>Solarkollektoren</value>
+  </data>
+  <data name="KABG_KATALOG_SOLARGANGLINIE" xml:space="preserve">
+    <value>Solarganglinien</value>
+  </data>
+  <data name="KABG_KATALOG_STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="KABG_KATALOG_STROMVERBRAUCHERTYP" xml:space="preserve">
+    <value>Stromverbraucher-Wochenprofile</value>
+  </data>
+  <data name="KABG_KATALOG_STROMVERBRAUCHER" xml:space="preserve">
+    <value>Stromverbraucherprofile</value>
+  </data>
+  <data name="KABG_KATALOG_STROMGANGLINIE" xml:space="preserve">
+    <value>Stromganglinien</value>
+  </data>
+  <data name="KABG_KATALOG_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarfsganglinien</value>
+  </data>
+  <data name="KABG_KATALOG_WECHSELRICHTER" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
   <data name="SIMQ_ERDREICH_STAND_LAUF" xml:space="preserve">
     <value>Stand des Laufs vom {0}.</value>
   </data>
