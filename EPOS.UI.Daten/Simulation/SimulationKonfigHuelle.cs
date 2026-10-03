@@ -1947,6 +1947,7 @@ namespace WindowsFormsApplication1
             Aufheizvorgabe aufheizvorgabe = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
             Netzverlustvorgabe netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt);
             Einspeisegrenze einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt);
+            Desinfektionsvorgabe desinfektion = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt);
 
             ctrl.model = _konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return false;
@@ -1982,6 +1983,10 @@ namespace WindowsFormsApplication1
             // Grenze) - nachgereicht wird der Stand VOR dem Delete.
             if (einspeisegrenze.Gesetzt)
                 KonfigurationCtrl.EinspeisegrenzeSchreiben(m_ID_Projekt, einspeisegrenze);
+            // DIE THERMISCHE DESINFEKTION REIST MIT (Welle M7, BW5): Die neue Zeile traegt fuenf NULL
+            // (= aus) - nachgereicht wird der Stand VOR dem Delete.
+            if (!desinfektion.Equals(Desinfektionsvorgabe.Aus))
+                KonfigurationCtrl.DesinfektionSchreiben(m_ID_Projekt, desinfektion);
 
             // DIE MERKSPALTE REIST MIT (Schemaschritt 82). Delete + Insert legt eine
             // NEUE Zeile an, und eine neue Zeile traegt die Vorbelegung 0 - ohne diese

@@ -2306,6 +2306,25 @@ namespace WindowsFormsApplication1
         /// hinter dem Abbruch auf einen gedeckten Rest — an der Reihenfolge der
         /// Modulbeiträge ändert das nichts.</para>
         /// </summary>
+        /// <summary>
+        /// BW5 (Konzept Simulationsablauf 21): Erreicht ein Modul mit seiner projektierten Kennlinie die
+        /// Zieltemperatur <paramref name="zielC"/>? Gefragt nach dem Modulaufbau.
+        /// </summary>
+        public bool ErreichtVorlauf(double zielC)
+        {
+            foreach (_Kenndaten k in wp_kenndaten)
+                if (k != null && Rechenrand.SchwelleErreicht(k.Vorlauf, zielC)) return true;
+            return false;
+        }
+
+        /// <summary>BW5: Führt ein Modul einen Heizstab mit Leistung?</summary>
+        public bool HeizstabVorhanden()
+        {
+            for (int i = 0; i < wp_model.Count && i < MAX_WP; i++)
+                if (WP_MitHeizstab[i] && WP_Heizung[i] > 0) return true;
+            return false;
+        }
+
         public void Heizstabphase(int stunde, double[] rest)
         {
             for (int index = 0; index < wp_model.Count; index++)

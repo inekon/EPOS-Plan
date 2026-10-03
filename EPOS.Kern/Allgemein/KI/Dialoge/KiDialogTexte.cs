@@ -878,6 +878,26 @@
         internal static string PspvEntladeleistungErl => MyResource.Resource.KI_DLG_PSPV_ENTLADELEISTUNG_ERL;
         internal static string PspvEntladeprioName => MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET;
         internal static string PspvEntladeprioErl => MyResource.Resource.KI_DLG_PSPV_ENTLADEPRIO_ERL;
+        internal static string SimDesinfektionName => MyResource.Resource.SIMKONF_LBL_DESINFEKTION;
+        internal static string SimDesinfektionErl => MyResource.Resource.KI_SIM_DESINFEKTION_ERL;
+        internal static string SimDesinfIntervallName => MyResource.Resource.SIMKONF_LBL_DESINF_INTERVALL;
+        internal static string SimDesinfIntervallErl => MyResource.Resource.KI_SIM_DESINF_INTERVALL_ERL;
+        internal static string SimDesinfStundeName => MyResource.Resource.SIMKONF_LBL_DESINF_STUNDE;
+        internal static string SimDesinfStundeErl => MyResource.Resource.KI_SIM_DESINF_STUNDE_ERL;
+        internal static string SimDesinfZielName => MyResource.Resource.SIMKONF_LBL_DESINF_ZIEL;
+        internal static string SimDesinfZielErl => MyResource.Resource.KI_SIM_DESINF_ZIEL_ERL;
+        internal static string SimDesinfVolumenName => MyResource.Resource.SIMKONF_LBL_DESINF_VOLUMEN;
+        internal static string SimDesinfVolumenErl => MyResource.Resource.KI_SIM_DESINF_VOLUMEN_ERL;
+        internal static string PspvBereitschaftTemperaturName => MyResource.Resource.PSP_BEREITSCHAFT_TEMPERATUR;
+        internal static string PspvBereitschaftTemperaturErl => MyResource.Resource.KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL;
+        internal static string PspvAufstellraumName => MyResource.Resource.PSP_LABEL_AUFSTELLRAUM;
+        internal static string PspvAufstellraumErl => MyResource.Resource.KI_DLG_PSPV_AUFSTELLRAUM_ERL;
+        internal static string PspvAnteileName => MyResource.Resource.PSP_LABEL_SCHICHT_ANTEILE;
+        internal static string PspvAnteileErl => MyResource.Resource.KI_DLG_PSPV_ANTEILE_ERL;
+        internal static string PspvFwmName => MyResource.Resource.PSP_LABEL_FRISCHWASSERMODUL;
+        internal static string PspvFwmErl => MyResource.Resource.KI_DLG_PSPV_FWM_ERL;
+        internal static string PspvFwmGraedigkeitName => MyResource.Resource.PSP_LABEL_FWM_GRAEDIGKEIT;
+        internal static string PspvFwmGraedigkeitErl => MyResource.Resource.KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL;
 
         // Die NUTZUNG ist auf der Maske EINE Mehrfachwahl; im Katalog sind es drei
         // Wahrheitswerte, denn ein Katalogfeld traegt EINEN Wert. Ihre Anzeigenamen

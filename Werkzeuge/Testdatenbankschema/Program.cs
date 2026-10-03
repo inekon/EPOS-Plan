@@ -2518,6 +2518,28 @@ namespace Testdatenbankschema
                                   StromViertelstundenSchema.Vollstaendig() + " (erwartet True).");
             }
 
+
+            // ---- Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
+            //      Pufferspeichers an Tab_Pufferspeicher (Bereitschaft_Weg, Aufstellraum_Temperatur_C,
+            //      Schicht_Anteile, Frischwassermodul, FWM_Graedigkeit_K) und die thermische
+            //      Desinfektion an Tab_Einstellungen (Desinfektion_*), alle nullbar. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferOptionen bedient.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder rechnen wie zuvor.
+            string nrPufferOptionen = PufferOptionenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPufferOptionen + " - Pufferoptionen und Desinfektion: " +
+                              (PufferOptionenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPufferOptionen = new List<string>();
+                angelegt += PufferOptionenSchema.Ausfuehren(berichtPufferOptionen);
+                foreach (string zeile in berichtPufferOptionen)
+                    Console.WriteLine("Schritt " + nrPufferOptionen + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPufferOptionen + " - vollstaendig: " +
+                                  PufferOptionenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

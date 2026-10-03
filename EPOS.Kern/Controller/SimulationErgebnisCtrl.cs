@@ -319,10 +319,13 @@ namespace WindowsFormsApplication1
                                           bool MitTakt = false, int Starts = 0, double TaktstromMwh = 0);
 
         /// <summary>Eine Zeile der Pufferspeichertabelle (Konzept 6.6).</summary>
+        /// <param name="BereitschaftTemperatur">Welle M7, PS1 (c): Bereitschaftsverlust nach Temperatur je Zone.</param>
+        /// <param name="Nachheizstunden">Welle M7, PS5 (a): Stunden, in denen das Frischwassermodul die Entnahme begrenzte; −1 = kein Modul.</param>
         public sealed record PufferZeile(string Bezeichner, string Rolle, double KapazitaetKwh,
                                          double LadungKwh, double EntladungKwh, double VerlusteKwh,
                                          double Vollzyklen, double FuellstandEndeProzent,
-                                         bool IstKombi);
+                                         bool IstKombi, bool BereitschaftTemperatur = false,
+                                         int Nachheizstunden = -1);
 
         public sealed class WaermepumpeErgebnis
         {
@@ -461,7 +464,10 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new PufferZeile(
                     sp.BezeichnerAnzeige(), sp.RolleAnzeige(), sp.Q_max,
                     sp.Ladung_gesamt, sp.Entladung_gesamt, sp.Verluste_gesamt,
-                    sp.Vollzyklen, sp.SOC, sp.IstKombi));
+                    sp.Vollzyklen, sp.SOC, sp.IstKombi,
+                    sp.BereitschaftTemperatur && !sp.IstQuelle,
+                    sp.Frischwassermodul && sim.FrischwasserBegrenzteStunden.TryGetValue(sp.ID_Pufferspeicher, out int n) ? n
+                        : sp.Frischwassermodul ? 0 : -1));
 
             return zeilen;
         }

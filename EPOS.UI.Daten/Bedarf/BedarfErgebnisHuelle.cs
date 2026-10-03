@@ -270,6 +270,17 @@ namespace WindowsFormsApplication1
                                      simulation.Brauchwasser_Zirkulation_Mwh, Energieeinheit.MWh));
                 daten.Kennzahlen = liste;
             }
+            if (mitBrauchwasser && simulation.Brauchwasser_Desinfektion_Mwh > 0)
+            {
+                // Die thermische Desinfektion (BW5, Konzept Simulationsablauf 21) als eigener Posten VOR der
+                // Summe: Sie steht im Brauchwasserkanal, nicht im Profilanteil darüber.
+                var liste = new List<ErgebnisKennzahl>(daten.Kennzahlen);
+                int summe = liste.FindIndex(k => k.Art == Kennzahlart.Summe);
+                liste.Insert(summe < 0 ? liste.Count : summe,
+                             Energie(Text_("BERG_LBL_DAVON_DESINFEKTION", "davon thermische Desinfektion:"),
+                                     simulation.Brauchwasser_Desinfektion_Mwh, Energieeinheit.MWh));
+                daten.Kennzahlen = liste;
+            }
             return daten;
         }
 

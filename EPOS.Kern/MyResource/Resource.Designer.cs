@@ -3806,6 +3806,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon thermische Desinfektion: ähnelt.
+        /// </summary>
+        public static string BERG_LBL_DAVON_DESINFEKTION {
+            get {
+                return ResourceManager.GetString("BERG_LBL_DAVON_DESINFEKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon Zirkulation: ähnelt.
         /// </summary>
         public static string BERG_LBL_DAVON_ZIRKULATION {
@@ -16754,6 +16763,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_ZEIGER_SPITZENSTUNDE {
             get {
                 return ResourceManager.GetString("CHART_ZEIGER_SPITZENSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Intervall muss zwischen {0} und {1} Tagen liegen. ähnelt.
+        /// </summary>
+        public static string DESINF_PRUEF_INTERVALL {
+            get {
+                return ResourceManager.GetString("DESINF_PRUEF_INTERVALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stunde muss zwischen {0} und {1} liegen. ähnelt.
+        /// </summary>
+        public static string DESINF_PRUEF_STUNDE {
+            get {
+                return ResourceManager.GetString("DESINF_PRUEF_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen muss zwischen 0 und {0:N0} l liegen. ähnelt.
+        /// </summary>
+        public static string DESINF_PRUEF_VOLUMEN {
+            get {
+                return ResourceManager.GetString("DESINF_PRUEF_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zieltemperatur muss zwischen {0} und {1} °C liegen. ähnelt.
+        /// </summary>
+        public static string DESINF_PRUEF_ZIEL {
+            get {
+                return ResourceManager.GetString("DESINF_PRUEF_ZIEL", resourceCulture);
             }
         }
         
@@ -49971,6 +50016,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumenanteile der Zonen von oben, durch Semikolon getrennt, Summe 1, Anzahl gleich der Schichtenzahl; leer = gleich große Zonen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_ANTEILE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_ANTEILE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur des Aufstellraums für den Bereitschaftsverlust nach Temperatur, 0 bis 35 °C; leer = 20 °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_AUFSTELLRAUM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_AUFSTELLRAUM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahr = Bereitschaftsverlust je Zone nach Temperatur (H aus dem Bereitschaftswert bei 45 K, gegen den Aufstellraum); falsch = Tageswert anteilig zum Füllstand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_BEREITSCHAFT_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name dieses Pufferspeichers im Projekt; er muss angegeben sein. ähnelt.
         /// </summary>
         public static string KI_DLG_PSPV_BEZEICHNER_ERL {
@@ -50021,6 +50093,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PSPV_ENTNAHME_PROZESS_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PSPV_ENTNAHME_PROZESS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahr = Brauchwasser über ein Frischwassermodul aus der obersten Zone, nur ab Zapftemperatur plus Grädigkeit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_FWM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_FWM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grädigkeit des Frischwassermoduls, 0 bis 20 K; leer = 5 K. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_FWM_GRAEDIGKEIT_ERL", resourceCulture);
             }
         }
         
@@ -60881,6 +60971,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_SIM_ANLAGE_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KI_SIM_ANLAGE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahr = thermische Desinfektion des Brauchwassers im Lauf (Zusatzbedarf in der gewählten Stunde). ähnelt.
+        /// </summary>
+        public static string KI_SIM_DESINFEKTION_ERL {
+            get {
+                return ResourceManager.GetString("KI_SIM_DESINFEKTION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abstand zweier Desinfektionen in Tagen, 1 bis 31; leer = 7. ähnelt.
+        /// </summary>
+        public static string KI_SIM_DESINF_INTERVALL_ERL {
+            get {
+                return ResourceManager.GetString("KI_SIM_DESINF_INTERVALL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde des Tages, in der die Desinfektion läuft, 0 bis 23; leer = 2. ähnelt.
+        /// </summary>
+        public static string KI_SIM_DESINF_STUNDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_SIM_DESINF_STUNDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufgeheiztes Volumen in Litern, 0 bis 100 000; leer = Volumen der Speicher, die Brauchwasser führen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_DESINF_VOLUMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_SIM_DESINF_VOLUMEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zieltemperatur der Desinfektion, 55 bis 90 °C; leer = 70 °C. ähnelt.
+        /// </summary>
+        public static string KI_SIM_DESINF_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_SIM_DESINF_ZIEL_ERL", resourceCulture);
             }
         }
         
@@ -72178,6 +72313,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Anteile für {1} Zonen – je Zone genau ein Anteil. ähnelt.
+        /// </summary>
+        public static string PSP_ANTEILE_ANZAHL {
+            get {
+                return ResourceManager.GetString("PSP_ANTEILE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Anteil „{0}“ liegt nicht zwischen 0 und 1. ähnelt.
+        /// </summary>
+        public static string PSP_ANTEILE_BEREICH {
+            get {
+                return ResourceManager.GetString("PSP_ANTEILE_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anteile ergeben {0}, nicht 1. ähnelt.
+        /// </summary>
+        public static string PSP_ANTEILE_SUMME {
+            get {
+                return ResourceManager.GetString("PSP_ANTEILE_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Zahl. ähnelt.
+        /// </summary>
+        public static string PSP_ANTEILE_ZAHL {
+            get {
+                return ResourceManager.GetString("PSP_ANTEILE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die →  leer = Automatik: {0} % ({1}) ähnelt.
         /// </summary>
         public static string PSP_ANZEIGE_NACHRANG_AUTOMATIK {
@@ -72201,6 +72372,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_AUSWAHL_ALLE_SPEICHER {
             get {
                 return ResourceManager.GetString("PSP_AUSWAHL_ALLE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tageswert anteilig zum Füllstand ähnelt.
+        /// </summary>
+        public static string PSP_BEREITSCHAFT_TAG {
+            get {
+                return ResourceManager.GetString("PSP_BEREITSCHAFT_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Temperatur je Zone ähnelt.
+        /// </summary>
+        public static string PSP_BEREITSCHAFT_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PSP_BEREITSCHAFT_TEMPERATUR", resourceCulture);
             }
         }
         
@@ -72277,6 +72466,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag Kombispeicher ähnelt.
+        /// </summary>
+        public static string PSP_BTN_VORSCHLAG_KOMBI {
+            get {
+                return ResourceManager.GetString("PSP_BTN_VORSCHLAG_KOMBI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherfüllstand ähnelt.
         /// </summary>
         public static string PSP_CHECKBOX_SPEICHERFUELLSTAND {
@@ -72313,6 +72511,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Bereitschaftsverlust nach Temperatur je Zone. ähnelt.
+        /// </summary>
+        public static string PSP_ERG_BEREITSCHAFT_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PSP_ERG_BEREITSCHAFT_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Frischwassermodul – {1} Stunden ohne ausreichende Puffertemperatur; dort deckt die nächste Stufe der Kaskade. ähnelt.
+        /// </summary>
+        public static string PSP_ERG_FWM_STUNDEN {
+            get {
+                return ResourceManager.GetString("PSP_ERG_FWM_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenanteile: {0} ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_ANTEILE {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_ANTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Aufstellraum muss zwischen 0 und 35 °C liegen. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_AUFSTELLRAUM {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_AUFSTELLRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Bezeichner eintragen oder einen Katalogeintrag wählen. ähnelt.
         /// </summary>
         public static string PSP_FEHLER_BEZEICHNER_FEHLT {
@@ -72336,6 +72570,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_FEHLER_ENTNAHMEHOEHE {
             get {
                 return ResourceManager.GetString("PSP_FEHLER_ENTNAHMEHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Grädigkeit des Frischwassermoduls muss zwischen 0 und 20 K liegen. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_FWM_GRAEDIGKEIT {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_FWM_GRAEDIGKEIT", resourceCulture);
             }
         }
         
@@ -72569,6 +72812,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaft und Frischwassermodul ähnelt.
+        /// </summary>
+        public static string PSP_GRUPPE_OPTIONEN {
+            get {
+                return ResourceManager.GetString("PSP_GRUPPE_OPTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schichtmodell ähnelt.
         /// </summary>
         public static string PSP_GRUPPE_SCHICHTMODELL {
@@ -72623,6 +72875,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumenanteile durch Semikolon getrennt, Summe 1; leer = gleich große Zonen. Vorschlag Kombispeicher: 0,10;0,16;0,37;0,37 (vier Zonen). ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_ANTEILE {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_ANTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur beim Weg nach Temperatur: H = Q_B · 1000 / (24 · 45 K), je Zone H · a_i · (ϑ_i − ϑ_Raum); leer = 20 °C. ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_AUFSTELLRAUM {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_AUFSTELLRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser aus der obersten Zone nur ab Zapftemperatur + Grädigkeit; sonst deckt die nächste Stufe der Kaskade. Leer = 5 K. ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_FWM {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_FWM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die leer = automatisch aus dem Höhen-/Durchmesserverhältnis 2,5 ähnelt.
         /// </summary>
         public static string PSP_HINWEIS_HOEHE {
@@ -72673,6 +72952,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_HINWEIS_T_NUTZ_BW {
             get {
                 return ResourceManager.GetString("PSP_HINWEIS_T_NUTZ_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übertrager: Leistung als Entladegrenze eintragen. ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_UEBERTRAGER {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_UEBERTRAGER", resourceCulture);
             }
         }
         
@@ -72929,6 +73217,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufstellraum: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_AUFSTELLRAUM {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_AUFSTELLRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus Katalog: ähnelt.
         /// </summary>
         public static string PSP_LABEL_AUS_KATALOG {
@@ -72943,6 +73240,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_LABEL_BEREITSCHAFTSVERLUSTE {
             get {
                 return ResourceManager.GetString("PSP_LABEL_BEREITSCHAFTSVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverlust: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_BEREITSCHAFT_WEG {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_BEREITSCHAFT_WEG", resourceCulture);
             }
         }
         
@@ -73019,6 +73325,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Frischwassermodul ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_FRISCHWASSERMODUL {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_FRISCHWASSERMODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grädigkeit Frischwassermodul: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_FWM_GRAEDIGKEIT {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_FWM_GRAEDIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen [l]: ähnelt.
         /// </summary>
         public static string PSP_LABEL_GESAMTVOLUMEN {
@@ -73087,6 +73411,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_LABEL_SCHICHTEN {
             get {
                 return ResourceManager.GetString("PSP_LABEL_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenanteile von oben: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_SCHICHT_ANTEILE {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_SCHICHT_ANTEILE", resourceCulture);
             }
         }
         
@@ -78186,6 +78519,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die thermische Desinfektion {0}-mal im Jahr (alle {1} Tage um {2} Uhr), {3:0.#} l von {4:0.#} auf {5:0.#} °C: {6:0.##} kWh je Ereignis, {7:0.###} MWh/a. ähnelt.
+        /// </summary>
+        public static string SIMENG_DESINF_BEDARF {
+            get {
+                return ResourceManager.GetString("SIMENG_DESINF_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Desinfektion: {0} deckt {1:0.##} kWh. ähnelt.
+        /// </summary>
+        public static string SIMENG_DESINF_GEDECKT {
+            get {
+                return ResourceManager.GetString("SIMENG_DESINF_GEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab ähnelt.
+        /// </summary>
+        public static string SIMENG_DESINF_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMENG_DESINF_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Desinfektion ohne Volumen: Weder ist ein Volumen gepflegt noch führt ein Speicher Brauchwasser – kein Zusatzbedarf. ähnelt.
+        /// </summary>
+        public static string SIMENG_DESINF_OHNE_VOLUMEN {
+            get {
+                return ResourceManager.GetString("SIMENG_DESINF_OHNE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Desinfektion: Das Projekt führt keine Speichersolltemperatur – gerechnet wird mit {0:0.#} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_DESINF_SOLL_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_DESINF_SOLL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Desinfektion: Die Zieltemperatur {0:0.#} °C liegt nicht über der Speichersolltemperatur {1:0.#} °C – kein Zusatzbedarf. ähnelt.
+        /// </summary>
+        public static string SIMENG_DESINF_ZIEL_UNTER_SOLL {
+            get {
+                return ResourceManager.GetString("SIMENG_DESINF_ZIEL_UNTER_SOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Desinfektion: Kein Erzeuger erreicht {1:0.#} °C für {0:0.##} kWh – gedeckt mit Zusatzstrom (elektrisch, Wirkungsgrad 1), im Reststrom enthalten. ähnelt.
+        /// </summary>
+        public static string SIMENG_DESINF_ZUSATZSTROM {
+            get {
+                return ResourceManager.GetString("SIMENG_DESINF_ZUSATZSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieprobe Kanalbildung: In {0} von 8760 Stunden weicht die Summe der drei Bedarfskanäle vom unabhängig gerechneten Gesamtbedarf ab (größte Abweichung {1} kWh). Die Kanalaufteilung des Wärmebedarfs ist zu prüfen. ähnelt.
         /// </summary>
         public static string SIMENG_ENERGIEPROBE_KANAELE {
@@ -79527,6 +79923,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher „{0}“: Zonenanteile nicht übernommen – {1} Gerechnet wird mit gleich großen Zonen. ähnelt.
+        /// </summary>
+        public static string SIMENG_PSP_ANTEILE_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("SIMENG_PSP_ANTEILE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher „{0}“: Bereitschaftsverlust nach Temperatur, H = {1:0.00} W/K, Aufstellraum {2:0.#} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_PSP_BEREITSCHAFT_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("SIMENG_PSP_BEREITSCHAFT_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher „{0}“: Frischwassermodul, Zapftemperatur {1:0.#} °C + Grädigkeit {2:0.#} K – Mindesttemperatur oben {3:0.#} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_PSP_FWM {
+            get {
+                return ResourceManager.GetString("SIMENG_PSP_FWM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher „{0}“: Das Frischwassermodul wirkt nicht – der Speicher führt kein Brauchwasser. ähnelt.
+        /// </summary>
+        public static string SIMENG_PSP_FWM_OHNE_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("SIMENG_PSP_FWM_OHNE_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher „{0}“: In {1} Stunden hielt die oberste Zone die Mindesttemperatur des Frischwassermoduls ({2:0.#} °C) nicht; den Rest deckte die nächste Stufe der Kaskade. ähnelt.
+        /// </summary>
+        public static string SIMENG_PSP_FWM_STUNDEN {
+            get {
+                return ResourceManager.GetString("SIMENG_PSP_FWM_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur der Anlage {0}: Die CSV-Datei „{1}“ fehlt oder liefert keine 8 760 Stundenwerte — gerechnet wird mit der Außentemperatur. ähnelt.
         /// </summary>
         public static string SIMENG_QUELLE_CSV_UNBRAUCHBAR {
@@ -79847,6 +80288,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_TNUTZ_UEBER_VORLAUF {
             get {
                 return ResourceManager.GetString("SIMENG_TNUTZ_UEBER_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: Das Projekt führt keine Zapftemperatur – gerechnet wird mit {0:0.#} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_TWW_ZAPF_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_TWW_ZAPF_VORGABE", resourceCulture);
             }
         }
         
@@ -81541,6 +81991,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die thermische Desinfektion konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string SIMKONF_DESINFEKTION_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_DESINFEKTION_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserspeicher ähnelt.
+        /// </summary>
+        public static string SIMKONF_DESINF_VOLUMEN_LEER {
+            get {
+                return ResourceManager.GetString("SIMKONF_DESINF_VOLUMEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kW am Netzanschluss ähnelt.
         /// </summary>
         public static string SIMKONF_EINSPEISEGRENZE_EINHEIT_KW {
@@ -81582,6 +82050,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_GRP_ANLAGENKOPPLUNG {
             get {
                 return ResourceManager.GetString("SIMKONF_GRP_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Desinfektion ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_DESINFEKTION {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_DESINFEKTION", resourceCulture);
             }
         }
         
@@ -81654,6 +82131,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT {
             get {
                 return ResourceManager.GetString("SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zusatzbedarf je Ereignis Q = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) im Brauchwasserkanal, gedeckt vom Erzeuger, der die Zieltemperatur erreicht, sonst vom Heizstab oder als Zusatzstrom. Leer: alle 7 Tage um 2 Uhr, 70 °C, Volumen der Brauchwasserspeicher. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_DESINFEKTION {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_DESINFEKTION", resourceCulture);
             }
         }
         
@@ -81762,6 +82248,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_LBL_ANLAGENKOPPLUNG {
             get {
                 return ResourceManager.GetString("SIMKONF_LBL_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Desinfektion ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_DESINFEKTION {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_DESINFEKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Intervall: ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_DESINF_INTERVALL {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_DESINF_INTERVALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uhrzeit (Stunde): ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_DESINF_STUNDE {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_DESINF_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen: ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_DESINF_VOLUMEN {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_DESINF_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zieltemperatur: ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_DESINF_ZIEL {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_DESINF_ZIEL", resourceCulture);
             }
         }
         
