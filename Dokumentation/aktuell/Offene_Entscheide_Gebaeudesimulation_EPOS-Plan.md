@@ -12,6 +12,7 @@ Konzept N1.60) am selben Tag entschieden hat — P11 abweichend von der Empfehlu
 E54 (27.09.2026, Konzept N1.62) entscheidet zwei Fragen aus dem Entwurf der zweiten Hälfte von KP1, die nicht im
 Register standen, und berührt keinen offenen Punkt. E58 (02.10.2026, Konzept N1.67) entscheidet die acht Fragen des
 Entwurfs KP3; F7 (Aufheizreserve ρ) ist ein Entscheid nach der Messung in RP1 und steht als offener Punkt P14 in
+Kapitel 10. E59 (02.10.2026) und E60 (03.10.2026, beide Konzept N1.68) bringen die offenen Punkte P15, P16 und P17 in
 Kapitel 10.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
@@ -52,17 +53,24 @@ Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.
 - **Kapitel 10** führt die mit **E52** (26.09.2026) entschiedenen Punkte P1 bis P8 des Teilkonzepts
   Konditionierungsprofile im selben Aufbau, mit dem Vermerk „**Entschieden: E52 (26.09.2026, Konzept N1.59)**", die
   mit **E53** entschiedenen Punkte P9 bis P13 der Rev. 2 mit dem Vermerk „**Entschieden: E53 (26.09.2026, Konzept
-  N1.60)**", die Festlegungen F1 bis F22 als Vermerk, F20 mit der Heizperiode, und den offenen Punkt **P14**
-  (Aufheizreserve ρ nach der Messung in RP1, aus E58).
+  N1.60)**", die Festlegungen F1 bis F22 als Vermerk, F20 mit der Heizperiode, den offenen Punkt **P14**
+  (Aufheizreserve ρ nach der Messung in RP1, aus E58) und die offenen Punkte **P15 bis P17** (Spanne nach Bauart,
+  Aufschlag an Sprüngen ohne Rampe, Lesart der Auslegungsgröße, aus E59 und E60).
 - Zahlen und Empfehlungen stehen im Wortlaut der Papiere. Wo zwei Papiere zu derselben Frage
   Verschiedenes sagen, sind **beide** genannt.
 - Die Nummern sind die der Papiere und werden nicht umnummeriert: **Q** Konzept, **U**
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung, **P** Konditionierungsprofile.
 
-**Umfang in Zahlen.** **2 offene Punkte** (Stand E58, 02.10.2026): im Mehrzonenkonzept M11 (fällig vor G6d), im
-Teilkonzept Konditionierungsprofile P14 (Aufheizreserve ρ nach der Messung in RP1, fällig vor dem Einfrieren von KP3);
-Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Punkt mehr.
+**Umfang in Zahlen.** **5 offene Punkte** (Stand E60, 03.10.2026): im Mehrzonenkonzept M11 (fällig vor G6d), im
+Teilkonzept Konditionierungsprofile P14 (Aufheizreserve ρ nach der Messung in RP1, fällig vor dem Einfrieren von KP3),
+P15 (Spanne der Aufheizzeit nach Bauart, fällig vor O2), P16 (Aufschlag an Sprüngen ohne Rampe, fällig vor R5) und P17
+(Lesart der Auslegungsgröße, fällig vor O2); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und
+Kühlkonzept haben keinen offenen Punkt mehr.
+**E59** (02.10.2026, Konzept N1.68) nimmt eine Vorgabe des Anwenders auf — die Rampe je Gebäude, ein Aufschlag in
+Stunden und Prozent (es gilt das Maximum), eine manuelle Aufheizzeit je Gebäude mit Vorschlägen, Umsetzung nach D2 und
+vor RP1 —; **E60** (03.10.2026, Konzept N1.68) legt die Auslegungsgröße fest (stationäre Auslegungsheizlast plus P_auf,
+kein Filter im Rechenweg). Aus der Ausgestaltung folgen P15 bis P17; die Zählung steigt damit auf 5.
 **E58** (02.10.2026, Konzept N1.67) hat die acht Fragen des Entwurfs KP3 entschieden — F1, F2, F5, F6 und F8 nach
 Empfehlung, F3 und F4 abweichend — und F7 abweichend als Entscheid nach der Messung gefasst: RP1 misst ρ_min aller 17
 VDI-Gebäude, danach entscheidet der Anwender; die Zählung steigt damit auf 2.
@@ -167,7 +175,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
 | **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
 
-**Was noch offen ist — 2 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
+**Was noch offen ist — 5 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
 (G1) sind mit **E28** (22.09.2026, Konzept N1.33) nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen. K4, K5, K6, K7 und K12 (KU1) sind mit **E31**
 (23.09.2026, Konzept N1.36) nach Empfehlung entschieden; vor KU1 ist keiner mehr offen. K8, K21
@@ -178,8 +186,8 @@ M6 (G6b) sind mit **E49** (26.09.2026, Konzept N1.55) nach Empfehlung entschiede
 M13 (G6c) mit **E50** (26.09.2026, Konzept N1.57); vor G6b und G6c ist keiner mehr offen. P1 bis P8 (KP1) sind
 mit **E52** (26.09.2026, Konzept N1.59) entschieden, P3 abweichend von der Empfehlung, P9 bis P13 (Rev. 2) mit **E53**
 (26.09.2026, Konzept N1.60), P11 abweichend; vor KP1 ist keiner mehr offen. Die acht Fragen des Entwurfs KP3 sind mit **E58** (02.10.2026, Konzept
-N1.67) entschieden, F7 als Entscheid nach der Messung in RP1 (P14). Nach Fälligkeit: **RP2 (Einfrieren von KP3)** P14,
-**G6d** M11.
+N1.67) entschieden, F7 als Entscheid nach der Messung in RP1 (P14); E59 und E60 (Konzept N1.68) bringen P15 bis P17. Nach
+Fälligkeit: **R5** P16, **O2** P15 und P17, **RP2 (Einfrieren von KP3)** P14, **G6d** M11.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -2118,7 +2126,7 @@ Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine 
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer
 beim Anwender erfragt; die Veröffentlichung läuft gebündelt.
 
-## 10. Konditionierungsprofile — P1 bis P13 (entschieden), P14 (offen)
+## 10. Konditionierungsprofile — P1 bis P13 (entschieden), P14 bis P17 (offen)
 
 Quelle: [`Konzept_Konditionierungsprofile_EPOS-Plan.md`](Konzept_Konditionierungsprofile_EPOS-Plan.md), Kapitel 9
 (Rev. 3, 26.09.2026). Die Stufen sind KP0 (Konzept, Entscheid, Probe der Aufheizreserve, Glossar, Nachzug der
@@ -2132,7 +2140,9 @@ Kalendern. / P12: unklar / P13: (a) / Heizperiode: Wird vom Benutzer vorgegeben 
 dieser Zeit ist der Heizwärmeerzeuger aus." — P11 **abweichend von der Empfehlung**; P11, P12 und die Heizperiode sind
 per Rückfrage geklärt (Vermerke unten, die Heizperiode unter F20). **P14** kommt aus dem Entscheid **E58**
 (02.10.2026, Konzept N1.67) zu Frage F7 des [Entwurfs KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md): ein
-Entscheid nach einer Messung, offen bis zur Welle RP1.
+Entscheid nach einer Messung, offen bis zur Welle RP1. **P15 bis P17** kommen aus der Ausgestaltung der Entscheide **E59**
+(02.10.2026: Aufschlag in Stunden und Prozent, manuelle Aufheizzeit je Gebäude mit Vorschlägen) und **E60** (03.10.2026:
+Auslegungsgröße), beide Konzept N1.68, Teilkonzept 9.9.
 
 ### P1 — was `Interne_Waermegewinne` unter Kalendern bedeutet
 
@@ -2387,9 +2397,75 @@ Entscheid nach einer Messung, offen bis zur Welle RP1.
   Messung gelegt.
 - **Folge bei Nichtentscheid:** Es bleibt bei 20 %; das Referenzprojekt 1051 rechnet mit leerer Reserve den Startwert
   und friert ihn in die neue Basis ein.
-- **Fällig vor:** **RP2** (Einfrieren der Basis R31), nach der Messung in RP1.
+- **Fällig vor:** **RP2** (Einfrieren der Basis R34), nach der Messung in RP1.
 - **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.4 und 9.8;
   [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) B26, F7 und Abschnitt 7.
+
+### P15 — Spanne der Aufheizzeit nach Bauart als Vorschlag
+
+**Offen** (aus E59, 02.10.2026, Konzept N1.68). Bis dahin baut O2 die Spannen der Option (a).
+
+- **Frage:** Welche Spanne zeigt der Gebäudedialog neben dem Feld „Aufheizzeit manuell (h)" als plausiblen Vorschlag?
+- **Hintergrund:** E59 verlangt plausible Vorschläge. Die Ausgestaltung nennt Spannen „leicht 1–2 h, mittel 2–4 h, schwer
+  4–8 h"; das Produkt kennt drei Bauarten aus `Bauweise` je m² Wohnfläche (`Gebaeudebauweise.BauartAusBauweise`: leicht
+  < 30, schwer 30–75, sehr schwer > 75 Wh/(m²·K)), die mittlere heißt dort „schwer". Die Zahlen sind EPOS-Vorgaben ohne
+  Normbeleg (DIN EN 12831-1 liegt lokal nicht vor). Im Bauteilweg trägt die Schichtfolge die Speichermasse, `Bauweise`
+  ist dort nur noch die Angabe für Gruppen ohne Schichten. Der zweite Vorschlag — die bemessene Zeit des Gebäudes — ist
+  davon unberührt.
+- **Optionen:**
+  - **(a)** Spannen leicht 1–2 h, schwer 2–4 h, sehr schwer 4–8 h, Bauart aus `Bauweise` wie im Katalogdialog.
+  - **(b)** Spanne aus der langsamen Zeitkonstante τ_2 der Aufheizantwort des Gebäudes (gebäudeeigen, auch im
+    Bauteilweg), etwa 0,5 · τ_2 bis 1 · τ_2, gerundet.
+  - **(c)** keine Spanne, nur die bemessene Zeit als Vorschlag.
+- **Empfehlung des Papiers:** (a), weil die Bauart dem Anwender vertraut ist; (b) als spätere Verfeinerung.
+- **Folge bei Nichtentscheid:** O2 baut (a); die Zahlen stehen in den Texten und sind ohne Schemaschritt änderbar.
+- **Fällig vor:** **O2**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 7.6 und 9.9;
+  [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) Festlegung 40.
+
+### P16 — Aufschlag an Sprüngen ohne Rampe
+
+**Offen** (aus E59, 02.10.2026, Konzept N1.68). Bis dahin gilt die Formel auf jedes ermittelte n (Option (a)).
+
+- **Frage:** Trifft der Aufschlag auch Sprünge, an denen die Bemessung keine Rampe verlangt (n = 1)?
+- **Hintergrund:** E59 setzt n' = min(48, n + max(Aufschlag_H, ⌈n · Prozent/100⌉)) auf jedes ermittelte n. Für n = 1
+  ist ⌈Prozent/100⌉ = 1 bei jedem Prozentsatz über 0: Schon 5 % geben jedem Sprung eine Rampenstunde, auch an milden
+  Tagen, an denen die Art „täglich" keine Rampe vorsieht (P6); ein Stundenaufschlag gibt jedem Sprung Aufschlag_H
+  Stunden. Bei kurzen Rampen wirkt der Prozentsatz durch das Aufrunden wie eine Stunde (n = 3, 10 % → +1 h).
+- **Optionen:**
+  - **(a)** wie die Formel: auf jedes n, auch n = 1 — der Aufschlag wirkt als Vorhaltezeit vor jedem Sprung, mehr
+    Wärme an milden Tagen.
+  - **(b)** nur auf Sprünge mit n > 1, an denen die Bemessung rampt; n = 1 bleibt ohne Rampe.
+  - **(c)** wie (b), dazu der Prozentsatz auf die Aufheizzeit t = n − 1 statt auf n (⌈t · Prozent/100⌉).
+- **Empfehlung des Papiers:** (b) — „ein Aufschlag auf diesen Wert" setzt einen ermittelten Wert voraus, und „täglich"
+  behält an milden Tagen seine Bedeutung; wer jeden Sprung vorhalten will, hat die Art „fest".
+- **Folge bei Nichtentscheid:** R5 baut (a) nach Festlegung 35 des Entwurfs.
+- **Fällig vor:** **R5**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.6 und 9.9;
+  [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) Festlegung 35, Abschnitt 8.
+
+### P17 — Lesart der Auslegungsgröße
+
+**Offen** (aus E60, 03.10.2026, Konzept N1.68). Bis dahin stehen die Zahlen nebeneinander, ohne Summe (Option (a)).
+
+- **Frage:** Wie ist „stationäre Auslegungsheizlast plus die Aufheizleistung P_auf" zu lesen, wenn Bedarfsdialog und
+  Bericht eine Zahl als Auslegungsgröße zeigen sollen?
+- **Hintergrund:** P_auf ist bei Quelle Ziel (1 + ρ) · Φ_stat(θ_T,max, T_a,B) und enthält die stationäre Last am
+  Bemessungspunkt schon; bei Quelle Grenze ist P_auf die gesetzte `Heizleistung_Max`. Die wörtliche Summe zählte die
+  stationäre Last zweimal (rund 2,2 · Φ_stat bei ρ = 20 %). DIN EN 12831-1 rechnet die Normheizlast plus einen
+  Aufheizzuschlag; die Auslegungsheizlast des Kerns gilt an der Normaußentemperatur, Φ_stat an der kältesten Stunde.
+- **Optionen:**
+  - **(a)** keine Summe: Auslegungsheizlast, P_auf mit Quelle, ideale Spitze und Tagesmittel stehen nebeneinander.
+  - **(b)** Auslegungsheizlast plus Aufheizzuschlag P_auf − Φ_stat(θ_T,max, T_a,B) als eine Zahl, die Teile daneben —
+    die Lesart nach DIN EN 12831-1.
+  - **(c)** das Größere aus Auslegungsheizlast und P_auf als Auslegungsgröße bei Schalter an.
+  - **(d)** die wörtliche Summe.
+- **Empfehlung des Papiers:** (b), mit den Teilen daneben; bei Quelle Grenze zeigt die Zeile die Grenze ohne Summe.
+- **Folge bei Nichtentscheid:** O2 und O3 bauen (a).
+- **Fällig vor:** **O2**.
+- **Quelle:** [Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md) 4 und 5;
+  [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.8 und 9.9;
+  [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) Festlegung 41.
 
 ### Festlegungen F1 bis F22 — Vermerk
 
