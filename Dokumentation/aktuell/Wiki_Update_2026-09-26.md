@@ -277,6 +277,9 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Der Katalogabgleich beim Programmupdate umfasst alle Gerätekataloge, Baustoffe und Bauteilaufbauten, Brennstoffe, Tagesverteilungen, Gebäude, Konditionierungsvorlagen, Pufferspeicher und Ganglinien; Klimadaten und der Zapfprofilkatalog behalten ihre eigenen Importwege. (#685)
 - Brennstoffe und Pufferauslegungs-Vorgaben liegen je Projekt als Kopie vor; ein Katalogupdate ändert laufende Projekte nicht mehr, und der Dialog „Brennstoffe des Projekts“ zeigt Abweichungen vom Katalog und setzt sie auf Wunsch zurück. (#687)
 - Bauteilschichten sind ab 0,5 mm Dicke zulässig; der IFC-Import übernimmt damit Bleche ab 0,5 mm und übergeht nur noch Folien und Anstriche darunter. (#693)
+- Der Ergebnisreiter der Simulation zeigt bei Projekten mit Kühlbetrieb das Diagramm „Kälte Produktion“; „Autarkie Analyse“ steht ganz rechts. (#694)
+- Der BHKW-Reiter zeigt unter der Wärmelast die Stromlast-Jahresganglinie mit Stromproduktion, Einspeisung, Reststrombedarf und Strombedarf. (#694)
+- Die Hinweise auf der Wirtschaftlichkeitsseite lassen sich ein- und ausklappen. (#694)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
