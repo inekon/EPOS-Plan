@@ -546,4 +546,7 @@ public sealed class PufferAuslegungTexte
 
     /// <summary><c>PAUS_PROBELAUF_OHNE_FUELLSTAND</c>.</summary>
     public string ProbelaufOhneFuellstand { get; set; } = Resource.PAUS_PROBELAUF_OHNE_FUELLSTAND;
+
+    /// <summary><c>PAUS_PROBELAUF_AUS_REIHE</c>.</summary>
+    public string ProbelaufAusReihe { get; set; } = Resource.PAUS_PROBELAUF_AUS_REIHE;
 }

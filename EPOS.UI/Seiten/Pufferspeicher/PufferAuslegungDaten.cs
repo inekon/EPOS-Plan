@@ -330,8 +330,9 @@ public sealed record PufferAuslegungDienste(
     Func<PufferAuslegungEingabeDaten, System.Threading.Tasks.Task<PufferProbelaufDaten>>? Probelauf = null);
 
 /// <summary>Die Starts eines Erzeugertyps im Probelauf (Name aus den Ressourcen).</summary>
+/// <param name="AusReihe">Der Lauf zählt keine Starts (Gerät ohne Mindestleistung); gezählt sind die Einschaltflanken.</param>
 public sealed record PufferProbelaufStartsDaten(string Erzeuger, int StartsJahr, int StartsHeizperiode, double StartsJeTag,
-                                                bool Rang1);
+                                                bool Rang1, bool AusReihe = false);
 
 /// <summary>Füllstand des Puffers in einem Monat (Anteil 0 … 1).</summary>
 public sealed record PufferFuellstandMonatDaten(int Monat, double Min, double Mittel, double Max);

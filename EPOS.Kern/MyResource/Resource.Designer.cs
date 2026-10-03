@@ -72566,6 +72566,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts aus der stündlichen Wärme (Einschaltflanken): Das Gerät hat keine Mindestleistung, der Lauf zählt keine Takte. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_AUS_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_AUS_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Deckung des Wärmebedarfs ähnelt.
         /// </summary>
         public static string PAUS_PROBELAUF_DECKUNG {
@@ -74231,7 +74240,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressimulation zählt {1:N1} Starts je Tag, die Auslegung schätzt {0:N1} – Abweichung über 30 %. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressimulation zählt {1} Starts je Tag, die Auslegung schätzt {0} – Abweichung über 30 %. ähnelt.
         /// </summary>
         public static string PA_STARTS_ABWEICHUNG {
             get {

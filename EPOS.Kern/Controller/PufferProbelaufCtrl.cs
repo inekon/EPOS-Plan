@@ -13,7 +13,12 @@ namespace WindowsFormsApplication1
     /// <param name="StartsHeizperiode">Starts in Stunden mit Heizbedarf &gt; 0 (wie D2), aus dem Jahreswert anteilig.</param>
     /// <param name="StartsJeTag">Starts je Tag der Heizperiode: Starts der Heizperiode ÷ (Heizstunden ÷ 24).</param>
     /// <param name="Rang1">Der Typ steht an Rang 1 der Auslegung.</param>
-    public sealed record PufferStartsLauf(int Typ, int StartsJahr, int StartsHeizperiode, double StartsJeTag, bool Rang1);
+    /// <param name="AusReihe">
+    /// Der Lauf zählt für diesen Typ keine Starts (kein Modul mit Mindestleistung, Welle M4); die Starts sind die
+    /// Einschaltflanken der stündlichen Wärme des Typs.
+    /// </param>
+    public sealed record PufferStartsLauf(int Typ, int StartsJahr, int StartsHeizperiode, double StartsJeTag, bool Rang1,
+                                          bool AusReihe = false);
 
     /// <summary>Füllstand des Puffers in einem Monat (Anteil der nutzbaren Kapazität, 0 … 1).</summary>
     public sealed record PufferFuellstandMonat(int Monat, double Min, double Mittel, double Max);
@@ -105,8 +110,8 @@ namespace WindowsFormsApplication1
         /// <summary>Der Hinweistext zur Abweichung (Ressource <c>PA_STARTS_ABWEICHUNG</c>).</summary>
         public static Textbaustein AbweichungText(double auslegung, double lauf)
             => Textbaustein.T("PA_STARTS_ABWEICHUNG",
-                              "Die Jahressimulation zählt {1:N1} Starts je Tag, die Auslegung schätzt {0:N1} — Abweichung über 30 %.",
-                              auslegung, lauf);
+                              "Die Jahressimulation zählt {1} Starts je Tag, die Auslegung schätzt {0} – Abweichung über 30 %.",
+                              Math.Round(auslegung, 1), Math.Round(lauf, 1));
 
         /// <summary>Der Erzeugertyp an Rang 1 aus der Vorlage der Auslegung; 0 = keiner der drei.</summary>
         public static int Rang1Typ(PufferVorlage vorlage)
@@ -244,16 +249,50 @@ namespace WindowsFormsApplication1
                 int jahr = starts?.Sum() ?? 0;
                 bool lief = waerme != null && waerme.Any(w => w > 0);
                 if (jahr <= 0 && !lief && typ != rang1Typ) return;
-                double anteil = AnteilHeizperiode(waerme, heiz);
-                int hp = (int)Math.Round(jahr * anteil, MidpointRounding.AwayFromZero);
+                int hp;
+                bool ausReihe = jahr <= 0 && lief;
+                if (ausReihe)
+                {
+                    // Ohne Mindestleistung zählt der Lauf keine Starts: die Einschaltflanken der Wärmereihe.
+                    jahr = Einschaltflanken(waerme, heiz, out hp);
+                }
+                else
+                {
+                    double anteil = AnteilHeizperiode(waerme, heiz);
+                    hp = (int)Math.Round(jahr * anteil, MidpointRounding.AwayFromZero);
+                }
                 double jeTag = heizstunden > 0 ? hp / (heizstunden / 24.0) : 0;
-                liste.Add(new PufferStartsLauf(typ, jahr, hp, jeTag, typ == rang1Typ));
+                liste.Add(new PufferStartsLauf(typ, jahr, hp, jeTag, typ == rang1Typ, ausReihe));
             }
 
             Typ(ProjektPuffer.TYP_WP, sim.simulation_wp?.Starts_WP, sim.simulation_wp?.WP_Waermeproduktion_stuendlich);
             Typ(ProjektPuffer.TYP_BHKW, sim.simulation_bhkw?.Starts_BHKW, sim.simulation_bhkw?.waermeproduktion);
             Typ(ProjektPuffer.TYP_KESSEL, sim.simulation_spk?.Starts_Spk, sim.simulation_spk?.Kesselleistung_stuendlich);
             return liste;
+        }
+
+        /// <summary>
+        /// Einschaltflanken einer Stundenreihe (Wärme &gt; 0 nach einer Stunde ohne; die Stunde vor dem 1. Januar ist
+        /// die letzte des Jahres) im Jahr und in Heizstunden (<paramref name="inHeizperiode"/>).
+        /// </summary>
+        public static int Einschaltflanken(IReadOnlyList<double> waerme, bool[] heiz, out int inHeizperiode)
+        {
+            inHeizperiode = 0;
+            if (waerme == null || waerme.Count == 0) return 0;
+            int n = heiz == null ? waerme.Count : Math.Min(waerme.Count, heiz.Length);
+            int flanken = 0;
+            bool vorher = waerme[n - 1] > 0;
+            for (int i = 0; i < n; i++)
+            {
+                bool an = waerme[i] > 0;
+                if (an && !vorher)
+                {
+                    flanken++;
+                    if (heiz == null || heiz[i]) inHeizperiode++;
+                }
+                vorher = an;
+            }
+            return flanken;
         }
 
         /// <summary>Anteil der Einschaltflanken (ersatzweise Laufstunden) in Heizstunden; ohne Reihe 1.</summary>

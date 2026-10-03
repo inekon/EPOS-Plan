@@ -535,7 +535,8 @@ namespace WindowsFormsApplication1
                 DauerSekunden = p.Dauer.TotalSeconds,
                 VolumenL = p.VolumenL,
                 Starts = p.Starts.Select(s => new PufferProbelaufStartsDaten(Erzeugername(s.Typ), s.StartsJahr,
-                                                                            s.StartsHeizperiode, s.StartsJeTag, s.Rang1)).ToList(),
+                                                                            s.StartsHeizperiode, s.StartsJeTag, s.Rang1,
+                                                                            s.AusReihe)).ToList(),
                 Deckung = p.Deckung,
                 Monate = p.Monate.Select(m => new PufferFuellstandMonatDaten(m.Monat, m.Min, m.Mittel, m.Max)).ToList(),
                 AuslegungStartsJeTag = auslegungJeTag

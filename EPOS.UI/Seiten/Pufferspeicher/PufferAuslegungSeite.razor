@@ -1130,6 +1130,10 @@
                     @if (_probelauf is { Erfolg: true } stand)
                     {
                         <p class="epos-leisezeile epos-pausl-probelauf-stand">@Format(Texte.ProbelaufStand, stand.Zeitpunkt.ToString("g", CultureInfo.CurrentCulture), Z(stand.VolumenL), Z(stand.DauerSekunden, "N1"))</p>
+                        @if (stand.Rang1 is { AusReihe: true })
+                        {
+                            <p class="epos-leisezeile epos-pausl-probelauf-ausreihe">@Texte.ProbelaufAusReihe</p>
+                        }
                         @if (stand.Abweichung)
                         {
                             <p class="epos-pausl-probelauf-abweichung" data-code="PA-STARTS-ABWEICHUNG">@stand.AbweichungText</p>
