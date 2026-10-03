@@ -335,11 +335,13 @@ namespace WindowsFormsApplication1
                 string werZone = wer + ", " + m.Eingaenge[z].Bezeichnung;
                 HinweisNutzungsmaske(m.Eingaenge[z].Eingang, werZone);
                 HinweisUntertemperatur(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
+                HinweisAbschnitte(m.Zonen[z], werZone);
                 HinweisKuehlNachtwert(m.Eingaenge[z].Eingang, werZone);
                 HinweisNachtauskuehlung(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
             }
             // Stufe KP3 (Festlegung 21): die Laufhinweise der Aufheizoptimierung einmal je Gebaeude.
             HinweisAufheizung(m.Gebaeude.Aufheizung, wer);
+            HinweisErdreichumfang(m.Gebaeude.Erdreich, wer);
 
             if (!(m.Gebaeude.VerbrauchAltKwh > 0.0))
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " hat im Jahreslauf keinen Heizbedarf.");
@@ -448,6 +450,34 @@ namespace WindowsFormsApplication1
                 string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_NACHTKUEHL_STUNDEN,
                               e.Nachtauskuehlung.ToString(),
                               r.StundenMitNachtauskuehlung.Value.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// <b>Der Laufhinweis der Obergrenze der Innenprüfung</b> (Rechenweg RP2a, <c>SIMENG_ZONE_ABSCHNITTE</c>):
+        /// einmal je Gebäude bzw. Zone, wenn Stunden eine innere Umkehr erkannt, aber wegen
+        /// <see cref="Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE"/> nicht mehr an ihr geschnitten haben. Sonst still.
+        /// </summary>
+        internal static void HinweisAbschnitte(GebaeudeModellErgebnis r, string wer)
+        {
+            if (r == null || r.StundenInnenpruefungGedeckelt == 0) return;
+            SimulationProtokoll.Aktuell.HinweisEinmal("zone-abschnitte-" + wer,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_ZONE_ABSCHNITTE, wer,
+                              r.StundenInnenpruefungGedeckelt.ToString(CultureInfo.InvariantCulture),
+                              Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// <b>Der Laufhinweis des Erdreichumfangs</b> (Rechenweg RP2a, <c>SIMENG_ERDREICH_UMFANG</c>): einmal je Gebäude,
+        /// wenn der Erdreichwiderstand nach DIN EN ISO 13370 mit dem flächengleichen Quadrat rechnet, weil kein
+        /// (plausibler) Umfang vorliegt. Sonst still.
+        /// </summary>
+        internal static void HinweisErdreichumfang(Erdreichkennwerte e, string wer)
+        {
+            if (e == null || e.Quelle != Erdreichumfangsquelle.Quadrat) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("erdreich-umfang-" + wer,
+                string.Format(k, MyResource.Resource.SIMENG_ERDREICH_UMFANG, wer, e.Umfang_M.ToString("0.#", k),
+                              e.B_M.ToString("0.##", k), e.Ug_WM2K.ToString("0.###", k)));
         }
 
         /// <summary>
@@ -581,6 +611,8 @@ namespace WindowsFormsApplication1
             if (eingang == null) throw new ArgumentNullException(nameof(eingang));
 
             var modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
+            Innenumkehrzaehler messung = modell.Innenumkehrmessung ? new Innenumkehrzaehler() : null;   // Messung RP2a
+            int gedeckelt = 0;                                                                              // RP2a, Obergrenze
 
             // Sommerlüftung (G2, Rechenschritte 7.2): einmal je Stunde am Stundenbeginn aus
             // Raumluft und Außenluft der Vorstunde; ohne Schalter bleibt sie aus. Mit wirksamer
@@ -657,6 +689,8 @@ namespace WindowsFormsApplication1
                 summeW += s.HeizleistungW;
                 kappung[h] = s.HeizleistungMaxAnteil;
                 kappungH += s.HeizleistungMaxAnteil;
+                messung?.Aufnehmen(in s);
+                if (s.InnenpruefungGedeckelt) gedeckelt++;
 
                 if (!Endlich(heiz[h]) || heiz[h] < 0.0 || !Endlich(kuehl[h]) || kuehl[h] < 0.0
                     || !Endlich(luft[h]) || !Endlich(op[h]))
@@ -751,6 +785,9 @@ namespace WindowsFormsApplication1
                 // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
                 SommerlueftungGesetzt = eingang.Sommerlueftung,
                 HeizkalenderWirksam = eingang.HeizkalenderWirksam,
+                Innenumkehr = messung?.Ergebnis(),
+                StundenInnenpruefungGedeckelt = gedeckelt,
+                Erdreich = eingang.Erdreich,
             };
         }
 
@@ -901,6 +938,8 @@ namespace WindowsFormsApplication1
             HinweisNachtauskuehlung(e, r, wer);
             HinweisNutzungsmaske(e, wer);
             HinweisUntertemperatur(e, r, wer);
+            HinweisAbschnitte(r, wer);
+            HinweisErdreichumfang(r.Erdreich, wer);
             HinweisAufheizung(r.Aufheizung, wer);
             if (e.Bauteilweg)
             {

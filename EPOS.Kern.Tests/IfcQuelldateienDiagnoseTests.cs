@@ -688,17 +688,19 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Die gemessenen Werte je Datei (VDI-Weg, Klimaregion des Projekts 1007): Vorgabe und Zonenzahl, Jahresheizwärme
         /// [MWh/a], Spitze der idealen Last und Spitze als Tagesmittel [kW] mit der Vorgabe; Jahresheizwärme mit der anderen
-        /// Regel (<c>NaN</c> = der Lauf lehnt sie ab); Auslegungsheizlast der einen Zone (Z5) [kW].
+        /// Regel (<c>NaN</c> = der Lauf lehnt sie ab); Auslegungsheizlast der einen Zone (Z5) [kW]. Gemessen mit dem
+        /// Erdreichwiderstand nach DIN EN ISO 13370 (Rechenweg RP2a); die Produktion (Bodenplatte 9 952 m², U 2,87) fiel
+        /// damit von 225 auf 100 kWh/(m²a), MFH-Klein (ohne Bauteil am Erdreich) blieb.
         /// </summary>
         private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen, double Q, double Spitze, double Tagesmittel, double QVergleich, double Auslegung)> SOLL
             = new Dictionary<string, (string, int, double, double, double, double, double)>(StringComparer.Ordinal)
             {
-                ["MFH_mittel_1984.ifc"] = ("Z5", 1, 59.67, 27.92, 18.62, 62.51, 22.29),
+                ["MFH_mittel_1984.ifc"] = ("Z5", 1, 40.20, 24.30, 14.72, 42.20, 18.33),
                 ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 41.39, 29.25, 16.96, 44.55, 20.73),
-                ["Sportheim_1970_unsaniert.ifc"] = ("Z5", 1, 67.45, 50.02, 28.32, 72.12, 37.18),
-                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z5", 1, 260.06, 253.21, 138.11, 279.77, 193.84), // QVergleich gemessen mit Einstufung nach Raumtemperatur und innerer Umschaltung
-                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 18.42, 21.56, 9.95, 18.15, 14.33),
-                ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 2, 4163.69, 1906.05, 1362.14, 3991.83, 1473.02),
+                ["Sportheim_1970_unsaniert.ifc"] = ("Z5", 1, 59.26, 48.20, 26.50, 62.17, 35.32),
+                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z5", 1, 220.36, 243.23, 127.65, 237.52, 183.10), // QVergleich gemessen mit Einstufung nach Raumtemperatur und innerer Umschaltung
+                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 17.69, 21.36, 9.76, 17.47, 14.13),
+                ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 2, 1856.94, 1268.79, 861.37, 1864.41, 1012.28),
             };
 
         /// <summary>

@@ -355,7 +355,9 @@ namespace WindowsFormsApplication1
     /// Nutzfläche, Bauweise, Masseanteil außen und Innenflächenfaktor für eine Gruppe, die
     /// mangels Schichten den Klassenweg rechnet (Mehrzonenkonzept 3.6), und der Leitwert der
     /// Lüftung H_ve [W/K] für R_ext. NaN = nicht vorhanden; gebraucht wird eine Größe nur, wenn
-    /// eine Gruppe sie verlangt, und dann benannt geprüft.
+    /// eine Gruppe sie verlangt, und dann benannt geprüft. Für den Erdreichwiderstand nach DIN EN ISO 13370
+    /// (Rechenweg RP2a) die Grundfläche der Gebäudezeile und das Feld ihres Umfangs; 0 = nicht vorhanden
+    /// (dann die Bodenbauteile am Erdreich bzw. das flächengleiche Quadrat).
     /// </summary>
     internal readonly record struct BauteilwegGebaeude(
         string Bezeichnung,
@@ -363,7 +365,9 @@ namespace WindowsFormsApplication1
         double Bauweise_WhK,
         double MasseanteilAussen,
         double Innenflaechenfaktor,
-        double Lueftungsleitwert_WK);
+        double Lueftungsleitwert_WK,
+        double ErdreichFlaeche_M2 = 0.0,
+        double ErdreichUmfang_M = 0.0);
 
     /// <summary>
     /// Die Herleitung EINES Bauteils im Bauteilweg — was der Dialog und das Protokoll je

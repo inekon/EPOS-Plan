@@ -83442,6 +83442,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} – der freiliegende Umfang der Bodenplatte fehlt oder ist kleiner als der Umfang des flächengleichen Kreises; der Erdreichwiderstand nach DIN EN ISO 13370 rechnet mit dem flächengleichen Quadrat P = {1} m (B′ = {2} m, U_g = {3} W/(m²K)). ähnelt.
+        /// </summary>
+        public static string SIMENG_ERDREICH_UMFANG {
+            get {
+                return ResourceManager.GetString("SIMENG_ERDREICH_UMFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Simulationsergebnis konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string SIMENG_ERGEBNIS_NICHT_GESPEICHERT {
@@ -85283,6 +85292,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_ZIRKULATION_BESTANDSWEG {
             get {
                 return ResourceManager.GetString("SIMENG_ZIRKULATION_BESTANDSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} – in {1} Stunden kehrte ein Abschnitt im Innern um, nachdem die Stunde schon {2} Abschnitte hatte; an dieser Umkehr wurde nicht mehr geschnitten (Obergrenze der Innenprüfung). ähnelt.
+        /// </summary>
+        public static string SIMENG_ZONE_ABSCHNITTE {
+            get {
+                return ResourceManager.GetString("SIMENG_ZONE_ABSCHNITTE", resourceCulture);
             }
         }
         
