@@ -202,6 +202,43 @@ namespace EPOS.Kern.Tests
             Assert.Equal("BUERO", NutzungAmKalender(g, Konditionierungsgroesse.Heizsoll));
         }
 
+        /// <summary>Ein Paket ohne Nutzung (älterer Stand) bekommt sie beim Import aus der Herkunft in Bemerkung.</summary>
+        [Fact]
+        public void Ein_Paketimport_ohne_Nutzung_saet_sie_aus_der_Herkunft()
+        {
+            if (!Bereit()) return;
+            long g = GebaeudeDesProjekts(PROJEKT);
+            long buero = Vorlage(Konditionierungsgroesse.Heizsoll, "Büro Paketprobe", "BUERO", 21.0);
+            Assert.True(_ctrl.Uebernehmen(buero, KonditionierungCtrl.Eigner.Gebaeude(g), Zielmatrix()).Ok);
+            // Das Paket entsteht ohne Nutzung - wie aus einer Datenbank vor dem Schemaschritt.
+            DataRepository.ExecuteNonQuery("UPDATE \"" + KonditionierungSchema.TAB_KALENDER + "\" SET \"Nutzung\" = NULL");
+
+            string name = Text("SELECT Projektname FROM Tab_Projekt WHERE ID = ?", new DbParam("@p", PROJEKT));
+            string ordner = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+                                                   "epos-knutz-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            System.IO.Directory.CreateDirectory(ordner);
+            try
+            {
+                string paket = System.IO.Path.Combine(ordner, "p.wpx");
+                var io = new ProjektExportImportCtrl();
+                Assert.True(io.Exportieren(name, paket));
+                int neu = io.Importieren(paket, "Transfer ohne Nutzung", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                         null, out string fehler);
+                Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+                long gNeu = GebaeudeDesProjekts(neu);
+                Assert.True(gNeu > 0);
+                Assert.Equal("BUERO", NutzungAmKalender(gNeu, Konditionierungsgroesse.Heizsoll));
+                // Nur die eingespielten Projekte: die Quelle bleibt, wie sie ist.
+                Assert.Null(NutzungAmKalender(g, Konditionierungsgroesse.Heizsoll));
+                Assert.Equal(PufferNutzungsprofil.BUERO_SCHULE, PufferAuslegungCtrl.Vorbelegen(neu, null).Nutzungsprofil.Profil);
+            }
+            finally
+            {
+                try { System.IO.Directory.Delete(ordner, true); } catch { /* Aufraeumen darf nicht scheitern */ }
+            }
+        }
+
         // =====================================================================
         //  Vorbelegung der Pufferauslegung
         // =====================================================================

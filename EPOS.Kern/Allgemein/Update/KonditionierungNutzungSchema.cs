@@ -76,6 +76,12 @@ namespace WindowsFormsApplication1
             "SELECT \"ID\", \"Groesse\", \"Bemerkung\" FROM \"" + KonditionierungSchema.TAB_KALENDER +
             "\" WHERE \"Nutzung\" IS NULL AND \"Bemerkung\" IS NOT NULL ORDER BY \"ID\"";
 
+        /// <summary>Dieselben Kalender, beschränkt auf die Gebäude und Zonen der Projekte ab einer ID (Paketimport).</summary>
+        internal const string SQL_OFFEN_AB_PROJEKT =
+            "SELECT k.\"ID\", k.\"Groesse\", k.\"Bemerkung\" FROM \"" + KonditionierungSchema.TAB_KALENDER +
+            "\" k JOIN \"Tab_Gebaeude\" g ON g.\"ID\" = k.\"ID_Gebaeude\" WHERE g.\"ID_Projekt\" > ? AND " +
+            "k.\"Nutzung\" IS NULL AND k.\"Bemerkung\" IS NOT NULL ORDER BY k.\"ID\"";
+
         /// <summary>Die Nutzung einer Vorlage nach Name und Größe.</summary>
         internal const string SQL_VORLAGE_NUTZUNG =
             "SELECT \"Nutzung\" FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE +
@@ -119,7 +125,9 @@ namespace WindowsFormsApplication1
         /// Die Zuordnung der Saat: je Kalenderzeile ohne Nutzung die Nutzung der Vorlage, die ihre
         /// Bemerkung nennt (gleicher Name, gleiche Größe); Zeilen ohne Treffer fehlen.
         /// </summary>
-        internal static List<KeyValuePair<long, string>> Zuordnung(DbVorgang v)
+        /// <param name="v">Der laufende Vorgang.</param>
+        /// <param name="nachProjekt">Nur die Kalender der Projekte mit größerer ID; <c>null</c> = alle Kalender.</param>
+        internal static List<KeyValuePair<long, string>> Zuordnung(DbVorgang v, long? nachProjekt = null)
         {
             var l = new List<KeyValuePair<long, string>>();
             if (!SpalteDa(v)) return l;
@@ -127,7 +135,9 @@ namespace WindowsFormsApplication1
                                        new DbParam("@t", TAB_VORLAGE));
             if (vorlagen == null || vorlagen == DBNull.Value ||
                 Convert.ToInt64(vorlagen, CultureInfo.InvariantCulture) == 0) return l;
-            DataTable t = v.Lese(SQL_OFFEN);
+            DataTable t = nachProjekt.HasValue
+                ? v.Lese(SQL_OFFEN_AB_PROJEKT, new DbParam("@p", nachProjekt.Value))
+                : v.Lese(SQL_OFFEN);
             if (t == null) return l;
             foreach (DataRow r in t.Rows)
             {
@@ -156,13 +166,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="bericht">Nimmt eine Zeile auf; darf <c>null</c> sein.</param>
         /// <returns>Die Zahl der gefüllten Kalenderzeilen.</returns>
-        public static int Saat(IList<string> bericht)
+        public static int Saat(IList<string> bericht) => Saat(bericht, null);
+
+        /// <summary>
+        /// Die Saat für die Projekte, die ein Paketimport angelegt hat (IDs größer als
+        /// <paramref name="nachProjekt"/>): Ein Paket mit älterem Schemastand bringt die Nutzung nicht mit
+        /// und bekommt sie aus der Herkunft in <c>Bemerkung</c>. Stehende Werte bleiben.
+        /// </summary>
+        public static int SaatNachImport(long nachProjekt) => Saat(null, nachProjekt);
+
+        private static int Saat(IList<string> bericht, long? nachProjekt)
         {
             if (!SchemaVollstaendig()) return 0;
             int n = 0;
             using (DbVorgang v = DataRepository.Vorgang())
             {
-                foreach (KeyValuePair<long, string> z in Zuordnung(v))
+                foreach (KeyValuePair<long, string> z in Zuordnung(v, nachProjekt))
                     n += v.Ausfuehren(SQL_SETZEN, new DbParam("@n", z.Value), new DbParam("@id", z.Key));
                 v.Commit();
             }
