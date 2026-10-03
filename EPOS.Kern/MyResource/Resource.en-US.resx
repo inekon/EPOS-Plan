@@ -15047,6 +15047,21 @@ The CHP unit never generates more electricity than the current own demand. The u
   <data name="SIMDET_BHKW_SERIE_SPEICHERLADUNG" xml:space="preserve">
     <value>Storage charging</value>
   </data>
+  <data name="SIMDET_BHKW_TITEL_STROMLAST" xml:space="preserve">
+    <value>Electricity load, annual load profile</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_STROMPRODUKTION" xml:space="preserve">
+    <value>Electricity production</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_EINSPEISUNG" xml:space="preserve">
+    <value>Grid feed-in</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_RESTSTROM" xml:space="preserve">
+    <value>Residual electricity demand</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_STROMBEDARF" xml:space="preserve">
+    <value>Electricity demand</value>
+  </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH" xml:space="preserve">
     <value>Power consumption:</value>
   </data>
@@ -32363,6 +32378,12 @@ Do you want to allow this?</value>
   <data name="WIRT_NM_KENNZEICHEN" xml:space="preserve">
     <value>Effect {0}: {1}</value>
   </data>
+  <data name="WIRT_HINWEISE_EINER" xml:space="preserve">
+    <value>1 note (click)</value>
+  </data>
+  <data name="WIRT_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} notes (click)</value>
+  </data>
   <data name="WIRT_NM_LISTE_HINWEIS" xml:space="preserve">
     <value>DIN EN 17463 requires every assessment to state what cannot be expressed in euros (6.1, 8.2): for each effect its category, its duration (short, medium, long) and its effect on the organisation, employees and environment (none to strong). The assessment is duration × strongest effect (0 to 9). The effects belong to the measure as a whole, appear in the report and do not enter the net present value.</value>
   </data>
@@ -43811,6 +43832,21 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
     <value>Construction "{0}": {1} layers carry density and thermal conductivity but no specific heat capacity; c [J/(kg·K)] is taken from the material catalogue or from DIN EN ISO 10456 — {2}.</value>
+  </data>
+  <data name="SIM_NAV_KAELTEPRODUKTION_CHART" xml:space="preserve">
+    <value>❄️ 
+Cooling
+generation
+chart</value>
+  </data>
+  <data name="CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Cooling generation, annual load profile</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Uncovered cooling</value>
   </data>
 </root>
 

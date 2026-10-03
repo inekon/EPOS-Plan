@@ -105,6 +105,9 @@
     <!-- Konzept Kesselkennlinie 5: die kleine Kurve des Kesseleditors (Wirkungsgrad ueber der Last je
          Ruecklauf) - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Kesselkennlinie.cs" />
+
+    <!-- Die Stromlast des BHKW: das zweite Bild des BHKW-Reiters - Mass-, Gegen- und SVG-Proben. -->
+    <Compile Include="Program.BhkwStrom.cs" />
   </ItemGroup>
 
   <ItemGroup>

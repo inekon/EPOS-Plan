@@ -101,9 +101,14 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         return Render<WirtschaftlichkeitSeite>(p =>
         {
             p.Add(x => x.Laden, () => { _geladen++; return _stand; });
+            p.Add(x => x.HinweisGedaechtnis, _hinweisGedaechtnis);
             mehr?.Invoke(p);
         });
     }
+
+    /// <summary>Das Sitzungsgedaechtnis der Hinweisklappe je Testfall — das prozessweite
+    /// bliebe sonst zwischen den Faellen stehen.</summary>
+    private readonly Dictionary<string, bool> _hinweisGedaechtnis = new();
 
     /// <summary>Ein Parametersatz, der jeden Unterdialog aufbauen lässt.</summary>
     private static IReadOnlyDictionary<string, object> LeererSatz()
@@ -1263,8 +1268,87 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         stand.Ansicht = MitWarnung("Erster Grund. | Zweiter Grund.");
         var cut = Zeige(stand: stand);
 
+        Assert.Empty(Warnbaender(cut));                       // eingeklappt: mehr als ein Hinweis
+        cut.Find(".epos-wirt-hinweisklappe").Click();
         Assert.Equal(2, Warnbaender(cut).Count);
         Assert.Equal(new[] { "Erster Grund.", "Zweiter Grund." }, cut.Instance.Warnungen);
+    }
+
+    // =====================================================================
+    //  Die Hinweise als Klappzeile (Anwenderwunsch 03.10.2026)
+    // =====================================================================
+
+    /// <summary>Mehrere Hinweise stehen eingeklappt: eine Zeile mit Zeichen, Zahl,
+    /// „n Hinweise (anklicken)" und „anzeigen ▾"; kein Banner darunter.</summary>
+    [Fact]
+    public void Mehrere_Hinweise_stehen_eingeklappt_mit_ihrer_Zahl()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht = MitWarnung("Erster Grund. | Zweiter Grund. | Dritter Grund.");
+        var cut = Zeige(stand: stand);
+
+        IElement band = cut.Find(".epos-wirt-warnband .epos-wirt-hinweisklappe");
+        Assert.Equal("false", band.GetAttribute("aria-expanded"));
+        Assert.Equal("3", band.QuerySelector(".epos-simerg-laufband-zahl")!.TextContent);
+        Assert.Equal("!", band.QuerySelector(".epos-hinweisklappe-symbol")!.TextContent);
+        Assert.Contains("3 Hinweise (anklicken)", band.TextContent);
+        Assert.Contains("anzeigen ▾", band.TextContent);
+        Assert.Empty(Warnbaender(cut));
+        Assert.Empty(cut.FindAll(".epos-wirt-hinweisliste"));
+    }
+
+    /// <summary>Aufklappen zeigt die vollstaendige Liste wie zuvor, „ausblenden ▴";
+    /// der zweite Klick klappt wieder zu.</summary>
+    [Fact]
+    public void Aufklappen_zeigt_alle_Hinweise()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht = MitWarnung("Erster Grund. | Zweiter Grund. | Dritter Grund.");
+        var cut = Zeige(stand: stand);
+
+        cut.Find(".epos-wirt-hinweisklappe").Click();
+
+        IElement band = cut.Find(".epos-wirt-hinweisklappe");
+        Assert.Equal("true", band.GetAttribute("aria-expanded"));
+        Assert.Contains("ausblenden ▴", band.TextContent);
+        Assert.Equal(new[] { "Erster Grund.", "Zweiter Grund.", "Dritter Grund." },
+                     Warnbaender(cut).Select(b => b.QuerySelector(".epos-warnbanner-text")!.TextContent).ToArray());
+
+        cut.Find(".epos-wirt-hinweisklappe").Click();
+        Assert.Empty(Warnbaender(cut));
+    }
+
+    /// <summary>Ein einzelner Hinweis steht offen.</summary>
+    [Fact]
+    public void Ein_einzelner_Hinweis_steht_offen()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht = MitWarnung("Einziger Grund.");
+        var cut = Zeige(stand: stand);
+
+        IElement band = cut.Find(".epos-wirt-hinweisklappe");
+        Assert.Equal("true", band.GetAttribute("aria-expanded"));
+        Assert.Contains("1 Hinweis (anklicken)", band.TextContent);
+        Assert.Contains("Einziger Grund.", Assert.Single(Warnbaender(cut)).TextContent);
+    }
+
+    /// <summary>Die Stellung bleibt beim Neuzeichnen und ueber einen Seitenwechsel
+    /// innerhalb der Sitzung (Sitzungsgedaechtnis, keine Datenbank).</summary>
+    [Fact]
+    public void Die_Stellung_bleibt_beim_Neuzeichnen()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht = MitWarnung("Erster Grund. | Zweiter Grund.");
+        var cut = Zeige(stand: stand);
+        cut.Find(".epos-wirt-hinweisklappe").Click();
+
+        cut.Render();
+        Assert.Equal(2, Warnbaender(cut).Count);
+
+        // Die Seite wird neu aufgebaut (Seitenwechsel und zurueck): weiterhin offen.
+        var zweite = Zeige(stand: stand);
+        Assert.Equal("true", zweite.Find(".epos-wirt-hinweisklappe").GetAttribute("aria-expanded"));
+        Assert.True(_hinweisGedaechtnis[WirtschaftlichkeitSeite.HINWEISKLAPPE_SCHLUESSEL]);
     }
 
     /// <summary>

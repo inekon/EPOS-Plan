@@ -1145,6 +1145,65 @@ public class ErzeugerReiterTests : EposBunitContext
                      _auftraege.Last(a => a.Bild == Bilder.Bhkw).Reihen!.ToArray());
     }
 
+    // ---- Die Stromlast des BHKW: das zweite Bild unter der Wärmelast ---------
+
+    /// <summary>
+    /// Unter der Wärmelast steht die „Stromlast Jahresganglinie“: eine dritte Schalterzeile
+    /// mit den vier Reihen in der Reihenfolge des Bildes, alle AN, und ein eigener
+    /// Bildauftrag <c>Bilder.BhkwStrom</c> mit allen vier Schlüsseln.
+    /// </summary>
+    [Fact]
+    public void Bhkw_zeigt_unter_der_Waermelast_die_Stromlast_mit_vier_Reihen()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+
+        Assert.Equal(3, seite.FindAll("div.epos-simerg-schalter").Count);
+        Assert.Equal(new[] { "Stromproduktion", "Stromeinspeisung", "Reststrombedarf", "Strombedarf" },
+                     Schalterzeile(seite, 2));
+
+        string[] alle = { "STROMPRODUKTION", "EINSPEISUNG", "RESTSTROM", "STROMBEDARF" };
+        Assert.Equal(alle, seite.Instance.GewaehlteStromreihen.ToArray());
+        Bildauftrag strom = _auftraege.Last(a => a.Bild == Bilder.BhkwStrom);
+        Assert.Equal(alle, strom.Reihen!.ToArray());
+        Assert.False(strom.Sortiert);
+
+        // Das Wärmebild bleibt, was es war.
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "SPEICHERLADUNG", "RESTWAERME", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Bhkw).Reihen!.ToArray());
+        Assert.Contains("simerg-bhkw-strom", seite.Markup);
+        Assert.Contains("Stromlast Jahresganglinie", seite.Markup);
+    }
+
+    /// <summary>Die Abwahl einer Stromreihe nimmt nur ihren Schlüssel aus dem Strom-Auftrag.</summary>
+    [Fact]
+    public void Bhkw_nimmt_die_abgewaehlte_Stromreihe_aus_dem_Strom_Auftrag()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+        _auftraege.Clear();
+
+        Kasten(seite, 1, 2).Change(false);              // Stromeinspeisung
+
+        Assert.Equal(new[] { "STROMPRODUKTION", "RESTSTROM", "STROMBEDARF" },
+                     seite.Instance.GewaehlteStromreihen.ToArray());
+        Assert.Equal(new[] { "STROMPRODUKTION", "RESTSTROM", "STROMBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.BhkwStrom).Reihen!.ToArray());
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "SPEICHERLADUNG", "RESTWAERME", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Bhkw).Reihen!.ToArray());
+    }
+
+    /// <summary>„sortiert“ gilt für beide Bilder: ein Schalter, zwei Dauerlinien.</summary>
+    [Fact]
+    public void Bhkw_sortiert_gilt_fuer_Waerme_und_Strom()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+        _auftraege.Clear();
+
+        Kasten(seite, 0, 0).Change(true);
+
+        Assert.True(_auftraege.Last(a => a.Bild == Bilder.Bhkw).Sortiert);
+        Assert.True(_auftraege.Last(a => a.Bild == Bilder.BhkwStrom).Sortiert);
+    }
+
     /// <summary>Ohne Praesenz: kein Diagramm, kein Umschalter, keine Speicherzeilen.</summary>
     [Fact]
     public void Bhkw_ohne_Praesenz_zeigt_kein_Diagramm()
@@ -1496,8 +1555,16 @@ public class ErzeugerReiterTests : EposBunitContext
         => Bildpruefung(SolarZeichnen(), "simerg-solarthermie");
 
     [Fact]
-    public void Der_Bhkwreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()
-        => Bildpruefung(BhkwZeichnen(Bhkw()), "simerg-bhkw");
+    public void Der_Bhkwreiter_traegt_zwei_DiagrammSvg_mit_ihren_Kennungen()
+    {
+        // Wärmelast oben, Stromlast darunter - je Bild eine eigene Kennung (eigener Zoom, eigener clipPath).
+        var seite = BhkwZeichnen(Bhkw());
+        var bilder = seite.FindComponents<DiagrammSvg>();
+        Assert.Equal(new[] { "simerg-bhkw", "simerg-bhkw-strom" },
+                     bilder.Select(b => b.Instance.Kennung).ToArray());
+        Assert.All(bilder, b => Assert.Equal("kW", b.Instance.Einheit));
+        Assert.Equal(2, seite.FindAll("svg.epos-flaeche").Count);
+    }
 
     [Fact]
     public void Der_Pvreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()

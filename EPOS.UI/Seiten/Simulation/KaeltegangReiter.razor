@@ -1,0 +1,74 @@
+﻿@* Der KAELTEGANG-Reiter der Ergebnisseite: die Kaelteproduktion des Laufs.
+
+   DAS GEGENSTUECK ZUM WAERMEGANG. Je Kaelteerzeuger (Waermepumpe im Kuehlbetrieb)
+   seine gedeckte Kaelte je Stunde als Saeule, darauf die ungedeckte Kaelte im Grau
+   des Rests, darueber der Kaeltebedarf als Linie auf derselben Achse. Die Reihen
+   sind die Stundenreihen des Laufs; das Bild baut der Kern
+   (KaelteProduktionBild), gerufen von der Huelle (Bildauftrag KAELTEGANG).
+
+   NUR MIT KAELTE. Der Ergebnisreiter zeigt dieses Blatt allein, wenn das Projekt
+   Kaelte rechnet (Projektschalter Kuehlbetrieb); sonst steht es gar nicht da.
+
+   EIN SCHALTER: „sortiert" (Jahresdauerlinie). Eine Reihenwahl gibt es nicht - die
+   Legende des Bildes blendet einzelne Reihen aus. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Ergebnisblattwirt
+
+<div class="epos-simerg-block">
+
+    <div class="epos-simerg-schalter">
+        <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                  WertChanged="@(w => { _sortiert = w; Merken(); })" />
+    </div>
+
+    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-kaeltegang"
+                 Bezeichnung="@Resource.CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE"
+                 Einheit="kW"
+                 Palette="@Farbpalette.Aktuell"
+                 FarbwahlErlaubt="@Farbwahl"
+                 FarbeGewaehlt="FarbeUebernehmen"
+                 FarbeZurueckgesetzt="FarbeVerwerfen" />
+
+</div>
+
+@code {
+    /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
+
+    /// <summary>
+    /// Das Sitzungsgedaechtnis dieses Reiters — ohne Angabe der prozessweite Stand aus
+    /// <see cref="Ganglinienregister"/>; es merkt „sortiert" ueber den Blattwechsel.
+    /// </summary>
+    [Parameter] public Ganglinienstand? Gedaechtnis { get; set; }
+
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
+    private bool _sortiert;
+    private Ganglinienstand _stand = new Ganglinienstand();
+
+    protected override void OnInitialized()
+    {
+        _stand = Gedaechtnis ?? Ganglinienregister.Stand(Ganglinienregister.KAELTEGANG);
+        if (_stand.Belegt) _sortiert = _stand.Sortiert;
+        base.OnInitialized();   // meldet die Anzeigeschalter an (Ergebnisblattwirt)
+    }
+
+    private void Merken() => _stand.Merken(-1, _sortiert, false, null);
+
+    private Zeichenmodell? ModellGang =>
+        Modell?.Invoke(new Bildauftrag(Bilder.Kaeltegang, _sortiert));
+
+    // =====================================================================
+    //  Der Hilfe-Assistent: die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>„sortiert" — der eine Schalter des Blatts.</summary>
+    protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
+        => new List<Anzeigeschalter>
+        {
+            Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, w => { _sortiert = w; Merken(); })
+        };
+}

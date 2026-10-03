@@ -5,8 +5,8 @@
    rechts ein Inhaltspanel, in das je nach Knopf NavigatorUebersicht,
    DashboardForm, NavigatorWaerme oder NavigatorStrom eingesetzt wurde.
 
-   AUS DEN VIER KNOEPFEN WIRD EIN INNERER <Reiter> - seit #222 mit DREI
-   Blaettern. Die zwei Fremdinhalte (Waerme- und Stromganglinie) reicht der Wirt
+   AUS DEN VIER KNOEPFEN WIRD EIN INNERER <Reiter> mit DREI Blaettern, mit
+   Kaelte VIER. Die Fremdinhalte (Waerme-, Strom- und Kaelteganglinie) reicht der Wirt
    als RenderFragment herein - so bleibt diese Komponente das, was sie ist: die
    Navigation und die AUTARKIE-ANALYSE. Das vierte Blatt „Uebersicht" ist mit
    #222 gefallen: Es zeigte dieselben Zahlen wie der gleichnamige HAUPTreiter,
@@ -46,9 +46,29 @@
                11.09.2026, Punkt a: „eine Uebersicht"). Es zeigte dieselben Zahlen
                wie der Hauptreiter „Uebersicht" - zwei Ringe, zwei Rest-Kacheln und
                das Eigenanteilsraster -, und der steht seit #216 ohnehin als ERSTES
-               Blatt der Seite. Was bleibt, sind die DREI Blaetter, die dieser
-               Reiter selbst traegt: die Autarkie-Analyse und die zwei
-               Produktionsganglinien. Das erste Blatt ist seither die AUTARKIE. *@
+               Blatt der Seite. Was bleibt, sind die Blaetter, die dieser Reiter
+               selbst traegt: die Produktionsganglinien von Waerme, Strom und -
+               nur, wenn das Projekt Kaelte rechnet - Kaelte, und ganz rechts die
+               Autarkie-Analyse. Beim Oeffnen aktiv ist die AUTARKIE (_blatt), auch
+               wenn sie nicht vorn steht. *@
+
+            <Reiterblatt Schluessel="WAERMEGANG" Titel="@Resource.SIM_NAV_WAERMEPRODUKTION_CHART">
+                <KindInhalt>@WaermegangInhalt</KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="STROMGANG" Titel="@Resource.SIM_NAV_STROMPRODUKTION_CHART">
+                <KindInhalt>@StromgangInhalt</KindInhalt>
+            </Reiterblatt>
+
+            @* Der Kaeltereiter steht NUR, wenn der Wirt einen Inhalt reicht - und das tut
+               er allein fuer ein Projekt mit Kuehlbetrieb. Ohne Kaelte kein Blatt, auch
+               kein leeres. *@
+            @if (KaeltegangInhalt is not null)
+            {
+                <Reiterblatt Schluessel="KAELTEGANG" Titel="@Resource.SIM_NAV_KAELTEPRODUKTION_CHART">
+                    <KindInhalt>@KaeltegangInhalt</KindInhalt>
+                </Reiterblatt>
+            }
 
             <Reiterblatt Schluessel="AUTARKIE" Titel="@Resource.SIM_NAV_AUTARKIE_ANALYSE">
                 <KindInhalt>
@@ -161,14 +181,6 @@
                 </KindInhalt>
             </Reiterblatt>
 
-            <Reiterblatt Schluessel="WAERMEGANG" Titel="@Resource.SIM_NAV_WAERMEPRODUKTION_CHART">
-                <KindInhalt>@WaermegangInhalt</KindInhalt>
-            </Reiterblatt>
-
-            <Reiterblatt Schluessel="STROMGANG" Titel="@Resource.SIM_NAV_STROMPRODUKTION_CHART">
-                <KindInhalt>@StromgangInhalt</KindInhalt>
-            </Reiterblatt>
-
         </KindInhalt>
     </Reiter>
 
@@ -196,13 +208,23 @@
     /// <summary>Der Stromgang-Reiter.</summary>
     [Parameter] public RenderFragment? StromgangInhalt { get; set; }
 
+    /// <summary>
+    /// Der Kaeltegang-Reiter; <c>null</c> = das Projekt rechnet keine Kaelte, dann steht
+    /// das Blatt gar nicht da.
+    /// </summary>
+    [Parameter] public RenderFragment? KaeltegangInhalt { get; set; }
+
     [Parameter] public string ReiterBezeichnung { get; set; } = "Ergebnis";
 
     /// <summary>Das sichtbare Blatt (Pruefhilfe).</summary>
     public string AktivesBlatt => _reiter?.AktiverSchluessel ?? _blatt;
 
     private Reiter? _reiter;
-    private string _blatt = "";
+    /// <summary>
+    /// Beim Oeffnen aktiv: die Autarkie-Analyse. Sie steht ganz rechts, bleibt aber das
+    /// Startblatt - der Reiter nimmt ohne Vorgabe das ERSTE Blatt.
+    /// </summary>
+    private string _blatt = "AUTARKIE";
 
     private Zeichenmodell? ModellMonate =>
         Modell?.Invoke(new Bildauftrag(Bilder.AutarkieMonate, false, -1, null, Autarkie.SpeicherKwh));

@@ -368,6 +368,14 @@ namespace WindowsFormsApplication1
                     "und der Pufferspeicher-Füllstand einblenden. Der Füllstand wird in Kilowattstunden dargestellt " +
                     "und macht das Laden und Entladen des Speichers sichtbar."),
 
+                new WissensAbschnitt("Kälte Produktion Chart", "Ergebnis",
+                    "Das Ergebnis-Diagramm 'Kälte Produktion Chart' steht nur, wenn das Projekt Kälte rechnet " +
+                    "(Projektschalter Kühlbetrieb). Es zeigt die Jahresganglinie der Kälteerzeugung: je Wärmepumpe " +
+                    "im Kühlbetrieb die gedeckte Kälte, darauf die ungedeckte Kälte in Grau und darüber den " +
+                    "Kältebedarf als Linie. Mit 'sortiert' wechselt die Darstellung zur Jahresdauerlinie. " +
+                    "Die Unterreiter des Ergebnisreiters stehen in der Folge Wärme, Strom, Kälte und ganz rechts " +
+                    "die Autarkie-Analyse, die beim Öffnen aktiv ist."),
+
                 new WissensAbschnitt("Klimaregion und Außentemperatur", "Projekt",
                     "Die Klimaregion liefert den stündlichen Außentemperaturgang für das gesamte Simulationsjahr. " +
                     "Sie wird oben im Hauptfenster ausgewählt und muss vor der Berechnung des Wärmebedarfs gesetzt " +

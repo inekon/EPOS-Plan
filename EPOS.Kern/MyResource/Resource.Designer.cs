@@ -16497,6 +16497,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ungedeckte Kälte ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kesselwärme ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_KESSELWAERME {
@@ -16736,6 +16754,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TITEL_KAELTELAST_JAHRESGANGLINIE {
             get {
                 return ResourceManager.GetString("CHART_TITEL_KAELTELAST_JAHRESGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteproduktion Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE", resourceCulture);
             }
         }
         
@@ -82848,11 +82875,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromeinspeisung ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststrombedarf ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_RESTSTROM {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_RESTSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherladung ähnelt.
         /// </summary>
         public static string SIMDET_BHKW_SERIE_SPEICHERLADUNG {
             get {
                 return ResourceManager.GetString("SIMDET_BHKW_SERIE_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromproduktion ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_STROMPRODUKTION {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_STROMPRODUKTION", resourceCulture);
             }
         }
         
@@ -82871,6 +82934,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMDET_BHKW_SPEICHERLADUNG {
             get {
                 return ResourceManager.GetString("SIMDET_BHKW_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromlast Jahresganglinie ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_TITEL_STROMLAST {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_TITEL_STROMLAST", resourceCulture);
             }
         }
         
@@ -91752,6 +91824,18 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_NAV_AUTARKIE_ANALYSE {
             get {
                 return ResourceManager.GetString("SIM_NAV_AUTARKIE_ANALYSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ❄️ 
+        ///Kälte
+        ///Produktion
+        ///Chart ähnelt.
+        /// </summary>
+        public static string SIM_NAV_KAELTEPRODUKTION_CHART {
+            get {
+                return ResourceManager.GetString("SIM_NAV_KAELTEPRODUKTION_CHART", resourceCulture);
             }
         }
         
@@ -106738,6 +106822,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER {
             get {
                 return ResourceManager.GetString("WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis (anklicken) ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEISE_EINER {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEISE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise (anklicken) ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEISE_MEHRERE {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEISE_MEHRERE", resourceCulture);
             }
         }
         

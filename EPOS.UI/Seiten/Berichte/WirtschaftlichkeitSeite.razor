@@ -127,10 +127,21 @@
             {
                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@SimulationVeraltetText" />
             }
-            @foreach (string w in _warnungen)
-            {
-                <Warnbanner Stufe="WarnStufe.Warnung" Text="@w" />
-            }
+            @* Die Hinweise des Laufs als Klappzeile (Baustein Hinweisklappe, derselbe wie
+               auf Simulations- und Berichtsseite): eingeklappt, sobald mehr als einer
+               vorliegt, ein einzelner steht offen; die Stellung gilt fuer die Sitzung. *@
+            <Hinweisklappe Anzahl="@_warnungen.Count" Stufe="WarnStufe.Warnung"
+                           Klasse="epos-wirt-hinweisklappe"
+                           TextEiner="@Resource.WIRT_HINWEISE_EINER"
+                           TextMehrere="@Resource.WIRT_HINWEISE_MEHRERE"
+                           Schluessel="@HINWEISKLAPPE_SCHLUESSEL" Gedaechtnis="@HinweisGedaechtnis">
+                <div class="epos-wirt-hinweisliste">
+                    @foreach (string w in _warnungen)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@w" />
+                    }
+                </div>
+            </Hinweisklappe>
             @if (Berechnen is not null)
             {
                 <div class="epos-leiste">
@@ -1094,6 +1105,13 @@
 
     /// <summary>Die Warnungen des Bandes (Prüfhilfe).</summary>
     public IReadOnlyList<string> Warnungen => _warnungen;
+
+    /// <summary>Schluessel dieser Seite im Sitzungsgedaechtnis der Hinweisklappe.</summary>
+    public const string HINWEISKLAPPE_SCHLUESSEL = "Wirtschaftlichkeit";
+
+    /// <summary>Das Sitzungsgedaechtnis der Hinweisklappe; ohne Angabe das prozessweite
+    /// (<see cref="Hinweisklappe.Sitzung"/>). Pruefstaende reichen ein eigenes herein.</summary>
+    [Parameter] public IDictionary<string, bool>? HinweisGedaechtnis { get; set; }
 
     /// <summary>Steht das Band „Simulationsergebnis veraltet“? (Prüfhilfe)</summary>
     public bool SimulationVeraltet => _simVeraltet;
