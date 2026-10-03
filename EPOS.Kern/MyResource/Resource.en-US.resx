@@ -15047,6 +15047,21 @@ The CHP unit never generates more electricity than the current own demand. The u
   <data name="SIMDET_BHKW_SERIE_SPEICHERLADUNG" xml:space="preserve">
     <value>Storage charging</value>
   </data>
+  <data name="SIMDET_BHKW_TITEL_STROMLAST" xml:space="preserve">
+    <value>Electricity load, annual load profile</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_STROMPRODUKTION" xml:space="preserve">
+    <value>Electricity production</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_EINSPEISUNG" xml:space="preserve">
+    <value>Grid feed-in</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_RESTSTROM" xml:space="preserve">
+    <value>Residual electricity demand</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_STROMBEDARF" xml:space="preserve">
+    <value>Electricity demand</value>
+  </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH" xml:space="preserve">
     <value>Power consumption:</value>
   </data>

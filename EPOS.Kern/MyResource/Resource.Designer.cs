@@ -82848,11 +82848,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromeinspeisung ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststrombedarf ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_RESTSTROM {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_RESTSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherladung ähnelt.
         /// </summary>
         public static string SIMDET_BHKW_SERIE_SPEICHERLADUNG {
             get {
                 return ResourceManager.GetString("SIMDET_BHKW_SERIE_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromproduktion ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_STROMPRODUKTION {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_STROMPRODUKTION", resourceCulture);
             }
         }
         
@@ -82871,6 +82907,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMDET_BHKW_SPEICHERLADUNG {
             get {
                 return ResourceManager.GetString("SIMDET_BHKW_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromlast Jahresganglinie ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_TITEL_STROMLAST {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_TITEL_STROMLAST", resourceCulture);
             }
         }
         
