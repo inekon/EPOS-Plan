@@ -1275,6 +1275,91 @@ namespace WindowsFormsApplication1
             return EinspeisegrenzeSchreiben(idProjekt, grenze);
         }
 
+        // --- Projekteinstellung „Thermische Desinfektion" (Schemaschritt PufferOptionenSchema; Welle M7, BW5)
+
+        /// <summary>Die fünf Spalten der Desinfektion in Lesereihenfolge.</summary>
+        private static readonly string[] DESINFEKTION_SPALTEN =
+        {
+            PufferOptionenSchema.SPALTE_DESINFEKTION_AKTIV, PufferOptionenSchema.SPALTE_DESINFEKTION_INTERVALL,
+            PufferOptionenSchema.SPALTE_DESINFEKTION_STUNDE, PufferOptionenSchema.SPALTE_DESINFEKTION_ZIEL,
+            PufferOptionenSchema.SPALTE_DESINFEKTION_VOLUMEN
+        };
+
+        /// <summary>
+        /// Die thermische Desinfektion eines Projekts — DIALOGFREI und NULL-ERHALTEND in EINER Abfrage der
+        /// fünf Spalten gelesen. <b>Fehlende Zeile, fehlende Spalte und ein unlesbarer Satz heißen „aus"</b>
+        /// (<see cref="Desinfektionsvorgabe.Aus"/>).
+        /// </summary>
+        public static Desinfektionsvorgabe DesinfektionLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Desinfektionsvorgabe.Aus;
+            HashSet<string> spalten = StilleDb.SpaltenNamen(PufferOptionenSchema.TAB_EINSTELLUNGEN);
+            if (spalten == null || !spalten.Contains(PufferOptionenSchema.SPALTE_DESINFEKTION_VOLUMEN))
+                return Desinfektionsvorgabe.Aus;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + string.Join("], [", DESINFEKTION_SPALTEN) + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < DESINFEKTION_SPALTEN.Length)
+                return Desinfektionsvorgabe.Aus;
+
+            DataRow r = dt.Rows[0];
+            double? aktiv = HeizgrenzeOderLeer(r[0]);
+            double? intervall = HeizgrenzeOderLeer(r[1]);
+            double? stunde = HeizgrenzeOderLeer(r[2]);
+            return new Desinfektionsvorgabe(
+                aktiv.HasValue && aktiv.Value != 0,
+                intervall.HasValue ? (int?)Math.Round(intervall.Value) : null,
+                stunde.HasValue ? (int?)Math.Round(stunde.Value) : null,
+                HeizgrenzeOderLeer(r[3]),
+                HeizgrenzeOderLeer(r[4]));
+        }
+
+        /// <summary>
+        /// Schreibt die Desinfektion in EINEM, zielgenauen <c>UPDATE</c> der fünf Spalten — aus demselben
+        /// Grund wie <see cref="AufheizvorgabeSchreiben"/>. „Aus" schreibt 0 nur, wenn Werte gepflegt sind;
+        /// <see cref="Desinfektionsvorgabe.Aus"/> schreibt NULL in alle fünf. Rückgabe <c>false</c>, wenn
+        /// keine Zeile getroffen wurde oder eine Spalte fehlt.
+        /// </summary>
+        public static bool DesinfektionSchreiben(int idProjekt, Desinfektionsvorgabe v)
+        {
+            if (idProjekt <= 0 || v == null) return false;
+            bool leer = v.Equals(Desinfektionsvorgabe.Aus);
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + string.Join("] = ?, [", DESINFEKTION_SPALTEN) + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@aktiv", DbParamTyp.Integer, leer ? (object)DBNull.Value : (v.Aktiv ? 1 : 0)),
+                StilleDb.Par("@intervall", DbParamTyp.Integer, (object)v.IntervallTage ?? DBNull.Value),
+                StilleDb.Par("@stunde", DbParamTyp.Integer, (object)v.Stunde ?? DBNull.Value),
+                StilleDb.Par("@ziel", DbParamTyp.Double, (object)v.ZielC ?? DBNull.Value),
+                StilleDb.Par("@volumen", DbParamTyp.Double, (object)v.VolumenL ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>
+        /// <b>Die Projekteinstellung „Thermische Desinfektion"</b> — der Schreibweg der Oberfläche und des
+        /// Assistenten nach der Regel von <see cref="AufheizvorgabeSetzen"/>: Steht ein Einstellungssatz,
+        /// wird geschrieben; steht keiner, ist „aus" ohne Satz schon wahr, jede andere Einstellung legt den
+        /// Vormerksatz an.
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Vorgabe trägt.</returns>
+        public static bool DesinfektionSetzen(int idProjekt, Desinfektionsvorgabe v)
+        {
+            if (idProjekt <= 0 || v == null) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (v.Equals(Desinfektionsvorgabe.Aus)) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return DesinfektionSchreiben(idProjekt, v);
+        }
+
         /// <summary>Steht für das Projekt ein Einstellungssatz (auch ein Vormerksatz)?</summary>
         private static bool SatzVorhanden(int idProjekt)
         {

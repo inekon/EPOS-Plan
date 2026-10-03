@@ -67,6 +67,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Netzverlustvorgabe Netzkanaele = Netzverlustvorgabe.Leer;
 
+        /// <summary>Die thermische Desinfektion (BW5); „aus", wenn das Projekt keine führt (dann keine Zeile).</summary>
+        public Desinfektionsvorgabe Desinfektion = Desinfektionsvorgabe.Aus;
+
+        /// <summary>Jahresmenge der Desinfektion [MWh] nach den Regeln des Laufs; 0 ohne.</summary>
+        public double DesinfektionMwh;
+
+        /// <summary>Aufgeheiztes Volumen der Desinfektion [l] (gepflegt oder das der Brauchwasserspeicher).</summary>
+        public double DesinfektionVolumenL;
+
         /// <summary>Rechnet das Projekt sein Brauchwasser über den Zapfprofilgenerator? (Dann gilt dessen Zirkulation.)</summary>
         public bool Zapfprofilweg;
 
@@ -252,6 +261,15 @@ namespace WindowsFormsApplication1
             // BW4: Netzverluste je Kanal und Zirkulation im Bestandsweg.
             d.Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(d.IdProjekt);
             d.Zapfprofilweg = ZapfprofilCtrl.Weg(d.IdProjekt) == BrauchwasserWeg.Generator;
+
+            // BW5: die thermische Desinfektion samt Jahresmenge (dieselben Regeln wie im Lauf).
+            d.Desinfektion = KonfigurationCtrl.DesinfektionLesen(d.IdProjekt);
+            if (d.Desinfektion.Aktiv)
+            {
+                double kwh = WindowsFormsApplication1.Desinfektion.JahresmengeKwh(d.IdProjekt, d.Desinfektion, out double volumen, out _);
+                d.DesinfektionMwh = Energieeinheit.MWh.AusKWh(kwh);
+                d.DesinfektionVolumenL = volumen;
+            }
             return d;
         }
 

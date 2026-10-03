@@ -308,6 +308,8 @@ Was der Vergleich nicht entscheiden kann, steht als Strich mit dem Grund daneben
 
 Steht der Rechenweg auf ''Zapfprofil'', rechnet ''Simulation'' im Bedarfsprofil-Dialog die Zonen des Arbeitsstands – auch vor dem Speichern und ohne markiertes Bestandsprofil; die Leiste trägt dann den Vermerk ''rechnet den Zapfprofilweg''. Das Ergebnis zeigt die Brauchwassersäulen gestapelt aus Zapfung und Zirkulation und nennt die Zirkulation als eigenen Posten. Trägt eine Zone 0 oder kann das Zapfprofil nicht gerechnet werden, steht der Grund als Hinweis über den Listen.
 
+{{Anker|desinfektion-frischwasser}}'''Thermische Desinfektion und Frischwassermodul.''' Die Speichertemperatur der Auslegung und die Zapftemperatur der Zonen gehen in zwei Optionen der Simulation ein: Die [[Programm Dokumentation/Simulation#desinfektion|thermische Desinfektion]] heizt das Speichervolumen von der Speichertemperatur auf ihre Zieltemperatur, und ein [[Programm Dokumentation/Pufferspeicher#bereitschaft|Frischwassermodul]] am Pufferspeicher braucht oben die höchste Zapftemperatur der Zonen plus seine Grädigkeit. Ohne Zapfprofil gelten für beide 60 °C.
+
 == Beispiel ==
 
 Ein Gebäude mit Wohnungen und einem Büro erhält zwei Zonen: ''Zone 1 Wohnen'' mit der Nutzungsart Wohnen, 20 Wohneinheiten, Niveau ''mittel'', und ''Zone 2 Büro'' mit der Nutzungsart Büro, 50 Beschäftigte, Niveau ''mittel''. ''Anzeigen für'' zeigt die Summe beider Zonen oder jede Zone für sich; die Liste nennt den Jahresbedarf je Zone. ''Auslegung…'' fasst beide Zonen zu einer Speichergruppe zusammen und empfiehlt etwa einen Speicher von 300 l bei 25 kW; ''OK'' übernimmt diesen Punkt in das Zapfprofil.

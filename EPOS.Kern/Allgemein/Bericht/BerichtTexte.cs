@@ -293,6 +293,8 @@ namespace WindowsFormsApplication1
             { "Netzverluste Brauchwasser", "Network losses domestic hot water" },
             { "Netzverluste Prozesswärme", "Network losses process heat" },
             { "Zirkulation Brauchwasser", "Circulation domestic hot water" },
+            // BW5: thermische Desinfektion.
+            { "Thermische Desinfektion", "Thermal disinfection" },
             // Die übrigen Zeilen der Eigenschaftstafel „Energiebedarf (Simulationsergebnis Stamm)“ — englisch wie die
             // Beschriftungen ihrer Kennzahlen (KennzahlenKatalog: energie.waermebedarf, .waermelast, .strombedarf, .strommax).
             { "Wärmebedarf gesamt", "Total heat demand" },

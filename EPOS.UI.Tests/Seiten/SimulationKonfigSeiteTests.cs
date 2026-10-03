@@ -2556,4 +2556,69 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.False(seite.Instance.Laufparameter.Einspeisegrenze.Gesetzt);
         Assert.Equal(4, _grenzeGeschrieben.Count);
     }
+
+    // =====================================================================
+    //  Welle M7 (BW5) — die Projekteinstellung „Thermische Desinfektion"
+    // =====================================================================
+
+    private readonly List<WindowsFormsApplication1.Desinfektionsvorgabe> _desinfGeschrieben = new();
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitDesinfektion(WindowsFormsApplication1.Desinfektionsvorgabe stand)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Desinfektion = stand;
+            return p;
+        };
+        wege.DesinfektionSchreiben = v =>
+        {
+            _desinfGeschrieben.Add(v);
+            return true;
+        };
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+    }
+
+    private static IElement Desinfektionsabschnitt(IRenderedComponent<SimulationKonfigSeite> seite)
+        => seite.Find("section.epos-simkonfig-desinfektion");
+
+    /// <summary>
+    /// Aus: nur der Schalter und die Herleitungszeile; Zeichnen schreibt nichts, ohne Delegat kein
+    /// Abschnitt. Der Schalter schreibt sofort „an", danach stehen die vier Felder mit ihren Vorgaben
+    /// als Platzhalter da; ein Wert schreibt die ganze Vorgabe, ein Wert außerhalb wird benannt abgelehnt.
+    /// </summary>
+    [Fact]
+    public void Die_Desinfektion_schaltet_und_schreibt_sofort()
+    {
+        var seite = SeiteMitDesinfektion(WindowsFormsApplication1.Desinfektionsvorgabe.Aus);
+        IElement abschnitt = Desinfektionsabschnitt(seite);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_DESINFEKTION, abschnitt.GetAttribute("aria-label"));
+        Assert.Empty(abschnitt.QuerySelectorAll("input[type=text]"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_DESINFEKTION, abschnitt.TextContent);
+        Assert.Empty(_desinfGeschrieben);
+        Assert.Empty(Seite().FindAll("section.epos-simkonfig-desinfektion"));
+
+        Desinfektionsabschnitt(seite).QuerySelector("input[type=checkbox]")!.Change(true);
+        Assert.True(_desinfGeschrieben.Last().Aktiv);
+        Assert.True(seite.Instance.Laufparameter.Desinfektion.Aktiv);
+        var felder = Desinfektionsabschnitt(seite).QuerySelectorAll("input[type=text]");
+        Assert.Equal(4, felder.Length);
+        Assert.Equal("7", felder[0].GetAttribute("placeholder"));
+
+        felder[0].Input("14");
+        Assert.Equal(14, _desinfGeschrieben.Last().IntervallTage);
+        Desinfektionsabschnitt(seite).QuerySelectorAll("input[type=text]")[3].Input("800");
+        Assert.Equal(800.0, _desinfGeschrieben.Last().VolumenL);
+        Assert.Equal(14, _desinfGeschrieben.Last().IntervallTage);
+
+        int vorher = _desinfGeschrieben.Count;
+        Desinfektionsabschnitt(seite).QuerySelectorAll("input[type=text]")[2].Input("95");
+        Assert.Equal(vorher, _desinfGeschrieben.Count);
+        Assert.Null(seite.Instance.Laufparameter.Desinfektion.ZielC);
+    }
 }

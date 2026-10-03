@@ -251,6 +251,14 @@ public sealed class ParameterDaten
     /// </summary>
     public WindowsFormsApplication1.Einspeisegrenze Einspeisegrenze = WindowsFormsApplication1.Einspeisegrenze.Keine;
 
+    // ---- Thermische Desinfektion (Welle M7, BW5) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Thermische Desinfektion" (<c>Tab_Einstellungen.Desinfektion_*</c>) in der
+    /// gespeicherten Form; ohne Satz und ohne Spalten „aus".
+    /// </summary>
+    public WindowsFormsApplication1.Desinfektionsvorgabe Desinfektion = WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
+
     /// <summary>
     /// Die ARBEITSKOPIE für einen Dialog, der erst im OK-Weg schreiben darf
     /// (Anwenderwunsch 16.09.2026, <c>KomponentenKonfigurationDialog</c>).
@@ -273,7 +281,8 @@ public sealed class ParameterDaten
         Anlagenkopplung = Anlagenkopplung,
         Aufheizung = Aufheizung,
         Netzkanaele = Netzkanaele,
-        Einspeisegrenze = Einspeisegrenze
+        Einspeisegrenze = Einspeisegrenze,
+        Desinfektion = Desinfektion
     };
 }
 

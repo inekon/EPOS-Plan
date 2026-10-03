@@ -257,6 +257,10 @@ namespace WindowsFormsApplication1
             // Ein Paket fuehrt keine Kostenvorlagen; die Empfehlung ist Hinweis, kein Projektwert.
             new Stufe(HilfsenergieEmpfehlungNachzug.SCHRITT, Art.Katalog,
                       "Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel auf den Endenergiebedarf (Weg B)"),
+            // Die Spalten kommen leer an - Bereitschaft als Tageswert, gleich große Zonen, kein
+            // Frischwassermodul, keine Desinfektion; ein Paketsatz rechnet wie zuvor.
+            new Stufe(PufferOptionenSchema.SCHRITT, Art.Ddl,
+                      "Optionen des Pufferspeichers (Bereitschaftsweg, Aufstellraum, Zonenanteile, Frischwassermodul) und thermische Desinfektion"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

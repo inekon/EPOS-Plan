@@ -57,14 +57,17 @@ namespace EPOS.Kern.Tests
         /// Pufferauslegung P1) — und der Zielstand des Schemas. Die Teillastfelder (167, Welle M4), die
         /// Einspeisegrenze mit Selbstentladung (168, Welle M5) und die Pufferauslegung (169, P1) haben
         /// ihre Nummern zeitgleich belegt und standen zuerst auf dem Arbeitszweig; dieser
-        /// Katalogschritt hängt sich dahinter.
+        /// Katalogschritt hängt sich dahinter; die Pufferoptionen (171, Welle M7) folgen.
         /// </summary>
         [Fact]
         public void Die_Nummer_folgt_lueckenlos_auf_die_Pufferauslegung_und_ist_das_Ziel()
         {
             Assert.Equal(PufferAuslegungSchema.SCHRITT + 1, HilfsenergieEmpfehlungNachzug.SCHRITT);
             Assert.Equal(170, HilfsenergieEmpfehlungNachzug.SCHRITT);
-            Assert.Equal(HilfsenergieEmpfehlungNachzug.SCHRITT, SchemaStand.Zielversion);
+            // Das Ziel steht mindestens auf diesem Schritt; ein spaeterer Schritt (171, Pufferoptionen
+            // der Welle M7) hebt es weiter.
+            Assert.True(SchemaStand.Zielversion >= HilfsenergieEmpfehlungNachzug.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + HilfsenergieEmpfehlungNachzug.SCHRITT + ".");
         }
 
         /// <summary>Katalogstufe: Ein Paket führt keine Kostenvorlagen, es gibt nichts umzuformen.</summary>
@@ -75,7 +78,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Paketanhebung.Art.Katalog, s.Wirkung);
             Assert.Null(s.Umformung);
             Assert.False(string.IsNullOrWhiteSpace(s.Text));
-            Assert.Equal(HilfsenergieEmpfehlungNachzug.SCHRITT, Paketanhebung.Stufen.Max(x => x.Nr));
+            Assert.True(Paketanhebung.Stufen.Max(x => x.Nr) >= HilfsenergieEmpfehlungNachzug.SCHRITT);
         }
 
         /// <summary>

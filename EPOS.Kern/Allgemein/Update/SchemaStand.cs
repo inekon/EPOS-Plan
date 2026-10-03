@@ -814,11 +814,20 @@ namespace WindowsFormsApplication1
         /// reines DML (<see cref="HilfsenergieEmpfehlungNachzug"/>). <b>Ergebnisneutral:</b> Die
         /// Empfehlung ist Hinweis am Satzfeld, kein Rechenwert; Projektzeilen bleiben unberührt. Die
         /// Nummer steht allein bei <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/>.
+        /// Danach, mit den OPTIONEN DES PUFFERSPEICHERS UND DER THERMISCHEN DESINFEKTION (Welle M7
+        /// „Speicher" der Entscheidungsvorlage Modellgrenzen: PS1 (c), PS1 (a), PS5 (a), BW5), steht das
+        /// Ziel auf <see cref="PufferOptionenSchema.SCHRITT"/>: an <c>Tab_Pufferspeicher</c> die nullbaren
+        /// Spalten <c>Bereitschaft_Weg</c>, <c>Aufstellraum_Temperatur_C</c>, <c>Schicht_Anteile</c>,
+        /// <c>Frischwassermodul</c> und <c>FWM_Graedigkeit_K</c>, an <c>Tab_Einstellungen</c>
+        /// <c>Desinfektion_Aktiv</c>, <c>Desinfektion_Intervall_Tage</c>, <c>Desinfektion_Stunde</c>,
+        /// <c>Desinfektion_Zieltemperatur_C</c> und <c>Desinfektion_Volumen_l</c>, alle mit Prüfklausel,
+        /// reines DDL (<see cref="PufferOptionenSchema"/>). <b>Ergebnisneutral:</b> Leere Felder rechnen
+        /// wie zuvor. Die Nummer steht allein bei <see cref="PufferOptionenSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = HilfsenergieEmpfehlungNachzug.SCHRITT;
+        public const int Zielversion = PufferOptionenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

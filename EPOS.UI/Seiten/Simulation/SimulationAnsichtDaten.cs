@@ -367,6 +367,14 @@ public sealed class SimulationParameterDienste
     public Func<WindowsFormsApplication1.Einspeisegrenze, bool>? EinspeisegrenzeSchreiben;
 
     /// <summary>
+    /// Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5) — schreibt SOFORT wie der
+    /// Kühlschalter und meldet, ob danach die gewünschte Vorgabe steht
+    /// (<c>KonfigurationCtrl.DesinfektionSetzen</c>, ohne Einstellungssatz mit Vormerksatz).
+    /// <c>null</c> = die Plattform bietet die Einstellung nicht an; dann steht der Abschnitt nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Desinfektionsvorgabe, bool>? DesinfektionSchreiben;
+
+    /// <summary>
     /// Die Herleitungszeilen der Aufheizoptimierung, eine je Gebäude („Gebäude: t_auf,max … bei … ·
     /// P_auf … · C_w …"), in der Oberflächensprache — die Bemessung ohne Jahreslauf (Entwurf KP3,
     /// Festlegung 3; verdrahtet mit der Welle D2). <c>null</c> = kein Weg; dann steht keine Zeile da.

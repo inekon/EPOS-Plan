@@ -6376,7 +6376,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Pufferspeicher-Verwaltung des Projekts — zweiundzwanzig Felder aus
+        /// Die Pufferspeicher-Verwaltung des Projekts — siebenundzwanzig Felder aus
         /// <c>EPOS.UI.Dialoge.Simulation.PufferSpProjektKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -6523,7 +6523,28 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("entnahmehoehe_prozess",
                                      "PufferSpProjektKiSicht.EntnahmehoeheProzess",
                                      KiDialogTexte.PspvEntnahmeProzessName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.PspvEntnahmeProzessErl, leerErlaubt: true)
+                                     KiDialogTexte.PspvEntnahmeProzessErl, leerErlaubt: true),
+
+                    // ---- Welle M7: Bereitschaft, Zonenanteile, Frischwassermodul ---------
+                    new KiDialogFeld("bereitschaft_nach_temperatur",
+                                     "PufferSpProjektKiSicht.BereitschaftNachTemperatur",
+                                     KiDialogTexte.PspvBereitschaftTemperaturName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PspvBereitschaftTemperaturErl),
+                    new KiDialogFeld("aufstellraum", "PufferSpProjektKiSicht.Aufstellraum",
+                                     KiDialogTexte.PspvAufstellraumName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvAufstellraumErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("zonenanteile", "PufferSpProjektKiSicht.Zonenanteile",
+                                     KiDialogTexte.PspvAnteileName, KiParameterTyp.Text,
+                                     KiDialogTexte.PspvAnteileErl, leerErlaubt: true),
+                    new KiDialogFeld("frischwassermodul", "PufferSpProjektKiSicht.Frischwassermodul",
+                                     KiDialogTexte.PspvFwmName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PspvFwmErl),
+                    new KiDialogFeld("fwm_graedigkeit", "PufferSpProjektKiSicht.FwmGraedigkeit",
+                                     KiDialogTexte.PspvFwmGraedigkeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvFwmGraedigkeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -8333,6 +8354,26 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("einspeisegrenze_einheit", "SimulationKiSicht.EinspeisegrenzeEinheit",
                                      KiDialogTexte.SimEinspeisegrenzeEinheitName, KiParameterTyp.Wahl,
                                      KiDialogTexte.SimEinspeisegrenzeEinheitErl, leerErlaubt: true),
+
+                    // ---- Die thermische Desinfektion (Welle M7, BW5) -------------------------------
+                    // Fuenf Felder ueber EINEN Delegaten (DesinfektionSchreiben) wie der Abschnitt.
+                    new KiDialogFeld("desinfektion", "SimulationKiSicht.Desinfektion",
+                                     KiDialogTexte.SimDesinfektionName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimDesinfektionErl),
+                    new KiDialogFeld("desinfektion_intervall", "SimulationKiSicht.DesinfektionIntervall",
+                                     KiDialogTexte.SimDesinfIntervallName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimDesinfIntervallErl, leerErlaubt: true, min: 1, max: 31),
+                    new KiDialogFeld("desinfektion_stunde", "SimulationKiSicht.DesinfektionStunde",
+                                     KiDialogTexte.SimDesinfStundeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimDesinfStundeErl, leerErlaubt: true, min: 0, max: 23),
+                    new KiDialogFeld("desinfektion_zieltemperatur", "SimulationKiSicht.DesinfektionZieltemperatur",
+                                     KiDialogTexte.SimDesinfZielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimDesinfZielErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 55, max: 90),
+                    new KiDialogFeld("desinfektion_volumen", "SimulationKiSicht.DesinfektionVolumen",
+                                     KiDialogTexte.SimDesinfVolumenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimDesinfVolumenErl,
+                                     einheit: KiDialogTexte.EINHEIT_LITER, leerErlaubt: true, min: 0, max: 100000),
 
                     // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
                     //

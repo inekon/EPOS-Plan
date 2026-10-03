@@ -213,9 +213,11 @@ namespace EPOS.Kern.Tests
 
             List<string> einst = DataRepository.SpaltenVonTabelle("Tab_Einstellungen");
             // Hinter den fünf Spalten folgen die acht des Schritts BedarfNetzKalenderSchema (Welle M3b)
-            // und die zwei der Einspeisegrenze (StromViertelstundenSchema, Welle M5).
+            // und die zwei der Einspeisegrenze (StromViertelstundenSchema, Welle M5) und die fünf der
+            // Desinfektion (PufferOptionenSchema, Welle M7).
             Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL + BedarfNetzKalenderSchema.SPALTEN_EINSTELLUNGEN.Count +
-                         StromViertelstundenSchema.EINSTELLUNGSSPALTEN.Length, einst.Count);
+                         StromViertelstundenSchema.EINSTELLUNGSSPALTEN.Length +
+                         PufferOptionenSchema.EINSTELLUNGSSPALTEN.Length, einst.Count);
             Assert.Equal(SPALTEN_VORGABE, einst.Skip(AufheizvorgabeSchema.SPALTENZAHL_VORHER).Take(SPALTEN_VORGABE.Length).ToArray());
             List<string> geb = DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude");
             Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
@@ -286,7 +288,8 @@ namespace EPOS.Kern.Tests
             foreach (string sp in SPALTEN_VORGABE)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"" + sp + "\"");
             Assert.False(AufheizvorgabeSchema.Vollstaendig());
-            Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL_VORHER + StromViertelstundenSchema.EINSTELLUNGSSPALTEN.Length,
+            Assert.Equal(AufheizvorgabeSchema.SPALTENZAHL_VORHER + StromViertelstundenSchema.EINSTELLUNGSSPALTEN.Length +
+                         PufferOptionenSchema.EINSTELLUNGSSPALTEN.Length,
                          DataRepository.SpaltenVonTabelle("Tab_Einstellungen").Count);
             Assert.Equal(5, AufheizvorgabeSchema.Anweisungen.Count());
 

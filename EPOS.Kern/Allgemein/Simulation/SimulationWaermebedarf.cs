@@ -41,6 +41,26 @@ namespace WindowsFormsApplication1
         public double Brauchwasser_Zirkulation_Mwh = 0;
 
         /// <summary>
+        /// Jahresmenge der thermischen Desinfektion [MWh] (BW5; Konzept Simulationsablauf 21): ein eigener
+        /// Posten des Brauchwasserkanals, <c>Q = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) / 1000</c> je
+        /// Ereignis. 0 ohne Desinfektion. Er steht im Kanal, nicht in <see cref="Waermebedarf_Brauchwasser"/>
+        /// (dem Profilanteil).
+        /// </summary>
+        public double Brauchwasser_Desinfektion_Mwh = 0;
+
+        /// <summary>Stundenreihe der Desinfektion [kWh]; 0 ohne Desinfektion.</summary>
+        public double[] Brauchwasser_Desinfektion_stuendlich = new double[8760];
+
+        /// <summary>Monatssummen der Desinfektion [MWh].</summary>
+        public double[] Waermebedarf_Brauchwasser_Desinfektion_Monat = new double[12];
+
+        /// <summary>Zahl der Desinfektionen im Jahr; 0 ohne Desinfektion.</summary>
+        public int DesinfektionEreignisse = 0;
+
+        /// <summary>Zieltemperatur der Desinfektion im Lauf [°C]; NaN ohne Desinfektion.</summary>
+        public double DesinfektionZielC = double.NaN;
+
+        /// <summary>
         /// Monatssummen der Zirkulation [MWh] (<c>BhkwPlan.MonatsSumme</c>) für den Monatsstapel
         /// von Vorschau und Bericht (2.2, 5.6); auf dem Bestandsweg 0. Die Zapfung eines Monats
         /// steht getrennt in <see cref="Waermebedarf_Brauchwasser_Zapfung_Monat"/>.
@@ -312,6 +332,24 @@ namespace WindowsFormsApplication1
         }
 
         private Netzverlustvorgabe _netzverlustvorgabeProjekt;
+
+        /// <summary>
+        /// Die thermische Desinfektion dieses Projekts (<c>Tab_Einstellungen</c>, <see cref="PufferOptionenSchema"/>;
+        /// BW5) — gelesen EINMAL je Lauf und Auskunft, dialogfrei; fehlende Zeile und Spalte heißen „aus".
+        /// Der Setter dient als Testnaht; <c>null</c> setzt „aus".
+        /// </summary>
+        internal Desinfektionsvorgabe DesinfektionsvorgabeProjekt
+        {
+            get
+            {
+                if (_desinfektionsvorgabeProjekt == null)
+                    _desinfektionsvorgabeProjekt = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt);
+                return _desinfektionsvorgabeProjekt;
+            }
+            set { _desinfektionsvorgabeProjekt = value ?? Desinfektionsvorgabe.Aus; }
+        }
+
+        private Desinfektionsvorgabe _desinfektionsvorgabeProjekt;
 
         /// <summary>
         /// Der projektierte Vorlauf des Heizkanals [°C] — der feste Vorlauf gekoppelter Gebäude
@@ -726,6 +764,10 @@ namespace WindowsFormsApplication1
                 for (int h = 0; h < 8760; h++) probe[h] += stundl_netzverluste;
             }
 
+            // THERMISCHE DESINFEKTION (BW5; Konzept Simulationsablauf 21): NACH den Netzverlusten - sie ist
+            // ein Aufheizen des Speichers, kein Verteilverlust. Ohne Desinfektion bleibt der Kanal, wie er ist.
+            BrauchwasserDesinfektion(probe);
+
             // Die beiden öffentlichen Bedarfsvektoren sind ab jetzt die KANÄLE inklusive
             // ihres Netzverlustanteils (gewollte F2-Wirkung, siehe Feldkommentare). Die
             // Monatswerte und die Jahresmengen oben bleiben der reine Profilanteil.
@@ -965,6 +1007,7 @@ namespace WindowsFormsApplication1
 
             // NETZVERLUSTE JE KANAL UND ZIRKULATION (BW4): je Lauf bzw. Auskunft neu, aus demselben Grund.
             _netzverlustvorgabeProjekt = null;
+            _desinfektionsvorgabeProjekt = null;
             _anlagenVorlaufGelesen = false;
             _anlagenVorlaufC = double.NaN;
             _kuehlVorlaufGelesen = false;
@@ -1621,6 +1664,70 @@ namespace WindowsFormsApplication1
             }
             // Protokollkanal-Nachzug: WARNUNG, siehe Prozesswärme-Zweig.
             catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
+        }
+
+        /// <summary>
+        /// <b>Die thermische Desinfektion</b> (Entscheidungsvorlage Modellgrenzen BW5; Konzept
+        /// Simulationsablauf 21): in jeder Ereignisstunde ein Zusatzbedarf
+        /// <code>
+        /// Q_D = V · 1,163 kWh/(m³·K) · (ϑ_Ziel − ϑ_Soll) / 1000
+        /// </code>
+        /// als eigener Posten des Brauchwasserkanals. V ist das gepflegte Volumen, sonst das der Speicher,
+        /// die Brauchwasser führen; ϑ_Soll die Speichersolltemperatur des Zapfprofilgenerators, sonst 60 °C
+        /// (mit Hinweis). Ohne Volumen oder mit ϑ_Soll ≥ ϑ_Ziel entsteht kein Posten (mit Hinweis).
+        /// </summary>
+        internal void BrauchwasserDesinfektion(double[] probe)
+        {
+            Brauchwasser_Desinfektion_Mwh = 0;
+            DesinfektionEreignisse = 0;
+            DesinfektionZielC = double.NaN;
+            Array.Clear(Brauchwasser_Desinfektion_stuendlich, 0, Brauchwasser_Desinfektion_stuendlich.Length);
+            Array.Clear(Waermebedarf_Brauchwasser_Desinfektion_Monat, 0, Waermebedarf_Brauchwasser_Desinfektion_Monat.Length);
+
+            Desinfektionsvorgabe v = DesinfektionsvorgabeProjekt;
+            if (v == null || !v.Aktiv) return;
+
+            string praefix = MyResource.Resource.SIMENG_PRAEFIX_BRAUCHWASSER;
+            double? sollGefuehrt = TwwTemperaturen.SpeicherSollC(m_ID_Projekt);
+            double soll = sollGefuehrt ?? Desinfektion.SOLL_VORGABE_C;
+            if (!sollGefuehrt.HasValue)
+                SimulationProtokoll.Aktuell.Hinweis(praefix + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_DESINF_SOLL_VORGABE, soll));
+
+            double volumen = v.VolumenL ?? TwwTemperaturen.BrauchwasserspeicherVolumenL(m_ID_Projekt) ?? 0;
+            if (!(volumen > 0))
+            {
+                SimulationProtokoll.Aktuell.Warnung(praefix + MyResource.Resource.SIMENG_DESINF_OHNE_VOLUMEN);
+                return;
+            }
+
+            double ziel = v.ZielWirksamC;
+            double jeEreignis = Desinfektion.ZusatzbedarfKwh(volumen, ziel, soll);
+            if (!(jeEreignis > 0))
+            {
+                SimulationProtokoll.Aktuell.Warnung(praefix + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_DESINF_ZIEL_UNTER_SOLL, ziel, soll));
+                return;
+            }
+
+            double[] reihe = Desinfektion.Reihe(v.IntervallWirksam, v.StundeWirksam, jeEreignis);
+            Array.Copy(reihe, Brauchwasser_Desinfektion_stuendlich, 8760);
+            double[] kanal = _kanaele.Brauchwasser;
+            for (int h = 0; h < 8760; h++)
+            {
+                if (reihe[h] <= 0) continue;
+                kanal[h] += reihe[h];
+                if (probe != null) probe[h] += reihe[h];
+            }
+
+            DesinfektionEreignisse = Desinfektion.EreignisseImJahr(v.IntervallWirksam);
+            DesinfektionZielC = ziel;
+            Brauchwasser_Desinfektion_Mwh = Energieeinheit.MWh.AusKWh(reihe.Sum());
+            WPPlan.Core.BhkwPlan.MonatsSumme(reihe, Waermebedarf_Brauchwasser_Desinfektion_Monat, mo_anfang, mo_ende);
+
+            SimulationProtokoll.Aktuell.Hinweis(praefix + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_DESINF_BEDARF, DesinfektionEreignisse, v.IntervallWirksam, v.StundeWirksam,
+                volumen, soll, ziel, jeEreignis, Brauchwasser_Desinfektion_Mwh));
         }
 
         /// <summary>

@@ -200,6 +200,26 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* --- Bereitschaft und Frischwassermodul (Welle M7, Konzept Simulationsablauf 21) ---- *@
+    <Gruppenkopf Titel="@GruppeOptionen">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@LabelBereitschaftWeg" Eintraege="@BereitschaftWege"
+                                 Auswahl="@_bereitschaftWeg" AuswahlChanged="w => Merken(() => _bereitschaftWeg = w ?? 0)" />
+                    <Zahlenfeld Bezeichnung="@LabelAufstellraum" Einheit="°C" Feldname="@LabelAufstellraum"
+                                Wert="@_aufstellraum" WertChanged="w => Merken(() => _aufstellraum = w)" />
+                    <Herleitungszeile Text="@HinweisAufstellraum" />
+                    <Schalter Bezeichnung="@LabelFrischwassermodul" Wert="@_fwm"
+                              WertChanged="w => Merken(() => _fwm = w)" />
+                    <Zahlenfeld Bezeichnung="@LabelFwmGraedigkeit" Einheit="K" Feldname="@LabelFwmGraedigkeit"
+                                Wert="@_fwmGraedigkeit" WertChanged="w => Merken(() => _fwmGraedigkeit = w)" />
+                    <Herleitungszeile Text="@HinweisFwm" />
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
     @* --- Schichtung --------------------------------------------------------- *@
     <Gruppenkopf Titel="@GruppeSchichtung">
         <KindInhalt>
@@ -218,6 +238,9 @@
                                         Wert="@_ladeleistung" WertChanged="w => Merken(() => _ladeleistung = w)" />
                             <Zahlenfeld Bezeichnung="@LabelEntladeleistung" Einheit="kW" Feldname="@LabelEntladeleistung"
                                         Wert="@_entladeleistung" WertChanged="w => Merken(() => _entladeleistung = w)" />
+                            @* HK4 (Entscheidungsvorlage Modellgrenzen): ein Uebertrager zwischen Puffer
+                               und Kessel begrenzt die Leistung - die Entladegrenze traegt sie. *@
+                            <Herleitungszeile Text="@HinweisUebertrager" />
                         </KindInhalt>
                     </Formulargruppe>
 
@@ -234,6 +257,12 @@
                                             Wert="@_lambda" WertChanged="w => Merken(() => _lambda = w)" />
                                 <Zahlenfeld Bezeichnung="@LabelTNutzBW" Einheit="°C" Feldname="@LabelTNutzBW"
                                             Wert="@_tNutzBW" WertChanged="w => Merken(() => _tNutzBW = w)" />
+                                @* PS1 (a): Zonenanteile von oben; der Knopf setzt vier Zonen mit dem
+                                   Vorschlag fuer Kombispeicher (Kern: PufferOptionen). *@
+                                <Textfeld Bezeichnung="@LabelSchichtAnteile" Wert="@_anteile"
+                                          WertChanged="w => Merken(() => _anteile = w ?? string.Empty)" />
+                                <button type="button" class="epos-knopf" @onclick="VorschlagKombispeicher">@BtnVorschlagKombi</button>
+                                <Herleitungszeile Text="@HinweisAnteile" />
                             </KindInhalt>
                         </Formulargruppe>
 
@@ -409,6 +438,24 @@
     [Parameter] public string GruppeSchwellen { get; set; } = "Schwellen";
     [Parameter] public string GruppeLeistungsgrenzen { get; set; } = "Leistungsgrenzen";
     [Parameter] public string GruppeSchichtmodell { get; set; } = "Schichtmodell";
+
+    // Welle M7 (Konzept Simulationsablauf 21) und Hinweis HK4.
+    [Parameter] public string GruppeOptionen { get; set; } = "Bereitschaft und Frischwassermodul";
+    [Parameter] public string LabelBereitschaftWeg { get; set; } = "Bereitschaftsverlust:";
+    [Parameter] public string BereitschaftTag { get; set; } = "Tageswert anteilig zum Füllstand";
+    [Parameter] public string BereitschaftTemperatur { get; set; } = "nach Temperatur je Zone";
+    [Parameter] public string LabelAufstellraum { get; set; } = "Aufstellraum:";
+    [Parameter] public string HinweisAufstellraum { get; set; } = "";
+    [Parameter] public string LabelSchichtAnteile { get; set; } = "Zonenanteile von oben:";
+    [Parameter] public string BtnVorschlagKombi { get; set; } = "Vorschlag Kombispeicher";
+    [Parameter] public string HinweisAnteile { get; set; } = "";
+    [Parameter] public string LabelFrischwassermodul { get; set; } = "Frischwassermodul";
+    [Parameter] public string LabelFwmGraedigkeit { get; set; } = "Grädigkeit Frischwassermodul:";
+    [Parameter] public string HinweisFwm { get; set; } = "";
+    [Parameter] public string HinweisUebertrager { get; set; } = "Übertrager: Leistung als Entladegrenze eintragen.";
+    [Parameter] public string FehlerAufstellraum { get; set; } = "Der Aufstellraum muss zwischen 0 und 35 °C liegen.";
+    [Parameter] public string FehlerFwmGraedigkeit { get; set; } = "Die Grädigkeit des Frischwassermoduls muss zwischen 0 und 20 K liegen.";
+    [Parameter] public string FehlerAnteile { get; set; } = "Zonenanteile: {0}";
 
     [Parameter] public string LabelAusKatalog { get; set; } = "Aus Katalog:";
     [Parameter] public string KatalogFreieEingabe { get; set; } = "(freie Eingabe)";
@@ -594,6 +641,25 @@
     private double? _entnahmeProzess;
     private double? _ladeleistung;
     private double? _entladeleistung;
+
+    // Welle M7: 0 = Tageswert, 1 = nach Temperatur.
+    private int? _bereitschaftWeg = 0;
+    private double? _aufstellraum;
+    private string _anteile = "";
+    private bool _fwm;
+    private double? _fwmGraedigkeit;
+
+    /// <summary>Die zwei Wege des Bereitschaftsverlusts.</summary>
+    private IReadOnlyList<(int Id, string Text)> BereitschaftWege
+        => new[] { (0, BereitschaftTag), (1, BereitschaftTemperatur) };
+
+    /// <summary>PS1 (a): vier Zonen mit dem Vorschlag für Kombispeicher.</summary>
+    private void VorschlagKombispeicher()
+        => Setzen(() =>
+        {
+            _schichten = WindowsFormsApplication1.PufferOptionen.VORSCHLAG_KOMBISPEICHER.Length;
+            _anteile = WindowsFormsApplication1.PufferOptionen.VorschlagKombispeicherText();
+        });
 
     private string _qmax = "";
     private string _nachrangAutomatik = "";
@@ -823,7 +889,18 @@
         EntnahmeBrauchwasserLesen = () => _entnahmeBW,
         EntnahmeBrauchwasserSetzen = w => KiGeaendert(() => _entnahmeBW = w),
         EntnahmeProzessLesen = () => _entnahmeProzess,
-        EntnahmeProzessSetzen = w => KiGeaendert(() => _entnahmeProzess = w)
+        EntnahmeProzessSetzen = w => KiGeaendert(() => _entnahmeProzess = w),
+
+        BereitschaftTemperaturLesen = () => _bereitschaftWeg == 1,
+        BereitschaftTemperaturSetzen = an => KiGeaendert(() => _bereitschaftWeg = an ? 1 : 0),
+        AufstellraumLesen = () => _aufstellraum,
+        AufstellraumSetzen = w => KiGeaendert(() => _aufstellraum = w),
+        ZonenanteileLesen = () => _anteile,
+        ZonenanteileSetzen = w => KiGeaendert(() => _anteile = w ?? string.Empty),
+        FrischwassermodulLesen = () => _fwm,
+        FrischwassermodulSetzen = an => KiGeaendert(() => _fwm = an),
+        FwmGraedigkeitLesen = () => _fwmGraedigkeit,
+        FwmGraedigkeitSetzen = w => KiGeaendert(() => _fwmGraedigkeit = w)
     };
 
     private void KiGeaendert(Action setzen)
@@ -1112,6 +1189,12 @@
         // Leistungsfeld liest sich wie "keine Leistung" und meint das Gegenteil.
         _ladeleistung = d.LadeleistungMax > 0 ? d.LadeleistungMax : null;
         _entladeleistung = d.EntladeleistungMax > 0 ? d.EntladeleistungMax : null;
+
+        _bereitschaftWeg = WindowsFormsApplication1.PufferOptionen.IstTemperaturweg(d.BereitschaftWeg) ? 1 : 0;
+        _aufstellraum = d.AufstellraumC;
+        _anteile = d.SchichtAnteile ?? "";
+        _fwm = d.Frischwassermodul;
+        _fwmGraedigkeit = d.FwmGraedigkeitK;
     }
 
     private void KatalogWaehlen(int? zeile)
@@ -1604,8 +1687,19 @@
         if (!ZahlOderLeer(_entladeleistung, string.Format(FehlerLeistung, NameEntladeleistungMax),
                           0, double.MaxValue, true, out double? entlade, out fehler)) return null;
 
+        // Welle M7: Aufstellraum 0 … 35 °C, Grädigkeit 0 … 20 K, Zonenanteile mit der Prüfung des Kerns.
+        if (!ZahlOderLeer(_aufstellraum, FehlerAufstellraum, 0, 35, true, out double? raum, out fehler)) return null;
+        if (!ZahlOderLeer(_fwmGraedigkeit, FehlerFwmGraedigkeit, 0, 20, true, out double? grad, out fehler)) return null;
+        string? anteile = string.IsNullOrWhiteSpace(_anteile) ? null : _anteile.Trim();
+        if (anteile != null)
+        {
+            string? f = WindowsFormsApplication1.PufferOptionen.AnteilePruefen(anteile, _schichten ?? 1, out _);
+            if (f != null) { fehler = string.Format(FehlerAnteile, f); return null; }
+        }
+        string? weg = _bereitschaftWeg == 1 ? WindowsFormsApplication1.DbWerte.PSP_BEREITSCHAFT_TEMPERATUR : null;
+
         return new PspSchichtdaten(_schichten ?? 1, hoehe, lambda, tNutz, eH, eB, eP,
-                                   lade ?? 0, entlade ?? 0);
+                                   lade ?? 0, entlade ?? 0, weg, raum, anteile, _fwm, grad);
     }
 
     private static bool ZahlOderLeer(double? feld, string fehlertext, double min, double max,

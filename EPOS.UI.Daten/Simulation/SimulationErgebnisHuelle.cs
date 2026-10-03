@@ -736,6 +736,7 @@ namespace WindowsFormsApplication1
                 Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt),
                 Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt),
                 Einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt),
+                Desinfektion = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt),
                 Speicher = SpeicherParameter()
             };
         }
@@ -792,7 +793,8 @@ namespace WindowsFormsApplication1
                         Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt),
                         Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt),
                         Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt),
-                        Einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt)
+                        Einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt),
+                        Desinfektion = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt)
                     };
                 },
                 // KUEHLUNG RECHNEN (Stufe KU1, Kuehlkonzept 8.3): der eine Schreibweg der
@@ -812,6 +814,9 @@ namespace WindowsFormsApplication1
                 // EINSPEISEGRENZE (Welle M5, PV3): der eine Schreibweg der Projekteinstellung - Wert und
                 // Einheit in einem UPDATE, nach der Regel des Kuehlschalters (Vormerksatz ohne Satz).
                 EinspeisegrenzeSchreiben = grenze => KonfigurationCtrl.EinspeisegrenzeSetzen(m_ID_Projekt, grenze),
+                // THERMISCHE DESINFEKTION (Welle M7, BW5): die ganze Vorgabe in einem UPDATE, nach der Regel
+                // des Kuehlschalters (Vormerksatz ohne Satz).
+                DesinfektionSchreiben = vorgabe => KonfigurationCtrl.DesinfektionSetzen(m_ID_Projekt, vorgabe),
                 // Die Herleitungszeilen je Gebaeude (Welle D2; Festlegung 3, B14): die Aufheizbemessung ohne
                 // Jahreslauf, mit dem Konditionierungssatz wie der Lauf - dieselben Zahlen wie die Ergebniszeile.
                 AufheizHerleitung = AufheizHerleitungszeilen,

@@ -646,7 +646,11 @@ namespace EPOS.Kern.Tests
                 { "Wärmepumpe", 4 },
                 // Die BHKW-Seite traegt Teillastkennlinie und Takten mit Anfahrverlust
                 // (Welle M4, BH1 und BH2).
-                { "BHKW", 4 }
+                { "BHKW", 4 },
+                // Welle M7: Bereitschaft nach Temperatur, Zonenanteile und Frischwassermodul
+                // (Pufferspeicher), thermische Desinfektion (Brauchwasser).
+                { "Pufferspeicher", 4 },
+                { "Brauchwasser", 4 }
             };
 
         /// <summary>

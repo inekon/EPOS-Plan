@@ -1,5 +1,6 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Brauchwasser | Fassung 3 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Brauchwasser | Fassung 4 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs,
+     EPOS.Kern/Allgemein/Simulation/Desinfektion.cs,
      EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Simulation/Init.cs,
      EPOS.Kern/Controller/BedarfsVorschauCtrl.cs, EPOS.Kern/Allgemein/Energieeinheit.cs -->
 
@@ -29,6 +30,10 @@ Diese Seite beschreibt den '''Bestandsweg''': Rechenweg ''Bestandsprofile'' im B
 | Jahressumme des Projekts || MWh || Dialog „Brauchwasserwärme", Feld „Jahresverbrauch"; leer oder 0 = Katalogwerte gelten unveraendert
 |-
 | Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion abgeleitet
+|-
+| Thermische Desinfektion: Intervall, Stunde, Zieltemperatur, Volumen || d, h, °C, l || Simulationskonfiguration, Abschnitt „Thermische Desinfektion"; leer = 7 Tage, 2 Uhr, 70&nbsp;°C, Volumen der Brauchwasserspeicher
+|-
+| Speichersolltemperatur || °C || Zapfprofilgenerator, Feld „Speichertemperatur"; ohne sie 60&nbsp;°C
 |}
 
 == Formelzeichen und Parameter ==
@@ -68,6 +73,16 @@ Was in die Rechnung hereinkommt:
 | <math>50</math> || Spreizung von 10 auf 60 °C || K || Konstante des Katalogbezugs
 |-
 | <math>1{,}163</math> || spezifische Waermekapazitaet von Wasser || Wh/(l·K) || Konstante
+|-
+| <math>V_{\mathrm{D}}</math> || aufgeheiztes Volumen der Desinfektion || l || Simulationskonfiguration; leer = Summe der Speicher, die Brauchwasser führen
+|-
+| <math>\vartheta_{\mathrm{Ziel}}</math> || Zieltemperatur der Desinfektion || °C || Simulationskonfiguration; '''Vorgabe: 70'''
+|-
+| <math>\vartheta_{\mathrm{Soll}}</math> || Speichersolltemperatur des Brauchwassers || °C || Zapfprofilgenerator; '''Vorgabe: 60'''
+|-
+| <math>n_{\mathrm{D}}</math> || Intervall der Desinfektion || d || Simulationskonfiguration; '''Vorgabe: 7'''
+|-
+| <math>s_{\mathrm{D}}</math> || Stunde des Tages, in der sie läuft || h || Simulationskonfiguration; '''Vorgabe: 2'''
 |}
 
 === Variablen ===
@@ -92,6 +107,12 @@ Was die Rechnung selbst bildet:
 | <math>Q_{\mathrm{a,spez}}</math> || Jahresmenge je Bezugseinheit aus der Zapfmenge || MWh/a || (7)
 |-
 | <math>k(m)</math> || Monatsfaktor der Typen ohne VDI-Jahresgang || — || (8)
+|-
+| <math>Q_{\mathrm{D}}</math> || Zusatzbedarf je Desinfektion || kWh || (9)
+|-
+| <math>Q_{\mathrm{D}}(t)</math> || Zusatzbedarf der Stunde t im Brauchwasserkanal || kWh || (10)
+|-
+| <math>d</math> || Tag des Jahres, <math>d = 0 \dots 364</math> || — || Zeitraster
 |}
 
 == Rechenweg ==
@@ -197,13 +218,38 @@ Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang 
 :: <math>n(m)</math> – Nutzungsfaktor des Monats [–]
 :: <math>\kappa(m)</math> – Kaltwasserfaktor des Monats, 1,083 im Februar bis 0,917 im August [–] und normiert auf die unveraenderte Jahressumme. Der Kaltwasserfaktor <math>\kappa(m)</math> kommt aus einer gedaempften Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit <math>0{,}8 \cdot 10^{-6}</math> m²/s, daraus Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug 41 Tage) und laeuft ueber das Jahr von 1,083 im Februar bis 0,917 im August. Die '''VDI-Typen bekommen diesen Faktor nicht''' — ihre Monatsprofile sind Messwerte des Waermebedarfs, in denen der Effekt schon steckt.
 
+=== 7. Thermische Desinfektion (Option) ===
+
+Mit eingeschalteter Desinfektion heizt der Lauf den Brauchwasserspeicher in festen Abständen von der Speichersolltemperatur auf die Zieltemperatur. Ein Ereignis kostet
+
+: <math>\displaystyle Q_{\mathrm{D}} = \frac{V_{\mathrm{D}} \cdot 1{,}163 \cdot \max\left( \vartheta_{\mathrm{Ziel}} - \vartheta_{\mathrm{Soll}} , 0 \right)}{1\,000}</math> &nbsp;&nbsp;(9)
+:: <math>Q_{\mathrm{D}}</math> – Zusatzbedarf je Desinfektion [kWh]
+:: <math>V_{\mathrm{D}}</math> – aufgeheiztes Volumen [l]
+:: <math>1{,}163</math> – spezifische Wärmekapazität von Wasser [Wh/(l·K)], gleich 1,163 kWh/(m³·K)
+:: <math>\vartheta_{\mathrm{Ziel}}</math> – Zieltemperatur [°C]
+:: <math>\vartheta_{\mathrm{Soll}}</math> – Speichersolltemperatur [°C]
+:: <math>1\,000</math> – Umrechnung Wh in kWh [Wh/kWh]
+
+und steht als eigener Posten im Brauchwasserkanal — am Tag <math>d</math> in der Stunde <math>s_{\mathrm{D}}</math>, wenn <math>d + 1</math> ein Vielfaches des Intervalls ist:
+
+: <math>\displaystyle Q_{\mathrm{D}}(t) = \begin{cases} Q_{\mathrm{D}} & t = 24 \cdot d + s_{\mathrm{D}} \; \mathrm{und} \; (d + 1) \; \operatorname{mod} \; n_{\mathrm{D}} = 0 \\ 0 & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(10)
+:: <math>Q_{\mathrm{D}}(t)</math> – Zusatzbedarf der Stunde [kWh]
+:: <math>Q_{\mathrm{D}}</math> – Zusatzbedarf je Ereignis aus (9) [kWh]
+:: <math>d</math> – Tag des Jahres [–]
+:: <math>s_{\mathrm{D}}</math> – Stunde des Tages [h]
+:: <math>n_{\mathrm{D}}</math> – Intervall [d]
+
+Alle sieben Tage sind das 52 Ereignisse im Jahr. Der Posten kommt nach den Netzverlusten in den Kanal — er ist ein Aufheizen des Speichers, kein Verteilverlust — und steht im Ergebnis als „davon thermische Desinfektion".
+
+'''Wer ihn deckt.''' Der Zusatzbedarf sieht nur Stufen, die die Zieltemperatur erreichen: einen Heizkessel oder ein BHKW mit gepflegtem Vorlauf ab <math>\vartheta_{\mathrm{Ziel}}</math> (ohne gepflegten Vorlauf gilt die Anlage als fähig), eine Wärmepumpe, deren projektierte Kennlinie ihn erreicht, den Heizstab einer Wärmepumpe und einen Brauchwasserspeicher, dessen gepflegter Vorlauf ihn erreicht und den eine solche Anlage lädt. Vor jeder anderen Stufe — auch der Solarthermie — steht er zurück. Was keine Stufe deckt, deckt ein '''Zusatzstrom''' (elektrisch, Wirkungsgrad 1); er steht im Reststrom und als Warnung im Protokoll. Ohne Volumen oder mit <math>\vartheta_{\mathrm{Soll}} \ge \vartheta_{\mathrm{Ziel}}</math> entsteht kein Posten, auch das meldet das Protokoll. Den Rahmen setzt DVGW W 551.
+
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
 * '''Auf dem Bestandsweg kein Zapfmodell.''' Gerechnet werden Stundenmittelwerte, keine einzelnen Zapfungen. Gleichzeitigkeit, Spitzenzapfung und Bereitschaftsvolumen nach VDI 6002 deckt dieser Weg '''nicht''' ab — einzelne Zapfereignisse und die Auslegung des Speichers rechnet der Zapfprofilgenerator (Rechenweg ''Zapfprofil'').
 * '''Keine Temperaturen im Rechenweg.''' In (1) bis (6) kommt keine Temperatur vor: Der Bedarf kommt als Energiemenge herein. Trinkwarmwassertemperatur, Kaltwassertemperatur und Spreizung stecken in den Katalogwerten — sie stehen nur in (7), also in der HERLEITUNG der Monatswerte. Wer bei anderer Spreizung rechnet, aendert die Monatswerte.
 * '''Die Zirkulation des Bestandswegs ist eine feste Leistung.''' Sie haengt nicht an Temperatur, Leitungslaenge oder Zapfmenge; wer sie aus Leitungsdaten schaetzen will, nimmt den Zapfprofilgenerator mit seinen Methoden.
-* '''Kein Legionellenbetrieb, keine Nachheizung''' als eigener Vorgang.
+* '''Die thermische Desinfektion ist ein Energieposten.''' (9) und (10) rechnen das Aufheizen in einer Stunde ohne Zapfverhalten, Mehrverluste des heißeren Speichers und Zirkulationsspülung; die Prüfung der Stufen vergleicht den gepflegten Vorlauf, nicht den Betriebspunkt der Stunde.
 * '''Der Wochengang ist ein Muster.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen; Feiertage und Betriebsferien legt ein Betriebskalender darauf, Belegungsschwankungen bildet der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab.
 * '''Die Monatsnormierung glaettet.''' Wegen (4) und (5) verschiebt der Kalender innerhalb eines Monats nur die Verteilung; die Monatsmenge bleibt, unabhaengig davon, wie viele Wochenenden im Monat liegen.
 * '''EINE Einheit fuer beide Wege.''' Die Brauchwassermenge steht nach (6) in MWh — im '''Lauf''' wie in der '''Vorschau''' der Bedarfsdialoge. Beide Wege gehen durch dieselbe Kernmethode, und die Anzeige rechnet nur noch von MWh auf die gewaehlte Anzeigeeinheit um.
@@ -213,8 +259,9 @@ Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang 
 {{Anker|ergebnisse}}
 
 * '''Dialog „Brauchwasserwärme"''', Knopf „Simulation…" — Jahresmenge und die zwoelf Monatswerte der ausgewaehlten Profile, dazu der monatliche Verlauf.
-* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Brauchwasseranteil im Jahresbedarf.
-* '''Bericht''' — Bedarfsuebersicht.
+* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Brauchwasseranteil im Jahresbedarf, mit Desinfektion die Zeile „davon thermische Desinfektion".
+* '''Bericht''' — Bedarfsuebersicht, mit Desinfektion die Zeile „Thermische Desinfektion" (Intervall, Stunde, Volumen, Zieltemperatur, Jahresmenge).
+* '''Laufprotokoll der Desinfektion''' — Ereignisse, Volumen, Temperaturen und Jahresmenge, wer sie gedeckt hat, und ein Zusatzstrom.
 * '''Laufprotokoll''' — uebersprungene Profile (kein Kopfsatz, kein Wochenprofil, Monatssumme null, Typ nicht definiert).
 
 == Bezüge ==

@@ -4971,6 +4971,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_HILFSENERGIE_EMPFEHLUNG = HilfsenergieEmpfehlungNachzug.SCHRITT;
 
+        // ---- Welle M7 Speicher: Optionen des Pufferspeichers und thermische Desinfektion ----
+
+        /// <summary>
+        /// Schritt <see cref="PufferOptionenSchema.SCHRITT"/> — <b>die Optionen des Pufferspeichers und die
+        /// thermische Desinfektion</b> (Welle M7 der Entscheidungsvorlage Modellgrenzen: PS1 (c), PS1 (a),
+        /// PS5 (a), BW5). Er folgt auf <see cref="SCHRITT_HILFSENERGIE_EMPFEHLUNG"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> an <c>Tab_Pufferspeicher</c> die nullbaren Spalten <c>Bereitschaft_Weg</c>,
+        /// <c>Aufstellraum_Temperatur_C</c>, <c>Schicht_Anteile</c>, <c>Frischwassermodul</c> und
+        /// <c>FWM_Graedigkeit_K</c>, an <c>Tab_Einstellungen</c> die fünf Spalten <c>Desinfektion_*</c>, alle
+        /// mit Prüfklausel. Die Anweisungen stehen bei <see cref="PufferOptionenSchema"/>, die Nummer allein
+        /// dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar, ergebnisneutral:</b> Leere Spalten rechnen wie zuvor.</para>
+        /// </summary>
+        public const int SCHRITT_PUFFER_OPTIONEN = PufferOptionenSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7177,6 +7194,16 @@ namespace WindowsFormsApplication1
                         "Brennstoffkosten) - in Weg B um das Preisverhaeltnis Strom zu Brennstoff zu hoch. KEIN " +
                         "Rechenergebnis aendert sich - die Empfehlung ist ein Hinweis, Projektzeilen bleiben.",
                         Schritt_HilfsenergieEmpfehlung),
+            // WELLE M7 SPEICHER - die Optionen des Pufferspeichers und die thermische Desinfektion.
+            // REIN DDL; die Quelle ist PufferOptionenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PUFFER_OPTIONEN,
+                        "Tab_Pufferspeicher: Bereitschaft_Weg, Aufstellraum_Temperatur_C, Schicht_Anteile, " +
+                        "Frischwassermodul, FWM_Graedigkeit_K; Tab_Einstellungen: Desinfektion_Aktiv, " +
+                        "Desinfektion_Intervall_Tage, Desinfektion_Stunde, Desinfektion_Zieltemperatur_C, Desinfektion_Volumen_l",
+                        "Bereitschaftsweg, Zonenanteile und Frischwassermodul des Pufferspeichers und die " +
+                        "thermische Desinfektion haetten keinen Ort. KEIN Rechenergebnis aendert sich - die " +
+                        "Felder entstehen leer und rechnen wie zuvor.",
+                        Schritt_PufferOptionen),
         };
 
         /// <summary>
@@ -12949,6 +12976,46 @@ namespace WindowsFormsApplication1
                 l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Katalogempfehlung der Hilfsenergie auf Weg B - KEIN Rechenergebnis aendert sich, " +
                     "Projektzeilen bleiben unberuehrt, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Pufferoptionen und Desinfektion" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PUFFER_OPTIONEN"/>, die Anweisungen bei <see cref="PufferOptionenSchema"/>.
+        /// <b>Wiederholbar</b>: <c>PufferOptionenSchema.Anweisungen</c> nennt nur fehlende Spalten. Fehlt
+        /// eine der zwei Tabellen, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_PufferOptionen(Lauf l)
+        {
+            string nr = PufferOptionenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in PufferOptionenSchema.TABELLEN)
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(PufferOptionenSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!PufferOptionenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Pufferoptionen und der Desinfektion an " +
+                                  PufferOptionenSchema.TAB_PUFFER + " und " + PufferOptionenSchema.TAB_EINSTELLUNGEN +
+                                  " stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Pufferoptionen und Desinfektion - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt (leer).") +
+                    " KEIN DML.");
             return true;
         }
 
