@@ -88,8 +88,11 @@ namespace EPOS.Kern.Tests
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= ZonenUebergabeSchema.SCHRITT);
             Assert.True(ZonenUebergabeSchema.Vollstaendig());
             Assert.True(ZonenUebergabeSchema.ZoneVorhanden());
+            // Gesät ist allein die Zone „Gastronomie und Verwaltung" des Referenzprojekts 1054
+            // (ZonenHeizkreisReferenzprojektWacheTests); jede andere Zone steht leer.
             foreach (string s in ZonenUebergabeSchema.SPALTEN_ZONE)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE \"" + s + "\" IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE \"" + s + "\" IS NOT NULL AND " +
+                                      "NOT (Bezeichner = 'Gastronomie und Verwaltung' AND ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1054))"));
         }
 
         /// <summary>Rundreise 180 → 181: aus dem Stand davor legt der Schritt sieben Spalten an; zweimal = nichts.</summary>

@@ -422,9 +422,9 @@ namespace EPOS.Kern.Tests
             }
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Baustoff"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
-            // Zonen trägt allein das Zonenprojekt 1052 (G6d, ZonenReferenzprojektWacheTests).
+            // Zonen tragen allein die Zonenprojekte 1052 und 1054 (G6d, AK1z; ZonenReferenzprojektWacheTests).
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID_Gebaeude NOT IN " +
-                                  "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1052)"));
+                                  "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054))"));
         }
 
         /// <summary>

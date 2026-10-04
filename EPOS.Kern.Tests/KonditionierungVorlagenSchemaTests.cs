@@ -143,11 +143,11 @@ namespace EPOS.Kern.Tests
             // einer Zone oder eines Katalogbaus, ausser den Zonenkalendern des Zonenprojekts 1052 (G6d) und der Konditionierung
             // des Referenzprojekts 1051 samt seinem Referenzkatalogbau (KP3, RP1).
             Assert.Equal(KonditionierungsvorlagenSaattabelle.VORLAGEN, (int)Zahl("SELECT COUNT(*) FROM \"" + VLG + "\""));
-            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_1052 + " AND " + Konditionierungsbestand.NICHT_1051));
-            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + VOR + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_1052 + " AND " + Konditionierungsbestand.NICHT_1051));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_ZONENPROJEKTE + " AND " + Konditionierungsbestand.NICHT_1051));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + VOR + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_ZONENPROJEKTE + " AND " + Konditionierungsbestand.NICHT_1051));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"" + PER + "\" WHERE \"ID_Kalender\" NOT IN " +
                                  "(SELECT \"ID\" FROM \"" + KAL + "\" WHERE \"ID_Vorlage\" IS NOT NULL) " +
-                                 "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_1052 + ") AND \"ID_Kalender\" NOT IN (" + Konditionierungsbestand.KALENDER_1051 + ")"));
+                                 "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_ZONENPROJEKTE + ") AND \"ID_Kalender\" NOT IN (" + Konditionierungsbestand.KALENDER_1051 + ")"));
         }
 
         /// <summary>

@@ -676,7 +676,8 @@ namespace EPOS.Kern.Tests
         /// bringt wie 1049 dessen 11 Positionen mit — zusammen 139 von 146, 36 von 43. Das Referenzprojekt
         /// Konditionierung 1051 (Kopie von 1007, KP3) bringt dessen 8 Positionen mit, alle ohne Dauer —
         /// zusammen 147 von 154. Das Prüfprojekt 1053 (Kopie von 1018) bringt wie 1049 dessen 11 Positionen mit —
-        /// zusammen 158 von 165, 37 von 44.
+        /// zusammen 158 von 165, 37 von 44. Das Referenzprojekt 1054 (Kopie von 1052, AK1z) bringt wie 1052 dessen
+        /// 11 Positionen mit — zusammen 169 von 176, 38 von 45.
         /// </summary>
         [Fact]
         public void Die_Testdatenbank_traegt_27_von_33_betragstragenden_Positionen_ohne_Dauer()
@@ -684,8 +685,8 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.Equal(165, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
-            Assert.Equal(158, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
+            Assert.Equal(176, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
+            Assert.Equal(169, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
                                   "AND (Nutzungsdauer IS NULL OR Nutzungsdauer < 1)"));
 
             int ohne = 0, alle = 0, hinweise = 0;
@@ -701,12 +702,12 @@ namespace EPOS.Kern.Tests
                 alle += h.Alle;
                 hinweise += h.Zeilen.Count;
             }
-            Assert.Equal(37, ohne);
-            Assert.Equal(44, alle);
+            Assert.Equal(38, ohne);
+            Assert.Equal(45, alle);
             // Einen Hinweis tragen nur Techniken mit Vorgabe unter T = 20 a: die Wärmepumpe
             // (18 a) in 1019, 1023, 1024, 1032, 1040, 1048 und 1050, das BHKW (15 a) in 1018, 1031,
-            // 1049, 1052 und 1053.
-            Assert.Equal(12, hinweise);
+            // 1049, 1052, 1053 und 1054.
+            Assert.Equal(13, hinweise);
         }
 
         /// <summary>

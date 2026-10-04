@@ -85,11 +85,11 @@ namespace EPOS.Kern.Tests
                      {
                          // Ausgenommen das Zonenprojekt 1052 (G6d): seine zwei Zonenkalender stehen ausserhalb der Basis;
                          // ebenso die Konditionierung des Referenzprojekts 1051 und seines Referenzkatalogbaus (KP3, RP1).
-                         "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_1052 + " AND " + Konditionierungsbestand.NICHT_1051,
-                         "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_1052 + " AND " + Konditionierungsbestand.NICHT_1051,
+                         "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_ZONENPROJEKTE + " AND " + Konditionierungsbestand.NICHT_1051,
+                         "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE \"ID_Vorlage\" IS NULL AND " + Zonenbestand.NICHT_ZONENPROJEKTE + " AND " + Konditionierungsbestand.NICHT_1051,
                          "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" NOT IN " +
                          "(SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NOT NULL) " +
-                         "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_1052 + ") AND \"ID_Kalender\" NOT IN (" + Konditionierungsbestand.KALENDER_1051 + ")",
+                         "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_ZONENPROJEKTE + ") AND \"ID_Kalender\" NOT IN (" + Konditionierungsbestand.KALENDER_1051 + ")",
                      })
             {
                 object o = DataRepository.ExecuteScalar(sql);

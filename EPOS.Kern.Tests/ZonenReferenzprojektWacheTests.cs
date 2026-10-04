@@ -11,44 +11,49 @@ using Xunit.Abstractions;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Der Zonenbestand ohne das Zonenprojekt 1052</b> (G6d): Tests, die auf einer Arbeitskopie eigene Zonen,
-    /// Bauteile, Luftströme oder Zonenkalender anlegen und die Tabellen im Ganzen zählen, zählen ohne die Zeilen von
-    /// 1052 — dem einzigen Projekt der Testdatenbank mit Zonen (<see cref="ZonenReferenzprojektWacheTests"/>). Ohne
-    /// 1052 ist jede Abfrage die Zählung der ganzen Tabelle.
+    /// <b>Der Zonenbestand ohne die Zonenprojekte 1052 und 1054</b> (G6d, AK1z): Tests, die auf einer Arbeitskopie
+    /// eigene Zonen, Bauteile, Luftströme oder Zonenkalender anlegen und die Tabellen im Ganzen zählen, zählen ohne
+    /// die Zeilen von 1052 (<see cref="ZonenReferenzprojektWacheTests"/>) und seiner Kopie 1054
+    /// (<see cref="ZonenHeizkreisReferenzprojektWacheTests"/>) — den einzigen Projekten der Testdatenbank mit Zonen.
+    /// Ohne sie ist jede Abfrage die Zählung der ganzen Tabelle.
     /// </summary>
     internal static class Zonenbestand
     {
-        /// <summary>Die Gebäude des Zonenprojekts.</summary>
-        internal const string GEBAEUDE_1052 = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1052";
+        /// <summary>Die Zonenprojekte der Testdatenbank.</summary>
+        internal static readonly long[] PROJEKTE = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU };
 
-        /// <summary>Die Zonen des Zonenprojekts.</summary>
-        internal const string ZONEN_1052 = "SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (" + GEBAEUDE_1052 + ")";
+        /// <summary>Die Gebäude der Zonenprojekte.</summary>
+        internal const string GEBAEUDE_ZONENPROJEKTE = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054)";
 
-        /// <summary>Zonen ohne die von 1052.</summary>
-        internal const string ZONEN = "SELECT COUNT(*) FROM Tab_Zone WHERE ID NOT IN (" + ZONEN_1052 + ")";
+        /// <summary>Die Zonen der Zonenprojekte.</summary>
+        internal const string ZONEN_ZONENPROJEKTE = "SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (" + GEBAEUDE_ZONENPROJEKTE + ")";
 
-        /// <summary>Bauteile ohne die von 1052.</summary>
-        internal const string BAUTEILE = "SELECT COUNT(*) FROM Tab_Bauteil WHERE ID_Zone NOT IN (" + ZONEN_1052 + ")";
+        /// <summary>Zonen ohne die der Zonenprojekte.</summary>
+        internal const string ZONEN = "SELECT COUNT(*) FROM Tab_Zone WHERE ID NOT IN (" + ZONEN_ZONENPROJEKTE + ")";
 
-        /// <summary>Luftströme ohne die von 1052.</summary>
-        internal const string LUFTSTROEME = "SELECT COUNT(*) FROM Tab_Zonenluftstrom WHERE ID_ZoneA NOT IN (" + ZONEN_1052 + ")";
+        /// <summary>Bauteile ohne die der Zonenprojekte.</summary>
+        internal const string BAUTEILE = "SELECT COUNT(*) FROM Tab_Bauteil WHERE ID_Zone NOT IN (" + ZONEN_ZONENPROJEKTE + ")";
 
-        /// <summary>Die Bedingung „kein Eigentum des Zonenprojekts" an Kalender- und Vorgabezeilen (Spalte <c>ID_Gebaeude</c>).</summary>
-        internal const string NICHT_1052 = "(ID_Gebaeude IS NULL OR ID_Gebaeude NOT IN (" + GEBAEUDE_1052 + "))";
+        /// <summary>Luftströme ohne die der Zonenprojekte.</summary>
+        internal const string LUFTSTROEME = "SELECT COUNT(*) FROM Tab_Zonenluftstrom WHERE ID_ZoneA NOT IN (" + ZONEN_ZONENPROJEKTE + ")";
 
-        /// <summary>Die Kalender des Zonenprojekts (die Heizkalender seiner beiden beheizten Zonen).</summary>
-        internal const string KALENDER_1052 = "SELECT ID FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IN (" + GEBAEUDE_1052 + ")";
+        /// <summary>Die Bedingung „kein Eigentum eines Zonenprojekts" an Kalender- und Vorgabezeilen (Spalte <c>ID_Gebaeude</c>).</summary>
+        internal const string NICHT_ZONENPROJEKTE = "(ID_Gebaeude IS NULL OR ID_Gebaeude NOT IN (" + GEBAEUDE_ZONENPROJEKTE + "))";
+
+        /// <summary>Die Kalender der Zonenprojekte (die Heizkalender ihrer beheizten Zonen).</summary>
+        internal const string KALENDER_ZONENPROJEKTE = "SELECT ID FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IN (" + GEBAEUDE_ZONENPROJEKTE + ")";
     }
 
     /// <summary>
     /// <b>Wache des Referenzprojekts 1052 „Referenzprojekt Zonen"</b> (Mehrzonenkonzept 9, Stufe G6d) — das
-    /// einzige Projekt der Testdatenbank mit Zonen: drei Zonen am Gebäude der Kopie von 1018 (Gästezimmer und
+    /// ungekoppelte Zonenprojekt der Testdatenbank (seine Kopie 1054 rechnet gekoppelt): drei Zonen am Gebäude der Kopie von 1018 (Gästezimmer und
     /// Gastronomie beheizt, Keller unbeheizt am Erdreich), Trennwand, Kellerdecken, ein Luftstrom, ein
     /// Heizkalender je beheizter Zone, Aufheizoptimierung an. Zonenschnitt und gesäte Zellen stehen in EINER
     /// Quelle, dem Bauplan <c>Referenzlaeufe/Skripte/referenzprojekt_1052_bauplan.cs</c> (hier verlinkt); das
     /// Saatskript <c>referenzprojekt_1052_zonen.cs</c> zieht ihn.
     /// <list type="bullet">
-    /// <item><b>Genau 1052 trägt Zonen</b>, Trennflächen, Luftströme und Zonenkalender.</item>
+    /// <item><b>Genau 1052 und seine Kopie 1054 tragen Zonen</b>, Trennflächen, Luftströme und Zonenkalender; 1052
+    /// bleibt ungekoppelt.</item>
     /// <item><b>Jede gesäte Zelle</b> steht wie im Bauplan (<see cref="Zonenprojekt1052.Pruefen"/>: Kopf,
     /// jede Zonen- und Bauteilzelle samt Nachbarzone, Luftstrom, Herkunft der Kalender, Aufheizvorgabe), dazu
     /// die Kennzahlen des Schnitts ausdrücklich.</item>
@@ -89,24 +94,35 @@ namespace EPOS.Kern.Tests
         //  Genau 1052
         // =====================================================================
 
+        /// <summary>
+        /// Zonen, Trennflächen, Luftströme und Zonenkalender tragen genau 1052 und seine Kopie 1054 (AK1z,
+        /// <see cref="ZonenHeizkreisReferenzprojektWacheTests"/>); 1052 selbst bleibt ungekoppelt.
+        /// </summary>
         [Fact]
-        public void Genau_1052_traegt_Zonen_Trennflaechen_Luftstroeme_und_Zonenkalender()
+        public void Genau_1052_und_1054_tragen_Zonen_Trennflaechen_Luftstroeme_und_Zonenkalender()
         {
             if (!_db.Vorhanden) return;
-            Assert.Equal(new long[] { PROJEKT }, Liste(
+            long[] PROJEKTE = Zonenbestand.PROJEKTE;
+            Assert.Equal(PROJEKTE, Liste(
                 "SELECT DISTINCT g.ID_Projekt FROM Tab_Zone z JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude ORDER BY 1"));
-            Assert.Equal(new long[] { PROJEKT }, Liste(
+            Assert.Equal(PROJEKTE, Liste(
                 "SELECT DISTINCT g.ID_Projekt FROM Tab_Bauteil b JOIN Tab_Zone z ON z.ID = b.ID_Zone " +
                 "JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude WHERE b.ID_Nachbarzone IS NOT NULL ORDER BY 1"));
-            Assert.Equal(new long[] { PROJEKT }, Liste(
+            Assert.Equal(PROJEKTE, Liste(
                 "SELECT DISTINCT g.ID_Projekt FROM Tab_Zonenluftstrom l JOIN Tab_Zone z ON z.ID = l.ID_ZoneA " +
                 "JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude ORDER BY 1"));
-            Assert.Equal(new long[] { PROJEKT }, Liste(
+            Assert.Equal(PROJEKTE, Liste(
                 "SELECT DISTINCT g.ID_Projekt FROM Tab_Konditionierungskalender k JOIN Tab_Gebaeude g ON g.ID = k.ID_Gebaeude " +
                 "WHERE k.ID_Zone IS NOT NULL ORDER BY 1"));
             Assert.Equal(Zonenprojekt1052.NAME, Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT Projektname FROM Tab_Projekt WHERE ID = ?", new DbParam("@p", PROJEKT)), CultureInfo.InvariantCulture));
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Z_ProjektGebaeude WHERE ID_Projekt = ?", PROJEKT));
+            // 1052 bleibt ungekoppelt: keine Kopplungsstufe, kein Heizkreis, keine Übergabe an den Zonen.
+            Assert.Null(KonfigurationCtrl.AnlagenkopplungLesen(PROJEKT));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ? AND Heizkreis_Aktiv <> 0", PROJEKT));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = ?) AND " +
+                                  "COALESCE(Uebergabe_Art, Uebergabe_Exponent, Uebergabe_Leistung_Nenn, Auslegung_Vorlauf, Auslegung_Ruecklauf, " +
+                                  "Auslegung_Raumtemperatur, Regler_Proportionalband) IS NOT NULL", PROJEKT));
         }
 
         // =====================================================================
