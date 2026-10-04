@@ -134,17 +134,30 @@ namespace WindowsFormsApplication1
         /// <summary>Instandsetzung [% der Investition je Jahr] — runder Wert nach VDI 2067.</summary>
         public const double INSTANDSETZUNG_PROZENT = 1.5;
 
-        /// <summary>Eine Position einer Standardvorlage.</summary>
-        public sealed record Position(string Bezeichnung, string Kostenart, string Bemessung, double? Satz, int Sortierung, bool Pflicht);
+        /// <summary>
+        /// Eine Position einer Standardvorlage. <paramref name="Positionsart"/> ist die Zeile der Nutzungsdauertabelle,
+        /// auf die die Position verweist (Saat-Zuordnung wie <see cref="NutzungsdauerSchema.Zuordnungen"/>):
+        /// <paramref name="Uebergreifend"/> sucht sie unter den technikübergreifenden Zeilen (KomponentenID NULL),
+        /// sonst unter denen der Kältemaschine; <c>null</c> heißt kein Verweis — die Position rechnet über den
+        /// Technik-Standard, und Betriebspositionen kennen keinen Ersatz.
+        /// </summary>
+        public sealed record Position(string Bezeichnung, string Kostenart, string Bemessung, double? Satz, int Sortierung, bool Pflicht,
+                                      string Positionsart = null, bool Uebergreifend = false);
 
-        /// <summary>Die Investitionsvorlage.</summary>
+        /// <summary>Die Positionsart des Geräts in <c>Tab_Nutzungsdauer</c> (Standardzeile der Komponente 11).</summary>
+        public const string POSITIONSART_GERAET = "Gerät";
+
+        /// <summary>Die Investitionsvorlage — drei Positionen tragen eine Positionsart, Rückkühlung und MSR keine.</summary>
         public static readonly IReadOnlyList<Position> VORLAGE_INVESTITION = new[]
         {
-            new Position(POSITION_AGGREGAT, DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, SATZ_AGGREGAT_EUR_JE_KW, 10, false),
+            new Position(POSITION_AGGREGAT, DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, SATZ_AGGREGAT_EUR_JE_KW, 10, false,
+                         POSITIONSART_GERAET),
             new Position("Rückkühlung / Zubehör", DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.BEMESSUNG_BETRAG, null, 20, false),
             new Position("MSR-Technik / Automation", DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN, null, 30, false),
-            new Position("Montage, Installation & Kältetechnik", DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.BEMESSUNG_PROZENT_INVESTITION, null, 40, false),
-            new Position("Planung / Baunebenkosten", DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.BEMESSUNG_PROZENT_INVESTITION, null, 50, false),
+            new Position("Montage, Installation & Kältetechnik", DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.BEMESSUNG_PROZENT_INVESTITION, null, 40, false,
+                         "Montage", true),
+            new Position("Planung / Baunebenkosten", DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.BEMESSUNG_PROZENT_INVESTITION, null, 50, false,
+                         "Planung / Baunebenkosten", true),
         };
 
         /// <summary>Die Betriebsvorlage.</summary>
@@ -180,9 +193,22 @@ namespace WindowsFormsApplication1
             "INSERT INTO \"Tab_KostenVorlagePosition\" (\"VorlageID\", \"Bezeichnung\", \"Kostenart\", \"Bemessung\", \"Satz\", " +
             "\"IstErloes\", \"Sortierung\", \"IstPflicht\", \"NutzungsdauerID\") " +
             "SELECT v.\"ID\", ?, ?, ?, ?, 0, ?, ?, " +
-            "(SELECT n.\"ID\" FROM \"Tab_Nutzungsdauer\" n WHERE n.\"KomponentenID\" = ? AND n.\"IstStandard\" = 1 LIMIT 1) " +
+            "(SELECT n.\"ID\" FROM \"Tab_Nutzungsdauer\" n WHERE n.\"Positionsart\" = ? AND n.\"KomponentenID\" IS ? LIMIT 1) " +
             "FROM \"Tab_KostenVorlage\" v WHERE v.\"KomponentenID\" = ? AND v.\"KategorieID\" = ? AND v.\"IstStandard\" = 1 " +
             "AND NOT EXISTS (SELECT 1 FROM \"Tab_KostenVorlagePosition\" p WHERE p.\"VorlageID\" = v.\"ID\" AND p.\"Bezeichnung\" = ?)";
+
+        /// <summary>
+        /// Nachtrag für Datenbanken, die den Schritt in seiner ersten Fassung trugen: Dort verwies JEDE Position beider
+        /// Vorlagen auf die Standardzeile „Gerät". Korrigiert wird nur eine Position, die noch genau diesen Verweis trägt
+        /// und deren Soll ein anderer ist — ein zweiter Lauf findet nichts mehr, eine gepflegte Zuordnung bleibt stehen.
+        /// </summary>
+        internal const string SQL_NACHTRAG_VERWEIS =
+            "UPDATE \"Tab_KostenVorlagePosition\" SET \"NutzungsdauerID\" = " +
+            "(SELECT n.\"ID\" FROM \"Tab_Nutzungsdauer\" n WHERE n.\"Positionsart\" = ? AND n.\"KomponentenID\" IS ? LIMIT 1) " +
+            "WHERE \"Bezeichnung\" = ? AND \"VorlageID\" IN (SELECT v.\"ID\" FROM \"Tab_KostenVorlage\" v " +
+            "WHERE v.\"KomponentenID\" = ? AND v.\"KategorieID\" = ? AND v.\"IstStandard\" = 1) " +
+            "AND \"NutzungsdauerID\" = (SELECT g.\"ID\" FROM \"Tab_Nutzungsdauer\" g WHERE g.\"KomponentenID\" = ? AND g.\"IstStandard\" = 1 LIMIT 1) " +
+            "AND \"NutzungsdauerID\" IS NOT (SELECT n.\"ID\" FROM \"Tab_Nutzungsdauer\" n WHERE n.\"Positionsart\" = ? AND n.\"KomponentenID\" IS ? LIMIT 1)";
 
         /// <summary>Legt Typ, Komponente, Nutzungsdauer und Vorlagen an, die noch fehlen; liefert die Zahl neuer Zeilen.</summary>
         public static int Saat(IList<string> bericht)
@@ -201,10 +227,10 @@ namespace WindowsFormsApplication1
                     n += v.Ausfuehren(SQL_SAAT_KOMPONENTE, new DbParam("?", KOMPONENTE_KAELTEMASCHINE),
                         new DbParam("?", DbWerte.KOSTEN_KOMPONENTE_KAELTEMASCHINE), new DbParam("?", KOMPONENTE_KAELTEMASCHINE));
                     n += v.Ausfuehren(SQL_SAAT_NUTZUNGSDAUER, new DbParam("?", KOMPONENTE_KAELTEMASCHINE),
-                        new DbParam("?", "Gerät"), new DbParam("?", NUTZUNGSDAUER_JAHRE),
+                        new DbParam("?", POSITIONSART_GERAET), new DbParam("?", NUTZUNGSDAUER_JAHRE),
                         new DbParam("?", INSTANDSETZUNG_PROZENT), new DbParam("?", WARTUNG_PROZENT),
                         new DbParam("?", NutzungsdauerSchema.QUELLE_VDI),
-                        new DbParam("?", KOMPONENTE_KAELTEMASCHINE), new DbParam("?", "Gerät"));
+                        new DbParam("?", KOMPONENTE_KAELTEMASCHINE), new DbParam("?", POSITIONSART_GERAET));
                     foreach ((int kategorie, IReadOnlyList<Position> positionen) in new[]
                              {
                                  (DbWerte.KOSTEN_KATEGORIE_INVESTITION, VORLAGE_INVESTITION),
@@ -214,12 +240,21 @@ namespace WindowsFormsApplication1
                         n += v.Ausfuehren(SQL_SAAT_VORLAGE, new DbParam("?", KOMPONENTE_KAELTEMASCHINE), new DbParam("?", kategorie),
                             new DbParam("?", KOMPONENTE_KAELTEMASCHINE), new DbParam("?", kategorie));
                         foreach (Position p in positionen)
+                        {
+                            object art = (object)p.Positionsart ?? DBNull.Value;
+                            object technik = p.Uebergreifend ? DBNull.Value : KOMPONENTE_KAELTEMASCHINE;
                             n += v.Ausfuehren(SQL_SAAT_POSITION, new DbParam("?", p.Bezeichnung), new DbParam("?", p.Kostenart),
                                 new DbParam("?", p.Bemessung), new DbParam("?", (object)p.Satz ?? DBNull.Value),
                                 new DbParam("?", p.Sortierung), new DbParam("?", p.Pflicht ? 1 : 0),
-                                new DbParam("?", KOMPONENTE_KAELTEMASCHINE),
+                                new DbParam("?", art), new DbParam("?", technik),
                                 new DbParam("?", KOMPONENTE_KAELTEMASCHINE), new DbParam("?", kategorie),
                                 new DbParam("?", p.Bezeichnung));
+                            n += v.Ausfuehren(SQL_NACHTRAG_VERWEIS, new DbParam("?", art), new DbParam("?", technik),
+                                new DbParam("?", p.Bezeichnung),
+                                new DbParam("?", KOMPONENTE_KAELTEMASCHINE), new DbParam("?", kategorie),
+                                new DbParam("?", KOMPONENTE_KAELTEMASCHINE),
+                                new DbParam("?", art), new DbParam("?", technik));
+                        }
                     }
                     if (stempel && n > 0)
                         v.Ausfuehren("UPDATE Tab_Applikation SET " + SPALTE_KATALOGSTEMPEL + " = ?",
