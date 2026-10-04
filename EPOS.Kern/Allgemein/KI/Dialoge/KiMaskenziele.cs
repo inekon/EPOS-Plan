@@ -202,6 +202,13 @@ namespace WindowsFormsApplication1
         public const string BAUTEILAUFBAU_KATALOG = "BAUTEILAUFBAU_KATALOG";
 
         /// <summary>
+        /// Der Seitenschluessel der Verwaltung „Kältemaschinen" (KU3-1) — dieselbe Lage wie
+        /// <see cref="BAUSTOFF_KATALOG"/>: eine freie Ansicht der Wurzel
+        /// (<c>Seitenschluessel.KaeltemaschineKatalog</c>, dieselbe Zeichenkette).
+        /// </summary>
+        public const string KAELTEMASCHINE_KATALOG = "KAELTEMASCHINE_KATALOG";
+
+        /// <summary>
         /// Der Seitenschluessel der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) —
         /// dieselbe Lage wie <see cref="BAUSTOFF_KATALOG"/>: eine freie Ansicht der Wurzel
         /// (<c>Seitenschluessel.Betriebskalender</c>, dieselbe Zeichenkette).
@@ -396,6 +403,7 @@ namespace WindowsFormsApplication1
                 // Menuepunkte - freie Ansichten der Wurzel.
                 { KiMaskennamen.BAUSTOFF_KATALOG, BAUSTOFF_KATALOG },
                 { KiMaskennamen.BAUTEILAUFBAU, BAUTEILAUFBAU_KATALOG },
+                { KiMaskennamen.KAELTEMASCHINE_KATALOG, KAELTEMASCHINE_KATALOG },
 
                 // Die Betriebskalender der Bedarfsprofile (PW2, BW2) - eine freie Ansicht wie die
                 // zwei Kataloge darueber.

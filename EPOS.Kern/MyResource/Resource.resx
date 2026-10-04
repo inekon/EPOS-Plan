@@ -44660,5 +44660,191 @@ Chart</value>
   <data name="KM_MSG_AUSGELIEFERT" xml:space="preserve">
     <value>Dieser Satz gehört zur Auslieferung und wird nicht überschrieben. Legen Sie eine Kopie an.</value>
   </data>
+  <data name="KM_TITEL" xml:space="preserve">
+    <value>Kältemaschinen</value>
+  </data>
+  <data name="KM_TITEL_NEU" xml:space="preserve">
+    <value>Neue Kältemaschine</value>
+  </data>
+  <data name="KM_LEER" xml:space="preserve">
+    <value>Der Katalog führt noch keine Kältemaschine – „Neu…“ legt eine an.</value>
+  </data>
+  <data name="KM_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Verwaltung der Kältemaschinen steht auf diesem Gerät noch nicht zur Verfügung.</value>
+  </data>
+  <data name="KM_GRUPPE_KENNLINIE" xml:space="preserve">
+    <value>Kennlinie</value>
+  </data>
+  <data name="KM_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="KM_LBL_FIRMA" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="KM_LBL_TYP" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="KM_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="KM_LBL_NENNKAELTELEISTUNG" xml:space="preserve">
+    <value>Nennkälteleistung</value>
+  </data>
+  <data name="KM_LBL_NENN_EER" xml:space="preserve">
+    <value>Nenn-EER</value>
+  </data>
+  <data name="KM_LBL_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel</value>
+  </data>
+  <data name="KM_LBL_RUECKKUEHLART" xml:space="preserve">
+    <value>Rückkühlart</value>
+  </data>
+  <data name="KM_LBL_MINDESTTEILLAST" xml:space="preserve">
+    <value>Mindestteillast</value>
+  </data>
+  <data name="KM_LBL_HILFSSTROM" xml:space="preserve">
+    <value>Hilfsstrom Rückkühlung</value>
+  </data>
+  <data name="KM_HILFSSTROM_LEER" xml:space="preserve">
+    <value>leer = im EER enthalten</value>
+  </data>
+  <data name="KM_LBL_KALTWASSER_MIN" xml:space="preserve">
+    <value>Kleinster Kaltwasservorlauf</value>
+  </data>
+  <data name="KM_LBL_MODULKOSTEN" xml:space="preserve">
+    <value>Gerätepreis</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
+    <value>(keine Angabe)</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_LUFT" xml:space="preserve">
+    <value>Luftgekühlt</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_WASSER" xml:space="preserve">
+    <value>Wassergekühlt</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_TROCKENKUEHLER" xml:space="preserve">
+    <value>Trockenkühler</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_NASSKUEHLER" xml:space="preserve">
+    <value>Nasskühlturm</value>
+  </data>
+  <data name="KM_SP_RUECKKUEHLTEMPERATUR" xml:space="preserve">
+    <value>Rückkühltemperatur</value>
+  </data>
+  <data name="KM_SP_KALTWASSERTEMPERATUR" xml:space="preserve">
+    <value>Kaltwassertemperatur</value>
+  </data>
+  <data name="KM_SP_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="KM_SP_KAELTELEISTUNG" xml:space="preserve">
+    <value>Kälteleistung</value>
+  </data>
+  <data name="KM_KENNLINIE_RASTER" xml:space="preserve">
+    <value>Kennlinienpunkte</value>
+  </data>
+  <data name="KM_KENNLINIE_PUNKT" xml:space="preserve">
+    <value>Punkt {0}</value>
+  </data>
+  <data name="KM_KENNLINIE_NEU" xml:space="preserve">
+    <value>+ Kennlinienpunkt hinzufügen</value>
+  </data>
+  <data name="KM_KENNLINIE_LEER" xml:space="preserve">
+    <value>Die Kennlinie hat noch keinen Punkt.</value>
+  </data>
+  <data name="KM_KENNLINIE_ENTFERNEN" xml:space="preserve">
+    <value>Punkt entfernen</value>
+  </data>
+  <data name="KM_KENNLINIE_ANZAHL" xml:space="preserve">
+    <value>{0} Kennlinienpunkte</value>
+  </data>
+  <data name="KM_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Soll die Kältemaschine „{0}“ gelöscht werden?</value>
+  </data>
+  <data name="KM_MSG_ANGELEGT" xml:space="preserve">
+    <value>„{0}“ angelegt.</value>
+  </data>
+  <data name="KM_MSG_GELOESCHT" xml:space="preserve">
+    <value>„{0}“ gelöscht.</value>
+  </data>
+  <data name="KM_MSG_FEHLER" xml:space="preserve">
+    <value>Die Kältemaschine konnte nicht geschrieben werden.</value>
+  </data>
+  <data name="KM_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Diesen Namen führt der Katalog bereits.</value>
+  </data>
+  <data name="KM_MSG_NAME_LEER" xml:space="preserve">
+    <value>Die Kältemaschine braucht einen Namen.</value>
+  </data>
+  <data name="MENU_KAELTEMASCHINEN" xml:space="preserve">
+    <value>Kältemaschinen</value>
+  </data>
+  <data name="KFLT_SP_NENNKAELTELEISTUNG" xml:space="preserve">
+    <value>Kälteleistung</value>
+  </data>
+  <data name="KFLT_SP_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="KFLT_SP_RUECKKUEHLART" xml:space="preserve">
+    <value>Rückkühlung</value>
+  </data>
+  <data name="KI_DLG_MASKE_KM" xml:space="preserve">
+    <value>Kältemaschinen</value>
+  </data>
+  <data name="KI_DLG_KM_GERAET_NAME" xml:space="preserve">
+    <value>Kältemaschine</value>
+  </data>
+  <data name="KI_DLG_KM_GERAET_ERL" xml:space="preserve">
+    <value>Wählt den Katalogsatz der Verwaltung – wie ein Klick in die Liste; Schlüssel ist die Id.</value>
+  </data>
+  <data name="KI_DLG_KM_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Name des Geräts; im Katalog eindeutig.</value>
+  </data>
+  <data name="KI_DLG_KM_FIRMA_ERL" xml:space="preserve">
+    <value>Hersteller als Freitext.</value>
+  </data>
+  <data name="KI_DLG_KM_TYP_ERL" xml:space="preserve">
+    <value>Typbezeichnung als Freitext.</value>
+  </data>
+  <data name="KI_DLG_KM_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Freitext zum Gerät.</value>
+  </data>
+  <data name="KI_DLG_KM_NENNKAELTELEISTUNG_ERL" xml:space="preserve">
+    <value>Kälteleistung im Nennpunkt in kW; größer als null.</value>
+  </data>
+  <data name="KI_DLG_KM_NENN_EER_ERL" xml:space="preserve">
+    <value>Energieeffizienzverhältnis im Nennpunkt; größer als null.</value>
+  </data>
+  <data name="KI_DLG_KM_KAELTEMITTEL_ERL" xml:space="preserve">
+    <value>Kältemittel als Freitext.</value>
+  </data>
+  <data name="KI_DLG_KM_RUECKKUEHLART_ERL" xml:space="preserve">
+    <value>Wie das Gerät seine Wärme abgibt: luftgekühlt, wassergekühlt, Trockenkühler oder Nasskühlturm; die Rückkühlung gehört zur Maschine.</value>
+  </data>
+  <data name="KI_DLG_KM_MINDESTTEILLAST_ERL" xml:space="preserve">
+    <value>Kleinste Teillast in Prozent der Nennkälteleistung (0 bis 100).</value>
+  </data>
+  <data name="KI_DLG_KM_HILFSSTROM_ERL" xml:space="preserve">
+    <value>Elektrische Leistung der Rückkühlung im Nennpunkt in kW; leer heißt im EER enthalten.</value>
+  </data>
+  <data name="KI_DLG_KM_KALTWASSER_MIN_ERL" xml:space="preserve">
+    <value>Kleinster zulässiger Kaltwasservorlauf in °C.</value>
+  </data>
+  <data name="KI_DLG_KM_MODULKOSTEN_ERL" xml:space="preserve">
+    <value>Gerätepreis in Euro; nicht negativ.</value>
+  </data>
+  <data name="KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL" xml:space="preserve">
+    <value>Eintrittstemperatur des Rückkühlmediums im Kennlinienpunkt in °C (luftgekühlt: Außenluft).</value>
+  </data>
+  <data name="KI_DLG_KM_KALTWASSERTEMPERATUR_ERL" xml:space="preserve">
+    <value>Kaltwasservorlauf im Kennlinienpunkt in °C; mit der Rückkühltemperatur je Gerät eindeutig.</value>
+  </data>
+  <data name="KI_DLG_KM_EER_ERL" xml:space="preserve">
+    <value>EER im Kennlinienpunkt; größer als null.</value>
+  </data>
+  <data name="KI_DLG_KM_KAELTELEISTUNG_ERL" xml:space="preserve">
+    <value>Kälteleistung im Kennlinienpunkt in kW; nicht negativ.</value>
+  </data>
 </root>
 

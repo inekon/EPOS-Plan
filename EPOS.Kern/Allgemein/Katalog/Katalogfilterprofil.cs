@@ -605,6 +605,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die flächenbezogene Wärmekapazität Σ ρ·c·d eines Aufbaus in kJ/(m²·K).</summary>
         public const string SpKapazitaet = "KAPAZITAET";
 
+        /// <summary>Kältemaschine (KU3-1): Nennkälteleistung [kW] (<c>Tab_Kaeltemaschine_STAMM.Nennkaelteleistung_kW</c>).</summary>
+        public const string SpNennkaelteleistung = "NENNKAELTELEISTUNG";
+
+        /// <summary>Kältemaschine (KU3-1): EER im Nennpunkt (<c>Nenn_EER</c>).</summary>
+        public const string SpEer = "EER";
+
+        /// <summary>Kältemaschine (KU3-1): Rückkühlart als Anzeigetext (<c>KaeltemaschineStammCtrl.RueckkuehlartText</c>).</summary>
+        public const string SpRueckkuehlart = "RUECKKUEHLART";
+
         /// <summary>
         /// <b>Der Ausdruck „ohne Wert"</b> — ein Gleichheitszeichen ohne Operand (Konzept_Katalogfilter
         /// V1: <c>=15</c> heißt „gleich 15", <c>=</c> allein „gleich nichts"). Er trifft genau die
@@ -836,6 +845,24 @@ namespace WindowsFormsApplication1
                             new Katalogspalte(SpCrate,      t("KFLT_SP_CRATE"), "1/h", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
                             new Katalogspalte(SpEtaRt,      t("KFLT_SP_ETART"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpZyklen,     t("KFLT_SP_ZYKLEN"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit)
+                        }
+                    };
+
+                // ----------------------------------------------------------
+                // Kaeltemaschine (KU3-1, 3 Beispielgeraete) - SECHS Spalten
+                // ----------------------------------------------------------
+                case Anlagenart.Kaeltemaschine:
+                    return new Katalogfilterprofil
+                    {
+                        Art = art,
+                        Spalten = new[]
+                        {
+                            new Katalogspalte(SpBezeichner,         t("KFLT_SP_BEZEICHNER")),
+                            new Katalogspalte(SpHersteller,         t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpTyp,                t("KFLT_SP_TYP"), rang: Katalogspaltenrang.Breit),
+                            new Katalogspalte(SpNennkaelteleistung, t("KFLT_SP_NENNKAELTELEISTUNG"), "kW", Katalogspaltenart.Zahl),
+                            new Katalogspalte(SpEer,                t("KFLT_SP_EER"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpRueckkuehlart,      t("KFLT_SP_RUECKKUEHLART"), rang: Katalogspaltenrang.BeiPlatz)
                         }
                     };
             }
@@ -1239,6 +1266,7 @@ namespace WindowsFormsApplication1
                 yield return Anlagenart.Photovoltaik;
                 yield return Anlagenart.Wechselrichter;
                 yield return Anlagenart.Stromspeicher;
+                yield return Anlagenart.Kaeltemaschine;
             }
         }
     }

@@ -24,7 +24,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine Zeile der Katalogliste.</summary>
         public sealed record Listenzeile(int Id, string Bezeichner, string Firma, double? Nennkaelteleistung_kW,
-                                         double? Nenn_EER, string Rueckkuehlart, bool ReadOnly);
+                                         double? Nenn_EER, string Rueckkuehlart, bool ReadOnly, string Typ = null);
 
         // =================================================================
         //  Lesen
@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
         {
             var liste = new List<Listenzeile>();
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT ID, Bezeichner, Firma, " + KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG + ", " +
+                "SELECT ID, Bezeichner, Firma, Typ, " + KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG + ", " +
                 KaeltemaschineSchema.SPALTE_NENN_EER + ", " + KaeltemaschineSchema.SPALTE_RUECKKUEHLART +
                 ", ReadOnly FROM " + TABLE + " ORDER BY Bezeichner");
             if (dt == null) return liste;
@@ -44,8 +44,52 @@ namespace WindowsFormsApplication1
                                           Zahl(r[KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG]),
                                           Zahl(r[KaeltemaschineSchema.SPALTE_NENN_EER]),
                                           Text(r[KaeltemaschineSchema.SPALTE_RUECKKUEHLART]),
-                                          Ganz(r["ReadOnly"]) == 1));
+                                          Ganz(r["ReadOnly"]) == 1, Text(r["Typ"])));
             return liste;
+        }
+
+        /// <summary>
+        /// <b>Die Zeilen der Katalogliste</b> der Verwaltung (Profil <see cref="Katalogfilterprofil.Finde"/> mit
+        /// <see cref="Anlagenart.Kaeltemaschine"/>): Bezeichner, Firma, Typ, Nennkälteleistung, Nenn-EER und die
+        /// Rückkühlart als ANZEIGETEXT — der Schlüssel der Zeile ist die Id, der Persistenzwert bleibt im Kern.
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var zeilen = new List<Katalogfilterzeile>();
+            foreach (Listenzeile z in Liste())
+            {
+                var zeile = new Katalogfilterzeile(z.Id, z.Bezeichner)
+                {
+                    Geschuetzt = z.ReadOnly,
+                    Schluessel = z.Id.ToString(CultureInfo.InvariantCulture)
+                };
+                zeilen.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, z.Bezeichner)
+                    .MitText(Katalogfilterprofil.SpHersteller, z.Firma)
+                    .MitText(Katalogfilterprofil.SpTyp, z.Typ)
+                    .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, z.Nennkaelteleistung_kW, 1)
+                    .MitZahl(Katalogfilterprofil.SpEer, z.Nenn_EER, 2)
+                    .MitText(Katalogfilterprofil.SpRueckkuehlart, RueckkuehlartText(z.Rueckkuehlart)));
+            }
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Der Anzeigetext einer Rückkühlart in der Oberflächensprache; leer für <c>null</c>, der Wert selbst für
+        /// einen unbekannten. <b>Nie ein Steuerwert</b> — geschrieben wird allein der Persistenzwert aus
+        /// <see cref="KaeltemaschineSchema.RUECKKUEHLARTEN"/>.
+        /// </summary>
+        public static string RueckkuehlartText(string persistenzwert)
+        {
+            switch (persistenzwert)
+            {
+                case null: return "";
+                case KaeltemaschineSchema.RUECKKUEHLART_LUFT: return MyResource.Resource.KM_RUECKKUEHLART_LUFT;
+                case KaeltemaschineSchema.RUECKKUEHLART_WASSER: return MyResource.Resource.KM_RUECKKUEHLART_WASSER;
+                case KaeltemaschineSchema.RUECKKUEHLART_TROCKENKUEHLER: return MyResource.Resource.KM_RUECKKUEHLART_TROCKENKUEHLER;
+                case KaeltemaschineSchema.RUECKKUEHLART_NASSKUEHLER: return MyResource.Resource.KM_RUECKKUEHLART_NASSKUEHLER;
+                default: return persistenzwert;
+            }
         }
 
         /// <summary>Ein Katalogsatz samt Kennlinie; <c>null</c>, wenn es die ID nicht gibt.</summary>

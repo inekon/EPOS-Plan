@@ -212,6 +212,13 @@ namespace WindowsFormsApplication1
         public const string BAUSTOFF_KATALOG = "BaustoffKatalog";
 
         /// <summary>
+        /// Die Verwaltung „Kältemaschinen" (<c>KaeltemaschineKatalogDialog</c>, KU3-1) — eine neue Maske
+        /// ohne WinForms-Vorlaeufer und deshalb ohne <c>Form_</c>-Vorsilbe; zugleich die Vorsilbe ihres
+        /// Hilfeschluessels.
+        /// </summary>
+        public const string KAELTEMASCHINE_KATALOG = "KaeltemaschineKatalog";
+
+        /// <summary>
         /// Die Verwaltung „Bauteilaufbauten" samt Schichtenraster (<c>BauteilaufbauDialog</c>,
         /// Gebaeudesimulation G3) — wie <see cref="BAUSTOFF_KATALOG"/> ohne <c>Form_</c>-Vorsilbe.
         /// </summary>
@@ -785,6 +792,7 @@ namespace WindowsFormsApplication1
                 GebaeudeBedarf(),
                 Gebaeudetyp(),
                 BaustoffKatalog(),
+                KaeltemaschineKatalog(),
                 Bauteilaufbau(),
                 Zone(),
                 Bauteil(),
@@ -4925,6 +4933,79 @@ namespace WindowsFormsApplication1
                                      min: BaustoffCtrl.CP_MIN, max: BaustoffCtrl.CP_MAX),
                     new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.BstQuelleName,
                                      KiParameterTyp.Text, KiDialogTexte.BstQuelleErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>
+        /// Die Verwaltung „Kältemaschinen" (KU3-1) — die Satzwahl, zwölf Kenndaten und das Raster der
+        /// Kennlinie aus <c>EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKatalogKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Die Rückkühlart ist eine WAHL über den Listenplatz (<c>RueckkuehlartWahl</c>) — nie über den
+        /// Anzeigetext. Die Kennlinie ist ein RASTER (<c>Kennlinie[]</c>, Kennzeichen die Nummer ab 1);
+        /// Punkte anlegen und entfernen bleiben Klicks des Anwenders. Geschrieben wird mit „Speichern",
+        /// dieselbe Prüfung wie am Knopf (<c>KaeltemaschineStammCtrl.Pruefen</c>).
+        /// </remarks>
+        private static KiDialog KaeltemaschineKatalog()
+        {
+            const string SICHT = "KaeltemaschineKatalogKiSicht.";
+            string punkt = SICHT + "Kennlinie" + KiEigenschaftspfad.Sammlungszeichen + ".";
+            const string NUMMER = "Nummer";
+            return new KiDialog(
+                maskenname: KiMaskennamen.KAELTEMASCHINE_KATALOG,
+                anzeigename: KiDialogTexte.MaskeKaeltemaschineKatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("kaeltemaschine", SICHT + "Kaeltemaschine", KiDialogTexte.KmGeraetName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmGeraetErl,
+                                     leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichner", SICHT + "Bezeichner", KiDialogTexte.KmBezeichnerName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmBezeichnerErl),
+                    new KiDialogFeld("firma", SICHT + "Firma", KiDialogTexte.KmFirmaName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmFirmaErl, leerErlaubt: true),
+                    new KiDialogFeld("typ", SICHT + "Typ", KiDialogTexte.KmTypName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmTypErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", SICHT + "Beschreibung", KiDialogTexte.KmBeschreibungName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("nennkaelteleistung", SICHT + "Nennkaelteleistung", KiDialogTexte.KmNennkaelteleistungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmNennkaelteleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("nenn_eer", SICHT + "NennEer", KiDialogTexte.KmNennEerName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmNennEerErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("kaeltemittel", SICHT + "Kaeltemittel", KiDialogTexte.KmKaeltemittelName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmKaeltemittelErl, leerErlaubt: true),
+                    new KiDialogFeld("rueckkuehlart", SICHT + "Rueckkuehlart", KiDialogTexte.KmRueckkuehlartName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmRueckkuehlartErl, leerErlaubt: true),
+                    new KiDialogFeld("mindestteillast", SICHT + "Mindestteillast", KiDialogTexte.KmMindestteillastName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmMindestteillastErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true, min: 0, max: 100),
+                    new KiDialogFeld("hilfsstrom", SICHT + "Hilfsstrom", KiDialogTexte.KmHilfsstromName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmHilfsstromErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("kaltwasser_min", SICHT + "KaltwasserMin", KiDialogTexte.KmKaltwasserMinName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmKaltwasserMinErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("modulkosten", SICHT + "Modulkosten", KiDialogTexte.KmModulkostenName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmModulkostenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("punkt_rueckkuehltemperatur", punkt + "Rueckkuehltemperatur",
+                                     KiDialogTexte.KmPunktRueckkuehltemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KmPunktRueckkuehltemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, zeilenkennzeichen: NUMMER),
+                    new KiDialogFeld("punkt_kaltwassertemperatur", punkt + "Kaltwassertemperatur",
+                                     KiDialogTexte.KmPunktKaltwassertemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KmPunktKaltwassertemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, zeilenkennzeichen: NUMMER),
+                    new KiDialogFeld("punkt_eer", punkt + "Eer", KiDialogTexte.KmPunktEerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KmPunktEerErl, leerErlaubt: true, zeilenkennzeichen: NUMMER, min: 0),
+                    new KiDialogFeld("punkt_kaelteleistung", punkt + "Kaelteleistung", KiDialogTexte.KmPunktKaelteleistungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmPunktKaelteleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, zeilenkennzeichen: NUMMER, min: 0)
                 },
                 knoepfe: new[]
                 {
