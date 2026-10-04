@@ -121,6 +121,20 @@ namespace EPOS.Kern.Tests
                     GebaeudeZonierung vorgabe = GebaeudeZonierung.Bilden(a.Abbild, gi);
                     _aus.WriteLine("Zonierung: Regeln " + string.Join(",", vorgabe.Regeln) + ", Vorgabe " + vorgabe.Vorgabe
                                    + ", Trenndecken über Raumbezüge " + g.ZahlTrenndeckenReferenz + "; " + Text(vorgabe.Meldungen));
+                    // Z6 nach Raumtemperatur und Nutzung — nur Protokoll: Zonen mit Temperatur, Nutzungsklassen, Fläche, Raumzahl.
+                    _aus.WriteLine("Raumtypen: " + string.Join(", ", g.Raeume.GroupBy(r => (r.Raumtyp ?? "—") + "→" + GebaeudeZonierung.Nutzungsklasse(r))
+                                                                         .OrderBy(x => x.Key, StringComparer.Ordinal)
+                                                                         .Select(x => x.Key + " " + x.Count() + " (" + string.Join("/", x.Select(r => r.Name ?? "?").Distinct().Take(3)) + ")")));
+                    if (vorgabe.Regeln.Contains(IfcImportProfil.ZONENREGEL_Z6))
+                    {
+                        GebaeudeZonierung z6 = GebaeudeZonierung.Bilden(a.Abbild, gi, IfcImportProfil.ZONENREGEL_Z6);
+                        _aus.WriteLine("Z6: " + z6.Zonen.Count + " Zonen; " + Text(z6.Meldungen));
+                        foreach (Importzone zone in z6.Zonen)
+                            _aus.WriteLine("  Z6-Zone " + zone.Name + (zone.IstBeheizt ? " [beheizt]" : " [unbeheizt]") + ": " + Z(zone.FlaecheM2) + " m², "
+                                           + zone.Raeume.Count + " Räume, Klassen " + string.Join("/", zone.Raeume.Select(GebaeudeZonierung.Nutzungsklasse).Distinct())
+                                           + (zone.Zugeschlagen.Count > 0 ? ", zugeschlagen " + string.Join("; ", zone.Zugeschlagen) : ""));
+                    }
+                    else _aus.WriteLine("Z6: nicht wählbar");
                     if (vorgabe.Regeln.Contains(IfcImportProfil.ZONENREGEL_Z4))
                     {
                         GebaeudeZonierung z4 = GebaeudeZonierung.Bilden(a.Abbild, gi, IfcImportProfil.ZONENREGEL_Z4);

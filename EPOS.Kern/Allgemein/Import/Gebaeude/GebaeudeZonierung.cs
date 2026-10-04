@@ -981,10 +981,11 @@ namespace WindowsFormsApplication1
             ["Restaurant"] = "Gastronomie", ["Eating"] = "Gastronomie",
             ["Kitchen"] = "Kueche",
             ["Fitness"] = "Sport", ["Sauna"] = "Sport",
-            ["Hall"] = "Verkehr", ["HallWay"] = "Verkehr", ["Stairway"] = "Verkehr", ["Connection"] = "Verkehr", ["Ante"] = "Verkehr",
+            ["Hall"] = "Verkehr", ["HallWay"] = "Verkehr", ["Stairway"] = "Verkehr", ["Ante"] = "Verkehr",
             ["WC"] = "Sanitaer", ["Bath"] = "Sanitaer", ["Shower"] = "Sanitaer", ["Locker"] = "Sanitaer",
-            ["Store"] = "Lager", ["StorageRoom"] = "Lager", ["Basement"] = "Lager", ["Roof"] = "Lager", ["AdjoiningRoom"] = "Lager",
-            ["CentralHeating"] = "Technik",
+            ["Store"] = "Lager", ["StorageRoom"] = "Lager", ["Basement"] = "Lager", ["Roof"] = "Lager",
+            ["CentralHeating"] = "Technik", ["Connection"] = "Technik",   // Anschlussräume (Hausanschluss, Heizung, Lüftung)
+            ["AdjoiningRoom"] = "Sonstige", ["Workshop"] = "Sonstige",
         };
 
         /// <summary>
@@ -1000,7 +1001,7 @@ namespace WindowsFormsApplication1
             ("Buero", new[] { "büro", "buero", "office", "besprech", "konferenz", "meeting", "conference" }),
             ("Sport", new[] { "sport", "fitness", "gym", "turn", "sauna" }),
             ("Verkehr", new[] { "flur", "diele", "treppe", "foyer", "eingang", "windfang", "corridor", "hallway", "stair", "lobby", "entrance" }),
-            ("Technik", new[] { "technik", "heizraum", "heizung", "schacht", "aufzug", "hausanschluss", "plant", "shaft", "server", "mechanical" }),
+            ("Technik", new[] { "technik", "heizraum", "heizung", "schacht", "aufzug", "hausanschluss", "verteiler", "lüftung", "plant", "shaft", "server", "mechanical" }),
             ("Lager", new[] { "lager", "abstell", "keller", "garage", "carport", "dachboden", "speicher", "store", "storage", "basement", "attic" }),
             ("Wohnen", new[] { "wohn", "living", "kinderzimmer", "guest" }),
         };
