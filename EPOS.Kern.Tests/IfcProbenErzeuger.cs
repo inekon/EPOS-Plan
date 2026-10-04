@@ -34,7 +34,7 @@ namespace EPOS.Kern.Tests
     /// m² ohne Prefix. Die Erwartungswerte stehen in <c>IfcImportTests</c> und folgen aus den Zahlen
     /// hier.</para>
     /// </summary>
-    internal static class IfcProbenErzeuger
+    internal static partial class IfcProbenErzeuger
     {
         /// <summary>Der feste Zeitstempel im Kopf jeder Probe.</summary>
         public const string ZEITSTEMPEL = "2026-09-25T00:00:00";
@@ -737,7 +737,7 @@ namespace EPOS.Kern.Tests
         //  Der Bauhelfer — schemafrei über die IIfc*-Schnittstellen
         // ==================================================================
 
-        private sealed class Bau : IDisposable
+        private sealed partial class Bau : IDisposable
         {
             private readonly MemoryModel _m;
             private readonly ITransaction _t;
