@@ -38086,6 +38086,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumkörper der Art {1} sind nicht lesbar; die Räume werden aus Umriss bzw. schematisch dargestellt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ART {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumkörper aus der Datei: {0} Räume mit Körper, {1} ohne, {2} Dreiecke. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_GELESEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die IFC-Datei konnte nicht gelesen werden: {0} ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_LESEFEHLER {

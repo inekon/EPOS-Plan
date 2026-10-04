@@ -33769,6 +33769,12 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_PLATZIERUNGSART" xml:space="preserve">
     <value>{0} building components with placement {1} are taken over without orientation; only IfcLocalPlacement is evaluated.</value>
   </data>
+  <data name="IMP_IFC_PROT_KOERPER_ART" xml:space="preserve">
+    <value>{0} space bodies of type {1} cannot be read; the spaces are shown from their outline or schematically.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_GELESEN" xml:space="preserve">
+    <value>Space bodies from the file: {0} spaces with a body, {1} without, {2} triangles.</value>
+  </data>
   <data name="IMP_IFC_PROT_EIGENSCHAFTSART" xml:space="preserve">
     <value>Property {1} is given as {0}; single and bounded values are read — it is skipped.</value>
   </data>
