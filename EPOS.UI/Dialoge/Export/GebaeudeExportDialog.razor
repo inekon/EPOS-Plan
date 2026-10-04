@@ -28,6 +28,15 @@
    Meldungen in der Liste, ohne Datei und ohne Teilen -, ein Erfolg schliesst den Dialog und gibt die Rueckmeldung (mit Pfad) an den
    Wirt. Abbrechen, Esc und das Kreuz geben null und rufen den Speicherweg nie.
 
+   DIE ORIGINALDATEI ANREICHERN (Stufe G7d, Datenaustauschkonzept 6.6): Fuehrt das gewaehlte Format die
+   Anreicherung (IFC) und hat das Gebaeude eine Importquelle des Formats (Gabe AnreicherungMoeglich), steht
+   eine zweite Wahl "Eigene Datei schreiben" / "Originaldatei anreichern" (Vorgabe: eigene Datei). Beim
+   Anreichern waehlt der Anwender die Originaldatei erneut (Gabe OriginalWaehlen); der Dialog zeigt
+   Dateiname, Importquelle und die Meldungen der Vorschau. Eine Verweigerung nennt ihren Grund und bietet
+   "Stattdessen eigene Datei schreiben" (wechselt mit denselben Eingaben auf die erste Wahl); eine Freigabe
+   verlangt die Bestaetigung des Beipackzettels - erst dann ruft "Speichern..." den Anreicherungsweg
+   (Gabe Anreichern), der unter neuem Namen speichert.
+
    TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
 
 @namespace EPOS.UI.Dialoge.Export
@@ -81,6 +90,61 @@
                     @onclick="BeiZusage">@Texte.Zusage</button>
             <Herleitungszeile Text="@Texte.ZusageHinweis" />
         </div>
+    }
+
+    @if (AnreicherungSichtbar)
+    {
+        <Optionsgruppe Bezeichnung="@Texte.Weg" Eintraege="@Wegeintraege" Auswahl="@_weg"
+                       AuswahlChanged="BeiWeg" Aktiv="@(!_speichertGerade && !_waehltGerade)" />
+        @if (Anreichernd)
+        {
+            <div class="epos-gebexport-anreicherung">
+                <Herleitungszeile Text="@Texte.AnreicherungHinweis" />
+                <button type="button" class="epos-knopf epos-gebexport-originalknopf"
+                        disabled="@(_speichertGerade || _waehltGerade)" @onclick="BeiOriginalWaehlen">@Texte.OriginalWaehlen</button>
+                @if (_wahl is not null)
+                {
+                    <dl class="epos-gebexport-kopf epos-gebexport-original">
+                        <dt>@Texte.Originaldatei</dt><dd class="epos-gebexport-originalname">@_wahl.Dateiname</dd>
+                        <dt>@Texte.Importquelle</dt><dd class="epos-gebexport-quelle">@_wahl.Quelle</dd>
+                    </dl>
+                    @if (_wahl.Grund is string grund)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Format(Texte.Verweigert, grund)" />
+                        <button type="button" class="epos-knopf epos-gebexport-stattknopf"
+                                disabled="@_speichertGerade" @onclick="BeiStattEigene">@Texte.StattEigene</button>
+                    }
+                    @if (_wahl.Meldungen.Count > 0)
+                    {
+                        <div class="epos-raster-huelle">
+                            <table class="epos-raster epos-gebexport-anrmeldungen">
+                                <thead>
+                                    <tr>
+                                        <th>@Texte.SpalteStufe</th>
+                                        <th>@Texte.SpalteMeldung</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < _wahl.Meldungen.Count; i++)
+                                    {
+                                        GebaeudeExportMeldung m = _wahl.Meldungen[i];
+                                        <tr @key="i" class="@Meldungsklasse(m)" data-schluessel="@m.Schluessel">
+                                            <td>@m.Stufentext</td>
+                                            <td class="epos-gebexport-meldungstext">@m.Text</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    @if (!_wahl.Verweigert)
+                    {
+                        <Schalter Bezeichnung="@Texte.BeipackBestaetigen" Wert="@_beipackBestaetigt"
+                                  WertChanged="BeiBeipack" Aktiv="@(!_speichertGerade)" />
+                    }
+                }
+            </div>
+        }
     }
 
     <Formularraster Einspaltig="true">
@@ -178,6 +242,24 @@
     /// </summary>
     [Parameter] public Func<Task<string?>>? ZusageOeffnen { get; set; }
 
+    /// <summary>
+    /// Hat das Gebäude eine Importquelle, deren Originaldatei angereichert werden kann (Stufe G7d)? Gerufen
+    /// einmal beim Öffnen. Kein Delegat oder <c>false</c> = keine Wahl des Ausgabewegs.
+    /// </summary>
+    [Parameter] public Func<Task<bool>>? AnreicherungMoeglich { get; set; }
+
+    /// <summary>
+    /// Die Wahl der Originaldatei: Dateiwähler der Plattform, Importquelle und Vorschau (Sperren oder
+    /// Beipackzettel). <c>null</c> = die Dateiwahl ist abgebrochen.
+    /// </summary>
+    [Parameter] public Func<Task<GebaeudeAnreicherungWahl?>>? OriginalWaehlen { get; set; }
+
+    /// <summary>
+    /// Der Anreicherungsweg (Stufe G7d): Anreichern der gewählten Originaldatei, Dateiwahl unter neuem Namen,
+    /// Schreiben (auf iOS danach Teilen). Gerufen NUR im OK-Weg, nach beiden Bestätigungen.
+    /// </summary>
+    [Parameter] public Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>? Anreichern { get; set; }
+
     /// <summary>Hat der Wirt ungespeicherte Änderungen an dieser Zeile? Dann steht der Hinweis „gespeicherter Stand".</summary>
     [Parameter] public bool GespeicherterStand { get; set; }
 
@@ -210,6 +292,23 @@
     private CancellationTokenSource? _entprellung;
     private int _fassung;
 
+    /// <summary>Der Ausgabeweg als Position der Optionsgruppe — nie als Anzeigetext.</summary>
+    private const int WEG_EIGEN = 0, WEG_ANREICHERN = 1;
+    private int _weg = WEG_EIGEN;
+    private bool _anreicherbar;
+    private bool _waehltGerade;
+    private bool _beipackBestaetigt;
+    private GebaeudeAnreicherungWahl? _wahl;
+
+    /// <summary>Wird die Originaldatei angereichert? (Prüfhilfe für die Tests.)</summary>
+    public bool Anreichernd => AnreicherungSichtbar && _weg == WEG_ANREICHERN;
+
+    /// <summary>Die gewählte Originaldatei (Prüfhilfe für die Tests); <c>null</c> = keine.</summary>
+    public GebaeudeAnreicherungWahl? Wahl => _wahl;
+
+    /// <summary>Ist der Beipackzettel bestätigt? (Prüfhilfe für die Tests.)</summary>
+    public bool BeipackBestaetigt => _beipackBestaetigt;
+
     /// <summary>Die Ansicht des Plans (Prüfhilfe für die Tests); <c>null</c>, solange sie gelesen wird.</summary>
     public GebaeudeExportAnsicht? Ansicht => _ansicht;
 
@@ -239,7 +338,15 @@
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_EXPORT, () => KiSicht(), KiHaken());
     }
 
-    protected override Task OnInitializedAsync() => Neubilden();
+    protected override async Task OnInitializedAsync()
+    {
+        await Neubilden();
+        if (AnreicherungMoeglich is not null && Anreichern is not null && OriginalWaehlen is not null)
+        {
+            try { _anreicherbar = await AnreicherungMoeglich(); }
+            catch (Exception) { _anreicherbar = false; }
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -313,8 +420,15 @@
 
     private GebaeudeExportEingabe Eingabe() => new(_plz, _format);
 
+    /// <summary>Steht die Wahl des Ausgabewegs? Nur beim Format mit Anreicherung und mit Importquelle.</summary>
+    private bool AnreicherungSichtbar => _anreicherbar && AktuellesFormat is { MitAnreicherung: true };
+
+    /// <summary>Die Einträge der Wegwahl: Position und Anzeigetext.</summary>
+    private IReadOnlyList<(int Id, string Text)> Wegeintraege
+        => new[] { (WEG_EIGEN, Texte.WegEigen), (WEG_ANREICHERN, Texte.WegAnreichern) };
+
     /// <summary>Der Grund der weichen Sperre von „Speichern…": die fehlende Bestätigung.</summary>
-    private string? OkSperrgrund => _ansicht is not null && !_bestaetigt ? Texte.SperreBestaetigen : null;
+    private string? OkSperrgrund => _ansicht is null ? null : Pruefen();
 
     private static string Meldungsklasse(GebaeudeExportMeldung m) => m.Stufe switch
     {
@@ -347,6 +461,43 @@
         _entprellung?.Cancel();
         _ansicht = null;
         await Neubilden();
+    }
+
+    /// <summary>Der Ausgabeweg: eigene Datei oder Originaldatei anreichern. Die gewählte Datei bleibt stehen.</summary>
+    private void BeiWeg(int? id)
+    {
+        if (id is not int w || _speichertGerade || _waehltGerade) return;
+        if (w != WEG_EIGEN && w != WEG_ANREICHERN) return;
+        _weg = w;
+        _meldung = "";
+    }
+
+    /// <summary>Wählt die Originaldatei; eine abgebrochene Dateiwahl lässt die bisherige stehen.</summary>
+    private async Task BeiOriginalWaehlen()
+    {
+        if (OriginalWaehlen is null || _waehltGerade || _speichertGerade) return;
+        _waehltGerade = true;
+        _meldung = "";
+        GebaeudeAnreicherungWahl? wahl;
+        try { wahl = await OriginalWaehlen(); }
+        finally { _waehltGerade = false; }
+        if (wahl is null) return;
+        _wahl = wahl;
+        _beipackBestaetigt = false;
+    }
+
+    /// <summary>Nach einer Verweigerung: dieselben Eingaben, aber eine eigene Datei.</summary>
+    private void BeiStattEigene()
+    {
+        if (_speichertGerade) return;
+        _weg = WEG_EIGEN;
+        _meldung = "";
+    }
+
+    private void BeiBeipack(bool wert)
+    {
+        _beipackBestaetigt = wert;
+        if (wert && _meldung == Texte.SperreBeipack) _meldung = "";
     }
 
     /// <summary>Die Exportzusage öffnen bzw. teilen; ein Grund steht im Banner.</summary>
@@ -413,6 +564,12 @@
         if (_ansicht is null) return Texte.Vorbereitung;
         if (_ansicht.Abgelehnt) return Ablehnungstext;
         if (!_bestaetigt) return Texte.SperreBestaetigen;
+        if (Anreichernd)
+        {
+            if (_wahl is null) return Texte.SperreOriginal;
+            if (_wahl.Grund is string grund) return Format(Texte.Verweigert, grund);
+            if (!_beipackBestaetigt) return Texte.SperreBeipack;
+        }
         return null;
     }
 
@@ -428,7 +585,8 @@
             _meldungStufe = WarnStufe.Hinweis;
             return;
         }
-        if (Speichern is null) return;
+        Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>? weg = Anreichernd ? Anreichern : Speichern;
+        if (weg is null) return;
 
         _entprellung?.Cancel();
         _meldung = "";
@@ -436,7 +594,7 @@
         GebaeudeExportErgebnis ergebnis;
         try
         {
-            ergebnis = await Speichern(Eingabe());
+            ergebnis = await weg(Eingabe());
         }
         finally
         {

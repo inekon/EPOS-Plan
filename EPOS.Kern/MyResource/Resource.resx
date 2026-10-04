@@ -44567,5 +44567,59 @@ Chart</value>
   <data name="GEXP_PROT_BEIPACK_KAELTE" xml:space="preserve">
     <value>Der Kältebedarf ist sensibel gerechnet, ohne Entfeuchtung; die Datei trägt diesen Hinweis an jedem Kältewert.</value>
   </data>
+  <data name="GEXP_ANR_LBL_WEG" xml:space="preserve">
+    <value>Ausgabe</value>
+  </data>
+  <data name="GEXP_ANR_WEG_EIGEN" xml:space="preserve">
+    <value>Eigene Datei schreiben</value>
+  </data>
+  <data name="GEXP_ANR_WEG_ANREICHERN" xml:space="preserve">
+    <value>Originaldatei anreichern</value>
+  </data>
+  <data name="GEXP_ANR_HINWEIS" xml:space="preserve">
+    <value>Die importierte IFC-Datei des Architekten wird um die Ergebnisse ergänzt und unter neuem Namen gespeichert; das Original bleibt unverändert.</value>
+  </data>
+  <data name="GEXP_ANR_BTN_WAEHLEN" xml:space="preserve">
+    <value>Originaldatei wählen…</value>
+  </data>
+  <data name="GEXP_ANR_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>Originaldatei wählen</value>
+  </data>
+  <data name="GEXP_ANR_LBL_DATEI" xml:space="preserve">
+    <value>Originaldatei</value>
+  </data>
+  <data name="GEXP_ANR_LBL_QUELLE" xml:space="preserve">
+    <value>Importquelle</value>
+  </data>
+  <data name="GEXP_ANR_QUELLE" xml:space="preserve">
+    <value>{0}, importiert am {1}</value>
+  </data>
+  <data name="GEXP_ANR_KEINE_QUELLE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="GEXP_ANR_VERWEIGERT" xml:space="preserve">
+    <value>Die Originaldatei kann nicht angereichert werden: {0}</value>
+  </data>
+  <data name="GEXP_ANR_BTN_EIGENE" xml:space="preserve">
+    <value>Stattdessen eigene Datei schreiben</value>
+  </data>
+  <data name="GEXP_ANR_BESTAETIGEN" xml:space="preserve">
+    <value>Ich gebe eine fremde Datei verändert weiter und habe den Hinweis gelesen.</value>
+  </data>
+  <data name="GEXP_ANR_SPERRE_BESTAETIGEN" xml:space="preserve">
+    <value>Bitte bestätigen Sie, dass Sie die fremde Datei verändert weitergeben.</value>
+  </data>
+  <data name="GEXP_ANR_SPERRE_DATEI" xml:space="preserve">
+    <value>Bitte wählen Sie zuerst die Originaldatei.</value>
+  </data>
+  <data name="GEXP_ANR_MSG_LESEFEHLER" xml:space="preserve">
+    <value>Die Originaldatei ließ sich nicht lesen: {0}</value>
+  </data>
+  <data name="GEXP_ANR_MSG_NICHTS_GESCHRIEBEN" xml:space="preserve">
+    <value>Die Anreicherung wurde verweigert; es ist keine Datei entstanden. Die Meldungen nennen den Grund.</value>
+  </data>
+  <data name="GEXP_ANR_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Die angereicherte Datei wurde gespeichert: {0} ({1} Byte). Objekte: {2}, ergänzt: {3}, ersetzt: {4}, übersprungen: {5}.</value>
+  </data>
 </root>
 
