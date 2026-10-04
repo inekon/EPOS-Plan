@@ -292,6 +292,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket bringt den wirksamen U-Wert der Bodenplatte nicht mit; leer rechnet nach DIN EN ISO 13370.
             new Stufe(ErdreichVorgabeSchema.SCHRITT, Art.Ddl,
                       "Wirksamer U-Wert der Bodenplatte als Vorgabe am Gebäude"),
+            // Ein älteres Paket bringt Auslegungspunkt und Proportionalband der Zonen nicht mit; leer rechnet die Zone wie ihr Gebäude.
+            new Stufe(ZonenUebergabeSchema.SCHRITT, Art.Ddl,
+                      "Auslegungspunkt und Regler der Wärmeübergabe je Zone"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

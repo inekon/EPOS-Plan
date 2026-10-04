@@ -5104,6 +5104,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ERDREICH_VORGABE = ErdreichVorgabeSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ZonenUebergabeSchema.SCHRITT"/> — <b>die Wärmeübergabe je Zone</b> (E63, AK1z):
+        /// Auslegungspunkt und Proportionalband an <c>Tab_Zone</c>, mittlere Kreistemperaturen und
+        /// Begrenzungsstunden an <c>Tab_ErgebnisZone</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten entstehen leer; leer rechnet die Zone wie
+        /// ihr Gebäude.</para>
+        /// </summary>
+        public const int SCHRITT_ZONEN_UEBERGABE = ZonenUebergabeSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7393,6 +7403,13 @@ namespace WindowsFormsApplication1
                         "Ein wirksamer U-Wert der Bodenplatte aus eigener Rechnung haette keinen Ort; die Rechnung nach " +
                         "DIN EN ISO 13370 waere die einzige. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_ErdreichVorgabe),
+            // WAERMEUEBERGABE JE ZONE (AK1z). Quelle ist ZonenUebergabeSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ZONEN_UEBERGABE,
+                        "Tab_Zone: Auslegung_Vorlauf/_Ruecklauf/_Raumtemperatur, Regler_Proportionalband; " +
+                        "Tab_ErgebnisZone: Vorlauf_Mittel_C, Ruecklauf_Mittel_C, Uebergabe_Begrenzt_H",
+                        "Eine Zone mit eigenem Heizkreis haette keinen eigenen Auslegungspunkt. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten entstehen leer.",
+                        Schritt_ZonenUebergabe),
         };
 
         /// <summary>
@@ -13743,6 +13760,62 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Erdreichvorgabe am Gebaeude - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Wärmeübergabe je Zone" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ZONEN_UEBERGABE"/>, die Anweisungen bei <see cref="ZonenUebergabeSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ZonenUebergabe(Lauf l)
+        {
+            string nr = ZonenUebergabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ZonenUebergabeSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ZonenUebergabeSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ZonenUebergabeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Uebergabespalten an Tab_Zone oder Tab_ErgebnisZone stehen nach dem Schritt " +
+                                  "nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Waermeuebergabe je Zone - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
