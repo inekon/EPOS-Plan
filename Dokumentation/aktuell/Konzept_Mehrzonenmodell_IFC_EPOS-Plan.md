@@ -813,7 +813,7 @@ Projektware; wiederverwendbar ist der Bauteilaufbau, nicht die Zone).
 | `IstBeheizt` | INTEGER NOT NULL DEFAULT 1 CHECK (IN (0,1)) | — | Schalter, kein Fachwert (Boolean-Regel `BETRIEB_SQLITE.md`) |
 | `Raumsolltemperatur_Tag`, `_Nachtabsenkung`, `_Wochenende`, `_Ferien`, `Maximaleraumtemperatur`, `Heizung_Strahlungsanteil`, `Heizleistung_Max`, `Luftwechsel_Infiltration`, `Luftwechsel_Nutzer` | REAL | ja | NULL = Wert des Gebäudes |
 | `Interne_Waermegewinne`, `Bewohner` | REAL | ja | NULL = anteilig aus dem Gebäude (Flächenschlüssel) |
-| `Kuehl_Sollwert`, `Kuehlleistung_Max`, `Kuehl_Sollwert_Nacht` (REAL), `Kuehlung_Aktiv` (INTEGER, `CHECK (IN (0,1))`) | REAL / INTEGER | ja | **Block aus KU-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1) |
+| `Kuehl_Sollwert`, `Kuehlleistung_Max`, `Kuehl_Sollwert_Nacht` (REAL), `Kuehlung_Aktiv` (INTEGER, `CHECK (IN (0,1))`) | REAL / INTEGER | ja | **Block aus KU-S1**, gelesen seit KU3-3: NULL = Wert des Gebäudes, Vererbung [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.5 |
 | `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn` | TEXT / REAL / REAL | ja | **Block aus AK-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 8.1) |
 | `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`, `Regler_Proportionalband` | REAL (°C / °C / °C / K, Proportionalband `CHECK (IS NULL OR >= 0)`) | ja | **Schemaschritt 181 `ZonenUebergabeSchema`** (E63): NULL = wie Gebäude, sonst Vorgabe der wirksamen Zonenart bzw. Tagsollwert der Zone bzw. 1 K ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.5); Heizkurve, Sollwertprofil, Auslegungsaußentemperatur und `Heizkreis_Aktiv` bleiben am Gebäude |
 | `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn` | TEXT (`CHECK IN` der drei Kühlübergabearten samt `IDEAL`) / REAL / REAL | ja | **Block aus KAK-S1** (E37, Konzept N1.42): NULL = Wert des Gebäudes bzw. Anteil der Zonenfläche; ohne Schalter wie die Heizseite. Anders als die übrigen Blöcke kommt er in einem **eigenen Schritt nach S-C** — Schemaschritt **137**, weil `KAK-S1` (Schritt 135) nach S-C entsteht. Das Aggregat je Gebäude, Projektduplikat und Projekttransfer tragen ihn NULL-erhaltend; gerechnet wird er erst ab G6 |
@@ -1682,6 +1682,7 @@ die Regel: **Der Abschnitt entfällt vollständig, wenn kein Objekt einen Wert t
 voller ‚—' wäre keine Aussage, sondern eine Frage." Das Gebäude steht heute als Eigenschaftsblock
 (`:35-52`, Daten aus `…/ProjektDetails.cs:39-40`, gefüllt `:72`); die Zonentabelle tritt daneben:
 Zone | Fläche | Volumen | H_T [W/K] | H_ve [W/K] | Heizwärme [kWh/a] | Spitze [kW] | beheizt.
+**Kältebedarf je Zone (KU3-3):** Eine zweite Tabelle „Kältebedarf je Zone“ steht unter der Zonentabelle, gespeist aus dem gespeicherten Ergebnis (`Tab_ErgebnisZone.Kuehlenergie`); sie entfällt, wenn keine Zone Kälte gespeichert hat. Kältespitze und Kühlstunden je Zone stehen nur im Lauf und im Bedarfsdialog.
 **Kennzahlen** (`…/KennzahlenKatalog.cs:204` ff.) kennen **keine Objektlisten** — als Kennzahl je
 Projekt taugt nur eine Summe oder ein Extremum; H_T je Gebäude ist mit E2 vorgesehen (N1.6).
 
