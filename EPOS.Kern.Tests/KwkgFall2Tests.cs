@@ -558,24 +558,30 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Flache Stundenreihen: BHKW 432,3 MWh/a gleichmäßig, Bedarf 30 kWh je
-        /// Stunde — 262,8 MWh Eigenverbrauch, 169,5 MWh Einspeisung.</summary>
+        /// Stunde — 262,8 MWh Eigenverbrauch, 169,5 MWh Einspeisung. Die Einspeisung steht wie
+        /// im Lauf als Reihe im Satz: Bedarf in jeder Viertelstunde 30 kW, BHKW stundenkonstant
+        /// 49,349 kW → Rest −19,349 kW je Viertel, Einspeisung max(0, −Rest) = BHKW − 30 kWh/h,
+        /// 8760 h × 19,349 kWh = 169,5 MWh/a.</summary>
         private static ZeitreihenSatz MitEinspeisung()
         {
             int n = ZeitreihenSatz.Stunden;
             var bedarf = new double[n];
             var bhkw = new double[n];
             var bezug = new double[n];
+            var einspeisung = new double[n];
             double bhkwKWh = 432.3 * 1000.0 / n;
             for (int h = 0; h < n; h++)
             {
                 bedarf[h] = 30.0;
                 bhkw[h] = bhkwKWh;
                 bezug[h] = 0.0;
+                einspeisung[h] = Math.Max(0, bhkwKWh - bedarf[h]);
             }
             var z = new ZeitreihenSatz();
             z.Reihen[ZeitreihenSatz.STROMBEDARF] = bedarf;
             z.Reihen[ZeitreihenSatz.BHKW_STROM] = bhkw;
             z.Reihen[ZeitreihenSatz.NETZBEZUG] = bezug;
+            z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] = einspeisung;
             return z;
         }
     }

@@ -90,7 +90,7 @@ Vermiedene Stromkosten — Differenzmethode
   Doppelzählung — fünffach belegt (E5).
 
 Aufteilung je Anlage (V‑4) — Schlüssel brutto aus der Strommatrix
-  BHKW  KwkEigenGesamtMWh = min(BHKW, Bedarf nach PV) je Stunde    (KWK-Split unverändert)
+  BHKW  KwkEigenGesamtMWh = BHKW-Strom − BHKW-Einspeisung des Laufs je Stunde (Viertelstundenbilanz)
   PV    PvEigenGesamtMWh  = PV-Eigennutzung, soweit sie Bedarf deckt
   Menge, Arbeit und § 9b-Korrektur anteilig ; der Leistungsanteil bleibt projektweit
   Rollentarif: der PV-Anteil ersetzt die Zeile „PV: vermiedener Bezug" (Flat-Preis) ;

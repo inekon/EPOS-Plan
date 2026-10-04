@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using WindowsFormsApplication1;
@@ -14,9 +15,8 @@ namespace EPOS.Kern.Tests
     /// Eigenerzeugung — der Bedarf VOR Abzug der PV-Eigennutzung. Die vermiedene Menge
     /// führt damit KWK- und PV-Eigenverbrauch, die § 9b-Korrektur greift auf beide, der
     /// Verteilschlüssel bringt beide Anlagen ein, und der Leistungsanteil der
-    /// Bezugsseite hängt am Lastbild des vollen Bedarfs. Unverändert bleiben der
-    /// KWK-Eigenanteil (min-Regel auf den Bedarf NACH Photovoltaik), der Kapitalwert und
-    /// jede Reihe.</para>
+    /// Bezugsseite hängt am Lastbild des vollen Bedarfs. Der KWK-Eigenanteil ist die
+    /// BHKW-Erzeugung minus der Einspeisung des Laufs (Reihe <c>BHKW_UEBERSCHUSS</c>).</para>
     ///
     /// <para><b>Der Weg ist der des Kerns</b> — Stundenreihen → <see cref="StromMatrix"/>
     /// → <see cref="StromTarifRechner"/> → Verteilschlüssel
@@ -40,7 +40,7 @@ namespace EPOS.Kern.Tests
         private const double SATZ_9B = 20.00;           // €/MWh
 
         private static ZeitreihenSatz Reihen(double bedarfMWh, double pvMWh, double bhkwMWh,
-                                             double bezugMWh)
+                                             double bezugMWh, double bhkwEinspeisungMWh = 0)
         {
             int n = ZeitreihenSatz.Stunden;
             var bedarf = new double[n];
@@ -59,12 +59,16 @@ namespace EPOS.Kern.Tests
             if (pvMWh > 0) z.Reihen[ZeitreihenSatz.PV_GENUTZT] = pv;
             if (bhkwMWh > 0) z.Reihen[ZeitreihenSatz.BHKW_STROM] = bhkw;
             z.Reihen[ZeitreihenSatz.NETZBEZUG] = bezug;
+            if (bhkwEinspeisungMWh > 0)
+                z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] =
+                    Enumerable.Repeat(bhkwEinspeisungMWh * 1000.0 / n, n).ToArray();
             return z;
         }
 
-        private static StromMatrix Matrix(double bedarf, double pv, double bhkw, double bezug)
+        private static StromMatrix Matrix(double bedarf, double pv, double bhkw, double bezug,
+                                          double bhkwEinspeisung = 0)
         {
-            StromMatrix m = StromMatrix.Baue(Reihen(bedarf, pv, bhkw, bezug), new TarifParameter());
+            StromMatrix m = StromMatrix.Baue(Reihen(bedarf, pv, bhkw, bezug, bhkwEinspeisung), new TarifParameter());
             Assert.NotNull(m);
             return m;
         }
@@ -100,8 +104,9 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>ALT:</b> „Bedarf ohne Anlage" = Bedarf − PV-Eigennutzung = 1.344,2 MWh.
         /// <b>NEU:</b> der Bedarf ohne jede Eigenerzeugung = 1.429,7 MWh; die Differenz ist
-        /// die PV-Eigennutzung (85,5 MWh). Der KWK-Eigenanteil bleibt die min-Regel auf den
-        /// Bedarf NACH Photovoltaik: 1.094,2 MWh, keine Einspeisung.
+        /// die PV-Eigennutzung (85,5 MWh). Der KWK-Eigenanteil ist die ganze BHKW-Erzeugung
+        /// 1.094,2 MWh: Der Lauf speist nichts ein (Bedarf nach PV 1.344,2 MWh je Jahr flach über
+        /// der Erzeugung), der Satz trägt keine Einspeisereihe.
         /// </summary>
         [Fact]
         public void Die_Bezugsgroesse_ist_der_Bedarf_ohne_jede_Eigenerzeugung()
@@ -120,20 +125,27 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die min-Regel des KWK-Eigenanteils bleibt auf den Bedarf NACH Photovoltaik:
-        /// Bedarf 100, Photovoltaik 30, BHKW 80 kWh je Stunde ergeben 70 Eigen und 10
-        /// Einspeisung — der Bedarf ohne jede Eigenerzeugung (100) ändert daran nichts.
+        /// Der KWK-Split liest die Einspeisung des Laufs, keine eigene Regel. Die Kaskade lässt das
+        /// BHKW zuerst decken, die Photovoltaik deckt den Rest: Bedarf 100, BHKW 80, PV-Erzeugung 30
+        /// kWh je Stunde → Rest nach dem BHKW 20, PV-Eigennutzung 20 (10 gehen als PV-Überschuss), BHKW-
+        /// Einspeisung 0 → Eigen 80. Bedarf 100, BHKW 120 → Rest −20 in jeder Viertelstunde, Einspeisung
+        /// max(0, −Rest) = 20 → Eigen 100. Der Bedarf ohne jede Eigenerzeugung (100) ändert daran nichts.
         /// </summary>
         [Fact]
-        public void Der_KWK_Eigenanteil_bleibt_die_min_Regel_auf_den_Bedarf_nach_PV()
+        public void Der_KWK_Eigenanteil_ist_die_Erzeugung_minus_der_Einspeisung_des_Laufs()
         {
             double je = ZeitreihenSatz.Stunden / 1000.0;           // kWh/h → MWh/a
-            StromMatrix m = Matrix(100 * je, 30 * je, 80 * je, 0);
+            StromMatrix m = Matrix(100 * je, 20 * je, 80 * je, 0);
 
-            Assert.Equal(70 * je, m.KwkEigenGesamtMWh, 6);
-            Assert.Equal(10 * je, m.KwkEinspeisungGesamtMWh, 6);
+            Assert.Equal(80 * je, m.KwkEigenGesamtMWh, 6);
+            Assert.Equal(0.0, m.KwkEinspeisungGesamtMWh, 6);
             Assert.Equal(100 * je, m.BedarfGesamtMWh, 6);
-            Assert.Equal(30 * je, m.PvEigenGesamtMWh, 6);
+            Assert.Equal(20 * je, m.PvEigenGesamtMWh, 6);
+
+            StromMatrix ueber = Matrix(100 * je, 0, 120 * je, 0, 20 * je);
+            Assert.Equal(100 * je, ueber.KwkEigenGesamtMWh, 6);
+            Assert.Equal(20 * je, ueber.KwkEinspeisungGesamtMWh, 6);
+            Assert.Equal(100 * je, ueber.BedarfGesamtMWh, 6);
         }
 
         /// <summary>Ohne Photovoltaik ist der neue Bedarf der alte: nichts wandert.</summary>

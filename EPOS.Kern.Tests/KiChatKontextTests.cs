@@ -69,7 +69,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// 27 Bereiche plus der Ersatzwert. Die Zahl steht hier, damit ein Zuwachs
+        /// 28 Bereiche plus der Ersatzwert. Die Zahl steht hier, damit ein Zuwachs
         /// auffällt: Jeder neue Bereich ist eine Angabe mehr, die hinausgeht.
         /// </summary>
         [Fact]
