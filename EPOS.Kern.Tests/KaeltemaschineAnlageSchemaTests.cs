@@ -102,6 +102,40 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, KaeltemaschineAnlageSchema.Saat(null));
         }
 
+        /// <summary>
+        /// Die Positionen der Vorlagen verweisen nach der Saat-Zuordnung: Aggregat auf „Gerät", Montage und Planung auf
+        /// die technikübergreifenden Zeilen, Rückkühlung, MSR und jede Betriebsposition auf keine. Eine Datenbank aus der
+        /// ersten Fassung des Schritts (jede Position auf „Gerät") wird beim nächsten Lauf nachgetragen, ein dritter Lauf
+        /// findet nichts mehr.
+        /// </summary>
+        [Fact]
+        public void Die_Positionen_tragen_ihre_Positionsart_und_der_Nachtrag_heilt_die_erste_Fassung()
+        {
+            if (!_db.Vorhanden) return;
+            const string verweise =
+                "SELECT p.Bezeichnung || '=' || IFNULL(n.Positionsart, '-') FROM Tab_KostenVorlagePosition p " +
+                "JOIN Tab_KostenVorlage v ON v.ID = p.VorlageID LEFT JOIN Tab_Nutzungsdauer n ON n.ID = p.NutzungsdauerID " +
+                "WHERE v.KomponentenID = 11 AND v.IstStandard = 1 ORDER BY v.KategorieID, p.Sortierung";
+            string[] soll =
+            {
+                KaeltemaschineAnlageSchema.POSITION_AGGREGAT + "=Gerät", "Rückkühlung / Zubehör=-", "MSR-Technik / Automation=-",
+                "Montage, Installation & Kältetechnik=Montage", "Planung / Baunebenkosten=Planung / Baunebenkosten",
+                "Wartung Kältemaschine=-", "Instandhaltung Kältemaschine=-",
+            };
+            string[] Ist() => DataRepository.GetDataTable(verweise).Rows.Cast<System.Data.DataRow>()
+                .Select(r => Convert.ToString(r[0])).ToArray();
+            Assert.Equal(soll, Ist());
+
+            // Die erste Fassung: jede Position verweist auf die Gerätezeile.
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_KostenVorlagePosition SET NutzungsdauerID = (SELECT ID FROM Tab_Nutzungsdauer " +
+                "WHERE KomponentenID = 11 AND IstStandard = 1) WHERE VorlageID IN " +
+                "(SELECT ID FROM Tab_KostenVorlage WHERE KomponentenID = 11 AND IstStandard = 1)");
+            Assert.Equal(6, KaeltemaschineAnlageSchema.Saat(null));
+            Assert.Equal(soll, Ist());
+            Assert.Equal(0, KaeltemaschineAnlageSchema.Saat(null));
+        }
+
         private static void Ausfuehren(SqliteConnection c, string sql)
         {
             using var cmd = c.CreateCommand();
