@@ -40,12 +40,19 @@
 > (10.1); die Aufheizreserve ρ entscheidet der Anwender nach der Messung in RP1 (4.4). Der Entwurf veranschlagt KP3 mit
 > 14–18,25 PT (8); nachgezogen sind 5.4, 6 und 12.
 
-**Stand:** 03.10.2026. **Fassung:** Rev. 3 mit E54 bis E60 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
+> **Fortgeschrieben am 04.10.2026 mit KP4** (Leitkonzept N1.69): KP3 ist in Rechenweg, Daten, Referenzprojekt und Basis
+> gebaut — die Wellen R1 bis R5, D1, D2, O1, RP1 und RP2 (Basis R34) —, die Reserve ist mit E64 Nutzereingabe (leer
+> 20 % mit Laufhinweis, Welle EV1); offen sind die Oberflächenwellen O1b, O2, O3 und die Welle A. Die Papiere sind
+> nachgezogen: Rechenschritte 7.5 und 7.6, Leitkonzept 4.4, 4.5 und N1.69, Softwarearchitektur; hier der Kopf, 4.4,
+> 4.6, 5.4 und 8.
+
+**Stand:** 04.10.2026. **Fassung:** Rev. 3 mit E54 bis E60 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
 entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55), fünf
 Fragen des KP2-Entwurfs entschieden (E56), die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" aufgenommen
 (E57), die acht Fragen des KP3-Entwurfs entschieden, eine davon als Entscheid nach einer Messung (E58), Aufschlag und
 manuelle Aufheizzeit (E59) und die Auslegungsgröße (E60) aufgenommen, beide in 9.9; KP0 bis KP2
-sind umgesetzt, KP3 ist entworfen und entschieden, die Umsetzung läuft, KP4 folgt auf Auftrag.
+sind umgesetzt, KP3 ist in Rechenweg, Daten, Referenzprojekt und Basis gebaut (Oberfläche O1b–O3 und Welle A offen), die
+Reserve ist Nutzereingabe (E64), die Papiere sind mit KP4 nachgezogen; Wiki-Quellen und Logbuch folgen in KP4.
 
 **Zweck.** Jede Größe der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und
 Personen — bekommt je Zone einen stundengenauen Jahreskalender; im Einzonenmodell ist das Gebäude die Zone, Katalogbauten
@@ -634,8 +641,8 @@ P_auf ist die Leistung, die das Aufheizen höchstens beanspruchen darf — **ein
 nicht je Tag. Die erste zutreffende Quelle gilt (P5): (1) **`Heizleistung_Max`**, wenn gesetzt (Zone: eigener Wert
 oder Flächenanteil; beim Skalieren nach E8 dieselbe Regel) — die Rampe verhindert dann die Kappung nach dem Sprung;
 (2) die **Zielleistung** P_auf = (1 + ρ) · Φ_stat(θ_T,max, T_a,min) mit dem höchsten Heizsollwert der Nutzungszeit und
-der **kältesten Stunde**, **ρ = 20 %** als Startwert, im Projekt einstellbar (0–100 %); der Startwert gilt bis zur
-Messung in KP3 (E58 F7, unten).
+der **kältesten Stunde** und der **Aufheizreserve ρ**, einer Eingabe im Projekt (1–100 %, gespeichert als Anteil 0 < ρ ≤ 1);
+bleibt sie leer, gilt **20 %**, und der Lauf meldet es (E64, unten).
 
 Der Anker an der kältesten Stunde macht (a) immer erreichbar, (b) verlängert die Zeit wie gewollt, und das Tagesmittel
 mischt sich nicht in eine Stundenbemessung. Der verworfene Anker H10 hätte P_auf im Referenzklima **unter** die Last der
@@ -657,13 +664,16 @@ möglich: ρ bleibt bei 20 %.** Ein größerer Sprung als der Standardsprung (Wo
 mehr als 2 K) ist von dieser Probe nicht erfasst und hebt die Überhöhung überproportional an; das bleibt eine
 Beobachtung für KP1 ff., kein Anlass, den Startwert vorab zu ändern.
 
-**Reserve nach der Messung (E58 F7).** Die Probe KP0 rechnete konvektiv; der Kern rechnet jede Gebäudezeile ohne
-Angabe mit dem Strahlungsanteil 0,3, und damit liegt die Überhöhung der Sprungspitze um 20–31 % höher. Hochgerechnet
-lägen die Klasse-H/I-Bauten von 1008 (Gebäude 1), 1018 und 1049 mit rund 22–25 % über ρ = 20 % — „(a) braucht
-nirgends eine Rampe" gilt nur konvektiv ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), B26). Die Welle RP1 misst deshalb ρ_min aller 17 VDI-Gebäude der
-Referenzprojekte mit dem echten Kern und legt sie dem A/B-Protokoll bei. Bis dahin gilt 20 %; danach entscheidet der
-Anwender über den Startwert (offener Punkt P14 im [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)),
-fällig vor dem Einfrieren der neuen Basis, weil das Referenzprojekt mit leerer Reserve den Startwert rechnet (10.2).
+**Reserve: Messung und Vorgabe (E58 F7, E64).** Die Probe KP0 rechnete konvektiv; der Kern rechnet jede Gebäudezeile
+ohne Angabe mit dem Strahlungsanteil 0,3, und damit liegt die Überhöhung der Sprungspitze um 20–31 % höher. Die Welle RP1
+hat deshalb ρ_min aller VDI-Gebäude der Referenzprojekte mit dem echten Kern gemessen (Kriterium W1 = 0 und W3 = 0;
+[A/B-Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-03_KP3_RP1_AB-Protokoll_1051.md) Abschnitt 8): Das
+größte ρ_min liegt bei 8,75 % (1051), die kleinste Reserve mit erreichbarem Bemessungsfall bei 13,75 % (1051, Bemessung
+(b)); bei 20 % sind W1 und W3 überall 0. Bemessung (b) ändert P_auf nicht, sie prüft nur die Erreichbarkeit bei
+T_a,min − ΔT_K. **Die Reserve ist Nutzereingabe ohne pauschale Programmvorgabe** (E64): Ist `Aufheiz_Reserve` leer, rechnet
+der Lauf mit 20 %, meldet einmal je Lauf `SIMENG_AUFH_RESERVE_VORGABE` („Aufheizreserve nicht vorgegeben; es gelten
+20 %.") und die Herleitungszeile nennt „Reserve 20 % (Vorgabe)"; eine eingegebene Reserve steht dort ohne Zusatz. Das
+Referenzprojekt 1051 rechnet mit leerer Reserve (10.2).
 
 ### 4.5 Bemessung (a) und (b)
 
@@ -711,7 +721,8 @@ sagt es.
 - **Individuell je Gebäude:** n folgt je Gebäude und Zone aus eigenen Massen, eigenem Φ_stat und eigener P_auf (4.3,
   4.4); pauschal je Projekt sind nur ρ, die Art und der Aufschlag.
 - **„manuell"** *(am Gebäude)*: Ein Gebäude mit einer manuellen Aufheizzeit t_m (`Aufheizzeit_Manuell_H`, 1–47 h) rampt
-  vor jedem Sprung mit n = t_m + 1, begrenzt auf D + 1 und den Deckel; ein Gebäude ohne Wert folgt der Art des Projekts.
+  vor jedem Sprung mit n = t_m + 1, begrenzt auf D + 1 und den Deckel; t_m ersetzt auch die Fenstergrenze (W = min(D, t_m + 1),
+  4.3); ein Gebäude ohne Wert folgt der Art des Projekts.
   Die Bemessung läuft weiter und liefert Vorschlag und Herleitungszeile (4.8, 7.6), entscheidet aber nicht; der Aufschlag
   gilt nicht. Zonen erben den Wert ihres Gebäudes (3.4), unbeheizte Zonen rampen nicht; ein gekoppeltes Einzonengebäude
   bleibt nicht optimiert (W5).
@@ -912,7 +923,8 @@ bleibt byte-gleich.
 **KP-S4** (KP3, Welle R5) trägt die Eingabe- und Ergebnisspalten aus 5.3 per `ADD COLUMN`, ohne Neubau von
 `Tab_ErgebnisGebaeude`; weil SQLite einen `CHECK` nicht ändert, baut er allein `Tab_ErgebnisZone` für `GEKOPPELT` neu
 (Rezept von Schritt 96) und die Sicht `Abfrage_Projektgebaeude` um die Gebäudespalte. Die Nummer vergibt die Beauftragung wie oben aus `SchemaStand.Zielversion`
-+ 1 — Platzhalter Schritt 171 — und prüft sie spät gegen `origin`; kein DML an Bestandsdaten.
++ 1 — gebaut als **Schritt 174** (`AufheizManuellSchema`) — und prüft sie spät gegen `origin`; kein DML an Bestandsdaten.
+Die Vorgabe U_g der Bodenplatte (`Erdreich_U_Wirksam`, E65) kam mit **Schritt 180** (`ErdreichVorgabeSchema`).
 
 ### 5.5 Kopierwege, Leser und Werkzeuge
 
@@ -1209,8 +1221,8 @@ Bemessung.
 | **KP0** | Dieses Konzept, die Entscheide E52 (N1.59) und E53 (N1.60), der Nachzug der Schwesterpapiere (2.3), die P_auf-Probe (4.4) und das Glossar (13) — abgeschlossen 27.09.2026 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
 | **KP1** | KP-S1 (Kalender, Perioden, Vorgaben, Vorlagen), Vorgabematrix mit Kaskade, Generator mit fünf Spalten, Kalendermodell, Feiertage, Heiz- und Kühlperiode samt Folgen (Kopplung, Hinweis), Vererbung, fünf Reihen, Nachtauskühlung, stündliche Kühlprüfung, Controller für Matrix und Vorlagen je Größe, Kopierwege Katalog ↔ Projekt, KINDER, Auslieferungsvorlage samt Prüfbericht, Werkzeuge | KP0; Schemawellen von G6c gemergt | Kern-Gate, Proben und Datenbankfälle (6), Vorlagenlauf; Referenzlauf **byte-gleich** gegen R22 | nein | 13–18 |
 | **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) — abgeschlossen 02.10.2026 in elf Wellen samt der Abkürzung „alle Größen" (E57; [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Festlegungen im Leitkonzept N1.66) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich — erfüllt bis auf die Sichtabnahme SA1, die beim Anwender aussteht (Referenzlauf byte-gleich gegen R29) | nein | 14–18; Entwurf: 19–22 (E56) |
-| **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI — Entwurf vorgelegt und E58 entschieden am 02.10.2026 ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), 9.8), Umsetzung in zwölf Wellen, 14–18,25 PT; mit Aufschlag und manueller Aufheizzeit (9.9) vierzehn Wellen samt R5 und O1b, 16,75–21,75 PT | KP2 | N-AH1–N-AH12; alle übrigen Projekte byte-gleich; A/B-Protokoll | **ja** | 6–9; Entwurf mit E58: 14–18,25; mit E59/E60: 16,75–21,75 |
-| **KP4** | Papiere nachziehen (Rechenschritte mit neuen Schritten „Aufheizrampe" und „Nachtauskühlung", Leitkonzept 4.4, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
+| **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), 9.8, 9.9). **Teilweise:** gebaut sind der Rechenweg (R1–R5 samt Aufschlag und manueller Aufheizzeit, Schritt 174), die Daten (D1, D2: Schritte 160, 161, Kennzahlen, Export, Auskunft), die Projekteinstellung (O1), das Referenzprojekt 1051 mit Wache und ρ-Messung (RP1) und die Basis R34 mit dem Erdreich nach DIN EN ISO 13370 (RP2); E64 mit EV1 (Reserve leer = 20 % mit Laufhinweis); offen sind O1b, O2, O3 und die Welle A ([Protokoll KP3](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-02_KP3_Aufheizoptimierung.md), Festlegungen im Leitkonzept N1.69) | KP2 | N-AH1–N-AH12; alle übrigen Projekte byte-gleich; A/B-Protokoll — erfüllt für die gebauten Wellen | **ja** (R34) | 6–9; Entwurf mit E58: 14–18,25; mit E59/E60: 16,75–21,75 |
+| **KP4** | Papiere nachziehen (Rechenschritte mit den Schritten K „Aufheizrampe" und L „Nachtauskühlung", Leitkonzept 4.4, 4.5 und N1.69, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf — **Papiere nachgezogen 04.10.2026**; Wiki-Quellen und Logbuch in einem eigenen Auftrag der Welle KP4 | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
 | **Summe** | | | | | **35–49** (mit den Entwürfen KP2 und KP3: 50,75–65,75) |
 | KP3b *(optional)* | AK1-Gebäude über die Vorausrechnung mit Ankunftskriterium; Vorkühlen mit KU3 | KP3; KU3 für die Kälte | wie KP3 | je nach Projekt | 3–5 |
 
