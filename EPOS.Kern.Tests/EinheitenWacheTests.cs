@@ -386,6 +386,66 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Wächter 3 — die Schreiber des Gebäudeexports (Stufe G7c)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Schreiber des Gebäudeexports und ihre Träger: Sie geben Jahresergebnisse in fremde Dateien
+        /// (IFC <c>EPOS_Ergebnis</c> in kWh mit ausdrücklicher Einheit, gbXML <c>Results</c> in
+        /// <c>KilowattHours</c>). Sie gehören in die Einheitenregel wie die Simulationsklassen: Die Einheit
+        /// steht im Namen, und umgerechnet wird an genau einer Naht des Exports
+        /// (<c>GebaeudeExportAblauf</c>: die MWh und kW der Ergebniszeile werden kWh und W).
+        /// </summary>
+        private static readonly string[] Exportschreiber =
+        {
+            "Export/Ifc/IfcSchreiber.cs", "Export/Ifc/IfcErgebnisse.cs", "Export/Gbxml/GbxmlSchreiber.cs",
+            "Import/Gebaeude/GebaeudeAbbild.cs",
+        };
+
+        /// <summary>Die eine Naht des Exports, an der die Ergebniszeile umgerechnet wird.</summary>
+        private const string EXPORTNAHT = "Export/Gebaeude/GebaeudeExportAblauf.cs";
+
+        /// <summary>Ein <c>double</c> oder <c>double?</c> als Feld, Property oder Parameter eines Datensatzes.</summary>
+        private static readonly Regex Zahlname = new Regex(@"\bdouble\??\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:[,;)={]|$)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// <b>Wächter 3.</b> In den Schreibern des Gebäudeexports steht kein Faktor 1000; jede Energiegröße
+        /// (Name mit <c>Bedarf</c>, <c>Verbrauch</c>, <c>Summe</c> …) nennt <c>Kwh</c> oder <c>Mwh</c>; die Naht
+        /// des Exports rechnet an genau einer Stelle um.
+        /// </summary>
+        [Fact]
+        public void Die_Schreiber_des_Gebaeudeexports_nennen_ihre_Einheiten_und_rechnen_nicht_um()
+        {
+            string ordner = Path.Combine(Arbeitsbaum(), "EPOS.Kern", "Allgemein");
+            var funde = new List<string>();
+            int benannt = 0;
+            foreach (string rel in Exportschreiber)
+            {
+                string datei = Path.Combine(ordner, rel);
+                Assert.True(File.Exists(datei), "Datei nicht gefunden: " + datei);
+                string[] zeilen = File.ReadAllText(datei).Replace("\r\n", "\n").Split('\n');
+                for (int i = 0; i < zeilen.Length; i++)
+                {
+                    if (IstKommentar(zeilen[i])) continue;
+                    if (Faktor.IsMatch(zeilen[i])) funde.Add(rel + ":" + (i + 1) + "  Faktor: " + zeilen[i].Trim());
+                    foreach (Match m in Zahlname.Matches(zeilen[i]))
+                    {
+                        string name = m.Groups[1].Value;
+                        if (Einheitensuffix.IsMatch(name)) benannt++;
+                        else if (Energiename.IsMatch(name)) funde.Add(rel + ":" + (i + 1) + "  ohne Einheit: " + name);
+                    }
+                }
+            }
+            Assert.True(funde.Count == 0, "Einheitenregel im Gebäudeexport verletzt:\n" + string.Join("\n", funde));
+            Assert.True(benannt >= 4, "Nur " + benannt + " benannte Energiegrößen in den Exportschreibern gefunden.");
+
+            string naht = Path.Combine(ordner, EXPORTNAHT);
+            int umrechnungen = File.ReadAllText(naht).Replace("\r\n", "\n").Split('\n')
+                                   .Count(z => !IstKommentar(z) && Faktor.IsMatch(z) && !z.Contains("R_MASSELOS_MIN_M2KW", StringComparison.Ordinal));
+            Assert.Equal(1, umrechnungen);
+        }
+
+        // =====================================================================
         //  Wächter 2 auch über den Rechenweg des Zapfprofils
         // =====================================================================
 

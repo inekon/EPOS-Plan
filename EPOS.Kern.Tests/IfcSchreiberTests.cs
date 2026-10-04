@@ -222,8 +222,9 @@ namespace EPOS.Kern.Tests
             GebaeudeAbbild abbild = Einzonig();
             AbbildGebaeude geb = abbild.Gebaeude[0];
             var ergebnisse = new IfcErgebnisse { Rechenzeitpunkt = new DateTime(2026, 9, 25, 8, 0, 0), Wetterdatensatz = "PVGIS-TMY Probe" };
-            ergebnisse.JeKennung[geb.Kennung] = new IfcErgebnis(12000.0, 8000.0);
-            ergebnisse.JeKennung[geb.Raeume[0].Kennung] = new IfcErgebnis(12000.0, 8000.0, 20.5, 26.0);
+            // Teil 2: Kältebedarf (Energie, KILOWATTHOUR) und Kältelast (Leistung) an Gebäude und Raum.
+            ergebnisse.JeKennung[geb.Kennung] = new IfcErgebnis(12000.0, 8000.0, KaeltebedarfKwh: 12000.0, KaeltelastW: 3000.0);
+            ergebnisse.JeKennung[geb.Raeume[0].Kennung] = new IfcErgebnis(12000.0, 8000.0, 20.5, 26.0, 12000.0, 3000.0);
             byte[] datei = IfcExportProbe.Schreiben(abbild, IfcExportProbe.Profil(), ergebnisse, null, out GebaeudeExportBilanz bilanz);
             Assert.DoesNotContain(bilanz.Meldungen, m => m.Schluessel == IfcSchreiber.OHNE_ERGEBNIS);
 
@@ -249,7 +250,9 @@ namespace EPOS.Kern.Tests
 
                 List<IIfcPropertySingleValue> werte = m.Instances.OfType<IIfcPropertySingleValue>().ToList();
                 List<IIfcPropertySingleValue> energie = werte.Where(p => p.NominalValue is M.IfcEnergyMeasure).ToList();
-                Assert.Equal(2, energie.Count);
+                Assert.Equal(4, energie.Count);
+                Assert.Equal(2, energie.Count(p => p.Name == "Kaeltebedarf"));
+                Assert.All(energie.Where(p => p.Name == "Kaeltebedarf"), p => Assert.Contains("Entfeuchtung", p.Description.ToString(), StringComparison.Ordinal));
                 Assert.All(energie, p => Assert.Same(kwh, p.Unit));
                 Assert.All(energie, p => Assert.Equal(12000.0, IfcExportProbe.Zahl(p)));
                 // Winkel in Grad mit ausdrücklicher Einheit, Temperaturen in Kelvin ohne (globale Einheit).
@@ -265,7 +268,8 @@ namespace EPOS.Kern.Tests
                                             || p.NominalValue is M.IfcThermalTransmittanceMeasure || p.NominalValue is M.IfcReal
                                             || p.NominalValue is M.IfcNormalisedRatioMeasure || p.NominalValue is M.IfcThermalConductivityMeasure
                                             || p.NominalValue is M.IfcSpecificHeatCapacityMeasure || p.NominalValue is M.IfcMassDensityMeasure
-                                            || p.NominalValue is M.IfcThermalResistanceMeasure || p.NominalValue is M.IfcInteger,
+                                            || p.NominalValue is M.IfcThermalResistanceMeasure || p.NominalValue is M.IfcInteger
+                                            || p.NominalValue is M.IfcNumericMeasure,
                                             p.Name + ": " + p.NominalValue.GetType().Name));
 
                 IIfcBuilding g = m.Instances.OfType<IIfcBuilding>().Single();
