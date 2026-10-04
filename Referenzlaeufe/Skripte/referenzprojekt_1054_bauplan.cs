@@ -10,12 +10,14 @@
 // GESAETE ZELLEN (alles andere wie kopiert):
 //   Tab_Projekt        Beschreibung, Aenderungsdatum, Erstelldatum; Kosten_Geaendert leer
 //   Tab_Einstellungen  Anlagenkopplung = 'AK1' (KonfigurationCtrl.AnlagenkopplungSetzen)
-//   Tab_Gebaeude       Heizkreis_Aktiv = 1, Uebergabe_Art = 'RADIATOR'; die uebrigen Uebergabe-, Auslegungs-
-//                      und Heizkurvenspalten leer, Heizkurve_Aktiv = 0 (fester Vorlauf aus der Anlage)
+//   Tab_Gebaeude       Heizkreis_Aktiv = 1, Uebergabe_Art = 'RADIATOR', Heizkurve_Aktiv = 1 (Niveau und
+//                      Steilheit leer = Vorgaben: Kurve durch den Auslegungspunkt, gedeckelt wie im Kern); die
+//                      uebrigen Uebergabe-, Auslegungs- und Heizkurvenspalten leer
 //   Tab_Zone           "Gastronomie und Verwaltung": Uebergabe_Art = 'KONVEKTOR', Auslegung_Vorlauf = 70,
 //                      Auslegung_Ruecklauf = 50, Regler_Proportionalband = 2.0; "Gaestezimmer" und "Keller":
 //                      alle sieben Uebergabespalten leer (Wert des Gebaeudes)
-// Die Zonen rechnen damit gekoppelt (Aufheizzustand GEKOPPELT) - das ist gewollt.
+// Die Zonen rechnen damit gekoppelt (Aufheizzustand GEKOPPELT) - das ist gewollt. Die gefahrene Heizkurve
+// laesst die Uebergabe in kalten Stunden an ihre Grenze kommen (Uebergabe_Begrenzt_H > 0).
 
 using System;
 using System.Collections.Generic;
@@ -34,7 +36,7 @@ namespace EPOS.Referenzlaeufe.Skripte
         public const string NAME = "Referenzprojekt Zonen mit Heizkreis";
         public const string BESCHREIBUNG =
             "Referenzprojekt der Wärmeübergabe je Zone: Kopie von Projekt 1052 (Hotel in drei Zonen) mit " +
-            "Anlagenkopplung AK1 — das Gebäude mit Heizkreis und Radiatoren, die Zone Gastronomie und Verwaltung " +
+            "Anlagenkopplung AK1 — das Gebäude mit Heizkreis, Radiatoren und Heizkurve, die Zone Gastronomie und Verwaltung " +
             "mit eigener Übergabe (Konvektor, Auslegung 70/50 °C, Proportionalband 2 K), Gästezimmer und Keller " +
             "mit den Werten des Gebäudes. Hält Vorlauf, Rücklauf und begrenzte Stunden je Zone im Regressionsnetz.";
         public const string DATUM = "2026-10-04 00:00:00";
@@ -79,7 +81,7 @@ namespace EPOS.Referenzlaeufe.Skripte
                 return "Die Kopplungsstufe ist nicht geschrieben.";
             int geb = Zonenprojekt1052.Gebaeude(projekt);
             if (geb <= 0) return "Die Projektkopie des Gebäudes fehlt.";
-            if (DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET Heizkreis_Aktiv = 1, Uebergabe_Art = ? WHERE ID = ?",
+            if (DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET Heizkreis_Aktiv = 1, Uebergabe_Art = ?, Heizkurve_Aktiv = 1 WHERE ID = ?",
                                                P(GEB_UEBERGABE_ART), P(geb)) != 1)
                 return "Die Gebäudezeile ist nicht geschrieben.";
             if (DataRepository.ExecuteNonQuery(
@@ -151,7 +153,7 @@ namespace EPOS.Referenzlaeufe.Skripte
             DataTable g = Zonenprojekt1052.Tabelle("SELECT * FROM Tab_Gebaeude WHERE ID = ?", geb);
             Soll("Heizkreis_Aktiv", g.Rows[0]["Heizkreis_Aktiv"], 1L);
             Soll("Gebäude.Uebergabe_Art", g.Rows[0]["Uebergabe_Art"], GEB_UEBERGABE_ART);
-            Soll("Heizkurve_Aktiv", g.Rows[0]["Heizkurve_Aktiv"], 0L);
+            Soll("Heizkurve_Aktiv", g.Rows[0]["Heizkurve_Aktiv"], 1L);
             foreach (string s in GEBAEUDE_LEER) Soll("Gebäude." + s, g.Rows[0][s], null);
 
             // Zonen: dieselben wie in der Vorlage, die sieben Uebergabespalten wie geplant.
