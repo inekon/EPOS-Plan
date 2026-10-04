@@ -156,14 +156,14 @@ Im Einstellungsdialog des Programms legt '''Neue Projekte mit Kühlung anlegen''
 == Eingaben im Gebäudedialog ==
 {{Anker|eingaben}}
 
-Die Gruppe ''Kühlung'' steht unter dem Rechenweg und ist immer sichtbar und bearbeitbar. Kühlsollwert und Kühlleistungsgrenze erscheinen mit dem Haken. Ein leeres Feld zeigt seine Vorgabe als grauen Text; gespeichert wird dann kein Wert, sondern „leer".
+Die Gruppe ''Kühlung'' im Reiter ''Gebäude und Hülle'' steht unter dem Rechenweg und ist immer sichtbar und bearbeitbar. Die Kühlleistungsgrenze erscheint mit dem Haken; der Kühlsollwert steht in der Spalte ''Kühlen'' der Matrix im Reiter ''Konditionierung'' (siehe [[#kuehlspalte|Kühlspalte, Kühlperiode und Kühlkalender]]). Ein leeres Feld zeigt seine Vorgabe als grauen Text; gespeichert wird dann kein Wert, sondern „leer".
 
 {| class="wikitable"
 ! Feld !! Vorgabe !! Bedeutung
 |-
 | Gebäude wird gekühlt || aus || schaltet die Kühlung dieses Gebäudes ein; ohne den Projektschalter wirkt der Haken nicht
 |-
-| Kühlsollwert || Kühlung aus || Raumlufttemperatur, über die das Modell den Raum nicht steigen lässt, solange die Kühlleistung reicht; zwischen 15 und 35 °C und mindestens 1 K über dem höchsten Heizsollwert (Tag, Nacht, Wochenende und Ferien). Ohne Kühlsollwert bleibt die Kühlung aus, auch mit Haken
+| Kühlsollwert (Matrix, Zelle ''Tag'') || Kühlung aus || Raumlufttemperatur, über die das Modell den Raum nicht steigen lässt, solange die Kühlleistung reicht; zwischen 15 und 35 °C und mindestens 1 K über dem höchsten Heizsollwert (Tag, Nacht, Wochenende und Ferien). Ohne Kühlsollwert bleibt die Kühlung aus, auch mit Haken
 |-
 | Kühlleistungsgrenze || unbegrenzt || größte Kühlleistung in kW; reicht sie nicht, steigt die Raumtemperatur über den Kühlsollwert
 |}
@@ -173,6 +173,19 @@ Die Zeile unter den Feldern nennt, was gilt: mit Haken die Prüfregel samt höch
 Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile, dass dieser Weg keine Kühllast liefert: Die Eingaben bleiben gespeichert und gelten, sobald das Gebäude nach VDI 6007 rechnet.
 
 Mit dem Haken steht darunter der Abschnitt '''Kühlübergabe''': Mit ihm rechnet das Gebäude die Kühlung über Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf statt ideal – in Projekten mit der Anlagenkopplung ''Heizkreis (AK1)''; siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell: Kühlübergabe]].
+
+=== Kühlspalte, Kühlperiode und Kühlkalender ===
+{{Anker|kuehlspalte|kuehlperiode}}
+
+Die Matrix des Reiters ''Konditionierung'' (siehe [[Programm Dokumentation/Gebäude#konditionierung|Gebäude]]) trägt neben der Heizspalte die Spalte ''Kühlen °C'':
+
+* '''Tag und Nacht''' – ''Tag'' ist der Kühlsollwert, ''Nacht'' der Absenksollwert des Nachtfensters (Wert oder ''aus''; leer gilt das Nachtfenster der Heizspalte). ''Wochenende'' und ''Ferien'' nehmen einen eigenen Wert, ''aus'' oder bleiben leer; leer heißt ''Vorgabe'', also der Wert von Tag bzw. Werktag.
+* '''Kühlperiode''' – die Zelle ''Saison'' der Kühlspalte: Start und Ende als Datum. Innerhalb wird gekühlt, außerhalb steht die Kühlung auf ''aus''; leer heißt ganzjährig, Start und Ende gibt es nur zusammen.
+* '''Kühlkalender''' – die Kalenderkarte ''Kühlen'' hält dasselbe als Stundenkalender: Wochenraster, Zeitfenster, Perioden, Feiertage und Teppichbild, dazu Vorlagen. ''Kalender anlegen'' erzeugt ihn aus den Zellen.
+* '''Prüfung''' – Der Kühlsollwert liegt in jeder Stunde, in der beide wirken, mindestens 1 K über dem Heizsollwert; die Matrix prüft das je Zeile, zulässig sind 15 bis 35 °C. Die Sommerlüftung rechnet je Stunde mit der Schwelle 3 K unter dem Kühlsollwert; steht die Kühlung auf ''aus'', gilt die feste Schwelle 23 °C.
+* '''Sperre''' – Die Spalte wirkt nur mit dem Projektschalter ''Kühlung rechnen'' und dem Haken ''Gebäude wird gekühlt''; sonst ist sie gesperrt, der Grund steht am Element. An einer Zone ist sie gesperrt: Kühlsollwert, Kühlperiode und Kühlkalender kommen vom Gebäude (siehe [[Programm Dokumentation/Mehrzonenmodell#konditionierung|Mehrzonenmodell]]).
+
+Die Nachtauskühlung ([[Programm Dokumentation/Gebäudemodell VDI 6007#nachtauskuehlung|Gebäudemodell VDI 6007]]) senkt die Raumluft am Morgen und damit die Kühlenergie des Folgetags.
 
 == Wie gerechnet wird ==
 {{Anker|rechenweg}}

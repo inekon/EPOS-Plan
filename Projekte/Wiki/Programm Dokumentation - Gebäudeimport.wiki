@@ -89,9 +89,11 @@ Was der Katalogeditor für jedes neue Gebäude verlangt, die Datei aber nicht li
 * '''Innere Gewinne''' – 5 W je m² Nutzfläche, für jede Gebäudeart gleich; bei 120 m² also 600 W. Ohne Nutzfläche bleibt es bei 0 W wie bei einem neuen Gebäude. Eine Datei nennt Auslegungsleistungen für Beleuchtung und Geräte, die zu Zeitplänen gehören; ihre Summe steht nur als Vorschlag im Beleg. Ändern Sie in der Zuordnung die Nutzfläche, folgen die inneren Gewinne ihr, solange Sie sie nicht selbst eingetragen haben.
 * '''Soll am Tag''' – 20 °C, wenn die Datei keine einheitliche Heiz-Solltemperatur nennt.
 * '''Heizsollwert in der Nacht''' – 18 °C, höchstens aber das Soll am Tag; der Beleg nennt es, wenn das Soll am Tag darunter liegt. Ändern Sie das Soll am Tag, folgt der Nachtwert, solange Sie ihn nicht selbst eingetragen haben.
-* '''Nachtabsenkung von … bis''' – 22 bis 6 Uhr, übernommen als eingetragene Stunden (siehe [[Programm Dokumentation/Gebäude#nachtzeit|Nachtzeit]]).
+* '''Nachtabsenkung von … bis''' – 22 bis 6 Uhr, übernommen als eingetragene Stunden (siehe [[Programm Dokumentation/Gebäude#nachtzeit|Nachtzeit]]; im Katalogeditor das Nachtfenster der Heizspalte).
 
 Jede dieser Vorgaben lässt sich in der Spalte ''Wert'' ändern – die Herkunft wird dann ''manuell'' – und später im Katalogeditor.
+
+Der Import setzt damit Felder der Matrix im Reiter ''Konditionierung'' des Katalogeditors: ''Tag'' und ''Nacht'' der Heizspalte, das Nachtfenster, Infiltration und Nutzerlüftung der Lüftungsspalte und die inneren Gewinne. Einen Kalender legt der Import nicht an. Er entsteht im Katalogeditor auf Knopfdruck mit ''Kalender anlegen'' aus den Zellen der Matrix oder durch die Übernahme einer Vorlage je Größe; Wochenende, Ferien, Saison und die Kühlspalte bleiben leer, bis Sie sie dort eintragen (siehe [[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Reiter „Konditionierung"]]).
 
 Für U-Werte, g-Wert und Wärmebrückenkoeffizienten gibt es Vorgaben nur aus der Baualtersklasse; ohne Klasse bleiben diese Zeilen leer, wenn die Datei keinen Wert liefert. Weiter gilt:
 

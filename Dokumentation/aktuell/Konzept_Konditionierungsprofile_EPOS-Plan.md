@@ -1439,13 +1439,13 @@ oder Entfernen eines Referenzprojekts mit Kalender oder Aufheizoptimierung.
 
 | Seite (`Projekte/Wiki/`) | Abschnitt | Änderung |
 |---|---|---|
-| `Programm Dokumentation - Gebäude.wiki` | Reiter „Temperaturen und Ferien" (Anker `raumtemperaturen`, `nachtzeit`, `ferienzeiten`) und der Abschnitt „Temperaturen und Ferien" aus #571 (Anker `temperaturen-und-ferien`, `wochenendabsenkung`, `ferienabsenkung`) | Reiter „Konditionierung" in Projekt und Gebäudekatalog (Anker `konditionierung`, `matrix`, `kalender`, `vorlagen`): Matrix mit Heiz- und Kühlperiode, Kalenderkarten, Vorlagen je Größe wählen und speichern, Schloss ausgelieferter Sätze; die alten Anker und die aus #571 bleiben im neuen Abschnitt, ebenso die Feldnamen „Soll am Wochenende (ganztägig)" und „Soll in Ferien (ganztägig)" |
-| `Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | Eingaben, Lüftung, Ergebnisse, Grenzen | Sollwerte, Gewinne und Luftwechsel als Kalender aus der Matrix; neue Abschnitte „Heizperiode" (Anker `heizperiode`), „Nachtauskühlung" (Anker `nachtauskuehlung`) und „Aufheizoptimierung" (Anker `aufheizoptimierung`) |
-| `Programm Dokumentation - Mehrzonenmodell.wiki` | Zonen anlegen, Ergebnisse | Zonen erben Matrixzellen und Kalender oder führen eigene; der Satz über Nachtzeit, Ferien und Kühlung vom Gebäude wird ersetzt |
-| `Programm Dokumentation - Kühlung.wiki` | Eingaben im Gebäudedialog | Kühlspalte der Matrix, Kühlperiode, Nachtwert, Kühlkalender |
-| `Programm Dokumentation - Simulation.wiki` | Projekteinstellungen | Schalter Aufheizoptimierung, Variante (a)/(b), Aufheizreserve, Art |
-| `Programm Dokumentation - Simulationsergebnisse.wiki` | Gebäudekennzahlen | Kennzahlen der Aufheizzeit, Nachtauskühlungsstunden, Hinweise W1–W5 und der Hinweis der Heizperiode |
-| `Programm Dokumentation - Gebäudeimport.wiki` | Vorgaben | der Import setzt Matrixfelder, der Kalender entsteht auf Knopfdruck oder aus einer Vorlage |
+| `Programm Dokumentation - Gebäude.wiki` | Reiter „Temperaturen und Ferien" (Anker `raumtemperaturen`, `nachtzeit`, `ferienzeiten`) und der Abschnitt „Temperaturen und Ferien" aus #571 (Anker `temperaturen-und-ferien`, `wochenendabsenkung`, `ferienabsenkung`) | Reiter „Konditionierung" in Projekt und Gebäudekatalog (Anker `konditionierung`, `matrix`, `kalender`, `vorlagen`): Matrix mit Heiz- und Kühlperiode, Kalenderkarten, Vorlagen je Größe wählen und speichern, Schloss ausgelieferter Sätze; die alten Anker und die aus #571 bleiben im neuen Abschnitt, ebenso die Feldnamen „Soll am Wochenende (ganztägig)" und „Soll in Ferien (ganztägig)" — nachgezogen |
+| `Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | Eingaben, Lüftung, Ergebnisse, Grenzen | Sollwerte, Gewinne und Luftwechsel als Kalender aus der Matrix; neue Abschnitte „Heizperiode" (Anker `heizperiode`), „Nachtauskühlung" (Anker `nachtauskuehlung`) und „Aufheizoptimierung" (Anker `aufheizoptimierung`) — nachgezogen |
+| `Programm Dokumentation - Mehrzonenmodell.wiki` | Zonen anlegen, Ergebnisse | Zonen erben Matrixzellen und Kalender oder führen eigene; der Satz über Nachtzeit, Ferien und Kühlung vom Gebäude wird ersetzt — nachgezogen |
+| `Programm Dokumentation - Kühlung.wiki` | Eingaben im Gebäudedialog | Kühlspalte der Matrix, Kühlperiode, Nachtwert, Kühlkalender — nachgezogen |
+| `Programm Dokumentation - Simulation.wiki` | Projekteinstellungen | Schalter Aufheizoptimierung, Variante (a)/(b), Aufheizreserve, Art — nachgezogen |
+| `Programm Dokumentation - Simulationsergebnisse.wiki` | Gebäudekennzahlen | Kennzahlen der Aufheizzeit, Nachtauskühlungsstunden, Hinweise W1–W5 und der Hinweis der Heizperiode — nachgezogen |
+| `Programm Dokumentation - Gebäudeimport.wiki` | Vorgaben | der Import setzt Matrixfelder, der Kalender entsteht auf Knopfdruck oder aus einer Vorlage — nachgezogen |
 
 Die Seiten beschreiben die Funktion, wie sie ist, ohne Hersteller- und Produktdaten; Beispiele tragen neutrale Namen
 mit runden Werten.
@@ -1457,6 +1457,21 @@ Ein Satz, veröffentlicht mit dem gebündelten Upload; die Versionsnummer ist be
 > „Gebäude, Zonen und Katalogbauten führen für Heiz- und Kühlsollwert, Lüftung, Geräte und Personen stundengenaue
 > Kalender, die eine Vorgabe-Matrix oder je Größe eine Vorlage belegt, mit Heiz- und Kühlperiode und Nachtauskühlung,
 > und die Aufheizoptimierung ersetzt den Sollwertsprung nach einer Absenkung durch eine berechnete Aufheizrampe."
+
+Die Sätze der Statuszeilen #690 bis #705 aus der Sitzung Gebäudesimulation, je ein Satz, geordnet; Version vom Anwender.
+Wo die Statuszeile keinen Satz führt (#691, #692), ist er hier aus ihrem Titel entworfen und vom Anwender zu prüfen;
+#695 bis #697 sind Referenz- und Einfrierschritte ohne sichtbare Änderung und bekommen keinen Eintrag, #690 ist
+ein Testdatenbankschritt und nur der Vollständigkeit halber genannt:
+
+| Zeile | Satz |
+|---|---|
+| #690 (G6d) | „Das Referenzprojekt 1052 mit drei Zonen steht in der Testdatenbank; die Referenzbasis ist unverändert, eingefroren wird mit RP2." *(intern, kein Logbuch-Eintrag nötig)* |
+| #691 (IFC-Diagnose, Entwurf) | „Der IFC-Import übernimmt die Beheizungsart des CAD-Exports je Raum, wertet einen U-Wert von 0 oder darunter nicht als U-Wert und lässt eine unbeheizte Zone ohne Flächen weg." |
+| #692 (IFC-Vorschläge, Entwurf) | „Der IFC-Import meldet einen Widerspruch zwischen dem Jahr der Datei und dem des Dateinamens, erkennt „getrennt beheizt“ an der Raumtemperatur und rechnet die Wärmekapazität masseloser IFC4-Schichten nach." |
+| #693 (Nachzüge) | „Bauteilschichten sind ab 0,5 mm Dicke zulässig; der IFC-Import übernimmt damit Bleche ab 0,5 mm und übergeht nur noch Folien und Anstriche darunter." *(Satz steht laut Statuszeile unter 1.2.0.6)* |
+| #705 (EV1) | „Im Gebäudedialog lässt sich der wirksame U-Wert der Bodenplatte als Wert vorgeben; leer rechnet das Programm die Erdreichkorrektur nach DIN EN ISO 13370. Die Aufheizreserve zeigt am leeren Feld die Vorgabe 20 %, und der Lauf meldet als Hinweis, wenn sie gilt." |
+
+Version vom Anwender: offen.
 
 Die Sätze der Oberfläche aus KP2 stehen im [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Abschnitt 7.
 
