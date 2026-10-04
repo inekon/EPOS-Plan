@@ -2,6 +2,10 @@
 
 **Rev. 2 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
 
+> **Nachgezogen 04.10.2026 mit G7c und G7d:** G7c (IFC-Export S1, 6.3 und 6.5) ist gebaut (Statuszeile #710), G7d
+> (Round-Trip-Anreicherung, 6.6) ist gebaut (#711); die Abweichungen von G7d stehen in 6.6 („So gebaut“), der Stand der
+> Probe 13 in Kapitel 9.
+
 > **Nachgezogen 04.10.2026 mit G7b:** Stufe 2 des gbXML-Exports ist gebaut und freigegeben; die Abweichungen von
 > den Regeln der Planung stehen in 5.5 („So gebaut“) und 5.6, der Stand der Proben in 14.5.
 
@@ -1089,6 +1093,8 @@ Anwender; fällig ist das vor der Stufe, die über die semantische hinausgeht (1
 
 ### 6.3 Stufe G7c (S1) — der semantische Export
 
+*Gebaut 04.10.2026 (G7c, Statuszeile #710); Protokoll [`2026-10-04_G7c_IFC-Export_S1.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_G7c_IFC-Export_S1.md).*
+
 Grundlage ist die Abbildungstabelle aus Befund S, 5; hier auf die Tabellen des Mehrzonenkonzepts
 (4.2) bezogen.
 
@@ -1209,6 +1215,8 @@ auch diese Zusage.
 
 ### 6.5 Der Produktausweis in der Datei
 
+*Mit G7c gebaut (04.10.2026): `EPOS_Rechenlauf` trägt den Ausweis, die Beipackzettel-Meldungen stehen vor dem Schreiben.*
+
 `EPOS_Rechenlauf.Validierung` trägt den Wortlaut aus **E10**, unverändert und ohne Umschreibung:
 
 > „Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich
@@ -1274,6 +1282,17 @@ Sechs Bedingungen:
 Vorhandene `GlobalId`-Werte sind gewöhnliche Attribute und werden unverändert zurückgeschrieben —
 GUID-Stabilität für Bestandsentitäten ist kostenlos. Nur die **neuen** Entitäten (Eigenschaftssätze,
 Beziehungen) brauchen die eigene Erzeugungsfunktion aus 6.4.
+
+**So gebaut (G7d, 04.10.2026).** `IfcAnreicherung` (`EPOS.Kern/Allgemein/Export/Ifc/`) setzt 6.6 um; Schnittstelle in
+`GebaeudeExportAblauf` (`Dateivorschlag`, `AnreicherungsQuelle`, `AnreicherungVorschau`, `Anreichern`), im Exportdialog die
+Wahl „Originaldatei anreichern“ nur für ein Gebäude mit IFC-Importquelle. Entscheide der Orchestrierung: (1) Der Validator
+läuft vor und nach dem Eingriff; **nur neue Verstöße brechen ab**, Altlasten der Datei erscheinen als Info
+`VERSTOESSE_VORHER`. (2) **Nur STEP**: ifcXML und ifcZIP werden benannt verweigert (`NUR_STEP`) mit dem Angebot einer
+eigenen Datei nach G7c. (3) Bei einer **geteilten Zone** steht das Raumergebnis nur am Gebäude (`ERGEBNIS_GETEILT`), am
+Raum nur, wenn er als einziger seiner Zone zugeordnet ist. Dazu: ein Kopf mit anderem Schema wird verweigert, der
+Beipackzettel D11 ist eine eigene Bestätigung im Dialog, Vorschlag des Dateinamens `<name>_EPOS.ifc`, nie der Originalname.
+Offen: iOS-Dateiwähler mit IFC-Filter auf einem Gerät, keine Größengrenze der Originaldatei. Protokoll:
+[`2026-10-04_G7d_IFC_Round-Trip.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_G7d_IFC_Round-Trip.md).
 
 ### 6.7 Stufe G7e (S3) — schematische Körper
 
@@ -1589,7 +1608,7 @@ Geschmacksfrage, und sie steht an drei Stellen:
 | 10 | **IFC-Export: `ExpressValidation.Validator`** | leere Verstoßliste vor `SaveAsStep21`; eine künstlich entfernte `GlobalId` wird gemeldet |
 | 11 | **Determinismus der Kennungen** | zweiter Export desselben Projekts liefert **byte-gleiche** `GlobalId` an **jeder `IfcRoot`-Instanz** — Objekte, Eigenschaftssätze, Mengen, Beziehungen, Raumgrenzen (6.4, Rollenglied) — und dieselben gbXML-`id`; ein dupliziertes Projekt liefert andere. Dazu feste Prüfwerte für die selbstgeschriebene RFC-4122-Version-5-Ableitung |
 | 12 | **Determinismus der Datei** | zweimal exportieren ergibt byte-gleiche Dateien **außer** dem Zeitstempel, und der steht an genau einer Stelle |
-| 13 | **Round-Trip-Sperre** | drei Fälle, je benannte Verweigerung mit Angebot einer eigenen Datei nach G7c: `Tab_Importquelle.FehlendeEntitaeten > 0` (beide Verlustkanäle, 6.6 Nr. 2); **Hash der erneut gewählten Datei ≠ `Tab_Importquelle.Hash`** (6.6 Nr. 1); **`Schemastand ≠ 'IFC4'`** (6.6, Einleitung). Dazu der Wächtertest, dass der Import nie `ignoreTypes`/`SkipTypes` setzt |
+| 13 | **Round-Trip-Sperre** | drei Fälle, je benannte Verweigerung mit Angebot einer eigenen Datei nach G7c: `Tab_Importquelle.FehlendeEntitaeten > 0` (beide Verlustkanäle, 6.6 Nr. 2); **Hash der erneut gewählten Datei ≠ `Tab_Importquelle.Hash`** (6.6 Nr. 1); **`Schemastand ≠ 'IFC4'`** (6.6, Einleitung). Dazu der Wächtertest, dass der Import nie `ignoreTypes`/`SkipTypes` setzt (**grün, G7d**: `IfcAnreicherungTests` 22, Wächter in `IfcImportTests` auch über `Export/Ifc/*.cs`) |
 | 14 | **Persistenz** | nach dem Import findet ein Test **Gebäude und Zone** über `Tab_Importzuordnung.Quellkennung` wieder; **nach einem gewöhnlichen Speichern des Gebäudes stehen Quelle und Zuordnung unverändert** (Kaskadenfalle, Kapitel 7); erst nach dem **Löschen** des Gebäudes sind beide Tabellen leer. (Umgesetzt in `GebaeudeImportCtrlTests`, dazu: das Entfernen eines Ziels löscht genau dessen Paarung, das Löschen des Projekts leert beide Tabellen; Protokoll G4 Abschnitt 4) |
 | 15 | **bSI-Validierungsdienst** | von Hand, je Stufe einmal (S1 und S3); das Ergebnis wird protokolliert. Der Dienst prüft ausdrücklich **keine** Darstellung — eine geometrielose Datei kann dort vollständig bestehen |
 | 16 | **Betrachter-Prüfmatrix** | rund 1 PT: eine geometrielose EPOS-Testdatei durch Archicad, Revit, Solibri, BIMcollab Zoom, FZKViewer, BIMvision schicken und protokollieren, **was öffnet, was anzeigt, was meldet**. Die veröffentlichte Quellenlage reicht dafür nicht (Befund S, 1.8); **erst dieses Ergebnis trägt die Aussage in 6.1** |
@@ -1640,8 +1659,8 @@ Rückfrage beim Anwender; G4c wird ohne iOS-Lauf abgenommen.
 | **G4c — gbXML-Import** | Lesemodell (`GbXmlDatei`, `GbXmlEinheiten`, `GbXmlModell`), Einheiten global und lokal, Aggregation auf das Gebäudemodell, Nachbarschaftsauflösung, Fensterabzug, Aufbauprüfung je Aufbau, **Zonenregel X4** (X1…X3 mit G6c, 3.3), Meldungen in beiden `.resx`, Anschluss an den gemeinsamen Zuordnungsdialog — **dazu die Persistenz** (Kapitel 7: Schemaschritt S-F, zwei Tabellen, `ImportzuordnungSchema.cs`, Registerpflege, Reduzierskript, Auslieferungsvorlage, Umbenennungen `IfcGuid` → `Quellkennung` und `IfcHerkunft` → `Importherkunft`) | Proben 1, 5–9, 14, 21, 24; Referenzlauf unverändert; Windows-Sichtabnahme. **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden (`GbxmlLeser`, `GbxmlEinheiten`, `GbxmlAbbild`, Schemaschritt 138), mit G4a auch der IFC-Weg; Proben 4–9, 14, 21 und 24 grün, Referenzlauf 13/13 byte-gleich, Probe 1 kommt mit G7a; offen die Windows-Sichtabnahme ([Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)) | **17–28 PT** |
 | **G7a — gbXML-Export Stufe 1** | `GebaeudeExportAblauf`/`-Profil` (Ordner `Export/Gebaeude/`, Schreiber in `Export/Gbxml/`), Wurzelattribute mit `version="6.01"`, `Campus`/`Building`/`Location`/`Space`/`Zone`/`Surface` mit `RectangularGeometry`/`Opening`, vollständige `Construction`-Kette mit **Schichtumkehr**, **Ersatzschichtung samt Kennzeichnung** (5.3), deterministische Kennungen, XSD-Prüfung im Test | Proben 1, 3, 11, 12. **Stand 26.09.2026:** nach E48 vorab gebaut, hinter dem Freigabeschalter, ausgeliefert erst mit G7b; Proben 1, 3, 11 und 12 grün, Referenzlauf 14/14 byte-gleich; offen die Windows-Sichtabnahme ([Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)) | **9–14 PT** |
 | **G7b — gbXML Stufe 2** (**gebaut 04.10.2026**) | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
-| **G7c — IFC-Export S1** | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |
-| **G7d — IFC-Export S2 (Round-Trip)** | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
+| **G7c — IFC-Export S1** (**gebaut 04.10.2026**) | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |
+| **G7d — IFC-Export S2 (Round-Trip)** (**gebaut 04.10.2026**) | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
 | **G7e — IFC-Export S3 (Körper)** | Quader je Zone, Platte je Bauteil **aus dem Zonengeometrie-Modell** (Nachtrag 1), Placement-Kette, Azimut als Drehung, `TrueNorth` auf der Vorgabe, Kennzeichnung, Prüfbilder | Probe 16 mit Bildern; Validator grün trotz Placement-Pflicht | **8–15 PT** † |
 | **Gebäudebetrachter (E11)** | Zonengeometrie-Modell im Kern (Polygon, Höhe, Geschoss, Kantenzuordnung), **2D-Grundriss je Geschoss mit G6c**, **3D-Ansicht mit G7b** — eine Komponente, Umschalter „Grundriss \| Körper", three.js lokal, Kennzeichnung „schematisch" (Kapitel 14) | Proben 25–27; Sichtabnahme Windows und iOS | **10–17 PT**, davon **4–7 PT hier** (3D-Ansicht); Zonengeometrie und 2D-Grundriss (**6–10 PT**) rechnet das [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) unter G6c |
 | | **Summe G7** (einschließlich der 3D-Ansicht aus E11) | | **46–79 PT** |
@@ -1708,6 +1727,8 @@ für G4c noch die kleinere Zahl; sie ist dort nachzuziehen.
 
 **Logbuch-Entwurf G7b:** „Der Gebäudeexport nach gbXML ist freigegeben und schreibt eine schematische Geometrie; der
 Zuordnungsdialog des Gebäudeimports zeigt die Zonen als Körper.“ Version vom Anwender: offen.
+
+**Logbuch-Entwurf G7d:** „Der Gebäudeexport schreibt wahlweise IFC; eine beim Import gelesene IFC-Datei lässt sich mit den Kennwerten und Ergebnissen aus EPOS-Plan angereichert zurückgeben.“ Version vom Anwender: offen.
 
 ## 11. Fragen mit Empfehlung
 
