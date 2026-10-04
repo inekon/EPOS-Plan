@@ -167,6 +167,11 @@ namespace WindowsFormsApplication1
                                       w => Berichtstabellen.Pufferauslegung(w.Stamm, w.Kultur));
             puffer.Seit = FASSUNG_PUFFERAUSLEGUNG;
             yield return puffer;
+            // Katalog v12 (KU3-4d): die Kältespeicher des Stamms - dieselbe Tafel wie der Baustein.
+            Tabellenquelle kaeltespeicher = Q(ProjektbeschreibungBaustein.PLATZHALTER_KAELTESPEICHER, ST,
+                                              w => Berichtstabellen.Kaeltespeicher(w.Stamm, w.Englisch, w.Kultur));
+            kaeltespeicher.Seit = FASSUNG_PUFFERAUSLEGUNG;
+            yield return kaeltespeicher;
 
             // ---------------- Variantenvergleich ----------------
             yield return Q("tabelle.vergleich", G, w => Berichtstabellen.Vergleichsgesamt(w.Daten, w.Englisch, w.Kultur));

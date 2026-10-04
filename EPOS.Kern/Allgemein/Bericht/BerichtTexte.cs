@@ -375,6 +375,13 @@ namespace WindowsFormsApplication1
             { "Spitze [kW]", "Peak [kW]" },
             { "T oben Mittel [°C]", "T top mean [°C]" },
             { "T oben Minimum [°C]", "T top minimum [°C]" },
+            // KU3-4d: die Kältespeicher im Kapitel Projektbeschreibung
+            { "Kältespeicher", "Cold storage" },
+            { "Kapazität [kWh]", "Capacity [kWh]" },
+            { "Ladung [MWh/a]", "Charging [MWh/a]" },
+            { "Entladung [MWh/a]", "Discharging [MWh/a]" },
+            { "Wärmeeintrag [MWh/a]", "Heat gain [MWh/a]" },
+            { "Vollzyklen", "Full cycles" },
             // Konzept Kesselkennlinie 5 - der Betrieb je Heizkessel (stand.tabelle.heizkessel, Katalog v11).
             { "Heizkessel", "Boiler" },
             { "Jahresnutzungsgrad [%]", "Annual efficiency [%]" },

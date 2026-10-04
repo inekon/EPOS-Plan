@@ -253,7 +253,7 @@ namespace WindowsFormsApplication1
                 spalten.Add(new CsvSpalte(WaermegangName(s) + zusatz, werte));
             }
 
-            List<SimulationPufferspeicher> alle = sim.AlleSpeicher();
+            List<SimulationPufferspeicher> alle = sim.SpeicherSamtKaelte();   // KU3-4d: samt Kältespeicher
             for (int i = 0; i < alle.Count; i++)
             {
                 SimulationPufferspeicher sp = alle[i];

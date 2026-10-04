@@ -54,6 +54,18 @@ namespace WindowsFormsApplication1
             return _kaeltespeicher ?? new List<SimulationPufferspeicher>();
         }
 
+        /// <summary>
+        /// <b>Alle Speicher mit Füllstandsganglinie</b> (KU3-4d): <see cref="AlleSpeicher"/>, dahinter
+        /// <see cref="Kaeltespeicher"/> — die Liste, aus der Navigator, Präsenz und Füllstandsexport ihre Reihen
+        /// bilden. Die Schlüssel (<c>PUFFER_&lt;ID&gt;</c>) bleiben eindeutig, die Wärmeseite ändert sich nicht.
+        /// </summary>
+        public List<SimulationPufferspeicher> SpeicherSamtKaelte()
+        {
+            var liste = new List<SimulationPufferspeicher>(AlleSpeicher() ?? new List<SimulationPufferspeicher>());
+            liste.AddRange(Kaeltespeicher());
+            return liste;
+        }
+
         /// <summary>Die Tagesbetriebsart dieses Laufs; <c>null</c> ohne Kälteerzeuger.</summary>
         private bool[] _kuehltage;
 
@@ -634,7 +646,7 @@ namespace WindowsFormsApplication1
         {
             Kaeltemaschine k = e.Maschine;
             string kw = k.Kaltwassertemperatur.ToString("F1", CultureInfo.CurrentCulture);
-            Protokoll.HinweisEinmal("kuehl-km-betrieb-" + k.Id,
+            Protokoll.HinweisEinmal("kuehl-km-betrieb-" + e.AnlagenID,
                 string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_BETRIEB,
                     e.Bezeichner, kw,
                     (e.KaelteGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
@@ -643,13 +655,13 @@ namespace WindowsFormsApplication1
                     (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
                     e.StundenTakt));
             if (e.StundenRandwert > 0)
-                Protokoll.HinweisEinmal("kuehl-km-randwert-" + k.Id,
+                Protokoll.HinweisEinmal("kuehl-km-randwert-" + e.AnlagenID,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_RANDWERT,
                         e.Bezeichner, e.StundenRandwert,
                         k.Kennlinie.RueckkuehlMin.ToString("F1", CultureInfo.CurrentCulture),
                         k.Kennlinie.RueckkuehlMax.ToString("F1", CultureInfo.CurrentCulture), kw));
             if (e.StundenLeistungsgrenze > 0)
-                Protokoll.WarnungEinmal("kuehl-km-unterdeckung-" + k.Id,
+                Protokoll.WarnungEinmal("kuehl-km-unterdeckung-" + e.AnlagenID,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_UNTERDECKUNG,
                         e.Bezeichner, e.StundenLeistungsgrenze,
                         (e.OffenAnLeistungsgrenzeKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture)));
