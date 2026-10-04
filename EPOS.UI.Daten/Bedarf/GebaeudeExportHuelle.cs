@@ -209,7 +209,7 @@ namespace WindowsFormsApplication1
             if (!File.Exists(pfad)) return Format(R.GEXP_MSG_ZUSAGE_FEHLT, pfad);
 
             bool offen;
-            try { offen = await Task.Run(() => Dienste.Datei.MitSystemOeffnen(pfad)); }
+            try { offen = await Kulturweitergabe.Starten(() => Dienste.Datei.MitSystemOeffnen(pfad)); }
             catch (Exception) { offen = false; }
             return offen ? null : Format(R.GEXP_MSG_ZUSAGE_FEHLER, pfad);
         }
