@@ -6771,6 +6771,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PspvNutzungProzessName,
                                      KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.PspvNutzungProzessErl),
+                    new KiDialogFeld("nutzung_kaelte",
+                                     "PufferSpProjektKiSicht.NutzungKaelte",
+                                     KiDialogTexte.PspvNutzungKaelteName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PspvNutzungKaelteErl),
 
                     // ---- Die drei Entnahmehoehen -----------------------------------
                     new KiDialogFeld("entnahmehoehe_heizung",

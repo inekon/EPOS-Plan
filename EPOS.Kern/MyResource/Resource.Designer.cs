@@ -80476,11 +80476,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Kältespeicher bedient allein die Kälte — Heizung, Brauchwasser und Prozesswärme sind dann abgewählt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Kältespeicher liegt der Kaltwasser-Vorlauf unter dem Rücklauf (z. B. 6 °C und 12 °C) — oder beide Felder bleiben leer. ähnelt.
         /// </summary>
-        public static string PSP_FEHLER_KAELTE_EXKLUSIV {
+        public static string PSP_FEHLER_KAELTEPAAR {
             get {
-                return ResourceManager.GetString("PSP_FEHLER_KAELTE_EXKLUSIV", resourceCulture);
+                return ResourceManager.GetString("PSP_FEHLER_KAELTEPAAR", resourceCulture);
             }
         }
         

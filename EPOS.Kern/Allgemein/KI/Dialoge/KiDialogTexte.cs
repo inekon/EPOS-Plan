@@ -910,6 +910,8 @@
         internal static string PspvNutzungBwErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_BW_ERL;
         internal static string PspvNutzungProzessName => MyResource.Resource.KANAL_PROZESS_ANZEIGE;
         internal static string PspvNutzungProzessErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_PROZESS_ERL;
+        internal static string PspvNutzungKaelteName => MyResource.Resource.PSP_VERWENDUNG_KAELTE_ANZEIGE;
+        internal static string PspvNutzungKaelteErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_KAELTE_ERL;
 
         internal static string PspvEntnahmeHeizungName => MyResource.Resource.PSP_LABEL_ENTNAHME_HEIZUNG;
         internal static string PspvEntnahmeHeizungErl => MyResource.Resource.KI_DLG_PSPV_ENTNAHME_HEIZUNG_ERL;

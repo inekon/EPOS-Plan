@@ -943,6 +943,10 @@ namespace WindowsFormsApplication1
         {
             KlassenSet ausAltwert = KlassenSetAusVerwendung(verwendung);
 
+            // KU3-5: Der Kältespeicher trägt kein Wärmeflag - die Hebung auf Heizung darunter
+            // machte aus ihm still einen Heizungspuffer.
+            if (ausAltwert.Kaelte) return ausAltwert;
+
             bool h = nutzungHeizung ?? ausAltwert.Heizung;
             bool b = nutzungBrauchwasser ?? ausAltwert.Brauchwasser;
             bool p = nutzungProzess ?? ausAltwert.Prozess;

@@ -70,7 +70,8 @@ public sealed record PspPufferstand(
     bool Brauchwasser,
     bool Prozess,
     PspSchichtdaten Schicht,
-    string? Katalogherkunft = null);
+    string? Katalogherkunft = null,
+    bool Kaelte = false);
 
 /// <summary>
 /// Was der Dialog beim Übernehmen aus seinen Feldern liest — der Satz, der an
@@ -103,7 +104,8 @@ public sealed record PspEingaben(
     bool Brauchwasser,
     bool Prozess,
     PspSchichtdaten Schicht,
-    int Katalogzeile);
+    int Katalogzeile,
+    bool Kaelte = false);
 
 /// <summary>
 /// Eine Zeile der Kontrollanzeige „Ladereihenfolge dieses Speichers" — alle sechs

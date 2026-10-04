@@ -45089,8 +45089,8 @@ Chart</value>
   <data name="PSP_HINWEIS_KAELTESPEICHER" xml:space="preserve">
     <value>Kältespeicher (Kaltwasser): entlädt vor den Kälteerzeugern und lädt an Kühltagen aus ihrer freien Leistung; ohne Temperaturpaar gilt 6/12 °C.</value>
   </data>
-  <data name="PSP_FEHLER_KAELTE_EXKLUSIV" xml:space="preserve">
-    <value>Ein Kältespeicher bedient allein die Kälte — Heizung, Brauchwasser und Prozesswärme sind dann abgewählt.</value>
+  <data name="PSP_FEHLER_KAELTEPAAR" xml:space="preserve">
+    <value>Beim Kältespeicher liegt der Kaltwasser-Vorlauf unter dem Rücklauf (z. B. 6 °C und 12 °C) — oder beide Felder bleiben leer.</value>
   </data>
   <data name="KI_DLG_PSPV_NUTZUNG_KAELTE_ERL" xml:space="preserve">
     <value>Der Speicher ist ein Kältespeicher (Kaltwasser) und versorgt allein die Kühlung.</value>

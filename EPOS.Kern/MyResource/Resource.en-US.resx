@@ -45082,8 +45082,8 @@ chart</value>
   <data name="PSP_HINWEIS_KAELTESPEICHER" xml:space="preserve">
     <value>Cold storage (chilled water): discharges ahead of the cooling generators and charges on cooling days from their spare capacity; without a temperature pair 6/12 °C applies.</value>
   </data>
-  <data name="PSP_FEHLER_KAELTE_EXKLUSIV" xml:space="preserve">
-    <value>A cold storage serves cooling only — heating, domestic hot water and process heat are then deselected.</value>
+  <data name="PSP_FEHLER_KAELTEPAAR" xml:space="preserve">
+    <value>For a cold storage the chilled water supply lies below the return (e.g. 6 °C and 12 °C) — or both fields stay empty.</value>
   </data>
   <data name="KI_DLG_PSPV_NUTZUNG_KAELTE_ERL" xml:space="preserve">
     <value>The tank is a cold storage (chilled water) and supplies cooling only.</value>

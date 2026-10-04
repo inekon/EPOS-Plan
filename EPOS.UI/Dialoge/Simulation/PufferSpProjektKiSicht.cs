@@ -99,6 +99,9 @@ public sealed class PufferSpProjektKiSicht
     public Func<bool>? NutzungProzessLesen { get; init; }
     public Action<bool>? NutzungProzessSetzen { get; init; }
 
+    public Func<bool>? NutzungKaelteLesen { get; init; }
+    public Action<bool>? NutzungKaelteSetzen { get; init; }
+
     public Func<double?>? EntnahmeHeizungLesen { get; init; }
     public Action<double?>? EntnahmeHeizungSetzen { get; init; }
 
@@ -294,6 +297,13 @@ public sealed class PufferSpProjektKiSicht
     {
         get => NutzungProzessLesen?.Invoke() ?? false;
         set => NutzungProzessSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Speicher ist ein Kältespeicher (Kaltwasser) und versorgt allein die Kühlung (KU3-5).</summary>
+    public bool NutzungKaelte
+    {
+        get => NutzungKaelteLesen?.Invoke() ?? false;
+        set => NutzungKaelteSetzen?.Invoke(value);
     }
 
     // =====================================================================
