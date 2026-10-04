@@ -572,6 +572,15 @@ namespace WindowsFormsApplication1
                 {
                     w.Kaelteproduktion_WP = kaskade.DeckungGesamtKwh / 1000.0;
                     w.Stromverbrauch_Kuehlung = kaskade.StromGesamtKwh / 1000.0;
+
+                    // KU3-2: Rechnet eine Kältemaschine mit, gehören ihre Kälte und ihr Strom nicht
+                    // zur Wärmepumpe - dann die Summe allein der Wärmepumpen. Ohne Kältemaschine
+                    // bleibt es Zeichen für Zeichen die Summe der Kaskade.
+                    if (kaskade.Erzeuger.Any(e => e.Maschine != null))
+                    {
+                        w.Kaelteproduktion_WP = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.KaelteGesamtKwh) / 1000.0;
+                        w.Stromverbrauch_Kuehlung = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.StromGesamtKwh) / 1000.0;
+                    }
                 }
 
                 // Modulauflistung.

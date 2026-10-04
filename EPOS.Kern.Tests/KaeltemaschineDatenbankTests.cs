@@ -82,6 +82,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(lauf.simulation_Kaeltebedarf.Kaelterestbedarf, mit.RestGesamtKwh / 1000.0, 9);
             Assert.Contains(lauf.Protokoll.Hinweise, t => t.Contains(LUFTGEKUEHLT, StringComparison.Ordinal));
 
+            // Gespeichert: Kälte und Kältestrom der Wärmepumpenzeile tragen allein die Wärmepumpe.
+            ErgebnisModel erg = new ErgebnisCtrl().Load(PROJEKT);
+            Assert.InRange(erg.Waermepumpe.Kaelteproduktion_WP.Value, wp.KaelteGesamtKwh / 1000.0 - 0.006, wp.KaelteGesamtKwh / 1000.0 + 0.006);
+            Assert.InRange(erg.Waermepumpe.Stromverbrauch_Kuehlung.Value, wp.StromGesamtKwh / 1000.0 - 0.006, wp.StromGesamtKwh / 1000.0 + 0.006);
+
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
                 "1017 + {0}: Kältebedarf {1:F3} MWh/a; WP {2:F3}, Kältemaschine {3:F3} MWh/a; Kältestrom {4:F3} -> {5:F3} MWh/a; " +
                 "Rest {6:F3} -> {7:F3} MWh/a; Takt {8} h, Randwert {9} h",
