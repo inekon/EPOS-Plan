@@ -720,6 +720,13 @@ rechnet alle neunzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` aus 181 nachgezogen, sobald die
 > Datenbank 181 auf origin liegt (die Testvorrichtung zieht 182 selbst auf die Arbeitskopie).
 
+> **Nachtrag — Prüfprojekt 1053 mit Viertelstunden-Lastgang, Basis unverändert.**
+> `Skripte/pruefprojekt_1053_bhkw_pv.cs` zieht an 1053 den Katalog-Lastgang „test“ (Viertelstundenwerte) als
+> Projektkopie mit den Werten × 0,005 und die Zuordnung `Z_ProjektStromganglinie` nach, dazu die Beschreibung des
+> Projekts; sonst keine Zeile. Schemastand bleibt **181**; `integrity_check` ok, `foreign_key_check` leer. Neue Fassung
+> **86 245 376 Byte, LFS-SHA-256 `30801a34423363f7ecbdab1d7f1405fd0aaa36afb9dd2057fbf3e40c40848cd8`**. **Die Basis
+> bleibt:** 1053 ist kein Referenzprojekt; der Referenzlauf der neunzehn Projekte meldet je Projekt PASS.
+
 ### Die Vorgängerbasis R34 `2026-10-03_R34_Erdreich`
 
 Achtzehn Projekte, 548 CSV, 3 568 Skalare, auf Linux eingefroren gegen die Testdatenbank `bb8dd3dc…` (Schemastand 176),
@@ -739,7 +746,7 @@ die Wärmeübergabe je Zone (a); die achtzehn Projekte rechnen byte-gleich, neu 
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -963,26 +970,31 @@ Testdatenbank: zuerst 1051, dann 1052** (eine Kopie für 1051 fiele bei stehende
 ### Das Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“ (ohne Referenzrolle)
 
 Projekt **1053 „Test BHKW mit PV ohne Kaskade“** rechnet ein BHKW mit Photovoltaik ohne Speicherflotte, ohne
-Stromspeicher und ohne Einspeisegrenze — den Fall, in dem die BHKW-Einspeisung des Zeitreihensatzes (mit PV aus der
-Viertelstundenbilanz `SimulationPV.BhkwUeberschuss`) und die des BHKW-Reiters (Stundenformel
-`SimulationControl.BhkwEinspeisungDesLaufs`) nebeneinander stehen. Kopie von 1018 auf dem Kopierweg des Programms,
-Wärmebedarf, Gebäude und Klima wie 1018; in der Kaskade nur das BHKW (`Tool_1` „BHKW“, `Tool_2` bis `Tool_4` leer —
-der Kesselanteil der Wärme bleibt ungedeckt), `Tool_5` „Photovoltaik“, `Tool_6` leer; dazu die Projektkopie desselben
-Katalogmoduls wie 1048 mit 60 Modulen = 15,60 kWp (Neigung 30°, Azimut 0°) und der Katalogstromverbraucher
-„Hotel_1“ mit 50 MWh/a. Die PV-Spitze (15,65 kWh je Stunde) liegt über der sommerlichen Tageslast des Hotels (Juni
-bis August, 8 bis 18 Uhr: Mittel 7,35 kW, höchstens 9,60 kW); der Lauf hat 2 290 Stunden mit PV-Überschuss,
-1 868 mit BHKW-Überschuss und 740 mit beidem.
+Stromspeicher und ohne Einspeisegrenze, mit einem Strombedarf, der innerhalb der Stunde schwankt — den Fall, in dem
+die BHKW-Einspeisung als Viertelstundenbilanz (`SimulationControl.BhkwEinspeisung_viertelstuendlich`, die eine Reihe
+für Reiter, Kennzahl, Zeitreihensatz, Strommatrix und Wirtschaftlichkeit) von einer Klemmung des Stundenmittels
+abweicht. Kopie von 1018 auf dem Kopierweg des Programms, Wärmebedarf, Gebäude und Klima wie 1018; in der Kaskade nur
+das BHKW (`Tool_1` „BHKW“, `Tool_2` bis `Tool_4` leer — der Kesselanteil der Wärme bleibt ungedeckt), `Tool_5`
+„Photovoltaik“, `Tool_6` leer; dazu die Projektkopie desselben Katalogmoduls wie 1048 mit 60 Modulen = 15,60 kWp
+(Neigung 30°, Azimut 0°), der Katalogstromverbraucher „Hotel_1“ mit 50 MWh/a und der Katalog-Lastgang „test“
+(Viertelstundenwerte, `Zeitinterval` 4) als Projektkopie mit den Werten × 0,005 (Mittel 2,73 kW, 23,95 MWh/a). Die
+PV-Spitze (15,65 kWh je Stunde) liegt über der sommerlichen Tageslast des Hotels; das BHKW (14,5 kW el.) liegt
+zeitweise über der Gesamtlast. Gemessen am Lauf: 8 741 Stunden mit schwankendem Viertelstundenbedarf, BHKW-Einspeisung
+1,909879 MWh/a; die Klemmung des Stundenmittels ergäbe 1,897397 MWh/a (118 Stunden niedriger, zusammen 12,481 kWh/a),
+und nur die Viertelstundenbilanz schließt die Energiebilanz (Rest 0,000 gegen 12,481 kWh/a).
 
 **1053 ist kein Referenzprojekt:** Es steht in keiner Basis und in keiner Projektliste der CI, für seine Zeilen gilt
 keine Einfrierregel, und eine Änderung an 1053 bewegt keine Basis. `EPOS.Kern.Tests/BhkwPvPruefprojektTests` hält
-die Form (BHKW allein in der Kaskade, PV, kein Speicher, keine Flotte) und dass der Lauf BHKW-Überschuss und
-BHKW-Einspeisung erzeugt — ohne eine der beiden Reihen als die gültige festzuschreiben.
+die Form (BHKW allein in der Kaskade, PV, Lastgang, kein Speicher, keine Flotte), die Gleichheit der Leser
+(Reiterlinie = `BHKW_UEBERSCHUSS` = `SimulationPV.BhkwUeberschuss` je Stunde, Kennzahl = KWK-Einspeisung der
+Strommatrix = Summe des Excel-Monatsblocks), den Bilanzschluss (< 1e‑6 kWh) und dass der Fall scharf ist.
 
 ```bash
 dotnet run Referenzlaeufe/Skripte/pruefprojekt_1053_bhkw_pv.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
 ```
 
-Das Skript ist wiederholbar (Rückgabe 0 ohne Änderung, Rückgabe 2 bei Abweichung ohne Änderung der Datei), prüft
+Das Skript ist wiederholbar (Rückgabe 0 ohne Änderung, Rückgabe 2 bei Abweichung ohne Änderung der Datei; den
+ersten Stand ohne Lastgang zieht es nach), prüft
 Zielzellen, die Unversehrtheit von 1018, `integrity_check` und `foreign_key_check` in einer Arbeitsdatei und ersetzt
 erst dann die Datenbank. Nach einer Neufassung der Testdatenbank wird es **nach 1052** gezogen.
 

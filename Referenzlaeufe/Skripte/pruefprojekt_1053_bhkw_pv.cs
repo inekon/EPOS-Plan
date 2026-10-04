@@ -7,12 +7,13 @@
 // mit Photovoltaik OHNE Speicherflotte, OHNE Stromspeicher und OHNE Einspeisegrenze, OHNE
 // Referenzrolle.
 //
-// WOZU. Die BHKW-Einspeisung hat ohne Flotte zwei Quellen: Mit Photovoltaik liest der
-// Zeitreihensatz (ZeitreihenExtraktor, Schluessel BHKW_UEBERSCHUSS) die Viertelstundenbilanz der
-// PV-Stufe (SimulationPV.BhkwUeberschuss), der BHKW-Reiter und seine Kennzahl EinspeisungMwh
-// die Stundenformel des KWK-Splits (SimulationControl.BhkwEinspeisungDesLaufs). Kein
-// Referenzprojekt rechnet BHKW und PV ohne Flotte; 1053 erzeugt den Fall, damit beide Reihen
-// nebeneinander gemessen werden koennen (EPOS.Kern.Tests/BhkwPvPruefprojektTests haelt die Form).
+// WOZU. Die BHKW-Einspeisung ohne Flotte ist die Viertelstundenbilanz des Laufs
+// (SimulationControl.BhkwEinspeisung_viertelstuendlich): Zeitreihensatz (BHKW_UEBERSCHUSS),
+// BHKW-Reiter, Kennzahl EinspeisungMwh und der KWK-Split der Strommatrix lesen dieselbe Reihe.
+// Kein Referenzprojekt rechnet BHKW und PV ohne Flotte mit schwankendem Viertelstundenbedarf;
+// 1053 erzeugt den Fall: Erst ein Viertelstunden-Lastgang macht die Viertelstundenbilanz von
+// einer Klemmung des Stundenmittels verschieden (EPOS.Kern.Tests/BhkwPvPruefprojektTests haelt
+// Form, Gleichheit der Leser und den Bilanzschluss).
 //
 // KEIN REFERENZPROJEKT. 1053 steht in keiner Referenzbasis, in keiner Projektliste von kern.yml,
 // ios.yml oder Referenzlaeufe/LIESMICH.md, und fuer 1053 gilt keine Einfrierregel. Die Vorlage
@@ -33,8 +34,16 @@
 //        Tab_Energieanlagen PV-Anlage: 60 Module x 260 W = 15,60 kWp, Neigung 30, Azimut 0 (wie 1048)
 //        Stromverbraucher   Katalogsatz "Hotel_1" (Typprofil "Hotel") ueber
 //                           StromverbraucherStammCtrl.CopyFromStamm, Zuordnung mit 50 MWh/a
-//      Die beiden Katalogkopierer sind intern; das Skript ruft sie ueber Reflexion, damit die
+//        Stromganglinie     Katalog-Lastgang "test" (Viertelstundenwerte, Zeitinterval 4) ueber
+//                           StromganglinieStammCtrl.ApplyGanglinieToProjekt als Projektkopie,
+//                           deren Werte mit 0,005 skaliert (Mittel 2,73 kW, 23,95 MWh/a), und
+//                           die Zuordnung Z_ProjektStromganglinie (Bezeichner "test")
+//      Die Katalogkopierer sind intern; das Skript ruft sie ueber Reflexion, damit die
 //      Kopie Spalte fuer Spalte dem Programm entspricht.
+//   Warum der Lastgang: Mit dem Hotelprofil allein ist der Bedarf je Stunde konstant; dann sind
+//   die Viertelstundenbilanz und die Klemmung des Stundenmittels gleich. Der Lastgang schwankt
+//   innerhalb der Stunde um die BHKW-Leistung - erst dann zeigt sich der Unterschied (Messung
+//   vor der Angleichung: 118 Stunden, 12,5 kWh/a).
 //   Warum 60 Module (gemessen am Lauf von 1053): Die Stromlast des Hotels (50 MWh/a) liegt im
 //   Sommer (Juni bis August, 8 bis 18 Uhr) im Mittel bei 7,35 kW, hoechstens bei 9,60 kW; die
 //   PV-Spitze von 15,6 kWp erreicht 15,65 kWh je Stunde und liegt damit ueber der Last
@@ -42,9 +51,11 @@
 //   ueber der Hotellast (1 868 Stunden mit BHKW-Ueberschuss); 740 Stunden haben beides.
 //
 // WIEDERHOLBAR. Steht "Test BHKW mit PV ohne Kaskade" schon mit allen Zielzellen, aendert das
-// Skript nichts (Rueckgabe 0). Weicht dort etwas ab, weicht die Vorlage 1018 ab oder faellt die
-// Kopie nicht auf 1053, bricht es ab, ohne die Datei zu aendern (Rueckgabe 2): Geschrieben wird in
-// eine Arbeitsdatei neben der Datenbank, geprueft, und erst dann ersetzt sie das Original.
+// Skript nichts (Rueckgabe 0). Steht es im ersten Stand (ohne Lastgang, alte Beschreibung),
+// zieht es Lastgang und Beschreibung nach. Weicht sonst etwas ab, weicht die Vorlage 1018 ab
+// oder faellt die Kopie nicht auf 1053, bricht es ab, ohne die Datei zu aendern (Rueckgabe 2):
+// Geschrieben wird in eine Arbeitsdatei neben der Datenbank, geprueft, und erst dann ersetzt
+// sie das Original.
 //
 // Aufruf (vorher sichern; dotnet ab SDK 10):
 //     dotnet run Referenzlaeufe/Skripte/pruefprojekt_1053_bhkw_pv.cs -- Referenzlaeufe/Kenndaten_Test.sqlite
@@ -64,10 +75,17 @@ const int VORLAGE = 1018;
 const string VORLAGE_NAME = "BHKW Test München";
 const int NEU = 1053;
 const string NAME = "Test BHKW mit PV ohne Kaskade";
-const string BESCHREIBUNG =
+// Die Beschreibung des ersten Stands (ohne Lastgang) - nur, um ihn fuer den Nachzug zu erkennen.
+const string BESCHREIBUNG_STAND1 =
     "Prüfprojekt ohne Referenzrolle: Kopie von Projekt 1018 mit dem BHKW allein in der Kaskade, " +
     "60 PV-Modulen (15,60 kWp) und dem Stromverbraucher Hotel (50 MWh/a), ohne Stromspeicher, " +
     "Speicherflotte und Einspeisegrenze. Es erzeugt BHKW- und PV-Überschuss im selben Lauf " +
+    "(BhkwPvPruefprojektTests) und steht in keiner Referenzbasis.";
+const string BESCHREIBUNG =
+    "Prüfprojekt ohne Referenzrolle: Kopie von Projekt 1018 mit dem BHKW allein in der Kaskade, " +
+    "60 PV-Modulen (15,60 kWp), dem Stromverbraucher Hotel (50 MWh/a) und dem Viertelstunden-" +
+    "Lastgang „test“ (× 0,005), ohne Stromspeicher, Speicherflotte und Einspeisegrenze. Es erzeugt " +
+    "BHKW- und PV-Überschuss im selben Lauf mit schwankendem Viertelstundenbedarf " +
     "(BhkwPvPruefprojektTests) und steht in keiner Referenzbasis.";
 const string DATUM = "2026-10-04 00:00:00";
 
@@ -78,6 +96,10 @@ const int NEIGUNG = 30;
 const int AZIMUT = 0;
 const string VERBRAUCHER = "Hotel_1";
 const double VERBRAUCHER_MWH = 50.0;
+const string GANGLINIE = "test";
+const int GANGLINIE_INTERVALL = 4;
+const int GANGLINIE_WERTE = 8760 * 4;
+const double GANGLINIE_FAKTOR = 0.005;
 
 string datei = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
 bool trocken = args.Contains("--trocken");
@@ -87,6 +109,7 @@ if (datei == null || !File.Exists(datei))
     return 2;
 }
 datei = Path.GetFullPath(datei);
+string arbeit = datei + ".p1053arbeit";
 using (var fs = File.OpenRead(datei))
 {
     var kopf = new byte[15];
@@ -148,6 +171,52 @@ int VerbraucherKopieren(int projekt)
     MethodInfo m = t.GetMethod("CopyFromStamm", BindingFlags.Public | BindingFlags.Static, null,
                                new[] { typeof(string), typeof(int) }, null);
     return (int)m.Invoke(null, new object[] { VERBRAUCHER, projekt });
+}
+int GanglinieKopieren(int projekt)
+{
+    Type t = kern.GetType("WindowsFormsApplication1.StromganglinieStammCtrl", true);
+    MethodInfo m = t.GetMethod("ApplyGanglinieToProjekt", BindingFlags.Public | BindingFlags.Static, null,
+                               new[] { typeof(string), typeof(int) }, null);
+    return (int)m.Invoke(null, new object[] { GANGLINIE, projekt });
+}
+double[] Werte(string sql, params object[] w)
+    => T(sql, w).Rows.Cast<DataRow>().Select(r => r[0] == DBNull.Value ? double.NaN
+                                                 : Convert.ToDouble(r[0], CultureInfo.InvariantCulture)).ToArray();
+
+// Der Lastgang des Projekts: genau eine Zuordnung "test" auf eine Projektkopie mit 35 040
+// Viertelstundenwerten, Wert fuer Wert der Katalogwert x 0,005 (in Katalogreihenfolge).
+void PruefeGanglinie(List<string> f, int id)
+{
+    DataTable z = T("SELECT z.Bezeichner, g.ID, g.ID_Projekt, g.Bezeichner AS Kopf, g.Zeitinterval FROM Z_ProjektStromganglinie z " +
+                    "JOIN Tab_Stromganglinie g ON g.ID = z.ID_Ganglinie WHERE z.ID_Projekt = ?", id);
+    if (z.Rows.Count != 1) { f.Add(z.Rows.Count + " Stromganglinien statt 1"); return; }
+    DataRow r = z.Rows[0];
+    SollText(f, "Stromganglinie", Txt(r, "Bezeichner"), GANGLINIE);
+    SollText(f, "Stromganglinie Kopf", Txt(r, "Kopf"), GANGLINIE);
+    Soll(f, "Stromganglinie ID_Projekt", D(r, "ID_Projekt"), id);
+    Soll(f, "Stromganglinie Zeitinterval", D(r, "Zeitinterval"), GANGLINIE_INTERVALL);
+    if (Z("SELECT COUNT(*) FROM Tab_Stromganglinie WHERE ID_Projekt = ?", id) != 1) f.Add("mehr als eine Ganglinienkopie");
+    double[] ist = Werte("SELECT Wert FROM Tab_StromganglinieDaten WHERE ID_Ganglinie = ? ORDER BY ID", D(r, "ID"));
+    double[] stamm = Werte("SELECT d.Wert FROM Tab_StromganglinieDaten_STAMM d JOIN Tab_Stromganglinie_STAMM s " +
+                           "ON s.ID = d.ID_Ganglinie WHERE s.Bezeichner = ? ORDER BY d.ID", GANGLINIE);
+    if (ist.Length != GANGLINIE_WERTE || stamm.Length != GANGLINIE_WERTE)
+    { f.Add("Ganglinienwerte " + ist.Length + "/" + stamm.Length + " statt " + GANGLINIE_WERTE); return; }
+    int abw = 0;
+    for (int q = 0; q < ist.Length; q++)
+        if (!(Math.Abs(ist[q] - stamm[q] * GANGLINIE_FAKTOR) <= 1e-12 * Math.Max(1.0, Math.Abs(stamm[q])))) abw++;
+    if (abw > 0) f.Add(abw + " Ganglinienwerte nicht Katalog x " + GANGLINIE_FAKTOR.ToString(CultureInfo.InvariantCulture));
+}
+
+// Der Lastgang anlegen: Projektkopie des Katalogs, Werte skalieren, Zuordnung wie
+// WizardCtrl.Add_Stromganglinie (ID vergibt die Datenbank) - ohne den Aenderungsstempel des
+// Assistenten; Beschreibung, Datum und Kostenstempel setzt der Aufrufer.
+string GanglinieAnlegen(int id)
+{
+    int kopie = GanglinieKopieren(id);
+    if (kopie <= 0) return "Stromganglinie '" + GANGLINIE + "' nicht kopiert.";
+    X("UPDATE Tab_StromganglinieDaten SET Wert = Wert * ? WHERE ID_Ganglinie = ?", GANGLINIE_FAKTOR, kopie);
+    X("INSERT INTO Z_ProjektStromganglinie (ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?)", id, kopie, GANGLINIE);
+    return null;
 }
 
 List<(string Tabelle, string Spalte)> Projekttabellen()
@@ -213,15 +282,25 @@ List<string> PruefeVorlage()
     if (Z("SELECT COUNT(*) FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ?", VORLAGE) != 0) f.Add("Vorlage: fuehrt Stromverbraucher");
     if (Z("SELECT COUNT(*) FROM Tab_PV_STAMM WHERE Bezeichner = ?", MODUL) != 1) f.Add("Katalogmodul '" + MODUL + "' fehlt");
     if (Z("SELECT COUNT(*) FROM Tab_Stromverbraucher_STAMM WHERE Bezeichner = ?", VERBRAUCHER) != 1) f.Add("Katalogverbraucher '" + VERBRAUCHER + "' fehlt");
+    if (Z("SELECT COUNT(*) FROM Z_ProjektStromganglinie WHERE ID_Projekt = ?", VORLAGE) != 0) f.Add("Vorlage: fuehrt eine Stromganglinie");
+    if (Z("SELECT COUNT(*) FROM Tab_Stromganglinie_STAMM WHERE Bezeichner = ? AND Zeitinterval = ?", GANGLINIE, GANGLINIE_INTERVALL) != 1)
+        f.Add("Katalog-Lastgang '" + GANGLINIE + "' (Viertelstundenwerte) fehlt");
     return f;
 }
 
-List<string> PruefeZiel(int id)
+// stand1: der erste Stand ohne Lastgang (alte Beschreibung, keine Ganglinie) - nur zum Erkennen.
+List<string> PruefeZiel(int id, bool stand1 = false)
 {
     var f = new List<string>();
     if (id != NEU) f.Add("Projekt-ID " + id + " statt " + NEU);
     DataTable p = T("SELECT * FROM Tab_Projekt WHERE ID = ?", id);
-    SollText(f, "Beschreibung", Txt(p.Rows[0], "Beschreibung"), BESCHREIBUNG);
+    SollText(f, "Beschreibung", Txt(p.Rows[0], "Beschreibung"), stand1 ? BESCHREIBUNG_STAND1 : BESCHREIBUNG);
+    if (stand1)
+    {
+        if (Z("SELECT COUNT(*) FROM Z_ProjektStromganglinie WHERE ID_Projekt = ?", id) != 0) f.Add("fuehrt eine Stromganglinie");
+        if (Z("SELECT COUNT(*) FROM Tab_Stromganglinie WHERE ID_Projekt = ?", id) != 0) f.Add("fuehrt eine Ganglinienkopie");
+    }
+    else PruefeGanglinie(f, id);
     SollText(f, "Aenderungsdatum", Dat(p.Rows[0], "Aenderungsdatum"), DATUM);
     SollText(f, "Erstelldatum", Dat(p.Rows[0], "Erstelldatum"), DATUM);
     SollText(f, "Kosten_Geaendert", Dat(p.Rows[0], "Kosten_Geaendert"), null);
@@ -275,15 +354,51 @@ long vorhanden = Z("SELECT ID FROM Tab_Projekt WHERE Projektname = ?", NAME);
 if (vorhanden > 0)
 {
     List<string> abw = PruefeZiel((int)vorhanden);
-    Ende();
     if (abw.Count == 0)
     {
+        Ende();
         Console.WriteLine("Projekt " + vorhanden + " '" + NAME + "' steht schon mit allen Zielzellen - nichts zu tun.");
         return 0;
     }
-    Console.Error.WriteLine("Projekt " + vorhanden + " steht, weicht aber ab:");
-    foreach (string a in abw) Console.Error.WriteLine("  " + a);
-    return 2;
+    List<string> abw1 = PruefeZiel((int)vorhanden, stand1: true);
+    List<string> vorlage1 = PruefeVorlage();
+    if (abw1.Count > 0 || vorlage1.Count > 0)
+    {
+        Ende();
+        Console.Error.WriteLine("Projekt " + vorhanden + " steht, weicht aber ab:");
+        foreach (string a in abw.Concat(vorlage1)) Console.Error.WriteLine("  " + a);
+        return 2;
+    }
+    if (trocken)
+    {
+        Ende();
+        Console.WriteLine("--trocken: Projekt " + vorhanden + " steht im ersten Stand, der Lastgang wuerde nachgezogen.");
+        return 0;
+    }
+
+    // Nachzug: der erste Stand bekommt Lastgang und Beschreibung - in der Arbeitsdatei.
+    string abdruck1 = Abdruck(VORLAGE);
+    Ende();
+    foreach (string a in new[] { arbeit, arbeit + "-wal", arbeit + "-shm" }) if (File.Exists(a)) File.Delete(a);
+    File.Copy(datei, arbeit);
+    DataRepository.PfadUeberschreibung = arbeit;
+    int idv = (int)vorhanden;
+    string grund1 = GanglinieAnlegen(idv);
+    if (grund1 != null) return Abbruch(grund1);
+    X("UPDATE Tab_Projekt SET Beschreibung = ?, Aenderungsdatum = ?, Erstelldatum = ?, Kosten_Geaendert = NULL WHERE ID = ?",
+      BESCHREIBUNG, DATUM, DATUM, idv);
+    List<string> ziel1 = PruefeZiel(idv);
+    if (ziel1.Count > 0) return Abbruch("Zielzellen weichen ab:\n  " + string.Join("\n  ", ziel1));
+    if (Abdruck(VORLAGE) != abdruck1) return Abbruch("Die Vorlage " + VORLAGE + " hat sich veraendert.");
+    Console.WriteLine("integrity:    " + S("PRAGMA integrity_check"));
+    long fk1 = T("PRAGMA foreign_key_check").Rows.Count;
+    if (fk1 != 0) return Abbruch("foreign_key_check meldet " + fk1 + " Zeilen.");
+    Ende();
+    File.Copy(arbeit, datei, true);
+    File.Delete(arbeit);
+    Console.WriteLine("Projekt " + NEU + " '" + NAME + "': Lastgang '" + GANGLINIE + "' x " +
+        GANGLINIE_FAKTOR.ToString(CultureInfo.InvariantCulture) + " nachgezogen.");
+    return 0;
 }
 
 List<string> vorlage = PruefeVorlage();
@@ -308,7 +423,6 @@ string abdruckVorher = Abdruck(VORLAGE);
 // 2. In einer Arbeitsdatei schreiben
 // ---------------------------------------------------------------------------------------
 Ende();
-string arbeit = datei + ".p1053arbeit";
 foreach (string a in new[] { arbeit, arbeit + "-wal", arbeit + "-shm" }) if (File.Exists(a)) File.Delete(a);
 File.Copy(datei, arbeit);
 DataRepository.PfadUeberschreibung = arbeit;
@@ -332,9 +446,11 @@ if (verbraucher <= 0) return Abbruch("Stromverbraucher '" + VERBRAUCHER + "' nic
 // Dieselbe Zeile wie WizardCtrl.Add_Projekt_Stromverbraucher (die Klasse ist intern).
 X("INSERT INTO Z_Projekt_Stromverbraucher (ID, ID_Projekt, ID_Stromverbraucher, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)",
   Z("SELECT MAX(ID) FROM Z_Projekt_Stromverbraucher") + 1, id, verbraucher, VERBRAUCHER, VERBRAUCHER_MWH);
+string grund = GanglinieAnlegen(id);
+if (grund != null) return Abbruch(grund);
 // Die Kostenstempel-Trigger stempeln die kopierten Kostenzeilen; die Testdatenbank fuehrt leere
 // Stempel (KostenStempelSchemaTests).
-X("UPDATE Tab_Projekt SET Kosten_Geaendert = NULL WHERE ID = ?", id);
+X("UPDATE Tab_Projekt SET Aenderungsdatum = ?, Kosten_Geaendert = NULL WHERE ID = ?", DATUM, id);
 
 // ---------------------------------------------------------------------------------------
 // 3. Pruefen, dann ersetzen
