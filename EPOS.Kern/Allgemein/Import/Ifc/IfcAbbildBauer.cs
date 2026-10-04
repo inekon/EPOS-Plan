@@ -92,6 +92,9 @@ namespace WindowsFormsApplication1
         private readonly List<string> _seiteUnbestimmt = new List<string>();
         private readonly List<string> _ohneGebaeude = new List<string>();
         private readonly SortedDictionary<string, int> _platzierungsart = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        private double _winkel = 1.0;
+        private readonly SortedDictionary<string, int> _koerperNichtLesbar = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        private readonly HashSet<int> _gebaeudeMitDarstellung = new HashSet<int>();
         private readonly List<Schale> _schalen = new List<Schale>();
 
         private sealed class Schale
@@ -124,6 +127,7 @@ namespace WindowsFormsApplication1
             _abbild.LaengenFaktorNachMeter = _einheiten.Laenge;
             _abbild.FlaechenFaktorNachM2 = _einheiten.Flaeche;
             _abbild.VolumenFaktorNachM3 = _einheiten.Volumen;
+            _winkel = IfcRaumkoerper.Winkelfaktor(projekt);
             Kontext(projekt);
 
             List<IIfcBuilding> gebaeude = Sortiert<IIfcBuilding>().ToList();
@@ -500,6 +504,23 @@ namespace WindowsFormsApplication1
                 try { r.GrundrissM = IfcRaumgrundriss.Lesen(s, rahmen.Value, _einheiten.Laenge); }
                 catch (Exception) { r.GrundrissM = null; }   // eine unlesbare Darstellung ist kein Grundriss
             }
+            Raumkoerper(s, r, gi, rahmen);
+        }
+
+        /// <summary>
+        /// <b>Der Körper des Raums aus der Datei</b> (Datenaustauschkonzept 15.2, Stufe G7f-1): nur Anzeige, nie
+        /// Rechengrundlage. Ohne Weltrahmen (<c>IfcGridPlacement</c>, <c>IfcLinearPlacement</c>) kein Körper; nicht
+        /// lesbare Arten werden je Art gezählt (<c>KOERPER_ART</c>).
+        /// </summary>
+        private void Raumkoerper(IIfcSpace s, AbbildRaum r, int gi, IfcRahmen? rahmen)
+        {
+            if (s.Representation == null) return;
+            _gebaeudeMitDarstellung.Add(gi);
+            if (!rahmen.HasValue) return;
+            var nichtLesbar = new List<string>();
+            r.Koerper = IfcRaumkoerper.Lesen(s, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar);
+            foreach (string art in nichtLesbar)
+                _koerperNichtLesbar[art] = _koerperNichtLesbar.TryGetValue(art, out int z) ? z + 1 : 1;
         }
 
         /// <summary>Die Temperatur [°C], oberhalb derer ein Raum nach Regel B3 beheizt ist.</summary>
@@ -2339,6 +2360,16 @@ namespace WindowsFormsApplication1
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KEINE_MENGEN", Ganz(_ohneMengen.Count), Beispiele(_ohneMengen)));
             foreach (KeyValuePair<string, int> art in _platzierungsart)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "PLATZIERUNGSART", Ganz(art.Value), art.Key));
+            foreach (KeyValuePair<string, int> art in _koerperNichtLesbar)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_ART", Ganz(art.Value), art.Key));
+            for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
+            {
+                if (!_gebaeudeMitDarstellung.Contains(gi)) continue;
+                AbbildGebaeude g = _abbild.Gebaeude[gi];
+                int mit = g.Raeume.Count(x => x.Koerper != null);
+                _abbild.Gebaeude[gi].Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_GELESEN", Ganz(mit),
+                    Ganz(g.Raeume.Count - mit), Ganz(g.Raeume.Sum(x => x.Koerper?.DreieckZahl ?? 0))));
+            }
             if (_seiteUnbestimmt.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "SEITE_UNBESTIMMT", Ganz(_seiteUnbestimmt.Count), Beispiele(_seiteUnbestimmt)));
             if (_ohneGebaeude.Count > 0)

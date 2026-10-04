@@ -315,6 +315,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? HoeheM { get; set; }
 
+        /// <summary>
+        /// Der Körper des Raums aus der Datei (IFC: <c>IfcSpace</c>, Darstellung „Body“; Datenaustauschkonzept 15.3),
+        /// formatfrei in Weltkoordinaten [m]; <c>null</c> = keiner. gbXML lässt ihn leer. Nur Anzeige.
+        /// </summary>
+        public Dateikoerper Koerper { get; set; }
+
         /// <summary>Ist der Raum beheizt?</summary>
         public bool Beheizt { get; set; } = true;
 
