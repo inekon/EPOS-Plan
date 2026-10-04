@@ -371,11 +371,12 @@ namespace Auslieferungsvorlage.Tests
                 Verweise: Convert.ToInt64(DataRepository.ExecuteScalar(
                     NutzungsdauerSchema.ZaehlungZuordnung()))));
 
-            Assert.Equal(NutzungsdauerSchema.Saat.Length, befund.Zeilen);
-            Assert.Equal(NutzungsdauerSchema.Saat.Length, befund.Auslieferung);
+            // Die Saat und die Gerätezeile der Kältemaschine, die Schritt 183 sät (KaeltemaschineAnlageSchema).
+            Assert.Equal(NutzungsdauerSchema.Saat.Length + 1, befund.Zeilen);
+            Assert.Equal(NutzungsdauerSchema.Saat.Length + 1, befund.Auslieferung);
 
-            // Genau eine Standardzeile je Technik - zehn Kostenkomponenten.
-            Assert.Equal(10, befund.Standard);
+            // Genau eine Standardzeile je Technik - elf Kostenkomponenten, die elfte aus Schritt 183.
+            Assert.Equal(11, befund.Standard);
 
             // Die Vorlagenpositionen behalten ihre Positionsart.
             Assert.True(befund.Verweise > 0,
