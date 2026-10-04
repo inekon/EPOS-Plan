@@ -1328,6 +1328,8 @@ Prüfbilder aus mindestens zwei Betrachtern.
 **S3 kauft Anschaulichkeit und bezahlt mit Verwechslungsgefahr.** Es lohnt erst, wenn im Feld
 tatsächlich jemand die Datei in einem Betrachter erwartet.
 
+**So gebaut (G7e, 04.10.2026).** `IfcKoerper` und `IfcSchreiber` (`EPOS.Kern/Allgemein/Export/Ifc/`) setzen 6.7 um; Körper entstehen nur, wenn das Zonengeometrie-Modell schematische Rechtecke liefert (gleiche Regel wie gbXML Stufe 2), bei abgelehnter Anordnung steht S1 ohne Körper mit Vermerk, ohne Umriss S1 ohne Vermerk; im Dialog gibt es keinen Schalter (Entscheid der Orchestrierung). **Abweichung von oben:** Der Azimut steht nicht in der Drehung des Placements; jedes `IfcProduct` trägt einen `IfcLocalPlacement` auf einer gemeinsamen `IfcAxis2Placement3D` im Ursprung ohne Drehung, Lage und Richtung stehen allein in der `Position` des Körpers, die Koordinaten des Modells bleiben unverändert — so liest der eigene Leser dieselben Azimute wie in S1 (Entscheid der Orchestrierung). Platten: Wand, Boden und Decke 0,1 m nach außen (rechteckig `IfcRectangleProfileDef`, sonst `IfcArbitraryClosedProfileDef` mit `IfcPolyline`); Fenster und Türen 0,05 m dick, 0,1 m vor der Wand, nichts ausgeschnitten, das geometrielose `IfcOpeningElement` bleibt. Kennzeichnung an vier Stellen (Projektname, `FILE_DESCRIPTION`, `Description` je Produkt, `IfcAnnotation`). Protokoll: [`2026-10-04_G7e_IFC_Koerper.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_G7e_IFC_Koerper.md).
+
 ---
 
 ## 7. Datenmodell-Ergänzungen
@@ -1661,9 +1663,9 @@ Rückfrage beim Anwender; G4c wird ohne iOS-Lauf abgenommen.
 | **G7b — gbXML Stufe 2** (**gebaut 04.10.2026**) | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
 | **G7c — IFC-Export S1** (**gebaut 04.10.2026**) | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |
 | **G7d — IFC-Export S2 (Round-Trip)** (**gebaut 04.10.2026**) | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
-| **G7e — IFC-Export S3 (Körper)** | Quader je Zone, Platte je Bauteil **aus dem Zonengeometrie-Modell** (Nachtrag 1), Placement-Kette, Azimut als Drehung, `TrueNorth` auf der Vorgabe, Kennzeichnung, Prüfbilder | Probe 16 mit Bildern; Validator grün trotz Placement-Pflicht | **8–15 PT** † |
+| **G7e — IFC-Export S3 (Körper)** (**gebaut 04.10.2026**) | Quader je Zone, Platte je Bauteil **aus dem Zonengeometrie-Modell** (Nachtrag 1), Placement-Kette, Azimut als Drehung, `TrueNorth` auf der Vorgabe, Kennzeichnung, Prüfbilder | Probe 16 mit Bildern; Validator grün trotz Placement-Pflicht | **8–15 PT** † |
 | **Gebäudebetrachter (E11)** | Zonengeometrie-Modell im Kern (Polygon, Höhe, Geschoss, Kantenzuordnung), **2D-Grundriss je Geschoss mit G6c**, **3D-Ansicht mit G7b** — eine Komponente, Umschalter „Grundriss \| Körper", three.js lokal, Kennzeichnung „schematisch" (Kapitel 14) | Proben 25–27; Sichtabnahme Windows und iOS | **10–17 PT**, davon **4–7 PT hier** (3D-Ansicht); Zonengeometrie und 2D-Grundriss (**6–10 PT**) rechnet das [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) unter G6c |
-| | **Summe G7** (einschließlich der 3D-Ansicht aus E11) | | **46–79 PT** |
+| | **Summe G7** (einschließlich der 3D-Ansicht aus E11; alle Stufen gebaut) | | **46–79 PT** |
 | | **Summe G4c + G7** | | **63–107 PT** |
 
 † **Ersparnis durch E11:** G7b und G7e rechnen die Geometrie nicht mehr selbst, sondern schreiben das
@@ -1729,6 +1731,8 @@ für G4c noch die kleinere Zahl; sie ist dort nachzuziehen.
 Zuordnungsdialog des Gebäudeimports zeigt die Zonen als Körper.“ Version vom Anwender: offen.
 
 **Logbuch-Entwurf G7d:** „Der Gebäudeexport schreibt wahlweise IFC; eine beim Import gelesene IFC-Datei lässt sich mit den Kennwerten und Ergebnissen aus EPOS-Plan angereichert zurückgeben.“ Version vom Anwender: offen.
+
+**Logbuch-Entwurf G7e:** „Die IFC-Datei des Gebäudeexports zeigt die Zonen als schematische Körper, gekennzeichnet in Datei und Dialog.“ Version vom Anwender: offen.
 
 ## 11. Fragen mit Empfehlung
 
@@ -1899,7 +1903,7 @@ nicht zwei Seiten, die auseinanderlaufen.
 - **G7e (IFC-Export S3)** liest dasselbe Modell und schreibt `IfcRectangleProfileDef` →
   `IfcExtrudedAreaSolid` samt Placement-Kette (6.7). **Derselbe Grundriss, dieselbe Höhe, dieselbe
   Anordnung** wie in der 3D-Ansicht und im gbXML; ein Unterschied zwischen beiden Dateien ist damit
-  ein Fehler, keine Auslegung.
+  ein Fehler, keine Auslegung. **Gebaut (G7e, 04.10.2026):** G7b und G7e schreiben dieselbe Geometrie; Probe 27 ist auf beiden Dateien grün (`IfcKoerperTests`).
 - **Die Ansicht ist der Prüfstand.** Bisher war die Sichtprobe der Exporte ein fremdes Werkzeug
   (Probe 2, Probe 16). Mit der 3D-Ansicht sieht der Anwender **vor** dem Schreiben, was er
   verschickt.
