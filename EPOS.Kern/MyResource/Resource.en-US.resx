@@ -33019,6 +33019,12 @@ Do you want to allow this?</value>
   <data name="GIMP_HERKUNFT_IFC" xml:space="preserve">
     <value>IFC file</value>
   </data>
+  <data name="GIMP_HERKUNFT_IFC_KOERPER" xml:space="preserve">
+    <value>IFC file (body)</value>
+  </data>
+  <data name="GIMP_BELEG_KOERPER" xml:space="preserve">
+    <value>Separating area from the space bodies: {0} / {1}, {2} m²</value>
+  </data>
   <data name="GIMP_HERKUNFT_KATALOG" xml:space="preserve">
     <value>Catalogue</value>
   </data>
@@ -42679,6 +42685,18 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
     <value>The separating slab between {0} and {1} carries only {2} m² from the spatial references against {3} m² heated floor area of the smaller storey ({4} %) — the file does not reference all slab parts. The pair of storeys is not considered coupled; please check the separating area.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_AUS_KOERPER" xml:space="preserve">
+    <value>Building "{0}" has no space boundaries; {1} separating areas from the space bodies connect adjacent spaces — separating walls {2} m², separating slabs {3} m². The zones count as coupled through them; external areas still come from quantities and spatial references.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT" xml:space="preserve">
+    <value>Building "{0}" has space boundaries; they take precedence. The space bodies show {1} separating areas (separating walls {2} m², separating slabs {3} m²), which are only counted.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERPAAR_SCHWACH" xml:space="preserve">
+    <value>The separating slabs from the space bodies between {0} and {1} cover only {2} m² against {3} m² heated floor area of the smaller storey ({4} %). The pair of storeys is not considered coupled; please check the bodies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_OHNE_PAAR" xml:space="preserve">
+    <value>{0} spaces carry a body but share no area with another space: {1}. They remain without a separating area from the bodies.</value>
   </data>
   <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
     <value>{0} interior walls without an adjacent space (interior by IsExternal or adjacency) count one-sided as internal mass: {1} m² gross area.</value>

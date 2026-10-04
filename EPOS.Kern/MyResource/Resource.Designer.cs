@@ -32227,6 +32227,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennfläche aus den Raumkörpern: {0} / {1}, {2} m² ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_KOERPER {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — bitte die Anschlusslänge eintragen ähnelt.
         /// </summary>
         public static string GIMP_BELEG_LAENGE_LEER {
@@ -34185,6 +34194,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_HERKUNFT_IFC {
             get {
                 return ResourceManager.GetString("GIMP_HERKUNFT_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Datei (Körper) ähnelt.
+        /// </summary>
+        public static string GIMP_HERKUNFT_IFC_KOERPER {
+            get {
+                return ResourceManager.GetString("GIMP_HERKUNFT_IFC_KOERPER", resourceCulture);
             }
         }
         
@@ -38293,6 +38311,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt keine Raumgrenzen; {1} Trennflächen aus den Raumkörpern verbinden benachbarte Räume — Trennwände {2} m², Trenndecken {3} m². Die Zonen gelten über sie als gekoppelt; Außenflächen kommen weiter aus Mengen und Raumbezügen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_GRENZEN_AUS_KOERPER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_GRENZEN_AUS_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Regel {0} ohne Raumgrenzen: Die Zonen sind thermisch entkoppelt, bis die Trennflächen zwischen ihnen eingetragen sind. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_GRENZEN_ENTKOPPELT {
@@ -38365,6 +38392,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt Raumgrenzen; sie gehen vor. Die Raumkörper zeigen {1} Trennflächen (Trennwände {2} m², Trenndecken {3} m²), die nur gezählt werden. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Trenndecken aus den Raumkörpern zwischen {0} und {1} decken nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %). Das Geschosspaar gilt nicht als gekoppelt; die Körper bitte prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERPAAR_SCHWACH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERPAAR_SCHWACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumkörper der Art {1} sind nicht lesbar; die Räume werden aus Umriss bzw. schematisch dargestellt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPER_ART {
@@ -38379,6 +38424,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_KOERPER_GELESEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen einen Körper, aber keine gemeinsame Fläche mit einem anderen Raum: {1}. Sie bleiben ohne Trennfläche aus den Körpern. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_OHNE_PAAR {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_OHNE_PAAR", resourceCulture);
             }
         }
         

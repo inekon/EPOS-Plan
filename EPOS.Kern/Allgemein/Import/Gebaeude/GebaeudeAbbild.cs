@@ -219,6 +219,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool GeschosseGekoppelt { get; set; }
 
+        /// <summary>
+        /// Die Flächenpaare der Raumkörper (<see cref="Koerpernachbarschaft"/>): gezählt immer, gebildet nur ohne
+        /// Raumgrenzen (<see cref="KoerperpaareGebildet"/>) — Rangfolge Raumgrenzen vor Körpern vor Raumbezügen.
+        /// </summary>
+        public int ZahlKoerperpaare { get; set; }
+
+        /// <summary>Summe der Trennwände aus den Körperpaaren [m²].</summary>
+        public double KoerperTrennwandM2 { get; set; }
+
+        /// <summary>Summe der Trenndecken aus den Körperpaaren [m²].</summary>
+        public double KoerperTrenndeckeM2 { get; set; }
+
+        /// <summary>Tragen Trennflächen aus den Körperpaaren die Nachbarschaft der Räume (Gebäude ohne Raumgrenzen)?</summary>
+        public bool KoerperpaareGebildet { get; set; }
+
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
 
@@ -528,6 +543,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Grundrisse der beiden Räume überdecken sich; die Fläche ist die Überlappung.</summary>
         public const string TRENNDECKE_GRUNDRISS = "GRUNDRISS";
 
+        /// <summary>Trenndecke aus einem Flächenpaar der Raumkörper (<see cref="Koerpernachbarschaft"/>).</summary>
+        public const string TRENNDECKE_KOERPER = "KOERPER";
+
         /// <summary>Azimut [°], 0 = Nord, im Uhrzeigersinn; <c>null</c> = unbestimmt (auch bei waagerechten Flächen).</summary>
         public double? AzimutGrad { get; set; }
 
@@ -642,6 +660,9 @@ namespace WindowsFormsApplication1
         /// 1 mm; <c>null</c> = keine auswertbare Geometrie oder keine Platzierung des Raums (Stufe G6c, Welle D).
         /// </summary>
         public IReadOnlyList<double[]> RandpunkteM { get; set; }
+
+        /// <summary>Woher die Grenze stammt: eine Raumgrenze der Datei oder ein Flächenpaar der Raumkörper.</summary>
+        public Grenzherkunft Herkunft { get; set; } = Grenzherkunft.Raumgrenze;
 
         /// <summary>Die Kennung der Gegengrenze aus der Datei (<c>CorrespondingBoundary</c>); <c>null</c> = keine.</summary>
         public string GegenstueckKennung { get; set; }

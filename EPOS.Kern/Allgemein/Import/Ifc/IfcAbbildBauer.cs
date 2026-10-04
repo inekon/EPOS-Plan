@@ -148,6 +148,7 @@ namespace WindowsFormsApplication1
 
             Raumbezuege();
             Bauteile();
+            Koerpertrennflaechen();
             GrundrissTrenndecken();
             ReferenzenMelden();
             Melden(0.9);
@@ -1548,6 +1549,169 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        /// <summary>Höchstzahl der Raumnamen in <c>IMP_IFC_PROT_KOERPER_OHNE_PAAR</c>.</summary>
+        internal const int KOERPER_OHNE_PAAR_NAMEN = 5;
+
+        /// <summary>
+        /// <b>Die Trennflächen aus den Raumkörpern</b> (Mehrzonenkonzept 6.2, „Trennflächen aus Raumkörpern“): Je Gebäude
+        /// die Flächenpaare der Körper (<see cref="Koerpernachbarschaft"/>). Rangfolge Raumgrenzen vor Körpern vor
+        /// Raumbezügen:
+        /// <list type="bullet">
+        /// <item>Mit Raumgrenzen werden die Paare nur gezählt (<c>IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT</c>, I).</item>
+        /// <item>Ohne Raumgrenzen wird je Paar ein Trennbauteil mit zwei Grenzen der Herkunft <see cref="Grenzherkunft.Koerper"/>
+        /// gebildet (Fläche = Schnittfläche, Gegenstücke wechselseitig). U-Wert, Aufbau und Dicke stammen vom Bauteil der
+        /// gleichen Art, das beide Räume referenzieren (Richtung passend, Fläche am nächsten), sonst von einer Innenwand
+        /// bzw. Decke, die einer der Räume referenziert, sonst bleibt der U-Wert offen (Vorgabe). Ein so abgedecktes Bauteil
+        /// geht in den Paaren auf, wenn jeder Raum, der es referenziert, an einem dieser Paare liegt; seine Öffnungen gehen
+        /// an das größte Paar. Die Trenndecken aus den Raumbezügen eines Geschosspaars weichen den Körperdecken, wo ein
+        /// Körperpaar das Geschosspaar verbindet; sonst bleiben sie als Rückfall. Außenflächen bleiben unberührt.</item>
+        /// </list>
+        /// Meldungen: <c>IMP_IFC_PROT_GRENZEN_AUS_KOERPER</c> (I), <c>IMP_IFC_PROT_KOERPER_OHNE_PAAR</c> (I); den
+        /// Kopplungswächter der Körperdecken (<c>IMP_IFC_PROT_KOERPERPAAR_SCHWACH</c>, W) führt <see cref="ReferenzenMelden"/>.
+        /// </summary>
+        private void Koerpertrennflaechen()
+        {
+            for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
+            {
+                AbbildGebaeude g = _abbild.Gebaeude[gi];
+                if (g.Raeume.Count(r => r.Koerper != null) < 2) continue;
+                List<Koerperpaar> paare = Koerpernachbarschaft.Paare(g.Raeume);
+                g.ZahlKoerperpaare = paare.Count;
+                g.KoerperTrennwandM2 = Math.Round(paare.Where(p => !p.Decke).Sum(p => p.FlaecheM2), 6);
+                g.KoerperTrenndeckeM2 = Math.Round(paare.Where(p => p.Decke).Sum(p => p.FlaecheM2), 6);
+                if (g.ZahlGrenzen > 0)
+                {
+                    if (paare.Count > 0)
+                        g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPERPAARE_GEZAEHLT", g.Anzeigename, Ganz(paare.Count),
+                            Zahl(Math.Round(g.KoerperTrennwandM2, 2)), Zahl(Math.Round(g.KoerperTrenndeckeM2, 2))));
+                    continue;
+                }
+                var mitPaar = new HashSet<int>(paare.SelectMany(p => new[] { p.RaumA, p.RaumB }));
+                List<string> ohne = Enumerable.Range(0, g.Raeume.Count).Where(i => g.Raeume[i].Koerper != null && !mitPaar.Contains(i))
+                                              .Select(i => string.IsNullOrWhiteSpace(g.Raeume[i].Name) ? g.Raeume[i].Kennung : g.Raeume[i].Name.Trim()).ToList();
+                if (ohne.Count > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_OHNE_PAAR", Ganz(ohne.Count),
+                        string.Join(", ", ohne.Take(KOERPER_OHNE_PAAR_NAMEN)) + (ohne.Count > KOERPER_OHNE_PAAR_NAMEN ? ", …" : "")));
+                if (paare.Count == 0) continue;
+                g.KoerperpaareGebildet = true;
+
+                // Bauteil → die Räume dieses Gebäudes, die es über die Raumbezüge referenzieren (Raumkennungen).
+                var bezug = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+                foreach (KeyValuePair<int, List<int>> e in _raumbezug.OrderBy(x => x.Key))
+                {
+                    if (!(_modell.Instances[e.Key] is IIfcRoot wurzel)) continue;
+                    var raeume = new HashSet<string>(e.Value.Where(r => _raumGebaeude.TryGetValue(r, out int x) && x == gi).Select(r => _raum[r].Kennung),
+                                                     StringComparer.Ordinal);
+                    if (raeume.Count > 0) bezug[wurzel.GlobalId.ToString()] = raeume;
+                }
+                HashSet<string> Bezug(AbbildBauteil b) => bezug.TryGetValue(b.Kennung, out HashSet<string> r) ? r : null;
+                bool Innen(AbbildBauteil b) => b.Randbedingung != Randbedingung.Aussenluft && b.Randbedingung != Randbedingung.Erdreich;
+                bool IstWand(AbbildBauteil b) => b.Quelltyp != null && b.Quelltyp.IndexOf("Wall", StringComparison.OrdinalIgnoreCase) >= 0
+                                                 && !b.Quelltyp.StartsWith("IfcCurtainWall", StringComparison.OrdinalIgnoreCase);
+                bool IstDecke(AbbildBauteil b) => string.Equals(b.Quelltyp, "IfcSlab", StringComparison.OrdinalIgnoreCase)
+                                                  && b.Quellart != nameof(IfcSlabTypeEnum.ROOF) && b.Quellart != nameof(IfcSlabTypeEnum.BASESLAB);
+                bool Richtung(AbbildBauteil b, Koerperpaar p)
+                {
+                    if (p.Decke || !b.AzimutGrad.HasValue) return true;
+                    double az = Math.Atan2(p.NormaleA[0], p.NormaleA[1]) * 180.0 / Math.PI;
+                    double d = Math.Abs(((b.AzimutGrad.Value - az) % 180.0 + 180.0) % 180.0);
+                    return Math.Min(d, 180.0 - d) <= Koerpernachbarschaft.WAND_NEIGUNG_GRAD;
+                }
+
+                List<AbbildBauteil> bestand = g.Bauteile.ToList();
+                var neu = new List<(AbbildBauteil Teil, Koerperpaar Paar, List<AbbildBauteil> Abgedeckt)>();
+                var kennungen = new Dictionary<string, int>(StringComparer.Ordinal);
+                foreach (Koerperpaar p in paare)
+                {
+                    AbbildRaum ra = g.Raeume[p.RaumA], rb = g.Raeume[p.RaumB];
+                    Func<AbbildBauteil, bool> art = p.Decke ? (Func<AbbildBauteil, bool>)IstDecke : IstWand;
+                    bool Beide(AbbildBauteil b) { HashSet<string> r = Bezug(b); return r != null && r.Contains(ra.Kennung) && r.Contains(rb.Kennung); }
+                    bool Einer(AbbildBauteil b) { HashSet<string> r = Bezug(b); return r != null && (r.Contains(ra.Kennung) || r.Contains(rb.Kennung)); }
+                    List<AbbildBauteil> beide = bestand.Where(b => Innen(b) && art(b) && Beide(b) && Richtung(b, p)).ToList();
+                    AbbildBauteil vorlage = beide.OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault()
+                        ?? bestand.Where(b => Innen(b) && art(b) && Einer(b) && Richtung(b, p)
+                                              && (p.Decke ? b.Art == Bauteilart.Decke : b.Art == Bauteilart.Innenwand))
+                                  .OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault();
+                    var abgedeckt = new List<AbbildBauteil>(beide);
+                    if (vorlage != null && !abgedeckt.Contains(vorlage)) abgedeckt.Add(vorlage);
+
+                    string kennung = (vorlage?.Kennung ?? "KOERPER") + "|" + ra.Kennung + "|" + rb.Kennung;
+                    int n = kennungen.TryGetValue(kennung, out int k) ? k + 1 : 1;
+                    kennungen[kennung] = n;
+                    if (n > 1) kennung += "|" + Ganz(n);
+                    AbbildRaum oben = p.Decke ? (p.Oben == p.RaumA ? ra : rb) : null;
+                    var t = new AbbildBauteil
+                    {
+                        Kennung = kennung, Quelltyp = vorlage?.Quelltyp ?? (p.Decke ? "IfcSlab" : "IfcWall"), Name = vorlage?.Name,
+                        Quellart = vorlage?.Quellart, Art = p.Decke ? Bauteilart.Decke : Bauteilart.Innenwand,
+                        Randbedingung = Randbedingung.Innen, BruttoflaecheM2 = p.FlaecheM2,
+                        UWertWm2K = vorlage?.UWertWm2K, UWertQuelle = vorlage?.UWertQuelle, Aufbau = vorlage?.Aufbau,
+                        DickeM = vorlage?.DickeM ?? (p.AbstandM > 0.0 ? p.AbstandM : (double?)null),
+                        NeigungGrad = p.Decke ? (double?)null : 90.0,
+                        GeschossKennung = oben?.GeschossKennung ?? ra.GeschossKennung,
+                        Trenndeckenherkunft = p.Decke ? AbbildBauteil.TRENNDECKE_KOERPER : null,
+                    };
+                    if (p.Decke) Paar(t, oben == ra ? rb : ra, oben);
+                    else { t.Nachbarn.Add(new AbbildNachbar(ra.Kennung, null)); t.Nachbarn.Add(new AbbildNachbar(rb.Kennung, null)); }
+                    double[] normaleB = p.NormaleA.Select(x => -x).ToArray();
+                    t.Grenzen.Add(new AbbildGrenze
+                    {
+                        Kennung = kennung + "|A", RaumKennung = ra.Kennung, Lage = Randbedingung.Innen, FlaecheM2 = p.FlaecheM2,
+                        SchwerpunktM = p.SchwerpunktA, Normale = p.NormaleA, RandpunkteM = p.RandA, GegenstueckKennung = kennung + "|B",
+                        Herkunft = Grenzherkunft.Koerper,
+                    });
+                    t.Grenzen.Add(new AbbildGrenze
+                    {
+                        Kennung = kennung + "|B", RaumKennung = rb.Kennung, Lage = Randbedingung.Innen, FlaecheM2 = p.FlaecheM2,
+                        SchwerpunktM = p.SchwerpunktB, Normale = normaleB, RandpunkteM = p.RandB, GegenstueckKennung = kennung + "|A",
+                        Herkunft = Grenzherkunft.Koerper,
+                    });
+                    neu.Add((t, p, abgedeckt));
+                }
+
+                // Abgedeckte Bauteile gehen auf, wenn jeder Raum, der sie referenziert, an einem ihrer Paare liegt.
+                var verbraucht = new HashSet<AbbildBauteil>();
+                foreach (AbbildBauteil b in neu.SelectMany(x => x.Abgedeckt).Distinct())
+                {
+                    var anPaaren = new HashSet<string>(neu.Where(x => x.Abgedeckt.Contains(b))
+                        .SelectMany(x => new[] { g.Raeume[x.Paar.RaumA].Kennung, g.Raeume[x.Paar.RaumB].Kennung }), StringComparer.Ordinal);
+                    HashSet<string> r = Bezug(b);
+                    if (r == null || r.All(anPaaren.Contains)) verbraucht.Add(b);
+                }
+
+                // Die Trenndecken aus den Raumbezügen eines Geschosspaars weichen den Körperdecken dieses Paars.
+                _trenndecken.TryGetValue(gi, out SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>> geschosspaare);
+                var koerperdecken = new SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>>();
+                foreach ((AbbildBauteil t, Koerperpaar p, _) in neu.Where(x => x.Paar.Decke))
+                {
+                    AbbildRaum o = g.Raeume[p.Oben], u = g.Raeume[p.Oben == p.RaumA ? p.RaumB : p.RaumA];
+                    if (u.GeschossKennung == null || o.GeschossKennung == null || u.GeschossKennung == o.GeschossKennung) continue;
+                    (string, string) schluessel = (u.GeschossKennung, o.GeschossKennung);
+                    if (!koerperdecken.TryGetValue(schluessel, out List<AbbildBauteil> l)) koerperdecken[schluessel] = l = new List<AbbildBauteil>();
+                    l.Add(t);
+                }
+                foreach (KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>> kd in koerperdecken)
+                {
+                    if (geschosspaare != null && geschosspaare.TryGetValue(kd.Key, out List<AbbildBauteil> alt))
+                        foreach (AbbildBauteil b in alt.Where(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG)) verbraucht.Add(b);
+                    if (geschosspaare == null) _trenndecken[gi] = geschosspaare = new SortedDictionary<(string, string), List<AbbildBauteil>>();
+                    geschosspaare[kd.Key] = kd.Value;
+                }
+
+                // Die Öffnungen eines aufgegangenen Bauteils gehen an sein größtes Paar.
+                foreach (AbbildBauteil b in bestand.Where(verbraucht.Contains))
+                {
+                    if (b.Oeffnungen.Count == 0) continue;
+                    AbbildBauteil ziel = neu.Where(x => x.Abgedeckt.Contains(b)).OrderByDescending(x => x.Paar.FlaecheM2).Select(x => x.Teil).FirstOrDefault();
+                    ziel?.Oeffnungen.AddRange(b.Oeffnungen);
+                }
+                g.Bauteile.RemoveAll(verbraucht.Contains);
+                g.Bauteile.AddRange(neu.Select(x => x.Teil));
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "GRENZEN_AUS_KOERPER", g.Anzeigename, Ganz(paare.Count),
+                    Zahl(Math.Round(g.KoerperTrennwandM2, 2)), Zahl(Math.Round(g.KoerperTrenndeckeM2, 2))));
+            }
+        }
+
         /// <summary>Kleinste Überlappung zweier Grundrisse übereinanderliegender Räume, ab der sie eine Trenndecke teilen [m²].</summary>
         internal const double UEBERLAPPUNG_MIN_M2 = 1.0;
 
@@ -1744,7 +1908,9 @@ namespace WindowsFormsApplication1
                     double referenziert = p.Value.Sum(t => t.BruttoflaecheM2 ?? 0.0);
                     double flaeche = referenziert;
                     // Die Überlappung der Grundrisse ist gemessen, keine Teilmenge: keine Schätzung.
-                    bool gemessen = p.Value.All(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_GRUNDRISS);
+                    bool gemessen = p.Value.All(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_GRUNDRISS
+                                                     || t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_KOERPER);
+                    bool koerper = p.Value.All(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_KOERPER);
                     if (kleiner > 0.0 && referenziert < kleiner && !gemessen)
                     {
                         Schaetzen(p.Value, referenziert, kleiner);
@@ -1753,7 +1919,7 @@ namespace WindowsFormsApplication1
                             Zahl(Math.Round(kleiner, 2)), Zahl(Math.Round(referenziert, 2))));
                     }
                     if (flaeche >= TRENNDECKE_ANTEIL_MIN * kleiner) { tragend.Add(p.Key); continue; }
-                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "TRENNDECKE_KLEIN", Name(p.Key.Unten), Name(p.Key.Oben),
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + (koerper ? "KOERPERPAAR_SCHWACH" : "TRENNDECKE_KLEIN"), Name(p.Key.Unten), Name(p.Key.Oben),
                         Zahl(Math.Round(flaeche, 2)), Zahl(Math.Round(kleiner, 2)), Ganz((int)Math.Round(100.0 * flaeche / kleiner))));
                 }
                 g.GeschosseGekoppelt = Gekoppelt(warm.Keys, tragend);

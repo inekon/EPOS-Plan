@@ -33026,6 +33026,12 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_HERKUNFT_IFC" xml:space="preserve">
     <value>IFC-Datei</value>
   </data>
+  <data name="GIMP_HERKUNFT_IFC_KOERPER" xml:space="preserve">
+    <value>IFC-Datei (Körper)</value>
+  </data>
+  <data name="GIMP_BELEG_KOERPER" xml:space="preserve">
+    <value>Trennfläche aus den Raumkörpern: {0} / {1}, {2} m²</value>
+  </data>
   <data name="GIMP_HERKUNFT_KATALOG" xml:space="preserve">
     <value>Katalog</value>
   </data>
@@ -42686,6 +42692,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
     <value>Die Trenndecke zwischen {0} und {1} trägt aus den Raumbezügen nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %) — die Datei referenziert nicht alle Deckenteile. Das Geschosspaar gilt nicht als gekoppelt; die Trennfläche bitte prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_AUS_KOERPER" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt keine Raumgrenzen; {1} Trennflächen aus den Raumkörpern verbinden benachbarte Räume — Trennwände {2} m², Trenndecken {3} m². Die Zonen gelten über sie als gekoppelt; Außenflächen kommen weiter aus Mengen und Raumbezügen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt Raumgrenzen; sie gehen vor. Die Raumkörper zeigen {1} Trennflächen (Trennwände {2} m², Trenndecken {3} m²), die nur gezählt werden.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERPAAR_SCHWACH" xml:space="preserve">
+    <value>Die Trenndecken aus den Raumkörpern zwischen {0} und {1} decken nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %). Das Geschosspaar gilt nicht als gekoppelt; die Körper bitte prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_OHNE_PAAR" xml:space="preserve">
+    <value>{0} Räume tragen einen Körper, aber keine gemeinsame Fläche mit einem anderen Raum: {1}. Sie bleiben ohne Trennfläche aus den Körpern.</value>
   </data>
   <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
     <value>{0} Innenwände ohne Nachbarraum (innen nach IsExternal oder Angrenzung) zählen einseitig als innere Masse: {1} m² Bruttofläche.</value>
