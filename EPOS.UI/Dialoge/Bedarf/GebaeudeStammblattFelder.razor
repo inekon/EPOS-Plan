@@ -117,8 +117,24 @@ else
                                     Wert="@Arbeit.Stand.Kellertemperatur"
                                     WertChanged="@(w => Setze(() => Arbeit.Stand.Kellertemperatur = w))" />
                     }
+                    @* EV1 (E65): der wirksame U-Wert der Bodenplatte als Vorgabe *@
+                    <Zahlenfeld Bezeichnung="@Feld(Texte.LabelErdreichUWirksam)" Einheit="W/(m²K)"
+                                Platzhalter="@Texte.HinweisErdreichUWirksam"
+                                Titel="@(Arbeit.ErdreichVorgabeWirkt ? Texte.HinweisErdreichUWirksam : Texte.SperreErdreichUWirksam)"
+                                Aktiv="@Arbeit.ErdreichVorgabeWirkt"
+                                Feldname="@Feld(Texte.LabelErdreichUWirksam)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.ErdreichUWirksam"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.ErdreichUWirksam = w))" />
                 </KindInhalt>
             </Formularraster>
+            @if (!Arbeit.ErdreichVorgabeWirkt)
+            {
+                <Herleitungszeile Text="@Texte.SperreErdreichUWirksam" />
+            }
+            else if (Arbeit.ErdreichAuskunftZeile(Texte, ErdreichAuskunft?.Invoke(Arbeit.Stand)) is { Length: > 0 } erdreichZeile)
+            {
+                <Herleitungszeile Text="@erdreichZeile" />
+            }
             <Herleitungszeile Text="@Leitwertzeile" />
             <Herleitungszeile Text="@Beschriftungen.HinweisHuelle" />
         </KindInhalt>
@@ -333,6 +349,9 @@ else
 
     /// <summary>Die Herleitung der Wärmeübergabe aus dem Kern (über die Hülle); <c>null</c> = ohne Zahl.</summary>
     [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? UebergabeHerleitung { get; set; }
+
+    /// <summary>Die Erdreichauskunft der Bodenplatte (B′ und U_g, EV1/E65); <c>null</c> = keine Auskunftszeile.</summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, ErdreichAuskunftDaten?>? ErdreichAuskunft { get; set; }
 
     /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms; <c>null</c> = kein Bild.</summary>
     [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }

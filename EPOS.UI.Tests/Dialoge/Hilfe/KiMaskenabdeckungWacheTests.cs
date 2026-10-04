@@ -294,14 +294,14 @@ public sealed class KiMaskenabdeckungWacheTests
         // KonditionierungMatrix (dieselben Katalogfelder): 48 → 37.
         // KP2 U1, E56 F3 (a): Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und
         // Kühlsollwert stehen nur noch im Reiter „Konditionierung" (Katalogfelder unverändert): 37 → 32.
-        new("GebaeudeKatalogDialog", 32),
+        new("GebaeudeKatalogDialog", 33),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.
         // KP2 U4, E56 F3 (a): Sollwerte, Nachtzeit, Ferien, Wärmegewinne, Infiltration, Nutzerlüftung,
         // Sommerlüftung und Kühlsollwert stehen im Blatt „Konditionierung" der Verwaltung (Bausteine
         // KonditionierungReiter und KonditionierungMatrix, dieselben Katalogfelder): 38 → 22.
-        new("GebaeudeStammblattFelder", 22, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
+        new("GebaeudeStammblattFelder", 23, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
             "des Hüll-Rasters ist gerechnet"),
         new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
             "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster"),

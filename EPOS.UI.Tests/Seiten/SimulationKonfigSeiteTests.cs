@@ -689,7 +689,7 @@ public class SimulationKonfigSeiteTests : BunitContext
 
     /// <summary>
     /// Schalter an mit lauter Vorgaben (in der Datenbank NULL): Bemessung „kälteste Stunde", kein
-    /// Feld ΔT_K, die Reserve leer mit dem Platzhalter „Vorgabe 20", Art „täglich", dazu die
+    /// Feld ΔT_K, die Reserve leer mit dem Platzhalter „Vorgabe 20 %", Art „täglich", dazu die
     /// Herleitungszeilen zu Reserve und Bemessung.
     /// </summary>
     [Fact]
@@ -707,7 +707,7 @@ public class SimulationKonfigSeiteTests : BunitContext
 
         IElement reserve = Assert.Single(Textfelder(seite));
         Assert.Equal("", reserve.GetAttribute("value") ?? "");
-        Assert.Equal("Vorgabe 20", reserve.GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 20 %", reserve.GetAttribute("placeholder"));
         Assert.Contains("%", abschnitt.TextContent);
 
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_RESERVE, abschnitt.TextContent);
@@ -927,10 +927,35 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Equal("coldest hour − ΔT_K", Gewaehlt(Wahlen(seite)[0]));
         Assert.Equal("daily", Gewaehlt(Wahlen(seite)[1]));
         Assert.Equal("Default 2", Textfelder(seite)[0].GetAttribute("placeholder"));
-        Assert.Equal("Default 20", Textfelder(seite)[1].GetAttribute("placeholder"));
+        Assert.Equal("Default 20 %", Textfelder(seite)[1].GetAttribute("placeholder"));
 
         Textfelder(seite)[1].Input("12.5");
         Assert.Equal(0.125, _aufheizGeschrieben.Last().Reserve);
+    }
+
+    /// <summary>
+    /// <b>Die leere Reserve nennt ihre Vorgabe</b> (EV1, E64): Platzhalter „Vorgabe 20 %", die Herleitungszeile
+    /// sagt, dass ohne Eingabe 20 % gelten und der Lauf das als Hinweis meldet; eine Eingabe schreibt den Wert
+    /// als Anteil, Leeren schreibt wieder NULL (keine Programmvorgabe außer dem Rückfall).
+    /// </summary>
+    [Fact]
+    public void Die_leere_Reserve_nennt_Vorgabe_und_Hinweis_und_eine_Eingabe_schreibt_den_Wert()
+    {
+        var seite = SeiteMitAufheizung(AUFHEIZ_AN);
+
+        IElement reserve = Textfelder(seite)[^1];
+        Assert.Equal("", reserve.GetAttribute("value") ?? "");
+        Assert.Equal("Vorgabe 20 %", reserve.GetAttribute("placeholder"));
+        string hinweis = WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_RESERVE;
+        Assert.Contains("20 %", hinweis);
+        Assert.Contains("Hinweis", hinweis);
+        Assert.Contains(hinweis, Aufheizabschnitt(seite).TextContent);
+
+        Textfelder(seite)[^1].Input("30");
+        Assert.Equal(0.3, _aufheizGeschrieben.Last().Reserve);
+
+        Textfelder(seite)[^1].Input("");
+        Assert.Null(_aufheizGeschrieben.Last().Reserve);
     }
 
     /// <summary>

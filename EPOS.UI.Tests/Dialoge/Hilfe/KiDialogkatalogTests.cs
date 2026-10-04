@@ -1247,8 +1247,9 @@ public class KiDialogkatalogTests : IDisposable
         // mit E47 der Energiestandard (Wahl nach der Verwendung); mit KP2 U1 die 36 Felder der
         // Vorgabe-Matrix aus dem Profil KiKonditionierungsfelder (Feldtafel der Sichtklasse); mit KP2 U2
         // je Größe die Vorlage (Wahl mit der Aktion des Knopfs „Übernehmen"); mit KP2 U3 je Größe die
-        // Woche als Text (Karte im Einzelnen); mit KP2 U5 die Abkürzung „alle Größen" (kond_vorlage_alle, E57).
-        Assert.Equal(88 + 47, d.Felder.Count);
+        // Woche als Text (Karte im Einzelnen); mit KP2 U5 die Abkürzung „alle Größen" (kond_vorlage_alle, E57);
+        // mit EV1 der wirksame U-Wert der Bodenplatte (erdreich_u_wirksam, E65).
+        Assert.Equal(89 + 47, d.Felder.Count);
         Assert.Equal(47, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {
@@ -1287,7 +1288,7 @@ public class KiDialogkatalogTests : IDisposable
         foreach (string bauteil in new[]
                  {
                      "u_aussenwand", "flaeche_aussenwand", "u_fenster", "u_dachflaeche", "dachflaeche",
-                     "u_grundflaeche", "grundflaeche", "u_sonstiges", "sonstige_flaechen",
+                     "u_grundflaeche", "grundflaeche", "erdreich_u_wirksam", "u_sonstiges", "sonstige_flaechen",
                      "wbvk_fenster_wand", "anschluss_fenster_wand", "wbvk_aussenwand_keller",
                      "anschluss_aussenwand_keller", "wbvk_wand_dach", "anschluss_wand_dach"
                  })

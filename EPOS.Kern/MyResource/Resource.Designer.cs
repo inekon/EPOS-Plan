@@ -25974,6 +25974,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Erdreichkorrektur nach DIN EN ISO 13370 ähnelt.
+        /// </summary>
+        public static string GEBK_HINWEIS_ERDREICH_U_WIRKSAM {
+            get {
+                return ResourceManager.GetString("GEBK_HINWEIS_ERDREICH_U_WIRKSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (z.B. 0,4) ähnelt.
         /// </summary>
         public static string GEBK_HINWEIS_FENSTERDURCHLASS {
@@ -26204,6 +26213,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_LBL_ENERGIESTANDARD {
             get {
                 return ResourceManager.GetString("GEBK_LBL_ENERGIESTANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksamer U-Wert Bodenplatte : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_ERDREICH_U_WIRKSAM {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_ERDREICH_U_WIRKSAM", resourceCulture);
             }
         }
         
@@ -26874,6 +26892,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der wirksame U-Wert der Bodenplatte muss größer als 0 W/(m²K) sein; leer gilt die Erdreichkorrektur nach DIN EN ISO 13370. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_ERDREICH_U {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_ERDREICH_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Speichern!
         ///Alle Eingaben überprüfen! ähnelt.
         /// </summary>
@@ -27280,6 +27307,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der wirksame U-Wert gilt nur bei Randbedingung Erdreich; der eingetragene Wert bleibt erhalten. ähnelt.
+        /// </summary>
+        public static string GEBK_SPERRE_ERDREICH_U_WIRKSAM {
+            get {
+                return ResourceManager.GetString("GEBK_SPERRE_ERDREICH_U_WIRKSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die A bzw. L ähnelt.
         /// </summary>
         public static string GEBK_SP_A_L {
@@ -27492,6 +27528,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_ZEILE_DACH {
             get {
                 return ResourceManager.GetString("GEBK_ZEILE_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdreichkorrektur nach DIN EN ISO 13370: B′ = {0} m, U_g = {1} W/(m²K) ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_ERDREICH_RECHNUNG {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_ERDREICH_RECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U_g = Vorgabe {0} W/(m²K) ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_ERDREICH_VORGABE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_ERDREICH_VORGABE", resourceCulture);
             }
         }
         
@@ -47330,6 +47384,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_ENERGIESTANDARD_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_ENERGIESTANDARD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksamer U-Wert der Bodenplatte samt Erdreich in W/(m²K), größer als 0; gilt nur bei Randbedingung Erdreich. Leer = Erdreichkorrektur nach DIN EN ISO 13370. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ERDREICH_U_WIRKSAM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ERDREICH_U_WIRKSAM_ERL", resourceCulture);
             }
         }
         
@@ -84171,6 +84234,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizreserve nicht vorgegeben; es gelten {0} %. ähnelt.
+        /// </summary>
+        public static string SIMENG_AUFH_RESERVE_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_AUFH_RESERVE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung (Verbrauchsangabe): Das Gebäude rechnet mit Verbrauchsangabe. Die Rückrechnung auf den angegebenen Verbrauch nimmt die Mehrwärme der Aufheizrampen an {0} Tagen in den Skalierungsfaktor auf; die Jahreswärme bleibt der angegebene Verbrauch. Die Mehrwärme der Rampen zeigt nur eine Flächenangabe. ähnelt.
         /// </summary>
         public static string SIMENG_AUFH_VERBRAUCH {
@@ -87796,7 +87868,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leer gilt die Vorgabe von 20 %. Sie ist ein Startwert, der an Referenzgebäuden gemessen und danach festgelegt wird; zulässig sind 1 bis 100 %. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Eingabe gilt die Vorgabe von 20 %, und der Lauf meldet das als Hinweis; zulässig sind 1 bis 100 %. ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_HRL_RESERVE {
             get {
@@ -87828,6 +87900,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT {
             get {
                 return ResourceManager.GetString("SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die · Reserve {0} % ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_ZEILE_RESERVE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_ZEILE_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die · Reserve {0} % (Vorgabe) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_ZEILE_RESERVE_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_ZEILE_RESERVE_VORGABE", resourceCulture);
             }
         }
         
@@ -87936,6 +88026,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_AUFH_VORGABE {
             get {
                 return ResourceManager.GetString("SIMKONF_AUFH_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} % ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_VORGABE_RESERVE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_VORGABE_RESERVE", resourceCulture);
             }
         }
         

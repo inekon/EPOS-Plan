@@ -72,6 +72,12 @@ public sealed class GebaeudeKatalogDaten
     public string? Energiestandard { get; set; }
 
     /// <summary>
+    /// Der wirksame U-Wert der Bodenplatte samt Erdreich [W/(m²K)] als Vorgabe (Spalte <c>Erdreich_U_Wirksam</c>,
+    /// Entscheid E65); <c>null</c> = die Erdreichkorrektur nach DIN EN ISO 13370.
+    /// </summary>
+    public double? ErdreichUWirksam { get; set; }
+
+    /// <summary>
     /// Setzt das Baujahr — und mit ihm die Baualtersklasse, wenn das Jahr eine ergibt (DAS BAUJAHR
     /// FÜHRT, <c>Gebaeudeklassen.IndexAusBaujahr</c>). Ein leeres oder ungültiges Jahr lässt die
     /// gewählte Klasse stehen. Hand, Stammblatt und Assistent gehen diesen Weg.

@@ -72,6 +72,7 @@ namespace WindowsFormsApplication1
                 // Waermeuebergabe - mit der Klimareihe des geoeffneten Projekts; ohne Projekt
                 // steht die Regel ohne Zahl - und das Vorschaubild des Zeitprogramms.
                 ["UebergabeHerleitung"] = GebaeudeKatalogHuelle.Herleitungsweg(Dienste.Projekt.Id),
+                ["ErdreichAuskunft"] = GebaeudeKatalogHuelle.Erdreichweg(),
                 ["WochenVorschau"] = GebaeudeKatalogHuelle.Wochenvorschau(),
                 ["Loeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
                 ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(Duplizieren),

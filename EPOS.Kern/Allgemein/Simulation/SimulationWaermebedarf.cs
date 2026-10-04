@@ -1207,6 +1207,8 @@ namespace WindowsFormsApplication1
             VdiWegEinstellen();
             Aufheizvorgabe vorgabe = _vdi6007.Aufheizvorgabe;
             if (vorgabe == null || !vorgabe.An) return leer;
+            // E64: die wirksame Reserve und ob sie die Vorgabe ist - die Herleitungszeile nennt die Quelle.
+            leer = leer with { ReserveAnteil = vorgabe.ReserveWirksam, ReserveVorgabe = !vorgabe.Reserve.HasValue };
             KlimakalenderGemeinsam gemeinsam = _kalender.Gemeinsam;
             try
             {

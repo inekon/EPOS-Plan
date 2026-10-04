@@ -199,6 +199,10 @@ namespace WindowsFormsApplication1
             // Die manuelle Aufheizzeit (E59, achter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
             // auf einer Sicht ohne die Spalte bleibt sie null (das Gebaeude folgt der Art des Projekts).
             item.Aufheizzeit_Manuell_H = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_AUFHEIZZEIT_MANUELL);
+
+            // Der wirksame U-Wert der Bodenplatte (E65, neunter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
+            // auf einer Sicht ohne die Spalte bleibt er null (Erdreichkorrektur nach DIN EN ISO 13370).
+            item.Erdreich_U_Wirksam = ZahlOderNull(row, GebaeudeSchema.SPALTE_ERDREICH_U_WIRKSAM);
             return item;
         }
 

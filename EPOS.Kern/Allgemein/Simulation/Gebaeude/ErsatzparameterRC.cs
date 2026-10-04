@@ -466,7 +466,8 @@ namespace WindowsFormsApplication1
             if (string.Equals(e.GrundRandbedingung, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal) && aGrund > 0.0 && uGrund > 0.0)
             {
                 var u = new double[1];
-                erdreich = Erdreichwiderstand.Bauteilsatz(new[] { (aGrund, 180.0, uGrund) }, aGrund, e.ErdreichUmfangFeld_M, u);
+                erdreich = Erdreichwiderstand.Bauteilsatz(new[] { (aGrund, 180.0, uGrund) }, aGrund, e.ErdreichUmfangFeld_M, u,
+                                                          e.ErdreichUVorgabe_WM2K);
                 uGrund = u[0];
             }
 
@@ -544,7 +545,8 @@ namespace WindowsFormsApplication1
             double hVe = e.Lueftungsleitwert_WK;
             if (e.Mehrzonenweg) hVe += e.LuftaustauschLeitwert_WK;
             return AusBauteilweg(new BauteilwegGebaeude(wer, e.Nutzflaeche_M2, e.Bauweise_WhK, e.MasseanteilAussen,
-                                                        e.Innenflaechenfaktor, hVe, e.A_Grund_M2, e.ErdreichUmfangFeld_M),
+                                                        e.Innenflaechenfaktor, hVe, e.A_Grund_M2, e.ErdreichUmfangFeld_M,
+                                                        e.ErdreichUVorgabe_WM2K),
                                  bauteile, e.Mehrzonenweg);
         }
 
@@ -737,7 +739,8 @@ namespace WindowsFormsApplication1
                 var satz = new List<(double, double, double)>(erdreich.Count);
                 foreach (var t in erdreich) satz.Add((t.Flaeche, t.Neigung, uJeBauteil[t.Bauteil]));
                 var uNeu = new double[erdreich.Count];
-                erdreichKennwerte = Erdreichwiderstand.Bauteilsatz(satz, g.ErdreichFlaeche_M2, g.ErdreichUmfang_M, uNeu);
+                erdreichKennwerte = Erdreichwiderstand.Bauteilsatz(satz, g.ErdreichFlaeche_M2, g.ErdreichUmfang_M, uNeu,
+                                                                   g.ErdreichUVorgabe_WM2K);
                 for (int k = 0; k < erdreich.Count; k++)
                 {
                     (int ib, int ih, double flaeche, _) = erdreich[k];

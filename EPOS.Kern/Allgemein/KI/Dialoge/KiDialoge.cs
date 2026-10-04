@@ -5865,6 +5865,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkKellertemperaturName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkKellertemperaturErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    // ---- Huell-Raster: der wirksame U-Wert der Bodenplatte als Vorgabe (EV1, E65) --
+                    new KiDialogFeld("erdreich_u_wirksam", "GebaeudeKatalogKiSicht.ErdreichUWirksam",
+                                     KiDialogTexte.GebkErdreichUWirksamName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkErdreichUWirksamErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K, leerErlaubt: true),
                     // ---- Huell-Raster: die Randbedingung der Bodenplatte (Welle #458 3b) --
                     new KiDialogFeld("randbedingung", "GebaeudeKatalogKiSicht.Randbedingung",
                                      KiDialogTexte.GebkRandbedingungName, KiParameterTyp.Wahl,

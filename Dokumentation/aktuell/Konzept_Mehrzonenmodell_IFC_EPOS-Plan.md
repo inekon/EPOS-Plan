@@ -411,6 +411,15 @@ vor und ist **ohne Änderung nutzbar**:
 (`:29-33`) und heute für die Wärmequelle Erdreich nach VDI 4640 gebaut (`:10`). **Sie ist nicht
 anzupassen, sondern zu rufen** — das hält die Fachänderung an einer Stelle.
 
+**Vorgabe des wirksamen U-Werts der Bodenplatte.** Die Spalte `Erdreich_U_Wirksam` (REAL, > 0, an
+`Tab_Gebaeude` und `Tab_Gebaeude_STAMM`) gibt U_g der Bodenplatte samt Erdreich in W/(m²K) vor. Gesetzt,
+nimmt die Erdreichrechnung den Wert als U_g jedes Bodenbauteils am Erdreich und rechnet kein B′ nach
+DIN EN ISO 13370 (`Erdreichwiderstand.Bauteilsatz`); Kellerwände rechnen unverändert, der Umfang dient dann
+allein ihrer Tiefe. Leer (NULL) gilt die Rechnung aus Grundfläche und Umfang. Der Export nennt die Herkunft
+als `Geb[n].Erdreich_Umfangsquelle = Vorgabe` (sonst `Feld` oder `Quadrat`). Die Katalogkopie ins Projekt
+und das Projektduplikat tragen den Wert mit; der Gebäudedialog führt ihn als Feld „Wirksamer U-Wert
+Bodenplatte" neben dem U-Wert der Grundfläche, wirksam nur bei Randbedingung Erdreich.
+
 | Zone | Hüllflächen | Besonderheit |
 |---|---|---|
 | Keller | Bodenplatte und Kellerwände gegen Erdreich, Kellerdecke gegen beheizte Zonen, ggf. Kellerfenster | großer Speicher, sehr träge — Vorlauf prüfen (2.9) |

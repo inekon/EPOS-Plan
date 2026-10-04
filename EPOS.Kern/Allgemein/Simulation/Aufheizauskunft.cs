@@ -53,6 +53,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Quelle von P_auf: GRENZE, ZIEL oder — im Mehrzonenweg — GEMISCHT.</summary>
         internal string Quelle { get; init; }
 
+        /// <summary>Die wirksame Aufheizreserve ρ als Anteil (E64); <c>null</c> mit ausgeschalteter Optimierung.</summary>
+        internal double? ReserveAnteil { get; init; }
+
+        /// <summary>Ist die Reserve des Projekts leer, gilt also die Vorgabe (E64, 20 %)?</summary>
+        internal bool ReserveVorgabe { get; init; }
+
         /// <summary>
         /// Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>, E59): MANUELL, wenn das Gebäude eine manuelle
         /// Aufheizzeit trägt, sonst die Art des Projekts; <c>null</c> ohne Bemessung und bei GEKOPPELT.

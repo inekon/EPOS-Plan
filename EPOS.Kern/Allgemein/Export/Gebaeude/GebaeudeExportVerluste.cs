@@ -94,6 +94,8 @@ namespace WindowsFormsApplication1
             ["Nachtabsenkung_Beginn"] = V, ["Nachtabsenkung_Ende"] = V, ["Wochenende"] = V, ["Ferien"] = V,
             // E59 (Festlegung 38): die manuelle Aufheizzeit - die Datei traegt sie nicht, der Import schreibt NULL.
             ["Aufheizzeit_Manuell_H"] = V,
+            // E65: der wirksame U-Wert der Bodenplatte als Vorgabe - die Datei traegt ihn nicht, der Import schreibt NULL.
+            ["Erdreich_U_Wirksam"] = V,
             ["Ferienbeginn_1"] = V, ["Ferienende_1"] = V, ["Ferienbeginn_2"] = V, ["Ferienende_2"] = V,
             ["Ferienbeginn_3"] = V, ["Ferienende_3"] = V, ["Ferienbeginn_4"] = V, ["Ferienende_4"] = V,
             ["Gebaeude_Modell"] = N, ["WW_Bedarf"] = N, ["spez_Waermeverbrauch"] = N, ["Waermebedarf"] = N,
@@ -135,6 +137,7 @@ namespace WindowsFormsApplication1
                 if (g.Verschattungsfaktor.HasValue) namen.Add("Verschattungsfaktor");
                 if (!string.IsNullOrWhiteSpace(g.Uebergabe_Art)) namen.Add("Uebergabe_Art");
                 if (g.Aufheizzeit_Manuell_H.HasValue) namen.Add("Aufheizzeit_Manuell_H");
+                if (g.Erdreich_U_Wirksam.HasValue) namen.Add("Erdreich_U_Wirksam");
             }
             foreach (ZoneModel z in zonen ?? new List<ZoneModel>())
             {

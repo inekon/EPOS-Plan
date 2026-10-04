@@ -636,6 +636,16 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     }
 
     /// <summary>
+    /// Der wirksame U-Wert der Bodenplatte samt Erdreich in W/(m²K) als Vorgabe; leer = Erdreichkorrektur nach
+    /// DIN EN ISO 13370. Wirkt nur bei Randbedingung Erdreich.
+    /// </summary>
+    public double? ErdreichUWirksam
+    {
+        get => Daten?.ErdreichUWirksam;
+        set { if (Daten is GebaeudeKatalogDaten d) d.ErdreichUWirksam = value; }
+    }
+
+    /// <summary>
     /// Wird das Gebäude gekühlt? (Stufe KU1) Wirkt nur mit Kühlsollwert und in einem Projekt mit
     /// der Projekteinstellung „Kühlung rechnen".
     /// </summary>

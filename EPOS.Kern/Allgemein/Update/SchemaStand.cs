@@ -875,11 +875,16 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c> und die Saat des Aufheizkriteriums K12
         /// (<see cref="PufferAuslegungErgaenzungSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
         /// Die Nummer steht allein bei <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>.
+        /// Danach, mit dem WIRKSAMEN U-WERT DER BODENPLATTE ALS VORGABE (E65, EV1), steht das Ziel auf
+        /// <see cref="ErdreichVorgabeSchema.SCHRITT"/>: <c>Erdreich_U_Wirksam</c> an <c>Tab_Gebaeude</c> und
+        /// <c>Tab_Gebaeude_STAMM</c> samt neuntem Sichtneubau (<see cref="ErdreichVorgabeSchema"/>).
+        /// <b>Ergebnisneutral:</b> Die Spalten entstehen leer. Die Nummer steht allein bei
+        /// <see cref="ErdreichVorgabeSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = PufferAuslegungErgaenzungSchema.SCHRITT;
+        public const int Zielversion = ErdreichVorgabeSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

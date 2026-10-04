@@ -144,6 +144,11 @@ namespace WindowsFormsApplication1
         // Imports (GebaeudeVorgaben). Name: GebaeudeSchema.SPALTE_ENERGIESTANDARD.
         public string Energiestandard;
 
+        // ---- Der wirksame U-Wert der Bodenplatte (E65, ErdreichVorgabeSchema.SCHRITT) -------------------
+        // U_g der Bodenplatte samt Erdreich [W/(m²K)] als Vorgabe, NULL-ERHALTEND: null heisst die
+        // Erdreichkorrektur nach DIN EN ISO 13370. Name: GebaeudeSchema.SPALTE_ERDREICH_U_WIRKSAM.
+        public double? Erdreich_U_Wirksam;
+
         public GebaeudeModel()
         {
             ID = 0;

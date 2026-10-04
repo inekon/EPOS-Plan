@@ -290,6 +290,15 @@
                                                                         Wert="@_stand.Kellertemperatur"
                                                                         WertChanged="w => _stand.Kellertemperatur = w" />
                                                         }
+                                                        @* EV1 (E65): der wirksame U-Wert der Bodenplatte als Vorgabe *@
+                                                        <Zahlenfeld Bezeichnung="@Texte.LabelErdreichUWirksam" Einheit="W/(m²K)"
+                                                                    Platzhalter="@Texte.HinweisErdreichUWirksam"
+                                                                    Titel="@ErdreichTitel"
+                                                                    Aktiv="@_arbeit.ErdreichVorgabeWirkt"
+                                                                    Feldname="@Feld(Texte.LabelErdreichUWirksam)"
+                                                                    FehlerZustand="FehlerMelden"
+                                                                    Wert="@_stand.ErdreichUWirksam"
+                                                                    WertChanged="w => _stand.ErdreichUWirksam = w" />
                                                     }
                                                     else if (z.IstWaermebruecke)
                                                     {
@@ -306,6 +315,14 @@
                                     </tbody>
                                 </table>
                             </div>
+                            @if (!_arbeit.ErdreichVorgabeWirkt)
+                            {
+                                <Herleitungszeile Text="@Texte.SperreErdreichUWirksam" />
+                            }
+                            else if (ErdreichZeile is { Length: > 0 } erdreichZeile)
+                            {
+                                <Herleitungszeile Text="@erdreichZeile" />
+                            }
                             <Herleitungszeile Text="@Texte.HinweisFensterflaeche" />
                             }
                         </KindInhalt>
@@ -830,6 +847,12 @@
     /// </summary>
     [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? UebergabeHerleitung { get; set; }
 
+    /// <summary>
+    /// Die Erdreichauskunft der Bodenplatte (B′ und U_g, EV1/E65) aus dem Kern — über die Hülle; <c>null</c> =
+    /// keine Auskunftszeile.
+    /// </summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, ErdreichAuskunftDaten?>? ErdreichAuskunft { get; set; }
+
     /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms aus dem Kern; <c>null</c> = kein Bild.</summary>
     [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }
 
@@ -1023,6 +1046,14 @@
 
     /// <summary>Der Feldsatz des Arbeitsstands — die Felder binden hierauf.</summary>
     private GebaeudeKatalogDaten _stand => _arbeit.Stand;
+
+    /// <summary>Die Auskunftszeile der Erdreichkorrektur (B′ und U_g, bei Vorgabe U_g); leer = keine Zeile.</summary>
+    private string ErdreichZeile => _arbeit.ErdreichAuskunftZeile(Texte, ErdreichAuskunft?.Invoke(_stand));
+
+    /// <summary>Der Tooltip des Felds: der Hinweis, gesperrt dazu der Grund.</summary>
+    private string ErdreichTitel => _arbeit.ErdreichVorgabeWirkt
+        ? Texte.HinweisErdreichUWirksam
+        : Texte.SperreErdreichUWirksam;
 
     /// <summary>
     /// Die Bearbeitung der Konditionierung (Stufe KP2, Welle U1) über demselben Arbeitsstand — der

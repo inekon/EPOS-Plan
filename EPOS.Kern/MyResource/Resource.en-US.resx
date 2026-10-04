@@ -14124,6 +14124,24 @@ Overwrite it anyway?</value>
   <data name="GEBK_LBL_KELLERTEMPERATUR" xml:space="preserve">
     <value>Basement temperature:</value>
   </data>
+  <data name="GEBK_LBL_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>Effective U-value ground floor slab:</value>
+  </data>
+  <data name="GEBK_HINWEIS_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>empty = ground correction according to DIN EN ISO 13370</value>
+  </data>
+  <data name="GEBK_SPERRE_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>The effective U-value applies only to the boundary condition ground; the entered value is kept.</value>
+  </data>
+  <data name="GEBK_ZEILE_ERDREICH_RECHNUNG" xml:space="preserve">
+    <value>Ground correction according to DIN EN ISO 13370: B′ = {0} m, U_g = {1} W/(m²K)</value>
+  </data>
+  <data name="GEBK_ZEILE_ERDREICH_VORGABE" xml:space="preserve">
+    <value>U_g = specified {0} W/(m²K)</value>
+  </data>
+  <data name="GEBK_MSG_ERDREICH_U" xml:space="preserve">
+    <value>The effective U-value of the ground floor slab must be greater than 0 W/(m²K); if empty, the ground correction according to DIN EN ISO 13370 applies.</value>
+  </data>
   <data name="GEBK_LBL_LUFTWECHSEL" xml:space="preserve">
     <value>Air exchange rate:</value>
   </data>
@@ -23419,6 +23437,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_GEBK_KELLERTEMPERATUR_ERL" xml:space="preserve">
     <value>Temperature of the unheated basement below the ground floor slab in °C; empty = default value 10 °C.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ERDREICH_U_WIRKSAM_ERL" xml:space="preserve">
+    <value>Effective U-value of the ground floor slab including the ground in W/(m²K), greater than 0; applies only to the boundary condition ground. Empty = ground correction according to DIN EN ISO 13370.</value>
   </data>
   <data name="KI_DLG_GEBK_RECHENWEG_ERL" xml:space="preserve">
     <value>The calculation method of the building: VDI 6007 (hourly model) or daily balance (legacy method); read-only.</value>
@@ -41385,6 +41406,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="SIMKONF_AUFH_VORGABE" xml:space="preserve">
     <value>Default {0}</value>
   </data>
+  <data name="SIMKONF_AUFH_VORGABE_RESERVE" xml:space="preserve">
+    <value>Default {0} %</value>
+  </data>
   <data name="SIMKONF_AUFH_HRL_AUS" xml:space="preserve">
     <value>Off: the heating setpoint steps as the calendar defines it. On: before every upward step of the heating setpoint, the run calculates a preheat ramp so that the heating output does not exceed the preheat power. Applies to the whole project and to buildings calculated to VDI 6007; every field is saved immediately.</value>
   </data>
@@ -41392,7 +41416,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>The preheat power is the heating output limit of the building or zone, without a limit the steady-state load at the coldest hour plus the preheat reserve ρ. The design basis fixes the longest preheat time; “coldest hour − ΔT_K” designs colder than the climate year. Daily: every day calculates its preheat time from its outdoor temperature, at most the longest. Fixed: every day preheats as long as the design case. Applies to the whole project; every field is saved immediately.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_RESERVE" xml:space="preserve">
-    <value>Empty means the default of 20 %. It is a starting value that is measured on reference buildings and fixed afterwards; allowed are 1 to 100 %.</value>
+    <value>Without an entry the default of 20 % applies, and the run reports this as a note; allowed are 1 to 100 %.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_GEKOPPELT" xml:space="preserve">
     <value>With system coupling “Heating circuit (AK1)”, a building without zones is not optimised; the run names it. Buildings with zones receive the ramp.</value>
@@ -41852,6 +41876,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="SIMENG_AUFH_W5" xml:space="preserve">
     <value>Preheat optimisation (W5): the building is calculated with system coupling and is not optimised; the heat emitter limits the output after the step.</value>
+  </data>
+  <data name="SIMENG_AUFH_RESERVE_VORGABE" xml:space="preserve">
+    <value>Preheat reserve not specified; {0} % applies.</value>
   </data>
   <data name="BHKWK_GRP_TEILLAST" xml:space="preserve">
     <value>Part load and cycling</value>
@@ -42437,6 +42464,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE" xml:space="preserve">
     <value>{0}: longest preheat time {1} h at {2} °C ({3}) · preheat power {4} kW {5}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_RESERVE" xml:space="preserve">
+    <value>· reserve {0} %</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_RESERVE_VORGABE" xml:space="preserve">
+    <value>· reserve {0} % (default)</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR" xml:space="preserve">
     <value>{0}: The preheat power is insufficient — at {1} °C ({2}) no ramp of up to 48 h holds · preheat power {3} kW {4}</value>

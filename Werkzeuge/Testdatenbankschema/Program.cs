@@ -2750,6 +2750,26 @@ namespace Testdatenbankschema
                                   PufferAuslegungErgaenzungSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ErdreichVorgabeSchema.SCHRITT (EV1, E65): der wirksame U-Wert der Bodenplatte als
+            //      Vorgabe an Tab_Gebaeude und Tab_Gebaeude_STAMM samt neuntem Sichtneubau - ZULETZT, weil
+            //      aeltere Durchgaenge die Sicht in ihrer Form bauen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ErdreichVorgabe bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; leer rechnet nach DIN EN ISO 13370.
+            string nrErdreich = ErdreichVorgabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrErdreich + " - Erdreichvorgabe am Gebaeude: " +
+                              (ErdreichVorgabeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtErdreich = new List<string>();
+                angelegt += ErdreichVorgabeSchema.Ausfuehren(berichtErdreich);
+                foreach (string zeile in berichtErdreich)
+                    Console.WriteLine("Schritt " + nrErdreich + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrErdreich + " - vollstaendig: " +
+                                  ErdreichVorgabeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

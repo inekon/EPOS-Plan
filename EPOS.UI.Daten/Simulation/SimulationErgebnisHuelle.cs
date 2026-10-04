@@ -1555,7 +1555,7 @@ namespace WindowsFormsApplication1
     internal sealed record AufheizHerleitungsdaten(
         string Gebaeude, string Zustand, string Bemessung, int? AufheizzeitMaxH, double? AussenC,
         double? LeistungKw, double? LeistungUnskaliertKw, double? Skalierungsfaktor, string Quelle,
-        bool Tagesbilanz = false, string Befund = null);
+        bool Tagesbilanz = false, string Befund = null, double? ReserveAnteil = null, bool ReserveVorgabe = false);
 
     /// <summary>
     /// <b>Die Herleitungszeile eines Gebäudes</b> (Teilkonzept 7.6; Entwurf KP3, Festlegung 16): „Name: t_auf,max
@@ -1572,7 +1572,7 @@ namespace WindowsFormsApplication1
             => new AufheizHerleitungsdaten(
                 string.IsNullOrEmpty(a.Gebaeudename) ? a.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) : a.Gebaeudename,
                 a.Zustand, a.Bemessung, a.AufheizzeitMaxH, a.AussenC, a.LeistungKw, a.LeistungUnskaliertKw,
-                a.Skalierungsfaktor, a.Quelle, a.Tagesbilanz, a.Befund);
+                a.Skalierungsfaktor, a.Quelle, a.Tagesbilanz, a.Befund, a.ReserveAnteil, a.ReserveVorgabe);
 
         /// <summary>Die Zeile; <c>null</c> ohne Bemessung (Schalter aus).</summary>
         internal static string Zeile(AufheizHerleitungsdaten d, CultureInfo k)
@@ -1598,6 +1598,12 @@ namespace WindowsFormsApplication1
                 ? string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR, d.Gebaeude, aussen, variante, leistung, quelle)
                 : string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE, d.Gebaeude, Zahl(d.AufheizzeitMaxH, k), aussen, variante,
                                 leistung, quelle);
+
+            // E64: Mit der Zielleistung wirkt die Aufheizreserve; ist sie leer, nennt die Zeile die Vorgabe als Quelle.
+            if (d.Quelle != DbWerte.AUFHEIZ_QUELLE_GRENZE && d.ReserveAnteil is double rho)
+                zeile += " " + string.Format(k, d.ReserveVorgabe ? MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_RESERVE_VORGABE
+                                                                 : MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_RESERVE,
+                                             (rho * 100.0).ToString("0.#", k));
 
             // B11, Festlegung 16: P_auf gilt dem Katalogbau; der Lauf skaliert es wie die Spitzen.
             if (!d.Skalierungsfaktor.HasValue && d.LeistungUnskaliertKw.HasValue)

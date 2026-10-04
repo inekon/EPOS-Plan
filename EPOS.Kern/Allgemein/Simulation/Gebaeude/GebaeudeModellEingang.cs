@@ -835,6 +835,12 @@ namespace WindowsFormsApplication1
         internal double ErdreichUmfangFeld_M { get; private set; }
 
         /// <summary>
+        /// Der wirksame U-Wert der Bodenplatte samt Erdreich [W/(m²K)] als Vorgabe des Gebäudes
+        /// (<c>Erdreich_U_Wirksam</c>, E65); NaN = keine Vorgabe, die Rechnung nach DIN EN ISO 13370.
+        /// </summary>
+        internal double ErdreichUVorgabe_WM2K { get; private set; } = double.NaN;
+
+        /// <summary>
         /// Die Erdreichkennwerte nach DIN EN ISO 13370 (Rechenweg RP2a): B′, Umfang samt Herkunft, U_g, R_g;
         /// <c>null</c>, wenn kein Bauteil (Klassenweg: keine Grundfläche) am Erdreich liegt. <see cref="U_Grund"/>
         /// bleibt der eingetragene Wert; den wirksamen trägt <see cref="Erdreichkennwerte.UWirksam_WM2K"/>.
@@ -2042,6 +2048,7 @@ namespace WindowsFormsApplication1
                 A_Dach_M2 = g.Dachflaeche,
                 A_Grund_M2 = g.Grundflaeche,
                 ErdreichUmfangFeld_M = g.Abmessung_Anschluß_Außenwand_Kellerdecke,
+                ErdreichUVorgabe_WM2K = g.Erdreich_U_Wirksam ?? double.NaN,
                 A_Sonstige_M2 = g.Sonstige_Flaechen,
                 A_FensterSued_M2 = g.Fensterflaeche_Sued,
                 A_FensterNord_M2 = g.Fensterflaeche_Nord,
