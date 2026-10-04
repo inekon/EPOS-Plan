@@ -2393,6 +2393,16 @@ namespace WindowsFormsApplication1
 
                 if (sp.IstQuelle) { sp.ImRechenpfad = true; continue; }
 
+                // KU3-5: Ein Kältespeicher als Wärmesenke einer Anlage ist ein Datenfehler (der Dialog
+                // lässt ihn nicht zu) - er rechnet nur in der Kältekaskade, benannt statt still.
+                if (sp.IstKaelte)
+                {
+                    Protokoll.WarnungEinmal("kaeltespeicher-als-waermesenke-" + id,
+                        string.Format(MyResource.Resource.SIMENG_KAELTESPEICHER_ALS_WAERMESENKE, sp.BezeichnerAnzeige()));
+                    sp.ImRechenpfad = false;
+                    continue;
+                }
+
                 if (verbundMitglieder.Contains(id))
                 {
                     Protokoll.WarnungEinmal("verbund-mitglied-eigenes-ziel-" + id,
@@ -3103,6 +3113,10 @@ namespace WindowsFormsApplication1
             PufferSpCtrl.KlassenSet set = (sp.ID_Pufferspeicher > 0)
                 ? PufferSpCtrl.KlassenSetLesen(sp.ID_Pufferspeicher)
                 : PufferSpCtrl.KlassenSetAusVerwendung(sp.Verwendung);
+
+            // KU3-5: Ein Kältespeicher hat kein Wärmeflag und behält seine Verwendung - er rechnet
+            // allein in der Kältekaskade (RegistryFuerZweikanaligOeffnen nimmt ihn heraus).
+            if (set.Kaelte) { sp.Verwendung = SimulationPufferspeicher.VERWENDUNG_KAELTE; return; }
 
             sp.KlassenSetSetzen(set.Heizung, set.Brauchwasser, set.Prozess);
 

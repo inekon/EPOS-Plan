@@ -649,6 +649,19 @@ namespace WindowsFormsApplication1
                     s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungMwh", e.KaelteFreiKwh / 1000.0));
                 }
             }
+            // KU3-5: die Kältespeicher - nur, wenn einer rechnet; sonst kein neuer Schlüssel.
+            if (k.Speicher != null)
+                for (int i = 0; i < k.Speicher.Count; i++)
+                {
+                    SimulationPufferspeicher sp = k.Speicher[i];
+                    string p = "Kaeltespeicher[" + i.ToString(CultureInfo.InvariantCulture) + "].";
+                    s.Add(new KeyValuePair<string, double>(p + "ID_Pufferspeicher", sp.ID_Pufferspeicher));
+                    s.Add(new KeyValuePair<string, double>(p + "KapazitaetKwh", sp.Q_max));
+                    s.Add(new KeyValuePair<string, double>(p + "EntladungMwh", sp.Entladung_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "LadungMwh", sp.Ladung_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "VerlusteMwh", sp.Verluste_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "Vollzyklen", sp.Vollzyklen));
+                }
             return s;
         }
 

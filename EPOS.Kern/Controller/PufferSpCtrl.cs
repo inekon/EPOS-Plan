@@ -734,11 +734,25 @@ namespace WindowsFormsApplication1
             public readonly bool Brauchwasser;
             public readonly bool Prozess;
 
+            /// <summary>
+            /// KÄLTESPEICHER (KU3-5, E68): Der Speicher gehört allein der Kältekaskade. Er steht
+            /// in keiner <c>Nutzung_*</c>-Spalte — die drei Wärmeflags bleiben 0 und die
+            /// Verwendung „Kaelte" trägt die Aussage. Ein Kältespeicher bedient keinen
+            /// Wärmekanal; gesetzt mit einem Wärmeflag zusammen gilt allein die Kälte.
+            /// </summary>
+            public readonly bool Kaelte;
+
             public KlassenSet(bool heizung, bool brauchwasser, bool prozess)
+                : this(heizung, brauchwasser, prozess, false)
             {
-                Heizung = heizung;
-                Brauchwasser = brauchwasser;
-                Prozess = prozess;
+            }
+
+            public KlassenSet(bool heizung, bool brauchwasser, bool prozess, bool kaelte)
+            {
+                Kaelte = kaelte;
+                Heizung = !kaelte && heizung;
+                Brauchwasser = !kaelte && brauchwasser;
+                Prozess = !kaelte && prozess;
             }
 
             /// <summary>
@@ -749,7 +763,7 @@ namespace WindowsFormsApplication1
             /// </summary>
             public bool Leer
             {
-                get { return !Heizung && !Brauchwasser && !Prozess; }
+                get { return !Heizung && !Brauchwasser && !Prozess && !Kaelte; }
             }
 
             /// <summary>
@@ -768,6 +782,7 @@ namespace WindowsFormsApplication1
             {
                 get
                 {
+                    if (Kaelte) return WaermesenkeClass.VERWENDUNG_KAELTE;
                     if (Heizung && Brauchwasser) return WaermesenkeClass.VERWENDUNG_KOMBI;
                     if (Brauchwasser) return WaermesenkeClass.VERWENDUNG_BRAUCHWASSER;
                     return WaermesenkeClass.VERWENDUNG_HEIZUNG;
@@ -781,7 +796,7 @@ namespace WindowsFormsApplication1
             /// </summary>
             public bool HatAltEntsprechung
             {
-                get { return !Prozess && !Leer; }
+                get { return !Prozess && !Kaelte && !Leer; }
             }
         }
 
@@ -799,6 +814,9 @@ namespace WindowsFormsApplication1
         public static KlassenSet KlassenSetAusVerwendung(string verwendung)
         {
             string wirksam = WaermesenkeClass.NormalisierteVerwendung(verwendung);
+
+            // KU3-5: Der Kältespeicher hat kein Wärmeflag - die Verwendung trägt ihn allein.
+            if (WaermesenkeClass.IstKaelteVerwendung(wirksam)) return new KlassenSet(false, false, false, true);
 
             bool brauchwasser =
                 string.Equals(wirksam, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,

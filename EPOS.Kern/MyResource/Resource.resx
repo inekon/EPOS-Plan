@@ -45074,5 +45074,47 @@ Chart</value>
   <data name="KI_DLG_KMA_ZAEHLER_ERL" xml:space="preserve">
     <value>Abrechnung über einen eigenen Zähler; wirkt nur bei abweichendem Kühlträger.</value>
   </data>
+  <data name="PSP_VERWENDUNG_KAELTE_ANZEIGE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="PSP_ROLLE_KAELTESPEICHER" xml:space="preserve">
+    <value>Kältespeicher</value>
+  </data>
+  <data name="PSP_LABEL_KALTWASSER_VORLAUF" xml:space="preserve">
+    <value>Kaltwasser-Vorlauf:</value>
+  </data>
+  <data name="PSP_LABEL_KALTWASSER_RUECKLAUF" xml:space="preserve">
+    <value>Kaltwasser-Rücklauf:</value>
+  </data>
+  <data name="PSP_HINWEIS_KAELTESPEICHER" xml:space="preserve">
+    <value>Kältespeicher (Kaltwasser): entlädt vor den Kälteerzeugern und lädt an Kühltagen aus ihrer freien Leistung; ohne Temperaturpaar gilt 6/12 °C.</value>
+  </data>
+  <data name="PSP_FEHLER_KAELTE_EXKLUSIV" xml:space="preserve">
+    <value>Ein Kältespeicher bedient allein die Kälte — Heizung, Brauchwasser und Prozesswärme sind dann abgewählt.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_KAELTE_ERL" xml:space="preserve">
+    <value>Der Speicher ist ein Kältespeicher (Kaltwasser) und versorgt allein die Kühlung.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_BETRIEB" xml:space="preserve">
+    <value>Kältespeicher „{0}“: Kapazität {1} kWh, Entladung {2} MWh, Ladung {3} MWh, Wärmeeintrag {4} MWh, {5} Vollzyklen.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_PAAR_VORGABE" xml:space="preserve">
+    <value>Kältespeicher „{0}“: Temperaturpaar leer oder vertauscht — gerechnet mit Vorlauf {1} °C und Rücklauf {2} °C.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Kältespeicher „{0}“: Kein Kälteerzeuger lädt ihn (keine Wärmepumpe im Kühlbetrieb, keine Kältemaschine) — er wird nicht gerechnet.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
+    <value>Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_ALS_WAERMESENKE" xml:space="preserve">
+    <value>Kältespeicher „{0}“ ist als Wärmesenke einer Anlage eingetragen — er rechnet nur in der Kältekaskade. Bitte die Wärmesenke der Anlage berichtigen.</value>
+  </data>
+  <data name="SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Kältespeicher „{0}“: Kein Kälteerzeuger (Wärmepumpe im Kühlbetrieb oder Kältemaschine) lädt ihn — er wird nicht gerechnet.</value>
+  </data>
+  <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
+    <value>Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet.</value>
+  </data>
 </root>
 

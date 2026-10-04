@@ -246,6 +246,25 @@ namespace WindowsFormsApplication1
         /// <summary>Ungedeckte Kälte je Stunde [kWh].</summary>
         public double[] Rest_stuendlich = new double[STUNDEN];
 
+        /// <summary>
+        /// <b>Die Kältespeicher der Kaskade</b> (KU3-5, E68; Kühlkonzept 5.5 Schritt 4) — Puffer mit der
+        /// Verwendung <see cref="SimulationPufferspeicher.VERWENDUNG_KAELTE"/>, gerechnet in Listenreihenfolge.
+        /// Leer: Die Stundenschleife rechnet Zeichen für Zeichen wie ohne Speicher.
+        /// </summary>
+        public List<SimulationPufferspeicher> Speicher = new List<SimulationPufferspeicher>();
+
+        /// <summary>Kälte aus den Kältespeichern in den Kühlkanal je Stunde [kWh] — Teil von <see cref="Deckung_stuendlich"/>.</summary>
+        public double[] Speicherentladung_stuendlich = new double[STUNDEN];
+
+        /// <summary>Kälte der Erzeuger in die Kältespeicher je Stunde [kWh] — Teil der Erzeugerkälte, nicht der Deckung.</summary>
+        public double[] Speicherladung_stuendlich = new double[STUNDEN];
+
+        /// <summary>Kälte aus den Kältespeichern im Jahr [kWh].</summary>
+        public double SpeicherentladungKwh;
+
+        /// <summary>Kälte in die Kältespeicher im Jahr [kWh].</summary>
+        public double SpeicherladungKwh;
+
         /// <summary>Kältebedarf im Jahr [kWh].</summary>
         public double BedarfGesamtKwh;
 
@@ -381,6 +400,12 @@ namespace WindowsFormsApplication1
             RestAnHeiztagenKwh = 0;
             RestAnKuehltagenKwh = 0;
             foreach (Kaelteerzeuger e in Erzeuger) e.Nullen();
+            Array.Clear(Speicherentladung_stuendlich, 0, STUNDEN);
+            Array.Clear(Speicherladung_stuendlich, 0, STUNDEN);
+            SpeicherentladungKwh = 0;
+            SpeicherladungKwh = 0;
+            bool mitSpeicher = Speicher != null && Speicher.Count > 0;
+            if (mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.Reset();
 
             // KU3-2 (Kühlkonzept 5.5): Kältemaschinen mit Trocken- oder Nasskühler kühlen in einer
             // Stunde mit kaltem Rückkühler frei - dann decken sie VOR allen anderen. Ohne eine solche
@@ -398,19 +423,32 @@ namespace WindowsFormsApplication1
                 BedarfGesamtKwh += b;
 
                 double rest = b;
+
+                // KU3-5 (5.5 Schritt 4): Ladewunsch der Kältespeicher in der Ladephase - bis zur
+                // Abschaltschwelle, begrenzt durch die Ladeleistung. Die Erzeuger bekommen ihn als
+                // Zusatzlast HINTER dem Raum: Was eine Stunde über den Bedarf hinaus erzeugt, lädt.
+                // Geladen wird nur an Kühltagen (5.2) - sonst hielte die Kältemaschine den Vorrat den
+                // Winter über gegen den Wärmeeintrag. Ohne Tagesbetriebsart (Rechenprobe) an jedem Tag.
+                bool ladetag = Kuehltage == null || (h / 24 < Kuehltage.Length && Kuehltage[h / 24]);
+                double lade = mitSpeicher && ladetag ? Ladewunsch() : 0.0;
+
                 if (mitFreierKuehlung)
                     foreach (Kaelteerzeuger e in Erzeuger)
                     {
-                        if (rest <= 0) break;
-                        if (e.Maschine != null && e.Maschine.FreieKuehlung(h)) rest = MaschineRechnen(e, h, rest);
+                        if (rest + lade <= 0) break;
+                        if (e.Maschine != null && e.Maschine.FreieKuehlung(h)) MaschineRechnen(e, h, ref rest, ref lade);
                     }
+
+                // KU3-5: Die Kältespeicher außerhalb der Ladephase entladen NACH der freien Kühlung
+                // und VOR den verdichtenden Erzeugern.
+                if (mitSpeicher && rest > 0) rest = SpeicherEntladen(h, rest);
 
                 foreach (Kaelteerzeuger e in Erzeuger)
                 {
-                    if (rest <= 0) break;
+                    if (rest + lade <= 0) break;
                     if (e.Maschine != null)
                     {
-                        if (!(mitFreierKuehlung && e.Maschine.FreieKuehlung(h))) rest = MaschineRechnen(e, h, rest);
+                        if (!(mitFreierKuehlung && e.Maschine.FreieKuehlung(h))) MaschineRechnen(e, h, ref rest, ref lade);
                         continue;
                     }
                     double anteil = (e.Zeitanteil != null && h < e.Zeitanteil.Length) ? e.Zeitanteil[h] : 0.0;
@@ -429,7 +467,10 @@ namespace WindowsFormsApplication1
                     double kapazitaet = anteil * p.Pkuehl;
                     if (!(kapazitaet > 0) || !(p.Eer > 0)) continue;
 
-                    double deckung = rest < kapazitaet ? rest : kapazitaet;
+                    double last = rest + lade;
+                    double deckung = last < kapazitaet ? last : kapazitaet;
+                    double raum = deckung < rest ? deckung : rest;
+                    double ladung = deckung - raum;
                     double verdichter = deckung / p.Eer;
 
                     // Welle M4, WP1: Taktverlust nach EN 14825 auch im Kühlbetrieb - die
@@ -447,38 +488,133 @@ namespace WindowsFormsApplication1
                     e.HilfsstromGesamtKwh += strom - verdichter;
                     e.StundenMitKaelte++;
 
-                    Deckung_stuendlich[h] += deckung;
+                    Deckung_stuendlich[h] += raum;
                     Stromverbrauch_Kuehlung_stuendlich[h] += strom;
-                    DeckungGesamtKwh += deckung;
+                    DeckungGesamtKwh += raum;
                     StromGesamtKwh += strom;
                     HilfsstromGesamtKwh += strom - verdichter;
 
-                    rest -= deckung;
+                    rest -= raum;
                     if (rest < 0) rest = 0;
+                    if (ladung > 0) lade -= SpeicherLaden(h, ladung);
                 }
+
+                // KU3-5: Bereitschaftsverlust der Kältespeicher - der Wärmeeintrag der Stunde.
+                if (mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.StundeAbschliessen(h);
 
                 Rest_stuendlich[h] = rest;
                 RestGesamtKwh += rest;
                 if (Kuehltage != null && h / 24 < Kuehltage.Length && Kuehltage[h / 24]) RestAnKuehltagenKwh += rest;
                 else RestAnHeiztagenKwh += rest;
             }
+
+            if (mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.KennzahlenBerechnen();
+        }
+
+        // =====================================================================
+        //  Die Kältespeicher (KU3-5, E68; Kühlkonzept 5.5 Schritt 4)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Ladewunsch aller Kältespeicher der Stunde [kWh]. Die Ladephase folgt der Hysterese des
+        /// Wärmepuffers: Sie beginnt, wenn der Vorrat auf die Einschaltschwelle fällt (der Lauf beginnt
+        /// leer, also ladend), und endet an der Abschaltschwelle. In der Ladephase wünscht der Speicher
+        /// den Abstand bis zur Abschaltschwelle, begrenzt durch seine Ladeleistung.
+        /// </summary>
+        private double Ladewunsch()
+        {
+            double summe = 0.0;
+            foreach (SimulationPufferspeicher sp in Speicher)
+            {
+                if (!LadephaseFortschreiben(sp)) continue;
+                summe += Ladebedarf(sp);
+            }
+            return summe;
+        }
+
+        /// <summary>Hysterese eines Kältespeichers fortschreiben; true = Ladephase.</summary>
+        internal static bool LadephaseFortschreiben(SimulationPufferspeicher sp)
+        {
+            if (sp == null || !(sp.Q_max > 0)) return false;
+            if (!sp.LaedtGerade && sp.SOC <= sp.SchwelleEin * sp.Q_max) sp.LaedtGerade = true;
+            if (sp.LaedtGerade && sp.SOC >= sp.SchwelleAus * sp.Q_max - Rechenrand.ABSOLUT) sp.LaedtGerade = false;
+            return sp.LaedtGerade;
+        }
+
+        /// <summary>Ladebedarf eines Kältespeichers in der Ladephase [kWh] — bis zur Abschaltschwelle.</summary>
+        private static double Ladebedarf(SimulationPufferspeicher sp)
+        {
+            double bedarf = sp.SchwelleAus * sp.Q_max - sp.SOC;
+            if (!(bedarf > 0)) return 0.0;
+            if (sp.LadeleistungMax > 0 && bedarf > sp.LadeleistungMax) bedarf = sp.LadeleistungMax;
+            return bedarf;
         }
 
         /// <summary>
-        /// Eine Stunde einer Kältemaschine (KU3-2): deckt höchstens <paramref name="rest"/>, bucht Kälte
-        /// und Strom (Verdichter · (1 + Hilfsstromanteil) + Hilfsstrom der Rückkühlung) und liefert den
-        /// neuen Rest.
+        /// Entlädt die Kältespeicher außerhalb ihrer Ladephase in Listenreihenfolge in den Kühlkanal und
+        /// liefert den Rest der Stunde.
         /// </summary>
-        private double MaschineRechnen(Kaelteerzeuger e, int h, double rest)
+        private double SpeicherEntladen(int h, double rest)
         {
-            KaeltemaschinenStunde s = e.Maschine.Stunde(h, rest);
+            foreach (SimulationPufferspeicher sp in Speicher)
+            {
+                if (rest <= 0) break;
+                if (sp.LaedtGerade) continue;
+                double e = sp.Entladen(rest, h, Kanal.KUEHLUNG);
+                if (!(e > 0)) continue;
+                Speicherentladung_stuendlich[h] += e;
+                SpeicherentladungKwh += e;
+                Deckung_stuendlich[h] += e;
+                DeckungGesamtKwh += e;
+                rest -= e;
+                if (rest < Rechenrand.ABSOLUT) rest = 0;
+            }
+            return rest;
+        }
+
+        /// <summary>
+        /// Verteilt Erzeugerkälte über den Raumbedarf hinaus auf die Kältespeicher in der Ladephase und
+        /// liefert die aufgenommene Menge [kWh].
+        /// </summary>
+        private double SpeicherLaden(int h, double menge)
+        {
+            double aufgenommen = 0.0;
+            foreach (SimulationPufferspeicher sp in Speicher)
+            {
+                if (menge - aufgenommen <= 0) break;
+                if (!sp.LaedtGerade) continue;
+                double wunsch = Ladebedarf(sp);
+                if (!(wunsch > 0)) continue;
+                double teil = Math.Min(wunsch, menge - aufgenommen);
+                aufgenommen += sp.Laden(teil, h);
+            }
+            Speicherladung_stuendlich[h] += aufgenommen;
+            SpeicherladungKwh += aufgenommen;
+            return aufgenommen;
+        }
+
+        /// <summary>
+        /// Eine Stunde einer Kältemaschine (KU3-2): deckt höchstens <paramref name="rest"/> und den
+        /// Ladewunsch <paramref name="lade"/> der Kältespeicher (KU3-5), bucht Kälte und Strom (Verdichter ·
+        /// (1 + Hilfsstromanteil) + Hilfsstrom der Rückkühlung) und schreibt Rest und Ladewunsch fort.
+        /// </summary>
+        private void MaschineRechnen(Kaelteerzeuger e, int h, ref double rest, ref double lade)
+        {
+            // KU3-5: Die Maschine sieht Raum und Ladewunsch als EINE Last; der Raum hat Vorrang.
+            double last = rest + lade;
+            KaeltemaschinenStunde s = e.Maschine.Stunde(h, last);
             if (s.Randwert) e.StundenRandwert++;
             if (!(s.KaelteKwh > 0))
             {
-                e.StundenLeistungsgrenze++;
-                e.OffenAnLeistungsgrenzeKwh += rest;
-                return rest;
+                if (rest > 0)
+                {
+                    e.StundenLeistungsgrenze++;
+                    e.OffenAnLeistungsgrenzeKwh += rest;
+                }
+                return;
             }
+            double raum = s.KaelteKwh < rest ? s.KaelteKwh : rest;
+            double ladung = s.KaelteKwh - raum;
 
             double verdichter = s.VerdichterKwh * (1.0 + e.Hilfsstromanteil);
             double strom = verdichter + s.HilfsstromKwh;
@@ -493,20 +629,21 @@ namespace WindowsFormsApplication1
             if (s.FreieKuehlung) { e.StundenFreieKuehlung++; e.KaelteFreiKwh += s.KaelteKwh; }
             if (s.Takt) e.StundenTakt++;
 
-            Deckung_stuendlich[h] += s.KaelteKwh;
+            Deckung_stuendlich[h] += raum;
             Stromverbrauch_Kuehlung_stuendlich[h] += strom;
-            DeckungGesamtKwh += s.KaelteKwh;
+            DeckungGesamtKwh += raum;
             StromGesamtKwh += strom;
             HilfsstromGesamtKwh += hilfs;
 
-            rest -= s.KaelteKwh;
+            rest -= raum;
             if (rest < Rechenrand.ABSOLUT) rest = 0;
             if (rest > 0)
             {
                 e.StundenLeistungsgrenze++;
                 e.OffenAnLeistungsgrenzeKwh += rest;
             }
-            return rest;
+            if (ladung > 0) lade -= SpeicherLaden(h, ladung);
+            if (lade < 0) lade = 0;
         }
 
         /// <summary>
@@ -647,11 +784,13 @@ namespace WindowsFormsApplication1
 
             if (kaskade != null)
             {
-                int schritte = 2 * kaskade.Erzeuger.Count + 1;
+                int schritte = 2 * kaskade.Erzeuger.Count + 2 * (kaskade.Speicher != null ? kaskade.Speicher.Count : 0) + 1;
                 for (int h = 0; h < STUNDEN; h++)
                 {
                     double summeErzeuger = 0;
                     foreach (Kaelteerzeuger e in kaskade.Erzeuger) summeErzeuger += e.Kaelte_stuendlich[h];
+                    // KU3-5: Die Deckung ist Erzeugerkälte plus Speicherentladung minus Speicherladung.
+                    summeErzeuger += kaskade.Speicherentladung_stuendlich[h] - kaskade.Speicherladung_stuendlich[h];
 
                     double bilanz = kaskade.Deckung_stuendlich[h] + kaskade.Rest_stuendlich[h];
                     double d1 = Math.Abs(bilanz - kaskade.Bedarf_stuendlich[h]);

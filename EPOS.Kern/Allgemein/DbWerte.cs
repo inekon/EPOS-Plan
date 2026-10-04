@@ -1759,6 +1759,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string PSP_VERWENDUNG_QUELLE = "Quelle";
 
+        /// <summary>
+        /// KÄLTESPEICHER (Kaltwasserspeicher, KU3-5, Entscheid E68; Kühlkonzept 4.6, 5.5): Ein Puffer
+        /// mit dieser Verwendung gehört allein der Kältekaskade — er entlädt in den Kühlkanal vor den
+        /// verdichtenden Kälteerzeugern und lädt aus ihrer freien Leistung. Kein Wärmekanal, kein
+        /// Klassen-Set-Eintrag (<c>Nutzung_*</c> bleiben 0). Persistenzwert, immer deutsch und ohne
+        /// Umlaut wie <see cref="WS_ZIEL_KAELTEKREIS"/>, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string PSP_VERWENDUNG_KAELTE = "Kaelte";
+
         // =====================================================================
         // Pufferspeicher — Speichertyp
         //   Tab_Pufferspeicher.Speichertyp
