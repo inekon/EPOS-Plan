@@ -22,6 +22,7 @@ Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.m
 | 3 | **G7d** (umgesetzt #711) | Round-Trip-Anreicherung fremder IFC4-Dateien — die tragende Stufe nach E69 | 6–11 | 4–5 Punkte | keine (E69) |
 | 4 | **G7e** (umgesetzt #712) | Schematische Körper im IFC | 8–15 | 5–7 Punkte | keine (E69: Empfänger sind Betrachter); Prüfbilder aus Revit, Archicad, HiCAD liegen beim Anwender |
 | 5 | **KU3** | Kältemaschine mit Rückkühlung, freie Kühlung über die Quelle, Kühlung je Zone, Export, Kältespeicher (E68: ja) | 20–31 | 15–19 Punkte | Katalogsaat der Kältemaschinen |
+| — | **G7f** — nach Zuruf | Raumkörper aus der IFC-Datei in der Körperansicht (E71; [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 15): Kern-Leser ohne Geometriekern, Umschalter „Dateikörper \| Exportmodell“; Vorschlag nach KU3-4b, vor AK2 | 4–6 | 4–5 Punkte | Reihenfolge und Dreiecksgrenze (Vorschlag 300 000 je Gebäude) |
 
 Maßstab: EV1 (3–4 PT) kostete rund 3 Punkte des Wochenlimits bei rund 230 Werkzeugaufrufen. Ein
 Personentag des Konzepts entspricht damit grob 0,8–1 Punkt. Die Spanne G7b bis KU3 liegt bei
