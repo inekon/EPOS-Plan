@@ -56,13 +56,21 @@ namespace EPOS.Kern.Tests
         private sealed class Dateiprobe : IDateiDienst
         {
             internal string Antwort = "";
+            internal string OeffnenPfad = "";
+            internal string OeffnenFilter = "";
+            internal int Oeffnungen;
             internal string Filter = "";
             internal string Vorschlag = "";
             internal int Wahlen;
             internal bool OeffnenAntwort = true;
             internal readonly List<string> Geoeffnet = new();
 
-            public string DateiOeffnen(string titel, string filter, string startOrdner) => "";
+            public string DateiOeffnen(string titel, string filter, string startOrdner)
+            {
+                Oeffnungen++;
+                OeffnenFilter = filter ?? "";
+                return OeffnenPfad;
+            }
 
             public string DateiSpeichern(string titel, string filter, string vorschlag)
             {
@@ -261,6 +269,241 @@ namespace EPOS.Kern.Tests
             Assert.IsType<Func<Task<string>>>(gaben["ZusageOeffnen"]);
             Assert.Equal(R.GEXP_BTN_ZUSAGE_IOS, ((GebaeudeExportTexte)gaben["Texte"]).Zusage);
             Assert.Equal(R.GEXP_BTN_ZUSAGE, GebaeudeExportHuelle.Texte(ios: false).Zusage);
+        }
+
+        // =====================================================================
+        //  Anreicherung der Originaldatei (Stufe G7d)
+        // =====================================================================
+
+        private static GebaeudeExportHuelle AnrHuelle(List<ImportquelleModel> quellen, bool ios = false,
+            Func<GebaeudeExportPlan, Stream, ImportquelleModel, IReadOnlyList<ImportzuordnungModel>, Stream,
+                 GebaeudeExportProfil, GebaeudeAnreicherungBilanz> anreicherer = null,
+            List<int> gefragt = null)
+            => new GebaeudeExportHuelle(1, 1, "Probe Haus", ios, (p, z) => Haus(), () => GbxmlExportProbe.Profil(), null,
+                                        g => { gefragt?.Add(g); return quellen; },
+                                        q => q == 3 ? IfcAnreicherungTests.Zuordnungen() : new List<ImportzuordnungModel>(),
+                                        anreicherer);
+
+        private string OriginalAblegen(byte[] inhalt, string name = "haus.ifc")
+        {
+            string pfad = Path.Combine(_ordner, "quelle", name);
+            Directory.CreateDirectory(Path.GetDirectoryName(pfad)!);
+            File.WriteAllBytes(pfad, inhalt);
+            return pfad;
+        }
+
+        private static GebaeudeAnreicherungBilanz Bilanz(Stream ziel, int bytes = 64)
+        {
+            ziel.Write(Encoding.ASCII.GetBytes("ISO-10303-21;" + new string('x', bytes - 13)));
+            return new GebaeudeAnreicherungBilanz(true, false, 5, 3, 1, 1, new List<PruefMeldung>(), bytes);
+        }
+
+        [Fact]
+        public async Task Die_Anreicherung_steht_nur_mit_IFC_Importquelle_des_Gebaeudes()
+        {
+            var gefragt = new List<int>();
+            byte[] datei = IfcAnreicherungTests.Fremdhaus();
+            var gbxml = new ImportquelleModel { ID = 9, Format = GebaeudeQuelle.FORMAT_GBXML, Zeitpunkt = "2026-09-01T08:00:00" };
+
+            Assert.True(await AnrHuelle(new List<ImportquelleModel> { gbxml, IfcAnreicherungTests.Quelle(datei) }, gefragt: gefragt).AnreicherungMoeglich());
+            Assert.Equal(new[] { ExportSatzProbe.GEB }, gefragt);
+            Assert.False(await AnrHuelle(new List<ImportquelleModel> { gbxml }).AnreicherungMoeglich());
+            Assert.False(await AnrHuelle(new List<ImportquelleModel>()).AnreicherungMoeglich());
+            var wirft = new GebaeudeExportHuelle(1, 1, "Probe Haus", false, (p, z) => Haus(), () => GbxmlExportProbe.Profil(), null,
+                                                 g => throw new InvalidOperationException("keine Datenbank"));
+            Assert.False(await wirft.AnreicherungMoeglich());
+        }
+
+        [Fact]
+        public async Task Eine_abgebrochene_Dateiwahl_merkt_nichts_und_ohne_Datei_wird_nicht_angereichert()
+        {
+            var datei = new Dateiprobe { Antwort = Path.Combine(_ordner, "nie.ifc") };
+            Dienste.Datei = datei;
+            int gerufen = 0;
+            GebaeudeExportHuelle h = AnrHuelle(new List<ImportquelleModel>(), anreicherer: (pl, o, q, z, ziel, pr) => { gerufen++; return Bilanz(ziel); });
+
+            Assert.Null(await h.OriginalWaehlen());
+            Assert.Equal(1, datei.Oeffnungen);
+            Assert.Equal(R.GEXP_DATEITYP_IFC + " " + GebaeudeExportProfil.DATEIFILTER_IFC, datei.OeffnenFilter);
+
+            GebaeudeExportErgebnis e = await h.Anreichern("");
+            Assert.False(e.Gespeichert);
+            Assert.Equal(R.GEXP_ANR_SPERRE_DATEI, e.Text);
+            Assert.Equal(0, gerufen);
+            Assert.Equal(0, datei.Wahlen);
+        }
+
+        [Fact]
+        public async Task Eine_fremde_Datei_wird_benannt_verweigert_und_nie_angereichert()
+        {
+            byte[] importiert = IfcAnreicherungTests.Fremdhaus();
+            byte[] anders = IfcAnreicherungTests.Fremdhaus(geometrie: true);
+            var datei = new Dateiprobe { OeffnenPfad = OriginalAblegen(anders, "anders.ifc"), Antwort = Path.Combine(_ordner, "nie.ifc") };
+            Dienste.Datei = datei;
+            int gerufen = 0;
+            GebaeudeExportHuelle h = AnrHuelle(new List<ImportquelleModel> { IfcAnreicherungTests.Quelle(importiert) },
+                                               anreicherer: (pl, o, q, z, ziel, pr) => { gerufen++; return Bilanz(ziel); });
+
+            GebaeudeAnreicherungWahl w = await h.OriginalWaehlen();
+
+            Assert.NotNull(w);
+            Assert.True(w.Verweigert);
+            Assert.Equal("anders.ifc", w.Dateiname);
+            Assert.StartsWith("fremdhaus.ifc, ", w.Quelle, StringComparison.Ordinal);
+            Assert.Contains("26.09.2026", w.Quelle, StringComparison.Ordinal);
+            GebaeudeExportMeldung grund = w.Meldungen.First(m => m.Stufe == WarnStufe.Fehler);
+            Assert.Equal("GEXP_PROT_ANR_HASH", grund.Schluessel);
+            Assert.Equal(grund.Text, w.Grund);
+            Assert.Contains("fremdhaus.ifc", w.Grund, StringComparison.Ordinal);
+
+            GebaeudeExportErgebnis e = await h.Anreichern("");
+            Assert.False(e.Gespeichert);
+            Assert.Equal(0, gerufen);
+            Assert.Equal(0, datei.Wahlen);
+        }
+
+        [Fact]
+        public async Task Ohne_IFC_Quelle_nennt_die_Vorschau_die_fehlende_Quelle()
+        {
+            var datei = new Dateiprobe { OeffnenPfad = OriginalAblegen(IfcAnreicherungTests.Fremdhaus()) };
+            Dienste.Datei = datei;
+
+            GebaeudeAnreicherungWahl w = await AnrHuelle(new List<ImportquelleModel>()).OriginalWaehlen();
+
+            Assert.True(w.Verweigert);
+            Assert.Equal(R.GEXP_ANR_KEINE_QUELLE, w.Quelle);
+            Assert.Equal("GEXP_PROT_ANR_KEINE_QUELLE", Assert.Single(w.Meldungen).Schluessel);
+        }
+
+        [Fact]
+        public async Task Die_Freigabe_zeigt_den_Beipackzettel_und_speichert_unter_dem_Dateivorschlag()
+        {
+            byte[] importiert = IfcAnreicherungTests.Fremdhaus();
+            string ziel = Path.Combine(_ordner, "haus_EPOS.ifc");
+            var datei = new Dateiprobe { OeffnenPfad = OriginalAblegen(importiert), Antwort = ziel };
+            Dienste.Datei = datei;
+            ImportquelleModel gesehen = null;
+            IReadOnlyList<ImportzuordnungModel> zuordnungen = null;
+            GebaeudeExportHuelle h = AnrHuelle(new List<ImportquelleModel> { IfcAnreicherungTests.Quelle(importiert) },
+                anreicherer: (pl, o, q, z, aus, pr) =>
+                {
+                    Assert.True(pr.IstIfc);
+                    Assert.False(pl.Abgelehnt);
+                    using var kopie = new MemoryStream();
+                    o.CopyTo(kopie);
+                    Assert.Equal(importiert, kopie.ToArray());
+                    gesehen = q;
+                    zuordnungen = z;
+                    return Bilanz(aus);
+                });
+
+            GebaeudeAnreicherungWahl w = await h.OriginalWaehlen();
+            Assert.False(w.Verweigert, w.Grund);
+            Assert.Null(w.Grund);
+            GebaeudeExportMeldung beipack = Assert.Single(w.Meldungen);
+            Assert.Equal("GEXP_PROT_ANR_BEIPACK_FREMDDATEI", beipack.Schluessel);
+            Assert.Equal(WarnStufe.Warnung, beipack.Stufe);
+
+            GebaeudeExportErgebnis e = await h.Anreichern("01067");
+
+            Assert.True(e.Gespeichert, e.Text);
+            Assert.Equal("haus_EPOS.ifc", datei.Vorschlag);
+            Assert.NotEqual("haus.ifc", datei.Vorschlag);
+            Assert.Equal(R.GEXP_DATEITYP_IFC + " " + GebaeudeExportProfil.DATEIFILTER_IFC, datei.Filter);
+            Assert.Equal(3, gesehen.ID);
+            Assert.Equal(IfcAnreicherungTests.Zuordnungen().Count, zuordnungen.Count);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.GEXP_ANR_MSG_GESPEICHERT, ziel, 64L, 5, 3, 1, 1), e.Text);
+            Assert.Equal(64, new FileInfo(ziel).Length);
+            Assert.Empty(datei.Geoeffnet);
+        }
+
+        [Fact]
+        public async Task Auf_iOS_wird_die_angereicherte_Datei_geteilt()
+        {
+            byte[] importiert = IfcAnreicherungTests.Fremdhaus();
+            string ziel = Path.Combine(_ordner, "haus_EPOS.ifc");
+            var datei = new Dateiprobe { OeffnenPfad = OriginalAblegen(importiert), Antwort = ziel };
+            Dienste.Datei = datei;
+            GebaeudeExportHuelle h = AnrHuelle(new List<ImportquelleModel> { IfcAnreicherungTests.Quelle(importiert) }, ios: true,
+                                               anreicherer: (pl, o, q, z, aus, pr) => Bilanz(aus));
+
+            Assert.False((await h.OriginalWaehlen()).Verweigert);
+            GebaeudeExportErgebnis e = await h.Anreichern("");
+
+            Assert.True(e.Gespeichert, e.Text);
+            Assert.Equal("haus_EPOS.ifc", datei.Vorschlag);
+            Assert.Equal(ziel, Assert.Single(datei.Geoeffnet));
+        }
+
+        [Fact]
+        public async Task Eine_Verweigerung_beim_Anreichern_fragt_keine_Datei_schreibt_nichts_und_teilt_nichts()
+        {
+            byte[] importiert = IfcAnreicherungTests.Fremdhaus();
+            var datei = new Dateiprobe { OeffnenPfad = OriginalAblegen(importiert), Antwort = Path.Combine(_ordner, "nie.ifc") };
+            Dienste.Datei = datei;
+            GebaeudeExportHuelle h = AnrHuelle(new List<ImportquelleModel> { IfcAnreicherungTests.Quelle(importiert) }, ios: true,
+                anreicherer: (pl, o, q, z, aus, pr) => GebaeudeAnreicherungBilanz.Verweigerung(new[]
+                {
+                    new PruefMeldung(PruefStufe.Fehler, "GEXP_PROT_ANR_ENTITAET_FEHLT", "2Fremd0Wand000000MitU0"),
+                }));
+
+            Assert.False((await h.OriginalWaehlen()).Verweigert);
+            GebaeudeExportErgebnis e = await h.Anreichern("");
+
+            Assert.False(e.Gespeichert);
+            Assert.False(e.Abgebrochen);
+            Assert.Equal(R.GEXP_ANR_MSG_NICHTS_GESCHRIEBEN, e.Text);
+            Assert.Equal("GEXP_PROT_ANR_ENTITAET_FEHLT", Assert.Single(e.Meldungen!).Schluessel);
+            Assert.Equal(0, datei.Wahlen);
+            Assert.Empty(datei.Geoeffnet);
+            Assert.False(File.Exists(Path.Combine(_ordner, "nie.ifc")));
+
+            // Ebenso eine Bilanz ohne Bytes.
+            GebaeudeExportHuelle leer = AnrHuelle(new List<ImportquelleModel> { IfcAnreicherungTests.Quelle(importiert) },
+                anreicherer: (pl, o, q, z, aus, pr) => new GebaeudeAnreicherungBilanz(true, false, 0, 0, 0, 0, null, 0));
+            Assert.False((await leer.OriginalWaehlen()).Verweigert);
+            Assert.False((await leer.Anreichern("")).Gespeichert);
+            Assert.Equal(0, datei.Wahlen);
+        }
+
+        [Fact]
+        public async Task Der_Kernweg_reichert_die_Originaldatei_an_und_laesst_sie_unveraendert()
+        {
+            byte[] importiert = IfcAnreicherungTests.Fremdhaus();
+            string ziel = Path.Combine(_ordner, "fremdhaus_EPOS.ifc");
+            var datei = new Dateiprobe { OeffnenPfad = OriginalAblegen(importiert, "fremdhaus.ifc"), Antwort = ziel };
+            Dienste.Datei = datei;
+            GebaeudeExportHuelle h = AnrHuelle(new List<ImportquelleModel> { IfcAnreicherungTests.Quelle(importiert) });
+
+            Assert.False((await h.OriginalWaehlen()).Verweigert);
+            GebaeudeExportErgebnis e = await h.Anreichern("");
+
+            Assert.True(e.Gespeichert, e.Text);
+            Assert.Equal("fremdhaus_EPOS.ifc", datei.Vorschlag);
+            Assert.StartsWith("ISO-10303-21;", File.ReadAllText(ziel, Encoding.ASCII), StringComparison.Ordinal);
+            Assert.NotEqual(importiert, File.ReadAllBytes(ziel));
+            Assert.Equal(importiert, File.ReadAllBytes(datei.OeffnenPfad));   // das Original bleibt unverändert
+        }
+
+        [Fact]
+        public void Der_Parametersatz_reicht_die_Gaben_der_Anreicherung()
+        {
+            IReadOnlyDictionary<string, object> gaben = Huelle().Gaben(geaendert: false);
+            Assert.IsType<Func<Task<bool>>>(gaben["AnreicherungMoeglich"]);
+            Assert.IsType<Func<Task<GebaeudeAnreicherungWahl>>>(gaben["OriginalWaehlen"]);
+            Assert.IsType<Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>>(gaben["Anreichern"]);
+            Assert.True(GebaeudeExportHuelle.Formate().Single(f => f.Wert == GebaeudeQuelle.FORMAT_IFC).MitAnreicherung);
+        }
+
+        [Fact]
+        public void Die_Quelle_steht_mit_Dateiname_und_Importzeitpunkt()
+        {
+            var q = new ImportquelleModel { Dateiname = "haus.ifc", Zeitpunkt = "2026-09-26T10:00:00" };
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.GEXP_ANR_QUELLE, "haus.ifc",
+                                       new DateTime(2026, 9, 26, 10, 0, 0).ToString("g", CultureInfo.CurrentCulture)),
+                         GebaeudeExportHuelle.Quelltext(q));
+            Assert.Equal(R.GEXP_ANR_KEINE_QUELLE, GebaeudeExportHuelle.Quelltext(null));
+            Assert.Contains("unbekannt", GebaeudeExportHuelle.Quelltext(new ImportquelleModel { Dateiname = "a.ifc", Zeitpunkt = "unbekannt" }));
         }
     }
 }
