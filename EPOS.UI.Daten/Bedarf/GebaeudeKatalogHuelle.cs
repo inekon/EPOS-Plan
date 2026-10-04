@@ -157,7 +157,7 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeZonenCtrl.SpeichernJeGebaeude"/>).
         ///
         /// <para><b>Was die Oberfläche nicht bearbeitet, bleibt</b>: Die Spalten einer Zone, die der
-        /// Zonendialog nicht führt (Kühl- und Übergabeeingaben, Herkunft; Stufe G6b, A4 (a)), hält der
+        /// Zonendialog nicht führt (Kühleingaben, Herkunft; Stufe G6b, A4 (a)), hält der
         /// Weg je Id fest und schreibt sie unverändert zurück; eine neue Zone trägt die Herkunft
         /// ihres Vorschlags. Ein Duplikat (Stufe G6a, <see cref="ZoneDaten.VorlageId"/>) übernimmt diese
         /// Spalten von seiner Vorlage — ohne deren Herkunft, Quellkennung und Importpaarung.</para>
@@ -196,6 +196,14 @@ namespace WindowsFormsApplication1
                 Bewohner = z.Bewohner,
                 HeizungStrahlungsanteil = z.Heizung_Strahlungsanteil,
                 HeizleistungMaxKw = z.Heizleistung_Max,
+                // E63 (AK1z): die sieben Uebergabefelder der Zone; NULL = wie Gebaeude.
+                UebergabeArt = z.Uebergabe_Art,
+                UebergabeExponent = z.Uebergabe_Exponent,
+                UebergabeLeistungNennKw = z.Uebergabe_Leistung_Nenn,
+                AuslegungVorlauf = z.Auslegung_Vorlauf,
+                AuslegungRuecklauf = z.Auslegung_Ruecklauf,
+                AuslegungRaumtemperatur = z.Auslegung_Raumtemperatur,
+                ReglerProportionalband = z.Regler_Proportionalband,
                 Konditionierung = z.ID > 0
                     ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Zone(idGebaeude, z.ID), gebaeudeebene)
                     : KonditionierungHuelle.Leer(),
@@ -250,7 +258,7 @@ namespace WindowsFormsApplication1
             };
 
             // Die Zeilen des Kerns aus dem Arbeitsstand (Stufe G6a): Was die Oberflaeche nicht fuehrt
-            // (Kuehl- und Uebergabespalten, G6b A4 a), kommt aus der gelesenen Zeile gleicher Id; ein
+            // (Kuehlspalten, G6b A4 a), kommt aus der gelesenen Zeile gleicher Id; ein
             // Duplikat nimmt es von seiner Vorlage (VorlageId) - ohne Herkunft, Quellkennung und
             // Importpaarung der Vorlage; eine neue Zone ist manuell.
             List<ZoneModel> Zeilen(IReadOnlyList<ZoneDaten> liste)
@@ -285,6 +293,15 @@ namespace WindowsFormsApplication1
                     z.Bewohner = d.Bewohner;
                     z.Heizung_Strahlungsanteil = d.HeizungStrahlungsanteil;
                     z.Heizleistung_Max = d.HeizleistungMaxKw;
+                    // E63 (AK1z): die Uebergabe je Zone fuehrt der Dialog - sie kommt aus dem Arbeitsstand,
+                    // nicht aus der gelesenen Zeile; die Kuehlspalten bleiben, wie sie stehen.
+                    z.Uebergabe_Art = d.UebergabeArt;
+                    z.Uebergabe_Exponent = d.UebergabeExponent;
+                    z.Uebergabe_Leistung_Nenn = d.UebergabeLeistungNennKw;
+                    z.Auslegung_Vorlauf = d.AuslegungVorlauf;
+                    z.Auslegung_Ruecklauf = d.AuslegungRuecklauf;
+                    z.Auslegung_Raumtemperatur = d.AuslegungRaumtemperatur;
+                    z.Regler_Proportionalband = d.ReglerProportionalband;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel
                     {
                         ID = b.Id,
@@ -376,7 +393,15 @@ namespace WindowsFormsApplication1
                 // kein Luftaustausch - benannt, der Schreibweg des Kerns lehnt sie ebenso ab.
                 KopplungSperre = GebaeudeZonenanschluss.KopplungVorhanden() ? null
                     : string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.GEBZ_SPERRE_KOPPLUNG,
-                                    ZonenkopplungSchema.SCHRITT)
+                                    ZonenkopplungSchema.SCHRITT),
+                // E63 (AK1z): ohne den Schemaschritt der Uebergabe je Zone schreibt der Kern die vier
+                // Auslegungs- und Reglerspalten nicht - benannt gesperrt statt still verloren.
+                UebergabeSperre = GebaeudeZonenanschluss.UebergabespaltenVorhanden() ? null
+                    : string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.ZONDLG_UEBERGABE_SPERRE,
+                                    ZonenUebergabeSchema.SCHRITT),
+                ProjektKoppelt = idProjekt > 0
+                    ? Waermeuebergabe.StufeAn(KonfigurationCtrl.AnlagenkopplungLesen(idProjekt))
+                    : null
             };
         }
 

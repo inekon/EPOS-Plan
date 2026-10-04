@@ -34523,6 +34523,54 @@ Do you want to allow this?</value>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>An unheated zone floats freely: no heating, no cooling, no set points.</value>
   </data>
+  <data name="ZONDLG_UEBERGABE_GRUPPE" xml:space="preserve">
+    <value>Heat emission</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_WIE_GEBAEUDE" xml:space="preserve">
+    <value>from the building ({0})</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_PLATZHALTER" xml:space="preserve">
+    <value>from the building: {0}</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG" xml:space="preserve">
+    <value>Share of the building by usable area</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_HERKUNFT_ZONE" xml:space="preserve">
+    <value>chosen for the zone</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE" xml:space="preserve">
+    <value>from the building</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_ART" xml:space="preserve">
+    <value>Effective heat emitter type: {0} ({1}). Defaults of the type: exponent {2}, design {3}/{4} °C, proportional band {5} K. An empty field takes the value of the building, or the default of the type if the building has none; the design room temperature is then the day set point of the zone, the nominal output the share of the building by the usable area of the heated zones.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_IDEAL" xml:space="preserve">
+    <value>Effective heat emitter type: ideal ({0}) — the zone is calculated with ideal control, without heat emission. The fields appear with radiator, panel heating or convector.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS" xml:space="preserve">
+    <value>No effect as long as the heating circuit of the building is off — the values are kept.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS" xml:space="preserve">
+    <value>No effect as long as the project does not calculate a system coupling (AK1) — the values are kept.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT" xml:space="preserve">
+    <value>An unheated zone has no heat emission; its values are kept.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_SPERRE" xml:space="preserve">
+    <value>The database does not know the heat emission per zone (schema step {0} is missing); the zone takes the heat emission of the building.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_ERL" xml:space="preserve">
+    <value>Heat emission of the zone; empty = from the building (value of the building, otherwise default of the effective type). Effective only for a heated zone, with the heating circuit of the building switched on and system coupling AK1 in the project.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_ART_ERL" xml:space="preserve">
+    <value>Heat emitter type of the zone: IDEAL, RADIATOR, FLAECHE or KONVEKTOR; empty = from the building. IDEAL means: this zone is calculated ideally even if the building is coupled.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_WIRKSAM_NAME" xml:space="preserve">
+    <value>Effective heat emission</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_WIRKSAM_ERL" xml:space="preserve">
+    <value>The effective heat emission of the zone with the origin of each value (zone, building or default of the type); read only.</value>
+  </data>
   <data name="ZONDLG_ZEILE_LUFTWECHSEL" xml:space="preserve">
     <value>Air change rate of the zone: {0} 1/h ({1}).</value>
   </data>

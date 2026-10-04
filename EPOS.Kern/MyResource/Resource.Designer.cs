@@ -115497,6 +115497,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_GRUPPE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die an der Zone gewählt ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_HERKUNFT_ZONE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_HERKUNFT_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart der Zone: IDEAL, RADIATOR, FLAECHE oder KONVEKTOR; leer = wie Gebäude. IDEAL heißt: diese Zone rechnet ideal, auch wenn das Gebäude gekoppelt ist. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_KI_ART_ERL {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_KI_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeübergabe der Zone; leer = wie Gebäude (Wert des Gebäudes, sonst Vorgabe der wirksamen Art). Wirkt nur bei beheizter Zone, eingeschaltetem Heizkreis des Gebäudes und Anlagenkopplung AK1 im Projekt. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_KI_ERL {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_KI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die wirksame Übergabe der Zone mit Herkunft je Wert (Zone, Gebäude oder Vorgabe der Art); nur lesen. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_KI_WIRKSAM_ERL {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_KI_WIRKSAM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Übergabe ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_KI_WIRKSAM_NAME {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_KI_WIRKSAM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude: {0} ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil des Gebäudes nach Nutzfläche ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank kennt die Übergabe je Zone nicht (Schemaschritt {0} fehlt); die Zone übernimmt die Übergabe des Gebäudes. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_SPERRE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude ({0}) ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_WIE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_WIE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Übergabeart: {0} ({1}). Vorgaben der Art: Exponent {2}, Auslegung {3}/{4} °C, Proportionalband {5} K. Ein leeres Feld übernimmt den Wert des Gebäudes, trägt das Gebäude keinen, die Vorgabe der Art; die Auslegungsraumtemperatur ist dann das Soll am Tag der Zone, die Nennleistung der Anteil des Gebäudes nach der Nutzfläche der beheizten Zonen. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_ART {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Wirkung, solange der Heizkreis des Gebäudes aus ist — die Werte bleiben erhalten. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Übergabeart: ideal ({0}) — die Zone rechnet mit idealer Regelung, ohne Übergabe. Die Felder erscheinen mit Radiator, Flächenheizung oder Konvektor. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_IDEAL {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Wirkung, solange das Projekt keine Anlagenkopplung (AK1) rechnet — die Werte bleiben erhalten. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine unbeheizte Zone hat keine Wärmeübergabe; ihre Werte bleiben erhalten. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus Aufbau ähnelt.
         /// </summary>
         public static string ZONDLG_U_AUS_AUFBAU {

@@ -5046,7 +5046,30 @@ namespace WindowsFormsApplication1
                                      leerErlaubt: true, min: 0.0, max: 1.0),
                     new KiDialogFeld("heizleistung_max", SICHT + "HeizleistungMax", KiDialogTexte.ZonHeizleistungName,
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonHeizleistungErl,
-                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01)
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                    // E63 (AK1z): die Uebergabe je Zone - leer = wie Gebaeude; dieselben Baender wie am Gebaeude.
+                    new KiDialogFeld("uebergabe_art", SICHT + "UebergabeArt", KiDialogTexte.GebkUebergabeArtName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonUebergabeArtErl, leerErlaubt: true),
+                    new KiDialogFeld("uebergabe_exponent", SICHT + "UebergabeExponent", KiDialogTexte.GebkUebergabeExponentName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, leerErlaubt: true,
+                                     min: Waermeuebergabevorgaben.EXPONENT_MIN, max: Waermeuebergabevorgaben.EXPONENT_MAX),
+                    new KiDialogFeld("uebergabe_nennleistung", SICHT + "UebergabeNennleistung",
+                                     KiDialogTexte.GebkUebergabeNennleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                    new KiDialogFeld("auslegung_vorlauf", SICHT + "AuslegungVorlauf", KiDialogTexte.GebkAuslegungVorlaufName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true, min: Waermeuebergabevorgaben.VORLAUF_MIN, max: Waermeuebergabevorgaben.VORLAUF_MAX),
+                    new KiDialogFeld("auslegung_ruecklauf", SICHT + "AuslegungRuecklauf", KiDialogTexte.GebkAuslegungRuecklaufName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("auslegung_raum", SICHT + "AuslegungRaumtemperatur", KiDialogTexte.GebkAuslegungRaumName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true, min: Waermeuebergabevorgaben.RAUM_MIN, max: Waermeuebergabevorgaben.RAUM_MAX),
+                    new KiDialogFeld("proportionalband", SICHT + "Proportionalband", KiDialogTexte.GebkProportionalbandName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_KELVIN,
+                                     leerErlaubt: true, min: Waermeuebergabevorgaben.BAND_MIN, max: Waermeuebergabevorgaben.BAND_MAX),
+                    new KiDialogFeld("uebergabe_wirksam", SICHT + "UebergabeWirksam", KiDialogTexte.ZonUebergabeWirksamName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonUebergabeWirksamErl, leerErlaubt: true, nurLesen: true)
                 }
                 // Stufe KP2, Welle U4 (Teilkonzept 3.4, 7.3): die Zonenmatrix aus dem Profil
                 // KiKonditionierungsfelder (Zonenkarte) - die Sichtklasse beantwortet sie als Feldtafel;
