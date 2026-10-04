@@ -1,6 +1,6 @@
 # Plan der Wellen G7b bis KU3 — Sitzung Gebäudesimulation
 
-**Stand 04.10.2026, nach den Entscheiden E67 und E68 (Kältespeicher ja).** Dieses Papier plant die Stufen, die nach E67 vor KU3
+**Stand 04.10.2026, nach den Entscheiden E67, E68 (Kältespeicher ja) und E69 (Gegenüber des IFC-Exports: Revit, Archicad, HiCAD; Zweck Round-Trip).** Dieses Papier plant die Stufen, die nach E67 vor KU3
 liegen, und KU3 selbst: Reihenfolge, Zuschnitt in Wellen und Agentenaufträge, Abnahme, Rückfragen an
 den Stufengrenzen und der geschätzte Verbrauch. Es ist ein Arbeitsplan, kein Konzept: Fachliche
 Festlegungen stehen in den Konzepten, auf die jede Zeile verweist. Erledigte Wellen wandern mit
@@ -19,8 +19,8 @@ Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.m
 |---|---|---|---|---|---|
 | 1 | **G7b** | gbXML Stufe 2 und 3D-Körperansicht (läuft) | 7–12 (+4–7 Ansicht) | 4–5 Punkte | keine (E66) |
 | 2 | **G7c** | IFC-Export S1, semantisch (Teil 1 läuft) | 12–20 | 7–9 Punkte | keine (D6: semantisch zuerst) |
-| 3 | **G7d** | Round-Trip-Anreicherung fremder IFC4-Dateien | 6–11 | 4–5 Punkte | **Gegenüber des IFC-Exports (D6)** |
-| 4 | **G7e** | Schematische Körper im IFC | 8–15 | 5–7 Punkte | Gegenüber bestätigt; Prüfbilder aus zwei Betrachtern liegen beim Anwender |
+| 3 | **G7d** | Round-Trip-Anreicherung fremder IFC4-Dateien — die tragende Stufe nach E69 | 6–11 | 4–5 Punkte | keine (E69) |
+| 4 | **G7e** | Schematische Körper im IFC | 8–15 | 5–7 Punkte | keine (E69: Empfänger sind Betrachter); Prüfbilder aus Revit, Archicad, HiCAD liegen beim Anwender |
 | 5 | **KU3** | Kältemaschine mit Rückkühlung, freie Kühlung über die Quelle, Kühlung je Zone, Export, Kältespeicher (E68: ja) | 20–31 | 15–19 Punkte | Katalogsaat der Kältemaschinen |
 
 Maßstab: EV1 (3–4 PT) kostete rund 3 Punkte des Wochenlimits bei rund 230 Werkzeugaufrufen. Ein
@@ -62,9 +62,10 @@ Scratchpad und bittet um das Protokoll. Erst Probe 16 trägt die Aussage in Konz
 
 ## 4 G7d — Round-Trip-Anreicherung
 
-Vorbedingungen: G7c abgenommen; der Anwender hat das Gegenüber des IFC-Exports benannt (D6 —
-Werkzeug und Zweck, etwa „Energieberater mit Solibri“ oder „Archivierung“). Ohne diese Antwort wird
-G7d nicht gestartet, G7e auch nicht.
+Vorbedingungen: G7c abgenommen. Das Gegenüber ist mit E69 benannt: Revit, Archicad und HiCAD; der
+Zweck ist die angereicherte Rückgabe der Architektendatei — G7d ist damit die tragende Stufe des
+IFC-Exports. Quelldateien müssen in IFC4 vorliegen (Revit und Archicad schreiben IFC4; eine Datei in
+IFC2x3 oder IFC4.3 wird benannt abgelehnt, mit Angebot einer eigenen Datei nach G7c).
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
@@ -75,9 +76,8 @@ G7d nicht gestartet, G7e auch nicht.
 
 ## 5 G7e — schematische Körper im IFC
 
-Vorbedingungen: G7b und G7d abgenommen; das Gegenüber (D6) erwartet eine Datei im Betrachter —
-sonst wird G7e nach Konzept 6.7 („lohnt erst, wenn im Feld jemand die Datei in einem Betrachter
-erwartet“) zurückgestellt und der Anwender entscheidet.
+Vorbedingungen: G7b und G7d abgenommen. Nach E69 sind die Empfänger Betrachter (Revit, Archicad,
+HiCAD); ein eigener Export ohne Architektendatei bliebe dort leer, deshalb wird G7e gebaut.
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
@@ -122,8 +122,8 @@ und ein Sonnet-Auftrag.
 | Wann | Was |
 |---|---|
 | nach G7b | Sichtprobe Körperansicht unter Windows; Logbuch-Version; Wiki-Upload gebündelt |
-| vor G7d | Gegenüber des IFC-Exports (D6) benennen |
-| nach G7c | Probe 15 (bSI-Validierungsdienst) und Probe 16 (Betrachter-Prüfmatrix) mit der bereitgestellten Datei |
-| vor G7e | Entscheid, ob das Gegenüber eine Datei im Betrachter erwartet |
+| vor G7d | erledigt mit E69 (Revit, Archicad, HiCAD; Round-Trip) |
+| nach G7c | Probe 15 (bSI-Validierungsdienst) und Probe 16 (Betrachter-Prüfmatrix in Revit, Archicad und HiCAD) mit der bereitgestellten Datei |
+| vor G7e | erledigt mit E69 |
 | vor KU3 | Freigabe der neutralen Katalogsaat (K7 ist mit E68 entschieden: ja) |
 | laufend | AK1z (eigene Sitzung, Bundle-Weg für Testdatenbank 181 und Basis R35); die Reihenfolge nach KU3: AK2, AK3, GA (E67) |
