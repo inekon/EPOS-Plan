@@ -23,7 +23,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(KaeltemaschineSchema.SCHRITT + 1, KaeltemaschineAnlageSchema.SCHRITT);
             Assert.Equal(183, KaeltemaschineAnlageSchema.SCHRITT);
-            Assert.Equal(KaeltemaschineAnlageSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KaeltemaschineAnlageSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, Paketanhebung.Stufen.Single(x => x.Nr == KaeltemaschineAnlageSchema.SCHRITT).Wirkung);
             Assert.Equal(13, KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE);
             Assert.Equal(11, KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE);

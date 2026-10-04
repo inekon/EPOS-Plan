@@ -897,7 +897,10 @@ namespace WindowsFormsApplication1
         /// Anzahl an <c>Tab_Energieanlagen</c>, Kühleingaben an der Projektkopie, Kostenkomponente samt Vorlagen,
         /// Ergebnistabelle je Maschine (<see cref="KaeltemaschineAnlageSchema"/>). <b>Ergebnisneutral:</b> Kein
         /// Referenzprojekt führt eine Anlagenzeile der Kältemaschine.
-        public const int Zielversion = KaeltemaschineAnlageSchema.SCHRITT;
+        /// Danach, mit der KÄLTESPITZE JE ZONE (MZ-Rest), steht das Ziel auf <see cref="ZonenKaeltespitzeSchema.SCHRITT"/>:
+        /// Kältespitze und Kühlstunden an <c>Tab_ErgebnisZone</c> (<see cref="ZonenKaeltespitzeSchema"/>).
+        /// <b>Ergebnisneutral:</b> Die Spalten entstehen leer und bleiben es ohne wirksame Kühlung.
+        public const int Zielversion = ZonenKaeltespitzeSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

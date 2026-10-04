@@ -1539,6 +1539,9 @@ namespace WindowsFormsApplication1
             Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_VORLAUF_MITTEL, z => z.VorlaufMittelC, (z, w) => z.VorlaufMittelC = w),
             Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_RUECKLAUF_MITTEL, z => z.RuecklaufMittelC, (z, w) => z.RuecklaufMittelC = w),
             Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_UEBERGABE_BEGRENZT, z => z.UebergabeBegrenztH, (z, w) => z.UebergabeBegrenztH = w),
+            // Schritt 185 (MZ-Rest): die Kaelte der Zone - NULL ohne wirksame Kuehlung.
+            Zahl<ErgebnisZoneModel>(ZonenKaeltespitzeSchema.SPALTE_KAELTESPITZE, z => z.KaeltespitzeKw, (z, w) => z.KaeltespitzeKw = w),
+            Ganz<ErgebnisZoneModel>(ZonenKaeltespitzeSchema.SPALTE_KUEHLSTUNDEN, z => z.KuehlstundenH, (z, w) => z.KuehlstundenH = w),
         };
 
         /// <summary>
