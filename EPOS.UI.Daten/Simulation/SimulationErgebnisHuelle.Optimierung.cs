@@ -23,15 +23,16 @@ namespace WindowsFormsApplication1
     /// <see cref="StromspeicherAuslegungCtrl"/> — Hausregel: Datenbankseite in den
     /// Kern.</para>
     ///
-    /// <para><b>Seit Auftrag #274 sind es vier</b> (Anwenderwunsch 14.09.2026: „Der
+    /// <para><b>Es sind drei</b> (Anwenderwunsch 14.09.2026: „Der
     /// Dialog Stromspeicher soll in den Dialog Konfiguration verschoben werden"). Der
     /// Reiter „Stromspeicher" ist reines ERGEBNIS und braucht davon nur noch zwei: die
     /// CSV der Flottenansicht (<see cref="OptimierungCsv"/>) und den Verweis zurück in
-    /// Schritt ① (<see cref="KonfigurationOeffnen"/>). Die anderen zwei gehören der
+    /// Schritt ① (<see cref="KonfigurationOeffnen"/>). Der dritte gehört der
     /// KONFIGURATION: <see cref="AuslegungOeffnen"/> ist ihr Knopf „Stromspeicher
     /// auslegen…" (eingelegt von <c>SimulationAnsichtQuelle</c>, weil die Auslegung
-    /// den gerechneten Lauf DIESER Hülle braucht), und <see cref="OptimierungVorgaben"/>
-    /// bestückt den Projektlauf mit dem Flottenstand.</para>
+    /// den gerechneten Lauf DIESER Hülle braucht). Den Flottenstand des Projektlaufs
+    /// bildet der Lauf selbst an seiner Speicherstufe
+    /// (<c>SimulationControl.SpeicherflotteAusLaufVorbelegen</c>).</para>
     ///
     /// <para><b>Was mit #274 gefallen ist</b>: der Schreibweg der Betriebsoptionen
     /// (<c>OptimierungEinstellungenSpeichern</c>) und die Flottenprobe
@@ -60,12 +61,6 @@ namespace WindowsFormsApplication1
             if (!ReferenceEquals(_auslegung.Lauf, sim)) _auslegung.LaufUebernehmen(sim);
             return _auslegung;
         }
-
-        /// <summary>
-        /// Vorbelegung des Suchraums samt der aktuellen Auslegung — <b>Datenbankzugriff</b>,
-        /// deshalb auf dem Bedienfaden.
-        /// </summary>
-        private SpeicherOptimierungVorgaben OptimierungVorgaben() => Auslegung().Vorgaben();
 
         /// <summary>
         /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Muster W16c‑E‑3,

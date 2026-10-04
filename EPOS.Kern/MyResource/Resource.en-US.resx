@@ -44866,5 +44866,20 @@ chart</value>
   <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
     <value>Every curve point needs a heat rejection and a chilled water temperature.</value>
   </data>
+  <data name="SIMERG_SP_VORGABEN_FEHLER" xml:space="preserve">
+    <value>The storage settings could not be prepared: {0}</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_ZEILE" xml:space="preserve">
+    <value>Peak target of this run: {0} kW – {1}</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_LASTGANG" xml:space="preserve">
+    <value>from this run's load profile without storage</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_RUECKFALL" xml:space="preserve">
+    <value>fallback from the peak demand, without load profile</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_GESPEICHERT" xml:space="preserve">
+    <value>from the saved fleet configuration</value>
+  </data>
 </root>
 

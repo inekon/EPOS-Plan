@@ -44873,5 +44873,20 @@ Chart</value>
   <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
     <value>Jeder Kennlinienpunkt braucht eine Rückkühl- und eine Kaltwassertemperatur.</value>
   </data>
+  <data name="SIMERG_SP_VORGABEN_FEHLER" xml:space="preserve">
+    <value>Die Speicher-Einstellungen konnten nicht vorbereitet werden: {0}</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_ZEILE" xml:space="preserve">
+    <value>Peak-Ziel dieses Laufs: {0} kW – {1}</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_LASTGANG" xml:space="preserve">
+    <value>aus dem Lastgang dieses Laufs ohne Speicher</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_RUECKFALL" xml:space="preserve">
+    <value>Rückfall aus der Bezugsspitze, ohne Lastgang</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_GESPEICHERT" xml:space="preserve">
+    <value>aus dem gespeicherten Flottenstand</value>
+  </data>
 </root>
 

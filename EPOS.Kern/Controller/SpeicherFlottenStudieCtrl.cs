@@ -47,6 +47,8 @@ public static partial class SpeicherFlottenStudieCtrl
         v.Eingaben.Auslegung ??= new();
         if (v.Eingaben.Auslegung.Flotte != null)
         {
+            // Ein gespeicherter Stand trägt sein eingefrorenes Peak-Ziel.
+            v.PeakZielHerkunft = FlottenPeakZielHerkunft.Gespeichert;
             BedienvorgabenErgaenzen(v.Eingaben.Auslegung, Preisvorschlag(projektId, v.Eingaben.Auslegung));
             return v;
         }
@@ -55,14 +57,14 @@ public static partial class SpeicherFlottenStudieCtrl
         if (p == null)
         {
             v.Eingaben.Auslegung.Flotte = new FlottenStudieKonfiguration();
-            BetriebsvorgabenSetzen(v.Eingaben.Auslegung.Flotte, peak, ctrl, sim);
+            v.PeakZielHerkunft = BetriebsvorgabenSetzen(v.Eingaben.Auslegung.Flotte, peak, ctrl, sim);
             v.Eingaben.Auslegung.Flotte.Wirtschaftlichkeit.Kalkulationszins = .03;
             BedienvorgabenErgaenzen(v.Eingaben.Auslegung, Preisvorschlag(projektId, v.Eingaben.Auslegung));
             return v;
         }
         var f = new FlottenStudieKonfiguration();
         EinheitenAusProjektanlagen(f, projektId, ctrl, p);
-        BetriebsvorgabenSetzen(f, peak, ctrl, sim);
+        v.PeakZielHerkunft = BetriebsvorgabenSetzen(f, peak, ctrl, sim);
         f.Optionen.NeuplanungAlleIntervalle = 96;
         f.Tarif.LeistungspreisEuroProKw = v.Eingaben.LeistungspreisEurProKwA;
         f.Wirtschaftlichkeit.Kalkulationszins = p.Kapitalzins;
@@ -367,18 +369,21 @@ public static partial class SpeicherFlottenStudieCtrl
     /// <param name="f">Die neu angelegte Flottenkonfiguration.</param>
     /// <param name="bezugsspitzeKw">Die Bezugsspitze des Lastgangs [kW] aus dem Lauf; 0 = unbekannt.</param>
     /// <param name="ctrl">Der Speichercontroller, über den die EPOS-Reihen gebildet werden.</param>
-    /// <param name="sim">Der abgeschlossene Simulationslauf; <c>null</c> = keine Zeitreihe, benannter Rückfall.</param>
-    private static void BetriebsvorgabenSetzen(FlottenStudieKonfiguration f, double bezugsspitzeKw,
+    /// <param name="sim">Der Simulationslauf mit gerechnetem Strombedarf; <c>null</c> = keine Zeitreihe, benannter Rückfall.</param>
+    /// <returns>Die Herkunft des gesetzten Peak-Ziels (Lastgang oder Rückfall).</returns>
+    private static FlottenPeakZielHerkunft BetriebsvorgabenSetzen(FlottenStudieKonfiguration f, double bezugsspitzeKw,
         StromspeicherSimCtrl ctrl, SimulationControl sim)
     {
         f.Optionen.NetzladungErlaubt = FlottenVorgaben.NetzladungFuer(f.Optionen.Betriebsziel);
         f.Optionen.PeakZielAdaptiv = FlottenVorgaben.PeakZielAdaptivFuer(f.Optionen.Betriebsziel);
-        f.Optionen.WirtschaftlicherPeakZielwertKw = PeakZielVorschlag(f, bezugsspitzeKw, ctrl, sim).PeakZielKw;
+        FlottenPeakZielVorschlag vorschlag = PeakZielVorschlag(f, bezugsspitzeKw, ctrl, sim);
+        f.Optionen.WirtschaftlicherPeakZielwertKw = vorschlag.PeakZielKw;
         // PV3 (Welle M5): Die HARTE Einspeisegrenze einer neuen Flotte wird mit der Einspeisegrenze
         // der Projekteinstellung vorbelegt - benannt im Netzblock des Dialogs
         // (FLOTTE_ED_EINSPEISEGRENZE_PROJEKT), nie still. Eine gepflegte Grenze bleibt.
         if (!f.Optionen.NetzeinspeisungGrenzeKw.HasValue)
             f.Optionen.NetzeinspeisungGrenzeKw = SpeicherFlottenProjektCtrl.WeicheEinspeisegrenze(sim);
+        return vorschlag.Herkunft;
     }
 
     /// <summary>
