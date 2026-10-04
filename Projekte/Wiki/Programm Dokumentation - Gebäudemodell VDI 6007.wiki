@@ -18,9 +18,9 @@ Fassen Sie den Schalter nicht an, rechnet das Gebäude mit der Vorgabe des Progr
 == Eingaben ==
 {{Anker|eingaben}}
 
-Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Raumtemperaturen samt Absenkung, Wochenende und Ferien. Führt ein Gebäude im Projekt Zonen, nimmt das Modell die Hülle statt aus der Tabelle aus den Bauteilen seiner Zonen (siehe [[#bauteilweg|Bauteilweg]]); mit zwei und mehr Zonen rechnet es jede Zone für sich, gekoppelt über Trennflächen und Luftaustausch (siehe [[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]).
+Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Konditionierung: Heiz- und Kühlsollwerte, Lüftung, Geräte und Personen als Matrix mit Kalendern aus Absenkung, Wochenende, Ferien und Saison (siehe [[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Reiter „Konditionierung"]]). Unter VDI 6007 ist die Matrix die Vorgabe, ein angelegter Kalender geht ihr vor. Führt ein Gebäude im Projekt Zonen, nimmt das Modell die Hülle statt aus der Tabelle aus den Bauteilen seiner Zonen (siehe [[#bauteilweg|Bauteilweg]]); mit zwei und mehr Zonen rechnet es jede Zone für sich, gekoppelt über Trennflächen und Luftaustausch (siehe [[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]).
 
-Für einen Satz des Gebäudekatalogs pflegen Sie dieselben Angaben im Stammblatt der Gebäudeverwaltung (Menü '''Administration''' › ''Gebäude'' › ''Bearbeiten''): unter ''Kenndaten'' Wohn-/Nutzfläche und Bauart, unter ''Hülle'' Kennwert und Größe je Bauteil samt der Randbedingung der Bodenplatte, dazu ''Fenster nach Orientierung'', ''Kenngrößen'' und aufklappbar ''Alle Daten'' mit Raumtemperaturen, Ferien, Modellparametern, Rechenweg und Kühlung. ''Speichern'' prüft sie mit denselben Regeln wie der Gebäudedialog; ''Neu…'' legt einen neuen Satz über dessen Eingabemaske an. Einen Wärmebedarf zeigt die Verwaltung nicht – er hängt an der Klimaregion und den Angaben des Projekts und steht im Gebäudedialog des Projekts unter ''Simulation…''.
+Für einen Satz des Gebäudekatalogs pflegen Sie dieselben Angaben im Stammblatt der Gebäudeverwaltung (Menü '''Administration''' › ''Gebäude'' › ''Bearbeiten''): unter ''Kenndaten'' Wohn-/Nutzfläche und Bauart, unter ''Hülle'' Kennwert und Größe je Bauteil samt der Randbedingung der Bodenplatte, dazu ''Fenster nach Orientierung'', ''Kenngrößen'' und aufklappbar ''Alle Daten'' mit der Konditionierung, den Modellparametern, dem Rechenweg und der Kühlung. ''Speichern'' prüft sie mit denselben Regeln wie der Gebäudedialog; ''Neu…'' legt einen neuen Satz über dessen Eingabemaske an. Einen Wärmebedarf zeigt die Verwaltung nicht – er hängt an der Klimaregion und den Angaben des Projekts und steht im Gebäudedialog des Projekts unter ''Simulation…''.
 
 Wie ein Gebäude gekühlt wird – Haken, Kühlsollwert und Kühlleistungsgrenze in der Gruppe ''Kühlung'' –, beschreibt die Seite [[Programm Dokumentation/Kühlung|Kühlung]].
 
@@ -41,7 +41,7 @@ Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, 
 |-
 | Heizleistungsgrenze || unbegrenzt || größte Heizleistung in kW; darüber sinkt die Raumtemperatur unter den Sollwert
 |-
-| Randbedingung der Bodenplatte || Erdreich || ''Erdreich'' (Temperatur in 1 m Tiefe aus dem Jahresgang der Außenluft), ''Keller'' (unbeheizter Keller mit der Kellertemperatur, Vorgabe 10 °C) oder ''Außenluft''
+| Randbedingung der Bodenplatte || Erdreich || ''Erdreich'' (Temperatur in 1 m Tiefe aus dem Jahresgang der Außenluft; der Wärmedurchgang der Bodenplatte samt Erdreich nach DIN EN ISO 13370 aus Grundfläche und freiliegendem Umfang, oder mit dem ''Wirksamen U-Wert Bodenplatte'' als Vorgabe unmittelbar, siehe [[Programm Dokumentation/Gebäude#flaechen|Gebäude: Hülle]]), ''Keller'' (unbeheizter Keller mit der Kellertemperatur, Vorgabe 10 °C) oder ''Außenluft''
 |-
 | Außenbauteile mit Strahlung || aus || siehe [[#strahlung|Strahlung auf die Außenbauteile]]
 |-
@@ -166,6 +166,34 @@ Die Sommerlüftung senkt Kühlbedarf und Überhitzungsstunden. Auf den Heizbedar
 
 Bei einem gekühlten Gebäude (siehe [[Programm Dokumentation/Kühlung|Kühlung]]) liegt die Schwelle nicht bei 23 °C, sondern 3 K unter dem Kühlsollwert: Die Nutzer öffnen die Fenster, bevor gekühlt wird.
 
+== Heizperiode ==
+{{Anker|heizperiode}}
+
+Die '''Heizperiode''' ist die Saison der Heizspalte der Konditionierung (siehe [[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Reiter „Konditionierung"]]): Start und Ende als Datum, innerhalb wird geheizt, außerhalb steht der Heizsollwert auf ''aus''. Dort rechnet das Modell ohne Heizung, der Raum schwingt frei; leer heißt ganzjährig. Die Kühlperiode wirkt ebenso auf die Kühlspalte ([[Programm Dokumentation/Kühlung#kuehlperiode|Kühlung]]).
+
+Die Heizperiode schneidet Bedarf ab, den die Raumheizung sonst gedeckt hätte. Liegt die Raumluft einer beheizten Zone außerhalb der Heizperiode in Nutzungsstunden unter dem Tagwert der Heizspalte, zählt der Lauf diese Stunden und nennt die Zahl und die größte Unterschreitung in K als Hinweis im Protokoll; die Rechnung läuft weiter. Wer den Bedarf dort decken will, verlängert die Heizperiode.
+
+== Nachtauskühlung ==
+{{Anker|nachtauskuehlung}}
+
+Die Zelle ''Nacht'' der Lüftungsspalte trägt einen erhöhten Luftwechsel der Nutzerlüftung in 1/h mit eigenem Nachtfenster (''von–bis''; leer gilt das Nachtfenster der Heizspalte) und einem Temperaturabstand ''ΔT Außenluft''. Die Nachtauskühlung wirkt immer '''bedingt''', einen Schalter gibt es nicht: Der Überschuss über den Tageswert gilt nur in den Stunden des Nachtfensters, in denen die Raumluft der Vorstunde über der Schwelle liegt und die Außenluft mindestens ΔT kühler ist; sonst gilt der Tageswert. Die Schwelle ist wie bei der [[#sommerlueftung|Sommerlüftung]] 23 °C, in der Kühlperiode eines gekühlten Gebäudes 3 K unter dem Kühlsollwert. ΔT ist 2 K, einstellbar von 0 bis 5 K; geschlossen wird mit 1 K Hysterese. Eine unbedingte Nachtauskühlung gibt es nicht, weil sie auch in Winternächten lüftete und die Heizwärme höbe.
+
+Sind Sommerlüftung und Nachtauskühlung gesetzt, gilt der größere Luftwechsel. Die Wirkung: Die Raumluft ist am Morgen kühler, es gibt weniger Überhitzungsstunden und mit wirksamer Kühlung weniger Kühlenergie am Folgetag. Die Zahl der Stunden steht als ''Stunden mit Nachtauskühlung'' im Wärmebedarf, im Export und im Bericht, nur wenn eine Nachtauskühlung gesetzt ist.
+
+== Aufheizoptimierung ==
+{{Anker|aufheizoptimierung}}
+
+Nach einer Absenkung springt der Heizsollwert im Kalender auf den Tagwert zurück. Ohne Aufheizoptimierung verlangt das Modell die Wärme für den Sprung in einer Stunde, die Leistungsspitze liegt weit über der stationären Last. Mit '''Aufheizoptimierung''' ersetzt das Modell den Sprung durch eine '''Aufheizrampe''': Der Sollwert steigt in einer berechneten Zahl von Stunden vor der Nutzung in Stufen an, sodass die Heizleistung die '''Aufheizleistung''' nicht übersteigt. Die Spitze sinkt, die Wärme für die Absenkung bleibt.
+
+* '''Schalter und Gültigkeit''' – die Aufheizoptimierung ist eine Projekteinstellung ([[Programm Dokumentation/Simulation#aufheizoptimierung|Simulation: Aufheizoptimierung]]) und ausgeschaltet, solange sie niemand einschaltet. Sie gilt für Gebäude nach VDI 6007, mit Zonen je beheizter Zone mit deren eigenen Massen, Heizleistung und Kalender. Ein Gebäude ohne Zonen mit Anlagenkopplung ''Heizkreis (AK1)'' wird nicht optimiert, die Wärmeübergabe begrenzt dort die Leistung; der Lauf nennt das. Der Rechenweg Tagesbilanz kennt keine Rampe.
+* '''Aufheizleistung''' – die Heizleistungsgrenze des Gebäudes oder der Zone; führt sie keine, die stationäre Last an der kältesten Stunde zuzüglich der '''Aufheizreserve''' (Vorgabe 20 %). Als Quelle nennt das Ergebnis ''Heizleistungsgrenze'' oder ''Zielleistung''.
+* '''Bemessung''' – die Außentemperatur der Bemessung ist die kälteste Stunde des Klimajahrs (Vorgabe); wahlweise ''kälteste Stunde − ΔT_K'' mit einem Abzug von 0 bis 10 K, Vorgabe 2 K, als Reserve für kältere Jahre. Aus Gebäude, Aufheizleistung und Außentemperatur folgt die '''längste Aufheizzeit''' bis höchstens 48 Stunden.
+* '''Art der Aufheizzeit''' – ''täglich'' (Vorgabe): Jeder Tag rechnet seine Aufheizzeit nach der kleinsten Außentemperatur seines Fensters, höchstens die längste; an milden Tagen entsteht keine Rampe und keine Mehrwärme. ''Fest'': Jeder Tag heizt so lange vor wie der Bemessungsfall, mit mehr Wärme an milden Tagen.
+* '''Grenzen der Rampe''' – eine Rampe ist nie länger als die Absenkung davor; verlangt die Rechnung mehr, füllt die Rampe die Absenkung, und der Lauf meldet, dass die Absenkung dort weitgehend wirkungslos ist. Der Sollwert der Rampe bleibt 1 K unter dem Kühlsollwert.
+* '''Auslegungsgröße''' – für die Auslegung der Heizung zählt die stationäre Auslegungsheizlast zuzüglich des Aufheizzuschlags; die ideale Spitze der Last bei ausgeschalteter Aufheizoptimierung ist keine Auslegungsgröße.
+
+Ein unsaniertes Gebäude braucht mit den Vorgaben oft keine Rampe, weil seine Sprungspitze nur wenig über der stationären Last und innerhalb der Reserve liegt. Die Optimierung wirkt in gut gedämmten Gebäuden und dort, wo die Heizleistungsgrenze knapp gesetzt ist. Ergebnisse und Hinweise beschreibt [[Programm Dokumentation/Simulationsergebnisse#gebaeudekennzahlen|Simulationsergebnisse: Gebäudekennzahlen]].
+
 == Strahlung auf die Außenbauteile ==
 {{Anker|strahlung}}
 
@@ -184,7 +212,8 @@ Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur
 Der Knopf ''Simulation…'' im Gebäudedialog öffnet den '''Wärmebedarf Gebäude'''. Auf dem Rechenweg VDI 6007 zeigt er neben Wärmebedarf, höchster Wärmelast und Vollbenutzungsstunden:
 
 * '''mittlere Raumtemperatur''' in der Nutzungszeit – außerhalb der Nachtzeit des Gebäudes (''Nachtabsenkung von … bis'', ohne Angabe 22 bis 6 Uhr, siehe [[Programm Dokumentation/Gebäude#nachtzeit|Nachtzeit]]);
-* '''Stunden mit Sommerlüftung'''.
+* '''Stunden mit Sommerlüftung''';
+* '''Stunden mit Nachtauskühlung''' – nur, wenn eine Nachtauskühlung gesetzt ist (siehe [[#nachtauskuehlung|Nachtauskühlung]]).
 
 Darunter steht der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite:
 
