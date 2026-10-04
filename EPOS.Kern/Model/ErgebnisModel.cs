@@ -313,6 +313,12 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen die Übergabe der Zone begrenzt hat [h] (E63); <c>null</c> bei idealer Zone.</summary>
         public double? UebergabeBegrenztH;
 
+        /// <summary>Die höchste Stunde des Kältebedarfs der Zone [kW] (Schritt 185); <c>null</c> ohne wirksame Kühlung.</summary>
+        public double? KaeltespitzeKw;
+
+        /// <summary>Stunden mit Kältebedarf der Zone [h] (Schritt 185); <c>null</c> ohne wirksame Kühlung.</summary>
+        public int? KuehlstundenH;
+
         // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
 
         /// <summary>

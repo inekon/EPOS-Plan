@@ -5139,6 +5139,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KAELTESTROMABRECHNUNG = KaeltestromabrechnungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ZonenKaeltespitzeSchema.SCHRITT"/> — <b>die Kältespitze je Zone</b> (MZ-Rest):
+        /// Kältespitze und Kühlstunden an <c>Tab_ErgebnisZone</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten entstehen leer.</para>
+        /// </summary>
+        public const int SCHRITT_ZONEN_KAELTESPITZE = ZonenKaeltespitzeSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7453,6 +7461,12 @@ namespace WindowsFormsApplication1
                         "Der Kaeltestrom einer Kaeltemaschine mit eigenem Kuehltraeger bliebe unbepreist, eine geaenderte " +
                         "Anzahl ohne Stempel. KEIN Rechenergebnis aendert sich - kein Referenzprojekt fuehrt sie.",
                         Schritt_Kaeltestromabrechnung),
+            // KAELTESPITZE JE ZONE (MZ-Rest). Quelle ist ZonenKaeltespitzeSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ZONEN_KAELTESPITZE,
+                        "Tab_ErgebnisZone.Kaeltespitze_kW/Kuehlstunden",
+                        "Die Kaeltespitze einer Zone waere nur im Lauf, nicht im gespeicherten Ergebnis. KEIN " +
+                        "Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_ZonenKaeltespitze),
         };
 
         /// <summary>
@@ -14024,6 +14038,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Kaeltestromabrechnung - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kältespitze je Zone" — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONEN_KAELTESPITZE"/>,
+        /// die Anweisungen bei <see cref="ZonenKaeltespitzeSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ZonenKaeltespitze(Lauf l)
+        {
+            string nr = ZonenKaeltespitzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ZonenKaeltespitzeSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ZonenKaeltespitzeSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ZonenKaeltespitzeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Kaeltespitze und Kuehlstunden je Zone stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kaeltespitze je Zone - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

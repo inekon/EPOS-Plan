@@ -38338,6 +38338,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge für alle Geschosse: {1} Trenndecken mit zusammen {2} m² verbinden übereinanderliegende Räume der Geschosse {3} — aus der Überlappung ihrer Grundrisse oder, ohne Grundriss, aus der Decke im Geschoss — und koppeln deren Zonen (Regel Z4). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_TRENNDECKE_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_TRENNDECKE_GRUNDRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Trenndecke zwischen {0} und {1} trägt aus den Raumbezügen nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %) — die Datei referenziert nicht alle Deckenteile. Das Geschosspaar gilt nicht als gekoppelt; die Trennfläche bitte prüfen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_TRENNDECKE_KLEIN {

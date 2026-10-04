@@ -170,10 +170,16 @@ namespace WindowsFormsApplication1
         /// <summary>Kopf der Kältespalte der Zonen (KU3-3) — zugleich Schlüssel der Übersetzung.</summary>
         internal const string SPALTE_ZONEN_KAELTE = "Kältebedarf [MWh/a]";
 
+        /// <summary>Kopf der Spalte Kältespitze der Zonen (Schritt 185) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string SPALTE_ZONEN_KAELTESPITZE = "Kältespitze [kW]";
+
+        /// <summary>Kopf der Spalte Kühlstunden der Zonen (Schritt 185) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string SPALTE_ZONEN_KUEHLSTUNDEN = "Kühlstunden [h/a]";
+
         /// <summary>
         /// Der Hinweis unter der Kältetabelle der Zonen (KU3-3, K6): Summe der Zonen, nicht saldiert. Der Bericht
-        /// liest das gespeicherte Ergebnis — allein der Kältebedarf je Zone ist gespeichert; Kältespitze und
-        /// Kühlstunden je Zone stehen nur im Lauf. Zugleich Schlüssel der Übersetzung.
+        /// liest das gespeicherte Ergebnis — Kältebedarf, Kältespitze und Kühlstunden je Zone (Schritt 185); die
+        /// Summenzeile summiert nur den Kältebedarf. Zugleich Schlüssel der Übersetzung.
         /// </summary>
         internal const string HINWEIS_ZONEN_KAELTE =
             "Die Gebäudesumme ist die Summe der Zonen; Heizen und Kühlen verschiedener Zonen in derselben Stunde werden nicht gegeneinander verrechnet.";
@@ -325,11 +331,18 @@ namespace WindowsFormsApplication1
         {
             if (!ergebnis.Any(e => e.KuehlenergieMwh.HasValue)) return;
             k.Text(UEBERSCHRIFT_ZONEN_KAELTE);
-            int[] w = { 5355, 4000 };
+            // Schritt 185: Spitze und Stunden je Zone, wenn der Lauf sie gespeichert hat (sonst die Tabelle wie zuvor).
+            bool mitSpitze = ergebnis.Any(e => e.KaeltespitzeKw.HasValue || e.KuehlstundenH.HasValue);
+            int[] w = mitSpitze ? new[] { 3355, 2000, 2000, 2000 } : new[] { 5355, 4000 };
             Table t = k.NeueTabelle(w);
             var kopf = new TableRow();
             kopf.Append(k.Zelle("Zone", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
             kopf.Append(k.Zelle(SPALTE_ZONEN_KAELTE, w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            if (mitSpitze)
+            {
+                kopf.Append(k.Zelle(SPALTE_ZONEN_KAELTESPITZE, w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle(SPALTE_ZONEN_KUEHLSTUNDEN, w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            }
             t.Append(kopf);
             double summe = 0.0;
             foreach (ZoneModel z in zonen)
@@ -338,12 +351,22 @@ namespace WindowsFormsApplication1
                 var tr = new TableRow();
                 tr.Append(k.Zelle(string.IsNullOrWhiteSpace(z.Bezeichner) ? "—" : z.Bezeichner, w[0], false, null, JustificationValues.Left));
                 tr.Append(k.Zelle(ez?.KuehlenergieMwh is double q ? k.F(q, 1) : "—", w[1], false, null, JustificationValues.Right));
+                if (mitSpitze)
+                {
+                    tr.Append(k.Zelle(ez?.KaeltespitzeKw is double p ? k.F(p, 1) : "—", w[2], false, null, JustificationValues.Right));
+                    tr.Append(k.Zelle(ez?.KuehlstundenH is int h ? k.F(h, 0) : "—", w[3], false, null, JustificationValues.Right));
+                }
                 if (ez?.KuehlenergieMwh is double s) summe += s;
                 t.Append(tr);
             }
             var fuss = new TableRow();
             fuss.Append(k.Zelle("Summe", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
             fuss.Append(k.Zelle(k.F(summe, 1), w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            if (mitSpitze)
+            {
+                fuss.Append(k.Zelle("", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+                fuss.Append(k.Zelle("", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            }
             t.Append(fuss);
             k.Fuege(t);
             k.Hinweis(HINWEIS_ZONEN_KAELTE);

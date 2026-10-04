@@ -2846,6 +2846,25 @@ namespace Testdatenbankschema
                                   KaeltestromabrechnungSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ZonenKaeltespitzeSchema.SCHRITT (MZ-Rest): Kaeltespitze und Kuehlstunden je Zone an
+            //      Tab_ErgebnisZone. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_ZonenKaeltespitze
+            //      bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; ohne Kuehlung bleiben sie leer.
+            string nrKaeltespitze = ZonenKaeltespitzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKaeltespitze + " - Kaeltespitze je Zone: " +
+                              (ZonenKaeltespitzeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKaeltespitze = new List<string>();
+                angelegt += ZonenKaeltespitzeSchema.Ausfuehren(berichtKaeltespitze);
+                foreach (string zeile in berichtKaeltespitze)
+                    Console.WriteLine("Schritt " + nrKaeltespitze + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKaeltespitze + " - vollstaendig: " +
+                                  ZonenKaeltespitzeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -309,8 +309,10 @@ namespace WindowsFormsApplication1
                     UebergabeBegrenztH = z.Ergebniszeile?.UebergabeBegrenztH,
                     // KU3-3: die Kaelte der Zone aus dem Lauf (nicht gespeichert: Spitze und Stunden).
                     KaeltebedarfMwh = z.KaeltebedarfMwh,
-                    KaeltespitzeKw = z.KaeltespitzeKw,
-                    KuehlstundenH = z.KuehlstundenH
+                    // Schritt 185: die Werte der Ergebniszeile (dieselbe, die der Lauf nach Tab_ErgebnisZone schreibt),
+                    // sonst die des Laufs.
+                    KaeltespitzeKw = z.Ergebniszeile?.KaeltespitzeKw ?? z.KaeltespitzeKw,
+                    KuehlstundenH = z.Ergebniszeile?.KuehlstundenH ?? z.KuehlstundenH
                 })
             };
         }

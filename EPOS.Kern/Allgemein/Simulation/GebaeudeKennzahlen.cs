@@ -84,6 +84,9 @@ namespace WindowsFormsApplication1
                             VorlaufMittelC = z.Ergebnis.Heizkreis is HeizkreisErgebnis zk && !double.IsNaN(zk.VorlaufMittelC) ? zk.VorlaufMittelC : (double?)null,
                             RuecklaufMittelC = z.Ergebnis.Heizkreis is HeizkreisErgebnis zr && !double.IsNaN(zr.RuecklaufMittelC) ? zr.RuecklaufMittelC : (double?)null,
                             UebergabeBegrenztH = z.Ergebnis.Heizkreis?.UebergabeBegrenztStundenH,
+                            // Schritt 185 (MZ-Rest): die Kälte der Zone wie im Bedarfsdialog - NULL ohne wirksame Kühlung.
+                            KaeltespitzeKw = z.Ergebnis.KaeltespitzeKw,
+                            KuehlstundenH = z.Ergebnis.StundenMitKuehlbedarf,
                         }.MitAufheizwerten(Aufheizwerte(z.Ergebnis.Aufheizung, zone: true)));
 
                 e.KuehlenergieMwh = vdi.KuehlenergieMwh;

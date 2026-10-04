@@ -224,7 +224,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
             Assert.Equal(SPALTEN_GEBAEUDE, geb.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE - 14).Take(14).ToArray());
             List<string> zone = DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone");
-            Assert.Equal(ZonenUebergabeSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
+            Assert.Equal(ZonenKaeltespitzeSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
             Assert.Equal(SPALTEN_ZONE, zone.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE - 14).Take(14).ToArray());
 
             // Aus ist alles ausser den Zonenprojekten 1052 und 1054 (G6d, AK1z; Aufheizoptimierung an; ZonenReferenzprojektWacheTests)
@@ -334,6 +334,9 @@ namespace EPOS.Kern.Tests
             long gebaeudeZeilen = Zahl("SELECT COUNT(*) FROM Tab_ErgebnisGebaeude");
             long zonenZeilen = Zahl("SELECT COUNT(*) FROM Tab_ErgebnisZone");
             // Der Stand vor dem Schritt der Uebergabe je Zone (E63) kennt dessen drei Ergebnisspalten nicht.
+            // Der Stand davor kennt auch die Kältespitze je Zone (Schritt 185) nicht.
+            foreach ((string tabelle, string spalte, string _) in ZonenKaeltespitzeSchema.SPALTEN)
+                DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
             foreach ((string tabelle, string spalte, string _) in ZonenUebergabeSchema.SPALTEN)
                 if (tabelle == ZonenUebergabeSchema.TAB_ERGEBNIS_ZONE)
                     DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");

@@ -936,6 +936,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltestromabrechnungSchema.SCHRITT (KU3-4d): Abrechnungsspalten je Maschine und der
                 // erneuerte Stempeltrigger der Anlagenzeile. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
                 KaeltestromabrechnungSchema.Ausfuehren(null);
+                // Schritt ZonenKaeltespitzeSchema.SCHRITT (MZ-Rest): Kaeltespitze und Kuehlstunden je Zone im
+                // Zonenergebnis. Ohne Sicht; die Spalten bleiben leer.
+                ZonenKaeltespitzeSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

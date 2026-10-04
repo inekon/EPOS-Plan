@@ -49,6 +49,13 @@ namespace EPOS.Kern.Tests
             Assert.Null(gastro.KuehlenergieMwh);   // Kuehlung_Aktiv = 0 an der Zone
             Assert.Null(keller.KuehlenergieMwh);   // unbeheizt schwingt frei
             Assert.Equal(gaeste.KuehlenergieMwh.Value, g.KuehlenergieMwh.Value, 6);
+            // Schritt 185: Kältespitze und Kühlstunden der Zone stehen im gespeicherten Ergebnis, nur bei wirksamer Kühlung.
+            Assert.True(gaeste.KaeltespitzeKw > 0.0, "die Kältespitze der Gästezimmer fehlt");
+            Assert.True(gaeste.KuehlstundenH > 0 && gaeste.KuehlstundenH <= 8760);
+            Assert.True(gaeste.KaeltespitzeKw.Value * gaeste.KuehlstundenH.Value >= gaeste.KuehlenergieMwh.Value * 1000.0 - 1e-6);
+            Assert.Null(gastro.KaeltespitzeKw);
+            Assert.Null(gastro.KuehlstundenH);
+            Assert.Null(keller.KaeltespitzeKw);
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "1052 gekühlt: Gästezimmer {0:F3} MWh/a, Gebäude {1:F3} MWh/a",
                                          gaeste.KuehlenergieMwh, g.KuehlenergieMwh));
         }
