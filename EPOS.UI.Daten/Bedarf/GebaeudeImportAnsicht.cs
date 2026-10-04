@@ -44,8 +44,27 @@ namespace WindowsFormsApplication1
                 Schematisch = geometrie.Schematisch,
                 Umhaengbar = umhaengbar,
                 Hinweise = geometrie.Meldungen.Select(GebaeudeZuordnungsModell.MeldungText).ToList(),
+                Koerperraeume = geometrie.Raeume.Select(r => Koerperraum(geometrie, r)).ToList(),
+                Geschosslagen = geometrie.Geschosse.Select(g => new GebaeudeAnsichtGeschosslage(g.Kennung ?? "", g.LageM)).ToList(),
             };
         }
+
+        /// <summary>
+        /// Die Körperangaben eines Raums (G7b): die Raumhöhe — die des Raums, sonst die der Zone (V/A), sonst keine —
+        /// und je Kante, Boden und Decke die Art des ersten Bauteils, das die Geometrie dort kennt.
+        /// </summary>
+        private static GebaeudeAnsichtKoerperraum Koerperraum(Zonengeometrie geometrie, Raumumriss r)
+        {
+            double? hoehe = r.HoeheM ?? (r.Zone >= 0 && r.Zone < geometrie.Zonen.Count ? geometrie.Zonen[r.Zone].HoeheM : null);
+            List<IReadOnlyList<string>> kanten = r.Polygone
+                .Select(p => (IReadOnlyList<string>)p.Kanten.Select(k => Art(k.Grenzen)).ToList())
+                .ToList();
+            return new GebaeudeAnsichtKoerperraum(r.RaumKennung, hoehe, kanten, Art(r.Boden), Art(r.Decke));
+        }
+
+        /// <summary>Die Bauteilart der ersten Grenze als sprachneutraler Schlüssel; <c>null</c> ohne Grenze.</summary>
+        private static string Art(IReadOnlyList<Grenzverweis> grenzen)
+            => grenzen != null && grenzen.Count > 0 ? grenzen[0].Bauteilart.ToString() : null;
 
         private static GebaeudeAnsichtRaum Raum(Zonengeometrie geometrie, Raumumriss r)
         {

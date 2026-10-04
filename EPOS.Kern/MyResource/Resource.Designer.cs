@@ -30778,11 +30778,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Körper: nicht verfügbar — kommt mit G7b. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziehen dreht, Rechtsklick verschiebt, Mausrad zoomt; ein Klick auf einen Körper wählt seine Zone. ähnelt.
         /// </summary>
-        public static string GIMP_ANS_KOERPER_GESPERRT {
+        public static string GIMP_ANS_KOERPER_BEDIENUNG {
             get {
-                return ResourceManager.GetString("GIMP_ANS_KOERPER_GESPERRT", resourceCulture);
+                return ResourceManager.GetString("GIMP_ANS_KOERPER_BEDIENUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körperansicht des Gebäudes — ziehen dreht, Mausrad oder zwei Finger zoomen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KOERPER_BILD {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KOERPER_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe als Vorgabe ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KOERPER_HOEHE_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KOERPER_HOEHE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper: Diese Umgebung kann keine 3D-Grafik zeichnen (WebGL fehlt oder das Modul ließ sich nicht laden). Der Grundriss zeigt dieselben Räume. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KOERPER_OHNE_WEBGL {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KOERPER_OHNE_WEBGL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens ein Körper ist erfunden (Umriss aus Fläche und Seitenverhältnis oder Höhe als Vorgabe 3 m) — die Anordnung zeigt kein reales Gebäude. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KOERPER_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KOERPER_SCHEMATISCH", resourceCulture);
             }
         }
         

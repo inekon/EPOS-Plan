@@ -12,6 +12,8 @@ Die Lizenztexte stehen unter der jeweils genannten Lizenzseite; zu einer SPDX-Ke
 auch unter https://spdx.org/licenses/<Kennung>.html.
 
 Abschnitt 6 nennt Daten Dritter, die EPOS-Plan in veränderter Form verwendet.
+Abschnitt 7 nennt JavaScript-Bibliotheken, die mit der Oberfläche als Dateien
+ausgeliefert werden (nicht als NuGet-Paket).
 
 
 ------------------------------------------------------------------------------
@@ -210,6 +212,46 @@ Genutzt:     Anhang A, Tabellen 26, 27, 28, 33, 34 und 39 (differenziertes Model
 
 
 ------------------------------------------------------------------------------
+ 7. JavaScript-Bibliotheken (lokal ausgeliefert unter _content/EPOS.UI/three/)
+------------------------------------------------------------------------------
+Bibliothek:  three.js 0.186.1 (r186) - Körperansicht des Gebäudes
+Dateien:     three.module.js, three.core.js, OrbitControls.js, LICENSE.txt,
+             FASSUNG.txt (aus dem npm-Paket three@0.186.1)
+Lizenz:      MIT - https://spdx.org/licenses/MIT.html
+Copyright:   Copyright © 2010-2026 three.js authors
+Projekt:     https://threejs.org
+Quelltext:   https://github.com/mrdoob/three.js
+Hinweis:     Die Dateien werden lokal ausgeliefert und nie aus dem Netz geladen.
+             OrbitControls.js stammt aus demselben Paket (examples/jsm/controls);
+             darin ist nur der Importpfad 'three' auf './three.module.js'
+             angepasst, sonst sind alle Dateien unverändert.
+Lizenztext:  (Datei LICENSE.txt neben den Dateien)
+             The MIT License
+
+             Copyright © 2010-2026 three.js authors
+
+             Permission is hereby granted, free of charge, to any person obtaining a copy
+             of this software and associated documentation files (the "Software"), to deal
+             in the Software without restriction, including without limitation the rights
+             to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+             copies of the Software, and to permit persons to whom the Software is
+             furnished to do so, subject to the following conditions:
+
+             The above copyright notice and this permission notice shall be included in
+             all copies or substantial portions of the Software.
+
+             THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+             IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+             FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+             AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+             LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+             OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+             THE SOFTWARE.
+
+
+------------------------------------------------------------------------------
 Pflege: je ausgelieferter Paketfassung aus Directory.Packages.props eine Angabe auf
 dieser Seite; der Wächter EPOS.Kern.Tests/LizenzhinweiseWacheTests.cs prüft, dass
-jedes von einem ausgelieferten Projekt referenzierte Paket hier genannt ist.
+jedes von einem ausgelieferten Projekt referenzierte Paket hier genannt ist,
+und dass die Fassung von three.js in Abschnitt 7 mit EPOS.UI/wwwroot/three/FASSUNG.txt
+und der REVISION in three.core.js übereinstimmt.

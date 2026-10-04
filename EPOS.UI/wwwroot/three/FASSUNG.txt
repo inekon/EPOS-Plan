@@ -1,0 +1,5 @@
+three.js 0.186.1 (r186)
+Lizenz: MIT (siehe LICENSE.txt)
+Quelle: npm-Paket three@0.186.1 (npm pack), Projekt https://threejs.org, Quelltext https://github.com/mrdoob/three.js
+Dateien: build/three.module.js, build/three.core.js, examples/jsm/controls/OrbitControls.js, LICENSE
+Anpassung: in OrbitControls.js nur der Importpfad 'three' -> './three.module.js'; sonst unverändert.

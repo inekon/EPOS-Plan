@@ -6,6 +6,7 @@ using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Xunit;
 
 namespace EPOS.UI.Tests.Bausteine;
@@ -17,8 +18,8 @@ namespace EPOS.UI.Tests.Bausteine;
 /// <para><b>Was hier bewiesen wird</b> (Abnahme 6.7): Polygone je Geschoss in Metern mit gespiegeltem y
 /// (Nord oben), die Zonenfarbe nach der Stelle und grau ohne Zone, die Kennzeichnung „schematisch" je Geschoss,
 /// je Raum und in der Legende, die Herkunft je Zone, der Geschosswechsel, der Klick (und die Tastatur) meldet
-/// Raumkennung und gewählte Zone — ohne Zone „als eigene Zone" —, ohne Umhängbarkeit keine Meldung, der
-/// weich gesperrte „Körper", der Fall ohne Gaben, und DETERMINISMUS: dieselben Daten geben zeichengleich
+/// Raumkennung und gewählte Zone — ohne Zone „als eigene Zone" —, ohne Umhängbarkeit keine Meldung, die
+/// Körperansicht (Probe 26: Umschalter, Canvas, „schematisch", Klick meldet die Zone, ohne WebGL benannt), der Fall ohne Gaben, und DETERMINISMUS: dieselben Daten geben zeichengleich
 /// dasselbe Markup, auch unter einer anderen Kultur.</para>
 ///
 /// <para><b>Was hier NICHT bewiesen wird:</b> Farbe, Strichbreite und Lage am Schirm — bunit hat kein Layout.
@@ -300,20 +301,174 @@ public class GebaeudeAnsichtTests : EposBunitContext
         Assert.Equal("g-kg", cut.Instance.GezeigtesGeschoss!.Kennung);
     }
 
-    [Fact]
-    public void GA3_Koerper_ist_weich_gesperrt_und_meldet_den_Versuch_mit_Grund()
+    // =====================================================================
+    //  Körper (G7b, E66; Probe 26 des Datenaustauschkonzepts)
+    // =====================================================================
+
+    private const string MODUL = GebaeudeAnsicht.MODUL_KOERPER;
+
+    /// <summary>Die Fälle mit Körperangaben: Wohnen 2,75 m hoch mit Außenwand an der Südkante, Boden und Decke.</summary>
+    private static GebaeudeAnsichtDaten KoerperDaten(double? lageEg = null) => Daten() with
     {
-        IRenderedComponent<GebaeudeAnsicht> cut = Zeige(Daten());
+        Koerperraeume = new[]
+        {
+            new GebaeudeAnsichtKoerperraum("r-wohnen", 2.75,
+                new[] { (IReadOnlyList<string?>)new string?[] { "Aussenwand", null, null, null } }, "Bodenplatte", "Decke"),
+            new GebaeudeAnsichtKoerperraum("r-kueche", 2.75, new[] { (IReadOnlyList<string?>)new string?[4] }, null, null),
+        },
+        Geschosslagen = new[] { new GebaeudeAnsichtGeschosslage("g-kg", null), new GebaeudeAnsichtGeschosslage("g-eg", lageEg) },
+    };
+
+    private IRenderedComponent<GebaeudeAnsicht> ZeigeKoerper(GebaeudeAnsichtDaten daten, List<string>? zonen = null, bool aktiv = true)
+        => Render<GebaeudeAnsicht>(p =>
+        {
+            p.Add(x => x.Daten, daten);
+            p.Add(x => x.Aktiv, aktiv);
+            if (zonen is not null) p.Add(x => x.ZoneGewaehlt, (string z) => zonen.Add(z));
+        });
+
+    [Fact]
+    public void GA3_Der_Umschalter_wechselt_auf_Koerper_mit_Canvas_und_Kennzeichnung_und_zurueck()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var erzeugen = modul.Setup<bool>("erzeugen", _ => true);
+        erzeugen.SetResult(true);
+        var entsorgen = modul.SetupVoid("entsorgen", _ => true);
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(KoerperDaten());
         IElement koerper = Reiterknopf(cut, "Körper");
-        Assert.Equal("true", koerper.GetAttribute("aria-disabled"));
-        Assert.False(koerper.HasAttribute("disabled"));
-        Assert.Equal("Körper: nicht verfügbar — kommt mit G7b.", koerper.GetAttribute("title"));
-        Assert.Empty(cut.FindAll(".epos-gebansicht-koerper"));
+        Assert.False(koerper.HasAttribute("aria-disabled"));
+        Assert.Empty(cut.FindAll("canvas"));
+        Assert.Empty(JSInterop.Invocations.Where(a => a.Identifier == "import"));   // erst beim ersten Wechsel
 
         koerper.Click();
-        Assert.Equal("Körper: nicht verfügbar — kommt mit G7b.", cut.Find(".epos-gebansicht-koerper").TextContent);
-        Assert.Equal("true", Reiterknopf(cut, "Grundriss").GetAttribute("aria-selected"));
+        cut.WaitForAssertion(() => Assert.Single(erzeugen.Invocations));
+        Assert.True(cut.Instance.KoerperGezeigt);
+        Assert.Equal("true", Reiterknopf(cut, "Körper").GetAttribute("aria-selected"));
+        Assert.Empty(cut.FindAll("svg.epos-gebansicht-bild"));
+        IElement canvas = cut.Find(".epos-gebansicht-koerperansicht canvas.epos-gebansicht-canvas");
+        Assert.Equal("img", canvas.GetAttribute("role"));
+        Assert.Equal("schematisch", cut.Find(".epos-gebansicht-koerperansicht .epos-gebansicht-schematisch .epos-gebansicht-marke").TextContent);
+        Assert.Equal(3, erzeugen.Invocations.Single().Arguments.Count);
+        Assert.IsType<DotNetObjectReference<GebaeudeAnsicht>>(erzeugen.Invocations.Single().Arguments[2]);
+
+        // Herkunft je Zone in der Legende, dazu die Höhe als Vorgabe beim Keller (kein Körperraum).
+        IElement kg = cut.Find(".epos-gebansicht-koerperansicht li[data-zone='" + ZONE_KG + "']");
+        Assert.Equal("schematisch", kg.QuerySelector(".epos-gebansicht-herkunft")!.TextContent);
+        Assert.NotNull(kg.QuerySelector(".epos-gebansicht-marke--hoehe"));
+        IElement eg = cut.Find(".epos-gebansicht-koerperansicht li[data-zone='" + ZONE_EG + "']");
+        Assert.Equal("aus Raumgrenzen", eg.QuerySelector(".epos-gebansicht-herkunft")!.TextContent);
+        Assert.Null(eg.QuerySelector(".epos-gebansicht-marke--hoehe"));
+
+        // Zurück: die Szene wird entsorgt, der Grundriss steht wieder.
+        Reiterknopf(cut, "Grundriss").Click();
+        cut.WaitForAssertion(() => Assert.Single(entsorgen.Invocations));
+        Assert.False(cut.Instance.KoerperGezeigt);
+        Assert.Empty(cut.FindAll("canvas"));
         Assert.NotEmpty(cut.FindAll("svg.epos-gebansicht-bild"));
+
+        // Wieder hin: das Modul ist geladen, die Szene entsteht neu.
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, erzeugen.Invocations.Count));
+        Assert.Single(JSInterop.Invocations.Where(a => a.Identifier == "import"));
+    }
+
+    [Fact]
+    public void GA3_Neue_Daten_gehen_ueber_aktualisieren_hinein()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        modul.Setup<bool>("erzeugen", _ => true).SetResult(true);
+        var aktualisieren = modul.SetupVoid("aktualisieren", _ => true);
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(KoerperDaten());
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.KoerperGezeigt));
+        Assert.Empty(aktualisieren.Invocations);
+
+        cut.Render(p => p.Add(x => x.GewaehlteZone, ZONE_EG));
+        cut.WaitForAssertion(() => Assert.Single(aktualisieren.Invocations));
+    }
+
+    [Fact]
+    public void GA3_Ohne_WebGL_steht_die_Hinweiszeile_statt_des_Canvas()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        JSInterop.SetupModule(MODUL).Setup<bool>("erzeugen", _ => true).SetResult(false);
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(KoerperDaten());
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebansicht-ohnewebgl")));
+        Assert.True(cut.Instance.KoerperNichtVerfuegbar);
+        Assert.Empty(cut.FindAll("canvas"));
+        Assert.StartsWith("Körper: Diese Umgebung kann keine 3D-Grafik zeichnen", cut.Find(".epos-gebansicht-ohnewebgl").TextContent);
+        Assert.Equal("status", cut.Find(".epos-gebansicht-ohnewebgl").GetAttribute("role"));
+    }
+
+    [Fact]
+    public void GA3_Laedt_das_Modul_nicht_steht_die_Hinweiszeile()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;   // kein Modul eingerichtet: der Import wirft
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(KoerperDaten());
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebansicht-ohnewebgl")));
+        Assert.Empty(cut.FindAll("canvas"));
+    }
+
+    [Fact]
+    public async Task GA3_Der_Klick_auf_einen_Koerper_meldet_die_Zone_an_den_Wirt()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        JSInterop.SetupModule(MODUL).Setup<bool>("erzeugen", _ => true).SetResult(true);
+        var zonen = new List<string>();
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(KoerperDaten(), zonen);
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.KoerperGezeigt));
+
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(ZONE_EG, "r-wohnen"));
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(null, "r-flur"));          // ohne Zone: nichts
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick("Erdgeschoss", "r-wohnen")); // ein NAME ist kein Schlüssel
+        Assert.Equal(new[] { ZONE_EG }, zonen);
+
+        // Gesperrt meldet der Klick nichts.
+        cut.Render(p => p.Add(x => x.Aktiv, false));
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(ZONE_KG, "r-lager"));
+        Assert.Single(zonen);
+    }
+
+    [Fact]
+    public void GA3_Die_Koerper_stapeln_Geschosse_ohne_Lage_und_nehmen_die_Vorgabehoehe()
+    {
+        IReadOnlyList<GebaeudeAnsichtKoerper> koerper = KoerperDaten().Koerper();
+        Assert.Equal(new[] { "r-lager", "r-wohnen", "r-kueche", "r-flur" }, koerper.Select(k => k.Raum.Kennung));  // Schacht ohne Umriss fehlt
+
+        GebaeudeAnsichtKoerper lager = koerper[0], wohnen = koerper[1], flur = koerper[3];
+        Assert.Equal((0.0, 3.0, true, true), (lager.UnterkanteM, lager.HoeheM, lager.HoeheVorgabe, lager.Schematisch));
+        Assert.Equal((3.0, 2.75, false, false), (wohnen.UnterkanteM, wohnen.HoeheM, wohnen.HoeheVorgabe, wohnen.Schematisch));
+        Assert.Equal((3.0, 3.0, true, true), (flur.UnterkanteM, flur.HoeheM, flur.HoeheVorgabe, flur.Schematisch));
+        Assert.Equal("Aussenwand", wohnen.Angaben!.Kanten[0][0]);
+        Assert.Null(flur.Angaben);
+
+        // Eine Höhenlage der Datei gilt vor dem Stapeln.
+        Assert.Equal(2.5, KoerperDaten(lageEg: 2.5).Koerper()[1].UnterkanteM);
+        // Ohne Körperangaben stehen alle Körper auf der Vorgabe.
+        Assert.All(Daten().Koerper(), k => Assert.True(k.HoeheVorgabe));
+    }
+
+    [Fact]
+    public void GA3_Die_Szene_traegt_Kennungen_und_Zahlen_keinen_Anzeigetext()
+    {
+        string json = System.Text.Json.JsonSerializer.Serialize(GebaeudeAnsicht.Szene(KoerperDaten(), ZONE_EG));
+        Assert.Contains("\"raum\":\"r-wohnen\"", json);
+        Assert.Contains("\"stelle\":1", json);
+        Assert.Contains("\"hoehe\":2.75", json);
+        Assert.Contains("\"Aussenwand\"", json);
+        foreach (string text in new[] { "Wohnen", "Küche", "Erdgeschoss", "Kellergeschoss", "m²" })
+            Assert.DoesNotContain(text, json);
+        // Deterministisch: zweimal dieselbe Szene.
+        Assert.Equal(json, System.Text.Json.JsonSerializer.Serialize(GebaeudeAnsicht.Szene(KoerperDaten(), ZONE_EG)));
     }
 
     // =====================================================================
@@ -470,7 +625,8 @@ public class GebaeudeAnsichtTests : EposBunitContext
         using (new Kulturvorrichtung("en-US")) englisch = new GebaeudeAnsichtTexte();
         Assert.Equal("Floor plan", englisch.Grundriss);
         Assert.Equal("Solids", englisch.Koerper);
-        Assert.Equal("Solids: not available — comes with G7b.", englisch.KoerperGesperrt);
+        Assert.Equal("height defaulted", englisch.HoeheVorgabe);
+        Assert.StartsWith("Solids: this environment cannot draw 3D graphics", englisch.KoerperOhneWebgl);
         Assert.Equal("schematic", englisch.Schematisch);
         Assert.Equal("from space boundaries", englisch.Raumgrenzen);
         Assert.Equal("no zone", englisch.OhneZone);
