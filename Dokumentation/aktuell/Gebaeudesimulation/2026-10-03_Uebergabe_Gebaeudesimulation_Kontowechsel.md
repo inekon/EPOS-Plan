@@ -103,3 +103,29 @@ Erste Aufgabe: Welle EV1 nach Abschnitt 3.1 der Übergabe (Schemaschritt 180 ist
 Abschnitt 3.2 (Schemaschritt vor dem Bau anmelden, Nummer aus der Kopfzeile). Vor jeder Welle den geschätzten Verbrauch nennen; ich gebe
 den Stand des Wochenlimits an. Melde dich mit dem Ergebnis von EV1 (Gate-Zahlen, Referenzlauf 18/18 byte-gleich gegen R34, Push-SHA).
 ```
+
+## 7. Nachtrag 04.10.2026 — EV1 abgeschlossen, Stand für AK1z
+
+| Was | Wert |
+|---|---|
+| EV1 | umgesetzt, Statuszeile **#705**, Protokoll [`2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md`](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md); E64 und E65 stehen auf „umgesetzt“ |
+| Schemaschritte | 180 `ErdreichVorgabeSchema` vergeben, Kopfzeile „181 — frei“; AK1z meldet 181 an |
+| origin | `91bfdca6` (der Inhalt der Welle liegt als Sync-Commit `3765af5c` des Anwenders auf origin, die Testdatenbank 180 mit `91bfdca6`; die Einzelcommits der Statuszeile #705 stammen aus dem Bundle der Sitzung und sind auf origin nicht einzeln sichtbar); CI-Vermerk zu #705 trägt die Sitzung EV1 nach |
+| Testdatenbank | Schemastand 180, 83 169 280 Byte, LFS-OID `0aa88998…` |
+| Referenzbasis | R34 unverändert, 18/18 byte-gleich; AK1z friert R35 ein (1052 mit abweichender Zone) |
+
+**Umgebung der Cloud-Sitzung — zwingend vor dem Start prüfen.** Die Netzrichtlinie der Umgebung muss
+`lfs.github.com` (LFS-Verify beim Push), `builds.dotnet.microsoft.com` und `download.visualstudio.microsoft.com`
+(`dotnet-install.sh`) erlauben; eine Freigabe gilt erst für neue Sitzungen. Ohne `lfs.github.com` lässt sich
+keine Testdatenbank pushen — eine Welle mit Schemaschritt bleibt dann lokal und muss als Bundle an den Anwender
+gehen. Fehlt das SDK trotz Setup-Skript, ist das Ubuntu-Paket `dotnet-sdk-10.0` (10.0.112) mit einem
+Verzeichnis-Alias `sdk/10.0.400` (`ln -s`) und `DOTNET_ROOT` auf das Installationsverzeichnis ein tragfähiger
+Ersatz: Kern-Filter, Tests und Referenzlauf (18/18, 548/548 byte-gleich) laufen damit; der grüne Kern-Lauf der CI
+bleibt der Nachweis. Das Gate der Orchestrierung nach Abschnitt 5 (Linux-Gate, Windows-Schale, Designer,
+SQL-Dialekt-Prüfer, die vier Werkzeugtests der CI, BOM-Suche, Konfliktmarker) liegt nicht im Repositorium und
+wird je Sitzung im Scratchpad neu angelegt. Bestandsbefund des Gates: `Werkzeuge/Formularkarte/LIESMICH.md` und
+`EPOS.iOS/CLAUDE.md` tragen ein BOM.
+
+**Beim Anwender offen (zusätzlich zu Abschnitt 4):** Logbuch-Version für die zwei Sätze in #705, Sichtprobe der
+EV1-Dialoge unter Windows (Bodenplattenfeld im Gebäudedialog, Reserve in der Projekteinstellung), Wiki-Upload der
+Seiten „Gebäude“ und „Simulation“.
