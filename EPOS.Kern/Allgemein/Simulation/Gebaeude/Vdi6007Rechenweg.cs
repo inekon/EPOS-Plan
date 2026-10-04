@@ -299,9 +299,32 @@ namespace WindowsFormsApplication1
         private Func<long?, Konditionierungssatz> Zonenkonditionierung(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam)
         {
             bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
-            bool kondKuehlung = Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue;
+            // KU3-3: die Kühlung wirkt je Zone (Schalter und Sollwert der Zone, sonst des Gebäudes).
             return idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
-                                                          gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone);
+                                                          gemeinsam.Referenzjahr, kondKopplung,
+                                                          KuehlungWirksamFuer(gebaeude, idZone, Kuehlbetrieb), idZone);
+        }
+
+        /// <summary>
+        /// <b>Wirkt die Kühlung an einer Zone?</b> (KU3-3, E67/E68) — Projektschalter, dann der Schalter
+        /// <c>Kuehlung_Aktiv</c> und der Sollwert <c>Kuehl_Sollwert</c> der Zone, NULL = der des Gebäudes
+        /// (dieselbe Kaskade wie <see cref="Zonenvorgaben"/>). Ohne Zone (oder unbekannte Zone) die Regel
+        /// des Gebäudes.
+        /// </summary>
+        internal static bool KuehlungWirksamFuer(ProjektGebaeudeModel gebaeude, long? idZone, bool kuehlbetrieb)
+        {
+            bool aktiv = gebaeude.Kuehlung_Aktiv;
+            double? soll = gebaeude.Kuehl_Sollwert;
+            if (idZone.HasValue && gebaeude.Zonen != null)
+                foreach (GebaeudeZonensatz z in gebaeude.Zonen)
+                {
+                    if (z == null || z.ZonenId != idZone.Value) continue;
+                    Zoneneingaben e = z.EingabenOderNutzflaeche();
+                    aktiv = e.KuehlungAktiv ?? aktiv;
+                    soll = e.KuehlSollwert ?? soll;
+                    break;
+                }
+            return kuehlbetrieb && aktiv && soll.HasValue;
         }
 
         /// <summary>

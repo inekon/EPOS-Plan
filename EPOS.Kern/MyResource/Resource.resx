@@ -40691,9 +40691,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_KUEHLEN_GESPERRT" xml:space="preserve">
     <value>Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der Simulationskonfiguration) und bei „Gebäude wird gekühlt“.</value>
   </data>
-  <data name="KOND_TXT_KUEHLEN_ZONE" xml:space="preserve">
-    <value>Die Kühlwerte gelten für das ganze Gebäude; ein eigener Kühlkalender je Zone ist noch nicht möglich.</value>
-  </data>
   <data name="KOND_TXT_HINWEIS_TAGESBILANZ" xml:space="preserve">
     <value>Dieses Gebäude rechnet auf dem Rechenweg „Tagesbilanz (Bestandsweg)“: Die Matrix zeigt nur die Felder, die dieser Weg liest; Kalender und weitere Zellen wirken erst unter VDI 6007.</value>
   </data>
@@ -40966,9 +40963,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KOND_MSG_ZONE_UNBEHEIZT" xml:space="preserve">
     <value>Die Zone „{0}“ wird nicht beheizt — sie trägt weder Heiz- noch Kühlkalender.</value>
-  </data>
-  <data name="KOND_MSG_ZONE_KUEHLEN" xml:space="preserve">
-    <value>Die Kühlspalte der Zone „{0}“ folgt dem Gebäude; eigene Kühlwerte je Zone gibt es noch nicht.</value>
   </data>
   <data name="KOND_MSG_ZONE_KALENDER" xml:space="preserve">
     <value>Die Zone „{0}“ behielte ihre Werte nicht: {1}</value>
@@ -44872,6 +44866,39 @@ Chart</value>
   </data>
   <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
     <value>Jeder Kennlinienpunkt braucht eine Rückkühl- und eine Kaltwassertemperatur.</value>
+  </data>
+  <data name="SIMENG_KU3_ZONEN_GLEICHZEITIG" xml:space="preserve">
+    <value>Gebäude „{0}": In {1} h heizt eine Zone, während eine Zone kühlt — Heizwärme {2} kWh und Kältebedarf {3} kWh in diesen Stunden. Beide sind ausgewiesen und nicht gegeneinander verrechnet; die Gebäudesummen sind die Summen der Zonen je Richtung.</value>
+  </data>
+  <data name="ZONDLG_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung der Zone</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHLUNG_AKTIV" xml:space="preserve">
+    <value>Zone wird gekühlt</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHLLEISTUNG_MAX" xml:space="preserve">
+    <value>Kühlleistungsgrenze</value>
+  </data>
+  <data name="ZONDLG_ZEILE_KUEHLUNG" xml:space="preserve">
+    <value>Die Kühlsollwerte der Zone für Tag und Nacht stehen in der Spalte „Kühlen" der Matrix; ein leeres Feld gilt wie beim Gebäude. Gekühlt wird nur, wenn das Projekt den Kühlbetrieb rechnet.</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KAELTESPITZE" xml:space="preserve">
+    <value>Kältespitze</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KUEHLSTUNDEN" xml:space="preserve">
+    <value>Stunden mit Kühlung</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN_GLEICHZEITIG" xml:space="preserve">
+    <value>In {0} h heizt eine Zone, während eine Zone kühlt: Heizwärme {1} kWh, Kältebedarf {2} kWh — ausgewiesen, nicht verrechnet.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
+    <value>Wird die Zone gekühlt: „ja", „nein" oder leer = wie das Gebäude. „nein" schaltet die Zone aus, auch wenn das Gebäude kühlt; gekühlt wird nur mit Kühlbetrieb des Projekts.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHLLEISTUNG_ERL" xml:space="preserve">
+    <value>Leistungsgrenze der Kühlung der Zone in kW; leer = die des Gebäudes, ab zwei Zonen nach dem Flächenanteil.</value>
   </data>
 </root>
 

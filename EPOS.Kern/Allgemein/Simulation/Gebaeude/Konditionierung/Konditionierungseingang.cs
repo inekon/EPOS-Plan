@@ -152,6 +152,12 @@ namespace WindowsFormsApplication1
             e.Maximaleraumtemperatur = zone.Maximaleraumtemperatur ?? gebaeude.Maximaleraumtemperatur;
             e.LuftwechselInfiltration = zone.LuftwechselInfiltration ?? gebaeude.LuftwechselInfiltration;
             e.LuftwechselNutzer = zone.LuftwechselNutzer ?? gebaeude.LuftwechselNutzer;
+            // KU3-3 (E67/E68): die Kühlzelle der Zone - Sollwert und Nachtwert der Zone, sonst des Gebäudes;
+            // eine Zone mit Kuehlung_Aktiv = 0 oder ohne Sollwert kühlt nicht. Die Wirksamkeit (Projektschalter)
+            // kommt mit dem Bestand des Aufrufers, im Lauf schon je Zone gebildet.
+            e.KuehlSollwert = zone.KuehlSollwert ?? gebaeude.KuehlSollwert;
+            e.KuehlSollwertNacht = zone.KuehlSollwertNacht ?? gebaeude.KuehlSollwertNacht;
+            if (zone.KuehlungAktiv == false || !e.KuehlSollwert.HasValue) e.KuehlungWirksam = false;
             e.InterneWaermegewinne = zone.InterneWaermegewinne.HasValue || gebaeude.InterneWaermegewinne.HasValue
                 ? vorgaben.InterneWaermegewinne.Wert : null;
             e.Bewohner = zone.Bewohner.HasValue || gebaeude.Bewohner.HasValue ? vorgaben.Bewohner.Wert : null;

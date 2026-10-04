@@ -96,7 +96,7 @@ namespace EPOS.Kern.Tests
             => Konditionierungsarbeit.ZelleSetzen(a, Ort(g, zone), zeile, Matrixzelle.AusWert(wert));
 
         [Fact]
-        public void B4_Eine_unbeheizte_Zone_traegt_weder_Heiz_noch_Kuehlzellen_und_die_Zone_kuehlt_wie_das_Gebaeude()
+        public void B4_Eine_unbeheizte_Zone_traegt_weder_Heiz_noch_Kuehlzellen_die_beheizte_Zone_eigene_Kuehlwerte()
         {
             Konditionierungsarbeitsstand a = Stand(Unbeheizt(-3, "Lager"), Zone(-1, "Anbau"));
             Konditionierungsarbeitsstand b = Gut(Konditionierungsarbeit.Anlegen(a, Ort(HEIZ)));
@@ -107,10 +107,10 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Lager", heiz.Meldung);
             Assert.False(Konditionierungsarbeit.Anlegen(a, Ort(HEIZ, -3)).Ok);
 
-            Konditionierungsschritt kuehl = Setzen(a, Konditionierungsgroesse.Kuehlsoll,
-                                                                        DbWerte.KOND_ZEILE_TAG, 26.0, -1);
-            Assert.False(kuehl.Ok);
-            Assert.Contains("Anbau", kuehl.Meldung);
+            Assert.False(Setzen(a, Konditionierungsgroesse.Kuehlsoll, DbWerte.KOND_ZEILE_TAG, 26.0, -3).Ok);
+            // KU3-3 (E67/E68): die beheizte Zone trägt eigene Kühlwerte.
+            Konditionierungsarbeitsstand k = Gut(Setzen(a, Konditionierungsgroesse.Kuehlsoll, DbWerte.KOND_ZEILE_TAG, 26.0, -1));
+            Assert.Equal(26.0, k.Zone(-1).Stand.Bestand.KuehlSollwert);
 
             // Lüftung, Geräte und Personen trägt auch die unbeheizte Zone.
             Gut(Setzen(a, Konditionierungsgroesse.Geraete, DbWerte.KOND_ZEILE_TAG, 0.5, -3));

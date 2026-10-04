@@ -145,6 +145,20 @@ namespace WindowsFormsApplication1
         /// <summary>Die Zeile über der Zonentabelle eines Gebäudes (G6a) — zugleich Schlüssel der Übersetzung.</summary>
         internal const string UEBERSCHRIFT_ZONEN = "Zonen";
 
+        /// <summary>Die Zeile über der Kältetabelle der Zonen (KU3-3) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_ZONEN_KAELTE = "Kältebedarf je Zone";
+
+        /// <summary>Kopf der Kältespalte der Zonen (KU3-3) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string SPALTE_ZONEN_KAELTE = "Kältebedarf [MWh/a]";
+
+        /// <summary>
+        /// Der Hinweis unter der Kältetabelle der Zonen (KU3-3, K6): Summe der Zonen, nicht saldiert. Der Bericht
+        /// liest das gespeicherte Ergebnis — allein der Kältebedarf je Zone ist gespeichert; Kältespitze und
+        /// Kühlstunden je Zone stehen nur im Lauf. Zugleich Schlüssel der Übersetzung.
+        /// </summary>
+        internal const string HINWEIS_ZONEN_KAELTE =
+            "Die Gebäudesumme ist die Summe der Zonen; Heizen und Kühlen verschiedener Zonen in derselben Stunde werden nicht gegeneinander verrechnet.";
+
         /// <summary>Der Hinweis unter der Zonentabelle, wenn ein Volumen abgeleitet ist — zugleich Schlüssel der Übersetzung.</summary>
         internal const string HINWEIS_ZONENVOLUMEN = "* Volumen aus Nutzfläche × Raumhöhe abgeleitet.";
 
@@ -279,6 +293,41 @@ namespace WindowsFormsApplication1
             t.Append(summe);
             k.Fuege(t);
             if (abgeleitet) k.Hinweis(HINWEIS_ZONENVOLUMEN);
+            if (mitErgebnis) ZonenkaelteSchreiben(k, zonen, ergebnis);
+        }
+
+        /// <summary>
+        /// <b>Der Kältebedarf je Zone</b> (KU3-3, Kühlkonzept F-K15): eine eigene kleine Tabelle unter der
+        /// Zonentabelle, nur wenn eine Zone mit wirksamer Kühlung gerechnet hat (<see cref="ErgebnisZoneModel.KuehlenergieMwh"/>
+        /// gesetzt, Muster E30) — sonst bleibt der Bericht, wie er war. „—" bei einer Zone ohne Kühlung; die
+        /// Summenzeile ist die Summe der Zonen.
+        /// </summary>
+        private static void ZonenkaelteSchreiben(WordKontext k, List<ZoneModel> zonen, List<ErgebnisZoneModel> ergebnis)
+        {
+            if (!ergebnis.Any(e => e.KuehlenergieMwh.HasValue)) return;
+            k.Text(UEBERSCHRIFT_ZONEN_KAELTE);
+            int[] w = { 5355, 4000 };
+            Table t = k.NeueTabelle(w);
+            var kopf = new TableRow();
+            kopf.Append(k.Zelle("Zone", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            kopf.Append(k.Zelle(SPALTE_ZONEN_KAELTE, w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            t.Append(kopf);
+            double summe = 0.0;
+            foreach (ZoneModel z in zonen)
+            {
+                ErgebnisZoneModel ez = ergebnis.FirstOrDefault(e => e.ID_Zone == z.ID);
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(z.Bezeichner) ? "—" : z.Bezeichner, w[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(ez?.KuehlenergieMwh is double q ? k.F(q, 1) : "—", w[1], false, null, JustificationValues.Right));
+                if (ez?.KuehlenergieMwh is double s) summe += s;
+                t.Append(tr);
+            }
+            var fuss = new TableRow();
+            fuss.Append(k.Zelle("Summe", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            fuss.Append(k.Zelle(k.F(summe, 1), w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            t.Append(fuss);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_ZONEN_KAELTE);
         }
 
         /// <summary>

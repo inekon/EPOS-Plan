@@ -1469,6 +1469,10 @@
         internal static string ZonUebergabeWirksamName => MyResource.Resource.ZONDLG_UEBERGABE_KI_WIRKSAM_NAME;
         internal static string ZonUebergabeWirksamErl => MyResource.Resource.ZONDLG_UEBERGABE_KI_WIRKSAM_ERL;
         internal static string ZonHeizleistungErl => MyResource.Resource.KI_DLG_ZON_HEIZLEISTUNG_ERL;
+        internal static string ZonKuehlungAktivName => MyResource.Resource.ZONDLG_LBL_KUEHLUNG_AKTIV;
+        internal static string ZonKuehlungAktivErl => MyResource.Resource.KI_DLG_ZON_KUEHLUNG_AKTIV_ERL;
+        internal static string ZonKuehlleistungName => MyResource.Resource.ZONDLG_LBL_KUEHLLEISTUNG_MAX;
+        internal static string ZonKuehlleistungErl => MyResource.Resource.KI_DLG_ZON_KUEHLLEISTUNG_ERL;
         internal static string ZonBauteilRandErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_RAND_ERL;
         internal static string ZonBauteilNachbarName => MyResource.Resource.ZONDLG_SP_NACHBAR;
         internal static string ZonBauteilNachbarErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_NACHBAR_ERL;

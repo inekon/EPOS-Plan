@@ -204,6 +204,11 @@ namespace WindowsFormsApplication1
                 AuslegungRuecklauf = z.Auslegung_Ruecklauf,
                 AuslegungRaumtemperatur = z.Auslegung_Raumtemperatur,
                 ReglerProportionalband = z.Regler_Proportionalband,
+                // KU3-3 (E67/E68): die vier Kühlfelder der Zone; NULL = wie Gebaeude.
+                KuehlungAktiv = z.Kuehlung_Aktiv,
+                KuehlSollwert = z.Kuehl_Sollwert,
+                KuehlSollwertNacht = z.Kuehl_Sollwert_Nacht,
+                KuehlleistungMaxKw = z.Kuehlleistung_Max,
                 Konditionierung = z.ID > 0
                     ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Zone(idGebaeude, z.ID), gebaeudeebene)
                     : KonditionierungHuelle.Leer(),
@@ -258,7 +263,7 @@ namespace WindowsFormsApplication1
             };
 
             // Die Zeilen des Kerns aus dem Arbeitsstand (Stufe G6a): Was die Oberflaeche nicht fuehrt
-            // (Kuehlspalten, G6b A4 a), kommt aus der gelesenen Zeile gleicher Id; ein
+            // (Kuehluebergabe der Zone), kommt aus der gelesenen Zeile gleicher Id; ein
             // Duplikat nimmt es von seiner Vorlage (VorlageId) - ohne Herkunft, Quellkennung und
             // Importpaarung der Vorlage; eine neue Zone ist manuell.
             List<ZoneModel> Zeilen(IReadOnlyList<ZoneDaten> liste)
@@ -302,6 +307,11 @@ namespace WindowsFormsApplication1
                     z.Auslegung_Ruecklauf = d.AuslegungRuecklauf;
                     z.Auslegung_Raumtemperatur = d.AuslegungRaumtemperatur;
                     z.Regler_Proportionalband = d.ReglerProportionalband;
+                    // KU3-3 (E67/E68): die Kuehlung je Zone fuehrt der Dialog - leer = wie Gebaeude.
+                    z.Kuehlung_Aktiv = d.KuehlungAktiv;
+                    z.Kuehl_Sollwert = d.KuehlSollwert;
+                    z.Kuehl_Sollwert_Nacht = d.KuehlSollwertNacht;
+                    z.Kuehlleistung_Max = d.KuehlleistungMaxKw;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel
                     {
                         ID = b.Id,

@@ -157,6 +157,12 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Stunden mit gleichzeitigem Heizen und Kühlen [h] (K6, nicht saldiert).</summary>
     public int? StundenHeizenUndKuehlenH { get; init; }
 
+    /// <summary>Heizwärme in den Stunden mit gleichzeitigem Heizen und Kühlen der Zonen [kWh] (KU3-3, F-K15); <c>null</c> außerhalb des Mehrzonenwegs mit Kühlung.</summary>
+    public double? GleichzeitigHeizenKwh { get; init; }
+
+    /// <summary>Kältebedarf in denselben Stunden [kWh] (KU3-3, F-K15); <c>null</c> wie <see cref="GleichzeitigHeizenKwh"/>.</summary>
+    public double? GleichzeitigKuehlenKwh { get; init; }
+
     /// <summary>Die zwölf Monatssummen der Kühlreihe in <b>MWh</b>; leer = keine Kühlspalte.</summary>
     public IReadOnlyList<double> KuehlMonatswerteMwh { get; init; } = new List<double>();
 
@@ -212,4 +218,13 @@ public sealed class GebaeudeBedarfZoneDaten
 
     /// <summary>Rechnet die Zone gekoppelt (mit eigenem Heizkreis)?</summary>
     public bool IstGekoppelt => VorlaufMittelC.HasValue;
+
+    /// <summary>Jahressumme des Kältebedarfs der Zone [MWh] (KU3-3); <c>null</c> ohne wirksame Kühlung der Zone.</summary>
+    public double? KaeltebedarfMwh { get; init; }
+
+    /// <summary>Höchste Stunde des Kältebedarfs der Zone [kW] (KU3-3); <c>null</c> wie <see cref="KaeltebedarfMwh"/>.</summary>
+    public double? KaeltespitzeKw { get; init; }
+
+    /// <summary>Stunden mit Kältebedarf der Zone [h] (KU3-3); <c>null</c> wie <see cref="KaeltebedarfMwh"/>.</summary>
+    public int? KuehlstundenH { get; init; }
 }
