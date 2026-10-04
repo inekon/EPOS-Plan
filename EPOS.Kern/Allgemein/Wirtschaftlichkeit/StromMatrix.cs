@@ -20,21 +20,23 @@ namespace WindowsFormsApplication1
     /// Geführt werden, je als Jahressumme:
     ///  - Netzbezug [MWh]           (Zeitreihe NETZBEZUG)
     ///  - PV-Einspeisung [MWh]      (Zeitreihe PV_UEBERSCHUSS)
-    ///  - KWK-Eigenstrom [MWh]      (stundenweise min(BHKW-Strom, Strombedarf nach PV))
-    ///
-    /// Strombedarf heißt hier der Bedarf aller Verbraucher des Anschlusses
-    /// (<see cref="ZeitreihenSatz.STROMBEDARF_GESAMT"/>, E26): derselbe Umfang, von dem der
-    /// Netzbezug der Rest ist. Auch der KWK-Split misst sich daran — die Simulation lässt
-    /// das BHKW den Strom der Wärmepumpe decken, also ist dieser Strom Eigenstrom.
-    ///  - KWK-Einspeisung [MWh]     (BHKW-Strom − Eigenanteil)
+    ///  - KWK-Einspeisung [MWh]     (Zeitreihe BHKW_UEBERSCHUSS, die Einspeisung des Laufs)
+    ///  - KWK-Eigenstrom [MWh]      (BHKW-Strom − KWK-Einspeisung je Stunde)
     ///  - Bedarf ohne jede Eigenerzeugung und PV-Eigennutzung [MWh] (Etappen E5/E7)
     /// plus die höchste Stundenlast des Netzbezugs [kW] und die zwei Lastbilder, an
     /// denen die Leistungspreismodelle des Rollentarifs bemessen werden.
     ///
-    /// Die KWK-Aufteilung ist eine dokumentierte Näherung: die Simulation führt
-    /// den BHKW-Strom nicht getrennt nach Eigennutzung/Einspeisung — die
-    /// stundenweise min-Regel bildet die Gleichzeitigkeit von Erzeugung und
-    /// Bedarf ab (Grundlage des KWKG-Splits, Entscheidung 11.08.2026).
+    /// Strombedarf heißt hier der Bedarf aller Verbraucher des Anschlusses
+    /// (<see cref="ZeitreihenSatz.STROMBEDARF_GESAMT"/>, E26): derselbe Umfang, von dem der
+    /// Netzbezug der Rest ist.
+    ///
+    /// Der KWK-Split rechnet nicht selbst: Die Einspeisung ist die Reihe, die der Lauf
+    /// führt — ohne Speicherflotte die Viertelstundenbilanz der Kaskade
+    /// (<c>SimulationControl.BhkwEinspeisungDesLaufs</c>; das BHKW deckt zuerst die
+    /// Verbraucher derselben Viertelstunde einschließlich Wärmepumpe, danach deckt die
+    /// Photovoltaik den Rest), mit Flotte deren BHKW-Netzeinspeisung. Reiter, Kennzahl,
+    /// Bericht und Wirtschaftlichkeit lesen damit dieselbe Menge, und die Bilanz Netzbezug +
+    /// PV-Eigenverbrauch + BHKW-Strom − Einspeisung = Bedarf schließt.
     /// </summary>
     public class StromMatrix
     {
@@ -171,6 +173,7 @@ namespace WindowsFormsApplication1
 
             double[] pvUeber = zeitreihen.Hole(ZeitreihenSatz.PV_UEBERSCHUSS);
             double[] bhkw = zeitreihen.Hole(ZeitreihenSatz.BHKW_STROM);
+            double[] bhkwEinspeisung = zeitreihen.Hole(ZeitreihenSatz.BHKW_UEBERSCHUSS);
             // E26 (Befund N3): Bezugsgröße ist der Bedarf ALLER Verbraucher des Anschlusses
             // (Strombedarf des Projekts plus Wärmepumpe, Heizstab, Elektrokessel, Kältestrom
             // der Stufenrechnung) — dieselbe Menge, die ohne Eigenerzeugung aus dem Netz käme
@@ -204,10 +207,8 @@ namespace WindowsFormsApplication1
                     m.EinspeisungPvGesamtMWh += pvUeber[h] / 1000.0;
 
                 // ETAPPE E5/E7 — zwei Bedarfsgrößen aus derselben Stunde:
-                //  * der Bedarf NACH Photovoltaik begrenzt wie seit W3 den KWK-Eigenanteil
-                //    (min-Regel unten) — unverändert (Konzept § 6.3 Nr. 32: „der KWK-Split
-                //    bleibt unverändert");
-                //  * der Bedarf OHNE JEDE EIGENERZEUGUNG ist seit E7 die Bezugsgröße der
+                //  * der Bedarf NACH Photovoltaik;
+                //  * der Bedarf OHNE JEDE EIGENERZEUGUNG ist die Bezugsgröße der
                 //    vermiedenen Kosten (Menge und Lastbild) — vor Abzug der PV-Eigennutzung.
                 // Die Differenz beider ist die PV-Eigennutzung, soweit sie Bedarf deckt.
                 // Ohne Bedarfsreihe bleiben alle drei 0 (StrombedarfFehlt).
@@ -225,16 +226,17 @@ namespace WindowsFormsApplication1
 
                 if (bhkw != null && h < bhkw.Length)
                 {
+                    // KWK-Split aus der Einspeisung DES LAUFS (BHKW_UEBERSCHUSS): ohne Flotte die
+                    // Viertelstundenbilanz im Stundenmittel, mit Flotte die Flottenbilanz — dieselbe
+                    // Reihe wie BHKW-Reiter und Kennzahl. Eigenstrom ist der Rest der Erzeugung.
+                    // Ohne Reihe (Überschuss unter der Schwelle des Extraktors) und ohne
+                    // Bedarfsreihe (StrombedarfFehlt) ist alles Eigenstrom.
                     double erz = bhkw[h];
-                    double eigen = erz;   // ohne Bedarfsreihe: alles Eigenstrom (Hinweis via StrombedarfFehlt)
-                    if (bedarf != null && h < bedarf.Length)
-                    {
-                        // PV-Eigennutzung derselben Stunde ist oben bereits abgezogen —
-                        // sonst wäre der KWK-Eigenanteil systematisch zu hoch.
-                        eigen = Math.Min(erz, bedarfNachPv);
-                    }
+                    double einsp = bedarf != null && bhkwEinspeisung != null && h < bhkwEinspeisung.Length
+                        ? Math.Max(0, bhkwEinspeisung[h]) : 0.0;
+                    double eigen = Math.Max(0, erz - einsp);
                     m.KwkEigenGesamtMWh += eigen / 1000.0;
-                    m.KwkEinspeisungGesamtMWh += Math.Max(0, erz - eigen) / 1000.0;
+                    m.KwkEinspeisungGesamtMWh += einsp / 1000.0;
                 }
             }
             return m;

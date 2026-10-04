@@ -75,12 +75,8 @@ namespace WindowsFormsApplication1
                         z.Reihen[ZeitreihenSatz.PV_ABREGELUNG] = Stunden(sim, abregelungKw);
                         z.Beschriftungen[ZeitreihenSatz.PV_ABREGELUNG] = "PV-Abregelung";
                     }
-
-                    // V1: BHKW-Überschuss als eigene Reihe — er stand bis P1 in der
-                    // PV-Überschussreihe (falsches Etikett).
-                    if (sim.simulation_pv.BhkwUeberschussGesamtKwh > 0.5)
-                        z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] =
-                            D(sim.simulation_pv.BhkwUeberschuss);
+                    // V1: Der BHKW-Überschuss ist keine PV-Größe; seine Reihe setzt der
+                    // gemeinsame Zweig unten (Einspeisung des Laufs, mit und ohne PV).
                     }
                 }
 
@@ -103,13 +99,14 @@ namespace WindowsFormsApplication1
                     z.Beschriftungen[ZeitreihenSatz.PV_ABREGELUNG] = "PV-Abregelung";
                 }
 
-                // E29 (#536, Entscheide E27‑Q3 b / E29‑Q1 a / E29‑Q2 a): die BHKW-Einspeisung
-                // auch OHNE Photovoltaik und ohne Flotte — dieselbe Stundenformel wie der
-                // KWK-Split der Strommatrix (SimulationControl.BhkwEinspeisungStuendlich).
-                // Mit PV führt SimulationPV.BhkwUeberschuss dieselbe Größe (Zweig oben,
-                // unverändert), mit Flotte die Flottenbilanz. Dieselbe Schwelle 0,5 kWh.
-                if (sim.Speicherflottennetzbilanz == null &&
-                    !(sim.bSimulationPV && sim.simulation_pv != null))
+                // Die BHKW-Einspeisung ohne Flotte, mit und ohne Photovoltaik: das Stundenmittel
+                // der Viertelstundenbilanz des Laufs (SimulationControl.BhkwEinspeisungDesLaufs).
+                // Dieselbe Reihe lesen BHKW-Reiter und Kennzahl; der KWK-Split der Strommatrix
+                // liest sie aus diesem Satz. Mit Flotte steht oben die Flottenbilanz.
+                // Die Schwelle 0,5 kWh/a bleibt: Ohne nennenswerten Überschuss erscheinen weder
+                // Spalte noch Reihe im Bericht; die Matrix rechnet dann alles als Eigenstrom
+                // (Unterschied zur Kennzahl höchstens 0,5 kWh/a, unter jeder Anzeigestelle).
+                if (sim.Speicherflottennetzbilanz == null)
                 {
                     double[] einspeisung = sim.BhkwEinspeisungDesLaufs();
                     double summe = 0;

@@ -1017,10 +1017,10 @@ namespace WindowsFormsApplication1
             public double ReststrombedarfMwh;
             /// <summary>
             /// Die BHKW-Einspeisung [MWh/a] (E29 #536, Entscheide E27‑Q3 b, E29‑Q1 a/Q3 a):
-            /// ohne Speicherflotte der KWK-Split je Stunde
-            /// (<see cref="SimulationControl.BhkwEinspeisungStuendlich"/>, dieselbe Menge wie
-            /// <c>StromMatrix.KwkEinspeisungGesamtMWh</c>), mit Flotte die BHKW-Einspeisung
-            /// der Flottenbilanz. Anzeige, nicht persistiert.
+            /// ohne Speicherflotte die Viertelstundenbilanz des Laufs
+            /// (<see cref="SimulationControl.BhkwEinspeisungDesLaufs"/>, dieselbe Menge wie die Reihe
+            /// <c>BHKW_UEBERSCHUSS</c> und <c>StromMatrix.KwkEinspeisungGesamtMWh</c>), mit Flotte die
+            /// BHKW-Einspeisung der Flottenbilanz. Anzeige, nicht persistiert.
             /// </summary>
             public double EinspeisungMwh;
             public double WaermeueberschussMwh;
@@ -1089,7 +1089,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die BHKW-Einspeisung des Laufs [MWh/a] (E29 #536): mit Speicherflotte deren
         /// BHKW-Einspeisung (Entscheid E29‑Q3 a, dieselbe Quelle wie die Reihe
-        /// <c>BHKW_UEBERSCHUSS</c>), sonst die Stundenformel des KWK-Splits. 0 ohne BHKW.
+        /// <c>BHKW_UEBERSCHUSS</c>), sonst die Viertelstundenbilanz des Laufs
+        /// (<see cref="SimulationControl.BhkwEinspeisungDesLaufs"/>). 0 ohne BHKW.
         /// </summary>
         internal static double BhkwEinspeisungMwh(SimulationControl sim)
         {
@@ -1124,7 +1125,7 @@ namespace WindowsFormsApplication1
             /// <summary>
             /// Der BHKW-Strom, der ins Netz geht — dieselbe Quelle wie
             /// <see cref="BhkwErgebnis.EinspeisungMwh"/>: mit Speicherflotte deren BHKW-Einspeisung
-            /// im Stundenmittel, sonst der KWK-Split je Stunde.
+            /// im Stundenmittel, sonst die Viertelstundenbilanz des Laufs im Stundenmittel.
             /// </summary>
             public double[] Einspeisung = new double[0];
 

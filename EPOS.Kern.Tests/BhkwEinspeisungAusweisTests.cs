@@ -12,8 +12,9 @@ namespace EPOS.Kern.Tests
     /// <b>E29 (#536): Anzeige-Welle Stromausweis.</b>
     /// <list type="bullet">
     /// <item>E27‑Q3 b: die BHKW-Einspeisung als Diagnosereihe (<c>BHKW_UEBERSCHUSS</c>, auch ohne
-    /// PV) und als Zeile im BHKW-Reiter — die Stundenformel des KWK-Splits
-    /// (<see cref="SimulationControl.BhkwEinspeisungStuendlich"/>, Entscheide E29‑Q1…Q4 a).</item>
+    /// PV) und als Zeile im BHKW-Reiter — die Viertelstundenbilanz des Laufs
+    /// (<see cref="SimulationControl.BhkwEinspeisungDesLaufs"/>), die auch der KWK-Split der
+    /// Strommatrix liest (Entscheid des Anwenders vom 04.10.2026).</item>
     /// <item>E26‑Q6: die Linie der Strombilanz und die Excel-Spalte „Strombedarf" messen am
     /// Strombedarf aller Verbraucher (<c>STROMBEDARF_GESAMT</c>), mit Rückfall (E29‑Q7/Q8 a);
     /// die BHKW-Einspeisung als Excel-Spalte auch ohne Flotte (E29‑Q6 a).</item>
@@ -21,7 +22,7 @@ namespace EPOS.Kern.Tests
     /// <item>Restpunkt E28 (a): der PV-Deckungsgrad teilt durch den je Stunde geklemmten Bedarf
     /// (E29‑Q10 a).</item>
     /// </list>
-    /// Kein Kernwert der Wirtschaftlichkeit ändert sich; die Strommatrix bleibt unberührt.
+    /// Die Strommatrix liest die Einspeisung aus dem Satz (<c>BHKW_UEBERSCHUSS</c>).
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class BhkwEinspeisungAusweisTests : IDisposable
@@ -36,56 +37,68 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Die Stundenformel (ohne Datenbank)
+        //  Die Viertelstundenbilanz (ohne Datenbank)
         // =====================================================================
 
         /// <summary>
-        /// Eine Stunde: BHKW-Strom, Bedarf aller Verbraucher und PV-Eigenverbrauch [kWh] →
-        /// Einspeisung. Der PV-Eigenverbrauch geht vor (10, 4, 3 → 9); nimmt die PV den ganzen
-        /// Bedarf, speist das BHKW alles ein (10, 4, 6 → 10).
+        /// Je Viertelstunde ist die Einspeisung der negative Rest nach der Kaskade
+        /// (Bedarf aller Verbraucher − BHKW-Strom): <c>max(0, −Rest_q)</c> [kW].
         /// </summary>
         [Theory]
-        [InlineData(10.0, 4.0, 0.0, 6.0)]
-        [InlineData(10.0, 4.0, 3.0, 9.0)]
-        [InlineData(10.0, 15.0, 0.0, 0.0)]
-        [InlineData(0.0, 5.0, 0.0, 0.0)]
-        [InlineData(10.0, 4.0, 6.0, 10.0)]
-        public void Die_Einspeisung_ist_der_Strom_den_die_Verbraucher_nach_der_PV_nicht_abnehmen(
-            double bhkw, double bedarf, double pv, double erwartet)
+        [InlineData(-6.0, 6.0)]
+        [InlineData(0.0, 0.0)]
+        [InlineData(3.5, 0.0)]
+        [InlineData(-0.25, 0.25)]
+        public void Die_Einspeisung_ist_der_negative_Rest_der_Viertelstunde(double restKw, double erwartetKw)
         {
-            double[] b = new double[8760], d = new double[8760], p = new double[8760];
-            b[17] = bhkw; d[17] = bedarf; p[17] = pv;
-
-            double[] e = SimulationControl.BhkwEinspeisungStuendlich(b, d, p);
-
-            Assert.Equal(8760, e.Length);
-            Assert.Equal(erwartet, e[17]);
-            Assert.Equal(erwartet, e.Sum());
+            Assert.Equal(erwartetKw, SimulationControl.BhkwUeberschussKw(restKw));
+            double[] reihe = SimulationControl.BhkwUeberschussKw(new[] { restKw, -restKw });
+            Assert.Equal(erwartetKw, reihe[0]);
+            Assert.Null(SimulationControl.BhkwUeberschussKw((double[])null));
         }
 
-        /// <summary>Ohne Bedarfswert ist die Stunde Eigenstrom — wie im KWK-Split.</summary>
+        /// <summary>
+        /// Eine Stunde mit stundenkonstantem BHKW-Strom 4 kWh/h und schwankendem Bedarf
+        /// 0, 8, 2, 6 kW (Mittel 4 kWh/h). Die frühere Stundenformel max(0, B − D̄) gab 0 —
+        /// die Viertelstunden: Rest −4, +4, −2, +2 → Einspeisung 4, 0, 2, 0 kW, Mittel
+        /// 1,5 kWh/h; Netzbezug 0, 4, 0, 2 kW, Mittel 1,5 kWh/h. Bilanz: Netzbezug 1,5 +
+        /// BHKW 4 − Einspeisung 1,5 = Bedarf 4. Bei konstantem Bedarf (4, 4, 4, 4) ist die
+        /// Einspeisung 0 wie in der Stundenformel.
+        /// </summary>
         [Fact]
-        public void Stunden_ohne_Bedarfswert_zaehlen_als_Eigenstrom()
+        public void Schwankender_Bedarf_in_der_Stunde_speist_ein_und_die_Bilanz_schliesst()
         {
-            double[] b = Enumerable.Repeat(3.0, 8760).ToArray();
-            double[] e = SimulationControl.BhkwEinspeisungStuendlich(b, new[] { 1.0 }, null);
-            Assert.Equal(2.0, e[0]);
-            Assert.Equal(0.0, e[1]);
-            Assert.Equal(0.0, e[8759]);
-            Assert.Null(SimulationControl.BhkwEinspeisungStuendlich(null, new double[8760], null));
+            double bhkw = 4.0;
+            double[] bedarf = { 0.0, 8.0, 2.0, 6.0 };
+            double[] rest = bedarf.Select(d => d - bhkw).ToArray();
+            double[] einsp = SimulationControl.BhkwUeberschussKw(rest);
+            double[] netz = SimulationControl.NetzbezugGeklemmt(rest);
+
+            Assert.Equal(1.5, einsp.Average(), 12);
+            Assert.Equal(1.5, netz.Average(), 12);
+            Assert.Equal(bedarf.Average(), netz.Average() + bhkw - einsp.Average(), 12);
+
+            double[] konstant = SimulationControl.BhkwUeberschussKw(new[] { 0.0, 0.0, 0.0, 0.0 });
+            Assert.Equal(0.0, konstant.Sum());
         }
 
-        /// <summary>Über ein ganzes Zufallsjahr dieselbe Menge wie der KWK-Split der Strommatrix.</summary>
+        /// <summary>
+        /// Der KWK-Split der Strommatrix rechnet nicht selbst: Die Einspeisung ist die Reihe
+        /// <c>BHKW_UEBERSCHUSS</c> des Satzes, der Eigenstrom die Erzeugung minus Einspeisung —
+        /// über ein Zufallsjahr exakt. Ohne Reihe oder ohne Bedarfsreihe ist alles Eigenstrom.
+        /// </summary>
         [Fact]
-        public void Die_Jahressumme_ist_die_KWK_Einspeisung_der_Strommatrix()
+        public void Der_KWK_Split_der_Strommatrix_liest_die_Einspeisung_des_Satzes()
         {
             var zufall = new Random(536);
-            double[] bhkw = new double[8760], bedarf = new double[8760], pv = new double[8760], netz = new double[8760];
+            double[] bhkw = new double[8760], bedarf = new double[8760], pv = new double[8760],
+                     netz = new double[8760], einsp = new double[8760];
             for (int h = 0; h < 8760; h++)
             {
                 bhkw[h] = zufall.NextDouble() * 20.0;
                 bedarf[h] = zufall.NextDouble() * 25.0;
                 pv[h] = zufall.NextDouble() < 0.5 ? 0.0 : zufall.NextDouble() * 10.0;
+                einsp[h] = zufall.NextDouble() * bhkw[h];
                 netz[h] = Math.Max(0, bedarf[h] - pv[h] - bhkw[h]);
             }
             var z = new ZeitreihenSatz();
@@ -94,11 +107,20 @@ namespace EPOS.Kern.Tests
             z.Reihen[ZeitreihenSatz.PV_GENUTZT] = pv;
             z.Reihen[ZeitreihenSatz.NETZBEZUG] = netz;
 
-            StromMatrix m = StromMatrix.Baue(z, new TarifParameter());
-            double[] e = SimulationControl.BhkwEinspeisungStuendlich(bhkw, bedarf, pv);
+            StromMatrix ohneReihe = StromMatrix.Baue(z, new TarifParameter());
+            Assert.Equal(0.0, ohneReihe.KwkEinspeisungGesamtMWh);
+            Assert.Equal(bhkw.Sum() / 1000.0, ohneReihe.KwkEigenGesamtMWh, 9);
 
+            z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] = einsp;
+            StromMatrix m = StromMatrix.Baue(z, new TarifParameter());
             Assert.True(m.KwkEinspeisungGesamtMWh > 1.0);
-            Assert.Equal(m.KwkEinspeisungGesamtMWh, e.Sum() / 1000.0, 9);
+            Assert.Equal(einsp.Sum() / 1000.0, m.KwkEinspeisungGesamtMWh, 9);
+            Assert.Equal((bhkw.Sum() - einsp.Sum()) / 1000.0, m.KwkEigenGesamtMWh, 9);
+
+            z.Reihen.Remove(ZeitreihenSatz.STROMBEDARF_GESAMT);
+            StromMatrix ohneBedarf = StromMatrix.Baue(z, new TarifParameter());
+            Assert.True(ohneBedarf.StrombedarfFehlt);
+            Assert.Equal(0.0, ohneBedarf.KwkEinspeisungGesamtMWh);
         }
 
         // =====================================================================
@@ -142,12 +164,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// 1018 mit der PV-Anlage von 1040 (Muster E28): Die Reihe kommt dann aus
-        /// <c>SimulationPV.BhkwUeberschuss</c> (Zweig unverändert) — dieselbe Größe wie die neue
-        /// Stundenformel, Stunde für Stunde; der Reiter zeigt 27,46 MWh.
+        /// 1018 mit der PV-Anlage von 1040 (Muster E28): <c>SimulationPV.BhkwUeberschuss</c> ist
+        /// dieselbe Größe wie die Einspeisereihe des Laufs, Stunde für Stunde bitgleich (gleiche
+        /// Formel auf gleichem Rest nach der Kaskade).
         /// </summary>
         [Fact]
-        public void Mit_PV_ist_die_Stundenformel_der_BHKW_Ueberschuss_der_PV()
+        public void Mit_PV_ist_die_Einspeisung_des_Laufs_der_BHKW_Ueberschuss_der_PV()
         {
             if (!_db.Vorhanden) return;
             Kopiere("Tab_Energieanlagen", "ID = 14742");
@@ -163,7 +185,7 @@ namespace EPOS.Kern.Tests
             double[] pv = r.sim.simulation_pv.BhkwUeberschuss;
             double abw = 0;
             for (int h = 0; h < 8760; h++) abw = Math.Max(abw, Math.Abs(neu[h] - pv[h]));
-            Assert.True(abw < 1e-9, "Stundenformel weicht vom BHKW-Überschuss der PV ab: " + abw);
+            Assert.Equal(0.0, abw);
 
             var bh = SimulationErgebnisCtrl.Bhkw(r.sim, r.simulation_Waermebedarf, r.simulation_Strombedarf);
             // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575 MWh.
