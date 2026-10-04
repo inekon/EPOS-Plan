@@ -261,20 +261,27 @@ entstehen oder verschwinden.
 > `Heizkurve_Steilheit`), `Regler_Proportionalband` und `Sollwertprofil` — und die Kühlübergabe aus
 > `KAK-S1` — `Kuehluebergabe_Aktiv`, `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`,
 > `Kuehl_Uebergabe_Leistung_Nenn`, `Kuehl_Auslegung_Vorlauf`, `Kuehl_Auslegung_Ruecklauf`,
-> `Kuehl_Auslegung_Raumtemperatur` und `Kuehl_Vorlaufgrenze`; sobald eine Zone rechnet, ebenso deren
-> Übergabespalten in `Tab_Zone`. Betroffen ist außerdem die **Kaskade** eines gekoppelten
+> `Kuehl_Auslegung_Raumtemperatur` und `Kuehl_Vorlaufgrenze` — und die sieben Übergabespalten seiner Zonen in
+> `Tab_Zone` aus `ZonenUebergabeSchema`: `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn`,
+> `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur` und `Regler_Proportionalband`. Betroffen ist außerdem die **Kaskade** eines gekoppelten
 > Referenzprojekts (`Tab_Einstellungen.Tool_1` bis `Tool_4`): Sie entscheidet, ob die Wärmepumpe Wärme
 > liefert und damit, ob die Kennlinienwahl am gerechneten Vorlauf (Anlagenkopplung 6.1) auf ein Ergebnis
 > wirkt; für den Platz der Wärmepumpe gilt zugleich die Regel „gesäte Kältedaten". Ebenso betroffen ist
 > das Anlegen oder Entfernen eines gekoppelten Referenzprojekts.
 >
-> **Rechenwirkung hat allein Projekt 1047 „Referenz Anlagenkopplung AK1"**, die Kopie von 1017:
+> **Rechenwirkung haben die Projekte 1047 und 1054.** Projekt **1047 „Referenz Anlagenkopplung AK1"**, die Kopie von 1017:
 > Kopplungsstufe „AK1", Gebäude 10653 mit Heizkreis (Radiator, Heizkurve gefahren) und Kühlübergabe
 > (Kühldecke), alle übrigen Übergabespalten leer, also die EPOS-Vorgaben der Art, und die Kaskade BHKW,
 > Wärmepumpe, Elektrokessel (in 1017: BHKW, Elektrokessel, Wärmepumpe) — neun Zellen samt der Kopie aus
 > [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py).
+> Projekt **1054 „Referenzprojekt Zonen mit Heizkreis"**, die Kopie von 1052 (unten „Das Referenzprojekt 1054“):
+> Kopplungsstufe „AK1", Gebäude mit `Heizkreis_Aktiv` = 1 und `Uebergabe_Art` „RADIATOR" (fester Vorlauf aus
+> der Anlage), an der Zone „Gastronomie und Verwaltung" `Uebergabe_Art` „KONVEKTOR", `Auslegung_Vorlauf` 70,
+> `Auslegung_Ruecklauf` 50 und `Regler_Proportionalband` 2,0 — sieben Zellen samt der Kopie aus
+> [`Skripte/referenzprojekt_1054_zonen_heizkreis.cs`](Skripte/referenzprojekt_1054_zonen_heizkreis.cs); alle
+> übrigen Übergabespalten von Gebäude und Zonen stehen leer.
 > Eine leere Spalte ist hier eine Setzung wie eine gefüllte: Wer eine Vorgabe von Hand einträgt, ändert
-> die Basis. Die übrigen dreizehn Referenzprojekte stehen ohne Kopplungsstufe und ohne Haken; ihre
+> die Basis. Die übrigen Referenzprojekte stehen ohne Kopplungsstufe und ohne Haken; ihre
 > Gebäude rechnen ideal.
 >
 > **Nicht** betroffen sind die Übergabespalten von Projekten außerhalb der Referenzliste und die
@@ -424,7 +431,8 @@ Referenzprojekt leer.
 
 ## Die Einfrierregel „gesäte Zonendaten“
 
-Zwölfter Ort derselben Falle: Das Zonenprojekt 1052 steht in der Basis (unten „Das Referenzprojekt 1052“). Ein Gebäude mit mindestens zwei Zonen rechnet in der Zonenschleife
+Zwölfter Ort derselben Falle: Das Zonenprojekt 1052 steht in der Basis (unten „Das Referenzprojekt 1052“), seine
+gekoppelte Kopie 1054 kommt mit dem nächsten Einfrieren hinzu (unten „Das Referenzprojekt 1054“). Ein Gebäude mit mindestens zwei Zonen rechnet in der Zonenschleife
 (Mehrzonenkonzept 2): jede Zone mit ihren Bauteilen, die Trennflächen zwischen zwei Zonen über `Tab_Bauteil.ID_Nachbarzone`
 (Randbedingung `ZONE`, Gruppe nach `Trennflaeche_Zuordnung` oder der 4-K-Regel), der Luftaustausch über
 `Tab_Zonenluftstrom`, eine unbeheizte Zone frei schwingend, und je Zone ihr Konditionierungssatz — Bestandsfelder der
@@ -833,7 +841,8 @@ der Testdatenbank ohne 1050 wird es auf der neuen Fassung erneut gezogen.
 
 ### Das Referenzprojekt 1052 „Zonen“
 
-Projekt **1052 „Referenzprojekt Zonen“** ist das einzige Projekt der Testdatenbank mit Zonen: Kopie von 1018 auf dem
+Projekt **1052 „Referenzprojekt Zonen“** ist das ungekoppelte Zonenprojekt der Testdatenbank (seine Kopie 1054 rechnet
+gekoppelt, siehe unten): Kopie von 1018 auf dem
 Kopierweg des Programms (Hotel-G-136, VDI 6007, BHKW, Kessel und zwei Puffer wie 1018). Das Gebäude ist über die Wege
 des Zonendialogs geteilt — „Gebäude als eine Zone übernehmen“ (`GebaeudeZonenCtrl.Uebernahme`, Hochrechnung auf die
 Zuordnung 500 m² mit dem Faktor 500 / 1 975,34 = 0,25312) und der OK-Weg der Zonen (`GebaeudeZonenCtrl.Schreiben`):
@@ -872,6 +881,49 @@ der Konditionierungsvorlagen, `integrity_check` und `foreign_key_check` und erse
 fällt auf `MAX(Tab_Projekt.ID) + 1`: Steht 1051 schon, fällt sie von selbst auf 1052; fehlt 1051, hält eine
 Platzhalterzeile `Tab_Projekt.ID = 1051` die Nummer nur für die Dauer der Kopie frei (ohne Kindzeile, danach gelöscht).
 Nach einer Neufassung der Testdatenbank wird es auf der neuen Fassung erneut gezogen — zuerst 1051, dann 1052.
+
+### Das Referenzprojekt 1054 „Zonen mit Heizkreis“
+
+Projekt **1054 „Referenzprojekt Zonen mit Heizkreis“** ist die gekoppelte Fassung des Zonenprojekts: Kopie von 1052 auf
+dem Kopierweg des Programms (`ProjektDuplizierenCtrl`) — dieselben drei Zonen, 31 Bauteile mit drei Trennflächen, der
+Luftstrom, die zwei Zonenkalender samt neun Perioden und zwei Vorgaben, Kaskade, Kühlbetrieb (aus) und
+Aufheizoptimierung (an) wie kopiert. 1052 bleibt unverändert und trägt weiter den Nachweis der Aufheizoptimierung mit
+Zonen. Gesät sind:
+
+| Ort | Zelle | Wert |
+|---|---|---|
+| `Tab_Einstellungen` | `Anlagenkopplung` | `AK1` (`KonfigurationCtrl.AnlagenkopplungSetzen`) |
+| `Tab_Gebaeude` (Kopie von 10658) | `Heizkreis_Aktiv` | 1 |
+| | `Uebergabe_Art` | `RADIATOR` |
+| | übrige Übergabe-, Auslegungs- und Heizkurvenspalten, `Regler_Proportionalband`, `Sollwertprofil` | leer (Vorgaben der Art, 1 K), `Heizkurve_Aktiv` 0 — fester Vorlauf aus der Anlage |
+| `Tab_Zone` „Gastronomie und Verwaltung“ | `Uebergabe_Art` | `KONVEKTOR` |
+| | `Auslegung_Vorlauf` / `Auslegung_Ruecklauf` | 70 / 50 °C |
+| | `Regler_Proportionalband` | 2,0 K |
+| | `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn`, `Auslegung_Raumtemperatur` | leer |
+| `Tab_Zone` „Gästezimmer“, „Keller“ | alle sieben Übergabespalten | leer (Wert des Gebäudes) |
+| `Tab_Projekt` | `Beschreibung`, `Erstelldatum`, `Aenderungsdatum`; `Kosten_Geaendert` | Kopfzellen; Kostenstempel leer |
+
+Mit der Kopplung stehen die beheizten Zonen im Aufheizzustand **GEKOPPELT** (der Keller UNBEHEIZT) — das ist gewollt und
+von der Wache festgehalten. Gerechnet (zwei Läufe byte-gleich, rund 2 s): Heizwärme des Gebäudes 51,46 MWh, Spitze
+31,66 kW; Vorlauf im Mittel 85,0 °C (fester Vorlauf der Anlage), Rücklauf 81,09 °C; Gästezimmer 34,89 MWh, Spitze
+20,67 kW, Vorlauf/Rücklauf 85,0/81,37 °C, 0 begrenzte Stunden; Gastronomie 16,58 MWh, Spitze 13,97 kW, Vorlauf/Rücklauf
+85,0/78,57 °C, 0 begrenzte Stunden; Keller ohne Übergabewerte, im Mittel der Heizzeit 14,9 °C. 1054 kommt mit dem
+Einfrieren in die Basis R35, nicht in die CI-Auswahl; es gelten die Einfrierregeln „gesäte Auslegungsdaten der Übergabe“
+und „gesäte Zonendaten“ oben.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1054_zonen_heizkreis.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
+```
+
+Die gesäten Zellen stehen in **einer** Quelle, dem Bauplan
+[`Skripte/referenzprojekt_1054_bauplan.cs`](Skripte/referenzprojekt_1054_bauplan.cs): Das Skript zieht ihn über
+`#:include` (dazu den Bauplan von 1052), `EPOS.Kern.Tests` verlinkt ihn für `ZonenHeizkreisReferenzprojektWacheTests`
+(jede gesäte Zelle, die Kopie von 1052 nach Zählung, ein Lauf mit Vorlauf, Rücklauf und begrenzten Stunden je Zone,
+zwei Läufe bitgleich). Das Skript ist wiederholbar wie das von 1052 (Rückgabe 0 ohne Änderung, 2 bei Abweichung ohne
+Änderung der Datei), schreibt in eine Arbeitsdatei, prüft die Zielzellen, die Unversehrtheit von 1052 (Abdruck und
+Bauplan), `integrity_check` und `foreign_key_check` und ersetzt erst dann die Datenbank. Die Kopie fällt auf
+`MAX(Tab_Projekt.ID) + 1`; vorausgesetzt ist 1053 als höchste Projekt-ID. Nach einer Neufassung der Testdatenbank wird
+es nach 1051, 1052 und 1053 gezogen.
 
 ### Das Referenzprojekt 1051 „Konditionierung“
 
