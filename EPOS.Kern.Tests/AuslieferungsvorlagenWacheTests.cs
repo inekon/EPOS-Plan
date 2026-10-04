@@ -271,6 +271,27 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Windows-Entwicklungsbau: genau ein <c>None</c>-Eintrag der Exportzusage, der sie mit <c>Link</c> und
+        /// <c>TargetPath</c> <c>Vorlage\EPOS_Export.ids</c> neben die EXE kopiert — wie das Setup nach
+        /// <c>{app}\Vorlage</c>.
+        /// </summary>
+        [Fact]
+        public void Der_Windows_Bau_kopiert_die_Exportzusage_neben_die_EXE()
+        {
+            XDocument projekt = Projekt(WINDOWS_PROJEKT);
+            if (projekt == null) return;
+
+            List<XElement> eintraege = Eintraege(projekt, "None")
+                .Where(e => Quellen(e).Contains(@"..\Setup\Vorlage\EPOS_Export.ids", StringComparer.Ordinal))
+                .ToList();
+            Assert.True(eintraege.Count == 1,
+                WINDOWS_PROJEKT + ": " + eintraege.Count + " None-Einträge für die Exportzusage, erwartet genau einer.");
+            Assert.Equal(@"Vorlage\EPOS_Export.ids", Metadatum(eintraege[0], "Link"));
+            Assert.Equal(@"Vorlage\EPOS_Export.ids", Metadatum(eintraege[0], "TargetPath"));
+            Assert.Equal("PreserveNewest", Metadatum(eintraege[0], "CopyToOutputDirectory"));
+        }
+
+        /// <summary>
         /// iOS: genau ein <c>MauiAsset</c> der Exportzusage mit <c>LogicalName</c> <c>Vorlage\EPOS_Export.ids</c> —
         /// im Paket neben dem erwarteten Ort der Vorlagendatenbank.
         /// </summary>

@@ -330,6 +330,18 @@
     </None>
   </ItemGroup>
 
+  <!-- Die Exportzusage (IDS) des IFC-Exports: im Entwicklungsbau nach Vorlage\
+       neben die EXE, wie das Setup sie nach {app}\Vorlage legt (dort sucht sie
+       der Exportdialog neben der Vorlagendatenbank). Gehalten von
+       EPOS.Kern.Tests/AuslieferungsvorlagenWacheTests. -->
+  <ItemGroup>
+    <None Include="..\Setup\Vorlage\EPOS_Export.ids">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlage\EPOS_Export.ids</Link>
+      <TargetPath>Vorlage\EPOS_Export.ids</TargetPath>
+    </None>
+  </ItemGroup>
+
   <!-- Die Startseite der Huelle. HostPage="wwwroot\index.html" sucht sie neben
        der EXE; ohne diese Zeile stuende sie nur im Quellbaum. Die Anteile aus
        EPOS.UI (_content\EPOS.UI\*) und das Blazor-Skript (_framework\*) legt
