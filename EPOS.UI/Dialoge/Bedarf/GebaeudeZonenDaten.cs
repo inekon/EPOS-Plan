@@ -16,8 +16,10 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Raumhöhe, Volumen, „beheizt", die vier Sollwerte samt Maximalraumtemperatur, Infiltration und
 /// Nutzerlüftung, innere Gewinne, Bewohner, Strahlungsanteil und Leistungsgrenze der Heizung — und die
 /// Bauteile. Ein leerer Wert (<c>null</c>) übernimmt den des Gebäudes (Vorgabenkaskade
-/// <see cref="Zonenvorgaben"/>). Die Kühl- und Übergabespalten der Zone liest der Dialog nicht
-/// (Anwenderentscheid A4 (a)); die Hülle hält sie beim Schreiben, wie sie stehen.</para>
+/// <see cref="Zonenvorgaben"/>). Die sieben Übergabefelder (E63, AK1z: Art, Exponent, Nennleistung,
+/// Auslegungsvorlauf, -rücklauf, -raumtemperatur, Proportionalband) führt der Abschnitt „Übergabe";
+/// leer heißt „wie Gebäude". Die Kühlspalten der Zone liest der Dialog nicht (Anwenderentscheid A4 (a));
+/// die Hülle hält sie beim Schreiben, wie sie stehen.</para>
 /// </remarks>
 public sealed class ZoneDaten
 {
@@ -72,16 +74,41 @@ public sealed class ZoneDaten
     /// <summary>Leistungsgrenze der Heizung [kW]; <c>null</c> = die des Gebäudes (ab zwei Zonen anteilig).</summary>
     public double? HeizleistungMaxKw { get; set; }
 
-    /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>).</summary>
+    // ---- Die Wärmeübergabe der Zone (E63, AK1z) — leer (null) = wie Gebäude ----
+
+    /// <summary>Übergabeart (<c>DbWerte.UEBERGABE_*</c>); <c>null</c> = die des Gebäudes. <c>IDEAL</c> = diese Zone rechnet ideal.</summary>
+    public string? UebergabeArt { get; set; }
+
+    /// <summary>Exponent der Übergabe [–]; <c>null</c> = Gebäudewert, sonst Vorgabe der wirksamen Art.</summary>
+    public double? UebergabeExponent { get; set; }
+
+    /// <summary>Nennleistung der Übergabe [kW]; <c>null</c> = Anteil des Gebäudes nach Nutzfläche.</summary>
+    public double? UebergabeLeistungNennKw { get; set; }
+
+    /// <summary>Auslegungsvorlauf [°C]; <c>null</c> = Gebäudewert, sonst Vorgabe der wirksamen Art.</summary>
+    public double? AuslegungVorlauf { get; set; }
+
+    /// <summary>Auslegungsrücklauf [°C]; <c>null</c> = Gebäudewert, sonst Vorgabe der wirksamen Art.</summary>
+    public double? AuslegungRuecklauf { get; set; }
+
+    /// <summary>Auslegungsraumtemperatur [°C]; <c>null</c> = Gebäudewert, sonst Soll am Tag der Zone.</summary>
+    public double? AuslegungRaumtemperatur { get; set; }
+
+    /// <summary>Proportionalband des Raumreglers [K]; <c>null</c> = Gebäudewert, sonst Vorgabe 1 K.</summary>
+    public double? ReglerProportionalband { get; set; }
+
+    /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>) samt den sieben Übergabefeldern.</summary>
     public Zoneneingaben Eingaben()
         => new(Nutzflaeche, Raumhoehe, Volumen, IstBeheizt, SollTag, SollNacht, SollWochenende, SollFerien,
                Maximaleraumtemperatur, HeizungStrahlungsanteil, HeizleistungMaxKw, LuftwechselInfiltration,
-               LuftwechselNutzer, InterneWaermegewinne, Bewohner);
+               LuftwechselNutzer, InterneWaermegewinne, Bewohner,
+               UebergabeArt, UebergabeExponent, UebergabeLeistungNennKw, AuslegungVorlauf, AuslegungRuecklauf,
+               AuslegungRaumtemperatur, ReglerProportionalband);
 
     /// <summary>
     /// Die Zone, deren Duplikat diese ist (Stufe G6a) — ihre Id im Arbeitsstand; <c>null</c> = kein
     /// Duplikat. Die Hülle übernimmt damit die Spalten der Vorlage, die die Oberfläche nicht führt
-    /// (Sollwerte, Lüftung, Kühl- und Übergabeeingaben), statt sie still auf NULL fallen zu lassen;
+    /// (Kühleingaben), statt sie still auf NULL fallen zu lassen;
     /// Herkunft und Quellkennung der Vorlage gehen nicht mit.
     /// </summary>
     public int? VorlageId { get; set; }
@@ -405,4 +432,17 @@ public sealed class GebaeudeZonenweg
     /// Dann bietet der Bauteildialog die Nachbarzone nicht an, und „Luftaustausch …" ist weich gesperrt.
     /// </summary>
     public string? KopplungSperre { get; init; }
+
+    /// <summary>
+    /// Warum die Datenbank die Übergabe je Zone nicht kennt (Schemaschritt der Übergabe je Zone fehlt;
+    /// E63, AK1z); <c>null</c> = sie kennt sie. Dann zeigt der Abschnitt „Übergabe" des Zonendialogs
+    /// statt der Felder diesen Grund — die Zone übernimmt die Übergabe des Gebäudes.
+    /// </summary>
+    public string? UebergabeSperre { get; init; }
+
+    /// <summary>
+    /// Rechnet das Projekt eine Kopplungsstufe (AK1 oder höher)? <c>null</c> = unbekannt (kein Projekt).
+    /// Ohne Stufe zeigt der Abschnitt „Übergabe" den Hinweis „ohne Wirkung".
+    /// </summary>
+    public bool? ProjektKoppelt { get; init; }
 }

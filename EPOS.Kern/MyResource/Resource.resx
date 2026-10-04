@@ -34530,6 +34530,54 @@ Möchten Sie das zulassen?</value>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>Eine unbeheizte Zone schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte.</value>
   </data>
+  <data name="ZONDLG_UEBERGABE_GRUPPE" xml:space="preserve">
+    <value>Übergabe</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_WIE_GEBAEUDE" xml:space="preserve">
+    <value>wie Gebäude ({0})</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_PLATZHALTER" xml:space="preserve">
+    <value>wie Gebäude: {0}</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG" xml:space="preserve">
+    <value>Anteil des Gebäudes nach Nutzfläche</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_HERKUNFT_ZONE" xml:space="preserve">
+    <value>an der Zone gewählt</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE" xml:space="preserve">
+    <value>wie Gebäude</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_ART" xml:space="preserve">
+    <value>Wirksame Übergabeart: {0} ({1}). Vorgaben der Art: Exponent {2}, Auslegung {3}/{4} °C, Proportionalband {5} K. Ein leeres Feld übernimmt den Wert des Gebäudes, trägt das Gebäude keinen, die Vorgabe der Art; die Auslegungsraumtemperatur ist dann das Soll am Tag der Zone, die Nennleistung der Anteil des Gebäudes nach der Nutzfläche der beheizten Zonen.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_IDEAL" xml:space="preserve">
+    <value>Wirksame Übergabeart: ideal ({0}) — die Zone rechnet mit idealer Regelung, ohne Übergabe. Die Felder erscheinen mit Radiator, Flächenheizung oder Konvektor.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS" xml:space="preserve">
+    <value>Ohne Wirkung, solange der Heizkreis des Gebäudes aus ist — die Werte bleiben erhalten.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS" xml:space="preserve">
+    <value>Ohne Wirkung, solange das Projekt keine Anlagenkopplung (AK1) rechnet — die Werte bleiben erhalten.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT" xml:space="preserve">
+    <value>Eine unbeheizte Zone hat keine Wärmeübergabe; ihre Werte bleiben erhalten.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_SPERRE" xml:space="preserve">
+    <value>Die Datenbank kennt die Übergabe je Zone nicht (Schemaschritt {0} fehlt); die Zone übernimmt die Übergabe des Gebäudes.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_ERL" xml:space="preserve">
+    <value>Wärmeübergabe der Zone; leer = wie Gebäude (Wert des Gebäudes, sonst Vorgabe der wirksamen Art). Wirkt nur bei beheizter Zone, eingeschaltetem Heizkreis des Gebäudes und Anlagenkopplung AK1 im Projekt.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_ART_ERL" xml:space="preserve">
+    <value>Übergabeart der Zone: IDEAL, RADIATOR, FLAECHE oder KONVEKTOR; leer = wie Gebäude. IDEAL heißt: diese Zone rechnet ideal, auch wenn das Gebäude gekoppelt ist.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_WIRKSAM_NAME" xml:space="preserve">
+    <value>Wirksame Übergabe</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_WIRKSAM_ERL" xml:space="preserve">
+    <value>Die wirksame Übergabe der Zone mit Herkunft je Wert (Zone, Gebäude oder Vorgabe der Art); nur lesen.</value>
+  </data>
   <data name="ZONDLG_ZEILE_LUFTWECHSEL" xml:space="preserve">
     <value>Luftwechsel der Zone: {0} 1/h ({1}).</value>
   </data>
