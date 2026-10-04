@@ -429,4 +429,231 @@ public class GebaeudeExportDialogTests : EposBunitContext
         Assert.False(string.IsNullOrWhiteSpace(en), schluessel + " (en)");
         Assert.NotEqual(de, en);
     }
+
+    // =====================================================================
+    //  Anreicherung der Originaldatei (Stufe G7d)
+    // =====================================================================
+
+    /// <summary>Der Prüfstand der Anreicherung: Quelle vorhanden?, Antwort der Dateiwahl, Ergebnis des Wegs.</summary>
+    private sealed class Anreicherungsstand
+    {
+        internal bool Moeglich = true;
+        internal int Wahlen;
+        internal GebaeudeAnreicherungWahl? Wahl = Frei();
+        internal readonly List<GebaeudeExportEingabe> Angereichert = new();
+        internal GebaeudeExportErgebnis Ergebnis =
+            new(true, false, "Die angereicherte Datei wurde gespeichert: C:\\Probe\\haus_EPOS.ifc (2048 Byte). Objekte: 5, ergänzt: 3, ersetzt: 1, übersprungen: 1.");
+    }
+
+    private static GebaeudeAnreicherungWahl Frei() => new("haus.ifc", "haus.ifc, importiert am 01.10.2026 10:00", new[]
+    {
+        new GebaeudeExportMeldung(WarnStufe.Warnung, "Warnung", "Sie geben eine fremde Datei verändert weiter.",
+                                  "GEXP_PROT_ANR_BEIPACK_FREMDDATEI"),
+    }, null);
+
+    private static GebaeudeAnreicherungWahl Gesperrt() => new("anders.ifc", "haus.ifc, importiert am 01.10.2026 10:00", new[]
+    {
+        new GebaeudeExportMeldung(WarnStufe.Fehler, "Fehler", "Rückgabe verweigert: Die gewählte Datei ist nicht die importierte Datei.",
+                                  "GEXP_PROT_ANR_HASH"),
+    }, "Rückgabe verweigert: Die gewählte Datei ist nicht die importierte Datei.");
+
+    private IRenderedComponent<GebaeudeExportDialog> AufbauenMitAnreicherung(Stand s, Anreicherungsstand a,
+                                                                             GebaeudeExportTexte? texte = null)
+        => Render<GebaeudeExportDialog>(p => p
+            .Add(x => x.Vorbereiten, e => { s.Vorbereitet.Add(e.Plz); s.Formatfolge.Add(e.Format); return Task.FromResult(s.Ansicht(e.Plz)); })
+            .Add(x => x.Speichern, e => { s.Gespeichert.Add(e.Plz); s.GespeichertFormat.Add(e.Format); return Task.FromResult(s.Ergebnis); })
+            .Add(x => x.Formate, Formate())
+            .Add(x => x.AnreicherungMoeglich, () => Task.FromResult(a.Moeglich))
+            .Add(x => x.OriginalWaehlen, () => { a.Wahlen++; return Task.FromResult(a.Wahl); })
+            .Add(x => x.Anreichern, e => { a.Angereichert.Add(e); return Task.FromResult(a.Ergebnis); })
+            .Add(x => x.Entprellung, 0)
+            .Add(x => x.Texte, texte ?? new GebaeudeExportTexte())
+            .Add(x => x.Geschlossen, e => s.Geschlossen.Add(e)));
+
+    private static void FormatIfc(IRenderedComponent<GebaeudeExportDialog> cut)
+        => cut.FindAll(".epos-gebexport-dialog input[type=radio]")[1].Change("1");
+
+    private static void WegAnreichern(IRenderedComponent<GebaeudeExportDialog> cut)
+        => cut.FindAll(".epos-gebexport-dialog input[type=radio]")[3].Change("1");
+
+    private static void PlanBestaetigen(IRenderedComponent<GebaeudeExportDialog> cut)
+        => cut.FindAll(".epos-gebexport-dialog input[type=checkbox]").Last().Change(true);
+
+    private static void BeipackBestaetigen(IRenderedComponent<GebaeudeExportDialog> cut)
+        => cut.Find(".epos-gebexport-anreicherung input[type=checkbox]").Change(true);
+
+    [Fact]
+    public void Die_Wegwahl_steht_nur_bei_IFC_und_mit_Importquelle()
+    {
+        var s = new Stand();
+        var cut = AufbauenMitAnreicherung(s, new Anreicherungsstand());
+        Assert.DoesNotContain("Originaldatei anreichern", cut.Markup);   // gbXML
+
+        FormatIfc(cut);
+        Assert.Contains("Eigene Datei schreiben", cut.Markup);
+        Assert.Contains("Originaldatei anreichern", cut.Markup);
+        Assert.False(cut.Instance.Anreichernd);                           // Vorgabe: eigene Datei
+        Assert.Empty(cut.FindAll(".epos-gebexport-originalknopf"));
+
+        var ohne = AufbauenMitAnreicherung(new Stand(), new Anreicherungsstand { Moeglich = false });
+        FormatIfc(ohne);
+        Assert.DoesNotContain("Originaldatei anreichern", ohne.Markup);
+        Assert.Equal(2, ohne.FindAll(".epos-gebexport-dialog input[type=radio]").Count);
+    }
+
+    [Fact]
+    public void Eine_Verweigerung_zeigt_den_Grund_und_wechselt_auf_die_eigene_Datei()
+    {
+        var s = new Stand();
+        var a = new Anreicherungsstand { Wahl = Gesperrt() };
+        var cut = AufbauenMitAnreicherung(s, a);
+        FormatIfc(cut);
+        cut.Find("input.epos-eingabe").Input("01067");
+        WegAnreichern(cut);
+        Knopf(cut, "Originaldatei wählen…").Click();
+
+        Assert.Equal(1, a.Wahlen);
+        Assert.Equal("anders.ifc", cut.Find(".epos-gebexport-originalname").TextContent.Trim());
+        Assert.Contains("haus.ifc, importiert am", cut.Find(".epos-gebexport-quelle").TextContent);
+        Assert.Contains("Die Originaldatei kann nicht angereichert werden: Rückgabe verweigert", cut.Markup);
+        Assert.Equal("GEXP_PROT_ANR_HASH", cut.Find(".epos-gebexport-anrmeldungen tbody tr").GetAttribute("data-schluessel"));
+        Assert.Empty(cut.FindAll(".epos-gebexport-anreicherung input[type=checkbox]"));   // keine Bestätigung
+
+        PlanBestaetigen(cut);
+        Primaer(cut).Click();
+        Assert.Empty(a.Angereichert);
+        Assert.Empty(s.Gespeichert);
+        Assert.Contains("Rückgabe verweigert", cut.Instance.Meldung);
+
+        cut.Find(".epos-gebexport-stattknopf").Click();
+        Assert.False(cut.Instance.Anreichernd);
+        Primaer(cut).Click();
+        Assert.Equal(new[] { "01067" }, s.Gespeichert);                   // dieselben Eingaben
+        Assert.Equal(new[] { "IFC" }, s.GespeichertFormat);
+        Assert.Empty(a.Angereichert);
+    }
+
+    [Fact]
+    public void Die_Freigabe_verlangt_die_Bestaetigung_des_Beipackzettels()
+    {
+        var s = new Stand();
+        var a = new Anreicherungsstand();
+        var cut = AufbauenMitAnreicherung(s, a);
+        FormatIfc(cut);
+        WegAnreichern(cut);
+        PlanBestaetigen(cut);
+
+        Primaer(cut).Click();                                             // ohne Datei
+        Assert.Equal("Bitte wählen Sie zuerst die Originaldatei.", cut.Instance.Meldung);
+
+        Knopf(cut, "Originaldatei wählen…").Click();
+        Assert.Contains("Sie geben eine fremde Datei verändert weiter", cut.Find(".epos-gebexport-anrmeldungen").TextContent);
+        Assert.Equal("Bitte bestätigen Sie, dass Sie die fremde Datei verändert weitergeben.",
+                     Primaer(cut).GetAttribute("title"));
+        Primaer(cut).Click();
+        Assert.Empty(a.Angereichert);
+        Assert.Equal("Bitte bestätigen Sie, dass Sie die fremde Datei verändert weitergeben.", cut.Instance.Meldung);
+        Assert.Empty(s.Geschlossen);
+
+        BeipackBestaetigen(cut);
+        Assert.True(cut.Instance.BeipackBestaetigt);
+        Primaer(cut).Click();
+        GebaeudeExportEingabe e = Assert.Single(a.Angereichert);
+        Assert.Equal("IFC", e.Format);
+        Assert.Empty(s.Gespeichert);
+        GebaeudeExportErgebnis? zurueck = Assert.Single(s.Geschlossen);
+        Assert.Contains("Objekte: 5, ergänzt: 3, ersetzt: 1, übersprungen: 1", zurueck!.Text);
+    }
+
+    [Fact]
+    public void Eine_neue_Dateiwahl_nimmt_die_Bestaetigung_zurueck_und_ein_Abbruch_laesst_sie_stehen()
+    {
+        var a = new Anreicherungsstand();
+        var cut = AufbauenMitAnreicherung(new Stand(), a);
+        FormatIfc(cut);
+        WegAnreichern(cut);
+        Knopf(cut, "Originaldatei wählen…").Click();
+        BeipackBestaetigen(cut);
+
+        a.Wahl = null;                                                    // Dateiwahl abgebrochen
+        Knopf(cut, "Originaldatei wählen…").Click();
+        Assert.True(cut.Instance.BeipackBestaetigt);
+        Assert.Equal("haus.ifc", cut.Instance.Wahl!.Dateiname);
+
+        a.Wahl = Frei();
+        Knopf(cut, "Originaldatei wählen…").Click();
+        Assert.False(cut.Instance.BeipackBestaetigt);
+    }
+
+    [Fact]
+    public void Eine_Verweigerung_beim_Schreiben_bleibt_im_Dialog_mit_den_Meldungen()
+    {
+        var s = new Stand();
+        var a = new Anreicherungsstand
+        {
+            Ergebnis = new(false, false, "Die Anreicherung wurde verweigert; es ist keine Datei entstanden.", new[]
+            {
+                new GebaeudeExportMeldung(WarnStufe.Fehler, "Fehler", "Entität fehlt.", "GEXP_PROT_ANR_ENTITAET_FEHLT"),
+            }),
+        };
+        var cut = AufbauenMitAnreicherung(s, a);
+        FormatIfc(cut);
+        WegAnreichern(cut);
+        Knopf(cut, "Originaldatei wählen…").Click();
+        BeipackBestaetigen(cut);
+        PlanBestaetigen(cut);
+        Primaer(cut).Click();
+
+        Assert.Single(a.Angereichert);
+        Assert.Empty(s.Geschlossen);
+        Assert.Equal(WarnStufe.Fehler, cut.Instance.MeldungStufe);
+        Assert.Contains("keine Datei entstanden", cut.Instance.Meldung);
+        Assert.Equal("GEXP_PROT_ANR_ENTITAET_FEHLT",
+                     cut.Find(".epos-gebexport-meldungen tbody tr").GetAttribute("data-schluessel"));
+    }
+
+    [Fact]
+    public void Die_Wegwahl_traegt_Texte_keine_Steuerwerte_auch_englisch()
+    {
+        var texte = new GebaeudeExportTexte
+        {
+            WegEigen = R.ResourceManager.GetString("GEXP_ANR_WEG_EIGEN", new System.Globalization.CultureInfo("en-US"))!,
+            WegAnreichern = R.ResourceManager.GetString("GEXP_ANR_WEG_ANREICHERN", new System.Globalization.CultureInfo("en-US"))!,
+            OriginalWaehlen = R.ResourceManager.GetString("GEXP_ANR_BTN_WAEHLEN", new System.Globalization.CultureInfo("en-US"))!,
+        };
+        var cut = AufbauenMitAnreicherung(new Stand(), new Anreicherungsstand(), texte);
+        FormatIfc(cut);
+        IReadOnlyList<string> beschriftungen = cut.FindAll(".epos-gebexport-dialog label").Select(l => l.TextContent.Trim()).ToList();
+        Assert.Contains(beschriftungen, b => b.Contains("Write own file", StringComparison.Ordinal));
+        Assert.Contains(beschriftungen, b => b.Contains("Enrich original file", StringComparison.Ordinal));
+        foreach (string steuer in new[] { "0", "1", "IFC", "GBXML" })
+            Assert.DoesNotContain(steuer, beschriftungen);
+        WegAnreichern(cut);
+        Assert.Equal("Choose original file…", cut.Find(".epos-gebexport-originalknopf").TextContent.Trim());
+        Assert.True(Formate().Single(f => f.Wert == "IFC").MitAnreicherung);
+        Assert.False(Formate().Single(f => f.Wert == "GBXML").MitAnreicherung);
+    }
+
+    /// <summary>Die Texte der Anreicherung stehen in beiden Sprachen, nicht leer und übersetzt.</summary>
+    [Theory]
+    [InlineData("GEXP_ANR_LBL_WEG")]
+    [InlineData("GEXP_ANR_WEG_EIGEN")]
+    [InlineData("GEXP_ANR_WEG_ANREICHERN")]
+    [InlineData("GEXP_ANR_HINWEIS")]
+    [InlineData("GEXP_ANR_BTN_WAEHLEN")]
+    [InlineData("GEXP_ANR_DATEIDIALOG_TITEL")]
+    [InlineData("GEXP_ANR_LBL_DATEI")]
+    [InlineData("GEXP_ANR_LBL_QUELLE")]
+    [InlineData("GEXP_ANR_QUELLE")]
+    [InlineData("GEXP_ANR_KEINE_QUELLE")]
+    [InlineData("GEXP_ANR_VERWEIGERT")]
+    [InlineData("GEXP_ANR_BTN_EIGENE")]
+    [InlineData("GEXP_ANR_BESTAETIGEN")]
+    [InlineData("GEXP_ANR_SPERRE_BESTAETIGEN")]
+    [InlineData("GEXP_ANR_SPERRE_DATEI")]
+    [InlineData("GEXP_ANR_MSG_LESEFEHLER")]
+    [InlineData("GEXP_ANR_MSG_NICHTS_GESCHRIEBEN")]
+    [InlineData("GEXP_ANR_MSG_GESPEICHERT")]
+    public void Die_Texte_der_Anreicherung_stehen_in_beiden_Sprachen(string schluessel)
+        => Die_Texte_der_Formatwahl_stehen_in_beiden_Sprachen(schluessel);
 }
