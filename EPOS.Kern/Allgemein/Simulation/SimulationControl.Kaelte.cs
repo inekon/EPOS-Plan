@@ -91,7 +91,7 @@ namespace WindowsFormsApplication1
         {
             _kaelteerzeuger = new List<Kaelteerzeuger>();
             _kuehltage = null;
-            simulation_wp.KuehlbetriebSetzen(null, null);
+            if (_wpInSchleife) simulation_wp.KuehlbetriebSetzen(null, null);
 
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
             bool erhoben = kaelte != null && kaelte.Gerechnet;
@@ -99,7 +99,7 @@ namespace WindowsFormsApplication1
             // Der Stromträger des Projekts - einmal je Lauf und erst, wenn ein Kälteerzeuger ihn braucht (E34).
             int projekttraeger = -1;
 
-            for (int i = 0; i < simulation_wp.wp_model.Count && i < SimulationWaermepumpe.MAX_WP; i++)
+            for (int i = 0; _wpInSchleife && i < simulation_wp.wp_model.Count && i < SimulationWaermepumpe.MAX_WP; i++)
             {
                 WErzeugerModel m = simulation_wp.wp_model[i];
                 if (m == null) continue;
@@ -236,6 +236,10 @@ namespace WindowsFormsApplication1
                 });
             }
 
+            // KU3-2: die Kältemaschinen nach den Wärmepumpen - sie haben keinen Kaskadenplatz.
+            bool mitWaermepumpe = _kaelteerzeuger.Count > 0;
+            KaeltemaschinenVorbereiten(erhoben);
+
             if (_kaelteerzeuger.Count == 0) return;
 
             // K8a (5.2): die Tagesbetriebsart aus den Tagessummen des PROJEKTbedarfs - Heizkanal
@@ -243,9 +247,72 @@ namespace WindowsFormsApplication1
             Kanalsatz bedarf = simulation_Waermebedarf.KanaeleDrei();
             _kuehltage = Kaeltekaskade.TagesbetriebsartBestimmen(bedarf.Heizung, bedarf.Kuehlung);
 
+            if (!mitWaermepumpe) return;
             bool[] module = new bool[simulation_wp.wp_model.Count];
-            foreach (Kaelteerzeuger e in _kaelteerzeuger) module[e.Modulindex] = true;
+            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+                if (e.Modulindex >= 0) module[e.Modulindex] = true;
             simulation_wp.KuehlbetriebSetzen(module, _kuehltage);
+        }
+
+        /// <summary>
+        /// <b>Die Kältemaschinen des Projekts</b> (KU3-2; Kühlkonzept 5.3, 5.5): jede Projektkopie in
+        /// <c>Tab_Kaeltemaschine</c> ist eine Maschine. Sie haben keinen Kaskadenplatz (die Plätze
+        /// <c>Tool_1</c> bis <c>Tool_4</c> kennen nur Erzeugerarten der Wärmeseite, und eine Anlagenzeile der
+        /// Kältemaschine gibt es noch nicht) — deshalb decken sie nach allen Wärmepumpen im Kühlbetrieb, in
+        /// der Reihenfolge ihrer Kennung; in Stunden freier Kühlung vor allen anderen
+        /// (<see cref="Kaeltekaskade.Rechnen"/>). Ohne Kältemaschine im Projekt: keine Zeile, keine Meldung.
+        /// </summary>
+        private void KaeltemaschinenVorbereiten(bool erhoben)
+        {
+            IReadOnlyList<int> ids = KaeltemaschineCtrl.IdsImProjektStill(m_ID_Projekt);
+            if (ids.Count == 0) return;
+
+            double[] feuchte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Luftfeuchte_stuendlich() : null;
+            int angelegt = 0;
+            foreach (int id in ids)
+            {
+                KaeltemaschineModel m = KaeltemaschineCtrl.LadenStill(id);
+                if (m == null) continue;
+                Kaeltemaschine k = Kaeltemaschine.AusModell(m, out bool angehoben);
+                if (!erhoben)
+                {
+                    Protokoll.HinweisEinmal("kuehl-km-projekt-aus-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_PROJEKT_AUS, k.Bezeichner));
+                    continue;
+                }
+                if (k.Kennlinie.Leer)
+                {
+                    Protokoll.WarnungEinmal("kuehl-km-ohne-kennlinie-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_OHNE_KENNLINIE, k.Bezeichner));
+                    continue;
+                }
+                if (angehoben)
+                    Protokoll.HinweisEinmal("kuehl-km-kaltwasser-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_KALTWASSER_ANGEHOBEN,
+                                      k.Bezeichner, k.Kaltwassertemperatur.ToString("F1", CultureInfo.CurrentCulture)));
+
+                k.Rueckkuehltemperatur_stuendlich = Kaeltemaschine.RueckkuehltemperaturenBilden(
+                    k.Rueckkuehlart, Stundentemperatur, feuchte, out int ohneFeuchte);
+                if (ohneFeuchte > 0)
+                    Protokoll.HinweisEinmal("kuehl-km-feuchte-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE,
+                                      k.Bezeichner, ohneFeuchte));
+
+                _kaelteerzeuger.Add(new Kaelteerzeuger
+                {
+                    AnlagenID = 0,
+                    IdWp = 0,
+                    Bezeichner = k.Bezeichner,
+                    Modulindex = -1,
+                    Maschine = k,
+                    Hilfsstromanteil = 0.0,
+                    Zeitanteil = null,
+                    Quelltemperatur = k.Rueckkuehltemperatur_stuendlich,
+                });
+                angelegt++;
+            }
+            if (angelegt > 0)
+                Protokoll.HinweisEinmal("kuehl-km-reihenfolge", MyResource.Resource.SIMENG_KAELTE_KM_REIHENFOLGE);
         }
 
         // =====================================================================
@@ -268,6 +335,7 @@ namespace WindowsFormsApplication1
 
             foreach (Kaelteerzeuger e in _kaelteerzeuger)
             {
+                if (e.Maschine != null) continue;   // KU3-2: die Kältemaschine kennt keinen Heizzeitanteil
                 WErzeugerModel m = simulation_wp.wp_model[e.Modulindex];
                 double[] heiz = simulation_wp.Heizzeitanteil_stuendlich != null &&
                                 e.Modulindex < simulation_wp.Heizzeitanteil_stuendlich.Length
@@ -391,6 +459,7 @@ namespace WindowsFormsApplication1
         {
             foreach (Kaelteerzeuger e in kaskade.Erzeuger)
             {
+                if (e.Maschine != null) { KaeltemaschineMelden(e); continue; }
                 Kuehlkennlinie k = e.Kennlinie;
                 if (k == null) continue;
                 string schluessel = "kuehl-wp-kennlinie-" + e.IdWp + "-" + k.Vorlauf.ToString(CultureInfo.InvariantCulture);
@@ -408,6 +477,35 @@ namespace WindowsFormsApplication1
                                       e.Verlaengert ? MyResource.Resource.SIMENG_KAELTE_KENNLINIE_VERLAENGERT
                                                     : MyResource.Resource.SIMENG_KAELTE_KENNLINIE_GEKAPPT));
             }
+        }
+
+        /// <summary>
+        /// Die Meldungen einer Kältemaschine (KU3-2): Betrieb mit freier Kühlung und Takt, die Stunden
+        /// am Rand der Kennlinie und die Unterdeckung an der Leistungsgrenze — je einmal.
+        /// </summary>
+        private void KaeltemaschineMelden(Kaelteerzeuger e)
+        {
+            Kaeltemaschine k = e.Maschine;
+            string kw = k.Kaltwassertemperatur.ToString("F1", CultureInfo.CurrentCulture);
+            Protokoll.HinweisEinmal("kuehl-km-betrieb-" + k.Id,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_BETRIEB,
+                    e.Bezeichner, kw,
+                    (e.KaelteGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    (e.KaelteFreiKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    e.StundenFreieKuehlung,
+                    (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    e.StundenTakt));
+            if (e.StundenRandwert > 0)
+                Protokoll.HinweisEinmal("kuehl-km-randwert-" + k.Id,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_RANDWERT,
+                        e.Bezeichner, e.StundenRandwert,
+                        k.Kennlinie.RueckkuehlMin.ToString("F1", CultureInfo.CurrentCulture),
+                        k.Kennlinie.RueckkuehlMax.ToString("F1", CultureInfo.CurrentCulture), kw));
+            if (e.StundenLeistungsgrenze > 0)
+                Protokoll.WarnungEinmal("kuehl-km-unterdeckung-" + k.Id,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_UNTERDECKUNG,
+                        e.Bezeichner, e.StundenLeistungsgrenze,
+                        (e.OffenAnLeistungsgrenzeKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture)));
         }
 
         // =====================================================================
