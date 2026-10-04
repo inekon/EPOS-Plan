@@ -14619,6 +14619,18 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBB_HRL_ZONEN" xml:space="preserve">
     <value>Heizwärme und Wärmelast des Gebäudes sind die Summe der Zonen; seine mittlere Raumtemperatur und seine Überhitzungsstunden zählen die beheizten Zonen. Überhitzt ist eine Stunde der Nutzungszeit, in der die operative Temperatur über der oberen Raumtemperatur der Zone liegt.</value>
   </data>
+  <data name="GEBB_SP_ZONE_VORLAUF" xml:space="preserve">
+    <value>Vorlauf</value>
+  </data>
+  <data name="GEBB_SP_ZONE_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf</value>
+  </data>
+  <data name="GEBB_SP_ZONE_BEGRENZT" xml:space="preserve">
+    <value>Übergabe begrenzt</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN_UEBERGABE" xml:space="preserve">
+    <value>Vorlauf und Rücklauf einer gekoppelt rechnenden Zone sind ihre Mittel über die Heizstunden; begrenzt heißt, die Übergabe der Zone lieferte weniger, als ihr Sollwert verlangte. „—“ steht bei einer Zone ohne Heizkreis (ideal oder unbeheizt).</value>
+  </data>
   <data name="GEBB_LBL_DIAGRAMM" xml:space="preserve">
     <value>Diagramme für:</value>
   </data>
@@ -23520,6 +23532,18 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_GEBB_VOLLBENUTZUNG_ERL" xml:space="preserve">
     <value>Die Vollbenutzungsstunden: Jahressumme geteilt durch Höchstlast. Ohne Höchstlast gibt es sie nicht.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_ERL" xml:space="preserve">
+    <value>Die Zone der Zonentabelle (nur bei einem Gebäude mit mindestens zwei Zonen), mit ihrem Namen als Kennzeichen.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_VORLAUF_ERL" xml:space="preserve">
+    <value>Mittlerer Vorlauf des Heizkreises der Zone über ihre Heizstunden; leer bei einer Zone ohne Heizkreis (ideal oder unbeheizt).</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Mittlerer Rücklauf des Heizkreises der Zone über ihre Heizstunden; leer bei einer Zone ohne Heizkreis.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_BEGRENZT_ERL" xml:space="preserve">
+    <value>Stunden, in denen die Übergabe der Zone weniger lieferte, als ihr Sollwert verlangte; leer bei einer Zone ohne Heizkreis.</value>
   </data>
   <data name="KI_DLG_GTYP_TYP_ERL" xml:space="preserve">
     <value>Der geladene Gebäudetyp. Ihn zu setzen lädt seinen Satz samt seinen Tageskurven — derselbe Weg wie ein Klick in die Liste.</value>
@@ -33997,6 +34021,18 @@ Möchten Sie das zulassen?</value>
   <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
     <value>Zone „{0}“: Die Kühlübergabeart „{1}“ ist kein gültiger Wert.</value>
   </data>
+  <data name="ZONE_MSG_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Zone „{0}“: Der Auslegungsvorlauf {1} °C liegt außerhalb von {2} bis {3} °C.</value>
+  </data>
+  <data name="ZONE_MSG_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Zone „{0}“: Der Auslegungsrücklauf {1} °C muss unter dem Auslegungsvorlauf {2} °C liegen.</value>
+  </data>
+  <data name="ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Zone „{0}“: Die Auslegungsraumtemperatur {1} °C liegt außerhalb von {2} bis {3} °C.</value>
+  </data>
+  <data name="ZONE_MSG_PROPORTIONALBAND" xml:space="preserve">
+    <value>Zone „{0}“: Das Proportionalband {1} K liegt außerhalb von {2} bis {3} K.</value>
+  </data>
   <data name="GIMP_BELEG_RAUMHOEHE_VORGABE" xml:space="preserve">
     <value>weder Raumhöhe noch Volumen der Räume in der Datei — Vorgabe {0} m</value>
   </data>
@@ -34061,7 +34097,7 @@ Möchten Sie das zulassen?</value>
     <value>{0}: Die Kopplung der Zonen {1} ist in Stunde {2} nach {3} Durchläufen nicht zur Ruhe gekommen (größte Änderung zuletzt {4} K bzw. {5} W, Luftaustausch zwischen ihnen {6} m³/h). Der Bedarfslauf bricht ab.</value>
   </data>
   <data name="SIMENG_G6_AK1_IDEAL" xml:space="preserve">
-    <value>Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Anlagenkopplung ist für ein Gebäude mit mehreren Zonen nicht abgebildet – Heizung und Kühlung rechnen je Zone ideal, und das Gebäude geht als feste Last in die Anlage.</value>
+    <value>Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Kühlübergabe ist für ein Gebäude mit mehreren Zonen nicht abgebildet – die Kühlung rechnet je Zone ideal und geht als feste Last in die Anlage; die Wärmeübergabe rechnet je Zone.</value>
   </data>
   <data name="SIMENG_G6_ZONENRECHNUNG" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} rechnet {1} Zonen gekoppelt ({2} Teilgruppen); Vorlauf {3} Stunden; im Mittel {4} Durchläufe je gekoppelter Stunde, höchstens {5}.</value>
@@ -34082,7 +34118,7 @@ Möchten Sie das zulassen?</value>
     <value>Gebäudemodell VDI 6007: {0} – der freiliegende Umfang der Bodenplatte fehlt oder ist kleiner als der Umfang des flächengleichen Kreises; der Erdreichwiderstand nach DIN EN ISO 13370 rechnet mit dem flächengleichen Quadrat P = {1} m (B′ = {2} m, U_g = {3} W/(m²K)).</value>
   </data>
   <data name="SIMENG_G6_MEHRZONEN_EINZELWEG" xml:space="preserve">
-    <value>{0}: Mit {1} Zonen rechnet das Gebäude Heizung und Kühlung je Zone ideal und ohne Anlagenkopplung; diese Auskunft gilt nur für ein Gebäude mit höchstens einer Zone.</value>
+    <value>{0}: Mit {1} Zonen rechnet das Gebäude die Wärmeübergabe je Zone – Vorlauf, Rücklauf und die Stunden mit begrenzter Übergabe stehen je Zone in der Zonentabelle des Wärmebedarfs. Die Kühlung rechnet je Zone ideal und ohne Anlagenkopplung; die Auskunft zur Kühlübergabe gilt nur für ein Gebäude mit höchstens einer Zone.</value>
   </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone „{0}“: Die Nutzfläche muss größer als null sein.</value>
@@ -34530,6 +34566,54 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>Eine unbeheizte Zone schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_GRUPPE" xml:space="preserve">
+    <value>Übergabe</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_WIE_GEBAEUDE" xml:space="preserve">
+    <value>wie Gebäude ({0})</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_PLATZHALTER" xml:space="preserve">
+    <value>wie Gebäude: {0}</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG" xml:space="preserve">
+    <value>Anteil des Gebäudes nach Nutzfläche</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_HERKUNFT_ZONE" xml:space="preserve">
+    <value>an der Zone gewählt</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE" xml:space="preserve">
+    <value>wie Gebäude</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_ART" xml:space="preserve">
+    <value>Wirksame Übergabeart: {0} ({1}). Vorgaben der Art: Exponent {2}, Auslegung {3}/{4} °C, Proportionalband {5} K. Ein leeres Feld übernimmt den Wert des Gebäudes, trägt das Gebäude keinen, die Vorgabe der Art; die Auslegungsraumtemperatur ist dann das Soll am Tag der Zone, die Nennleistung der Anteil des Gebäudes nach der Nutzfläche der beheizten Zonen.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_IDEAL" xml:space="preserve">
+    <value>Wirksame Übergabeart: ideal ({0}) — die Zone rechnet mit idealer Regelung, ohne Übergabe. Die Felder erscheinen mit Radiator, Flächenheizung oder Konvektor.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS" xml:space="preserve">
+    <value>Ohne Wirkung, solange der Heizkreis des Gebäudes aus ist — die Werte bleiben erhalten.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS" xml:space="preserve">
+    <value>Ohne Wirkung, solange das Projekt keine Anlagenkopplung (AK1) rechnet — die Werte bleiben erhalten.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT" xml:space="preserve">
+    <value>Eine unbeheizte Zone hat keine Wärmeübergabe; ihre Werte bleiben erhalten.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_SPERRE" xml:space="preserve">
+    <value>Die Datenbank kennt die Übergabe je Zone nicht (Schemaschritt {0} fehlt); die Zone übernimmt die Übergabe des Gebäudes.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_ERL" xml:space="preserve">
+    <value>Wärmeübergabe der Zone; leer = wie Gebäude (Wert des Gebäudes, sonst Vorgabe der wirksamen Art). Wirkt nur bei beheizter Zone, eingeschaltetem Heizkreis des Gebäudes und Anlagenkopplung AK1 im Projekt.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_ART_ERL" xml:space="preserve">
+    <value>Übergabeart der Zone: IDEAL, RADIATOR, FLAECHE oder KONVEKTOR; leer = wie Gebäude. IDEAL heißt: diese Zone rechnet ideal, auch wenn das Gebäude gekoppelt ist.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_WIRKSAM_NAME" xml:space="preserve">
+    <value>Wirksame Übergabe</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_WIRKSAM_ERL" xml:space="preserve">
+    <value>Die wirksame Übergabe der Zone mit Herkunft je Wert (Zone, Gebäude oder Vorgabe der Art); nur lesen.</value>
   </data>
   <data name="ZONDLG_ZEILE_LUFTWECHSEL" xml:space="preserve">
     <value>Luftwechsel der Zone: {0} 1/h ({1}).</value>

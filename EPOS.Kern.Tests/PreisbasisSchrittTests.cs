@@ -53,9 +53,10 @@ namespace EPOS.Kern.Tests
             // Das Referenzprojekt Solarthermie 1049: eine Zeile „Nm³" (Erdgas, Kopie von 1018). Das
             // Referenzprojekt Kesselkennlinie 1050: je eine Zeile „kWh" und „Nm³" (Kopie von 1023). Das
             // Zonenprojekt 1052 (G6d): eine Zeile „Nm³" (Erdgas, Kopie von 1018). Das Prüfprojekt 1053
-            // „Test BHKW mit PV ohne Kaskade": eine Zeile „Nm³" (Erdgas, Kopie von 1018).
+            // „Test BHKW mit PV ohne Kaskade": eine Zeile „Nm³" (Erdgas, Kopie von 1018). Das Referenzprojekt
+            // Zonen mit Heizkreis 1054 (AK1z): eine Zeile „Nm³" (Erdgas, Kopie von 1052).
             Assert.Equal(10, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
-            Assert.Equal(23, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
+            Assert.Equal(24, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
             Assert.Equal(4, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'L'"));
             Assert.Equal(2, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
 

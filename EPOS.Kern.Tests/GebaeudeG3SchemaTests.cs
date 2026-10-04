@@ -284,9 +284,11 @@ namespace EPOS.Kern.Tests
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
             Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten), Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
             // Hinter den Spalten von S-C hängt der eigene Zonenschritt der Kühlübergabe (E37,
-            // KuehluebergabeSchema.SCHRITT_ZONE) seine drei Spalten an.
+            // KuehluebergabeSchema.SCHRITT_ZONE) seine drei Spalten an, dahinter die Uebergabe je Zone
+            // (E63, ZonenUebergabeSchema.SCHRITT) ihre vier.
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Zonenspalten)
-                                       .Concat(KuehluebergabeSchema.SpaltenZone.Select(s => s.Key)),
+                                       .Concat(KuehluebergabeSchema.SpaltenZone.Select(s => s.Key))
+                                       .Concat(ZonenUebergabeSchema.SPALTEN_ZONE),
                          Spalten(SchemaKatalog.TAB_ZONE));
             // Hinter den Spalten von S-C hängt der Schritt S-G (Stufe G6b) Nachbarzone und Zuordnung an.
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten)
@@ -420,9 +422,9 @@ namespace EPOS.Kern.Tests
             }
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Baustoff"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
-            // Zonen trägt allein das Zonenprojekt 1052 (G6d, ZonenReferenzprojektWacheTests).
+            // Zonen tragen allein die Zonenprojekte 1052 und 1054 (G6d, AK1z; ZonenReferenzprojektWacheTests).
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID_Gebaeude NOT IN " +
-                                  "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1052)"));
+                                  "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054))"));
         }
 
         /// <summary>

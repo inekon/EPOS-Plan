@@ -729,4 +729,35 @@ public class GebaeudeZonenTests : EposBunitContext
 
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
     }
+
+    /// <summary>
+    /// <b>Die Übergabe je Zone reist mit dem Zonenweg</b> (E63, AK1z): Eine im Zonendialog gewählte Art und ein
+    /// Exponent stehen nach OK im Arbeitsstand, gelten als Änderung und gehen mit dem OK des Editors in den
+    /// Schreibweg der Zonen.
+    /// </summary>
+    [Fact]
+    public void Die_Uebergabe_der_Zone_geht_mit_dem_OK_in_den_Zonenweg()
+    {
+        var weg = new Weg();
+        var cut = Aufbauen(weg, zonen: new[] { Vorschlagszone() });
+        ReiterWaehlen(cut, "Zonen");
+        Knoepfe(cut, "Öffnen…")[0].Click();
+
+        IElement art = cut.FindAll(".epos-zonendialog label.epos-feld")
+                          .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Übergabeart")
+                          .QuerySelector("select")!;
+        art.Change("2");
+        cut.FindAll(".epos-zonendialog label.epos-feld")
+           .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Exponent")
+           .QuerySelector("input")!.Input("1,25");
+        cut.FindAll(".epos-zonendialog > .epos-leiste button.epos-knopf--primaer").Single().Click();
+        Assert.Equal(DbWerte.UEBERGABE_RADIATOR, cut.Instance.ZonenImArbeitsstand[0].UebergabeArt);
+
+        Ok(cut);
+
+        ZoneDaten zone = Assert.Single(Assert.Single(weg.Zonengeschrieben));
+        Assert.Equal(DbWerte.UEBERGABE_RADIATOR, zone.UebergabeArt);
+        Assert.Equal(1.25, zone.UebergabeExponent);
+        Assert.Null(zone.AuslegungVorlauf);
+    }
 }

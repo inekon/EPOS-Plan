@@ -4738,7 +4738,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Waermebedarf EINES Gebaeudes — sieben Felder aus
+        /// Der Waermebedarf EINES Gebaeudes — sieben Felder und vier Spalten der Zonentabelle (AK1z) aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht</c>; die Diagrammwahl je Zone kam mit
         /// Stufe G6b (W5) dazu.
         /// </summary>
@@ -4795,7 +4795,28 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebbVollbenutzungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebbVollbenutzungErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A,
-                                     leerErlaubt: true, nurLesen: true)
+                                     leerErlaubt: true, nurLesen: true),
+
+                    // ---- Die Zonentabelle (AK1z, E63): SPALTEN mit dem Zonennamen als Kennzeichen ----
+                    new KiDialogFeld("zone", "GebaeudeBedarfKiSicht.Zonen[].Zonenname",
+                                     KiDialogTexte.GebbZoneName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebbZoneErl,
+                                     nurLesen: true, zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("zone_vorlauf", "GebaeudeBedarfKiSicht.Zonen[].VorlaufMittelC",
+                                     KiDialogTexte.GebbZoneVorlaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbZoneVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true, nurLesen: true, zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("zone_ruecklauf", "GebaeudeBedarfKiSicht.Zonen[].RuecklaufMittelC",
+                                     KiDialogTexte.GebbZoneRuecklaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbZoneRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true, nurLesen: true, zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("zone_uebergabe_begrenzt", "GebaeudeBedarfKiSicht.Zonen[].UebergabeBegrenztH",
+                                     KiDialogTexte.GebbZoneBegrenztName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbZoneBegrenztErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_A,
+                                     leerErlaubt: true, nurLesen: true, zeilenkennzeichen: "Kennzeichen")
                 },
                 knoepfe: new[]
                 {
@@ -5046,7 +5067,30 @@ namespace WindowsFormsApplication1
                                      leerErlaubt: true, min: 0.0, max: 1.0),
                     new KiDialogFeld("heizleistung_max", SICHT + "HeizleistungMax", KiDialogTexte.ZonHeizleistungName,
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonHeizleistungErl,
-                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01)
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                    // E63 (AK1z): die Uebergabe je Zone - leer = wie Gebaeude; dieselben Baender wie am Gebaeude.
+                    new KiDialogFeld("uebergabe_art", SICHT + "UebergabeArt", KiDialogTexte.GebkUebergabeArtName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonUebergabeArtErl, leerErlaubt: true),
+                    new KiDialogFeld("uebergabe_exponent", SICHT + "UebergabeExponent", KiDialogTexte.GebkUebergabeExponentName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, leerErlaubt: true,
+                                     min: Waermeuebergabevorgaben.EXPONENT_MIN, max: Waermeuebergabevorgaben.EXPONENT_MAX),
+                    new KiDialogFeld("uebergabe_nennleistung", SICHT + "UebergabeNennleistung",
+                                     KiDialogTexte.GebkUebergabeNennleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                    new KiDialogFeld("auslegung_vorlauf", SICHT + "AuslegungVorlauf", KiDialogTexte.GebkAuslegungVorlaufName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true, min: Waermeuebergabevorgaben.VORLAUF_MIN, max: Waermeuebergabevorgaben.VORLAUF_MAX),
+                    new KiDialogFeld("auslegung_ruecklauf", SICHT + "AuslegungRuecklauf", KiDialogTexte.GebkAuslegungRuecklaufName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("auslegung_raum", SICHT + "AuslegungRaumtemperatur", KiDialogTexte.GebkAuslegungRaumName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true, min: Waermeuebergabevorgaben.RAUM_MIN, max: Waermeuebergabevorgaben.RAUM_MAX),
+                    new KiDialogFeld("proportionalband", SICHT + "Proportionalband", KiDialogTexte.GebkProportionalbandName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_KELVIN,
+                                     leerErlaubt: true, min: Waermeuebergabevorgaben.BAND_MIN, max: Waermeuebergabevorgaben.BAND_MAX),
+                    new KiDialogFeld("uebergabe_wirksam", SICHT + "UebergabeWirksam", KiDialogTexte.ZonUebergabeWirksamName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonUebergabeWirksamErl, leerErlaubt: true, nurLesen: true)
                 }
                 // Stufe KP2, Welle U4 (Teilkonzept 3.4, 7.3): die Zonenmatrix aus dem Profil
                 // KiKonditionierungsfelder (Zonenkarte) - die Sichtklasse beantwortet sie als Feldtafel;

@@ -66,6 +66,16 @@
 > die 4.4 für den Raumregler ausschließt, ist für die ideale Regelung als Vorab-Fahrplan (Stufenformel)
 > aufgehoben; für den P-Regler und für AK1-Gebäude bleibt der Ausschluss bis KP3b. Nachgezogen in 1.3,
 > 4.3 und 4.4.
+>
+> **Nachzug 04.10.2026 — E63 (AK1z, Wärmeübergabe je Zone):** Die Kopplung wirkt im Mehrzonenweg. Die
+> Rollenteilung aus 6.5 ist nach **E63** neu gezogen: `Tab_Zone` trägt **sieben** Übergabespalten — Art,
+> Exponent, Nennleistung (Schritt S-C) und Auslegungsvorlauf, Auslegungsrücklauf, Auslegungsraumtemperatur,
+> Proportionalband (Schritt 181 `ZonenUebergabeSchema`), NULL heißt „wie Gebäude"; beim Gebäude bleiben
+> `Heizkreis_Aktiv` als Hauptschalter, Heizkurve, Sollwertprofil und Auslegungsaußentemperatur, also der eine
+> Vorlauf. Schritt H läuft je Zone am gemeinsamen Vorlauf, der Rücklauf des Gebäudes ist massenstromgewichtet, und
+> der Gauß-Seidel der Zonen hält auch die Übergabefälle im Muster fest. Die Kühlseite rechnet je Zone weiter ideal,
+> die Verteilung der AK2-Verfügbarkeit auf Zonen bleibt offen. Referenzprojekt **1054** „Zonen mit Heizkreis", Basis
+> `2026-10-04_R35_Zonenuebergabe`. Nachgezogen in 6.5, 8.1, 10.1, 10.2 und 11.4.
 
 **Frage des Anwenders (16.09.2026):** „kann das Gebäudesimulationskonzept erweitert werden um die
 Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
@@ -73,7 +83,7 @@ Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
 **Auftrag, im Wortlaut (Entscheid E22):** „trage es als Nachtrag mit einer neuen Frage Q26 zum
 Stufenplan ein und schreibe ein eigenes Konzeptpapier dazu".
 
-**Stand:** 25.09.2026 (Nachzug AK1 Welle 5: Referenzprojekt 1047, Einfrierregel, Basis R15; AK1 abgenommen). **Fassung:** Rev. 2 — mit **E23**, **E24**,
+**Stand:** 04.10.2026 (Nachzug E63: Wärmeübergabe je Zone, Referenzprojekt 1054, Basis R35). **Fassung:** Rev. 2 — mit **E23**, **E24**,
 **E25** und **E26** fortgeschrieben, **E27**, **E36** und **E37** nachgezogen.
 
 **Zweck.** Dieses Papier ist das in N1.27 angekündigte eigene Konzept. Es beschreibt, was die
@@ -1104,12 +1114,39 @@ Raumtemperatur hergibt. Das ist die übliche Anlage, es kostet keine zusätzlich
 und es erzeugt genau den Effekt, den man kennt: Eine Zone mit zu kleiner Heizfläche bleibt kalt,
 während die Nachbarzone den Sollwert hält.
 
-**Daraus folgt die Rollenteilung Spalte für Spalte.** `Tab_Zone` bekommt **allein die drei
-Übergabespalten** `Uebergabe_Art`, `Uebergabe_Exponent` und `Uebergabe_Leistung_Nenn`; NULL heißt
-dort „Wert des Gebäudes" bzw. beim Nennwert „Anteil der Zonenfläche". Heizkurve, Auslegungspunkt,
-Proportionalband und Sollwertprofil bleiben **beim Gebäude** — sie beschreiben den einen Heizkreis
-und den einen Nutzungsfahrplan, und je Zone geführt wären sie vier Wege zu derselben Aussage
-(8.1, 8.5).
+**Daraus folgt die Rollenteilung Spalte für Spalte (E63).** `Tab_Zone` trägt **sieben
+Übergabespalten**: `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn`,
+`Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur` und `Regler_Proportionalband`
+(8.1); NULL heißt jeweils „wie Gebäude". Beim **Gebäude** bleiben der Schalter `Heizkreis_Aktiv`, die
+Heizkurve, das `Sollwertprofil` und `Auslegung_Aussentemperatur` — sie beschreiben den einen Heizkreis,
+den einen Vorlauf und den einen Nutzungsfahrplan (8.5). Die Zonenart `IDEAL` nimmt eine Zone im
+gekoppelten Gebäude aus der Kopplung; sie rechnet dann ideal an ihren Sollwerten.
+
+**Die wirksamen Werte einer Zone ergeben sich aus einer Kaskade** (`Zonenuebergabevorgaben.Aufloesen`):
+
+| Größe | Rangfolge |
+|---|---|
+| Übergabeart | Zone, sonst Gebäude |
+| Exponent, Auslegungsvorlauf, Auslegungsrücklauf | Zone, sonst ausdrücklicher Gebäudewert, sonst Vorgabe der **wirksamen Zonenart** (3.1) |
+| Auslegungsraumtemperatur | Zone, sonst Gebäudewert, sonst Tagsollwert der Zone |
+| Proportionalband | Zone, sonst Gebäude, sonst 1 K (**H1**) |
+| Nennleistung | Zone [kW], sonst Gebäudenennleistung × Nutzflächenanteil der Zone an den beheizten Zonen |
+
+Die **Gebäudenennleistung** ist das Feld am Gebäude, sonst hergeleitet als Summe der stationären
+Auslegungslasten aller beheizten Zonen (8.4); dabei sind die Nachbarzonen fest — beheizte an ihrer
+Auslegungsraumtemperatur, unbeheizte an der Auslegungsaußentemperatur. Die Auslegungsraumtemperatur des
+Gebäudes ist das Feld, sonst die höchste der beheizten Zonen.
+
+**Der Vorlauf ist der des Gebäudes.** Die Heizkurve läuft am höchsten Heizsollwert der gekoppelten Zonen
+der Stunde und ist am Auslegungsvorlauf des Gebäudes gedeckelt; jede Zone rechnet Schritt H mit ihren
+Kennwerten an diesem Vorlauf (10.2). Der **Rücklauf des Gebäudes** ist je Stunde massenstromgewichtet,
+`theta_R = Σ W_H,z · theta_R,z / Σ W_H,z`. Begrenzt-Anteil, Stunden an `Heizleistung_Max` und an der
+Heizgrenze und die größte Unterschreitung des Gebäudes sind das Maximum über die Zonen; je Zone stehen
+Vorlauf- und Rücklaufmittel und die begrenzten Stunden in `Tab_ErgebnisZone` (8.3).
+
+**Das Gebäude ist der Hauptschalter.** Steht die Gebäudeart auf `IDEAL` oder `Heizkreis_Aktiv` auf 0,
+rechnet das Gebäude ungekoppelt — auch wenn eine Zone eine eigene Art trägt; der Zonendialog nennt die
+Zonenwerte dann „ohne Wirkung".
 
 **Und die Verfügbarkeit erreicht die Zone über eine zweite Verteilungsstufe** — die Gebäudeschranke
 der Stunde wird nach demselben Schlüssel auf die Zonen weiterverteilt (6.2). Ohne sie verglich
@@ -1119,12 +1156,11 @@ Anlage zur Verfügung.
 Mehrere Heizkreise mit getrennten Heizkurven sind ein eigener Gegenstand und werden **benannt
 abgelehnt**; wer sie braucht, legt zwei Gebäude an.
 
-**Bis AK2 geht ein Gebäude mit mehreren Zonen als feste Last ein (E49/A4, Stufe G6b).** Heizung und
-Kühlung rechnen je Zone ideal an den Sollwerten der Zone; die Summe der Zonen geht in den Kanal. Ist
-die Kopplung für dieses Gebäude eingeschaltet, rechnet es trotzdem ideal, und das Protokoll nennt das
-als Warnung — die Übergabe je Zone und die Iteration Anlage × Zonen kommen mit AK2 und AK3. Die
-Übergabe- und Kühlauskunft des Gebäudedialogs gilt nur für ein Gebäude mit höchstens einer Zone und
-nennt das.
+**Die Kühlseite rechnet je Zone ideal (E49/A4).** Die Kühlung jeder Zone folgt ideal ihren Sollwerten;
+eine eingeschaltete Kühlübergabe am Gebäude wirkt im Mehrzonenweg nicht, und das Protokoll nennt das mit
+`SIMENG_G6_AK1_IDEAL`. Ebenso ohne Übergabe bleibt die 4-K-Regel je Zone. Die Summe der Zonen geht als
+Last in den Kanal; die Verfügbarkeit aus AK2 gibt es im Mehrzonenweg nicht, ihre zweite Verteilungsstufe
+und die Iteration Anlage × Zonen kommen mit AK2 und AK3.
 
 ---
 
@@ -1265,13 +1301,23 @@ Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boole
 
 Dreizehn Spalten je Gebäudetabelle — `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`, also **26
 `SchemaSpalte`-Einträge** — und **eine Projektspalte** in `Tab_Einstellungen`, zusammen **27
-Einträge**. Dazu kommen in `Tab_Zone`, sobald es sie gibt, **allein die drei Übergabespalten**
-`Uebergabe_Art`, `Uebergabe_Exponent` und `Uebergabe_Leistung_Nenn` nach der Rollenteilung aus 6.5;
-Heizkurve, Auslegungspunkt, Proportionalband und Sollwertprofil bleiben beim Gebäude. **`Tab_Zone`
-entsteht mit dem Schritt S-C der Stufe G3**, und weil `AK-S1` dann steht, legt S-C die drei Spalten
-gleich mit an ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 4.2 und 4.4,
-[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.4); **gerechnet** wird
-die Übergabe je Zone erst ab G6 (6.5, **H3**).
+Einträge**. Dazu kommen in `Tab_Zone` **sieben Übergabespalten** nach der Rollenteilung aus 6.5 (E63);
+Heizkurve, Sollwertprofil, Auslegungsaußentemperatur und der Schalter `Heizkreis_Aktiv` bleiben beim
+Gebäude. Gerechnet wird die Übergabe je Zone im Mehrzonenweg (6.5, 10.2, **H3**):
+
+| Spalte in `Tab_Zone` | SQLite | NULL bedeutet | Schritt |
+|---|---|---|---|
+| `Uebergabe_Art` | TEXT | wie Gebäude | S-C (G3) |
+| `Uebergabe_Exponent` | REAL | wie Gebäude, sonst Vorgabe der wirksamen Zonenart | S-C (G3) |
+| `Uebergabe_Leistung_Nenn` | REAL (kW) | Gebäudenennleistung × Nutzflächenanteil der beheizten Zonen | S-C (G3) |
+| `Auslegung_Vorlauf` | REAL (°C) | wie Gebäude, sonst Vorgabe der wirksamen Zonenart | 181 `ZonenUebergabeSchema` |
+| `Auslegung_Ruecklauf` | REAL (°C) | wie Gebäude, sonst Vorgabe der wirksamen Zonenart | 181 |
+| `Auslegung_Raumtemperatur` | REAL (°C) | wie Gebäude, sonst Tagsollwert der Zone | 181 |
+| `Regler_Proportionalband` | REAL (K), `CHECK (IS NULL OR >= 0)` | wie Gebäude, sonst 1 K | 181 |
+
+Schritt 181 legt dazu an `Tab_ErgebnisZone` `Vorlauf_Mittel_C`, `Ruecklauf_Mittel_C` und
+`Uebergabe_Begrenzt_H` an ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 4.2 und 4.4,
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.4).
 
 | Spalte | Typangabe | SQLite | NULL bedeutet | Stufe |
 |---|---|---|---|---|
@@ -1742,6 +1788,11 @@ Verteilung je Stunde:             Schranke des Anlagenfahrplans proportional auf
 Pass 2 je Gebaeude des VDI-Wegs:  Verfuegbarkeit[h] = Anteil dieses Gebaeudes -> Ergebnis
 ```
 
+**Im Mehrzonenweg** bildet Schritt E die Übergabekennwerte **je Zone** aus der Kaskade (6.5), den
+Sollwertvektor je Zone aus ihren Kalendern und **eine** Vorlaufreihe des Gebäudes: die Heizkurve am
+höchsten Heizsollwert der gekoppelten Zonen der Stunde, gedeckelt am Auslegungsvorlauf des Gebäudes.
+Schritt H sitzt in der Zonenschleife an derselben Stelle wie im Einzonenweg, einmal je gekoppelter Zone.
+
 ### 10.2 Schritt H je Abschnitt einer Stunde
 
 ```
@@ -1858,6 +1909,15 @@ aus 3.7. Die Bisektion von Schritt F findet damit **beide** Umschaltzeitpunkte u
 oberen; ohne den unteren liefe der gesättigte Fall über den Knick hinaus weiter und rechnete im
 Proportionalband mit voller Leistung.
 
+**Im Mehrzonenweg** rechnet jede gekoppelte Zone diesen Ablauf je Abschnitt mit ihren Kennwerten am
+gemeinsamen Vorlauf; ihre Nachbarzonen gehen über die Trennflächen als Randbedingung ein. Der Rücklauf
+des Gebäudes ist das massenstromgewichtete Mittel `theta_R = Σ W_H,z · theta_R,z / Σ W_H,z` der Zonen, die
+in der Stunde Wärme abnehmen. Der Gauß-Seidel der Zonen hält ab dem zweiten Durchlauf das Fallmuster fest
+— auch die Übergabefälle: Eine Zone im Übergabefall löst ihre Leistung mit der Gleichung des festen Falls
+neu, ohne Bisektion; ist das Muster nicht haltbar, wird die Stunde frei gerechnet und gezählt. Die
+Grenzfallprobe B (3.7) gilt je Zone: Mit `Xp = 0` und unbegrenzter Fläche ist das Ergebnis bitgleich zur
+idealen Regelung. Einzonengebäude und ungekoppelte Mehrzonengebäude rechnen byte-gleich wie ohne diesen Weg.
+
 ### 10.3 Ein Zahlenbeispiel mit runden Werten
 
 **Gebäude „Beispiel A"** — ein neutrales Beispiel, keine Produktdaten. **Das Beispiel rechnet in
@@ -1959,6 +2019,7 @@ Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,84 kW
 | `UebergabeKwh[8760]` | kWh | neue Datei `uebergabe_<n>.csv`, **bedingt** — sie ist **nicht** gleich `HeizlastW`, sobald eine Grenze greift |
 | `BegrenzungsgrundJeStunde[8760]` | Kennung | **keine eigene Datei** — verdichtet zu den drei Stundenzahlen in `AK-S3` (8.3) |
 | `VorlaufMittelC`, `RuecklaufMittelC` | °C | heizzeitgewichtetes Mittel, Ergebnisspalte |
+| `Geb[n].Zone[k].VorlaufMittelC`, `Geb[n].Zone[k].RuecklaufMittelC`, `Geb[n].Zone[k].UebergabeBegrenztH` | °C, °C, h | je Zone (E63): Spalten `Vorlauf_Mittel_C`, `Ruecklauf_Mittel_C`, `Uebergabe_Begrenzt_H` in `Tab_ErgebnisZone`; Exportschlüssel nur bei gekoppelter Zone, NULL bei idealer oder unbeheizter Zone |
 | `KomfortUnterschreitungsstundenH`, `KomfortKelvinstundenKh`, `KomfortLaengsteStreckeH` | h, Kh, h | ab AK2, Ergebnisspalten (5.5) |
 
 ### 10.5 Schritt K — die Kälteseite (E37)
@@ -2142,6 +2203,17 @@ alten byte-gleich); gegen 1017 sinken Heizwärme um 8,3 % und Kältebedarf um 7,
 begrenzter Wärmeübergabe, Überhitzungsstunden 306 → 327 — die Zahlen und ihre Erklärung stehen im
 Abschnitt „Aktuelle Basis" von [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md). Mit AK2
 kommt die Sperrzeit dazu, die Komfortstunden erzeugt; sie fällt dann unter dieselbe Regel.
+
+**Erweitert mit der Übergabe je Zone (E63).** Die Einfrierregel umfasst auch die sieben
+Übergabespalten der Zonen eines Referenzprojekts in `Tab_Zone` (6.5, 8.1); eine leere Zonenspalte ist eine
+Setzung wie eine gefüllte. Das Referenzprojekt dazu ist **1054 „Zonen mit Heizkreis"**, eine Kopie des
+Zonenprojekts 1052: Projektstufe AK1, am Gebäude der Heizkreis (Radiator, gefahrene Vorgabeheizkurve), an der
+Zone „Gastronomie und Verwaltung" ein Konvektor 70/50 °C mit 2 K Proportionalband, die übrigen Zonen wie
+Gebäude. 1052 bleibt ungekoppelt, weil es den Nachweis der Aufheizoptimierung mit Zonen trägt. Gerechnet:
+Heizwärme 47,58 MWh, Spitze 26,05 kW, Vorlauf/Rücklauf im Mittel 39,53/36,08 °C, 1 339 begrenzte Stunden am
+Gebäude (Gästezimmer 293,9, Gastronomie 1 106,5). Die Basis ist `2026-10-04_R35_Zonenuebergabe` mit neunzehn
+Projekten; 1054 steht nicht in der CI-Auswahl
+([`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md), „Das Referenzprojekt 1054").
 
 ### 11.5 CI, iOS und ChartProben
 

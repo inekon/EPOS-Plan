@@ -1,6 +1,6 @@
 # Protokoll G7b — gbXML Stufe 2 und 3D-Körperansicht (04.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Welle G7b (E66), Teilzweige als Worktrees, Merges `a9dbba2`, `e3c3d24`, `7bf23eb`, `39b2cff`. Statuszeile #708.
+**Sitzung:** Gebäudesimulation (Cloud), Welle G7b (E66), Teilzweige als Worktrees, Merges `a9dbba2`, `e3c3d24`, `7bf23eb`, `39b2cff`. Statuszeile #709.
 **Entscheid:** keiner neu. Kein Schemaschritt, Basis R34 unverändert (Referenzlauf nicht betroffen).
 
 ## 1 Auftrag
@@ -30,7 +30,7 @@ Nicht gebaut: Dachschrägen und `SurfaceReferenceLocation`.
 
 ## 6 Abnahme
 
-Tests: `ZonengeometrieAnlegenTests` (5, Probe 25), `GbxmlStufe2Tests` (9, darunter Schemaprüfung gegen die XSD, Rundlauf, Azimut gegen PolyLoop), `GebaeudeImportAnsichtKoerperTests` (3), `GebaeudeAnsichtTests` GA3 (7), Lizenzwache; Sichtprobe mit Chromium. Gate: siehe Statuszeile #708; CI: Kern-Lauf nach dem Push nachzutragen.
+Tests: `ZonengeometrieAnlegenTests` (5, Probe 25), `GbxmlStufe2Tests` (9, darunter Schemaprüfung gegen die XSD, Rundlauf, Azimut gegen PolyLoop), `GebaeudeImportAnsichtKoerperTests` (3), `GebaeudeAnsichtTests` GA3 (7), Lizenzwache; Sichtprobe mit Chromium. Gate: siehe Statuszeile #709; CI: Kern-Lauf nach dem Push nachzutragen.
 
 ## 7 Offen
 

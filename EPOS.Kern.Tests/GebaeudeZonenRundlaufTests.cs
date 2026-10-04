@@ -85,10 +85,11 @@ namespace EPOS.Kern.Tests
                || tabelle == SchemaKatalog.TAB_ZONENLUFTSTROM
                || tabelle == SchemaKatalog.TAB_IMPORTQUELLE || tabelle == SchemaKatalog.TAB_IMPORTZUORDNUNG;
 
-        /// <summary>Die Zeilen der Tabelle ohne die des Zonenprojekts 1052 (G6d, <see cref="Zonenbestand"/>).</summary>
+        /// <summary>Die Zeilen der Tabelle ohne die der Zonenprojekte 1052 und 1054 (G6d, AK1z, <see cref="Zonenbestand"/>).</summary>
         internal static long Zahl(string tabelle)
             => Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + tabelle + "\""), CultureInfo.InvariantCulture)
-               - Zeilen(tabelle, EPOS.Referenzlaeufe.Skripte.Zonenprojekt1052.NEU).Rows.Count;
+               - Zeilen(tabelle, EPOS.Referenzlaeufe.Skripte.Zonenprojekt1052.NEU).Rows.Count
+               - Zeilen(tabelle, EPOS.Referenzlaeufe.Skripte.Zonenprojekt1054.NEU).Rows.Count;
 
         // =============================================================================
         //  Die Vorrichtung

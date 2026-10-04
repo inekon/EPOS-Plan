@@ -1284,6 +1284,15 @@
         internal static string GebbMaxLastErl => MyResource.Resource.KI_DLG_GEBB_MAX_LAST_ERL;
         internal static string GebbVollbenutzungName => MyResource.Resource.GEBB_LBL_VOLLBENUTZUNG;
         internal static string GebbVollbenutzungErl => MyResource.Resource.KI_DLG_GEBB_VOLLBENUTZUNG_ERL;
+        // AK1z (E63): die Zonentabelle mit dem Heizkreis je Zone
+        internal static string GebbZoneName => MyResource.Resource.GEBZ_SP_ZONE;
+        internal static string GebbZoneErl => MyResource.Resource.KI_DLG_GEBB_ZONE_ERL;
+        internal static string GebbZoneVorlaufName => MyResource.Resource.GEBB_SP_ZONE_VORLAUF;
+        internal static string GebbZoneVorlaufErl => MyResource.Resource.KI_DLG_GEBB_ZONE_VORLAUF_ERL;
+        internal static string GebbZoneRuecklaufName => MyResource.Resource.GEBB_SP_ZONE_RUECKLAUF;
+        internal static string GebbZoneRuecklaufErl => MyResource.Resource.KI_DLG_GEBB_ZONE_RUECKLAUF_ERL;
+        internal static string GebbZoneBegrenztName => MyResource.Resource.GEBB_SP_ZONE_BEGRENZT;
+        internal static string GebbZoneBegrenztErl => MyResource.Resource.KI_DLG_GEBB_ZONE_BEGRENZT_ERL;
 
         internal static string GtypTypName => MyResource.Resource.GTYP_LBL_NAME;
         internal static string GtypTypErl => MyResource.Resource.KI_DLG_GTYP_TYP_ERL;
@@ -1416,6 +1425,10 @@
         internal static string ZonStrahlungName => MyResource.Resource.ZONDLG_LBL_STRAHLUNG;
         internal static string ZonStrahlungErl => MyResource.Resource.KI_DLG_ZON_STRAHLUNG_ERL;
         internal static string ZonHeizleistungName => MyResource.Resource.ZONDLG_LBL_HEIZLEISTUNG_MAX;
+        internal static string ZonUebergabeErl => MyResource.Resource.ZONDLG_UEBERGABE_KI_ERL;
+        internal static string ZonUebergabeArtErl => MyResource.Resource.ZONDLG_UEBERGABE_KI_ART_ERL;
+        internal static string ZonUebergabeWirksamName => MyResource.Resource.ZONDLG_UEBERGABE_KI_WIRKSAM_NAME;
+        internal static string ZonUebergabeWirksamErl => MyResource.Resource.ZONDLG_UEBERGABE_KI_WIRKSAM_ERL;
         internal static string ZonHeizleistungErl => MyResource.Resource.KI_DLG_ZON_HEIZLEISTUNG_ERL;
         internal static string ZonBauteilRandErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_RAND_ERL;
         internal static string ZonBauteilNachbarName => MyResource.Resource.ZONDLG_SP_NACHBAR;

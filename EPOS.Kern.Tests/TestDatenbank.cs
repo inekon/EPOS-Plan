@@ -924,6 +924,9 @@ namespace EPOS.Kern.Tests
                 // Schritt ErdreichVorgabeSchema.SCHRITT (EV1, E65): Erdreich_U_Wirksam an beiden Gebaeudetabellen
                 // samt neuntem Sichtneubau - ZULETZT, weil aeltere Durchgaenge die Sicht in ihrer Form bauen.
                 ErdreichVorgabeSchema.Ausfuehren(null);
+                // Schritt ZonenUebergabeSchema.SCHRITT (AK1z, E63): Auslegungspunkt und Regler je Zone, Kreiswerte im
+                // Zonenergebnis. Ohne Sicht; die Spalten bleiben leer.
+                ZonenUebergabeSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -14612,6 +14612,18 @@ Please check all entries!</value>
   <data name="GEBB_HRL_ZONEN" xml:space="preserve">
     <value>Heating energy and heat load of the building are the sum of its zones; its mean room temperature and overheating hours count the heated zones. An hour of the usage period is overheated when the operative temperature exceeds the upper room temperature of the zone.</value>
   </data>
+  <data name="GEBB_SP_ZONE_VORLAUF" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="GEBB_SP_ZONE_RUECKLAUF" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="GEBB_SP_ZONE_BEGRENZT" xml:space="preserve">
+    <value>Emission limited</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN_UEBERGABE" xml:space="preserve">
+    <value>Flow and return of a zone calculated with coupling are its means over the heating hours; limited means the heat emitter of the zone delivered less than its set point required. “—” stands for a zone without a heating circuit (ideal or unheated).</value>
+  </data>
   <data name="GEBB_LBL_DIAGRAMM" xml:space="preserve">
     <value>Charts for:</value>
   </data>
@@ -23513,6 +23525,18 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_GEBB_VOLLBENUTZUNG_ERL" xml:space="preserve">
     <value>The full load hours: annual sum divided by peak load. Without a peak load there are none.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_ERL" xml:space="preserve">
+    <value>The zone of the zone table (only for a building with at least two zones), identified by its name.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_VORLAUF_ERL" xml:space="preserve">
+    <value>Mean flow temperature of the zone heating circuit over its heating hours; empty for a zone without a heating circuit (ideal or unheated).</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Mean return temperature of the zone heating circuit over its heating hours; empty for a zone without a heating circuit.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_BEGRENZT_ERL" xml:space="preserve">
+    <value>Hours in which the heat emitter of the zone delivered less than its set point required; empty for a zone without a heating circuit.</value>
   </data>
   <data name="KI_DLG_GTYP_TYP_ERL" xml:space="preserve">
     <value>The loaded building type. Setting it loads its record together with its daily curves — the same path as a click in the list.</value>
@@ -33990,6 +34014,18 @@ Do you want to allow this?</value>
   <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
     <value>Zone “{0}”: The cooling emitter type “{1}” is not a valid value.</value>
   </data>
+  <data name="ZONE_MSG_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Zone “{0}”: The design flow temperature {1} °C is outside {2} to {3} °C.</value>
+  </data>
+  <data name="ZONE_MSG_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Zone “{0}”: The design return temperature {1} °C must be below the design flow temperature {2} °C.</value>
+  </data>
+  <data name="ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Zone “{0}”: The design room temperature {1} °C is outside {2} to {3} °C.</value>
+  </data>
+  <data name="ZONE_MSG_PROPORTIONALBAND" xml:space="preserve">
+    <value>Zone “{0}”: The proportional band {1} K is outside {2} to {3} K.</value>
+  </data>
   <data name="GIMP_BELEG_RAUMHOEHE_VORGABE" xml:space="preserve">
     <value>neither room height nor room volume in the file — default {0} m</value>
   </data>
@@ -34054,7 +34090,7 @@ Do you want to allow this?</value>
     <value>{0}: The coupling of zones {1} did not settle in hour {2} after {3} passes (largest last change {4} K or {5} W, air exchange between them {6} m³/h). The demand calculation stops.</value>
   </data>
   <data name="SIMENG_G6_AK1_IDEAL" xml:space="preserve">
-    <value>VDI 6007 building model: {0} is calculated with {1} zones; plant coupling is not available for a building with several zones – heating and cooling are ideal per zone, and the building enters the plant as a fixed load.</value>
+    <value>VDI 6007 building model: {0} is calculated with {1} zones; the cooling transfer is not available for a building with several zones – cooling is ideal per zone and enters the plant as a fixed load; the heat transfer is calculated per zone.</value>
   </data>
   <data name="SIMENG_G6_ZONENRECHNUNG" xml:space="preserve">
     <value>VDI 6007 building model: {0} calculates {1} coupled zones ({2} sub-groups); pre-run {3} hours; on average {4} passes per coupled hour, at most {5}.</value>
@@ -34075,7 +34111,7 @@ Do you want to allow this?</value>
     <value>VDI 6007 building model: {0} – the exposed perimeter of the ground floor is missing or smaller than that of the circle of equal area; the ground resistance to EN ISO 13370 uses the square of equal area P = {1} m (B′ = {2} m, U_g = {3} W/(m²K)).</value>
   </data>
   <data name="SIMENG_G6_MEHRZONEN_EINZELWEG" xml:space="preserve">
-    <value>{0}: with {1} zones the building calculates heating and cooling ideally per zone and without plant coupling; this information applies only to a building with at most one zone.</value>
+    <value>{0}: with {1} zones the building calculates the heat emission per zone – flow, return and the hours with limited emission are shown per zone in the zone table of the heat demand. Cooling is calculated ideally per zone and without plant coupling; the cooling emission information applies only to a building with at most one zone.</value>
   </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone “{0}”: the usable area must be greater than zero.</value>
@@ -34523,6 +34559,54 @@ Do you want to allow this?</value>
   </data>
   <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>An unheated zone floats freely: no heating, no cooling, no set points.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_GRUPPE" xml:space="preserve">
+    <value>Heat emission</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_WIE_GEBAEUDE" xml:space="preserve">
+    <value>from the building ({0})</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_PLATZHALTER" xml:space="preserve">
+    <value>from the building: {0}</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG" xml:space="preserve">
+    <value>Share of the building by usable area</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_HERKUNFT_ZONE" xml:space="preserve">
+    <value>chosen for the zone</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE" xml:space="preserve">
+    <value>from the building</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_ART" xml:space="preserve">
+    <value>Effective heat emitter type: {0} ({1}). Defaults of the type: exponent {2}, design {3}/{4} °C, proportional band {5} K. An empty field takes the value of the building, or the default of the type if the building has none; the design room temperature is then the day set point of the zone, the nominal output the share of the building by the usable area of the heated zones.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_IDEAL" xml:space="preserve">
+    <value>Effective heat emitter type: ideal ({0}) — the zone is calculated with ideal control, without heat emission. The fields appear with radiator, panel heating or convector.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS" xml:space="preserve">
+    <value>No effect as long as the heating circuit of the building is off — the values are kept.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS" xml:space="preserve">
+    <value>No effect as long as the project does not calculate a system coupling (AK1) — the values are kept.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT" xml:space="preserve">
+    <value>An unheated zone has no heat emission; its values are kept.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_SPERRE" xml:space="preserve">
+    <value>The database does not know the heat emission per zone (schema step {0} is missing); the zone takes the heat emission of the building.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_ERL" xml:space="preserve">
+    <value>Heat emission of the zone; empty = from the building (value of the building, otherwise default of the effective type). Effective only for a heated zone, with the heating circuit of the building switched on and system coupling AK1 in the project.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_ART_ERL" xml:space="preserve">
+    <value>Heat emitter type of the zone: IDEAL, RADIATOR, FLAECHE or KONVEKTOR; empty = from the building. IDEAL means: this zone is calculated ideally even if the building is coupled.</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_WIRKSAM_NAME" xml:space="preserve">
+    <value>Effective heat emission</value>
+  </data>
+  <data name="ZONDLG_UEBERGABE_KI_WIRKSAM_ERL" xml:space="preserve">
+    <value>The effective heat emission of the zone with the origin of each value (zone, building or default of the type); read only.</value>
   </data>
   <data name="ZONDLG_ZEILE_LUFTWECHSEL" xml:space="preserve">
     <value>Air change rate of the zone: {0} 1/h ({1}).</value>

@@ -187,6 +187,13 @@ namespace WindowsFormsApplication1
                     skalare.Add(Paar(q + "MittlereRaumtemperaturHeizzeit", r.MittlereRaumtemperaturHeizzeit));
                     skalare.Add(Paar(q + "Ueberhitzungsstunden", r.Ueberhitzungsstunden));
                     if (!double.IsNaN(z.DeltaThetaMaxK)) skalare.Add(Paar(q + "DeltaThetaMaxK", z.DeltaThetaMaxK));
+                    // E63 (AK1z): der Kreis nur bei gekoppelter Zone (Muster Wirkend - ohne Wirkung kein Schlüssel).
+                    if (r.Heizkreis is HeizkreisErgebnis zk)
+                    {
+                        if (!double.IsNaN(zk.VorlaufMittelC)) skalare.Add(Paar(q + "VorlaufMittelC", zk.VorlaufMittelC));
+                        if (!double.IsNaN(zk.RuecklaufMittelC)) skalare.Add(Paar(q + "RuecklaufMittelC", zk.RuecklaufMittelC));
+                        skalare.Add(Paar(q + "UebergabeBegrenztH", zk.UebergabeBegrenztStundenH));
+                    }
                     Wirkend(q, r, GebaeudeKennzahlen.Aufheizwerte(r.Aufheizung, zone: true), skalare, texte, gebaeude: false);
                     Messung(q, r.Innenumkehr, skalare);
                 }

@@ -25146,6 +25146,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf einer gekoppelt rechnenden Zone sind ihre Mittel über die Heizstunden; begrenzt heißt, die Übergabe der Zone lieferte weniger, als ihr Sollwert verlangte. „—“ steht bei einer Zone ohne Heizkreis (ideal oder unbeheizt). ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_ZONEN_UEBERGABE {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_ZONEN_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit begrenzter Übergabe ähnelt.
         /// </summary>
         public static string GEBB_KACHEL_BEGRENZT {
@@ -25488,6 +25497,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe begrenzt ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_BEGRENZT {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme ähnelt.
         /// </summary>
         public static string GEBB_SP_ZONE_HEIZWAERME {
@@ -25515,11 +25533,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Überhitzungsstunden ähnelt.
         /// </summary>
         public static string GEBB_SP_ZONE_UEBERHITZUNG {
             get {
                 return ResourceManager.GetString("GEBB_SP_ZONE_UEBERHITZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_VORLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_VORLAUF", resourceCulture);
             }
         }
         
@@ -47654,6 +47690,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBB_VOLLBENUTZUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBB_VOLLBENUTZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden, in denen die Übergabe der Zone weniger lieferte, als ihr Sollwert verlangte; leer bei einer Zone ohne Heizkreis. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_ZONE_BEGRENZT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_ZONE_BEGRENZT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone der Zonentabelle (nur bei einem Gebäude mit mindestens zwei Zonen), mit ihrem Namen als Kennzeichen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_ZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_ZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Rücklauf des Heizkreises der Zone über ihre Heizstunden; leer bei einer Zone ohne Heizkreis. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_ZONE_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_ZONE_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Vorlauf des Heizkreises der Zone über ihre Heizstunden; leer bei einer Zone ohne Heizkreis (ideal oder unbeheizt). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_ZONE_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_ZONE_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -85260,7 +85332,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Anlagenkopplung ist für ein Gebäude mit mehreren Zonen nicht abgebildet – Heizung und Kühlung rechnen je Zone ideal, und das Gebäude geht als feste Last in die Anlage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Kühlübergabe ist für ein Gebäude mit mehreren Zonen nicht abgebildet – die Kühlung rechnet je Zone ideal und geht als feste Last in die Anlage; die Wärmeübergabe rechnet je Zone. ähnelt.
         /// </summary>
         public static string SIMENG_G6_AK1_IDEAL {
             get {
@@ -85305,7 +85377,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Mit {1} Zonen rechnet das Gebäude Heizung und Kühlung je Zone ideal und ohne Anlagenkopplung; diese Auskunft gilt nur für ein Gebäude mit höchstens einer Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Mit {1} Zonen rechnet das Gebäude die Wärmeübergabe je Zone – Vorlauf, Rücklauf und die Stunden mit begrenzter Übergabe stehen je Zone in der Zonentabelle des Wärmebedarfs. Die Kühlung rechnet je Zone ideal und ohne Anlagenkopplung; die Auskunft zur Kühlübergabe gilt nur für ein Gebäude mit höchstens einer Zone. ähnelt.
         /// </summary>
         public static string SIMENG_G6_MEHRZONEN_EINZELWEG {
             get {
@@ -115965,6 +116037,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_GRUPPE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die an der Zone gewählt ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_HERKUNFT_ZONE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_HERKUNFT_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart der Zone: IDEAL, RADIATOR, FLAECHE oder KONVEKTOR; leer = wie Gebäude. IDEAL heißt: diese Zone rechnet ideal, auch wenn das Gebäude gekoppelt ist. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_KI_ART_ERL {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_KI_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeübergabe der Zone; leer = wie Gebäude (Wert des Gebäudes, sonst Vorgabe der wirksamen Art). Wirkt nur bei beheizter Zone, eingeschaltetem Heizkreis des Gebäudes und Anlagenkopplung AK1 im Projekt. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_KI_ERL {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_KI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die wirksame Übergabe der Zone mit Herkunft je Wert (Zone, Gebäude oder Vorgabe der Art); nur lesen. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_KI_WIRKSAM_ERL {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_KI_WIRKSAM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Übergabe ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_KI_WIRKSAM_NAME {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_KI_WIRKSAM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude: {0} ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil des Gebäudes nach Nutzfläche ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank kennt die Übergabe je Zone nicht (Schemaschritt {0} fehlt); die Zone übernimmt die Übergabe des Gebäudes. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_SPERRE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude ({0}) ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_WIE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_WIE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Übergabeart: {0} ({1}). Vorgaben der Art: Exponent {2}, Auslegung {3}/{4} °C, Proportionalband {5} K. Ein leeres Feld übernimmt den Wert des Gebäudes, trägt das Gebäude keinen, die Vorgabe der Art; die Auslegungsraumtemperatur ist dann das Soll am Tag der Zone, die Nennleistung der Anteil des Gebäudes nach der Nutzfläche der beheizten Zonen. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_ART {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Wirkung, solange der Heizkreis des Gebäudes aus ist — die Werte bleiben erhalten. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Übergabeart: ideal ({0}) — die Zone rechnet mit idealer Regelung, ohne Übergabe. Die Felder erscheinen mit Radiator, Flächenheizung oder Konvektor. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_IDEAL {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Wirkung, solange das Projekt keine Anlagenkopplung (AK1) rechnet — die Werte bleiben erhalten. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine unbeheizte Zone hat keine Wärmeübergabe; ihre Werte bleiben erhalten. ähnelt.
+        /// </summary>
+        public static string ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus Aufbau ähnelt.
         /// </summary>
         public static string ZONDLG_U_AUS_AUFBAU {
@@ -116078,6 +116294,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONE_HINWEIS_OHNE_AUSSEN {
             get {
                 return ResourceManager.GetString("ZONE_HINWEIS_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Auslegungsraumtemperatur {1} °C liegt außerhalb von {2} bis {3} °C. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Auslegungsrücklauf {1} °C muss unter dem Auslegungsvorlauf {2} °C liegen. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_AUSLEGUNG_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_AUSLEGUNG_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Auslegungsvorlauf {1} °C liegt außerhalb von {2} bis {3} °C. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_AUSLEGUNG_VORLAUF {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_AUSLEGUNG_VORLAUF", resourceCulture);
             }
         }
         
@@ -116267,6 +116510,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONE_MSG_OHNE_KOPPLUNG {
             get {
                 return ResourceManager.GetString("ZONE_MSG_OHNE_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Proportionalband {1} K liegt außerhalb von {2} bis {3} K. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_PROPORTIONALBAND {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_PROPORTIONALBAND", resourceCulture);
             }
         }
         

@@ -194,12 +194,12 @@ namespace EPOS.Kern.Tests
             // Die Projektkopien trugen nur Bauzeitraeume (alt A 18, D 2, F 4, G 2, H 2) - je einen Buchstaben weiter;
             // H3 mit der Gebaeudekopie des Referenzprojekts Solarthermie 1049 (Vorlage 1018), G5 mit der
             // des Referenzprojekts Kesselkennlinie 1050 (Vorlage 1023), H4 mit der des Zonenprojekts 1052
-            // (Vorlage 1018, G6d), H5 mit der des Prüfprojekts 1053 (Vorlage 1018), J1 mit dem Gebäude des Referenzprojekts 1051 aus seinem Referenzkatalogbau (KP3, RP1).
+            // (Vorlage 1018, G6d), H5 mit der des Prüfprojekts 1053 (Vorlage 1018), H6 mit der des Referenzprojekts 1054 (Vorlage 1052, AK1z), J1 mit dem Gebäude des Referenzprojekts 1051 aus seinem Referenzkatalogbau (KP3, RP1).
             var kopien = DataRepository.GetDataTable(
                 "SELECT Baualtersklasse, COUNT(*) AS Anzahl FROM Tab_Gebaeude GROUP BY Baualtersklasse ORDER BY Baualtersklasse")
                 .Rows.Cast<DataRow>()
                 .Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture) + Convert.ToString(r[1], CultureInfo.InvariantCulture));
-            Assert.Equal(new[] { "B18", "E2", "G5", "H5", "I2", "J1" }, kopien);
+            Assert.Equal(new[] { "B18", "E2", "G5", "H6", "I2", "J1" }, kopien);
         }
 
         /// <summary>

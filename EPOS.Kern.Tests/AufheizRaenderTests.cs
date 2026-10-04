@@ -530,7 +530,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>AK1-Gebäude mit Zonen (W5) und eine unbeheizte Zone im selben Gebäude:</b> Mit wirksamer Stufe
-        /// rechnen die Zonen als ideale Last (A4 (a)); die Planung liefert für jede beheizte Zone den Zustand
+        /// rechnen die Zonen ihre Wärmeübergabe (E63); die Planung liefert für jede beheizte Zone den Zustand
         /// GEKOPPELT (keine Ablehnung, die Reihe bleibt dieselbe Instanz), für den Keller UNBEHEIZT; das
         /// Gebäude ist GEKOPPELT, und der Lauf ist bitgleich zu „aus". Gegenprobe: ohne Stufe rampt dasselbe
         /// Gebäude.
@@ -556,8 +556,9 @@ namespace EPOS.Kern.Tests
                 Assert.Same(z.Eingang.ThetaSoll, p.Reihe);
                 if (z.IstBeheizt)
                 {
-                    Assert.True(z.Eingang.KopplungAlsIdealeLast);
-                    Assert.False(z.Eingang.KopplungWirksam);
+                    // E63 (AK1z): die Zone rechnet ihre Wärmeübergabe selbst.
+                    Assert.False(z.Eingang.KopplungAlsIdealeLast);
+                    Assert.True(z.Eingang.KopplungWirksam);
                     Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, p.Zustand);
                     Assert.True(p.Gekoppelt);
                 }

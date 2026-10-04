@@ -224,15 +224,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
             Assert.Equal(SPALTEN_GEBAEUDE, geb.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE - 14).Take(14).ToArray());
             List<string> zone = DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone");
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
+            Assert.Equal(ZonenUebergabeSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
             Assert.Equal(SPALTEN_ZONE, zone.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE - 14).Take(14).ToArray());
 
-            // Aus ist alles ausser dem Zonenprojekt 1052 (G6d, Aufheizoptimierung an; ZonenReferenzprojektWacheTests)
+            // Aus ist alles ausser den Zonenprojekten 1052 und 1054 (G6d, AK1z; Aufheizoptimierung an; ZonenReferenzprojektWacheTests)
             // und dem Referenzprojekt Konditionierung 1051 (KP3, RP1; Bemessung (b) mit 2 K).
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Einstellungen") > 0);
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Aufheizoptimierung <> 0 AND ID_Projekt NOT IN (1051, 1052)"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Aufheizoptimierung <> 0 AND ID_Projekt NOT IN (1051, 1052, 1054)"));
             foreach (string sp in SPALTEN_VORGABE.Skip(1))
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE \"" + sp + "\" IS NOT NULL AND ID_Projekt NOT IN (1051, 1052)"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE \"" + sp + "\" IS NOT NULL AND ID_Projekt NOT IN (1051, 1052, 1054)"));
             foreach (string sp in SPALTEN_GEBAEUDE)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_ErgebnisGebaeude WHERE \"" + sp + "\" IS NOT NULL"));
             foreach (string sp in SPALTEN_ZONE)
@@ -264,7 +264,7 @@ namespace EPOS.Kern.Tests
                      })
                 Assert.True(StilleDb.NonQuery("UPDATE Tab_Einstellungen SET " + falsch + " WHERE ID_Projekt = 1007") < 0, falsch);
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE (Aufheizoptimierung <> 0 " +
-                                  "OR Aufheiz_Reserve IS NOT NULL OR Aufheiz_Abzug_K IS NOT NULL) AND ID_Projekt NOT IN (1051, 1052)"));
+                                  "OR Aufheiz_Reserve IS NOT NULL OR Aufheiz_Abzug_K IS NOT NULL) AND ID_Projekt NOT IN (1051, 1052, 1054)"));
 
             Assert.Equal(1, StilleDb.NonQuery("UPDATE Tab_Einstellungen SET Aufheizoptimierung = 1, Aufheiz_Reserve = 0.25, " +
                                               "Aufheiz_Abzug_K = 0, Aufheiz_Bemessung = 'STUNDE_ABZUG', Aufheiz_Art = 'FEST' " +
@@ -333,6 +333,10 @@ namespace EPOS.Kern.Tests
 
             long gebaeudeZeilen = Zahl("SELECT COUNT(*) FROM Tab_ErgebnisGebaeude");
             long zonenZeilen = Zahl("SELECT COUNT(*) FROM Tab_ErgebnisZone");
+            // Der Stand vor dem Schritt der Uebergabe je Zone (E63) kennt dessen drei Ergebnisspalten nicht.
+            foreach ((string tabelle, string spalte, string _) in ZonenUebergabeSchema.SPALTEN)
+                if (tabelle == ZonenUebergabeSchema.TAB_ERGEBNIS_ZONE)
+                    DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
             // Der Stand VOR KP-S3 kennt die Spalten des späteren Schritts KP-S4 nicht.
             foreach ((string tabelle, string spalte, string _) in AufheizManuellSchema.SPALTEN)
                 if (tabelle == "Tab_ErgebnisGebaeude" || tabelle == "Tab_ErgebnisZone")
@@ -427,10 +431,10 @@ namespace EPOS.Kern.Tests
                                                "WHERE (name LIKE 'Aufheiz%' OR name = 'HeizleistungMax_H') AND \"notnull\" = 0"));
             Assert.Equal(1L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_ErgebnisZone') " +
                                               "WHERE name = 'Sommerlueftungsstunden_H' AND type = 'INTEGER'"));
-            // Ausser dem Zonenprojekt 1052 (G6d) und dem Referenzprojekt 1051 (KP3, RP1) steht jedes Projekt auf „aus".
+            // Ausser den Zonenprojekten 1052 und 1054 (G6d, AK1z) und dem Referenzprojekt 1051 (KP3, RP1) steht jedes Projekt auf „aus".
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Einstellungen WHERE (Aufheizoptimierung <> 0 OR " +
                                               "Aufheiz_Bemessung IS NOT NULL OR Aufheiz_Abzug_K IS NOT NULL OR " +
-                                              "Aufheiz_Reserve IS NOT NULL OR Aufheiz_Art IS NOT NULL) AND ID_Projekt NOT IN (1051, 1052)"));
+                                              "Aufheiz_Reserve IS NOT NULL OR Aufheiz_Art IS NOT NULL) AND ID_Projekt NOT IN (1051, 1052, 1054)"));
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_ErgebnisGebaeude WHERE Aufheiz_Zustand IS NOT NULL"));
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_ErgebnisZone WHERE Aufheiz_Zustand IS NOT NULL"));
         }

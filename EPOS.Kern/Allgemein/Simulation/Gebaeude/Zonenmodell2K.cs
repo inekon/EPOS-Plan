@@ -632,20 +632,34 @@ namespace WindowsFormsApplication1
         /// bitgleich (Probe). Mit einem anderen Rand rechnet sie das festgehaltene Muster unter
         /// geänderten Randbedingungen — so hält die Zonenschleife eine Pendelstunde fest.
         ///
-        /// <para>Nur ohne Übergabe: Die Lagen mit Übergabe hängen am Arbeitspunkt des
-        /// Abschnittsbeginns und lassen sich nicht aus dem Fall allein bilden — im Zonenweg rechnen
-        /// die Zonen ideal (Anwenderentscheid A4). Die Abschnittsregel (F-K3) gilt wie in
-        /// <see cref="Schritt"/>. Das Muster muss die Stunde genau füllen.</para>
+        /// <para><b>Mit Wärmeübergabe (E63, Schritt H je Zone):</b> Auch die Fälle
+        /// <see cref="Betriebsfall.UebergabeGesaettigt"/> und <see cref="Betriebsfall.UebergabeRegelbereich"/>
+        /// werden festgehalten. Ihre Lage hängt am Arbeitspunkt des Abschnittsbeginns; im festen Fall
+        /// wird die Leistung deshalb mit der Leistungsgleichung DIESES Falls am Zustand des
+        /// Abschnittsbeginns unter dem neuen Rand neu gelöst — ohne Fallwahl und ohne Bisektion, genau
+        /// wie <see cref="Betriebsfall.HeizenGeregelt"/> im Muster gehalten wird: gesättigt Φ_ue,max am
+        /// freien Lauf θ₀ (Sekantenleitwert G_H, H5), im Regelbereich der Arbeitspunkt mit
+        /// y = (θ_soll − θ_i)/Xp auf [0, 1] und dem Leitwert Φ_ue,max/Xp + y·G_H (Anlagenkopplung
+        /// 10.2 H5). Liefert der Fall dort keine Leistung (Vorlauf nicht über θ₀, kein Leitwert) oder
+        /// läge sie über <c>Heizleistung_Max</c>, ist das Muster nicht haltbar
+        /// (<see cref="GebaeudeModellFehler.AbschnittsregelVerletzt"/>) — die Zonenschleife rechnet die
+        /// Stunde dann frei (<see cref="Schritt"/>), die Kappung bleibt so beim Fall der Leistungsgrenze.
+        /// Die Fälle ohne Leitwert rechnen wie ohne Übergabe; Rücklauf und Gründe der Stunde wie in
+        /// <see cref="Schritt"/>. Eine Kühlübergabe (Schritt K) bleibt ausgeschlossen — im
+        /// Mehrzonenweg rechnet die Kälteseite ideal.</para>
+        /// <para>Die Abschnittsregel (F-K3) gilt wie in <see cref="Schritt"/>. Das Muster muss die Stunde
+        /// genau füllen.</para>
         /// </summary>
-        /// <exception cref="ArgumentException">bei einem Rand mit Übergabe, einem Fall mit Übergabe
-        /// oder einem Muster, das die Stunde nicht genau füllt; der Zustand bleibt dann unverändert.</exception>
+        /// <exception cref="ArgumentException">bei einem Rand mit Kühlübergabe, einem Fall mit Kühlübergabe,
+        /// einem Übergabefall ohne Übergabe im Rand oder einem Muster, das die Stunde nicht genau füllt;
+        /// der Zustand bleibt dann unverändert.</exception>
         /// <exception cref="GebaeudeModellException">bei ungültigem Rand oder verletzter Abschnittsregel.</exception>
         internal Stundenergebnis SchrittMitMuster(in Stundenrand r, Stundenmuster muster)
         {
             RandPruefen(in r);
             if (muster == null) throw new ArgumentNullException(nameof(muster));
-            if (r.MitUebergabe || r.MitKuehluebergabe)
-                throw new ArgumentException(_bezeichnung + ": Eine Stunde mit Übergabe lässt sich nicht mit festem Muster nachrechnen.", nameof(r));
+            if (r.MitKuehluebergabe)
+                throw new ArgumentException(_bezeichnung + ": Eine Stunde mit Kühlübergabe lässt sich nicht mit festem Muster nachrechnen.", nameof(r));
             int n = muster.Anzahl;
             if (n < 1 || n > ABSCHNITTSDECKEL)
                 throw new ArgumentException(_bezeichnung + ": Das Muster hat " + n.ToString(CultureInfo.InvariantCulture) +
@@ -658,6 +672,9 @@ namespace WindowsFormsApplication1
             double akkKappung = 0.0;     // Kappungsanteil wie in Schritt (Entwurf KP3, Festlegung 20)
             double mUmkehrJ = 0.0, mBandKs = 0.0;
             int mUmkehrAb = 0, mBandAb = 0;
+            // E63: Zeit je Begrenzungsgrund [s], nur mit Übergabe geführt (wie in Schritt).
+            Span<double> tauJeGrund = stackalloc double[GRUENDE];
+            tauJeGrund.Clear();
             for (int i = 0; i < n; i++)
             {
                 if (!(t < STUNDE_S))
@@ -671,10 +688,15 @@ namespace WindowsFormsApplication1
                     case Betriebsfall.Kuehlgrenze:
                     case Betriebsfall.Totband:
                         break;
+                    case Betriebsfall.UebergabeGesaettigt:
+                    case Betriebsfall.UebergabeRegelbereich:
+                        if (r.MitUebergabe) break;
+                        throw new ArgumentException(_bezeichnung + ": Der Fall " + fall + " braucht eine Übergabe im Rand.", nameof(muster));
                     default:
-                        throw new ArgumentException(_bezeichnung + ": Der Fall " + fall + " hat eine Übergabe und lässt sich nicht mit festem Muster nachrechnen.", nameof(muster));
+                        throw new ArgumentException(_bezeichnung + ": Der Fall " + fall + " hat eine Kühlübergabe und lässt sich nicht mit festem Muster nachrechnen.", nameof(muster));
                 }
-                Abschnitt ab = Aufbauen(fall, in r);
+                bool uebergabefall = fall == Betriebsfall.UebergabeGesaettigt || fall == Betriebsfall.UebergabeRegelbereich;
+                Abschnitt ab = uebergabefall ? UebergabeImMuster(fall, x, in r, i) : Aufbauen(fall, in r);
 
                 double rest = STUNDE_S - t;
                 double tau = muster.Dauer[i];
@@ -712,8 +734,16 @@ namespace WindowsFormsApplication1
                         if (q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
+                    case Betriebsfall.UebergabeGesaettigt:
+                    case Betriebsfall.UebergabeRegelbereich:
+                        // Derselbe Zahlenrand des Leitwerts wie in Schritt.
+                        if (-q > Rechenrand.Zu(0.0) + ab.LeitwertWK * Rechenrand.Zu(ab.ThetaHC))
+                            AbschnittsregelVerletzt(fall, q);
+                        akkHeiz += Math.Max(q, 0.0) * tau;
+                        break;
                 }
                 if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
+                if (r.MitUebergabe) tauJeGrund[(int)GrundImMuster(fall, x, in r)] += tau;
                 akkAir += air * tau;
                 akkS1 += s1 * tau;
                 akkS2 += s2 * tau;
@@ -734,8 +764,36 @@ namespace WindowsFormsApplication1
             double s1Mittel = akkS1 / STUNDE_S;
             double s2Mittel = akkS2 / STUNDE_S;
             double opMittel = 0.5 * airMittel + 0.5 * (_wAW * s1Mittel + _wIW * s2Mittel);
+            if (!r.MitUebergabe)
+                return new Stundenergebnis(
+                    akkHeiz / STUNDE_S,
+                    akkKuehl / STUNDE_S,
+                    airMittel,
+                    opMittel,
+                    s1Mittel,
+                    s2Mittel,
+                    akkM1 / STUNDE_S,
+                    akkM2 / STUNDE_S,
+                    x.A,
+                    x.B,
+                    n,
+                    heizleistungMaxAnteil: akkKappung / STUNDE_S)
+                {
+                    MessungUmkehrJ = mUmkehrJ,
+                    MessungUmkehrAbschnitte = mUmkehrAb,
+                    MessungBandKs = mBandKs,
+                    MessungBandAbschnitte = mBandAb,
+                };
+
+            // E63: Vorlauf und Rücklauf zur gelieferten mittleren Leistung, der Grund mit dem größten
+            // Zeitanteil - dieselben Ausdrücke wie in Schritt (ohne Kälteseite).
+            double heizMittel = akkHeiz / STUNDE_S;
+            double vorlauf = r.MitHeizung ? r.VorlaufC : double.NaN;
+            double ruecklauf = double.IsNaN(vorlauf) ? double.NaN : Waermeuebergabe.RuecklaufC(r.Uebergabe, vorlauf, heizMittel);
+            int grund = 0;
+            for (int i = 1; i < GRUENDE; i++) if (tauJeGrund[i] > tauJeGrund[grund]) grund = i;
             return new Stundenergebnis(
-                akkHeiz / STUNDE_S,
+                heizMittel,
                 akkKuehl / STUNDE_S,
                 airMittel,
                 opMittel,
@@ -746,13 +804,92 @@ namespace WindowsFormsApplication1
                 x.A,
                 x.B,
                 n,
-                heizleistungMaxAnteil: akkKappung / STUNDE_S)
+                vorlauf,
+                ruecklauf,
+                (Begrenzungsgrund)grund,
+                tauJeGrund[(int)Begrenzungsgrund.Uebergabe] / STUNDE_S,
+                tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S,
+                tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S,
+                double.NaN,
+                double.NaN,
+                (Begrenzungsgrund)0,
+                0.0,
+                0.0,
+                0.0,
+                0.0)
             {
                 MessungUmkehrJ = mUmkehrJ,
                 MessungUmkehrAbschnitte = mUmkehrAb,
                 MessungBandKs = mBandKs,
                 MessungBandAbschnitte = mBandAb,
             };
+        }
+
+        /// <summary>
+        /// Der Abschnitt eines festgehaltenen Übergabefalls (E63; Regel: <see cref="SchrittMitMuster"/>) —
+        /// die Leistungsgleichung des Falls am Zustand <paramref name="x"/> unter dem Rand <paramref name="r"/>,
+        /// mit denselben Aufrufen wie H5 in <see cref="SchrittUebergabe"/>.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.AbschnittsregelVerletzt"/>: das Muster ist nicht haltbar.</exception>
+        private Abschnitt UebergabeImMuster(Betriebsfall fall, Vektor2 x, in Stundenrand r, int i)
+        {
+            Uebergabekennwerte k = r.Uebergabe;
+            double soll = r.ThetaSoll;
+            double xp = r.ReglerbandK;
+            double vorlauf = r.VorlaufC;
+            double a = r.HeizungStrahlungsanteil;
+            double eAW = a * _wAW, eIW = a * _wIW, eLuft = 1.0 - a;
+            Abschnitt frei = Aufbauen(Betriebsfall.Totband, in r);
+            double theta0 = frei.Ausgang(2, x);
+            double s = frei.System.Empfindlichkeit(eAW, eIW, eLuft);
+
+            double thetaStern, phiStern, leitwert;
+            Begrenzungsgrund grund;
+            bool haltbar = r.MitHeizung && !double.IsNaN(vorlauf) && vorlauf > theta0;
+            if (!haltbar)
+            {
+                thetaStern = phiStern = leitwert = double.NaN;
+                grund = Begrenzungsgrund.Heizgrenze;
+            }
+            else if (fall == Betriebsfall.UebergabeGesaettigt)
+            {
+                phiStern = Waermeuebergabe.LeistungGesaettigtW(k, vorlauf, theta0, s);
+                thetaStern = theta0 + s * phiStern;
+                leitwert = Waermeuebergabe.SteigungOffenWK(k, phiStern, vorlauf, thetaStern);
+                grund = Begrenzungsgrund.Uebergabe;
+            }
+            else
+            {
+                Waermeuebergabe.ArbeitspunktRegelbereich(k, vorlauf, soll, xp, theta0, s,
+                                                         out thetaStern, out phiStern, out leitwert);
+                grund = Begrenzungsgrund.KeineBegrenzung;
+            }
+            if (!haltbar || !(phiStern > 0.0) || !(leitwert > 0.0) || !Endlich(leitwert)
+                || (Begrenzt(r.HeizleistungMaxW) && phiStern > r.HeizleistungMaxW))
+                throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt,
+                    _bezeichnung + ": Der Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture) + " im Betriebsfall " + fall +
+                    " liefert am Zustand des Abschnittsbeginns keine haltbare Übergabe; das Muster ist nicht haltbar.");
+            double thetaH = thetaStern + phiStern / leitwert;
+            return FreiMitLeitwert(leitwert, thetaH, eAW, eIW, eLuft, in r,
+                                   Kopplung.Leitwert(grund, leitwert, thetaH, double.NegativeInfinity, double.PositiveInfinity));
+        }
+
+        /// <summary>
+        /// Der Begrenzungsgrund eines festgehaltenen Abschnitts in einer Stunde mit Übergabe (E63) — wie ihn
+        /// <see cref="SchrittUebergabe"/> setzt: gesättigt die Übergabe, Leistungsgrenze <c>Heizleistung_Max</c>,
+        /// das Totband mit Wärmebedarf (q₀ &gt; 0) die Heizgrenze der Übergabe, sonst keine Begrenzung.
+        /// </summary>
+        private Begrenzungsgrund GrundImMuster(Betriebsfall fall, Vektor2 x, in Stundenrand r)
+        {
+            switch (fall)
+            {
+                case Betriebsfall.UebergabeGesaettigt: return Begrenzungsgrund.Uebergabe;
+                case Betriebsfall.Heizgrenze: return Begrenzungsgrund.HeizleistungMax;
+                case Betriebsfall.Totband:
+                    return r.MitHeizung && Aufbauen(Betriebsfall.HeizenGeregelt, in r).Ausgang(2, x) > 0.0
+                        ? Begrenzungsgrund.Heizgrenze : Begrenzungsgrund.KeineBegrenzung;
+                default: return Begrenzungsgrund.KeineBegrenzung;
+            }
         }
 
         /// <summary>

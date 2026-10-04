@@ -50,6 +50,9 @@ namespace WindowsFormsApplication1
             ["Kuehl_Sollwert"] = V, ["Kuehlleistung_Max"] = V, ["Kuehlung_Aktiv"] = V, ["Kuehl_Sollwert_Nacht"] = V,
             ["Uebergabe_Art"] = V, ["Uebergabe_Exponent"] = V, ["Uebergabe_Leistung_Nenn"] = V,
             ["Kuehl_Uebergabe_Art"] = V, ["Kuehl_Uebergabe_Exponent"] = V, ["Kuehl_Uebergabe_Leistung_Nenn"] = V,
+            // Schritt 181 (E63, AK1z): der Auslegungspunkt und das Proportionalband der Zone.
+            ["Auslegung_Vorlauf"] = V, ["Auslegung_Ruecklauf"] = V, ["Auslegung_Raumtemperatur"] = V,
+            ["Regler_Proportionalband"] = V,
         };
 
         /// <summary>Die Felder eines Bauteils.</summary>

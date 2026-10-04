@@ -2770,6 +2770,25 @@ namespace Testdatenbankschema
                                   ErdreichVorgabeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ZonenUebergabeSchema.SCHRITT (AK1z, E63): Auslegungspunkt und Regler der Waermeuebergabe
+            //      je Zone an Tab_Zone, Kreiswerte an Tab_ErgebnisZone. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ZonenUebergabe bedient. Ohne Sicht.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; leer rechnet die Zone wie ihr Gebaeude.
+            string nrZonenUebergabe = ZonenUebergabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZonenUebergabe + " - Waermeuebergabe je Zone: " +
+                              (ZonenUebergabeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZone = new List<string>();
+                angelegt += ZonenUebergabeSchema.Ausfuehren(berichtZone);
+                foreach (string zeile in berichtZone)
+                    Console.WriteLine("Schritt " + nrZonenUebergabe + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZonenUebergabe + " - vollstaendig: " +
+                                  ZonenUebergabeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -98,4 +98,43 @@ public sealed class GebaeudeBedarfKiSicht
     /// Die Vollbenutzungsstunden [h/a]; leer, wenn es sie nicht gibt (Höchstlast 0).
     /// </summary>
     public double? VollbenutzungsstundenH => Satz?.VollbenutzungsstundenH;
+
+    /// <summary>
+    /// Die Zeilen der Zonentabelle (Stufe G6b; AK1z, E63) mit dem Zonennamen als Kennzeichen — nur
+    /// zum Lesen; leer bei einem Gebäude mit höchstens einer Zone.
+    /// </summary>
+    public IReadOnlyList<GebaeudeBedarfZoneKiZeile> Zonen
+        => Satz is { Zonen.Count: >= 2 } s
+            ? s.Zonen.Select(z => new GebaeudeBedarfZoneKiZeile(z)).ToList()
+            : Array.Empty<GebaeudeBedarfZoneKiZeile>();
+}
+
+/// <summary>
+/// Eine Zone der Zonentabelle als ZEILE der Sichtklasse <see cref="GebaeudeBedarfKiSicht"/> — nur
+/// zum Lesen: der Name als Kennzeichen und der Heizkreis der Zone (AK1z, E63), leer ohne Kopplung.
+/// </summary>
+public sealed class GebaeudeBedarfZoneKiZeile
+{
+    private readonly GebaeudeBedarfZoneDaten _zone;
+
+    /// <summary>Legt die Zeile zu einer Zone des Ergebnisses an.</summary>
+    public GebaeudeBedarfZoneKiZeile(GebaeudeBedarfZoneDaten zone)
+    {
+        _zone = zone ?? throw new ArgumentNullException(nameof(zone));
+    }
+
+    /// <summary>Das ZEILENKENNZEICHEN — der Zonenname, wie ihn die Tabelle zeigt.</summary>
+    public string Kennzeichen => _zone.Name;
+
+    /// <summary>Der Zonenname.</summary>
+    public string Zonenname => _zone.Name;
+
+    /// <summary>Mittlerer Vorlauf des Zonenkreises [°C]; leer ohne Kopplung.</summary>
+    public double? VorlaufMittelC => _zone.VorlaufMittelC;
+
+    /// <summary>Mittlerer Rücklauf des Zonenkreises [°C]; leer ohne Kopplung.</summary>
+    public double? RuecklaufMittelC => _zone.RuecklaufMittelC;
+
+    /// <summary>Stunden mit begrenzender Übergabe der Zone [h]; leer ohne Kopplung.</summary>
+    public double? UebergabeBegrenztH => _zone.UebergabeBegrenztH;
 }

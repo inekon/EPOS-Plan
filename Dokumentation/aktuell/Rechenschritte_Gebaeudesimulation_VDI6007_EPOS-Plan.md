@@ -1255,6 +1255,17 @@ Regelbereich (0 < y < 1):  gueltig solange  theta_soll - Xp <= theta_air(x) <= t
 
 Mit Xp = 0 fällt beides zusammen, und der Fall verhält sich wie „Heizgrenze" aus 7.1.
 
+**Im Mehrzonenweg.** Schritt H läuft je gekoppelter Zone und je Abschnitt in der Zonenschleife, mit den
+Übergabekennwerten der Zone (Kaskade Zone → Gebäude → Vorgabe der wirksamen Zonenart, Anlagenkopplung 6.5)
+und am **gemeinsamen Vorlauf** des Gebäudes: Die Vorlaufreihe bildet Schritt E einmal, aus der Heizkurve am
+höchsten Heizsollwert der gekoppelten Zonen, gedeckelt am Auslegungsvorlauf des Gebäudes. Der Rücklauf des
+Gebäudes ist je Stunde massenstromgewichtet, θ_R = Σ W_H,z · θ_R,z / Σ W_H,z. Der Gauß-Seidel über die Zonen
+hält ab dem zweiten Durchlauf das Fallmuster der Zonen fest, die Übergabefälle eingeschlossen: Die Leistung
+einer Zone im Übergabefall wird mit der Gleichung des festen Falls neu gelöst, ohne Bisektion; ist das Muster
+nicht haltbar, wird die Stunde frei gerechnet und gezählt. Zonen mit der Art `IDEAL`, die Kühlseite und die
+4-K-Regel rechnen je Zone ohne Übergabe; ein Gebäude mit Art `IDEAL` oder ohne `Heizkreis_Aktiv` rechnet alle
+Zonen ideal.
+
 ### 7.5 Schritt K — Konditionierungskalender und Aufheizrampe
 
 **Stelle in der Reihenfolge.** Schritt K hat zwei Teile. **K1** bildet im Eingangsbauer (Schritt E) die Reihen der

@@ -203,6 +203,53 @@ namespace WindowsFormsApplication1
             return hk;
         }
 
+        /// <summary>
+        /// Bildet das Ergebnis des GEBÄUDES im Mehrzonenweg (E63, AK1z) aus seinem Heizkreis und den
+        /// gemischten Reihen der gekoppelten Zonen (<see cref="Gebaeudeheizkreis.Mischen"/>) — dieselben
+        /// Kennzahlen wie <see cref="Bilden(GebaeudeModellEingang, double[], double[], double[], double, double, double[], double)"/>,
+        /// die Übergabewerte vom Gebäude.
+        /// </summary>
+        /// <param name="g">Der Heizkreis des Gebäudes.</param>
+        /// <param name="vorlaufC">Gemeinsamer Vorlauf je Stunde [°C].</param>
+        /// <param name="ruecklaufC">Massenstromgewichteter Rücklauf je Stunde [°C].</param>
+        /// <param name="uebergabeBegrenztAnteil">Begrenzt-Anteil je Stunde, Maximum über die Zonen [–].</param>
+        /// <param name="heizleistungMaxStundenH">Zeitanteile mit <c>Heizleistung_Max</c> als Grenze [h] (Maximum über die Zonen).</param>
+        /// <param name="heizgrenzeStundenH">Zeitanteile an der Heizgrenze [h] (Maximum über die Zonen).</param>
+        /// <param name="heizlastW">Die Heizlast des Gebäudes je Stunde [W] (Summe der Zonen).</param>
+        /// <param name="groessteUnterschreitungK">Größte Unterschreitung einer Zone [K].</param>
+        internal static HeizkreisErgebnis Bilden(Gebaeudeheizkreis g, double[] vorlaufC, double[] ruecklaufC,
+                                                 double[] uebergabeBegrenztAnteil, double heizleistungMaxStundenH,
+                                                 double heizgrenzeStundenH, double[] heizlastW,
+                                                 double groessteUnterschreitungK)
+        {
+            if (g == null) throw new ArgumentNullException(nameof(g));
+            var hk = new HeizkreisErgebnis();
+            hk.KennzahlenBilden(vorlaufC, ruecklaufC, uebergabeBegrenztAnteil, heizlastW);
+
+            Uebergabekennwerte k = g.Uebergabe;
+            hk.HeizleistungMaxStundenH = heizleistungMaxStundenH;
+            hk.HeizgrenzeStundenH = heizgrenzeStundenH;
+            hk.StundenOhneHeizungH = g.StundenOhneHeizungH;
+            hk.GroessteUnterschreitungK = groessteUnterschreitungK;
+            hk.UebergabeArt = g.UebergabeArt;
+            hk.Exponent = k.Exponent;
+            hk.UebergabeNennKw = k.PhiNW / 1000.0;
+            hk.UebergabeNennleistungHergeleitet = g.NennleistungHergeleitet;
+            hk.AuslegungsheizlastKw = g.AuslegungsheizlastW / 1000.0;
+            hk.AuslegungVorlaufC = k.AuslegungVorlaufC;
+            hk.AuslegungRuecklaufC = k.AuslegungRuecklaufC;
+            hk.AuslegungRaumC = k.AuslegungRaumC;
+            hk.AuslegungAussenC = g.AuslegungAussentemperaturC;
+            hk.AuslegungAussenHergeleitet = g.AuslegungAussentemperaturHergeleitet;
+            hk.ReglerbandK = g.ReglerbandK;
+            hk.HeizkurveAktiv = g.HeizkurveAktiv;
+            hk.Vorlaufquelle = g.Vorlaufquelle;
+            hk.VorlaufFestC = g.VorlaufFestC;
+            hk.Strahlungsanteil = g.Strahlungsanteil;
+            hk.SollwertprofilWirksam = g.SollwertprofilWirksam;
+            return hk;
+        }
+
         /// <summary>Zahl der Heizstunden (Heizleistung &gt; 0) — die Stunden der Mittelwerte.</summary>
         internal int Heizstunden => Bedarfsstunden;
 

@@ -111,7 +111,8 @@ namespace WindowsFormsApplication1
                                                   string anlagenkopplung, int index, int idGebaeude,
                                                   Func<long?, Konditionierungssatz> konditionierung = null,
                                                   Aufheizvorgabe aufheizvorgabe = null,
-                                                  double aufheizleistungTestW = double.NaN)
+                                                  double aufheizleistungTestW = double.NaN,
+                                                  double vorlaufAnlageC = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -124,7 +125,7 @@ namespace WindowsFormsApplication1
                                                            out List<(int A, int B)> regelpaare,
                                                            out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
                                                            out Dictionary<(int, int), double> deltaVorlauf,
-                                                           out double zeitAdiabat);
+                                                           out double zeitAdiabat, vorlaufAnlageC);
 
             // Die Schleife.
             var schleife = new Zonenschleife(zonen, wer);
@@ -165,6 +166,7 @@ namespace WindowsFormsApplication1
         /// eingeschaltet setzt der Eingangsbauer am Ende die Aufheizpläne (Festlegung 1).
         /// </summary>
         /// <param name="zeitAdiabatMs">Die Rechenzeit des adiabaten Vorlaufs [ms].</param>
+        /// <param name="vorlaufAnlageC">Der feste Vorlauf der Anlage [°C] für ein gekoppeltes Gebäude ohne Heizkurve (E63); NaN = keiner.</param>
         internal static IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, GebaeudeKlima klima, bool kuehlbetrieb,
                                                              string anlagenkopplung, int index, int idGebaeude,
                                                              Func<long?, Konditionierungssatz> konditionierung,
@@ -172,7 +174,8 @@ namespace WindowsFormsApplication1
                                                              out List<(int A, int B)> regelpaare,
                                                              out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
                                                              out Dictionary<(int, int), double> deltaVorlauf,
-                                                             out double zeitAdiabatMs)
+                                                             out double zeitAdiabatMs,
+                                                             double vorlaufAnlageC = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -209,7 +212,8 @@ namespace WindowsFormsApplication1
             return ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, VierK,
                                       konditionierung: konditionierung,
                                       aufheizvorgabe: aufheizvorgabe,
-                                      aufheizleistungTestW: aufheizleistungTestW);
+                                      aufheizleistungTestW: aufheizleistungTestW,
+                                      vorlaufAnlageC: vorlaufAnlageC);
         }
 
         /// <summary>
@@ -278,7 +282,8 @@ namespace WindowsFormsApplication1
             GebaeudeModellEingang erste = zonen.First(z => z.IstBeheizt).Eingang;
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
-                                              soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit,
+                                              soll, sommer, kuehlWirksam ? kuehlSoll : null,
+                                              Gebaeudeheizkreis(zonen, ergebnisse, heiz), null, erste.Nachtzeit,
                                               schleife.NachtauskuehlungGesetzt ? (int?)nacht : null,
                                               Gebaeudenutzung(zonen), aufheizung: aufheizung)
             {
@@ -289,6 +294,36 @@ namespace WindowsFormsApplication1
                 StundenInnenpruefungGedeckelt = ergebnisse.Sum(e => e.StundenInnenpruefungGedeckelt),
                 Erdreich = ergebnisse.Select(e => e.Erdreich).FirstOrDefault(e => e != null),
             };
+        }
+
+        /// <summary>
+        /// <b>Der Heizkreis des Gebäudes im Mehrzonenweg</b> (E63, AK1z) aus den Heizkreisen der gekoppelten
+        /// Zonen: gemeinsamer Vorlauf, Rücklauf massenstromgewichtet, Begrenzt-Anteil je Stunde als Maximum
+        /// (<see cref="WindowsFormsApplication1.Gebaeudeheizkreis.Mischen"/>), Heizlast die Summe der Zonen.
+        /// Die Stunden an <c>Heizleistung_Max</c> und an der Heizgrenze sowie die größte Unterschreitung sind
+        /// das Maximum über die Zonen (benannte Festlegung). <c>null</c> ohne gekoppelte Zone — dann bleibt das
+        /// Gebäudeergebnis Zeichen für Zeichen wie ohne Kopplung.
+        /// </summary>
+        private static HeizkreisErgebnis Gebaeudeheizkreis(IReadOnlyList<ZonenEingang> zonen,
+                                                           IReadOnlyList<GebaeudeModellErgebnis> ergebnisse, double[] heizW)
+        {
+            WindowsFormsApplication1.Gebaeudeheizkreis g = null;
+            var reihen = new List<(double WHWK, double[] VorlaufC, double[] RuecklaufC, double[] Begrenzt)>();
+            double hl = 0.0, hg = 0.0, unter = 0.0;
+            for (int z = 0; z < zonen.Count; z++)
+            {
+                HeizkreisErgebnis hz = ergebnisse[z].Heizkreis;
+                GebaeudeModellEingang e = zonen[z].Eingang;
+                if (hz == null || !e.KopplungWirksam || e.Gebaeudeheizkreis == null) continue;
+                g ??= e.Gebaeudeheizkreis;
+                reihen.Add((e.Uebergabe.WHWK, hz.VorlaufC, hz.RuecklaufC, hz.UebergabeBegrenztAnteil));
+                hl = Math.Max(hl, hz.HeizleistungMaxStundenH);
+                hg = Math.Max(hg, hz.HeizgrenzeStundenH);
+                unter = Math.Max(unter, hz.GroessteUnterschreitungK);
+            }
+            if (g == null) return null;
+            WindowsFormsApplication1.Gebaeudeheizkreis.Mischen(reihen, out double[] vorlauf, out double[] ruecklauf, out double[] begrenzt);
+            return HeizkreisErgebnis.Bilden(g, vorlauf, ruecklauf, begrenzt, hl, hg, heizW, unter);
         }
 
         /// <summary>

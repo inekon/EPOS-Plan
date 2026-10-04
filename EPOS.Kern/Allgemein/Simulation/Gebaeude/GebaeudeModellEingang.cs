@@ -1180,11 +1180,23 @@ namespace WindowsFormsApplication1
             e.AnlagenkopplungStufe = anlagenkopplung;
             e.HeizkreisAktiv = gebaeude.Heizkreis_Aktiv;
             e.UebergabeArt = gebaeude.Uebergabe_Art;
-            // Mehrzonenweg (G6b, A4 (a)): die Zonen rechnen ideal, eine wirksame Kopplung wird zur
-            // idealen Last - benannt über KopplungAlsIdealeLast, nie still.
             bool kopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung);
-            e.KopplungWirksam = kopplung && !e.Mehrzonenweg;
-            e.ThetaSoll = Bestandsfahrplan(e, gebaeude, wochenende, e.KopplungWirksam);
+            // Mehrzonenweg (E63, AK1z): Schritt H je Zone. Die Art der Zone, sonst die des Gebäudes;
+            // eine Zone mit IDEAL (oder leer), eine unbeheizte Zone und der adiabate Vorlauf der
+            // 4-K-Regel rechnen ohne Übergabe. Die Auflösung der Werte geschieht erst, wenn alle Zonen
+            // stehen (ZonenkopplungAufloesen) - Vorlauf, Heizkurve und Nennleistung kommen vom Gebäude.
+            bool kopplungImVorlaufIdeal = false;
+            if (e.Mehrzonenweg)
+            {
+                string artZone = e.Zone.Eingaben?.UebergabeArt ?? gebaeude.Uebergabe_Art;
+                e.UebergabeArt = artZone;
+                bool zoneGekoppelt = kopplung && e.IstBeheizt && !string.IsNullOrWhiteSpace(artZone)
+                                     && !string.Equals(artZone, DbWerte.UEBERGABE_IDEAL, StringComparison.Ordinal);
+                kopplungImVorlaufIdeal = zoneGekoppelt && zone.OhneUebergabe;
+                e.KopplungWirksam = zoneGekoppelt && !zone.OhneUebergabe;
+            }
+            else e.KopplungWirksam = kopplung;
+            e.ThetaSoll = Bestandsfahrplan(e, gebaeude, wochenende, e.KopplungWirksam || kopplungImVorlaufIdeal);
             // Stufe KP1: mit Heizkalender tritt seine Reihe an die Stelle des Bestandsfahrplans
             // (Konzept 6); "aus" ist NaN, und der Loeser rechnet die Stunde dann ohne Heizung -
             // die Heizleistung der Zone ist 0 und der Kanal Raumwaerme ebenso (E53).
@@ -1229,7 +1241,7 @@ namespace WindowsFormsApplication1
                 e.KuehlauslegungAufloesen();
             }
 
-            if (e.KopplungWirksam)
+            if (e.KopplungWirksam && !e.Mehrzonenweg)
                 e.KopplungAufloesen(gebaeude, aequivalentN, vorlaufAnlageC, nennleistungSkalierung);
 
             // Kälteseite (E37): unabhängig vom Heizkreis, nur mit wirksamer Kühlung (E32), dem
@@ -1240,7 +1252,9 @@ namespace WindowsFormsApplication1
             e.KuehlKopplungWirksam = kuehlKopplung && !e.Mehrzonenweg;
             if (e.KuehlKopplungWirksam)
                 e.KuehlKopplungAufloesen(gebaeude, kuehlVorlaufAnlageC, nennleistungSkalierung);
-            e.KopplungAlsIdealeLast = e.Mehrzonenweg && e.IstBeheizt && (kopplung || (kuehlKopplung && e.KuehlungWirksam));
+            // Im Mehrzonenweg bleibt die Kälteseite ideal (A4 (a)); die Wärmeseite nur im adiabaten
+            // Vorlauf der 4-K-Regel (E63).
+            e.KopplungAlsIdealeLast = e.Mehrzonenweg && e.IstBeheizt && (kopplungImVorlaufIdeal || (kuehlKopplung && e.KuehlungWirksam));
             return e;
         }
 
@@ -1646,6 +1660,274 @@ namespace WindowsFormsApplication1
             }
             VorlaufC = vorlauf;
         }
+
+        // =====================================================================
+        //  Wärmeübergabe je Zone im Mehrzonenweg (E63, AK1z)
+        // =====================================================================
+
+        /// <summary>Der Heizkreis des Gebäudes, an dem diese gekoppelte Zone hängt (E63); <c>null</c> außerhalb des gekoppelten Mehrzonenwegs.</summary>
+        internal Gebaeudeheizkreis Gebaeudeheizkreis { get; private set; }
+
+        /// <summary>
+        /// <b>Löst die Wärmeübergabe der Zonen eines gekoppelten Mehrzonengebäudes auf</b> (E63, AK1z;
+        /// Schritt H je Zone am gemeinsamen Vorlauf) — gerufen von <see cref="ZonenEingang.Bauen"/>, wenn
+        /// alle Zonen stehen und bevor die Aufheizrampen gesetzt sind:
+        /// <list type="number">
+        /// <item><b>Gebäude, einmal:</b> Art, Exponent, Auslegungspunkt, Proportionalband, Heizkurve und
+        /// Auslegungsaußentemperatur mit den Prüfregeln des Einzonenwegs (9.1, 9.5). Die
+        /// Auslegungsraumtemperatur des Gebäudes ist das Feld, sonst die höchste der beheizten Zonen.</item>
+        /// <item><b>Auslegungsheizlast</b> des Gebäudes: Summe der stationären Lasten der beheizten Zonen
+        /// (8.4) — jede Zone an ihrer Auslegungsraumtemperatur, die Nachbarn in der Nachbarform fest:
+        /// beheizte an ihrer Auslegungsraumtemperatur, unbeheizte an der Auslegungsaußentemperatur
+        /// (benannte Festlegung, auf der sicheren Seite). Die Nennleistung des Gebäudes ist das Feld (kW →
+        /// W; Skalierungsfaktor 1, Festlegung 11), sonst diese Summe.</item>
+        /// <item><b>Vorlauf, einmal:</b> Heizkurve je Stunde am höchsten Heizsollwert der gekoppelten Zonen,
+        /// sonst der feste Vorlauf (Anlage, sonst Auslegungsvorlauf des Gebäudes) — dieselbe Reihe für jede Zone.</item>
+        /// <item><b>Je gekoppelte Zone</b> die Kaskade <see cref="Zonenuebergabevorgaben.Aufloesen"/>, die
+        /// Bänder und die Kette Vorlauf &gt; Rücklauf &gt; Raum (Fehler mit Zonenbezeichner), der
+        /// Strahlungsanteil der Art (H12, nur ohne Zonen- und Gebäudewert) und die Kennwerte.</item>
+        /// </list>
+        /// Eine Zone mit IDEAL rechnet den Bestandsweg; sie zählt in die Auslegungslast und in den
+        /// Flächenschlüssel, trägt aber keinen Heizkreis.
+        /// </summary>
+        /// <returns>Der Heizkreis des Gebäudes; <c>null</c> ohne gekoppelte Zone.</returns>
+        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.UebergabeUngueltig"/>, benannt.</exception>
+        internal static Gebaeudeheizkreis ZonenkopplungAufloesen(ProjektGebaeudeModel g, IReadOnlyList<ZonenEingang> zonen,
+                                                                double vorlaufAnlageC)
+        {
+            if (g == null) throw new ArgumentNullException(nameof(g));
+            if (zonen == null) throw new ArgumentNullException(nameof(zonen));
+            GebaeudeModellEingang erste = null;
+            foreach (ZonenEingang z in zonen)
+                if (z.Eingang.KopplungWirksam) { erste = z.Eingang; break; }
+            if (erste == null) return null;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            int n = zonen.Count;
+
+            // ---- 1. die Werte des Gebäudes (wie KopplungAufloesen) ----
+            string art = g.Uebergabe_Art;
+            if (!Waermeuebergabe.ArtBekannt(art))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABEART_UNBEKANNT, art));
+            double nG = g.Uebergabe_Exponent ?? Waermeuebergabe.VorgabeExponent(art);
+            erste.Bereich(GebaeudeSchema.SPALTE_UEBERGABE_EXPONENT, nG,
+                          GebaeudeFestwerte.UEBERGABE_EXPONENT_MIN, GebaeudeFestwerte.UEBERGABE_EXPONENT_MAX);
+            double vG = g.Auslegung_Vorlauf ?? Waermeuebergabe.VorgabeVorlaufC(art);
+            double rG = g.Auslegung_Ruecklauf ?? Waermeuebergabe.VorgabeRuecklaufC(art);
+            double iMax = double.NegativeInfinity;
+            foreach (ZonenEingang z in zonen)
+                if (z.IstBeheizt && z.Eingang.AuslegungsraumtemperaturHeizC > iMax) iMax = z.Eingang.AuslegungsraumtemperaturHeizC;
+            double iG = g.Auslegung_Raumtemperatur ?? iMax;
+            if (g.Auslegung_Vorlauf.HasValue)
+                erste.Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF, vG,
+                              GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX);
+            if (g.Auslegung_Raumtemperatur.HasValue)
+                erste.Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR, iG,
+                              GebaeudeFestwerte.AUSLEGUNG_RAUM_MIN, GebaeudeFestwerte.AUSLEGUNG_RAUM_MAX);
+            if (!Endlich(vG) || !Endlich(iG) || !(vG > iG))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(k, MyResource.Resource.SIMENG_AK_VORLAUF_UNTER_RAUM, Text(vG), Text(iG)));
+            if (!Endlich(rG) || !(rG > iG) || !(rG < vG))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(k, MyResource.Resource.SIMENG_AK_RUECKLAUF_AUSSERHALB, Text(rG), Text(iG), Text(vG)));
+            double xpG = g.Regler_Proportionalband ?? GebaeudeFestwerte.VORGABE_REGLER_PROPORTIONALBAND_K;
+            erste.Bereich(GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND, xpG,
+                          GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K);
+            double niveau = g.Heizkurve_Niveau ?? GebaeudeFestwerte.VORGABE_HEIZKURVE_NIVEAU_K;
+            double steilheit = g.Heizkurve_Steilheit ?? GebaeudeFestwerte.VORGABE_HEIZKURVE_STEILHEIT;
+            erste.Bereich(GebaeudeSchema.SPALTE_HEIZKURVE_NIVEAU, niveau,
+                          GebaeudeFestwerte.HEIZKURVE_NIVEAU_MIN, GebaeudeFestwerte.HEIZKURVE_NIVEAU_MAX);
+            erste.Bereich(GebaeudeSchema.SPALTE_HEIZKURVE_STEILHEIT, steilheit,
+                          GebaeudeFestwerte.HEIZKURVE_STEILHEIT_MIN, GebaeudeFestwerte.HEIZKURVE_STEILHEIT_MAX);
+            int auslegungstag = KaeltesterTag(erste.ThetaOut, out double kaeltestesMittel);
+            double aN = g.Auslegung_Aussentemperatur ?? Math.Floor(kaeltestesMittel);
+            if (g.Auslegung_Aussentemperatur.HasValue)
+                erste.Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_AUSSENTEMPERATUR, aN,
+                              GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MIN, GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MAX);
+            if (!Endlich(aN) || !(aN < iG))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(k, MyResource.Resource.SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM, Text(aN), Text(iG)));
+
+            // ---- 2. je Zone: Kaskade, Strahlungsanteil (H12), Bemessungstemperatur ----
+            var eingaben = new List<Zoneneingaben>(n);
+            foreach (ZonenEingang z in zonen) eingaben.Add(z.Eingang.Zone.EingabenOderNutzflaeche());
+            Gebaeudeuebergabe gu = Gebaeudeuebergabe.Aus(g);
+            var u = new Zonenuebergabe[n];
+            var anteil = new double[n];
+            var luftN = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                GebaeudeModellEingang e = zonen[i].Eingang;
+                if (!e.IstBeheizt)
+                {
+                    luftN[i] = aN;
+                    continue;
+                }
+                anteil[i] = Zonenuebergabevorgaben.FlaechenanteilBeheizt(eingaben[i], eingaben);
+                u[i] = Zonenuebergabevorgaben.Aufloesen(eingaben[i], gu, e.AuslegungsraumtemperaturHeizC, double.NaN, anteil[i]);
+                if (e.KopplungWirksam && u[i].Ideal)
+                    e.FehlerZone(string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABEART_UNBEKANNT, e.UebergabeArt));
+                luftN[i] = e.KopplungWirksam ? u[i].AuslegungRaumtemperaturC : e.AuslegungsraumtemperaturHeizC;
+                if (e.KopplungWirksam && eingaben[i].HeizungStrahlungsanteil == null && !g.Heizung_Strahlungsanteil.HasValue)
+                    e.HeizungStrahlungsanteil = Waermeuebergabe.VorgabeStrahlungsanteil(u[i].Art);
+            }
+
+            // ---- 3. die Auslegungsheizlast: Summe der stationären Lasten der beheizten Zonen (8.4) ----
+            var lastW = new double[n];
+            double summeW = 0.0;
+            for (int i = 0; i < n; i++)
+            {
+                if (!zonen[i].IstBeheizt) continue;
+                lastW[i] = zonen[i].Eingang.StationaereAuslegungW(zonen[i], auslegungstag, aN, luftN[i], luftN);
+                summeW += lastW[i];
+            }
+            double phiG;
+            bool hergeleitet;
+            if (g.Uebergabe_Leistung_Nenn.HasValue)
+            {
+                double wertKw = g.Uebergabe_Leistung_Nenn.Value;
+                if (!(wertKw > 0.0))
+                    erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                                 string.Format(k, MyResource.Resource.SIMENG_AK_NENNLEISTUNG_UNGUELTIG, Text(wertKw)));
+                phiG = double.IsPositiveInfinity(wertKw) ? double.PositiveInfinity : 1000.0 * wertKw;
+                hergeleitet = false;
+            }
+            else
+            {
+                if (!(summeW > 0.0) || !Endlich(summeW))
+                    erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                                 string.Format(k, MyResource.Resource.SIMENG_AK_AUSLEGUNGSHEIZLAST_NICHT_POSITIV,
+                                               Text(summeW), Text(aN), Text(iG)));
+                phiG = summeW;
+                hergeleitet = true;
+            }
+
+            // ---- 4. Heizkurve und Vorlauf, einmal (10.1) ----
+            var uebergabeG = new Uebergabekennwerte(phiG, nG, vG, rG, iG);
+            var kurve = new Heizkurve(uebergabeG, aN, niveau, steilheit);
+            bool kurveAktiv = g.Heizkurve_Aktiv;
+            Vorlaufquelle quelle;
+            double fest = double.NaN;
+            var vorlauf = new double[8760];
+            int ohneHeizung = 0;
+            bool profil = false;
+            foreach (ZonenEingang z in zonen) profil |= z.Eingang.KopplungWirksam && z.Eingang.SollwertprofilWirksam;
+            for (int h = 0; h < 8760; h++)
+            {
+                double soll = double.NegativeInfinity;
+                foreach (ZonenEingang z in zonen)
+                {
+                    if (!z.Eingang.KopplungWirksam) continue;
+                    double s = z.Eingang.ThetaSoll[h];
+                    if (Endlich(s) && s > soll) soll = s;
+                }
+                if (double.IsNegativeInfinity(soll)) ohneHeizung++;
+                vorlauf[h] = double.IsNegativeInfinity(soll) ? double.NaN : soll;
+            }
+            if (kurveAktiv)
+            {
+                quelle = Vorlaufquelle.Heizkurve;
+                for (int h = 0; h < 8760; h++)
+                    vorlauf[h] = double.IsNaN(vorlauf[h]) ? double.NaN : kurve.VorlaufC(vorlauf[h], erste.ThetaOut[h]);
+            }
+            else
+            {
+                bool anlage = Endlich(vorlaufAnlageC) && vorlaufAnlageC > 0.0;
+                quelle = anlage ? Vorlaufquelle.Anlage : Vorlaufquelle.Auslegung;
+                fest = anlage ? vorlaufAnlageC : vG;
+                for (int h = 0; h < 8760; h++) vorlauf[h] = fest;
+            }
+
+            var hk = new Gebaeudeheizkreis
+            {
+                UebergabeArt = art,
+                Uebergabe = uebergabeG,
+                NennleistungHergeleitet = hergeleitet,
+                AuslegungsheizlastW = summeW,
+                AuslegungAussentemperaturC = aN,
+                AuslegungAussentemperaturHergeleitet = !g.Auslegung_Aussentemperatur.HasValue,
+                ReglerbandK = xpG,
+                Heizkurve = kurve,
+                HeizkurveAktiv = kurveAktiv,
+                Vorlaufquelle = quelle,
+                VorlaufFestC = fest,
+                VorlaufC = vorlauf,
+                Strahlungsanteil = g.Heizung_Strahlungsanteil ?? Waermeuebergabe.VorgabeStrahlungsanteil(art),
+                StundenOhneHeizungH = ohneHeizung,
+                SollwertprofilWirksam = profil,
+            };
+
+            // ---- 5. je gekoppelte Zone: Prüfung und Kennwerte ----
+            for (int i = 0; i < n; i++)
+            {
+                GebaeudeModellEingang e = zonen[i].Eingang;
+                if (!e.KopplungWirksam) continue;
+                Zonenuebergabe z = u[i];
+                Zoneneingaben ze = eingaben[i];
+                if (z.NennleistungHerkunft == Vorgabeherkunft.GebaeudeAnteilig) z = z with { NennleistungW = phiG * anteil[i] };
+                e.BereichZone(GebaeudeSchema.SPALTE_UEBERGABE_EXPONENT, z.Exponent,
+                              GebaeudeFestwerte.UEBERGABE_EXPONENT_MIN, GebaeudeFestwerte.UEBERGABE_EXPONENT_MAX);
+                if (ze.AuslegungVorlaufC.HasValue || g.Auslegung_Vorlauf.HasValue)
+                    e.BereichZone(GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF, z.AuslegungVorlaufC,
+                                  GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX);
+                if (ze.AuslegungRaumtemperaturC.HasValue || g.Auslegung_Raumtemperatur.HasValue)
+                    e.BereichZone(GebaeudeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR, z.AuslegungRaumtemperaturC,
+                                  GebaeudeFestwerte.AUSLEGUNG_RAUM_MIN, GebaeudeFestwerte.AUSLEGUNG_RAUM_MAX);
+                double vN = z.AuslegungVorlaufC, rN = z.AuslegungRuecklaufC, iN = z.AuslegungRaumtemperaturC;
+                if (!Endlich(vN) || !Endlich(iN) || !(vN > iN))
+                    e.FehlerZone(string.Format(k, MyResource.Resource.SIMENG_AK_VORLAUF_UNTER_RAUM, Text(vN), Text(iN)));
+                if (!Endlich(rN) || !(rN > iN) || !(rN < vN))
+                    e.FehlerZone(string.Format(k, MyResource.Resource.SIMENG_AK_RUECKLAUF_AUSSERHALB, Text(rN), Text(iN), Text(vN)));
+                e.BereichZone(GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND, z.ReglerProportionalbandK,
+                              GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K);
+                if (!(z.NennleistungW > 0.0))
+                    e.FehlerZone(string.Format(k, MyResource.Resource.SIMENG_AK_NENNLEISTUNG_UNGUELTIG,
+                                               Text(ze.UebergabeLeistungNennKw ?? z.NennleistungW / 1000.0)));
+
+                e.UebergabeArt = z.Art;
+                e.Uebergabe = new Uebergabekennwerte(z.NennleistungW, z.Exponent, vN, rN, iN);
+                e.ReglerbandK = z.ReglerProportionalbandK;
+                e.UebergabeNennleistungHergeleitet = z.NennleistungHerkunft != Vorgabeherkunft.Zone && hergeleitet;
+                e.AuslegungsheizlastW = lastW[i];
+                e.AuslegungAussentemperaturC = aN;
+                e.AuslegungAussentemperaturHergeleitet = hk.AuslegungAussentemperaturHergeleitet;
+                e.Heizkurve = kurve;
+                e.HeizkurveAktiv = kurveAktiv;
+                e.Vorlaufquelle = quelle;
+                e.VorlaufFestC = fest;
+                e.VorlaufC = vorlauf;
+                e.Gebaeudeheizkreis = hk;
+            }
+            return hk;
+        }
+
+        /// <summary>
+        /// Die stationäre Auslegungslast DIESER Zone [W] (E63): an <paramref name="iN"/>, Außenluft
+        /// <paramref name="aN"/> am Auslegungstag, die Nachbarn fest an <paramref name="luftN"/> (Nachbarform
+        /// von θ_eq und Zuluft) — sonst dieselbe Bildung wie die Auslegungsheizlast des Einzonenwegs.
+        /// </summary>
+        private double StationaereAuslegungW(ZonenEingang zone, int tag, double aN, double iN, double[] luftN)
+        {
+            double eqN = zone.AequivalentN(tag, aN, luftN);
+            double zusatz = LueftungZusatzleitwertWK == null ? 0.0 : AuslegungZusatzleitwertWK;
+            double zuluft = zone.ZuluftN(aN, zusatz, luftN);
+            return LueftungZusatzleitwertWK == null
+                ? new Zonenmodell2K(Parameter, Bezeichnung).StationaereHeizlastW(iN, zuluft, eqN, HeizungStrahlungsanteil)
+                : new Zonenmodell2K(Parameter, Bezeichnung).StationaereHeizlastW(iN, zuluft, eqN, HeizungStrahlungsanteil, zusatz);
+        }
+
+        /// <summary>Harte Prüfregel eines Werts der Zone (E63): benannter Fehler mit Zonenbezeichner.</summary>
+        private void BereichZone(string spalte, double wert, double min, double max)
+        {
+            if (!Endlich(wert) || wert < min || wert > max)
+                FehlerZone(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK_WERT_AUSSERHALB,
+                                         spalte, Text(wert), Text(min), Text(max)));
+        }
+
+        /// <summary>Der Fehler der Übergabe einer Zone (E63): „Gebäude, Zone …: Text".</summary>
+        private void FehlerZone(string text)
+            => throw new GebaeudeModellException(GebaeudeModellFehler.UebergabeUngueltig,
+                                                 Bezeichnung + ", " + GebaeudeZonenabbildung.Wer(Zone.Bezeichnung) + ": " + text);
 
         // =====================================================================
         //  Kälteseite der Kopplung (E37; Anlagenkopplung 7.2, 8.1, 8.4, 10.5)

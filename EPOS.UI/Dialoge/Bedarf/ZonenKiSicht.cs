@@ -55,6 +55,38 @@ public sealed class ZonenKiSicht : IKiFeldtafel
     public Func<double?>? HeizleistungMaxLesen { get; init; }
     public Action<double?>? HeizleistungMaxSetzen { get; init; }
 
+    // E63 (AK1z): die Uebergabe je Zone; leer = wie Gebaeude.
+    /// <summary>Liest die Übergabeart der Zone (<c>null</c> = wie Gebäude).</summary>
+    public Func<string?>? UebergabeArtLesen { get; init; }
+    /// <summary>Setzt die Übergabeart; ein unbekannter Wert wirft mit Grund.</summary>
+    public Action<string?>? UebergabeArtSetzen { get; init; }
+    /// <summary>Liest den Exponenten.</summary>
+    public Func<double?>? UebergabeExponentLesen { get; init; }
+    /// <summary>Setzt den Exponenten.</summary>
+    public Action<double?>? UebergabeExponentSetzen { get; init; }
+    /// <summary>Liest die Nennleistung [kW].</summary>
+    public Func<double?>? UebergabeNennleistungLesen { get; init; }
+    /// <summary>Setzt die Nennleistung [kW].</summary>
+    public Action<double?>? UebergabeNennleistungSetzen { get; init; }
+    /// <summary>Liest den Auslegungsvorlauf [°C].</summary>
+    public Func<double?>? AuslegungVorlaufLesen { get; init; }
+    /// <summary>Setzt den Auslegungsvorlauf [°C].</summary>
+    public Action<double?>? AuslegungVorlaufSetzen { get; init; }
+    /// <summary>Liest den Auslegungsrücklauf [°C].</summary>
+    public Func<double?>? AuslegungRuecklaufLesen { get; init; }
+    /// <summary>Setzt den Auslegungsrücklauf [°C].</summary>
+    public Action<double?>? AuslegungRuecklaufSetzen { get; init; }
+    /// <summary>Liest die Auslegungsraumtemperatur [°C].</summary>
+    public Func<double?>? AuslegungRaumLesen { get; init; }
+    /// <summary>Setzt die Auslegungsraumtemperatur [°C].</summary>
+    public Action<double?>? AuslegungRaumSetzen { get; init; }
+    /// <summary>Liest das Proportionalband [K].</summary>
+    public Func<double?>? ProportionalbandLesen { get; init; }
+    /// <summary>Setzt das Proportionalband [K].</summary>
+    public Action<double?>? ProportionalbandSetzen { get; init; }
+    /// <summary>Liest die wirksame Übergabe mit Herkunft je Wert.</summary>
+    public Func<string>? UebergabeWirksamLesen { get; init; }
+
     public Func<IReadOnlyList<BauteilDaten>>? BauteileLesen { get; init; }
 
     /// <summary>Der Anzeigetext einer Bauteilart.</summary>
@@ -113,6 +145,30 @@ public sealed class ZonenKiSicht : IKiFeldtafel
 
     /// <summary>Leistungsgrenze der Heizung [kW]; leer = die des Gebäudes (ab zwei Zonen anteilig).</summary>
     public double? HeizleistungMax { get => HeizleistungMaxLesen?.Invoke(); set => HeizleistungMaxSetzen?.Invoke(value); }
+
+    /// <summary>Übergabeart der Zone (IDEAL, RADIATOR, FLAECHE, KONVEKTOR); leer = wie Gebäude.</summary>
+    public string UebergabeArt { get => UebergabeArtLesen?.Invoke() ?? ""; set => UebergabeArtSetzen?.Invoke(value); }
+
+    /// <summary>Exponent der Übergabe; leer = wie Gebäude.</summary>
+    public double? UebergabeExponent { get => UebergabeExponentLesen?.Invoke(); set => UebergabeExponentSetzen?.Invoke(value); }
+
+    /// <summary>Nennleistung der Übergabe [kW]; leer = Anteil des Gebäudes nach Nutzfläche.</summary>
+    public double? UebergabeNennleistung { get => UebergabeNennleistungLesen?.Invoke(); set => UebergabeNennleistungSetzen?.Invoke(value); }
+
+    /// <summary>Auslegungsvorlauf [°C]; leer = wie Gebäude.</summary>
+    public double? AuslegungVorlauf { get => AuslegungVorlaufLesen?.Invoke(); set => AuslegungVorlaufSetzen?.Invoke(value); }
+
+    /// <summary>Auslegungsrücklauf [°C]; leer = wie Gebäude.</summary>
+    public double? AuslegungRuecklauf { get => AuslegungRuecklaufLesen?.Invoke(); set => AuslegungRuecklaufSetzen?.Invoke(value); }
+
+    /// <summary>Auslegungsraumtemperatur [°C]; leer = wie Gebäude.</summary>
+    public double? AuslegungRaumtemperatur { get => AuslegungRaumLesen?.Invoke(); set => AuslegungRaumSetzen?.Invoke(value); }
+
+    /// <summary>Proportionalband des Raumreglers [K]; leer = wie Gebäude.</summary>
+    public double? Proportionalband { get => ProportionalbandLesen?.Invoke(); set => ProportionalbandSetzen?.Invoke(value); }
+
+    /// <summary>Die wirksame Übergabe mit Herkunft je Wert (nur lesen).</summary>
+    public string UebergabeWirksam => UebergabeWirksamLesen?.Invoke() ?? "";
 
     /// <summary>
     /// Die Bearbeitung der Zonenmatrix (<see cref="KonditionierungBearbeitung"/> im Zonenmodus); ohne sie

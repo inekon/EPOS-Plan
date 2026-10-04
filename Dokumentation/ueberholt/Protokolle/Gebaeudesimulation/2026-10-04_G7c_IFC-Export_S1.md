@@ -1,6 +1,6 @@
 # Protokoll G7c — IFC-Export S1 semantisch (04.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Welle G7c (E67, E69), Teilzweige als Worktrees, Merges `bd5ab2d`, `9c2e423`, `8e683c9`, `3db43cc`. Statuszeile #709.
+**Sitzung:** Gebäudesimulation (Cloud), Welle G7c (E67, E69), Teilzweige als Worktrees, Merges `bd5ab2d`, `9c2e423`, `8e683c9`, `3db43cc`. Statuszeile #710.
 **Entscheid:** keiner neu. Kein Schemaschritt, Basis unverändert (Referenzlauf nicht betroffen).
 
 ## 1 Auftrag
@@ -30,7 +30,7 @@ Nicht abgebildet, weil die Quelle fehlt: Kältelast-Spitze, `AnzahlTeilflaechen`
 
 ## 6 Abnahme
 
-Tests: `IfcSchreiberTests` (21), `GebaeudeExportErgebnisTests` (15), `GebaeudeExportReferenzprojektTests` (2, Projekt 1052), `IdsWacheTests` (4), `GebaeudeExportFormatHuelleTests` (10), bunit Exportdialog (7); Exportfilter 466/467 (1 übersprungen, Bestand), UI 7 436/7 436. Gate: siehe Statuszeile #709; CI: Kern-Lauf nach dem Push nachzutragen.
+Tests: `IfcSchreiberTests` (21), `GebaeudeExportErgebnisTests` (15), `GebaeudeExportReferenzprojektTests` (2, Projekt 1052), `IdsWacheTests` (4), `GebaeudeExportFormatHuelleTests` (10), bunit Exportdialog (7); Exportfilter 466/467 (1 übersprungen, Bestand), UI 7 436/7 436. Gate: siehe Statuszeile #710; CI: Kern-Lauf nach dem Push nachzutragen.
 
 ## 7 Offen
 

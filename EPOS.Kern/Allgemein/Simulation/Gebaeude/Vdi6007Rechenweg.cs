@@ -220,7 +220,8 @@ namespace WindowsFormsApplication1
                 // Stufe KP3 (Festlegung 1): die Aufheizrampen am Ende von ZonenEingang.Bauen, in beiden
                 // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
                 Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index,
-                    gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW);
+                    gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
+                    AnlagenVorlaufC);
                 LetztesMehrzonenergebnis = m;
 
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
@@ -285,7 +286,7 @@ namespace WindowsFormsApplication1
         internal IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam, int index)
             => Zonenrechnung.ZonenBauen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude,
                                         Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
-                                        out _, out _, out _, out _);
+                                        out _, out _, out _, out _, AnlagenVorlaufC);
 
         private GebaeudeKlima Zonenklima(KlimakalenderGemeinsam gemeinsam)
             => new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
@@ -343,6 +344,13 @@ namespace WindowsFormsApplication1
                 HinweisAbschnitte(m.Zonen[z], werZone);
                 HinweisKuehlNachtwert(m.Eingaenge[z].Eingang, werZone);
                 HinweisNachtauskuehlung(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
+                // E63: die begrenzte Wärmeübergabe je gekoppelter Zone, benannt wie im Einzonenweg.
+                HeizkreisErgebnis hz = m.Zonen[z].Heizkreis;
+                if (m.Eingaenge[z].Eingang.KopplungWirksam && hz != null && hz.UebergabeBegrenztStundenH > 0.0)
+                    p.HinweisEinmal("ak-uebergabe-begrenzt-" + werZone,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABE_BEGRENZT, werZone,
+                                      hz.UebergabeBegrenztStundenH.ToString("0.#", k),
+                                      hz.GroessteUnterschreitungK.ToString("0.0#", k)));
             }
             // Stufe KP3 (Festlegung 21): die Laufhinweise der Aufheizoptimierung einmal je Gebaeude.
             HinweisAufheizung(m.Gebaeude.Aufheizung, wer);

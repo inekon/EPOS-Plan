@@ -57,8 +57,10 @@ namespace WindowsFormsApplication1
 
                     // Stufe G6a: die Zonen dieses Gebaeudes - der Abschnitt entfaellt ohne Zonen;
                     // Stufe G6b: mit den Zonenzeilen des Laufs (Tab_ErgebnisZone, E30).
-                    ZonentabelleSchreiben(k, stamm.Details, g,
-                                          ErgebnisZonen(stamm, (int)(ProjektDetails.D(g, "ID") ?? 0)));
+                    // AK1z (E63): mit dem Heizkreis je Zone, wenn eine Zone gekoppelt gerechnet hat.
+                    int idGebaeude = (int)(ProjektDetails.D(g, "ID") ?? 0);
+                    ZonentabelleSchreiben(k, stamm.Details, g, ErgebnisZonen(stamm, idGebaeude),
+                                          GebaeudeZeilen(stamm).FirstOrDefault(x => x.ID_Gebaeude == idGebaeude));
                 }
             }
 
@@ -167,17 +169,27 @@ namespace WindowsFormsApplication1
         /// unbeheizte Zone und eine Zone ohne Zeile zeigen „—". Die Summenzeile summiert die Heizwärme,
         /// die Spitzen nicht (sie treten nicht gleichzeitig auf). Ohne Zonenzeilen bleibt die Tabelle,
         /// wie sie ist. Der Abschnitt entfällt ohne Zonen.
+        /// <para><b>Wärmeübergabe je Zone (AK1z, E63):</b> Hat mindestens eine Zone gekoppelt gerechnet
+        /// (<see cref="ErgebnisZoneModel.VorlaufMittelC"/> gesetzt), kommen Vorlauf- und Rücklaufmittel und
+        /// die Stunden mit begrenzender Übergabe dazu — „—" bei idealer oder unbeheizter Zone. Die Summenzeile
+        /// trägt Vorlauf und Rücklauf des Gebäudekreises (<paramref name="gebaeudeErgebnis"/>) und als
+        /// begrenzte Stunden das Maximum der Zonen. Die Zeilensumme der Breiten bleibt die der Vorlage.</para>
         /// </summary>
         private static void ZonentabelleSchreiben(WordKontext k, ProjektDetails details, DataRow gebaeude,
-                                                  List<ErgebnisZoneModel> ergebnis)
+                                                  List<ErgebnisZoneModel> ergebnis,
+                                                  ErgebnisGebaeudeModel gebaeudeErgebnis = null)
         {
             if (details == null || gebaeude == null) return;
             List<ZoneModel> zonen = details.ZonenVon((int)(ProjektDetails.D(gebaeude, "ID") ?? 0));
             if (zonen.Count == 0) return;
             bool mitErgebnis = ergebnis != null && ergebnis.Count > 0;
+            bool mitUebergabe = mitErgebnis && ergebnis.Any(e => e.VorlaufMittelC.HasValue);
 
             k.Text(UEBERSCHRIFT_ZONEN);
-            int[] w = mitErgebnis
+            // Die Zeilensumme bleibt in allen drei Formen 9355 (Breite der Vorlage).
+            int[] w = mitUebergabe
+                ? new[] { 1255, 800, 700, 700, 700, 600, 650, 850, 700, 650, 650, 1100 }
+                : mitErgebnis
                 ? new[] { 1755, 1000, 950, 950, 950, 850, 850, 1100, 950 }
                 : new[] { 2355, 1500, 1500, 1400, 1400, 1200 };
             Table t = k.NeueTabelle(w);
@@ -194,6 +206,12 @@ namespace WindowsFormsApplication1
                 kopf.Append(k.Zelle("Heizwärme [MWh/a]", w[7], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
                 kopf.Append(k.Zelle("Spitze [kW]", w[8], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
             }
+            if (mitUebergabe)
+            {
+                kopf.Append(k.Zelle("Vorlauf Mittel [°C]", w[9], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle("Rücklauf Mittel [°C]", w[10], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle("Übergabe begrenzt [h/a]", w[11], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            }
             t.Append(kopf);
 
             double heizwaerme = 0.0;
@@ -201,6 +219,7 @@ namespace WindowsFormsApplication1
             double flaeche = 0.0, volumen = 0.0, ht = 0.0, hve = 0.0;
             bool flaecheBekannt = true, volumenBekannt = true, abgeleitet = false;
             int bauteile = 0;
+            double? begrenztMax = null;
             foreach (ZoneModel z in zonen)
             {
                 Zonenkennwerte kw = details.Kennwerte(z, gebaeude);
@@ -219,6 +238,13 @@ namespace WindowsFormsApplication1
                     tr.Append(k.Zelle(ez?.HeizwaermeMwh is double q ? k.F(q, 1) : "—", w[7], false, null, JustificationValues.Right));
                     tr.Append(k.Zelle(ez?.SpitzeKw is double p ? k.F(p, 1) : "—", w[8], false, null, JustificationValues.Right));
                     if (ez?.HeizwaermeMwh is double s) { heizwaerme += s; heizwaermeDa = true; }
+                    if (mitUebergabe)
+                    {
+                        tr.Append(k.Zelle(ez?.VorlaufMittelC is double vl ? k.F(vl, 1) : "—", w[9], false, null, JustificationValues.Right));
+                        tr.Append(k.Zelle(ez?.RuecklaufMittelC is double rl ? k.F(rl, 1) : "—", w[10], false, null, JustificationValues.Right));
+                        tr.Append(k.Zelle(ez?.UebergabeBegrenztH is double bh ? k.F(bh, 0) : "—", w[11], false, null, JustificationValues.Right));
+                        if (ez?.UebergabeBegrenztH is double b) begrenztMax = Math.Max(begrenztMax ?? b, b);
+                    }
                 }
                 t.Append(tr);
 
@@ -242,6 +268,13 @@ namespace WindowsFormsApplication1
                 summe.Append(k.Zelle("", w[6], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
                 summe.Append(k.Zelle(heizwaermeDa ? k.F(heizwaerme, 1) : "—", w[7], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
                 summe.Append(k.Zelle("—", w[8], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            }
+            if (mitUebergabe)
+            {
+                // Vorlauf und Rücklauf als Gebäudewert (Mittel des Gebäudekreises), die Stunden als Maximum.
+                summe.Append(k.Zelle(gebaeudeErgebnis?.VorlaufMittelC is double gv ? k.F(gv, 1) : "—", w[9], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+                summe.Append(k.Zelle(gebaeudeErgebnis?.RuecklaufMittelC is double gr ? k.F(gr, 1) : "—", w[10], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+                summe.Append(k.Zelle(begrenztMax is double bm ? k.F(bm, 0) : "—", w[11], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
             }
             t.Append(summe);
             k.Fuege(t);

@@ -200,4 +200,16 @@ public sealed class GebaeudeBedarfZoneDaten
 
     /// <summary>Stunden mit wirksamer Nachtauskühlung der Zone [h]; <c>null</c> ohne Nachtauskühlung.</summary>
     public int? NachtauskuehlstundenH { get; init; }
+
+    /// <summary>Mittlerer Vorlauf des Zonenkreises über die Heizstunden [°C] (AK1z, E63); <c>null</c> bei idealer oder unbeheizter Zone.</summary>
+    public double? VorlaufMittelC { get; init; }
+
+    /// <summary>Mittlerer Rücklauf des Zonenkreises über die Heizstunden [°C] (E63); <c>null</c> bei idealer oder unbeheizter Zone.</summary>
+    public double? RuecklaufMittelC { get; init; }
+
+    /// <summary>Stunden mit begrenzender Übergabe der Zone [h] (E63); <c>null</c> bei idealer oder unbeheizter Zone.</summary>
+    public double? UebergabeBegrenztH { get; init; }
+
+    /// <summary>Rechnet die Zone gekoppelt (mit eigenem Heizkreis)?</summary>
+    public bool IstGekoppelt => VorlaufMittelC.HasValue;
 }

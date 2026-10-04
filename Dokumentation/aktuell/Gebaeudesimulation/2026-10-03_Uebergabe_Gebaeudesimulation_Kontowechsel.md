@@ -53,6 +53,8 @@ Worktree `.claude/worktrees/ev1` (Zweig `ev1`) auf origin. Byte-gleich gegen R34
 
 ### 3.2 AK1z — Wärmeübergabe je Zone (E63; Opus, Schemaschritt anmelden, 3–5 PT)
 
+**Umgesetzt, siehe 7.** Der Auftrag bleibt hier im Wortlaut stehen.
+
 Ist: Übergabeart, Exponent, Nennleistung, Auslegungspunkt, Proportionalband sind Gebäudefelder (`Tab_Gebaeude.Uebergabe_*`, `Heizkreis_Aktiv`); der Mehrzonenweg behandelt die Kopplung als ideale Last (Zustand GEKOPPELT). Soll: (1) Übergabespalten an `Tab_Zone` (NULL = wie Gebäude), Heizkurve und Vorlauf bleiben am Heizkreis des Gebäudes; (2) Mehrzonenweg rechnet die Übergabe je Zone am gemeinsamen Vorlauf (Schritt H je Zone), Rücklauf massenstromgewichtet, Einzonenweg und Basis byte-gleich; (3) Zonendialog Abschnitt „Übergabe“ je Zone mit Vorgabe „wie Gebäude“; (4) Ergebniszeile, Export E32, Bericht je Zone; (5) Einfrierregel „gesäte Auslegungsdaten der Übergabe“ um die Zonenspalten erweitert, 1052 mit einer abweichenden Zone gesät (dann Basiswechsel R35). Konzept Anlagenkopplung 8 und 10 und Mehrzonenkonzept nachziehen.
 
 ### 3.3 Danach, aus dem Teilkonzept Konditionierungsprofile und dem KP3-Entwurf
@@ -113,6 +115,7 @@ den Stand des Wochenlimits an. Melde dich mit dem Ergebnis von EV1 (Gate-Zahlen,
 | origin | `91bfdca6` (der Inhalt der Welle liegt als Sync-Commit `3765af5c` des Anwenders auf origin, die Testdatenbank 180 mit `91bfdca6`; die Einzelcommits der Statuszeile #705 stammen aus dem Bundle der Sitzung und sind auf origin nicht einzeln sichtbar); CI-Vermerk zu #705 trägt die Sitzung EV1 nach |
 | Testdatenbank | Schemastand 180, 83 169 280 Byte, LFS-OID `0aa88998…` |
 | Referenzbasis | R34 unverändert, 18/18 byte-gleich; AK1z friert R35 ein (1052 mit abweichender Zone) |
+| AK1z | umgesetzt, Statuszeile **#708**, Protokoll [`2026-10-04_AK1z_Waermeuebergabe_je_Zone.md`](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_AK1z_Waermeuebergabe_je_Zone.md), Basis R35 `2026-10-04_R35_Zonenuebergabe` (19 Projekte, gesät ist die Kopie 1054 statt 1052, weil 1052 den Zonen-Aufheiznachweis trägt), Schemaschritt 181 `ZonenUebergabeSchema`; E63 steht auf „umgesetzt“ |
 
 **Umgebung der Cloud-Sitzung — zwingend vor dem Start prüfen.** Die Netzrichtlinie der Umgebung muss
 `lfs.github.com` (LFS-Verify beim Push), `builds.dotnet.microsoft.com` und `download.visualstudio.microsoft.com`

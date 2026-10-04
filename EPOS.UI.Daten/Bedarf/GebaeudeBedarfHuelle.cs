@@ -300,7 +300,11 @@ namespace WindowsFormsApplication1
                     MaxLastKw = z.MaxLastKw,
                     MittlereRaumtemperaturC = z.MittlereRaumtemperaturC,
                     UeberhitzungsstundenH = z.UeberhitzungsstundenH,
-                    NachtauskuehlstundenH = z.NachtauskuehlstundenH
+                    NachtauskuehlstundenH = z.NachtauskuehlstundenH,
+                    // AK1z (E63): der Heizkreis der Zone aus der Ergebniszeile des Laufs - null ohne Kopplung.
+                    VorlaufMittelC = z.Ergebniszeile?.VorlaufMittelC,
+                    RuecklaufMittelC = z.Ergebniszeile?.RuecklaufMittelC,
+                    UebergabeBegrenztH = z.Ergebniszeile?.UebergabeBegrenztH
                 })
             };
         }

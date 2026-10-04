@@ -38,6 +38,8 @@ namespace WindowsFormsApplication1
         private static bool? _tabelleVorhanden;
         private static string _pfadKuehl;
         private static bool? _kuehlspaltenVorhanden;
+        private static string _pfadUebergabe;
+        private static bool? _uebergabespaltenVorhanden;
         private static string _pfadKopplung;
         private static bool? _kopplungVorhanden;
 
@@ -79,6 +81,8 @@ namespace WindowsFormsApplication1
                 _tabelleVorhanden = null;
                 _pfadKuehl = null;
                 _kuehlspaltenVorhanden = null;
+                _pfadUebergabe = null;
+                _uebergabespaltenVorhanden = null;
                 _pfadKopplung = null;
                 _kopplungVorhanden = null;
             }
@@ -131,6 +135,29 @@ namespace WindowsFormsApplication1
             {
                 _pfadKuehl = pfad;
                 _kuehlspaltenVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Zone</c> die vier Spalten der Übergabe je Zone (Schritt
+        /// <see cref="ZonenUebergabeSchema.SCHRITT"/>)? Gemerkt je Datenbankpfad wie
+        /// <see cref="KuehlspaltenVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool UebergabespaltenVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_uebergabespaltenVorhanden.HasValue && string.Equals(pfad, _pfadUebergabe, StringComparison.OrdinalIgnoreCase))
+                    return _uebergabespaltenVorhanden.Value;
+            }
+
+            bool da = ZonenUebergabeSchema.ZoneVorhanden();
+            lock (_sperre)
+            {
+                _pfadUebergabe = pfad;
+                _uebergabespaltenVorhanden = da;
             }
             return da;
         }

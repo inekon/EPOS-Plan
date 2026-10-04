@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="..\Referenzlaeufe\Skripte\referenzprojekt_1052_bauplan.cs" Link="Referenzlaeufe\referenzprojekt_1052_bauplan.cs" />
     <Compile Include="..\Referenzlaeufe\Skripte\referenzprojekt_1051_bauplan.cs" Link="Referenzlaeufe\referenzprojekt_1051_bauplan.cs" />
+    <Compile Include="..\Referenzlaeufe\Skripte\referenzprojekt_1054_bauplan.cs" Link="Referenzlaeufe\referenzprojekt_1054_bauplan.cs" />
   </ItemGroup>
 
   <!-- xUnit-Einstellungen (Auftrag #531): Sammlungen seriell, hoechstens zwei Threads -
