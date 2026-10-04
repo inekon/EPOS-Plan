@@ -44304,5 +44304,74 @@ chart</value>
   <data name="GEXP_PROT_OEFFNUNG_BEGRENZT" xml:space="preserve">
     <value>{0} openings do not fit their wall section; their polygon is reduced (edge distance 0.1 m, at most 90 %): {1}</value>
   </data>
+  <data name="GEXP_IFC_ZUSAMMEN_AUSSENWAND" xml:space="preserve">
+    <value>External walls (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_DACH" xml:space="preserve">
+    <value>Roofs (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_BODENPLATTE" xml:space="preserve">
+    <value>Ground floor slabs (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_FENSTER" xml:space="preserve">
+    <value>Windows (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_TUER" xml:space="preserve">
+    <value>Doors (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_INNENWAND" xml:space="preserve">
+    <value>Internal walls (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_DECKE" xml:space="preserve">
+    <value>Floors and ceilings (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_VORHANGFASSADE" xml:space="preserve">
+    <value>Curtain walls (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_SONSTIGES" xml:space="preserve">
+    <value>Other building elements (combined)</value>
+  </data>
+  <data name="GEXP_IFC_RECHENMODELL_EINZONE" xml:space="preserve">
+    <value>VDI 6007 Part 1, two-capacity model</value>
+  </data>
+  <data name="GEXP_IFC_RECHENMODELL_MEHRZONE" xml:space="preserve">
+    <value>VDI 6007 Part 1, two-capacity model per zone; the coupling of the zones is an EPOS extension, not a standard</value>
+  </data>
+  <data name="GEXP_IFC_AZIMUT_BEZUG" xml:space="preserve">
+    <value>Azimuth of the outer face in degrees: 0° = north, clockwise (90° = east, 180° = south, 270° = west)</value>
+  </data>
+  <data name="GEXP_IFC_NEIGUNG_BEZUG" xml:space="preserve">
+    <value>Tilt in degrees against the horizontal: 0° = horizontal facing up (roof), 90° = vertical, 180° = horizontal facing down (floor)</value>
+  </data>
+  <data name="GEXP_IFC_SCHICHTRICHTUNG" xml:space="preserve">
+    <value>Order of the IfcMaterialLayer: the first layer is on the outside</value>
+  </data>
+  <data name="GEXP_IFC_RAUMGRENZE" xml:space="preserve">
+    <value>Space boundaries without ConnectionGeometry are logical, not measured</value>
+  </data>
+  <data name="GEXP_IFC_WAERMEBRUECKE" xml:space="preserve">
+    <value>Linear thermal bridges of the element as the sum ψ·L in W/K</value>
+  </data>
+  <data name="GEXP_IFC_FLAECHENBEZOGEN" xml:space="preserve">
+    <value>kWh/(m²·a), related to the usable floor area</value>
+  </data>
+  <data name="GEXP_IFC_LUFTWECHSEL" xml:space="preserve">
+    <value>Infiltration air change rate in 1/h</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
+    <value>IFC export from EPOS-Plan, stage S1: semantic, without geometry.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>The file carries no calculation results: EPOS_Ergebnis and the entries calculation time and weather data set are omitted.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_OHNE_KOORDINATEN" xml:space="preserve">
+    <value>The site has no coordinates: IfcSite without RefLatitude and RefLongitude.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_SCHEMA" xml:space="preserve">
+    <value>Schema check: {0} – {1}</value>
+  </data>
+  <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
+    <value>IFC export cancelled: the schema check reports {0} violations; nothing was written.</value>
+  </data>
 </root>
 

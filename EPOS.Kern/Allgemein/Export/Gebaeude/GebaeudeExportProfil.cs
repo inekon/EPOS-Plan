@@ -59,8 +59,11 @@ namespace WindowsFormsApplication1
         /// <summary>Der Programmname in <c>DocumentHistory</c> (<c>ProgramInfo</c> und die neutrale <c>PersonInfo</c>).</summary>
         public const string PROGRAMMNAME = "EPOS-Plan";
 
-        /// <summary>Dateifilter des Speicherdialogs.</summary>
+        /// <summary>Dateifilter des Speicherdialogs (gbXML).</summary>
         public const string DATEIFILTER = "(*.xml)|*.xml";
+
+        /// <summary>Dateifilter des Speicherdialogs für IFC (Stufe G7c).</summary>
+        public const string DATEIFILTER_IFC = "(*.ifc)|*.ifc";
 
         /// <summary>Der Lizenztyp der Testversion (<c>LizenzToken.Typ</c>).</summary>
         public const string LIZENZTYP_TEST = "demo";
@@ -97,9 +100,15 @@ namespace WindowsFormsApplication1
         /// <param name="testlizenz">Läuft eine Testlizenz (<see cref="IstTestlizenz"/>)?</param>
         /// <param name="programmversion">Die Programmversion für <c>DocumentHistory</c>.</param>
         /// <param name="gebaeudetypen">Die Tabelle der Gebäudearten; <c>null</c> = <see cref="StandardGebaeudetypen"/>.</param>
+        /// <param name="format">Das Format: <see cref="GebaeudeQuelle.FORMAT_GBXML"/> (Vorgabe) oder
+        /// <see cref="GebaeudeQuelle.FORMAT_IFC"/> (Stufe G7c); ein anderer Wert wirft.</param>
         internal GebaeudeExportProfil(CultureInfo sprache, Func<DateTime> uhr, bool testlizenz, string programmversion,
-                                      IReadOnlyList<Gebaeudetypregel> gebaeudetypen = null)
+                                      IReadOnlyList<Gebaeudetypregel> gebaeudetypen = null, string format = GebaeudeQuelle.FORMAT_GBXML)
         {
+            if (!string.Equals(format, GebaeudeQuelle.FORMAT_GBXML, StringComparison.Ordinal)
+                && !string.Equals(format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal))
+                throw new ArgumentException("Kein Exportformat: " + format, nameof(format));
+            Format = format;
             if (string.IsNullOrWhiteSpace(programmversion))
                 throw new ArgumentException("Das Profil braucht eine Programmversion.", nameof(programmversion));
             Sprache = sprache ?? throw new ArgumentNullException(nameof(sprache));
@@ -109,8 +118,14 @@ namespace WindowsFormsApplication1
             Gebaeudetypen = gebaeudetypen ?? StandardGebaeudetypen;
         }
 
-        /// <summary>Das Format (<see cref="GebaeudeQuelle.FORMAT_GBXML"/>).</summary>
-        internal string Format => GebaeudeQuelle.FORMAT_GBXML;
+        /// <summary>Das Format: <see cref="GebaeudeQuelle.FORMAT_GBXML"/> (Vorgabe) oder <see cref="GebaeudeQuelle.FORMAT_IFC"/>.</summary>
+        internal string Format { get; }
+
+        /// <summary>Ist das Format IFC?</summary>
+        internal bool IstIfc => string.Equals(Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal);
+
+        /// <summary>Der Dateifilter des Speicherdialogs zum Format.</summary>
+        internal string Dateifilter => IstIfc ? DATEIFILTER_IFC : DATEIFILTER;
 
         /// <summary>Die Sprache der Dateitexte (Produktausweis, Vorbehalt, Vermerke).</summary>
         internal CultureInfo Sprache { get; }
@@ -130,8 +145,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die Tabelle der Gebäudearten.</summary>
         internal IReadOnlyList<Gebaeudetypregel> Gebaeudetypen { get; }
 
-        /// <summary>Ein neuer Schreiber des Formats je Lauf.</summary>
-        internal IGebaeudeSchreiber SchreiberErzeugen() => new GbxmlSchreiber();
+        /// <summary>
+        /// Ein neuer Schreiber des Formats je Lauf: <see cref="GbxmlSchreiber"/> oder <see cref="IfcSchreiber"/>.
+        /// Ein Bau ohne xBIM (<c>OHNE_XBIM</c>) lehnt IFC benannt ab.
+        /// </summary>
+        internal IGebaeudeSchreiber SchreiberErzeugen()
+        {
+            if (!IstIfc) return new GbxmlSchreiber();
+#if OHNE_XBIM
+            throw new NotSupportedException("IFC-Export: Dieser Bau enthält xBIM nicht (OHNE_XBIM).");
+#else
+            return new IfcSchreiber();
+#endif
+        }
 
         /// <summary>Ist der Lizenztyp der der Testversion (<c>LizenzToken.Typ == "demo"</c>)?</summary>
         internal static bool IstTestlizenz(string lizenztyp) => string.Equals(lizenztyp, LIZENZTYP_TEST, StringComparison.Ordinal);
