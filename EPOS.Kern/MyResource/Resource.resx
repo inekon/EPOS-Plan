@@ -20,6 +20,7 @@
   <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
   </data>
     <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+  </data>
     <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
         <value>[base64 mime encoded serialized .NET Framework object]</value>
     </data>
@@ -44872,6 +44873,21 @@ Chart</value>
   </data>
   <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
     <value>Jeder Kennlinienpunkt braucht eine Rückkühl- und eine Kaltwassertemperatur.</value>
+  </data>
+  <data name="SIMERG_SP_VORGABEN_FEHLER" xml:space="preserve">
+    <value>Die Speicher-Einstellungen konnten nicht vorbereitet werden: {0}</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_ZEILE" xml:space="preserve">
+    <value>Peak-Ziel dieses Laufs: {0} kW – {1}</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_LASTGANG" xml:space="preserve">
+    <value>aus dem Lastgang dieses Laufs ohne Speicher</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_RUECKFALL" xml:space="preserve">
+    <value>Rückfall aus der Bezugsspitze, ohne Lastgang</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_GESPEICHERT" xml:space="preserve">
+    <value>aus dem gespeicherten Flottenstand</value>
   </data>
   <data name="SIMENG_KU3_ZONEN_GLEICHZEITIG" xml:space="preserve">
     <value>Gebäude „{0}": In {1} h heizt eine Zone, während eine Zone kühlt — Heizwärme {2} kWh und Kältebedarf {3} kWh in diesen Stunden. Beide sind ausgewiesen und nicht gegeneinander verrechnet; die Gebäudesummen sind die Summen der Zonen je Richtung.</value>

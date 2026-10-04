@@ -91,6 +91,16 @@
         </p>
     }
 
+    @* DIE HERKUNFT DES PEAK-ZIELS (Anwenderentscheid 04.10.2026): welches Peak-Ziel im
+       angezeigten Lauf gegolten hat und woher es stammt - aus dem Lastgang dieses Laufs,
+       aus dem gespeicherten Flottenstand oder als benannter Rückfall. *@
+    @if (Daten.PeakZielKw is double peakZiel && Daten.PeakZielHerkunft is { } peakHerkunft)
+    {
+        <p class="epos-simerg-status epos-simerg-peakherkunft" data-herkunft="@peakHerkunft">
+            @PeakZielZeile(peakZiel, peakHerkunft)
+        </p>
+    }
+
     @if (Daten.FlottenAenderungOhneNeuenLauf)
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="Flotte geändert: Projektsimulation neu berechnen. Angezeigte Ergebnisse gehören noch zum vorherigen Lauf." />
@@ -311,6 +321,23 @@
     public string Herkunftszeile(FlottenStudieKonfiguration flotte)
         => WindowsFormsApplication1.SpeicherAnzeigeCtrl.FlottenKontextText(
                flotte, Resource.SIM_SP_HERKUNFT);
+
+    /// <summary>
+    /// Die Zeile „Peak-Ziel dieses Laufs: … kW – Herkunft" unter der Herkunftszeile.
+    /// </summary>
+    /// <param name="peakZielKw">Das Peak-Ziel H₀, mit dem die Flotte gerechnet hat [kW].</param>
+    /// <param name="herkunft">Woher es stammt.</param>
+    public static string PeakZielZeile(double peakZielKw, FlottenPeakZielHerkunft herkunft)
+    {
+        System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+        string quelle = herkunft switch
+        {
+            FlottenPeakZielHerkunft.Lastgang => Resource.SIMERG_SP_PEAKZIEL_LASTGANG,
+            FlottenPeakZielHerkunft.Gespeichert => Resource.SIMERG_SP_PEAKZIEL_GESPEICHERT,
+            _ => Resource.SIMERG_SP_PEAKZIEL_RUECKFALL
+        };
+        return string.Format(k, Resource.SIMERG_SP_PEAKZIEL_ZEILE, peakZielKw.ToString("N1", k), quelle);
+    }
 
     /// <summary>Die Rückmeldung des CSV-Schreibers (Pfad bzw. Fehlertext); leer = nichts zu melden.</summary>
     private string _csvMeldung = "";

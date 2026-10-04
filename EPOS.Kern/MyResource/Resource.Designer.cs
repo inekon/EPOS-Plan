@@ -89758,6 +89758,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem gespeicherten Flottenstand ähnelt.
+        /// </summary>
+        public static string SIMERG_SP_PEAKZIEL_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("SIMERG_SP_PEAKZIEL_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Lastgang dieses Laufs ohne Speicher ähnelt.
+        /// </summary>
+        public static string SIMERG_SP_PEAKZIEL_LASTGANG {
+            get {
+                return ResourceManager.GetString("SIMERG_SP_PEAKZIEL_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall aus der Bezugsspitze, ohne Lastgang ähnelt.
+        /// </summary>
+        public static string SIMERG_SP_PEAKZIEL_RUECKFALL {
+            get {
+                return ResourceManager.GetString("SIMERG_SP_PEAKZIEL_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel dieses Laufs: {0} kW – {1} ähnelt.
+        /// </summary>
+        public static string SIMERG_SP_PEAKZIEL_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMERG_SP_PEAKZIEL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicher-Einstellungen konnten nicht vorbereitet werden: {0} ähnelt.
+        /// </summary>
+        public static string SIMERG_SP_VORGABEN_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMERG_SP_VORGABEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag {0} MWh/a ohne Abnehmer: Die Senke „{1}&quot; bedient nicht den Kanal {2}, in dem der Bedarf liegt. ähnelt.
         /// </summary>
         public static string SIMERG_ST_HINWEIS_OHNE_ABNEHMER {

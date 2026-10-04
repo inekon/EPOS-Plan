@@ -627,8 +627,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-04_R35_Zonenuebergabe/`** — **neunzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054), **576 CSV**, **3 791 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 04.10.2026, Stand `b845355`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **181**, 84 832 256 Byte, LFS-SHA-256
-`2eea4775d3cf30fe395c94e512387cba2677b9740fdd7643134488f387eb915d`, mit den Projekten 1053 und 1054; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+gegen `Kenndaten_Test.sqlite` (Schemastand **183**, 84 844 544 Byte, LFS-SHA-256
+`525e7b43a9525bea636869ced400356e8fa1b2cdd5325279d8b27db96c3c24bf`, mit den Projekten 1053 und 1054; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -725,6 +725,12 @@ rechnet alle neunzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Kostenvorlagen); kein Referenzprojekt führt eine Kältemaschine, Referenzlauf der acht CI-Projekte gegen R35 byte-gleich. Die Testdatenbank steht
 > auf **183** (`18f72df`, 84 844 544 Byte, OID `3a87fb93`), aus 181 von der Orchestrierung über 182 gezogen; die LFS-Objekte gehen als Bundle an den
 > Anwender, der sie pusht. Der Rechenweg der Basis liest die neuen Spalten nicht.
+
+> **Nachtrag — Testdatenbank auf 183 (Kältemaschine 182, Kältemaschine-Anlage 183), Basis unverändert.** Der Sync-Commit
+> `d308fb917` vom 04.10.2026 hatte den LFS-Zeiger der Testdatenbank entfernt; die Fassung 181 (`2eea4775…`) ist
+> wiederhergestellt und mit `Werkzeuge/Testdatenbankschema` auf **183** gezogen (`integrity_check` ok). Neue Fassung
+> **84 844 544 Byte, LFS-SHA-256 `525e7b43a9525bea636869ced400356e8fa1b2cdd5325279d8b27db96c3c24bf`**. **Die Basis bleibt:** Die neunzehn Projekte rechnen auf ihr gegen R35
+> GESAMT PASS, CSV byte-gleich (Nachtest der Sitzung Dialoge und Korrekturen, Statuszeilen #699 und #700).
 
 ### Die Vorgängerbasis R34 `2026-10-03_R34_Erdreich`
 
