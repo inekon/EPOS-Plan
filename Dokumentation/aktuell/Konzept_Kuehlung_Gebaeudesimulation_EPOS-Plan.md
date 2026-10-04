@@ -1,5 +1,7 @@
 # Konzept: Kühlung in der Gebäudesimulation und in der Simulation von EPOS-Plan
 
+> **Stand 04.10.2026:** KU3-1 bis KU3-3 sind gebaut (#713 bis #715); die Kühlung je Zone steht in 3.5 („So gebaut“).
+
 > **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Bestandsweg ist der
 > **Bestandsweg als Übergang**, und die Stufe **GA — Altweg ablösen** kehrt als letzte Stufe ohne
 > Termin zurück (Q24 damals wieder offen, seit E27 entschieden); **K20 ist durch die Umsetzung erledigt**, und die Belege des
@@ -618,6 +620,20 @@ Verschiedenes tun. Deshalb:
   ein Gebäude, das wirklich beides braucht — und das muss der Planer sehen.
 - Im **Einzonenfall** zählt die Kennzahl allein die Umschaltstunden aus 3.3; die Abschnittsregel
   bleibt scharf.
+
+**So gebaut (KU3-3, 04.10.2026, #715).** Die Zonenspalten `Tab_Zone.Kuehl_*` werden gelesen, nach dieser
+Vererbungsregel (`GebaeudeModellEingang.KuehlungAufloesen`, gleich in `Zonenvorgaben.Bilden`): (1) der
+Projektschalter `Kuehlbetrieb` steht über allem; (2) `Kuehlung_Aktiv` NULL = wie das Gebäude, 0 schaltet die
+Zone aus (auch wenn das Gebäude kühlt), 1 ein (auch wenn das Gebäude nicht kühlt); (3) `Kuehl_Sollwert` der
+Zone, sonst des Gebäudes, ohne beide aus — der Nachtwert ebenso, wirksam nur über den Kühlkalender;
+(4) `Kuehlleistung_Max` der Zone, sonst ab zwei Zonen die Gebäudegrenze nach Flächenanteil, sonst die
+Gebäudegrenze, sonst unbegrenzt; (5) eine eigene Kühlzeile oder ein eigener Kühlkalender der Zone gilt,
+sonst der des Gebäudes; (6) eine unbeheizte Zone kühlt nie. Die Gebäudesummen je Richtung sind die Summe
+der Zonen, nichts wird saldiert; neu `GleichzeitigHeizenKwh` und `GleichzeitigKuehlenKwh` neben
+`StundenHeizenUndKuehlen`, dazu der Laufhinweis `SIMENG_KU3_ZONEN_GLEICHZEITIG` (Rechenprobe: 2 610 h,
+Heizen 3 661 kWh, Kühlen 4 583 kWh). Gespeichert wird allein der Kältebedarf je Zone
+(`Tab_ErgebnisZone.Kuehlenergie`); Kältespitze und Kühlstunden je Zone stehen nur im Lauf. Kopie von 1052:
+Gästezimmer 0,986 MWh/a, Gastronomie mit `Kuehlung_Aktiv = 0` und Keller ohne Kälte, Gebäude = Summe.
 
 ### 3.6 Was auch im Rechenweg ausgeschlossen bleibt
 
@@ -2197,6 +2213,11 @@ Bestandsweg-Gebäude erscheint und mit dem Bestandsweg **bis zu dessen Ablösung
 Zeitpunkt offen (E23, E26, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Die Kühleingaben gehören
 **nicht** in diesen Abschnitt — sie sind VDI-Eingaben.
 
+**Gebaut mit KU3-3: Gruppe „Kühlung der Zone“ im Zonendialog.** Die Wahl „wie Gebäude / Ja / Nein“ für
+`Kuehlung_Aktiv` und die Kühlleistungsgrenze (leer = Flächenanteil bzw. unbegrenzt; eine unbeheizte Zone
+trägt eine Begründungszeile); die Kühlsollwerte Tag und Nacht der Zone stehen in der Spalte „Kühlen“ der
+Zonenmatrix wie am Gebäude, die Kühlspalte ist nicht mehr gesperrt.
+
 **Bei einem Bestandsweg-Gebäude sagt die Gruppe, was sie ist: eine Vorbereitung.** Sie trägt dann die
 Herleitungszeile „Tagesbilanz (Bestandsweg) liefert keine Kühllast — diese Eingaben gelten,
 sobald das Gebäude auf VDI 6007 rechnet", und der Bedarfsdialog zeigt für dieses Gebäude
@@ -2350,6 +2371,11 @@ Kältestroms, die Tabelle „Kälteerzeuger" und den Satz zu den Kältemittelver
 die Gruppe „Kälte" als Gegenstück, keinen eigenen Abschnitt. **Bedarfsreiter:** Er bleibt beim Bedarf
 und nennt die Deckung als Satz — wie die Wärmeseite, die dort ebenfalls keine Deckungszahlen führt
 (E21).
+
+**Gebaut mit KU3-3.** Der Bedarfsdialog des Gebäudes führt eine Zonentabelle mit Kältebedarf, Kältespitze und
+Kühlstunden je Zone und eine Zeile zum gleichzeitigen Heizen und Kühlen; der Bericht eine Tabelle „Kältebedarf
+je Zone“ unter der Zonentabelle (nur, wenn eine Zone Kälte gespeichert hat); der Export `KaeltebedarfKWh` je
+Zone (`KaeltelastW` je Zone bleibt leer, bis eine Spitze gespeichert wird).
 
 **„—" statt 0, überall.** Die `Kennzahlkachel` zeigt einen leeren Wert als Gedankenstrich; `null`
 heißt „für dieses Projekt nicht verfügbar", nie 0 (**K18**). Ein Projekt ohne Kühlung zeigt also
@@ -2894,7 +2920,7 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
 | **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 (K1 mit E21; K2, K10, K11, K19 und K18a mit E27; K4–K7 und K12 mit E31; K8, K9, K21 und K23 mit E33; K22 am 23.09.2026 geprüft) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
 | **KU1** | **Der Kanal — und die Fassade, die ihn füllt.** Schemaschritte `KU-S1`/`KU-S2`/`KU-S4` (neun Ergebnisspalten, 7.4), dazu die Programmeinstellung „Neue Projekte mit Kühlung anlegen" über `Dienste.Einstellungen` samt Feld im Einstellungsdialog, Anfangswert in beiden Anlagewegen und Mitführen beim Speichern der Kaskade (E27, K10; 7.2), Persistenz und Ergebnisspalten **vor** `ANZAHL = 4`; die zwei Kanallisten und die zwei Ausnahmen, dazu die fünf Restbedarfsfelder und der Bivalenzpunkt über `KANAELE_WAERME` (4.2); **Fassade `SimulationKaeltebedarf`** mit `SummeKaelte()`, `Kaeltebedarf_Max` → `Kaeltelast_Max`, eigener Dauerlinie und `Kaeltebedarf_Gesamt` (E21); Text↔Index; toleranter Knappheitsparser; `Warnkriterien.KanalAnzeige` (4.3 #24); `BerichtsDaten.KANAL_SCHLUESSEL` um `"KUEHLUNG"` und die Erzeugertabelle der Ergebnisansicht bei drei Kanälen (4.3 #32, #34); **Bedarfsprobe Kälte** mit `probeKaelte` (4.3 #30); Ressourcen, darunter der entfallende Zusatz „(informativ)" an `gebaeude.kuehlbedarf` (6.4) und der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (E20, F-K18); Kühlsollwert und Kühlleistungsgrenze im Löser und im Gebäudedialog; Abschnitt „Kältebedarf" im Bedarfsdialog (8.4); Export der Kühlreihe; Wächter. **Gefüllt vom Gebäudemodell, gedeckt von niemandem** | **G1 steht**, und zwar in der Form aus E20: Bestandsweg verschoben, Weiche und Vorbereitungsschritt byte-gleich abgenommen (ohne Stundenmodell keine Kühllast je Stunde); `KU-S4` vor `ANZAHL` | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kühlung byte-gleich; die drei neuen Proben aus 10.2 („Bestandsweg-Gebäude liefert 0 mit Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen") | **ja — mit G1 + G2** | **11–16** |
 | **KU2** | **Der Erzeuger, samt Auswahl und Konfiguration (E15).** `KU-S3` mit drei Spalten je WP-Tabelle (`Kuehl_Vorlauf` als `INTEGER`) und der Stromträgerwahl an der Anlagenzeile (`Kuehl_ID_Carrier`, K9, E33); reversible Wärmepumpe über die vorhandene Kühlkennlinie (Laststufe `MAX(Last)`, linear, EER konstant), Kennlinienwahl über `Kuehl_Vorlauf`, dazu `Last` in Modell, Leser und Schreiber, ein projektseitiger Kennlinienleser und die Extrapolationsmeldung (5.1); Umschaltregel je Tag für den Heizkanal, Brauchwasser bleibt bedienbar (5.2); `Kaeltekaskade` nach der Wärmekaskade (5.5); Quellspeicher benannt abgelehnt; Senke „Kältekreis"; eigener Deckungsgrad-Zweig `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` und `Kaelterestbedarf`; **Deckungsprobe Kälte** (4.3 #31); Kältestrom in eigener Reihe samt Hilfsstromanteil (6.1), als Projektskalar in der Kennzahlendatei (7.4, 7.6; K18a, E27), Wirtschaftlichkeit, Emissionen; Kennzahlen, Bericht, Abschnitt „Kältebedarf und -deckung"; Erzeugerdialog, Bedarfs- und Ergebnisdialog (der Katalogfilter „nur mit Kühlfunktion" ist gebaut — K20 erledigt, 5.0.3); Import der Kühlsollwerte (verschoben auf G4, 9.1) | **G2 steht** (Sommerlüftung — sonst wird auf eine überzeichnete Last ausgelegt, 3.4); KU1 abgenommen; **K22 geprüft** und im Glossar festgehalten (E27) | Referenzprojekt mit Kälteerzeuger; Rechenprobe gegen Handrechnung **je Vorlauf**; Katalog- und Übernahmefälle (10.3); ChartProben grün; Sichtabnahme Windows | **ja — ein Projekt** | **15–25** |
-| **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6; bis dahin rechnet ein Gebäude mit mehreren Zonen nach E49/A4 die Kühlung je Zone ideal mit Kühlsollwert und Kühlbetrieb des Gebäudes, die Leistungsgrenze nach dem Flächenanteil, `Tab_Zone.Kuehl_*` bleiben ungelesen); Kühlsollwert Nacht; Export nach IFC und gbXML. **KU3-1 gebaut 04.10.2026 (#713), KU3-2 gebaut 04.10.2026 (#714), KU3-3 bis KU3-5 folgen** | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
+| **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6; KU3-3 gebaut 04.10.2026 (#715): Zonenspalten gelesen nach der Vererbungsregel 3.5); Kühlsollwert Nacht; Export nach IFC und gbXML. **KU3-1 gebaut 04.10.2026 (#713), KU3-2 gebaut 04.10.2026 (#714), KU3-3 gebaut 04.10.2026 (#715), KU3-4 und KU3-5 folgen** | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
 
 **Stand 23.09.2026: KU1 ist abgeschlossen** — in vier Wellen (Schema und Programmeinstellung; Kanal,
 Fassade und Löser; Oberfläche, Bericht und Export; E32, Referenzprojekt 1017 und neue Basis
@@ -3030,6 +3056,12 @@ Kältedeckung (Block und dritter Ring in der Übersicht, Anker `kaeltedeckung`; 
 Wärme-/Strombedarf), die Seite „Kühlung" den eigenen Zähler mit Grund- und Leistungspreis (E35) — gegen
 das Verbotsmuster gegengelesen, ohne Produktdaten, nicht hochgeladen. E35 bekommt keinen eigenen
 Logbuch-Satz (Regel 13.4: der Satz zu KU2 nennt die Kosten des Kältestroms schon). Offen: der Upload.
+
+**Logbuch-Entwurf KU3 (Version vom Anwender: offen):**
+
+- Die Kältemaschine ist als Erzeugertyp mit Katalog verfügbar.
+- Die Kältemaschine rechnet mit Kennlinie, Rückkühlung und freier Kühlung.
+- Die Kühlung lässt sich je Zone einstellen.
 
 ---
 
