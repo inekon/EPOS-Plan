@@ -1,6 +1,6 @@
 # Plan der Wellen G7b bis KU3 — Sitzung Gebäudesimulation
 
-**Stand 04.10.2026, nach Entscheid E67.** Dieses Papier plant die Stufen, die nach E67 vor KU3
+**Stand 04.10.2026, nach den Entscheiden E67 und E68 (Kältespeicher ja).** Dieses Papier plant die Stufen, die nach E67 vor KU3
 liegen, und KU3 selbst: Reihenfolge, Zuschnitt in Wellen und Agentenaufträge, Abnahme, Rückfragen an
 den Stufengrenzen und der geschätzte Verbrauch. Es ist ein Arbeitsplan, kein Konzept: Fachliche
 Festlegungen stehen in den Konzepten, auf die jede Zeile verweist. Erledigte Wellen wandern mit
@@ -21,7 +21,7 @@ Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.m
 | 2 | **G7c** | IFC-Export S1, semantisch (Teil 1 läuft) | 12–20 | 7–9 Punkte | keine (D6: semantisch zuerst) |
 | 3 | **G7d** | Round-Trip-Anreicherung fremder IFC4-Dateien | 6–11 | 4–5 Punkte | **Gegenüber des IFC-Exports (D6)** |
 | 4 | **G7e** | Schematische Körper im IFC | 8–15 | 5–7 Punkte | Gegenüber bestätigt; Prüfbilder aus zwei Betrachtern liegen beim Anwender |
-| 5 | **KU3** | Kältemaschine mit Rückkühlung, freie Kühlung über die Quelle, Kühlung je Zone, Export, Kältespeicher nur bei Ja | 17–26 (20–31 mit Speicher) | 12–16 Punkte (15–19 mit Speicher) | **Kältespeicher (K7)**, Katalogsaat der Kältemaschinen |
+| 5 | **KU3** | Kältemaschine mit Rückkühlung, freie Kühlung über die Quelle, Kühlung je Zone, Export, Kältespeicher (E68: ja) | 20–31 | 15–19 Punkte | Katalogsaat der Kältemaschinen |
 
 Maßstab: EV1 (3–4 PT) kostete rund 3 Punkte des Wochenlimits bei rund 230 Werkzeugaufrufen. Ein
 Personentag des Konzepts entspricht damit grob 0,8–1 Punkt. Die Spanne G7b bis KU3 liegt bei
@@ -96,10 +96,9 @@ Kühlen/Nacht gebaut (Kühlkonzept, Kopfvermerk).
 
 **Rückfragen vor dem Start:**
 
-- **K7 Kältespeicher:** mit der Kältemaschine bauen (3–5 PT: Pufferverwendung `VERWENDUNG_KAELTE`,
-  Klassensatz, Warnkriterien, `Entladung_Kuehlung` aus `KU-S4` füllt sich) oder bei „Ein
-  Kältespeicher wird nicht gerechnet“ bleiben. Empfehlung des Kühlkonzepts 4.6: **mit** der
-  Kältemaschine oder gar nicht.
+- **K7 Kältespeicher: entschieden (E68, 04.10.2026): ja** — mit der Kältemaschine in Welle KU3-5
+  (3–5 PT: Pufferverwendung `VERWENDUNG_KAELTE`, Klassensatz, Warnkriterien, `Entladung_Kuehlung`
+  aus `KU-S4` füllt sich).
 - **Katalogsaat:** Die Auslieferung braucht Kältemaschinen im Stammkatalog. Neutral benannte
   Beispielgeräte mit runden Werten (etwa „Kältemaschine 50 kW luftgekühlt“) legt die Sitzung an;
   Herstellerdaten pflegt der Anwender später über den Katalogdialog.
@@ -112,9 +111,9 @@ Kühlen/Nacht gebaut (Kühlkonzept, Kopfvermerk).
 | **KU3-2 Rechenweg** | Rechenklasse unter `EPOS.Kern/Allgemein/Simulation/`, Teillastkennlinie, Rückkühlmodell (Trocken-/Nasskühler, Hilfsstrom), Einordnung in `Kaeltekaskade` und `DeckungKanalKaelte`, freie Kühlung über die Quelle als Betriebsfall des Erzeugers mit Grenze der Quellentemperatur (K8), Kältestrom in die Strombilanz, Komponentenkennung in `Tab_KostenKomponente`, Endenergiezeile, Emissionen | keiner | 5–7 | Rechenproben ohne Datenbank (Kühlkonzept 10.2), Datenbankfälle (10.3), Referenzlauf byte-gleich, weil kein Referenzprojekt eine Kältemaschine führt |
 | **KU3-3 Kühlung je Zone** | `Tab_Zone.Kuehl_*` werden gelesen (NULL = Wert des Gebäudes), Kühlbedarf je Zone mit eigener Grenze `Kuehlleistung_Max`, gleichzeitiges Heizen und Kühlen ausgewiesen, nicht saldiert (F-K15, K6), Zonenzeilen im Bedarfsdialog, Ergebnisreihen je Zone, Export der Kälteseite in IFC `EPOS_Ergebnis` (`Kaeltebedarf`, `Kaeltelast`) und gbXML `Results` `CoolingLoad` | keiner | 3–5 | `ZonenReferenzprojektWacheTests`, Rundlauf der Exporte, Referenzlauf: 1052 steht nicht in der CI-Auswahl, 1017 und 1047 (Kühlung, Einzone) bleiben byte-gleich |
 | **KU3-4 Erzeugerdialog, Bericht, Referenz** | Erzeugerdialog Kältemaschine, Bericht (Erzeugerabschnitt, Kennzahlen F-K11), Wirtschaftlichkeit (Investition, Nutzungsdauer), neues Referenzprojekt mit Kältemaschine als Kopie von 1017, Einfrierregel „gesäte Kältemaschinendaten“, Basiswechsel (R-Nummer vor dem Bau anmelden), Wiki und Logbuch | keiner | 3–5 | Gate, Vergleich der 18 Projekte plus das neue, Basis neu eingefroren |
-| **KU3-5 Kältespeicher** (nur bei Ja zu K7) | `VERWENDUNG_KAELTE` am Puffer, Lade- und Entladeweg im Kältekreis, `Entladung_Kuehlung`, Warnkriterien, Dialogtext „wird gerechnet“ | ein Schemaschritt, falls eine Spalte nötig | 3–5 | Proben, Referenzlauf, Basis nur, wenn das Referenzprojekt den Speicher bekommt |
+| **KU3-5 Kältespeicher** (E68) | `VERWENDUNG_KAELTE` am Puffer, Lade- und Entladeweg im Kältekreis, `Entladung_Kuehlung`, Warnkriterien, Dialogtext „wird gerechnet“ | ein Schemaschritt, falls eine Spalte nötig | 3–5 | Proben, Referenzlauf, Basis nur, wenn das Referenzprojekt den Speicher bekommt |
 
-Verbrauch KU3: rund 12–16 Punkte, mit Kältespeicher 15–19; je Welle zwei bis drei Opus-Aufträge
+Verbrauch KU3: rund 15–19 Punkte (mit Kältespeicher, E68); je Welle zwei bis drei Opus-Aufträge
 und ein Sonnet-Auftrag.
 
 
@@ -126,5 +125,5 @@ und ein Sonnet-Auftrag.
 | vor G7d | Gegenüber des IFC-Exports (D6) benennen |
 | nach G7c | Probe 15 (bSI-Validierungsdienst) und Probe 16 (Betrachter-Prüfmatrix) mit der bereitgestellten Datei |
 | vor G7e | Entscheid, ob das Gegenüber eine Datei im Betrachter erwartet |
-| vor KU3 | K7 Kältespeicher; Freigabe der neutralen Katalogsaat |
+| vor KU3 | Freigabe der neutralen Katalogsaat (K7 ist mit E68 entschieden: ja) |
 | laufend | AK1z (eigene Sitzung, Bundle-Weg für Testdatenbank 181 und Basis R35); die Reihenfolge nach KU3: AK2, AK3, GA (E67) |
