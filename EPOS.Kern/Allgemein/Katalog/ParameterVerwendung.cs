@@ -860,7 +860,7 @@ namespace WindowsFormsApplication1
         /// Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung und den kleinsten Kaltwasservorlauf;
         /// Leistung und EER der Stunde kommen aus der Kennlinie. Der Nenn-EER ist eine Angabe des
         /// Datenblatts, das Kältemittel eine Beschreibung (F-Gase rechnet EPOS-Plan nicht, Kühlkonzept
-        /// 6.3); die Modulkosten liest erst die Wirtschaftlichkeit der Kältemaschine.
+        /// 6.3); die Modulkosten liest die Wirtschaftlichkeit (KU3-4, Gerätepreis × Anzahl der Anlagenzeile).
         /// </summary>
         private static IReadOnlyList<ParameterEintrag> Kaeltemaschine(Func<string, string> t)
         {
@@ -890,8 +890,8 @@ namespace WindowsFormsApplication1
                   "Kaeltemaschine.Stunde (Hilfsstrom der Rueckkuehlung x Laufanteil)"),
                 E(KaeltemaschineSchema.SPALTE_KALTWASSER_VORLAUF_MIN, t("KM_LBL_KALTWASSER_MIN"), "°C", SIM,
                   "Kaeltemaschine.AusModell (untere Grenze der Kaltwassertemperatur)"),
-                E(KaeltemaschineSchema.SPALTE_MODULKOSTEN, t("KM_LBL_MODULKOSTEN"), "€", DLG,
-                  "KaeltemaschineKatalogDialog.razor (Geraetepreis; die Investition liest erst KU3-4)"),
+                E(KaeltemaschineSchema.SPALTE_MODULKOSTEN, t("KM_LBL_MODULKOSTEN"), "€", WIRT,
+                  "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_KAELTEMASCHINE: Geraetepreis x Anzahl der Anlagenzeile)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "KaeltemaschineStammCtrl.Speichern (Auslieferungssatz)"),
             }.Concat(Katalogspalten(t)).ToList();
