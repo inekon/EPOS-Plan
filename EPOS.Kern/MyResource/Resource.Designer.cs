@@ -57207,6 +57207,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungsgrenze der Kühlung der Zone in kW; leer = die des Gebäudes, ab zwei Zonen nach dem Flächenanteil. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_KUEHLLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_KUEHLLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird die Zone gekühlt: „ja&quot;, „nein&quot; oder leer = wie das Gebäude. „nein&quot; schaltet die Zone aus, auch wenn das Gebäude kühlt; gekühlt wird nur mit Kühlbetrieb des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_KUEHLUNG_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_KUEHLUNG_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Luftwechsel der Zone in 1/h; leer = der Wert des Gebäudes. ähnelt.
         /// </summary>
         public static string KI_DLG_ZON_LUEFTUNG_ERL {
@@ -67390,15 +67408,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte der Zone „{0}“ folgt dem Gebäude; eigene Kühlwerte je Zone gibt es noch nicht. ähnelt.
-        /// </summary>
-        public static string KOND_MSG_ZONE_KUEHLEN {
-            get {
-                return ResourceManager.GetString("KOND_MSG_ZONE_KUEHLEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude führt keinen angelegten Kalender „{0}“ – die Zone „{1}“ hat nichts zu übernehmen; „Kalender anlegen“ legt ihren eigenen aus der Matrix an. ähnelt.
         /// </summary>
         public static string KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER {
@@ -67935,15 +67944,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_KUEHLEN_GESPERRT {
             get {
                 return ResourceManager.GetString("KOND_TXT_KUEHLEN_GESPERRT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlwerte gelten für das ganze Gebäude; ein eigener Kühlkalender je Zone ist noch nicht möglich. ähnelt.
-        /// </summary>
-        public static string KOND_TXT_KUEHLEN_ZONE {
-            get {
-                return ResourceManager.GetString("KOND_TXT_KUEHLEN_ZONE", resourceCulture);
             }
         }
         

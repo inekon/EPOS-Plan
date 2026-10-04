@@ -40684,9 +40684,6 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_KUEHLEN_GESPERRT" xml:space="preserve">
     <value>The cooling column only takes effect with cooling mode in the project (“Calculate cooling” in the simulation configuration) and with “Building is cooled”.</value>
   </data>
-  <data name="KOND_TXT_KUEHLEN_ZONE" xml:space="preserve">
-    <value>The cooling values apply to the whole building; a separate cooling calendar per zone is not yet possible.</value>
-  </data>
   <data name="KOND_TXT_HINWEIS_TAGESBILANZ" xml:space="preserve">
     <value>This building is calculated with the method “Daily balance (legacy method)”: the matrix shows only the fields this method reads; calendars and further cells take effect only under VDI 6007.</value>
   </data>
@@ -40959,9 +40956,6 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_MSG_ZONE_UNBEHEIZT" xml:space="preserve">
     <value>Zone “{0}” is not heated — it carries neither a heating nor a cooling calendar.</value>
-  </data>
-  <data name="KOND_MSG_ZONE_KUEHLEN" xml:space="preserve">
-    <value>The cooling column of zone “{0}” follows the building; cooling values per zone are not available yet.</value>
   </data>
   <data name="KOND_MSG_ZONE_KALENDER" xml:space="preserve">
     <value>Zone “{0}” would not keep its values: {1}</value>
@@ -44892,6 +44886,12 @@ chart</value>
   </data>
   <data name="GEBB_HRL_ZONEN_GLEICHZEITIG" xml:space="preserve">
     <value>In {0} h one zone heats while a zone cools: heating {1} kWh, cooling demand {2} kWh — reported, not offset.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
+    <value>Is the zone cooled: "yes", "no" or empty = as the building. "no" switches the zone off even if the building is cooled; cooling only applies with the project's cooling operation.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHLLEISTUNG_ERL" xml:space="preserve">
+    <value>Cooling power limit of the zone in kW; empty = the building's, with two or more zones by floor-area share.</value>
   </data>
 </root>
 

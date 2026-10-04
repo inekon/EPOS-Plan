@@ -5149,6 +5149,12 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("heizleistung_max", SICHT + "HeizleistungMax", KiDialogTexte.ZonHeizleistungName,
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonHeizleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                    // KU3-3 (E67/E68): die Kuehlung je Zone - leer = wie Gebaeude.
+                    new KiDialogFeld("kuehlung_aktiv", SICHT + "KuehlungAktiv", KiDialogTexte.ZonKuehlungAktivName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonKuehlungAktivErl, leerErlaubt: true),
+                    new KiDialogFeld("kuehlleistung_max", SICHT + "KuehlleistungMax", KiDialogTexte.ZonKuehlleistungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonKuehlleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
                     // E63 (AK1z): die Uebergabe je Zone - leer = wie Gebaeude; dieselben Baender wie am Gebaeude.
                     new KiDialogFeld("uebergabe_art", SICHT + "UebergabeArt", KiDialogTexte.GebkUebergabeArtName,
                                      KiParameterTyp.Text, KiDialogTexte.ZonUebergabeArtErl, leerErlaubt: true),

@@ -160,7 +160,6 @@ namespace WindowsFormsApplication1
             t.HinweisVdi6007 = Text_("KOND_TXT_HINWEIS_VDI6007", t.HinweisVdi6007);
             t.HinweisAltfelder = Text_("KOND_TXT_HINWEIS_ALTFELDER", t.HinweisAltfelder);
             t.GrundKuehlenGesperrt = Text_("KOND_TXT_KUEHLEN_GESPERRT", t.GrundKuehlenGesperrt);
-            t.HinweisKuehlenZone = Text_("KOND_TXT_KUEHLEN_ZONE", t.HinweisKuehlenZone);
             t.HinweisTagesbilanz = Text_("KOND_TXT_HINWEIS_TAGESBILANZ", t.HinweisTagesbilanz);
             t.HinweisLesemodus = Text_("KOND_TXT_HINWEIS_LESEMODUS", t.HinweisLesemodus);
             t.MeldungGemeinjahr = Text_("KOND_TXT_GEMEINJAHR", t.MeldungGemeinjahr);

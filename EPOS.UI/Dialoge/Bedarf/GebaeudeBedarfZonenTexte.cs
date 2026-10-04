@@ -51,6 +51,18 @@ public sealed class GebaeudeBedarfZonenTexte
     /// <summary>Kopf der Spalte „Übergabe begrenzt“ (E63).</summary>
     public string SpalteBegrenzt { get; set; } = Resource.GEBB_SP_ZONE_BEGRENZT;
 
+    /// <summary><c>GEBB_SP_ZONE_KAELTE</c> — Kältebedarf der Zone (KU3-3), nur wenn eine Zone gekühlt rechnet.</summary>
+    public string SpalteKaelte { get; set; } = Resource.GEBB_SP_ZONE_KAELTE;
+
+    /// <summary><c>GEBB_SP_ZONE_KAELTESPITZE</c> (KU3-3).</summary>
+    public string SpalteKaeltespitze { get; set; } = Resource.GEBB_SP_ZONE_KAELTESPITZE;
+
+    /// <summary><c>GEBB_SP_ZONE_KUEHLSTUNDEN</c> (KU3-3).</summary>
+    public string SpalteKuehlstunden { get; set; } = Resource.GEBB_SP_ZONE_KUEHLSTUNDEN;
+
+    /// <summary><c>GEBB_HRL_ZONEN_GLEICHZEITIG</c> — {0} Stunden, {1} Heizwärme [kWh], {2} Kältebedarf [kWh] (KU3-3, F-K15).</summary>
+    public string HerleitungGleichzeitig { get; set; } = Resource.GEBB_HRL_ZONEN_GLEICHZEITIG;
+
     /// <summary>Die Herleitung der drei Heizkreisspalten (E63) — nur bei mindestens einer gekoppelten Zone.</summary>
     public string HerleitungUebergabe { get; set; } = Resource.GEBB_HRL_ZONEN_UEBERGABE;
 
