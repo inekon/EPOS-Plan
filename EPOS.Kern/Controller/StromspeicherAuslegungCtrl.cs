@@ -643,7 +643,11 @@ namespace WindowsFormsApplication1
             FlottenStudieKonfiguration flotte = eingaben?.Auslegung?.Flotte;
             try
             {
-                if (flotte != null && flotte.Einheiten.Count > 0)
+                // Vor dem ersten Lauf (Lauf ohne Strombedarf) gibt es keine EPOS-Reihe: Dann
+                // gilt gleich der Rueckfall, statt die Beschaffung scheitern zu lassen.
+                if (flotte != null && flotte.Einheiten.Count > 0 &&
+                    (SpeicherFlottenStudieCtrl.LastgangGerechnet(_lauf) ||
+                     !SpeicherAuslegungCtrl.BrauchtEposReihe(eingaben.Auslegung)))
                 {
                     // Derselbe Zwischenspeicher wie die Vorpruefung (Auftrag #254): Der
                     // Vorschlag liest genau dieselbe Istreihe.
