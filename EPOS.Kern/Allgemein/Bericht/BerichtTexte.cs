@@ -138,6 +138,11 @@ namespace WindowsFormsApplication1
             { "Vorlauf Mittel [°C]", "Mean flow [°C]" },
             { "Rücklauf Mittel [°C]", "Mean return [°C]" },
             { "Übergabe begrenzt [h/a]", "Emission limited [h/a]" },
+            // KU3-3: der Kaeltebedarf je Zone
+            { "Kältebedarf je Zone", "Cooling demand per zone" },
+            { "Kältebedarf [MWh/a]", "Cooling demand [MWh/a]" },
+            { "Die Gebäudesumme ist die Summe der Zonen; Heizen und Kühlen verschiedener Zonen in derselben Stunde werden nicht gegeneinander verrechnet.",
+              "The building total is the sum of the zones; heating and cooling of different zones in the same hour are not offset against each other." },
             { "fester Vorlauf", "fixed flow temperature" },
             { "Niveau", "Level" },
             { "Steilheit", "Slope" },

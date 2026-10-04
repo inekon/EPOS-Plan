@@ -272,10 +272,18 @@ namespace WindowsFormsApplication1
             double summeW = 0.0;
             for (int h = 0; h < 8760; h++) summeW += heiz[h];
             int umschaltung = 0, beides = 0, sommer = 0, nacht = 0;
+            // KU3-3 (F-K15, K6): in den Stunden, in denen eine Zone heizt und eine kühlt, die Energie je
+            // Richtung - ausgewiesen, nicht saldiert; die Summen heiz und kuehl bleiben Σ Zonen.
+            double gleichHeizKwh = 0.0, gleichKuehlKwh = 0.0;
             for (int h = 0; h < 8760; h++)
             {
                 if (schleife.StundenMitUmschaltung[h]) umschaltung++;
-                if (schleife.StundenMitHeizen[h] && schleife.StundenMitKuehlen[h]) beides++;
+                if (schleife.StundenMitHeizen[h] && schleife.StundenMitKuehlen[h])
+                {
+                    beides++;
+                    gleichHeizKwh += heiz[h] / 1000.0;
+                    if (kuehl != null) gleichKuehlKwh += kuehl[h];
+                }
                 if (schleife.StundenMitSommerlueftung[h]) sommer++;
                 if (schleife.StundenMitNachtauskuehlung[h]) nacht++;
             }
@@ -293,6 +301,8 @@ namespace WindowsFormsApplication1
                 Innenumkehr = Innenumkehrmessung.Summe(ergebnisse.Select(e => e.Innenumkehr)),
                 StundenInnenpruefungGedeckelt = ergebnisse.Sum(e => e.StundenInnenpruefungGedeckelt),
                 Erdreich = ergebnisse.Select(e => e.Erdreich).FirstOrDefault(e => e != null),
+                GleichzeitigHeizenKwh = kuehlWirksam ? gleichHeizKwh : (double?)null,
+                GleichzeitigKuehlenKwh = kuehlWirksam ? gleichKuehlKwh : (double?)null,
             };
         }
 

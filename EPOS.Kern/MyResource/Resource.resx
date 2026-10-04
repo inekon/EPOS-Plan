@@ -44873,5 +44873,32 @@ Chart</value>
   <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
     <value>Jeder Kennlinienpunkt braucht eine Rückkühl- und eine Kaltwassertemperatur.</value>
   </data>
+  <data name="SIMENG_KU3_ZONEN_GLEICHZEITIG" xml:space="preserve">
+    <value>Gebäude „{0}": In {1} h heizt eine Zone, während eine Zone kühlt — Heizwärme {2} kWh und Kältebedarf {3} kWh in diesen Stunden. Beide sind ausgewiesen und nicht gegeneinander verrechnet; die Gebäudesummen sind die Summen der Zonen je Richtung.</value>
+  </data>
+  <data name="ZONDLG_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung der Zone</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHLUNG_AKTIV" xml:space="preserve">
+    <value>Zone wird gekühlt</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHLLEISTUNG_MAX" xml:space="preserve">
+    <value>Kühlleistungsgrenze</value>
+  </data>
+  <data name="ZONDLG_ZEILE_KUEHLUNG" xml:space="preserve">
+    <value>Die Kühlsollwerte der Zone für Tag und Nacht stehen in der Spalte „Kühlen" der Matrix; ein leeres Feld gilt wie beim Gebäude. Gekühlt wird nur, wenn das Projekt den Kühlbetrieb rechnet.</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KAELTESPITZE" xml:space="preserve">
+    <value>Kältespitze</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KUEHLSTUNDEN" xml:space="preserve">
+    <value>Stunden mit Kühlung</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN_GLEICHZEITIG" xml:space="preserve">
+    <value>In {0} h heizt eine Zone, während eine Zone kühlt: Heizwärme {1} kWh, Kältebedarf {2} kWh — ausgewiesen, nicht verrechnet.</value>
+  </data>
 </root>
 

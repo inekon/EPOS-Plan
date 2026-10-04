@@ -25146,6 +25146,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} h heizt eine Zone, während eine Zone kühlt: Heizwärme {1} kWh, Kältebedarf {2} kWh — ausgewiesen, nicht verrechnet. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_ZONEN_GLEICHZEITIG {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_ZONEN_GLEICHZEITIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf einer gekoppelt rechnenden Zone sind ihre Mittel über die Heizstunden; begrenzt heißt, die Übergabe der Zone lieferte weniger, als ihr Sollwert verlangte. „—“ steht bei einer Zone ohne Heizkreis (ideal oder unbeheizt). ähnelt.
         /// </summary>
         public static string GEBB_HRL_ZONEN_UEBERGABE {
@@ -25511,6 +25520,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_SP_ZONE_HEIZWAERME {
             get {
                 return ResourceManager.GetString("GEBB_SP_ZONE_HEIZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_KAELTE {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespitze ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_KAELTESPITZE {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_KAELTESPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Kühlung ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_KUEHLSTUNDEN {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_KUEHLSTUNDEN", resourceCulture);
             }
         }
         
@@ -87132,6 +87168,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}&quot;: In {1} h heizt eine Zone, während eine Zone kühlt — Heizwärme {2} kWh und Kältebedarf {3} kWh in diesen Stunden. Beide sind ausgewiesen und nicht gegeneinander verrechnet; die Gebäudesummen sind die Summen der Zonen je Richtung. ähnelt.
+        /// </summary>
+        public static string SIMENG_KU3_ZONEN_GLEICHZEITIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KU3_ZONEN_GLEICHZEITIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab. ähnelt.
         /// </summary>
         public static string SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT {
@@ -116820,6 +116865,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung der Zone ähnelt.
+        /// </summary>
+        public static string ZONDLG_GRP_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_GRP_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Werte der Zone ähnelt.
         /// </summary>
         public static string ZONDLG_GRP_WERTE {
@@ -116879,6 +116933,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_LBL_INFILTRATION {
             get {
                 return ResourceManager.GetString("ZONDLG_LBL_INFILTRATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistungsgrenze ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_KUEHLLEISTUNG_MAX {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_KUEHLLEISTUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone wird gekühlt ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_KUEHLUNG_AKTIV {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_KUEHLUNG_AKTIV", resourceCulture);
             }
         }
         
@@ -117311,6 +117383,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_ZEILE_GEGENSEITE {
             get {
                 return ResourceManager.GetString("ZONDLG_ZEILE_GEGENSEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlsollwerte der Zone für Tag und Nacht stehen in der Spalte „Kühlen&quot; der Matrix; ein leeres Feld gilt wie beim Gebäude. Gekühlt wird nur, wenn das Projekt den Kühlbetrieb rechnet. ähnelt.
+        /// </summary>
+        public static string ZONDLG_ZEILE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_ZEILE_KUEHLUNG", resourceCulture);
             }
         }
         

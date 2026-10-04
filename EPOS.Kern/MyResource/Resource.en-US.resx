@@ -44866,5 +44866,32 @@ chart</value>
   <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
     <value>Every curve point needs a heat rejection and a chilled water temperature.</value>
   </data>
+  <data name="SIMENG_KU3_ZONEN_GLEICHZEITIG" xml:space="preserve">
+    <value>Building "{0}": in {1} h one zone heats while a zone cools — heating {2} kWh and cooling demand {3} kWh in these hours. Both are reported and not offset against each other; the building totals are the sums of the zones per direction.</value>
+  </data>
+  <data name="ZONDLG_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Zone cooling</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHLUNG_AKTIV" xml:space="preserve">
+    <value>Zone is cooled</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHLLEISTUNG_MAX" xml:space="preserve">
+    <value>Cooling power limit</value>
+  </data>
+  <data name="ZONDLG_ZEILE_KUEHLUNG" xml:space="preserve">
+    <value>The day and night cooling setpoints of the zone are in the "Cooling" column of the matrix; an empty field follows the building. Cooling only takes effect when the project calculates cooling operation.</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KAELTESPITZE" xml:space="preserve">
+    <value>Peak cooling</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KUEHLSTUNDEN" xml:space="preserve">
+    <value>Hours with cooling</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN_GLEICHZEITIG" xml:space="preserve">
+    <value>In {0} h one zone heats while a zone cools: heating {1} kWh, cooling demand {2} kWh — reported, not offset.</value>
+  </data>
 </root>
 

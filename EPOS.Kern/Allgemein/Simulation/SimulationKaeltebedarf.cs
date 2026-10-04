@@ -276,6 +276,13 @@ namespace WindowsFormsApplication1
                 StundenHeizenUndKuehlen = ergebnis.StundenHeizenUndKuehlen;
                 StundenHeizenUndKuehlenGebaeude = name;
             }
+            // KU3-3 (F-K15): im Mehrzonenweg je Gebäude die Energie je Richtung in diesen Stunden.
+            if (ergebnis.StundenHeizenUndKuehlen > 0
+                && ergebnis.GleichzeitigHeizenKwh is double gleichHeiz && ergebnis.GleichzeitigKuehlenKwh is double gleichKuehl)
+                SimulationProtokoll.Aktuell.HinweisEinmal("ku3-gleichzeitig-" + name,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KU3_ZONEN_GLEICHZEITIG, name,
+                                  ergebnis.StundenHeizenUndKuehlen, gleichHeiz.ToString("0", CultureInfo.CurrentCulture),
+                                  gleichKuehl.ToString("0", CultureInfo.CurrentCulture)));
         }
 
         /// <summary>
