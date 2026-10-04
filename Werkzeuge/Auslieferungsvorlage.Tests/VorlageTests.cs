@@ -225,7 +225,10 @@ namespace Auslieferungsvorlage.Tests
             // 167 seit dem Schemaschritt 182 (KaeltemaschineSchema, KU3-1): Tab_Kaeltemaschine(_STAMM) und
             // Tab_Kenndaten_Kaeltemaschine(_STAMM), STRICT von ihrer ersten Zeile an. Die Schritte 180 und 181
             // sind ADD COLUMN und aendern die Zahl nicht.
-            Assert.Equal(167, befund.Strict);
+            // 168 seit dem Schemaschritt 183 (KaeltemaschineAnlageSchema, KU3-4): Tab_ErgebnisKaeltemaschine,
+            // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            Assert.Equal(168, befund.Strict);
         }
 
         // =============================================================================
