@@ -313,9 +313,8 @@ Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
 # Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki); beide
 # Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).
 Form_GebaeudeImport.btn_Help = Gebäudeimport#zuordnung
-# Gebaeudeexport (gbXML, G7a): bis die Seite den Abschnitt "Gebäudedaten ausgeben" traegt
-# (Wiki-Upload mit G7b), springt er auf den Kopf der Importseite - ohne Anker.
-GebaeudeExport.btn_Help = Gebäudeimport
+# Gebaeudeexport (gbXML): der Abschnitt "Gebäudedaten ausgeben" der Importseite.
+GebaeudeExport.btn_Help = Gebäudeimport#export
 # Die Ansicht "Baustoff-Zuordnungen..." des Gebaeudedialogs: der Abschnitt zu den gemerkten Zuordnungen.
 Baustoffzuordnungen.btn_Help = Gebäudeimport#baustoffzuordnungen
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
