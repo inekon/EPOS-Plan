@@ -13,6 +13,7 @@ using Xbim.Common.ExpressValidation;
 using Xbim.Common.Step21;
 using Xbim.Ifc4.ActorResource;
 using Xbim.Ifc4.DateTimeResource;
+using Xbim.Ifc4.GeometricConstraintResource;
 using Xbim.Ifc4.Interfaces;
 using Xbim.Ifc4.Kernel;
 using Xbim.Ifc4.MaterialResource;
@@ -20,6 +21,7 @@ using Xbim.Ifc4.MeasureResource;
 using Xbim.Ifc4.ProductExtension;
 using Xbim.Ifc4.PropertyResource;
 using Xbim.Ifc4.QuantityResource;
+using Xbim.Ifc4.RepresentationResource;
 using Xbim.Ifc4.SharedBldgElements;
 using Xbim.Ifc4.UtilityResource;
 using Xbim.IO.Memory;
@@ -41,6 +43,15 @@ namespace WindowsFormsApplication1
     /// <c>ConnectionGeometry</c>; Aufbauten als <c>IfcMaterialLayerSet</c> mit
     /// <c>IfcRelAssociatesMaterial</c>. Struktur über <c>IfcRelAggregates</c> und
     /// <c>IfcRelContainedInSpatialStructure</c>; kein erzwungenes Geschoss.</para>
+    ///
+    /// <para><b>Stufe S3 — schematische Körper</b> (Stufe G7e; 6.7, 8.4): nach derselben Regel wie gbXML Stufe 2
+    /// (<see cref="GbxmlSchreiber.Raumgeometrie"/>). Liefert das Zonengeometrie-Modell schematische Rechtecke, trägt
+    /// jeder Raum sein Prisma und jede Fläche und Öffnung ihre Platte (<see cref="IfcKoerper"/>); jedes Produkt
+    /// bekommt dann ein <c>ObjectPlacement</c> (Kette Grundstück → Gebäude → Raum bzw. Bauteil), auch das ohne
+    /// Körper. Die Kennzeichnung „schematisch“ steht an vier Stellen: <c>IfcProject.Name</c>,
+    /// <c>FILE_DESCRIPTION</c>, <c>Description</c> jedes Produkts mit Körper und eine <c>IfcAnnotation</c> am
+    /// Gebäude. Zusammengefasste Bauteile (Klassenweg) bleiben ohne Körper. Ohne Rechteck bleibt die Datei S1 ohne
+    /// Geometrie und ohne Vermerk; bei widersprüchlicher Anordnung S1 mit Vermerk.</para>
     ///
     /// <para><b>Einheiten:</b> Temperaturen stehen in Kelvin (die globale Einheit), Winkel in Grad mit
     /// ausdrücklichem <c>Unit</c> (<c>IfcConversionBasedUnit</c> DEGREE), jede Energie in kWh mit
@@ -93,6 +104,18 @@ namespace WindowsFormsApplication1
         internal const string SCHEMA = GebaeudeExportAblauf.P + "IFC_SCHEMA";
         internal const string ABGEBROCHEN = GebaeudeExportAblauf.P + "IFC_ABGEBROCHEN";
 
+        // Die Kennzeichnung der Stufe S3 (8.4).
+        internal const string DATEI_STUFE_S1 = "GEXP_IFC_DATEI_STUFE";
+        internal const string DATEI_STUFE_S3 = "GEXP_IFC_DATEI_STUFE_S3";
+        internal const string DATEI_ABGELEHNT = "GEXP_IFC_DATEI_ABGELEHNT";
+        internal const string PROJEKT_SCHEMATISCH = "GEXP_IFC_PROJEKT_SCHEMATISCH";
+        internal const string ELEMENT_SCHEMATISCH = "GEXP_IFC_ELEMENT_SCHEMATISCH";
+        internal const string KENNZEICHNUNG_SCHEMATISCH = "GEXP_IFC_KENNZEICHNUNG_SCHEMATISCH";
+        internal const string GEOMETRIE_ABGELEHNT_TEXT = "GEXP_IFC_GEOMETRIE_ABGELEHNT";
+
+        /// <summary>Der Name der <c>IfcAnnotation</c>, die die Datei als schematisch kennzeichnet.</summary>
+        internal const string KENNZEICHNUNG_NAME = "EPOS-Plan";
+
         private readonly IfcErgebnisse _ergebnisse;
 
         /// <summary>Legt den Schreiber an.</summary>
@@ -111,7 +134,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Vorschau des IFC-Formats: der Beipackzettel (logische Raumgrenzen ohne Anschlussgeometrie, ohne MVD,
         /// die IDS-Datei der Auslieferung), dazu „ohne Ergebnis", wenn der Schreiber keine Ergebnisse trägt, und
-        /// „ohne Koordinaten", wenn Breite oder Länge fehlen — dieselben Bedingungen wie beim Schreiben.
+        /// „ohne Koordinaten", wenn Breite oder Länge fehlen — dieselben Bedingungen wie beim Schreiben. Dazu die
+        /// Meldungen der Raumgeometrie wie bei gbXML (<see cref="GbxmlSchreiber.Geometriemeldungen"/>: schematische
+        /// Körper oder benannt abgelehnt), sonst bei einem Gebäude ohne Körper „Daten ohne Geometrie“.
         /// </summary>
         public IReadOnlyList<PruefMeldung> Vorschau(GebaeudeAbbild abbild, GebaeudeExportProfil profil)
         {
@@ -124,6 +149,10 @@ namespace WindowsFormsApplication1
             if (abbild == null) return meldungen;
             if (_ergebnisse == null && abbild.Gebaeude.Count > 0) meldungen.Add(new PruefMeldung(PruefStufe.Info, OHNE_ERGEBNIS));
             if (!(abbild.BreiteGrad.HasValue && abbild.LaengeGrad.HasValue)) meldungen.Add(new PruefMeldung(PruefStufe.Info, OHNE_KOORDINATEN));
+            IReadOnlyList<PruefMeldung> geometrie = GbxmlSchreiber.Geometriemeldungen(abbild);
+            meldungen.AddRange(geometrie);
+            if (geometrie.Count == 0 && abbild.Gebaeude.Count == 1)
+                meldungen.Add(new PruefMeldung(PruefStufe.Info, GbxmlSchreiber.GEOMETRIE_OHNE));
             return meldungen;
         }
 
@@ -154,7 +183,7 @@ namespace WindowsFormsApplication1
                     return new GebaeudeExportBilanz(lauf.Flaechen, lauf.Oeffnungen, lauf.Aufbauten, lauf.Ersatzaufbauten, lauf.Meldungen, 0);
                 }
 
-                byte[] bytes = Speichern(modell, lauf.Zeitstempel, profil);
+                byte[] bytes = Speichern(modell, lauf.Zeitstempel, profil, lauf.Dateibeschreibung);
                 abbruch.ThrowIfCancellationRequested();
                 ziel.Write(bytes, 0, bytes.Length);
                 ziel.Flush();
@@ -191,13 +220,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Dateikopf und die Byteform: keine MVD-Angabe (6.2), Zeitstempel aus der einen Ablesung der
-        /// Uhr, keine Anwenderdaten; Zeilenende CRLF unabhängig von der Plattform.
+        /// Uhr, keine Anwenderdaten; Zeilenende CRLF unabhängig von der Plattform. <paramref name="beschreibung"/>
+        /// sind die Zeilen von <c>FILE_DESCRIPTION</c>; ohne sie steht dort die Stufe S1.
         /// </summary>
-        internal static byte[] Speichern(MemoryModel modell, DateTime zeit, GebaeudeExportProfil profil)
+        internal static byte[] Speichern(MemoryModel modell, DateTime zeit, GebaeudeExportProfil profil, IReadOnlyList<string> beschreibung = null)
         {
             IStepFileHeader kopf = modell.Header;
             kopf.FileDescription.Description.Clear();
-            kopf.FileDescription.Description.Add(T(profil, "GEXP_IFC_DATEI_STUFE"));
+            if (beschreibung == null || beschreibung.Count == 0) kopf.FileDescription.Description.Add(T(profil, DATEI_STUFE_S1));
+            else foreach (string zeile in beschreibung) kopf.FileDescription.Description.Add(zeile);
             kopf.FileDescription.ImplementationLevel = "2;1";
             kopf.FileName.Name = profil.Programmname + " IFC";
             kopf.FileName.TimeStamp = Zeitstempel(zeit);
@@ -263,6 +294,13 @@ namespace WindowsFormsApplication1
             private IfcConversionBasedUnit _kwh;
             private IfcConversionBasedUnit _grad;
             private bool _mehrzonig;
+            private Zonengeometrie _geometrie;
+            private Zonenkoerper _koerper;
+            private IfcKoerper _form;
+            private IfcLocalPlacement _siteLage;
+            private IfcLocalPlacement _gebaeudeLage;
+            private readonly List<string> _ohneKoerper = new List<string>();
+            private readonly List<string> _begrenzt = new List<string>();
 
             internal Lauf(MemoryModel m, GebaeudeAbbild abbild, GebaeudeExportProfil profil, IfcErgebnisse ergebnisse, CancellationToken abbruch)
             {
@@ -279,6 +317,12 @@ namespace WindowsFormsApplication1
             internal int Ersatzaufbauten { get; private set; }
             internal List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
             internal DateTime Zeitstempel { get; private set; }
+
+            /// <summary>Die Zeilen von <c>FILE_DESCRIPTION</c>: die Stufe, bei S3 die Kennzeichnung, bei abgelehnter Anordnung der Vermerk.</summary>
+            internal List<string> Dateibeschreibung { get; } = new List<string>();
+
+            /// <summary>Die Zahl der geschriebenen Körper (<c>IfcExtrudedAreaSolid</c>); 0 = Stufe S1.</summary>
+            internal int Koerperzahl => _form?.Koerper ?? 0;
 
             private T Neu<T>(Action<T> belegen = null) where T : IInstantiableEntity
                 => _m.Instances.New(belegen ?? (_ => { }));
@@ -304,7 +348,12 @@ namespace WindowsFormsApplication1
                 string wurzel = string.IsNullOrWhiteSpace(_abbild.CampusKennung) ? g.Kennung : _abbild.CampusKennung;
 
                 Zeitstempel = _profil.Uhr();
+                // Die Raumgeometrie nach derselben Regel wie gbXML Stufe 2: Körper nur aus schematischen Rechtecken.
+                (_geometrie, _koerper) = GbxmlSchreiber.Raumgeometrie(_abbild);
+                Dateibeschreibung.Add(T(_profil, _koerper != null ? DATEI_STUFE_S3 : DATEI_STUFE_S1));
+                if (_geometrie.AnordnungAbgelehnt) Dateibeschreibung.Add(T(_profil, DATEI_ABGELEHNT));
                 Geschichte();
+                if (_koerper != null) _form = new IfcKoerper(_m);
                 IfcProject projekt = Projekt(wurzel, g);
                 IfcSite site = Grundstueck(wurzel);
                 IfcBuilding gebaeude = Gebaeude(g);
@@ -321,11 +370,13 @@ namespace WindowsFormsApplication1
                     _abbruch.ThrowIfCancellationRequested();
                     Flaeche(b);
                 }
-                if (_elemente.Count > 0)
+                IfcAnnotation kennzeichnung = Kennzeichnung(g);
+                if (_elemente.Count > 0 || kennzeichnung != null)
                     Wurzel<IfcRelContainedInSpatialStructure>(g.Kennung, "RelContained", r =>
                     {
                         r.RelatingStructure = gebaeude;
                         r.RelatedElements.AddRange(_elemente);
+                        if (kennzeichnung != null) r.RelatedElements.Add(kennzeichnung);
                     });
                 foreach (string kennung in _satzReihenfolge)
                 {
@@ -339,6 +390,69 @@ namespace WindowsFormsApplication1
                 }
 
                 if (_ergebnisse == null) Meldungen.Add(new PruefMeldung(PruefStufe.Info, OHNE_ERGEBNIS));
+                Sammelmeldung(GbxmlSchreiber.FLAECHE_OHNE_POLYGON, _ohneKoerper);
+                Sammelmeldung(GbxmlSchreiber.OEFFNUNG_BEGRENZT, _begrenzt);
+            }
+
+            // --------------------------------------------------------------
+            //  Schematische Körper (Stufe S3)
+            // --------------------------------------------------------------
+
+            /// <summary>Eine Platzierung im Ursprung relativ zum Gebäude — nur in Stufe S3, sonst <c>null</c>.</summary>
+            private IfcLocalPlacement Lage() => _form?.Platzierung(_gebaeudeLage);
+
+            /// <summary>Der Text der Kennzeichnung je Produkt mit Körper.</summary>
+            private string Vermerk => T(_profil, ELEMENT_SCHEMATISCH);
+
+            /// <summary>Hängt Platzierung und, soweit vorhanden, Körper samt Vermerk an ein Bauteil (nur Stufe S3).</summary>
+            private void Koerper(IfcProduct e, IfcProductDefinitionShape form)
+            {
+                if (_form == null) return;
+                e.ObjectPlacement = Lage();
+                if (form == null) return;
+                e.Representation = form;
+                string bisher = e.Description?.Value?.ToString();
+                e.Description = Text(string.IsNullOrWhiteSpace(bisher) ? Vermerk : bisher.Trim() + " – " + Vermerk);
+            }
+
+            /// <summary>
+            /// Die <c>IfcAnnotation</c> der Kennzeichnung am Gebäude (8.4, vierte Stelle): Name, Beschreibung mit dem
+            /// Text der Kennzeichnung, Platzierung im Ursprung; ohne Darstellung. Nur in Stufe S3.
+            /// </summary>
+            private IfcAnnotation Kennzeichnung(AbbildGebaeude g)
+            {
+                if (_form == null) return null;
+                return Wurzel<IfcAnnotation>(g.Kennung, "Kennzeichnung", a =>
+                {
+                    a.Name = Label(KENNZEICHNUNG_NAME);
+                    a.Description = Text(T(_profil, KENNZEICHNUNG_SCHEMATISCH));
+                    a.ObjectType = Label(T(_profil, DATEI_STUFE_S3));
+                    a.ObjectPlacement = Lage();
+                });
+            }
+
+            /// <summary>Die Fläche eines Bauteils im Körper seines ersten Nachbarraums; Zusammenfassung und innere Masse haben keine.</summary>
+            private Koerperflaeche Koerperflaeche(AbbildBauteil f)
+            {
+                if (_koerper == null || f.Nachbarn.Count == 0 || InnereMasse(f)
+                    || f.Kennung.StartsWith(PRAEFIX_ZUSAMMENFASSUNG, StringComparison.Ordinal)) return null;
+                foreach (AbbildNachbar n in f.Nachbarn)
+                {
+                    Koerperflaeche k = _koerper.Flaeche(n.Kennung, f.Kennung);
+                    if (k != null) return k;
+                }
+                return null;
+            }
+
+            /// <summary>Innere Masse einer Zone: beide Nachbarn sind derselbe Raum — sie liegt an keiner Kante.</summary>
+            private static bool InnereMasse(AbbildBauteil f)
+                => f.Nachbarn.Count == 2 && string.Equals(f.Nachbarn[0].Kennung, f.Nachbarn[1].Kennung, StringComparison.Ordinal);
+
+            private void Sammelmeldung(string schluessel, List<string> namen)
+            {
+                if (namen.Count == 0) return;
+                string beispiele = namen.Count <= 5 ? string.Join(", ", namen) : string.Join(", ", namen.Take(5)) + ", …";
+                Meldungen.Add(new PruefMeldung(PruefStufe.Info, schluessel, namen.Count.ToString(CultureInfo.InvariantCulture), beispiele));
             }
 
             // --------------------------------------------------------------
@@ -389,11 +503,18 @@ namespace WindowsFormsApplication1
                                   new IfcEnergyMeasure(3.6e6), Si(IfcUnitEnum.ENERGYUNIT, IfcSIUnitName.JOULE));
                 _grad = Umrechnung(IfcUnitEnum.PLANEANGLEUNIT, GRAD, Exponenten(0, 0, 0),
                                    new IfcPlaneAngleMeasure(Math.PI / 180.0), Si(IfcUnitEnum.PLANEANGLEUNIT, IfcSIUnitName.RADIAN));
+                string name = _form == null || string.IsNullOrWhiteSpace(g.Anzeigename)
+                    ? g.Anzeigename
+                    : string.Format(_profil.Sprache, T(_profil, PROJEKT_SCHEMATISCH), g.Anzeigename.Trim());
+                string beschreibung = T(_profil, _form != null ? DATEI_STUFE_S3 : DATEI_STUFE_S1);
+                if (_geometrie.AnordnungAbgelehnt)
+                    beschreibung += " " + string.Format(_profil.Sprache, T(_profil, GEOMETRIE_ABGELEHNT_TEXT), GbxmlSchreiber.Widersprueche(_geometrie));
                 return Wurzel<IfcProject>(wurzel, "Projekt", p =>
                 {
-                    p.Name = Label(g.Anzeigename);
-                    p.Description = T(_profil, "GEXP_IFC_DATEI_STUFE");
+                    p.Name = Label(name);
+                    p.Description = beschreibung;
                     p.UnitsInContext = einheiten;
+                    if (_form != null) p.RepresentationContexts.Add(_form.Kontext);
                 });
             }
 
@@ -442,6 +563,7 @@ namespace WindowsFormsApplication1
                         s.RefLongitude = new IfcCompoundPlaneAngleMeasure(GradMinutenSekunden(_abbild.LaengeGrad.Value));
                     }
                     if (adresse != null) s.SiteAddress = adresse;
+                    if (_form != null) s.ObjectPlacement = _siteLage = _form.Platzierung(null);
                 });
             }
 
@@ -452,6 +574,7 @@ namespace WindowsFormsApplication1
                     x.Name = Label(g.Anzeigename);
                     x.Description = Text(g.Beschreibung);
                     x.CompositionType = IfcElementCompositionEnum.ELEMENT;
+                    if (_form != null) x.ObjectPlacement = _gebaeudeLage = _form.Platzierung(_siteLage);
                 });
                 string baujahr = !string.IsNullOrWhiteSpace(g.BaujahrText) ? g.BaujahrText.Trim()
                     : g.Baujahr?.ToString(CultureInfo.InvariantCulture);
@@ -480,6 +603,7 @@ namespace WindowsFormsApplication1
                     x.CompositionType = IfcElementCompositionEnum.ELEMENT;
                     x.PredefinedType = IfcSpaceTypeEnum.SPACE;
                 });
+                Koerper(s, (_form?.Raum(_koerper.Raum(r.Kennung))));
                 Mengen(s, r.Kennung, "Qto_SpaceBaseQuantities",
                        Flaeche("NetFloorArea", r.FlaecheM2), Laenge("Height", r.HoeheM), Volumen("NetVolume", r.VolumenM3));
                 if (r.Beheizt)
@@ -560,14 +684,22 @@ namespace WindowsFormsApplication1
                 Randbedingung rand = Rand(b);
                 IfcElement e = Element(b, rand, null);
                 Flaechen++;
-                foreach (AbbildBauteil o in b.Oeffnungen)
+                Koerperflaeche wand = Koerperflaeche(b);
+                Koerper(e, (_form?.Flaeche(wand)));
+                bool zusammen = b.Kennung.StartsWith(PRAEFIX_ZUSAMMENFASSUNG, StringComparison.Ordinal);
+                if (_koerper != null && wand == null && !zusammen && !InnereMasse(b)) _ohneKoerper.Add(b.Name ?? b.Kennung);
+                for (int i = 0; i < b.Oeffnungen.Count; i++)
                 {
+                    AbbildBauteil o = b.Oeffnungen[i];
                     IfcElement f = Element(o, rand, b);
                     Oeffnungen++;
+                    Koerper(f, (_form?.Oeffnung(Oeffnungsring(o, wand, i, b.Oeffnungen.Count))));
+                    // Das Öffnungselement bleibt geometrielos (kein Ausschnitt, 6.7); in Stufe S3 trägt es nur die Platzierung.
                     IfcOpeningElement loch = Wurzel<IfcOpeningElement>(o.Kennung, "Oeffnungselement", x =>
                     {
                         x.Name = Label(o.Name);
                         x.PredefinedType = IfcOpeningElementTypeEnum.OPENING;
+                        if (_form != null) x.ObjectPlacement = Lage();
                     });
                     Wurzel<IfcRelVoidsElement>(o.Kennung, "RelVoids", r =>
                     {
@@ -580,6 +712,17 @@ namespace WindowsFormsApplication1
                         r.RelatedBuildingElement = f;
                     });
                 }
+            }
+
+            /// <summary>Der Ring einer Öffnung in ihrer Wand (dieselbe Regel wie gbXML Stufe 2); <c>null</c> = keiner.</summary>
+            private IReadOnlyList<double[]> Oeffnungsring(AbbildBauteil o, Koerperflaeche wand, int stelle, int anzahl)
+            {
+                if (wand == null || o.Kennung.StartsWith(PRAEFIX_ZUSAMMENFASSUNG, StringComparison.Ordinal)) return null;
+                double? flaeche = o.BruttoflaecheM2 ?? (o.BreiteM * o.HoeheM);
+                if (!(flaeche > 0.0)) return null;
+                IReadOnlyList<double[]> ring = Zonenkoerper.Oeffnung(wand, stelle, anzahl, flaeche.Value, out bool begrenzt);
+                if (begrenzt) _begrenzt.Add(o.Name ?? o.Kennung);
+                return ring;
             }
 
             /// <summary>Die Randbedingung einer Fläche: aus der gbXML-Flächenart, sonst aus dem Abbild; zwei Nachbarn sind innen.</summary>

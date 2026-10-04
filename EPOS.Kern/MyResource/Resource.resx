@@ -38169,7 +38169,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Umfang</value>
   </data>
   <data name="GEXP_STUFE_DATEN" xml:space="preserve">
-    <value>Daten ohne Geometrie</value>
+    <value>Zonen, Bauteilflächen und Schichtaufbauten mit Ergebnissen; schematische Körper, soweit das Modell Umrisse kennt</value>
   </data>
   <data name="GEXP_LBL_PLZ" xml:space="preserve">
     <value>Postleitzahl (freiwillig)</value>
@@ -44449,6 +44449,24 @@ Chart</value>
   </data>
   <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
     <value>IFC-Export aus EPOS-Plan, Stufe S1: semantisch, ohne Geometrie.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE_S3" xml:space="preserve">
+    <value>IFC-Export aus EPOS-Plan, Stufe S3: schematische Körper – Ersatzmodell, kein Architekturmodell.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_ABGELEHNT" xml:space="preserve">
+    <value>Ohne Körper: Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen.</value>
+  </data>
+  <data name="GEXP_IFC_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>Ohne Körper: Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen ({0}).</value>
+  </data>
+  <data name="GEXP_IFC_PROJEKT_SCHEMATISCH" xml:space="preserve">
+    <value>{0} (schematisch)</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_SCHEMATISCH" xml:space="preserve">
+    <value>Schematischer Körper aus dem EPOS-Gebäudemodell – kein Aufmaß.</value>
+  </data>
+  <data name="GEXP_IFC_KENNZEICHNUNG_SCHEMATISCH" xml:space="preserve">
+    <value>Ersatzmodell: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Körper sind schematisch erzeugt und bilden den tatsächlichen Grundriss nicht ab. Maße nicht abgreifen.</value>
   </data>
   <data name="GEXP_PROT_IFC_OHNE_ERGEBNIS" xml:space="preserve">
     <value>Die Datei trägt keine Rechenergebnisse: EPOS_Ergebnis und die Angaben Rechenzeitpunkt und Wetterdatensatz entfallen.</value>

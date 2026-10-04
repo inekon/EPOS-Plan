@@ -399,10 +399,10 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEXP_IFC_RECHENMODELL_EINZONE,
                              IfcExportProbe.Eigenschaften(m.Instances.OfType<IIfcBuilding>().Single())[IfcSchreiber.EPOS_RECHENLAUF]["Rechenmodell"].NominalValue.ToString());
 
-                // Struktur: Projekt → Site → Gebäude → Räume, Bauteile im Gebäude, kein Geschoss.
+                // Struktur: Projekt → Site → Gebäude → Räume, Bauteile im Gebäude (in Stufe S3 dazu die Kennzeichnung), kein Geschoss.
                 IIfcBuilding g = m.Instances.OfType<IIfcBuilding>().Single();
                 Assert.Equal(2, g.IsDecomposedBy.SelectMany(r => r.RelatedObjects).Count());
-                Assert.Equal(m.Instances.OfType<IIfcElement>().Count(e => !(e is IIfcOpeningElement)),
+                Assert.Equal(m.Instances.OfType<IIfcElement>().Count(e => !(e is IIfcOpeningElement)) + m.Instances.OfType<IIfcAnnotation>().Count(),
                              g.ContainsElements.SelectMany(r => r.RelatedElements).Count());
                 Assert.All(m.Instances.OfType<IIfcRelAssociatesMaterial>(), r => Assert.IsAssignableFrom<IIfcMaterialLayerSet>(r.RelatingMaterial));
             }

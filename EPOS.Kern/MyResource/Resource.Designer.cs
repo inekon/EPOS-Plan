@@ -30589,6 +30589,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Körper: Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_DATEI_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_DATEI_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Export aus EPOS-Plan, Stufe S1: semantisch, ohne Geometrie. ähnelt.
         /// </summary>
         public static string GEXP_IFC_DATEI_STUFE {
@@ -30598,11 +30607,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Export aus EPOS-Plan, Stufe S3: schematische Körper – Ersatzmodell, kein Architekturmodell. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_DATEI_STUFE_S3 {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_DATEI_STUFE_S3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schematischer Körper aus dem EPOS-Gebäudemodell – kein Aufmaß. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ELEMENT_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ELEMENT_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kWh/(m²·a), bezogen auf die Nutzfläche ähnelt.
         /// </summary>
         public static string GEXP_IFC_FLAECHENBEZOGEN {
             get {
                 return ResourceManager.GetString("GEXP_IFC_FLAECHENBEZOGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Körper: Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen ({0}). ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_GEOMETRIE_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_GEOMETRIE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzmodell: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Körper sind schematisch erzeugt und bilden den tatsächlichen Grundriss nicht ab. Maße nicht abgreifen. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_KENNZEICHNUNG_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_KENNZEICHNUNG_SCHEMATISCH", resourceCulture);
             }
         }
         
@@ -30621,6 +30666,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_IFC_NEIGUNG_BEZUG {
             get {
                 return ResourceManager.GetString("GEXP_IFC_NEIGUNG_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (schematisch) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_PROJEKT_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_PROJEKT_SCHEMATISCH", resourceCulture);
             }
         }
         
@@ -31372,7 +31426,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Daten ohne Geometrie ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen, Bauteilflächen und Schichtaufbauten mit Ergebnissen; schematische Körper, soweit das Modell Umrisse kennt ähnelt.
         /// </summary>
         public static string GEXP_STUFE_DATEN {
             get {
