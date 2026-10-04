@@ -195,6 +195,12 @@ else if (_ansicht == Seitenschluessel.BauteilaufbauKatalog && _bauteilaufbauKata
     <EPOS.UI.Dialoge.Bedarf.BauteilaufbauDialog @attributes="_bauteilaufbauKatalog"
                                                 Geschlossen="BeiBauteilaufbauKatalogFertig" />
 }
+@* DIE KAELTEMASCHINEN (KU3-1): dieselbe Bauart wie die Kataloge der Gebaeudesimulation. *@
+else if (_ansicht == Seitenschluessel.KaeltemaschineKatalog && _kaeltemaschineKatalog is not null)
+{
+    <EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKatalogDialog @attributes="_kaeltemaschineKatalog"
+                                                          Geschlossen="BeiKaeltemaschineKatalogFertig" />
+}
 @* DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2): eine
    freie Ansicht wie die Kataloge der Gebaeudesimulation - die Huelle liegt plattformfrei in
    EPOS.UI.Daten (BetriebskalenderHuelle). *@
@@ -446,6 +452,7 @@ else
     private IReadOnlyDictionary<string, object>? _nutzungsartKatalog;
     private IReadOnlyDictionary<string, object>? _baustoffKatalog;
     private IReadOnlyDictionary<string, object>? _bauteilaufbauKatalog;
+    private IReadOnlyDictionary<string, object>? _kaeltemaschineKatalog;
     private IReadOnlyDictionary<string, object>? _betriebskalender;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
@@ -667,6 +674,13 @@ else
     /// <c>IProjektQuelle.BauteilaufbauKatalogGaben</c>.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Verwaltung „Kältemaschinen" (KU3-1) — dieselbe Form wie
+    /// <see cref="BaustoffKatalogGaben"/>; ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.KaeltemaschineKatalogGaben</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? KaeltemaschineKatalogGaben { get; set; }
 
     /// <summary>
     /// Der Parametersatz der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) — dieselbe
@@ -1289,6 +1303,15 @@ else
             return true;
         }
 
+        // ---- Die Kaeltemaschinen (KU3-1) - derselbe Weg ---------------------------
+        if (maske == Seitenschluessel.KaeltemaschineKatalog)
+        {
+            _kaeltemaschineKatalog = KaeltemaschineKatalogGaben?.Invoke() ?? Quelle.KaeltemaschineKatalogGaben();
+            if (_kaeltemaschineKatalog is null) { _statuszeile = KeinKaeltemaschineKatalogText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         // ---- Die Betriebskalender der Bedarfsprofile (PW2, BW2) ------------------
         if (maske == Seitenschluessel.Betriebskalender)
         {
@@ -1519,6 +1542,7 @@ else
         // Brauchwasser-Nutzungsarten (ZU26).
         _baustoffKatalog = null;
         _bauteilaufbauKatalog = null;
+        _kaeltemaschineKatalog = null;
         _betriebskalender = null;
         _nutzungsartKatalog = null;
         _auslegungGeklaert = true;
@@ -1583,6 +1607,9 @@ else
 
     /// <summary>Die Baustoffverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiBaustoffKatalogFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Die Verwaltung der Kältemaschinen ist zu — sie schreibt in ihrem Speicherweg.</summary>
+    private void BeiKaeltemaschineKatalogFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>Die Aufbauverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiBauteilaufbauKatalogFertig(bool ok) => ZurueckZurListe();
@@ -1902,6 +1929,8 @@ else
            // Assistent (dialog_oeffnen) erreichen sie auf beiden Plattformen.
            || maske == Seitenschluessel.BaustoffKatalog
            || maske == Seitenschluessel.BauteilaufbauKatalog
+           // Die Kaeltemaschinen (KU3-1) - dieselbe Bauart, auf beiden Plattformen.
+           || maske == Seitenschluessel.KaeltemaschineKatalog
            || maske == Seitenschluessel.Betriebskalender
 
            // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
@@ -2127,6 +2156,9 @@ else
 
     /// <summary>Meldung, wenn die Aufbauverwaltung nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBauteilaufbauKatalogText { get; set; } = Resource.BTA_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn die Verwaltung der Kältemaschinen nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinKaeltemaschineKatalogText { get; set; } = Resource.KM_KEINE_ANSICHT;
 
     /// <summary>Meldung, wenn die Verwaltung der Betriebskalender nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBetriebskalenderText { get; set; } = Resource.BKAL_KEINE_ANSICHT;

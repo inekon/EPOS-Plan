@@ -2789,6 +2789,25 @@ namespace Testdatenbankschema
                                   ZonenUebergabeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KaeltemaschineSchema.SCHRITT (KU3-1, E67/E68): Katalog, Projektkopie und Kennlinien der
+            //      Kaeltemaschine samt drei Beispielgeraeten. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Kaeltemaschine bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Projekt fuehrt eine Kaeltemaschine.
+            string nrKaeltemaschine = KaeltemaschineSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKaeltemaschine + " - Kaeltemaschine: " +
+                              (KaeltemaschineSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKm = new List<string>();
+                tabellen += KaeltemaschineSchema.Ausfuehren(berichtKm);
+                foreach (string zeile in berichtKm)
+                    Console.WriteLine("Schritt " + nrKaeltemaschine + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKaeltemaschine + " - vollstaendig: " +
+                                  KaeltemaschineSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

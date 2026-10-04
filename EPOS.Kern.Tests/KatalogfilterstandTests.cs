@@ -123,7 +123,7 @@ namespace EPOS.Kern.Tests
 
             var alle = Katalogfilterprofil.AlleArten.ToList();
             foreach (Anlagenart art in alle) Katalogfilterregister.Stand(art);
-            Assert.Equal(8, alle.Count);
+            Assert.Equal(9, alle.Count);                                 // KU3-1: + Kaeltemaschine
             Assert.All(alle, art => Assert.True(Katalogfilterregister.Bekannt(art)));
         }
 

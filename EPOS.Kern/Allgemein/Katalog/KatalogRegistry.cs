@@ -250,6 +250,25 @@ namespace WindowsFormsApplication1
             },
             new KatalogDefinition
             {
+                // KU3-1: die Kaeltemaschine. "Modulkosten" ist ein Anwenderfeld wie bei der Waermepumpe.
+                Schluessel = "KAELTEMASCHINE",
+                Tabelle = KaeltemaschineSchema.TAB_STAMM,
+                AusschlussSpalten = new[] { KaeltemaschineSchema.SPALTE_MODULKOSTEN },
+                Datenbloecke = new[]
+                {
+                    new KatalogDatenblock
+                    {
+                        Tabelle = KaeltemaschineSchema.TAB_KENNDATEN_STAMM,
+                        FkSpalte = KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE,
+                        Sortierung = KaeltemaschineSchema.SPALTE_RUECKKUEHLTEMPERATUR + ", " + KaeltemaschineSchema.SPALTE_KALTWASSERTEMPERATUR,
+                        WertSpalten = KaeltemaschineSchema.KennlinienSpalten
+                    }
+                }
+                // VerwendungsPruefungen: LEER - Kopiersemantik. Projekte verweisen auf die Projektkopie
+                // Tab_Kaeltemaschine (KaeltemaschineCtrl.AusKatalogUebernehmen), nie auf den Katalog.
+            },
+            new KatalogDefinition
+            {
                 Schluessel = "BHKW",
                 Tabelle = "Tab_BHKW_STAMM",
                 AusschlussSpalten = new[] { "Investition_kwel", "Wartungskosten_kwhel",

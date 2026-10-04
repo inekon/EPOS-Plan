@@ -421,7 +421,20 @@ namespace WindowsFormsApplication1
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_WECHSELRICHTER" },
         };
 
-        private static readonly Katalogtabelle[] ALLE = STUFE1.Concat(STUFE2).ToArray();
+        // Stufe 3: Kataloge, die NACH den Schritten der Katalogfassung entstehen. Sie stehen nicht in
+        // Stufe 1 oder 2, weil deren Schritte ihre Tabellen sonst als „unvollständig“ fänden, solange
+        // eine ältere Datenbank den späteren Schritt noch nicht gelaufen hat; ihr eigener Schemaschritt
+        // legt Katalogspalten und Schlüssel an (KaeltemaschineSchema, KU3-1).
+        private static readonly Katalogtabelle[] STUFE3 =
+        {
+            new Katalogtabelle(KaeltemaschineSchema.TAB_STAMM, "KM",
+                KaeltemaschineSchema.Fachspalten,
+                new Katalogkind(KaeltemaschineSchema.TAB_KENNDATEN_STAMM, KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE,
+                                KaeltemaschineSchema.KennlinienSpalten))
+            { Stufe = 3, Anzeigeschluessel = "KABG_KATALOG_KAELTEMASCHINE" },
+        };
+
+        private static readonly Katalogtabelle[] ALLE = STUFE1.Concat(STUFE2).Concat(STUFE3).ToArray();
 
         /// <summary>Die Katalogtabellen der Stufe 1 in fester Folge.</summary>
         public static IReadOnlyList<Katalogtabelle> Stufe1 => STUFE1;
@@ -429,7 +442,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die Katalogtabellen der Stufe 2 in fester Folge (Verweisziele vor ihren Verweisern).</summary>
         public static IReadOnlyList<Katalogtabelle> Stufe2 => STUFE2;
 
-        /// <summary>Das ganze Register: Stufe 1, dann Stufe 2.</summary>
+        /// <summary>Die Katalogtabellen der Stufe 3 — eigener Schemaschritt nach der Katalogfassung.</summary>
+        public static IReadOnlyList<Katalogtabelle> Stufe3 => STUFE3;
+
+        /// <summary>Das ganze Register: Stufe 1, dann Stufe 2, dann Stufe 3.</summary>
         public static IReadOnlyList<Katalogtabelle> Alle => ALLE;
 
         /// <summary>

@@ -1312,6 +1312,45 @@
         /// <summary>Die Verwaltung „Bauteilaufbauten" (G3).</summary>
         internal static string MaskeBauteilaufbau => MyResource.Resource.KI_DLG_MASKE_BTA;
 
+        // ================= KU3-1: die Verwaltung der Kältemaschinen
+
+        /// <summary>Die Verwaltung „Kältemaschinen" (KU3-1).</summary>
+        internal static string MaskeKaeltemaschineKatalog => MyResource.Resource.KI_DLG_MASKE_KM;
+        internal static string KmGeraetName => MyResource.Resource.KI_DLG_KM_GERAET_NAME;
+        internal static string KmGeraetErl => MyResource.Resource.KI_DLG_KM_GERAET_ERL;
+        internal static string KmBezeichnerName => MyResource.Resource.KM_LBL_BEZEICHNER;
+        internal static string KmBezeichnerErl => MyResource.Resource.KI_DLG_KM_BEZEICHNER_ERL;
+        internal static string KmFirmaName => MyResource.Resource.KM_LBL_FIRMA;
+        internal static string KmFirmaErl => MyResource.Resource.KI_DLG_KM_FIRMA_ERL;
+        internal static string KmTypName => MyResource.Resource.KM_LBL_TYP;
+        internal static string KmTypErl => MyResource.Resource.KI_DLG_KM_TYP_ERL;
+        internal static string KmBeschreibungName => MyResource.Resource.KM_LBL_BESCHREIBUNG;
+        internal static string KmBeschreibungErl => MyResource.Resource.KI_DLG_KM_BESCHREIBUNG_ERL;
+        internal static string KmNennkaelteleistungName => MyResource.Resource.KM_LBL_NENNKAELTELEISTUNG;
+        internal static string KmNennkaelteleistungErl => MyResource.Resource.KI_DLG_KM_NENNKAELTELEISTUNG_ERL;
+        internal static string KmNennEerName => MyResource.Resource.KM_LBL_NENN_EER;
+        internal static string KmNennEerErl => MyResource.Resource.KI_DLG_KM_NENN_EER_ERL;
+        internal static string KmKaeltemittelName => MyResource.Resource.KM_LBL_KAELTEMITTEL;
+        internal static string KmKaeltemittelErl => MyResource.Resource.KI_DLG_KM_KAELTEMITTEL_ERL;
+        internal static string KmRueckkuehlartName => MyResource.Resource.KM_LBL_RUECKKUEHLART;
+        internal static string KmRueckkuehlartErl => MyResource.Resource.KI_DLG_KM_RUECKKUEHLART_ERL;
+        internal static string KmMindestteillastName => MyResource.Resource.KM_LBL_MINDESTTEILLAST;
+        internal static string KmMindestteillastErl => MyResource.Resource.KI_DLG_KM_MINDESTTEILLAST_ERL;
+        internal static string KmHilfsstromName => MyResource.Resource.KM_LBL_HILFSSTROM;
+        internal static string KmHilfsstromErl => MyResource.Resource.KI_DLG_KM_HILFSSTROM_ERL;
+        internal static string KmKaltwasserMinName => MyResource.Resource.KM_LBL_KALTWASSER_MIN;
+        internal static string KmKaltwasserMinErl => MyResource.Resource.KI_DLG_KM_KALTWASSER_MIN_ERL;
+        internal static string KmModulkostenName => MyResource.Resource.KM_LBL_MODULKOSTEN;
+        internal static string KmModulkostenErl => MyResource.Resource.KI_DLG_KM_MODULKOSTEN_ERL;
+        internal static string KmPunktRueckkuehltemperaturName => MyResource.Resource.KM_SP_RUECKKUEHLTEMPERATUR;
+        internal static string KmPunktRueckkuehltemperaturErl => MyResource.Resource.KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL;
+        internal static string KmPunktKaltwassertemperaturName => MyResource.Resource.KM_SP_KALTWASSERTEMPERATUR;
+        internal static string KmPunktKaltwassertemperaturErl => MyResource.Resource.KI_DLG_KM_KALTWASSERTEMPERATUR_ERL;
+        internal static string KmPunktEerName => MyResource.Resource.KM_SP_EER;
+        internal static string KmPunktEerErl => MyResource.Resource.KI_DLG_KM_EER_ERL;
+        internal static string KmPunktKaelteleistungName => MyResource.Resource.KM_SP_KAELTELEISTUNG;
+        internal static string KmPunktKaelteleistungErl => MyResource.Resource.KI_DLG_KM_KAELTELEISTUNG_ERL;
+
         /// <summary>Einheit der Waermeleitfaehigkeit — Symbol, keine Uebersetzung.</summary>
         internal const string EINHEIT_LAMBDA = "W/(m·K)";
 

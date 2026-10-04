@@ -885,11 +885,15 @@ namespace WindowsFormsApplication1
         /// mittlere Kreistemperaturen und Begrenzungsstunden an <c>Tab_ErgebnisZone</c>
         /// (<see cref="ZonenUebergabeSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer. Die Nummer
         /// steht allein bei <see cref="ZonenUebergabeSchema.SCHRITT"/>.
+        /// Danach, mit der KÄLTEMASCHINE (KU3-1, E67/E68), steht das Ziel auf
+        /// <see cref="KaeltemaschineSchema.SCHRITT"/>: Katalog, Projektkopie und Kennlinien der Kältemaschine
+        /// samt drei Beispielgeräten (<see cref="KaeltemaschineSchema"/>). <b>Ergebnisneutral:</b> Kein Projekt
+        /// führt eine Kältemaschine. Die Nummer steht allein bei <see cref="KaeltemaschineSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ZonenUebergabeSchema.SCHRITT;
+        public const int Zielversion = KaeltemaschineSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

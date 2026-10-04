@@ -196,7 +196,8 @@ public class MenuebandTests : EposBunitContext
         // BRENNSTOFFE DES PROJEKTS (Anwenderentscheid 03.10.2026): „Kosten" fuehrt hinter den
         // Energietraegern die Projektkopie des Brennstoffkatalogs - ein neuer Weg. Also 66 Punkte
         // und 52 Handlungen.
-        Assert.Equal(66, Punkte.Count);
+        // KU3-1: der Punkt „Kältemaschinen" neben der Wärmepumpe (66 -> 67, 52 -> 53).
+        Assert.Equal(67, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -291,6 +292,8 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_Kessel",
             "MenuItem_BHKW",
             "MenuItem_WP",
+            // KU3-1: die Kaeltemaschinen neben der Waermepumpe.
+            "MenuItem_Kaeltemaschinen",
             "MenuItem_Solarkollektoren",
         }, Kinder(wbund));
 
@@ -877,6 +880,8 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.GebaeudeAdmin,
             Seitenschluessel.GebaeudetypenAdmin,
             Seitenschluessel.Gesetzeskatalog,
+            // KU3-1: das NEUE Ziel neben der Waermepumpe - die Kaeltemaschinen.
+            Seitenschluessel.KaeltemaschineKatalog,
             Seitenschluessel.HeizkesselAdmin,
             Seitenschluessel.HeizkesselImport,
             // KU1 Stufe 1: das NEUE Ziel „Katalog aktualisieren…".
@@ -1251,7 +1256,7 @@ public class MenuebandTests : EposBunitContext
         Assert.Equal(14, Punkte.Count(p => p.Klappt));
         //
         // „Brennstoffe des Projekts…" (Anwenderentscheid 03.10.2026) ist ein echter Weg (51 -> 52).
-        Assert.Equal(52, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(53, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

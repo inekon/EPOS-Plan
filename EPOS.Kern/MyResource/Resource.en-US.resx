@@ -44632,5 +44632,215 @@ chart</value>
   <data name="GEXP_ANR_MSG_GESPEICHERT" xml:space="preserve">
     <value>The enriched file was saved: {0} ({1} bytes). Objects: {2}, supplemented: {3}, replaced: {4}, skipped: {5}.</value>
   </data>
+  <data name="KABG_KATALOG_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chillers</value>
+  </data>
+  <data name="KM_MSG_RUECKKUEHLART_UNGUELTIG" xml:space="preserve">
+    <value>The heat rejection type is unknown.</value>
+  </data>
+  <data name="KM_MSG_NENNWERT_UNGUELTIG" xml:space="preserve">
+    <value>Rated cooling capacity and rated EER must be greater than zero; auxiliary power and price must not be negative.</value>
+  </data>
+  <data name="KM_MSG_TEILLAST_UNGUELTIG" xml:space="preserve">
+    <value>The minimum part load must be between 0 and 100 %.</value>
+  </data>
+  <data name="KM_MSG_KENNLINIE_UNGUELTIG" xml:space="preserve">
+    <value>A performance map point has an EER ≤ 0 or a negative cooling capacity.</value>
+  </data>
+  <data name="KM_MSG_KENNLINIE_DOPPELT" xml:space="preserve">
+    <value>The performance map contains the same combination of heat rejection and chilled water temperature twice.</value>
+  </data>
+  <data name="KM_MSG_AUSGELIEFERT" xml:space="preserve">
+    <value>This record belongs to the delivered catalogue and is not overwritten. Create a copy.</value>
+  </data>
+  <data name="KM_TITEL" xml:space="preserve">
+    <value>Chillers</value>
+  </data>
+  <data name="KM_TITEL_NEU" xml:space="preserve">
+    <value>New chiller</value>
+  </data>
+  <data name="KM_LEER" xml:space="preserve">
+    <value>The catalogue contains no chiller yet – “New…” creates one.</value>
+  </data>
+  <data name="KM_KEINE_ANSICHT" xml:space="preserve">
+    <value>Chiller management is not yet available on this device.</value>
+  </data>
+  <data name="KM_GRUPPE_KENNLINIE" xml:space="preserve">
+    <value>Performance curve</value>
+  </data>
+  <data name="KM_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KM_LBL_FIRMA" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="KM_LBL_TYP" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="KM_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="KM_LBL_NENNKAELTELEISTUNG" xml:space="preserve">
+    <value>Rated cooling capacity</value>
+  </data>
+  <data name="KM_LBL_NENN_EER" xml:space="preserve">
+    <value>Rated EER</value>
+  </data>
+  <data name="KM_LBL_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerant</value>
+  </data>
+  <data name="KM_LBL_RUECKKUEHLART" xml:space="preserve">
+    <value>Heat rejection</value>
+  </data>
+  <data name="KM_LBL_MINDESTTEILLAST" xml:space="preserve">
+    <value>Minimum part load</value>
+  </data>
+  <data name="KM_LBL_HILFSSTROM" xml:space="preserve">
+    <value>Auxiliary power of heat rejection</value>
+  </data>
+  <data name="KM_HILFSSTROM_LEER" xml:space="preserve">
+    <value>empty = included in the EER</value>
+  </data>
+  <data name="KM_LBL_KALTWASSER_MIN" xml:space="preserve">
+    <value>Lowest chilled water supply</value>
+  </data>
+  <data name="KM_LBL_MODULKOSTEN" xml:space="preserve">
+    <value>Unit price</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
+    <value>(not specified)</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_LUFT" xml:space="preserve">
+    <value>Air-cooled</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_WASSER" xml:space="preserve">
+    <value>Water-cooled</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_TROCKENKUEHLER" xml:space="preserve">
+    <value>Dry cooler</value>
+  </data>
+  <data name="KM_RUECKKUEHLART_NASSKUEHLER" xml:space="preserve">
+    <value>Wet cooling tower</value>
+  </data>
+  <data name="KM_SP_RUECKKUEHLTEMPERATUR" xml:space="preserve">
+    <value>Heat rejection temperature</value>
+  </data>
+  <data name="KM_SP_KALTWASSERTEMPERATUR" xml:space="preserve">
+    <value>Chilled water temperature</value>
+  </data>
+  <data name="KM_SP_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="KM_SP_KAELTELEISTUNG" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="KM_KENNLINIE_RASTER" xml:space="preserve">
+    <value>Curve points</value>
+  </data>
+  <data name="KM_KENNLINIE_PUNKT" xml:space="preserve">
+    <value>Point {0}</value>
+  </data>
+  <data name="KM_KENNLINIE_NEU" xml:space="preserve">
+    <value>+ Add curve point</value>
+  </data>
+  <data name="KM_KENNLINIE_LEER" xml:space="preserve">
+    <value>The curve has no point yet.</value>
+  </data>
+  <data name="KM_KENNLINIE_ENTFERNEN" xml:space="preserve">
+    <value>Remove point</value>
+  </data>
+  <data name="KM_KENNLINIE_ANZAHL" xml:space="preserve">
+    <value>{0} curve points</value>
+  </data>
+  <data name="KM_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the chiller “{0}”?</value>
+  </data>
+  <data name="KM_MSG_ANGELEGT" xml:space="preserve">
+    <value>“{0}” created.</value>
+  </data>
+  <data name="KM_MSG_GELOESCHT" xml:space="preserve">
+    <value>“{0}” deleted.</value>
+  </data>
+  <data name="KM_MSG_FEHLER" xml:space="preserve">
+    <value>The chiller could not be written.</value>
+  </data>
+  <data name="KM_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>The catalogue already contains this name.</value>
+  </data>
+  <data name="KM_MSG_NAME_LEER" xml:space="preserve">
+    <value>The chiller needs a name.</value>
+  </data>
+  <data name="MENU_KAELTEMASCHINEN" xml:space="preserve">
+    <value>Chillers</value>
+  </data>
+  <data name="KFLT_SP_NENNKAELTELEISTUNG" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="KFLT_SP_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="KFLT_SP_RUECKKUEHLART" xml:space="preserve">
+    <value>Heat rejection</value>
+  </data>
+  <data name="KI_DLG_MASKE_KM" xml:space="preserve">
+    <value>Chillers</value>
+  </data>
+  <data name="KI_DLG_KM_GERAET_NAME" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="KI_DLG_KM_GERAET_ERL" xml:space="preserve">
+    <value>Selects the catalogue record of the management view – like a click in the list; the key is the id.</value>
+  </data>
+  <data name="KI_DLG_KM_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Name of the unit; unique in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_KM_FIRMA_ERL" xml:space="preserve">
+    <value>Manufacturer as free text.</value>
+  </data>
+  <data name="KI_DLG_KM_TYP_ERL" xml:space="preserve">
+    <value>Type designation as free text.</value>
+  </data>
+  <data name="KI_DLG_KM_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free text about the unit.</value>
+  </data>
+  <data name="KI_DLG_KM_NENNKAELTELEISTUNG_ERL" xml:space="preserve">
+    <value>Cooling capacity at the rating point in kW; greater than zero.</value>
+  </data>
+  <data name="KI_DLG_KM_NENN_EER_ERL" xml:space="preserve">
+    <value>Energy efficiency ratio at the rating point; greater than zero.</value>
+  </data>
+  <data name="KI_DLG_KM_KAELTEMITTEL_ERL" xml:space="preserve">
+    <value>Refrigerant as free text.</value>
+  </data>
+  <data name="KI_DLG_KM_RUECKKUEHLART_ERL" xml:space="preserve">
+    <value>How the unit rejects its heat: air-cooled, water-cooled, dry cooler or wet cooling tower; heat rejection is part of the machine.</value>
+  </data>
+  <data name="KI_DLG_KM_MINDESTTEILLAST_ERL" xml:space="preserve">
+    <value>Lowest part load as a percentage of the rated cooling capacity (0 to 100).</value>
+  </data>
+  <data name="KI_DLG_KM_HILFSSTROM_ERL" xml:space="preserve">
+    <value>Electrical power of heat rejection at the rating point in kW; empty means included in the EER.</value>
+  </data>
+  <data name="KI_DLG_KM_KALTWASSER_MIN_ERL" xml:space="preserve">
+    <value>Lowest permissible chilled water supply in °C.</value>
+  </data>
+  <data name="KI_DLG_KM_MODULKOSTEN_ERL" xml:space="preserve">
+    <value>Unit price in euros; not negative.</value>
+  </data>
+  <data name="KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL" xml:space="preserve">
+    <value>Inlet temperature of the heat rejection medium at the curve point in °C (air-cooled: outdoor air).</value>
+  </data>
+  <data name="KI_DLG_KM_KALTWASSERTEMPERATUR_ERL" xml:space="preserve">
+    <value>Chilled water supply at the curve point in °C; unique per unit together with the heat rejection temperature.</value>
+  </data>
+  <data name="KI_DLG_KM_EER_ERL" xml:space="preserve">
+    <value>EER at the curve point; greater than zero.</value>
+  </data>
+  <data name="KI_DLG_KM_KAELTELEISTUNG_ERL" xml:space="preserve">
+    <value>Cooling capacity at the curve point in kW; not negative.</value>
+  </data>
+  <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
+    <value>Every curve point needs a heat rejection and a chilled water temperature.</value>
+  </data>
 </root>
 

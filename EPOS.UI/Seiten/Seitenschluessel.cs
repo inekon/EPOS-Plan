@@ -375,6 +375,14 @@ public static class Seitenschluessel
     public const string BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG";
 
     /// <summary>
+    /// Menue „Administration -> Wärmebedarf &amp; Heizung -> Kältemaschinen" (<c>KaeltemaschineKatalogDialog</c>,
+    /// KU3-1) — dieselbe Lage wie <see cref="BaustoffKatalog"/>: eine freie Ansicht der Wurzel auf beiden
+    /// Plattformen; der Kern fuehrt dieselbe Zeichenkette als Ziel des Assistenten
+    /// (<c>KiMaskenziele.KAELTEMASCHINE_KATALOG</c>).
+    /// </summary>
+    public const string KaeltemaschineKatalog = "KAELTEMASCHINE_KATALOG";
+
+    /// <summary>
     /// Menue „Administration -> Wärmebedarf &amp; Heizung -> Profile &amp; Lastgänge -> Betriebskalender"
     /// (<c>BetriebskalenderDialog</c>; Entscheidungsvorlage Modellgrenzen PW2, BW2) — eine freie
     /// Ansicht der Wurzel wie die Kataloge der Gebäudesimulation.
@@ -472,7 +480,7 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
-        BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender,
+        BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender, KaeltemaschineKatalog,
         Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch

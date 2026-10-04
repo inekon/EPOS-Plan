@@ -278,6 +278,8 @@ namespace WindowsFormsApplication1
                                         // der Original-Id zeigte er dort auf ein fremdes Geraet
                                         // oder legte einen Katalogsatz an.
                                         if (IstWaermepumpenkatalog(fk.RefTab)) continue;
+                                        // Dieselbe Regel fuer den Katalog der Kaeltemaschine (KU3-1).
+                                        if (string.Equals(fk.RefTab, KaeltemaschineSchema.TAB_STAMM, StringComparison.OrdinalIgnoreCase)) continue;
                                         // Die Katalogverweise der Pufferauslegung (Welle P4c) reisen
                                         // nicht: Konditionierungsvorlage und Pufferkatalog des Ziels
                                         // kennen die Id nicht oder unter einem anderen Satz.
@@ -1308,6 +1310,11 @@ namespace WindowsFormsApplication1
             if (wp != null && wp.ContainsKey(WaermepumpeKatalogverweis.SPALTE))
                 foreach (int id in ids)
                     v.Ausfuehren(WaermepumpeKatalogverweis.SqlNachtragProjekt(), new DbParam("@projekt", id));
+
+            Dictionary<string, Type> km = ZielTypen(KaeltemaschineSchema.TAB_PROJEKT);
+            if (km != null && km.ContainsKey(KaeltemaschineSchema.SPALTE_ID_STAMM))
+                foreach (int id in ids)
+                    v.Ausfuehren(KaeltemaschineSchema.SqlNachtragProjekt(), new DbParam("@projekt", id));
         }
 
         // ---- Umschlüsselung ----------------------------------------------------------------
@@ -1329,6 +1336,10 @@ namespace WindowsFormsApplication1
             // Dieselbe Regel fuer den Katalogverweis der Waermepumpen-Projektkopie (Schritt 80).
             if (tab.Equals(WaermepumpeKatalogverweis.TABELLE, StringComparison.OrdinalIgnoreCase) &&
                 col.Equals(WaermepumpeKatalogverweis.SPALTE, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+            // Ebenso der Katalogverweis der Kaeltemaschinen-Projektkopie (KU3-1).
+            if (tab.Equals(KaeltemaschineSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(KaeltemaschineSchema.SPALTE_ID_STAMM, StringComparison.OrdinalIgnoreCase))
                 return DBNull.Value;
 
             // Der Katalogverweis des Projektpuffers (Welle P4c) reist nicht - die Id eines fremden

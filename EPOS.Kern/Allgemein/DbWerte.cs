@@ -61,6 +61,12 @@ namespace WindowsFormsApplication1
         public const string ERZEUGER_BHKW = "BHKW";
         public const string ERZEUGER_PHOTOVOLTAIK = "Photovoltaik";
         public const string ERZEUGER_STROMSPEICHER = "Stromspeicher";
+        /// <summary>
+        /// Erzeugerart „Kältemaschine“ (KU3-1, Schritt <see cref="KaeltemaschineSchema.SCHRITT"/>): der eigene
+        /// Kälteerzeuger neben der Wärmepumpe im Kühlbetrieb. Erzeugerdialog und Rechenweg folgen (KU3-2, KU3-4).
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string ERZEUGER_KAELTEMASCHINE = "Kältemaschine";
 
         /// <summary>
         /// Sammelzuordnung in <c>Z_ProjektPufferSp.Erzeuger</c>: der Puffer gehört keinem
@@ -186,6 +192,10 @@ namespace WindowsFormsApplication1
         /// <summary>Bestandskomponente „BHKW" (<c>ID = 7</c>).
         /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
         public const string KOSTEN_KOMPONENTE_BHKW = "BHKW";
+        /// <summary>Komponente „Kältemaschine“ (KU3-1). Die Zeile in <c>Tab_KostenKomponente</c> legt erst die
+        /// Welle der Wirtschaftlichkeit an, zusammen mit Kostengruppe, Vorlagen und Nutzungsdauer.
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_KAELTEMASCHINE = "Kältemaschine";
 
         // =====================================================================
         // Nebenkosten-Positionen einer Kostenkomponente

@@ -150,6 +150,8 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.GebaeudetypKiSicht) },
         { KiMaskennamen.BAUSTOFF_KATALOG,
           typeof(EPOS.UI.Dialoge.Bedarf.BaustoffKatalogKiSicht) },
+        { KiMaskennamen.KAELTEMASCHINE_KATALOG,
+          typeof(EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKatalogKiSicht) },
         { KiMaskennamen.BAUTEILAUFBAU,
           typeof(EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht) },
 
@@ -465,7 +467,7 @@ public class KiDialogkatalogTests : IDisposable
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
-        Assert.Equal(90, katalog.Anzahl);
+        Assert.Equal(91, katalog.Anzahl);                            // KU3-1: + Kältemaschinen
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -879,6 +881,8 @@ public class KiDialogkatalogTests : IDisposable
                      KiMaskenziele.BAUTEILAUFBAU_KATALOG);
         Assert.Equal(KiMaskenziele.BAUSTOFF_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUSTOFF_KATALOG));
         Assert.Equal(KiMaskenziele.BAUTEILAUFBAU_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUTEILAUFBAU));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineKatalog, KiMaskenziele.KAELTEMASCHINE_KATALOG);
+        Assert.Equal(KiMaskenziele.KAELTEMASCHINE_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMASCHINE_KATALOG));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Betriebskalender, KiMaskenziele.BETRIEBSKALENDER);
         Assert.Equal(KiMaskenziele.BETRIEBSKALENDER, KiMaskenziele.Ziel(KiMaskennamen.BETRIEBSKALENDER));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.PufferAuslegung, KiMaskenziele.PUFFER_AUSLEGUNG);
@@ -1610,6 +1614,10 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.BAUSTOFF_KATALOG] =
             "bindet über die Sichtklasse BaustoffKatalogKiSicht auf die Satzwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BaustoffKatalogDialogTests",
+        [KiMaskennamen.KAELTEMASCHINE_KATALOG] =
+            "bindet über die Sichtklasse KaeltemaschineKatalogKiSicht auf die Satzwahl, die Kenndaten " +
+            "(Rückkühlart über den Listenplatz) und das Kennlinienraster des Arbeitsstands; Zeuge ist " +
+            "KaeltemaschineKatalogDialogTests",
         [KiMaskennamen.BAUTEILAUFBAU] =
             "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf und das " +
             "Schichtenraster des Arbeitsstands; Zeuge ist BauteilaufbauDialogTests",

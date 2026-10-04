@@ -140,6 +140,10 @@ namespace WindowsFormsApplication1
                 ["BauteilaufbauKatalogGaben"] =
                     new Func<IReadOnlyDictionary<string, object>>(BauteilaufbauHuelle.Gaben),
 
+                // DIE KAELTEMASCHINEN (KU3-1) - dieselbe Bauart, die Huelle liegt in EPOS.UI.Daten.
+                ["KaeltemaschineKatalogGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogHuelle.Gaben),
+
                 // DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage PW2, BW2) als freie
                 // Ansicht der Wurzel - dieselbe Bauart wie die Kataloge darueber.
                 ["BetriebskalenderGaben"] =

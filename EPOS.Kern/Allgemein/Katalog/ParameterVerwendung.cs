@@ -43,7 +43,15 @@ namespace WindowsFormsApplication1
         /// Anwenderentscheid W6-E-2 vom 06.09.2026 (Stufe S1 des
         /// Konzept_Wechselrichter_EPOS-Plan.md).
         /// </summary>
-        Wechselrichter
+        Wechselrichter,
+
+        /// <summary>
+        /// <c>Tab_Kaeltemaschine_STAMM</c> (die Kennlinie steht in <c>Tab_Kenndaten_Kaeltemaschine_STAMM</c>) —
+        /// der NEUNTE Katalog (KU3-1). Er hat eine Verwaltung und ein Filterprofil; im
+        /// <see cref="ParameterVerwendung.AlleArten">Verwendungskatalog</see> steht er erst, wenn der
+        /// Rechenweg ihn liest — ohne gerechnete Spalte waere die Einstufung eine Behauptung.
+        /// </summary>
+        Kaeltemaschine
     }
 
     /// <summary>
@@ -183,6 +191,7 @@ namespace WindowsFormsApplication1
                 case Anlagenart.Stromspeicher: return StromspeicherStammCtrl.TABLE;
                 case Anlagenart.Pufferspeicher: return PufferSpStammCtrl.TABLE;
                 case Anlagenart.Wechselrichter: return WechselrichterStammCtrl.TABLE;
+                case Anlagenart.Kaeltemaschine: return KaeltemaschineStammCtrl.TABLE;
             }
             throw new ArgumentOutOfRangeException(nameof(art));
         }

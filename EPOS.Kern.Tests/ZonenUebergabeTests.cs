@@ -42,7 +42,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(ErdreichVorgabeSchema.SCHRITT + 1, ZonenUebergabeSchema.SCHRITT);
             Assert.Equal(181, ZonenUebergabeSchema.SCHRITT);
-            Assert.Equal(ZonenUebergabeSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(ZonenUebergabeSchema.SCHRITT <= SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == ZonenUebergabeSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);

@@ -39868,6 +39868,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
         /// </summary>
         public static string KABG_KATALOG_KESSEL {
@@ -43289,6 +43298,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
+        /// </summary>
+        public static string KFLT_SP_EER {
+            get {
+                return ResourceManager.GetString("KFLT_SP_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die E ähnelt.
         /// </summary>
         public static string KFLT_SP_ENERGIE {
@@ -43559,6 +43577,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_NENNKAELTELEISTUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_NENNKAELTELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die P_N ähnelt.
         /// </summary>
         public static string KFLT_SP_NENNLEISTUNG {
@@ -43627,6 +43654,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_RHO {
             get {
                 return ResourceManager.GetString("KFLT_SP_RHO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_RUECKKUEHLART {
+            get {
+                return ResourceManager.GetString("KFLT_SP_RUECKKUEHLART", resourceCulture);
             }
         }
         
@@ -49872,6 +49908,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Gerät. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Geräts; im Katalog eindeutig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER im Kennlinienpunkt; größer als null. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_EER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_EER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller als Freitext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_FIRMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählt den Katalogsatz der Verwaltung – wie ein Klick in die Liste; Schlüssel ist die Id. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_GERAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_GERAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_GERAET_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_GERAET_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrische Leistung der Rückkühlung im Nennpunkt in kW; leer heißt im EER enthalten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_HILFSSTROM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_HILFSSTROM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung im Kennlinienpunkt in kW; nicht negativ. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_KAELTELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_KAELTELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel als Freitext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_KAELTEMITTEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_KAELTEMITTEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasservorlauf im Kennlinienpunkt in °C; mit der Rückkühltemperatur je Gerät eindeutig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_KALTWASSERTEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_KALTWASSERTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinster zulässiger Kaltwasservorlauf in °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_KALTWASSER_MIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_KALTWASSER_MIN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Teillast in Prozent der Nennkälteleistung (0 bis 100). ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_MINDESTTEILLAST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_MINDESTTEILLAST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis in Euro; nicht negativ. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_MODULKOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_MODULKOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung im Nennpunkt in kW; größer als null. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_NENNKAELTELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_NENNKAELTELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieeffizienzverhältnis im Nennpunkt; größer als null. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_NENN_EER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_NENN_EER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie das Gerät seine Wärme abgibt: luftgekühlt, wassergekühlt, Trockenkühler oder Nasskühlturm; die Rückkühlung gehört zur Maschine. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_RUECKKUEHLART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_RUECKKUEHLART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eintrittstemperatur des Rückkühlmediums im Kennlinienpunkt in °C (luftgekühlt: Außenluft). ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typbezeichnung als Freitext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_DLG_KNOPF_ABBRECHEN {
@@ -50606,6 +50804,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_KLIMA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KM {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KM", resourceCulture);
             }
         }
         
@@ -64127,6 +64334,420 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Kältemaschine „{0}“ gelöscht werden? ähnelt.
+        /// </summary>
+        public static string KM_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KM_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinie ähnelt.
+        /// </summary>
+        public static string KM_GRUPPE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("KM_GRUPPE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = im EER enthalten ähnelt.
+        /// </summary>
+        public static string KM_HILFSSTROM_LEER {
+            get {
+                return ResourceManager.GetString("KM_HILFSSTROM_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwaltung der Kältemaschinen steht auf diesem Gerät noch nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string KM_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("KM_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kennlinienpunkte ähnelt.
+        /// </summary>
+        public static string KM_KENNLINIE_ANZAHL {
+            get {
+                return ResourceManager.GetString("KM_KENNLINIE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt entfernen ähnelt.
+        /// </summary>
+        public static string KM_KENNLINIE_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("KM_KENNLINIE_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennlinie hat noch keinen Punkt. ähnelt.
+        /// </summary>
+        public static string KM_KENNLINIE_LEER {
+            get {
+                return ResourceManager.GetString("KM_KENNLINIE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Kennlinienpunkt hinzufügen ähnelt.
+        /// </summary>
+        public static string KM_KENNLINIE_NEU {
+            get {
+                return ResourceManager.GetString("KM_KENNLINIE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt {0} ähnelt.
+        /// </summary>
+        public static string KM_KENNLINIE_PUNKT {
+            get {
+                return ResourceManager.GetString("KM_KENNLINIE_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinienpunkte ähnelt.
+        /// </summary>
+        public static string KM_KENNLINIE_RASTER {
+            get {
+                return ResourceManager.GetString("KM_KENNLINIE_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string KM_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KM_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string KM_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("KM_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string KM_LBL_FIRMA {
+            get {
+                return ResourceManager.GetString("KM_LBL_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstrom Rückkühlung ähnelt.
+        /// </summary>
+        public static string KM_LBL_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("KM_LBL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel ähnelt.
+        /// </summary>
+        public static string KM_LBL_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("KM_LBL_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinster Kaltwasservorlauf ähnelt.
+        /// </summary>
+        public static string KM_LBL_KALTWASSER_MIN {
+            get {
+                return ResourceManager.GetString("KM_LBL_KALTWASSER_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestteillast ähnelt.
+        /// </summary>
+        public static string KM_LBL_MINDESTTEILLAST {
+            get {
+                return ResourceManager.GetString("KM_LBL_MINDESTTEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis ähnelt.
+        /// </summary>
+        public static string KM_LBL_MODULKOSTEN {
+            get {
+                return ResourceManager.GetString("KM_LBL_MODULKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung ähnelt.
+        /// </summary>
+        public static string KM_LBL_NENNKAELTELEISTUNG {
+            get {
+                return ResourceManager.GetString("KM_LBL_NENNKAELTELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nenn-EER ähnelt.
+        /// </summary>
+        public static string KM_LBL_NENN_EER {
+            get {
+                return ResourceManager.GetString("KM_LBL_NENN_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlart ähnelt.
+        /// </summary>
+        public static string KM_LBL_RUECKKUEHLART {
+            get {
+                return ResourceManager.GetString("KM_LBL_RUECKKUEHLART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string KM_LBL_TYP {
+            get {
+                return ResourceManager.GetString("KM_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt noch keine Kältemaschine – „Neu…“ legt eine an. ähnelt.
+        /// </summary>
+        public static string KM_LEER {
+            get {
+                return ResourceManager.GetString("KM_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ angelegt. ähnelt.
+        /// </summary>
+        public static string KM_MSG_ANGELEGT {
+            get {
+                return ResourceManager.GetString("KM_MSG_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Satz gehört zur Auslieferung und wird nicht überschrieben. Legen Sie eine Kopie an. ähnelt.
+        /// </summary>
+        public static string KM_MSG_AUSGELIEFERT {
+            get {
+                return ResourceManager.GetString("KM_MSG_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschine konnte nicht geschrieben werden. ähnelt.
+        /// </summary>
+        public static string KM_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("KM_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ gelöscht. ähnelt.
+        /// </summary>
+        public static string KM_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("KM_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennlinie enthält dieselbe Kombination aus Rückkühl- und Kaltwassertemperatur zweimal. ähnelt.
+        /// </summary>
+        public static string KM_MSG_KENNLINIE_DOPPELT {
+            get {
+                return ResourceManager.GetString("KM_MSG_KENNLINIE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Kennlinienpunkt braucht eine Rückkühl- und eine Kaltwassertemperatur. ähnelt.
+        /// </summary>
+        public static string KM_MSG_KENNLINIE_TEMPERATUR_LEER {
+            get {
+                return ResourceManager.GetString("KM_MSG_KENNLINIE_TEMPERATUR_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Kennlinienpunkt hat einen EER ≤ 0 oder eine negative Kälteleistung. ähnelt.
+        /// </summary>
+        public static string KM_MSG_KENNLINIE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_KENNLINIE_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Namen führt der Katalog bereits. ähnelt.
+        /// </summary>
+        public static string KM_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("KM_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschine braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("KM_MSG_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung und Nenn-EER müssen größer als null sein, Hilfsstrom und Preis dürfen nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string KM_MSG_NENNWERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_NENNWERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rückkühlart ist unbekannt. ähnelt.
+        /// </summary>
+        public static string KM_MSG_RUECKKUEHLART_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_RUECKKUEHLART_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Mindestteillast muss zwischen 0 und 100 % liegen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TEILLAST_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_TEILLAST_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Angabe) ähnelt.
+        /// </summary>
+        public static string KM_RUECKKUEHLART_KEINE {
+            get {
+                return ResourceManager.GetString("KM_RUECKKUEHLART_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftgekühlt ähnelt.
+        /// </summary>
+        public static string KM_RUECKKUEHLART_LUFT {
+            get {
+                return ResourceManager.GetString("KM_RUECKKUEHLART_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nasskühlturm ähnelt.
+        /// </summary>
+        public static string KM_RUECKKUEHLART_NASSKUEHLER {
+            get {
+                return ResourceManager.GetString("KM_RUECKKUEHLART_NASSKUEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trockenkühler ähnelt.
+        /// </summary>
+        public static string KM_RUECKKUEHLART_TROCKENKUEHLER {
+            get {
+                return ResourceManager.GetString("KM_RUECKKUEHLART_TROCKENKUEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wassergekühlt ähnelt.
+        /// </summary>
+        public static string KM_RUECKKUEHLART_WASSER {
+            get {
+                return ResourceManager.GetString("KM_RUECKKUEHLART_WASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
+        /// </summary>
+        public static string KM_SP_EER {
+            get {
+                return ResourceManager.GetString("KM_SP_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung ähnelt.
+        /// </summary>
+        public static string KM_SP_KAELTELEISTUNG {
+            get {
+                return ResourceManager.GetString("KM_SP_KAELTELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwassertemperatur ähnelt.
+        /// </summary>
+        public static string KM_SP_KALTWASSERTEMPERATUR {
+            get {
+                return ResourceManager.GetString("KM_SP_KALTWASSERTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühltemperatur ähnelt.
+        /// </summary>
+        public static string KM_SP_RUECKKUEHLTEMPERATUR {
+            get {
+                return ResourceManager.GetString("KM_SP_RUECKKUEHLTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
+        /// </summary>
+        public static string KM_TITEL {
+            get {
+                return ResourceManager.GetString("KM_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Kältemaschine ähnelt.
+        /// </summary>
+        public static string KM_TITEL_NEU {
+            get {
+                return ResourceManager.GetString("KM_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ doppelt angesetzt: Der erfasste Arbeitspreis weist einen aktiven CO₂-Bestandteil nach BEHG aus ({0}), und der Lauf bucht zusätzlich eine CO₂-Abgabe von {1} €/a. Derselbe Betrag steht damit zweimal in den Energiekosten — verrechnet wird nichts. ähnelt.
         /// </summary>
         public static string KOH_CO2_DOPPELT {
@@ -69705,6 +70326,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_IMPORT_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("MENU_IMPORT_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
+        /// </summary>
+        public static string MENU_KAELTEMASCHINEN {
+            get {
+                return ResourceManager.GetString("MENU_KAELTEMASCHINEN", resourceCulture);
             }
         }
         

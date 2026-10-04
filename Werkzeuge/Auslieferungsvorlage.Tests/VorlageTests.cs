@@ -221,7 +221,11 @@ namespace Auslieferungsvorlage.Tests
             // (ProzessNutzungSchema: Tab_Nutzungsprofil_STAMM, Z_Nutzungsprofil), STRICT von ihrer ersten
             // Zeile an. Die Schritte 176 (KonditionierungNutzungSchema) und 179 (PufferAuslegungErgaenzungSchema)
             // sind ADD COLUMN und aendern die Zahl nicht.
-            Assert.Equal(163, befund.Strict);
+            //
+            // 167 seit dem Schemaschritt 182 (KaeltemaschineSchema, KU3-1): Tab_Kaeltemaschine(_STAMM) und
+            // Tab_Kenndaten_Kaeltemaschine(_STAMM), STRICT von ihrer ersten Zeile an. Die Schritte 180 und 181
+            // sind ADD COLUMN und aendern die Zahl nicht.
+            Assert.Equal(167, befund.Strict);
         }
 
         // =============================================================================

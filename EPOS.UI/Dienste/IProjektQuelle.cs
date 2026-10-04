@@ -394,6 +394,12 @@ public interface IProjektQuelle
     IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben() => null;
 
     /// <summary>
+    /// Der fertige PARAMETERSATZ der Verwaltung „Kältemaschinen"
+    /// (<c>Dialoge.Erzeuger.KaeltemaschineKatalogDialog</c>, KU3-1); <c>null</c> = diese Hülle führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KaeltemaschineKatalogGaben() => null;
+
+    /// <summary>
     /// Der fertige PARAMETERSATZ der Verwaltung „Betriebskalender"
     /// (<c>Dialoge.Bedarf.BetriebskalenderDialog</c>; Entscheidungsvorlage PW2, BW2); <c>null</c> =
     /// diese Hülle führt sie nicht (die Wurzel nennt dann den Grund).

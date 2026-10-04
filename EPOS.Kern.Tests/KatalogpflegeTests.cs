@@ -64,7 +64,8 @@ namespace EPOS.Kern.Tests
         {
             // Zapfprofilgenerator, Stufe Z0 (P8): drei Tww-Kataloge dazu - 23.
             // Gebaeudesimulation G3 (Welle B, W21): Baustoff und Bauteilaufbau dazu - 25.
-            Assert.Equal(25, KatalogRegistry.Alle.Count);
+            // KU3-1: die Kaeltemaschine dazu - 26.
+            Assert.Equal(26, KatalogRegistry.Alle.Count);
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -77,7 +78,9 @@ namespace EPOS.Kern.Tests
                 // W6-E-2: "WECHSELRICHTER" steht NACH "PV" - er gehoert zur
                 // selben Anlage und wird nach dem Modul gepflegt.
                 "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV",
-                "WECHSELRICHTER", "BHKW",
+                "WECHSELRICHTER",
+                // KU3-1: die Kaeltemaschine nach den Erzeugern der Waerme- und Stromseite, vor dem BHKW.
+                "KAELTEMASCHINE", "BHKW",
                 "STROMSPEICHER", "GEBAEUDE",
                 // Gebaeudesimulation G3 (W21): die zwei Kataloge der Gebaeudehuelle beim Gebaeude.
                 "BAUSTOFF", "BAUTEILAUFBAU",

@@ -213,6 +213,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BaustoffKatalogDialog", 8, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
         new("BauteilaufbauDialog", 4),
         new("BauteilschichtenFelder", 6),
+
+        // KU3-1: die Verwaltung der Kaeltemaschinen - zwoelf Kenndaten als EIN Fragment fuer
+        // Stammblatt und „Neu…" (Rueckkuehlart als Auswahlfeld) und das Kennlinienraster mit vier
+        // Zahlen je Punkt (die Spalten punkt_* der Feldkarte).
+        new("KaeltemaschineKatalogDialog", 16),
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
