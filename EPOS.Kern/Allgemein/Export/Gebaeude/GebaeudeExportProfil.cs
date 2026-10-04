@@ -147,15 +147,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Ein neuer Schreiber des Formats je Lauf: <see cref="GbxmlSchreiber"/> oder <see cref="IfcSchreiber"/>.
+        /// Der IFC-Schreiber bekommt die Ergebnisse des Abbilds (<see cref="IfcErgebnisse.AusAbbild"/>; ohne
+        /// Rechenlauf <c>null</c>, dann wie ohne Ergebnisse); der gbXML-Schreiber liest sie selbst aus dem Abbild.
         /// Ein Bau ohne xBIM (<c>OHNE_XBIM</c>) lehnt IFC benannt ab.
         /// </summary>
-        internal IGebaeudeSchreiber SchreiberErzeugen()
+        /// <param name="abbild">Das Abbild, das geschrieben wird; <c>null</c> = ohne Ergebnisse.</param>
+        internal IGebaeudeSchreiber SchreiberErzeugen(GebaeudeAbbild abbild = null)
         {
             if (!IstIfc) return new GbxmlSchreiber();
 #if OHNE_XBIM
             throw new NotSupportedException("IFC-Export: Dieser Bau enthält xBIM nicht (OHNE_XBIM).");
 #else
-            return new IfcSchreiber();
+            return new IfcSchreiber(IfcErgebnisse.AusAbbild(abbild));
 #endif
         }
 

@@ -26,6 +26,12 @@ namespace WindowsFormsApplication1
     /// mit Vorher/Nachher-Stand herausgenommen (<see cref="SimulationProtokoll.Herausnehmen"/>) und als
     /// <see cref="Uebernahmeprotokoll"/> zu Exportmeldungen; die Laufzeit steht in
     /// <see cref="UebernahmeLaufzeitMs"/>.</para>
+    ///
+    /// <para><b>Die Ergebnisse des letzten Rechenlaufs</b> (Stufe G7c, Teil 2) kommen über den Leser der
+    /// Ergebnisseite (<c>ErgebnisCtrl.Load</c>: <c>Tab_Ergebnis</c>, <c>Tab_ErgebnisGebaeude</c>,
+    /// <c>Tab_ErgebnisZone</c>) — die Zeile dieses Gebäudes samt Zonen, Zeitpunkt und Klimaregion des Laufs;
+    /// ohne Lauf oder ohne Zeile des Gebäudes bleibt <see cref="Ergebnis"/> <c>null</c>. Die Koordinaten des
+    /// Klimaorts stehen an der Klimaregion des Projekts (<c>Tab_Klimaregion</c>).</para>
     /// </summary>
     internal sealed class GebaeudeExportSatz
     {
@@ -64,6 +70,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Postleitzahl des Standorts — freiwillige Eingabe des Exportdialogs, nicht gespeichert; <c>null</c> = keine.</summary>
         internal string Plz { get; init; }
+
+        /// <summary>Die Ergebniszeile dieses Gebäudes aus dem letzten Rechenlauf (samt Zonen); <c>null</c> = kein Lauf.</summary>
+        internal ErgebnisGebaeudeModel Ergebnis { get; init; }
+
+        /// <summary>Der Zeitpunkt des letzten Rechenlaufs (<c>Tab_Ergebnis.Zeitstempel</c>); <c>null</c> = kein Lauf.</summary>
+        internal DateTime? Rechenzeitpunkt { get; init; }
+
+        /// <summary>Der Wetterdatensatz des Laufs: der Name seiner Klimaregion; <c>null</c> = unbekannt.</summary>
+        internal string Wetterdatensatz { get; init; }
+
+        /// <summary>Geographische Breite des Klimaorts [°, Nord positiv]; <c>null</c> = keine.</summary>
+        internal double? BreiteGrad { get; init; }
+
+        /// <summary>Geographische Länge des Klimaorts [°, Ost positiv]; <c>null</c> = keine.</summary>
+        internal double? LaengeGrad { get; init; }
 
         /// <summary>
         /// Die angelegten Konditionierungskalender des Projektgebäudes je Größe (Entwurf KP2, Festlegung 9),
@@ -127,6 +148,38 @@ namespace WindowsFormsApplication1
             Plz = string.IsNullOrWhiteSpace(plz) ? null : plz.Trim(),
             Gebaeudekalender = Gebaeudekalender,
             Zonenkalender = Zonenkalender,
+            Ergebnis = Ergebnis,
+            Rechenzeitpunkt = Rechenzeitpunkt,
+            Wetterdatensatz = Wetterdatensatz,
+            BreiteGrad = BreiteGrad,
+            LaengeGrad = LaengeGrad,
+        };
+
+        /// <summary>
+        /// Derselbe Satz mit den Ergebnissen eines Rechenlaufs (Stufe G7c, Teil 2) — für die Proben und für eine
+        /// Hülle, die das Ergebnis schon in der Hand hat; <c>null</c> = ohne Ergebnis.
+        /// </summary>
+        internal GebaeudeExportSatz MitErgebnis(ErgebnisGebaeudeModel ergebnis, DateTime? rechenzeitpunkt, string wetterdatensatz) => new GebaeudeExportSatz
+        {
+            IdProjekt = IdProjekt,
+            IdZ = IdZ,
+            Gebaeude = Gebaeude,
+            Zonen = Zonen,
+            Uebernahme = Uebernahme,
+            Uebernahmeprotokoll = Uebernahmeprotokoll,
+            UebernahmeLaufzeitMs = UebernahmeLaufzeitMs,
+            Aufbauten = Aufbauten,
+            Baustoffe = Baustoffe,
+            Kuehlbetrieb = Kuehlbetrieb,
+            Klimaregion = Klimaregion,
+            Plz = Plz,
+            Gebaeudekalender = Gebaeudekalender,
+            Zonenkalender = Zonenkalender,
+            Ergebnis = ergebnis,
+            Rechenzeitpunkt = ergebnis != null ? rechenzeitpunkt : null,
+            Wetterdatensatz = ergebnis != null ? wetterdatensatz : null,
+            BreiteGrad = BreiteGrad,
+            LaengeGrad = LaengeGrad,
         };
 
         /// <summary>
@@ -172,11 +225,37 @@ namespace WindowsFormsApplication1
                 if (k.Count > 0) zonenkalender[z.ID] = k;
             }
 
+            // Die Ergebnisse des letzten Laufs (G7c, Teil 2) über den Leser der Ergebnisseite.
+            ErgebnisModel lauf = new ErgebnisCtrl().Load(idProjekt);
+            ErgebnisGebaeudeModel ergebnis = lauf?.Gebaeude.FirstOrDefault(x => x.ID_Gebaeude == g.ID_Gebaeude);
+            string wetter = ergebnis != null && lauf.ID_Klimaregion > 0
+                ? KlimaregionStammCtrl.NameZuProjektregion(lauf.ID_Klimaregion, idProjekt) : null;
+
+            // Die Koordinaten des Klimaorts: die Klimaregion des Projekts; (0, 0) heißt „nicht gepflegt".
+            double? breite = null, laenge = null;
+            if (projekt.m_ID_Klimaregion > 0)
+            {
+                var ort = new KlimaregionCtrl();
+                ort.ReadSingle("SELECT * FROM Tab_Klimaregion WHERE ID = ? AND ID_Projekt = ?",
+                               new DbParam("@id", projekt.m_ID_Klimaregion), new DbParam("@p", idProjekt));
+                if (ort.m_ID_Klimaregion > 0 && (ort.Latitude != 0.0 || ort.Longitude != 0.0)
+                    && Math.Abs(ort.Latitude) <= 90.0 && Math.Abs(ort.Longitude) <= 180.0)
+                {
+                    breite = ort.Latitude;
+                    laenge = ort.Longitude;
+                }
+            }
+
             return new GebaeudeExportSatz
             {
                 IdProjekt = idProjekt,
                 IdZ = idZ,
                 Gebaeude = g,
+                Ergebnis = ergebnis,
+                Rechenzeitpunkt = ergebnis != null ? lauf.Zeitstempel : (DateTime?)null,
+                Wetterdatensatz = string.IsNullOrWhiteSpace(wetter) ? null : wetter.Trim(),
+                BreiteGrad = breite,
+                LaengeGrad = laenge,
                 Zonen = zonen.OrderBy(z => z.Rang).ThenBy(z => z.ID).ToList(),
                 Uebernahme = uebernahme,
                 Uebernahmeprotokoll = protokoll,

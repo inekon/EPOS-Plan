@@ -1,5 +1,4 @@
-﻿#if !OHNE_XBIM
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -441,7 +440,8 @@ namespace WindowsFormsApplication1
                      baujahr == null ? null : Wert("YearOfConstruction", new IfcLabel(baujahr)));
                 Satz(b, g.Kennung, EPOS_GEBAEUDE,
                      Wert("Kennung", new IfcIdentifier(g.Kennung)),
-                     string.IsNullOrWhiteSpace(g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(g.Art.Trim())));
+                     string.IsNullOrWhiteSpace(g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(g.Art.Trim())),
+                     string.IsNullOrWhiteSpace(g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(g.Baualtersklasse.Trim())));
                 Ergebnis(b, g.Kennung, null);
                 Rechenlauf(b, g.Kennung, mitLauf: true);
                 return b;
@@ -466,7 +466,9 @@ namespace WindowsFormsApplication1
                 if (r.Beheizt)
                     Satz(s, r.Kennung, "Pset_SpaceThermalRequirements",
                          Temperatur("SpaceTemperature", r.SollHeizenC),
-                         Temperatur("SpaceTemperatureSummerMax", r.SollKuehlenC));
+                         Temperatur("SpaceTemperatureSummerMax", r.SollKuehlenC),
+                         r.Nachtabsenkung.HasValue ? Wert("DiscontinuedHeating", new IfcBoolean(r.Nachtabsenkung.Value)) : null,
+                         r.LuftwechselNutzerJeH.HasValue ? Wert("NaturalVentilationRate", new IfcNumericMeasure(Endlich(r.LuftwechselNutzerJeH.Value))) : null);
                 Satz(s, r.Kennung, EPOS_ZONE,
                      Wert("IstBeheizt", new IfcBoolean(r.Beheizt)),
                      r.ZonenKennung == null ? null : Wert("Kennung", new IfcIdentifier(r.ZonenKennung)),
@@ -510,7 +512,10 @@ namespace WindowsFormsApplication1
                      Zahl("HeizwaermebedarfFlaechenbezogen", bezogen, "GEXP_IFC_FLAECHENBEZOGEN"),
                      e.HeizlastW.HasValue ? Wert("Heizlast", new IfcPowerMeasure(Endlich(e.HeizlastW.Value))) : null,
                      Temperatur("RaumtemperaturMittel", e.RaumtemperaturMittelC),
-                     Temperatur("RaumtemperaturMax", e.RaumtemperaturMaxC));
+                     Temperatur("RaumtemperaturMax", e.RaumtemperaturMaxC),
+                     // Kälte (Kühlkonzept 9.2): die Grenze reist in der Beschreibung der Eigenschaft mit.
+                     e.KaeltebedarfKwh.HasValue ? Wert("Kaeltebedarf", new IfcEnergyMeasure(Endlich(e.KaeltebedarfKwh.Value)), _kwh, "GEXP_DATEI_KAELTE_SENSIBEL") : null,
+                     e.KaeltelastW.HasValue ? Wert("Kaeltelast", new IfcPowerMeasure(Endlich(e.KaeltelastW.Value)), null, "GEXP_DATEI_KAELTE_SENSIBEL") : null);
             }
 
             /// <summary><c>EPOS_Rechenlauf</c>: Rechenmodell und Produktausweis (E10), am Gebäude dazu Fassung, Zeitpunkt und Wetter.</summary>
@@ -647,6 +652,7 @@ namespace WindowsFormsApplication1
                      Winkel("Neigung", b.NeigungGrad, "GEXP_IFC_NEIGUNG_BEZUG"),
                      Wert("IstZusammenfassung", new IfcBoolean(zusammen)),
                      zusammen ? null : Wert("AnzahlTeilflaechen", new IfcInteger(1)),
+                     Zahl("WaermebrueckeUA", b.WaermebrueckeWK, "GEXP_IFC_WAERMEBRUECKE"),
                      a != null && a.Schichten.Count > 0 ? Wert("Schichtrichtung", new IfcLabel(SCHICHTRICHTUNG_AUSSEN_INNEN), null, "GEXP_IFC_SCHICHTRICHTUNG") : null,
                      a != null ? Wert("Ersatzschichtung", new IfcBoolean(a.IstErsatz)) : null,
                      b.Nachbarn.Count > 0 ? Wert("Raumgrenze", new IfcLabel(RAUMGRENZE_LOGISCH), null, "GEXP_IFC_RAUMGRENZE") : null);
@@ -864,4 +870,3 @@ namespace WindowsFormsApplication1
         }
     }
 }
-#endif

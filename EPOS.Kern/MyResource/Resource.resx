@@ -18,6 +18,7 @@
     <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
     <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
   <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+  </data>
     <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
     <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
         <value>[base64 mime encoded serialized .NET Framework object]</value>
@@ -44412,6 +44413,21 @@ Chart</value>
   </data>
   <data name="GEXP_MSG_ZUSAGE_FEHLER" xml:space="preserve">
     <value>Die Exportzusage konnte nicht geöffnet werden: {0}</value>
+  </data>
+  <data name="GEXP_DATEI_KAELTE_SENSIBEL" xml:space="preserve">
+    <value>Kältebedarf sensibel, ohne Entfeuchtung</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_RAUMGRENZEN" xml:space="preserve">
+    <value>Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen, nicht in einer Geometrie.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_OHNE_MVD" xml:space="preserve">
+    <value>Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export ohne Geometrie.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_IDS" xml:space="preserve">
+    <value>Was die IFC-Datei zusagt, beschreibt die IDS-Datei {0} im Ordner Vorlage der Installation; ein IDS-fähiges Prüfwerkzeug hält sie gegen die Datei.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_KAELTE" xml:space="preserve">
+    <value>Der Kältebedarf ist sensibel gerechnet, ohne Entfeuchtung; die Datei trägt diesen Hinweis an jedem Kältewert.</value>
   </data>
 </root>
 
