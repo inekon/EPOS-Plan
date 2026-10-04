@@ -33401,6 +33401,57 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_ANS_KOERPER_BEDIENUNG" xml:space="preserve">
     <value>Ziehen dreht, Rechtsklick verschiebt, Mausrad zoomt; ein Klick auf einen Körper wählt seine Zone.</value>
   </data>
+  <data name="GANS_MODUS" xml:space="preserve">
+    <value>Darstellung der Körper</value>
+  </data>
+  <data name="GANS_DATEIKOERPER" xml:space="preserve">
+    <value>Dateikörper</value>
+  </data>
+  <data name="GANS_EXPORTMODELL" xml:space="preserve">
+    <value>Exportmodell</value>
+  </data>
+  <data name="GANS_KENNZEICHEN" xml:space="preserve">
+    <value>{0} Räume aus Datei, {1} aus Umriss, {2} schematisch</value>
+  </data>
+  <data name="GANS_VEREINFACHT" xml:space="preserve">
+    <value>vereinfacht: {0}</value>
+  </data>
+  <data name="GANS_ZU_GROSS" xml:space="preserve">
+    <value>Dateikörper zu groß ({0} Dreiecke, Grenze {1}) — alle Räume als Prisma aus dem Umriss.</value>
+  </data>
+  <data name="GANS_HERKUNFT_DATEI" xml:space="preserve">
+    <value>aus Datei</value>
+  </data>
+  <data name="GANS_HERKUNFT_UMRISS" xml:space="preserve">
+    <value>aus Umriss</value>
+  </data>
+  <data name="GANS_HERKUNFT_SCHEMATISCH" xml:space="preserve">
+    <value>schematisch</value>
+  </data>
+  <data name="GANS_RAEUME" xml:space="preserve">
+    <value>Räume und Herkunft ihrer Körper</value>
+  </data>
+  <data name="GANS_RAUM_HERKUNFT" xml:space="preserve">
+    <value>{0} — Körper {1}</value>
+  </data>
+  <data name="GANS_VERMERK_BOGEN" xml:space="preserve">
+    <value>Bogen als Sehnenzug</value>
+  </data>
+  <data name="GANS_VERMERK_LOCH" xml:space="preserve">
+    <value>Loch fehlt</value>
+  </data>
+  <data name="GANS_VERMERK_UNEBEN" xml:space="preserve">
+    <value>unebene Fläche</value>
+  </data>
+  <data name="GANS_VERMERK_OHNEBESCHNITT" xml:space="preserve">
+    <value>ohne Beschnitt</value>
+  </data>
+  <data name="GANS_VERMERK_OFFEN" xml:space="preserve">
+    <value>offene Schale</value>
+  </data>
+  <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
+    <value>nur Außenschale</value>
+  </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Geschosse</value>
   </data>

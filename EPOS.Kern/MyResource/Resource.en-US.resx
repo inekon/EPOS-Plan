@@ -33394,6 +33394,57 @@ Do you want to allow this?</value>
   <data name="GIMP_ANS_KOERPER_BEDIENUNG" xml:space="preserve">
     <value>Drag to rotate, right-click to pan, mouse wheel to zoom; clicking a solid selects its zone.</value>
   </data>
+  <data name="GANS_MODUS" xml:space="preserve">
+    <value>Solid display</value>
+  </data>
+  <data name="GANS_DATEIKOERPER" xml:space="preserve">
+    <value>File solids</value>
+  </data>
+  <data name="GANS_EXPORTMODELL" xml:space="preserve">
+    <value>Export model</value>
+  </data>
+  <data name="GANS_KENNZEICHEN" xml:space="preserve">
+    <value>{0} rooms from file, {1} from outline, {2} schematic</value>
+  </data>
+  <data name="GANS_VEREINFACHT" xml:space="preserve">
+    <value>simplified: {0}</value>
+  </data>
+  <data name="GANS_ZU_GROSS" xml:space="preserve">
+    <value>File solids too large ({0} triangles, limit {1}) — all rooms shown as prisms from their outline.</value>
+  </data>
+  <data name="GANS_HERKUNFT_DATEI" xml:space="preserve">
+    <value>from file</value>
+  </data>
+  <data name="GANS_HERKUNFT_UMRISS" xml:space="preserve">
+    <value>from outline</value>
+  </data>
+  <data name="GANS_HERKUNFT_SCHEMATISCH" xml:space="preserve">
+    <value>schematic</value>
+  </data>
+  <data name="GANS_RAEUME" xml:space="preserve">
+    <value>Rooms and origin of their solids</value>
+  </data>
+  <data name="GANS_RAUM_HERKUNFT" xml:space="preserve">
+    <value>{0} — solid {1}</value>
+  </data>
+  <data name="GANS_VERMERK_BOGEN" xml:space="preserve">
+    <value>arc as chords</value>
+  </data>
+  <data name="GANS_VERMERK_LOCH" xml:space="preserve">
+    <value>hole omitted</value>
+  </data>
+  <data name="GANS_VERMERK_UNEBEN" xml:space="preserve">
+    <value>non-planar face</value>
+  </data>
+  <data name="GANS_VERMERK_OHNEBESCHNITT" xml:space="preserve">
+    <value>without clipping</value>
+  </data>
+  <data name="GANS_VERMERK_OFFEN" xml:space="preserve">
+    <value>open shell</value>
+  </data>
+  <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
+    <value>outer shell only</value>
+  </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Storeys</value>
   </data>

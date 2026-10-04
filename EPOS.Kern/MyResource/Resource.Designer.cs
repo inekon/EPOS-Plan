@@ -24822,6 +24822,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dateikörper ähnelt.
+        /// </summary>
+        public static string GANS_DATEIKOERPER {
+            get {
+                return ResourceManager.GetString("GANS_DATEIKOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportmodell ähnelt.
+        /// </summary>
+        public static string GANS_EXPORTMODELL {
+            get {
+                return ResourceManager.GetString("GANS_EXPORTMODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Datei ähnelt.
+        /// </summary>
+        public static string GANS_HERKUNFT_DATEI {
+            get {
+                return ResourceManager.GetString("GANS_HERKUNFT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die schematisch ähnelt.
+        /// </summary>
+        public static string GANS_HERKUNFT_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GANS_HERKUNFT_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Umriss ähnelt.
+        /// </summary>
+        public static string GANS_HERKUNFT_UMRISS {
+            get {
+                return ResourceManager.GetString("GANS_HERKUNFT_UMRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume aus Datei, {1} aus Umriss, {2} schematisch ähnelt.
+        /// </summary>
+        public static string GANS_KENNZEICHEN {
+            get {
+                return ResourceManager.GetString("GANS_KENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Darstellung der Körper ähnelt.
+        /// </summary>
+        public static string GANS_MODUS {
+            get {
+                return ResourceManager.GetString("GANS_MODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume und Herkunft ihrer Körper ähnelt.
+        /// </summary>
+        public static string GANS_RAEUME {
+            get {
+                return ResourceManager.GetString("GANS_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — Körper {1} ähnelt.
+        /// </summary>
+        public static string GANS_RAUM_HERKUNFT {
+            get {
+                return ResourceManager.GetString("GANS_RAUM_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vereinfacht: {0} ähnelt.
+        /// </summary>
+        public static string GANS_VEREINFACHT {
+            get {
+                return ResourceManager.GetString("GANS_VEREINFACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bogen als Sehnenzug ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_BOGEN {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_BOGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Loch fehlt ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_LOCH {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_LOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Außenschale ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_MEHRSCHALE {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_MEHRSCHALE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die offene Schale ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_OFFEN {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Beschnitt ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_OHNEBESCHNITT {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_OHNEBESCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unebene Fläche ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_UNEBEN {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_UNEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dateikörper zu groß ({0} Dreiecke, Grenze {1}) — alle Räume als Prisma aus dem Umriss. ähnelt.
+        /// </summary>
+        public static string GANS_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("GANS_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetypen… ähnelt.
         /// </summary>
         public static string GEBA_BTN_GEBAEUDETYPEN {
