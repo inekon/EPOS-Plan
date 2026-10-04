@@ -2537,6 +2537,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle Kältemaschinen ähnelt.
+        /// </summary>
+        public static string AUFLOESER_BASIS_ALLE_KM {
+            get {
+                return ResourceManager.GetString("AUFLOESER_BASIS_ALLE_KM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die alle Wärmepumpen-Module ähnelt.
         /// </summary>
         public static string AUFLOESER_BASIS_ALLE_WP {
@@ -2587,6 +2596,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUFLOESER_KOMP_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("AUFLOESER_KOMP_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string AUFLOESER_KOMP_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("AUFLOESER_KOMP_KAELTEMASCHINE", resourceCulture);
             }
         }
         

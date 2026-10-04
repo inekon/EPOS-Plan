@@ -44920,5 +44920,11 @@ chart</value>
   <data name="KM_ANLAGE_VORLAUF_UNGUELTIG" xml:space="preserve">
     <value>The chilled water supply temperature must be between −20 and 30 °C.</value>
   </data>
+  <data name="AUFLOESER_KOMP_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE_KM" xml:space="preserve">
+    <value>all chillers</value>
+  </data>
 </root>
 

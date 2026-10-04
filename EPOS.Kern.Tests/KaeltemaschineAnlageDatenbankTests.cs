@@ -101,6 +101,17 @@ namespace EPOS.Kern.Tests
             Assert.Equal(e2.StundenLeistungsgrenze, ek.Stunden_Leistungsgrenze);
             Assert.InRange(ek.Unterdeckung_MWh, e2.OffenAnLeistungsgrenzeKwh / 1000.0 - 0.006, e2.OffenAnLeistungsgrenzeKwh / 1000.0 + 0.006);
 
+            // Wirtschaftlichkeit (Kühlkonzept 6.2): Investitionsbezug = Nennkälteleistung x Anzahl, Endenergiezeile = Kältestrom.
+            Assert.Equal(5.0, TechnikPlanwertCtrl.BaugroesseSumme(PROJEKT, KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE,
+                DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, anlage));
+            EndenergieAufloeser.Groesse g = EndenergieAufloeser.FuerProjekt(PROJEKT)
+                .FuerPosition(KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE, anlage);
+            Assert.NotNull(g);
+            Assert.InRange(g.BedarfKwh, ek.Stromverbrauch_MWh * 1000.0 - 1e-6, ek.Stromverbrauch_MWh * 1000.0 + 1e-6);
+            Assert.Null(EndenergieAufloeser.FuerProjekt(PROJEKT).FuerPosition(KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE, 999999));
+            Assert.False(Waermegestehung.AnlagentypZaehlt(KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
+            Assert.Contains(DbWerte.KOSTEN_KOMPONENTE_KAELTEMASCHINE, KostenVorlagenCtrl.WaehlbareKomponenten);
+
             // Löschen: Anlagenzeile und Projektkopie verschwinden, das Ergebnis behält seine Zeile ohne Verweis.
             KaeltemaschineAnlageCtrl.Loeschen(anlage);
             Assert.Null(KaeltemaschineAnlageCtrl.Laden(anlage));

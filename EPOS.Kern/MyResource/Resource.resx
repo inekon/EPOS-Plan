@@ -44927,5 +44927,11 @@ Chart</value>
   <data name="KM_ANLAGE_VORLAUF_UNGUELTIG" xml:space="preserve">
     <value>Der Kaltwasservorlauf muss zwischen −20 und 30 °C liegen.</value>
   </data>
+  <data name="AUFLOESER_KOMP_KAELTEMASCHINE" xml:space="preserve">
+    <value>Kältemaschine</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE_KM" xml:space="preserve">
+    <value>alle Kältemaschinen</value>
+  </data>
 </root>
 
