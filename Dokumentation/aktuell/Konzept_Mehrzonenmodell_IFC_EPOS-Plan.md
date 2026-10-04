@@ -1645,8 +1645,11 @@ fünf Präzisierungen gegenüber diesem Abschnitt:
 - **Herkunft je Raum, Zone und Geschoss** („aus Raumgrenzen“ oder „schematisch“, dazu die Herleitung: Boden,
   Decke, Wandflächen, Seitenverhältnis, Quadrat). „schematisch“ steht am Reiter des Geschosses, als Zeile
   über dem Bild, je Raum (gestrichelt) und in der Legende.
-- **Umschalter und Geschosswahl** als Reiter: „Grundriss | Körper“ — „Körper“ ist bis G7b weich gesperrt und
-  nennt den Grund — und die Geschosse, vorbelegt das unterste Geschoss mit Umriss.
+- **Umschalter und Geschosswahl** als Reiter: „Grundriss | Körper“ — „Körper“ ist mit G7b freigeschaltet — und die Geschosse, vorbelegt das unterste Geschoss mit Umriss.
+- **Stand G7b (04.10.2026):** Der Reiter „Körper“ ist freigeschaltet. Das Aneinanderlegen von Zonen mit gemeinsamer
+  Trennwand ist gebaut (Rechtecke im selben Geschoss; keine Drehung der Räume; ein Paar mit Trennwand auf derselben
+  Himmelsseite beider Räume wird nicht angelegt und mit `ZGEO_NICHT_ANGELEGT` gemeldet). Der byteweise gleiche
+  Export ist mit Probe 25 nachgewiesen.
 - **Legende** mit den Zonen des gewählten Geschosses, dazu „ohne Zone“ und „schematisch“; die Zielzone fett,
   die Marken „unbeheizt“ und „von Hand“. Zehn Zonenfarben, ab der elften Zone wiederholen sie sich.
 - **Klick, Tastatur und Weg ohne Grundriss:** Ein Klick — oder Enter bzw. Leertaste auf dem Raum — hängt

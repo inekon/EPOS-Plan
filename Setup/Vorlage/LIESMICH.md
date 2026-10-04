@@ -6,7 +6,7 @@ Erststart die Arbeitsdatenbank des Kontos anlegt.
 
 > **Die Datenbank wird nie eingecheckt.** `Kenndaten.sqlite`, ihre Beidateien und der
 > Prüfbericht stehen in [`.gitignore`](../../.gitignore). Versioniert sind nur diese
-> Liesmich-Datei und die von Hand gepflegte Lizenzhinweisseite. Der Grund: Die Vorlage entsteht
+> Liesmich-Datei, die von Hand gepflegte Lizenzhinweisseite und die IDS-Datei der Exportzusage. Der Grund: Die Vorlage entsteht
 > aus der **produktiven** Entwicklungsdatenbank, die reale Kunden- und Objektdaten führt — sie in
 > ein Repository zu legen wäre der Umweg, auf dem genau diese Daten doch wieder herauskommen.
 
@@ -18,6 +18,7 @@ Erststart die Arbeitsdatenbank des Kontos anlegt.
 |---|---|---|
 | `LIESMICH.md` | von Hand | **ja** |
 | `Lizenzhinweise.txt` | von Hand — je ausgelieferter Fremdbibliothek Name, Fassung, Lizenz, Copyright-Vermerk und Quelltextverweis (E27, U10); das Setup legt sie nach `{app}`, der Wächter `EPOS.Kern.Tests/LizenzhinweiseWacheTests.cs` hält sie gegen `Directory.Packages.props` | **ja** |
+| `EPOS_Export.ids` | von Hand — die Exportzusage des IFC-Exports (IDS 1.0, buildingSMART): je Entität die Attribute, Eigenschaften und Mengen, die eine EPOS-Datei sicher trägt, ohne Geometrie; sie reist mit der Auslieferung nach `{app}\Vorlage\`, nicht als zweite Datei je Export (Datenaustauschkonzept 6.4). Der Wächter `EPOS.Kern.Tests/IdsWacheTests.cs` hält sie gegen eine frisch geschriebene Datei; die Exportbilanz nennt sie im Beipackzettel | **ja** |
 | `Kenndaten.sqlite` | erzeugt von `Werkzeuge/Auslieferungsvorlage` | nein |
 | `Kenndaten.sqlite.bericht.txt` | erzeugt im selben Lauf — der Prüfbericht | nein |
 

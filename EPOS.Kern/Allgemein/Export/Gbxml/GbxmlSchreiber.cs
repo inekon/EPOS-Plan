@@ -36,6 +36,17 @@ namespace WindowsFormsApplication1
     /// ein Aufbau innen → außen im Abbild (<see cref="Schichtrichtung.InnenNachAussen"/>, die Zählung von
     /// <c>Tab_Bauteilschicht.Reihenfolge</c>), kehrt der Schreiber die Folge um.</para>
     ///
+    /// <para><b>Stufe 2 — Raumgeometrie (G7b, Datenaustauschkonzept 5.5 und 14.3):</b> Die Geometrie stammt aus
+    /// dem Zonengeometrie-Modell (<see cref="GebaeudeGrundriss.Bilden"/>, <see cref="Zonenkoerper"/>); der
+    /// Schreiber rechnet nichts, er schreibt: je <c>Space</c> mit Körper <c>ShellGeometry/ClosedShell</c> (das
+    /// Prisma, sechs <c>PolyLoop</c>), je <c>Surface</c> mit Fläche im Körper ihres ersten Nachbarraums
+    /// <c>PlanarGeometry/PolyLoop</c> neben der <c>RectangularGeometry</c>, je <c>Opening</c> das Rechteck in
+    /// der Wandstrecke. Ist der Körper schematisch, steht der Vermerk „Ersatzmodell“ in
+    /// <c>Campus/Description</c> und <c>Building/Description</c> (8.4); im Exportdialog steht er als Meldung des
+    /// Plans (<see cref="Geometriemeldungen"/>). Ist die Anordnung widersprüchlich
+    /// (<see cref="Zonengeometrie.AnordnungAbgelehnt"/>), schreibt er keine Raumgeometrie — Stufe 2 ist dann
+    /// benannt abgelehnt. <c>Results</c> (5.6) je Zone, soweit das Abbild Jahresergebnisse trägt.</para>
+    ///
     /// <para><b>Byteform:</b> UTF-8 ohne BOM, Zeilenende <c>\n</c>, zwei Leerzeichen Einzug; Zahlen
     /// kulturfrei in der kürzesten rundlaufenden Form. Die Datei entsteht erst im Speicher und geht
     /// als Ganzes in den Zielstrom — bei Abbruch oder Fehler bleibt er unberührt. Der einzige
@@ -53,6 +64,73 @@ namespace WindowsFormsApplication1
         internal const string VERSION = "6.01";
 
         private static readonly XNamespace NS = GbxmlLeser.NAMENSRAUM;
+
+        /// <summary>
+        /// Der Träger der <c>Results</c> (Pflichtattribut <c>resourceType</c>): Die Jahresgrößen der Zone sind
+        /// Heizwärme; <c>resourceTypeEnum</c> kennt dafür keinen eigenen Wert, gewählt ist <c>HotWater</c>.
+        /// </summary>
+        internal const string ERGEBNIS_TRAEGER = "HotWater";
+
+        /// <summary>Der Träger der Kälte-<c>Results</c> (<c>CoolingLoad</c>, Kühlkonzept 9.2): <c>ChilledWater</c>.</summary>
+        internal const string ERGEBNIS_TRAEGER_KAELTE = "ChilledWater";
+
+        /// <summary>Die Wertart der <c>Results</c>: gerechnet.</summary>
+        internal const string ERGEBNIS_WERTART = "Simulated";
+
+        /// <summary>
+        /// Die Raumgeometrie eines Abbilds: das Zonengeometrie-Modell seines (einzigen) Gebäudes und die Körper —
+        /// <c>null</c>, wenn die Anordnung benannt abgelehnt ist oder kein Raum einen Körper trägt.
+        /// </summary>
+        internal static (Zonengeometrie Geometrie, Zonenkoerper Koerper) Raumgeometrie(GebaeudeAbbild abbild)
+        {
+            Zonengeometrie z = GebaeudeGrundriss.Bilden(abbild, 0);
+            Zonenkoerper k = z.AnordnungAbgelehnt ? null : Zonenkoerper.Bilden(z);
+            return (z, k != null && k.Raeume.Count > 0 ? k : null);
+        }
+
+        /// <summary>
+        /// Die Meldungen der Raumgeometrie für den Plan (die dritte Stelle der Kennzeichnung, 8.4 — der Hinweis im
+        /// Exportdialog): schematisch (Info) oder benannt abgelehnt (Warnung); sonst keine.
+        /// </summary>
+        internal static IReadOnlyList<PruefMeldung> Geometriemeldungen(GebaeudeAbbild abbild)
+        {
+            var meldungen = new List<PruefMeldung>();
+            if (abbild == null || abbild.Gebaeude.Count != 1) return meldungen;
+            (Zonengeometrie z, Zonenkoerper k) = Raumgeometrie(abbild);
+            if (z.AnordnungAbgelehnt)
+                meldungen.Add(new PruefMeldung(PruefStufe.Warnung, GEOMETRIE_ABGELEHNT, Widersprueche(z)));
+            else if (k != null)
+                meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_SCHEMATISCH, k.Raeume.Count.ToString(CultureInfo.InvariantCulture)));
+            return meldungen;
+        }
+
+        /// <summary>
+        /// Die Vorschau des gbXML-Formats: die Geometriemeldungen (<see cref="Geometriemeldungen"/> — schematisch
+        /// oder abgelehnt), sonst bei einem Gebäude ohne Raumkörper „Daten ohne Geometrie" (<see cref="GEOMETRIE_OHNE"/>).
+        /// </summary>
+        public IReadOnlyList<PruefMeldung> Vorschau(GebaeudeAbbild abbild, GebaeudeExportProfil profil)
+        {
+            var meldungen = new List<PruefMeldung>(Geometriemeldungen(abbild));
+            if (meldungen.Count == 0 && abbild != null && abbild.Gebaeude.Count == 1)
+                meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_OHNE));
+            return meldungen;
+        }
+
+        /// <summary>Die Paare, an denen die Anordnung widersprüchlich ist, als „Raum – Raum“.</summary>
+        internal static string Widersprueche(Zonengeometrie z)
+            => string.Join(", ", z.Nachbarpaare.Where(p => p.Widerspruch)
+                                  .Select(p => (z.Raum(p.RaumA)?.Name ?? p.RaumA) + " – " + (z.Raum(p.RaumB)?.Name ?? p.RaumB)));
+
+        /// <summary>I — {0} Zahl der Räume mit Körper: Die Datei trägt schematische Raumgeometrie (Kennzeichnung 8.4).</summary>
+        internal const string GEOMETRIE_SCHEMATISCH = "GEXP_PROT_GEOMETRIE_SCHEMATISCH";
+        /// <summary>W — {0} Paare: widersprüchliche Anordnung — keine Raumgeometrie (Stufe 2 benannt abgelehnt).</summary>
+        internal const string GEOMETRIE_ABGELEHNT = "GEXP_PROT_GEOMETRIE_ABGELEHNT";
+        /// <summary>I — Die Datei trägt Daten ohne Raumgeometrie (Stufe 1; Vorschau).</summary>
+        internal const string GEOMETRIE_OHNE = "GEXP_PROT_GEOMETRIE_OHNE";
+        /// <summary>I — {0} Zahl, {1} Beispiele: Flächen ohne Polygon, obwohl die Datei Raumgeometrie trägt (Raum ohne Körper, Wand an keiner Kante); innere Masse zählt nicht.</summary>
+        internal const string FLAECHE_OHNE_POLYGON = "GEXP_PROT_FLAECHE_OHNE_POLYGON";
+        /// <summary>I — {0} Zahl, {1} Beispiele: Öffnungen, deren Polygon in der Wandstrecke verkleinert ist.</summary>
+        internal const string OEFFNUNG_BEGRENZT = "GEXP_PROT_OEFFNUNG_BEGRENZT";
 
         /// <inheritdoc />
         public GebaeudeExportBilanz Schreiben(GebaeudeAbbild abbild, Stream ziel, GebaeudeExportProfil profil, CancellationToken abbruch)
@@ -163,6 +241,12 @@ namespace WindowsFormsApplication1
             private readonly List<XElement> _fenstertypen = new List<XElement>();
             private readonly List<XElement> _zonen = new List<XElement>();
 
+            private Zonengeometrie _geometrie;
+            private Zonenkoerper _koerper;
+            private readonly List<XElement> _ergebnisse = new List<XElement>();
+            private readonly List<string> _ohnePolygon = new List<string>();
+            private readonly List<string> _begrenzt = new List<string>();
+
             private readonly Dictionary<string, AbbildAufbau> _aufbauJeKennung = new Dictionary<string, AbbildAufbau>(StringComparer.Ordinal);
             private readonly Dictionary<string, string> _stoffJeSchicht = new Dictionary<string, string>(StringComparer.Ordinal);
             private readonly Dictionary<string, AbbildSchicht> _schichtJeStoff = new Dictionary<string, AbbildSchicht>(StringComparer.Ordinal);
@@ -191,9 +275,11 @@ namespace WindowsFormsApplication1
                     throw Fehler("Das Gebäude trägt " + flaechen.Count.ToString(CultureInfo.InvariantCulture) + " Flächen; das Schema verlangt mindestens "
                                  + GbxmlVokabular.MINDESTZAHL_FLAECHEN.ToString(CultureInfo.InvariantCulture) + ".");
 
+                (_geometrie, _koerper) = Raumgeometrie(_abbild);
+
                 var campus = new XElement(NS + "Campus", new XAttribute("id", Kennung(_abbild.CampusKennung, "Campus")));
                 Text(campus, "Name", g.Name);
-                Text(campus, "Description", g.Beschreibung);
+                Text(campus, "Description", string.Join("\n", new[] { g.Beschreibung?.Trim(), Stufenzeile() }.Where(t => !string.IsNullOrWhiteSpace(t))));
                 if (!string.IsNullOrWhiteSpace(_abbild.Plz))
                     campus.Add(new XElement(NS + "Location",
                         new XElement(NS + "ZipcodeOrPostalCode", Klartext(_abbild.Plz.Trim())),
@@ -215,9 +301,56 @@ namespace WindowsFormsApplication1
                     new XAttribute("volumeUnit", GbxmlVokabular.CubicMeters),
                     new XAttribute("useSIUnitsForResults", "true"),
                     campus);
-                wurzel.Add(_konstruktionen, _schichten, _stoffe, _fenstertypen, _zonen);
+                wurzel.Add(_konstruktionen, _schichten, _stoffe, _fenstertypen, _zonen, _ergebnisse);
                 wurzel.Add(Dokumentgeschichte());
+                Sammelmeldung(FLAECHE_OHNE_POLYGON, _ohnePolygon);
+                Sammelmeldung(OEFFNUNG_BEGRENZT, _begrenzt);
                 return new XDocument(wurzel);
+            }
+
+            // --------------------------------------------------------------
+            //  Raumgeometrie (Stufe 2)
+            // --------------------------------------------------------------
+
+            /// <summary>Die Stufenzeile in <c>Campus/Description</c>: Ersatzmodell, benannte Ablehnung oder Stufe 1.</summary>
+            private string Stufenzeile()
+            {
+                if (_koerper != null) return T("GEXP_DATEI_SCHEMATISCH");
+                if (_geometrie.AnordnungAbgelehnt)
+                    return string.Format(_profil.Sprache, T("GEXP_DATEI_GEOMETRIE_ABGELEHNT"), Widersprueche(_geometrie));
+                return T("GEXP_DATEI_OHNE_GEOMETRIE");
+            }
+
+            private string T(string schluessel) => MyResource.Resource.ResourceManager.GetString(schluessel, _profil.Sprache) ?? schluessel;
+
+            private void Sammelmeldung(string schluessel, List<string> namen)
+            {
+                if (namen.Count == 0) return;
+                string beispiele = namen.Count <= 5 ? string.Join(", ", namen) : string.Join(", ", namen.Take(5)) + ", …";
+                Meldungen.Add(new PruefMeldung(PruefStufe.Info, schluessel, namen.Count.ToString(CultureInfo.InvariantCulture), beispiele));
+            }
+
+            /// <summary>Ein <c>PolyLoop</c>: je Punkt ein <c>CartesianPoint</c> mit drei <c>Coordinate</c> [m].</summary>
+            private static XElement Ring(IEnumerable<double[]> punkte)
+                => new XElement(NS + "PolyLoop", punkte.Select(p => new XElement(NS + "CartesianPoint",
+                    new XElement(NS + "Coordinate", Zahl(p[0])),
+                    new XElement(NS + "Coordinate", Zahl(p[1])),
+                    new XElement(NS + "Coordinate", Zahl(p[2])))));
+
+            /// <summary>Innere Masse einer Zone: beide Nachbarn sind derselbe Raum — sie liegt an keiner Kante und trägt kein Polygon.</summary>
+            private static bool InnereMasse(AbbildBauteil f)
+                => f.Nachbarn.Count == 2 && string.Equals(f.Nachbarn[0].Kennung, f.Nachbarn[1].Kennung, StringComparison.Ordinal);
+
+            /// <summary>Die Fläche eines Bauteils im Körper seines ersten Nachbarraums; innere Masse einer Zone hat keine.</summary>
+            private Koerperflaeche Koerperflaeche(AbbildBauteil f)
+            {
+                if (_koerper == null || f.Nachbarn.Count == 0 || InnereMasse(f)) return null;
+                foreach (AbbildNachbar n in f.Nachbarn)
+                {
+                    Koerperflaeche k = _koerper.Flaeche(n.Kennung, f.Kennung);
+                    if (k != null) return k;
+                }
+                return null;
             }
 
             // --------------------------------------------------------------
@@ -233,6 +366,7 @@ namespace WindowsFormsApplication1
                     new XAttribute("id", Kennung(g.Kennung, "Building")),
                     new XAttribute("buildingType", art));
                 Text(building, "Name", g.Name);
+                if (_koerper != null) Text(building, "Description", T("GEXP_DATEI_SCHEMATISCH"));
                 double flaeche = g.Raeume.Where(r => r.FlaecheM2.HasValue).Sum(r => r.FlaecheM2.Value);
                 building.Add(new XElement(NS + "Area", Zahl(flaeche)));
 
@@ -265,6 +399,12 @@ namespace WindowsFormsApplication1
                 else Groesse(space, "PeopleNumber", r.FlaecheJePersonM2, GbxmlVokabular.SquareMPerPerson);
                 Groesse(space, "LightPowerPerArea", r.LichtWm2, GbxmlVokabular.WattPerSquareMeter);
                 Groesse(space, "EquipPowerPerArea", r.GeraeteWm2, GbxmlVokabular.WattPerSquareMeter);
+                Raumkoerper koerper = _koerper?.Raum(r.Kennung);
+                if (koerper != null)
+                    space.Add(new XElement(NS + "ShellGeometry",
+                        new XAttribute("id", Kennung(r.Kennung + "-Schale", "ShellGeometry")),
+                        new XAttribute("unit", GbxmlVokabular.Meters),
+                        new XElement(NS + "ClosedShell", koerper.Schale.Select(Ring))));
                 return space;
             }
 
@@ -275,7 +415,43 @@ namespace WindowsFormsApplication1
                 Text(zone, "Description", r.ZonenBeschreibung);
                 Groesse(zone, "DesignHeatT", r.SollHeizenC, null);
                 Groesse(zone, "DesignCoolT", r.SollKuehlenC, null);
+                Ergebnisse(r);
                 return zone;
+            }
+
+            /// <summary>
+            /// <c>Results</c> einer Zone (Datenaustauschkonzept 5.6): die drei Jahresgrößen in den zulässigen
+            /// Einheiten des Schemas — <c>Energy</c> in <c>KilowattHours</c>, <c>HeatLoad</c> in <c>Watt</c>,
+            /// <c>DryBulbTemperature</c> (Mittel) in <c>C</c> —, ohne Zeitreihen. Mit gerechneter Kühlung dazu
+            /// <c>CoolingLoad</c> (Kühlkonzept 9.2): der Jahreskältebedarf in <c>KilowattHours</c> und, wo
+            /// gespeichert, die Kältelast in <c>Watt</c> (beide aus der Vereinigung des <c>unit</c>-Attributs:
+            /// <c>energyUnitEnum</c> bzw. <c>loadUnitEnum</c>), Träger <c>ChilledWater</c>, mit dem Hinweis
+            /// „sensibel, ohne Entfeuchtung" in <c>Description</c>.
+            /// </summary>
+            private void Ergebnisse(AbbildRaum r)
+            {
+                AbbildErgebnis e = r.Ergebnis;
+                if (e == null) return;
+                void Ergebnis(string art, string einheit, string endung, double? wert, string traeger = ERGEBNIS_TRAEGER, string beschreibung = null)
+                {
+                    if (!wert.HasValue) return;
+                    _ergebnisse.Add(new XElement(NS + "Results",
+                        new XAttribute("id", Kennung(r.ZonenKennung + "-" + endung, "Results")),
+                        new XAttribute("unit", einheit),
+                        new XAttribute("resultsType", art),
+                        new XAttribute("resourceType", traeger),
+                        new XAttribute("valueType", ERGEBNIS_WERTART),
+                        new XAttribute("startTime", Zeitstempel(e.Beginn)),
+                        beschreibung == null ? null : new XElement(NS + "Description", beschreibung),
+                        new XElement(NS + "ObjectId", r.ZonenKennung),
+                        new XElement(NS + "Value", Zahl(wert.Value))));
+                }
+                Ergebnis("Energy", "KilowattHours", "Energie", e.EnergieKWh);
+                Ergebnis("HeatLoad", "Watt", "Heizlast", e.HeizlastW);
+                Ergebnis("DryBulbTemperature", GbxmlVokabular.Celsius, "Temperatur", e.MitteltemperaturC);
+                string sensibel = e.MitKaelte ? T("GEXP_DATEI_KAELTE_SENSIBEL") : null;
+                Ergebnis("CoolingLoad", "KilowattHours", "Kaeltebedarf", e.KaeltebedarfKWh, ERGEBNIS_TRAEGER_KAELTE, sensibel);
+                Ergebnis("CoolingLoad", "Watt", "Kaeltelast", e.KaeltelastW, ERGEBNIS_TRAEGER_KAELTE, sensibel);
             }
 
             // --------------------------------------------------------------
@@ -312,11 +488,15 @@ namespace WindowsFormsApplication1
                     surface.Add(nachbar);
                 }
                 surface.Add(Rechteck(f));
-                foreach (AbbildBauteil o in f.Oeffnungen) surface.Add(Oeffnung(o));
+                Koerperflaeche flaeche = Koerperflaeche(f);
+                if (flaeche != null) surface.Add(new XElement(NS + "PlanarGeometry", Ring(flaeche.PunkteM)));
+                else if (_koerper != null && !InnereMasse(f)) _ohnePolygon.Add(f.Name ?? f.Kennung);
+                for (int i = 0; i < f.Oeffnungen.Count; i++)
+                    surface.Add(Oeffnung(f.Oeffnungen[i], flaeche, i, f.Oeffnungen.Count));
                 return surface;
             }
 
-            private XElement Oeffnung(AbbildBauteil o)
+            private XElement Oeffnung(AbbildBauteil o, Koerperflaeche wand, int stelle, int anzahl)
             {
                 if (o.Quellart == null || !GbxmlVokabular.Oeffnungsarten.ContainsKey(o.Quellart))
                     throw Fehler("Die Öffnung " + o.Kennung + " trägt keine schreibbare Öffnungsart (" + (o.Quellart ?? "keine") + ").");
@@ -339,6 +519,13 @@ namespace WindowsFormsApplication1
                     Groesse(opening, "SolarHeatGainCoeff", o.GWert, GbxmlVokabular.Fraction);
                 }
                 opening.Add(Rechteck(o));
+                double? flaeche = o.BruttoflaecheM2 ?? (o.BreiteM * o.HoeheM);
+                if (wand != null && flaeche > 0.0)
+                {
+                    IReadOnlyList<double[]> ring = Zonenkoerper.Oeffnung(wand, stelle, anzahl, flaeche.Value, out bool begrenzt);
+                    if (begrenzt) _begrenzt.Add(o.Name ?? o.Kennung);
+                    if (ring != null) opening.Add(new XElement(NS + "PlanarGeometry", Ring(ring)));
+                }
                 return opening;
             }
 

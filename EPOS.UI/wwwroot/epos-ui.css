@@ -5611,6 +5611,26 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     -webkit-user-select: none;
 }
 
+/* Die Koerperansicht (G7b): ein canvas, das das Modul epos-gebaeude-koerper.js mit three.js fuellt. Die
+   Hoehe ist fest, die Breite folgt dem Rahmen; das Modul passt die Zeichenflaeche ueber einen
+   ResizeObserver an. Beruehrung dreht und zoomt (touch-action: none, sonst rollte die Seite). */
+.epos-gebansicht-koerperansicht {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.epos-gebansicht-canvas {
+    display: block;
+    width: 100%;
+    height: 24rem;
+    background: var(--epos-flaeche-hell);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    touch-action: none;
+    cursor: grab;
+}
+
 .epos-gebansicht-zone--0 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-0); }
 .epos-gebansicht-zone--1 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-1); }
 .epos-gebansicht-zone--2 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-2); }

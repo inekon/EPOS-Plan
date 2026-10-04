@@ -72,6 +72,16 @@
   #error Die Lizenzhinweise Setup\Vorlage\Lizenzhinweise.txt fehlen; sie sind versioniert und Pflicht fuer die Auslieferung (E27, U10).
 #endif
 
+; Exportzusage des IFC-Exports (Stufe G7c; Datenaustauschkonzept, IDS): eine IDS-Datei
+; (buildingSMART Information Delivery Specification), die beschreibt, welche Angaben jede
+; IFC-Datei aus EPOS-Plan traegt. Sie reist mit der Auslieferung neben die Vorlagendatenbank
+; nach {app}\Vorlage; der Exportdialog oeffnet sie dort (Knopf "Exportzusage (IDS) oeffnen...").
+; VERSIONIERT und Pflicht - deshalb #error statt eines stillen Weglassens.
+#define ExportZusage   SetupDir + "Vorlage\EPOS_Export.ids"
+#if !FileExists(ExportZusage)
+  #error Die Exportzusage Setup\Vorlage\EPOS_Export.ids fehlt; sie ist versioniert und Pflicht fuer die Auslieferung (IFC-Export, Stufe G7c).
+#endif
+
 ; Herstellerdaten (VDI 3805 und die zwei CEC-Listen) — Anwenderentscheid W6-O-9
 ; vom 06.09.2026: „ja". Der Ordner liegt im Repository und wandert unveraendert
 ; nach {app}\VDI-3805-Daten; rund 186 MB (WP 134, KWK 25, PV 13, SPK 10,
@@ -367,6 +377,12 @@ Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
 ; Programm; die Anwendung liest es beim Start und gleicht die Kataloge ab, wenn seine Fassung
 ; neuer ist als die der Datenbank - eigene Saetze und Projekte bleiben unberuehrt.
 Source: "{#Katalogpaket}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
+    Components: programm
+
+; Die Exportzusage (IDS) des IFC-Exports neben die Vorlage (oben #define ExportZusage). Der
+; Exportdialog sucht sie neben der Vorlagendatenbank (Dienste.Pfade.Auslieferungsvorlage); ein
+; Update ersetzt sie mit dem Programm.
+Source: "{#ExportZusage}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
     Components: programm
 
 ; Herstellerdaten (W6-O-9). NEBEN das Programm, nicht nach {commonappdata}:

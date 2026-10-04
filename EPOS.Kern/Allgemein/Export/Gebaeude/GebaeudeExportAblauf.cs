@@ -104,6 +104,19 @@ namespace WindowsFormsApplication1
         /// <summary>I — {0} Felder: die benannten Verluste, die das Gebäude trägt.</summary>
         internal const string VERLUSTE = P + "VERLUSTE";
 
+        // Der Beipackzettel (Stufe G7c, Teil 2): keine Textdatei neben der Datei, sondern Meldungen der Bilanz.
+        /// <summary>I — IFC: Die Raumgrenzen sind logisch, ohne Anschlussgeometrie.</summary>
+        internal const string BEIPACK_RAUMGRENZEN = P + "BEIPACK_RAUMGRENZEN";
+        /// <summary>I — IFC: Die Datei nennt keine MVD.</summary>
+        internal const string BEIPACK_OHNE_MVD = P + "BEIPACK_OHNE_MVD";
+        /// <summary>I — IFC: Die Exportzusage steht in der IDS-Datei der Auslieferung.</summary>
+        internal const string BEIPACK_IDS = P + "BEIPACK_IDS";
+        /// <summary>I — Der Kältebedarf ist sensibel, ohne Entfeuchtung (Kühlkonzept 9.2).</summary>
+        internal const string BEIPACK_KAELTE = P + "BEIPACK_KAELTE";
+
+        /// <summary>Der Dateiname der IDS-Datei der Auslieferung (<c>{app}\Vorlage\EPOS_Export.ids</c>).</summary>
+        internal const string IDS_DATEI = "EPOS_Export.ids";
+
         /// <summary>Grund „masselos": Die Gruppe rechnet mit Schichten; ein Bauteil ohne Schichten trägt dort keine Kapazität.</summary>
         internal const string GRUND_GEMISCHT = "GEMISCHTE_GRUPPE";
         /// <summary>Grund „masselos": Die Stoffwertbänder haben für U und Kapazität keinen gemeinsamen Schnitt.</summary>
@@ -156,17 +169,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Schreibt einen schreibbaren Plan über den Schreiber des Profils; die Bilanz trägt die Meldungen
-        /// des Plans. Ein abgelehnter Plan ist ein Programmfehler des Aufrufers.
+        /// des Plans und danach die des Schreibers, ohne die, die schon im Plan stehen (die Vorschau des
+        /// Schreibers bildet der Schreiber beim Schreiben erneut). Ein abgelehnter Plan ist ein Programmfehler
+        /// des Aufrufers.
         /// </summary>
         internal GebaeudeExportBilanz Schreiben(GebaeudeExportPlan plan, Stream ziel, GebaeudeExportProfil profil, CancellationToken abbruch)
         {
             if (plan == null) throw new ArgumentNullException(nameof(plan));
             if (profil == null) throw new ArgumentNullException(nameof(profil));
             if (plan.Abgelehnt) throw new InvalidOperationException("Ein abgelehnter Exportplan wird nicht geschrieben.");
-            GebaeudeExportBilanz b = profil.SchreiberErzeugen().Schreiben(plan.Abbild, ziel, profil, abbruch);
+            GebaeudeExportBilanz b = profil.SchreiberErzeugen(plan.Abbild).Schreiben(plan.Abbild, ziel, profil, abbruch);
             return new GebaeudeExportBilanz(b.Flaechen, b.Oeffnungen, b.Aufbauten, b.Ersatzaufbauten,
-                                            plan.Meldungen.Concat(b.Meldungen).ToList(), b.Bytes);
+                                            plan.Meldungen.Concat(b.Meldungen.Where(m => !plan.Meldungen.Any(v => Gleich(v, m)))).ToList(), b.Bytes);
         }
+
+        /// <summary>Zwei Meldungen mit gleicher Stufe, gleichem Schlüssel und gleichen Werten.</summary>
+        private static bool Gleich(PruefMeldung a, PruefMeldung b)
+            => a.Stufe == b.Stufe && string.Equals(a.Schluessel, b.Schluessel, StringComparison.Ordinal)
+               && (a.Werte ?? Array.Empty<string>()).SequenceEqual(b.Werte ?? Array.Empty<string>(), StringComparer.Ordinal);
 
         /// <summary>
         /// Die Ersatzschicht eines Bauteils (Datenaustauschkonzept 5.3, D10): mit c = 1000 J/(kgK) und
@@ -316,7 +336,38 @@ namespace WindowsFormsApplication1
                 {
                     // Die Ablehnung steht in _ablehnung.
                 }
+                // Die Vorschau des gewählten Formats (gbXML: Kennzeichnung der Raumgeometrie, 8.4; IFC: Beipackzettel).
+                if (_ablehnung == null && _abbild != null) Vorschau();
+                if (_ablehnung == null && _abbild != null) Beipackzettel();
                 return new GebaeudeExportPlan(_abbild, _meldungen, _ablehnung);
+            }
+
+            /// <summary>
+            /// Die Vorschaumeldungen des Schreibers des gewählten Formats (<see cref="IGebaeudeSchreiber.Vorschau"/>).
+            /// Ein Bau ohne xBIM hat keinen IFC-Schreiber; dort entfällt die Vorschau, das Schreiben lehnt benannt ab.
+            /// </summary>
+            private void Vorschau()
+            {
+                IGebaeudeSchreiber schreiber;
+                try
+                {
+                    schreiber = _profil.SchreiberErzeugen(_abbild);
+                }
+                catch (NotSupportedException)
+                {
+                    return;
+                }
+                _meldungen.AddRange(schreiber.Vorschau(_abbild, _profil));
+            }
+
+            /// <summary>
+            /// <b>Der Beipackzettel beider Formate</b> (G7c, Teil 2): bei Kälte im Ergebnis „sensibel, ohne
+            /// Entfeuchtung". Den Beipackzettel des IFC-Formats bildet dessen Schreiber (<see cref="Vorschau"/>).
+            /// </summary>
+            private void Beipackzettel()
+            {
+                if (_g != null && (_g.Ergebnis?.MitKaelte == true || _g.Raeume.Any(r => r.Ergebnis?.MitKaelte == true)))
+                    Info(BEIPACK_KAELTE);
             }
 
             private void Bilden()
@@ -344,6 +395,8 @@ namespace WindowsFormsApplication1
                     CampusKennung = GebaeudeExportKennung.Campus(_gebId),
                     Plz = _satz.Plz,
                     NordwinkelGrad = _satz.Plz != null ? 0.0 : (double?)null,
+                    BreiteGrad = _satz.BreiteGrad,
+                    LaengeGrad = _satz.LaengeGrad,
                 };
                 Gebaeudetypwahl art = _profil.Gebaeudetyp(_geb.Gebaeudeart);
                 if (!art.Bekannt) Info(GEBAEUDEART_UNBEKANNT, _geb.Gebaeudeart ?? "");
@@ -353,6 +406,8 @@ namespace WindowsFormsApplication1
                     Name = string.IsNullOrWhiteSpace(_geb.Gebaeudename) ? null : _geb.Gebaeudename.Trim(),
                     Art = art.Wert,
                     Beschreibung = Campusbeschreibung(),
+                    Baujahr = _geb.Baujahr,
+                    Baualtersklasse = string.IsNullOrWhiteSpace(_geb.Baualtersklasse) ? null : _geb.Baualtersklasse.Trim(),
                 };
                 _abbild.Gebaeude.Add(_g);
                 if (_profil.Testlizenz) Info(TESTLIZENZ);
@@ -368,6 +423,7 @@ namespace WindowsFormsApplication1
                 }
                 for (int i = 0; i < _zonen.Count; i++) Zone(_zonen[i]);
                 if (_platzhalter != null) _g.Raeume.Add(_platzhalter);
+                Ergebnisse();
 
                 int flaechen = _g.Bauteile.Count;
                 if (flaechen < GbxmlVokabular.MINDESTZAHL_FLAECHEN)
@@ -449,11 +505,88 @@ namespace WindowsFormsApplication1
                     GeraeteWm2 = a > 0.0 ? gewinne / a : (double?)null,
                     SollHeizenC = Heizsollwert(z),
                     SollKuehlenC = gekuehlt ? z.Kuehl_Sollwert ?? _geb.Kuehl_Sollwert : null,
+                    HoeheM = Hoehe(z) > 0.0 ? Hoehe(z) : (double?)null,
+                    Nachtabsenkung = z.IstBeheizt ? Nachtabsenkung(z) : null,
+                    LuftwechselNutzerJeH = z.Luftwechsel_Nutzer ?? _geb.Luftwechsel_Nutzer,
                     ZonenKennung = _klassenweg ? GebaeudeExportKennung.KlassenZone(_gebId) : GebaeudeExportKennung.Zone(z.ID),
                     Beschreibung = T("GEXP_DATEI_MITTELWERT"),
                     ZonenBeschreibung = T(nameof(MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007)),
                 };
             }
+
+            /// <summary>
+            /// Ist eine Nachtabsenkung gesetzt? Der Nachtsollwert (Zone vor Gebäude) liegt unter dem Tagessollwert;
+            /// ohne gepflegten Nachtsollwert (≤ 0) unbekannt.
+            /// </summary>
+            private bool? Nachtabsenkung(ZoneModel z)
+            {
+                double nacht = z.Raumsolltemperatur_Nachtabsenkung ?? _geb.Raumsolltemperatur_Nachtabsenkung;
+                double tag = z.Raumsolltemperatur_Tag ?? _geb.Raumsolltemperatur_Tag;
+                return nacht > 0.0 && tag > 0.0 ? nacht < tag : (bool?)null;
+            }
+
+            // --------------------------------------------------------------
+            //  Ergebnisse des letzten Rechenlaufs (G7c, Teil 2)
+            // --------------------------------------------------------------
+
+            /// <summary>
+            /// <b>Die Jahresergebnisse in das Abbild</b>: die Gebäudezeile an das Gebäude (mit Zeitpunkt und
+            /// Wetterdatensatz des Laufs), die Zonenzeilen an die Räume ihrer Zone; führt das Ergebnis keine
+            /// Zonen (höchstens eine Zone, Klassenweg), trägt der einzige beheizte Raum die Gebäudewerte. Der
+            /// Kältebedarf steht nur bei wirksamer Kühlung (sonst wäre er die bis zur oberen Raumtemperatur
+            /// abzuführende Wärme); eine Kältelast speichert das Ergebnis nicht — sie bleibt leer. Ohne Lauf
+            /// bleibt alles leer.
+            /// </summary>
+            private void Ergebnisse()
+            {
+                ErgebnisGebaeudeModel e = _satz.Ergebnis;
+                if (e == null) return;
+                DateTime beginn = new DateTime((_satz.Rechenzeitpunkt ?? DateTime.MinValue).Year, 1, 1);
+                bool kuehlung = _satz.Kuehlbetrieb && _zonen.Any(z => z.IstBeheizt && Gekuehlt(z));
+                _g.Ergebnis = new AbbildErgebnis
+                {
+                    EnergieKWh = Kilo(e.HeizwaermeMwh),
+                    HeizlastW = Kilo(e.SpitzeKw),
+                    MitteltemperaturC = e.MittlereRaumtemperaturC,
+                    KaeltebedarfKWh = kuehlung ? Kilo(e.KuehlenergieMwh) : null,
+                    Beginn = beginn,
+                    Rechenzeitpunkt = _satz.Rechenzeitpunkt,
+                    Wetterdatensatz = _satz.Wetterdatensatz,
+                };
+                if (e.Zonen.Count == 0)
+                {
+                    List<AbbildRaum> beheizt = _g.Raeume.Where(r => r.Beheizt && r != _platzhalter).ToList();
+                    if (beheizt.Count == 1)
+                        beheizt[0].Ergebnis = new AbbildErgebnis
+                        {
+                            EnergieKWh = _g.Ergebnis.EnergieKWh,
+                            HeizlastW = _g.Ergebnis.HeizlastW,
+                            MitteltemperaturC = _g.Ergebnis.MitteltemperaturC,
+                            KaeltebedarfKWh = _g.Ergebnis.KaeltebedarfKWh,
+                            Beginn = beginn,
+                        };
+                    return;
+                }
+                foreach (ErgebnisZoneModel ez in e.Zonen)
+                {
+                    if (!ez.ID_Zone.HasValue || !_raumJeZone.TryGetValue(ez.ID_Zone.Value, out string kennung)) continue;
+                    AbbildRaum raum = _g.Raeume.FirstOrDefault(r => r.Kennung == kennung);
+                    ZoneModel zone = _zonen.FirstOrDefault(z => z.ID == ez.ID_Zone.Value);
+                    if (raum == null || zone == null || !raum.Beheizt) continue;
+                    raum.Ergebnis = new AbbildErgebnis
+                    {
+                        EnergieKWh = Kilo(ez.HeizwaermeMwh),
+                        HeizlastW = Kilo(ez.SpitzeKw),
+                        MitteltemperaturC = ez.MittlereRaumtemperaturC,
+                        KaeltebedarfKWh = Gekuehlt(zone) ? Kilo(ez.KuehlenergieMwh) : null,
+                        Beginn = beginn,
+                    };
+                }
+            }
+
+            /// <summary>Mega in Kilo bzw. Kilo in Eins (× 1000); nicht endlich oder <c>null</c> bleibt leer.</summary>
+            private static double? Kilo(double? wert)
+                => wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value) ? wert.Value * 1000.0 : (double?)null;
 
             private string Platzhalter()
             {
@@ -634,6 +767,7 @@ namespace WindowsFormsApplication1
                 f.Nachbarn.AddRange(nachbarn);
                 f.Aufbau = Aufbau(x, kappa, grund, x.Zelle.Nachbarn == Umkehrnachbarn.Nachbarzone ? Bauteilrand.Zone : x.E.Rand);
                 f.UWertWm2K = f.Aufbau.UWertWm2K;
+                f.WaermebrueckeWK = x.B.Psi_L.HasValue && x.B.Psi_L.Value > 0.0 ? Endlich(x.B.Psi_L.Value) : null;
                 foreach (Zeile o in x.Oeffnungen) f.Oeffnungen.Add(Oeffnung(o, x, kappa, grund));
                 return f;
             }

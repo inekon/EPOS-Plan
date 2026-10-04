@@ -12,7 +12,7 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Der Knopf „Exportieren (gbXML)…" im Gebäudedialog (Gebäudesimulation G7a, Welle W3): kein Delegat, kein
+/// Der Knopf „Exportieren…" im Gebäudedialog (Gebäudesimulation G7a, Welle W3): kein Delegat, kein
 /// Knopf; eine Zeile ohne Projektkopie (vorläufige Id ab 100000) ist weich gesperrt und nennt den Grund;
 /// sonst öffnet der Knopf den Exportdialog als Überlagerung für GENAU die markierte Zeile, mit dem Vermerk,
 /// ob sie ungespeicherte Änderungen trägt; nach dem Schreiben steht die Rückmeldung im Banner; Esc schließt
@@ -23,7 +23,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class GebaeudeDialogExportTests : EposBunitContext
 {
-    private const string KNOPF = "Exportieren (gbXML)…";
+    private const string KNOPF = "Exportieren…";
 
     public GebaeudeDialogExportTests()
     {
@@ -48,11 +48,11 @@ public class GebaeudeDialogExportTests : EposBunitContext
     private static IReadOnlyDictionary<string, object> Exportgaben(List<string>? gespeichert = null, bool geaendert = false)
         => new Dictionary<string, object>
         {
-            ["Vorbereiten"] = new Func<string, Task<GebaeudeExportAnsicht>>(_ => Task.FromResult(
+            ["Vorbereiten"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportAnsicht>>(_ => Task.FromResult(
                 new GebaeudeExportAnsicht(new[] { new GebaeudeExportMeldung(WarnStufe.Hinweis, "Info", "Ohne Ort.", "GEXP_PROT_OHNE_ORT") }, null))),
-            ["Speichern"] = new Func<string, Task<GebaeudeExportErgebnis>>(plz =>
+            ["Speichern"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>(e =>
             {
-                gespeichert?.Add(plz);
+                gespeichert?.Add(e.Plz);
                 return Task.FromResult(new GebaeudeExportErgebnis(true, false, "Gespeichert: C:\\Probe\\haus.xml (1234 Byte)."));
             }),
             ["GespeicherterStand"] = geaendert,
@@ -87,7 +87,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
 
         var mit = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, kopie: true) }, (_, _) => Exportgaben());
         Assert.Contains(KNOPF, mit.Markup);
-        Assert.Equal("Die Daten des Gebäudes im Projekt als gbXML-Datei ausgeben — Zonen, Bauteilflächen und Schichtaufbauten, ohne Geometrie",
+        Assert.Equal("Die Daten des Gebäudes im Projekt ausgeben — als gbXML mit schematischer Raumgeometrie oder als IFC mit Zonen, Bauteilflächen und Schichtaufbauten ohne Geometrie",
                      Knopf(mit, KNOPF).GetAttribute("title"));
     }
 
@@ -143,7 +143,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
 
         Assert.True(cut.Instance.ExportOffen);
         Assert.Equal((4711, false), Assert.Single(gereicht));
-        Assert.Contains("Gebäude exportieren (gbXML)", cut.Find("[role=dialog]").TextContent);
+        Assert.Contains("Gebäude exportieren", cut.Find("[role=dialog]").TextContent);
         Assert.Single(cut.FindComponents<GebaeudeExportDialog>());
     }
 
@@ -206,8 +206,8 @@ public class GebaeudeDialogExportTests : EposBunitContext
     public void Die_Beschriftung_reicht_die_Huelle_auf_iOS_mit_teilen()
     {
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, kopie: true) }, (_, _) => Exportgaben(),
-                           knopftext: "Exportieren und teilen (gbXML)…");
-        Assert.Contains("Exportieren und teilen (gbXML)…", cut.Markup);
+                           knopftext: "Exportieren und teilen…");
+        Assert.Contains("Exportieren und teilen…", cut.Markup);
         Assert.DoesNotContain(">" + KNOPF + "<", cut.Markup);
     }
 }

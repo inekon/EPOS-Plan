@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using Xunit;
+using R = WindowsFormsApplication1.MyResource.Resource;
 
 namespace EPOS.UI.Tests.Dialoge;
 
@@ -44,16 +45,33 @@ public class GebaeudeExportDialogTests : EposBunitContext
     {
         internal readonly List<string> Vorbereitet = new();
         internal readonly List<string> Gespeichert = new();
+        internal readonly List<string> Formatfolge = new();
+        internal readonly List<string> GespeichertFormat = new();
+        internal int Zusagen;
+        internal string? ZusageAntwort;
         internal readonly List<GebaeudeExportErgebnis?> Geschlossen = new();
         internal Func<string, GebaeudeExportAnsicht> Ansicht = Schreibbar;
         internal GebaeudeExportErgebnis Ergebnis = new(true, false, "Gespeichert: C:\\Probe\\haus.xml (1234 Byte).");
     }
 
     private IRenderedComponent<GebaeudeExportDialog> Aufbauen(Stand s, bool gespeicherterStand = false,
-                                                              GebaeudeExportTexte? texte = null)
+                                                              GebaeudeExportTexte? texte = null,
+                                                              IReadOnlyList<GebaeudeExportFormat>? formate = null)
         => Render<GebaeudeExportDialog>(p => p
-            .Add(x => x.Vorbereiten, plz => { s.Vorbereitet.Add(plz); return Task.FromResult(s.Ansicht(plz)); })
-            .Add(x => x.Speichern, plz => { s.Gespeichert.Add(plz); return Task.FromResult(s.Ergebnis); })
+            .Add(x => x.Vorbereiten, e =>
+            {
+                s.Vorbereitet.Add(e.Plz);
+                s.Formatfolge.Add(e.Format);
+                return Task.FromResult(s.Ansicht(e.Plz));
+            })
+            .Add(x => x.Speichern, e =>
+            {
+                s.Gespeichert.Add(e.Plz);
+                s.GespeichertFormat.Add(e.Format);
+                return Task.FromResult(s.Ergebnis);
+            })
+            .Add(x => x.Formate, formate ?? Array.Empty<GebaeudeExportFormat>())
+            .Add(x => x.ZusageOeffnen, () => { s.Zusagen++; return Task.FromResult(s.ZusageAntwort); })
             .Add(x => x.GespeicherterStand, gespeicherterStand)
             .Add(x => x.Entprellung, 0)
             .Add(x => x.Texte, texte ?? new GebaeudeExportTexte())
@@ -231,7 +249,7 @@ public class GebaeudeExportDialogTests : EposBunitContext
     {
         var cut = Render<GebaeudeExportDialog>(p => p.Add(x => x.Entprellung, 0));
 
-        Assert.Contains("Gebäude exportieren (gbXML)", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Equal("Gebäude exportieren", cut.Find(".epos-dialog-titel").TextContent.Trim());
         Assert.Contains("Die Daten des Gebäudes werden gelesen", cut.Find(".epos-gebexport-vorbereitung").TextContent);
         Assert.NotNull(Primaer(cut).GetAttribute("disabled"));
     }
@@ -269,5 +287,146 @@ public class GebaeudeExportDialogTests : EposBunitContext
         Bestaetigen(cut);
         Assert.Equal(true, bestaetigt.Lesen());
         Assert.Empty(s.Gespeichert);
+    }
+
+    // =====================================================================
+    //  Formatwahl (Stufe G7c): gbXML oder IFC, Abbruch des Schreibens, Exportzusage
+    // =====================================================================
+
+    /// <summary>Die Formate der Hülle — Steuerwerte und Ressourcentexte, wie der Gebäudedialog sie reicht.</summary>
+    private static IReadOnlyList<GebaeudeExportFormat> Formate() => GebaeudeExportHuelle.Formate();
+
+    private static IReadOnlyList<IElement> Formatknoepfe(IRenderedComponent<GebaeudeExportDialog> cut)
+        => cut.FindAll(".epos-gebexport-dialog input[type=radio]").ToList();
+
+    [Fact]
+    public void Die_Formatwahl_steht_mit_Vorgabe_gbXML_und_reicht_den_Steuerwert()
+    {
+        var s = new Stand();
+        var cut = Aufbauen(s, formate: Formate());
+
+        IReadOnlyList<IElement> knoepfe = Formatknoepfe(cut);
+        Assert.Equal(2, knoepfe.Count);
+        Assert.True(knoepfe[0].HasAttribute("checked"));
+        Assert.Contains("gbXML (Schemafassung 6.01)", cut.Markup);
+        Assert.Contains("IFC 4 (semantisch)", cut.Markup);
+        Assert.Contains("Daten mit schematischer Raumgeometrie", cut.Find(".epos-gebexport-kopf").TextContent);
+        Assert.Equal(new[] { "GBXML" }, s.Formatfolge);
+        Assert.Equal("GBXML", cut.Instance.Formatwert);
+        Assert.Empty(cut.FindAll(".epos-gebexport-zusageknopf"));
+    }
+
+    [Fact]
+    public void Ein_Formatwechsel_bildet_den_Plan_neu_nimmt_die_Bestaetigung_zurueck_und_speichert_im_Format()
+    {
+        var s = new Stand();
+        var cut = Aufbauen(s, formate: Formate());
+        Bestaetigen(cut);
+        Assert.True(cut.Instance.Bestaetigt);
+
+        Formatknoepfe(cut)[1].Change("1");
+
+        Assert.Equal(new[] { "GBXML", "IFC" }, s.Formatfolge);
+        Assert.Equal("IFC", cut.Instance.Formatwert);
+        Assert.False(cut.Instance.Bestaetigt);
+        Assert.Contains("Daten ohne Geometrie", cut.Find(".epos-gebexport-kopf").TextContent);
+        Assert.NotNull(cut.Find(".epos-gebexport-zusageknopf"));
+
+        Bestaetigen(cut);
+        Primaer(cut).Click();
+        Assert.Equal(new[] { "IFC" }, s.GespeichertFormat);
+        Assert.Single(s.Geschlossen);
+    }
+
+    [Fact]
+    public void Ein_abgebrochenes_Schreiben_zeigt_Fehler_und_Meldungen_und_schliesst_nicht()
+    {
+        var abbruch = new[]
+        {
+            new GebaeudeExportMeldung(WarnStufe.Fehler, "Fehler", "IfcWall: Name fehlt.", "GEXP_PROT_IFC_SCHEMA"),
+            new GebaeudeExportMeldung(WarnStufe.Fehler, "Fehler", "IFC-Export abgebrochen: 1 Verstoß.", "GEXP_PROT_IFC_ABGEBROCHEN"),
+        };
+        var s = new Stand { Ergebnis = new GebaeudeExportErgebnis(false, false, R.GEXP_MSG_NICHTS_GESCHRIEBEN, abbruch) };
+        var cut = Aufbauen(s, formate: Formate());
+        Formatknoepfe(cut)[1].Change("1");
+        Bestaetigen(cut);
+
+        Primaer(cut).Click();
+
+        Assert.Equal(new[] { "IFC" }, s.GespeichertFormat);
+        Assert.Empty(s.Geschlossen);
+        Assert.Equal(WarnStufe.Fehler, cut.Instance.MeldungStufe);
+        Assert.Contains("es wurde keine Datei geschrieben", cut.Find(".epos-warnbanner").TextContent);
+        IReadOnlyList<IElement> zeilen = cut.FindAll(".epos-gebexport-meldungen tbody tr").ToList();
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal("GEXP_PROT_IFC_ABGEBROCHEN", zeilen[1].GetAttribute("data-schluessel"));
+        Assert.Contains("epos-gebexport-meldung--fehler", zeilen[1].ClassName);
+    }
+
+    [Fact]
+    public void Der_Zusageknopf_ruft_die_Naht_und_nennt_einen_Grund()
+    {
+        var s = new Stand();
+        var cut = Aufbauen(s, formate: Formate());
+        Formatknoepfe(cut)[1].Change("1");
+
+        IElement knopf = cut.Find(".epos-gebexport-zusageknopf");
+        Assert.Equal("Exportzusage (IDS) öffnen…", knopf.TextContent.Trim());
+        knopf.Click();
+        Assert.Equal(1, s.Zusagen);
+        Assert.Equal("", cut.Instance.Meldung);
+
+        s.ZusageAntwort = "Die Exportzusage liegt nicht vor: /app/Vorlage/EPOS_Export.ids";
+        cut.Find(".epos-gebexport-zusageknopf").Click();
+        Assert.Equal(2, s.Zusagen);
+        Assert.Contains("liegt nicht vor", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Empty(s.Gespeichert);
+    }
+
+    [Fact]
+    public void Ohne_Formatliste_steht_das_Format_als_Text()
+    {
+        var s = new Stand();
+        var cut = Aufbauen(s);
+        Assert.Empty(Formatknoepfe(cut));
+        Assert.Equal(new[] { "" }, s.Formatfolge);
+        Assert.Empty(cut.FindAll(".epos-gebexport-zusageknopf"));
+    }
+
+    [Fact]
+    public void Kein_Anzeigetext_ist_ein_Steuerwert()
+    {
+        var cut = Aufbauen(new Stand(), formate: Formate());
+        IReadOnlyList<string> beschriftungen = cut.FindAll(".epos-gebexport-dialog label").Select(l => l.TextContent.Trim()).ToList();
+        foreach (GebaeudeExportFormat f in Formate())
+        {
+            Assert.NotEqual(f.Wert, f.Text);
+            Assert.DoesNotContain(f.Wert, beschriftungen);
+            Assert.Contains(beschriftungen, b => b.Contains(f.Text, StringComparison.Ordinal));
+        }
+        Assert.Equal(new[] { "GBXML", "IFC" }, Formate().Select(f => f.Wert));
+        Assert.Equal(new[] { false, true }, Formate().Select(f => f.MitZusage));
+    }
+
+    /// <summary>Die neuen Texte der Formatwahl stehen in beiden Sprachen, nicht leer und übersetzt.</summary>
+    [Theory]
+    [InlineData("GEXP_TITEL_FORMATWAHL")]
+    [InlineData("GEXP_FORMAT_IFC")]
+    [InlineData("GEXP_STUFE_SCHEMATISCH")]
+    [InlineData("GEXP_DATEITYP_GBXML")]
+    [InlineData("GEXP_DATEITYP_IFC")]
+    [InlineData("GEXP_MSG_NICHTS_GESCHRIEBEN")]
+    [InlineData("GEXP_BTN_ZUSAGE")]
+    [InlineData("GEXP_BTN_ZUSAGE_IOS")]
+    [InlineData("GEXP_ZUSAGE_HINWEIS")]
+    [InlineData("GEXP_MSG_ZUSAGE_FEHLT")]
+    [InlineData("GEXP_MSG_ZUSAGE_FEHLER")]
+    public void Die_Texte_der_Formatwahl_stehen_in_beiden_Sprachen(string schluessel)
+    {
+        string? de = R.ResourceManager.GetString(schluessel, new System.Globalization.CultureInfo("de-DE"));
+        string? en = R.ResourceManager.GetString(schluessel, new System.Globalization.CultureInfo("en-US"));
+        Assert.False(string.IsNullOrWhiteSpace(de), schluessel + " (de)");
+        Assert.False(string.IsNullOrWhiteSpace(en), schluessel + " (en)");
+        Assert.NotEqual(de, en);
     }
 }

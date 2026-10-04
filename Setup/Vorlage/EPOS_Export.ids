@@ -1,0 +1,1069 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ids xmlns="http://standards.buildingsmart.org/IDS" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://standards.buildingsmart.org/IDS http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+  <info>
+    <title>EPOS-Plan: Exportzusage des semantischen IFC-Exports (Stufe S1)</title>
+    <copyright>INEKON</copyright>
+    <version>1.0</version>
+    <description>Was eine IFC-Datei aus EPOS-Plan (IFC4, Stufe S1: semantisch, ohne Geometrie, ohne MVD) je Entität sicher trägt: Attribute, Eigenschaften und Mengen samt Datentyp. „required“ steht an jeder Instanz; „optional“ steht, wenn die Quelle den Wert trägt, und hat dann den genannten Datentyp. Geometrie ist nicht Teil der Zusage. Energiewerte stehen in kWh mit ausdrücklicher Einheit KILOWATTHOUR, Leistungen in W, Temperaturen in K, Winkel in Grad.</description>
+    <purpose>Prüfgrundlage für Empfänger der Datei: Mit einem IDS-fähigen Prüfwerkzeug lässt sich jede exportierte Datei gegen diese Zusage halten.</purpose>
+  </info>
+  <specifications>
+    <specification name="Projekt" ifcVersion="IFC4" description="Das Projekt mit Namen, Beschreibung (Stufe des Exports) und der vollständigen Einheitenzuweisung (Meter, Quadratmeter, Kubikmeter, Joule, Watt, Kelvin, Radiant; dazu kWh und Grad als umgerechnete Einheiten).">
+      <applicability minOccurs="1" maxOccurs="1">
+        <entity>
+          <name>
+            <simpleValue>IFCPROJECT</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>GlobalId</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Name</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Description</simpleValue>
+          </name>
+        </attribute>
+      </requirements>
+    </specification>
+    <specification name="Grundstück" ifcVersion="IFC4" description="Das Grundstück; mit gepflegtem Klimaort trägt es RefLatitude und RefLongitude, mit Postleitzahl die Anschrift.">
+      <applicability minOccurs="1" maxOccurs="1">
+        <entity>
+          <name>
+            <simpleValue>IFCSITE</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>GlobalId</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>CompositionType</simpleValue>
+          </name>
+          <value>
+            <simpleValue>ELEMENT</simpleValue>
+          </value>
+        </attribute>
+      </requirements>
+    </specification>
+    <specification name="Gebäude" ifcVersion="IFC4" description="Das exportierte Gebäude mit seiner EPOS-Kennung und der Angabe des Rechenlaufs. EPOS_Ergebnis steht nur nach einem gespeicherten Rechenlauf; der Kältebedarf ist sensibel, ohne Entfeuchtung.">
+      <applicability minOccurs="1" maxOccurs="1">
+        <entity>
+          <name>
+            <simpleValue>IFCBUILDING</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>GlobalId</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Name</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>CompositionType</simpleValue>
+          </name>
+          <value>
+            <simpleValue>ELEMENT</simpleValue>
+          </value>
+        </attribute>
+        <property dataType="IFCIDENTIFIER" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Gebaeude</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kennung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Gebaeude</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Gebaeudeart</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Gebaeude</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Baualtersklasse</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_BuildingCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>YearOfConstruction</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Rechenlauf</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Rechenmodell</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Rechenlauf</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Validierung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Rechenlauf</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Programmfassung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCDATETIME" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Rechenlauf</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Rechenzeitpunkt</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Rechenlauf</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Wetterdatensatz</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCENERGYMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Heizwaermebedarf</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>HeizwaermebedarfFlaechenbezogen</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPOWERMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Heizlast</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCENERGYMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kaeltebedarf</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPOWERMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kaeltelast</simpleValue>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+    <specification name="Räume" ifcVersion="IFC4" description="Je Zone ein Raum, dazu ein Platzhalter „unbeheizt“, wo eine Fläche an unbeheizte Räume grenzt. Ein beheizter Raum trägt die Sollwerte; EPOS_Ergebnis steht nur nach einem gespeicherten Rechenlauf.">
+      <applicability minOccurs="1" maxOccurs="unbounded">
+        <entity>
+          <name>
+            <simpleValue>IFCSPACE</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>GlobalId</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Name</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>PredefinedType</simpleValue>
+          </name>
+          <value>
+            <simpleValue>SPACE</simpleValue>
+          </value>
+        </attribute>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IstBeheizt</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCIDENTIFIER" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kennung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>LuftwechselInfiltration</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Personen</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>GeraeteWm2</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>LichtWm2</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCAREAMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_SpaceBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>NetFloorArea</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLENGTHMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_SpaceBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Height</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCVOLUMEMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_SpaceBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>NetVolume</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_SpaceThermalRequirements</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>SpaceTemperature</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_SpaceThermalRequirements</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>SpaceTemperatureSummerMax</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_SpaceThermalRequirements</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>DiscontinuedHeating</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCNUMERICMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_SpaceThermalRequirements</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>NaturalVentilationRate</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Rechenlauf</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Rechenmodell</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Rechenlauf</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Validierung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCENERGYMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Heizwaermebedarf</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>HeizwaermebedarfFlaechenbezogen</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPOWERMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Heizlast</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCENERGYMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kaeltebedarf</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPOWERMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kaeltelast</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>RaumtemperaturMittel</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Ergebnis</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>RaumtemperaturMax</simpleValue>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+    <specification name="Wände" ifcVersion="IFC4" description="Außen-, Innen- und Trennwände; die Raumgrenzen sind logisch (IfcRelSpaceBoundary2ndLevel ohne Anschlussgeometrie).">
+      <applicability minOccurs="1" maxOccurs="unbounded">
+        <entity>
+          <name>
+            <simpleValue>IFCWALL</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>GlobalId</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Name</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Tag</simpleValue>
+          </name>
+        </attribute>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>Pset_WallCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IsExternal</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMALTRANSMITTANCEMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>Pset_WallCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>ThermalTransmittance</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCAREAMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>Qto_WallBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>GrossSideArea</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLENGTHMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_WallBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Width</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCIDENTIFIER" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kennung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Bauteilart</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Randbedingung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IstZusammenfassung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPLANEANGLEMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Neigung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPLANEANGLEMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Azimut</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCINTEGER" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>AnzahlTeilflaechen</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>WaermebrueckeUA</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Schichtrichtung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Ersatzschichtung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Raumgrenze</simpleValue>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+    <specification name="Decken, Dächer, Bodenplatten" ifcVersion="IFC4" description="Dach (ROOF), Bodenplatte (BASESLAB) und Decke (FLOOR).">
+      <applicability minOccurs="1" maxOccurs="unbounded">
+        <entity>
+          <name>
+            <simpleValue>IFCSLAB</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>GlobalId</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Name</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Tag</simpleValue>
+          </name>
+        </attribute>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>Pset_SlabCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IsExternal</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMALTRANSMITTANCEMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>Pset_SlabCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>ThermalTransmittance</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCAREAMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>Qto_SlabBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>GrossArea</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLENGTHMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_SlabBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Width</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCIDENTIFIER" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kennung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Bauteilart</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Randbedingung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IstZusammenfassung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPLANEANGLEMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Neigung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPLANEANGLEMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Azimut</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCINTEGER" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>AnzahlTeilflaechen</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>WaermebrueckeUA</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Schichtrichtung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Ersatzschichtung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Raumgrenze</simpleValue>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+    <specification name="Fenster" ifcVersion="IFC4" description="Fenster und Vorhangfassaden in einem geometrielosen IfcOpeningElement ihrer Wirtsfläche.">
+      <applicability minOccurs="0" maxOccurs="unbounded">
+        <entity>
+          <name>
+            <simpleValue>IFCWINDOW</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>GlobalId</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Name</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Tag</simpleValue>
+          </name>
+        </attribute>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>Pset_WindowCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IsExternal</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMALTRANSMITTANCEMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>Pset_WindowCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>ThermalTransmittance</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCNORMALISEDRATIOMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_DoorWindowGlazingType</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>SolarHeatGainTransmittance</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCAREAMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>Qto_WindowBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Area</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLENGTHMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_WindowBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Width</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLENGTHMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_WindowBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Height</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCIDENTIFIER" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kennung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Bauteilart</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Randbedingung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IstZusammenfassung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPLANEANGLEMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Neigung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPLANEANGLEMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Azimut</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCINTEGER" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>AnzahlTeilflaechen</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>WaermebrueckeUA</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Schichtrichtung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Ersatzschichtung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Raumgrenze</simpleValue>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+    <specification name="Türen" ifcVersion="IFC4" description="Türen in einem geometrielosen IfcOpeningElement ihrer Wirtsfläche.">
+      <applicability minOccurs="0" maxOccurs="unbounded">
+        <entity>
+          <name>
+            <simpleValue>IFCDOOR</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>GlobalId</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Name</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Tag</simpleValue>
+          </name>
+        </attribute>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>Pset_DoorCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IsExternal</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMALTRANSMITTANCEMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>Pset_DoorCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>ThermalTransmittance</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCAREAMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>Qto_DoorBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Area</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLENGTHMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_DoorBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Width</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLENGTHMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Qto_DoorBaseQuantities</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Height</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCIDENTIFIER" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kennung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Bauteilart</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Randbedingung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>IstZusammenfassung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPLANEANGLEMEASURE" cardinality="required">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Neigung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPLANEANGLEMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Azimut</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCINTEGER" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>AnzahlTeilflaechen</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>WaermebrueckeUA</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Schichtrichtung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCBOOLEAN" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Ersatzschichtung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Bauteil</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Raumgrenze</simpleValue>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+    <specification name="Baustoffe" ifcVersion="IFC4" description="Die Baustoffe der Schichtaufbauten (IfcMaterialLayerSet); die Stoffwerte stehen, soweit gepflegt.">
+      <applicability minOccurs="0" maxOccurs="unbounded">
+        <entity>
+          <name>
+            <simpleValue>IFCMATERIAL</simpleValue>
+          </name>
+        </entity>
+      </applicability>
+      <requirements>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Name</simpleValue>
+          </name>
+        </attribute>
+        <attribute cardinality="required">
+          <name>
+            <simpleValue>Description</simpleValue>
+          </name>
+        </attribute>
+        <property dataType="IFCTHERMALCONDUCTIVITYMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_MaterialThermal</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>ThermalConductivity</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCSPECIFICHEATCAPACITYMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_MaterialThermal</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>SpecificHeatCapacity</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCMASSDENSITYMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_MaterialCommon</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>MassDensity</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMALRESISTANCEMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Baustoff</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Waermedurchlasswiderstand</simpleValue>
+          </baseName>
+        </property>
+      </requirements>
+    </specification>
+  </specifications>
+</ids>

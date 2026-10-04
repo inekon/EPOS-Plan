@@ -206,6 +206,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Wandgrenzen auf dieser Kante in der Reihenfolge der Seiten; leer = keine bekannt.</summary>
         internal IReadOnlyList<Grenzverweis> Grenzen { get; }
+
+        /// <summary>
+        /// Die Strecken der Wände auf dieser Kante (Stufe G7b), vom Startpunkt der Kante gemessen und lückenlos —
+        /// nur am schematischen Rechteck; leer = keine (Umriss aus Raumgrenzen). Innere Masse desselben Raums
+        /// steht auf keiner Strecke.
+        /// </summary>
+        internal IReadOnlyList<Kantenabschnitt> Abschnitte { get; init; } = Array.Empty<Kantenabschnitt>();
     }
 
     /// <summary>Ein Polygon eines Umrisses in der Grundrissebene.</summary>
@@ -294,6 +301,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Wände ohne Kante (kein Ring, kein Sektor, keine passende Kante) und Grenzen unbestimmter Stellung — benannt statt verloren.</summary>
         internal IReadOnlyList<Grenzverweis> OhneKante { get; init; } = Array.Empty<Grenzverweis>();
+
+        /// <summary>Liegt das schematische Rechteck an einem Nachbarraum mit gemeinsamer Trennfläche an (Stufe G7b)?</summary>
+        internal bool Angelegt { get; init; }
+
+        /// <summary>
+        /// Die Bodengrenzen des schematischen Rechtecks als Streifen quer zur Kante 0, entlang der Kante 0 gemessen
+        /// [m], lückenlos, je Grenze im Verhältnis ihrer Fläche (Stufe G7b); leer = keine oder kein Rechteck.
+        /// </summary>
+        internal IReadOnlyList<Kantenabschnitt> BodenStreifen { get; init; } = Array.Empty<Kantenabschnitt>();
+
+        /// <summary>Die Deckengrenzen des schematischen Rechtecks als Streifen wie <see cref="BodenStreifen"/>.</summary>
+        internal IReadOnlyList<Kantenabschnitt> DeckenStreifen { get; init; } = Array.Empty<Kantenabschnitt>();
 
         public override string ToString() => Name + " (" + Herkunft + ", " + Polygone.Count.ToString(CultureInfo.InvariantCulture) + " Polygone)";
     }
@@ -418,11 +437,17 @@ namespace WindowsFormsApplication1
     /// je Zone in der Reihenfolge der Datei, in Zeilen gereiht; Nord oben, die Kanten Süd, Ost, Nord, West
     /// tragen die Wände ihres Sektors. <b>Diese Anordnung ist erfunden</b> — Herkunft
     /// <see cref="Geometrieherkunft.Schematisch"/>, Pflicht an Bild und Datei.</item>
+    /// <item><b>Aneinanderlegen</b> (Stufe G7b, Datenaustauschkonzept 5.5 Punkt 3): Räume mit gemeinsamer
+    /// Trennwand (<see cref="Nachbarpaare"/>) stehen als Block, die Strecken der Trennwand deckungsgleich —
+    /// flächentreu gestreckt, nie gedreht, keine Polygonvereinigung; ein Paar, dessen Trennwand bei beiden
+    /// Räumen nicht auf gegenüberliegenden Himmelsseiten liegt, bleibt getrennt (Hinweis
+    /// <see cref="NICHT_ANGELEGT"/>); eine widersprüchliche Anordnung ist benannt abgelehnt
+    /// (<see cref="AnordnungAbgelehnt"/>). Die Gegenstücke der Paare sind nachgezogen.</item>
     /// <item><b>Determinismus:</b> dieselbe Eingabe ergibt dieselben Polygone in derselben Reihenfolge — nur
     /// Listen in fester Folge, Sortierung über Höhenlage und Ordinalvergleich.</item>
     /// </list>
     /// </summary>
-    internal sealed class Zonengeometrie
+    internal sealed partial class Zonengeometrie
     {
         // ==================================================================
         //  Meldungen (Schlüssel formatfrei, Präfix ZGEO_)
@@ -497,6 +522,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>Trägt die Geometrie einen schematischen Umriss? Dann ist „schematisch" Pflicht an Bild und Datei.</summary>
         internal bool Schematisch => Raeume.Any(r => r.Herkunft == Geometrieherkunft.Schematisch && r.Polygone.Count > 0);
+
+        /// <summary>
+        /// Die Nachbarpaare (Stufe G7b): je Trennfläche, die genau zwei Räume teilen, beide Seiten — mit dem
+        /// nachgezogenen Gegenstück und dem Stand des Aneinanderlegens; nach Bauteilkennung geordnet.
+        /// </summary>
+        internal IReadOnlyList<Nachbarpaar> Nachbarpaare { get; private set; } = Array.Empty<Nachbarpaar>();
+
+        /// <summary>
+        /// Ist das Aneinanderlegen für mindestens eine Gruppe benannt abgelehnt (widersprüchliche Anordnung)?
+        /// Dann steht die Gruppe gereiht wie ohne Nachbarn, die Meldung <see cref="ANORDNUNG_ABGELEHNT"/> nennt das
+        /// Paar, und der gbXML-Export schreibt keine Raumgeometrie (Stufe 2 benannt abgelehnt).
+        /// </summary>
+        internal bool AnordnungAbgelehnt => Nachbarpaare.Any(p => p.Abgelehnt);
 
         /// <summary>Die Drehung des Modells gegen Nord [°], wie gelesen; <c>null</c> = keine Angabe.</summary>
         internal double? NordwinkelGrad { get; private set; }
@@ -595,8 +633,13 @@ namespace WindowsFormsApplication1
                 entwurf.Add(e);
             }
 
+            // Die Nachbarpaare und die Kanten der Wände am Rechteck (Stufe G7b).
+            List<Paarentwurf> paare = Paare(entwurf);
+            Kantenzuordnung(entwurf, paare);
+
             // Die Rechtecke je Geschoss reihen: rechts neben den Umrissen aus Raumgrenzen, je Zone in der
-            // Reihenfolge der Datei (Räume ohne Zone zuletzt), in Zeilen.
+            // Reihenfolge der Datei (Räume ohne Zone zuletzt), in Zeilen — Räume mit gemeinsamer Trennfläche
+            // aneinandergelegt als ein Block.
             for (int g = 0; g < geordnet.Count; g++)
             {
                 List<Umrissentwurf> echt = entwurf.Where(e => e.Geschoss == g && e.Herkunft == Geometrieherkunft.Raumgrenzen).ToList();
@@ -610,8 +653,12 @@ namespace WindowsFormsApplication1
                     x0 = punkte.Max(p => p[0]) + ABSTAND_BLOCK_M;
                     oben = punkte.Max(p => p[1]);
                 }
-                Reihen(ersatz, x0, oben);
+                Reihen(Anlegen(ersatz, paare), x0, oben);
             }
+
+            // Die Gegenstücke der Paare nachziehen (M13): jede Seite verweist auf die Gegenseite.
+            Dictionary<Grenzverweis, Grenzverweis> nachgezogen = Nachziehen(paare);
+            foreach (Umrissentwurf e in entwurf) Ersetzen(e, nachgezogen);
 
             // Die Umrisse der Räume.
             var raeume = new List<Raumumriss>(entwurf.Count);
@@ -637,6 +684,9 @@ namespace WindowsFormsApplication1
                     Boden = e.Boden,
                     Decke = e.Decke,
                     OhneKante = e.OhneKante,
+                    Angelegt = e.Angelegt,
+                    BodenStreifen = e.BodenStreifen,
+                    DeckenStreifen = e.DeckenStreifen,
                 });
             }
             z.Raeume = raeume;
@@ -703,7 +753,8 @@ namespace WindowsFormsApplication1
             }
             z.Zonen = zonen;
             z.Umrisse = umrisse;
-            z.Meldungen = Melden(raeume);
+            z.Nachbarpaare = paare.Select(p => p.Abschluss(nachgezogen)).ToList();
+            z.Meldungen = Melden(raeume).Concat(Paarmeldungen(paare)).ToList();
             return z;
         }
 
@@ -721,6 +772,13 @@ namespace WindowsFormsApplication1
             internal List<Grenzverweis> Decke = new List<Grenzverweis>();
             internal List<Grenzverweis> OhneKante = new List<Grenzverweis>();
             internal double L, B;
+
+            // Stufe G7b — Lage und Kanten des schematischen Rechtecks (nie gedreht).
+            internal double X, Y;
+            internal bool Angelegt;
+            internal List<Kantenabschnitt> BodenStreifen = new List<Kantenabschnitt>();
+            internal List<Kantenabschnitt> DeckenStreifen = new List<Kantenabschnitt>();
+            internal readonly Dictionary<Umrissseite, int> Kante = new Dictionary<Umrissseite, int>();
         }
 
         // ------------------------------------------------------------------
@@ -915,51 +973,36 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Reiht die Rechtecke eines Geschosses in Zeilen ab (<paramref name="x0"/>, <paramref name="oben"/>)
+        /// Reiht die Blöcke eines Geschosses in Zeilen ab (<paramref name="x0"/>, <paramref name="oben"/>)
         /// nach rechts und unten, oben bündig, Abstand <see cref="ABSTAND_M"/>: Die Zeilenbreite ist die Breite
-        /// eines Blocks im Verhältnis <see cref="BLOCK_SEITENVERHAELTNIS"/> aus der Fläche aller Rechtecke samt
-        /// Abständen, mindestens das breiteste Rechteck. Nord oben: die Kanten eines Rechtecks laufen Süd, Ost,
-        /// Nord, West, und jede trägt die Wände ihres Sektors.
+        /// eines Blocks im Verhältnis <see cref="BLOCK_SEITENVERHAELTNIS"/> aus der Fläche aller Blöcke samt
+        /// Abständen, mindestens der breiteste Block. Ein Block ist ein Rechteck oder eine Gruppe
+        /// aneinandergelegter Rechtecke (Stufe G7b). Nord oben: die Kanten eines Rechtecks laufen
+        /// Süd, Ost, Nord, West, und jede trägt die Wände ihres Sektors.
         /// </summary>
-        private static void Reihen(List<Umrissentwurf> ersatz, double x0, double oben)
+        private static void Reihen(List<Rechteckblock> bloecke, double x0, double oben)
         {
-            double breite = Math.Max(ersatz.Max(e => e.L),
-                                     Math.Sqrt(BLOCK_SEITENVERHAELTNIS * ersatz.Sum(e => (e.L + ABSTAND_M) * (e.B + ABSTAND_M))));
+            double breite = Math.Max(bloecke.Max(b => b.Breite),
+                                     Math.Sqrt(BLOCK_SEITENVERHAELTNIS * bloecke.Sum(b => (b.Breite + ABSTAND_M) * (b.Tiefe + ABSTAND_M))));
             double x = x0, zeileOben = oben, zeileHoehe = 0.0;
             int inZeile = 0;
-            foreach (Umrissentwurf e in ersatz)
+            foreach (Rechteckblock b in bloecke)
             {
-                if (inZeile > 0 && x - x0 + e.L > breite)
+                if (inZeile > 0 && x - x0 + b.Breite > breite)
                 {
                     zeileOben -= zeileHoehe + ABSTAND_M;
                     x = x0;
                     zeileHoehe = 0.0;
                     inZeile = 0;
                 }
-                double unten = zeileOben - e.B;
-                var punkte = new List<double[]>
+                foreach (Umrissentwurf e in b.Glieder)
                 {
-                    new[] { x, unten }, new[] { x + e.L, unten }, new[] { x + e.L, zeileOben }, new[] { x, zeileOben },
-                };
-                // Kante 0 Süd, 1 Ost, 2 Nord, 3 West — Sektor 0 Nord → Kante 2, 1 Ost → 1, 2 Süd → 0, 3 West → 3.
-                int[] kanteJeSektor = { 2, 1, 0, 3 };
-                double[] azimut = { 180.0, 90.0, 0.0, 270.0 };
-                double[] laenge = { e.L, e.B, e.L, e.B };
-                var jeKante = new List<Grenzverweis>[] { new List<Grenzverweis>(), new List<Grenzverweis>(), new List<Grenzverweis>(), new List<Grenzverweis>() };
-                var ohne = new List<Grenzverweis>();
-                foreach (Umrissseite s in e.Raum.Seiten)
-                {
-                    if (s.Verweis == null || s.Verweis.Stellung == Grenzstellung.Boden || s.Verweis.Stellung == Grenzstellung.Decke) continue;
-                    if (s.Verweis.Stellung == Grenzstellung.Wand && s.Sektor is int sektor && sektor >= 0 && sektor < 4)
-                        jeKante[kanteJeSektor[sektor]].Add(s.Verweis);
-                    else ohne.Add(s.Verweis);
+                    e.X = x + (e.X - b.MinX);
+                    e.Y = zeileOben - b.Tiefe + (e.Y - b.MinY);
+                    Rechteckpolygon(e);
                 }
-                var kanten = new List<Umrisskante>(4);
-                for (int i = 0; i < 4; i++) kanten.Add(new Umrisskante(i, laenge[i], azimut[i], jeKante[i]));
-                e.Polygone = new List<Umrisspolygon> { new Umrisspolygon(punkte, kanten, e.L * e.B, null, null) };
-                e.OhneKante = ohne;
-                x += e.L + ABSTAND_M;
-                zeileHoehe = Math.Max(zeileHoehe, e.B);
+                x += b.Breite + ABSTAND_M;
+                zeileHoehe = Math.Max(zeileHoehe, b.Tiefe);
                 inZeile++;
             }
         }

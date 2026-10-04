@@ -18,6 +18,7 @@
     <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
     <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
   <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+  </data>
     <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
     <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
         <value>[base64 mime encoded serialized .NET Framework object]</value>
@@ -33353,8 +33354,20 @@ Do you want to allow this?</value>
   <data name="GIMP_ANS_KOERPER" xml:space="preserve">
     <value>Solids</value>
   </data>
-  <data name="GIMP_ANS_KOERPER_GESPERRT" xml:space="preserve">
-    <value>Solids: not available — comes with G7b.</value>
+  <data name="GIMP_ANS_KOERPER_BILD" xml:space="preserve">
+    <value>Solid view of the building — drag to rotate, mouse wheel or two fingers to zoom</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_SCHEMATISCH" xml:space="preserve">
+    <value>At least one solid is invented (outline from area and aspect ratio or height defaulted to 3 m) — the arrangement does not show a real building.</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_OHNE_WEBGL" xml:space="preserve">
+    <value>Solids: this environment cannot draw 3D graphics (WebGL is missing or the module could not be loaded). The floor plan shows the same rooms.</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_HOEHE_VORGABE" xml:space="preserve">
+    <value>height defaulted</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_BEDIENUNG" xml:space="preserve">
+    <value>Drag to rotate, right-click to pan, mouse wheel to zoom; clicking a solid selects its zone.</value>
   </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Storeys</value>
@@ -38116,7 +38129,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Layer {0}</value>
   </data>
   <data name="GEXP_DATEI_STUFE" xml:space="preserve">
-    <value>gbXML export from EPOS-Plan, stage 1: data without geometry.</value>
+    <value>gbXML export from EPOS-Plan.</value>
   </data>
   <data name="GEXP_DATEI_TESTVERSION" xml:space="preserve">
     <value>Created with a trial version of EPOS-Plan.</value>
@@ -38127,17 +38140,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEXP_DATEI_VORBEHALT" xml:space="preserve">
     <value>matches the U-value and the total heat capacity, not the position of the mass</value>
   </data>
-  <data name="GEXP_TITEL" xml:space="preserve">
-    <value>Export building (gbXML)</value>
-  </data>
   <data name="GEXP_BTN_EXPORT" xml:space="preserve">
-    <value>Export (gbXML)…</value>
+    <value>Export…</value>
   </data>
   <data name="GEXP_BTN_EXPORT_IOS" xml:space="preserve">
-    <value>Export and share (gbXML)…</value>
+    <value>Export and share…</value>
   </data>
   <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
-    <value>Write the data of the building in the project to a gbXML file — zones, component areas and layer build-ups, without geometry</value>
+    <value>Write the data of the building in the project — as gbXML with schematic room geometry or as IFC with zones, component areas and layer build-ups without geometry</value>
   </data>
   <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
     <value>The building is not yet saved in the project. Save with OK first, then export.</value>
@@ -38192,9 +38202,6 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="GEXP_DATEIDIALOG_TITEL" xml:space="preserve">
     <value>Save gbXML file</value>
-  </data>
-  <data name="GEXP_DATEIFILTER" xml:space="preserve">
-    <value>gbXML file (*.xml)|*.xml</value>
   </data>
   <data name="GEXP_MSG_GESPEICHERT" xml:space="preserve">
     <value>Saved: {0} ({1} bytes).</value>
@@ -44345,6 +44352,156 @@ chart</value>
   </data>
   <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
     <value>Uncovered cooling</value>
+  </data>
+  <data name="ZGEO_ANGELEGT" xml:space="preserve">
+    <value>{0} pairs of rooms sharing a partition wall are placed side by side — the partition congruent, the rectangle adjusted with its area kept: {1}</value>
+  </data>
+  <data name="ZGEO_NICHT_ANGELEGT" xml:space="preserve">
+    <value>{0} pairs of rooms are not placed side by side: their partition wall does not lie on opposite compass sides in both rooms; both stand apart: {1}</value>
+  </data>
+  <data name="ZGEO_ANORDNUNG_ABGELEHNT" xml:space="preserve">
+    <value>{0} pairs of rooms cannot be placed side by side without contradiction; their group is lined up as if without neighbours, and the gbXML export writes no room geometry: {1}</value>
+  </data>
+  <data name="GEXP_DATEI_SCHEMATISCH" xml:space="preserve">
+    <value>Stage 2, substitute model: surfaces, orientations and constructions are those of the EPOS building model; the room geometry is generated schematically and does not represent the actual floor plan.</value>
+  </data>
+  <data name="GEXP_DATEI_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>Stage 1, data without geometry: the zones sharing a partition cannot be placed side by side without contradiction ({0}).</value>
+  </data>
+  <data name="GEXP_DATEI_OHNE_GEOMETRIE" xml:space="preserve">
+    <value>Stage 1: data without geometry.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_SCHEMATISCH" xml:space="preserve">
+    <value>Substitute model: {0} rooms are written with schematic geometry. Surfaces, orientations and constructions are those of the EPOS building model; the room geometry is generated schematically and does not represent the actual floor plan.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>The zones sharing a partition cannot be placed side by side without contradiction ({0}); the file carries no room geometry.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_OHNE" xml:space="preserve">
+    <value>Stage 1: the file carries the data of the building model without room geometry.</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_OHNE_POLYGON" xml:space="preserve">
+    <value>{0} surfaces are written without a polygon — their room has no body, or they lie on no edge: {1}</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_BEGRENZT" xml:space="preserve">
+    <value>{0} openings do not fit their wall section; their polygon is reduced (edge distance 0.1 m, at most 90 %): {1}</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_AUSSENWAND" xml:space="preserve">
+    <value>External walls (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_DACH" xml:space="preserve">
+    <value>Roofs (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_BODENPLATTE" xml:space="preserve">
+    <value>Ground floor slabs (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_FENSTER" xml:space="preserve">
+    <value>Windows (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_TUER" xml:space="preserve">
+    <value>Doors (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_INNENWAND" xml:space="preserve">
+    <value>Internal walls (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_DECKE" xml:space="preserve">
+    <value>Floors and ceilings (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_VORHANGFASSADE" xml:space="preserve">
+    <value>Curtain walls (combined)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_SONSTIGES" xml:space="preserve">
+    <value>Other building elements (combined)</value>
+  </data>
+  <data name="GEXP_IFC_RECHENMODELL_EINZONE" xml:space="preserve">
+    <value>VDI 6007 Part 1, two-capacity model</value>
+  </data>
+  <data name="GEXP_IFC_RECHENMODELL_MEHRZONE" xml:space="preserve">
+    <value>VDI 6007 Part 1, two-capacity model per zone; the coupling of the zones is an EPOS extension, not a standard</value>
+  </data>
+  <data name="GEXP_IFC_AZIMUT_BEZUG" xml:space="preserve">
+    <value>Azimuth of the outer face in degrees: 0° = north, clockwise (90° = east, 180° = south, 270° = west)</value>
+  </data>
+  <data name="GEXP_IFC_NEIGUNG_BEZUG" xml:space="preserve">
+    <value>Tilt in degrees against the horizontal: 0° = horizontal facing up (roof), 90° = vertical, 180° = horizontal facing down (floor)</value>
+  </data>
+  <data name="GEXP_IFC_SCHICHTRICHTUNG" xml:space="preserve">
+    <value>Order of the IfcMaterialLayer: the first layer is on the outside</value>
+  </data>
+  <data name="GEXP_IFC_RAUMGRENZE" xml:space="preserve">
+    <value>Space boundaries without ConnectionGeometry are logical, not measured</value>
+  </data>
+  <data name="GEXP_IFC_WAERMEBRUECKE" xml:space="preserve">
+    <value>Linear thermal bridges of the element as the sum ψ·L in W/K</value>
+  </data>
+  <data name="GEXP_IFC_FLAECHENBEZOGEN" xml:space="preserve">
+    <value>kWh/(m²·a), related to the usable floor area</value>
+  </data>
+  <data name="GEXP_IFC_LUFTWECHSEL" xml:space="preserve">
+    <value>Infiltration air change rate in 1/h</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
+    <value>IFC export from EPOS-Plan, stage S1: semantic, without geometry.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>The file carries no calculation results: EPOS_Ergebnis and the entries calculation time and weather data set are omitted.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_OHNE_KOORDINATEN" xml:space="preserve">
+    <value>The site has no coordinates: IfcSite without RefLatitude and RefLongitude.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_SCHEMA" xml:space="preserve">
+    <value>Schema check: {0} – {1}</value>
+  </data>
+  <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
+    <value>IFC export cancelled: the schema check reports {0} violations; nothing was written.</value>
+  </data>
+  <data name="GEXP_TITEL_FORMATWAHL" xml:space="preserve">
+    <value>Export building</value>
+  </data>
+  <data name="GEXP_FORMAT_IFC" xml:space="preserve">
+    <value>IFC 4 (semantic)</value>
+  </data>
+  <data name="GEXP_STUFE_SCHEMATISCH" xml:space="preserve">
+    <value>Data with schematic room geometry</value>
+  </data>
+  <data name="GEXP_DATEITYP_GBXML" xml:space="preserve">
+    <value>gbXML file</value>
+  </data>
+  <data name="GEXP_DATEITYP_IFC" xml:space="preserve">
+    <value>IFC file</value>
+  </data>
+  <data name="GEXP_MSG_NICHTS_GESCHRIEBEN" xml:space="preserve">
+    <value>The export was aborted; no file was written. The messages state the reason.</value>
+  </data>
+  <data name="GEXP_BTN_ZUSAGE" xml:space="preserve">
+    <value>Open export specification (IDS)…</value>
+  </data>
+  <data name="GEXP_BTN_ZUSAGE_IOS" xml:space="preserve">
+    <value>Share export specification (IDS)…</value>
+  </data>
+  <data name="GEXP_ZUSAGE_HINWEIS" xml:space="preserve">
+    <value>The export specification is an IDS file describing what every IFC file from EPOS-Plan contains; an IDS-capable checker compares the file against it.</value>
+  </data>
+  <data name="GEXP_MSG_ZUSAGE_FEHLT" xml:space="preserve">
+    <value>The export specification is missing: {0}</value>
+  </data>
+  <data name="GEXP_MSG_ZUSAGE_FEHLER" xml:space="preserve">
+    <value>The export specification could not be opened: {0}</value>
+  </data>
+  <data name="GEXP_DATEI_KAELTE_SENSIBEL" xml:space="preserve">
+    <value>Cooling demand sensible only, without dehumidification</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_RAUMGRENZEN" xml:space="preserve">
+    <value>The space boundaries of the IFC file are logical: each second-level space boundary names space and element without connection geometry; areas are given as quantities, not as geometry.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_OHNE_MVD" xml:space="preserve">
+    <value>The IFC file names no model view definition (no MVD): no published MVD fits a semantic export without geometry.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_IDS" xml:space="preserve">
+    <value>What the IFC file guarantees is described by the IDS file {0} in the Vorlage folder of the installation; any IDS-capable checker can hold it against the file.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_KAELTE" xml:space="preserve">
+    <value>The cooling demand is computed sensible only, without dehumidification; the file carries this note at every cooling value.</value>
   </data>
 </root>
 
