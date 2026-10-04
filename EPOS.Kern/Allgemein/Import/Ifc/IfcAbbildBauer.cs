@@ -501,13 +501,23 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Je Gebäude die Räume mit <c>PredefinedType = INTERNAL</c> und <c>IsExternal = TRUE</c> (Regel B2 ohne Wirkung).</summary>
+        private readonly Dictionary<AbbildGebaeude, List<string>> _aussenWiderspruch = new Dictionary<AbbildGebaeude, List<string>>();
+
+        private static void Zaehlen(Dictionary<AbbildGebaeude, List<string>> ziel, AbbildGebaeude g, string raum)
+        {
+            if (!ziel.TryGetValue(g, out List<string> liste)) ziel[g] = liste = new List<string>();
+            liste.Add(raum);
+        }
+
         /// <summary>Die Temperatur [°C], oberhalb derer ein Raum nach Regel B3 beheizt ist.</summary>
         internal const double B3_GRENZE_C = 12.0;
 
         /// <summary>
         /// <b>Beheizt oder unbeheizt — die Regeln B1 bis B4 und B6</b> (Mehrzonenkonzept 6.1; B5 folgt
         /// nach den Raumgrenzen, <see cref="Untergeschosse"/>): B1 <c>PredefinedType = EXTERNAL</c>, B2
-        /// <c>Pset_SpaceCommon.IsExternal = TRUE</c>, B3 der Heizsollwert aus
+        /// <c>Pset_SpaceCommon.IsExternal = TRUE</c> (nicht gegen ein ausdrückliches <c>PredefinedType = INTERNAL</c>: dann
+        /// gilt das Attribut, benannt <c>IMP_IFC_PROT_AUSSEN_WIDERSPRUCH</c>), B3 der Heizsollwert aus
         /// <c>Pset_SpaceThermalRequirements</c> — nur mit auflösbarer Temperatureinheit — über 12 °C
         /// beheizt, sonst unbeheizt, ersatzweise die Beheizungsart eines CAD-Exports
         /// (<see cref="Beheizungsart"/>), B4 die Namensregel, B6 sonst beheizt. Die erste Regel, die trägt,
@@ -523,7 +533,11 @@ namespace WindowsFormsApplication1
                 return;
             }
             bool? aussen = Wahrheit(IfcEigenschaften.Finden(_bezuege, s, "Pset_SpaceCommon", "IsExternal"));
-            if (aussen == true)
+            // B2 nur ohne Widerspruch: Erklärt das Attribut den Raum ausdrücklich als Innenraum (INTERNAL), geht es dem
+            // Satz vor — IsExternal = TRUE bleibt dann ohne Wirkung, benannt je Gebäude (AUSSEN_WIDERSPRUCH).
+            if (aussen == true && art == IfcSpaceTypeEnum.INTERNAL)
+                Zaehlen(_aussenWiderspruch, g, r.Name ?? r.Kennung);
+            else if (aussen == true)
             {
                 Setzen(r, false, BeheiztQuelle.Attribut, "B2", "IsExternal");
                 return;
@@ -672,6 +686,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void BeheizungsartMelden()
         {
+            foreach (KeyValuePair<AbbildGebaeude, List<string>> g in _aussenWiderspruch)
+                g.Key.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "AUSSEN_WIDERSPRUCH", Ganz(g.Value.Count), Beispiele(g.Value)));
             foreach (KeyValuePair<AbbildGebaeude, SortedDictionary<string, int[]>> g in _beheizungsart)
                 foreach (KeyValuePair<string, int[]> m in g.Value)
                     g.Key.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BEHEIZUNGSART", Ganz(m.Value[0]), Ganz(m.Value[1]), m.Key));
@@ -883,9 +899,39 @@ namespace WindowsFormsApplication1
                     RueckfallMerken(gi, platz == 0 ? "NetFloorArea" : "GrossFloorArea", herkunft[platz].Value);
             }
             RueckfaelleMelden(gi);
+            FlaecheAusGrundriss(g, raeume);
 
-            if (raeume.Count == 0 || raeume.All(kv => !(_raumflaechen[kv.Key][0] > 0.0) && !(_raumflaechen[kv.Key][1] > 0.0)))
+            if (raeume.Count == 0 || raeume.All(kv => !(_raumflaechen[kv.Key][0] > 0.0) && !(_raumflaechen[kv.Key][1] > 0.0)
+                                                      && !kv.Value.FlaecheAusGrundriss))
                 g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KEINE_RAEUME", g.Anzeigename, Ganz(raeume.Count)));
+        }
+
+        /// <summary>
+        /// <b>Die Raumfläche aus dem Grundriss</b> (Mehrzonenkonzept 6.5): Führt die Datei für einen Raum keine Flächenmenge —
+        /// weder Netto noch Brutto, auch nicht über die Rückfallnamen —, gilt die Fläche seines Grundrisses
+        /// (<see cref="AbbildRaum.GrundrissM"/>, Gaußsche Trapezformel) als Raumfläche, gekennzeichnet über
+        /// <see cref="AbbildRaum.FlaecheAusGrundriss"/> und benannt je Gebäude (<c>IMP_IFC_PROT_FLAECHE_GRUNDRISS</c>, I).
+        /// Ein Raum mit einer Flächenmenge bleibt unberührt.
+        /// </summary>
+        private void FlaecheAusGrundriss(AbbildGebaeude g, List<KeyValuePair<int, AbbildRaum>> raeume)
+        {
+            var namen = new List<string>();
+            double summe = 0.0;
+            foreach (KeyValuePair<int, AbbildRaum> kv in raeume)
+            {
+                AbbildRaum r = kv.Value;
+                if (r.FlaecheM2.HasValue || _raumflaechen[kv.Key][0] > 0.0 || _raumflaechen[kv.Key][1] > 0.0) continue;
+                if (r.GrundrissM == null || r.GrundrissM.Count < 3) continue;
+                double f = Math.Abs(Grundrissueberlappung.Flaeche(r.GrundrissM));
+                if (!(f > 0.0)) continue;
+                r.FlaecheM2 = f;
+                r.FlaecheAusGrundriss = true;
+                summe += f;
+                namen.Add(r.Name ?? r.Kennung);
+            }
+            if (namen.Count > 0)
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "FLAECHE_GRUNDRISS", Ganz(namen.Count),
+                    Zahl(Math.Round(summe, 1)), Beispiele(namen)));
         }
 
         // ==================================================================
@@ -934,10 +980,56 @@ namespace WindowsFormsApplication1
             return nachName || nachTyp;
         }
 
+        /// <summary>Bauteile, deren äußere Raumgrenzen als Splitter nicht entschieden (<see cref="IstAussenSplitter"/>).</summary>
+        private readonly List<string> _aussenSplitter = new List<string>();
+
+        /// <summary>Je Platte eines zerlegten Dachs das Dach, dessen Raumgrenzen sie trägt (<see cref="Bauteile"/>).</summary>
+        private readonly Dictionary<int, int> _grenzenUebertrag = new Dictionary<int, int>();
+
+        /// <summary>Zerlegte Dächer, deren Raumgrenzen auf ihre Platte übergingen, und die Zahl dieser Grenzen.</summary>
+        private int _daecherUebertragen, _dachgrenzenUebertragen;
+
+        /// <summary>Die Raumgrenzen, die ein Bauteil oder eine Öffnung des Abbilds übernommen hat (Kennung der Grenze).</summary>
+        private readonly HashSet<int> _grenzenUebernommen = new HashSet<int>();
+
+        /// <summary>
+        /// <b>Raumgrenzen ohne Bauteilfläche</b> (Mehrzonenkonzept 6.2): Jede Grenze der gewählten Ebene (die 2. Ebene, wenn die
+        /// Datei welche führt), die kein Bauteil und keine Öffnung des Abbilds übernommen hat, wird je Art gezählt — die Klasse
+        /// ihres Bauteils (Stütze, Träger, mehrteiliges Dach, virtuelles Element …), ohne Bauteil „—“ — und benannt
+        /// (<c>IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL</c>, I, mit Anzahl und Fläche je Art). Ihre Geometrie liest der Leser; sie
+        /// gehört nur zu keinem Bauteil der Hülle.
+        /// </summary>
+        private void GrenzenOhneBauteilMelden()
+        {
+            if (_aussenSplitter.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "AUSSEN_SPLITTER", Ganz(_aussenSplitter.Count), Beispiele(_aussenSplitter)));
+            if (_daecherUebertragen > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "GRENZEN_DACHPLATTE", Ganz(_daecherUebertragen), Ganz(_dachgrenzenUebertragen)));
+            bool nurZweite = _abbild.ZahlRaumgrenzenZweiteEbene > 0;
+            var arten = new SortedDictionary<string, (int Zahl, double FlaecheM2)>(StringComparer.Ordinal);
+            foreach (IIfcRelSpaceBoundary rsb in Sortiert<IIfcRelSpaceBoundary>())
+            {
+                if (_grenzenUebernommen.Contains(rsb.EntityLabel)) continue;
+                if (nurZweite && !IstZweiteEbene(rsb, _abbild.SchemaStand, out _)) continue;
+                IIfcElement e = rsb.RelatedBuildingElement;
+                string art = (e == null ? "—" : e.ExpressType.ExpressName)
+                             + (rsb.PhysicalOrVirtualBoundary == IfcPhysicalOrVirtualEnum.VIRTUAL ? " (VIRTUAL)" : "");
+                IfcRahmen? rahmen = rsb.RelatingSpace is IIfcSpace raum && _raumRahmen.TryGetValue(raum.EntityLabel, out IfcRahmen r) ? r : (IfcRahmen?)null;
+                IfcGrenzgeometrie.Flaeche f = IfcGrenzgeometrie.Lesen(rsb, rahmen, _einheiten.Laenge);
+                arten.TryGetValue(art, out (int Zahl, double FlaecheM2) n);
+                arten[art] = (n.Zahl + 1, n.FlaecheM2 + (f?.FlaecheM2 ?? 0.0));
+            }
+            foreach (KeyValuePair<string, (int Zahl, double FlaecheM2)> a in arten.OrderByDescending(x => x.Value.FlaecheM2).ThenBy(x => x.Key, StringComparer.Ordinal))
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "GRENZEN_OHNE_BAUTEIL", Ganz(a.Value.Zahl), a.Key,
+                    Zahl(Math.Round(a.Value.FlaecheM2, 1))));
+        }
+
         /// <summary>Die Raumgrenzen eines Bauteils — die der 2. Ebene, wenn es welche gibt, sonst alle.</summary>
         private List<IIfcRelSpaceBoundary> GrenzenVon(IIfcElement e)
         {
-            if (!_grenzen.TryGetValue(e.EntityLabel, out List<IIfcRelSpaceBoundary> alle)) return new List<IIfcRelSpaceBoundary>();
+            if (!_grenzen.TryGetValue(e.EntityLabel, out List<IIfcRelSpaceBoundary> alle)
+                && !(_grenzenUebertrag.TryGetValue(e.EntityLabel, out int dach) && _grenzen.TryGetValue(dach, out alle)))
+                return new List<IIfcRelSpaceBoundary>();
             List<IIfcRelSpaceBoundary> zweite = alle.Where(g => _grenzenZweiteEbene.Contains(g.EntityLabel)).ToList();
             return zweite.Count > 0 ? zweite : alle;
         }
@@ -960,7 +1052,17 @@ namespace WindowsFormsApplication1
                     || IfcEigenschaften.MengeRueckfall(_bezuege, dach, RUECKFALL_BAUTEIL_BRUTTO, _einheiten, out _, out _).HasValue)
                     foreach (IIfcElement t in teile) uebersprungen.Add(t.EntityLabel);
                 else
+                {
                     uebersprungen.Add(dach.EntityLabel);
+                    // Die Raumgrenzen eines zerlegten Dachs: Hängen sie am Dach und trägt seine einzige Platte keine
+                    // eigenen, gelten sie für die Platte (Mehrzonenkonzept 6.5) — sonst gingen sie verloren.
+                    if (teile.Count == 1 && _grenzen.ContainsKey(dach.EntityLabel) && !_grenzen.ContainsKey(teile[0].EntityLabel))
+                    {
+                        _grenzenUebertrag[teile[0].EntityLabel] = dach.EntityLabel;
+                        _dachgrenzenUebertragen += GrenzenVon(dach).Count;
+                        _daecherUebertragen++;
+                    }
+                }
             }
             // Eine Vorhangfassade zählt als Ganzes; ihre Platten und Pfosten nicht noch einmal.
             foreach (IIfcCurtainWall fassade in Sortiert<IIfcCurtainWall>())
@@ -1164,7 +1266,8 @@ namespace WindowsFormsApplication1
             List<IIfcRelSpaceBoundary> grenzen = GrenzenVon(e);
             // Ohne IsExternal und ohne Raumgrenze: die Angrenzung eines CAD-Exports (Mehrzonenkonzept 6.5).
             (Randbedingung Rand, bool? Zonenboden)? angrenzung = !istAussen.HasValue && grenzen.Count == 0 ? Angrenzung(e) : null;
-            Randbedingung rand = Rand(istAussen, grenzen, dach, bodenplatte, angrenzung?.Rand);
+            Randbedingung rand = Rand(istAussen, grenzen, dach, bodenplatte, angrenzung?.Rand, out bool splitter);
+            if (splitter) _aussenSplitter.Add(IfcEigenschaften.Text(e.Name) ?? e.GlobalId.ToString());
 
             int gi = GebaeudeVon(e, grenzen);
             var b = new AbbildBauteil
@@ -1272,7 +1375,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Randbedingung (3.5 Nr. 4): <c>IsExternal</c> (Vorkommnis vor Typ) entscheidet; fehlt es,
         /// entscheidet <c>InternalOrExternalBoundary</c> der Raumgrenzen (<c>EXTERNAL_EARTH</c> = Erdreich,
-        /// <c>EXTERNAL*</c> = außen, <c>INTERNAL</c> = innen), bei <c>NOTDEFINED</c> die Zählregel: außen, wenn
+        /// <c>EXTERNAL*</c> = außen, an einer Bodenplatte erdberührt wie unter <c>IsExternal</c>, <c>INTERNAL</c> = innen;
+        /// äußere Grenzen, die nur ein Splitter sind, entscheiden nicht, <see cref="IstAussenSplitter"/>, gemeldet über
+        /// <paramref name="splitter"/>), bei <c>NOTDEFINED</c> die Zählregel: außen, wenn
         /// genau eine physische Raumgrenze auf das Bauteil zeigt. Ein Dach ohne jede Angabe gilt als außen,
         /// eine Bodenplatte als erdberührt — beides ist ihre Definition. Ohne beides gilt die
         /// <paramref name="angrenzung"/> eines CAD-Exports (<see cref="ANGRENZUNG"/>, Mehrzonenkonzept 6.5)
@@ -1280,17 +1385,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Randbedingung Rand(bool? istAussen, IReadOnlyCollection<IIfcRelSpaceBoundary> grenzen, bool dach, bool bodenplatte,
                                            Randbedingung? angrenzung = null)
+            => Rand(istAussen, grenzen, dach, bodenplatte, angrenzung, out _);
+
+        /// <summary>Die Randbedingung wie oben; <paramref name="splitter"/> sagt, ob äußere Grenzen als Splitter nicht entschieden.</summary>
+        internal static Randbedingung Rand(bool? istAussen, IReadOnlyCollection<IIfcRelSpaceBoundary> grenzen, bool dach, bool bodenplatte,
+                                           Randbedingung? angrenzung, out bool splitter)
         {
+            splitter = false;
             bool erde = grenzen.Any(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_EARTH);
             if (istAussen == true) return erde || bodenplatte ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
             if (istAussen == false) return Randbedingung.Innen;
             if (grenzen.Count > 0)
             {
                 if (erde) return Randbedingung.Erdreich;
-                if (grenzen.Any(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL
-                                     || g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_WATER
-                                     || g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_FIRE))
-                    return Randbedingung.Aussenluft;
+                List<IIfcRelSpaceBoundary> aussen = grenzen.Where(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL
+                                                                       || g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_WATER
+                                                                       || g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_FIRE).ToList();
+                if (aussen.Count > 0 && IstAussenSplitter(aussen, grenzen))
+                {
+                    splitter = true;
+                    grenzen = grenzen.Except(aussen).ToList();
+                }
+                else if (aussen.Count > 0)
+                    return bodenplatte ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
                 if (grenzen.All(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.INTERNAL))
                     return Randbedingung.Innen;
                 if (grenzen.Count(g => g.PhysicalOrVirtualBoundary == IfcPhysicalOrVirtualEnum.PHYSICAL) == 1)
@@ -1301,6 +1418,33 @@ namespace WindowsFormsApplication1
             if (dach) return Randbedingung.Aussenluft;
             if (bodenplatte) return Randbedingung.Erdreich;
             return Randbedingung.Unbekannt;
+        }
+
+        /// <summary>Der Flächenanteil, unter dem die äußeren Raumgrenzen eines Bauteils mit inneren Grenzen nicht entscheiden.</summary>
+        internal const double AUSSEN_SPLITTER_ANTEIL = 0.05;
+
+        /// <summary>
+        /// <b>Ein äußerer Splitter</b> (Mehrzonenkonzept 6.2): Trägt ein Bauteil auch innere Raumgrenzen und haben seine äußeren
+        /// Grenzen alle ein lesbares Polygon, zusammen aber weniger als <see cref="AUSSEN_SPLITTER_ANTEIL"/> der gelesenen
+        /// Grenzfläche des Bauteils, entscheiden sie die Randbedingung nicht — ein Randstreifen (FZK-Haus: 0,82 m² an einer
+        /// Geschossdecke von 170,6 m² Grenzfläche) macht keine Decke zum Dach.
+        /// </summary>
+        internal static bool IstAussenSplitter(IReadOnlyCollection<IIfcRelSpaceBoundary> aussen, IReadOnlyCollection<IIfcRelSpaceBoundary> alle)
+        {
+            if (aussen.Count == alle.Count) return false;
+            double flaecheAussen = 0.0, flaecheAlle = 0.0;
+            foreach (IIfcRelSpaceBoundary g in alle)
+            {
+                IfcGrenzgeometrie.Flaeche f = IfcGrenzgeometrie.Lesen(g, null, 1.0);
+                bool gelesen = f != null && f.Fehler == null;
+                if (aussen.Contains(g))
+                {
+                    if (!gelesen) return false;
+                    flaecheAussen += f.FlaecheM2;
+                }
+                if (gelesen) flaecheAlle += f.FlaecheM2;
+            }
+            return flaecheAlle > 0.0 && flaecheAussen < AUSSEN_SPLITTER_ANTEIL * flaecheAlle;
         }
 
         /// <summary>
@@ -1863,6 +2007,7 @@ namespace WindowsFormsApplication1
         {
             foreach (IIfcRelSpaceBoundary g in grenzen.OrderBy(x => x.EntityLabel))
             {
+                _grenzenUebernommen.Add(g.EntityLabel);
                 IIfcSpace raum = g.RelatingSpace as IIfcSpace;
                 var a = new AbbildGrenze
                 {
@@ -2318,6 +2463,7 @@ namespace WindowsFormsApplication1
             KeinUWert();
             Schichtmeldungen();
 
+            GrenzenOhneBauteilMelden();
             foreach (KeyValuePair<string, int> art in _flaecheUnbekannt)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "FLAECHE_UNBEKANNT", Ganz(art.Value), art.Key));
 

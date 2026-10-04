@@ -39035,6 +39035,21 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_FLAECHE_UNBEKANNT" xml:space="preserve">
     <value>{0} space boundaries carry a geometry that cannot be evaluated without a geometry kernel ({1}) — their area remains empty.</value>
   </data>
+  <data name="IMP_IFC_PROT_AUSSEN_WIDERSPRUCH" xml:space="preserve">
+    <value>{0} spaces carry PredefinedType = INTERNAL and at the same time Pset_SpaceCommon.IsExternal = TRUE — the attribute applies, heating follows the remaining rules ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHE_GRUNDRISS" xml:space="preserve">
+    <value>{0} spaces without an area quantity receive the area of their floor plan ({1} m²; {2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_DACHPLATTE" xml:space="preserve">
+    <value>{0} decomposed roofs carry their space boundaries themselves — the {1} boundaries apply to their only slab.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0} space boundaries belong to no element of the envelope ({1}, {2} m²) — they enter no element area.</value>
+  </data>
+  <data name="IMP_IFC_PROT_AUSSEN_SPLITTER" xml:space="preserve">
+    <value>{0} elements with internal space boundaries carry only an external edge strip (below 5 % of their boundary area) — they are treated as internal ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
   </data>
