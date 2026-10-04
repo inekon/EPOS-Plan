@@ -120,6 +120,9 @@ namespace WindowsFormsApplication1
         /// <summary>Kombispeicher — bedient BEIDE Kanäle aus einem Vorrat (D5a).</summary>
         public const string VERWENDUNG_KOMBI = DbWerte.PSP_VERWENDUNG_KOMBI;
 
+        /// <summary>Verwendung „Kaelte": Kaltwasserspeicher der Kältekaskade (KU3-5).</summary>
+        public const string VERWENDUNG_KAELTE = DbWerte.PSP_VERWENDUNG_KAELTE;
+
         // Eine eigene Liste der Erzeugertypen stand hier ursprünglich als
         // ERZEUGER_TYPEN. Sie wurde von niemandem gelesen: Wer die Typen braucht,
         // nimmt ProjektPuffer.WAERMEERZEUGER_TYPEN (die SQL-taugliche Fassung, die
@@ -135,13 +138,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool IstPufferZiel(string ziel)
         {
-            // KU2 (4.3 #15): Das Kälteziel ist ausdrücklich KEIN Puffer-Ziel - einen
-            // Kältespeicher gibt es erst mit KU3 (K7).
+            // KU2 (4.3 #15): Das Kälteziel ist ausdrücklich KEIN Puffer-Ziel. Der Kältespeicher
+            // (KU3-5) braucht keine Senkenzeile: Jeder Projektpuffer mit Verwendung „Kaelte" gehört
+            // der Kältekaskade (SimulationControl.KaeltespeicherVorbereiten).
             if (IstKaelteZiel(ziel)) return false;
             return string.Equals(ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_PROZESS, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// true, wenn die Verwendung einen KÄLTESPEICHER meint (KU3-5, E68). Auch die Schreibweise
+        /// mit Umlaut („Kälte") wird erkannt — sie ist allein über direkte Datenbankeingriffe
+        /// erreichbar und wird über <see cref="NormalisierteVerwendung"/> auf den Persistenzwert gehoben.
+        /// </summary>
+        public static bool IstKaelteVerwendung(string verwendung)
+        {
+            return string.Equals(verwendung, VERWENDUNG_KAELTE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(verwendung, "Kälte", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>true, wenn die Verwendung einen KOMBISPEICHER meint (D5a).</summary>
@@ -159,8 +174,8 @@ namespace WindowsFormsApplication1
                 return VERWENDUNG_BRAUCHWASSER;
             if (string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
                 return VERWENDUNG_KOMBI;
-            // KU2 (4.3 #15): Das Kälteziel verlangt keinen Puffer - es gibt keine
-            // Pufferverwendung „Kälte", solange kein Kältespeicher rechnet (K7, 7.6).
+            // KU2 (4.3 #15): Das Kälteziel verlangt keinen Puffer - der Kältespeicher (KU3-5)
+            // hängt ohne Senkenzeile an der Kältekaskade.
             if (IstKaelteZiel(ziel)) return null;
             return null;
         }
@@ -1122,6 +1137,8 @@ namespace WindowsFormsApplication1
                 return VERWENDUNG_BRAUCHWASSER;
             if (string.Equals(verwendung, VERWENDUNG_KOMBI, StringComparison.OrdinalIgnoreCase))
                 return VERWENDUNG_KOMBI;
+            if (IstKaelteVerwendung(verwendung))
+                return VERWENDUNG_KAELTE;
 
             return verwendung;
         }
@@ -1147,6 +1164,7 @@ namespace WindowsFormsApplication1
             if (string.Equals(dbWert, VERWENDUNG_BRAUCHWASSER, StringComparison.OrdinalIgnoreCase))
                 return MyResource.Resource.PSP_VERWENDUNG_BRAUCHWASSER_ANZEIGE;
             if (IstKombiVerwendung(dbWert)) return MyResource.Resource.PSP_VERWENDUNG_KOMBI_ANZEIGE;
+            if (IstKaelteVerwendung(dbWert)) return MyResource.Resource.PSP_VERWENDUNG_KAELTE_ANZEIGE;
             return dbWert;
         }
 

@@ -52545,6 +52545,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher ist ein Kältespeicher (Kaltwasser) und versorgt allein die Kühlung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_NUTZUNG_KAELTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_NUTZUNG_KAELTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher versorgt die Prozesswärme. ähnelt.
         /// </summary>
         public static string KI_DLG_PSPV_NUTZUNG_PROZESS_ERL {
@@ -80467,6 +80476,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Kältespeicher liegt der Kaltwasser-Vorlauf unter dem Rücklauf (z. B. 6 °C und 12 °C) — oder beide Felder bleiben leer. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_KAELTEPAAR {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_KAELTEPAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Nutzung muss angehakt sein: Heizung, Brauchwasser oder Prozesswärme. Einen Speicher ohne Nutzung entlädt keine Anlage (Konzept 6.1). ähnelt.
         /// </summary>
         public static string PSP_FEHLER_KLASSENSET_LEER {
@@ -80791,6 +80809,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_HINWEIS_HOEHE {
             get {
                 return ResourceManager.GetString("PSP_HINWEIS_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher (Kaltwasser): entlädt vor den Kälteerzeugern und lädt an Kühltagen aus ihrer freien Leistung; ohne Temperaturpaar gilt 6/12 °C. ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_KAELTESPEICHER {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_KAELTESPEICHER", resourceCulture);
             }
         }
         
@@ -81245,6 +81272,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Rücklauf: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_KALTWASSER_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_KALTWASSER_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Vorlauf: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_KALTWASSER_VORLAUF {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_KALTWASSER_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung (Klassen-Set): ähnelt.
         /// </summary>
         public static string PSP_LABEL_KLASSENSET {
@@ -81673,6 +81718,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher ähnelt.
+        /// </summary>
+        public static string PSP_ROLLE_KAELTESPEICHER {
+            get {
+                return ResourceManager.GetString("PSP_ROLLE_KAELTESPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellspeicher ähnelt.
         /// </summary>
         public static string PSP_ROLLE_QUELLSPEICHER {
@@ -81916,6 +81970,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_VERWENDUNG_HEIZUNG_ANZEIGE {
             get {
                 return ResourceManager.GetString("PSP_VERWENDUNG_HEIZUNG_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string PSP_VERWENDUNG_KAELTE_ANZEIGE {
+            get {
+                return ResourceManager.GetString("PSP_VERWENDUNG_KAELTE_ANZEIGE", resourceCulture);
             }
         }
         
@@ -87011,6 +87074,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G6_ZONE_OHNE_NUTZFLAECHE {
             get {
                 return ResourceManager.GetString("SIMENG_G6_ZONE_OHNE_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“ ist als Wärmesenke einer Anlage eingetragen — er rechnet nur in der Kältekaskade. Bitte die Wärmesenke der Anlage berichtigen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_ALS_WAERMESENKE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_ALS_WAERMESENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Kapazität {1} kWh, Entladung {2} MWh, Ladung {3} MWh, Wärmeeintrag {4} MWh, {5} Vollzyklen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Kein Kälteerzeuger lädt ihn (keine Wärmepumpe im Kühlbetrieb, keine Kältemaschine) — er wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_OHNE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_OHNE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_OHNE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_OHNE_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Temperaturpaar leer oder vertauscht — gerechnet mit Vorlauf {1} °C und Rücklauf {2} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_PAAR_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_PAAR_VORGABE", resourceCulture);
             }
         }
         
@@ -92856,6 +92964,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_KACHEL_SPEICHER_TIP {
             get {
                 return ResourceManager.GetString("SIMWARN_KACHEL_SPEICHER_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Kein Kälteerzeuger (Wärmepumpe im Kühlbetrieb oder Kältemaschine) lädt ihn — er wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG", resourceCulture);
             }
         }
         

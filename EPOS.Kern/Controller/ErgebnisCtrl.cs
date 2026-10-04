@@ -734,8 +734,9 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN + ", " +
                             SchemaKatalog.SPALTE_PUFFER_ID_ANLAGE + ", " +
                             SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL + ", " +
-                            SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?)";
+                            SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ", " +
+                            KuehlungSchema.SPALTE_PUFFER_ENTLADUNG_KUEHLUNG + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?, ?)";
                         foreach (ErgebnisPufferspeicherModel sp in m.Pufferspeicher)
                         {
                             {
@@ -755,8 +756,8 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(sp.Vollzyklen) });
 
                                 // PAKET E1
-                                // Nur die drei Waermekanaele: Entladung_Kuehlung bleibt NULL,
-                                // bis ein Kaeltespeicher rechnet (K7, E31).
+                                // Die drei Waermekanaele; Entladung_Kuehlung steht am Ende und ist
+                                // allein beim Kaeltespeicher belegt (KU3-5), sonst NULL.
                                 WaermekanalParameter(p, sp.Entladung_Kanal);
                                 p.Add(new DbParam("@d1", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Geladen) });
                                 p.Add(new DbParam("@d2", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Entladen) });
@@ -767,6 +768,11 @@ namespace WindowsFormsApplication1
                                 // ohne Speichertemperatur ehrlich leer.
                                 p.Add(new DbParam("@t1", DbParamTyp.Double) { Wert = sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value });
                                 p.Add(new DbParam("@t2", DbParamTyp.Double) { Wert = sp.T_oben_Min.HasValue ? (object)R(sp.T_oben_Min.Value) : DBNull.Value });
+                                p.Add(new DbParam("@kue", DbParamTyp.Double)
+                                {
+                                    Wert = WaermesenkeClass.IstKaelteVerwendung(sp.Verwendung)
+                                        ? (object)R(sp.Entladung_Kanal[Kanal.KUEHLUNG]) : DBNull.Value
+                                });
 
                                 v.Ausfuehren(sqlP, p.ToArray());
                             }
@@ -1329,6 +1335,9 @@ namespace WindowsFormsApplication1
                     sp.Durchsatz_Entladen = D(rsp, SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN);
                     sp.T_oben_Mittel = DN(rsp, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL);
                     sp.T_oben_Min = DN(rsp, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN);
+                    // KU3-5: die Kühlkanalentladung des Kältespeichers (NULL bei jedem Wärmespeicher).
+                    double? kuehl = DN(rsp, KuehlungSchema.SPALTE_PUFFER_ENTLADUNG_KUEHLUNG);
+                    if (kuehl.HasValue) sp.Entladung_Kanal[Kanal.KUEHLUNG] = kuehl.Value;
 
                     m.Pufferspeicher.Add(sp);
                 }
@@ -2097,7 +2106,8 @@ namespace WindowsFormsApplication1
         /// kurzes Feld wird als 0 geschrieben - die Spalten werden IMMER belegt, damit "nicht
         /// erhoben" (NULL, Zeile vor Schritt 52) und "erhoben und null" unterscheidbar bleiben;
         /// dieselbe Begruendung wie bei Quellwaerme und den Vbh-Spalten. Der Schreibweg der
-        /// Speicherzeile: Ihre vierte Spalte <c>Entladung_Kuehlung</c> bleibt NULL (K7).
+        /// Speicherzeile: Ihre vierte Spalte <c>Entladung_Kuehlung</c> schreibt er selbst - belegt
+        /// allein beim Kaeltespeicher (KU3-5), sonst NULL.
         /// </summary>
         private static void WaermekanalParameter(List<DbParam> p, double[] werte)
         {

@@ -1060,6 +1060,15 @@ Pufferverwendungswert, einen Klassen-Set-Eintrag und eine Warnkriterienprüfung 
 Kältemaschine (KU3) selten sinnvoll. Er gehört deshalb **mit** der Kältemaschine in KU3 oder gar
 nicht. Bis dahin sagt der Dialog es: „Ein Kältespeicher wird nicht gerechnet."
 
+**So gebaut (KU3-5, E68):** Die Pufferverwendung `Kaelte` (`DbWerte.PSP_VERWENDUNG_KAELTE`) macht einen
+Projektpuffer zum Kaltwasserspeicher; er braucht keine Senkenzeile, alle Kälteerzeuger laden ihn. Er rechnet
+auf dem Füllstand des Puffers, gespiegelt gelesen (kalt = geladen): Kapazität = Volumen · 1,16 Wh/(l·K) ·
+(Rücklauf − Vorlauf), ohne oder mit vertauschtem Paar 6/12 °C; der Bereitschaftsverlust ist der
+Wärmeeintrag und zehrt den Vorrat füllstandsanteilig wie beim Wärmepuffer. Klassen-Set: Kälte allein,
+kein Wärmeflag; Warnkriterien `KAELTESPEICHER_OHNE_ERZEUGER` und `KAELTESPEICHER_OHNE_KUEHLUNG`. Der
+Dialog bietet die Nutzung „Kälte" ausschließlich an und beschriftet das Paar als Kaltwasser-Vorlauf und
+-Rücklauf. Kein Schemaschritt — die Spalte `Verwendung` trägt keine CHECK-Klausel.
+
 ### 4.7 Referenzlauf-Export des Kanals
 
 | Was | Wie |
@@ -1510,6 +1519,14 @@ bekommt eine **Erzeugerreihenfolge**, und die folgt derselben Regel wie die Wär
 3. **Kältemaschine** (KU3), begrenzt durch Kennlinie und Mindestteillast.
 4. **Kältespeicher** (KU3, nur wenn K7 dafür entschieden wird) — entlädt vor Schritt 2 und 3, lädt
    in Stunden ohne Bedarf.
+
+   **So gebaut (KU3-5):** Der Speicher entlädt in jeder Stunde mit Vorrat nach der freien Kühlung und
+   vor der Wärmepumpe und der Kältemaschine. Geladen wird nur an Kühltagen und nur in der Ladephase
+   (Hysterese wie beim Wärmepuffer: Beginn an `Schwelle_Ein`, Ende an `Schwelle_Aus`, der Lauf beginnt
+   leer): Der Ladewunsch bis zur Abschaltschwelle (begrenzt durch die Ladeleistung) geht als Zusatzlast
+   hinter dem Raumbedarf an die Erzeuger — was sie in der Stunde über den Bedarf hinaus liefern, lädt;
+   der Raum hat Vorrang. Ergebnis: `Tab_ErgebnisPufferspeicher` mit Verwendung `Kaelte` und
+   `Entladung_Kuehlung`, Skalare `Kaeltespeicher[i].*` in `aggregate.csv`.
 
 **Wo die Kältedeckung läuft — und woher ihre Reihenfolge kommt.** Die Wärmeseite rechnet ihre
 Erzeuger in **einer** gemeinsamen Stundenkette (`Kaskadenschleife`), und die Reihenfolge darin
@@ -2076,7 +2093,7 @@ Nach dem Muster von Schritt 52 (`EPOS.Kern/Allgemein/Update/SchemaKatalog.cs:241
 | `Tab_ErgebnisHeizkessel` | `Deckung_Kuehlung` | bleibt dauerhaft 0 |
 | `Tab_ErgebnisBHKW` | `Deckung_Kuehlung` | bleibt dauerhaft 0 |
 | `Tab_ErgebnisSolarthermie` | `Deckung_Kuehlung` | bleibt dauerhaft 0 |
-| `Tab_ErgebnisPufferspeicher` | `Entladung_Kuehlung` | erst mit dem Kältespeicher (KU3, K7) |
+| `Tab_ErgebnisPufferspeicher` | `Entladung_Kuehlung` | belegt allein in der Zeile eines Kältespeichers (KU3-5), sonst NULL |
 | `Tab_ErgebnisEnergiebedarf` | **`Kaeltebedarf_Gesamt`** | Gegenstück zu `Waermebedarf_Gesamt` (`:853`) — Nenner des Deckungsgrads (E21, 6.4) |
 | `Tab_ErgebnisEnergiebedarf` | **`Kaeltelast_Max`** | Gegenstück zu `Waermelast_Max` (`:854`) — die Kältespitze (E21, 6.4) |
 | `Tab_ErgebnisEnergiebedarf` | **`Kaelterestbedarf`** | Gegenstück zu `Waermerestbedarf` (`:857`) — die ungedeckte Kälte (E21, F-K12) |

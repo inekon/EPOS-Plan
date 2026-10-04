@@ -1095,7 +1095,8 @@ namespace WindowsFormsApplication1
             // Senken-Puffer (sim.puffer_wp) UND jeder Quellspeicher der WP-Module;
             // die Rolle steht in Verwendung. Quelle ist dieselbe Speicherliste, aus
             // der sich auch Navigator, CSV-Export und die Ergebnistabelle speisen.
-            foreach (SimulationPufferspeicher sp in sim.AlleSpeicher())
+            // KU3-5: die Kältespeicher hinter den Wärmespeichern - Verwendung „Kaelte", Entladung im Kühlkanal.
+            foreach (SimulationPufferspeicher sp in sim.AlleSpeicher().Concat(sim.Kaeltespeicher()))
             {
                 var pz = new ErgebnisPufferspeicherModel
                 {
