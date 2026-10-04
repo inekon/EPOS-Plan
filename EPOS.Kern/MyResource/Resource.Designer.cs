@@ -37789,6 +37789,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile mit inneren Raumgrenzen tragen nur einen äußeren Randstreifen (unter 5 % ihrer Grenzfläche) — sie gelten als innen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_AUSSEN_SPLITTER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_AUSSEN_SPLITTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen PredefinedType = INTERNAL und zugleich Pset_SpaceCommon.IsExternal = TRUE — das Attribut gilt, die Beheizung folgt den übrigen Regeln ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_AUSSEN_WIDERSPRUCH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_AUSSEN_WIDERSPRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenbauteile ohne Raumgrenze: Die Himmelsrichtung stammt aus {1}, wie die Datei sie am Bauteil nennt (0° = Nord, im Uhrzeigersinn, ohne Nordwinkel des Modells). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_AZIMUT_RUECKFALL {
@@ -37978,6 +37996,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Flächenmenge erhalten die Fläche ihres Grundrisses ({1} m²; {2}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FLAECHE_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FLAECHE_GRUNDRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumgrenzen tragen eine Geometrie, die ohne Geometriekern nicht auszuwerten ist ({1}) — ihre Fläche bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_FLAECHE_UNBEKANNT {
@@ -38014,11 +38041,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} zerlegte Dächer tragen ihre Raumgrenzen selbst — die {1} Grenzen gelten für ihre einzige Platte. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_GRENZEN_DACHPLATTE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_GRENZEN_DACHPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Regel {0} ohne Raumgrenzen: Die Zonen sind thermisch entkoppelt, bis die Trennflächen zwischen ihnen eingetragen sind. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_GRENZEN_ENTKOPPELT {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_GRENZEN_ENTKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumgrenzen gehören zu keinem Bauteil der Hülle ({1}, {2} m²) — sie gehen in keine Bauteilfläche ein. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL", resourceCulture);
             }
         }
         

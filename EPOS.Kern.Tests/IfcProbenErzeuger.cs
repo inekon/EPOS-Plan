@@ -671,6 +671,71 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Die Befunde der Importproben 13–18</b> (Mehrzonenkonzept 6.1, 6.2, 6.5) in einer Datei: EG „Wohnen“ 30 m² mit
+        /// Flächenmenge und einem Grundriss von 36 m², „Arbeitsraum“ ohne Flächenmenge mit Grundriss 4 × 5 m, „Büro“ mit
+        /// <c>PredefinedType = INTERNAL</c> und <c>IsExternal = TRUE</c>, „Terrasse“ nur mit <c>IsExternal = TRUE</c>; OG
+        /// „Schlafen“ 30 m². Ohne <c>IsExternal</c> an den Bauteilen: die Geschossdecke (FLOOR) mit zwei inneren Grenzen je
+        /// 30 m² und einem äußeren Randstreifen 6 × 0,1 m, die Kragplatte (FLOOR) mit zwei inneren Grenzen je 30 m² und einer
+        /// äußeren von 10 m², die Bodenplatte (BASESLAB) mit einer Grenze <c>EXTERNAL</c>; ein Dach ohne Flächenmenge aus einer
+        /// Platte (ROOF), dessen Grenze (30 m²) am Dach hängt; eine Stütze mit einer Grenze von 0,6 m².
+        /// </summary>
+        public static byte[] Importbefunde()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_importbefunde.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Befundhaus", "2010");
+                IIfcBuildingStorey eg = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcBuildingStorey og = b.Geschoss(g, "Obergeschoss", 2800);
+                var ext = IfcInternalOrExternalEnum.EXTERNAL;
+                var innen = IfcInternalOrExternalEnum.INTERNAL;
+                double[] hoch = { 0, 0, 1 }, runter = { 0, 0, -1 }, sued = { 0, -1, 0 };
+
+                IIfcSpace wohnen = b.Raum(eg, "0.01", "Wohnen", 0, 0, 30, 2500, 75, beheizt: true);
+                b.Grundriss(wohnen, (0, 0), (6000, 0), (6000, 6000), (0, 6000));
+                IIfcSpace arbeit = b.RaumEnthalten(eg, "Arbeitsraum", 7000, 0, null, null, null, zerlegt: true);
+                b.Grundriss(arbeit, (0, 0), (4000, 0), (4000, 5000), (0, 5000));
+                IIfcSpace buero = b.RaumEnthalten(eg, "Büro", 12000, 0, 20, 50, 2500, zerlegt: true);
+                buero.PredefinedType = IfcSpaceTypeEnum.INTERNAL;
+                b.Eigenschaft(buero, "Pset_SpaceCommon", "IsExternal", new IfcBoolean(true));
+                IIfcSpace terrasse = b.RaumEnthalten(eg, "Terrasse", 17000, 0, 12, 30, 2500, zerlegt: true);
+                b.Eigenschaft(terrasse, "Pset_SpaceCommon", "IsExternal", new IfcBoolean(true));
+                IIfcSpace schlafen = b.Raum(og, "1.01", "Schlafen", 0, 0, 30, 2500, 75, beheizt: true);
+
+                // Die Geschossdecke: innen, mit einem äußeren Randstreifen von 0,6 m² (1 % der Grenzfläche).
+                IIfcSlab decke = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Geschossdecke", "btaHeated", false, 0.5, null, null, 30, 30, null, null);
+                decke.PredefinedType = IfcSlabTypeEnum.FLOOR;
+                b.Grenze2(wohnen, decke, innen, hoch, new double[] { 0, 0, 2500 }, new double[] { 6000, 0, 2500 }, new double[] { 6000, 5000, 2500 }, new double[] { 0, 5000, 2500 });
+                b.Grenze2(schlafen, decke, innen, runter, new double[] { 0, 0, 0 }, new double[] { 0, 5000, 0 }, new double[] { 6000, 5000, 0 }, new double[] { 6000, 0, 0 });
+                b.Grenze2(schlafen, decke, ext, runter, new double[] { 0, 5000, 0 }, new double[] { 0, 5100, 0 }, new double[] { 6000, 5100, 0 }, new double[] { 6000, 5000, 0 });
+
+                // Die Kragplatte: zwei innere Grenzen und eine äußere von 10 m² (14 %) — bleibt außen.
+                IIfcSlab krag = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Kragplatte", "btaHeated", false, 0.5, null, null, 40, 40, null, null);
+                krag.PredefinedType = IfcSlabTypeEnum.FLOOR;
+                b.Grenze2(wohnen, krag, innen, hoch, new double[] { 0, 0, 2500 }, new double[] { 6000, 0, 2500 }, new double[] { 6000, 5000, 2500 }, new double[] { 0, 5000, 2500 });
+                b.Grenze2(schlafen, krag, innen, runter, new double[] { 0, 0, 0 }, new double[] { 0, 5000, 0 }, new double[] { 6000, 5000, 0 }, new double[] { 6000, 0, 0 });
+                b.Grenze2(schlafen, krag, ext, runter, new double[] { 6000, 0, 0 }, new double[] { 6000, 5000, 0 }, new double[] { 8000, 5000, 0 }, new double[] { 8000, 0, 0 });
+
+                // Die Bodenplatte mit einer Grenze EXTERNAL statt EXTERNAL_EARTH.
+                IIfcSlab boden = b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Bodenplatte", "btaGround", true, 0.4, null, null, 30, 30, null, null);
+                boden.PredefinedType = IfcSlabTypeEnum.BASESLAB;
+                b.Grenze2(wohnen, boden, ext, runter, new double[] { 0, 0, 0 }, new double[] { 0, 5000, 0 }, new double[] { 6000, 5000, 0 }, new double[] { 6000, 0, 0 });
+
+                // Das zerlegte Dach ohne Flächenmenge: die Grenze hängt am Dach, nicht an seiner einzigen Platte.
+                IIfcRoof dach = b.CadBauteil<IIfcRoof>(og, "IfcRoof", "Dach", "btaOutside", true, 0.2, null, null, null, null, null, null);
+                IIfcSlab dachplatte = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Dachplatte", "btaOutside", true, 0.2, null, null, null, null, null, null);
+                dachplatte.PredefinedType = IfcSlabTypeEnum.ROOF;
+                b.Teil(dach, dachplatte);
+                b.Grenze2(schlafen, dach, ext, hoch, new double[] { 0, 0, 2500 }, new double[] { 6000, 0, 2500 }, new double[] { 6000, 5000, 2500 }, new double[] { 0, 5000, 2500 });
+
+                // Eine Stütze mit Raumgrenze — kein Bauteil der Hülle.
+                IIfcColumn stuetze = b.CadBauteil<IIfcColumn>(eg, "IfcColumn", "Stütze", "btaHeated", false, null, null, null, null, null, null, null);
+                b.Grenze2(wohnen, stuetze, innen, sued, new double[] { 1000, 1000, 0 }, new double[] { 1300, 1000, 0 }, new double[] { 1300, 1000, 2000 }, new double[] { 1000, 1000, 2000 });
+                return b.Speichern();
+            }
+        }
+
         /// <summary>Zwei Gebäude mit je einem beheizten Raum, einer Außenwand und einem Fenster (U13).</summary>
         public static byte[] ZweiGebaeude()
         {
@@ -1373,6 +1438,12 @@ namespace EPOS.Kern.Tests
                 }
                 return g;
             }
+
+            /// <summary>Hängt <paramref name="teil"/> über <c>IfcRelAggregates</c> an <paramref name="ganzes"/>.</summary>
+            public void Teil(IIfcObjectDefinition ganzes, IIfcObjectDefinition teil) => Zerlegen(ganzes, teil);
+
+            /// <summary>Eine einzelne Eigenschaft in einem eigenen Satz <paramref name="satz"/>.</summary>
+            public void Eigenschaft(IIfcObject o, string satz, string name, IIfcValue wert) => Satz(o, satz, (name, wert));
 
             /// <summary>Zwei Grenzen als Gegenstücke (<c>CorrespondingBoundary</c> beidseitig).</summary>
             public void Gegenstuecke(IIfcRelSpaceBoundary a, IIfcRelSpaceBoundary b)

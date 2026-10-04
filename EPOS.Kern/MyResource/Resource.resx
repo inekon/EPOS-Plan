@@ -39042,6 +39042,21 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_FLAECHE_UNBEKANNT" xml:space="preserve">
     <value>{0} Raumgrenzen tragen eine Geometrie, die ohne Geometriekern nicht auszuwerten ist ({1}) — ihre Fläche bleibt leer.</value>
   </data>
+  <data name="IMP_IFC_PROT_AUSSEN_WIDERSPRUCH" xml:space="preserve">
+    <value>{0} Räume tragen PredefinedType = INTERNAL und zugleich Pset_SpaceCommon.IsExternal = TRUE — das Attribut gilt, die Beheizung folgt den übrigen Regeln ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHE_GRUNDRISS" xml:space="preserve">
+    <value>{0} Räume ohne Flächenmenge erhalten die Fläche ihres Grundrisses ({1} m²; {2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_DACHPLATTE" xml:space="preserve">
+    <value>{0} zerlegte Dächer tragen ihre Raumgrenzen selbst — die {1} Grenzen gelten für ihre einzige Platte.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0} Raumgrenzen gehören zu keinem Bauteil der Hülle ({1}, {2} m²) — sie gehen in keine Bauteilfläche ein.</value>
+  </data>
+  <data name="IMP_IFC_PROT_AUSSEN_SPLITTER" xml:space="preserve">
+    <value>{0} Bauteile mit inneren Raumgrenzen tragen nur einen äußeren Randstreifen (unter 5 % ihrer Grenzfläche) — sie gelten als innen ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
   </data>
