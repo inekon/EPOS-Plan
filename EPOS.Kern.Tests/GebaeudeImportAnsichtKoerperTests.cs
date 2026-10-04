@@ -136,14 +136,26 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(4, ring.Count);
                 for (int i = 0; i < 4; i++) Assert.Equal((modell[i][0], modell[i][1]), (ring[i].X, ring[i].Y));
             }
-            // Der Körper der Datei (A: Höhe aus V/A) steht auf demselben Rechteck: der Boden der Schale ist der Ring in Folge 0, 3, 2, 1.
-            IReadOnlyList<double[]> boden = koerper.Raum("A").Schale[0];
+            // Die Körper der Datei — A mit Höhe aus V/A, B mit Höhe aus der Zone wie in der Ansicht — stehen auf denselben
+            // Rechtecken: der Boden der Schale ist der Ring in Folge 0, 3, 2, 1; Höhe wie der Körper der Ansicht.
             int[] folge = { 0, 3, 2, 1 };
-            for (int i = 0; i < 4; i++)
+            foreach (string kennung in new[] { "A", "B" })
             {
-                Assert.Equal(boden[i][0], d.Raum("A")!.Polygone[0][folge[i]].X, 6);
-                Assert.Equal(boden[i][1], d.Raum("A")!.Polygone[0][folge[i]].Y, 6);
+                Raumkoerper rk = koerper.Raum(kennung);
+                Assert.NotNull(rk);
+                Assert.Equal(d.Koerper().Single(x => x.Raum.Kennung == kennung).HoeheM, rk.HoeheM, 6);
+                IReadOnlyList<double[]> boden = rk.Schale[0];
+                for (int i = 0; i < 4; i++)
+                {
+                    Assert.Equal(boden[i][0], d.Raum(kennung)!.Polygone[0][folge[i]].X, 6);
+                    Assert.Equal(boden[i][1], d.Raum(kennung)!.Polygone[0][folge[i]].Y, 6);
+                }
             }
+            Assert.False(koerper.Raum("A").HoeheAusZone);
+            Assert.True(koerper.Raum("B").HoeheAusZone);
+            Assert.Equal(2.8, koerper.Raum("B").HoeheM, 9);
+            // C: weder Raum- noch Zonenhöhe — kein Dateikörper (die Ansicht zeigt ihn mit der Vorgabe, schematisch).
+            Assert.Contains("C", koerper.OhneKoerper);
 
             // Die Trennwand: Ostkante von A (Punkte 1 → 2) und Westkante von B (Punkte 3 → 0), gegenläufig deckungsgleich.
             IReadOnlyList<GebaeudeAnsichtPunkt> pa = d.Raum("A")!.Polygone[0], pb = d.Raum("B")!.Polygone[0];
@@ -151,12 +163,19 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Innenwand", d.Koerperraum("B")!.Kanten[0][3]);
             Punktgleich(pa[1], pb[0]);
             Punktgleich(pa[2], pb[3]);
-            // … und auf der Trennfläche des Dateikörpers aus Sicht von A.
-            Koerperflaeche t = koerper.Flaeche("A", "T");
+            // … und auf der Trennfläche des Dateikörpers aus beiden Sichten: A von Punkt 1 nach 2, B gegenläufig.
+            Koerperflaeche t = koerper.Flaeche("A", "T"), tb = koerper.Flaeche("B", "T");
+            Assert.NotNull(tb);
             Assert.Equal(t.EckenM[0][0], pa[1].X, 6);
             Assert.Equal(t.EckenM[0][1], pa[1].Y, 6);
             Assert.Equal(t.EckenM[1][0], pa[2].X, 6);
             Assert.Equal(t.EckenM[1][1], pa[2].Y, 6);
+            Assert.Equal(tb.EckenM[0][0], pb[3].X, 6);
+            Assert.Equal(tb.EckenM[0][1], pb[3].Y, 6);
+            Assert.Equal(tb.EckenM[1][0], pb[0].X, 6);
+            Assert.Equal(tb.EckenM[1][1], pb[0].Y, 6);
+            Assert.Equal(ZonengeometrieAnlegenTests.Text(t.EckenM[0]), ZonengeometrieAnlegenTests.Text(tb.EckenM[1]));
+            Assert.Equal(ZonengeometrieAnlegenTests.Text(t.EckenM[1]), ZonengeometrieAnlegenTests.Text(tb.EckenM[0]));
             // Flächentreu gestreckt: B behält seine Fläche, seine Westkante ist so lang wie die Ostkante von A.
             Assert.Equal(5.0, Math.Abs(pb[0].Y - pb[3].Y), 9);
             Assert.Equal(30.0, Math.Abs(pb[1].X - pb[0].X) * Math.Abs(pb[3].Y - pb[0].Y), 9);
