@@ -24,6 +24,7 @@ namespace EPOS.Kern.Tests
         private const string BILD_KAELTE = "stand.bild.kaelte_produktion";
         private const int PROJEKT_BHKW = 1018;
         private const int PROJEKT_KAELTE = 1017;
+        private const int PROJEKT_KAELTE_GEKOPPELT = 1047;
 
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
 
@@ -137,25 +138,42 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im Kühlbetrieb: Das Kältebild trägt je Erzeuger
-        /// eine Säule, gedeckte und ungedeckte Kälte ergeben zusammen den Kältebedarf.
+        /// Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im Kühlbetrieb, 1047 ebenso mit Anlagenkopplung:
+        /// Das Kältebild trägt je Erzeuger eine Säule, gedeckte und ungedeckte Kälte ergeben zusammen den Kältebedarf.
+        /// Geschärft nach dem Anwenderbefund 04.10.2026: Die Wärmepumpe DECKT (1017: ≈ 4,01 MWh/a), der Rest ist klein
+        /// (≈ 0,08 MWh/a) — „gedeckt + ungedeckt = Bedarf" allein ist mit gedeckt = 0 trivial erfüllt.
         /// </summary>
-        [Fact]
-        public void Projekt_1017_hat_das_Bild_der_Kaelteproduktion()
+        [Theory]
+        [InlineData(PROJEKT_KAELTE)]
+        [InlineData(PROJEKT_KAELTE_GEKOPPELT)]
+        public void Projekt_mit_Kaelte_hat_das_Bild_der_Kaelteproduktion(int projekt)
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            (Berichtswerte w, VariantenDaten v) = Sammle(PROJEKT_KAELTE);
+            (Berichtswerte w, VariantenDaten v) = Sammle(projekt);
             ZeitreihenSatz z = v.Zeitreihen;
             Assert.True(z.RechnetKaelte);
-            Assert.NotEmpty(z.Kaeltereihen);
+            string erzeuger = Assert.Single(z.Kaeltereihen);
+            Assert.Equal(ZeitreihenSatz.KAELTE_PRAEFIX + "1", erzeuger);
             double gedeckt = z.Kaeltereihen.Sum(k => z.Hole(k).Sum());
             double ungedeckt = z.Hole(ZeitreihenSatz.KAELTEREST).Sum();
             double bedarf = z.Hole(ZeitreihenSatz.BedarfSchluessel(Kanal.KUEHLUNG)).Sum();
-            Assert.True(gedeckt > 0);
+            // Jahressummen der Basis [MWh/a], im Band gehalten (Befund: gedeckt = 0).
+            (double sollBedarf, double sollGedeckt, double sollRest) =
+                projekt == PROJEKT_KAELTE ? (4.0826, 4.0075, 0.0751) : (3.8498, 3.7822, 0.0677);
+            Assert.InRange(bedarf / 1000.0, 0.98 * sollBedarf, 1.02 * sollBedarf);
+            Assert.InRange(gedeckt / 1000.0, 0.98 * sollGedeckt, 1.02 * sollGedeckt);
+            Assert.InRange(ungedeckt / 1000.0, 0.5 * sollRest, 1.5 * sollRest);
             Assert.True(Math.Abs(gedeckt + ungedeckt - bedarf) <= 1e-6 * Math.Max(1.0, bedarf),
                         $"gedeckt {gedeckt} + ungedeckt {ungedeckt} gegen Bedarf {bedarf}");
+
+            // Der Plan des Berichtsbildes: die Säule der Wärmepumpe trägt die gedeckte Kälte.
+            Berichtsbilder.Ergebnisbildplan plan = Berichtsbilder.ErgebnisbildPlan("kaelte_produktion", z);
+            Assert.NotNull(plan);
+            Assert.Equal(2, plan.Stapel.Count);                  // Wärmepumpe, ungedeckte Kälte
+            Assert.Equal(gedeckt, plan.Stapel[0].Werte.Sum(), 6);
+            Assert.True(plan.Stapel[0].Werte.Sum() > 0);
 
             Platzhalterwert bild = Loese(BILD_KAELTE, w, v);
             Assert.False(bild.IstLeer);
