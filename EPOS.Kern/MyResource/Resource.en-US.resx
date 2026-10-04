@@ -44560,5 +44560,59 @@ chart</value>
   <data name="GEXP_PROT_BEIPACK_KAELTE" xml:space="preserve">
     <value>The cooling demand is computed sensible only, without dehumidification; the file carries this note at every cooling value.</value>
   </data>
+  <data name="GEXP_ANR_LBL_WEG" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="GEXP_ANR_WEG_EIGEN" xml:space="preserve">
+    <value>Write own file</value>
+  </data>
+  <data name="GEXP_ANR_WEG_ANREICHERN" xml:space="preserve">
+    <value>Enrich original file</value>
+  </data>
+  <data name="GEXP_ANR_HINWEIS" xml:space="preserve">
+    <value>The architect's imported IFC file is supplemented with the results and saved under a new name; the original remains unchanged.</value>
+  </data>
+  <data name="GEXP_ANR_BTN_WAEHLEN" xml:space="preserve">
+    <value>Choose original file…</value>
+  </data>
+  <data name="GEXP_ANR_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>Choose original file</value>
+  </data>
+  <data name="GEXP_ANR_LBL_DATEI" xml:space="preserve">
+    <value>Original file</value>
+  </data>
+  <data name="GEXP_ANR_LBL_QUELLE" xml:space="preserve">
+    <value>Import source</value>
+  </data>
+  <data name="GEXP_ANR_QUELLE" xml:space="preserve">
+    <value>{0}, imported on {1}</value>
+  </data>
+  <data name="GEXP_ANR_KEINE_QUELLE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="GEXP_ANR_VERWEIGERT" xml:space="preserve">
+    <value>The original file cannot be enriched: {0}</value>
+  </data>
+  <data name="GEXP_ANR_BTN_EIGENE" xml:space="preserve">
+    <value>Write own file instead</value>
+  </data>
+  <data name="GEXP_ANR_BESTAETIGEN" xml:space="preserve">
+    <value>I am passing on a third-party file in modified form and have read the notice.</value>
+  </data>
+  <data name="GEXP_ANR_SPERRE_BESTAETIGEN" xml:space="preserve">
+    <value>Please confirm that you are passing on the third-party file in modified form.</value>
+  </data>
+  <data name="GEXP_ANR_SPERRE_DATEI" xml:space="preserve">
+    <value>Please choose the original file first.</value>
+  </data>
+  <data name="GEXP_ANR_MSG_LESEFEHLER" xml:space="preserve">
+    <value>The original file could not be read: {0}</value>
+  </data>
+  <data name="GEXP_ANR_MSG_NICHTS_GESCHRIEBEN" xml:space="preserve">
+    <value>Enrichment was refused; no file was created. The messages state the reason.</value>
+  </data>
+  <data name="GEXP_ANR_MSG_GESPEICHERT" xml:space="preserve">
+    <value>The enriched file was saved: {0} ({1} bytes). Objects: {2}, supplemented: {3}, replaced: {4}, skipped: {5}.</value>
+  </data>
 </root>
 

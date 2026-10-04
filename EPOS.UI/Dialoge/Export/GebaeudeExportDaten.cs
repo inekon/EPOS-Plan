@@ -54,7 +54,26 @@ public sealed record GebaeudeExportErgebnis(bool Gespeichert, bool Abgebrochen, 
 /// <param name="Text">Der Anzeigetext (<c>GEXP_FORMAT_*</c>).</param>
 /// <param name="Umfang">Der Umfang der Datei als Anzeigetext (<c>GEXP_STUFE_*</c>).</param>
 /// <param name="MitZusage">Führt das Format eine Exportzusage (IDS)? Dann steht der Knopf dazu im Dialog.</param>
-public sealed record GebaeudeExportFormat(string Wert, string Text, string Umfang, bool MitZusage = false);
+/// <param name="MitAnreicherung">Kann das Format die importierte Originaldatei anreichern (Stufe G7d, IFC)? Dann
+/// steht — wenn das Gebäude eine Importquelle des Formats hat — die Wahl des Ausgabewegs im Dialog.</param>
+public sealed record GebaeudeExportFormat(string Wert, string Text, string Umfang, bool MitZusage = false,
+                                          bool MitAnreicherung = false);
+
+/// <summary>
+/// Die gewählte Originaldatei der Anreicherung (Stufe G7d, Datenaustauschkonzept 6.6) — fertige Anzeigetexte:
+/// Dateiname, Importquelle (Dateiname und Importzeitpunkt) und die Meldungen der Vorschau (Sperren als Fehler,
+/// bei Freigabe der Beipackzettel als Warnung). Die Datei selbst behält die Hülle im Speicher.
+/// </summary>
+/// <param name="Dateiname">Der Name der gewählten Datei (ohne Pfad).</param>
+/// <param name="Quelle">Die Importquelle als Anzeigetext.</param>
+/// <param name="Meldungen">Die Meldungen der Vorschau.</param>
+/// <param name="Grund">Der Grund der Verweigerung als Anzeigetext; <c>null</c> = frei (Beipackzettel zu bestätigen).</param>
+public sealed record GebaeudeAnreicherungWahl(string Dateiname, string Quelle,
+                                              IReadOnlyList<GebaeudeExportMeldung> Meldungen, string? Grund)
+{
+    /// <summary>Ist die Anreicherung verweigert?</summary>
+    public bool Verweigert => Grund is not null;
+}
 
 /// <summary>Die Eingaben des Anwenders, nach denen der Plan gebildet und die Datei geschrieben wird.</summary>
 /// <param name="Plz">Die Postleitzahl des Standorts (freiwillig).</param>
@@ -129,6 +148,42 @@ public sealed class GebaeudeExportTexte
 
     /// <summary>GEXP_ZUSAGE_HINWEIS</summary>
     public string ZusageHinweis { get; set; } = Resource.GEXP_ZUSAGE_HINWEIS;
+
+    /// <summary>GEXP_ANR_LBL_WEG</summary>
+    public string Weg { get; set; } = Resource.GEXP_ANR_LBL_WEG;
+
+    /// <summary>GEXP_ANR_WEG_EIGEN</summary>
+    public string WegEigen { get; set; } = Resource.GEXP_ANR_WEG_EIGEN;
+
+    /// <summary>GEXP_ANR_WEG_ANREICHERN</summary>
+    public string WegAnreichern { get; set; } = Resource.GEXP_ANR_WEG_ANREICHERN;
+
+    /// <summary>GEXP_ANR_HINWEIS</summary>
+    public string AnreicherungHinweis { get; set; } = Resource.GEXP_ANR_HINWEIS;
+
+    /// <summary>GEXP_ANR_BTN_WAEHLEN</summary>
+    public string OriginalWaehlen { get; set; } = Resource.GEXP_ANR_BTN_WAEHLEN;
+
+    /// <summary>GEXP_ANR_LBL_DATEI</summary>
+    public string Originaldatei { get; set; } = Resource.GEXP_ANR_LBL_DATEI;
+
+    /// <summary>GEXP_ANR_LBL_QUELLE</summary>
+    public string Importquelle { get; set; } = Resource.GEXP_ANR_LBL_QUELLE;
+
+    /// <summary>GEXP_ANR_VERWEIGERT — {0} = Grund.</summary>
+    public string Verweigert { get; set; } = Resource.GEXP_ANR_VERWEIGERT;
+
+    /// <summary>GEXP_ANR_BTN_EIGENE</summary>
+    public string StattEigene { get; set; } = Resource.GEXP_ANR_BTN_EIGENE;
+
+    /// <summary>GEXP_ANR_BESTAETIGEN</summary>
+    public string BeipackBestaetigen { get; set; } = Resource.GEXP_ANR_BESTAETIGEN;
+
+    /// <summary>GEXP_ANR_SPERRE_BESTAETIGEN</summary>
+    public string SperreBeipack { get; set; } = Resource.GEXP_ANR_SPERRE_BESTAETIGEN;
+
+    /// <summary>GEXP_ANR_SPERRE_DATEI</summary>
+    public string SperreOriginal { get; set; } = Resource.GEXP_ANR_SPERRE_DATEI;
 }
 
 /// <summary>

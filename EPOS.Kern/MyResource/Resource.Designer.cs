@@ -29923,6 +29923,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ich gebe eine fremde Datei verändert weiter und habe den Hinweis gelesen. ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_BESTAETIGEN {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_BESTAETIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stattdessen eigene Datei schreiben ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_BTN_EIGENE {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_BTN_EIGENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Originaldatei wählen… ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_BTN_WAEHLEN {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_BTN_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Originaldatei wählen ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_DATEIDIALOG_TITEL {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_DATEIDIALOG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die importierte IFC-Datei des Architekten wird um die Ergebnisse ergänzt und unter neuem Namen gespeichert; das Original bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Originaldatei ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_LBL_DATEI {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_LBL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importquelle ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgabe ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_LBL_WEG {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_LBL_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angereicherte Datei wurde gespeichert: {0} ({1} Byte). Objekte: {2}, ergänzt: {3}, ersetzt: {4}, übersprungen: {5}. ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Originaldatei ließ sich nicht lesen: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_MSG_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_MSG_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anreicherung wurde verweigert; es ist keine Datei entstanden. Die Meldungen nennen den Grund. ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_MSG_NICHTS_GESCHRIEBEN {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_MSG_NICHTS_GESCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, importiert am {1} ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_QUELLE {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte bestätigen Sie, dass Sie die fremde Datei verändert weitergeben. ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_SPERRE_BESTAETIGEN {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_SPERRE_BESTAETIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte wählen Sie zuerst die Originaldatei. ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_SPERRE_DATEI {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_SPERRE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Originaldatei kann nicht angereichert werden: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_VERWEIGERT {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_VERWEIGERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Originaldatei anreichern ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_WEG_ANREICHERN {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_WEG_ANREICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Datei schreiben ähnelt.
+        /// </summary>
+        public static string GEXP_ANR_WEG_EIGEN {
+            get {
+                return ResourceManager.GetString("GEXP_ANR_WEG_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ich habe die Meldungen gelesen ähnelt.
         /// </summary>
         public static string GEXP_BESTAETIGEN {
