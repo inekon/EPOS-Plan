@@ -1,4 +1,5 @@
-﻿using WindowsFormsApplication1.MyResource;
+﻿using System.Buffers.Binary;
+using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -96,6 +97,61 @@ public sealed record GebaeudeAnsichtDaten
     /// <summary>Die Höhenlagen der Geschosse; fehlt ein Geschoss oder seine Lage, wird es gestapelt.</summary>
     public IReadOnlyList<GebaeudeAnsichtGeschosslage> Geschosslagen { get; init; } = Array.Empty<GebaeudeAnsichtGeschosslage>();
 
+    /// <summary>
+    /// Der Bezugspunkt der Dateikörper [m] (x, y, z im Modellsystem): der kleinste Punkt aller Körper je Achse.
+    /// Die Punkte eines <see cref="GebaeudeAnsichtDateikoerper"/> stehen relativ zu ihm — georeferenzierte Dateien
+    /// tragen Koordinaten um 10⁶ m, ein <c>float</c> verlöre dort die Zentimeter. Ohne Dateikörper (0, 0, 0).
+    /// </summary>
+    public IReadOnlyList<double> Bezugspunkt { get; init; } = new double[3];
+
+    /// <summary>Die Dreiecksgrenze der Dateikörper je Gebäude (<see cref="DREIECKSGRENZE"/>; Tests setzen eine kleinere).</summary>
+    public int Dreiecksgrenze { get; init; } = DREIECKSGRENZE;
+
+    /// <summary>
+    /// Die Dreiecksgrenze je Gebäude (Datenaustauschkonzept 15.4, gleich der Grenze des Kerns): Darüber zeigt die
+    /// Ansicht für alle Räume das Prisma aus dem Umriss, mit benanntem Hinweis — auf allen Plattformen gleich.
+    /// </summary>
+    public const int DREIECKSGRENZE = 300_000;
+
+    /// <summary>Trägt mindestens ein Raum einen Körper aus der Datei? Ohne einen einzigen entfällt der Umschalter.</summary>
+    public bool HatDateikoerper => Koerperraeume.Any(k => k.Dateikoerper is not null);
+
+    /// <summary>Die Dreiecke aller Dateikörper.</summary>
+    public long DateikoerperDreiecke => Koerperraeume.Sum(k => (long)(k.Dateikoerper?.DreieckZahl ?? 0));
+
+    /// <summary>Überschreiten die Dateikörper die <see cref="Dreiecksgrenze"/>? Dann zeigt die Ansicht die Prismen.</summary>
+    public bool DateikoerperZuGross => DateikoerperDreiecke > Dreiecksgrenze;
+
+    /// <summary>
+    /// <b>Die Dateikörper als Bytefeld</b> für das Modul (15.4): je Raum mit Dateikörper, in der Reihenfolge von
+    /// <see cref="Koerperraeume"/>, erst die Punkte (float32, je Punkt x, y, z relativ zum <see cref="Bezugspunkt"/>),
+    /// dann die Dreiecke (int32, Indextripel), dann die Randkanten (int32, Indexpaare) — Little-Endian, jeder Abschnitt
+    /// auf vier Byte ausgerichtet. Daneben das Verzeichnis mit den Byte-Offsets und Zahlen je Raum. Dieselben Daten
+    /// geben dasselbe Feld, byteweise.
+    /// </summary>
+    public GebaeudeAnsichtKoerperfeld Koerperfeld()
+    {
+        long laenge = 0;
+        foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
+            if (k.Dateikoerper is { } d) laenge += 4L * (d.Punkte.Count + d.Dreiecke.Count + d.Randkanten.Count);
+        var bytes = new byte[checked((int)laenge)];
+        var verzeichnis = new List<GebaeudeAnsichtKoerperfeldEintrag>();
+        int stelle = 0;
+        foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
+        {
+            if (k.Dateikoerper is not { } d) continue;
+            int punkteAb = stelle;
+            foreach (float f in d.Punkte) { BinaryPrimitives.WriteSingleLittleEndian(bytes.AsSpan(stelle, 4), f); stelle += 4; }
+            int dreieckeAb = stelle;
+            foreach (int i in d.Dreiecke) { BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(stelle, 4), i); stelle += 4; }
+            int kantenAb = stelle;
+            foreach (int i in d.Randkanten) { BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(stelle, 4), i); stelle += 4; }
+            verzeichnis.Add(new GebaeudeAnsichtKoerperfeldEintrag(
+                k.Kennung, punkteAb, d.Punkte.Count / 3, dreieckeAb, d.Dreiecke.Count / 3, kantenAb, d.Randkanten.Count / 2));
+        }
+        return new GebaeudeAnsichtKoerperfeld(bytes, verzeichnis);
+    }
+
     /// <summary>Die Raumhöhe, wenn die Datei keine nennt [m] — der Körper ist dann schematisch.</summary>
     public const double VORGABEHOEHE_M = 3.0;
 
@@ -190,7 +246,59 @@ public sealed record GebaeudeAnsichtDaten
 /// <param name="Boden">Die Bauteilart des Bodens; <c>null</c> = keines bekannt.</param>
 /// <param name="Decke">Die Bauteilart der Decke; <c>null</c> = keines bekannt.</param>
 public sealed record GebaeudeAnsichtKoerperraum(
-    string Kennung, double? HoeheM, IReadOnlyList<IReadOnlyList<string?>> Kanten, string? Boden, string? Decke);
+    string Kennung, double? HoeheM, IReadOnlyList<IReadOnlyList<string?>> Kanten, string? Boden, string? Decke)
+{
+    /// <summary>Der Körper des Raums aus der Datei (15.3); <c>null</c> = keiner (dann das Prisma aus dem Umriss).</summary>
+    public GebaeudeAnsichtDateikoerper? Dateikoerper { get; init; }
+
+    /// <summary>Woher der Körper des Raums stammt — als Wert, nie als Text.</summary>
+    public Koerperherkunft Herkunft { get; init; } = Koerperherkunft.Umriss;
+}
+
+/// <summary>Die Herkunft des Körpers eines Raums (Datenaustauschkonzept 15.4) — der Steuerwert der Kennzeichen.</summary>
+public enum Koerperherkunft
+{
+    /// <summary>Der Raum trägt einen Körper aus der Datei.</summary>
+    Datei,
+
+    /// <summary>Prisma aus den Raumgrenzen (Umriss um die Raumhöhe extrudiert).</summary>
+    Umriss,
+
+    /// <summary>Prisma aus einem erfundenen Umriss (Fläche und Seitenverhältnis).</summary>
+    Schematisch,
+}
+
+/// <summary>
+/// Der Körper eines Raums, wie die Datei ihn zeichnet (15.3, 15.4), für die Ansicht: die Punkte als Folge
+/// (x, y, z, x, y, z, …) in Metern <b>relativ zum <see cref="GebaeudeAnsichtDaten.Bezugspunkt"/></b>, die Dreiecke
+/// als Indextripel, die Randkanten der Ursprungsflächen als Indexpaare (keine Triangulationsdiagonalen), dazu die
+/// gelesene Darstellungsart und die Vermerke als Schlüssel (Namen von <c>Koerpervermerk</c>; leer = exakt gelesen).
+/// </summary>
+/// <param name="Punkte">Die Punkte relativ zum Bezugspunkt [m], drei Werte je Punkt.</param>
+/// <param name="Dreiecke">Die Dreiecke, drei Indizes je Dreieck.</param>
+/// <param name="Randkanten">Die Randkanten, zwei Indizes je Kante.</param>
+/// <param name="DreieckZahl">Die Zahl der Dreiecke.</param>
+/// <param name="Art">Die Darstellungsart als Schlüssel (etwa <c>FacetedBrep</c>).</param>
+/// <param name="Vermerke">Die Vermerke als Schlüssel, aufsteigend.</param>
+public sealed record GebaeudeAnsichtDateikoerper(
+    IReadOnlyList<float> Punkte, IReadOnlyList<int> Dreiecke, IReadOnlyList<int> Randkanten, int DreieckZahl,
+    string Art, IReadOnlyList<string> Vermerke);
+
+/// <summary>Die Dateikörper eines Gebäudes als ein Bytefeld samt Verzeichnis (<see cref="GebaeudeAnsichtDaten.Koerperfeld"/>).</summary>
+/// <param name="Bytes">Das Feld: je Raum Punkte (float32), Dreiecke und Kanten (int32), Little-Endian.</param>
+/// <param name="Verzeichnis">Je Raum mit Dateikörper Kennung, Byte-Offsets und Zahlen.</param>
+public sealed record GebaeudeAnsichtKoerperfeld(byte[] Bytes, IReadOnlyList<GebaeudeAnsichtKoerperfeldEintrag> Verzeichnis);
+
+/// <summary>Ein Eintrag des Verzeichnisses im Bytefeld: Raumkennung, je Abschnitt Byte-Offset und Zahl.</summary>
+/// <param name="Raum">Die Raumkennung.</param>
+/// <param name="PunkteAb">Byte-Offset der Punkte.</param>
+/// <param name="PunktZahl">Zahl der Punkte (je drei float32).</param>
+/// <param name="DreieckeAb">Byte-Offset der Dreiecke.</param>
+/// <param name="DreieckZahl">Zahl der Dreiecke (je drei int32).</param>
+/// <param name="KantenAb">Byte-Offset der Randkanten.</param>
+/// <param name="KantenZahl">Zahl der Randkanten (je zwei int32).</param>
+public sealed record GebaeudeAnsichtKoerperfeldEintrag(
+    string Raum, int PunkteAb, int PunktZahl, int DreieckeAb, int DreieckZahl, int KantenAb, int KantenZahl);
 
 /// <summary>Die Höhenlage eines Geschosses für die Körper; <c>null</c> = unbekannt (dann gestapelt).</summary>
 /// <param name="Kennung">Kennung des Geschosses (<see cref="GebaeudeAnsichtGeschoss.Kennung"/>).</param>
