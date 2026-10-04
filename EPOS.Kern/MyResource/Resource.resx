@@ -44380,5 +44380,20 @@ Chart</value>
   <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
     <value>IFC-Export abgebrochen: Die Schemaprüfung meldet {0} Verstöße; es wurde nichts geschrieben.</value>
   </data>
+  <data name="GEXP_DATEI_KAELTE_SENSIBEL" xml:space="preserve">
+    <value>Kältebedarf sensibel, ohne Entfeuchtung</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_RAUMGRENZEN" xml:space="preserve">
+    <value>Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen, nicht in einer Geometrie.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_OHNE_MVD" xml:space="preserve">
+    <value>Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export ohne Geometrie.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_IDS" xml:space="preserve">
+    <value>Was die IFC-Datei zusagt, beschreibt die IDS-Datei {0} im Ordner Vorlage der Installation; ein IDS-fähiges Prüfwerkzeug hält sie gegen die Datei.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_KAELTE" xml:space="preserve">
+    <value>Der Kältebedarf ist sensibel gerechnet, ohne Entfeuchtung; die Datei trägt diesen Hinweis an jedem Kältewert.</value>
+  </data>
 </root>
 

@@ -44373,5 +44373,20 @@ chart</value>
   <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
     <value>IFC export cancelled: the schema check reports {0} violations; nothing was written.</value>
   </data>
+  <data name="GEXP_DATEI_KAELTE_SENSIBEL" xml:space="preserve">
+    <value>Cooling demand sensible only, without dehumidification</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_RAUMGRENZEN" xml:space="preserve">
+    <value>The space boundaries of the IFC file are logical: each second-level space boundary names space and element without connection geometry; areas are given as quantities, not as geometry.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_OHNE_MVD" xml:space="preserve">
+    <value>The IFC file names no model view definition (no MVD): no published MVD fits a semantic export without geometry.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_IDS" xml:space="preserve">
+    <value>What the IFC file guarantees is described by the IDS file {0} in the Vorlage folder of the installation; any IDS-capable checker can hold it against the file.</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_KAELTE" xml:space="preserve">
+    <value>The cooling demand is computed sensible only, without dehumidification; the file carries this note at every cooling value.</value>
+  </data>
 </root>
 

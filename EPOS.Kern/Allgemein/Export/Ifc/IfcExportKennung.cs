@@ -1,5 +1,4 @@
-﻿#if !OHNE_XBIM
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
@@ -79,4 +78,3 @@ namespace WindowsFormsApplication1
         }
     }
 }
-#endif

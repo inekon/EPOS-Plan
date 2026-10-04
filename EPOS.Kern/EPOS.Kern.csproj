@@ -195,7 +195,8 @@
   <!-- BAU OHNE xBIM (-p:OhneXbim=true; ADR-003 Aufgabe 7). Nur fuer den   -->
   <!-- Groessenvergleich des iOS-Geraetebaus (ios.yml, Job geraetebau):    -->
   <!-- ohne die Paketzeile und ohne jede Datei, die xBIM anspricht - der   -->
-  <!-- Leser samt Hilfsklassen und die Importmessung. Das Profil bleibt;   -->
+  <!-- Leser samt Hilfsklassen, die Importmessung und der IFC-Schreiber  -->
+  <!-- samt Kennungen (Export\Ifc, ausser IfcErgebnisse). Das Profil bleibt; -->
   <!-- IfcImportProfil.LeserErzeugen lehnt dann benannt ab. Jeder andere   -->
   <!-- Bau (Windows, Filter, Tests, iOS) setzt den Schalter nicht.         -->
   <!-- ================================================================== -->
@@ -209,6 +210,9 @@
     <Compile Remove="Allgemein\Import\Ifc\*.cs" />
     <Compile Include="Allgemein\Import\Ifc\IfcImportProfil.cs" />
     <Compile Remove="Allgemein\Import\Gebaeude\Importmessung.cs;Allgemein\Import\Gebaeude\ImportmessungProben.cs" />
+    <!-- Der IFC-Schreiber (G7c) samt Kennungen spricht xBIM an; die Ergebnisse bleiben (Profil, Abbild). -->
+    <Compile Remove="Allgemein\Export\Ifc\*.cs" />
+    <Compile Include="Allgemein\Export\Ifc\IfcErgebnisse.cs" />
   </ItemGroup>
 
   <!-- ================================================================== -->

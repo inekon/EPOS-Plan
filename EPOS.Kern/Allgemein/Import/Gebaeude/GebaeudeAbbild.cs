@@ -154,6 +154,18 @@ namespace WindowsFormsApplication1
         /// <summary>Der Text, aus dem <see cref="Baujahr"/> gezogen ist, wie gelesen; <c>null</c> = keiner.</summary>
         public string BaujahrText { get; set; }
 
+        /// <summary>
+        /// Die Baualtersklasse des Gebäudes (Kürzel aus <c>Tab_Gebaeude.Baualtersklasse</c>; Export G7c, IFC
+        /// <c>EPOS_Gebaeude.Baualtersklasse</c>); <c>null</c> = keine. Der Leser lässt sie leer.
+        /// </summary>
+        public string Baualtersklasse { get; set; }
+
+        /// <summary>
+        /// Die Jahresergebnisse des Gebäudes aus dem letzten Rechenlauf (Export G7c, IFC <c>EPOS_Ergebnis</c> am
+        /// <c>IfcBuilding</c>); <c>null</c> = kein Rechenlauf. Der Leser lässt es leer.
+        /// </summary>
+        public AbbildErgebnis Ergebnis { get; set; }
+
         /// <summary>Die Räume des Gebäudes.</summary>
         public List<AbbildRaum> Raeume { get; } = new List<AbbildRaum>();
 
@@ -254,8 +266,26 @@ namespace WindowsFormsApplication1
         /// <summary>Mittlere Raumlufttemperatur des Jahres [°C].</summary>
         public double? MitteltemperaturC { get; set; }
 
+        /// <summary>
+        /// Jahreskältebedarf [kWh] — sensibel, ohne Entfeuchtung (Kühlkonzept 9.2); <c>null</c> = die Kühlung ist
+        /// nicht gerechnet.
+        /// </summary>
+        public double? KaeltebedarfKWh { get; set; }
+
+        /// <summary>Kältelast (Spitze) [W]; <c>null</c> = nicht gerechnet oder nicht gespeichert.</summary>
+        public double? KaeltelastW { get; set; }
+
         /// <summary>Beginn des Rechenjahrs (<c>startTime</c>).</summary>
         public DateTime Beginn { get; set; }
+
+        /// <summary>Der Zeitpunkt des Rechenlaufs (<c>Tab_Ergebnis.Zeitstempel</c>); <c>null</c> = unbekannt. Nur am Gebäude.</summary>
+        public DateTime? Rechenzeitpunkt { get; set; }
+
+        /// <summary>Der Wetterdatensatz des Rechenlaufs (Klimaregion des Laufs); <c>null</c> = unbekannt. Nur am Gebäude.</summary>
+        public string Wetterdatensatz { get; set; }
+
+        /// <summary>Trägt das Ergebnis eine Kältegröße?</summary>
+        public bool MitKaelte => KaeltebedarfKWh.HasValue || KaeltelastW.HasValue;
     }
 
     /// <summary>Ein Raum des Abbilds.</summary>
@@ -317,6 +347,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kühlsollwert der Auslegung [°C] (gbXML aus der Zone) — gelesen, aber keinem Zielfeld zugeordnet.</summary>
         public double? SollKuehlenC { get; set; }
+
+        /// <summary>
+        /// Ist eine Nachtabsenkung gesetzt (Nachtsollwert unter dem Tagessollwert; Export G7c, IFC
+        /// <c>Pset_SpaceThermalRequirements.DiscontinuedHeating</c>)? <c>null</c> = unbekannt. Der Leser lässt es leer.
+        /// </summary>
+        public bool? Nachtabsenkung { get; set; }
+
+        /// <summary>
+        /// Luftwechsel durch Nutzerlüftung [1/h] (<c>Luftwechsel_Nutzer</c>; Export G7c, IFC
+        /// <c>Pset_SpaceThermalRequirements.NaturalVentilationRate</c>); <c>null</c> = keiner. Der Leser lässt ihn leer.
+        /// </summary>
+        public double? LuftwechselNutzerJeH { get; set; }
 
         /// <summary>Kennung des Geschosses; <c>null</c> = keine.</summary>
         public string GeschossKennung { get; set; }
@@ -463,6 +505,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gesamtenergiedurchlassgrad g [–] einer Öffnung; <c>null</c> = keiner.</summary>
         public double? GWert { get; set; }
+
+        /// <summary>
+        /// Die längenbezogenen Wärmebrücken des Bauteils als Summe ψ·L [W/K] (<c>Tab_Bauteil.Psi_L</c>; Export G7c,
+        /// IFC <c>EPOS_Bauteil.WaermebrueckeUA</c>); <c>null</c> = keine. Der Leser lässt sie leer.
+        /// </summary>
+        public double? WaermebrueckeWK { get; set; }
 
         /// <summary>
         /// Breite [m] des Rechtecks, das der Export schreibt (<c>RectangularGeometry/Width</c>, G7a);

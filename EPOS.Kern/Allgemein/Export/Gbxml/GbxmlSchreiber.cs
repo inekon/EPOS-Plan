@@ -71,6 +71,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const string ERGEBNIS_TRAEGER = "HotWater";
 
+        /// <summary>Der Träger der Kälte-<c>Results</c> (<c>CoolingLoad</c>, Kühlkonzept 9.2): <c>ChilledWater</c>.</summary>
+        internal const string ERGEBNIS_TRAEGER_KAELTE = "ChilledWater";
+
         /// <summary>Die Wertart der <c>Results</c>: gerechnet.</summary>
         internal const string ERGEBNIS_WERTART = "Simulated";
 
@@ -405,28 +408,36 @@ namespace WindowsFormsApplication1
             /// <summary>
             /// <c>Results</c> einer Zone (Datenaustauschkonzept 5.6): die drei Jahresgrößen in den zulässigen
             /// Einheiten des Schemas — <c>Energy</c> in <c>KilowattHours</c>, <c>HeatLoad</c> in <c>Watt</c>,
-            /// <c>DryBulbTemperature</c> (Mittel) in <c>C</c> —, ohne Zeitreihen.
+            /// <c>DryBulbTemperature</c> (Mittel) in <c>C</c> —, ohne Zeitreihen. Mit gerechneter Kühlung dazu
+            /// <c>CoolingLoad</c> (Kühlkonzept 9.2): der Jahreskältebedarf in <c>KilowattHours</c> und, wo
+            /// gespeichert, die Kältelast in <c>Watt</c> (beide aus der Vereinigung des <c>unit</c>-Attributs:
+            /// <c>energyUnitEnum</c> bzw. <c>loadUnitEnum</c>), Träger <c>ChilledWater</c>, mit dem Hinweis
+            /// „sensibel, ohne Entfeuchtung" in <c>Description</c>.
             /// </summary>
             private void Ergebnisse(AbbildRaum r)
             {
                 AbbildErgebnis e = r.Ergebnis;
                 if (e == null) return;
-                void Ergebnis(string art, string einheit, string endung, double? wert)
+                void Ergebnis(string art, string einheit, string endung, double? wert, string traeger = ERGEBNIS_TRAEGER, string beschreibung = null)
                 {
                     if (!wert.HasValue) return;
                     _ergebnisse.Add(new XElement(NS + "Results",
                         new XAttribute("id", Kennung(r.ZonenKennung + "-" + endung, "Results")),
                         new XAttribute("unit", einheit),
                         new XAttribute("resultsType", art),
-                        new XAttribute("resourceType", ERGEBNIS_TRAEGER),
+                        new XAttribute("resourceType", traeger),
                         new XAttribute("valueType", ERGEBNIS_WERTART),
                         new XAttribute("startTime", Zeitstempel(e.Beginn)),
+                        beschreibung == null ? null : new XElement(NS + "Description", beschreibung),
                         new XElement(NS + "ObjectId", r.ZonenKennung),
                         new XElement(NS + "Value", Zahl(wert.Value))));
                 }
                 Ergebnis("Energy", "KilowattHours", "Energie", e.EnergieKWh);
                 Ergebnis("HeatLoad", "Watt", "Heizlast", e.HeizlastW);
                 Ergebnis("DryBulbTemperature", GbxmlVokabular.Celsius, "Temperatur", e.MitteltemperaturC);
+                string sensibel = e.MitKaelte ? T("GEXP_DATEI_KAELTE_SENSIBEL") : null;
+                Ergebnis("CoolingLoad", "KilowattHours", "Kaeltebedarf", e.KaeltebedarfKWh, ERGEBNIS_TRAEGER_KAELTE, sensibel);
+                Ergebnis("CoolingLoad", "Watt", "Kaeltelast", e.KaeltelastW, ERGEBNIS_TRAEGER_KAELTE, sensibel);
             }
 
             // --------------------------------------------------------------

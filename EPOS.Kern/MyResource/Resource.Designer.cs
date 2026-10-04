@@ -30040,6 +30040,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf sensibel, ohne Entfeuchtung ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_KAELTE_SENSIBEL {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_KAELTE_SENSIBEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hülle aus dem Gebäudetyp gebildet und mit dem Faktor {0} auf das Projekt hochgerechnet (Grundlage: {1}). ähnelt.
         /// </summary>
         public static string GEXP_DATEI_KLASSENWEG {
@@ -30585,6 +30594,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PROT_BAUTEIL_UNGUELTIG {
             get {
                 return ResourceManager.GetString("GEXP_PROT_BAUTEIL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was die IFC-Datei zusagt, beschreibt die IDS-Datei {0} im Ordner Vorlage der Installation; ein IDS-fähiges Prüfwerkzeug hält sie gegen die Datei. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_BEIPACK_IDS {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_BEIPACK_IDS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kältebedarf ist sensibel gerechnet, ohne Entfeuchtung; die Datei trägt diesen Hinweis an jedem Kältewert. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_BEIPACK_KAELTE {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_BEIPACK_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export ohne Geometrie. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_BEIPACK_OHNE_MVD {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_BEIPACK_OHNE_MVD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen, nicht in einer Geometrie. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_BEIPACK_RAUMGRENZEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_BEIPACK_RAUMGRENZEN", resourceCulture);
             }
         }
         
