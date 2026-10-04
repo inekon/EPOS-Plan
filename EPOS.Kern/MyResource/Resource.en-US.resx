@@ -44839,5 +44839,8 @@ chart</value>
   <data name="KI_DLG_KM_KAELTELEISTUNG_ERL" xml:space="preserve">
     <value>Cooling capacity at the curve point in kW; not negative.</value>
   </data>
+  <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
+    <value>Every curve point needs a heat rejection and a chilled water temperature.</value>
+  </data>
 </root>
 

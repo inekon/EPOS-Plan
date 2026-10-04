@@ -64586,6 +64586,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Kennlinienpunkt braucht eine Rückkühl- und eine Kaltwassertemperatur. ähnelt.
+        /// </summary>
+        public static string KM_MSG_KENNLINIE_TEMPERATUR_LEER {
+            get {
+                return ResourceManager.GetString("KM_MSG_KENNLINIE_TEMPERATUR_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Kennlinienpunkt hat einen EER ≤ 0 oder eine negative Kälteleistung. ähnelt.
         /// </summary>
         public static string KM_MSG_KENNLINIE_UNGUELTIG {

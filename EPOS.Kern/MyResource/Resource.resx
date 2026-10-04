@@ -44846,5 +44846,8 @@ Chart</value>
   <data name="KI_DLG_KM_KAELTELEISTUNG_ERL" xml:space="preserve">
     <value>Kälteleistung im Kennlinienpunkt in kW; nicht negativ.</value>
   </data>
+  <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
+    <value>Jeder Kennlinienpunkt braucht eine Rückkühl- und eine Kaltwassertemperatur.</value>
+  </data>
 </root>
 
