@@ -1,10 +1,14 @@
-﻿@* GEBAEUDEEXPORT (gbXML) - die Daten EINES Projektgebaeudes als Datei ausgeben (Gebaeudesimulation
-   G7a, Welle W3; Softwarearchitektur 3.2; Ueberlagerung im Gebaeudedialog hinter dem Knopf
-   "Exportieren (gbXML)...").
+﻿@* GEBAEUDEEXPORT (gbXML oder IFC) - die Daten EINES Projektgebaeudes als Datei ausgeben
+   (Gebaeudesimulation G7a/G7c; Softwarearchitektur 3.2; Ueberlagerung im Gebaeudedialog hinter dem
+   Knopf "Exportieren...").
 
-   FEST STEHEN Format (gbXML) und Umfang (Daten ohne Geometrie) - sie sind Text, keine Felder. Frei
-   ist nur die Postleitzahl; sie wird nicht gespeichert und bestimmt, ob die Datei einen Standort
-   und eine Nordrichtung traegt.
+   DAS FORMAT waehlt eine Optionsgruppe (Formate der Huelle: Steuerwert GebaeudeQuelle.FORMAT_*,
+   Anzeigetext und Umfang aus den Ressourcen; Vorgabe der erste Eintrag, gbXML). Der Umfang steht als
+   Text daneben. Ein Formatwechsel bildet den Plan sofort neu - die Meldungen unterscheiden sich je
+   Format - und nimmt die Bestaetigung zurueck. Fuehrt das Format eine Exportzusage (IFC: die IDS der
+   Auslieferung), steht ein Knopf, der sie oeffnet (Windows) bzw. teilt (iOS). Ohne Formatliste
+   (aeltere Wirte) steht das Format als Text. Frei ist dazu die Postleitzahl; sie wird nicht
+   gespeichert und bestimmt, ob die Datei einen Standort und eine Nordrichtung traegt.
 
    VOR DEM SCHREIBEN steht die Meldungsliste des Kerns (GebaeudeExportAblauf.Vorbereiten): was fehlt,
    ersetzt oder gewechselt wird, der Vorbehalt der Ersatzschichtung - und eine Ablehnung. Eine
@@ -20,7 +24,8 @@
 
    GESCHRIEBEN WIRD NUR IM OK-WEG ("Speichern..."): Der Speicherweg der Huelle fragt die Dateiwahl der
    Plattform und schreibt; eine abgebrochene Dateiwahl laesst den Dialog offen und still, ein Fehler
-   steht im Banner, ein Erfolg schliesst den Dialog und gibt die Rueckmeldung (mit Pfad) an den
+   steht im Banner - ein abgebrochenes Schreiben (Schemapruefung des IFC-Schreibers) samt seinen
+   Meldungen in der Liste, ohne Datei und ohne Teilen -, ein Erfolg schliesst den Dialog und gibt die Rueckmeldung (mit Pfad) an den
    Wirt. Abbrechen, Esc und das Kreuz geben null und rufen den Speicherweg nie.
 
    TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
@@ -53,10 +58,30 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <dl class="epos-gebexport-kopf">
-        <dt>@Texte.Format</dt><dd>@Texte.FormatGbxml</dd>
-        <dt>@Texte.Stufe</dt><dd>@Texte.StufeDaten</dd>
-    </dl>
+    @if (Formate.Count > 1)
+    {
+        <Optionsgruppe Bezeichnung="@Texte.Format" Eintraege="@Formateintraege" Auswahl="@Formatindex"
+                       AuswahlChanged="BeiFormat" Aktiv="@(!_speichertGerade)" />
+        <dl class="epos-gebexport-kopf">
+            <dt>@Texte.Stufe</dt><dd>@Umfangtext</dd>
+        </dl>
+    }
+    else
+    {
+        <dl class="epos-gebexport-kopf">
+            <dt>@Texte.Format</dt><dd>@(AktuellesFormat?.Text ?? Texte.FormatGbxml)</dd>
+            <dt>@Texte.Stufe</dt><dd>@Umfangtext</dd>
+        </dl>
+    }
+
+    @if (AktuellesFormat is { MitZusage: true } && ZusageOeffnen is not null)
+    {
+        <div class="epos-gebexport-zusage">
+            <button type="button" class="epos-knopf epos-gebexport-zusageknopf" disabled="@_speichertGerade"
+                    @onclick="BeiZusage">@Texte.Zusage</button>
+            <Herleitungszeile Text="@Texte.ZusageHinweis" />
+        </div>
+    }
 
     <Formularraster Einspaltig="true">
         <KindInhalt>
@@ -132,13 +157,26 @@
     /// liest die Daten; jeder weitere bildet den Plan ohne Datenbank neu. Kein Delegat = keine Meldungen,
     /// und Speichern bleibt gesperrt.
     /// </summary>
-    [Parameter] public Func<string, Task<GebaeudeExportAnsicht>>? Vorbereiten { get; set; }
+    [Parameter] public Func<GebaeudeExportEingabe, Task<GebaeudeExportAnsicht>>? Vorbereiten { get; set; }
 
     /// <summary>
     /// Der Speicherweg: Plan zur Postleitzahl, Dateiwahl der Plattform, Schreiben (auf iOS danach Teilen).
     /// Gerufen NUR im OK-Weg, nach der Bestätigung.
     /// </summary>
-    [Parameter] public Func<string, Task<GebaeudeExportErgebnis>>? Speichern { get; set; }
+    [Parameter] public Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>? Speichern { get; set; }
+
+    /// <summary>
+    /// Die wählbaren Formate (Stufe G7c) in Anzeigereihenfolge; das erste ist die Vorgabe. Leer = ein
+    /// fester Weg ohne Wahl (der Text <see cref="GebaeudeExportTexte.FormatGbxml"/> steht im Kopf).
+    /// </summary>
+    [Parameter] public IReadOnlyList<GebaeudeExportFormat> Formate { get; set; } = Array.Empty<GebaeudeExportFormat>();
+
+    /// <summary>
+    /// Öffnet (Windows) bzw. teilt (iOS) die Exportzusage des Formats — die IDS der Auslieferung. Gibt
+    /// <c>null</c> bei Erfolg, sonst den benannten Grund (fehlende Datei, kein Programm). Kein Delegat =
+    /// kein Knopf.
+    /// </summary>
+    [Parameter] public Func<Task<string?>>? ZusageOeffnen { get; set; }
 
     /// <summary>Hat der Wirt ungespeicherte Änderungen an dieser Zeile? Dann steht der Hinweis „gespeicherter Stand".</summary>
     [Parameter] public bool GespeicherterStand { get; set; }
@@ -163,6 +201,7 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private string _plz = "";
+    private string _format = "";
     private bool _bestaetigt;
     private bool _speichertGerade;
     private GebaeudeExportAnsicht? _ansicht;
@@ -183,8 +222,20 @@
     /// <summary>Sind die Meldungen bestätigt? (Prüfhilfe für die Tests.)</summary>
     public bool Bestaetigt => _bestaetigt;
 
+    /// <summary>Der Steuerwert des gewählten Formats; leer ohne Formatliste (Prüfhilfe für die Tests).</summary>
+    public string Formatwert => _format;
+
+    /// <summary>Hält das gewählte Format in der Liste; ohne gültige Wahl gilt das erste (gbXML).</summary>
+    protected override void OnParametersSet() => FormatAbgleichen();
+
+    private void FormatAbgleichen()
+    {
+        if (Formate.Count > 0 && !Formate.Any(f => f.Wert == _format)) _format = Formate[0].Wert;
+    }
+
     protected override void OnInitialized()
     {
+        FormatAbgleichen();   // vor dem ersten Plan (OnInitializedAsync läuft vor OnParametersSet)
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_EXPORT, () => KiSicht(), KiHaken());
     }
 
@@ -240,6 +291,28 @@
     private string Ablehnungstext
         => _ansicht is { Ablehnung: string grund } ? Format(Texte.Abgelehnt, grund) : "";
 
+    /// <summary>Das gewählte Format; <c>null</c> ohne Formatliste.</summary>
+    private GebaeudeExportFormat? AktuellesFormat => Formate.FirstOrDefault(f => f.Wert == _format);
+
+    /// <summary>Der Umfang der Datei zum gewählten Format.</summary>
+    private string Umfangtext => AktuellesFormat?.Umfang ?? Texte.StufeDaten;
+
+    /// <summary>Die Einträge der Optionsgruppe: Position und Anzeigetext — der Steuerwert bleibt in <see cref="Formate"/>.</summary>
+    private IReadOnlyList<(int Id, string Text)> Formateintraege
+        => Formate.Select((f, i) => (i, f.Text)).ToList();
+
+    private int? Formatindex
+    {
+        get
+        {
+            for (int i = 0; i < Formate.Count; i++)
+                if (Formate[i].Wert == _format) return i;
+            return null;
+        }
+    }
+
+    private GebaeudeExportEingabe Eingabe() => new(_plz, _format);
+
     /// <summary>Der Grund der weichen Sperre von „Speichern…": die fehlende Bestätigung.</summary>
     private string? OkSperrgrund => _ansicht is not null && !_bestaetigt ? Texte.SperreBestaetigen : null;
 
@@ -257,8 +330,33 @@
     }
 
     // =================================================================================
-    // Postleitzahl und Neubildung des Plans
+    // Format, Exportzusage, Postleitzahl und Neubildung des Plans
     // =================================================================================
+
+    /// <summary>
+    /// Ein Formatwechsel bildet den Plan sofort neu (die Meldungen unterscheiden sich je Format) und
+    /// nimmt die Bestätigung zurück: Bestätigt waren die Meldungen des anderen Formats.
+    /// </summary>
+    private async Task BeiFormat(int? index)
+    {
+        if (index is not int i || i < 0 || i >= Formate.Count || _speichertGerade) return;
+        if (Formate[i].Wert == _format) return;
+        _format = Formate[i].Wert;
+        _bestaetigt = false;
+        _meldung = "";
+        _entprellung?.Cancel();
+        _ansicht = null;
+        await Neubilden();
+    }
+
+    /// <summary>Die Exportzusage öffnen bzw. teilen; ein Grund steht im Banner.</summary>
+    private async Task BeiZusage()
+    {
+        if (ZusageOeffnen is null) return;
+        string? grund = await ZusageOeffnen();
+        _meldung = grund ?? "";
+        _meldungStufe = WarnStufe.Fehler;
+    }
 
     private async Task BeiPlz(string wert)
     {
@@ -289,7 +387,7 @@
     {
         if (Vorbereiten is null) return;
         int fassung = ++_fassung;
-        GebaeudeExportAnsicht ansicht = await Vorbereiten(_plz);
+        GebaeudeExportAnsicht ansicht = await Vorbereiten(Eingabe());
         if (fassung != _fassung) return;
         bool warAbgelehnt = _ansicht?.Abgelehnt ?? false;
         _ansicht = ansicht;
@@ -338,7 +436,7 @@
         GebaeudeExportErgebnis ergebnis;
         try
         {
-            ergebnis = await Speichern(_plz);
+            ergebnis = await Speichern(Eingabe());
         }
         finally
         {
@@ -348,6 +446,8 @@
         if (ergebnis.Abgebrochen) return;
         if (!ergebnis.Gespeichert)
         {
+            if (ergebnis.Meldungen is not null)
+                _ansicht = new GebaeudeExportAnsicht(ergebnis.Meldungen, null);
             _meldung = ergebnis.Text;
             _meldungStufe = WarnStufe.Fehler;
             return;
