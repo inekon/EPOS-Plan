@@ -9,35 +9,35 @@
 
 ## 2 Umsetzung Teil A (Schema, Kaskade, Testdatenbank)
 
-- `745ca38` Schemaschritt 181 `ZonenUebergabeSchema` (`ErdreichVorgabeSchema.SCHRITT + 1`): an `Tab_Zone` `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`, `Regler_Proportionalband` (REAL, nullbar, Proportionalband `CHECK (IS NULL OR >= 0)`); an `Tab_ErgebnisZone` `Vorlauf_Mittel_C`, `Ruecklauf_Mittel_C`, `Uebergabe_Begrenzt_H` (`CHECK (BETWEEN 0 AND 8760)`). Art, Exponent und Nennleistung lagen seit S-C an der Zone.
-- `8333240` Zone: Auslegungspunkt und Regler lesen, schreiben, prüfen (Prüfmeldungen `ZONE_MSG_*`), NULL-erhaltend über die Kopierwege.
-- `ced7956` Kaskade `Zonenuebergabevorgaben.Aufloesen` als reine Funktion.
-- `c291500` Testdatenbank auf Schemastand 181 (7 Spalten, alle leer, 83 972 096 Byte).
-- `cd7137e` Tests der Übergabe je Zone, Spaltenzähler auf Schritt 181.
+- `d9d9c1b` Schemaschritt 181 `ZonenUebergabeSchema` (`ErdreichVorgabeSchema.SCHRITT + 1`): an `Tab_Zone` `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`, `Regler_Proportionalband` (REAL, nullbar, Proportionalband `CHECK (IS NULL OR >= 0)`); an `Tab_ErgebnisZone` `Vorlauf_Mittel_C`, `Ruecklauf_Mittel_C`, `Uebergabe_Begrenzt_H` (`CHECK (BETWEEN 0 AND 8760)`). Art, Exponent und Nennleistung lagen seit S-C an der Zone.
+- `b943a8a` Zone: Auslegungspunkt und Regler lesen, schreiben, prüfen (Prüfmeldungen `ZONE_MSG_*`), NULL-erhaltend über die Kopierwege.
+- `b4d5fcc` Kaskade `Zonenuebergabevorgaben.Aufloesen` als reine Funktion.
+- `ef5ecb7` Testdatenbank auf Schemastand 181 (7 Spalten, alle leer, 83 972 096 Byte).
+- `4aacafa` Tests der Übergabe je Zone, Spaltenzähler auf Schritt 181.
 
 ## 3 Umsetzung Teil B (Rechenweg)
 
-- `6442931` Wärmeübergabe je Zone im Mehrzonenweg: Schritt H je Zone je Abschnitt am gemeinsamen Vorlauf, Rücklaufmischung, Begrenzungskennzahlen des Gebäudes als Maximum über die Zonen, Musterfesthaltung im Gauß-Seidel, Ergebnisspalten je Zone.
-- `9521050` Tests der Wärmeübergabe je Zone (Grenzfallprobe B je Zone bitgleich zur idealen Regelung, Byte-Gleichheit ungekoppelter Mehrzonengebäude).
-- `5e70b9b` Exportverluste: Auslegungspunkt und Proportionalband der Zone eingestuft.
+- `9506d15` Wärmeübergabe je Zone im Mehrzonenweg: Schritt H je Zone je Abschnitt am gemeinsamen Vorlauf, Rücklaufmischung, Begrenzungskennzahlen des Gebäudes als Maximum über die Zonen, Musterfesthaltung im Gauß-Seidel, Ergebnisspalten je Zone.
+- `825ad2e` Tests der Wärmeübergabe je Zone (Grenzfallprobe B je Zone bitgleich zur idealen Regelung, Byte-Gleichheit ungekoppelter Mehrzonengebäude).
+- `adbb285` Exportverluste: Auslegungspunkt und Proportionalband der Zone eingestuft.
 
 ## 4 Umsetzung Teil C (Zonendialog)
 
-- `877a8ef` DTO und Hülle mit der Übergabe je Zone, Ressourcen `ZONDLG_UEBERGABE_*` in beiden Sprachen.
-- `8187273` Zonendialog: Abschnitt „Übergabe“ (Klappliste mit „wie Gebäude (…)“, sechs Zahlenfelder mit Platzhalter des wirksamen Werts, Herleitungszeile mit Herkunft, Hinweis „ohne Wirkung“ bei Heizkreis oder Projektkopplung aus, unbeheizte Zone ohne Übergabe, KI-Sicht).
-- `91dc1d8` Tests `ZonenUebergabeDialogTests` (16 Fälle), Rundreise über den Zonenweg; Beschriftungen ohne Doppelpunkt.
+- `0077b9f` DTO und Hülle mit der Übergabe je Zone, Ressourcen `ZONDLG_UEBERGABE_*` in beiden Sprachen.
+- `318a9e2` Zonendialog: Abschnitt „Übergabe“ (Klappliste mit „wie Gebäude (…)“, sechs Zahlenfelder mit Platzhalter des wirksamen Werts, Herleitungszeile mit Herkunft, Hinweis „ohne Wirkung“ bei Heizkreis oder Projektkopplung aus, unbeheizte Zone ohne Übergabe, KI-Sicht).
+- `cf09889` Tests `ZonenUebergabeDialogTests` (16 Fälle), Rundreise über den Zonenweg; Beschriftungen ohne Doppelpunkt.
 
 ## 5 Umsetzung Teil D (Bedarfsdialog, Bericht, Export)
 
-- `8b76cdc` Bericht: Zonentabelle mit Vorlauf, Rücklauf und begrenzten Stunden, nur bei gekoppelter Zone.
-- `1cf0e33` Bedarfsdialog und KI-Sicht: dieselben drei Spalten in der Gruppe „Zonen“.
-- `08b054d` Exportschlüssel `Geb[n].Zone[k].VorlaufMittelC`, `.RuecklaufMittelC`, `.UebergabeBegrenztH` in Anlagenkopplung 10.4.
+- `f446dc9` Bericht: Zonentabelle mit Vorlauf, Rücklauf und begrenzten Stunden, nur bei gekoppelter Zone.
+- `22c4473` Bedarfsdialog und KI-Sicht: dieselben drei Spalten in der Gruppe „Zonen“.
+- `49f8908` Exportschlüssel `Geb[n].Zone[k].VorlaufMittelC`, `.RuecklaufMittelC`, `.UebergabeBegrenztH` in Anlagenkopplung 10.4.
 
 ## 6 Umsetzung Teil E (Referenzprojekt 1054)
 
-- `70303ec` Testdatenbank: Referenzprojekt 1054 „Zonen mit Heizkreis“ als Kopie von 1052 gesät (Saatskript und Bauplan unter `Referenzlaeufe/Skripte/`).
-- `7017444` Wache `ZonenHeizkreisReferenzprojektWacheTests` und Zählnachzüge; `9e0fe11` LIESMICH: Referenzprojekt 1054 und Einfrierregel der Übergabe.
-- `62000bd` Heizkurve am Gebäude von 1054 gesät, Datenbank neu; `428b98e` Wachen nachgezogen (Heizkurve, begrenzte Stunden, Kopplungsschema); `f95cc27` LIESMICH mit Heizkurve und Rechenergebnis.
+- `c91ea01` Testdatenbank: Referenzprojekt 1054 „Zonen mit Heizkreis“ als Kopie von 1052 gesät (Saatskript und Bauplan unter `Referenzlaeufe/Skripte/`).
+- `a805914` Wache `ZonenHeizkreisReferenzprojektWacheTests` und Zählnachzüge; `64f503a` LIESMICH: Referenzprojekt 1054 und Einfrierregel der Übergabe.
+- `a0ed451` Heizkurve am Gebäude von 1054 gesät, Datenbank neu; `be9c714` Wachen nachgezogen (Heizkurve, begrenzte Stunden, Kopplungsschema); `b1de7b2` LIESMICH mit Heizkurve und Rechenergebnis.
 - Zusammenführung: `d3462d4`, `ea0ce62` (`ak1z-ui` in `ak1z`), `7a5c161` (origin in `ak1z`).
 
 ## 7 Umsetzung Teil G (Papiere)
@@ -54,7 +54,8 @@ Anlagenkopplung (Nachzug E63, 6.5, 8.1, 10.1, 10.2, 11.4), Mehrzonenkonzept (2.6
 | Teil D | Kern 1 044, UI 1 544 grün |
 | Teil E | 589 / 985 grün nach Zählnachzug; 1054 zwei Läufe byte-gleich, rund 2 s |
 | Teil G | Wachen Dokumentation, Repository-Ordnung, Wiki und Wiki-Produktdaten grün |
-| Gate, Basis R35, Push | trägt die Orchestrierung nach |
+| Gate (Hauptbaum, Merge-Stand) | Kern-Bau 0 Fehler; ChartProben 208 Hashes gleich der Messlatte; Referenzlauf 19/19 PASS gegen R35, 576/576 CSV byte-gleich; Plattformnachweis `--stoerung ulp` PASS; Dokumentationswachen 60/60; Designer unverändert; SQL-Dialekt 2 300 Texte 0 Fundstellen; BOM nur die zwei Bestandsbefunde; keine Konfliktmarker; Testlauf Kern-Filter ⟨TESTS⟩, Windows-Schale auf Linux ⟨WINDOWS⟩, Werkzeugtests ⟨WERKZEUGE⟩ |
+| Basis R35, Push | Basis eingefroren (Teil F); Push-SHA und CI-Vermerk folgen |
 
 **Rechenergebnis 1054:** Heizwärme 47,58 MWh, Spitze 26,05 kW; Vorlauf/Rücklauf im Mittel 39,53/36,08 °C, 1 339 begrenzte Stunden am Gebäude; Gästezimmer 33,63 MWh, 293,9 h begrenzt; Gastronomie und Verwaltung 13,94 MWh, 1 106,5 h begrenzt, im Mittel der Heizzeit 18,7 °C; Keller unbeheizt. Beheizte Zonen im Aufheizzustand GEKOPPELT. Basis **`2026-10-04_R35_Zonenuebergabe`** mit neunzehn Projekten; 1054 nicht in der CI-Auswahl.
 
@@ -73,6 +74,7 @@ Anlagenkopplung (Nachzug E63, 6.5, 8.1, 10.1, 10.2, 11.4), Mehrzonenkonzept (2.6
 
 ## 10 Offen
 
+- Bundle-Weg und rote CI: Die Netzrichtlinie sperrt `lfs.github.com`; die Commits liegen ohne neue LFS-Zeiger auf origin (Datenbank im Zeiger auf dem Stand #706). Der Datenbank-Commit (Testdatenbank 181 mit 1054, 84 832 256 Byte, `2eea4775…`) folgt als Bundle an den Anwender; die CI ist rot, bis er es gepusht hat (Schemastand-Wache, Zonenwachen, Referenzlauf).
 - Sichtproben unter Windows: Zonendialog (Abschnitt „Übergabe“), Bedarfsdialog (Gruppe „Zonen“), Bericht (Tabelle „Zonen“).
 - `#:include` der Saatskripte braucht SDK 10.0.400; mit 10.0.112 nicht ausführbar.
 - Verteilung der AK2-Verfügbarkeit auf Zonen (zweite Verteilungsstufe, Anlagenkopplung 6.2).
