@@ -45138,5 +45138,47 @@ Chart</value>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
     <value>Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet.</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z6" xml:space="preserve">
+    <value>Z6 – nach Raumtemperatur und Nutzung</value>
+  </data>
+  <data name="GIMP_ZONE_OHNE_SOLLWERT" xml:space="preserve">
+    <value>ohne Sollwert</value>
+  </data>
+  <data name="GIMP_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>(unbeheizt)</value>
+  </data>
+  <data name="GIMP_NUTZUNG_BUERO" xml:space="preserve">
+    <value>Büro</value>
+  </data>
+  <data name="GIMP_NUTZUNG_WOHNEN" xml:space="preserve">
+    <value>Wohnen</value>
+  </data>
+  <data name="GIMP_NUTZUNG_SCHLAFEN" xml:space="preserve">
+    <value>Schlafen</value>
+  </data>
+  <data name="GIMP_NUTZUNG_GASTRONOMIE" xml:space="preserve">
+    <value>Gastronomie</value>
+  </data>
+  <data name="GIMP_NUTZUNG_KUECHE" xml:space="preserve">
+    <value>Küche</value>
+  </data>
+  <data name="GIMP_NUTZUNG_SPORT" xml:space="preserve">
+    <value>Sport</value>
+  </data>
+  <data name="GIMP_NUTZUNG_VERKEHR" xml:space="preserve">
+    <value>Verkehr</value>
+  </data>
+  <data name="GIMP_NUTZUNG_SANITAER" xml:space="preserve">
+    <value>Sanitär</value>
+  </data>
+  <data name="GIMP_NUTZUNG_LAGER" xml:space="preserve">
+    <value>Lager</value>
+  </data>
+  <data name="GIMP_NUTZUNG_TECHNIK" xml:space="preserve">
+    <value>Technik</value>
+  </data>
+  <data name="GIMP_NUTZUNG_SONSTIGE" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
 </root>
 

@@ -396,6 +396,12 @@ namespace WindowsFormsApplication1
                     && g.Raeume.Select(r => Nutzung(r.Name)).Distinct(StringComparer.Ordinal).Count() < g.Raeume.Count)
                     regeln.Add(IfcImportProfil.ZONENREGEL_Z3);
                 if (geschosse > 1) regeln.Add(IfcImportProfil.ZONENREGEL_Z4);
+                if (g.Raeume.Count > 1)
+                {
+                    int gruppen = Z6Gruppen(g.Raeume, r => r.Beheizt).Select(x => x.Kennung + "|" + (x.Warm ? "B" : "U"))
+                                                                    .Distinct(StringComparer.Ordinal).Count();
+                    if (gruppen > 1 && gruppen < g.Raeume.Count) regeln.Add(IfcImportProfil.ZONENREGEL_Z6);
+                }
                 regeln.Add(IfcImportProfil.ZONENREGEL_Z5);
                 string vorgabe = (grenzen || g.GeschosseGekoppelt) && geschosse > 1 ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
                 return (regeln, vorgabe, grenzen);
@@ -513,6 +519,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Räume in Zonen je Regel und Beheizung, in Dateireihenfolge.</summary>
         private void Gruppieren()
         {
+            if (Regel == IfcImportProfil.ZONENREGEL_Z6) { Z6Gruppieren(); return; }
             var jeSchluessel = new Dictionary<string, Importzone>(StringComparer.Ordinal);
             foreach (AbbildRaum r in Gebaeude.Raeume)
             {
@@ -950,6 +957,191 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------------
+        //  Regel Z6: nach Raumtemperatur und Nutzung
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Die Nutzungsklassen (Z6) in fester Reihenfolge — sprachneutrale Schlüssel; der Anzeigetext steht in
+        /// <c>GIMP_NUTZUNG_&lt;KLASSE&gt;</c>.
+        /// </summary>
+        internal static readonly IReadOnlyList<string> NUTZUNGSKLASSEN = new[]
+        {
+            "Buero", "Wohnen", "Schlafen", "Gastronomie", "Kueche", "Sport", "Verkehr", "Sanitaer", "Lager", "Technik", "Sonstige",
+        };
+
+        /// <summary>Die Klasse ohne Zuordnung.</summary>
+        internal const string NUTZUNG_SONSTIGE = "Sonstige";
+
+        /// <summary>Der Raumtyp der Datei (ohne Präfix <c>mrt</c>, Groß-/Kleinschreibung egal) → Nutzungsklasse.</summary>
+        private static readonly IReadOnlyDictionary<string, string> RAUMTYP_KLASSE = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Office"] = "Buero", ["Conference"] = "Buero", ["Examination"] = "Buero",
+            ["Living"] = "Wohnen", ["Child"] = "Wohnen", ["Guests"] = "Wohnen",
+            ["Sleeping"] = "Schlafen",
+            ["Restaurant"] = "Gastronomie", ["Eating"] = "Gastronomie",
+            ["Kitchen"] = "Kueche",
+            ["Fitness"] = "Sport", ["Sauna"] = "Sport",
+            ["Hall"] = "Verkehr", ["HallWay"] = "Verkehr", ["Stairway"] = "Verkehr", ["Ante"] = "Verkehr",
+            ["WC"] = "Sanitaer", ["Bath"] = "Sanitaer", ["Shower"] = "Sanitaer", ["Locker"] = "Sanitaer",
+            ["Store"] = "Lager", ["StorageRoom"] = "Lager", ["Basement"] = "Lager", ["Roof"] = "Lager",
+            ["CentralHeating"] = "Technik", ["Connection"] = "Technik",   // Anschlussräume (Hausanschluss, Heizung, Lüftung)
+            ["AdjoiningRoom"] = "Sonstige", ["Workshop"] = "Sonstige",
+        };
+
+        /// <summary>
+        /// Die Namensmuster je Klasse (Teilwort, klein; deutsch und englisch, die Muster der Regel B4 eingeschlossen) in
+        /// Prüfreihenfolge — die erste Klasse mit Treffer gilt.
+        /// </summary>
+        private static readonly (string Klasse, string[] Muster)[] NAME_KLASSE =
+        {
+            ("Sanitaer", new[] { "wc", "bad", "dusch", "umkleide", "sanit", "toilet", "bath", "shower", "washroom", "locker" }),
+            ("Kueche", new[] { "küche", "kueche", "kitchen" }),
+            ("Gastronomie", new[] { "restaurant", "gastst", "gastraum", "speiseraum", "kantine", "cafe", "café", "bistro", "dining", "canteen" }),
+            ("Schlafen", new[] { "schlaf", "sleep", "bedroom" }),
+            ("Buero", new[] { "büro", "buero", "office", "besprech", "konferenz", "meeting", "conference" }),
+            ("Sport", new[] { "sport", "fitness", "gym", "turn", "sauna" }),
+            ("Verkehr", new[] { "flur", "diele", "treppe", "foyer", "eingang", "windfang", "corridor", "hallway", "stair", "lobby", "entrance" }),
+            ("Technik", new[] { "technik", "heizraum", "heizung", "schacht", "aufzug", "hausanschluss", "verteiler", "lüftung", "plant", "shaft", "server", "mechanical" }),
+            ("Lager", new[] { "lager", "abstell", "keller", "garage", "carport", "dachboden", "speicher", "store", "storage", "basement", "attic" }),
+            ("Wohnen", new[] { "wohn", "living", "kinderzimmer", "guest" }),
+        };
+
+        /// <summary>
+        /// <b>Die Nutzungsklasse eines Raums</b> (Z6): aus dem Raumtyp der Datei über eine feste Tabelle, sonst aus dem
+        /// Raumnamen (<see cref="Nutzung"/>) über Namensmuster, sonst <see cref="NUTZUNG_SONSTIGE"/>. Ein sprachneutraler
+        /// Schlüssel aus <see cref="NUTZUNGSKLASSEN"/>.
+        /// </summary>
+        internal static string Nutzungsklasse(AbbildRaum r)
+        {
+            if (r == null) return NUTZUNG_SONSTIGE;
+            string typ = (r.Raumtyp ?? "").Trim();
+            if (typ.Length > 3 && typ.StartsWith("mrt", StringComparison.Ordinal)) typ = typ.Substring(3);
+            if (typ.Length > 0 && RAUMTYP_KLASSE.TryGetValue(typ, out string klasse)) return klasse;
+            string name = Nutzung(r.Name);
+            if (name.Length > 0)
+                foreach ((string k, string[] muster) in NAME_KLASSE)
+                    if (muster.Any(m => name.Contains(m, StringComparison.Ordinal))) return k;
+            return NUTZUNG_SONSTIGE;
+        }
+
+        /// <summary>Der Anzeigetext einer Nutzungsklasse (<c>GIMP_NUTZUNG_&lt;KLASSE&gt;</c>); ohne Ressource der Schlüssel.</summary>
+        internal static string NutzungText(string klasse)
+            => Ressource("GIMP_NUTZUNG_" + (klasse ?? "").ToUpperInvariant()) ?? klasse ?? "";
+
+        /// <summary>Die auf ganze °C gerundete Raumsolltemperatur (Z6): Heizsollwert, sonst Raumtemperatur der Datei.</summary>
+        internal static double? Z6Temperatur(AbbildRaum r)
+        {
+            double? t = r?.SollHeizenC ?? r?.RaumtemperaturC;
+            return t.HasValue && !double.IsNaN(t.Value) && !double.IsInfinity(t.Value)
+                ? Math.Round(t.Value, MidpointRounding.AwayFromZero) : (double?)null;
+        }
+
+        /// <summary>
+        /// <b>Die Gruppen der Regel Z6</b> je Raum in Dateireihenfolge: Kennung <c>T|&lt;°C&gt;</c> aus Beheizung und gerundeter
+        /// Temperatur; ein Raum ohne Temperatur geht zur Temperaturgruppe gleicher Beheizung, in der seine Nutzungsklasse die
+        /// größte Fläche hat (Gleichstand: die wärmere), sonst in die Gruppe <c>N|&lt;Klasse&gt;</c> („ohne Sollwert").
+        /// </summary>
+        internal static List<(AbbildRaum Raum, string Kennung, bool Warm, double? Temperatur, string Klasse)> Z6Gruppen(
+            IEnumerable<AbbildRaum> raeume, Func<AbbildRaum, bool> beheizt)
+        {
+            var liste = raeume.Select(r => (Raum: r, Warm: beheizt(r), T: Z6Temperatur(r), Klasse: Nutzungsklasse(r))).ToList();
+            var ergebnis = new List<(AbbildRaum, string, bool, double?, string)>(liste.Count);
+            foreach (var x in liste)
+            {
+                double? t = x.T;
+                if (!t.HasValue)
+                    t = liste.Where(y => y.T.HasValue && y.Warm == x.Warm && y.Klasse == x.Klasse)
+                             .GroupBy(y => y.T.Value)
+                             .Select(gr => (T: gr.Key, A: gr.Sum(y => y.Raum.FlaecheM2 > 0.0 ? y.Raum.FlaecheM2.Value : 0.0)))
+                             .OrderByDescending(k => k.A).ThenByDescending(k => k.T)
+                             .Select(k => (double?)k.T).FirstOrDefault();
+                string kennung = t.HasValue ? "T|" + t.Value.ToString("0", CultureInfo.InvariantCulture) : "N|" + x.Klasse;
+                ergebnis.Add((x.Raum, kennung, x.Warm, t, x.Klasse));
+            }
+            return ergebnis;
+        }
+
+        /// <summary>Die Solltemperatur je Zonenschlüssel (Z6); <c>null</c> = ohne Sollwert.</summary>
+        private readonly Dictionary<string, double?> _z6Temperatur = new Dictionary<string, double?>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Die Zonen der Regel Z6: gebäudeweit je Gruppe, in fester Ordnung — absteigend nach Solltemperatur (ohne Sollwert
+        /// zuletzt), beheizt vor unbeheizt, dann Name ordinal; die Räume einer Zone in Dateireihenfolge.
+        /// </summary>
+        private void Z6Gruppieren()
+        {
+            var jeSchluessel = new Dictionary<string, Importzone>(StringComparer.Ordinal);
+            var zonen = new List<Importzone>();
+            foreach (var x in Z6Gruppen(Gebaeude.Raeume, _beheizt))
+            {
+                string schluessel = Regel + "|" + x.Kennung + "|" + (x.Warm ? "B" : "U");
+                if (!jeSchluessel.TryGetValue(schluessel, out Importzone zone))
+                {
+                    zone = new Importzone { Schluessel = schluessel, IstBeheizt = x.Warm, Quellkennung = Gebaeude.Kennung };
+                    jeSchluessel[schluessel] = zone;
+                    _z6Temperatur[schluessel] = x.Temperatur;
+                    zonen.Add(zone);
+                }
+                zone.Raeume.Add(x.Raum);
+            }
+            foreach (Importzone zone in zonen)
+            {
+                double? t = _z6Temperatur[zone.Schluessel];
+                List<string> klassen = zone.Raeume.GroupBy(Nutzungsklasse)
+                    .Select(gr => (Klasse: gr.Key, A: gr.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0), N: gr.Count()))
+                    .OrderByDescending(k => k.A).ThenByDescending(k => k.N).ThenBy(k => k.Klasse, StringComparer.Ordinal)
+                    .Take(3).Select(k => NutzungText(k.Klasse)).ToList();
+                string kopf = t.HasValue
+                    ? t.Value.ToString("0", CultureInfo.InvariantCulture) + " °C"
+                    : Ressource("GIMP_ZONE_OHNE_SOLLWERT") ?? "ohne Sollwert";
+                zone.Name = kopf + " – " + string.Join(", ", klassen);
+                string partner = zone.Schluessel.Substring(0, zone.Schluessel.Length - 1) + "B";
+                if (!zone.IstBeheizt && jeSchluessel.ContainsKey(partner))
+                    zone.Name += " " + (Ressource("GIMP_ZONE_UNBEHEIZT") ?? "(unbeheizt)");
+            }
+            Zonen.AddRange(zonen.OrderBy(z => _z6Temperatur[z.Schluessel].HasValue ? 0 : 1)
+                                .ThenByDescending(z => _z6Temperatur[z.Schluessel] ?? 0.0)
+                                .ThenBy(z => z.IstBeheizt ? 0 : 1)
+                                .ThenBy(z => z.Name, StringComparer.Ordinal));
+            ZuordnungNeu();
+        }
+
+        /// <summary>
+        /// Die Zone gleicher Beheizung mit der nächstliegenden Solltemperatur zu Zone <paramref name="i"/> (M8 unter Z6, vor
+        /// der größten gemeinsamen Grenzfläche); bei Gleichstand der Temperatur die mit der größeren gemeinsamen Fläche
+        /// (<paramref name="nachbarn"/>), dann die größere Zone, dann die frühere. Ohne Sollwert auf einer Seite gilt der
+        /// Abstand als unendlich. −1 = keine.
+        /// </summary>
+        private int NaechsteTemperatur(int i, IReadOnlyDictionary<int, double> nachbarn)
+        {
+            double? ti = _z6Temperatur.TryGetValue(Zonen[i].Schluessel, out double? a) ? a : null;
+            return Enumerable.Range(0, Zonen.Count)
+                .Where(j => j != i && Zonen[j].IstBeheizt == Zonen[i].IstBeheizt)
+                .Select(j =>
+                {
+                    double? tj = _z6Temperatur.TryGetValue(Zonen[j].Schluessel, out double? b) ? b : null;
+                    double abstand = ti.HasValue && tj.HasValue ? Math.Abs(ti.Value - tj.Value) : double.MaxValue;
+                    return (J: j, Abstand: abstand, Gemeinsam: nachbarn.TryGetValue(j, out double g) ? g : 0.0, Flaeche: Zonen[j].FlaecheM2 ?? 0.0);
+                })
+                .OrderBy(k => k.Abstand).ThenByDescending(k => k.Gemeinsam).ThenByDescending(k => k.Flaeche).ThenBy(k => k.J)
+                .Select(k => k.J).DefaultIfEmpty(-1).First();
+        }
+
+        /// <summary>Ein Text der Ressourcen in der Kultur der Ressourcen; <c>null</c> = keiner.</summary>
+        private static string Ressource(string schluessel)
+        {
+            try
+            {
+                string text = MyResource.Resource.ResourceManager.GetString(schluessel, MyResource.Resource.Culture);
+                return string.IsNullOrEmpty(text) ? null : text;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        // ------------------------------------------------------------------
         //  Mindestgröße (M8)
         // ------------------------------------------------------------------
 
@@ -967,6 +1159,16 @@ namespace WindowsFormsApplication1
                     foreach (Zonenflaeche f in Flaechen.Where(f => f.Zone == i && f.Rand == Zonenrand.Zone
                                                                     && Zonen[f.Nachbarzone].IstBeheizt == Zonen[i].IstBeheizt))
                         nachbarn[f.Nachbarzone] = (nachbarn.TryGetValue(f.Nachbarzone, out double w) ? w : 0.0) + (f.GroessereM2 ?? 0.0);
+                    if (Regel == IfcImportProfil.ZONENREGEL_Z6)
+                    {
+                        // Z6: stets zur Zone gleicher Beheizung mit der nächstliegenden Solltemperatur — vor der Grenzfläche.
+                        int naechste = NaechsteTemperatur(i, nachbarn);
+                        if (naechste < 0) continue;
+                        klein = i;
+                        ziel = naechste;
+                        gemeinsam = nachbarn.TryGetValue(naechste, out double g) ? g : 0.0;
+                        break;
+                    }
                     if (nachbarn.Count == 0 || nachbarn.Values.Max() <= 0.0) continue;
                     KeyValuePair<int, double> best = nachbarn.OrderByDescending(n => n.Value).ThenBy(n => n.Key).First();
                     klein = i;
