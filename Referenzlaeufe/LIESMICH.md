@@ -717,7 +717,7 @@ ist der Rechenweg des Erdreichs (a), dazu die zwei neuen Projekte.
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -891,6 +891,32 @@ Zellen und Programmwege stehen im Bauplan
 `Konditionierungsprojekt1051`); das Skript zieht ihn über `#:include`, `EPOS.Kern.Tests` verlinkt ihn für die Wache. Das
 Skript läuft unter de-DE und ist wiederholbar (Rückgabe 0 ohne Änderung). **Reihenfolge nach einer Neufassung der
 Testdatenbank: zuerst 1051, dann 1052** (eine Kopie für 1051 fiele bei stehendem 1052 auf 1053).
+
+### Das Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“ (ohne Referenzrolle)
+
+Projekt **1053 „Test BHKW mit PV ohne Kaskade“** rechnet ein BHKW mit Photovoltaik ohne Speicherflotte, ohne
+Stromspeicher und ohne Einspeisegrenze — den Fall, in dem die BHKW-Einspeisung des Zeitreihensatzes (mit PV aus der
+Viertelstundenbilanz `SimulationPV.BhkwUeberschuss`) und die des BHKW-Reiters (Stundenformel
+`SimulationControl.BhkwEinspeisungDesLaufs`) nebeneinander stehen. Kopie von 1018 auf dem Kopierweg des Programms,
+Wärmebedarf, Gebäude und Klima wie 1018; in der Kaskade nur das BHKW (`Tool_1` „BHKW“, `Tool_2` bis `Tool_4` leer —
+der Kesselanteil der Wärme bleibt ungedeckt), `Tool_5` „Photovoltaik“, `Tool_6` leer; dazu die Projektkopie desselben
+Katalogmoduls wie 1048 mit 60 Modulen = 15,60 kWp (Neigung 30°, Azimut 0°) und der Katalogstromverbraucher
+„Hotel_1“ mit 50 MWh/a. Die PV-Spitze (15,65 kWh je Stunde) liegt über der sommerlichen Tageslast des Hotels (Juni
+bis August, 8 bis 18 Uhr: Mittel 7,35 kW, höchstens 9,60 kW); der Lauf hat 2 290 Stunden mit PV-Überschuss,
+1 868 mit BHKW-Überschuss und 740 mit beidem.
+
+**1053 ist kein Referenzprojekt:** Es steht in keiner Basis und in keiner Projektliste der CI, für seine Zeilen gilt
+keine Einfrierregel, und eine Änderung an 1053 bewegt keine Basis. `EPOS.Kern.Tests/BhkwPvPruefprojektTests` hält
+die Form (BHKW allein in der Kaskade, PV, kein Speicher, keine Flotte) und dass der Lauf BHKW-Überschuss und
+BHKW-Einspeisung erzeugt — ohne eine der beiden Reihen als die gültige festzuschreiben.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/pruefprojekt_1053_bhkw_pv.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
+```
+
+Das Skript ist wiederholbar (Rückgabe 0 ohne Änderung, Rückgabe 2 bei Abweichung ohne Änderung der Datei), prüft
+Zielzellen, die Unversehrtheit von 1018, `integrity_check` und `foreign_key_check` in einer Arbeitsdatei und ersetzt
+erst dann die Datenbank. Nach einer Neufassung der Testdatenbank wird es **nach 1052** gezogen.
 
 **Die achtzehn Projekte der Basis R34:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
 1046, 1047, 1049, 1050, 1051 und 1052. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1052 und 1050
