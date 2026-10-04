@@ -353,13 +353,17 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Vorschau_IFC_traegt_den_Beipackzettel_und_keine_Geometriemeldung()
+        public void Vorschau_IFC_traegt_den_Beipackzettel_und_die_Geometriemeldung_wie_gbXML()
         {
             GebaeudeExportPlan plan = Plan(Zweizonig(), IfcExportProbe.Profil());
             foreach (string s in new[] { GebaeudeExportAblauf.BEIPACK_RAUMGRENZEN, GebaeudeExportAblauf.BEIPACK_OHNE_MVD,
                                          GebaeudeExportAblauf.BEIPACK_IDS, IfcSchreiber.OHNE_ERGEBNIS })
                 Assert.Contains(plan.Meldungen, m => m.Schluessel == s && m.Stufe == PruefStufe.Info);
-            foreach (string s in GBXML_VORSCHAU) Assert.DoesNotContain(plan.Meldungen, m => m.Schluessel == s);
+            // Stufe G7e: IFC schreibt die Körper nach derselben Regel wie gbXML Stufe 2 — dieselbe Geometriemeldung genau einmal.
+            GebaeudeExportPlan gbxml = Plan(Zweizonig(), GbxmlExportProbe.Profil());
+            Assert.Equal(gbxml.Meldungen.Where(m => GBXML_VORSCHAU.Contains(m.Schluessel)).Select(m => m.Schluessel + "|" + string.Join("|", m.Werte)),
+                         plan.Meldungen.Where(m => GBXML_VORSCHAU.Contains(m.Schluessel)).Select(m => m.Schluessel + "|" + string.Join("|", m.Werte)));
+            Assert.Single(plan.Meldungen, m => GBXML_VORSCHAU.Contains(m.Schluessel));
 
             // Mit Ergebnis entfällt „ohne Ergebnis" schon in der Vorschau.
             GebaeudeExportPlan mit = Plan(Zweizonig().MitErgebnis(Ergebnis(), LAUF, WETTER), IfcExportProbe.Profil());

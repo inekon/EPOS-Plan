@@ -38169,7 +38169,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Umfang</value>
   </data>
   <data name="GEXP_STUFE_DATEN" xml:space="preserve">
-    <value>Daten ohne Geometrie</value>
+    <value>Zonen, Bauteilflächen und Schichtaufbauten mit Ergebnissen; schematische Körper, soweit das Modell Umrisse kennt</value>
   </data>
   <data name="GEXP_LBL_PLZ" xml:space="preserve">
     <value>Postleitzahl (freiwillig)</value>
@@ -44450,6 +44450,24 @@ Chart</value>
   <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
     <value>IFC-Export aus EPOS-Plan, Stufe S1: semantisch, ohne Geometrie.</value>
   </data>
+  <data name="GEXP_IFC_DATEI_STUFE_S3" xml:space="preserve">
+    <value>IFC-Export aus EPOS-Plan, Stufe S3: schematische Körper – Ersatzmodell, kein Architekturmodell.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_ABGELEHNT" xml:space="preserve">
+    <value>Ohne Körper: Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen.</value>
+  </data>
+  <data name="GEXP_IFC_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>Ohne Körper: Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen ({0}).</value>
+  </data>
+  <data name="GEXP_IFC_PROJEKT_SCHEMATISCH" xml:space="preserve">
+    <value>{0} (schematisch)</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_SCHEMATISCH" xml:space="preserve">
+    <value>Schematischer Körper aus dem EPOS-Gebäudemodell – kein Aufmaß.</value>
+  </data>
+  <data name="GEXP_IFC_KENNZEICHNUNG_SCHEMATISCH" xml:space="preserve">
+    <value>Ersatzmodell: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Körper sind schematisch erzeugt und bilden den tatsächlichen Grundriss nicht ab. Maße nicht abgreifen.</value>
+  </data>
   <data name="GEXP_PROT_IFC_OHNE_ERGEBNIS" xml:space="preserve">
     <value>Die Datei trägt keine Rechenergebnisse: EPOS_Ergebnis und die Angaben Rechenzeitpunkt und Wetterdatensatz entfallen.</value>
   </data>
@@ -44556,10 +44574,10 @@ Chart</value>
     <value>Kältebedarf sensibel, ohne Entfeuchtung</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_RAUMGRENZEN" xml:space="preserve">
-    <value>Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen, nicht in einer Geometrie.</value>
+    <value>Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen. Schematische Körper, soweit vorhanden, sind kein Aufmaß und ändern daran nichts.</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_OHNE_MVD" xml:space="preserve">
-    <value>Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export ohne Geometrie.</value>
+    <value>Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export – auch die schematischen Körper, soweit vorhanden, erfüllen keine Reference View.</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_IDS" xml:space="preserve">
     <value>Was die IFC-Datei zusagt, beschreibt die IDS-Datei {0} im Ordner Vorlage der Installation; ein IDS-fähiges Prüfwerkzeug hält sie gegen die Datei.</value>

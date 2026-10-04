@@ -38162,7 +38162,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Scope</value>
   </data>
   <data name="GEXP_STUFE_DATEN" xml:space="preserve">
-    <value>Data without geometry</value>
+    <value>Zones, component surfaces and layer constructions with results; schematic solids where the model knows outlines</value>
   </data>
   <data name="GEXP_LBL_PLZ" xml:space="preserve">
     <value>Postal code (optional)</value>
@@ -44443,6 +44443,24 @@ chart</value>
   <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
     <value>IFC export from EPOS-Plan, stage S1: semantic, without geometry.</value>
   </data>
+  <data name="GEXP_IFC_DATEI_STUFE_S3" xml:space="preserve">
+    <value>IFC export from EPOS-Plan, stage S3: schematic solids – substitute model, not an architectural model.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_ABGELEHNT" xml:space="preserve">
+    <value>Without solids: the zones sharing a partition cannot be placed next to each other without contradiction.</value>
+  </data>
+  <data name="GEXP_IFC_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>Without solids: the zones sharing a partition cannot be placed next to each other without contradiction ({0}).</value>
+  </data>
+  <data name="GEXP_IFC_PROJEKT_SCHEMATISCH" xml:space="preserve">
+    <value>{0} (schematic)</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_SCHEMATISCH" xml:space="preserve">
+    <value>Schematic solid from the EPOS building model – not for measurement.</value>
+  </data>
+  <data name="GEXP_IFC_KENNZEICHNUNG_SCHEMATISCH" xml:space="preserve">
+    <value>Substitute model: surfaces, orientations and constructions are those of the EPOS building model; the solids are generated schematically and do not represent the actual floor plan. Do not take measurements.</value>
+  </data>
   <data name="GEXP_PROT_IFC_OHNE_ERGEBNIS" xml:space="preserve">
     <value>The file carries no calculation results: EPOS_Ergebnis and the entries calculation time and weather data set are omitted.</value>
   </data>
@@ -44549,10 +44567,10 @@ chart</value>
     <value>Cooling demand sensible only, without dehumidification</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_RAUMGRENZEN" xml:space="preserve">
-    <value>The space boundaries of the IFC file are logical: each second-level space boundary names space and element without connection geometry; areas are given as quantities, not as geometry.</value>
+    <value>The space boundaries of the IFC file are logical: each second-level space boundary names space and element without connection geometry; areas are given as quantities. Schematic solids, where present, are not for measurement and do not change this.</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_OHNE_MVD" xml:space="preserve">
-    <value>The IFC file names no model view definition (no MVD): no published MVD fits a semantic export without geometry.</value>
+    <value>The IFC file names no model view definition (no MVD): no published MVD fits a semantic export – the schematic solids, where present, do not satisfy a Reference View either.</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_IDS" xml:space="preserve">
     <value>What the IFC file guarantees is described by the IDS file {0} in the Vorlage folder of the installation; any IDS-capable checker can hold it against the file.</value>

@@ -99,7 +99,7 @@ public class GebaeudeExportDialogTests : EposBunitContext
         Assert.Equal(new[] { "" }, s.Vorbereitet);
         string kopf = cut.Find(".epos-gebexport-kopf").TextContent;
         Assert.Contains("gbXML (Schemafassung 6.01)", kopf);
-        Assert.Contains("Daten ohne Geometrie", kopf);
+        Assert.Contains(R.GEXP_STUFE_DATEN, kopf);
         Assert.Contains("Postleitzahl (freiwillig)", cut.Markup);
         Assert.Single(cut.FindAll("input.epos-eingabe"));
 
@@ -329,7 +329,7 @@ public class GebaeudeExportDialogTests : EposBunitContext
         Assert.Equal(new[] { "GBXML", "IFC" }, s.Formatfolge);
         Assert.Equal("IFC", cut.Instance.Formatwert);
         Assert.False(cut.Instance.Bestaetigt);
-        Assert.Contains("Daten ohne Geometrie", cut.Find(".epos-gebexport-kopf").TextContent);
+        Assert.Contains(R.GEXP_STUFE_DATEN, cut.Find(".epos-gebexport-kopf").TextContent);
         Assert.NotNull(cut.Find(".epos-gebexport-zusageknopf"));
 
         Bestaetigen(cut);
