@@ -305,12 +305,12 @@ namespace EPOS.Kern.Tests
         // =================================================================
 
         /// <summary>
-        /// Jede der acht Anlagenarten hat ein Profil mit FUENF bis NEUN Spalten
+        /// Jede der neun Anlagenarten hat ein Profil mit FUENF bis NEUN Spalten
         /// (5.6.5), lauter verschiedenen Schluesseln, und die erste Spalte ist immer
         /// eine Textspalte.
         /// </summary>
         [Fact]
-        public void Acht_Profile_mit_fuenf_bis_neun_Spalten()
+        public void Neun_Profile_mit_fuenf_bis_neun_Spalten()
         {
             int arten = 0;
             foreach (Anlagenart art in Katalogfilterprofil.AlleArten)
@@ -326,7 +326,7 @@ namespace EPOS.Kern.Tests
                 foreach (Katalogspalte s in profil.Spalten)
                     Assert.False(string.IsNullOrWhiteSpace(s.Titel));
             }
-            Assert.Equal(8, arten);
+            Assert.Equal(9, arten);
         }
 
         /// <summary>
