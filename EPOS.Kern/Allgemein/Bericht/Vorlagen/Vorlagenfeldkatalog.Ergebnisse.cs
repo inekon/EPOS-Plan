@@ -32,6 +32,23 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Stromlast des BHKW und der Kälteproduktion (Katalog v12).</summary>
         internal const int FASSUNG_STROM_KAELTE = 12;
 
+        /// <summary>
+        /// Die Kennzahlen der Kältemaschine als Anlage (Schemaschritt 183) kamen mit Katalog v12 — ihre erzeugten
+        /// Einträge (Stammzahl, Beschriftung, Einheit) stehen erst ab dieser Fassung, frühere Listen bleiben, wie sie
+        /// ausgeliefert sind.
+        /// </summary>
+        private static readonly HashSet<string> KennzahlenStromKaelte = new(StringComparer.Ordinal)
+        {
+            KennzahlenKatalog.SCHLUESSEL_KM_ERZEUGUNG, KennzahlenKatalog.SCHLUESSEL_KM_STROM,
+            KennzahlenKatalog.SCHLUESSEL_KM_HILFSSTROM, KennzahlenKatalog.SCHLUESSEL_KM_JAZ,
+            KennzahlenKatalog.SCHLUESSEL_KM_FREI, KennzahlenKatalog.SCHLUESSEL_KM_FREI_STUNDEN,
+            KennzahlenKatalog.SCHLUESSEL_KM_TAKT,
+        };
+
+        /// <summary>Die Fassung, seit der die erzeugten Einträge einer Kennzahl im Katalog stehen.</summary>
+        internal static int SeitDerKennzahl(string schluessel) =>
+            KennzahlenStromKaelte.Contains(schluessel) ? FASSUNG_STROM_KAELTE : 1;
+
         /// <summary>Die Einträge der Fassung 10 in Katalogfolge.</summary>
         private static IEnumerable<Vorlagenfeld> Ergebnisse()
         {

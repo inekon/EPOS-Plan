@@ -144,7 +144,7 @@ namespace WindowsFormsApplication1
             string nummer = position.ToString(CultureInfo.InvariantCulture);
             return new Vorlagenfeld(schluessel, vorbild.Art, Vorlagenfeldkontext.Gruppe, w => AnPosition(w, vorbild, position, variante))
             {
-                Seit = FASSUNG_POSITION,
+                Seit = Math.Max(FASSUNG_POSITION, vorbild.Seit),
                 Format = vorbild.Format,
                 Einheit = vorbild.Einheit,
                 Leerwert = vorbild.Leerwert,
