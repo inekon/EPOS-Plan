@@ -49,24 +49,31 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ist an diesem Paar der Widerspruch aufgetreten (eines je abgelehnter Gruppe)?</summary>
         internal bool Widerspruch { get; init; }
+
+        /// <summary>
+        /// Liegt die Trennwand bei beiden Räumen <b>nicht</b> auf gegenüberliegenden Himmelsseiten? Dann ist das Paar
+        /// nicht angelegt — gedreht wird nie, der Azimut einer Wand ist eine physikalische Eigenschaft —, beide stehen
+        /// getrennt; die Gegenstücke sind trotzdem nachgezogen.
+        /// </summary>
+        internal bool SeitenUnpassend { get; init; }
     }
 
     internal sealed partial class Zonengeometrie
     {
         /// <summary>I — {0} Zahl, {1} Beispiele: Paare schematischer Räume mit gemeinsamer Trennfläche liegen deckungsgleich aneinander.</summary>
         internal const string ANGELEGT = "ZGEO_ANGELEGT";
-        /// <summary>I — {0} Zahl, {1} Beispiele: Räume, deren Rechteck zum Aneinanderlegen um 90°-Schritte gedreht ist.</summary>
-        internal const string GEDREHT = "ZGEO_GEDREHT";
+        /// <summary>I — {0} Zahl, {1} Beispiele: Paare, deren Trennwand bei beiden Räumen nicht auf gegenüberliegenden Himmelsseiten liegt — nicht angelegt.</summary>
+        internal const string NICHT_ANGELEGT = "ZGEO_NICHT_ANGELEGT";
         /// <summary>W — {0} Zahl, {1} Beispiele: widersprüchliche Anordnung — die Gruppe ist nicht aneinandergelegt (benannte Ablehnung).</summary>
         internal const string ANORDNUNG_ABGELEHNT = "ZGEO_ANORDNUNG_ABGELEHNT";
 
         /// <summary>Toleranz [m] für Deckungsgleichheit und Überlappung beim Aneinanderlegen.</summary>
         internal const double ANLAGE_TOLERANZ_M = 1e-6;
 
-        /// <summary>Die Kante des ungedrehten Rechtecks je Sektor: 0 Nord → 2, 1 Ost → 1, 2 Süd → 0, 3 West → 3.</summary>
+        /// <summary>Die Kante des Rechtecks je Sektor: 0 Nord → 2, 1 Ost → 1, 2 Süd → 0, 3 West → 3.</summary>
         private static readonly int[] KanteJeSektor = { 2, 1, 0, 3 };
 
-        /// <summary>Der Azimut der Außennormalen je Weltrichtung einer Kante: 0 Süd, 1 Ost, 2 Nord, 3 West.</summary>
+        /// <summary>Der Azimut der Außennormalen je Kante: 0 Süd, 1 Ost, 2 Nord, 3 West.</summary>
         private static readonly double[] AzimutJeRichtung = { 180.0, 90.0, 0.0, 270.0 };
 
         // ------------------------------------------------------------------
@@ -80,7 +87,7 @@ namespace WindowsFormsApplication1
             internal Umrissseite SeiteA, SeiteB;
             internal string Bauteil = "";
             internal bool Wand;
-            internal bool Angelegt, Abgelehnt, Widerspruch;
+            internal bool Angelegt, Abgelehnt, Widerspruch, SeitenUnpassend;
 
             internal Nachbarpaar Abschluss(Dictionary<Grenzverweis, Grenzverweis> nachgezogen) => new Nachbarpaar
             {
@@ -92,6 +99,7 @@ namespace WindowsFormsApplication1
                 Angelegt = Angelegt,
                 Abgelehnt = Abgelehnt,
                 Widerspruch = Widerspruch,
+                SeitenUnpassend = SeitenUnpassend,
             };
 
             internal string Name => A.Raum.Name + " – " + B.Raum.Name;
@@ -109,8 +117,8 @@ namespace WindowsFormsApplication1
             {
                 MinX = Glieder.Min(e => e.X);
                 MinY = Glieder.Min(e => e.Y);
-                MaxX = Glieder.Max(e => e.X + Weltbreite(e));
-                MaxY = Glieder.Max(e => e.Y + Welttiefe(e));
+                MaxX = Glieder.Max(e => e.X + e.L);
+                MaxY = Glieder.Max(e => e.Y + e.B);
             }
         }
 
@@ -178,7 +186,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Kante jeder Wand am schematischen Rechteck: die ihres Sektors. Eine Trennwand ohne Sektor bekommt
         /// die Gegenkante ihrer Gegenseite; fehlt beiden der Sektor, steht sie in Raum A an der Ost-, in Raum B an
-        /// der Westkante.
+        /// der Westkante. Liegt die Trennwand danach bei beiden nicht auf gegenüberliegenden Kanten, ist das Paar
+        /// <see cref="Paarentwurf.SeitenUnpassend"/> und wird nicht angelegt — gedreht wird nie.
         /// </summary>
         private static void Kantenzuordnung(List<Umrissentwurf> entwurf, List<Paarentwurf> paare)
         {
@@ -201,6 +210,9 @@ namespace WindowsFormsApplication1
                 else if (!a) p.A.Kante[p.SeiteA] = (kb + 2) % 4;
                 else p.B.Kante[p.SeiteB] = (ka + 2) % 4;
             }
+            foreach (Paarentwurf p in paare.Where(p => p.Wand))
+                if (p.A.Kante.TryGetValue(p.SeiteA, out int ka) && p.B.Kante.TryGetValue(p.SeiteB, out int kb) && kb != (ka + 2) % 4)
+                    p.SeitenUnpassend = true;
         }
 
         // ------------------------------------------------------------------
@@ -209,13 +221,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Legt die Rechtecke eines Geschosses mit gemeinsamer Trennwand aneinander</b> und liefert die Blöcke
-        /// in der Reihenfolge des ersten Glieds in <paramref name="ersatz"/>. Je Gruppe (Zusammenhang über die
-        /// Paare) steht der Raum mit der kleinsten Kennung ungedreht im Ursprung; die übrigen folgen in
-        /// Breitensuche, je Raum die Paare nach Partnerkennung und Bauteil geordnet:
+        /// in der Reihenfolge des ersten Glieds in <paramref name="ersatz"/>. Angelegt werden nur Paare, deren
+        /// Trennwand bei beiden Räumen auf gegenüberliegenden Kanten liegt; gedreht wird nie (der Azimut einer Wand
+        /// ist eine physikalische Eigenschaft, die Anordnung nur schematisch). Je Gruppe (Zusammenhang über die
+        /// Paare) steht der Raum mit der kleinsten Kennung im Ursprung; die übrigen folgen in Breitensuche, je Raum
+        /// die Paare nach Partnerkennung und Bauteil geordnet:
         /// <list type="number">
-        /// <item>der Partner wird in 90°-Schritten gedreht, bis seine Kante der Trennwand der Kante des gelegten
-        /// Raums gegenübersteht;</item>
-        /// <item>er wird flächentreu gestreckt, bis die Strecke der Trennwand auf seiner Kante so lang ist wie
+        /// <item>der Partner wird flächentreu gestreckt, bis die Strecke der Trennwand auf seiner Kante so lang ist wie
         /// auf der Kante des gelegten Raums;</item>
         /// <item>er wird so verschoben, dass beide Strecken deckungsgleich liegen.</item>
         /// </list>
@@ -226,7 +238,7 @@ namespace WindowsFormsApplication1
         private static List<Rechteckblock> Anlegen(List<Umrissentwurf> ersatz, List<Paarentwurf> paare)
         {
             var hier = new HashSet<Umrissentwurf>(ersatz);
-            List<Paarentwurf> eigene = paare.Where(p => p.Wand && hier.Contains(p.A) && hier.Contains(p.B)
+            List<Paarentwurf> eigene = paare.Where(p => p.Wand && !p.SeitenUnpassend && hier.Contains(p.A) && hier.Contains(p.B)
                                                         && p.A.Kante.ContainsKey(p.SeiteA) && p.B.Kante.ContainsKey(p.SeiteB)).ToList();
             var blockVon = new Dictionary<Umrissentwurf, Rechteckblock>();
             foreach (Umrissentwurf start in ersatz)
@@ -251,7 +263,6 @@ namespace WindowsFormsApplication1
                 {
                     e.X = 0.0;
                     e.Y = 0.0;
-                    e.Drehung = 0;
                 }
                 if (gruppe.Count > 0 && Auslegen(folge, gruppe))
                 {
@@ -276,7 +287,6 @@ namespace WindowsFormsApplication1
                         e.B = b;
                         e.X = 0.0;
                         e.Y = 0.0;
-                        e.Drehung = 0;
                     }
                 }
                 foreach (Umrissentwurf e in folge)
@@ -332,12 +342,15 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        /// <summary>Dreht, streckt und verschiebt <paramref name="b"/> so, dass seine Seite <paramref name="sb"/> auf der Seite <paramref name="sa"/> des gelegten <paramref name="a"/> liegt.</summary>
+        /// <summary>
+        /// Streckt und verschiebt <paramref name="b"/> so, dass seine Seite <paramref name="sb"/> auf der Seite
+        /// <paramref name="sa"/> des gelegten <paramref name="a"/> liegt; beide Kanten liegen einander gegenüber
+        /// (<see cref="Kantenzuordnung"/>).
+        /// </summary>
         private static bool Legen(Umrissentwurf a, Umrissseite sa, Umrissentwurf b, Umrissseite sb)
         {
             int ka = a.Kante[sa], kb = b.Kante[sb];
-            int richtungA = (ka + a.Drehung) % 4;
-            b.Drehung = ((richtungA + 2 - kb) % 4 + 4) % 4;
+            if (kb != (ka + 2) % 4) return false;
 
             (double vonA, double bisA) = Strecke(a, sa);
             (double anteilVon, double anteilBis) = Anteil(b, sb);
@@ -358,7 +371,7 @@ namespace WindowsFormsApplication1
             (double[] startA, double[] richtung) = Kante(a, ka);
             double versatz = bisA + laenge * anteilVon;
             double px = startA[0] + richtung[0] * versatz, py = startA[1] + richtung[1] * versatz;
-            double[] ecke = Eckversatz(b, (kb + b.Drehung) % 4);
+            double[] ecke = Eckversatz(b, kb);
             b.X = px - ecke[0];
             b.Y = py - ecke[1];
             return true;
@@ -373,21 +386,17 @@ namespace WindowsFormsApplication1
         }
 
         private static bool Ueberlappt(Umrissentwurf x, Umrissentwurf y)
-            => Math.Min(x.X + Weltbreite(x), y.X + Weltbreite(y)) - Math.Max(x.X, y.X) > ANLAGE_TOLERANZ_M
-            && Math.Min(x.Y + Welttiefe(x), y.Y + Welttiefe(y)) - Math.Max(x.Y, y.Y) > ANLAGE_TOLERANZ_M;
+            => Math.Min(x.X + x.L, y.X + y.L) - Math.Max(x.X, y.X) > ANLAGE_TOLERANZ_M
+            && Math.Min(x.Y + x.B, y.Y + y.B) - Math.Max(x.Y, y.Y) > ANLAGE_TOLERANZ_M;
 
         // ------------------------------------------------------------------
-        //  Das gedrehte Rechteck
+        //  Das Rechteck
         // ------------------------------------------------------------------
 
-        private static double Weltbreite(Umrissentwurf e) => e.Drehung % 2 == 0 ? e.L : e.B;
-
-        private static double Welttiefe(Umrissentwurf e) => e.Drehung % 2 == 0 ? e.B : e.L;
-
-        /// <summary>Der Versatz der Weltecke c vom Ursprung des Rechtecks: 0 Südwest, 1 Südost, 2 Nordost, 3 Nordwest.</summary>
+        /// <summary>Der Versatz der Ecke c vom Ursprung des Rechtecks: 0 Südwest, 1 Südost, 2 Nordost, 3 Nordwest.</summary>
         private static double[] Eckversatz(Umrissentwurf e, int c)
         {
-            double w = Weltbreite(e), h = Welttiefe(e);
+            double w = e.L, h = e.B;
             switch (c)
             {
                 case 1: return new[] { w, 0.0 };
@@ -403,10 +412,10 @@ namespace WindowsFormsApplication1
             return new[] { e.X + v[0], e.Y + v[1] };
         }
 
-        /// <summary>Startpunkt und Einheitsrichtung der Kante k (Kante des ungedrehten Rechtecks) in Weltkoordinaten.</summary>
+        /// <summary>Startpunkt und Einheitsrichtung der Kante k in Weltkoordinaten.</summary>
         private static (double[] Start, double[] Richtung) Kante(Umrissentwurf e, int k)
         {
-            double[] a = Ecke(e, (k + e.Drehung) % 4), b = Ecke(e, (k + e.Drehung + 1) % 4);
+            double[] a = Ecke(e, k), b = Ecke(e, (k + 1) % 4);
             double dx = b[0] - a[0], dy = b[1] - a[1], l = Math.Sqrt(dx * dx + dy * dy);
             return (a, new[] { dx / l, dy / l });
         }
@@ -472,13 +481,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Polygon des Rechtecks an seiner Lage: die Punkte gegen den Uhrzeigersinn ab der Ecke, an der Kante 0
-        /// beginnt; Kante i ist die Kante i des ungedrehten Rechtecks (0 Süd, 1 Ost, 2 Nord, 3 West vor der
-        /// Drehung) mit Länge, Azimut ihrer Weltrichtung, Wänden und Strecken.
+        /// beginnt; Kante i (0 Süd, 1 Ost, 2 Nord, 3 West) mit Länge, Azimut ihrer Richtung, Wänden und Strecken —
+        /// die Richtung der Kante und der Azimut ihrer Wände stimmen immer überein.
         /// </summary>
         private static void Rechteckpolygon(Umrissentwurf e)
         {
             var punkte = new List<double[]>(4);
-            for (int i = 0; i < 4; i++) punkte.Add(Ecke(e, (i + e.Drehung) % 4));
+            for (int i = 0; i < 4; i++) punkte.Add(Ecke(e, i));
             var jeKante = new List<Grenzverweis>[] { new List<Grenzverweis>(), new List<Grenzverweis>(), new List<Grenzverweis>(), new List<Grenzverweis>() };
             var ohne = new List<Grenzverweis>();
             foreach (Umrissseite s in e.Raum.Seiten)
@@ -491,7 +500,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < 4; i++)
             {
                 double laenge = Kantenlaenge(e, i);
-                kanten.Add(new Umrisskante(i, laenge, AzimutJeRichtung[(i + e.Drehung) % 4], jeKante[i])
+                kanten.Add(new Umrisskante(i, laenge, AzimutJeRichtung[i], jeKante[i])
                 {
                     Abschnitte = Abschnitte(e, i, laenge).Select(x => new Kantenabschnitt(x.Seite.Verweis, x.Von, x.Bis)).ToList(),
                 });
@@ -568,12 +577,10 @@ namespace WindowsFormsApplication1
                 string beispiele = namen.Count <= 5 ? string.Join(", ", namen) : string.Join(", ", namen.Take(5)) + ", …";
                 return new PruefMeldung(stufe, schluessel, namen.Count.ToString(CultureInfo.InvariantCulture), beispiele);
             }
-            var gedreht = paare.Where(p => p.Angelegt).SelectMany(p => new[] { p.A, p.B }).Distinct()
-                               .Where(e => e.Drehung != 0).Select(e => e.Raum.Name).OrderBy(n => n, StringComparer.Ordinal).ToList();
             return new[]
             {
                 Sammel(ANGELEGT, PruefStufe.Info, paare.Where(p => p.Angelegt).Select(p => p.Name).ToList()),
-                Sammel(GEDREHT, PruefStufe.Info, gedreht),
+                Sammel(NICHT_ANGELEGT, PruefStufe.Info, paare.Where(p => p.SeitenUnpassend).Select(p => p.Name).ToList()),
                 Sammel(ANORDNUNG_ABGELEHNT, PruefStufe.Warnung, paare.Where(p => p.Widerspruch).Select(p => p.Name).ToList()),
             }.Where(m => m != null);
         }

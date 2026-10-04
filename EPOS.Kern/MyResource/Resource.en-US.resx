@@ -44277,8 +44277,8 @@ chart</value>
   <data name="ZGEO_ANGELEGT" xml:space="preserve">
     <value>{0} pairs of rooms sharing a partition wall are placed side by side — the partition congruent, the rectangle adjusted with its area kept: {1}</value>
   </data>
-  <data name="ZGEO_GEDREHT" xml:space="preserve">
-    <value>{0} rooms are rotated in 90° steps to be placed side by side — their walls do not face their compass direction in the drawing: {1}</value>
+  <data name="ZGEO_NICHT_ANGELEGT" xml:space="preserve">
+    <value>{0} pairs of rooms are not placed side by side: their partition wall does not lie on opposite compass sides in both rooms; both stand apart: {1}</value>
   </data>
   <data name="ZGEO_ANORDNUNG_ABGELEHNT" xml:space="preserve">
     <value>{0} pairs of rooms cannot be placed side by side without contradiction; their group is lined up as if without neighbours, and the gbXML export writes no room geometry: {1}</value>

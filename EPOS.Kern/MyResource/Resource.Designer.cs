@@ -115101,11 +115101,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume sind zum Aneinanderlegen in 90°-Schritten gedreht — ihre Wände zeigen im Bild nicht in ihre Himmelsrichtung: {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Paare von Räumen liegen nicht aneinander: die Trennwand liegt bei beiden nicht auf gegenüberliegenden Himmelsseiten; beide stehen getrennt: {1} ähnelt.
         /// </summary>
-        public static string ZGEO_GEDREHT {
+        public static string ZGEO_NICHT_ANGELEGT {
             get {
-                return ResourceManager.GetString("ZGEO_GEDREHT", resourceCulture);
+                return ResourceManager.GetString("ZGEO_NICHT_ANGELEGT", resourceCulture);
             }
         }
         

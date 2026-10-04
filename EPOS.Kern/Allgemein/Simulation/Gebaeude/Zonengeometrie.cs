@@ -302,9 +302,6 @@ namespace WindowsFormsApplication1
         /// <summary>Wände ohne Kante (kein Ring, kein Sektor, keine passende Kante) und Grenzen unbestimmter Stellung — benannt statt verloren.</summary>
         internal IReadOnlyList<Grenzverweis> OhneKante { get; init; } = Array.Empty<Grenzverweis>();
 
-        /// <summary>Die Drehung des schematischen Rechtecks [°] (0, 90, 180, 270) — ungleich 0 nur, wenn das Aneinanderlegen sie verlangt (Stufe G7b).</summary>
-        internal int DrehungGrad { get; init; }
-
         /// <summary>Liegt das schematische Rechteck an einem Nachbarraum mit gemeinsamer Trennfläche an (Stufe G7b)?</summary>
         internal bool Angelegt { get; init; }
 
@@ -442,9 +439,10 @@ namespace WindowsFormsApplication1
     /// <see cref="Geometrieherkunft.Schematisch"/>, Pflicht an Bild und Datei.</item>
     /// <item><b>Aneinanderlegen</b> (Stufe G7b, Datenaustauschkonzept 5.5 Punkt 3): Räume mit gemeinsamer
     /// Trennwand (<see cref="Nachbarpaare"/>) stehen als Block, die Strecken der Trennwand deckungsgleich —
-    /// gedreht in 90°-Schritten und flächentreu gestreckt, keine Polygonvereinigung; eine widersprüchliche
-    /// Anordnung ist benannt abgelehnt (<see cref="AnordnungAbgelehnt"/>). Die Gegenstücke der Paare sind
-    /// nachgezogen.</item>
+    /// flächentreu gestreckt, nie gedreht, keine Polygonvereinigung; ein Paar, dessen Trennwand bei beiden
+    /// Räumen nicht auf gegenüberliegenden Himmelsseiten liegt, bleibt getrennt (Hinweis
+    /// <see cref="NICHT_ANGELEGT"/>); eine widersprüchliche Anordnung ist benannt abgelehnt
+    /// (<see cref="AnordnungAbgelehnt"/>). Die Gegenstücke der Paare sind nachgezogen.</item>
     /// <item><b>Determinismus:</b> dieselbe Eingabe ergibt dieselben Polygone in derselben Reihenfolge — nur
     /// Listen in fester Folge, Sortierung über Höhenlage und Ordinalvergleich.</item>
     /// </list>
@@ -686,7 +684,6 @@ namespace WindowsFormsApplication1
                     Boden = e.Boden,
                     Decke = e.Decke,
                     OhneKante = e.OhneKante,
-                    DrehungGrad = e.Drehung * 90,
                     Angelegt = e.Angelegt,
                     BodenStreifen = e.BodenStreifen,
                     DeckenStreifen = e.DeckenStreifen,
@@ -776,9 +773,8 @@ namespace WindowsFormsApplication1
             internal List<Grenzverweis> OhneKante = new List<Grenzverweis>();
             internal double L, B;
 
-            // Stufe G7b — Lage, Drehung und Kanten des schematischen Rechtecks.
+            // Stufe G7b — Lage und Kanten des schematischen Rechtecks (nie gedreht).
             internal double X, Y;
-            internal int Drehung;
             internal bool Angelegt;
             internal List<Kantenabschnitt> BodenStreifen = new List<Kantenabschnitt>();
             internal List<Kantenabschnitt> DeckenStreifen = new List<Kantenabschnitt>();
@@ -981,7 +977,7 @@ namespace WindowsFormsApplication1
         /// nach rechts und unten, oben bündig, Abstand <see cref="ABSTAND_M"/>: Die Zeilenbreite ist die Breite
         /// eines Blocks im Verhältnis <see cref="BLOCK_SEITENVERHAELTNIS"/> aus der Fläche aller Blöcke samt
         /// Abständen, mindestens der breiteste Block. Ein Block ist ein Rechteck oder eine Gruppe
-        /// aneinandergelegter Rechtecke (Stufe G7b). Nord oben: die Kanten eines ungedrehten Rechtecks laufen
+        /// aneinandergelegter Rechtecke (Stufe G7b). Nord oben: die Kanten eines Rechtecks laufen
         /// Süd, Ost, Nord, West, und jede trägt die Wände ihres Sektors.
         /// </summary>
         private static void Reihen(List<Rechteckblock> bloecke, double x0, double oben)

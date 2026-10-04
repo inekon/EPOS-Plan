@@ -13,9 +13,9 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Stufe G7b — Aneinanderlegen im Zonengeometrie-Modell</b> (Datenaustauschkonzept 5.5 Punkt 3, 14.1;
-    /// Mehrzonenkonzept M13): Zonen mit gemeinsamer Trennwand liegen deckungsgleich aneinander, gedreht in
-    /// 90°-Schritten, wo nötig; die Gegenstücke sind wechselseitig nachgezogen; eine widersprüchliche Anordnung
-    /// ist benannt abgelehnt; Probe 25 (Determinismus der Geometrie) am Modell. Ohne Datenbank.
+    /// Mehrzonenkonzept M13): Zonen mit gemeinsamer Trennwand liegen deckungsgleich aneinander, nie gedreht — liegt
+    /// die Trennwand bei beiden nicht auf gegenüberliegenden Himmelsseiten, bleibt das Paar getrennt und benannt;
+    /// die Gegenstücke sind wechselseitig nachgezogen; eine widersprüchliche Anordnung ist benannt abgelehnt; Probe 25 (Determinismus der Geometrie) am Modell. Ohne Datenbank.
     /// </summary>
     public sealed class ZonengeometrieAnlegenTests
     {
@@ -105,8 +105,6 @@ namespace EPOS.Kern.Tests
             Zonengeometrie z = Zonengeometrie.AusFlaechen(Zwei());
             Raumumriss a = z.Raum("A"), b = z.Raum("B");
             Assert.True(a.Angelegt && b.Angelegt);
-            Assert.Equal(0, a.DrehungGrad);
-            Assert.Equal(0, b.DrehungGrad);
             Assert.False(Ueberlappt(a, b));
 
             // Die Trennwand: dieselbe Strecke von beiden Seiten, gegenläufig, an der Ostkante von A.
@@ -142,23 +140,68 @@ namespace EPOS.Kern.Tests
         private static double Abstand(double[] a, double[] b) => Math.Sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]));
 
         [Fact]
-        public void Steht_die_Trennwand_auf_keiner_Gegenkante_wird_der_Partner_in_90_Grad_Schritten_gedreht()
+        public void Liegt_die_Trennwand_bei_beiden_nicht_gegenueber_wird_nicht_gedreht_und_das_Paar_nicht_angelegt()
         {
-            // T in B nach Norden statt Westen: B wird um 90° gedreht, die Strecken liegen trotzdem deckungsgleich.
+            // T in A nach Osten, in B nach Norden: kein Drehen — beide stehen getrennt, benannt, die Gegenstücke sind gesetzt.
             Zonengeometrie z = Zonengeometrie.AusFlaechen(Zwei(sektorB: 0));
             Raumumriss a = z.Raum("A"), b = z.Raum("B");
-            Assert.Equal(0, a.DrehungGrad);
-            Assert.Equal(90, b.DrehungGrad);
-            (double[] a0, double[] a1) = Strecke(a, "T-A");
-            (double[] b0, double[] b1) = Strecke(b, "T-B");
-            Gleich(a0, b1);
-            Gleich(a1, b0);
+            Assert.False(a.Angelegt || b.Angelegt);
             Assert.False(Ueberlappt(a, b));
-            // Die Kante der Trennwand zeigt nach Westen (Azimut 270°), die Fläche bleibt.
-            Umrisskante kante = b.Polygone[0].Kanten.Single(k => k.Grenzen.Any(v => v.BauteilKennung == "T"));
-            Assert.Equal(270.0, kante.AzimutGrad.Value, Genau);
+            Nachbarpaar paar = Assert.Single(z.Nachbarpaare);
+            Assert.True(paar.SeitenUnpassend);
+            Assert.False(paar.Angelegt || paar.Abgelehnt || paar.Widerspruch);
+            Assert.False(z.AnordnungAbgelehnt);
+            Assert.Equal("T-B", paar.VerweisA.GegenstueckKennung);
+            Assert.Equal("T-A", paar.VerweisB.GegenstueckKennung);
+            Assert.Equal("T-B", Assert.Single(a.Polygone[0].Kanten[1].Grenzen).GegenstueckKennung);
+            Assert.Equal("T-A", Assert.Single(b.Polygone[0].Kanten[2].Grenzen, v => v.BauteilKennung == "T").GegenstueckKennung);
+            // Jede Kante zeigt in die Himmelsrichtung ihrer Wände: die Trennwand von B nach Norden, die Flächen bleiben.
+            Assert.Equal(0.0, b.Polygone[0].Kanten.Single(k => k.Grenzen.Any(v => v.BauteilKennung == "T")).AzimutGrad.Value, Genau);
+            Assert.Equal(90.0, a.Polygone[0].Kanten.Single(k => k.Grenzen.Any(v => v.BauteilKennung == "T")).AzimutGrad.Value, Genau);
+            Assert.Equal(50.0, a.PolygonflaecheM2, 1e-9);
             Assert.Equal(30.0, b.PolygonflaecheM2, 1e-9);
-            Assert.Contains(z.Meldungen, m => m.Schluessel == Zonengeometrie.GEDREHT && m.Werte[1] == "Raum B");
+            PruefMeldung m = Assert.Single(z.Meldungen, x => x.Schluessel == Zonengeometrie.NICHT_ANGELEGT);
+            Assert.Equal(("1", "Raum A – Raum B"), (m.Werte[0], m.Werte[1]));
+            Assert.DoesNotContain(z.Meldungen, x => x.Schluessel == Zonengeometrie.ANGELEGT);
+        }
+
+        /// <summary>
+        /// Bei jedem angelegten Paar zeigt die Normale jeder Wandfläche des Körpers in den Azimut ihrer Kante (1°) — die
+        /// Anordnung dreht nie, die Wand behält ihre Himmelsrichtung.
+        /// </summary>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Bei_angelegten_Paaren_passen_Azimut_und_Richtung_der_Wandflaeche_zusammen(bool umgekehrt)
+        {
+            Zonengeometrie z = Zonengeometrie.AusFlaechen(Zwei(umgekehrt: umgekehrt));
+            Zonenkoerper k = Zonenkoerper.Bilden(z);
+            Assert.All(z.Nachbarpaare, p => Assert.True(p.Angelegt));
+            int geprueft = 0;
+            foreach (Raumumriss r in z.Raeume)
+                foreach (Umrisskante kante in r.Polygone[0].Kanten)
+                    foreach (Kantenabschnitt x in kante.Abschnitte)
+                    {
+                        Koerperflaeche f = k.Raum(r.RaumKennung).Flaechen.Single(g => ReferenceEquals(g.Verweis, x.Verweis));
+                        Assert.Equal(0.0, Winkelabstand(kante.AzimutGrad.Value, AzimutDerNormalen(f.PunkteM)), 1.0);
+                        geprueft++;
+                    }
+            Assert.Equal(8, geprueft);
+        }
+
+        /// <summary>Der Azimut der Normalen eines Rings [°]: 0 Nord, 90 Ost, im Uhrzeigersinn.</summary>
+        internal static double AzimutDerNormalen(IReadOnlyList<double[]> ring)
+        {
+            double[] n = Newell(ring);
+            double grad = Math.Atan2(n[0], n[1]) * 180.0 / Math.PI;
+            return grad < 0.0 ? grad + 360.0 : grad;
+        }
+
+        /// <summary>Der kleinste Abstand zweier Winkel [°].</summary>
+        internal static double Winkelabstand(double a, double b)
+        {
+            double d = Math.Abs(a - b) % 360.0;
+            return Math.Min(d, 360.0 - d);
         }
 
         /// <summary>Drei Räume: A–B über T1 (A Ost), B–C über T2 (B Nord), A–C über T3 (A Nord) — C kann nicht an beiden liegen.</summary>
@@ -186,7 +229,6 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Raum " + w.RaumA, m.Werte[1]);
             // Kein stiller Rückfall auf ein Anlegen: keiner liegt an, keiner überlappt, alle in Nordrichtung.
             Assert.All(z.Raeume, r => Assert.False(r.Angelegt));
-            Assert.All(z.Raeume, r => Assert.Equal(0, r.DrehungGrad));
             for (int i = 0; i < z.Raeume.Count; i++)
                 for (int j = i + 1; j < z.Raeume.Count; j++)
                     Assert.False(Ueberlappt(z.Raeume[i], z.Raeume[j]));
