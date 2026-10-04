@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -167,6 +168,48 @@ namespace WindowsFormsApplication1
         /// <summary>Jahreskälte = Summe des Kühlkanals [MWh/a] — Katalogschlüssel der Softwarearchitektur 4.3.</summary>
         public const string SCHLUESSEL_KAELTE_JAHRESBEDARF = "kaelte.jahresbedarf";
 
+        /// <summary>Kälteerzeugung aller Kältemaschinen [MWh/a] (KU3-4, <c>Tab_ErgebnisKaeltemaschine</c>).</summary>
+        public const string SCHLUESSEL_KM_ERZEUGUNG = "kaelte.km.erzeugung";
+
+        /// <summary>Strom aller Kältemaschinen [MWh/a] — Verdichter, Hilfsstrom und Rückkühlung.</summary>
+        public const string SCHLUESSEL_KM_STROM = "kaelte.km.strom";
+
+        /// <summary>Davon Hilfsstrom [MWh/a] — Zuschlag des Kältekreises und Rückkühlung.</summary>
+        public const string SCHLUESSEL_KM_HILFSSTROM = "kaelte.km.hilfsstrom";
+
+        /// <summary>Jahresarbeitszahl der Kältemaschinen [—] = Kälte / Strom.</summary>
+        public const string SCHLUESSEL_KM_JAZ = "kaelte.km.jaz";
+
+        /// <summary>Kälte in freier Kühlung [MWh/a].</summary>
+        public const string SCHLUESSEL_KM_FREI = "kaelte.km.frei";
+
+        /// <summary>Stunden freier Kühlung [h/a] (Summe über die Maschinen).</summary>
+        public const string SCHLUESSEL_KM_FREI_STUNDEN = "kaelte.km.frei_stunden";
+
+        /// <summary>Taktstunden unter der Mindestteillast [h/a] (Summe über die Maschinen).</summary>
+        public const string SCHLUESSEL_KM_TAKT = "kaelte.km.takt";
+
+        /// <summary>Kältemaschinen des Laufs; leer = keine gerechnet.</summary>
+        private static List<ErgebnisKaeltemaschineModel> KM(VariantenDaten v)
+        {
+            List<ErgebnisKaeltemaschineModel> l = v?.Ergebnis?.Kaeltemaschinen;
+            return l != null && l.Count > 0 ? l : null;
+        }
+
+        /// <summary>Summe einer Größe über die Kältemaschinen; <c>null</c> ohne Kältemaschine.</summary>
+        private static double? KmSumme(VariantenDaten v, Func<ErgebnisKaeltemaschineModel, double> wert)
+        {
+            List<ErgebnisKaeltemaschineModel> l = KM(v);
+            return l == null ? (double?)null : l.Sum(wert);
+        }
+
+        /// <summary>Jahresarbeitszahl der Kältemaschinen [—]; <c>null</c> ohne Strom.</summary>
+        public static double? JahresarbeitszahlKaeltemaschine(VariantenDaten v)
+        {
+            double? kaelte = KmSumme(v, k => k.Kaelteproduktion_MWh), strom = KmSumme(v, k => k.Stromverbrauch_MWh);
+            return kaelte.HasValue && strom.HasValue && strom.Value > 0 ? kaelte.Value / strom.Value : (double?)null;
+        }
+
         /// <summary>Kältespitze [kW] (<c>Kaeltelast_Max</c>).</summary>
         public const string SCHLUESSEL_KAELTE_SPITZE = "kaelte.spitze";
 
@@ -216,7 +259,7 @@ namespace WindowsFormsApplication1
         /// <summary>Nur mit gerechneter Kälteerzeugung (<c>Kaelteproduktion_WP</c> gesetzt) — sonst keine Kältezahl der Gruppe <see cref="GR_KAELTE"/>.</summary>
         private static bool MitKaelteerzeugung(VariantenDaten v)
         {
-            return WP(v)?.Kaelteproduktion_WP != null;
+            return WP(v)?.Kaelteproduktion_WP != null || KM(v) != null;   // KU3-4: auch eine Kältemaschine
         }
 
         /// <summary>
@@ -477,6 +520,27 @@ namespace WindowsFormsApplication1
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_ERZEUGUNG, "Kälteerzeugung Wärmepumpe (sensibel)",
                 "Heat pump cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
                 v => WP(v)?.Kaelteproduktion_WP));
+            // KU3-4: die Kältemaschinen - nur mit gerechneter Kältemaschine, sonst null (Gruppe unverändert).
+            l.Add(new Kennzahl(SCHLUESSEL_KM_ERZEUGUNG, "Kälteerzeugung Kältemaschinen (sensibel)",
+                "Chiller cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                v => KmSumme(v, k => k.Kaelteproduktion_MWh)));
+            l.Add(new Kennzahl(SCHLUESSEL_KM_STROM, "Strom Kältemaschinen (sensibel)",
+                "Chiller electricity (sensible)", "MWh/a", GR_KAELTE, "N2", true,
+                v => KmSumme(v, k => k.Stromverbrauch_MWh)));
+            l.Add(new Kennzahl(SCHLUESSEL_KM_HILFSSTROM, "davon Hilfsstrom und Rückkühlung (sensibel)",
+                "of which auxiliary power and heat rejection (sensible)", "MWh/a", GR_KAELTE, "N2", true,
+                v => KmSumme(v, k => k.Hilfsstrom_MWh)));
+            l.Add(new Kennzahl(SCHLUESSEL_KM_JAZ, "Jahresarbeitszahl Kältemaschinen (sensibel)",
+                "Chiller seasonal EER (sensible)", "–", GR_KAELTE, "N2", true, JahresarbeitszahlKaeltemaschine));
+            l.Add(new Kennzahl(SCHLUESSEL_KM_FREI, "Kälte in freier Kühlung (sensibel)",
+                "Free cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                v => KmSumme(v, k => k.FreieKuehlung_MWh)));
+            l.Add(new Kennzahl(SCHLUESSEL_KM_FREI_STUNDEN, "Stunden freier Kühlung (sensibel)",
+                "Free cooling hours (sensible)", "h/a", GR_KAELTE, "N0", true,
+                v => KmSumme(v, k => k.FreieKuehlung_Stunden)));
+            l.Add(new Kennzahl(SCHLUESSEL_KM_TAKT, "Taktstunden Kältemaschinen (sensibel)",
+                "Chiller cycling hours (sensible)", "h/a", GR_KAELTE, "N0", true,
+                v => KmSumme(v, k => k.Taktstunden)));
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
                 "Uncovered cooling demand (sensible)", "MWh/a", GR_KAELTE, "N1", true,
                 v => MitKaelteerzeugung(v) ? E(v)?.Kaelterestbedarf : null));

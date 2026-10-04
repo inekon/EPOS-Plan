@@ -390,17 +390,46 @@ namespace WindowsFormsApplication1
             // Strombilanz mit seinem Netzbezug, seinen Kosten und Emissionen. Nur mit gerechneter
             // Kälteerzeugung; ohne Kälteerzeuger steht allein der ungedeckte Bedarf.
             ErgebnisWaermepumpeModel wp = stamm.Ergebnis.Waermepumpe;
-            bool mitErzeugung = wp != null && wp.Kaelteproduktion_WP.HasValue;
+            // KU3-4: die Kältemaschinen (Tab_ErgebnisKaeltemaschine) - ein eigener Erzeugerblock.
+            List<ErgebnisKaeltemaschineModel> km = stamm.Ergebnis.Kaeltemaschinen ?? new List<ErgebnisKaeltemaschineModel>();
+            bool mitWp = wp != null && wp.Kaelteproduktion_WP.HasValue;
+            bool mitKm = km.Count > 0;
+            bool mitErzeugung = mitWp || mitKm;
             if (mitErzeugung)
             {
                 paare.Add("Deckungsgrad Kühlung");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD, 1, "%"));
+            }
+            if (mitWp)
+            {
                 paare.Add("Kälteerzeugung Wärmepumpe");
                 paare.Add(k.F(wp.Kaelteproduktion_WP.Value, 1) + " MWh/a");
                 paare.Add("Kältestrom");
                 paare.Add(Wert(k, wp.Stromverbrauch_Kuehlung, 2, "MWh/a"));
                 paare.Add("Jahresarbeitszahl Kälte");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ, 2, ""));
+            }
+            if (mitKm)
+            {
+                paare.Add("Kälteerzeugung Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Kaelteproduktion_MWh), 1) + " MWh/a");
+                paare.Add("Strom Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Stromverbrauch_MWh), 2) + " MWh/a");
+                paare.Add("davon Hilfsstrom und Rückkühlung");
+                paare.Add(k.F(km.Sum(x => x.Hilfsstrom_MWh), 2) + " MWh/a");
+                paare.Add("Jahresarbeitszahl Kältemaschinen");
+                paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KM_JAZ, 2, ""));
+                paare.Add("Kälte in freier Kühlung");
+                paare.Add(k.F(km.Sum(x => x.FreieKuehlung_MWh), 1) + " MWh/a");
+                paare.Add("Stunden freier Kühlung");
+                paare.Add(k.F(km.Sum(x => x.FreieKuehlung_Stunden), 0) + " h/a");
+                paare.Add("Taktstunden Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Taktstunden), 0) + " h/a");
+                paare.Add("Stunden an der Leistungsgrenze");
+                paare.Add(k.F(km.Sum(x => x.Stunden_Leistungsgrenze), 0) + " h/a");
+            }
+            if (mitErzeugung)
+            {
                 paare.Add("Netzbezug Kältestrom");
                 paare.Add(Wert(k, stamm.KaeltestromNetzbezugMWh, 2, "MWh/a"));
                 paare.Add("Kosten Kältestrom");
@@ -411,7 +440,7 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername);
+            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername, km);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
                                                         k.F(wp.Kaelteproduktion_WP.Value, 2),
@@ -428,10 +457,11 @@ namespace WindowsFormsApplication1
         /// nicht darin.
         /// </summary>
         private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp,
-                                                    Func<int, string> traegername)
+                                                    Func<int, string> traegername,
+                                                    IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null)
         {
-            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}}.
-            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur);
+            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen.
+            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen);
             if (t.IstLeer) return;
 
             k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);
