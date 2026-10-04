@@ -933,6 +933,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltemaschineAnlageSchema.SCHRITT (KU3-4): die Kaeltemaschine als Anlage samt
                 // Kostenkomponente und Ergebnistabelle. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
                 KaeltemaschineAnlageSchema.Ausfuehren(null);
+                // Schritt KaeltestromabrechnungSchema.SCHRITT (KU3-4d): Abrechnungsspalten je Maschine und der
+                // erneuerte Stempeltrigger der Anlagenzeile. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                KaeltestromabrechnungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

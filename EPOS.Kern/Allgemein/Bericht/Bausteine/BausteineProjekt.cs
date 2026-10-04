@@ -137,6 +137,25 @@ namespace WindowsFormsApplication1
 
             // Pufferspeicher-Auslegung P3: die gespeicherten Auslegungen des Stamms.
             PufferauslegungSchreiben(k, stamm);
+
+            // KU3-4d: die Kältespeicher des Stamms.
+            KaeltespeicherSchreiben(k, stamm);
+        }
+
+        /// <summary>Der Platzhalter der Kältespeichertafel (<c>{{tabelle.kaeltespeicher}}</c>, Katalog v12, KU3-4d).</summary>
+        internal const string PLATZHALTER_KAELTESPEICHER = "tabelle.kaeltespeicher";
+
+        /// <summary>
+        /// <b>Die Kältespeicher</b> (KU3-4d, E68): je Kältespeicher eine Zeile mit Kapazität, Ladung, Entladung, Wärmeeintrag
+        /// und Vollzyklen — dieselbe Tafel wie <c>{{tabelle.kaeltespeicher}}</c>. Der Abschnitt entfällt ohne Kältespeicher
+        /// und, wenn die Vorlage die Tafel selbst setzt.
+        /// </summary>
+        internal static void KaeltespeicherSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            if (Berichtstabellen.KaeltespeicherDesStamms(stamm).Count == 0) return;
+            if (k.Vorlagenfelder != null && k.Vorlagenfelder.Contains(PLATZHALTER_KAELTESPEICHER)) return;
+            k.Ueberschrift2("Kältespeicher");
+            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Kaeltespeicher(stamm, BerichtTexte.Englisch, k.Kultur)));
         }
 
         /// <summary>Überschrift des Abschnitts (E30) — zugleich Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
@@ -479,12 +498,16 @@ namespace WindowsFormsApplication1
         /// Wertesatz des Laufs (<see cref="WirtschaftsBerichtswerte.Traegername"/>, BV-E3).
         /// </summary>
         internal static string KuehltraegerText(ErgebnisWaermepumpeModulModel m, Func<int, string> traegername)
+            => KuehltraegerText(m?.Kuehl_CarrierId, m?.Kuehl_EigenerZaehler, traegername);
+
+        /// <summary>Derselbe Text aus Kühlträger und Abrechnungsart — auch für die Kältemaschine (KU3-4d).</summary>
+        internal static string KuehltraegerText(int? traeger, bool? eigenerZaehler, Func<int, string> traegername)
         {
-            if (m == null || !m.Kuehl_CarrierId.HasValue || m.Kuehl_CarrierId.Value <= 0)
+            if (!traeger.HasValue || traeger.Value <= 0)
                 return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
-            string name = (traegername ?? Emissionsquelle.TraegerName)(m.Kuehl_CarrierId.Value);
-            return string.Format(m.Kuehl_EigenerZaehler == true ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
-                                                               : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG, name);
+            string name = (traegername ?? Emissionsquelle.TraegerName)(traeger.Value);
+            return string.Format(eigenerZaehler == true ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
+                                                        : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG, name);
         }
 
         /// <summary>Ein Kennzahlwert der Variante aus dem Katalog — null wird „—".</summary>

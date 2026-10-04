@@ -961,7 +961,7 @@ namespace WindowsFormsApplication1
             // Wahrheit. Bis dahin lagen sie auf der PRIMÄRachse und der Wärmebedarf
             // (kW!) auf der zweiten; es war genau verkehrt herum.
             var speicherreihen = new List<ChartRenderer.Reihe>();
-            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+            List<SimulationPufferspeicher> speicher = sim.SpeicherSamtKaelte();   // KU3-4d: samt Kältespeicher
             int nummer = 0;
             for (int i = 0; i < speicher.Count; i++)
             {
@@ -969,7 +969,7 @@ namespace WindowsFormsApplication1
                 if (sp == null) continue;
                 string schluessel = sp.Schluessel(i);
                 if (wahl.Contains(schluessel))
-                    speicherreihen.Add(Reihe(sp.BezeichnerAnzeige(), sp.SOC_stuendlich,
+                    speicherreihen.Add(Reihe(SpeicherLegende(sp), sp.SOC_stuendlich,
                                              R_SPEICHERREIHEN[nummer % R_SPEICHERREIHEN.Length]));
                 nummer++;
             }

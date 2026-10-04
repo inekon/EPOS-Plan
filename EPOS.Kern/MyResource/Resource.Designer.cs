@@ -106259,6 +106259,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle der Kältespeicher des Stammprojekts: je Kältespeicher Kapazität, Ladung, Entladung, Wärmeeintrag und Vollzyklen. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt. ähnelt.
+        /// </summary>
+        public static string VF_TABELLE__KAELTESPEICHER {
+            get {
+                return ResourceManager.GetString("VF_TABELLE__KAELTESPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle Gewerk × Stand: welche Komponenten jeder Stand führt (✓, ✓ (Anzahl) oder —); Spalten je Stand in Blöcken zu drei Varianten. ähnelt.
         /// </summary>
         public static string VF_TABELLE__KOMPONENTEN__MATRIX {

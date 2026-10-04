@@ -897,7 +897,10 @@ namespace WindowsFormsApplication1
         /// Anzahl an <c>Tab_Energieanlagen</c>, Kühleingaben an der Projektkopie, Kostenkomponente samt Vorlagen,
         /// Ergebnistabelle je Maschine (<see cref="KaeltemaschineAnlageSchema"/>). <b>Ergebnisneutral:</b> Kein
         /// Referenzprojekt führt eine Anlagenzeile der Kältemaschine.
-        public const int Zielversion = KaeltemaschineAnlageSchema.SCHRITT;
+        /// <see cref="KaeltestromabrechnungSchema.SCHRITT"/>: die Kältestromabrechnung der Kältemaschine — Netzbezug,
+        /// Kühlträger, Abrechnungsart und Stromspitze je Maschine im Ergebnis, der Stempeltrigger der Anlagenzeile mit
+        /// Anzahl und Gerät (<see cref="KaeltestromabrechnungSchema"/>). <b>Ergebnisneutral.</b>
+        public const int Zielversion = KaeltestromabrechnungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
