@@ -175,6 +175,12 @@
                                 {
                                     <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteNachtauskuehlung, EinheitStundenZahl)</th>
                                 }
+                                @if (ZonenMitHeizkreis)
+                                {
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteVorlauf, "°C")</th>
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteRuecklauf, "°C")</th>
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteBegrenzt, EinheitStundenZahl)</th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -192,12 +198,22 @@
                                     {
                                         <td class="epos-zahl">@Ganzzahl(z.NachtauskuehlstundenH)</td>
                                     }
+                                    @if (ZonenMitHeizkreis)
+                                    {
+                                        <td class="epos-zahl">@Temperatur(z.VorlaufMittelC)</td>
+                                        <td class="epos-zahl">@Temperatur(z.RuecklaufMittelC)</td>
+                                        <td class="epos-zahl">@Stunden(z.UebergabeBegrenztH)</td>
+                                    }
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
                 <Herleitungszeile Text="@ZonenTexte.Herleitung" />
+                @if (ZonenMitHeizkreis)
+                {
+                    <Herleitungszeile Text="@ZonenTexte.HerleitungUebergabe" />
+                }
             </KindInhalt>
         </Gruppenkopf>
     }
@@ -606,6 +622,12 @@
 
     /// <summary>Trägt eine Zone Stunden mit Nachtauskühlung? Dann steht die Spalte (nur mit Wert).</summary>
     private bool ZonenMitNachtauskuehlung => Daten.Zonen.Any(z => z.NachtauskuehlstundenH.HasValue);
+
+    /// <summary>
+    /// Rechnet mindestens eine Zone gekoppelt (AK1z, E63)? Nur dann stehen Vorlauf, Rücklauf und die
+    /// begrenzten Stunden je Zone in der Tabelle — eine Zone ohne Heizkreis zeigt dort „—".
+    /// </summary>
+    private bool ZonenMitHeizkreis => Daten.Zonen.Any(z => z.IstGekoppelt);
     [Parameter] public string EinheitStundenZahl { get; set; } = "h";
 
     // --- Texte der Stufe KU1 (Abschnitt „Kältebedarf", Kühlkonzept 8.4) -----------
@@ -781,6 +803,14 @@
 
     /// <summary>Eine nullbare Leistung, Temperatur oder Stundenzahl mit zwei Nachkommastellen; „—" ohne Wert.</summary>
     private string Zahl(double? wert) => wert is double w ? Zahl(w) : LeerText;
+
+    /// <summary>Eine Temperatur mit einer Nachkommastelle wie die Kachel „Vorlauf / Rücklauf"; „—" ohne Wert.</summary>
+    private string Temperatur(double? wert)
+        => wert is double w ? w.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) : LeerText;
+
+    /// <summary>Eine gerechnete Stundenzahl auf ganze Stunden wie die Kachel der begrenzten Übergabe; „—" ohne Wert.</summary>
+    private string Stunden(double? wert)
+        => wert is double w ? w.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) : LeerText;
 
     /// <summary>Eine Stundenzahl ohne Nachkommastellen; „—" ohne Wert.</summary>
     private string Ganzzahl(int? wert)

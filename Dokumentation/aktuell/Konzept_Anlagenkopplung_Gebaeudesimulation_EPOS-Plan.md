@@ -1959,6 +1959,7 @@ Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,84 kW
 | `UebergabeKwh[8760]` | kWh | neue Datei `uebergabe_<n>.csv`, **bedingt** — sie ist **nicht** gleich `HeizlastW`, sobald eine Grenze greift |
 | `BegrenzungsgrundJeStunde[8760]` | Kennung | **keine eigene Datei** — verdichtet zu den drei Stundenzahlen in `AK-S3` (8.3) |
 | `VorlaufMittelC`, `RuecklaufMittelC` | °C | heizzeitgewichtetes Mittel, Ergebnisspalte |
+| `Geb[n].Zone[k].VorlaufMittelC`, `Geb[n].Zone[k].RuecklaufMittelC`, `Geb[n].Zone[k].UebergabeBegrenztH` | °C, °C, h | je Zone (E63): Spalten `Vorlauf_Mittel_C`, `Ruecklauf_Mittel_C`, `Uebergabe_Begrenzt_H` in `Tab_ErgebnisZone`; Exportschlüssel nur bei gekoppelter Zone, NULL bei idealer oder unbeheizter Zone |
 | `KomfortUnterschreitungsstundenH`, `KomfortKelvinstundenKh`, `KomfortLaengsteStreckeH` | h, Kh, h | ab AK2, Ergebnisspalten (5.5) |
 
 ### 10.5 Schritt K — die Kälteseite (E37)

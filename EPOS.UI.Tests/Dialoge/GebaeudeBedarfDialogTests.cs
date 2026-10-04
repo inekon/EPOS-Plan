@@ -529,6 +529,58 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Equal("—", zz[1].QuerySelectorAll("td")[6].TextContent.Trim());
     }
 
+    /// <summary>
+    /// <b>Die Wärmeübergabe je Zone</b> (AK1z, E63): Vorlauf, Rücklauf und die begrenzten Stunden stehen
+    /// nur, wenn mindestens eine Zone gekoppelt rechnet — dann als drei Spalten mit Einheit im Kopf,
+    /// rechtsbündig, eine Zone ohne Heizkreis mit „—", dazu die Herleitung der Spalten. Ohne gekoppelte
+    /// Zone bleibt die Tabelle bei sechs Spalten.
+    /// </summary>
+    [Fact]
+    public void Die_Zonentabelle_zeigt_den_Heizkreis_je_Zone_nur_mit_gekoppelter_Zone()
+    {
+        var ohne = Aufbauen(MitZonen());
+        Assert.Equal(6, ohne.FindAll("table.gebb-zonen thead th").Count);
+        Assert.DoesNotContain("Vorlauf [°C]", ohne.Markup);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.GEBB_HRL_ZONEN_UEBERGABE, ohne.Markup);
+
+        var mit = Aufbauen(MitZonen(gekoppelt: true));
+        IReadOnlyList<IElement> koepfe = mit.FindAll("table.gebb-zonen thead th");
+        Assert.Equal(9, koepfe.Count);
+        Assert.Equal(new[] { "Vorlauf [°C]", "Rücklauf [°C]", "Übergabe begrenzt [h]" },
+                     koepfe.Skip(6).Select(k => k.TextContent.Trim()).ToArray());
+        Assert.All(koepfe.Skip(6), k => Assert.Contains("epos-zahl", k.ClassName));
+
+        IReadOnlyList<IElement> zeilen = mit.FindAll("table.gebb-zonen tbody tr");
+        Assert.Equal(new[] { "45,3", "35,0", "1.211" },
+                     zeilen[0].QuerySelectorAll("td").Skip(6).Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(new[] { "—", "—", "—" },
+                     zeilen[1].QuerySelectorAll("td").Skip(6).Select(z => z.TextContent.Trim()).ToArray());
+        Assert.All(zeilen[0].QuerySelectorAll("td").Skip(6), z => Assert.Contains("epos-zahl", z.ClassName));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.GEBB_HRL_ZONEN_UEBERGABE, mit.Markup);
+
+        // Mit Nachtauskühlung stehen die drei Spalten dahinter.
+        var beide = Aufbauen(MitZonen(nachtauskuehlungWohnen: 180, gekoppelt: true));
+        Assert.Equal(10, beide.FindAll("table.gebb-zonen thead th").Count);
+    }
+
+    /// <summary>
+    /// <b>Der Assistent liest den Heizkreis je Zone</b> (AK1z): die Zonentabelle als Spalten mit dem
+    /// Zonennamen als Kennzeichen, nur zum Lesen; leer ohne Kopplung.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_Vorlauf_Ruecklauf_und_begrenzte_Stunden_je_Zone()
+    {
+        Aufbauen(MitZonen(gekoppelt: true));
+        IReadOnlyList<WindowsFormsApplication1.KiFeldwert> werte = KiMaskenbruecke.Lesen(KiMaskennamen.GEBAEUDE_BEDARF);
+        List<WindowsFormsApplication1.KiFeldwert> vorlauf = werte.Where(w => w.Name.StartsWith("zone_vorlauf", StringComparison.Ordinal)).ToList();
+        Assert.Equal(2, vorlauf.Count);
+        Assert.Equal(45.26, Assert.IsType<double>(vorlauf[0].Rohwert), 9);
+        Assert.Null(vorlauf[1].Rohwert);
+        Assert.All(vorlauf, w => Assert.False(w.Setzbar));
+        Assert.Equal(1211.0, Assert.IsType<double>(werte.First(w => w.Name.StartsWith("zone_uebergabe_begrenzt", StringComparison.Ordinal)).Rohwert), 9);
+        Assert.Equal(35.04, Assert.IsType<double>(werte.First(w => w.Name.StartsWith("zone_ruecklauf", StringComparison.Ordinal)).Rohwert), 9);
+    }
+
     [Fact]
     public void Der_Kuehlbedarf_folgt_der_Einheitenwahl()
     {
@@ -858,7 +910,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>Ein Satz mit zwei Zonen — Wohnen beheizt, Keller unbeheizt (A2).</summary>
-    private static GebaeudeBedarfDaten MitZonen(int? nachtauskuehlungWohnen = null) => new()
+    private static GebaeudeBedarfDaten MitZonen(int? nachtauskuehlungWohnen = null, bool gekoppelt = false) => new()
     {
         Name = "Haus mit Keller",
         HeizwaermeMwh = 12.5,
@@ -869,7 +921,10 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         {
             new GebaeudeBedarfZoneDaten { Name = "Wohnen", IstBeheizt = true, HeizwaermeMwh = 12.5, MaxLastKw = 8.0,
                                           MittlereRaumtemperaturC = 20.5, UeberhitzungsstundenH = 12,
-                                          NachtauskuehlstundenH = nachtauskuehlungWohnen },
+                                          NachtauskuehlstundenH = nachtauskuehlungWohnen,
+                                          VorlaufMittelC = gekoppelt ? 45.26 : null,
+                                          RuecklaufMittelC = gekoppelt ? 35.04 : null,
+                                          UebergabeBegrenztH = gekoppelt ? 1211.0 : null },
             new GebaeudeBedarfZoneDaten { Name = "Keller", IstBeheizt = false,
                                           MittlereRaumtemperaturC = 11.25, UeberhitzungsstundenH = 0 },
         }

@@ -4738,7 +4738,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Waermebedarf EINES Gebaeudes — sieben Felder aus
+        /// Der Waermebedarf EINES Gebaeudes — sieben Felder und vier Spalten der Zonentabelle (AK1z) aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht</c>; die Diagrammwahl je Zone kam mit
         /// Stufe G6b (W5) dazu.
         /// </summary>
@@ -4795,7 +4795,28 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebbVollbenutzungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebbVollbenutzungErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A,
-                                     leerErlaubt: true, nurLesen: true)
+                                     leerErlaubt: true, nurLesen: true),
+
+                    // ---- Die Zonentabelle (AK1z, E63): SPALTEN mit dem Zonennamen als Kennzeichen ----
+                    new KiDialogFeld("zone", "GebaeudeBedarfKiSicht.Zonen[].Zonenname",
+                                     KiDialogTexte.GebbZoneName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebbZoneErl,
+                                     nurLesen: true, zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("zone_vorlauf", "GebaeudeBedarfKiSicht.Zonen[].VorlaufMittelC",
+                                     KiDialogTexte.GebbZoneVorlaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbZoneVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true, nurLesen: true, zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("zone_ruecklauf", "GebaeudeBedarfKiSicht.Zonen[].RuecklaufMittelC",
+                                     KiDialogTexte.GebbZoneRuecklaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbZoneRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     leerErlaubt: true, nurLesen: true, zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("zone_uebergabe_begrenzt", "GebaeudeBedarfKiSicht.Zonen[].UebergabeBegrenztH",
+                                     KiDialogTexte.GebbZoneBegrenztName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbZoneBegrenztErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_A,
+                                     leerErlaubt: true, nurLesen: true, zeilenkennzeichen: "Kennzeichen")
                 },
                 knoepfe: new[]
                 {
