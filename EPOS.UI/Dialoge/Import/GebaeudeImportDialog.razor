@@ -1045,7 +1045,7 @@
             </div>
         }
         <GebaeudeAnsicht Daten="@ansicht" GewaehlteZone="@Zielzone(ansicht)" Geschoss="@_geschoss" GeschossChanged="BeiGeschoss"
-                         RaumUmgehaengt="BeiUmhaengen" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht" />
+                         RaumUmgehaengt="BeiUmhaengen" ZoneGewaehlt="BeiZoneGewaehlt" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht" />
         if (_konflikt is Umhaengkonflikt k)
         {
             <div class="epos-gebimport-ausweg" data-raum="@k.Raum" data-kennung="@k.Kennung">
@@ -1119,6 +1119,15 @@
     }
 
     private void BeiGeschoss(string kennung) => _geschoss = kennung;
+
+    /// <summary>Ein Klick auf einen Körper der Ansicht wählt dessen Zone als Ziel der Zuordnung (nur unter einer Regel mit mehreren Zonen).</summary>
+    private void BeiZoneGewaehlt(string schluessel)
+    {
+        if (_stand?.Ansicht is not { Umhaengbar: true } ansicht || ansicht.Zone(schluessel) is null) return;
+        _ziel = schluessel;
+        _konflikt = null;
+        _notiz = "";
+    }
 
     /// <summary>Der gewählte Raum des Wegs ohne Grundriss — im gezeigten Geschoss, sonst dessen erster.</summary>
     private GebaeudeAnsichtRaum? GewaehlterRaum(GebaeudeAnsichtDaten ansicht)

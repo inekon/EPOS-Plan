@@ -33336,8 +33336,20 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_ANS_KOERPER" xml:space="preserve">
     <value>Körper</value>
   </data>
-  <data name="GIMP_ANS_KOERPER_GESPERRT" xml:space="preserve">
-    <value>Körper: nicht verfügbar — kommt mit G7b.</value>
+  <data name="GIMP_ANS_KOERPER_BILD" xml:space="preserve">
+    <value>Körperansicht des Gebäudes — ziehen dreht, Mausrad oder zwei Finger zoomen</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_SCHEMATISCH" xml:space="preserve">
+    <value>Mindestens ein Körper ist erfunden (Umriss aus Fläche und Seitenverhältnis oder Höhe als Vorgabe 3 m) — die Anordnung zeigt kein reales Gebäude.</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_OHNE_WEBGL" xml:space="preserve">
+    <value>Körper: Diese Umgebung kann keine 3D-Grafik zeichnen (WebGL fehlt oder das Modul ließ sich nicht laden). Der Grundriss zeigt dieselben Räume.</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_HOEHE_VORGABE" xml:space="preserve">
+    <value>Höhe als Vorgabe</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_BEDIENUNG" xml:space="preserve">
+    <value>Ziehen dreht, Rechtsklick verschiebt, Mausrad zoomt; ein Klick auf einen Körper wählt seine Zone.</value>
   </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Geschosse</value>

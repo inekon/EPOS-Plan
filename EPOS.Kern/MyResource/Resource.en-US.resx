@@ -33329,8 +33329,20 @@ Do you want to allow this?</value>
   <data name="GIMP_ANS_KOERPER" xml:space="preserve">
     <value>Solids</value>
   </data>
-  <data name="GIMP_ANS_KOERPER_GESPERRT" xml:space="preserve">
-    <value>Solids: not available — comes with G7b.</value>
+  <data name="GIMP_ANS_KOERPER_BILD" xml:space="preserve">
+    <value>Solid view of the building — drag to rotate, mouse wheel or two fingers to zoom</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_SCHEMATISCH" xml:space="preserve">
+    <value>At least one solid is invented (outline from area and aspect ratio or height defaulted to 3 m) — the arrangement does not show a real building.</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_OHNE_WEBGL" xml:space="preserve">
+    <value>Solids: this environment cannot draw 3D graphics (WebGL is missing or the module could not be loaded). The floor plan shows the same rooms.</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_HOEHE_VORGABE" xml:space="preserve">
+    <value>height defaulted</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_BEDIENUNG" xml:space="preserve">
+    <value>Drag to rotate, right-click to pan, mouse wheel to zoom; clicking a solid selects its zone.</value>
   </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Storeys</value>

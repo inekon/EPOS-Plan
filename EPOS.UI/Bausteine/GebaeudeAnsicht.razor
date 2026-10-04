@@ -1,7 +1,7 @@
 ﻿@* Die GRUNDRISSANSICHT eines Gebaeudes (Stufe G6c, Welle D2; Entscheid E11, Mehrzonenkonzept 6.7,
    Softwarearchitektur 1.2 und 3.4) - eine eingebettete Komponente ohne eigene Maske, ohne
    Eingabefeld und ohne Bibliothek. Sie steht im Zuordnungsdialog des Gebaeudeimports neben der
-   Zonenliste; die Koerperansicht kommt mit G7b in denselben Baustein.
+   Zonenliste. Der Reiter "Koerper" (G7b, Entscheid E66) zeigt dieselben Raeume als Koerper (three.js).
 
    WAS SIE ZEIGT. Je Geschoss die Raeume als SVG-Polygone (Meter, Nord oben: y gespiegelt), die
    Farbe je Zone aus einer festen Palette nach der STELLE der Zone (zehn Farbtoken, modulo zehn),
@@ -21,8 +21,19 @@
    ohne Rueckruf oder gesperrt (Aktiv) ebenso - kein Delegat, kein Knopf. Die Trefferflaechen sind
    die Polygone selbst (Beruehrung).
 
-   DER UMSCHALTER "GRUNDRISS | KOERPER" ist der Baustein Reiter; "Koerper" ist WEICH gesperrt und
-   meldet den Versuch mit seinem Grund. Die Geschosswahl ist ebenfalls ein Reiter; vorbelegt ist das
+   DER UMSCHALTER "GRUNDRISS | KOERPER" ist der Baustein Reiter. "Koerper" zeichnet in ein canvas ueber das
+   Modul _content/EPOS.UI/epos-gebaeude-koerper.js (three.js lokal unter wwwroot/three, nie vom CDN). Das
+   Modul wird erst beim ERSTEN Wechsel auf "Koerper" geladen; beim Rueckweg auf den Grundriss und beim
+   Entsorgen gibt es Renderer und Geometrie frei (entsorgen), beim naechsten Wechsel baut es neu. Neue
+   Daten oder eine andere Zielzone gehen ueber aktualisieren hinein. Die Koerper bildet
+   GebaeudeAnsichtDaten.Koerper (Unterkante aus der Geschosslage, sonst gestapelt; Hoehe des Raums, sonst
+   3 m als Vorgabe und schematisch). Ein Klick auf einen Koerper meldet dem Wirt den Schluessel seiner
+   Zone (ZoneGewaehlt) - er waehlt die Zone, er haengt nichts um. Kann die Plattform kein WebGL oder
+   laedt das Modul nicht, steht statt des canvas eine benannte Hinweiszeile, nie ein leeres Bild.
+   "Schematisch" steht als Zeile ueber dem Bild, sobald ein Koerper erfunden ist; die Legende nennt je
+   Zone die Herkunft und eine Hoehe als Vorgabe. Anzeigetexte stehen nur im HTML, nie im Modul.
+
+   Die Geschosswahl ist ebenfalls ein Reiter; vorbelegt ist das
    unterste Geschoss mit einem Umriss (GebaeudeAnsichtDaten.GeschossOderVorgabe - dieselbe Stelle
    fragt der Wirt). Der Wirt kann die Wahl binden (Geschoss/GeschossChanged).
 
@@ -34,6 +45,9 @@
 @using System.Globalization
 @using EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Import
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime Js
 
 <div class="epos-gebansicht">
     @if (Daten is not { Geschosse.Count: > 0 } daten)
@@ -42,21 +56,20 @@
     }
     else
     {
-        <Reiter Bezeichnung="@Texte.Ansicht" Aktiv="@SCHLUESSEL_GRUNDRISS" Verweigert="BeiVerweigert">
+        <Reiter Bezeichnung="@Texte.Ansicht" Aktiv="@_ansicht" AktivChanged="BeiAnsicht">
             <KindInhalt>
                 <Reiterblatt Schluessel="@SCHLUESSEL_GRUNDRISS" Titel="@Texte.Grundriss">
                     <KindInhalt>
                         @Grundriss(daten)
                     </KindInhalt>
                 </Reiterblatt>
-                <Reiterblatt Schluessel="@SCHLUESSEL_KOERPER" Titel="@Texte.Koerper" Bedienbar="false"
-                             Sperrgrund="@Texte.KoerperGesperrt" />
+                <Reiterblatt Schluessel="@SCHLUESSEL_KOERPER" Titel="@Texte.Koerper">
+                    <KindInhalt>
+                        @Koerperbild(daten)
+                    </KindInhalt>
+                </Reiterblatt>
             </KindInhalt>
         </Reiter>
-        @if (_koerperVersucht)
-        {
-            <p class="epos-leisezeile epos-gebansicht-koerper" role="status">@Texte.KoerperGesperrt</p>
-        }
         @if (!daten.Umhaengbar)
         {
             <p class="epos-leisezeile epos-gebansicht-nuranzeige">@Texte.NurAnzeige</p>
@@ -80,11 +93,14 @@
     /// <summary>Der Schlüssel des Reiters „Grundriss".</summary>
     internal const string SCHLUESSEL_GRUNDRISS = "gebansicht-grundriss";
 
-    /// <summary>Der Schlüssel des Reiters „Körper" (weich gesperrt bis G7b).</summary>
+    /// <summary>Der Schlüssel des Reiters „Körper".</summary>
     internal const string SCHLUESSEL_KOERPER = "gebansicht-koerper";
 
     /// <summary>Der Vorsatz der Reiterschlüssel je Geschoss; dahinter steht die Stelle des Geschosses.</summary>
     internal const string SCHLUESSEL_GESCHOSS = "gebansicht-geschoss-";
+
+    /// <summary>Das Modul der Körperansicht (statisches Web-Asset der Bibliothek).</summary>
+    public const string MODUL_KOERPER = "./_content/EPOS.UI/epos-gebaeude-koerper.js";
 
     // =====================================================================
     //  Gaben
@@ -108,6 +124,12 @@
     /// <summary>Meldet die Geschosswahl — für <c>@@bind-Geschoss</c>.</summary>
     [Parameter] public EventCallback<string> GeschossChanged { get; set; }
 
+    /// <summary>
+    /// Ein Klick auf einen Körper wählt dessen Zone — gemeldet wird ihr Schlüssel
+    /// (<see cref="GebaeudeAnsichtZone.Schluessel"/>), nie ein Name. Ohne Delegat ist der Körper reine Anzeige.
+    /// </summary>
+    [Parameter] public EventCallback<string> ZoneGewaehlt { get; set; }
+
     /// <summary>Bedienbar? <c>false</c> (etwa während eines Laufs im Wirt) macht die Ansicht zur Anzeige.</summary>
     [Parameter] public bool Aktiv { get; set; } = true;
 
@@ -122,8 +144,33 @@
     private string? _geschoss;
     private string? _geschossParameter;
 
-    /// <summary>Hat der Anwender „Körper" versucht? Dann steht der Grund unter dem Umschalter.</summary>
-    private bool _koerperVersucht;
+    /// <summary>Die gezeigte Ansicht (Reiterschlüssel).</summary>
+    private string _ansicht = SCHLUESSEL_GRUNDRISS;
+
+    /// <summary>Das canvas der Körper; nur gezeichnet, solange „Körper" gewählt ist.</summary>
+    private ElementReference _canvas;
+
+    /// <summary>Das Modul der Körper — geladen beim ersten Wechsel auf „Körper".</summary>
+    private IJSObjectReference? _modul;
+
+    /// <summary>Der Rückweg des Moduls für den Klick auf einen Körper.</summary>
+    private DotNetObjectReference<GebaeudeAnsicht>? _rueckweg;
+
+    /// <summary>Steht die Szene am canvas? Dann sind Renderer und Geometrie zu entsorgen.</summary>
+    private bool _koerperAktiv;
+
+    /// <summary>Kann die Plattform keine Körper zeichnen (kein WebGL, Modul fehlt)? Dann die Hinweiszeile.</summary>
+    private bool _koerperFehlt;
+
+    /// <summary>Die Daten und die Zielzone, die das Modul zuletzt bekam — weichen sie ab, wird aktualisiert.</summary>
+    private GebaeudeAnsichtDaten? _gezeigteDaten;
+    private string? _gezeigtesZiel;
+
+    /// <summary>Ist die Körperansicht gewählt (Prüfhilfe für Tests)?</summary>
+    public bool KoerperGezeigt => string.Equals(_ansicht, SCHLUESSEL_KOERPER, StringComparison.Ordinal);
+
+    /// <summary>Kann die Plattform keine Körper zeichnen (Prüfhilfe für Tests)?</summary>
+    public bool KoerperNichtVerfuegbar => _koerperFehlt;
 
     /// <summary>Löst ein Klick eine Zuordnung aus? Nur mit Umhängbarkeit, Rückruf und ohne Sperre.</summary>
     public bool Bedienbar => Daten is { Umhaengbar: true } && Aktiv && RaumUmgehaengt.HasDelegate;
@@ -293,8 +340,165 @@
         await GeschossChanged.InvokeAsync(_geschoss);
     }
 
-    /// <summary>Der Versuch, „Körper" zu betreten — die weiche Sperre meldet ihn mit ihrem Grund.</summary>
-    private void BeiVerweigert(string schluessel) => _koerperVersucht = true;
+    private void BeiAnsicht(string schluessel) => _ansicht = schluessel;
+
+    /// <summary>
+    /// Der Klick auf einen Körper (aus dem Modul): meldet dem Wirt den Schlüssel der Zone. Ein Raum ohne Zone,
+    /// ein unbekannter Schlüssel, eine gesperrte Ansicht oder ein Wirt ohne Delegat melden nichts.
+    /// </summary>
+    [JSInvokable("ZoneGewaehlt")]
+    public Task BeiKoerperklick(string? zone, string? raum)
+    {
+        if (!Aktiv || !ZoneGewaehlt.HasDelegate || Daten?.Zone(zone) is not GebaeudeAnsichtZone z) return Task.CompletedTask;
+        return InvokeAsync(() => ZoneGewaehlt.InvokeAsync(z.Schluessel));
+    }
+
+    // =====================================================================
+    //  Körper
+    // =====================================================================
+
+    private RenderFragment Koerperbild(GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        IReadOnlyList<GebaeudeAnsichtKoerper> koerper = daten.Koerper();
+        <div class="epos-gebansicht-koerperansicht">
+            @if (daten.Schematisch || koerper.Any(k => k.Schematisch))
+            {
+                <p class="epos-gebansicht-schematisch">
+                    <span class="epos-gebansicht-marke">@Texte.Schematisch</span>
+                    <span>@Texte.KoerperSchematisch</span>
+                </p>
+            }
+            @if (koerper.Count == 0)
+            {
+                <p class="epos-leisezeile epos-gebansicht-ohneumriss">@Texte.KeineUmrisse</p>
+            }
+            else if (_koerperFehlt)
+            {
+                <p class="epos-leisezeile epos-gebansicht-ohnewebgl" role="status">@Texte.KoerperOhneWebgl</p>
+            }
+            else
+            {
+                <canvas @ref="_canvas" class="epos-gebansicht-canvas" role="img" aria-label="@Texte.KoerperBild"></canvas>
+                <p class="epos-leisezeile epos-gebansicht-bedienung">@Texte.KoerperBedienung</p>
+            }
+            <ul class="epos-gebansicht-legende" aria-label="@Texte.Legende">
+                @foreach (GebaeudeAnsichtZone zone in daten.Zonen.Where(z => koerper.Any(k => string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal))))
+                {
+                    GebaeudeAnsichtZone z = zone;
+                    <li class="@Legendenklasse(z)" data-zone="@z.Schluessel">
+                        <span class="@("epos-gebansicht-farbfeld " + Zonenklasse(daten, z.Schluessel))" aria-hidden="true"></span>
+                        <span class="epos-gebansicht-zonenname">@z.Name</span>
+                        <span class="epos-gebansicht-herkunft">@(z.Schematisch ? Texte.Schematisch : Texte.Raumgrenzen)</span>
+                        @if (koerper.Any(k => k.HoeheVorgabe && string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal)))
+                        {
+                            <span class="epos-gebansicht-marke epos-gebansicht-marke--hoehe">@Texte.HoeheVorgabe</span>
+                        }
+                        @if (!z.Beheizt)
+                        {
+                            <span class="epos-gebansicht-marke">@Texte.Unbeheizt</span>
+                        }
+                        @if (z.VonHand)
+                        {
+                            <span class="epos-gebansicht-marke epos-gebansicht-marke--hand">@Texte.VonHand</span>
+                        }
+                    </li>
+                }
+                @if (koerper.Any(k => daten.Zone(k.Raum.Zone) is null))
+                {
+                    <li class="epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--ohnezone">
+                        <span class="epos-gebansicht-farbfeld epos-gebansicht-zone--ohne" aria-hidden="true"></span>
+                        <span class="epos-gebansicht-zonenname">@Texte.OhneZone</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    };
+
+    /// <summary>
+    /// Die Szene für das Modul: je Körper Raum- und Zonenschlüssel, Farbstelle (−1 = ohne Zone), Unterkante, Höhe,
+    /// „schematisch", Polygone in Metern und die Bauteilarten an Kante, Boden und Decke; dazu die Zielzone.
+    /// Nur Kennungen und Zahlen — kein Anzeigetext.
+    /// </summary>
+    public static object Szene(GebaeudeAnsichtDaten daten, string? ziel) => new
+    {
+        ziel,
+        koerper = daten.Koerper().Select(k => new
+        {
+            raum = k.Raum.Kennung,
+            zone = k.Raum.Zone,
+            stelle = daten.Zone(k.Raum.Zone) is GebaeudeAnsichtZone z ? Math.Abs(z.Stelle) % PALETTE : -1,
+            unterkante = k.UnterkanteM,
+            hoehe = k.HoeheM,
+            schematisch = k.Schematisch,
+            polygone = k.Raum.Polygone.Select(p => p.Select(q => new { x = q.X, y = q.Y }).ToList()).ToList(),
+            kanten = k.Angaben?.Kanten,
+            boden = k.Angaben?.Boden,
+            decke = k.Angaben?.Decke,
+        }).ToList(),
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Daten is not { } daten || !KoerperGezeigt || _koerperFehlt || daten.Koerper().Count == 0)
+        {
+            await KoerperEntsorgen();
+            return;
+        }
+        try
+        {
+            if (!_koerperAktiv)
+            {
+                _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL_KOERPER);
+                _rueckweg ??= DotNetObjectReference.Create(this);
+                bool gezeichnet = await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone), _rueckweg);
+                if (!gezeichnet)
+                {
+                    _koerperFehlt = true;
+                    StateHasChanged();
+                    return;
+                }
+                _koerperAktiv = true;
+            }
+            else if (!ReferenceEquals(_gezeigteDaten, daten) || !string.Equals(_gezeigtesZiel, GewaehlteZone, StringComparison.Ordinal))
+            {
+                await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone));
+            }
+            _gezeigteDaten = daten;
+            _gezeigtesZiel = GewaehlteZone;
+        }
+        catch (JSDisconnectedException) { /* die WebView ist weg - nichts mehr zu zeichnen */ }
+        catch (Exception)
+        {
+            // Das Modul lädt nicht oder wirft: benannt melden statt eines leeren Bildes.
+            _koerperFehlt = true;
+            _koerperAktiv = false;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Gibt die Szene frei, wenn eine steht (Rückweg auf den Grundriss, Daten ohne Körper).</summary>
+    private async Task KoerperEntsorgen()
+    {
+        if (!_koerperAktiv || _modul is null) return;
+        _koerperAktiv = false;
+        _gezeigteDaten = null;
+        _gezeigtesZiel = null;
+        try { await _modul.InvokeVoidAsync("entsorgen"); }
+        catch (Exception) { /* die WebView ist schon weg - dann gibt es nichts zu lösen */ }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await KoerperEntsorgen();
+        if (_modul is not null)
+        {
+            try { await _modul.DisposeAsync(); }
+            catch (Exception) { /* die WebView ist schon weg */ }
+            _modul = null;
+        }
+        _rueckweg?.Dispose();
+        _rueckweg = null;
+    }
 
     // =====================================================================
     //  Anzeige
