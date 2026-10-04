@@ -44632,5 +44632,26 @@ chart</value>
   <data name="GEXP_ANR_MSG_GESPEICHERT" xml:space="preserve">
     <value>The enriched file was saved: {0} ({1} bytes). Objects: {2}, supplemented: {3}, replaced: {4}, skipped: {5}.</value>
   </data>
+  <data name="KABG_KATALOG_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chillers</value>
+  </data>
+  <data name="KM_MSG_RUECKKUEHLART_UNGUELTIG" xml:space="preserve">
+    <value>The heat rejection type is unknown.</value>
+  </data>
+  <data name="KM_MSG_NENNWERT_UNGUELTIG" xml:space="preserve">
+    <value>Rated cooling capacity and rated EER must be greater than zero; auxiliary power and price must not be negative.</value>
+  </data>
+  <data name="KM_MSG_TEILLAST_UNGUELTIG" xml:space="preserve">
+    <value>The minimum part load must be between 0 and 100 %.</value>
+  </data>
+  <data name="KM_MSG_KENNLINIE_UNGUELTIG" xml:space="preserve">
+    <value>A performance map point has an EER ≤ 0 or a negative cooling capacity.</value>
+  </data>
+  <data name="KM_MSG_KENNLINIE_DOPPELT" xml:space="preserve">
+    <value>The performance map contains the same combination of heat rejection and chilled water temperature twice.</value>
+  </data>
+  <data name="KM_MSG_AUSGELIEFERT" xml:space="preserve">
+    <value>This record belongs to the delivered catalogue and is not overwritten. Create a copy.</value>
+  </data>
 </root>
 

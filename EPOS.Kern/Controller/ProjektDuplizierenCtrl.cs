@@ -176,6 +176,8 @@ namespace WindowsFormsApplication1
             // ohnehin; der Eintrag hier ist Guertel und Hosentraeger fuer Datenbanken, in
             // denen Schritt 66 (noch) nicht gelaufen ist.
             {"ID_Wechselrichter","Tab_Wechselrichter"},
+            // KU3-1: die Kennlinie der Kaeltemaschine haengt an der Projektkopie.
+            {KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE, KaeltemaschineSchema.TAB_PROJEKT},
             // Zapfprofilgenerator (Schemaschritt 103): der Wohnungstyp haengt an der Zone.
             // Die deklarierte Beziehung Tab_TwwWohnungstyp.ID_Zone -> Tab_TwwZone erkennt
             // _echteFks ohnehin; der Eintrag traegt den Versatz auch ohne sie.
@@ -243,6 +245,7 @@ namespace WindowsFormsApplication1
         {
             {"Tab_Kenndaten",          "ID_WP IN (SELECT ID FROM Tab_WP WHERE ID_Projekt = {0})"},
             {"Tab_Kenndaten_Kuehlung", "ID_WP IN (SELECT ID FROM Tab_WP WHERE ID_Projekt = {0})"},
+            {KaeltemaschineSchema.TAB_KENNDATEN, "ID_Kaeltemaschine IN (SELECT ID FROM Tab_Kaeltemaschine WHERE ID_Projekt = {0})"},
             {"Tab_DBTagV",             "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {"Tab_DBTagVDaten",        "ID_TagV IN (SELECT ID FROM Tab_DBTagV WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
             {"Tab_WaermebedarfDaten",  "ID_Ganglinie IN (SELECT ID FROM Tab_Waermebedarf WHERE ID_Projekt = {0})"},

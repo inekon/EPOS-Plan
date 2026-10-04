@@ -44639,5 +44639,26 @@ Chart</value>
   <data name="GEXP_ANR_MSG_GESPEICHERT" xml:space="preserve">
     <value>Die angereicherte Datei wurde gespeichert: {0} ({1} Byte). Objekte: {2}, ergänzt: {3}, ersetzt: {4}, übersprungen: {5}.</value>
   </data>
+  <data name="KABG_KATALOG_KAELTEMASCHINE" xml:space="preserve">
+    <value>Kältemaschinen</value>
+  </data>
+  <data name="KM_MSG_RUECKKUEHLART_UNGUELTIG" xml:space="preserve">
+    <value>Die Rückkühlart ist unbekannt.</value>
+  </data>
+  <data name="KM_MSG_NENNWERT_UNGUELTIG" xml:space="preserve">
+    <value>Nennkälteleistung und Nenn-EER müssen größer als null sein, Hilfsstrom und Preis dürfen nicht negativ sein.</value>
+  </data>
+  <data name="KM_MSG_TEILLAST_UNGUELTIG" xml:space="preserve">
+    <value>Die Mindestteillast muss zwischen 0 und 100 % liegen.</value>
+  </data>
+  <data name="KM_MSG_KENNLINIE_UNGUELTIG" xml:space="preserve">
+    <value>Ein Kennlinienpunkt hat einen EER ≤ 0 oder eine negative Kälteleistung.</value>
+  </data>
+  <data name="KM_MSG_KENNLINIE_DOPPELT" xml:space="preserve">
+    <value>Die Kennlinie enthält dieselbe Kombination aus Rückkühl- und Kaltwassertemperatur zweimal.</value>
+  </data>
+  <data name="KM_MSG_AUSGELIEFERT" xml:space="preserve">
+    <value>Dieser Satz gehört zur Auslieferung und wird nicht überschrieben. Legen Sie eine Kopie an.</value>
+  </data>
 </root>
 

@@ -39868,6 +39868,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
         /// </summary>
         public static string KABG_KATALOG_KESSEL {
@@ -64123,6 +64132,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_TRY_ZEITFELD {
             get {
                 return ResourceManager.GetString("KLIMA_TRY_ZEITFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Satz gehört zur Auslieferung und wird nicht überschrieben. Legen Sie eine Kopie an. ähnelt.
+        /// </summary>
+        public static string KM_MSG_AUSGELIEFERT {
+            get {
+                return ResourceManager.GetString("KM_MSG_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennlinie enthält dieselbe Kombination aus Rückkühl- und Kaltwassertemperatur zweimal. ähnelt.
+        /// </summary>
+        public static string KM_MSG_KENNLINIE_DOPPELT {
+            get {
+                return ResourceManager.GetString("KM_MSG_KENNLINIE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Kennlinienpunkt hat einen EER ≤ 0 oder eine negative Kälteleistung. ähnelt.
+        /// </summary>
+        public static string KM_MSG_KENNLINIE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_KENNLINIE_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung und Nenn-EER müssen größer als null sein, Hilfsstrom und Preis dürfen nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string KM_MSG_NENNWERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_NENNWERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rückkühlart ist unbekannt. ähnelt.
+        /// </summary>
+        public static string KM_MSG_RUECKKUEHLART_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_RUECKKUEHLART_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Mindestteillast muss zwischen 0 und 100 % liegen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TEILLAST_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_TEILLAST_UNGUELTIG", resourceCulture);
             }
         }
         
