@@ -275,9 +275,10 @@ entstehen oder verschwinden.
 > Wärmepumpe, Elektrokessel (in 1017: BHKW, Elektrokessel, Wärmepumpe) — neun Zellen samt der Kopie aus
 > [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py).
 > Projekt **1054 „Referenzprojekt Zonen mit Heizkreis"**, die Kopie von 1052 (unten „Das Referenzprojekt 1054“):
-> Kopplungsstufe „AK1", Gebäude mit `Heizkreis_Aktiv` = 1 und `Uebergabe_Art` „RADIATOR" (fester Vorlauf aus
-> der Anlage), an der Zone „Gastronomie und Verwaltung" `Uebergabe_Art` „KONVEKTOR", `Auslegung_Vorlauf` 70,
-> `Auslegung_Ruecklauf` 50 und `Regler_Proportionalband` 2,0 — sieben Zellen samt der Kopie aus
+> Kopplungsstufe „AK1", Gebäude mit `Heizkreis_Aktiv` = 1, `Uebergabe_Art` „RADIATOR" und `Heizkurve_Aktiv` = 1
+> (Niveau und Steilheit leer, also die Vorgabekurve durch den Auslegungspunkt), an der Zone „Gastronomie und
+> Verwaltung" `Uebergabe_Art` „KONVEKTOR", `Auslegung_Vorlauf` 70, `Auslegung_Ruecklauf` 50 und
+> `Regler_Proportionalband` 2,0 — acht Zellen (Kopplungsstufe, drei Gebäudespalten, vier Zonenzellen) samt der Kopie aus
 > [`Skripte/referenzprojekt_1054_zonen_heizkreis.cs`](Skripte/referenzprojekt_1054_zonen_heizkreis.cs); alle
 > übrigen Übergabespalten von Gebäude und Zonen stehen leer.
 > Eine leere Spalte ist hier eine Setzung wie eine gefüllte: Wer eine Vorgabe von Hand einträgt, ändert
@@ -895,7 +896,8 @@ Zonen. Gesät sind:
 | `Tab_Einstellungen` | `Anlagenkopplung` | `AK1` (`KonfigurationCtrl.AnlagenkopplungSetzen`) |
 | `Tab_Gebaeude` (Kopie von 10658) | `Heizkreis_Aktiv` | 1 |
 | | `Uebergabe_Art` | `RADIATOR` |
-| | übrige Übergabe-, Auslegungs- und Heizkurvenspalten, `Regler_Proportionalband`, `Sollwertprofil` | leer (Vorgaben der Art, 1 K), `Heizkurve_Aktiv` 0 — fester Vorlauf aus der Anlage |
+| | `Heizkurve_Aktiv` | 1 — Niveau und Steilheit leer: Vorgabekurve durch den Auslegungspunkt, gedeckelt wie im Kern |
+| | übrige Übergabe-, Auslegungs- und Heizkurvenspalten, `Regler_Proportionalband`, `Sollwertprofil` | leer (Vorgaben der Art, 1 K) |
 | `Tab_Zone` „Gastronomie und Verwaltung“ | `Uebergabe_Art` | `KONVEKTOR` |
 | | `Auslegung_Vorlauf` / `Auslegung_Ruecklauf` | 70 / 50 °C |
 | | `Regler_Proportionalband` | 2,0 K |
@@ -904,10 +906,11 @@ Zonen. Gesät sind:
 | `Tab_Projekt` | `Beschreibung`, `Erstelldatum`, `Aenderungsdatum`; `Kosten_Geaendert` | Kopfzellen; Kostenstempel leer |
 
 Mit der Kopplung stehen die beheizten Zonen im Aufheizzustand **GEKOPPELT** (der Keller UNBEHEIZT) — das ist gewollt und
-von der Wache festgehalten. Gerechnet (zwei Läufe byte-gleich, rund 2 s): Heizwärme des Gebäudes 51,46 MWh, Spitze
-31,66 kW; Vorlauf im Mittel 85,0 °C (fester Vorlauf der Anlage), Rücklauf 81,09 °C; Gästezimmer 34,89 MWh, Spitze
-20,67 kW, Vorlauf/Rücklauf 85,0/81,37 °C, 0 begrenzte Stunden; Gastronomie 16,58 MWh, Spitze 13,97 kW, Vorlauf/Rücklauf
-85,0/78,57 °C, 0 begrenzte Stunden; Keller ohne Übergabewerte, im Mittel der Heizzeit 14,9 °C. 1054 kommt mit dem
+von der Wache festgehalten; die gefahrene Heizkurve bringt die Übergabe in kalten Stunden an ihre Grenze. Gerechnet
+(zwei Läufe byte-gleich, rund 2 s): Heizwärme des Gebäudes 47,58 MWh, Spitze 26,05 kW; Vorlauf im Mittel 39,53 °C,
+Rücklauf 36,08 °C, 1 339 begrenzte Stunden; Gästezimmer 33,63 MWh, Spitze 18,75 kW, Vorlauf/Rücklauf 39,89/36,55 °C,
+294 begrenzte Stunden; Gastronomie 13,94 MWh, Spitze 8,54 kW, Vorlauf/Rücklauf 40,63/35,79 °C, 1 106 begrenzte Stunden,
+im Mittel der Heizzeit 18,7 °C; Keller ohne Übergabewerte, im Mittel der Heizzeit 14,7 °C. 1054 kommt mit dem
 Einfrieren in die Basis R35, nicht in die CI-Auswahl; es gelten die Einfrierregeln „gesäte Auslegungsdaten der Übergabe“
 und „gesäte Zonendaten“ oben.
 
@@ -918,7 +921,7 @@ dotnet run Referenzlaeufe/Skripte/referenzprojekt_1054_zonen_heizkreis.cs -- Ref
 Die gesäten Zellen stehen in **einer** Quelle, dem Bauplan
 [`Skripte/referenzprojekt_1054_bauplan.cs`](Skripte/referenzprojekt_1054_bauplan.cs): Das Skript zieht ihn über
 `#:include` (dazu den Bauplan von 1052), `EPOS.Kern.Tests` verlinkt ihn für `ZonenHeizkreisReferenzprojektWacheTests`
-(jede gesäte Zelle, die Kopie von 1052 nach Zählung, ein Lauf mit Vorlauf, Rücklauf und begrenzten Stunden je Zone,
+(jede gesäte Zelle, die Kopie von 1052 nach Zählung, ein Lauf mit Vorlauf, Rücklauf und begrenzten Stunden je Zone, mehr als 0 an mindestens einer beheizten,
 zwei Läufe bitgleich). Das Skript ist wiederholbar wie das von 1052 (Rückgabe 0 ohne Änderung, 2 bei Abweichung ohne
 Änderung der Datei), schreibt in eine Arbeitsdatei, prüft die Zielzellen, die Unversehrtheit von 1052 (Abdruck und
 Bauplan), `integrity_check` und `foreign_key_check` und ersetzt erst dann die Datenbank. Die Kopie fällt auf
