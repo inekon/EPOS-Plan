@@ -1123,6 +1123,7 @@ Regel, die für die Datei trägt, gewinnt, und der Anwender kann umschalten:
 | Z2 | nach Klassifikation | alle Räume tragen dieselbe Klassifikationsquelle | FZK-Haus: eine Klasse „000 Allgemeines" für alle sieben Räume → eine Zone |
 | Z3 | nach Nutzung (`LongName`) | Nutzungsmuster trifft | FZK-Haus: Schlafen/Bad/Büro/Wohnen/Flur/Küche/Galerie → 4–5 Gruppen |
 | Z4 | **nach Geschoss** | Geschosse vorhanden | FZK-Haus 2, DigitalHub 3 Zonen — der robusteste Vorschlag |
+| Z6 | **nach Raumtemperatur und Nutzung**, gebäudeweit | mehr als ein Raum; die Gruppenbildung ergibt mehr als eine und weniger Gruppen als Räume; Raumgrenzen nicht nötig | an allen sechs CAD-Exporten wählbar: drei bis vier Zonen (etwa 20 °C Büro/Wohnen, 15 °C Verkehr/Lager, 10 °C unbeheizt) |
 | Z5 | eine Zone je Gebäude | immer | der **Einzonen-Rückfall** |
 
 **Vorbelegung: Z4**, sofern mehr als ein Geschoss Räume trägt, sonst Z5 — Z4 ist die einzige Regel,
@@ -1150,6 +1151,24 @@ ist jede Raumtemperatur größer 12); ohne auflösbare Einheit greift B3 nicht. 
 Rückfall zu B3 die Beheizungsart eines CAD-Exports (`HeatingType`, 6.5). Dann B4
 Nutzungsmuster im Namen (`Keller|Garage|Dachboden|Technik|Treppenhaus` und englische
 Entsprechungen), B5 Untergeschoss ohne `EXTERNAL`-Grenze, B6 sonst beheizt.
+
+**Regel Z6 — nach Raumtemperatur und Nutzung.** Für Dateien ohne Zonen, Klassifikation und Raumgrenzen, die je Raum
+eine Temperatur und einen Raumtyp tragen (CAD-Exporte). **Gruppenschlüssel** je Raum: die wirksame Beheizung (mit den
+Haken der Raumliste) und die auf ganze °C gerundete Raumsolltemperatur — der Heizsollwert des Standards (B3), sonst die
+Raumtemperatur der Datei (`InsideTemperature (°C)`, nur zur Gruppenbildung, nie als Sollwert übernommen). Ein Raum ohne
+Temperatur geht zur Temperaturgruppe gleicher Beheizung, in der seine **Nutzungsklasse** die größte Fläche hat (bei
+Gleichstand die wärmere); gibt es keine, bildet er mit seinesgleichen eine Gruppe „ohne Sollwert" je Nutzungsklasse. Die
+Nutzungsklasse (Büro, Wohnen, Schlafen, Gastronomie, Küche, Sport, Verkehr, Sanitär, Lager, Technik, Sonstige) folgt aus
+dem Raumtyp der Datei (`RoomType` ohne Präfix `mrt`, sonst `Pset_SpaceCommon.Category`, sonst `ObjectType`) über eine
+feste Tabelle, sonst aus Namensmustern des Raumnamens (deutsch und englisch, die Muster von B4 eingeschlossen). **Name**
+der Zone: „⟨T⟩ °C – ⟨bis zu drei Nutzungsklassen, flächengewichtet⟩", eine unbeheizte Zone neben einer beheizten
+gleicher Temperatur mit dem Zusatz „(unbeheizt)"; Schlüssel sprachneutral, Texte aus den Ressourcen. **Ordnung**:
+absteigend nach Solltemperatur (ohne Sollwert zuletzt), beheizt vor unbeheizt, dann Name. Die Zonen gelten
+geschossübergreifend; Trenndecken und Trennwände entstehen wie bei Z4 aus Raumbezügen bzw. Raumgrenzen, soweit vorhanden,
+sonst warnt `IMP_IFC_PROT_GRENZEN_ENTKOPPELT`. **Mindestgröße unter Z6:** hat eine zu kleine Zone keinen Nachbarn gleicher
+Beheizung mit gemeinsamer Grenzfläche, wird sie der Zone gleicher Beheizung mit der nächstliegenden Solltemperatur
+zugeschlagen (bei Gleichstand der größeren). Obergrenze M12, Zuordnung von Hand und Regelwechsel gelten wie bei Z4; die
+Vorgabe (M7) bleibt Z4 bzw. Z5, Z6 steht in der Liste nach Z4.
 
 **Mindestgröße.** Eine Zone unter **max(2 m², 2 % der Gebäudegrundfläche)** wird dem Nachbarn mit
 der größten gemeinsamen Grenzfläche zugeschlagen; gibt es keinen, bleibt sie stehen und der Dialog
