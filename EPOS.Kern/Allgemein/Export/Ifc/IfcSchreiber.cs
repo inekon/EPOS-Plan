@@ -312,7 +312,8 @@ namespace WindowsFormsApplication1
                 foreach (string kennung in _satzReihenfolge)
                 {
                     IfcMaterialLayerSet satz = _saetze[kennung];
-                    Wurzel<IfcRelAssociatesMaterial>(kennung, "RelMaterial", r =>
+                    // Schlüssel ist das Gebäude: derselbe Aufbau an zwei Gebäuden ergibt zwei Kennungen.
+                    Wurzel<IfcRelAssociatesMaterial>(g.Kennung, "RelMaterial:" + kennung, r =>
                     {
                         r.RelatingMaterial = satz;
                         r.RelatedObjects.AddRange(_satzElemente[kennung]);
@@ -348,7 +349,7 @@ namespace WindowsFormsApplication1
                 {
                     h.OwningUser = nutzer;
                     h.OwningApplication = programm;
-                    h.ChangeAction = IfcChangeActionEnum.ADDED;
+                    // ChangeAction bleibt leer: ohne LastModifiedDate erlaubt die Regel CorrectChangeAction nur leer, NOCHANGE oder NOTDEFINED.
                     h.CreationDate = new IfcTimeStamp(sekunden);
                 });
             }
@@ -764,7 +765,6 @@ namespace WindowsFormsApplication1
                           s.RhoKgM3 > 0.0 ? Wert("MassDensity", new IfcMassDensityMeasure(Endlich(s.RhoKgM3.Value))) : null);
                 Stoffsatz(m, EPOS_BAUSTOFF,
                           s.RWertM2KW > 0.0 ? Wert("Waermedurchlasswiderstand", new IfcThermalResistanceMeasure(Endlich(s.RWertM2KW.Value))) : null);
-                _ = _m;
                 return m;
             }
 
