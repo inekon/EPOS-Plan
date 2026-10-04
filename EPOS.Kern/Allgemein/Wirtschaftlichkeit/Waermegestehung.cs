@@ -91,6 +91,8 @@ namespace WindowsFormsApplication1
             {
                 case KOMPONENTE_PHOTOVOLTAIK:
                 case KOMPONENTE_STROMSPEICHER:
+                // KU3-4: die Kältemaschine erzeugt keine Wärme - ihre Kosten zählen nicht zur Wärmegestehung.
+                case KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE:
                     return false;
                 case KOMPONENTE_WAERMEPUMPE:
                 case KOMPONENTE_HEIZKESSEL:
@@ -108,7 +110,8 @@ namespace WindowsFormsApplication1
         /// Batteriespeicher nicht; ein unbekannter Typ zählt wie eine allgemeine Position.</summary>
         internal static bool AnlagentypZaehlt(int anlagentyp)
         {
-            return anlagentyp != TYP_PHOTOVOLTAIK && anlagentyp != TYP_BATTERIESPEICHER;
+            return anlagentyp != TYP_PHOTOVOLTAIK && anlagentyp != TYP_BATTERIESPEICHER
+                && anlagentyp != KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE;   // KU3-4: Kälte, keine Wärme
         }
 
         /// <summary>

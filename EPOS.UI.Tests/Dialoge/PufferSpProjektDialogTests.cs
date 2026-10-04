@@ -1169,6 +1169,77 @@ public class PufferSpProjektDialogTests : EposBunitContext
         Assert.Contains("Übertrager: Leistung als Entladegrenze eintragen.", cut.Markup);
     }
 
+    // ============================================================ Kältespeicher (KU3-5)
+
+    /// <summary>
+    /// Ein bestehender Kältespeicher: Nutzung „Kälte" allein im Set, die Temperaturfelder heißen
+    /// Kaltwasser-Vorlauf und -Rücklauf, die Kapazität folgt Rücklauf − Vorlauf, und kein Sperrtext
+    /// sagt mehr, er werde nicht gerechnet.
+    /// </summary>
+    [Fact]
+    public void Ein_Kaeltespeicher_zeigt_Kaltwasserfelder_und_seine_Kapazitaet()
+    {
+        var stand = new Pruefstand();
+        stand.Bestand.Add(Speicher(11, "Kaltwasser", h: false, vorlauf: 6, ruecklauf: 12) with { Kaelte = true });
+        var cut = Zeige(stand);
+
+        Assert.Equal(new[] { 3 }, cut.Instance.KlassenSet);
+        Assert.True(cut.Instance.IstKaeltespeicher);
+        Assert.Contains("Kaltwasser-Vorlauf", cut.Markup);
+        Assert.Contains("Kaltwasser-Rücklauf", cut.Markup);
+        Assert.Contains("5,6", cut.Instance.Qmax);           // 800 l · 1,16 · 6 K / 1 000
+        Assert.DoesNotContain("nicht gerechnet", cut.Markup);
+    }
+
+    /// <summary>Kälte ist ausschließlich: Anhaken wählt die Wärmenutzungen ab und umgekehrt.</summary>
+    [Fact]
+    public void Kaelte_schliesst_die_Waermenutzungen_aus()
+    {
+        var cut = Zeige(MitZwei());
+        Assert.Equal(new[] { 0 }, cut.Instance.KlassenSet);
+        Assert.Contains("Vorlauf", cut.Markup);
+        Assert.DoesNotContain("Kaltwasser-Vorlauf", cut.Markup);
+
+        cut.FindAll("input[type=checkbox]")[3].Change(true);
+        Assert.Equal(new[] { 3 }, cut.Instance.KlassenSet);
+        Assert.Contains("Kaltwasser-Vorlauf", cut.Markup);
+
+        cut.FindAll("input[type=checkbox]")[1].Change(true);
+        Assert.Equal(new[] { 1 }, cut.Instance.KlassenSet);
+        Assert.False(cut.Instance.IstKaeltespeicher);
+    }
+
+    /// <summary>
+    /// Neuanlage eines Kältespeichers: Das Wärmepaar der Systemvorgabe (70/50) ist für Kaltwasser
+    /// vertauscht und wird benannt abgelehnt; 6/12 °C wird mit Kälte und ohne Wärmeflag angelegt.
+    /// </summary>
+    [Fact]
+    public void Ein_neuer_Kaeltespeicher_wird_mit_Kaltwasserpaar_angelegt()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+        Bezeichner(cut, "Kaltwasser");
+        Volumen(cut, 2000);
+        cut.FindAll("input[type=checkbox]")[3].Change(true);
+
+        Uebernehmen(cut);
+        Assert.Contains("Kältespeicher", cut.Instance.Meldung);
+        Assert.Null(stand.Angelegt);
+
+        var felder = cut.FindAll("input.epos-eingabe");
+        felder[3].Input("6");
+        cut.FindAll("input.epos-eingabe")[4].Input("12");
+        Uebernehmen(cut);
+        Assert.Equal(WarnStufe.Erfolg, cut.Instance.MeldungStufe);
+        Ok(cut);
+
+        Assert.NotNull(stand.Angelegt);
+        Assert.True(stand.Angelegt!.Kaelte);
+        Assert.False(stand.Angelegt.Heizung || stand.Angelegt.Brauchwasser || stand.Angelegt.Prozess);
+        Assert.Equal(6, stand.Angelegt.Vorlauf);
+        Assert.Equal(12, stand.Angelegt.Ruecklauf);
+    }
+
     // ============================================================ Hilfsgriffe
 
     private static void Uebernehmen(IRenderedComponent<PufferSpProjektDialog> cut)

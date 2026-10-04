@@ -460,7 +460,8 @@ namespace WindowsFormsApplication1
             List<PufferZeile> zeilen = new List<PufferZeile>();
             if (sim == null) return zeilen;
 
-            foreach (SimulationPufferspeicher sp in sim.AlleSpeicher())
+            // KU3-5: die Kältespeicher hinter den Wärmespeichern, gekennzeichnet über ihre Rolle „Kältespeicher".
+            foreach (SimulationPufferspeicher sp in sim.AlleSpeicher().Concat(sim.Kaeltespeicher()))
                 zeilen.Add(new PufferZeile(
                     sp.BezeichnerAnzeige(), sp.RolleAnzeige(), sp.Q_max,
                     sp.Ladung_gesamt, sp.Entladung_gesamt, sp.Verluste_gesamt,

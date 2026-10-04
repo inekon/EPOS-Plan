@@ -170,6 +170,8 @@ namespace WindowsFormsApplication1
                     // haengt per Loeschweitergabe am Kopf, das DELETE ist Guertel und
                     // Hosentraeger wie bei Puffer und Stromspeicher.
                     DetailzeilenLoeschen(v, TAB_GEB, m.ID_Projekt);
+                    // KU3-4: das Ergebnis je Kaeltemaschine - derselbe Vorablauf (Loeschweitergabe am Kopf).
+                    DetailzeilenLoeschen(v, KaeltemaschineAnlageSchema.TAB_ERGEBNIS, m.ID_Projekt);
 
                     //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
                     //    Notwendig, weil ein frueherer Kopf-Delete OHNE Loeschweitergabe
@@ -279,6 +281,29 @@ namespace WindowsFormsApplication1
                             }
                             v.Ausfuehren(sql, p.ToArray());
                         }
+                    }
+
+                    // 4a. KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine. Ohne Kaeltemaschine keine Zeile.
+                    if (m.Kaeltemaschinen != null && m.Kaeltemaschinen.Count > 0)
+                    {
+                        string sqlKm = "INSERT INTO " + KaeltemaschineAnlageSchema.TAB_ERGEBNIS + " (ID_Ergebnis, ID_Kaeltemaschine, " +
+                            "Bezeichner, Anzahl, Kaelteproduktion_MWh, Stromverbrauch_MWh, Hilfsstrom_MWh, FreieKuehlung_MWh, " +
+                            "FreieKuehlung_Stunden, Taktstunden, Unterdeckung_MWh, Stunden_Leistungsgrenze) " +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                        foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
+                            v.Ausfuehren(sqlKm,
+                                new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId },
+                                new DbParam("@km", DbParamTyp.Integer) { Wert = km.ID_Kaeltemaschine.HasValue ? (object)km.ID_Kaeltemaschine.Value : DBNull.Value },
+                                new DbParam("@b", DbParamTyp.VarWChar) { Wert = (object)(km.Bezeichner ?? "") },
+                                new DbParam("@n", DbParamTyp.Integer) { Wert = km.Anzahl },
+                                new DbParam("@k", DbParamTyp.Double) { Wert = R(km.Kaelteproduktion_MWh) },
+                                new DbParam("@s", DbParamTyp.Double) { Wert = R(km.Stromverbrauch_MWh) },
+                                new DbParam("@h", DbParamTyp.Double) { Wert = R(km.Hilfsstrom_MWh) },
+                                new DbParam("@f", DbParamTyp.Double) { Wert = R(km.FreieKuehlung_MWh) },
+                                new DbParam("@fs", DbParamTyp.Integer) { Wert = km.FreieKuehlung_Stunden },
+                                new DbParam("@t", DbParamTyp.Integer) { Wert = km.Taktstunden },
+                                new DbParam("@u", DbParamTyp.Double) { Wert = R(km.Unterdeckung_MWh) },
+                                new DbParam("@l", DbParamTyp.Integer) { Wert = km.Stunden_Leistungsgrenze });
                     }
 
                     // 4. Detail: Waermepumpe (+ Modulliste).
@@ -709,8 +734,9 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN + ", " +
                             SchemaKatalog.SPALTE_PUFFER_ID_ANLAGE + ", " +
                             SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL + ", " +
-                            SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?)";
+                            SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ", " +
+                            KuehlungSchema.SPALTE_PUFFER_ENTLADUNG_KUEHLUNG + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?, ?)";
                         foreach (ErgebnisPufferspeicherModel sp in m.Pufferspeicher)
                         {
                             {
@@ -730,8 +756,8 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(sp.Vollzyklen) });
 
                                 // PAKET E1
-                                // Nur die drei Waermekanaele: Entladung_Kuehlung bleibt NULL,
-                                // bis ein Kaeltespeicher rechnet (K7, E31).
+                                // Die drei Waermekanaele; Entladung_Kuehlung steht am Ende und ist
+                                // allein beim Kaeltespeicher belegt (KU3-5), sonst NULL.
                                 WaermekanalParameter(p, sp.Entladung_Kanal);
                                 p.Add(new DbParam("@d1", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Geladen) });
                                 p.Add(new DbParam("@d2", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Entladen) });
@@ -742,6 +768,11 @@ namespace WindowsFormsApplication1
                                 // ohne Speichertemperatur ehrlich leer.
                                 p.Add(new DbParam("@t1", DbParamTyp.Double) { Wert = sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value });
                                 p.Add(new DbParam("@t2", DbParamTyp.Double) { Wert = sp.T_oben_Min.HasValue ? (object)R(sp.T_oben_Min.Value) : DBNull.Value });
+                                p.Add(new DbParam("@kue", DbParamTyp.Double)
+                                {
+                                    Wert = WaermesenkeClass.IstKaelteVerwendung(sp.Verwendung)
+                                        ? (object)R(sp.Entladung_Kanal[Kanal.KUEHLUNG]) : DBNull.Value
+                                });
 
                                 v.Ausfuehren(sqlP, p.ToArray());
                             }
@@ -1008,6 +1039,33 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.KuehlVorlaufMittelC = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL);
                 m.Energiebedarf.KuehlRuecklaufMittelC = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL);
                 m.Energiebedarf.KuehlUebergabeBegrenztStundenH = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_STUNDEN);
+            }
+
+            // KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine; vor dem Schritt fehlt die Tabelle.
+            if (DataRepository.TabelleVorhanden(KaeltemaschineAnlageSchema.TAB_ERGEBNIS))
+            {
+                DataTable dk = DataRepository.GetDataTable(
+                    "SELECT * FROM " + KaeltemaschineAnlageSchema.TAB_ERGEBNIS + " WHERE ID_Ergebnis = ? ORDER BY ID",
+                    new DbParam("@e", m.ID));
+                if (dk != null)
+                    foreach (DataRow rk in dk.Rows)
+                    {
+                        double? idKm = DN(rk, KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE);
+                        m.Kaeltemaschinen.Add(new ErgebnisKaeltemaschineModel
+                        {
+                            ID_Kaeltemaschine = idKm.HasValue ? (int?)Convert.ToInt32(idKm.Value) : null,
+                            Bezeichner = S(rk, "Bezeichner"),
+                            Anzahl = Math.Max(1, I(rk, "Anzahl")),
+                            Kaelteproduktion_MWh = D(rk, "Kaelteproduktion_MWh"),
+                            Stromverbrauch_MWh = D(rk, "Stromverbrauch_MWh"),
+                            Hilfsstrom_MWh = D(rk, "Hilfsstrom_MWh"),
+                            FreieKuehlung_MWh = D(rk, "FreieKuehlung_MWh"),
+                            FreieKuehlung_Stunden = I(rk, "FreieKuehlung_Stunden"),
+                            Taktstunden = I(rk, "Taktstunden"),
+                            Unterdeckung_MWh = D(rk, "Unterdeckung_MWh"),
+                            Stunden_Leistungsgrenze = I(rk, "Stunden_Leistungsgrenze"),
+                        });
+                    }
             }
 
             // Detail: Waermepumpe (+ Module).
@@ -1277,6 +1335,9 @@ namespace WindowsFormsApplication1
                     sp.Durchsatz_Entladen = D(rsp, SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN);
                     sp.T_oben_Mittel = DN(rsp, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL);
                     sp.T_oben_Min = DN(rsp, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN);
+                    // KU3-5: die Kühlkanalentladung des Kältespeichers (NULL bei jedem Wärmespeicher).
+                    double? kuehl = DN(rsp, KuehlungSchema.SPALTE_PUFFER_ENTLADUNG_KUEHLUNG);
+                    if (kuehl.HasValue) sp.Entladung_Kanal[Kanal.KUEHLUNG] = kuehl.Value;
 
                     m.Pufferspeicher.Add(sp);
                 }
@@ -2045,7 +2106,8 @@ namespace WindowsFormsApplication1
         /// kurzes Feld wird als 0 geschrieben - die Spalten werden IMMER belegt, damit "nicht
         /// erhoben" (NULL, Zeile vor Schritt 52) und "erhoben und null" unterscheidbar bleiben;
         /// dieselbe Begruendung wie bei Quellwaerme und den Vbh-Spalten. Der Schreibweg der
-        /// Speicherzeile: Ihre vierte Spalte <c>Entladung_Kuehlung</c> bleibt NULL (K7).
+        /// Speicherzeile: Ihre vierte Spalte <c>Entladung_Kuehlung</c> schreibt er selbst - belegt
+        /// allein beim Kaeltespeicher (KU3-5), sonst NULL.
         /// </summary>
         private static void WaermekanalParameter(List<DbParam> p, double[] werte)
         {

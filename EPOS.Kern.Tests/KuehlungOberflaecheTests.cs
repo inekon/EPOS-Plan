@@ -336,10 +336,13 @@ namespace EPOS.Kern.Tests
             List<Kennzahl> kaelte = KennzahlenKatalog.Alle().Where(k => k.Schluessel.StartsWith("kaelte.", StringComparison.Ordinal)).ToList();
             Assert.Equal(new[] { "kaelte.jahresbedarf", "kaelte.spitze", "kaelte.stunden", "kaelte.deckungsgrad" },
                          kaelte.Where(k => k.Gruppe == KennzahlenKatalog.GR_ENERGIE).Select(k => k.Schluessel));
-            Assert.Equal(new[] { "kaelte.erzeugung", "kaelte.rest", "kaelte.jaz", "kaelte.strom",
+            // KU3-4: die sieben Kennzahlen der Kältemaschinen nach der Kälteerzeugung der Wärmepumpe.
+            Assert.Equal(new[] { "kaelte.erzeugung", "kaelte.km.erzeugung", "kaelte.km.strom", "kaelte.km.hilfsstrom",
+                                 "kaelte.km.jaz", "kaelte.km.frei", "kaelte.km.frei_stunden", "kaelte.km.takt",
+                                 "kaelte.rest", "kaelte.jaz", "kaelte.strom",
                                  "kaelte.netzbezug", "kaelte.kosten", "kaelte.co2" },
                          kaelte.Where(k => k.Gruppe == KennzahlenKatalog.GR_KAELTE).Select(k => k.Schluessel));
-            Assert.Equal(11, kaelte.Count);
+            Assert.Equal(18, kaelte.Count);
         }
 
         /// <summary>

@@ -145,6 +145,20 @@ namespace WindowsFormsApplication1
         /// <summary>Die Zeile über der Zonentabelle eines Gebäudes (G6a) — zugleich Schlüssel der Übersetzung.</summary>
         internal const string UEBERSCHRIFT_ZONEN = "Zonen";
 
+        /// <summary>Die Zeile über der Kältetabelle der Zonen (KU3-3) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_ZONEN_KAELTE = "Kältebedarf je Zone";
+
+        /// <summary>Kopf der Kältespalte der Zonen (KU3-3) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string SPALTE_ZONEN_KAELTE = "Kältebedarf [MWh/a]";
+
+        /// <summary>
+        /// Der Hinweis unter der Kältetabelle der Zonen (KU3-3, K6): Summe der Zonen, nicht saldiert. Der Bericht
+        /// liest das gespeicherte Ergebnis — allein der Kältebedarf je Zone ist gespeichert; Kältespitze und
+        /// Kühlstunden je Zone stehen nur im Lauf. Zugleich Schlüssel der Übersetzung.
+        /// </summary>
+        internal const string HINWEIS_ZONEN_KAELTE =
+            "Die Gebäudesumme ist die Summe der Zonen; Heizen und Kühlen verschiedener Zonen in derselben Stunde werden nicht gegeneinander verrechnet.";
+
         /// <summary>Der Hinweis unter der Zonentabelle, wenn ein Volumen abgeleitet ist — zugleich Schlüssel der Übersetzung.</summary>
         internal const string HINWEIS_ZONENVOLUMEN = "* Volumen aus Nutzfläche × Raumhöhe abgeleitet.";
 
@@ -279,6 +293,41 @@ namespace WindowsFormsApplication1
             t.Append(summe);
             k.Fuege(t);
             if (abgeleitet) k.Hinweis(HINWEIS_ZONENVOLUMEN);
+            if (mitErgebnis) ZonenkaelteSchreiben(k, zonen, ergebnis);
+        }
+
+        /// <summary>
+        /// <b>Der Kältebedarf je Zone</b> (KU3-3, Kühlkonzept F-K15): eine eigene kleine Tabelle unter der
+        /// Zonentabelle, nur wenn eine Zone mit wirksamer Kühlung gerechnet hat (<see cref="ErgebnisZoneModel.KuehlenergieMwh"/>
+        /// gesetzt, Muster E30) — sonst bleibt der Bericht, wie er war. „—" bei einer Zone ohne Kühlung; die
+        /// Summenzeile ist die Summe der Zonen.
+        /// </summary>
+        private static void ZonenkaelteSchreiben(WordKontext k, List<ZoneModel> zonen, List<ErgebnisZoneModel> ergebnis)
+        {
+            if (!ergebnis.Any(e => e.KuehlenergieMwh.HasValue)) return;
+            k.Text(UEBERSCHRIFT_ZONEN_KAELTE);
+            int[] w = { 5355, 4000 };
+            Table t = k.NeueTabelle(w);
+            var kopf = new TableRow();
+            kopf.Append(k.Zelle("Zone", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            kopf.Append(k.Zelle(SPALTE_ZONEN_KAELTE, w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            t.Append(kopf);
+            double summe = 0.0;
+            foreach (ZoneModel z in zonen)
+            {
+                ErgebnisZoneModel ez = ergebnis.FirstOrDefault(e => e.ID_Zone == z.ID);
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(z.Bezeichner) ? "—" : z.Bezeichner, w[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(ez?.KuehlenergieMwh is double q ? k.F(q, 1) : "—", w[1], false, null, JustificationValues.Right));
+                if (ez?.KuehlenergieMwh is double s) summe += s;
+                t.Append(tr);
+            }
+            var fuss = new TableRow();
+            fuss.Append(k.Zelle("Summe", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            fuss.Append(k.Zelle(k.F(summe, 1), w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            t.Append(fuss);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_ZONEN_KAELTE);
         }
 
         /// <summary>
@@ -341,17 +390,46 @@ namespace WindowsFormsApplication1
             // Strombilanz mit seinem Netzbezug, seinen Kosten und Emissionen. Nur mit gerechneter
             // Kälteerzeugung; ohne Kälteerzeuger steht allein der ungedeckte Bedarf.
             ErgebnisWaermepumpeModel wp = stamm.Ergebnis.Waermepumpe;
-            bool mitErzeugung = wp != null && wp.Kaelteproduktion_WP.HasValue;
+            // KU3-4: die Kältemaschinen (Tab_ErgebnisKaeltemaschine) - ein eigener Erzeugerblock.
+            List<ErgebnisKaeltemaschineModel> km = stamm.Ergebnis.Kaeltemaschinen ?? new List<ErgebnisKaeltemaschineModel>();
+            bool mitWp = wp != null && wp.Kaelteproduktion_WP.HasValue;
+            bool mitKm = km.Count > 0;
+            bool mitErzeugung = mitWp || mitKm;
             if (mitErzeugung)
             {
                 paare.Add("Deckungsgrad Kühlung");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD, 1, "%"));
+            }
+            if (mitWp)
+            {
                 paare.Add("Kälteerzeugung Wärmepumpe");
                 paare.Add(k.F(wp.Kaelteproduktion_WP.Value, 1) + " MWh/a");
                 paare.Add("Kältestrom");
                 paare.Add(Wert(k, wp.Stromverbrauch_Kuehlung, 2, "MWh/a"));
                 paare.Add("Jahresarbeitszahl Kälte");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ, 2, ""));
+            }
+            if (mitKm)
+            {
+                paare.Add("Kälteerzeugung Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Kaelteproduktion_MWh), 1) + " MWh/a");
+                paare.Add("Strom Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Stromverbrauch_MWh), 2) + " MWh/a");
+                paare.Add("davon Hilfsstrom und Rückkühlung");
+                paare.Add(k.F(km.Sum(x => x.Hilfsstrom_MWh), 2) + " MWh/a");
+                paare.Add("Jahresarbeitszahl Kältemaschinen");
+                paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KM_JAZ, 2, ""));
+                paare.Add("Kälte in freier Kühlung");
+                paare.Add(k.F(km.Sum(x => x.FreieKuehlung_MWh), 1) + " MWh/a");
+                paare.Add("Stunden freier Kühlung");
+                paare.Add(k.F(km.Sum(x => x.FreieKuehlung_Stunden), 0) + " h/a");
+                paare.Add("Taktstunden Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Taktstunden), 0) + " h/a");
+                paare.Add("Stunden an der Leistungsgrenze");
+                paare.Add(k.F(km.Sum(x => x.Stunden_Leistungsgrenze), 0) + " h/a");
+            }
+            if (mitErzeugung)
+            {
                 paare.Add("Netzbezug Kältestrom");
                 paare.Add(Wert(k, stamm.KaeltestromNetzbezugMWh, 2, "MWh/a"));
                 paare.Add("Kosten Kältestrom");
@@ -362,7 +440,7 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername);
+            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername, km);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
                                                         k.F(wp.Kaelteproduktion_WP.Value, 2),
@@ -379,10 +457,11 @@ namespace WindowsFormsApplication1
         /// nicht darin.
         /// </summary>
         private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp,
-                                                    Func<int, string> traegername)
+                                                    Func<int, string> traegername,
+                                                    IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null)
         {
-            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}}.
-            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur);
+            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen.
+            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen);
             if (t.IstLeer) return;
 
             k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);

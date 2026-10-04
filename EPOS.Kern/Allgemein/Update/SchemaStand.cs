@@ -893,7 +893,11 @@ namespace WindowsFormsApplication1
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KaeltemaschineSchema.SCHRITT;
+        /// <see cref="KaeltemaschineAnlageSchema.SCHRITT"/>: die Kältemaschine als Anlage — Anlagentyp, Verweis und
+        /// Anzahl an <c>Tab_Energieanlagen</c>, Kühleingaben an der Projektkopie, Kostenkomponente samt Vorlagen,
+        /// Ergebnistabelle je Maschine (<see cref="KaeltemaschineAnlageSchema"/>). <b>Ergebnisneutral:</b> Kein
+        /// Referenzprojekt führt eine Anlagenzeile der Kältemaschine.
+        public const int Zielversion = KaeltemaschineAnlageSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -293,6 +293,8 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.BauteilaufbauKatalog:
                 // Die Kaeltemaschinen (KU3-1): dieselbe freie Ansicht (KiMaskenziele.KAELTEMASCHINE_KATALOG).
                 case Seitenschluessel.KaeltemaschineKatalog:
+                // Die Kaeltemaschinen des Projekts (KU3-4c): dieselbe freie Ansicht (KiMaskenziele.KAELTEMASCHINE_ANLAGE).
+                case Seitenschluessel.KaeltemaschineAnlage:
                     return AnsichtZeigen(maske, "");
 
             }

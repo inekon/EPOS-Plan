@@ -163,7 +163,10 @@ namespace WindowsFormsApplication1
             { DbWerte.ERZEUGER_SOLARTHERMIE,            new Plan { Tabelle = "Tab_Solarkollektoren", Verweis = "ID_Solar",  Mengenspalte = "Kollektormodulanzahl" } },
             { DbWerte.ERZEUGER_STROMSPEICHER,           new Plan { Tabelle = "Tab_Stromspeicher",    Verweis = "ID_SP" } },
             { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, new Plan { Tabelle = "Tab_Pufferspeicher",   Verweis = "ID_PUFFER" } },
-            { DbWerte.ERZEUGER_BHKW,                    new Plan { Tabelle = "Tab_BHKW",             Verweis = "ID_BHKW" } }
+            { DbWerte.ERZEUGER_BHKW,                    new Plan { Tabelle = "Tab_BHKW",             Verweis = "ID_BHKW" } },
+            // KU3-4 (Kühlkonzept 6.2): die Kältemaschine - Gerät x Anzahl der Anlagenzeile.
+            { DbWerte.ERZEUGER_KAELTEMASCHINE,          new Plan { Tabelle = KaeltemaschineSchema.TAB_PROJEKT, Verweis = KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE,
+                                                                   Mengenspalte = KaeltemaschineAnlageSchema.SPALTE_ANZAHL } }
         };
 
         /// <summary>Führt dieses Gewerk überhaupt Technik-Planwerte?</summary>
@@ -482,6 +485,11 @@ namespace WindowsFormsApplication1
                     Stueckpreis(a, Zahl(r, "Investitionskosten"));
                     break;
 
+                // KU3-4 (Kühlkonzept 6.2): Gerätepreis der Kältemaschine x Anzahl der Anlagenzeile.
+                case DbWerte.ERZEUGER_KAELTEMASCHINE:
+                    Stueckpreis(a, Zahl(r, KaeltemaschineSchema.SPALTE_MODULKOSTEN));
+                    break;
+
                 case DbWerte.ERZEUGER_HEIZKESSEL:
                 case DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER:
                     Basis(a, BASIS_MODULPREIS, Zahl(r, "Investitionskosten"),
@@ -636,6 +644,7 @@ namespace WindowsFormsApplication1
                 case 5: return DbWerte.ERZEUGER_STROMSPEICHER;
                 case 6: return DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER;
                 case 7: return DbWerte.ERZEUGER_BHKW;
+                case KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE: return DbWerte.ERZEUGER_KAELTEMASCHINE;
                 default: return null;
             }
         }
@@ -807,6 +816,12 @@ namespace WindowsFormsApplication1
                 if (komponentenID == 2) return "Ptherm";         // Kessel: nur diese eine
                 if (komponentenID == 1) return "Nennleistung";   // WP: nur diese eine
                 if (komponentenID == 5) return "Leistung";       // Speicher: nur diese eine [kW]
+                // KU3-4: die Kältemaschine führt EINE Leistung - die Nennkälteleistung, mal Anzahl der Anlage.
+                if (komponentenID == KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE)
+                {
+                    malModulanzahl = true;
+                    return KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG;
+                }
 
                 // ANWENDERENTSCHEID 15.09.2026 — die beiden offenen Gewerke, wortgleich:
                 // „‚je kW Leistung' beim BHKW ist ‚je kW elektr. Leistung', beim

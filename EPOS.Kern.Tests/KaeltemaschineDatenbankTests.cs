@@ -36,6 +36,17 @@ namespace EPOS.Kern.Tests
             "SELECT ID FROM " + KaeltemaschineSchema.TAB_STAMM + " WHERE Bezeichner = ?", new DbParam("?", bezeichner)),
             CultureInfo.InvariantCulture);
 
+        /// <summary>
+        /// Legt die Maschine als Anlage an (KU3-4: Anlagenzeile mit Typ 13 und Projektkopie) und liefert die ID
+        /// der Projektkopie.
+        /// </summary>
+        internal static int Anlegen(string bezeichner)
+        {
+            int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, Stamm(bezeichner), null);
+            Assert.True(anlage > 0);
+            return KaeltemaschineAnlageCtrl.Laden(anlage).IdKaeltemaschine.Value;
+        }
+
         private static SimulationRunner Rechnen()
         {
             var lauf = new SimulationRunner();
@@ -56,7 +67,7 @@ namespace EPOS.Kern.Tests
             Assert.True(ohne.RestGesamtKwh > 0, "1017 braucht ohne Kältemaschine eine Unterdeckung, sonst prüft der Fall nichts.");
             double[] wpKaelteOhne = (double[])wpOhne.Kaelte_stuendlich.Clone();
 
-            int id = KaeltemaschineCtrl.AusKatalogUebernehmen(Stamm(LUFTGEKUEHLT), PROJEKT);
+            int id = Anlegen(LUFTGEKUEHLT);
             Assert.True(id > 0);
 
             SimulationRunner lauf = Rechnen();
@@ -86,6 +97,13 @@ namespace EPOS.Kern.Tests
             ErgebnisModel erg = new ErgebnisCtrl().Load(PROJEKT);
             Assert.InRange(erg.Waermepumpe.Kaelteproduktion_WP.Value, wp.KaelteGesamtKwh / 1000.0 - 0.006, wp.KaelteGesamtKwh / 1000.0 + 0.006);
             Assert.InRange(erg.Waermepumpe.Stromverbrauch_Kuehlung.Value, wp.StromGesamtKwh / 1000.0 - 0.006, wp.StromGesamtKwh / 1000.0 + 0.006);
+            // KU3-4: das Ergebnis je Maschine steht in Tab_ErgebnisKaeltemaschine.
+            ErgebnisKaeltemaschineModel ek = Assert.Single(erg.Kaeltemaschinen);
+            Assert.Equal(id, ek.ID_Kaeltemaschine);
+            Assert.Equal(LUFTGEKUEHLT, ek.Bezeichner);
+            Assert.InRange(ek.Kaelteproduktion_MWh, km.KaelteGesamtKwh / 1000.0 - 0.006, km.KaelteGesamtKwh / 1000.0 + 0.006);
+            Assert.InRange(ek.Stromverbrauch_MWh, km.StromGesamtKwh / 1000.0 - 0.006, km.StromGesamtKwh / 1000.0 + 0.006);
+            Assert.Equal(km.StundenTakt, ek.Taktstunden);
 
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
                 "1017 + {0}: Kältebedarf {1:F3} MWh/a; WP {2:F3}, Kältemaschine {3:F3} MWh/a; Kältestrom {4:F3} -> {5:F3} MWh/a; " +
@@ -100,7 +118,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            int id = KaeltemaschineCtrl.AusKatalogUebernehmen(Stamm(LUFTGEKUEHLT), PROJEKT);
+            int id = Anlegen(LUFTGEKUEHLT);
             DataRepository.ExecuteNonQuery("UPDATE " + KaeltemaschineSchema.TAB_KENNDATEN + " SET " +
                 KaeltemaschineSchema.SPALTE_KAELTELEISTUNG + " = 0.2 WHERE " + KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE + " = ?",
                 new DbParam("?", id));
@@ -126,7 +144,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            KaeltemaschineCtrl.AusKatalogUebernehmen(Stamm(LUFTGEKUEHLT), PROJEKT);
+            Anlegen(LUFTGEKUEHLT);
             foreach (string tool in new[] { "Tool_1", "Tool_2", "Tool_3", "Tool_4" })
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Einstellungen SET " + tool + " = '' WHERE ID_Projekt = ? AND " + tool + " = ?",
                                                new DbParam("?", PROJEKT), new DbParam("?", DbWerte.ERZEUGER_WAERMEPUMPE));
@@ -148,7 +166,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            KaeltemaschineCtrl.AusKatalogUebernehmen(Stamm(LUFTGEKUEHLT), PROJEKT);
+            Anlegen(LUFTGEKUEHLT);
             DataRepository.ExecuteNonQuery("UPDATE Tab_Einstellungen SET Kuehlbetrieb = 0 WHERE ID_Projekt = ?",
                                            new DbParam("?", PROJEKT));
 

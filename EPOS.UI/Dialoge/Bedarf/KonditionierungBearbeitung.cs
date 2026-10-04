@@ -305,6 +305,8 @@ public sealed class KonditionierungBearbeitung
         (KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht) => zone.SollNacht,
         (KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende) => zone.SollWochenende,
         (KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien) => zone.SollFerien,
+        (KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag) => zone.KuehlSollwert,
+        (KonditionierungGroesse.Kuehlen, KonditionierungZeile.Nacht) => zone.KuehlSollwertNacht,
         (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert) => zone.LuftwechselInfiltration,
         (KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag) => zone.LuftwechselNutzer,
         (KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert) => zone.InterneWaermegewinne,
@@ -336,6 +338,8 @@ public sealed class KonditionierungBearbeitung
                 case (KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht): zone.SollNacht = w; break;
                 case (KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende): zone.SollWochenende = w; break;
                 case (KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien): zone.SollFerien = w; break;
+                case (KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag): zone.KuehlSollwert = w; break;
+                case (KonditionierungGroesse.Kuehlen, KonditionierungZeile.Nacht): zone.KuehlSollwertNacht = w; break;
                 case (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert): zone.LuftwechselInfiltration = w; break;
                 case (KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag): zone.LuftwechselNutzer = w; break;
                 case (KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert): zone.InterneWaermegewinne = w; break;
@@ -1051,7 +1055,13 @@ public sealed class KonditionierungBearbeitung
     /// aktiv“). Die Abkürzung übergeht eine gesperrte Größe und nennt den Grund in ihrer Rückfrage; <c>null</c> = frei.
     /// </summary>
     public string? Uebernehmensperre(KonditionierungGroesse g)
-        => g == KonditionierungGroesse.Kuehlen && !Stand.KuehlungAktiv ? Texte.GrundKuehlenGesperrt : null;
+        => g == KonditionierungGroesse.Kuehlen && !KuehlungAktivHier ? Texte.GrundKuehlenGesperrt : null;
+
+    /// <summary>
+    /// Wird am Ort der Bearbeitung gekühlt? Am Gebäude sein Schalter, an einer Zone ihr eigener
+    /// (<see cref="ZoneDaten.KuehlungAktiv"/>, KU3-3), leer = der des Gebäudes.
+    /// </summary>
+    public bool KuehlungAktivHier => _zone?.KuehlungAktiv ?? Stand.KuehlungAktiv;
 
     /// <summary>Die Rückfrage der Abkürzung und ihr Name — die Wahl gilt, solange GENAU diese Frage steht.</summary>
     private Rueckfrage? _frageAlle;
@@ -1667,6 +1677,8 @@ public sealed class KonditionierungBearbeitung
         new(z => z.SollNacht, (z, w) => z.SollNacht = (double?)w),
         new(z => z.SollWochenende, (z, w) => z.SollWochenende = (double?)w),
         new(z => z.SollFerien, (z, w) => z.SollFerien = (double?)w),
+        new(z => z.KuehlSollwert, (z, w) => z.KuehlSollwert = (double?)w),
+        new(z => z.KuehlSollwertNacht, (z, w) => z.KuehlSollwertNacht = (double?)w),
         new(z => z.LuftwechselInfiltration, (z, w) => z.LuftwechselInfiltration = (double?)w),
         new(z => z.LuftwechselNutzer, (z, w) => z.LuftwechselNutzer = (double?)w),
         new(z => z.InterneWaermegewinne, (z, w) => z.InterneWaermegewinne = (double?)w),

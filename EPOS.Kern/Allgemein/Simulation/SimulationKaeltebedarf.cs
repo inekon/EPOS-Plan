@@ -276,6 +276,13 @@ namespace WindowsFormsApplication1
                 StundenHeizenUndKuehlen = ergebnis.StundenHeizenUndKuehlen;
                 StundenHeizenUndKuehlenGebaeude = name;
             }
+            // KU3-3 (F-K15): im Mehrzonenweg je Gebäude die Energie je Richtung in diesen Stunden.
+            if (ergebnis.StundenHeizenUndKuehlen > 0
+                && ergebnis.GleichzeitigHeizenKwh is double gleichHeiz && ergebnis.GleichzeitigKuehlenKwh is double gleichKuehl)
+                SimulationProtokoll.Aktuell.HinweisEinmal("ku3-gleichzeitig-" + name,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KU3_ZONEN_GLEICHZEITIG, name,
+                                  ergebnis.StundenHeizenUndKuehlen, gleichHeiz.ToString("0", CultureInfo.CurrentCulture),
+                                  gleichKuehl.ToString("0", CultureInfo.CurrentCulture)));
         }
 
         /// <summary>
@@ -642,6 +649,19 @@ namespace WindowsFormsApplication1
                     s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungMwh", e.KaelteFreiKwh / 1000.0));
                 }
             }
+            // KU3-5: die Kältespeicher - nur, wenn einer rechnet; sonst kein neuer Schlüssel.
+            if (k.Speicher != null)
+                for (int i = 0; i < k.Speicher.Count; i++)
+                {
+                    SimulationPufferspeicher sp = k.Speicher[i];
+                    string p = "Kaeltespeicher[" + i.ToString(CultureInfo.InvariantCulture) + "].";
+                    s.Add(new KeyValuePair<string, double>(p + "ID_Pufferspeicher", sp.ID_Pufferspeicher));
+                    s.Add(new KeyValuePair<string, double>(p + "KapazitaetKwh", sp.Q_max));
+                    s.Add(new KeyValuePair<string, double>(p + "EntladungMwh", sp.Entladung_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "LadungMwh", sp.Ladung_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "VerlusteMwh", sp.Verluste_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "Vollzyklen", sp.Vollzyklen));
+                }
             return s;
         }
 

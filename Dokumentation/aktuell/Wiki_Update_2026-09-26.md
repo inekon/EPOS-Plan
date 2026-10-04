@@ -122,8 +122,8 @@ gegliedert in einer aufklappbaren Zeile; #582: „Zum Bericht ›“ der Wirtsch
 mit derselben Vorlage und Prüfung; #698: Platzhalter der Bilder Stromlast-Jahresganglinie des BHKW und
 Kälteproduktion im Absatz „Platzhalter in der App“, ausstehend),
 Wirtschaftlichkeit (#582: die Knöpfe „Bericht erzeugen“ heißen „Zum Bericht ›“ und wechseln in den
-Bereich Bericht, erzeugt wird dort mit „Erstellen“; #715: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ausstehend),
-BHKW (#715: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ausstehend),
+Bereich Bericht, erzeugt wird dort mit „Erstellen“; #719: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ausstehend),
+BHKW (#719: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ausstehend),
 Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungssatz zum geltenden Fahrplan,
 Wochenend- und Feriensollwert als absolute, ganztägige Solltemperatur, Anker `temperaturen-und-ferien`,
 `wochenendabsenkung`, `ferienabsenkung`; #577: „Simulation…“ rechnet auch für ein eben übernommenes,
@@ -181,8 +181,8 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#650; Version bestätigt der Anwender beim Upload)
 - Der § 9b-Abzug der Wärmegestehungskosten berücksichtigt den Sockelbetrag und übersteigt den Stromsteueranteil nicht. (#653; Version bestätigt der Anwender beim Upload)
 - Die Katalogempfehlung der Hilfsenergiekosten bezieht sich auf den Endenergiebedarf: Heizkessel 1 bis 2 %, BHKW 0,5 bis 1,5 %. (#676; Version bestätigt der Anwender beim Upload)
-- Die Einspeisung des BHKW wird je Viertelstunde bilanziert; der BHKW-Reiter mit seiner Kennzahl, die Strommatrix und die Wirtschaftlichkeit zeigen dieselbe Einspeisung wie der Bericht. (#715; Version bestätigt der Anwender beim Upload)
-- Der Unterreiter „Kälte Produktion Chart“ und die Kältedeckung der Übersicht zeigen die Deckung der Wärmepumpe im Kühlbetrieb auch nach einem Wechsel zur Startseite. (#716; Version bestätigt der Anwender beim Upload)
+- Die Einspeisung des BHKW wird je Viertelstunde bilanziert; der BHKW-Reiter mit seiner Kennzahl, die Strommatrix und die Wirtschaftlichkeit zeigen dieselbe Einspeisung wie der Bericht. (#719; Version bestätigt der Anwender beim Upload)
+- Der Unterreiter „Kälte Produktion Chart“ und die Kältedeckung der Übersicht zeigen die Deckung der Wärmepumpe im Kühlbetrieb auch nach einem Wechsel zur Startseite. (#720; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

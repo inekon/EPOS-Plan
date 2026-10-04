@@ -596,20 +596,30 @@ public class ZonenDialogTests : EposBunitContext
         Assert.Equal(arbeit.Stand.Konditionierung!.Spalte(KonditionierungGroesse.Heizen).Kalender.Woche, k.Woche);
     }
 
+    /// <summary>
+    /// KU3-3 (E67/E68): Die Kühlspalte der Zone ist bedienbar, solange die Zone gekühlt wird (eigener
+    /// Schalter, leer = der des Gebäudes); ihre Tagzelle schreibt den Kühlsollwert der Zone. Schaltet die
+    /// Zone die Kühlung aus, ist die Spalte weich gesperrt und nennt den Grund.
+    /// </summary>
     [Fact]
-    public void Die_Kuehlspalte_der_Zone_ist_weich_gesperrt_und_nennt_den_Grund()
+    public void Die_Kuehlspalte_der_Zone_folgt_dem_Kuehlschalter_der_Zone()
     {
         (GebaeudeArbeitsstand arbeit, KonditionierungWeg weg) = Matrixgebaeude();
         var cut = MitMatrix(arbeit, weg);
 
+        IElement tag = Matrixzelle(cut, KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag);
+        Assert.Null(tag.QuerySelector(".epos-kond-gesperrt"));
+        IElement eingabe = Feld(cut.Find(".epos-zonendialog"), "Kühlen · Tag");
+        Assert.Contains("26", eingabe.GetAttribute("placeholder"));
+        eingabe.Input("24");
+        Assert.Equal(24.0, cut.Instance.Arbeitsstand.KuehlSollwert);
+        Assert.NotEmpty(cut.FindAll(".epos-kond-zonenzeile[data-groesse=\"1\"]"));
+
+        cut.Find(".epos-zonenkuehlung select").Change("2");
         IElement kuehlen = Matrixzelle(cut, KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag)
                                .QuerySelector(".epos-kond-gesperrt")!;
         Assert.Equal("true", kuehlen.GetAttribute("aria-disabled"));
-        Assert.StartsWith("Die Kühlwerte gelten für das ganze Gebäude", kuehlen.GetAttribute("title"));
-        Assert.Contains("Vorgabe 26", kuehlen.TextContent);
-        kuehlen.Click();
-        Assert.StartsWith("Die Kühlwerte gelten für das ganze Gebäude", cut.Instance.Meldung);
-        // Kühlen trägt an der Zone weder Zustandszeile noch Karte (bis KU3).
+        Assert.StartsWith("Die Kühlspalte wirkt nur mit Kühlbetrieb", kuehlen.GetAttribute("title"));
         Assert.Empty(cut.FindAll(".epos-kond-zonenzeile[data-groesse=\"1\"]"));
         Assert.Empty(cut.FindAll(".epos-kond-karte[data-groesse=\"1\"]"));
     }

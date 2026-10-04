@@ -315,6 +315,9 @@ namespace WindowsFormsApplication1
                 SollWochenende = z.SollWochenende,
                 SollFerien = z.SollFerien,
                 Maximaleraumtemperatur = z.Maximaleraumtemperatur,
+                // KU3-3: die Kühlzelle der Zone (Bestandszellen Kuehl_Sollwert, Kuehl_Sollwert_Nacht).
+                KuehlSollwert = z.KuehlSollwert,
+                KuehlSollwertNacht = z.KuehlSollwertNacht,
                 LuftwechselInfiltration = z.LuftwechselInfiltration,
                 LuftwechselNutzer = z.LuftwechselNutzer,
                 InterneWaermegewinne = z.InterneWaermegewinne,
@@ -355,6 +358,8 @@ namespace WindowsFormsApplication1
             if (Anders(alt.SollNacht, neu.SollNacht)) z.SollNacht = neu.SollNacht;
             if (Anders(alt.SollWochenende, neu.SollWochenende)) z.SollWochenende = neu.SollWochenende;
             if (Anders(alt.SollFerien, neu.SollFerien)) z.SollFerien = neu.SollFerien;
+            if (Anders(alt.KuehlSollwert, neu.KuehlSollwert)) z.KuehlSollwert = neu.KuehlSollwert;
+            if (Anders(alt.KuehlSollwertNacht, neu.KuehlSollwertNacht)) z.KuehlSollwertNacht = neu.KuehlSollwertNacht;
             if (Anders(alt.LuftwechselInfiltration, neu.LuftwechselInfiltration)) z.LuftwechselInfiltration = neu.LuftwechselInfiltration;
             if (Anders(alt.LuftwechselNutzer, neu.LuftwechselNutzer)) z.LuftwechselNutzer = neu.LuftwechselNutzer;
             if (Anders(alt.InterneWaermegewinne, neu.InterneWaermegewinne)) z.InterneWaermegewinne = neu.InterneWaermegewinne;

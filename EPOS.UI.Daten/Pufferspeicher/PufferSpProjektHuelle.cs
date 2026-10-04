@@ -136,6 +136,11 @@ namespace WindowsFormsApplication1
                 ["NutzungHeizung"] = MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
                 ["NutzungBrauchwasser"] = MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
                 ["NutzungProzess"] = MyResource.Resource.KANAL_PROZESS_ANZEIGE,
+                ["NutzungKaelte"] = MyResource.Resource.PSP_VERWENDUNG_KAELTE_ANZEIGE,
+                ["LabelKaltVorlauf"] = MyResource.Resource.PSP_LABEL_KALTWASSER_VORLAUF,
+                ["LabelKaltRuecklauf"] = MyResource.Resource.PSP_LABEL_KALTWASSER_RUECKLAUF,
+                ["HinweisKaeltespeicher"] = MyResource.Resource.PSP_HINWEIS_KAELTESPEICHER,
+                ["FehlerKaeltepaar"] = MyResource.Resource.PSP_FEHLER_KAELTEPAAR,
                 ["HerleitungVerwendung"] = MyResource.Resource.PSP_HERLEITUNG_VERWENDUNG,
 
                 ["AnzeigeQmax"] = MyResource.Resource.PSP_ANZEIGE_QMAX,
@@ -291,7 +296,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string Listentext(PspEingaben e)
         {
-            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess);
+            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
             return string.Format(MyResource.Resource.PSP_LISTE_EINTRAG,
                                  e.Bezeichner,
                                  WaermesenkeClass.VerwendungAnzeige(set.Verwendung),
@@ -326,7 +331,8 @@ namespace WindowsFormsApplication1
                 p.Entladeprio,
                 set.Heizung, set.Brauchwasser, set.Prozess,
                 Schichtdaten(s),
-                PufferSpCtrl.Katalogherkunft(idPuffer));
+                PufferSpCtrl.Katalogherkunft(idPuffer),
+                set.Kaelte);
         }
 
         private static PspSchichtdaten Schichtdaten(PufferSpCtrl.Schichtdaten s)
@@ -487,7 +493,7 @@ namespace WindowsFormsApplication1
             KatalogfelderLesen(e.Katalogzeile, 0, idProjekt, ref hersteller, ref speichertyp,
                                ref investition);
 
-            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess);
+            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
 
             return PufferSpCtrl.ProjektPufferAnlegen(
                 idProjekt, e.Bezeichner, hersteller, speichertyp, e.Volumen, e.Verluste,
@@ -504,7 +510,7 @@ namespace WindowsFormsApplication1
             KatalogfelderLesen(e.Katalogzeile, idPuffer, idProjekt, ref hersteller,
                                ref speichertyp, ref investition);
 
-            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess);
+            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
 
             return PufferSpCtrl.ProjektPufferAendern(
                 idPuffer, idProjekt, e.Bezeichner, hersteller, speichertyp, e.Volumen,
@@ -597,6 +603,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static IReadOnlyList<int> VorbelegteNutzung(string verwendung)
         {
+            // KU3-5: Ein Absprung mit Wunsch „Kaelte" legt einen Kältespeicher an (Nutzung 3).
+            if (WaermesenkeClass.IstKaelteVerwendung(verwendung)) return new[] { 3 };
+
             string wunsch =
                 WaermesenkeClass.IstKombiVerwendung(verwendung)
                     ? WaermesenkeClass.VERWENDUNG_KOMBI

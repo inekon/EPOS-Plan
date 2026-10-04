@@ -930,6 +930,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltemaschineSchema.SCHRITT (KU3-1): Katalog, Projektkopie und Kennlinien der
                 // Kaeltemaschine samt Saat. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
                 KaeltemaschineSchema.Ausfuehren(null);
+                // Schritt KaeltemaschineAnlageSchema.SCHRITT (KU3-4): die Kaeltemaschine als Anlage samt
+                // Kostenkomponente und Ergebnistabelle. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                KaeltemaschineAnlageSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

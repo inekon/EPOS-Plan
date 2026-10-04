@@ -2537,6 +2537,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle Kältemaschinen ähnelt.
+        /// </summary>
+        public static string AUFLOESER_BASIS_ALLE_KM {
+            get {
+                return ResourceManager.GetString("AUFLOESER_BASIS_ALLE_KM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die alle Wärmepumpen-Module ähnelt.
         /// </summary>
         public static string AUFLOESER_BASIS_ALLE_WP {
@@ -2587,6 +2596,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUFLOESER_KOMP_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("AUFLOESER_KOMP_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string AUFLOESER_KOMP_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("AUFLOESER_KOMP_KAELTEMASCHINE", resourceCulture);
             }
         }
         
@@ -25146,6 +25164,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} h heizt eine Zone, während eine Zone kühlt: Heizwärme {1} kWh, Kältebedarf {2} kWh — ausgewiesen, nicht verrechnet. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_ZONEN_GLEICHZEITIG {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_ZONEN_GLEICHZEITIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf einer gekoppelt rechnenden Zone sind ihre Mittel über die Heizstunden; begrenzt heißt, die Übergabe der Zone lieferte weniger, als ihr Sollwert verlangte. „—“ steht bei einer Zone ohne Heizkreis (ideal oder unbeheizt). ähnelt.
         /// </summary>
         public static string GEBB_HRL_ZONEN_UEBERGABE {
@@ -25511,6 +25538,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_SP_ZONE_HEIZWAERME {
             get {
                 return ResourceManager.GetString("GEBB_SP_ZONE_HEIZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_KAELTE {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespitze ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_KAELTESPITZE {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_KAELTESPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Kühlung ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_KUEHLSTUNDEN {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_KUEHLSTUNDEN", resourceCulture);
             }
         }
         
@@ -49908,6 +49962,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Kältemaschinen-Anlage des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_ANLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_ANLAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl gleicher Maschinen, mindestens 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_ANZAHL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_ANZAHL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstromanteil in Prozent, 0 bis unter 100; leer = 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_HILFSSTROM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_HILFSSTROM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstromanteil ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_HILFSSTROM_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_HILFSSTROM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeigename der Anlage; darf nicht leer sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Anlage ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_NAME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_NAME_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger, der den Strom der Kältemaschine bepreist; leer = Stromträger des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_TRAEGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_TRAEGER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_TRAEGER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasservorlauf in °C zwischen −20 und 30; leer = kleinste Stützstelle der Kennlinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasservorlauf ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_VORLAUF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_VORLAUF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abrechnung über einen eigenen Zähler; wirkt nur bei abweichendem Kühlträger. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_ZAEHLER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_ZAEHLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Zähler ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_ZAEHLER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_ZAEHLER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Gerät. ähnelt.
         /// </summary>
         public static string KI_DLG_KM_BESCHREIBUNG_ERL {
@@ -50813,6 +50993,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_KM {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_KM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen im Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KMA {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KMA", resourceCulture);
             }
         }
         
@@ -52352,6 +52541,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PSPV_NUTZUNG_HEIZUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PSPV_NUTZUNG_HEIZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher ist ein Kältespeicher (Kaltwasser) und versorgt allein die Kühlung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_NUTZUNG_KAELTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_NUTZUNG_KAELTE_ERL", resourceCulture);
             }
         }
         
@@ -57167,6 +57365,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ZON_HEIZLEISTUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZON_HEIZLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungsgrenze der Kühlung der Zone in kW; leer = die des Gebäudes, ab zwei Zonen nach dem Flächenanteil. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_KUEHLLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_KUEHLLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird die Zone gekühlt: „ja&quot;, „nein&quot; oder leer = wie das Gebäude. „nein&quot; schaltet die Zone aus, auch wenn das Gebäude kühlt; gekühlt wird nur mit Kühlbetrieb des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_KUEHLUNG_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_KUEHLUNG_AKTIV_ERL", resourceCulture);
             }
         }
         
@@ -64334,6 +64550,339 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinzufügen… ähnelt.
+        /// </summary>
+        public static string KMA_BTN_HINZU {
+            get {
+                return ResourceManager.GetString("KMA_BTN_HINZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string KMA_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KMA_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KMA_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KMA_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Anlage „{0}“ aus dem Projekt entfernt werden? Gelöscht wird beim OK. ähnelt.
+        /// </summary>
+        public static string KMA_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KMA_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen ähnelt.
+        /// </summary>
+        public static string KMA_GRUPPE_ANLAGEN {
+            get {
+                return ResourceManager.GetString("KMA_GRUPPE_ANLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string KMA_GRUPPE_BETRIEB {
+            get {
+                return ResourceManager.GetString("KMA_GRUPPE_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string KMA_GRUPPE_GERAET {
+            get {
+                return ResourceManager.GetString("KMA_GRUPPE_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuschlag auf den Strom der Maschine für Pumpen und Regelung; leer = 0 %. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennwerte pflegt die Verwaltung „Kältemaschinen“; hier stehen sie nur zum Lesen. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_KATALOG {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie des Geräts entsteht beim OK. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_NEU {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschinen rechnen nach den Wärmepumpen im Kühlbetrieb. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_REIHENFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinster zulässiger Kaltwasservorlauf des Geräts: {0} °C. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_VORLAUF_MIN {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_VORLAUF_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der eigene Zähler wirkt nur bei einem Kühlträger, der vom Stromträger des Projekts abweicht. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_ZAEHLER {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte wählen Sie eine Kältemaschine aus der Liste. ähnelt.
+        /// </summary>
+        public static string KMA_KATALOG_KEINE_WAHL {
+            get {
+                return ResourceManager.GetString("KMA_KATALOG_KEINE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog enthält keine Kältemaschine. Legen Sie Geräte unter Administration › Kältemaschinen an. ähnelt.
+        /// </summary>
+        public static string KMA_KATALOG_LEER {
+            get {
+                return ResourceManager.GetString("KMA_KATALOG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet? ähnelt.
+        /// </summary>
+        public static string KMA_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("KMA_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
+        /// </summary>
+        public static string KMA_LBL_ANZAHL {
+            get {
+                return ResourceManager.GetString("KMA_LBL_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstromanteil ähnelt.
+        /// </summary>
+        public static string KMA_LBL_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("KMA_LBL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Anlage ähnelt.
+        /// </summary>
+        public static string KMA_LBL_NAME {
+            get {
+                return ResourceManager.GetString("KMA_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger ähnelt.
+        /// </summary>
+        public static string KMA_LBL_TRAEGER {
+            get {
+                return ResourceManager.GetString("KMA_LBL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasservorlauf ähnelt.
+        /// </summary>
+        public static string KMA_LBL_VORLAUF {
+            get {
+                return ResourceManager.GetString("KMA_LBL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Zähler ähnelt.
+        /// </summary>
+        public static string KMA_LBL_ZAEHLER {
+            get {
+                return ResourceManager.GetString("KMA_LBL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt steht noch keine Kältemaschine. Wählen Sie mit „Hinzufügen…“ ein Gerät aus dem Katalog. ähnelt.
+        /// </summary>
+        public static string KMA_LEER {
+            get {
+                return ResourceManager.GetString("KMA_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschine „{0}“ gibt es im Katalog nicht mehr. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_ANLEGEN_FEHLT {
+            get {
+                return ResourceManager.GetString("KMA_MSG_ANLEGEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Projekts ähnelt.
+        /// </summary>
+        public static string KMA_PLATZHALTER_TRAEGER {
+            get {
+                return ResourceManager.GetString("KMA_PLATZHALTER_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kleinste Stützstelle ({0} °C) ähnelt.
+        /// </summary>
+        public static string KMA_PLATZHALTER_VORLAUF {
+            get {
+                return ResourceManager.GetString("KMA_PLATZHALTER_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen… ähnelt.
+        /// </summary>
+        public static string KMA_REITER_KNOPF {
+            get {
+                return ResourceManager.GetString("KMA_REITER_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
+        /// </summary>
+        public static string KMA_SP_ANZAHL {
+            get {
+                return ResourceManager.GetString("KMA_SP_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung [kW] ähnelt.
+        /// </summary>
+        public static string KMA_SP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KMA_SP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
+        /// </summary>
+        public static string KMA_SP_NAME {
+            get {
+                return ResourceManager.GetString("KMA_SP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen im Projekt ähnelt.
+        /// </summary>
+        public static string KMA_TITEL {
+            get {
+                return ResourceManager.GetString("KMA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine aus dem Katalog wählen ähnelt.
+        /// </summary>
+        public static string KMA_TITEL_KATALOG {
+            get {
+                return ResourceManager.GetString("KMA_TITEL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzahl muss mindestens 1 sein. ähnelt.
+        /// </summary>
+        public static string KM_ANLAGE_ANZAHL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_ANLAGE_ANZAHL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage der Kältemaschine gibt es nicht mehr. ähnelt.
+        /// </summary>
+        public static string KM_ANLAGE_FEHLT {
+            get {
+                return ResourceManager.GetString("KM_ANLAGE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hilfsstromanteil muss zwischen 0 und unter 100 % liegen. ähnelt.
+        /// </summary>
+        public static string KM_ANLAGE_HILFSSTROM_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_ANLAGE_HILFSSTROM_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte geben Sie der Anlage einen Namen. ähnelt.
+        /// </summary>
+        public static string KM_ANLAGE_NAME_LEER {
+            get {
+                return ResourceManager.GetString("KM_ANLAGE_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kaltwasservorlauf muss zwischen −20 und 30 °C liegen. ähnelt.
+        /// </summary>
+        public static string KM_ANLAGE_VORLAUF_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_ANLAGE_VORLAUF_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Kältemaschine „{0}“ gelöscht werden? ähnelt.
         /// </summary>
         public static string KM_FRAGE_LOESCHEN {
@@ -67354,15 +67903,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlspalte der Zone „{0}“ folgt dem Gebäude; eigene Kühlwerte je Zone gibt es noch nicht. ähnelt.
-        /// </summary>
-        public static string KOND_MSG_ZONE_KUEHLEN {
-            get {
-                return ResourceManager.GetString("KOND_MSG_ZONE_KUEHLEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude führt keinen angelegten Kalender „{0}“ – die Zone „{1}“ hat nichts zu übernehmen; „Kalender anlegen“ legt ihren eigenen aus der Matrix an. ähnelt.
         /// </summary>
         public static string KOND_MSG_ZONE_OHNE_GEBAEUDEKALENDER {
@@ -67899,15 +68439,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_KUEHLEN_GESPERRT {
             get {
                 return ResourceManager.GetString("KOND_TXT_KUEHLEN_GESPERRT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlwerte gelten für das ganze Gebäude; ein eigener Kühlkalender je Zone ist noch nicht möglich. ähnelt.
-        /// </summary>
-        public static string KOND_TXT_KUEHLEN_ZONE {
-            get {
-                return ResourceManager.GetString("KOND_TXT_KUEHLEN_ZONE", resourceCulture);
             }
         }
         
@@ -79945,6 +80476,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Kältespeicher liegt der Kaltwasser-Vorlauf unter dem Rücklauf (z. B. 6 °C und 12 °C) — oder beide Felder bleiben leer. ähnelt.
+        /// </summary>
+        public static string PSP_FEHLER_KAELTEPAAR {
+            get {
+                return ResourceManager.GetString("PSP_FEHLER_KAELTEPAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Nutzung muss angehakt sein: Heizung, Brauchwasser oder Prozesswärme. Einen Speicher ohne Nutzung entlädt keine Anlage (Konzept 6.1). ähnelt.
         /// </summary>
         public static string PSP_FEHLER_KLASSENSET_LEER {
@@ -80269,6 +80809,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_HINWEIS_HOEHE {
             get {
                 return ResourceManager.GetString("PSP_HINWEIS_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher (Kaltwasser): entlädt vor den Kälteerzeugern und lädt an Kühltagen aus ihrer freien Leistung; ohne Temperaturpaar gilt 6/12 °C. ähnelt.
+        /// </summary>
+        public static string PSP_HINWEIS_KAELTESPEICHER {
+            get {
+                return ResourceManager.GetString("PSP_HINWEIS_KAELTESPEICHER", resourceCulture);
             }
         }
         
@@ -80723,6 +81272,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Rücklauf: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_KALTWASSER_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_KALTWASSER_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Vorlauf: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_KALTWASSER_VORLAUF {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_KALTWASSER_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung (Klassen-Set): ähnelt.
         /// </summary>
         public static string PSP_LABEL_KLASSENSET {
@@ -81151,6 +81718,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher ähnelt.
+        /// </summary>
+        public static string PSP_ROLLE_KAELTESPEICHER {
+            get {
+                return ResourceManager.GetString("PSP_ROLLE_KAELTESPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellspeicher ähnelt.
         /// </summary>
         public static string PSP_ROLLE_QUELLSPEICHER {
@@ -81394,6 +81970,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_VERWENDUNG_HEIZUNG_ANZEIGE {
             get {
                 return ResourceManager.GetString("PSP_VERWENDUNG_HEIZUNG_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string PSP_VERWENDUNG_KAELTE_ANZEIGE {
+            get {
+                return ResourceManager.GetString("PSP_VERWENDUNG_KAELTE_ANZEIGE", resourceCulture);
             }
         }
         
@@ -86493,6 +87078,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“ ist als Wärmesenke einer Anlage eingetragen — er rechnet nur in der Kältekaskade. Bitte die Wärmesenke der Anlage berichtigen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_ALS_WAERMESENKE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_ALS_WAERMESENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Kapazität {1} kWh, Entladung {2} MWh, Ladung {3} MWh, Wärmeeintrag {4} MWh, {5} Vollzyklen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Kein Kälteerzeuger lädt ihn (keine Wärmepumpe im Kühlbetrieb, keine Kältemaschine) — er wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_OHNE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_OHNE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_OHNE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_OHNE_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Temperaturpaar leer oder vertauscht — gerechnet mit Vorlauf {1} °C und Rücklauf {2} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTESPEICHER_PAAR_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTESPEICHER_PAAR_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die anteilig am Netzbezug; Eigenverbrauch aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_ABRECHNUNG_ANTEILIG {
@@ -86583,11 +87213,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}“: Die Kältemaschine führt kein Gerät (Projektkopie gelöscht) — sie rechnet nicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_ANLAGE_OHNE_GERAET {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_ANLAGE_OHNE_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot; (Kaltwasser {1} °C): {2} MWh Kälte, davon {3} MWh in {4} Stunden freier Kühlung, {5} MWh Strom; in {6} Stunden unter der Mindestteillast getaktet. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_KM_BETRIEB {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_KM_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_HILFSSTROM_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_HILFSSTROM_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -86601,11 +87249,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Der Kältestrom trägt den Stromträger „{1}“ — {2}. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_KUEHLTRAEGER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_KUEHLTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: Das Klima führt keine Luftfeuchte — der Nasskühler rechnet in {1} Stunden mit der Außentemperatur − 3 K statt der Feuchtkugeltemperatur. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Die Projektkopie hat keine Anlagenzeile — sie rechnet nicht. Legen Sie die Maschine als Erzeuger im Projekt an. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_OHNE_ANLAGE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_OHNE_ANLAGE", resourceCulture);
             }
         }
         
@@ -86637,7 +87303,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen haben keinen Kaskadenplatz: Sie decken nach den Wärmepumpen im Kühlbetrieb in der Reihenfolge ihrer Projektkopien — mit Trocken- oder Nasskühler in Stunden freier Kühlung vor allen anderen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen decken als Erzeugertyp nach den Wärmepumpen im Kühlbetrieb, untereinander in der Reihenfolge ihrer Anlagenzeilen — mit Trocken- oder Nasskühler in Stunden freier Kühlung vor allen anderen. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_KM_REIHENFOLGE {
             get {
@@ -87128,6 +87794,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KOND_UNTERTEMPERATUR {
             get {
                 return ResourceManager.GetString("SIMENG_KOND_UNTERTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}&quot;: In {1} h heizt eine Zone, während eine Zone kühlt — Heizwärme {2} kWh und Kältebedarf {3} kWh in diesen Stunden. Beide sind ausgewiesen und nicht gegeneinander verrechnet; die Gebäudesummen sind die Summen der Zonen je Richtung. ähnelt.
+        /// </summary>
+        public static string SIMENG_KU3_ZONEN_GLEICHZEITIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KU3_ZONEN_GLEICHZEITIG", resourceCulture);
             }
         }
         
@@ -92289,6 +92964,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_KACHEL_SPEICHER_TIP {
             get {
                 return ResourceManager.GetString("SIMWARN_KACHEL_SPEICHER_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Kein Kälteerzeuger (Wärmepumpe im Kühlbetrieb oder Kältemaschine) lädt ihn — er wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG", resourceCulture);
             }
         }
         
@@ -116820,6 +117513,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung der Zone ähnelt.
+        /// </summary>
+        public static string ZONDLG_GRP_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_GRP_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Werte der Zone ähnelt.
         /// </summary>
         public static string ZONDLG_GRP_WERTE {
@@ -116879,6 +117581,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_LBL_INFILTRATION {
             get {
                 return ResourceManager.GetString("ZONDLG_LBL_INFILTRATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistungsgrenze ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_KUEHLLEISTUNG_MAX {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_KUEHLLEISTUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone wird gekühlt ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_KUEHLUNG_AKTIV {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_KUEHLUNG_AKTIV", resourceCulture);
             }
         }
         
@@ -117311,6 +118031,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_ZEILE_GEGENSEITE {
             get {
                 return ResourceManager.GetString("ZONDLG_ZEILE_GEGENSEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlsollwerte der Zone für Tag und Nacht stehen in der Spalte „Kühlen&quot; der Matrix; ein leeres Feld gilt wie beim Gebäude. Gekühlt wird nur, wenn das Projekt den Kühlbetrieb rechnet. ähnelt.
+        /// </summary>
+        public static string ZONDLG_ZEILE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_ZEILE_KUEHLUNG", resourceCulture);
             }
         }
         

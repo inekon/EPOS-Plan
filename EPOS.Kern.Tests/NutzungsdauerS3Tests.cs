@@ -161,8 +161,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1.25, Instandsetzung(ZEILE_BAULICH));
             Assert.Null(Instandsetzung(ZEILE_BATTERIE));
 
-            Assert.Equal(5, Zahl("SELECT COUNT(*) FROM Tab_Nutzungsdauer WHERE Instandsetzung_Prozent IS NOT NULL"));
-            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Nutzungsdauer WHERE Wartung_Prozent IS NOT NULL"));
+            // Gezählt werden die Zeilen dieses Schritts; die Gerätezeile der Kältemaschine (Komponente 11) sät
+            // Schritt 183 mit beiden Sätzen aus ihrer eigenen Quelle.
+            Assert.Equal(5, Zahl("SELECT COUNT(*) FROM Tab_Nutzungsdauer WHERE Instandsetzung_Prozent IS NOT NULL AND KomponentenID IS NOT 11"));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Nutzungsdauer WHERE Wartung_Prozent IS NOT NULL AND KomponentenID IS NOT 11"));
 
             NutzungsdauerSaetze.Bericht zweiter = NutzungsdauerSaetze.Ausfuehren();
             Assert.Equal(0, zweiter.Gesetzt);

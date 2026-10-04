@@ -1665,6 +1665,7 @@ Rückfrage beim Anwender; G4c wird ohne iOS-Lauf abgenommen.
 | **G7d — IFC-Export S2 (Round-Trip)** (**gebaut 04.10.2026**) | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
 | **G7e — IFC-Export S3 (Körper)** (**gebaut 04.10.2026**) | Quader je Zone, Platte je Bauteil **aus dem Zonengeometrie-Modell** (Nachtrag 1), Placement-Kette, Azimut als Drehung, `TrueNorth` auf der Vorgabe, Kennzeichnung, Prüfbilder | Probe 16 mit Bildern; Validator grün trotz Placement-Pflicht | **8–15 PT** † |
 | **Gebäudebetrachter (E11)** | Zonengeometrie-Modell im Kern (Polygon, Höhe, Geschoss, Kantenzuordnung), **2D-Grundriss je Geschoss mit G6c**, **3D-Ansicht mit G7b** — eine Komponente, Umschalter „Grundriss \| Körper", three.js lokal, Kennzeichnung „schematisch" (Kapitel 14) | Proben 25–27; Sichtabnahme Windows und iOS | **10–17 PT**, davon **4–7 PT hier** (3D-Ansicht); Zonengeometrie und 2D-Grundriss (**6–10 PT**) rechnet das [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) unter G6c |
+| **G7f — Raumkörper aus der IFC-Datei (E71)** (Konzept, Reihenfolge offen) | Kern-Leser der Raumdarstellungen ohne Geometriekern (Extrusion, Tessellation, BRep, `IfcMappedItem`, Placement-Kette), `Raumumriss.Koerper`, Ansicht mit Umschalter „Dateikörper \| Exportmodell“, Kennzeichen je Raum, Dreiecksgrenze; Exporte unverändert (Kapitel 15) | Proben 28–31 | **4–6 PT** (nicht in der Summe G7) |
 | | **Summe G7** (einschließlich der 3D-Ansicht aus E11; alle Stufen gebaut) | | **46–79 PT** |
 | | **Summe G4c + G7** | | **63–107 PT** |
 
@@ -1943,7 +1944,131 @@ nicht zwei Seiten, die auseinanderlaufen.
 - **Die native xBIM Geometry Engine:** nur Windows, OCCT unter LGPL — gegen
   [`ADR-003`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) und gegen die Plattformfreiheit des Kerns.
 
-Beides bleibt eine **spätere Option nur bei Bedarf aus der Praxis** und ist nicht geplant. **„Datei
+Beides bleibt eine **spätere Option nur bei Bedarf aus der Praxis** und ist nicht geplant. Raumkörper ohne Kern: siehe Nachtrag 2 (Kapitel 15) — der Betrachter zeigt die Räume aus der Datei, nicht die Bauteile. **„Datei
 extern öffnen"** bleibt als Handgriff über `Dienste.Datei` zulässig — für den Anwender, der eine
 fremde IFC-Datei wirklich ansehen will, ist das der ehrlichere Weg als ein halber eigener
 Betrachter.
+
+---
+
+## 15. Nachtrag 2 — Raumkörper aus der IFC-Datei (E71, 04.10.2026)
+
+Der Anwender hat am 04.10.2026 festgelegt (**E71**, [Status](Status_Gebaeudesimulation_VDI6007.md)): Der
+IFC-Betrachter zeigt die **Geometrie der Räume und Zonen aus der Datei** — nicht Wände mit Dicke, nicht
+Öffnungen, nicht Dächer, nicht Bauteile. Dieser Nachtrag legt die Stufe **G7f** vor. Er ergänzt Kapitel 14 und
+lässt dessen Regeln, die Exporte (5.5, 6.7) und [`ADR-003`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) unberührt.
+
+### 15.1 Ziel und Abgrenzung
+
+| Gehört dazu | Gehört nicht dazu |
+|---|---|
+| die wirkliche Form jedes Raums: `IfcSpace`, Darstellung `RepresentationIdentifier = "Body"` | Bauteile (`IfcWall`, `IfcSlab`, `IfcRoof`, `IfcCovering` …), ihre Dicke und ihre Schichten |
+| daraus die Zone als Menge ihrer Raumkörper (Zuordnung wie im Grundriss, 14.1) | Öffnungen (`IfcOpeningElement`, `IfcWindow`, `IfcDoor`) und jede Ausschneidung |
+| Lage über die Placement-Kette in Weltkoordinaten, Längeneinheit der Datei | Rechnen mit dem Körper: Flächen, Volumen und Zonierung bleiben bei Raumgrenzen und Mengen (3.4, 14.1) |
+| Herkunft und Vereinfachung je Raum, sichtbar in der Ansicht | Reparatur: offene, überlappende oder verdrehte Netze werden gezeichnet, wie sie sind |
+
+**Die Datei bleibt Quelle.** Nichts am Körper wird gerechnet, geschlossen oder ausgeglichen; was der Leser nicht
+lesen kann, fällt benannt auf den Umriss zurück. **„Schematisch“ bleibt der benannte Rückfall** für jeden Raum ohne
+Dateikörper und ohne Raumgrenzen (14.4 Nr. 1). Der gbXML-Weg (`Space/ShellGeometry`) könnte dasselbe Modell speisen;
+er ist nicht Teil von G7f und bleibt ein eigener Zuruf.
+
+### 15.2 Was ohne Geometriekern lesbar ist
+
+Gelesen wird über die Schnittstellen `Xbim.Ifc4.Interfaces.IIfc*` — damit gilt jede Zeile für IFC2x3, IFC4 und
+IFC4x3, soweit das Schema die Entität kennt (Tessellation und `IfcIndexedPolyCurve` gibt es erst ab IFC4). Jeder
+Darstellungsträger (`IfcRepresentationItem`) ergibt ein Dreiecksnetz im System seines Raums; mehrere Träger einer
+Darstellung werden **aneinandergehängt, nicht vereinigt**.
+
+| Darstellungsart | Verfahren | Grenze |
+|---|---|---|
+| `IfcExtrudedAreaSolid` über `IfcRectangleProfileDef` | Rechteck um `Position` des Profils (2D) → Prisma längs `ExtrudedDirection` um `Depth`, dann `Position` des Körpers | exakt |
+| … über `IfcArbitraryClosedProfileDef` mit `IfcPolyline` | Ring der Punkte, Schlusspunkt entfernt, Deckflächen per Ohrenschnitt | exakt |
+| … mit `IfcIndexedPolyCurve` (`IfcLineIndex`, `IfcArcIndex`) oder `IfcCompositeCurve` (Segmente aus `IfcPolyline` und `IfcTrimmedCurve` über `IfcCircle`) | Bögen als Sehnenzug mit **fester Sehnenzahl** (Vorschlag: 32 je Vollkreis, je Bogen anteilig, mindestens 2) | Vermerk „vereinfacht (Bogen)“ |
+| … über `IfcCircleProfileDef` | Vieleck mit derselben festen Sehnenzahl | Vermerk „vereinfacht (Bogen)“ |
+| … über `IfcArbitraryProfileDefWithVoids` | Innenringe als Löcher: Ohrenschnitt mit Brückenkanten vom Loch zum Außenring | gelingt die Brücke nicht: nur der Außenring, Vermerk „vereinfacht (Loch)“ |
+| Richtung und Tiefe | `ExtrudedDirection` beliebig (schräges Prisma zulässig), `Depth` in Längeneinheit der Datei | — |
+| `IfcFacetedBrep` (`IfcClosedShell` aus `IfcFace` mit `IfcPolyLoop`) | je Fläche ein ebenes Vieleck, `IfcFaceOuterBound` und `IfcFaceBound` mit `Orientation`, Ohrenschnitt (Löcher wie oben) | nicht ebene Fläche: Fächer vom ersten Punkt, Vermerk „vereinfacht (uneben)“; `IfcFacetedBrepWithVoids`: nur die Außenschale, Vermerk |
+| `IfcShellBasedSurfaceModel`, `IfcFaceBasedSurfaceModel` | wie `IfcFacetedBrep`, auch mit `IfcOpenShell` | offene Schale wird gezeichnet, Vermerk „offen“ (15.6 Nr. 2) |
+| `IfcTriangulatedFaceSet` (IFC4) | `Coordinates` und `CoordIndex` direkt; Normalen aus den Dreiecken, nicht aus `Normals` | exakt |
+| `IfcPolygonalFaceSet` (IFC4) | je `IfcIndexedPolygonalFace(WithVoids)` Ohrenschnitt | wie BRep |
+| `IfcMappedItem` | `MappingSource` (`IfcRepresentationMap` samt `MappingOrigin`) über `MappingTarget` (`IfcCartesianTransformationOperator3D`, auch mit Maßstab und `…NonUniform`) abbilden | `IfcRahmen` bleibt maßstabfrei; der Maßstab steht eigens in der Abbildung |
+| `IfcBooleanClippingResult` (und allgemein `IfcBooleanResult`) | **nur der erste Operand**, rekursiv bis zu einem lesbaren Körper | Vermerk „ohne Beschnitt“ — der Körper kann über die Dachschräge hinausragen |
+| Placement-Kette | `IfcSpace.ObjectPlacement` über `IfcPlatzierung.Weltrahmen`, `Verketten`, `Abbilden` bis in Weltkoordinaten; Längeneinheit der Datei wie beim Import | `IfcGridPlacement`, `IfcLinearPlacement`: kein Körper, Rückfall (wie `IMP_IFC_PROT_PLATZIERUNGSART`) |
+| Nordrichtung | `TrueNorth` bzw. `IfcMapConversion` wie beim Import (`IfcPlatzierung`) — **nur für den Nordpfeil**; die Punkte bleiben im Modellsystem, so decken sich Körper und Grundriss (14.1) | — |
+
+**Benannt nicht lesbar** — Rückfall je Raum auf das Prisma aus dem Umriss der Raumgrenzen, ohne sie auf das
+schematische Rechteck, als Herkunft am Raum ausgewiesen:
+
+| Darstellungsart | Warum |
+|---|---|
+| `IfcAdvancedBrep` (NURBS- und B-Spline-Flächen) | braucht einen Flächenauswerter — das ist ein Geometriekern |
+| `IfcCsgSolid` (Primitive mit booleschen Bäumen) | boolesche Operation auf Körpern |
+| `IfcSweptDiskSolid` | Rohrkörper längs einer Raumkurve, für Räume ohne Gegenstand |
+| `IfcRevolvedAreaSolid` | Drehkörper mit gekrümmter Mantelfläche |
+| `IfcExtrudedAreaSolidTapered`, `IfcSectionedSolid…` und jede übrige Art | ohne Messdatei kein Bedarf; die Art wird mit Namen gemeldet |
+
+**Alles plattformfrei im Kern** (`EPOS.Kern/Allgemein/Import/Ifc/`, Arbeitsname `IfcRaumkoerper`), nur mit
+`Xbim.Ifc4`-Typen; kein neues Paket, ADR-003 bleibt. Welche Arten die Werkzeuge aus E69 (Revit, Archicad, HiCAD)
+für Räume schreiben, misst G7f-1 an den lokalen Dateien und trägt es in diese Tabelle nach.
+
+### 15.3 Das Modell
+
+| Teil | Festlegung |
+|---|---|
+| `Raumumriss.Koerper` | **optional**, Typ mit Arbeitsnamen `Dateikoerper` (der Name `Raumkoerper` ist mit `Zonenkoerper.cs` belegt); `null` = kein Dateikörper |
+| Inhalt | Punkte in Weltkoordinaten [m] (x Ost, y Nord der Datei, z oben), Dreiecke als Indextripel mit Normale je Dreieck, Umlauf so, dass die Normale vom Raum weg zeigt, wo die Datei das hergibt; dazu die **Randkanten** der Ursprungsflächen (ohne Triangulationsdiagonalen) für die Linien der Ansicht |
+| Herkunft | `Datei`, dazu die gelesene Darstellungsart als Schlüssel und die Vermerke je Raum (`Bogen`, `Loch`, `uneben`, `ohne Beschnitt`, `offen`, `Mehrschale`) — sprachneutrale Schlüssel, nie Anzeigetext (14.4 Nr. 4) |
+| Grundriss-Umriss | **unverändert**: aus Raumgrenzen, sonst das schematische Rechteck; der Körper ersetzt ihn nicht und speist weder Fläche noch Zonierung |
+| Zone | die Menge der Körper ihrer Räume, in der Reihenfolge der Datei; keine Vereinigung |
+| Determinismus | Räume in der Reihenfolge von `Zonengeometrie.Raeume`, Träger in der Reihenfolge der Datei, feste Startecke des Ohrenschnitts, Punkte gerundet auf `Zonenkoerper.STELLEN` (1e‑6 m); Probe 25 gilt auch für den Körper |
+
+**Die Exporte bleiben unverändert.** gbXML Stufe 2 und IFC S3 schreiben weiter den Umriss, um die Höhe extrudiert
+(14.3). Der Dateikörper wird nicht zurückgeschrieben: Wer die Architektendatei zurückgibt, gibt sie über G7d
+zurück, und dort trägt sie ihre Geometrie ohnehin unverändert. **Die Ansicht kann damit zwei Dinge zeigen:** den
+Dateikörper (was die Datei sagt) und, per Umschalter, das Exportmodell (was EPOS schreibt — der Prüfstand nach 14.3).
+
+### 15.4 Die Ansicht
+
+| Punkt | Festlegung |
+|---|---|
+| Zeichnen | `epos-gebaeude-koerper.js` zeichnet je Raum mit Dateikörper eine `BufferGeometry` (Position, Index), Zonenfarbe nach der Stelle der Zone wie heute, Randkanten als `LineSegments`; ohne Dateikörper das Prisma aus dem Umriss wie heute |
+| Kennzeichen je Raum | in der Legende und am Raum: **„aus Datei“**, **„aus Umriss“** (Prisma aus Raumgrenzen), **„schematisch“**; „vereinfacht“ mit dem Vermerk als Zusatz; Texte in beiden `.resx`, der Steuerwert ist der Schlüssel |
+| Umschalter | **„Dateikörper \| Exportmodell“** im Reiter „Körper“; „Exportmodell“ ist die Körperansicht aus 14.2 (Umriss extrudiert, Platten je Bauteil); ohne einen einzigen Dateikörper (gbXML, schematisches Gebäude) entfällt der Umschalter |
+| Klick | wählt die Zone über die Raumkennung wie heute (`ZoneGewaehlt`) |
+| DTO | `GebaeudeAnsichtKoerperraum` bekommt den Dateikörper: Punkte als `float`-Folge **relativ zu einem Bezugspunkt** des Gebäudes (georeferenzierte Dateien tragen Koordinaten im Bereich 10⁶ m, `float` verlöre dort die Zentimeter), Indizes als `int`-Folge, Kennzeichen und Vermerke; Übergabe an JavaScript als Bytefeld statt als Zahlenliste |
+| Dreiecksgrenze iPad | **Vorschlag: 300 000 Dreiecke je Gebäude**. Darüber zeigt die Ansicht für alle Räume das Prisma aus dem Umriss, mit Hinweis „Dateikörper zu groß (n Dreiecke)“ — benannte Vereinfachung, kein Abbruch |
+| Speicher und Ladezeit | Probe 31: Dreieckszahl, Größe des Bytefelds und Zeit bis zum ersten Bild an FZK-Haus und DigitalHub, auf Windows und iPad |
+
+### 15.5 Stufen und Aufwand
+
+| Stufe | Inhalt | Abnahme | Aufwand |
+|---|---|---|---|
+| **G7f-1 — Kern-Leser** | `IfcRaumkoerper`: Extrusion (alle Profile aus 15.2), Tessellation, BRep und Flächenmodelle, `IfcMappedItem`, Clipping als erster Operand, Placement-Kette, Rückfall und Vermerke; `Raumumriss.Koerper`; Tests mit **selbst erzeugten IFC-Dateien** nach 8.3 unter `Referenzlaeufe/Importproben/` und mit dem **Rundlauf über den eigenen Schreiber G7e** (dessen Extrusionen kommen byte-genau als Körper zurück, Probe 27 erweitert); FZK-Haus und DigitalHub **lokal**, nicht im Repositorium, ohne Datei benannt übersprungen | Proben 25, 28, 29 | **2–3 PT** |
+| **G7f-2 — Ansicht** | DTO und Hülle `GebaeudeImportAnsicht`, Bytefeld, JavaScript mit `BufferGeometry`, Umschalter, Kennzeichen in der Legende, Dreiecksgrenze; bunit (Probe 26 erweitert), Sichtprobe Windows | Proben 26, 30; Sichtprobe | **1–2 PT** |
+| **G7f-3 — Papiere** | dieses Kapitel als „So gebaut“, Statuszeile, Wiki-Seite „Gebäudeimport“ Abschnitt „Körper“ (`Projekte/Wiki/`), Logbuch-Entwurf, Protokoll | Linkwache, Gegenlese | **0,5 PT** |
+| | **zusammen** | | **4–6 PT** |
+
+**Einordnung (Vorschlag, die Reihenfolge legt der Anwender fest):** nach KU3-4b, vor AK2. Probe 31 (iPad) nur auf
+Zuruf und mit dem einen iOS-Lauf, den der Anwender ohnehin freigibt.
+
+### 15.6 Regeln (Ergänzung zu 14.4)
+
+1. **Herkunft je Raum sichtbar:** „aus Datei“, „aus Umriss“ oder „schematisch“, dazu jeder Vermerk; ein Körper ohne
+   Kennzeichen ist ein Fehler.
+2. **Keine Reparatur fremder Geometrie:** Offene Schalen werden gezeichnet, nicht geschlossen; Überlappungen und
+   verdrehte Flächen bleiben; die Ansicht vermerkt „offen“. Beidseitiges Material, damit offene Netze sichtbar
+   bleiben.
+3. **Keine Lizenzänderung:** nur `Xbim.Ifc4`-Typen, kein web-ifc, keine xBIM Geometry Engine, kein neues Paket;
+   three.js bleibt, wie es ist (14.4 Nr. 2).
+4. **iOS-Grenze:** die Dreiecksgrenze aus 15.4 gilt auf allen Plattformen gleich, damit beide Schalen dasselbe
+   Bild zeigen.
+5. **Determinismus:** dieselbe Datei ergibt dasselbe Netz, byteweise (15.3); kein Zufall, keine Hashreihenfolge.
+
+### 15.7 Abnahmeproben (Ergänzung zu 14.5)
+
+| Nr. | Probe | Kriterium |
+|---|---|---|
+| 28 | **Rundlauf eigener Schreiber → Leser** | Jede Raumextrusion, die G7e schreibt (`IfcRectangleProfileDef` → `IfcExtrudedAreaSolid`), kommt als Dateikörper zurück, dessen Punkte nach Rundung auf 1e‑6 die Schale des `Zonenkoerper` sind; die Ausgabe des Körpers in invarianter Kultur ist byteweise gleich; erweitert Probe 27 |
+| 29 | **Darstellungsarten je Testdatei** | Je selbst erzeugter Kleinstdatei die erwartete Art und Dreieckszahl: Extrusion mit Polygon, mit Bogen (Vermerk), mit Loch; `IfcFacetedBrep`; `IfcTriangulatedFaceSet` und `IfcPolygonalFaceSet`; `IfcMappedItem` mit Maßstab; Clipping mit Vermerk „ohne Beschnitt“; offene Schale mit Vermerk; `IfcAdvancedBrep` → Rückfall mit Herkunft „aus Umriss“ bzw. „schematisch“ |
+| 30 | **Dateikörper und Exportmodell getrennt** (bunit) | Der Umschalter wechselt zwischen beiden; „Dateikörper“ trägt die Kennzeichen je Raum, „Exportmodell“ die Kennzeichnung aus 14.4; ohne Dateikörper kein Umschalter; kein Anzeigetext ist Steuerwert |
+| 31 | **iPad-Grenze** (nur auf Zuruf) | Dreieckszahl, Bytefeld und Ladezeit an FZK-Haus und DigitalHub; über der Grenze die benannte Vereinfachung statt eines Absturzes |

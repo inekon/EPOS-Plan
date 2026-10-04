@@ -44,6 +44,8 @@ namespace WindowsFormsApplication1
         public const int KESSEL_TYP = 10;
         public const int BHKW_TYP = 11;
         public const int PUFFER_TYP = 12;
+        /// <summary>Kältemaschine als Anlage (Schemaschritt <see cref="KaeltemaschineAnlageSchema"/>).</summary>
+        public const int KM_TYP = 13;
 
         /// <summary>
         /// Untergrenze der VORLAEUFIGEN Ids, die die Auswahl-Dialoge ungespeicherten

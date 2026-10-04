@@ -225,7 +225,10 @@ namespace Auslieferungsvorlage.Tests
             // 167 seit dem Schemaschritt 182 (KaeltemaschineSchema, KU3-1): Tab_Kaeltemaschine(_STAMM) und
             // Tab_Kenndaten_Kaeltemaschine(_STAMM), STRICT von ihrer ersten Zeile an. Die Schritte 180 und 181
             // sind ADD COLUMN und aendern die Zahl nicht.
-            Assert.Equal(167, befund.Strict);
+            // 168 seit dem Schemaschritt 183 (KaeltemaschineAnlageSchema, KU3-4): Tab_ErgebnisKaeltemaschine,
+            // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            Assert.Equal(168, befund.Strict);
         }
 
         // =============================================================================
@@ -368,11 +371,12 @@ namespace Auslieferungsvorlage.Tests
                 Verweise: Convert.ToInt64(DataRepository.ExecuteScalar(
                     NutzungsdauerSchema.ZaehlungZuordnung()))));
 
-            Assert.Equal(NutzungsdauerSchema.Saat.Length, befund.Zeilen);
-            Assert.Equal(NutzungsdauerSchema.Saat.Length, befund.Auslieferung);
+            // Die Saat und die Gerätezeile der Kältemaschine, die Schritt 183 sät (KaeltemaschineAnlageSchema).
+            Assert.Equal(NutzungsdauerSchema.Saat.Length + 1, befund.Zeilen);
+            Assert.Equal(NutzungsdauerSchema.Saat.Length + 1, befund.Auslieferung);
 
-            // Genau eine Standardzeile je Technik - zehn Kostenkomponenten.
-            Assert.Equal(10, befund.Standard);
+            // Genau eine Standardzeile je Technik - elf Kostenkomponenten, die elfte aus Schritt 183.
+            Assert.Equal(11, befund.Standard);
 
             // Die Vorlagenpositionen behalten ihre Positionsart.
             Assert.True(befund.Verweise > 0,

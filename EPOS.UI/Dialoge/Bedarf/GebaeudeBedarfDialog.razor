@@ -35,6 +35,7 @@
 @namespace EPOS.UI.Dialoge.Bedarf
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@using System.Globalization
 @inherits Farbwahlwirt
 @implements IDisposable
 
@@ -175,6 +176,12 @@
                                 {
                                     <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteNachtauskuehlung, EinheitStundenZahl)</th>
                                 }
+                                @if (ZonenMitKaelte)
+                                {
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteKaelte, _einheit.Text)</th>
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteKaeltespitze, EinheitKw)</th>
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteKuehlstunden, EinheitStundenZahl)</th>
+                                }
                                 @if (ZonenMitHeizkreis)
                                 {
                                     <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteVorlauf, "°C")</th>
@@ -198,6 +205,12 @@
                                     {
                                         <td class="epos-zahl">@Ganzzahl(z.NachtauskuehlstundenH)</td>
                                     }
+                                    @if (ZonenMitKaelte)
+                                    {
+                                        <td class="epos-zahl gebb-zone-kaelte">@Energie(z.KaeltebedarfMwh)</td>
+                                        <td class="epos-zahl">@Zahl(z.KaeltespitzeKw)</td>
+                                        <td class="epos-zahl">@Ganzzahl(z.KuehlstundenH)</td>
+                                    }
                                     @if (ZonenMitHeizkreis)
                                     {
                                         <td class="epos-zahl">@Temperatur(z.VorlaufMittelC)</td>
@@ -210,6 +223,10 @@
                     </table>
                 </div>
                 <Herleitungszeile Text="@ZonenTexte.Herleitung" />
+                @if (Gleichzeitigzeile is string gleichzeitig)
+                {
+                    <Herleitungszeile Text="@gleichzeitig" />
+                }
                 @if (ZonenMitHeizkreis)
                 {
                     <Herleitungszeile Text="@ZonenTexte.HerleitungUebergabe" />
@@ -622,6 +639,20 @@
 
     /// <summary>Trägt eine Zone Stunden mit Nachtauskühlung? Dann steht die Spalte (nur mit Wert).</summary>
     private bool ZonenMitNachtauskuehlung => Daten.Zonen.Any(z => z.NachtauskuehlstundenH.HasValue);
+
+    /// <summary>Rechnet eine Zone gekühlt (KU3-3)? Dann stehen Kältebedarf, Kältespitze und Kühlstunden je Zone.</summary>
+    private bool ZonenMitKaelte => Daten.Zonen.Any(z => z.KaeltebedarfMwh.HasValue);
+
+    /// <summary>
+    /// Die Zeile zum gleichzeitigen Heizen und Kühlen der Zonen (KU3-3, F-K15, K6) — ausgewiesen, nicht
+    /// saldiert; <c>null</c> ohne solche Stunden.
+    /// </summary>
+    private string? Gleichzeitigzeile
+        => Daten.StundenHeizenUndKuehlenH is int h && h > 0 && Daten.GleichzeitigHeizenKwh is double heiz
+           && Daten.GleichzeitigKuehlenKwh is double kuehl
+            ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.HerleitungGleichzeitig,
+                            h, heiz.ToString("N0", CultureInfo.CurrentCulture), kuehl.ToString("N0", CultureInfo.CurrentCulture))
+            : null;
 
     /// <summary>
     /// Rechnet mindestens eine Zone gekoppelt (AK1z, E63)? Nur dann stehen Vorlauf, Rücklauf und die
