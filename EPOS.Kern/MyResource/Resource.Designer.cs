@@ -30004,6 +30004,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1, Daten ohne Geometrie: Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen ({0}). ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_GEOMETRIE_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_GEOMETRIE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
         /// </summary>
         public static string GEXP_DATEI_GRUNDLAGE_FLAECHE {
@@ -30067,11 +30076,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1: Daten ohne Geometrie. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_OHNE_GEOMETRIE {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_OHNE_GEOMETRIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Standort und ohne Nordrichtung: Es ist keine Postleitzahl angegeben. ähnelt.
         /// </summary>
         public static string GEXP_DATEI_OHNE_ORT {
             get {
                 return ResourceManager.GetString("GEXP_DATEI_OHNE_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 2, Ersatzmodell: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie ist schematisch erzeugt und bildet den tatsächlichen Grundriss nicht ab. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_SCHEMATISCH", resourceCulture);
             }
         }
         
@@ -30085,7 +30112,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Export aus EPOS-Plan, Stufe 1: Daten ohne Geometrie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Export aus EPOS-Plan. ähnelt.
         /// </summary>
         public static string GEXP_DATEI_STUFE {
             get {
@@ -30400,11 +30427,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Flächen stehen ohne Polygon in der Datei — ihr Raum trägt keinen Körper, oder sie liegen an keiner Kante: {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_FLAECHE_OHNE_POLYGON {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_FLAECHE_OHNE_POLYGON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart „{0}“ hat keine Entsprechung in gbXML; die Datei nennt „Unknown“. ähnelt.
         /// </summary>
         public static string GEXP_PROT_GEBAEUDEART_UNBEKANNT {
             get {
                 return ResourceManager.GetString("GEXP_PROT_GEBAEUDEART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen ({0}); die Datei trägt keine Raumgeometrie. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_GEOMETRIE_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_GEOMETRIE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzmodell: {0} Räume stehen mit schematischer Geometrie in der Datei. Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie ist schematisch erzeugt und bildet den tatsächlichen Grundriss nicht ab. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_GEOMETRIE_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_GEOMETRIE_SCHEMATISCH", resourceCulture);
             }
         }
         
@@ -30468,6 +30522,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PROT_NACHBARZONE_UNBEKANNT {
             get {
                 return ResourceManager.GetString("GEXP_PROT_NACHBARZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen passen nicht in ihre Wandstrecke; ihr Polygon ist verkleinert (Randabstand 0,1 m, höchstens 90 %): {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_OEFFNUNG_BEGRENZT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_OEFFNUNG_BEGRENZT", resourceCulture);
             }
         }
         
@@ -114980,6 +115043,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WZP_PFLICHT {
             get {
                 return ResourceManager.GetString("WZP_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Paare von Räumen mit gemeinsamer Trennwand liegen aneinander — die Trennwand deckungsgleich, das Rechteck flächentreu angepasst: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_ANGELEGT {
+            get {
+                return ResourceManager.GetString("ZGEO_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Paare von Räumen lassen sich nicht widerspruchsfrei aneinanderlegen; ihre Gruppe steht gereiht wie ohne Nachbarn, und der gbXML-Export schreibt keine Raumgeometrie: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_ANORDNUNG_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("ZGEO_ANORDNUNG_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume sind zum Aneinanderlegen in 90°-Schritten gedreht — ihre Wände zeigen im Bild nicht in ihre Himmelsrichtung: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_GEDREHT {
+            get {
+                return ResourceManager.GetString("ZGEO_GEDREHT", resourceCulture);
             }
         }
         

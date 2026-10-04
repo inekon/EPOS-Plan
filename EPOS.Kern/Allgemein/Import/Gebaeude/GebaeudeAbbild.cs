@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -238,9 +239,31 @@ namespace WindowsFormsApplication1
         public string Anzeigename => string.IsNullOrWhiteSpace(Name) ? Kennung : Name;
     }
 
+    /// <summary>
+    /// Die Jahresergebnisse einer Zone für <c>Results</c> im gbXML-Export (Stufe G7b, Datenaustauschkonzept 5.6);
+    /// jede Größe <c>null</c> = keine.
+    /// </summary>
+    internal sealed class AbbildErgebnis
+    {
+        /// <summary>Jahresheizwärme [kWh].</summary>
+        public double? EnergieKWh { get; set; }
+
+        /// <summary>Heizlast [W].</summary>
+        public double? HeizlastW { get; set; }
+
+        /// <summary>Mittlere Raumlufttemperatur des Jahres [°C].</summary>
+        public double? MitteltemperaturC { get; set; }
+
+        /// <summary>Beginn des Rechenjahrs (<c>startTime</c>).</summary>
+        public DateTime Beginn { get; set; }
+    }
+
     /// <summary>Ein Raum des Abbilds.</summary>
     internal sealed class AbbildRaum
     {
+        /// <summary>Die Jahresergebnisse der Zone dieses Raums (nur Export); <c>null</c> = keine.</summary>
+        public AbbildErgebnis Ergebnis { get; set; }
+
         /// <summary>Kennung aus der Datei.</summary>
         public string Kennung { get; set; } = "";
 
