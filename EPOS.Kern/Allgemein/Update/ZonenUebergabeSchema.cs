@@ -67,6 +67,9 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen die Übergabe der Zone begrenzt hat [h], im Ergebnis.</summary>
         public const string SPALTE_UEBERGABE_BEGRENZT = "Uebergabe_Begrenzt_H";
 
+        /// <summary>Spaltenzahl von <c>Tab_ErgebnisZone</c> nach dem Schritt: die von KP-S4 und die drei Kreisspalten.</summary>
+        public const int SPALTENZAHL_ERGEBNIS_ZONE = AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE + 3;
+
         /// <summary>Die vier Eingabespalten an <c>Tab_Zone</c>, in Schrittfolge.</summary>
         public static readonly string[] SPALTEN_ZONE =
         {

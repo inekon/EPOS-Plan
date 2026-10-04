@@ -217,7 +217,7 @@ namespace EPOS.Kern.Tests
             // Aufheizoptimierung (KP-S3) und die drei bzw. eine des Schritts KP-S4 (B24).
             Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
                          DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE,
+            Assert.Equal(ZonenUebergabeSchema.SPALTENZAHL_ERGEBNIS_ZONE,
                          DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_ERGEBNIS).Count);
             foreach (string t in KonditionierungVorlagenSchema.Ergebnistabellen)
             {

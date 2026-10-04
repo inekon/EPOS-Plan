@@ -224,7 +224,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
             Assert.Equal(SPALTEN_GEBAEUDE, geb.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE - 14).Take(14).ToArray());
             List<string> zone = DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone");
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
+            Assert.Equal(ZonenUebergabeSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
             Assert.Equal(SPALTEN_ZONE, zone.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE - 14).Take(14).ToArray());
 
             // Aus ist alles ausser dem Zonenprojekt 1052 (G6d, Aufheizoptimierung an; ZonenReferenzprojektWacheTests)
@@ -333,6 +333,10 @@ namespace EPOS.Kern.Tests
 
             long gebaeudeZeilen = Zahl("SELECT COUNT(*) FROM Tab_ErgebnisGebaeude");
             long zonenZeilen = Zahl("SELECT COUNT(*) FROM Tab_ErgebnisZone");
+            // Der Stand vor dem Schritt der Uebergabe je Zone (E63) kennt dessen drei Ergebnisspalten nicht.
+            foreach ((string tabelle, string spalte, string _) in ZonenUebergabeSchema.SPALTEN)
+                if (tabelle == ZonenUebergabeSchema.TAB_ERGEBNIS_ZONE)
+                    DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
             // Der Stand VOR KP-S3 kennt die Spalten des späteren Schritts KP-S4 nicht.
             foreach ((string tabelle, string spalte, string _) in AufheizManuellSchema.SPALTEN)
                 if (tabelle == "Tab_ErgebnisGebaeude" || tabelle == "Tab_ErgebnisZone")
