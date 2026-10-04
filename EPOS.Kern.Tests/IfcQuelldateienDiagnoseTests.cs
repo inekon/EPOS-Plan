@@ -65,9 +65,12 @@ namespace EPOS.Kern.Tests
                 // Eine Zeigerdatei von Git LFS ist keine IFC-Datei.
                 if (new FileInfo(pfad).Length < 1024) { _aus.WriteLine(Path.GetFileName(pfad) + ": zu klein — übersprungen."); continue; }
                 var a = new GebaeudeImportAblauf();
+                var uhr = Stopwatch.StartNew();
                 using (FileStream s = File.OpenRead(pfad))
                     a.Lesen(s, pfad, new IfcImportProfil());
-                _aus.WriteLine("=== " + Path.GetFileName(pfad) + " — Schema " + a.Quelle?.Schemastand);
+                uhr.Stop();
+                _aus.WriteLine("=== " + Path.GetFileName(pfad) + " — Schema " + a.Quelle?.Schemastand + ", gelesen in "
+                               + uhr.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture) + " ms");
                 _aus.WriteLine("Leser: " + Text(a.Meldungen));
                 if (a.Abbild == null || a.Abbild.Gebaeude.Count == 0) { _aus.WriteLine("kein Gebäude"); continue; }
                 for (int gi = 0; gi < a.Abbild.Gebaeude.Count; gi++)
@@ -83,6 +86,16 @@ namespace EPOS.Kern.Tests
                         _aus.WriteLine("  " + gr.Count() + "× " + gr.Key + ", Fläche " + Z(gr.Sum(r => r.FlaecheM2 ?? 0))
                                        + " m², Volumen " + Z(gr.Sum(r => r.VolumenM3 ?? 0)) + " m³");
                     _aus.WriteLine("Gebäudemeldungen: " + Text(g.Meldungen));
+
+                    // Raumkörper aus der Datei (G7f-1): Arten, mit/ohne Körper, Dreiecke — nur Protokoll.
+                    List<AbbildRaum> mitKoerper = g.Raeume.Where(r => r.Koerper != null).ToList();
+                    Zonengeometrie zg = GebaeudeGrundriss.Bilden(a.Abbild, gi);
+                    _aus.WriteLine("Raumkörper: " + mitKoerper.Count + " mit, " + (g.Raeume.Count - mitKoerper.Count) + " ohne, Dreiecke "
+                                   + mitKoerper.Sum(r => r.Koerper.DreieckZahl) + " (Zonengeometrie " + zg.DateikoerperDreiecke
+                                   + "), Randkanten " + mitKoerper.Sum(r => r.Koerper.Randkanten.Count) + "; Arten "
+                                   + string.Join(", ", mitKoerper.GroupBy(r => r.Koerper.Art + (r.Koerper.Vermerke.Count > 0 ? " [" + string.Join(",", r.Koerper.Vermerke) + "]" : ""))
+                                                                 .OrderBy(x => x.Key, StringComparer.Ordinal)
+                                                                 .Select(x => x.Count() + "× " + x.Key + " (" + x.Min(r => r.Koerper.DreieckZahl) + "–" + x.Max(r => r.Koerper.DreieckZahl) + " Dreiecke)")));
 
                     GebaeudeImportSatz satz = a.Zuordnen(gi, null);
                     _aus.WriteLine("Satz: Nutzfläche " + Z(satz.Zeile(GebaeudeZielfelder.NUTZFLAECHE).Wert) + " m², Volumen "
