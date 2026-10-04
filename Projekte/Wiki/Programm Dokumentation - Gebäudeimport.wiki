@@ -212,6 +212,8 @@ Die Datei enthält die Zonen des Gebäudes mit Fläche, Volumen, Luftwechsel, Pe
 
 Die Datei enthält eine '''schematische Geometrie''': je Zone einen Quader aus Fläche und Höhe, Zonen mit gemeinsamer Trennwand aneinandergelegt und Fenster als Rechtecke mittig in der Wand. Datei und Dialog kennzeichnen sie als „schematisch“; Lage und Umrisse sind keine Vermessung. Ist die Anordnung der Zonen widersprüchlich – Räume überlappen sich oder die gemeinsame Kante deckt sich nicht –, schreibt das Programm die Datei ohne Raumgeometrie und nennt den Grund. Nicht enthalten sind Zeitpläne, Nacht- und Wochenendabsenkung, Wärmebrücken, Rahmenanteil, Kühlung und Wärmeübergabe sowie die Anlagentechnik.
 
+Die '''IFC-Datei''' zeigt die Zonen als schematische Körper, sobald das Programm Umrisse der Zonen kennt; Wände, Böden, Decken, Fenster und Türen erscheinen als dünne Platten. Die Körper sind in Datei und Dialog als schematisch gekennzeichnet und kein Aufmaß. Kennt das Programm keine Umrisse, enthält die Datei die Zonen und Bauteile ohne Körper.
+
 Hat ein Bauteil keinen Schichtaufbau, schreibt EPOS-Plan eine gekennzeichnete Ersatzschicht aus U-Wert und Speichermasse. Sie '''trifft U-Wert und Gesamtwärmekapazität, nicht die Lage der Masse'''.
 
 Vor dem Schreiben zeigt der Dialog, was ersetzt, gewechselt oder weggelassen wird, und lässt die schematische Geometrie bestätigen; erst nach der Bestätigung lässt sich speichern. Lässt sich das Gebäude nicht ausgeben, nennt der Dialog den Grund. Die '''Postleitzahl''' ist freiwillig und wird nicht gespeichert: Mit ihr trägt die Datei den Standort und die Nordrichtung, ohne sie keinen Ort. Auf dem iPad liegt die Datei danach in den Dokumenten von EPOS-Plan und öffnet das Teilen-Menü.

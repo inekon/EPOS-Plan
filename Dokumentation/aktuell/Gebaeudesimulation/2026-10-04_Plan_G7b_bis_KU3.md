@@ -20,7 +20,7 @@ Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.m
 | 1 | **G7b** (umgesetzt #709) | gbXML Stufe 2 und 3D-Körperansicht | 7–12 (+4–7 Ansicht) | 4–5 Punkte | keine (E66) |
 | 2 | **G7c** (umgesetzt #710) | IFC-Export S1, semantisch | 12–20 | 7–9 Punkte | keine (D6: semantisch zuerst) |
 | 3 | **G7d** (umgesetzt #711) | Round-Trip-Anreicherung fremder IFC4-Dateien — die tragende Stufe nach E69 | 6–11 | 4–5 Punkte | keine (E69) |
-| 4 | **G7e** | Schematische Körper im IFC | 8–15 | 5–7 Punkte | keine (E69: Empfänger sind Betrachter); Prüfbilder aus Revit, Archicad, HiCAD liegen beim Anwender |
+| 4 | **G7e** (umgesetzt #712) | Schematische Körper im IFC | 8–15 | 5–7 Punkte | keine (E69: Empfänger sind Betrachter); Prüfbilder aus Revit, Archicad, HiCAD liegen beim Anwender |
 | 5 | **KU3** | Kältemaschine mit Rückkühlung, freie Kühlung über die Quelle, Kühlung je Zone, Export, Kältespeicher (E68: ja) | 20–31 | 15–19 Punkte | Katalogsaat der Kältemaschinen |
 
 Maßstab: EV1 (3–4 PT) kostete rund 3 Punkte des Wochenlimits bei rund 230 Werkzeugaufrufen. Ein
@@ -82,6 +82,8 @@ IFC2x3 oder IFC4.3 wird benannt abgelehnt, mit Angebot einer eigenen Datei nach 
 
 ## 5 G7e — schematische Körper im IFC
 
+Umgesetzt (#712; Protokoll `../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_G7e_IFC_Koerper.md`). Der nächste Schritt ist KU3-1 (Schema und Katalog der Kältemaschine, Abschnitt 6).
+
 Vorbedingungen: G7b und G7d abgenommen. Nach E69 sind die Empfänger Betrachter (Revit, Archicad,
 HiCAD); ein eigener Export ohne Architektendatei bliebe dort leer, deshalb wird G7e gebaut.
 
@@ -132,5 +134,6 @@ und ein Sonnet-Auftrag.
 | nach G7d | Probe 16 mit einer angereicherten Architektendatei (Datei wählen, anreichern, in Revit, Archicad und HiCAD öffnen), Probe 15 (bSI) der angereicherten Datei, Sichtabnahme des Exportdialogs; Logbuch-Version |
 | nach G7c | Probe 15 (bSI-Validierungsdienst) und Probe 16 (Betrachter-Prüfmatrix in Revit, Archicad und HiCAD) mit der bereitgestellten Datei |
 | vor G7e | erledigt mit E69 |
+| nach G7e | Probe 16 mit Prüfbildern aus Revit, Archicad und HiCAD der gesendeten Datei, Probe 15 (bSI), Sichtabnahme; Logbuch-Version |
 | vor KU3 | Freigabe der neutralen Katalogsaat (K7 ist mit E68 entschieden: ja) |
 | laufend | AK1z (eigene Sitzung, Bundle-Weg für Testdatenbank 181 und Basis R35); die Reihenfolge nach KU3: AK2, AK3, GA (E67) |
