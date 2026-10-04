@@ -44380,5 +44380,38 @@ Chart</value>
   <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
     <value>IFC-Export abgebrochen: Die Schemaprüfung meldet {0} Verstöße; es wurde nichts geschrieben.</value>
   </data>
+  <data name="GEXP_TITEL_FORMATWAHL" xml:space="preserve">
+    <value>Gebäude exportieren</value>
+  </data>
+  <data name="GEXP_FORMAT_IFC" xml:space="preserve">
+    <value>IFC 4 (semantisch)</value>
+  </data>
+  <data name="GEXP_STUFE_SCHEMATISCH" xml:space="preserve">
+    <value>Daten mit schematischer Raumgeometrie</value>
+  </data>
+  <data name="GEXP_DATEITYP_GBXML" xml:space="preserve">
+    <value>gbXML-Datei</value>
+  </data>
+  <data name="GEXP_DATEITYP_IFC" xml:space="preserve">
+    <value>IFC-Datei</value>
+  </data>
+  <data name="GEXP_MSG_NICHTS_GESCHRIEBEN" xml:space="preserve">
+    <value>Der Export ist abgebrochen; es wurde keine Datei geschrieben. Die Meldungen nennen den Grund.</value>
+  </data>
+  <data name="GEXP_BTN_ZUSAGE" xml:space="preserve">
+    <value>Exportzusage (IDS) öffnen…</value>
+  </data>
+  <data name="GEXP_BTN_ZUSAGE_IOS" xml:space="preserve">
+    <value>Exportzusage (IDS) teilen…</value>
+  </data>
+  <data name="GEXP_ZUSAGE_HINWEIS" xml:space="preserve">
+    <value>Die Exportzusage beschreibt als IDS-Datei, welche Angaben jede IFC-Datei aus EPOS-Plan trägt; ein IDS-fähiges Prüfprogramm gleicht die Datei damit ab.</value>
+  </data>
+  <data name="GEXP_MSG_ZUSAGE_FEHLT" xml:space="preserve">
+    <value>Die Exportzusage liegt nicht vor: {0}</value>
+  </data>
+  <data name="GEXP_MSG_ZUSAGE_FEHLER" xml:space="preserve">
+    <value>Die Exportzusage konnte nicht geöffnet werden: {0}</value>
+  </data>
 </root>
 
