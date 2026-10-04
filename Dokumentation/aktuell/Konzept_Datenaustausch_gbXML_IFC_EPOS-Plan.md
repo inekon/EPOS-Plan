@@ -2,6 +2,9 @@
 
 **Rev. 2 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
 
+> **Nachgezogen 04.10.2026 mit G7b:** Stufe 2 des gbXML-Exports ist gebaut und freigegeben; die Abweichungen von
+> den Regeln der Planung stehen in 5.5 („So gebaut“) und 5.6, der Stand der Proben in 14.5.
+
 > **Was Rev. 2 ändert:** 7.4 nennt keine festen Schrittnummern mehr — die Gebäudespalten-Schritte
 > tragen die Papiernamen **M3** und **M4**, der Zielstand wird an `SchemaStand.Zielversion`
 > abgelesen; sonst bleibt der Stand der Rev. 1.
@@ -1010,6 +1013,21 @@ echte Raumgeometrie, jede Tageslichtrechnung.
 Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie ist
 schematisch erzeugt und bildet den tatsächlichen Grundriss nicht ab."*
 
+**So gebaut (G7b, 04.10.2026).** Der Kern legt die Zonen an, `Zonenkoerper` bildet je schematischem Raum das
+Prisma, `GbxmlSchreiber` schreibt `PolyLoop`, `ShellGeometry` und die Öffnungen. Abweichungen von den Regeln oben:
+
+- **Widerspruch → Stufe 1 statt Einzonenmodell.** Ist die Anordnung widersprüchlich (Überlappung, nicht
+  deckungsgleiche Kante), bleibt dieselbe Datei auf Stufe 1 ohne Raumgeometrie, mit `GEXP_DATEI_GEOMETRIE_ABGELEHNT`
+  und Planwarnung; Punkt 3 wollte nur das Einzonenmodell exportieren.
+- **Keine Drehung.** Der Nachzug der Nachbarpaare dreht keine Räume; ein Paar, dessen Trennwand bei beiden Räumen auf
+  derselben Himmelsseite liegt, wird nicht angelegt und mit `ZGEO_NICHT_ANGELEGT` gemeldet.
+- **Nicht gebaut:** Dachschrägen (Punkt 5; Dächer liegen waagerecht, die Neigung steht in `RectangularGeometry`) und
+  `SurfaceReferenceLocation` (Punkt 7).
+- **`Results`** werden erst geschrieben, wenn der Exportweg Jahresergebnisse je Zone liefert (G7c Teil 2).
+- Die Kennzeichnung „schematisch“ steht nur mit Körper an drei Stellen (`Campus/Description`, `Building/Description`,
+  Planmeldung `GEXP_PROT_GEOMETRIE_SCHEMATISCH`, vom Dialog bestätigt). `GbxmlExportFreigegeben` ist dauerhaft an
+  (F1, D2).
+
 ### 5.6 `Results` — technisch möglich, praktisch fragwürdig
 
 gbXML hat Ergebnisfelder: `resultsTypeEnum` enthält `HeatLoad`, `CoolingLoad`, `Energy`, `Power`,
@@ -1031,6 +1049,10 @@ gewünschte Wert (etwa kWh) dort nicht enthalten, wird in der zulässigen Einhei
 Umrechnung im Text genannt. **Findet sich für eine Ergebnisgröße überhaupt kein zulässiger Wert,
 entfällt ihr `Results`-Block benannt** — „`Results` schreiben" und „fehlerfrei validieren" (Probe 3)
 sind sonst nicht beide zu haben.
+
+**So gebaut (G7b, 04.10.2026).** Einheiten: `Energy` in `KilowattHours`, `HeatLoad` in `Watt`,
+`DryBulbTemperature` in `C`; `resourceType="HotWater"` ist ein Pflichtwert des Schemas, `valueType="Simulated"`.
+Geschrieben wird erst mit Jahresergebnissen je Zone (G7c Teil 2).
 
 ---
 
@@ -1617,7 +1639,7 @@ Rückfrage beim Anwender; G4c wird ohne iOS-Lauf abgenommen.
 |---|---|---|---|
 | **G4c — gbXML-Import** | Lesemodell (`GbXmlDatei`, `GbXmlEinheiten`, `GbXmlModell`), Einheiten global und lokal, Aggregation auf das Gebäudemodell, Nachbarschaftsauflösung, Fensterabzug, Aufbauprüfung je Aufbau, **Zonenregel X4** (X1…X3 mit G6c, 3.3), Meldungen in beiden `.resx`, Anschluss an den gemeinsamen Zuordnungsdialog — **dazu die Persistenz** (Kapitel 7: Schemaschritt S-F, zwei Tabellen, `ImportzuordnungSchema.cs`, Registerpflege, Reduzierskript, Auslieferungsvorlage, Umbenennungen `IfcGuid` → `Quellkennung` und `IfcHerkunft` → `Importherkunft`) | Proben 1, 5–9, 14, 21, 24; Referenzlauf unverändert; Windows-Sichtabnahme. **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden (`GbxmlLeser`, `GbxmlEinheiten`, `GbxmlAbbild`, Schemaschritt 138), mit G4a auch der IFC-Weg; Proben 4–9, 14, 21 und 24 grün, Referenzlauf 13/13 byte-gleich, Probe 1 kommt mit G7a; offen die Windows-Sichtabnahme ([Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)) | **17–28 PT** |
 | **G7a — gbXML-Export Stufe 1** | `GebaeudeExportAblauf`/`-Profil` (Ordner `Export/Gebaeude/`, Schreiber in `Export/Gbxml/`), Wurzelattribute mit `version="6.01"`, `Campus`/`Building`/`Location`/`Space`/`Zone`/`Surface` mit `RectangularGeometry`/`Opening`, vollständige `Construction`-Kette mit **Schichtumkehr**, **Ersatzschichtung samt Kennzeichnung** (5.3), deterministische Kennungen, XSD-Prüfung im Test | Proben 1, 3, 11, 12. **Stand 26.09.2026:** nach E48 vorab gebaut, hinter dem Freigabeschalter, ausgeliefert erst mit G7b; Proben 1, 3, 11 und 12 grün, Referenzlauf 14/14 byte-gleich; offen die Windows-Sichtabnahme ([Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)) | **9–14 PT** |
-| **G7b — gbXML Stufe 2** | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
+| **G7b — gbXML Stufe 2** (**gebaut 04.10.2026**) | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
 | **G7c — IFC-Export S1** | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |
 | **G7d — IFC-Export S2 (Round-Trip)** | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
 | **G7e — IFC-Export S3 (Körper)** | Quader je Zone, Platte je Bauteil **aus dem Zonengeometrie-Modell** (Nachtrag 1), Placement-Kette, Azimut als Drehung, `TrueNorth` auf der Vorgabe, Kennzeichnung, Prüfbilder | Probe 16 mit Bildern; Validator grün trotz Placement-Pflicht | **8–15 PT** † |
@@ -1683,6 +1705,9 @@ für G4c noch die kleinere Zahl; sie ist dort nachzuziehen.
    nachzurüsten hieße, für alle vorher importierten Gebäude keine Zuordnung zu haben.
 
 ---
+
+**Logbuch-Entwurf G7b:** „Der Gebäudeexport nach gbXML ist freigegeben und schreibt eine schematische Geometrie; der
+Zuordnungsdialog des Gebäudeimports zeigt die Zonen als Körper.“ Version vom Anwender: offen.
 
 ## 11. Fragen mit Empfehlung
 
@@ -1879,9 +1904,11 @@ nicht zwei Seiten, die auseinanderlaufen.
 
 | Nr. | Probe | Kriterium |
 |---|---|---|
-| 25 | **Determinismus der Geometrie** | Dieselbe Eingabe liefert dieselben Polygone (Koordinaten auf 1e‑6) und **byteweise gleiche** Exporte; die Probe läuft über das Modell, nicht über das Bild, und ergänzt die Proben 2 und 12 |
-| 26 | **Komponentenprobe** (bunit) | `GebaeudeAnsicht` zeichnet je Zone ein Polygon mit der Zonenfarbe, der Klick meldet die Zone an den Wirt, der Umschalter wechselt die Ansicht, die Kennzeichnung „schematisch" steht im gerenderten Baum; kein Anzeigetext ist Steuerwert |
-| 27 | **Ansicht und Datei zeigen dasselbe** | `PolyLoop` (G7b) und `IfcExtrudedAreaSolid` (G7e) werden **gegen das Zonengeometrie-Modell** gehalten, nicht gegeneinander; Abweichung ist ein Fehler |
+| 25 | **Determinismus der Geometrie** (grün, G7b) | Dieselbe Eingabe liefert dieselben Polygone (Koordinaten auf 1e‑6) und **byteweise gleiche** Exporte; die Probe läuft über das Modell, nicht über das Bild, und ergänzt die Proben 2 und 12 |
+| 26 | **Komponentenprobe** (bunit) (grün, G7b) | `GebaeudeAnsicht` zeichnet je Zone ein Polygon mit der Zonenfarbe, der Klick meldet die Zone an den Wirt, der Umschalter wechselt die Ansicht, die Kennzeichnung „schematisch" steht im gerenderten Baum; kein Anzeigetext ist Steuerwert |
+| 27 | **Ansicht und Datei zeigen dasselbe** (grün, G7b; `PolyLoop` gehalten) | `PolyLoop` (G7b) und `IfcExtrudedAreaSolid` (G7e) werden **gegen das Zonengeometrie-Modell** gehalten, nicht gegeneinander; Abweichung ist ein Fehler |
+
+**Offen:** die Sichtabnahme auf Windows und iOS (Reiter „Körper“, Drehen, Klick).
 
 ### 14.6 Was benannt abgelehnt ist
 
