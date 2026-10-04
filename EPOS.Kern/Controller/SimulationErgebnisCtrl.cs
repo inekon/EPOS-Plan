@@ -1562,7 +1562,8 @@ namespace WindowsFormsApplication1
                     e.Erzeuger.Add(new KaelteerzeugerZeile
                     {
                         Bezeichner = z.Bezeichner ?? "",
-                        Vorlauf = z.Kennlinie != null ? z.Kennlinie.Vorlauf : 0,
+                        Vorlauf = z.Maschine != null ? (int)Math.Round(z.Maschine.Kaltwassertemperatur)
+                                                     : (z.Kennlinie != null ? z.Kennlinie.Vorlauf : 0),
                         KaelteMwh = z.KaelteGesamtKwh / 1000.0,
                         StromMwh = z.StromGesamtKwh / 1000.0,
                         Eer = z.StromGesamtKwh > 0 ? z.EerJahreswert : (double?)null,

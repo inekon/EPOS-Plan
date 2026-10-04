@@ -28188,6 +28188,30 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE" xml:space="preserve">
     <value>Heat pump "{0}": rated cooling capacity without a cooling characteristic — this unit only calculates heat.</value>
   </data>
+  <data name="SIMENG_KAELTE_KM_PROJEKT_AUS" xml:space="preserve">
+    <value>Chiller "{0}": the project does not calculate cooling (project setting "Calculate cooling" off) — the chiller stays out of operation.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Chiller "{0}": the project copy has no usable performance map (cooling capacity and EER) — the chiller is not calculated.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_KALTWASSER_ANGEHOBEN" xml:space="preserve">
+    <value>Chiller "{0}": the lowest chilled-water point of the performance map is below the minimum permitted chilled-water flow temperature — calculated with {1} °C.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE" xml:space="preserve">
+    <value>Chiller "{0}": the climate data carry no humidity — the wet cooler uses the outdoor temperature − 3 K instead of the wet-bulb temperature in {1} hours.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
+    <value>Chiller "{0}": in {1} hours the operating point lay outside the performance map (heat rejection {2} to {3} °C, chilled water {4} °C) — the boundary value was used.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_BETRIEB" xml:space="preserve">
+    <value>Chiller "{0}" (chilled water {1} °C): {2} MWh cooling, of which {3} MWh in {4} hours of free cooling, {5} MWh electricity; cycling below minimum part load in {6} hours.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_UNTERDECKUNG" xml:space="preserve">
+    <value>Chiller "{0}": in {1} hours the capacity of the performance map was not sufficient — {2} MWh of cooling demand remained open after this chiller.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_REIHENFOLGE" xml:space="preserve">
+    <value>Chillers have no cascade position: they cover after the heat pumps in cooling mode in the order of their project copies — with a dry or wet cooler in free-cooling hours before all others.</value>
+  </data>
   <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
     <value>Heat pump "{0}": cooling mode is set, but the project does not calculate cooling (project setting "Calculate cooling" off) — the unit only heats.</value>
   </data>

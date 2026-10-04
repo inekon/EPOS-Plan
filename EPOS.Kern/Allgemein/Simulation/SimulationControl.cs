@@ -1032,6 +1032,15 @@ namespace WindowsFormsApplication1
 
             WaermeUnterdeckungMelden(Rest_Waermebedarf_stuendlich);
 
+            // KU3-2 (Kühlkonzept 5.5): Ohne Wärmepumpe in der Schleife hat der Lauf noch keine
+            // Kälteerzeuger zusammengestellt - dann rechnen hier die Kältemaschinen allein, vor der
+            // Stufenrechnung des Stroms. Ohne Kältemaschine im Projekt ein sofortiger Rücksprung.
+            if (!_wpInSchleife && !m_bError)
+            {
+                KaelteerzeugerVorbereiten();
+                KaeltekaskadeRechnen(kanaele);
+            }
+
             // KU2: Meldungen der Kälteseite und die Deckungsprobe Kälte (Kühlkonzept 4.3 #31) -
             // nach der GANZEN Wärmekaskade. Ohne erhobene Kälte ein sofortiger Rücksprung.
             KaelteseiteAbschliessen(kanaele);

@@ -628,9 +628,19 @@ namespace WindowsFormsApplication1
                 Kaelteerzeuger e = k.Erzeuger[i];
                 string p = "Kaelte[" + i.ToString(CultureInfo.InvariantCulture) + "].";
                 s.Add(new KeyValuePair<string, double>(p + "ID_Anlage", e.AnlagenID));
-                s.Add(new KeyValuePair<string, double>(p + "Vorlauf", e.Kennlinie != null ? e.Kennlinie.Vorlauf : 0));
+                s.Add(new KeyValuePair<string, double>(p + "Vorlauf",
+                    e.Maschine != null ? e.Maschine.Kaltwassertemperatur : (e.Kennlinie != null ? e.Kennlinie.Vorlauf : 0)));
                 s.Add(new KeyValuePair<string, double>(p + "ErzeugungMwh", e.KaelteGesamtKwh / 1000.0));
                 s.Add(new KeyValuePair<string, double>(p + "StromMwh", e.StromGesamtKwh / 1000.0));
+                // KU3-2: die Kältemaschine trägt ihre Kennung, die freie Kühlung und den Hilfsstrom der
+                // Rückkühlung - nur sie, die Schlüssel der Wärmepumpe bleiben unverändert.
+                if (e.Maschine != null)
+                {
+                    s.Add(new KeyValuePair<string, double>(p + "ID_Kaeltemaschine", e.Maschine.Id));
+                    s.Add(new KeyValuePair<string, double>(p + "HilfsstromMwh", e.HilfsstromGesamtKwh / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungStunden", e.StundenFreieKuehlung));
+                    s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungMwh", e.KaelteFreiKwh / 1000.0));
+                }
             }
             return s;
         }

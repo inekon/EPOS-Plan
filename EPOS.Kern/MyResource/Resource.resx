@@ -28195,6 +28195,30 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE" xml:space="preserve">
     <value>Wärmepumpe „{0}": Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme.</value>
   </data>
+  <data name="SIMENG_KAELTE_KM_PROJEKT_AUS" xml:space="preserve">
+    <value>Kältemaschine „{0}": Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen" aus) — die Maschine bleibt außer Betrieb.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Kältemaschine „{0}": Die Projektkopie führt keine rechenbare Kennlinie (Kälteleistung und EER) — die Maschine rechnet nicht.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_KALTWASSER_ANGEHOBEN" xml:space="preserve">
+    <value>Kältemaschine „{0}": Die kleinste Kaltwasser-Stützstelle der Kennlinie liegt unter dem kleinsten zulässigen Kaltwasservorlauf — gerechnet wird mit {1} °C.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE" xml:space="preserve">
+    <value>Kältemaschine „{0}": Das Klima führt keine Luftfeuchte — der Nasskühler rechnet in {1} Stunden mit der Außentemperatur − 3 K statt der Feuchtkugeltemperatur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
+    <value>Kältemaschine „{0}": In {1} Stunden lag der Betriebspunkt außerhalb der Kennlinie (Rückkühlung {2} bis {3} °C, Kaltwasser {4} °C) — gerechnet wurde mit dem Randwert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_BETRIEB" xml:space="preserve">
+    <value>Kältemaschine „{0}" (Kaltwasser {1} °C): {2} MWh Kälte, davon {3} MWh in {4} Stunden freier Kühlung, {5} MWh Strom; in {6} Stunden unter der Mindestteillast getaktet.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_UNTERDECKUNG" xml:space="preserve">
+    <value>Kältemaschine „{0}": In {1} Stunden reichte die Leistung der Kennlinie nicht — nach dieser Maschine blieben {2} MWh Kältebedarf offen.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_REIHENFOLGE" xml:space="preserve">
+    <value>Kältemaschinen haben keinen Kaskadenplatz: Sie decken nach den Wärmepumpen im Kühlbetrieb in der Reihenfolge ihrer Projektkopien — mit Trocken- oder Nasskühler in Stunden freier Kühlung vor allen anderen.</value>
+  </data>
   <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
     <value>Wärmepumpe „{0}": Der Kühlbetrieb ist eingestellt, das Projekt rechnet aber keine Kälte (Projekteinstellung „Kühlung rechnen" aus) — die Maschine heizt nur.</value>
   </data>

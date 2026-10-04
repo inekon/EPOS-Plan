@@ -86583,6 +86583,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot; (Kaltwasser {1} °C): {2} MWh Kälte, davon {3} MWh in {4} Stunden freier Kühlung, {5} MWh Strom; in {6} Stunden unter der Mindestteillast getaktet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: Die kleinste Kaltwasser-Stützstelle der Kennlinie liegt unter dem kleinsten zulässigen Kaltwasservorlauf — gerechnet wird mit {1} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_KALTWASSER_ANGEHOBEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_KALTWASSER_ANGEHOBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: Das Klima führt keine Luftfeuchte — der Nasskühler rechnet in {1} Stunden mit der Außentemperatur − 3 K statt der Feuchtkugeltemperatur. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: Die Projektkopie führt keine rechenbare Kennlinie (Kälteleistung und EER) — die Maschine rechnet nicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen&quot; aus) — die Maschine bleibt außer Betrieb. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: In {1} Stunden lag der Betriebspunkt außerhalb der Kennlinie (Rückkühlung {2} bis {3} °C, Kaltwasser {4} °C) — gerechnet wurde mit dem Randwert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_RANDWERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_RANDWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen haben keinen Kaskadenplatz: Sie decken nach den Wärmepumpen im Kühlbetrieb in der Reihenfolge ihrer Projektkopien — mit Trocken- oder Nasskühler in Stunden freier Kühlung vor allen anderen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_REIHENFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: In {1} Stunden reichte die Leistung der Kennlinie nicht — nach dieser Maschine blieben {2} MWh Kältebedarf offen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_UNTERDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_UNTERDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}“: {1} MWh/a Netzbezug des Kältestroms (Kältestrom {2} MWh/a) tragen den Stromträger „{3}“. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_KUEHLTRAEGER_MENGE {

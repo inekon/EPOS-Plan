@@ -209,6 +209,7 @@ namespace WindowsFormsApplication1
                 yield return Anlagenart.Stromspeicher;
                 yield return Anlagenart.Pufferspeicher;
                 yield return Anlagenart.Wechselrichter;
+                yield return Anlagenart.Kaeltemaschine;
             }
         }
 
@@ -237,6 +238,7 @@ namespace WindowsFormsApplication1
                 case Anlagenart.Stromspeicher: return Stromspeicher(t);
                 case Anlagenart.Pufferspeicher: return Pufferspeicher(t);
                 case Anlagenart.Wechselrichter: return Wechselrichter(t);
+                case Anlagenart.Kaeltemaschine: return Kaeltemaschine(t);
             }
             throw new ArgumentOutOfRangeException(nameof(art));
         }
@@ -852,6 +854,49 @@ namespace WindowsFormsApplication1
         /// nichts - auch die Verwaltung zeigt sie nicht, weil sie kein Anwender von Hand
         /// pflegen kann.</para>
         /// </remarks>
+        /// <summary>
+        /// <b>Die Kältemaschine</b> (KU3-2): Der Rechenweg liest die Projektkopie
+        /// (<c>Tab_Kaeltemaschine</c>) über <c>Kaeltemaschine.AusModell</c> — Nennkälteleistung,
+        /// Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung und den kleinsten Kaltwasservorlauf;
+        /// Leistung und EER der Stunde kommen aus der Kennlinie. Der Nenn-EER ist eine Angabe des
+        /// Datenblatts, das Kältemittel eine Beschreibung (F-Gase rechnet EPOS-Plan nicht, Kühlkonzept
+        /// 6.3); die Modulkosten liest erst die Wirtschaftlichkeit der Kältemaschine.
+        /// </summary>
+        private static IReadOnlyList<ParameterEintrag> Kaeltemaschine(Func<string, string> t)
+        {
+            return new[]
+            {
+                E("ID", "ID:", "", DLG,
+                  "KaeltemaschineCtrl.AusKatalogUebernehmen (Quelle der Projektkopie, ID_Stamm)"),
+                E("Bezeichner", t("KM_LBL_BEZEICHNER"), "", SIM,
+                  "Kaeltemaschine.AusModell (Name des Erzeugers in Kältekaskade und Laufprotokoll)"),
+                E("Firma", t("KM_LBL_FIRMA"), "", DLG,
+                  "KaeltemaschineKatalogDialog.razor (Feld Firma)"),
+                E("Typ", t("KM_LBL_TYP"), "", DLG,
+                  "KaeltemaschineKatalogDialog.razor (Feld Typ)"),
+                E("Beschreibung", t("KM_LBL_BESCHREIBUNG"), "", DLG,
+                  "KaeltemaschineKatalogDialog.razor (Feld Beschreibung)"),
+                E(KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG, t("KM_LBL_NENNKAELTELEISTUNG"), "kW", SIM,
+                  "Kaeltemaschine.Stunde (Bezug der Mindestteillast, Grenze der freien Kuehlung)"),
+                E(KaeltemaschineSchema.SPALTE_NENN_EER, t("KM_LBL_NENN_EER"), "-", DLG,
+                  "KaeltemaschineKatalogDialog.razor (Datenblattangabe; gerechnet wird der EER der Kennlinie)"),
+                E(KaeltemaschineSchema.SPALTE_KAELTEMITTEL, t("KM_LBL_KAELTEMITTEL"), "", DLG,
+                  "KaeltemaschineKatalogDialog.razor (Beschreibung; F-Gase ausgeschlossen, Kuehlkonzept 6.3)"),
+                E(KaeltemaschineSchema.SPALTE_RUECKKUEHLART, t("KM_LBL_RUECKKUEHLART"), "", SIM,
+                  "Kaeltemaschine.Rueckkuehltemperatur; Kaeltemaschine.FreieKuehlungMoeglich"),
+                E(KaeltemaschineSchema.SPALTE_MINDESTTEILLAST, t("KM_LBL_MINDESTTEILLAST"), "%", SIM,
+                  "Kaeltemaschine.Stunde (Takt unter der Mindestteillast)"),
+                E(KaeltemaschineSchema.SPALTE_HILFSSTROM_RUECKKUEHLUNG, t("KM_LBL_HILFSSTROM"), "kW", SIM,
+                  "Kaeltemaschine.Stunde (Hilfsstrom der Rueckkuehlung x Laufanteil)"),
+                E(KaeltemaschineSchema.SPALTE_KALTWASSER_VORLAUF_MIN, t("KM_LBL_KALTWASSER_MIN"), "°C", SIM,
+                  "Kaeltemaschine.AusModell (untere Grenze der Kaltwassertemperatur)"),
+                E(KaeltemaschineSchema.SPALTE_MODULKOSTEN, t("KM_LBL_MODULKOSTEN"), "€", DLG,
+                  "KaeltemaschineKatalogDialog.razor (Geraetepreis; die Investition liest erst KU3-4)"),
+                E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
+                  "KaeltemaschineStammCtrl.Speichern (Auslieferungssatz)"),
+            }.Concat(Katalogspalten(t)).ToList();
+        }
+
         private static IReadOnlyList<ParameterEintrag> Wechselrichter(Func<string, string> t)
         {
             return new[]

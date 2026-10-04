@@ -512,7 +512,8 @@ namespace WindowsFormsApplication1
             // KU2 (Kühlkonzept 5.5): Hat das Projekt Kälteerzeuger angelegt, meldet erst die
             // Kältekaskade die Unterdeckung - mit Menge und Grund -, nicht schon der Bedarfslauf.
             if (KuehlbetriebProjekt)
-                Kaelteseite.KaelteerzeugerAngelegt = WPCtrl.AnlagenImKuehlbetrieb(ID_Projekt);
+                Kaelteseite.KaelteerzeugerAngelegt = WPCtrl.AnlagenImKuehlbetrieb(ID_Projekt)
+                                                     + KaeltemaschineCtrl.AnzahlImProjektStill(ID_Projekt);
 
             ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(ID_Projekt);
@@ -1494,6 +1495,23 @@ namespace WindowsFormsApplication1
         /// lag also gegenueber dem Bedarf 1 h (Winter) bzw. 2 h (Sommer) zu frueh. Die
         /// Jahres- und Monatsmittel bleiben davon unberuehrt, der Tagesgang nicht.</para>
         /// </summary>
+        /// <summary>
+        /// Die relative Luftfeuchte der 8.760 Stunden [%] aus dem Ortszeit-Lesepfad (KU3-2: Nasskühler
+        /// der Kältemaschine); <c>null</c>, wenn das Klima nicht für jede Stunde eine Feuchte führt.
+        /// </summary>
+        internal double[] Luftfeuchte_stuendlich()
+        {
+            IReadOnlyList<SolardatenModel> s = _kalender.Gemeinsam.SolarOrtszeit;
+            if (s == null || s.Count < Stundentemperatur.Length) return null;
+            var r = new double[Stundentemperatur.Length];
+            for (int i = 0; i < r.Length; i++)
+            {
+                if (s[i] == null || !s[i].Luftfeuchte.HasValue) return null;
+                r[i] = s[i].Luftfeuchte.Value;
+            }
+            return r;
+        }
+
         private void Stundentemperatur_aus_DB(int ID_Klimaregion)
         {
             SolardatenCtrl ctrldat = new SolardatenCtrl();

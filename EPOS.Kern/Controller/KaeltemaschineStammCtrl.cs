@@ -352,6 +352,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Projektkopien eines Projekts für den Rechenweg (KU3-2): still — eine Datenbank ohne
+        /// <c>Tab_Kaeltemaschine</c> (vor Schritt <see cref="KaeltemaschineSchema.SCHRITT"/>) oder ein
+        /// Lesefehler liefert die leere Liste, der Lauf rechnet dann wie ohne Kältemaschine.
+        /// </summary>
+        public static IReadOnlyList<int> IdsImProjektStill(int projektId)
+        {
+            try
+            {
+                if (!DataRepository.TabelleVorhanden(TABLE)) return Array.Empty<int>();
+                return IdsImProjekt(projektId);
+            }
+            catch (Exception)
+            {
+                return Array.Empty<int>();
+            }
+        }
+
+        /// <summary>Die Zahl der Projektkopien eines Projekts, still wie <see cref="IdsImProjektStill"/>.</summary>
+        public static int AnzahlImProjektStill(int projektId) => IdsImProjektStill(projektId).Count;
+
+        /// <summary>Lädt eine Projektkopie für den Rechenweg; <c>null</c> bei einem Lesefehler.</summary>
+        public static KaeltemaschineModel LadenStill(int id)
+        {
+            try { return Laden(id); }
+            catch (Exception) { return null; }
+        }
+
+        /// <summary>
         /// Kopiert den Katalogsatz <paramref name="stammId"/> samt Kennlinie in das Projekt
         /// <paramref name="projektId"/> — Spalte für Spalte nach <see cref="KaeltemaschineSchema.Fachspalten"/>,
         /// mit <c>ID_Stamm</c> als Zuordnung. Führt das Projekt schon eine Kopie dieses Katalogsatzes, bleibt

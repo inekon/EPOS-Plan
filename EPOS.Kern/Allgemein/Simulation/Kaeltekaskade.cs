@@ -54,6 +54,32 @@ namespace WindowsFormsApplication1
         /// <summary>Senke der Kälteseite (Kühlkonzept 4.6): Erzeuger → Kältekreis → Kühlkanal.</summary>
         public Senke Ziel { get { return Senke.Kaeltekreis; } }
 
+        /// <summary>
+        /// <b>Die Kältemaschine dieses Erzeugers</b> (KU3-2) — <c>null</c> für eine Wärmepumpe im
+        /// Kühlbetrieb. Ist sie gesetzt, rechnet die Stunde über
+        /// <see cref="Kaeltemaschine.Stunde"/>: ohne <see cref="Kennlinie"/>, <see cref="Zeitanteil"/>
+        /// und <see cref="Modulindex"/> (-1, kein Wärmepumpenmodul).
+        /// </summary>
+        public Kaeltemaschine Maschine;
+
+        /// <summary>Stunden in freier Kühlung (nur Kältemaschine).</summary>
+        public int StundenFreieKuehlung;
+
+        /// <summary>Kälte aus freier Kühlung [kWh] (nur Kältemaschine).</summary>
+        public double KaelteFreiKwh;
+
+        /// <summary>Stunden mit Kennlinie am Rand (nur Kältemaschine).</summary>
+        public int StundenRandwert;
+
+        /// <summary>Stunden unter der Mindestteillast — die Maschine taktet (nur Kältemaschine).</summary>
+        public int StundenTakt;
+
+        /// <summary>Stunden, in denen die Kennlinienleistung die Last nicht trug (nur Kältemaschine).</summary>
+        public int StundenLeistungsgrenze;
+
+        /// <summary>Last, die an der Leistungsgrenze offen blieb [kWh] (nur Kältemaschine).</summary>
+        public double OffenAnLeistungsgrenzeKwh;
+
         // ---- Ergebnis ------------------------------------------------------------
 
         /// <summary>Gedeckte Kälte je Stunde [kWh].</summary>
@@ -165,6 +191,12 @@ namespace WindowsFormsApplication1
             StundenUeberKennlinie = 0;
             Verlaengert = false;
             StundenEinzelpunkt = 0;
+            StundenFreieKuehlung = 0;
+            KaelteFreiKwh = 0;
+            StundenRandwert = 0;
+            StundenTakt = 0;
+            StundenLeistungsgrenze = 0;
+            OffenAnLeistungsgrenzeKwh = 0;
         }
     }
 
@@ -350,6 +382,13 @@ namespace WindowsFormsApplication1
             RestAnKuehltagenKwh = 0;
             foreach (Kaelteerzeuger e in Erzeuger) e.Nullen();
 
+            // KU3-2 (Kühlkonzept 5.5): Kältemaschinen mit Trocken- oder Nasskühler kühlen in einer
+            // Stunde mit kaltem Rückkühler frei - dann decken sie VOR allen anderen. Ohne eine solche
+            // Maschine bleibt die Reihenfolge Zeichen für Zeichen die der Liste.
+            bool mitFreierKuehlung = false;
+            foreach (Kaelteerzeuger e in Erzeuger)
+                if (e.Maschine != null && e.Maschine.FreieKuehlungMoeglich) mitFreierKuehlung = true;
+
             for (int h = 0; h < STUNDEN; h++)
             {
                 // Der Kühlkanal führt positive Mengen (K2); ein negativer Wert wäre ein Fehler der
@@ -359,9 +398,21 @@ namespace WindowsFormsApplication1
                 BedarfGesamtKwh += b;
 
                 double rest = b;
+                if (mitFreierKuehlung)
+                    foreach (Kaelteerzeuger e in Erzeuger)
+                    {
+                        if (rest <= 0) break;
+                        if (e.Maschine != null && e.Maschine.FreieKuehlung(h)) rest = MaschineRechnen(e, h, rest);
+                    }
+
                 foreach (Kaelteerzeuger e in Erzeuger)
                 {
                     if (rest <= 0) break;
+                    if (e.Maschine != null)
+                    {
+                        if (!(mitFreierKuehlung && e.Maschine.FreieKuehlung(h))) rest = MaschineRechnen(e, h, rest);
+                        continue;
+                    }
                     double anteil = (e.Zeitanteil != null && h < e.Zeitanteil.Length) ? e.Zeitanteil[h] : 0.0;
                     if (anteil <= 0 || e.Kennlinie == null) continue;
 
@@ -411,6 +462,51 @@ namespace WindowsFormsApplication1
                 if (Kuehltage != null && h / 24 < Kuehltage.Length && Kuehltage[h / 24]) RestAnKuehltagenKwh += rest;
                 else RestAnHeiztagenKwh += rest;
             }
+        }
+
+        /// <summary>
+        /// Eine Stunde einer Kältemaschine (KU3-2): deckt höchstens <paramref name="rest"/>, bucht Kälte
+        /// und Strom (Verdichter · (1 + Hilfsstromanteil) + Hilfsstrom der Rückkühlung) und liefert den
+        /// neuen Rest.
+        /// </summary>
+        private double MaschineRechnen(Kaelteerzeuger e, int h, double rest)
+        {
+            KaeltemaschinenStunde s = e.Maschine.Stunde(h, rest);
+            if (s.Randwert) e.StundenRandwert++;
+            if (!(s.KaelteKwh > 0))
+            {
+                e.StundenLeistungsgrenze++;
+                e.OffenAnLeistungsgrenzeKwh += rest;
+                return rest;
+            }
+
+            double verdichter = s.VerdichterKwh * (1.0 + e.Hilfsstromanteil);
+            double strom = verdichter + s.HilfsstromKwh;
+            double hilfs = strom - s.VerdichterKwh;
+
+            e.Kaelte_stuendlich[h] = s.KaelteKwh;
+            e.Strom_stuendlich[h] = strom;
+            e.KaelteGesamtKwh += s.KaelteKwh;
+            e.StromGesamtKwh += strom;
+            e.HilfsstromGesamtKwh += hilfs;
+            e.StundenMitKaelte++;
+            if (s.FreieKuehlung) { e.StundenFreieKuehlung++; e.KaelteFreiKwh += s.KaelteKwh; }
+            if (s.Takt) e.StundenTakt++;
+
+            Deckung_stuendlich[h] += s.KaelteKwh;
+            Stromverbrauch_Kuehlung_stuendlich[h] += strom;
+            DeckungGesamtKwh += s.KaelteKwh;
+            StromGesamtKwh += strom;
+            HilfsstromGesamtKwh += hilfs;
+
+            rest -= s.KaelteKwh;
+            if (rest < Rechenrand.ABSOLUT) rest = 0;
+            if (rest > 0)
+            {
+                e.StundenLeistungsgrenze++;
+                e.OffenAnLeistungsgrenzeKwh += rest;
+            }
+            return rest;
         }
 
         /// <summary>
