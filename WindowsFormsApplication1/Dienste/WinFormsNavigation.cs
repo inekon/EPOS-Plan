@@ -291,6 +291,8 @@ namespace WindowsFormsApplication1
                 // (KiMaskenziele.BAUSTOFF_KATALOG, …BAUTEILAUFBAU_KATALOG) die Verwaltungen.
                 case Seitenschluessel.BaustoffKatalog:
                 case Seitenschluessel.BauteilaufbauKatalog:
+                // Die Kaeltemaschinen (KU3-1): dieselbe freie Ansicht (KiMaskenziele.KAELTEMASCHINE_KATALOG).
+                case Seitenschluessel.KaeltemaschineKatalog:
                     return AnsichtZeigen(maske, "");
 
             }

@@ -64,6 +64,7 @@
                SimulationGaben="@SimulationGaben"
                BaustoffKatalogGaben="@BaustoffKatalogGaben"
                BauteilaufbauKatalogGaben="@BauteilaufbauKatalogGaben"
+               KaeltemaschineKatalogGaben="@KaeltemaschineKatalogGaben"
                BetriebskalenderGaben="@BetriebskalenderGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
@@ -274,6 +275,9 @@
 
     /// <summary>Siehe <see cref="BaustoffKatalogGaben"/>.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
+
+    /// <summary>Der Parametersatz der Verwaltung „Kältemaschinen" (Windows: <c>KaeltemaschineKatalogHuelle.Gaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? KaeltemaschineKatalogGaben { get; set; }
 
     /// <summary>Der Parametersatz der Betriebskalender (Windows: <c>BetriebskalenderHuelle.Gaben</c>); nur durchgereicht.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }

@@ -130,6 +130,11 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? BaustoffKatalogGaben() => BaustoffKatalog;
 
+    /// <summary>Der Parametersatz der Verwaltung „Kältemaschinen" (KU3-1).</summary>
+    internal IReadOnlyDictionary<string, object>? KaeltemaschineKatalog { get; set; }
+
+    public IReadOnlyDictionary<string, object>? KaeltemaschineKatalogGaben() => KaeltemaschineKatalog;
+
     /// <summary>Der Parametersatz der Verwaltung „Bauteilaufbauten".</summary>
     internal IReadOnlyDictionary<string, object>? BauteilaufbauKatalog { get; set; }
 
