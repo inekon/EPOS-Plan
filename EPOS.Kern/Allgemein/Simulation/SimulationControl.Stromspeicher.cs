@@ -110,6 +110,48 @@ namespace WindowsFormsApplication1
             SpeichersystemEigenverbrauchKwh = bilanz.GesamtKwh;
         }
 
+        /// <summary>
+        /// Die Flottenvorgabe aus dem laufenden Durchgang (Anwenderentscheid 04.10.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para>Gerufen an der Speicherstufe, wenn <see cref="SpeicherflotteAusLaufVorbelegen"/>
+        /// gesetzt ist: Der Strombedarf und alle Reihen, aus denen
+        /// <see cref="StromspeicherSimCtrl.BaueLastreihe"/> den Lastgang ohne Speicher bildet,
+        /// sind dann gerechnet. Die Vorbelegung ist dieselbe wie auf der Auslegungsseite
+        /// (<see cref="StromspeicherAuslegungCtrl.Vorgaben"/>) — mit diesem Lauf als Lauf.
+        /// Damit bekommt der erste Lauf dieselbe Vorgabe wie jeder weitere.</para>
+        /// <para>Ein gespeicherter Stand (<c>@Aktuell</c>) bleibt wie er ist; dann ist die
+        /// Herkunft <see cref="FlottenPeakZielHerkunft.Gespeichert"/>.</para>
+        /// </remarks>
+        /// <returns><c>false</c>, wenn die Vorgaben nicht gebildet werden konnten — der
+        /// Grund steht dann in <see cref="Fehlertext"/>, der Lauf bricht ab.</returns>
+        private bool SpeicherflotteVorbelegen(int ID_Projekt)
+        {
+            SpeicherflottenEingaben = null;
+            SpeicherflottenPeakZielHerkunft = null;
+            try
+            {
+                var auslegung = new StromspeicherAuslegungCtrl(ID_Projekt);
+                auslegung.LaufUebernehmen(this);
+                SpeicherOptimierungVorgaben vorgaben = auslegung.Vorgaben();
+                SpeicherOptimierungEingaben eingaben = vorgaben.Eingaben.Kopie();
+                if (eingaben.Auslegung?.Flotte?.Einheiten?.Count > 0 &&
+                    !eingaben.Auslegung.FlottenProjektbetriebDeaktiviert)
+                {
+                    eingaben.Auslegung.FlottenGroessenOptimieren = false;
+                    SpeicherflottenEingaben = eingaben;
+                    SpeicherflottenPeakZielHerkunft = vorgaben.PeakZielHerkunft;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FehlertextAufnehmen(string.Format(
+                    MyResource.Resource.SIMERG_SP_VORGABEN_FEHLER, ex.Message));
+                return false;
+            }
+        }
+
         internal double[] SpeicherlaufAusfuehren(int ID_Projekt,
             System.Threading.CancellationToken abbruch = default)
         {
@@ -131,6 +173,9 @@ namespace WindowsFormsApplication1
                     Speicherflottenergebnis = lauf.Studie;
                     Speicherflottenkonfiguration = lauf.Konfiguration;
                     Speicherflottenlauf = lauf;
+                    // Ohne Laufvorgabe rechnet die aktivierte Projektflotte: ihr Peak-Ziel ist gespeichert.
+                    if (SpeicherflottenEingaben == null)
+                        SpeicherflottenPeakZielHerkunft = FlottenPeakZielHerkunft.Gespeichert;
                     if (!string.IsNullOrWhiteSpace(lauf.Hinweis)) Protokoll.Hinweis(lauf.Hinweis);
                     Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.Kopie(
                         lauf.Kompatibilitaetsergebnis.SoCKwh);

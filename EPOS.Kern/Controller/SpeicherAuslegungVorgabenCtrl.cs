@@ -82,6 +82,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der vorgeschlagene Suchraum.</summary>
         public SpeicherOptimierungEingaben Eingaben { get; set; } = new SpeicherOptimierungEingaben();
 
+        /// <summary>
+        /// Herkunft des Peak-Ziels der Flotte in <see cref="Eingaben"/>: gespeichert, aus dem
+        /// Lastgang des Laufs oder benannter Rückfall; <c>null</c>, solange keine Flotte vorliegt.
+        /// </summary>
+        public FlottenPeakZielHerkunft? PeakZielHerkunft { get; set; }
+
         /// <summary>„Aktuelle Auslegung: … kWh / … kW (… C)"; leer, wenn keine da ist.</summary>
         public string AktuelleAuslegung { get; set; } = "";
 
