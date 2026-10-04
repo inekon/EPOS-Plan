@@ -151,6 +151,11 @@
          "Excel-Vorlage" direkt waehlbar.
          Berichtsvorlage_Beispiel.docx (Anschauung) wird nicht ausgeliefert. -->
     <MauiAsset Include="$(SeedDb)" LogicalName="Kenndaten.sqlite" />
+    <!-- Die Exportzusage des IFC-Exports (IDS, Stufe G7c) im Unterordner "Vorlage" des
+         Pakets: Der Exportdialog sucht sie neben dem ERWARTETEN Ort der Vorlagendatenbank
+         (Dienste.Pfade.Auslieferungsvorlage, auf iOS <App-Bundle>/Vorlage/Kenndaten.sqlite)
+         und gibt sie nur auf Anforderung ueber das Teilen weiter (MitSystemOeffnen). -->
+    <MauiAsset Include="..\Setup\Vorlage\EPOS_Export.ids" LogicalName="Vorlage\EPOS_Export.ids" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx"
                LogicalName="Vorlagen\Berichtsvorlage.docx" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Standard.docx"

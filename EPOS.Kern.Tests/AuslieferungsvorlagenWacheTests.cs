@@ -229,6 +229,66 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Exportzusage (IDS) des IFC-Exports (Stufe G7c)
+        // =====================================================================
+
+        /// <summary>Die Exportzusage im Repositorium — versioniert, neben der Vorlagendatenbank des Setups.</summary>
+        private const string ZUSAGE_REPO = "Setup/Vorlage/EPOS_Export.ids";
+
+        /// <summary>
+        /// Die Exportzusage liegt versioniert unter <c>Setup/Vorlage</c> und ist eine IDS-Datei: XML mit der
+        /// Wurzel <c>ids</c>. Der Exportdialog sucht sie neben der Vorlagendatenbank.
+        /// </summary>
+        [Fact]
+        public void Die_Exportzusage_liegt_im_Setup_und_ist_eine_IDS()
+        {
+            string wurzel = Berichtsdatenproben.Repowurzel();
+            if (wurzel == null) return;
+            string pfad = Path.Combine(wurzel, ZUSAGE_REPO.Replace('/', Path.DirectorySeparatorChar));
+            Assert.True(File.Exists(pfad), "Exportzusage fehlt: " + ZUSAGE_REPO + " (Setup und iOS-Paket führen sie).");
+            XDocument ids = XDocument.Load(pfad);
+            Assert.Equal("ids", ids.Root!.Name.LocalName);
+        }
+
+        /// <summary>
+        /// Windows: Das Setup führt die Exportzusage über eine Pflichtkonstante (<c>#error</c>, wenn sie fehlt)
+        /// nach <c>{app}\Vorlage</c> — neben die Vorlagendatenbank, dort sucht sie der Exportdialog.
+        /// </summary>
+        [Fact]
+        public void Das_Setup_legt_die_Exportzusage_neben_die_Vorlage()
+        {
+            string wurzel = Berichtsdatenproben.Repowurzel();
+            if (wurzel == null) return;
+            string iss = File.ReadAllText(Path.Combine(wurzel, "Setup", "EPOS-Plan.iss"));
+            Assert.Matches(new System.Text.RegularExpressions.Regex(
+                @"^#define\s+ExportZusage\s+SetupDir\s*\+\s*""Vorlage\\EPOS_Export\.ids""",
+                System.Text.RegularExpressions.RegexOptions.Multiline), iss);
+            Assert.Matches(new System.Text.RegularExpressions.Regex(@"^#if\s+!FileExists\(ExportZusage\)",
+                System.Text.RegularExpressions.RegexOptions.Multiline), iss);
+            Assert.Matches(new System.Text.RegularExpressions.Regex(
+                @"^Source:\s*""\{#ExportZusage\}"";\s*DestDir:\s*""\{app\}\\Vorlage""",
+                System.Text.RegularExpressions.RegexOptions.Multiline), iss);
+        }
+
+        /// <summary>
+        /// iOS: genau ein <c>MauiAsset</c> der Exportzusage mit <c>LogicalName</c> <c>Vorlage\EPOS_Export.ids</c> —
+        /// im Paket neben dem erwarteten Ort der Vorlagendatenbank.
+        /// </summary>
+        [Fact]
+        public void Der_iOS_Lieferweg_fuehrt_die_Exportzusage()
+        {
+            XDocument projekt = Projekt(IOS_PROJEKT);
+            if (projekt == null) return;
+
+            List<XElement> eintraege = Eintraege(projekt, "MauiAsset")
+                .Where(e => Quellen(e).Contains(@"..\Setup\Vorlage\EPOS_Export.ids", StringComparer.Ordinal))
+                .ToList();
+            Assert.True(eintraege.Count == 1,
+                IOS_PROJEKT + ": " + eintraege.Count + " MauiAsset-Einträge für die Exportzusage, erwartet genau einer.");
+            Assert.Equal(@"Vorlage\EPOS_Export.ids", Metadatum(eintraege[0], "LogicalName"));
+        }
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 

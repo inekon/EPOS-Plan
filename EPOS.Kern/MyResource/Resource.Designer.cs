@@ -29950,6 +29950,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportzusage (IDS) öffnen… ähnelt.
+        /// </summary>
+        public static string GEXP_BTN_ZUSAGE {
+            get {
+                return ResourceManager.GetString("GEXP_BTN_ZUSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportzusage (IDS) teilen… ähnelt.
+        /// </summary>
+        public static string GEXP_BTN_ZUSAGE_IOS {
+            get {
+                return ResourceManager.GetString("GEXP_BTN_ZUSAGE_IOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Datei speichern ähnelt.
         /// </summary>
         public static string GEXP_DATEIDIALOG_TITEL {
@@ -29964,6 +29982,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_DATEIFILTER {
             get {
                 return ResourceManager.GetString("GEXP_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Datei ähnelt.
+        /// </summary>
+        public static string GEXP_DATEITYP_GBXML {
+            get {
+                return ResourceManager.GetString("GEXP_DATEITYP_GBXML", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Datei ähnelt.
+        /// </summary>
+        public static string GEXP_DATEITYP_IFC {
+            get {
+                return ResourceManager.GetString("GEXP_DATEITYP_IFC", resourceCulture);
             }
         }
         
@@ -30153,6 +30189,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_FORMAT_GBXML {
             get {
                 return ResourceManager.GetString("GEXP_FORMAT_GBXML", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC 4 (semantisch) ähnelt.
+        /// </summary>
+        public static string GEXP_FORMAT_IFC {
+            get {
+                return ResourceManager.GetString("GEXP_FORMAT_IFC", resourceCulture);
             }
         }
         
@@ -30544,6 +30589,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Export ist abgebrochen; es wurde keine Datei geschrieben. Die Meldungen nennen den Grund. ähnelt.
+        /// </summary>
+        public static string GEXP_MSG_NICHTS_GESCHRIEBEN {
+            get {
+                return ResourceManager.GetString("GEXP_MSG_NICHTS_GESCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert unter {0}; das Teilen ließ sich nicht öffnen. ähnelt.
         /// </summary>
         public static string GEXP_MSG_TEILEN_FEHLER {
@@ -30558,6 +30612,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_MSG_VORBEREITUNG_FEHLER {
             get {
                 return ResourceManager.GetString("GEXP_MSG_VORBEREITUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Exportzusage konnte nicht geöffnet werden: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_MSG_ZUSAGE_FEHLER {
+            get {
+                return ResourceManager.GetString("GEXP_MSG_ZUSAGE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Exportzusage liegt nicht vor: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_MSG_ZUSAGE_FEHLT {
+            get {
+                return ResourceManager.GetString("GEXP_MSG_ZUSAGE_FEHLT", resourceCulture);
             }
         }
         
@@ -30895,6 +30967,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten mit schematischer Raumgeometrie ähnelt.
+        /// </summary>
+        public static string GEXP_STUFE_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GEXP_STUFE_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude exportieren (gbXML) ähnelt.
         /// </summary>
         public static string GEXP_TITEL {
@@ -30904,11 +30985,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude exportieren ähnelt.
+        /// </summary>
+        public static string GEXP_TITEL_FORMATWAHL {
+            get {
+                return ResourceManager.GetString("GEXP_TITEL_FORMATWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Daten des Gebäudes werden gelesen … ähnelt.
         /// </summary>
         public static string GEXP_VORBEREITUNG {
             get {
                 return ResourceManager.GetString("GEXP_VORBEREITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Exportzusage beschreibt als IDS-Datei, welche Angaben jede IFC-Datei aus EPOS-Plan trägt; ein IDS-fähiges Prüfprogramm gleicht die Datei damit ab. ähnelt.
+        /// </summary>
+        public static string GEXP_ZUSAGE_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEXP_ZUSAGE_HINWEIS", resourceCulture);
             }
         }
         

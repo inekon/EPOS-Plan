@@ -44373,5 +44373,38 @@ chart</value>
   <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
     <value>IFC export cancelled: the schema check reports {0} violations; nothing was written.</value>
   </data>
+  <data name="GEXP_TITEL_FORMATWAHL" xml:space="preserve">
+    <value>Export building</value>
+  </data>
+  <data name="GEXP_FORMAT_IFC" xml:space="preserve">
+    <value>IFC 4 (semantic)</value>
+  </data>
+  <data name="GEXP_STUFE_SCHEMATISCH" xml:space="preserve">
+    <value>Data with schematic room geometry</value>
+  </data>
+  <data name="GEXP_DATEITYP_GBXML" xml:space="preserve">
+    <value>gbXML file</value>
+  </data>
+  <data name="GEXP_DATEITYP_IFC" xml:space="preserve">
+    <value>IFC file</value>
+  </data>
+  <data name="GEXP_MSG_NICHTS_GESCHRIEBEN" xml:space="preserve">
+    <value>The export was aborted; no file was written. The messages state the reason.</value>
+  </data>
+  <data name="GEXP_BTN_ZUSAGE" xml:space="preserve">
+    <value>Open export specification (IDS)…</value>
+  </data>
+  <data name="GEXP_BTN_ZUSAGE_IOS" xml:space="preserve">
+    <value>Share export specification (IDS)…</value>
+  </data>
+  <data name="GEXP_ZUSAGE_HINWEIS" xml:space="preserve">
+    <value>The export specification is an IDS file describing what every IFC file from EPOS-Plan contains; an IDS-capable checker compares the file against it.</value>
+  </data>
+  <data name="GEXP_MSG_ZUSAGE_FEHLT" xml:space="preserve">
+    <value>The export specification is missing: {0}</value>
+  </data>
+  <data name="GEXP_MSG_ZUSAGE_FEHLER" xml:space="preserve">
+    <value>The export specification could not be opened: {0}</value>
+  </data>
 </root>
 

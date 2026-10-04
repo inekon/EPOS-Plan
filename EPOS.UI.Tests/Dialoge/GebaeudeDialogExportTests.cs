@@ -48,11 +48,11 @@ public class GebaeudeDialogExportTests : EposBunitContext
     private static IReadOnlyDictionary<string, object> Exportgaben(List<string>? gespeichert = null, bool geaendert = false)
         => new Dictionary<string, object>
         {
-            ["Vorbereiten"] = new Func<string, Task<GebaeudeExportAnsicht>>(_ => Task.FromResult(
+            ["Vorbereiten"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportAnsicht>>(_ => Task.FromResult(
                 new GebaeudeExportAnsicht(new[] { new GebaeudeExportMeldung(WarnStufe.Hinweis, "Info", "Ohne Ort.", "GEXP_PROT_OHNE_ORT") }, null))),
-            ["Speichern"] = new Func<string, Task<GebaeudeExportErgebnis>>(plz =>
+            ["Speichern"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>(e =>
             {
-                gespeichert?.Add(plz);
+                gespeichert?.Add(e.Plz);
                 return Task.FromResult(new GebaeudeExportErgebnis(true, false, "Gespeichert: C:\\Probe\\haus.xml (1234 Byte)."));
             }),
             ["GespeicherterStand"] = geaendert,
