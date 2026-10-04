@@ -89,7 +89,8 @@ namespace EPOS.Kern.Tests
                 "WHERE v.KomponentenID = ? AND v.KategorieID = ? AND p.Bezeichnung = ?",
                 new DbParam("?", 11), new DbParam("?", DbWerte.KOSTEN_KATEGORIE_INVESTITION),
                 new DbParam("?", KaeltemaschineAnlageSchema.POSITION_AGGREGAT))));
-            Assert.Equal(4 + KaeltemaschineAnlageSchema.ErgebnisSpalten.Length,
+            // Schritt 184 (KU3-4d) haengt seine Abrechnungsspalten an dieselbe Tabelle.
+            Assert.Equal(4 + KaeltemaschineAnlageSchema.ErgebnisSpalten.Length + KaeltestromabrechnungSchema.SPALTEN.Count,
                          DataRepository.SpaltenVonTabelle(KaeltemaschineAnlageSchema.TAB_ERGEBNIS).Count);
             // Kein Referenzprojekt führt eine Anlagenzeile der Kältemaschine (ergebnisneutral).
             Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
