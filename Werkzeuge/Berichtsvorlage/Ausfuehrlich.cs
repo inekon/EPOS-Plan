@@ -528,6 +528,13 @@ namespace Berichtsvorlage
                 r.Add(Marke("tabelle.pufferauslegung"));
                 r.Add(Marke("/wenn"));
 
+                // Katalog v12 (KU3-4d): die Kältespeicher des Stamms - steht die Tafel in der Vorlage, schreibt der
+                // Baustein des Kapitels Projekt seinen Abschnitt nicht.
+                r.Add(Marke("#wenn hat.tabelle.kaeltespeicher"));
+                r.Add(H2("Kältespeicher", "Cold storage"));
+                r.Add(Marke("tabelle.kaeltespeicher"));
+                r.Add(Marke("/wenn"));
+
                 r.Add(Erklaert(Marke("#wenn hat.tabelle.speichertemperaturen"), new[]
                 {
                     "Jede Strukturtabelle und jedes Bild hat einen Schalter hat.tabelle.<name> bzw. hat.bild.<name>: Mit "

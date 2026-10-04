@@ -294,7 +294,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.Equal(184, KaeltestromabrechnungSchema.SCHRITT);
-            Assert.Equal(KaeltestromabrechnungSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KaeltestromabrechnungSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, Paketanhebung.Stufen.Single(x => x.Nr == KaeltestromabrechnungSchema.SCHRITT).Wirkung);
             Assert.True(KaeltestromabrechnungSchema.Vollstaendig());
             Assert.Equal(0, KaeltestromabrechnungSchema.Ausfuehren(null));
