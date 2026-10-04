@@ -1561,9 +1561,10 @@ namespace WindowsFormsApplication1
         /// <item>Ohne Raumgrenzen wird je Paar ein Trennbauteil mit zwei Grenzen der Herkunft <see cref="Grenzherkunft.Koerper"/>
         /// gebildet (Fläche = Schnittfläche, Gegenstücke wechselseitig). U-Wert, Aufbau und Dicke stammen vom Bauteil der
         /// gleichen Art, das beide Räume referenzieren (Richtung passend, Fläche am nächsten), sonst von einer Innenwand
-        /// bzw. Decke, die einer der Räume referenziert, sonst bleibt der U-Wert offen (Vorgabe). Ein so abgedecktes Bauteil
-        /// geht in den Paaren auf, wenn jeder Raum, der es referenziert, an einem dieser Paare liegt; seine Öffnungen gehen
-        /// an das größte Paar. Die Trenndecken aus den Raumbezügen eines Geschosspaars weichen den Körperdecken, wo ein
+        /// bzw. Decke, die einer der Räume referenziert, bei einer Decke sonst von der größten freien Decke des
+        /// Geschosspaars (<see cref="FreieDecke"/>), sonst bleibt der U-Wert offen (Vorgabe). Ein so abgedecktes Bauteil
+        /// geht in den Paaren auf, wenn jeder Raum, der es referenziert, an einem dieser Paare liegt (seine Öffnungen gehen
+        /// an das größte Paar); sonst gibt es die Fläche seiner Paare ab und trägt nur den Rest weiter. Die Trenndecken aus den Raumbezügen eines Geschosspaars weichen den Körperdecken, wo ein
         /// Körperpaar das Geschosspaar verbindet; sonst bleiben sie als Rückfall. Außenflächen bleiben unberührt.</item>
         /// </list>
         /// Meldungen: <c>IMP_IFC_PROT_GRENZEN_AUS_KOERPER</c> (I), <c>IMP_IFC_PROT_KOERPER_OHNE_PAAR</c> (I); den
@@ -1632,6 +1633,14 @@ namespace WindowsFormsApplication1
                         ?? bestand.Where(b => Innen(b) && art(b) && Einer(b) && Richtung(b, p)
                                               && (p.Decke ? b.Art == Bauteilart.Decke : b.Art == Bauteilart.Innenwand))
                                   .OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault();
+                    // Eine Decke ohne Bezug: die größte freie Decke des Geschosspaars, im oberen Geschoss vor dem unteren
+                    // (wie die Trenndecke aus dem Grundriss).
+                    if (vorlage == null && p.Decke)
+                    {
+                        string o = (p.Oben == p.RaumA ? ra : rb).GeschossKennung, u = (p.Oben == p.RaumA ? rb : ra).GeschossKennung;
+                        vorlage = bestand.Where(b => FreieDecke(b) && b.GeschossKennung != null && (b.GeschossKennung == o || b.GeschossKennung == u))
+                                         .OrderByDescending(b => b.GeschossKennung == o).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).FirstOrDefault();
+                    }
                     var abgedeckt = new List<AbbildBauteil>(beide);
                     if (vorlage != null && !abgedeckt.Contains(vorlage)) abgedeckt.Add(vorlage);
 
@@ -1676,7 +1685,13 @@ namespace WindowsFormsApplication1
                     var anPaaren = new HashSet<string>(neu.Where(x => x.Abgedeckt.Contains(b))
                         .SelectMany(x => new[] { g.Raeume[x.Paar.RaumA].Kennung, g.Raeume[x.Paar.RaumB].Kennung }), StringComparer.Ordinal);
                     HashSet<string> r = Bezug(b);
-                    if (r == null || r.All(anPaaren.Contains)) verbraucht.Add(b);
+                    if (r == null || r.All(anPaaren.Contains)) { verbraucht.Add(b); continue; }
+                    // Teilweise abgedeckt: Das Bauteil gibt die Fläche seiner Paare ab; was bleibt, trägt es weiter.
+                    if (!b.BruttoflaecheM2.HasValue) continue;
+                    double rest = b.BruttoflaecheM2.Value - neu.Where(x => x.Abgedeckt.Contains(b)).Sum(x => x.Paar.FlaecheM2);
+                    if (rest < Koerpernachbarschaft.FLAECHE_MIN_M2) { verbraucht.Add(b); continue; }
+                    if (b.NettoflaecheM2.HasValue) b.NettoflaecheM2 = b.NettoflaecheM2.Value * rest / b.BruttoflaecheM2.Value;
+                    b.BruttoflaecheM2 = Math.Round(rest, 6);
                 }
 
                 // Die Trenndecken aus den Raumbezügen eines Geschosspaars weichen den Körperdecken dieses Paars.
