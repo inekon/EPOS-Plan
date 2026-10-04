@@ -102,6 +102,7 @@ hat.tabelle.erzeuger
 hat.tabelle.gebaeude.ergebnis
 hat.tabelle.heizkessel
 hat.tabelle.kaelteerzeuger
+hat.tabelle.kaeltespeicher
 hat.tabelle.kennzahlen
 hat.tabelle.komponenten.kenndaten.bhkw
 hat.tabelle.komponenten.kenndaten.photovoltaik
@@ -1788,6 +1789,7 @@ tabelle.anhang.simulationsstaende
 tabelle.anhang_e.checkliste
 tabelle.gebaeude.ergebnis
 tabelle.kaelteerzeuger
+tabelle.kaeltespeicher
 tabelle.komponenten.kenndaten.bhkw
 tabelle.komponenten.kenndaten.photovoltaik
 tabelle.komponenten.kenndaten.pufferspeicher

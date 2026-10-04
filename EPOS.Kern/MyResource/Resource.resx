@@ -44237,6 +44237,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
     <value>Tabelle der gespeicherten Pufferauslegungen des Stammprojekts: je Auslegung eine Gruppenzeile, darunter Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina, bemessendes Kriterium, Empfehlung, Kennzahlen und Hinweise. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt.</value>
   </data>
+  <data name="VF_TABELLE__KAELTESPEICHER" xml:space="preserve">
+    <value>Tabelle der Kältespeicher des Stammprojekts: je Kältespeicher Kapazität, Ladung, Entladung, Wärmeeintrag und Vollzyklen. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt.</value>
+  </data>
   <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
     <value>Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze</value>
   </data>

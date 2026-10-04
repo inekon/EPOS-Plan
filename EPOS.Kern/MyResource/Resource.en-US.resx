@@ -44230,6 +44230,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
     <value>Table of the saved buffer designs of the base project: one group row per design, below it storage class, template, usage profile, zone volumes, sizing criterion, recommendation, key figures and notes. If it is in the template, the section in the project chapter is omitted.</value>
   </data>
+  <data name="VF_TABELLE__KAELTESPEICHER" xml:space="preserve">
+    <value>Table of the cold storages of the base project: capacity, charging, discharging, heat gain and full cycles per cold storage. If it is in the template, the section in the project chapter is omitted.</value>
+  </data>
   <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
     <value>Buffer sizing concept 6 (benefit-effort line); pass-through D1 and two-point D2 with fixed volume, loss K11 by class C limit</value>
   </data>
