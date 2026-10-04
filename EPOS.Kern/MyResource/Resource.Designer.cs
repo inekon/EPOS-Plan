@@ -29896,7 +29896,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren (gbXML)… ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren… ähnelt.
         /// </summary>
         public static string GEXP_BTN_EXPORT {
             get {
@@ -29905,7 +29905,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Daten des Gebäudes im Projekt als gbXML-Datei ausgeben — Zonen, Bauteilflächen und Schichtaufbauten, ohne Geometrie ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Daten des Gebäudes im Projekt ausgeben — als gbXML mit schematischer Raumgeometrie oder als IFC mit Zonen, Bauteilflächen und Schichtaufbauten ohne Geometrie ähnelt.
         /// </summary>
         public static string GEXP_BTN_EXPORT_HINWEIS {
             get {
@@ -29914,7 +29914,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren und teilen (gbXML)… ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren und teilen… ähnelt.
         /// </summary>
         public static string GEXP_BTN_EXPORT_IOS {
             get {
@@ -29973,15 +29973,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_DATEIDIALOG_TITEL {
             get {
                 return ResourceManager.GetString("GEXP_DATEIDIALOG_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Datei (*.xml)|*.xml ähnelt.
-        /// </summary>
-        public static string GEXP_DATEIFILTER {
-            get {
-                return ResourceManager.GetString("GEXP_DATEIFILTER", resourceCulture);
             }
         }
         
@@ -30742,6 +30733,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1: Die Datei trägt die Daten des Gebäudemodells ohne Raumgeometrie. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_GEOMETRIE_OHNE {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_GEOMETRIE_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzmodell: {0} Räume stehen mit schematischer Geometrie in der Datei. Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie ist schematisch erzeugt und bildet den tatsächlichen Grundriss nicht ab. ähnelt.
         /// </summary>
         public static string GEXP_PROT_GEOMETRIE_SCHEMATISCH {
@@ -31017,15 +31017,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_STUFE_SCHEMATISCH {
             get {
                 return ResourceManager.GetString("GEXP_STUFE_SCHEMATISCH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude exportieren (gbXML) ähnelt.
-        /// </summary>
-        public static string GEXP_TITEL {
-            get {
-                return ResourceManager.GetString("GEXP_TITEL", resourceCulture);
             }
         }
         

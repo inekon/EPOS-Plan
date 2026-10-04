@@ -38063,17 +38063,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GEXP_DATEI_VORBEHALT" xml:space="preserve">
     <value>trifft U-Wert und Gesamtwärmekapazität, nicht die Lage der Masse</value>
   </data>
-  <data name="GEXP_TITEL" xml:space="preserve">
-    <value>Gebäude exportieren (gbXML)</value>
-  </data>
   <data name="GEXP_BTN_EXPORT" xml:space="preserve">
-    <value>Exportieren (gbXML)…</value>
+    <value>Exportieren…</value>
   </data>
   <data name="GEXP_BTN_EXPORT_IOS" xml:space="preserve">
-    <value>Exportieren und teilen (gbXML)…</value>
+    <value>Exportieren und teilen…</value>
   </data>
   <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
-    <value>Die Daten des Gebäudes im Projekt als gbXML-Datei ausgeben — Zonen, Bauteilflächen und Schichtaufbauten, ohne Geometrie</value>
+    <value>Die Daten des Gebäudes im Projekt ausgeben — als gbXML mit schematischer Raumgeometrie oder als IFC mit Zonen, Bauteilflächen und Schichtaufbauten ohne Geometrie</value>
   </data>
   <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
     <value>Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren.</value>
@@ -38128,9 +38125,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="GEXP_DATEIDIALOG_TITEL" xml:space="preserve">
     <value>gbXML-Datei speichern</value>
-  </data>
-  <data name="GEXP_DATEIFILTER" xml:space="preserve">
-    <value>gbXML-Datei (*.xml)|*.xml</value>
   </data>
   <data name="GEXP_MSG_GESPEICHERT" xml:space="preserve">
     <value>Gespeichert: {0} ({1} Byte).</value>
@@ -44305,6 +44299,9 @@ Chart</value>
   </data>
   <data name="GEXP_PROT_GEOMETRIE_ABGELEHNT" xml:space="preserve">
     <value>Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen ({0}); die Datei trägt keine Raumgeometrie.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_OHNE" xml:space="preserve">
+    <value>Stufe 1: Die Datei trägt die Daten des Gebäudemodells ohne Raumgeometrie.</value>
   </data>
   <data name="GEXP_PROT_FLAECHE_OHNE_POLYGON" xml:space="preserve">
     <value>{0} Flächen stehen ohne Polygon in der Datei — ihr Raum trägt keinen Körper, oder sie liegen an keiner Kante: {1}</value>

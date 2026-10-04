@@ -112,6 +112,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(R.GEXP_BTN_SPEICHERN_IOS, GebaeudeExportHuelle.Texte(ios: true).Speichern);
             Assert.Equal(R.GEXP_BTN_SPEICHERN, GebaeudeExportHuelle.Texte(ios: false).Speichern);
             Assert.Contains("teilen", R.GEXP_BTN_EXPORT_IOS, StringComparison.Ordinal);
+            // Der Knopf nennt kein Format: Das Format wählt der Exportdialog (gbXML oder IFC).
+            Assert.DoesNotContain("gbXML", R.GEXP_BTN_EXPORT, StringComparison.Ordinal);
+            Assert.DoesNotContain("gbXML", R.GEXP_BTN_EXPORT_IOS, StringComparison.Ordinal);
+            Assert.Contains("IFC", R.GEXP_BTN_EXPORT_HINWEIS, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -219,7 +223,7 @@ namespace EPOS.Kern.Tests
             Assert.False(e.Gespeichert);
             Assert.Equal(1, datei.Wahlen);
             Assert.Equal(R.GEXP_DATEIDIALOG_TITEL, datei.Titel);
-            Assert.Equal(R.GEXP_DATEIFILTER, datei.Filter);
+            Assert.Equal(R.GEXP_DATEITYP_GBXML + " " + GebaeudeExportProfil.DATEIFILTER, datei.Filter);
             Assert.Empty(Directory.GetFiles(_ordner));
         }
 

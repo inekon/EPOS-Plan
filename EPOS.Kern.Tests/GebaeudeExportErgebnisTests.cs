@@ -328,6 +328,58 @@ namespace EPOS.Kern.Tests
         //  Beipackzettel
         // ==================================================================
 
+        /// <summary>Die Schlüssel der IFC-Vorschau (Beipackzettel, ohne Ergebnis, ohne Koordinaten).</summary>
+        private static readonly string[] IFC_VORSCHAU =
+        {
+            GebaeudeExportAblauf.BEIPACK_RAUMGRENZEN, GebaeudeExportAblauf.BEIPACK_OHNE_MVD, GebaeudeExportAblauf.BEIPACK_IDS,
+            IfcSchreiber.OHNE_ERGEBNIS, IfcSchreiber.OHNE_KOORDINATEN,
+        };
+
+        /// <summary>Die Schlüssel der gbXML-Vorschau (Kennzeichnung der Raumgeometrie).</summary>
+        private static readonly string[] GBXML_VORSCHAU =
+        {
+            GbxmlSchreiber.GEOMETRIE_SCHEMATISCH, GbxmlSchreiber.GEOMETRIE_ABGELEHNT, GbxmlSchreiber.GEOMETRIE_OHNE,
+        };
+
+        [Fact]
+        public void Vorschau_gbXML_traegt_die_Geometriemeldung_und_keine_IFC_Meldung()
+        {
+            GebaeudeExportPlan plan = Plan(Zweizonig(), GbxmlExportProbe.Profil());
+            Assert.Contains(plan.Meldungen, m => m.Schluessel == GbxmlSchreiber.GEOMETRIE_SCHEMATISCH && m.Stufe == PruefStufe.Info);
+            foreach (string s in IFC_VORSCHAU) Assert.DoesNotContain(plan.Meldungen, m => m.Schluessel == s);
+            // Dieselbe Vorschau liefert der Schreiber selbst.
+            Assert.Equal(new GbxmlSchreiber().Vorschau(plan.Abbild, GbxmlExportProbe.Profil()).Select(m => m.Schluessel),
+                         plan.Meldungen.Where(m => GBXML_VORSCHAU.Contains(m.Schluessel)).Select(m => m.Schluessel));
+        }
+
+        [Fact]
+        public void Vorschau_IFC_traegt_den_Beipackzettel_und_keine_Geometriemeldung()
+        {
+            GebaeudeExportPlan plan = Plan(Zweizonig(), IfcExportProbe.Profil());
+            foreach (string s in new[] { GebaeudeExportAblauf.BEIPACK_RAUMGRENZEN, GebaeudeExportAblauf.BEIPACK_OHNE_MVD,
+                                         GebaeudeExportAblauf.BEIPACK_IDS, IfcSchreiber.OHNE_ERGEBNIS })
+                Assert.Contains(plan.Meldungen, m => m.Schluessel == s && m.Stufe == PruefStufe.Info);
+            foreach (string s in GBXML_VORSCHAU) Assert.DoesNotContain(plan.Meldungen, m => m.Schluessel == s);
+
+            // Mit Ergebnis entfällt „ohne Ergebnis" schon in der Vorschau.
+            GebaeudeExportPlan mit = Plan(Zweizonig().MitErgebnis(Ergebnis(), LAUF, WETTER), IfcExportProbe.Profil());
+            Assert.DoesNotContain(mit.Meldungen, m => m.Schluessel == IfcSchreiber.OHNE_ERGEBNIS);
+        }
+
+        [Fact]
+        public void Bilanz_traegt_jede_Vorschaumeldung_einmal()
+        {
+            foreach (GebaeudeExportProfil profil in new[] { GbxmlExportProbe.Profil(), IfcExportProbe.Profil() })
+            {
+                GebaeudeExportPlan plan = Plan(Zweizonig(), profil);
+                Datei(Zweizonig(), profil, out GebaeudeExportBilanz bilanz);
+                Assert.True(bilanz.Bytes > 0);
+                foreach (string s in IFC_VORSCHAU.Concat(GBXML_VORSCHAU))
+                    Assert.Equal(plan.Meldungen.Count(m => m.Schluessel == s), bilanz.Meldungen.Count(m => m.Schluessel == s));
+                foreach (var m in plan.Meldungen) Assert.Contains(bilanz.Meldungen, b => b.Schluessel == m.Schluessel);
+            }
+        }
+
         [Fact]
         public void Beipackzettel_steht_in_der_Exportbilanz_beider_Sprachen()
         {

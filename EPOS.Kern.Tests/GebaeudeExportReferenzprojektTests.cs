@@ -19,12 +19,19 @@ namespace EPOS.Kern.Tests
     /// Rechenlauf, deshalb wird das Ergebnis über dieselbe Fassade wie der Lauf gerechnet
     /// (<c>GebaeudeBedarfCtrl.Rechnen</c>, schreibt nichts) und in den Satz gelegt. Gehalten werden
     /// <c>EPOS_Ergebnis</c> am Gebäude und je beheizter Zone (IFC) und die <c>Results</c> je Zone (gbXML).
-    /// Mit gesetzter Umgebungsvariable <c>EPOS_G7C_BEISPIELORDNER</c> legt der Fall beide Dateien dort ab.
+    /// <para><b>Umgebungsvariable <c>EPOS_EXPORT_BEISPIELORDNER</c></b> (<see cref="BEISPIELORDNER_VARIABLE"/>):
+    /// Ist sie gesetzt (ein Ordnerpfad), legt der Fall beide Dateien dort ab
+    /// (<c>Referenzprojekt_1052.ifc</c>, <c>Referenzprojekt_1052.xml</c>) — zum Ansehen in einem Zielwerkzeug.
+    /// Ohne Variable (nicht gesetzt oder leer) schreibt der Test nichts; das hält
+    /// <see cref="Ohne_Beispielordner_wird_nichts_geschrieben"/>.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class GebaeudeExportReferenzprojektTests : IClassFixture<TestDatenbank>, IDisposable
     {
         private const int PROJEKT = 1052;
+
+        /// <summary>Die Umgebungsvariable mit dem Ordner für die Beispieldateien; ohne sie wird nichts geschrieben.</summary>
+        internal const string BEISPIELORDNER_VARIABLE = "EPOS_EXPORT_BEISPIELORDNER";
         private static readonly XNamespace NS = GbxmlLeser.NAMENSRAUM;
         private readonly TestDatenbank _db;
         private readonly ITestOutputHelper _aus;
@@ -99,15 +106,50 @@ namespace EPOS.Kern.Tests
                 Assert.True(befunde.Length == 0, string.Join("\n", befunde));
             }
 
-            string ordner = Environment.GetEnvironmentVariable("EPOS_G7C_BEISPIELORDNER");
-            if (!string.IsNullOrWhiteSpace(ordner))
-            {
-                Directory.CreateDirectory(ordner);
-                File.WriteAllBytes(Path.Combine(ordner, "Referenzprojekt_1052.ifc"), ifcDatei);
-                File.WriteAllBytes(Path.Combine(ordner, "Referenzprojekt_1052.xml"), xmlDatei);
-                _aus.WriteLine("Beispieldateien in " + ordner);
-            }
+            string ordner = Environment.GetEnvironmentVariable(BEISPIELORDNER_VARIABLE);
+            if (BeispieleAblegen(ordner, ifcDatei, xmlDatei).Count > 0) _aus.WriteLine("Beispieldateien in " + ordner);
             foreach (var meldung in plan.Meldungen) _aus.WriteLine(meldung.Stufe + " " + meldung.Schluessel);
+        }
+
+        /// <summary>
+        /// Legt die Beispieldateien im Ordner ab — nur, wenn ein Ordner genannt ist; sonst wird nichts geschrieben.
+        /// </summary>
+        /// <returns>Die geschriebenen Pfade; leer ohne Ordner.</returns>
+        internal static IReadOnlyList<string> BeispieleAblegen(string ordner, byte[] ifcDatei, byte[] xmlDatei)
+        {
+            if (string.IsNullOrWhiteSpace(ordner)) return Array.Empty<string>();
+            Directory.CreateDirectory(ordner);
+            string ifc = Path.Combine(ordner, "Referenzprojekt_1052.ifc");
+            string xml = Path.Combine(ordner, "Referenzprojekt_1052.xml");
+            File.WriteAllBytes(ifc, ifcDatei);
+            File.WriteAllBytes(xml, xmlDatei);
+            return new[] { ifc, xml };
+        }
+
+        [Fact]
+        public void Ohne_Beispielordner_wird_nichts_geschrieben()
+        {
+            string arbeit = Path.Combine(Path.GetTempPath(), "epos_beispielordner_" + Guid.NewGuid().ToString("N"));
+            string vorher = Directory.GetCurrentDirectory();
+            Directory.CreateDirectory(arbeit);
+            try
+            {
+                Directory.SetCurrentDirectory(arbeit);
+                Assert.Empty(BeispieleAblegen(null, new byte[] { 1 }, new byte[] { 2 }));
+                Assert.Empty(BeispieleAblegen("", new byte[] { 1 }, new byte[] { 2 }));
+                Assert.Empty(BeispieleAblegen("   ", new byte[] { 1 }, new byte[] { 2 }));
+                Assert.Empty(Directory.EnumerateFileSystemEntries(arbeit));
+
+                // Gegenprobe: mit Ordner liegen genau die zwei Dateien darin.
+                string ziel = Path.Combine(arbeit, "beispiele");
+                Assert.Equal(2, BeispieleAblegen(ziel, new byte[] { 1 }, new byte[] { 2 }).Count);
+                Assert.Equal(2, Directory.GetFiles(ziel).Length);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(vorher);
+                Directory.Delete(arbeit, true);
+            }
         }
     }
 }

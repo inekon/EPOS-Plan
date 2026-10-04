@@ -206,7 +206,7 @@ Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus w
 == Gebäudedaten ausgeben ==
 {{Anker|export}}
 
-Im Dialog '''Eingabe der Gebäudedaten''' steht neben ''Hülle und Zonen…'' der Knopf '''Exportieren (gbXML)…''' – auf dem iPad '''Exportieren und teilen (gbXML)…'''. Er schreibt die Daten des markierten Gebäudes im Projekt in eine Datei im Format '''gbXML'''. Eine Zeile, die noch nicht mit ''OK'' gespeichert ist, lässt sich nicht exportieren; der Knopf nennt den Grund. Exportiert wird immer der gespeicherte Stand.
+Im Dialog '''Eingabe der Gebäudedaten''' steht neben ''Hülle und Zonen…'' der Knopf '''Exportieren…''' – auf dem iPad '''Exportieren und teilen…'''. Er schreibt die Daten des markierten Gebäudes im Projekt in eine Datei; das Format – '''gbXML''' oder '''IFC''' – wählen Sie im Dialog. Eine Zeile, die noch nicht mit ''OK'' gespeichert ist, lässt sich nicht exportieren; der Knopf nennt den Grund. Exportiert wird immer der gespeicherte Stand.
 
 Die Datei enthält die Zonen des Gebäudes mit Fläche, Volumen, Luftwechsel, Personen, Geräteleistung und Heizsollwert, jedes Bauteil mit Fläche, Ausrichtung, Neigung und Randbedingung, Fenster und Türen mit U-Wert und Gesamtenergiedurchlassgrad und die Schichtaufbauten mit Dicke und Stoffwerten. Ein Gebäude ohne Zonen wird so ausgegeben, wie ''Hülle und Zonen…'' es als eine Zone übernehmen würde, samt Hochrechnung; Faktor und Grundlage stehen in der Datei.
 
