@@ -144,6 +144,6 @@ und ein Sonnet-Auftrag.
 | nach KU3-2 (#714) | Testdatenbank 181 pushen; Entscheid, ob die freie Kühlung über die Wärmequelle der Wärmepumpe (Sole) mit KU3-5 gebaut wird; iOS-Bau nur auf Zuruf |
 | nach KU3-5 (#718) | Sichtabnahme des Speicherdialogs (Nutzung Kälte); Entscheid zur freien Kühlung über die Sole (mit KU3-5 nicht gebaut) |
 | nach KU3-3 (#715) | Sichtabnahme Zonendialog (Kühlgruppe) und Bedarfsdialog unter Windows; Testdatenbank 181 pushen (KU3-4b wartet darauf); iOS-Bau nur auf Zuruf |
-| nach KU3-4c (#717) | Sichtabnahme des Dialogs „Kältemaschinen“ unter Windows; **Q27 (offen):** Kältemaschine als Startseitenkachel oder im Assistenten — Kachel und Assistent brauchen einen Umbau von Komponentenauswahl und `AssistentCtrl` (Item-Nummer 13 ist dort `PUFFER_ITEM`); bis zum Entscheid gilt der Knopf „Kältemaschinen…“ im Reiter „Energieerzeuger“ |
+| nach KU3-4c (#717) | Sichtabnahme des Dialogs „Kältemaschinen“ unter Windows; **Q27 entschieden (E74, 04.10.2026):** keine Startseitenkachel, kein Assistentenschritt — der Knopf „Kältemaschinen…“ im Reiter „Energieerzeuger“ bleibt der Einstieg |
 | nach KU3-4a (#716) | Bundle mit Testdatenbank 182/183 einspielen und pushen (LFS; KU3-4b wartet darauf); Sichtabnahme Kostenvorlagen und Bericht; iOS-Bau nur auf Zuruf |
 | laufend | AK1z (eigene Sitzung, Bundle-Weg für Testdatenbank 181 und Basis R35); die Reihenfolge nach KU3: AK2, AK3, GA (E67) |
