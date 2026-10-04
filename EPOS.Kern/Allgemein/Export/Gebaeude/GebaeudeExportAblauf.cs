@@ -169,7 +169,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Schreibt einen schreibbaren Plan über den Schreiber des Profils; die Bilanz trägt die Meldungen
-        /// des Plans. Ein abgelehnter Plan ist ein Programmfehler des Aufrufers.
+        /// des Plans und danach die des Schreibers, ohne die, die schon im Plan stehen (die Vorschau des
+        /// Schreibers bildet der Schreiber beim Schreiben erneut). Ein abgelehnter Plan ist ein Programmfehler
+        /// des Aufrufers.
         /// </summary>
         internal GebaeudeExportBilanz Schreiben(GebaeudeExportPlan plan, Stream ziel, GebaeudeExportProfil profil, CancellationToken abbruch)
         {
@@ -178,8 +180,13 @@ namespace WindowsFormsApplication1
             if (plan.Abgelehnt) throw new InvalidOperationException("Ein abgelehnter Exportplan wird nicht geschrieben.");
             GebaeudeExportBilanz b = profil.SchreiberErzeugen(plan.Abbild).Schreiben(plan.Abbild, ziel, profil, abbruch);
             return new GebaeudeExportBilanz(b.Flaechen, b.Oeffnungen, b.Aufbauten, b.Ersatzaufbauten,
-                                            plan.Meldungen.Concat(b.Meldungen).ToList(), b.Bytes);
+                                            plan.Meldungen.Concat(b.Meldungen.Where(m => !plan.Meldungen.Any(v => Gleich(v, m)))).ToList(), b.Bytes);
         }
+
+        /// <summary>Zwei Meldungen mit gleicher Stufe, gleichem Schlüssel und gleichen Werten.</summary>
+        private static bool Gleich(PruefMeldung a, PruefMeldung b)
+            => a.Stufe == b.Stufe && string.Equals(a.Schluessel, b.Schluessel, StringComparison.Ordinal)
+               && (a.Werte ?? Array.Empty<string>()).SequenceEqual(b.Werte ?? Array.Empty<string>(), StringComparer.Ordinal);
 
         /// <summary>
         /// Die Ersatzschicht eines Bauteils (Datenaustauschkonzept 5.3, D10): mit c = 1000 J/(kgK) und
@@ -329,25 +336,36 @@ namespace WindowsFormsApplication1
                 {
                     // Die Ablehnung steht in _ablehnung.
                 }
-                // Die Kennzeichnung der Raumgeometrie im Exportdialog (Stufe G7b, Datenaustauschkonzept 8.4).
-                if (_ablehnung == null && _abbild != null) _meldungen.AddRange(GbxmlSchreiber.Geometriemeldungen(_abbild));
+                // Die Vorschau des gewählten Formats (gbXML: Kennzeichnung der Raumgeometrie, 8.4; IFC: Beipackzettel).
+                if (_ablehnung == null && _abbild != null) Vorschau();
                 if (_ablehnung == null && _abbild != null) Beipackzettel();
                 return new GebaeudeExportPlan(_abbild, _meldungen, _ablehnung);
             }
 
             /// <summary>
-            /// <b>Der Beipackzettel als Teil der Exportbilanz</b> (G7c, Teil 2): für IFC die logischen Raumgrenzen
-            /// ohne Anschlussgeometrie, „ohne MVD" und der Hinweis auf die IDS-Datei der Auslieferung; für beide
-            /// Formate bei Kälte im Ergebnis „sensibel, ohne Entfeuchtung".
+            /// Die Vorschaumeldungen des Schreibers des gewählten Formats (<see cref="IGebaeudeSchreiber.Vorschau"/>).
+            /// Ein Bau ohne xBIM hat keinen IFC-Schreiber; dort entfällt die Vorschau, das Schreiben lehnt benannt ab.
+            /// </summary>
+            private void Vorschau()
+            {
+                IGebaeudeSchreiber schreiber;
+                try
+                {
+                    schreiber = _profil.SchreiberErzeugen(_abbild);
+                }
+                catch (NotSupportedException)
+                {
+                    return;
+                }
+                _meldungen.AddRange(schreiber.Vorschau(_abbild, _profil));
+            }
+
+            /// <summary>
+            /// <b>Der Beipackzettel beider Formate</b> (G7c, Teil 2): bei Kälte im Ergebnis „sensibel, ohne
+            /// Entfeuchtung". Den Beipackzettel des IFC-Formats bildet dessen Schreiber (<see cref="Vorschau"/>).
             /// </summary>
             private void Beipackzettel()
             {
-                if (_profil.IstIfc)
-                {
-                    Info(BEIPACK_RAUMGRENZEN);
-                    Info(BEIPACK_OHNE_MVD);
-                    Info(BEIPACK_IDS, IDS_DATEI);
-                }
                 if (_g != null && (_g.Ergebnis?.MitKaelte == true || _g.Raeume.Any(r => r.Ergebnis?.MitKaelte == true)))
                     Info(BEIPACK_KAELTE);
             }

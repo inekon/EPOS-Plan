@@ -108,6 +108,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Action<IModel> VorDerPruefung { get; set; }
 
+        /// <summary>
+        /// Die Vorschau des IFC-Formats: der Beipackzettel (logische Raumgrenzen ohne Anschlussgeometrie, ohne MVD,
+        /// die IDS-Datei der Auslieferung), dazu „ohne Ergebnis", wenn der Schreiber keine Ergebnisse trägt, und
+        /// „ohne Koordinaten", wenn Breite oder Länge fehlen — dieselben Bedingungen wie beim Schreiben.
+        /// </summary>
+        public IReadOnlyList<PruefMeldung> Vorschau(GebaeudeAbbild abbild, GebaeudeExportProfil profil)
+        {
+            var meldungen = new List<PruefMeldung>
+            {
+                new PruefMeldung(PruefStufe.Info, GebaeudeExportAblauf.BEIPACK_RAUMGRENZEN),
+                new PruefMeldung(PruefStufe.Info, GebaeudeExportAblauf.BEIPACK_OHNE_MVD),
+                new PruefMeldung(PruefStufe.Info, GebaeudeExportAblauf.BEIPACK_IDS, GebaeudeExportAblauf.IDS_DATEI),
+            };
+            if (abbild == null) return meldungen;
+            if (_ergebnisse == null && abbild.Gebaeude.Count > 0) meldungen.Add(new PruefMeldung(PruefStufe.Info, OHNE_ERGEBNIS));
+            if (!(abbild.BreiteGrad.HasValue && abbild.LaengeGrad.HasValue)) meldungen.Add(new PruefMeldung(PruefStufe.Info, OHNE_KOORDINATEN));
+            return meldungen;
+        }
+
         /// <inheritdoc />
         public GebaeudeExportBilanz Schreiben(GebaeudeAbbild abbild, Stream ziel, GebaeudeExportProfil profil, CancellationToken abbruch)
         {

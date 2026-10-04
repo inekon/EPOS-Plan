@@ -38056,17 +38056,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEXP_DATEI_VORBEHALT" xml:space="preserve">
     <value>matches the U-value and the total heat capacity, not the position of the mass</value>
   </data>
-  <data name="GEXP_TITEL" xml:space="preserve">
-    <value>Export building (gbXML)</value>
-  </data>
   <data name="GEXP_BTN_EXPORT" xml:space="preserve">
-    <value>Export (gbXML)…</value>
+    <value>Export…</value>
   </data>
   <data name="GEXP_BTN_EXPORT_IOS" xml:space="preserve">
-    <value>Export and share (gbXML)…</value>
+    <value>Export and share…</value>
   </data>
   <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
-    <value>Write the data of the building in the project to a gbXML file — zones, component areas and layer build-ups, without geometry</value>
+    <value>Write the data of the building in the project — as gbXML with schematic room geometry or as IFC with zones, component areas and layer build-ups without geometry</value>
   </data>
   <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
     <value>The building is not yet saved in the project. Save with OK first, then export.</value>
@@ -38121,9 +38118,6 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="GEXP_DATEIDIALOG_TITEL" xml:space="preserve">
     <value>Save gbXML file</value>
-  </data>
-  <data name="GEXP_DATEIFILTER" xml:space="preserve">
-    <value>gbXML file (*.xml)|*.xml</value>
   </data>
   <data name="GEXP_MSG_GESPEICHERT" xml:space="preserve">
     <value>Saved: {0} ({1} bytes).</value>
@@ -44298,6 +44292,9 @@ chart</value>
   </data>
   <data name="GEXP_PROT_GEOMETRIE_ABGELEHNT" xml:space="preserve">
     <value>The zones sharing a partition cannot be placed side by side without contradiction ({0}); the file carries no room geometry.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_OHNE" xml:space="preserve">
+    <value>Stage 1: the file carries the data of the building model without room geometry.</value>
   </data>
   <data name="GEXP_PROT_FLAECHE_OHNE_POLYGON" xml:space="preserve">
     <value>{0} surfaces are written without a polygon — their room has no body, or they lie on no edge: {1}</value>

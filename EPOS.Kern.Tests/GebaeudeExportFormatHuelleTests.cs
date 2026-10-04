@@ -118,7 +118,7 @@ namespace EPOS.Kern.Tests
             Assert.Same(vorbild.Uhr, ifc.Uhr);
             Assert.Throws<ArgumentException>(() => GebaeudeExportHuelle.MitFormat(vorbild, "gbXML (Schemafassung 6.01)"));
 
-            Assert.Equal(R.GEXP_DATEIFILTER, GebaeudeExportHuelle.Dateifilter(vorbild));
+            Assert.Equal(R.GEXP_DATEITYP_GBXML + " " + GebaeudeExportProfil.DATEIFILTER, GebaeudeExportHuelle.Dateifilter(vorbild));
             Assert.Equal(R.GEXP_DATEITYP_IFC + " " + GebaeudeExportProfil.DATEIFILTER_IFC, GebaeudeExportHuelle.Dateifilter(ifc));
             Assert.Equal(".xml", GebaeudeExportHuelle.Endung(vorbild));
             Assert.Equal(".ifc", GebaeudeExportHuelle.Endung(ifc));

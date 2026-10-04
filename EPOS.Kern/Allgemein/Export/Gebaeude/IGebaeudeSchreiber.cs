@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -29,5 +31,16 @@ namespace WindowsFormsApplication1
         /// <param name="abbruch">Abbruch des Laufs.</param>
         /// <returns>Was geschrieben wurde.</returns>
         GebaeudeExportBilanz Schreiben(GebaeudeAbbild abbild, Stream ziel, GebaeudeExportProfil profil, CancellationToken abbruch);
+
+        /// <summary>
+        /// <b>Die Vorschaumeldungen des Formats</b> (G7c, Nachzug): was der Exportdialog vor dem Speichern über
+        /// die Datei dieses Formats zeigt — gbXML die Kennzeichnung der Raumgeometrie, IFC den Beipackzettel samt
+        /// „ohne Ergebnis" und „ohne Koordinaten". Schreibt nichts und wirft nicht; der Ablauf übernimmt die
+        /// Meldungen in den Plan, und dieselben Meldungen, die der Schreiber beim Schreiben erneut bildet, stehen
+        /// in der Bilanz nur einmal (<c>GebaeudeExportAblauf.Schreiben</c>).
+        /// </summary>
+        /// <param name="abbild">Das Abbild eines Gebäudes, wie der Ablauf es vorbereitet hat.</param>
+        /// <param name="profil">Das Profil des Laufs.</param>
+        IReadOnlyList<PruefMeldung> Vorschau(GebaeudeAbbild abbild, GebaeudeExportProfil profil);
     }
 }

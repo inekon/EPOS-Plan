@@ -104,6 +104,18 @@ namespace WindowsFormsApplication1
             return meldungen;
         }
 
+        /// <summary>
+        /// Die Vorschau des gbXML-Formats: die Geometriemeldungen (<see cref="Geometriemeldungen"/> — schematisch
+        /// oder abgelehnt), sonst bei einem Gebäude ohne Raumkörper „Daten ohne Geometrie" (<see cref="GEOMETRIE_OHNE"/>).
+        /// </summary>
+        public IReadOnlyList<PruefMeldung> Vorschau(GebaeudeAbbild abbild, GebaeudeExportProfil profil)
+        {
+            var meldungen = new List<PruefMeldung>(Geometriemeldungen(abbild));
+            if (meldungen.Count == 0 && abbild != null && abbild.Gebaeude.Count == 1)
+                meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_OHNE));
+            return meldungen;
+        }
+
         /// <summary>Die Paare, an denen die Anordnung widersprüchlich ist, als „Raum – Raum“.</summary>
         internal static string Widersprueche(Zonengeometrie z)
             => string.Join(", ", z.Nachbarpaare.Where(p => p.Widerspruch)
@@ -113,6 +125,8 @@ namespace WindowsFormsApplication1
         internal const string GEOMETRIE_SCHEMATISCH = "GEXP_PROT_GEOMETRIE_SCHEMATISCH";
         /// <summary>W — {0} Paare: widersprüchliche Anordnung — keine Raumgeometrie (Stufe 2 benannt abgelehnt).</summary>
         internal const string GEOMETRIE_ABGELEHNT = "GEXP_PROT_GEOMETRIE_ABGELEHNT";
+        /// <summary>I — Die Datei trägt Daten ohne Raumgeometrie (Stufe 1; Vorschau).</summary>
+        internal const string GEOMETRIE_OHNE = "GEXP_PROT_GEOMETRIE_OHNE";
         /// <summary>I — {0} Zahl, {1} Beispiele: Flächen ohne Polygon, obwohl die Datei Raumgeometrie trägt (Raum ohne Körper, Wand an keiner Kante); innere Masse zählt nicht.</summary>
         internal const string FLAECHE_OHNE_POLYGON = "GEXP_PROT_FLAECHE_OHNE_POLYGON";
         /// <summary>I — {0} Zahl, {1} Beispiele: Öffnungen, deren Polygon in der Wandstrecke verkleinert ist.</summary>
