@@ -714,6 +714,12 @@ rechnet alle neunzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `bfd9f574a6a1c9af5ce5b996c8e23ebea46063fbecc05e16114d9f58746f5404`**. **Die Basis bleibt:** Keine Zone trägt einen
 > Wert, kein Rechenweg liest die Spalten; keine Einfrierregel ist berührt.
 
+> **Nachtrag — Schemaschritt 182 (Kältemaschine als Erzeugertyp), Basis unverändert.**
+> `KaeltemaschineSchema` (182 = 181 + 1) legt vier STRICT-Tabellen an und sät drei neutrale Auslieferungsgeräte; kein Referenzprojekt führt eine
+> Kältemaschine, der Rechenweg liest die Tabellen nicht. Der Schritt ist gebaut; die Repo-Datei steht noch auf 180 und wird mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` aus 181 nachgezogen, sobald die
+> Datenbank 181 auf origin liegt (die Testvorrichtung zieht 182 selbst auf die Arbeitskopie).
+
 ### Die Vorgängerbasis R34 `2026-10-03_R34_Erdreich`
 
 Achtzehn Projekte, 548 CSV, 3 568 Skalare, auf Linux eingefroren gegen die Testdatenbank `bb8dd3dc…` (Schemastand 176),
