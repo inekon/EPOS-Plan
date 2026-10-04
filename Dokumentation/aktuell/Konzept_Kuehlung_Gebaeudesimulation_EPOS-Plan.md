@@ -1510,7 +1510,7 @@ Stellen:
 als eigener „Erzeuger" im Sinne der Anlagenliste. Ein Eintrag „freie Kühlung" in der Erzeugerauswahl würde eine Anlage suggerieren,
 die es nicht gibt.
 
-**So gebaut (KU3-2, 04.10.2026):** Die freie Kühlung ist ein Betriebsfall des Rückkühlers, kein Erzeuger (K8). Sie gilt nur bei Trocken- und Nasskühler, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit dem Ersatz-EER 15 plus Hilfsstrom, der Verdichter ist in dieser Stunde aus; Stunden und Kälte werden gezählt. Der Weg über die Wärmequelle der Wärmepumpe (Sole) ist nicht gebaut; offen beim Anwender, ob er mit KU3-5 folgt.
+**So gebaut (KU3-2, 04.10.2026):** Die freie Kühlung ist ein Betriebsfall des Rückkühlers, kein Erzeuger (K8). Sie gilt nur bei Trocken- und Nasskühler, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit dem Ersatz-EER 15 plus Hilfsstrom, der Verdichter ist in dieser Stunde aus; Stunden und Kälte werden gezählt. Der Weg über die Wärmequelle der Wärmepumpe (Sole direkt in den Kühlkreis, ohne Verdichter) ist nicht gebaut; er folgt als Stufe KU3-6 nach AK2 (E73): Schalter mit Grädigkeit des Wärmetauschers und Leistungsgrenze an der Wärmepumpen-Anlage, je Stunde deckt die Quelle vor dem Verdichter, solange Soletemperatur plus Grädigkeit unter dem Kaltwasser-Vorlauf liegt; Stunden und Kälte werden gezählt, die Rückwirkung auf die Sonde (K8c) bleibt vertagt.
 
 ### 5.5 Deckungsreihenfolge und Unterdeckung
 
