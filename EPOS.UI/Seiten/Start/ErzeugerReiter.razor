@@ -84,6 +84,13 @@
         </KindInhalt>
     </Kachelraster>
 
+    @* DIE KAELTEMASCHINEN DES PROJEKTS (KU3-4c): kein Kachelbild, ein Knopf unter den sieben Kacheln. Der Weg
+       ist Dienste.Navigation und damit auf beiden Plattformen derselbe (freie Ansicht KAELTEMASCHINE_ANLAGE). *@
+    <div class="epos-startreiter-zusatz">
+        <button type="button" class="epos-knopf epos-startreiter-kaeltemaschine"
+                @onclick="KaeltemaschinenOeffnen">@KaeltemaschinenText</button>
+    </div>
+
     <Warnbanner Stufe="WarnStufe.Hinweis" Text="@(TippTitelText + ": " + TippText)" />
 </div>
 
@@ -125,6 +132,14 @@
 
     /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Energieerzeuger";
+
+    /// <summary>Beschriftung des Knopfes zu den Kältemaschinen des Projekts.</summary>
+    [Parameter] public string KaeltemaschinenText { get; set; } = WindowsFormsApplication1.MyResource.Resource.KMA_REITER_KNOPF;
+
+    /// <summary>Öffnet den Erzeugerdialog der Kältemaschinen; ohne Wurzel bleibt der Klick folgenlos.</summary>
+    private static void KaeltemaschinenOeffnen()
+        => _ = WindowsFormsApplication1.Dienste.Navigation
+               .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, "");
 
     /// <summary>Die Stellung „Profil" der Weiche.</summary>
     private const int PROFIL = 0;

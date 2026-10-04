@@ -135,6 +135,11 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? KaeltemaschineKatalogGaben() => KaeltemaschineKatalog;
 
+    /// <summary>Der Parametersatz des Erzeugerdialogs „Kältemaschinen im Projekt" (KU3-4c).</summary>
+    internal IReadOnlyDictionary<string, object>? KaeltemaschineAnlage { get; set; }
+
+    public IReadOnlyDictionary<string, object>? KaeltemaschineAnlageGaben(int idProjekt) => KaeltemaschineAnlage;
+
     /// <summary>Der Parametersatz der Verwaltung „Bauteilaufbauten".</summary>
     internal IReadOnlyDictionary<string, object>? BauteilaufbauKatalog { get; set; }
 
