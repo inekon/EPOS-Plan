@@ -92,6 +92,49 @@ namespace EPOS.Kern.Tests
                          f.Optionen.WirtschaftlicherPeakZielwertKw);
         }
 
+        /// <summary>
+        /// <b>Der verwandte Weg der Auslegungsseite.</b> Vor dem ersten Lauf (frisches
+        /// <see cref="SimulationControl"/>, keine gespeicherte Flotte) läuft der Peak-Ziel-Vorschlag
+        /// weder die Wache in <c>BaueLastreihe</c> noch die Lauf-Prüfung der Quellenbeschaffung an
+        /// und liefert den benannten Rückfall.
+        /// </summary>
+        [Fact]
+        public void Auslegungsseite_vor_dem_ersten_Lauf_liefert_den_Rueckfall_ohne_Wache()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ProjektMitSpeicherAnlegen();
+            var ctrl = new StromspeicherAuslegungCtrl(PROJEKT);
+            ctrl.LaufUebernehmen(new SimulationControl());
+
+            int treffer = 0;
+            EventHandler<FirstChanceExceptionEventArgs> zaehler = (_, e) =>
+            {
+                if ((e.Exception is InvalidOperationException &&
+                     e.Exception.Message.StartsWith(WACHE, StringComparison.Ordinal)) ||
+                    (e.Exception is ArgumentNullException an && an.ParamName == "sim"))
+                    treffer++;
+            };
+            AppDomain.CurrentDomain.FirstChanceException += zaehler;
+            FlottenPeakZielVorschlag vorschlag;
+            try
+            {
+                SpeicherOptimierungEingaben eingaben = ctrl.Vorgaben().Eingaben;
+                Assert.Single(eingaben.Auslegung.Flotte.Einheiten);
+                Assert.True(SpeicherAuslegungCtrl.BrauchtEposReihe(eingaben.Auslegung));
+                vorschlag = ctrl.PeakZielVorschlag(eingaben);
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.FirstChanceException -= zaehler;
+            }
+
+            Assert.Equal(0, treffer);
+            Assert.NotNull(vorschlag);
+            Assert.False(vorschlag.AusReihe);
+        }
+
         /// <summary>Die Wache in <c>BaueLastreihe</c> bleibt: Wer sie direkt ruft, bekommt sie.</summary>
         [Fact]
         public void Die_Wache_in_BaueLastreihe_bleibt()
