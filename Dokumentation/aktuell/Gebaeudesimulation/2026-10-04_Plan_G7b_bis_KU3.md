@@ -1,0 +1,130 @@
+# Plan der Wellen G7b bis KU3 — Sitzung Gebäudesimulation
+
+**Stand 04.10.2026, nach Entscheid E67.** Dieses Papier plant die Stufen, die nach E67 vor KU3
+liegen, und KU3 selbst: Reihenfolge, Zuschnitt in Wellen und Agentenaufträge, Abnahme, Rückfragen an
+den Stufengrenzen und der geschätzte Verbrauch. Es ist ein Arbeitsplan, kein Konzept: Fachliche
+Festlegungen stehen in den Konzepten, auf die jede Zeile verweist. Erledigte Wellen wandern mit
+Statuszeile und Protokoll aus diesem Plan heraus; ist KU3 abgenommen, geht das Papier nach
+`ueberholt/`.
+
+Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kapitel 5, 6, 9,
+10 und 14; [Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 4.6, 5.3, 5.4, 9.2 und
+11; [Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.7 und 7;
+[Statusdatei](../Status_Gebaeudesimulation_VDI6007.md) Abschnitte 1 und 2.
+
+
+## 1 Reihenfolge und Maßstab
+
+| Nr. | Welle | Inhalt in einem Satz | PT laut Konzept | Verbrauch (Schätzung) | Rückfrage vorher |
+|---|---|---|---|---|---|
+| 1 | **G7b** | gbXML Stufe 2 und 3D-Körperansicht (läuft) | 7–12 (+4–7 Ansicht) | 4–5 Punkte | keine (E66) |
+| 2 | **G7c** | IFC-Export S1, semantisch (Teil 1 läuft) | 12–20 | 7–9 Punkte | keine (D6: semantisch zuerst) |
+| 3 | **G7d** | Round-Trip-Anreicherung fremder IFC4-Dateien | 6–11 | 4–5 Punkte | **Gegenüber des IFC-Exports (D6)** |
+| 4 | **G7e** | Schematische Körper im IFC | 8–15 | 5–7 Punkte | Gegenüber bestätigt; Prüfbilder aus zwei Betrachtern liegen beim Anwender |
+| 5 | **KU3** | Kältemaschine mit Rückkühlung, freie Kühlung über die Quelle, Kühlung je Zone, Export, Kältespeicher nur bei Ja | 17–26 (20–31 mit Speicher) | 12–16 Punkte (15–19 mit Speicher) | **Kältespeicher (K7)**, Katalogsaat der Kältemaschinen |
+
+Maßstab: EV1 (3–4 PT) kostete rund 3 Punkte des Wochenlimits bei rund 230 Werkzeugaufrufen. Ein
+Personentag des Konzepts entspricht damit grob 0,8–1 Punkt. Die Spanne G7b bis KU3 liegt bei
+**32–46 Punkten**, verteilt auf drei bis vier Wochenlimits. Jede Welle wird vor dem Start mit ihrer
+Schätzung genannt; der Anwender nennt das verbleibende Limit.
+
+Arbeitsweise je Welle unverändert: Worktree je Agent (`opus-umsetzung` für Code und Tests,
+`sonnet-mechanik` für Papiere, Wiki und Statuszeilen, `haiku-pruefung` für Zählungen), Agenten
+committen und pushen nicht, höchstens rund 150 Werkzeugaufrufe je Auftrag; danach Merge → Gate →
+Statuszeile und Protokoll → Push → CI-Vermerk. Kein macOS-, iOS- oder Setup-Lauf ohne Freigabe.
+
+
+## 2 G7b — gbXML Stufe 2 und Körperansicht (läuft)
+
+| Teil | Agent | Inhalt | Abnahme |
+|---|---|---|---|
+| Kern | Opus, `g7b-kern` | Aneinanderlegen von Zonen mit gemeinsamer Trennfläche, M13-Paare an den Kanten, `PlanarGeometry/PolyLoop`, `ShellGeometry`, `Results`, Kennzeichnung „schematisch“ in der Datei, Freigabe des gbXML-Exports | Proben 2, 3, 12, 25, 27; Rundlauf |
+| Ansicht | Opus, `g7b-ansicht` | three.js 0.186.1 (MIT) lokal unter `EPOS.UI/wwwroot/three/`, Reiter „Körper“, Kennzeichen „schematisch“ am Bild, Herkunft je Zone, Lizenzblock mit Wache, Hilfeanker des Exportdialogs | Probe 26 (bunit), Schale 0 Fehler, Lizenzwache |
+| Papiere | Sonnet | Wiki „Gebäudeimport“ (Abschnitt „Gebäudedaten ausgeben“ aus Protokoll G7a Abschnitt 8 und Körperansicht), Datenaustauschkonzept 5.5 und 14, Mehrzonenkonzept 6.7, Protokoll, Statuszeile, Logbuch-Satz | Wachen grün, Gegenlese 0 Treffer |
+
+Offen beim Anwender nach G7b: Sichtprobe der Körperansicht unter Windows; Probe 20 (macOS-Lauf) nur
+auf Zuruf; Logbuch-Version.
+
+
+## 3 G7c — IFC-Export S1 (Teil 1 läuft)
+
+| Teil | Agent | Inhalt | Abnahme |
+|---|---|---|---|
+| Kern 1 | Opus, `g7c-kern` | `IfcSchreiber` mit `MemoryModel`: Einheiten von Hand (METRE … RADIAN, KILOWATTHOUR), `IfcSite`, `IfcBuilding`, `IfcSpace` mit Psets und Qtos, `IfcZone` nur bei mehreren Zonen, Bauteile, Raumgrenzen 2. Stufe ohne Geometrie, Materialschichten, `EPOS_*`-Sätze, Produktausweis E10, deterministische `GlobalId`, Validator, Formatwahl im Profil | Proben 10, 11, 12, 22, 23; Rundlauf über `IfcLeser` |
+| Kern 2 | Opus | `EPOS_Ergebnis` vollständig (Heizwärmebedarf, Heizlast, Kältebedarf und Kältelast nach Kühlkonzept 9.2 mit explizitem `Unit` und dem Hinweis „sensibel, ohne Entfeuchtung“), Beipackzettel als Text je Export (Ressourcen beider Sprachen), IDS-Datei `EPOS_Export.ids` mit der Exportzusage, Wache IDS ↔ geschriebene Sätze | Probe 23 erweitert; IDS-Wache |
+| Schalen und Oberfläche | Opus | Formatwahl „gbXML / IFC“ im Exportdialog, Hülle, Dateiendung und Teilen auf iOS, IDS in der Auslieferung: Windows `{app}\Vorlage\EPOS_Export.ids` (`Setup/EPOS-Plan.iss`), iOS als Bündelressource mit `MitSystemOeffnen` auf Anforderung; Lizenzhinweise unverändert (xBIM steht) | bunit des Dialogs, Schale 0 Fehler, `AuslieferungsvorlagenWacheTests` |
+| Papiere | Sonnet | Wiki „Gebäudeimport“ (IFC-Export), Datenaustauschkonzept 6.3–6.5 und 10, Softwarearchitektur, Protokoll, Statuszeile, Logbuch-Satz | Wachen grün |
+
+Probe 15 (bSI-Validierungsdienst) und Probe 16 (Betrachter-Prüfmatrix) laufen von Hand beim
+Anwender; die Sitzung liefert dafür eine Beispieldatei aus dem Referenzprojekt 1052 (drei Zonen) im
+Scratchpad und bittet um das Protokoll. Erst Probe 16 trägt die Aussage in Konzept 6.1.
+
+
+## 4 G7d — Round-Trip-Anreicherung
+
+Vorbedingungen: G7c abgenommen; der Anwender hat das Gegenüber des IFC-Exports benannt (D6 —
+Werkzeug und Zweck, etwa „Energieberater mit Solibri“ oder „Archivierung“). Ohne diese Antwort wird
+G7d nicht gestartet, G7e auch nicht.
+
+| Teil | Agent | Inhalt | Abnahme |
+|---|---|---|---|
+| Kern | Opus | Wiederfinden über `Tab_Importquelle.Hash` nach erneuter Dateiwahl, Sperren: Schemastand ≠ IFC4, Entitätenverlust im Leseprotokoll (beide Kanäle), Hash ungleich — je benannte Verweigerung mit Angebot einer eigenen Datei nach G7c; Ergänzen statt Doppeln (`Pset_WallCommon.ThermalTransmittance` ersetzen), neue Entitäten mit eigener `GlobalId`, `FILE_DESCRIPTION`-Vermerk und eigene `IfcApplication`, `OriginatingSystem` bleibt | Probe 13 (drei Sperrfälle), Wächter `SkipTypes` nie gesetzt, Rundlauf an einer gesäten Testdatei (8.3: selbst erzeugt, kein Download) |
+| Oberfläche | Opus | Exportdialog: Wahl „eigene Datei / Originaldatei anreichern“, Hinweis mit Bestätigung (D11), immer neuer Dateiname, Beipackzettel | bunit, Schale 0 Fehler |
+| Papiere | Sonnet | Wiki, Konzept 6.6, Protokoll, Statuszeile, Logbuch | Wachen grün |
+
+
+## 5 G7e — schematische Körper im IFC
+
+Vorbedingungen: G7b und G7d abgenommen; das Gegenüber (D6) erwartet eine Datei im Betrachter —
+sonst wird G7e nach Konzept 6.7 („lohnt erst, wenn im Feld jemand die Datei in einem Betrachter
+erwartet“) zurückgestellt und der Anwender entscheidet.
+
+| Teil | Agent | Inhalt | Abnahme |
+|---|---|---|---|
+| Kern | Opus | Aus dem Zonengeometrie-Modell je Zone `IfcRectangleProfileDef` → `IfcExtrudedAreaSolid` → `IfcShapeRepresentation` → `IfcProductDefinitionShape`; Platte je Bauteil, Fenster als kleinere Platte vor der Wand; Placement-Kette Project → Site → Building → Element, Azimut nur als Drehung des Placements, `TrueNorth` Vorgabe; Kennzeichnung im Projektnamen, `FILE_DESCRIPTION`, je Element im `Description` und als `IfcAnnotation` | Validator grün trotz Placement-Pflicht, Probe 27 (Körper gegen das Modell), Determinismus |
+| Papiere | Sonnet | Wiki, Konzept 6.7 und 14, Protokoll, Statuszeile, Logbuch | Wachen grün |
+
+Prüfbilder aus mindestens zwei Betrachtern (Probe 16) liefert der Anwender; die Sitzung legt die
+Beispieldatei bereit.
+
+
+## 6 KU3 — das Umfeld der Kälte
+
+Vorbedingungen: KU2 im Feld (liegt beim Anwender), G6 für die Zonen (erfüllt), G7 für den Export
+(mit G7c). Der Kühlsollwert Nacht ist nicht mehr Teil von KU3: Er wurde mit KP1 als Matrixzelle
+Kühlen/Nacht gebaut (Kühlkonzept, Kopfvermerk).
+
+**Rückfragen vor dem Start:**
+
+- **K7 Kältespeicher:** mit der Kältemaschine bauen (3–5 PT: Pufferverwendung `VERWENDUNG_KAELTE`,
+  Klassensatz, Warnkriterien, `Entladung_Kuehlung` aus `KU-S4` füllt sich) oder bei „Ein
+  Kältespeicher wird nicht gerechnet“ bleiben. Empfehlung des Kühlkonzepts 4.6: **mit** der
+  Kältemaschine oder gar nicht.
+- **Katalogsaat:** Die Auslieferung braucht Kältemaschinen im Stammkatalog. Neutral benannte
+  Beispielgeräte mit runden Werten (etwa „Kältemaschine 50 kW luftgekühlt“) legt die Sitzung an;
+  Herstellerdaten pflegt der Anwender später über den Katalogdialog.
+
+**Wellen von KU3** (jede mit eigenem Gate; ergebnisneutral, bis die Welle 4 die Basis wechselt):
+
+| Welle | Inhalt | Schema | PT | Abnahme |
+|---|---|---|---|---|
+| **KU3-1 Schema und Katalog** | `Tab_Kaeltemaschine(_STAMM)` (Nennkälteleistung, Nenn-EER, Kältemittel als Text, Rückkühlart, Mindestteillast), `Tab_Kenndaten_Kaeltemaschine(_STAMM)` als Kennlinie über Rückkühl- und Kaltwassertemperatur, `Z_*`-Zuordnung, Anlagenart, Katalogregister, Projektkopien, Auslieferungsvorlage, Katalogdialog, Katalogfilterprofil, KI-Dialogkatalogeintrag | ein Schemaschritt (Nummer vor dem Bau anmelden) | 4–6 | Schemawache, Katalogrundlauf, Auslieferungsvorlage grün, Referenzlauf byte-gleich |
+| **KU3-2 Rechenweg** | Rechenklasse unter `EPOS.Kern/Allgemein/Simulation/`, Teillastkennlinie, Rückkühlmodell (Trocken-/Nasskühler, Hilfsstrom), Einordnung in `Kaeltekaskade` und `DeckungKanalKaelte`, freie Kühlung über die Quelle als Betriebsfall des Erzeugers mit Grenze der Quellentemperatur (K8), Kältestrom in die Strombilanz, Komponentenkennung in `Tab_KostenKomponente`, Endenergiezeile, Emissionen | keiner | 5–7 | Rechenproben ohne Datenbank (Kühlkonzept 10.2), Datenbankfälle (10.3), Referenzlauf byte-gleich, weil kein Referenzprojekt eine Kältemaschine führt |
+| **KU3-3 Kühlung je Zone** | `Tab_Zone.Kuehl_*` werden gelesen (NULL = Wert des Gebäudes), Kühlbedarf je Zone mit eigener Grenze `Kuehlleistung_Max`, gleichzeitiges Heizen und Kühlen ausgewiesen, nicht saldiert (F-K15, K6), Zonenzeilen im Bedarfsdialog, Ergebnisreihen je Zone, Export der Kälteseite in IFC `EPOS_Ergebnis` (`Kaeltebedarf`, `Kaeltelast`) und gbXML `Results` `CoolingLoad` | keiner | 3–5 | `ZonenReferenzprojektWacheTests`, Rundlauf der Exporte, Referenzlauf: 1052 steht nicht in der CI-Auswahl, 1017 und 1047 (Kühlung, Einzone) bleiben byte-gleich |
+| **KU3-4 Erzeugerdialog, Bericht, Referenz** | Erzeugerdialog Kältemaschine, Bericht (Erzeugerabschnitt, Kennzahlen F-K11), Wirtschaftlichkeit (Investition, Nutzungsdauer), neues Referenzprojekt mit Kältemaschine als Kopie von 1017, Einfrierregel „gesäte Kältemaschinendaten“, Basiswechsel (R-Nummer vor dem Bau anmelden), Wiki und Logbuch | keiner | 3–5 | Gate, Vergleich der 18 Projekte plus das neue, Basis neu eingefroren |
+| **KU3-5 Kältespeicher** (nur bei Ja zu K7) | `VERWENDUNG_KAELTE` am Puffer, Lade- und Entladeweg im Kältekreis, `Entladung_Kuehlung`, Warnkriterien, Dialogtext „wird gerechnet“ | ein Schemaschritt, falls eine Spalte nötig | 3–5 | Proben, Referenzlauf, Basis nur, wenn das Referenzprojekt den Speicher bekommt |
+
+Verbrauch KU3: rund 12–16 Punkte, mit Kältespeicher 15–19; je Welle zwei bis drei Opus-Aufträge
+und ein Sonnet-Auftrag.
+
+
+## 7 Was zwischen den Wellen beim Anwender liegt
+
+| Wann | Was |
+|---|---|
+| nach G7b | Sichtprobe Körperansicht unter Windows; Logbuch-Version; Wiki-Upload gebündelt |
+| vor G7d | Gegenüber des IFC-Exports (D6) benennen |
+| nach G7c | Probe 15 (bSI-Validierungsdienst) und Probe 16 (Betrachter-Prüfmatrix) mit der bereitgestellten Datei |
+| vor G7e | Entscheid, ob das Gegenüber eine Datei im Betrachter erwartet |
+| vor KU3 | K7 Kältespeicher; Freigabe der neutralen Katalogsaat |
+| laufend | AK1z (eigene Sitzung, Bundle-Weg für Testdatenbank 181 und Basis R35); die Reihenfolge nach KU3: AK2, AK3, GA (E67) |
