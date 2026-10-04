@@ -558,7 +558,13 @@ namespace WindowsFormsApplication1
                 getroffen++;
                 double kwh = k.Stromverbrauch_MWh * 1000.0;
                 if (!(kwh > 0)) continue;
-                if (kuehltraeger.TryGetValue(k.Bezeichner ?? "", out int traeger))
+                // KU3-4d (Schritt 184): Ein Lauf danach hat den Kühlträger an der Ergebniszeile festgehalten - er gilt,
+                // wie bei der Wärmepumpe; ein Lauf davor nimmt den der Anlagenzeile.
+                int traeger;
+                bool abweichend = k.Kaeltestrom_Netzbezug_MWh.HasValue
+                    ? (traeger = k.Kuehl_CarrierId ?? 0) > 0
+                    : kuehltraeger.TryGetValue(k.Bezeichner ?? "", out traeger);
+                if (abweichend)
                 {
                     traegerKwh += kwh;
                     double? pk = Preis(traeger);

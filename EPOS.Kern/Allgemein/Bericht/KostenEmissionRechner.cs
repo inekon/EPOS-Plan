@@ -974,8 +974,16 @@ namespace WindowsFormsApplication1
                 if (v.Zeitreihen == null || v.Zeitreihen.Kaeltestromspitzen == null ||
                     !v.Zeitreihen.Kaeltestromspitzen.TryGetValue(z.Modulindex, out eigene) || eigene == null)
                 {
-                    LeistungspreisOhneSpitzeVermerken(v, z.Traeger);
-                    continue;
+                    // KU3-4d: Die Kältemaschine speichert ihre Jahresspitze (Schritt 184) - sie trägt den Satz je
+                    // Jahr und die Staffel auch ohne Zeitreihen; Monatswerte kennt nur der Lauf.
+                    bool nurJahr = kt.Staffel.Gepflegt || (kt.ReiheJeKW == null &&
+                        !string.Equals(kt.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal));
+                    if (!(nurJahr && z.StromspitzeKw.HasValue))
+                    {
+                        LeistungspreisOhneSpitzeVermerken(v, z.Traeger);
+                        continue;
+                    }
+                    eigene = new Netzbezugsspitze { JahrKW = z.StromspitzeKw.Value };
                 }
                 if (!(eigene.JahrKW > 0)) continue;      // kein Kältestrom - keine Spitze, kein Anteil
 

@@ -109,6 +109,9 @@ namespace WindowsFormsApplication1
             bool zonenTabelle = gebaeudeTabelle && TabelleVorhanden(ZonenkopplungSchema.TAB_ERGEBNIS);
             // KAK-S3 (E37): die Ergebnisspalten der Kaelteseite - ebenso vor der Transaktion gefragt;
             // auf einer Datenbank davor bleiben die Zeilen, wie sie waren (Waechter: Spalte vorhanden).
+            // KU3-4d (Schritt 184): die Abrechnungsspalten je Kaeltemaschine - ebenso vor der Transaktion gefragt.
+            bool kmAbrechnung = System.Linq.Enumerable.All(KaeltestromabrechnungSchema.SPALTEN,
+                                    s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte));
             bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
                                          s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
             bool kuehlkreisSpalten = heizkreisSpalten &&
@@ -288,10 +291,13 @@ namespace WindowsFormsApplication1
                     {
                         string sqlKm = "INSERT INTO " + KaeltemaschineAnlageSchema.TAB_ERGEBNIS + " (ID_Ergebnis, ID_Kaeltemaschine, " +
                             "Bezeichner, Anzahl, Kaelteproduktion_MWh, Stromverbrauch_MWh, Hilfsstrom_MWh, FreieKuehlung_MWh, " +
-                            "FreieKuehlung_Stunden, Taktstunden, Unterdeckung_MWh, Stunden_Leistungsgrenze) " +
-                            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                            "FreieKuehlung_Stunden, Taktstunden, Unterdeckung_MWh, Stunden_Leistungsgrenze" +
+                            (kmAbrechnung ? ", Kaeltestrom_Netzbezug_MWh, Kuehl_ID_Carrier, Kuehl_EigenerZaehler, Stromspitze_kW" : "") +
+                            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?" + (kmAbrechnung ? ",?,?,?,?" : "") + ")";
                         foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
-                            v.Ausfuehren(sqlKm,
+                        {
+                            var pk = new List<DbParam>
+                            {
                                 new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId },
                                 new DbParam("@km", DbParamTyp.Integer) { Wert = km.ID_Kaeltemaschine.HasValue ? (object)km.ID_Kaeltemaschine.Value : DBNull.Value },
                                 new DbParam("@b", DbParamTyp.VarWChar) { Wert = (object)(km.Bezeichner ?? "") },
@@ -303,7 +309,19 @@ namespace WindowsFormsApplication1
                                 new DbParam("@fs", DbParamTyp.Integer) { Wert = km.FreieKuehlung_Stunden },
                                 new DbParam("@t", DbParamTyp.Integer) { Wert = km.Taktstunden },
                                 new DbParam("@u", DbParamTyp.Double) { Wert = R(km.Unterdeckung_MWh) },
-                                new DbParam("@l", DbParamTyp.Integer) { Wert = km.Stunden_Leistungsgrenze });
+                                new DbParam("@l", DbParamTyp.Integer) { Wert = km.Stunden_Leistungsgrenze },
+                            };
+                            // KU3-4d (Schritt 184): Netzbezug, abweichender Kuehltraeger samt Abrechnungsart, Stromspitze.
+                            if (kmAbrechnung)
+                            {
+                                bool traeger = km.Kuehl_CarrierId.HasValue && km.Kuehl_CarrierId.Value > 0;
+                                pk.Add(new DbParam("@nb", DbParamTyp.Double) { Wert = km.Kaeltestrom_Netzbezug_MWh.HasValue ? (object)R(km.Kaeltestrom_Netzbezug_MWh.Value) : DBNull.Value });
+                                pk.Add(new DbParam("@kc", DbParamTyp.Integer) { Wert = traeger ? (object)km.Kuehl_CarrierId.Value : DBNull.Value });
+                                pk.Add(new DbParam("@kz", DbParamTyp.Integer) { Wert = traeger && km.Kuehl_EigenerZaehler.HasValue ? (object)(km.Kuehl_EigenerZaehler.Value ? 1 : 0) : DBNull.Value });
+                                pk.Add(new DbParam("@sp", DbParamTyp.Double) { Wert = km.Stromspitze_kW.HasValue ? (object)R(km.Stromspitze_kW.Value) : DBNull.Value });
+                            }
+                            v.Ausfuehren(sqlKm, pk.ToArray());
+                        }
                     }
 
                     // 4. Detail: Waermepumpe (+ Modulliste).
@@ -1064,6 +1082,12 @@ namespace WindowsFormsApplication1
                             Taktstunden = I(rk, "Taktstunden"),
                             Unterdeckung_MWh = D(rk, "Unterdeckung_MWh"),
                             Stunden_Leistungsgrenze = I(rk, "Stunden_Leistungsgrenze"),
+                            // KU3-4d (Schritt 184); vor dem Schritt bzw. aus einem Lauf davor NULL.
+                            Kaeltestrom_Netzbezug_MWh = DN(rk, KaeltestromabrechnungSchema.SPALTE_NETZBEZUG),
+                            Kuehl_CarrierId = KmTraeger(DN(rk, KaeltestromabrechnungSchema.SPALTE_KUEHL_ID_CARRIER)),
+                            Kuehl_EigenerZaehler = DN(rk, KaeltestromabrechnungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER) is double z
+                                ? (bool?)(z != 0) : null,
+                            Stromspitze_kW = DN(rk, KaeltestromabrechnungSchema.SPALTE_STROMSPITZE),
                         });
                     }
             }
@@ -2245,6 +2269,8 @@ namespace WindowsFormsApplication1
         private static int I(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? Convert.ToInt32(r[col]) : 0; }
         /// <summary>Wie <see cref="D"/>, aber NULL bleibt NULL (P1-Vorgriff T_oben_*).</summary>
+        /// <summary>Ein Kühlträger aus der Ergebniszeile; 0 oder leer = keiner.</summary>
+        private static int? KmTraeger(double? d) => d.HasValue && d.Value > 0 ? (int?)(int)d.Value : null;
         private static double? DN(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? (double?)Convert.ToDouble(r[col]) : null; }
         private static double D(DataRow r, string col)

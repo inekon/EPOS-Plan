@@ -174,7 +174,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Kostenspalten einer Anlagenzeile: Energieträger, KWKG je Anlage (alle elf
-        /// <c>KWKG_*</c>), Steuerwahl, Aufteilung, Hilfsenergie und Kältestrom. Die Wache
+        /// <c>KWKG_*</c>), Steuerwahl, Aufteilung, Hilfsenergie, Kältestrom sowie Anzahl und Gerät der Kältemaschine. Die Wache
         /// <c>KostenStempelSchemaTests</c> hält die <c>KWKG_*</c>-Liste gegen die Testdatenbank.
         /// </summary>
         public static readonly IReadOnlyList<string> SPALTEN_ENERGIEANLAGEN = new[]
@@ -185,6 +185,9 @@ namespace WindowsFormsApplication1
             "KWKG_Kostenanteil", "KWKG_Abwaermeabfuhr", "KWKG_Stromkennzahl",
             "Energiesteuer_Wahl", "Aufteilung_Methode", "Hilfsenergie_Anteil",
             "Kuehl_ID_Carrier", "Kuehl_EigenerZaehler",
+            // KU3-4d (Schritt KaeltestromabrechnungSchema.SCHRITT): Anzahl und Gerät der Kältemaschine tragen deren
+            // Investition; der Schritt erneuert den Trigger (DROP und CREATE).
+            "Kaeltemaschine_Anzahl", "ID_Kaeltemaschine",
         };
 
         /// <summary>Die Variantentabelle: stempelt Variante (<c>ID_Projekt</c>) UND Stamm (<c>ID_ProjektRef</c>).</summary>
