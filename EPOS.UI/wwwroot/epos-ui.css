@@ -11449,6 +11449,15 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     border: 2px solid var(--epos-karte-rahmen-hover);
 }
 
+/* Nutzen-Aufwand-Zeile: die Empfehlung hervorgehoben, das Laufzeitband der Kurve leise markiert. */
+.epos-pausl-nachbarstufe--empfehlung td {
+    font-weight: 600;
+    background: var(--epos-karte-flaeche-hover);
+}
+.epos-pausl-kurve--band td {
+    font-style: italic;
+}
+
 .epos-pausl-karte-kopf {
     display: flex;
     flex-wrap: wrap;
@@ -12158,6 +12167,23 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 .epos-simerg-laufband-pfeil {
     flex: none;
     white-space: nowrap;
+}
+
+/* Baustein Hinweisklappe: das Zeichen der Schwere vor der Zahl (dieselben Zeichen
+   wie der Warnbanner), aufgeklappt die Liste darunter. */
+.epos-hinweisklappe-symbol {
+    flex: none;
+    min-width: 1em;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Die aufgeklappte Hinweisliste der Wirtschaftlichkeitsseite: die Banner
+   untereinander mit demselben Abstand wie das Warnband. */
+.epos-wirt-hinweisliste {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 @media (forced-colors: active) {

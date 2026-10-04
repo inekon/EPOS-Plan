@@ -1527,6 +1527,7 @@
             Daten.Sperrung = alt.Sperrung;
             Daten.SperrzeitVon = alt.SperrzeitVon;
             Daten.SperrzeitBis = alt.SperrzeitBis;
+            Daten.Sperrfenster = alt.Sperrfenster?.Select(z => z.Kopie()).ToList();
             Daten.BivalenterBetrieb = alt.BivalenterBetrieb;
             Daten.Betriebsart = alt.Betriebsart;
             Daten.Abschaltpunkt = alt.Abschaltpunkt;
@@ -1741,6 +1742,14 @@
             return (string.Format(WarnungFeldFormat, KonfigTexte.LabelVon), MANGEL_VON);
         if (Daten.SperrzeitBis is null)
             return (string.Format(WarnungFeldFormat, KonfigTexte.LabelBis), MANGEL_BIS);
+        // V14: jedes Sperrfenster braucht Beginn (0 … 24 h) und Dauer (über 0 bis 24 h).
+        foreach (SperrfensterZeile f in Daten.Sperrfenster ?? new List<SperrfensterZeile>())
+        {
+            if (f.VonH is not double von || von < 0 || von > 24)
+                return (string.Format(WarnungFeldFormat, KonfigTexte.LabelSperrVon), MANGEL_VON);
+            if (f.DauerH is not double dauer || dauer <= 0 || dauer > 24)
+                return (string.Format(WarnungFeldFormat, KonfigTexte.LabelSperrDauer), MANGEL_BIS);
+        }
         // KU2 Welle 3: die Prüfregel der Kühlfelder - EINE Stelle für beide Wirte.
         string? kuehl = WaermepumpeKonfiguration.KuehlFehler(Daten, Kuehlung, KonfigTexte);
         if (kuehl is not null) return (kuehl, MANGEL_KUEHLUNG);

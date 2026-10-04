@@ -85,6 +85,40 @@ namespace WindowsFormsApplication1
             return t;
         }
 
+        /// <summary>
+        /// <b><c>tabelle.pufferauslegung</c></b> (Katalog v12, Welle P4c) — die gespeicherten Pufferauslegungen des Stamms
+        /// in einer Tafel: je Auslegung eine Gruppenzeile mit dem Puffernamen, darunter dieselben Eigenschaftspaare wie
+        /// im Baustein (<see cref="ProjektbeschreibungBaustein.PufferauslegungPaare"/>), der Hinweis zur Nachrechnung und
+        /// die Warnliste. Steht der Platzhalter in der Vorlage, entfällt der Standardabschnitt des Bausteins.
+        /// </summary>
+        public static Berichtstabelle Pufferauslegung(VariantenDaten stamm, CultureInfo kultur)
+        {
+            if (stamm == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAMM), kultur);
+            List<PufferAuslegungGespeichert> zeilen = stamm.Pufferauslegungen;
+            if (zeilen == null || zeilen.Count == 0) return Leer(nameof(RR.BV_GRUND_KEINE_PUFFERAUSLEGUNG), kultur);
+
+            var t = new Berichtstabelle().Feste(2800, 0);
+            void Paar(string beschriftung, string wert) => t.Zeile(new[]
+            {
+                Zellen.Text(beschriftung, fett: true, h: Tabellenhinterlegung.Stamm),
+                Zellen.Text(string.IsNullOrEmpty(wert) ? Tabellenzelle.STRICH : wert),
+            });
+            foreach (PufferAuslegungGespeichert g in zeilen)
+            {
+                t.Zeile(new[]
+                {
+                    Zellen.Text(ProjektbeschreibungBaustein.Pufferueberschrift(g), rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
+                    Zellen.Text("", rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
+                }, Tabellenrolle.Gruppe);
+                List<string> paare = ProjektbeschreibungBaustein.PufferauslegungPaare(g, kultur);
+                for (int i = 0; i + 1 < paare.Count; i += 2) Paar(paare[i], paare[i + 1]);
+                string nachrechnung = ProjektbeschreibungBaustein.PufferauslegungNachrechnung(g, kultur);
+                if (nachrechnung != null) Paar(RR.BER_PAUS_NACHRECHNUNG, nachrechnung);
+                Paar(RR.PAUS_GRUPPE_WARNUNGEN, string.Join("\n", ProjektbeschreibungBaustein.PufferauslegungWarnzeilen(g, kultur)));
+            }
+            return t;
+        }
+
         private static IEnumerable<(string, Tabellenzelle)> Gebaeudepaare(ErgebnisGebaeudeModel g, CultureInfo kultur)
         {
             Tabellenzelle Zahl(double? w, int dez, string einheit) => new Tabellenzelle

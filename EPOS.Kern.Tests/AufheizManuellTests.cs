@@ -22,6 +22,10 @@ namespace EPOS.Kern.Tests
     [Collection("Testdatenbank")]
     public sealed class AufheizManuellTests : IDisposable
     {
+
+        /// <summary>Die Textskalare ohne die Herkunft des Erdreichumfangs (Rechenweg RP2a, gilt jedem Gebäude am Erdreich).</summary>
+        private static List<KeyValuePair<string, string>> OhneErdreich(IEnumerable<KeyValuePair<string, string>> texte)
+            => texte.Where(t => !t.Key.EndsWith(".Erdreich_Umfangsquelle", StringComparison.Ordinal)).ToList();
         private const int STUNDEN = 8760;
         private readonly TestDatenbank _db = new TestDatenbank();
         private readonly ITestOutputHelper _aus;
@@ -240,7 +244,7 @@ namespace EPOS.Kern.Tests
             SimulationWaermebedarf ausMit = Bedarf(1018);
             Assert.Null(ausMit.GebaeudeErgebnisse.Ergebnis(0).Aufheizung);
             Gleich(ausOhne, ausMit.GebaeudeErgebnisse.Ergebnis(0).HeizlastW);
-            Assert.Empty(GebaeudeErgebnisexport.Saetze(ausMit).Single().Texte);
+            Assert.Empty(OhneErdreich(GebaeudeErgebnisexport.Saetze(ausMit).Single().Texte));
 
             // Schalter an ohne Wert: TAEGLICH.
             Manuell(idGebaeude, null);

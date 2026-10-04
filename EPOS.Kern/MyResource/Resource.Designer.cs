@@ -4139,6 +4139,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachrechnung ähnelt.
+        /// </summary>
+        public static string BER_PAUS_NACHRECHNUNG {
+            get {
+                return ResourceManager.GetString("BER_PAUS_NACHRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachrechnung mit dem aktuellen Projektstand empfiehlt {0} l; die gespeicherte Auslegung ist neu zu rechnen. ähnelt.
         /// </summary>
         public static string BER_PAUS_NACHRECHNUNG_ABWEICHEND {
@@ -4171,6 +4180,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BER_PAUS_SPEICHERKLASSE {
             get {
                 return ResourceManager.GetString("BER_PAUS_SPEICHERKLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts je Tag (Jahressimulation {0}) ähnelt.
+        /// </summary>
+        public static string BER_PAUS_STARTS_PROBELAUF {
+            get {
+                return ResourceManager.GetString("BER_PAUS_STARTS_PROBELAUF", resourceCulture);
             }
         }
         
@@ -13064,6 +13082,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine gespeicherte Pufferauslegung ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_PUFFERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_PUFFERAUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Solarthermie im Lauf ähnelt.
         /// </summary>
         public static string BV_GRUND_KEINE_SOLARTHERMIE {
@@ -16497,6 +16524,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ungedeckte Kälte ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kesselwärme ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_KESSELWAERME {
@@ -16736,6 +16781,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TITEL_KAELTELAST_JAHRESGANGLINIE {
             get {
                 return ResourceManager.GetString("CHART_TITEL_KAELTELAST_JAHRESGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteproduktion Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE", resourceCulture);
             }
         }
         
@@ -37258,7 +37312,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten unter 1 mm übergangen: {1} — sie tragen keine Wärmewirkung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten unter 0,5 mm übergangen: {1} — sie tragen keine Wärmewirkung. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_SCHICHT_DUENN {
             get {
@@ -45795,7 +45849,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dicke der Schicht in mm, zulässig 1 bis 1 000 (eine ruhende Luftschicht bis 300). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dicke der Schicht in mm, zulässig 0,5 bis 1 000 (eine ruhende Luftschicht bis 300). ähnelt.
         /// </summary>
         public static string KI_DLG_BTA_SCHICHT_DICKE_ERL {
             get {
@@ -55061,6 +55115,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_RUECKLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrfenster der Wärmepumpe als Liste „Beginn-Ende“ in Stunden, getrennt durch Semikolon (z. B. „11-13; 17-19“); jeden Tag, Heizstab mitgesperrt. Ein Fenster über Mitternacht („22-2“) läuft in den Folgetag; leer = keine Sperrzeiten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SPERRFENSTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SPERRFENSTER_ERL", resourceCulture);
             }
         }
         
@@ -70613,6 +70676,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe {0} l: Deckung {1}, {2} Starts je Tag, Verlust {3} kWh/a ähnelt.
+        /// </summary>
+        public static string PAUS_BERICHT_NA_ZEILE {
+            get {
+                return ResourceManager.GetString("PAUS_BERICHT_NA_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
         /// </summary>
         public static string PAUS_BEZEICHNER {
@@ -71018,6 +71090,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_AUFHEIZ_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_AUFHEIZ_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_AUFHEIZ_KP3 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_AUFHEIZ_KP3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen; DIN EN 15450 ähnelt.
         /// </summary>
         public static string PAUS_HERK_BAND {
@@ -71077,6 +71167,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_HERK_ERZEUGER_SUMME {
             get {
                 return ResourceManager.GetString("PAUS_HERK_ERZEUGER_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die höchster Vorlauf der Erzeuger an der Kaskade ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ERZEUGER_VORLAUF {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ERZEUGER_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Erzeugervorlauf gepflegt: Prüfung nur gegen 95 °C ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_ERZEUGER_VORLAUF_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_ERZEUGER_VORLAUF_KEINE", resourceCulture);
             }
         }
         
@@ -71149,6 +71257,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_HERK_K11_KATALOG {
             get {
                 return ResourceManager.GetString("PAUS_HERK_K11_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung V30 / KP3 (Aufheizbemessung der Gebäude) ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_K12 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_K12", resourceCulture);
             }
         }
         
@@ -71261,11 +71378,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ecosizer (Ecotope 2020), Speicher gegen Leistung: Laufvolumen des Spitzenereignisses ÷ η_s ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_KURVE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_KURVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fachportal KWK-Flexibilisierung (Sekundärquelle) ähnelt.
         /// </summary>
         public static string PAUS_HERK_KV {
             get {
                 return ResourceManager.GetString("PAUS_HERK_KV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NACHBARSTUFEN {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NACHBARSTUFEN", resourceCulture);
             }
         }
         
@@ -71347,6 +71482,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_HERK_PARAMETER_TABELLE {
             get {
                 return ResourceManager.GetString("PAUS_HERK_PARAMETER_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturpaar der Prozesswärme ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_PROZESS_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_PROZESS_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Temperaturpaar der Prozesswärme gepflegt: Temperaturpaar des Puffers ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_PROZESS_TEMPERATUR_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_PROZESS_TEMPERATUR_KEINE", resourceCulture);
             }
         }
         
@@ -71500,6 +71653,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_HERK_Q_TOOL {
             get {
                 return ResourceManager.GetString("PAUS_HERK_Q_TOOL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung V30 / KP3 ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_Q_V30 {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_Q_V30", resourceCulture);
             }
         }
         
@@ -72017,6 +72179,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größerer Speicher: mehr Bereitschaftsverlust und höhere mittlere Puffertemperatur, JAZ sinkt ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_GROESSER {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_GROESSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größerer Speicher: mehr Bereitschaftsverlust, weniger Starts ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_GROESSER_OHNE_WP {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_GROESSER_OHNE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kleinerer Speicher: weniger Bereitschaftsverlust, aber mehr Starts — häufiges Takten belastet Verdichter und JAZ ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_KLEINER {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_KLEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kleinerer Speicher: weniger Bereitschaftsverlust, mehr Starts ähnelt.
+        /// </summary>
+        public static string PAUS_JAZ_KLEINER_OHNE_WP {
+            get {
+                return ResourceManager.GetString("PAUS_JAZ_KLEINER_OHNE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage des Nutzungsprofils: an bei Büro/Schule ähnelt.
+        /// </summary>
+        public static string PAUS_K12_SCHALTER_VORLAGE {
+            get {
+                return ResourceManager.GetString("PAUS_K12_SCHALTER_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz als Herkunft am Puffer merken ähnelt.
+        /// </summary>
+        public static string PAUS_KATALOGSATZ_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PAUS_KATALOGSATZ_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalogvorschlag ähnelt.
         /// </summary>
         public static string PAUS_KATALOGVORSCHLAG {
@@ -72215,6 +72440,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizen nach Absenkung ähnelt.
+        /// </summary>
+        public static string PAUS_KRIT_K12 {
+            get {
+                return ResourceManager.GetString("PAUS_KRIT_K12", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Faustwert nach Gerätetyp ähnelt.
         /// </summary>
         public static string PAUS_KRIT_K2 {
@@ -72301,6 +72535,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_KRIT_RECHENWEG {
             get {
                 return ResourceManager.GetString("PAUS_KRIT_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laufvolumen bei {0} kW = D_max {1} kWh; die Zapfreihe trägt die Änderung mit der Leistung; Volumen bei ΔT_B {2} K und η_s {3} ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_HINWEIS {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Kurve: kein Zapfprofil-Ergebnis ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_KEIN_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_KEIN_ZAPFPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Kurve: Das Zapfprofil liefert keine Ladeleistung oder kein D_max ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_OHNE_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_OHNE_LADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Kurve: Die Zapfreihe ist leer ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_OHNE_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_OHNE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil Ladeleistung ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_SPALTE_ANTEIL {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_SPALTE_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laufzeit je Tag ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_SPALTE_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_SPALTE_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_SPALTE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_SPALTE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_SPALTE_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_SPALTE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher gegen Leistung (Brauchwasser) ähnelt.
+        /// </summary>
+        public static string PAUS_KURVE_TITEL {
+            get {
+                return ResourceManager.GetString("PAUS_KURVE_TITEL", resourceCulture);
             }
         }
         
@@ -72431,6 +72746,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrprofil an die Wärmepumpe schreiben ähnelt.
+        /// </summary>
+        public static string PAUS_LBL_SPERRPROFIL_SCHREIBEN {
+            get {
+                return ResourceManager.GetString("PAUS_LBL_SPERRPROFIL_SCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe ähnelt.
         /// </summary>
         public static string PAUS_LEER_VORGABE {
@@ -72472,6 +72796,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_MINDESTLEISTUNG {
             get {
                 return ResourceManager.GetString("PAUS_MINDESTLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung ähnelt.
+        /// </summary>
+        public static string PAUS_NA_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("PAUS_NA_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegung rechnete länger als eine Sekunde: Die Nachbarstufen rechnen auf Zuruf. ähnelt.
+        /// </summary>
+        public static string PAUS_NA_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("PAUS_NA_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzen und Aufwand der Nachbarstufen ähnelt.
+        /// </summary>
+        public static string PAUS_NA_GRUPPE {
+            get {
+                return ResourceManager.GetString("PAUS_NA_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachbarstufen rechnen ähnelt.
+        /// </summary>
+        public static string PAUS_NA_KNOPF {
+            get {
+                return ResourceManager.GetString("PAUS_NA_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Reihe (nur Volumen und Verlust) ähnelt.
+        /// </summary>
+        public static string PAUS_NA_OHNE_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_NA_OHNE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_DECKUNG {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_JAZ {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_JAZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrvolumen ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_MEHR {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts je Tag ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_STARTS {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_STARTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_STUFE {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust kWh/a ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_VERLUST {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string PAUS_NA_SPALTE_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PAUS_NA_SPALTE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gerechnet in {0} ms; Simulation: {1} ähnelt.
+        /// </summary>
+        public static string PAUS_NA_STAND {
+            get {
+                return ResourceManager.GetString("PAUS_NA_STAND", resourceCulture);
             }
         }
         
@@ -72553,6 +72994,213 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAUS_NUTZUNGSPROFIL {
             get {
                 return ResourceManager.GetString("PAUS_NUTZUNGSPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts aus der stündlichen Wärme (Einschaltflanken): Das Gerät hat keine Mindestleistung, der Lauf zählt keine Takte. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_AUS_REIHE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_AUS_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung des Wärmebedarfs ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_DECKUNG {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet das Projekt einmal mit dem empfohlenen Volumen des gewählten Puffers. Es wird nichts gespeichert und nichts übernommen. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Probelauf nicht möglich: {0} ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_FEHLER {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand des Puffers je Monat ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_FUELLSTAND {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_FUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgleich mit der Jahressimulation ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_GRUPPE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Lauf ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_KEIN_LAUF {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_KEIN_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Jahressimulation nachrechnen ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_KNOPF {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressimulation rechnet … ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_LAEUFT {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_MAX {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die min. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_MIN {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittel ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_MITTEL {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_MONAT {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Probelauf braucht einen Puffer im Projekt; einen neuen Puffer zuerst übernehmen. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_NEU {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Empfehlung gibt es keinen Probelauf. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_OHNE_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_OHNE_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Puffer stand im Lauf nicht im Rechenpfad; kein Füllstand. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_OHNE_FUELLSTAND {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_OHNE_FUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Puffer gehört nicht zum Projekt. ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_PUFFER_FEHLT {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_PUFFER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_SPALTE_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_SPALTE_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_SPALTE_GROESSE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_SPALTE_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Probelauf (Empfehlung) ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_SPALTE_LAUF {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_SPALTE_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Probelauf vom {0} mit {1} l, Dauer {2} s ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_STAND {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts je Jahr ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_STARTS_JAHR {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_STARTS_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteste Woche ab Tag {0}: Füllstand min. {1} %, Mittel {2} %, max. {3} % ähnelt.
+        /// </summary>
+        public static string PAUS_PROBELAUF_WOCHE {
+            get {
+                return ResourceManager.GetString("PAUS_PROBELAUF_WOCHE", resourceCulture);
             }
         }
         
@@ -73511,6 +74159,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6}) ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K12 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K12", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizdauer aus KP3 ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K12_DAUER_KP3 {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K12_DAUER_KP3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Aufheiz.Dauer_h ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K12_DAUER_VORGABE {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K12_DAUER_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine KP3-Aufheizbemessung der Gebäude ähnelt.
+        /// </summary>
+        public static string PAUS_WEG_K12_KEINE {
+            get {
+                return ResourceManager.GetString("PAUS_WEG_K12_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ; Einzelraumregelung: absperrbar, keine Gutschrift für K1 ähnelt.
         /// </summary>
         public static string PAUS_WEG_K1_EINZELRAUM {
@@ -73916,6 +74600,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trinkwasservorrang: Unter {0} l fehlt Abtaureserve für die Heizung. ähnelt.
+        /// </summary>
+        public static string PA_ABTAU_VORRANG_TEXT {
+            get {
+                return ResourceManager.GetString("PA_ABTAU_VORRANG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Aufheizbemessung ähnelt.
+        /// </summary>
+        public static string PA_AUFHEIZ_KEINE_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("PA_AUFHEIZ_KEINE_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Aufheizkriterium ist eingeschaltet, aber keine Aufheizbemessung der Gebäude liegt vor: Es bemisst nicht. Erst die Simulation mit Aufheizoptimierung liefert Φ_n. ähnelt.
+        /// </summary>
+        public static string PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT {
+            get {
+                return ResourceManager.GetString("PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ausgewählt ähnelt.
         /// </summary>
         public static string PA_AUSGEWAEHLT {
@@ -73934,11 +74645,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Heizzone ({0} l) liegt über dem Band {1}–{2} l. ähnelt.
+        /// </summary>
+        public static string PA_BAND_UEBER_TEXT {
+            get {
+                return ResourceManager.GetString("PA_BAND_UEBER_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Heizzone liegt unter dem Plausibilitätsband der Übergabeart. ähnelt.
         /// </summary>
         public static string PA_BAND_UNTER {
             get {
                 return ResourceManager.GetString("PA_BAND_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Heizzone ({0} l) liegt unter dem Band {1}–{2} l. ähnelt.
+        /// </summary>
+        public static string PA_BAND_UNTER_TEXT {
+            get {
+                return ResourceManager.GetString("PA_BAND_UNTER_TEXT", resourceCulture);
             }
         }
         
@@ -73952,11 +74681,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brauchwasserzone ({0} l) übersteigt das {1}-fache des Tagesbedarfs ({2} l). ähnelt.
+        /// </summary>
+        public static string PA_BW_UEBERDIMENSIONIERT_TEXT {
+            get {
+                return ResourceManager.GetString("PA_BW_UEBERDIMENSIONIERT_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereitschaftsverlust ist über den Geltungsbereich der Klasse-C-Grenze hinaus extrapoliert. ähnelt.
         /// </summary>
         public static string PA_EXTRAPOLATION {
             get {
                 return ResourceManager.GetString("PA_EXTRAPOLATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverlust über {0} l aus der Klasse-C-Grenze extrapoliert. ähnelt.
+        /// </summary>
+        public static string PA_EXTRAPOLATION_TEXT {
+            get {
+                return ResourceManager.GetString("PA_EXTRAPOLATION_TEXT", resourceCulture);
             }
         }
         
@@ -73970,11 +74717,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizstab gilt in der Sperre als mitgesperrt: Die Sperrzeit bemisst den Puffer. ähnelt.
+        /// </summary>
+        public static string PA_HEIZSTAB_GESPERRT_TEXT {
+            get {
+                return ResourceManager.GetString("PA_HEIZSTAB_GESPERRT_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Puffer oben zu kalt für die Frischwasserbereitung; periodisches Aufheizen ist kein Ersatz. ähnelt.
         /// </summary>
         public static string PA_HYGIENE_TEMPERATUR {
             get {
                 return ResourceManager.GetString("PA_HYGIENE_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer oben {0} °C: Für die Frischwasserbereitung mindestens {1} °C Vorlauf; periodisches Aufheizen ist kein Ersatz. ähnelt.
+        /// </summary>
+        public static string PA_HYGIENE_TEMPERATUR_TEXT {
+            get {
+                return ResourceManager.GetString("PA_HYGIENE_TEMPERATUR_TEXT", resourceCulture);
             }
         }
         
@@ -73988,11 +74753,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trinkwasserspeicher über {0} l: Anforderungen an Großanlagen beachten. ähnelt.
+        /// </summary>
+        public static string PA_HYGIENE_W551_TEXT {
+            get {
+                return ResourceManager.GetString("PA_HYGIENE_W551_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine Bedarfsreihe ist leer: Die Kriterien auf dem Lastgang entfallen für diese Zone. ähnelt.
         /// </summary>
         public static string PA_KEINE_REIHE {
             get {
                 return ResourceManager.GetString("PA_KEINE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zapfprofil-Ergebnis: Die Brauchwasserzone bleibt leer. ähnelt.
+        /// </summary>
+        public static string PA_KEINE_REIHE_BW_TEXT {
+            get {
+                return ResourceManager.GetString("PA_KEINE_REIHE_BW_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prozessreihe ist leer: Die Prozesszone bleibt leer. ähnelt.
+        /// </summary>
+        public static string PA_KEINE_REIHE_PROZESS_TEXT {
+            get {
+                return ResourceManager.GetString("PA_KEINE_REIHE_PROZESS_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizreihe ist leer: Lastgang-Kriterien (K4e, D1, D2) entfallen. ähnelt.
+        /// </summary>
+        public static string PA_KEINE_REIHE_TEXT {
+            get {
+                return ResourceManager.GetString("PA_KEINE_REIHE_TEXT", resourceCulture);
             }
         }
         
@@ -74006,11 +74807,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das nicht absperrbare Anlagenvolumen reicht: kein Heizungspuffer erforderlich. ähnelt.
+        /// </summary>
+        public static string PA_KEIN_PUFFER_TEXT {
+            get {
+                return ResourceManager.GetString("PA_KEIN_PUFFER_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt. ähnelt.
         /// </summary>
         public static string PA_OHNE_PUFFER_GEREGELT {
             get {
                 return ResourceManager.GetString("PA_OHNE_PUFFER_GEREGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Puffer nur mit leistungsgeregelter Wärmepumpe: Das Gerät ist Fixed-Speed, der Puffer bleibt. ähnelt.
+        /// </summary>
+        public static string PA_OHNE_PUFFER_GEREGELT_TEXT {
+            get {
+                return ResourceManager.GetString("PA_OHNE_PUFFER_GEREGELT_TEXT", resourceCulture);
             }
         }
         
@@ -74024,11 +74843,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Deckungsziel {0} ist auch mit {1} l nicht erreichbar: Die Erzeugerleistung ist zu klein; die Deckung bemisst nicht. ähnelt.
+        /// </summary>
+        public static string PA_PRAXISGRENZE_DECKUNG_TEXT {
+            get {
+                return ResourceManager.GetString("PA_PRAXISGRENZE_DECKUNG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Startziel {0} je Tag ist auch mit {1} l nicht zu halten; das Taktziel bemisst nicht. ähnelt.
+        /// </summary>
+        public static string PA_PRAXISGRENZE_START_TEXT {
+            get {
+                return ResourceManager.GetString("PA_PRAXISGRENZE_START_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summe der Zonen ({0} l) überschreitet die Praxisgrenze {1} l: Das ist ein Saisonalspeicher, keine Pufferauslegung. ähnelt.
+        /// </summary>
+        public static string PA_PRAXISGRENZE_TEXT {
+            get {
+                return ResourceManager.GetString("PA_PRAXISGRENZE_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Prozessvorlauf liegt über 95 °C oder über dem höchsten Erzeugervorlauf: Der Puffer kann ihn nicht sicher liefern. ähnelt.
+        /// </summary>
+        public static string PA_PROZESS_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("PA_PROZESS_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Prozessvorlauf {0} °C liegt über 95 °C: Der Puffer kann ihn nicht sicher liefern. ähnelt.
+        /// </summary>
+        public static string PA_PROZESS_TEMPERATUR_95_TEXT {
+            get {
+                return ResourceManager.GetString("PA_PROZESS_TEMPERATUR_95_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Prozessvorlauf {0} °C liegt über 95 °C oder über dem höchsten Erzeugervorlauf {1} °C: Der Puffer kann ihn nicht sicher liefern. ähnelt.
+        /// </summary>
+        public static string PA_PROZESS_TEMPERATUR_TEXT {
+            get {
+                return ResourceManager.GetString("PA_PROZESS_TEMPERATUR_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressimulation zählt {1} Starts je Tag, die Auslegung schätzt {0} – Abweichung über 30 %. ähnelt.
+        /// </summary>
+        public static string PA_STARTS_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("PA_STARTS_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Starts je Heizperiode liegen über der Hinweisschwelle. ähnelt.
         /// </summary>
         public static string PA_STARTS_JAHR {
             get {
                 return ResourceManager.GetString("PA_STARTS_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Starts je Heizperiode über {1}. ähnelt.
+        /// </summary>
+        public static string PA_STARTS_JAHR_TEXT {
+            get {
+                return ResourceManager.GetString("PA_STARTS_JAHR_TEXT", resourceCulture);
             }
         }
         
@@ -74042,6 +74933,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Starts je Tag über der Warnschwelle {1}. ähnelt.
+        /// </summary>
+        public static string PA_STARTS_TAG_TEXT {
+            get {
+                return ResourceManager.GetString("PA_STARTS_TAG_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau). ähnelt.
         /// </summary>
         public static string PA_TANK_IM_TANK {
@@ -74051,11 +74951,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tank-im-Tank-Kombispeicher sind für Wärmepumpen weniger geeignet (hohes Temperaturniveau). ähnelt.
+        /// </summary>
+        public static string PA_TANK_IM_TANK_TEXT {
+            get {
+                return ResourceManager.GetString("PA_TANK_IM_TANK_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung. ähnelt.
         /// </summary>
         public static string PA_UEBERGABE_UNBEKANNT {
             get {
                 return ResourceManager.GetString("PA_UEBERGABE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Übergabeart am Gebäude: Die Heizzone rechnet wie Flächenheizung. ähnelt.
+        /// </summary>
+        public static string PA_UEBERGABE_UNBEKANNT_TEXT {
+            get {
+                return ResourceManager.GetString("PA_UEBERGABE_UNBEKANNT_TEXT", resourceCulture);
             }
         }
         
@@ -74074,6 +74992,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PA_ZWEITERZEUGER_FREI {
             get {
                 return ResourceManager.GetString("PA_ZWEITERZEUGER_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zweiterzeuger ist in der Sperre freigegeben: Die Sperrzeit bemisst den Puffer nicht. ähnelt.
+        /// </summary>
+        public static string PA_ZWEITERZEUGER_FREI_TEXT {
+            get {
+                return ResourceManager.GetString("PA_ZWEITERZEUGER_FREI_TEXT", resourceCulture);
             }
         }
         
@@ -77695,6 +78622,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_GRUPPE_VOLUMEN {
             get {
                 return ResourceManager.GetString("PSP_GRUPPE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Katalog: {0} ähnelt.
+        /// </summary>
+        public static string PSP_HERKUNFT_KATALOG {
+            get {
+                return ResourceManager.GetString("PSP_HERKUNFT_KATALOG", resourceCulture);
             }
         }
         
@@ -82848,11 +83784,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromeinspeisung ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststrombedarf ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_RESTSTROM {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_RESTSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherladung ähnelt.
         /// </summary>
         public static string SIMDET_BHKW_SERIE_SPEICHERLADUNG {
             get {
                 return ResourceManager.GetString("SIMDET_BHKW_SERIE_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromproduktion ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_STROMPRODUKTION {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_STROMPRODUKTION", resourceCulture);
             }
         }
         
@@ -82871,6 +83843,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMDET_BHKW_SPEICHERLADUNG {
             get {
                 return ResourceManager.GetString("SIMDET_BHKW_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromlast Jahresganglinie ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_TITEL_STROMLAST {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_TITEL_STROMLAST", resourceCulture);
             }
         }
         
@@ -83438,6 +84419,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_ENTLADEORDNUNG_NACHTRAG {
             get {
                 return ResourceManager.GetString("SIMENG_ENTLADEORDNUNG_NACHTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} – der freiliegende Umfang der Bodenplatte fehlt oder ist kleiner als der Umfang des flächengleichen Kreises; der Erdreichwiderstand nach DIN EN ISO 13370 rechnet mit dem flächengleichen Quadrat P = {1} m (B′ = {2} m, U_g = {3} W/(m²K)). ähnelt.
+        /// </summary>
+        public static string SIMENG_ERDREICH_UMFANG {
+            get {
+                return ResourceManager.GetString("SIMENG_ERDREICH_UMFANG", resourceCulture);
             }
         }
         
@@ -85062,6 +86052,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrprofil {0}: {1} Fenster, {2} gesperrte Stunden ähnelt.
+        /// </summary>
+        public static string SIMENG_SPERRPROFIL_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMENG_SPERRPROFIL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Die Stromprofile konnten nicht berechnet werden{0} - {1} ähnelt.
         /// </summary>
         public static string SIMENG_STROMPROFILE_DIAGNOSE {
@@ -85283,6 +86282,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_ZIRKULATION_BESTANDSWEG {
             get {
                 return ResourceManager.GetString("SIMENG_ZIRKULATION_BESTANDSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} – in {1} Stunden kehrte ein Abschnitt im Innern um, nachdem die Stunde schon {2} Abschnitte hatte; an dieser Umkehr wurde nicht mehr geschnitten (Obergrenze der Innenprüfung). ähnelt.
+        /// </summary>
+        public static string SIMENG_ZONE_ABSCHNITTE {
+            get {
+                return ResourceManager.GetString("SIMENG_ZONE_ABSCHNITTE", resourceCulture);
             }
         }
         
@@ -91734,6 +92742,18 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_NAV_AUTARKIE_ANALYSE {
             get {
                 return ResourceManager.GetString("SIM_NAV_AUTARKIE_ANALYSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ❄️ 
+        ///Kälte
+        ///Produktion
+        ///Chart ähnelt.
+        /// </summary>
+        public static string SIM_NAV_KAELTEPRODUKTION_CHART {
+            get {
+                return ResourceManager.GetString("SIM_NAV_KAELTEPRODUKTION_CHART", resourceCulture);
             }
         }
         
@@ -99191,6 +100211,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Stromlast des BHKW“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__BHKW_STROM {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__BHKW_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Stromdeckung“ (Stand bzw. irgendein Stand)? ähnelt.
         /// </summary>
         public static string VF_HAT__BILD__DECKUNG_STROM {
@@ -99214,6 +100243,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_HAT__BILD__HEIZKESSEL {
             get {
                 return ResourceManager.GetString("VF_HAT__BILD__HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Kälteproduktion“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__KAELTE_PRODUKTION {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__KAELTE_PRODUKTION", resourceCulture);
             }
         }
         
@@ -102323,6 +103361,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Stromlast des BHKW — Stromproduktion als Säule, Einspeisung, Reststrombedarf und Strombedarf als Linien im Jahresverlauf — wie das Bild „Stromlast“ des Reiters „BHKW“; leer ohne BHKW. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__BHKW_STROM {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__BHKW_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Anteile an der Stromdeckung (Kuchen; der Rest ist Netzbezug). ähnelt.
         /// </summary>
         public static string VF_STAND__BILD__DECKUNG_STROM {
@@ -102346,6 +103393,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__BILD__HEIZKESSEL {
             get {
                 return ResourceManager.GetString("VF_STAND__BILD__HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Kälteproduktion — je Wärmepumpe im Kühlbetrieb die gedeckte Kälte als Säule, die ungedeckte Kälte grau, der Kältebedarf als Linie im Jahresverlauf — wie das Blatt „Kälte“ des Reiters „Ergebnis“; leer, wenn das Projekt keine Kälte rechnet. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__KAELTE_PRODUKTION {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__KAELTE_PRODUKTION", resourceCulture);
             }
         }
         
@@ -102814,6 +103870,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_TABELLE__KOMPONENTEN__MATRIX {
             get {
                 return ResourceManager.GetString("VF_TABELLE__KOMPONENTEN__MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle der gespeicherten Pufferauslegungen des Stammprojekts: je Auslegung eine Gruppenzeile, darunter Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina, bemessendes Kriterium, Empfehlung, Kennzahlen und Hinweise. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt. ähnelt.
+        /// </summary>
+        public static string VF_TABELLE__PUFFERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("VF_TABELLE__PUFFERAUSLEGUNG", resourceCulture);
             }
         }
         
@@ -106720,6 +107785,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER {
             get {
                 return ResourceManager.GetString("WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis (anklicken) ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEISE_EINER {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEISE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise (anklicken) ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEISE_MEHRERE {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEISE_MEHRERE", resourceCulture);
             }
         }
         
@@ -110913,6 +111996,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 2 × 2 h ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_2X2 {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_2X2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 3 × 2 h ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_3X2 {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_3X2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster hinzufügen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_HINZU {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_HINZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_KEINE {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitrechnen ähnelt.
         /// </summary>
         public static string WPA_CHK_HEIZSTAB {
@@ -110927,6 +112055,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_CHK_SPERRZEIT {
             get {
                 return ResourceManager.GetString("WPA_CHK_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
+        /// </summary>
+        public static string WPA_EINHEIT_STUNDEN {
+            get {
+                return ResourceManager.GetString("WPA_EINHEIT_STUNDEN", resourceCulture);
             }
         }
         
@@ -110985,6 +112122,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeiten ähnelt.
+        /// </summary>
+        public static string WPA_GRP_SPERRZEITEN {
+            get {
+                return ResourceManager.GetString("WPA_GRP_SPERRZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien. ähnelt.
         /// </summary>
         public static string WPA_HERLEITUNG_KATALOG {
@@ -111026,6 +112172,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_HINWEIS_HEIZSTAB_LEER {
             get {
                 return ResourceManager.GetString("WPA_HINWEIS_HEIZSTAB_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Sperrzeiten — die Wärmepumpe darf jederzeit laufen. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_SPERR_LEER {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_SPERR_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Fenster über Mitternacht läuft in den Folgetag; gesperrt ist jede Stunde, deren Beginn im Fenster liegt. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_SPERR_UEBERTRAG {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_SPERR_UEBERTRAG", resourceCulture);
             }
         }
         
@@ -111098,6 +112262,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_SPERRZEIT {
             get {
                 return ResourceManager.GetString("WPA_LBL_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauer ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_DAUER {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitgesperrt ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_VON {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage: ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_VORLAGE {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_VORLAGE", resourceCulture);
             }
         }
         
@@ -111251,6 +112451,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_UEB_TITEL {
             get {
                 return ResourceManager.GetString("WPA_UEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Di ähnelt.
+        /// </summary>
+        public static string WPA_WT_DI {
+            get {
+                return ResourceManager.GetString("WPA_WT_DI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Do ähnelt.
+        /// </summary>
+        public static string WPA_WT_DO {
+            get {
+                return ResourceManager.GetString("WPA_WT_DO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fr ähnelt.
+        /// </summary>
+        public static string WPA_WT_FR {
+            get {
+                return ResourceManager.GetString("WPA_WT_FR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mi ähnelt.
+        /// </summary>
+        public static string WPA_WT_MI {
+            get {
+                return ResourceManager.GetString("WPA_WT_MI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mo ähnelt.
+        /// </summary>
+        public static string WPA_WT_MO {
+            get {
+                return ResourceManager.GetString("WPA_WT_MO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sa ähnelt.
+        /// </summary>
+        public static string WPA_WT_SA {
+            get {
+                return ResourceManager.GetString("WPA_WT_SA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die So ähnelt.
+        /// </summary>
+        public static string WPA_WT_SO {
+            get {
+                return ResourceManager.GetString("WPA_WT_SO", resourceCulture);
             }
         }
         

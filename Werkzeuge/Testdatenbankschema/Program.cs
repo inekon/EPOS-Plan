@@ -2674,6 +2674,82 @@ namespace Testdatenbankschema
                                   ProjektkopienKatalogeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KonditionierungNutzungSchema.SCHRITT: die Nutzung der Vorlage am Kalender des
+            //      Projekts (Tab_Konditionierungskalender.Nutzung) samt Saat aus der Herkunft in Bemerkung.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_KonditionierungNutzung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Lauf liest die Nutzung nicht.
+            string nrKondNutzung = KonditionierungNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKondNutzung + " - Konditionierungsnutzung an der Kalenderkopie: " +
+                              (KonditionierungNutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKondNutzung = new List<string>();
+                angelegt += KonditionierungNutzungSchema.Ausfuehren(berichtKondNutzung);
+                foreach (string zeile in berichtKondNutzung)
+                    Console.WriteLine("Schritt " + nrKondNutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKondNutzung + " - vollstaendig: " +
+                                  KonditionierungNutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt WaermepumpeSperrprofilSchema.SCHRITT (Welle V14): die Tabelle Tab_Sperrfenster,
+            //      leer. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_WaermepumpeSperrprofil bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Ohne Zeilen rechnet allein das Altfenster.
+            string nrSperr = WaermepumpeSperrprofilSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSperr + " - Sperrfenster der Waermepumpe: " +
+                              (WaermepumpeSperrprofilSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSperr = new List<string>();
+                tabellen += WaermepumpeSperrprofilSchema.Ausfuehren(berichtSperr) > 0 ? 1 : 0;
+                foreach (string zeile in berichtSperr)
+                    Console.WriteLine("Schritt " + nrSperr + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSperr + " - vollstaendig: " +
+                                  WaermepumpeSperrprofilSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ProzessNutzungSchema.SCHRITT (V31/V32): Zuordnung der Nutzungsprofile ueber IDs und
+            //      die Zapf-Nutzungsarten Buero/Schule/Gewerbe. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ProzessNutzung bedient. Danach tww_testkatalog_fiktiv.py nachlaufen
+            //      lassen: es fuehrt die nachgetragenen Nutzungsarten nach der Regel der Testdatenbank (EIGEN).
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Referenzprojekt benutzt die neuen Zeilen.
+            string nrNutzung = ProzessNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNutzung + " - Nutzungsprofil-Zuordnung und Zapf-Nutzungsarten: " +
+                              (ProzessNutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNutzung = new List<string>();
+                tabellen += ProzessNutzungSchema.Ausfuehren(berichtNutzung);
+                foreach (string zeile in berichtNutzung)
+                    Console.WriteLine("Schritt " + nrNutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNutzung + " - vollstaendig: " +
+                                  ProzessNutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Wellen P4c/P4d): die Sitzungseingaben der
+            //      Pufferauslegung, ID_Stamm am Projektpuffer und die Saat des Aufheizkriteriums K12.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferAuslegungErgaenzung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer, die Simulation liest keine Vorgabe.
+            string nrPufferErg = PufferAuslegungErgaenzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPufferErg + " - Ergaenzungen der Pufferauslegung: " +
+                              (PufferAuslegungErgaenzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPufferErg = new List<string>();
+                angelegt += PufferAuslegungErgaenzungSchema.Ausfuehren(berichtPufferErg);
+                foreach (string zeile in berichtPufferErg)
+                    Console.WriteLine("Schritt " + nrPufferErg + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPufferErg + " - vollstaendig: " +
+                                  PufferAuslegungErgaenzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

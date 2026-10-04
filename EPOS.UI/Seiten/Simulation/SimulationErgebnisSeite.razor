@@ -79,18 +79,13 @@
        die aussah wie eine Schaltflaeche fuer etwas Wichtiges. Jetzt steht das
        Band in der Warnfarbe des Hauses, traegt links die ZAHL als Abzeichen und
        rechts „anzeigen"; der Klick tut dasselbe wie bisher. *@
-    @if (_daten.LaufmeldungenAnzahl > 0)
-    {
-        <button type="button" class="epos-simerg-laufband" @onclick="() => _volltext = true">
-            <span class="epos-simerg-laufband-zahl">@_daten.LaufmeldungenAnzahl</span>
-            <span class="epos-simerg-laufband-text">
-                @(_daten.LaufmeldungenAnzahl == 1
-                    ? Resource.SIM_LAUFMELDUNG_EINER
-                    : string.Format(Resource.SIM_LAUFMELDUNG_MEHRERE, _daten.LaufmeldungenAnzahl))
-            </span>
-            <span class="epos-simerg-laufband-pfeil">@Resource.SIM_LAUFMELDUNG_ANZEIGEN ▾</span>
-        </button>
-    }
+    @* Das Band ist der Baustein Hinweisklappe im Dialogweg (Oeffnen): derselbe Baustein
+       wie die Klappzeilen der Bericht- und der Wirtschaftlichkeitsseite. *@
+    <Hinweisklappe Anzahl="@_daten.LaufmeldungenAnzahl" Stufe="WarnStufe.Warnung"
+                   TextEiner="@Resource.SIM_LAUFMELDUNG_EINER"
+                   TextMehrere="@Resource.SIM_LAUFMELDUNG_MEHRERE"
+                   AnzeigenText="@Resource.SIM_LAUFMELDUNG_ANZEIGEN"
+                   Oeffnen="@(() => _volltext = true)" />
 
     <fieldset class="epos-simerg-bereich" disabled="@_daten.Gesperrt">
 
@@ -246,7 +241,8 @@
                         <ErgebnisReiter Autarkie="@_daten.Autarkie" Modell="ModellHolen"
                                         KapazitaetGeaendert="KapazitaetGeaendert"
                                         WaermegangInhalt="@Waermegang"
-                                        StromgangInhalt="@Stromgang" />
+                                        StromgangInhalt="@Stromgang"
+                                        KaeltegangInhalt="@(_daten.Bedarf?.Kaelte is null ? null : Kaeltegang)" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -917,6 +913,11 @@
         FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
         Csv="@(Dienste?.CsvStromgang is null ? default
                 : EventCallback.Factory.Create<IReadOnlyList<string>>(this, r => Dienste!.CsvStromgang!(r)))" />;
+
+    // Der Kaeltegang steht nur, wenn das Projekt Kaelte rechnet: Bedarf.Kaelte ist
+    // null, solange der Projektschalter Kuehlbetrieb aus ist (nicht erhoben).
+    private RenderFragment Kaeltegang => @<KaeltegangReiter Modell="ModellHolen"
+        FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />;
 
     /// <summary>Ein Rueckruf aus einem Delegaten; ohne Delegat bleibt der Knopf weg.</summary>
     private EventCallback Rueckruf(Action? aktion)

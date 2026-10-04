@@ -25,7 +25,7 @@ Nach einer Eingabeänderung wird das alte Ergebnis als veraltet gekennzeichnet. 
 == Die Diagramme bedienen ==
 {{Anker|diagrammbedienung}}
 
-Die Zeitreihen der Auswertung tragen dieselbe Bedienung: ''Energiebedarf'', die drei Bilder der ''Wärmepumpe'' – ''Produktion'', ''Stromverbrauch'' und ''Speichertemperaturen'' –, ''Heizkessel'', ''Solarthermie'', ''BHKW'', ''Photovoltaik'', das Betriebsbild des ''Stromspeichers'' sowie die beiden Ganglinien des Reiters ''Ergebnis'' (''Wärmeproduktion'' und ''Stromproduktion'').
+Die Zeitreihen der Auswertung tragen dieselbe Bedienung: ''Energiebedarf'', die drei Bilder der ''Wärmepumpe'' – ''Produktion'', ''Stromverbrauch'' und ''Speichertemperaturen'' –, ''Heizkessel'', ''Solarthermie'', die zwei Bilder des ''BHKW'' – ''Wärmelast'' und ''Stromlast'' –, ''Photovoltaik'', das Betriebsbild des ''Stromspeichers'' sowie die Ganglinien des Reiters ''Ergebnis'' (''Wärmeproduktion'', ''Stromproduktion'' und – rechnet das Projekt Kälte – ''Kälteproduktion'').
 
 Über jedem Bild steht eine kleine Leiste. Mit dem Mausrad, mit Ziehen, mit der Kneifgeste und mit den Tasten ''+'', ''−'' und ''0'' vergrößern und verschieben Sie den Zeitausschnitt; die Werteachse bleibt dabei vollständig, und die Leiste zeigt links die Vergrößerung an – etwa ''×5''. ''Bereich'' schaltet auf das Aufziehen eines Ausschnitts um: Ziehen Sie ein Rechteck über die Stelle, die Sie sehen wollen; mit der Maus tut es auch Umschalt + Ziehen. ''1:1'' stellt die volle Ansicht wieder her; ein Doppelklick ins Bild und die Taste ''0'' tun dasselbe.
 

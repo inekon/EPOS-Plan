@@ -1570,6 +1570,8 @@ namespace WindowsFormsApplication1
                 // selbst aus den Kanälen - im zweikanaligen Weg ist der Kanal die Wahrheit,
                 // nicht ein vorab zugewiesener Summenvektor.
 
+                // V14: der Kalender der Wärmerechnung für die Wochentagsmaske der Sperrfenster.
+                simulation_wp.SperrWochentagJan1 = simulation_Waermebedarf != null ? simulation_Waermebedarf.WochentagJan1 : -1;
                 m_bError = !simulation_wp.Vorbereiten_Zweikanalig();
                 if (m_bError)
                 {

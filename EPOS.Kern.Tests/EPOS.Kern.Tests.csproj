@@ -59,11 +59,22 @@
     <Compile Include="..\Referenzlauf\Plausibilitaet.cs" Link="Referenzlauf\Plausibilitaet.cs" />
   </ItemGroup>
 
-  <!-- Der Bauplan des Referenzprojekts 1052 "Referenzprojekt Zonen" (Stufe G6d) - VERLINKT: das Saatskript
+  <!-- Der Ergebnisexport des Referenzlaufs ("lauf") samt Protokoll - VERLINKT, wie
+       EPOS.Referenzlauf ihn verlinkt: Die Wache des Referenzprojekts 1051
+       (KonditionierungReferenzprojektWacheTests) schreibt mit genau diesem Weg den Ordner
+       eines Laufs zweimal und haelt ihn gegen die Basis. -->
+  <ItemGroup>
+    <Compile Include="..\Referenzlauf\Ergebnisexport.cs" Link="Referenzlauf\Ergebnisexport.cs" />
+    <Compile Include="..\Referenzlauf\Protokoll.cs" Link="Referenzlauf\Protokoll.cs" />
+  </ItemGroup>
+
+  <!-- Die Bauplaene der Referenzprojekte 1052 "Referenzprojekt Zonen" (Stufe G6d) und 1051
+       "Referenzprojekt Konditionierung" (KP3, RP1; Bauwahlprobe) - VERLINKT: das Saatskript
        zieht ihn ueber #:include, die ZonenReferenzprojektWacheTests halten jede gesaete Zelle gegen ihn und
        gehen dieselben Programmwege auf einer Arbeitskopie nach. Eine Fassung. -->
   <ItemGroup>
     <Compile Include="..\Referenzlaeufe\Skripte\referenzprojekt_1052_bauplan.cs" Link="Referenzlaeufe\referenzprojekt_1052_bauplan.cs" />
+    <Compile Include="..\Referenzlaeufe\Skripte\referenzprojekt_1051_bauplan.cs" Link="Referenzlaeufe\referenzprojekt_1051_bauplan.cs" />
   </ItemGroup>
 
   <!-- xUnit-Einstellungen (Auftrag #531): Sammlungen seriell, hoechstens zwei Threads -

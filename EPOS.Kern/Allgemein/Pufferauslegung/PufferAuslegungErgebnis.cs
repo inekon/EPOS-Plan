@@ -41,13 +41,24 @@ namespace WindowsFormsApplication1
         public const string ZWEITERZEUGER_FREI = "PA-ZWEITERZEUGER-FREI";
         public const string HEIZSTAB_GESPERRT = "PA-HEIZSTAB-GESPERRT";
         public const string KEINE_REIHE = "PA-KEINE-REIHE";
+        /// <summary>
+        /// Hinweis des Abgleichs mit der Jahressimulation (Welle P4b): Die Starts je Tag des Probelaufs
+        /// weichen um mehr als 30 % von der Zweipunktschätzung D2 ab. Kein Code der Auslegungsliste
+        /// (<see cref="ALLE"/>) — er entsteht erst mit einem Lauf.
+        /// </summary>
+        public const string STARTS_ABWEICHUNG = "PA-STARTS-ABWEICHUNG";
+        /// <summary>Der Prozessvorlauf liegt über 95 °C oder über dem Vorlauf aller Erzeuger an der Kaskade.</summary>
+        public const string PROZESS_TEMPERATUR = "PA-PROZESS-TEMPERATUR";
+        /// <summary>Das Aufheizkriterium K12 ist eingeschaltet, aber keine KP3-Bemessung der Gebäude liegt vor.</summary>
+        public const string AUFHEIZ_KEINE_BEMESSUNG = "PA-AUFHEIZ-KEINE-BEMESSUNG";
 
         /// <summary>Alle Codes der Liste.</summary>
         public static readonly IReadOnlyList<string> ALLE = new[]
         {
             KEIN_PUFFER, BAND_UNTER, BAND_UEBER, ABTAU_VORRANG, STARTS_TAG, STARTS_JAHR, PRAXISGRENZE,
             EXTRAPOLATION, TANK_IM_TANK, OHNE_PUFFER_GEREGELT, HYGIENE_W551, HYGIENE_TEMPERATUR,
-            BW_UEBERDIMENSIONIERT, UEBERGABE_UNBEKANNT, ZWEITERZEUGER_FREI, HEIZSTAB_GESPERRT, KEINE_REIHE
+            BW_UEBERDIMENSIONIERT, UEBERGABE_UNBEKANNT, ZWEITERZEUGER_FREI, HEIZSTAB_GESPERRT, KEINE_REIHE,
+            PROZESS_TEMPERATUR, AUFHEIZ_KEINE_BEMESSUNG
         };
     }
 
@@ -63,8 +74,24 @@ namespace WindowsFormsApplication1
         {
         }
 
+        /// <summary>Eine Warnung mit dem Klartext als <see cref="Textbaustein"/> (Schlüssel <c>PA_&lt;CODE&gt;_TEXT</c>, Zahlen als Argumente).</summary>
+        public PufferWarnung(string code, PufferStufe stufe, Textbaustein text, Textbaustein herkunft, PufferZone? zone)
+            : this(code, stufe, text?.Klartext ?? "", herkunft, zone)
+        {
+            TextBaustein = text;
+        }
+
         /// <summary>Der Ressourcenschlüssel des Texts: <c>PA-KEIN-PUFFER</c> → <c>PA_KEIN_PUFFER</c>.</summary>
         public string Ressourcenschluessel => Code.Replace('-', '_');
+
+        /// <summary>
+        /// Der Klartext mit Zahlen als <see cref="Textbaustein"/> (<c>PA_&lt;CODE&gt;_TEXT</c>); die Auflösung formatiert
+        /// die Zahlen in der Sprache der Ansicht bzw. des Berichts. Ohne Baustein: <see cref="Text"/> als Klartext.
+        /// </summary>
+        public Textbaustein TextBaustein { get; init; }
+
+        /// <summary>Der Klartext als Baustein — <see cref="TextBaustein"/> oder <see cref="Text"/> als Klartext.</summary>
+        public Textbaustein KlartextBaustein => TextBaustein ?? Textbaustein.Klar(Text);
 
         /// <summary>Die Herkunft als deutscher Klartext.</summary>
         public string Herkunft => HerkunftBaustein?.Klartext ?? "";
@@ -85,6 +112,8 @@ namespace WindowsFormsApplication1
         public const string K10 = "K10";
         /// <summary>Verschiebedauer des BHKW (Schlüssel <c>BHKW.Verschiebedauer_h</c>).</summary>
         public const string KV = "KV";
+        /// <summary>Aufheizen nach Absenkung (V30, KP3): Puffer deckt Φ_n − P_gen über die Aufheizdauer.</summary>
+        public const string K12 = "K12";
         /// <summary>Brauchwasserzone aus dem Zapfprofil (Nenninhalt des Trinkwasserspeichers).</summary>
         public const string B_SPEICHER = "B-Speicher";
         /// <summary>Brauchwasserzone für Frischwasser-/Wohnungsstation (Konzept 3.2).</summary>

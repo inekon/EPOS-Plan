@@ -1023,7 +1023,7 @@ meldet ihn mit „Katalogwert pflegen“.
 
 Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`, `EPOS.Kern.Tests/KesselBereitschaftEinheitTests`,
 `EPOS.Kern.Tests/KesselKennlinieTests`,
-`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-02_R33_Viertelstunden` (Größen `Kessel[i].*` in `aggregate.csv`).
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` und der Referenzbasis `2026-10-03_R34_Erdreich` (Größen `Kessel[i].*` in `aggregate.csv`).
 
 ## 13. Kaskade: Vorwahl in der Folge der Ladeprioritäten
 
@@ -1404,7 +1404,7 @@ Zeitreihe `SPEICHER_EIGENVERBRAUCH`, Monatstafel des Berichts, Referenzskalar
 
 Gehalten von `EPOS.Kern.Tests/StromViertelstundenTests`, `StromViertelstundenSchemaTests`,
 `PvAusweisStromMatrixTests`, `PvPreisProjektTests` und `SpeicherEngine.Tests/SpeichersystemTests`;
-Basis `Referenzlaeufe/2026-10-02_R33_Viertelstunden`.
+Basis `Referenzlaeufe/2026-10-03_R34_Erdreich`.
 
 ## 20. Katalogabgleich mit Katalogfassung; Erdreichprüfung im Ergebnis
 
@@ -1669,6 +1669,15 @@ Vorlage. „Vorlage übernehmen" kopiert ihren Inhalt in die Matrix und den Kale
 Herkunft steht nur als Text in `Bemerkung`. Der Lauf liest ausschließlich diese Projektzeilen. Die
 Projektkopie besteht damit schon, eine eigene Tabelle braucht es nicht; das Kennzeichen `ReadOnly`
 bleibt am Stamm.
+
+**Die Kopie trägt die Nutzung.** „Vorlage übernehmen" schreibt die `Nutzung` der Vorlage (`WOHNEN`,
+`BUERO`, `SCHULE`, `SONSTIGE`) in die Spalte `Nutzung` des Kalenders am Gebäude bzw. an der Zone;
+Bearbeiten behält sie, solange die Herkunft dieselbe Vorlage nennt, ein Kalender ohne Herkunft trägt
+keine. Die Vorbelegung des Nutzungsprofils der Pufferauslegung liest allein diese Spalte der
+Projektkalender, nie den Vorlagenkatalog: Umbenennen, Löschen oder Katalogabgleich einer Vorlage
+ändern sie nicht. Duplizieren, Projektpaket und Katalogbau-Übernahme tragen die Spalte mit.
+Schemaschritt `KonditionierungNutzungSchema` (176) legt sie an und füllt bestehende Kalender einmalig
+aus der Herkunft in `Bemerkung` (Vorlage gleichen Namens und gleicher Größe; ohne Treffer leer).
 
 **Vorgaben der Pufferauslegung.** Die Kopie entsteht mit der ersten gespeicherten Auslegung eines
 Projekts (`PufferAuslegungCtrl.Speichern`). `PufferAuslegungParameter.Lesen(idProjekt)` legt die

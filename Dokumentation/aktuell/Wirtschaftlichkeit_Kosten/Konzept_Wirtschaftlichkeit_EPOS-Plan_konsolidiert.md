@@ -3167,7 +3167,7 @@ bewegt keiner.
 | § 9b-Korrektur des Ausweises 1030 als produzierendes Gewerbe (Rollentarif, Stundenreihen des Prüffalls B6, vermiedene Menge 432,3 MWh) | **8.646,00 €/a** = 432,3 MWh × 20,00 €/MWh; Stromsteueranteil des Netzträgers 1,00 ct/kWh: **4.323,00 €/a**; Komponente abgeschaltet: 0 | gemessen P654 (`VermiedenAusweis9bDeckelTests`) — ohne gepflegten Anteil Obergrenze Regelsatz 20,50 €/MWh, kein Deckel; mit 2,05 ct/kWh bitgleich |
 | Wärmegestehungskosten 1030 mit Stundenreihen, Modus AUSWEIS = ERLOES | **0,0068421 €/kWh** (mit der Befreiungsreihe wären es 0,0053982) | gemessen P646 |
 | Wärmegestehungskosten 1024, Elektrokessel mit eigenem Stromträger 0,30 €/kWh | **0,0388473 €/kWh** = 0,0616162 + 52,99 MWh × (300 − 467,46) €/MWh ÷ 389.730 kWh | gemessen P646 |
-| Referenzbasis | `Referenzlaeufe/2026-10-02_R33_Viertelstunden` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-10-03_R34_Erdreich` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im

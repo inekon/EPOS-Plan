@@ -296,9 +296,11 @@ namespace WindowsFormsApplication1
             {
                 new Katalogkind("Tab_Konditionierungsvorgabe", fremdschluessel,
                     new[] { "Groesse", "Zeile", "Wert", "Aus", "Von", "Bis", "Bedingt_K" }) { Nebenspalten = neben },
+                // Nutzung (Schemaschritt 176) ist die Kopie der Vorlagen-Nutzung am Projektkalender:
+                // keine Fachspalte des Katalogs (die Nutzung steht am Vorlagenkopf), nur Nebenspalte.
                 new Katalogkind("Tab_Konditionierungskalender", fremdschluessel,
                     new[] { "Groesse", "Wert", "Aus", "Woche", "Nennwert", "Bemerkung" })
-                { Nebenspalten = neben, Enkel = new[] { periode } },
+                { Nebenspalten = new[] { "ID_Gebaeude", "ID_Zone", andererEigentuemer, "Nutzung" }, Enkel = new[] { periode } },
             };
         }
 
@@ -443,6 +445,10 @@ namespace WindowsFormsApplication1
             "Importdatum, Szenario und Bezugsjahr; Primaerschluessel ID_Klimaregion statt ID.";
 
         /// <summary>Grund der Ausnahme des Zapfprofilkatalogs.</summary>
+        public const string GRUND_NUTZUNGSPROFIL =
+            "Nutzungsprofile der Pufferauslegung: eine feste Aufzaehlung (Kennungen im Code), die der Schemaschritt " +
+            "ProzessNutzungSchema anlegt; ohne Katalogfassung und ohne Paketweg - es gibt nichts abzugleichen.";
+
         public const string GRUND_ZAPFPROFIL =
             "Zapfprofilkatalog: fuehrt eine eigene Katalogversion und einen eigenen Paketweg (TwwPaketteilCtrl, " +
             "Katalogimport mit Konfliktregeln und Provenienz je Zeile); seine Tabellen verweisen ueber IDs " +
@@ -461,6 +467,7 @@ namespace WindowsFormsApplication1
                          "Tab_TwwDin4708Wert_STAMM", "Tab_TwwParameter_STAMM"
                      })
                 d[t] = GRUND_ZAPFPROFIL;
+            d[ProzessNutzungSchema.TAB_PROFIL] = GRUND_NUTZUNGSPROFIL;
             return d;
         }
 

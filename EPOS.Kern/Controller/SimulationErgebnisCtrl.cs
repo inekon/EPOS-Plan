@@ -1112,6 +1112,93 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die vier Stundenreihen des Strombilds im BHKW-Reiter [kWh je Stunde] — die
+        /// „Stromlast Jahresganglinie“ neben der Wärmelast. Keine neue Rechnung: Jede Reihe
+        /// kommt aus den Reihen des Laufs, die auch die Kennzahlen des Reiters tragen.
+        /// </summary>
+        public sealed class BhkwStromreihen
+        {
+            /// <summary>Die Stromproduktion des BHKW (<c>SimulationBHKW.stromproduktion</c>).</summary>
+            public double[] Stromproduktion = new double[0];
+
+            /// <summary>
+            /// Der BHKW-Strom, der ins Netz geht — dieselbe Quelle wie
+            /// <see cref="BhkwErgebnis.EinspeisungMwh"/>: mit Speicherflotte deren BHKW-Einspeisung
+            /// im Stundenmittel, sonst der KWK-Split je Stunde.
+            /// </summary>
+            public double[] Einspeisung = new double[0];
+
+            /// <summary>Strombedarf minus Stromproduktion je Stunde, nie unter 0 — die Stundenreihe zu
+            /// <see cref="BhkwErgebnis.ReststrombedarfMwh"/>.</summary>
+            public double[] Reststrombedarf = new double[0];
+
+            /// <summary>Der Strombedarf am Eingang des BHKW (<c>SimulationBHKW.strombedarf</c>).</summary>
+            public double[] Strombedarf = new double[0];
+        }
+
+        /// <summary>
+        /// Die Stromreihen des BHKW-Reiters aus dem Lauf (<see cref="BhkwStromreihenBilden"/>);
+        /// <c>null</c> ohne Lauf oder ohne BHKW.
+        /// </summary>
+        public static BhkwStromreihen BhkwStromStunden(SimulationControl sim)
+        {
+            if (sim == null || sim.simulation_bhkw == null) return null;
+            SimulationBHKW bh = sim.simulation_bhkw;
+            double[] flotte = sim.Speicherflottennetzbilanz != null
+                ? sim.Speicherflottennetzbilanz.BhkwNetzeinspeisungKw
+                : null;
+            double[] lauf = flotte == null && sim.bSimulationBHKW ? sim.BhkwEinspeisungDesLaufs() : null;
+            return BhkwStromreihenBilden(bh.strombedarf, bh.stromproduktion, flotte, lauf);
+        }
+
+        /// <summary>
+        /// Bildet die vier Stromreihen aus den Reihen des Laufs [kWh je Stunde].
+        /// <para><b>Einspeisung:</b> trägt <paramref name="einspeisungFlotteKw"/> Werte, gilt die
+        /// Flottenbilanz — eine Viertelstundenreihe [kW] geht über das Stundenmittel ins
+        /// Stundenraster, eine Stundenreihe bleibt, wie sie ist —, sonst
+        /// <paramref name="einspeisungLauf"/>, ohne beide 0.</para>
+        /// <para><b>Reststrombedarf:</b> Strombedarf minus Stromproduktion je Stunde, nie unter 0 —
+        /// dieselbe Klemmung wie <see cref="SimulationControl.BhkwReststrombedarfMwh"/>.</para>
+        /// </summary>
+        internal static BhkwStromreihen BhkwStromreihenBilden(double[] strombedarf, double[] stromproduktion,
+                                                             double[] einspeisungFlotteKw, double[] einspeisungLauf)
+        {
+            int n = stromproduktion != null ? stromproduktion.Length : strombedarf != null ? strombedarf.Length : 0;
+            var r = new BhkwStromreihen
+            {
+                Stromproduktion = new double[n],
+                Einspeisung = new double[n],
+                Reststrombedarf = new double[n],
+                Strombedarf = new double[n],
+            };
+
+            double[] einspeisung = null;
+            if (einspeisungFlotteKw != null && einspeisungFlotteKw.Length > 0)
+            {
+                if (einspeisungFlotteKw.Length == 4 * n)
+                {
+                    einspeisung = new double[n];
+                    for (int h = 0; h < n; h++)
+                        einspeisung[h] = (einspeisungFlotteKw[4 * h] + einspeisungFlotteKw[4 * h + 1]
+                                          + einspeisungFlotteKw[4 * h + 2] + einspeisungFlotteKw[4 * h + 3]) / 4.0;
+                }
+                else einspeisung = einspeisungFlotteKw;
+            }
+            else einspeisung = einspeisungLauf;
+
+            for (int h = 0; h < n; h++)
+            {
+                double erz = stromproduktion != null && h < stromproduktion.Length ? stromproduktion[h] : 0.0;
+                double bed = strombedarf != null && h < strombedarf.Length ? strombedarf[h] : 0.0;
+                r.Stromproduktion[h] = erz;
+                r.Strombedarf[h] = bed;
+                r.Reststrombedarf[h] = Math.Max(0.0, bed - erz);
+                r.Einspeisung[h] = einspeisung != null && h < einspeisung.Length ? einspeisung[h] : 0.0;
+            }
+            return r;
+        }
+
+        /// <summary>
         /// E30/3 (#548, N10) — der <b>Strombedarf aller Verbraucher</b> [MWh/a] vor jeder
         /// Eigenerzeugung (<see cref="SimulationControl.Strombedarf_Verbraucher_viertelstuendlich"/>,
         /// dieselbe Reihe wie <c>STROMBEDARF_GESAMT</c> der Strommatrix): Projektlast,

@@ -216,6 +216,7 @@ namespace Gebaeudevergleich
                 HeizkreisAktiv = m.HeizkreisAktiv,
                 IstNwg = m.IstNwg,
                 SpalteTagesbilanz = m.SpalteModell == DbWerte.GEBAEUDE_MODELL_TAGESBILANZ,
+                ErdreichRgM2KW = z.Neu.Ok ? z.Neu.ErdreichRgM2KW : double.NaN,
                 DeltaJahrProzent = Kennzahlen.DeltaProzent(z.Alt.JahrMwh, z.Neu.JahrMwh),
                 DeltaSpitzeProzent = Kennzahlen.DeltaProzent(z.Alt.SpitzeKw, z.Neu.SpitzeKw),
                 KatalogtrefferNeuProzent = z.Neu.KatalogtrefferProzent,
@@ -301,6 +302,11 @@ namespace Gebaeudevergleich
             {
                 w.RaumtemperaturMittelC = e.MittlereRaumtemperaturC;
                 w.Ueberhitzungsstunden = e.UeberhitzungsstundenH;
+                if (e.Erdreich != null)
+                {
+                    w.ErdreichRgM2KW = e.Erdreich.Rg_M2KW;
+                    w.ErdreichBM = e.Erdreich.B_M;
+                }
                 if (e.KuehlbetriebProjekt && e.KuehlungAktiv)
                 {
                     w.KaelteMwh = e.KuehlenergieMwh;

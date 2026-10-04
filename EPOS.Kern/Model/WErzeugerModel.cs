@@ -339,6 +339,13 @@
         /// </summary>
         public System.Collections.Generic.List<AnlageStrangModel> PV_Straenge;
 
+        /// <summary>
+        /// Die im Wärmepumpen-Dialog bearbeiteten Sperrfenster (Welle V14, <c>Tab_Sperrfenster</c>) —
+        /// <c>null</c> = nicht angefasst; eine gesetzte Liste (auch leer) schreibt
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c> nach dem Anlegen der Zeile, wie <see cref="PV_Straenge"/>.
+        /// </summary>
+        public System.Collections.Generic.List<Sperrfenster> WP_Sperrfenster;
+
         // =============================================================================
         // Kollektorfeld der Solarthermie (Welle M2; Schemaschritt SolarthermieFelderSchema.SCHRITT)
         // =============================================================================

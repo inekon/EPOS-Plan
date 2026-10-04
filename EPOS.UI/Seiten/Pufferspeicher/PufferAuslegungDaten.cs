@@ -116,6 +116,9 @@ public sealed class PufferAuslegungEingabeDaten
     /// </summary>
     public Dictionary<string, bool> Kriterien { get; set; } = new(StringComparer.Ordinal);
 
+    /// <summary>Die Anzeigestufe (<c>SCHNELL</c>, <c>STANDARD</c>, <c>EXPERTE</c>); leer = Vorgabe (Standard).</summary>
+    public string Anzeigestufe { get; set; } = "";
+
     /// <summary>Eine tiefe Kopie — der Arbeitsstand ist entkoppelt vom Startstand.</summary>
     public PufferAuslegungEingabeDaten Kopie()
     {
@@ -181,6 +184,12 @@ public sealed class PufferAuslegungStartDaten
     public IReadOnlyList<string> Erzeuger { get; set; } = Array.Empty<string>();
     public bool IstWaermepumpe { get; set; }
 
+    // ---- Aufheizkriterium K12 (V30) ----
+    /// <summary>Der Vorlagenschalter von K12 für das Nutzungsprofil (an bei Büro/Schule).</summary>
+    public bool AufheizVorlageAn { get; set; }
+    /// <summary>Φ_n [kW] aus der KP3-Bemessung; <c>null</c> = keine Bemessung.</summary>
+    public double? AufheizleistungKw { get; set; }
+
     // ---- Puffer ----
     public double VorlaufC { get; set; }
     public double RuecklaufC { get; set; }
@@ -204,6 +213,9 @@ public sealed class PufferAuslegungStartDaten
 
     /// <summary>Das erste Ergebnis; <c>null</c> = noch nicht gerechnet.</summary>
     public PufferAuslegungErgebnisDaten? Ergebnis { get; set; }
+
+    /// <summary>Der letzte Probelauf dieser Sitzung für Projekt und Puffer; <c>null</c> = kein Lauf.</summary>
+    public PufferProbelaufDaten? Probelauf { get; set; }
 
     /// <summary>Die Marke der Herkunft eines Felds (letzter Eintrag gewinnt); leer = keine.</summary>
     public PufferHerkunftDaten? HerkunftVon(string feld)
@@ -289,6 +301,9 @@ public sealed class PufferAuslegungErgebnisDaten
     public PufferKennzahlDaten Kennzahlen { get; set; } = new();
     public IReadOnlyList<PufferWarnungDaten> Warnungen { get; set; } = Array.Empty<PufferWarnungDaten>();
 
+    /// <summary>Die Nutzen-Aufwand-Zeile (Nachbarstufen und Kurve); <c>null</c> = nicht gerechnet (nur auf Zuruf).</summary>
+    public PufferNachbarstufenDaten? Nachbarstufen { get; set; }
+
     /// <summary>Das Kriterium mit der Kennung aus der ersten Zone, die es führt; <c>null</c> = keine.</summary>
     public PufferKriteriumDaten? Kriterium(string kennung)
     {
@@ -306,8 +321,39 @@ public sealed class PufferAuslegungErgebnisDaten
         => new() { Zustand = PufferErgebnisZustand.Fehler, Grund = grund ?? "" };
 }
 
+/// <summary>Eine Stufe der Nutzen-Aufwand-Zeile: Abstand zur Empfehlung, Volumen, Deckung, Starts, Verlust, JAZ-Hinweis.</summary>
+public sealed record PufferNachbarstufeDaten(int Abstand, double VolumenL, double MehrvolumenL, double? Deckungsgrad,
+                                             double? StartsJeTag, int? StartsHeizperiode, double VerlustKwhJeJahr, string JazHinweis)
+{
+    /// <summary>Ist die Stufe die Empfehlung?</summary>
+    public bool Empfehlung => Abstand == 0;
+}
+
+/// <summary>Ein Punkt der Speicher-gegen-Leistung-Kurve (Brauchwasserzone, Ecosizer-Weg).</summary>
+public sealed record PufferLeistungspunktDaten(double LeistungKw, double Anteil, double VolumenL, double? LaufzeitH, bool ImLaufzeitband);
+
+/// <summary>Die Nutzen-Aufwand-Zeile der Ergebnisansicht samt Kurve und Rechendauer.</summary>
+public sealed class PufferNachbarstufenDaten
+{
+    public IReadOnlyList<PufferNachbarstufeDaten> Stufen { get; set; } = Array.Empty<PufferNachbarstufeDaten>();
+    public IReadOnlyList<PufferLeistungspunktDaten> Kurve { get; set; } = Array.Empty<PufferLeistungspunktDaten>();
+    /// <summary>Wie die Kurve entstand bzw. warum es keine gibt.</summary>
+    public string KurveHinweis { get; set; } = "";
+    /// <summary>Die Herkunft der Zeile.</summary>
+    public string Herkunft { get; set; } = "";
+    /// <summary>Die Zone, deren Reihe die Simulation trug; leer = ohne Reihe.</summary>
+    public string Simulationszone { get; set; } = "";
+    /// <summary>Rechendauer [ms].</summary>
+    public double DauerMs { get; set; }
+    /// <summary>Mit der Auslegung gerechnet (unter einer Sekunde) statt auf Zuruf.</summary>
+    public bool Automatisch { get; set; }
+}
+
 /// <summary>Was übernommen werden soll: neuer Speicher oder der gewählte, mit Bezeichnung.</summary>
-public sealed record PufferUebernahmeDaten(bool Neu, string Bezeichner);
+/// <summary>Was die Übernahme braucht: neu anlegen, Bezeichner, den Katalogsatz als Herkunft merken,
+/// das Sperrprofil der Wärmepumpe mitschreiben.</summary>
+public sealed record PufferUebernahmeDaten(bool Neu, string Bezeichner, bool Katalogsatz = true,
+                                           bool SperrprofilSchreiben = false);
 
 /// <summary>Die Antwort der Übernahme: Erfolg, Text der Statuszeile, Puffer-ID (bei Erfolg).</summary>
 public sealed record PufferUebernahmeErgebnis(bool Erfolg, string Text, int IdPuffer);
@@ -319,7 +365,61 @@ public sealed record PufferUebernahmeErgebnis(bool Erfolg, string Text, int IdPu
 /// <param name="Rechnen">Rechnet den Arbeitsstand (ohne Datenbank, Reihen in der Hülle).</param>
 /// <param name="Speichern">Speichert Eingaben und Ergebnis; <c>null</c> = gespeichert, sonst der Grund.</param>
 /// <param name="Uebernehmen">Speichert und übernimmt die Empfehlung in den Projektpuffer.</param>
+/// <param name="Probelauf">Rechnet das Projekt einmal mit der Empfehlung (Jahressimulation, nichts wird gespeichert).</param>
+/// <param name="Nachbarstufen">Rechnet die Nutzen-Aufwand-Zeile auf Zuruf; <c>null</c> = kein Knopf.</param>
 public sealed record PufferAuslegungDienste(
     Func<PufferAuslegungEingabeDaten, PufferAuslegungErgebnisDaten> Rechnen,
     Func<PufferAuslegungEingabeDaten, string?>? Speichern = null,
-    Func<PufferAuslegungEingabeDaten, PufferUebernahmeDaten, PufferUebernahmeErgebnis>? Uebernehmen = null);
+    Func<PufferAuslegungEingabeDaten, PufferUebernahmeDaten, PufferUebernahmeErgebnis>? Uebernehmen = null,
+    Func<PufferAuslegungEingabeDaten, System.Threading.Tasks.Task<PufferProbelaufDaten>>? Probelauf = null,
+    Func<PufferAuslegungEingabeDaten, PufferNachbarstufenDaten>? Nachbarstufen = null);
+
+/// <summary>Die Starts eines Erzeugertyps im Probelauf (Name aus den Ressourcen).</summary>
+/// <param name="AusReihe">Der Lauf zählt keine Starts (Gerät ohne Mindestleistung); gezählt sind die Einschaltflanken.</param>
+public sealed record PufferProbelaufStartsDaten(string Erzeuger, int StartsJahr, int StartsHeizperiode, double StartsJeTag,
+                                                bool Rang1, bool AusReihe = false);
+
+/// <summary>Füllstand des Puffers in einem Monat (Anteil 0 … 1).</summary>
+public sealed record PufferFuellstandMonatDaten(int Monat, double Min, double Mittel, double Max);
+
+/// <summary>
+/// Der PROBELAUF der Jahressimulation mit der Empfehlung (Welle P4b): Starts, Deckung, Füllstand und
+/// Dauer — nur Anzeige, nichts davon wird gespeichert oder übernommen.
+/// </summary>
+public sealed class PufferProbelaufDaten
+{
+    public bool Erfolg { get; set; }
+
+    /// <summary>Der benannte Grund, wenn der Lauf nicht möglich war; leer bei Erfolg.</summary>
+    public string Fehler { get; set; } = "";
+
+    public DateTime Zeitpunkt { get; set; }
+    public double DauerSekunden { get; set; }
+    public double VolumenL { get; set; }
+    public IReadOnlyList<PufferProbelaufStartsDaten> Starts { get; set; } = Array.Empty<PufferProbelaufStartsDaten>();
+
+    /// <summary>Deckung des Wärmebedarfs (0 … 1); <c>null</c> ohne Bedarf.</summary>
+    public double? Deckung { get; set; }
+
+    public IReadOnlyList<PufferFuellstandMonatDaten> Monate { get; set; } = Array.Empty<PufferFuellstandMonatDaten>();
+
+    /// <summary>Tag (1 … 365), an dem die kälteste Woche beginnt; 0 = ohne Reihe.</summary>
+    public int KaeltesteWocheTag { get; set; }
+    public double? WocheMin { get; set; }
+    public double? WocheMittel { get; set; }
+    public double? WocheMax { get; set; }
+
+    /// <summary>Starts je Tag der Auslegung (D2), gegen die der Lauf gehalten wurde; <c>null</c> = keine Schätzung.</summary>
+    public double? AuslegungStartsJeTag { get; set; }
+
+    /// <summary>Hinweis <c>PA-STARTS-ABWEICHUNG</c>: Starts je Tag weichen um mehr als 30 % ab.</summary>
+    public bool Abweichung { get; set; }
+
+    /// <summary>Der Hinweistext der Abweichung (Ressource, mit Zahlen); leer ohne Abweichung.</summary>
+    public string AbweichungText { get; set; } = "";
+
+    /// <summary>Die Starts des Erzeugers an Rang 1; <c>null</c> = keiner im Lauf.</summary>
+    public PufferProbelaufStartsDaten? Rang1 => Starts.FirstOrDefault(s => s.Rang1);
+
+    public static PufferProbelaufDaten MitFehler(string grund) => new() { Erfolg = false, Fehler = grund ?? "" };
+}

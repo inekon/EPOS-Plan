@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -215,7 +216,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = Start(),
-                ["Dienste"] = new PufferAuslegungDienste(Rechnen, Speichern, Uebernehmen),
+                ["Dienste"] = new PufferAuslegungDienste(Rechnen, Speichern, Uebernehmen, ProbelaufImHintergrund, Nachbarstufen),
                 ["Texte"] = new PufferAuslegungTexte(),
                 ["HilfeSchluessel"] = HILFE
             };
@@ -245,6 +246,9 @@ namespace WindowsFormsApplication1
             PufferAuslegungEingang e = _vorbelegung.Eingang;
             PufferAuslegungParameter p = e.Parameter ?? PufferAuslegungParameter.Vorgabe();
             d.Eingabe = EingabeAus(e);
+            // Die gespeicherten Sitzungseingaben (Welle P4c): abweichende Kriterienschalter und Anzeigestufe.
+            d.Eingabe.Kriterien = new Dictionary<string, bool>(_vorbelegung.Kriterien, StringComparer.Ordinal);
+            d.Eingabe.Anzeigestufe = _vorbelegung.Anzeigestufe ?? "";
             d.Herkunft = _vorbelegung.Herkunft
                 .Select(z => new PufferHerkunftDaten(z.Feld, z.Quelle, Marke(z.Quelle), Textbaustein.Aufloesen(z.Baustein))).ToList();
             d.Gespeichert = _vorbelegung.Gespeichert;
@@ -294,6 +298,8 @@ namespace WindowsFormsApplication1
                 .ToList();
             if (erz.NennleistungKw <= 0 && erz.KollektorflaecheM2 <= 0) d.Erzeuger = Array.Empty<string>();
 
+            d.AufheizVorlageAn = p.AufheizAn(e.Nutzungsprofil);
+            d.AufheizleistungKw = e.AufheizleistungKw;
             d.VorlaufC = e.VorlaufC;
             d.RuecklaufC = e.RuecklaufC;
             d.SchwelleEin = e.SchwelleEin ?? p.WertOder(PufferAuslegungVorgaben.SCHWELLE_EIN, ProjektPuffer.SCHWELLE_EIN_DEFAULT / 100.0);
@@ -310,6 +316,8 @@ namespace WindowsFormsApplication1
             }
 
             d.Ergebnis = Rechnen(d.Eingabe);
+            PufferProbelaufErgebnis letzter = PufferProbelaufCtrl.Letzter(_auftrag.IdProjekt, _idPuffer);
+            if (letzter != null) d.Probelauf = Abbilden(letzter, AuslegungStartsJeTag(d.Ergebnis));
             return d;
         }
 
@@ -432,21 +440,11 @@ namespace WindowsFormsApplication1
                 TPufferObenC = d.TPufferObenC,
                 ZirkulationWeg = zw,
                 Wohneinheiten = d.Wohneinheiten,
-                Parameter = ParameterMit(b.Parameter, vorlage, d.Kriterien)
+                // K12 (V30): ein Schalter des Anwenders geht vor den Vorlagenschalter des Nutzungsprofils.
+                AufheizKriterium = d.Kriterien != null && d.Kriterien.TryGetValue(PufferKriteriumKennung.K12, out bool aufheiz) ? aufheiz : (bool?)null,
+                // Grundlage ist der Satz VOR den gespeicherten Schaltern - ein zurückgestellter Schalter gilt wieder.
+                Parameter = PufferAuslegungCtrl.ParameterMitKriterien(_vorbelegung.KriterienBasis ?? b.Parameter, vorlage, d.Kriterien)
             };
-        }
-
-        /// <summary>Der Parametersatz mit den abweichenden Kriterienschaltern der Vorlage.</summary>
-        private static PufferAuslegungParameter ParameterMit(PufferAuslegungParameter p, PufferVorlage vorlage,
-                                                             IReadOnlyDictionary<string, bool> kriterien)
-        {
-            p ??= PufferAuslegungParameter.Vorgabe();
-            if (kriterien == null || kriterien.Count == 0) return p;
-            var werte = new Dictionary<string, double>(p.Werte, StringComparer.Ordinal);
-            foreach (KeyValuePair<string, bool> k in kriterien)
-                if (PufferAuslegungVorgaben.VORLAGE_SCHALTER.Contains(k.Key))
-                    werte[PufferAuslegungVorgaben.VorlageSchluessel(vorlage.ToString(), k.Key)] = k.Value ? 1 : 0;
-            return PufferAuslegungParameter.Mit(werte);
         }
 
         // =================================================================
@@ -462,13 +460,166 @@ namespace WindowsFormsApplication1
                 return PufferAuslegungErgebnisDaten.MitFehler(Format(MyResource.Resource.PAUS_REIHEN_FEHLER, _reihen.Fehlertext ?? ""));
             try
             {
-                return Abbilden(PufferAuslegungCtrl.Rechnen(EingangAus(d)));
+                PufferAuslegungEingang e = EingangAus(d);
+                var uhr = Stopwatch.StartNew();
+                PufferAuslegungErgebnis r = PufferAuslegungCtrl.Rechnen(e);
+                uhr.Stop();
+                PufferAuslegungErgebnisDaten daten = Abbilden(r);
+                // Die Nutzen-Aufwand-Zeile rechnet mit, wenn die Auslegung samt Betriebssimulation unter einer Sekunde lag;
+                // sonst nur auf Zuruf („Nachbarstufen rechnen").
+                if (uhr.Elapsed.TotalMilliseconds < NACHBARSTUFEN_AUTOMATISCH_MS)
+                    daten.Nachbarstufen = NachbarstufenGemessen(e, r, true);
+                return daten;
             }
             catch (ArgumentException ex)
             {
                 return PufferAuslegungErgebnisDaten.MitFehler(Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, ex.Message));
             }
         }
+
+        /// <summary>Unter dieser Rechenzeit der Auslegung [ms] rechnet die Nutzen-Aufwand-Zeile mit.</summary>
+        internal const double NACHBARSTUFEN_AUTOMATISCH_MS = 1000;
+
+        /// <summary>Die Nutzen-Aufwand-Zeile auf Zuruf: rechnet die Auslegung und die Nachbarstufen des Arbeitsstands.</summary>
+        internal PufferNachbarstufenDaten Nachbarstufen(PufferAuslegungEingabeDaten d)
+        {
+            if (_vorbelegung == null || !_reihen.Vorhanden) return new PufferNachbarstufenDaten();
+            try
+            {
+                PufferAuslegungEingang e = EingangAus(d);
+                return NachbarstufenGemessen(e, PufferAuslegungCtrl.Rechnen(e), false);
+            }
+            catch (ArgumentException ex)
+            {
+                return new PufferNachbarstufenDaten { KurveHinweis = Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, ex.Message) };
+            }
+        }
+
+        private static PufferNachbarstufenDaten NachbarstufenGemessen(PufferAuslegungEingang e, PufferAuslegungErgebnis r, bool automatisch)
+        {
+            var uhr = Stopwatch.StartNew();
+            PufferNachbarstufen n = PufferAuslegung.Nachbarstufen(e, r);
+            uhr.Stop();
+            PufferNachbarstufenDaten daten = Abbilden(n);
+            daten.DauerMs = uhr.Elapsed.TotalMilliseconds;
+            daten.Automatisch = automatisch;
+            return daten;
+        }
+
+        /// <summary>Die Nutzen-Aufwand-Zeile des Kerns als Anzeige (Texte in der Oberflächensprache).</summary>
+        internal static PufferNachbarstufenDaten Abbilden(PufferNachbarstufen n)
+        {
+            if (n == null) return new PufferNachbarstufenDaten();
+            return new PufferNachbarstufenDaten
+            {
+                Stufen = n.Stufen.Select(s => new PufferNachbarstufeDaten(
+                    s.Abstand, s.VolumenL, s.MehrvolumenL, s.Deckungsgrad, s.StartsJeTag, s.StartsHeizperiode,
+                    s.Verlust?.KwhJeJahr ?? 0, Textbaustein.Aufloesen(s.JazHinweis))).ToList(),
+                Kurve = n.Kurve.Select(k => new PufferLeistungspunktDaten(k.LeistungKw, k.Anteil, k.VolumenL, k.LaufzeitH, k.ImLaufzeitband)).ToList(),
+                KurveHinweis = Textbaustein.Aufloesen(n.KurveHinweis),
+                Herkunft = Textbaustein.Aufloesen(n.HerkunftBaustein),
+                Simulationszone = n.Simulationszone.HasValue ? PufferAuslegungTexte.Nach("PAUS_ZONE_", n.Simulationszone.Value.ToString()) : ""
+            };
+        }
+
+        // =================================================================
+        //  Probelauf der Jahressimulation (Welle P4b)
+        // =================================================================
+
+        /// <summary>Der Probelauf außerhalb des Oberflächenfadens — die Jahressimulation dauert Sekunden; der Faden erbt die Kultur.</summary>
+        internal Task<PufferProbelaufDaten> ProbelaufImHintergrund(PufferAuslegungEingabeDaten d) => SpeicherEngine.Kulturweitergabe.Starten(() => Probelauf(d));
+
+        /// <summary>
+        /// Rechnet die Auslegung des Arbeitsstands und fährt mit ihrer Empfehlung einen Probelauf der
+        /// Jahressimulation (<see cref="PufferProbelaufCtrl.Probelauf"/>). Nichts wird gespeichert, nichts
+        /// übernommen; was nicht geht, kommt benannt zurück (Lesemodus, Konfiguration, Klimaregion, neuer Puffer).
+        /// </summary>
+        internal PufferProbelaufDaten Probelauf(PufferAuslegungEingabeDaten d)
+        {
+            if (_vorbelegung == null) return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_FEHLER_START, _fehler));
+            if (!_reihen.Vorhanden)
+                return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_REIHEN_FEHLER, _reihen.Fehlertext ?? ""));
+            PufferAuslegungEingang e;
+            PufferAuslegungErgebnis r;
+            try
+            {
+                e = EingangAus(d);
+                r = PufferAuslegungCtrl.Rechnen(e);
+            }
+            catch (ArgumentException ex)
+            {
+                return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, ex.Message));
+            }
+            if (!(r.EmpfehlungL > 0)) return PufferProbelaufDaten.MitFehler(MyResource.Resource.PAUS_GRUND_KEINE_EMPFEHLUNG);
+
+            PufferProbelaufErgebnis p;
+            try
+            {
+                p = PufferProbelaufCtrl.Probelauf(_auftrag.IdProjekt, _idPuffer, r.EmpfehlungL, _reihen.Heizung,
+                                                  PufferProbelaufCtrl.Rang1Typ(e.Vorlage));
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                // Benannt, nie still: Der Lauf ist eine Fremdrechnung, jeder Abbruch erreicht die Ansicht.
+                return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_PROBELAUF_FEHLER, ex.Message));
+            }
+            PufferBetriebsbild bild = r.Zone(PufferZone.Heizung)?.Betriebsbild ?? r.Zone(PufferZone.Prozess)?.Betriebsbild;
+            return Abbilden(p, bild?.StartsJeTag);
+        }
+
+        /// <summary>Die Starts je Tag der Auslegung (D2) aus dem angezeigten Ergebnis; <c>null</c> = keine.</summary>
+        private static double? AuslegungStartsJeTag(PufferAuslegungErgebnisDaten r)
+            => (r?.Zonen.FirstOrDefault(z => z.Zone == nameof(PufferZone.Heizung))?.Betriebsbild
+                ?? r?.Zonen.FirstOrDefault(z => z.Zone == nameof(PufferZone.Prozess))?.Betriebsbild)?.StartsJeTag;
+
+        /// <summary>Der Probelauf des Kerns als Anzeige, gehalten gegen die Starts je Tag der Auslegung.</summary>
+        internal static PufferProbelaufDaten Abbilden(PufferProbelaufErgebnis p, double? auslegungJeTag)
+        {
+            if (p == null) return null;
+            if (!p.Erfolgreich)
+                return PufferProbelaufDaten.MitFehler(Format(MyResource.Resource.PAUS_PROBELAUF_FEHLER, p.Fehlertext));
+            var d = new PufferProbelaufDaten
+            {
+                Erfolg = true,
+                Zeitpunkt = p.Zeitpunkt,
+                DauerSekunden = p.Dauer.TotalSeconds,
+                VolumenL = p.VolumenL,
+                Starts = p.Starts.Select(s => new PufferProbelaufStartsDaten(Erzeugername(s.Typ), s.StartsJahr,
+                                                                            s.StartsHeizperiode, s.StartsJeTag, s.Rang1,
+                                                                            s.AusReihe)).ToList(),
+                Deckung = p.Deckung,
+                Monate = p.Monate.Select(m => new PufferFuellstandMonatDaten(m.Monat, m.Min, m.Mittel, m.Max)).ToList(),
+                AuslegungStartsJeTag = auslegungJeTag
+            };
+            if (p.Fuellstand != null && p.KaeltesteWocheAb >= 0)
+            {
+                IEnumerable<double> woche = p.Fuellstand.Skip(p.KaeltesteWocheAb).Take(168);
+                d.KaeltesteWocheTag = p.KaeltesteWocheAb / 24 + 1;
+                d.WocheMin = woche.Min();
+                d.WocheMittel = woche.Average();
+                d.WocheMax = woche.Max();
+            }
+            double? lauf = p.Rang1?.StartsJeTag;
+            d.Abweichung = PufferProbelaufCtrl.Abweichung(auslegungJeTag, lauf);
+            if (d.Abweichung)
+                d.AbweichungText = Textbaustein.Aufloesen(PufferProbelaufCtrl.AbweichungText(auslegungJeTag.Value, lauf.Value));
+            return d;
+        }
+
+        private static string Erzeugername(int typ)
+        {
+            switch (typ)
+            {
+                case ProjektPuffer.TYP_WP: return MyResource.Resource.PAUS_HERK_TYP_WP;
+                case ProjektPuffer.TYP_BHKW: return MyResource.Resource.PAUS_HERK_TYP_BHKW;
+                case ProjektPuffer.TYP_KESSEL: return MyResource.Resource.PAUS_HERK_TYP_KESSEL;
+                default: return typ.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        /// <summary>Die Anzeigestufe des Arbeitsstands als Wert der Spalte; <c>null</c> = keine Angabe.</summary>
+        private static string Stufe(PufferAuslegungEingabeDaten d) =>
+            string.IsNullOrEmpty(d?.Anzeigestufe) ? null : d.Anzeigestufe.ToUpperInvariant();
 
         /// <summary>Speichert Eingaben und Ergebnis in <c>Tab_PufferAuslegung</c>; <c>null</c> = gespeichert.</summary>
         internal string Speichern(PufferAuslegungEingabeDaten d)
@@ -478,7 +629,7 @@ namespace WindowsFormsApplication1
             {
                 PufferAuslegungEingang e = EingangAus(d);
                 PufferAuslegungErgebnis r = _reihen.Vorhanden ? PufferAuslegungCtrl.Rechnen(e) : null;
-                int id = PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, _idPuffer, e, r);
+                int id = PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, _idPuffer, e, r, Stufe(d));
                 return id > 0 ? null : MyResource.Resource.PAUS_GRUND_SPEICHERN;
             }
             catch (ArgumentException ex)
@@ -515,12 +666,16 @@ namespace WindowsFormsApplication1
             bool neu = u == null || u.Neu || !_idPuffer.HasValue;
             int? ziel = neu ? (int?)null : _idPuffer;
             string name = neu ? (u?.Bezeichner ?? "").Trim() : "";
-            PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, ziel, e, r);
-            int id = PufferAuslegungCtrl.Uebernehmen(_auftrag.IdProjekt, ziel, r, name);
+            PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, ziel, e, r, Stufe(d));
+            int id = PufferAuslegungCtrl.Uebernehmen(_auftrag.IdProjekt, ziel, r, name, u?.Katalogsatz ?? true);
             if (id <= 0)
                 return new PufferUebernahmeErgebnis(false, MyResource.Resource.PAUS_GRUND_SCHREIBFEHLER, 0);
 
             _idPuffer = id;
+            // V14: das Sperrprofil der Auslegung an die Wärmepumpe - nur auf Zuruf.
+            if (u?.SperrprofilSchreiben == true &&
+                PufferAuslegungCtrl.SperrprofilSchreiben(_auftrag.IdProjekt, e.Sperrfenster) < 0)
+                return new PufferUebernahmeErgebnis(false, MyResource.Resource.PAUS_GRUND_SCHREIBFEHLER, id);
             _auftrag.Nachzug?.Invoke();
             string anzeige = Puffername(id);
             return new PufferUebernahmeErgebnis(true,
@@ -591,7 +746,7 @@ namespace WindowsFormsApplication1
                 },
                 Warnungen = r.Warnungen.Select(w => new PufferWarnungDaten(
                     w.Code, w.Stufe == PufferStufe.Warnung,
-                    Ressource(w.Ressourcenschluessel, w.Text), w.Text ?? "", Textbaustein.Aufloesen(w.HerkunftBaustein),
+                    Ressource(w.Ressourcenschluessel, w.Text), Textbaustein.Aufloesen(w.KlartextBaustein), Textbaustein.Aufloesen(w.HerkunftBaustein),
                     w.Zone.HasValue ? PufferAuslegungTexte.Nach("PAUS_ZONE_", w.Zone.Value.ToString()) : "")).ToList()
             };
         }

@@ -220,7 +220,8 @@ namespace EPOS.Kern.Tests
         // Welle #485 (Schritt GebaeudeKatalogReparatur.SCHRITT): acht Testreste geloescht -
         // 269 Saetze, und die Inhaltsgruppe der inhaltsgleichen Testreste "Z2-EFH-A-S*" faellt.
         // E51 (Schemaschritt GebaeudeSaatSchema.SCHRITT): sechs Katalogsätze der Klassen M und A dazu.
-        [InlineData("GEBAEUDE", 275, 0, 9)]
+        // KP3, RP1: der Referenzkatalogbau des Referenzprojekts 1051 (Kopie von Verw_I_40) dazu.
+        [InlineData("GEBAEUDE", 276, 0, 9)]
         [InlineData("KLIMAREGION", 32, 0, 1)]
         [InlineData("BRAUCHWASSER", 16, 0, 0)]
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
@@ -229,9 +230,9 @@ namespace EPOS.Kern.Tests
         // aus VDI 6002 abgeleitete (ZU19; Wohnen gross, Ein- und Zweifamilienhaus,
         // Studentenwohnheim, Seniorenheim, Krankenhaus) und "Hotel (aus Messung, je Zimmer)" (ZU36), sechs
         // Tagesgangsaetze (der fiktive, je einer der vier eigenen abgeleiteten Formen und der des
-        // Hotels), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), alle Status EIGEN.
-        [InlineData("TWW_NUTZUNGSART", 9, 0, 0)]
-        [InlineData("TWW_TAGESGANGSATZ", 6, 0, 0)]
+        // Hotels), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), dazu Buero, Schule, Gewerbe (V31) mit je eigenem Satz, alle Status EIGEN.
+        [InlineData("TWW_NUTZUNGSART", 12, 0, 0)]
+        [InlineData("TWW_TAGESGANGSATZ", 9, 0, 0)]
         [InlineData("TWW_BEDARFSTAG", 12, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
         [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
@@ -278,7 +279,7 @@ namespace EPOS.Kern.Tests
         [InlineData("HEIZKESSEL", 63)]
         [InlineData("BHKW", 79)]
         [InlineData("PV", 6)]
-        [InlineData("GEBAEUDE", 275)]
+        [InlineData("GEBAEUDE", 276)]   // 275 + der Referenzkatalogbau von 1051 (KP3, RP1)
         public void VergebeneNamenZaehltJedenSatz(string schluessel, int anzahl)
         {
             if (!_db.Vorhanden) return;

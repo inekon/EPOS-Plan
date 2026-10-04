@@ -212,6 +212,21 @@ namespace WindowsFormsApplication1
         /// <summary>Rücklauftemperatur des Puffers ϑ_RL [°C].</summary>
         public double RuecklaufC { get; init; }
 
+        /// <summary>
+        /// Geforderter Vorlauf der Prozesswärme ϑ_VL,P [°C] — der höchste über die Prozesse des Projekts mit
+        /// Temperaturpaar; <c>null</c> = keiner gepflegt, die Prozesszone rechnet mit dem Paar des Puffers.
+        /// </summary>
+        public double? ProzessVorlaufC { get; init; }
+
+        /// <summary>Rücklauf der Prozesswärme ϑ_RL,P [°C] — der tiefste; <c>null</c> = keiner gepflegt.</summary>
+        public double? ProzessRuecklaufC { get; init; }
+
+        /// <summary>
+        /// Höchster gepflegter Vorlauf der Wärmeerzeuger an der Kaskade [°C]; <c>null</c> = keiner gepflegt,
+        /// dann prüft <see cref="PufferWarncode.PROZESS_TEMPERATUR"/> nur gegen die Grenze 95 °C.
+        /// </summary>
+        public double? ErzeugerVorlaufMaxC { get; init; }
+
         /// <summary>Einschaltschwelle s_ein (Anteil 0 … 1); <c>null</c> = Vorgabe <c>Puffer.Schwelle_Ein</c>.</summary>
         public double? SchwelleEin { get; init; }
 
@@ -263,6 +278,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>Verschiebedauer des BHKW [h]; <c>null</c> = <c>BHKW.Verschiebedauer_h</c>.</summary>
         public double? BhkwVerschiebedauerH { get; init; }
+
+        // ---- Aufheizkriterium K12 (V30, KP3) ----
+
+        /// <summary>K12 ein/aus; <c>null</c> = Vorlagenschalter des Nutzungsprofils (<c>Aufheiz.Nutzungsprofil.*</c>).</summary>
+        public bool? AufheizKriterium { get; init; }
+
+        /// <summary>Aufheizleistung Φ_n [kW] aus der KP3-Bemessung, Summe über die Projektgebäude; <c>null</c> = keine Bemessung.</summary>
+        public double? AufheizleistungKw { get; init; }
+
+        /// <summary>Aufheizdauer n [h] aus der KP3-Rampe; <c>null</c> = Vorgabe <c>Aufheiz.Dauer_h</c>.</summary>
+        public double? AufheizdauerH { get; init; }
 
         // ---- Brauchwasserzone ----
 

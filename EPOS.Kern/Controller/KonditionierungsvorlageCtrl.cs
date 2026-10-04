@@ -448,8 +448,21 @@ namespace WindowsFormsApplication1
             Konditionierungsstand inhalt = ctrl.StandLesen(KonditionierungCtrl.Eigner.Vorlage(idVorlage), out string m1);
             if (m1 != null) return KonditionierungCtrl.Ergebnis.Fehler(m1);
             var quelle = new Konditionierungsvorlage(idVorlage, vorlage.Bezeichner, vorlage.Groesse, inhalt);
-            return ctrl.Schrittweg(ziel, mitBestand: true, streng: true,
+            KonditionierungCtrl.Ergebnis e = ctrl.Schrittweg(ziel, mitBestand: true, streng: true,
                                    vor => Konditionierungsarbeit.VorlageEintragen(vor, zielmatrix, quelle));
+            if (!e.Ok) return e;
+
+            // Die Kopie trägt die Nutzung der Vorlage selbst (Schemaschritt KonditionierungNutzungSchema):
+            // Die Vorbelegung der Pufferauslegung liest sie dort, nie am Vorlagenkatalog.
+            try
+            {
+                KonditionierungCtrl.NutzungSetzen(ziel, vorlage.Groesse, vorlage.Nutzung);
+            }
+            catch (Exception ex)
+            {
+                return KonditionierungCtrl.Ergebnis.Fehler(ex.Message);
+            }
+            return e;
         }
 
         // =================================================================

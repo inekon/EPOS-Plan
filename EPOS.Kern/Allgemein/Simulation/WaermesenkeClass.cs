@@ -17,6 +17,57 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class WaermesenkeClass
     {
+        // =================================================================
+        //  Probelauf der Pufferauslegung (Welle P4b): Volumen im Speicher ersetzen
+        // =================================================================
+
+        /// <summary>Die im Probelauf ersetzten Volumina [l] je Puffer-ID; <c>null</c> = keine Übersteuerung.</summary>
+        private static readonly System.Threading.AsyncLocal<IReadOnlyDictionary<int, int>> _probelaufVolumen =
+            new System.Threading.AsyncLocal<IReadOnlyDictionary<int, int>>();
+
+        /// <summary>
+        /// Öffnet einen Bereich, in dem jede Lesung eines Projektpuffers (<see cref="PufferLesen"/>, die
+        /// Desinfektionsmenge) für <paramref name="idPuffer"/> das Volumen <paramref name="volumenL"/> statt
+        /// des gespeicherten liefert — die Naht des Probelaufs der Pufferauslegung. Nichts wird geschrieben;
+        /// außerhalb des Bereichs (und in jedem anderen Ausführungsfluss) liest die Simulation unverändert.
+        /// </summary>
+        public static IDisposable ProbelaufVolumen(int idPuffer, int volumenL)
+        {
+            IReadOnlyDictionary<int, int> vorher = _probelaufVolumen.Value;
+            var neu = new Dictionary<int, int>();
+            if (vorher != null) foreach (KeyValuePair<int, int> e in vorher) neu[e.Key] = e.Value;
+            neu[idPuffer] = volumenL;
+            _probelaufVolumen.Value = neu;
+            return new ProbelaufBereich(vorher);
+        }
+
+        /// <summary>Das wirksame Volumen [l]: die Übersteuerung des Probelaufs, sonst <paramref name="gespeichert"/>.</summary>
+        public static int ProbelaufVolumenOder(int idPuffer, int gespeichert)
+        {
+            IReadOnlyDictionary<int, int> m = _probelaufVolumen.Value;
+            return m != null && m.TryGetValue(idPuffer, out int v) ? v : gespeichert;
+        }
+
+        /// <summary>Wie <see cref="ProbelaufVolumenOder(int,int)"/> für ein Volumen als Kommazahl.</summary>
+        public static double ProbelaufVolumenOder(int idPuffer, double gespeichert)
+        {
+            IReadOnlyDictionary<int, int> m = _probelaufVolumen.Value;
+            return m != null && m.TryGetValue(idPuffer, out int v) ? v : gespeichert;
+        }
+
+        private sealed class ProbelaufBereich : IDisposable
+        {
+            private readonly IReadOnlyDictionary<int, int> _vorher;
+            private bool _offen = true;
+            public ProbelaufBereich(IReadOnlyDictionary<int, int> vorher) { _vorher = vorher; }
+            public void Dispose()
+            {
+                if (!_offen) return;
+                _offen = false;
+                _probelaufVolumen.Value = _vorher;
+            }
+        }
+
         // --- Hauptsenke: Werte der Spalte WS_Ziel (Konzept 5.3) -----------------------
 
         // Persistenzwerte; seit Paket 9 / L0 zentral in DbWerte geführt, hier nur Aliasse.
@@ -713,7 +764,7 @@ namespace WindowsFormsApplication1
             p.Bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
             p.Verwendung = StilleDb.Text(StilleDb.Feld(r, "Verwendung"));
             p.VerwendungFehlt = p.Verwendung.Length == 0;
-            p.Gesamtvolumen = StilleDb.Zahl(StilleDb.Feld(r, "Gesamtvolumen"));
+            p.Gesamtvolumen = ProbelaufVolumenOder(p.ID, StilleDb.Zahl(StilleDb.Feld(r, "Gesamtvolumen")));
             p.Bereitschaftsverluste = StilleDb.Kommazahl(StilleDb.Feld(r, "Bereitschaftsverluste"));
             p.Vorlauf = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf"));
             p.Ruecklauf = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf"));

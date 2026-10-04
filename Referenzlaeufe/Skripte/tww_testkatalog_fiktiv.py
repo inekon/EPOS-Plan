@@ -316,10 +316,49 @@ def hotel_satz_und_art():
     return satz, art
 
 
+# --- Die Nutzungsarten Buero, Schule und Gewerbe (V31, Recherche Pufferoptimierung 4.2) -----------
+# VDI 6002 und der freie Paketteil fuehren kein Nichtwohngebaeude ausser Hotel und Pflege. Die drei
+# Nutzungsarten sind RUNDE SETZUNGEN von INEKON nach der Profilfamilie der DIN EN 12831-3 (Buero:
+# Vormittag/Mittag, Wochenende leer; Schule: Pausenspitzen, Ferienfaktor; Gewerbe: Schichtwechsel),
+# Herkunftsart EIGENKONSTRUKTION, keine Messung und kein Produktwert. Werte allein aus der JSON-Datei.
+NICHTWOHNEN_DATEI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tww_nichtwohnen_setzung.json")
+HERKUNFT_NICHTWOHNEN = "EIGENKONSTRUKTION"
+NICHTWOHNEN_TAGTYPEN = ("werktag", "samstag", "sonntag", "ruhetag")
+
+
+def nichtwohnen_saetze_und_arten():
+    """Tagesgangsaetze und Nutzungsarten der Setzungen Buero, Schule, Gewerbe aus der JSON-Datei."""
+    with open(NICHTWOHNEN_DATEI, encoding="utf-8") as f:
+        d = json.load(f)
+    kopf = d["kopf"]
+    assert kopf["herkunftsart"] == HERKUNFT_NICHTWOHNEN, "tww_nichtwohnen_setzung.json: Herkunftsart"
+    assert ";" not in kopf["quelle"] + kopf["ausgabe"], "tww_nichtwohnen_setzung.json: Semikolon im Text"
+    saetze, arten = [], []
+    for a in d["nutzungsarten"]:
+        b = a["bedarf"]
+        assert 0 < b["niedrig"] <= b["mittel"] <= b["hoch"], "tww_nichtwohnen_setzung.json: Bedarfsstufen"
+        assert a["bezugsart"] in BEZUGSARTEN, "tww_nichtwohnen_setzung.json: Bezugsart"
+        assert a["kalenderart"] in (2, 3, 4), "tww_nichtwohnen_setzung.json: Kalenderart"
+        saetze.append((a["tagesgangsatz"],
+                       {t + 1: normiert(a["tagesprofile"][NICHTWOHNEN_TAGTYPEN[t]], 1.0) for t in range(4)},
+                       kopf["quelle"], kopf["ausgabe"], HERKUNFT_NICHTWOHNEN, VERSION_PAKETTEIL))
+        arten.append(dict(
+            name=a["nutzungsart"], bezug=a["bezugsart"], bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
+            grenze=1, kalender=a["kalenderart"], ferien=a["ferienfaktor"],
+            monate=[1.0] * 12,                                # flacher Jahresgang (Setzung)
+            woche=normiert([a["wochenanteile"][t] for t in WOCHENTAGE], 1.0),
+            satz=a["tagesgangsatz"], bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
+            quelle=kopf["quelle"], ausgabe=kopf["ausgabe"], herkunft=HERKUNFT_NICHTWOHNEN, version=VERSION_PAKETTEIL))
+    return saetze, arten
+
+
 ABGELEITETE_SAETZE, ABGELEITETE_NUTZUNGSARTEN = abgeleitete_saetze_und_arten()
 _HOTEL_SATZ, _HOTEL_ART = hotel_satz_und_art()
 ABGELEITETE_SAETZE.append(_HOTEL_SATZ)
 ABGELEITETE_NUTZUNGSARTEN.append(_HOTEL_ART)
+_NW_SAETZE, _NW_ARTEN = nichtwohnen_saetze_und_arten()
+ABGELEITETE_SAETZE.extend(_NW_SAETZE)
+ABGELEITETE_NUTZUNGSARTEN.extend(_NW_ARTEN)
 
 # Alle Tagesgangsaetze: (Bezeichner, {Tagtyp: 24 Anteile}, Quelle, Ausgabe, Herkunftsart, Version).
 SAETZE = [(SATZ, TAGESGAENGE, QUELLE, None, HERKUNFT, VERSION)] + ABGELEITETE_SAETZE

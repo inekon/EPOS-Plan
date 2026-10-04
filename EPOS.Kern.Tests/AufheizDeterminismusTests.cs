@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text;
+using EPOS.Referenzlaeufe.Skripte;
 using WindowsFormsApplication1;
 using Xunit;
 using Xunit.Abstractions;
@@ -125,15 +126,24 @@ namespace EPOS.Kern.Tests
             return new[] { Plattformrundung.UlpStoerung ? "gestört" : "ungestört", Plaene(l), Reihenhash(l), Zeile(l, false) };
         }
 
+        /// <summary>
+        /// Ein Lauf mit Schalter an: mit der Aufheizvorgabe des Projekts, wenn sie an ist (das Referenzprojekt 1051
+        /// mit der Bemessung (b), RP1b), sonst mit den Vorgaben.
+        /// </summary>
         internal static AufheizLauf.Gebaeudelauf Lauf(int projekt, int gebaeude, bool zonen)
-            => AufheizLauf.Projekt(projekt, new Aufheizvorgabe(true, null, null, null, null), double.NaN,
-                                   g => g.ID_Gebaeude == gebaeude, zonen ? AufheizLauf.Mehrzonenfassung : null).Single();
+        {
+            Aufheizvorgabe v = KonfigurationCtrl.AufheizvorgabeLesen(projekt);
+            if (!v.An) v = new Aufheizvorgabe(true, null, null, null, null);
+            return AufheizLauf.Projekt(projekt, v, double.NaN,
+                                       g => g.ID_Gebaeude == gebaeude, zonen ? AufheizLauf.Mehrzonenfassung : null).Single();
+        }
     }
 
     /// <summary>
     /// <b>N-AH7 Determinismus, Lauf</b> (Entwurf KP3 Abschnitt 7, Welle R4; Grundsatz 6, B13) an Gebäuden der
     /// Testdatenbank mit Schalter an — Projekt 1018 (Gebäude 10632, Rampe an rund 20 Tagen) einzonig und in der
-    /// Mehrzonenfassung, Projekt 1008 (Gebäude 10576): zwei Läufe bitgleich; de-DE gegen en-US
+    /// Mehrzonenfassung, Projekt 1008 (Gebäude 10576) und das Referenzprojekt 1051 (Gebäude 10657, mit seiner
+    /// Aufheizvorgabe: Bemessung (b) 2 K, Kalender aller fünf Größen; Plattformprobe RP1b): zwei Läufe bitgleich; de-DE gegen en-US
     /// (<see cref="Kulturvorrichtung"/>) bitgleich; die ulp-Störung der Naht <see cref="Plattformrundung"/>
     /// kippt kein n. Ergebniszeile und Export (Welle D2): zwei Läufe und beide Kulturen bitgleich, im gestörten Lauf
     /// dieselben Zustände, Zähler und Schlüssel.
@@ -162,6 +172,7 @@ namespace EPOS.Kern.Tests
             new object[] { 1018, 10632, false },
             new object[] { 1018, 10632, true },
             new object[] { 1008, 10576, false },
+            new object[] { Konditionierungsprojekt1051.NEU, KonditionierungReferenzprojektWacheTests.GEBAEUDE, false },
         };
 
         private static void Gleich(AufheizLauf.Gebaeudelauf a, AufheizLauf.Gebaeudelauf b, string wo)
@@ -304,11 +315,13 @@ namespace EPOS.Kern.Tests
             Assert.False(Plattformrundung.UlpStoerung);
             Assert.False(AppContext.TryGetSwitch(Plattformrundung.SCHALTER_ULP, out bool an) && an);
 
-            int spruenge = (normal.Mehrzonen != null ? normal.Mehrzonen.Eingaenge.Select(z => z.Aufheizplan) : new[] { normal.Plan })
-                .Sum(p => p.Spruenge.Count);
+            List<Aufheizsprung> alle = (normal.Mehrzonen != null ? normal.Mehrzonen.Eingaenge.Select(z => z.Aufheizplan) : new[] { normal.Plan })
+                .SelectMany(p => p.Spruenge).ToList();
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                "N-AH7 ulp: Projekt {0}, Gebäude {1}{2}: {3} Sprünge mit gleichem n, Heizreihe gestört (Hash verschieden)",
-                projekt, gebaeude, zonen ? " (Zonen)" : "", spruenge));
+                "N-AH7 ulp: Projekt {0}, Gebäude {1}{2}: {3} Sprünge mit gleichem n (n: {4}), Heizreihe gestört (Hash verschieden); {5}",
+                projekt, gebaeude, zonen ? " (Zonen)" : "", alle.Count,
+                string.Join(", ", alle.GroupBy(sp => sp.N).OrderBy(x => x.Key).Select(x => x.Key + "×" + x.Count())),
+                Aufheizabdruck.Plaene(normal).Split('\n').Last()));
         }
     }
 }

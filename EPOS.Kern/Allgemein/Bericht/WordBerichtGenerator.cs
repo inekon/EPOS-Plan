@@ -306,6 +306,12 @@ namespace WindowsFormsApplication1
         public IReadOnlyDictionary<string, string> Kapitelstellen { get; internal set; }
 
         /// <summary>
+        /// Die Katalogschlüssel aller Felder, die die Vorlage trägt (Welle P4c); <c>null</c> = ohne Vorlage. Ein
+        /// Baustein, dessen Tafel die Vorlage als eigenen Platzhalter führt, schreibt am Standardort nichts.
+        /// </summary>
+        public IReadOnlyCollection<string> Vorlagenfelder { get; internal set; }
+
+        /// <summary>
         /// Wohin, was der Baustein VOR seine entfallene Überschrift schreibt, kommt: vor den Kapitelkopf
         /// der Vorlage (<c>|ohne titel</c> unter einem Kapitelkopf). So steht der Seitenumbruch des
         /// Anhangs E vor dem Kapitelkopf, und die Überschrift hängt nie allein am Seitenende.

@@ -456,6 +456,8 @@
         internal static string WpaSperrzeitVonErl => MyResource.Resource.KI_DLG_WPA_SPERRZEIT_VON_ERL;
         internal static string WpaSperrzeitBisName => MyResource.Resource.WPA_LBL_BIS;
         internal static string WpaSperrzeitBisErl => MyResource.Resource.KI_DLG_WPA_SPERRZEIT_BIS_ERL;
+        internal static string WpaSperrfensterName => MyResource.Resource.WPA_GRP_SPERRZEITEN;
+        internal static string WpaSperrfensterErl => MyResource.Resource.KI_DLG_WPA_SPERRFENSTER_ERL;
         internal static string WpaBivalentName => MyResource.Resource.WPA_LBL_BIVALENT;
         internal static string WpaBivalentErl => MyResource.Resource.KI_DLG_WPA_BIVALENT_ERL;
         internal static string WpaBetriebsartName => MyResource.Resource.WPA_LBL_BETRIEBSART;

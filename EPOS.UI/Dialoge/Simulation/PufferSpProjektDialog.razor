@@ -160,6 +160,11 @@
 
                     <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
                               WertChanged="w => Merken(() => _bezeichner = w)" />
+                    @if (_katalogherkunft.Length > 0)
+                    {
+                        @* Der Katalogsatz, aus dem die Pufferauslegung den Puffer uebernommen hat (ID_Stamm). *@
+                        <Herleitungszeile Text="@string.Format(System.Globalization.CultureInfo.CurrentCulture, HerkunftKatalog, _katalogherkunft)" />
+                    }
 
                     @* Die Mehrfachauswahl spannt ueber alle Spalten (Stilblatt,
                        Nachzug iU8-O-1) - drei Haekchen untereinander in einer
@@ -486,6 +491,7 @@
     [Parameter] public string LabelAusKatalog { get; set; } = "Aus Katalog:";
     [Parameter] public string KatalogFreieEingabe { get; set; } = "(freie Eingabe)";
     [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
+    [Parameter] public string HerkunftKatalog { get; set; } = "aus Katalog: {0}";
     [Parameter] public string LabelVerwendung { get; set; } = "Nutzung:";
     [Parameter] public string LabelGesamtvolumen { get; set; } = "Gesamtvolumen:";
     [Parameter] public string LabelBereitschaftsverluste { get; set; } = "Bereitschaftsverluste:";
@@ -647,6 +653,8 @@
 
     private int? _katalogzeile = -1;
     private string _bezeichner = "";
+    /// <summary>Der Bezeichner des Katalogsatzes, aus dem der Puffer übernommen wurde; leer = keiner.</summary>
+    private string _katalogherkunft = "";
     private IReadOnlyList<int> _klassenSet = Array.Empty<int>();
     private int? _volumen;
     private double? _verluste;
@@ -1097,6 +1105,7 @@
 
         _katalogzeile = -1;                        // ein vorhandener Speicher wird nicht neu uebernommen
         _bezeichner = p.Bezeichner;
+        _katalogherkunft = p.Katalogherkunft ?? "";
         _volumen = p.Gesamtvolumen;
         _verluste = p.Bereitschaftsverluste;
         _klassenSet = Set(p.Heizung, p.Brauchwasser, p.Prozess);
@@ -1125,6 +1134,7 @@
 
         _katalogzeile = e.Katalogzeile;
         _bezeichner = e.Bezeichner;
+        _katalogherkunft = z.Id > 0 ? Dienste?.PufferLesen(z.Id)?.Katalogherkunft ?? "" : "";
         _volumen = e.Volumen;
         _verluste = e.Verluste;
         _klassenSet = Set(e.Heizung, e.Brauchwasser, e.Prozess);
@@ -1154,6 +1164,7 @@
         VermerkZuruecknehmen();
         _katalogzeile = -1;
         _bezeichner = "";
+        _katalogherkunft = "";
         _volumen = null;
         _verluste = 0;
 
@@ -1232,6 +1243,7 @@
         // cbKatalog_SelectedIndexChanged:1566-1591 - drei Felder aus der Katalogzeile.
         PspKatalogzeile k = _katalog[zeile.Value];
         _bezeichner = k.Bezeichner;
+        _katalogherkunft = "";
         _volumen = k.Gesamtvolumen;
         _verluste = k.Bereitschaftsverluste;
 

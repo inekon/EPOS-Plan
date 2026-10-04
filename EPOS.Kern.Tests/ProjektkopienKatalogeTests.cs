@@ -49,7 +49,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(AufheizManuellSchema.SCHRITT + 1, ProjektkopienKatalogeSchema.SCHRITT);
             Assert.Equal(175, ProjektkopienKatalogeSchema.SCHRITT);
-            Assert.Equal(ProjektkopienKatalogeSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= ProjektkopienKatalogeSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= ProjektkopienKatalogeSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl,
                          Paketanhebung.Stufen.Single(x => x.Nr == ProjektkopienKatalogeSchema.SCHRITT).Wirkung);
@@ -502,6 +502,7 @@ namespace EPOS.Kern.Tests
         public void Konditionierungsvorlagen_werden_bei_der_Uebernahme_kopiert()
         {
             if (!_db.Vorhanden) return;
+            // Übernommen ist kopiert: Kein Projektgebäude liest eine Vorlage live, keine Projekttabelle führt eine Vorlagenspalte.
             foreach (string t in new[] { "Tab_Gebaeude", "Tab_Zone", "Tab_Projekt" })
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_table_info('" + t + "') WHERE name LIKE '%Vorlage%'"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IS NOT NULL AND ID_Vorlage IS NOT NULL"));

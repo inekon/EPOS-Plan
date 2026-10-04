@@ -902,7 +902,7 @@ mit dem U dieses Falls; R_si und R_se kommen aus Neigung und Randbedingung des B
 Bauteil neben einem Aufbau hat im Lauf Vorrang — er wird gemeldet und ist benannter Verlust.
 **Ersatzschichtung mit Bändern:** Die Ersatzschicht trägt U und die flächenbezogene Kapazität κ, mit der
 die Gruppe im Lauf rechnet (Außen- oder Innengruppe, aus `ErsatzparameterRC`); mit c = 1 000 J/(kgK) und
-R = 1/U − R_si − R_se gilt d ∈ [λ_min·R, λ_max·R] ∩ [κ/(ρ_max·c), κ/(ρ_min·c)] ∩ [0,001 m; 1,0 m],
+R = 1/U − R_si − R_se gilt d ∈ [λ_min·R, λ_max·R] ∩ [κ/(ρ_max·c), κ/(ρ_min·c)] ∩ [0,0005 m; 1,0 m],
 bevorzugt die Dicke zu ρ = 1 500 kg/m³, dann λ = d/R und ρ = κ/(d·c). Ein leerer Schnitt, R ≤ 0 oder
 κ = 0 ergibt einen masselosen Stoff mit Meldung. Der Vorbehalt „trifft U-Wert und Gesamtwärmekapazität,
 nicht die Lage der Masse" steht **wörtlich** in `Construction/Description`, im Namen des Stoffs und in der

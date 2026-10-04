@@ -75,6 +75,15 @@ namespace WindowsFormsApplication1
         public bool Gespeichert { get; init; }
         /// <summary>Die ID der gespeicherten Zeile; <c>null</c> = keine.</summary>
         public int? IdZeile { get; init; }
+        /// <summary>
+        /// Die gespeicherten Kriterienschalter, die von der Vorlage ABWEICHEN (Kennung → an/aus); leer = die
+        /// Vorlage gilt. Sie stehen schon im Parametersatz des Eingangs.
+        /// </summary>
+        public IReadOnlyDictionary<string, bool> Kriterien { get; init; } = new Dictionary<string, bool>(StringComparer.Ordinal);
+        /// <summary>Der Parametersatz VOR den gespeicherten Kriterienschaltern — Grundlage jeder neuen Überschreibung.</summary>
+        public PufferAuslegungParameter KriterienBasis { get; init; }
+        /// <summary>Die gespeicherte Anzeigestufe (<c>SCHNELL</c>, <c>STANDARD</c>, <c>EXPERTE</c>); <c>null</c> = Vorgabe.</summary>
+        public string Anzeigestufe { get; init; }
 
         /// <summary>Die Quelle des Felds (letzter Eintrag gewinnt); <c>null</c>, wenn das Feld keinen trägt.</summary>
         public string Quelle(string feld)
@@ -128,9 +137,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die Empfehlung der Nachrechnung [l]; <c>null</c> = keine Nachrechnung.</summary>
         public double? NachgerechnetL { get; init; }
         public double? StartsJeTag { get; init; }
+        /// <summary>Starts je Tag des Rang-1-Erzeugers im letzten Probelauf dieser Sitzung; <c>null</c> = kein Lauf.</summary>
+        public double? ProbelaufStartsJeTag { get; init; }
+        /// <summary>Zeitpunkt des letzten Probelaufs; <c>null</c> = kein Lauf.</summary>
+        public DateTime? ProbelaufAm { get; init; }
         public double? VerlustKwhJeTag { get; init; }
         public double? VerlustWJeK { get; init; }
         public IReadOnlyList<PufferWarnung> Warnungen { get; init; } = Array.Empty<PufferWarnung>();
+        /// <summary>Die Nutzen-Aufwand-Zeile der Nachrechnung (Welle P4d); leer = nicht gerechnet.</summary>
+        public IReadOnlyList<PufferNachbarstufe> Nachbarstufen { get; init; } = Array.Empty<PufferNachbarstufe>();
         /// <summary>Warum die Nachrechnung nicht möglich war; <c>null</c> = sie lief (oder war nicht verlangt).</summary>
         public string Fehlertext { get; init; }
 
@@ -194,14 +209,36 @@ namespace WindowsFormsApplication1
         internal const string SQL_GEBAEUDE_ANZAHL = "SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?";
         internal const string SQL_PROZESS =
             "SELECT COUNT(*) FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?";
+        /// <summary>Höchster Vorlauf und tiefster Rücklauf der zugeordneten Prozesse mit Temperaturpaar (V29).</summary>
+        internal const string SQL_PROZESS_TEMPERATUR =
+            "SELECT MAX(p.Vorlauf) AS VL, MIN(p.Ruecklauf) AS RL FROM Tab_Prozesswaerme p " +
+            "INNER JOIN Z_Projekt_Prozesswaerme z ON z.ID_Prozesswaerme = p.ID " +
+            "WHERE z.ID_Projekt = ? AND p.ID_Projekt = ? AND p.Vorlauf IS NOT NULL AND p.Ruecklauf IS NOT NULL";
+        /// <summary>Höchster gepflegter Vorlauf der Wärmeerzeuger an der Kaskade (V29, Gegenstück zu <c>SQL_SYSTEM_VORLAUF</c>).</summary>
+        internal static readonly string SQL_ERZEUGER_VORLAUF_MAX =
+            "SELECT MAX(Vorlauf) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type IN (" +
+            ProjektPuffer.SYSTEMVORGABE_TYPEN + ") AND Vorlauf > 0";
         internal const string SQL_ZAPFNUTZUNGEN =
             "SELECT n.Bezeichner FROM " + TwwSchema.TAB_TWW_ZONE + " z JOIN " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
             " n ON n.ID = z.ID_Nutzungsart WHERE z.ID_Projekt = ? ORDER BY z.Reihenfolge, z.ID";
+        /// <summary>
+        /// Die Nutzung an den Kalendern der Projektgebäude und ihrer Zonen (am Zonenkalender ist
+        /// <c>ID_Gebaeude</c> das Gebäude der Zone) — die Kopie trägt sie selbst
+        /// (<see cref="KonditionierungNutzungSchema"/>).
+        /// </summary>
         internal const string SQL_KONDITIONIERUNG =
-            "SELECT k.Groesse, k.Bemerkung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
-            "ON g.ID = k.ID_Gebaeude WHERE g.ID_Projekt = ? AND k.Bemerkung IS NOT NULL ORDER BY g.ID, k.ID";
-        internal const string SQL_KONDITIONIERUNG_NUTZUNG =
-            "SELECT Nutzung FROM " + KonditionierungVorlagenSchema.TAB_VORLAGE + " WHERE Bezeichner = ? AND Groesse = ?";
+            "SELECT k.ID_Gebaeude, k.Nutzung FROM " + KonditionierungSchema.TAB_KALENDER + " k JOIN Tab_Gebaeude g " +
+            "ON g.ID = k.ID_Gebaeude WHERE g.ID_Projekt = ? AND k.Nutzung IS NOT NULL ORDER BY g.ID, k.ID";
+        /// <summary>
+        /// Die KP3-Aufheizbemessung des jüngsten Laufs mit Gebäudeergebnis (V30): Zahl der bemessenen Gebäude,
+        /// Summe der Aufheizleistung Φ_n und längste Aufheizzeit t_auf,max.
+        /// </summary>
+        internal const string SQL_AUFHEIZ =
+            "SELECT COUNT(g." + AufheizErgebnisSchema.SPALTE_LEISTUNG + ") AS Anzahl, SUM(g." + AufheizErgebnisSchema.SPALTE_LEISTUNG +
+            ") AS Leistung, MAX(g." + AufheizErgebnisSchema.SPALTE_ZEIT_MAX + ") AS Dauer FROM " + AufheizErgebnisSchema.TAB_GEBAEUDE +
+            " g WHERE g.ID_Ergebnis = (SELECT MAX(e.ID) FROM Tab_Ergebnis e WHERE e.ID_Projekt = ? AND EXISTS (SELECT 1 FROM " +
+            AufheizErgebnisSchema.TAB_GEBAEUDE + " x WHERE x.ID_Ergebnis = e.ID)) AND g." + AufheizErgebnisSchema.SPALTE_LEISTUNG + " > 0";
+
         internal const string SQL_KATALOG =
             "SELECT ID, Bezeichner, Speichertyp, Gesamtvolumen, Bereitschaftsverluste FROM Tab_Pufferspeicher_STAMM " +
             "WHERE Gesamtvolumen > 0 ORDER BY Gesamtvolumen, ID";
@@ -227,6 +264,9 @@ namespace WindowsFormsApplication1
             "Sperrprofil = ?, Sperrdauer_h = ?, Sperrbeginn_h = ?, Startziel_je_Tag = ?, Deckungsziel = ?, " +
             "DeltaT_B_K = ?, T_Puffer_Oben_C = ?, Zirkulation_Weg = ?, BHKW_Verschiebedauer_h = ?, Volumen_H_l = ?, " +
             "Volumen_B_l = ?, Volumen_P_l = ?, Volumen_Empfehlung_l = ?, Bemessend = ?, Berechnet_am = ? WHERE ID = ?";
+        internal const string SQL_ZEILE_ERGAENZUNG =
+            "UPDATE " + PufferAuslegungSchema.TAB + " SET Kriterien_Aktiv = ?, Sperrzeit_Expertenweg = ?, " +
+            "Auslegungsheizlast_kW = ?, Wohneinheiten = ?, Anzeigestufe = ? WHERE ID = ?";
         internal const string SQL_ZEILE_UMHAENGEN =
             "UPDATE " + PufferAuslegungSchema.TAB + " SET ID_Pufferspeicher = ? WHERE ID_Projekt = ? AND ID_Pufferspeicher IS NULL";
         internal const string SQL_PUFFER_STAMMWERTE =
@@ -319,6 +359,25 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // ---- Temperaturpaar der Prozesswärme (V29) ----
+            double? prozessVl = null, prozessRl = null, erzeugerVlMax = null;
+            if (kP && prozessVorhanden)
+            {
+                DataRow pt = ErsteZeile(SQL_PROZESS_TEMPERATUR, P("@projekt", idProjekt), P("@projekt2", idProjekt));
+                double? tv = ZahlOderNull(pt, "VL"), tr = ZahlOderNull(pt, "RL");
+                if (tv > 0 && tr >= 0 && tv > tr) { prozessVl = tv; prozessRl = tr; }
+                double ev = Zahl(DataRepository.ExecuteScalar(SQL_ERZEUGER_VORLAUF_MAX, P("@projekt", idProjekt)));
+                if (ev > 0) erzeugerVlMax = ev;
+                H(nameof(PufferAuslegungEingang.ProzessVorlaufC), prozessVl.HasValue ? PufferHerkunftsquelle.PROJEKT : PufferHerkunftsquelle.PUFFER,
+                  prozessVl.HasValue
+                      ? T("PAUS_HERK_PROZESS_TEMPERATUR", "Temperaturpaar der Prozesswärme")
+                      : T("PAUS_HERK_PROZESS_TEMPERATUR_KEINE", "kein Temperaturpaar der Prozesswärme gepflegt: Temperaturpaar des Puffers"));
+                H(nameof(PufferAuslegungEingang.ErzeugerVorlaufMaxC), erzeugerVlMax.HasValue ? PufferHerkunftsquelle.KASKADE : PufferHerkunftsquelle.VORGABE,
+                  erzeugerVlMax.HasValue
+                      ? T("PAUS_HERK_ERZEUGER_VORLAUF", "höchster Vorlauf der Erzeuger an der Kaskade")
+                      : T("PAUS_HERK_ERZEUGER_VORLAUF_KEINE", "kein Erzeugervorlauf gepflegt: Prüfung nur gegen 95 °C"));
+            }
+
             // ---- Schwellen (Datenbank in %, Eingang als Anteil) ----
             double? sEin = ZahlOderNull(pz, "Schwelle_Ein"), sAus = ZahlOderNull(pz, "Schwelle_Aus");
             double? schwelleEin = sEin > 0 ? sEin / 100.0 : null;
@@ -405,8 +464,15 @@ namespace WindowsFormsApplication1
 
             // ---- Nutzungsprofil ----
             PufferNutzungsprofilAbleitung np = global::WindowsFormsApplication1.Nutzungsprofil.Ableiten(
-                Zapfnutzungen(idProjekt), prozessVorhanden, Konditionierungsnutzungen(idProjekt));
+                Zapfnutzungen(idProjekt), prozessVorhanden, Konditionierungsnutzungen(idProjekt),
+                NutzungsprofilZuordnung.Lesen());
             H(nameof(PufferAuslegungEingang.Nutzungsprofil), np.Vorgabe ? PufferHerkunftsquelle.VORGABE : PufferHerkunftsquelle.PROJEKT, np.HerkunftBaustein);
+
+            // ---- Aufheizbemessung KP3 (Kriterium K12, V30) ----
+            var (aufheizKw, aufheizH, aufheizGebaeude) = Aufheizbemessung(idProjekt);
+            H(nameof(PufferAuslegungEingang.AufheizleistungKw), aufheizKw.HasValue ? PufferHerkunftsquelle.GEBAEUDE : PufferHerkunftsquelle.VORGABE,
+              aufheizKw.HasValue ? T("PAUS_HERK_AUFHEIZ_KP3", "Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit", aufheizGebaeude)
+                                 : T("PAUS_HERK_AUFHEIZ_KEINE", "keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht)"));
 
             if (reihen != null)
                 H("Reihen", PufferHerkunftsquelle.REIHE, reihen.Vorhanden
@@ -423,6 +489,9 @@ namespace WindowsFormsApplication1
                 Erzeuger = erz,
                 VorlaufC = vl,
                 RuecklaufC = rl,
+                ProzessVorlaufC = prozessVl,
+                ProzessRuecklaufC = prozessRl,
+                ErzeugerVorlaufMaxC = erzeugerVlMax,
                 SchwelleEin = schwelleEin,
                 SchwelleAus = schwelleAus,
                 ReiheHeizung = reihen?.Vorhanden == true ? reihen.Heizung : Array.Empty<double>(),
@@ -432,6 +501,8 @@ namespace WindowsFormsApplication1
                 HeizgrenzeC = heizgrenze,
                 Sperrfenster = sperre,
                 MindestlaufzeitMin = mindestlaufzeit,
+                AufheizleistungKw = aufheizKw,
+                AufheizdauerH = aufheizH,
                 Zapfprofil = zp,
                 ZirkulationProjektKw = zirkKw,
                 ZirkulationLaufzeitHd = zirkH,
@@ -447,6 +518,21 @@ namespace WindowsFormsApplication1
                 Herkunft = h.AsReadOnly(),
                 Nutzungsprofil = np
             };
+        }
+
+        /// <summary>
+        /// Φ_n [kW] und n [h] aus der KP3-Aufheizbemessung des jüngsten Laufs mit Gebäudeergebnis; ohne Bemessung
+        /// beide <c>null</c>. Eine Aufheizzeit 0 h zählt als „keine Rampe“ (Vorgabe <c>Aufheiz.Dauer_h</c>).
+        /// </summary>
+        public static (double? LeistungKw, double? DauerH, int Gebaeude) Aufheizbemessung(int idProjekt)
+        {
+            if (!DataRepository.TabelleVorhanden(AufheizErgebnisSchema.TAB_GEBAEUDE)) return (null, null, 0);
+            DataRow r = ErsteZeile(SQL_AUFHEIZ, P("@p", idProjekt));
+            if (r == null || r["Anzahl"] == DBNull.Value) return (null, null, 0);
+            int anzahl = Convert.ToInt32(r["Anzahl"], CultureInfo.InvariantCulture);
+            if (anzahl <= 0 || r["Leistung"] == DBNull.Value) return (null, null, 0);
+            double? dauer = r["Dauer"] == DBNull.Value ? (double?)null : Zahl(r["Dauer"]);
+            return (Zahl(r["Leistung"]), dauer > 0 ? dauer : null, anzahl);
         }
 
         // ---- Anlagen und Erzeuger ----
@@ -669,6 +755,13 @@ namespace WindowsFormsApplication1
                             PufferBrennstoff art = BrennstoffAus(BrennstoffName(idProjekt, idB));
                             if (art != PufferBrennstoff.Keiner) { brennstoff = art; festbrennstoff = true; }
                         }
+                    }
+                    // V14: die Sperrfenster der Wärmepumpe (Tab_Sperrfenster) vor dem Altfenster.
+                    if (a.Typ == TYP_WP && sperre.Count == 0)
+                    {
+                        List<Sperrfenster> tabelle = SperrfensterCtrl.Lesen(a.Id);
+                        if (tabelle.Count > 0)
+                            sperre = tabelle.Select(f => new PufferSperrfenster(f.VonH, f.DauerH)).ToList();
                     }
                     if (a.Sperrung && sperre.Count == 0)
                     {
@@ -920,23 +1013,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Nutzung der Konditionierungsvorlagen, aus denen die Kalender der Projektgebäude stammen
-        /// (Herkunft in <c>Bemerkung</c>, <see cref="Kalenderherkunft.AusBemerkung"/>).
+        /// Die Nutzung der Konditionierung der Projektgebäude — allein aus der Kopie an den Kalendern des
+        /// Gebäudes und seiner Zonen (<c>Tab_Konditionierungskalender.Nutzung</c>, Schemaschritt
+        /// <see cref="KonditionierungNutzungSchema.SCHRITT"/>). Kein Verweis auf die Vorlage: Umbenennen, Löschen
+        /// oder Katalogabgleich einer Vorlage ändern die Vorbelegung nicht.
         /// </summary>
         private static IEnumerable<string> Konditionierungsnutzungen(int idProjekt)
         {
             var l = new List<string>();
-            if (!DataRepository.TabelleVorhanden(KonditionierungSchema.TAB_KALENDER) ||
-                !DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE)) return l;
+            if (!KonditionierungNutzungSchema.SchemaVollstaendig()) return l;
             DataTable t = DataRepository.GetDataTable(SQL_KONDITIONIERUNG, P("@projekt", idProjekt));
-            if (t == null) return l;
-            foreach (DataRow r in t.Rows)
-            {
-                string vorlage = Kalenderherkunft.AusBemerkung(Text(r, "Bemerkung")).Vorlage;
-                if (string.IsNullOrEmpty(vorlage)) continue;
-                object n = DataRepository.ExecuteScalar(SQL_KONDITIONIERUNG_NUTZUNG, P("@bez", vorlage), P("@groesse", Text(r, "Groesse") ?? ""));
-                if (n != null && n != DBNull.Value) l.Add(Convert.ToString(n, CultureInfo.InvariantCulture));
-            }
+            if (t != null)
+                foreach (DataRow r in t.Rows)
+                {
+                    string n = Text(r, "Nutzung");
+                    if (!string.IsNullOrEmpty(n)) l.Add(n);
+                }
             return l;
         }
 
@@ -991,7 +1083,75 @@ namespace WindowsFormsApplication1
                 e = e with { Sperrfenster = PufferSperrprofil.Fenster(sp, ZahlOderNull(z, "Sperrbeginn_h"), ZahlOderNull(z, "Sperrdauer_h")) };
                 H(nameof(e.Sperrfenster), "Sperrprofil");
             }
-            return basis with { Eingang = e, Herkunft = h.AsReadOnly(), Gespeichert = true, IdZeile = (int)Zahl(z["ID"]) };
+
+            // Die Sitzungseingaben (Welle P4c) - nur, wenn die Spalten stehen.
+            bool Hat(string spalte) => z.Table.Columns.Contains(spalte);
+            PufferAuslegungParameter kb = e.Parameter ?? PufferAuslegungParameter.Vorgabe();
+            var kriterien = new Dictionary<string, bool>(StringComparer.Ordinal);
+            if (Hat(PufferAuslegungErgaenzungSchema.SPALTE_KRITERIEN) &&
+                (v = ZahlOderNull(z, PufferAuslegungErgaenzungSchema.SPALTE_KRITERIEN)).HasValue)
+            {
+                foreach (KeyValuePair<string, bool> k in KriterienAusMaske((int)v.Value))
+                    if (k.Value != kb.VorlageAn(e.Vorlage.ToString(), k.Key)) kriterien[k.Key] = k.Value;
+                e = e with { Parameter = ParameterMitKriterien(kb, e.Vorlage, kriterien) };
+                H("Kriterien", PufferAuslegungErgaenzungSchema.SPALTE_KRITERIEN);
+            }
+            if (Hat(PufferAuslegungErgaenzungSchema.SPALTE_EXPERTENWEG) &&
+                (v = ZahlOderNull(z, PufferAuslegungErgaenzungSchema.SPALTE_EXPERTENWEG)).HasValue)
+            { e = e with { SperrzeitExpertenweg = v.Value != 0 }; H(nameof(e.SperrzeitExpertenweg), PufferAuslegungErgaenzungSchema.SPALTE_EXPERTENWEG); }
+            if (Hat(PufferAuslegungErgaenzungSchema.SPALTE_HEIZLAST) &&
+                (v = ZahlOderNull(z, PufferAuslegungErgaenzungSchema.SPALTE_HEIZLAST)).HasValue)
+            { e = e with { AuslegungsheizlastKw = v }; H(nameof(e.AuslegungsheizlastKw), PufferAuslegungErgaenzungSchema.SPALTE_HEIZLAST); }
+            if (Hat(PufferAuslegungErgaenzungSchema.SPALTE_WOHNEINHEITEN) &&
+                (v = ZahlOderNull(z, PufferAuslegungErgaenzungSchema.SPALTE_WOHNEINHEITEN)).HasValue)
+            { e = e with { Wohneinheiten = v }; H(nameof(e.Wohneinheiten), PufferAuslegungErgaenzungSchema.SPALTE_WOHNEINHEITEN); }
+            string stufe = Hat(PufferAuslegungErgaenzungSchema.SPALTE_ANZEIGESTUFE)
+                ? Text(z, PufferAuslegungErgaenzungSchema.SPALTE_ANZEIGESTUFE) : null;
+
+            return basis with
+            {
+                Eingang = e, Herkunft = h.AsReadOnly(), Gespeichert = true, IdZeile = (int)Zahl(z["ID"]),
+                Kriterien = kriterien, KriterienBasis = kb, Anzeigestufe = stufe
+            };
+        }
+
+        // =================================================================================
+        //  Kriterienschalter (Welle P4c)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Bitmaske der Kriterienschalter einer Vorlage im Parametersatz: Bit i = Schalter i in der
+        /// Reihenfolge von <see cref="PufferAuslegungVorgaben.VORLAGE_SCHALTER"/> (Bit 0 = K1).
+        /// </summary>
+        public static int KriterienMaske(PufferAuslegungParameter p, PufferVorlage vorlage)
+        {
+            p ??= PufferAuslegungParameter.Vorgabe();
+            int m = 0;
+            for (int i = 0; i < PufferAuslegungVorgaben.VORLAGE_SCHALTER.Count; i++)
+                if (p.VorlageAn(vorlage.ToString(), PufferAuslegungVorgaben.VORLAGE_SCHALTER[i])) m |= 1 << i;
+            return m;
+        }
+
+        /// <summary>Die Schalter einer Bitmaske (Kennung → an/aus), alle neun.</summary>
+        public static IReadOnlyDictionary<string, bool> KriterienAusMaske(int maske)
+        {
+            var d = new Dictionary<string, bool>(StringComparer.Ordinal);
+            for (int i = 0; i < PufferAuslegungVorgaben.VORLAGE_SCHALTER.Count; i++)
+                d[PufferAuslegungVorgaben.VORLAGE_SCHALTER[i]] = (maske & (1 << i)) != 0;
+            return d;
+        }
+
+        /// <summary>Der Parametersatz mit den abweichenden Kriterienschaltern der Vorlage.</summary>
+        public static PufferAuslegungParameter ParameterMitKriterien(PufferAuslegungParameter p, PufferVorlage vorlage,
+                                                                     IReadOnlyDictionary<string, bool> kriterien)
+        {
+            p ??= PufferAuslegungParameter.Vorgabe();
+            if (kriterien == null || kriterien.Count == 0) return p;
+            var werte = new Dictionary<string, double>(p.Werte, StringComparer.Ordinal);
+            foreach (KeyValuePair<string, bool> k in kriterien)
+                if (PufferAuslegungVorgaben.VORLAGE_SCHALTER.Contains(k.Key))
+                    werte[PufferAuslegungVorgaben.VorlageSchluessel(vorlage.ToString(), k.Key)] = k.Value ? 1 : 0;
+            return PufferAuslegungParameter.Mit(werte);
         }
 
         // =================================================================================
@@ -1075,9 +1235,12 @@ namespace WindowsFormsApplication1
         /// Speichert Eingang und Ergebnis in <c>Tab_PufferAuslegung</c> (eine Zeile je Projekt und
         /// Puffer, <c>null</c> = „neu anlegen“): die Klassen immer, jede übrige Eingabespalte nur, wenn
         /// sie von der Vorbelegung abweicht (sonst NULL = Vorgabe), dazu die Zonenvolumina, die
-        /// Empfehlung, das bemessende Kriterium und den Zeitpunkt. Liefert die ID der Zeile; -1 bei Fehler.
+        /// Empfehlung, das bemessende Kriterium und den Zeitpunkt. Dazu die Sitzungseingaben (Welle P4c):
+        /// Kriterienschalter als Bitmaske, Expertenweg, Heizlast und Wohneinheiten nur bei Abweichung,
+        /// die <paramref name="anzeigestufe"/> wie übergeben. Liefert die ID der Zeile; -1 bei Fehler.
         /// </summary>
-        public static int Speichern(int idProjekt, int? idPuffer, PufferAuslegungEingang eingang, PufferAuslegungErgebnis ergebnis)
+        public static int Speichern(int idProjekt, int? idPuffer, PufferAuslegungEingang eingang, PufferAuslegungErgebnis ergebnis,
+                                    string anzeigestufe = null)
         {
             if (eingang == null) throw new ArgumentNullException(nameof(eingang));
             if (!DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB)) return -1;
@@ -1123,16 +1286,44 @@ namespace WindowsFormsApplication1
                                                                   : DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture))
             };
 
+            int zeile;
             DataRow vorhanden = ZeileLesen(idProjekt, idPuffer);
             if (vorhanden != null)
             {
-                int id = (int)Zahl(vorhanden["ID"]);
-                werte.Add(P("@id", id));
-                return DataRepository.ExecuteNonQuery(SQL_ZEILE_AENDERN, werte.ToArray()) >= 0 ? id : -1;
+                zeile = (int)Zahl(vorhanden["ID"]);
+                werte.Add(P("@id", zeile));
+                if (DataRepository.ExecuteNonQuery(SQL_ZEILE_AENDERN, werte.ToArray()) < 0) return -1;
             }
-            if (DataRepository.ExecuteNonQuery(SQL_ZEILE_EINFUEGEN, werte.ToArray()) < 0) return -1;
-            DataRow neu = ZeileLesen(idProjekt, idPuffer);
-            return neu == null ? -1 : (int)Zahl(neu["ID"]);
+            else
+            {
+                if (DataRepository.ExecuteNonQuery(SQL_ZEILE_EINFUEGEN, werte.ToArray()) < 0) return -1;
+                DataRow neu = ZeileLesen(idProjekt, idPuffer);
+                if (neu == null) return -1;
+                zeile = (int)Zahl(neu["ID"]);
+            }
+            return ErgaenzungSchreiben(zeile, eingang, b, anzeigestufe) ? zeile : -1;
+        }
+
+        /// <summary>
+        /// Schreibt die Sitzungseingaben (Welle P4c) an die Zeile: NULL = Vorgabe. Ohne die Spalten (älterer
+        /// Schemastand) bleibt es beim Bisherigen.
+        /// </summary>
+        private static bool ErgaenzungSchreiben(int zeile, PufferAuslegungEingang eingang, PufferAuslegungEingang b, string anzeigestufe)
+        {
+            if (!PufferAuslegungErgaenzungSchema.Vorhanden(PufferAuslegungSchema.TAB, PufferAuslegungErgaenzungSchema.SPALTE_KRITERIEN))
+                return true;
+            int maske = KriterienMaske(eingang.Parameter, eingang.Vorlage);
+            int basis = KriterienMaske(b.Parameter, eingang.Vorlage);
+            double? we = eingang.Wohneinheiten.HasValue ? Math.Round(eingang.Wohneinheiten.Value, MidpointRounding.AwayFromZero) : null;
+            double? wb = b.Wohneinheiten.HasValue ? Math.Round(b.Wohneinheiten.Value, MidpointRounding.AwayFromZero) : null;
+            string stufe = anzeigestufe != null && PufferAuslegungErgaenzungSchema.ANZEIGESTUFEN.Contains(anzeigestufe) ? anzeigestufe : null;
+            return DataRepository.ExecuteNonQuery(SQL_ZEILE_ERGAENZUNG,
+                PObj("@kriterien", DbParamTyp.Integer, maske != basis ? maske : (object)DBNull.Value),
+                PObj("@experte", DbParamTyp.Integer, Abw(eingang.SperrzeitExpertenweg, b.SperrzeitExpertenweg)),
+                PObj("@heizlast", DbParamTyp.Double, Abw(eingang.AuslegungsheizlastKw, b.AuslegungsheizlastKw)),
+                PObj("@we", DbParamTyp.Integer, we.HasValue && we != wb ? (long)we.Value : (object)DBNull.Value),
+                PObj("@stufe", DbParamTyp.VarWChar, (object)stufe ?? DBNull.Value),
+                P("@id", zeile)) >= 0;
         }
 
         // =================================================================================
@@ -1218,9 +1409,12 @@ namespace WindowsFormsApplication1
                 BemessendHerkunft = string.IsNullOrWhiteSpace(k?.Herkunft) ? null : k.HerkunftBaustein,
                 NachgerechnetL = r.EmpfehlungL,
                 StartsJeTag = bild?.StartsJeTag,
+                ProbelaufStartsJeTag = PufferProbelaufCtrl.Letzter(idProjekt, g.IdPuffer)?.Rang1?.StartsJeTag,
+                ProbelaufAm = PufferProbelaufCtrl.Letzter(idProjekt, g.IdPuffer)?.Zeitpunkt,
                 VerlustKwhJeTag = r.Kennzahlen?.Verlust?.KwhJeTag,
                 VerlustWJeK = r.Kennzahlen?.Verlust?.WJeK,
-                Warnungen = r.Warnungen ?? Array.Empty<PufferWarnung>()
+                Warnungen = r.Warnungen ?? Array.Empty<PufferWarnung>(),
+                Nachbarstufen = PufferAuslegung.Nachbarstufen(v.Eingang, r).Stufen
             };
         }
 
@@ -1236,11 +1430,21 @@ namespace WindowsFormsApplication1
         /// Kombipuffer Schichtung mit mindestens zwei Schichten und den Zonenanteilen als Entnahmehöhen.
         /// Schwellen, Temperaturpaar, Hersteller, Speichertyp und Kosten bleiben beim Ändern unverändert
         /// (eine leere Schwelle wird mit ihrer Vorgabe geschrieben, mit der die Simulation sie ohnehin
-        /// liest); beim Neuanlegen gelten die Vorgaben. Der Puffer führt keinen Katalogverweis — der
-        /// Vorschlag fließt nur über den Verlust ein. Liefert die Puffer-ID; -1, wenn nichts übernommen
+        /// liest); beim Neuanlegen gelten die Vorgaben. Mit <paramref name="katalogsatz"/> und einem
+        /// Katalogvorschlag merkt der Puffer den Katalogsatz (<c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c),
+        /// sonst wird der Verweis leer. Liefert die Puffer-ID; -1, wenn nichts übernommen
         /// wurde (keine Empfehlung, Puffer nicht im Projekt, Schreibfehler).
         /// </summary>
-        public static int Uebernehmen(int idProjekt, int? idPuffer, PufferAuslegungErgebnis ergebnis, string bezeichner)
+        public static int Uebernehmen(int idProjekt, int? idPuffer, PufferAuslegungErgebnis ergebnis, string bezeichner,
+                                      bool katalogsatz = true)
+        {
+            int id = UebernehmenOhneVerweis(idProjekt, idPuffer, ergebnis, bezeichner);
+            if (id <= 0) return id;
+            int? stamm = katalogsatz && ergebnis.Katalogvorschlag?.Id > 0 ? ergebnis.Katalogvorschlag.Id : null;
+            return PufferSpCtrl.KatalogverweisSetzen(id, idProjekt, stamm) ? id : -1;
+        }
+
+        private static int UebernehmenOhneVerweis(int idProjekt, int? idPuffer, PufferAuslegungErgebnis ergebnis, string bezeichner)
         {
             if (ergebnis == null || idProjekt <= 0 || !(ergebnis.EmpfehlungL > 0)) return -1;
             int volumen = (int)Math.Round(ergebnis.EmpfehlungL, MidpointRounding.AwayFromZero);
@@ -1290,6 +1494,30 @@ namespace WindowsFormsApplication1
             if (neu > 0 && DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB))
                 DataRepository.ExecuteNonQuery(SQL_ZEILE_UMHAENGEN, P("@puffer", neu), P("@projekt", idProjekt));
             return neu;
+        }
+
+        /// <summary>
+        /// Schreibt das Sperrprofil der Auslegung an die Wärmepumpen des Projekts — <b>nur auf Zuruf</b>
+        /// (Schalter „Sperrprofil an die Wärmepumpe schreiben“ im Übernahme-Block, Vorgabe aus). Jedes
+        /// Fenster gilt an allen Tagen und sperrt den Heizstab mit; die Liste ersetzt die Fenster der
+        /// Anlage, das Altfenster geht aus (<see cref="SperrfensterCtrl.Schreiben"/>).
+        /// </summary>
+        /// <returns>Die Zahl der beschriebenen Anlagen; -1 bei einem Schreibfehler.</returns>
+        public static int SperrprofilSchreiben(int idProjekt, IReadOnlyList<PufferSperrfenster> fenster)
+        {
+            if (idProjekt <= 0 || !SperrfensterCtrl.TabelleVorhanden()) return 0;
+            var liste = (fenster ?? Array.Empty<PufferSperrfenster>())
+                .Where(f => f != null && f.DauerH > 0)
+                .Select(f => new Sperrfenster { VonH = f.BeginnH, DauerH = Math.Min(24, f.DauerH) })
+                .ToList();
+            int n = 0;
+            foreach (Anlage a in AnlagenLesen(idProjekt))
+            {
+                if (a.Typ != TYP_WP) continue;
+                if (!SperrfensterCtrl.Schreiben(a.Id, liste)) return -1;
+                n++;
+            }
+            return n;
         }
 
         // =================================================================================

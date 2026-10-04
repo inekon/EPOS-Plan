@@ -155,6 +155,10 @@ namespace WindowsFormsApplication1
             // nicht ueberfluessig, sondern eine ArgumentException beim Laden der
             // Klasse. ID_Anlage steht ohnehin schon oben (Ä20).
             {"ID_Senke","Z_AnlageSenke"},
+            // Sperrprofil der Waermepumpe (Schemaschritt WaermepumpeSperrprofilSchema): die Fenster
+            // haengen an der Anlagenzeile. Ohne Versatz zeigten die Fenster der Kopie auf die Anlage
+            // des QUELLprojekts.
+            {"ID_Energieanlage","Tab_Energieanlagen"},
             // Q1 (Migrationsschritt 54): Quellprofile. Zwei Spalten, beide eindeutig
             // benannt - der Profilschluessel an der Anlage (WQ_ID_Quellprofil, echte
             // Access-Beziehung FK_Anlage_Quellprofil, die _echteFks ohnehin erkennt) und
@@ -277,6 +281,12 @@ namespace WindowsFormsApplication1
             // OHNE zugeordnetes Geraet aus der Kopie, und das ist genau der
             // Zwischenstand, den ein Planer ablegen darf.
             {"Z_AnlageStrang",         "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
+
+            // Sperrprofil der Waermepumpe (Schemaschritt WaermepumpeSperrprofilSchema): Die Fenster
+            // haengen an der ANLAGE und fuehren kein eigenes ID_Projekt - dasselbe Muster wie die
+            // Senkenliste. Ausdruecklich statt ueber die Auto-Erkennung, damit Kopie und Export sie
+            // auch ohne erkannte Beziehung sicher mitnehmen.
+            {"Tab_Sperrfenster",       "ID_Energieanlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
 
             // Q1 (Migrationsschritt 54): Die Wertzeilen eines Quellprofils haengen am
             // KOPF und fuehren bewusst kein eigenes ID_Projekt - dasselbe Muster wie

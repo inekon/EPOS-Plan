@@ -27,6 +27,10 @@ namespace EPOS.Kern.Tests
     [Collection("Testdatenbank")]
     public sealed class AufheizExportTests : IDisposable
     {
+
+        /// <summary>Die Textskalare ohne die Herkunft des Erdreichumfangs (Rechenweg RP2a, gilt jedem Gebäude am Erdreich).</summary>
+        private static List<KeyValuePair<string, string>> OhneErdreich(IEnumerable<KeyValuePair<string, string>> texte)
+            => texte.Where(t => !t.Key.EndsWith(".Erdreich_Umfangsquelle", StringComparison.Ordinal)).ToList();
         private readonly TestDatenbank _db = new TestDatenbank();
         private readonly ITestOutputHelper _aus;
 
@@ -78,7 +82,7 @@ namespace EPOS.Kern.Tests
                 foreach (GebaeudeExportsatz satz in liste)
                 {
                     saetze++;
-                    Assert.Empty(satz.Texte);
+                    Assert.Empty(OhneErdreich(satz.Texte));
                     foreach (KeyValuePair<string, double> s in satz.Skalare)
                     {
                         schluessel++;
@@ -122,7 +126,7 @@ namespace EPOS.Kern.Tests
                 new KeyValuePair<string, string>("Geb[0].Aufheizbemessung", DbWerte.AUFHEIZ_BEMESSUNG_STUNDE),
                 new KeyValuePair<string, string>("Geb[0].Aufheizart", DbWerte.AUFHEIZ_ART_TAEGLICH),
                 new KeyValuePair<string, string>("Geb[0].Aufheizleistungsquelle", DbWerte.AUFHEIZ_QUELLE_ZIEL),
-            }, satz.Texte);
+            }, OhneErdreich(satz.Texte));
             Assert.DoesNotContain(satz.Skalare, p => p.Key == "Geb[0].Aufheizzeit_Manuell");
             Dictionary<string, double> z = satz.Skalare.ToDictionary(p => p.Key, p => p.Value);
             Assert.Equal((double)zeile.AufheizzeitMaxH, z["Geb[0].AufheizzeitMaxH"]);
@@ -158,7 +162,7 @@ namespace EPOS.Kern.Tests
             // Wieder aus: kein Schlüssel, keine Datei.
             Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(1018, Aufheizvorgabe.Aus));
             GebaeudeExportsatz aus = GebaeudeErgebnisexport.Saetze(Bedarf(1018)).Single();
-            Assert.Empty(aus.Texte);
+            Assert.Empty(OhneErdreich(aus.Texte));
             Assert.DoesNotContain(aus.Reihen, r => r.Key.StartsWith("heizsollwert_", StringComparison.Ordinal));
             Assert.Equal(satz.Skalare.Count - 11, aus.Skalare.Count);
         }
@@ -233,7 +237,7 @@ namespace EPOS.Kern.Tests
             int aus = soll.Count(double.IsNaN);
             Assert.True(aus >= 52 * 48, "zu wenige Stunden „aus\": " + aus);
             Assert.Equal(e.ThetaSoll.Select(double.IsNaN), soll.Select(double.IsNaN));
-            Assert.Empty(satz.Texte);
+            Assert.Empty(OhneErdreich(satz.Texte));
             Assert.DoesNotContain(satz.Skalare, p => p.Key.Contains("Aufheiz", StringComparison.Ordinal));
             Assert.Equal((double)ohne.StundenMitSommerlueftung,
                          Assert.Single(satz.Skalare, p => p.Key == "Geb[0].Sommerlueftungsstunden").Value);
@@ -257,7 +261,7 @@ namespace EPOS.Kern.Tests
             GebaeudeExportsatz leer = GebaeudeErgebnisexport.Satz(bestand);
             Assert.DoesNotContain(leer.Reihen, r => r.Key.StartsWith("heizsollwert_", StringComparison.Ordinal));
             Assert.DoesNotContain(leer.Skalare, p => NUR_BEI_WIRKUNG.Any(t => p.Key.Contains(t, StringComparison.Ordinal)));
-            Assert.Empty(leer.Texte);
+            Assert.Empty(OhneErdreich(leer.Texte));
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
                 "Heizkalender: {0} Stunden NaN (aus), Sommerlüftung {1} h; mit Schalter {2} Rampenstunden",
                 aus, ohne.StundenMitSommerlueftung, plan.MaskenstundenH));

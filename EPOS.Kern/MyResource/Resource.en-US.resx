@@ -15047,6 +15047,21 @@ The CHP unit never generates more electricity than the current own demand. The u
   <data name="SIMDET_BHKW_SERIE_SPEICHERLADUNG" xml:space="preserve">
     <value>Storage charging</value>
   </data>
+  <data name="SIMDET_BHKW_TITEL_STROMLAST" xml:space="preserve">
+    <value>Electricity load, annual load profile</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_STROMPRODUKTION" xml:space="preserve">
+    <value>Electricity production</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_EINSPEISUNG" xml:space="preserve">
+    <value>Grid feed-in</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_RESTSTROM" xml:space="preserve">
+    <value>Residual electricity demand</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_STROMBEDARF" xml:space="preserve">
+    <value>Electricity demand</value>
+  </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH" xml:space="preserve">
     <value>Power consumption:</value>
   </data>
@@ -23547,7 +23562,7 @@ Do you want to allow this?</value>
     <value>The building material of the layer (its key is its id; empty = free entry). Choosing it copies λ, ρ and c_p of the material; they can be overwritten afterwards.</value>
   </data>
   <data name="KI_DLG_BTA_SCHICHT_DICKE_ERL" xml:space="preserve">
-    <value>The thickness of the layer in mm, permitted 1 to 1,000 (an unventilated air layer up to 300).</value>
+    <value>The thickness of the layer in mm, permitted 0.5 to 1,000 (an unventilated air layer up to 300).</value>
   </data>
   <data name="KI_DLG_BTA_SCHICHT_LAMBDA_ERL" xml:space="preserve">
     <value>The thermal conductivity λ of the layer in W/(mK); empty only for an unventilated air layer.</value>
@@ -32363,6 +32378,12 @@ Do you want to allow this?</value>
   <data name="WIRT_NM_KENNZEICHEN" xml:space="preserve">
     <value>Effect {0}: {1}</value>
   </data>
+  <data name="WIRT_HINWEISE_EINER" xml:space="preserve">
+    <value>1 note (click)</value>
+  </data>
+  <data name="WIRT_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} notes (click)</value>
+  </data>
   <data name="WIRT_NM_LISTE_HINWEIS" xml:space="preserve">
     <value>DIN EN 17463 requires every assessment to state what cannot be expressed in euros (6.1, 8.2): for each effect its category, its duration (short, medium, long) and its effect on the organisation, employees and environment (none to strong). The assessment is duration × strongest effect (0 to 9). The effects belong to the measure as a whole, appear in the report and do not enter the net present value.</value>
   </data>
@@ -34012,6 +34033,12 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMENG_G6_MUSTERWECHSEL" xml:space="preserve">
     <value>VDI 6007 building model: {0} – in {1} zone hours the control state changed between two passes; the pattern of the first pass was kept ({2} times it could not be kept).</value>
+  </data>
+  <data name="SIMENG_ZONE_ABSCHNITTE" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – in {1} hours a section reversed in its interior after the hour already had {2} sections; this reversal was not split any more (limit of the interior check).</value>
+  </data>
+  <data name="SIMENG_ERDREICH_UMFANG" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – the exposed perimeter of the ground floor is missing or smaller than that of the circle of equal area; the ground resistance to EN ISO 13370 uses the square of equal area P = {1} m (B′ = {2} m, U_g = {3} W/(m²K)).</value>
   </data>
   <data name="SIMENG_G6_MEHRZONEN_EINZELWEG" xml:space="preserve">
     <value>{0}: with {1} zones the building calculates heating and cooling ideally per zone and without plant coupling; this information applies only to a building with at most one zone.</value>
@@ -38989,7 +39016,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Layer thicknesses in {0} layer sets read as millimetres (length unit of the file: metre); largest thickness {1} m in set {2} “{3}” — all thicknesses of these sets are divided by 1000.</value>
   </data>
   <data name="IMP_IFC_PROT_SCHICHT_DUENN" xml:space="preserve">
-    <value>{0} layers below 1 mm skipped: {1} — they carry no thermal effect.</value>
+    <value>{0} layers below 0.5 mm skipped: {1} — they carry no thermal effect.</value>
   </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
@@ -39929,6 +39956,18 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="VF_HAT__BILD__BHKW" xml:space="preserve">
     <value>Image switch: is there the CHP image (case or any case)?</value>
+  </data>
+  <data name="VF_STAND__BILD__BHKW_STROM" xml:space="preserve">
+    <value>Image per case: electrical load of the CHP — power production as columns, feed-in, residual power demand and power demand as lines over the year — as the image “electrical load” of the tab “CHP”; empty without CHP.</value>
+  </data>
+  <data name="VF_HAT__BILD__BHKW_STROM" xml:space="preserve">
+    <value>Image switch: is there the image “electrical load of the CHP” (case or any case)?</value>
+  </data>
+  <data name="VF_STAND__BILD__KAELTE_PRODUKTION" xml:space="preserve">
+    <value>Image per case: cooling production — per heat pump in cooling mode the covered cooling as columns, the uncovered cooling in grey, the cooling demand as a line over the year — as the sheet “Cooling” of the tab “Result”; empty if the project does not calculate cooling.</value>
+  </data>
+  <data name="VF_HAT__BILD__KAELTE_PRODUKTION" xml:space="preserve">
+    <value>Image switch: is there the image “cooling production” (case or any case)?</value>
   </data>
   <data name="VF_HAT__BILD__PHOTOVOLTAIK" xml:space="preserve">
     <value>Image switch: is there the photovoltaics image (case or any case)?</value>
@@ -43805,6 +43844,390 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL" xml:space="preserve">
     <value>Construction "{0}": {1} layers carry density and thermal conductivity but no specific heat capacity; c [J/(kg·K)] is taken from the material catalogue or from DIN EN ISO 10456 — {2}.</value>
+  </data>
+  <data name="PA_STARTS_ABWEICHUNG" xml:space="preserve">
+    <value>The annual simulation counts {1} starts per day, the design estimates {0} – deviation above 30 %.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_NEU" xml:space="preserve">
+    <value>The trial run needs a buffer in the project; apply a new buffer first.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_OHNE_EMPFEHLUNG" xml:space="preserve">
+    <value>No trial run without a recommendation.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_PUFFER_FEHLT" xml:space="preserve">
+    <value>The buffer does not belong to the project.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_GRUPPE" xml:space="preserve">
+    <value>Check against the annual simulation</value>
+  </data>
+  <data name="PAUS_PROBELAUF_KNOPF" xml:space="preserve">
+    <value>Recalculate with annual simulation</value>
+  </data>
+  <data name="PAUS_PROBELAUF_LAEUFT" xml:space="preserve">
+    <value>The annual simulation is running …</value>
+  </data>
+  <data name="PAUS_PROBELAUF_ERKLAERUNG" xml:space="preserve">
+    <value>Calculates the project once with the recommended volume of the selected buffer. Nothing is saved or applied.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_GROESSE" xml:space="preserve">
+    <value>Figure</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_AUSLEGUNG" xml:space="preserve">
+    <value>Design</value>
+  </data>
+  <data name="PAUS_PROBELAUF_SPALTE_LAUF" xml:space="preserve">
+    <value>Trial run (recommendation)</value>
+  </data>
+  <data name="PAUS_PROBELAUF_KEIN_LAUF" xml:space="preserve">
+    <value>no run</value>
+  </data>
+  <data name="PAUS_PROBELAUF_STARTS_JAHR" xml:space="preserve">
+    <value>Starts per year</value>
+  </data>
+  <data name="PAUS_PROBELAUF_DECKUNG" xml:space="preserve">
+    <value>Heat demand coverage</value>
+  </data>
+  <data name="PAUS_PROBELAUF_STAND" xml:space="preserve">
+    <value>Trial run of {0} with {1} l, duration {2} s</value>
+  </data>
+  <data name="PAUS_PROBELAUF_FUELLSTAND" xml:space="preserve">
+    <value>Buffer charge level per month</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MIN" xml:space="preserve">
+    <value>min.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MITTEL" xml:space="preserve">
+    <value>Mean</value>
+  </data>
+  <data name="PAUS_PROBELAUF_MAX" xml:space="preserve">
+    <value>max.</value>
+  </data>
+  <data name="PAUS_PROBELAUF_WOCHE" xml:space="preserve">
+    <value>Coldest week from day {0}: charge level min. {1} %, mean {2} %, max. {3} %</value>
+  </data>
+  <data name="PAUS_PROBELAUF_FEHLER" xml:space="preserve">
+    <value>Trial run not possible: {0}</value>
+  </data>
+  <data name="PAUS_PROBELAUF_OHNE_FUELLSTAND" xml:space="preserve">
+    <value>The buffer was not part of the calculation path; no charge level.</value>
+  </data>
+  <data name="BER_PAUS_STARTS_PROBELAUF" xml:space="preserve">
+    <value>Starts per day (annual simulation {0})</value>
+  </data>
+  <data name="PAUS_PROBELAUF_AUS_REIHE" xml:space="preserve">
+    <value>Starts from the hourly heat (switch-on edges): the unit has no minimum output, the run counts no cycles.</value>
+  </data>
+  <data name="SIMENG_SPERRPROFIL_ZEILE" xml:space="preserve">
+    <value>Lock-out profile {0}: {1} windows, {2} locked hours</value>
+  </data>
+  <data name="WPA_GRP_SPERRZEITEN" xml:space="preserve">
+    <value>Lock-out times</value>
+  </data>
+  <data name="WPA_LBL_SPERR_VORLAGE" xml:space="preserve">
+    <value>Template:</value>
+  </data>
+  <data name="WPA_BTN_SPERR_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WPA_BTN_SPERR_2X2" xml:space="preserve">
+    <value>2 × 2 h</value>
+  </data>
+  <data name="WPA_BTN_SPERR_3X2" xml:space="preserve">
+    <value>3 × 2 h</value>
+  </data>
+  <data name="WPA_LBL_SPERR_VON" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="WPA_LBL_SPERR_DAUER" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="WPA_LBL_SPERR_HEIZSTAB" xml:space="preserve">
+    <value>Heating rod locked too</value>
+  </data>
+  <data name="WPA_BTN_SPERR_HINZU" xml:space="preserve">
+    <value>Add window</value>
+  </data>
+  <data name="WPA_BTN_SPERR_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERR_LEER" xml:space="preserve">
+    <value>No lock-out times — the heat pump may run at any time.</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERR_UEBERTRAG" xml:space="preserve">
+    <value>A window past midnight continues into the next day; every hour whose start lies in the window is locked.</value>
+  </data>
+  <data name="WPA_WT_MO" xml:space="preserve">
+    <value>Mon</value>
+  </data>
+  <data name="WPA_WT_DI" xml:space="preserve">
+    <value>Tue</value>
+  </data>
+  <data name="WPA_WT_MI" xml:space="preserve">
+    <value>Wed</value>
+  </data>
+  <data name="WPA_WT_DO" xml:space="preserve">
+    <value>Thu</value>
+  </data>
+  <data name="WPA_WT_FR" xml:space="preserve">
+    <value>Fri</value>
+  </data>
+  <data name="WPA_WT_SA" xml:space="preserve">
+    <value>Sat</value>
+  </data>
+  <data name="WPA_WT_SO" xml:space="preserve">
+    <value>Sun</value>
+  </data>
+  <data name="WPA_EINHEIT_STUNDEN" xml:space="preserve">
+    <value>h</value>
+  </data>
+  <data name="PAUS_LBL_SPERRPROFIL_SCHREIBEN" xml:space="preserve">
+    <value>Write lock-out profile to the heat pump</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRFENSTER_ERL" xml:space="preserve">
+    <value>Lock-out windows of the heat pump as a list “start-end” in hours, separated by semicolons (e.g. “11-13; 17-19”); every day, heating rod locked too. A window past midnight (“22-2”) continues into the next day; empty = no lock-out times.</value>
+  </data>
+  <data name="PA_PROZESS_TEMPERATUR" xml:space="preserve">
+    <value>The process supply temperature exceeds 95 °C or the highest generator supply temperature: the buffer cannot deliver it reliably.</value>
+  </data>
+  <data name="PAUS_HERK_PROZESS_TEMPERATUR" xml:space="preserve">
+    <value>Temperature pair of the process heat</value>
+  </data>
+  <data name="PAUS_HERK_PROZESS_TEMPERATUR_KEINE" xml:space="preserve">
+    <value>no temperature pair maintained for the process heat: temperature pair of the buffer</value>
+  </data>
+  <data name="PA_PROZESS_TEMPERATUR_TEXT" xml:space="preserve">
+    <value>The process supply temperature of {0} °C exceeds 95 °C or the highest generator supply temperature of {1} °C: the buffer cannot deliver it reliably.</value>
+  </data>
+  <data name="PA_PROZESS_TEMPERATUR_95_TEXT" xml:space="preserve">
+    <value>The process supply temperature of {0} °C exceeds 95 °C: the buffer cannot deliver it reliably.</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_VORLAUF" xml:space="preserve">
+    <value>highest supply temperature of the generators in the cascade</value>
+  </data>
+  <data name="PAUS_HERK_ERZEUGER_VORLAUF_KEINE" xml:space="preserve">
+    <value>no generator supply temperature maintained: check against 95 °C only</value>
+  </data>
+  <data name="PAUS_KATALOGSATZ_UEBERNEHMEN" xml:space="preserve">
+    <value>Record the catalogue entry as the buffer’s origin</value>
+  </data>
+  <data name="PSP_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>from catalogue: {0}</value>
+  </data>
+  <data name="PA_KEINE_REIHE_BW_TEXT" xml:space="preserve">
+    <value>No draw-off profile result: the domestic hot water zone remains empty.</value>
+  </data>
+  <data name="PA_HYGIENE_W551_TEXT" xml:space="preserve">
+    <value>Potable water store above {0} l: observe the requirements for large systems.</value>
+  </data>
+  <data name="PA_HYGIENE_TEMPERATUR_TEXT" xml:space="preserve">
+    <value>Buffer top {0} °C: fresh water heating needs a flow of at least {1} °C; periodic heating up is no substitute.</value>
+  </data>
+  <data name="PA_BW_UEBERDIMENSIONIERT_TEXT" xml:space="preserve">
+    <value>The domestic hot water zone ({0} l) exceeds {1} times the daily demand ({2} l).</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_TEXT" xml:space="preserve">
+    <value>The sum of the zones ({0} l) exceeds the practical limit of {1} l: this is a seasonal store, not a buffer design.</value>
+  </data>
+  <data name="PA_TANK_IM_TANK_TEXT" xml:space="preserve">
+    <value>Tank-in-tank combination stores are less suitable for heat pumps (high temperature level).</value>
+  </data>
+  <data name="PA_EXTRAPOLATION_TEXT" xml:space="preserve">
+    <value>Standby loss above {0} l extrapolated from the class C limit.</value>
+  </data>
+  <data name="PA_UEBERGABE_UNBEKANNT_TEXT" xml:space="preserve">
+    <value>No emitter type at the building: the heating zone is calculated as surface heating.</value>
+  </data>
+  <data name="PA_KEINE_REIHE_TEXT" xml:space="preserve">
+    <value>The heating series is empty: the load profile criteria (K4e, D1, D2) are omitted.</value>
+  </data>
+  <data name="PA_KEIN_PUFFER_TEXT" xml:space="preserve">
+    <value>The non-isolatable system volume is sufficient: no heating buffer required.</value>
+  </data>
+  <data name="PA_OHNE_PUFFER_GEREGELT_TEXT" xml:space="preserve">
+    <value>Without a buffer only with a modulating heat pump: the unit is fixed-speed, the buffer stays.</value>
+  </data>
+  <data name="PA_ZWEITERZEUGER_FREI_TEXT" xml:space="preserve">
+    <value>The second generator is released during the lock-out: the lock-out time does not size the buffer.</value>
+  </data>
+  <data name="PA_HEIZSTAB_GESPERRT_TEXT" xml:space="preserve">
+    <value>The immersion heater counts as locked out too: the lock-out time sizes the buffer.</value>
+  </data>
+  <data name="PA_BAND_UNTER_TEXT" xml:space="preserve">
+    <value>The heating zone volume ({0} l) is below the range {1}–{2} l.</value>
+  </data>
+  <data name="PA_BAND_UEBER_TEXT" xml:space="preserve">
+    <value>The heating zone volume ({0} l) is above the range {1}–{2} l.</value>
+  </data>
+  <data name="PA_ABTAU_VORRANG_TEXT" xml:space="preserve">
+    <value>Hot water priority: below {0} l there is no defrost reserve for space heating.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_DECKUNG_TEXT" xml:space="preserve">
+    <value>The coverage target {0} cannot be reached even with {1} l: the generator output is too small; coverage does not size the buffer.</value>
+  </data>
+  <data name="PA_PRAXISGRENZE_START_TEXT" xml:space="preserve">
+    <value>The start target of {0} per day cannot be kept even with {1} l; the cycling target does not size the buffer.</value>
+  </data>
+  <data name="PA_STARTS_TAG_TEXT" xml:space="preserve">
+    <value>{0} starts per day above the warning threshold of {1}.</value>
+  </data>
+  <data name="PA_STARTS_JAHR_TEXT" xml:space="preserve">
+    <value>{0} starts per heating season above {1}.</value>
+  </data>
+  <data name="PA_KEINE_REIHE_PROZESS_TEXT" xml:space="preserve">
+    <value>The process series is empty: the process zone remains empty.</value>
+  </data>
+  <data name="BV_GRUND_KEINE_PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>no saved buffer design</value>
+  </data>
+  <data name="BER_PAUS_NACHRECHNUNG" xml:space="preserve">
+    <value>Recalculation</value>
+  </data>
+  <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
+    <value>Table of the saved buffer designs of the base project: one group row per design, below it storage class, template, usage profile, zone volumes, sizing criterion, recommendation, key figures and notes. If it is in the template, the section in the project chapter is omitted.</value>
+  </data>
+  <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
+    <value>Buffer sizing concept 6 (benefit-effort line); pass-through D1 and two-point D2 with fixed volume, loss K11 by class C limit</value>
+  </data>
+  <data name="PAUS_HERK_KURVE" xml:space="preserve">
+    <value>Ecosizer (Ecotope 2020), storage versus capacity: running volume of the peak event ÷ η_s</value>
+  </data>
+  <data name="PAUS_JAZ_EMPFEHLUNG" xml:space="preserve">
+    <value>Recommendation</value>
+  </data>
+  <data name="PAUS_JAZ_GROESSER" xml:space="preserve">
+    <value>larger tank: more standby loss and higher mean buffer temperature, SPF decreases</value>
+  </data>
+  <data name="PAUS_JAZ_GROESSER_OHNE_WP" xml:space="preserve">
+    <value>larger tank: more standby loss, fewer starts</value>
+  </data>
+  <data name="PAUS_JAZ_KLEINER" xml:space="preserve">
+    <value>smaller tank: less standby loss but more starts — frequent cycling strains compressor and SPF</value>
+  </data>
+  <data name="PAUS_JAZ_KLEINER_OHNE_WP" xml:space="preserve">
+    <value>smaller tank: less standby loss, more starts</value>
+  </data>
+  <data name="PAUS_KURVE_KEIN_ZAPFPROFIL" xml:space="preserve">
+    <value>no curve: no draw-off profile result</value>
+  </data>
+  <data name="PAUS_KURVE_OHNE_LADELEISTUNG" xml:space="preserve">
+    <value>no curve: the draw-off profile provides no charging capacity or no D_max</value>
+  </data>
+  <data name="PAUS_KURVE_OHNE_REIHE" xml:space="preserve">
+    <value>no curve: the draw-off series is empty</value>
+  </data>
+  <data name="PAUS_KURVE_HINWEIS" xml:space="preserve">
+    <value>Running volume at {0} kW = D_max {1} kWh; the draw-off series carries the change with capacity; volume at ΔT_B {2} K and η_s {3}</value>
+  </data>
+  <data name="PAUS_NA_GRUPPE" xml:space="preserve">
+    <value>Benefit and effort of neighbouring sizes</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_STUFE" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_MEHR" xml:space="preserve">
+    <value>Additional volume</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_DECKUNG" xml:space="preserve">
+    <value>Coverage</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_STARTS" xml:space="preserve">
+    <value>Starts per day</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_VERLUST" xml:space="preserve">
+    <value>Loss kWh/a</value>
+  </data>
+  <data name="PAUS_NA_SPALTE_JAZ" xml:space="preserve">
+    <value>Effect</value>
+  </data>
+  <data name="PAUS_NA_EMPFEHLUNG" xml:space="preserve">
+    <value>Recommendation</value>
+  </data>
+  <data name="PAUS_NA_KNOPF" xml:space="preserve">
+    <value>Calculate neighbouring sizes</value>
+  </data>
+  <data name="PAUS_NA_ERKLAERUNG" xml:space="preserve">
+    <value>The sizing took longer than one second: neighbouring sizes are calculated on request.</value>
+  </data>
+  <data name="PAUS_NA_STAND" xml:space="preserve">
+    <value>calculated in {0} ms; simulation: {1}</value>
+  </data>
+  <data name="PAUS_NA_OHNE_REIHE" xml:space="preserve">
+    <value>without series (volume and loss only)</value>
+  </data>
+  <data name="PAUS_KURVE_TITEL" xml:space="preserve">
+    <value>Storage versus capacity (domestic hot water)</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_LEISTUNG" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_ANTEIL" xml:space="preserve">
+    <value>Share of charging capacity</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PAUS_KURVE_SPALTE_LAUFZEIT" xml:space="preserve">
+    <value>Run time per day</value>
+  </data>
+  <data name="PAUS_BERICHT_NA_ZEILE" xml:space="preserve">
+    <value>Size {0} l: coverage {1}, {2} starts per day, loss {3} kWh/a</value>
+  </data>
+  <data name="PA_AUFHEIZ_KEINE_BEMESSUNG" xml:space="preserve">
+    <value>No warm-up sizing</value>
+  </data>
+  <data name="PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT" xml:space="preserve">
+    <value>The warm-up criterion is switched on, but no warm-up sizing of the buildings is available: it does not size the tank. Only a simulation with warm-up optimisation provides Φ_n.</value>
+  </data>
+  <data name="PAUS_KRIT_K12" xml:space="preserve">
+    <value>Warm-up after setback</value>
+  </data>
+  <data name="PAUS_HERK_K12" xml:space="preserve">
+    <value>Buffer sizing concept V30 / KP3 (warm-up sizing of the buildings)</value>
+  </data>
+  <data name="PAUS_HERK_Q_V30" xml:space="preserve">
+    <value>Buffer sizing concept V30 / KP3</value>
+  </data>
+  <data name="PAUS_WEG_K12" xml:space="preserve">
+    <value>({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6})</value>
+  </data>
+  <data name="PAUS_WEG_K12_DAUER_KP3" xml:space="preserve">
+    <value>warm-up duration from KP3</value>
+  </data>
+  <data name="PAUS_WEG_K12_DAUER_VORGABE" xml:space="preserve">
+    <value>default Aufheiz.Dauer_h</value>
+  </data>
+  <data name="PAUS_WEG_K12_KEINE" xml:space="preserve">
+    <value>no KP3 warm-up sizing of the buildings</value>
+  </data>
+  <data name="PAUS_HERK_AUFHEIZ_KP3" xml:space="preserve">
+    <value>KP3 warm-up sizing of the last run: sum of Aufheiz_Leistung_Kw over {0} buildings, longest warm-up time</value>
+  </data>
+  <data name="PAUS_HERK_AUFHEIZ_KEINE" xml:space="preserve">
+    <value>no warm-up sizing in the last run (criterion K12 does not size)</value>
+  </data>
+  <data name="PAUS_K12_SCHALTER_VORLAGE" xml:space="preserve">
+    <value>Template of the usage profile: on for office/school</value>
+  </data>
+  <data name="SIM_NAV_KAELTEPRODUKTION_CHART" xml:space="preserve">
+    <value>❄️ 
+Cooling
+generation
+chart</value>
+  </data>
+  <data name="CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Cooling generation, annual load profile</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Uncovered cooling</value>
   </data>
 </root>
 

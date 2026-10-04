@@ -118,6 +118,19 @@ namespace WindowsFormsApplication1
                         z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] = einspeisung;
                 }
 
+                // Katalog v12: die Stromlast des BHKW-Reiters — Strombedarf am BHKW und Reststrombedarf je Stunde,
+                // dieselben Reihen wie das Bild der Seite (SimulationErgebnisCtrl.BhkwStromStunden); Stromproduktion
+                // und Einspeisung stehen oben schon als BHKW_STROM und BHKW_UEBERSCHUSS.
+                if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
+                {
+                    SimulationErgebnisCtrl.BhkwStromreihen bs = SimulationErgebnisCtrl.BhkwStromStunden(sim);
+                    if (bs != null)
+                    {
+                        z.Reihen[ZeitreihenSatz.BHKW_STROMBEDARF] = bs.Strombedarf;
+                        z.Reihen[ZeitreihenSatz.BHKW_RESTSTROM] = bs.Reststrombedarf;
+                    }
+                }
+
                 // Stromspeicher: seit AP2b eigenes Gewerk mit eigenem Flag - der SOC
                 // hing bis dahin am PV-Objekt (simulation_pv.Speicherfuellstand).
                 if (sim.bSimulationSSP)
@@ -158,6 +171,11 @@ namespace WindowsFormsApplication1
                             Netzbezugsspitze s = Netzbezugsspitze.AusReihe(e.Strom_stuendlich);
                             if (s != null) z.Kaeltestromspitzen[e.Modulindex] = s;
                         }
+
+                // Katalog v12: die Kälteproduktion des Kältereiters — je Kälteerzeuger die gedeckte Kälte, dazu die
+                // ungedeckte Kälte; dieselben Reihen wie das Bild der Seite (KaelteProduktionBild.AusLauf). Nur,
+                // wenn das Projekt Kälte rechnet; der Kältebedarf steht als Kanalreihe BEDARF_KUEHLUNG im Satz.
+                Kaeltereihen(runner, z);
 
                 // Restwärme (Referenz des letzten Gewerks → Kopie zwingend).
                 z.Reihen[ZeitreihenSatz.WAERMEREST] = D(sim.Rest_Waermebedarf_stuendlich);
@@ -293,6 +311,26 @@ namespace WindowsFormsApplication1
                 if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
                     Kanalreihe(z, "BHKW_WAERME", k, sim.DeckungKanalStuendlich(ProjektPuffer.TYP_BHKW, k));
             }
+        }
+
+        /// <summary>
+        /// Katalog v12: die Kältedeckung je Kälteerzeuger (<see cref="ZeitreihenSatz.KAELTE_PRAEFIX"/>, in der Folge der
+        /// Kältekaskade, Beschriftung = Bezeichner der Wärmepumpe) und die ungedeckte Kälte
+        /// (<see cref="ZeitreihenSatz.KAELTEREST"/>). Keine Rechnung — die Reihen sind die des Kältereiters
+        /// (<see cref="KaelteProduktionBild.AusLauf"/>); ohne Kälte bleibt der Satz unberührt.
+        /// </summary>
+        private static void Kaeltereihen(SimulationRunner runner, ZeitreihenSatz z)
+        {
+            KaelteProduktionBild.Reihen r = KaelteProduktionBild.AusLauf(runner.simulation_Kaeltebedarf);
+            if (r == null) return;
+            for (int i = 0; i < r.Erzeuger.Count; i++)
+            {
+                string schluessel = ZeitreihenSatz.KAELTE_PRAEFIX + (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                z.Reihen[schluessel] = r.Erzeuger[i].Werte;
+                z.Beschriftungen[schluessel] = r.Erzeuger[i].Name;
+                z.Kaeltereihen.Add(schluessel);
+            }
+            z.Reihen[ZeitreihenSatz.KAELTEREST] = r.Rest;
         }
 
         /// <summary>Eine Deckungsreihe eintragen — nur, wenn sie überhaupt Werte trägt.</summary>

@@ -267,8 +267,8 @@ public class PufferAuslegungSeiteTests : EposBunitContext
         var cut = Zeige(stand);
         Schritt(cut, 3);
 
-        // Standard zeigt alle neun Karten, abgeschaltete gedämpft.
-        Assert.Equal(9, Karten(cut).Count);
+        // Standard zeigt die neun Karten der Vorlage und das Aufheizkriterium K12, abgeschaltete gedämpft.
+        Assert.Equal(10, Karten(cut).Count);
         Assert.Contains("epos-pausl-karte--aus", cut.Find("section[data-kriterium=D1]").ClassName);
 
         cut.Find("section[data-kriterium=D1] input[type=checkbox]").Change(true);
@@ -486,6 +486,223 @@ public class PufferAuslegungSeiteTests : EposBunitContext
         Assert.Contains("gehört nicht zum Projekt", cut.Markup);
         Assert.Empty(cut.FindAll(".epos-ablaufleiste"));
     }
+
+    // =============================================================================
+    //  Abgleich mit der Jahressimulation (Probelauf, Welle P4b)
+    // =============================================================================
+
+    private static PufferProbelaufDaten Lauf(double startsJeTag, bool abweichung) => new()
+    {
+        Erfolg = true,
+        Zeitpunkt = new DateTime(2026, 10, 3, 14, 30, 0),
+        DauerSekunden = 12.4,
+        VolumenL = 3000,
+        Starts = new[]
+        {
+            new PufferProbelaufStartsDaten("Wärmepumpe", 1800, 1500, startsJeTag, true),
+            new PufferProbelaufStartsDaten("Heizkessel", 40, 38, 0.2, false)
+        },
+        Deckung = 0.97,
+        Monate = Enumerable.Range(1, 12).Select(m => new PufferFuellstandMonatDaten(m, 0.1, 0.5, 0.95)).ToList(),
+        KaeltesteWocheTag = 18, WocheMin = 0.1, WocheMittel = 0.4, WocheMax = 0.9,
+        AuslegungStartsJeTag = 5.3,
+        Abweichung = abweichung,
+        AbweichungText = abweichung ? "Die Jahressimulation zählt 8,0 Starts je Tag, die Auslegung schätzt 5,3 – Abweichung über 30 %." : ""
+    };
+
+    private IRenderedComponent<PufferAuslegungSeite> ZeigeMitProbelauf(Pruefstand stand, Func<PufferAuslegungEingabeDaten, PufferProbelaufDaten> lauf,
+                                                                      PufferAuslegungStartDaten? daten = null)
+        => Render<PufferAuslegungSeite>(p => p
+            .Add(x => x.Daten, daten ?? Start(stand))
+            .Add(x => x.Dienste, stand.Dienste() with { Probelauf = e => System.Threading.Tasks.Task.FromResult(lauf(e)) })
+            .Add(x => x.Geschlossen, () => _geschlossen++));
+
+    [Fact]
+    public void Schritt_4_zeigt_Auslegung_und_Probelauf_nebeneinander_und_ohne_Lauf_kein_Lauf()
+    {
+        var stand = new Pruefstand();
+        var cut = ZeigeMitProbelauf(stand, _ => Lauf(5.5, false));
+        Schritt(cut, 4);
+        var kopf = cut.FindAll(".epos-pausl-probelauf thead th").Select(t => t.TextContent).ToList();
+        Assert.Equal(new[] { Resource.PAUS_PROBELAUF_SPALTE_GROESSE, "Auslegung", "Probelauf (Empfehlung)" }, kopf);
+        var tag = cut.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td").Select(t => t.TextContent).ToList();
+        Assert.Equal("5,3", tag[1]);
+        Assert.Equal("kein Lauf", tag[2]);
+        Assert.Equal("Mit Jahressimulation nachrechnen", cut.Find(".epos-pausl-probelauf-knopf").TextContent);
+        Assert.Empty(cut.FindAll(".epos-pausl-probelauf-abweichung"));
+        Assert.Empty(cut.FindAll(".epos-pausl-probelauf-monate"));
+    }
+
+    [Fact]
+    public void Ohne_Probelauf_Dienst_fehlt_der_Knopf()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+        Schritt(cut, 4);
+        Assert.Single(cut.FindAll(".epos-pausl-probelauf"));
+        Assert.Empty(cut.FindAll(".epos-pausl-probelauf-knopf"));
+    }
+
+    [Fact]
+    public void Der_Knopf_rechnet_den_Probelauf_zeigt_Starts_Fuellstand_Dauer_und_den_Hinweis_ueber_30_Prozent()
+    {
+        var stand = new Pruefstand();
+        var gerufen = new List<PufferAuslegungEingabeDaten>();
+        var cut = ZeigeMitProbelauf(stand, e => { gerufen.Add(e); return Lauf(8.0, true); });
+        Schritt(cut, 4);
+        int gespeichert = stand.Gespeichert.Count, uebernommen = stand.Uebernommen.Count;
+        cut.Find(".epos-pausl-probelauf-knopf").Click();
+        Assert.Single(gerufen);
+        var tag = cut.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td").Select(t => t.TextContent).ToList();
+        Assert.Equal("8,0", tag[2]);
+        Assert.Equal("1.500", cut.Find(".epos-pausl-probelauf-heizperiode").QuerySelectorAll("td")[2].TextContent);
+        Assert.Equal("1.800", cut.Find(".epos-pausl-probelauf-jahr").QuerySelectorAll("td")[2].TextContent);
+        Assert.Equal("97 %", cut.Find(".epos-pausl-probelauf-deckung").QuerySelectorAll("td")[2].TextContent);
+        Assert.Contains("Heizkessel", cut.Find(".epos-pausl-probelauf-weitere").TextContent);
+        Assert.Equal("PA-STARTS-ABWEICHUNG", cut.Find(".epos-pausl-probelauf-abweichung").GetAttribute("data-code"));
+        Assert.Contains("Abweichung über 30 %", cut.Find(".epos-pausl-probelauf-abweichung").TextContent);
+        Assert.Equal(12, cut.FindAll(".epos-pausl-probelauf-monate tbody tr").Count);
+        string standzeile = cut.Find(".epos-pausl-probelauf-stand").TextContent;
+        Assert.Contains("3.000 l", standzeile);
+        Assert.Contains("12,4 s", standzeile);
+        // Nichts gespeichert, nichts übernommen.
+        Assert.Equal(gespeichert, stand.Gespeichert.Count);
+        Assert.Equal(uebernommen, stand.Uebernommen.Count);
+    }
+
+    [Fact]
+    public void Ohne_Abweichung_kein_Hinweis_und_ein_abgelehnter_Lauf_nennt_den_Grund()
+    {
+        var stand = new Pruefstand();
+        var cut = ZeigeMitProbelauf(stand, _ => Lauf(6.0, false));
+        Schritt(cut, 4);
+        cut.Find(".epos-pausl-probelauf-knopf").Click();
+        Assert.Empty(cut.FindAll(".epos-pausl-probelauf-abweichung"));
+
+        var cut2 = ZeigeMitProbelauf(stand, _ => PufferProbelaufDaten.MitFehler("Probelauf nicht möglich: Bitte eine Klimaregion wählen."));
+        Schritt(cut2, 4);
+        cut2.Find(".epos-pausl-probelauf-knopf").Click();
+        Assert.Contains("Klimaregion", cut2.Find(".epos-pausl-probelauf-fehler").TextContent);
+        Assert.Equal("kein Lauf", cut2.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td")[2].TextContent);
+    }
+
+    [Fact]
+    public void Ein_Lauf_der_Sitzung_steht_beim_Oeffnen_schon_da()
+    {
+        var stand = new Pruefstand();
+        PufferAuslegungStartDaten d = Start(stand);
+        d.Probelauf = Lauf(5.0, false);
+        var cut = ZeigeMitProbelauf(stand, _ => Lauf(5.0, false), d);
+        Schritt(cut, 4);
+        Assert.Equal("5,0", cut.Find(".epos-pausl-probelauf-tag").QuerySelectorAll("td")[2].TextContent);
+    }
+
+    // =============================================================================
+    //  Nutzen-Aufwand-Zeile, Speicher-gegen-Leistung-Kurve und Aufheizkriterium (Welle P4d)
+    // =============================================================================
+
+    private static PufferNachbarstufenDaten Nachbarn() => new()
+    {
+        Stufen = new[]
+        {
+            new PufferNachbarstufeDaten(-2, 1500, -1500, 0.97, 9.1, 2100, 610, "kleinerer Speicher: weniger Bereitschaftsverlust, aber mehr Starts"),
+            new PufferNachbarstufeDaten(-1, 2000, -1000, 0.99, 7.0, 1600, 700, "kleinerer Speicher: weniger Bereitschaftsverlust, aber mehr Starts"),
+            new PufferNachbarstufeDaten(0, 3000, 0, 1.0, 5.3, 1219, 850, "Empfehlung"),
+            new PufferNachbarstufeDaten(1, 5000, 2000, 1.0, 3.4, 800, 1100, "größerer Speicher: mehr Bereitschaftsverlust und höhere mittlere Puffertemperatur, JAZ sinkt"),
+            new PufferNachbarstufeDaten(2, 8000, 5000, 1.0, 2.2, 520, 1400, "größerer Speicher: mehr Bereitschaftsverlust und höhere mittlere Puffertemperatur, JAZ sinkt")
+        },
+        Kurve = new[]
+        {
+            new PufferLeistungspunktDaten(6, 0.6, 1400, 26.7, false),
+            new PufferLeistungspunktDaten(8, 0.8, 1000, 20, true),
+            new PufferLeistungspunktDaten(10, 1.0, 700, 16, true),
+            new PufferLeistungspunktDaten(12, 1.2, 500, 13.3, false),
+            new PufferLeistungspunktDaten(14, 1.4, 400, 11.4, false)
+        },
+        KurveHinweis = "Laufvolumen bei 10 kW = D_max 24 kWh",
+        Herkunft = "Konzept Pufferauslegung 6",
+        Simulationszone = "Heizzone",
+        DauerMs = 120,
+        Automatisch = true
+    };
+
+    [Fact]
+    public void Schritt_4_zeigt_die_Nutzen_Aufwand_Zeile_mit_hervorgehobener_Empfehlung_und_die_Kurve()
+    {
+        var stand = new Pruefstand();
+        PufferAuslegungStartDaten d = Start(stand);
+        d.Ergebnis!.Nachbarstufen = Nachbarn();
+        var cut = Zeige(stand, d);
+        Schritt(cut, 4);
+
+        var zeilen = cut.FindAll(".epos-pausl-nachbarstufen tbody tr");
+        Assert.Equal(5, zeilen.Count);
+        Assert.Equal(new[] { "-2", "-1", "0", "1", "2" }, zeilen.Select(z => z.GetAttribute("data-abstand")!).ToArray());
+        var empfehlung = cut.Find(".epos-pausl-nachbarstufen tr[data-abstand='0']");
+        Assert.Contains("epos-pausl-nachbarstufe--empfehlung", empfehlung.ClassName);
+        Assert.Contains("3.000 l", empfehlung.TextContent);
+        Assert.Contains("JAZ sinkt", cut.Find(".epos-pausl-nachbarstufen tr[data-abstand='2'] .epos-pausl-nachbarstufe-jaz").TextContent);
+        Assert.Contains("+5.000 l", cut.Find(".epos-pausl-nachbarstufen tr[data-abstand='2']").TextContent);
+        Assert.DoesNotContain("epos-pausl-nachbarstufe--empfehlung", cut.Find(".epos-pausl-nachbarstufen tr[data-abstand='1']").ClassName ?? "");
+
+        var kurve = cut.FindAll(".epos-pausl-kurve tbody tr");
+        Assert.Equal(5, kurve.Count);
+        Assert.Contains("700 l", kurve[2].TextContent);
+        Assert.Contains("epos-pausl-kurve--band", kurve[1].ClassName);
+        Assert.Contains("D_max", cut.Find(".epos-pausl-kurve-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-pausl-nachbarstufen-knopf"));
+    }
+
+    [Fact]
+    public void Ohne_Nachbarstufen_rechnet_der_Knopf_sie_auf_Zuruf()
+    {
+        var stand = new Pruefstand();
+        int gerufen = 0;
+        var cut = Render<PufferAuslegungSeite>(p => p
+            .Add(x => x.Daten, Start(stand))
+            .Add(x => x.Dienste, stand.Dienste() with { Nachbarstufen = _ => { gerufen++; return Nachbarn(); } }));
+        Schritt(cut, 4);
+        Assert.Empty(cut.FindAll(".epos-pausl-nachbarstufen"));
+        Assert.Contains(Resource.PAUS_NA_ERKLAERUNG, cut.Markup);
+
+        cut.Find(".epos-pausl-nachbarstufen-knopf").Click();
+        Assert.Equal(1, gerufen);
+        Assert.Equal(5, cut.FindAll(".epos-pausl-nachbarstufen tbody tr").Count);
+    }
+
+    [Fact]
+    public void Ohne_Nachbarstufen_Dienst_fehlt_der_Knopf()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+        Schritt(cut, 4);
+        Assert.Empty(cut.FindAll(".epos-pausl-nachbarstufen-knopf"));
+    }
+
+    [Fact]
+    public void Die_Karte_K12_folgt_dem_Nutzungsprofil_und_dem_Schalter_des_Anwenders()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+        Schritt(cut, 3);
+        // Wohnen: K12 steht in Standard gedämpft.
+        Assert.Contains("epos-pausl-karte--aus", cut.Find("section[data-kriterium=K12]").ClassName);
+        Assert.Equal(Resource.PAUS_KRIT_K12, cut.Find("section[data-kriterium=K12] .epos-pausl-karte-titel").TextContent);
+
+        cut.Find("section[data-kriterium=K12] input[type=checkbox]").Change(true);
+        Assert.True(stand.Gerechnet.Last().Kriterien["K12"]);
+        Assert.DoesNotContain("epos-pausl-karte--aus", cut.Find("section[data-kriterium=K12]").ClassName);
+
+        // Büro/Schule: der Vorlagenschalter steht an, Schnell zeigt die Karte.
+        var buero = new Pruefstand();
+        PufferAuslegungStartDaten d = Start(buero);
+        d.AufheizVorlageAn = true;
+        var cut2 = Zeige(buero, d);
+        Stufe(cut2, PufferAuslegungStufe.Schnell);
+        Schritt(cut2, 3);
+        Assert.Contains("K12", Karten(cut2));
+        Assert.DoesNotContain("epos-pausl-karte--aus", cut2.Find("section[data-kriterium=K12]").ClassName);
+    }
 }
 
 /// <summary>Dieselbe Ansicht unter en-US: Titel, Schritte und Marken aus <c>Resource.en-US</c>.</summary>
@@ -571,7 +788,7 @@ public class PufferAuslegungSeiteEnglischTests : EposBunitContext
             new PufferHerkunftDaten("Erzeuger", "Kaskade", "Cascade", erzeuger)
         };
         start.Erzeuger = new[] { erzeuger };
-        start.NutzungsprofilHerkunft = WindowsFormsApplication1.Nutzungsprofil.Ableiten(new[] { "Mehrfamilienhaus" }, false, null)
+        start.NutzungsprofilHerkunft = WindowsFormsApplication1.Nutzungsprofil.Ableiten(new[] { "Wohnen groß (abgeleitet)" }, false, null)
             .HerkunftBaustein.Aufloesen();
         start.Ergebnis = ergebnis;
 

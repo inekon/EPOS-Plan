@@ -826,6 +826,20 @@ namespace WindowsFormsApplication1
         internal Fassadenstrahlung Strahlung { get; private set; }
         /// <summary>Fiel die Erdreichrechnung auf Ersatzwerte des Jahresgangs zurück? Im Bauteilweg nur, wenn ein Bauteil am Erdreich liegt.</summary>
         internal bool ErdreichErsatzwerte { get; private set; }
+
+        /// <summary>
+        /// Das Feld des freiliegenden Umfangs der Bodenplatte [m] (Rechenweg RP2a): die Länge des Anschlusses
+        /// Außenwand/Kellerdecke der Gebäudezeile; 0 = nicht vorhanden. Gilt nur, wenn es mindestens dem Umfang
+        /// des flächengleichen Kreises entspricht (<see cref="Erdreichwiderstand.Umfang"/>).
+        /// </summary>
+        internal double ErdreichUmfangFeld_M { get; private set; }
+
+        /// <summary>
+        /// Die Erdreichkennwerte nach DIN EN ISO 13370 (Rechenweg RP2a): B′, Umfang samt Herkunft, U_g, R_g;
+        /// <c>null</c>, wenn kein Bauteil (Klassenweg: keine Grundfläche) am Erdreich liegt. <see cref="U_Grund"/>
+        /// bleibt der eingetragene Wert; den wirksamen trägt <see cref="Erdreichkennwerte.UWirksam_WM2K"/>.
+        /// </summary>
+        internal Erdreichkennwerte Erdreich { get; private set; }
         /// <summary>Zahl der Stunden mit Gegenstrahlung — nur in ihnen rechnet der langwellige Term (NULL-Regel E5).</summary>
         internal int StundenMitGegenstrahlung { get; private set; }
 
@@ -990,7 +1004,10 @@ namespace WindowsFormsApplication1
             e.KonditionierungAufloesen(konditionierung);
 
             if (e.Zone == null)
+            {
                 e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
+                e.Erdreich = e.Parameter.Erdreich;
+            }
             else
             {
                 // Die Werte der Zone (G6b, A5 (a): eine Regel für jede Zahl der Zonen).
@@ -1005,6 +1022,7 @@ namespace WindowsFormsApplication1
                     e.LuftaustauschLeitwert_WK = g;
                 }
                 e.Parameter = ErsatzparameterRC.AusBauteilweg(e, e.Bauteile);
+                e.Erdreich = e.Parameter.Erdreich;
             }
             e.Zeitbezug = klima.Zeitbezug;
 
@@ -1060,7 +1078,8 @@ namespace WindowsFormsApplication1
                 // Mit Schalter: Wand und Sonstiges senkrecht, Dach waagerecht (Klassenweg, Rechenschritte E5).
                 double uaSenkrecht = e.U_Aussenwand * e.A_Aussenwand_M2 + e.U_Sonstige * e.A_Sonstige_M2;
                 double uaDach = e.U_Dach * e.A_Dach_M2;
-                double uaGrund = e.U_Grund * e.A_Grund_M2;
+                // RP2a: der wirksame U-Wert der Grundfläche (mit Erdreichwiderstand) wie in Gl. (27).
+                double uaGrund = (e.Erdreich?.UWirksam_WM2K ?? e.U_Grund) * e.A_Grund_M2;
                 double uaFenster = p.UA_Fenster_WK;
                 double uaSumme = p.SummeUA_opak_WK + uaFenster;
 
@@ -2022,6 +2041,7 @@ namespace WindowsFormsApplication1
                 A_Fenster_M2 = g.gesamte_Fensterflaeche,
                 A_Dach_M2 = g.Dachflaeche,
                 A_Grund_M2 = g.Grundflaeche,
+                ErdreichUmfangFeld_M = g.Abmessung_Anschluß_Außenwand_Kellerdecke,
                 A_Sonstige_M2 = g.Sonstige_Flaechen,
                 A_FensterSued_M2 = g.Fensterflaeche_Sued,
                 A_FensterNord_M2 = g.Fensterflaeche_Nord,

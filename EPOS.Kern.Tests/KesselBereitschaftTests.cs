@@ -38,14 +38,15 @@ namespace EPOS.Kern.Tests
     {
         private const int PROJEKT_GASKESSEL = 1007;
         private const double BEREITSCHAFT_1007_KW = 0.05;
-        private const int LAUFSTUNDEN_1007 = 1797;
-        private const int BEREITSCHAFTSSTUNDEN_1007 = 4335;
+        // RP2a (Erdreich nach DIN EN ISO 13370): vorher 1797 / 4335 / 3488 Stunden.
+        private const int LAUFSTUNDEN_1007 = 1729;
+        private const int BEREITSCHAFTSSTUNDEN_1007 = 4403;
         private const int HEIZTAGE_1007 = 254;
 
         /// <summary>Eine eigene Heizgrenze für 1007 und was sie ergibt (nachgebildet aus der Basis).</summary>
         private const double GRENZE_EIGEN = 12;
         private const int HEIZTAGE_1007_EIGEN = 202;
-        private const int BEREITSCHAFTSSTUNDEN_1007_EIGEN = 3488;
+        private const int BEREITSCHAFTSSTUNDEN_1007_EIGEN = 3555;
         private const int PROJEKT_ELEKTROKESSEL = 1017;
         private const int PROJEKT_MIT_REST = 1023;
         private const int PROJEKT_OHNE_REST = 1030;

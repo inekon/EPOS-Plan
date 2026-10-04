@@ -159,16 +159,16 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             PufferAuslegungGespeichert g = Probe() with
             {
                 BemessendHerkunft = HeizzoneRechner.HERKUNFT_K4,
-                NutzungsprofilHerkunft = Nutzungsprofil.Ableiten(new[] { "Mehrfamilienhaus" }, false, null).HerkunftBaustein
+                NutzungsprofilHerkunft = Nutzungsprofil.Ableiten(new[] { "Wohnen groß (abgeleitet)" }, false, null).HerkunftBaustein
             };
             string de = string.Join("\n", Schreibe(Daten(new List<PufferAuslegungGespeichert> { g })));
             Assert.Contains("VDI 4645 E 2026-03, Gleichung 23 mit Tabellen 14 und 15", de);
-            Assert.Contains(R.PAUS_NP_WOHNEN + " — Zapf-Nutzungsart „Mehrfamilienhaus“", de);
+            Assert.Contains(R.PAUS_NP_WOHNEN + " — Zapf-Nutzungsart „Wohnen groß (abgeleitet)“", de);
 
             string en;
             using (BerichtTexte.ImLauf(true)) en = string.Join("\n", Schreibe(Daten(new List<PufferAuslegungGespeichert> { g })));
             Assert.Contains("VDI 4645 draft 2026-03, equation 23 with tables 14 and 15", en);
-            Assert.Contains("Draw-off use type “Mehrfamilienhaus”", en);
+            Assert.Contains("Draw-off use type “Wohnen groß (abgeleitet)”", en);
             foreach (string marke in new[] { "Gleichung", "Tabellen", "Zapf-Nutzungsart", "Wärmespeicher-Tool", "Vorgabe" })
                 Assert.DoesNotContain(marke, en);
         }
@@ -220,6 +220,52 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             string[] t = Schreibe(Daten(zeilen.ToList()));
             Assert.Contains(R.PAUS_TITEL, t);
             Assert.Contains(g.Puffername, t);
+        }
+
+        // =============================================================================
+        //  Platzhalter {{tabelle.pufferauslegung}} (Katalog v12, Welle P4c)
+        // =============================================================================
+
+        /// <summary>
+        /// Steht der Platzhalter in der Vorlage, schreibt er die Tafel an seiner Stelle, und der Baustein des Kapitels
+        /// Projekt lässt seinen Abschnitt weg; ohne Platzhalter schreibt der Baustein wie bisher (Gegenprobe).
+        /// </summary>
+        [Fact]
+        public void Der_Platzhalter_schreibt_die_Tafel_an_seiner_Stelle_und_der_Baustein_schweigt()
+        {
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-pa-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(ordner);
+            try
+            {
+                var konfig = new BerichtsKonfiguration();
+                konfig.AktiveBausteine.Add(BerichtsKonfiguration.B_PROJEKT);
+
+                (string[] Absaetze, string[] Zellen) Fuelle(params string[] absaetze)
+                {
+                    byte[] vorlage = Probevorlagen.AusAbsaetzen(absaetze);
+                    string ziel = Path.Combine(ordner, Guid.NewGuid().ToString("N") + ".docx");
+                    new WordBerichtGenerator().ErzeugeMitVorlage(Daten(new List<PufferAuslegungGespeichert> { Probe() }), konfig,
+                                                                 vorlage, new Erstellerangaben(), ziel);
+                    using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+                    Body body = doc.MainDocumentPart!.Document.Body!;
+                    return (body.Elements<Paragraph>().Select(p => p.InnerText).ToArray(),
+                            body.Descendants<TableCell>().Select(c => c.InnerText).ToArray());
+                }
+
+                var mit = Fuelle("{{kapitel.projekt}}", "{{tabelle.pufferauslegung}}");
+                Assert.Contains("Speicher 1", mit.Zellen);
+                Assert.Contains(R.PAUS_EMPFEHLUNG, mit.Zellen);
+                Assert.DoesNotContain(R.BER_PAUS_EINLEITUNG, mit.Absaetze);
+                Assert.DoesNotContain(R.PAUS_TITEL, mit.Absaetze);
+
+                var ohne = Fuelle("{{kapitel.projekt}}");
+                Assert.Contains(R.BER_PAUS_EINLEITUNG, ohne.Absaetze);
+                Assert.Contains(R.PAUS_TITEL, ohne.Absaetze);
+            }
+            finally
+            {
+                try { Directory.Delete(ordner, true); } catch (IOException) { }
+            }
         }
     }
 }

@@ -409,6 +409,35 @@ namespace WindowsFormsApplication1
             return neueId;
         }
 
+        // ---- Katalogverweis des Projektpuffers (Tab_Pufferspeicher.ID_Stamm, Welle P4c) ----
+
+        internal const string SQL_KATALOGHERKUNFT =
+            "SELECT s.Bezeichner FROM Tab_Pufferspeicher p JOIN Tab_Pufferspeicher_STAMM s ON s.ID = p.ID_Stamm WHERE p.ID = ?";
+        internal const string SQL_KATALOGVERWEIS_SETZEN =
+            "UPDATE Tab_Pufferspeicher SET ID_Stamm = ? WHERE ID = ? AND ID_Projekt = ?";
+
+        /// <summary>Gibt es den Katalogverweis am Projektpuffer (Schemaschritt der Pufferauslegungs-Ergänzungen)?</summary>
+        public static bool KatalogverweisVorhanden() =>
+            DataRepository.SpalteVorhanden(SchemaKatalog.TAB_PUFFERSPEICHER, PufferAuslegungErgaenzungSchema.SPALTE_PUFFER_STAMM);
+
+        /// <summary>Der Bezeichner des Katalogsatzes, aus dem der Puffer übernommen wurde; <c>null</c> = keiner.</summary>
+        public static string Katalogherkunft(int idPuffer)
+        {
+            if (idPuffer <= 0 || !KatalogverweisVorhanden()) return null;
+            object o = DataRepository.ExecuteScalar(SQL_KATALOGHERKUNFT, new DbParam("@id", idPuffer));
+            string b = o == null || o == DBNull.Value ? null : Convert.ToString(o, System.Globalization.CultureInfo.InvariantCulture);
+            return string.IsNullOrWhiteSpace(b) ? null : b;
+        }
+
+        /// <summary>Setzt den Katalogverweis des Projektpuffers (<c>null</c> = keiner); ohne die Spalte: nichts.</summary>
+        public static bool KatalogverweisSetzen(int idPuffer, int idProjekt, int? idStamm)
+        {
+            if (!KatalogverweisVorhanden()) return true;
+            return DataRepository.ExecuteNonQuery(SQL_KATALOGVERWEIS_SETZEN,
+                new DbParam("@stamm", DbParamTyp.Integer) { Wert = idStamm.HasValue ? idStamm.Value : DBNull.Value },
+                new DbParam("@id", idPuffer), new DbParam("@projekt", idProjekt)) >= 0;
+        }
+
         /// <summary>
         /// Ändert einen vorhandenen Projekt-Puffer (Konzept 4.3).
         /// Die drei Klassen-Set-Flags verhalten sich wie in

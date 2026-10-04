@@ -70,6 +70,13 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Sperrzeit bis [h] — Pflichtangabe.</summary>
     public int? SperrzeitBis { get; set; }
 
+    /// <summary>
+    /// Die Sperrfenster der Anlage (Welle V14, <c>Tab_Sperrfenster</c>) — das aktive Altfenster
+    /// (<see cref="Sperrung"/>) steht als erste Zeile darin und wird beim Speichern überführt.
+    /// <c>null</c> = die Hülle liefert keine Liste (dann bleibt alles, wie es ist).
+    /// </summary>
+    public List<SperrfensterZeile>? Sperrfenster { get; set; }
+
     /// <summary>Bivalenter Betrieb.</summary>
     public bool BivalenterBetrieb { get; set; }
 
@@ -191,6 +198,7 @@ public sealed class WaermepumpeAnlageDaten
         Sperrung = Sperrung,
         SperrzeitVon = SperrzeitVon,
         SperrzeitBis = SperrzeitBis,
+        Sperrfenster = Sperrfenster?.Select(z => z.Kopie()).ToList(),
         BivalenterBetrieb = BivalenterBetrieb,
         CarrierId = CarrierId,
         Betriebsart = Betriebsart,
@@ -256,4 +264,35 @@ public sealed class WaermepumpeKuehlGaben
     /// weicht der Kühlträger davon ab, bietet der Baustein die Abrechnungsart an (E34).
     /// </summary>
     public int ProjektStromtraeger { get; init; }
+}
+
+/// <summary>
+/// Ein Sperrfenster der Wärmepumpe im Feldsatz (Welle V14): Beginn und Dauer in Stunden, die
+/// Wochentage als Bitmaske (Mo = 1 … So = 64) und ob der Heizstab mitgesperrt ist.
+/// </summary>
+public sealed class SperrfensterZeile
+{
+    /// <summary>Alle sieben Tage.</summary>
+    public const int ALLE_TAGE = 127;
+
+    /// <summary>Beginn [h des Tages, 0 … 24].</summary>
+    public double? VonH { get; set; }
+
+    /// <summary>Dauer [h, 0 … 24]; über Mitternacht läuft das Fenster in den Folgetag.</summary>
+    public double? DauerH { get; set; }
+
+    /// <summary>Wochentage als Bitmaske, Mo = 1 … So = 64.</summary>
+    public int Wochentage { get; set; } = ALLE_TAGE;
+
+    /// <summary>Liefert auch der Heizstab im Fenster nichts?</summary>
+    public bool HeizstabGesperrt { get; set; } = true;
+
+    /// <summary>Gilt das Fenster am Wochentag <paramref name="tag"/> (Montag = 0 … Sonntag = 6)?</summary>
+    public bool GiltAm(int tag) => (Wochentage & (1 << tag)) != 0;
+
+    /// <summary>Eine flache Kopie.</summary>
+    public SperrfensterZeile Kopie() => new()
+    {
+        VonH = VonH, DauerH = DauerH, Wochentage = Wochentage, HeizstabGesperrt = HeizstabGesperrt
+    };
 }

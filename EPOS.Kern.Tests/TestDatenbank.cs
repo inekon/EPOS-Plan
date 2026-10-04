@@ -907,6 +907,20 @@ namespace EPOS.Kern.Tests
                 // Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat.
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
                 ProjektkopienKatalogeSchema.Ausfuehren(null);
+                // Schritt KonditionierungNutzungSchema.SCHRITT (nach 175): die Nutzung der Vorlage am
+                // Kalender des Projekts samt Saat aus der Herkunft in Bemerkung. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar, KEIN Rechenergebnis aendert sich.
+                KonditionierungNutzungSchema.Ausfuehren(null);
+                // Schritt WaermepumpeSperrprofilSchema.SCHRITT (Welle V14): die Tabelle Tab_Sperrfenster,
+                // leer. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
+                WaermepumpeSperrprofilSchema.Ausfuehren(null);
+                // Schritt ProzessNutzungSchema.SCHRITT (V31/V32): Zuordnung der Nutzungsprofile und die
+                // Zapf-Nutzungsarten Buero/Schule/Gewerbe. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                ProzessNutzungSchema.Ausfuehren(null);
+                // Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Wellen P4c/P4d): die Sitzungseingaben der
+                // Pufferauslegung, ID_Stamm am Projektpuffer, Saat des Aufheizkriteriums. Aus DERSELBEN Quelle
+                // wie Migration und Werkzeug; die Spalten bleiben leer.
+                PufferAuslegungErgaenzungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

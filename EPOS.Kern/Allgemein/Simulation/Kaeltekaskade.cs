@@ -300,6 +300,14 @@ namespace WindowsFormsApplication1
         /// <param name="sperrBis">Ende der Sperrzeit [h des Tages], ausschließlich.</param>
         public static double[] ZeitanteilBilden(bool[] kuehltage, double[] heizzeitanteil,
                                                 bool sperrung, int sperrVon, int sperrBis)
+            => ZeitanteilBilden(kuehltage, heizzeitanteil,
+                                Sperrprofil.Bilden(sperrung, sperrVon, sperrBis, null, 0).Verdichter);
+
+        /// <summary>
+        /// Wie <see cref="ZeitanteilBilden(bool[], double[], bool, int, int)"/>, mit der Stundenmaske des
+        /// Sperrprofils (<see cref="Sperrprofil.Verdichter"/>, Welle V14); <c>null</c> = keine Sperre.
+        /// </summary>
+        public static double[] ZeitanteilBilden(bool[] kuehltage, double[] heizzeitanteil, bool[] sperrmaske)
         {
             var anteil = new double[STUNDEN];
             if (kuehltage == null) return anteil;
@@ -309,8 +317,7 @@ namespace WindowsFormsApplication1
                 int tag = h / 24;
                 if (tag >= kuehltage.Length || !kuehltage[tag]) continue;
 
-                int std = h % 24;
-                if (sperrung && std >= sperrVon && std < sperrBis) continue;
+                if (sperrmaske != null && h < sperrmaske.Length && sperrmaske[h]) continue;
 
                 double heiz = (heizzeitanteil != null && h < heizzeitanteil.Length) ? heizzeitanteil[h] : 0.0;
                 if (heiz < 0) heiz = 0;

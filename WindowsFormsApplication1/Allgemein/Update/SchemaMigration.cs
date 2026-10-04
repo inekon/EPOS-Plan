@@ -5054,6 +5054,46 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_PROJEKTKOPIEN_KATALOGE = ProjektkopienKatalogeSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KonditionierungNutzungSchema.SCHRITT"/> — <b>die Konditionierungsnutzung an der
+        /// Kalenderkopie</b>. Er folgt auf <see cref="SCHRITT_PROJEKTKOPIEN_KATALOGE"/>.
+        ///
+        /// <para><b>DDL und Saat:</b> die Spalte <c>Nutzung</c> an <c>Tab_Konditionierungskalender</c>, dann
+        /// je Kalender, dessen Bemerkung eine Herkunftsvorlage nennt, die Nutzung dieser Vorlage. Danach liest
+        /// die Pufferauslegung die Nutzung an der Kopie statt am Vorlagenkatalog.</para>
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Lauf liest die Nutzung nicht.</para>
+        /// </summary>
+        public const int SCHRITT_KONDITIONIERUNG_NUTZUNG = KonditionierungNutzungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/> — <b>das Sperrprofil der Wärmepumpe</b>
+        /// (Anwenderentscheid 03.10.2026): die Tabelle <c>Tab_Sperrfenster</c> (STRICT, je Anlagenzeile).
+        ///
+        /// <para><b>Nur DDL, wiederholbar, ergebnisneutral:</b> Die Tabelle kommt leer an; das Altfenster an
+        /// <c>Tab_Energieanlagen</c> bleibt gültig.</para>
+        /// </summary>
+        public const int SCHRITT_WAERMEPUMPE_SPERRPROFIL = WaermepumpeSperrprofilSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ProzessNutzungSchema.SCHRITT"/> — <b>die Zuordnung der Nutzungsprofile über IDs
+        /// und die Zapf-Nutzungsarten Büro, Schule, Gewerbe</b> (V31/V32). DDL <c>Tab_Nutzungsprofil_STAMM</c>
+        /// und <c>Z_Nutzungsprofil</c> (STRICT), Saat per INSERT OR IGNORE, Nachtrag der drei Nutzungsarten in
+        /// einen versionierten Zapfkatalog. Wiederholbar, ergebnisneutral.
+        /// </summary>
+        public const int SCHRITT_PROZESS_NUTZUNG = ProzessNutzungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/> — <b>die Ergänzungen der
+        /// Pufferspeicher-Auslegung</b> (Wellen P4c/P4d): an <c>Tab_PufferAuslegung</c> die Sitzungseingaben,
+        /// an <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c>, dazu die Saat der Vorgaben des Aufheizkriteriums K12
+        /// in <c>Tab_PufferAuslegungParameter_STAMM</c> (INSERT OR IGNORE).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer; die Simulation liest
+        /// keine Vorgabe der Pufferauslegung.</para>
+        /// </summary>
+        public const int SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG = PufferAuslegungErgaenzungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7306,6 +7346,36 @@ namespace WindowsFormsApplication1
                         "Ein Katalogabgleich aenderte die Werte der Brennstoffe und der Pufferauslegungs-Vorgaben, die " +
                         "ein Projekt liest. KEIN Rechenergebnis aendert sich - die Kopien tragen die Werte des Stamms.",
                         Schritt_ProjektkopienKataloge),
+            // KONDITIONIERUNGSNUTZUNG an der Kalenderkopie samt Saat aus der Herkunftsvorlage. Die Quelle
+            // ist KonditionierungNutzungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KONDITIONIERUNG_NUTZUNG,
+                        "Tab_Konditionierungskalender: Nutzung",
+                        "Die Vorbelegung der Pufferauslegung laese die Nutzung weiter am Vorlagenkatalog; Umbenennen, " +
+                        "Loeschen oder Katalogabgleich einer Vorlage aenderten sie. KEIN Rechenergebnis aendert sich.",
+                        Schritt_KonditionierungNutzung),
+            // SPERRPROFIL der Waermepumpe: die Tabelle der Sperrfenster. Die Quelle ist
+            // WaermepumpeSperrprofilSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_WAERMEPUMPE_SPERRPROFIL,
+                        "Tab_Sperrfenster (Sperrfenster der Waermepumpe)",
+                        "Ein Sperrprofil mit mehreren Fenstern und Wochentagen haette keinen Ort. KEIN Rechenergebnis " +
+                        "aendert sich - die Tabelle entsteht leer.",
+                        Schritt_WaermepumpeSperrprofil),
+            // ZUORDNUNG DER NUTZUNGSPROFILE über IDs und Zapf-Nutzungsarten Büro/Schule/Gewerbe (V31/V32). Die
+            // Quelle ist ProzessNutzungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PROZESS_NUTZUNG,
+                        "Tab_Nutzungsprofil_STAMM, Z_Nutzungsprofil, Zapf-Nutzungsarten Buero/Schule/Gewerbe",
+                        "Die Pufferauslegung leitete ihr Nutzungsprofil ueber die Vorgabe im Code ab; die Nutzungsarten " +
+                        "Buero, Schule und Gewerbe fehlten im Zapfkatalog. KEIN Rechenergebnis aendert sich.",
+                        Schritt_ProzessNutzung),
+            // ERGAENZUNGEN der Pufferauslegung (P4c). Quelle ist PufferAuslegungErgaenzungSchema,
+            // die Nummer steht allein dort.
+            new Schritt(SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG,
+                        "Tab_PufferAuslegung: Kriterien_Aktiv, Sperrzeit_Expertenweg, Auslegungsheizlast_kW, " +
+                        "Wohneinheiten, Anzeigestufe; Tab_Pufferspeicher: ID_Stamm; Saat Pufferauslegung.Aufheiz.*",
+                        "Die Eingaben einer Auslegungssitzung und der Katalogsatz eines uebernommenen Puffers haetten " +
+                        "keinen Ort; die Vorgaben des Aufheizkriteriums stuenden nur im Code. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten entstehen leer.",
+                        Schritt_PufferAuslegungErgaenzung),
         };
 
         /// <summary>
@@ -13399,6 +13469,208 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen) l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben - " +
                     (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Konditionierungsnutzung an der Kalenderkopie" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KONDITIONIERUNG_NUTZUNG"/>, die Anweisungen bei
+        /// <see cref="KonditionierungNutzungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KonditionierungNutzung(Lauf l)
+        {
+            string nr = KonditionierungNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KonditionierungNutzungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(KonditionierungNutzungSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!KonditionierungNutzungSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte Nutzung steht nach dem Schritt nicht an Tab_Konditionierungskalender.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern, in EINEM Vorgang.
+            var zeilen = new List<string>();
+            try
+            {
+                KonditionierungNutzungSchema.Saat(zeilen);
+            }
+            catch (Exception ex)
+            {
+                foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Konditionierungsnutzung an der Kalenderkopie - " +
+                    (angelegt == 0 ? "Spalte stand bereits." : "Spalte angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        private static bool Schritt_ProzessNutzung(Lauf l)
+        {
+            string nr = ProzessNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProzessNutzungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(ProzessNutzungSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!ProzessNutzungSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Die Tabellen der Nutzungsprofil-Zuordnung stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            // Die Saat ueber den KERN mit ?-Parametern.
+            var zeilen = new List<string>();
+            try
+            {
+                ProzessNutzungSchema.Saat(zeilen);
+            }
+            catch (Exception ex)
+            {
+                foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (!ProzessNutzungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Nach der Saat fehlen Nutzungsprofile oder Zuordnungen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Nutzungsprofil-Zuordnung und Zapf-Nutzungsarten - " +
+                    (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Tabelle(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Sperrprofil der Wärmepumpe" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_WAERMEPUMPE_SPERRPROFIL"/>, die Anweisungen bei
+        /// <see cref="WaermepumpeSperrprofilSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_WaermepumpeSperrprofil(Lauf l)
+        {
+            string nr = WaermepumpeSperrprofilSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN))
+            {
+                l.LetzterFehler = "Die Tabelle " + SchemaKatalog.TAB_ENERGIEANLAGEN + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in
+                     new List<KeyValuePair<string, string>>(WaermepumpeSperrprofilSchema.Anweisungen))
+            {
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                angelegt++;
+            }
+
+            if (!WaermepumpeSperrprofilSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Tabelle " + WaermepumpeSperrprofilSchema.TAB + " steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Sperrfenster der Waermepumpe - " +
+                    (angelegt == 0 ? "Tabelle stand bereits." : "Tabelle angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ergänzungen der Pufferauslegung" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG"/>, die Anweisungen bei
+        /// <see cref="PufferAuslegungErgaenzungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_PufferAuslegungErgaenzung(Lauf l)
+        {
+            string nr = PufferAuslegungErgaenzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in PufferAuslegungErgaenzungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = PufferAuslegungErgaenzungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!PufferAuslegungErgaenzungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Ergaenzungsspalten oder Vorgaben der Pufferauslegung stehen nach dem Schritt " +
+                                  "nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergaenzungen der Pufferauslegung - " +
+                    (handgriffe == 0 ? "standen bereits." : handgriffe + " Handgriff(e) (Spalten und Saat).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

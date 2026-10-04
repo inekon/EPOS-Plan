@@ -220,8 +220,9 @@ namespace EPOS.Kern.Tests
 
                 SimulationWaermepumpe wp = l.sim.simulation_wp;
                 Assert.True(wp.wp_list.Count == 2, "Projekt 1042 führt nicht mehr zwei Module.");
-                Assert.Equal(5995.29, wp.Modul_WP_Laufzeit[0], 2);
-                Assert.Equal(1575.4, wp.Modul_WP_Laufzeit[1], 2);
+                // Rechenweg RP2a (Erdreichwiderstand): vorher 5 995,29 und 1 575,4.
+                Assert.Equal(5925.57, wp.Modul_WP_Laufzeit[0], 2);
+                Assert.Equal(1587.23, wp.Modul_WP_Laufzeit[1], 2);
             }
         }
 
@@ -300,9 +301,10 @@ namespace EPOS.Kern.Tests
                 Assert.True(l.Simuliere(1024, out fehler), "Lauf gescheitert: " + fehler);
 
                 SimulationSPK spk = l.sim.simulation_spk;
-                Assert.Equal(4895, spk.Laufstunden_Spk[0]);
+                // Rechenweg RP2a (Erdreichwiderstand): vorher 4 895 / 233 / 2 608.
+                Assert.Equal(4652, spk.Laufstunden_Spk[0]);
                 Assert.Equal(233, spk.Starts_Spk[0]);
-                Assert.Equal(2608, spk.Bereitschaftsstunden_Spk[0]);
+                Assert.Equal(2594, spk.Bereitschaftsstunden_Spk[0]);
             }
         }
 

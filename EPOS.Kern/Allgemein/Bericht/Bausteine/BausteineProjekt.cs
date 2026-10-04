@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
@@ -686,66 +687,141 @@ namespace WindowsFormsApplication1
         {
             List<PufferAuslegungGespeichert> zeilen = stamm?.Pufferauslegungen;
             if (zeilen == null || zeilen.Count == 0) return;
+            // Steht der Platzhalter {{tabelle.pufferauslegung}} in der Vorlage, schreibt er die Tafel an
+            // seiner Stelle - der Standardabschnitt entfällt (keine doppelte Ausgabe, Welle P4c).
+            if (k.Vorlagenfelder != null && k.Vorlagenfelder.Contains(PLATZHALTER_PUFFERAUSLEGUNG)) return;
 
             k.Ueberschrift2Roh(MyResource.Resource.PAUS_TITEL);
             k.TextRoh(MyResource.Resource.BER_PAUS_EINLEITUNG);
 
             foreach (PufferAuslegungGespeichert g in zeilen)
             {
-                k.Ueberschrift3Roh(string.IsNullOrWhiteSpace(g.Puffername) ? MyResource.Resource.BER_PAUS_NEUER_SPEICHER : g.Puffername);
+                k.Ueberschrift3Roh(Pufferueberschrift(g));
+                k.Eigenschaften(PufferauslegungPaare(g, k.Kultur).ToArray());
 
-                var paare = new List<string>
+                string abweichung = PufferauslegungNachrechnung(g, k.Kultur);
+                if (abweichung != null) k.HinweisRoh(abweichung);
+
+                // Welle P4d: die Nutzen-Aufwand-Zeile - nur, wenn die gespeicherte Auslegung nachgerechnet wurde.
+                List<string> stufen = PufferauslegungNachbarstufenzeilen(g, k.Kultur);
+                if (stufen.Count > 0)
                 {
-                    MyResource.Resource.BER_PAUS_SPEICHERKLASSE, Klassentext(g),
-                    MyResource.Resource.BER_PAUS_VORLAGE, Vorlagentext(g.Vorlage),
-                    MyResource.Resource.PAUS_NUTZUNGSPROFIL, Nutzungsprofiltext(g, k.Kultur)
-                };
-                void Zone(PufferZone zone, double? volumen)
-                {
-                    if (!volumen.HasValue) return;
-                    paare.Add(Pauskey("PAUS_ZONE_", zone.ToString(), zone.ToString()));
-                    paare.Add(Liter(k, volumen));
+                    k.TextRoh(MyResource.Resource.PAUS_NA_GRUPPE);
+                    foreach (string z in stufen) k.HinweisRoh("• " + z);
                 }
-                Zone(PufferZone.Heizung, g.VolumenHeizungL);
-                Zone(PufferZone.Brauchwasser, g.VolumenBrauchwasserL);
-                Zone(PufferZone.Prozess, g.VolumenProzessL);
-
-                paare.Add(MyResource.Resource.BER_PAUS_BEMESSEND);
-                paare.Add(Bemessendtext(g));
-                paare.Add(MyResource.Resource.PAUS_SPALTE_HERKUNFT);
-                string herkunft = Textbaustein.Aufloesen(g.BemessendHerkunft, k.Kultur);
-                paare.Add(string.IsNullOrWhiteSpace(herkunft) ? "—" : herkunft);
-                paare.Add(MyResource.Resource.PAUS_EMPFEHLUNG);
-                paare.Add(g.EmpfehlungL.HasValue && g.EmpfehlungL.Value <= 0 ? MyResource.Resource.PAUS_KEIN_PUFFER : Liter(k, g.EmpfehlungL));
-                paare.Add(MyResource.Resource.BER_PAUS_GEWAEHLT);
-                paare.Add(Liter(k, g.GewaehltL));
-                paare.Add(MyResource.Resource.PAUS_KZ_STARTS_TAG);
-                paare.Add(Wert(k, g.StartsJeTag, 1, "1/d"));
-                paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_TAG);
-                paare.Add(Wert(k, g.VerlustKwhJeTag, 2, "kWh/d"));
-                paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_WK);
-                paare.Add(Wert(k, g.VerlustWJeK, 2, "W/K"));
-                paare.Add(MyResource.Resource.BER_PAUS_BERECHNET_AM);
-                paare.Add(g.BerechnetAm.HasValue ? g.BerechnetAm.Value.ToString("dd.MM.yyyy HH:mm", k.Kultur) : "—");
-                k.Eigenschaften(paare.ToArray());
-
-                if (g.Fehlertext != null)
-                    k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.BER_PAUS_NACHRECHNUNG_FEHLT,
-                                               g.Fehlertext.Length > 0 ? g.Fehlertext : "—"));
-                else if (g.NachgerechnetL.HasValue && g.EmpfehlungL.HasValue
-                         && Math.Abs(g.NachgerechnetL.Value - g.EmpfehlungL.Value) > 0.5)
-                    k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.BER_PAUS_NACHRECHNUNG_ABWEICHEND,
-                                               k.F(g.NachgerechnetL.Value, 0)));
 
                 k.TextRoh(MyResource.Resource.PAUS_GRUPPE_WARNUNGEN);
-                if (g.Warnungen == null || g.Warnungen.Count == 0)
-                    k.HinweisRoh("• " + MyResource.Resource.PAUS_WARNUNGEN_LEER);
-                else
-                    foreach (PufferWarnung w in g.Warnungen)
-                        k.HinweisRoh("• " + (w.Stufe == PufferStufe.Warnung ? MyResource.Resource.PAUS_STUFE_WARNUNG
-                                                                            : MyResource.Resource.PAUS_STUFE_HINWEIS) +
-                                     ": " + Pauskey("", w.Ressourcenschluessel, w.Text));
+                foreach (string w in PufferauslegungWarnzeilen(g, k.Kultur)) k.HinweisRoh("• " + w);
             }
+        }
+
+        /// <summary>Der Platzhalter der Tafel (<c>{{tabelle.pufferauslegung}}</c>, Katalog v12).</summary>
+        internal const string PLATZHALTER_PUFFERAUSLEGUNG = "tabelle.pufferauslegung";
+
+        /// <summary>Die Überschrift einer gespeicherten Auslegung: Puffername oder „neuer Speicher".</summary>
+        internal static string Pufferueberschrift(PufferAuslegungGespeichert g) =>
+            string.IsNullOrWhiteSpace(g.Puffername) ? MyResource.Resource.BER_PAUS_NEUER_SPEICHER : g.Puffername;
+
+        /// <summary>
+        /// Die Eigenschaftspaare einer gespeicherten Auslegung (Bezeichnung, Wert, …) — EINE Quelle für den
+        /// Baustein und die Tafel <c>{{tabelle.pufferauslegung}}</c>.
+        /// </summary>
+        internal static List<string> PufferauslegungPaare(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            string F(double v, int dez) => v.ToString("N" + dez, kultur);
+            string Liter(double? l) => l.HasValue ? F(l.Value, 0) + " l" : "—";
+            string Wert(double? w, int dez, string einheit) => w.HasValue ? F(w.Value, dez) + " " + einheit : "—";
+
+            var paare = new List<string>
+            {
+                MyResource.Resource.BER_PAUS_SPEICHERKLASSE, Klassentext(g),
+                MyResource.Resource.BER_PAUS_VORLAGE, Vorlagentext(g.Vorlage),
+                MyResource.Resource.PAUS_NUTZUNGSPROFIL, Nutzungsprofiltext(g, kultur)
+            };
+            void Zone(PufferZone zone, double? volumen)
+            {
+                if (!volumen.HasValue) return;
+                paare.Add(Pauskey("PAUS_ZONE_", zone.ToString(), zone.ToString()));
+                paare.Add(Liter(volumen));
+            }
+            Zone(PufferZone.Heizung, g.VolumenHeizungL);
+            Zone(PufferZone.Brauchwasser, g.VolumenBrauchwasserL);
+            Zone(PufferZone.Prozess, g.VolumenProzessL);
+
+            paare.Add(MyResource.Resource.BER_PAUS_BEMESSEND);
+            paare.Add(Bemessendtext(g));
+            paare.Add(MyResource.Resource.PAUS_SPALTE_HERKUNFT);
+            string herkunft = Textbaustein.Aufloesen(g.BemessendHerkunft, kultur);
+            paare.Add(string.IsNullOrWhiteSpace(herkunft) ? "—" : herkunft);
+            paare.Add(MyResource.Resource.PAUS_EMPFEHLUNG);
+            paare.Add(g.EmpfehlungL.HasValue && g.EmpfehlungL.Value <= 0 ? MyResource.Resource.PAUS_KEIN_PUFFER : Liter(g.EmpfehlungL));
+            paare.Add(MyResource.Resource.BER_PAUS_GEWAEHLT);
+            paare.Add(Liter(g.GewaehltL));
+            paare.Add(MyResource.Resource.PAUS_KZ_STARTS_TAG);
+            paare.Add(Wert(g.StartsJeTag, 1, "1/d"));
+            if (g.ProbelaufStartsJeTag.HasValue && g.ProbelaufAm.HasValue)
+            {
+                // Welle P4b: die Gegenprobe der Jahressimulation, wenn in der Sitzung ein Probelauf lief.
+                paare.Add(string.Format(kultur, MyResource.Resource.BER_PAUS_STARTS_PROBELAUF,
+                                        g.ProbelaufAm.Value.ToString("dd.MM.yyyy HH:mm", kultur)));
+                paare.Add(Wert(g.ProbelaufStartsJeTag, 1, "1/d"));
+            }
+            paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_TAG);
+            paare.Add(Wert(g.VerlustKwhJeTag, 2, "kWh/d"));
+            paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_WK);
+            paare.Add(Wert(g.VerlustWJeK, 2, "W/K"));
+            paare.Add(MyResource.Resource.BER_PAUS_BERECHNET_AM);
+            paare.Add(g.BerechnetAm.HasValue ? g.BerechnetAm.Value.ToString("dd.MM.yyyy HH:mm", kultur) : "—");
+            return paare;
+        }
+
+        /// <summary>
+        /// Die Zeilen der Nutzen-Aufwand-Zeile („Stufe 800 l: Deckung …, Starts …, Verlust … — Hinweis“), die
+        /// Empfehlung markiert; leer, wenn die gespeicherte Auslegung nicht nachgerechnet wurde.
+        /// </summary>
+        internal static List<string> PufferauslegungNachbarstufenzeilen(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            var l = new List<string>();
+            if (g?.Nachbarstufen == null || g.Fehlertext != null) return l;
+            foreach (PufferNachbarstufe s in g.Nachbarstufen)
+            {
+                string zeile = string.Format(kultur, MyResource.Resource.PAUS_BERICHT_NA_ZEILE,
+                    s.VolumenL.ToString("N0", kultur),
+                    s.Deckungsgrad.HasValue ? (s.Deckungsgrad.Value * 100).ToString("N1", kultur) + " %" : "—",
+                    s.StartsJeTag.HasValue ? s.StartsJeTag.Value.ToString("N1", kultur) : "—",
+                    (s.Verlust?.KwhJeJahr ?? 0).ToString("N0", kultur));
+                string hinweis = Textbaustein.Aufloesen(s.JazHinweis, kultur);
+                l.Add(hinweis.Length > 0 ? zeile + " — " + hinweis : zeile);
+            }
+            return l;
+        }
+
+        /// <summary>Der Hinweis zur Nachrechnung (fehlt oder weicht ab); <c>null</c> = keiner.</summary>
+        internal static string PufferauslegungNachrechnung(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            if (g.Fehlertext != null)
+                return string.Format(kultur, MyResource.Resource.BER_PAUS_NACHRECHNUNG_FEHLT, g.Fehlertext.Length > 0 ? g.Fehlertext : "—");
+            if (g.NachgerechnetL.HasValue && g.EmpfehlungL.HasValue && Math.Abs(g.NachgerechnetL.Value - g.EmpfehlungL.Value) > 0.5)
+                return string.Format(kultur, MyResource.Resource.BER_PAUS_NACHRECHNUNG_ABWEICHEND, g.NachgerechnetL.Value.ToString("N0", kultur));
+            return null;
+        }
+
+        /// <summary>
+        /// Die Zeilen der Warnliste („Stufe: Text"); ohne Warnung die eine Zeile „keine". Der Klartext mit Zahlen
+        /// in der Berichtssprache (<c>PA_&lt;CODE&gt;_TEXT</c>, Welle P4c); ohne Baustein der Kurztext des Codes.
+        /// </summary>
+        internal static List<string> PufferauslegungWarnzeilen(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            var l = new List<string>();
+            if (g.Warnungen == null || g.Warnungen.Count == 0)
+            {
+                l.Add(MyResource.Resource.PAUS_WARNUNGEN_LEER);
+                return l;
+            }
+            foreach (PufferWarnung w in g.Warnungen)
+                l.Add((w.Stufe == PufferStufe.Warnung ? MyResource.Resource.PAUS_STUFE_WARNUNG : MyResource.Resource.PAUS_STUFE_HINWEIS) +
+                      ": " + (w.TextBaustein != null ? w.TextBaustein.Aufloesen(kultur) : Pauskey("", w.Ressourcenschluessel, w.Text)));
+            return l;
         }
 
         /// <summary>Ein Ressourcentext über seinen Schlüssel (Präfix + Wert, „-“ → „_“); Rückfall der Klartext.</summary>

@@ -521,6 +521,13 @@ namespace Berichtsvorlage
                 r.Add(Marke("tabelle.gebaeude.ergebnis"));
                 r.Add(Marke("/wenn"));
 
+                // Katalog v12 (Welle P4c): die gespeicherten Pufferauslegungen - steht die Tafel in der Vorlage, schreibt
+                // der Baustein des Kapitels Projekt seinen Abschnitt nicht.
+                r.Add(Marke("#wenn hat.tabelle.pufferauslegung"));
+                r.Add(H2("Pufferspeicher-Auslegung", "Buffer storage design"));
+                r.Add(Marke("tabelle.pufferauslegung"));
+                r.Add(Marke("/wenn"));
+
                 r.Add(Erklaert(Marke("#wenn hat.tabelle.speichertemperaturen"), new[]
                 {
                     "Jede Strukturtabelle und jedes Bild hat einen Schalter hat.tabelle.<name> bzw. hat.bild.<name>: Mit "
@@ -662,7 +669,12 @@ namespace Berichtsvorlage
                     ("heizkessel", "Heizkessel: Wärmeproduktion, Restwärme und Wärmebedarf", "Boiler: heat production, residual heat and heat demand"),
                     ("solarthermie", "Solarthermie: Wärmeproduktion und Wärmebedarf", "Solar thermal: heat production and heat demand"),
                     ("bhkw", "BHKW: Wärmeproduktion, Restwärme und Wärmebedarf", "CHP: heat production, residual heat and heat demand"),
+                    // Katalog v12: die Stromlast des BHKW und die Kälteproduktion.
+                    ("bhkw_strom", "BHKW: Stromproduktion, Einspeisung, Reststrombedarf und Strombedarf",
+                     "CHP: power production, feed-in, residual power demand and power demand"),
                     ("photovoltaik", "Photovoltaik: Erzeugung, Überschuss und Strombedarf", "Photovoltaics: generation, surplus and electricity demand"),
+                    ("kaelte_produktion", "Kälteproduktion: gedeckte Kälte je Wärmepumpe, ungedeckte Kälte und Kältebedarf",
+                     "Cooling production: covered cooling per heat pump, uncovered cooling and cooling demand"),
                 };
                 foreach ((string schluessel, string de, string en) in ergebnisbilder)
                 {

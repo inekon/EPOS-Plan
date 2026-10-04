@@ -145,7 +145,11 @@
     private int? _idPuffer;
     private string _pufferName = "";
     private int _ziel;
+    private bool _katalogsatz = true;
     private string _bezeichner = "";
+
+    /// <summary>V14: das Sperrprofil der Auslegung beim Übernehmen an die Wärmepumpe schreiben? Vorgabe aus.</summary>
+    private bool _sperrprofilSchreiben;
     private string _meldung = "";
     private bool _meldungErfolg;
     private Hilfekontext? _gemeldet;
@@ -166,7 +170,11 @@
     protected override void OnInitialized()
     {
         _eingabe = (Daten.Eingabe ?? new PufferAuslegungEingabeDaten()).Kopie();
+        // Die gespeicherte Anzeigestufe (Welle P4c); leer = Standard.
+        if (Enum.TryParse(_eingabe.Anzeigestufe ?? "", true, out PufferAuslegungStufe gespeichert) &&
+            Enum.IsDefined(typeof(PufferAuslegungStufe), gespeichert)) _stufe = gespeichert;
         _ergebnis = Daten.Ergebnis;
+        _probelauf = Daten.Probelauf;
         _idPuffer = Daten.IdPuffer;
         _pufferName = Daten.PufferBezeichner ?? "";
         _ziel = _idPuffer.HasValue ? 0 : 1;
@@ -232,7 +240,11 @@
 
     private void StufeGewaehlt(int? id)
     {
-        if (id is int i && Enum.IsDefined(typeof(PufferAuslegungStufe), i)) _stufe = (PufferAuslegungStufe)i;
+        if (id is int i && Enum.IsDefined(typeof(PufferAuslegungStufe), i))
+        {
+            _stufe = (PufferAuslegungStufe)i;
+            _eingabe.Anzeigestufe = _stufe.ToString().ToUpperInvariant();
+        }
     }
 
     private bool AbStandard => _stufe != PufferAuslegungStufe.Schnell;
@@ -751,7 +763,12 @@
 
     /// <summary>Der Schalter der Vorlage für das Kriterium (ohne Abweichung des Anwenders).</summary>
     private bool VorlageAn(string kennung)
-        => GewaehlteVorlage?.Kriterien is { } k && k.TryGetValue(kennung, out bool an) && an;
+        => kennung == KENNUNG_AUFHEIZ
+            ? Daten.AufheizVorlageAn
+            : GewaehlteVorlage?.Kriterien is { } k && k.TryGetValue(kennung, out bool an) && an;
+
+    /// <summary>Das Aufheizkriterium (V30): sein Schalter folgt dem Nutzungsprofil, nicht der Vorlage.</summary>
+    private const string KENNUNG_AUFHEIZ = "K12";
 
     /// <summary>Gilt das Kriterium — Abweichung des Anwenders vor dem Schalter der Vorlage?</summary>
     private bool KriteriumAn(string kennung)
@@ -769,6 +786,7 @@
     /// <summary>Die Karten in der Reihenfolge der Vorlage; Schnell zeigt nur die eingeschalteten.</summary>
     private IEnumerable<string> Karten
         => (GewaehlteVorlage?.Kriterien.Keys ?? Enumerable.Empty<string>())
+           .Concat(_eingabe.KlasseHeizung ? new[] { KENNUNG_AUFHEIZ } : Array.Empty<string>())
            .Where(k => AbStandard || KriteriumAn(k));
 
     private string Kriteriumswert(PufferKriteriumDaten? k)
@@ -891,7 +909,49 @@
         }
     }
 
+    // ---- Probelauf der Jahressimulation (Welle P4b) ----
+    private PufferProbelaufDaten? _probelauf;
+    private bool _probelaufLaeuft;
+
+    /// <summary>Der letzte Probelauf (bunit).</summary>
+    public PufferProbelaufDaten? Probelauf => _probelauf;
+
+    private PufferProbelaufStartsDaten? ProbelaufRang1 => _probelauf is { Erfolg: true } p ? p.Rang1 : null;
+
+    /// <summary>„kein Lauf", solange kein erfolgreicher Probelauf vorliegt.</summary>
+    private string ProbelaufLeer => _probelauf is { Erfolg: true } ? "—" : Texte.ProbelaufKeinLauf;
+
+    /// <summary>Rechnet die Nutzen-Aufwand-Zeile auf Zuruf (die Auslegung lag über einer Sekunde).</summary>
+    public void NachbarstufenRechnen()
+    {
+        if (Dienste?.Nachbarstufen is null || _ergebnis is null) return;
+        _ergebnis.Nachbarstufen = Dienste.Nachbarstufen(_eingabe.Kopie());
+    }
+
+    /// <summary>Startet den Probelauf mit der Empfehlung — nichts wird gespeichert oder übernommen.</summary>
+    public async Task ProbelaufStarten()
+    {
+        if (Dienste?.Probelauf is null || _probelaufLaeuft) return;
+        if (_veraltet || _ergebnis is null) NeuRechnen();
+        _probelaufLaeuft = true;
+        try
+        {
+            _probelauf = await Dienste.Probelauf(_eingabe.Kopie());
+        }
+        catch (Exception ex)
+        {
+            _probelauf = PufferProbelaufDaten.MitFehler(Format(Texte.ProbelaufFehler, ex.Message));
+        }
+        finally
+        {
+            _probelaufLaeuft = false;
+        }
+    }
+
     private bool Neuanlage => !_idPuffer.HasValue || _ziel == 1;
+
+    /// <summary>Hat das Ergebnis einen Katalogvorschlag (dann steht der Schalter „Katalogsatz übernehmen")?</summary>
+    private bool HatKatalogvorschlag => _ergebnis is { } e && !string.IsNullOrEmpty(e.Katalogvorschlag);
 
     private bool UebernahmeFrei => _ergebnis is { Zustand: PufferErgebnisZustand.Gerechnet, EmpfehlungL: > 0 } && !_veraltet;
 
@@ -919,7 +979,9 @@
             Melden(Texte.GrundBezeichner, false);
             return;
         }
-        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(), new PufferUebernahmeDaten(neu, name));
+        PufferUebernahmeErgebnis r = Dienste.Uebernehmen(_eingabe.Kopie(),
+            new PufferUebernahmeDaten(neu, name, Katalogsatz: _katalogsatz && HatKatalogvorschlag,
+                                      SperrprofilSchreiben: _sperrprofilSchreiben));
         Melden(r.Text, r.Erfolg);
         if (r.Erfolg && r.IdPuffer > 0)
         {
@@ -1050,6 +1112,200 @@
                 </KindInhalt>
             </Gruppenkopf>
 
+            @if (e.EmpfehlungL > 0)
+            {
+                <Gruppenkopf Titel="@Texte.NaGruppe">
+                    <KindInhalt>
+                        @if (e.Nachbarstufen is PufferNachbarstufenDaten na)
+                        {
+                            @if (na.Stufen.Count > 0)
+                            {
+                                <table class="epos-raster epos-pausl-nachbarstufen">
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.NaSpalteStufe</th>
+                                            <th>@Texte.NaSpalteVolumen</th>
+                                            <th>@Texte.NaSpalteMehr</th>
+                                            <th>@Texte.NaSpalteDeckung</th>
+                                            <th>@Texte.NaSpalteStarts</th>
+                                            <th>@Texte.NaSpalteVerlust</th>
+                                            <th>@Texte.NaSpalteJaz</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (PufferNachbarstufeDaten s in na.Stufen)
+                                        {
+                                            <tr @key="s.Abstand" data-abstand="@s.Abstand"
+                                                class="@(s.Empfehlung ? "epos-pausl-nachbarstufe--empfehlung" : "")">
+                                                <td>@(s.Empfehlung ? Texte.NaEmpfehlung : (s.Abstand > 0 ? "+" : "−") + Z(Math.Abs(s.Abstand)))</td>
+                                                <td>@(Z(s.VolumenL) + " l")</td>
+                                                <td>@(s.Empfehlung ? "—" : (s.MehrvolumenL > 0 ? "+" : "−") + Z(Math.Abs(s.MehrvolumenL)) + " l")</td>
+                                                <td>@(s.Deckungsgrad is double dg ? Z(dg * 100, "N1") + " %" : "—")</td>
+                                                <td>@(s.StartsJeTag is double st ? Z(st, "N1") : "—")</td>
+                                                <td>@Z(s.VerlustKwhJeJahr)</td>
+                                                <td class="epos-pausl-nachbarstufe-jaz">@s.JazHinweis</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                <p class="epos-leisezeile epos-pausl-nachbarstufen-stand">@Format(Texte.NaStand, Z(na.DauerMs), na.Simulationszone.Length > 0 ? na.Simulationszone : Texte.NaOhneReihe)</p>
+                                @if (AbStandard && na.Herkunft.Length > 0)
+                                {
+                                    <Herleitungszeile Text="@na.Herkunft" />
+                                }
+                            }
+                            @if (na.Kurve.Count > 0)
+                            {
+                                <table class="epos-raster epos-pausl-kurve">
+                                    <caption>@Texte.KurveTitel</caption>
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.KurveSpalteLeistung</th>
+                                            <th>@Texte.KurveSpalteAnteil</th>
+                                            <th>@Texte.KurveSpalteVolumen</th>
+                                            <th>@Texte.KurveSpalteLaufzeit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (PufferLeistungspunktDaten pk in na.Kurve)
+                                        {
+                                            <tr @key="pk.Anteil" class="@(pk.ImLaufzeitband ? "epos-pausl-kurve--band" : "")">
+                                                <td>@(Z(pk.LeistungKw, "N1") + " kW")</td>
+                                                <td>@(Z(pk.Anteil * 100) + " %")</td>
+                                                <td>@(Z(pk.VolumenL) + " l")</td>
+                                                <td>@(pk.LaufzeitH is double lz ? Z(lz, "N1") + " h" : "—")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            @if (na.KurveHinweis.Length > 0)
+                            {
+                                <p class="epos-leisezeile epos-pausl-kurve-hinweis">@na.KurveHinweis</p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="epos-leisezeile">@Texte.NaErklaerung</p>
+                            @if (Dienste?.Nachbarstufen is not null)
+                            {
+                                <button type="button" class="epos-knopf epos-pausl-nachbarstufen-knopf" @onclick="NachbarstufenRechnen">@Texte.NaKnopf</button>
+                            }
+                        }
+                    </KindInhalt>
+                </Gruppenkopf>
+            }
+
+            <Gruppenkopf Titel="@Texte.ProbelaufGruppe">
+                <KindInhalt>
+                    <table class="epos-raster epos-pausl-probelauf">
+                        <thead>
+                            <tr>
+                                <th>@Texte.ProbelaufSpalteGroesse</th>
+                                <th>@Texte.ProbelaufSpalteAuslegung</th>
+                                <th>@Texte.ProbelaufSpalteLauf</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="epos-pausl-probelauf-tag">
+                                <td>@Texte.KzStartsTag</td>
+                                <td>@(Betriebsbild is PufferBetriebsbildDaten bt ? Z(bt.StartsJeTag, "N1") : "—")</td>
+                                <td>@(ProbelaufRang1 is PufferProbelaufStartsDaten rt ? Z(rt.StartsJeTag, "N1") : ProbelaufLeer)</td>
+                            </tr>
+                            <tr class="epos-pausl-probelauf-heizperiode">
+                                <td>@Texte.KzStartsJahr</td>
+                                <td>@(Betriebsbild is PufferBetriebsbildDaten bh ? Z(bh.StartsHeizperiode) : "—")</td>
+                                <td>@(ProbelaufRang1 is PufferProbelaufStartsDaten rh ? Z(rh.StartsHeizperiode) : ProbelaufLeer)</td>
+                            </tr>
+                            <tr class="epos-pausl-probelauf-jahr">
+                                <td>@Texte.ProbelaufStartsJahr</td>
+                                <td>—</td>
+                                <td>@(ProbelaufRang1 is PufferProbelaufStartsDaten rj ? Z(rj.StartsJahr) : ProbelaufLeer)</td>
+                            </tr>
+                            <tr class="epos-pausl-probelauf-deckung">
+                                <td>@Texte.ProbelaufDeckung</td>
+                                <td>@(Betriebsbild is PufferBetriebsbildDaten bd ? Z(bd.Deckungsgrad * 100) + " %" : "—")</td>
+                                <td>@(_probelauf is { Erfolg: true, Deckung: double dk } ? Z(dk * 100) + " %" : ProbelaufLeer)</td>
+                            </tr>
+                            @if (_probelauf is { Erfolg: true } pl)
+                            {
+                                @foreach (PufferProbelaufStartsDaten s in pl.Starts.Where(s => !s.Rang1))
+                                {
+                                    <tr class="epos-pausl-probelauf-weitere">
+                                        <td>@(s.Erzeuger + ": " + Texte.ProbelaufStartsJahr)</td>
+                                        <td>—</td>
+                                        <td>@Z(s.StartsJahr)</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    @if (_probelauf is { Erfolg: true } stand)
+                    {
+                        <p class="epos-leisezeile epos-pausl-probelauf-stand">@Format(Texte.ProbelaufStand, stand.Zeitpunkt.ToString("g", CultureInfo.CurrentCulture), Z(stand.VolumenL), Z(stand.DauerSekunden, "N1"))</p>
+                        @if (stand.Rang1 is { AusReihe: true })
+                        {
+                            <p class="epos-leisezeile epos-pausl-probelauf-ausreihe">@Texte.ProbelaufAusReihe</p>
+                        }
+                        @if (stand.Abweichung)
+                        {
+                            <p class="epos-pausl-probelauf-abweichung" data-code="PA-STARTS-ABWEICHUNG">@stand.AbweichungText</p>
+                        }
+                        @if (stand.Monate.Count > 0)
+                        {
+                            <table class="epos-raster epos-pausl-probelauf-monate">
+                                <caption>@Texte.ProbelaufFuellstand</caption>
+                                <thead>
+                                    <tr>
+                                        <th>@Texte.ProbelaufMonat</th>
+                                        <th>@Texte.ProbelaufMin</th>
+                                        <th>@Texte.ProbelaufMittel</th>
+                                        <th>@Texte.ProbelaufMax</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (PufferFuellstandMonatDaten m in stand.Monate)
+                                    {
+                                        <tr>
+                                            <td>@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m.Monat)</td>
+                                            <td>@(Z(m.Min * 100) + " %")</td>
+                                            <td>@(Z(m.Mittel * 100) + " %")</td>
+                                            <td>@(Z(m.Max * 100) + " %")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            @if (stand.KaeltesteWocheTag > 0 && stand.WocheMin is double wmin2 && stand.WocheMittel is double wmit && stand.WocheMax is double wmax2)
+                            {
+                                <Herleitungszeile Text="@Format(Texte.ProbelaufWoche, stand.KaeltesteWocheTag, Z(wmin2 * 100), Z(wmit * 100), Z(wmax2 * 100))" />
+                            }
+                        }
+                        else
+                        {
+                            <p class="epos-leisezeile">@Texte.ProbelaufOhneFuellstand</p>
+                        }
+                    }
+                    else if (_probelauf is { Erfolg: false } fehl)
+                    {
+                        <p class="epos-pausl-probelauf-fehler">@fehl.Fehler</p>
+                    }
+                    @if (Dienste?.Probelauf is not null)
+                    {
+                        <p class="epos-leisezeile">@Texte.ProbelaufErklaerung</p>
+                        <div class="epos-pausl-probelauf-knoepfe">
+                            @if (_probelaufLaeuft)
+                            {
+                                <button type="button" class="epos-knopf epos-pausl-probelauf-knopf" aria-disabled="true" aria-busy="true">@Texte.ProbelaufLaeuft</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="epos-knopf epos-pausl-probelauf-knopf" @onclick="ProbelaufStarten">@Texte.ProbelaufKnopf</button>
+                            }
+                        </div>
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+
             <Gruppenkopf Titel="@Texte.GruppeWarnungen" Summe="@(e.Warnungen.Count > 0 ? Z(e.Warnungen.Count) : "")">
                 <KindInhalt>
                     @if (e.Warnungen.Count == 0)
@@ -1099,6 +1355,13 @@
                                           WertChanged="@((string w) => _bezeichner = w ?? "")" />
                             </KindInhalt>
                         </Formularraster>
+                    }
+                    <Schalter Bezeichnung="@Texte.SperrprofilSchreiben" Wert="@_sperrprofilSchreiben"
+                              WertChanged="@((bool w) => _sperrprofilSchreiben = w)" />
+                    @if (HatKatalogvorschlag)
+                    {
+                        <Schalter Bezeichnung="@Texte.KatalogsatzUebernehmen" Wert="@_katalogsatz"
+                                  WertChanged="@((bool w) => _katalogsatz = w)" />
                     }
                     <p class="epos-leisezeile epos-pausl-bleibt">@Texte.UebernahmeBleibt</p>
                     <div class="epos-pausl-uebernahme-knoepfe">

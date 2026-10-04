@@ -102,7 +102,8 @@ Upload unter 1.2.0.5:** Gerätekataloge (#552: Zeile Vorlauf/Rücklauf des Solar
 Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
 Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung und Speichernutzen;
 #563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
-Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611),
+Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611;
+#699: Satz zum Platzhalter des Kältebilds im Punkt „Bericht“, ausstehend),
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“;
 #576: Punkt „Wärmelast Jahresganglinie“ mit den gestapelten Bedarfsarten und der Summe als Linie),
@@ -118,7 +119,8 @@ mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „W
 Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; hochgeladen 28.09.2026 mit #611),
 Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
 gegliedert in einer aufklappbaren Zeile; #582: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
-mit derselben Vorlage und Prüfung),
+mit derselben Vorlage und Prüfung; #698: Platzhalter der Bilder Stromlast-Jahresganglinie des BHKW und
+Kälteproduktion im Absatz „Platzhalter in der App“, ausstehend),
 Wirtschaftlichkeit (#582: die Knöpfe „Bericht erzeugen“ heißen „Zum Bericht ›“ und wechseln in den
 Bereich Bericht, erzeugt wird dort mit „Erstellen“),
 Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungssatz zum geltenden Fahrplan,
@@ -276,6 +278,11 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Prüfung der Wärmequelle Erdreich bleibt mit dem Simulationsergebnis gespeichert. (#678)
 - Der Katalogabgleich beim Programmupdate umfasst alle Gerätekataloge, Baustoffe und Bauteilaufbauten, Brennstoffe, Tagesverteilungen, Gebäude, Konditionierungsvorlagen, Pufferspeicher und Ganglinien; Klimadaten und der Zapfprofilkatalog behalten ihre eigenen Importwege. (#685)
 - Brennstoffe und Pufferauslegungs-Vorgaben liegen je Projekt als Kopie vor; ein Katalogupdate ändert laufende Projekte nicht mehr, und der Dialog „Brennstoffe des Projekts“ zeigt Abweichungen vom Katalog und setzt sie auf Wunsch zurück. (#687)
+- Bauteilschichten sind ab 0,5 mm Dicke zulässig; der IFC-Import übernimmt damit Bleche ab 0,5 mm und übergeht nur noch Folien und Anstriche darunter. (#693)
+- Der Ergebnisreiter der Simulation zeigt bei Projekten mit Kühlbetrieb das Diagramm „Kälte Produktion“; „Autarkie Analyse“ steht ganz rechts. (#694)
+- Der BHKW-Reiter zeigt unter der Wärmelast die Stromlast-Jahresganglinie mit Stromproduktion, Einspeisung, Reststrombedarf und Strombedarf. (#694)
+- Die Hinweise auf der Wirtschaftlichkeitsseite lassen sich ein- und ausklappen. (#694)
+- Der Bericht enthält die Stromlast-Jahresganglinie des BHKW und bei Projekten mit Kühlbetrieb das Kälte-Produktionsbild, in Word und Excel (Platzhalterkatalog Fassung 12). (#698)
 - Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite

@@ -124,12 +124,14 @@ namespace WindowsFormsApplication1
                     case Bilder.Heizkessel: return ModellKessel(a);
                     case Bilder.Solarthermie: return ModellSolar(a);
                     case Bilder.Bhkw: return ModellBhkw(a);
+                    case Bilder.BhkwStrom: return ModellBhkwStrom(a);
                     case Bilder.Photovoltaik: return ModellPv(a);
                     case Bilder.SpeicherBetrieb: return ModellSpeicherBetrieb(a);
                     case Bilder.AutarkieMonate: return ModellAutarkie(a.Zahl);
                     case Bilder.WaermeAutarkieMonate: return ModellWaermeAutarkie();
                     case Bilder.Waermegang: return ModellWaermegang(a);
                     case Bilder.Stromgang: return ModellStromgang(a);
+                    case Bilder.Kaeltegang: return ModellKaeltegang(a);
                     default: return null;
                 }
             }
@@ -664,6 +666,47 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die „Stromlast Jahresganglinie“ des BHKW — das Gegenstück zur Wärmelast
+        /// (<see cref="ModellBhkw"/>) mit denselben Regeln: die Stromproduktion als Säule
+        /// unten, Einspeisung, Reststrombedarf und Strombedarf als Linien darüber; jede Reihe
+        /// abwählbar (<c>null</c> heißt „alle“, eine LEERE Liste „keine“), „sortiert“ zeichnet
+        /// die Dauerlinie über Jahresstunden. Die Reihen bildet der Kern
+        /// (<see cref="SimulationErgebnisCtrl.BhkwStromStunden"/>) aus den Reihen des Laufs —
+        /// keine Rechnung in der Hülle. Die Farben folgen dem Stromgang: BHKW-Strom, Überschuss,
+        /// Rest, Bedarf.
+        /// </summary>
+        private Zeichenmodell ModellBhkwStrom(Bildauftrag a)
+        {
+            SimulationErgebnisCtrl.BhkwStromreihen r = SimulationErgebnisCtrl.BhkwStromStunden(sim);
+            if (r == null) return null;
+            bool sortiert = a != null && a.Sortiert;
+            bool alle = Alle(a);
+
+            var stapel = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "STROMPRODUKTION"))
+                stapel.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_STROMPRODUKTION, r.Stromproduktion,
+                                 Farbrolle.STROM_BHKW, ChartRenderer.Stapelart.Saeule,
+                                 sortiert ? 4f : 0f));
+
+            var linien = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "EINSPEISUNG"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_EINSPEISUNG, r.Einspeisung,
+                                 Farbrolle.UEBERSCHUSS));
+            if (Gewaehlt(a, alle, "RESTSTROM"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_RESTSTROM, r.Reststrombedarf,
+                                 Farbrolle.REST));
+            if (Gewaehlt(a, alle, "STROMBEDARF"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_STROMBEDARF, r.Strombedarf,
+                                 Farbrolle.BEDARF));
+
+            return ChartRenderer.ErzeugerStapelModell(
+                MyResource.Resource.SIMDET_BHKW_TITEL_STROMLAST,
+                stapel, linien, null, MyResource.Resource.CHART_ACHSE_LEISTUNG,
+                sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                sortiert);
+        }
+
+        /// <summary>
         /// B2 + B3 auf der PV-Seite: vier Reihen im Viertelstundenraster; der
         /// Speicherfüllstand geht in kWh auf die ZWEITE Y-Achse.
         ///
@@ -978,6 +1021,26 @@ namespace WindowsFormsApplication1
                 a.Sortiert,
                 speicherreihen.Count > 0 ? speicherreihen : null,
                 MyResource.Resource.CHART_ACHSE_SPEICHERINHALT_KWH);
+        }
+
+        /// <summary>
+        /// Die Kälteproduktion (Unterreiter „Kälte Produktion Chart"): je Kälteerzeuger die
+        /// gedeckte Kälte als Säule, darauf die ungedeckte Kälte, darüber der Kältebedarf — die
+        /// Stundenreihen des Laufs, gebildet in <see cref="KaelteProduktionBild"/>. Rechnet das
+        /// Projekt keine Kälte, gibt es kein Bild.
+        /// </summary>
+        private Zeichenmodell ModellKaeltegang(Bildauftrag a)
+        {
+            KaelteProduktionBild.Reihen r = KaelteProduktionBild.AusLauf(_waermebedarf?.Kaelteseite);
+            if (r == null) return null;
+            return KaelteProduktionBild.Modell(r, new KaelteProduktionBild.Texte
+            {
+                Titel = MyResource.Resource.CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE,
+                Achse = MyResource.Resource.CHART_ACHSE_LEISTUNG,
+                Bedarf = MyResource.Resource.CHART_LEGENDE_KAELTEBEDARF,
+                Rest = MyResource.Resource.CHART_LEGENDE_KAELTE_UNGEDECKT,
+                Erzeuger = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE
+            }, a.Sortiert);
         }
 
         /// <summary>

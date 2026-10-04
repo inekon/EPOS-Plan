@@ -855,11 +855,31 @@ namespace WindowsFormsApplication1
         /// und ihre wertgleiche Saat; die Konditionierungsvorlagen werden schon bei der Übernahme kopiert
         /// (<see cref="ProjektkopienKatalogeSchema"/>). <b>Ergebnisneutral:</b> Die Kopien tragen die Werte
         /// des Stamms. Die Nummer steht allein bei <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>.
+        /// Danach, mit der KONDITIONIERUNGSNUTZUNG AN DER KALENDERKOPIE, steht das Ziel auf
+        /// <see cref="KonditionierungNutzungSchema.SCHRITT"/>: die Spalte <c>Nutzung</c> an
+        /// <c>Tab_Konditionierungskalender</c> samt Saat aus der Herkunftsvorlage
+        /// (<see cref="KonditionierungNutzungSchema"/>). <b>Ergebnisneutral:</b> Der Lauf liest die Nutzung
+        /// nicht. Die Nummer steht allein bei <see cref="KonditionierungNutzungSchema.SCHRITT"/>.
+        /// Danach, mit dem SPERRPROFIL DER WÄRMEPUMPE (Anwenderentscheid 03.10.2026), steht das Ziel auf
+        /// <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/>: die Tabelle <c>Tab_Sperrfenster</c> (STRICT,
+        /// je Anlagenzeile). <b>Ergebnisneutral:</b> Sie kommt leer an. Die Nummer steht allein bei
+        /// <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/>.
+        /// Danach, mit der NUTZUNGSPROFIL-ZUORDNUNG ÜBER IDs und den Zapf-Nutzungsarten Büro, Schule,
+        /// Gewerbe (V31/V32), steht das Ziel auf <see cref="ProzessNutzungSchema.SCHRITT"/>: die Tabellen
+        /// <c>Tab_Nutzungsprofil_STAMM</c> und <c>Z_Nutzungsprofil</c> samt Saat und der Nachtrag der drei
+        /// Nutzungsarten in einen versionierten Zapfkatalog. <b>Ergebnisneutral.</b> Die Nummer steht allein
+        /// bei <see cref="ProzessNutzungSchema.SCHRITT"/>.
+        /// Danach, mit den ERGÄNZUNGEN DER PUFFERSPEICHER-AUSLEGUNG (Welle P4c), steht das Ziel auf
+        /// <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>: an <c>Tab_PufferAuslegung</c> die
+        /// Sitzungseingaben (Kriterienschalter, Expertenweg, Heizlast, Wohneinheiten, Anzeigestufe), an
+        /// <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c> und die Saat des Aufheizkriteriums K12
+        /// (<see cref="PufferAuslegungErgaenzungSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        /// Die Nummer steht allein bei <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ProjektkopienKatalogeSchema.SCHRITT;
+        public const int Zielversion = PufferAuslegungErgaenzungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

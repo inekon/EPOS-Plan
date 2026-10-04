@@ -98,6 +98,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("HeizkesselReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("PhotovoltaikReiter",             "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SolarthermieReiter",             "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("KaeltegangReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("StromgangReiter",                "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("StromspeicherReiter",            "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("WaermegangReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
@@ -249,7 +250,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // BerichtSeiteKiSicht.Vorlage samt VorlageWahl.
         new("BerichtSeite", 7, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl), die Wahl der Excel-Vorlage das Katalogfeld excel_vorlage (BerichtSeiteKiSicht.ExcelVorlage samt ExcelVorlageWahl, BV-E7); die Musterwahl von „Neue Vorlage…“ (Standardvorlage oder Kurzbericht) steht in der Überlagerung und wählt nur die Quelle einer Kopie, ebenso die Musterwahl von „Neue Excel-Vorlage…“ (Excel-Standardmappe oder ausführliche Excel-Vorlage, BV-E9)"),
         new("BhkwWirtschaftlichkeitDialog", 39),
-        new("BhkwReiter", 5),
+        // Die Stromlast unter der Wärmelast: vier Reihenschalter mehr, „sortiert" gilt für beide Bilder (5 → 9).
+        new("BhkwReiter", 9),
         new("BrennstoffBestandteile", 2),
         new("CaseEingabeDialog", 7),
         // Berichtsvorlagen BV-E1 (Konzept 10.3): die Firma der Rubrik „Bericht" (9 → 10) - das
@@ -370,7 +372,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Karten (eine Schleife über die Vorlage), Ziel und Bezeichnung der Übernahme (Angaben der
         // Handlung „Übernehmen") und die Expertenfelder (Heizlast, eigenes Sperrfenster, Expertenweg,
         // kleinste Dauerleistung, Zirkulation, Wohneinheiten, Puffertemperatur, Spreizung).
-        new("PufferAuslegungSeite", 26, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme und " +
+        new("PufferAuslegungSeite", 28, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme (samt Schaltern " +
+            "„Sperrprofil an die Wärmepumpe schreiben“ und „Katalogsatz als Herkunft merken“) und " +
             "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
         new("PufferSpProjektDialog", 25),
         new("PvModellFelder", 4),
@@ -400,6 +403,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherZeitreihenDialog", 16),
         new("Startseite", 2, "die Projekt- und Variantenwahl im Kopfband öffnet ein anderes Projekt — Navigation, kein Einstellwert"),
         new("StromganglinieAdminDialog", 1),
+        new("KaeltegangReiter", 1, "der Schalter „sortiert“ steht als Anzeigeschalter im Katalog"),
         new("StromgangReiter", 1, "die Serienauswahl (Mehrfachauswahl) steht als Anzeigeschalter mit im Katalog"),
         new("StrompreisDetails", 3),
         new("StromspeicherAuslegungSeite", 0),
@@ -436,8 +440,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Anwenderauftrag 30.09.2026: das Ganzzahlfeld „Nutzungsdauer" ist in den Kostendialog
         // gegangen, mit ihm das Feld nutzungsdauer der Feldkarte (5 -> 4).
         new("WaermepumpeAnlageDialog", 4, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
-        new("WaermepumpeKonfiguration", 14, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
-            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld"),
+        new("WaermepumpeKonfiguration", 18, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld; die vier Felder je Sperrfenster (Beginn, Dauer, " +
+            "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“"),
         new("WaermepumpeReiter", 8),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.

@@ -12,8 +12,8 @@ Regeln, die beide voraussetzen: Tests nie ohne die Schalter `-- xUnit.Paralleliz
 `EPOS.Referenzlauf` vor jedem Referenzlauf bauen; das Bildmaß der Windows-Liste gilt nur auf Windows. Kommen Probebilder
 hinzu, zieht das nächste Windows-Gate die lokale Liste nach — jede alte Zeile muss gleich bleiben, die neuen kommen dazu.
 Ändert eine gewollte Bildänderung Zeilen, nennt der Abschnitt der Etappe in `Proben/ChartProben/LIESMICH.md` genau diese
-Bilder, und nur sie dürfen abweichen. Gegenwärtig (`Messlatte_2026-09-30.sha256`): neun Bilder der Kalenderkarte neu, die
-zwölf Bilder der Stufenregel des Stapels geändert.
+Bilder, und nur sie dürfen abweichen. Gegenwärtig (`Messlatte_2026-10-03.sha256`): sechs Bilder der BHKW-Stromlast neu, keines
+geändert.
 
 ## Referenzlauf und Plattform
 
@@ -27,8 +27,8 @@ gescheitert (etwa ohne `dotnet` im Pfad); Schritt 5 meldet das als „REFERENZLA
 
 | Basis | Lauf | erwartet |
 |---|---|---|
-| R33 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 16/16 PASS, 487/487 CSV byte-gleich |
-| R33 | Windows | 16/16 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
+| R34 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 18/18 PASS, 548/548 CSV byte-gleich |
+| R33 (für R34 nicht gemessen) | Windows | 16/16 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
 
 Die Windows-Zeile ist die Gegenrichtung des gemessenen Plattformwechsels: Der Rechenweg der Basis R25 ergab
 auf Linux gegen die Windows-Basis R25 genau diese fünf Dateien (GESAMT PASS, 455/460), und die Kesselregel

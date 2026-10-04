@@ -216,7 +216,12 @@ namespace Auslieferungsvorlage.Tests
             //
             // 160 seit dem Schemaschritt der Projektkopien (ProjektkopienKatalogeSchema, Anwenderentscheid
             // 03.10.2026): Tab_Brennstoff und Tab_PufferAuslegungParameter, STRICT von ihrer ersten Zeile an.
-            Assert.Equal(160, befund.Strict);
+            //
+            // 163 seit den Schemaschritten 177 (WaermepumpeSperrprofilSchema: Tab_Sperrfenster) und 178
+            // (ProzessNutzungSchema: Tab_Nutzungsprofil_STAMM, Z_Nutzungsprofil), STRICT von ihrer ersten
+            // Zeile an. Die Schritte 176 (KonditionierungNutzungSchema) und 179 (PufferAuslegungErgaenzungSchema)
+            // sind ADD COLUMN und aendern die Zahl nicht.
+            Assert.Equal(163, befund.Strict);
         }
 
         // =============================================================================
