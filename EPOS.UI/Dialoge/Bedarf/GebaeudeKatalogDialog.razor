@@ -743,6 +743,7 @@
                              Nachbarzonen="@_arbeit.Nachbarzonen(_zoneOffen.Id)"
                              Gegenseiten="@_arbeit.Gegenseiten(_zoneOffen.Id)"
                              KopplungSperre="@Zonen?.KopplungSperre"
+                             UebergabeSperre="@Zonen?.UebergabeSperre" ProjektKoppelt="@Zonen?.ProjektKoppelt"
                              Projektaufbauten="@_projektaufbauten"
                              Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
                              Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"

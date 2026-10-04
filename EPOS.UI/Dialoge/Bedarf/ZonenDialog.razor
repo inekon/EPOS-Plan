@@ -28,6 +28,15 @@
    Ebene 4); dessen OK uebernimmt die Zeile in DIESEN Arbeitsstand, geschrieben wird erst mit
    dem OK des Gebaeudeeditors (Softwarearchitektur 3.3). Eine neue Zeile traegt eine negative Id.
 
+   E63 (AK1z): DER ABSCHNITT "UEBERGABE" - die Waermeuebergabe je Zone (Art, Exponent, Nennleistung,
+   Auslegung Vorlauf/Ruecklauf/Raum, Proportionalband). Erster Eintrag der Art ist "wie Gebaeude" (NULL);
+   jedes leere Zahlenfeld zeigt den WIRKSAMEN Wert als Platzhalter: den Wert des Gebaeudes, wenn es einen
+   traegt ("wie Gebaeude: ..."), sonst die Vorgabe der wirksamen Art ("Vorgabe: ..."); die Nennleistung
+   leer ist der Anteil des Gebaeudes nach Nutzflaeche. Die Zahlenfelder stehen nur mit einer rechnenden
+   wirksamen Art; eine unbeheizte Zone zeigt statt der Felder den Grund. Ist der Heizkreis des Gebaeudes
+   aus oder rechnet das Projekt keine Kopplungsstufe, sagt eine Zeile "ohne Wirkung" - die Felder bleiben
+   bearbeitbar. Kennt die Datenbank den Schemaschritt nicht, steht allein die Sperre da.
+
    PRUEFREGELN (Mehrzonenkonzept 5.3, Ebene Zone) genau einmal im Rueckruf der Leiste: Name,
    Nutzflaeche groesser null; mit NutzflaechePflicht (ab zwei Zonen, G6a) ist die Nutzflaeche Pflicht -
    ohne Platzhalter "Nutzflaeche des Gebaeudes", denn leer zaehlte sie doppelt. OK gibt den Arbeitsstand zurueck, Abbrechen, Esc und das Kreuz
@@ -128,6 +137,67 @@
             <ZonenKonditionierung Bearbeitung="@_kond" Texte="@KonditionierungTexte" HuelleTexte="@HuelleTexte"
                                   JaText="@JaText" NeinText="@NeinText"
                                   Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* E63 (AK1z): die Waermeuebergabe der Zone - leer = wie Gebaeude (Kopfkommentar). *@
+    <Gruppenkopf Titel="@Texte.UebergabeGruppe">
+        <KindInhalt>
+            @if (UebergabeSperre is not null)
+            {
+                <Herleitungszeile Text="@UebergabeSperre" />
+            }
+            else if (!_stand.IstBeheizt)
+            {
+                <Herleitungszeile Text="@Texte.UebergabeZeileUnbeheizt" />
+            }
+            else
+            {
+                <div class="epos-zonenuebergabe">
+                    <Formularraster>
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@Texte.UebergabeLabelArt" Eintraege="@UebergabeArteintraege"
+                                         Auswahl="@UebergabeArtindex" AuswahlChanged="UebergabeArtWaehlen" />
+                            @if (UebergabeRechnet)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.UebergabeLabelExponent"
+                                            Min="@Waermeuebergabevorgaben.EXPONENT_MIN" Max="@Waermeuebergabevorgaben.EXPONENT_MAX"
+                                            Platzhalter="@UebergabePlatzhalter(GebaeudeUebergabe?.UebergabeExponent, Waermeuebergabevorgaben.Exponent(WirksameArt), 2)"
+                                            Feldname="@Feld(Texte.UebergabeLabelExponent)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.UebergabeExponent" WertChanged="w => Setzen(() => _stand.UebergabeExponent = w)" />
+                                <Zahlenfeld Bezeichnung="@Texte.UebergabeLabelNennleistung" Einheit="kW" Min="0.01"
+                                            Platzhalter="@Texte.UebergabePlatzhalterNennleistung"
+                                            Feldname="@Feld(Texte.UebergabeLabelNennleistung)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.UebergabeLeistungNennKw" WertChanged="w => Setzen(() => _stand.UebergabeLeistungNennKw = w)" />
+                                <Zahlenfeld Bezeichnung="@Texte.UebergabeLabelVorlauf" Einheit="°C"
+                                            Min="@Waermeuebergabevorgaben.VORLAUF_MIN" Max="@Waermeuebergabevorgaben.VORLAUF_MAX"
+                                            Platzhalter="@UebergabePlatzhalter(GebaeudeUebergabe?.AuslegungVorlauf, Waermeuebergabevorgaben.Vorlauf(WirksameArt), 0)"
+                                            Feldname="@Feld(Texte.UebergabeLabelVorlauf)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.AuslegungVorlauf" WertChanged="w => Setzen(() => _stand.AuslegungVorlauf = w)" />
+                                <Zahlenfeld Bezeichnung="@Texte.UebergabeLabelRuecklauf" Einheit="°C"
+                                            Platzhalter="@UebergabePlatzhalter(GebaeudeUebergabe?.AuslegungRuecklauf, Waermeuebergabevorgaben.Ruecklauf(WirksameArt), 0)"
+                                            Feldname="@Feld(Texte.UebergabeLabelRuecklauf)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.AuslegungRuecklauf" WertChanged="w => Setzen(() => _stand.AuslegungRuecklauf = w)" />
+                                <Zahlenfeld Bezeichnung="@Texte.UebergabeLabelRaum" Einheit="°C"
+                                            Min="@Waermeuebergabevorgaben.RAUM_MIN" Max="@Waermeuebergabevorgaben.RAUM_MAX"
+                                            Platzhalter="@UebergabePlatzhalter(GebaeudeUebergabe?.AuslegungRaumtemperatur, _vorgaben?.SollTag.Wert, 1)"
+                                            Feldname="@Feld(Texte.UebergabeLabelRaum)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.AuslegungRaumtemperatur" WertChanged="w => Setzen(() => _stand.AuslegungRaumtemperatur = w)" />
+                                <Zahlenfeld Bezeichnung="@Texte.UebergabeLabelBand" Einheit="K"
+                                            Min="@Waermeuebergabevorgaben.BAND_MIN" Max="@Waermeuebergabevorgaben.BAND_MAX"
+                                            Platzhalter="@UebergabePlatzhalter(GebaeudeUebergabe?.ReglerProportionalband, Waermeuebergabevorgaben.Proportionalband, 1)"
+                                            Feldname="@Feld(Texte.UebergabeLabelBand)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.ReglerProportionalband" WertChanged="w => Setzen(() => _stand.ReglerProportionalband = w)" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    <Herleitungszeile Text="@UebergabeArtZeile" />
+                    @if (UebergabeOhneWirkung.Length > 0)
+                    {
+                        <Herleitungszeile Text="@UebergabeOhneWirkung" />
+                    }
+                </div>
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -284,6 +354,18 @@
     /// <summary>Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz?</summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
+    /// <summary>
+    /// Warum die Datenbank die Übergabe je Zone nicht kennt (E63, AK1z); <c>null</c> = sie kennt sie.
+    /// Dann zeigt der Abschnitt „Übergabe" allein diesen Grund.
+    /// </summary>
+    [Parameter] public string? UebergabeSperre { get; set; }
+
+    /// <summary>
+    /// Rechnet das Projekt eine Kopplungsstufe (AK1 oder höher)? <c>false</c> = der Abschnitt „Übergabe"
+    /// nennt „ohne Wirkung"; <c>null</c> = unbekannt (kein Hinweis aus der Stufe).
+    /// </summary>
+    [Parameter] public bool? ProjektKoppelt { get; set; }
+
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Zone.btn_Help";
 
@@ -394,7 +476,12 @@
     }
 
     private void VorgabenNachziehen()
-        => _vorgaben = Gebaeude is null ? null : Zonenvorgaben.Bilden(_stand.Eingaben(), Gebaeude, Math.Max(1, Zonenzahl));
+    {
+        _vorgaben = Gebaeude is null ? null : Zonenvorgaben.Bilden(_stand.Eingaben(), Gebaeude, Math.Max(1, Zonenzahl));
+        // E63: eine Fehleingabe in einem ausgeblendeten Uebergabefeld haelt das OK nicht mehr an.
+        if (!UebergabeFelderSichtbar)
+            foreach (string f in UebergabeFeldnamen) _fehlerfelder.Remove(f);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -448,6 +535,22 @@
             StrahlungsanteilSetzen = w => Setzen(() => _stand.HeizungStrahlungsanteil = w),
             HeizleistungMaxLesen = () => _stand.HeizleistungMaxKw,
             HeizleistungMaxSetzen = w => Setzen(() => _stand.HeizleistungMaxKw = w),
+            // E63 (AK1z): die Uebergabe je Zone - leer = wie Gebaeude; die Art prueft ihren Wert.
+            UebergabeArtLesen = () => _stand.UebergabeArt,
+            UebergabeArtSetzen = UebergabeArtSetzenKi,
+            UebergabeExponentLesen = () => _stand.UebergabeExponent,
+            UebergabeExponentSetzen = w => Setzen(() => _stand.UebergabeExponent = w),
+            UebergabeNennleistungLesen = () => _stand.UebergabeLeistungNennKw,
+            UebergabeNennleistungSetzen = w => Setzen(() => _stand.UebergabeLeistungNennKw = w),
+            AuslegungVorlaufLesen = () => _stand.AuslegungVorlauf,
+            AuslegungVorlaufSetzen = w => Setzen(() => _stand.AuslegungVorlauf = w),
+            AuslegungRuecklaufLesen = () => _stand.AuslegungRuecklauf,
+            AuslegungRuecklaufSetzen = w => Setzen(() => _stand.AuslegungRuecklauf = w),
+            AuslegungRaumLesen = () => _stand.AuslegungRaumtemperatur,
+            AuslegungRaumSetzen = w => Setzen(() => _stand.AuslegungRaumtemperatur = w),
+            ProportionalbandLesen = () => _stand.ReglerProportionalband,
+            ProportionalbandSetzen = w => Setzen(() => _stand.ReglerProportionalband = w),
+            UebergabeWirksamLesen = () => UebergabeWirksam,
             BauteileLesen = () => _stand.Bauteile,
             ArtText = ArtText,
             RandText = RandText,
@@ -533,6 +636,166 @@
             };
             return string.Format(CultureInfo.CurrentCulture, Texte.ZeileLuftwechsel, Kurz(n, 2), quelle);
         }
+    }
+
+    // ---- Die Uebergabe je Zone (E63, AK1z) ----
+
+    /// <summary>Die Übergabewerte des Gebäudes im Arbeitsstand des Editors; <c>null</c> ohne Gebäude.</summary>
+    private GebaeudeKatalogDaten? GebaeudeUebergabe => Gebaeudestand?.Stand;
+
+    /// <summary>Die wirksame Art: die der Zone, sonst die des Gebäudes (Kaskade des Kerns).</summary>
+    private string? WirksameArt => _stand.UebergabeArt ?? GebaeudeUebergabe?.UebergabeArt;
+
+    /// <summary>Rechnet die wirksame Art eine Übergabe? Dann stehen die Zahlenfelder.</summary>
+    private bool UebergabeRechnet => Waermeuebergabevorgaben.ArtRechnet(WirksameArt);
+
+    /// <summary>Stehen die Zahlenfelder der Übergabe? Beheizt, nicht gesperrt, rechnende Art.</summary>
+    private bool UebergabeFelderSichtbar => UebergabeSperre is null && _stand.IstBeheizt && UebergabeRechnet;
+
+    private IEnumerable<string> UebergabeFeldnamen => new[]
+    {
+        Texte.UebergabeLabelExponent, Texte.UebergabeLabelNennleistung, Texte.UebergabeLabelVorlauf,
+        Texte.UebergabeLabelRuecklauf, Texte.UebergabeLabelRaum, Texte.UebergabeLabelBand
+    }.Select(Feld);
+
+    private static string Feld(string beschriftung) => GebaeudeArbeitsstand.Feld(beschriftung);
+
+    /// <summary>Die Einträge der Art: 0 = „wie Gebäude (Art des Gebäudes)", dann die vier Arten; eine unbekannte steht als −1.</summary>
+    private IReadOnlyList<(int Id, string Text)> UebergabeArteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (UebergabeArtindex < 0) l.Add((-1, _stand.UebergabeArt ?? ""));
+            l.Add((0, string.Format(CultureInfo.CurrentCulture, Texte.UebergabeWieGebaeude,
+                                    Texte.UebergabeArtname(GebaeudeUebergabe?.UebergabeArt))));
+            for (int i = 0; i < Waermeuebergabevorgaben.Arten.Count; i++)
+                l.Add((i + 1, Texte.UebergabeArtname(Waermeuebergabevorgaben.Arten[i])));
+            return l;
+        }
+    }
+
+    /// <summary>Der Listenplatz der Art: NULL = 0 („wie Gebäude"), sonst 1 bis 4; unbekannt = −1.</summary>
+    private int UebergabeArtindex
+    {
+        get
+        {
+            if (_stand.UebergabeArt is null) return 0;
+            for (int i = 0; i < Waermeuebergabevorgaben.Arten.Count; i++)
+                if (Waermeuebergabevorgaben.Arten[i] == _stand.UebergabeArt) return i + 1;
+            return -1;
+        }
+    }
+
+    private void UebergabeArtWaehlen(int? index)
+    {
+        if (index is not int i || i < 0 || i > Waermeuebergabevorgaben.Arten.Count) return;
+        Setzen(() => _stand.UebergabeArt = i == 0 ? null : Waermeuebergabevorgaben.Arten[i - 1]);
+    }
+
+    /// <summary>Der Assistent setzt die Art: leer = wie Gebäude, sonst einer der vier Steuerwerte.</summary>
+    private void UebergabeArtSetzenKi(string? wert)
+    {
+        string? w = string.IsNullOrWhiteSpace(wert) ? null : wert.Trim().ToUpperInvariant();
+        if (w is not null && !Waermeuebergabevorgaben.Arten.Contains(w))
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Texte.MeldungUebergabeArt,
+                                                              (_stand.Bezeichner ?? "").Trim(), wert));
+        Setzen(() => _stand.UebergabeArt = w);
+    }
+
+    /// <summary>
+    /// Der Platzhalter eines leeren Übergabefeldes: der Wert des Gebäudes („wie Gebäude: …"), sonst die
+    /// Vorgabe („Vorgabe: …"); ohne beide kein Platzhalter.
+    /// </summary>
+    private string UebergabePlatzhalter(double? gebaeude, double? vorgabe, int stellen)
+    {
+        var c = CultureInfo.CurrentCulture;
+        if (gebaeude is double g) return string.Format(c, Texte.UebergabePlatzhalter, Kurz(g, stellen));
+        if (vorgabe is double v) return string.Format(c, Texte.Vorgabe, Kurz(v, stellen));
+        return "";
+    }
+
+    /// <summary>Die Herleitungszeile: wirksame Art mit Herkunft und den Vorgaben der Art als Zahlen.</summary>
+    private string UebergabeArtZeile
+    {
+        get
+        {
+            var c = CultureInfo.CurrentCulture;
+            string herkunft = _stand.UebergabeArt is null ? Texte.UebergabeHerkunftGebaeude : Texte.UebergabeHerkunftZone;
+            string? art = WirksameArt;
+            if (!UebergabeRechnet) return string.Format(c, Texte.UebergabeZeileIdeal, herkunft);
+            return string.Format(c, Texte.UebergabeZeileArt, Texte.UebergabeArtname(art), herkunft,
+                                 Zahl(Waermeuebergabevorgaben.Exponent(art), 2), Zahl(Waermeuebergabevorgaben.Vorlauf(art), 0),
+                                 Zahl(Waermeuebergabevorgaben.Ruecklauf(art), 0), Zahl(Waermeuebergabevorgaben.Proportionalband, 1));
+        }
+    }
+
+    /// <summary>„Ohne Wirkung" samt Grund: Heizkreis des Gebäudes aus, sonst Projekt ohne Kopplungsstufe; leer = wirkt.</summary>
+    private string UebergabeOhneWirkung
+        => GebaeudeUebergabe is GebaeudeKatalogDaten g && !g.HeizkreisAktiv ? Texte.UebergabeZeileHeizkreisAus
+           : ProjektKoppelt == false ? Texte.UebergabeZeileProjektAus
+           : "";
+
+    /// <summary>
+    /// Die wirksame Übergabe mit Herkunft je Wert — die Lesezeile des Assistenten: an der Zone gesetzt,
+    /// sonst der Platzhalter (wie Gebäude bzw. Vorgabe), dazu der Grund, wenn sie nicht wirkt.
+    /// </summary>
+    private string UebergabeWirksam
+    {
+        get
+        {
+            if (UebergabeSperre is not null) return UebergabeSperre;
+            if (!_stand.IstBeheizt) return Texte.UebergabeZeileUnbeheizt;
+            var teile = new List<string> { UebergabeArtZeile };
+            if (UebergabeRechnet)
+            {
+                string? art = WirksameArt;
+                GebaeudeKatalogDaten? g = GebaeudeUebergabe;
+                void Wert(string label, double? zone, string leer, int stellen)
+                    => teile.Add(Feld(label) + ": " + (zone is double z
+                        ? Kurz(z, stellen) + " (" + Texte.UebergabeHerkunftZone + ")"
+                        : leer));
+                Wert(Texte.UebergabeLabelExponent, _stand.UebergabeExponent,
+                     UebergabePlatzhalter(g?.UebergabeExponent, Waermeuebergabevorgaben.Exponent(art), 2), 2);
+                Wert(Texte.UebergabeLabelNennleistung, _stand.UebergabeLeistungNennKw, Texte.UebergabePlatzhalterNennleistung, 2);
+                Wert(Texte.UebergabeLabelVorlauf, _stand.AuslegungVorlauf,
+                     UebergabePlatzhalter(g?.AuslegungVorlauf, Waermeuebergabevorgaben.Vorlauf(art), 0), 1);
+                Wert(Texte.UebergabeLabelRuecklauf, _stand.AuslegungRuecklauf,
+                     UebergabePlatzhalter(g?.AuslegungRuecklauf, Waermeuebergabevorgaben.Ruecklauf(art), 0), 1);
+                Wert(Texte.UebergabeLabelRaum, _stand.AuslegungRaumtemperatur,
+                     UebergabePlatzhalter(g?.AuslegungRaumtemperatur, _vorgaben?.SollTag.Wert, 1), 1);
+                Wert(Texte.UebergabeLabelBand, _stand.ReglerProportionalband,
+                     UebergabePlatzhalter(g?.ReglerProportionalband, Waermeuebergabevorgaben.Proportionalband, 1), 1);
+            }
+            if (UebergabeOhneWirkung.Length > 0) teile.Add(UebergabeOhneWirkung);
+            return string.Join(" | ", teile);
+        }
+    }
+
+    /// <summary>
+    /// Die Bänder der Übergabe — dieselben wie <c>GebaeudeZonenCtrl.UebergabePruefen</c>: Vorlauf, Raum und
+    /// Proportionalband, wenn gesetzt; der Rücklauf unter dem Vorlauf, wenn beide gesetzt sind.
+    /// </summary>
+    private string? UebergabePruefen(string zn)
+    {
+        var k = CultureInfo.CurrentCulture;
+        static bool Ausserhalb(double w, double min, double max) => double.IsNaN(w) || w < min || w > max;
+        if (_stand.AuslegungVorlauf is double v
+            && Ausserhalb(v, Waermeuebergabevorgaben.VORLAUF_MIN, Waermeuebergabevorgaben.VORLAUF_MAX))
+            return string.Format(k, Texte.MeldungUebergabeVorlauf, zn, v,
+                                 Waermeuebergabevorgaben.VORLAUF_MIN, Waermeuebergabevorgaben.VORLAUF_MAX);
+        if (_stand.AuslegungRuecklauf is double r && (double.IsNaN(r) || double.IsInfinity(r)
+                                                      || (_stand.AuslegungVorlauf is double vl && !(r < vl))))
+            return string.Format(k, Texte.MeldungUebergabeRuecklauf, zn, r, _stand.AuslegungVorlauf ?? double.NaN);
+        if (_stand.AuslegungRaumtemperatur is double t
+            && Ausserhalb(t, Waermeuebergabevorgaben.RAUM_MIN, Waermeuebergabevorgaben.RAUM_MAX))
+            return string.Format(k, Texte.MeldungUebergabeRaum, zn, t,
+                                 Waermeuebergabevorgaben.RAUM_MIN, Waermeuebergabevorgaben.RAUM_MAX);
+        if (_stand.ReglerProportionalband is double xp
+            && Ausserhalb(xp, Waermeuebergabevorgaben.BAND_MIN, Waermeuebergabevorgaben.BAND_MAX))
+            return string.Format(k, Texte.MeldungUebergabeBand, zn, xp,
+                                 Waermeuebergabevorgaben.BAND_MIN, Waermeuebergabevorgaben.BAND_MAX);
+        return null;
     }
 
     private static string Kurz(double w, int stellen)
@@ -670,7 +933,7 @@
             return string.Format(CultureInfo.CurrentCulture, Texte.MeldungRaumhoehe, name);
         if (_stand.Volumen is double v && (!(v > 0.0) || double.IsInfinity(v)))
             return string.Format(CultureInfo.CurrentCulture, Texte.MeldungVolumen, name);
-        return null;
+        return UebergabePruefen(name);
     }
 
     private Task BeiErgebnis(bool ok)

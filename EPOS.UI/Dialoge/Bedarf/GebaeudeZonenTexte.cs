@@ -440,6 +440,80 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_MSG_VOLUMEN</c> — {0} Zone.</summary>
     public string MeldungVolumen { get; set; } = Resource.ZONDLG_MSG_VOLUMEN;
 
+    // ---- Der Abschnitt „Übergabe" (E63, AK1z) ----
+
+    /// <summary><c>ZONDLG_UEBERGABE_GRUPPE</c></summary>
+    public string UebergabeGruppe { get; set; } = Resource.ZONDLG_UEBERGABE_GRUPPE;
+
+    /// <summary><c>GEBK_LBL_UEBERGABE_ART</c></summary>
+    public string UebergabeLabelArt { get; set; } = Resource.GEBK_LBL_UEBERGABE_ART;
+
+    /// <summary><c>GEBK_LBL_UEBERGABE_EXPONENT</c></summary>
+    public string UebergabeLabelExponent { get; set; } = Resource.GEBK_LBL_UEBERGABE_EXPONENT;
+
+    /// <summary><c>GEBK_LBL_UEBERGABE_NENNLEISTUNG</c></summary>
+    public string UebergabeLabelNennleistung { get; set; } = Resource.GEBK_LBL_UEBERGABE_NENNLEISTUNG;
+
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_VORLAUF</c></summary>
+    public string UebergabeLabelVorlauf { get; set; } = Resource.GEBK_LBL_AUSLEGUNG_VORLAUF;
+
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_RUECKLAUF</c></summary>
+    public string UebergabeLabelRuecklauf { get; set; } = Resource.GEBK_LBL_AUSLEGUNG_RUECKLAUF;
+
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_RAUM</c></summary>
+    public string UebergabeLabelRaum { get; set; } = Resource.GEBK_LBL_AUSLEGUNG_RAUM;
+
+    /// <summary><c>GEBK_LBL_PROPORTIONALBAND</c></summary>
+    public string UebergabeLabelBand { get; set; } = Resource.GEBK_LBL_PROPORTIONALBAND;
+
+    /// <summary><c>ZONDLG_UEBERGABE_WIE_GEBAEUDE</c> — {0} Art des Gebäudes.</summary>
+    public string UebergabeWieGebaeude { get; set; } = Resource.ZONDLG_UEBERGABE_WIE_GEBAEUDE;
+
+    /// <summary><c>ZONDLG_UEBERGABE_PLATZHALTER</c> — {0} wirksamer Wert.</summary>
+    public string UebergabePlatzhalter { get; set; } = Resource.ZONDLG_UEBERGABE_PLATZHALTER;
+
+    /// <summary><c>ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG</c></summary>
+    public string UebergabePlatzhalterNennleistung { get; set; } = Resource.ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG;
+
+    /// <summary><c>ZONDLG_UEBERGABE_HERKUNFT_ZONE</c></summary>
+    public string UebergabeHerkunftZone { get; set; } = Resource.ZONDLG_UEBERGABE_HERKUNFT_ZONE;
+
+    /// <summary><c>ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE</c></summary>
+    public string UebergabeHerkunftGebaeude { get; set; } = Resource.ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_ART</c> — {0} Art, {1} Herkunft, {2} Exponent, {3}/{4} Auslegung, {5} Band.</summary>
+    public string UebergabeZeileArt { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_ART;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_IDEAL</c> — {0} Herkunft.</summary>
+    public string UebergabeZeileIdeal { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_IDEAL;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS</c></summary>
+    public string UebergabeZeileHeizkreisAus { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS</c></summary>
+    public string UebergabeZeileProjektAus { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT</c></summary>
+    public string UebergabeZeileUnbeheizt { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT;
+
+    /// <summary><c>ZONE_MSG_UEBERGABEART</c> — {0} Zone, {1} Wert.</summary>
+    public string MeldungUebergabeArt { get; set; } = Resource.ZONE_MSG_UEBERGABEART;
+
+    /// <summary><c>ZONE_MSG_AUSLEGUNG_VORLAUF</c> — {0} Zone, {1} Wert, {2}/{3} Band.</summary>
+    public string MeldungUebergabeVorlauf { get; set; } = Resource.ZONE_MSG_AUSLEGUNG_VORLAUF;
+
+    /// <summary><c>ZONE_MSG_AUSLEGUNG_RUECKLAUF</c> — {0} Zone, {1} Rücklauf, {2} Vorlauf.</summary>
+    public string MeldungUebergabeRuecklauf { get; set; } = Resource.ZONE_MSG_AUSLEGUNG_RUECKLAUF;
+
+    /// <summary><c>ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR</c> — {0} Zone, {1} Wert, {2}/{3} Band.</summary>
+    public string MeldungUebergabeRaum { get; set; } = Resource.ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR;
+
+    /// <summary><c>ZONE_MSG_PROPORTIONALBAND</c> — {0} Zone, {1} Wert, {2}/{3} Band.</summary>
+    public string MeldungUebergabeBand { get; set; } = Resource.ZONE_MSG_PROPORTIONALBAND;
+
+    /// <summary>Der Anzeigename einer Übergabeart (<c>GEBK_UEBERGABE_*</c>, aus dem Kern).</summary>
+    public Func<string?, string> UebergabeArtname { get; set; } = a => WindowsFormsApplication1.Waermeuebergabevorgaben.Anzeigename(a);
+
     /// <summary><c>ALLG_BTN_OK</c></summary>
     public string Ok { get; set; } = Resource.ALLG_BTN_OK;
 
