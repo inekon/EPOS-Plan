@@ -117,6 +117,32 @@ namespace EPOS.Kern.Tests
                                                            t.Contains(km.StundenLeistungsgrenze.ToString(CultureInfo.CurrentCulture), StringComparison.Ordinal));
         }
 
+        /// <summary>
+        /// Ohne Wärmepumpe in der Kaskade (alle Plätze der Wärmepumpe geleert) rechnet die Kältemaschine
+        /// allein — am Ende der Wärmekaskade, vor der Stufenrechnung des Stroms.
+        /// </summary>
+        [Fact]
+        public void Ohne_Waermepumpe_rechnet_die_Kaeltemaschine_allein()
+        {
+            if (!_db.Vorhanden) return;
+
+            KaeltemaschineCtrl.AusKatalogUebernehmen(Stamm(LUFTGEKUEHLT), PROJEKT);
+            foreach (string tool in new[] { "Tool_1", "Tool_2", "Tool_3", "Tool_4" })
+                DataRepository.ExecuteNonQuery("UPDATE Tab_Einstellungen SET " + tool + " = '' WHERE ID_Projekt = ? AND " + tool + " = ?",
+                                               new DbParam("?", PROJEKT), new DbParam("?", DbWerte.ERZEUGER_WAERMEPUMPE));
+
+            SimulationRunner lauf = Rechnen();
+            Assert.False(lauf.sim.WPInSpeicherstufe);
+            Kaeltekaskade k = lauf.simulation_Kaeltebedarf.Kaskade;
+            Assert.NotNull(k);
+            Kaelteerzeuger km = Assert.Single(k.Erzeuger);
+            Assert.NotNull(km.Maschine);
+            Assert.True(km.KaelteGesamtKwh > 0);
+            Assert.True(k.StromGesamtKwh > 0);
+            Assert.True(k.RestGesamtKwh < 1e-6);
+            Assert.Equal(0.0, lauf.simulation_Kaeltebedarf.Kaelterestbedarf, 9);
+        }
+
         [Fact]
         public void Ohne_Kuehlung_im_Projekt_rechnet_die_Maschine_nicht()
         {

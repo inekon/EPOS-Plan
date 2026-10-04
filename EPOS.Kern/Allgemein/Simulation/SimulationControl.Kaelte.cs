@@ -356,7 +356,7 @@ namespace WindowsFormsApplication1
             }
 
             var kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage };
-            kaskade.Rechnen(kaelte.Kaeltebedarf, simulation_wp.Extrapolation_Erlaubt);
+            kaskade.Rechnen(kaelte.Kaeltebedarf, simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
             kaelte.DeckungUebernehmen(kaskade);
 
             _waermekanalAbweichungen = 0;
