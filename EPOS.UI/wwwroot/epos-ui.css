@@ -5631,6 +5631,44 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     cursor: grab;
 }
 
+/* Der Umschalter "Dateikoerper | Exportmodell" (15.4): zwei Knoepfe mit aria-pressed, gedrueckt wie der
+   Bereichsknopf der Diagramme. Darunter die Kennzeichenzeile, der Hinweis zur Dreiecksgrenze und die
+   aufklappbare Liste der Raeume mit der Herkunft ihres Koerpers. */
+.epos-gebansicht-modus {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-gebansicht-modusknopf {
+    min-height: 32px;
+}
+
+.epos-gebansicht-modusknopf[aria-pressed="true"] {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+.epos-gebansicht-kennzeichen,
+.epos-gebansicht-vereinfacht {
+    margin: 0;
+}
+
+.epos-gebansicht-raumherkunft ul {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.epos-gebansicht-raumherkunft li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .epos-gebansicht-zone--0 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-0); }
 .epos-gebansicht-zone--1 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-1); }
 .epos-gebansicht-zone--2 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-2); }

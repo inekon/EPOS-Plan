@@ -33,6 +33,23 @@
    "Schematisch" steht als Zeile ueber dem Bild, sobald ein Koerper erfunden ist; die Legende nennt je
    Zone die Herkunft und eine Hoehe als Vorgabe. Anzeigetexte stehen nur im HTML, nie im Modul.
 
+   DER UMSCHALTER "DATEIKOERPER | EXPORTMODELL" (Datenaustauschkonzept 15.4) steht im Reiter "Koerper", sobald
+   mindestens ein Raum einen Koerper aus der Datei traegt (GebaeudeAnsichtDaten.HatDateikoerper); vorgewaehlt ist
+   "Dateikoerper". Ohne einen einzigen Dateikoerper (gbXML, schematisches Gebaeude) entfaellt er, und es gilt das
+   Exportmodell. Zwei Knoepfe mit aria-pressed; gesteuert wird ueber die Schluessel MODUS_DATEIKOERPER und
+   MODUS_EXPORTMODELL (data-modus), nie ueber ihren Text. "Exportmodell" ist die Koerperansicht oben (Umriss
+   extrudiert, Platten je Bauteil). "Dateikoerper" zeichnet je Raum das Dreiecksnetz der Datei mit seinen
+   Randkanten, jeden anderen Raum als Prisma aus dem Umriss (GebaeudeAnsichtDaten.Dateiansicht). Die Netze gehen
+   als EIN Bytefeld je Gebaeude ans Modul (GebaeudeAnsichtDaten.Koerperfeld: float32-Punkte relativ zum
+   Bezugspunkt, int32-Dreiecke und -Kanten, Little-Endian), daneben ein Verzeichnis je Raum in der Szene; ein
+   Moduswechsel geht ueber aktualisieren hinein, das Modul bleibt geladen und die Kamera, wo sie ist. Ueber dem
+   Bild steht die Kennzeichenzeile "n Raeume aus Datei, m aus Umriss, k schematisch" (Zahlen auch als
+   data-Attribute) und, wenn ein Koerper vereinfacht gelesen ist, "vereinfacht: ..." mit dem Text je Vermerk;
+   unter der Legende die Raeume mit ihrer Herkunft (Kurztext je Raum). Uebersteigen die Dateikoerper die
+   Dreiecksgrenze (GebaeudeAnsichtDaten.DateikoerperZuGross, 300 000 je Gebaeude), zeigt "Dateikoerper" alle
+   Raeume als Prisma mit dem Hinweis "Dateikoerper zu gross (n Dreiecke, Grenze ...)" - benannte Vereinfachung,
+   kein Abbruch, auf allen Plattformen gleich; das Bytefeld geht dann nicht ans Modul.
+
    Die Geschosswahl ist ebenfalls ein Reiter; vorbelegt ist das
    unterste Geschoss mit einem Umriss (GebaeudeAnsichtDaten.GeschossOderVorgabe - dieselbe Stelle
    fragt der Wirt). Der Wirt kann die Wahl binden (Geschoss/GeschossChanged).
@@ -98,6 +115,12 @@
 
     /// <summary>Der Vorsatz der Reiterschlüssel je Geschoss; dahinter steht die Stelle des Geschosses.</summary>
     internal const string SCHLUESSEL_GESCHOSS = "gebansicht-geschoss-";
+
+    /// <summary>Der Schlüssel der Körperdarstellung „Dateikörper" (Netze der Datei).</summary>
+    internal const string MODUS_DATEIKOERPER = "dateikoerper";
+
+    /// <summary>Der Schlüssel der Körperdarstellung „Exportmodell" (Umriss extrudiert, Platten je Bauteil).</summary>
+    internal const string MODUS_EXPORTMODELL = "exportmodell";
 
     /// <summary>Das Modul der Körperansicht (statisches Web-Asset der Bibliothek).</summary>
     public const string MODUL_KOERPER = "./_content/EPOS.UI/epos-gebaeude-koerper.js";
@@ -165,6 +188,25 @@
     /// <summary>Die Daten und die Zielzone, die das Modul zuletzt bekam — weichen sie ab, wird aktualisiert.</summary>
     private GebaeudeAnsichtDaten? _gezeigteDaten;
     private string? _gezeigtesZiel;
+
+    /// <summary>Die gewählte Körperdarstellung; <c>null</c> = die Vorgabe.</summary>
+    private string? _modus;
+
+    /// <summary>Die Darstellung, die das Modul zuletzt bekam.</summary>
+    private string? _gezeigterModus;
+
+    /// <summary>Das Bytefeld der Dateikörper und die Daten, aus denen es gebildet ist.</summary>
+    private GebaeudeAnsichtKoerperfeld? _feld;
+    private GebaeudeAnsichtDaten? _feldDaten;
+
+    /// <summary>
+    /// Die gezeigte Körperdarstellung (Prüfhilfe für Tests): mit Dateikörpern die Wahl, vorgegeben
+    /// <see cref="MODUS_DATEIKOERPER"/>; ohne einen einzigen immer <see cref="MODUS_EXPORTMODELL"/>.
+    /// </summary>
+    public string KoerperModus => Daten is { HatDateikoerper: true } ? _modus ?? MODUS_DATEIKOERPER : MODUS_EXPORTMODELL;
+
+    /// <summary>Ist die Darstellung „Dateikörper" gezeigt?</summary>
+    private bool ImDateimodus => string.Equals(KoerperModus, MODUS_DATEIKOERPER, StringComparison.Ordinal);
 
     /// <summary>Ist die Körperansicht gewählt (Prüfhilfe für Tests)?</summary>
     public bool KoerperGezeigt => string.Equals(_ansicht, SCHLUESSEL_KOERPER, StringComparison.Ordinal);
@@ -342,6 +384,8 @@
 
     private void BeiAnsicht(string schluessel) => _ansicht = schluessel;
 
+    private void BeiModus(string schluessel) => _modus = schluessel;
+
     /// <summary>
     /// Der Klick auf einen Körper (aus dem Modul): meldet dem Wirt den Schlüssel der Zone. Ein Raum ohne Zone,
     /// ein unbekannter Schlüssel, eine gesperrte Ansicht oder ein Wirt ohne Delegat melden nichts.
@@ -357,11 +401,56 @@
     //  Körper
     // =====================================================================
 
+    /// <summary>
+    /// Die gezeigten Räume der Körperansicht: im Modus Dateikörper die <see cref="GebaeudeAnsichtDaten.Dateiansicht"/>,
+    /// sonst die Prismen aus <see cref="GebaeudeAnsichtDaten.Koerper"/> (Herkunft schematisch oder aus Umriss).
+    /// </summary>
+    private IReadOnlyList<GebaeudeAnsichtDateiraum> GezeigteKoerper(GebaeudeAnsichtDaten daten)
+        => ImDateimodus
+            ? daten.Dateiansicht()
+            : daten.Koerper().Select(k => new GebaeudeAnsichtDateiraum(
+                k.Raum, k.Schematisch ? Koerperherkunft.Schematisch : Koerperherkunft.Umriss, null, k)).ToList();
+
     private RenderFragment Koerperbild(GebaeudeAnsichtDaten daten) => __builder =>
     {
-        IReadOnlyList<GebaeudeAnsichtKoerper> koerper = daten.Koerper();
-        <div class="epos-gebansicht-koerperansicht">
-            @if (daten.Schematisch || koerper.Any(k => k.Schematisch))
+        IReadOnlyList<GebaeudeAnsichtDateiraum> koerper = GezeigteKoerper(daten);
+        <div class="epos-gebansicht-koerperansicht" data-modus="@KoerperModus">
+            @if (daten.HatDateikoerper)
+            {
+                <div class="epos-gebansicht-modus" role="group" aria-label="@Texte.Modus">
+                    @foreach ((string schluessel, string titel) in new[] { (MODUS_DATEIKOERPER, Texte.Dateikoerper), (MODUS_EXPORTMODELL, Texte.Exportmodell) })
+                    {
+                        string s = schluessel;
+                        <button type="button" class="epos-diagramm-knopf epos-gebansicht-modusknopf" data-modus="@s"
+                                aria-pressed="@(string.Equals(KoerperModus, s, StringComparison.Ordinal) ? "true" : "false")"
+                                @onclick="() => BeiModus(s)">@titel</button>
+                    }
+                </div>
+            }
+            @if (ImDateimodus)
+            {
+                @if (daten.DateikoerperZuGross)
+                {
+                    <p class="epos-leisezeile epos-gebansicht-zugross" role="status"
+                       data-dreiecke="@daten.DateikoerperDreiecke.ToString(CultureInfo.InvariantCulture)"
+                       data-grenze="@daten.Dreiecksgrenze.ToString(CultureInfo.InvariantCulture)">
+                        @Format(Texte.ZuGross, daten.DateikoerperDreiecke.ToString("N0", CultureInfo.CurrentCulture),
+                                daten.Dreiecksgrenze.ToString("N0", CultureInfo.CurrentCulture))
+                    </p>
+                }
+                int ausDatei = koerper.Count(k => k.Herkunft == Koerperherkunft.Datei);
+                int ausUmriss = koerper.Count(k => k.Herkunft == Koerperherkunft.Umriss);
+                int schematisch = koerper.Count(k => k.Herkunft == Koerperherkunft.Schematisch);
+                <p class="epos-gebansicht-kennzeichen" data-datei="@ausDatei.ToString(CultureInfo.InvariantCulture)"
+                   data-umriss="@ausUmriss.ToString(CultureInfo.InvariantCulture)"
+                   data-schematisch="@schematisch.ToString(CultureInfo.InvariantCulture)">@Format(Texte.Kennzeichen, ausDatei, ausUmriss, schematisch)</p>
+                IReadOnlyList<string> vermerke = Vermerke(koerper);
+                @if (vermerke.Count > 0)
+                {
+                    <p class="epos-gebansicht-vereinfacht" data-vermerke="@string.Join(",", vermerke)">@Format(Texte.Vereinfacht, string.Join(", ", vermerke.Select(Texte.Vermerk)))</p>
+                }
+            }
+            @if (ImDateimodus ? koerper.Any(k => k.Herkunft == Koerperherkunft.Schematisch) : daten.Schematisch || koerper.Any(k => k.Prisma!.Schematisch))
             {
                 <p class="epos-gebansicht-schematisch">
                     <span class="epos-gebansicht-marke">@Texte.Schematisch</span>
@@ -389,7 +478,7 @@
                         <span class="@("epos-gebansicht-farbfeld " + Zonenklasse(daten, z.Schluessel))" aria-hidden="true"></span>
                         <span class="epos-gebansicht-zonenname">@z.Name</span>
                         <span class="epos-gebansicht-herkunft">@(z.Schematisch ? Texte.Schematisch : Texte.Raumgrenzen)</span>
-                        @if (koerper.Any(k => k.HoeheVorgabe && string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal)))
+                        @if (koerper.Any(k => k.Prisma is { HoeheVorgabe: true } && string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal)))
                         {
                             <span class="epos-gebansicht-marke epos-gebansicht-marke--hoehe">@Texte.HoeheVorgabe</span>
                         }
@@ -411,7 +500,44 @@
                     </li>
                 }
             </ul>
+            @if (ImDateimodus && koerper.Count > 0)
+            {
+                <details class="epos-gebansicht-raumherkunft">
+                    <summary>@Texte.Raeume</summary>
+                    <ul aria-label="@Texte.Raeume">
+                        @foreach (GebaeudeAnsichtDateiraum k in koerper)
+                        {
+                            string text = Format(Texte.RaumHerkunft, k.Raum.Name, Texte.Herkunft(k.Herkunft));
+                            if (k.Datei is { Vermerke.Count: > 0 } d)
+                                text += " — " + Format(Texte.Vereinfacht, string.Join(", ", d.Vermerke.Select(Texte.Vermerk)));
+                            <li data-raum="@k.Raum.Kennung" data-zone="@k.Raum.Zone" data-herkunft="@Herkunftsschluessel(k.Herkunft)" title="@text">
+                                <span class="@("epos-gebansicht-farbfeld " + Zonenklasse(daten, k.Raum.Zone))" aria-hidden="true"></span>
+                                <span>@text</span>
+                            </li>
+                        }
+                    </ul>
+                </details>
+            }
         </div>
+    };
+
+    /// <summary>Die Vermerke aller gezeigten Dateikörper, ohne Doppel, in der Reihenfolge der Vermerke des Kerns.</summary>
+    private static IReadOnlyList<string> Vermerke(IReadOnlyList<GebaeudeAnsichtDateiraum> koerper)
+        => koerper.Where(k => k.Datei is not null).SelectMany(k => k.Datei!.Vermerke).Distinct(StringComparer.Ordinal)
+                  .OrderBy(v => Reihe(v)).ThenBy(v => v, StringComparer.Ordinal).ToList();
+
+    private static int Reihe(string vermerk)
+    {
+        int i = Array.IndexOf(GebaeudeAnsichtDateikoerper.VERMERKE, vermerk);
+        return i < 0 ? int.MaxValue : i;
+    }
+
+    /// <summary>Der sprachneutrale Schlüssel einer Herkunft für das Markup.</summary>
+    internal static string Herkunftsschluessel(Koerperherkunft herkunft) => herkunft switch
+    {
+        Koerperherkunft.Datei => "datei",
+        Koerperherkunft.Schematisch => "schematisch",
+        _ => "umriss",
     };
 
     /// <summary>
@@ -422,11 +548,50 @@
     public static object Szene(GebaeudeAnsichtDaten daten, string? ziel) => new
     {
         ziel,
-        koerper = daten.Koerper().Select(k => new
+        modus = MODUS_EXPORTMODELL,
+        koerper = daten.Koerper().Select(k => Prisma(daten, k)).ToList(),
+    };
+
+    /// <summary>
+    /// Die Szene im Modus Dateikörper: die Prismen der Räume ohne gezeigten Dateikörper wie im Exportmodell, je Raum
+    /// mit Dateikörper Raum- und Zonenschlüssel, Farbstelle und sein Eintrag im Verzeichnis des Bytefelds, dazu der
+    /// Bezugspunkt [m]. Nur Kennungen und Zahlen — kein Anzeigetext.
+    /// </summary>
+    public static object SzeneDatei(GebaeudeAnsichtDaten daten, string? ziel, GebaeudeAnsichtKoerperfeld feld)
+    {
+        IReadOnlyList<GebaeudeAnsichtDateiraum> raeume = daten.Dateiansicht();
+        var verzeichnis = new Dictionary<string, GebaeudeAnsichtKoerperfeldEintrag>(StringComparer.Ordinal);
+        foreach (GebaeudeAnsichtKoerperfeldEintrag e in feld.Verzeichnis) verzeichnis.TryAdd(e.Raum, e);
+        return new
+        {
+            ziel,
+            modus = MODUS_DATEIKOERPER,
+            bezugspunkt = daten.Bezugspunkt.ToArray(),
+            koerper = raeume.Where(r => r.Prisma is not null).Select(r => Prisma(daten, r.Prisma!)).ToList(),
+            dateikoerper = raeume.Where(r => r.Datei is not null && verzeichnis.ContainsKey(r.Raum.Kennung)).Select(r =>
+            {
+                GebaeudeAnsichtKoerperfeldEintrag e = verzeichnis[r.Raum.Kennung];
+                return new
+                {
+                    raum = r.Raum.Kennung,
+                    zone = r.Raum.Zone,
+                    stelle = Farbstelle(daten, r.Raum.Zone),
+                    punkteAb = e.PunkteAb, punktZahl = e.PunktZahl,
+                    dreieckeAb = e.DreieckeAb, dreieckZahl = e.DreieckZahl,
+                    kantenAb = e.KantenAb, kantenZahl = e.KantenZahl,
+                };
+            }).ToList(),
+        };
+    }
+
+    private static int Farbstelle(GebaeudeAnsichtDaten daten, string? zone)
+        => daten.Zone(zone) is GebaeudeAnsichtZone z ? Math.Abs(z.Stelle) % PALETTE : -1;
+
+    private static object Prisma(GebaeudeAnsichtDaten daten, GebaeudeAnsichtKoerper k) => new
         {
             raum = k.Raum.Kennung,
             zone = k.Raum.Zone,
-            stelle = daten.Zone(k.Raum.Zone) is GebaeudeAnsichtZone z ? Math.Abs(z.Stelle) % PALETTE : -1,
+            stelle = Farbstelle(daten, k.Raum.Zone),
             unterkante = k.UnterkanteM,
             hoehe = k.HoeheM,
             schematisch = k.Schematisch,
@@ -434,12 +599,11 @@
             kanten = k.Angaben?.Kanten,
             boden = k.Angaben?.Boden,
             decke = k.Angaben?.Decke,
-        }).ToList(),
-    };
+        };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Daten is not { } daten || !KoerperGezeigt || _koerperFehlt || daten.Koerper().Count == 0)
+        if (Daten is not { } daten || !KoerperGezeigt || _koerperFehlt || GezeigteKoerper(daten).Count == 0)
         {
             await KoerperEntsorgen();
             return;
@@ -450,7 +614,9 @@
             {
                 _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL_KOERPER);
                 _rueckweg ??= DotNetObjectReference.Create(this);
-                bool gezeichnet = await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone), _rueckweg);
+                bool gezeichnet = Dateinetze(daten) is { } feld
+                    ? await _modul.InvokeAsync<bool>("erzeugen", _canvas, SzeneDatei(daten, GewaehlteZone, feld), _rueckweg, feld.Bytes)
+                    : await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone), _rueckweg);
                 if (!gezeichnet)
                 {
                     _koerperFehlt = true;
@@ -459,12 +625,17 @@
                 }
                 _koerperAktiv = true;
             }
-            else if (!ReferenceEquals(_gezeigteDaten, daten) || !string.Equals(_gezeigtesZiel, GewaehlteZone, StringComparison.Ordinal))
+            else if (!ReferenceEquals(_gezeigteDaten, daten) || !string.Equals(_gezeigtesZiel, GewaehlteZone, StringComparison.Ordinal)
+                     || !string.Equals(_gezeigterModus, KoerperModus, StringComparison.Ordinal))
             {
-                await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone));
+                if (Dateinetze(daten) is { } feld)
+                    await _modul!.InvokeVoidAsync("aktualisieren", SzeneDatei(daten, GewaehlteZone, feld), feld.Bytes);
+                else
+                    await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone));
             }
             _gezeigteDaten = daten;
             _gezeigtesZiel = GewaehlteZone;
+            _gezeigterModus = KoerperModus;
         }
         catch (JSDisconnectedException) { /* die WebView ist weg - nichts mehr zu zeichnen */ }
         catch (Exception)
@@ -476,6 +647,21 @@
         }
     }
 
+    /// <summary>
+    /// Das Bytefeld der Dateikörper, wenn die Netze der Datei zu zeichnen sind (Modus Dateikörper, unter der Grenze);
+    /// sonst <c>null</c> — dann geht kein Feld ans Modul. Je Daten einmal gebildet.
+    /// </summary>
+    private GebaeudeAnsichtKoerperfeld? Dateinetze(GebaeudeAnsichtDaten daten)
+    {
+        if (!ImDateimodus || daten.DateikoerperZuGross || !daten.HatDateikoerper) return null;
+        if (!ReferenceEquals(_feldDaten, daten))
+        {
+            _feld = daten.Koerperfeld();
+            _feldDaten = daten;
+        }
+        return _feld;
+    }
+
     /// <summary>Gibt die Szene frei, wenn eine steht (Rückweg auf den Grundriss, Daten ohne Körper).</summary>
     private async Task KoerperEntsorgen()
     {
@@ -483,6 +669,7 @@
         _koerperAktiv = false;
         _gezeigteDaten = null;
         _gezeigtesZiel = null;
+        _gezeigterModus = null;
         try { await _modul.InvokeVoidAsync("entsorgen"); }
         catch (Exception) { /* die WebView ist schon weg - dann gibt es nichts zu lösen */ }
     }

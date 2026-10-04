@@ -188,6 +188,32 @@ public sealed record GebaeudeAnsichtDaten
         return koerper;
     }
 
+    /// <summary>
+    /// <b>Die Räume der Ansicht „Dateikörper"</b> (15.4) in der Reihenfolge der Geschosse und Räume: ein Raum mit
+    /// Dateikörper als <see cref="Koerperherkunft.Datei"/>, jeder andere mit Umriss als Prisma wie in
+    /// <see cref="Koerper"/> — <see cref="Koerperherkunft.Schematisch"/>, wenn das Prisma schematisch ist, sonst
+    /// <see cref="Koerperherkunft.Umriss"/>. Ist <see cref="DateikoerperZuGross"/>, stehen alle Räume als Prisma da
+    /// (benannte Vereinfachung). Ein Raum ohne Dateikörper und ohne Umriss fehlt.
+    /// </summary>
+    public IReadOnlyList<GebaeudeAnsichtDateiraum> Dateiansicht()
+    {
+        bool zuGross = DateikoerperZuGross;
+        var prismen = new Dictionary<string, GebaeudeAnsichtKoerper>(StringComparer.Ordinal);
+        foreach (GebaeudeAnsichtKoerper k in Koerper()) prismen.TryAdd(k.Raum.Kennung, k);
+        var raeume = new List<GebaeudeAnsichtDateiraum>();
+        foreach (GebaeudeAnsichtGeschoss g in Geschosse)
+            foreach (GebaeudeAnsichtRaum r in g.Raeume)
+            {
+                GebaeudeAnsichtDateikoerper? datei = zuGross ? null : Koerperraum(r.Kennung)?.Dateikoerper;
+                if (datei is not null)
+                    raeume.Add(new GebaeudeAnsichtDateiraum(r, Koerperherkunft.Datei, datei, null));
+                else if (prismen.TryGetValue(r.Kennung, out GebaeudeAnsichtKoerper? prisma))
+                    raeume.Add(new GebaeudeAnsichtDateiraum(
+                        r, prisma.Schematisch ? Koerperherkunft.Schematisch : Koerperherkunft.Umriss, null, prisma));
+            }
+        return raeume;
+    }
+
     /// <summary>Die Körperangaben des Raums <paramref name="kennung"/>; <c>null</c> ohne Treffer.</summary>
     public GebaeudeAnsichtKoerperraum? Koerperraum(string? kennung)
     {
@@ -282,7 +308,22 @@ public enum Koerperherkunft
 /// <param name="Vermerke">Die Vermerke als Schlüssel, aufsteigend.</param>
 public sealed record GebaeudeAnsichtDateikoerper(
     IReadOnlyList<float> Punkte, IReadOnlyList<int> Dreiecke, IReadOnlyList<int> Randkanten, int DreieckZahl,
-    string Art, IReadOnlyList<string> Vermerke);
+    string Art, IReadOnlyList<string> Vermerke)
+{
+    /// <summary>Die Schlüssel der Vermerke in ihrer Reihenfolge — die Namen von <c>Koerpervermerk</c> des Kerns.</summary>
+    public static readonly string[] VERMERKE = { "Bogen", "Loch", "Uneben", "OhneBeschnitt", "Offen", "Mehrschale" };
+}
+
+/// <summary>
+/// Ein Raum der Ansicht „Dateikörper" (<see cref="GebaeudeAnsichtDaten.Dateiansicht"/>): der Raum, die gezeigte
+/// Herkunft, der Dateikörper (bei <see cref="Koerperherkunft.Datei"/>) oder das Prisma aus dem Umriss.
+/// </summary>
+/// <param name="Raum">Der Raum mit Zone und Kennung.</param>
+/// <param name="Herkunft">Die gezeigte Herkunft.</param>
+/// <param name="Datei">Der Dateikörper; <c>null</c> beim Prisma.</param>
+/// <param name="Prisma">Das Prisma aus dem Umriss; <c>null</c> beim Dateikörper.</param>
+public sealed record GebaeudeAnsichtDateiraum(
+    GebaeudeAnsichtRaum Raum, Koerperherkunft Herkunft, GebaeudeAnsichtDateikoerper? Datei, GebaeudeAnsichtKoerper? Prisma);
 
 /// <summary>Die Dateikörper eines Gebäudes als ein Bytefeld samt Verzeichnis (<see cref="GebaeudeAnsichtDaten.Koerperfeld"/>).</summary>
 /// <param name="Bytes">Das Feld: je Raum Punkte (float32), Dreiecke und Kanten (int32), Little-Endian.</param>
@@ -406,4 +447,62 @@ public sealed class GebaeudeAnsichtTexte
 
     /// <summary>GIMP_ANS_LEER — ohne Daten.</summary>
     public string Leer { get; set; } = Resource.GIMP_ANS_LEER;
+
+    /// <summary>GANS_MODUS — Beschriftung des Umschalters „Dateikörper | Exportmodell" für die Sprachausgabe.</summary>
+    public string Modus { get; set; } = Resource.GANS_MODUS;
+
+    /// <summary>GANS_DATEIKOERPER</summary>
+    public string Dateikoerper { get; set; } = Resource.GANS_DATEIKOERPER;
+
+    /// <summary>GANS_EXPORTMODELL</summary>
+    public string Exportmodell { get; set; } = Resource.GANS_EXPORTMODELL;
+
+    /// <summary>GANS_KENNZEICHEN — {0} Räume aus Datei, {1} aus Umriss, {2} schematisch.</summary>
+    public string Kennzeichen { get; set; } = Resource.GANS_KENNZEICHEN;
+
+    /// <summary>GANS_VEREINFACHT — {0} = die Vermerke, mit Komma getrennt.</summary>
+    public string Vereinfacht { get; set; } = Resource.GANS_VEREINFACHT;
+
+    /// <summary>GANS_ZU_GROSS — {0} = Dreiecke, {1} = Grenze.</summary>
+    public string ZuGross { get; set; } = Resource.GANS_ZU_GROSS;
+
+    /// <summary>GANS_HERKUNFT_DATEI</summary>
+    public string HerkunftDatei { get; set; } = Resource.GANS_HERKUNFT_DATEI;
+
+    /// <summary>GANS_HERKUNFT_UMRISS</summary>
+    public string HerkunftUmriss { get; set; } = Resource.GANS_HERKUNFT_UMRISS;
+
+    /// <summary>GANS_HERKUNFT_SCHEMATISCH</summary>
+    public string HerkunftSchematisch { get; set; } = Resource.GANS_HERKUNFT_SCHEMATISCH;
+
+    /// <summary>GANS_RAEUME — Beschriftung der Raumliste mit der Herkunft je Körper.</summary>
+    public string Raeume { get; set; } = Resource.GANS_RAEUME;
+
+    /// <summary>GANS_RAUM_HERKUNFT — {0} = Raum, {1} = Herkunft (Kurztext des Raums).</summary>
+    public string RaumHerkunft { get; set; } = Resource.GANS_RAUM_HERKUNFT;
+
+    /// <summary>
+    /// GANS_VERMERK_&lt;NAME&gt; — der Text je Vermerk eines Dateikörpers, nach dem Schlüssel (Name von
+    /// <c>Koerpervermerk</c>); ein unbekannter Schlüssel zeigt sich selbst.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Vermerke { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["Bogen"] = Resource.GANS_VERMERK_BOGEN,
+        ["Loch"] = Resource.GANS_VERMERK_LOCH,
+        ["Uneben"] = Resource.GANS_VERMERK_UNEBEN,
+        ["OhneBeschnitt"] = Resource.GANS_VERMERK_OHNEBESCHNITT,
+        ["Offen"] = Resource.GANS_VERMERK_OFFEN,
+        ["Mehrschale"] = Resource.GANS_VERMERK_MEHRSCHALE,
+    };
+
+    /// <summary>Die Herkunft eines Körpers als Text.</summary>
+    public string Herkunft(Koerperherkunft herkunft) => herkunft switch
+    {
+        Koerperherkunft.Datei => HerkunftDatei,
+        Koerperherkunft.Schematisch => HerkunftSchematisch,
+        _ => HerkunftUmriss,
+    };
+
+    /// <summary>Der Text eines Vermerks nach seinem Schlüssel; unbekannt = der Schlüssel.</summary>
+    public string Vermerk(string schluessel) => Vermerke.TryGetValue(schluessel, out string? text) ? text : schluessel;
 }
