@@ -103,7 +103,7 @@
                 <KindInhalt>
                     <Textfeld Bezeichnung="@Texte.LabelName" Wert="@d.Bezeichner" WertChanged="BeiName" />
                     <Ganzzahlfeld Bezeichnung="@Texte.LabelAnzahl" Feldname="@Texte.LabelAnzahl" Wert="@d.Anzahl"
-                                  Min="1" WertChanged="BeiAnzahl" />
+                                  WertChanged="BeiAnzahl" />
                     <Zahlenfeld Bezeichnung="@Texte.LabelVorlauf" Feldname="@Texte.LabelVorlauf" Einheit="@Texte.EinheitGradC"
                                 Wert="@d.KuehlVorlauf" Platzhalter="@PlatzhalterVorlauf(d)" WertChanged="BeiVorlauf" />
                     @if (d.Geraet?.KaltwasserMin is double min)
