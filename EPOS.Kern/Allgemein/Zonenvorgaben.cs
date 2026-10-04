@@ -80,13 +80,19 @@ namespace WindowsFormsApplication1
     /// die Spalten von <c>Tab_Zone</c> ohne Fachklasse, damit der Zonendialog seine Anzeige „Vorgabe: …"
     /// aus DERSELBEN Funktion bildet wie der Lauf (Auftrag G6b, Welle W2). <c>null</c> heißt „leer" —
     /// der Wert des Gebäudes gilt; die Kühlspalten der Zone bleiben ungelesen (Anwenderentscheid A4 (a)).
+    /// Die sieben Übergabefelder (E63, AK1z) löst <see cref="Zonenuebergabevorgaben.Aufloesen"/> auf, nicht
+    /// <see cref="Zonenvorgaben"/>: Art, Exponent, Nennleistung [kW], Auslegungsvorlauf, -rücklauf und
+    /// -raumtemperatur [°C], Proportionalband [K].
     /// </summary>
     public sealed record Zoneneingaben(
         double? Nutzflaeche = null, double? Raumhoehe = null, double? Volumen = null, bool IstBeheizt = true,
         double? SollTag = null, double? SollNacht = null, double? SollWochenende = null, double? SollFerien = null,
         double? Maximaleraumtemperatur = null, double? HeizungStrahlungsanteil = null, double? HeizleistungMaxKw = null,
         double? LuftwechselInfiltration = null, double? LuftwechselNutzer = null,
-        double? InterneWaermegewinne = null, double? Bewohner = null)
+        double? InterneWaermegewinne = null, double? Bewohner = null,
+        string UebergabeArt = null, double? UebergabeExponent = null, double? UebergabeLeistungNennKw = null,
+        double? AuslegungVorlaufC = null, double? AuslegungRuecklaufC = null, double? AuslegungRaumtemperaturC = null,
+        double? ReglerProportionalbandK = null)
     {
         /// <summary>Die Eingaben einer gespeicherten Zone.</summary>
         public static Zoneneingaben Aus(ZoneModel z)
@@ -95,7 +101,9 @@ namespace WindowsFormsApplication1
             return new Zoneneingaben(z.Nutzflaeche, z.Raumhoehe, z.Volumen, z.IstBeheizt,
                 z.Raumsolltemperatur_Tag, z.Raumsolltemperatur_Nachtabsenkung, z.Raumsolltemperatur_Wochenende,
                 z.Raumsolltemperatur_Ferien, z.Maximaleraumtemperatur, z.Heizung_Strahlungsanteil, z.Heizleistung_Max,
-                z.Luftwechsel_Infiltration, z.Luftwechsel_Nutzer, z.Interne_Waermegewinne, z.Bewohner);
+                z.Luftwechsel_Infiltration, z.Luftwechsel_Nutzer, z.Interne_Waermegewinne, z.Bewohner,
+                z.Uebergabe_Art, z.Uebergabe_Exponent, z.Uebergabe_Leistung_Nenn,
+                z.Auslegung_Vorlauf, z.Auslegung_Ruecklauf, z.Auslegung_Raumtemperatur, z.Regler_Proportionalband);
         }
     }
 
