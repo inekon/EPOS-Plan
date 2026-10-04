@@ -42,6 +42,18 @@ public sealed class GebaeudeBedarfZonenTexte
     /// <summary><c>GEBB_HRL_ZONEN</c> — wie die Gebäudezahlen aus den Zonen entstehen (Festlegung 10).</summary>
     public string Herleitung { get; set; } = Resource.GEBB_HRL_ZONEN;
 
+    /// <summary>Kopf der Spalte „Vorlauf“ (AK1z, E63) — nur bei mindestens einer gekoppelten Zone.</summary>
+    public string SpalteVorlauf { get; set; } = Resource.GEBB_SP_ZONE_VORLAUF;
+
+    /// <summary>Kopf der Spalte „Rücklauf“ (E63).</summary>
+    public string SpalteRuecklauf { get; set; } = Resource.GEBB_SP_ZONE_RUECKLAUF;
+
+    /// <summary>Kopf der Spalte „Übergabe begrenzt“ (E63).</summary>
+    public string SpalteBegrenzt { get; set; } = Resource.GEBB_SP_ZONE_BEGRENZT;
+
+    /// <summary>Die Herleitung der drei Heizkreisspalten (E63) — nur bei mindestens einer gekoppelten Zone.</summary>
+    public string HerleitungUebergabe { get; set; } = Resource.GEBB_HRL_ZONEN_UEBERGABE;
+
     /// <summary><c>GEBB_LBL_DIAGRAMM</c></summary>
     public string LabelDiagramm { get; set; } = Resource.GEBB_LBL_DIAGRAMM;
 

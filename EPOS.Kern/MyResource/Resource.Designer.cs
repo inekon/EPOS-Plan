@@ -25146,6 +25146,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf einer gekoppelt rechnenden Zone sind ihre Mittel über die Heizstunden; begrenzt heißt, die Übergabe der Zone lieferte weniger, als ihr Sollwert verlangte. „—“ steht bei einer Zone ohne Heizkreis (ideal oder unbeheizt). ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_ZONEN_UEBERGABE {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_ZONEN_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit begrenzter Übergabe ähnelt.
         /// </summary>
         public static string GEBB_KACHEL_BEGRENZT {
@@ -25488,6 +25497,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe begrenzt ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_BEGRENZT {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme ähnelt.
         /// </summary>
         public static string GEBB_SP_ZONE_HEIZWAERME {
@@ -25515,11 +25533,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Überhitzungsstunden ähnelt.
         /// </summary>
         public static string GEBB_SP_ZONE_UEBERHITZUNG {
             get {
                 return ResourceManager.GetString("GEBB_SP_ZONE_UEBERHITZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_VORLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_VORLAUF", resourceCulture);
             }
         }
         
@@ -47213,6 +47249,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBB_VOLLBENUTZUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBB_VOLLBENUTZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden, in denen die Übergabe der Zone weniger lieferte, als ihr Sollwert verlangte; leer bei einer Zone ohne Heizkreis. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_ZONE_BEGRENZT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_ZONE_BEGRENZT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone der Zonentabelle (nur bei einem Gebäude mit mindestens zwei Zonen), mit ihrem Namen als Kennzeichen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_ZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_ZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Rücklauf des Heizkreises der Zone über ihre Heizstunden; leer bei einer Zone ohne Heizkreis. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_ZONE_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_ZONE_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Vorlauf des Heizkreises der Zone über ihre Heizstunden; leer bei einer Zone ohne Heizkreis (ideal oder unbeheizt). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_ZONE_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_ZONE_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -84864,7 +84936,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Mit {1} Zonen rechnet das Gebäude Heizung und Kühlung je Zone ideal und ohne Anlagenkopplung; diese Auskunft gilt nur für ein Gebäude mit höchstens einer Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Mit {1} Zonen rechnet das Gebäude die Wärmeübergabe je Zone – Vorlauf, Rücklauf und die Stunden mit begrenzter Übergabe stehen je Zone in der Zonentabelle des Wärmebedarfs. Die Kühlung rechnet je Zone ideal und ohne Anlagenkopplung; die Auskunft zur Kühlübergabe gilt nur für ein Gebäude mit höchstens einer Zone. ähnelt.
         /// </summary>
         public static string SIMENG_G6_MEHRZONEN_EINZELWEG {
             get {

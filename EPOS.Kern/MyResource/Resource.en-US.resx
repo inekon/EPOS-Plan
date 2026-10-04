@@ -14611,6 +14611,18 @@ Please check all entries!</value>
   <data name="GEBB_HRL_ZONEN" xml:space="preserve">
     <value>Heating energy and heat load of the building are the sum of its zones; its mean room temperature and overheating hours count the heated zones. An hour of the usage period is overheated when the operative temperature exceeds the upper room temperature of the zone.</value>
   </data>
+  <data name="GEBB_SP_ZONE_VORLAUF" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="GEBB_SP_ZONE_RUECKLAUF" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="GEBB_SP_ZONE_BEGRENZT" xml:space="preserve">
+    <value>Emission limited</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN_UEBERGABE" xml:space="preserve">
+    <value>Flow and return of a zone calculated with coupling are its means over the heating hours; limited means the heat emitter of the zone delivered less than its set point required. “—” stands for a zone without a heating circuit (ideal or unheated).</value>
+  </data>
   <data name="GEBB_LBL_DIAGRAMM" xml:space="preserve">
     <value>Charts for:</value>
   </data>
@@ -23512,6 +23524,18 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_GEBB_VOLLBENUTZUNG_ERL" xml:space="preserve">
     <value>The full load hours: annual sum divided by peak load. Without a peak load there are none.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_ERL" xml:space="preserve">
+    <value>The zone of the zone table (only for a building with at least two zones), identified by its name.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_VORLAUF_ERL" xml:space="preserve">
+    <value>Mean flow temperature of the zone heating circuit over its heating hours; empty for a zone without a heating circuit (ideal or unheated).</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Mean return temperature of the zone heating circuit over its heating hours; empty for a zone without a heating circuit.</value>
+  </data>
+  <data name="KI_DLG_GEBB_ZONE_BEGRENZT_ERL" xml:space="preserve">
+    <value>Hours in which the heat emitter of the zone delivered less than its set point required; empty for a zone without a heating circuit.</value>
   </data>
   <data name="KI_DLG_GTYP_TYP_ERL" xml:space="preserve">
     <value>The loaded building type. Setting it loads its record together with its daily curves — the same path as a click in the list.</value>
@@ -34074,7 +34098,7 @@ Do you want to allow this?</value>
     <value>VDI 6007 building model: {0} – the exposed perimeter of the ground floor is missing or smaller than that of the circle of equal area; the ground resistance to EN ISO 13370 uses the square of equal area P = {1} m (B′ = {2} m, U_g = {3} W/(m²K)).</value>
   </data>
   <data name="SIMENG_G6_MEHRZONEN_EINZELWEG" xml:space="preserve">
-    <value>{0}: with {1} zones the building calculates heating and cooling ideally per zone and without plant coupling; this information applies only to a building with at most one zone.</value>
+    <value>{0}: with {1} zones the building calculates the heat emission per zone – flow, return and the hours with limited emission are shown per zone in the zone table of the heat demand. Cooling is calculated ideally per zone and without plant coupling; the cooling emission information applies only to a building with at most one zone.</value>
   </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone “{0}”: the usable area must be greater than zero.</value>
