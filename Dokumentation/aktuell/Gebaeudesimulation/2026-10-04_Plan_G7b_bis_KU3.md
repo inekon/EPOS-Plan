@@ -17,9 +17,9 @@ Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.m
 
 | Nr. | Welle | Inhalt in einem Satz | PT laut Konzept | Verbrauch (Schätzung) | Rückfrage vorher |
 |---|---|---|---|---|---|
-| 1 | **G7b** | gbXML Stufe 2 und 3D-Körperansicht (läuft) | 7–12 (+4–7 Ansicht) | 4–5 Punkte | keine (E66) |
-| 2 | **G7c** | IFC-Export S1, semantisch (Teil 1 läuft) | 12–20 | 7–9 Punkte | keine (D6: semantisch zuerst) |
-| 3 | **G7d** | Round-Trip-Anreicherung fremder IFC4-Dateien — die tragende Stufe nach E69 | 6–11 | 4–5 Punkte | keine (E69) |
+| 1 | **G7b** (umgesetzt #709) | gbXML Stufe 2 und 3D-Körperansicht | 7–12 (+4–7 Ansicht) | 4–5 Punkte | keine (E66) |
+| 2 | **G7c** (umgesetzt #710) | IFC-Export S1, semantisch | 12–20 | 7–9 Punkte | keine (D6: semantisch zuerst) |
+| 3 | **G7d** (umgesetzt #711) | Round-Trip-Anreicherung fremder IFC4-Dateien — die tragende Stufe nach E69 | 6–11 | 4–5 Punkte | keine (E69) |
 | 4 | **G7e** | Schematische Körper im IFC | 8–15 | 5–7 Punkte | keine (E69: Empfänger sind Betrachter); Prüfbilder aus Revit, Archicad, HiCAD liegen beim Anwender |
 | 5 | **KU3** | Kältemaschine mit Rückkühlung, freie Kühlung über die Quelle, Kühlung je Zone, Export, Kältespeicher (E68: ja) | 20–31 | 15–19 Punkte | Katalogsaat der Kältemaschinen |
 
@@ -34,7 +34,9 @@ committen und pushen nicht, höchstens rund 150 Werkzeugaufrufe je Auftrag; dana
 Statuszeile und Protokoll → Push → CI-Vermerk. Kein macOS-, iOS- oder Setup-Lauf ohne Freigabe.
 
 
-## 2 G7b — gbXML Stufe 2 und Körperansicht (läuft)
+## 2 G7b — gbXML Stufe 2 und Körperansicht
+
+Umgesetzt (#709).
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
@@ -46,7 +48,9 @@ Offen beim Anwender nach G7b: Sichtprobe der Körperansicht unter Windows; Probe
 auf Zuruf; Logbuch-Version.
 
 
-## 3 G7c — IFC-Export S1 (Teil 1 läuft)
+## 3 G7c — IFC-Export S1
+
+Umgesetzt (#710).
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
@@ -61,6 +65,8 @@ Scratchpad und bittet um das Protokoll. Erst Probe 16 trägt die Aussage in Konz
 
 
 ## 4 G7d — Round-Trip-Anreicherung
+
+Umgesetzt (#711; Protokoll `../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_G7d_IFC_Round-Trip.md`).
 
 Vorbedingungen: G7c abgenommen. Das Gegenüber ist mit E69 benannt: Revit, Archicad und HiCAD; der
 Zweck ist die angereicherte Rückgabe der Architektendatei — G7d ist damit die tragende Stufe des
@@ -121,8 +127,9 @@ und ein Sonnet-Auftrag.
 
 | Wann | Was |
 |---|---|
-| nach G7b | Sichtprobe Körperansicht unter Windows; Logbuch-Version; Wiki-Upload gebündelt |
+| nach G7b (erledigt bis auf Sichtprobe, #709) | Sichtprobe Körperansicht unter Windows; Logbuch-Version; Wiki-Upload gebündelt |
 | vor G7d | erledigt mit E69 (Revit, Archicad, HiCAD; Round-Trip) |
+| nach G7d | Probe 16 mit einer angereicherten Architektendatei (Datei wählen, anreichern, in Revit, Archicad und HiCAD öffnen), Probe 15 (bSI) der angereicherten Datei, Sichtabnahme des Exportdialogs; Logbuch-Version |
 | nach G7c | Probe 15 (bSI-Validierungsdienst) und Probe 16 (Betrachter-Prüfmatrix in Revit, Archicad und HiCAD) mit der bereitgestellten Datei |
 | vor G7e | erledigt mit E69 |
 | vor KU3 | Freigabe der neutralen Katalogsaat (K7 ist mit E68 entschieden: ja) |

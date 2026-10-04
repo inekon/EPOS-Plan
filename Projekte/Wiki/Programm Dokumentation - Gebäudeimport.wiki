@@ -216,6 +216,18 @@ Hat ein Bauteil keinen Schichtaufbau, schreibt EPOS-Plan eine gekennzeichnete Er
 
 Vor dem Schreiben zeigt der Dialog, was ersetzt, gewechselt oder weggelassen wird, und lässt die schematische Geometrie bestätigen; erst nach der Bestätigung lässt sich speichern. Lässt sich das Gebäude nicht ausgeben, nennt der Dialog den Grund. Die '''Postleitzahl''' ist freiwillig und wird nicht gespeichert: Mit ihr trägt die Datei den Standort und die Nordrichtung, ohne sie keinen Ort. Auf dem iPad liegt die Datei danach in den Dokumenten von EPOS-Plan und öffnet das Teilen-Menü.
 
+=== IFC-Datei des Architekten anreichern ===
+{{Anker|anreichern}}
+
+Wurde das Gebäude aus einer IFC-Datei importiert, bietet der Exportdialog bei Format ''IFC'' zusätzlich die Wahl '''Originaldatei anreichern''' an; für ein von Hand angelegtes oder aus gbXML importiertes Gebäude erscheint sie nicht. Wählen Sie mit '''Originaldatei wählen…''' dieselbe IFC-Datei erneut. Das Programm prüft sie vor dem Schreiben und lehnt sie mit einem Grund ab, wenn
+* es nicht dieselbe Datei ist wie beim Import,
+* die Datei nicht im Format IFC4 vorliegt (oder nicht als reine IFC-Textdatei, also als ifcXML oder ifcZIP), oder
+* beim Import Teile der Datei verloren gingen.
+
+Bei einer Ablehnung bietet der Dialog mit '''Stattdessen eigene Datei schreiben''' eine eigene IFC-Datei aus den Daten des Gebäudes an. Ist die Datei zulässig, bestätigen Sie mit '''Ich gebe eine fremde Datei verändert weiter''', dass Sie eine Datei, die nicht von EPOS-Plan stammt, ergänzt weitergeben. Die Datei erhält den Namen des Originals mit dem Zusatz ''_EPOS'' (aus ''haus.ifc'' wird ''haus_EPOS.ifc''); das Original bleibt unverändert.
+
+Ergänzt werden die Kennwerte aus EPOS-Plan: U-Werte der Bauteile, Sollwerte der Räume, Schichtaufbauten für Bauteile, die noch keinen Stoff tragen, sowie die Ergebnisse des letzten Rechenlaufs. Geometrie und alle vorhandenen Angaben bleiben unverändert; abweichende Fachwerte werden durch die Werte aus EPOS-Plan ersetzt. Der Dialog nennt danach, wie viele Objekte ergänzt, ersetzt oder übersprungen wurden.
+
 == Grenzen ==
 {{Anker|grenzen}}
 
