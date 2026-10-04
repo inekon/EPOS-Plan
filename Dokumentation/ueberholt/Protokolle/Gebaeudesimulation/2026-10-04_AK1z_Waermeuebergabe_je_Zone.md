@@ -1,6 +1,6 @@
 # Protokoll AK1z — Wärmeübergabe je Zone (04.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Orchestrierung Fable 5.1, Zweig `ak1z` mit den Worktrees `ak1z-ui` (Oberfläche) und `ak1z-doc` (Papiere), Stand der Teile A bis E `7a5c161`.
+**Sitzung:** Gebäudesimulation (Cloud), Orchestrierung Fable 5.1, Zweig `ak1z` mit den Worktrees `ak1z-ui` (Oberfläche) und `ak1z-doc` (Papiere), Stand der Teile A bis E `b845355`.
 **Anlass:** Entscheid E63 (Anwender, 03.10.2026, am Zonenprojekt 1052): „Wärmeübergabe soll für jede Zone einstellbar sein.“ Übergabe [`2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md`](../../../aktuell/Gebaeudesimulation/2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md), Abschnitt 3.2. Statuszeile #708, Schemaschritt 181.
 
 ## 1 Auftrag
@@ -38,7 +38,7 @@
 - `c91ea01` Testdatenbank: Referenzprojekt 1054 „Zonen mit Heizkreis“ als Kopie von 1052 gesät (Saatskript und Bauplan unter `Referenzlaeufe/Skripte/`).
 - `a805914` Wache `ZonenHeizkreisReferenzprojektWacheTests` und Zählnachzüge; `64f503a` LIESMICH: Referenzprojekt 1054 und Einfrierregel der Übergabe.
 - `a0ed451` Heizkurve am Gebäude von 1054 gesät, Datenbank neu; `be9c714` Wachen nachgezogen (Heizkurve, begrenzte Stunden, Kopplungsschema); `b1de7b2` LIESMICH mit Heizkurve und Rechenergebnis.
-- Zusammenführung: `d3462d4`, `ea0ce62` (`ak1z-ui` in `ak1z`), `7a5c161` (origin in `ak1z`).
+- Zusammenführung: `2c449c6`, `9a0a96a` (`ak1z-ui` in `ak1z`), `b845355` (origin in `ak1z`).
 
 ## 7 Umsetzung Teil G (Papiere)
 
@@ -54,7 +54,7 @@ Anlagenkopplung (Nachzug E63, 6.5, 8.1, 10.1, 10.2, 11.4), Mehrzonenkonzept (2.6
 | Teil D | Kern 1 044, UI 1 544 grün |
 | Teil E | 589 / 985 grün nach Zählnachzug; 1054 zwei Läufe byte-gleich, rund 2 s |
 | Teil G | Wachen Dokumentation, Repository-Ordnung, Wiki und Wiki-Produktdaten grün |
-| Gate (Hauptbaum, Merge-Stand) | Kern-Bau 0 Fehler; ChartProben 208 Hashes gleich der Messlatte; Referenzlauf 19/19 PASS gegen R35, 576/576 CSV byte-gleich; Plattformnachweis `--stoerung ulp` PASS; Dokumentationswachen 60/60; Designer unverändert; SQL-Dialekt 2 300 Texte 0 Fundstellen; BOM nur die zwei Bestandsbefunde; keine Konfliktmarker; Testlauf Kern-Filter ⟨TESTS⟩, Windows-Schale auf Linux ⟨WINDOWS⟩, Werkzeugtests ⟨WERKZEUGE⟩ |
+| Gate (Hauptbaum, Merge-Stand) | Kern-Bau 0 Fehler; ChartProben 208 Hashes gleich der Messlatte; Referenzlauf 19/19 PASS gegen R35, 576/576 CSV byte-gleich; Plattformnachweis `--stoerung ulp` PASS; Dokumentationswachen 60/60; Designer unverändert; SQL-Dialekt 2 300 Texte 0 Fundstellen; BOM nur die zwei Bestandsbefunde; keine Konfliktmarker; Testlauf Kern-Filter Kern-Filter auf 7a5c161 (gepusht b845355): EPOS.Kern.Tests 10 672 grün, 1 rot, 2 übersprungen — der rote `SchrittMusterTests` hielt die alte Regel „Muster lehnt Übergabefälle ab“ und ist mit `b4b9f06` auf die gültige Regel umgeschrieben (Filter SchrittMuster/ZonenuebergabeRechenweg/Zonenschleife 40/40); EPOS.UI.Tests 7 432/7 432, KiKern 549/549, SpeicherEngine 397/397, SpeicherPlanung 27/28 (1 übersprungen), Windows-Schale auf Linux 0 Fehler, Werkzeugtests Formularkarte 124/124, Auslieferungsvorlage 47/47, Gebäudevergleich 24/24, ZapfprofilValidierung 39/39 |
 | Basis R35, Push | Basis eingefroren (Teil F); Push-SHA und CI-Vermerk folgen |
 
 **Rechenergebnis 1054:** Heizwärme 47,58 MWh, Spitze 26,05 kW; Vorlauf/Rücklauf im Mittel 39,53/36,08 °C, 1 339 begrenzte Stunden am Gebäude; Gästezimmer 33,63 MWh, 293,9 h begrenzt; Gastronomie und Verwaltung 13,94 MWh, 1 106,5 h begrenzt, im Mittel der Heizzeit 18,7 °C; Keller unbeheizt. Beheizte Zonen im Aufheizzustand GEKOPPELT. Basis **`2026-10-04_R35_Zonenuebergabe`** mit neunzehn Projekten; 1054 nicht in der CI-Auswahl.
