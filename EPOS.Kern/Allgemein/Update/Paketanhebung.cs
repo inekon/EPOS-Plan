@@ -295,6 +295,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket bringt Auslegungspunkt und Proportionalband der Zonen nicht mit; leer rechnet die Zone wie ihr Gebäude.
             new Stufe(ZonenUebergabeSchema.SCHRITT, Art.Ddl,
                       "Auslegungspunkt und Regler der Wärmeübergabe je Zone"),
+            // Ein älteres Paket führt keine Kältemaschine; die Tabellen kommen leer an, der Katalog mit der Saat.
+            new Stufe(KaeltemaschineSchema.SCHRITT, Art.Ddl,
+                      "Katalog, Projektkopie und Kennlinien der Kältemaschine"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -927,6 +927,9 @@ namespace EPOS.Kern.Tests
                 // Schritt ZonenUebergabeSchema.SCHRITT (AK1z, E63): Auslegungspunkt und Regler je Zone, Kreiswerte im
                 // Zonenergebnis. Ohne Sicht; die Spalten bleiben leer.
                 ZonenUebergabeSchema.Ausfuehren(null);
+                // Schritt KaeltemaschineSchema.SCHRITT (KU3-1): Katalog, Projektkopie und Kennlinien der
+                // Kaeltemaschine samt Saat. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                KaeltemaschineSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

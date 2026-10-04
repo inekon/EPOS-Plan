@@ -5114,6 +5114,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ZONEN_UEBERGABE = ZonenUebergabeSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaeltemaschineSchema.SCHRITT"/> — <b>die Kältemaschine</b> (KU3-1, E67/E68):
+        /// Katalog, Projektkopie und Kennlinien samt drei Beispielgeräten.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Projekt führt eine Kältemaschine.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEMASCHINE = KaeltemaschineSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7410,6 +7418,12 @@ namespace WindowsFormsApplication1
                         "Eine Zone mit eigenem Heizkreis haette keinen eigenen Auslegungspunkt. KEIN Rechenergebnis " +
                         "aendert sich - die Spalten entstehen leer.",
                         Schritt_ZonenUebergabe),
+            // KAELTEMASCHINE (KU3-1). Quelle ist KaeltemaschineSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEMASCHINE,
+                        "Tab_Kaeltemaschine(_STAMM), Tab_Kenndaten_Kaeltemaschine(_STAMM); Saat dreier Beispielgeraete",
+                        "Eine Kaeltemaschine haette weder Katalog noch Projektkopie. KEIN Rechenergebnis aendert " +
+                        "sich - kein Projekt fuehrt eine Kaeltemaschine.",
+                        Schritt_Kaeltemaschine),
         };
 
         /// <summary>
@@ -13817,6 +13831,61 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Waermeuebergabe je Zone - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kältemaschine" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTEMASCHINE"/>,
+        /// die Anweisungen bei <see cref="KaeltemaschineSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Kaeltemaschine(Lauf l)
+        {
+            string nr = KaeltemaschineSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltemaschineSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KaeltemaschineSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltemaschineSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tabellen, Katalogspalten oder Saat der Kaeltemaschine stehen nach dem Schritt " +
+                                  "nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kaeltemaschine - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
