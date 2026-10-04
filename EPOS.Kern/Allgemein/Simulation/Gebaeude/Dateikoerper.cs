@@ -37,8 +37,10 @@ namespace WindowsFormsApplication1
     /// so decken sich Körper und Grundriss —, je Dreieck die Normale (vom Raum weg, wo die Datei das hergibt), dazu
     /// die Randkanten der Ursprungsflächen ohne Triangulationsdiagonalen für die Linien der Ansicht.
     ///
-    /// <para><b>Nur Anzeige:</b> Der Körper speist weder Fläche noch Volumen noch Zonierung; die rechnen weiter aus
-    /// Mengen, Raumbezügen und Raumgrenzen. Nichts wird geschlossen oder repariert (15.6 Nr. 2).</para>
+    /// <para><b>Anzeige, dazu die Nachbarschaft:</b> Der Körper speist weder Fläche noch Volumen der Räume; die rechnen
+    /// weiter aus Mengen, Raumbezügen und Raumgrenzen. Ohne Raumgrenzen kommen allein die Trennflächen zwischen Räumen aus
+    /// den gemeinsamen Flächen der Körper (<see cref="Koerpernachbarschaft"/>). Nichts wird geschlossen oder repariert
+    /// (15.6 Nr. 2).</para>
     ///
     /// <para><b>Deterministisch:</b> Punkte auf <see cref="Zonenkoerper.STELLEN"/> Nachkommastellen gerundet und in
     /// der Reihenfolge ihres ersten Auftretens geführt; dieselbe Datei ergibt dasselbe Netz, byteweise
