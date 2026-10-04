@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Xbim.Common;
 using Xbim.Ifc4.Interfaces;
-using Xbim.Ifc4.MeasureResource;
 
 namespace WindowsFormsApplication1
 {
@@ -435,6 +434,18 @@ namespace WindowsFormsApplication1
             return zug;
         }
 
+        /// <summary>Die Indizes einer Indexliste (1-basiert, wie in der Datei); ein unlesbarer Eintrag wird 0.</summary>
+        private static List<int> Indizes(IEnumerable folge)
+        {
+            var r = new List<int>();
+            foreach (object w in folge)
+            {
+                double v = w is IExpressValueType e ? IfcEigenschaften.Wert(e) : double.NaN;
+                r.Add(double.IsNaN(v) ? 0 : (int)v);
+            }
+            return r;
+        }
+
         /// <summary>Die Ganzzahlen eines Indexwerts (Liste von <c>IfcPositiveInteger</c>).</summary>
         private static IEnumerable<int> Ganzzahlen(object werte)
         {
@@ -719,13 +730,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Punkte eines Punktsatzes mit dem Index des optionalen <c>PnIndex</c> (1-basiert); <c>null</c> = ungültig.</summary>
-        private static List<double[]> Punktliste(IIfcTessellatedFaceSet satz, IItemSet<IfcPositiveInteger> pn, out List<int> abbildung)
+        private static List<double[]> Punktliste(IIfcTessellatedFaceSet satz, IEnumerable pn, out List<int> abbildung)
         {
             abbildung = null;
             List<double[]> punkte = satz.Coordinates?.CoordList.Select(c => Koordinaten(c)).ToList();
             if (punkte == null) return null;
-            if (pn != null && pn.Count > 0)
-                abbildung = pn.Select(x => (int)IfcEigenschaften.Wert(x) - 1).ToList();
+            List<int> folge = pn == null ? null : Indizes(pn);
+            if (folge != null && folge.Count > 0) abbildung = folge.Select(x => x - 1).ToList();
             return punkte;
         }
 
@@ -750,9 +761,9 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < idx.Length; i++) idx[i] = -1;
             int P(int i) => idx[i] >= 0 ? idx[i] : idx[i] = n.Punkt(a, punkte[i]);
             var dreiecke = new List<int[]>();
-            foreach (IItemSet<IfcPositiveInteger> d in t.CoordIndex)
+            foreach (IEnumerable d in t.CoordIndex)
             {
-                List<int> i = d.Select(x => Aufloesen((int)IfcEigenschaften.Wert(x), punkte, abb)).ToList();
+                List<int> i = Indizes(d).Select(x => Aufloesen(x, punkte, abb)).ToList();
                 if (i.Count != 3) return Typ(t);
                 dreiecke.Add(new[] { i[0], i[1], i[2] });
             }
@@ -794,12 +805,12 @@ namespace WindowsFormsApplication1
             List<double[]> punkte = Punktliste(s, s.PnIndex, out List<int> abb);
             if (punkte == null) return Typ(s);
             if (s.Closed == false) n.Vermerk(Koerpervermerk.Offen);
-            List<double[]> Auf(IEnumerable<IfcPositiveInteger> i) => i.Select(x => punkte[Aufloesen((int)IfcEigenschaften.Wert(x), punkte, abb)]).ToList();
+            List<double[]> Auf(IEnumerable i) => Indizes(i).Select(x => punkte[Aufloesen(x, punkte, abb)]).ToList();
             foreach (IIfcIndexedPolygonalFace f in s.Faces)
             {
                 var loecher = new List<List<double[]>>();
                 if (f is IIfcIndexedPolygonalFaceWithVoids mit)
-                    foreach (IItemSet<IfcPositiveInteger> innen in mit.InnerCoordIndices) loecher.Add(Auf(innen));
+                    foreach (IEnumerable innen in mit.InnerCoordIndices) loecher.Add(Auf(innen));
                 Flaeche(Auf(f.CoordIndex), loecher, a, n);
             }
             return null;
