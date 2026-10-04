@@ -3096,6 +3096,9 @@ Logbuch-Satz (Regel 13.4: der Satz zu KU2 nennt die Kosten des Kältestroms scho
 - Die Kältemaschine rechnet mit Kennlinie, Rückkühlung und freier Kühlung.
 - Die Kühlung lässt sich je Zone einstellen.
 - Ein Pufferspeicher lässt sich als Kältespeicher nutzen.
+- Die Kältemaschine hat einen eigenen Anlagendialog mit Anzahl, Kühlträger und Rückkühlart.
+- Der Kältestrom von Wärmepumpe und Kältemaschine lässt sich mit eigenem Zähler abrechnen, mit Grund- und Leistungspreis.
+- Der Bericht zeigt den Kältespeicher mit Ladung, Entladung und Vollzyklen.
 
 ---
 
