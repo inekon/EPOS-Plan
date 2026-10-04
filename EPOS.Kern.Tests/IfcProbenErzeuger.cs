@@ -638,6 +638,39 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Zwei Räume übereinander ohne Raumgrenzen und ohne Raumbezug</b> (Mehrzonenkonzept 6.5, Trenndecke ohne
+        /// Raumgrenzen): EG „Wohnen“ 6 × 5 m im Ursprung, OG „Schlafen“ 6 × 5 m um 2 m nach Osten versetzt — die
+        /// Grundrisse überdecken sich auf 4 × 5 = 20 m². Mit <paramref name="grundriss"/> tragen beide Räume eine
+        /// Körperdarstellung (Extrusion eines Polylinienprofils; das OG-Profil als L mit Ausschnitt außerhalb der
+        /// Überdeckung), mit <paramref name="decke"/> steht im OG eine Platte innen (U 1,0, 40 m²) ohne Bezug.
+        /// </summary>
+        public static byte[] Uebereinander(bool grundriss, bool decke)
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_uebereinander.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Gebäude", null);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 2800);
+                IIfcSpace wohnen = b.RaumEnthalten(eg, "Wohnen", 0, 0, 30, 75, 2500, zerlegt: false);
+                IIfcSpace schlafen = b.RaumEnthalten(og, "Schlafen", 2000, 0, 29, 72.5, 2500, zerlegt: false);
+                if (grundriss)
+                {
+                    b.Grundriss(wohnen, (0, 0), (6000, 0), (6000, 5000), (0, 5000));
+                    // L-förmig: der Ausschnitt 1 × 1 m liegt außerhalb des EG (x 6…7 m).
+                    b.Grundriss(schlafen, (0, 0), (6000, 0), (6000, 4000), (5000, 4000), (5000, 5000), (0, 5000));
+                }
+                b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand", "btaOutside", true, 0.3, null, 180, 60, 60, null, null);
+                b.CadBauteil<IIfcWall>(og, "IfcWall", "Außenwand OG", "btaOutside", true, 0.3, null, 0, 60, 60, null, null);
+                b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Bodenplatte", "btaGround", true, 0.4, null, null, 30, 30, null, null);
+                b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke", "btaOutside", true, 0.2, null, null, 30, 30, null, null);
+                if (decke)
+                    b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Decke EG/OG", "btaHeated", false, 1.0, null, null, 40, 40, null, null);
+                return b.Speichern();
+            }
+        }
+
         /// <summary>Zwei Gebäude mit je einem beheizten Raum, einer Außenwand und einem Fenster (U13).</summary>
         public static byte[] ZweiGebaeude()
         {
@@ -962,6 +995,40 @@ namespace EPOS.Kern.Tests
                     }
                 }
                 return r;
+            }
+
+            /// <summary>
+            /// Die Körperdarstellung eines Raums: senkrechte Extrusion (2,5 m) eines geschlossenen Polylinienprofils mit den
+            /// Punkten <paramref name="punkteMm"/> im System des Raums [mm].
+            /// </summary>
+            public void Grundriss(IIfcSpace r, params (double X, double Y)[] punkteMm)
+            {
+                IIfcPolyline linie = N<IIfcPolyline>("IfcPolyline");
+                foreach ((double x, double y) in punkteMm.Concat(new[] { punkteMm[0] }))
+                {
+                    IIfcCartesianPoint q = N<IIfcCartesianPoint>("IfcCartesianPoint");
+                    q.Coordinates.Add(new IfcLengthMeasure(x));
+                    q.Coordinates.Add(new IfcLengthMeasure(y));
+                    linie.Points.Add(q);
+                }
+                IIfcArbitraryClosedProfileDef profil = N<IIfcArbitraryClosedProfileDef>("IfcArbitraryClosedProfileDef");
+                profil.ProfileType = IfcProfileTypeEnum.AREA;
+                profil.OuterCurve = linie;
+                IIfcAxis2Placement3D lage = N<IIfcAxis2Placement3D>("IfcAxis2Placement3D");
+                lage.Location = Punkt(0, 0, 0);
+                IIfcExtrudedAreaSolid koerper = N<IIfcExtrudedAreaSolid>("IfcExtrudedAreaSolid");
+                koerper.SweptArea = profil;
+                koerper.Position = lage;
+                koerper.ExtrudedDirection = Richtung(0, 0, 1);
+                koerper.Depth = new IfcPositiveLengthMeasure(2500);
+                IIfcShapeRepresentation darstellung = N<IIfcShapeRepresentation>("IfcShapeRepresentation");
+                darstellung.ContextOfItems = _kontext;
+                darstellung.RepresentationIdentifier = new IfcLabel("Body");
+                darstellung.RepresentationType = new IfcLabel("SweptSolid");
+                darstellung.Items.Add(koerper);
+                IIfcProductDefinitionShape form = N<IIfcProductDefinitionShape>("IfcProductDefinitionShape");
+                form.Representations.Add(darstellung);
+                r.Representation = form;
             }
 
             /// <summary>Ein Geschoss, das über das Enthaltensein (nicht die Zerlegung) am Gebäude hängt.</summary>

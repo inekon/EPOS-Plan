@@ -144,6 +144,7 @@ namespace WindowsFormsApplication1
 
             Raumbezuege();
             Bauteile();
+            GrundrissTrenndecken();
             ReferenzenMelden();
             Melden(0.9);
 
@@ -494,6 +495,9 @@ namespace WindowsFormsApplication1
             {
                 _raumPunkt[s.EntityLabel] = rahmen.Value.Ursprung;
                 _raumRahmen[s.EntityLabel] = rahmen.Value;
+                // Der Grundriss aus der Körperdarstellung — trägt ohne Raumgrenzen die Trenndecke (Mehrzonenkonzept 6.5).
+                try { r.GrundrissM = IfcRaumgrundriss.Lesen(s, rahmen.Value, _einheiten.Laenge); }
+                catch (Exception) { r.GrundrissM = null; }   // eine unlesbare Darstellung ist kein Grundriss
             }
         }
 
@@ -1472,6 +1476,7 @@ namespace WindowsFormsApplication1
                 AbbildNachbar nUnten = new AbbildNachbar(_raum[unten].Kennung, GebaeudeAggregation.SICHT_DECKE);
                 b.Nachbarn.Add(obenZuerst ? nOben : nUnten);
                 b.Nachbarn.Add(obenZuerst ? nUnten : nOben);
+                b.Trenndeckenherkunft = AbbildBauteil.TRENNDECKE_BEZUG;
                 if (!_trenndecken.TryGetValue(gi, out SortedDictionary<(string, string), List<AbbildBauteil>> paare))
                     _trenndecken[gi] = paare = new SortedDictionary<(string, string), List<AbbildBauteil>>();
                 (string, string) paar = (_raum[unten].GeschossKennung, _raum[oben].GeschossKennung);
@@ -1490,6 +1495,125 @@ namespace WindowsFormsApplication1
             foreach (int r in wahl) b.Nachbarn.Add(new AbbildNachbar(_raum[r].Kennung, null));
             _bezugswaende[gi] = _bezugswaende.TryGetValue(gi, out int w) ? w + 1 : 1;
             return true;
+        }
+
+        /// <summary>Kleinste Überlappung zweier Grundrisse übereinanderliegender Räume, ab der sie eine Trenndecke teilen [m²].</summary>
+        internal const double UEBERLAPPUNG_MIN_M2 = 1.0;
+
+        /// <summary>
+        /// <b>Trenndecken ohne Raumgrenzen und ohne Raumbezug</b> (Mehrzonenkonzept 6.5, Rest der Stufe G6c): Für je zwei
+        /// übereinanderliegende Geschosse mit Räumen, die kein Raumbezug schon verbindet:
+        /// <list type="bullet">
+        /// <item><b>Grundriss:</b> Tragen alle Räume beider Geschosse einen Grundriss (<see cref="AbbildRaum.GrundrissM"/>),
+        /// bekommt jedes Raumpaar, dessen Grundrisse sich um mindestens <see cref="UEBERLAPPUNG_MIN_M2"/> überdecken, eine
+        /// Trenndecke als Paar mit der Überlappung als Fläche (Herkunft <see cref="AbbildBauteil.TRENNDECKE_GRUNDRISS"/>).
+        /// U-Wert, Aufbau und Dicke stammen von der größten freien Decke des Geschosspaars (eine Platte innen ohne Grenze,
+        /// Nachbarn und Hüllerklärung, im oberen Geschoss vor dem unteren); sie geht in den Paaren auf. Ohne solche Decke
+        /// bleibt das Paar ohne U-Wert (Vorgabe der Baualtersklasse).</item>
+        /// <item><b>Geschoss:</b> Fehlt einem Raum der Grundriss und führt die Datei keine Raumbezüge (sonst nennen
+        /// diese die Nachbarn selbst), trennt jede freie Decke des Geschosspaars den ersten
+        /// beheizten Raum je Geschoss (sonst den ersten), mit ihrer Fläche (Herkunft
+        /// <see cref="AbbildBauteil.TRENNDECKE_GESCHOSS"/>) — wie der Raumbezug, auch mit dessen Schätzung.</item>
+        /// </list>
+        /// Die Paare gehen in die Kopplung der Raumbezüge ein (<see cref="ReferenzenMelden"/>); <c>GRENZEN_ENTKOPPELT</c>
+        /// bleibt nur, wo auch das scheitert. Meldung je Gebäude <c>IMP_IFC_PROT_TRENNDECKE_GRUNDRISS</c> (I).
+        /// </summary>
+        private void GrundrissTrenndecken()
+        {
+            for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
+            {
+                AbbildGebaeude g = _abbild.Gebaeude[gi];
+                if (g.ZahlGrenzen > 0) continue;
+                var geschosse = g.Raeume.Where(r => r.GeschossKennung != null)
+                    .GroupBy(r => r.GeschossKennung, StringComparer.Ordinal)
+                    .Select(x => (Kennung: x.Key, Lage: g.Geschosse.FirstOrDefault(k => k.Kennung == x.Key)?.LageM ?? x.First().GeschossLageM,
+                                  Raeume: x.ToList()))
+                    .Where(x => x.Lage.HasValue).OrderBy(x => x.Lage.Value).ToList();
+                if (geschosse.Count < 2) continue;
+                _trenndecken.TryGetValue(gi, out SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>> paare);
+                // Führt die Datei Raumbezüge, nennt sie die Nachbarn selbst: Eine Decke ohne Bezug trennt dann keine Räume.
+                bool bezuege = _raumbezug.Values.Any(l => l.Any(r => _raumGebaeude.TryGetValue(r, out int x) && x == gi));
+                var verbraucht = new HashSet<AbbildBauteil>();
+                var neu = new List<AbbildBauteil>();
+                int zahl = 0;
+                double flaeche = 0.0;
+                var geschosspaare = new List<string>();
+                for (int i = 1; i < geschosse.Count; i++)
+                {
+                    var u = geschosse[i - 1];
+                    var o = geschosse[i];
+                    if (u.Lage.Value == o.Lage.Value) continue;
+                    if (paare != null && paare.ContainsKey((u.Kennung, o.Kennung))) continue;
+                    List<AbbildBauteil> vorlagen = g.Bauteile.Where(b => FreieDecke(b) && !verbraucht.Contains(b)
+                                                                         && (b.GeschossKennung == o.Kennung || b.GeschossKennung == u.Kennung))
+                        .OrderByDescending(b => b.GeschossKennung == o.Kennung).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).ToList();
+                    var stuecke = new List<AbbildBauteil>();
+                    if (u.Raeume.All(r => r.GrundrissM != null) && o.Raeume.All(r => r.GrundrissM != null))
+                    {
+                        AbbildBauteil v = vorlagen.FirstOrDefault();
+                        foreach (AbbildRaum ru in u.Raeume)
+                            foreach (AbbildRaum ro in o.Raeume)
+                            {
+                                double f = Grundrissueberlappung.Ueberlappung(ru.GrundrissM, ro.GrundrissM);
+                                if (f < UEBERLAPPUNG_MIN_M2) continue;
+                                var t = new AbbildBauteil
+                                {
+                                    Kennung = (v?.Kennung ?? "TRENNDECKE") + "|" + ru.Kennung + "|" + ro.Kennung,
+                                    Quelltyp = v?.Quelltyp ?? "IfcSlab", Name = v?.Name, Quellart = v?.Quellart,
+                                    Art = Bauteilart.Decke, Randbedingung = Randbedingung.Innen,
+                                    BruttoflaecheM2 = Math.Round(f, 4), UWertWm2K = v?.UWertWm2K, UWertQuelle = v?.UWertQuelle,
+                                    Aufbau = v?.Aufbau, DickeM = v?.DickeM, GeschossKennung = o.Kennung,
+                                    Trenndeckenherkunft = AbbildBauteil.TRENNDECKE_GRUNDRISS,
+                                };
+                                Paar(t, ru, ro);
+                                stuecke.Add(t);
+                                neu.Add(t);
+                            }
+                        if (stuecke.Count > 0 && v != null) verbraucht.Add(v);
+                    }
+                    else if (!bezuege)
+                    {
+                        AbbildRaum ru = u.Raeume.FirstOrDefault(r => r.Beheizt) ?? u.Raeume[0];
+                        AbbildRaum ro = o.Raeume.FirstOrDefault(r => r.Beheizt) ?? o.Raeume[0];
+                        foreach (AbbildBauteil v in vorlagen)
+                        {
+                            Paar(v, ru, ro);
+                            v.Trenndeckenherkunft = AbbildBauteil.TRENNDECKE_GESCHOSS;
+                            stuecke.Add(v);
+                        }
+                    }
+                    if (stuecke.Count == 0) continue;
+                    if (paare == null) _trenndecken[gi] = paare = new SortedDictionary<(string, string), List<AbbildBauteil>>();
+                    paare[(u.Kennung, o.Kennung)] = stuecke;
+                    zahl += stuecke.Count;
+                    flaeche += stuecke.Sum(t => t.BruttoflaecheM2 ?? 0.0);
+                    geschosspaare.Add((g.Geschosse.FirstOrDefault(k => k.Kennung == u.Kennung)?.Anzeigename ?? u.Kennung) + "/"
+                                      + (g.Geschosse.FirstOrDefault(k => k.Kennung == o.Kennung)?.Anzeigename ?? o.Kennung));
+                }
+                if (zahl == 0) continue;
+                g.Bauteile.RemoveAll(verbraucht.Contains);
+                g.Bauteile.AddRange(neu);
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "TRENNDECKE_GRUNDRISS", g.Anzeigename, Ganz(zahl),
+                    Zahl(Math.Round(flaeche, 2)), string.Join(", ", geschosspaare)));
+            }
+        }
+
+        /// <summary>Eine Platte innen ohne Grenze, Nachbarn und Hüllerklärung, bewertet — Vorlage einer Trenndecke ohne Raumbezug.</summary>
+        private static bool FreieDecke(AbbildBauteil b)
+            => string.Equals(b.Quelltyp, "IfcSlab", StringComparison.OrdinalIgnoreCase)
+               && b.Quellart != nameof(IfcSlabTypeEnum.ROOF) && b.Quellart != nameof(IfcSlabTypeEnum.BASESLAB)
+               && b.Nachbarn.Count == 0 && b.Grenzen.Count == 0 && !b.HuelleOhneNachbar
+               && (b.Randbedingung == Randbedingung.Innen || b.Randbedingung == Randbedingung.Unbekannt)
+               && (b.UWertWm2K > 0.0 || b.Aufbau != null || !b.UWertWm2K.HasValue);
+
+        /// <summary>Die Nachbarn einer Trenndecke: der beheizte Raum zuerst, Sicht aus der Lage (oben Boden, unten Decke).</summary>
+        private static void Paar(AbbildBauteil t, AbbildRaum unten, AbbildRaum oben)
+        {
+            var nOben = new AbbildNachbar(oben.Kennung, GebaeudeAggregation.SICHT_BODEN);
+            var nUnten = new AbbildNachbar(unten.Kennung, GebaeudeAggregation.SICHT_DECKE);
+            bool obenZuerst = oben.Beheizt && !unten.Beheizt;
+            t.Nachbarn.Add(obenZuerst ? nOben : nUnten);
+            t.Nachbarn.Add(obenZuerst ? nUnten : nOben);
         }
 
         /// <summary>Der Name eines Raums, sonst seine Kennung.</summary>
@@ -1532,17 +1656,21 @@ namespace WindowsFormsApplication1
                         g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "ERKLAERUNG_VOR_BEZUG", bauteil, raum));
                 _trenndecken.TryGetValue(gi, out SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>> paare);
                 _bezugswaende.TryGetValue(gi, out int waende);
-                int decken = paare?.Values.Sum(p => p.Count) ?? 0;
-                if (decken == 0 && waende == 0) continue;
+                // Die Meldung der Raumbezüge zählt nur deren Decken; die aus Geschoss und Grundriss meldet GrundrissTrenndecken.
+                int decken = paare?.Values.Sum(p => p.Count(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG)) ?? 0;
+                if ((paare == null || paare.Count == 0) && waende == 0) continue;
                 g.ZahlTrenndeckenReferenz = decken;
                 string Name(string kennung) => g.Geschosse.FirstOrDefault(x => x.Kennung == kennung)?.Anzeigename ?? kennung;
                 double Hoehe(string kennung) => g.Geschosse.FirstOrDefault(x => x.Kennung == kennung)?.LageM ?? 0.0;
                 List<KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>>> geordnet = paare == null
                     ? new List<KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>>>()
                     : paare.OrderBy(p => Hoehe(p.Key.Unten)).ThenBy(p => Hoehe(p.Key.Oben)).ToList();
-                string liste = geordnet.Count == 0 ? "—"
-                    : string.Join(", ", geordnet.Select(p => Name(p.Key.Unten) + "/" + Name(p.Key.Oben) + (p.Value.Count > 1 ? " (" + Ganz(p.Value.Count) + ")" : "")));
-                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "TRENNDECKE_REFERENZ", g.Anzeigename, Ganz(decken), liste, Ganz(waende)));
+                int Bezug(List<AbbildBauteil> teile) => teile.Count(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG);
+                List<KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>>> ausBezug = geordnet.Where(p => Bezug(p.Value) > 0).ToList();
+                string liste = ausBezug.Count == 0 ? "—"
+                    : string.Join(", ", ausBezug.Select(p => Name(p.Key.Unten) + "/" + Name(p.Key.Oben) + (Bezug(p.Value) > 1 ? " (" + Ganz(Bezug(p.Value)) + ")" : "")));
+                if (decken > 0 || waende > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "TRENNDECKE_REFERENZ", g.Anzeigename, Ganz(decken), liste, Ganz(waende)));
                 if (geordnet.Count == 0) continue;
 
                 // Die beheizte Grundfläche je Geschoss aus den Raummengen — Maßstab der Schätzung und der Kopplung.
@@ -1564,7 +1692,9 @@ namespace WindowsFormsApplication1
                     double kleiner = Math.Min(warm.TryGetValue(p.Key.Unten, out double u) ? u : 0.0, warm.TryGetValue(p.Key.Oben, out double o) ? o : 0.0);
                     double referenziert = p.Value.Sum(t => t.BruttoflaecheM2 ?? 0.0);
                     double flaeche = referenziert;
-                    if (kleiner > 0.0 && referenziert < kleiner)
+                    // Die Überlappung der Grundrisse ist gemessen, keine Teilmenge: keine Schätzung.
+                    bool gemessen = p.Value.All(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_GRUNDRISS);
+                    if (kleiner > 0.0 && referenziert < kleiner && !gemessen)
                     {
                         Schaetzen(p.Value, referenziert, kleiner);
                         flaeche = kleiner;
