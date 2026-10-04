@@ -33977,6 +33977,18 @@ Do you want to allow this?</value>
   <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
     <value>Zone “{0}”: The cooling emitter type “{1}” is not a valid value.</value>
   </data>
+  <data name="ZONE_MSG_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Zone “{0}”: The design flow temperature {1} °C is outside {2} to {3} °C.</value>
+  </data>
+  <data name="ZONE_MSG_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Zone “{0}”: The design return temperature {1} °C must be below the design flow temperature {2} °C.</value>
+  </data>
+  <data name="ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Zone “{0}”: The design room temperature {1} °C is outside {2} to {3} °C.</value>
+  </data>
+  <data name="ZONE_MSG_PROPORTIONALBAND" xml:space="preserve">
+    <value>Zone “{0}”: The proportional band {1} K is outside {2} to {3} K.</value>
+  </data>
   <data name="GIMP_BELEG_RAUMHOEHE_VORGABE" xml:space="preserve">
     <value>neither room height nor room volume in the file — default {0} m</value>
   </data>

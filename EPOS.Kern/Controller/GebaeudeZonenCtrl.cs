@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
         }
 
         private static string ZonenspaltenSql(string alias)
-            => string.Join(", ", new[] { "ID" }.Concat(ZonenSchema.Zonenspalten).Concat(Kuehlspalten())
+            => string.Join(", ", new[] { "ID" }.Concat(ZonenSchema.Zonenspalten).Concat(Zusatzspalten())
                                              .Select(s => alias + ".\"" + s + "\""));
 
         /// <summary>
@@ -62,6 +62,29 @@ namespace WindowsFormsApplication1
             => GebaeudeZonenanschluss.KuehlspaltenVorhanden()
                 ? KuehluebergabeSchema.SpaltenZone.Select(s => s.Key).ToList()
                 : (IReadOnlyList<string>)Array.Empty<string>();
+
+        /// <summary>
+        /// Die vier Spalten von Auslegungspunkt und Regler der Wärmeübergabe an der Zone (E63,
+        /// <see cref="ZonenUebergabeSchema.SPALTEN_ZONE"/>) — wie die Kühlspalten NEBEN
+        /// <see cref="ZonenSchema.Zonenspalten"/> gelesen und geschrieben; leer, solange die Datenbank
+        /// den Schritt nicht trägt. NULL bleibt NULL.
+        /// </summary>
+        private static IReadOnlyList<string> Uebergabespalten()
+            => GebaeudeZonenanschluss.UebergabespaltenVorhanden()
+                ? ZonenUebergabeSchema.SPALTEN_ZONE
+                : (IReadOnlyList<string>)Array.Empty<string>();
+
+        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, dann Übergabe je Zone.</summary>
+        private static IReadOnlyList<string> Zusatzspalten() => Kuehlspalten().Concat(Uebergabespalten()).ToList();
+
+        /// <summary>Die Werte zu <paramref name="zusatz"/> (aus <see cref="Zusatzspalten"/>) in derselben Reihenfolge.</summary>
+        private static IEnumerable<DbParam> Zusatzwerte(ZoneModel z, IReadOnlyList<string> zusatz)
+        {
+            IEnumerable<DbParam> werte = Enumerable.Empty<DbParam>();
+            if (zusatz.Contains(GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_ART)) werte = werte.Concat(Kuehlwerte(z));
+            if (zusatz.Contains(ZonenUebergabeSchema.SPALTE_AUSLEGUNG_VORLAUF)) werte = werte.Concat(Uebergabewerte(z));
+            return werte;
+        }
 
         private static string BauteilspaltenSql(string alias)
             => string.Join(", ", new[] { "ID" }.Concat(Bauteilspalten()).Select(s => alias + ".\"" + s + "\""));
@@ -279,6 +302,8 @@ namespace WindowsFormsApplication1
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_UEBERGABEART, zn, z.Uebergabe_Art);
                 if (z.Kuehl_Uebergabe_Art != null && !Waermeuebergabevorgaben.KuehlArten.Contains(z.Kuehl_Uebergabe_Art))
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_KUEHLUEBERGABEART, zn, z.Kuehl_Uebergabe_Art);
+                string u = UebergabePruefen(z, zn);
+                if (u != null) return u;
 
                 foreach (BauteilModel b in z.Bauteile ?? new List<BauteilModel>())
                 {
@@ -598,9 +623,9 @@ namespace WindowsFormsApplication1
             // Die Spalten der Zone: die von ZonenSchema und - mit Schritt 137 - die drei der
             // Kuehluebergabe (E37); die des Bauteils samt S-G. Festgestellt VOR dem Vorgang, auf der
             // gewoehnlichen Verbindung.
-            IReadOnlyList<string> kuehl = Kuehlspalten();
-            List<string> spalten = ZonenSchema.Zonenspalten.Concat(kuehl).ToList();
-            IEnumerable<DbParam> Werte(ZoneModel z) => kuehl.Count > 0 ? Zonenwerte(z).Concat(Kuehlwerte(z)) : Zonenwerte(z);
+            IReadOnlyList<string> zusatz = Zusatzspalten();
+            List<string> spalten = ZonenSchema.Zonenspalten.Concat(zusatz).ToList();
+            IEnumerable<DbParam> Werte(ZoneModel z) => Zonenwerte(z).Concat(Zusatzwerte(z, zusatz));
             IReadOnlyList<string> bauteilspalten = Bauteilspalten();
 
             try
@@ -937,8 +962,8 @@ namespace WindowsFormsApplication1
             foreach (BauteilaufbauModel a in aufbauten) fehler ??= BauteilaufbauCtrl.Pruefen(a);
             if (fehler != null) return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.NICHT_GESCHRIEBEN, fehler);
 
-            IReadOnlyList<string> kuehl = Kuehlspalten();
-            List<string> spalten = ZonenSchema.Zonenspalten.Concat(kuehl).ToList();
+            IReadOnlyList<string> zusatz = Zusatzspalten();
+            List<string> spalten = ZonenSchema.Zonenspalten.Concat(zusatz).ToList();
             IReadOnlyList<string> bauteilspalten = Bauteilspalten();
             bool kopplung = bauteilspalten.Count > ZonenSchema.Bauteilspalten.Count;
             // Ohne Schritt S-G keine Trennfläche — benannt, bevor etwas geschrieben ist.
@@ -1004,7 +1029,7 @@ namespace WindowsFormsApplication1
                         zone.Rang = ++rangZone;
                         zone.Bezeichner = zone.Bezeichner.Trim();
                         int vorlaeufig = zone.ID;
-                        IEnumerable<DbParam> werte = kuehl.Count > 0 ? Zonenwerte(zone).Concat(Kuehlwerte(zone)) : Zonenwerte(zone);
+                        IEnumerable<DbParam> werte = Zonenwerte(zone).Concat(Zusatzwerte(zone, zusatz));
                         zone.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_ZONE + "\" (" +
                                                    string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
                                                    ") VALUES (" + BaustoffCtrl.Fragezeichen(spalten.Count) + ")", werte.ToArray());
@@ -1145,6 +1170,44 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Prüft Auslegungspunkt und Regler der Übergabe einer Zone (E63) in den Bändern des Gebäudes
+        /// (<see cref="GebaeudeFestwerte"/>): Vorlauf, Raumtemperatur und Proportionalband, wenn gesetzt;
+        /// der Rücklauf liegt unter dem Vorlauf, wenn beide gesetzt sind. NULL heißt „wie Gebäude" und
+        /// wird nicht geprüft. <c>null</c> = in Ordnung, sonst die Meldung.
+        /// </summary>
+        internal static string UebergabePruefen(ZoneModel z, string zn)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            static bool Ausserhalb(double w, double min, double max) => double.IsNaN(w) || w < min || w > max;
+            if (z.Auslegung_Vorlauf is double v
+                && Ausserhalb(v, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX))
+                return string.Format(k, MyResource.Resource.ZONE_MSG_AUSLEGUNG_VORLAUF, zn, v,
+                                     GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX);
+            if (z.Auslegung_Ruecklauf is double r && (double.IsNaN(r) || double.IsInfinity(r)
+                                                       || (z.Auslegung_Vorlauf is double vl && !(r < vl))))
+                return string.Format(k, MyResource.Resource.ZONE_MSG_AUSLEGUNG_RUECKLAUF, zn, r,
+                                     z.Auslegung_Vorlauf ?? double.NaN);
+            if (z.Auslegung_Raumtemperatur is double t
+                && Ausserhalb(t, GebaeudeFestwerte.AUSLEGUNG_RAUM_MIN, GebaeudeFestwerte.AUSLEGUNG_RAUM_MAX))
+                return string.Format(k, MyResource.Resource.ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR, zn, t,
+                                     GebaeudeFestwerte.AUSLEGUNG_RAUM_MIN, GebaeudeFestwerte.AUSLEGUNG_RAUM_MAX);
+            if (z.Regler_Proportionalband is double xp
+                && Ausserhalb(xp, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K))
+                return string.Format(k, MyResource.Resource.ZONE_MSG_PROPORTIONALBAND, zn, xp,
+                                     GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K);
+            return null;
+        }
+
+        /// <summary>Die Werte der Übergabe je Zone in der Reihenfolge von <see cref="ZonenUebergabeSchema.SPALTEN_ZONE"/>; NULL bleibt NULL.</summary>
+        private static IEnumerable<DbParam> Uebergabewerte(ZoneModel z)
+        {
+            yield return BaustoffCtrl.Zahl("@uav", z.Auslegung_Vorlauf);
+            yield return BaustoffCtrl.Zahl("@uar", z.Auslegung_Ruecklauf);
+            yield return BaustoffCtrl.Zahl("@uat", z.Auslegung_Raumtemperatur);
+            yield return BaustoffCtrl.Zahl("@uxp", z.Regler_Proportionalband);
+        }
+
+        /// <summary>
         /// Die Werte eines Bauteils in der Reihenfolge von <see cref="ZonenSchema.Bauteilspalten"/>,
         /// mit <paramref name="kopplung"/> dazu die zwei Spalten von S-G
         /// (<see cref="ZonenkopplungSchema.SpaltenBauteil"/>); NULL bleibt NULL.
@@ -1217,6 +1280,10 @@ namespace WindowsFormsApplication1
                     Kuehl_Uebergabe_Art = BaustoffCtrl.TextAus(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_ART),
                     Kuehl_Uebergabe_Exponent = BaustoffCtrl.ZahlAus(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_EXPONENT),
                     Kuehl_Uebergabe_Leistung_Nenn = BaustoffCtrl.ZahlAus(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN),
+                    Auslegung_Vorlauf = BaustoffCtrl.ZahlAus(r, ZonenUebergabeSchema.SPALTE_AUSLEGUNG_VORLAUF),
+                    Auslegung_Ruecklauf = BaustoffCtrl.ZahlAus(r, ZonenUebergabeSchema.SPALTE_AUSLEGUNG_RUECKLAUF),
+                    Auslegung_Raumtemperatur = BaustoffCtrl.ZahlAus(r, ZonenUebergabeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR),
+                    Regler_Proportionalband = BaustoffCtrl.ZahlAus(r, ZonenUebergabeSchema.SPALTE_REGLER_PROPORTIONALBAND),
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                     Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung")
                 };

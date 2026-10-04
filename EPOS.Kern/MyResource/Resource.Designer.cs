@@ -115614,6 +115614,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Auslegungsraumtemperatur {1} °C liegt außerhalb von {2} bis {3} °C. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Auslegungsrücklauf {1} °C muss unter dem Auslegungsvorlauf {2} °C liegen. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_AUSLEGUNG_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_AUSLEGUNG_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Auslegungsvorlauf {1} °C liegt außerhalb von {2} bis {3} °C. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_AUSLEGUNG_VORLAUF {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_AUSLEGUNG_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone mit der Kennung {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string ZONE_MSG_FREMD {
@@ -115799,6 +115826,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONE_MSG_OHNE_KOPPLUNG {
             get {
                 return ResourceManager.GetString("ZONE_MSG_OHNE_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Proportionalband {1} K liegt außerhalb von {2} bis {3} K. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_PROPORTIONALBAND {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_PROPORTIONALBAND", resourceCulture);
             }
         }
         

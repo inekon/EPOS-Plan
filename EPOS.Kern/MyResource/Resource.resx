@@ -33984,6 +33984,18 @@ Möchten Sie das zulassen?</value>
   <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
     <value>Zone „{0}“: Die Kühlübergabeart „{1}“ ist kein gültiger Wert.</value>
   </data>
+  <data name="ZONE_MSG_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Zone „{0}“: Der Auslegungsvorlauf {1} °C liegt außerhalb von {2} bis {3} °C.</value>
+  </data>
+  <data name="ZONE_MSG_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Zone „{0}“: Der Auslegungsrücklauf {1} °C muss unter dem Auslegungsvorlauf {2} °C liegen.</value>
+  </data>
+  <data name="ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Zone „{0}“: Die Auslegungsraumtemperatur {1} °C liegt außerhalb von {2} bis {3} °C.</value>
+  </data>
+  <data name="ZONE_MSG_PROPORTIONALBAND" xml:space="preserve">
+    <value>Zone „{0}“: Das Proportionalband {1} K liegt außerhalb von {2} bis {3} K.</value>
+  </data>
   <data name="GIMP_BELEG_RAUMHOEHE_VORGABE" xml:space="preserve">
     <value>weder Raumhöhe noch Volumen der Räume in der Datei — Vorgabe {0} m</value>
   </data>
