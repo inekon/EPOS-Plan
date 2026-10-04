@@ -1696,7 +1696,7 @@ die Regel: **Der Abschnitt entfällt vollständig, wenn kein Objekt einen Wert t
 voller ‚—' wäre keine Aussage, sondern eine Frage." Das Gebäude steht heute als Eigenschaftsblock
 (`:35-52`, Daten aus `…/ProjektDetails.cs:39-40`, gefüllt `:72`); die Zonentabelle tritt daneben:
 Zone | Fläche | Volumen | H_T [W/K] | H_ve [W/K] | Heizwärme [kWh/a] | Spitze [kW] | beheizt.
-**Kältebedarf je Zone (KU3-3):** Eine zweite Tabelle „Kältebedarf je Zone“ steht unter der Zonentabelle, gespeist aus dem gespeicherten Ergebnis (`Tab_ErgebnisZone.Kuehlenergie`); sie entfällt, wenn keine Zone Kälte gespeichert hat. Kältespitze und Kühlstunden je Zone stehen nur im Lauf und im Bedarfsdialog.
+**Kältebedarf je Zone (KU3-3):** Eine zweite Tabelle „Kältebedarf je Zone“ steht unter der Zonentabelle, gespeist aus dem gespeicherten Ergebnis (`Tab_ErgebnisZone.Kuehlenergie`); sie entfällt, wenn keine Zone Kälte gespeichert hat. Schemaschritt 185 speichert `Tab_ErgebnisZone.Kaeltespitze_kW` und `Kuehlstunden` (nullbar); die Tabelle führt „Kältespitze [kW]“ und „Kühlstunden [h/a]“ nur bei gespeicherten Werten, der Bedarfsdialog liest die Ergebniszeile (ersatzweise den Lauf), der Export gibt die Spitze je gekühlter Zone als IFC `Kaeltelast` und gbXML `CoolingLoad` (Spitze × 1000 W) aus.
 **Kennzahlen** (`…/KennzahlenKatalog.cs:204` ff.) kennen **keine Objektlisten** — als Kennzahl je
 Projekt taugt nur eine Summe oder ein Extremum; H_T je Gebäude ist mit E2 vorgesehen (N1.6).
 

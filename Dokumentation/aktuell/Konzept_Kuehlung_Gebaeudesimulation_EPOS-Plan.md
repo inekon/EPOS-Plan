@@ -1,6 +1,6 @@
 # Konzept: Kühlung in der Gebäudesimulation und in der Simulation von EPOS-Plan
 
-> **Stand 04.10.2026:** KU3-1 bis KU3-4a, KU3-4c und KU3-5 sind gebaut (#713 bis #718); die Kühlung je Zone steht in 3.5 („So gebaut“).
+> **Stand 04.10.2026:** KU3-1 bis KU3-5 sind gebaut (#713 bis #721, offen nur KU3-4b); die Kühlung je Zone steht in 3.5 („So gebaut“).
 
 > **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Bestandsweg ist der
 > **Bestandsweg als Übergang**, und die Stufe **GA — Altweg ablösen** kehrt als letzte Stufe ohne
@@ -1069,6 +1069,8 @@ kein Wärmeflag; Warnkriterien `KAELTESPEICHER_OHNE_ERZEUGER` und `KAELTESPEICHE
 Dialog bietet die Nutzung „Kälte" ausschließlich an und beschriftet das Paar als Kaltwasser-Vorlauf und
 -Rücklauf. Kein Schemaschritt — die Spalte `Verwendung` trägt keine CHECK-Klausel.
 
+**So gebaut (KU3-4d, 04.10.2026, #721).** Der Bericht führt die Tafel `tabelle.kaeltespeicher` (Kapazität, Ladung, Entladung, Wärmeeintrag, Vollzyklen) im Abschnitt „Kältespeicher“ der Projektbeschreibung; ohne Kältespeicher entfällt er. Speichertemperaturen tragen den Zusatz „(Kältespeicher)“, die Kälteerzeuger-Tafel zeigt Netzbezug und Träger der Kältemaschine („—“ ohne Werte vor Schritt 184). Navigator, Ergebnisanzeige und Füllstandsexport lesen `SpeicherSamtKaelte()`.
+
 ### 4.7 Referenzlauf-Export des Kanals
 
 | Was | Wie |
@@ -1491,6 +1493,8 @@ Ergebnisse: Bedarf, Deckung, `Kaelterestbedarf`, Deckungsgrad und Kältestrom en
 
 **So gebaut (KU3-4a, 04.10.2026, #716).** Die Kältemaschine ist eine Anlage: Typ 13 „Kältemaschine“ in `Tab_Typ_Energieanlagen`, die Anlagenzeile `Tab_Energieanlagen` trägt `ID_Kaeltemaschine` (Projektkopie, SET NULL) und `Kaeltemaschine_Anzahl` (≥ 1). `KaeltemaschineAnlageCtrl` legt Projektkopie und Anlagenzeile zusammen an und löscht die Projektkopie mit, wenn keine andere Anlage sie führt. `KaeltemaschinenVorbereiten` liest nur Anlagenzeilen: Die Anzahl teilt die Last gleich auf (Kälte, Strom, Kapazität als Vielfaches), das Kaltwasser kommt aus `Kuehl_Vorlauf`, sonst aus der kleinsten Stützstelle, der Hilfsstromanteil gilt nach K23 (ungültige Werte werden mit Meldung verworfen), Kühlträger und Abrechnungsart folgen der Wärmepumpe (E34). Eine Projektkopie ohne Anlagenzeile rechnet nicht (Hinweis), ein gelöschtes Gerät einer Anlage gibt eine Warnung. Der Kaskadenplatz bleibt wie in 5.5: `Tool_1…4` ordnen nur die Wärmeseite, die Kälte deckt zuerst die freie Kühlung, dann die Wärmepumpen im Kühlbetrieb, dann die Kältemaschinen in der Reihenfolge der Anlagenzeilen. Das Ergebnis je Maschine steht in `Tab_ErgebnisKaeltemaschine` (7.4). Der Erzeugerdialog folgt mit KU3-4c.
 
+**So gebaut (KU3-4d, 04.10.2026, #721).** Zwei Anlagen aus demselben Katalogsatz teilen eine Projektkopie in `Tab_Kaeltemaschine`; Vorlauf und Hilfsstrom gelten je Gerät an der Kopie, die Anzahl je Anlagenzeile. Die Kopie wird erst gelöscht, wenn keine Anlage sie mehr nutzt.
+
 ### 5.4 Freie Kühlung und Nachtlüftung: Gebäudemaßnahme, kein Erzeuger
 
 Drei Dinge werden im Sprachgebrauch „freie Kühlung" genannt, und sie gehören an verschiedene
@@ -1726,6 +1730,8 @@ Abrechnungsart (`SzenarioMengen`), sodass ein Kühlträger im Szenario weder Men
 Kältespalten skalieren jetzt mit dem Faktor wie die Wärmespalten, die eigenen Spitzen ebenso.
 
 **So gebaut (KU3-4a, 04.10.2026, #716).** Die Kältemaschine ist die Kostenkomponente 11. `TechnikPlanwertCtrl` setzt die Investition je kW aus Nennkälteleistung × Anzahl, bei gepflegten `Modulkosten` diese × Anzahl; Standardvorlagen für Investition („Kältemaschine (Aggregat)“, 300 €/kW mit Rückkühlung/Zubehör, MSR, Montage, Planung) und Betrieb (Wartung und Instandhaltung je 1,5 %) sind wählbar, die Nutzungsdauer beträgt 15 Jahre. `EndenergieAufloeser` führt für die Komponente 11 den Kältestrom aus `Tab_ErgebnisKaeltemaschine` zum Strompreis des Projekts bzw. des Kühlträgers. Komponente 11 und Typ 13 zählen nicht zur Wärmegestehung. Offen (KU3-4d): Kühlträger mit eigenem Zähler in der Kältestromabrechnung.
+
+**So gebaut (KU3-4d, 04.10.2026, #721).** Die Kältemaschine rechnet in `Kaeltestromabrechnung` wie ein Wärmepumpen-Modul und steht in `Quellen` nach den Modulen; der Kühlträger zählt nur > 0, die Abrechnung läuft anteilig oder über den eigenen Zähler mit Grund- und Leistungspreis (Schlüssel `-1-i`). Schemaschritt 184 legt am Ergebnis je Maschine `Kaeltestrom_Netzbezug_MWh`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler` und `Stromspitze_kW` an; der Kostenstempel-Trigger `trg_Kostenstempel_Tab_Energieanlagen_U` führt `Kaeltemaschine_Anzahl` und `ID_Kaeltemaschine` (an `Tab_Kaeltemaschine` liegt keiner, wie an `Tab_WP`). `EndenergieAufloeser` nimmt den Träger aus der Ergebniszeile, sonst aus der Anlagenzeile; `KostenEmissionRechner` nimmt ohne Zeitreihen die gespeicherte Jahresspitze; `SzenarioMengen` skaliert Mengen, Netzbezug und Spitze.
 
 ### 6.3 Emissionen (K9)
 
