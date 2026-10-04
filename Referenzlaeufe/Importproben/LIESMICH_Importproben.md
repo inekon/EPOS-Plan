@@ -71,6 +71,8 @@ KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
 | `ifc4_koerper_offen.ifc` | Raumkörper als `IfcShellBasedSurfaceModel` mit `IfcOpenShell` (Quader ohne Decke) — Vermerk „offen“, nicht geschlossen | selbst erzeugt | eigenes Werk |
 | `ifc4_koerper_advancedbrep.ifc` | Raumkörper als `IfcAdvancedBrep` — benannt nicht lesbar (`IMP_IFC_PROT_KOERPER_ART`), der Raum bleibt ohne Körper | selbst erzeugt | eigenes Werk |
 | `ifc4_koerper_platzierung.ifc` | Raumkörper hinter einer Placement-Kette: Gebäude um 90° gedreht und versetzt, Geschoss 3 m höher, Raum versetzt; Längen in mm | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_nachbarn.ifc` | Trennflächen aus Raumkörpern (G7f-4): drei Räume als `IfcFacetedBrep` auf zwei Geschossen ohne Raumgrenzen, mit Raumbezügen — „Büro“ und „Flur“ (EG) durch eine Wand von 0,24 m (`Pset_WallCommon.ThermalTransmittance` 1,2) getrennt, „Büro 2“ (OG) 0,3 m über dem Büro; zwei Temperaturen für Z6 | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_nachbarn_grenzen.ifc` | Gegenprobe zu `ifc4_koerper_nachbarn.ifc`: dieselben Räume mit Raumgrenzen der 2. Ebene für Wand und Decke (Gegenstücke) — die Raumgrenzen gehen vor, die Körperpaare werden nur gezählt | selbst erzeugt | eigenes Werk |
 | `ifc4_verlust.ifc` | von Hand geschriebene Kleinstdatei (< 5 KB), absichtlich beschädigt: ein unbekannter Entitätstyp und ein Verweis ins Leere — beide Verlustkanäle | von Hand geschrieben | eigenes Werk |
 
 ## Katalog-, Geräte-, Ganglinien- und Klimaimporte

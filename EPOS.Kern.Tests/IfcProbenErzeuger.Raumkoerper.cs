@@ -42,6 +42,8 @@ namespace EPOS.Kern.Tests
                     b => new[] { b.AdvancedBrep() }),
                 ["ifc4_koerper_platzierung.ifc"] = Koerperprobe("ifc4_koerper_platzierung.ifc", XbimSchemaVersion.Ifc4, "SweptSolid",
                     b => new[] { b.Extrusion(b.Rechteckprofil(4000, 3000, 2000, 1500), 2500) }, gedreht: true),
+                ["ifc4_koerper_nachbarn.ifc"] = Koerpernachbarn("ifc4_koerper_nachbarn.ifc", grenzen: false),
+                ["ifc4_koerper_nachbarn_grenzen.ifc"] = Koerpernachbarn("ifc4_koerper_nachbarn_grenzen.ifc", grenzen: true),
             };
 
         private static byte[] Koerperprobe(string datei, XbimSchemaVersion schema, string typ, Func<Bau, IIfcRepresentationItem[]> koerper, bool gedreht = false)
@@ -54,6 +56,56 @@ namespace EPOS.Kern.Tests
                 IIfcBuildingStorey s = b.Geschoss(g, "Erdgeschoss", gedreht ? 3000 : 0);
                 IIfcSpace r = b.Raum(s, "0.01", "Raum", 1000, 2000, 20, 3000, 60, beheizt: true);
                 b.Koerper(r, typ, koerper(b));
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
+        /// <b>Nachbarschaft aus Raumkörpern</b> (Stufe G7f-4, Mehrzonenkonzept 6.2): drei Räume als <c>IfcFacetedBrep</c> auf
+        /// zwei Geschossen, nach dem Muster eines CAD-Exports (Raumbezüge, keine Raumgrenzen). EG (0 mm): „Büro“ 5 × 4 × 3 m
+        /// im Ursprung (20 °C, Büro), „Flur“ 3 × 4 × 3 m bei x = 5,24 m (15 °C, Flur) — dazwischen die Wand „Innenwand
+        /// Büro/Flur“ (0,24 m, <c>Pset_WallCommon.ThermalTransmittance</c> 1,2, von beiden referenziert); OG (3300 mm):
+        /// „Büro 2“ 5 × 4 × 3 m über dem Büro (20 °C, Büro) — dazwischen die Decke „Decke EG/OG“ (0,3 m, U 1,0, von Büro
+        /// und Büro 2 referenziert). Mit <paramref name="grenzen"/> trägt dieselbe Datei
+        /// Raumgrenzen der 2. Ebene mit Polygonen für Wand und Decke als Gegenstücke (Gegenprobe: Raumgrenzen gehen vor).
+        /// </summary>
+        private static byte[] Koerpernachbarn(string datei, bool grenzen)
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, datei))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Körpernachbarn", null);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 3300);
+                IIfcWall wand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand Büro/Flur", "btaHeated", false, null, null, null, 12, 12, null, null);
+                b.Eigenschaften(wand, "Pset_WallCommon", ("ThermalTransmittance", new IfcThermalTransmittanceMeasure(1.2)));
+                IIfcSlab decke = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Decke EG/OG", "btaHeated", false, 1.0, null, null, 20, 20, null, null);
+
+                IIfcSpace buero = b.RaumEnthalten(eg, "Büro", 0, 0, 20, 60, 3000, zerlegt: false);
+                IIfcSpace flur = b.RaumEnthalten(eg, "Flur", 5240, 0, 12, 36, 3000, zerlegt: false);
+                IIfcSpace buero2 = b.RaumEnthalten(og, "Büro 2", 0, 0, 20, 60, 3000, zerlegt: false);
+                b.Koerper(buero, "Brep", b.Brep(5000, 4000, 3000, offen: false));
+                b.Koerper(flur, "Brep", b.Brep(3000, 4000, 3000, offen: false));
+                b.Koerper(buero2, "Brep", b.Brep(5000, 4000, 3000, offen: false));
+                b.Raumangaben(buero, "bhtHeated", 20.0, "mrtOffice");
+                b.Raumangaben(flur, "bhtHeated", 15.0, "mrtHall");
+                b.Raumangaben(buero2, "bhtHeated", 20.0, "mrtOffice");
+                b.Bezug(buero, wand, decke);
+                b.Bezug(flur, wand);
+                b.Bezug(buero2, decke);
+                if (grenzen)
+                {
+                    b.Gegenstuecke(
+                        b.Grenze2(buero, wand, IfcInternalOrExternalEnum.INTERNAL, new[] { 1.0, 0.0, 0.0 },
+                                  new[] { 5000.0, 0, 0 }, new[] { 5000.0, 4000, 0 }, new[] { 5000.0, 4000, 3000 }, new[] { 5000.0, 0, 3000 }),
+                        b.Grenze2(flur, wand, IfcInternalOrExternalEnum.INTERNAL, new[] { -1.0, 0.0, 0.0 },
+                                  new[] { 5240.0, 0, 0 }, new[] { 5240.0, 0, 3000 }, new[] { 5240.0, 4000, 3000 }, new[] { 5240.0, 4000, 0 }));
+                    b.Gegenstuecke(
+                        b.Grenze2(buero, decke, IfcInternalOrExternalEnum.INTERNAL, new[] { 0.0, 0.0, 1.0 },
+                                  new[] { 0.0, 0, 3000 }, new[] { 5000.0, 0, 3000 }, new[] { 5000.0, 4000, 3000 }, new[] { 0.0, 4000, 3000 }),
+                        b.Grenze2(buero2, decke, IfcInternalOrExternalEnum.INTERNAL, new[] { 0.0, 0.0, -1.0 },
+                                  new[] { 0.0, 0, 0 }, new[] { 0.0, 4000, 0 }, new[] { 5000.0, 4000, 0 }, new[] { 5000.0, 0, 0 }));
+                }
                 return b.Speichern();
             }
         }
