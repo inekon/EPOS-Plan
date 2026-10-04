@@ -152,6 +152,8 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.BaustoffKatalogKiSicht) },
         { KiMaskennamen.KAELTEMASCHINE_KATALOG,
           typeof(EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKatalogKiSicht) },
+        { KiMaskennamen.KAELTEMASCHINE_ANLAGE,
+          typeof(EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageKiSicht) },
         { KiMaskennamen.BAUTEILAUFBAU,
           typeof(EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht) },
 
@@ -467,7 +469,7 @@ public class KiDialogkatalogTests : IDisposable
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
-        Assert.Equal(91, katalog.Anzahl);                            // KU3-1: + Kältemaschinen
+        Assert.Equal(92, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -883,6 +885,8 @@ public class KiDialogkatalogTests : IDisposable
         Assert.Equal(KiMaskenziele.BAUTEILAUFBAU_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUTEILAUFBAU));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineKatalog, KiMaskenziele.KAELTEMASCHINE_KATALOG);
         Assert.Equal(KiMaskenziele.KAELTEMASCHINE_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMASCHINE_KATALOG));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, KiMaskenziele.KAELTEMASCHINE_ANLAGE);
+        Assert.Equal(KiMaskenziele.KAELTEMASCHINE_ANLAGE, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMASCHINE_ANLAGE));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Betriebskalender, KiMaskenziele.BETRIEBSKALENDER);
         Assert.Equal(KiMaskenziele.BETRIEBSKALENDER, KiMaskenziele.Ziel(KiMaskennamen.BETRIEBSKALENDER));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.PufferAuslegung, KiMaskenziele.PUFFER_AUSLEGUNG);
@@ -1618,6 +1622,9 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse KaeltemaschineKatalogKiSicht auf die Satzwahl, die Kenndaten " +
             "(Rückkühlart über den Listenplatz) und das Kennlinienraster des Arbeitsstands; Zeuge ist " +
             "KaeltemaschineKatalogDialogTests",
+        [KiMaskennamen.KAELTEMASCHINE_ANLAGE] =
+            "bindet über die Sichtklasse KaeltemaschineAnlageKiSicht auf die Anlagenwahl und den Arbeitsstand der " +
+            "gewählten Anlage (Kühlträger über die Id); Zeuge ist KaeltemaschineAnlageDialogTests",
         [KiMaskennamen.BAUTEILAUFBAU] =
             "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf und das " +
             "Schichtenraster des Arbeitsstands; Zeuge ist BauteilaufbauDialogTests",

@@ -44933,5 +44933,146 @@ Chart</value>
   <data name="AUFLOESER_BASIS_ALLE_KM" xml:space="preserve">
     <value>alle Kältemaschinen</value>
   </data>
+  <data name="KMA_TITEL" xml:space="preserve">
+    <value>Kältemaschinen im Projekt</value>
+  </data>
+  <data name="KMA_LEER" xml:space="preserve">
+    <value>Im Projekt steht noch keine Kältemaschine. Wählen Sie mit „Hinzufügen…“ ein Gerät aus dem Katalog.</value>
+  </data>
+  <data name="KMA_GRUPPE_ANLAGEN" xml:space="preserve">
+    <value>Anlagen</value>
+  </data>
+  <data name="KMA_SP_NAME" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="KMA_SP_ANZAHL" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
+  <data name="KMA_SP_LEISTUNG" xml:space="preserve">
+    <value>Nennkälteleistung [kW]</value>
+  </data>
+  <data name="KMA_BTN_HINZU" xml:space="preserve">
+    <value>Hinzufügen…</value>
+  </data>
+  <data name="KMA_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="KMA_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KMA_TITEL_KATALOG" xml:space="preserve">
+    <value>Kältemaschine aus dem Katalog wählen</value>
+  </data>
+  <data name="KMA_KATALOG_KEINE_WAHL" xml:space="preserve">
+    <value>Bitte wählen Sie eine Kältemaschine aus der Liste.</value>
+  </data>
+  <data name="KMA_KATALOG_LEER" xml:space="preserve">
+    <value>Der Katalog enthält keine Kältemaschine. Legen Sie Geräte unter Administration › Kältemaschinen an.</value>
+  </data>
+  <data name="KMA_GRUPPE_GERAET" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="KMA_HINWEIS_KATALOG" xml:space="preserve">
+    <value>Die Kennwerte pflegt die Verwaltung „Kältemaschinen“; hier stehen sie nur zum Lesen.</value>
+  </data>
+  <data name="KMA_HINWEIS_NEU" xml:space="preserve">
+    <value>Die Projektkopie des Geräts entsteht beim OK.</value>
+  </data>
+  <data name="KMA_GRUPPE_BETRIEB" xml:space="preserve">
+    <value>Betrieb</value>
+  </data>
+  <data name="KMA_LBL_NAME" xml:space="preserve">
+    <value>Name der Anlage</value>
+  </data>
+  <data name="KMA_LBL_ANZAHL" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
+  <data name="KMA_LBL_VORLAUF" xml:space="preserve">
+    <value>Kaltwasservorlauf</value>
+  </data>
+  <data name="KMA_PLATZHALTER_VORLAUF" xml:space="preserve">
+    <value>kleinste Stützstelle ({0} °C)</value>
+  </data>
+  <data name="KMA_HINWEIS_VORLAUF_MIN" xml:space="preserve">
+    <value>Kleinster zulässiger Kaltwasservorlauf des Geräts: {0} °C.</value>
+  </data>
+  <data name="KMA_LBL_HILFSSTROM" xml:space="preserve">
+    <value>Hilfsstromanteil</value>
+  </data>
+  <data name="KMA_HINWEIS_HILFSSTROM" xml:space="preserve">
+    <value>Zuschlag auf den Strom der Maschine für Pumpen und Regelung; leer = 0 %.</value>
+  </data>
+  <data name="KMA_LBL_TRAEGER" xml:space="preserve">
+    <value>Kühlträger</value>
+  </data>
+  <data name="KMA_PLATZHALTER_TRAEGER" xml:space="preserve">
+    <value>Stromträger des Projekts</value>
+  </data>
+  <data name="KMA_LBL_ZAEHLER" xml:space="preserve">
+    <value>eigener Zähler</value>
+  </data>
+  <data name="KMA_HINWEIS_ZAEHLER" xml:space="preserve">
+    <value>Der eigene Zähler wirkt nur bei einem Kühlträger, der vom Stromträger des Projekts abweicht.</value>
+  </data>
+  <data name="KMA_HINWEIS_REIHENFOLGE" xml:space="preserve">
+    <value>Die Kältemaschinen rechnen nach den Wärmepumpen im Kühlbetrieb.</value>
+  </data>
+  <data name="KMA_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Soll die Anlage „{0}“ aus dem Projekt entfernt werden? Gelöscht wird beim OK.</value>
+  </data>
+  <data name="KMA_MSG_ANLEGEN_FEHLT" xml:space="preserve">
+    <value>Die Kältemaschine „{0}“ gibt es im Katalog nicht mehr.</value>
+  </data>
+  <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet?</value>
+  </data>
+  <data name="KMA_REITER_KNOPF" xml:space="preserve">
+    <value>Kältemaschinen…</value>
+  </data>
+  <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
+    <value>Kältemaschinen im Projekt</value>
+  </data>
+  <data name="KI_DLG_KMA_ANLAGE_NAME" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="KI_DLG_KMA_ANLAGE_ERL" xml:space="preserve">
+    <value>Die gewählte Kältemaschinen-Anlage des Projekts.</value>
+  </data>
+  <data name="KI_DLG_KMA_NAME_NAME" xml:space="preserve">
+    <value>Name der Anlage</value>
+  </data>
+  <data name="KI_DLG_KMA_NAME_ERL" xml:space="preserve">
+    <value>Anzeigename der Anlage; darf nicht leer sein.</value>
+  </data>
+  <data name="KI_DLG_KMA_ANZAHL_NAME" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
+  <data name="KI_DLG_KMA_ANZAHL_ERL" xml:space="preserve">
+    <value>Anzahl gleicher Maschinen, mindestens 1.</value>
+  </data>
+  <data name="KI_DLG_KMA_VORLAUF_NAME" xml:space="preserve">
+    <value>Kaltwasservorlauf</value>
+  </data>
+  <data name="KI_DLG_KMA_VORLAUF_ERL" xml:space="preserve">
+    <value>Kaltwasservorlauf in °C zwischen −20 und 30; leer = kleinste Stützstelle der Kennlinie.</value>
+  </data>
+  <data name="KI_DLG_KMA_HILFSSTROM_NAME" xml:space="preserve">
+    <value>Hilfsstromanteil</value>
+  </data>
+  <data name="KI_DLG_KMA_HILFSSTROM_ERL" xml:space="preserve">
+    <value>Hilfsstromanteil in Prozent, 0 bis unter 100; leer = 0.</value>
+  </data>
+  <data name="KI_DLG_KMA_TRAEGER_NAME" xml:space="preserve">
+    <value>Kühlträger</value>
+  </data>
+  <data name="KI_DLG_KMA_TRAEGER_ERL" xml:space="preserve">
+    <value>Stromträger, der den Strom der Kältemaschine bepreist; leer = Stromträger des Projekts.</value>
+  </data>
+  <data name="KI_DLG_KMA_ZAEHLER_NAME" xml:space="preserve">
+    <value>eigener Zähler</value>
+  </data>
+  <data name="KI_DLG_KMA_ZAEHLER_ERL" xml:space="preserve">
+    <value>Abrechnung über einen eigenen Zähler; wirkt nur bei abweichendem Kühlträger.</value>
+  </data>
 </root>
 

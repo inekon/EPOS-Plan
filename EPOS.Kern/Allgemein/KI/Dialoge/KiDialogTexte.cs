@@ -1317,6 +1317,23 @@
         /// <summary>Die Verwaltung „Kältemaschinen" (KU3-1).</summary>
         internal static string MaskeKaeltemaschineKatalog => MyResource.Resource.KI_DLG_MASKE_KM;
         internal static string KmGeraetName => MyResource.Resource.KI_DLG_KM_GERAET_NAME;
+
+        // ---- KU3-4c: der Erzeugerdialog „Kältemaschinen im Projekt" ----
+        internal static string MaskeKaeltemaschineAnlage => MyResource.Resource.KI_DLG_MASKE_KMA;
+        internal static string KmaAnlageName => MyResource.Resource.KI_DLG_KMA_ANLAGE_NAME;
+        internal static string KmaAnlageErl => MyResource.Resource.KI_DLG_KMA_ANLAGE_ERL;
+        internal static string KmaNameName => MyResource.Resource.KI_DLG_KMA_NAME_NAME;
+        internal static string KmaNameErl => MyResource.Resource.KI_DLG_KMA_NAME_ERL;
+        internal static string KmaAnzahlName => MyResource.Resource.KI_DLG_KMA_ANZAHL_NAME;
+        internal static string KmaAnzahlErl => MyResource.Resource.KI_DLG_KMA_ANZAHL_ERL;
+        internal static string KmaVorlaufName => MyResource.Resource.KI_DLG_KMA_VORLAUF_NAME;
+        internal static string KmaVorlaufErl => MyResource.Resource.KI_DLG_KMA_VORLAUF_ERL;
+        internal static string KmaHilfsstromName => MyResource.Resource.KI_DLG_KMA_HILFSSTROM_NAME;
+        internal static string KmaHilfsstromErl => MyResource.Resource.KI_DLG_KMA_HILFSSTROM_ERL;
+        internal static string KmaTraegerName => MyResource.Resource.KI_DLG_KMA_TRAEGER_NAME;
+        internal static string KmaTraegerErl => MyResource.Resource.KI_DLG_KMA_TRAEGER_ERL;
+        internal static string KmaZaehlerName => MyResource.Resource.KI_DLG_KMA_ZAEHLER_NAME;
+        internal static string KmaZaehlerErl => MyResource.Resource.KI_DLG_KMA_ZAEHLER_ERL;
         internal static string KmGeraetErl => MyResource.Resource.KI_DLG_KM_GERAET_ERL;
         internal static string KmBezeichnerName => MyResource.Resource.KM_LBL_BEZEICHNER;
         internal static string KmBezeichnerErl => MyResource.Resource.KI_DLG_KM_BEZEICHNER_ERL;

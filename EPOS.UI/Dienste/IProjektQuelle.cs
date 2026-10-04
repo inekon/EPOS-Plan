@@ -400,6 +400,13 @@ public interface IProjektQuelle
     IReadOnlyDictionary<string, object>? KaeltemaschineKatalogGaben() => null;
 
     /// <summary>
+    /// Der fertige PARAMETERSATZ des Erzeugerdialogs „Kältemaschinen im Projekt"
+    /// (<c>Dialoge.Erzeuger.KaeltemaschineAnlageDialog</c>, KU3-4c) für ein Projekt; <c>null</c> = diese Hülle
+    /// führt ihn nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KaeltemaschineAnlageGaben(int idProjekt) => null;
+
+    /// <summary>
     /// Der fertige PARAMETERSATZ der Verwaltung „Betriebskalender"
     /// (<c>Dialoge.Bedarf.BetriebskalenderDialog</c>; Entscheidungsvorlage PW2, BW2); <c>null</c> =
     /// diese Hülle führt sie nicht (die Wurzel nennt dann den Grund).

@@ -143,6 +143,9 @@ namespace WindowsFormsApplication1
                 // DIE KAELTEMASCHINEN (KU3-1) - dieselbe Bauart, die Huelle liegt in EPOS.UI.Daten.
                 ["KaeltemaschineKatalogGaben"] =
                     new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogHuelle.Gaben),
+                // Die Kaeltemaschinen des offenen Projekts (KU3-4c) - der Erzeugerdialog als freie Ansicht.
+                ["KaeltemaschineAnlageGaben"] =
+                    new Func<int, IReadOnlyDictionary<string, object>>(KaeltemaschineAnlageHuelle.Gaben),
 
                 // DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage PW2, BW2) als freie
                 // Ansicht der Wurzel - dieselbe Bauart wie die Kataloge darueber.
