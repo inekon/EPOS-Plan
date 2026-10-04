@@ -428,7 +428,7 @@ namespace WindowsFormsApplication1
                 // Abschaltschwelle, begrenzt durch die Ladeleistung. Die Erzeuger bekommen ihn als
                 // Zusatzlast HINTER dem Raum: Was eine Stunde über den Bedarf hinaus erzeugt, lädt.
                 // Geladen wird nur an Kühltagen (5.2) - sonst hielte die Kältemaschine den Vorrat den
-                // Winter über gegen den Wärmeeintrag. Ohne Tagesbetriebsart (Rechenprobe) an jedem Tag.
+                // Winter über gegen den Wärmeeintrag. Ohne Tagesbetriebsart (Kuehltage null) an jedem Tag.
                 bool ladetag = Kuehltage == null || (h / 24 < Kuehltage.Length && Kuehltage[h / 24]);
                 double lade = mitSpeicher && ladetag ? Ladewunsch() : 0.0;
 
@@ -439,8 +439,8 @@ namespace WindowsFormsApplication1
                         if (e.Maschine != null && e.Maschine.FreieKuehlung(h)) MaschineRechnen(e, h, ref rest, ref lade);
                     }
 
-                // KU3-5: Die Kältespeicher außerhalb der Ladephase entladen NACH der freien Kühlung
-                // und VOR den verdichtenden Erzeugern.
+                // KU3-5: Die Kältespeicher entladen NACH der freien Kühlung und VOR den verdichtenden
+                // Erzeugern.
                 if (mitSpeicher && rest > 0) rest = SpeicherEntladen(h, rest);
 
                 foreach (Kaelteerzeuger e in Erzeuger)
@@ -551,15 +551,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Entlädt die Kältespeicher außerhalb ihrer Ladephase in Listenreihenfolge in den Kühlkanal und
-        /// liefert den Rest der Stunde.
+        /// Entlädt die Kältespeicher in Listenreihenfolge in den Kühlkanal und liefert den Rest der Stunde —
+        /// wie der Wärmepuffer in jeder Stunde mit Vorrat, auch in der Ladephase: Die Erzeuger decken den
+        /// Raum vor dem Ladewunsch, eine Spitze bleibt damit auch beim Nachladen gekappt.
         /// </summary>
         private double SpeicherEntladen(int h, double rest)
         {
             foreach (SimulationPufferspeicher sp in Speicher)
             {
                 if (rest <= 0) break;
-                if (sp.LaedtGerade) continue;
                 double e = sp.Entladen(rest, h, Kanal.KUEHLUNG);
                 if (!(e > 0)) continue;
                 Speicherentladung_stuendlich[h] += e;
@@ -587,6 +587,9 @@ namespace WindowsFormsApplication1
                 if (!(wunsch > 0)) continue;
                 double teil = Math.Min(wunsch, menge - aufgenommen);
                 aufgenommen += sp.Laden(teil, h);
+                // An der Abschaltschwelle endet die Ladephase in derselben Stunde - sonst holte der
+                // Wärmeeintrag danach den Speicher jede Stunde zurück in die Ladung.
+                LadephaseFortschreiben(sp);
             }
             Speicherladung_stuendlich[h] += aufgenommen;
             SpeicherladungKwh += aufgenommen;
