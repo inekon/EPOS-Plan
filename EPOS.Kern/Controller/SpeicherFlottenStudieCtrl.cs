@@ -382,6 +382,14 @@ public static partial class SpeicherFlottenStudieCtrl
     }
 
     /// <summary>
+    /// Trägt der Lauf einen gerechneten Strombedarf? Nur dann gibt es einen Lastgang, aus dem
+    /// die Vorbelegung schöpfen darf. Ein frisches, noch nicht gelaufenes
+    /// <see cref="SimulationControl"/> (Ergebnishülle vor dem ersten Lauf) zählt wie <c>null</c>.
+    /// </summary>
+    internal static bool LastgangGerechnet(SimulationControl sim)
+        => sim != null && sim.simulation_Strombedarf != null;
+
+    /// <summary>
     /// Der Vorschlag H₀ für eine neu angelegte Flotte — aus dem gelaufenen Lastgang, sonst
     /// aus der Bezugsspitze, sonst aus dem benannten Rückfall.
     /// </summary>
@@ -394,7 +402,11 @@ public static partial class SpeicherFlottenStudieCtrl
         double bezugsspitzeKw, StromspeicherSimCtrl ctrl, SimulationControl sim)
     {
         double entladeleistung = f.Einheiten.Sum(x => x.EntladeleistungKw);
-        if (sim != null && ctrl != null)
+        // Ein Lauf ohne gerechneten Strombedarf hat keinen Lastgang: Die Ergebnishülle reicht
+        // vor ihrem ersten Simulationslauf (frisch geöffnetes Projekt) ein noch leeres
+        // SimulationControl herein. Dann gilt der benannte Rückfall unten — die Wache in
+        // StromspeicherSimCtrl.BaueLastreihe wird gar nicht erst angelaufen.
+        if (LastgangGerechnet(sim) && ctrl != null)
             try
             {
                 double[] last = ctrl.BaueLastreihe(sim);
