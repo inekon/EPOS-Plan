@@ -13,6 +13,11 @@ und 4 als benannte Abweichungen in Kapitel 11 (Zeilen 20 und 21).
 **Nachgezogen 25.09.2026 mit E45** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49, Stufe
 G4b): Der Gebäudeimport kann f_IW aus der gemessenen Innenfläche setzen, plausibel im Band 1,0 … 5,0
 (1.1, A2).
+**Nachgezogen 04.10.2026 mit KP4** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.69,
+[Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md)): zwei neue Schritte — **Schritt K**
+Konditionierungskalender und Aufheizrampe (7.5), **Schritt L** Nachtauskühlung (7.6) —, die neuen Eingaben in 1.1, das
+Erdreich nach DIN EN ISO 13370 mit der Vorgabe U_g in E6 und 1.3, der Kalender als Quelle des Fahrplans in E8, die
+Aufheiz- und Lüftungskennzahlen in 8.2, die Zeilen 2, 22 und 23 in Kapitel 11 und Schritt K im Bild des Kapitels 0.
 **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet; Rev. 1 vom 16.09.2026**
 Rev. 2 zieht den Fensterzweig nach E14 durch alle Schritte (A7a, Schritt C, E7, θ_op, stationäre
 Probe), macht die Kühlung zum vierten Kanal mit den fünf Betriebsfällen und getrennten Heiz- und
@@ -113,6 +118,9 @@ flowchart TD
     A --> C["Schritt C<br/>Elimination der drei<br/>algebraischen Knoten<br/>dx/dt = A x + b"]
     C --> D["Schritt D<br/>exakte Diskretisierung<br/>Phi, Gamma, Psi fuer h = 3600 s"]
     D --> F["Schritt F<br/>Vorlauf 30 Tage<br/>+ 8760 Blockstunden<br/>Regelung, Bisektion"]
+    E4["Konditionierungskalender, Vorgabe-Matrix<br/>Tab_Konditionierungskalender, Tab_Einstellungen.Aufheiz_*"] --> SK
+    E --> SK["Schritt K<br/>K1 Kalenderreihen statt Fahrplan E8<br/>K2 Aufheizrampe vor Sollwertspruengen<br/>nur mit Schalter, sonst byte-gleich"]
+    SK --> F
     E --> F
     V["Vorbereitungsschritt — modellfrei, VOR der Weiche<br/>Klimareihen, Wochenendmaske, Verbrauch und Flaechen<br/>kennt kein Rechenmodell"] --> E
     V --> S
@@ -129,7 +137,9 @@ sie steht in der **Fassade hinter der Weiche** und rechnet mit dem, was der eine
 zurückgibt (8.3) — aus dem Bestandsweg gerufen wird nichts. Die
 Spalte heißt nach dem Umbenennungsschritt `Nutzflaeche` (E19); `Z_AuswahlWohnflaeche` behält seinen
 Namen. Der **Kühlbedarf** verlässt Schritt G auf einem eigenen Weg in den vierten Kanal (E12, E21) —
-aus **demselben** Lauf, nicht aus einer zweiten Rechnung.
+aus **demselben** Lauf, nicht aus einer zweiten Rechnung. **Schritt K** steht zwischen Eingangsbauer und Stundenschleife:
+Er füllt die Reihen aus den Konditionierungskalendern und setzt vor jedem Sollwertsprung nach oben eine Rampe in die
+Heizsollwertreihe — ein Lauf, kein Zweitlauf (7.5); die Nachtauskühlung (Schritt L, 7.6) schaltet in der Stundenschleife.
 
 ---
 
@@ -195,6 +205,9 @@ Momentaufnahme mit Datum — Stand 22.09.2026 steht sie auf **100**, die nächst
 | Strahlungsanteil der Heizung | a_str,H | — | `Tab_Gebaeude.Heizung_Strahlungsanteil` **M3** | 0,3 | 0 ≤ Wert ≤ 1 |
 | Heizleistungsgrenze | Φ_h,max | **kW** | `Tab_Gebaeude.Heizleistung_Max` **M3** | unbegrenzt (`double.PositiveInfinity`) | > 0, wenn gesetzt; der Eingangsbauer bildet daraus **einmal** `Φ_h_max_W = 1 000 · Heizleistung_Max` |
 | Randbedingung Grundfläche | — | — | `Tab_Gebaeude.Grundflaeche_Randbedingung` **M3** | `ERDREICH` | `ERDREICH` / `KELLER` / `AUSSENLUFT` |
+| Wirksamer U-Wert der Bodenplatte | U_g,V | W/(m²K) | `Tab_Gebaeude.Erdreich_U_Wirksam` (Schritt 180, auch am Katalog) | leer = Erdreichkorrektur nach DIN EN ISO 13370 (E6) | > 0; wirkt nur auf Böden am Erdreich |
+| Manuelle Aufheizzeit | t_m | h | `Tab_Gebaeude.Aufheizzeit_Manuell_H` (Schritt 174, nur Projektgebäude) | leer = Art des Projekts (7.5) | 1 … 47; wirkt nur mit dem Projektschalter |
+| Konditionierungskalender | — | — | `Tab_Konditionierungskalender`, `Tab_Konditionierungsperiode`, `Tab_Konditionierungsvorgabe` je Gebäude oder Zone | ohne Zeile = Fahrplan E8 aus den Bestandsfeldern | Prüfregeln des Teilkonzepts 3.6; Schritt K1 (7.5) |
 | Kellertemperatur | θ_NR | °C | `Tab_Gebaeude.Kellertemperatur` **M3** | 10 | nur bei `KELLER` |
 | Strahlung auf Außenbauteile | — | 0/1 | `Tab_Gebaeude.Aussenbauteile_Strahlung` **M3** | 0 (Schalter, `NOT NULL DEFAULT 0`) | — |
 | Projektfläche (Skalierung) | A_proj | m² | **Vorbereitungsschritt**, aus `Z_ProjektGebaeude.Wohnflaeche_Waermebedarf` über `Z_AuswahlWohnflaeche` | — | > 0 |
@@ -205,6 +218,19 @@ Momentaufnahme mit Datum — Stand 22.09.2026 steht sie auf **100**, die nächst
 | Skalierungsfaktor (E8) | — | — | entsteht **nach** dem Lauf in der Fassade aus `VerbrauchAltKwh` und den Flächen des Vorbereitungsschritts (8.3) | 1 | > 0 |
 | Fläche je Person | — | m²/Person | `Tab_Gebaeude.Flaeche_Nutzer` | — | > 0 |
 | spezifischer Verbrauch | — | kWh/(m²a) | `Tab_Gebaeude.spez_Waermeverbrauch` | — | **reine Katalogkennzahl, kein Rechnungseingang** — sie geht allein in das Abnahmekriterium (Konzept 10.4 (4)) |
+
+**Projekteingaben aus `Tab_Einstellungen`.** Die Aufheizoptimierung liest je Lauf einmal die Projekteinstellung
+(`KonfigurationCtrl.AufheizvorgabeLesen`; eine fehlende Zeile oder Spalte heißt „aus"):
+
+| Größe | Zeichen | Einheit | Quelle | Vorgabe bei NULL | Grenze |
+|---|---|---|---|---|---|
+| Aufheizoptimierung | — | 0/1 | `Aufheizoptimierung` (Schritt 160) | 0 (`NOT NULL DEFAULT 0`) | Schalter |
+| Bemessung | (a), (b) | — | `Aufheiz_Bemessung` (160) | (a) kälteste Stunde | `STUNDE`, `STUNDE_ABZUG` |
+| Abzug der Bemessung (b) | ΔT_K | K | `Aufheiz_Abzug_K` (160) | 2 | 0 … 10 |
+| Aufheizreserve | ρ | — | `Aufheiz_Reserve` (160), als Anteil | 0,2 mit Laufhinweis (E64) | 0 < ρ ≤ 1 |
+| Art der Aufheizzeit | — | — | `Aufheiz_Art` (160) | täglich | `TAEGLICH`, `FEST` |
+| Aufschlag | A_h | h | `Aufheiz_Aufschlag_H` (174) | 0 | 0 … 24 |
+| Aufschlag | A_% | % | `Aufheiz_Aufschlag_Prozent` (174) | 0 | 0 … 100 |
 
 **Zur Herkunft „Vorbereitungsschritt".** Die vier so gekennzeichneten Größen liest das Modul
 `Gebaeude/` **nicht selbst aus der Datenbank** und ruft sie auch nicht aus dem Bestandsweg ab: Sie
@@ -264,6 +290,9 @@ Sie stehen im Quelltext, nicht in der Datenbank, und sind Teil des Rechenwegs.
 | Wärmekapazität der Luft | c·ρ | 0,34 | Wh/(m³K) | DIN EN 12831; Normtestfall 12 rechnet 1,1953 kJ/(m³K) = 0,332 |
 | Tiefe der Erdreichtemperatur | z | 1,0 | m | Kusuda/Achenbach — **EPOS-Ergänzung** |
 | Temperaturleitfähigkeit Erdreich | α_Erd | 0,06 | m²/d | daraus Dämpfung 0,68 und Phasenverzug 22 d; wird der Kernklasse **ausdrücklich übergeben** (E6) |
+| Wärmeleitfähigkeit Erdreich | λ_Erd | 2,0 | W/(m·K) | DIN EN ISO 13370, Tabelle 1, Kategorie 2 (Sand, Kies) — Vorgabe der Norm bei unbekannter Bodenart (E6) |
+| Wanddicke in d_t | w | 0,3 | m | DIN EN ISO 13370, 9.1 — **EPOS-Vorgabe**, die Wanddicke wird nicht gelesen |
+| äußerer Übergang in d_t und d_w | R_se | 0,04 | m²K/W | DIN EN ISO 13370, 9.1 (Wert der DIN EN ISO 6946); nur in den Formeln der Norm, das Bauteil selbst rechnet am Erdreich ohne äußeren Übergang |
 | Albedo | ρ_Umg | 0,2 | — | Blatt 3, 7.3, Regelwert |
 | Zeitschritt | h | 3 600 | s | Blatt 1, Abschnitt 6.4 |
 | Vorlauf | — | 30 | d | Konzept 4.6 |
@@ -828,7 +857,7 @@ Strahlungsterm. Der Leitwert des Netzes (α_A = 25 W/(m²K) in A4/A7a) bleibt un
 
 | `Grundflaeche_Randbedingung` | θ_grund(d) | Quelle |
 |---|---|---|
-| `ERDREICH` (Vorgabe) | Kusuda/Achenbach in z = 1 m | EPOS-Ergänzung, VDI 6007-1 kennt kein Erdreichmodell |
+| `ERDREICH` (Vorgabe) | Kusuda/Achenbach in z = 1 m; das Bauteil rechnet mit dem wirksamen U-Wert samt Erdreichwiderstand nach DIN EN ISO 13370 (unten) | EPOS-Ergänzung, VDI 6007-1 kennt kein Erdreichmodell |
 | `KELLER` | θ_NR aus `Kellertemperatur` (Vorgabe 10 °C) | θ_NR,eq nach Gl. (40) |
 | `AUSSENLUFT` | θ_out | — |
 
@@ -857,6 +886,29 @@ Erdkollektor der Wärmepumpe, nicht der Bodenplatte: Verlegetiefe 1,5 m und Bode
 Katalog ergeben Dämpfung 0,69 und Phasenverzug 21,4 d, und der Ausgleich läuft dort über zwölf
 Monatsmittel statt über die 365 Tagesmittel. Beide Unterschiede sind bei der Umsetzung
 auszuweisen; mit den Kollektorvorgaben ändern sich die Zahlen in 9.4.
+
+**Erdreichwiderstand nach DIN EN ISO 13370** (`Erdreichwiderstand`, EPOS-Ergänzung). Die Randtemperatur bleibt θ_grund
+nach Kusuda; zum Bauteilwiderstand jedes Bauteils am Erdreich tritt der Widerstand des Erdreichs **in Reihe**. Böden und
+Wände am Erdreich unterscheidet die Neigung (Wand: 45° … 135°).
+
+```
+B′   = A / (0,5 · P)                                   charakteristisches Bodenplattenmaß [m]
+d_t  = w + λ_Erd · (R_si + R_f + R_se),  R_si + R_f = 1/U_Bauteil        wirksame Gesamtdicke [m]
+U_g  = 2λ/(πB′ + d_t) · ln(πB′/d_t + 1)      für d_t < B′  (9.1)
+     = λ/(0,457·B′ + d_t)                     für d_t ≥ B′  (Gl. (3), gut gedämmt)
+     Kellerboden in der Tiefe z: d_t durch d_t + 0,5·z ersetzt (9.3.2)
+U_bw = 2λ/(πz) · (1 + 0,5·d_t/(d_t + z)) · ln(z/d_w + 1),  d_w = λ·(R_si + R_w + R_se)   Kellerwand (9.3.3)
+     z → 0: Grenzwert 3λ/(π·d_w)
+R_g  = max(0, 1/U_norm − 1/U_Bauteil)                  Erdreichwiderstand [m²K/W]
+U_w  = 1 / (1/U_Bauteil + R_g)                         wirksamer U-Wert, nie größer als der eingetragene
+```
+
+A ist die Grundfläche der Gebäudezeile (ohne sie die Fläche der Böden am Erdreich), P der freiliegende Umfang aus
+`Abmessung_Anschluß_Außenwand_Kellerdecke`, wenn er endlich und nicht kleiner als der Umfang des flächengleichen Kreises
+2·√(π·A) ist, sonst das flächengleiche Quadrat 4·√A (Hinweis `SIMENG_ERDREICH_UMFANG`); z = Fläche der Kellerwände am
+Erdreich / P, ohne sie 0. **Vorgabe:** Ist `Erdreich_U_Wirksam` gesetzt (> 0), ist dieser Wert U_g jedes Bodens am
+Erdreich, B′ wird nicht gerechnet (Export `Geb[n].Erdreich_Umfangsquelle = Vorgabe`, kein `Geb[n].Erdreich_B`, kein
+Umfanghinweis); Kellerwände rechnen unverändert nach 9.3.3. Festwerte λ_Erd, w und R_se in 1.3.
 
 **E7 — U·A-gewichtete äquivalente Außentemperatur am einen Massepfad** (Gl. (41)/(42))
 
@@ -896,6 +948,11 @@ keine stille Korrektur. Damit steht der Sollwertfahrplan auf derselben Zeitbasis
 Randbedingungen; die Frage **U7** (Ortszeit- oder UTC-Kalender für die Maske) bleibt bis zur
 Beauftragung von G1 offen und steht im Register.
 Ferien haben Vorrang vor dem Wochenende.
+
+**Mit Konditionierungskalender** treten an die Stelle dieses Fahrplans die Reihen aus Schritt K1 (7.5): Heiz- und
+Kühlsollwert, Lüftung und innere Lasten je Stunde aus Kalender, Matrix und Vorlage, mit Heiz- und Kühlperiode („aus"
+außerhalb). Ohne angelegten Kalender und ohne neue Matrixzelle gilt der Fahrplan oben wörtlich. Die Aufheizrampe (K2)
+formt die fertige Heizsollwertreihe nach dem Eingangsbauer.
 
 **Ferien:** Zeiträume laufen nach Tagesindex 1…365. Geprüft wird nur ein **aktiver** Fahrplan
 (`Ferien` > 0,9 und θ_soll,Fer ≥ 1); **0 und 366 heißen „aus"** und werden still übergangen —
@@ -1198,6 +1255,175 @@ Regelbereich (0 < y < 1):  gueltig solange  theta_soll - Xp <= theta_air(x) <= t
 
 Mit Xp = 0 fällt beides zusammen, und der Fall verhält sich wie „Heizgrenze" aus 7.1.
 
+### 7.5 Schritt K — Konditionierungskalender und Aufheizrampe
+
+**Stelle in der Reihenfolge.** Schritt K hat zwei Teile. **K1** bildet im Eingangsbauer (Schritt E) die Reihen der
+Konditionierungsgrößen aus den Kalendern — Heiz- und Kühlsollwert, Lüftung, Geräte, Personen — an Stelle des
+Bestandsfahrplans E8. **K2** formt danach, **nach** dem Eingangsbauer und **vor** der Stundenschleife (Schritt F), die
+fertige Heizsollwertreihe jeder beheizten Zone um eine Rampe vor jedem Sollwertsprung nach oben: eine reine Funktion der
+Reihen und der Aufheizantwort, ein Lauf, kein Zweitlauf; der Löser selbst ändert keine Zahl. Einzone ruft K2 in
+`Vdi6007Rechenweg.Rechnen` über `ZonenEingang.Einzeln`, Mehrzonen am Ende von `ZonenEingang.Bauen` in beiden Aufbauten
+(adiabater Vorlauf der 4-K-Regel, gekoppelter Lauf) — erst werden alle Zonen geplant, dann alle Rampen geschrieben.
+Physik und Begründung: [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3, 4 und 6;
+die Festlegungen der Umsetzung stehen im [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.61, N1.63, N1.66
+und N1.69.
+
+**K1 — Kalenderreihen**
+
+| Eingabe | Einheit | Quelle | ohne Zeile |
+|---|---|---|---|
+| Kalender je Größe: Grundangabe, Standardwoche (168 Zellen), Perioden mit Rang | °C, 1/h, W | `Tab_Konditionierungskalender`, `Tab_Konditionierungsperiode`; Eigentümer Zone, Gebäude oder Katalogbau | Ableitung aus der Matrix |
+| Vorgabe-Matrix: Zellen Tag, Nacht, Wochenende, Ferien je Größe, Nachtfenster, Heiz- und Kühlperiode, `Bedingt_K` | °C, 1/h, W, h, Datum, K | `Tab_Konditionierungsvorgabe` und die Bestandsfelder der Gebäude- oder Zonenzeile (1.1) | Bestandsfelder |
+| Vorlagen je Größe | — | `Tab_Konditionierungsvorlage_STAMM`; beim Übernehmen in den Kalender kopiert, der Lauf liest sie nicht | — |
+| Referenzjahr, Wochentag des 1. Januar w₀ | — | Vorbereitungsschritt (Wochenendmaske, E8) | Pflicht |
+
+```
+Quelle je Größe:  Kalender der Zone → Kalender des Gebäudes → abgeleitet aus der wirksamen Matrix der Zone
+Ebenen:           Grundangabe (Wert oder „aus") < Standardwoche < ranghöchste Periode, die den Tag enthält
+Raster:           x(h), h = 24·d + s, d = 0 … 364, s = 0 … 23, Wochentag w(d) = (w₀ + d) mod 7 (Gemeinjahr)
+„aus":            Heizsollwert NaN (keine Raumheizung), Kühlsollwert +∞ (keine Kühlung)
+Heizperiode:      außerhalb [Start, Ende] ist der Heizsollwert „aus"; ebenso die Kühlperiode für den Kühlsollwert
+```
+
+Die **Matrix** erzeugt die Kalender (Standardfahrplan aus den Zellen, Feiertage und Ferien als Perioden), eine
+**Vorlage** belegt eine Spalte der Matrix samt Kalender; jeder Kalender bleibt einzeln änderbar. **Der Lauf liest nur
+Projektmatrix und Projektkalender** (`Konditionierungdatenweg`); Katalogkalender erreichen ein Projekt allein über die
+Übernahme. **Byte-Gleichheit durch Bau:** Ohne angelegten Kalender, ohne neue Matrixzelle und ohne Schalter entsteht kein
+`Konditionierungssatz`, und der Eingangsbauer nimmt wörtlich den Fahrplan E8 — ohne Multiplikation mit 1 und ohne Umweg
+über den Kalender. Der Luftwechsel geht mit seinem Jahresminimum in die Ersatzparameter, der Überschuss je Stunde als
+Zusatzleitwert; seinen bedingten Anteil behandelt Schritt L. **Ausgabe K1** sind dieselben Reihen wie in E8 und E4
+(`ThetaSoll`, `ThetaKuehl`, Lüftungsleitwert, innere Lasten), nur aus dem Kalender gefüllt; die Nutzungszeit der Kennzahlen
+(8.2) folgt der Nachtzeit des Heizkalenders.
+
+**K2 — Aufheizrampe** — nur mit `Tab_Einstellungen.Aufheizoptimierung` = 1. **Schalter aus heißt kein Aufruf**; der Lauf
+ist dann byte-gleich zu einem Lauf ohne die Spalten.
+
+| Eingabe | Zeichen | Einheit | Quelle | Vorgabe bei NULL |
+|---|---|---|---|---|
+| Projektschalter | — | 0/1 | `Tab_Einstellungen.Aufheizoptimierung` (Schritt 160) | 0 (aus) |
+| Bemessung | (a), (b) | — | `Aufheiz_Bemessung` (`STUNDE`, `STUNDE_ABZUG`) | (a) kälteste Stunde |
+| Abzug der Bemessung (b) | ΔT_K | K | `Aufheiz_Abzug_K`, 0 … 10 | 2 |
+| Aufheizreserve | ρ | — | `Aufheiz_Reserve`, 0 < ρ ≤ 1 (Oberfläche 1 … 100 %) | 0,2 mit Laufhinweis `SIMENG_AUFH_RESERVE_VORGABE` |
+| Art | — | — | `Aufheiz_Art` (`TAEGLICH`, `FEST`) | täglich |
+| Aufschlag in Stunden | A_h | h | `Aufheiz_Aufschlag_H`, 0 … 24 (Schritt 174) | 0 |
+| Aufschlag in Prozent | A_% | % | `Aufheiz_Aufschlag_Prozent`, 0 … 100 (Schritt 174) | 0 |
+| manuelle Aufheizzeit | t_m | h | `Tab_Gebaeude.Aufheizzeit_Manuell_H`, 1 … 47 (Schritt 174); Zonen erben | Art des Projekts |
+| Heizleistungsgrenze | Φ_h,max | kW | `Tab_Gebaeude.Heizleistung_Max` (Zone: eigener Wert oder Flächenanteil) | Quelle Ziel |
+| Heiz- und Kühlsollwertreihe | s(h), θ_K(h) | °C | K1 bzw. E8 | — |
+| Außenluft, Erdreich, Luftwechsel, Nachbarzonen | | | Schritt E, Ersatzparameter, Zonenkopplung | — |
+
+Festwerte: Deckel n ≤ 48; kleinster Sprung 0,01 K; Abstand zum Kühlsollwert 1 K; Nachweisband 1,01 · P_auf. Jeder
+Vergleich läuft über `Rechenrand`, jede Exponentialfunktion über `Aufheizantwort.Bei` (Zahlenrand des gestörten Laufs).
+
+**Sprung.** Eine Stunde h_s ist ein Sprung, wenn s(h_s − 1) und θ_T = s(h_s) endlich sind und ΔT = θ_T − s(h_s − 1)
+> 0,01 K. Die **Absenkdauer** D sind die zusammenhängenden endlichen Stunden unter θ_T vor h_s; Stunde 0 vergleicht mit
+8 759, D und Rampe laufen über den Jahreswechsel. Ein Übergang aus „aus" bekommt keine Rampe (W4), auch am Beginn der
+Heizperiode.
+
+**Aufheizantwort.** `Zonenmodell2K.Aufheizantwort(a_str, ΔG)` liefert zustandsfrei für den geregelten Fall die Matrix
+A, die Ausgangszeile z, die Empfindlichkeit ΔB = ∂b/∂θ_soll und G_0; mit h = 3 600 s, v = A⁻¹·ΔB, Φ(t) und Γ(t) aus
+Schritt D und dem unbedingten Zusatzleitwert der Sprungstunde:
+
+```
+Φ_stat(θ)  stationäre Heizlast bei θ, θ_eq aus AequivalentN (Außenflächen bei T_a, Erdreich als Tagesmittel,
+           ohne Sonne und Gewinne; mit Zonen θ_eq in der Nachbarform, Zuluft an der Stelle der Außenluft)
+
+Φ̄_n = Φ_stat(θ_T) + ΔT/(n·h) · z·Γ(n·h)·v                     Stundenmittel der Sprungstunde
+Φ̂_n = Φ_stat(θ_T) + ΔT/n · z·(Σ_{m=0…n−1} Φ(h)^m)·v             Augenblick am Beginn der Sprungstunde
+
+n  = kleinstes n ≤ 48 mit  Φ_n − P_auf ≤ Rand(P_auf)            Form nach der Quelle von P_auf
+```
+
+Die Absenkform Φ̄_n − ΔT/h · z·(Γ((D + 1)·h) − Γ(D·h))·v und die erste Ordnung mit C_w = −z·A⁻¹·v dienen den Nachweisen
+und der Herleitung (τ₁, τ₂, C_w), nicht der Wahl von n.
+
+**Aufheizleistung P_auf** — eine Zahl je Zone, die erste zutreffende Quelle gilt:
+
+```
+Quelle Grenze:  P_auf = 1 000 · Heizleistung_Max                       → Augenblicksform Φ̂_n
+Quelle Ziel:    P_auf = (1 + ρ) · Φ_stat(θ_T,max, T_a,min)             → Stundenmittel Φ̄_n
+θ_T,max  höchster endlicher Heizsollwert der Nutzungszeit (ohne Nutzungsstunde: höchster endlicher Wert)
+T_a,min  kälteste Außenluft über die Stunden mit endlichem Heizsollwert; Erdreich des Tags dieser Stunde;
+         Luftwechsel der Auslegung; beheizte Nachbarn bei ihrem θ_T,max, unbeheizte beim Startwert
+```
+
+**Bemessung.** T_a,B = T_a,min bei (a), T_a,min − ΔT_K bei (b). Je Variante das **ungünstigste Sprungpaar** des
+Heizkalenders bei T_a,B: je Paar (θ_N, θ_T) das kleinste haltende n ≤ 48 im Fenster min(D, 48), θ_N = kleinster endlicher
+Sollwert im Fenster; **t_auf,max** = größtes n − 1. Hält ein Paar kein n ≤ 48, ist die Bemessung **unerreichbar** (W1):
+t_auf,max fehlt in der Ergebniszeile, im Lauf gilt 47 als Obergrenze. Dieselbe Bemessung liefert ohne Jahreslauf die
+Herleitungszeile der Projekteinstellung (`Aufheizauskunft`, mit dem Konditionierungssatz wie der Lauf).
+
+**Stufenzahl je Sprung.** Fenster W = die letzten min(D, t_auf,max + 1) Stunden vor h_s, T_a = kleinste Außenluft über W
+und h_s, θ_N = kleinster endlicher Sollwert in W; Grenze n ≤ min(t_auf,max + 1, D + 1, 48).
+
+```
+täglich:  n  = kleinstes haltendes n bei T_a, höchstens die Grenze; hält keines bis 48: W1, n = Grenze
+fest:     n  = min(t_auf,max + 1, D + 1)                                   (fest ≥ täglich durch Bau)
+Aufschlag (nur n > 1, Rampe aus einem Sprung des Heizkalenders):
+          n′ = min(48, n + max(A_h, ⌈n · A_% / 100⌉)),  danach n′ ≤ D + 1
+manuell:  n  = min(t_m + 1, D + 1, 48) an jedem Sprung, W = min(D, t_m + 1), kein Aufschlag, kein W1
+```
+
+t_auf,max in Ergebnis- und Herleitungszeile bleibt die bemessene Zeit ohne Aufschlag; mit „manuell" läuft die Bemessung
+weiter (T_a,B, P_auf, Quelle, Herleitung), entscheidet aber nicht.
+
+**Rampe.** Für j = 1 … n − 1 an den Stunden h = h_s − n + j:
+
+```
+s′(h) = max( s(h), min( θ_N + ΔT · j / n ,  θ_K(h) − 1 K ) )
+```
+
+Die Sprungstunde wird nie geschrieben, n = 1 schreibt nichts, überlappende Rampen verbinden sich über das Maximum, jede an
+θ_K − 1 K gekappte Stunde wird gezählt. Rampenstunden (s′ > s) fallen aus der Nutzungszeit der Kennzahlen (8.2).
+
+**Zähler und Zustände.**
+
+| Zähler | Bedeutung |
+|---|---|
+| W1 | kein n ≤ 48 hält (je Tag; Unterzahl „P_auf ≤ Φ_stat"); auch die Bemessung kann unerreichbar sein |
+| W2 | Rampe durch die Absenkdauer begrenzt: n − 1 = D bei größerem Bedarf (auch mit n′) |
+| W3 | Nachweisband im Lauf verletzt — Quelle Grenze: Kappungsanteil > 0, Quelle Ziel: Stundenleistung > 1,01 · P_auf, im Fenster [h_s − n + 1, h_s + 2]; nur Tage ohne W1/W2 |
+| W4 | Sprung aus „aus", ohne Rampe; Unterzahl Beginn der Heizperiode |
+| W5 | Gebäude oder Zone mit wirksamer Anlagenkopplung — nicht optimiert |
+
+Zustand je Gebäude und Zone: `BEMESSEN`, `UNERREICHBAR`, `GEKOPPELT` (W5), `UNBEHEIZT` (Zone ohne Heizung, ohne Rampe).
+Laufhinweise `SIMENG_AUFH_W1` … `W5` und `SIMENG_AUFH_W2_BEMESSUNG` je Gebäude einmal mit Zahl, `SIMENG_AUFH_VERBRAUCH`
+bei Verbrauchsangabe, `SIMENG_AUFH_RESERVE_VORGABE` bei leerer Reserve. **Ausgabe K2** ist die Heizsollwertreihe mit Rampe
+(sie trägt auch die Reihe `Heizsollwert` im Ergebnis), die Rampenmaske und der Aufheizplan je Zone; die Kennzahlen stehen in 8.2.
+
+### 7.6 Schritt L — Nachtauskühlung
+
+**Stelle in der Reihenfolge.** Die Teilung der Nutzerlüftung entsteht im Eingangsbauer (Schritt E, aus K1); geschaltet
+wird in der Stundenschleife (Schritt F) am Stundenbeginn, je Zone mit deren eigener Raumluft, wie die Sommerlüftung (7.2).
+
+| Eingabe | Zeichen | Einheit | Quelle | Vorgabe |
+|---|---|---|---|---|
+| Nutzerlüftung je Stunde | n(h) | 1/h | Lüftungskalender (K1); die Nachtzeile der Lüftungsspalte trägt den erhöhten Wert | — |
+| Tagwert der Nutzerlüftung | n_T | 1/h | Zelle Lüftung/Tag der Matrix des Eigentümers, dessen Lüftungskalender gilt | ohne Wert kein bedingter Anteil (Laufhinweis) |
+| Nachtfenster | — | h | Nachtzeile der Lüftungsspalte | das der Heizspalte |
+| Außenabstand | ΔT_N | K | `Tab_Konditionierungsvorgabe.Bedingt_K`, 0 … 5 | 2 |
+
+```
+im Nachtfenster:  L_b(h) = max(0, n(h) − n_T)   bedingter Anteil,  L_u(h) = n(h) − L_b(h)
+sonst:            L_b(h) = 0,                    L_u(h) = n(h)
+Zusatzleitwert:   G(h) = max( G_Sommer · [Sommerlüftung an],  G(L_u(h)) + G(L_b(h)) · [Nachtregel an] )
+Nachtregel ein:   θ_air,Vorstunde > θ_S  und  θ_out,Vorstunde < θ_air,Vorstunde − ΔT_N
+Nachtregel aus:   θ_air,Vorstunde < θ_S − 1 K  oder  θ_out,Vorstunde > θ_air,Vorstunde − (ΔT_N − 1 K)
+θ_S = 23 °C; mit Kühlkalender θ_K(h) − 3 K, wo θ_K endlich ist
+```
+
+Dazwischen bleibt der Zustand der Vorstunde; ohne Vorstunde ist die Regel aus. Die Regel ist ein **zweites Exemplar der
+`Sommerlueftungsregel`** je Zone mit eigenem Außenabstand ΔT_N; die Hysterese von 1 K ist dieselbe. Es gibt keine
+unbedingte Nachtauskühlung — sie lüftete auch in Winternächten.
+
+**Verhältnis zur Sommerlüftungsregel (7.2).** Die Sommerlüftung bleibt eine eigene Regel über den ganzen Tag mit
+2,0 1/h (Schalter `Sommerlueftung`, Außenabstand 2 K fest). Wirken beide, gilt der größere Leitwert; die Nachtauskühlung
+ist die Sommerlüftung im Nachtfenster mit dem Wert des Anwenders. **Ohne Nachtzeile der Lüftung** steht wörtlich der
+Ausdruck aus 7.2 (byte-gleich).
+
+**Ausgabe.** `Nachtauskuehlstunden_H` zählt die Stunden, in denen die Nachtregel an ist **und** die Stunde einen bedingten
+Anteil trägt — gleich, welcher Leitwert am Ende gewinnt; NULL, wenn keine Nachtauskühlung gesetzt ist (8.2).
+
 ---
 
 ## 8. Schritt G — Ergebnisse
@@ -1268,6 +1494,31 @@ E31); `MittlereRaumtemperaturHeizzeit` aus Raumluft flächengewichtet über die 
 Zone den Fall erfüllt — die Überhitzung gegen die `Maximaleraumtemperatur` der Zone. Ein Gebäude mit
 Zonen trägt den Faktor 1 (8.3), Zonen- und Gebäudewerte gehen ohne Faktor auf. Die Zonenwerte stehen in
 `Tab_ErgebnisZone` (E30-Weg), im Export als `Geb[i].Zone[k].*` — nur ab zwei Zonen.
+
+**Aufheiz- und Lüftungskennzahlen (Schritte K und L).** Sie stehen in `Tab_ErgebnisGebaeude` und `Tab_ErgebnisZone`
+(Schritte 161 und 174), gebildet an **einer** Stelle (`GebaeudeKennzahlen.Aufheizwerte`); NULL heißt Schalter aus oder
+Tagesbilanz-Weg, im Export kein Schlüssel:
+
+| Kennzahl | Einheit | Bildung |
+|---|---|---|
+| `Aufheiz_Zustand` | — | `BEMESSEN`, `UNERREICHBAR`, `GEKOPPELT` (W5), `UNBEHEIZT` (nur Zone) |
+| `Aufheiz_Bemessung`, `Aufheiz_Art` | — | Variante (a)/(b) des Laufs (nur Gebäude); wirksame Art `TAEGLICH`, `FEST`, `MANUELL` (die Zone erbt sie) |
+| `Aufheizzeit_Max_H` | h | t_auf,max; bei `MANUELL` der Wert t_m; NULL bei `UNERREICHBAR` |
+| `Aufheiz_Aussen_C` | °C | T_a,B |
+| `Aufheiz_Leistung_Kw`, `Aufheiz_Leistungsquelle` | kW, — | P_auf, skaliert wie die Spitzen (8.3), nur endlich und > 0; Quelle `GRENZE`, `ZIEL`, am Gebäude mit Zonen verschiedener Quelle `GEMISCHT` |
+| `Aufheiztage`, `Aufheiztage_Begrenzt`, `Aufheiztage_Unerreichbar`, `Aufheiztage_Nachweisband` | d | Tage mit n > 1; W2; W1; W3 |
+| `Aufheizstunden_H`, `Aufheizzeit_Laengste_H` | h | Σ (n − 1); größtes n − 1 |
+| `Aufheizspruenge_Aus` | — | W4 |
+| `HeizleistungMax_H` | h | Σ der Kappungsanteile an der Leistungsgrenze, auch ohne Kopplung |
+| `Auslegungsheizlast_Kw`, `Aufheizzuschlag_Kw` | kW | Φ_HL (ohne Übergabe NULL) und Φ_RH = max(0, P_auf − Φ_stat(θ_T,max, T_a,B)), bei W1 0; nur Gebäude |
+| `Nachtauskuehlstunden_H` | h | Schritt L; NULL ohne Nachtauskühlung |
+| `Sommerlueftungsstunden_H` | h | Stunden mit Sommerlüftung (7.2), am Gebäude und je Zone; NULL ohne Sommerlüftung |
+
+Zeiten, Zählungen und T_a,B bleiben von der Skalierung unberührt. **Am Gebäude mit Zonen** sind Tage und Stunden die
+Vereinigung über die beheizten Zonen, t_auf,max und längste Rampe das Maximum, T_a,B das Minimum, P_auf und Φ_RH die
+Summe, `HeizleistungMax_H` = Σ_h max_z Anteil; der Zustand ist `GEKOPPELT` nur, wenn alle beheizten Zonen gekoppelt sind.
+**Nutzungszeit:** Rampenstunden zählen nicht zur Nutzungszeit von `MittlereRaumtemperaturHeizzeit` und
+`Ueberhitzungsstunden`; mit Heizkalender folgt die Nutzungszeit dessen Nachtzeit.
 
 **`VerbrauchAltKwh` gehört nicht zu den acht.** Es ist der **unskalierte** Jahreswert des einen
 Laufs — Summe der Heizlastreihe vor Schritt 5 in 8.3, in kWh —, den `IGebaeudeRechenweg.Rechnen`
@@ -1773,7 +2024,7 @@ steht in der Löschliste der Stufe GA (Umsetzungskonzept 6).
 | # | Abweichung | Was die Richtlinie sagt | Warum in EPOS-Plan | Verweis |
 |---|---|---|---|---|
 | 1 | **Hay-Davies** als Transpositionsmodell | Blatt 3 schreibt Aydinli/Krochmann vor: bedeckter Himmel rotationssymmetrisch, klarer Himmel anisotrop, Mischung über die Sonnenwahrscheinlichkeit aus dem Bedeckungsgrad | Der Bedeckungsgrad steht seit M4 in `Tab_Solar`, aber nur für Regionen aus einem Testreferenzjahr — PVGIS liefert ihn nicht, dort ist er NULL; Blatt 3 verlangt zudem die Koordinaten des TRY-Referenzorts, nicht des Projektorts. Hay-Davies ist gegenüber dem isotropen Weg des Bestandswegs eine erhebliche Verbesserung. In G1 wird Blatt 3 **neben** Hay-Davies gerechnet und je Klimaregion, Orientierung und Neigung gegengehalten | Konzept N1.3, N1.10 (E5); Q20 |
-| 2 | **Kusuda-Erdreich** | VDI 6007-1 hat kein Erdreichmodell; erdberührte Bauteile laufen über θ_NR,eq (40) mit vorzugebender Nachbarraumtemperatur | Ein Anwender soll für die Bodenplatte keine Temperatur erfinden müssen. Kusuda ergänzt die Norm, ohne sie zu verletzen: er liefert genau das θ_NR, das (40) verlangt. `KELLER` ist der Normweg mit vorgegebener Temperatur | Konzept N1.3, 4.4 |
+| 2 | **Erdreich: Kusuda-Temperatur mit Erdreichwiderstand nach DIN EN ISO 13370** | VDI 6007-1 hat kein Erdreichmodell; erdberührte Bauteile laufen über θ_NR,eq (40) mit vorzugebender Nachbarraumtemperatur | Ein Anwender soll für die Bodenplatte keine Temperatur erfinden müssen: Kusuda liefert genau das θ_NR, das (40) verlangt. Der Wärmedurchgang folgt DIN EN ISO 13370 — B′, d_t, U_g und der Erdreichwiderstand R_g in Reihe zum Bauteil (E6); ein Anwender kann U_g der Bodenplatte je Gebäude vorgeben (`Erdreich_U_Wirksam`). `KELLER` ist der Normweg mit vorgegebener Temperatur | Konzept 4.4, N1.3, N1.69 |
 | 3 | **Klassenweg-Parameter** h_ms = 9,1 W/(m²K), a_AW = 0,3, f_IW = 2,5 | Die Richtlinie leitet R_1, R_Rest und C_1 aus dem Schichtaufbau ab (1)–(17) | `Tab_Gebaeude` führt keine Schichtaufbauten. Der Klassenweg ist die Brücke, bis der Bauteilkatalog (G3) und der IFC-Import (G4) sie liefern. h_ms stammt aus DIN EN ISO 13790 und wird — bewusst abweichend von dort — auf **beide** Massepfade angewandt | Konzept 4.3 |
 | 4 | **Fenster im Außenwandzweig — keine Abweichung im Produkt**; allein der Prototyp (Prüfwerkzeug, Kapitel 9) führt die Fenster noch im Lüftungszweig | (25)–(28): Fenster mit R_1,AF = R_AF/6 **nach** den Wänden parallel, und in θ_A,eq,gew (41) | Das Produkt rechnet ab G1 den Normweg (E14, A7a): Fensterzweig am Oberflächenknoten θ_s,AW, Fensterfläche in Strahlungsverteilung, θ_eq-Gewichtung, R_conv,AW, A_rad und θ_op (A2, E3, E7, 8.1). Der Prototypweg — Fenster als masseloser Widerstand in R_ext zwischen Außenluft und Luftknoten — ist eine Vereinfachung, die den AW-Massenknoten und das innere Oberflächennetz umgeht (stationär um den inneren Übergang, transient um die Pufferung durch C_AW anders); er bleibt die Konvention, in der die Zahlen in Kapitel 9 entstanden sind, und wird dort nicht neu gerechnet | Konzept N1.19 (E14), A7a, Frage Q6 |
 | 5 | **Zeitbezug Stundenanfang statt Stundenmitte** | Blatt 3, Seite 11: Sonnenstand zur Stundenmitte | Der Klimaimport des Bestands übergibt den Stundenanfang. Der Unterschied sind 7,5° Stundenwinkel und trifft Ost und West. Entschieden wird an einer Stelle, im Eingangsbauer; `Tab_Solar.Sol_*` bleibt unberührt. **Entschieden mit E29 (23.09.2026): Stundenanfang**, derselbe Sonnenstand wie PV und Solarthermie; die Jahresheizwärme ändert sich mit der Stundenmitte um höchstens +0,10 % | Umsetzungskonzept 1.2, Frage U6, Konzept N1.34 |
@@ -1793,6 +2044,8 @@ steht in der Löschliste der Stufe GA (Umsetzungskonzept 6).
 | 19 | **Hysterese der Sommerlüftung auch auf den Außenabstand** (Stufe G2) | — (die Sommerlüftung ist keine Regel der Richtlinie, sondern EPOS-Ergänzung, Konzept 4.4) | Ohne Hysterese auf den Abstand θ_air − θ_out schaltete die Regel an Abenden mit gerade 2 K Abstand Stunde für Stunde; zurückgeschaltet wird bei θ_air < 22 °C oder θ_out > θ_air − 1 K | 7.2, F-P4 |
 | 20 | **Konvektiver Übergang der Außengruppe als Σ(α_kon·A) der Bauteile** (Stufe G3) — **Testbeispiel 10** liegt damit in einzelnen Stunden höchstens 0,088 K außerhalb des Bands | Blatt 1 gibt die konvektiven Werte je Bauteil vor; das Validierungsmodell der AixLib zu Testbeispiel 10 rechnet die Außengruppe mit einem um 15,7 % höheren konvektiven Übergang, ihren Restwiderstand aber mit den α-Werten der Tabelle | Der Bauteilweg folgt der Tabelle und bildet die Summe über die Bauteile der Gruppe — ein zweiter, nur für einen Testfall passender Übergang wäre ein Hilfskonstrukt. Benannte Abweichung wie Fall 11; welcher α_kon für eine Trennfläche in der Außengruppe gilt, klärt G6 (Mehrzonenkonzept 2.2, Punkt 4) | 3, 10.3; Konzept N1.46 |
 | 21 | **Druckfehler der Richtlinie in Testbeispiel 4** (Decke DE2) — keine Abweichung des Rechenwegs | Die Bauteiltabelle führt für eine Dämmschicht der Decke eine Wärmeleitfähigkeit, die weder zu ihrem Materialnamen noch zu derselben Schicht in Testbeispiel 3 passt, und eine verschobene Rohdichte | Der Normnachweis nimmt das Bauteil aus Testbeispiel 3, wie die AixLib, die Testbeispiel 4 mit den Raumparametern von Testbeispiel 3 rechnet, und weist die Abweichung des gedruckten Aufbaus daneben aus | 10.3; Konzept N1.46 |
+| 22 | **Aufheizrampe vor Sollwertsprüngen** (Schritt K2) | Die Richtlinie rechnet die ideale Regelung auf den vorgegebenen Sollwert; Aufheiz- und Absenkdynamik behandeln Blatt 1 und 3 nicht | Ohne Rampe fällt die Jahresspitze auf die erste Stunde nach der Absenkung am kältesten Tag — Physik, aber kein Auslegungswert. Die Rampe ist ein Vorab-Fahrplan aus dem eigenen 2K-Modell (Stufenformel), eine EPOS-Ergänzung außerhalb der Richtlinie; nur mit Projektschalter, sonst byte-gleich | Teilkonzept Konditionierungsprofile 4; Konzept 4.5, N1.69 |
+| 23 | **Bedingte Nachtauskühlung** (Schritt L) | — (Fensterlüftung nach einer Regel ist keine Regel der Richtlinie) | Der Überschuss der Nachtlüftung über den Tagwert wirkt nur unter der Bedingung der Sommerlüftung; eine unbedingte Nachtlüftung höbe die Heizwärme in Winternächten | Teilkonzept Konditionierungsprofile 3.7 |
 
 ---
 
