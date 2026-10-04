@@ -224,7 +224,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U4: Sollwerte, Infiltration, Nutzerlüftung und Gewinne stehen in der Zonenmatrix
         // (Baustein KonditionierungMatrix über ZonenKonditionierung, dieselben Katalogfelder; die übrigen
         // Zellen sind die Felder kond_* der Zonenkarte, Feldtafel ZonenKiSicht): 16 → 9.
-        new("ZonenDialog", 9),
+        // E63 (AK1z): der Abschnitt „Übergabe“ - Art und sechs Zahlenfelder (Katalogfelder uebergabe_*,
+        // auslegung_*, proportionalband): 9 → 16.
+        new("ZonenDialog", 16),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.

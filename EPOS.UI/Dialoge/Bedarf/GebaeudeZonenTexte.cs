@@ -445,26 +445,26 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_UEBERGABE_GRUPPE</c></summary>
     public string UebergabeGruppe { get; set; } = Resource.ZONDLG_UEBERGABE_GRUPPE;
 
-    /// <summary><c>GEBK_LBL_UEBERGABE_ART</c></summary>
-    public string UebergabeLabelArt { get; set; } = Resource.GEBK_LBL_UEBERGABE_ART;
+    /// <summary><c>GEBK_LBL_UEBERGABE_ART</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelArt { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_UEBERGABE_ART);
 
-    /// <summary><c>GEBK_LBL_UEBERGABE_EXPONENT</c></summary>
-    public string UebergabeLabelExponent { get; set; } = Resource.GEBK_LBL_UEBERGABE_EXPONENT;
+    /// <summary><c>GEBK_LBL_UEBERGABE_EXPONENT</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelExponent { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_UEBERGABE_EXPONENT);
 
-    /// <summary><c>GEBK_LBL_UEBERGABE_NENNLEISTUNG</c></summary>
-    public string UebergabeLabelNennleistung { get; set; } = Resource.GEBK_LBL_UEBERGABE_NENNLEISTUNG;
+    /// <summary><c>GEBK_LBL_UEBERGABE_NENNLEISTUNG</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelNennleistung { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_UEBERGABE_NENNLEISTUNG);
 
-    /// <summary><c>GEBK_LBL_AUSLEGUNG_VORLAUF</c></summary>
-    public string UebergabeLabelVorlauf { get; set; } = Resource.GEBK_LBL_AUSLEGUNG_VORLAUF;
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_VORLAUF</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelVorlauf { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_AUSLEGUNG_VORLAUF);
 
-    /// <summary><c>GEBK_LBL_AUSLEGUNG_RUECKLAUF</c></summary>
-    public string UebergabeLabelRuecklauf { get; set; } = Resource.GEBK_LBL_AUSLEGUNG_RUECKLAUF;
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_RUECKLAUF</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelRuecklauf { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_AUSLEGUNG_RUECKLAUF);
 
-    /// <summary><c>GEBK_LBL_AUSLEGUNG_RAUM</c></summary>
-    public string UebergabeLabelRaum { get; set; } = Resource.GEBK_LBL_AUSLEGUNG_RAUM;
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_RAUM</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelRaum { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_AUSLEGUNG_RAUM);
 
-    /// <summary><c>GEBK_LBL_PROPORTIONALBAND</c></summary>
-    public string UebergabeLabelBand { get; set; } = Resource.GEBK_LBL_PROPORTIONALBAND;
+    /// <summary><c>GEBK_LBL_PROPORTIONALBAND</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelBand { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_PROPORTIONALBAND);
 
     /// <summary><c>ZONDLG_UEBERGABE_WIE_GEBAEUDE</c> — {0} Art des Gebäudes.</summary>
     public string UebergabeWieGebaeude { get; set; } = Resource.ZONDLG_UEBERGABE_WIE_GEBAEUDE;
@@ -510,6 +510,9 @@ public sealed class ZonenDialogTexte
 
     /// <summary><c>ZONE_MSG_PROPORTIONALBAND</c> — {0} Zone, {1} Wert, {2}/{3} Band.</summary>
     public string MeldungUebergabeBand { get; set; } = Resource.ZONE_MSG_PROPORTIONALBAND;
+
+    /// <summary>Eine Beschriftung des Gebäudedialogs („… :") in der Schreibweise des Zonendialogs, ohne Doppelpunkt.</summary>
+    private static string OhneDoppelpunkt(string text) => (text ?? "").TrimEnd(' ', ':');
 
     /// <summary>Der Anzeigename einer Übergabeart (<c>GEBK_UEBERGABE_*</c>, aus dem Kern).</summary>
     public Func<string?, string> UebergabeArtname { get; set; } = a => WindowsFormsApplication1.Waermeuebergabevorgaben.Anzeigename(a);
