@@ -44368,6 +44368,63 @@ chart</value>
   <data name="GEXP_PROT_IFC_SCHEMA" xml:space="preserve">
     <value>Schema check: {0} – {1}</value>
   </data>
+  <data name="GEXP_PROT_ANR_KEINE_QUELLE" xml:space="preserve">
+    <value>Return refused: the building does not come from an IFC import. Instead, a separate IFC file (stage S1) can be written.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_HASH" xml:space="preserve">
+    <value>Return refused: the selected file is not the imported file "{0}" (SHA-256 differs). Instead, a separate IFC file (stage S1) can be written.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_SCHEMA" xml:space="preserve">
+    <value>Return only for IFC4; the file has schema {0}. Instead, a separate IFC file (stage S1) can be written.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_VERLUST" xml:space="preserve">
+    <value>Return refused: {0} entities were lost during import; returning the file would silently destroy them. Instead, a separate IFC file (stage S1) can be written.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_VERLUST_LADEN" xml:space="preserve">
+    <value>Return refused: reloading loses {0} entities ({1} not created, {2} dangling references; e.g. {3}). Instead, a separate IFC file (stage S1) can be written.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_NUR_STEP" xml:space="preserve">
+    <value>Return refused: only a STEP file (.ifc) is enriched, no ifcXML and no archive. Instead, a separate IFC file (stage S1) can be written.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_LESEFEHLER" xml:space="preserve">
+    <value>Return refused: the file cannot be loaded ({0}). Instead, a separate IFC file (stage S1) can be written.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_OHNE_XBIM" xml:space="preserve">
+    <value>Return refused: this build does not contain the IFC component.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_BEIPACK_FREMDDATEI" xml:space="preserve">
+    <value>You are passing on a third-party file in modified form: EPOS-Plan adds properties and results, geometry and structure remain unchanged. The file carries a note and its own application entry; the original file is not overwritten. Please confirm.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_ENTITAET_FEHLT" xml:space="preserve">
+    <value>The source entity {0} ({1}) is not in the file; the assignment is skipped.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_ZEILE_FEHLT" xml:space="preserve">
+    <value>The EPOS row {0} (source {1}) is not in the export image; the assignment is skipped.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_TYP_FALSCH" xml:space="preserve">
+    <value>The source entity {0} is an {1}, expected {2}; the assignment is skipped.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_MEHRFACH" xml:space="preserve">
+    <value>The source entity {0} is assigned to several EPOS rows; the first one is used, {1} is skipped.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_ERGEBNIS_GETEILT" xml:space="preserve">
+    <value>Zone {0} spans {1} spaces; its result is written at the building only, not at the spaces.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_VERSTOESSE_VORHER" xml:space="preserve">
+    <value>The input file already carries {0} schema violations; they remain unchanged.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_BILANZ" xml:space="preserve">
+    <value>Enriched: {0} objects; {1} added, {2} replaced, {3} assignments skipped.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_KENNUNG_BELEGT" xml:space="preserve">
+    <value>Return cancelled: the new identifier {0} is already used in the file; nothing was written.</value>
+  </data>
+  <data name="GEXP_IFC_ANR_VERMERK" xml:space="preserve">
+    <value>enriched by {0} on {1}: properties and results added, geometry unchanged</value>
+  </data>
+  <data name="GEXP_IFC_ANR_MATERIALHERKUNFT" xml:space="preserve">
+    <value>Origin of the material assignment: Datei = from the original file, unchanged; otherwise added by EPOS-Plan.</value>
+  </data>
   <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
     <value>IFC export cancelled: the schema check reports {0} violations; nothing was written.</value>
   </data>
