@@ -332,26 +332,29 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
             Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SichtSpalten().Take(90));
 
-            // Gesät ist allein das Referenzprojekt der Anlagenkopplung 1047 (Einfrierregel „gesäte
-            // Auslegungsdaten der Übergabe", anlagenkopplung_1047_referenzprojekt.py): die Stufe AK1
-            // und am Gebäude 10653 Heizkreis, Radiator und Heizkurve, alles Übrige leer.
+            // Gesät sind allein das Referenzprojekt der Anlagenkopplung 1047 (Einfrierregel „gesäte
+            // Auslegungsdaten der Übergabe", anlagenkopplung_1047_referenzprojekt.py) und das Referenzprojekt
+            // Zonen mit Heizkreis 1054 (AK1z, referenzprojekt_1054_zonen_heizkreis.cs): je die Stufe AK1
+            // und am Gebäude Heizkreis, Radiator und Heizkurve, alles Übrige leer.
+            const string GEBAEUDE_1054 = "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1054)";
             foreach (SchemaSpalte s in AnlagenkopplungSchema.UebergabeSpalten().Concat(AnlagenkopplungSchema.Ergebnisspalten))
             {
                 string ausser = s.Tabelle == "Tab_Gebaeude"
-                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture)
+                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + " AND ID NOT IN " + GEBAEUDE_1054
                     : s.Tabelle == "Tab_Einstellungen"
-                        ? " AND ID_Projekt <> " + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture)
+                        ? " AND ID_Projekt NOT IN (" + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", 1054)"
                         : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));
                 if (!GebaeudeSchema.UEBERGABE_SCHALTER.Contains(s.Name))
                     Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" + ausser));
             }
-            Assert.Equal(DbWerte.ANLAGENKOPPLUNG_AK1, Convert.ToString(DataRepository.ExecuteScalar(
-                "SELECT Anlagenkopplung FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                new DbParam("?", PROJEKT_REFERENZ_KOPPLUNG)), CultureInfo.InvariantCulture));
-            DataRow referenz = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
-                                                           new DbParam("?", GEBAEUDE_REFERENZ_KOPPLUNG)).Rows[0];
+            foreach (int projekt in new[] { PROJEKT_REFERENZ_KOPPLUNG, 1054 })
+                Assert.Equal(DbWerte.ANLAGENKOPPLUNG_AK1, Convert.ToString(DataRepository.ExecuteScalar(
+                    "SELECT Anlagenkopplung FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                    new DbParam("?", projekt)), CultureInfo.InvariantCulture));
+            foreach (DataRow referenz in DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ? OR ID IN " + GEBAEUDE_1054,
+                                                                     new DbParam("?", GEBAEUDE_REFERENZ_KOPPLUNG)).Rows)
             foreach (SchemaSpalte s in GebaeudeSchema.Uebergabespalten.Where(x => x.Tabelle == "Tab_Gebaeude"))
             {
                 if (GebaeudeSchema.UEBERGABE_SCHALTER.Contains(s.Name))

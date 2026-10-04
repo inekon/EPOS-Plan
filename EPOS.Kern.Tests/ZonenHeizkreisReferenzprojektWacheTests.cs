@@ -14,7 +14,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Wache des Referenzprojekts 1054 „Referenzprojekt Zonen mit Heizkreis"</b> (Welle AK1z, Wärmeübergabe je
     /// Zone, E63) — die Kopie des Zonenprojekts 1052 mit Anlagenkopplung AK1: das Gebäude mit Heizkreis und
-    /// Radiatoren, die Zone „Gastronomie und Verwaltung" mit eigener Übergabe (Konvektor, 70/50 °C,
+    /// Radiatoren an der Heizkurve (Vorgaben), die Zone „Gastronomie und Verwaltung" mit eigener Übergabe (Konvektor, 70/50 °C,
     /// Proportionalband 2 K), Gästezimmer und Keller mit den Werten des Gebäudes. Die gesäten Zellen stehen in
     /// EINER Quelle, dem Bauplan <c>Referenzlaeufe/Skripte/referenzprojekt_1054_bauplan.cs</c> (hier verlinkt);
     /// das Saatskript <c>referenzprojekt_1054_zonen_heizkreis.cs</c> zieht ihn.
@@ -73,7 +73,7 @@ namespace EPOS.Kern.Tests
             DataRow g = Zonenprojekt1052.Tabelle("SELECT * FROM Tab_Gebaeude WHERE ID = ?", geb).Rows[0];
             Assert.Equal(1L, Convert.ToInt64(g["Heizkreis_Aktiv"], CultureInfo.InvariantCulture));
             Assert.Equal("RADIATOR", g["Uebergabe_Art"]);
-            Assert.Equal(0L, Convert.ToInt64(g["Heizkurve_Aktiv"], CultureInfo.InvariantCulture));
+            Assert.Equal(1L, Convert.ToInt64(g["Heizkurve_Aktiv"], CultureInfo.InvariantCulture));   // Kurve aus den Vorgaben
             foreach (string s in new[] { "Uebergabe_Exponent", "Uebergabe_Leistung_Nenn", "Auslegung_Vorlauf", "Auslegung_Ruecklauf",
                                          "Auslegung_Raumtemperatur", "Auslegung_Aussentemperatur", "Heizkurve_Niveau",
                                          "Heizkurve_Steilheit", "Regler_Proportionalband", "Sollwertprofil" })
@@ -182,6 +182,9 @@ namespace EPOS.Kern.Tests
                             r[0] + ": Vorlauf nicht über Rücklauf");
                 Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, r[5]);
             }
+            // Die gefahrene Heizkurve bringt die Übergabe an ihre Grenze - an mindestens einer beheizten Zone.
+            Assert.True(zz.Rows.Cast<DataRow>().Take(2).Any(r => Convert.ToDouble(r[4], CultureInfo.InvariantCulture) > 0.0),
+                        "Keine beheizte Zone mit begrenzten Stunden");
             DataRow keller = zz.Rows[2];
             foreach (int s in new[] { 2, 3, 4 })
                 Assert.True(keller[s] == DBNull.Value, "Keller." + zz.Columns[s].ColumnName + " ist nicht leer");
