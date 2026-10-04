@@ -44459,6 +44459,63 @@ Chart</value>
   <data name="GEXP_PROT_IFC_SCHEMA" xml:space="preserve">
     <value>Schemaprüfung: {0} – {1}</value>
   </data>
+  <data name="GEXP_PROT_ANR_KEINE_QUELLE" xml:space="preserve">
+    <value>Rückgabe verweigert: Das Gebäude stammt aus keinem IFC-Import. Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_HASH" xml:space="preserve">
+    <value>Rückgabe verweigert: Die gewählte Datei ist nicht die importierte Datei „{0}" (SHA-256 weicht ab). Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_SCHEMA" xml:space="preserve">
+    <value>Rückgabe nur für IFC4; die Datei hat den Schemastand {0}. Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_VERLUST" xml:space="preserve">
+    <value>Rückgabe verweigert: Beim Import gingen {0} Entitäten verloren; die Rückgabe würde sie still vernichten. Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_VERLUST_LADEN" xml:space="preserve">
+    <value>Rückgabe verweigert: Beim erneuten Laden gehen {0} Entitäten verloren ({1} nicht angelegt, {2} Verweise ins Leere; etwa: {3}). Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_NUR_STEP" xml:space="preserve">
+    <value>Rückgabe verweigert: Angereichert wird nur eine STEP-Datei (.ifc), kein ifcXML und kein Archiv. Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_LESEFEHLER" xml:space="preserve">
+    <value>Rückgabe verweigert: Die Datei lässt sich nicht laden ({0}). Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_OHNE_XBIM" xml:space="preserve">
+    <value>Rückgabe verweigert: Dieser Programmbau enthält keinen IFC-Baustein.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_BEIPACK_FREMDDATEI" xml:space="preserve">
+    <value>Sie geben eine fremde Datei verändert weiter: EPOS-Plan ergänzt Eigenschaften und Ergebnisse, Geometrie und Struktur bleiben unverändert. Die Datei trägt einen Vermerk und eine eigene Anwendungskennung; die Originaldatei wird nicht überschrieben. Bitte bestätigen.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_ENTITAET_FEHLT" xml:space="preserve">
+    <value>Die Quellentität {0} ({1}) steht nicht in der Datei; die Zuordnung wird übersprungen.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_ZEILE_FEHLT" xml:space="preserve">
+    <value>Die EPOS-Zeile {0} (Quelle {1}) steht nicht im Exportabbild; die Zuordnung wird übersprungen.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_TYP_FALSCH" xml:space="preserve">
+    <value>Die Quellentität {0} ist ein {1}, erwartet war {2}; die Zuordnung wird übersprungen.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_MEHRFACH" xml:space="preserve">
+    <value>Die Quellentität {0} ist mehreren EPOS-Zeilen zugeordnet; angereichert wird nach der ersten, {1} wird übersprungen.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_ERGEBNIS_GETEILT" xml:space="preserve">
+    <value>Die Zone {0} verteilt sich auf {1} Räume; ihr Ergebnis steht nur am Gebäude, nicht an den Räumen.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_VERSTOESSE_VORHER" xml:space="preserve">
+    <value>Die Eingangsdatei trägt schon {0} Verstöße gegen das Schema; sie bleiben unverändert.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_BILANZ" xml:space="preserve">
+    <value>Angereichert: {0} Objekte; {1} ergänzt, {2} ersetzt, {3} Zuordnungen übersprungen.</value>
+  </data>
+  <data name="GEXP_PROT_ANR_KENNUNG_BELEGT" xml:space="preserve">
+    <value>Rückgabe abgebrochen: Die neue Kennung {0} ist in der Datei schon vergeben; es wurde nichts geschrieben.</value>
+  </data>
+  <data name="GEXP_IFC_ANR_VERMERK" xml:space="preserve">
+    <value>angereichert durch {0} am {1}: Eigenschaften und Ergebnisse ergänzt, Geometrie unverändert</value>
+  </data>
+  <data name="GEXP_IFC_ANR_MATERIALHERKUNFT" xml:space="preserve">
+    <value>Herkunft der Materialzuordnung: Datei = aus der Originaldatei, unverändert; sonst von EPOS-Plan ergänzt.</value>
+  </data>
   <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
     <value>IFC-Export abgebrochen: Die Schemaprüfung meldet {0} Verstöße; es wurde nichts geschrieben.</value>
   </data>

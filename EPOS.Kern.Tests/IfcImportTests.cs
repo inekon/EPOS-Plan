@@ -461,6 +461,19 @@ namespace EPOS.Kern.Tests
             foreach (string datei in Directory.GetFiles(Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Import", "Ifc"), "*.cs"))
                 Assert.False(Regex.IsMatch(Code(datei), @"\bXbim\.Ifc(2x3|4x3|4)\.(?!Interfaces\b)[A-Z]"),
                     Path.GetFileName(datei) + " nennt eine schemagebundene xBIM-Klasse.");
+
+            // Dieselbe Wache für die Exportseite (Stufe G7d: die Anreicherung lädt die Fremddatei erneut): kein
+            // Typübergehen, und jeder Ladeaufruf übergibt als vierten Wert null.
+            string[] export = Directory.GetFiles(Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Export", "Ifc"), "*.cs");
+            Assert.Contains(export, d => Path.GetFileName(d) == "IfcAnreicherung.cs");
+            foreach (string datei in export.Concat(Directory.GetFiles(Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Import", "Ifc"), "*.cs")))
+            {
+                string text = Code(datei);
+                Assert.False(Regex.IsMatch(text, @"\b(ignoreTypes|SkipTypes)\b"), Path.GetFileName(datei) + " übergeht Entitätstypen.");
+                foreach (Match aufruf in Regex.Matches(text, @"\.LoadStep21\(([^;]*)\)\s*;"))
+                    Assert.True(Regex.IsMatch(aufruf.Groups[1].Value, @",\s*null\s*$"),
+                        Path.GetFileName(datei) + ": LoadStep21 ohne null als vierten Wert: " + aufruf.Value);
+            }
         }
 
         [Fact]

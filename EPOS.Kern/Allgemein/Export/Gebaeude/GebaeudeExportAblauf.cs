@@ -183,6 +183,109 @@ namespace WindowsFormsApplication1
                                             plan.Meldungen.Concat(b.Meldungen.Where(m => !plan.Meldungen.Any(v => Gleich(v, m)))).ToList(), b.Bytes);
         }
 
+        // ==================================================================
+        //  Round-Trip-Anreicherung (Stufe G7d)
+        // ==================================================================
+
+        /// <summary>Der Zusatz im Dateivorschlag der angereicherten Datei.</summary>
+        internal const string ANREICHERUNG_ZUSATZ = "_EPOS";
+
+        /// <summary>Ein Bau ohne xBIM kann nicht anreichern — Verweigerung.</summary>
+        internal const string ANREICHERUNG_OHNE_XBIM = P + "ANR_OHNE_XBIM";
+
+        /// <summary>Die Meldungen des IFC-Schreibers, die für die Anreicherung nicht gelten (keine Raumgrenzen, Site unberührt).</summary>
+        private static readonly HashSet<string> NurSchreiber = new HashSet<string>(StringComparer.Ordinal)
+        {
+            BEIPACK_RAUMGRENZEN, BEIPACK_OHNE_MVD, BEIPACK_IDS, P + "IFC_OHNE_KOORDINATEN",
+        };
+
+        /// <summary>
+        /// <b>Der Dateivorschlag der angereicherten Datei</b> (6.6 Nr. 4: immer unter neuem Namen): der Name der
+        /// Originaldatei ohne Pfad und Endung mit dem Zusatz <see cref="ANREICHERUNG_ZUSATZ"/> und der Endung
+        /// <c>.ifc</c> — <c>haus.ifc</c> → <c>haus_EPOS.ifc</c>. Den Speicherdialog führt die Oberfläche.
+        /// </summary>
+        internal static string Dateivorschlag(string original)
+        {
+            string name = (original ?? "").Trim().Replace('\\', '/');
+            int schnitt = name.LastIndexOf('/');
+            if (schnitt >= 0) name = name.Substring(schnitt + 1);
+            int punkt = name.LastIndexOf('.');
+            if (punkt > 0) name = name.Substring(0, punkt);
+            if (name.Length == 0) name = GebaeudeExportProfil.PROGRAMMNAME;
+            return name + ANREICHERUNG_ZUSATZ + ".ifc";
+        }
+
+        /// <summary>
+        /// Die Importquelle zur gewählten Datei unter den Quellen des Gebäudes: die IFC-Quelle mit gleichem
+        /// SHA-256, sonst die jüngste IFC-Quelle (deren Sperre dann benannt verweigert); <c>null</c> = keine.
+        /// </summary>
+        internal static ImportquelleModel AnreicherungsQuelle(IEnumerable<ImportquelleModel> quellen, byte[] datei)
+        {
+            List<ImportquelleModel> ifc = (quellen ?? Enumerable.Empty<ImportquelleModel>())
+                .Where(q => q != null && string.Equals(q.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal))
+                .OrderByDescending(q => q.Zeitpunkt, StringComparer.Ordinal).ThenByDescending(q => q.ID).ToList();
+            if (ifc.Count == 0) return null;
+            string hash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(datei ?? Array.Empty<byte>()));
+            return ifc.FirstOrDefault(q => string.Equals((q.Hash ?? "").Trim(), hash, StringComparison.OrdinalIgnoreCase)) ?? ifc[0];
+        }
+
+        /// <summary>
+        /// <b>Die Vorschau der Anreicherung</b>, sobald die Originaldatei gewählt ist: die Sperren (Hash, Schemastand,
+        /// Entitätenverlust samt erneutem Laden — je Fehler mit dem Angebot einer eigenen Datei nach G7c) und,
+        /// wenn sie frei sind, der Beipackzettel <c>GEXP_PROT_ANR_BEIPACK_FREMDDATEI</c> (Warnung, zu bestätigen).
+        /// </summary>
+        /// <param name="original">Der Strom der erneut gewählten Originaldatei (wird ganz gelesen).</param>
+        /// <param name="quelle">Die Importquelle (<see cref="AnreicherungsQuelle"/>).</param>
+        internal IReadOnlyList<PruefMeldung> AnreicherungVorschau(Stream original, ImportquelleModel quelle)
+        {
+            if (original == null) throw new ArgumentNullException(nameof(original));
+#if OHNE_XBIM
+            return new List<PruefMeldung> { new PruefMeldung(PruefStufe.Fehler, ANREICHERUNG_OHNE_XBIM) };
+#else
+            var meldungen = new List<PruefMeldung>(IfcAnreicherung.Sperren(Einlesen(original), quelle));
+            if (meldungen.Count == 0) meldungen.Add(new PruefMeldung(PruefStufe.Warnung, IfcAnreicherung.BEIPACK_FREMDDATEI));
+            return meldungen;
+#endif
+        }
+
+        /// <summary>
+        /// <b>Reichert die gewählte Originaldatei an</b> (Stufe G7d) — neben <see cref="Schreiben"/>: das Abbild des
+        /// Plans wie beim IFC-Export (mit Ergebnissen, <see cref="IfcErgebnisse.AusAbbild"/>), die Importquelle und
+        /// ihre Zuordnungen (<see cref="GebaeudeImportCtrl.LesenQuellen"/>, <see cref="GebaeudeImportCtrl.LesenZuordnungen"/>).
+        /// Die Bilanz trägt die Meldungen des Plans (ohne die nur für den Schreiber geltenden) und danach die der
+        /// Anreicherung. Ein abgelehnter Plan ist ein Programmfehler des Aufrufers.
+        /// </summary>
+        internal GebaeudeAnreicherungBilanz Anreichern(GebaeudeExportPlan plan, Stream original, ImportquelleModel quelle,
+                                                       IReadOnlyList<ImportzuordnungModel> zuordnungen, Stream ziel,
+                                                       GebaeudeExportProfil profil, CancellationToken abbruch)
+        {
+            if (plan == null) throw new ArgumentNullException(nameof(plan));
+            if (original == null) throw new ArgumentNullException(nameof(original));
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            if (plan.Abgelehnt) throw new InvalidOperationException("Ein abgelehnter Exportplan wird nicht angereichert.");
+            if (!profil.IstIfc) throw new ArgumentException("Die Anreicherung braucht das Format IFC.", nameof(profil));
+#if OHNE_XBIM
+            return GebaeudeAnreicherungBilanz.Verweigerung(new[] { new PruefMeldung(PruefStufe.Fehler, ANREICHERUNG_OHNE_XBIM) });
+#else
+            GebaeudeAnreicherungBilanz b = new IfcAnreicherung(IfcErgebnisse.AusAbbild(plan.Abbild))
+                .Anreichern(Einlesen(original), quelle, zuordnungen, plan.Abbild, ziel, profil, abbruch);
+            if (b.Verweigert) return b;
+            List<PruefMeldung> vorab = plan.Meldungen.Where(m => !NurSchreiber.Contains(m.Schluessel)).ToList();
+            return new GebaeudeAnreicherungBilanz(b.Geschrieben, false, b.Objekte, b.Ergaenzt, b.Ersetzt, b.Uebersprungen,
+                                                  vorab.Concat(b.Meldungen.Where(m => !vorab.Any(v => Gleich(v, m)))).ToList(), b.Bytes);
+#endif
+        }
+
+        private static byte[] Einlesen(Stream quelle)
+        {
+            if (quelle is MemoryStream ms && ms.Position == 0) return ms.ToArray();
+            using (var ziel = new MemoryStream())
+            {
+                quelle.CopyTo(ziel);
+                return ziel.ToArray();
+            }
+        }
+
         /// <summary>Zwei Meldungen mit gleicher Stufe, gleichem Schlüssel und gleichen Werten.</summary>
         private static bool Gleich(PruefMeldung a, PruefMeldung b)
             => a.Stufe == b.Stufe && string.Equals(a.Schluessel, b.Schluessel, StringComparison.Ordinal)

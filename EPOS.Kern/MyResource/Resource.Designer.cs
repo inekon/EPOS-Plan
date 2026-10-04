@@ -30400,6 +30400,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Materialzuordnung: Datei = aus der Originaldatei, unverändert; sonst von EPOS-Plan ergänzt. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ANR_MATERIALHERKUNFT {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ANR_MATERIALHERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die angereichert durch {0} am {1}: Eigenschaften und Ergebnisse ergänzt, Geometrie unverändert ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ANR_VERMERK {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ANR_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Azimut der Außenseite in Grad: 0° = Nord, im Uhrzeigersinn (90° = Ost, 180° = Süd, 270° = West) ähnelt.
         /// </summary>
         public static string GEXP_IFC_AZIMUT_BEZUG {
@@ -30675,6 +30693,159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PLZ_HINWEIS {
             get {
                 return ResourceManager.GetString("GEXP_PLZ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie geben eine fremde Datei verändert weiter: EPOS-Plan ergänzt Eigenschaften und Ergebnisse, Geometrie und Struktur bleiben unverändert. Die Datei trägt einen Vermerk und eine eigene Anwendungskennung; die Originaldatei wird nicht überschrieben. Bitte bestätigen. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_BEIPACK_FREMDDATEI {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_BEIPACK_FREMDDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angereichert: {0} Objekte; {1} ergänzt, {2} ersetzt, {3} Zuordnungen übersprungen. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_BILANZ {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quellentität {0} ({1}) steht nicht in der Datei; die Zuordnung wird übersprungen. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_ENTITAET_FEHLT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_ENTITAET_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} verteilt sich auf {1} Räume; ihr Ergebnis steht nur am Gebäude, nicht an den Räumen. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_ERGEBNIS_GETEILT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_ERGEBNIS_GETEILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe verweigert: Die gewählte Datei ist nicht die importierte Datei „{0}&quot; (SHA-256 weicht ab). Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_HASH {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_HASH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe verweigert: Das Gebäude stammt aus keinem IFC-Import. Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe abgebrochen: Die neue Kennung {0} ist in der Datei schon vergeben; es wurde nichts geschrieben. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_KENNUNG_BELEGT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_KENNUNG_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe verweigert: Die Datei lässt sich nicht laden ({0}). Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quellentität {0} ist mehreren EPOS-Zeilen zugeordnet; angereichert wird nach der ersten, {1} wird übersprungen. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_MEHRFACH {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_MEHRFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe verweigert: Angereichert wird nur eine STEP-Datei (.ifc), kein ifcXML und kein Archiv. Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_NUR_STEP {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_NUR_STEP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe verweigert: Dieser Programmbau enthält keinen IFC-Baustein. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_OHNE_XBIM {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_OHNE_XBIM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe nur für IFC4; die Datei hat den Schemastand {0}. Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_SCHEMA {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quellentität {0} ist ein {1}, erwartet war {2}; die Zuordnung wird übersprungen. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_TYP_FALSCH {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_TYP_FALSCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe verweigert: Beim Import gingen {0} Entitäten verloren; die Rückgabe würde sie still vernichten. Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_VERLUST {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückgabe verweigert: Beim erneuten Laden gehen {0} Entitäten verloren ({1} nicht angelegt, {2} Verweise ins Leere; etwa: {3}). Stattdessen kann eine eigene IFC-Datei nach Stufe S1 geschrieben werden. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_VERLUST_LADEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_VERLUST_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Eingangsdatei trägt schon {0} Verstöße gegen das Schema; sie bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_VERSTOESSE_VORHER {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_VERSTOESSE_VORHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die EPOS-Zeile {0} (Quelle {1}) steht nicht im Exportabbild; die Zuordnung wird übersprungen. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ANR_ZEILE_FEHLT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ANR_ZEILE_FEHLT", resourceCulture);
             }
         }
         
