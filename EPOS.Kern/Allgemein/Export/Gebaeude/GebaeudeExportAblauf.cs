@@ -316,6 +316,8 @@ namespace WindowsFormsApplication1
                 {
                     // Die Ablehnung steht in _ablehnung.
                 }
+                // Die Kennzeichnung der Raumgeometrie im Exportdialog (Stufe G7b, Datenaustauschkonzept 8.4).
+                if (_ablehnung == null && _abbild != null) _meldungen.AddRange(GbxmlSchreiber.Geometriemeldungen(_abbild));
                 return new GebaeudeExportPlan(_abbild, _meldungen, _ablehnung);
             }
 

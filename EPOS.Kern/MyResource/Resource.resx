@@ -38039,7 +38039,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Schicht {0}</value>
   </data>
   <data name="GEXP_DATEI_STUFE" xml:space="preserve">
-    <value>gbXML-Export aus EPOS-Plan, Stufe 1: Daten ohne Geometrie.</value>
+    <value>gbXML-Export aus EPOS-Plan.</value>
   </data>
   <data name="GEXP_DATEI_TESTVERSION" xml:space="preserve">
     <value>Erstellt mit einer Testversion von EPOS-Plan.</value>
@@ -44268,6 +44268,36 @@ Chart</value>
   </data>
   <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
     <value>Ungedeckte Kälte</value>
+  </data>
+  <data name="ZGEO_ANGELEGT" xml:space="preserve">
+    <value>{0} Paare von Räumen mit gemeinsamer Trennwand liegen aneinander — die Trennwand deckungsgleich, das Rechteck flächentreu angepasst: {1}</value>
+  </data>
+  <data name="ZGEO_GEDREHT" xml:space="preserve">
+    <value>{0} Räume sind zum Aneinanderlegen in 90°-Schritten gedreht — ihre Wände zeigen im Bild nicht in ihre Himmelsrichtung: {1}</value>
+  </data>
+  <data name="ZGEO_ANORDNUNG_ABGELEHNT" xml:space="preserve">
+    <value>{0} Paare von Räumen lassen sich nicht widerspruchsfrei aneinanderlegen; ihre Gruppe steht gereiht wie ohne Nachbarn, und der gbXML-Export schreibt keine Raumgeometrie: {1}</value>
+  </data>
+  <data name="GEXP_DATEI_SCHEMATISCH" xml:space="preserve">
+    <value>Stufe 2, Ersatzmodell: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie ist schematisch erzeugt und bildet den tatsächlichen Grundriss nicht ab.</value>
+  </data>
+  <data name="GEXP_DATEI_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>Stufe 1, Daten ohne Geometrie: Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen ({0}).</value>
+  </data>
+  <data name="GEXP_DATEI_OHNE_GEOMETRIE" xml:space="preserve">
+    <value>Stufe 1: Daten ohne Geometrie.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_SCHEMATISCH" xml:space="preserve">
+    <value>Ersatzmodell: {0} Räume stehen mit schematischer Geometrie in der Datei. Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie ist schematisch erzeugt und bildet den tatsächlichen Grundriss nicht ab.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>Die Zonen mit gemeinsamer Trennfläche lassen sich nicht widerspruchsfrei aneinanderlegen ({0}); die Datei trägt keine Raumgeometrie.</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_OHNE_POLYGON" xml:space="preserve">
+    <value>{0} Flächen stehen ohne Polygon in der Datei — ihr Raum trägt keinen Körper, oder sie liegen an keiner Kante: {1}</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_BEGRENZT" xml:space="preserve">
+    <value>{0} Öffnungen passen nicht in ihre Wandstrecke; ihr Polygon ist verkleinert (Randabstand 0,1 m, höchstens 90 %): {1}</value>
   </data>
 </root>
 

@@ -38032,7 +38032,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Layer {0}</value>
   </data>
   <data name="GEXP_DATEI_STUFE" xml:space="preserve">
-    <value>gbXML export from EPOS-Plan, stage 1: data without geometry.</value>
+    <value>gbXML export from EPOS-Plan.</value>
   </data>
   <data name="GEXP_DATEI_TESTVERSION" xml:space="preserve">
     <value>Created with a trial version of EPOS-Plan.</value>
@@ -44261,6 +44261,36 @@ chart</value>
   </data>
   <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
     <value>Uncovered cooling</value>
+  </data>
+  <data name="ZGEO_ANGELEGT" xml:space="preserve">
+    <value>{0} pairs of rooms sharing a partition wall are placed side by side — the partition congruent, the rectangle adjusted with its area kept: {1}</value>
+  </data>
+  <data name="ZGEO_GEDREHT" xml:space="preserve">
+    <value>{0} rooms are rotated in 90° steps to be placed side by side — their walls do not face their compass direction in the drawing: {1}</value>
+  </data>
+  <data name="ZGEO_ANORDNUNG_ABGELEHNT" xml:space="preserve">
+    <value>{0} pairs of rooms cannot be placed side by side without contradiction; their group is lined up as if without neighbours, and the gbXML export writes no room geometry: {1}</value>
+  </data>
+  <data name="GEXP_DATEI_SCHEMATISCH" xml:space="preserve">
+    <value>Stage 2, substitute model: surfaces, orientations and constructions are those of the EPOS building model; the room geometry is generated schematically and does not represent the actual floor plan.</value>
+  </data>
+  <data name="GEXP_DATEI_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>Stage 1, data without geometry: the zones sharing a partition cannot be placed side by side without contradiction ({0}).</value>
+  </data>
+  <data name="GEXP_DATEI_OHNE_GEOMETRIE" xml:space="preserve">
+    <value>Stage 1: data without geometry.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_SCHEMATISCH" xml:space="preserve">
+    <value>Substitute model: {0} rooms are written with schematic geometry. Surfaces, orientations and constructions are those of the EPOS building model; the room geometry is generated schematically and does not represent the actual floor plan.</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_ABGELEHNT" xml:space="preserve">
+    <value>The zones sharing a partition cannot be placed side by side without contradiction ({0}); the file carries no room geometry.</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_OHNE_POLYGON" xml:space="preserve">
+    <value>{0} surfaces are written without a polygon — their room has no body, or they lie on no edge: {1}</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_BEGRENZT" xml:space="preserve">
+    <value>{0} openings do not fit their wall section; their polygon is reduced (edge distance 0.1 m, at most 90 %): {1}</value>
   </data>
 </root>
 
