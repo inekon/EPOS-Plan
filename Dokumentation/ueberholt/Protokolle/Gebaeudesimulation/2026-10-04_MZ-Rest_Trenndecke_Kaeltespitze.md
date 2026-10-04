@@ -1,6 +1,6 @@
 # Protokoll MZ-Rest — Trenndecke ohne Raumgrenzen, Kältespitze je Zone (04.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Welle MZ-Rest (E67, E68), ein Opus-Auftrag, Commits `985e7c1`, `bbaed9f`, `e1ab74c`, Merge `20d822b`, Testdatenbank 185 `2481d13`. Statuszeile #720. Die Importproben 13–18 haben ein eigenes Protokoll: [`2026-10-04_MZ-Rest_Importproben.md`](2026-10-04_MZ-Rest_Importproben.md).
+**Sitzung:** Gebäudesimulation (Cloud), Welle MZ-Rest (E67, E68), ein Opus-Auftrag, Commits `985e7c1`, `bbaed9f`, `e1ab74c`, Merge `20d822b`, Testdatenbank 185 `2481d13`. Statuszeile #722. Die Importproben 13–18 haben ein eigenes Protokoll: [`2026-10-04_MZ-Rest_Importproben.md`](2026-10-04_MZ-Rest_Importproben.md).
 **Entscheid:** keiner neu beim Anwender. Schemaschritt 185, Basis R35 unverändert, Referenzlauf byte-gleich.
 
 ## 1 Auftrag
@@ -26,7 +26,7 @@ Ein Opus-Auftrag in drei Commits (Trenndecke, Schritt 185 mit Lauf und Export, T
 
 ## 5 Nachweise
 
-Kern-Filter und Schale 0 Fehler; Kern-Tests Abnahmefilter 1 998; Ifc/Zonierung/Import 433 grün; UI 276 grün; Referenzlauf 8 CI-Projekte + 1052 + 1054 PASS gegen R35, 315 Projektdateien byte-gleich; SQL-Dialekt 0 Fundstellen; Designer ohne Befund. Gate 720: Zahlen in Statuszeile #720.
+Kern-Filter und Schale 0 Fehler; Kern-Tests Abnahmefilter 1 998; Ifc/Zonierung/Import 433 grün; UI 276 grün; Referenzlauf 8 CI-Projekte + 1052 + 1054 PASS gegen R35, 315 Projektdateien byte-gleich; SQL-Dialekt 0 Fundstellen; Designer ohne Befund. Gate 722: Zahlen in Statuszeile #722.
 
 ## 6 Offenes
 

@@ -1,6 +1,6 @@
 # Protokoll KU3-4d — Kältestromabrechnung, Stempeltrigger, Kältespeicher in Bericht und Navigator (04.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Welle KU3-4d (E67, E68), ein Opus-Auftrag, Commits `8b9558d`, `212dc29`, `7449229`, `73797b4`, `d3786e2`, Merge `bf0c0ac`, Testdatenbank 184 `d8b186b`. Statuszeile #719.
+**Sitzung:** Gebäudesimulation (Cloud), Welle KU3-4d (E67, E68), ein Opus-Auftrag, Commits `8b9558d`, `212dc29`, `7449229`, `73797b4`, `d3786e2`, Merge `bf0c0ac`, Testdatenbank 184 `d8b186b`. Statuszeile #721.
 **Entscheid:** keiner neu beim Anwender. Schemaschritt 184, Basis R35 unverändert, Referenzlauf byte-gleich.
 
 ## 1 Auftrag
@@ -9,7 +9,7 @@ Die Kältemaschine (KU3-4a) im Kältestrom abrechnen wie ein Wärmepumpen-Modul,
 
 ## 2 Vorgehen
 
-Ein Opus-Auftrag in fünf Commits (Schema 184, Abrechnung und Lauf, Projektkopie, Bericht und Navigator, Tests); Merge nach `bf0c0ac`. Die Testdatenbank wurde von der Orchestrierung beim Merge mit KU3-4d und MZ-Rest in zwei Commits auf 184 und 185 gehoben (Statuszeile #720).
+Ein Opus-Auftrag in fünf Commits (Schema 184, Abrechnung und Lauf, Projektkopie, Bericht und Navigator, Tests); Merge nach `bf0c0ac`. Die Testdatenbank wurde von der Orchestrierung beim Merge mit KU3-4d und MZ-Rest in zwei Commits auf 184 und 185 gehoben (Statuszeile #722).
 
 ## 3 Ergebnis
 
@@ -25,7 +25,7 @@ Ein Opus-Auftrag in fünf Commits (Schema 184, Abrechnung und Lauf, Projektkopie
 
 ## 5 Nachweise
 
-Kern-Filter 0 Fehler; Kern-Tests Auftragsfilter 1 918/1 929 grün, nach Nachbesserung alle grün; UI 1 053/1 053; Auslieferungstests 47/47 mit Datenbank 184; SQL-Dialekt 2 345 Texte, 0 Fundstellen; Schale 0 Fehler; Referenzlauf der 8 CI-Projekte PASS gegen R35, 262 Dateien byte-gleich. Gate 720 (Stand `2481d13`): Zahlen in Statuszeile #720.
+Kern-Filter 0 Fehler; Kern-Tests Auftragsfilter 1 918/1 929 grün, nach Nachbesserung alle grün; UI 1 053/1 053; Auslieferungstests 47/47 mit Datenbank 184; SQL-Dialekt 2 345 Texte, 0 Fundstellen; Schale 0 Fehler; Referenzlauf der 8 CI-Projekte PASS gegen R35, 262 Dateien byte-gleich. Gate 722 (Stand `2481d13`): Zahlen in Statuszeile #722.
 
 ## 6 Offenes
 
