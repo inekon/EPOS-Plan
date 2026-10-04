@@ -22,7 +22,8 @@
 //   1. Die Kopie 1018 -> 1053 auf dem KOPIERWEG DES PROGRAMMS (ProjektDuplizierenCtrl): alle
 //      Projekttabellen, keine Rechenergebnisse. Nur die Projekt-ID muss 1053 sein, sonst Abbruch.
 //   2. Zellen der Kopie:
-//        Tab_Projekt        Beschreibung, Aenderungs- und Erstelldatum fest (2026-10-04)
+//        Tab_Projekt        Beschreibung, Aenderungs- und Erstelldatum fest (2026-10-04),
+//                           Kosten_Geaendert leer (die Testdatenbank fuehrt leere Kostenstempel)
 //        Tab_Einstellungen  Tool_1 'BHKW', Tool_2 bis Tool_4 leer (nur das BHKW in der Kaskade;
 //                           der Kesselanteil der Waerme bleibt ungedeckt), Tool_5 'Photovoltaik',
 //                           Tool_6 leer (kein Stromspeicher); Einspeisegrenze bleibt leer
@@ -223,6 +224,7 @@ List<string> PruefeZiel(int id)
     SollText(f, "Beschreibung", Txt(p.Rows[0], "Beschreibung"), BESCHREIBUNG);
     SollText(f, "Aenderungsdatum", Dat(p.Rows[0], "Aenderungsdatum"), DATUM);
     SollText(f, "Erstelldatum", Dat(p.Rows[0], "Erstelldatum"), DATUM);
+    SollText(f, "Kosten_Geaendert", Dat(p.Rows[0], "Kosten_Geaendert"), null);
 
     DataTable e = T("SELECT Tool_1, Tool_2, Tool_3, Tool_4, Tool_5, Tool_6 FROM Tab_Einstellungen WHERE ID_Projekt = ?", id);
     if (e.Rows.Count == 1)
@@ -330,6 +332,9 @@ if (verbraucher <= 0) return Abbruch("Stromverbraucher '" + VERBRAUCHER + "' nic
 // Dieselbe Zeile wie WizardCtrl.Add_Projekt_Stromverbraucher (die Klasse ist intern).
 X("INSERT INTO Z_Projekt_Stromverbraucher (ID, ID_Projekt, ID_Stromverbraucher, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)",
   Z("SELECT MAX(ID) FROM Z_Projekt_Stromverbraucher") + 1, id, verbraucher, VERBRAUCHER, VERBRAUCHER_MWH);
+// Die Kostenstempel-Trigger stempeln die kopierten Kostenzeilen; die Testdatenbank fuehrt leere
+// Stempel (KostenStempelSchemaTests).
+X("UPDATE Tab_Projekt SET Kosten_Geaendert = NULL WHERE ID = ?", id);
 
 // ---------------------------------------------------------------------------------------
 // 3. Pruefen, dann ersetzen
