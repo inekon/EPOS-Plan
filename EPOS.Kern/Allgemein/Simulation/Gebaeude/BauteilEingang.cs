@@ -357,7 +357,8 @@ namespace WindowsFormsApplication1
     /// Lüftung H_ve [W/K] für R_ext. NaN = nicht vorhanden; gebraucht wird eine Größe nur, wenn
     /// eine Gruppe sie verlangt, und dann benannt geprüft. Für den Erdreichwiderstand nach DIN EN ISO 13370
     /// (Rechenweg RP2a) die Grundfläche der Gebäudezeile und das Feld ihres Umfangs; 0 = nicht vorhanden
-    /// (dann die Bodenbauteile am Erdreich bzw. das flächengleiche Quadrat).
+    /// (dann die Bodenbauteile am Erdreich bzw. das flächengleiche Quadrat); dazu der vorgegebene wirksame U-Wert
+    /// der Bodenplatte (E65), NaN = keine Vorgabe.
     /// </summary>
     internal readonly record struct BauteilwegGebaeude(
         string Bezeichnung,
@@ -367,7 +368,8 @@ namespace WindowsFormsApplication1
         double Innenflaechenfaktor,
         double Lueftungsleitwert_WK,
         double ErdreichFlaeche_M2 = 0.0,
-        double ErdreichUmfang_M = 0.0);
+        double ErdreichUmfang_M = 0.0,
+        double ErdreichUVorgabe_WM2K = double.NaN);
 
     /// <summary>
     /// Die Herleitung EINES Bauteils im Bauteilweg — was der Dialog und das Protokoll je

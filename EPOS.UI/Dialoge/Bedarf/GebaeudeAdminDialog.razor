@@ -190,6 +190,7 @@
                                                   Texte="@HuellTexte" Prueftexte="@Prueftexte"
                                                   Beschriftungen="@Beschriftungen"
                                                   UebergabeHerleitung="@UebergabeHerleitung"
+                                                  ErdreichAuskunft="@ErdreichAuskunft"
                                                   WochenVorschau="@WochenVorschau"
                                                   EntprellungMs="@EntprellungMs"
                                                   HinweisAltfelder="@KonditionierungTexte.HinweisVerwaltungAltfelder" />
@@ -410,6 +411,9 @@
 
     /// <summary>Die Herleitung der Wärmeübergabe aus dem Kern (Anlagenkopplung 8.4); <c>null</c> = ohne Zahl.</summary>
     [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? UebergabeHerleitung { get; set; }
+
+    /// <summary>Die Erdreichauskunft der Bodenplatte (B′ und U_g, EV1/E65); <c>null</c> = keine Auskunftszeile.</summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, ErdreichAuskunftDaten?>? ErdreichAuskunft { get; set; }
 
     /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms; <c>null</c> = kein Bild.</summary>
     [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }

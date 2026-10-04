@@ -74,8 +74,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(103, GebaeudeSchema.SICHT_AUFHEIZ_MANUELL.Length);
             Assert.Equal("Aufheizzeit_Manuell_H", GebaeudeSchema.SICHT_AUFHEIZ_MANUELL[102]);
             Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SICHT_AUFHEIZ_MANUELL.Take(102));
-            Assert.Equal(GebaeudeSchema.SICHT_AUFHEIZ_MANUELL, GebaeudeSchema.SICHT_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_AUFHEIZ_MANUELL, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SICHT_AUFHEIZ_MANUELL, GebaeudeSchema.SICHT_AKTUELL.Take(103));
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_ERDREICH_VORGABE, GebaeudeSchema.SQL_VIEW_AKTUELL);
             Assert.Contains("Tab_Gebaeude.Aufheizzeit_Manuell_H", GebaeudeSchema.SQL_VIEW_AKTUELL, StringComparison.Ordinal);
 
             Assert.Equal("CHECK (\"Aufheiz_Zustand\" IN ('BEMESSEN','UNERREICHBAR','UNBEHEIZT'))", AufheizManuellSchema.CHECK_ZUSTAND_ALT);
@@ -243,7 +243,7 @@ namespace EPOS.Kern.Tests
             var nurSicht = new List<string>();
             Assert.Equal(0, AufheizManuellSchema.Ausfuehren(nurSicht));
             Assert.Equal(new[] { "Sicht Abfrage_Projektgebaeude neu gebaut (103 Spalten)" }, nurSicht.Take(1).ToArray());
-            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
+            Assert.Equal(GebaeudeSchema.SICHT_AUFHEIZ_MANUELL, GebaeudeSchema.SichtSpalten());
             Assert.True(AufheizManuellSchema.Vollstaendig());
 
             DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Einstellungen\" DROP COLUMN \"Aufheiz_Aufschlag_Prozent\"");
@@ -298,7 +298,7 @@ namespace EPOS.Kern.Tests
             foreach ((string tabelle, string spalte, string _) in AufheizManuellSchema.SPALTEN)
                 Assert.Equal(1L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('" + tabelle + "') WHERE name = '" + spalte +
                                                   "' AND \"notnull\" = 0 AND dflt_value IS NULL"));
-            Assert.Equal(103L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Abfrage_Projektgebaeude')"));
+            Assert.Equal((long)GebaeudeSchema.SICHT_AKTUELL.Length, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Abfrage_Projektgebaeude')"));
             Assert.Equal(1L, Repo(verbindung, "SELECT COUNT(*) FROM sqlite_master WHERE name = 'Tab_ErgebnisZone' AND sql LIKE '%''GEKOPPELT'',''UNBEHEIZT''%'"));
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Einstellungen WHERE Aufheiz_Aufschlag_H IS NOT NULL OR Aufheiz_Aufschlag_Prozent IS NOT NULL"));
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude WHERE Aufheizzeit_Manuell_H IS NOT NULL"));

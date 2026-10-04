@@ -179,6 +179,7 @@ namespace WindowsFormsApplication1
 
                 if (!Probelauf)
                 {
+                    HinweisReserveVorgabe(Aufheizvorgabe);
                     Melden(eingang, ergebnis, gemeinsam, wer);
                     KopplungMelden(eingang, ergebnis, gebaeude, wer);
                 }
@@ -225,7 +226,11 @@ namespace WindowsFormsApplication1
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
                 verbrauchAltKwh = m.Gebaeude.VerbrauchAltKwh;
                 _traeger.Setzen(index, m.Gebaeude);
-                if (!Probelauf) MeldenMehrzonen(m, gemeinsam, wer);
+                if (!Probelauf)
+                {
+                    HinweisReserveVorgabe(Aufheizvorgabe);
+                    MeldenMehrzonen(m, gemeinsam, wer);
+                }
                 return true;
             }
             catch (GebaeudeModellException ex)
@@ -521,6 +526,21 @@ namespace WindowsFormsApplication1
                 string.Format(k, MyResource.Resource.SIMENG_KOND_UNTERTEMPERATUR,
                               stunden.ToString(CultureInfo.InvariantCulture),
                               grenze.ToString("0.0#", k), tiefste.ToString("0.0#", k)));
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis auf die Vorgabe der Aufheizreserve</b> (E64, <c>SIMENG_AUFH_RESERVE_VORGABE</c>): Mit
+        /// eingeschalteter Aufheizoptimierung und leerer Reserve des Projekts (<see cref="Aufheizvorgabe.Reserve"/>)
+        /// rechnet der Lauf mit <see cref="AufheizvorgabeSchema.RESERVE_VORGABE"/> — einmal je Projekt und Lauf
+        /// im Protokoll (Stufe Hinweis). Ausgeschaltet oder mit gesetzter Reserve schweigt die Methode.
+        /// </summary>
+        internal static void HinweisReserveVorgabe(Aufheizvorgabe vorgabe)
+        {
+            if (vorgabe == null || !vorgabe.An || vorgabe.Reserve.HasValue) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("aufh-reserve-vorgabe",
+                "Gebäudemodell VDI 6007: " + string.Format(k, MyResource.Resource.SIMENG_AUFH_RESERVE_VORGABE,
+                                                            (AufheizvorgabeSchema.RESERVE_VORGABE * 100.0).ToString("0.#", k)));
         }
 
         /// <summary>

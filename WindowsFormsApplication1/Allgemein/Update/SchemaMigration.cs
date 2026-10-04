@@ -5094,6 +5094,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_PUFFER_AUSLEGUNG_ERGAENZUNG = PufferAuslegungErgaenzungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ErdreichVorgabeSchema.SCHRITT"/> — <b>der wirksame U-Wert der Bodenplatte als
+        /// Vorgabe</b> (E65, EV1): <c>Erdreich_U_Wirksam</c> an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>
+        /// samt neuntem Sichtneubau.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten entstehen leer; leer rechnet nach
+        /// DIN EN ISO 13370.</para>
+        /// </summary>
+        public const int SCHRITT_ERDREICH_VORGABE = ErdreichVorgabeSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7376,6 +7386,13 @@ namespace WindowsFormsApplication1
                         "keinen Ort; die Vorgaben des Aufheizkriteriums stuenden nur im Code. KEIN Rechenergebnis " +
                         "aendert sich - die Spalten entstehen leer.",
                         Schritt_PufferAuslegungErgaenzung),
+            // WIRKSAMER U-WERT DER BODENPLATTE als Vorgabe (EV1). Quelle ist ErdreichVorgabeSchema, die Nummer
+            // steht allein dort. ZULETZT: der neunte Sichtneubau.
+            new Schritt(SCHRITT_ERDREICH_VORGABE,
+                        "Tab_Gebaeude, Tab_Gebaeude_STAMM: Erdreich_U_Wirksam; Sicht Abfrage_Projektgebaeude",
+                        "Ein wirksamer U-Wert der Bodenplatte aus eigener Rechnung haette keinen Ort; die Rechnung nach " +
+                        "DIN EN ISO 13370 waere die einzige. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_ErdreichVorgabe),
         };
 
         /// <summary>
@@ -13671,6 +13688,62 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Ergaenzungen der Pufferauslegung - " +
                     (handgriffe == 0 ? "standen bereits." : handgriffe + " Handgriff(e) (Spalten und Saat).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Erdreichvorgabe am Gebäude" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ERDREICH_VORGABE"/>, die Anweisungen bei <see cref="ErdreichVorgabeSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ErdreichVorgabe(Lauf l)
+        {
+            string nr = ErdreichVorgabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ErdreichVorgabeSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ErdreichVorgabeSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ErdreichVorgabeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Erdreich_U_Wirksam oder die Sicht des neunten Durchgangs stehen nach dem Schritt " +
+                                  "nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Erdreichvorgabe am Gebaeude - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

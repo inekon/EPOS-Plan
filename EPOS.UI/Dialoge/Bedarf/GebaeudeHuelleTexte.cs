@@ -92,6 +92,26 @@ public sealed class GebaeudeHuelleTexte
     /// <summary><c>GEBK_LBL_KELLERTEMPERATUR</c></summary>
     public string LabelKellertemperatur { get; set; } = "Kellertemperatur :";
 
+    /// <summary><c>GEBK_LBL_ERDREICH_U_WIRKSAM</c></summary>
+    public string LabelErdreichUWirksam { get; set; } = "Wirksamer U-Wert Bodenplatte :";
+
+    /// <summary><c>GEBK_HINWEIS_ERDREICH_U_WIRKSAM</c> — der Platzhalter des leeren Felds.</summary>
+    public string HinweisErdreichUWirksam { get; set; } = "leer = Erdreichkorrektur nach DIN EN ISO 13370";
+
+    /// <summary><c>GEBK_SPERRE_ERDREICH_U_WIRKSAM</c> — der Grund der Sperre bei Randbedingung Keller oder Außenluft.</summary>
+    public string SperreErdreichUWirksam { get; set; }
+        = "Der wirksame U-Wert gilt nur bei Randbedingung Erdreich; der eingetragene Wert bleibt erhalten.";
+
+    /// <summary><c>GEBK_ZEILE_ERDREICH_RECHNUNG</c> — „{0}" B′ in m, „{1}" U_g in W/(m²K).</summary>
+    public string ZeileErdreichRechnung { get; set; } = "Erdreichkorrektur nach DIN EN ISO 13370: B′ = {0} m, U_g = {1} W/(m²K)";
+
+    /// <summary><c>GEBK_ZEILE_ERDREICH_VORGABE</c> — „{0}" U_g in W/(m²K).</summary>
+    public string ZeileErdreichVorgabe { get; set; } = "U_g = Vorgabe {0} W/(m²K)";
+
+    /// <summary><c>GEBK_MSG_ERDREICH_U</c></summary>
+    public string MeldungErdreichU { get; set; }
+        = "Der wirksame U-Wert der Bodenplatte muss größer als 0 W/(m²K) sein; leer gilt die Erdreichkorrektur nach DIN EN ISO 13370.";
+
     /// <summary><c>GEBK_HINWEIS_FENSTER_SUMME</c></summary>
     public string HinweisFensterflaeche { get; set; }
         = "Die Fensterfläche ist die Summe der vier Orientierungen.";

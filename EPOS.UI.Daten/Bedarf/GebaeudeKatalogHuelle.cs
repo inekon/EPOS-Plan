@@ -439,6 +439,8 @@ namespace WindowsFormsApplication1
                 // Waermeuebergabe aus dem Kern (Klimareihe des laufenden Projekts, einmal je
                 // Oeffnen gelesen) und das Vorschaubild des Sollwert-Zeitprogramms.
                 ["UebergabeHerleitung"] = Herleitungsweg(Dienste.Projekt.Id),
+                // EV1 (E65): die Erdreichauskunft der Bodenplatte (B' und U_g aus dem Kern).
+                ["ErdreichAuskunft"] = Erdreichweg(),
                 ["WochenVorschau"] = Wochenvorschau(),
 
                 ["Texte"] = Texte(),
@@ -604,6 +606,12 @@ namespace WindowsFormsApplication1
             t.RandErdreich = Text_("GEBK_RAND_ERDREICH", t.RandErdreich);
             t.RandKeller = Text_("GEBK_RAND_KELLER", t.RandKeller);
             t.LabelKellertemperatur = Text_("GEBK_LBL_KELLERTEMPERATUR", t.LabelKellertemperatur);
+            t.LabelErdreichUWirksam = Text_("GEBK_LBL_ERDREICH_U_WIRKSAM", t.LabelErdreichUWirksam);
+            t.HinweisErdreichUWirksam = Text_("GEBK_HINWEIS_ERDREICH_U_WIRKSAM", t.HinweisErdreichUWirksam);
+            t.SperreErdreichUWirksam = Text_("GEBK_SPERRE_ERDREICH_U_WIRKSAM", t.SperreErdreichUWirksam);
+            t.ZeileErdreichRechnung = Text_("GEBK_ZEILE_ERDREICH_RECHNUNG", t.ZeileErdreichRechnung);
+            t.ZeileErdreichVorgabe = Text_("GEBK_ZEILE_ERDREICH_VORGABE", t.ZeileErdreichVorgabe);
+            t.MeldungErdreichU = Text_("GEBK_MSG_ERDREICH_U", t.MeldungErdreichU);
             t.HinweisFensterflaeche = Text_("GEBK_HINWEIS_FENSTER_SUMME", t.HinweisFensterflaeche);
 
             t.LabelHT = Text_("GEBK_LBL_HT", t.LabelHT);
@@ -817,6 +825,29 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// <b>Die Erdreichauskunft der Bodenplatte</b> (EV1, E65): B′ und U_g, wie der Klassenweg sie für die
+        /// Grundfläche rechnet (<see cref="Erdreichwiderstand.Bauteilsatz"/> mit Grundfläche, ihrem U-Wert, dem
+        /// Umfangsfeld und der Vorgabe <c>Erdreich_U_Wirksam</c>). Ohne Datenbank. <c>null</c>, wenn keine
+        /// Erdreichkorrektur rechnet: Randbedingung Keller oder Außenluft, keine Grundfläche oder kein U-Wert.
+        /// </summary>
+        internal static Func<GebaeudeKatalogDaten, ErdreichAuskunftDaten> Erdreichweg()
+            => d =>
+            {
+                if (d == null) return null;
+                string rand = d.GrundflaecheRandbedingung;
+                if (!string.IsNullOrEmpty(rand) && !string.Equals(rand, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal))
+                    return null;
+                double a = d.Grundflaeche ?? 0.0, u = d.UWertGrundflaeche ?? 0.0;
+                if (!(a > 0.0) || !(u > 0.0)) return null;
+                double vorgabe = d.ErdreichUWirksam is double ug && ug > 0.0 ? ug : double.NaN;
+                Erdreichkennwerte k = Erdreichwiderstand.Bauteilsatz(new[] { (a, 180.0, u) }, a,
+                                                                     d.AnschlussAussenwandKeller ?? 0.0, new double[1], vorgabe);
+                if (k == null) return null;
+                bool istVorgabe = k.Quelle == Erdreichumfangsquelle.Vorgabe;
+                return new ErdreichAuskunftDaten(istVorgabe || double.IsNaN(k.B_M) ? null : k.B_M, k.Ug_WM2K, istVorgabe);
+            };
+
         /// <summary>Die Herleitung der Kälteseite als DTO der Oberfläche; <c>null</c> bleibt <c>null</c>.</summary>
         internal static KuehluebergabeHerleitungDaten Kuehlherleitung(KuehluebergabeHerleitung k)
             => k == null
@@ -984,6 +1015,8 @@ namespace WindowsFormsApplication1
                 Baujahr = m.Baujahr,
                 // E47: der Energiestandard als Code - NULL bleibt null (keiner).
                 Energiestandard = string.IsNullOrEmpty(m.Energiestandard) ? null : m.Energiestandard,
+                // E65: der wirksame U-Wert der Bodenplatte - NULL bleibt null (Rechnung nach DIN EN ISO 13370).
+                ErdreichUWirksam = m.Erdreich_U_Wirksam,
                 // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise.
                 Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Nutzflaeche),
                 Bauweise = m.Bauweise,
@@ -1153,6 +1186,8 @@ namespace WindowsFormsApplication1
             m.Baujahr = d.Baujahr;
             // E47: der Energiestandard als Code - leer bleibt NULL ("keiner").
             m.Energiestandard = string.IsNullOrEmpty(d.Energiestandard) ? null : d.Energiestandard;
+            // E65: der wirksame U-Wert der Bodenplatte - leer bleibt NULL; nur ein Wert über null gilt.
+            m.Erdreich_U_Wirksam = d.ErdreichUWirksam is double ug && ug > 0 ? ug : null;
             m.Gebaeudeart = d.Gebaeudeart ?? "";
             m.Wohngebaeude_Nicht_Wohngebaeude = d.Verwendung ?? VERWENDUNGSWERTE[0];
 

@@ -11,6 +11,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Benannter Rückfall: das flächengleiche Quadrat P = 4·√A.</summary>
         Quadrat,
+
+        /// <summary>
+        /// Die Vorgabe des Gebäudes (<c>Erdreich_U_Wirksam</c>, E65): U_g der Bodenplatte ist der vorgegebene Wert,
+        /// B′ wird nicht gerechnet. Der Umfang dient dann allein der Tiefe der Kellerwände.
+        /// </summary>
+        Vorgabe,
     }
 
     /// <summary>
@@ -23,8 +29,16 @@ namespace WindowsFormsApplication1
     internal sealed record Erdreichkennwerte(double B_M, double Umfang_M, Erdreichumfangsquelle Quelle, double Tiefe_M,
                                              double Dt_M, double Ug_WM2K, double Rg_M2KW, double UWirksam_WM2K)
     {
-        /// <summary>Die Herkunft des Umfangs als Text des Exports (<c>Feld</c>, <c>Quadrat</c>).</summary>
-        internal string QuelleText => Quelle == Erdreichumfangsquelle.Feld ? "Feld" : "Quadrat";
+        /// <summary>Die Herkunft des Umfangs als Text des Exports (<c>Feld</c>, <c>Quadrat</c>, <c>Vorgabe</c>).</summary>
+        internal string QuelleText => Quelle switch
+        {
+            Erdreichumfangsquelle.Feld => "Feld",
+            Erdreichumfangsquelle.Vorgabe => QUELLE_VORGABE,
+            _ => "Quadrat",
+        };
+
+        /// <summary>Der Exporttext der Vorgabe (<c>Geb[n].Erdreich_Umfangsquelle = Vorgabe</c>).</summary>
+        internal const string QUELLE_VORGABE = "Vorgabe";
     }
 
     /// <summary>
@@ -100,6 +114,9 @@ namespace WindowsFormsApplication1
         /// <summary>Der wirksame U-Wert eines Bauteils mit Erdreichwiderstand: 1/(1/U + R_g).</summary>
         internal static double UWirksam(double uBauteil, double rg) => rg > 0.0 ? 1.0 / (1.0 / uBauteil + rg) : uBauteil;
 
+        /// <summary>Ist der wirksame U-Wert der Bodenplatte vorgegeben (endlich und größer als null)?</summary>
+        internal static bool IstVorgabe(double uVorgabe) => uVorgabe > 0.0 && !double.IsInfinity(uVorgabe);
+
         /// <summary>Ist das Bauteil eine Wand (Neigung zwischen 45° und 135°)? Sonst Boden.</summary>
         internal static bool IstWand(double neigungGrad) => neigungGrad > 45.0 && neigungGrad < 135.0;
 
@@ -108,10 +125,15 @@ namespace WindowsFormsApplication1
         /// ist die Grundfläche der Gebäudezeile (≤ 0 ⇒ die Bodenbauteile am Erdreich), <paramref name="feldUmfangM"/>
         /// das Feld des Umfangs. Jedes Bauteil am Erdreich bekommt seinen wirksamen U-Wert in <paramref name="uWirksam"/>
         /// (Index wie <paramref name="bauteile"/>); <c>null</c>, wenn keines am Erdreich liegt.
+        /// <para><b>Vorgabe (E65):</b> Ist <paramref name="uVorgabe"/> endlich und größer als null, ist es U_g jedes
+        /// Bodenbauteils am Erdreich; B′ wird nicht gerechnet (<see cref="Erdreichkennwerte.B_M"/> = NaN), die Quelle
+        /// ist <see cref="Erdreichumfangsquelle.Vorgabe"/>. Kellerwände rechnen unverändert nach 9.3.3.</para>
         /// </summary>
         internal static Erdreichkennwerte Bauteilsatz(IReadOnlyList<(double FlaecheM2, double NeigungGrad, double U)> bauteile,
-                                                     double flaecheGebaeudeM2, double feldUmfangM, double[] uWirksam)
+                                                     double flaecheGebaeudeM2, double feldUmfangM, double[] uWirksam,
+                                                     double uVorgabe = double.NaN)
         {
+            bool vorgabe = IstVorgabe(uVorgabe);
             double aBoden = 0.0, aWand = 0.0, uaBoden = 0.0;
             for (int i = 0; i < bauteile.Count; i++)
             {
@@ -125,7 +147,8 @@ namespace WindowsFormsApplication1
             if (aBoden + aWand <= 0.0) return null;
             double a = flaecheGebaeudeM2 > 0.0 ? flaecheGebaeudeM2 : aBoden > 0.0 ? aBoden : aWand;
             double p = Umfang(a, feldUmfangM, out Erdreichumfangsquelle quelle);
-            double b = BStrich(a, p);
+            double b = vorgabe ? double.NaN : BStrich(a, p);
+            if (vorgabe) quelle = Erdreichumfangsquelle.Vorgabe;
             double z = aWand > 0.0 ? aWand / p : 0.0;
             // d_t der Wand aus dem flächengewichteten Boden; ohne Boden am Erdreich der Boden wie die Wand selbst.
             double dtBoden = aBoden > 0.0 ? Dt(Math.Max(0.0, aBoden / uaBoden - GebaeudeFestwerte.R_SI_ABWAERTS)) : double.NaN;
@@ -144,7 +167,7 @@ namespace WindowsFormsApplication1
                 else
                 {
                     double dt = Dt(Math.Max(0.0, 1.0 / u - GebaeudeFestwerte.R_SI_ABWAERTS));
-                    uNorm = BodenU(b, dt, z);
+                    uNorm = vorgabe ? uVorgabe : BodenU(b, dt, z);
                     uaNorm += uNorm * bauteile[i].FlaecheM2;
                     flaecheNorm += bauteile[i].FlaecheM2;
                     rgFlaeche += Rg(uNorm, u) * bauteile[i].FlaecheM2;

@@ -468,7 +468,7 @@
                                 <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_RESERVE"
                                             Wert="@ReserveProzent"
                                             Einheit="%" Min="1" Max="100"
-                                            Platzhalter="@Vorgabetext(WindowsFormsApplication1.AufheizvorgabeSchema.RESERVE_VORGABE * 100.0)"
+                                            Platzhalter="@Reservevorgabetext"
                                             Aktiv="@(!_daten.Gesperrt)"
                                             WertChanged="AufheizReserveGesetzt" />
                                 <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_RESERVE" />
@@ -1377,6 +1377,15 @@
         (0, Resource.SIMKONF_AUFH_ART_TAEGLICH),
         (1, Resource.SIMKONF_AUFH_ART_FEST)
     };
+
+    /// <summary>
+    /// Der Platzhalter der leeren Reserve („Vorgabe 20 %", EV1/E64): Ohne Eingabe rechnet der Lauf mit
+    /// <see cref="WindowsFormsApplication1.AufheizvorgabeSchema.RESERVE_VORGABE"/> und meldet das als Hinweis.
+    /// </summary>
+    private static string Reservevorgabetext
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_VORGABE_RESERVE,
+                         (WindowsFormsApplication1.AufheizvorgabeSchema.RESERVE_VORGABE * 100.0)
+                             .ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
 
     /// <summary>Der leise Platzhalter eines leeren Zahlenfeldes („Vorgabe 2") in der Oberflächenkultur.</summary>
     private static string Vorgabetext(double wert)

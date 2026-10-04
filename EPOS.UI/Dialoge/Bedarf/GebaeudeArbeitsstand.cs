@@ -592,6 +592,25 @@ public sealed class GebaeudeArbeitsstand
         Stand.GrundflaecheRandbedingung = gewaehlt == geladen ? RandBeimLaden : gewaehlt;
     }
 
+    /// <summary>
+    /// Wirkt die Vorgabe des wirksamen U-Werts der Bodenplatte (EV1, E65)? Nur bei Randbedingung Erdreich —
+    /// sonst ist das Feld weich gesperrt, sein Wert bleibt erhalten.
+    /// </summary>
+    public bool ErdreichVorgabeWirkt => Randindex == 0;
+
+    /// <summary>
+    /// <b>Die Auskunftszeile der Erdreichkorrektur</b> (EV1, E65) aus der Auskunft des Kerns: B′ und U_g
+    /// gerechnet, bei Vorgabe „U_g = Vorgabe …"; leer, wenn keine Erdreichkorrektur rechnet (Randbedingung
+    /// Keller oder Außenluft, keine Grundfläche, keine Auskunft).
+    /// </summary>
+    public string ErdreichAuskunftZeile(GebaeudeHuelleTexte t, ErdreichAuskunftDaten? a)
+    {
+        if (a is null || !ErdreichVorgabeWirkt) return "";
+        string ug = a.UgWM2K.ToString("N2", CultureInfo.CurrentCulture);
+        if (a.Vorgabe || a.BStrichM is not double b) return t.ZeileErdreichVorgabe.Replace("{0}", ug);
+        return t.ZeileErdreichRechnung.Replace("{0}", b.ToString("N2", CultureInfo.CurrentCulture)).Replace("{1}", ug);
+    }
+
     /// <summary>Der Listenplatz der Randbedingung: 0 Erdreich, 1 Keller, 2 Außenluft.</summary>
     public int Randindex => Stand.GrundflaecheRandbedingung switch
     {
@@ -1413,6 +1432,11 @@ public sealed class GebaeudeArbeitsstand
             && uMittel >= Gebaeudehuellbilanz.U_OPAK_MITTEL_MAX)
             return Huelle(t.MeldungRRest);
 
+        // EV1 (E65): die Vorgabe des wirksamen U-Werts der Bodenplatte - dieselbe Grenze wie der CHECK
+        // (> 0). Geprüft auch bei gesperrtem Feld (Keller, Außenluft), denn der Wert bleibt erhalten.
+        if (Stand.ErdreichUWirksam is double ug && !(ug > 0 && !double.IsInfinity(ug)))
+            return Huelle(t.MeldungErdreichU);
+
         if (SummeOstWest is null) return Huelle(t.MeldungOstWest);
 
         double bauweise = BauweiseNachfuehren
@@ -1668,6 +1692,7 @@ public sealed class GebaeudeArbeitsstand
 
         T(a.Modell, g.Modell); T(a.GrundflaecheRandbedingung, g.GrundflaecheRandbedingung);
         Z(a.Kellertemperatur, g.Kellertemperatur);
+        Z(a.ErdreichUWirksam, g.ErdreichUWirksam);
         Z(a.Rahmenanteil, g.Rahmenanteil); Z(a.Verschattungsfaktor, g.Verschattungsfaktor);
         Z(a.MasseanteilAussen, g.MasseanteilAussen); Z(a.Innenflaechenfaktor, g.Innenflaechenfaktor);
         Z(a.HeizungStrahlungsanteil, g.HeizungStrahlungsanteil); Z(a.HeizleistungMax, g.HeizleistungMax);

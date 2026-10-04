@@ -619,7 +619,7 @@ danach im Wegweiser desselben Ordners.
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052), **548 CSV**, **3 568 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 03.10.2026, Stand `87c024218`)
 gegen `Kenndaten_Test.sqlite` (Schemastand **176**, 83 120 128 Byte, LFS-SHA-256
-`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; gültige Fassung Schemastand **179**, 83 169 280 Byte, LFS-SHA-256 `799da43afcbd99469445311e8c5168109df5fed5a87f7da69d8a984fbadf57f2`, Nachtrag „Schemaschritte 177 bis 179“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; gültige Fassung Schemastand **180**, 83 169 280 Byte, LFS-SHA-256 `0aa889989d4a32c31a23f3162c75a75a74adc7341b5fc1da6a221b192d2ab323`, Nachträge „Schemaschritte 177 bis 179“ und „Schemaschritt 180“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -698,6 +698,16 @@ CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle achtzehn. Sie ist die **
 > Neue Fassung **83 169 280 Byte, LFS-SHA-256 `799da43afcbd99469445311e8c5168109df5fed5a87f7da69d8a984fbadf57f2`**.
 > **Die Basis bleibt:** Es entstehen nur leere Spalten, leere Tabellen und Saat, die kein Rechenweg eines
 > Referenzprojekts liest; keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 180 (wirksamer U-Wert der Bodenplatte als Vorgabe), Basis unverändert.**
+> `ErdreichVorgabeSchema` (180 = `PufferAuslegungErgaenzungSchema.SCHRITT + 1`): an `Tab_Gebaeude` und
+> `Tab_Gebaeude_STAMM` die Spalte `Erdreich_U_Wirksam` (REAL, `CHECK (IS NULL OR > 0)`), dazu der neunte Neubau der
+> Sicht `Abfrage_Projektgebaeude` (104 Spalten). Gesetzt nimmt die Erdreichrechnung den Wert als U_g der Bodenplatte
+> und rechnet kein B′; leer rechnet sie nach DIN EN ISO 13370. Die Testdatenbank ist aus der Fassung `799da43a…` (179)
+> mit `Werkzeuge/Testdatenbankschema` auf **180** gezogen (2 Spalten, alle leer; `integrity_check` ok,
+> `foreign_key_check` leer, 163 STRICT-Tabellen). Neue Fassung **83 169 280 Byte, LFS-SHA-256
+> `0aa889989d4a32c31a23f3162c75a75a74adc7341b5fc1da6a221b192d2ab323`**. **Die Basis bleibt:** Kein Referenzgebäude
+> trägt einen Wert; der Referenzlauf der achtzehn Projekte ist byte-gleich (548 CSV); keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R33 `2026-10-02_R33_Viertelstunden`
 

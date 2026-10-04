@@ -1237,6 +1237,8 @@
         internal static string GebkFensterflaecheWestErl => MyResource.Resource.KI_DLG_GEBK_FENSTERFLAECHE_WEST_ERL;
         internal static string GebkKellertemperaturName => MyResource.Resource.GEBK_LBL_KELLERTEMPERATUR;
         internal static string GebkKellertemperaturErl => MyResource.Resource.KI_DLG_GEBK_KELLERTEMPERATUR_ERL;
+        internal static string GebkErdreichUWirksamName => MyResource.Resource.GEBK_LBL_ERDREICH_U_WIRKSAM;
+        internal static string GebkErdreichUWirksamErl => MyResource.Resource.KI_DLG_GEBK_ERDREICH_U_WIRKSAM_ERL;
         internal static string GebkRechenwegName => MyResource.Resource.GEBK_LBL_RECHENWEG;
         internal static string GebkRechenwegErl => MyResource.Resource.KI_DLG_GEBK_RECHENWEG_ERL;
         internal static string GebkBetriebsartName => MyResource.Resource.KI_DLG_GEBK_BETRIEBSART_NAME;

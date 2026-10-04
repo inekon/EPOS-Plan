@@ -921,6 +921,9 @@ namespace EPOS.Kern.Tests
                 // Pufferauslegung, ID_Stamm am Projektpuffer, Saat des Aufheizkriteriums. Aus DERSELBEN Quelle
                 // wie Migration und Werkzeug; die Spalten bleiben leer.
                 PufferAuslegungErgaenzungSchema.Ausfuehren(null);
+                // Schritt ErdreichVorgabeSchema.SCHRITT (EV1, E65): Erdreich_U_Wirksam an beiden Gebaeudetabellen
+                // samt neuntem Sichtneubau - ZULETZT, weil aeltere Durchgaenge die Sicht in ihrer Form bauen.
+                ErdreichVorgabeSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

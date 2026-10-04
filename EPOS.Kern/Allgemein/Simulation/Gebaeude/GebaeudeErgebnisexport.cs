@@ -158,7 +158,8 @@ namespace WindowsFormsApplication1
             var texte = new List<KeyValuePair<string, string>>();
             if (e.Erdreich != null)
             {
-                skalare.Add(Paar(p + "Erdreich_B", e.Erdreich.B_M));
+                // Bei der Vorgabe (E65) gibt es kein B′ - dann fehlt die Zeile.
+                if (!double.IsNaN(e.Erdreich.B_M)) skalare.Add(Paar(p + "Erdreich_B", e.Erdreich.B_M));
                 if (!double.IsNaN(e.Erdreich.Ug_WM2K)) skalare.Add(Paar(p + "Erdreich_Ug", e.Erdreich.Ug_WM2K));
                 texte.Add(new KeyValuePair<string, string>(p + "Erdreich_Umfangsquelle", e.Erdreich.QuelleText));
             }

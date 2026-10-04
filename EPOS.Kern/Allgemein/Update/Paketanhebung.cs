@@ -289,6 +289,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket bringt die Ergänzungsspalten der Pufferauslegung nicht mit; sie bleiben leer.
             new Stufe(PufferAuslegungErgaenzungSchema.SCHRITT, Art.Ddl,
                       "Sitzungseingaben der Pufferauslegung, Katalogverweis am Projektpuffer, Vorgaben des Aufheizkriteriums"),
+            // Ein älteres Paket bringt den wirksamen U-Wert der Bodenplatte nicht mit; leer rechnet nach DIN EN ISO 13370.
+            new Stufe(ErdreichVorgabeSchema.SCHRITT, Art.Ddl,
+                      "Wirksamer U-Wert der Bodenplatte als Vorgabe am Gebäude"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

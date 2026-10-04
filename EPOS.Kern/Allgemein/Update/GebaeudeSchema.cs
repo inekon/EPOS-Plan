@@ -689,14 +689,43 @@ namespace WindowsFormsApplication1
                                  .Concat(new[] { SPALTE_ENERGIESTANDARD })
                                  .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL }));
 
-        /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der manuellen
-        /// Aufheizzeit). Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
-        /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_AUFHEIZ_MANUELL;
+        // ---- der neunte Durchgang: der wirksame U-Wert der Bodenplatte als Vorgabe (E65, EV1) ----
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der manuellen Aufheizzeit).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_AUFHEIZ_MANUELL;
+        /// <summary>
+        /// Der wirksame U-Wert der Bodenplatte samt Erdreich [W/(m²K)] als Vorgabe (E65): gesetzt, nimmt die
+        /// Erdreichrechnung ihn als U_g der Bodenbauteile am Erdreich und rechnet kein B′; NULL = die
+        /// Erdreichkorrektur nach DIN EN ISO 13370. An <c>Tab_Gebaeude</c> UND <c>Tab_Gebaeude_STAMM</c>.
+        /// </summary>
+        public const string SPALTE_ERDREICH_U_WIRKSAM = "Erdreich_U_Wirksam";
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt der Erdreichvorgabe (<see cref="ErdreichVorgabeSchema.SCHRITT"/>,
+        /// der neunte Durchgang): die 103 aus <see cref="SICHT_AUFHEIZ_MANUELL"/>, dahinter der wirksame U-Wert der
+        /// Bodenplatte - an der Stelle 103.
+        /// </summary>
+        public static readonly string[] SICHT_ERDREICH_VORGABE =
+            SICHT_AUFHEIZ_MANUELL.Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM }).ToArray();
+
+        /// <summary>Die Sichtdefinition der Erdreichvorgabe: alle acht Durchgänge davor und dahinter der wirksame U-Wert der Bodenplatte.</summary>
+        public static readonly string SQL_VIEW_ERDREICH_VORGABE =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
+                                 .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM }));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der Erdreichvorgabe).
+        /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
+        /// </summary>
+        public static string[] SICHT_AKTUELL => SICHT_ERDREICH_VORGABE;
+
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der Erdreichvorgabe).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_ERDREICH_VORGABE;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)

@@ -14131,6 +14131,24 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_LBL_KELLERTEMPERATUR" xml:space="preserve">
     <value>Kellertemperatur :</value>
   </data>
+  <data name="GEBK_LBL_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>Wirksamer U-Wert Bodenplatte :</value>
+  </data>
+  <data name="GEBK_HINWEIS_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>leer = Erdreichkorrektur nach DIN EN ISO 13370</value>
+  </data>
+  <data name="GEBK_SPERRE_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>Der wirksame U-Wert gilt nur bei Randbedingung Erdreich; der eingetragene Wert bleibt erhalten.</value>
+  </data>
+  <data name="GEBK_ZEILE_ERDREICH_RECHNUNG" xml:space="preserve">
+    <value>Erdreichkorrektur nach DIN EN ISO 13370: B′ = {0} m, U_g = {1} W/(m²K)</value>
+  </data>
+  <data name="GEBK_ZEILE_ERDREICH_VORGABE" xml:space="preserve">
+    <value>U_g = Vorgabe {0} W/(m²K)</value>
+  </data>
+  <data name="GEBK_MSG_ERDREICH_U" xml:space="preserve">
+    <value>Der wirksame U-Wert der Bodenplatte muss größer als 0 W/(m²K) sein; leer gilt die Erdreichkorrektur nach DIN EN ISO 13370.</value>
+  </data>
   <data name="GEBK_LBL_LUFTWECHSEL" xml:space="preserve">
     <value>Luftwechselrate :</value>
   </data>
@@ -23426,6 +23444,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_GEBK_KELLERTEMPERATUR_ERL" xml:space="preserve">
     <value>Temperatur des unbeheizten Kellers unter der Bodenplatte in °C; leer = Vorgabe 10 °C.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ERDREICH_U_WIRKSAM_ERL" xml:space="preserve">
+    <value>Wirksamer U-Wert der Bodenplatte samt Erdreich in W/(m²K), größer als 0; gilt nur bei Randbedingung Erdreich. Leer = Erdreichkorrektur nach DIN EN ISO 13370.</value>
   </data>
   <data name="KI_DLG_GEBK_RECHENWEG_ERL" xml:space="preserve">
     <value>Der Rechenweg des Gebäudes: VDI 6007 (Stundenmodell) oder Tagesbilanz (Bestandsweg); nur lesend.</value>
@@ -41392,6 +41413,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="SIMKONF_AUFH_VORGABE" xml:space="preserve">
     <value>Vorgabe {0}</value>
   </data>
+  <data name="SIMKONF_AUFH_VORGABE_RESERVE" xml:space="preserve">
+    <value>Vorgabe {0} %</value>
+  </data>
   <data name="SIMKONF_AUFH_HRL_AUS" xml:space="preserve">
     <value>Aus: Der Heizsollwert springt so, wie ihn der Kalender führt. Ein: Vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe, damit die Heizleistung die Aufheizleistung nicht übersteigt. Gilt für das ganze Projekt und für Gebäude nach VDI 6007; jedes Feld wird sofort gespeichert.</value>
   </data>
@@ -41399,7 +41423,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Aufheizleistung ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die stationäre Last an der kältesten Stunde zuzüglich der Aufheizreserve ρ. Die Bemessung legt die längste Aufheizzeit fest; „kälteste Stunde − ΔT_K“ bemisst kälter als das Klimajahr. Täglich: Jeder Tag rechnet seine Aufheizzeit nach seiner Außentemperatur, höchstens die längste. Fest: Jeder Tag heizt so lange vor wie der Bemessungsfall. Gilt für das ganze Projekt; jedes Feld wird sofort gespeichert.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_RESERVE" xml:space="preserve">
-    <value>Leer gilt die Vorgabe von 20 %. Sie ist ein Startwert, der an Referenzgebäuden gemessen und danach festgelegt wird; zulässig sind 1 bis 100 %.</value>
+    <value>Ohne Eingabe gilt die Vorgabe von 20 %, und der Lauf meldet das als Hinweis; zulässig sind 1 bis 100 %.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_GEKOPPELT" xml:space="preserve">
     <value>Mit der Anlagenkopplung „Heizkreis (AK1)“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe.</value>
@@ -41859,6 +41883,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="SIMENG_AUFH_W5" xml:space="preserve">
     <value>Aufheizoptimierung (W5): Das Gebäude rechnet mit Anlagenkopplung und wird nicht optimiert; die Übergabe begrenzt die Leistung nach dem Sprung.</value>
+  </data>
+  <data name="SIMENG_AUFH_RESERVE_VORGABE" xml:space="preserve">
+    <value>Aufheizreserve nicht vorgegeben; es gelten {0} %.</value>
   </data>
   <data name="BHKWK_GRP_TEILLAST" xml:space="preserve">
     <value>Teillast und Takten</value>
@@ -42444,6 +42471,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE" xml:space="preserve">
     <value>{0}: t_auf,max {1} h bei {2} °C ({3}) · P_auf {4} kW {5}</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_RESERVE" xml:space="preserve">
+    <value>· Reserve {0} %</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_ZEILE_RESERVE_VORGABE" xml:space="preserve">
+    <value>· Reserve {0} % (Vorgabe)</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR" xml:space="preserve">
     <value>{0}: Die Aufheizleistung reicht nicht — bei {1} °C ({2}) hält keine Rampe bis 48 h · P_auf {3} kW {4}</value>

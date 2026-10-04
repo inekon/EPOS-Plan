@@ -224,6 +224,18 @@ namespace WindowsFormsApplication1
         public int? Aufheizzeit_Manuell_H;
 
         // =====================================================================
+        //  Der wirksame U-Wert der Bodenplatte (E65, neunter Sichtneubau) —
+        //  NULL-ERHALTEND; null = Erdreichkorrektur nach DIN EN ISO 13370.
+        // =====================================================================
+
+        /// <summary>
+        /// Der wirksame U-Wert der Bodenplatte samt Erdreich U_g [W/(m²K)] als Vorgabe
+        /// (<c>Tab_Gebaeude.Erdreich_U_Wirksam</c>): gesetzt, nimmt die Erdreichrechnung ihn für die Bodenbauteile am
+        /// Erdreich und rechnet kein B′. <c>null</c> = die Rechnung nach DIN EN ISO 13370.
+        /// </summary>
+        public double? Erdreich_U_Wirksam;
+
+        // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der
         //  Gebäudezeile. Bewusst internal und eine Eigenschaft: Die Feldspiegel

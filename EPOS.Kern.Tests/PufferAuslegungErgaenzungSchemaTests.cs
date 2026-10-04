@@ -25,7 +25,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(ProzessNutzungSchema.SCHRITT + 1, PufferAuslegungErgaenzungSchema.SCHRITT);
             Assert.Equal(179, PufferAuslegungErgaenzungSchema.SCHRITT);
-            Assert.Equal(PufferAuslegungErgaenzungSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= PufferAuslegungErgaenzungSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl,
                          Paketanhebung.Stufen.Single(x => x.Nr == PufferAuslegungErgaenzungSchema.SCHRITT).Wirkung);
             Assert.Equal(6, PufferAuslegungErgaenzungSchema.SPALTEN.Count);
