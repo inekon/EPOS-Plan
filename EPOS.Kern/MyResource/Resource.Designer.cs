@@ -84819,7 +84819,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Anlagenkopplung ist für ein Gebäude mit mehreren Zonen nicht abgebildet – Heizung und Kühlung rechnen je Zone ideal, und das Gebäude geht als feste Last in die Anlage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Kühlübergabe ist für ein Gebäude mit mehreren Zonen nicht abgebildet – die Kühlung rechnet je Zone ideal und geht als feste Last in die Anlage; die Wärmeübergabe rechnet je Zone. ähnelt.
         /// </summary>
         public static string SIMENG_G6_AK1_IDEAL {
             get {

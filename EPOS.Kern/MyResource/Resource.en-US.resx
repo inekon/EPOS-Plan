@@ -34053,7 +34053,7 @@ Do you want to allow this?</value>
     <value>{0}: The coupling of zones {1} did not settle in hour {2} after {3} passes (largest last change {4} K or {5} W, air exchange between them {6} m³/h). The demand calculation stops.</value>
   </data>
   <data name="SIMENG_G6_AK1_IDEAL" xml:space="preserve">
-    <value>VDI 6007 building model: {0} is calculated with {1} zones; plant coupling is not available for a building with several zones – heating and cooling are ideal per zone, and the building enters the plant as a fixed load.</value>
+    <value>VDI 6007 building model: {0} is calculated with {1} zones; the cooling transfer is not available for a building with several zones – cooling is ideal per zone and enters the plant as a fixed load; the heat transfer is calculated per zone.</value>
   </data>
   <data name="SIMENG_G6_ZONENRECHNUNG" xml:space="preserve">
     <value>VDI 6007 building model: {0} calculates {1} coupled zones ({2} sub-groups); pre-run {3} hours; on average {4} passes per coupled hour, at most {5}.</value>

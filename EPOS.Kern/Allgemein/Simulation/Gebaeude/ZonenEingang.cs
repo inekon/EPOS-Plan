@@ -27,8 +27,9 @@ namespace WindowsFormsApplication1
     internal sealed class Zonenkopplung
     {
         internal Zonenkopplung(GebaeudeZonensatz zone, int zonenzahl, IReadOnlyList<BauteilEingang> bauteile,
-                               IReadOnlyList<Luftkopplung> luftkopplungen)
+                               IReadOnlyList<Luftkopplung> luftkopplungen, bool ohneUebergabe = false)
         {
+            OhneUebergabe = ohneUebergabe;
             Zone = zone ?? throw new ArgumentNullException(nameof(zone));
             if (zonenzahl < 1) throw new ArgumentOutOfRangeException(nameof(zonenzahl));
             Zonenzahl = zonenzahl;
@@ -47,6 +48,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Luftaustausch mit den Nachbarzonen.</summary>
         internal IReadOnlyList<Luftkopplung> Luftkopplungen { get; }
+
+        /// <summary>
+        /// Rechnet die Zone ohne Wärmeübergabe (E63)? Allein im adiabaten Vorlauf der 4-K-Regel — dort
+        /// bleibt eine gekoppelte Zone ideale Last (<see cref="GebaeudeModellEingang.KopplungAlsIdealeLast"/>).
+        /// </summary>
+        internal bool OhneUebergabe { get; }
     }
 
     /// <summary>
@@ -253,6 +260,8 @@ namespace WindowsFormsApplication1
         /// Zone mit den Reihen ihrer Nachbarn und setzt die Rampen; <c>null</c> oder aus = kein Aufruf
         /// (Grundsatz 3).</param>
         /// <param name="aufheizleistungTestW">Testnaht der Grenzfallprobe (N-AH8): P_auf statt der Bemessung [W]; NaN = keine.</param>
+        /// <param name="vorlaufAnlageC">Der feste Vorlauf der Anlage [°C] für ein gekoppeltes Gebäude ohne Heizkurve (E63,
+        /// wie im Einzonenweg); NaN = keiner.</param>
         /// <exception cref="GebaeudeModellException">benannt: keine beheizte Zone, eine Trennfläche oder
         /// ein Luftstrom zu einer Zone, die das Gebäude nicht führt, eine unlesbare Zone, oder jede
         /// Prüfung des Eingangsbauers.</exception>
@@ -262,7 +271,8 @@ namespace WindowsFormsApplication1
                                                           bool adiabat = false,
                                                           Func<long?, Konditionierungssatz> konditionierung = null,
                                                           Aufheizvorgabe aufheizvorgabe = null,
-                                                          double aufheizleistungTestW = double.NaN)
+                                                          double aufheizleistungTestW = double.NaN,
+                                                          double vorlaufAnlageC = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -361,7 +371,7 @@ namespace WindowsFormsApplication1
                 // Stufe KP1: die Konditionierung JE ZONE - erste Quelle Zone, dann Gebaeude, dann
                 // abgeleitet (Konzept 3.4); null heisst woertlich der Bestandszweig.
                 eingaenge[i] = GebaeudeModellEingang.Bauen(gebaeude, klima,
-                    new Zonenkopplung(zonen[i], n, geordnet[i].AsReadOnly(), luft[i].AsReadOnly()),
+                    new Zonenkopplung(zonen[i], n, geordnet[i].AsReadOnly(), luft[i].AsReadOnly(), ohneUebergabe: adiabat),
                     kuehlbetrieb, anlagenkopplung,
                     konditionierung: konditionierung?.Invoke(zonen[i].ZonenId));
 
@@ -374,6 +384,12 @@ namespace WindowsFormsApplication1
                 ergebnis[i] = new ZonenEingang(e, i, nachbarIndex, luftIndex);
             }
             foreach (ZonenEingang z in ergebnis) z._gebaeudezonen = ergebnis;
+
+            // E63 (AK1z): die Wärmeübergabe je Zone - erst jetzt, weil Nennleistung und Vorlauf des
+            // Gebäudes alle Zonen brauchen; vor den Aufheizrampen wie im Einzonenweg (Reihe ohne Rampe).
+            // Ohne gekoppelte Zone kein Aufruf: ein ungekoppeltes Gebäude bleibt Zeichen für Zeichen.
+            if (eingaenge.Any(e => e.KopplungWirksam))
+                GebaeudeModellEingang.ZonenkopplungAufloesen(gebaeude, ergebnis, vorlaufAnlageC);
 
             // Stufe KP3 (Entwurf KP3, Festlegung 1): die Aufheizrampen erst HIER - in beiden
             // Aufbauten (adiabater Vorlauf der 4-K-Regel und gekoppelter Lauf) -, denn erst jetzt

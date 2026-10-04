@@ -1474,6 +1474,10 @@ namespace WindowsFormsApplication1
             Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_SOMMERLUEFTUNG, z => z.SommerlueftungsstundenH, (z, w) => z.SommerlueftungsstundenH = w),
             // Schritt KP-S4 (E59): die wirksame Art, geerbt vom Gebaeude.
             Text<ErgebnisZoneModel>(AufheizManuellSchema.SPALTE_ART, z => z.AufheizArt, (z, w) => z.AufheizArt = w),
+            // Schritt 181 (E63, AK1z): der Kreis der Zone - NULL bei idealer Zone.
+            Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_VORLAUF_MITTEL, z => z.VorlaufMittelC, (z, w) => z.VorlaufMittelC = w),
+            Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_RUECKLAUF_MITTEL, z => z.RuecklaufMittelC, (z, w) => z.RuecklaufMittelC = w),
+            Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_UEBERGABE_BEGRENZT, z => z.UebergabeBegrenztH, (z, w) => z.UebergabeBegrenztH = w),
         };
 
         /// <summary>

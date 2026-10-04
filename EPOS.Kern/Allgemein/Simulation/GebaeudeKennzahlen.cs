@@ -80,6 +80,10 @@ namespace WindowsFormsApplication1
                             NachtauskuehlstundenH = z.Ergebnis.StundenMitNachtauskuehlung,
                             // Stufe KP3 (Festlegung 26, E54 je Zone): NULL ohne Sommerlueftung.
                             SommerlueftungsstundenH = Sommerlueftungsstunden(z.Ergebnis),
+                            // E63 (AK1z): der Kreis der gekoppelten Zone; NULL bei idealer Zone.
+                            VorlaufMittelC = z.Ergebnis.Heizkreis is HeizkreisErgebnis zk && !double.IsNaN(zk.VorlaufMittelC) ? zk.VorlaufMittelC : (double?)null,
+                            RuecklaufMittelC = z.Ergebnis.Heizkreis is HeizkreisErgebnis zr && !double.IsNaN(zr.RuecklaufMittelC) ? zr.RuecklaufMittelC : (double?)null,
+                            UebergabeBegrenztH = z.Ergebnis.Heizkreis?.UebergabeBegrenztStundenH,
                         }.MitAufheizwerten(Aufheizwerte(z.Ergebnis.Aufheizung, zone: true)));
 
                 e.KuehlenergieMwh = vdi.KuehlenergieMwh;

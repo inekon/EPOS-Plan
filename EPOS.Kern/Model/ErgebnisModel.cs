@@ -301,6 +301,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int? SommerlueftungsstundenH;
 
+        /// <summary>Mittlerer Vorlauf des Zonenkreises [°C] über die Heizstunden (E63, AK1z); <c>null</c> bei idealer Zone.</summary>
+        public double? VorlaufMittelC;
+
+        /// <summary>Mittlerer Rücklauf des Zonenkreises [°C] über die Heizstunden (E63); <c>null</c> bei idealer Zone.</summary>
+        public double? RuecklaufMittelC;
+
+        /// <summary>Stunden, in denen die Übergabe der Zone begrenzt hat [h] (E63); <c>null</c> bei idealer Zone.</summary>
+        public double? UebergabeBegrenztH;
+
         // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
 
         /// <summary>
