@@ -30292,6 +30292,177 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut der Außenseite in Grad: 0° = Nord, im Uhrzeigersinn (90° = Ost, 180° = Süd, 270° = West) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_AZIMUT_BEZUG {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_AZIMUT_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Export aus EPOS-Plan, Stufe S1: semantisch, ohne Geometrie. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_DATEI_STUFE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_DATEI_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh/(m²·a), bezogen auf die Nutzfläche ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_FLAECHENBEZOGEN {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_FLAECHENBEZOGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechsel der Infiltration in 1/h ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung in Grad gegen die Waagerechte: 0° = waagerecht nach oben (Dach), 90° = senkrecht, 180° = waagerecht nach unten (Boden) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_NEIGUNG_BEZUG {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_NEIGUNG_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumgrenzen ohne ConnectionGeometry sind logisch, nicht vermessen ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_RAUMGRENZE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_RAUMGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 6007 Blatt 1, Zweikapazitätenmodell ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_RECHENMODELL_EINZONE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_RECHENMODELL_EINZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 6007 Blatt 1, Zweikapazitätenmodell je Zone; die Kopplung der Zonen ist eine EPOS-Erweiterung, keine Norm ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_RECHENMODELL_MEHRZONE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_RECHENMODELL_MEHRZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihenfolge der IfcMaterialLayer: die erste Schicht liegt außen ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_SCHICHTRICHTUNG {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_SCHICHTRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Längenbezogene Wärmebrücken des Bauteils als Summe ψ·L in W/K ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_WAERMEBRUECKE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_WAERMEBRUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwände (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenplatten (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_BODENPLATTE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_BODENPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dächer (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_DACH {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decken (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_DECKE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_DECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_FENSTER {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenwände (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_INNENWAND {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige Bauteile (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_SONSTIGES {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_SONSTIGES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Türen (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_TUER {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_TUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhangfassaden (zusammengefasst) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ZUSAMMEN_VORHANGFASSADE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ZUSAMMEN_VORHANGFASSADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Meldungen. ähnelt.
         /// </summary>
         public static string GEXP_KEINE_MELDUNGEN {
@@ -30405,6 +30576,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PROT_GEBAEUDEART_UNBEKANNT {
             get {
                 return ResourceManager.GetString("GEXP_PROT_GEBAEUDEART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Export abgebrochen: Die Schemaprüfung meldet {0} Verstöße; es wurde nichts geschrieben. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_IFC_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_IFC_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt keine Rechenergebnisse: EPOS_Ergebnis und die Angaben Rechenzeitpunkt und Wetterdatensatz entfallen. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_IFC_OHNE_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_IFC_OHNE_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Standort trägt keine Koordinaten: IfcSite ohne RefLatitude und RefLongitude. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_IFC_OHNE_KOORDINATEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_IFC_OHNE_KOORDINATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schemaprüfung: {0} – {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_IFC_SCHEMA {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_IFC_SCHEMA", resourceCulture);
             }
         }
         

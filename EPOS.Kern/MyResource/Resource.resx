@@ -44269,5 +44269,74 @@ Chart</value>
   <data name="CHART_LEGENDE_KAELTE_UNGEDECKT" xml:space="preserve">
     <value>Ungedeckte Kälte</value>
   </data>
+  <data name="GEXP_IFC_ZUSAMMEN_AUSSENWAND" xml:space="preserve">
+    <value>Außenwände (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_DACH" xml:space="preserve">
+    <value>Dächer (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_BODENPLATTE" xml:space="preserve">
+    <value>Bodenplatten (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_FENSTER" xml:space="preserve">
+    <value>Fenster (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_TUER" xml:space="preserve">
+    <value>Türen (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_INNENWAND" xml:space="preserve">
+    <value>Innenwände (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_DECKE" xml:space="preserve">
+    <value>Decken (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_VORHANGFASSADE" xml:space="preserve">
+    <value>Vorhangfassaden (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_ZUSAMMEN_SONSTIGES" xml:space="preserve">
+    <value>Sonstige Bauteile (zusammengefasst)</value>
+  </data>
+  <data name="GEXP_IFC_RECHENMODELL_EINZONE" xml:space="preserve">
+    <value>VDI 6007 Blatt 1, Zweikapazitätenmodell</value>
+  </data>
+  <data name="GEXP_IFC_RECHENMODELL_MEHRZONE" xml:space="preserve">
+    <value>VDI 6007 Blatt 1, Zweikapazitätenmodell je Zone; die Kopplung der Zonen ist eine EPOS-Erweiterung, keine Norm</value>
+  </data>
+  <data name="GEXP_IFC_AZIMUT_BEZUG" xml:space="preserve">
+    <value>Azimut der Außenseite in Grad: 0° = Nord, im Uhrzeigersinn (90° = Ost, 180° = Süd, 270° = West)</value>
+  </data>
+  <data name="GEXP_IFC_NEIGUNG_BEZUG" xml:space="preserve">
+    <value>Neigung in Grad gegen die Waagerechte: 0° = waagerecht nach oben (Dach), 90° = senkrecht, 180° = waagerecht nach unten (Boden)</value>
+  </data>
+  <data name="GEXP_IFC_SCHICHTRICHTUNG" xml:space="preserve">
+    <value>Reihenfolge der IfcMaterialLayer: die erste Schicht liegt außen</value>
+  </data>
+  <data name="GEXP_IFC_RAUMGRENZE" xml:space="preserve">
+    <value>Raumgrenzen ohne ConnectionGeometry sind logisch, nicht vermessen</value>
+  </data>
+  <data name="GEXP_IFC_WAERMEBRUECKE" xml:space="preserve">
+    <value>Längenbezogene Wärmebrücken des Bauteils als Summe ψ·L in W/K</value>
+  </data>
+  <data name="GEXP_IFC_FLAECHENBEZOGEN" xml:space="preserve">
+    <value>kWh/(m²·a), bezogen auf die Nutzfläche</value>
+  </data>
+  <data name="GEXP_IFC_LUFTWECHSEL" xml:space="preserve">
+    <value>Luftwechsel der Infiltration in 1/h</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
+    <value>IFC-Export aus EPOS-Plan, Stufe S1: semantisch, ohne Geometrie.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>Die Datei trägt keine Rechenergebnisse: EPOS_Ergebnis und die Angaben Rechenzeitpunkt und Wetterdatensatz entfallen.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_OHNE_KOORDINATEN" xml:space="preserve">
+    <value>Der Standort trägt keine Koordinaten: IfcSite ohne RefLatitude und RefLongitude.</value>
+  </data>
+  <data name="GEXP_PROT_IFC_SCHEMA" xml:space="preserve">
+    <value>Schemaprüfung: {0} – {1}</value>
+  </data>
+  <data name="GEXP_PROT_IFC_ABGEBROCHEN" xml:space="preserve">
+    <value>IFC-Export abgebrochen: Die Schemaprüfung meldet {0} Verstöße; es wurde nichts geschrieben.</value>
+  </data>
 </root>
 
