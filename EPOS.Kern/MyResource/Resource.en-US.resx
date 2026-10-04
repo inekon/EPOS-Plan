@@ -28210,7 +28210,7 @@ Do you want to allow this?</value>
     <value>Chiller "{0}": in {1} hours the capacity of the performance map was not sufficient — {2} MWh of cooling demand remained open after this chiller.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_REIHENFOLGE" xml:space="preserve">
-    <value>Chillers have no cascade position: they cover after the heat pumps in cooling mode in the order of their project copies — with a dry or wet cooler in free-cooling hours before all others.</value>
+    <value>Chillers cover as a generator type after the heat pumps in cooling mode, among themselves in the order of their plant rows — with a dry or wet cooler in free-cooling hours before all others.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
     <value>Heat pump "{0}": cooling mode is set, but the project does not calculate cooling (project setting "Calculate cooling" off) — the unit only heats.</value>
@@ -44892,6 +44892,39 @@ chart</value>
   </data>
   <data name="KI_DLG_ZON_KUEHLLEISTUNG_ERL" xml:space="preserve">
     <value>Cooling power limit of the zone in kW; empty = the building's, with two or more zones by floor-area share.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_OHNE_ANLAGE" xml:space="preserve">
+    <value>Chiller "{0}": the project copy has no plant row — it is not calculated. Add the chiller as a generator in the project.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_ANLAGE_OHNE_GERAET" xml:space="preserve">
+    <value>Plant "{0}": the chiller has no device (project copy deleted) — it is not calculated.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Chiller "{0}": the auxiliary power share {1} is not between 0 and 1 — no auxiliary power surcharge is applied.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_KUEHLTRAEGER" xml:space="preserve">
+    <value>Chiller "{0}": the cooling electricity is charged to the electricity carrier "{1}" — {2}.</value>
+  </data>
+  <data name="KM_ANLAGE_FEHLT" xml:space="preserve">
+    <value>The chiller plant no longer exists.</value>
+  </data>
+  <data name="KM_ANLAGE_NAME_LEER" xml:space="preserve">
+    <value>Please give the plant a name.</value>
+  </data>
+  <data name="KM_ANLAGE_ANZAHL_UNGUELTIG" xml:space="preserve">
+    <value>The number must be at least 1.</value>
+  </data>
+  <data name="KM_ANLAGE_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>The auxiliary power share must be at least 0 and below 100 %.</value>
+  </data>
+  <data name="KM_ANLAGE_VORLAUF_UNGUELTIG" xml:space="preserve">
+    <value>The chilled water supply temperature must be between −20 and 30 °C.</value>
+  </data>
+  <data name="AUFLOESER_KOMP_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE_KM" xml:space="preserve">
+    <value>all chillers</value>
   </data>
 </root>
 

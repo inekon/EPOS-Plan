@@ -36,6 +36,9 @@ namespace WindowsFormsApplication1
         public ErgebnisSolarthermieModel Solarthermie;
         public ErgebnisPhotovoltaikModel Photovoltaik;
 
+        // KU3-4 (Schemaschritt 183): eine Zeile je Kaeltemaschine (Tab_ErgebnisKaeltemaschine); leer = keine gerechnet.
+        public List<ErgebnisKaeltemaschineModel> Kaeltemaschinen = new List<ErgebnisKaeltemaschineModel>();
+
         // Pufferspeicher des Laufs (Tab_ErgebnisPufferspeicher, Konzept 6.6):
         // eine Zeile je beteiligtem Speicher - Senkenspeicher UND Quellspeicher.
         // Leere Liste = dieser Lauf hatte keinen Speicher.
@@ -446,6 +449,25 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>Kuehl_Uebergabe_Begrenzt_Stunden</c> [h]: Stunden, in denen die Kühlübergabe (mindestens eines Gebäudes) die Grenze war.</summary>
         public double? KuehlUebergabeBegrenztStundenH;
+    }
+
+    /// <summary>
+    /// <b>Das Ergebnis einer Kältemaschine</b> (KU3-4, <c>Tab_ErgebnisKaeltemaschine</c>): Mengen in MWh/a,
+    /// Stunden in h/a; alle Werte gelten für die ganze Anlagenzeile (Anzahl gleicher Maschinen).
+    /// </summary>
+    public class ErgebnisKaeltemaschineModel
+    {
+        public int? ID_Kaeltemaschine;
+        public string Bezeichner = "";
+        public int Anzahl = 1;
+        public double Kaelteproduktion_MWh;
+        public double Stromverbrauch_MWh;
+        public double Hilfsstrom_MWh;
+        public double FreieKuehlung_MWh;
+        public int FreieKuehlung_Stunden;
+        public int Taktstunden;
+        public double Unterdeckung_MWh;
+        public int Stunden_Leistungsgrenze;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.

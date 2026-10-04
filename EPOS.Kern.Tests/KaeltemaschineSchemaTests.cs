@@ -38,7 +38,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(ZonenUebergabeSchema.SCHRITT + 1, KaeltemaschineSchema.SCHRITT);
             Assert.Equal(182, KaeltemaschineSchema.SCHRITT);
-            Assert.Equal(KaeltemaschineSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KaeltemaschineSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == KaeltemaschineSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Equal("Kältemaschine", DbWerte.ERZEUGER_KAELTEMASCHINE);
@@ -127,7 +127,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             Assert.True(KaeltemaschineSchema.Vollstaendig());
             Assert.Equal(17, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_STAMM).Count);
-            Assert.Equal(15, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_PROJEKT).Count);
+            Assert.Equal(17, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_PROJEKT).Count); // + Kuehl_Vorlauf, Kuehl_Hilfsstromanteil (183)
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN_STAMM).Count);
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN).Count);
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE ReadOnly = 1"));

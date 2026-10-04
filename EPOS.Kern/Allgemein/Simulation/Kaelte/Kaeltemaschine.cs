@@ -227,6 +227,12 @@ namespace WindowsFormsApplication1
         /// <summary>Kaltwassertemperatur des Laufs [°C].</summary>
         public double Kaltwassertemperatur;
 
+        /// <summary>
+        /// Anzahl gleicher Maschinen der Anlagenzeile (KU3-4, <c>Kaeltemaschine_Anzahl</c>), mindestens 1: Die
+        /// Last teilt sich gleich auf, Kälte, Strom und Kapazität zählen das Vielfache.
+        /// </summary>
+        public int Anzahl = 1;
+
         /// <summary>Die Kennlinie der Projektkopie.</summary>
         public KaeltemaschinenKennlinie Kennlinie;
 
@@ -251,6 +257,15 @@ namespace WindowsFormsApplication1
         /// welchem Strom. Die Last ist der offene Kältebedarf der Stunde [kWh].
         /// </summary>
         public KaeltemaschinenStunde Stunde(int h, double lastKwh)
+        {
+            if (Anzahl <= 1) return StundeEinzeln(h, lastKwh);
+            KaeltemaschinenStunde s = StundeEinzeln(h, lastKwh / Anzahl);
+            return new KaeltemaschinenStunde(s.KaelteKwh * Anzahl, s.VerdichterKwh * Anzahl, s.HilfsstromKwh * Anzahl,
+                                             s.KapazitaetKw * Anzahl, s.FreieKuehlung, s.Randwert, s.Takt);
+        }
+
+        /// <summary>Eine Stunde EINER Maschine der Anlagenzeile.</summary>
+        private KaeltemaschinenStunde StundeEinzeln(int h, double lastKwh)
         {
             if (!(lastKwh > 0)) return default;
             double rk = Rueckkuehltemperatur_stuendlich != null && h >= 0 && h < Rueckkuehltemperatur_stuendlich.Length
@@ -350,8 +365,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Baut die Rechenklasse aus der Projektkopie. Die Kaltwassertemperatur ist die kleinste
-        /// Kaltwasser-Stützstelle der Kennlinie (Muster K21), mindestens <c>Kaltwasser_Vorlauf_Min</c>;
+        /// Baut die Rechenklasse aus der Projektkopie. Die Kaltwassertemperatur ist <c>Kuehl_Vorlauf</c> der
+        /// Projektkopie, ohne ihn die kleinste Kaltwasser-Stützstelle der Kennlinie (Muster K21), mindestens
+        /// <c>Kaltwasser_Vorlauf_Min</c>;
         /// <paramref name="angehoben"/> sagt, ob die Grenze gegriffen hat.
         /// </summary>
         public static Kaeltemaschine AusModell(KaeltemaschineModel m, out bool angehoben)
@@ -361,6 +377,8 @@ namespace WindowsFormsApplication1
             var k = new KaeltemaschinenKennlinie(m.Kennlinie.Select(p =>
                 (p.Rueckkuehltemperatur, p.Kaltwassertemperatur, p.EER, p.Kaelteleistung_kW)));
             double kw = k.Kaltwasserstuetzstellen.Count > 0 ? k.Kaltwasserstuetzstellen[0] : 0.0;
+            // KU3-4: der Kaltwasservorlauf der Projektkopie (Kuehl_Vorlauf) vor der kleinsten Stützstelle.
+            if (m.Kuehl_Vorlauf.HasValue) kw = m.Kuehl_Vorlauf.Value;
             if (m.Kaltwasser_Vorlauf_Min.HasValue && kw < m.Kaltwasser_Vorlauf_Min.Value)
             {
                 kw = m.Kaltwasser_Vorlauf_Min.Value;

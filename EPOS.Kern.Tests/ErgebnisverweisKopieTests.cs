@@ -386,7 +386,9 @@ namespace EPOS.Kern.Tests
             // Gebaeudesimulation G6b (Schritt S-G, A6): das Ergebnis je Zone am Gebaeudeergebnis.
             SchemaKatalog.TAB_ERGEBNISZONE,
             // EQ1 (Entscheidungsvorlage Modellgrenzen, Welle M6): die gespeicherte Erdreichpruefung.
-            KatalogfassungSchema.TAB_ERGEBNIS_ERDREICH
+            KatalogfassungSchema.TAB_ERGEBNIS_ERDREICH,
+            // KU3-4 (Schritt 183): das Ergebnis je Kaeltemaschine.
+            KaeltemaschineAnlageSchema.TAB_ERGEBNIS
         };
 
         private static bool Ergebnistabelle(string tabelle)

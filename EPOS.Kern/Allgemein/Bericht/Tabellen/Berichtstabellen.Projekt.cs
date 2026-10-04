@@ -15,11 +15,15 @@ namespace WindowsFormsApplication1
         /// Träger kommen aus dem Wertesatz (<paramref name="traegername"/>).
         /// </summary>
         public static Berichtstabelle Kaelteerzeuger(ErgebnisWaermepumpeModel wp, Func<int, string> traegername,
-                                                     bool englisch, CultureInfo kultur)
+                                                     bool englisch, CultureInfo kultur,
+                                                     IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null)
         {
             var zeilen = (wp?.Module ?? new List<ErgebnisWaermepumpeModulModel>())
                 .Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
-            if (zeilen.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
+            // KU3-4: die Kältemaschinen nach den Wärmepumpen - ihre Zeilen tragen keinen Netzbezug je Anlage.
+            var km = (maschinen ?? Array.Empty<ErgebnisKaeltemaschineModel>())
+                .Where(k => k != null && k.Kaelteproduktion_MWh > 0).ToList();
+            if (zeilen.Count == 0 && km.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
 
             var t = new Berichtstabelle().Feste(2600, 1200, 1300, 1000, 1300, 0);
             string[] titel = { "Anlage", "Kälte [MWh/a]", "Kältestrom [MWh/a]", "EER", "aus dem Netz [MWh/a]", "Stromträger" };
@@ -45,6 +49,20 @@ namespace WindowsFormsApplication1
                     zahl(strom > 0 ? m.Kaelteproduktion.Value / strom : (double?)null, null),
                     zahl(m.Kaeltestrom_Netzbezug, "MWh/a"),
                     Zellen.Text(ProjektbeschreibungBaustein.KuehltraegerText(m, traegername)),
+                });
+            }
+            foreach (ErgebnisKaeltemaschineModel k in km)
+            {
+                string name = string.IsNullOrEmpty(k.Bezeichner) ? Tabellenzelle.STRICH : k.Bezeichner;
+                if (k.Anzahl > 1) name += " (" + k.Anzahl.ToString(kultur) + " ×)";
+                t.Zeile(new[]
+                {
+                    Zellen.Text(name),
+                    zahl(k.Kaelteproduktion_MWh, "MWh/a"),
+                    zahl(k.Stromverbrauch_MWh, "MWh/a"),
+                    zahl(k.Stromverbrauch_MWh > 0 ? k.Kaelteproduktion_MWh / k.Stromverbrauch_MWh : (double?)null, null),
+                    zahl(null, "MWh/a"),
+                    Zellen.Text(Tabellenzelle.STRICH),
                 });
             }
             return t;
