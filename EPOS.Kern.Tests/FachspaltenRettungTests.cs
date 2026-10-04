@@ -257,6 +257,9 @@ namespace EPOS.Kern.Tests
             // Der Verweis WQ_ID_Quellprofil braucht einen Satz; die Testdatenbank führt keinen.
             DataRepository.ExecuteSQL("INSERT INTO Tab_Quellprofil (ID_Projekt, Bezeichner) VALUES (?, ?)",
                                       new DbParam("?", projekt), new DbParam("?", "FS1-Probe"));
+            // Ebenso ID_Kaeltemaschine (Schritt 183): Kein Referenzprojekt führt eine Projektkopie der Kältemaschine.
+            DataRepository.ExecuteSQL("INSERT INTO Tab_Kaeltemaschine (ID_Projekt, Bezeichner) VALUES (?, ?)",
+                                      new DbParam("?", projekt), new DbParam("?", "FS1-Probe"));
 
             string ddl = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'Tab_Energieanlagen'"),

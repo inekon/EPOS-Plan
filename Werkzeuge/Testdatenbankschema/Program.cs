@@ -2808,6 +2808,25 @@ namespace Testdatenbankschema
                                   KaeltemaschineSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KaeltemaschineAnlageSchema.SCHRITT (KU3-4, E67/E68): die Kaeltemaschine als Anlage
+            //      samt Kostenkomponente und Ergebnistabelle. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KaeltemaschineAnlage bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt eine Anlagenzeile der Kaeltemaschine.
+            string nrKmAnlage = KaeltemaschineAnlageSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKmAnlage + " - Kaeltemaschine als Anlage: " +
+                              (KaeltemaschineAnlageSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKmAnlage = new List<string>();
+                tabellen += KaeltemaschineAnlageSchema.Ausfuehren(berichtKmAnlage);
+                foreach (string zeile in berichtKmAnlage)
+                    Console.WriteLine("Schritt " + nrKmAnlage + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKmAnlage + " - vollstaendig: " +
+                                  KaeltemaschineAnlageSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

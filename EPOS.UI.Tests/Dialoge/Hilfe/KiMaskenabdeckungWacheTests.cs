@@ -218,6 +218,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Stammblatt und „Neu…" (Rueckkuehlart als Auswahlfeld) und das Kennlinienraster mit vier
         // Zahlen je Punkt (die Spalten punkt_* der Feldkarte).
         new("KaeltemaschineKatalogDialog", 16),
+        // KU3-4c: der Erzeugerdialog der Kaeltemaschinen - Name, Anzahl, Kaltwasservorlauf, Hilfsstrom,
+        // Kuehltraeger und eigener Zaehler der gewaehlten Anlage (die Felder der Feldkarte); die Katalogliste
+        // der Geraetewahl ist eine Auswahl, kein Wert.
+        new("KaeltemaschineAnlageDialog", 6),
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
@@ -231,7 +235,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // Zellen sind die Felder kond_* der Zonenkarte, Feldtafel ZonenKiSicht): 16 → 9.
         // E63 (AK1z): der Abschnitt „Übergabe“ - Art und sechs Zahlenfelder (Katalogfelder uebergabe_*,
         // auslegung_*, proportionalband): 9 → 16.
-        new("ZonenDialog", 16),
+        new("ZonenDialog", 18),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.

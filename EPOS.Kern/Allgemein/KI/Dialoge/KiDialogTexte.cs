@@ -910,6 +910,8 @@
         internal static string PspvNutzungBwErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_BW_ERL;
         internal static string PspvNutzungProzessName => MyResource.Resource.KANAL_PROZESS_ANZEIGE;
         internal static string PspvNutzungProzessErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_PROZESS_ERL;
+        internal static string PspvNutzungKaelteName => MyResource.Resource.PSP_VERWENDUNG_KAELTE_ANZEIGE;
+        internal static string PspvNutzungKaelteErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_KAELTE_ERL;
 
         internal static string PspvEntnahmeHeizungName => MyResource.Resource.PSP_LABEL_ENTNAHME_HEIZUNG;
         internal static string PspvEntnahmeHeizungErl => MyResource.Resource.KI_DLG_PSPV_ENTNAHME_HEIZUNG_ERL;
@@ -1317,6 +1319,23 @@
         /// <summary>Die Verwaltung „Kältemaschinen" (KU3-1).</summary>
         internal static string MaskeKaeltemaschineKatalog => MyResource.Resource.KI_DLG_MASKE_KM;
         internal static string KmGeraetName => MyResource.Resource.KI_DLG_KM_GERAET_NAME;
+
+        // ---- KU3-4c: der Erzeugerdialog „Kältemaschinen im Projekt" ----
+        internal static string MaskeKaeltemaschineAnlage => MyResource.Resource.KI_DLG_MASKE_KMA;
+        internal static string KmaAnlageName => MyResource.Resource.KI_DLG_KMA_ANLAGE_NAME;
+        internal static string KmaAnlageErl => MyResource.Resource.KI_DLG_KMA_ANLAGE_ERL;
+        internal static string KmaNameName => MyResource.Resource.KI_DLG_KMA_NAME_NAME;
+        internal static string KmaNameErl => MyResource.Resource.KI_DLG_KMA_NAME_ERL;
+        internal static string KmaAnzahlName => MyResource.Resource.KI_DLG_KMA_ANZAHL_NAME;
+        internal static string KmaAnzahlErl => MyResource.Resource.KI_DLG_KMA_ANZAHL_ERL;
+        internal static string KmaVorlaufName => MyResource.Resource.KI_DLG_KMA_VORLAUF_NAME;
+        internal static string KmaVorlaufErl => MyResource.Resource.KI_DLG_KMA_VORLAUF_ERL;
+        internal static string KmaHilfsstromName => MyResource.Resource.KI_DLG_KMA_HILFSSTROM_NAME;
+        internal static string KmaHilfsstromErl => MyResource.Resource.KI_DLG_KMA_HILFSSTROM_ERL;
+        internal static string KmaTraegerName => MyResource.Resource.KI_DLG_KMA_TRAEGER_NAME;
+        internal static string KmaTraegerErl => MyResource.Resource.KI_DLG_KMA_TRAEGER_ERL;
+        internal static string KmaZaehlerName => MyResource.Resource.KI_DLG_KMA_ZAEHLER_NAME;
+        internal static string KmaZaehlerErl => MyResource.Resource.KI_DLG_KMA_ZAEHLER_ERL;
         internal static string KmGeraetErl => MyResource.Resource.KI_DLG_KM_GERAET_ERL;
         internal static string KmBezeichnerName => MyResource.Resource.KM_LBL_BEZEICHNER;
         internal static string KmBezeichnerErl => MyResource.Resource.KI_DLG_KM_BEZEICHNER_ERL;
@@ -1469,6 +1488,10 @@
         internal static string ZonUebergabeWirksamName => MyResource.Resource.ZONDLG_UEBERGABE_KI_WIRKSAM_NAME;
         internal static string ZonUebergabeWirksamErl => MyResource.Resource.ZONDLG_UEBERGABE_KI_WIRKSAM_ERL;
         internal static string ZonHeizleistungErl => MyResource.Resource.KI_DLG_ZON_HEIZLEISTUNG_ERL;
+        internal static string ZonKuehlungAktivName => MyResource.Resource.ZONDLG_LBL_KUEHLUNG_AKTIV;
+        internal static string ZonKuehlungAktivErl => MyResource.Resource.KI_DLG_ZON_KUEHLUNG_AKTIV_ERL;
+        internal static string ZonKuehlleistungName => MyResource.Resource.ZONDLG_LBL_KUEHLLEISTUNG_MAX;
+        internal static string ZonKuehlleistungErl => MyResource.Resource.KI_DLG_ZON_KUEHLLEISTUNG_ERL;
         internal static string ZonBauteilRandErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_RAND_ERL;
         internal static string ZonBauteilNachbarName => MyResource.Resource.ZONDLG_SP_NACHBAR;
         internal static string ZonBauteilNachbarErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_NACHBAR_ERL;

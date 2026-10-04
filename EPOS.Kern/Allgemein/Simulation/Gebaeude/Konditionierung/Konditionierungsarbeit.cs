@@ -770,8 +770,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Was eine Zone nicht trägt</b> (Konzept 3.4): Eine unbeheizte Zone hat weder Heiz- noch
-        /// Kühlkalender (N1.56 Festlegung 2), und die Kühlspalte einer Zone folgt dem Gebäude, bis KU3
-        /// Kühlkalender je Zone bringt (E49 A4 (a)). <c>null</c> = der Schritt darf.
+        /// Kühlkalender (N1.56 Festlegung 2). Die Kühlspalte einer beheizten Zone ist offen (KU3-3, E67/E68):
+        /// Kühlsollwert, Nachtwert und Kühlkalender je Zone. <c>null</c> = der Schritt darf.
         /// </summary>
         private static string Zonenregel(Konditionierungsarbeitsstand stand, Konditionierungsort ort)
         {
@@ -781,8 +781,7 @@ namespace WindowsFormsApplication1
             bool klima = ort.Groesse == Konditionierungsgroesse.Heizsoll || ort.Groesse == Konditionierungsgroesse.Kuehlsoll;
             if (klima && !z.IstBeheizt)
                 return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_ZONE_UNBEHEIZT, z.Name);
-            if (ort.Groesse == Konditionierungsgroesse.Kuehlsoll)
-                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_ZONE_KUEHLEN, z.Name);
+            // KU3-3 (E67/E68): die Kühlspalte der Zone ist offen - ihre Werte rechnet der Lauf je Zone.
             return null;
         }
 

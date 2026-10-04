@@ -201,6 +201,12 @@ else if (_ansicht == Seitenschluessel.KaeltemaschineKatalog && _kaeltemaschineKa
     <EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKatalogDialog @attributes="_kaeltemaschineKatalog"
                                                           Geschlossen="BeiKaeltemaschineKatalogFertig" />
 }
+@* DIE KAELTEMASCHINEN DES PROJEKTS (KU3-4c): der Erzeugerdialog als freie Ansicht fuer das offene Projekt. *@
+else if (_ansicht == Seitenschluessel.KaeltemaschineAnlage && _kaeltemaschineAnlage is not null)
+{
+    <EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDialog @attributes="_kaeltemaschineAnlage"
+                                                         Geschlossen="BeiKaeltemaschineAnlageFertig" />
+}
 @* DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2): eine
    freie Ansicht wie die Kataloge der Gebaeudesimulation - die Huelle liegt plattformfrei in
    EPOS.UI.Daten (BetriebskalenderHuelle). *@
@@ -453,6 +459,7 @@ else
     private IReadOnlyDictionary<string, object>? _baustoffKatalog;
     private IReadOnlyDictionary<string, object>? _bauteilaufbauKatalog;
     private IReadOnlyDictionary<string, object>? _kaeltemaschineKatalog;
+    private IReadOnlyDictionary<string, object>? _kaeltemaschineAnlage;
     private IReadOnlyDictionary<string, object>? _betriebskalender;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
@@ -681,6 +688,12 @@ else
     /// <c>IProjektQuelle.KaeltemaschineKatalogGaben</c>.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? KaeltemaschineKatalogGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des Erzeugerdialogs „Kältemaschinen im Projekt" (KU3-4c) für ein Projekt; ohne ihn fragt
+    /// die Wurzel <c>IProjektQuelle.KaeltemaschineAnlageGaben</c>.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? KaeltemaschineAnlageGaben { get; set; }
 
     /// <summary>
     /// Der Parametersatz der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) — dieselbe
@@ -1312,6 +1325,17 @@ else
             return true;
         }
 
+        // ---- Die Kaeltemaschinen des offenen Projekts (KU3-4c) --------------------
+        if (maske == Seitenschluessel.KaeltemaschineAnlage)
+        {
+            int idProjekt = _projekt?.Id ?? 0;
+            _kaeltemaschineAnlage = idProjekt <= 0 ? null
+                : KaeltemaschineAnlageGaben?.Invoke(idProjekt) ?? Quelle.KaeltemaschineAnlageGaben(idProjekt);
+            if (_kaeltemaschineAnlage is null) { _statuszeile = KeineKaeltemaschineAnlageText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         // ---- Die Betriebskalender der Bedarfsprofile (PW2, BW2) ------------------
         if (maske == Seitenschluessel.Betriebskalender)
         {
@@ -1610,6 +1634,9 @@ else
 
     /// <summary>Die Verwaltung der Kältemaschinen ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiKaeltemaschineKatalogFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Der Erzeugerdialog der Kältemaschinen ist zu — mit OK hat er geschrieben.</summary>
+    private void BeiKaeltemaschineAnlageFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>Die Aufbauverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiBauteilaufbauKatalogFertig(bool ok) => ZurueckZurListe();
@@ -1931,6 +1958,7 @@ else
            || maske == Seitenschluessel.BauteilaufbauKatalog
            // Die Kaeltemaschinen (KU3-1) - dieselbe Bauart, auf beiden Plattformen.
            || maske == Seitenschluessel.KaeltemaschineKatalog
+           || maske == Seitenschluessel.KaeltemaschineAnlage
            || maske == Seitenschluessel.Betriebskalender
 
            // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
@@ -2159,6 +2187,9 @@ else
 
     /// <summary>Meldung, wenn die Verwaltung der Kältemaschinen nicht aufzubauen ist.</summary>
     [Parameter] public string KeinKaeltemaschineKatalogText { get; set; } = Resource.KM_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn der Erzeugerdialog der Kältemaschinen nicht aufzubauen ist (etwa ohne Projekt).</summary>
+    [Parameter] public string KeineKaeltemaschineAnlageText { get; set; } = Resource.KMA_KEINE_ANSICHT;
 
     /// <summary>Meldung, wenn die Verwaltung der Betriebskalender nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBetriebskalenderText { get; set; } = Resource.BKAL_KEINE_ANSICHT;

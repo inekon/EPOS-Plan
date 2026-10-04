@@ -522,11 +522,6 @@ public sealed class KonditionierungTexte
         = "Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt („Kühlung rechnen“ in der "
         + "Simulationskonfiguration) und bei „Gebäude wird gekühlt“.";
 
-    /// <summary><c>KOND_TXT_KUEHLEN_ZONE</c> — der Grund der gesperrten Kühlspalte einer Zone</summary>
-    public string HinweisKuehlenZone { get; set; }
-        = "Die Kühlwerte gelten für das ganze Gebäude; ein eigener Kühlkalender je Zone ist noch nicht "
-        + "möglich.";
-
     /// <summary><c>KOND_TXT_HINWEIS_TAGESBILANZ</c> — für Gebäude auf dem Tagesbilanz-Weg</summary>
     public string HinweisTagesbilanz { get; set; }
         = "Dieses Gebäude rechnet auf dem Rechenweg „Tagesbilanz (Bestandsweg)“: Die Matrix zeigt nur die "

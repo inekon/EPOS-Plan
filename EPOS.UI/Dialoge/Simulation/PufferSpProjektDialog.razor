@@ -186,11 +186,17 @@
 
                     <Formulargruppe Titel="@GruppeTemperaturen">
                         <KindInhalt>
-                            <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlauf"
+                            @* KU3-5: Beim Kaeltespeicher sind es die Kaltwassertemperaturen -
+                               dieselben Felder, kalt (Vorlauf) unter warm (Ruecklauf). *@
+                            <Ganzzahlfeld Bezeichnung="@BeschriftungVorlauf" Einheit="°C" Feldname="@BeschriftungVorlauf"
                                           Wert="@_vorlauf" WertChanged="w => Setzen(() => _vorlauf = w)" />
-                            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@LabelRuecklauf"
+                            <Ganzzahlfeld Bezeichnung="@BeschriftungRuecklauf" Einheit="°C" Feldname="@BeschriftungRuecklauf"
                                           Wert="@_ruecklauf" WertChanged="w => Setzen(() => _ruecklauf = w)" />
                             <Herleitungszeile Text="@_qmax" />
+                            @if (IstKaeltespeicher)
+                            {
+                                <Herleitungszeile Text="@HinweisKaeltespeicher" />
+                            }
                         </KindInhalt>
                     </Formulargruppe>
 
@@ -530,6 +536,28 @@
     [Parameter] public string NutzungBrauchwasser { get; set; } = "Brauchwasser";
     [Parameter] public string NutzungProzess { get; set; } = "Prozesswärme";
 
+    /// <summary>KU3-5: die vierte Nutzung — der Kältespeicher (Kaltwasser), ausschließlich.</summary>
+    [Parameter] public string NutzungKaelte { get; set; } = "Kälte";
+
+    /// <summary>KU3-5: Beschriftung der Temperaturfelder beim Kältespeicher.</summary>
+    [Parameter] public string LabelKaltVorlauf { get; set; } = "Kaltwasser-Vorlauf:";
+    [Parameter] public string LabelKaltRuecklauf { get; set; } = "Kaltwasser-Rücklauf:";
+
+    /// <summary>KU3-5: die Zeile unter den Temperaturen beim Kältespeicher — wie er rechnet.</summary>
+    [Parameter] public string HinweisKaeltespeicher { get; set; } = "";
+
+    /// <summary>KU3-5: Kaltwasser-Vorlauf nicht unter dem Rücklauf.</summary>
+    [Parameter] public string FehlerKaeltepaar { get; set; } = "Beim Kältespeicher liegt der Vorlauf unter dem Rücklauf.";
+
+    /// <summary>KU3-5: Nutzung 3 = Kältespeicher.</summary>
+    private const int NUTZUNG_KAELTE = 3;
+
+    /// <summary>KU3-5: Ist der Speicher in der Maske ein Kältespeicher?</summary>
+    public bool IstKaeltespeicher => Hat(NUTZUNG_KAELTE);
+
+    private string BeschriftungVorlauf => IstKaeltespeicher ? LabelKaltVorlauf : LabelVorlauf;
+    private string BeschriftungRuecklauf => IstKaeltespeicher ? LabelKaltRuecklauf : LabelRuecklauf;
+
     /// <summary>Herleitung unter der Mehrfachauswahl; <c>{0}</c> ist der Altwert.</summary>
     [Parameter] public string HerleitungVerwendung { get; set; }
         = "Gespeichert wird zusätzlich der abgeleitete Altwert „{0}“.";
@@ -794,7 +822,8 @@
     {
         (0, NutzungHeizung),
         (1, NutzungBrauchwasser),
-        (2, NutzungProzess)
+        (2, NutzungProzess),
+        (NUTZUNG_KAELTE, NutzungKaelte)
     };
 
     /// <summary>
@@ -825,7 +854,7 @@
         => Dienste is null
             ? ""
             : string.Format(HerleitungVerwendung,
-                            Dienste.KlassenSetAnzeige(Hat(0), Hat(1), Hat(2)));
+                            IstKaeltespeicher ? NutzungKaelte : Dienste.KlassenSetAnzeige(Hat(0), Hat(1), Hat(2)));
 
     // --- Aufbau -----------------------------------------------------------------
 
@@ -917,6 +946,8 @@
         NutzungBrauchwasserSetzen = an => KiNutzung(1, an),
         NutzungProzessLesen = () => Hat(2),
         NutzungProzessSetzen = an => KiNutzung(2, an),
+        NutzungKaelteLesen = () => Hat(NUTZUNG_KAELTE),
+        NutzungKaelteSetzen = an => KiNutzung(NUTZUNG_KAELTE, an),
 
         EntnahmeHeizungLesen = () => _entnahmeHeizung,
         EntnahmeHeizungSetzen = w => KiGeaendert(() => _entnahmeHeizung = w),
@@ -1108,7 +1139,7 @@
         _katalogherkunft = p.Katalogherkunft ?? "";
         _volumen = p.Gesamtvolumen;
         _verluste = p.Bereitschaftsverluste;
-        _klassenSet = Set(p.Heizung, p.Brauchwasser, p.Prozess);
+        _klassenSet = Set(p.Heizung, p.Brauchwasser, p.Prozess, p.Kaelte);
 
         _vorlauf = p.Vorlauf > 0 ? p.Vorlauf : null;
         _ruecklauf = p.Ruecklauf > 0 ? p.Ruecklauf : null;
@@ -1137,7 +1168,7 @@
         _katalogherkunft = z.Id > 0 ? Dienste?.PufferLesen(z.Id)?.Katalogherkunft ?? "" : "";
         _volumen = e.Volumen;
         _verluste = e.Verluste;
-        _klassenSet = Set(e.Heizung, e.Brauchwasser, e.Prozess);
+        _klassenSet = Set(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
 
         _vorlauf = e.Vorlauf;
         _ruecklauf = e.Ruecklauf;
@@ -1203,8 +1234,10 @@
     /// <summary>Die Nutzung, mit der ein NEUER Speicher aufgeht (aus <see cref="Verwendung"/>).</summary>
     [Parameter] public IReadOnlyList<int> VorbelegteNutzung { get; set; } = new[] { 0 };
 
-    private static IReadOnlyList<int> Set(bool h, bool b, bool p)
+    private static IReadOnlyList<int> Set(bool h, bool b, bool p, bool k = false)
     {
+        // KU3-5: Der Kältespeicher ist ausschließlich - er steht allein im Set.
+        if (k) return new[] { NUTZUNG_KAELTE };
         var l = new List<int>();
         if (h) l.Add(0);
         if (b) l.Add(1);
@@ -1255,6 +1288,13 @@
         // Das LEERE Set wird hier NICHT abgefangen: Wer von "nur Heizung" auf "nur
         // Brauchwasser" umstellt, muss zwischendurch durch das leere Set gehen. Die
         // Pflichtpruefung sitzt im Uebernehmen.
+        //
+        // KU3-5: Kälte schließt die drei Wärmenutzungen aus - wer Kälte anhakt, wählt sie ab;
+        // wer zu Kälte eine Wärmenutzung anhakt, wählt Kälte ab.
+        if (set.Contains(NUTZUNG_KAELTE) && set.Count > 1)
+            set = _klassenSet.Contains(NUTZUNG_KAELTE)
+                ? set.Where(n => n != NUTZUNG_KAELTE).ToList()
+                : new[] { NUTZUNG_KAELTE };
         _klassenSet = set;
         Beruehrt();
         AnzeigenAktualisieren();
@@ -1308,6 +1348,7 @@
         _automatik = _bearbeiteteId > 0 && Dienste is not null
             ? Dienste.Automatiktext(_bearbeiteteId) : "";
         _entladeposition = _bearbeiteteId > 0 && Dienste is not null
+            && !IstKaeltespeicher   // KU3-5: der Kältespeicher steht in keiner Wärmeordnung
             ? Dienste.Entladeposition(_bearbeiteteId, Hat(0), Hat(1), Hat(2)) : "";
     }
 
@@ -1320,10 +1361,12 @@
         int vl = _vorlauf ?? 0;
         int rl = _ruecklauf ?? 0;
 
-        if (Dienste is null || v <= 0 || vl <= rl) { _qmax = ""; return; }
+        // KU3-5: Beim Kältespeicher ist die Spreizung Rücklauf − Vorlauf.
+        int spreizung = IstKaeltespeicher ? rl - vl : vl - rl;
+        if (Dienste is null || v <= 0 || vl <= 0 || spreizung <= 0) { _qmax = ""; return; }
 
         _qmax = string.Format(AnzeigeQmax,
-            Dienste.Kapazitaet(v, vl - rl)
+            Dienste.Kapazitaet(v, spreizung)
                    .ToString("0.0", System.Globalization.CultureInfo.CurrentCulture));
     }
 
@@ -1622,8 +1665,8 @@
         string bezeichner = (_bezeichner ?? "").Trim();
         if (bezeichner.Length == 0) { fehler = FehlerBezeichnerFehlt; return null; }
 
-        bool h = Hat(0), b = Hat(1), p = Hat(2);
-        if (!h && !b && !p) { fehler = FehlerKlassenSetLeer; return null; }
+        bool h = Hat(0), b = Hat(1), p = Hat(2), k = IstKaeltespeicher;
+        if (!h && !b && !p && !k) { fehler = FehlerKlassenSetLeer; return null; }
 
         if (_volumen is null || _volumen.Value <= 0) { fehler = FehlerVolumen; return null; }
 
@@ -1637,7 +1680,11 @@
         {
             string vt = Zahltext(_vorlauf);
             string rt = Zahltext(_ruecklauf);
-            fehler = Dienste?.TemperaturenPruefen(vt, rt);
+            // KU3-5: Das Kaltwasserpaar liegt gespiegelt (kalt unter warm) - eigene Prüfung.
+            if (k)
+                fehler = _vorlauf is > 0 && _ruecklauf is > 0 && _vorlauf < _ruecklauf ? null : FehlerKaeltepaar;
+            else
+                fehler = Dienste?.TemperaturenPruefen(vt, rt);
             if (!string.IsNullOrEmpty(fehler)) return null;
             fehler = null;
             vorlauf = _vorlauf;
@@ -1674,7 +1721,7 @@
 
         return new PspEingaben(bezeichner, _volumen.Value, verluste, vorlauf, ruecklauf,
                                ein, aus, nachrang, reserve, _entladeprio ?? 0,
-                               h, b, p, schicht, _katalogzeile ?? -1);
+                               h, b, p, schicht, _katalogzeile ?? -1, k);
     }
 
     private static string Zahltext(int? wert)

@@ -314,6 +314,18 @@ namespace WindowsFormsApplication1
         public const string KANAL_OHNE_VERSORGER = "KANAL_OHNE_VERSORGER";
 
         /// <summary>
+        /// KU3-5 (E68; Kühlkonzept 4.3 #18): Ein Kältespeicher steht im Projekt, aber kein Kälteerzeuger
+        /// (keine Wärmepumpe im Kühlbetrieb, keine Kältemaschine) lädt ihn — er rechnet nicht. WEICH.
+        /// </summary>
+        public const string KAELTESPEICHER_OHNE_ERZEUGER = "KAELTESPEICHER_OHNE_ERZEUGER";
+
+        /// <summary>
+        /// KU3-5: Ein Kältespeicher steht im Projekt, die Kühlung des Projekts ist aber ausgeschaltet
+        /// (<c>Tab_Einstellungen.Kuehlbetrieb</c>) — er rechnet nicht. WEICH.
+        /// </summary>
+        public const string KAELTESPEICHER_OHNE_KUEHLUNG = "KAELTESPEICHER_OHNE_KUEHLUNG";
+
+        /// <summary>
         /// Untergrenze [MWh/a], ab der ein Kanal als „mit Bedarf" gilt. Darunter liegt
         /// nur Rundungsrauschen der Netzverlustverteilung; gemeldet würde sonst
         /// „0,0 MWh/a".
@@ -400,7 +412,38 @@ namespace WindowsFormsApplication1
                 SolarNachrangPruefen(bild, idPuffer, befunde);
             }
 
+            KaeltespeicherPruefen(idProjekt, befunde);
+
             return befunde;
+        }
+
+        /// <summary>
+        /// <see cref="KAELTESPEICHER_OHNE_ERZEUGER"/> und <see cref="KAELTESPEICHER_OHNE_KUEHLUNG"/> — je
+        /// Kältespeicher des Projekts (KU3-5). Ohne Kältespeicher eine einzige Abfrage und kein Befund.
+        /// </summary>
+        public static void KaeltespeicherPruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            if (idProjekt <= 0 || befunde == null) return;
+            List<WaermesenkeClass.PufferInfo> speicher =
+                WaermesenkeClass.ProjektPufferListe(idProjekt, WaermesenkeClass.VERWENDUNG_KAELTE);
+            if (speicher.Count == 0) return;
+
+            bool kuehlung = KonfigurationCtrl.KuehlbetriebLesen(idProjekt);
+            int erzeuger = WPCtrl.AnlagenImKuehlbetrieb(idProjekt) + StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE)));
+
+            foreach (WaermesenkeClass.PufferInfo p in speicher)
+            {
+                string name = string.IsNullOrEmpty(p.Bezeichner) ? p.ID.ToString() : p.Bezeichner;
+                if (!kuehlung)
+                    befunde.Add(Befund(KAELTESPEICHER_OHNE_KUEHLUNG, false, 0, p.ID,
+                        string.Format(MyResource.Resource.SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG, name)));
+                if (erzeuger <= 0)
+                    befunde.Add(Befund(KAELTESPEICHER_OHNE_ERZEUGER, false, 0, p.ID,
+                        string.Format(MyResource.Resource.SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER, name)));
+            }
         }
 
         /// <summary>
@@ -908,6 +951,10 @@ namespace WindowsFormsApplication1
             Pufferdaten p = bild.Puffer(idPuffer);
             if (p == null) return;
 
+            // KU3-5: Der Kältespeicher prüft KaeltespeicherPruefen - sein Paar (kalt unten) ist kein
+            // vertauschtes Wärmepaar, und die Wärmekriterien gelten für ihn nicht.
+            if (p.Set != null && p.Set.Kaelte) return;
+
             // --- HART: leeres Klassen-Set ---------------------------------------------
             //
             // AUF HEUTIGEN DATEN NICHT ERREICHBAR, und das mit Absicht:
@@ -1222,6 +1269,7 @@ namespace WindowsFormsApplication1
             if (set.Heizung) teile.Add(KanalAnzeige(Kanal.HEIZUNG));
             if (set.Brauchwasser) teile.Add(KanalAnzeige(Kanal.BRAUCHWASSER));
             if (set.Prozess) teile.Add(KanalAnzeige(Kanal.PROZESS));
+            if (set.Kaelte) teile.Add(KanalAnzeige(Kanal.KUEHLUNG));
 
             return Verbinden(teile);
         }
@@ -1395,9 +1443,9 @@ namespace WindowsFormsApplication1
                 {
                     case Kanal.BRAUCHWASSER: return Set.Brauchwasser;
                     case Kanal.PROZESS: return Set.Prozess;
-                    // Kühlkonzept 4.3 #25: benannte Ablehnung statt Rückfall auf Heizung -
-                    // ein Speicher bedient keine Kälte, solange kein Kältespeicher rechnet (K7).
-                    case Kanal.KUEHLUNG: return false;
+                    // Kühlkonzept 4.3 #25: benannte Ablehnung statt Rückfall auf Heizung - den
+                    // Kühlkanal bedient allein der Kältespeicher (KU3-5).
+                    case Kanal.KUEHLUNG: return Set.Kaelte;
                     default: return Set.Heizung;
                 }
             }

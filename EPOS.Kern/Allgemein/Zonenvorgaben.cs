@@ -79,7 +79,7 @@ namespace WindowsFormsApplication1
     /// <b>Die Eingaben EINER Zone</b>, aus denen die Vorgabenkaskade liest (<see cref="Zonenvorgaben"/>) —
     /// die Spalten von <c>Tab_Zone</c> ohne Fachklasse, damit der Zonendialog seine Anzeige „Vorgabe: …"
     /// aus DERSELBEN Funktion bildet wie der Lauf (Auftrag G6b, Welle W2). <c>null</c> heißt „leer" —
-    /// der Wert des Gebäudes gilt; die Kühlspalten der Zone bleiben ungelesen (Anwenderentscheid A4 (a)).
+    /// der Wert des Gebäudes gilt — auch für die vier Kühlspalten der Zone (KU3-3, E67/E68).
     /// Die sieben Übergabefelder (E63, AK1z) löst <see cref="Zonenuebergabevorgaben.Aufloesen"/> auf, nicht
     /// <see cref="Zonenvorgaben"/>: Art, Exponent, Nennleistung [kW], Auslegungsvorlauf, -rücklauf und
     /// -raumtemperatur [°C], Proportionalband [K].
@@ -92,7 +92,9 @@ namespace WindowsFormsApplication1
         double? InterneWaermegewinne = null, double? Bewohner = null,
         string UebergabeArt = null, double? UebergabeExponent = null, double? UebergabeLeistungNennKw = null,
         double? AuslegungVorlaufC = null, double? AuslegungRuecklaufC = null, double? AuslegungRaumtemperaturC = null,
-        double? ReglerProportionalbandK = null)
+        double? ReglerProportionalbandK = null,
+        bool? KuehlungAktiv = null, double? KuehlSollwert = null, double? KuehlSollwertNacht = null,
+        double? KuehlleistungMaxKw = null)
     {
         /// <summary>Die Eingaben einer gespeicherten Zone.</summary>
         public static Zoneneingaben Aus(ZoneModel z)
@@ -103,7 +105,8 @@ namespace WindowsFormsApplication1
                 z.Raumsolltemperatur_Ferien, z.Maximaleraumtemperatur, z.Heizung_Strahlungsanteil, z.Heizleistung_Max,
                 z.Luftwechsel_Infiltration, z.Luftwechsel_Nutzer, z.Interne_Waermegewinne, z.Bewohner,
                 z.Uebergabe_Art, z.Uebergabe_Exponent, z.Uebergabe_Leistung_Nenn,
-                z.Auslegung_Vorlauf, z.Auslegung_Ruecklauf, z.Auslegung_Raumtemperatur, z.Regler_Proportionalband);
+                z.Auslegung_Vorlauf, z.Auslegung_Ruecklauf, z.Auslegung_Raumtemperatur, z.Regler_Proportionalband,
+                z.Kuehlung_Aktiv, z.Kuehl_Sollwert, z.Kuehl_Sollwert_Nacht, z.Kuehlleistung_Max);
         }
     }
 
@@ -123,9 +126,11 @@ namespace WindowsFormsApplication1
     /// Anteil genau 1): innere Gewinne und Bewohner — Zone, sonst Gebäude × Anteil.</item>
     /// <item><b>Leistungsgrenzen</b> (Heizung und Kühlung, Festlegung 5): Zone, sonst ab zwei Zonen
     /// Gebäude × Anteil; bei einer Zone der Wert des Gebäudes unverändert (G3-Stand).</item>
-    /// <item><b>Kühlung</b> (Anwenderentscheid A4 (a)): Schalter, Kühlsollwert und Nachtwert kommen
-    /// vom Gebäude, die Kühlspalten der Zone bleiben ungelesen; nur die Grenze wird wie oben
-    /// anteilig.</item>
+    /// <item><b>Kühlung</b> (KU3-3, E67/E68; Kühlkonzept 3.5, 7.1): Schalter <c>Kuehlung_Aktiv</c>,
+    /// <c>Kuehl_Sollwert</c> und <c>Kuehl_Sollwert_Nacht</c> — Zone, sonst Gebäude; ein Schalter 0 an der
+    /// Zone schaltet sie aus, auch wenn das Gebäude kühlt (und 1 ein, wenn es nicht kühlt). Die
+    /// Grenze <c>Kuehlleistung_Max</c> wie oben: Zone, sonst ab zwei Zonen Gebäude × Anteil. Der
+    /// Projektschalter <c>Kuehlbetrieb</c> steht darüber und wird im Lauf angewandt, nicht hier.</item>
     /// <item><c>IstBeheizt</c> ist ein Schalter der Zone ohne Gebäudewert (Festlegung 2); die Nachtzeit
     /// kommt vom Gebäude (Festlegung 1) und steht deshalb nicht hier.</item>
     /// </list></para>
@@ -194,10 +199,10 @@ namespace WindowsFormsApplication1
                 gebaeude.Luftwechselrate,
                 Anteilig(zone.InterneWaermegewinne, gebaeude.InterneWaermegewinne, anteil),
                 Anteilig(zone.Bewohner, gebaeude.Bewohner, anteil),
-                gebaeude.KuehlungAktiv,
-                Gebaeudewert(gebaeude.KuehlSollwert),
-                Gebaeudewert(gebaeude.KuehlSollwertNacht),
-                Grenze(null, gebaeude.KuehlleistungMaxKw, anteil, mehrere));
+                zone.KuehlungAktiv ?? gebaeude.KuehlungAktiv,
+                Erben(zone.KuehlSollwert, gebaeude.KuehlSollwert),
+                Erben(zone.KuehlSollwertNacht, gebaeude.KuehlSollwertNacht),
+                Grenze(zone.KuehlleistungMaxKw, gebaeude.KuehlleistungMaxKw, anteil, mehrere));
         }
 
         /// <summary>Zone, sonst Gebäude (auch ein fehlender Gebäudewert bleibt fehlend).</summary>

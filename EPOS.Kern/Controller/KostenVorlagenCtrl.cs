@@ -98,7 +98,8 @@ namespace WindowsFormsApplication1
             DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE,
             DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER,
             DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER,
-            DbWerte.KOSTEN_KOMPONENTE_BHKW
+            DbWerte.KOSTEN_KOMPONENTE_BHKW,
+            DbWerte.KOSTEN_KOMPONENTE_KAELTEMASCHINE
         };
 
         /// <summary>true, wenn die Komponente zur Auswahl angeboten wird (Ä7).</summary>

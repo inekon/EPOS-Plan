@@ -504,7 +504,7 @@ namespace WindowsFormsApplication1
             ? Luftwechselrate_h * Nutzflaeche_M2 * Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
             : Luftwechselrate_h * Luftvolumen_M3 * GebaeudeFestwerte.C_RHO_LUFT;
 
-        /// <summary>Die Kühlleistungsgrenze der Zone [kW] aus der Kaskade, wenn sie vom Gebäude abweicht (anteilig ab zwei Zonen, Festlegung 5); sonst <c>null</c>.</summary>
+        /// <summary>Die Kühlleistungsgrenze der Zone [kW] aus der Kaskade, wenn sie vom Gebäude abweicht (eigener Wert der Zone, KU3-3, oder anteilig ab zwei Zonen, Festlegung 5); sonst <c>null</c>.</summary>
         private double? _kuehlgrenzeZoneKw;
 
         /// <summary>Trägt die Zone eigene innere Gewinne? Dann schlüsselt der Flächenschlüssel sie nicht.</summary>
@@ -519,7 +519,8 @@ namespace WindowsFormsApplication1
         /// vorher. Raumhöhe, Volumen, die vier Sollwerte, θ_max, Strahlungsanteil der Heizung,
         /// Heizleistungsgrenze, Infiltration und Nutzerlüftung, eigene innere Gewinne und „beheizt";
         /// danach gelten die Prüfungen der Gebäudedaten für die Werte der Zone. Die Nachtzeit kommt
-        /// vom Gebäude (Festlegung 1), die Kühlwerte ebenso (A4 (a)).
+        /// vom Gebäude (Festlegung 1); die Kühlwerte der Zone löst <see cref="KuehlungAufloesen"/> aus
+        /// derselben Kaskade auf (KU3-3).
         /// </summary>
         private void Zonenwerte(ProjektGebaeudeModel g, int zonenzahl)
         {
@@ -536,7 +537,7 @@ namespace WindowsFormsApplication1
             if (AusZone(v.HeizungStrahlungsanteil)) HeizungStrahlungsanteil = v.HeizungStrahlungsanteil.Wert.Value;
             if (AusZone(v.HeizleistungMaxKw) || v.HeizleistungMaxKw.Herkunft == Vorgabeherkunft.GebaeudeAnteilig)
                 HeizleistungMaxW = 1000.0 * v.HeizleistungMaxKw.Wert.Value;
-            if (v.KuehlleistungMaxKw.Herkunft == Vorgabeherkunft.GebaeudeAnteilig)
+            if (AusZone(v.KuehlleistungMaxKw) || v.KuehlleistungMaxKw.Herkunft == Vorgabeherkunft.GebaeudeAnteilig)
                 _kuehlgrenzeZoneKw = v.KuehlleistungMaxKw.Wert.Value;
             if (AusZone(v.InterneWaermegewinne))
             {
@@ -2256,7 +2257,24 @@ namespace WindowsFormsApplication1
         /// <param name="kuehlkalender">Gilt ein Kühlkalender? Dann prüft nur die stündliche Regel.</param>
         private void KuehlungAufloesen(ProjektGebaeudeModel g, bool kuehlbetrieb, bool kuehlkalender)
         {
-            KuehlungWirksam = kuehlbetrieb && g.Kuehlung_Aktiv && g.Kuehl_Sollwert.HasValue;
+            // DIE VERERBUNG DER KÜHLWERTE EINER ZONE (KU3-3, E67/E68; Kühlkonzept 3.5, 7.1; Mehrzonenkonzept 4.2),
+            // in dieser Reihenfolge:
+            //  1. Der Projektschalter Tab_Einstellungen.Kuehlbetrieb steht über allem: ohne ihn kühlt keine Zone.
+            //  2. Der Schalter: Tab_Zone.Kuehlung_Aktiv, NULL = Tab_Gebaeude.Kuehlung_Aktiv. Eine 0 an der Zone
+            //     schaltet sie aus, auch wenn das Gebäude kühlt; eine 1 schaltet sie ein, auch wenn es nicht kühlt.
+            //  3. Der Sollwert: Tab_Zone.Kuehl_Sollwert, NULL = der des Gebäudes; ohne beide ist die Kühlung aus
+            //     (F-K1). Der Nachtwert ebenso (Tab_Zone.Kuehl_Sollwert_Nacht, NULL = der des Gebäudes) — wirksam
+            //     wird er nur über den Kühlkalender (R14).
+            //  4. Die Grenze: Tab_Zone.Kuehlleistung_Max, sonst ab zwei Zonen der Flächenanteil der Gebäudegrenze
+            //     (Festlegung 5), sonst die Gebäudegrenze, sonst unbegrenzt.
+            //  5. Der Kühlkalender: Führt die Zone eine eigene Kühlzeile (Matrix oder Kalender), gilt ihre Reihe
+            //     (Konditionierungdatenweg mit idZone), sonst die des Gebäudes, sonst die Konstante aus 3.
+            //  Eine unbeheizte Zone schwingt frei (FreiSchwingend) — sie kühlt nie.
+            // Ohne Zone (Klassenweg) gelten die Spalten des Gebäudes; ohne eigene Werte der Zone ist jeder
+            // Wert der des Gebäudes, also bitgleich wie vorher.
+            bool aktiv = Vorgaben?.KuehlungAktiv ?? g.Kuehlung_Aktiv;
+            double? sollwert = Vorgaben != null ? Vorgaben.KuehlSollwert.Wert : g.Kuehl_Sollwert;
+            KuehlungWirksam = kuehlbetrieb && aktiv && sollwert.HasValue;
             if (!KuehlungWirksam)
             {
                 KuehlSollwert = double.PositiveInfinity;
@@ -2265,7 +2283,7 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            double soll = g.Kuehl_Sollwert.Value;
+            double soll = sollwert.Value;
             double heizMax = double.NegativeInfinity;
             for (int h = 0; h < ThetaSoll.Length; h++)
                 if (Endlich(ThetaSoll[h]) && ThetaSoll[h] > heizMax) heizMax = ThetaSoll[h];
@@ -2281,7 +2299,7 @@ namespace WindowsFormsApplication1
             AuslegungsraumtemperaturKuehlC = soll;
 
             KuehlleistungMaxW = double.NaN;
-            // Ab zwei Zonen die anteilige Grenze der Zone (Festlegung 5), sonst die des Gebäudes.
+            // Die Grenze der Zone (eigener Wert, KU3-3, oder ab zwei Zonen anteilig, Festlegung 5), sonst die des Gebäudes.
             double? grenzeKw = _kuehlgrenzeZoneKw ?? g.Kuehlleistung_Max;
             if (grenzeKw.HasValue)
             {
@@ -2461,10 +2479,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void KuehlNachtwertAufloesen(ProjektGebaeudeModel g)
         {
-            double? nacht = g.Kuehl_Sollwert_Nacht;
+            // KU3-3: an einer Zone die Werte der Kaskade (Zone, sonst Gebäude).
+            double? nacht = Vorgaben != null ? Vorgaben.KuehlSollwertNacht.Wert : g.Kuehl_Sollwert_Nacht;
+            double? tag = Vorgaben != null ? Vorgaben.KuehlSollwert.Wert : g.Kuehl_Sollwert;
             if (!nacht.HasValue || !Endlich(nacht.Value)) return;
             double wert = nacht.Value;
-            if (!g.Kuehl_Sollwert.HasValue || wert == g.Kuehl_Sollwert.Value) return;
+            if (!tag.HasValue || wert == tag.Value) return;
             int n = 0;
             for (int h = 0; h < ThetaMax.Length; h++)
                 if (ThetaMax[h] == wert) n++;

@@ -383,6 +383,14 @@ public static class Seitenschluessel
     public const string KaeltemaschineKatalog = "KAELTEMASCHINE_KATALOG";
 
     /// <summary>
+    /// Der Erzeugerdialog „Kältemaschinen im Projekt" (<c>KaeltemaschineAnlageDialog</c>, KU3-4c) — eine freie
+    /// Ansicht der Wurzel für das offene Projekt auf beiden Plattformen; Einstieg ist der Knopf
+    /// „Kältemaschinen…" im Reiter „Energieerzeuger" der Startseite. Der Kern führt dieselbe Zeichenkette als
+    /// Ziel des Assistenten (<c>KiMaskenziele.KAELTEMASCHINE_ANLAGE</c>).
+    /// </summary>
+    public const string KaeltemaschineAnlage = "KAELTEMASCHINE_ANLAGE";
+
+    /// <summary>
     /// Menue „Administration -> Wärmebedarf &amp; Heizung -> Profile &amp; Lastgänge -> Betriebskalender"
     /// (<c>BetriebskalenderDialog</c>; Entscheidungsvorlage Modellgrenzen PW2, BW2) — eine freie
     /// Ansicht der Wurzel wie die Kataloge der Gebäudesimulation.
@@ -480,7 +488,7 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
-        BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender, KaeltemaschineKatalog,
+        BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
         Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch

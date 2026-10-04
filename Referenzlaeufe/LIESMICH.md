@@ -716,9 +716,15 @@ rechnet alle neunzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 
 > **Nachtrag — Schemaschritt 182 (Kältemaschine als Erzeugertyp), Basis unverändert.**
 > `KaeltemaschineSchema` (182 = 181 + 1) legt vier STRICT-Tabellen an und sät drei neutrale Auslieferungsgeräte; kein Referenzprojekt führt eine
-> Kältemaschine, der Rechenweg liest die Tabellen nicht. Der Schritt ist gebaut; die Repo-Datei steht noch auf 180 und wird mit
-> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` aus 181 nachgezogen, sobald die
-> Datenbank 181 auf origin liegt (die Testvorrichtung zieht 182 selbst auf die Arbeitskopie).
+> Kältemaschine, der Rechenweg liest die Tabellen nicht. Die Repo-Datei ist aus 181 (`ff43435`, OID `2eea4775`) auf 182 gezogen
+> (`e0813c0`, 84 836 352 Byte) und weiter auf 183 (siehe unten).
+>
+> **Nachtrag — Schemaschritt 183 (Kältemaschine als Anlage), Basis unverändert.**
+> `KaeltemaschineAnlageSchema` (183 = 182 + 1): an `Tab_Energieanlagen` `ID_Kaeltemaschine` und `Kaeltemaschine_Anzahl`, an `Tab_Kaeltemaschine`
+> `Kuehl_Vorlauf` und `Kuehl_Hilfsstromanteil`, die STRICT-Tabelle `Tab_ErgebnisKaeltemaschine` und Saat (Typ 13, Kostenkomponente 11, Nutzungsdauer,
+> Kostenvorlagen); kein Referenzprojekt führt eine Kältemaschine, Referenzlauf der acht CI-Projekte gegen R35 byte-gleich. Die Testdatenbank steht
+> auf **183** (`18f72df`, 84 844 544 Byte, OID `3a87fb93`), aus 181 von der Orchestrierung über 182 gezogen; die LFS-Objekte gehen als Bundle an den
+> Anwender, der sie pusht. Der Rechenweg der Basis liest die neuen Spalten nicht.
 
 ### Die Vorgängerbasis R34 `2026-10-03_R34_Erdreich`
 

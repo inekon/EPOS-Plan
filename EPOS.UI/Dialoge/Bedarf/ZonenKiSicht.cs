@@ -55,6 +55,16 @@ public sealed class ZonenKiSicht : IKiFeldtafel
     public Func<double?>? HeizleistungMaxLesen { get; init; }
     public Action<double?>? HeizleistungMaxSetzen { get; init; }
 
+    // KU3-3 (E67/E68): die Kuehlung je Zone; leer = wie Gebaeude.
+    /// <summary>Liest den Kühlschalter der Zone (<c>null</c> = wie Gebäude).</summary>
+    public Func<bool?>? KuehlungAktivLesen { get; init; }
+    /// <summary>Setzt den Kühlschalter der Zone.</summary>
+    public Action<bool?>? KuehlungAktivSetzen { get; init; }
+    /// <summary>Liest die Kühlleistungsgrenze der Zone.</summary>
+    public Func<double?>? KuehlleistungMaxLesen { get; init; }
+    /// <summary>Setzt die Kühlleistungsgrenze der Zone.</summary>
+    public Action<double?>? KuehlleistungMaxSetzen { get; init; }
+
     // E63 (AK1z): die Uebergabe je Zone; leer = wie Gebaeude.
     /// <summary>Liest die Übergabeart der Zone (<c>null</c> = wie Gebäude).</summary>
     public Func<string?>? UebergabeArtLesen { get; init; }
@@ -145,6 +155,29 @@ public sealed class ZonenKiSicht : IKiFeldtafel
 
     /// <summary>Leistungsgrenze der Heizung [kW]; leer = die des Gebäudes (ab zwei Zonen anteilig).</summary>
     public double? HeizleistungMax { get => HeizleistungMaxLesen?.Invoke(); set => HeizleistungMaxSetzen?.Invoke(value); }
+
+    /// <summary>
+    /// Wird die Zone gekühlt — „ja", „nein" oder leer = wie das Gebäude (KU3-3). Ein anderer Text wirft mit Grund.
+    /// </summary>
+    public string KuehlungAktiv
+    {
+        get => KuehlungAktivLesen?.Invoke() switch { true => "ja", false => "nein", _ => "" };
+        set
+        {
+            string w = (value ?? "").Trim().ToLowerInvariant();
+            bool? schalter = w switch
+            {
+                "" => null,
+                "ja" or "yes" or "1" or "true" => true,
+                "nein" or "no" or "0" or "false" => false,
+                _ => throw new ArgumentException("Erlaubt sind „ja\", „nein\" oder leer (wie Gebäude).", nameof(value))
+            };
+            KuehlungAktivSetzen?.Invoke(schalter);
+        }
+    }
+
+    /// <summary>Leistungsgrenze der Kühlung [kW]; leer = die des Gebäudes (ab zwei Zonen anteilig).</summary>
+    public double? KuehlleistungMax { get => KuehlleistungMaxLesen?.Invoke(); set => KuehlleistungMaxSetzen?.Invoke(value); }
 
     /// <summary>Übergabeart der Zone (IDEAL, RADIATOR, FLAECHE, KONVEKTOR); leer = wie Gebäude.</summary>
     public string UebergabeArt { get => UebergabeArtLesen?.Invoke() ?? ""; set => UebergabeArtSetzen?.Invoke(value); }

@@ -286,6 +286,8 @@ namespace WindowsFormsApplication1
                 KaeltelastMaxKw = ergebnis.KaelteBestandsweg ? 0.0 : ergebnis.KaeltelastMaxKw,
                 VollbenutzungsstundenKaelteH = ergebnis.VollbenutzungsstundenKaelteH,
                 StundenHeizenUndKuehlenH = ergebnis.StundenHeizenUndKuehlen,
+                GleichzeitigHeizenKwh = ergebnis.GleichzeitigHeizenKwh,
+                GleichzeitigKuehlenKwh = ergebnis.GleichzeitigKuehlenKwh,
                 KuehlMonatswerteMwh = ergebnis.KuehlMonatswerteMwh != null
                     ? (IReadOnlyList<double>)(double[])ergebnis.KuehlMonatswerteMwh.Clone()
                     : ergebnis.KaelteBestandsweg ? new double[12] : new List<double>(),
@@ -304,7 +306,11 @@ namespace WindowsFormsApplication1
                     // AK1z (E63): der Heizkreis der Zone aus der Ergebniszeile des Laufs - null ohne Kopplung.
                     VorlaufMittelC = z.Ergebniszeile?.VorlaufMittelC,
                     RuecklaufMittelC = z.Ergebniszeile?.RuecklaufMittelC,
-                    UebergabeBegrenztH = z.Ergebniszeile?.UebergabeBegrenztH
+                    UebergabeBegrenztH = z.Ergebniszeile?.UebergabeBegrenztH,
+                    // KU3-3: die Kaelte der Zone aus dem Lauf (nicht gespeichert: Spitze und Stunden).
+                    KaeltebedarfMwh = z.KaeltebedarfMwh,
+                    KaeltespitzeKw = z.KaeltespitzeKw,
+                    KuehlstundenH = z.KuehlstundenH
                 })
             };
         }

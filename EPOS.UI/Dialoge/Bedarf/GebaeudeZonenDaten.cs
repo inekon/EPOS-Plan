@@ -74,6 +74,20 @@ public sealed class ZoneDaten
     /// <summary>Leistungsgrenze der Heizung [kW]; <c>null</c> = die des Gebäudes (ab zwei Zonen anteilig).</summary>
     public double? HeizleistungMaxKw { get; set; }
 
+    // ---- Die Kühlung der Zone (KU3-3, E67/E68) — leer (null) = wie Gebäude ----
+
+    /// <summary>Wird die Zone gekühlt? <c>null</c> = wie das Gebäude; <c>false</c> schaltet sie aus, auch wenn das Gebäude kühlt.</summary>
+    public bool? KuehlungAktiv { get; set; }
+
+    /// <summary>Kühlsollwert am Tag [°C]; <c>null</c> = der des Gebäudes (Bestandszelle der Kühlspalte der Zonenmatrix).</summary>
+    public double? KuehlSollwert { get; set; }
+
+    /// <summary>Kühlsollwert der Nacht [°C]; <c>null</c> = der des Gebäudes (wirksam über den Kühlkalender).</summary>
+    public double? KuehlSollwertNacht { get; set; }
+
+    /// <summary>Leistungsgrenze der Kühlung [kW]; <c>null</c> = die des Gebäudes (ab zwei Zonen nach dem Flächenanteil).</summary>
+    public double? KuehlleistungMaxKw { get; set; }
+
     // ---- Die Wärmeübergabe der Zone (E63, AK1z) — leer (null) = wie Gebäude ----
 
     /// <summary>Übergabeart (<c>DbWerte.UEBERGABE_*</c>); <c>null</c> = die des Gebäudes. <c>IDEAL</c> = diese Zone rechnet ideal.</summary>
@@ -97,18 +111,19 @@ public sealed class ZoneDaten
     /// <summary>Proportionalband des Raumreglers [K]; <c>null</c> = Gebäudewert, sonst Vorgabe 1 K.</summary>
     public double? ReglerProportionalband { get; set; }
 
-    /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>) samt den sieben Übergabefeldern.</summary>
+    /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>) samt den sieben Übergabefeldern und den vier Kühlfeldern.</summary>
     public Zoneneingaben Eingaben()
         => new(Nutzflaeche, Raumhoehe, Volumen, IstBeheizt, SollTag, SollNacht, SollWochenende, SollFerien,
                Maximaleraumtemperatur, HeizungStrahlungsanteil, HeizleistungMaxKw, LuftwechselInfiltration,
                LuftwechselNutzer, InterneWaermegewinne, Bewohner,
                UebergabeArt, UebergabeExponent, UebergabeLeistungNennKw, AuslegungVorlauf, AuslegungRuecklauf,
-               AuslegungRaumtemperatur, ReglerProportionalband);
+               AuslegungRaumtemperatur, ReglerProportionalband,
+               KuehlungAktiv, KuehlSollwert, KuehlSollwertNacht, KuehlleistungMaxKw);
 
     /// <summary>
     /// Die Zone, deren Duplikat diese ist (Stufe G6a) — ihre Id im Arbeitsstand; <c>null</c> = kein
     /// Duplikat. Die Hülle übernimmt damit die Spalten der Vorlage, die die Oberfläche nicht führt
-    /// (Kühleingaben), statt sie still auf NULL fallen zu lassen;
+    /// (Kühlübergabe), statt sie still auf NULL fallen zu lassen;
     /// Herkunft und Quellkennung der Vorlage gehen nicht mit.
     /// </summary>
     public int? VorlageId { get; set; }

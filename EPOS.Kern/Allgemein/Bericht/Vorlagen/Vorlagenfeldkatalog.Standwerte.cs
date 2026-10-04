@@ -326,7 +326,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.kennzahl." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Kennzahlwert(w, v, s)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(s)),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Bedarf = bedarf,
@@ -340,7 +340,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.delta." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Abweichung(w, v, s, false)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(s)),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Bedarf = bedarf,
@@ -349,7 +349,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.delta_prozent." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Abweichung(w, v, s, true)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(s)),
                     Format = "N1",
                     Einheit = "%",
                     Bedarf = bedarf,
@@ -379,7 +379,7 @@ namespace WindowsFormsApplication1
                     yield return new Vorlagenfeld(a.Vorsilbe + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Gruppe,
                         w => UeberStaende(w, s, wert))
                     {
-                        Seit = FASSUNG_STAND,
+                        Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(s)),
                         Format = k.Format,
                         Einheit = k.Einheit,
                         Bedarf = s == KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN ? Vorlagenbedarf.Zeitreihen : Vorlagenbedarf.Keiner,
@@ -614,7 +614,7 @@ namespace WindowsFormsApplication1
                     yield return new Vorlagenfeld(STAND + (a ? "a." : "b.") + f.Schluessel.Substring(STAND.Length), f.Art,
                         Vorlagenfeldkontext.Gruppe, w => ImPaar(w, vorbild, standA))
                     {
-                        Seit = FASSUNG_STAND,
+                        Seit = Math.Max(FASSUNG_STAND, f.Seit),
                         Format = f.Format,
                         Einheit = f.Einheit,
                         Leerwert = f.Leerwert,

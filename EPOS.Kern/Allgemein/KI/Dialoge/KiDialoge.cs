@@ -219,6 +219,13 @@ namespace WindowsFormsApplication1
         public const string KAELTEMASCHINE_KATALOG = "KaeltemaschineKatalog";
 
         /// <summary>
+        /// Der Erzeugerdialog „Kältemaschinen im Projekt" (<c>KaeltemaschineAnlageDialog</c>, KU3-4c) — eine neue
+        /// Maske ohne WinForms-Vorlaeufer und deshalb ohne <c>Form_</c>-Vorsilbe; zugleich die Vorsilbe ihres
+        /// Hilfeschluessels.
+        /// </summary>
+        public const string KAELTEMASCHINE_ANLAGE = "KaeltemaschineAnlage";
+
+        /// <summary>
         /// Die Verwaltung „Bauteilaufbauten" samt Schichtenraster (<c>BauteilaufbauDialog</c>,
         /// Gebaeudesimulation G3) — wie <see cref="BAUSTOFF_KATALOG"/> ohne <c>Form_</c>-Vorsilbe.
         /// </summary>
@@ -793,6 +800,7 @@ namespace WindowsFormsApplication1
                 Gebaeudetyp(),
                 BaustoffKatalog(),
                 KaeltemaschineKatalog(),
+                KaeltemaschineAnlage(),
                 Bauteilaufbau(),
                 Zone(),
                 Bauteil(),
@@ -5015,6 +5023,48 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Erzeugerdialog „Kältemaschinen im Projekt" (KU3-4c) — die Anlagenwahl und die sechs Eingaben der
+        /// gewählten Anlage aus <c>EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Der Kühlträger ist eine WAHL über die Id des Trägers (<c>KuehltraegerWahl</c>) — nie über den
+        /// Anzeigetext. Das Gerät wählt und entfernt der Anwender mit Klicks („Hinzufügen…", „Löschen");
+        /// geschrieben wird mit „OK", dieselbe Prüfung wie am Knopf (<c>KaeltemaschineAnlageCtrl.Pruefen</c>).
+        /// </remarks>
+        private static KiDialog KaeltemaschineAnlage()
+        {
+            const string SICHT = "KaeltemaschineAnlageKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.KAELTEMASCHINE_ANLAGE,
+                anzeigename: KiDialogTexte.MaskeKaeltemaschineAnlage,
+                felder: new[]
+                {
+                    new KiDialogFeld("anlage", SICHT + "Anlage", KiDialogTexte.KmaAnlageName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmaAnlageErl,
+                                     leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichner", SICHT + "Bezeichner", KiDialogTexte.KmaNameName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmaNameErl),
+                    new KiDialogFeld("anzahl", SICHT + "Anzahl", KiDialogTexte.KmaAnzahlName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.KmaAnzahlErl, min: 1),
+                    new KiDialogFeld("kuehl_vorlauf", SICHT + "KuehlVorlauf", KiDialogTexte.KmaVorlaufName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmaVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: -20, max: 30),
+                    new KiDialogFeld("hilfsstrom", SICHT + "Hilfsstrom", KiDialogTexte.KmaHilfsstromName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmaHilfsstromErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true, min: 0, max: 99.999),
+                    new KiDialogFeld("kuehltraeger", SICHT + "Kuehltraeger", KiDialogTexte.KmaTraegerName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmaTraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("eigener_zaehler", SICHT + "EigenerZaehler", KiDialogTexte.KmaZaehlerName,
+                                     KiParameterTyp.Wahrheitswert, KiDialogTexte.KmaZaehlerErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
         /// Die Verwaltung „Bauteilaufbauten" — die Satzwahl, vier Kopffelder und das Raster der
         /// Schichten aus <c>EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht</c>.
         /// </summary>
@@ -5148,6 +5198,12 @@ namespace WindowsFormsApplication1
                                      leerErlaubt: true, min: 0.0, max: 1.0),
                     new KiDialogFeld("heizleistung_max", SICHT + "HeizleistungMax", KiDialogTexte.ZonHeizleistungName,
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonHeizleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                    // KU3-3 (E67/E68): die Kuehlung je Zone - leer = wie Gebaeude.
+                    new KiDialogFeld("kuehlung_aktiv", SICHT + "KuehlungAktiv", KiDialogTexte.ZonKuehlungAktivName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonKuehlungAktivErl, leerErlaubt: true),
+                    new KiDialogFeld("kuehlleistung_max", SICHT + "KuehlleistungMax", KiDialogTexte.ZonKuehlleistungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonKuehlleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
                     // E63 (AK1z): die Uebergabe je Zone - leer = wie Gebaeude; dieselben Baender wie am Gebaeude.
                     new KiDialogFeld("uebergabe_art", SICHT + "UebergabeArt", KiDialogTexte.GebkUebergabeArtName,
@@ -6715,6 +6771,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PspvNutzungProzessName,
                                      KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.PspvNutzungProzessErl),
+                    new KiDialogFeld("nutzung_kaelte",
+                                     "PufferSpProjektKiSicht.NutzungKaelte",
+                                     KiDialogTexte.PspvNutzungKaelteName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PspvNutzungKaelteErl),
 
                     // ---- Die drei Entnahmehoehen -----------------------------------
                     new KiDialogFeld("entnahmehoehe_heizung",

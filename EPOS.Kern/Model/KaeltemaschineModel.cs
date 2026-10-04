@@ -57,6 +57,12 @@ namespace WindowsFormsApplication1
         /// <summary>Gehört zur Auslieferung (nur am Katalogsatz).</summary>
         public bool ReadOnly { get; set; }
 
+        /// <summary>Kaltwasservorlauf der Projektkopie [°C] (<c>Kuehl_Vorlauf</c>, Schritt 183); <c>null</c> = kleinste Stützstelle.</summary>
+        public double? Kuehl_Vorlauf { get; set; }
+
+        /// <summary>Hilfsstromanteil des Kältekreises [0…1) (<c>Kuehl_Hilfsstromanteil</c>, Schritt 183); <c>null</c> = kein Zuschlag.</summary>
+        public double? Kuehl_Hilfsstromanteil { get; set; }
+
         /// <summary>Die Kennlinie des Geräts.</summary>
         public List<KaeltemaschineKenndatenModel> Kennlinie { get; set; } = new List<KaeltemaschineKenndatenModel>();
     }
