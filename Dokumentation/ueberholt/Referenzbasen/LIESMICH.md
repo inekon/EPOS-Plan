@@ -1,6 +1,6 @@
-# Die Protokolle der 51 entfernten Referenzbasen
+# Die Protokolle der 52 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **51 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **52 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
 16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30, das von R31 und das von R32 am 02.10.2026. **51 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-03_R34_Erdreich`](../../../Referenzlaeufe/2026-10-03_R34_Erdreich/);
+> [`Referenzlaeufe/2026-10-04_R35_Zonenuebergabe`](../../../Referenzlaeufe/2026-10-04_R35_Zonenuebergabe/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -79,6 +79,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-02_R31_Rechenwegbefunde` | 02.10.2026 | Basis nach RB1 (untere Grenzleistung des BHKW aus dem Anlagenfeld vor Katalog vor Projekt, in allen drei Betriebsarten; Autarkie ohne Stromspeicher mit 0 kWh; Bedarfsprofil ohne Typbezug übersprungen), auf Linux eingefroren; Testdatenbank `a50f1f49…` (Schemastand 159), getragen bis zur Fassung `05783be1…` (Schemastand 162); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R32 am 02.10.2026 | [`2026-10-02_R31_Rechenwegbefunde/protokoll.txt`](2026-10-02_R31_Rechenwegbefunde/protokoll.txt) |
 | `2026-10-02_R32_Solarthermie` | 02.10.2026 | Basis nach der Welle M2 Solarthermie (Arbeitstemperatur des Kollektorfelds von 1049 aus dem Speicher, Diffus-Einfallswinkelkorrektur, Solarkreisfelder, Bezugsfläche), auf Linux eingefroren; Testdatenbank `486d5b0c…`, getragen bis zur Fassung `7debfd8a…` (Schemastand 165); sechzehn Projekte, 487 CSV, 3 081 Skalare — abgelöst durch R33 am 02.10.2026 | [`2026-10-02_R32_Solarthermie/protokoll.txt`](2026-10-02_R32_Solarthermie/protokoll.txt) |
 | `2026-10-02_R33_Viertelstunden` | 02.10.2026 | Basis nach der Welle M5 „Strom in Viertelstunden“ (PV-Bilanz je Viertelstunde nach dem Sonnenstand, Einspeisegrenze, Standby und Selbstentladung), auf Linux eingefroren; Testdatenbank `2b0dc246…` (Schemastand 168), gehoben bis Schemastand 176; sechzehn Projekte, 487 CSV, 3 082 Skalare — abgelöst durch R34 am 03.10.2026 | [`2026-10-02_R33_Viertelstunden/protokoll.txt`](2026-10-02_R33_Viertelstunden/protokoll.txt) |
+| `2026-10-03_R34_Erdreich` | 03.10.2026 | Basis nach dem Erdreichwiderstand nach DIN EN ISO 13370 (Bauteile am Erdreich), der allgemeinen Innenprüfung der Abschnittsregel im Zonenmodell und den neuen Referenzprojekten 1051 „Konditionierung“ und 1052 „Zonen“, auf Linux eingefroren; Testdatenbank `bb8dd3dc…` (Schemastand 176), gehoben bis Schemastand 181; achtzehn Projekte, 548 CSV, 3 568 Skalare — abgelöst durch R35 am 04.10.2026 | [`2026-10-03_R34_Erdreich/protokoll.txt`](2026-10-03_R34_Erdreich/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4418,5 +4419,93 @@ bis zur Fassung `7debfd8a…` (Schemastand 165); mit R33 aus dem Arbeitsbaum gef
 [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R32 und
 R33 hat die Testdatenbank die Schemaschritte 166 bis 168 bekommen (leere Felder); der Wechsel ist allein der Rechenweg der
 PV-Bilanz (SB1 a).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R34 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat bis zum 04.10.2026 die Basis R34 beschrieben — den Anlass (Erdreichwiderstand nach DIN EN ISO 13370, Innenprüfung der Abschnittsregel, die Referenzprojekte 1051 und 1052) mit der Tafel der Heizwärme je Projekt, darunter den Abschnitt zur Vorgängerbasis R33. Beides steht unten im Wortlaut; die Nachträge der Schemaschritte 177 bis 181 bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `7a5c161`, Testdatenbank Schemastand 181.
+
+**Abgelöst wurde R34 durch `2026-10-04_R35_Zonenuebergabe`** (Wärmeübergabe je Zone, AK1z, E63, dazu das Referenzprojekt 1054 „Zonen mit Heizkreis“): Die achtzehn Projekte der Basis rechnen byte-gleich (18/18 PASS, 548/548 CSV), neu ist allein 1054.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-03_R34_Erdreich/`** — **achtzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052), **548 CSV**, **3 568 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 03.10.2026, Stand `87c024218`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **176**, 83 120 128 Byte, LFS-SHA-256
+`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; gültige Fassung Schemastand **181**, 83 972 096 Byte, LFS-SHA-256 `bfd9f574a6a1c9af5ce5b996c8e23ebea46063fbecc05e16114d9f58746f5404`, Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052. 1050 und 1052 stehen nicht in der
+CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle achtzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: drei Teile, die Zahlen der Basis verschiebt allein der erste.**
+>
+> **(a) Erdreichwiderstand nach DIN EN ISO 13370.** Bauteile am Erdreich — Kellerboden, Kellerwand und die
+> Bodenplatte — rechnen mit dem Wärmewiderstand des Erdreichs statt mit dem Bauteil-U-Wert allein: charakteristisches
+> Bodenmaß B′ = A / (0,5 · P), äquivalente Dicke d_t, Bodenleitwert U_g für Boden und Wand, mit den Festwerten
+> λ_Erd 2,0 W/(m·K), Randstreifenbreite w 0,3 m und Außenwiderstand R_se 0,04 m²K/W. Der Umfang P kommt aus
+> `Abmessung_Anschluß_Außenwand_Kellerdecke`, aber nur, wenn er mindestens dem Kreisumfang der Fläche entspricht;
+> sonst gilt der Umfang des flächengleichen Quadrats 4·√A (Exportschlüssel `Erdreich_Umfangsquelle`: Feld oder
+> Quadrat). Die Randtemperatur des Erdreichs folgt Kusuda in 1 m Tiefe. Die Heizwärme sinkt gegenüber R33 überall dort,
+> wo ein Gebäude Bauteile am Erdreich trägt:
+>
+> | Projekt | Heizwärme | Spitze |
+> |---|---|---|
+> | 1007, 1046 | −2,3 % | −0,7 % |
+> | 1008 | −6,5 % | −1,9 % |
+> | 1017 | −16,4 % | −4,7 % |
+> | 1018, 1049 (B′ 22,9 m, U_g 0,155 W/(m²K)) | −22,7 % | −7,9 % |
+> | 1023, 1024, 1050 | −11,2 % | −3,5 % |
+> | 1039 | −10,2 % | −3,3 % |
+> | 1041, 1042, 1045 | −3,2 % | −1,1 % |
+> | 1047 | −15,7 % | −7,6 % |
+> | 1052 | −5,4 % | −3,8 % |
+> | 1030, 1040 (ohne Gebäudemodell) | unverändert | unverändert |
+>
+> **(b) Allgemeine Innenprüfung der Abschnittsregel** im Zonenmodell (Obergrenze 8 Abschnitte je Stunde, in
+> `GebaeudeFestwerte`). Messung an allen Referenzprojekten: 0 Stunden innerer Lastumkehr und 0 Bandverletzungen; die
+> Prüfung ändert keine Zahl, die Rechnung war gegen R33 byte-gleich.
+>
+> **(c) Neue Referenzprojekte und Exportschlüssel.** 1051 „Konditionierung“ und 1052 „Zonen“ (unten) kommen in die
+> Basis; neu im Export sind die Schlüssel `Geb[n].Erdreich_B`, `Geb[n].Erdreich_Ug` und
+> `Geb[n].Erdreich_Umfangsquelle`.
+>
+> **Gegenprobe:** Ein zweiter Lauf ist mit dem Einfrierlauf **548/548 CSV byte-gleich** (18/18 PASS, 5 828 968 Werte).
+> **Plattformnachweis:** gestört (`--stoerung ulp`) gegen die Basis 18/18 PASS, 540/548 CSV byte-gleich.
+> Aufbau und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052 \
+>   --ziel Referenzlaeufe/2026-10-03_R34_Erdreich
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+### Die Vorgängerbasis R33 `2026-10-02_R33_Viertelstunden`
+
+Sechzehn Projekte, 487 CSV, 3 082 Skalare, auf Linux eingefroren gegen die Testdatenbank `2b0dc246…` (Schemastand 168),
+gehoben bis Schemastand 176 (leere Felder und Katalogspalten, kein Rechenweg); mit R34 aus dem Arbeitsbaum gefallen,
+Protokoll, Anlass (PV-Bilanz je Viertelstunde, Welle M5) und alle Nachträge der Schemaschritte 166 bis 176 unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Der Wechsel zu R34
+ist der Rechenweg des Erdreichs (a), dazu die zwei neuen Projekte.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

@@ -595,7 +595,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-03_R34_Erdreich`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-04_R35_Zonenuebergabe`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -610,11 +610,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026**
-(51 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich` am 04.10.2026**
+(52 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 51 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 52 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -624,11 +624,11 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-03_R34_Erdreich/`** — **achtzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052), **548 CSV**, **3 568 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 03.10.2026, Stand `87c024218`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **176**, 83 120 128 Byte, LFS-SHA-256
-`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; gültige Fassung Schemastand **181**, 83 972 096 Byte, LFS-SHA-256 `bfd9f574a6a1c9af5ce5b996c8e23ebea46063fbecc05e16114d9f58746f5404`, Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+**`2026-10-04_R35_Zonenuebergabe/`** — **neunzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054), **576 CSV**, **3 791 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 04.10.2026, Stand `7a5c161`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **181**, 84 832 256 Byte, LFS-SHA-256
+`2eea4775d3cf30fe395c94e512387cba2677b9740fdd7643134488f387eb915d`, mit den Projekten 1053 und 1054; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -644,51 +644,36 @@ das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des 
 1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
 Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
 die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
-`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052. 1050 und 1052 stehen nicht in der
-CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle achtzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054. 1050, 1052 und 1054 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
+rechnet alle neunzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: drei Teile, die Zahlen der Basis verschiebt allein der erste.**
+> **Anlass: Wärmeübergabe je Zone (AK1z, E63) — die Zahlen der achtzehn Vorgängerprojekte sind unverändert, neu ist allein 1054.**
 >
-> **(a) Erdreichwiderstand nach DIN EN ISO 13370.** Bauteile am Erdreich — Kellerboden, Kellerwand und die
-> Bodenplatte — rechnen mit dem Wärmewiderstand des Erdreichs statt mit dem Bauteil-U-Wert allein: charakteristisches
-> Bodenmaß B′ = A / (0,5 · P), äquivalente Dicke d_t, Bodenleitwert U_g für Boden und Wand, mit den Festwerten
-> λ_Erd 2,0 W/(m·K), Randstreifenbreite w 0,3 m und Außenwiderstand R_se 0,04 m²K/W. Der Umfang P kommt aus
-> `Abmessung_Anschluß_Außenwand_Kellerdecke`, aber nur, wenn er mindestens dem Kreisumfang der Fläche entspricht;
-> sonst gilt der Umfang des flächengleichen Quadrats 4·√A (Exportschlüssel `Erdreich_Umfangsquelle`: Feld oder
-> Quadrat). Die Randtemperatur des Erdreichs folgt Kusuda in 1 m Tiefe. Die Heizwärme sinkt gegenüber R33 überall dort,
-> wo ein Gebäude Bauteile am Erdreich trägt:
+> Bei gekoppelter Anlage (AK1) rechnet der Schritt H die Wärmeübergabe je Zone am gemeinsamen Vorlauf des Gebäudes: Jede
+> Zone trägt ihre eigene Übergabeart, Auslegung und ihr Proportionalband, der Rücklauf des Gebäudes ist
+> massenstromgewichtet, und die Stunden, in denen die Übergabe an ihre Grenze kommt, werden je Zone gezählt. Schemaschritt
+> 181 legt dafür an `Tab_Zone` vier Spalten (`Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`,
+> `Regler_Proportionalband`; leer heißt „wie Gebäude“) und an `Tab_ErgebnisZone` drei Ergebnisspalten (`Vorlauf_Mittel_C`,
+> `Ruecklauf_Mittel_C`, `Uebergabe_Begrenzt_H`) an. Der Einzonenweg und die ungekoppelten Mehrzonengebäude rechnen
+> unverändert: **Gegen R34 sind die achtzehn Vorgängerprojekte 18/18 PASS und 548/548 CSV byte-gleich.**
 >
-> | Projekt | Heizwärme | Spitze |
-> |---|---|---|
-> | 1007, 1046 | −2,3 % | −0,7 % |
-> | 1008 | −6,5 % | −1,9 % |
-> | 1017 | −16,4 % | −4,7 % |
-> | 1018, 1049 (B′ 22,9 m, U_g 0,155 W/(m²K)) | −22,7 % | −7,9 % |
-> | 1023, 1024, 1050 | −11,2 % | −3,5 % |
-> | 1039 | −10,2 % | −3,3 % |
-> | 1041, 1042, 1045 | −3,2 % | −1,1 % |
-> | 1047 | −15,7 % | −7,6 % |
-> | 1052 | −5,4 % | −3,8 % |
-> | 1030, 1040 (ohne Gebäudemodell) | unverändert | unverändert |
+> **Neu ist Projekt 1054 „Zonen mit Heizkreis“**, Kopie von 1052 mit AK1, Radiator und Heizkurve am Gebäude und einer
+> Konvektorzone (Gastronomie und Verwaltung: Auslegung 70/50 °C, Proportionalband 2 K; Abschnitt „Das Referenzprojekt
+> 1054“ unten). Ergebnis: Heizwärme 47,58 MWh, Spitze 26,05 kW, Vorlauf/Rücklauf im Mittel 39,53/36,08 °C, 1 339 begrenzte
+> Stunden (Gästezimmer 293,9 h, Gastronomie 1 106,5 h); die beheizten Zonen stehen im Aufheizzustand GEKOPPELT. Der
+> Vergleichslauf meldet 1054 als „nur im Vergleichslauf vorhanden“, weil R34 das Projekt nicht kennt.
 >
-> **(b) Allgemeine Innenprüfung der Abschnittsregel** im Zonenmodell (Obergrenze 8 Abschnitte je Stunde, in
-> `GebaeudeFestwerte`). Messung an allen Referenzprojekten: 0 Stunden innerer Lastumkehr und 0 Bandverletzungen; die
-> Prüfung ändert keine Zahl, die Rechnung war gegen R33 byte-gleich.
->
-> **(c) Neue Referenzprojekte und Exportschlüssel.** 1051 „Konditionierung“ und 1052 „Zonen“ (unten) kommen in die
-> Basis; neu im Export sind die Schlüssel `Geb[n].Erdreich_B`, `Geb[n].Erdreich_Ug` und
-> `Geb[n].Erdreich_Umfangsquelle`.
->
-> **Gegenprobe:** Ein zweiter Lauf ist mit dem Einfrierlauf **548/548 CSV byte-gleich** (18/18 PASS, 5 828 968 Werte).
-> **Plattformnachweis:** gestört (`--stoerung ulp`) gegen die Basis 18/18 PASS, 540/548 CSV byte-gleich.
-> Aufbau und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+> **Gegenprobe:** Der Vergleich der neunzehn Projekte gegen R34 steht bei 18/18 PASS, die 548 CSV der Vorgänger sind
+> byte-gleich; 1054 bringt 28 CSV und 223 Skalare dazu. Aufbau und Ausstattung je Projekt stehen im `protokoll.txt` der
+> Basis.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052 \
->   --ziel Referenzlaeufe/2026-10-03_R34_Erdreich
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054 \
+>   --ziel Referenzlaeufe/2026-10-04_R35_Zonenuebergabe
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
@@ -729,13 +714,14 @@ CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle achtzehn. Sie ist die **
 > `bfd9f574a6a1c9af5ce5b996c8e23ebea46063fbecc05e16114d9f58746f5404`**. **Die Basis bleibt:** Keine Zone trägt einen
 > Wert, kein Rechenweg liest die Spalten; keine Einfrierregel ist berührt.
 
-### Die Vorgängerbasis R33 `2026-10-02_R33_Viertelstunden`
+### Die Vorgängerbasis R34 `2026-10-03_R34_Erdreich`
 
-Sechzehn Projekte, 487 CSV, 3 082 Skalare, auf Linux eingefroren gegen die Testdatenbank `2b0dc246…` (Schemastand 168),
-gehoben bis Schemastand 176 (leere Felder und Katalogspalten, kein Rechenweg); mit R34 aus dem Arbeitsbaum gefallen,
-Protokoll, Anlass (PV-Bilanz je Viertelstunde, Welle M5) und alle Nachträge der Schemaschritte 166 bis 176 unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R34
-ist der Rechenweg des Erdreichs (a), dazu die zwei neuen Projekte.
+Achtzehn Projekte, 548 CSV, 3 568 Skalare, auf Linux eingefroren gegen die Testdatenbank `bb8dd3dc…` (Schemastand 176),
+gehoben bis Schemastand 181 (leere Felder, leere Tabellen und Saat, kein Rechenweg); mit R35 aus dem Arbeitsbaum gefallen,
+Protokoll und Anlass (Erdreichwiderstand nach DIN EN ISO 13370, Innenprüfung der Abschnittsregel, die Referenzprojekte
+1051 und 1052) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R35 ist
+die Wärmeübergabe je Zone (a); die achtzehn Projekte rechnen byte-gleich, neu ist allein 1054.
 
 ## Was hier liegt
 
@@ -865,7 +851,7 @@ Aufheizzeit trägt das Gebäude nicht. Alle übrigen Zonenfelder bleiben leer (W
 Gerechnet (zwei Läufe byte-gleich, rund 2 s): Heizwärme des Gebäudes 54,00 MWh, Spitze 28,95 kW (Umfang des
 flächengleichen Quadrats, B′ 22,9 m, U_g 0,146 W/(m²K)); Gästezimmer 35,23 MWh, Spitze 18,03 kW, 52 Rampentage,
 t_auf,max 6 h; Gastronomie 18,77 MWh, Spitze 12,27 kW, 201 Rampentage, t_auf,max 16 h; Keller im Mittel der Heizzeit
-15,1 °C; 672 Rampenstunden in `heizsollwert_0.csv` (Wert vor R34, nicht neu abgelesen). 1052 steht in der Basis R34, nicht
+15,1 °C; 672 Rampenstunden in `heizsollwert_0.csv` (Wert vor R34, nicht neu abgelesen). 1052 steht in der Basis R35, nicht
 in der CI-Auswahl; es gilt die Einfrierregel „gesäte Zonendaten“ oben.
 
 ```bash
@@ -910,8 +896,8 @@ von der Wache festgehalten; die gefahrene Heizkurve bringt die Übergabe in kalt
 (zwei Läufe byte-gleich, rund 2 s): Heizwärme des Gebäudes 47,58 MWh, Spitze 26,05 kW; Vorlauf im Mittel 39,53 °C,
 Rücklauf 36,08 °C, 1 339 begrenzte Stunden; Gästezimmer 33,63 MWh, Spitze 18,75 kW, Vorlauf/Rücklauf 39,89/36,55 °C,
 294 begrenzte Stunden; Gastronomie 13,94 MWh, Spitze 8,54 kW, Vorlauf/Rücklauf 40,63/35,79 °C, 1 106 begrenzte Stunden,
-im Mittel der Heizzeit 18,7 °C; Keller ohne Übergabewerte, im Mittel der Heizzeit 14,7 °C. 1054 kommt mit dem
-Einfrieren in die Basis R35, nicht in die CI-Auswahl; es gelten die Einfrierregeln „gesäte Auslegungsdaten der Übergabe“
+im Mittel der Heizzeit 18,7 °C; Keller ohne Übergabewerte, im Mittel der Heizzeit 14,7 °C. 1054 steht in der
+Basis R35, nicht in der CI-Auswahl; es gelten die Einfrierregeln „gesäte Auslegungsdaten der Übergabe“
 und „gesäte Zonendaten“ oben.
 
 ```bash
@@ -949,13 +935,13 @@ Rampentage, längste Rampe 13 h, t_auf,max 26 h, W1/W2/W3 0/1/0, Bemessungsfall 
 | Gebäude 10657 | 26 Gebäudezellen, keine manuelle Aufheizzeit, Zuordnung 572 m² |
 | `Tab_Einstellungen` | Aufheizvorgabe STUNDE_ABZUG 2 K, Reserve leer (wirksam 20 %), Art und Aufschlag leer, täglich; Kühlbetrieb aus; `Kosten_Geaendert` NULL |
 
-Gerechnet (zwei Läufe byte-gleich, Basis R34): Heizwärme 24,328 MWh, Spitze 30,63 kW, 108 Rampentage, t_auf,max 27 h,
+Gerechnet (zwei Läufe byte-gleich, Basis R35): Heizwärme 24,328 MWh, Spitze 30,63 kW, 108 Rampentage, t_auf,max 27 h,
 P_auf 31,62 kW bei −20,17 °C, 312 Aufheizstunden, längste Rampe 13 h, 615 Nachtauskühlstunden, 1 797
 Sommerlüftungsstunden; der Umfang kommt aus dem Feld (`Erdreich_Umfangsquelle` Feld, B′ 6,69 m,
 U_g 0,198 W/(m²K)). Heizwärme und Spitze ohne Rampe, die Wirkungen W1 bis W4 und die kleinste Reserve ohne W1 und W3
 sind in der Basis nicht abzulesen und stehen mit den Werten vor R34 nicht mehr hier; die gesetzte Reserve von 20 % bleibt.
 
-1051 steht in der Basis R34 und in der CI-Auswahl; es gilt die Einfrierregel „gesäte Konditionierungsdaten“ oben.
+1051 steht in der Basis R35 und in der CI-Auswahl; es gilt die Einfrierregel „gesäte Konditionierungsdaten“ oben.
 Die Auslieferungsvorlage liefert 1051 und den Referenzbau nicht aus.
 
 ```bash
@@ -994,8 +980,8 @@ Das Skript ist wiederholbar (Rückgabe 0 ohne Änderung, Rückgabe 2 bei Abweich
 Zielzellen, die Unversehrtheit von 1018, `integrity_check` und `foreign_key_check` in einer Arbeitsdatei und ersetzt
 erst dann die Datenbank. Nach einer Neufassung der Testdatenbank wird es **nach 1052** gezogen.
 
-**Die achtzehn Projekte der Basis R34:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
-1046, 1047, 1049, 1050, 1051 und 1052. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1052 und 1050
+**Die neunzehn Projekte der Basis R35:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
+1046, 1047, 1049, 1050, 1051, 1052 und 1054. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1050, 1052 und 1054
 stehen nicht in der CI-Auswahl).
 
 ## Die wichtigste Regel
