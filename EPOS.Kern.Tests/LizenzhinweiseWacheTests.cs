@@ -122,6 +122,52 @@ namespace EPOS.Kern.Tests
                         projekt + " referenziert " + paket + " — das Paket hängt allein am Kern (A2).");
         }
 
+        /// <summary>
+        /// three.js (G7b, E66; Datenaustauschkonzept 14.4 Regel 2): Die lokal ausgelieferte Fassung steht an drei
+        /// Stellen gleich — <c>EPOS.UI/wwwroot/three/FASSUNG.txt</c>, <c>const REVISION</c> in <c>three.core.js</c>
+        /// (das <c>three.module.js</c> von dort bezieht) und Abschnitt 7 der Lizenzhinweisseite samt MIT,
+        /// Copyright-Vermerk aus <c>LICENSE.txt</c>, Projekt und Quelltext. Dazu: nur die fünf Dateien im Ordner
+        /// (kein <c>package.json</c>, keine Werkzeugkette), OrbitControls bezieht three lokal, und das Modul der
+        /// Körperansicht lädt nichts aus dem Netz.
+        /// </summary>
+        [Fact]
+        public void Die_Fassung_von_threejs_steht_in_Datei_Bibliothek_und_Lizenzhinweisen_gleich()
+        {
+            const string ordner = "EPOS.UI/wwwroot/three/";
+            Match m = Regex.Match(File.ReadAllText(Pfad(ordner + "FASSUNG.txt")),
+                                  @"^three\.js (\d+\.(\d+)\.\d+) \(r(\d+)\)", RegexOptions.Multiline);
+            Assert.True(m.Success, ordner + "FASSUNG.txt nennt keine Fassung der Form 'three.js 0.186.1 (r186)'.");
+            string fassung = m.Groups[1].Value, revision = m.Groups[3].Value;
+            Assert.Equal(m.Groups[2].Value, revision);
+
+            Assert.Contains("const REVISION = '" + revision + "';", File.ReadAllText(Pfad(ordner + "three.core.js")));
+            Assert.Contains("from './three.core.js'", File.ReadAllText(Pfad(ordner + "three.module.js")));
+            string orbit = File.ReadAllText(Pfad(ordner + "OrbitControls.js"));
+            Assert.Contains("} from './three.module.js';", orbit);
+            Assert.DoesNotContain("} from 'three';", orbit);
+
+            var dateien = Directory.GetFiles(Pfad(ordner)).Select(Path.GetFileName).OrderBy(n => n, StringComparer.Ordinal).ToArray();
+            Assert.Equal(new[] { "FASSUNG.txt", "LICENSE.txt", "OrbitControls.js", "three.core.js", "three.module.js" }, dateien);
+
+            string lizenz = File.ReadAllText(Pfad(ordner + "LICENSE.txt"));
+            Assert.Contains("The MIT License", lizenz);
+            string copyright = lizenz.Split('\n').Select(z => z.Trim()).First(z => z.StartsWith("Copyright", StringComparison.Ordinal));
+
+            string block = Abschnitt(File.ReadAllText(Pfad(Seite)), "three.js " + fassung);
+            Assert.Contains("(r" + revision + ")", block);
+            Assert.Contains("MIT", block);
+            Assert.Contains(copyright, block);
+            Assert.Contains("https://threejs.org", block);
+            Assert.Contains("https://github.com/mrdoob/three.js", block);
+            Assert.Contains("OrbitControls", block);
+            Assert.Contains("Permission is hereby granted", block);
+
+            string modul = File.ReadAllText(Pfad("EPOS.UI/wwwroot/epos-gebaeude-koerper.js"));
+            Assert.Contains("from './three/three.module.js'", modul);
+            Assert.Contains("from './three/OrbitControls.js'", modul);
+            Assert.DoesNotContain("http", modul);
+        }
+
         // ==================================================================
         //  Hilfen
         // ==================================================================
