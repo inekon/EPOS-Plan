@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
                 if (g.Ergebnis != null)
                 {
                     e ??= new IfcErgebnisse();
-                    e.JeKennung[g.Kennung] = Aus(g.Ergebnis);
+                    e.JeKennung[g.Kennung] = Aus(g.Ergebnis, raum: false);
                     e.Rechenzeitpunkt ??= g.Ergebnis.Rechenzeitpunkt;
                     e.Wetterdatensatz ??= string.IsNullOrWhiteSpace(g.Ergebnis.Wetterdatensatz) ? null : g.Ergebnis.Wetterdatensatz.Trim();
                 }
@@ -58,13 +58,14 @@ namespace WindowsFormsApplication1
                 {
                     if (r.Ergebnis == null) continue;
                     e ??= new IfcErgebnisse();
-                    e.JeKennung[r.Kennung] = Aus(r.Ergebnis);
+                    e.JeKennung[r.Kennung] = Aus(r.Ergebnis, raum: true);
                 }
             }
             return e;
         }
 
-        private static IfcErgebnis Aus(AbbildErgebnis a)
-            => new IfcErgebnis(a.EnergieKWh, a.HeizlastW, a.MitteltemperaturC, null, a.KaeltebedarfKWh, a.KaeltelastW);
+        /// <summary>Ein Ergebnis des Abbilds; die Raumtemperatur steht nur am Raum (6.4).</summary>
+        private static IfcErgebnis Aus(AbbildErgebnis a, bool raum)
+            => new IfcErgebnis(a.EnergieKWh, a.HeizlastW, raum ? a.MitteltemperaturC : null, null, a.KaeltebedarfKWh, a.KaeltelastW);
     }
 }
