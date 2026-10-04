@@ -229,10 +229,17 @@ namespace EPOS.Kern.Tests
             // Die unbeheizte Gruppe {Lagerraum, Abstellraum} bildet „10 °C – Lager"; ohne Raumgrenzen trägt sie keine Fläche und
             // entfällt benannt (6.5) — ihre Räume bleiben außerhalb der Zonen.
             Assert.Equal(new[] { "20 °C – Büro, Wohnen, Sanitär", "15 °C – Verkehr" }, z.Zonen.Select(x => x.Name));
-            Assert.Equal(new[] { "Büroraum", "Büroraum 2", "WC-Raum", "Wohnraum", "Raum 7" }, z.Zonen[0].Raeume.Select(r => r.Name));
+            Assert.Equal(new[] { "Büroraum", "Büroraum 2", "WC-Raum", "Wohnraum", "Raum 7", "Dusche" }, z.Zonen[0].Raeume.Select(r => r.Name));
             Assert.Equal(new[] { "10 °C – Lager", "35" },
                          Assert.Single(z.Meldungen, m => m.Schluessel == I + GebaeudeZonierung.ZONE_OHNE_FLAECHEN).Werte);
             Assert.Equal(-1, z.ZoneVon(g.Raeume.Single(r => r.Name == "Lagerraum").Kennung));
+            // Nachbar mit Fläche, aber fernere Temperatur: die Dusche (24 °C, 3 m²) grenzt nur an den Flur (15 °C) und geht
+            // dennoch zur 20-°C-Zone — unter Z6 gilt die nächstliegende Solltemperatur vor der gemeinsamen Grenzfläche.
+            Assert.Equal("Dusche", z.Zonen[0].Raeume.Last().Name);
+            Assert.Equal(new[] { "24 °C – Sanitär" }, z.Zonen[0].Zugeschlagen);
+            Assert.Empty(z.Zonen[1].Zugeschlagen);
+            Assert.Equal("20 °C – Büro, Wohnen, Sanitär",
+                         Assert.Single(z.Meldungen, m => m.Schluessel == I + GebaeudeZonierung.ZONE_ZUGESCHLAGEN).Werte[2]);
             Assert.Equal(IfcImportProfil.ZONENREGEL_Z4, z.Vorgabe);   // M7: die Trenndecke aus den Raumbezügen koppelt die Geschosse
 
             // Übersteuerung: der Abstellraum beheizt → eigene beheizte 10-°C-Zone, der Lagerraum ohne Temperatur bleibt unbeheizt ohne Sollwert.

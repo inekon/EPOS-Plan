@@ -1107,11 +1107,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Zone gleicher Beheizung mit der nächstliegenden Solltemperatur zu Zone <paramref name="i"/> (M8 unter Z6 ohne
-        /// Grenzflächen); bei Gleichstand die größere, dann die frühere. Ohne Sollwert auf einer Seite gilt der Abstand als
-        /// unendlich. −1 = keine.
+        /// Die Zone gleicher Beheizung mit der nächstliegenden Solltemperatur zu Zone <paramref name="i"/> (M8 unter Z6, vor
+        /// der größten gemeinsamen Grenzfläche); bei Gleichstand der Temperatur die mit der größeren gemeinsamen Fläche
+        /// (<paramref name="nachbarn"/>), dann die größere Zone, dann die frühere. Ohne Sollwert auf einer Seite gilt der
+        /// Abstand als unendlich. −1 = keine.
         /// </summary>
-        private int NaechsteTemperatur(int i)
+        private int NaechsteTemperatur(int i, IReadOnlyDictionary<int, double> nachbarn)
         {
             double? ti = _z6Temperatur.TryGetValue(Zonen[i].Schluessel, out double? a) ? a : null;
             return Enumerable.Range(0, Zonen.Count)
@@ -1120,9 +1121,9 @@ namespace WindowsFormsApplication1
                 {
                     double? tj = _z6Temperatur.TryGetValue(Zonen[j].Schluessel, out double? b) ? b : null;
                     double abstand = ti.HasValue && tj.HasValue ? Math.Abs(ti.Value - tj.Value) : double.MaxValue;
-                    return (J: j, Abstand: abstand, Flaeche: Zonen[j].FlaecheM2 ?? 0.0);
+                    return (J: j, Abstand: abstand, Gemeinsam: nachbarn.TryGetValue(j, out double g) ? g : 0.0, Flaeche: Zonen[j].FlaecheM2 ?? 0.0);
                 })
-                .OrderBy(k => k.Abstand).ThenByDescending(k => k.Flaeche).ThenBy(k => k.J)
+                .OrderBy(k => k.Abstand).ThenByDescending(k => k.Gemeinsam).ThenByDescending(k => k.Flaeche).ThenBy(k => k.J)
                 .Select(k => k.J).DefaultIfEmpty(-1).First();
         }
 
@@ -1158,16 +1159,17 @@ namespace WindowsFormsApplication1
                     foreach (Zonenflaeche f in Flaechen.Where(f => f.Zone == i && f.Rand == Zonenrand.Zone
                                                                     && Zonen[f.Nachbarzone].IstBeheizt == Zonen[i].IstBeheizt))
                         nachbarn[f.Nachbarzone] = (nachbarn.TryGetValue(f.Nachbarzone, out double w) ? w : 0.0) + (f.GroessereM2 ?? 0.0);
-                    if (nachbarn.Count == 0 || nachbarn.Values.Max() <= 0.0)
+                    if (Regel == IfcImportProfil.ZONENREGEL_Z6)
                     {
-                        // Z6 ohne Grenzflächen: zur Zone gleicher Beheizung mit der nächstliegenden Solltemperatur.
-                        int naechste = Regel == IfcImportProfil.ZONENREGEL_Z6 ? NaechsteTemperatur(i) : -1;
+                        // Z6: stets zur Zone gleicher Beheizung mit der nächstliegenden Solltemperatur — vor der Grenzfläche.
+                        int naechste = NaechsteTemperatur(i, nachbarn);
                         if (naechste < 0) continue;
                         klein = i;
                         ziel = naechste;
-                        gemeinsam = 0.0;
+                        gemeinsam = nachbarn.TryGetValue(naechste, out double g) ? g : 0.0;
                         break;
                     }
+                    if (nachbarn.Count == 0 || nachbarn.Values.Max() <= 0.0) continue;
                     KeyValuePair<int, double> best = nachbarn.OrderByDescending(n => n.Value).ThenBy(n => n.Key).First();
                     klein = i;
                     ziel = best.Key;

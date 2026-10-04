@@ -1165,9 +1165,10 @@ der Zone: „⟨T⟩ °C – ⟨bis zu drei Nutzungsklassen, flächengewichtet�
 gleicher Temperatur mit dem Zusatz „(unbeheizt)"; Schlüssel sprachneutral, Texte aus den Ressourcen. **Ordnung**:
 absteigend nach Solltemperatur (ohne Sollwert zuletzt), beheizt vor unbeheizt, dann Name. Die Zonen gelten
 geschossübergreifend; Trenndecken und Trennwände entstehen wie bei Z4 aus Raumbezügen bzw. Raumgrenzen, soweit vorhanden,
-sonst warnt `IMP_IFC_PROT_GRENZEN_ENTKOPPELT`. **Mindestgröße unter Z6:** hat eine zu kleine Zone keinen Nachbarn gleicher
-Beheizung mit gemeinsamer Grenzfläche, wird sie der Zone gleicher Beheizung mit der nächstliegenden Solltemperatur
-zugeschlagen (bei Gleichstand der größeren). Obergrenze M12, Zuordnung von Hand und Regelwechsel gelten wie bei Z4; die
+sonst warnt `IMP_IFC_PROT_GRENZEN_ENTKOPPELT`. **Mindestgröße unter Z6:** eine zu kleine Zone wird stets der Zone gleicher
+Beheizung (unbeheizt nur zu unbeheizt) mit der nächstliegenden Solltemperatur zugeschlagen — vor der größten gemeinsamen
+Grenzfläche, denn Z6 bildet die Zonen über die Temperatur; bei gleichem Temperaturabstand entscheidet die größere
+gemeinsame Grenzfläche, dann die größere Zone. Unter Z1 bis Z5 gilt die Mindestgröße unverändert. Obergrenze M12, Zuordnung von Hand und Regelwechsel gelten wie bei Z4; die
 Vorgabe (M7) bleibt Z4 bzw. Z5, Z6 steht in der Liste nach Z4.
 
 **Mindestgröße.** Eine Zone unter **max(2 m², 2 % der Gebäudegrundfläche)** wird dem Nachbarn mit

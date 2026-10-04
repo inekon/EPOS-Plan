@@ -677,7 +677,8 @@ namespace EPOS.Kern.Tests
         /// <c>InsideTemperature (°C)</c> und <c>RoomType</c> (Aufzählung mit Präfix <c>mrt</c>), Bauteile mit Raumbezügen.
         /// EG: „Büroraum" 40 m² beheizt 20 °C Office, „Büroraum 2" 30 m² beheizt 20 °C Office, „Flur" 20 m² beheizt 15 °C Hall,
         /// „WC-Raum" 6 m² beheizt 20 °C WC, „Lagerraum" 25 m² unbeheizt ohne Temperatur Store; OG: „Wohnraum" 35 m² getrennt
-        /// beheizt 20 °C Living, „Raum 7" 12 m² beheizt ohne Temperatur Office, „Abstellraum" 10 m² unbeheizt 10 °C Store.
+        /// beheizt 20 °C Living, „Raum 7" 12 m² beheizt ohne Temperatur Office, „Abstellraum" 10 m² unbeheizt 10 °C Store; dazu im EG
+        /// „Dusche" 3 m² beheizt 24 °C Shower unter der Mindestgröße, deren einzige Grenzfläche („Wand Dusche") am Flur (15 °C) liegt.
         /// </summary>
         public static byte[] Z6Cad()
         {
@@ -692,16 +693,18 @@ namespace EPOS.Kern.Tests
                 IIfcSlab dach = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke", "btaUppermostStorey", true, 0.3, null, null, 57, 57, null, null);
                 IIfcWall sued = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand Süd", "btaOutside", true, 0.3, null, 180, 40, 40, null, null);
                 IIfcWall nord = b.CadBauteil<IIfcWall>(og, "IfcWall", "Außenwand Nord", "btaOutside", true, 0.3, null, 0, 40, 40, null, null);
+                IIfcWall duschwand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand Dusche", "btaHeated", false, 1.5, null, null, 5, 5, null, null);
                 (IIfcBuildingStorey S, string Name, double M2, string Art, double? C, string Typ, IIfcProduct[] Bauteile)[] raeume =
                 {
                     (eg, "Büroraum", 40, "bhtHeated", 20.0, "mrtOffice", new IIfcProduct[] { boden, decke, sued }),
                     (eg, "Büroraum 2", 30, "bhtHeated", 20.0, "mrtOffice", new IIfcProduct[] { boden, decke, sued }),
-                    (eg, "Flur", 20, "bhtHeated", 15.0, "mrtHall", new IIfcProduct[] { boden, decke }),
+                    (eg, "Flur", 20, "bhtHeated", 15.0, "mrtHall", new IIfcProduct[] { boden, decke, duschwand }),
                     (eg, "WC-Raum", 6, "bhtHeated", 20.0, "mrtWC", new IIfcProduct[] { boden, decke }),
                     (eg, "Lagerraum", 25, "bhtUnHeated", null, "mrtStore", new IIfcProduct[] { boden, decke, sued }),
                     (og, "Wohnraum", 35, "bhtSeparatelyHeated", 20.0, "mrtLiving", new IIfcProduct[] { decke, dach, nord }),
                     (og, "Raum 7", 12, "bhtHeated", null, "mrtOffice", new IIfcProduct[] { decke, dach }),
                     (og, "Abstellraum", 10, "bhtUnHeated", 10.0, "mrtStore", new IIfcProduct[] { decke, dach, nord }),
+                    (eg, "Dusche", 3, "bhtHeated", 24.0, "mrtShower", new IIfcProduct[] { boden, duschwand }),
                 };
                 double x = 150;
                 foreach (var r in raeume)
