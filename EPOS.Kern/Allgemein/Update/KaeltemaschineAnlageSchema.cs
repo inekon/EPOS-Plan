@@ -154,6 +154,9 @@ namespace WindowsFormsApplication1
             new Position("Instandhaltung Kältemaschine", DbWerte.KOSTENART_BETRIEBSGEBUNDEN, DbWerte.BEMESSUNG_PROZENT_INVESTITION, INSTANDSETZUNG_PROZENT, 20, true),
         };
 
+        /// <summary>Der Katalogstempel der Kosten an <c>Tab_Applikation</c>.</summary>
+        private const string SPALTE_KATALOGSTEMPEL = "Kostenkatalog_Geaendert";
+
         internal const string SQL_SAAT_TYP =
             "INSERT INTO \"Tab_Typ_Energieanlagen\" (\"ID\", \"Bezeichner\") SELECT ?, ? " +
             "WHERE NOT EXISTS (SELECT 1 FROM \"Tab_Typ_Energieanlagen\" WHERE \"ID\" = ?)";
@@ -185,6 +188,10 @@ namespace WindowsFormsApplication1
         public static int Saat(IList<string> bericht)
         {
             int n = 0;
+            // Die Saat ist Auslieferung, keine Anwenderänderung: Der Katalogstempel der Kosten (Trigger an
+            // Tab_KostenKomponente und Tab_Nutzungsdauer) bleibt, wie er war - kein Projekt rechnet anders.
+            bool stempel = DataRepository.SpalteVorhanden("Tab_Applikation", SPALTE_KATALOGSTEMPEL);
+            object stempelVorher = stempel ? DataRepository.ExecuteScalar("SELECT " + SPALTE_KATALOGSTEMPEL + " FROM Tab_Applikation LIMIT 1") : null;
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
@@ -214,6 +221,9 @@ namespace WindowsFormsApplication1
                                 new DbParam("?", KOMPONENTE_KAELTEMASCHINE), new DbParam("?", kategorie),
                                 new DbParam("?", p.Bezeichnung));
                     }
+                    if (stempel && n > 0)
+                        v.Ausfuehren("UPDATE Tab_Applikation SET " + SPALTE_KATALOGSTEMPEL + " = ?",
+                                     new DbParam("?", stempelVorher ?? DBNull.Value));
                     v.Commit();
                 }
                 catch
