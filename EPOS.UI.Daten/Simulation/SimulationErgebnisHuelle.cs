@@ -619,6 +619,12 @@ namespace WindowsFormsApplication1
             d.Speicher.AktiveFlotte = SpeicherFlottenProjektCtrl.AktiveKonfiguration(m_ID_Projekt);
             d.Speicher.FlotteImProjektAktiv = d.Speicher.AktiveFlotte != null;
             d.Speicher.FlottenAenderungOhneNeuenLauf = _flotteProjektGeaendert;
+            if (sim.Speicherflottenkonfiguration?.Optionen?.WirtschaftlicherPeakZielwertKw is double peakZiel &&
+                sim.SpeicherflottenPeakZielHerkunft is FlottenPeakZielHerkunft herkunft)
+            {
+                d.Speicher.PeakZielKw = peakZiel;
+                d.Speicher.PeakZielHerkunft = herkunft;
+            }
             if (sim.Speicherflottenergebnis != null && sim.Speicherflottenkonfiguration != null)
                 d.Speicher.Flottenergebnis = new SpeicherFlottenErgebnis
                 {
@@ -1446,23 +1452,11 @@ namespace WindowsFormsApplication1
             if (bedarfsfehler != null) return Abbruch(Mitkanal(bedarfsfehler));
 
             // Erst ein vollständig erfolgreicher Lauf ersetzt die vorherige Anzeige.
-            // Die Flotte wird am Speicherzweig aus den frisch gerechneten Quellen
-            // vorbereitet; damit funktioniert derselbe Weg auch beim ersten Öffnen.
-            var neuerLauf = new SimulationControl();
-            try
-            {
-                var eingaben = OptimierungVorgaben().Eingaben.Kopie();
-                if (eingaben.Auslegung.Flotte?.Einheiten?.Count > 0 &&
-                    !eingaben.Auslegung.FlottenProjektbetriebDeaktiviert)
-                {
-                    eingaben.Auslegung.FlottenGroessenOptimieren = false;
-                    neuerLauf.SpeicherflottenEingaben = eingaben;
-                }
-            }
-            catch (Exception ex)
-            {
-                return Abbruch("Die Speicher-Einstellungen konnten nicht vorbereitet werden: " + ex.Message);
-            }
+            // Die Flottenvorgabe bildet der Lauf SELBST an seiner Speicherstufe — nach Wärme-
+            // und Strombedarf, aus dem Lastgang ohne Speicher dieses Durchgangs
+            // (Anwenderentscheid 04.10.2026). Damit bekommt schon der erste Lauf dieselbe
+            // Vorgabe wie jeder weitere; ein gespeicherter Stand gilt wie er ist.
+            var neuerLauf = new SimulationControl { SpeicherflotteAusLaufVorbelegen = true };
 
             SimulationLaufCtrl.Bestuecken(neuerLauf, m_ID_Projekt, Tools(),
                                           waermeLauf, stromLauf, ctrl,

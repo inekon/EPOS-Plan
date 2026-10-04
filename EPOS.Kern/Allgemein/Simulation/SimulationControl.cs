@@ -281,6 +281,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public SpeicherOptimierungEingaben SpeicherflottenEingaben { get; set; }
 
+        /// <summary>
+        /// Bildet <see cref="SpeicherflottenEingaben"/> im Lauf selbst — nach der
+        /// Bedarfsrechnung und vor der Speicherstufe — aus dem Lastgang DIESES Laufs
+        /// (<see cref="SpeicherflotteVorbelegen"/>). Ein vorher gesetzter Stand wird dabei
+        /// ersetzt; ohne Flotteneinheiten bleibt er leer.
+        /// </summary>
+        public bool SpeicherflotteAusLaufVorbelegen { get; set; }
+
+        /// <summary>
+        /// Herkunft des Peak-Ziels, mit dem die Flotte dieses Laufs gerechnet hat;
+        /// <c>null</c>, solange der Lauf keine Flottenvorgabe gebildet hat.
+        /// </summary>
+        public FlottenPeakZielHerkunft? SpeicherflottenPeakZielHerkunft { get; set; }
+
         /// <summary>Vollständiger Lauf zum instanzbezogenen Flottenstand.</summary>
         public SpeicherFlottenProjektLauf Speicherflottenlauf { get; internal set; }
 
@@ -667,6 +681,14 @@ namespace WindowsFormsApplication1
             // Beschaffen der Lastreihe auswertet.
             // ***********************************************************************
             Phase(fortschritt, abbruch, Laufphase.Stromspeicher, 0.75);
+
+            // Die Flottenvorgabe aus DIESEM Lauf (Anwenderentscheid 04.10.2026): Wärme- und
+            // Strombedarf und alle Erzeuger vor der Speicherstufe sind gerechnet, der Lastgang
+            // ohne Speicher steht fest. Nur auf Anforderung (Ergebnishülle); der Runner und der
+            // Referenzlauf rechnen unverändert.
+            if (SpeicherflotteAusLaufVorbelegen && !SpeicherflotteVorbelegen(ID_Projekt))
+                return;
+
             if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER ||
                 SpeicherflottenEingaben != null ||
                 (SpeicherflotteAktiv != null && SpeicherflotteAktiv(m_ID_Projekt)))

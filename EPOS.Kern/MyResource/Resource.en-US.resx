@@ -20,6 +20,7 @@
   <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
   </data>
     <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+  </data>
     <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
         <value>[base64 mime encoded serialized .NET Framework object]</value>
     </data>
@@ -44859,6 +44860,21 @@ chart</value>
   </data>
   <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
     <value>Every curve point needs a heat rejection and a chilled water temperature.</value>
+  </data>
+  <data name="SIMERG_SP_VORGABEN_FEHLER" xml:space="preserve">
+    <value>The storage settings could not be prepared: {0}</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_ZEILE" xml:space="preserve">
+    <value>Peak target of this run: {0} kW – {1}</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_LASTGANG" xml:space="preserve">
+    <value>from this run's load profile without storage</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_RUECKFALL" xml:space="preserve">
+    <value>fallback from the peak demand, without load profile</value>
+  </data>
+  <data name="SIMERG_SP_PEAKZIEL_GESPEICHERT" xml:space="preserve">
+    <value>from the saved fleet configuration</value>
   </data>
   <data name="SIMENG_KU3_ZONEN_GLEICHZEITIG" xml:space="preserve">
     <value>Building "{0}": in {1} h one zone heats while a zone cools — heating {2} kWh and cooling demand {3} kWh in these hours. Both are reported and not offset against each other; the building totals are the sums of the zones per direction.</value>

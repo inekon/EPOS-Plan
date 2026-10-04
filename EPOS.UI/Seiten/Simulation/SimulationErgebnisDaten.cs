@@ -733,6 +733,15 @@ public sealed class SpeicherErgebnisDaten
     /// <summary>Übernommene Projektflotte und tatsächlicher letzter Flottenlauf.</summary>
     public bool FlotteImProjektAktiv;
     public SpeicherEngine.FlottenStudieKonfiguration? AktiveFlotte;
+
+    /// <summary>
+    /// Das Peak-Ziel H₀ [kW], mit dem die Flotte des angezeigten Laufs gerechnet hat;
+    /// <c>null</c> ohne Flottenlauf.
+    /// </summary>
+    public double? PeakZielKw;
+
+    /// <summary>Woher <see cref="PeakZielKw"/> stammt (Lastgang, Rückfall, gespeichert).</summary>
+    public WindowsFormsApplication1.FlottenPeakZielHerkunft? PeakZielHerkunft;
     public bool FlottenAenderungOhneNeuenLauf;
     public SpeicherFlottenErgebnis? Flottenergebnis;
     /// <summary>Gab es ueberhaupt einen Speicherlauf?</summary>

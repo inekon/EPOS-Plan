@@ -47,7 +47,7 @@ Der Knopf '''„Stromspeicher auslegen…“''' in derselben Spalte wechselt in 
 
 Deren '''← zurück''' bringt Sie wieder nach '''① Konfiguration'''; die Speicherspalte liest ihren Stand dabei frisch. Haben Sie in der Auslegung etwas gespeichert oder gerechnet, gilt ein angezeigtes Ergebnis als veraltet, und der Ergebnisreiter ''Stromspeicher'' meldet, dass die Simulation neu zu starten ist.
 
-Der Ergebnisreiter ''Stromspeicher'' zeigt selbst nur '''Ergebnisse'''. Über seinen Zahlen steht eine Zeile, womit gerechnet wurde – Betriebsziel, Zahl der Einheiten und, wo es eines gibt, das Peak-Ziel samt seiner Art –, daneben der Verweis ''Konfiguration ändern → ①''. '''Das gilt auch für den Startseiten-Reiter''': Der Verweis führt von dort in die Ansicht ''Simulation'', Schritt ①.
+Der Ergebnisreiter ''Stromspeicher'' zeigt selbst nur '''Ergebnisse'''. Über seinen Zahlen steht eine Zeile, womit gerechnet wurde – Betriebsziel, Zahl der Einheiten und, wo es eines gibt, das Peak-Ziel samt seiner Art –, daneben der Verweis ''Konfiguration ändern → ①''. Nach einem Flottenlauf nennt eine zweite Zeile das Peak-Ziel, mit dem gerechnet wurde, und seine Herkunft: aus dem Lastgang dieses Laufs ohne Speicher, aus dem gespeicherten Flottenstand oder als Rückfall aus der Bezugsspitze, wenn kein Lastgang vorliegt. '''Das gilt auch für den Startseiten-Reiter''': Der Verweis führt von dort in die Ansicht ''Simulation'', Schritt ①.
 
 === Der Ablauf im Überblick ===
 {{Anker|ablauf-neu}}
