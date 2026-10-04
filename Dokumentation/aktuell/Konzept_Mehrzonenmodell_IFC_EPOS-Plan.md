@@ -1142,7 +1142,10 @@ Untergeschoss ist jedes Geschoss unter dem niedrigsten, dessen Räume Grenzen mi
 ersatzweise unter dem Geschoss mit der kleinsten Elevation ≥ −0,5 m (§ 1.6).
 
 **Beheizt oder unbeheizt** — dieselbe Rangfolge, jede Stufe mit Beleg: B1
-`PredefinedType = EXTERNAL`, B2 `Pset_SpaceCommon.IsExternal = TRUE`, B3
+`PredefinedType = EXTERNAL`, B2 `Pset_SpaceCommon.IsExternal = TRUE` — nicht gegen ein ausdrückliches
+`PredefinedType = INTERNAL`: Widersprechen sich Attribut und Satz, gilt das Attribut, B2 bleibt ohne Wirkung, und
+die Räume werden je Gebäude benannt (`IMP_IFC_PROT_AUSSEN_WIDERSPRUCH`, W; die angereicherte DigitalHub-Fassung
+setzt `IsExternal = TRUE` an 53 von 59 Innenräumen) —, B3
 `Pset_SpaceThermalRequirements` mit `SpaceTemperatureWinterMin` > 12 °C (nur IFC2x3/IFC4, in 4.3
 entfallen) — **der Wert ist vor dem Vergleich über die `THERMODYNAMICTEMPERATUREUNIT` aus
 `UnitsInContext` auf °C zu bringen** (KELVIN und DEGREE_CELSIUS sind beide zulässig, und in Kelvin
@@ -1169,8 +1172,17 @@ Profillänge × `Depth` zu rechnen; nur ein gekrümmtes Profil wird benannt abge
 zwei Fälle noch zu messen). Die Summen 778,2 / 1 358,1 / 22 862,1 m² sind **Bruttosummen aller
 Grenzflächen einschließlich der auf ihnen liegenden Öffnungsgrenzen** und dienen als
 **Reproduktionsprobe des Lesers**, nicht als Hüllfläche; sie stammen aus einer Textauszählung
-(Befund P, § 8) und sind beim ersten Lauf mit xBIM nachzumessen. Abnahmegrundlage sind allein die
-lizenzgeklärten Dateien (8.2, M10).
+(Befund P, § 8). Mit xBIM nachgemessen: Jede Grenze der Beispieldateien trägt eine `IfcCurveBoundedPlane` mit
+`IfcPolyline` bzw. `IfcCompositeCurve` aus Polylinien — der Leser liest **alle** Polygone. Was zur Summe fehlt,
+gehört zu keinem Bauteil der Hülle: virtuelle Grenzen (mit `IfcVirtualElement` oder ohne Bauteil), Stützen und
+Träger, die Glasdächer eines mehrteiligen Dachs. Der Leser zählt diese Grenzen je Art mit Fläche
+(`IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL`, I). Abnahmegrundlage sind allein die lizenzgeklärten Dateien (8.2, M10).
+
+**Zerlegtes Dach.** Trägt ein `IfcRoof` ohne eigene Flächenmenge die Raumgrenzen selbst, während es aus Platten
+besteht (die Platten werden Bauteile, das Dach nicht), gelten seine Grenzen für seine **einzige** Platte, wenn diese
+keine eigenen trägt (`IMP_IFC_PROT_GRENZEN_DACHPLATTE`, I, mit Zahl der Dächer und Grenzen; DigitalHub mit Raumgrenzen:
+das Flachdach mit 41 Grenzen und 2 874,1 m²). Besteht das Dach aus mehreren Platten, bleibt die Zuordnung ohne
+Geometrie offen; seine Grenzen zählen unter den Grenzen ohne Bauteil.
 
 Drei Umsetzungsfallen: Die Randkurve ist mal eine `IfcPolyline`, mal eine `IfcCompositeCurve` →
 `IfcCompositeCurveSegment` → `IfcPolyline` (beide Wege nötig, `IfcIndexedPolyCurve` dazu); die
@@ -1217,7 +1229,13 @@ Geometrie — Mehrzonigkeit auch für Dateien ohne echte Paare, die kleine lizen
 nutzbar (Probe 18).
 
 **Randbedingung** kommt direkt aus `InternalOrExternalBoundary` — gemessen im DigitalHub
-`.INTERNAL.` 1 538, `.EXTERNAL.` 967, **`.EXTERNAL_EARTH.` 76**:
+`.INTERNAL.` 1 538, `.EXTERNAL.` 967, **`.EXTERNAL_EARTH.` 76**. Für die Randbedingung **des Bauteils** (ohne
+`IsExternal`) gilt: Eine Grenze `EXTERNAL_EARTH` macht es erdberührt, eine Grenze `EXTERNAL*` außen — an einer
+Bodenplatte (`BASESLAB`) erdberührt wie unter `IsExternal = TRUE` —, sonst innen. **Ein äußerer Splitter entscheidet
+nicht:** Trägt das Bauteil auch innere Grenzen und haben seine äußeren alle ein Polygon, zusammen aber weniger als
+5 % seiner gelesenen Grenzfläche, gilt es nach den übrigen Grenzen (`IMP_IFC_PROT_AUSSEN_SPLITTER`, I) — im FZK-Haus
+machte ein Randstreifen von 0,82 m² die Geschossdecke (170,6 m² Grenzfläche) zum Außenbauteil, das der Einzonenweg
+mit 115,6 m² als Dach zählte:
 
 | IFC | EPOS-Randbedingung |
 |---|---|
@@ -1232,8 +1250,8 @@ nutzbar (Probe 18).
 Außen-/Innenwand (die Randbedingung entscheidet, **nicht** `Pset_WallCommon.IsExternal`), `IfcSlab`
 `ROOF`/`IfcRoof` → Dach, `BASESLAB` → Bodenplatte, `FLOOR` → Decke (Neigung entscheidet über
 oben/unten), `IfcWindow` → Fenster, `IfcDoor` → Tür, `IfcColumn`/`IfcBeam`/`IfcMember` →
-Sonstiges (im DigitalHub 150 + 42 Grenzen mit zusammen 198,6 m² — **nicht** zur Außenwand zählen,
-sie sind innere Masse); `IfcCurtainWall`/`IfcPlate` → **eigene Bauteilart „Vorhangfassade"** mit
+kein Bauteil der Hülle (im DigitalHub 150 + 42 Grenzen mit zusammen 198,6 m² — **nicht** zur Außenwand zählen;
+benannt unter den Grenzen ohne Bauteil); `IfcCurtainWall`/`IfcPlate` → **eigene Bauteilart „Vorhangfassade"** mit
 U-Wert und g-Wert wie ein Fenster (im DigitalHub 2 Grenzen / 36,0 m², in den 198,6 m² **nicht**
 enthalten), sonst verliert das Modell die solaren Gewinne einer Pfosten-Riegel-Fassade; `VIRTUAL`
 → **keine Bauteilfläche**, aber eine benannte Luftverbindung: Liegen beide Räume in derselben Zone,
@@ -1429,6 +1447,12 @@ Raumbezüge, nennen diese die Nachbarn, und eine Platte ohne Bezug trennt nichts
 wie die aus den Raumbezügen; `GRENZEN_ENTKOPPELT` bleibt nur, wo auch das scheitert. Meldung je Gebäude
 `IMP_IFC_PROT_TRENNDECKE_GRUNDRISS` (I) mit Zahl, Fläche und Geschosspaaren. Die Überlappung rechnet ohne
 Geometriekern: Ohrenschnitt beider Ringe, je Dreieckspaar Sutherland–Hodgman.
+
+**Raumfläche aus dem Grundriss.** Führt die Datei für einen Raum keine Flächenmenge — weder `NetFloorArea` noch
+`GrossFloorArea`, auch nicht über die Rückfallnamen —, gilt die Fläche seines Grundrisses (derselbe Profilring,
+Gaußsche Trapezformel) als Raumfläche, im Abbild gekennzeichnet (`AbbildRaum.FlaecheAusGrundriss`) und je Gebäude
+benannt (`IMP_IFC_PROT_FLAECHE_GRUNDRISS`, I, mit Zahl, Fläche und Räumen). Ein Raum mit Flächenmenge bleibt
+unberührt. DigitalHub ohne Anreicherung: 61 von 64 Räumen, 2 913,7 m².
 
 **Unbeheizte Zone ohne Fläche.** Ohne Raumgrenzen kann eine unbeheizte Zone ohne jede Fläche entstehen: Die
 Datei zählt die Hüllbauteile ihrer Räume nicht zur Hülle, und kein Bezug verbindet sie mit einem beheizten Raum.
@@ -1784,7 +1808,9 @@ die Proben sind deshalb nicht gefahren. Ersatzweise halten zwei eigene Importpro
 `Referenzlaeufe/Importproben/` die Regeln: `ifc4_zonen.ifc` (drei Geschosse, Polygone, Gegenstück,
 fehlendes Paar, geschachtelte und mehrfache `IfcZone`, Klassifikation, B3/B5, zu kleiner Raum) und
 `gbxml_zonen_viele.xml` (60 Räume, über 50 Zonen); unter Z5 bzw. X4 bleibt der Vorschlag zeilengleich zu
-G4b. Die genannten Proben kommen mit den lizenzgeklärten Dateien nach.
+G4b. Die Proben 13–18 sind an den öffentlichen Beispieldateien gefahren, ihre Befunde behoben
+([Protokoll Importproben](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_MZ-Rest_Importproben.md)); die Regeln
+dazu hält die erzeugte Probe `IfcProbenErzeuger.Importbefunde` (`IfcImportbefundeTests`).
 
 ### 8.3 Referenzprojekt und Einfrierschritt
 
