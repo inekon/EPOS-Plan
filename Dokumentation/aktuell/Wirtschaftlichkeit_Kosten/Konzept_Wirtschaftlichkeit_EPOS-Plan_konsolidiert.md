@@ -2492,7 +2492,7 @@ Reststrom = Rollenkosten(Reststromtarif, Restbezug MIT Anlage)
 Vermieden = Bezug − Reststrom       je Arbeit / Leistung / Gesamt
 Menge     = Bedarf ohne jede Eigenerzeugung − Restbezug      (KWK- und PV-Eigenverbrauch)
 Schlüssel = Eigenverbrauch je Anlage, brutto aus der Strommatrix
-            BHKW  KwkEigenGesamtMWh   min(BHKW, Bedarf nach PV) — der KWK-Split bleibt
+            BHKW  KwkEigenGesamtMWh   BHKW-Strom − BHKW-Einspeisung des Laufs (Viertelstundenbilanz)
             PV    PvEigenGesamtMWh    PV-Eigennutzung, soweit sie Bedarf deckt
             Menge, Arbeit und § 9b-Korrektur anteilig; der Leistungsanteil bleibt projektweit
 ```
@@ -2539,12 +2539,10 @@ er rechnet mit dem tatsächlichen Restbezug; gespeichert ändert sich allein der
 
 **Bedarf aller Verbraucher** (E26, #518; → Register R‑E26). Bedarf ohne jede Eigenerzeugung ist der
 Strombedarf aller Verbraucher des Anschlusses (Projektbedarf, Wärmepumpe, Heizstab, Elektrokessel,
-Kältestrom der Stufenrechnung; Reihe `STROMBEDARF_GESAMT`); auch der KWK-Split (Eigenstrom =
-min(BHKW-Strom, Bedarf nach PV-Eigennutzung)) misst sich daran, weil die Simulation das BHKW den Strom
-der Wärmepumpe decken lässt (E26, Entscheid E26‑Q3). Die Reihe ist der Rest nach der Kaskade plus
+Kältestrom der Stufenrechnung; Reihe `STROMBEDARF_GESAMT`); die Simulation lässt das BHKW den Strom der
+Wärmepumpe decken (E26, Entscheid E26‑Q3), sein Eigenstrom ist also Teil dieses Bedarfs. Die Reihe ist der Rest nach der Kaskade plus
 BHKW-Strom (`SimulationControl.Strombedarf_Verbraucher_viertelstuendlich`); der Kältestrom mit eigenem
-Zähler gehört nicht dazu (E34). `StromMatrix.Baue` nimmt sie für Bedarf, PV-Eigenverbrauch, Lastbild und
-KWK-Split und fällt auf den Projektbedarf `STROMBEDARF` zurück, wo sie fehlt. An den Referenzen bleiben
+Zähler gehört nicht dazu (E34). `StromMatrix.Baue` nimmt sie für Bedarf, PV-Eigenverbrauch und Lastbild und fällt auf den Projektbedarf `STROMBEDARF` zurück, wo sie fehlt. An den Referenzen bleiben
 KWK-Split und Kapitalwert gleich; in einem Projekt, dessen BHKW-Strom zwischen Projekt- und Bruttobedarf
 liegt, kann der Kapitalwert über KWKG-Zuschlag, Stromsteuer und Einspeiseerlös wandern.
 
@@ -2568,14 +2566,27 @@ Strom-Stufeneingang der Kessel- und der PV-Zeile wird je Stunde bei 0 geklemmt (
 dem Reststrombedarf der BHKW-Zeile (E28‑Q1…Q3); die Stundenrechnung des Kessels liest diese Reihe nicht, und das BHKW der
 Speicherstufe bekommt weiter den ungeklemmten Eingang.
 
+**BHKW-Einspeisung als Viertelstundenbilanz** (Entscheid des Anwenders vom 04.10.2026). Ohne Speicherflotte ist die
+BHKW-Einspeisung je Viertelstunde der negative Rest nach der Kaskade, max(0, −Rest_q)
+(`SimulationControl.BhkwEinspeisung_viertelstuendlich`): Die Kaskade zieht den BHKW-Strom stundenkonstant und
+ungeklemmt ab, was in einer Viertelstunde kein Verbraucher des Anschlusses abnimmt, geht ins Netz; die
+Photovoltaik deckt danach den Rest. Das Stundenmittel (`BhkwEinspeisungDesLaufs`) ist die eine Reihe für BHKW-Reiter
+und Kennzahl `EinspeisungMwh`, Zeitreihensatz `BHKW_UEBERSCHUSS` (Bericht, Excel-Monatsblock) und den KWK-Split der
+Strommatrix: `StromMatrix.Baue` liest die Einspeisung aus dem Satz und rechnet den Eigenstrom als Erzeugung minus
+Einspeisung; fehlt die Reihe (Überschuss unter 0,5 kWh/a) oder die Bedarfsreihe, ist alles Eigenstrom. Damit folgen
+BHKW-Einspeisevergütung, Netto-Split, Einspeisesumme, KWKG-Eigenstrom und Stromsteuerbefreiung derselben Menge, und die
+Bilanz Netzbezug + PV-Eigenverbrauch + BHKW-Strom − Einspeisung = Strombedarf aller Verbraucher schließt. Mit
+stundenkonstantem Bedarf ist sie gleich der Klemmung des Stundenmittels max(0, BHKW − max(0, Bedarf − PV-Eigenverbrauch));
+schwankt der Bedarf innerhalb der Stunde um die BHKW-Leistung (Viertelstunden-Lastgang), ist sie größer. Mit
+Speicherflotte liest die Matrix die BHKW-Netzeinspeisung der Flottenbilanz.
+
 **BHKW-Einspeisung und Gesamtbedarf im Ausweis** (E29, #536; → Register R‑E29). Die BHKW-Einspeisung ist eine
-Ausweisgröße und gleich dem KWK-Split, je Stunde Σ max(0, BHKW − max(0, Strombedarf aller Verbraucher −
-PV-Eigenverbrauch)) (`SimulationControl.BhkwEinspeisungStuendlich`; mit Speicherflotte die BHKW-Einspeisung der
-Flottenbilanz): Der BHKW-Reiter zeigt sie als Zeile „Stromeinspeisung“ nach der Stromproduktion, die Diagnosereihe
+Ausweisgröße und gleich dem KWK-Split, die Viertelstundenbilanz des Laufs (`SimulationControl.BhkwEinspeisungDesLaufs`,
+siehe „BHKW-Einspeisung als Viertelstundenbilanz“; mit Speicherflotte die BHKW-Einspeisung der Flottenbilanz): Der BHKW-Reiter zeigt sie als Zeile „Stromeinspeisung“ nach der Stromproduktion, die Diagnosereihe
 `BHKW_UEBERSCHUSS` und der Excel-Monatsblock führen sie auch ohne PV und Flotte; Strombilanz-Diagramm und Excel-Spalte
 „Strombedarf“ messen den Strombedarf aller Verbraucher (`STROMBEDARF_GESAMT`, Rückfall `STROMBEDARF`), die Übersicht
 „Strombedarf mit Eigenverbrauch“ zählt den Kältestrom der Stufenrechnung mit, und der PV-Deckungsgrad teilt durch den je
-Stunde geklemmten Bedarf (E29‑Q1…Q10). Kapitalwert und Strommatrix bleiben unberührt. Die Stromdeckung des BHKW ist
+Stunde geklemmten Bedarf (E29‑Q1…Q10). Die Stromdeckung des BHKW ist
 seit E30 (#548; → Register R‑E30, E30‑Q7 a) sein Eigenverbrauch am Strombedarf aller Verbraucher, (Erzeugung −
 BHKW-Einspeisung) ÷ Σ `Strombedarf_Verbraucher`, auf 0 bis 100 % geklemmt — eine Formel
 (`SimulationErgebnisCtrl.BhkwStromdeckungProzent`) für `BHKW.Strombedarfsdeckung` des Laufs (persistiert, `aggregate.csv`,
