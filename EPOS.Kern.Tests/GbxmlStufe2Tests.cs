@@ -240,6 +240,36 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// Bei jedem angelegten Paar passt der Azimut der <c>RectangularGeometry</c> jeder Wand zur Richtung ihrer
+        /// <c>PolyLoop</c>: die Normale des Rings zeigt in den Azimut (Toleranz 1°) — die Anordnung dreht nie.
+        /// </summary>
+        [Fact]
+        public void Azimut_der_RectangularGeometry_und_Richtung_der_PolyLoop_passen_zusammen()
+        {
+            int paarwaendeAlle = 0;
+            foreach (GebaeudeAbbild abbild in new[] { Zweizonen(), Abbild() })
+            {
+                (Zonengeometrie z, _) = GbxmlSchreiber.Raumgeometrie(abbild);
+                var trennwaende = new HashSet<string>(z.Nachbarpaare.Where(p => p.Angelegt).Select(p => p.BauteilKennung), StringComparer.Ordinal);
+                int waende = 0, paarwaende = 0;
+                foreach (XElement s in Laden(Schreiben(abbild)).Descendants(NS + "Surface"))
+                {
+                    XElement planar = s.Element(NS + "PlanarGeometry"), rechteck = s.Element(NS + "RectangularGeometry");
+                    if (planar == null || rechteck?.Element(NS + "Azimuth") == null) continue;
+                    if (Math.Abs(double.Parse(rechteck.Element(NS + "Tilt").Value, CultureInfo.InvariantCulture) - 90.0) > 1e-9) continue;
+                    double azimut = double.Parse(rechteck.Element(NS + "Azimuth").Value, CultureInfo.InvariantCulture);
+                    Assert.Equal(0.0, ZonengeometrieAnlegenTests.Winkelabstand(azimut, ZonengeometrieAnlegenTests.AzimutDerNormalen(Ring(planar))), 1.0);
+                    waende++;
+                    if (trennwaende.Contains((string)s.Attribute("id"))) paarwaende++;
+                }
+                Assert.True(waende >= 4);
+                Assert.Equal(trennwaende.Count, paarwaende);
+                paarwaendeAlle += paarwaende;
+            }
+            Assert.True(paarwaendeAlle >= 1);
+        }
+
         [Fact]
         public void Die_Trennflaeche_steht_einmal_mit_beiden_Raeumen_und_liegt_auf_beiden_Koerpern()
         {

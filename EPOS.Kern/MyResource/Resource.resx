@@ -44284,8 +44284,8 @@ Chart</value>
   <data name="ZGEO_ANGELEGT" xml:space="preserve">
     <value>{0} Paare von Räumen mit gemeinsamer Trennwand liegen aneinander — die Trennwand deckungsgleich, das Rechteck flächentreu angepasst: {1}</value>
   </data>
-  <data name="ZGEO_GEDREHT" xml:space="preserve">
-    <value>{0} Räume sind zum Aneinanderlegen in 90°-Schritten gedreht — ihre Wände zeigen im Bild nicht in ihre Himmelsrichtung: {1}</value>
+  <data name="ZGEO_NICHT_ANGELEGT" xml:space="preserve">
+    <value>{0} Paare von Räumen liegen nicht aneinander: die Trennwand liegt bei beiden nicht auf gegenüberliegenden Himmelsseiten; beide stehen getrennt: {1}</value>
   </data>
   <data name="ZGEO_ANORDNUNG_ABGELEHNT" xml:space="preserve">
     <value>{0} Paare von Räumen lassen sich nicht widerspruchsfrei aneinanderlegen; ihre Gruppe steht gereiht wie ohne Nachbarn, und der gbXML-Export schreibt keine Raumgeometrie: {1}</value>

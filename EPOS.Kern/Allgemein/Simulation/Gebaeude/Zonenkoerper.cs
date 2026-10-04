@@ -38,8 +38,14 @@ namespace WindowsFormsApplication1
         /// <summary>Die Höhe des Bodens [m]: die Höhenlage des Geschosses, sonst 0 (keine Stapelung).</summary>
         internal double BodenM { get; init; }
 
-        /// <summary>Die Raumhöhe [m].</summary>
+        /// <summary>Die Raumhöhe [m]: die des Raums, sonst die seiner Zone (<see cref="HoeheAusZone"/>).</summary>
         internal double HoeheM { get; init; }
+
+        /// <summary>
+        /// Stammt die Höhe aus der Zone (der Raum nennt keine)? Der Körper ist ohnehin schematisch — er entsteht nur
+        /// aus dem schematischen Rechteck —, die Herkunft der Höhe steht hier dazu. Dieselbe Regel wie die Ansicht.
+        /// </summary>
+        internal bool HoeheAusZone { get; init; }
 
         /// <summary>Die geschlossene Hülle: Boden, Decke und die vier Seiten des Prismas, Normale nach außen.</summary>
         internal IReadOnlyList<IReadOnlyList<double[]>> Schale { get; init; } = Array.Empty<IReadOnlyList<double[]>>();
@@ -74,7 +80,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Körper in der Reihenfolge der Räume des Modells.</summary>
         internal IReadOnlyList<Raumkoerper> Raeume { get; private set; } = Array.Empty<Raumkoerper>();
 
-        /// <summary>Die Räume mit Umriss, aber ohne Körper (Umriss aus Raumgrenzen, kein Rechteck, keine Höhe).</summary>
+        /// <summary>Die Räume mit Umriss, aber ohne Körper (Umriss aus Raumgrenzen, kein Rechteck, weder Raum- noch Zonenhöhe).</summary>
         internal IReadOnlyList<string> OhneKoerper { get; private set; } = Array.Empty<string>();
 
         /// <summary>Der Körper eines Raums; <c>null</c> = keiner.</summary>
@@ -97,20 +103,24 @@ namespace WindowsFormsApplication1
                 if (r.Polygone.Count == 0) continue;
                 bool rechteck = r.Herkunft == Geometrieherkunft.Schematisch && r.Polygone.Count == 1 && r.Polygone[0].Punkte.Count == 4
                                 && r.Polygone[0].Kanten.Count == 4;
-                if (!rechteck || !(r.HoeheM > 0.0))
+                // Die Höhe: die des Raums, sonst die seiner Zone — dieselbe Regel wie die Ansicht.
+                double? zonenhoehe = r.Zone >= 0 && r.Zone < z.Zonen.Count ? z.Zonen[r.Zone].HoeheM : null;
+                bool ausZone = !(r.HoeheM > 0.0) && zonenhoehe > 0.0;
+                double? hoehe = r.HoeheM > 0.0 ? r.HoeheM : ausZone ? zonenhoehe : null;
+                if (!rechteck || hoehe == null)
                 {
                     ohne.Add(r.RaumKennung);
                     continue;
                 }
                 double boden = r.Geschoss >= 0 && r.Geschoss < z.Geschosse.Count ? z.Geschosse[r.Geschoss].LageM ?? 0.0 : 0.0;
-                raeume.Add(Koerper(r, boden, r.HoeheM.Value));
+                raeume.Add(Koerper(r, boden, hoehe.Value, ausZone));
             }
             k.Raeume = raeume;
             k.OhneKoerper = ohne;
             return k;
         }
 
-        private static Raumkoerper Koerper(Raumumriss r, double z0, double h)
+        private static Raumkoerper Koerper(Raumumriss r, double z0, double h, bool ausZone)
         {
             Umrisspolygon p = r.Polygone[0];
             double z1 = z0 + h;
@@ -160,7 +170,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < 4; i++)
                 schale.Add(new[] { P(c[i], z0), P(c[(i + 1) % 4], z0), P(c[(i + 1) % 4], z1), P(c[i], z1) });
 
-            return new Raumkoerper { RaumKennung = r.RaumKennung, BodenM = R(z0), HoeheM = R(h), Schale = schale, Flaechen = ergebnis };
+            return new Raumkoerper { RaumKennung = r.RaumKennung, BodenM = R(z0), HoeheM = R(h), HoeheAusZone = ausZone, Schale = schale, Flaechen = ergebnis };
         }
 
         /// <summary>
