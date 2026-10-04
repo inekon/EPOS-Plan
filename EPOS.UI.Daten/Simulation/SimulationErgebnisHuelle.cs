@@ -56,9 +56,9 @@ namespace WindowsFormsApplication1
         /// Legt die Hülle an und meldet den Hilfebereich.
         /// </summary>
         /// <param name="bedarf">
-        /// Die zwei Bedarfsrechnungen des Projekts — sie werden hier
-        /// WEITERGESCHRIEBEN und von der Startseite für die Kachelbeschriftungen
-        /// weiterverwendet (Befund W11-B3, Entscheid E-5).
+        /// Die zwei Bedarfsrechnungen des Projekts — die Hülle rechnet in ihnen den
+        /// Bedarf des Leerzustands, die Startseite ihre Zusammenfassung (Befund W11-B3,
+        /// Entscheid E-5). Ein Lauf rechnet in eigene Objekte (Anwenderbefund 04.10.2026).
         /// </param>
         /// <remarks>
         /// <para><b>iU9-W16b.4 (Entscheid E-5): kein zweites Fenster mehr.</b> Hier
@@ -106,8 +106,33 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         private readonly int m_ID_Projekt;
-        private readonly SimulationWaermebedarf _waermebedarf;
-        private readonly SimulationStrombedarf _strombedarf;
+
+        /// <summary>
+        /// Die zwei Bedarfsrechnungen des PROJEKTS (<see cref="BedarfsZustand"/>) — geteilt mit
+        /// der Startseite, deren Reiter „Simulation" sie für seine Zusammenfassung jederzeit neu
+        /// rechnet. Sie tragen den Bedarf, solange kein gültiger Lauf steht (Leerzustand,
+        /// „veraltet"); ein Lauf rechnet NICHT in sie hinein.
+        /// </summary>
+        private readonly SimulationWaermebedarf _projektWaerme;
+        private readonly SimulationStrombedarf _projektStrom;
+
+        /// <summary>
+        /// Die Bedarfsrechnungen, die die Hülle ZEIGT: vor dem ersten Lauf die des Projekts,
+        /// nach einem erfolgreichen Lauf die DES LAUFS (<c>sim.simulation_Waermebedarf</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Anwenderbefund 04.10.2026</b> (Projekt 1017, Unterreiter „Kälte Produktion
+        /// Chart"): Der Lauf hängt seine Kältekaskade an die Kälteseite seines Wärmebedarfs
+        /// (<c>SimulationKaeltebedarf.DeckungUebernehmen</c>). Rechnete der Lauf in das geteilte
+        /// Objekt des Projekts, setzte die nächste Bedarfsrechnung der Startseite
+        /// (<c>StartseiteHuelle.Zusammenfassen</c> → <c>Waermebedarf_berechnen</c> →
+        /// <c>SimulationKaeltebedarf.Beginnen</c>) die Kaskade auf <c>null</c> — der Lauf blieb
+        /// gültig, das Bild zeichnete den ganzen Kältebedarf als ungedeckt. Der Lauf rechnet
+        /// seinen Bedarf deshalb in EIGENE Objekte; was er gerechnet hat, ändert danach niemand
+        /// mehr. Der Bericht tut dasselbe (<c>SimulationRunner</c> mit eigenem Bedarf).</para>
+        /// </remarks>
+        private SimulationWaermebedarf _waermebedarf;
+        private SimulationStrombedarf _strombedarf;
 
         private SimulationControl sim = new SimulationControl();
         private readonly KonfigurationCtrl ctrl = new KonfigurationCtrl();
@@ -290,8 +315,10 @@ namespace WindowsFormsApplication1
                                          SimulationStrombedarf strombedarf)
         {
             m_ID_Projekt = idProjekt;
-            _waermebedarf = waermebedarf ?? new SimulationWaermebedarf();
-            _strombedarf = strombedarf ?? new SimulationStrombedarf();
+            _projektWaerme = waermebedarf ?? new SimulationWaermebedarf();
+            _projektStrom = strombedarf ?? new SimulationStrombedarf();
+            _waermebedarf = _projektWaerme;
+            _strombedarf = _projektStrom;
 
             _zustand.ProjektSetzen(idProjekt, "");
 
@@ -659,9 +686,13 @@ namespace WindowsFormsApplication1
                 int idKlimaregion = projektCtrl.m_ID_Klimaregion;
                 if (idKlimaregion <= 0) return;
 
+                // In die Objekte des PROJEKTS, und die Anzeige zeigt wieder sie: Hier steht kein
+                // gültiger Lauf (Leerzustand oder „veraltet"), also gilt der Bedarf des Projekts.
+                _waermebedarf = _projektWaerme;
+                _strombedarf = _projektStrom;
                 string grund = SimulationLaufCtrl.Bedarf(idProjekt, idKlimaregion,
                                                          ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
-                                                         _waermebedarf, _strombedarf);
+                                                         _projektWaerme, _projektStrom);
 
                 // Ein benannter Abbruch (Zapfprofilgenerator, Umsetzungskonzept 2.2, N8; oder die
                 // Stromrechnung) geht ins Protokoll — die Wärmefelder stehen dann auf 0, nicht auf
@@ -1398,10 +1429,15 @@ namespace WindowsFormsApplication1
             string fehler = SimulationLaufCtrl.Vorpruefen(m_ID_Projekt, ctrl, idKlimaregion);
             if (fehler != null) return Abbruch(fehler);
 
+            // Der Lauf rechnet seinen Bedarf in EIGENE Objekte (Anwenderbefund 04.10.2026, siehe
+            // _waermebedarf): An ihnen hängen danach seine Ergebnisse (Kältekaskade), und keine
+            // Bedarfsrechnung der Startseite setzt sie mehr zurück.
+            var waermeLauf = new SimulationWaermebedarf();
+            var stromLauf = new SimulationStrombedarf();
             string bedarfsfehler = SimulationLaufCtrl.Bedarf(
                 m_ID_Projekt, idKlimaregion,
                 ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
-                _waermebedarf, _strombedarf);
+                waermeLauf, stromLauf);
 
             // Der Bedarf ist gerechnet - die Vorabrechnung aus BedarfSicherstellen
             // braucht es danach nicht mehr (#236).
@@ -1429,7 +1465,7 @@ namespace WindowsFormsApplication1
             }
 
             SimulationLaufCtrl.Bestuecken(neuerLauf, m_ID_Projekt, Tools(),
-                                          _waermebedarf, _strombedarf, ctrl,
+                                          waermeLauf, stromLauf, ctrl,
                                           _grenzleistungBhkw, _bhkwBetriebsart);
 
             _laufAbbruch = new CancellationTokenSource();
@@ -1476,6 +1512,8 @@ namespace WindowsFormsApplication1
                 }
             }
             sim = neuerLauf;
+            _waermebedarf = waermeLauf;
+            _strombedarf = stromLauf;
 
             // Erst JETZT ist ein Ergebnis da, das gespeichert werden darf (Befund N1).
             ZustandSetzen(ErgebnisZustand.Gueltig, "");
