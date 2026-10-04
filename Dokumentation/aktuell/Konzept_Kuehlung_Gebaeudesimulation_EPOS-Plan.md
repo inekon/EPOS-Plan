@@ -1449,6 +1449,21 @@ ihrer Rückkühlung zusammen in KU3.
 
 **So gebaut (KU3-1, 04.10.2026):** Schemaschritt 182 legt `Tab_Kaeltemaschine_STAMM`, `Tab_Kaeltemaschine`, `Tab_Kenndaten_Kaeltemaschine_STAMM` und `Tab_Kenndaten_Kaeltemaschine` an (alle STRICT) und sät drei neutrale Auslieferungsgeräte (50 kW luftgekühlt, 200 kW wassergekühlt mit Trockenkühler, 500 kW wassergekühlt mit Nasskühler) mit je sechs Kennlinienpunkten (Rückkühlung 25/35/45 °C, Kaltwasser 6/12 °C). Die Zuordnung Projekt ↔ Katalog läuft über `Tab_Kaeltemaschine.ID_Stamm` wie bei `Tab_WP.ID_Stamm`, es gibt keine `Z_*`-Tabelle. Der Hilfsstrom der Rückkühlung steht als Leistung in kW (`Hilfsstrom_Rueckkuehlung_kW`, NULL = im EER enthalten). Die Kostenkomponente `KOSTEN_KOMPONENTE_KAELTEMASCHINE` ist als Wert angelegt, ihre Zeile in `Tab_KostenKomponente` kommt mit der Wirtschaftlichkeit in KU3-4. Verwaltungsdialog, Register und Katalogfilterprofil stehen; der Rechenweg folgt in KU3-2 ([Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_KU3-1_Kaeltemaschine_Schema_Katalog.md)).
 
+**So gebaut (KU3-2, 04.10.2026):** Der Rechenweg steht in `EPOS.Kern/Allgemein/Simulation/Kaelte/Kaeltemaschine.cs` (Kennlinie bilinear über Rückkühl- und Kaltwassertemperatur, Randwert außerhalb mit Zählung und Meldung, ohne Punkte keine Rechnung mit Warnung); die Festwerte stehen in `KaelteFestwerte.cs`, sind benannte Festwerte und keine Eingaben.
+
+| Größe | Regel |
+|---|---|
+| Rückkühltemperatur, Luft | Außentemperatur + 5 K |
+| Rückkühltemperatur, Trockenkühler | Außentemperatur + 10 K |
+| Rückkühltemperatur, Wasser | fest 25 °C |
+| Rückkühltemperatur, Nasskühler | Feuchtkugeltemperatur nach Stull (2011) + 5 K aus der Luftfeuchte des Ortszeit-Klimas; ohne Luftfeuchte Außentemperatur − 3 K mit Hinweis |
+| Kaltwassertemperatur | kleinste Kaltwasser-Stützstelle der Kennlinie (Muster K21), mindestens `Kaltwasser_Vorlauf_Min` mit Hinweis |
+| Verdichter | Kapazität und EER aus der Kennlinie, höchstens der offene Bedarf |
+| Mindestteillast | bezogen auf die Nennkälteleistung; darunter taktet die Maschine ohne Anfahrverlust und liefert die Last (Taktstunden gezählt, keine Unterdeckung) |
+| Kältestrom | Kälte / EER · (1 + Hilfsstromanteil) + `Hilfsstrom_Rueckkuehlung_kW` × Laufanteil (NULL = 0) |
+
+Ergebnisse: Bedarf, Deckung, `Kaelterestbedarf`, Deckungsgrad und Kältestrom enthalten die Maschine; die Kennzahlendatei führt je Maschine `ID_Kaeltemaschine`, `HilfsstromMwh`, `FreieKuehlungStunden`, `FreieKuehlungMwh`. Gespeichert wird je Maschine nichts. Weil `Tab_Energieanlagen` keinen Verweis auf `Tab_Kaeltemaschine` trägt, zählt jede Projektkopie als eine Maschine ohne Kaskadenplatz, `Kuehl_Vorlauf`, Hilfsstromanteil, Kühlträger und Zähler; Anlagenzeile und Wirtschaftlichkeit kommen mit Schemaschritt 183 (KU3-4).
+
 ### 5.4 Freie Kühlung und Nachtlüftung: Gebäudemaßnahme, kein Erzeuger
 
 Drei Dinge werden im Sprachgebrauch „freie Kühlung" genannt, und sie gehören an verschiedene
@@ -1463,6 +1478,8 @@ Stellen:
 **K8 ist mit E33 (23.09.2026) nach Empfehlung entschieden:** Alle drei werden gebaut, aber keine
 als eigener „Erzeuger" im Sinne der Anlagenliste. Ein Eintrag „freie Kühlung" in der Erzeugerauswahl würde eine Anlage suggerieren,
 die es nicht gibt.
+
+**So gebaut (KU3-2, 04.10.2026):** Die freie Kühlung ist ein Betriebsfall des Rückkühlers, kein Erzeuger (K8). Sie gilt nur bei Trocken- und Nasskühler, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit dem Ersatz-EER 15 plus Hilfsstrom, der Verdichter ist in dieser Stunde aus; Stunden und Kälte werden gezählt. Der Weg über die Wärmequelle der Wärmepumpe (Sole) ist nicht gebaut; offen beim Anwender, ob er mit KU3-5 folgt.
 
 ### 5.5 Deckungsreihenfolge und Unterdeckung
 
@@ -1522,6 +1539,8 @@ Deckungswelten hält: **kein** Wärmeerzeuger darf in KU1 auch nur ein Kilowatt 
 
 ---
 
+**So gebaut (KU3-2, 04.10.2026):** Die Kältemaschine hat bis Schemaschritt 183 keinen Kaskadenplatz. Sie deckt nach allen Wärmepumpen im Kühlbetrieb, mehrere Maschinen in Kennungsreihenfolge (Hinweis im Laufprotokoll); Stunden mit freier Kühlung decken Maschinen mit Trocken- oder Nasskühler vor allen anderen. Ohne Kältemaschine bleibt die Schleife unverändert; ohne Wärmepumpe läuft die Kältekaskade am Ende der Wärmekaskade vor der Stromstufe. Kühltage und Sperrzeiten der Wärmepumpe gelten nicht für die Maschine; die Unterdeckung wird je Maschine mit Stunden an der Leistungsgrenze und offener Menge ausgewiesen.
+
 ## 6. Strom, Wirtschaftlichkeit, Emissionen
 
 ### 6.1 Der Kältestrom in der Strombilanz
@@ -1532,6 +1551,8 @@ Die Strombilanz führt heute je Wärmepumpe `Stromverbrauch_WP` und `Stromverbra
 ```
 Stromverbrauch_Kuehlung [kWh je Stunde] = Kaelteerzeugung[h] / EER(h)  +  Hilfsstrom(h)
 ```
+
+Der Kältestrom der Kältemaschine enthält den Hilfsstrom der Rückkühlung (`Hilfsstrom_Rueckkuehlung_kW` × Laufanteil, NULL = 0) und läuft bis KU3-4 über Netzbezug und Stromspeicher-Lastreihe in Kosten und Emissionen.
 
 **Der Hilfsstrom ist eine Eingabe, keine Rechnung** (Kapitel 14: keine Ventilatorphysik). Er
 kommt als Anteil der Verdichterarbeit über `Kuehl_Hilfsstromanteil` je Anlage (`KU-S3`, 7.3);
@@ -2873,7 +2894,7 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
 | **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 (K1 mit E21; K2, K10, K11, K19 und K18a mit E27; K4–K7 und K12 mit E31; K8, K9, K21 und K23 mit E33; K22 am 23.09.2026 geprüft) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
 | **KU1** | **Der Kanal — und die Fassade, die ihn füllt.** Schemaschritte `KU-S1`/`KU-S2`/`KU-S4` (neun Ergebnisspalten, 7.4), dazu die Programmeinstellung „Neue Projekte mit Kühlung anlegen" über `Dienste.Einstellungen` samt Feld im Einstellungsdialog, Anfangswert in beiden Anlagewegen und Mitführen beim Speichern der Kaskade (E27, K10; 7.2), Persistenz und Ergebnisspalten **vor** `ANZAHL = 4`; die zwei Kanallisten und die zwei Ausnahmen, dazu die fünf Restbedarfsfelder und der Bivalenzpunkt über `KANAELE_WAERME` (4.2); **Fassade `SimulationKaeltebedarf`** mit `SummeKaelte()`, `Kaeltebedarf_Max` → `Kaeltelast_Max`, eigener Dauerlinie und `Kaeltebedarf_Gesamt` (E21); Text↔Index; toleranter Knappheitsparser; `Warnkriterien.KanalAnzeige` (4.3 #24); `BerichtsDaten.KANAL_SCHLUESSEL` um `"KUEHLUNG"` und die Erzeugertabelle der Ergebnisansicht bei drei Kanälen (4.3 #32, #34); **Bedarfsprobe Kälte** mit `probeKaelte` (4.3 #30); Ressourcen, darunter der entfallende Zusatz „(informativ)" an `gebaeude.kuehlbedarf` (6.4) und der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (E20, F-K18); Kühlsollwert und Kühlleistungsgrenze im Löser und im Gebäudedialog; Abschnitt „Kältebedarf" im Bedarfsdialog (8.4); Export der Kühlreihe; Wächter. **Gefüllt vom Gebäudemodell, gedeckt von niemandem** | **G1 steht**, und zwar in der Form aus E20: Bestandsweg verschoben, Weiche und Vorbereitungsschritt byte-gleich abgenommen (ohne Stundenmodell keine Kühllast je Stunde); `KU-S4` vor `ANZAHL` | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kühlung byte-gleich; die drei neuen Proben aus 10.2 („Bestandsweg-Gebäude liefert 0 mit Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen") | **ja — mit G1 + G2** | **11–16** |
 | **KU2** | **Der Erzeuger, samt Auswahl und Konfiguration (E15).** `KU-S3` mit drei Spalten je WP-Tabelle (`Kuehl_Vorlauf` als `INTEGER`) und der Stromträgerwahl an der Anlagenzeile (`Kuehl_ID_Carrier`, K9, E33); reversible Wärmepumpe über die vorhandene Kühlkennlinie (Laststufe `MAX(Last)`, linear, EER konstant), Kennlinienwahl über `Kuehl_Vorlauf`, dazu `Last` in Modell, Leser und Schreiber, ein projektseitiger Kennlinienleser und die Extrapolationsmeldung (5.1); Umschaltregel je Tag für den Heizkanal, Brauchwasser bleibt bedienbar (5.2); `Kaeltekaskade` nach der Wärmekaskade (5.5); Quellspeicher benannt abgelehnt; Senke „Kältekreis"; eigener Deckungsgrad-Zweig `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` und `Kaelterestbedarf`; **Deckungsprobe Kälte** (4.3 #31); Kältestrom in eigener Reihe samt Hilfsstromanteil (6.1), als Projektskalar in der Kennzahlendatei (7.4, 7.6; K18a, E27), Wirtschaftlichkeit, Emissionen; Kennzahlen, Bericht, Abschnitt „Kältebedarf und -deckung"; Erzeugerdialog, Bedarfs- und Ergebnisdialog (der Katalogfilter „nur mit Kühlfunktion" ist gebaut — K20 erledigt, 5.0.3); Import der Kühlsollwerte (verschoben auf G4, 9.1) | **G2 steht** (Sommerlüftung — sonst wird auf eine überzeichnete Last ausgelegt, 3.4); KU1 abgenommen; **K22 geprüft** und im Glossar festgehalten (E27) | Referenzprojekt mit Kälteerzeuger; Rechenprobe gegen Handrechnung **je Vorlauf**; Katalog- und Übernahmefälle (10.3); ChartProben grün; Sichtabnahme Windows | **ja — ein Projekt** | **15–25** |
-| **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6; bis dahin rechnet ein Gebäude mit mehreren Zonen nach E49/A4 die Kühlung je Zone ideal mit Kühlsollwert und Kühlbetrieb des Gebäudes, die Leistungsgrenze nach dem Flächenanteil, `Tab_Zone.Kuehl_*` bleiben ungelesen); Kühlsollwert Nacht; Export nach IFC und gbXML. **KU3-1 gebaut 04.10.2026 (#713), KU3-2 bis KU3-5 folgen** | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
+| **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6; bis dahin rechnet ein Gebäude mit mehreren Zonen nach E49/A4 die Kühlung je Zone ideal mit Kühlsollwert und Kühlbetrieb des Gebäudes, die Leistungsgrenze nach dem Flächenanteil, `Tab_Zone.Kuehl_*` bleiben ungelesen); Kühlsollwert Nacht; Export nach IFC und gbXML. **KU3-1 gebaut 04.10.2026 (#713), KU3-2 gebaut 04.10.2026 (#714), KU3-3 bis KU3-5 folgen** | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
 
 **Stand 23.09.2026: KU1 ist abgeschlossen** — in vier Wellen (Schema und Programmeinstellung; Kanal,
 Fassade und Löser; Oberfläche, Bericht und Export; E32, Referenzprojekt 1017 und neue Basis
