@@ -48,7 +48,8 @@ namespace EPOS.Kern.Tests
             Assert.True(NutzungsdauerCtrl.TabelleVorhanden());
             Assert.Equal(0L, Zahl(NutzungsdauerSchema.ZaehlungOhneStrict()));
             Assert.Equal(28, NutzungsdauerSchema.Saat.Length);
-            Assert.Equal(NutzungsdauerSchema.Saat.Length, (int)Zahl(NutzungsdauerSchema.Zaehlung()));
+            // Dazu die Standardzeile „Gerät" der Kältemaschine, die Schritt 183 sät (KaeltemaschineAnlageSchema).
+            Assert.Equal(NutzungsdauerSchema.Saat.Length + 1, (int)Zahl(NutzungsdauerSchema.Zaehlung()));
         }
 
         /// <summary>
@@ -68,7 +69,7 @@ namespace EPOS.Kern.Tests
                 jeTechnik[id] = jeTechnik.TryGetValue(id, out int n) ? n + 1 : 1;
             }
 
-            Assert.Equal(10, jeTechnik.Count);          // zehn Kostenkomponenten
+            Assert.Equal(11, jeTechnik.Count);          // elf Kostenkomponenten — die elfte (Kältemaschine) sät Schritt 183
             foreach (KeyValuePair<int, int> paar in jeTechnik)
                 Assert.True(paar.Value == 1,
                             "Technik " + paar.Key + " hat " + paar.Value + " Standardzeilen.");
@@ -105,7 +106,8 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            Assert.Equal(31L, Zahl(NutzungsdauerSchema.ZaehlungZuordnung()));
+            // 31 aus der Saat-Zuordnung, dazu drei der Kältemaschine aus Schritt 183 (Aggregat, Montage, Planung).
+            Assert.Equal(31L + 3L, Zahl(NutzungsdauerSchema.ZaehlungZuordnung()));
 
             long betrieb = Zahl(
                 "SELECT COUNT(*) FROM Tab_KostenVorlagePosition p " +
