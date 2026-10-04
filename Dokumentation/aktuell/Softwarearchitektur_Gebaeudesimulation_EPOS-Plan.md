@@ -2,6 +2,12 @@
 
 **15.09.2026 — Architekturentwurf, zur Abnahme durch Philipp**
 
+> **Nachzug 04.10.2026 — Konditionierung und Aufheizoptimierung (KP1 bis KP3, EV1; nachgezogen mit KP4)**
+> ([Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md), [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.61, N1.63, N1.66, N1.69):
+> Die Klassen des Kalenderwegs, der Aufheizoptimierung und des Erdreichwiderstands stehen mit Ort und Aufrufer in 1.3,
+> die Tabellen und Spalten als Verweis in 2.2, die Stufen in Kapitel 5. Die Konzeption führt das Teilkonzept; dieses
+> Papier verweist nur.
+>
 > **Nachzug 25.09.2026 — Abschluss G3** ([Protokoll G3](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md),
 > [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.44–N1.46): Die acht Tabellen sind nach
 > W1 mit G3 gebaut (Schritte 132–134). Abweichend vom Entwurf trägt der Baustoffkatalog die Spalte
@@ -474,6 +480,24 @@ classDiagram
   Zonengeometrie --> Zonenumriss : je Zone und Geschoss
   Zonenumriss --> Raumumriss : seine Raeume
 ```
+
+**Konditionierung, Aufheizoptimierung, Erdreich (KP1 bis KP3, EV1).** Die Kalender sind ein eigenes Modul
+`Gebaeude/Konditionierung/` ohne Datenbank — bis auf den einen Datenweg; die Aufheizoptimierung ist eine reine Funktion
+zwischen Eingangsbauer und Lauf ([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 7.5, 7.6, E6).
+Ortsangaben ohne Pfad meinen `EPOS.Kern/Allgemein/Simulation/Gebaeude/`.
+
+| Baustein | Ort | Zweck | Aufrufer |
+|---|---|---|---|
+| `Konditionierungskalender` | `Konditionierung/` | Kalender einer Größe: Grundangabe, Standardwoche, Perioden; `Auswerten` bildet die 8760-Reihe, rein, ohne Datenbank | `Konditionierungssatz`, `Konditionierungseingang`, Kalenderwerkzeuge; `KonditionierungCtrl`, `GebaeudeStammCtrl`, Gebäudeexport |
+| `Konditionierungssatz` | `Konditionierung/` | die aufgelöste Konditionierung eines Gebäudes oder einer Zone, je Größe ein Kalender samt Referenzjahr und w₀; leer = Bestandszweig | `GebaeudeModellEingang.Bauen`, `Vdi6007Rechenweg`, `SimulationWaermebedarf`; Auskunft in `SimulationErgebnisHuelle` |
+| `Konditionierungdatenweg` | `Konditionierung/` | die einzige Stelle mit Datenbankzugriff des Moduls: liest Kalender, Perioden und Vorgaben eines Eigentümers zum Satz; `null`, wo nichts steht | `Vdi6007Rechenweg` (Lauf), `GebaeudeKatalogkalender`, `Kalenderteppich`; `KonditionierungHuelle` (`EPOS.UI.Daten`), `KonditionierungWeg` (`EPOS.UI`) |
+| `Konditionierungsstand`, `Konditionierungsarbeit` | `Konditionierung/` | der reine Arbeitsstand des Reiters „Konditionierung" und seine Schritte — jeder Schritt liefert einen neuen Stand mit benanntem Ergebnis, geschrieben wird beim OK (N1.66 Nr. 1) | `KonditionierungCtrl`, `KonditionierungsvorlageCtrl`, `GebaeudeStammCtrl`, `KonditionierungHuelle`, `KonditionierungBearbeitung` |
+| `Aufheizoptimierung` | `Aufheizoptimierung.cs` | Bemessung, Stufenzahl, Aufschlag, manuelle Zeit, Rampe; `Anwenden` (Einzone), `AnwendenZonen` (Mehrzonen), `Bemessen` (ohne Lauf) | `Vdi6007Rechenweg.Rechnen` über `ZonenEingang.Einzeln`; `ZonenEingang.Bauen`; `SimulationWaermebedarf` (Auskunft) |
+| `Aufheizplan` (mit `Aufheizzone`, `Aufheizbemessung`) | `Aufheizplan.cs` | Ergebnis der Planung einer Zone: Reihe mit Rampe, Maske, Sprünge, Zähler W1–W5, Zustand, Φ_RH | `Vdi6007Rechenweg`, `ZonenEingang`, `Zonenlauf`, `Zonenrechnung`, `GebaeudeModellErgebnis` (`Aufheizergebnis`) |
+| `Aufheizantwort`, `Aufheizstufen` | `Aufheizantwort.cs`, `Aufheizstufen.cs` | geregelte Antwort des 2K-Modells (`Zonenmodell2K.Aufheizantwort`) und die Stufenformel | `Aufheizoptimierung` |
+| `Aufheizvorgabe` | `EPOS.Kern/Model/Aufheizvorgabe.cs` | die Projekteinstellung, unveränderlich und normalisiert; wirksame Werte mit den Vorgaben | `KonfigurationCtrl.AufheizvorgabeLesen`/`-Schreiben`/`-Setzen`; `SimulationWaermebedarf.AufheizvorgabeProjekt` → `Vdi6007Rechenweg`; `SimulationKonfigHuelle`, `SimulationKiSicht` |
+| `Aufheizauskunft` | `EPOS.Kern/Allgemein/Simulation/Aufheizauskunft.cs` | Bemessung eines Gebäudes ohne Jahreslauf (t_auf,max, P_auf, Quelle, τ₂, Art, Reserve) | `SimulationWaermebedarf.AufheizbemessungEinesGebaeudes`; Herleitungszeile in `SimulationErgebnisHuelle.ParameterGaben` |
+| `Erdreichwiderstand` (mit `Erdreichkennwerte`) | `Erdreichwiderstand.cs` | Erdreichwiderstand nach DIN EN ISO 13370 in Reihe zum Bauteil, Vorgabe U_g aus `Erdreich_U_Wirksam` | `ErsatzparameterRC` (Klassen- und Bauteilweg), `BauteilEingang`, `GebaeudeModellEingang`, `Vdi6007Rechenweg` (Export, Hinweis); Auskunft über `GebaeudeKatalogHuelle` und `ErdreichAuskunftDaten` |
 
 ### 1.4 Controller und Hüllen
 
@@ -1073,6 +1097,15 @@ XML-Doku jeder Konstante sagt, was NULL bedeutet:
 **Sobald Zonen da sind, sind `Tab_Gebaeude.Wohnflaeche_gesamt` und die Flächenspalten abgeleitete
 Anzeigen, keine Eingaben** (Mehrzonenkonzept 4.3). Sichtbar gemacht wird das über eine
 `Herleitungszeile`; **still überschrieben wird nichts**.
+
+**Konditionierung und Aufheizoptimierung.** Die Tabellen `Tab_Konditionierungskalender`, `Tab_Konditionierungsperiode`,
+`Tab_Konditionierungsvorgabe` und `Tab_Konditionierungsvorlage_STAMM` (Schritte 151, 152, Saat 157, Nutzung der Vorlage
+176) stehen mit ihren Spalten im [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 5.1, 5.6 und 5.7. Die Spalten
+der Aufheizoptimierung — Schritt 160 an `Tab_Einstellungen`, Schritt 161 an `Tab_ErgebnisGebaeude` und
+`Tab_ErgebnisZone`, Schritt 174 mit Aufschlag, `Tab_Gebaeude.Aufheizzeit_Manuell_H`, `Aufheiz_Art` und den Spalten der
+Auslegungsgröße — führt der [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) in Abschnitt 4 (Teilkonzept 5.3, 5.4). Schritt 180
+(`ErdreichVorgabeSchema`) legt `Erdreich_U_Wirksam` (REAL, NULL oder > 0) an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`
+an und baut die Sicht `Abfrage_Projektgebaeude` neu ([Protokoll EV1](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md)).
 
 ### 2.3 Auflösung der Widersprüche
 
@@ -2303,6 +2336,10 @@ Stufe **GA** steht in keiner Summe (E26).
 | **AK1** | **Heizkreis als Randbedingung:** `Waermeuebergabe` in `Gebaeude/`; `Stundenrand` um `VorlaufC`, `UebergabeKennwerte`, `ReglerbandK` und `Stundenergebnis` um `VorlaufC`, `RuecklaufC`, `Begrenzungsgrund` erweitert (1.3); Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) mit Sichtneubau und NULL-erhaltender Katalogkopie (2.4, 2.5); ein Gebäude auf dem Altweg geht als **feste Last** ein — ein Altweg-Sonderfall, der in die Löschliste der Stufe GA gehört | G1 + G2 (Wärmeseite); die Kälteseite setzt KU1 und KU2 voraus (Anlagenkopplung 12.3) | eigener Einfrierschritt (2.8): Projekte mit `Anlagenkopplung = AUS` byte-gleich, das gekoppelte Projekt mit neuer Basis; die Grenzfallproben der Anlagenkopplung 11.1; `ChartProben` grün |
 | **AK2** | **Erzeugerfahrplan als Verfügbarkeit:** `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` neben den Fassaden, außerhalb beider Module (1.3, 1.5); Schemaschritt `AK-S2` und der Komfortteil von `AK-S3`; der Zweipass der Verteilung auf mehrere Gebäude; die Wache prüft, dass der Fahrplan keinen der beiden Ordner nennt (1.7) | AK1 abgenommen und eine Feldphase (Anlagenkopplung B-A6) | eigener Einfrierschritt (2.8); die AK2-Proben der Anlagenkopplung 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander |
 | **AK3** | **Der geschlossene Kreis:** Iterationsrahmen nach dem Muster von ADR-005 (feste Reihenfolge, Abbruchmaße, Höchstzahl, benannter Fehler), Umkehr der Laufordnung in `SimulationWaermebedarf`/`SimulationControl` | AK2 abgenommen und eine Feldphase; ob überhaupt, wird dann entschieden (Anlagenkopplung H6) | eigener Einfrierschritt (2.8); „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; Laufzeit an einem Mehrzonengebäude gemessen |
+| **KP1** | Modul `Gebaeude/Konditionierung/` (Kalendermodell, Vorgabematrix, Standardfahrplan, Feiertage, `Konditionierungdatenweg`, `Konditionierungssatz`), Nachtauskühlung, Schemaschritte 151 und 152; Teilkonzept 8 | KP0; Schemawellen G6c | byte-gleich gegen die geltende Basis |
+| **KP2** | Reiter „Konditionierung" mit `Konditionierungsstand`/`Konditionierungsarbeit`, Vorlagenverwaltung, Teppichbild, Saat der 14 Vorlagen (Schritt 157); N1.66 | KP1 | bunit, ChartProben, byte-gleich; Sichtabnahme SA1 beim Anwender |
+| **KP3** | `Aufheizantwort`, `Aufheizstufen`, `Aufheizoptimierung`, `Aufheizplan`, `Aufheizvorgabe`, `Aufheizauskunft`; Schritte 160, 161, 174; Referenzprojekt 1051, Basis R34 mit `Erdreichwiderstand` (RP2a); N1.69 — Oberflächenwellen O1b bis O3 und Welle A offen | KP2 | N-AH1 bis N-AH12, A/B-Protokoll, neue Basis R34 |
+| **EV1** | Schritt 180 `Erdreich_U_Wirksam`, Vorgabe in `Erdreichwiderstand`, Laufhinweis bei leerer Reserve, Feld im Gebäudedialog; N1.69 | KP3 (R34) | byte-gleich gegen R34 |
 | **GA — Altweg ablösen** (letzte Stufe, fällig nach Q24) | Modul `Altweg/`, Weiche, `IGebaeudeRechenweg`, `Modultrennungswache` (1.2, 1.3, 1.5, 1.7); Schalter „Rechenweg" und Abschnitt „Tagesbilanz (Bestandsweg)" (3.2); Vergleich alt/neu, Ausweis und Kältebedarf-0-Hinweis (3.5, 4.1); `DROP COLUMN` der nur vom Altweg gelesenen Spalten samt `Gebaeude_Modell` je Tabelle mit Sichtneubau, davor `Fensterflaeche_Ost`/`_West` einmalig aus `Fensterflaeche_Ost_West` füllen (2.2, 2.4); `Tab_DBTagV(-Daten)` samt Leser (2.9); der Prüfpunkt der Auslieferungsvorlage (2.7); der AK-Sonderfall „feste Last"; das Referenzprojekt des Altwegs auf VDI 6007 umstellen, den Rückweg-Test einstellen (4.4). Die vollständige **Löschliste** führt das Umsetzungskonzept Kap. 6 (Q25: vollständige Ablösung, E27) | Ablösekriterium **Q24**, mit E27 entschieden ([Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)): GA wird beauftragbar und fällig, sobald alle vier Bedingungen erfüllt sind — alle Referenz- und Bestandsprojekte einmal auf VDI 6007 gerechnet und die Abweichung zum Altweg je Projekt erklärt; eine Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg; KU1 und, falls beauftragt, AK1 abgenommen; die Ausbauprobe grün. Geprüft wird mit jeder Abnahme, der Stand steht in der Statusdatei | **Gate ist die Ausbauprobe** (1.7, 4.4): Ein Bau mit umbenanntem Ordner `Altweg/` übersetzt, nachdem die Weiche entfernt ist, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt byte-gleich; danach die **Basis neu eingefroren** (2.8). 5–8 PT, in keiner Summe |
 
 ```mermaid
