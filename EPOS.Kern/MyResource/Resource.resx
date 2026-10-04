@@ -44574,10 +44574,10 @@ Chart</value>
     <value>Kältebedarf sensibel, ohne Entfeuchtung</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_RAUMGRENZEN" xml:space="preserve">
-    <value>Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen, nicht in einer Geometrie.</value>
+    <value>Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen. Schematische Körper, soweit vorhanden, sind kein Aufmaß und ändern daran nichts.</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_OHNE_MVD" xml:space="preserve">
-    <value>Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export ohne Geometrie.</value>
+    <value>Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export – auch die schematischen Körper, soweit vorhanden, erfüllen keine Reference View.</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_IDS" xml:space="preserve">
     <value>Was die IFC-Datei zusagt, beschreibt die IDS-Datei {0} im Ordner Vorlage der Installation; ein IDS-fähiges Prüfwerkzeug hält sie gegen die Datei.</value>

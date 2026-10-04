@@ -31102,7 +31102,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export ohne Geometrie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die IFC-Datei nennt keine Model View Definition (ohne MVD): Keine veröffentlichte MVD passt auf einen semantischen Export – auch die schematischen Körper, soweit vorhanden, erfüllen keine Reference View. ähnelt.
         /// </summary>
         public static string GEXP_PROT_BEIPACK_OHNE_MVD {
             get {
@@ -31111,7 +31111,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen, nicht in einer Geometrie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumgrenzen der IFC-Datei sind logisch: Jede Raumgrenze 2. Ebene nennt Raum und Bauteil ohne Anschlussgeometrie; die Flächen stehen in den Mengen. Schematische Körper, soweit vorhanden, sind kein Aufmaß und ändern daran nichts. ähnelt.
         /// </summary>
         public static string GEXP_PROT_BEIPACK_RAUMGRENZEN {
             get {

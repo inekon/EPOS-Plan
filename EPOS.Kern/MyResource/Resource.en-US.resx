@@ -44567,10 +44567,10 @@ chart</value>
     <value>Cooling demand sensible only, without dehumidification</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_RAUMGRENZEN" xml:space="preserve">
-    <value>The space boundaries of the IFC file are logical: each second-level space boundary names space and element without connection geometry; areas are given as quantities, not as geometry.</value>
+    <value>The space boundaries of the IFC file are logical: each second-level space boundary names space and element without connection geometry; areas are given as quantities. Schematic solids, where present, are not for measurement and do not change this.</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_OHNE_MVD" xml:space="preserve">
-    <value>The IFC file names no model view definition (no MVD): no published MVD fits a semantic export without geometry.</value>
+    <value>The IFC file names no model view definition (no MVD): no published MVD fits a semantic export – the schematic solids, where present, do not satisfy a Reference View either.</value>
   </data>
   <data name="GEXP_PROT_BEIPACK_IDS" xml:space="preserve">
     <value>What the IFC file guarantees is described by the IDS file {0} in the Vorlage folder of the installation; any IDS-capable checker can hold it against the file.</value>
