@@ -1,6 +1,6 @@
 # Konzept: Kühlung in der Gebäudesimulation und in der Simulation von EPOS-Plan
 
-> **Stand 04.10.2026:** KU3-1 bis KU3-3 sind gebaut (#713 bis #715); die Kühlung je Zone steht in 3.5 („So gebaut“).
+> **Stand 04.10.2026:** KU3-1 bis KU3-4a sind gebaut (#713 bis #716); die Kühlung je Zone steht in 3.5 („So gebaut“).
 
 > **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Bestandsweg ist der
 > **Bestandsweg als Übergang**, und die Stufe **GA — Altweg ablösen** kehrt als letzte Stufe ohne
@@ -1480,6 +1480,8 @@ ihrer Rückkühlung zusammen in KU3.
 
 Ergebnisse: Bedarf, Deckung, `Kaelterestbedarf`, Deckungsgrad und Kältestrom enthalten die Maschine; die Kennzahlendatei führt je Maschine `ID_Kaeltemaschine`, `HilfsstromMwh`, `FreieKuehlungStunden`, `FreieKuehlungMwh`. Gespeichert wird je Maschine nichts. Weil `Tab_Energieanlagen` keinen Verweis auf `Tab_Kaeltemaschine` trägt, zählt jede Projektkopie als eine Maschine ohne Kaskadenplatz, `Kuehl_Vorlauf`, Hilfsstromanteil, Kühlträger und Zähler; Anlagenzeile und Wirtschaftlichkeit kommen mit Schemaschritt 183 (KU3-4).
 
+**So gebaut (KU3-4a, 04.10.2026, #716).** Die Kältemaschine ist eine Anlage: Typ 13 „Kältemaschine“ in `Tab_Typ_Energieanlagen`, die Anlagenzeile `Tab_Energieanlagen` trägt `ID_Kaeltemaschine` (Projektkopie, SET NULL) und `Kaeltemaschine_Anzahl` (≥ 1). `KaeltemaschineAnlageCtrl` legt Projektkopie und Anlagenzeile zusammen an und löscht die Projektkopie mit, wenn keine andere Anlage sie führt. `KaeltemaschinenVorbereiten` liest nur Anlagenzeilen: Die Anzahl teilt die Last gleich auf (Kälte, Strom, Kapazität als Vielfaches), das Kaltwasser kommt aus `Kuehl_Vorlauf`, sonst aus der kleinsten Stützstelle, der Hilfsstromanteil gilt nach K23 (ungültige Werte werden mit Meldung verworfen), Kühlträger und Abrechnungsart folgen der Wärmepumpe (E34). Eine Projektkopie ohne Anlagenzeile rechnet nicht (Hinweis), ein gelöschtes Gerät einer Anlage gibt eine Warnung. Der Kaskadenplatz bleibt wie in 5.5: `Tool_1…4` ordnen nur die Wärmeseite, die Kälte deckt zuerst die freie Kühlung, dann die Wärmepumpen im Kühlbetrieb, dann die Kältemaschinen in der Reihenfolge der Anlagenzeilen. Das Ergebnis je Maschine steht in `Tab_ErgebnisKaeltemaschine` (7.4). Der Erzeugerdialog folgt mit KU3-4c.
+
 ### 5.4 Freie Kühlung und Nachtlüftung: Gebäudemaßnahme, kein Erzeuger
 
 Drei Dinge werden im Sprachgebrauch „freie Kühlung" genannt, und sie gehören an verschiedene
@@ -1705,6 +1707,8 @@ Netzbezug des Projektträgers und nicht als vermiedener Bezug; der anteilige Kä
 Netzbezug. (3) Ein **Mengenszenario** (E9a) verlor die Kälteseite der Wärmepumpe samt Kühlträger und
 Abrechnungsart (`SzenarioMengen`), sodass ein Kühlträger im Szenario weder Menge noch Kosten trug; die
 Kältespalten skalieren jetzt mit dem Faktor wie die Wärmespalten, die eigenen Spitzen ebenso.
+
+**So gebaut (KU3-4a, 04.10.2026, #716).** Die Kältemaschine ist die Kostenkomponente 11. `TechnikPlanwertCtrl` setzt die Investition je kW aus Nennkälteleistung × Anzahl, bei gepflegten `Modulkosten` diese × Anzahl; Standardvorlagen für Investition („Kältemaschine (Aggregat)“, 300 €/kW mit Rückkühlung/Zubehör, MSR, Montage, Planung) und Betrieb (Wartung und Instandhaltung je 1,5 %) sind wählbar, die Nutzungsdauer beträgt 15 Jahre. `EndenergieAufloeser` führt für die Komponente 11 den Kältestrom aus `Tab_ErgebnisKaeltemaschine` zum Strompreis des Projekts bzw. des Kühlträgers. Komponente 11 und Typ 13 zählen nicht zur Wärmegestehung. Offen (KU3-4d): Kühlträger mit eigenem Zähler in der Kältestromabrechnung.
 
 ### 6.3 Emissionen (K9)
 
@@ -2058,6 +2062,8 @@ ersten Welle von KU2 in Modell, Leser und Schreiber, NULL-treu; den projektseiti
 `Tab_Kenndaten_Kuehlung` hat die zweite Welle gebaut (`ZeilenProjekt`, `KennlinieProjekt`; 5.1,
 Festlegung 1).
 
+**Vermerk Schritt 183 (KU3-4a, `KaeltemaschineAnlageSchema`).** An `Tab_Energieanlagen` kommen `ID_Kaeltemaschine` (Verweis auf `Tab_Kaeltemaschine`, SET NULL) und `Kaeltemaschine_Anzahl` (INTEGER NOT NULL DEFAULT 1, CHECK ≥ 1), an `Tab_Kaeltemaschine` `Kuehl_Vorlauf` (REAL, −20…30) und `Kuehl_Hilfsstromanteil` (REAL, 0 ≤ x < 1; Spaltenzahl 15 → 17); dazu Typ 13, Kostenkomponente 11, Nutzungsdauer und Kostenvorlagen als wiederholbare Saat.
+
 ### 7.4 `KU-S4` — die Ergebnisspalten
 
 Nach dem Muster von Schritt 52 (`EPOS.Kern/Allgemein/Update/SchemaKatalog.cs:2417-2502`, Feld
@@ -2131,6 +2137,8 @@ das Muster verlangt. Dazu die drei Eintragungen nach ADR-001: Migrationsschritt,
 
 **Reihenfolge innerhalb von KU1:** `KU-S4` **vor** der Erhöhung von `Kanal.ANZAHL` — sonst ist der
 Lauf rot, bevor eine Zeile Fachlogik existiert (4.3, #20).
+
+**Gebaut mit KU3-4a: `Tab_ErgebnisKaeltemaschine`** (Schritt 183, STRICT, 13 Spalten): `ID`, `ID_Ergebnis` (Kaskade), `ID_Kaeltemaschine` (SET NULL), `Bezeichner`, `Anzahl`, `Kaelteproduktion_MWh`, `Stromverbrauch_MWh`, `Hilfsstrom_MWh`, `FreieKuehlung_MWh`, `FreieKuehlung_Stunden`, `Taktstunden`, `Unterdeckung_MWh`, `Stunden_Leistungsgrenze`. Eine Zeile je Maschine; geschrieben im Ergebnisweg und gelesen über `ErgebnisModel.Kaeltemaschinen`; Duplizieren reist nach Präfix.
 
 ### 7.5 Das Bild
 
@@ -2920,7 +2928,7 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
 | **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 (K1 mit E21; K2, K10, K11, K19 und K18a mit E27; K4–K7 und K12 mit E31; K8, K9, K21 und K23 mit E33; K22 am 23.09.2026 geprüft) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
 | **KU1** | **Der Kanal — und die Fassade, die ihn füllt.** Schemaschritte `KU-S1`/`KU-S2`/`KU-S4` (neun Ergebnisspalten, 7.4), dazu die Programmeinstellung „Neue Projekte mit Kühlung anlegen" über `Dienste.Einstellungen` samt Feld im Einstellungsdialog, Anfangswert in beiden Anlagewegen und Mitführen beim Speichern der Kaskade (E27, K10; 7.2), Persistenz und Ergebnisspalten **vor** `ANZAHL = 4`; die zwei Kanallisten und die zwei Ausnahmen, dazu die fünf Restbedarfsfelder und der Bivalenzpunkt über `KANAELE_WAERME` (4.2); **Fassade `SimulationKaeltebedarf`** mit `SummeKaelte()`, `Kaeltebedarf_Max` → `Kaeltelast_Max`, eigener Dauerlinie und `Kaeltebedarf_Gesamt` (E21); Text↔Index; toleranter Knappheitsparser; `Warnkriterien.KanalAnzeige` (4.3 #24); `BerichtsDaten.KANAL_SCHLUESSEL` um `"KUEHLUNG"` und die Erzeugertabelle der Ergebnisansicht bei drei Kanälen (4.3 #32, #34); **Bedarfsprobe Kälte** mit `probeKaelte` (4.3 #30); Ressourcen, darunter der entfallende Zusatz „(informativ)" an `gebaeude.kuehlbedarf` (6.4) und der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (E20, F-K18); Kühlsollwert und Kühlleistungsgrenze im Löser und im Gebäudedialog; Abschnitt „Kältebedarf" im Bedarfsdialog (8.4); Export der Kühlreihe; Wächter. **Gefüllt vom Gebäudemodell, gedeckt von niemandem** | **G1 steht**, und zwar in der Form aus E20: Bestandsweg verschoben, Weiche und Vorbereitungsschritt byte-gleich abgenommen (ohne Stundenmodell keine Kühllast je Stunde); `KU-S4` vor `ANZAHL` | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kühlung byte-gleich; die drei neuen Proben aus 10.2 („Bestandsweg-Gebäude liefert 0 mit Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen") | **ja — mit G1 + G2** | **11–16** |
 | **KU2** | **Der Erzeuger, samt Auswahl und Konfiguration (E15).** `KU-S3` mit drei Spalten je WP-Tabelle (`Kuehl_Vorlauf` als `INTEGER`) und der Stromträgerwahl an der Anlagenzeile (`Kuehl_ID_Carrier`, K9, E33); reversible Wärmepumpe über die vorhandene Kühlkennlinie (Laststufe `MAX(Last)`, linear, EER konstant), Kennlinienwahl über `Kuehl_Vorlauf`, dazu `Last` in Modell, Leser und Schreiber, ein projektseitiger Kennlinienleser und die Extrapolationsmeldung (5.1); Umschaltregel je Tag für den Heizkanal, Brauchwasser bleibt bedienbar (5.2); `Kaeltekaskade` nach der Wärmekaskade (5.5); Quellspeicher benannt abgelehnt; Senke „Kältekreis"; eigener Deckungsgrad-Zweig `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` und `Kaelterestbedarf`; **Deckungsprobe Kälte** (4.3 #31); Kältestrom in eigener Reihe samt Hilfsstromanteil (6.1), als Projektskalar in der Kennzahlendatei (7.4, 7.6; K18a, E27), Wirtschaftlichkeit, Emissionen; Kennzahlen, Bericht, Abschnitt „Kältebedarf und -deckung"; Erzeugerdialog, Bedarfs- und Ergebnisdialog (der Katalogfilter „nur mit Kühlfunktion" ist gebaut — K20 erledigt, 5.0.3); Import der Kühlsollwerte (verschoben auf G4, 9.1) | **G2 steht** (Sommerlüftung — sonst wird auf eine überzeichnete Last ausgelegt, 3.4); KU1 abgenommen; **K22 geprüft** und im Glossar festgehalten (E27) | Referenzprojekt mit Kälteerzeuger; Rechenprobe gegen Handrechnung **je Vorlauf**; Katalog- und Übernahmefälle (10.3); ChartProben grün; Sichtabnahme Windows | **ja — ein Projekt** | **15–25** |
-| **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6; KU3-3 gebaut 04.10.2026 (#715): Zonenspalten gelesen nach der Vererbungsregel 3.5); Kühlsollwert Nacht; Export nach IFC und gbXML. **KU3-1 gebaut 04.10.2026 (#713), KU3-2 gebaut 04.10.2026 (#714), KU3-3 gebaut 04.10.2026 (#715), KU3-4 und KU3-5 folgen** | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
+| **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6; KU3-3 gebaut 04.10.2026 (#715): Zonenspalten gelesen nach der Vererbungsregel 3.5); Kühlsollwert Nacht; Export nach IFC und gbXML. **KU3-1 gebaut 04.10.2026 (#713), KU3-2 gebaut 04.10.2026 (#714), KU3-3 gebaut 04.10.2026 (#715), KU3-4a gebaut 04.10.2026 (#716), KU3-4b/4c/4d und KU3-5 folgen** | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
 
 **Stand 23.09.2026: KU1 ist abgeschlossen** — in vier Wellen (Schema und Programmeinstellung; Kanal,
 Fassade und Löser; Oberfläche, Bericht und Export; E32, Referenzprojekt 1017 und neue Basis
