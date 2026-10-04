@@ -28217,7 +28217,7 @@ Möchten Sie das zulassen?</value>
     <value>Kältemaschine „{0}": In {1} Stunden reichte die Leistung der Kennlinie nicht — nach dieser Maschine blieben {2} MWh Kältebedarf offen.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_REIHENFOLGE" xml:space="preserve">
-    <value>Kältemaschinen haben keinen Kaskadenplatz: Sie decken nach den Wärmepumpen im Kühlbetrieb in der Reihenfolge ihrer Projektkopien — mit Trocken- oder Nasskühler in Stunden freier Kühlung vor allen anderen.</value>
+    <value>Kältemaschinen decken als Erzeugertyp nach den Wärmepumpen im Kühlbetrieb, untereinander in der Reihenfolge ihrer Anlagenzeilen — mit Trocken- oder Nasskühler in Stunden freier Kühlung vor allen anderen.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
     <value>Wärmepumpe „{0}": Der Kühlbetrieb ist eingestellt, das Projekt rechnet aber keine Kälte (Projekteinstellung „Kühlung rechnen" aus) — die Maschine heizt nur.</value>
@@ -44899,6 +44899,33 @@ Chart</value>
   </data>
   <data name="KI_DLG_ZON_KUEHLLEISTUNG_ERL" xml:space="preserve">
     <value>Leistungsgrenze der Kühlung der Zone in kW; leer = die des Gebäudes, ab zwei Zonen nach dem Flächenanteil.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_OHNE_ANLAGE" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Die Projektkopie hat keine Anlagenzeile — sie rechnet nicht. Legen Sie die Maschine als Erzeuger im Projekt an.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_ANLAGE_OHNE_GERAET" xml:space="preserve">
+    <value>Anlage „{0}“: Die Kältemaschine führt kein Gerät (Projektkopie gelöscht) — sie rechnet nicht.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_KUEHLTRAEGER" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Der Kältestrom trägt den Stromträger „{1}“ — {2}.</value>
+  </data>
+  <data name="KM_ANLAGE_FEHLT" xml:space="preserve">
+    <value>Die Anlage der Kältemaschine gibt es nicht mehr.</value>
+  </data>
+  <data name="KM_ANLAGE_NAME_LEER" xml:space="preserve">
+    <value>Bitte geben Sie der Anlage einen Namen.</value>
+  </data>
+  <data name="KM_ANLAGE_ANZAHL_UNGUELTIG" xml:space="preserve">
+    <value>Die Anzahl muss mindestens 1 sein.</value>
+  </data>
+  <data name="KM_ANLAGE_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Der Hilfsstromanteil muss zwischen 0 und unter 100 % liegen.</value>
+  </data>
+  <data name="KM_ANLAGE_VORLAUF_UNGUELTIG" xml:space="preserve">
+    <value>Der Kaltwasservorlauf muss zwischen −20 und 30 °C liegen.</value>
   </data>
 </root>
 

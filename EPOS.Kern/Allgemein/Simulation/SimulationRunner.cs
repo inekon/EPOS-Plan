@@ -600,6 +600,29 @@ namespace WindowsFormsApplication1
                 m.Waermepumpe = w;
             }
 
+            // KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine - nur mit gerechneter Kaeltekaskade.
+            {
+                SimulationKaeltebedarf kk = sim.simulation_Waermebedarf != null ? sim.simulation_Waermebedarf.Kaelteseite : null;
+                Kaeltekaskade kas = (kk != null && kk.Gerechnet) ? kk.Kaskade : null;
+                if (kas != null)
+                    foreach (Kaelteerzeuger e in kas.Erzeuger)
+                        if (e != null && e.Maschine != null)
+                            m.Kaeltemaschinen.Add(new ErgebnisKaeltemaschineModel
+                            {
+                                ID_Kaeltemaschine = e.Maschine.Id > 0 ? (int?)e.Maschine.Id : null,
+                                Bezeichner = e.Bezeichner ?? "",
+                                Anzahl = Math.Max(1, e.Maschine.Anzahl),
+                                Kaelteproduktion_MWh = e.KaelteGesamtKwh / 1000.0,
+                                Stromverbrauch_MWh = e.StromGesamtKwh / 1000.0,
+                                Hilfsstrom_MWh = e.HilfsstromGesamtKwh / 1000.0,
+                                FreieKuehlung_MWh = e.KaelteFreiKwh / 1000.0,
+                                FreieKuehlung_Stunden = e.StundenFreieKuehlung,
+                                Taktstunden = e.StundenTakt,
+                                Unterdeckung_MWh = e.OffenAnLeistungsgrenzeKwh / 1000.0,
+                                Stunden_Leistungsgrenze = e.StundenLeistungsgrenze,
+                            });
+            }
+
             // Detail: BHKW (nur wenn gerechnet). Werte wie in der BHKW-Ergebnisansicht (MWh/a).
             if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
             {

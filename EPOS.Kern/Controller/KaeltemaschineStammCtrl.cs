@@ -247,6 +247,11 @@ namespace WindowsFormsApplication1
             {
                 m.IdProjekt = r["ID_Projekt"] == DBNull.Value ? (int?)null : Ganz(r["ID_Projekt"]);
                 m.IdStamm = r[KaeltemaschineSchema.SPALTE_ID_STAMM] == DBNull.Value ? (int?)null : Ganz(r[KaeltemaschineSchema.SPALTE_ID_STAMM]);
+                // Schritt 183: die Kühleingaben der Projektkopie - vor dem Schritt fehlen die Spalten, dann null.
+                if (r.Table.Columns.Contains(KaeltemaschineAnlageSchema.SPALTE_KUEHL_VORLAUF))
+                    m.Kuehl_Vorlauf = Zahl(r[KaeltemaschineAnlageSchema.SPALTE_KUEHL_VORLAUF]);
+                if (r.Table.Columns.Contains(KaeltemaschineAnlageSchema.SPALTE_KUEHL_HILFSSTROMANTEIL))
+                    m.Kuehl_Hilfsstromanteil = Zahl(r[KaeltemaschineAnlageSchema.SPALTE_KUEHL_HILFSSTROMANTEIL]);
             }
             DataTable k = DataRepository.GetDataTable(
                 "SELECT * FROM " + kennlinie + " WHERE " + KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE + " = ? ORDER BY " +

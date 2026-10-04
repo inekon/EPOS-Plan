@@ -236,9 +236,9 @@ namespace WindowsFormsApplication1
                 });
             }
 
-            // KU3-2: die Kältemaschinen nach den Wärmepumpen - sie haben keinen Kaskadenplatz.
+            // KU3-4: die Kältemaschinen nach den Wärmepumpen - der Typ Kältemaschine folgt den Wärmepumpen.
             bool mitWaermepumpe = _kaelteerzeuger.Count > 0;
-            KaeltemaschinenVorbereiten(erhoben);
+            KaeltemaschinenVorbereiten(erhoben, ref projekttraeger);
 
             if (_kaelteerzeuger.Count == 0) return;
 
@@ -255,25 +255,45 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Kältemaschinen des Projekts</b> (KU3-2; Kühlkonzept 5.3, 5.5): jede Projektkopie in
-        /// <c>Tab_Kaeltemaschine</c> ist eine Maschine. Sie haben keinen Kaskadenplatz (die Plätze
-        /// <c>Tool_1</c> bis <c>Tool_4</c> kennen nur Erzeugerarten der Wärmeseite, und eine Anlagenzeile der
-        /// Kältemaschine gibt es noch nicht) — deshalb decken sie nach allen Wärmepumpen im Kühlbetrieb, in
-        /// der Reihenfolge ihrer Kennung; in Stunden freier Kühlung vor allen anderen
-        /// (<see cref="Kaeltekaskade.Rechnen"/>). Ohne Kältemaschine im Projekt: keine Zeile, keine Meldung.
+        /// <b>Die Kältemaschinen des Projekts</b> (KU3-4; Kühlkonzept 5.3, 5.5, 6.1): jede Anlagenzeile mit Typ
+        /// <see cref="KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE"/> und Verweis auf ihre Projektkopie ist eine
+        /// Maschine — mit Anzahl, Kaltwasservorlauf (<c>Kuehl_Vorlauf</c>), Hilfsstromanteil, Kühlträger und
+        /// Abrechnungsart. Die Plätze <c>Tool_1</c> bis <c>Tool_4</c> ordnen die Erzeugertypen der Wärmeseite;
+        /// gefiltert auf die kühlfähigen Erzeuger folgt die Kältemaschine als Typ den Wärmepumpen im Kühlbetrieb,
+        /// innerhalb des Typs in der Reihenfolge ihrer Anlagenzeilen; in Stunden freier Kühlung deckt sie vor allen
+        /// anderen (<see cref="Kaeltekaskade.Rechnen"/>). Eine Projektkopie ohne Anlagenzeile rechnet nicht und
+        /// wird benannt.
         /// </summary>
-        private void KaeltemaschinenVorbereiten(bool erhoben)
+        private void KaeltemaschinenVorbereiten(bool erhoben, ref int projekttraeger)
         {
-            IReadOnlyList<int> ids = KaeltemaschineCtrl.IdsImProjektStill(m_ID_Projekt);
-            if (ids.Count == 0) return;
+            IReadOnlyList<KaeltemaschineAnlageModel> anlagen = KaeltemaschineAnlageCtrl.ListeStill(m_ID_Projekt);
+            var gefuehrt = new HashSet<int>(anlagen.Where(a => a.IdKaeltemaschine.HasValue).Select(a => a.IdKaeltemaschine.Value));
+            foreach (int id in KaeltemaschineCtrl.IdsImProjektStill(m_ID_Projekt))
+                if (!gefuehrt.Contains(id))
+                {
+                    KaeltemaschineModel ohne = KaeltemaschineCtrl.LadenStill(id);
+                    Protokoll.HinweisEinmal("kuehl-km-ohne-anlage-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_OHNE_ANLAGE,
+                                      ohne != null && !string.IsNullOrEmpty(ohne.Bezeichner) ? ohne.Bezeichner : id.ToString(CultureInfo.CurrentCulture)));
+                }
+            if (anlagen.Count == 0) return;
 
             double[] feuchte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Luftfeuchte_stuendlich() : null;
             int angelegt = 0;
-            foreach (int id in ids)
+            foreach (KaeltemaschineAnlageModel a in anlagen)
             {
+                if (!a.IdKaeltemaschine.HasValue)
+                {
+                    Protokoll.WarnungEinmal("kuehl-km-anlage-ohne-geraet-" + a.AnlagenId,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_ANLAGE_OHNE_GERAET, a.Bezeichner));
+                    continue;
+                }
+                int id = a.IdKaeltemaschine.Value;
                 KaeltemaschineModel m = KaeltemaschineCtrl.LadenStill(id);
                 if (m == null) continue;
                 Kaeltemaschine k = Kaeltemaschine.AusModell(m, out bool angehoben);
+                if (!string.IsNullOrWhiteSpace(a.Bezeichner)) k.Bezeichner = a.Bezeichner;
+                k.Anzahl = Math.Max(1, a.Anzahl);
                 if (!erhoben)
                 {
                     Protokoll.HinweisEinmal("kuehl-km-projekt-aus-" + id,
@@ -298,16 +318,42 @@ namespace WindowsFormsApplication1
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE,
                                       k.Bezeichner, ohneFeuchte));
 
+                // K23 wie bei der Wärmepumpe: NULL = kein Zuschlag; ein Wert außerhalb 0 <= x < 1 wird benannt verworfen.
+                double hilfsstromanteil = 0.0;
+                if (m.Kuehl_Hilfsstromanteil.HasValue)
+                {
+                    double h = m.Kuehl_Hilfsstromanteil.Value;
+                    if (h >= 0 && h < 1) hilfsstromanteil = h;
+                    else
+                        Protokoll.WarnungEinmal("kuehl-km-hilfsstrom-" + id,
+                            string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_HILFSSTROM_UNGUELTIG,
+                                          k.Bezeichner, h));
+                }
+
+                // E34 (6.1): nur ein ABWEICHENDER Kühlträger wirkt - dann gilt die Abrechnungsart der Anlage.
+                if (projekttraeger < 0) projekttraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt);
+                int kuehltraeger = Kaeltestromabrechnung.Abweichend(a.KuehlIdCarrier, projekttraeger)
+                    ? a.KuehlIdCarrier.Value : 0;
+                bool eigenerZaehler = kuehltraeger > 0 && a.KuehlEigenerZaehler == true;
+                if (kuehltraeger > 0)
+                    Protokoll.HinweisEinmal("kuehl-km-kuehltraeger-" + a.AnlagenId,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_KUEHLTRAEGER,
+                                      k.Bezeichner, Emissionsquelle.TraegerName(kuehltraeger),
+                                      eigenerZaehler ? MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ZAEHLER
+                                                     : MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ANTEILIG));
+
                 _kaelteerzeuger.Add(new Kaelteerzeuger
                 {
-                    AnlagenID = 0,
+                    AnlagenID = a.AnlagenId,
                     IdWp = 0,
                     Bezeichner = k.Bezeichner,
                     Modulindex = -1,
                     Maschine = k,
-                    Hilfsstromanteil = 0.0,
+                    Hilfsstromanteil = hilfsstromanteil,
                     Zeitanteil = null,
                     Quelltemperatur = k.Rueckkuehltemperatur_stuendlich,
+                    Kuehltraeger = kuehltraeger,
+                    EigenerZaehler = eigenerZaehler,
                 });
                 angelegt++;
             }
