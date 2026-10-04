@@ -815,3 +815,7 @@ Form_Gebaeude_Kuehluebergabe.btn_Help    = Gebäudemodell VDI 6007#kuehluebergab
 # (SimulationKonfigSeite, Entwurf KP3 Welle O1): bis der Abschnitt der Anwendungsseite
 # mit seinem Anker steht, auf Seitenebene.
 Form_Simulation_Config_Aufheizung.btn_Help = Gebäudemodell VDI 6007
+
+# Kaeltemaschine: Katalogdialog und Anlagendialog (KU3-4b).
+KaeltemaschineKatalog.btn_Help = Kühlung#kaeltemaschine-katalog
+KaeltemaschineAnlage.btn_Help = Kühlung#kaeltemaschine-anlage

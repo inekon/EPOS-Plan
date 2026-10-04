@@ -293,6 +293,34 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Gespeicherte_Kaeltespitze_der_Zone_wird_Kaeltelast_in_IFC_und_gbXML()
+        {
+            ErgebnisGebaeudeModel e = Ergebnis();
+            e.Zonen[0].KaeltespitzeKw = 4.2;
+            e.Zonen[0].KuehlstundenH = 410;
+            e.Zonen[1].KaeltespitzeKw = 1.5;   // ungekühlte Zone: keine Kältelast
+            GebaeudeExportPlan plan = Plan(Zweizonig().MitErgebnis(e, LAUF, WETTER), GbxmlExportProbe.Profil());
+            AbbildGebaeude g = plan.Abbild.Gebaeude.Single();
+            Assert.Equal(4200.0, g.Raeume.Single(r => r.Name == "Wohnen").Ergebnis.KaeltelastW.Value, 9);
+            Assert.Null(g.Raeume.Single(r => r.Name == "Anbau").Ergebnis.KaeltelastW);
+            Assert.Null(g.Ergebnis.KaeltelastW);
+
+            XDocument d = XDocument.Load(new MemoryStream(Datei(Zweizonig().MitErgebnis(e, LAUF, WETTER), GbxmlExportProbe.Profil(), out _)));
+            XElement last = Assert.Single(d.Root.Elements(NS + "Results"),
+                                          r => (string)r.Attribute("resultsType") == "CoolingLoad" && (string)r.Attribute("unit") == "Watt");
+            Assert.Equal("4200", (string)last.Element(NS + "Value"));
+
+            using (MemoryModel m = IfcExportProbe.Modell(Datei(Zweizonig().MitErgebnis(e, LAUF, WETTER), IfcExportProbe.Profil(), out _)))
+            {
+                List<Dictionary<string, IIfcPropertySingleValue>> raeume = m.Instances.OfType<IIfcSpace>()
+                    .Select(s => IfcExportProbe.Eigenschaften(s)).Where(x => x.ContainsKey(IfcSchreiber.EPOS_ERGEBNIS))
+                    .Select(x => x[IfcSchreiber.EPOS_ERGEBNIS]).ToList();
+                Dictionary<string, IIfcPropertySingleValue> wohnen = Assert.Single(raeume, x => x.ContainsKey("Kaeltelast"));
+                Assert.Equal(4200.0, IfcExportProbe.Zahl(wohnen["Kaeltelast"]), 9);
+            }
+        }
+
+        [Fact]
         public void Gbxml_mit_Results_besteht_die_Schemapruefung()
         {
             string schema = GbxmlExportProbe.Schemakopie();

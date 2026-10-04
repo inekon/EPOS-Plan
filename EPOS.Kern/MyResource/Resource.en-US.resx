@@ -42617,6 +42617,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_TRENNDECKE_REFERENZ" xml:space="preserve">
     <value>Building "{0}" has no space boundaries but spatial references of its elements (IfcRelReferencedInSpatialStructure): {1} slabs separate the storeys {2} and couple their zones (rule Z4); {3} interior walls between spaces of one storey count as internal mass. Areas come from the element quantities, per pair of storeys, not per space.</value>
   </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_GRUNDRISS" xml:space="preserve">
+    <value>Building "{0}" has neither space boundaries nor spatial references for all storeys: {1} separating slabs with a total of {2} m² connect stacked spaces of the storeys {3} — from the overlap of their floor plans or, without a floor plan, from the slab contained in the storey — and couple their zones (rule Z4).</value>
+  </data>
   <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
     <value>The separating slab between {0} and {1} carries only {2} m² from the spatial references against {3} m² heated floor area of the smaller storey ({4} %) — the file does not reference all slab parts. The pair of storeys is not considered coupled; please check the separating area.</value>
   </data>
@@ -44230,6 +44233,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
     <value>Table of the saved buffer designs of the base project: one group row per design, below it storage class, template, usage profile, zone volumes, sizing criterion, recommendation, key figures and notes. If it is in the template, the section in the project chapter is omitted.</value>
+  </data>
+  <data name="VF_TABELLE__KAELTESPEICHER" xml:space="preserve">
+    <value>Table of the cold storages of the base project: capacity, charging, discharging, heat gain and full cycles per cold storage. If it is in the template, the section in the project chapter is omitted.</value>
   </data>
   <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
     <value>Buffer sizing concept 6 (benefit-effort line); pass-through D1 and two-point D2 with fixed volume, loss K11 by class C limit</value>

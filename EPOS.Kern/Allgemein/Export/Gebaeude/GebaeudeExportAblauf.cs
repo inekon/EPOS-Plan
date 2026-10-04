@@ -637,7 +637,8 @@ namespace WindowsFormsApplication1
             /// Wetterdatensatz des Laufs), die Zonenzeilen an die Räume ihrer Zone; führt das Ergebnis keine
             /// Zonen (höchstens eine Zone, Klassenweg), trägt der einzige beheizte Raum die Gebäudewerte. Der
             /// Kältebedarf steht nur bei wirksamer Kühlung (sonst wäre er die bis zur oberen Raumtemperatur
-            /// abzuführende Wärme); eine Kältelast speichert das Ergebnis nicht — sie bleibt leer. Ohne Lauf
+            /// abzuführende Wärme); die Kältelast je Zone ist die gespeicherte Kältespitze der Zone (Schritt 185),
+            /// am Gebäude bleibt sie leer. Ohne Lauf
             /// bleibt alles leer.
             /// </summary>
             private void Ergebnisse()
@@ -682,6 +683,8 @@ namespace WindowsFormsApplication1
                         HeizlastW = Kilo(ez.SpitzeKw),
                         MitteltemperaturC = ez.MittlereRaumtemperaturC,
                         KaeltebedarfKWh = Gekuehlt(zone) ? Kilo(ez.KuehlenergieMwh) : null,
+                        // Schritt 185: die gespeicherte Kältespitze der Zone als Kältelast [W]; leer ohne Spalte oder Kühlung.
+                        KaeltelastW = Gekuehlt(zone) ? Kilo(ez.KaeltespitzeKw) : null,
                         Beginn = beginn,
                     };
                 }

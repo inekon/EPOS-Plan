@@ -165,12 +165,19 @@ namespace WindowsFormsApplication1
                 Kaeltekaskade kaskade = runner.simulation_Kaeltebedarf != null
                     ? runner.simulation_Kaeltebedarf.Kaskade : null;
                 if (kaskade != null && kaskade.Erzeuger != null)
+                {
+                    // KU3-4d: die Kältemaschinen unter ihrem eigenen Schlüssel - der Platz in der Ergebnisliste
+                    // Kaeltemaschinen (dieselbe Folge wie im SimulationRunner).
+                    int km = 0;
                     foreach (Kaelteerzeuger e in kaskade.Erzeuger)
-                        if (e != null && e.NebenDerStufenrechnung && e.Modulindex >= 0)
-                        {
-                            Netzbezugsspitze s = Netzbezugsspitze.AusReihe(e.Strom_stuendlich);
-                            if (s != null) z.Kaeltestromspitzen[e.Modulindex] = s;
-                        }
+                    {
+                        if (e == null) continue;
+                        int schluessel = e.Maschine != null ? Kaeltestromabrechnung.SchluesselKaeltemaschine(km++) : e.Modulindex;
+                        if (!e.NebenDerStufenrechnung || (e.Maschine == null && e.Modulindex < 0)) continue;
+                        Netzbezugsspitze s = Netzbezugsspitze.AusReihe(e.Strom_stuendlich);
+                        if (s != null) z.Kaeltestromspitzen[schluessel] = s;
+                    }
+                }
 
                 // Katalog v12: die Kälteproduktion des Kältereiters — je Kälteerzeuger die gedeckte Kälte, dazu die
                 // ungedeckte Kälte; dieselben Reihen wie das Bild der Seite (KaelteProduktionBild.AusLauf). Nur,

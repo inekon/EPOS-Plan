@@ -620,6 +620,11 @@ namespace WindowsFormsApplication1
                                 Taktstunden = e.StundenTakt,
                                 Unterdeckung_MWh = e.OffenAnLeistungsgrenzeKwh / 1000.0,
                                 Stunden_Leistungsgrenze = e.StundenLeistungsgrenze,
+                                // KU3-4d (Schritt 184): die Abrechnung des Kaeltestroms wie an der Modulzeile der WP.
+                                Kaeltestrom_Netzbezug_MWh = e.NetzbezugKwh / 1000.0,
+                                Kuehl_CarrierId = e.Kuehltraeger > 0 ? (int?)e.Kuehltraeger : null,
+                                Kuehl_EigenerZaehler = e.Kuehltraeger > 0 ? (bool?)e.EigenerZaehler : null,
+                                Stromspitze_kW = Kaeltestromabrechnung.Stundenspitze(e.Strom_stuendlich),
                             });
             }
 

@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
         {
             var zeilen = (wp?.Module ?? new List<ErgebnisWaermepumpeModulModel>())
                 .Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
-            // KU3-4: die Kältemaschinen nach den Wärmepumpen - ihre Zeilen tragen keinen Netzbezug je Anlage.
+            // KU3-4: die Kältemaschinen nach den Wärmepumpen - Netzbezug und Träger seit Schritt 184 (KU3-4d).
             var km = (maschinen ?? Array.Empty<ErgebnisKaeltemaschineModel>())
                 .Where(k => k != null && k.Kaelteproduktion_MWh > 0).ToList();
             if (zeilen.Count == 0 && km.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
@@ -61,8 +61,11 @@ namespace WindowsFormsApplication1
                     zahl(k.Kaelteproduktion_MWh, "MWh/a"),
                     zahl(k.Stromverbrauch_MWh, "MWh/a"),
                     zahl(k.Stromverbrauch_MWh > 0 ? k.Kaelteproduktion_MWh / k.Stromverbrauch_MWh : (double?)null, null),
-                    zahl(null, "MWh/a"),
-                    Zellen.Text(Tabellenzelle.STRICH),
+                    // KU3-4d: Netzbezug und Träger aus der Ergebniszeile (Schritt 184); ein Lauf davor bleibt „—".
+                    zahl(k.Kaeltestrom_Netzbezug_MWh, "MWh/a"),
+                    Zellen.Text(k.Kaeltestrom_Netzbezug_MWh.HasValue
+                        ? ProjektbeschreibungBaustein.KuehltraegerText(k.Kuehl_CarrierId, k.Kuehl_EigenerZaehler, traegername)
+                        : Tabellenzelle.STRICH),
                 });
             }
             return t;
@@ -208,7 +211,10 @@ namespace WindowsFormsApplication1
             foreach (ErgebnisPufferspeicherModel p in mitWert)
                 t.Zeile(new[]
                 {
-                    Zellen.Text(string.IsNullOrWhiteSpace(p.Bezeichner) ? Tabellenzelle.STRICH : p.Bezeichner),
+                    // KU3-4d: Ein Kältespeicher mit Temperaturen nennt seine Rolle - die Werte sind kalt, nicht warm.
+                    Zellen.Text((string.IsNullOrWhiteSpace(p.Bezeichner) ? Tabellenzelle.STRICH : p.Bezeichner) +
+                                (WaermesenkeClass.IstKaelteVerwendung(p.Verwendung)
+                                    ? " (" + BerichtTexte.T("Kältespeicher", englisch) + ")" : "")),
                     new Tabellenzelle { Text = Tabellenformat.F(p.T_oben_Mittel.Value, 1, kultur), Zahl = p.T_oben_Mittel,
                                         Format = "N1", Einheit = "°C", Ausrichtung = Tabellenausrichtung.Rechts },
                     Zellen.Zahl(p.T_oben_Min.HasValue ? Tabellenformat.F(p.T_oben_Min.Value, 1, kultur) : Tabellenzelle.STRICH,
@@ -216,5 +222,42 @@ namespace WindowsFormsApplication1
                 });
             return t;
         }
+
+        /// <summary>
+        /// <b><c>tabelle.kaeltespeicher</c></b> (Katalog v12, KU3-4d) — je Kältespeicher des Stamms Kapazität, Ladung,
+        /// Entladung, Wärmeeintrag (die Verluste eines Kältespeichers sind Wärme von außen) und Vollzyklen aus
+        /// <c>Tab_ErgebnisPufferspeicher</c>. Leer ohne Kältespeicher.
+        /// </summary>
+        public static Berichtstabelle Kaeltespeicher(VariantenDaten stamm, bool englisch, CultureInfo kultur)
+        {
+            if (stamm == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAMM), kultur);
+            if (stamm.Ergebnis == null || stamm.Ergebnis.Pufferspeicher == null) return Leer(nameof(RR.BV_GRUND_KEIN_ERGEBNIS), kultur);
+            List<ErgebnisPufferspeicherModel> kalt = KaeltespeicherDesStamms(stamm);
+            if (kalt.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
+
+            var t = new Berichtstabelle().Feste(2600, 1300, 1300, 1300, 1300, 1000);
+            string[] titel = { "Kältespeicher", "Kapazität [kWh]", "Ladung [MWh/a]", "Entladung [MWh/a]",
+                               "Wärmeeintrag [MWh/a]", "Vollzyklen" };
+            t.MitKopf(titel.Select((x, i) => Zellen.Kopf(BerichtTexte.T(x, englisch),
+                                                        i == 0 ? Tabellenausrichtung.Links : Tabellenausrichtung.Rechts)));
+            Func<double, int, string, Tabellenzelle> zahl = (w, dez, einheit) =>
+                Zellen.Zahl(Tabellenformat.F(w, dez, kultur), w, "N" + dez.ToString(CultureInfo.InvariantCulture), einheit: einheit);
+            foreach (ErgebnisPufferspeicherModel p in kalt)
+                t.Zeile(new[]
+                {
+                    Zellen.Text(string.IsNullOrWhiteSpace(p.Bezeichner) ? Tabellenzelle.STRICH : p.Bezeichner),
+                    zahl(p.Q_max, 0, "kWh"),
+                    zahl(p.Ladung_gesamt / 1000.0, 2, "MWh/a"),
+                    zahl(p.Entladung_gesamt / 1000.0, 2, "MWh/a"),
+                    zahl(p.Verluste_gesamt / 1000.0, 2, "MWh/a"),
+                    zahl(p.Vollzyklen, 1, null),
+                });
+            return t;
+        }
+
+        /// <summary>Die Kältespeicher im Ergebnis des Stamms (Verwendung Kälte), in Ergebnisreihenfolge.</summary>
+        internal static List<ErgebnisPufferspeicherModel> KaeltespeicherDesStamms(VariantenDaten stamm)
+            => (stamm?.Ergebnis?.Pufferspeicher ?? new List<ErgebnisPufferspeicherModel>())
+               .Where(p => p != null && WaermesenkeClass.IstKaelteVerwendung(p.Verwendung)).ToList();
     }
 }

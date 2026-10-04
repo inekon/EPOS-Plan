@@ -313,6 +313,12 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen die Übergabe der Zone begrenzt hat [h] (E63); <c>null</c> bei idealer Zone.</summary>
         public double? UebergabeBegrenztH;
 
+        /// <summary>Die höchste Stunde des Kältebedarfs der Zone [kW] (Schritt 185); <c>null</c> ohne wirksame Kühlung.</summary>
+        public double? KaeltespitzeKw;
+
+        /// <summary>Stunden mit Kältebedarf der Zone [h] (Schritt 185); <c>null</c> ohne wirksame Kühlung.</summary>
+        public int? KuehlstundenH;
+
         // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
 
         /// <summary>
@@ -468,6 +474,17 @@ namespace WindowsFormsApplication1
         public int Taktstunden;
         public double Unterdeckung_MWh;
         public int Stunden_Leistungsgrenze;
+
+        // KU3-4d (Schemaschritt 184; Kühlkonzept 6.1-6.3, E34/E35): die Abrechnung des Kältestroms der Maschine.
+        /// <summary>Der Netzbezug ihres Kältestroms [MWh/a] — anteilig ein Teil von <c>Stromrestbedarf</c>, mit eigenem
+        /// Zähler daneben; <c>null</c> = vor dem Schritt gerechnet.</summary>
+        public double? Kaeltestrom_Netzbezug_MWh;
+        /// <summary>Der ABWEICHENDE Kühlträger (<c>energy_carrier.id</c>); <c>null</c> = Stromträger des Projekts.</summary>
+        public int? Kuehl_CarrierId;
+        /// <summary>Abrechnung über einen eigenen Zähler; nur mit abweichendem Kühlträger belegt.</summary>
+        public bool? Kuehl_EigenerZaehler;
+        /// <summary>Die Spitze ihres Kältestroms je Stunde [kW] — der Leistungspreis eines eigenen Zählers.</summary>
+        public double? Stromspitze_kW;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.

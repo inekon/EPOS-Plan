@@ -31,6 +31,12 @@ namespace WindowsFormsApplication1
     /// (Entscheid E35, Konzept Gebäudesimulation N1.40): je Zähler — je Anlage — einen Grundpreis und
     /// den Leistungspreis auf die eigene Spitze des Kältestroms der Anlage
     /// (<see cref="EigeneZaehler"/>, <c>ZeitreihenSatz.Kaeltestromspitzen</c>).</para>
+    ///
+    /// <para><b>Die Kältemaschine rechnet wie die Wärmepumpe</b> (KU3-4d, Schemaschritt 184): Ihre Ergebniszeile
+    /// (<c>Tab_ErgebnisKaeltemaschine</c>) trägt Netzbezug, abweichenden Kühlträger, Abrechnungsart und die Spitze
+    /// ihres Kältestroms; jede Frage dieser Klasse nimmt sie NACH den Modulen der Wärmepumpe mit. Ihr Schlüssel in
+    /// <c>Kaeltestromspitzen</c> ist <see cref="SchluesselKaeltemaschine"/> (negativ — die Modulplätze der Wärmepumpe
+    /// sind es nie).</para>
     /// </summary>
     public static class Kaeltestromabrechnung
     {
@@ -114,25 +120,85 @@ namespace WindowsFormsApplication1
         public static List<Anteil> Anteile(ErgebnisModel m)
         {
             var liste = new List<Anteil>();
-            if (m == null || m.Waermepumpe == null || m.Waermepumpe.Module == null) return liste;
-
-            foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
+            foreach (Quelle q in Quellen(m))
             {
-                if (mo == null || !mo.Kuehl_CarrierId.HasValue || mo.Kuehl_CarrierId.Value <= 0) continue;
-                double menge = mo.Kaeltestrom_Netzbezug ?? 0.0;
+                if (!q.Traeger.HasValue || q.Traeger.Value <= 0) continue;
+                double menge = q.NetzbezugMwh ?? 0.0;
                 if (!(menge > 0)) continue;
 
-                bool zaehler = mo.Kuehl_EigenerZaehler == true;
-                Anteil a = liste.Find(x => x.Traeger == mo.Kuehl_CarrierId.Value && x.EigenerZaehler == zaehler);
+                bool zaehler = q.EigenerZaehler == true;
+                Anteil a = liste.Find(x => x.Traeger == q.Traeger.Value && x.EigenerZaehler == zaehler);
                 if (a == null)
                 {
-                    a = new Anteil { Traeger = mo.Kuehl_CarrierId.Value, EigenerZaehler = zaehler };
+                    a = new Anteil { Traeger = q.Traeger.Value, EigenerZaehler = zaehler };
                     liste.Add(a);
                 }
                 a.MengeMwh += menge;
-                a.Anlagen.Add(string.IsNullOrEmpty(mo.Modul) ? "?" : mo.Modul);
+                a.Anlagen.Add(q.Anlage);
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Der Schlüssel einer Kältemaschine in <c>ZeitreihenSatz.Kaeltestromspitzen</c> und
+        /// <see cref="Zaehler.Modulindex"/>: <c>-1 - i</c> für die <paramref name="i"/>-te Zeile von
+        /// <see cref="ErgebnisModel.Kaeltemaschinen"/> — negativ, damit er nie auf einen Modulplatz der Wärmepumpe fällt.
+        /// </summary>
+        public static int SchluesselKaeltemaschine(int i) => -1 - i;
+
+        /// <summary>Die Spitze einer Stundenreihe des Kältestroms [kW] (kWh je Stunde = kW); <c>null</c> ohne Reihe.</summary>
+        public static double? Stundenspitze(double[] stunden)
+        {
+            if (stunden == null || stunden.Length == 0) return null;
+            double max = 0.0;
+            foreach (double w in stunden) if (w > max) max = w;
+            return max;
+        }
+
+        /// <summary>Eine Anlage mit Kältestrom im gespeicherten Ergebnis — Modulzeile der Wärmepumpe oder Kältemaschine.</summary>
+        private sealed class Quelle
+        {
+            public int Schluessel;
+            public string Anlage = "?";
+            public int? Traeger;
+            public bool? EigenerZaehler;
+            public double? NetzbezugMwh;
+            public double? StromspitzeKw;
+        }
+
+        /// <summary>Die Anlagen mit Kältestrom: erst die Module der Wärmepumpe, dann die Kältemaschinen (KU3-4d).</summary>
+        private static IEnumerable<Quelle> Quellen(ErgebnisModel m)
+        {
+            if (m == null) yield break;
+            if (m.Waermepumpe != null && m.Waermepumpe.Module != null)
+                for (int i = 0; i < m.Waermepumpe.Module.Count; i++)
+                {
+                    ErgebnisWaermepumpeModulModel mo = m.Waermepumpe.Module[i];
+                    if (mo == null) continue;
+                    yield return new Quelle
+                    {
+                        Schluessel = i,
+                        Anlage = string.IsNullOrEmpty(mo.Modul) ? "?" : mo.Modul,
+                        Traeger = mo.Kuehl_CarrierId,
+                        EigenerZaehler = mo.Kuehl_EigenerZaehler,
+                        NetzbezugMwh = mo.Kaeltestrom_Netzbezug,
+                    };
+                }
+            if (m.Kaeltemaschinen != null)
+                for (int i = 0; i < m.Kaeltemaschinen.Count; i++)
+                {
+                    ErgebnisKaeltemaschineModel k = m.Kaeltemaschinen[i];
+                    if (k == null) continue;
+                    yield return new Quelle
+                    {
+                        Schluessel = SchluesselKaeltemaschine(i),
+                        Anlage = string.IsNullOrEmpty(k.Bezeichner) ? "?" : k.Bezeichner,
+                        Traeger = k.Kuehl_CarrierId,
+                        EigenerZaehler = k.Kuehl_EigenerZaehler,
+                        NetzbezugMwh = k.Kaeltestrom_Netzbezug_MWh,
+                        StromspitzeKw = k.Stromspitze_kW,
+                    };
+                }
         }
 
         /// <summary>
@@ -145,8 +211,13 @@ namespace WindowsFormsApplication1
         public sealed class Zaehler
         {
             /// <summary>Platz der Anlage in der Modulliste der Wärmepumpe (<c>Module[i]</c>) — derselbe
-            /// Index wie der Modulplatz des Laufs (<c>Kaelteerzeuger.Modulindex</c>).</summary>
+            /// Index wie der Modulplatz des Laufs (<c>Kaelteerzeuger.Modulindex</c>); bei einer Kältemaschine
+            /// <see cref="SchluesselKaeltemaschine"/>. Schlüssel in <c>ZeitreihenSatz.Kaeltestromspitzen</c>.</summary>
             public int Modulindex;
+
+            /// <summary>Die gespeicherte Spitze des Kältestroms [kW] (Kältemaschine, Schritt 184) — die Jahresspitze,
+            /// wenn der Lauf keine Zeitreihen geführt hat; <c>null</c> bei der Wärmepumpe.</summary>
+            public double? StromspitzeKw;
 
             /// <summary>Bezeichner der Anlage (Modulzeile).</summary>
             public string Anlage = "";
@@ -166,19 +237,17 @@ namespace WindowsFormsApplication1
         public static List<Zaehler> EigeneZaehler(ErgebnisModel m)
         {
             var liste = new List<Zaehler>();
-            if (m == null || m.Waermepumpe == null || m.Waermepumpe.Module == null) return liste;
-            for (int i = 0; i < m.Waermepumpe.Module.Count; i++)
+            foreach (Quelle q in Quellen(m))
             {
-                ErgebnisWaermepumpeModulModel mo = m.Waermepumpe.Module[i];
-                if (mo == null || !mo.Kuehl_CarrierId.HasValue || mo.Kuehl_CarrierId.Value <= 0 ||
-                    mo.Kuehl_EigenerZaehler != true) continue;
-                double menge = mo.Kaeltestrom_Netzbezug ?? 0.0;
+                if (!q.Traeger.HasValue || q.Traeger.Value <= 0 || q.EigenerZaehler != true) continue;
+                double menge = q.NetzbezugMwh ?? 0.0;
                 liste.Add(new Zaehler
                 {
-                    Modulindex = i,
-                    Anlage = string.IsNullOrEmpty(mo.Modul) ? "?" : mo.Modul,
-                    Traeger = mo.Kuehl_CarrierId.Value,
-                    MengeMwh = menge > 0 ? menge : 0.0
+                    Modulindex = q.Schluessel,
+                    Anlage = q.Anlage,
+                    Traeger = q.Traeger.Value,
+                    MengeMwh = menge > 0 ? menge : 0.0,
+                    StromspitzeKw = q.StromspitzeKw
                 });
             }
             return liste;
@@ -208,19 +277,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Netzbezug des Kältestroms aller Anlagen [MWh/a] — die Summe der Modulspalte
-        /// <c>Kaeltestrom_Netzbezug</c>, gleich welcher Träger ihn bepreist; <c>null</c>, wenn der Lauf
+        /// <c>Kaeltestrom_Netzbezug</c> und der Spalte <c>Kaeltestrom_Netzbezug_MWh</c> der Kältemaschinen, gleich welcher Träger ihn bepreist; <c>null</c>, wenn der Lauf
         /// keinen Kältestrom gerechnet hat.
         /// </summary>
         public static double? NetzbezugKaeltestromMwh(ErgebnisModel m)
         {
-            if (m == null || m.Waermepumpe == null || m.Waermepumpe.Module == null) return null;
             double s = 0.0;
             bool gerechnet = false;
-            foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
+            foreach (Quelle q in Quellen(m))
             {
-                if (mo == null || !mo.Kaeltestrom_Netzbezug.HasValue) continue;
+                if (!q.NetzbezugMwh.HasValue) continue;
                 gerechnet = true;
-                s += mo.Kaeltestrom_Netzbezug.Value;
+                s += q.NetzbezugMwh.Value;
             }
             return gerechnet ? (double?)s : null;
         }

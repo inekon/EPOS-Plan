@@ -10,6 +10,7 @@ Der Reiter '''Energieerzeuger''' der Startseite bestückt das Projekt mit der Te
 * '''Solarthermie''' – die beiden Schalter ''Profil'' und ''Ganglinie'' wählen den Dialog. ''Profil'' öffnet die ''Eingabe der Solarkollektoren'' mit Kollektortyp, Fläche, Neigung und Azimut, ''Ganglinie'' die Zuordnung einer fertigen Solarthermieganglinie; voreingestellt ist ''Profil''. Ist dem Projekt eine vollständige Ganglinie zugeordnet, rechnet die Simulation sie anstelle des Kollektorfelds, mit dessen Senken, Puffer und Kaskadenplatz ([[Programm Dokumentation/Solarthermie#ganglinie|Ganglinie statt Kollektorfeld]]).
 * '''Photovoltaik''' – öffnet die ''Verwaltung Photovoltaik Module'' mit Modultyp, Modulanzahl, Neigung und Azimut; mehrere Teilfelder für unterschiedliche Dachflächen sind möglich.
 * '''Stromspeicher''' und '''Pufferspeicher''' – öffnen die Dialoge ''Verwaltung Stromspeicher'' und ''Verwaltung Pufferspeicher''. Zugeordnet und mit Schaltschwellen versehen wird der Pufferspeicher anschließend in der Simulationskonfiguration.
+* '''Kältemaschine''' – der Knopf ''Kältemaschinen…'' öffnet den Dialog ''Kältemaschinen im Projekt'' mit den Anlagen aus dem Kältemaschinen-Katalog; Einzelheiten unter [[Programm Dokumentation/Kühlung#kaeltemaschine|Kühlung]].
 * '''Statuspunkt''' – ein grüner Punkt an der Kachel zeigt an, dass für diese Technologie bereits Daten im Projekt vorliegen, ein grauer, dass keine vorliegen; bei der Solarthermie genügt dafür ein Kollektorsatz oder eine vollständige Ganglinie mit 8 760 Stundenwerten.
 
 == Die Techniken im Überblick ==

@@ -627,8 +627,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-04_R35_Zonenuebergabe/`** — **neunzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054), **576 CSV**, **3 791 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 04.10.2026, Stand `b845355`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **183**, 84 844 544 Byte, LFS-SHA-256
-`525e7b43a9525bea636869ced400356e8fa1b2cdd5325279d8b27db96c3c24bf`, mit den Projekten 1053 und 1054; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+gegen `Kenndaten_Test.sqlite` (Schemastand **185**, 84 844 544 Byte, LFS-SHA-256
+`905096ae15695c888a89b4a5717acfa9d08d19ffb110d2929730af0afd03513c`, mit den Projekten 1053 und 1054; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,

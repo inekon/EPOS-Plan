@@ -141,6 +141,8 @@ namespace WindowsFormsApplication1
             // KU3-3: der Kaeltebedarf je Zone
             { "Kältebedarf je Zone", "Cooling demand per zone" },
             { "Kältebedarf [MWh/a]", "Cooling demand [MWh/a]" },
+            { "Kältespitze [kW]", "Peak cooling load [kW]" },
+            { "Kühlstunden [h/a]", "Cooling hours [h/a]" },
             { "Die Gebäudesumme ist die Summe der Zonen; Heizen und Kühlen verschiedener Zonen in derselben Stunde werden nicht gegeneinander verrechnet.",
               "The building total is the sum of the zones; heating and cooling of different zones in the same hour are not offset against each other." },
             { "fester Vorlauf", "fixed flow temperature" },
@@ -375,6 +377,13 @@ namespace WindowsFormsApplication1
             { "Spitze [kW]", "Peak [kW]" },
             { "T oben Mittel [°C]", "T top mean [°C]" },
             { "T oben Minimum [°C]", "T top minimum [°C]" },
+            // KU3-4d: die Kältespeicher im Kapitel Projektbeschreibung
+            { "Kältespeicher", "Cold storage" },
+            { "Kapazität [kWh]", "Capacity [kWh]" },
+            { "Ladung [MWh/a]", "Charging [MWh/a]" },
+            { "Entladung [MWh/a]", "Discharging [MWh/a]" },
+            { "Wärmeeintrag [MWh/a]", "Heat gain [MWh/a]" },
+            { "Vollzyklen", "Full cycles" },
             // Konzept Kesselkennlinie 5 - der Betrieb je Heizkessel (stand.tabelle.heizkessel, Katalog v11).
             { "Heizkessel", "Boiler" },
             { "Jahresnutzungsgrad [%]", "Annual efficiency [%]" },

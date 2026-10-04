@@ -145,7 +145,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(AufheizManuellSchema.SPALTEN.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte)));
             Assert.False(DataRepository.SpalteVorhanden(GebaeudeSchema.TAB_GEBAEUDE_STAMM, AufheizManuellSchema.SPALTE_MANUELL));
             Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude").Count);
-            Assert.Equal(ZonenUebergabeSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone").Count);
+            Assert.Equal(ZonenKaeltespitzeSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone").Count);
             Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
             Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, Text("SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?", GebaeudeSchema.VIEW));
 
@@ -315,6 +315,9 @@ namespace EPOS.Kern.Tests
         private static void StandDavorHerstellen()
         {
             // Der Stand vor dem Schritt der Uebergabe je Zone (E63) kennt dessen drei Ergebnisspalten nicht.
+            // Der Stand davor kennt auch die Kältespitze je Zone (Schritt 185) nicht.
+            foreach ((string tabelle, string spalte, string _) in ZonenKaeltespitzeSchema.SPALTEN)
+                DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
             foreach ((string tabelle, string spalte, string _) in ZonenUebergabeSchema.SPALTEN)
                 if (tabelle == ZonenUebergabeSchema.TAB_ERGEBNIS_ZONE)
                     DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");

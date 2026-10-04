@@ -2827,6 +2827,44 @@ namespace Testdatenbankschema
                                   KaeltemaschineAnlageSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KaeltestromabrechnungSchema.SCHRITT (KU3-4d): die Kaeltestromabrechnung der
+            //      Kaeltemaschine - Abrechnungsspalten je Maschine, erneuerter Stempeltrigger der Anlagenzeile.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Kaeltestromabrechnung. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt eine Kaeltemaschine.
+            string nrKsAbr = KaeltestromabrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKsAbr + " - Kaeltestromabrechnung der Kaeltemaschine: " +
+                              (KaeltestromabrechnungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKsAbr = new List<string>();
+                angelegt += KaeltestromabrechnungSchema.Ausfuehren(berichtKsAbr);
+                foreach (string zeile in berichtKsAbr)
+                    Console.WriteLine("Schritt " + nrKsAbr + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKsAbr + " - vollstaendig: " +
+                                  KaeltestromabrechnungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ZonenKaeltespitzeSchema.SCHRITT (MZ-Rest): Kaeltespitze und Kuehlstunden je Zone an
+            //      Tab_ErgebnisZone. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_ZonenKaeltespitze
+            //      bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; ohne Kuehlung bleiben sie leer.
+            string nrKaeltespitze = ZonenKaeltespitzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKaeltespitze + " - Kaeltespitze je Zone: " +
+                              (ZonenKaeltespitzeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKaeltespitze = new List<string>();
+                angelegt += ZonenKaeltespitzeSchema.Ausfuehren(berichtKaeltespitze);
+                foreach (string zeile in berichtKaeltespitze)
+                    Console.WriteLine("Schritt " + nrKaeltespitze + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKaeltespitze + " - vollstaendig: " +
+                                  ZonenKaeltespitzeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
