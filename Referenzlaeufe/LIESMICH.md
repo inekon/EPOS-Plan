@@ -619,7 +619,7 @@ danach im Wegweiser desselben Ordners.
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052), **548 CSV**, **3 568 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 03.10.2026, Stand `87c024218`)
 gegen `Kenndaten_Test.sqlite` (Schemastand **176**, 83 120 128 Byte, LFS-SHA-256
-`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; gültige Fassung Schemastand **180**, 83 169 280 Byte, LFS-SHA-256 `0aa889989d4a32c31a23f3162c75a75a74adc7341b5fc1da6a221b192d2ab323`, Nachträge „Schemaschritte 177 bis 179“ und „Schemaschritt 180“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; gültige Fassung Schemastand **181**, 83 972 096 Byte, LFS-SHA-256 `bfd9f574a6a1c9af5ce5b996c8e23ebea46063fbecc05e16114d9f58746f5404`, Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -708,6 +708,17 @@ CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle achtzehn. Sie ist die **
 > `foreign_key_check` leer, 163 STRICT-Tabellen). Neue Fassung **83 169 280 Byte, LFS-SHA-256
 > `0aa889989d4a32c31a23f3162c75a75a74adc7341b5fc1da6a221b192d2ab323`**. **Die Basis bleibt:** Kein Referenzgebäude
 > trägt einen Wert; der Referenzlauf der achtzehn Projekte ist byte-gleich (548 CSV); keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 181 (Wärmeübergabe je Zone), Basis unverändert.**
+> `ZonenUebergabeSchema` (181 = `ErdreichVorgabeSchema.SCHRITT + 1`): an `Tab_Zone` die Spalten `Auslegung_Vorlauf`,
+> `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur` (REAL) und `Regler_Proportionalband` (REAL, `CHECK (IS NULL OR >= 0)`),
+> leer heißt „wie Gebäude“; an `Tab_ErgebnisZone` `Vorlauf_Mittel_C`, `Ruecklauf_Mittel_C` (REAL) und
+> `Uebergabe_Begrenzt_H` (REAL, `CHECK (BETWEEN 0 AND 8760)`). Kein Sichtneubau, kein DML. Die Testdatenbank ist aus
+> der Fassung `45c77e91…` (180, mit Prüfprojekt 1053, 84 000 768 Byte) mit `Werkzeuge/Testdatenbankschema` auf
+> **181** gezogen (7 Spalten, alle leer; `Tab_Zone` 35, `Tab_ErgebnisZone` 33 Spalten; `integrity_check` ok,
+> `foreign_key_check` leer, 163 STRICT-Tabellen). Neue Fassung **83 972 096 Byte, LFS-SHA-256
+> `bfd9f574a6a1c9af5ce5b996c8e23ebea46063fbecc05e16114d9f58746f5404`**. **Die Basis bleibt:** Keine Zone trägt einen
+> Wert, kein Rechenweg liest die Spalten; keine Einfrierregel ist berührt.
 
 ### Die Vorgängerbasis R33 `2026-10-02_R33_Viertelstunden`
 
