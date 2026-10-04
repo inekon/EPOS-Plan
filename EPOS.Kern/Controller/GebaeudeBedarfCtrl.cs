@@ -158,6 +158,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int? StundenHeizenUndKuehlen;
 
+        /// <summary>Die Heizwärme in diesen Stunden [kWh] (KU3-3, F-K15); <c>null</c> außerhalb des Mehrzonenwegs mit Kühlung.</summary>
+        internal double? GleichzeitigHeizenKwh;
+
+        /// <summary>Der Kältebedarf in diesen Stunden [kWh] (KU3-3, F-K15); <c>null</c> wie <see cref="GleichzeitigHeizenKwh"/>.</summary>
+        internal double? GleichzeitigKuehlenKwh;
+
         /// <summary>Rechnet das PROJEKT Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>)?</summary>
         internal bool KuehlbetriebProjekt;
 
@@ -327,6 +333,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Heizsollwert je Stunde [°C]; <c>null</c> für eine unbeheizte Zone.</summary>
         internal double[] HeizsollwertC;
+
+        /// <summary>Jahressumme des Kältebedarfs der Zone [MWh] (KU3-3); <c>null</c> ohne wirksame Kühlung der Zone.</summary>
+        internal double? KaeltebedarfMwh;
+
+        /// <summary>Die höchste Stunde des Kältebedarfs der Zone [kW] (KU3-3); <c>null</c> wie <see cref="KaeltebedarfMwh"/>.</summary>
+        internal double? KaeltespitzeKw;
+
+        /// <summary>Stunden mit Kältebedarf der Zone [h] (KU3-3); <c>null</c> wie <see cref="KaeltebedarfMwh"/>.</summary>
+        internal int? KuehlstundenH;
     }
 
     /// <summary>
@@ -484,6 +499,8 @@ namespace WindowsFormsApplication1
                     WPPlan.Core.BhkwPlan.MonatsSumme(kuehl, ergebnis.KuehlMonatswerteMwh,
                                                      sim.mo_anfang, sim.mo_ende);
                     ergebnis.StundenHeizenUndKuehlen = vdi.StundenHeizenUndKuehlen;
+                    ergebnis.GleichzeitigHeizenKwh = vdi.GleichzeitigHeizenKwh;
+                    ergebnis.GleichzeitigKuehlenKwh = vdi.GleichzeitigKuehlenKwh;
                 }
                 ergebnis.KuehlSollwertC = vdi.KuehlSollwert;
 
@@ -571,7 +588,11 @@ namespace WindowsFormsApplication1
                 NachtauskuehlstundenH = r.StundenMitNachtauskuehlung,
                 SommerlueftungsstundenH = GebaeudeKennzahlen.Sommerlueftungsstunden(r),
                 RaumtemperaturC = r.Raumtemperatur,
-                OperativeTemperaturC = r.OperativeTemperatur
+                OperativeTemperaturC = r.OperativeTemperatur,
+                // KU3-3: die Kälte der Zone aus ihrem Ergebnis - nur mit wirksamer Kühlung (E32).
+                KaeltebedarfMwh = r.KuehlenergieMwh,
+                KaeltespitzeKw = r.KaeltespitzeKw,
+                KuehlstundenH = r.StundenMitKuehlbedarf
             };
             if (z.IstBeheizt)
             {

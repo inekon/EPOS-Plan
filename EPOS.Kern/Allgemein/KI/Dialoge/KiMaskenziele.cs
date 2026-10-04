@@ -209,6 +209,12 @@ namespace WindowsFormsApplication1
         public const string KAELTEMASCHINE_KATALOG = "KAELTEMASCHINE_KATALOG";
 
         /// <summary>
+        /// Der Seitenschluessel des Erzeugerdialogs „Kältemaschinen im Projekt" (KU3-4c) — eine freie Ansicht
+        /// der Wurzel fuer das offene Projekt (<c>Seitenschluessel.KaeltemaschineAnlage</c>, dieselbe Zeichenkette).
+        /// </summary>
+        public const string KAELTEMASCHINE_ANLAGE = "KAELTEMASCHINE_ANLAGE";
+
+        /// <summary>
         /// Der Seitenschluessel der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) —
         /// dieselbe Lage wie <see cref="BAUSTOFF_KATALOG"/>: eine freie Ansicht der Wurzel
         /// (<c>Seitenschluessel.Betriebskalender</c>, dieselbe Zeichenkette).
@@ -404,6 +410,7 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.BAUSTOFF_KATALOG, BAUSTOFF_KATALOG },
                 { KiMaskennamen.BAUTEILAUFBAU, BAUTEILAUFBAU_KATALOG },
                 { KiMaskennamen.KAELTEMASCHINE_KATALOG, KAELTEMASCHINE_KATALOG },
+                { KiMaskennamen.KAELTEMASCHINE_ANLAGE, KAELTEMASCHINE_ANLAGE },
 
                 // Die Betriebskalender der Bedarfsprofile (PW2, BW2) - eine freie Ansicht wie die
                 // zwei Kataloge darueber.

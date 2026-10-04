@@ -28210,7 +28210,7 @@ Do you want to allow this?</value>
     <value>Chiller "{0}": in {1} hours the capacity of the performance map was not sufficient — {2} MWh of cooling demand remained open after this chiller.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_REIHENFOLGE" xml:space="preserve">
-    <value>Chillers have no cascade position: they cover after the heat pumps in cooling mode in the order of their project copies — with a dry or wet cooler in free-cooling hours before all others.</value>
+    <value>Chillers cover as a generator type after the heat pumps in cooling mode, among themselves in the order of their plant rows — with a dry or wet cooler in free-cooling hours before all others.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
     <value>Heat pump "{0}": cooling mode is set, but the project does not calculate cooling (project setting "Calculate cooling" off) — the unit only heats.</value>
@@ -40684,9 +40684,6 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_KUEHLEN_GESPERRT" xml:space="preserve">
     <value>The cooling column only takes effect with cooling mode in the project (“Calculate cooling” in the simulation configuration) and with “Building is cooled”.</value>
   </data>
-  <data name="KOND_TXT_KUEHLEN_ZONE" xml:space="preserve">
-    <value>The cooling values apply to the whole building; a separate cooling calendar per zone is not yet possible.</value>
-  </data>
   <data name="KOND_TXT_HINWEIS_TAGESBILANZ" xml:space="preserve">
     <value>This building is calculated with the method “Daily balance (legacy method)”: the matrix shows only the fields this method reads; calendars and further cells take effect only under VDI 6007.</value>
   </data>
@@ -40959,9 +40956,6 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_MSG_ZONE_UNBEHEIZT" xml:space="preserve">
     <value>Zone “{0}” is not heated — it carries neither a heating nor a cooling calendar.</value>
-  </data>
-  <data name="KOND_MSG_ZONE_KUEHLEN" xml:space="preserve">
-    <value>The cooling column of zone “{0}” follows the building; cooling values per zone are not available yet.</value>
   </data>
   <data name="KOND_MSG_ZONE_KALENDER" xml:space="preserve">
     <value>Zone “{0}” would not keep its values: {1}</value>
@@ -44865,6 +44859,255 @@ chart</value>
   </data>
   <data name="KM_MSG_KENNLINIE_TEMPERATUR_LEER" xml:space="preserve">
     <value>Every curve point needs a heat rejection and a chilled water temperature.</value>
+  </data>
+  <data name="SIMENG_KU3_ZONEN_GLEICHZEITIG" xml:space="preserve">
+    <value>Building "{0}": in {1} h one zone heats while a zone cools — heating {2} kWh and cooling demand {3} kWh in these hours. Both are reported and not offset against each other; the building totals are the sums of the zones per direction.</value>
+  </data>
+  <data name="ZONDLG_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Zone cooling</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHLUNG_AKTIV" xml:space="preserve">
+    <value>Zone is cooled</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHLLEISTUNG_MAX" xml:space="preserve">
+    <value>Cooling power limit</value>
+  </data>
+  <data name="ZONDLG_ZEILE_KUEHLUNG" xml:space="preserve">
+    <value>The day and night cooling setpoints of the zone are in the "Cooling" column of the matrix; an empty field follows the building. Cooling only takes effect when the project calculates cooling operation.</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KAELTESPITZE" xml:space="preserve">
+    <value>Peak cooling</value>
+  </data>
+  <data name="GEBB_SP_ZONE_KUEHLSTUNDEN" xml:space="preserve">
+    <value>Hours with cooling</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN_GLEICHZEITIG" xml:space="preserve">
+    <value>In {0} h one zone heats while a zone cools: heating {1} kWh, cooling demand {2} kWh — reported, not offset.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
+    <value>Is the zone cooled: "yes", "no" or empty = as the building. "no" switches the zone off even if the building is cooled; cooling only applies with the project's cooling operation.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHLLEISTUNG_ERL" xml:space="preserve">
+    <value>Cooling power limit of the zone in kW; empty = the building's, with two or more zones by floor-area share.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_OHNE_ANLAGE" xml:space="preserve">
+    <value>Chiller "{0}": the project copy has no plant row — it is not calculated. Add the chiller as a generator in the project.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_ANLAGE_OHNE_GERAET" xml:space="preserve">
+    <value>Plant "{0}": the chiller has no device (project copy deleted) — it is not calculated.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Chiller "{0}": the auxiliary power share {1} is not between 0 and 1 — no auxiliary power surcharge is applied.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_KUEHLTRAEGER" xml:space="preserve">
+    <value>Chiller "{0}": the cooling electricity is charged to the electricity carrier "{1}" — {2}.</value>
+  </data>
+  <data name="KM_ANLAGE_FEHLT" xml:space="preserve">
+    <value>The chiller plant no longer exists.</value>
+  </data>
+  <data name="KM_ANLAGE_NAME_LEER" xml:space="preserve">
+    <value>Please give the plant a name.</value>
+  </data>
+  <data name="KM_ANLAGE_ANZAHL_UNGUELTIG" xml:space="preserve">
+    <value>The number must be at least 1.</value>
+  </data>
+  <data name="KM_ANLAGE_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>The auxiliary power share must be at least 0 and below 100 %.</value>
+  </data>
+  <data name="KM_ANLAGE_VORLAUF_UNGUELTIG" xml:space="preserve">
+    <value>The chilled water supply temperature must be between −20 and 30 °C.</value>
+  </data>
+  <data name="AUFLOESER_KOMP_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE_KM" xml:space="preserve">
+    <value>all chillers</value>
+  </data>
+  <data name="KMA_TITEL" xml:space="preserve">
+    <value>Chillers in the project</value>
+  </data>
+  <data name="KMA_LEER" xml:space="preserve">
+    <value>The project has no chiller yet. Use “Add…” to choose a unit from the catalogue.</value>
+  </data>
+  <data name="KMA_GRUPPE_ANLAGEN" xml:space="preserve">
+    <value>Plants</value>
+  </data>
+  <data name="KMA_SP_NAME" xml:space="preserve">
+    <value>Plant</value>
+  </data>
+  <data name="KMA_SP_ANZAHL" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="KMA_SP_LEISTUNG" xml:space="preserve">
+    <value>Rated cooling capacity [kW]</value>
+  </data>
+  <data name="KMA_BTN_HINZU" xml:space="preserve">
+    <value>Add…</value>
+  </data>
+  <data name="KMA_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KMA_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="KMA_TITEL_KATALOG" xml:space="preserve">
+    <value>Choose a chiller from the catalogue</value>
+  </data>
+  <data name="KMA_KATALOG_KEINE_WAHL" xml:space="preserve">
+    <value>Please choose a chiller from the list.</value>
+  </data>
+  <data name="KMA_KATALOG_LEER" xml:space="preserve">
+    <value>The catalogue contains no chiller. Create units under Administration › Chillers.</value>
+  </data>
+  <data name="KMA_GRUPPE_GERAET" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="KMA_HINWEIS_KATALOG" xml:space="preserve">
+    <value>The ratings are maintained in the “Chillers” administration; they are shown here read-only.</value>
+  </data>
+  <data name="KMA_HINWEIS_NEU" xml:space="preserve">
+    <value>The project copy of the unit is created on OK.</value>
+  </data>
+  <data name="KMA_GRUPPE_BETRIEB" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="KMA_LBL_NAME" xml:space="preserve">
+    <value>Plant name</value>
+  </data>
+  <data name="KMA_LBL_ANZAHL" xml:space="preserve">
+    <value>Number of units</value>
+  </data>
+  <data name="KMA_LBL_VORLAUF" xml:space="preserve">
+    <value>Chilled water supply</value>
+  </data>
+  <data name="KMA_PLATZHALTER_VORLAUF" xml:space="preserve">
+    <value>lowest curve point ({0} °C)</value>
+  </data>
+  <data name="KMA_HINWEIS_VORLAUF_MIN" xml:space="preserve">
+    <value>Lowest permitted chilled water supply of the unit: {0} °C.</value>
+  </data>
+  <data name="KMA_LBL_HILFSSTROM" xml:space="preserve">
+    <value>Auxiliary power share</value>
+  </data>
+  <data name="KMA_HINWEIS_HILFSSTROM" xml:space="preserve">
+    <value>Surcharge on the unit's power for pumps and controls; empty = 0 %.</value>
+  </data>
+  <data name="KMA_LBL_TRAEGER" xml:space="preserve">
+    <value>Cooling power carrier</value>
+  </data>
+  <data name="KMA_PLATZHALTER_TRAEGER" xml:space="preserve">
+    <value>Project power carrier</value>
+  </data>
+  <data name="KMA_LBL_ZAEHLER" xml:space="preserve">
+    <value>separate meter</value>
+  </data>
+  <data name="KMA_HINWEIS_ZAEHLER" xml:space="preserve">
+    <value>The separate meter only applies to a cooling carrier that differs from the project power carrier.</value>
+  </data>
+  <data name="KMA_HINWEIS_REIHENFOLGE" xml:space="preserve">
+    <value>The chillers are dispatched after the heat pumps in cooling mode.</value>
+  </data>
+  <data name="KMA_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Remove the plant “{0}” from the project? It is deleted on OK.</value>
+  </data>
+  <data name="KMA_MSG_ANLEGEN_FEHLT" xml:space="preserve">
+    <value>The chiller “{0}” no longer exists in the catalogue.</value>
+  </data>
+  <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
+    <value>The project chillers cannot be opened — is a project open?</value>
+  </data>
+  <data name="KMA_REITER_KNOPF" xml:space="preserve">
+    <value>Chillers…</value>
+  </data>
+  <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
+    <value>Chillers in the project</value>
+  </data>
+  <data name="KI_DLG_KMA_ANLAGE_NAME" xml:space="preserve">
+    <value>Plant</value>
+  </data>
+  <data name="KI_DLG_KMA_ANLAGE_ERL" xml:space="preserve">
+    <value>The selected chiller plant of the project.</value>
+  </data>
+  <data name="KI_DLG_KMA_NAME_NAME" xml:space="preserve">
+    <value>Plant name</value>
+  </data>
+  <data name="KI_DLG_KMA_NAME_ERL" xml:space="preserve">
+    <value>Display name of the plant; must not be empty.</value>
+  </data>
+  <data name="KI_DLG_KMA_ANZAHL_NAME" xml:space="preserve">
+    <value>Number of units</value>
+  </data>
+  <data name="KI_DLG_KMA_ANZAHL_ERL" xml:space="preserve">
+    <value>Number of identical units, at least 1.</value>
+  </data>
+  <data name="KI_DLG_KMA_VORLAUF_NAME" xml:space="preserve">
+    <value>Chilled water supply</value>
+  </data>
+  <data name="KI_DLG_KMA_VORLAUF_ERL" xml:space="preserve">
+    <value>Chilled water supply in °C between −20 and 30; empty = lowest curve point.</value>
+  </data>
+  <data name="KI_DLG_KMA_HILFSSTROM_NAME" xml:space="preserve">
+    <value>Auxiliary power share</value>
+  </data>
+  <data name="KI_DLG_KMA_HILFSSTROM_ERL" xml:space="preserve">
+    <value>Auxiliary power share in percent, 0 to below 100; empty = 0.</value>
+  </data>
+  <data name="KI_DLG_KMA_TRAEGER_NAME" xml:space="preserve">
+    <value>Cooling power carrier</value>
+  </data>
+  <data name="KI_DLG_KMA_TRAEGER_ERL" xml:space="preserve">
+    <value>Power carrier pricing the chiller's electricity; empty = project power carrier.</value>
+  </data>
+  <data name="KI_DLG_KMA_ZAEHLER_NAME" xml:space="preserve">
+    <value>separate meter</value>
+  </data>
+  <data name="KI_DLG_KMA_ZAEHLER_ERL" xml:space="preserve">
+    <value>Billing via a separate meter; only applies to a differing cooling carrier.</value>
+  </data>
+  <data name="PSP_VERWENDUNG_KAELTE_ANZEIGE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="PSP_ROLLE_KAELTESPEICHER" xml:space="preserve">
+    <value>Cold storage</value>
+  </data>
+  <data name="PSP_LABEL_KALTWASSER_VORLAUF" xml:space="preserve">
+    <value>Chilled water supply:</value>
+  </data>
+  <data name="PSP_LABEL_KALTWASSER_RUECKLAUF" xml:space="preserve">
+    <value>Chilled water return:</value>
+  </data>
+  <data name="PSP_HINWEIS_KAELTESPEICHER" xml:space="preserve">
+    <value>Cold storage (chilled water): discharges ahead of the cooling generators and charges on cooling days from their spare capacity; without a temperature pair 6/12 °C applies.</value>
+  </data>
+  <data name="PSP_FEHLER_KAELTEPAAR" xml:space="preserve">
+    <value>For a cold storage the chilled water supply lies below the return (e.g. 6 °C and 12 °C) — or both fields stay empty.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_KAELTE_ERL" xml:space="preserve">
+    <value>The tank is a cold storage (chilled water) and supplies cooling only.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_BETRIEB" xml:space="preserve">
+    <value>Cold storage “{0}”: capacity {1} kWh, discharge {2} MWh, charge {3} MWh, heat gain {4} MWh, {5} full cycles.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_PAAR_VORGABE" xml:space="preserve">
+    <value>Cold storage “{0}”: temperature pair empty or reversed — calculated with supply {1} °C and return {2} °C.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Cold storage “{0}”: no cooling generator charges it (no heat pump in cooling mode, no chiller) — it is not calculated.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
+    <value>Cold storage “{0}”: cooling is switched off for the project — it is not calculated.</value>
+  </data>
+  <data name="SIMENG_KAELTESPEICHER_ALS_WAERMESENKE" xml:space="preserve">
+    <value>Cold storage “{0}” is entered as a heat sink of a plant — it is calculated in the cooling cascade only. Please correct the plant's heat sink.</value>
+  </data>
+  <data name="SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Cold storage “{0}”: no cooling generator (heat pump in cooling mode or chiller) charges it — it is not calculated.</value>
+  </data>
+  <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
+    <value>Cold storage “{0}”: cooling is switched off for the project — it is not calculated.</value>
   </data>
 </root>
 

@@ -566,7 +566,8 @@ namespace WindowsFormsApplication1
                 SollTag: z.SollTag, SollNacht: z.SollNacht, SollWochenende: z.SollWochenende, SollFerien: z.SollFerien,
                 Maximaleraumtemperatur: z.Maximaleraumtemperatur,
                 LuftwechselInfiltration: z.LuftwechselInfiltration, LuftwechselNutzer: z.LuftwechselNutzer,
-                InterneWaermegewinne: z.InterneWaermegewinne, Bewohner: z.Bewohner);
+                InterneWaermegewinne: z.InterneWaermegewinne, Bewohner: z.Bewohner,
+                KuehlSollwert: z.KuehlSollwert, KuehlSollwertNacht: z.KuehlSollwertNacht);
             Zonenvorgaben v = Zonenvorgaben.Bilden(eingaben, gebaeude, _zonen.Length);
             flaechenanteil = v.Flaechenanteil;
             return Konditionierungseingang.ZonenBestand(g, eingaben, v);

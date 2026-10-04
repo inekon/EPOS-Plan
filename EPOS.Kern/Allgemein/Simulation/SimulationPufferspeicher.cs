@@ -46,6 +46,64 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string VERWENDUNG_KOMBI = DbWerte.PSP_VERWENDUNG_KOMBI;
 
+        /// <summary>
+        /// Verwendung „Kaelte": KALTWASSERSPEICHER der Kältekaskade (KU3-5, Entscheid E68;
+        /// Kühlkonzept 4.6, 5.5). Gerechnet wird auf demselben <see cref="SOC"/> wie jeder Puffer,
+        /// nur gespiegelt gelesen: Der Füllstand ist der KÄLTEvorrat [kWh] — kalt heißt geladen.
+        /// Die Kapazität folgt aus Volumen und Spreizung Rücklauf − Vorlauf (<see cref="InitKaelte"/>),
+        /// der Bereitschaftsverlust ist der WÄRMEEINTRAG aus der Umgebung und zehrt den Vorrat nach
+        /// derselben füllstandsanteiligen Regel wie beim Wärmepuffer (<see cref="StundeAbschliessen"/>).
+        /// Ein Kältespeicher bedient allein den Kühlkanal und steht in keiner Wärmeordnung.
+        /// </summary>
+        public const string VERWENDUNG_KAELTE = DbWerte.PSP_VERWENDUNG_KAELTE;
+
+        /// <summary>Vorgabe Kaltwasser-Vorlauf [°C], wenn das Temperaturpaar des Kältespeichers leer ist.</summary>
+        public const int KAELTE_VORLAUF_VORGABE = 6;
+
+        /// <summary>Vorgabe Kaltwasser-Rücklauf [°C], wenn das Temperaturpaar des Kältespeichers leer ist.</summary>
+        public const int KAELTE_RUECKLAUF_VORGABE = 12;
+
+        /// <summary>Kaltwasser-Vorlauf des Kältespeichers [°C] (der geladene, kalte Zustand); 0 ohne Kälte.</summary>
+        public int KaltVorlauf = 0;
+
+        /// <summary>Kaltwasser-Rücklauf des Kältespeichers [°C] (der entladene, warme Zustand); 0 ohne Kälte.</summary>
+        public int KaltRuecklauf = 0;
+
+        /// <summary>true, wenn das Temperaturpaar des Kältespeichers auf die Vorgabe 6/12 °C fiel.</summary>
+        public bool KaeltepaarVorgabe = false;
+
+        /// <summary>true = Kaltwasserspeicher der Kältekaskade (<see cref="VERWENDUNG_KAELTE"/>).</summary>
+        public bool IstKaelte
+        {
+            get { return Verwendung == VERWENDUNG_KAELTE; }
+        }
+
+        /// <summary>
+        /// Initialisiert einen KÄLTESPEICHER (KU3-5): Kapazität = Volumen · 1,16 Wh/(l·K) ·
+        /// (Rücklauf − Vorlauf). Ein leeres oder vertauschtes Paar (Rücklauf ≤ Vorlauf oder ein Wert
+        /// ≤ 0) fällt auf die Vorgabe <see cref="KAELTE_VORLAUF_VORGABE"/>/<see cref="KAELTE_RUECKLAUF_VORGABE"/>
+        /// zurück und wird in <see cref="KaeltepaarVorgabe"/> vermerkt. Der Speicher rechnet einschichtig;
+        /// die Temperaturachse der Schichtebene ist die gespiegelte (der warme Rücklauf oben), ihre
+        /// Kennzahlen T_oben werden für den Kältespeicher nicht erhoben.
+        /// </summary>
+        public void InitKaelte(double volumenLiter, int vorlauf, int ruecklauf, double bereitschaftsverlusteProTag)
+        {
+            KaeltepaarVorgabe = !(vorlauf > 0 && ruecklauf > vorlauf);
+            if (KaeltepaarVorgabe)
+            {
+                vorlauf = KAELTE_VORLAUF_VORGABE;
+                ruecklauf = KAELTE_RUECKLAUF_VORGABE;
+            }
+            KaltVorlauf = vorlauf;
+            KaltRuecklauf = ruecklauf;
+            Verwendung = VERWENDUNG_KAELTE;
+            SchichtenAnzahl = 1;
+            BereitschaftTemperatur = false;
+
+            // Init rechnet ΔT = erstes − zweites Argument: der warme Rücklauf zuerst.
+            Init(volumenLiter, ruecklauf, vorlauf, bereitschaftsverlusteProTag);
+        }
+
         public string Bezeichner = "";
         public string Erzeuger = "";
 
@@ -749,6 +807,14 @@ namespace WindowsFormsApplication1
             // PAKET P1 (Befund E1-O5): die beiden Temperaturkennzahlen der OBERSTEN
             // Schicht aus derselben Ganglinie - Jahresmittel und Jahresminimum.
             Schicht_Kennzahlen();
+
+            // KU3-5: Der Kältespeicher hat keine Speichertemperatur „oben" im Sinn des Wärmepuffers -
+            // NULL heißt „nicht erhoben", wie beim Quellspeicher.
+            if (IstKaelte)
+            {
+                T_oben_Mittel = null;
+                T_oben_Min = null;
+            }
         }
 
         // ------------------------------------------------------------------
@@ -848,6 +914,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool VerwendungBedient(int kanal)
         {
+            // KU3-5: Der Kältespeicher bedient allein den Kühlkanal.
+            if (Verwendung == VERWENDUNG_KAELTE)
+                return kanal == Kanal.KUEHLUNG;
             if (Verwendung == VERWENDUNG_KOMBI)
                 return kanal == Kanal.HEIZUNG || kanal == Kanal.BRAUCHWASSER;
             if (Verwendung == VERWENDUNG_BRAUCHWASSER)
@@ -1146,6 +1215,7 @@ namespace WindowsFormsApplication1
         /// <summary>Anzeigetext der Rolle (lokalisiert seit Paket 9 / L6).</summary>
         public string RolleAnzeige()
         {
+            if (Verwendung == VERWENDUNG_KAELTE) return MyResource.Resource.PSP_ROLLE_KAELTESPEICHER;
             return (Verwendung == VERWENDUNG_QUELLE)
                 ? MyResource.Resource.PSP_ROLLE_QUELLSPEICHER
                 : MyResource.Resource.PSP_ROLLE_SENKENSPEICHER;

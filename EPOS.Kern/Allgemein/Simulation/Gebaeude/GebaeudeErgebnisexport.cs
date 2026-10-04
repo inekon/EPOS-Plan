@@ -154,6 +154,14 @@ namespace WindowsFormsApplication1
             };
             if (e.KuehlenergieMwh is double kuehlMwh) skalare.Add(Paar(p + "KuehlenergieMwh", kuehlMwh));
             if (e.StundenMitKuehlbedarf is int kuehlStunden) skalare.Add(Paar(p + "StundenMitKuehlbedarf", kuehlStunden));
+            // KU3-3 (F-K15, K6): gleichzeitiges Heizen und Kühlen der Zonen - nur im Mehrzonenweg mit wirksamer
+            // Kühlung (Muster E30: ohne Wirkung kein Schlüssel).
+            if (e.GleichzeitigHeizenKwh is double gleichHeiz && e.GleichzeitigKuehlenKwh is double gleichKuehl)
+            {
+                skalare.Add(Paar(p + "StundenHeizenUndKuehlen", e.StundenHeizenUndKuehlen));
+                skalare.Add(Paar(p + "GleichzeitigHeizenKwh", gleichHeiz));
+                skalare.Add(Paar(p + "GleichzeitigKuehlenKwh", gleichKuehl));
+            }
             // Rechenweg RP2a (E32-Muster): die Erdreichkennwerte nach DIN EN ISO 13370 nur mit Bauteil am Erdreich.
             var texte = new List<KeyValuePair<string, string>>();
             if (e.Erdreich != null)
@@ -183,7 +191,13 @@ namespace WindowsFormsApplication1
                         skalare.Add(Paar(q + "JahresheizwaermeMwh", r.JahresheizwaermeMwh));
                         skalare.Add(Paar(q + "SpitzeKw", r.SpitzeKw));
                     }
-                    if (r.KuehlenergieMwh is double zoneKuehlMwh) skalare.Add(Paar(q + "KuehlenergieMwh", zoneKuehlMwh));
+                    if (r.KuehlenergieMwh is double zoneKuehlMwh)
+                    {
+                        // KU3-3: Kältebedarf, Kältespitze und gekühlte Stunden je Zone - nur mit wirksamer Kühlung.
+                        skalare.Add(Paar(q + "KuehlenergieMwh", zoneKuehlMwh));
+                        if (r.KaeltespitzeKw is double zoneKaelteKw) skalare.Add(Paar(q + "KaeltespitzeKw", zoneKaelteKw));
+                        if (r.StundenMitKuehlbedarf is int zoneKuehlStunden) skalare.Add(Paar(q + "StundenMitKuehlbedarf", zoneKuehlStunden));
+                    }
                     skalare.Add(Paar(q + "MittlereRaumtemperaturHeizzeit", r.MittlereRaumtemperaturHeizzeit));
                     skalare.Add(Paar(q + "Ueberhitzungsstunden", r.Ueberhitzungsstunden));
                     if (!double.IsNaN(z.DeltaThetaMaxK)) skalare.Add(Paar(q + "DeltaThetaMaxK", z.DeltaThetaMaxK));

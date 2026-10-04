@@ -11,7 +11,8 @@
    JE GROESSE EINE ZUSTANDSZEILE: "vom Gebaeude" (das Gebaeude hat den Kalender angelegt, die Zone
    keinen eigenen - dann sind die Zellen dieser Groesse OHNE WIRKUNG, die Zeile nennt den Grund, die
    Spalte steht leise), "eigener Kalender" oder "aus der Matrix". "Vom Gebaeude uebernehmen und
-   anpassen" legt eine eigene Kopie an. Die Kuehlspalte der Zone ist bis KU3 weich gesperrt, an einer
+   anpassen" legt eine eigene Kopie an. Die Kuehlspalte der Zone (KU3-3) ist bedienbar, wenn die Zone
+   gekuehlt wird (eigener Schalter, leer = der des Gebaeudes); sonst ist sie weich gesperrt, an einer
    unbeheizten Zone auch die Heizspalte; beide Groessen tragen dann keine Zustandszeile und keine Karte.
 
    GESCHRIEBEN WIRD MIT DEM OK DES GEBAEUDEEDITORS. Der Zonendialog gibt seinen Arbeitsstand samt
@@ -40,7 +41,7 @@
     </div>
 
     <KonditionierungMatrix Bearbeitung="@Bearbeitung" Texte="@Texte" HuelleTexte="@HuelleTexte"
-                           Kuehlsperre="@Texte.HinweisKuehlenZone" Heizsperre="@Heizsperre"
+                           Kuehlsperre="@Kuehlsperre" Heizsperre="@Heizsperre"
                            AktiveGroesse="@_groesse" Geaendert="Geaendert" FehlerZustand="FehlerZustand" />
     <p class="epos-leisezeile epos-kond-zonenhinweis">@Texte.HinweisZoneMatrix</p>
 
@@ -122,11 +123,17 @@
     private string? Heizsperre => Beheizt ? null : Texte.HinweisUnbeheizt;
 
     /// <summary>
-    /// Die Größen, die die Zone trägt: nie Kühlen (bis KU3), Heizen nur beheizt — für Zustandszeilen und
+    /// Die Kühlspalte der Zone (KU3-3): bedienbar, wenn die beheizte Zone gekühlt wird — ihr eigener Schalter,
+    /// leer der des Gebäudes; sonst weich gesperrt mit dem Grund der Gebäudespalte.
+    /// </summary>
+    private string? Kuehlsperre => Beheizt && Bearbeitung.KuehlungAktivHier ? null : Texte.GrundKuehlenGesperrt;
+
+    /// <summary>
+    /// Die Größen, die die Zone trägt: Kühlen nur gekühlt (KU3-3), Heizen nur beheizt — für Zustandszeilen und
     /// Karten; die Matrix zeigt alle fünf Spalten.
     /// </summary>
     private IEnumerable<KonditionierungGroesse> Groessen
-        => KonditionierungDaten.Alle.Where(g => g != KonditionierungGroesse.Kuehlen
+        => KonditionierungDaten.Alle.Where(g => (g != KonditionierungGroesse.Kuehlen || Kuehlsperre is null)
                                                 && (g != KonditionierungGroesse.Heizen || Beheizt));
 
     /// <summary>Ein Rückruf nur, wenn der Weg die Handlung bietet („kein Delegat, kein Knopf").</summary>

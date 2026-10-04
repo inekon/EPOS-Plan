@@ -17,7 +17,7 @@
    und Gewinne stehen in der Gruppe "Werte" als Vorgabe-Matrix der Zone (Baustein ZonenKonditionierung
    ueber derselben KonditionierungMatrix wie am Gebaeude): leer = "wie Gebaeude", der Platzhalter
    nennt den geerbten Wert; je Groesse eine Zustandszeile ("vom Gebaeude" mit Grund, "Vom Gebaeude
-   uebernehmen und anpassen"); die Kuehlspalte weich gesperrt bis KU3. Die Aenderungen gehen ueber die
+   uebernehmen und anpassen"); die Kuehlspalte bedienbar, wenn die Zone gekuehlt wird. Die Aenderungen gehen ueber die
    Bearbeitung am Ort der Zone in DIESEN Arbeitsstand; OK gibt ihn samt Konditionierung zurueck, das
    OK des Gebaeudeeditors schreibt.
 
@@ -137,6 +137,38 @@
             <ZonenKonditionierung Bearbeitung="@_kond" Texte="@KonditionierungTexte" HuelleTexte="@HuelleTexte"
                                   JaText="@JaText" NeinText="@NeinText"
                                   Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* KU3-3 (E67/E68): die Kuehlung der Zone - Schalter (leer = wie Gebaeude) und Leistungsgrenze (leer = die
+       des Gebaeudes, ab zwei Zonen nach dem Flaechenanteil); die Kuehlsollwerte Tag und Nacht stehen wie am
+       Gebaeude (E56 F3 a) in der Spalte "Kuehlen" der Zonenmatrix. Eine unbeheizte Zone schwingt frei. *@
+    <Gruppenkopf Titel="@Texte.KuehlGruppe">
+        <KindInhalt>
+            @if (!_stand.IstBeheizt)
+            {
+                <Herleitungszeile Text="@Texte.ZeileUnbeheizt" />
+            }
+            else
+            {
+                <div class="epos-zonenkuehlung">
+                    <Formularraster>
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@Texte.KuehlLabelAktiv" Eintraege="@KuehlAktivEintraege"
+                                         Auswahl="@KuehlAktivIndex" AuswahlChanged="KuehlAktivWaehlen" />
+                            @if (KuehlungAktivWirksam)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.KuehlLabelLeistungMax" Einheit="kW" Min="0.01"
+                                            Platzhalter="@KuehlGrenzeVorgabe"
+                                            Feldname="@Feld(Texte.KuehlLabelLeistungMax)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.KuehlleistungMaxKw"
+                                            WertChanged="w => Setzen(() => _stand.KuehlleistungMaxKw = w)" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                </div>
+                <Herleitungszeile Text="@Texte.KuehlZeile" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -461,6 +493,8 @@
             (KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht) => _vorgaben.SollNacht.Wert,
             (KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende) => _vorgaben.SollWochenende.Wert,
             (KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien) => _vorgaben.SollFerien.Wert,
+            (KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag) => _vorgaben.KuehlSollwert.Wert,
+            (KonditionierungGroesse.Kuehlen, KonditionierungZeile.Nacht) => _vorgaben.KuehlSollwertNacht.Wert,
             (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert) => _vorgaben.LuftwechselInfiltration.Wert,
             (KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag) => _vorgaben.LuftwechselNutzer.Wert,
             (KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert) => _vorgaben.InterneWaermegewinne.Wert,
@@ -535,6 +569,10 @@
             StrahlungsanteilSetzen = w => Setzen(() => _stand.HeizungStrahlungsanteil = w),
             HeizleistungMaxLesen = () => _stand.HeizleistungMaxKw,
             HeizleistungMaxSetzen = w => Setzen(() => _stand.HeizleistungMaxKw = w),
+            KuehlungAktivLesen = () => _stand.KuehlungAktiv,
+            KuehlungAktivSetzen = w => Setzen(() => _stand.KuehlungAktiv = w),
+            KuehlleistungMaxLesen = () => _stand.KuehlleistungMaxKw,
+            KuehlleistungMaxSetzen = w => Setzen(() => _stand.KuehlleistungMaxKw = w),
             // E63 (AK1z): die Uebergabe je Zone - leer = wie Gebaeude; die Art prueft ihren Wert.
             UebergabeArtLesen = () => _stand.UebergabeArt,
             UebergabeArtSetzen = UebergabeArtSetzenKi,
@@ -619,6 +657,33 @@
         => _vorgaben is null ? ""
            : _vorgaben.HeizleistungMaxKw.Herkunft == Vorgabeherkunft.Leer ? Texte.VorgabeUnbegrenzt
            : Vorgabe(_vorgaben.HeizleistungMaxKw, 1);
+
+    /// <summary>Die Leistungsgrenze der Kühlung (KU3-3): vom Gebäude (ab zwei Zonen anteilig), sonst „unbegrenzt".</summary>
+    private string KuehlGrenzeVorgabe
+        => _vorgaben is null ? ""
+           : _vorgaben.KuehlleistungMaxKw.Herkunft == Vorgabeherkunft.Leer ? Texte.VorgabeUnbegrenzt
+           : Vorgabe(_vorgaben.KuehlleistungMaxKw, 1);
+
+    /// <summary>Wird die Zone gekühlt — ihr Schalter, leer der des Gebäudes (KU3-3)?</summary>
+    public bool KuehlungAktivWirksam => _stand.KuehlungAktiv ?? Gebaeude?.KuehlungAktiv ?? false;
+
+    /// <summary>Die Einträge des Schalters: 0 = „wie Gebäude (Ja/Nein)", 1 = Ja, 2 = Nein.</summary>
+    private IReadOnlyList<(int Id, string Text)> KuehlAktivEintraege => new List<(int, string)>
+    {
+        (0, string.Format(CultureInfo.CurrentCulture, Texte.UebergabeWieGebaeude,
+                          Gebaeude?.KuehlungAktiv == true ? JaText : NeinText)),
+        (1, JaText),
+        (2, NeinText),
+    };
+
+    /// <summary>Der Listenplatz des Schalters: NULL = 0, wahr = 1, falsch = 2.</summary>
+    private int KuehlAktivIndex => _stand.KuehlungAktiv switch { null => 0, true => 1, false => 2 };
+
+    private void KuehlAktivWaehlen(int? index)
+    {
+        if (index is not int i || i < 0 || i > 2) return;
+        Setzen(() => _stand.KuehlungAktiv = i == 0 ? null : i == 1);
+    }
 
     /// <summary>Der Luftwechsel der Zone [1/h] und woher er kommt — dieselbe Regel wie im Kern.</summary>
     private string Luftwechselzeile

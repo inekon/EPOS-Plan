@@ -392,6 +392,18 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_LBL_STRAHLUNG</c></summary>
     public string LabelStrahlungsanteil { get; set; } = Resource.ZONDLG_LBL_STRAHLUNG;
 
+    /// <summary><c>ZONDLG_GRP_KUEHLUNG</c> — die Kühlgruppe der Zone (KU3-3).</summary>
+    public string KuehlGruppe { get; set; } = Resource.ZONDLG_GRP_KUEHLUNG;
+
+    /// <summary><c>ZONDLG_LBL_KUEHLUNG_AKTIV</c></summary>
+    public string KuehlLabelAktiv { get; set; } = Resource.ZONDLG_LBL_KUEHLUNG_AKTIV;
+
+    /// <summary><c>ZONDLG_LBL_KUEHLLEISTUNG_MAX</c></summary>
+    public string KuehlLabelLeistungMax { get; set; } = Resource.ZONDLG_LBL_KUEHLLEISTUNG_MAX;
+
+    /// <summary><c>ZONDLG_ZEILE_KUEHLUNG</c> — wo die Kühlsollwerte der Zone stehen und was der Projektschalter tut.</summary>
+    public string KuehlZeile { get; set; } = Resource.ZONDLG_ZEILE_KUEHLUNG;
+
     /// <summary><c>ZONDLG_LBL_HEIZLEISTUNG_MAX</c></summary>
     public string LabelHeizleistungMax { get; set; } = Resource.ZONDLG_LBL_HEIZLEISTUNG_MAX;
 

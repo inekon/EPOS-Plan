@@ -585,6 +585,14 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     /// <inheritdoc />
+    /// <remarks>Dieselbe plattformfreie Hülle wie unter Windows (KU3-4c).</remarks>
+    public IReadOnlyDictionary<string, object>? KaeltemaschineAnlageGaben(int idProjekt)
+    {
+        try { return KaeltemaschineAnlageHuelle.Gaben(idProjekt); }
+        catch (Exception ex) { Console.WriteLine("Kältemaschinen im Projekt: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
     /// <remarks>Dieselbe plattformfreie Hülle wie unter Windows (Gebäudesimulation G3).</remarks>
     public IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben()
     {

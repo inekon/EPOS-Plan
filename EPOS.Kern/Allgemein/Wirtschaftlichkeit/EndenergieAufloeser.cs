@@ -72,6 +72,9 @@ namespace WindowsFormsApplication1
         /// <summary>ANWENDERBEFUND 10.09.2026 (H4c): Stromspeicher (5) — Quelle wie oben.</summary>
         internal const int KOMPONENTE_STROMSPEICHER = 5;
 
+        /// <summary>KU3-4 (Kühlkonzept 6.2): Kältemaschine (11) — eigene Komponente mit eigener Endenergiezeile.</summary>
+        internal const int KOMPONENTE_KAELTEMASCHINE = KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE;
+
         /// <summary>Endenergie einer Position — das Ergebnis des Auflösers.</summary>
         internal sealed class Groesse
         {
@@ -237,6 +240,8 @@ namespace WindowsFormsApplication1
                     return Kesselsumme(anlagenName, idAnlage);
                 case KOMPONENTE_WAERMEPUMPE:
                     return Waermepumpensumme(anlagenName, idAnlage);
+                case KOMPONENTE_KAELTEMASCHINE:
+                    return Kaeltemaschinensumme(anlagenName, idAnlage);
                 default:
                     return null;   // § 4.5: keine Endenergie — nur fester Jahresbetrag
             }
@@ -526,6 +531,63 @@ namespace WindowsFormsApplication1
 
         /// <summary>Strom-Endenergie der Wärmepumpe: (Stromverbrauch + Heizstab) ×
         /// Strombezugspreis.</summary>
+        /// <summary>
+        /// <b>Die Endenergie der Kältemaschine</b> (KU3-4, Kühlkonzept 6.2): ihr Kältestrom aus
+        /// <c>Tab_ErgebnisKaeltemaschine</c> (Verdichter, Hilfsstrom, Rückkühlung), bewertet mit dem Arbeitspreis
+        /// des Projektträgers — oder, trägt die Anlage einen abweichenden Kühlträger (E34), mit dessen Preis.
+        /// </summary>
+        private Groesse Kaeltemaschinensumme(string anlagenName, int idAnlage)
+        {
+            if (_ergebnis == null || _ergebnis.Kaeltemaschinen == null || _ergebnis.Kaeltemaschinen.Count == 0) return null;
+            var kuehltraeger = new Dictionary<string, int>(StringComparer.Ordinal);
+            int projekttraeger = -1;
+            foreach (KaeltemaschineAnlageModel a in KaeltemaschineAnlageCtrl.ListeStill(_idProjekt))
+            {
+                if (!a.KuehlIdCarrier.HasValue) continue;
+                if (projekttraeger < 0) projekttraeger = Kaeltestromabrechnung.Projekttraeger(_idProjekt);
+                if (Kaeltestromabrechnung.Abweichend(a.KuehlIdCarrier, projekttraeger))
+                    kuehltraeger[a.Bezeichner ?? ""] = a.KuehlIdCarrier.Value;
+            }
+
+            double projektKwh = 0.0, traegerKwh = 0.0, traegerEuro = 0.0;
+            bool traegerOhnePreis = false;
+            int getroffen = 0;
+            foreach (ErgebnisKaeltemaschineModel k in _ergebnis.Kaeltemaschinen)
+            {
+                if (anlagenName != null && !string.Equals(k.Bezeichner ?? "", anlagenName, StringComparison.Ordinal)) continue;
+                getroffen++;
+                double kwh = k.Stromverbrauch_MWh * 1000.0;
+                if (!(kwh > 0)) continue;
+                if (kuehltraeger.TryGetValue(k.Bezeichner ?? "", out int traeger))
+                {
+                    traegerKwh += kwh;
+                    double? pk = Preis(traeger);
+                    if (pk.HasValue) traegerEuro += kwh * pk.Value;
+                    else traegerOhnePreis = true;
+                }
+                else projektKwh += kwh;
+            }
+            if (anlagenName != null && getroffen == 0) return null;
+            double gesamt = projektKwh + traegerKwh;
+            if (!(gesamt > 0)) return null;
+
+            double? preis = StrompreisJeKwh;
+            double? kosten = null;
+            if (!traegerOhnePreis && (preis.HasValue || projektKwh <= 0))
+                kosten = (preis.HasValue ? projektKwh * preis.Value : 0.0) + traegerEuro;
+            return new Groesse
+            {
+                BedarfKwh = gesamt,
+                KostenEuro = kosten,
+                BewertungspreisJeKwh = traegerKwh > 0 ? (kosten.HasValue ? kosten.Value / gesamt : (double?)null) : preis,
+                EigenerStromtraeger = traegerKwh > 0,
+                Basis = anlagenName != null
+                    ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.AUFLOESER_BASIS_ANLAGE,
+                                    MyResource.Resource.AUFLOESER_KOMP_KAELTEMASCHINE, anlagenName)
+                    : MyResource.Resource.AUFLOESER_BASIS_ALLE_KM
+            };
+        }
+
         private Groesse Waermepumpensumme(string anlagenName, int idAnlage)
         {
             if (_ergebnis == null || _ergebnis.Waermepumpe == null || _ergebnis.Waermepumpe.Module == null) return null;
@@ -688,6 +750,12 @@ namespace WindowsFormsApplication1
                                     ? m.Stromverbrauch + m.Heizstab + m.Stromverbrauch_Kuehlung.Value
                                     : m.Stromverbrauch + m.Heizstab
                             });
+                    break;
+                case KOMPONENTE_KAELTEMASCHINE:
+                    // KU3-4: der Kältestrom der Kältemaschine (Verdichter, Hilfsstrom, Rückkühlung).
+                    if (_ergebnis != null && _ergebnis.Kaeltemaschinen != null)
+                        foreach (ErgebnisKaeltemaschineModel k in _ergebnis.Kaeltemaschinen)
+                            zeilen.Add(new Brennstoffzeile { Modul = k.Bezeichner, VerbrauchMWh = k.Stromverbrauch_MWh });
                     break;
                 case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
                     // E1: Nur der ELEKTROKESSEL hat am Heizkessel eine elektrische
@@ -1068,6 +1136,11 @@ namespace WindowsFormsApplication1
                     if (_ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
                         foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
                             namen.Add(m.Modul);
+                    break;
+                case KOMPONENTE_KAELTEMASCHINE:
+                    if (_ergebnis.Kaeltemaschinen != null)
+                        foreach (ErgebnisKaeltemaschineModel k in _ergebnis.Kaeltemaschinen)
+                            namen.Add(k.Bezeichner);
                     break;
                 case KOMPONENTE_PHOTOVOLTAIK:
                     if (_ergebnis.Photovoltaik != null && _ergebnis.Photovoltaik.Module != null)

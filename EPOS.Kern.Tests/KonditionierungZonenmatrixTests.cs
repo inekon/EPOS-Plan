@@ -88,10 +88,13 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_Zonenregel_gilt_Kuehlen_und_unbeheizt_werden_benannt_abgelehnt()
+        public void Die_Zonenregel_gilt_unbeheizt_wird_benannt_abgelehnt_Kuehlen_ist_offen()
         {
             Konditionierungsarbeitsstand a = MitKalendern(Zone(-1, null), Zone(-2, null, beheizt: false));
-            Assert.Contains("Kühlspalte", Konditionierungsarbeit.VomGebaeudeUebernehmen(a, Ort(Konditionierungsgroesse.Kuehlsoll, -1)).Meldung);
+            // KU3-3 (E67/E68): die Kühlspalte einer beheizten Zone ist offen - ohne Kühlkalender am Gebäude
+            // gibt es nichts zu übernehmen, aber keine Zonenregel lehnt mehr ab.
+            Assert.DoesNotContain("Kühlspalte der Zone", Konditionierungsarbeit.VomGebaeudeUebernehmen(a, Ort(Konditionierungsgroesse.Kuehlsoll, -1)).Meldung ?? "");
+            Assert.Contains("nicht beheizt", Konditionierungsarbeit.VomGebaeudeUebernehmen(a, Ort(Konditionierungsgroesse.Kuehlsoll, -2)).Meldung);
             Assert.Contains("nicht beheizt", Konditionierungsarbeit.VomGebaeudeUebernehmen(a, Ort(Konditionierungsgroesse.Heizsoll, -2)).Meldung);
             Assert.False(Konditionierungsarbeit.VomGebaeudeUebernehmen(a, Ort(Konditionierungsgroesse.Heizsoll)).Ok);
         }

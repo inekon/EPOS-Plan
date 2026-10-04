@@ -65,6 +65,7 @@
                BaustoffKatalogGaben="@BaustoffKatalogGaben"
                BauteilaufbauKatalogGaben="@BauteilaufbauKatalogGaben"
                KaeltemaschineKatalogGaben="@KaeltemaschineKatalogGaben"
+               KaeltemaschineAnlageGaben="@KaeltemaschineAnlageGaben"
                BetriebskalenderGaben="@BetriebskalenderGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
@@ -278,6 +279,9 @@
 
     /// <summary>Der Parametersatz der Verwaltung „Kältemaschinen" (Windows: <c>KaeltemaschineKatalogHuelle.Gaben</c>); nur durchgereicht.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? KaeltemaschineKatalogGaben { get; set; }
+
+    /// <summary>Der Parametersatz des Erzeugerdialogs „Kältemaschinen im Projekt" (Windows: <c>KaeltemaschineAnlageHuelle.Gaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? KaeltemaschineAnlageGaben { get; set; }
 
     /// <summary>Der Parametersatz der Betriebskalender (Windows: <c>BetriebskalenderHuelle.Gaben</c>); nur durchgereicht.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }

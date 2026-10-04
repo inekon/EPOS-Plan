@@ -306,6 +306,29 @@ namespace WindowsFormsApplication1
         internal int StundenHeizenUndKuehlen { get; }
 
         /// <summary>
+        /// <b>Die Heizwärme in den Stunden mit gleichzeitigem Heizen und Kühlen</b> [kWh] (KU3-3, F-K15, K6) —
+        /// am Gebäude eines Mehrzonenlaufs mit wirksamer Kühlung: Σ der Heizlast aller Zonen über die Stunden,
+        /// in denen eine Zone heizt und eine kühlt. Ausgewiesen, nicht saldiert — die Gebäudesummen bleiben
+        /// Σ Zonen je Richtung. <c>null</c> im Einzonenweg und ohne wirksame Kühlung (Muster E30).
+        /// </summary>
+        internal double? GleichzeitigHeizenKwh { get; init; }
+
+        /// <summary>Der Kältebedarf in denselben Stunden [kWh] (KU3-3, F-K15); <c>null</c> wie <see cref="GleichzeitigHeizenKwh"/>.</summary>
+        internal double? GleichzeitigKuehlenKwh { get; init; }
+
+        /// <summary>Die höchste Stunde des Kältebedarfs [kW] (KU3-3, je Zone und Gebäude); <c>null</c> ohne wirksame Kühlung.</summary>
+        internal double? KaeltespitzeKw
+        {
+            get
+            {
+                if (KuehlbedarfKwh == null) return null;
+                double max = 0.0;
+                for (int h = 0; h < KuehlbedarfKwh.Length; h++) if (KuehlbedarfKwh[h] > max) max = KuehlbedarfKwh[h];
+                return max;
+            }
+        }
+
+        /// <summary>
         /// Der Heizsollwert je Stunde [°C] (Sollwertfahrplan E8) — die untere Kante des
         /// Sollwertbands im Bild „Raumtemperatur" (Stufe G2); <c>null</c> = nicht mitgeführt.
         /// </summary>

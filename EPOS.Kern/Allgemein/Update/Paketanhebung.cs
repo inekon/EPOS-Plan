@@ -298,6 +298,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keine Kältemaschine; die Tabellen kommen leer an, der Katalog mit der Saat.
             new Stufe(KaeltemaschineSchema.SCHRITT, Art.Ddl,
                       "Katalog, Projektkopie und Kennlinien der Kältemaschine"),
+            // Ein älteres Paket führt keine Anlagenzeile der Kältemaschine; die Spalten kommen leer bzw. mit 1 an.
+            new Stufe(KaeltemaschineAnlageSchema.SCHRITT, Art.Ddl,
+                      "Kältemaschine als Anlage: Verweis, Anzahl, Kühleingaben, Kostenkomponente, Ergebnis je Maschine"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

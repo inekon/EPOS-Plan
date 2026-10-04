@@ -1113,7 +1113,7 @@ unter „Abbildung der heutigen Felder" festhält.
 **Zonen:** Im Detailbereich der Zone steht dieselbe Matrix; geerbte Zellen zeigen den Gebäudewert als Platzhalter
 „Vorgabe …" (Muster U3), eine eigene Zelle überschreibt ihn, „erben" leert sie wieder. Je Größe trägt die Zone „vom
 Gebäude" (gesperrte Anzeige mit Grund) oder „eigener Kalender"; „vom Gebäude übernehmen und anpassen" legt eine Kopie an.
-Die Kühlspalte der Zone ist bis KU3 weich gesperrt, mit Grund am Element. **Katalog (P3):** Im Katalogmodus steht
+Die Kühlspalte der Zone ist bedienbar seit KU3-3 (Vererbung Kühlkonzept 3.5). **Katalog (P3):** Im Katalogmodus steht
 dieselbe Oberfläche ohne Zonen; das Schloss eines ausgelieferten Satzes sperrt Matrix und Karten, „Duplizieren" öffnet
 eine bearbeitbare Kopie samt Vorgaben und Kalendern. Die Katalogauswahl zeigt je Satz, ob er Kalender trägt; die
 Rückfrage einer erneuten Übernahme nennt, was ersetzt wird und was bleibt.
