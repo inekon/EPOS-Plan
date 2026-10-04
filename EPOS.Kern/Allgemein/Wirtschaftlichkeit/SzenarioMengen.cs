@@ -146,6 +146,29 @@ namespace WindowsFormsApplication1
                 k.Waermepumpe = wk;
             }
 
+            // KU3-4d: die Kältemaschinen skalieren wie die Module der Wärmepumpe - Mengen, Netzbezug und Spitze
+            // ihres Kältestroms; Anzahl, Kühlträger und Abrechnungsart sind Konfiguration und bleiben.
+            if (m.Kaeltemaschinen != null)
+                foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
+                    k.Kaeltemaschinen.Add(km == null ? null : new ErgebnisKaeltemaschineModel
+                    {
+                        ID_Kaeltemaschine = km.ID_Kaeltemaschine,
+                        Bezeichner = km.Bezeichner,
+                        Anzahl = km.Anzahl,
+                        Kaelteproduktion_MWh = km.Kaelteproduktion_MWh * f,
+                        Stromverbrauch_MWh = km.Stromverbrauch_MWh * f,
+                        Hilfsstrom_MWh = km.Hilfsstrom_MWh * f,
+                        FreieKuehlung_MWh = km.FreieKuehlung_MWh * f,
+                        FreieKuehlung_Stunden = km.FreieKuehlung_Stunden,
+                        Taktstunden = km.Taktstunden,
+                        Unterdeckung_MWh = km.Unterdeckung_MWh * f,
+                        Stunden_Leistungsgrenze = km.Stunden_Leistungsgrenze,
+                        Kaeltestrom_Netzbezug_MWh = Mal(km.Kaeltestrom_Netzbezug_MWh, f),
+                        Kuehl_CarrierId = km.Kuehl_CarrierId,
+                        Kuehl_EigenerZaehler = km.Kuehl_EigenerZaehler,
+                        Stromspitze_kW = Mal(km.Stromspitze_kW, f),
+                    });
+
             if (m.BHKW != null)
             {
                 ErgebnisBHKWModel b = m.BHKW;

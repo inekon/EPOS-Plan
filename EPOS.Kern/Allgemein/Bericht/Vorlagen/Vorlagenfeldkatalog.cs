@@ -677,6 +677,7 @@ namespace WindowsFormsApplication1
             ["tabelle.speichertemperaturen"] = Berichtskapitel.PROJEKT,
             ["tabelle.gebaeude.ergebnis"] = Berichtskapitel.PROJEKT,
             ["tabelle.pufferauslegung"] = Berichtskapitel.PROJEKT,
+            ["tabelle.kaeltespeicher"] = Berichtskapitel.PROJEKT,
             ["stamm.bild.speichertemperaturen"] = Berichtskapitel.PROJEKT,
             // Komponenten & Varianten — die Variantenliste gehört zum Kapitel, das die Varianten nennt
             ["tabelle.varianten"] = Berichtskapitel.KOMPONENTEN,

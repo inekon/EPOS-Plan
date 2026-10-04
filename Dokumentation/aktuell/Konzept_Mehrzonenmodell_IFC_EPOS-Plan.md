@@ -1416,6 +1416,20 @@ nicht je Raumpaar (ADR-003):
 - **Meldung:** je Gebäude `IMP_IFC_PROT_TRENNDECKE_REFERENZ` (I) mit der Zahl der Trenndecken, den
   Geschosspaaren von unten nach oben und der Zahl der Innenwände mit zwei Nachbarn.
 
+**Trenndecke ohne Raumbezug.** Verbindet kein Raumbezug zwei übereinanderliegende Geschosse mit Räumen, sucht der
+Leser die Trenndecke selbst: Tragen alle Räume beider Geschosse einen Grundriss (Profilring der senkrechten
+Extrusion ihrer Körperdarstellung — Polylinie, indizierte Polylinie ohne Bögen oder Rechteck; andere Darstellungen
+liefern keinen), bekommt jedes Raumpaar, dessen Grundrisse sich in der Projektion um mindestens 1 m² überdecken, eine
+Trenndecke als Paar mit der Überlappung als Fläche (Herkunft `GRUNDRISS`, keine Schätzung aus den Raummengen); U-Wert,
+Aufbau und Dicke stammen von der größten Platte innen ohne Grenze, Nachbarn und Hüllerklärung im oberen (sonst
+unteren) der beiden Geschosse, die in den Paaren aufgeht — ohne sie bleibt das Paar ohne U-Wert (Vorgabe der
+Baualtersklasse). Fehlt ein Grundriss und führt die Datei keine Raumbezüge, trennt jede solche Platte den ersten
+beheizten Raum je Geschoss mit ihrer Menge (Herkunft `GESCHOSS`, wie der Raumbezug samt Schätzung); führt sie
+Raumbezüge, nennen diese die Nachbarn, und eine Platte ohne Bezug trennt nichts. Die Paare zählen für die Kopplung
+wie die aus den Raumbezügen; `GRENZEN_ENTKOPPELT` bleibt nur, wo auch das scheitert. Meldung je Gebäude
+`IMP_IFC_PROT_TRENNDECKE_GRUNDRISS` (I) mit Zahl, Fläche und Geschosspaaren. Die Überlappung rechnet ohne
+Geometriekern: Ohrenschnitt beider Ringe, je Dreieckspaar Sutherland–Hodgman.
+
 **Unbeheizte Zone ohne Fläche.** Ohne Raumgrenzen kann eine unbeheizte Zone ohne jede Fläche entstehen: Die
 Datei zählt die Hüllbauteile ihrer Räume nicht zur Hülle, und kein Bezug verbindet sie mit einem beheizten Raum.
 Der Bauteilweg rechnet keine Zone ohne Bauteil, und sie koppelt an nichts — sie entfällt deshalb aus der
@@ -1682,7 +1696,7 @@ die Regel: **Der Abschnitt entfällt vollständig, wenn kein Objekt einen Wert t
 voller ‚—' wäre keine Aussage, sondern eine Frage." Das Gebäude steht heute als Eigenschaftsblock
 (`:35-52`, Daten aus `…/ProjektDetails.cs:39-40`, gefüllt `:72`); die Zonentabelle tritt daneben:
 Zone | Fläche | Volumen | H_T [W/K] | H_ve [W/K] | Heizwärme [kWh/a] | Spitze [kW] | beheizt.
-**Kältebedarf je Zone (KU3-3):** Eine zweite Tabelle „Kältebedarf je Zone“ steht unter der Zonentabelle, gespeist aus dem gespeicherten Ergebnis (`Tab_ErgebnisZone.Kuehlenergie`); sie entfällt, wenn keine Zone Kälte gespeichert hat. Kältespitze und Kühlstunden je Zone stehen nur im Lauf und im Bedarfsdialog.
+**Kältebedarf je Zone (KU3-3):** Eine zweite Tabelle „Kältebedarf je Zone“ steht unter der Zonentabelle, gespeist aus dem gespeicherten Ergebnis (`Tab_ErgebnisZone.Kuehlenergie`); sie entfällt, wenn keine Zone Kälte gespeichert hat. Schemaschritt 185 speichert `Tab_ErgebnisZone.Kaeltespitze_kW` und `Kuehlstunden` (nullbar); die Tabelle führt „Kältespitze [kW]“ und „Kühlstunden [h/a]“ nur bei gespeicherten Werten, der Bedarfsdialog liest die Ergebniszeile (ersatzweise den Lauf), der Export gibt die Spitze je gekühlter Zone als IFC `Kaeltelast` und gbXML `CoolingLoad` (Spitze × 1000 W) aus.
 **Kennzahlen** (`…/KennzahlenKatalog.cs:204` ff.) kennen **keine Objektlisten** — als Kennzahl je
 Projekt taugt nur eine Summe oder ein Extremum; H_T je Gebäude ist mit E2 vorgesehen (N1.6).
 

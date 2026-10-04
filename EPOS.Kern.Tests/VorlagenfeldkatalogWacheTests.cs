@@ -264,6 +264,7 @@ namespace EPOS.Kern.Tests
                                                  "tabelle.speichertemperaturen", "hat.tabelle.speichertemperaturen",
                                                  "tabelle.gebaeude.ergebnis", "hat.tabelle.gebaeude.ergebnis",
                                                  "tabelle.pufferauslegung", "hat.tabelle.pufferauslegung",
+                                                 "tabelle.kaeltespeicher", "hat.tabelle.kaeltespeicher",
                                                  "stamm.bild.speichertemperaturen", "hat.bild.speichertemperaturen",
                                                  "text.kapitel_projekt", "baustein.projekt",
                                              }),

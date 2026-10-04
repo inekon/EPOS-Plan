@@ -374,6 +374,14 @@ namespace WindowsFormsApplication1
         public double? GeschossLageM { get; set; }
 
         /// <summary>
+        /// Der Grundriss des Raums in der waagerechten Projektion [m] (IFC: Profilring der senkrechten Extrusion seiner
+        /// Körperdarstellung, <see cref="IfcRaumgrundriss"/>; je Punkt x, y in Weltkoordinaten, ohne Schlusspunkt);
+        /// <c>null</c> = keiner. Trägt ohne Raumgrenzen die Trenndecke zwischen übereinanderliegenden Räumen
+        /// (Mehrzonenkonzept 6.5). gbXML setzt ihn nie.
+        /// </summary>
+        public IReadOnlyList<double[]> GrundrissM { get; set; }
+
+        /// <summary>
         /// Kennung der Zone; <c>null</c> = keine (gbXML <c>@zoneIdRef</c>; IFC die oberste
         /// <c>IfcZone</c> bzw. <c>IfcSpatialZone</c> mit <c>THERMAL</c>, die den Raum fasst — Regel Z1).
         /// </summary>
@@ -490,6 +498,21 @@ namespace WindowsFormsApplication1
         /// ihres Geschosses. gbXML setzt es nie.
         /// </summary>
         public bool InnenEinseitig { get; set; }
+
+        /// <summary>
+        /// Woraus die Nachbarn einer Trenndecke ohne Raumgrenzen stammen (Mehrzonenkonzept 6.5): <see cref="TRENNDECKE_BEZUG"/>,
+        /// <see cref="TRENNDECKE_GESCHOSS"/> oder <see cref="TRENNDECKE_GRUNDRISS"/>; <c>null</c> = keine solche Trenndecke.
+        /// </summary>
+        public string Trenndeckenherkunft { get; set; }
+
+        /// <summary>Die Raumbezüge der Datei (<c>IfcRelReferencedInSpatialStructure</c>) nennen beide Räume.</summary>
+        public const string TRENNDECKE_BEZUG = "BEZUG";
+
+        /// <summary>Die Decke steht im Geschoss eines von zwei übereinanderliegenden Geschossen; die Räume ohne Grundriss.</summary>
+        public const string TRENNDECKE_GESCHOSS = "GESCHOSS";
+
+        /// <summary>Die Grundrisse der beiden Räume überdecken sich; die Fläche ist die Überlappung.</summary>
+        public const string TRENNDECKE_GRUNDRISS = "GRUNDRISS";
 
         /// <summary>Azimut [°], 0 = Nord, im Uhrzeigersinn; <c>null</c> = unbestimmt (auch bei waagerechten Flächen).</summary>
         public double? AzimutGrad { get; set; }

@@ -965,17 +965,22 @@ namespace WindowsFormsApplication1
             return d;
         }
 
+        /// <summary>Die Legende einer Füllstandsreihe: der Name, beim Kältespeicher mit seiner Rolle (KU3-4d).</summary>
+        internal static string SpeicherLegende(SimulationPufferspeicher sp)
+            => sp.Verwendung == SimulationPufferspeicher.VERWENDUNG_KAELTE ? sp.Anzeige() : sp.BezeichnerAnzeige();
+
         /// <summary>Je Speicher eine Füllstandsreihe — Schlüssel wie im Vorläufer.</summary>
         private List<Ganglinienreihe> Speicherreihen()
         {
             var liste = new List<Ganglinienreihe>();
-            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+            // KU3-4d: die Kältespeicher hinter den Wärmespeichern, gekennzeichnet „Name (Kältespeicher)".
+            List<SimulationPufferspeicher> speicher = sim.SpeicherSamtKaelte();
 
             for (int i = 0; i < speicher.Count; i++)
             {
                 SimulationPufferspeicher sp = speicher[i];
                 if (sp == null) continue;
-                liste.Add(new Ganglinienreihe(sp.Schluessel(i), sp.BezeichnerAnzeige(), true));
+                liste.Add(new Ganglinienreihe(sp.Schluessel(i), SpeicherLegende(sp), true));
             }
             return liste;
         }

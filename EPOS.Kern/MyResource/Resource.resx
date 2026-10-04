@@ -42624,6 +42624,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_TRENNDECKE_REFERENZ" xml:space="preserve">
     <value>Das Gebäude „{0}“ führt keine Raumgrenzen, aber Raumbezüge der Bauteile (IfcRelReferencedInSpatialStructure): {1} Decken trennen die Geschosse {2} und koppeln deren Zonen (Regel Z4); {3} Innenwände zwischen Räumen eines Geschosses zählen als innere Masse. Die Flächen kommen aus den Mengen der Bauteile, je Geschosspaar, nicht je Raum.</value>
   </data>
+  <data name="IMP_IFC_PROT_TRENNDECKE_GRUNDRISS" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge für alle Geschosse: {1} Trenndecken mit zusammen {2} m² verbinden übereinanderliegende Räume der Geschosse {3} — aus der Überlappung ihrer Grundrisse oder, ohne Grundriss, aus der Decke im Geschoss — und koppeln deren Zonen (Regel Z4).</value>
+  </data>
   <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
     <value>Die Trenndecke zwischen {0} und {1} trägt aus den Raumbezügen nur {2} m² bei {3} m² beheizter Grundfläche des kleineren Geschosses ({4} %) — die Datei referenziert nicht alle Deckenteile. Das Geschosspaar gilt nicht als gekoppelt; die Trennfläche bitte prüfen.</value>
   </data>
@@ -44237,6 +44240,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="VF_TABELLE__PUFFERAUSLEGUNG" xml:space="preserve">
     <value>Tabelle der gespeicherten Pufferauslegungen des Stammprojekts: je Auslegung eine Gruppenzeile, darunter Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina, bemessendes Kriterium, Empfehlung, Kennzahlen und Hinweise. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt.</value>
+  </data>
+  <data name="VF_TABELLE__KAELTESPEICHER" xml:space="preserve">
+    <value>Tabelle der Kältespeicher des Stammprojekts: je Kältespeicher Kapazität, Ladung, Entladung, Wärmeeintrag und Vollzyklen. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt.</value>
   </data>
   <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
     <value>Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze</value>

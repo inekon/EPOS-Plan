@@ -301,6 +301,12 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keine Anlagenzeile der Kältemaschine; die Spalten kommen leer bzw. mit 1 an.
             new Stufe(KaeltemaschineAnlageSchema.SCHRITT, Art.Ddl,
                       "Kältemaschine als Anlage: Verweis, Anzahl, Kühleingaben, Kostenkomponente, Ergebnis je Maschine"),
+            // Ein älteres Paket führt kein Ergebnis der Kältemaschine mit Abrechnung; die Spalten kommen leer an.
+            new Stufe(KaeltestromabrechnungSchema.SCHRITT, Art.Ddl,
+                      "Kältestromabrechnung der Kältemaschine: Netzbezug, Kühlträger, Stromspitze; Stempeltrigger"),
+            // Ein älteres Paket führt keine Kältespitze je Zone; die Spalten kommen leer an.
+            new Stufe(ZonenKaeltespitzeSchema.SCHRITT, Art.Ddl,
+                      "Kältespitze und Kühlstunden je Zone im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
