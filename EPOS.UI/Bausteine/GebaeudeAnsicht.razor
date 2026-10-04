@@ -628,14 +628,16 @@
             else if (!ReferenceEquals(_gezeigteDaten, daten) || !string.Equals(_gezeigtesZiel, GewaehlteZone, StringComparison.Ordinal)
                      || !string.Equals(_gezeigterModus, KoerperModus, StringComparison.Ordinal))
             {
+                // Der Stand gilt als gezeigt, sobald er unterwegs ist: ein schneller zweiter Wechsel vergleicht
+                // gegen ihn, nicht gegen den vorigen.
+                Merken(daten);
                 if (Dateinetze(daten) is { } feld)
                     await _modul!.InvokeVoidAsync("aktualisieren", SzeneDatei(daten, GewaehlteZone, feld), feld.Bytes);
                 else
                     await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone));
+                return;
             }
-            _gezeigteDaten = daten;
-            _gezeigtesZiel = GewaehlteZone;
-            _gezeigterModus = KoerperModus;
+            Merken(daten);
         }
         catch (JSDisconnectedException) { /* die WebView ist weg - nichts mehr zu zeichnen */ }
         catch (Exception)
@@ -645,6 +647,14 @@
             _koerperAktiv = false;
             StateHasChanged();
         }
+    }
+
+    /// <summary>Merkt Daten, Zielzone und Darstellung, die das Modul bekommen hat.</summary>
+    private void Merken(GebaeudeAnsichtDaten daten)
+    {
+        _gezeigteDaten = daten;
+        _gezeigtesZiel = GewaehlteZone;
+        _gezeigterModus = KoerperModus;
     }
 
     /// <summary>
