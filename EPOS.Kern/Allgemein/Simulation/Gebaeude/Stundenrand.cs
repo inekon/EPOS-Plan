@@ -1,4 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿using System;
+
+namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die Randbedingungen EINER Blockstunde für <see cref="Zonenmodell2K.Schritt"/>
@@ -75,7 +77,48 @@
             Uebergabe = uebergabe;
             VorlaufC = vorlaufC;
             ReglerbandK = reglerbandK;
+            VerfuegbarkeitW = double.NaN;
+            Verfuegbarkeitsgrund = Verfuegbarkeitsgrund.KeineBegrenzung;
+            VerfuegbarkeitIstGrenze = false;
+            VorlaufAnlageGekappt = false;
         }
+
+        /// <summary>
+        /// <b>Die vierte Grenze (AK2, 4.5; Schritt H)</b>: derselbe Rand mit der Schranke der Anlagenverfügbarkeit
+        /// <paramref name="schrankeW"/> [W] samt Grund und dem Vorlaufangebot der Anlage
+        /// <paramref name="vorlaufAngebotC"/> [°C]. Die kleinere der beiden Leistungsgrenzen gilt — ist es die
+        /// Schranke, kappt der Löser mit ihr und nennt den Grund <see cref="Begrenzungsgrund.Verfuegbarkeit"/>;
+        /// liegt sie darüber, bleibt die Leistungsgrenze Zeichen für Zeichen dieselbe. Beim Vorlauf gewinnt die
+        /// kleinere Zahl von Heizkurve und Angebot (F6, <see cref="Begrenzungsgrund.VorlaufAnlage"/>). NaN heißt
+        /// jeweils „keine Grenze". Nur mit Übergabe wirkt der Vorlauf.
+        /// </summary>
+        internal Stundenrand MitVerfuegbarkeit(double schrankeW, Verfuegbarkeitsgrund grund, double vorlaufAngebotC)
+        {
+            double schranke = double.IsNaN(schrankeW) ? double.NaN : Math.Max(schrankeW, 0.0);
+            bool istGrenze = !double.IsNaN(schranke) && (double.IsNaN(HeizleistungMaxW) || schranke < HeizleistungMaxW);
+            bool gekappt = MitUebergabe && !double.IsNaN(vorlaufAngebotC) && !double.IsNaN(VorlaufC) && vorlaufAngebotC < VorlaufC;
+            return this with
+            {
+                HeizleistungMaxW = istGrenze ? schranke : HeizleistungMaxW,
+                VerfuegbarkeitW = schranke,
+                Verfuegbarkeitsgrund = grund,
+                VerfuegbarkeitIstGrenze = istGrenze,
+                VorlaufC = gekappt ? vorlaufAngebotC : VorlaufC,
+                VorlaufAnlageGekappt = gekappt,
+            };
+        }
+
+        /// <summary>Die Schranke der Anlagenverfügbarkeit dieser Stunde [W]; NaN = keine (AK2).</summary>
+        internal double VerfuegbarkeitW { get; private init; }
+
+        /// <summary>Der Grund der Anlagenseite zur Schranke (Paarungsregel 5.3).</summary>
+        internal Verfuegbarkeitsgrund Verfuegbarkeitsgrund { get; private init; }
+
+        /// <summary>Ist die Schranke der Verfügbarkeit die kleinere Leistungsgrenze — trägt <see cref="HeizleistungMaxW"/> sie?</summary>
+        internal bool VerfuegbarkeitIstGrenze { get; private init; }
+
+        /// <summary>Steht der Vorlauf am Angebot der Anlage, weil die Heizkurve mehr verlangt (F6)?</summary>
+        internal bool VorlaufAnlageGekappt { get; private init; }
 
         /// <summary>Außenlufttemperatur am masselosen Zweig [°C].</summary>
         internal double ThetaOut { get; }
@@ -98,8 +141,11 @@
         /// <summary>Konvektive Last an der Raumluft [W].</summary>
         internal double PhiConv { get; }
 
-        /// <summary>Größte Heizleistung [W]; NaN = unbegrenzt.</summary>
-        internal double HeizleistungMaxW { get; }
+        /// <summary>
+        /// Größte Heizleistung [W]; NaN = unbegrenzt. Mit der Schranke der Verfügbarkeit (AK2) die kleinere der
+        /// beiden Grenzen (<see cref="MitVerfuegbarkeit"/>).
+        /// </summary>
+        internal double HeizleistungMaxW { get; private init; }
 
         /// <summary>Größte Kühlleistung [W], als positiver Betrag; NaN = unbegrenzt.</summary>
         internal double KuehlleistungMaxW { get; }
@@ -126,7 +172,7 @@
         /// Vorlauf der Stunde [°C] aus Heizkurve oder Festwert (Schritt E); NaN = Heizkurve aus
         /// (Heizgrenze) — die Übergabe liefert dann nichts. Nur mit <see cref="Uebergabe"/>.
         /// </summary>
-        internal double VorlaufC { get; }
+        internal double VorlaufC { get; private init; }
 
         /// <summary>Proportionalband Xp des Raumreglers [K]; 0 = ideale Regelung mit Grenze (H1, E25).</summary>
         internal double ReglerbandK { get; }
@@ -291,6 +337,21 @@
 
         /// <summary>War die Übergabe in dieser Stunde die Grenze — ja/nein?</summary>
         internal bool UebergabeBegrenzt => UebergabeBegrenztAnteil > 0.0;
+
+        /// <summary>Zeitanteil der Stunde an der Schranke der Anlagenverfügbarkeit [–], 0 … 1 (AK2, <c>VERFUEGBARKEIT</c>).</summary>
+        internal double VerfuegbarkeitAnteil { get; init; }
+
+        /// <summary>Zeitanteil der Stunde mit gesättigter Übergabe am Vorlaufangebot der Anlage [–] (F6); in <see cref="UebergabeBegrenztAnteil"/> enthalten.</summary>
+        internal double VorlaufAnlageAnteil { get; init; }
+
+        /// <summary>
+        /// Der Anlagengrund, der neben <see cref="Begrenzungsgrund.Verfuegbarkeit"/> mitreist (Paarungsregel 5.3);
+        /// <see cref="Verfuegbarkeitsgrund.KeineBegrenzung"/>, wenn die Schranke in der Stunde nicht gekappt hat.
+        /// </summary>
+        internal Verfuegbarkeitsgrund Verfuegbarkeitsgrund { get; init; }
+
+        /// <summary>Hat die Schranke der Verfügbarkeit in dieser Stunde gekappt — ja/nein?</summary>
+        internal bool VerfuegbarkeitBegrenzt => VerfuegbarkeitAnteil > 0.0;
 
         // ---- die Kälteseite der Kopplung (Schritt K, E37) ----
 

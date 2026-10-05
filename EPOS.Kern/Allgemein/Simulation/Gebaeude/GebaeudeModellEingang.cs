@@ -635,6 +635,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Stundenrand Rand(int h, bool sommerlueftung, double thetaEq, double thetaLue,
                                   bool nachtauskuehlung = false)
+            => MitFahrplan(h, RandOhneFahrplan(h, sommerlueftung, thetaEq, thetaLue, nachtauskuehlung));
+
+        private Stundenrand RandOhneFahrplan(int h, bool sommerlueftung, double thetaEq, double thetaLue,
+                                             bool nachtauskuehlung)
         {
             if (!KuehlKopplungWirksam)
             {
@@ -856,6 +860,32 @@ namespace WindowsFormsApplication1
         /// zum Lüftungszweig (Rechenschritte 7.2 — der Zustand gilt die ganze Stunde).
         /// </summary>
         internal Stundenrand Rand(int h, bool sommerlueftung = false, bool nachtauskuehlung = false)
+            => MitFahrplan(h, RandOhneFahrplan(h, sommerlueftung, nachtauskuehlung));
+
+        // =====================================================================
+        //  Anlagenkopplung, Stufe AK2 (Konzept Anlagenkopplung 4.5, 5.3, 6.2)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Schranke der Anlagenverfügbarkeit dieser Zone</b> je Stunde (8760; AK2) — von der Fassade
+        /// verteilt (Projekt → Gebäude → Zone, <see cref="Verfuegbarkeitsverteilung"/>) und auf den Maßstab
+        /// dieses Eingangs umgerechnet; die Leistung in kW. <c>null</c> = keine Schranke: Der Rand bleibt
+        /// Zeichen für Zeichen der Bestand. Wirkt nur mit wirksamer Kopplung (F10). Das Modul liest damit
+        /// keine Anlagendaten, es bekommt die fertige Reihe (5.3).
+        /// </summary>
+        internal Anlagenverfuegbarkeit[] Verfuegbarkeit { get; set; }
+
+        /// <summary>Trägt dieser Eingang eine wirksame Schranke der Verfügbarkeit?</summary>
+        internal bool FahrplanWirksam => Verfuegbarkeit != null && KopplungWirksam;
+
+        private Stundenrand MitFahrplan(int h, Stundenrand r)
+        {
+            if (!FahrplanWirksam) return r;
+            Anlagenverfuegbarkeit v = Verfuegbarkeit[h];
+            return r.MitVerfuegbarkeit(v.LeistungKw * 1000.0, v.Grund, v.VorlaufC);
+        }
+
+        private Stundenrand RandOhneFahrplan(int h, bool sommerlueftung, bool nachtauskuehlung)
         {
             // Die Kühlleistung wirkt in KU1 rein konvektiv am Luftknoten (Kühlkonzept 3.2):
             // kein Anteil an der Innenfläche, keine eigene Übergabeart vor der Anlagenkopplung.
