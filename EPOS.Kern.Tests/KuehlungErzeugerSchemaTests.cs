@@ -136,8 +136,8 @@ namespace EPOS.Kern.Tests
             int platzhalter = AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?');
             // 66 seit Schemaschritt 119: die Abrechnungsart des Kältestroms (E34) steht daneben;
             // 67 mit der Bodenalbedo (AlbedoSchema), 72 mit den fünf Feldern des Kollektorfelds
-            // (SolarthermieFelderSchema).
-            Assert.Equal(72, platzhalter);
+            // (SolarthermieFelderSchema), 74 mit Zeitprogramm und Vorlauf_Max (AnlagenfahrplanSchema).
+            Assert.Equal(74, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
         }
 

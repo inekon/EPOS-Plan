@@ -109,8 +109,20 @@ namespace WindowsFormsApplication1
         /// die der Lauf angelegt hat (Block FS1).
         /// </para>
         /// </summary>
-        public const string SQL_ANLAGE_INSERT = @"INSERT INTO Tab_Energieanlagen
-                        (ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis,
+        public const string SQL_ANLAGE_INSERT = "INSERT INTO Tab_Energieanlagen (" + SPALTEN_BESTAND + ", " +
+                        AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM + ", " + AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX +
+                        ") VALUES (" + WERTE_BESTAND + ", ?,?)";
+
+        /// <summary>
+        /// Dieselbe Anweisung OHNE die zwei Spalten des Anlagenfahrplans (Schemaschritt
+        /// <see cref="AnlagenfahrplanSchema.SCHRITT"/>) - fuer eine Datenbank vor dem Schritt, etwa einen
+        /// aelteren Stand auf iOS. Gewaehlt wird allein in <see cref="Einfuegen"/>.
+        /// </summary>
+        public const string SQL_ANLAGE_INSERT_OHNE_FAHRPLAN =
+            "INSERT INTO Tab_Energieanlagen (" + SPALTEN_BESTAND + ") VALUES (" + WERTE_BESTAND + ")";
+
+        /// <summary>Die Spalten der Anweisung bis einschliesslich <c>Albedo</c> - alles vor dem Anlagenfahrplan.</summary>
+        private const string SPALTEN_BESTAND = @"ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis,
                          Vorlauf, Rücklauf, Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung,
                          Kollektormodulanzahl, PV_Leistung, Neigung, Azimut, ID_Type,
                          ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER,
@@ -127,8 +139,10 @@ namespace WindowsFormsApplication1
                          Kuehl_ID_Carrier, Kuehl_EigenerZaehler,
                          Pumpenleistung_W, Solarkreisverluste_Prozent, Uebertrager_Graedigkeit_K,
                          Kollektor_Spreizung_K, Arbeitstemperatur_Weg,
-                         Albedo)
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+                         Albedo";
+
+        /// <summary>Die Platzhalter zu <see cref="SPALTEN_BESTAND"/>.</summary>
+        private const string WERTE_BESTAND = @"?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,?,?,?,?,?,?,?,?,
@@ -138,7 +152,27 @@ namespace WindowsFormsApplication1
                                 ?,?,
                                 ?,?,?,
                                 ?,?,
-                                ?)";
+                                ?";
+
+        /// <summary>
+        /// <b>Die Anweisung samt Parametern, passend zum Stand der Datenbank</b> - der EINE Weg, auf dem
+        /// eine Anlagenzeile entsteht. Traegt die Datenbank die zwei Spalten des Anlagenfahrplans
+        /// (Schemaschritt <see cref="AnlagenfahrplanSchema.SCHRITT"/>), schreibt er sie NULL-erhaltend mit;
+        /// sonst entfallen Spalten und Parameter (Muster der AK1-Spalten: Spaltenliste nur, wenn die
+        /// Spalte vorhanden ist).
+        /// </summary>
+        /// <param name="mitFahrplan">Der Stand der Datenbank, wenn der Aufrufer ihn VOR seinem Vorgang
+        /// erfragt hat (<see cref="AnlagenfahrplanSchema.AnlagenspaltenVorhanden"/>); <c>null</c> = hier fragen.</param>
+        public static (string Sql, DbParam[] Werte) Einfuegen(int projektID, WErzeugerModel item,
+                                                               Dictionary<int, bool> pufferCache = null,
+                                                               bool? mitFahrplan = null)
+        {
+            DbParam[] werte = AnlagenParameter(projektID, item, pufferCache);
+            if (mitFahrplan ?? AnlagenfahrplanSchema.AnlagenspaltenVorhanden()) return (SQL_ANLAGE_INSERT, werte);
+            var ohne = new DbParam[werte.Length - AnlagenfahrplanSchema.SPALTEN_ANLAGE.Count];
+            Array.Copy(werte, ohne, ohne.Length);
+            return (SQL_ANLAGE_INSERT_OHNE_FAHRPLAN, ohne);
+        }
 
         /// <summary>
         /// Parameter zu <see cref="SQL_ANLAGE_INSERT"/>, exakt in der Reihenfolge der
@@ -287,7 +321,13 @@ namespace WindowsFormsApplication1
                         // die Pruefklausel und liesse das INSERT nach dem DELETE scheitern -
                         // er faellt deshalb zu NULL, wie ein Verweis ins Leere.
                         ProjektPuffer.Par("@albedo", DbParamTyp.Double,
-                            Bodenalbedo.Zulaessig(item.Albedo) ? Wert(item.Albedo) : null)
+                            Bodenalbedo.Zulaessig(item.Albedo) ? Wert(item.Albedo) : null),
+                        // --- Anlagenfahrplan (Schemaschritt AnlagenfahrplanSchema.SCHRITT, AK2-1) ------
+                        // Die LETZTEN zwei Parameter: Einfuegen schneidet sie auf einer Datenbank vor dem
+                        // Schritt ab. NULL = immer verfuegbar bzw. Vorlauf der Anlage; der Text reist
+                        // unveraendert (geprueft wird beim Lesen, Anlagenzeitprogramm).
+                        ProjektPuffer.Par("@zeitprog", DbParamTyp.VarWChar, item.Zeitprogramm),
+                        ProjektPuffer.Par("@vorlmax",  DbParamTyp.Double,   Wert(item.Vorlauf_Max))
                     };
         }
 
