@@ -2145,8 +2145,8 @@ namespace WindowsFormsApplication1
 
                     // Anweisung und Parameter stehen zentral (siehe SQL_ANLAGE_INSERT):
                     // dieselbe Wahrheit, die auch WErzeugerCtrl.Insert benutzt.
-                    if (!DataRepository.ExecuteSQL(SQL_ANLAGE_INSERT,
-                                                   AnlagenParameter(projektID, item, pufferCache)))
+                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(projektID, item, pufferCache);
+                    if (!DataRepository.ExecuteSQL(sqlAnlage, werteAnlage))
                     {
                         SpVariantenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
                         FachspaltenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");

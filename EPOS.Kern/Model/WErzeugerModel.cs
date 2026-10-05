@@ -259,6 +259,24 @@
         public double? Albedo;
 
         // =============================================================================
+        // Anlagenfahrplan (Schemaschritt AnlagenfahrplanSchema.SCHRITT, AK2-1; Anlagenkopplung 8.2)
+        // =============================================================================
+
+        /// <summary>
+        /// <c>Zeitprogramm</c> - 168 Verfügbarkeitsfaktoren 0…1 der Anlage, Montag 00:00 bis Sonntag
+        /// 23:00, als Text im Format des Sollwertprofils (Trennzeichen <c>;</c>). <b>NULL = immer
+        /// verfügbar</b>; gelesen und geprüft von <see cref="Anlagenzeitprogramm"/>. Die Sperrzeit geht
+        /// vor (F7). Eine MODELLspalte: Sie reist durch Löschen + Neuanlegen, NULL bleibt NULL.
+        /// </summary>
+        public string Zeitprogramm;
+
+        /// <summary>
+        /// <c>Vorlauf_Max</c> - das Vorlaufangebot der Anlage [°C]. <b>NULL = <see cref="Vorlauf"/></b>
+        /// (die Anlage bietet ihren projektierten Vorlauf). Eine MODELLspalte, NULL-treu.
+        /// </summary>
+        public double? Vorlauf_Max;
+
+        // =============================================================================
         // PV-Modellwahl und Wechselrichter (Paket B des PV-Ertragsmodells, Stufe E2)
         // =============================================================================
         //

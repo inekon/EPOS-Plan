@@ -351,8 +351,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                bool ok = DataRepository.ExecuteSQL(AnlagenSql.SQL_ANLAGE_INSERT,
-                                                    AnlagenSql.AnlagenParameter(ID_Projekt, this));
+                (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(ID_Projekt, this);
+                bool ok = DataRepository.ExecuteSQL(sqlAnlage, werteAnlage);
                 if (ok) { StromTraegerNachziehen(); SenkenAnlegen(); ProjektGeaendert(); }
                 return ok;
             }
@@ -661,6 +661,12 @@ namespace WindowsFormsApplication1
             item.Uebertrager_Graedigkeit_K = Kommazahl(dt, row, SolarthermieFelderSchema.SPALTE_GRAEDIGKEIT);
             item.Kollektor_Spreizung_K = Kommazahl(dt, row, SolarthermieFelderSchema.SPALTE_SPREIZUNG);
             item.Arbeitstemperatur_Weg = Text(dt, row, SolarthermieFelderSchema.SPALTE_ARBEITSTEMPERATUR);
+
+            // --- Anlagenfahrplan (Schemaschritt AnlagenfahrplanSchema.SCHRITT, AK2-1) ------
+            // Ausdruecklich mit null - NULL heisst „immer verfuegbar" bzw. „Vorlauf der Anlage";
+            // eine Datenbank vor dem Schritt (etwa ein aelterer Stand auf iOS) laeuft unveraendert.
+            item.Zeitprogramm = Text(dt, row, AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM);
+            item.Vorlauf_Max = Kommazahl(dt, row, AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX);
         }
 
         /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>

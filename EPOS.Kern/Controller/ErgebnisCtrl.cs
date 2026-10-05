@@ -114,6 +114,9 @@ namespace WindowsFormsApplication1
                                     s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte));
             bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
                                          s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
+            // AK2-1 (Schritt 186): die Komfort- und Fahrplanspalten des Energiebedarfs - ebenso vor der
+            // Transaktion gefragt; auf einer Datenbank davor bleibt die Zeile, wie sie war.
+            bool komfortEnergie = AnlagenfahrplanSchema.ErgebnisspaltenVorhanden();
             bool kuehlkreisSpalten = heizkreisSpalten &&
                                      System.Linq.Enumerable.All(KuehluebergabeSchema.SpaltenKuehlkreis,
                                          s => DataRepository.SpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key));
@@ -255,8 +258,10 @@ namespace WindowsFormsApplication1
                                 ? ", " + KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL + ", " +
                                   KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL + ", " +
                                   KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_STUNDEN
-                                : "") + ") " +
-                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?" + (kuehlkreisEnergie ? ", ?,?,?" : "") + ")";
+                                : "") +
+                            (komfortEnergie ? ", " + string.Join(", ", AnlagenfahrplanSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?" + (kuehlkreisEnergie ? ", ?,?,?" : "") +
+                            (komfortEnergie ? ", ?,?,?,?,?,?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
@@ -281,6 +286,17 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@k1", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlVorlaufMittelC) });
                                 p.Add(new DbParam("@k2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlRuecklaufMittelC) });
                                 p.Add(new DbParam("@k3", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlUebergabeBegrenztStundenH) });
+                            }
+                            // AK2-1 (Schritt 186): NULL, solange kein Gebaeude gekoppelt rechnet; Reihenfolge wie
+                            // AnlagenfahrplanSchema.SPALTEN_ERGEBNIS.
+                            if (komfortEnergie)
+                            {
+                                p.Add(new DbParam("@f1", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KomfortUnterschreitungsstundenH) });
+                                p.Add(new DbParam("@f2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KomfortKelvinstundenKh) });
+                                p.Add(new DbParam("@f3", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KomfortLaengsteStreckeH) });
+                                p.Add(new DbParam("@f4", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.FahrplanBegrenztStundenH) });
+                                p.Add(new DbParam("@f5", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KomfortUeberschreitungsstundenH) });
+                                p.Add(new DbParam("@f6", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KomfortKelvinstundenKuehlungKh) });
                             }
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -1057,6 +1073,13 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.KuehlVorlaufMittelC = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL);
                 m.Energiebedarf.KuehlRuecklaufMittelC = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL);
                 m.Energiebedarf.KuehlUebergabeBegrenztStundenH = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_STUNDEN);
+                // AK2-1 (Schritt 186): dieselbe Regel; eine fehlende Spalte liest null.
+                m.Energiebedarf.KomfortUnterschreitungsstundenH = GanzOderNull(re, AnlagenfahrplanSchema.SPALTE_UNTERSCHREITUNGSSTUNDEN);
+                m.Energiebedarf.KomfortKelvinstundenKh = DN(re, AnlagenfahrplanSchema.SPALTE_KELVINSTUNDEN);
+                m.Energiebedarf.KomfortLaengsteStreckeH = GanzOderNull(re, AnlagenfahrplanSchema.SPALTE_LAENGSTE_STRECKE);
+                m.Energiebedarf.FahrplanBegrenztStundenH = GanzOderNull(re, AnlagenfahrplanSchema.SPALTE_FAHRPLAN_BEGRENZT);
+                m.Energiebedarf.KomfortUeberschreitungsstundenH = GanzOderNull(re, AnlagenfahrplanSchema.SPALTE_UEBERSCHREITUNGSSTUNDEN);
+                m.Energiebedarf.KomfortKelvinstundenKuehlungKh = DN(re, AnlagenfahrplanSchema.SPALTE_KELVINSTUNDEN_KUEHLUNG);
             }
 
             // KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine; vor dem Schritt fehlt die Tabelle.
@@ -2161,6 +2184,12 @@ namespace WindowsFormsApplication1
                 p.Add(new DbParam("@k" + k, DbParamTyp.Double)
                     { Wert = kaelteErhoben ? (object)R(wert) : DBNull.Value });
             }
+        }
+
+        /// <summary>Eine nullbare Stundenzahl: der Wert, oder NULL fuer "nicht erhoben".</summary>
+        private static object GanzOderDbNull(int? wert)
+        {
+            return wert.HasValue ? (object)wert.Value : DBNull.Value;
         }
 
         /// <summary>Ein nullbarer Ergebniswert: gerundet, oder NULL fuer "nicht erhoben".</summary>

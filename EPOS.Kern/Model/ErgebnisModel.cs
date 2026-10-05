@@ -455,6 +455,29 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>Kuehl_Uebergabe_Begrenzt_Stunden</c> [h]: Stunden, in denen die Kühlübergabe (mindestens eines Gebäudes) die Grenze war.</summary>
         public double? KuehlUebergabeBegrenztStundenH;
+
+        // ---- Anlagenfahrplan und Komfort (Schemaschritt 186, AK2-1; Anlagenkopplung 8.3) ----
+        //
+        // null heißt „nicht erhoben" — kein Gebäude rechnete gekoppelt. Der Referenzlauf-Export nimmt eine
+        // NULL-Spalte nicht auf (SpaltenNurMitWert); ein Projekt ohne Kopplung schreibt dieselben Zeilen.
+
+        /// <summary><c>Komfort_Unterschreitungsstunden</c> [h]: Stunden der Nutzungszeit unter dem Sollwert.</summary>
+        public int? KomfortUnterschreitungsstundenH;
+
+        /// <summary><c>Komfort_Kelvinstunden</c> [Kh]: Summe der Unterschreitungen.</summary>
+        public double? KomfortKelvinstundenKh;
+
+        /// <summary><c>Komfort_Laengste_Strecke</c> [h]: längste zusammenhängende Unterschreitung.</summary>
+        public int? KomfortLaengsteStreckeH;
+
+        /// <summary><c>Fahrplan_Begrenzt_Stunden</c> [h]: Stunden, in denen der Fahrplan die Grenze war.</summary>
+        public int? FahrplanBegrenztStundenH;
+
+        /// <summary><c>Komfort_Ueberschreitungsstunden</c> [h]: Stunden der Nutzungszeit über dem Kühlsollwert.</summary>
+        public int? KomfortUeberschreitungsstundenH;
+
+        /// <summary><c>Komfort_Kelvinstunden_Kuehlung</c> [Kh]: Summe der Überschreitungen des Kühlsollwerts.</summary>
+        public double? KomfortKelvinstundenKuehlungKh;
     }
 
     /// <summary>
