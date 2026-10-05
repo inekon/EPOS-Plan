@@ -162,6 +162,10 @@ Stammt die IFC-Datei aus einem CAD-Programm, das neben der IFC-Datei eine Projek
 
 '''Zonen.''' Die Zonen der Projektdatei ersetzen die Zonierung im Zonenbaum. Jede Zone trägt das Kennzeichen ''aus Projektdatei'', die Nutzung (Wohnen, Büro, Schule) aus der Nummer des Nutzungsprofils nach DIN V 18599 – die Nummer steht als Tooltip – und den Heizsollwert am Tag aus der Tagesganglinie bzw. dem Nutzungsprofil. Räume ohne Partner stehen rechts: die Räume der IFC-Datei unter ''Nicht zugeordnete Räume'', die Räume der Projektdatei darunter. Bestehen schon Änderungen von Hand am Zonenbaum, fragt der Dialog zuerst nach; mit ''Nein'' bleibt der Zonenbaum, und der Knopf ''Zonen der Projektdatei übernehmen'' holt die Übernahme nach. ''Projektdatei entfernen'' nimmt die Projektdatei samt ihren Zonen wieder heraus; ein anderes Gebäude der Datei ebenso.
 
+'''Zonierung.''' Übernommen werden die DIN-V-18599-Zonen der Projektdatei (Vorgabe). Enthält die Datei auch Simulationszonen, erscheint neben dem Knopf das Wahlfeld ''DIN-V-18599-Zonen | Simulationszonen''; enthält sie nur eine Zonierung, wird diese ohne Wahl genommen. Ein Wechsel baut den Zonenbaum neu auf und fragt nach, wenn Handänderungen verloren gingen. Jede Zone nennt ihre Herkunft: ''aus Projektdatei (DIN-Zonen)'' oder ''aus Projektdatei (Simulationszonen)''. Eine Wahl vor dem Übernehmen gilt erst für die nächste Übernahme.
+
+'''Größe.''' Projektdateien werden bis 250 MB gelesen, auf dem iPad bis 100 MB; größere Dateien werden mit Nennung von Größe und Grenze abgelehnt.
+
 '''Speichern.''' Mit ''OK'' wird jede Zone samt ihrer Konditionierung gespeichert: Heiz- und Kühlsollwert, Lüftung, Geräte und Personen als Kalender aus der Tagesganglinie oder als Werte aus dem Nutzungsprofil; was die Projektdatei nicht liefert, kommt aus der Vorlage der Nutzung. Im Reiter ''Konditionierung'' der Zone nennt die Kalenderkarte die Herkunft ''aus Projektdatei'' mit Tabelle, Spalte und Profil. Wird das Gebäude ohne Zonen übernommen, bekommt das Gebäude selbst die Konditionierung der einzigen Zone bzw. der Gebäudegruppe der Projektdatei.
 
 === Baustoffe ===
