@@ -140,7 +140,7 @@ namespace EPOS.Kern.Tests
         /// Die Referenzprojekte mit Kühlung und ihre Gebäude (Einfrierregel „gesäte Kältedaten"):
         /// 1017 mit 10599 und seine Kopie im Referenzprojekt der Anlagenkopplung, 1047 mit 10653.
         /// </summary>
-        private static readonly (int Projekt, int Gebaeude)[] REFERENZEN_MIT_KUEHLUNG = { (1017, 10599), (1047, 10653), (1055, 10661) };   // 1055: Kopie von 1017 (KU3-4b)
+        private static readonly (int Projekt, int Gebaeude)[] REFERENZEN_MIT_KUEHLUNG = { (1017, 10599), (1047, 10653), (1055, 10661), (1056, 10662) };   // 1055: Kopie von 1017 (KU3-4b), 1056: Kopie von 1047 (AK2-4)
 
         /// <summary>
         /// Alle Strukturen stehen, und sie tragen allein die gesäten Kältedaten der
