@@ -146,6 +146,10 @@ namespace WindowsFormsApplication1
                             Kaeltestrom_Netzbezug = Mal(mo.Kaeltestrom_Netzbezug, f),
                             FreieKuehlung_MWh = Mal(mo.FreieKuehlung_MWh, f),
                             FreieKuehlung_Stunden = mo.FreieKuehlung_Stunden,
+                            // VW1b: die Vorlaufwahl sind Stunden, keine Mengen - sie bleiben; null bleibt null.
+                            Vorlaufwahl_Stunden = mo.Vorlaufwahl_Stunden,
+                            Vorlauf_Darueber_Stunden = mo.Vorlauf_Darueber_Stunden,
+                            Vorlauf_Darunter_Stunden = mo.Vorlauf_Darunter_Stunden,
                             Kuehl_CarrierId = mo.Kuehl_CarrierId,
                             Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler
                         });

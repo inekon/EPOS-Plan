@@ -752,8 +752,51 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_HEIZKREIS);
             k.Fuege(t);
+            VorlaufwahlSchreiben(k, stamm);
             k.Hinweis(HINWEIS_HEIZKREIS);
             k.HinweisRoh(MyResource.Resource.GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG);
+        }
+
+        /// <summary>
+        /// <b>VW1b (E88) — die Vorlaufwahl der Wärmepumpe</b> je Modul, das am gerechneten Heizkreisvorlauf seine
+        /// Kennlinie gewählt hat (<c>Vorlaufwahl_Stunden</c> belegt): die Stunden je Stützstelle und die Stunden
+        /// darunter (gerechnet mit der untersten Kennlinie) und darüber (nach der Extrapolationsregel). Ein Modul ohne
+        /// Kennlinienwahl steht nicht darin; ohne ein solches Modul entfällt die Tafel.
+        /// </summary>
+        internal static void VorlaufwahlSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            List<ErgebnisWaermepumpeModulModel> module = (stamm?.Ergebnis?.Waermepumpe?.Module
+                ?? new List<ErgebnisWaermepumpeModulModel>())
+                .Where(m => m != null && !string.IsNullOrEmpty(m.Vorlaufwahl_Stunden)).ToList();
+            if (module.Count == 0) return;
+
+            var paare = new List<string>();
+            foreach (ErgebnisWaermepumpeModulModel m in module)
+            {
+                paare.Add("Wärmepumpe");
+                paare.Add(string.IsNullOrWhiteSpace(m.Modul) ? "—" : m.Modul);
+                paare.Add("Vorlaufwahl der Kennlinie");
+                paare.Add(VorlaufwahlText(k.Kultur, m.Vorlaufwahl_Stunden));
+                paare.Add("Stunden außerhalb der Stützstellen");
+                paare.Add(AusserhalbText(k.Kultur, m.Vorlauf_Darunter_Stunden, m.Vorlauf_Darueber_Stunden));
+            }
+            k.Eigenschaften(paare.ToArray());
+        }
+
+        /// <summary>„35 °C 1.549 h, 45 °C 1.782 h, …“ aus dem gespeicherten Text der Vorlaufwahl, Zahlformat der Kultur.</summary>
+        internal static string VorlaufwahlText(CultureInfo kultur, string stunden)
+        {
+            IReadOnlyList<KeyValuePair<int, int>> paare = VorlaufwahlSchema.StundenLesen(stunden);
+            if (paare.Count == 0) return "—";
+            return string.Join(", ", paare.Select(p =>
+                p.Key.ToString("N0", kultur) + " °C " + p.Value.ToString("N0", kultur) + " h"));
+        }
+
+        /// <summary>„darunter 1.851 h, darüber 0 h“ — die Wörter in der Berichtssprache, Zahlformat der Kultur.</summary>
+        internal static string AusserhalbText(CultureInfo kultur, int? darunter, int? darueber)
+        {
+            return BerichtTexte.T("darunter") + " " + (darunter ?? 0).ToString("N0", kultur) + " h, "
+                 + BerichtTexte.T("darüber") + " " + (darueber ?? 0).ToString("N0", kultur) + " h";
         }
 
         /// <summary>Überschrift des Abschnitts Kältekreis (E37) — zugleich Schlüssel der Übersetzung.</summary>
