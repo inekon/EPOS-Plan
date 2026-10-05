@@ -28223,6 +28223,9 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
     <value>Wärmepumpe „{0}": Der Kühlbetrieb ist eingestellt, das Projekt rechnet aber keine Kälte (Projekteinstellung „Kühlung rechnen" aus) — die Maschine heizt nur.</value>
   </data>
+  <data name="SIMENG_KAELTE_WP_FREI_OHNE_QUELLE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Freie Kühlung über die Wärmequelle wird nicht gerechnet — sie braucht eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe mit der Wärmequelle Erdreich, Konstant, Profil oder CSV; die Maschine kühlt nur über den Verdichter.</value>
+  </data>
   <data name="SIMENG_KAELTE_WP_QUELLSPEICHER" xml:space="preserve">
     <value>Wärmepumpe „{0}": Kühlbetrieb mit Quellspeicher wird nicht gerechnet — die Maschine heizt nur.</value>
   </data>

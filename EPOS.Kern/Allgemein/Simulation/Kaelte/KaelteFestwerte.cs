@@ -34,5 +34,13 @@
 
         /// <summary>EER-Ersatz der freien Kühlung [—]: Pumpen und Ventilatoren ohne Verdichter.</summary>
         public const double FREIE_KUEHLUNG_EER = 15.0;
+
+        /// <summary>
+        /// Freie Kühlung über die Wärmequelle der Wärmepumpe [K] (KU3-6, F1/F3): die Grädigkeit des
+        /// Wärmetauschers zwischen Sole bzw. Grundwasser und Kaltwasser, wenn die Anlagenzeile keine
+        /// pflegt (<c>Kuehl_Frei_Graedigkeit_K</c> NULL). Frei gekühlt wird, solange die Quellentemperatur
+        /// plus Grädigkeit den Kaltwasser-Vorlauf nicht übersteigt.
+        /// </summary>
+        public const double FREIE_KUEHLUNG_SOLE_GRAEDIGKEIT_K = 3.0;
     }
 }

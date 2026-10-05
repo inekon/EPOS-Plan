@@ -244,6 +244,17 @@ namespace WindowsFormsApplication1
                                       eigenerZaehler ? MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ZAEHLER
                                                      : MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ANTEILIG));
 
+                // KU3-6 (F2): freie Kühlung über die Wärmequelle nur mit einer Quelle, die sie trägt -
+                // sonst benannt abgelehnt, der Schalter bleibt ohne Wirkung.
+                bool freieKuehlung = false;
+                if (m.Kuehl_Frei)
+                {
+                    freieKuehlung = FreieKuehlungSoleMoeglich(wpTyp, wqTyp);
+                    if (!freieKuehlung)
+                        Protokoll.WarnungEinmal("kuehl-wp-frei-ohne-quelle-" + m.ID,
+                            string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_WP_FREI_OHNE_QUELLE, name));
+                }
+
                 _kaelteerzeuger.Add(new Kaelteerzeuger
                 {
                     AnlagenID = m.ID,
@@ -253,6 +264,10 @@ namespace WindowsFormsApplication1
                     Kennlinie = k,
                     Hilfsstromanteil = hilfsstromanteil,
                     Quelltemperatur = i < simulation_wp.Quelltemperaturen.Count ? simulation_wp.Quelltemperaturen[i] : null,
+                    FreieKuehlungSole = freieKuehlung,
+                    FreieKuehlungGraedigkeitK = m.Kuehl_Frei_Graedigkeit_K ?? KaelteFestwerte.FREIE_KUEHLUNG_SOLE_GRAEDIGKEIT_K,
+                    FreieKuehlungLeistungKw = m.Kuehl_Frei_Leistung_kW,
+                    KuehlVorlaufC = kuehlVorlauf ?? k.Vorlauf,
                     Kuehltraeger = kuehltraeger,
                     EigenerZaehler = eigenerZaehler,
                     // Welle M4, WP1: der Taktverlust gilt auch im Kühlbetrieb - die Mindestleistung als
@@ -278,6 +293,18 @@ namespace WindowsFormsApplication1
             foreach (Kaelteerzeuger e in _kaelteerzeuger)
                 if (e.Modulindex >= 0) module[e.Modulindex] = true;
             simulation_wp.KuehlbetriebSetzen(module, _kuehltage);
+        }
+
+        /// <summary>
+        /// <b>Trägt die Wärmequelle die freie Kühlung?</b> (KU3-6, F2): Bauart Sole-Wasser oder Wasser-Wasser
+        /// und eine gepflegte Quelle — <c>WQ_Typ</c> Erdreich, Konstant, Profil oder CSV. Luft-Wasser, die
+        /// leere Quelle (Außenluft-Rückfall), Außenluft und der Pufferspeicher scheiden aus.
+        /// </summary>
+        internal static bool FreieKuehlungSoleMoeglich(string wpTyp, string wqTyp)
+        {
+            if (wpTyp != DbWerte.WP_BAUART_SOLE_WASSER && wpTyp != DbWerte.WP_BAUART_WASSER_WASSER) return false;
+            return wqTyp == WaermequelleClass.TYP_ERDREICH || wqTyp == WaermequelleClass.TYP_KONSTANT ||
+                   wqTyp == WaermequelleClass.TYP_PROFIL || wqTyp == WaermequelleClass.TYP_CSV;
         }
 
         /// <summary>
