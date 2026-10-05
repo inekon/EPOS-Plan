@@ -896,4 +896,60 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.True(seite.Instance.Sortiert);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Kaeltegang && a.Sortiert);
     }
+
+    /// <summary>
+    /// <b>Die Reihenschalter stehen nebeneinander</b> (Anwenderwunsch 05.10.2026): Jede
+    /// Reihenwahl des Wärme- und des Stromgangs ist eine waagerechte, umbrechende Zeile
+    /// (<c>epos-mehrfachauswahl--zeile</c>) — dieselbe Bauart wie die Schalterzeilen
+    /// (<c>epos-simerg-schalter</c>) der übrigen Reiter.
+    /// </summary>
+    [Fact]
+    public void Die_Reihenwahl_von_Waerme_und_Stromgang_steht_waagerecht()
+    {
+        var waerme = WaermeZeichnen();
+        var strom = StromZeichnen();
+
+        Assert.Equal(2, waerme.FindAll("div.epos-mehrfachauswahl").Count);
+        Assert.All(waerme.FindAll("div.epos-mehrfachauswahl"),
+            e => Assert.Contains("epos-mehrfachauswahl--zeile", e.ClassList));
+        Assert.Single(strom.FindAll("div.epos-mehrfachauswahl"));
+        Assert.All(strom.FindAll("div.epos-mehrfachauswahl"),
+            e => Assert.Contains("epos-mehrfachauswahl--zeile", e.ClassList));
+        Assert.Empty(waerme.FindAll("div.epos-simerg-spalten"));
+    }
+
+    /// <summary>
+    /// <b>Wache über alle Reiter der Simulationsseite:</b> Jede Mehrfachauswahl unter
+    /// <c>EPOS.UI/Seiten/Simulation</c> ist eine Reihenwahl über einem Bild und steht
+    /// deshalb waagerecht — ein neuer Reiter fällt hier auf, wenn er die senkrechte
+    /// Dialogliste übernimmt.
+    /// </summary>
+    [Fact]
+    public void Jede_Mehrfachauswahl_der_Simulationsseite_ist_waagerecht()
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+        Assert.NotNull(d);
+
+        var ohne = new List<string>();
+        int gefunden = 0;
+        foreach (string datei in Directory.GetFiles(Path.Combine(d!.FullName, "EPOS.UI", "Seiten", "Simulation"), "*.razor"))
+        {
+            string text = File.ReadAllText(datei);
+            int pos = 0;
+            while ((pos = text.IndexOf("<Mehrfachauswahl", pos, StringComparison.Ordinal)) >= 0)
+            {
+                int ende = text.IndexOf("/>", pos, StringComparison.Ordinal);
+                string tag = text.Substring(pos, ende - pos);
+                gefunden++;
+                if (!tag.Contains("Waagerecht=\"true\"", StringComparison.Ordinal))
+                    ohne.Add(Path.GetFileName(datei));
+                pos = ende;
+            }
+        }
+
+        Assert.True(gefunden >= 3, $"nur {gefunden} Mehrfachauswahl gefunden");
+        Assert.Empty(ohne);
+    }
 }
