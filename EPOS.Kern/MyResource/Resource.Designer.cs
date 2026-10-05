@@ -87654,6 +87654,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ gehört zur Auslieferung und lässt sich nur duplizieren. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_AUSGELIEFERT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_KATEGORIE_FEHLT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_KATEGORIE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kennwert {0} = {1} ist ungültig. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_KENNWERT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_KENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Namen „{0}“ gibt es hier schon. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name braucht 1 bis {0} Zeichen. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_NAME_LAENGE {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_NAME_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nummer „{0}“ gibt es in dieser Kategorie schon. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_NUMMER_DOPPELT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_NUMMER_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nummer braucht höchstens {0} Zeichen. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_NUMMER_LAENGE {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_NUMMER_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Nutzungsprofil {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_PROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_PROFIL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog der Nutzungsprofile fehlt; die Datenbank braucht den Schemaschritt {0}. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_SCHEMA_FEHLT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_SCHEMA_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Schlüssel braucht 1 bis {0} Zeichen. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_SCHLUESSEL_LAENGE {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_SCHLUESSEL_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Stundenprofil {0}/{1} braucht 24 Werte in den Grenzen der Größe. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_STUNDEN {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Text ist länger als {0} Zeichen. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_TEXT_LAENGE {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_TEXT_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilenbild {0}/{1}: {2} ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_ZEILE {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {1} gehört nicht zum Gebäude {0}. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_ZONE_FEHLT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_ZONE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Art der Zuordnung. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_ZUORDNUNG_ART {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_ZUORDNUNG_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string RAUMNUTZUNG_MSG_ZUORDNUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("RAUMNUTZUNG_MSG_ZUORDNUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
         /// </summary>
         public static string SCHLIESSKREUZ_TOOLTIP {

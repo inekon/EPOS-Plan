@@ -45852,5 +45852,53 @@ Chart</value>
   <data name="GIMP_DLG_SQ_ZONIERUNG_WERT" xml:space="preserve">
     <value>{0} ({1} Zonen)</value>
   </data>
+  <data name="RAUMNUTZUNG_MSG_SCHEMA_FEHLT" xml:space="preserve">
+    <value>Der Katalog der Nutzungsprofile fehlt; die Datenbank braucht den Schemaschritt {0}.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_KATEGORIE_FEHLT" xml:space="preserve">
+    <value>Die Kategorie {0} gibt es nicht.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_PROFIL_FEHLT" xml:space="preserve">
+    <value>Das Nutzungsprofil {0} gibt es nicht.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_ZUORDNUNG_FEHLT" xml:space="preserve">
+    <value>Die Zuordnung {0} gibt es nicht.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_AUSGELIEFERT" xml:space="preserve">
+    <value>„{0}“ gehört zur Auslieferung und lässt sich nur duplizieren.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_NAME_LAENGE" xml:space="preserve">
+    <value>Der Name braucht 1 bis {0} Zeichen.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_NAME_DOPPELT" xml:space="preserve">
+    <value>Den Namen „{0}“ gibt es hier schon.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_NUMMER_LAENGE" xml:space="preserve">
+    <value>Die Nummer braucht höchstens {0} Zeichen.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_NUMMER_DOPPELT" xml:space="preserve">
+    <value>Die Nummer „{0}“ gibt es in dieser Kategorie schon.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_TEXT_LAENGE" xml:space="preserve">
+    <value>Der Text ist länger als {0} Zeichen.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_KENNWERT" xml:space="preserve">
+    <value>Der Kennwert {0} = {1} ist ungültig.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_ZEILE" xml:space="preserve">
+    <value>Zeilenbild {0}/{1}: {2}</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_STUNDEN" xml:space="preserve">
+    <value>Das Stundenprofil {0}/{1} braucht 24 Werte in den Grenzen der Größe.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_ZUORDNUNG_ART" xml:space="preserve">
+    <value>„{0}“ ist keine Art der Zuordnung.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_SCHLUESSEL_LAENGE" xml:space="preserve">
+    <value>Der Schlüssel braucht 1 bis {0} Zeichen.</value>
+  </data>
+  <data name="RAUMNUTZUNG_MSG_ZONE_FEHLT" xml:space="preserve">
+    <value>Die Zone {1} gehört nicht zum Gebäude {0}.</value>
+  </data>
 </root>
 
