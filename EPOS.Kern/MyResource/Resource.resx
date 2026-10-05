@@ -45288,5 +45288,29 @@ Chart</value>
   <data name="SIMENG_AK2_FESTE_LAST" xml:space="preserve">
     <value>Anlagenkopplung: {0} Gebäude gehen als feste Last ein (Altweg oder ungekoppelt) — sie zehren an der Verfügbarkeit, haben aber keine Rückwirkung und keine Komfortstunden.</value>
   </data>
+  <data name="GIMP_DLG_CAD_SOLLWERT" xml:space="preserve">
+    <value>Raumtemperatur der Datei als Heizsollwert übernehmen</value>
+  </data>
+  <data name="GIMP_DLG_CAD_SOLLWERT_HINWEIS" xml:space="preserve">
+    <value>Vorgabe: Normtemperatur; der Wert bleibt änderbar. Mit Haken wird der Heizsollwert am Tag des Gebäudes und jeder beheizten Zone das flächengewichtete Mittel der Raumtemperaturen ihrer beheizten Räume aus der Datei.</value>
+  </data>
+  <data name="GIMP_DLG_SP_SOLLWERT" xml:space="preserve">
+    <value>Heizsollwert Tag</value>
+  </data>
+  <data name="GIMP_BELEG_SOLLWERT_CAD" xml:space="preserve">
+    <value>Mittel der Raumtemperaturen der Datei, flächengewichtet, von {0} beheizten Räumen ({1} bis {2} °C; {3} Räume ohne Angabe)</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_SOLLWERT_CAD" xml:space="preserve">
+    <value>Zone „{0}“: Heizsollwert am Tag {1} °C aus der Raumtemperatur der Datei ({2} Räume mit, {3} ohne Angabe).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_SOLLWERT_CAD" xml:space="preserve">
+    <value>Zone „{0}“: Heizsollwert am Tag {1} °C aus der Raumtemperatur der Datei ({2} Räume mit, {3} ohne Angabe).</value>
+  </data>
+  <data name="IMP_IFC_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
+    <value>„{0}“: Die gemittelten Raumtemperaturen der Datei reichen von {1} bis {2} °C — mehr als {3} K; der gemittelte Heizsollwert sollte geprüft werden.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
+    <value>„{0}“: Die gemittelten Raumtemperaturen der Datei reichen von {1} bis {2} °C — mehr als {3} K; der gemittelte Heizsollwert sollte geprüft werden.</value>
+  </data>
 </root>
 

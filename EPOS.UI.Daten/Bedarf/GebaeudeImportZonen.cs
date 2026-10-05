@@ -78,6 +78,7 @@ namespace WindowsFormsApplication1
                     Volumen = MitEinheit(iz.VolumenM3, "m³"),
                     Beheizt = iz.IstBeheizt,
                     Hinweis = Zonenhinweis(iz),
+                    Sollwert = mitVorschlag ? MitEinheit(v.Zonen[i].Raumsolltemperatur_Tag, "°C") : "",
                     Raumliste = iz.Raeume.Select(r => Raumdaten(z, r, h)).ToList(),
                 });
             }

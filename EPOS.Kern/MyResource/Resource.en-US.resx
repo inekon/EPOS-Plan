@@ -45281,5 +45281,29 @@ chart</value>
   <data name="SIMENG_AK2_FESTE_LAST" xml:space="preserve">
     <value>System coupling: {0} building(s) enter as a fixed load (legacy path or uncoupled) — they draw on the availability but have no feedback and no comfort hours.</value>
   </data>
+  <data name="GIMP_DLG_CAD_SOLLWERT" xml:space="preserve">
+    <value>Use the room temperature of the file as heating setpoint</value>
+  </data>
+  <data name="GIMP_DLG_CAD_SOLLWERT_HINWEIS" xml:space="preserve">
+    <value>Default: standard temperature; the value stays editable. When ticked, the daytime heating setpoint of the building and of every heated zone becomes the area-weighted mean of the room temperatures of its heated spaces in the file.</value>
+  </data>
+  <data name="GIMP_DLG_SP_SOLLWERT" xml:space="preserve">
+    <value>Heating setpoint day</value>
+  </data>
+  <data name="GIMP_BELEG_SOLLWERT_CAD" xml:space="preserve">
+    <value>Area-weighted mean of the room temperatures of the file from {0} heated spaces ({1} to {2} °C; {3} spaces without a value)</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_SOLLWERT_CAD" xml:space="preserve">
+    <value>Zone "{0}": daytime heating setpoint {1} °C from the room temperature of the file ({2} spaces with, {3} without a value).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_SOLLWERT_CAD" xml:space="preserve">
+    <value>Zone "{0}": daytime heating setpoint {1} °C from the room temperature of the file ({2} spaces with, {3} without a value).</value>
+  </data>
+  <data name="IMP_IFC_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
+    <value>"{0}": the averaged room temperatures of the file range from {1} to {2} °C — more than {3} K; check the averaged heating setpoint.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
+    <value>"{0}": the averaged room temperatures of the file range from {1} to {2} °C — more than {3} K; check the averaged heating setpoint.</value>
+  </data>
 </root>
 

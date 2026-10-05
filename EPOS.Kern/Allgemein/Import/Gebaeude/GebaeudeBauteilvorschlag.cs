@@ -571,8 +571,10 @@ namespace WindowsFormsApplication1
         /// <summary>Der Vorschlag aus dem gelesenen Ablauf (Abbild, Quelle und Profil des letzten Laufs).</summary>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeImportAblauf ablauf, int gebaeudeIndex, char? baualtersklasse,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
-                                                        Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null)
-            => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich, zonierung);
+                                                        Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null,
+                                                        bool raumtemperaturAlsSollwert = false)
+            => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich, zonierung,
+                      raumtemperaturAlsSollwert);
 
         /// <summary>
         /// <b>Der Vorschlag mehrerer Zonen</b> (Stufe G6c) aus dem gelesenen Ablauf: die Zonierung nach
@@ -601,10 +603,14 @@ namespace WindowsFormsApplication1
         /// <param name="abgleich">Der Namensabgleich der Baustoffe (Katalog, Synonyme, gemerkte Zuordnungen des
         /// Projekts); <c>null</c> = ohne Abgleich — dann gelten allein die Stoffwerte der Datei.</param>
         /// <param name="zonierung">Die Zonierung des Mehrzonenwegs (Stufe G6c); <c>null</c> oder Z5/X4 = der Einzonenweg.</param>
+        /// <param name="raumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen"
+        /// (<see cref="GebaeudeCadSollwert"/>): im Mehrzonenweg trägt dann jede beheizte Zone das Mittel ihrer Räume als
+        /// <c>Raumsolltemperatur_Tag</c>; aus (Vorgabe) bleiben die Sollwerte der Zonen leer und erben das Gebäude.</param>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeAbbild abbild, int gebaeudeIndex, char? baualtersklasse,
                                                         GebaeudeQuelle quelle, GebaeudeImportProfil profil,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
-                                                        Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null)
+                                                        Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null,
+                                                        bool raumtemperaturAlsSollwert = false)
         {
             var v = new GebaeudeBauteilvorschlag { AbgleichAktiv = abgleich != null };
             if (abbild == null || profil == null || gebaeudeIndex < 0 || gebaeudeIndex >= abbild.Gebaeude.Count)
@@ -616,6 +622,7 @@ namespace WindowsFormsApplication1
             new Bauer(v, abbild, gebaeudeIndex, baualtersklasse, quelle, profil, beheiztUebersteuert, abgleich)
             {
                 Zonierung = zonierung != null && !zonierung.Einzonig ? zonierung : null,
+                CadSollwert = raumtemperaturAlsSollwert,
             }.Bauen();
             return v;
         }
@@ -681,6 +688,9 @@ namespace WindowsFormsApplication1
             /// <summary>Die Zonierung des Mehrzonenwegs; <c>null</c> = der Einzonenweg.</summary>
             internal GebaeudeZonierung Zonierung { get; init; }
 
+            /// <summary>Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen".</summary>
+            internal bool CadSollwert { get; init; }
+
             // Der Mehrzonenweg: die Zone, an die Abschliessen die Zeile hängt.
             private ZoneModel _aktuelleZone;
             private int _aktuelleStelle;
@@ -698,7 +708,8 @@ namespace WindowsFormsApplication1
                 _v.NordwinkelAngewandt = _datei == Importherkunft.Ifc;
 
                 // Die Zuordnung des Einzonenwegs — Kenngrößen der Zone, Vorgaben, Summenprobe.
-                GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(_abbild, _index, _klasseGewaehlt, _quelle, _profil, _uebersteuert);
+                GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(_abbild, _index, _klasseGewaehlt, _quelle, _profil, _uebersteuert,
+                                                                     CadSollwert);
                 _v.Satz = satz;
                 _klasse = satz.Baualtersklasse;
                 _v.Baualtersklasse = _klasse;
@@ -792,6 +803,22 @@ namespace WindowsFormsApplication1
                 _v.HerkunftNutzflaeche = nf.Wert > 0.0 ? nf.Herkunft : Importherkunft.Leer;
                 _v.HerkunftVolumen = vol.Wert > 0.0 ? vol.Herkunft : Importherkunft.Leer;
                 _v.HerkunftRaumhoehe = rh.Wert > 0.0 ? rh.Herkunft : Importherkunft.Leer;
+            }
+
+            /// <summary>
+            /// Der Tagsollwert einer beheizten Zone aus der Raumtemperatur der Datei (<see cref="GebaeudeCadSollwert"/>):
+            /// das flächengewichtete Mittel ihrer beheizten Räume mit Temperatur, gerundet auf 0,1 °C; die übrigen
+            /// Sollwertspalten bleiben leer (Wert des Gebäudes). Beleg je Zone, über 2 K Spanne ein Hinweis.
+            /// </summary>
+            private void ZonensollwertAusDatei(ZoneModel m, Importzone iz)
+            {
+                if (GebaeudeCadSollwert.Bilden(iz.Raeume.Where(IstBeheizt)) is not GebaeudeCadSollwert.Mittel mittel) return;
+                m.Raumsolltemperatur_Tag = mittel.Wert;
+                Info(_profil.Meldung(GebaeudeCadSollwert.ZONE_SOLLWERT_CAD), m.Bezeichner, Zahl(mittel.Wert),
+                     Ganz(mittel.Raeume), Ganz(mittel.OhneTemperatur));
+                if (mittel.SpanneGross)
+                    Warnung(_profil.Meldung(GebaeudeCadSollwert.SOLLWERT_CAD_SPANNE), m.Bezeichner, Zahl(mittel.MinC),
+                            Zahl(mittel.MaxC), Zahl(GebaeudeCadSollwert.SPANNE_GRENZE_K));
             }
 
             // ------------------------------------------------------------------
@@ -1010,6 +1037,7 @@ namespace WindowsFormsApplication1
                         Herkunft = _herkunftWert,
                         Quellkennung = string.IsNullOrEmpty(iz.Quellkennung) ? null : WindowsFormsApplication1.Quellkennung.Kuerzen(iz.Quellkennung),
                     };
+                    if (satz.CadSollwertAktiv && iz.IstBeheizt) ZonensollwertAusDatei(m, iz);
                     _v._zonen.Add(m);
                     foreach (AbbildRaum r in iz.Raeume)
                         _v._raeume.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Zone, m.ID));

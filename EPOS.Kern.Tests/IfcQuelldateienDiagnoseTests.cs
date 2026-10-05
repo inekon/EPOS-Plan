@@ -49,6 +49,13 @@ namespace EPOS.Kern.Tests
 
         private static string Z(double? w) => w.HasValue ? w.Value.ToString("0.##", CultureInfo.InvariantCulture) : "—";
 
+        /// <summary>Das Mittel der Raumtemperaturen als Protokolltext: Wert, Spanne, Räume mit/ohne.</summary>
+        private static string CadMittel(GebaeudeCadSollwert.Mittel? m)
+            => m is GebaeudeCadSollwert.Mittel x
+                ? Z(x.Wert) + " °C (" + Z(x.MinC) + "–" + Z(x.MaxC) + " °C, " + x.Raeume + " Räume mit, " + x.OhneTemperatur + " ohne"
+                  + (x.SpanneGross ? ", Spanne > 2 K" : "") + ")"
+                : "—";
+
         private static string Text(IEnumerable<PruefMeldung> meldungen)
             => string.Join(" | ", meldungen.Select(m => m.Stufe + " " + m.Schluessel + "(" + string.Join(";", m.Werte) + ")"));
 
@@ -140,9 +147,15 @@ namespace EPOS.Kern.Tests
                     _aus.WriteLine("Raumtypen: " + string.Join(", ", g.Raeume.GroupBy(r => (r.Raumtyp ?? "—") + "→" + GebaeudeZonierung.Nutzungsklasse(r))
                                                                          .OrderBy(x => x.Key, StringComparer.Ordinal)
                                                                          .Select(x => x.Key + " " + x.Count() + " (" + string.Join("/", x.Select(r => r.Name ?? "?").Distinct().Take(3)) + ")")));
+                    // Die Raumtemperatur der Datei als Heizsollwert (nur auf Wunsch) — nur Protokoll: Gebäudemittel mit Spanne.
+                    List<AbbildRaum> warm = g.Raeume.Where(r => GebaeudeRaumzeile.BeheiztWirksam(r, null)).ToList();
+                    _aus.WriteLine("CAD-Sollwert: " + (GebaeudeCadSollwert.Moeglich(warm) ? "wählbar" : "nicht wählbar") + "; Gebäudemittel "
+                                   + CadMittel(GebaeudeCadSollwert.Bilden(warm)));
                     if (vorgabe.Regeln.Contains(IfcImportProfil.ZONENREGEL_Z6))
                     {
                         GebaeudeZonierung z6 = GebaeudeZonierung.Bilden(a.Abbild, gi, IfcImportProfil.ZONENREGEL_Z6);
+                        foreach (Importzone zone in z6.Zonen.Where(x => x.IstBeheizt))
+                            _aus.WriteLine("  CAD-Sollwert Z6-Zone " + zone.Name + ": " + CadMittel(GebaeudeCadSollwert.Bilden(zone.Raeume)));
                         _aus.WriteLine("Z6: " + z6.Zonen.Count + " Zonen, Trennungen " + z6.Trennungen.Count + " mit "
                                        + Z(z6.Trennungen.Sum(t => Math.Max(t.FlaecheA, t.FlaecheB))) + " m²; " + Text(z6.Meldungen));
                         foreach (Importzone zone in z6.Zonen)
