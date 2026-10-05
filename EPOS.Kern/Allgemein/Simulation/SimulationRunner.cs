@@ -262,16 +262,18 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Spalten des Schemaschritts 186 in der Projektzeile</b> (Anlagenkopplung 8.3; AK2-2a, AK2-2b): die
         /// Stunden an der Schranke des Fahrplans und die Komfortkennzahlen des Projekts (5.5, F8, F9). Erhoben wird
-        /// erst, wenn der Fahrplan in mindestens einer Stunde gekappt hat; sonst bleiben alle NULL, und jedes Projekt
-        /// ohne greifende Schranke — auch die AK1-Referenzprojekte — schreibt dieselbe Zeile wie vorher
+        /// für jedes Projekt, dessen Fahrplan lief — Anlagenkopplung ab AK1 und mindestens ein gekoppeltes Gebäude
+        /// auf dem VDI-Weg (F12, E83) —, auch ohne greifende Schranke: dann steht <c>Fahrplan_Begrenzt_Stunden</c>
+        /// auf 0, nicht NULL. Ein Projekt ohne Fahrplan schreibt alle NULL und damit dieselbe Zeile wie vorher
         /// (Referenzlauf byte-gleich, <c>SpaltenNurMitWert</c>). Eine Seite ohne erhobenes Gebäude bleibt NULL.
         /// </summary>
-        internal static void AnlagenfahrplanSpaltenSetzen(ErgebnisEnergiebedarfModel e, int fahrplanStunden,
+        internal static void AnlagenfahrplanSpaltenSetzen(ErgebnisEnergiebedarfModel e, bool fahrplanWirksam,
+                                                          int fahrplanStunden,
                                                           Komfortkennzahlen heizen, Komfortkennzahlen kuehlen)
         {
             if (e == null) throw new ArgumentNullException(nameof(e));
-            if (fahrplanStunden <= 0) return;
-            e.FahrplanBegrenztStundenH = fahrplanStunden;
+            if (!fahrplanWirksam) return;
+            e.FahrplanBegrenztStundenH = Math.Max(0, fahrplanStunden);
             if (heizen != null)
             {
                 e.KomfortUnterschreitungsstundenH = heizen.Stunden;
@@ -435,14 +437,16 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.UebergabeBegrenztStundenH = heizkreis.UebergabeBegrenztStundenH;
             }
 
-            // ANLAGENKOPPLUNG AK2 (8.3): die Stunden, in denen der Fahrplan in mindestens einem Gebaeude gekappt
-            // hat. Keine solche Stunde bleibt NULL - so schreiben die Projekte ohne greifende Schranke dieselbe
-            // Zeile wie vorher (Referenzlauf byte-gleich, SpaltenNurMitWert).
-            int fahrplanStunden = simulation_Waermebedarf.FahrplanBegrenztStunden();
-            (Komfortkennzahlen komfortHeizen, Komfortkennzahlen komfortKuehlen) = fahrplanStunden > 0
+            // ANLAGENKOPPLUNG AK2 (8.3; F12, E83): die Stunden, in denen der Fahrplan in mindestens einem Gebaeude
+            // gekappt hat, und die Komfortkennzahlen - fuer jedes Projekt, dessen Fahrplan lief (Kopplung ab AK1,
+            // ein gekoppeltes Gebaeude auf dem VDI-Weg), auch ohne greifende Schranke (dann 0 Stunden). Ein
+            // Projekt ohne Fahrplan schreibt NULL und dieselbe Zeile wie vorher (SpaltenNurMitWert).
+            bool fahrplanWirksam = simulation_Waermebedarf.FahrplanWirksam;
+            int fahrplanStunden = fahrplanWirksam ? simulation_Waermebedarf.FahrplanBegrenztStunden() : 0;
+            (Komfortkennzahlen komfortHeizen, Komfortkennzahlen komfortKuehlen) = fahrplanWirksam
                 ? simulation_Waermebedarf.KomfortProjekt()
                 : (null, null);
-            AnlagenfahrplanSpaltenSetzen(m.Energiebedarf, fahrplanStunden, komfortHeizen, komfortKuehlen);
+            AnlagenfahrplanSpaltenSetzen(m.Energiebedarf, fahrplanWirksam, fahrplanStunden, komfortHeizen, komfortKuehlen);
 
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.
