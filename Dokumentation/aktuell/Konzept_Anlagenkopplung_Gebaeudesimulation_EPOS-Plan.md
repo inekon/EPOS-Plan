@@ -807,6 +807,15 @@ mit welchem Wirkungsgrad, zu welchem Preis — das bleibt Sache von `SimulationC
 Kaskade. Sie sagt nur, **wie viel höchstens ankommen kann**. Die Deckung rechnet danach wie heute,
 gegen den nun kleineren Bedarf.
 
+**So gebaut (AK2-2a, 05.10.2026).** `Verfuegbarkeitsgrund` und die Naht `Anlagenverfuegbarkeit` (`LeistungKw`,
+`VorlaufC`, `Grund`) stehen in `EPOS.Kern/Allgemein/Simulation/Anlagenverfuegbarkeit.cs`, neben den Fassaden.
+`Begrenzungsgrund` trägt am Ende `VorlaufAnlage` und `Verfuegbarkeit`; `UMSCHALTUNG` ist noch nicht gebaut. Das Modul
+`Gebaeude/` bekommt die Reihe je Zone am `GebaeudeModellEingang` (`Verfuegbarkeit`) und über
+`Stundenrand.MitVerfuegbarkeit` in den Stundenrand; es liest keine Anlagendaten (`ModultrennungswacheTests`, Satz 5).
+Greift die Schranke, trägt das `Stundenergebnis` den Gebäudegrund `Verfuegbarkeit` und daneben den Anlagengrund
+(`Verfuegbarkeitsgrund`; nennt der Fahrplan keinen, `LEISTUNGSGRENZE`), dazu `VerfuegbarkeitAnteil` und
+`VorlaufAnlageAnteil`.
+
 ### 5.4 Profilweg oder echte Kopplung (H4)
 
 | Weg | Wie | Dafür | Dagegen |
@@ -821,6 +830,16 @@ Kapazität** berücksichtigen (`Q_max` steht bereits als berechnete Größe bere
 Sperrdauer**, nicht als Ladezustand je Stunde. Damit ist die Aussage „eine zweistündige Sperrzeit
 ist durch den Speicher gedeckt, eine achtstündige nicht" möglich, ohne den Kreis zu schließen —
 und der Bericht nennt die Näherung.
+
+**So gebaut (AK2-2a, 05.10.2026).** `Anlagenfahrplan` (`EPOS.Kern/Allgemein/Simulation/Anlagenfahrplan.cs`) rechnet
+die 8 760 Verfügbarkeiten einmal je Projekt aus den belegten Plätzen der Wärmekaskade (Wärmepumpe, Heizkessel, BHKW,
+Senke Heizwärme). Nennleistung je Typ: Wärmepumpe `Tab_WP.Nennleistung`, Heizkessel `Tab_Heizkessel.Ptherm`, BHKW
+`Tab_BHKW.Ptherm`. Verfügbarkeit je Stunde: Sperrprofil der Wärmepumpe (geht vor), sonst der Faktor des
+Zeitprogramms (Wochenbeginn aus dem Kalender), dazu der Abschaltpunkt des bivalenten Betriebs wie im Bestand.
+Vorlaufangebot: das höchste `Vorlauf_Max` (Rückfall `Vorlauf`) der verfügbaren Erzeuger; trägt einer keins, gibt es
+keine Grenze. Der Speichervorrat (Σ `Q_max` der Heizungsspeicher) füllt je zusammenhängendem Sperrblock höchstens
+Vorrat ÷ Blocklänge je Stunde; reicht er nicht, heißt der Grund `SPEICHER_LEER`. Eine Stunde ohne Ausfall trägt im
+Lauf keine Schranke: Die Summe der Nennleistungen allein kappt auf dem Profilweg nicht.
 
 ### 5.5 Komfortstunden — die eine neue Aussage
 
@@ -1021,6 +1040,17 @@ der Deckungslauf sieht den kleineren Bedarf **erst danach**. Ein Erzeuger, der w
 Begrenzung weniger liefert, wird also nicht doppelt gezählt — aber der Speicher füllt sich in der
 Rechnung so, als hätte er den ursprünglichen Bedarf gedeckt. **Das ist der Preis des Profilwegs**,
 und er steht im Bericht (5.4).
+
+**So gebaut (AK2-2a, 05.10.2026).** Der Zweipass sitzt in `SimulationWaermebedarf.FahrplanVorbereiten` vor der
+Gebäudeschleife und wirkt nur mit Projektstufe und mindestens einem gekoppelten Gebäude auf dem VDI-Weg (F10).
+Pass 1 rechnet alle Gebäude unbegrenzt auf einer frisch gelesenen Gebäudeliste (Altweg und ungekoppelte Gebäude
+zehren als feste Last mit); er entfällt bei genau einem Gebäude ohne Zonenschleife. `Verfuegbarkeitsverteilung`
+verteilt proportional mit Randfall und Rundungsrest, die zweite Stufe gibt die Gebäudeschranke nach dem Schlüssel
+der Zonen weiter. Im Weg mit Nachmultiplikation wird die Schranke auf den Katalogbau umgerechnet; bei
+Verbrauchsangabe liefert ein Probelauf ohne Schranke den Faktor. `Fahrplan_Begrenzt_Stunden` zählt die Stunden mit
+`Verfuegbarkeit` je Gebäude (`ErgebnisGebaeudeModel`) und je Projekt (`Tab_ErgebnisEnergiebedarf`, ohne gekappte
+Stunde NULL). Offen für AK2-2b: Komfortkennzahlen, Kennzeichnung der festen Last im Bericht, Kälteseite,
+Laufprotokoll-Hinweise.
 
 ### 6.3 AK3 — der geschlossene Kreis
 
