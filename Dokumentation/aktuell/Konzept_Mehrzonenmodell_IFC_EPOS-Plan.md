@@ -59,7 +59,7 @@
 > (kein eigener Maskenschlüssel, Überlagerung im Gebäudedialog), **U10** (Lizenzhinweisseite mit der
 > ersten IFC-Stufe) und **U12** (Vorgaben je Baualtersklasse aus dem eigenen EPOS-Gebäudekatalog) —
 > diese stehen in 6 und 6.4, soweit sie den Zonenimport berühren. Mit E27 sind auch **D16**
-> (gbXML-Zonenbildung) und **Q24** (Fälligkeit der Stufe GA) entschieden (0, 2.8, Kapitel 9).
+> (gbXML-Zonenbildung) und **Q24** (Fälligkeit der Stufe GA, mit E89 gegenstandslos) entschieden (0, 2.8, Kapitel 9).
 > M3, M5–M8 und M11–M13 sind nicht Gegenstand von E27 und bleiben mit ihrer Stufe zu entscheiden.
 
 > **Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026 eingearbeitet, Protokoll:
@@ -504,8 +504,7 @@ dass es Zonen gibt.** `SimulationWaermebedarf.Waermebedarf_Max` bleibt das Maxim
 Kanalsummenvektors (`:401`); die Ergebnisgröße `Waermelast_Max` wird davon unverändert abgeleitet
 (`SimulationRunner.cs:358`, Konzept 4.5). **Die Skalierung** `Z_AuswahlWohnflaeche / Wohnflaeche`
 (Konzept 4.7, Entscheid E8) steht im Altweg — dem eingefrorenen Bestandsweg nach E20 und E23, der
-nach E26 mit der Stufe GA abgelöst wird (ohne Datum; fällig nach den vier Bedingungen aus Q24,
-entschieden mit E27) — in
+nach E89 dauerhaft wählbar bleibt — in
 der Physikfunktion selbst (`EPOS.Kern/Allgemein/BhkwPlan.cs:435`, Argumente `:392`) — die in
 Entscheid E8 genannte Fundstelle
 in `SimulationWaermebedarf.cs` trifft den Kopfkommentar von `SummenvektorAusKanaelen` und ist dort
