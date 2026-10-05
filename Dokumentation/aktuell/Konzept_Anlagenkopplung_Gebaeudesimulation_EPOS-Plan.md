@@ -2328,6 +2328,23 @@ Gebäude (Gästezimmer 293,9, Gastronomie 1 106,5). Die Basis ist `2026-10-04_R3
 Projekten; 1054 steht nicht in der CI-Auswahl
 ([`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md), „Das Referenzprojekt 1054").
 
+**So gebaut (AK2-4, 05.10.2026).** Die Komfortspalten stehen für jedes gekoppelte Projekt (F12, E83):
+`SimulationRunner.AnlagenfahrplanSpaltenSetzen` schreibt `Fahrplan_Begrenzt_Stunden` und die Komfortkennzahlen,
+sobald der Anlagenfahrplan lief (Kopplung ab AK1, ein gekoppeltes Gebäude auf dem VDI-Weg) — ohne greifende Schranke
+mit 0 Fahrplanstunden statt NULL; ein Projekt ohne Kopplung bleibt NULL. Das Referenzprojekt des Fahrplans ist
+**1056 „Referenz Kopplung mit Fahrplan"**, eine Kopie von 1047 auf dem Kopierweg des Programms
+(`Referenzlaeufe/Skripte/referenzprojekt_1056_fahrplan.py`): an der Wärmepumpe `Sperrung` 1 mit `Sperrzeit_von` 0 und
+`Sperrzeit_bis` 6 — das Altfenster kennt keinen Übertrag über Mitternacht, ein Fenster 22 bis 6 Uhr sperrte keine
+Stunde — und `Vorlauf_Max` 50 °C (Abschaltpunkt), an Kessel und BHKW ein Zeitprogramm mit Faktor 0 in denselben
+Stunden an allen Tagen, damit sie die Sperre nicht auffangen; kein Pufferspeicher (1047 führt keinen). Gerechnet:
+1 249 Stunden an der Schranke, 1 854 Komfort-Unterschreitungsstunden (1047: 875), 3 883,19 Kh (1047: 1 281,04), längste
+Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh, im Protokoll der Hinweis der Näherung des Profilwegs. Die
+Einfrierregel „gesäte Auslegungsdaten der Übergabe" umfasst den Anlagenfahrplan eines gekoppelten Referenzprojekts
+(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-05_R37_Fahrplan` mit
+einundzwanzig Projekten: die zwanzig alten je Wert gleich, 18 byte-gleich, 1047 und 1054 nur mit den neuen Zeilen in
+`aggregate.csv`; 1056 steht nicht in der CI-Auswahl und wird von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`
+gehalten.
+
 ### 11.5 CI, iOS und ChartProben
 
 - **Der Nachweis liegt auf `kern.yml` (ubuntu):** Bau und Tests des Filters, SQL-Dialekt-Prüfer,
