@@ -2334,7 +2334,7 @@ Stunden an allen Tagen, damit sie die Sperre nicht auffangen; kein Pufferspeiche
 1 249 Stunden an der Schranke, 1 854 Komfort-Unterschreitungsstunden (1047: 875), 3 883,19 Kh (1047: 1 281,04), längste
 Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh, im Protokoll der Hinweis der Näherung des Profilwegs. Die
 Einfrierregel „gesäte Auslegungsdaten der Übergabe" umfasst den Anlagenfahrplan eines gekoppelten Referenzprojekts
-(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-05_R37_Fahrplan` mit
+(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-05_R38_Vorlaufwahl` mit
 einundzwanzig Projekten: die zwanzig alten je Wert gleich, 18 byte-gleich, 1047 und 1054 nur mit den neuen Zeilen in
 `aggregate.csv`; 1056 steht nicht in der CI-Auswahl und wird von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`
 gehalten.
