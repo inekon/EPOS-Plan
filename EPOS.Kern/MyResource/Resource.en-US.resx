@@ -33599,13 +33599,25 @@ Do you want to allow this?</value>
     <value>Surfaces per zone</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
-    <value>errors only</value>
+    <value>Only surfaces with a finding</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
-    <value>without counterpart only</value>
+    <value>Only surfaces without an adjacent surface</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_UWERT" xml:space="preserve">
-    <value>without U-value only</value>
+    <value>Only surfaces without U-value and build-up</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_ERLAEUTERUNG" xml:space="preserve">
+    <value>The filters only narrow the displayed list; together they apply as “and”. Everything is always saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_FEHLER_HINWEIS" xml:space="preserve">
+    <value>Shows only surfaces for which the “Finding” column states something: no adjacent surface, no U-value, estimated area or a record from room bodies. Affects the display only; everything is saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS" xml:space="preserve">
+    <value>Shows only partition surfaces for which the import found no counterpart in the neighbouring zone. They are calculated against an unheated room. Affects the display only; everything is saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_UWERT_HINWEIS" xml:space="preserve">
+    <value>Shows only surfaces that have neither a U-value nor a layer build-up (from the file or assigned). Affects the display only; everything is saved.</value>
   </data>
   <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
     <value>The “Finding” column states what a surface lacks: no counterpart (calculated against unheated), no U-value or an estimated area. The filters show only these surfaces; the search looks in all columns.</value>
@@ -45669,7 +45681,7 @@ chart</value>
     <value>The table {0} has version {1}, which the reader does not know — the values are read, please check.</value>
   </data>
   <data name="IMP_SQ_PROT_ZU_GROSS" xml:space="preserve">
-    <value>The project file has {0} bytes and exceeds the limit of {1} bytes — it is not read.</value>
+    <value>The project file has {0} MB and exceeds the limit of {1} MB — it is not read.</value>
   </data>
   <data name="IMP_SQ_PROT_KEIN_HOTTCAD" xml:space="preserve">
     <value>A project file ({0}) can only be added to an IFC file from HottCAD.</value>
@@ -45802,6 +45814,33 @@ chart</value>
   </data>
   <data name="GIMP_DLG_SQ_HINWEIS" xml:space="preserve">
     <value>The project file supplies zones, usage and time profiles per zone; the IFC file remains the source of the geometry. The conditioning per zone is saved with origin “from project file”.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONIERUNG" xml:space="preserve">
+    <value>Zoning: {0} ({1} zones); {2} available ({3}).</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONIERUNG_EINE" xml:space="preserve">
+    <value>Zoning: {0} ({1} zones); only one zoning available.</value>
+  </data>
+  <data name="IMP_SQ_ZONIERUNG_DIN" xml:space="preserve">
+    <value>DIN V 18599 zones</value>
+  </data>
+  <data name="IMP_SQ_ZONIERUNG_SIM" xml:space="preserve">
+    <value>Simulation zones</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG" xml:space="preserve">
+    <value>Zoning</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT_DIN" xml:space="preserve">
+    <value>from project file (DIN zones)</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT_SIM" xml:space="preserve">
+    <value>from project file (simulation zones)</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG_FRAGE" xml:space="preserve">
+    <value>Changing the zoning rebuilds the zone plan; {0} manual steps will be lost. Change?</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG_WERT" xml:space="preserve">
+    <value>{0} ({1} zones)</value>
   </data>
 </root>
 

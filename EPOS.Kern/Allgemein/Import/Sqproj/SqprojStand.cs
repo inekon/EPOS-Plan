@@ -66,5 +66,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gelesene Abschnitte.</summary>
         internal int Abschnitte => Abbild?.Abschnitte ?? 0;
+
+        /// <summary>Die gewählte Zonierung (E87, F1); Vorgabe die DIN-V-18599-Zonen.</summary>
+        internal SqprojZonierung Gewaehlt { get; set; } = SqprojZonierung.Din18599;
+
+        /// <summary>Trägt die Datei DIN-V-18599-Zonen (Typ 5) mit abgeglichenen Räumen?</summary>
+        internal bool HatDinZonen => SqprojZonen.Belegte(Abbild, Abgleich, SqprojZonierung.Din18599) > 0;
+
+        /// <summary>Trägt die Datei Simulationszonen (Typ 6) mit abgeglichenen Räumen?</summary>
+        internal bool HatSimulationszonen => SqprojZonen.Belegte(Abbild, Abgleich, SqprojZonierung.Simulation) > 0;
+
+        /// <summary>Trägt die Datei beide Zonierungen — nur dann gibt es die Wahl?</summary>
+        internal bool BeideZonierungen => HatDinZonen && HatSimulationszonen;
+
+        /// <summary>Die wirksame Zonierung: die gewählte, wenn vorhanden, sonst die vorhandene (<see cref="SqprojZonen.Wirksam"/>).</summary>
+        internal SqprojZonierung Zonierung => SqprojZonen.Wirksam(Abbild, Abgleich, Gewaehlt);
+
+        /// <summary>Der Protokollsatz der wirksamen Zonierung (<c>IMP_SQ_PROT_ZONIERUNG</c> bzw. <c>…_EINE</c>); <c>null</c> bei einer Ablehnung.</summary>
+        internal PruefMeldung Zonierungsmeldung() => Abgelehnt || Abbild == null ? null : SqprojZonen.Zonierungsmeldung(Abbild, Abgleich, Zonierung);
     }
 }

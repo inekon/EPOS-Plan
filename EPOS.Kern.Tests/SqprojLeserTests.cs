@@ -200,15 +200,52 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Der_Ablauf_haelt_die_Groessengrenze_des_IFC_Profils()
+        public void Die_Projektdatei_hat_ihre_eigene_Grenze_250_und_100_MB()
+        {
+            Assert.Equal(250L * 1024 * 1024, SqprojProfil.MAX_BYTES);
+            Assert.Equal(100L * 1024 * 1024, SqprojProfil.MAX_BYTES_IOS);
+            Assert.Equal(SqprojProfil.MAX_BYTES, SqprojProfil.GrenzeFuerPlattform(false));
+            Assert.Equal(SqprojProfil.MAX_BYTES_IOS, SqprojProfil.GrenzeFuerPlattform(true));
+            Assert.Equal(SqprojProfil.MAX_BYTES, new GebaeudeImportAblauf().ProjektdateiMaxBytes);
+            // Gegenprobe: die IFC-Grenze bleibt 50/20 MB.
+            Assert.Equal(50L * 1024 * 1024, new IfcImportProfil().GrenzeFuerPlattform(false));
+            Assert.Equal(20L * 1024 * 1024, new IfcImportProfil().GrenzeFuerPlattform(true));
+        }
+
+        /// <summary>Ablauf mit gelesenem HottCAD-IFC, dessen IFC-Profil kleiner ist als die Projektdatei.</summary>
+        private static GebaeudeImportAblauf HottcadAblauf()
         {
             string ifc = Path.Combine(IfcProbenTests.Ordner(), "ifc4_zonen.ifc");
             var ablauf = new GebaeudeImportAblauf();
             using (FileStream s = File.OpenRead(ifc))
                 ablauf.Lesen(s, ifc, new IfcImportProfil(new FileInfo(ifc).Length + 100));
             ablauf.Abbild.Gebaeude[0].Art = "TModelBuilding";
-            SqprojStand stand = ablauf.ProjektdateiLesen(Probe(SqprojProbenErzeuger.Standard()), 0);
+            return ablauf;
+        }
+
+        [Fact]
+        public void Die_Grenze_des_IFC_Profils_gilt_nicht_fuer_die_Projektdatei()
+        {
+            GebaeudeImportAblauf ablauf = HottcadAblauf();
+            string probe = Probe(SqprojProbenErzeuger.Standard());
+            Assert.True(new FileInfo(probe).Length > ablauf.Profil.MaxBytes);   // größer als die IFC-Grenze …
+            SqprojStand stand = ablauf.ProjektdateiLesen(probe, 0);
+            Assert.False(stand.Abgelehnt, stand.Ablehnung?.Schluessel);         // … und doch gelesen
+        }
+
+        [Fact]
+        public void Zu_gross_nennt_die_wirksame_Grenze_in_MB()
+        {
+            GebaeudeImportAblauf ablauf = HottcadAblauf();
+            ablauf.ProjektdateiMaxBytes = 1024 * 1024 / 10;   // 0,1 MB
+            string probe = Probe(SqprojProbenErzeuger.Standard().Raum("RX", new string('x', 200_000), "F1", null, 1.0));
+            SqprojStand stand = ablauf.ProjektdateiLesen(probe, 0);
             Assert.Equal(SqprojProtokoll.ZU_GROSS, stand.Ablehnung?.Schluessel);
+            Assert.Equal("0.1", stand.Ablehnung.Werte[1]);
+            Assert.Equal(SqprojProtokoll.Mb(new FileInfo(probe).Length), stand.Ablehnung.Werte[0]);
+            Assert.Contains("0.1 MB", string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.IMP_SQ_PROT_ZU_GROSS, stand.Ablehnung.Werte));
+            Assert.Equal("250", SqprojProtokoll.Mb(SqprojProfil.MAX_BYTES));
+            Assert.Equal("100", SqprojProtokoll.Mb(SqprojProfil.MAX_BYTES_IOS));
         }
     }
 }

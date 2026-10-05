@@ -193,6 +193,7 @@ public static class GebaeudePlanschrittArt
 /// <param name="Geschoss">Die Geschosskennung (Geschoss).</param>
 /// <param name="Regel">Der Regelschlüssel (Rest nach Regel).</param>
 /// <param name="Beheizt">Der Haken „beheizt" (Haken).</param>
+/// <param name="Zonierung">Die Zonierung der Projektdatei (<see cref="GebaeudeZonierungSchluessel"/>, Projektdatei); <c>null</c> = die bisherige Wahl.</param>
 public sealed record GebaeudePlanschritt(
     string Art,
     IReadOnlyList<string>? Raeume = null,
@@ -202,7 +203,24 @@ public sealed record GebaeudePlanschritt(
     string? Nutzung = null,
     string? Geschoss = null,
     string? Regel = null,
-    bool Beheizt = false);
+    bool Beheizt = false,
+    string? Zonierung = null);
+
+/// <summary>
+/// <b>Die sprachneutralen Schlüssel der Zonierung der Projektdatei</b> (E87, F1): die Wahl (<c>data-zonierung</c>, Schritt
+/// <see cref="GebaeudePlanschrittArt.PROJEKTDATEI"/>) und die Herkunft einer Zone im Zonenbaum (<c>data-herkunft</c>).
+/// </summary>
+public static class GebaeudeZonierungSchluessel
+{
+    /// <summary>Die DIN-V-18599-Zonen (<c>ZoneType</c> 5) — die Vorgabe.</summary>
+    public const string DIN = "din";
+    /// <summary>Die Simulationszonen (<c>ZoneType</c> 6).</summary>
+    public const string SIMULATION = "sim";
+    /// <summary>Herkunft einer Zone: aus der Projektdatei, DIN-V-18599-Zonen.</summary>
+    public const string HERKUNFT_DIN = "projektdatei-din";
+    /// <summary>Herkunft einer Zone: aus der Projektdatei, Simulationszonen.</summary>
+    public const string HERKUNFT_SIMULATION = "projektdatei-sim";
+}
 
 /// <summary>Ein Raum der Raumliste mit dem Haken „beheizt" und dem Grund der Entscheidung.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung.</param>
@@ -489,6 +507,16 @@ public sealed record GebaeudePlanzoneDaten
     /// <summary>Stammt die Zone aus der Projektdatei (Kennzeichen <c>data-herkunft</c>)?</summary>
     public bool AusProjektdatei { get; init; }
 
+    /// <summary>
+    /// Die Herkunft der Zone als Schlüssel (<c>data-herkunft</c>): <see cref="GebaeudeZonierungSchluessel.HERKUNFT_DIN"/>,
+    /// <see cref="GebaeudeZonierungSchluessel.HERKUNFT_SIMULATION"/>, sonst <see cref="GebaeudePlanschrittArt.PROJEKTDATEI"/>
+    /// (Zonierung unbekannt); leer = nicht aus der Projektdatei.
+    /// </summary>
+    public string Herkunft { get; init; } = "";
+
+    /// <summary>Die Herkunft als Anzeigetext („aus Projektdatei (DIN-Zonen)“); leer = nicht aus der Projektdatei.</summary>
+    public string HerkunftText { get; init; } = "";
+
     /// <summary>Das Nutzungsprofil der Projektdatei als Tooltip („Nutzungsprofil 1 nach DIN V 18599“); leer = keines.</summary>
     public string Profiltext { get; init; } = "";
 }
@@ -528,6 +556,24 @@ public sealed record GebaeudeProjektdateiDaten
 
     /// <summary>Die Zonen der belegten Typen in der Datei.</summary>
     public int Zonen { get; init; }
+
+    /// <summary>Trägt die Datei DIN-V-18599-Zonen mit abgeglichenen Räumen?</summary>
+    public bool HatDinZonen { get; init; }
+
+    /// <summary>Trägt die Datei Simulationszonen mit abgeglichenen Räumen?</summary>
+    public bool HatSimulationszonen { get; init; }
+
+    /// <summary>Beide Zonierungen vorhanden — nur dann steht das Wahlfeld (<c>data-zonierung</c>)?</summary>
+    public bool BeideZonierungen => HatDinZonen && HatSimulationszonen;
+
+    /// <summary>Die gewählte Zonierung (<see cref="GebaeudeZonierungSchluessel"/>).</summary>
+    public string Gewaehlt { get; init; } = GebaeudeZonierungSchluessel.DIN;
+
+    /// <summary>Die wirksame Zonierung (<see cref="GebaeudeZonierungSchluessel"/>): die gewählte, sonst die vorhandene.</summary>
+    public string Zonierung { get; init; } = GebaeudeZonierungSchluessel.DIN;
+
+    /// <summary>Die wirksame Zonierung als Anzeigetext mit der Zahl ihrer Zonen (Bilanz); leer = keine.</summary>
+    public string ZonierungText { get; init; } = "";
 
     /// <summary>Die übernommenen Zonen; <c>null</c> = noch nicht übernommen.</summary>
     public int? Uebernommen { get; init; }
@@ -1166,6 +1212,18 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_FILTER_OHNE_UWERT</summary>
     public string FilterOhneUWert { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_UWERT;
 
+    /// <summary>GIMP_DLG_FILTER_ERLAEUTERUNG</summary>
+    public string FilterErlaeuterung { get; set; } = Resource.GIMP_DLG_FILTER_ERLAEUTERUNG;
+
+    /// <summary>GIMP_DLG_FILTER_FEHLER_HINWEIS</summary>
+    public string FilterFehlerHinweis { get; set; } = Resource.GIMP_DLG_FILTER_FEHLER_HINWEIS;
+
+    /// <summary>GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS</summary>
+    public string FilterOhneGegenstueckHinweis { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS;
+
+    /// <summary>GIMP_DLG_FILTER_OHNE_UWERT_HINWEIS</summary>
+    public string FilterOhneUWertHinweis { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_UWERT_HINWEIS;
+
     /// <summary>GIMP_DLG_FLAECHEN_HINWEIS</summary>
     public string FlaechenHinweis { get; set; } = Resource.GIMP_DLG_FLAECHEN_HINWEIS;
 
@@ -1308,6 +1366,18 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_SQ_HERKUNFT</summary>
     public string SqHerkunft { get; set; } = Resource.GIMP_DLG_SQ_HERKUNFT;
+
+    /// <summary>GIMP_DLG_SQ_ZONIERUNG</summary>
+    public string SqZonierung { get; set; } = Resource.GIMP_DLG_SQ_ZONIERUNG;
+
+    /// <summary>IMP_SQ_ZONIERUNG_DIN</summary>
+    public string SqZonierungDin { get; set; } = Resource.IMP_SQ_ZONIERUNG_DIN;
+
+    /// <summary>IMP_SQ_ZONIERUNG_SIM</summary>
+    public string SqZonierungSim { get; set; } = Resource.IMP_SQ_ZONIERUNG_SIM;
+
+    /// <summary>GIMP_DLG_SQ_ZONIERUNG_FRAGE</summary>
+    public string SqZonierungFrage { get; set; } = Resource.GIMP_DLG_SQ_ZONIERUNG_FRAGE;
 
     /// <summary>GIMP_DLG_SQ_FRAGE_TITEL</summary>
     public string SqFrageTitel { get; set; } = Resource.GIMP_DLG_SQ_FRAGE_TITEL;

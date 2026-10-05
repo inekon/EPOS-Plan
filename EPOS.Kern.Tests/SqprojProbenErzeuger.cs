@@ -240,6 +240,41 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Beide Zonierungen</b> (E87, F1): Räume A, B (EG) und C (OG); DIN-V-18599-Zonen (Typ 5) „DIN Büro“ (A, B; Profil 1)
+        /// und „DIN Wohnen“ (C; Profil 71), eine Simulationszone (Typ 6) „Simulation Haus“ (A, B, C; Gruppe mit Heizen als
+        /// Ganglinie, ohne Profilnummer) — jeder Raum liegt in beiden Zonierungen; dazu eine Zone vom Typ 2.
+        /// </summary>
+        internal static SqprojProbenErzeuger ZweiZonierungen()
+            => new SqprojProbenErzeuger()
+                .Geschoss("F1", "EG").Geschoss("F2", "OG")
+                .Raum("R1", "Raum A", "F1", "{11111111-1111-1111-1111-111111111111}", 20.0)
+                .Raum("R2", "Raum B", "F1", null, 30.0)
+                .Raum("R3", "Raum C", "F2", null, 40.0)
+                .Zone("Z1", "DIN Büro", 5, null, "R1", "R2")
+                .Zone("Z2", "DIN Wohnen", 5, null, "R3")
+                .Zone("Z3", "Simulation Haus", 6, "G1", "R1", "R2", "R3")
+                .Zone("Z4", "Darstellung", 2, null)
+                .Nutzung("U1", "Profil Buero", "Z1", 1, Uhr(7), Uhr(18), null, 21.0, null, null, null, null, null, null, null, null)
+                .Nutzung("U2", "Profil Wohnen", "Z2", 71, NULLZEIT, NULLZEIT, null, 20.0, null, null, null, null, null, null, null, null)
+                .Gruppe("G1", "Gruppe Haus", 6)
+                .Zeitprofil("H1", "Heizen Haus", 6, "G1", h => h >= 6 && h < 22 ? 21.0 : 17.0);
+
+        /// <summary>
+        /// <b>Nur DIN-V-18599-Zonen</b> (wie das Wohngebäude EH55, E87): Räume A, B (EG), C (OG) in einer Zone vom Typ 5
+        /// „Wohnen“ (Profil 71), keine Simulationszone; dazu je eine Zone der Typen 2 und 10.
+        /// </summary>
+        internal static SqprojProbenErzeuger NurDinZonen()
+            => new SqprojProbenErzeuger()
+                .Geschoss("F1", "EG").Geschoss("F2", "OG")
+                .Raum("R1", "Raum A", "F1", "{11111111-1111-1111-1111-111111111111}", 20.0)
+                .Raum("R2", "Raum B", "F1", null, 30.0)
+                .Raum("R3", "Raum C", "F2", null, 40.0)
+                .Zone("Z1", "Wohnen", 5, null, "R1", "R2", "R3")
+                .Zone("Z2", "Darstellung", 2, null)
+                .Zone("Z3", "Sonstige", 10, null)
+                .Nutzung("U1", "Profil Wohnen", "Z1", 71, NULLZEIT, NULLZEIT, null, 20.0, null, null, null, null, null, null, null, null);
+
+        /// <summary>
         /// <b>Die Zonierung unvollständig</b> (Zwischenstand einer Projektdatei): nur eine Simulationszone mit einem Teil der
         /// Räume, eine Nutzungszone ohne Raumbezug.
         /// </summary>

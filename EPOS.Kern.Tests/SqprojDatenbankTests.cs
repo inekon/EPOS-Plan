@@ -67,7 +67,7 @@ namespace EPOS.Kern.Tests
 
             Zonenplan plan = Zonenplan.Vorschlag(ablauf.Abbild, 0, IfcImportProfil.ZONENREGEL_Z4);
             foreach (AbbildRaum r in plan.Gebaeude.Raeume) plan.BeheizungSetzen(r.Kennung, true);
-            SqprojZonenergebnis ergebnis = ablauf.ProjektdateiUebernehmen(plan);
+            SqprojZonenergebnis ergebnis = ablauf.ProjektdateiUebernehmen(plan, SqprojZonierung.Simulation);
             Assert.Equal(3, ergebnis.Uebernommen);
             Assert.Empty(plan.NichtZugeordnet);
             Assert.Contains(ergebnis.Meldungen, m => m.Schluessel == SqprojProtokoll.BILANZ && m.Werte[0] == "6" && m.Werte[3] == "3");

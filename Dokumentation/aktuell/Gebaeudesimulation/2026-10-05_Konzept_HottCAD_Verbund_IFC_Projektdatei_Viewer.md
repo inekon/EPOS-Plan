@@ -96,7 +96,7 @@ als Muster des Wellenzuschnitts. Code: `EPOS.Kern/Allgemein/Import/Ifc/`,
 | Raumkörper | `Ifc/IfcRaumkoerper.cs` | Dreiecksnetz aus `IfcFacetedBrep`, `IfcShellBasedSurfaceModel`, `IfcExtrudedAreaSolid`, Dreiecks- und Vieleckssätze, `IfcMappedItem`; Vermerke (Bogen, Loch, Uneben, Offen) |
 | Nachbarschaft | `Gebaeude/Koerpernachbarschaft.cs` | Trennflächen aus gegenläufigen gemeinsamen Flächen zweier Raumkörper (E73, G7f-4) |
 | Zonierung | `Gebaeude/GebaeudeZonierung.cs`, `Gebaeude/Zonenplan.cs` | Z1–Z6 und X1–X4, M7 Vorgabe, M8 Mindestgröße, Zonenplan mit Umhängen, Anlegen, Löschen (ZB-1) |
-| Projektdatei | `EPOS.Kern/Allgemein/Import/Sqproj/` (`SqprojLeser`, `SqprojAbbild`, `SqprojRaumabgleich`, `SqprojZonen`, `SqprojKonditionierung`, `SqprojProfil`, `SqprojProtokoll`, `SqprojStand`) | `.sqproj` nur lesend (`Mode=ReadOnly`, `query_only`), Fassungsprüfung, Räume, Zonen (`ZoneType` 5 und 6), Profile, Ganglinien, Kalender; Abgleich `GId` ↔ `GlobalId`, dann Name je Geschoss; Konditionierung je Zone |
+| Projektdatei | `EPOS.Kern/Allgemein/Import/Sqproj/` (`SqprojLeser`, `SqprojAbbild`, `SqprojRaumabgleich`, `SqprojZonen`, `SqprojKonditionierung`, `SqprojProfil`, `SqprojProtokoll`, `SqprojStand`) | `.sqproj` nur lesend (`Mode=ReadOnly`, `query_only`), Fassungsprüfung, Räume, Zonen (`ZoneType` 5 und 6, Zonierung wählbar mit Vorgabe DIN-V-18599-Zone, eigene Größengrenze 250/100 MB), Profile, Ganglinien, Kalender; Abgleich `GId` ↔ `GlobalId`, dann Name je Geschoss; Konditionierung je Zone |
 | Herkunft | `Gebaeude/Importherkunft.cs`, `GebaeudeFeldzeile.cs` | je Feld Herkunft und Beleg; persistiert `Tab_Zone.Herkunft`, `Tab_Bauteil.Herkunft`, `Tab_Importquelle`, `Tab_Importzuordnung` |
 | Ansicht | `EPOS.UI/Bausteine/GebaeudeAnsicht.razor`, `GebaeudeAnsichtZeichnung.cs`, `wwwroot/epos-gebaeude-koerper.js`, `wwwroot/three/` | Reiter „Grundriss \| Körper“, Zonenfarben, „Dateikörper \| Exportmodell“, Klick meldet Raum und Zone; three.js 0.186.1 lokal mit Lizenzwache |
 | Datenseite | `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs`, `GebaeudeImportAnsicht.cs`, `GebaeudeImportZonen.cs` | Dateiwahl über `Dienste.Datei`, Größengrenze, Lesen im Arbeitsfaden, Projektdatei dazuladen und entfernen, DTO der Ansicht |
@@ -260,8 +260,7 @@ Datenaustauschkonzept Kapitel 16.
 
 ### 5.2 Nachzug nach E87: Wahl der Zonierung, Vorgabe DIN-V-18599-Zone, Größengrenze
 
-Bisher gilt: Liegt ein Raum in mehreren Zonen, zählt die Simulationszone (`ZoneType` 6).
-Der Anwender hat am 05.10.2026 anders entschieden (**E87, F1**):
+Gebauter Stand (**E87, F1**): Die Zonierung ist ein Parameter, die Räume gehören der wirksamen Zonierung.
 
 - Trägt die Projektdatei **beide** Zonierungen (`ZoneType` 5 und 6 mit Räumen), bietet der
   Dialog die Wahl **„DIN-V-18599-Zonen | Simulationszonen“** an.
@@ -276,14 +275,12 @@ Der Anwender hat am 05.10.2026 anders entschieden (**E87, F1**):
 - Die Konditionierung je Zone folgt der gewählten Zonierung: bei DIN-Zonen aus dem
   Nutzungsprofil der Zone und, wo vorhanden, aus der Profilgruppe der Simulationszone, mit
   der die DIN-Zone die meisten Räume teilt (Regel aus 16.3 bleibt).
-- **Größengrenze (E87, F4):** Die Projektdatei bekommt in `SqprojProfil` eine eigene Grenze
+- **Größengrenze (E87, F4):** Die Projektdatei hat in `SqprojProfil` eine eigene Grenze
   von **250 MB unter Windows und 100 MB auf iOS**, losgelöst von der IFC-Grenze (50/20 MB).
   Der Leser liest nur die Profil-, Zonen- und Raumtabellen; die Größe der Anwenderdateien
-  (bis 211 MB) stammt aus eingebetteten Bildern, die nie gelesen werden. Auf iOS wird die
-  Grenze wie bei IFC (G4-8) gemessen, bevor sie gilt; bis dahin lehnt iOS über 100 MB benannt ab.
+  (bis 211 MB) stammt aus eingebetteten Bildern, die nie gelesen werden. Die iOS-Grenze ist gesetzt; ihre Messung wie bei IFC (G4-8) steht aus, bis dahin lehnt iOS über 100 MB benannt ab.
 
-Aufwand 0,5 bis 1 PT (`SqprojZonen`, `SqprojStand`, `SqprojProfil`, `GebaeudeImportHuelle`,
-Dialog, Texte, Proben 33 und 36 erweitert, Nachtrag 3 berichtigt).
+Gebaut (#736): `SqprojZonen`, `SqprojStand`, `SqprojProfil`, `GebaeudeImportHuelle`, Dialog, Texte, Proben 33, 36 und 37 erweitert, Nachtrag 3 berichtigt.
 
 ### 5.3 Offen aus SQ, beim Anwender oder nach Zuruf
 
@@ -315,9 +312,9 @@ die Sichtabnahme auf Windows, die iPad-Sichtprobe hängt an der offenen Probe 31
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
-| Kern | Opus | `SqprojZonen`: Zonierung als Parameter (5 Vorgabe, 6 wählbar), Verfügbarkeit beider Zonierungen im `SqprojStand`, Protokollsatz `IMP_SQ_PROT_ZONIERUNG`; `SqprojProfil`: Grenze 250/100 MB | `SqprojZonenTests` (Probe 36) mit beiden Zonierungen und mit nur einer; `SqprojLeserTests` (Probe 33) Grenze |
-| Hülle und Dialog | Opus | Wahlfeld neben „Projektdatei dazuladen“, nur sichtbar bei beiden Zonierungen; Quelle im Zonenbaum; Rückfrage beim Wechsel; iOS-Grenze in `GrenzeFuerPlattform` | `SqprojHuelleTests`, bunit `GebaeudeImportProjektdateiDialogTests` (Probe 37); Windows-Schale auf Linux kompiliert |
-| Papiere | Sonnet | Nachtrag 3 (16.2, 16.3, 16.4) berichtigt, Statuszeile, Protokoll, Wiki-Quelle des Importdialogs, Logbuch-Entwurf | Link-Wache grün |
+| Kern | Opus | `SqprojZonen`: Zonierung als Parameter (5 Vorgabe, 6 wählbar), Verfügbarkeit beider Zonierungen im `SqprojStand`, Protokollsatz `IMP_SQ_PROT_ZONIERUNG`; `SqprojProfil`: Grenze 250/100 MB | `SqprojZonenTests` (Probe 36) mit beiden Zonierungen und mit nur einer; `SqprojLeserTests` (Probe 33) Grenze; gebaut (#736) |
+| Hülle und Dialog | Opus | Wahlfeld neben „Projektdatei dazuladen“, nur sichtbar bei beiden Zonierungen; Quelle im Zonenbaum; Rückfrage beim Wechsel; iOS-Grenze in `GrenzeFuerPlattform` | `SqprojHuelleTests`, bunit `GebaeudeImportProjektdateiDialogTests` (Probe 37); Windows-Schale auf Linux kompiliert; gebaut (#736) |
+| Papiere | Sonnet | Nachtrag 3 (16.2, 16.3, 16.4) berichtigt, Statuszeile, Protokoll, Wiki-Quelle des Importdialogs, Logbuch-Entwurf | Link-Wache grün; gebaut (#736) |
 
 ### 6.3 HC-1 — Kern: IFC vollenden und Flächen klassifizieren
 

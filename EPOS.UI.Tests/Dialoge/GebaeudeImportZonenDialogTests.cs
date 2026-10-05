@@ -262,13 +262,13 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.Equal(30, cut.Instance.Flaechenzeilen.Count);
         Assert.Equal(30, liste.Instance.Angezeigt.Count);
 
-        Schalter(cut, "nur ohne Gegenstück").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(true);
         Assert.Equal(10, cut.Instance.Flaechenzeilen.Count);          // 0, 3, …, 27
-        Schalter(cut, "nur ohne U-Wert").Change(true);
+        Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").Change(true);
         Assert.Equal(2, cut.Instance.Flaechenzeilen.Count);           // 0 und 15
-        Schalter(cut, "nur ohne Gegenstück").Change(false);
-        Schalter(cut, "nur ohne U-Wert").Change(false);
-        Schalter(cut, "nur Fehler").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(false);
+        Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").Change(false);
+        Schalter(cut, "Nur Flächen mit Befund").Change(true);
         Assert.Equal(14, cut.Instance.Flaechenzeilen.Count);          // Vielfache von 3 oder 5 unter 30
         Assert.Equal(14, cut.FindComponent<Katalogliste>().Instance.Angezeigt.Count);
 
@@ -301,9 +301,9 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.Equal("Take over as zones with components", englisch.AlsZonen);
         Assert.Equal("Zones", englisch.GruppeZonen);
         Assert.Equal("Surfaces per zone", englisch.GruppeFlaechen);
-        Assert.Equal("errors only", englisch.FilterFehler);
-        Assert.Equal("without counterpart only", englisch.FilterOhneGegenstueck);
-        Assert.Equal("without U-value only", englisch.FilterOhneUWert);
+        Assert.Equal("Only surfaces with a finding", englisch.FilterFehler);
+        Assert.Equal("Only surfaces without an adjacent surface", englisch.FilterOhneGegenstueck);
+        Assert.Equal("Only surfaces without U-value and build-up", englisch.FilterOhneUWert);
         Assert.Equal("Use the coarser rule: {0}", englisch.GroebereRegel);
         Assert.Equal("Heated area", englisch.BilanzFlaeche);
 
@@ -312,7 +312,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         Einlesen(cut, englisch.DateiKnopf.TrimEnd('…', '.'));
         Assert.Contains("Take over as zones with components", cut.Find(".epos-gebimport-bauteile").TextContent);
         Assert.Contains("Surfaces per zone", cut.Markup);
-        Assert.Contains("errors only", cut.Markup);
+        Assert.Contains("Only surfaces with a finding", cut.Markup);
     }
 
     [Fact]
@@ -368,7 +368,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         // Nach den Zonen der Datei: Flächen ohne Gegenstück, der Filter zeigt nur sie.
         IElement wahl = cut.FindAll("select").First(s => s.TextContent.Contains("Z4 –"));
         wahl.Change(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z1", StringComparison.Ordinal)).GetAttribute("value"));
-        Schalter(cut, "nur ohne Gegenstück").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(true);
         Assert.NotEmpty(cut.Instance.Flaechenzeilen);
         Assert.All(cut.Instance.Flaechenzeilen, z => Assert.Contains("ohne Gegenstück", z.Text("BEFUND")));
     }

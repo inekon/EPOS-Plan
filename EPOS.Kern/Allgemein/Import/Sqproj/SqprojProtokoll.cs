@@ -37,6 +37,10 @@ namespace WindowsFormsApplication1
         internal const string NUTZUNG_OHNE_ABBILDUNG = PRAEFIX + "NUTZUNG_OHNE_ABBILDUNG";
         internal const string WERT_BEGRENZT = PRAEFIX + "WERT_BEGRENZT";
         internal const string BILANZ = PRAEFIX + "BILANZ";
+        /// <summary>Die wirksame Zonierung und die andere vorhandene (E87): Zonierung, Zahl, andere, Zahl.</summary>
+        internal const string ZONIERUNG = PRAEFIX + "ZONIERUNG";
+        /// <summary>Die wirksame Zonierung, nur eine vorhanden (E87): Zonierung, Zahl.</summary>
+        internal const string ZONIERUNG_EINE = PRAEFIX + "ZONIERUNG_EINE";
 
         /// <summary>Der Belegtext je Zelle: Tabelle, Spalte, Profilnummer bzw. Profil.</summary>
         internal const string BELEG = "GIMP_BELEG_SQPROJ";
@@ -74,6 +78,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zahl als Text, invariant.</summary>
         internal static string Z(int n) => n.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>Byte als Megabyte (1 MB = 1024 · 1024 Byte), invariant, bis eine Nachkommastelle — für <see cref="ZU_GROSS"/>.</summary>
+        internal static string Mb(long bytes) => (bytes / (1024.0 * 1024.0)).ToString("0.#", CultureInfo.InvariantCulture);
 
         /// <summary>Die Zahl als Text, invariant, bis vier Nachkommastellen.</summary>
         internal static string Z(double w) => w.ToString("0.####", CultureInfo.InvariantCulture);

@@ -113,12 +113,14 @@ namespace WindowsFormsApplication1
         {
             _idProjekt = idProjekt;
             _ios = ios ?? OperatingSystem.IsIOS();
+            _ablauf.ProjektdateiMaxBytes = SqprojProfil.GrenzeFuerPlattform(_ios);
         }
 
         /// <summary>Die Hülle EINES Profils; die Größengrenze wird für die Plattform belegt (<paramref name="ios"/> wie oben).</summary>
         internal GebaeudeImportHuelle(GebaeudeImportProfil profil, int idProjekt = 0, bool? ios = null)
         {
             _ios = ios ?? OperatingSystem.IsIOS();
+            _ablauf.ProjektdateiMaxBytes = SqprojProfil.GrenzeFuerPlattform(_ios);
             _festesProfil = MitPlattformgrenze(profil ?? throw new ArgumentNullException(nameof(profil)));
             _profil = _festesProfil;
             _idProjekt = idProjekt;
@@ -446,6 +448,9 @@ namespace WindowsFormsApplication1
             return ProjektdateiDaten();
         }
 
+        /// <summary>Die wirksame Größengrenze der Projektdatei dieser Plattform (<see cref="SqprojProfil.GrenzeFuerPlattform"/>).</summary>
+        internal long ProjektdateiGrenze => _ablauf.ProjektdateiMaxBytes;
+
         /// <summary>„Projektdatei entfernen“: der Stand ohne Projektdatei, die IFC-Daten bleiben.</summary>
         internal void ProjektdateiEntfernen()
         {
@@ -488,6 +493,12 @@ namespace WindowsFormsApplication1
                 NichtAbgeglichen = p.NichtAbgeglichen,
                 OhneGegenstueck = p.IfcOhneGegenstueck,
                 Zonen = p.Zonen,
+                HatDinZonen = p.HatDinZonen,
+                HatSimulationszonen = p.HatSimulationszonen,
+                Gewaehlt = Zonierungsschluessel(p.Gewaehlt),
+                Zonierung = Zonierungsschluessel(p.Zonierung),
+                ZonierungText = Formatieren(MyResource.Resource.GIMP_DLG_SQ_ZONIERUNG_WERT, SqprojZonen.Bezeichnung(p.Zonierung),
+                                            SqprojZonen.Belegte(p.Abbild, p.Abgleich, p.Zonierung)),
                 Uebernommen = _sqZonen?.Uebernommen,
                 Zeitprofile = p.Zeitprofile,
                 Abschnitte = p.Abschnitte,
@@ -504,11 +515,13 @@ namespace WindowsFormsApplication1
         /// Kopie; übernimmt sie keine Zone (oder fehlt die Projektdatei), lehnt der Schritt ab und der Plan bleibt. Angenommen
         /// reicht er die Bilanz als Hinweis weiter.
         /// </summary>
-        private Planschritt ProjektdateiSchritt(Zonenplan plan)
+        private Planschritt ProjektdateiSchritt(Zonenplan plan, string zonierung)
         {
             SqprojStand p = _ablauf.Projektdatei;
             if (p == null || p.Abgelehnt)
                 return new Planschritt(false, new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.NICHT_GELESEN));
+            // Der Wechsel der Zonierung liest nicht neu: das Abbild bleibt, gerechnet wird mit der anderen Zonierung (E87, F1).
+            if (ZonierungAus(zonierung) is SqprojZonierung z) p.Gewaehlt = z;
             SqprojZonenergebnis probe = _ablauf.ProjektdateiUebernehmen(plan.Kopie());
             PruefMeldung bilanz = probe.Meldungen.LastOrDefault(m => m.Schluessel == SqprojProtokoll.BILANZ);
             if (probe.Uebernommen == 0)
@@ -516,6 +529,15 @@ namespace WindowsFormsApplication1
             _sqZonen = _ablauf.ProjektdateiUebernehmen(plan);
             return new Planschritt(true, bilanz);
         }
+
+        /// <summary>Die Zonierung zum Schlüssel (<see cref="GebaeudeZonierungSchluessel"/>); <c>null</c> = keiner/unbekannt.</summary>
+        internal static SqprojZonierung? ZonierungAus(string schluessel)
+            => schluessel == GebaeudeZonierungSchluessel.DIN ? SqprojZonierung.Din18599
+             : schluessel == GebaeudeZonierungSchluessel.SIMULATION ? SqprojZonierung.Simulation : null;
+
+        /// <summary>Der Schlüssel einer Zonierung.</summary>
+        internal static string Zonierungsschluessel(SqprojZonierung z)
+            => z == SqprojZonierung.Simulation ? GebaeudeZonierungSchluessel.SIMULATION : GebaeudeZonierungSchluessel.DIN;
 
         // =================================================================================
         // Zuordnen und Prüfen
@@ -614,7 +636,7 @@ namespace WindowsFormsApplication1
         /// zählt als verworfen. Ein angenommener letzter Schritt reicht seinen Hinweis weiter (etwa Räume anderer Beheizung).
         /// </summary>
         internal static (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) Auflegen(Zonenplan plan, IReadOnlyList<GebaeudePlanschritt> schritte,
-                                                                                       Func<Zonenplan, Planschritt> projektdatei = null)
+                                                                                       Func<Zonenplan, string, Planschritt> projektdatei = null)
         {
             int verworfen = 0;
             PruefMeldung meldung = null;
@@ -633,7 +655,7 @@ namespace WindowsFormsApplication1
             return (meldung, abgelehnt, verworfen);
         }
 
-        private static Planschritt Schritt(Zonenplan plan, GebaeudePlanschritt s, Func<Zonenplan, Planschritt> projektdatei)
+        private static Planschritt Schritt(Zonenplan plan, GebaeudePlanschritt s, Func<Zonenplan, string, Planschritt> projektdatei)
         {
             if (s == null) return new Planschritt(true);
             IReadOnlyList<string> raeume = s.Raeume ?? Array.Empty<string>();
@@ -644,7 +666,7 @@ namespace WindowsFormsApplication1
                 case GebaeudePlanschrittArt.NUTZUNG: return plan.NutzungSetzen(s.Zone, s.Nutzung);
                 case GebaeudePlanschrittArt.AUFHEBEN: return plan.ZonierungAufheben();
                 case GebaeudePlanschrittArt.PROJEKTDATEI:
-                    return projektdatei?.Invoke(plan) ?? new Planschritt(false, new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.NICHT_GELESEN));
+                    return projektdatei?.Invoke(plan, s.Zonierung) ?? new Planschritt(false, new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.NICHT_GELESEN));
                 case GebaeudePlanschrittArt.ZUORDNEN: return plan.Zuordnen(raeume, s.Zone);
                 case GebaeudePlanschrittArt.GESCHOSS: return plan.GeschossZuordnen(s.Geschoss, s.Zone);
                 case GebaeudePlanschrittArt.REST: return plan.RestNachRegelZuordnen(s.Regel);

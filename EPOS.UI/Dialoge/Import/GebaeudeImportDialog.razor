@@ -91,8 +91,14 @@
    Gegenstueck, Zonen, Zeitprofile und Abschnitte, nach der Uebernahme die Zonen je Groesse, das Uebersprungene mit
    Grund) und die schwerste Meldung als Banner. Die Uebernahme der Zonen ist ein SCHRITT am Zonenplan (PROJEKTDATEI) -
    bestehen schon Schritte von Hand, erst nach Rueckfrage; ohne Zonenbaum sagt ein Hinweis, dass nichts uebernommen
-   wird. Der Baum zeigt die Zonen der Projektdatei mit Nutzung, Profilnummer (Tooltip) und Heizsollwert Tag aus der
-   Ganglinie, je Zone das Kennzeichen "aus Projektdatei" (data-herkunft); rechts stehen die nicht zugeordneten Raeume
+   wird. DIE ZONIERUNG (E87): Traegt die Projektdatei beide Zonierungen (DIN-V-18599-Zonen und Simulationszonen mit
+   abgeglichenen Raeumen), steht neben dem Knopf das Wahlfeld "DIN-V-18599-Zonen | Simulationszonen" (data-zonierung,
+   Vorgabe DIN); sonst gilt ohne Wahl die vorhandene. Die Wahl reist im Schritt PROJEKTDATEI mit (Schluessel din/sim) - ein
+   Wechsel liest nicht neu, sondern baut den Zonenplan mit der anderen Zonierung neu auf; bestehen Schritte von Hand, erst
+   nach Rueckfrage (Vorgabe "Nein" stellt die Wahl zurueck). Die Bilanz nennt die wirksame Zonierung mit der Zahl ihrer
+   Zonen. Der Baum zeigt die Zonen der Projektdatei mit Nutzung, Profilnummer (Tooltip) und Heizsollwert Tag aus der
+   Ganglinie, je Zone die Herkunft "aus Projektdatei (DIN-Zonen)" bzw. "(Simulationszonen)" (data-herkunft
+   projektdatei-din / projektdatei-sim); rechts stehen die nicht zugeordneten Raeume
    und darunter die Raeume der Projektdatei ohne Gegenstueck. "Projektdatei entfernen" setzt Stand und Plan zurueck;
    ein anderes Gebaeude entfernt sie ebenfalls. Gespeichert wird wie immer in einem Vorgang - der Kern schreibt die
    Konditionierung je Zone mit dem Beleg in der Bemerkung des Kalenders.
@@ -171,6 +177,17 @@
                     <button type="button" class="epos-knopf epos-gebimport-sq-entfernen" data-aktion="projektdatei-entfernen"
                             disabled="@Beschaeftigt" @onclick="BeiProjektdateiEntfernen">@Texte.SqEntfernen</button>
                 }
+                @if (stand.Projektdatei is { Gelesen: true, BeideZonierungen: true } sqw)
+                {
+                    string zonierung = _sqZonierung ?? sqw.Zonierung;
+                    @* DIE WAHL DER ZONIERUNG (E87, F1): nur bei beiden Zonierungen; der Schluessel steuert, der Text zeigt. *@
+                    <select class="epos-eingabe epos-gebimport-sq-zonierung" data-zonierung="@zonierung"
+                            aria-label="@Texte.SqZonierung" title="@Texte.SqZonierung" disabled="@Beschaeftigt"
+                            value="@zonierung" @onchange="BeiZonierung">
+                        <option value="@GebaeudeZonierungSchluessel.DIN" selected="@(zonierung == GebaeudeZonierungSchluessel.DIN)">@Texte.SqZonierungDin</option>
+                        <option value="@GebaeudeZonierungSchluessel.SIMULATION" selected="@(zonierung == GebaeudeZonierungSchluessel.SIMULATION)">@Texte.SqZonierungSim</option>
+                    </select>
+                }
             </div>
             @if (stand.Projektdatei is GebaeudeProjektdateiDaten sq)
             {
@@ -187,6 +204,7 @@
                         <dt>@Texte.SqGruppe</dt><dd data-wert="datei">@sq.Dateiname</dd>
                         <dt>@Texte.SqFassung</dt><dd data-wert="fassung">@sq.Fassung</dd>
                         <dt>@Texte.SqRaeume</dt><dd data-wert="raeume">@Format(Texte.SqRaeumeWert, sq.Abgeglichen, sq.NichtAbgeglichen, sq.OhneGegenstueck)</dd>
+                        <dt>@Texte.SqZonierung</dt><dd data-wert="zonierung">@sq.ZonierungText</dd>
                         <dt>@Texte.SqZonen</dt><dd data-wert="zonen">@(sq.Uebernommen is int u ? Format(Texte.SqZonenWert, u, sq.Zonen) : Format(Texte.SqZonenOffen, sq.Zonen))</dd>
                         <dt>@Texte.SqProfile</dt><dd data-wert="profile">@Format(Texte.SqProfileWert, sq.Zeitprofile, sq.Abschnitte)</dd>
                         @if (sq.Groessen.Count > 0)
@@ -418,7 +436,7 @@
                                     bool offen = _offeneZonen.Contains(zone.Schluessel);
                                     string klapptext = Format(offen ? Texte.ZoneZuklappen : Texte.ZoneAufklappen, zone.Name);
                                     <tr @key="zone.Schluessel" class="epos-gebimport-planzone" data-zone="@zone.Schluessel"
-                                        data-herkunft="@(zone.AusProjektdatei ? GebaeudePlanschrittArt.PROJEKTDATEI : null)">
+                                        data-herkunft="@(zone.Herkunft.Length > 0 ? zone.Herkunft : null)">
                                         <td>
                                             <input type="checkbox" class="epos-gebimport-wahl" checked="@_zonenwahl.Contains(zone.Schluessel)"
                                                    aria-label="@Format(Texte.ZoneWaehlen, zone.Name)" disabled="@Beschaeftigt"
@@ -436,7 +454,7 @@
                                             @if (zone.AusProjektdatei)
                                             {
                                                 <span class="epos-leisezeile epos-gebimport-sqherkunft"
-                                                      title="@(zone.Profiltext.Length > 0 ? zone.Profiltext : null)">@Texte.SqHerkunft</span>
+                                                      title="@(zone.Profiltext.Length > 0 ? zone.Profiltext : null)">@(zone.HerkunftText.Length > 0 ? zone.HerkunftText : Texte.SqHerkunft)</span>
                                             }
                                         </td>
                                         <td>
@@ -615,11 +633,12 @@
                 }
                 else
                 {
+                    <p class="epos-leisezeile epos-gebimport-flaechenfilter-hinweis">@Texte.FilterErlaeuterung</p>
                     <div class="epos-gebimport-flaechenfilter">
-                        <Schalter Bezeichnung="@Texte.FilterFehler" Wert="@_nurFehler" WertChanged="b => BeiFilter(ref _nurFehler, b)" />
-                        <Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
-                                  WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" />
-                        <Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" />
+                        <span title="@Texte.FilterFehlerHinweis"><Schalter Bezeichnung="@Texte.FilterFehler" Wert="@_nurFehler" WertChanged="b => BeiFilter(ref _nurFehler, b)" /></span>
+                        <span title="@Texte.FilterOhneGegenstueckHinweis"><Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
+                                  WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" /></span>
+                        <span title="@Texte.FilterOhneUWertHinweis"><Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" /></span>
                     </div>
                     <div class="epos-gebimport-flaechen">
                         <Katalogliste Profil="@mehrere.Flaechenprofil" Zeilen="@_flaechenzeilen" Filterstand="@_flaechenfilter"
@@ -814,6 +833,9 @@
     @* Die Rueckfrage vor der Uebernahme der Zonen der Projektdatei, solange Schritte von Hand bestehen - Vorgabe "Nein". *@
     <Rueckfrage Offen="@_sqFrage" TitelText="@Texte.SqFrageTitel" Frage="@Format(Texte.SqFrage, _planschritte.Count)" VorgabeNein="true"
                 Beantwortet="SqBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
+    @* Die Rueckfrage vor dem Wechsel der Zonierung, solange Schritte von Hand bestehen - Vorgabe "Nein" stellt die Wahl zurueck. *@
+    <Rueckfrage Offen="@_sqZonierungFrage" TitelText="@Texte.SqFrageTitel" Frage="@Format(Texte.SqZonierungFrage, Handschritte)" VorgabeNein="true"
+                Beantwortet="SqZonierungBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
 </div>
 
 @code {
@@ -1066,6 +1088,18 @@
     /// <summary>Steht die Rückfrage vor der Übernahme der Zonen der Projektdatei offen (Prüfhilfe für Tests)?</summary>
     public bool ProjektdateiFrageOffen => _sqFrage;
 
+    /// <summary>Die gewählte Zonierung der Projektdatei (<see cref="GebaeudeZonierungSchluessel"/>); <c>null</c> = die der Datenseite.</summary>
+    private string? _sqZonierung;
+
+    /// <summary>Die Wahl vor einem Wechsel, der auf die Rückfrage wartet.</summary>
+    private string? _sqZonierungAlt;
+
+    /// <summary>Steht die Rückfrage vor dem Wechsel der Zonierung?</summary>
+    private bool _sqZonierungFrage;
+
+    /// <summary>Steht die Rückfrage vor dem Wechsel der Zonierung offen (Prüfhilfe für Tests)?</summary>
+    public bool ZonierungFrageOffen => _sqZonierungFrage;
+
     private string WirksamerHilfeSchluessel
         => Profil is { HilfeSchluessel.Length: > 0 } p ? p.HilfeSchluessel : HilfeSchluessel;
 
@@ -1263,6 +1297,7 @@
         _plangeschoss = _restregel = null;
         _aufhebenFrage = false;
         _sqFrage = false;
+        _sqZonierungFrage = false;
         _planhinweis = null;
     }
 
@@ -1816,7 +1851,9 @@
     /// <summary>Die Meldungen der Projektdatei ohne Bilanz und Fassung — das Übersprungene mit Grund.</summary>
     private static IReadOnlyList<GebaeudeImportMeldung> Uebersprungen(GebaeudeProjektdateiDaten sq)
         => sq.Meldungen.Where(m => m.Kennung is not null && !m.Kennung.EndsWith("_BILANZ", StringComparison.Ordinal)
-                                   && !m.Kennung.EndsWith("_FASSUNG", StringComparison.Ordinal)).ToList();
+                                   && !m.Kennung.EndsWith("_FASSUNG", StringComparison.Ordinal)
+                                   && !m.Kennung.EndsWith("_ZONIERUNG", StringComparison.Ordinal)
+                                   && !m.Kennung.EndsWith("_ZONIERUNG_EINE", StringComparison.Ordinal)).ToList();
 
     /// <summary>Trägt der Plan die Zonen der Projektdatei?</summary>
     private bool PlanMitProjektdatei => _planschritte.Exists(s => s.Art == GebaeudePlanschrittArt.PROJEKTDATEI);
@@ -1854,6 +1891,7 @@
             PlanZuruecksetzen();
             _offeneZonen.Clear();
         }
+        _sqZonierung = null;
         if (sq is { Gelesen: true }) ZonenDerProjektdatei();
         else NeuZuordnen();
     }
@@ -1868,7 +1906,7 @@
             _sqFrage = true;
             return;
         }
-        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI));
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI, Zonierung: _sqZonierung));
     }
 
     /// <summary>Die Antwort der Rückfrage: „Ja“ verwirft die Schritte von Hand und übernimmt die Zonen der Projektdatei.</summary>
@@ -1878,7 +1916,46 @@
         if (antwort != true) return;
         PlanZuruecksetzen();
         _offeneZonen.Clear();
-        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI));
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI, Zonierung: _sqZonierung));
+    }
+
+    /// <summary>Die Schritte von Hand am Plan (alle außer der Übernahme der Projektdatei).</summary>
+    private int Handschritte => _planschritte.Count(s => s.Art != GebaeudePlanschrittArt.PROJEKTDATEI);
+
+    /// <summary>
+    /// Das Wahlfeld der Zonierung (E87, F1): trägt der Plan die Zonen der Projektdatei, baut der Wechsel ihn mit der anderen
+    /// Zonierung neu auf — mit Schritten von Hand erst nach Rückfrage; sonst gilt die Wahl für die nächste Übernahme.
+    /// </summary>
+    private void BeiZonierung(ChangeEventArgs e)
+    {
+        string? neu = e.Value as string;
+        string aktuell = _sqZonierung ?? _stand?.Projektdatei?.Zonierung ?? GebaeudeZonierungSchluessel.DIN;
+        if (Beschaeftigt || neu is not (GebaeudeZonierungSchluessel.DIN or GebaeudeZonierungSchluessel.SIMULATION) || neu == aktuell) return;
+        _sqZonierungAlt = _sqZonierung;
+        _sqZonierung = neu;
+        if (!PlanMitProjektdatei) return;
+        if (Handschritte > 0)
+        {
+            _sqZonierungFrage = true;
+            return;
+        }
+        ZonierungNeuAufbauen();
+    }
+
+    /// <summary>Die Antwort der Rückfrage vor dem Wechsel: „Ja“ baut den Plan neu auf, sonst gilt die alte Wahl.</summary>
+    private void SqZonierungBeantwortet(bool? antwort)
+    {
+        _sqZonierungFrage = false;
+        if (antwort == true) ZonierungNeuAufbauen();
+        else _sqZonierung = _sqZonierungAlt;
+    }
+
+    /// <summary>Verwirft die Schritte und übernimmt die Zonen der Projektdatei mit der gewählten Zonierung neu.</summary>
+    private void ZonierungNeuAufbauen()
+    {
+        PlanZuruecksetzen();
+        _offeneZonen.Clear();
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI, Zonierung: _sqZonierung));
     }
 
     /// <summary>„Projektdatei entfernen“: Stand ohne Projektdatei; trug der Plan ihre Zonen, steht wieder der Regelvorschlag.</summary>
@@ -1886,6 +1963,7 @@
     {
         if (Beschaeftigt) return;
         ProjektdateiEntfernen?.Invoke();
+        _sqZonierung = null;
         if (PlanMitProjektdatei)
         {
             PlanZuruecksetzen();
