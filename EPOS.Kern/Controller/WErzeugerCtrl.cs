@@ -154,7 +154,10 @@ namespace WindowsFormsApplication1
                                                  double? Abschaltpunkt = null,
                                                  int? IdCarrier = null,
                                                  int? KuehlIdCarrier = null,
-                                                 bool? KuehlEigenerZaehler = null);
+                                                 bool? KuehlEigenerZaehler = null,
+                                                 bool Betriebszeiten = false,
+                                                 string Zeitprogramm = null,
+                                                 double? VorlaufMax = null);
 
         /// <summary>
         /// Schreibt die Konfigurationsfelder EINER Anlagenzeile — der Speicherweg des
@@ -249,6 +252,25 @@ namespace WindowsFormsApplication1
                     return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
                         "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
                         bezeichner);
+
+                // Anlagenkopplung AK2 (9.3): die Gruppe „Betriebszeiten" - Zeitprogramm und hoechster Vorlauf,
+                // nur wenn der Wirt sie fuehrt (Betriebszeiten) und die Datenbank die Spalten traegt. Beide Werte
+                // gehen wie gelesen zurueck: NULL bleibt NULL (leer = immer verfuegbar bzw. Vorgabe Vorlauf).
+                if (felder.Betriebszeiten && AnlagenfahrplanSchema.AnlagenspaltenVorhanden())
+                {
+                    bool okZeiten = DataRepository.ExecuteSQL(
+                        "UPDATE Tab_Energieanlagen SET " + AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM + " = ?, " +
+                        AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX + " = ? WHERE ID = ? AND ID_Projekt = ?",
+                        ProjektPuffer.Par("@zeitprogramm", DbParamTyp.VarWChar,
+                            string.IsNullOrWhiteSpace(felder.Zeitprogramm) ? null : felder.Zeitprogramm),
+                        ProjektPuffer.Par("@vorlaufmax", DbParamTyp.Double, felder.VorlaufMax),
+                        new DbParam("@id", idAnlage),
+                        new DbParam("@proj", idProjekt));
+                    if (!okZeiten)
+                        return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
+                            "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
+                            bezeichner);
+                }
 
                 // ET-2 wie in Update(): Wer den Heizstab einschaltet, hebt die Anlage in
                 // die elektrische Welt. Idempotent, und ein Fehlschlag bricht nichts ab.

@@ -45288,5 +45288,104 @@ Chart</value>
   <data name="SIMENG_AK2_FESTE_LAST" xml:space="preserve">
     <value>Anlagenkopplung: {0} Gebäude gehen als feste Last ein (Altweg oder ungekoppelt) — sie zehren an der Verfügbarkeit, haben aber keine Rückwirkung und keine Komfortstunden.</value>
   </data>
+  <data name="GEB_BEDARFSBEGRIFF_RUECKWIRKUNG" xml:space="preserve">
+    <value>mit Rückwirkung</value>
+  </data>
+  <data name="GEB_BEDARFSBEGRIFF_FESTE_LAST" xml:space="preserve">
+    <value>feste Last</value>
+  </data>
+  <data name="GEB_BERICHT_FESTE_LAST" xml:space="preserve">
+    <value>Gebäude als feste Last: {0} — sie rechnen auf dem Tagesbilanz-Weg oder ohne Kopplung, zehren an der Verfügbarkeit der Anlage und haben weder Rückwirkung noch Komfortstunden.</value>
+  </data>
+  <data name="WPA_GRP_BETRIEBSZEITEN" xml:space="preserve">
+    <value>Betriebszeiten</value>
+  </data>
+  <data name="WPA_LBL_ZEITPROGRAMM" xml:space="preserve">
+    <value>Zeitprogramm</value>
+  </data>
+  <data name="WPA_BTN_ZEITPROGRAMM" xml:space="preserve">
+    <value>Wochenraster bearbeiten</value>
+  </data>
+  <data name="WPA_BTN_ZEITPROGRAMM_SCHLIESSEN" xml:space="preserve">
+    <value>Wochenraster schließen</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_LEER" xml:space="preserve">
+    <value>Nicht gepflegt — die Anlage ist immer verfügbar.</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_GEPFLEGT" xml:space="preserve">
+    <value>Gepflegt: {0} von 168 Wochenstunden mit voller Verfügbarkeit, {1} gesperrt.</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_FAKTOREN" xml:space="preserve">
+    <value>Faktor je Wochenstunde von 0 (gesperrt) bis 1 (volle Leistung), Montag 0 Uhr bis Sonntag 23 Uhr.</value>
+  </data>
+  <data name="WPA_LBL_VORLAUF_MAX" xml:space="preserve">
+    <value>Höchster Vorlauf</value>
+  </data>
+  <data name="WPA_HRL_VORLAUF_MAX" xml:space="preserve">
+    <value>Vorgabe: projektierter Vorlauf {0} °C; leer = Vorgabe.</value>
+  </data>
+  <data name="WPA_HRL_VORLAUF_MAX_OHNE" xml:space="preserve">
+    <value>Leer = projektierter Vorlauf der Anlage.</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERRZEIT_VORRANG" xml:space="preserve">
+    <value>Sperrzeit und Zeitprogramm gelten zusammen; die Sperrzeit geht vor.</value>
+  </data>
+  <data name="WPA_HRL_BETRIEBSZEITEN_WIRKUNG" xml:space="preserve">
+    <value>Zeitprogramm und höchster Vorlauf wirken mit der Anlagenkopplung auf die gekoppelten Gebäude des Projekts.</value>
+  </data>
+  <data name="WPA_MSG_VORLAUF_MAX_BEREICH" xml:space="preserve">
+    <value>Der höchste Vorlauf muss zwischen {0} und {1} °C liegen.</value>
+  </data>
+  <data name="WPA_INFO_SPERRZEIT_ZEITPROGRAMM" xml:space="preserve">
+    <value>Sperrzeit und Zeitprogramm überschneiden sich in {0} Wochenstunden mit Faktor über 0; dort gilt die Sperrzeit.</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_STUNDEN" xml:space="preserve">
+    <value>Unterschreitungsstunden</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_KELVIN" xml:space="preserve">
+    <value>Kelvinstunden</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_STRECKE" xml:space="preserve">
+    <value>Längste Strecke</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_QUELLE" xml:space="preserve">
+    <value>Stunden der Nutzungszeit mehr als 1,0 K unter dem Sollwert</value>
+  </data>
+  <data name="GEBB_KACHEL_RESTBEDARF" xml:space="preserve">
+    <value>Restbedarf (Projekt, letzter Lauf)</value>
+  </data>
+  <data name="GEBB_KACHEL_RESTBEDARF_QUELLE" xml:space="preserve">
+    <value>Wärme, die kein Erzeuger gedeckt hat — steht neben den Komfortstunden</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_UEBER" xml:space="preserve">
+    <value>Überschreitungsstunden Kühlung</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_KELVIN_KUEHL" xml:space="preserve">
+    <value>Kelvinstunden Kühlung</value>
+  </data>
+  <data name="GEBB_KACHEL_BEDARFSBEGRIFF" xml:space="preserve">
+    <value>Bedarfsbegriff</value>
+  </data>
+  <data name="GEBB_KACHEL_FAHRPLAN_BEGRENZT" xml:space="preserve">
+    <value>Stunden am Fahrplan begrenzt</value>
+  </data>
+  <data name="GEBB_HRL_KOMFORT_OHNE" xml:space="preserve">
+    <value>Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude.</value>
+  </data>
+  <data name="GEBB_BILD_KOMFORTWOCHE" xml:space="preserve">
+    <value>Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_RAUMLUFT" xml:space="preserve">
+    <value>Raumluft</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_SOLLWERT" xml:space="preserve">
+    <value>Sollwert</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_UNTERSCHREITUNG" xml:space="preserve">
+    <value>Unterschreitung</value>
+  </data>
+  <data name="GEBB_HRL_KOMFORTWOCHE" xml:space="preserve">
+    <value>Die Woche ab {0}; markiert sind die gezählten Unterschreitungsstunden.</value>
+  </data>
 </root>
 

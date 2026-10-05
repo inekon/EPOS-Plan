@@ -5970,6 +5970,54 @@ namespace WindowsFormsApplication1
             return werte;
         }
 
+        /// <summary>
+        /// <b>RAUMTEMPERATUR UND SOLLWERT — DIE WOCHE MIT DER GRÖSSTEN UNTERSCHREITUNG</b> (Anlagenkopplung AK2,
+        /// Konzept 9.4, E80): Raumluft und Heizsollwert über 168 Stunden als zwei Linien, der Sollwert gestrichelt;
+        /// die gezählten Unterschreitungsstunden stehen als dritte Reihe auf der Raumluft — nur in diesen Stunden,
+        /// sonst Lücke (<see cref="Reihe.Luecken"/>). Gezeichnet wie die <see cref="Raumtemperatur"/>:
+        /// vorzeichenfähige Achse, Mindestspanne 5 K. Eine fehlende Reihe entfällt still; ohne Maske entfällt die
+        /// Markierung.
+        /// </summary>
+        public static byte[] Komfortwoche(string titel, double[] raumluft, double[] sollwert, bool[] unterschreitung,
+                                          Komfortwochennamen namen, Achsenfenster fenster = null)
+            => SkiaMaler.Png(KomfortwocheModell(titel, raumluft, sollwert, unterschreitung, namen, fenster));
+
+        /// <summary>Dasselbe Bild als Zeichenmodell — der Weg der Oberfläche (<c>DiagrammSvg</c>).</summary>
+        public static Zeichenmodell KomfortwocheModell(string titel, double[] raumluft, double[] sollwert,
+                                                       bool[] unterschreitung, Komfortwochennamen namen,
+                                                       Achsenfenster fenster = null)
+        {
+            namen ??= new Komfortwochennamen();
+            var reihen = new List<Reihe>();
+            if (raumluft != null)
+                reihen.Add(new Reihe(namen.Raumluft, raumluft, Farbrolle.SERIE_1));
+            if (sollwert != null)
+                reihen.Add(new Reihe(namen.Sollwert, sollwert, Farbrolle.SERIE_3,
+                                     Stapelart.Keine, Strichart.Gestrichelt));
+            if (raumluft != null && unterschreitung != null && unterschreitung.Any(b => b))
+            {
+                var markiert = new double[raumluft.Length];
+                for (int h = 0; h < markiert.Length; h++)
+                    markiert[h] = h < unterschreitung.Length && unterschreitung[h] ? raumluft[h] : double.NaN;
+                reihen.Add(new Reihe(namen.Unterschreitung, markiert, Farbrolle.SERIE_2) { Luecken = true });
+            }
+            return VerlaufsbildModell(titel, reihen, true, TEMPERATUR_MINDESTSPANNE, fenster,
+                                      yTitel: namen.Achse);
+        }
+
+        /// <summary>Die Legendennamen und der Achsentitel des Bildes „Raumtemperatur und Sollwert" — die Texte reicht der Aufrufer.</summary>
+        public sealed class Komfortwochennamen
+        {
+            /// <summary>Legende der Raumlufttemperatur.</summary>
+            public string Raumluft { get; init; } = "Raumluft";
+            /// <summary>Legende des Heizsollwerts.</summary>
+            public string Sollwert { get; init; } = "Sollwert";
+            /// <summary>Legende der markierten Unterschreitungsstunden.</summary>
+            public string Unterschreitung { get; init; } = "Unterschreitung";
+            /// <summary>Titel der y-Achse; <c>null</c> = keiner.</summary>
+            public string Achse { get; init; } = "°C";
+        }
+
         /// <summary>Die Legendennamen und der Achsentitel des Bildes „Vorlauf und Rücklauf" — die Texte reicht der Aufrufer.</summary>
         public sealed class VorlaufRuecklaufnamen
         {
