@@ -102,7 +102,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(ablage.NamePruefen(Konditionierungsgroesse.Lueftung, "Wohnen", 0));   // eine andere Liste
             Assert.NotNull(ablage.NamePruefen(Konditionierungsgroesse.Heizsoll, "", 0));
             Assert.NotNull(ablage.NamePruefen(Konditionierungsgroesse.Heizsoll, new string('x', 81), 0));
-            Assert.False(ablage.SpeichernAus(inhalt, Konditionierungsgroesse.Heizsoll, "Neu", null, "KANTINE", out _).Ok);
+            Assert.False(ablage.SpeichernAus(inhalt, Konditionierungsgroesse.Heizsoll, "Neu", null, new string('x', 121), out _).Ok);   // Nutzung: freier Text bis 120 Zeichen (NP-F15)
 
             // Das Schloss: eine ausgelieferte lässt sich nur duplizieren.
             Assert.False(ablage.Umbenennen(buero.Id, "Kontor").Ok);
