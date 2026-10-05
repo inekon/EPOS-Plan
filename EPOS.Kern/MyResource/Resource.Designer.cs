@@ -39166,6 +39166,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteilkörper der Art {1} sind nicht lesbar; die Bauteile werden ohne Körper dargestellt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUTEILKOERPER_ART {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUTEILKOERPER_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkörper aus der Datei: {0} Bauteile mit Körper, {1} Dreiecke (nur Anzeige). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUTEILKOERPER_GELESEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUTEILKOERPER_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteilkörper nicht geladen: Räume und Bauteile zusammen dürfen {1} Dreiecke nicht überschreiten, die Räume tragen schon {2}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUTEILKOERPER_GRENZE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUTEILKOERPER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Standardmenge {1} (Qto_*BaseQuantities) — der Wert stammt aus der Menge {3} im Mengensatz {2}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL {
@@ -39292,6 +39319,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Gruppe {1} der Randbedingungen hat {2} m² Körperfläche gegen {3} m² Bauteilfläche — Hinweis, keine Rechengröße. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FLAECHENGRUPPE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FLAECHENGRUPPE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Grenzgeometrie liegen an mehreren Zonen — ihre Fläche ist nach der Zahl der Raumgrenzen geteilt: {1} ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_FLAECHE_AUFGETEILT {
@@ -39306,6 +39342,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_FLAECHE_GRUNDRISS {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_FLAECHE_GRUNDRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Flächen der Raumkörper ({2} m²) ohne passendes Bauteil — Gruppe aus der Flächennormale (nur Anzeige). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FLAECHE_OHNE_BAUTEIL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FLAECHE_OHNE_BAUTEIL", resourceCulture);
             }
         }
         

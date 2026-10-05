@@ -268,6 +268,38 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Dateikoerper.SEHNEN_VOLLKREIS, IfcRaumkoerper.Sehnen(2 * Math.PI));
         }
 
+        [Fact]
+        public void Huellbauteile_tragen_ihren_Koerper_ohne_Darstellung_keinen()
+        {
+            GebaeudeImportAblauf a = Lesen("ifc4_koerper_bauteile.ifc");
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            AbbildBauteil sued = g.Bauteile.Single(b => b.Name == "Außenwand Süd");
+            AbbildBauteil fenster = sued.Oeffnungen.Single();
+            Assert.NotNull(sued.Koerper);
+            Assert.Equal(12, sued.Koerper.DreieckZahl);
+            NormalenNachAussen(sued.Koerper, "Außenwand Süd");
+            Assert.Equal(9.24 * 0.3 * 3.0, Volumen(sued.Koerper), 6);
+            Assert.NotNull(fenster.Koerper);
+            Assert.Equal(1.5 * 0.3 * 1.2, Volumen(fenster.Koerper), 6);
+            Assert.Equal(-0.3, fenster.Koerper.PunkteM.Min(p => p[1]), 6);
+            foreach (string name in new[] { "Innenwand", "Bodenplatte" })
+                Assert.Null(g.Bauteile.Single(b => b.Name == name).Koerper);
+            Assert.All(g.Raeume, r => Assert.NotNull(r.Koerper));
+            Assert.Contains(g.Meldungen, m => m.Schluessel == P + "BAUTEILKOERPER_GELESEN" && m.Werte[0] == "2" && m.Werte[1] == "24");
+            Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == P + "BAUTEILKOERPER_GRENZE");
+            Assert.DoesNotContain(a.Abbild.Meldungen, m => m.Schluessel == P + "BAUTEILKOERPER_ART");
+        }
+
+        [Fact]
+        public void Bauteilkoerper_teilen_sich_die_Dreiecksgrenze_mit_den_Raeumen()
+        {
+            Assert.Equal(200_000, (int)(Dateikoerper.DREIECKSGRENZE * IfcAbbildBauer.BAUTEILKOERPER_RAUMANTEIL + 1e-9));
+            // Ohne Bauteilkörper bleibt alles wie zuvor: die Nachbarprobe trägt keine.
+            GebaeudeImportAblauf a = Lesen("ifc4_koerper_nachbarn.ifc");
+            Assert.All(a.Abbild.Gebaeude.Single().Bauteile, b => Assert.Null(b.Koerper));
+            Assert.DoesNotContain(a.Abbild.Gebaeude.Single().Meldungen, m => m.Schluessel == P + "BAUTEILKOERPER_GELESEN");
+        }
+
         [Fact(Skip = "Erzeuger: schreibt die Raumkörperproben nach Referenzlaeufe/Importproben — nur von Hand, siehe IfcProbenTests.")]
         public void Erzeuger_schreibt_die_Raumkoerperproben()
         {

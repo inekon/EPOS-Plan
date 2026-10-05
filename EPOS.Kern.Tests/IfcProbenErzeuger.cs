@@ -513,7 +513,8 @@ namespace EPOS.Kern.Tests
 
                 // Die Bauteile des CAD-Exports (Klassenkopf).
                 IIfcWall nord = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Nord CAD", "btaOutside", true, 0.25, 0.5, 0, 30, 24, 10000, 3000);
-                b.CadFenster(nord, eg, "F1 CAD", (2000, 2000), null, 1.2, 9.9);
+                IIfcWindow f1 = b.CadFenster(nord, eg, "F1 CAD", (2000, 2000), null, 1.2, 9.9);
+                b.Rahmenanteil(f1, "30");   // Prozent, wie der CAD-Export
                 b.CadFenster(nord, eg, "F2 CAD", null, 2.0, 1.2, 9.9);
                 b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Kellerdecke CAD", "btaCellarCeiling", true, 0.4, null, null, 60, 60, 7500, 8000);
                 b.CadBauteil<IIfcWall>(eg, "IfcWall", "Kellerwand CAD", "btaGround", true, 0.5, null, 90, 10, 10, 4000, 2500);
@@ -521,7 +522,8 @@ namespace EPOS.Kern.Tests
                 b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand unbeheizt CAD", "btaUnHeated", true, 0.6, null, null, 6, 6, 2400, 2500);
                 b.CadBauteil<IIfcWall>(eg, "IfcWall", "Hilfswand CAD", "btaNone", false, null, null, null, null, null, null, null);
                 IIfcRoof dach = b.CadBauteil<IIfcRoof>(og, "IfcRoof", "Dach CAD", "btaOutside", true, 0.2, 0.9, null, 35, 34, 7000, 5000);
-                b.CadFenster(dach, og, "DF CAD", (1000, 1000), null, 1.4, null, teil: true);
+                IIfcWindow df = b.CadFenster(dach, og, "DF CAD", (1000, 1000), null, 1.4, null, teil: true);
+                b.Rahmenanteil(df, "0,2");  // Anteil
                 b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke CAD", "btaUppermostStorey", true, 0.3, null, null, 20, 20, 5000, 4000);
                 b.CadBauteil<IIfcWall>(og, "IfcWall", "Spitzbodenwand CAD", "btaOutside", false, 0.3, null, 270, 8, 8, 3200, 2500);
                 return b.Speichern();
@@ -694,6 +696,13 @@ namespace EPOS.Kern.Tests
                 IIfcWall sued = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand Süd", "btaOutside", true, 0.3, null, 180, 40, 40, null, null);
                 IIfcWall nord = b.CadBauteil<IIfcWall>(og, "IfcWall", "Außenwand Nord", "btaOutside", true, 0.3, null, 0, 40, 40, null, null);
                 IIfcWall duschwand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand Dusche", "btaHeated", false, 1.5, null, null, 5, 5, null, null);
+                // Die zwei Seiten (HSETU_Bauteilreferenzen, Konzept HottCAD-Verbund 3.1); die Wand Dusche ohne — der Rückfall.
+                const string OHNE = "botNone (-987654321,99)";
+                b.Seiten(decke, ("btaHeated", OHNE), ("btaHeated", OHNE));
+                b.Seiten(boden, ("btaGround", OHNE));
+                b.Seiten(dach, ("btaHeated", OHNE), ("btaUppermostStorey", OHNE));
+                b.Seiten(sued, ("btaOutside", "botS (180)"), ("btaHeated", "botN (-987654321,99)"));
+                b.Seiten(nord, ("btaOutside", "botN (0)"), ("btaNone", OHNE));
                 (IIfcBuildingStorey S, string Name, double M2, string Art, double? C, string Typ, IIfcProduct[] Bauteile)[] raeume =
                 {
                     (eg, "Büroraum", 40, "bhtHeated", 20.0, "mrtOffice", new IIfcProduct[] { boden, decke, sued }),
@@ -1078,6 +1087,22 @@ namespace EPOS.Kern.Tests
             /// Die Raumbezüge eines Raums nach dem Muster eines CAD-Exports ohne Raumgrenzen: ein
             /// <c>IfcRelReferencedInSpatialStructure</c> je Raum mit den angrenzenden Bauteilen.
             /// </summary>
+            /// <summary>Der Rahmenanteil eines Fensters nach dem Muster des CAD-Exports (<c>FractionOfFrame</c> als Text).</summary>
+            public void Rahmenanteil(IIfcElement e, string wert)
+                => SatzMit(e, "CAD_EcoCad", new List<IIfcProperty> { Einzel("FractionOfFrame", new IfcLabel(wert)) });
+
+            /// <summary>Die Seiten eines Bauteils nach dem Muster des CAD-Exports: je Seite Angrenzung (Aufzählung) und Orientierung (Text).</summary>
+            public void Seiten(IIfcElement e, params (string Angrenzung, string Orientierung)[] seiten)
+            {
+                var liste = new List<IIfcProperty>();
+                for (int i = 0; i < seiten.Length; i++)
+                {
+                    liste.Add(Aufzaehlung("ElementReferences[" + i + "].AdjacentType", seiten[i].Angrenzung));
+                    liste.Add(Einzel("ElementReferences[" + i + "].Orientation (°)", new IfcLabel(seiten[i].Orientierung)));
+                }
+                SatzMit(e, "CAD_Bauteilreferenzen", liste);
+            }
+
             public void Bezug(IIfcSpace raum, params IIfcProduct[] bauteile)
             {
                 IIfcRelReferencedInSpatialStructure r = Wurzel<IIfcRelReferencedInSpatialStructure>("IfcRelReferencedInSpatialStructure",
