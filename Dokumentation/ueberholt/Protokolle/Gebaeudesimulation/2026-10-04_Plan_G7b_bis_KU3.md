@@ -9,10 +9,10 @@ Statuszeile und Protokoll aus diesem Plan heraus; ist KU3 abgenommen, geht das P
 
 **Abgearbeitet (05.10.2026):** Mit KU3-4b (#728) sind alle Wellen dieses Plans umgesetzt, KU3 ist abgeschlossen. Nächster Schritt ist AK2 (E67; G7f läuft in der Sitzung „IFC Modellauswahl“), KU3-6 folgt nach AK2 (E75). Das Papier wartet auf das Verschieben nach `ueberholt/` durch die Orchestrierung.
 
-Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kapitel 5, 6, 9,
-10 und 14; [Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 4.6, 5.3, 5.4, 9.2 und
-11; [Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.7 und 7;
-[Statusdatei](../Status_Gebaeudesimulation_VDI6007.md) Abschnitte 1 und 2.
+Quellen: [Datenaustauschkonzept](../../../aktuell/Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kapitel 5, 6, 9,
+10 und 14; [Kühlkonzept](../../../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 4.6, 5.3, 5.4, 9.2 und
+11; [Mehrzonenkonzept](../../../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.7 und 7;
+[Statusdatei](../../../aktuell/Status_Gebaeudesimulation_VDI6007.md) Abschnitte 1 und 2.
 
 
 ## 1 Reihenfolge und Maßstab
@@ -24,7 +24,7 @@ Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.m
 | 3 | **G7d** (umgesetzt #711) | Round-Trip-Anreicherung fremder IFC4-Dateien — die tragende Stufe nach E69 | 6–11 | 4–5 Punkte | keine (E69) |
 | 4 | **G7e** (umgesetzt #712) | Schematische Körper im IFC | 8–15 | 5–7 Punkte | keine (E69: Empfänger sind Betrachter); Prüfbilder aus Revit, Archicad, HiCAD liegen beim Anwender |
 | 5 | **KU3** | Kältemaschine mit Rückkühlung, freie Kühlung über die Quelle, Kühlung je Zone, Export, Kältespeicher (E68: ja) | 20–31 | 15–19 Punkte | Katalogsaat der Kältemaschinen |
-| — | **G7f** — nach Zuruf | Raumkörper aus der IFC-Datei in der Körperansicht (E71; [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 15): Kern-Leser ohne Geometriekern, Umschalter „Dateikörper \| Exportmodell“; Vorschlag nach KU3-4b, vor AK2 | 4–6 | 4–5 Punkte | Reihenfolge und Dreiecksgrenze (Vorschlag 300 000 je Gebäude) |
+| — | **G7f** — nach Zuruf | Raumkörper aus der IFC-Datei in der Körperansicht (E71; [Datenaustauschkonzept](../../../aktuell/Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 15): Kern-Leser ohne Geometriekern, Umschalter „Dateikörper \| Exportmodell“; Vorschlag nach KU3-4b, vor AK2 | 4–6 | 4–5 Punkte | Reihenfolge und Dreiecksgrenze (Vorschlag 300 000 je Gebäude) |
 
 Maßstab: EV1 (3–4 PT) kostete rund 3 Punkte des Wochenlimits bei rund 230 Werkzeugaufrufen. Ein
 Personentag des Konzepts entspricht damit grob 0,8–1 Punkt. Die Spanne G7b bis KU3 liegt bei
