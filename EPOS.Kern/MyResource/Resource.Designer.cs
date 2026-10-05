@@ -32749,6 +32749,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zonenplan ergibt eine Zone – das Gebäude kommt als eine Zone mit Bauteilen; Name und Nutzung dieser Zone werden nicht übernommen. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_ALS_ZONE_PLAN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_ALS_ZONE_PLAN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Umstellen wird „{0}“ der Zone „{1}“ zugeordnet. ähnelt.
         /// </summary>
         public static string GIMP_DLG_AUSWEG {
@@ -33244,6 +33253,267 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone hinzufügen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ANLEGEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlegen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ANLEGEN_OK {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ANLEGEN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwerfen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ANLEGEN_VERWERFEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ANLEGEN_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung aufheben ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Räume werden aus ihren Zonen genommen und stehen danach unter „Nicht zugeordnete Räume“; die Zonen des Regelvorschlags entfallen, selbst angelegte bleiben leer stehen. Zonierung aufheben? ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_AUFHEBEN_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_AUFHEBEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung aufheben ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_AUFHEBEN_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_AUFHEBEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume lässt die Regel außerhalb jeder Zone (unbeheizt); sie sperren das OK nicht. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Plan ergibt eine Zone: Das Gebäude kommt als eine Zone wie ohne Zonierung; Name und Nutzung dieser Zone werden nicht übernommen. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_EINZONIG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_EINZONIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschoss ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschoss zur Zone ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_GESCHOSS_KNOPF {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_GESCHOSS_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Haken wählen Zonen und Räume; die Knöpfe wirken auf die Wahl. Ein Klick im Grundriss ordnet den Raum der Zielzone zu. Räume gleicher Beheizung bilden eine Zone; der Haken „beheizt“ eines Raums ist der Ausweg. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone(n) löschen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der neuen Zone ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_NAME {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_NUTZUNG_KEINE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_NUTZUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Räume sind einer Zone zugeordnet. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_OFFEN_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_OFFEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht zugeordnete Räume ({0}) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_OFFEN_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_OFFEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume sind keiner Zone zugeordnet – OK ist gesperrt, bis jeder Raum eine Zone hat. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_OK_GESPERRT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_OK_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ wählen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_RAUM_WAEHLEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_RAUM_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest nach Regel zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_REST {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regel für den Rest ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_REST_REGEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_REST_REGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_WURZEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_WURZEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Raum ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_NAME {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0} ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_NEU {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung der Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ wählen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume zur ausgewählten Zone hinzufügen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZUORDNEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZUORDNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie genau eine Zone als Ziel und – zum Hinzufügen – mindestens einen Raum. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZUORDNEN_GRUND {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZUORDNEN_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nur beheizte Räume bilden die Zone; ein geänderter Haken ordnet neu zu. ähnelt.
         /// </summary>
         public static string GIMP_DLG_RAEUME_HINWEIS {
@@ -33474,6 +33744,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_NEIGUNG {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SP_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SP_NUTZUNG", resourceCulture);
             }
         }
         

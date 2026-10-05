@@ -45377,5 +45377,98 @@ chart</value>
   <data name="IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
     <value>"{0}": the averaged room temperatures of the file range from {1} to {2} °C — more than {3} K; check the averaged heating setpoint.</value>
   </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NEU" xml:space="preserve">
+    <value>Zone {0}</value>
+  </data>
+  <data name="GIMP_DLG_SP_NUTZUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_WURZEL" xml:space="preserve">
+    <value>Building “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_WAEHLEN" xml:space="preserve">
+    <value>Select zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NAME" xml:space="preserve">
+    <value>Name of zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NUTZUNG" xml:space="preserve">
+    <value>Use of zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NUTZUNG_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_LEER" xml:space="preserve">
+    <value>no room</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_RAUM_WAEHLEN" xml:space="preserve">
+    <value>Select room “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NAME" xml:space="preserve">
+    <value>Name of the new zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NUTZUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN_OK" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN" xml:space="preserve">
+    <value>Add zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_LOESCHEN" xml:space="preserve">
+    <value>Delete zone(s)</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN" xml:space="preserve">
+    <value>Remove zoning</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZUORDNEN" xml:space="preserve">
+    <value>Add rooms to the selected zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZUORDNEN_GRUND" xml:space="preserve">
+    <value>Select exactly one zone as target and – to add – at least one room.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_GESCHOSS" xml:space="preserve">
+    <value>Storey</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_GESCHOSS_KNOPF" xml:space="preserve">
+    <value>Storey to zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_REST_REGEL" xml:space="preserve">
+    <value>Rule for the rest</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_REST" xml:space="preserve">
+    <value>Assign the rest by rule</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_HINWEIS" xml:space="preserve">
+    <value>Tick boxes select zones and rooms; the buttons act on the selection. A click in the floor plan assigns the room to the target zone. Rooms of equal heating form a zone; a room’s “heated” box is the way out.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_EINZONIG" xml:space="preserve">
+    <value>The plan yields one zone: the building is taken over as a single zone as without zoning; name and use of this zone are not taken over.</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_PLAN_HINWEIS" xml:space="preserve">
+    <value>The zone plan yields one zone – the building is taken over as one zone with components; name and use of this zone are not taken over.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OFFEN_TITEL" xml:space="preserve">
+    <value>Unassigned rooms ({0})</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OFFEN_LEER" xml:space="preserve">
+    <value>All rooms are assigned to a zone.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUSSERHALB" xml:space="preserve">
+    <value>The rule leaves {0} rooms outside every zone (unheated); they do not block OK.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Remove zoning</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>All rooms are taken out of their zones and then appear under “Unassigned rooms”; the zones of the rule proposal are dropped, zones you added stay empty. Remove zoning?</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OK_GESPERRT" xml:space="preserve">
+    <value>{0} rooms are not assigned to a zone – OK is blocked until every room has a zone.</value>
+  </data>
 </root>
 

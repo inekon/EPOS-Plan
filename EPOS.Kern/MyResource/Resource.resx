@@ -45384,5 +45384,98 @@ Chart</value>
   <data name="IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
     <value>„{0}“: Die gemittelten Raumtemperaturen der Datei reichen von {1} bis {2} °C — mehr als {3} K; der gemittelte Heizsollwert sollte geprüft werden.</value>
   </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NEU" xml:space="preserve">
+    <value>Zone {0}</value>
+  </data>
+  <data name="GIMP_DLG_SP_NUTZUNG" xml:space="preserve">
+    <value>Nutzung</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_WURZEL" xml:space="preserve">
+    <value>Gebäude „{0}“</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_WAEHLEN" xml:space="preserve">
+    <value>Zone „{0}“ wählen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NAME" xml:space="preserve">
+    <value>Name der Zone „{0}“</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NUTZUNG" xml:space="preserve">
+    <value>Nutzung der Zone „{0}“</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NUTZUNG_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_LEER" xml:space="preserve">
+    <value>ohne Raum</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_RAUM_WAEHLEN" xml:space="preserve">
+    <value>Raum „{0}“ wählen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NAME" xml:space="preserve">
+    <value>Name der neuen Zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NUTZUNG" xml:space="preserve">
+    <value>Nutzung</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN_OK" xml:space="preserve">
+    <value>Anlegen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN_VERWERFEN" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN" xml:space="preserve">
+    <value>Zone hinzufügen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_LOESCHEN" xml:space="preserve">
+    <value>Zone(n) löschen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN" xml:space="preserve">
+    <value>Zonierung aufheben</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZUORDNEN" xml:space="preserve">
+    <value>Räume zur ausgewählten Zone hinzufügen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZUORDNEN_GRUND" xml:space="preserve">
+    <value>Wählen Sie genau eine Zone als Ziel und – zum Hinzufügen – mindestens einen Raum.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_GESCHOSS" xml:space="preserve">
+    <value>Geschoss</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_GESCHOSS_KNOPF" xml:space="preserve">
+    <value>Geschoss zur Zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_REST_REGEL" xml:space="preserve">
+    <value>Regel für den Rest</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_REST" xml:space="preserve">
+    <value>Rest nach Regel zuordnen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_HINWEIS" xml:space="preserve">
+    <value>Haken wählen Zonen und Räume; die Knöpfe wirken auf die Wahl. Ein Klick im Grundriss ordnet den Raum der Zielzone zu. Räume gleicher Beheizung bilden eine Zone; der Haken „beheizt“ eines Raums ist der Ausweg.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_EINZONIG" xml:space="preserve">
+    <value>Der Plan ergibt eine Zone: Das Gebäude kommt als eine Zone wie ohne Zonierung; Name und Nutzung dieser Zone werden nicht übernommen.</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_PLAN_HINWEIS" xml:space="preserve">
+    <value>Der Zonenplan ergibt eine Zone – das Gebäude kommt als eine Zone mit Bauteilen; Name und Nutzung dieser Zone werden nicht übernommen.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OFFEN_TITEL" xml:space="preserve">
+    <value>Nicht zugeordnete Räume ({0})</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OFFEN_LEER" xml:space="preserve">
+    <value>Alle Räume sind einer Zone zugeordnet.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUSSERHALB" xml:space="preserve">
+    <value>{0} Räume lässt die Regel außerhalb jeder Zone (unbeheizt); sie sperren das OK nicht.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Zonierung aufheben</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>Alle Räume werden aus ihren Zonen genommen und stehen danach unter „Nicht zugeordnete Räume“; die Zonen des Regelvorschlags entfallen, selbst angelegte bleiben leer stehen. Zonierung aufheben?</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OK_GESPERRT" xml:space="preserve">
+    <value>{0} Räume sind keiner Zone zugeordnet – OK ist gesperrt, bis jeder Raum eine Zone hat.</value>
+  </data>
 </root>
 
