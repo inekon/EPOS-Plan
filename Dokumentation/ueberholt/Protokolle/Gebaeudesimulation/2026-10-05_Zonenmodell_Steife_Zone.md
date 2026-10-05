@@ -1,6 +1,6 @@
 # Protokoll Steife Zone — Abschnittsregel bricht nicht mehr ab (05.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Statuszeile #741, Commits `c325c1b7d`, `ecac51252`.
+**Sitzung:** Gebäudesimulation (Cloud), Statuszeile #743, Commits `c325c1b7d`, `ecac51252`.
 **Entscheide:** keine neuen; kein Schemaschritt, keine neue Basis (R38 bleibt).
 
 ## 1 Auftrag
@@ -9,7 +9,7 @@ Anwenderbefund vom 05.10.2026 (Windows, Debugger): Beim Gebäude „Sportheim_19
 
 ## 2 Vorgehen
 
-Ein Opus-Agent fand die Ursache mit einer Zufallsprobe und Nachrechnung und behob sie in zwei Schritten; ein Sonnet-Agent schrieb die Papiere. Gate 741 fährt die Orchestrierung danach.
+Ein Opus-Agent fand die Ursache mit einer Zufallsprobe und Nachrechnung und behob sie in zwei Schritten; ein Sonnet-Agent schrieb die Papiere. Gate 743 fährt die Orchestrierung danach.
 
 ## 3 Ergebnis
 
@@ -27,7 +27,7 @@ Keine Klemmung, keine Toleranz, kein neuer Fall oder Zähler, keine Schemaänder
 
 ## 5 Nachweise
 
-Rechenprobe `EPOS.Kern.Tests/ZonenmodellSteifeZoneTests.cs`, 3 Tests: (1) steife Zone — vorher Abbruch mit −48 991,6 W, jetzt zwei Abschnitte (HeizenGeregelt 7,8e‑5 s und Totband), Heizleistung ≥ 0, Bilanz geschlossen; (2) Gegenfall mit erzwungenem geregelten Abschnitt wirft weiterhin; (3) Übergabefall — jetzt 6 Abschnitte, 56 W. Abnahme des Agenten: Kern-Filter 0 Fehler; 1 673 Tests grün (1 übersprungen); Referenzlauf 21/21 PASS gegen R38 (6 872 111 Werte), byte-gleich außer `protokoll.txt`; Zufallsprobe ohne Abbruch. Gate 741 steht in der Statuszeile #741 der Statusdatei.
+Rechenprobe `EPOS.Kern.Tests/ZonenmodellSteifeZoneTests.cs`, 3 Tests: (1) steife Zone — vorher Abbruch mit −48 991,6 W, jetzt zwei Abschnitte (HeizenGeregelt 7,8e‑5 s und Totband), Heizleistung ≥ 0, Bilanz geschlossen; (2) Gegenfall mit erzwungenem geregelten Abschnitt wirft weiterhin; (3) Übergabefall — jetzt 6 Abschnitte, 56 W. Abnahme des Agenten: Kern-Filter 0 Fehler; 1 673 Tests grün (1 übersprungen); Referenzlauf 21/21 PASS gegen R38 (6 872 111 Werte), byte-gleich außer `protokoll.txt`; Zufallsprobe ohne Abbruch. Gate 743 steht in der Statuszeile #743 der Statusdatei.
 
 ## 6 Offenes
 
