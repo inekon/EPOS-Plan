@@ -34090,6 +34090,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Büro ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_BUERO {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_BUERO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gastronomie ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_GASTRONOMIE {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_GASTRONOMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Küche ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_KUECHE {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_KUECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lager ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_LAGER {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_LAGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sanitär ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_SANITAER {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_SANITAER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlafen ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_SCHLAFEN {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_SCHLAFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_SONSTIGE {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sport ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_SPORT {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_SPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_TECHNIK {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verkehr ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_VERKEHR {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_VERKEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnen ähnelt.
+        /// </summary>
+        public static string GIMP_NUTZUNG_WOHNEN {
+            get {
+                return ResourceManager.GetString("GIMP_NUTZUNG_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe — als beheizt angenommen ähnelt.
         /// </summary>
         public static string GIMP_RAUM_GRUND_ANNAHME {
@@ -34270,11 +34369,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Z6 – nach Raumtemperatur und Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_ZONENREGEL_Z6 {
+            get {
+                return ResourceManager.GetString("GIMP_ZONENREGEL_Z6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Außenfläche ähnelt.
         /// </summary>
         public static string GIMP_ZONE_OHNE_AUSSEN {
             get {
                 return ResourceManager.GetString("GIMP_ZONE_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Sollwert ähnelt.
+        /// </summary>
+        public static string GIMP_ZONE_OHNE_SOLLWERT {
+            get {
+                return ResourceManager.GetString("GIMP_ZONE_OHNE_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (unbeheizt) ähnelt.
+        /// </summary>
+        public static string GIMP_ZONE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_ZONE_UNBEHEIZT", resourceCulture);
             }
         }
         

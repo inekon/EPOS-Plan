@@ -423,6 +423,14 @@ namespace WindowsFormsApplication1
         /// Leser lässt ihn leer.
         /// </summary>
         public string ZonenBeschreibung { get; set; }
+
+        /// <summary>
+        /// Die Raumtemperatur eines CAD-Exports [°C] (IFC <c>InsideTemperature (°C)</c> aus einem beliebigen Satz) —
+        /// nur für die Zonenregel Z6, wenn <see cref="SollHeizenC"/> fehlt; nie als Sollwert übernommen. <c>null</c> = keine.
+        /// <see cref="Raumtyp"/> trägt unter IFC <c>HSETU_RaumAllgemein.RoomType</c> ohne Präfix <c>mrt</c>, sonst
+        /// <c>Pset_SpaceCommon.Category</c> bzw. <c>ObjectType</c> — er benennt die Nutzungsklasse der Regel Z6.
+        /// </summary>
+        public double? RaumtemperaturC { get; set; }
     }
 
     /// <summary>Ein Nachbarraum eines Bauteils samt der Sicht dieses Raums auf die Fläche.</summary>

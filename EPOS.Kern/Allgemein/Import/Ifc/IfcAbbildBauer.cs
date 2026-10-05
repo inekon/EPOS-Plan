@@ -485,6 +485,7 @@ namespace WindowsFormsApplication1
             r.SollHeizenC = Sollwert(s);
             Beheizung(s, r, langname, name, g);
             r.Klassifikation = Klassifikation(s);
+            RaumtypLesen(s, r);
 
             g.Raeume.Add(r);
             _raum[s.EntityLabel] = r;
@@ -655,6 +656,35 @@ namespace WindowsFormsApplication1
                 _beheizungsartOffen[g] = offen = new SortedDictionary<string, int>(StringComparer.Ordinal);
             Zaehlen(offen, ort + "\u0001" + (wert.Length == 0 ? "—" : wert));
             return null;
+        }
+
+        /// <summary>Der Raumtyp eines CAD-Exports (<c>HSETU_RaumAllgemein</c>, Aufzählung mit Präfix <c>mrt</c>).</summary>
+        internal const string RAUMTYP = "RoomType";
+
+        /// <summary>
+        /// <b>Raumtyp und Raumtemperatur</b> für die Zonenregel Z6 (Mehrzonenkonzept 6.1): der Raumtyp aus
+        /// <see cref="RAUMTYP"/> eines beliebigen Satzes ohne Präfix <c>mrt</c> (<c>mrtOffice</c> → <c>Office</c>), sonst
+        /// <c>Pset_SpaceCommon.Category</c>, sonst <c>ObjectType</c>, sonst <c>null</c> — sprachneutral, wie in der Datei;
+        /// dazu die Raumtemperatur der Datei (<see cref="Raumtemperatur"/>), die nie als Sollwert gilt.
+        /// </summary>
+        private void RaumtypLesen(IIfcSpace s, AbbildRaum r)
+        {
+            r.RaumtemperaturC = Raumtemperatur(s)?.TemperaturC;
+            string typ = null;
+            IfcFund f = IfcEigenschaften.AlleMitNamen(_bezuege, s, new[] { RAUMTYP }).FirstOrDefault();
+            if (f != null)
+                typ = f.Eigenschaft is IIfcPropertyEnumeratedValue aufz
+                    ? aufz.EnumerationValues?.Select(IfcEigenschaften.Textwert).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t))
+                    : f.Eigenschaft is IIfcPropertySingleValue einzel ? IfcEigenschaften.Textwert(einzel.NominalValue) : null;
+            typ = typ?.Trim();
+            if (typ != null && typ.Length > 3 && typ.StartsWith("mrt", StringComparison.Ordinal)) typ = typ.Substring(3);
+            if (string.IsNullOrWhiteSpace(typ))
+            {
+                IfcFund kategorie = IfcEigenschaften.Finden(_bezuege, s, "Pset_SpaceCommon", "Category");
+                typ = kategorie?.Eigenschaft is IIfcPropertySingleValue k ? IfcEigenschaften.Textwert(k.NominalValue) : null;
+            }
+            if (string.IsNullOrWhiteSpace(typ)) typ = IfcEigenschaften.Text(s.ObjectType);
+            r.Raumtyp = string.IsNullOrWhiteSpace(typ) ? null : typ.Trim();
         }
 
         /// <summary>

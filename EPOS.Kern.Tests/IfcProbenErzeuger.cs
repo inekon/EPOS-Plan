@@ -62,6 +62,8 @@ namespace EPOS.Kern.Tests
                 ["ifc4_vorhangfassade.ifc"] = Fassadenhaus(),
                 ["ifc4_haus_materialnamen.ifc"] = Haus(XbimSchemaVersion.Ifc4, "ifc4_haus_materialnamen.ifc", materialnamen: true),
                 ["ifc4_zonen.ifc"] = Zonenhaus(),
+                ["ifc4_z6_sollwerte.ifc"] = Z6Sollwerte(),
+                ["ifc4_z6_cad.ifc"] = Z6Cad(),
             };
         }
 
@@ -639,6 +641,84 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Zonenregel Z6 mit Sollwerten des Standards</b> (Mehrzonenkonzept 6.1): IFC4, zwei Geschosse, Räume über die
+        /// Zerlegung, keine Raumgrenzen, keine Bauteile; Heizsollwert je Raum als <c>Pset_SpaceThermalRequirements.SpaceTemperature</c>.
+        /// EG: „Büro 1" 30 m² 20 °C, „Büro 2" 25 m² 20,4 °C, „Flur" 15 m² 15 °C, „WC" 2,5 m² 24 °C (unter der Mindestgröße),
+        /// „Lager 1" 20 m² 15 °C; OG: „Besprechung" 20 m² 19,6 °C, „Lager 2" 10 m² und „Archiv" 12 m² ohne Sollwert.
+        /// </summary>
+        public static byte[] Z6Sollwerte()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_z6_sollwerte.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Zonenprobe", null);
+                IIfcBuildingStorey eg = b.Geschoss(g, "EG", 0);
+                IIfcBuildingStorey og = b.Geschoss(g, "OG", 3000);
+                (IIfcBuildingStorey S, string Nr, string Name, double M2, double? C)[] raeume =
+                {
+                    (eg, "1", "Büro 1", 30, 20.0), (eg, "2", "Büro 2", 25, 20.4), (eg, "3", "Flur", 15, 15.0),
+                    (eg, "4", "WC", 2.5, 24.0), (eg, "5", "Lager 1", 20, 15.0),
+                    (og, "6", "Besprechung", 20, 19.6), (og, "7", "Lager 2", 10, null), (og, "8", "Archiv", 12, null),
+                };
+                double x = 0.0;
+                foreach (var r in raeume)
+                {
+                    IIfcSpace raum = b.Raum(r.S, r.Nr, r.Name, x, 0, r.M2, 2500, r.M2 * 2.5, beheizt: false);
+                    if (r.C.HasValue) b.Solltemperatur(raum, r.C.Value);
+                    x += 1000;
+                }
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
+        /// <b>Zonenregel Z6 nach dem Muster eines CAD-Exports</b> (Mehrzonenkonzept 6.1, 6.5): IFC4, Räume über das
+        /// Enthaltensein, keine Raumgrenzen; je Raum ein Satz <c>CAD_RaumAllgemein</c> mit <c>HeatingType</c>,
+        /// <c>InsideTemperature (°C)</c> und <c>RoomType</c> (Aufzählung mit Präfix <c>mrt</c>), Bauteile mit Raumbezügen.
+        /// EG: „Büroraum" 40 m² beheizt 20 °C Office, „Büroraum 2" 30 m² beheizt 20 °C Office, „Flur" 20 m² beheizt 15 °C Hall,
+        /// „WC-Raum" 6 m² beheizt 20 °C WC, „Lagerraum" 25 m² unbeheizt ohne Temperatur Store; OG: „Wohnraum" 35 m² getrennt
+        /// beheizt 20 °C Living, „Raum 7" 12 m² beheizt ohne Temperatur Office, „Abstellraum" 10 m² unbeheizt 10 °C Store; dazu im EG
+        /// „Dusche" 3 m² beheizt 24 °C Shower unter der Mindestgröße, deren einzige Grenzfläche („Wand Dusche") am Flur (15 °C) liegt.
+        /// </summary>
+        public static byte[] Z6Cad()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_z6_cad.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Zonenprobe", null);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 2800);
+                IIfcSlab decke = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Decke EG/OG", "btaHeated", false, 1.0, null, null, 140, 140, null, null);
+                IIfcSlab boden = b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Bodenplatte", "btaGround", true, 0.4, null, null, 121, 121, null, null);
+                IIfcSlab dach = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke", "btaUppermostStorey", true, 0.3, null, null, 57, 57, null, null);
+                IIfcWall sued = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand Süd", "btaOutside", true, 0.3, null, 180, 40, 40, null, null);
+                IIfcWall nord = b.CadBauteil<IIfcWall>(og, "IfcWall", "Außenwand Nord", "btaOutside", true, 0.3, null, 0, 40, 40, null, null);
+                IIfcWall duschwand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand Dusche", "btaHeated", false, 1.5, null, null, 5, 5, null, null);
+                (IIfcBuildingStorey S, string Name, double M2, string Art, double? C, string Typ, IIfcProduct[] Bauteile)[] raeume =
+                {
+                    (eg, "Büroraum", 40, "bhtHeated", 20.0, "mrtOffice", new IIfcProduct[] { boden, decke, sued }),
+                    (eg, "Büroraum 2", 30, "bhtHeated", 20.0, "mrtOffice", new IIfcProduct[] { boden, decke, sued }),
+                    (eg, "Flur", 20, "bhtHeated", 15.0, "mrtHall", new IIfcProduct[] { boden, decke, duschwand }),
+                    (eg, "WC-Raum", 6, "bhtHeated", 20.0, "mrtWC", new IIfcProduct[] { boden, decke }),
+                    (eg, "Lagerraum", 25, "bhtUnHeated", null, "mrtStore", new IIfcProduct[] { boden, decke, sued }),
+                    (og, "Wohnraum", 35, "bhtSeparatelyHeated", 20.0, "mrtLiving", new IIfcProduct[] { decke, dach, nord }),
+                    (og, "Raum 7", 12, "bhtHeated", null, "mrtOffice", new IIfcProduct[] { decke, dach }),
+                    (og, "Abstellraum", 10, "bhtUnHeated", 10.0, "mrtStore", new IIfcProduct[] { decke, dach, nord }),
+                    (eg, "Dusche", 3, "bhtHeated", 24.0, "mrtShower", new IIfcProduct[] { boden, duschwand }),
+                };
+                double x = 150;
+                foreach (var r in raeume)
+                {
+                    IIfcSpace raum = b.RaumEnthalten(r.S, r.Name, x, 150, r.M2, r.M2 * 2.5, 2500, zerlegt: false);
+                    b.Raumangaben(raum, r.Art, r.C, r.Typ);
+                    b.Bezug(raum, r.Bauteile);
+                    x += 1000;
+                }
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
         /// <b>Zwei Räume übereinander ohne Raumgrenzen und ohne Raumbezug</b> (Mehrzonenkonzept 6.5, Trenndecke ohne
         /// Raumgrenzen): EG „Wohnen“ 6 × 5 m im Ursprung, OG „Schlafen“ 6 × 5 m um 2 m nach Osten versetzt — die
         /// Grundrisse überdecken sich auf 4 × 5 = 20 m². Mit <paramref name="grundriss"/> tragen beide Räume eine
@@ -1177,6 +1257,19 @@ namespace EPOS.Kern.Tests
             }
 
             /// <summary>Die Beheizungsart eines Raums nach dem Muster des CAD-Exports (<c>HeatingType</c>, Aufzählung).</summary>
+            /// <summary>Der Heizsollwert eines Raums als <c>Pset_SpaceThermalRequirements.SpaceTemperature</c> [°C].</summary>
+            public void Solltemperatur(IIfcSpace r, double temperaturC)
+                => Satz(r, "Pset_SpaceThermalRequirements", ("SpaceTemperature", new IfcThermodynamicTemperatureMeasure(temperaturC)));
+
+            /// <summary>Beheizungsart, Raumtemperatur und Raumtyp eines CAD-Exports in einem Satz <c>CAD_RaumAllgemein</c>.</summary>
+            public void Raumangaben(IIfcSpace r, string beheizungsart, double? temperaturC, string raumtyp)
+            {
+                var liste = new List<IIfcProperty> { Aufzaehlung("HeatingType", beheizungsart) };
+                if (temperaturC.HasValue) liste.Add(Einzel("InsideTemperature (°C)", new IfcReal(temperaturC.Value)));
+                liste.Add(Aufzaehlung("RoomType", raumtyp));
+                SatzMit(r, "CAD_RaumAllgemein", liste);
+            }
+
             public void Beheizungsart(IIfcSpace r, string wert, double? temperaturC = null)
             {
                 var liste = new List<IIfcProperty> { Aufzaehlung("HeatingType", wert) };
