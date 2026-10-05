@@ -756,6 +756,13 @@ rechnet alle zwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **86 257 664 Byte, LFS-SHA-256 `889d0699bdd9e264938ea9b3cb419f82716828e31f65a450fac1f652d4933cdf`**. **Die Basis
 > bleibt:** 1053 ist kein Referenzprojekt; der Referenzlauf der neunzehn Projekte meldet je Projekt PASS.
 
+> **Nachtrag — Schemaschritt 186 (Anlagenfahrplan), Basis unverändert.**
+> `AnlagenfahrplanSchema` (186 = 185 + 1) legt an `Tab_Energieanlagen` `Zeitprogramm` und `Vorlauf_Max`, an
+> `Tab_ErgebnisEnergiebedarf` sechs Komfort- und Fahrplanspalten an, alle leer, ohne Saat; der Rechenweg liest sie nicht.
+> Die Testdatenbank steht auf **186**: **86 917 120 Byte, LFS-SHA-256
+> `3878da28c64ade18ca935e27e2472570833ee2b5693ac93e027e8ccbe3bda392`**. **Die Basis bleibt:** Die acht CI-Projekte
+> rechnen gegen R36 je Projekt PASS, 262 CSV byte-gleich.
+
 ### Die Vorgängerbasis R35 `2026-10-04_R35_Zonenuebergabe`
 
 Neunzehn Projekte, 576 CSV, 3 791 Skalare, auf Linux eingefroren gegen die Testdatenbank `905096ae…` (Schemastand 185,
