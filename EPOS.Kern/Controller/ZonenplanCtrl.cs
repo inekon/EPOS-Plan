@@ -16,11 +16,14 @@ namespace WindowsFormsApplication1
     internal static class ZonenplanCtrl
     {
         /// <summary>
-        /// <b>Gibt einer Zone die Vorlagen ihrer Nutzung</b>: je Größe die erste ausgelieferte Vorlage dieser Nutzung in der
-        /// Ordnung der Auswahlliste, übernommen über den Vorlagenweg (<see cref="KonditionierungsvorlageCtrl.Uebernehmen"/>:
-        /// Kalenderkopie mit den Ferien der Zone, Nutzung an der Kopie) auf die wirksame Matrix der Zone. Eine Größe ohne
-        /// Vorlage dieser Nutzung bleibt ohne Kalender. Läuft im Vorgang des Aufrufers, wenn einer angemeldet ist
-        /// (<see cref="Vorgangsklammer"/>; je Größe ein Sicherungspunkt).
+        /// <b>Gibt einer Zone die Vorlagen ihrer Nutzung</b> über den Weg von „Vorlage übernehmen“ (KP2): je Größe die erste
+        /// ausgelieferte Vorlage dieser Nutzung in der Ordnung der Auswahlliste, als reiner Schritt
+        /// (<see cref="Konditionierungsarbeit.VorlageUebernehmen"/>: Kalenderkopie mit den Ferien der Zone, Folgen) auf dem
+        /// Arbeitsstand des Gebäudes; danach werden Gebäude- und Zonenebene geschrieben und die Kopien tragen die Nutzung.
+        /// Eine unbeheizte Zone bekommt keinen Heiz- und Kühlkalender (Zonenregel), eine Größe ohne Vorlage dieser Nutzung
+        /// keinen Kalender. Fragt die Lüftung nach dem Aufteilen der Gesamtangabe <c>Luftwechselrate</c> (F5), wird
+        /// aufgeteilt — der wirksame Luftwechsel bleibt. Läuft im Vorgang des Aufrufers, wenn einer angemeldet ist
+        /// (<see cref="Vorgangsklammer"/>, Sicherungspunkt).
         /// </summary>
         /// <returns><c>null</c>, wenn alles übernommen ist; sonst die erste Ablehnung.</returns>
         internal static string NutzungUebernehmen(int idGebaeude, int idZone, string nutzung)
@@ -30,16 +33,46 @@ namespace WindowsFormsApplication1
                 return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG, nutzung);
             var vorlagen = new KonditionierungsvorlageCtrl();
             var kond = new KonditionierungCtrl();
-            KonditionierungCtrl.Eigner ziel = KonditionierungCtrl.Eigner.Zone(idGebaeude, idZone);
+            Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
+            Konditionierungszone zone = stand?.Zone(idZone);
+            if (zone == null) return gelesen ?? "";
+            var uebernommen = new List<Konditionierungsgroesse>();
             foreach (Konditionierungsgroesse groesse in Konditionierungsgroessen.Alle)
             {
-                KonditionierungsvorlageCtrl.Vorlage vorlage = vorlagen.Liste(groesse)
+                if (!zone.IstBeheizt && (groesse == Konditionierungsgroesse.Heizsoll || groesse == Konditionierungsgroesse.Kuehlsoll)) continue;
+                KonditionierungsvorlageCtrl.Vorlage kopf = vorlagen.Liste(groesse)
                     .FirstOrDefault(x => x.Ausgeliefert && string.Equals(x.Nutzung, nutzung, StringComparison.Ordinal));
-                if (vorlage == null) continue;
-                Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string meldung);
-                if (stand == null) return meldung ?? "";
-                KonditionierungCtrl.Ergebnis e = vorlagen.Uebernehmen(vorlage.Id, ziel, stand.Matrix(idZone));
-                if (!e.Ok) return e.Meldung;
+                if (kopf == null) continue;
+                Konditionierungsstand inhalt = kond.StandLesen(KonditionierungCtrl.Eigner.Vorlage(kopf.Id), out string m);
+                if (m != null) return m;
+                var vorlage = new Konditionierungsvorlage(kopf.Id, kopf.Bezeichner, kopf.Groesse, inhalt);
+                var ort = new Konditionierungsort(groesse, idZone);
+                Konditionierungsschritt schritt = Konditionierungsarbeit.VorlageUebernehmen(stand, ort, vorlage);
+                if (schritt.Rueckfrage)
+                {
+                    Konditionierungsschritt geteilt = Konditionierungsarbeit.LuftwechselAufteilen(stand);
+                    if (!geteilt.Ok) return geteilt.Meldung;
+                    schritt = Konditionierungsarbeit.VorlageUebernehmen(geteilt.Stand, ort, vorlage);
+                }
+                if (!schritt.Ok || schritt.Rueckfrage) return schritt.Meldung ?? "";
+                stand = schritt.Stand;
+                uebernommen.Add(groesse);
+            }
+            if (uebernommen.Count == 0) return null;
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                KonditionierungCtrl.Eigner ziel = KonditionierungCtrl.Eigner.Zone(idGebaeude, idZone);
+                KonditionierungCtrl.Ergebnis e = kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), stand.Gebaeude, true, out _);
+                if (e.Ok) e = kond.StandSchreiben(v, ziel, stand.Zone(idZone).Stand, true, out _);
+                if (!e.Ok)
+                {
+                    v.Rollback();
+                    return e.Meldung;
+                }
+                // Die Kopie trägt die Nutzung der Vorlage selbst (wie „Vorlage übernehmen").
+                foreach (Konditionierungsgroesse groesse in uebernommen) KonditionierungCtrl.NutzungSetzen(ziel, groesse, nutzung);
+                v.Commit();
             }
             return null;
         }
