@@ -34,7 +34,7 @@ Gate 730 im Hauptbaum auf `688cdb7e`: Kern-Filter 0 Fehler, ChartProben 208 glei
 
 - Ziehen mit der Maus (zweite Stufe); Pfeiltasten im Baum (`role=tree`).
 - Gespeicherter Plan derselben Datei wird noch nicht als Startplan geladen (`ZonenplanCtrl.Gespeichert` vorhanden).
-- Leere Zonen und der Merker „angelegt“ überleben den erneuten Import nicht; dafür wäre `Tab_Zone.Nutzung`/`Angelegt` (Schemaschritt) nötig — nach Entscheid.
+- Leere Zonen und der Merker „angelegt“ überleben den erneuten Import nicht; dafür wäre `Tab_Zone.Nutzung`/`Angelegt` (Schemaschritt) nötig — E81 (05.10.2026): kein Schemaschritt, bleibt so.
 - DIN-V-18599-Nutzungsprofile aus der `.sqproj` (Befund `aktuell/Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md`) als eigene Welle.
 - Windows-Sichtabnahme des Zonenbaums (Anwender); Logbuch-Satz (Version offen): „Der Gebäudeimport zeigt die Zonen als Baum mit einer Liste nicht zugeordneter Räume; Zonen lassen sich anlegen, löschen, benennen und mit einer Nutzung versehen, Räume, Geschosse oder der Rest nach Regel lassen sich zuordnen.“
 
