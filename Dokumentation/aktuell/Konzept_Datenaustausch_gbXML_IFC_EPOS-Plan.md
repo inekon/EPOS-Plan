@@ -2080,3 +2080,124 @@ Zuruf und mit dem einen iOS-Lauf, den der Anwender ohnehin freigibt.
 | 30 | **Dateikörper und Exportmodell getrennt** (bunit) (grün) | Der Umschalter wechselt zwischen beiden; „Dateikörper“ trägt die Kennzeichen je Raum, „Exportmodell“ die Kennzeichnung aus 14.4; ohne Dateikörper kein Umschalter; kein Anzeigetext ist Steuerwert |
 | 31 | **iPad-Grenze** (nur auf Zuruf; **offen**) | Dreieckszahl, Bytefeld und Ladezeit an FZK-Haus und DigitalHub; über der Grenze die benannte Vereinfachung statt eines Absturzes |
 | 32 | **Flächenpaare aus Raumkörpern** (grün) | Zwei Quader mit gemeinsamer Wand ergeben eine Trennwand mit der Überlappungsfläche; stehen Raumgrenzen in der Datei, werden die Körperpaare nur gezählt (`KOERPERPAARE_GEZAEHLT`) |
+
+---
+
+## 16. Nachtrag 3 — Nutzungsprofile, Tagesganglinien und Kalender aus der HottCAD-Projektdatei (E80, 05.10.2026)
+
+Der Anwender hat am 05.10.2026 festgelegt (**E80**, [Status](Status_Gebaeudesimulation_VDI6007.md), auf den
+[Befund zur Projektdatei](Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md)): **kein Klimaimport**; der
+eigene IFC-Export schreibt alle vorhandenen Daten; **vorzunehmen** sind die Nutzungsprofile aus `PdProfile` mit der
+DIN-V-18599-Nummer, je Profilklasse die 24-Stunden-Tagesganglinien aus `PdProfileTimeCurve` und die Kalender aus
+`PdProfileTaskSerial`; **die Hülle kommt weiter aus dem IFC-Export.** Dieser Nachtrag legt die Stufe **SQ** vor. Er
+ergänzt Kapitel 15 und das Mehrzonenkonzept 6.4 (Zonenplan, E79) und lässt Leser, Exporte und ADR-003 unberührt.
+
+### 16.1 Ziel und Abgrenzung
+
+| Gehört dazu | Gehört nicht dazu |
+|---|---|
+| die Projektdatei (`.sqproj`, SQLite 3) **zusätzlich** zur IFC-Datei desselben Projekts lesen | ein Import allein aus der Projektdatei: Wände, Fenster, Türen und Aufbauten liegen dort nur in Binär- und XML-Strömen (Befund 3.5) |
+| Zonen (`BmZone`, `BmZoneReference`) in den Zonenplan übernehmen | Klimareihen (`SmDiagram`), Standort, Ergebnisse, Anlage, Katalog |
+| je Zone die Konditionierung aus den Profilen: Heizsollwert, Kühlsollwert, Lüftung, Geräte, Personen als Kalender mit Standardwoche und Perioden | Beleuchtung, Elektro, Trinkwasser, Feuchte, Sonnenschutz (keine Größe in EPOS-Plan — benannt übersprungen) |
+| das DIN-V-18599-Nutzungsprofil (`PdProfileUsage`) als Vorgabe-Matrix und als Nutzung der Zone | das Nachtippen der Normtabelle: ohne Projektdatei gelten die Vorlagen wie heute |
+| Herkunft und Beleg je Wert, sichtbar im Dialog | Rückschreiben in die Projektdatei |
+
+**Die Projektdatei bleibt Quelle.** Was der Leser nicht sicher deuten kann (unbekannte Codes), fällt benannt auf die
+heutige Vorgabe zurück; es wird nichts geraten.
+
+### 16.2 Lesen ohne Fremdbibliothek
+
+Die Projektdatei wird mit `Microsoft.Data.Sqlite` **nur lesend** geöffnet (`Mode=ReadOnly`, nie `VACUUM`, nie ein
+Schreibzugriff, keine Journale neben der Datei des Anwenders). Der Leser prüft zuerst `XmTables.Version` und das
+Vorhandensein der benötigten Tabellen; fehlt eine, wird der Import der Projektdatei benannt abgelehnt, die IFC-Daten
+bleiben. Ein Stream (iOS) wird in eine Arbeitskopie im App-Container gelegt, Größengrenze wie beim IFC-Import. Gelesen
+wird nur, was Kapitel 16.3 nennt; der Leser hält keine Verbindung über den Import hinaus.
+
+### 16.3 Die Abbildung
+
+**Räume und Zonen.** `BmBuilding → BmFloor → BmRoom` (über `FloorUUID`) und `BmZone` mit `BmZoneReference`
+(`UUID` = Zone, `ReferenceToUUID` = Raum, `ReferenceClass` `TModelRoom`). Der Abgleich mit den `IfcSpace` der
+IFC-Datei läuft über den **Raumnamen je Geschoss** (Geschossname aus `BmFloor` gegen `IfcBuildingStorey.Name`), zweitens
+über `BmRoom.BIMUUID` ↔ `IfcSpace.GlobalId` (GUID in Klammern ↔ 22-stellige Base64-Form, umkodiert); trifft kein Weg,
+bleibt der Raum unzugeordnet und wird benannt. Zonen vom `ZoneType` 6 (Simulationszonen mit Profilgruppe) und 5
+(Nutzungszonen mit DIN-V-18599-Profil) werden freie Zonen des Zonenplans (E79) mit Name und Nutzung; trägt ein Raum
+mehrere Zonen, gilt die Simulationszone; Zonen ohne Raum werden als leere Zonen gemeldet und nicht angelegt. Die
+übrigen `ZoneType`-Codes (2, 8, 10) werden gezählt und übersprungen.
+
+**Nutzung.** Die DIN-V-18599-10-Profilnummer (`PdProfileUsage.ProfileUsageType`) wird über eine feste Tabelle im Kern
+auf die Nutzung der Zone abgebildet: Büroprofile (Einzel-, Gruppen-, Großraumbüro, Besprechung, Schalter) → BUERO;
+Schulprofile (Klassenzimmer, Hörsaal, Bibliothek) → SCHULE; Wohnprofile (70, 71 und die Wohnzeilen der Norm) → WOHNEN;
+alles andere → keine Nutzung, die Nummer steht im Beleg. Die Tabelle ist sprachneutral und wird mit Nummer und Normname
+in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen.
+
+**Vorgabe-Matrix aus dem Nutzungsprofil** (Konditionierungskonzept 3.3): `NominalRoomTemperature` → Zeile TAG des
+Heizsollwerts; `DropOfTemperatureSetback` → NACHT als Absenkung mit `Von`/`Bis` aus `PeriodOfOperationFrom/To` bzw.
+`HeatedFrom/To` (Nullzeit heißt „keine Angabe“ → Vorgabe); `SupplyAirChange` bzw. die Außenluft je Person und Fläche →
+Lüftung TAG (1/h, bezogen auf das Raumvolumen); `UserCount`, `SpecificThermalOutputPowerOfPersons` → Personen-Nennwert
+(W) und TAG 100 %; `SpecificThermalOutputOfDevices` × Nutzfläche → Geräte-Nennwert; `DailyEffectiveLoadHours…` →
+Anteil TAG. Jede Zelle bekommt die Herkunft „aus Projektdatei“ mit Beleg (Tabelle, Spalte, Profilnummer).
+
+**Tagesganglinien** (`PdProfileTimeCurve`, 24 Zeilen je Profil, `HourType` 1…24): Heizen (`Temperature`) →
+HEIZSOLL, Kühlen (`Temperature`) → KUEHLSOLL, Lüftung (`SpecificRatedAirChange`) → LUEFTUNG, Geräte (`Ratio`) → GERAETE
+mit Nennwert aus `PdProfileDevice`, Personen (`Ratio`) → PERSONEN mit Nennwert aus `PdProfilePerson`
+(`RatedPersonOccupancyRate`, `SpecificRatedDryHeatEmission`; ohne Nennwert gilt 70 W je Person wie im Haus). Die 24
+Stunden werden zur **Standardwoche (168 Zellen)** ausgerollt: die Tagesart der Profilgruppe
+(`PdProfileGroup.ProfileUsageDayType`) entscheidet, ob die Kurve für alle sieben Tage gilt oder nur für Werktage (dann
+Samstag und Sonntag „aus“ bzw. der Nachtwert); unbekannte Codes gelten als „alle Tage“ und werden benannt
+(`IMP_SQ_PROT_TAGESART_UNBEKANNT`). `OperatingModeType` (1, 2) wird gezählt und im Beleg genannt, nicht gedeutet.
+Werte außerhalb der Grenzen der Größe (Konditionierungskonzept 3.1) werden benannt begrenzt.
+
+**Kalender** (`PdProfileTaskSerial` über `PdProfileTaskSerialReference`): je Abschnitt eine **Periode** der Art
+ZEITRAUM mit `Beginn`/`Ende` aus `TaskStartDay`/`TaskEndDay` (Tag 1…365; Start nach Ende = über den Jahreswechsel);
+sind Wochentagsschalter gesetzt, bekommt die Periode eine eigene Woche, in der die nicht gewählten Tage „aus“ tragen;
+der Ganzjahresabschnitt ohne Schalter ergibt keine Periode (die Standardwoche genügt). `TaskPeriodType` ≠ 1 wird
+gezählt und als Zeitraum behandelt, benannt. Ferien, Feiertage und Heizperiode kennt die Projektdatei nicht als
+Tabelle; sie bleiben Sache des Anwenders (Perioden von Hand, Feiertagsregel).
+
+**Rangfolge je Zelle:** Tagesganglinie vor Nutzungsprofil vor Vorlage der Nutzung vor Programmvorgabe. Was die
+Projektdatei liefert, ersetzt beim Import die Kalenderkopien der Vorlagen; was sie nicht liefert, kommt wie heute aus
+der Vorlage der Nutzung (E79). Jeder Wert bleibt im Dialog änderbar; eine Handänderung ist manuell.
+
+**IFC-Export (E80):** Der eigene IFC-Export schreibt die vorhandenen Daten der Zonen auch zurück: Nutzung, Sollwerte
+und Kalender als `EPOS_Zone`-Eigenschaften (Standardwoche als Text, Perioden als Liste), zusätzlich zu
+`Pset_SpaceThermalRequirements`. Das ist eine Ergänzung der Stufe G7c und wird mit SQ-3 gebaut.
+
+### 16.4 Der Weg im Dialog
+
+Im Zuordnungsdialog steht neben der IFC-Datei der Knopf **„Projektdatei dazuladen (.sqproj)“** (nur bei IFC-Dateien,
+deren `ObjectType` `TModel…` oder Erzeuger HottCAD ist, sonst ausgegraut mit Grund). Nach dem Lesen zeigt der Kopf die
+Bilanz: Räume abgeglichen / nicht abgeglichen, Zonen übernommen, Profile je Größe, Abschnitte, Übersprungenes mit Grund.
+Der Zonenbaum (E79) zeigt die Zonen der Projektdatei mit Nutzung; nicht abgeglichene Räume stehen rechts. Die
+Konditionierung je Zone erscheint in der Zonenzeile (Heizsollwert Tag aus der Ganglinie, Nutzung) und nach dem
+Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. Ohne Projektdatei bleibt alles wie heute.
+
+### 16.5 Stufen und Aufwand
+
+| Stufe | Inhalt | Abnahme | Aufwand |
+|---|---|---|---|
+| **SQ-1 — Kern-Leser und Abbildung** | `Import/Sqproj/`: Leser (ReadOnly, Fassungsprüfung, Tabellenprüfung), Abbild (Räume, Zonen, Profile, Kurven, Abschnitte), Raumabgleich gegen das IFC-Abbild, Zonenplan-Übernahme, Konditionierung je Zone (Matrix, Standardwoche, Perioden, Nennwerte) als Kalenderzeilen mit Herkunft; Meldungen de/en; synthetische `.sqproj`-Proben (Erzeuger im Test, nur die benötigten Tabellen) | Proben 33–36 | **3–4 PT** |
+| **SQ-2 — Dialog** | Knopf, Bilanz, Zonenbaum mit Projektdatei, Speichern der Kalender, Dateiweg Windows und iOS (Stream → Arbeitskopie) | Probe 37 (bunit), Sichtprobe Windows | **1–2 PT** |
+| **SQ-3 — Export und Papiere** | `EPOS_Zone`-Sätze im IFC-Export (Nutzung, Sollwerte, Kalender), Rundlauf Export → Leser; dieses Kapitel als „So gebaut“, Konditionierungskonzept 5.5 (Leser), Mehrzonenkonzept 6.4, Wiki, Logbuch, Protokoll | Probe 38, Wachen | **1 PT** |
+| | **zusammen** | | **5–7 PT** |
+
+### 16.6 Regeln
+
+1. **Nur lesen**, keine Spur an der Datei des Anwenders; die Datei kommt nie ins Repositorium (`*.sqproj` in
+   `.gitignore` unter `Quellen/`, Diagnose wie bei `Quellen/*.ifc` nur, wenn eine Datei lokal liegt).
+2. **Keine gedeuteten Codes:** `ZoneType`, `ProfileUsageDayType`, `OperatingModeType`, `TaskPeriodType` werden nur in den
+   belegten Werten des Befunds genutzt; jeder andere Wert fällt benannt zurück. Eine zweite Projektdatei mit mehreren
+   belegten Zonen und Wochentagskalendern festigt die Tabelle (offen, Kapitel 5 des Befunds).
+3. **Herkunft je Zelle** sichtbar und als Beleg gespeichert, wie beim IFC-Import; Handänderungen schlagen den Import.
+4. **Keine Produktdaten** in Papieren, Proben und Wiki: Proben sind selbst erzeugt mit neutralen Namen und runden Werten.
+5. **Determinismus:** feste Reihenfolgen (Räume nach Geschoss und Name, Profile nach Klasse, Stunden 1…24).
+
+### 16.7 Abnahmeproben
+
+| Nr. | Probe | Kriterium |
+|---|---|---|
+| 33 | **Leser und Fassung** | selbst erzeugte Kleinstdatei mit `XmTables`, `BmBuilding/Floor/Room`, `BmZone/BmZoneReference`, `PdProfile*`, `PdProfileTimeCurve`, `PdProfileTaskSerial(+Reference)`, `PdProfileGroup(+Reference)`: Räume, Zonen, Profile und Abschnitte kommen vollständig an; fehlende Tabelle → benannte Ablehnung; Schreibversuch unmöglich (ReadOnly) |
+| 34 | **Raumabgleich** | Räume treffen über Name je Geschoss, über `BIMUUID` ↔ `GlobalId`, und bleiben benannt unzugeordnet, wenn beides fehlt |
+| 35 | **Konditionierung** | Heiz-/Kühlsollwert, Lüftung, Geräte, Personen aus Ganglinie und Nutzungsprofil ergeben die erwarteten 168 Zellen, Nennwerte und Perioden; Tagesart Werktage lässt das Wochenende „aus“; Grenzen benannt begrenzt; Rangfolge Ganglinie vor Profil vor Vorlage |
+| 36 | **Zonenplan** | Zonen der Projektdatei werden freie Zonen mit Nutzung aus der Profilnummer; Räume in mehreren Zonen folgen der Simulationszone; leere Zonen gemeldet |
+| 37 | **Dialog** (bunit) | Knopf nur bei HottCAD-IFC, Bilanz, Zonenbaum mit Projektdatei, Speichern schreibt Kalender, Perioden und Vorgaben mit Herkunft |
+| 38 | **Rundlauf Export** | `EPOS_Zone`-Sätze des IFC-Exports kommen über den IFC-Leser als Zonen-Konditionierung zurück |
