@@ -5175,6 +5175,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_VORLAUFWAHL = VorlaufwahlSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="RaumnutzungSchema.SCHRITT"/> — <b>Katalog der Nutzungsprofile</b> (NP1a): fünf
+        /// Katalogtabellen samt Saat, freie Nutzung an <c>Tab_Konditionierungskalender</c> und
+        /// <c>Tab_Konditionierungsvorlage_STAMM</c> (Tabellenneubau), <c>Tab_Zone.Nutzungsprofil</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest Katalog oder Zonenspalte; die Kalender
+        /// behalten Zeilen, IDs und Nutzungen.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG = RaumnutzungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7514,6 +7524,12 @@ namespace WindowsFormsApplication1
                         "Die Stunden je Kennlinienstuetzstelle der Waermepumpe haetten im Ergebnis keinen Platz. " +
                         "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_Vorlaufwahl),
+            // KATALOG DER NUTZUNGSPROFILE (NP1a). Quelle ist RaumnutzungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG,
+                        "Tab_Raumnutzung* (Katalog, Profil, Zeile, Stunden, Zuordnung), Nutzung an Kalender und Vorlage, Tab_Zone.Nutzungsprofil",
+                        "Nutzungsprofile haetten keinen Katalog, die Nutzung der Kalender bliebe auf vier Kennungen beschraenkt " +
+                        "und die Zone truege ihren Profilnamen nicht. KEIN Rechenergebnis aendert sich.",
+                        Schritt_Raumnutzung),
         };
 
         /// <summary>
@@ -14301,6 +14317,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Ausweis der Vorlaufwahl der Waermepumpe - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalog der Nutzungsprofile" — Anlass und Wirkung stehen bei <see cref="SCHRITT_RAUMNUTZUNG"/>,
+        /// die Anweisungen bei <see cref="RaumnutzungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Raumnutzung(Lauf l)
+        {
+            string nr = RaumnutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RaumnutzungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Katalog der Nutzungsprofile, freie Nutzung oder Tab_Zone.Nutzungsprofil stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Katalog der Nutzungsprofile - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

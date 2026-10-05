@@ -74,8 +74,18 @@ namespace WindowsFormsApplication1
                 ? ZonenUebergabeSchema.SPALTEN_ZONE
                 : (IReadOnlyList<string>)Array.Empty<string>();
 
-        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, dann Übergabe je Zone.</summary>
-        private static IReadOnlyList<string> Zusatzspalten() => Kuehlspalten().Concat(Uebergabespalten()).ToList();
+        /// <summary>
+        /// Die Spalte des Nutzungsprofils an der Zone (Q41, <see cref="RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL"/>) — wie
+        /// die übrigen Zusatzspalten gelesen und geschrieben; leer, solange die Datenbank den Schritt nicht trägt. NULL bleibt NULL.
+        /// </summary>
+        private static IReadOnlyList<string> Nutzungsprofilspalten()
+            => GebaeudeZonenanschluss.NutzungsprofilVorhanden()
+                ? new[] { RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL }
+                : (IReadOnlyList<string>)Array.Empty<string>();
+
+        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil.</summary>
+        private static IReadOnlyList<string> Zusatzspalten()
+            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).ToList();
 
         /// <summary>Die Werte zu <paramref name="zusatz"/> (aus <see cref="Zusatzspalten"/>) in derselben Reihenfolge.</summary>
         private static IEnumerable<DbParam> Zusatzwerte(ZoneModel z, IReadOnlyList<string> zusatz)
@@ -83,6 +93,8 @@ namespace WindowsFormsApplication1
             IEnumerable<DbParam> werte = Enumerable.Empty<DbParam>();
             if (zusatz.Contains(GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_ART)) werte = werte.Concat(Kuehlwerte(z));
             if (zusatz.Contains(ZonenUebergabeSchema.SPALTE_AUSLEGUNG_VORLAUF)) werte = werte.Concat(Uebergabewerte(z));
+            if (zusatz.Contains(RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL))
+                werte = werte.Append(BaustoffCtrl.Text("@np", z.Nutzungsprofil));
             return werte;
         }
 
@@ -291,6 +303,8 @@ namespace WindowsFormsApplication1
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_ID_DOPPELT, zn, z.ID);
                 string t = BaustoffCtrl.Laenge(MyResource.Resource.KFLT_SP_NAME, zn, BaustoffSchema.LAENGE_BEZEICHNER)
                            ?? BaustoffCtrl.Laenge(MyResource.Resource.BAUTEIL_FELD_QUELLKENNUNG, z.Quellkennung, BaustoffSchema.LAENGE_QUELLKENNUNG)
+                           ?? BaustoffCtrl.Laenge(MyResource.Resource.ZONE_FELD_NUTZUNGSPROFIL, z.Nutzungsprofil?.Trim(),
+                                                  RaumnutzungSchema.NUTZUNG_MAX_ZEICHEN)
                            ?? BaustoffCtrl.HerkunftPruefen(z.Herkunft);
                 if (t != null) return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_WERT, zn, t);
                 if (z.Nutzflaeche.HasValue && (!(z.Nutzflaeche.Value > 0.0) || double.IsInfinity(z.Nutzflaeche.Value)))
@@ -1304,7 +1318,8 @@ namespace WindowsFormsApplication1
                     Auslegung_Raumtemperatur = BaustoffCtrl.ZahlAus(r, ZonenUebergabeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR),
                     Regler_Proportionalband = BaustoffCtrl.ZahlAus(r, ZonenUebergabeSchema.SPALTE_REGLER_PROPORTIONALBAND),
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
-                    Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung")
+                    Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
+                    Nutzungsprofil = BaustoffCtrl.TextAus(r, RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL)
                 };
                 liste.Add(z);
                 jeId[z.ID] = z;

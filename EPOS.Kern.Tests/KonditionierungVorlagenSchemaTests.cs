@@ -482,13 +482,16 @@ namespace EPOS.Kern.Tests
             Einfuegen(ein, P("HEIZSOLL", new string('x', 80)));
             Assert.True(Wirft(ein, P("HEIZSOLL", "Lang", new string('b', 401))));
             Einfuegen(ein, P("HEIZSOLL", "Lang", new string('b', 400)));
-            Assert.True(Wirft(ein, P("HEIZSOLL", "Fremd", null, "KINO")));
+            // Die Nutzung ist seit Schritt 189 (RaumnutzungSchema, NP-F15) freier Text von 1 bis 120 Zeichen.
+            Assert.True(Wirft(ein, P("HEIZSOLL", "Fremd", null, "")));
+            Assert.True(Wirft(ein, P("HEIZSOLL", "Fremd", null, new string('n', 121))));
+            Einfuegen(ein, P("HEIZSOLL", "Fremd", null, "KINO"));
             Assert.True(Wirft(ein, P("HEIZSOLL", "Schloss", null, null, 2)));
             Assert.True(Wirft(ein, P("TEMPERATUR", "Groesse")));
             foreach (string n in DbWerte.KOND_NUTZUNGEN)
                 Einfuegen(ein, P("PERSONEN", "Nutzung " + n, null, n));
 
-            Assert.Equal(9, Zahl("SELECT COUNT(*) FROM \"" + VLG + "\""));
+            Assert.Equal(10, Zahl("SELECT COUNT(*) FROM \"" + VLG + "\""));
         }
 
         /// <summary>

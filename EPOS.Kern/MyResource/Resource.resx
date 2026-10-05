@@ -9059,6 +9059,9 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="ZONE_MSG_WERT" xml:space="preserve">
     <value>Zone „{0}“: {1}</value>
   </data>
+  <data name="ZONE_FELD_NUTZUNGSPROFIL" xml:space="preserve">
+    <value>Nutzungsprofil</value>
+  </data>
   <data name="ZONE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Die Zonen des Gebäudes konnten nicht gespeichert werden: {0}</value>
   </data>

@@ -107,12 +107,12 @@ namespace EPOS.Kern.Tests
             Assert.Contains("\"Nutzung\" TEXT CHECK", sql);
             Assert.EndsWith("STRICT", sql.TrimEnd());
 
-            // Die Prüfklausel hält einen fremden Wert fern.
+            // Die Prüfklausel hält einen leeren Wert fern (seit Schritt 189 freier Text, NP-F15).
             long g = GebaeudeDesProjekts(PROJEKT);
             long id = Vorlage(Konditionierungsgroesse.Heizsoll, "Nutzungsprobe", "WOHNEN", 21.0);
             Assert.True(_ctrl.Uebernehmen(id, KonditionierungCtrl.Eigner.Gebaeude(g), Zielmatrix()).Ok);
             Assert.False(DataRepository.ExecuteSQL(
-                "UPDATE \"" + KonditionierungSchema.TAB_KALENDER + "\" SET \"Nutzung\" = 'KINO' WHERE \"ID_Gebaeude\" = ?",
+                "UPDATE \"" + KonditionierungSchema.TAB_KALENDER + "\" SET \"Nutzung\" = '' WHERE \"ID_Gebaeude\" = ?",
                 new DbParam("@g", g)));
             Assert.Equal("WOHNEN", NutzungAmKalender(g, Konditionierungsgroesse.Heizsoll));
         }

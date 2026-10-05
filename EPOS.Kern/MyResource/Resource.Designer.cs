@@ -120276,6 +120276,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil ähnelt.
+        /// </summary>
+        public static string ZONE_FELD_NUTZUNGSPROFIL {
+            get {
+                return ResourceManager.GetString("ZONE_FELD_NUTZUNGSPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Σ Zonen {0} m² gegen Gebäude {1} m² ({2} %): Die Nutzflächen der Zonen weichen um 5 % oder mehr von der des Gebäudes ab – Räume doppelt gezählt oder vergessen? ähnelt.
         /// </summary>
         public static string ZONE_HINWEIS_FLAECHE {

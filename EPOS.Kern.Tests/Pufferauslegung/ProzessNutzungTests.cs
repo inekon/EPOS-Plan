@@ -88,7 +88,9 @@ namespace EPOS.Kern.Tests.Pufferauslegung
                 Assert.EndsWith("STRICT", Convert.ToString(DataRepository.ExecuteScalar(
                     "SELECT sql FROM sqlite_master WHERE name = ?", new DbParam("?", t))).TrimEnd());
             Assert.Equal(5L, Zahl("SELECT COUNT(*) FROM Tab_Nutzungsprofil_STAMM WHERE ReadOnly = 1"));
-            Assert.Equal((long)NutzungsprofilZuordnung.VORGABE.Count, Zahl("SELECT COUNT(*) FROM Z_Nutzungsprofil"));
+            // Dazu die Musternamen Büro und Schule unter KONDITIONIERUNG (Schritt 189, RaumnutzungSaat, NP-F15).
+            Assert.Equal((long)(NutzungsprofilZuordnung.VORGABE.Count + RaumnutzungSaat.Pufferzuordnungen.Count),
+                         Zahl("SELECT COUNT(*) FROM Z_Nutzungsprofil"));
             Assert.Equal(26, NutzungsprofilZuordnung.VORGABE.Count);
             // Die Prüfklauseln greifen.
             try { DataRepository.ExecuteNonQuery("INSERT INTO Z_Nutzungsprofil (ID_Nutzungsprofil, Quelle, Schluessel) VALUES (1, 'FREITEXT', 'x')"); }
