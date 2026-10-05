@@ -2128,7 +2128,16 @@ mehrere Zonen, gilt die Simulationszone; Zonen ohne Raum werden als leere Zonen 
 auf die Nutzung der Zone abgebildet: Büroprofile (Einzel-, Gruppen-, Großraumbüro, Besprechung, Schalter) → BUERO;
 Schulprofile (Klassenzimmer, Hörsaal, Bibliothek) → SCHULE; Wohnprofile (70, 71 und die Wohnzeilen der Norm) → WOHNEN;
 alles andere → keine Nutzung, die Nummer steht im Beleg. Die Tabelle ist sprachneutral und wird mit Nummer und Normname
-in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen.
+in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen. Festgelegt sind (SQ-1, `Din18599Nutzung`): **BUERO** 1–5, **SCHULE** 8, 9, 28, 29,
+**WOHNEN** 70, 71. Trägt eine Simulationszone kein eigenes Nutzungsprofil, gilt das der Nutzungszone, mit der sie die
+meisten Räume teilt, sonst die Profilnummer ihrer Gruppe (`PdProfileGroup.ProfileUsageType`).
+
+**Abgleichsschlüssel (Befund Kapitel 6):** `BmRoom.GId` ist dieselbe GUID wie `IfcSpace.GlobalId`; der Abgleich läuft
+deshalb zuerst über `GId` ↔ `GlobalId`, dann über den Raumnamen je Geschoss; `BIMUUID` ist die Gebäude-GUID. Die
+Raumart (`RoomType` ↔ `mrt…`) ist ein Beleg, kein Schlüssel. **Tagesart als Annahme:** `ProfileUsageDayType` 4 →
+Montag–Freitag, 5 → Montag–Samstag, 6 → alle Tage, benannt (`IMP_SQ_PROT_TAGESART_ANNAHME`) und im Beleg genannt; die
+Stunden mit `OperatingModeType` 2 belegen die Nachtstunden (der Nachtwert der freien Tage), gerechnet wird mit den
+Werten der Kurve.
 
 **Vorgabe-Matrix aus dem Nutzungsprofil** (Konditionierungskonzept 3.3): `NominalRoomTemperature` → Zeile TAG des
 Heizsollwerts; `DropOfTemperatureSetback` → NACHT als Absenkung mit `Von`/`Bis` aus `PeriodOfOperationFrom/To` bzw.

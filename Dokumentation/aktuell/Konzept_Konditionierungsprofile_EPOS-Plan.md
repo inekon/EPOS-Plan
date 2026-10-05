@@ -943,6 +943,14 @@ Die Vorgabe U_g der Bodenplatte (`Erdreich_U_Wirksam`, E65) kam mit **Schritt 18
 | Auslieferungsvorlage | Katalogvorgaben, Katalogkalender, ausgelieferte Vorlagen und die Kalender der Beispielprojekte reisen mit | Die Projektbereinigung erfasst Vorgaben und Kalender über `ID_Gebaeude` als Folgetabellen und lässt Katalog- und Vorlagenzeilen (`ID_Gebaeude` leer) stehen (`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs:24-40, 75-87`); die Katalogbereinigung (`--kataloge readonly`) räumt eigene Vorlagen und entfernte Katalogbauten samt Kaskade; der **Prüfbericht** zählt Vorlagen, Vorgaben, Kalender und Perioden je Eigentümerart; die Werkzeugtests zählen vier STRICT-Tabellen mehr |
 | `SqlDialektPruefer`, KI-Wissen | neue Anweisungen, neue Handlungen | Prüfer ziehen; Aktionswissen „Matrix", „Kalender anlegen", „Vorlage übernehmen", „Nachtauskühlung", „Aufheizoptimierung" |
 
+**Leser aus der HottCAD-Projektdatei** (Datenaustauschkonzept 16, E80): Wird zum IFC-Import die Projektdatei
+dazugeladen, bildet `SqprojKonditionierung` je Zone aus Tagesganglinie und DIN-V-18599-Nutzungsprofil einen formatfreien
+Satz (`Zonenkonditionierung`: Kalender mit Standardwoche und Perioden, Vorgabezellen, je Größe Herkunft und Beleg). Beim
+Speichern schreibt `ZonenplanCtrl.ProjektdateiUebernehmen` ihn nach den Vorlagen der Nutzung über die reinen Schritte
+dieses Konzepts in denselben Vorgang: Je gelieferter Größe weicht die Kalenderkopie der Vorlage, `ZelleSetzen` trägt die
+Zellen des Profils ein (Bestand oder Vorgabetabelle), der Kalender der Ganglinie tritt mit dem Beleg in `Bemerkung` an.
+Größen ohne Angabe der Projektdatei behalten die Vorlage. Kein neues Schema.
+
 Die manuelle Aufheizzeit reist mit „Projekt duplizieren", Variante und `.wpx`, nicht zwischen Katalog und Projekt (kein
 Katalogfeld; die Übernahme lässt NULL); die Importe gbXML und IFC schreiben NULL.
 
