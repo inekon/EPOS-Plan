@@ -68,6 +68,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Konditionierung einer Größe.</summary>
         internal Groessenkonditionierung Groesse(Konditionierungsgroesse g) => Groessen.First(x => x.Groesse == g);
 
+        /// <summary>Stammt die Konditionierung aus einer IFC-Datei von EPOS-Plan (<see cref="Konditionierungsherkunft.IfcDatei"/>)?</summary>
+        internal bool AusIfc => Groessen.Any(g => g.Herkunft == Konditionierungsherkunft.IfcDatei);
+
         /// <summary>Liefert die Projektdatei für mindestens eine Größe etwas?</summary>
         internal bool Liefert => Groessen.Any(g => g.Herkunft != Konditionierungsherkunft.Vorlage);
 

@@ -136,7 +136,7 @@ namespace WindowsFormsApplication1
                     Sollwert = pz.Projektdatei?.HeizsollTag is double sq ? MitEinheit(sq, "°C")
                              : zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? sw : Leer,
                     Raumliste = raeume.Select(r => Planraum(plan, r)).ToList(),
-                    AusProjektdatei = pz.Projektdatei != null,
+                    AusProjektdatei = pz.Projektdatei != null && !pz.Projektdatei.AusIfc,
                     Profiltext = pz.Projektdatei?.Profilnummer is int nr
                         ? Formatieren(MyResource.Resource.GIMP_DLG_SQ_PROFIL, nr.ToString(CultureInfo.CurrentCulture)) : "",
                 });

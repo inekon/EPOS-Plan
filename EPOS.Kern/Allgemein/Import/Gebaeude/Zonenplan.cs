@@ -241,6 +241,13 @@ namespace WindowsFormsApplication1
                                  angelegt: iz.Schluessel.StartsWith(GebaeudeZonierung.HAND_PRAEFIX, StringComparison.Ordinal));
                 z.Geaendert = iz.Handgeaendert;
                 foreach (AbbildRaum r in iz.Raeume) _zoneJeRaum[r.Kennung] = z.Schluessel;
+                // Die Konditionierung aus einer IFC-Datei von EPOS-Plan (EPOS_Zone, EPOS_Kalender_*): die des ersten Raums der
+                // Zone, der sie trägt — Rangfolge Projektdatei (ersetzt die Zonierung, SqprojZonen) vor IFC-EPOS_* vor Vorlage.
+                if (iz.Raeume.Select(r => r.Konditionierung).FirstOrDefault(k => k != null) is AbbildKonditionierung k)
+                {
+                    z.Projektdatei = k.AlsZonenkonditionierung(z.Name);
+                    z.Nutzung ??= k.Nutzung;
+                }
             }
             foreach (AbbildRaum r in Gebaeude.Raeume)
                 if (!_zoneJeRaum.ContainsKey(r.Kennung)) _ausserhalb.Add(r.Kennung);
