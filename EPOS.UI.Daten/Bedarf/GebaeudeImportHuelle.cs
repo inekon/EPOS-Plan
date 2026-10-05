@@ -448,6 +448,9 @@ namespace WindowsFormsApplication1
             return ProjektdateiDaten();
         }
 
+        /// <summary>Die wirksame Größengrenze der Projektdatei dieser Plattform (<see cref="SqprojProfil.GrenzeFuerPlattform"/>).</summary>
+        internal long ProjektdateiGrenze => _ablauf.ProjektdateiMaxBytes;
+
         /// <summary>„Projektdatei entfernen“: der Stand ohne Projektdatei, die IFC-Daten bleiben.</summary>
         internal void ProjektdateiEntfernen()
         {
