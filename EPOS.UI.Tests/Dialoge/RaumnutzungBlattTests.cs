@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AngleSharp.Dom;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using EPOS.UI.Dialoge.Bedarf;
 using Xunit;
 
@@ -335,6 +336,57 @@ public class RaumnutzungBlattTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-raumnutzung-kategorie"));
         Assert.Empty(cut.FindAll(".epos-raumnutzung-profil-neu"));
         Assert.Empty(cut.FindAll(".epos-raumnutzung-reiter-zuordnung"));
+    }
+
+    // =====================================================================
+    //  Der Zugang im Wirt (Konzept Nutzungsprofile 6.2, NP-F22)
+    // =====================================================================
+
+    private IRenderedComponent<GebaeudeKatalogDialog> Wirt(RaumnutzungWeg weg)
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
+        IRenderedComponent<GebaeudeKatalogDialog> cut = Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, KonditionierungVorlagenDialogTests.Vollsatz())
+            .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+            .Add(x => x.Konditionierung, KalenderkarteTests.Weg(null))
+            .Add(x => x.Raumnutzung, weg)
+            .Add(x => x.EntprellungMs, 0));
+        KonditionierungVorlagenDialogTests.ReiterWaehlen(cut, "Konditionierung");
+        return cut;
+    }
+
+    /// <summary>
+    /// Der Reiter „Konditionierung" trägt „Nutzungsprofile verwalten…", und der Knopf tauscht den Inhalt des
+    /// Editors gegen das Blatt; „‹ Wirt" führt zurück (Konzept Nutzungsprofile 6.2, NP-F22).
+    /// </summary>
+    [Fact]
+    public void Der_Wirt_oeffnet_das_Blatt_und_der_Rueckweg_fuehrt_in_den_Editor()
+    {
+        IRenderedComponent<GebaeudeKatalogDialog> cut = Wirt(Probekatalog().Weg());
+
+        Assert.False(cut.Instance.NutzungsprofilblattOffen);
+        cut.Find(".epos-kond-nutzungsprofile").Click();
+
+        Assert.True(cut.Instance.NutzungsprofilblattOffen);
+        Assert.Single(cut.FindAll(".epos-raumnutzung"));
+        Assert.Equal(2, cut.FindAll(".epos-raumnutzung-kategorie").Count);
+        // Der Editor selbst steht nicht mehr da, solange das Blatt steht.
+        Assert.Empty(cut.FindAll(".epos-kond-matrix"));
+
+        cut.Find(".epos-blatt-zurueck").Click();
+        Assert.False(cut.Instance.NutzungsprofilblattOffen);
+        Assert.Empty(cut.FindAll(".epos-raumnutzung"));
+    }
+
+    /// <summary>Ohne Gabe bietet der Wirt den Knopf nicht an — „Kein Delegat, kein Knopf".</summary>
+    [Fact]
+    public void Ohne_Gabe_traegt_der_Wirt_keinen_Knopf()
+    {
+        IRenderedComponent<GebaeudeKatalogDialog> cut = Wirt(null);
+
+        Assert.Empty(cut.FindAll(".epos-kond-nutzungsprofile"));
+        Assert.False(cut.Instance.NutzungsprofilblattOffen);
     }
 
     /// <summary>
