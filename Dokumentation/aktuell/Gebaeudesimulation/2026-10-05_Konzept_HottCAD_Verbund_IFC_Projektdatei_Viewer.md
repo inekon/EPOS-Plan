@@ -146,7 +146,8 @@ kommen weiterhin aus den Mengensätzen (ADR-003).
 `HSETU_EcoCad.FractionOfFrame` steht an allen Fenstern; `Pset_DoorWindowGlazingType` wird
 schon gelesen, ein g-Wert fehlt in den HottCAD-Dateien. Neu: `FractionOfFrame` als Beleg für
 `Tab_Bauteil.Rahmenanteil` mit Herkunft `Ifc`; der g-Wert bleibt Vorgabe mit Beleg „nicht in
-der Datei“. Kein weiterer Aufwand.
+der Datei“. Kein weiterer Aufwand. Ein Wert über 1 gilt als Prozent (der CAD-Export schreibt 30),
+ein Wert bis 1 als Anteil.
 
 ### 3.4 Was die IFC nicht hergibt
 
@@ -297,7 +298,7 @@ als Startplan, Ziehen mit der Maus, Windows-Sichtabnahme, iOS-Lauf für den Date
 | Nr. | Welle | Inhalt in einem Satz | PT | Schema | Rückfrage vorher |
 |---|---|---|---|---|---|
 | 1 | **HC-3** Nachzug E87 an SQ | Wahl „DIN-Zonen \| Simulationszonen“ mit Vorgabe 5, Protokoll, Quelle im Zonenplan, Größengrenze 250/100 MB, Nachtrag 3 berichtigt | 0,5–1 | nein | keine |
-| 2 | **HC-1** Kern: IFC vollenden und Flächen klassifizieren | zweiseitige Randbedingung, Bauteilkörper, Rahmenanteil; Flächengruppen R0–R7 je Raumkörper mit Bilanz | 2–3 | nein | keine |
+| 2 | **HC-1** Kern: IFC vollenden und Flächen klassifizieren | zweiseitige Randbedingung, Bauteilkörper, Rahmenanteil; Flächengruppen R0–R7 je Raumkörper mit Bilanz — **HC-1 umgesetzt (#740)**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_HC-1_IFC_Randbedingung_Bauteilkoerper_Flaechen.md) | 2–3 | nein | keine |
 | 3 | **HC-2** Ansicht: Farbmodus Randbedingung | Umschalter, Legende, 2D-Kanten und Schraffur, 3D-Dreiecksfarben und Bauteilkörper | 1–2 | nein | keine |
 | 4 | **HC-4** „Datei erneut lesen“ | Ansicht im Gebäudedialog aus der gespeicherten Importquelle, Hashprüfung, beide Farbmodi | 1 | nein | keine |
 
