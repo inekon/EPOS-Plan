@@ -45834,5 +45834,8 @@ Chart</value>
   <data name="GIMP_DLG_SQ_ZONIERUNG_FRAGE" xml:space="preserve">
     <value>Der Wechsel der Zonierung baut den Zonenplan neu auf; {0} Schritte von Hand gehen verloren. Wechseln?</value>
   </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG_WERT" xml:space="preserve">
+    <value>{0} ({1} Zonen)</value>
+  </data>
 </root>
 

@@ -137,6 +137,14 @@ namespace WindowsFormsApplication1
                              : zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? sw : Leer,
                     Raumliste = raeume.Select(r => Planraum(plan, r)).ToList(),
                     AusProjektdatei = pz.Projektdatei != null && !pz.Projektdatei.AusIfc,
+                    Herkunft = pz.Projektdatei == null || pz.Projektdatei.AusIfc ? ""
+                             : pz.Projektdatei.Zonierung == SqprojZonierung.Din18599 ? GebaeudeZonierungSchluessel.HERKUNFT_DIN
+                             : pz.Projektdatei.Zonierung == SqprojZonierung.Simulation ? GebaeudeZonierungSchluessel.HERKUNFT_SIMULATION
+                             : GebaeudePlanschrittArt.PROJEKTDATEI,
+                    HerkunftText = pz.Projektdatei == null || pz.Projektdatei.AusIfc ? ""
+                                 : pz.Projektdatei.Zonierung == SqprojZonierung.Din18599 ? MyResource.Resource.GIMP_DLG_SQ_HERKUNFT_DIN
+                                 : pz.Projektdatei.Zonierung == SqprojZonierung.Simulation ? MyResource.Resource.GIMP_DLG_SQ_HERKUNFT_SIM
+                                 : MyResource.Resource.GIMP_DLG_SQ_HERKUNFT,
                     Profiltext = pz.Projektdatei?.Profilnummer is int nr
                         ? Formatieren(MyResource.Resource.GIMP_DLG_SQ_PROFIL, nr.ToString(CultureInfo.CurrentCulture)) : "",
                 });

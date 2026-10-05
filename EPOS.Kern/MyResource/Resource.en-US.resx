@@ -45827,5 +45827,8 @@ chart</value>
   <data name="GIMP_DLG_SQ_ZONIERUNG_FRAGE" xml:space="preserve">
     <value>Changing the zoning rebuilds the zone plan; {0} manual steps will be lost. Change?</value>
   </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG_WERT" xml:space="preserve">
+    <value>{0} ({1} zones)</value>
+  </data>
 </root>
 

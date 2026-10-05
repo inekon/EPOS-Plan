@@ -34378,6 +34378,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} Zonen) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_ZONIERUNG_WERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_ZONIERUNG_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude importieren ähnelt.
         /// </summary>
         public static string GIMP_DLG_TITEL {
