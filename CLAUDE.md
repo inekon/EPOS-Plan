@@ -17,15 +17,22 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Fable 5.1 orchestriert und übernimmt das Anspruchsvolle:** Es plant, zerlegt Aufträge,
-  prüft Ergebnisse, führt zusammen und berichtet; Konzeptarbeit, schwierige Analysen, die
-  Fehlersuche im Rechenweg und die Zusammenführung widersprüchlicher Stände übernimmt es selbst
-  oder gibt sie an Agenten mit `model: fable`.
+- **Fable 5.1 orchestriert nur:** Es plant, schneidet Aufträge, wählt das Modell, nimmt
+  Ergebnisse ab, entscheidet bei widersprüchlichen Befunden, bereitet Anwenderentscheide vor und
+  berichtet. Alles andere wird delegiert — auch Hüllen, Nachzüge, Konzeptabsätze, Status- und
+  Protokollpflege, Merges und Gates; Fable fasst Dateien nur an, wenn ein Agentenaufruf teurer
+  wäre als die Änderung selbst (eine Zeile, ein Verweis).
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
-  und Zeit: `model: opus` (Opus 5.5) für Implementierung, Tests, Hüllen, Nachzüge, Papiere und
-  Konfliktauflösung; `model: sonnet` für Suchen, Dateilisten, kleine Textpflege und Vorlagen;
-  `model: haiku` für Zählungen, Encoding- und Zeilenendenprüfungen. Das Modell bei jedem
-  Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
+  und Zeit:
+
+  | Modell | Aufgaben |
+  |---|---|
+  | `model: opus` (Opus 5.5, `opus-umsetzung`) | Rechenweg, Schema, Tests, Hüllen und Dialoge, Fehlersuche im Code, Konfliktauflösung mit Fachinhalt, Konzeptabsätze mit Fachinhalt, Referenzprojekte und Basen einfrieren |
+  | `model: sonnet` (`sonnet-mechanik`) | Inventare und Suchen, Status-, Protokoll- und Indexpflege nach Vorlage, Ressourcen in beiden Sprachen, Wiki-Quellen und Logbuch-Entwürfe, Gate fahren und Zahlen melden, Merges ohne Fachkonflikt, CI-Protokolle auswerten, Vergleichstabellen aus vorliegenden Zahlen |
+  | `model: haiku` (`haiku-pruefung`) | Zählungen, BOM-, Encoding- und Zeilenendenprüfungen, Konfliktmarker, LFS-Zeiger, Dateilisten |
+  | `model: fable` | nur, wenn die Orchestrierung selbst eine schwierige Analyse in einem frischen Kontext braucht |
+
+  Das Modell bei jedem Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
 - **Agentenaufträge** sind vollständig und repo-relativ formuliert (keine absoluten Pfade —
   sie lenken Worktree-Sitzungen in den Hauptbaum), nennen das Ziel, die Abnahme (Build,
   Tests, Referenzlauf) und die Regeln dieser Datei, die gelten. Agenten arbeiten im eigenen
