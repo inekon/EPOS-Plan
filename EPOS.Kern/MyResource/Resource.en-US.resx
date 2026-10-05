@@ -39179,6 +39179,51 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² after the manual assignment — it remains and is not merged; merging is recommended.</value>
   </data>
+  <data name="IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>{0} rooms are in no zone ({1}) — they do not count towards the zone area; assign them before saving.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_LEER" xml:space="preserve">
+    <value>Zone “{0}” holds no room (0 m²) — it is not taken over.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG_GEMISCHT" xml:space="preserve">
+    <value>Zone “{0}” holds heated and unheated rooms — it counts as heated; check the rooms' “heated” ticks.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZUORDNUNG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} rooms are not assigned to a zone ({1}) — not saved; assign the rooms or choose “Assign rest by rule”.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NAME_LEER" xml:space="preserve">
+    <value>A zone needs a name.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NAME_DOPPELT" xml:space="preserve">
+    <value>The zone name “{0}” already exists.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG" xml:space="preserve">
+    <value>The use {0} cannot be chosen for a zone (residential, office, school or none).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Zone {0} does not exist.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Room {0} does not belong to this building.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_GESCHOSS_UNBEKANNT" xml:space="preserve">
+    <value>Storey {0} holds no room of this building.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG" xml:space="preserve">
+    <value>Room “{0}” and zone “{1}” are not heated alike — not assigned; first change the room's “heated” tick.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG_TEIL" xml:space="preserve">
+    <value>{0} rooms of the storey are heated differently from zone “{2}” and stay where they were ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>The building computes no more than {0} zones — no further zone created.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REGEL_UNGUELTIG" xml:space="preserve">
+    <value>Rule {0} does not apply to this building (available: {1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REST_AUSSERHALB" xml:space="preserve">
+    <value>{0} rooms stay outside the zones under rule {2} ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_STRUKTUR_ENTHALTEN" xml:space="preserve">
     <value>Building {0}: {1} storeys and {2} spaces are attached by containment (IfcRelContainedInSpatialStructure) instead of decomposition (IfcRelAggregates) — they are imported as if decomposed.</value>
   </data>
@@ -39298,6 +39343,51 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² after the manual assignment — it remains and is not merged; merging is recommended.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAEUME_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>{0} rooms are in no zone ({1}) — they do not count towards the zone area; assign them before saving.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_LEER" xml:space="preserve">
+    <value>Zone “{0}” holds no room (0 m²) — it is not taken over.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG_GEMISCHT" xml:space="preserve">
+    <value>Zone “{0}” holds heated and unheated rooms — it counts as heated; check the rooms' “heated” ticks.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZUORDNUNG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} rooms are not assigned to a zone ({1}) — not saved; assign the rooms or choose “Assign rest by rule”.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NAME_LEER" xml:space="preserve">
+    <value>A zone needs a name.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NAME_DOPPELT" xml:space="preserve">
+    <value>The zone name “{0}” already exists.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NUTZUNG_UNGUELTIG" xml:space="preserve">
+    <value>The use {0} cannot be chosen for a zone (residential, office, school or none).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Zone {0} does not exist.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Room {0} does not belong to this building.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_GESCHOSS_UNBEKANNT" xml:space="preserve">
+    <value>Storey {0} holds no room of this building.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG" xml:space="preserve">
+    <value>Room “{0}” and zone “{1}” are not heated alike — not assigned; first change the room's “heated” tick.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL" xml:space="preserve">
+    <value>{0} rooms of the storey are heated differently from zone “{2}” and stay where they were ({1}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>The building computes no more than {0} zones — no further zone created.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REGEL_UNGUELTIG" xml:space="preserve">
+    <value>Rule {0} does not apply to this building (available: {1}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REST_AUSSERHALB" xml:space="preserve">
+    <value>{0} rooms stay outside the zones under rule {2} ({1}).</value>
   </data>
   <data name="ZGEO_SCHEMATISCH" xml:space="preserve">
     <value>{0} rooms without an outline from space boundaries are drawn schematically as rectangles, lined up per storey — their position is invented: {1}</value>
@@ -45289,6 +45379,99 @@ chart</value>
   </data>
   <data name="IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
     <value>"{0}": the averaged room temperatures of the file range from {1} to {2} °C — more than {3} K; check the averaged heating setpoint.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NEU" xml:space="preserve">
+    <value>Zone {0}</value>
+  </data>
+  <data name="GIMP_DLG_SP_NUTZUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_WURZEL" xml:space="preserve">
+    <value>Building “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_WAEHLEN" xml:space="preserve">
+    <value>Select zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NAME" xml:space="preserve">
+    <value>Name of zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NUTZUNG" xml:space="preserve">
+    <value>Use of zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NUTZUNG_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_LEER" xml:space="preserve">
+    <value>no room</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_RAUM_WAEHLEN" xml:space="preserve">
+    <value>Select room “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NAME" xml:space="preserve">
+    <value>Name of the new zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NUTZUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN_OK" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN" xml:space="preserve">
+    <value>Add zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_LOESCHEN" xml:space="preserve">
+    <value>Delete zone(s)</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN" xml:space="preserve">
+    <value>Remove zoning</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZUORDNEN" xml:space="preserve">
+    <value>Add rooms to the selected zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZUORDNEN_GRUND" xml:space="preserve">
+    <value>Select exactly one zone as target and – to add – at least one room.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_GESCHOSS" xml:space="preserve">
+    <value>Storey</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_GESCHOSS_KNOPF" xml:space="preserve">
+    <value>Storey to zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_REST_REGEL" xml:space="preserve">
+    <value>Rule for the rest</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_REST" xml:space="preserve">
+    <value>Assign the rest by rule</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_HINWEIS" xml:space="preserve">
+    <value>Tick boxes select zones and rooms; the buttons act on the selection. A click in the floor plan assigns the room to the target zone. Rooms of equal heating form a zone; a room’s “heated” box is the way out.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_EINZONIG" xml:space="preserve">
+    <value>The plan yields one zone: the building is taken over as a single zone as without zoning; name and use of this zone are not taken over.</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_PLAN_HINWEIS" xml:space="preserve">
+    <value>The zone plan yields one zone – the building is taken over as one zone with components; name and use of this zone are not taken over.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OFFEN_TITEL" xml:space="preserve">
+    <value>Unassigned rooms ({0})</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OFFEN_LEER" xml:space="preserve">
+    <value>All rooms are assigned to a zone.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUSSERHALB" xml:space="preserve">
+    <value>The rule leaves {0} rooms outside every zone (unheated); they do not block OK.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Remove zoning</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>All rooms are taken out of their zones and then appear under “Unassigned rooms”; the zones of the rule proposal are dropped, zones you added stay empty. Remove zoning?</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OK_GESPERRT" xml:space="preserve">
+    <value>{0} rooms are not assigned to a zone – OK is blocked until every room has a zone.</value>
   </data>
 </root>
 

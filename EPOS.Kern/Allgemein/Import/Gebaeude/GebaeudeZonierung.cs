@@ -77,6 +77,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal bool Handgeaendert { get; set; }
 
+        /// <summary>
+        /// Die Nutzung der Zone aus dem <see cref="Zonenplan"/> (<c>WOHNEN</c>, <c>BUERO</c>, <c>SCHULE</c>); <c>null</c> = keine.
+        /// Beim Speichern bekommt die Zone die ausgelieferten Vorlagen dieser Nutzung als Kalenderkopien.
+        /// </summary>
+        internal string Nutzung { get; set; }
+
         public override string ToString() => Name + " (" + Raeume.Count.ToString(CultureInfo.InvariantCulture) + " Räume)";
     }
 
@@ -258,6 +264,12 @@ namespace WindowsFormsApplication1
         internal const string UMHAENGEN_EINZONIG = "UMHAENGEN_EINZONIG";
         /// <summary>W — {0} Zone, {1} Fläche, {2} Mindestgröße: nach der Zuordnung von Hand zu klein — bleibt, nicht zugeschlagen.</summary>
         internal const string ZONE_ZU_KLEIN_HAND = "ZONE_ZU_KLEIN_HAND";
+        /// <summary>Meldung (W): Räume des Plans in keiner Zone — Zahl und bis fünf Namen.</summary>
+        internal const string RAEUME_NICHT_ZUGEORDNET = "RAEUME_NICHT_ZUGEORDNET";
+        /// <summary>Meldung (I): eine Zone des Plans ohne Raum — 0 m², sie wird nicht übernommen.</summary>
+        internal const string ZONE_LEER = "ZONE_LEER";
+        /// <summary>Meldung (W): eine Zone des Plans mit beheizten und unbeheizten Räumen.</summary>
+        internal const string PLAN_BEHEIZUNG_GEMISCHT = "PLAN_BEHEIZUNG_GEMISCHT";
 
         // ==================================================================
         //  Festwerte
@@ -350,6 +362,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hat mindestens eine Zuordnung von Hand gewirkt?</summary>
         internal bool Handzuordnung { get; private set; }
+
+        /// <summary>Der Zonenplan, aus dem gebildet ist; <c>null</c> = der Regelvorschlag.</summary>
+        internal Zonenplan Plan { get; private set; }
+
+        /// <summary>Die Namen der Zonen des Plans ohne Raum, in Planreihenfolge — in der Bilanz mit 0 m².</summary>
+        internal List<string> LeereZonen { get; } = new List<string>();
+
+        /// <summary>Die Räume dieses Gebäudes in keiner Zone des Plans, in Dateireihenfolge; leer ohne Plan.</summary>
+        internal List<AbbildRaum> NichtZugeordnet { get; } = new List<AbbildRaum>();
 
         /// <summary>
         /// <b>Hängt einen Raum um</b> (Stufe G6c, Welle D): die Zonierung derselben Datei, Regel und Haken mit
@@ -447,9 +468,12 @@ namespace WindowsFormsApplication1
         /// <param name="regel">Die gewählte Regel; <c>null</c> = die Vorgabe.</param>
         /// <param name="beheiztUebersteuert">Die Haken der Raumliste, Raumkennung → beheizt; <c>null</c> = wie gelesen.</param>
         /// <param name="umhaengungen">Die Zuordnungen von Hand in ihrer Reihenfolge (Welle D); <c>null</c> = keine.</param>
+        /// <param name="plan">Der Zonenplan (Mehrzonenkonzept 6.4): Zonen, Namen, Nutzung und Räume kommen allein aus ihm;
+        /// Regel und Umhängungen wirken dann nicht, die Mindestgröße M8 schlägt nichts zu. <c>null</c> = der Regelvorschlag.</param>
         internal static GebaeudeZonierung Bilden(GebaeudeAbbild abbild, int index, string regel = null,
                                                  IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
-                                                 IReadOnlyList<Raumumhaengung> umhaengungen = null)
+                                                 IReadOnlyList<Raumumhaengung> umhaengungen = null,
+                                                 Zonenplan plan = null)
         {
             var z = new GebaeudeZonierung();
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return z;
@@ -472,7 +496,8 @@ namespace WindowsFormsApplication1
             z.Regeln = regeln;
             z.Vorgabe = vorgabe;
             z.HatRaumgrenzen = grenzen;
-            z.Regel = regel ?? vorgabe;
+            z.Regel = plan?.Regel ?? regel ?? vorgabe;
+            z.Plan = plan;
             // Trennflächen aus den Raumkörpern tragen die Nachbarschaft wie Raumgrenzen (6.2); Z1 bis Z3 bleiben an diese gebunden.
             bool koerper = !grenzen && z.Gebaeude.KoerperpaareGebildet;
             if (!grenzen && !z.Gebaeude.GeschosseGekoppelt && !koerper)
@@ -484,10 +509,25 @@ namespace WindowsFormsApplication1
                 z.Melden(PruefStufe.Fehler, ZONENREGEL_UNGUELTIG, z.Regel, string.Join(", ", regeln));
                 return z;
             }
-            z.Einzonig = IstEinzonig(z.Regel);
+            z.Einzonig = plan == null && IstEinzonig(z.Regel);
 
             double gesamt = z.Gebaeude.Raeume.Where(r => r.FlaecheM2 > 0.0).Sum(r => r.FlaecheM2.Value);
             z.MindestflaecheM2 = Math.Max(MINDESTFLAECHE_M2, MINDESTANTEIL * gesamt);
+
+            if (plan != null)
+            {
+                // Der Plan ist die Zonierung von Hand: keine Regel, kein Zuschlag nach M8, keine entfallende Zone.
+                bool bezugPlan = !grenzen && (z.Gebaeude.GeschosseGekoppelt || koerper);
+                if (!grenzen && !bezugPlan) z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
+                z.AusPlanGruppieren(plan);
+                z.Seiten(melden: false);
+                z.KleineMelden();
+                z.Seiten(melden: true);
+                if (bezugPlan && !z.BeheizteVerbunden())
+                    z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
+                z.Abschluss();
+                return z;
+            }
 
             z.Gruppieren();
             if (z.Einzonig)
@@ -543,6 +583,42 @@ namespace WindowsFormsApplication1
                 string partner = u.Schluessel.Substring(0, u.Schluessel.Length - 1) + "B";
                 if (jeSchluessel.ContainsKey(partner)) u.Name += " (unbeheizt)";
             }
+            ZuordnungNeu();
+        }
+
+        /// <summary>
+        /// Die Zonen aus dem Plan in Planreihenfolge, die Räume je Zone in Dateireihenfolge. Eine Zone ohne Raum steht in
+        /// <see cref="LeereZonen"/> (Info), die Räume ohne Zone in <see cref="NichtZugeordnet"/> (Warnung, Zahl und bis
+        /// fünf Namen); beide liegen außerhalb der Zonen und zählen nicht zur Zonenfläche.
+        /// </summary>
+        private void AusPlanGruppieren(Zonenplan plan)
+        {
+            foreach (Planzone pz in plan.Zonen)
+            {
+                List<AbbildRaum> raeume = Gebaeude.Raeume
+                    .Where(r => string.Equals(plan.ZoneVon(r.Kennung), pz.Schluessel, StringComparison.Ordinal)).ToList();
+                if (raeume.Count == 0)
+                {
+                    LeereZonen.Add(pz.Name);
+                    Melden(PruefStufe.Info, ZONE_LEER, pz.Name);
+                    continue;
+                }
+                bool warm = raeume.Any(_beheizt);
+                if (raeume.Any(r => _beheizt(r) != warm)) Melden(PruefStufe.Warnung, PLAN_BEHEIZUNG_GEMISCHT, pz.Name);
+                var zone = new Importzone
+                {
+                    Schluessel = pz.Schluessel, Name = pz.Name, IstBeheizt = warm, Nutzung = pz.Nutzung,
+                    Quellkennung = pz.Quellkennung ?? (raeume.Count == 1 ? raeume[0].Kennung : Gebaeude.Kennung),
+                    Handgeaendert = pz.Angelegt || pz.Geaendert,
+                };
+                zone.Raeume.AddRange(raeume);
+                Zonen.Add(zone);
+            }
+            NichtZugeordnet.AddRange(plan.NichtZugeordnet);
+            if (NichtZugeordnet.Count > 0)
+                Melden(PruefStufe.Warnung, RAEUME_NICHT_ZUGEORDNET, Ganz(NichtZugeordnet.Count),
+                       Liste(NichtZugeordnet.Select(Zonenplan.Raumname).ToList()));
+            Handzuordnung = Zonen.Any(x => x.Handgeaendert);
             ZuordnungNeu();
         }
 

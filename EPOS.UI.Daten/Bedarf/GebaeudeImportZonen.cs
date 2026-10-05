@@ -54,8 +54,11 @@ namespace WindowsFormsApplication1
         /// <param name="z">Die Zonierung der Anfrage.</param>
         /// <param name="v">Der Bauteilvorschlag darauf; <c>null</c> = keiner.</param>
         /// <param name="haken">Die Haken der Raumliste (Raumkennung → beheizt).</param>
+        /// <param name="plan">Der Zonenplan der Anfrage (Zonenbaum); <c>null</c> = keiner.</param>
+        /// <param name="schritt">Was der letzte Schritt am Plan ergab.</param>
         internal static GebaeudeZonierungDaten ZonierungDaten(GebaeudeZonierung z, GebaeudeBauteilvorschlag v,
-                                                              IReadOnlyDictionary<string, bool> haken)
+                                                              IReadOnlyDictionary<string, bool> haken, Zonenplan plan = null,
+                                                              (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) schritt = default)
         {
             if (z == null || z.Gebaeude == null || z.Regeln.Count <= 1) return null;
             bool mehr = GebaeudeImportHuelle.Mehrzonig(z);
@@ -99,7 +102,78 @@ namespace WindowsFormsApplication1
                 Flaechenprofil = mitVorschlag ? Flaechenprofil() : null,
                 Flaechen = mitVorschlag ? Flaechen(z, v) : Array.Empty<GebaeudeFlaechenzeileDaten>(),
                 Ablehnungen = Ablehnungen(z),
+                Plan = plan == null ? null : PlanDaten(plan, z, zonen, schritt),
             };
+        }
+
+        /// <summary>
+        /// <b>Der Zonenplan als Daten des Zonenbaums</b>: je Zone Schlüssel, Name, Nutzung, Beheizung, Räume, Fläche und der
+        /// Sollwert der gebildeten Zone; die nicht zugeordneten Räume; Geschosse und Nutzungen der Klapplisten; die Meldung des
+        /// letzten Schritts. Der Schlüssel im Grundriss ist der der gebildeten Zonierung — aus dem Plan der Planschlüssel,
+        /// aus der Regel (noch kein Schritt) der Schlüssel der Regelzone, aus der die Planzone stammt.
+        /// </summary>
+        internal static GebaeudeZonenplanDaten PlanDaten(Zonenplan plan, GebaeudeZonierung z, IReadOnlyList<GebaeudeZonenzeileDaten> zonen,
+                                                         (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) schritt)
+        {
+            bool ausPlan = ReferenceEquals(z?.Plan, plan);
+            var gebildet = new HashSet<string>(z?.Zonen.Select(x => x.Schluessel) ?? Enumerable.Empty<string>(), StringComparer.Ordinal);
+            var liste = new List<GebaeudePlanzoneDaten>();
+            foreach (Planzone pz in plan.Zonen)
+            {
+                string ansicht = ausPlan ? pz.Schluessel : pz.Herkunft ?? "";
+                if (!gebildet.Contains(ansicht)) ansicht = "";
+                IReadOnlyList<AbbildRaum> raeume = plan.RaeumeVon(pz.Schluessel);
+                double? flaeche = raeume.Any(r => r.FlaecheM2 > 0.0) ? raeume.Where(r => r.FlaecheM2 > 0.0).Sum(r => r.FlaecheM2.Value) : 0.0;
+                liste.Add(new GebaeudePlanzoneDaten
+                {
+                    Schluessel = pz.Schluessel,
+                    Ansichtsschluessel = ansicht,
+                    Name = pz.Name,
+                    Nutzung = pz.Nutzung,
+                    Beheizt = plan.ZoneBeheizt(pz.Schluessel),
+                    Raeume = raeume.Count.ToString(CultureInfo.CurrentCulture),
+                    Flaeche = MitEinheit(flaeche, "m²"),
+                    Sollwert = zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? sw : Leer,
+                    Raumliste = raeume.Select(r => Planraum(plan, r)).ToList(),
+                });
+            }
+            int n = plan.Zonen.Count + 1;
+            string neu = Formatieren(MyResource.Resource.GIMP_DLG_PLAN_ZONE_NEU, n);
+            while (plan.Zonen.Any(x => string.Equals(x.Name, neu, StringComparison.OrdinalIgnoreCase)))
+                neu = Formatieren(MyResource.Resource.GIMP_DLG_PLAN_ZONE_NEU, ++n);
+            return new GebaeudeZonenplanDaten
+            {
+                Zonen = liste,
+                NichtZugeordnet = plan.NichtZugeordnet.Select(r => Planraum(plan, r)).ToList(),
+                Ausserhalb = plan.RaeumeAusserhalb.Count,
+                Geschosse = plan.Geschosse.Select(g => new GebaeudeZonenregelDaten(g, Geschosstext(plan, g))).ToList(),
+                Nutzungen = new[]
+                {
+                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_WOHNEN, MyResource.Resource.KOND_LBL_NUTZUNG_WOHNEN),
+                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_BUERO, MyResource.Resource.KOND_LBL_NUTZUNG_BUERO),
+                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_SCHULE, MyResource.Resource.KOND_LBL_NUTZUNG_SCHULE),
+                },
+                Einzonig = plan.Zonen.Count(x => plan.RaeumeVon(x.Schluessel).Count > 0) <= 1,
+                NeuerName = neu,
+                Schrittmeldung = schritt.Meldung == null ? null : GebaeudeImportHuelle.MeldungDaten(schritt.Meldung),
+                LetzterAbgelehnt = schritt.Abgelehnt,
+                Verworfen = schritt.Verworfen,
+            };
+        }
+
+        private static string Geschosstext(Zonenplan plan, string kennung)
+        {
+            string name = plan.Gebaeude.Geschosse.FirstOrDefault(s => s.Kennung == kennung)?.Anzeigename;
+            return string.IsNullOrWhiteSpace(name) ? kennung ?? Leer : name;
+        }
+
+        private static GebaeudePlanraumDaten Planraum(Zonenplan plan, AbbildRaum r)
+        {
+            var zeile = new GebaeudeRaumzeile(r, plan.Haken);
+            string geschoss = plan.Gebaeude.Geschosse.FirstOrDefault(s => s.Kennung == r.GeschossKennung)?.Anzeigename
+                              ?? (string.IsNullOrWhiteSpace(r.GeschossName) ? Leer : r.GeschossName.Trim());
+            return new GebaeudePlanraumDaten(r.Kennung, zeile.Anzeigename, geschoss, MitEinheit(r.FlaecheM2, "m²"),
+                                             plan.Beheizt(r), zeile.BeheiztLautDatei);
         }
 
         /// <summary>Die Meldungen des Kerns, mit denen er eine Zuordnung von Hand ablehnt (Welle D2).</summary>

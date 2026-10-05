@@ -32749,6 +32749,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zonenplan ergibt eine Zone – das Gebäude kommt als eine Zone mit Bauteilen; Name und Nutzung dieser Zone werden nicht übernommen. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_ALS_ZONE_PLAN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_ALS_ZONE_PLAN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Umstellen wird „{0}“ der Zone „{1}“ zugeordnet. ähnelt.
         /// </summary>
         public static string GIMP_DLG_AUSWEG {
@@ -33244,6 +33253,267 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone hinzufügen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ANLEGEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlegen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ANLEGEN_OK {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ANLEGEN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwerfen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ANLEGEN_VERWERFEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ANLEGEN_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung aufheben ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Räume werden aus ihren Zonen genommen und stehen danach unter „Nicht zugeordnete Räume“; die Zonen des Regelvorschlags entfallen, selbst angelegte bleiben leer stehen. Zonierung aufheben? ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_AUFHEBEN_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_AUFHEBEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung aufheben ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_AUFHEBEN_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_AUFHEBEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume lässt die Regel außerhalb jeder Zone (unbeheizt); sie sperren das OK nicht. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Plan ergibt eine Zone: Das Gebäude kommt als eine Zone wie ohne Zonierung; Name und Nutzung dieser Zone werden nicht übernommen. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_EINZONIG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_EINZONIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschoss ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschoss zur Zone ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_GESCHOSS_KNOPF {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_GESCHOSS_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Haken wählen Zonen und Räume; die Knöpfe wirken auf die Wahl. Ein Klick im Grundriss ordnet den Raum der Zielzone zu. Räume gleicher Beheizung bilden eine Zone; der Haken „beheizt“ eines Raums ist der Ausweg. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone(n) löschen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der neuen Zone ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_NAME {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_NUTZUNG_KEINE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_NUTZUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Räume sind einer Zone zugeordnet. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_OFFEN_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_OFFEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht zugeordnete Räume ({0}) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_OFFEN_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_OFFEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume sind keiner Zone zugeordnet – OK ist gesperrt, bis jeder Raum eine Zone hat. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_OK_GESPERRT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_OK_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ wählen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_RAUM_WAEHLEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_RAUM_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest nach Regel zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_REST {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regel für den Rest ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_REST_REGEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_REST_REGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_WURZEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_WURZEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Raum ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_NAME {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0} ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_NEU {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung der Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ wählen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZONE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZONE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume zur ausgewählten Zone hinzufügen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZUORDNEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZUORDNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie genau eine Zone als Ziel und – zum Hinzufügen – mindestens einen Raum. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZUORDNEN_GRUND {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZUORDNEN_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nur beheizte Räume bilden die Zone; ein geänderter Haken ordnet neu zu. ähnelt.
         /// </summary>
         public static string GIMP_DLG_RAEUME_HINWEIS {
@@ -33474,6 +33744,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_NEIGUNG {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SP_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SP_NUTZUNG", resourceCulture);
             }
         }
         
@@ -37528,6 +37807,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht zugeordnet; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ fasst beheizte und unbeheizte Räume — sie gilt als beheizt; die Haken „beheizt“ der Räume prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_BEHEIZUNG_GEMISCHT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_BEHEIZUNG_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume des Geschosses sind anders beheizt als die Zone „{2}“ und bleiben, wo sie waren ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Geschoss {0} trägt keinen Raum dieses Gebäudes. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_GESCHOSS_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_GESCHOSS_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Zonennamen „{0}“ gibt es schon. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_NAME_LEER {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzung {0} ist für eine Zone nicht wählbar (Wohnen, Büro, Schule oder keine). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_NUTZUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_NUTZUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Regel {0} trägt dieses Gebäude nicht (wählbar: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_REGEL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_REGEL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume bleiben nach der Regel {2} außerhalb der Zonen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_REST_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_REST_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehr als {0} Zonen rechnet das Gebäude nicht — keine weitere Zone angelegt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume liegen in keiner Zone ({1}) — sie zählen nicht zur Zonenfläche; vor dem Speichern zuordnen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_RAEUME_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_RAEUME_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_RAUM_ABGETRENNT {
@@ -37708,6 +38104,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ trägt keinen Raum (0 m²) — sie wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_LEER {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_ZONE_OHNE_AUSSEN {
@@ -37758,6 +38163,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume sind keiner Zone zugeordnet ({1}) — nicht gespeichert; die Räume zuordnen oder „Rest nach Regel zuordnen“ wählen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZUORDNUNG_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZUORDNUNG_UNVOLLSTAENDIG", resourceCulture);
             }
         }
         
@@ -38671,11 +39085,128 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht zugeordnet; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ fasst beheizte und unbeheizte Räume — sie gilt als beheizt; die Haken „beheizt“ der Räume prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_BEHEIZUNG_GEMISCHT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_BEHEIZUNG_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume des Geschosses sind anders beheizt als die Zone „{2}“ und bleiben, wo sie waren ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_BEHEIZUNG_TEIL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_BEHEIZUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Geschoss {0} trägt keinen Raum dieses Gebäudes. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_GESCHOSS_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_GESCHOSS_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Zonennamen „{0}“ gibt es schon. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_NAME_LEER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzung {0} ist für eine Zone nicht wählbar (Wohnen, Büro, Schule oder keine). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Regel {0} trägt dieses Gebäude nicht (wählbar: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_REGEL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_REGEL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume bleiben nach der Regel {2} außerhalb der Zonen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_REST_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_REST_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehr als {0} Zonen rechnet das Gebäude nicht — keine weitere Zone angelegt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_ZU_VIELE_ZONEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile mit der Platzierung {1} werden ohne Himmelsrichtung übernommen; ausgewertet wird nur IfcLocalPlacement. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_PLATZIERUNGSART {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_PLATZIERUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume liegen in keiner Zone ({1}) — sie zählen nicht zur Zonenfläche; vor dem Speichern zuordnen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET", resourceCulture);
             }
         }
         
@@ -38959,6 +39490,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ trägt keinen Raum (0 m²) — sie wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_LEER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ZONE_OHNE_AUSSEN {
@@ -39009,6 +39549,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume sind keiner Zone zugeordnet ({1}) — nicht gespeichert; die Räume zuordnen oder „Rest nach Regel zuordnen“ wählen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZUORDNUNG_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZUORDNUNG_UNVOLLSTAENDIG", resourceCulture);
             }
         }
         
