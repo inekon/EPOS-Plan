@@ -103,8 +103,14 @@ namespace WindowsFormsApplication1
                 return anteil;
             }
 
+            // Summen in der Ordnung der Ids, nicht der Zeilen - so ist auch der Rundungsrest bitgleich, wenn
+            // jemand die Zeilenreihenfolge ändert (Probe „umgekehrte Zeilenreihenfolge", 11.1).
+            int[] ordnung = new int[n];
+            for (int i = 0; i < n; i++) ordnung[i] = i;
+            Array.Sort(ordnung, (x, y) => ids[x] != ids[y] ? ids[x].CompareTo(ids[y]) : x.CompareTo(y));
+
             double summe = 0.0;
-            for (int i = 0; i < n; i++) summe += Gueltig(schluessel[i]);
+            foreach (int i in ordnung) summe += Gueltig(schluessel[i]);
             if (!(summe > 0.0))
             {
                 for (int i = 0; i < n; i++) anteil[i] = schranke;
@@ -113,7 +119,7 @@ namespace WindowsFormsApplication1
 
             double verteilt = 0.0;
             int groesster = -1;
-            for (int i = 0; i < n; i++)
+            foreach (int i in ordnung)
             {
                 anteil[i] = schranke * (Gueltig(schluessel[i]) / summe);
                 verteilt += anteil[i];

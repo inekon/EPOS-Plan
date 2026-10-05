@@ -1197,6 +1197,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Fahrplan des Projekts aus dem letzten Lauf; <c>null</c> ohne wirksame Kopplung (F10).</summary>
         internal Anlagenfahrplan Fahrplan => _fahrplan;
 
+        /// <summary>
+        /// Testnaht der Proben „Zweipass trifft den Schluessel" und „ohne Sperrung byte-gleich": <c>true</c> rechnet
+        /// den Lauf ohne Fahrplan - wie vor AK2. Der Lauf setzt sie nie.
+        /// </summary>
+        internal bool FahrplanUnterdrueckt { get; set; }
+
         /// <summary>Zahl der Gebaeude, die als feste Last an der Verfuegbarkeit zehren (Altweg oder ungekoppelt; F5).</summary>
         internal int FahrplanFesteLastGebaeude { get; private set; }
 
@@ -1247,7 +1253,7 @@ namespace WindowsFormsApplication1
             FahrplanMitPass1 = false;
 
             string stufe = AnlagenkopplungProjekt;
-            if (!Waermeuebergabe.StufeAn(stufe) || ctrl.rows == 0) return true;
+            if (FahrplanUnterdrueckt || !Waermeuebergabe.StufeAn(stufe) || ctrl.rows == 0) return true;
             var gekoppelt = new bool[ctrl.rows];
             bool irgendeins = false, zonenschleife = false;
             for (int i = 0; i < ctrl.rows; i++)
@@ -1309,6 +1315,12 @@ namespace WindowsFormsApplication1
         /// Gebaeude → Zonen nach demselben Schluessel. Ohne Schluessel (ein Gebaeude) gehoert die ganze Schranke
         /// dem Gebaeude. Reicht die Schranke fuer den Bedarf nicht und nennt der Fahrplan keinen Grund, heisst
         /// er <see cref="Verfuegbarkeitsgrund.Leistungsgrenze"/> (Probe „Verfuegbarkeit traegt immer einen Grund").
+        ///
+        /// <para><b>Festlegung AK2-2a (Befund 1054):</b> Eine Stunde OHNE Ausfall (Grund des Fahrplans
+        /// <see cref="Verfuegbarkeitsgrund.KeineBegrenzung"/>) traegt im Lauf keine Schranke (NaN) — die Summe der
+        /// Nennleistungen allein kappt das Gebaeude auf dem Profilweg nicht; die Unterdeckung bleibt dort Sache der
+        /// Deckungsrechnung wie vor AK2. Mit <paramref name="leistungsgrenzeAlsSchranke"/> = <c>true</c> gilt die
+        /// Summe auch dann (Grund <c>LEISTUNGSGRENZE</c>); das ist ein Entscheid samt neuer Basis.</para>
         /// </summary>
         internal static Anlagenverfuegbarkeit[][][] Verteilen(Anlagenfahrplan fahrplan, ProjektGebaeudeCtrl ctrl, bool[] gekoppelt,
                                                              double[][] schluessel, IReadOnlyList<double[]>[] zonenSchluessel)
@@ -1316,12 +1328,13 @@ namespace WindowsFormsApplication1
             int n = ctrl.rows;
             var ids = new long[n];
             for (int i = 0; i < n; i++) ids[i] = ctrl.items[i].ID_Gebaeude;
-            return Verteilen(fahrplan, ids, gekoppelt, schluessel, zonenSchluessel);
+            return Verteilen(fahrplan, ids, gekoppelt, schluessel, zonenSchluessel, false);
         }
 
         /// <summary>Die Verteilung ohne Datenbank — <see cref="Verteilen(Anlagenfahrplan, ProjektGebaeudeCtrl, bool[], double[][], IReadOnlyList{double[]}[])"/>.</summary>
         internal static Anlagenverfuegbarkeit[][][] Verteilen(Anlagenfahrplan fahrplan, IReadOnlyList<long> ids, bool[] gekoppelt,
-                                                             double[][] schluessel, IReadOnlyList<double[]>[] zonenSchluessel)
+                                                             double[][] schluessel, IReadOnlyList<double[]>[] zonenSchluessel,
+                                                             bool leistungsgrenzeAlsSchranke = false)
         {
             int n = ids.Count;
             var ergebnis = new Anlagenverfuegbarkeit[n][][];
@@ -1332,6 +1345,8 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < 8760; h++)
             {
                 Anlagenverfuegbarkeit v = fahrplan.Stunde(h);
+                if (!leistungsgrenzeAlsSchranke && v.Grund == Verfuegbarkeitsgrund.KeineBegrenzung)
+                    v = v.MitLeistung(double.NaN);
                 double schranke = v.LeistungKw;
                 double[] anteil;
                 if (schluessel == null)
