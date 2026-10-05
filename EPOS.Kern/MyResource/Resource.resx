@@ -33606,13 +33606,25 @@ Möchten Sie das zulassen?</value>
     <value>Flächen je Zone</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
-    <value>nur Fehler</value>
+    <value>Nur Flächen mit Befund</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
-    <value>nur ohne Gegenstück</value>
+    <value>Nur Flächen ohne Nachbarfläche</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_UWERT" xml:space="preserve">
-    <value>nur ohne U-Wert</value>
+    <value>Nur Flächen ohne U-Wert und Aufbau</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_ERLAEUTERUNG" xml:space="preserve">
+    <value>Die Filter schränken nur die Anzeige der Liste ein; zusammen gelten sie als „und“. Gespeichert wird immer alles.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_FEHLER_HINWEIS" xml:space="preserve">
+    <value>Zeigt nur Flächen, bei denen die Spalte „Befund“ etwas nennt: ohne Nachbarfläche, ohne U-Wert, geschätzte Fläche oder ein Beleg aus Raumkörpern. Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS" xml:space="preserve">
+    <value>Zeigt nur Trennflächen, zu denen der Import keine Gegenfläche in der Nachbarzone gefunden hat. Sie rechnen gegen einen unbeheizten Raum. Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_UWERT_HINWEIS" xml:space="preserve">
+    <value>Zeigt nur Flächen, bei denen weder ein U-Wert noch ein Schichtaufbau vorliegt (aus der Datei oder zugeordnet). Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
   </data>
   <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
     <value>Die Spalte „Befund“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten.</value>

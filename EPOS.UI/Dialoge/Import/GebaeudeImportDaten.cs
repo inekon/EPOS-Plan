@@ -1212,6 +1212,18 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_FILTER_OHNE_UWERT</summary>
     public string FilterOhneUWert { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_UWERT;
 
+    /// <summary>GIMP_DLG_FILTER_ERLAEUTERUNG</summary>
+    public string FilterErlaeuterung { get; set; } = Resource.GIMP_DLG_FILTER_ERLAEUTERUNG;
+
+    /// <summary>GIMP_DLG_FILTER_FEHLER_HINWEIS</summary>
+    public string FilterFehlerHinweis { get; set; } = Resource.GIMP_DLG_FILTER_FEHLER_HINWEIS;
+
+    /// <summary>GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS</summary>
+    public string FilterOhneGegenstueckHinweis { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS;
+
+    /// <summary>GIMP_DLG_FILTER_OHNE_UWERT_HINWEIS</summary>
+    public string FilterOhneUWertHinweis { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_UWERT_HINWEIS;
+
     /// <summary>GIMP_DLG_FLAECHEN_HINWEIS</summary>
     public string FlaechenHinweis { get; set; } = Resource.GIMP_DLG_FLAECHEN_HINWEIS;
 

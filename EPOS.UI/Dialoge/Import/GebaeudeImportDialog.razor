@@ -633,11 +633,12 @@
                 }
                 else
                 {
+                    <p class="epos-leisezeile epos-gebimport-flaechenfilter-hinweis">@Texte.FilterErlaeuterung</p>
                     <div class="epos-gebimport-flaechenfilter">
-                        <Schalter Bezeichnung="@Texte.FilterFehler" Wert="@_nurFehler" WertChanged="b => BeiFilter(ref _nurFehler, b)" />
-                        <Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
-                                  WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" />
-                        <Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" />
+                        <span title="@Texte.FilterFehlerHinweis"><Schalter Bezeichnung="@Texte.FilterFehler" Wert="@_nurFehler" WertChanged="b => BeiFilter(ref _nurFehler, b)" /></span>
+                        <span title="@Texte.FilterOhneGegenstueckHinweis"><Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
+                                  WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" /></span>
+                        <span title="@Texte.FilterOhneUWertHinweis"><Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" /></span>
                     </div>
                     <div class="epos-gebimport-flaechen">
                         <Katalogliste Profil="@mehrere.Flaechenprofil" Zeilen="@_flaechenzeilen" Filterstand="@_flaechenfilter"
