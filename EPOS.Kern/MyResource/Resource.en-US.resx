@@ -45548,5 +45548,80 @@ chart</value>
   <data name="GIMP_BELEG_SQPROJ_TAGESART" xml:space="preserve">
     <value>day type {0} assumed as {1}-day week</value>
   </data>
+  <data name="GIMP_DLG_SQ_KNOPF" xml:space="preserve">
+    <value>Add project file (.sqproj)…</value>
+  </data>
+  <data name="GIMP_DLG_SQ_KNOPF_GRUND" xml:space="preserve">
+    <value>A project file (.sqproj) can only be added to an IFC file exported by HottCAD (ObjectType “TModel…” on the building or a room).</value>
+  </data>
+  <data name="GIMP_DLG_SQ_TITEL" xml:space="preserve">
+    <value>Choose project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FILTER" xml:space="preserve">
+    <value>Project file of the CAD program (*.sqproj)|*.sqproj</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ENTFERNEN" xml:space="preserve">
+    <value>Remove project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_UEBERNEHMEN" xml:space="preserve">
+    <value>Take over zones of the project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_GRUPPE" xml:space="preserve">
+    <value>Project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FASSUNG" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="GIMP_DLG_SQ_RAEUME" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="GIMP_DLG_SQ_RAEUME_WERT" xml:space="preserve">
+    <value>{0} matched · {1} unmatched · {2} IFC rooms without counterpart</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN_WERT" xml:space="preserve">
+    <value>{0} taken over of {1}</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN_OFFEN" xml:space="preserve">
+    <value>{0} in the file, not yet taken over</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFILE" xml:space="preserve">
+    <value>Time profiles</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFILE_WERT" xml:space="preserve">
+    <value>{0} time profiles, {1} sections</value>
+  </data>
+  <data name="GIMP_DLG_SQ_JE_GROESSE" xml:space="preserve">
+    <value>Per quantity</value>
+  </data>
+  <data name="GIMP_DLG_SQ_GROESSE_WERT" xml:space="preserve">
+    <value>{0}: {1} zones from the daily curve, {2} from the usage profile</value>
+  </data>
+  <data name="GIMP_DLG_SQ_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="GIMP_DLG_SQ_OHNE_TREFFER" xml:space="preserve">
+    <value>Project file rooms without IFC room ({0})</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT" xml:space="preserve">
+    <value>from project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFIL" xml:space="preserve">
+    <value>Usage profile {0} per DIN V 18599</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FRAGE_TITEL" xml:space="preserve">
+    <value>Take over zones of the project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FRAGE" xml:space="preserve">
+    <value>The zones of the project file replace the zone plan; {0} manual steps will be lost. Take over?</value>
+  </data>
+  <data name="GIMP_DLG_SQ_KEIN_PLAN" xml:space="preserve">
+    <value>The zones of the project file need the zone tree — the file carries only one zoning rule for this building; nothing is taken over.</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HINWEIS" xml:space="preserve">
+    <value>The project file supplies zones, usage and time profiles per zone; the IFC file remains the source of the geometry. The conditioning per zone is saved with origin “from project file”.</value>
+  </data>
 </root>
 

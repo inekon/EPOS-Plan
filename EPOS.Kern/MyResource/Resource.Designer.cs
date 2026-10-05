@@ -33910,6 +33910,231 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei entfernen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassung ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_FASSUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_FASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei des CAD-Programms (*.sqproj)|*.sqproj ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_FILTER {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen der Projektdatei ersetzen den Zonenplan; {0} Schritte von Hand gehen verloren. Übernehmen? ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen der Projektdatei übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Zonen aus der Ganglinie, {2} aus dem Nutzungsprofil ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_GROESSE_WERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_GROESSE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_GRUPPE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_HERKUNFT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei liefert Zonen, Nutzung und Zeitprofile je Zone; die IFC-Datei bleibt die Quelle der Geometrie. Gespeichert wird die Konditionierung je Zone mit Herkunft „aus Projektdatei“. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Größe ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_JE_GROESSE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_JE_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen der Projektdatei brauchen den Zonenbaum — für dieses Gebäude trägt die Datei nur eine Zonenregel; übernommen wird nichts. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_KEIN_PLAN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_KEIN_PLAN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei dazuladen (.sqproj)… ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_KNOPF {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Projektdatei (.sqproj) lässt sich nur zu einer IFC-Datei aus HottCAD dazuladen (ObjectType „TModel…“ am Gebäude oder an einem Raum). ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_KNOPF_GRUND {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_KNOPF_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume der Projektdatei ohne IFC-Raum ({0}) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_OHNE_TREFFER {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_OHNE_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil {0} nach DIN V 18599 ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_PROFIL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprofile ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_PROFILE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_PROFILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeitprofile, {1} Abschnitte ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_PROFILE_WERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_PROFILE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_RAEUME {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} abgeglichen · {1} nicht abgeglichen · {2} IFC-Räume ohne Gegenstück ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_RAEUME_WERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_RAEUME_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei wählen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen der Projektdatei übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersprungen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_ZONEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} in der Datei, noch nicht übernommen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_ZONEN_OFFEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_ZONEN_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} übernommen von {1} ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_ZONEN_WERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_ZONEN_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude importieren ähnelt.
         /// </summary>
         public static string GIMP_DLG_TITEL {
