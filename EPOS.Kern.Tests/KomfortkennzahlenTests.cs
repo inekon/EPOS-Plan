@@ -112,11 +112,11 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Projektspalten_bleiben_NULL_ohne_greifende_Schranke()
+        public void Projektspalten_bleiben_NULL_ohne_Fahrplan_und_stehen_mit_Fahrplan_auch_ohne_Schranke()
         {
             var k = new Komfortkennzahlen(3, 4.5, 2);
             var ohne = new ErgebnisEnergiebedarfModel();
-            SimulationRunner.AnlagenfahrplanSpaltenSetzen(ohne, 0, k, k);
+            SimulationRunner.AnlagenfahrplanSpaltenSetzen(ohne, false, 0, k, k);
             Assert.Null(ohne.FahrplanBegrenztStundenH);
             Assert.Null(ohne.KomfortUnterschreitungsstundenH);
             Assert.Null(ohne.KomfortKelvinstundenKh);
@@ -126,7 +126,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(ohne.KomfortUndRestbedarf);
 
             var mit = new ErgebnisEnergiebedarfModel { Waermerestbedarf = 1.25 };
-            SimulationRunner.AnlagenfahrplanSpaltenSetzen(mit, 7, k, null);
+            SimulationRunner.AnlagenfahrplanSpaltenSetzen(mit, true, 7, k, null);
             Assert.Equal(7, mit.FahrplanBegrenztStundenH);
             Assert.Equal(3, mit.KomfortUnterschreitungsstundenH);
             Assert.Equal(4.5, mit.KomfortKelvinstundenKh);
@@ -134,6 +134,13 @@ namespace EPOS.Kern.Tests
             Assert.Null(mit.KomfortUeberschreitungsstundenH);
             Assert.Null(mit.KomfortKelvinstundenKuehlungKh);
             Assert.Equal((3, 4.5, 2, 1.25), mit.KomfortUndRestbedarf);
+
+            // F12/E83: Fahrplan gelaufen, Schranke nie gegriffen - 0 Stunden statt NULL, Komfort steht.
+            var frei = new ErgebnisEnergiebedarfModel();
+            SimulationRunner.AnlagenfahrplanSpaltenSetzen(frei, true, 0, k, k);
+            Assert.Equal(0, frei.FahrplanBegrenztStundenH);
+            Assert.Equal(3, frei.KomfortUnterschreitungsstundenH);
+            Assert.Equal(3, frei.KomfortUeberschreitungsstundenH);
         }
 
         // ---- Probe 11.1 „Sperrzeit erzeugt Unterschreitung" am gekoppelten Probegebäude ----

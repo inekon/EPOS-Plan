@@ -91,6 +91,12 @@ Energiebedarf.Uebergabe_Begrenzt_Stunden;859.54
 Energiebedarf.Kuehl_Vorlauf_Mittel;18
 Energiebedarf.Kuehl_Ruecklauf_Mittel;18.81
 Energiebedarf.Kuehl_Uebergabe_Begrenzt_Stunden;0
+Energiebedarf.Komfort_Unterschreitungsstunden;875
+Energiebedarf.Komfort_Kelvinstunden;1281.04
+Energiebedarf.Komfort_Laengste_Strecke;11
+Energiebedarf.Fahrplan_Begrenzt_Stunden;0
+Energiebedarf.Komfort_Ueberschreitungsstunden;32
+Energiebedarf.Komfort_Kelvinstunden_Kuehlung;43
 Waermepumpe.Waermebedarf;10.27
 Waermepumpe.Restwaermebedarf;0.83
 Waermepumpe.Waermeproduktion_WP;9.43

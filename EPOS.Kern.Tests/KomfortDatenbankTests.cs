@@ -8,7 +8,8 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Komfortkennzahlen und feste Last im Lauf</b> (Anlagenkopplung AK2-2b; 5.5, 6.2, 11.1, 11.3) — auf einer
-    /// Arbeitskopie der Testdatenbank: 1047 ohne Sperrung schreibt die Spalten des Schritts 186 nicht (NULL), mit
+    /// Arbeitskopie der Testdatenbank: 1047 ohne Sperrung schreibt die Spalten des Schritts 186 mit 0 Fahrplanstunden
+    /// und gefüllten Komfortspalten (F12, E83), mit
     /// Sperrung der Wärmepumpe und Zeitprogramm 0 an Kessel und BHKW stehen Komfortstunden und Restbedarf
     /// nebeneinander; die Bedarfsauskunft rechnet denselben Fahrplan. 1008 (zwei Gebäude) mit einem Gebäude auf dem
     /// Altweg: Es zehrt als feste Last, ohne Komfortstunden und ohne gerechneten Vorlauf; auf dem VDI-Weg gekoppelt
@@ -71,17 +72,23 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ohne_greifende_Schranke_bleiben_die_Spalten_NULL_am_gekoppelten_Referenzprojekt()
+        public void Ohne_greifende_Schranke_stehen_die_Spalten_am_gekoppelten_Referenzprojekt()
         {
             if (!_db.Vorhanden) return;
             ErgebnisEnergiebedarfModel e = LaufUndLesen(1047);
-            Assert.Null(e.FahrplanBegrenztStundenH);
-            Assert.Null(e.KomfortUnterschreitungsstundenH);
-            Assert.Null(e.KomfortKelvinstundenKh);
-            Assert.Null(e.KomfortLaengsteStreckeH);
-            Assert.Null(e.KomfortUeberschreitungsstundenH);
-            Assert.Null(e.KomfortKelvinstundenKuehlungKh);
-            Assert.Null(e.KomfortUndRestbedarf);
+            Assert.Equal(0, e.FahrplanBegrenztStundenH);
+            Assert.NotNull(e.KomfortUnterschreitungsstundenH);
+            Assert.NotNull(e.KomfortKelvinstundenKh);
+            Assert.NotNull(e.KomfortLaengsteStreckeH);
+            Assert.NotNull(e.KomfortUeberschreitungsstundenH);
+            Assert.NotNull(e.KomfortKelvinstundenKuehlungKh);
+            Assert.NotNull(e.KomfortUndRestbedarf);
+
+            // Ein Projekt ohne Kopplung schreibt die Spalten nicht.
+            ErgebnisEnergiebedarfModel o = LaufUndLesen(1017);
+            Assert.Null(o.FahrplanBegrenztStundenH);
+            Assert.Null(o.KomfortUnterschreitungsstundenH);
+            Assert.Null(o.KomfortUndRestbedarf);
         }
 
         [Fact]
