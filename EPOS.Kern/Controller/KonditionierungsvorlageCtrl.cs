@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
         /// <param name="Groesse">Die eine Größe der Vorlage (P11).</param>
         /// <param name="Bezeichner">Der Name, eindeutig je Größe.</param>
         /// <param name="Beschreibung">Die Beschreibung; <c>null</c> heißt „ohne".</param>
-        /// <param name="Nutzung">Die Nutzung (<see cref="DbWerte.KOND_NUTZUNGEN"/>); <c>null</c> heißt „ohne".</param>
+        /// <param name="Nutzung">Die Nutzung als freier Text (Profilname oder alte Kennung, NP-F15); <c>null</c> heißt „ohne".</param>
         /// <param name="Ausgeliefert"><c>ReadOnly = 1</c> — die Vorlage gehört zur Auslieferung.</param>
         public sealed record Vorlage(long Id, Konditionierungsgroesse Groesse, string Bezeichner,
                                      string Beschreibung, string Nutzung, bool Ausgeliefert);
@@ -172,7 +172,7 @@ namespace WindowsFormsApplication1
         /// <param name="groesse">Die eine Größe der Vorlage.</param>
         /// <param name="bezeichner">Der Name; getrimmt, 1 … 80 Zeichen, je Größe eindeutig.</param>
         /// <param name="beschreibung">Die Beschreibung oder <c>null</c>.</param>
-        /// <param name="nutzung">Eine der <see cref="DbWerte.KOND_NUTZUNGEN"/> oder <c>null</c>.</param>
+        /// <param name="nutzung">Freier Text, 1 bis 120 Zeichen (Profilname oder alte Kennung), oder <c>null</c>.</param>
         /// <param name="id">Die Id der neuen Vorlage; 0 im Fehlerfall.</param>
         public KonditionierungCtrl.Ergebnis Speichern(KonditionierungCtrl.Eigner quelle,
                                                       Konditionierungsgroesse groesse, string bezeichner,
@@ -873,16 +873,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Nutzung muss eine der vier sein (oder fehlen) — kein stiller Eigenwert; eine reine Regel,
-        /// die auch die Ablage ohne Datenbank nimmt.
+        /// Die Nutzung ist freier Text (Konzept Nutzungsprofile NP-F15): getrimmt 1 bis
+        /// <see cref="RaumnutzungSchema.NUTZUNG_MAX_ZEICHEN"/> Zeichen — ein Profilname oder eine der alten Kennungen —,
+        /// oder sie fehlt; zu lang wird benannt abgelehnt, nicht still gekürzt. Eine reine Regel, die auch die Ablage
+        /// ohne Datenbank nimmt.
         /// </summary>
         public static string Nutzungspruefung(string nutzung, out string meldung)
         {
             meldung = null;
             string n = Leer(nutzung);
             if (n == null) return null;
-            foreach (string k in DbWerte.KOND_NUTZUNGEN)
-                if (string.Equals(n, k, StringComparison.Ordinal)) return n;
+            if (KonditionierungNutzungSchema.Nutzungstext(n) != null) return n;
             meldung = string.Format(CultureInfo.CurrentCulture,
                 MyResource.Resource.KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT, n);
             return null;

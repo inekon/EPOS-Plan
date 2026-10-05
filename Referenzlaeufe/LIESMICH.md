@@ -776,6 +776,17 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `3878da28c64ade18ca935e27e2472570833ee2b5693ac93e027e8ccbe3bda392`**. **Die Basis bleibt:** Die acht CI-Projekte
 > rechnen gegen R36 je Projekt PASS, 262 CSV byte-gleich.
 
+> **Nachtrag — Schemaschritt 189 (Katalog der Nutzungsprofile), Basis unverändert.**
+> `RaumnutzungSchema` (189 = `VorlaufwahlSchema.SCHRITT + 1`) legt die fünf STRICT-Tabellen `Tab_Raumnutzungskatalog`,
+> `Tab_Raumnutzungsprofil`, `Tab_Raumnutzungszeile`, `Tab_Raumnutzungsstunden` und `Tab_Raumnutzungszuordnung` an und sät
+> 4 Kategorien, 33 Profile (9 EPOS-Muster, 24 DIN-Profile ohne Werte), 50 Zeilen des Zeilenbilds und 25 Zuordnungen, dazu in
+> `Z_Nutzungsprofil` die Musternamen Büro und Schule; die Prüfklausel der `Nutzung` an `Tab_Konditionierungskalender` und
+> `Tab_Konditionierungsvorlage_STAMM` wird per Tabellenneubau freier Text (24 bzw. 14 Zeilen, IDs und Werte gleich), an
+> `Tab_Zone` kommt `Nutzungsprofil` (leer) hinzu. Die Testdatenbank steht auf **189** (`integrity_check` ok,
+> `foreign_key_check` leer, 173 STRICT-Tabellen): **87 793 664 Byte, LFS-SHA-256
+> `e90fc05f95d9ab45ce68e39dbbf332c0839b7ff4c0c8a9a90da57c4238586228`**. **Die Basis bleibt:** Kein Rechenweg liest Katalog oder
+> Zonenspalte, keine Einfrierregel ist berührt; 1047, 1051, 1052 und 1054 rechnen gegen R38 byte-gleich (127 CSV).
+
 ### Die Vorgängerbasis R37 (Fahrplan)
 
 Einundzwanzig Projekte, 646 CSV, 4 265 Skalare, auf Linux eingefroren gegen die Testdatenbank `63b0bdae…` (Schemastand

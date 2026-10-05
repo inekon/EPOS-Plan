@@ -747,7 +747,7 @@ namespace WindowsFormsApplication1
         {
             if (eigner == null) throw new ArgumentNullException(nameof(eigner));
             if (!KonditionierungNutzungSchema.SchemaVollstaendig()) return;
-            if (nutzung != null && !DbWerte.KOND_NUTZUNGEN.Contains(nutzung)) nutzung = null;
+            nutzung = KonditionierungNutzungSchema.Nutzungstext(nutzung);
             DataRepository.ExecuteNonQuery(
                 "UPDATE \"" + KonditionierungSchema.TAB_KALENDER + "\" SET \"Nutzung\" = ? WHERE " +
                 eigner.Bedingung() + " AND \"Groesse\" = ?",

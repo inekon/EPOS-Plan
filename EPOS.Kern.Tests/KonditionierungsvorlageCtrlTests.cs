@@ -324,9 +324,11 @@ namespace EPOS.Kern.Tests
                 new string('x', KonditionierungVorlagenSchema.BEZEICHNER_MAX_ZEICHEN + 1), null, null,
                 out long _).Ok);
 
-            // Eine Nutzung, die es nicht gibt, wird benannt abgelehnt.
+            // Die Nutzung ist freier Text bis 120 Zeichen (NP-F15); länger wird benannt abgelehnt.
             Assert.False(_ctrl.Speichern(eigner, Konditionierungsgroesse.Heizsoll, "Nutzung", null,
-                                         "FREMD", out long _).Ok);
+                                         new string('x', RaumnutzungSchema.NUTZUNG_MAX_ZEICHEN + 1), out long _).Ok);
+            Assert.Equal("Einzelbüro", KonditionierungsvorlageCtrl.Nutzungspruefung(" Einzelbüro ", out string frei));
+            Assert.Null(frei);
         }
 
         // =============================================================================
