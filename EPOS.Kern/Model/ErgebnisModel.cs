@@ -672,6 +672,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Stunden der Anlage mit freier Kühlung [h], 0 … 8760. <c>null</c> = nicht erhoben.</summary>
         public int? FreieKuehlung_Stunden;
+
+        /// <summary>
+        /// VW1a (Schemaschritt <see cref="VorlaufwahlSchema.SCHRITT"/>): die Stunden je Kennlinienstützstelle, die die
+        /// Wärmepumpe am gerechneten Heizkreisvorlauf gewählt hat, als „Vorlauf:Stunden“ aufsteigend mit „;“ getrennt
+        /// (<see cref="VorlaufwahlSchema.StundenText"/>). <c>null</c> = keine Kennlinienwahl am Vorlauf.
+        /// </summary>
+        public string Vorlaufwahl_Stunden;
+
+        /// <summary>Die Stunden mit Vorlauf über der obersten Stützstelle [h]. <c>null</c> = keine Kennlinienwahl.</summary>
+        public int? Vorlauf_Darueber_Stunden;
+
+        /// <summary>Die Stunden mit Vorlauf unter der untersten Stützstelle [h]. <c>null</c> = keine Kennlinienwahl.</summary>
+        public int? Vorlauf_Darunter_Stunden;
     }
 
     // Detail: BHKW-Aggregat (Tab_ErgebnisBHKW) + Modulliste.

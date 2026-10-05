@@ -641,6 +641,15 @@ namespace WindowsFormsApplication1
                     mo.Heizstab = wp.Modul_Heizstab[i] / 1000.0;
                     mo.Betriebsstunden = wp.Modul_WP_Laufzeit[i];
                     if (kaskade != null) KaelteseiteDesModuls(mo, kaskade, i);
+                    // VW1a (Schemaschritt 188, E88): der Ausweis der Kennlinienwahl am gerechneten Vorlauf -
+                    // nur fuer ein Modul mit Kennlinienwahl; sonst bleiben die drei Felder null.
+                    SimulationWaermepumpe.VorlaufwahlAusweis vw = wp.VorlaufwahlDesModuls(i);
+                    if (vw != null)
+                    {
+                        mo.Vorlaufwahl_Stunden = vw.StundenText;
+                        mo.Vorlauf_Darueber_Stunden = vw.Darueber;
+                        mo.Vorlauf_Darunter_Stunden = vw.Darunter;
+                    }
                     w.Module.Add(mo);
                 }
 
