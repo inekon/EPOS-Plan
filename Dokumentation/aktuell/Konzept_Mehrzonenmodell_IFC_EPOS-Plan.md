@@ -1449,8 +1449,8 @@ folgt aus ihren Räumen (Haken der Raumliste).
 
 **Zonenplan mit Projektdatei** (Datenaustauschkonzept 16.3, 16.4): Ist zur IFC-Datei eines HottCAD-Exports die
 Projektdatei dazugeladen, ersetzt der Schritt „Zonen der Projektdatei übernehmen“ die Zonierung des Plans durch die
-Simulations- und Nutzungszonen der Projektdatei (`SqprojZonen`), je Zone mit Nutzung aus der DIN-V-18599-Profilnummer
-und der Konditionierung aus Ganglinie und Nutzungsprofil (`Planzone.Projektdatei`); IFC-Räume ohne Gegenstück bleiben
+wirksame Zonierung der Projektdatei (`SqprojZonen`; Vorgabe die DIN-V-18599-Zonen, bei Dateien mit beiden Zonierungen im Dialog wählbar: Simulationszonen), je Zone mit Nutzung aus der DIN-V-18599-Profilnummer
+und der Konditionierung aus Ganglinie und Nutzungsprofil (`Planzone.Projektdatei`; die Herkunft je Zone nennt die Zonierung); IFC-Räume ohne Gegenstück bleiben
 nicht zugeordnet, leere Zonen werden gemeldet und nicht angelegt. Trägt eine IFC-Datei von EPOS-Plan je Raum die Sätze
 `EPOS_Zone` und `EPOS_Kalender_*`, übernimmt schon der Regelvorschlag die Konditionierung des ersten Raums der Zone, der
 sie trägt — mit der Rangfolge Projektdatei vor IFC-`EPOS_*` vor Vorlage. Beim Speichern schreibt
