@@ -32389,6 +32389,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittel der Raumtemperaturen der Datei, flächengewichtet, von {0} beheizten Räumen ({1} bis {2} °C; {3} Räume ohne Angabe) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SOLLWERT_CAD {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SOLLWERT_CAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} °C ähnelt.
         /// </summary>
         public static string GIMP_BELEG_SOLLWERT_VORGABE {
@@ -32835,6 +32844,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_BILANZ_ZONEN {
             get {
                 return ResourceManager.GetString("GIMP_DLG_BILANZ_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumtemperatur der Datei als Heizsollwert übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_CAD_SOLLWERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_CAD_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: Normtemperatur; der Wert bleibt änderbar. Mit Haken wird der Heizsollwert am Tag des Gebäudes und jeder beheizten Zone das flächengewichtete Mittel der Raumtemperaturen ihrer beheizten Räume aus der Datei. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_CAD_SOLLWERT_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_CAD_SOLLWERT_HINWEIS", resourceCulture);
             }
         }
         
@@ -33492,6 +33519,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_SCHICHTEN {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizsollwert Tag ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SP_SOLLWERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SP_SOLLWERT", resourceCulture);
             }
         }
         
@@ -37510,6 +37546,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Die gemittelten Raumtemperaturen der Datei reichen von {1} bis {2} °C — mehr als {3} K; der gemittelte Heizsollwert sollte geprüft werden. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff {0}: {1} = {2} ist kein Wert (≤ 0) — die Angabe bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_STOFFWERT_FEHLSTELLE {
@@ -37677,6 +37722,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_ZONE_OHNE_FLAECHEN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_OHNE_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Heizsollwert am Tag {1} °C aus der Raumtemperatur der Datei ({2} Räume mit, {3} ohne Angabe). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_SOLLWERT_CAD {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_SOLLWERT_CAD", resourceCulture);
             }
         }
         
@@ -38698,6 +38752,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Die gemittelten Raumtemperaturen der Datei reichen von {1} bis {2} °C — mehr als {3} K; der gemittelte Heizsollwert sollte geprüft werden. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_SOLLWERT_CAD_SPANNE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_SOLLWERT_CAD_SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Stoffwerte von {1} Baustoffen werden nicht gelesen — die Schnittstelle bildet ihre Eigenschaftssätze nicht verlässlich ab (IfcThermalMaterialProperties, IfcGeneralMaterialProperties, IfcExtendedMaterialProperties); U-Wert und Bauart aus diesen Schichten entfallen ({2}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_STOFFWERTE_NICHT_GELESEN {
@@ -38910,6 +38973,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZONE_OHNE_FLAECHEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZONE_OHNE_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Heizsollwert am Tag {1} °C aus der Raumtemperatur der Datei ({2} Räume mit, {3} ohne Angabe). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_SOLLWERT_CAD {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_SOLLWERT_CAD", resourceCulture);
             }
         }
         

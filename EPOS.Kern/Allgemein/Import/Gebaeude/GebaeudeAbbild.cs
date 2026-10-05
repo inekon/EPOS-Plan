@@ -447,7 +447,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Raumtemperatur eines CAD-Exports [°C] (IFC <c>InsideTemperature (°C)</c> aus einem beliebigen Satz) —
-        /// nur für die Zonenregel Z6, wenn <see cref="SollHeizenC"/> fehlt; nie als Sollwert übernommen. <c>null</c> = keine.
+        /// für die Zonenregel Z6, wenn <see cref="SollHeizenC"/> fehlt, und als Heizsollwert nur auf Wunsch des Anwenders
+        /// (<see cref="GebaeudeCadSollwert"/>, Schalter im Zuordnungsdialog, Vorgabe aus). <c>null</c> = keine.
         /// <see cref="Raumtyp"/> trägt unter IFC <c>HSETU_RaumAllgemein.RoomType</c> ohne Präfix <c>mrt</c>, sonst
         /// <c>Pset_SpaceCommon.Category</c> bzw. <c>ObjectType</c> — er benennt die Nutzungsklasse der Regel Z6.
         /// </summary>

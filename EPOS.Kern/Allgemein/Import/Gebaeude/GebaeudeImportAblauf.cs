@@ -238,11 +238,17 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <exception cref="InvalidOperationException">wenn nichts gelesen ist.</exception>
         /// <exception cref="ArgumentOutOfRangeException">bei einem Index außerhalb der Klappliste.</exception>
+        /// <param name="raumtemperaturAlsSollwert">
+        /// Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" (<see cref="GebaeudeCadSollwert"/>);
+        /// Vorgabe aus — dann gilt die Normtemperatur.
+        /// </param>
         public GebaeudeImportSatz Zuordnen(int gebaeudeIndex, char? baualtersklasse,
-                                           IReadOnlyDictionary<string, bool> beheiztUebersteuert = null)
+                                           IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
+                                           bool raumtemperaturAlsSollwert = false)
         {
             GebaeudePruefen(gebaeudeIndex);
-            return GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert);
+            return GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert,
+                                              raumtemperaturAlsSollwert);
         }
 
         /// <summary>
