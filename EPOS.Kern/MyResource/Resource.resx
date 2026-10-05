@@ -39186,6 +39186,51 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
   </data>
+  <data name="IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>{0} Räume liegen in keiner Zone ({1}) — sie zählen nicht zur Zonenfläche; vor dem Speichern zuordnen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_LEER" xml:space="preserve">
+    <value>Die Zone „{0}“ trägt keinen Raum (0 m²) — sie wird nicht übernommen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG_GEMISCHT" xml:space="preserve">
+    <value>Die Zone „{0}“ fasst beheizte und unbeheizte Räume — sie gilt als beheizt; die Haken „beheizt“ der Räume prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZUORDNUNG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} Räume sind keiner Zone zugeordnet ({1}) — nicht gespeichert; die Räume zuordnen oder „Rest nach Regel zuordnen“ wählen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NAME_LEER" xml:space="preserve">
+    <value>Eine Zone braucht einen Namen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NAME_DOPPELT" xml:space="preserve">
+    <value>Den Zonennamen „{0}“ gibt es schon.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Nutzung {0} ist für eine Zone nicht wählbar (Wohnen, Büro, Schule oder keine).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Die Zone {0} gibt es nicht.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Der Raum {0} gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_GESCHOSS_UNBEKANNT" xml:space="preserve">
+    <value>Das Geschoss {0} trägt keinen Raum dieses Gebäudes.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG" xml:space="preserve">
+    <value>Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht zugeordnet; zuerst den Haken „beheizt“ des Raums umstellen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG_TEIL" xml:space="preserve">
+    <value>{0} Räume des Geschosses sind anders beheizt als die Zone „{2}“ und bleiben, wo sie waren ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>Mehr als {0} Zonen rechnet das Gebäude nicht — keine weitere Zone angelegt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REGEL_UNGUELTIG" xml:space="preserve">
+    <value>Die Regel {0} trägt dieses Gebäude nicht (wählbar: {1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REST_AUSSERHALB" xml:space="preserve">
+    <value>{0} Räume bleiben nach der Regel {2} außerhalb der Zonen ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_STRUKTUR_ENTHALTEN" xml:space="preserve">
     <value>Gebäude {0}: {1} Geschosse und {2} Räume hängen über das Enthaltensein (IfcRelContainedInSpatialStructure) statt über die Zerlegung (IfcRelAggregates) — sie werden wie zerlegte übernommen.</value>
   </data>
@@ -39305,6 +39350,51 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAEUME_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>{0} Räume liegen in keiner Zone ({1}) — sie zählen nicht zur Zonenfläche; vor dem Speichern zuordnen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_LEER" xml:space="preserve">
+    <value>Die Zone „{0}“ trägt keinen Raum (0 m²) — sie wird nicht übernommen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG_GEMISCHT" xml:space="preserve">
+    <value>Die Zone „{0}“ fasst beheizte und unbeheizte Räume — sie gilt als beheizt; die Haken „beheizt“ der Räume prüfen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZUORDNUNG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} Räume sind keiner Zone zugeordnet ({1}) — nicht gespeichert; die Räume zuordnen oder „Rest nach Regel zuordnen“ wählen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NAME_LEER" xml:space="preserve">
+    <value>Eine Zone braucht einen Namen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NAME_DOPPELT" xml:space="preserve">
+    <value>Den Zonennamen „{0}“ gibt es schon.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NUTZUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Nutzung {0} ist für eine Zone nicht wählbar (Wohnen, Büro, Schule oder keine).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Die Zone {0} gibt es nicht.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Der Raum {0} gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_GESCHOSS_UNBEKANNT" xml:space="preserve">
+    <value>Das Geschoss {0} trägt keinen Raum dieses Gebäudes.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG" xml:space="preserve">
+    <value>Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht zugeordnet; zuerst den Haken „beheizt“ des Raums umstellen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL" xml:space="preserve">
+    <value>{0} Räume des Geschosses sind anders beheizt als die Zone „{2}“ und bleiben, wo sie waren ({1}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>Mehr als {0} Zonen rechnet das Gebäude nicht — keine weitere Zone angelegt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REGEL_UNGUELTIG" xml:space="preserve">
+    <value>Die Regel {0} trägt dieses Gebäude nicht (wählbar: {1}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REST_AUSSERHALB" xml:space="preserve">
+    <value>{0} Räume bleiben nach der Regel {2} außerhalb der Zonen ({1}).</value>
   </data>
   <data name="ZGEO_SCHEMATISCH" xml:space="preserve">
     <value>{0} Räume ohne Umriss aus Raumgrenzen sind schematisch als Rechteck gezeichnet und je Geschoss gereiht — ihre Lage ist erfunden: {1}</value>

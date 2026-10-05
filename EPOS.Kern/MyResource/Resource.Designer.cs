@@ -37528,6 +37528,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht zugeordnet; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ fasst beheizte und unbeheizte Räume — sie gilt als beheizt; die Haken „beheizt“ der Räume prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_BEHEIZUNG_GEMISCHT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_BEHEIZUNG_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume des Geschosses sind anders beheizt als die Zone „{2}“ und bleiben, wo sie waren ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Geschoss {0} trägt keinen Raum dieses Gebäudes. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_GESCHOSS_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_GESCHOSS_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Zonennamen „{0}“ gibt es schon. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_NAME_LEER {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzung {0} ist für eine Zone nicht wählbar (Wohnen, Büro, Schule oder keine). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_NUTZUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_NUTZUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Regel {0} trägt dieses Gebäude nicht (wählbar: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_REGEL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_REGEL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume bleiben nach der Regel {2} außerhalb der Zonen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_REST_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_REST_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehr als {0} Zonen rechnet das Gebäude nicht — keine weitere Zone angelegt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume liegen in keiner Zone ({1}) — sie zählen nicht zur Zonenfläche; vor dem Speichern zuordnen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_RAEUME_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_RAEUME_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_RAUM_ABGETRENNT {
@@ -37708,6 +37825,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ trägt keinen Raum (0 m²) — sie wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_LEER {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_ZONE_OHNE_AUSSEN {
@@ -37758,6 +37884,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume sind keiner Zone zugeordnet ({1}) — nicht gespeichert; die Räume zuordnen oder „Rest nach Regel zuordnen“ wählen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZUORDNUNG_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZUORDNUNG_UNVOLLSTAENDIG", resourceCulture);
             }
         }
         
@@ -38671,11 +38806,128 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht zugeordnet; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ fasst beheizte und unbeheizte Räume — sie gilt als beheizt; die Haken „beheizt“ der Räume prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_BEHEIZUNG_GEMISCHT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_BEHEIZUNG_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume des Geschosses sind anders beheizt als die Zone „{2}“ und bleiben, wo sie waren ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_BEHEIZUNG_TEIL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_BEHEIZUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Geschoss {0} trägt keinen Raum dieses Gebäudes. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_GESCHOSS_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_GESCHOSS_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Zonennamen „{0}“ gibt es schon. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_NAME_LEER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzung {0} ist für eine Zone nicht wählbar (Wohnen, Büro, Schule oder keine). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Regel {0} trägt dieses Gebäude nicht (wählbar: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_REGEL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_REGEL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume bleiben nach der Regel {2} außerhalb der Zonen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_REST_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_REST_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehr als {0} Zonen rechnet das Gebäude nicht — keine weitere Zone angelegt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_ZU_VIELE_ZONEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile mit der Platzierung {1} werden ohne Himmelsrichtung übernommen; ausgewertet wird nur IfcLocalPlacement. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_PLATZIERUNGSART {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_PLATZIERUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume liegen in keiner Zone ({1}) — sie zählen nicht zur Zonenfläche; vor dem Speichern zuordnen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET", resourceCulture);
             }
         }
         
@@ -38959,6 +39211,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ trägt keinen Raum (0 m²) — sie wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_LEER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ZONE_OHNE_AUSSEN {
@@ -39009,6 +39270,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume sind keiner Zone zugeordnet ({1}) — nicht gespeichert; die Räume zuordnen oder „Rest nach Regel zuordnen“ wählen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZUORDNUNG_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZUORDNUNG_UNVOLLSTAENDIG", resourceCulture);
             }
         }
         
