@@ -81,6 +81,12 @@ namespace WindowsFormsApplication1
         private GebaeudeImportSatz _satz;
         private GebaeudeBauteilvorschlag _vorschlag;
         private GebaeudeZonierung _zonierung;
+
+        /// <summary>Der Zonenplan der letzten Zuordnung bzw. Prüfung (Zonenbaum); <c>null</c> = keiner (eine Regel oder abgelehnt).</summary>
+        private Zonenplan _plan;
+
+        /// <summary>Was der letzte Schritt am Plan ergab: seine Meldung, ob er abgelehnt ist, wie viele frühere nicht mehr griffen.</summary>
+        private (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) _schritt;
         private Zonengeometrie _geometrie;
         private bool _alsZone;
 
@@ -403,7 +409,9 @@ namespace WindowsFormsApplication1
             // Anfrage (Regel, Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung, Zuordnung von
             // Hand) bildet sie neu, mit dem Namensabgleich samt den Zuordnungen des Dialogs.
             VorschlagBilden(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), anfrage.Zonenregel, haken,
-                            anfrage.Baustoffzuordnungen, anfrage.Umhaengungen, anfrage.RaumtemperaturAlsSollwert);
+                            anfrage.Baustoffzuordnungen, anfrage.Umhaengungen, anfrage.RaumtemperaturAlsSollwert,
+                            anfrage.Planschritte, anfrage.Plangrundhaken);
+            bool umhaengbar = Mehrzonig(_zonierung) || (_plan != null && anfrage.Planschritte is { Count: > 0 });
 
             return new GebaeudeImportStand
             {
@@ -418,8 +426,8 @@ namespace WindowsFormsApplication1
                 Baustoffe = BaustoffeDaten(_vorschlag, anfrage.Baustoffzuordnungen),
                 KlasseDerDatei = GebaeudeZuordnungsModell.KlasseDerDatei(satz),
                 KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
-                Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken),
-                Ansicht = GebaeudeImportAnsicht.AnsichtDaten(_geometrie, Mehrzonig(_zonierung),
+                Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken, _plan, _schritt),
+                Ansicht = GebaeudeImportAnsicht.AnsichtDaten(_geometrie, umhaengbar,
                                                              GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag)),
             };
         }
@@ -433,13 +441,105 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void VorschlagBilden(int index, char? klasse, string regel, IReadOnlyDictionary<string, bool> haken,
                                      IReadOnlyDictionary<string, int?> zuordnungen,
-                                     IReadOnlyList<GebaeudeRaumumhaengung> umhaengungen = null, bool cadSollwert = false)
+                                     IReadOnlyList<GebaeudeRaumumhaengung> umhaengungen = null, bool cadSollwert = false,
+                                     IReadOnlyList<GebaeudePlanschritt> schritte = null,
+                                     IReadOnlyDictionary<string, bool> grundhaken = null)
         {
             _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken, umhaengungen);
+            _plan = null;
+            _schritt = (null, false, 0);
+            if (_zonierung != null && _zonierung.Regeln.Count > 1 && !_zonierung.Abgelehnt)
+            {
+                // DER ZONENPLAN (Zonenbaum): der Regelvorschlag mit den Haken vor dem ersten Schritt, darauf die Schritte
+                // in ihrer Reihenfolge, zuletzt die heutigen Haken. Ohne Schritt bleibt die Zonierung die der Regel.
+                bool mitSchritten = schritte is { Count: > 0 };
+                List<Raumumhaengung> hand = umhaengungen?.Where(u => u != null).Select(u => new Raumumhaengung(u.Raum, u.Zielzone)).ToList();
+                _plan = Zonenplan.Vorschlag(_ablauf.Abbild, index, _zonierung.Regel, mitSchritten ? grundhaken ?? haken : haken, hand);
+                if (mitSchritten)
+                {
+                    _schritt = Auflegen(_plan, schritte);
+                    foreach (AbbildRaum r in _plan.Gebaeude.Raeume)
+                    {
+                        bool soll = GebaeudeRaumzeile.BeheiztWirksam(r, haken);
+                        if (_plan.Beheizt(r) != soll) _plan.BeheizungSetzen(r.Kennung, soll);
+                    }
+                    _zonierung = _plan.Zonieren();
+                }
+            }
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
                                                          Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert);
             _geometrie = GebaeudeGrundriss.Bilden(_ablauf.Abbild, index, _zonierung);
         }
+
+        /// <summary>
+        /// <b>Legt die Schritte des Zonenbaums auf den Plan</b>, in ihrer Reihenfolge. Ein abgelehnter Schritt lässt den Plan
+        /// unverändert; ist es der letzte, steht seine Meldung im Stand (der Dialog nimmt ihn wieder heraus), ein früherer
+        /// zählt als verworfen. Ein angenommener letzter Schritt reicht seinen Hinweis weiter (etwa Räume anderer Beheizung).
+        /// </summary>
+        internal static (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) Auflegen(Zonenplan plan, IReadOnlyList<GebaeudePlanschritt> schritte)
+        {
+            int verworfen = 0;
+            PruefMeldung meldung = null;
+            bool abgelehnt = false;
+            for (int i = 0; i < schritte.Count; i++)
+            {
+                Planschritt e = Schritt(plan, schritte[i]);
+                bool letzter = i == schritte.Count - 1;
+                if (!e.Ok && !letzter) verworfen++;
+                if (letzter)
+                {
+                    meldung = e.Meldung;
+                    abgelehnt = !e.Ok;
+                }
+            }
+            return (meldung, abgelehnt, verworfen);
+        }
+
+        private static Planschritt Schritt(Zonenplan plan, GebaeudePlanschritt s)
+        {
+            if (s == null) return new Planschritt(true);
+            IReadOnlyList<string> raeume = s.Raeume ?? Array.Empty<string>();
+            switch (s.Art)
+            {
+                case GebaeudePlanschrittArt.ANLEGEN: return plan.ZoneAnlegen(s.Name, s.Nutzung);
+                case GebaeudePlanschrittArt.UMBENENNEN: return plan.ZoneUmbenennen(s.Zone, s.Name);
+                case GebaeudePlanschrittArt.NUTZUNG: return plan.NutzungSetzen(s.Zone, s.Nutzung);
+                case GebaeudePlanschrittArt.AUFHEBEN: return plan.ZonierungAufheben();
+                case GebaeudePlanschrittArt.ZUORDNEN: return plan.Zuordnen(raeume, s.Zone);
+                case GebaeudePlanschrittArt.GESCHOSS: return plan.GeschossZuordnen(s.Geschoss, s.Zone);
+                case GebaeudePlanschrittArt.REST: return plan.RestNachRegelZuordnen(s.Regel);
+                case GebaeudePlanschrittArt.HAKEN:
+                    return raeume.Count == 1 ? plan.BeheizungSetzen(raeume[0], s.Beheizt) : new Planschritt(true);
+                case GebaeudePlanschrittArt.LOESCHEN:
+                {
+                    // Alle oder keine: auf einer Kopie gelöscht, erst dann am Plan.
+                    Zonenplan probe = plan.Kopie();
+                    foreach (string z in s.Zonen ?? Array.Empty<string>())
+                    {
+                        Planschritt e = probe.ZoneLoeschen(z);
+                        if (!e.Ok) return e;
+                    }
+                    foreach (string z in s.Zonen ?? Array.Empty<string>()) plan.ZoneLoeschen(z);
+                    return new Planschritt(true);
+                }
+                case GebaeudePlanschrittArt.EIGENE:
+                {
+                    // Ein Raum als eigene Zone: eine neue Zone mit seinem Namen (im Plan frei), dann der Raum hinein.
+                    AbbildRaum raum = raeume.Count == 1
+                        ? plan.Gebaeude.Raeume.FirstOrDefault(r => string.Equals(r.Kennung, raeume[0], StringComparison.Ordinal)) : null;
+                    if (raum == null) return plan.Zuordnen(raeume.Count == 0 ? new[] { "" } : raeume.Take(1), null);
+                    string basis = Zonenplan.Raumname(raum);
+                    Planschritt neu = plan.ZoneAnlegen(basis, null);
+                    for (int n = 2; !neu.Ok && neu.Meldung?.Schluessel?.EndsWith(Zonenplan.PLAN_NAME_DOPPELT, StringComparison.Ordinal) == true; n++)
+                        neu = plan.ZoneAnlegen(basis + " " + n.ToString(CultureInfo.InvariantCulture), null);
+                    return neu.Ok ? plan.Zuordnen(new[] { raum.Kennung }, neu.Schluessel) : neu;
+                }
+                default: return new Planschritt(true);
+            }
+        }
+
+        /// <summary>Der Zonenplan der letzten Zuordnung bzw. Prüfung; <c>null</c> ohne.</summary>
+        internal Zonenplan Plan => _plan;
 
         /// <summary>
         /// Die Zonierung eines Gebäudes nach <paramref name="regel"/>, sonst nach der Vorgabe, mit den
@@ -485,6 +585,8 @@ namespace WindowsFormsApplication1
 
             // Als Zone mit Bauteilen gewählt, aber der Vorschlag lässt sich nicht bilden: benannt
             // abgelehnt, nicht still als Summenweg übernommen.
+            // Der Zonenplan mit nicht zugeordneten Räumen wird nicht gespeichert (dieselbe Prüfung des Kerns).
+            if (_plan?.Abschlusspruefung() is PruefMeldung offen) meldungen.Add(MeldungDaten(offen));
             if (ergebnis.AlsZone && (_vorschlag == null || _vorschlag.Abgelehnt))
                 meldungen.Add(new GebaeudeImportMeldung(WarnStufe.Fehler, GebaeudeZuordnungsModell.StufeText(PruefStufe.Fehler),
                     Formatieren(MyResource.Resource.GIMP_DLG_ALS_ZONE_NICHT, Ablehnungstext(_vorschlag)), ALS_ZONE_NICHT));
@@ -543,7 +645,7 @@ namespace WindowsFormsApplication1
             // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt.
             VorschlagBilden(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse), ergebnis.Zonenregel,
                             ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen, ergebnis.Umhaengungen,
-                            ergebnis.RaumtemperaturAlsSollwert);
+                            ergebnis.RaumtemperaturAlsSollwert, ergebnis.Planschritte, ergebnis.Plangrundhaken);
             _alsZone = ergebnis.AlsZone && !_vorschlag.Abgelehnt;
             _baustoffzuordnungen = Wirksame(ergebnis.Baustoffzuordnungen, _vorschlag);
             return satz;
@@ -714,7 +816,7 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.RaumGrundText(r),
                 r.Uebersteuert);
 
-        private static GebaeudeImportMeldung MeldungDaten(PruefMeldung m)
+        internal static GebaeudeImportMeldung MeldungDaten(PruefMeldung m)
             => new GebaeudeImportMeldung(
                 m.Stufe == PruefStufe.Fehler ? WarnStufe.Fehler : m.Stufe == PruefStufe.Warnung ? WarnStufe.Warnung : WarnStufe.Hinweis,
                 GebaeudeZuordnungsModell.StufeText(m.Stufe),

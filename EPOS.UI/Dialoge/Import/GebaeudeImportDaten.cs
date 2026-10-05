@@ -98,6 +98,13 @@ public sealed record GebaeudeLesestand(
 /// Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" (Schlüssel
 /// <see cref="GebaeudeImportSchalter.RAUMTEMPERATUR_ALS_SOLLWERT"/>); Vorgabe aus = die Normtemperatur.
 /// </param>
+/// <param name="Planschritte">
+/// Die Schritte am Zonenplan (Zonenbaum) in ihrer Reihenfolge; <c>null</c> = keine — dann gilt der Regelvorschlag.
+/// </param>
+/// <param name="Plangrundhaken">
+/// Die Haken, mit denen der Plan vor dem ersten Schritt gebildet war — damit die Schlüssel der Zonen stehen bleiben,
+/// wenn ein Haken danach wechselt (der Wechsel kommt als Schritt <see cref="GebaeudePlanschrittArt.HAKEN"/>).
+/// </param>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -106,8 +113,19 @@ public sealed record GebaeudeZuordnungsanfrage(
     IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
     string? Zonenregel = null,
     IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null,
-    bool RaumtemperaturAlsSollwert = false)
+    bool RaumtemperaturAlsSollwert = false,
+    IReadOnlyList<GebaeudePlanschritt>? Planschritte = null,
+    IReadOnlyDictionary<string, bool>? Plangrundhaken = null)
 {
+    /// <summary>Dieselbe Anfrage mit einem Schritt am Zonenplan hinter den bisherigen (Zonenbaum).</summary>
+    /// <param name="schritt">Der Schritt — nur Schlüssel und Kennungen, nie ein Anzeigetext.</param>
+    public GebaeudeZuordnungsanfrage MitPlanschritt(GebaeudePlanschritt schritt)
+        => this with
+        {
+            Planschritte = (Planschritte ?? Array.Empty<GebaeudePlanschritt>()).Append(schritt).ToList(),
+            Plangrundhaken = Plangrundhaken ?? BeheiztUebersteuert,
+        };
+
     /// <summary>
     /// Dieselbe Anfrage mit einer Zuordnung von Hand hinter den bisherigen — der Weg eines Klicks im
     /// Grundriss: Raumkennung und Zonenschlüssel, nie ein Name.
@@ -130,6 +148,56 @@ public sealed record GebaeudeZuordnungsanfrage(
 /// <param name="Raum">Die Raumkennung der Datei.</param>
 /// <param name="Zielzone">Der Schlüssel der Zielzone; <c>null</c> = als eigene Zone abtrennen.</param>
 public sealed record GebaeudeRaumumhaengung(string Raum, string? Zielzone);
+
+/// <summary>Die sprachneutralen Arten eines Schritts am Zonenplan (<see cref="GebaeudePlanschritt.Art"/>).</summary>
+public static class GebaeudePlanschrittArt
+{
+    /// <summary>Zone anlegen (Name, Nutzung).</summary>
+    public const string ANLEGEN = "ANLEGEN";
+    /// <summary>Zonen löschen (Zonen); ihre Räume sind danach nicht zugeordnet.</summary>
+    public const string LOESCHEN = "LOESCHEN";
+    /// <summary>Zone umbenennen (Zone, Name).</summary>
+    public const string UMBENENNEN = "UMBENENNEN";
+    /// <summary>Nutzung einer Zone setzen (Zone, Nutzung; <c>null</c> = keine).</summary>
+    public const string NUTZUNG = "NUTZUNG";
+    /// <summary>Zonierung aufheben: alle Räume nicht zugeordnet.</summary>
+    public const string AUFHEBEN = "AUFHEBEN";
+    /// <summary>Räume einer Zone zuordnen (Räume, Zone).</summary>
+    public const string ZUORDNEN = "ZUORDNEN";
+    /// <summary>Einen Raum als eigene Zone abtrennen (Räume mit einem Raum).</summary>
+    public const string EIGENE = "EIGENE";
+    /// <summary>Die Räume eines Geschosses einer Zone zuordnen (Geschoss, Zone).</summary>
+    public const string GESCHOSS = "GESCHOSS";
+    /// <summary>Die nicht zugeordneten Räume nach einer Regel zuordnen (Regel).</summary>
+    public const string REST = "REST";
+    /// <summary>Den Haken „beheizt" eines Raums im Plan umstellen (Räume mit einem Raum, Beheizt).</summary>
+    public const string HAKEN = "HAKEN";
+}
+
+/// <summary>
+/// <b>Ein Schritt am Zonenplan</b> (Zonenbaum, Mehrzonenkonzept 6.4): Die Anfrage trägt die Schritte in ihrer
+/// Reihenfolge, die Hülle legt sie auf den Regelvorschlag. Nur Schlüssel und Kennungen, nie ein Anzeigetext; ein
+/// abgelehnter Schritt lässt den Plan unverändert.
+/// </summary>
+/// <param name="Art">Die Art (<see cref="GebaeudePlanschrittArt"/>).</param>
+/// <param name="Raeume">Die Raumkennungen (Zuordnen, Eigene, Haken).</param>
+/// <param name="Zone">Der Zonenschlüssel des Plans (Ziel, Umbenennen, Nutzung).</param>
+/// <param name="Zonen">Die Zonenschlüssel (Löschen).</param>
+/// <param name="Name">Der Zonenname (Anlegen, Umbenennen).</param>
+/// <param name="Nutzung">Der Nutzungsschlüssel; <c>null</c> = keine.</param>
+/// <param name="Geschoss">Die Geschosskennung (Geschoss).</param>
+/// <param name="Regel">Der Regelschlüssel (Rest nach Regel).</param>
+/// <param name="Beheizt">Der Haken „beheizt" (Haken).</param>
+public sealed record GebaeudePlanschritt(
+    string Art,
+    IReadOnlyList<string>? Raeume = null,
+    string? Zone = null,
+    IReadOnlyList<string>? Zonen = null,
+    string? Name = null,
+    string? Nutzung = null,
+    string? Geschoss = null,
+    string? Regel = null,
+    bool Beheizt = false);
 
 /// <summary>Ein Raum der Raumliste mit dem Haken „beheizt" und dem Grund der Entscheidung.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung.</param>
@@ -374,6 +442,83 @@ public sealed record GebaeudeBaustoffeDaten
 /// <param name="Text">Der Anzeigetext („Z4 – eine Zone je Geschoss").</param>
 public sealed record GebaeudeZonenregelDaten(string Schluessel, string Text);
 
+/// <summary>Ein Raum des Zonenbaums oder der Liste „Nicht zugeordnete Räume".</summary>
+/// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Wahl (<c>data-raum</c>).</param>
+/// <param name="Name">Anzeigename.</param>
+/// <param name="Geschoss">Das Geschoss als Anzeigetext.</param>
+/// <param name="Flaeche">Fläche mit Einheit.</param>
+/// <param name="Beheizt">Wirksam beheizt (mit den Haken).</param>
+/// <param name="BeheiztLautDatei">Was die Datei sagt.</param>
+public sealed record GebaeudePlanraumDaten(string Kennung, string Name, string Geschoss, string Flaeche, bool Beheizt, bool BeheiztLautDatei);
+
+/// <summary>Eine Zone des Zonenplans: Schlüssel, Name, Nutzung, Beheizung, Zahl der Räume, Fläche, Sollwert und Räume.</summary>
+public sealed record GebaeudePlanzoneDaten
+{
+    /// <summary>Der Schlüssel der Zone im Plan („Z:n") — das Ziel jedes Planschritts (<c>data-zone</c>).</summary>
+    public string Schluessel { get; init; } = "";
+
+    /// <summary>Der Schlüssel, unter dem der Grundriss die Zone führt; leer = die Zone steht nicht im Grundriss.</summary>
+    public string Ansichtsschluessel { get; init; } = "";
+
+    /// <summary>Der Name der Zone.</summary>
+    public string Name { get; init; } = "";
+
+    /// <summary>Der Nutzungsschlüssel (<c>WOHNEN</c>, <c>BUERO</c>, <c>SCHULE</c>); <c>null</c> = keine.</summary>
+    public string? Nutzung { get; init; }
+
+    /// <summary>Beheizt; <c>null</c> = die Zone hat keinen Raum.</summary>
+    public bool? Beheizt { get; init; }
+
+    /// <summary>Die Zahl der Räume als Anzeigetext.</summary>
+    public string Raeume { get; init; } = "";
+
+    /// <summary>Die Fläche mit Einheit.</summary>
+    public string Flaeche { get; init; } = "";
+
+    /// <summary>Der Heizsollwert am Tag mit Einheit; das Leerzeichen der Liste = der Wert des Gebäudes.</summary>
+    public string Sollwert { get; init; } = "";
+
+    /// <summary>Die Räume der Zone in Dateireihenfolge.</summary>
+    public IReadOnlyList<GebaeudePlanraumDaten> Raumliste { get; init; } = Array.Empty<GebaeudePlanraumDaten>();
+}
+
+/// <summary>
+/// <b>Der Zonenplan für den Zonenbaum</b> (Mehrzonenkonzept 6.4): die Zonen mit ihren Räumen, die nicht zugeordneten
+/// Räume, die Geschosse und Nutzungen der Klapplisten und die Meldung des letzten Schritts.
+/// </summary>
+public sealed record GebaeudeZonenplanDaten
+{
+    /// <summary>Die Zonen in Planreihenfolge.</summary>
+    public IReadOnlyList<GebaeudePlanzoneDaten> Zonen { get; init; } = Array.Empty<GebaeudePlanzoneDaten>();
+
+    /// <summary>Die nicht zugeordneten Räume in Dateireihenfolge — solange einer dasteht, ist OK gesperrt.</summary>
+    public IReadOnlyList<GebaeudePlanraumDaten> NichtZugeordnet { get; init; } = Array.Empty<GebaeudePlanraumDaten>();
+
+    /// <summary>Die Zahl der Räume, die die Regel bewusst außerhalb lässt (sie sperren das OK nicht).</summary>
+    public int Ausserhalb { get; init; }
+
+    /// <summary>Die Geschosse (Kennung, Anzeigetext) für „Geschoss zur Zone".</summary>
+    public IReadOnlyList<GebaeudeZonenregelDaten> Geschosse { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
+
+    /// <summary>Die Nutzungen (Schlüssel, Anzeigetext) der Klappliste; „keine" ist der Platzhalter.</summary>
+    public IReadOnlyList<GebaeudeZonenregelDaten> Nutzungen { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
+
+    /// <summary>Ergibt der Plan genau eine Zone (Einzonenweg: Name und Nutzung werden nicht übernommen)?</summary>
+    public bool Einzonig { get; init; }
+
+    /// <summary>Der Vorgabename einer neuen Zone („Zone n", im Plan frei).</summary>
+    public string NeuerName { get; init; } = "";
+
+    /// <summary>Die Meldung des letzten Schritts (Ablehnung oder Hinweis); <c>null</c> = keine.</summary>
+    public GebaeudeImportMeldung? Schrittmeldung { get; init; }
+
+    /// <summary>Hat der Kern den letzten Schritt abgelehnt (der Plan ist der ohne ihn)?</summary>
+    public bool LetzterAbgelehnt { get; init; }
+
+    /// <summary>Wie viele frühere Schritte sich nicht mehr auflegen ließen.</summary>
+    public int Verworfen { get; init; }
+}
+
 /// <summary>Ein Raum einer Zone (aufgeklappt): Name, Geschoss, Fläche, Beheizungsregel und ihr Beleg.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung „beheizt".</param>
 /// <param name="Name">Anzeigename (Name, sonst Kennung).</param>
@@ -495,6 +640,9 @@ public sealed record GebaeudeZonierungDaten
     /// letzten abgelehnten Zuordnung. Leer = keine abgelehnt.
     /// </summary>
     public IReadOnlyList<GebaeudeImportMeldung> Ablehnungen { get; init; } = Array.Empty<GebaeudeImportMeldung>();
+
+    /// <summary>Der Zonenplan für den Zonenbaum; <c>null</c> = keiner (die Regel ist abgelehnt).</summary>
+    public GebaeudeZonenplanDaten? Plan { get; init; }
 }
 
 /// <summary>
@@ -576,6 +724,8 @@ public sealed record GebaeudeImportStand
 /// Zonen und den Raumpaarungen erst mit der Gebäudeliste.
 /// </param>
 /// <param name="RaumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen".</param>
+/// <param name="Planschritte">Die Schritte am Zonenplan in ihrer Reihenfolge; <c>null</c> = keine (der Regelvorschlag).</param>
+/// <param name="Plangrundhaken">Die Haken, mit denen der Plan vor dem ersten Schritt gebildet war; <c>null</c> = die heutigen.</param>
 public sealed record GebaeudeImportErgebnis(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -586,7 +736,9 @@ public sealed record GebaeudeImportErgebnis(
     IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
     string? Zonenregel = null,
     IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null,
-    bool RaumtemperaturAlsSollwert = false)
+    bool RaumtemperaturAlsSollwert = false,
+    IReadOnlyList<GebaeudePlanschritt>? Planschritte = null,
+    IReadOnlyDictionary<string, bool>? Plangrundhaken = null)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)
@@ -785,6 +937,96 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_ZONE_BEHEIZT — Beschriftung des Hakens je Zone für die Sprachausgabe, {0} = Zone.</summary>
     public string ZoneBeheizt { get; set; } = Resource.GIMP_DLG_ZONE_BEHEIZT;
+
+    /// <summary>GIMP_DLG_SP_NUTZUNG</summary>
+    public string SpalteNutzung { get; set; } = Resource.GIMP_DLG_SP_NUTZUNG;
+
+    /// <summary>GIMP_DLG_PLAN_WURZEL</summary>
+    public string PlanWurzel { get; set; } = Resource.GIMP_DLG_PLAN_WURZEL;
+
+    /// <summary>GIMP_DLG_PLAN_ZONE_WAEHLEN</summary>
+    public string ZoneWaehlen { get; set; } = Resource.GIMP_DLG_PLAN_ZONE_WAEHLEN;
+
+    /// <summary>GIMP_DLG_PLAN_ZONE_NAME</summary>
+    public string ZoneName { get; set; } = Resource.GIMP_DLG_PLAN_ZONE_NAME;
+
+    /// <summary>GIMP_DLG_PLAN_ZONE_NUTZUNG</summary>
+    public string ZoneNutzung { get; set; } = Resource.GIMP_DLG_PLAN_ZONE_NUTZUNG;
+
+    /// <summary>GIMP_DLG_PLAN_NUTZUNG_KEINE</summary>
+    public string NutzungKeine { get; set; } = Resource.GIMP_DLG_PLAN_NUTZUNG_KEINE;
+
+    /// <summary>GIMP_DLG_PLAN_ZONE_LEER</summary>
+    public string ZoneLeer { get; set; } = Resource.GIMP_DLG_PLAN_ZONE_LEER;
+
+    /// <summary>GIMP_DLG_PLAN_RAUM_WAEHLEN</summary>
+    public string RaumWaehlen { get; set; } = Resource.GIMP_DLG_PLAN_RAUM_WAEHLEN;
+
+    /// <summary>GIMP_DLG_PLAN_NAME</summary>
+    public string PlanName { get; set; } = Resource.GIMP_DLG_PLAN_NAME;
+
+    /// <summary>GIMP_DLG_PLAN_NUTZUNG</summary>
+    public string PlanNutzung { get; set; } = Resource.GIMP_DLG_PLAN_NUTZUNG;
+
+    /// <summary>GIMP_DLG_PLAN_ANLEGEN_OK</summary>
+    public string PlanAnlegenOk { get; set; } = Resource.GIMP_DLG_PLAN_ANLEGEN_OK;
+
+    /// <summary>GIMP_DLG_PLAN_ANLEGEN_VERWERFEN</summary>
+    public string PlanAnlegenVerwerfen { get; set; } = Resource.GIMP_DLG_PLAN_ANLEGEN_VERWERFEN;
+
+    /// <summary>GIMP_DLG_PLAN_ANLEGEN</summary>
+    public string PlanAnlegen { get; set; } = Resource.GIMP_DLG_PLAN_ANLEGEN;
+
+    /// <summary>GIMP_DLG_PLAN_LOESCHEN</summary>
+    public string PlanLoeschen { get; set; } = Resource.GIMP_DLG_PLAN_LOESCHEN;
+
+    /// <summary>GIMP_DLG_PLAN_AUFHEBEN</summary>
+    public string PlanAufheben { get; set; } = Resource.GIMP_DLG_PLAN_AUFHEBEN;
+
+    /// <summary>GIMP_DLG_PLAN_ZUORDNEN</summary>
+    public string PlanZuordnen { get; set; } = Resource.GIMP_DLG_PLAN_ZUORDNEN;
+
+    /// <summary>GIMP_DLG_PLAN_ZUORDNEN_GRUND</summary>
+    public string PlanZuordnenGrund { get; set; } = Resource.GIMP_DLG_PLAN_ZUORDNEN_GRUND;
+
+    /// <summary>GIMP_DLG_PLAN_GESCHOSS</summary>
+    public string PlanGeschoss { get; set; } = Resource.GIMP_DLG_PLAN_GESCHOSS;
+
+    /// <summary>GIMP_DLG_PLAN_GESCHOSS_KNOPF</summary>
+    public string PlanGeschossKnopf { get; set; } = Resource.GIMP_DLG_PLAN_GESCHOSS_KNOPF;
+
+    /// <summary>GIMP_DLG_PLAN_REST_REGEL</summary>
+    public string PlanRestRegel { get; set; } = Resource.GIMP_DLG_PLAN_REST_REGEL;
+
+    /// <summary>GIMP_DLG_PLAN_REST</summary>
+    public string PlanRest { get; set; } = Resource.GIMP_DLG_PLAN_REST;
+
+    /// <summary>GIMP_DLG_PLAN_HINWEIS</summary>
+    public string PlanHinweis { get; set; } = Resource.GIMP_DLG_PLAN_HINWEIS;
+
+    /// <summary>GIMP_DLG_PLAN_EINZONIG</summary>
+    public string PlanEinzonig { get; set; } = Resource.GIMP_DLG_PLAN_EINZONIG;
+
+    /// <summary>GIMP_DLG_ALS_ZONE_PLAN_HINWEIS</summary>
+    public string AlsZonePlanHinweis { get; set; } = Resource.GIMP_DLG_ALS_ZONE_PLAN_HINWEIS;
+
+    /// <summary>GIMP_DLG_PLAN_OFFEN_TITEL</summary>
+    public string PlanOffenTitel { get; set; } = Resource.GIMP_DLG_PLAN_OFFEN_TITEL;
+
+    /// <summary>GIMP_DLG_PLAN_OFFEN_LEER</summary>
+    public string PlanOffenLeer { get; set; } = Resource.GIMP_DLG_PLAN_OFFEN_LEER;
+
+    /// <summary>GIMP_DLG_PLAN_AUSSERHALB</summary>
+    public string PlanAusserhalb { get; set; } = Resource.GIMP_DLG_PLAN_AUSSERHALB;
+
+    /// <summary>GIMP_DLG_PLAN_AUFHEBEN_TITEL</summary>
+    public string PlanAufhebenTitel { get; set; } = Resource.GIMP_DLG_PLAN_AUFHEBEN_TITEL;
+
+    /// <summary>GIMP_DLG_PLAN_AUFHEBEN_FRAGE</summary>
+    public string PlanAufhebenFrage { get; set; } = Resource.GIMP_DLG_PLAN_AUFHEBEN_FRAGE;
+
+    /// <summary>GIMP_DLG_PLAN_OK_GESPERRT</summary>
+    public string PlanOkGesperrt { get; set; } = Resource.GIMP_DLG_PLAN_OK_GESPERRT;
 
     /// <summary>GIMP_DLG_ZONEN_HINWEIS</summary>
     public string ZonenHinweis { get; set; } = Resource.GIMP_DLG_ZONEN_HINWEIS;
