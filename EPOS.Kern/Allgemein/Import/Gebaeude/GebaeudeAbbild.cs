@@ -606,6 +606,18 @@ namespace WindowsFormsApplication1
         public double? GWert { get; set; }
 
         /// <summary>
+        /// Der Rahmenanteil [0–1] einer Öffnung aus der Datei (IFC <c>HSETU_EcoCad.FractionOfFrame</c>, Konzept HottCAD-Verbund
+        /// 3.3); <c>null</c> = keiner, dann gilt die Vorgabe des Gebäudes. Der g-Wert bleibt davon unberührt.
+        /// </summary>
+        public double? Rahmenanteil { get; set; }
+
+        /// <summary>Die Herkunft des <see cref="Rahmenanteil"/>s (<see cref="Importherkunft.Ifc"/>, wenn gelesen).</summary>
+        public Importherkunft RahmenanteilHerkunft { get; set; } = Importherkunft.Leer;
+
+        /// <summary>Der Beleg des <see cref="Rahmenanteil"/>s: Satz, Eigenschaft und Skala der Datei.</summary>
+        public string RahmenanteilBeleg { get; set; }
+
+        /// <summary>
         /// Die längenbezogenen Wärmebrücken des Bauteils als Summe ψ·L [W/K] (<c>Tab_Bauteil.Psi_L</c>; Export G7c,
         /// IFC <c>EPOS_Bauteil.WaermebrueckeUA</c>); <c>null</c> = keine. Der Leser lässt sie leer.
         /// </summary>

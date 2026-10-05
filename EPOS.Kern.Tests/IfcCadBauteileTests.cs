@@ -293,6 +293,24 @@ namespace EPOS.Kern.Tests
             => Assert.Equal(erwartet, IfcAbbildBauer.WirksameSeite(new[] { IfcAbbildBauer.SeiteAbbilden(a), IfcAbbildBauer.SeiteAbbilden(b) }));
 
         [Fact]
+        public void Der_Rahmenanteil_kommt_aus_FractionOfFrame_in_Prozent_oder_als_Anteil()
+        {
+            GebaeudeImportAblauf a = Lesen(PROBE);
+            AbbildBauteil nord = Bauteil(a, "Nord CAD");
+            AbbildBauteil f1 = nord.Oeffnungen.Single(o => o.Name == "F1 CAD"), f2 = nord.Oeffnungen.Single(o => o.Name == "F2 CAD");
+            AbbildBauteil df = Bauteil(a, "Dach CAD").Oeffnungen.Single();
+            Nah(0.3, f1.Rahmenanteil);
+            Assert.Equal(Importherkunft.Ifc, f1.RahmenanteilHerkunft);
+            Assert.Equal("CAD_EcoCad.FractionOfFrame [%]", f1.RahmenanteilBeleg);
+            Nah(0.2, df.Rahmenanteil);
+            Assert.Equal("CAD_EcoCad.FractionOfFrame [–]", df.RahmenanteilBeleg);
+            // Ohne Angabe: leer, die Vorgabe des Gebäudes gilt; der g-Wert bleibt Vorgabe.
+            Assert.Null(f2.Rahmenanteil);
+            Assert.Equal(Importherkunft.Leer, f2.RahmenanteilHerkunft);
+            Assert.Null(f1.GWert);
+        }
+
+        [Fact]
         public void Die_Seiten_der_Probe_stehen_am_Bauteil_und_die_wirksame_Seite_entscheidet()
         {
             GebaeudeImportAblauf a = Lesen("ifc4_z6_cad.ifc");

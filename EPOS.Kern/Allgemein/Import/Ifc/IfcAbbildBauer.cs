@@ -1308,6 +1308,37 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>Der Rahmenanteil eines CAD-Exports (<c>HSETU_EcoCad.FractionOfFrame</c>, Konzept HottCAD-Verbund 3.3).</summary>
+        internal const string RAHMENANTEIL = "FractionOfFrame";
+
+        /// <summary>
+        /// <b>Der Rahmenanteil [0–1] aus dem Wert der Datei</b>: Über 1 ist er in Prozent (der CAD-Export schreibt <c>30</c>
+        /// für 30 %), bis 1 ein Anteil; Text mit Dezimalkomma wird gelesen. Negativ, über 100 % oder unlesbar → <c>null</c>.
+        /// </summary>
+        internal static double? RahmenanteilLesen(IIfcProperty p, out bool prozent)
+        {
+            prozent = false;
+            if (!(p is IIfcPropertySingleValue einzel) || einzel.NominalValue == null) return null;
+            double? w = IfcEigenschaften.Zahl(einzel.NominalValue);
+            if (!w.HasValue && double.TryParse((IfcEigenschaften.Textwert(einzel.NominalValue) ?? "").Trim().Replace(',', '.'),
+                                               NumberStyles.Float, CultureInfo.InvariantCulture, out double t)) w = t;
+            if (!w.HasValue || double.IsNaN(w.Value) || w.Value < 0.0 || w.Value > 100.0) return null;
+            prozent = w.Value > 1.0;
+            return prozent ? w.Value / 100.0 : w.Value;
+        }
+
+        /// <summary>Der Rahmenanteil einer Öffnung mit Herkunft IFC und Beleg; ohne Angabe bleibt er leer (Vorgabe des Gebäudes).</summary>
+        private void Rahmenanteil(IIfcElement o, AbbildBauteil b)
+        {
+            IfcFund f = IfcEigenschaften.AlleMitNamen(_bezuege, o, new[] { RAHMENANTEIL }).FirstOrDefault();
+            if (f == null) return;
+            double? anteil = RahmenanteilLesen(f.Eigenschaft, out bool prozent);
+            if (!anteil.HasValue) return;
+            b.Rahmenanteil = anteil;
+            b.RahmenanteilHerkunft = Importherkunft.Ifc;
+            b.RahmenanteilBeleg = f.Satz + "." + f.Eigenschaft.Name + (prozent ? " [%]" : " [–]");
+        }
+
         /// <summary>Die Namen der Angrenzung je Seite (<c>HSETU_Bauteilreferenzen</c>, Konzept HottCAD-Verbund 3.1).</summary>
         internal static readonly IReadOnlyList<string> SEITE_ANGRENZUNG = new[] { "ElementReferences[0].AdjacentType", "ElementReferences[1].AdjacentType" };
 
@@ -2419,6 +2450,7 @@ namespace WindowsFormsApplication1
             UWert(o, "Pset_" + klasse + "Common", b);
             IfcFund g = IfcEigenschaften.Finden(_bezuege, o, "Pset_DoorWindowGlazingType", "SolarHeatGainTransmittance");
             b.GWert = g == null ? null : Zahl(g);
+            Rahmenanteil(o, b);
             GrenzenUebernehmen(b, GrenzenVon(o));
             b.GeschossKennung = _elementGeschoss.TryGetValue(o.EntityLabel, out string geschoss) ? geschoss : wirt.GeschossKennung;
             return b;
