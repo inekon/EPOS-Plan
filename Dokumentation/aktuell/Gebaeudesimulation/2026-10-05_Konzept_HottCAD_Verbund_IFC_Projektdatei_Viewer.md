@@ -1,8 +1,10 @@
 # Konzept: HottCAD-Verbund — IFC zuerst, Projektdatei ergänzt, Hülle nach Randbedingung sichtbar (EPOS-Plan)
 
-> **Entscheidstand:** Entwurf vom 05.10.2026 zum Anwenderauftrag vom selben Tag. Offen sind
-> die Fragen F1 bis F5 in Kapitel 7. Umsetzung in den Wellen HC-1 bis HC-6 (Kapitel 6);
-> HC-5 und HC-6 nur nach Entscheid.
+> **Entscheidstand:** Rev. 2 vom 05.10.2026. Ziel 3 (Raum → Zone aus der Projektdatei) ist mit
+> den Wellen SQ-1 bis SQ-3 (#731, E80, Datenaustauschkonzept Nachtrag 3) bereits gebaut; dieses
+> Papier beschreibt dazu den Nachzug nach **E87** (Wahl der Zonierung, Vorgabe
+> DIN-V-18599-Zone, Größengrenze). **E87** entscheidet die Fragen F1 bis F5 (Kapitel 7); es ist
+> nichts mehr offen. Umsetzung in den Wellen HC-1 bis HC-4 (Kapitel 6).
 
 Der Anwender hat am 05.10.2026 drei Ziele genannt: **(2)** alle sinnvollen Informationen aus
 der IFC-Datei nutzen, nicht aus der `.sqproj`; **(3)** was in der IFC fehlt und wesentlich ist,
@@ -15,11 +17,12 @@ Boden gegen Erdreich.
 (Struktur der `.sqproj`, Codetabellen, Schlüssel `GId`), [Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md)
 Kapitel 6 (Zonierungsregeln Z1–Z6, 6.5 Rückfälle, 6.7 Grundrissansicht),
 [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kapitel 2 (Zuordnungsgerüst,
-Herkunft je Feld, Plattformweg), 14 (Körperansicht) und 15 (Raumkörper, G7f),
-[ADR-003](../ADR-003_IFC_xBIM_ohne_Geometriekernel.md) (xBIM ohne Geometriekernel), die Entscheide
-E72, E73 und E79 der [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md), der
-[Plan G7b bis KU3](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_Plan_G7b_bis_KU3.md) als Muster des Wellenzuschnitts. Code:
-`EPOS.Kern/Allgemein/Import/Ifc/`, `EPOS.Kern/Allgemein/Import/Gebaeude/`,
+Herkunft je Feld, Plattformweg), 14 (Körperansicht), 15 (Raumkörper, G7f) und **16 (Nachtrag 3:
+Projektdatei, Stufe SQ)**, [ADR-003](../ADR-003_IFC_xBIM_ohne_Geometriekernel.md) (xBIM ohne
+Geometriekernel), die Entscheide E72, E73, E79, E80, E81 und E87 der
+[Statusdatei](../Status_Gebaeudesimulation_VDI6007.md), der [Plan G7b bis KU3](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_Plan_G7b_bis_KU3.md)
+als Muster des Wellenzuschnitts. Code: `EPOS.Kern/Allgemein/Import/Ifc/`,
+`EPOS.Kern/Allgemein/Import/Sqproj/`, `EPOS.Kern/Allgemein/Import/Gebaeude/`,
 `EPOS.UI/Bausteine/GebaeudeAnsicht.razor`, `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs`.
 
 
@@ -30,7 +33,7 @@ E72, E73 und E79 der [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md), der
    Aufbauten. Es fehlen drei Dinge, die die Datei hergibt: die **zweiseitige Randbedingung**
    je Bauteil (`HSETU_Bauteilreferenzen.ElementReferences[0|1].AdjacentType`), die
    **Körper der Hüllbauteile** (`IfcShellBasedSurfaceModel` an Außenwänden, Dächern,
-   Fenstern, Bodenplatten) und die **Fensterwerte** Rahmenanteil und g-Wert, soweit vorhanden.
+   Fenstern, Bodenplatten) und der **Rahmenanteil** der Fenster.
 2. **Ziel 4 kommt ohne Projektdatei aus.** Die Randbedingungscodes `btaOutside`, `btaGround`,
    `btaHeated`, `btaUnHeated`, `btaCellarCeiling`, `btaUppermostStorey` stehen an jedem
    Bauteil der IFC und ergeben die gewünschten Gruppen unmittelbar. Darstellen lässt sich jede
@@ -38,47 +41,47 @@ E72, E73 und E79 der [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md), der
    ist eine Trennfläche (Gruppe nach Beheizung des Nachbarn), eine Fläche ohne Gegenfläche ist
    Hülle (Gruppe nach dem Bauteil, das der Raumbezug nennt). Das verlängert G7f-4
    (Körpernachbarschaft) um die Hüllseite; Hüllbauteile mit eigenem Körper werden zusätzlich
-   als Körper gezeichnet.
+   als Körper gezeichnet. Die Gruppenliste R0–R7 (4.1) ist mit E87 festgelegt.
 3. **Der Viewer existiert und wird um einen Farbmodus erweitert.** `GebaeudeAnsicht.razor`
    zeichnet Grundriss (SVG) und Körper (three.js, lokal, MIT) im Importdialog. Neu ist der
    Umschalter **„Zonen | Randbedingung“** mit Legende der Gruppen, in 2D als gefärbte
    Raumkanten und Bodenflächen, in 3D als gefärbte Dreiecke der Raumkörper und Bauteilkörper.
-4. **Ziel 3 wird eine Ergänzungsquelle, keine zweite Importart.** Die IFC bleibt Primärdatei.
-   Dazu kann der Anwender die zugehörige `.sqproj` wählen; sie liefert eine neue Zonierungsregel
-   **Z7 „nach Projektdatei“** (Simulationszonen `ZoneType` 6, wahlweise DIN-18599-Zonen 5 oder
-   Wohneinheiten 2) über `BmZoneReference`. Der Abgleich der Räume läuft über **`GId` =
-   dekodierte IFC-`GlobalId`**, ohne Namensabgleich. Der Leser nutzt `Microsoft.Data.Sqlite`,
-   das der Kern schon hat, öffnet nur lesend, prüft `XmTables.Version` und meldet jede
-   Abweichung benannt (Räume ohne Treffer, Zonen ohne Räume).
-5. **Nutzungsprofile, Ganglinien, Kalender und Klima aus der `.sqproj`** sind lesbar und
-   wertvoll, aber eine eigene, spätere Welle (E79: „DIN-V-18599-Profile als spätere Welle“).
-   Sie brauchen die Abbildung auf die Konditionierungsvorlagen und Zonenkalender des Kerns und
-   damit einen eigenen Entscheid.
-6. **Aufwand:** HC-1 bis HC-4 zusammen 7 bis 11 PT in vier Wellen mit je einer Abnahme; HC-5
-   (Profile) 3 bis 4 PT und HC-6 (Geometrie dauerhaft speichern, Viewer außerhalb des Imports)
-   3 bis 5 PT nur nach Entscheid. Zwei Rückfragen an Stufengrenzen (F1 vor HC-3, F3 vor HC-6).
-   Kein neues Paket, kein Geometriekernel, kein web-ifc.
+   Außerhalb des Imports erscheint die Ansicht im Gebäudedialog über **„Datei erneut lesen“**
+   (E87, kein Schema, keine Persistenz der Geometrie).
+4. **Ziel 3 ist gebaut (SQ-1 bis SQ-3, #731).** Der Importdialog lädt die `.sqproj` zur IFC
+   dazu; der Kern liest nur lesend, gleicht Räume über `GId` ↔ `GlobalId` und dann über den
+   Raumnamen je Geschoss ab, übernimmt die Zonen als Zonenplan und bildet Nutzung, Heiz- und
+   Kühlsollwerte, Lüftung, Geräte und Personen je Zone als Konditionierung — **soweit die
+   Projektdatei sie trägt** (E87, F2). **Nachzug nach E87:** Trägt die Projektdatei beide
+   Zonierungen, bietet der Dialog die Wahl „DIN-V-18599-Zonen | Simulationszonen“ an;
+   **Vorgabe ist die DIN-V-18599-Zone (`ZoneType` 5)**, weil sie in jeder Projektdatei
+   vorhanden ist. Bisher galt bei Räumen in mehreren Zonen die Simulationszone.
+5. **Kein Klimaimport, keine zweite Importart.** E80 hat entschieden: Die Hülle kommt weiter
+   aus dem IFC-Export, das Projektklima bleibt. Die Größengrenze der Projektdatei wird
+   eigenständig: **250 MB Windows, 100 MB iOS** (E87, F4), weil der Leser nur kleine Tabellen
+   liest und die Größe aus eingebetteten Bildern stammt.
+6. **Aufwand:** HC-1 und HC-2 zusammen 3 bis 5 PT, HC-3 (Nachzug E87 an SQ) 0,5 bis 1 PT,
+   HC-4 („Datei erneut lesen“) 1 PT. Keine Rückfrage mehr vor einer Welle. Kein neues Paket,
+   kein Geometriekernel, kein web-ifc, kein Schemaschritt.
 
 
 ## 1. Einordnung
 
 ### 1.1 Was die drei Ziele vom Bestand verlangen
 
-| Ziel | Heute | Lücke |
+| Ziel | Heute (Stand #731) | Lücke |
 |---|---|---|
-| (2) IFC ausreizen | `IfcAbbildBauer` liest Struktur, Räume, Raumkörper (G7f-1), Raumbezüge, Beheizung und Sollwert (`HSETU_RaumAllgemein`), Raumtyp (`mrt…`), Bauteile mit U-Wert, einseitige Randbedingung (`HSETU_BauteilAllgemein.AdjacentType`), Aufbauten | zweiseitige Randbedingung, Bauteilkörper, Fensterwerte (`HSETU_EcoCad.FractionOfFrame`, `Pset_DoorWindowGlazingType`) |
-| (3) Raum → Zone aus `.sqproj` | Zonierung nur aus IFC (Z1–Z6, Umhängen von Hand); E79 beschließt den Zonenbaum ZB-1/ZB-2 | Leser für `BmZoneReference`, Regel Z7, Abgleich über `GId`, Persistenz der zweiten Quelle |
-| (4) Geometrie 2D/3D mit Gruppen | Grundriss und Körperansicht im Importdialog, Zonenfarben, Trennflächen aus Raumkörpern (G7f-4) | Klassifikation **aller** Flächen nach Randbedingung, Farbmodus, Legende, Bauteilkörper |
+| (2) IFC ausreizen | `IfcAbbildBauer` liest Struktur, Räume, Raumkörper (G7f-1), Raumbezüge, Beheizung und Sollwert (`HSETU_RaumAllgemein`), Raumtyp (`mrt…`), Bauteile mit U-Wert, einseitige Randbedingung (`HSETU_BauteilAllgemein.AdjacentType`), Aufbauten | zweiseitige Randbedingung, Bauteilkörper, Rahmenanteil (`HSETU_EcoCad.FractionOfFrame`) |
+| (3) Raum → Zone aus `.sqproj` | **gebaut:** `Import/Sqproj/` (Leser, Abbild, Raumabgleich, Zonen, Konditionierung, Protokoll), Knopf „Projektdatei dazuladen“, Zonenbaum (ZB-1, E79, E81), Proben 33–38 | Wahl der Zonierung mit Vorgabe DIN-Zone, eigene Größengrenze (E87); Diagnose an echten Dateien steht beim Anwender |
+| (4) Geometrie 2D/3D mit Gruppen | Grundriss und Körperansicht im Importdialog, Zonenfarben, Trennflächen aus Raumkörpern (G7f-4) | Klassifikation **aller** Flächen nach Randbedingung, Farbmodus, Legende, Bauteilkörper, Ansicht außerhalb des Imports |
 
 ### 1.2 Was dieses Papier an den Nachbarpapieren ändert
 
-- **Mehrzonenkonzept 6.1:** eine siebte Zonierungsregel Z7 „nach Projektdatei“, Rang hinter Z1
-  (Zonen der IFC selbst) und vor Z2; wählbar nur, wenn eine `.sqproj` geladen ist und mindestens
-  ein Raum trifft.
-- **Datenaustauschkonzept 2.3:** eine Importquelle kann eine **Ergänzungsdatei** tragen
-  (Format `SQPROJ`), mit eigenem Dateinamen und SHA-256; die Paarung Raum ↔ Quellobjekt
-  bleibt eine Zeile je Zuordnung.
-- **Datenaustauschkonzept 15.1:** die Körperansicht zeigt weiterhin keine Dicken und keine
+- **Datenaustauschkonzept 16.3 (Nachtrag 3):** Der Satz „Liegt ein Raum in mehreren Zonen,
+  gilt die Simulationszone“ wird durch E87 ersetzt: Der Anwender wählt die Zonierung, Vorgabe
+  ist `ZoneType` 5. Die Größengrenze der Projektdatei löst sich von der IFC-Grenze. Nachzug
+  mit HC-3.
+- **Datenaustauschkonzept 15.1:** Die Körperansicht zeigt weiterhin keine Dicken und keine
   Öffnungen als Ausschnitt; sie zeigt aber **Hüllbauteile mit eigenem Körper** als Flächennetz
   und färbt Raumflächen nach Randbedingung. Die Datei bleibt Quelle, nichts wird repariert.
 - **E73 (Rangfolge Raumgrenzen vor Körpern vor Raumbezügen)** gilt unverändert; die
@@ -92,15 +95,16 @@ E72, E73 und E79 der [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md), der
 | IFC-Leser | `EPOS.Kern/Allgemein/Import/Ifc/IfcLeser.cs`, `IfcAbbildBauer.cs` | STEP, ifcXML, ifczip; IFC2X3/4/4X3; Struktur, Räume, Zonen, Raumgrenzen, Raumbezüge, Bauteile, Aufbauten, Stoffwerte; `HSETU_*` für Beheizung, Sollwert, Raumtyp, Randbedingung (einseitig), Verkleidung |
 | Raumkörper | `Ifc/IfcRaumkoerper.cs` | Dreiecksnetz aus `IfcFacetedBrep`, `IfcShellBasedSurfaceModel`, `IfcExtrudedAreaSolid`, Dreiecks- und Vieleckssätze, `IfcMappedItem`; Vermerke (Bogen, Loch, Uneben, Offen) |
 | Nachbarschaft | `Gebaeude/Koerpernachbarschaft.cs` | Trennflächen aus gegenläufigen gemeinsamen Flächen zweier Raumkörper (E73, G7f-4) |
-| Zonierung | `Gebaeude/GebaeudeZonierung.cs` | Z1–Z6 und X1–X4, M7 Vorgabe, M8 Mindestgröße, Umhängen von Hand, Pflegegrenze 50 Zonen |
+| Zonierung | `Gebaeude/GebaeudeZonierung.cs`, `Gebaeude/Zonenplan.cs` | Z1–Z6 und X1–X4, M7 Vorgabe, M8 Mindestgröße, Zonenplan mit Umhängen, Anlegen, Löschen (ZB-1) |
+| Projektdatei | `EPOS.Kern/Allgemein/Import/Sqproj/` (`SqprojLeser`, `SqprojAbbild`, `SqprojRaumabgleich`, `SqprojZonen`, `SqprojKonditionierung`, `SqprojProfil`, `SqprojProtokoll`, `SqprojStand`) | `.sqproj` nur lesend (`Mode=ReadOnly`, `query_only`), Fassungsprüfung, Räume, Zonen (`ZoneType` 5 und 6), Profile, Ganglinien, Kalender; Abgleich `GId` ↔ `GlobalId`, dann Name je Geschoss; Konditionierung je Zone |
 | Herkunft | `Gebaeude/Importherkunft.cs`, `GebaeudeFeldzeile.cs` | je Feld Herkunft und Beleg; persistiert `Tab_Zone.Herkunft`, `Tab_Bauteil.Herkunft`, `Tab_Importquelle`, `Tab_Importzuordnung` |
 | Ansicht | `EPOS.UI/Bausteine/GebaeudeAnsicht.razor`, `GebaeudeAnsichtZeichnung.cs`, `wwwroot/epos-gebaeude-koerper.js`, `wwwroot/three/` | Reiter „Grundriss \| Körper“, Zonenfarben, „Dateikörper \| Exportmodell“, Klick meldet Raum und Zone; three.js 0.186.1 lokal mit Lizenzwache |
-| Datenseite | `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs`, `GebaeudeImportAnsicht.cs`, `GebaeudeImportZonen.cs` | Dateiwahl über `Dienste.Datei`, Größengrenze, Lesen im Arbeitsfaden, DTO der Ansicht |
-| Dialog | `EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor` | Regelliste, Zonenliste, Bauteile, Baustoffabgleich, eingebettete Ansicht |
-| Proben | `Referenzlaeufe/Importproben/`, `EPOS.Kern.Tests/IfcProbenErzeuger*.cs`, `Quellen/*.ifc` | über 30 synthetische IFC-Proben, sechs HottCAD-Anwenderdateien |
+| Datenseite | `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs`, `GebaeudeImportAnsicht.cs`, `GebaeudeImportZonen.cs` | Dateiwahl über `Dienste.Datei`, Größengrenze, Lesen im Arbeitsfaden, Projektdatei dazuladen und entfernen, DTO der Ansicht |
+| Dialog | `EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor` | Regelliste, Zonenbaum mit „aus Projektdatei“, nicht zugeordnete Räume, Bauteile, Baustoffabgleich, eingebettete Ansicht |
+| Proben | `Referenzlaeufe/Importproben/`, `EPOS.Kern.Tests/IfcProbenErzeuger*.cs`, `SqprojProbenErzeuger*.cs`, `Quellen/*.ifc` | über 30 synthetische IFC-Proben, synthetische `.sqproj`-Proben (33–38), sechs HottCAD-Anwenderdateien; `SqprojQuelldateienDiagnoseTests` gegen `Quellen/<name>.sqproj`, wenn vorhanden |
 
-Nicht vorhanden: ein `.sqproj`-Leser, der Zonenbaum ZB-1/ZB-2, eine Klassifikation der
-Hüllflächen, Bauteilkörper, eine Persistenz von Räumen, Geschossen oder Geometrie.
+Nicht vorhanden: eine Klassifikation der Hüllflächen, Bauteilkörper, ein Farbmodus nach
+Randbedingung, eine Wahl der Zonierung der Projektdatei, eine Ansicht außerhalb des Imports.
 
 
 ## 3. Ziel 2 — die IFC vollständig ausreizen
@@ -137,22 +141,24 @@ die von G7f-1: `DREIECKSGRENZE` 300 000 je Gebäude, kein Beschnitt, kein Booles
 außer dem ersten Operanden. Die Körper dienen allein der Anzeige; Flächen für die Rechnung
 kommen weiterhin aus den Mengensätzen (ADR-003).
 
-### 3.3 Fensterwerte
+### 3.3 Rahmenanteil
 
-`HSETU_EcoCad.FractionOfFrame` steht an allen Fenstern, `Pset_DoorWindowGlazingType` wird
+`HSETU_EcoCad.FractionOfFrame` steht an allen Fenstern; `Pset_DoorWindowGlazingType` wird
 schon gelesen, ein g-Wert fehlt in den HottCAD-Dateien. Neu: `FractionOfFrame` als Beleg für
 `Tab_Bauteil.Rahmenanteil` mit Herkunft `Ifc`; der g-Wert bleibt Vorgabe mit Beleg „nicht in
 der Datei“. Kein weiterer Aufwand.
 
-### 3.4 Was die IFC nicht hergibt (bleibt wie heute)
+### 3.4 Was die IFC nicht hergibt
 
 Zonen (nur Z4/Z6-Herleitung), Nutzungsprofile, Tagesganglinien, Kalender, Klimareihen,
-Schichtaufbauten der Innenbauteile. Das ist der Gegenstand von Kapitel 5.
+Schichtaufbauten der Innenbauteile. Zonen, Profile, Ganglinien und Kalender liefert die
+Projektdatei (Kapitel 5); Klima wird nach E80 nicht importiert; Innenaufbauten bleiben U-Wert
+mit Vorgabe-Aufbau.
 
 
 ## 4. Ziel 4 — Flächenklassifikation und Darstellung nach Randbedingung
 
-### 4.1 Die Gruppen
+### 4.1 Die Gruppen (E87, F5)
 
 Die Gruppen folgen der Frage des Anwenders und schließen die Dachseite, die Fenster und die
 neutralen Innenflächen ein, damit jede Fläche genau eine Farbe hat:
@@ -218,6 +224,11 @@ zeigt und die als Gegenprobe gegen die Bauteilflächen des Mengensatzes dient (A
 - **DTO:** `GebaeudeAnsichtDaten` bekommt je Raum ein `Koerperfeld` mit Gruppenindex je
   Dreieck (ein Byte je Dreieck, angehängt an das vorhandene Bytefeld) und eine Gruppenliste;
   die Bauteilkörper kommen als eigene `Koerperfeld`-Einträge mit Gruppe und Bauteilkennung.
+- **Außerhalb des Imports (E87, F3):** Der Gebäudedialog zeigt für ein importiertes Gebäude
+  den Knopf „Datei erneut lesen“. Er liest die in `Tab_Importquelle` gespeicherte Datei (Name
+  und SHA-256) über `Dienste.Datei` erneut, prüft den Hash, meldet eine Abweichung benannt
+  und zeigt dann dieselbe `GebaeudeAnsicht` mit beiden Farbmodi, ohne etwas zu schreiben. Die
+  Geometrie wird nicht persistiert.
 
 ### 4.4 Grenzen
 
@@ -228,95 +239,58 @@ Gegenprobe, **keine Rechengröße**: Die Simulation rechnet weiter mit den Baute
 Randbedingungen aus Mengensatz und Zuordnung.
 
 
-## 5. Ziel 3 — die Projektdatei als Ergänzungsquelle
+## 5. Ziel 3 — die Projektdatei als Ergänzungsquelle (gebaut, ein Nachzug)
 
-### 5.1 Grundsatz
+### 5.1 Was SQ-1 bis SQ-3 liefern (#731, E80)
 
-Die IFC bleibt die Importdatei. Die `.sqproj` ist eine **Ergänzungsdatei**, die der Anwender
-im Importdialog zusätzlich wählt („Projektdatei hinzuladen“). Sie wird nur gelesen, nie
-geschrieben, und liefert in der ersten Stufe genau eines: die Zonierung. Ohne Ergänzungsdatei
-läuft der Import wie heute.
+Die IFC bleibt die Importdatei. Im Zuordnungsdialog steht der Knopf „Projektdatei dazuladen
+(.sqproj)“, aktiv nur bei einer IFC aus dem passenden CAD-Programm. Der Kern öffnet die Datei
+nur lesend (`Mode=ReadOnly`, ohne Pool, `query_only`), prüft Fassung und Tabellen, liest
+`BmBuilding → BmFloor → BmRoom`, `BmZone` mit `BmZoneReference`, die Profile mit
+DIN-V-18599-Nummer, die 24-Stunden-Ganglinien und die Kalenderabschnitte. Räume werden zuerst
+über `GId` ↔ `GlobalId` (GUID umkodiert in die 22-stellige Form), dann über den Raumnamen je
+Geschoss abgeglichen; was nicht trifft, bleibt benannt unzugeordnet. Zonen vom `ZoneType` 5
+und 6 werden Zonen des Zonenplans (ZB-1) mit Nutzung aus der Profilnummer; die Ganglinien
+ergeben die Konditionierung je Zone (Heiz- und Kühlsollwert Tag/Nacht, Lüftung, Geräte,
+Personen). **E87 (F2) bestätigt: übernehmen, soweit vorhanden** — eine Projektdatei ohne
+Zeitprofile (so das Wohngebäude EH55, das nur `ZoneType` 5 und Nutzungsprofile trägt) liefert
+Zonen und Nutzung, die Konditionierung bleibt dann bei den Vorlagen. Kein Schemaschritt, kein
+neues Paket, keine Anwenderdatei im Repositorium; Proben 33 bis 38 grün. Einzelheiten:
+Datenaustauschkonzept Kapitel 16.
 
-### 5.2 Leser
+### 5.2 Nachzug nach E87: Wahl der Zonierung, Vorgabe DIN-V-18599-Zone, Größengrenze
 
-- **Öffnen:** `Microsoft.Data.Sqlite` (im Kern vorhanden), Verbindung `Mode=ReadOnly`, kein
-  Journal, kein Schreiben; die Datei wird vor dem Öffnen auf die SQLite-Signatur und die
-  Größengrenze geprüft (Windows 250 MB, iOS 100 MB, F4). Auf iOS liegt die gewählte Datei als
-  Kopie im Sandkasten (`Dienste.Datei.DateiOeffnenAsync` mit Filter `*.sqproj`, UTI
-  `public.data`); der Leser liest nur die benötigten Tabellen.
-- **Fassungsprüfung:** `XmTables` muss vorhanden sein und die Tabellen `BmRoom`, `BmZone`,
-  `BmZoneReference` in Fassung 15.1 bis 17.x führen; `PrProject.ProgName` wird protokolliert.
-  Unbekannte Fassung → Meldung `IMP_SQPROJ_PROT_FASSUNG`, Lesen wird trotzdem versucht.
-- **Gelesen werden:** `BmRoom` (`UUID`, `GId`, `ShortDesc`, `FloorUUID`, `HeatingType`,
-  `InsideTemperature`), `BmZone` (`UUID`, `ZoneType`, `ShortDesc`, `ProfileGroupUUID`,
-  `HeatingType`), `BmZoneReference` (`UUID` = Zone, `ReferenceToUUID` = Raum), zur Benennung
-  der Zone optional `PdProfileReference` → `PdProfile` → `PdProfileUsage.ProfileUsageType`
-  (DIN-V-18599-Profilnummer). Nichts weiter.
-- **Abgleich:** Für jeden Raum des IFC-Abbilds wird die `GlobalId` in die GUID dekodiert
-  (Base64-Zeichensatz `0–9 A–Z a–z _ $`, 22 Zeichen → 128 Bit) und gegen `BmRoom.GId`
-  gesucht (Klammern und Groß-/Kleinschreibung normiert). Ergebnis je Raum: getroffen oder
-  nicht. Bilanz: getroffene Räume, nicht getroffene Räume, Zonen ohne getroffenen Raum.
-  Unter 100 % Treffer wird der Rest nach der gewählten Rückfallregel (Z4 oder Z6) zugeordnet
-  und als `IMP_SQPROJ_PROT_RAUM_OHNE_TREFFER` je Raum gemeldet.
-- **Zonierungsregel Z7 „nach Projektdatei“:** eine EPOS-Zone je `BmZone` des gewählten
-  `ZoneType` (Vorgabe 6 Simulationszone, wählbar 5 DIN-18599-Zone, 2 Wohneinheit; F1), Name
-  aus `ShortDesc` der Zone oder, wenn leer, aus der Profilnummer („Zone 3 – Profil 2“);
-  Beheizung der Zone aus der Mehrheit ihrer Räume (B-Regeln des Mehrzonenkonzepts bleiben).
-  M8 (Mindestgröße) gilt auch hier; M12 (Pflegegrenze 50 Zonen) ebenso.
-- **SQL-Texte:** Die Abfragen stehen in einer Klasse `SqprojLeser` mit `?`-Parametern. Der
-  `SqlDialektPruefer` hält Bestandstexte gegen die Testdatenbank; die `.sqproj`-Abfragen
-  gehören nicht dorthin und werden in der Prüferkonfiguration als eigener Satz gegen eine
-  **synthetische Probe** geprüft (5.5), nicht gegen `Kenndaten_Test.sqlite`.
+Bisher gilt: Liegt ein Raum in mehreren Zonen, zählt die Simulationszone (`ZoneType` 6).
+Der Anwender hat am 05.10.2026 anders entschieden (**E87, F1**):
 
-### 5.3 Herkunft und Persistenz
+- Trägt die Projektdatei **beide** Zonierungen (`ZoneType` 5 und 6 mit Räumen), bietet der
+  Dialog die Wahl **„DIN-V-18599-Zonen | Simulationszonen“** an.
+- **Vorgabe ist `ZoneType` 5** (DIN-V-18599-Zone), weil sie in jeder Projektdatei vorhanden
+  ist; die Simulationszonen fehlen etwa im Wohngebäude EH55.
+- Trägt die Datei nur eine der beiden Zonierungen, wird sie ohne Wahl genommen; `ZoneType` 2,
+  7, 10, 0 und 8 bleiben gezählt und übersprungen (Nachtrag 3, 16.3).
+- Die Wahl steht im Dialog neben dem Knopf „Projektdatei dazuladen“, wird im Protokoll
+  vermerkt (`IMP_SQ_PROT_ZONIERUNG`) und beim gespeicherten Zonenplan als Quelle
+  „aus Projektdatei (DIN-Zonen)“ bzw. „(Simulationszonen)“ geführt. Ein Wechsel der Wahl
+  baut den Zonenplan neu auf; Handänderungen gehen dabei nach Rückfrage verloren.
+- Die Konditionierung je Zone folgt der gewählten Zonierung: bei DIN-Zonen aus dem
+  Nutzungsprofil der Zone und, wo vorhanden, aus der Profilgruppe der Simulationszone, mit
+  der die DIN-Zone die meisten Räume teilt (Regel aus 16.3 bleibt).
+- **Größengrenze (E87, F4):** Die Projektdatei bekommt in `SqprojProfil` eine eigene Grenze
+  von **250 MB unter Windows und 100 MB auf iOS**, losgelöst von der IFC-Grenze (50/20 MB).
+  Der Leser liest nur die Profil-, Zonen- und Raumtabellen; die Größe der Anwenderdateien
+  (bis 211 MB) stammt aus eingebetteten Bildern, die nie gelesen werden. Auf iOS wird die
+  Grenze wie bei IFC (G4-8) gemessen, bevor sie gilt; bis dahin lehnt iOS über 100 MB benannt ab.
 
-- `Tab_Importquelle` bekommt eine zweite Zeile je Import mit `Format = 'SQPROJ'`, Dateiname
-  (nie Pfad), SHA-256, Größe, `Schemastand` (= höchste `XmTables.Version`),
-  `Programmfassung` (= `PrProject.ProgVersion`), `Zonenregel = 'Z7'` und einem Verweis auf die
-  Primärquelle (`ID_Primaerquelle`). Das `CHECK` der Spalte `Format` kennt heute nur `IFC`
-  und `GBXML` → **ein Schemaschritt** (Nummer bei Baubeginn anmelden, Kette über `+ 1`).
-- `Tab_Importzuordnung` bekommt je Raum ↔ `BmRoom.UUID` und je Zone ↔ `BmZone.UUID` eine
-  Zeile mit `Quelltyp` `SQPROJ_RAUM` bzw. `SQPROJ_ZONE`.
-- Herkunft je Feld: Die Zonenbildung trägt `Importherkunft.Ifc` mit Beleg „Zonierung aus
-  Projektdatei (Z7)“; ein neuer Enum-Wert ist nicht nötig, weil kein Fachwert aus der
-  `.sqproj` in ein Rechenfeld fließt. Erst HC-5 (Profile) bräuchte den Wert `Sqproj` in
-  `Importherkunft` und `WERTE_HERKUNFT`, dann mit eigenem Schemaschritt.
+Aufwand 0,5 bis 1 PT (`SqprojZonen`, `SqprojStand`, `SqprojProfil`, `GebaeudeImportHuelle`,
+Dialog, Texte, Proben 33 und 36 erweitert, Nachtrag 3 berichtigt).
 
-### 5.4 Verhältnis zum Zonenbaum (E79, ZB-1/ZB-2)
+### 5.3 Offen aus SQ, beim Anwender oder nach Zuruf
 
-Z7 ist der **Startvorschlag**, den der Zonenbaum anzeigt; der Anwender kann danach wie
-beschlossen Räume umhängen, Zonen anlegen und löschen. „Nicht zugeordnete Räume“ sind die
-Räume ohne Treffer. ZB-1 muss daher die Zonierung als änderbare Liste halten, aus der Z7 nur
-den Anfangszustand liefert; ZB-2 zeigt die Quelle („aus Projektdatei“, „nach Regel“, „von
-Hand“) je Zone in der Baumzeile. HC-3 und HC-4 setzen auf ZB-1 auf; läuft ZB-1 noch, bauen
-sie gegen die heutige `Raumumhaengung` und werden beim Merge angepasst.
-
-### 5.5 Proben und Tests ohne Anwenderdaten
-
-Die `.sqproj`-Dateien tragen Adressen, Kontakte und Herstellerdaten und bleiben außerhalb des
-Repositoriums (CLAUDE.md, Wiki-Regel sinngemäß). Getestet wird mit:
-
-- einem **`SqprojProbenErzeuger`** in `EPOS.Kern.Tests`, der mit `Microsoft.Data.Sqlite` eine
-  Minimaldatei schreibt (`XmTables` mit Fassungen, `PrProject`, `BmBuilding`, `BmFloor`,
-  `BmRoom`, `BmZone`, `BmZoneReference`, optional `PdProfile*`), passend zu einer vorhandenen
-  IFC-Probe (`ifc4_z6_cad.ifc`) über identische GUIDs; Byte-Gleichheit als Messlatte wie bei
-  den IFC-Proben, Ablage unter `Referenzlaeufe/Importproben/sqproj_*.sqproj`;
-- Probenfälle: voller Treffer, Teiltreffer mit Rückfall, Zone ohne Räume, unbekannte Fassung,
-  falsche Datei (kein SQLite), `ZoneType` 5 und 2 statt 6, leerer `ShortDesc`;
-- einer **Diagnose** wie `IfcQuelldateienDiagnoseTests`, die gegen `C:\Temp\IFC_Ganglinie_Beispiele`
-  läuft, wenn der Ordner existiert, und sonst übersprungen wird (nur Zählungen im Protokoll,
-  keine Werte).
-
-### 5.6 Später: Profile, Kalender, Klima (HC-5, nach Entscheid)
-
-Die `.sqproj` liefert je Simulationszone zehn Tagesganglinien (Heizen, Kühlen, Personen,
-Geräte, Beleuchtung, Lüftung, Elektro, Trinkwasser, Feuchte, Sonnenschutz), die
-DIN-V-18599-Profilnummer und einen Klimasatz mit neun Stundenreihen. Die Übernahme braucht
-drei Abbildungen, die ein eigener Entscheid festlegt: Profilnummer → Konditionierungsvorlage
-(Wohnen, Büro, Schule, keine) oder neue Vorlage je Profil; Heiz-/Kühlganglinie →
-Zonenkalender mit Tag-/Nachtsollwert (`Raumsolltemperatur_Tag`, `_Nachtabsenkung`); Klimasatz
-→ Klimatabelle des Projekts (nur mit Herkunftsvermerk, Einfrierregeln beachten, kein
-Referenzprojekt). Aufwand 3 bis 4 PT; Nutzen: die Nutzung muss nicht nachgetippt werden.
+Diagnose an echten Projektdateien (`Quellen/<name>.sqproj` neben `<name>.ifc`, nur lokal),
+Nachzug der drei Annahmen (Tagesart, Personenzahl, Geräteleistung), gespeicherter Zonenplan
+als Startplan, Ziehen mit der Maus, Windows-Sichtabnahme, iOS-Lauf für den Dateifilter
+`.sqproj`. Nichts davon ist Voraussetzung für HC-1 bis HC-4.
 
 
 ## 6. Wellenzuschnitt
@@ -325,29 +299,36 @@ Referenzprojekt). Aufwand 3 bis 4 PT; Nutzen: die Nutzung muss nicht nachgetippt
 
 | Nr. | Welle | Inhalt in einem Satz | PT | Schema | Rückfrage vorher |
 |---|---|---|---|---|---|
-| 1 | **HC-1** Kern: IFC vollenden und Flächen klassifizieren | zweiseitige Randbedingung, Bauteilkörper, Fensterwerte; Flächengruppen je Raumkörper mit Bilanz | 2–3 | nein | keine |
-| 2 | **HC-2** Ansicht: Farbmodus Randbedingung | Umschalter, Legende, 2D-Kanten und Schraffur, 3D-Dreiecksfarben und Bauteilkörper | 1–2 | nein | keine (Farbtoken nach Hausblatt) |
-| 3 | **HC-3** Kern: `.sqproj`-Leser und Z7 | Leser, Fassungsprüfung, GId-Abgleich, Bilanz, Regel Z7, Protokollmeldungen, Probenerzeuger | 2–3 | nein | **F1** (ZoneType-Vorgabe), F4 (Grenzen) |
-| 4 | **HC-4** Dialog und Persistenz | „Projektdatei hinzuladen“, Bilanzanzeige, Z7 in der Regelliste, Quelle und Paarungen speichern | 2–3 | **ja** (Format `SQPROJ`, `ID_Primaerquelle`) | keine |
-| 5 | **HC-5** Profile, Kalender, Klima aus der Projektdatei | nach eigenem Entscheid (5.6) | 3–4 | ja | **F2** |
-| 6 | **HC-6** Geometrie dauerhaft, Viewer außerhalb des Imports | Raumkörper und Flächengruppen je Gebäude speichern, Ansicht im Gebäude- und Zonendialog | 3–5 | ja | **F3** |
+| 1 | **HC-3** Nachzug E87 an SQ | Wahl „DIN-Zonen \| Simulationszonen“ mit Vorgabe 5, Protokoll, Quelle im Zonenplan, Größengrenze 250/100 MB, Nachtrag 3 berichtigt | 0,5–1 | nein | keine |
+| 2 | **HC-1** Kern: IFC vollenden und Flächen klassifizieren | zweiseitige Randbedingung, Bauteilkörper, Rahmenanteil; Flächengruppen R0–R7 je Raumkörper mit Bilanz | 2–3 | nein | keine |
+| 3 | **HC-2** Ansicht: Farbmodus Randbedingung | Umschalter, Legende, 2D-Kanten und Schraffur, 3D-Dreiecksfarben und Bauteilkörper | 1–2 | nein | keine |
+| 4 | **HC-4** „Datei erneut lesen“ | Ansicht im Gebäudedialog aus der gespeicherten Importquelle, Hashprüfung, beide Farbmodi | 1 | nein | keine |
 
-Maßstab wie im Plan G7b bis KU3: 1 PT ≈ 0,8–1 Punkt des Wochenkontingents; HC-1 bis HC-4
-zusammen rund 7–10 Punkte. Jede Welle endet mit Build, Tests mit `--filter`, Proben, einem
-Commit auf dem Arbeitszweig und dem Gate nach dem Merge; Statuszeile und Protokoll wie
-gewohnt. Kein iOS-Lauf ohne Rückfrage; HC-2 und HC-4 brauchen die Sichtabnahme auf Windows,
-die iPad-Sichtprobe hängt an der offenen Probe 31 aus G7f-2.
+HC-3 geht vor, weil der Anwender die Projektdateien jetzt importiert und die Vorgabe
+DIN-Zone sofort wirken soll. Maßstab wie im Plan G7b bis KU3: 1 PT ≈ 0,8–1 Punkt des
+Wochenkontingents; alle vier Wellen zusammen rund 4–6 Punkte. Jede Welle endet mit Build,
+Tests mit `--filter`, Proben, einem Commit auf dem Arbeitszweig und dem Gate nach dem Merge;
+Statuszeile und Protokoll wie gewohnt. Kein iOS-Lauf ohne Rückfrage; HC-2 und HC-4 brauchen
+die Sichtabnahme auf Windows, die iPad-Sichtprobe hängt an der offenen Probe 31 aus G7f-2.
 
-### 6.2 HC-1 — Kern: IFC vollenden und Flächen klassifizieren
+### 6.2 HC-3 — Nachzug E87 an SQ
+
+| Teil | Agent | Inhalt | Abnahme |
+|---|---|---|---|
+| Kern | Opus | `SqprojZonen`: Zonierung als Parameter (5 Vorgabe, 6 wählbar), Verfügbarkeit beider Zonierungen im `SqprojStand`, Protokollsatz `IMP_SQ_PROT_ZONIERUNG`; `SqprojProfil`: Grenze 250/100 MB | `SqprojZonenTests` (Probe 36) mit beiden Zonierungen und mit nur einer; `SqprojLeserTests` (Probe 33) Grenze |
+| Hülle und Dialog | Opus | Wahlfeld neben „Projektdatei dazuladen“, nur sichtbar bei beiden Zonierungen; Quelle im Zonenbaum; Rückfrage beim Wechsel; iOS-Grenze in `GrenzeFuerPlattform` | `SqprojHuelleTests`, bunit `GebaeudeImportProjektdateiDialogTests` (Probe 37); Windows-Schale auf Linux kompiliert |
+| Papiere | Sonnet | Nachtrag 3 (16.2, 16.3, 16.4) berichtigt, Statuszeile, Protokoll, Wiki-Quelle des Importdialogs, Logbuch-Entwurf | Link-Wache grün |
+
+### 6.3 HC-1 — Kern: IFC vollenden und Flächen klassifizieren
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
 | Randbedingung | Opus | `IfcAbbildBauer.Bauteil()`: beide `ElementReferences[i].AdjacentType` und `Orientation` lesen; `ANGRENZUNG_ABBILDUNG` um `btaCellarCeiling`, `btaUppermostStorey`, `btaNone`; `AbbildBauteil.RandbedingungSeiteA/B`, wirksame Randbedingung | `IfcCadBauteileTests` erweitert; Probe `ifc4_z6_cad.ifc` um zweiseitige Sätze ergänzt; `IfcQuelldateienDiagnoseTests` zählt Gruppen an den sechs Dateien unter `Quellen/` |
 | Bauteilkörper | Opus | `IfcRaumkoerper` für `IfcWall`, `IfcSlab`, `IfcRoof`, `IfcWindow`, `IfcDoor`; `AbbildBauteil.Koerper`; Dreiecksgrenze gemeinsam mit Räumen | neue Probe `ifc4_koerper_bauteile.ifc`; `IfcRaumkoerperTests` um Bauteile |
-| Fensterwerte | Opus | `FractionOfFrame` → Rahmenanteil mit Herkunft `Ifc` | `IfcImportWelle2Tests` |
+| Rahmenanteil | Opus | `FractionOfFrame` → Rahmenanteil mit Herkunft `Ifc` | `IfcImportWelle2Tests` |
 | Flächengruppen | Opus | Klasse `Flaechenklassifikation` in `Import/Gebaeude/`: gepaart/ungepaart aus `Koerpernachbarschaft`, Bauteilzuordnung über Raumbezug und Normale, Rückfälle, Bilanz je Gruppe, Gegenprobe 5 % | `FlaechenklassifikationTests` an `ifc4_koerper_nachbarn*.ifc` und der neuen Probe; Gegenprobe an den sechs Anwenderdateien als Diagnose |
 
-### 6.3 HC-2 — Ansicht: Farbmodus Randbedingung
+### 6.4 HC-2 — Ansicht: Farbmodus Randbedingung
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
@@ -356,62 +337,48 @@ die iPad-Sichtprobe hängt an der offenen Probe 31 aus G7f-2.
 | Körper | Opus | `epos-gebaeude-koerper.js`: Farbe je Dreieck (`BufferGeometry` mit Farbattribut), Transparenz R0, Bauteilnetze schaltbar, Klick meldet Gruppe | Probe 26/30 erweitert; Lizenzwache unverändert (kein neuer Fremdanteil) |
 | Texte | Sonnet | Gruppen- und Legendentexte in beiden Sprachen, `ResourceDesigner` ziehen | `ResourceDesigner`-Prüfung grün |
 
-### 6.4 HC-3 — Kern: `.sqproj`-Leser und Z7
+### 6.5 HC-4 — „Datei erneut lesen“ im Gebäudedialog
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
-| Leser | Opus | `Import/Sqproj/SqprojLeser.cs`, `SqprojErgaenzung.cs` (Ergebnis: Zonen, Raumzuordnung, Bilanz, Protokoll); ReadOnly, Signatur- und Größenprüfung, Fassungsprüfung | `SqprojLeserTests` an synthetischen Proben |
-| GId-Abgleich | Opus | `IfcGlobalIdKodierung` (22 Zeichen ↔ GUID), Normierung, Treffer je Raum | Hin- und Rückkodierung an bekannten Paaren; 20/20 am Wohngebäude in der Diagnose |
-| Regel Z7 | Opus | `GebaeudeZonierung`: Regel Z7, Wählbarkeit, Vorgabe `ZoneType` 6, Name, Beheizung, M8/M12 | `GebaeudeZonierungTests`, `ZonierungZ7Tests` |
-| Proben | Opus | `SqprojProbenErzeuger`, Proben unter `Referenzlaeufe/Importproben/`, LIESMICH fortgeschrieben; Diagnose gegen `C:\Temp\…` wenn vorhanden | Byte-Gleichheit der Proben; `SqlDialektPruefer` mit eigenem Satz für die `.sqproj`-Abfragen |
-
-### 6.5 HC-4 — Dialog und Persistenz
-
-| Teil | Agent | Inhalt | Abnahme |
-|---|---|---|---|
-| Schema | Opus | Schemaschritt: `Tab_Importquelle.Format` um `SQPROJ`, Spalte `ID_Primaerquelle`; `Quelltyp`-Werte | Migrationstest, `SqlDialektPruefer`, Testdatenbank unverändert (kein Referenzprojekt importiert) |
-| Hülle | Opus | `GebaeudeImportHuelle`: zweite Dateiwahl, Größengrenze je Plattform, Lesen im Arbeitsfaden, Bilanz-DTO; iOS-Filter `.sqproj` in `Dateifilter.cs` | `GebaeudeImportZonenHuelleTests`; Windows-Schale auf Linux kompiliert |
-| Dialog | Opus | Knopf „Projektdatei hinzuladen“, Bilanzzeile, Z7 in der Regelliste mit Quelle, Hinweis bei Teiltreffern | bunit `GebaeudeImportZonenDialogTests` |
-| Controller | Opus | `GebaeudeImportCtrl`: zweite Quelle und Paarungen schreiben, `SchonImportiert` kennt die Ergänzung | `GebaeudeImportCtrlTests` |
-| Papiere | Sonnet | Statuszeile, Protokoll, Mehrzonenkonzept 6.1 (Z7), Datenaustauschkonzept 2.3, Wiki-Quelle des Importdialogs, Logbuch-Entwurf | Link-Wache grün |
-
-### 6.6 HC-5 und HC-6
-
-Beide erst nach Entscheid (F2, F3). HC-6 bräuchte eine Tabelle für Räume mit Körper je
-Gebäude (Netz als BLOB, Gruppenindex, Herkunft) und eine Ladefunktion der Ansicht außerhalb
-des Imports; Alternative ohne Schema: Die Ansicht im Gebäudedialog liest die gespeicherte
-Importquelle (Dateiname, Hash) und bietet „Datei erneut lesen“ an, wenn die Datei am
-gewählten Ort liegt. Die Alternative kostet 1 PT statt 3–5 und wird für F3 empfohlen.
+| Kern und Hülle | Opus | `GebaeudeImportCtrl.LesenQuellen` liefert Dateiname und Hash; `GebaeudeHuelle`: Datei über `Dienste.Datei` wählen (Vorbelegung Dateiname), Hash prüfen, Abbild lesen, `GebaeudeAnsichtDaten` bauen; nichts schreiben | `GebaeudeHuelleTests` mit passendem und abweichendem Hash |
+| Dialog | Opus | Knopf „Datei erneut lesen“ im Gebäudedialog (nur bei importiertem Gebäude), eingebettete `GebaeudeAnsicht` mit beiden Farbmodi, Hinweis bei abweichendem Hash | bunit `GebaeudeDialogImportTests` erweitert |
+| Papiere | Sonnet | Datenaustauschkonzept 14 (Ort der Ansicht), Statuszeile, Protokoll, Wiki-Quelle des Gebäudedialogs | Link-Wache grün |
 
 
-## 7. Fragen mit Empfehlung
+## 7. Fragen — alle entschieden (E87, 05.10.2026)
 
-| Nr. | Frage | Empfehlung |
+| Nr. | Frage | Entscheid |
 |---|---|---|
-| F1 | Welche Zonierung der Projektdatei ist die Vorgabe für Z7: Simulationszonen (`ZoneType` 6), DIN-18599-Zonen (5) oder Wohneinheiten (2)? | **6**, weil sie die Zonen der Stundensimulation sind und in allen gerechneten Dateien alle Räume abdecken; 5 und 2 wählbar in der Regelliste („Z7: Simulationszonen \| DIN-Zonen \| Einheiten“) |
-| F2 | Sollen Profile, Kalender und Klima aus der Projektdatei übernommen werden (HC-5), und wie werden die Profilnummern auf die Konditionierungsvorlagen abgebildet? | nach HC-4 entscheiden; Vorschlag: Heiz-/Kühlsollwerte je Zone aus den Ganglinien direkt (Tag/Nacht aus `OperatingModeType`), Nutzungsklasse aus der Profilnummer, Klima nicht übernehmen (Projektklima bleibt) |
-| F3 | Soll die Geometrie dauerhaft gespeichert werden, damit der Viewer außerhalb des Imports läuft (HC-6), oder genügt „Datei erneut lesen“ im Gebäudedialog? | **„Datei erneut lesen“** (1 PT); Persistenz erst, wenn Berichte oder iOS ohne Datei die Ansicht brauchen |
-| F4 | Größengrenzen der `.sqproj`: Windows 250 MB, iOS 100 MB? | ja; die größte Anwenderdatei hat 211 MB, davon über 120 MB Bilder, die nicht gelesen werden; iOS misst wie bei IFC (G4-8) |
-| F5 | Gruppenliste R0–R7 nach 4.1 so übernehmen? | ja; Fenster und Türen als eigene Gruppe R7, damit die Hüllbilanz vollständig ist |
+| F1 | Welche Zonierung der Projektdatei ist die Vorgabe? | Wahl zwischen `ZoneType` 5 (DIN-V-18599-Zonen) und 6 (Simulationszonen), wenn beide vorhanden; **Vorgabe 5**, weil immer vorhanden. Wohneinheiten (2) nicht wählbar. Nachzug HC-3 |
+| F2 | Profile, Kalender, Klima aus der Projektdatei? | **übernehmen, falls vorhanden** (Profile, Ganglinien, Kalender; wie E80 gebaut); kein Klimaimport (E80) |
+| F3 | Geometrie dauerhaft speichern oder „Datei erneut lesen“? | **„Datei erneut lesen“** im Gebäudedialog (HC-4, 1 PT, kein Schema); Persistenz bleibt aus |
+| F4 | Größengrenze der `.sqproj`? | **250 MB Windows, 100 MB iOS**, eigenständig von der IFC-Grenze; iOS misst wie G4-8 |
+| F5 | Gruppenliste R0–R7 nach 4.1? | **ja**, mit Fenstern und Türen als eigener Gruppe R7 |
 
 
 ## 8. Risiken
 
 - **GId-Abgleich schlägt fehl**, wenn die IFC aus einem anderen Speicherstand exportiert wurde
-  als die Projektdatei (Räume gelöscht, neu angelegt). Gegenmaßnahme: Bilanz mit Rückfall auf
-  Z4/Z6 für die Resträume, Hinweis mit Datum beider Dateien (`FILE_NAME` und
-  `PrJournalEntry.StampEdit`).
+  als die Projektdatei (Räume gelöscht, neu angelegt). SQ fällt auf den Raumnamen je Geschoss
+  zurück und meldet Resträume; ergänzend sollte der Dialog das Datum beider Dateien zeigen
+  (`FILE_NAME` und `PrJournalEntry.StampEdit`).
 - **Raumseitige Stücke ohne Körper** lassen Hüllflächen ohne passendes Bauteil zurück, wenn
   Orientierung und Lage nicht eindeutig sind (schiefe Wände, Erker). Gegenmaßnahme: Rückfall
   nach Normale mit Vermerk, Gegenprobe gegen die Mengensätze.
 - **Dreiecksgrenze** mit Bauteilkörpern früher erreicht: Bauteilkörper werden erst
   geladen, wenn Räume unter zwei Dritteln der Grenze bleiben; sonst Hinweis und nur Räume.
 - **iPad:** Transparenz und Farbattribute in WebGL sind unkritisch, die Sichtprobe 31 steht
-  aber noch aus; HC-2 erhöht die Dringlichkeit, nicht den Umfang.
+  aber noch aus; HC-2 erhöht die Dringlichkeit, nicht den Umfang. Die 100-MB-Grenze der
+  Projektdatei ist auf iOS bis zur Messung eine Annahme.
+- **Zonierungswechsel nach Handarbeit:** Ein Wechsel „DIN-Zonen ↔ Simulationszonen“ baut den
+  Zonenplan neu auf; ohne Rückfrage gingen Umhängungen verloren (E81 lässt leere Zonen ohnehin
+  ungespeichert).
+- **„Datei erneut lesen“ ohne Datei:** Liegt die Datei nicht mehr am Ort oder ist der Hash
+  anders, gibt es keine Ansicht; der Dialog sagt das und bietet die Dateiwahl an. Das ist der
+  bewusst gewählte Preis dafür, keine Geometrie zu speichern (F3).
 - **Schemawechsel von HottCAD:** `XmTables.Version` wandert mit jeder Fassung; der Leser
-  prüft die Fassung der drei gelesenen Tabellen und meldet, bricht aber nicht ab.
-- **Prüferkonflikt:** `.sqproj`-SQL darf nie gegen `Kenndaten_Test.sqlite` geprüft werden
-  (fremdes Schema); die Konfiguration des `SqlDialektPruefer` muss das vor HC-3 können.
+  prüft und meldet, bricht aber nicht ab.
 
 
 ## 9. Abgrenzung
@@ -420,15 +387,16 @@ Kein web-ifc, kein IFC-Vollbetrachter, keine xBIM Geometry Engine, kein neues Nu
 (ADR-003 und Datenaustauschkonzept 15.6 bleiben). Kein Schreiben der `.sqproj`, kein Lesen
 der Binärströme (`WDIN18599DataModel`, `.BDExit`, Grafikmodell), keine Übernahme von
 Hersteller-, Adress- oder Kontaktdaten aus der Projektdatei, keine Anwenderdateien im
-Repositorium. Die Gruppenfarben sind Anzeige und Gegenprobe, keine Rechengröße; die
-Einfrierregeln sind nicht berührt, weil kein Referenzprojekt importiert wird.
+Repositorium, kein Klimaimport (E80), keine Persistenz der Geometrie (E87). Die Gruppenfarben
+sind Anzeige und Gegenprobe, keine Rechengröße; die Einfrierregeln sind nicht berührt, weil
+kein Referenzprojekt importiert wird.
 
 
 ## 10. Regeln, die gelten
 
 Fachänderung nur im Kern; Dialoge als Razor mit Hülle in `EPOS.UI.Daten`, keine Datenbank in
 der Oberfläche; Texte in beiden Sprachen mit `ResourceDesigner`; Dateiwahl allein über
-`Dienste.Datei`; was iOS nicht kann, wird benannt abgelehnt; SQL mit `?`-Parametern; neue
-Schemaschritte über `SchemaMigration` mit Anmeldung der Nummer vor dem Bau; Agentenaufträge mit
-`model: opus` für Umsetzung, `model: sonnet` für Texte, `AGENT_LAEUFT` im Hauptbaum; Merge →
-Gate → Statuszeile und Protokoll → Push → Nachweis; iOS-Lauf nur nach Rückfrage.
+`Dienste.Datei`; was iOS nicht kann, wird benannt abgelehnt; SQL mit `?`-Parametern;
+Agentenaufträge mit `model: opus` für Umsetzung, `model: sonnet` für Texte, `AGENT_LAEUFT` im
+Hauptbaum; Merge → Gate → Statuszeile und Protokoll → Push → Nachweis; iOS-Lauf nur nach
+Rückfrage.
