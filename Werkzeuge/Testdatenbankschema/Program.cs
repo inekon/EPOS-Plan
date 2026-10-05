@@ -2865,6 +2865,25 @@ namespace Testdatenbankschema
                                   ZonenKaeltespitzeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt AnlagenfahrplanSchema.SCHRITT (AK2-1): Zeitprogramm und Vorlauf_Max an Tab_Energieanlagen,
+            //      sechs Komfort- und Fahrplanspalten an Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Anlagenfahrplan bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer.
+            string nrFahrplan = AnlagenfahrplanSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFahrplan + " - Anlagenfahrplan: " +
+                              (AnlagenfahrplanSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtFahrplan = new List<string>();
+                angelegt += AnlagenfahrplanSchema.Ausfuehren(berichtFahrplan);
+                foreach (string zeile in berichtFahrplan)
+                    Console.WriteLine("Schritt " + nrFahrplan + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFahrplan + " - vollstaendig: " +
+                                  AnlagenfahrplanSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

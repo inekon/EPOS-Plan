@@ -939,6 +939,9 @@ namespace EPOS.Kern.Tests
                 // Schritt ZonenKaeltespitzeSchema.SCHRITT (MZ-Rest): Kaeltespitze und Kuehlstunden je Zone im
                 // Zonenergebnis. Ohne Sicht; die Spalten bleiben leer.
                 ZonenKaeltespitzeSchema.Ausfuehren(null);
+                // Schritt AnlagenfahrplanSchema.SCHRITT (AK2-1): Zeitprogramm und Vorlauf_Max am Erzeuger, Komfort-
+                // und Fahrplanspalten im Energiebedarf. Ohne Saat; die Spalten bleiben leer.
+                AnlagenfahrplanSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
