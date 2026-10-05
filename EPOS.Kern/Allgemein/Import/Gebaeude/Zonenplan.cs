@@ -271,8 +271,8 @@ namespace WindowsFormsApplication1
         // ==================================================================
 
         /// <summary>
-        /// Die Nutzung einer Nutzungsklasse (Z6): Büro → <c>BUERO</c>; Wohnen, Schlafen, Küche, Sanitär → <c>WOHNEN</c>;
-        /// sonst keine (<c>null</c>).
+        /// Die Nutzung einer Nutzungsklasse (Z6): Büro → <c>BUERO</c>; Wohnen, Schlafen, Küche → <c>WOHNEN</c>; Sanitär,
+        /// Verkehr, Lager, Technik, Sport, Gastronomie und Sonstige allein ergeben keine (<c>null</c>).
         /// </summary>
         internal static string NutzungAusKlasse(string klasse)
         {
@@ -281,19 +281,20 @@ namespace WindowsFormsApplication1
                 case "Buero": return DbWerte.KOND_NUTZUNG_BUERO;
                 case "Wohnen":
                 case "Schlafen":
-                case "Kueche":
-                case "Sanitaer": return DbWerte.KOND_NUTZUNG_WOHNEN;
+                case "Kueche": return DbWerte.KOND_NUTZUNG_WOHNEN;
                 default: return null;
             }
         }
 
         /// <summary>
         /// Die Nutzung einer Vorschlagszone: unter Z6 die der Nutzungsklasse mit der größten Fläche (Gleichstand: mehr Räume,
-        /// dann Klasse ordinal — dieselbe Ordnung wie der Zonenname), unter jeder anderen Regel keine.
+        /// dann Klasse ordinal — dieselbe Ordnung wie der Zonenname), unter jeder anderen Regel keine. Vorbelegt wird nur eine
+        /// beheizte Zone; eine unbeheizte bekommt keine Nutzung.
         /// </summary>
         internal static string NutzungAus(string regel, Importzone zone)
         {
-            if (zone == null || !string.Equals(regel, IfcImportProfil.ZONENREGEL_Z6, StringComparison.Ordinal) || zone.Raeume.Count == 0)
+            if (zone == null || !zone.IstBeheizt || !string.Equals(regel, IfcImportProfil.ZONENREGEL_Z6, StringComparison.Ordinal)
+                || zone.Raeume.Count == 0)
                 return null;
             string klasse = zone.Raeume.GroupBy(GebaeudeZonierung.Nutzungsklasse)
                 .Select(gr => (Klasse: gr.Key, A: gr.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0), N: gr.Count()))

@@ -77,10 +77,23 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(DbWerte.KOND_NUTZUNG_WOHNEN, Zonenplan.NutzungAusKlasse("Schlafen"));
             Assert.Equal(DbWerte.KOND_NUTZUNG_WOHNEN, Zonenplan.NutzungAusKlasse("Kueche"));
-            Assert.Equal(DbWerte.KOND_NUTZUNG_WOHNEN, Zonenplan.NutzungAusKlasse("Sanitaer"));
+            Assert.Null(Zonenplan.NutzungAusKlasse("Sanitaer"));
+            Assert.Null(Zonenplan.NutzungAusKlasse("Technik"));
+            Assert.Null(Zonenplan.NutzungAusKlasse("Sonstige"));
             Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, Zonenplan.NutzungAusKlasse("Buero"));
             Assert.Null(Zonenplan.NutzungAusKlasse("Lager"));
             Assert.Null(Zonenplan.NutzungAusKlasse("Verkehr"));
+        }
+
+        [Fact]
+        public void Nutzung_wird_nur_fuer_beheizte_Zonen_vorbelegt()
+        {
+            GebaeudeAbbild a = BauteilvorschlagProbe.Lesen("ifc4_z6_sollwerte.ifc").Abbild;
+            Importzone buero = GebaeudeZonierung.Bilden(a, 0, Z6).Zonen[0];
+            Assert.True(buero.IstBeheizt);
+            Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, Zonenplan.NutzungAus(Z6, buero));
+            buero.IstBeheizt = false;
+            Assert.Null(Zonenplan.NutzungAus(Z6, buero));
         }
 
         [Fact]
