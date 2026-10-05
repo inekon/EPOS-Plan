@@ -462,6 +462,12 @@ als Vorschlag, ein Doppelname in der Zielliste wird benannt abgelehnt; die Besch
 Herkunft ergänzt („aus Vorlage ‚Büro‘ (Heizen)"), die Nutzung übernommen, `ReadOnly = 0`. Der Inhalt entsteht nur in
 der Zielgröße, ohne Nennwert und Saison (E54).
 
+> **Vermerk 05.10.2026 (E90):** Die Nutzung als feste Kennung (Wohnen, Büro, Schule, Sonstige) wird zum Katalog der
+> Nutzungsprofile mit Kategorien (EPOS-Muster, DIN V 18599-10, SIA 2024, VDI 2078, eigene) und änderbarer Zuordnung;
+> die 14 Vorlagen dieser Tabelle bleiben, die Muster Wohnen, Büro und Schule werden zusätzlich als Profile bitgleich
+> abgebildet, Normwerte werden weiterhin nicht ausgeliefert (B15, P4). Ausgearbeitet in
+> [Konzept Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md) (Stufe NP).
+
 **Ausgelieferte Vorlagen (F22)** — EPOS-Muster mit runden Werten, weder Norm- noch Messwerte. Die Tabelle liest sich
 spaltenweise: Jede belegte Zelle ist eine Vorlage in der Liste ihrer Größe, zusammen **14 Vorlagen in fünf Listen** —
 die Lüftungsliste führt kein „Wohnen". Leere Zellen bleiben beim Ziel; eine Heiz- oder Kühlperiode tragen die

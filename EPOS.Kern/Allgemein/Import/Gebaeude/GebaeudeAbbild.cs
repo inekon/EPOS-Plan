@@ -238,6 +238,18 @@ namespace WindowsFormsApplication1
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
 
         /// <summary>
+        /// Die Flächen der Raum- und Bauteilkörper nach Randbedingung (<see cref="Flaechenklassifikation"/>, Konzept HottCAD-Verbund
+        /// 4.2); <c>null</c> = kein Raumkörper. Nur Anzeige und Gegenprobe: nie geschrieben, keine Rechengröße.
+        /// </summary>
+        public IReadOnlyList<Flaechengruppenzeile> Flaechengruppen { get; set; }
+
+        /// <summary>Die Bilanz je Gruppe [m²]: Dreiecksflächen der Raumkörper, R7 aus den Öffnungen der Hülle; <c>null</c> = keine.</summary>
+        public IReadOnlyDictionary<Flaechengruppe, double> FlaechengruppenBilanzM2 { get; set; }
+
+        /// <summary>Die Bauteilflächen des Mengensatzes je Gruppe [m²] — die Gegenprobe zur Bilanz; <c>null</c> = keine.</summary>
+        public IReadOnlyDictionary<Flaechengruppe, double> FlaechengruppenMengeM2 { get; set; }
+
+        /// <summary>
         /// Der Beschreibungstext, den der Export in <c>Campus/Description</c> schreibt (Produktausweis,
         /// Wasserzeichen der Testlizenz, Vermerke; G7a); <c>null</c> = keiner. Der Leser lässt ihn leer.
         /// </summary>
@@ -341,6 +353,12 @@ namespace WindowsFormsApplication1
         /// formatfrei in Weltkoordinaten [m]; <c>null</c> = keiner. gbXML lässt ihn leer. Nur Anzeige.
         /// </summary>
         public Dateikoerper Koerper { get; set; }
+
+        /// <summary>
+        /// Die Kennungen der Bauteile, auf die der Raum verweist (IFC <c>IfcRelReferencedInSpatialStructure</c>), in
+        /// Dateireihenfolge — Eingang der Flächenklassifikation; leer = keine.
+        /// </summary>
+        public List<string> Bezugsbauteile { get; } = new List<string>();
 
         /// <summary>Ist der Raum beheizt?</summary>
         public bool Beheizt { get; set; } = true;
@@ -503,6 +521,36 @@ namespace WindowsFormsApplication1
         /// <summary>Die Randbedingung aus dem Typ; <see cref="Randbedingung.Innen"/> heißt „über die Nachbarn entscheiden".</summary>
         public Randbedingung Randbedingung { get; set; }
 
+        /// <summary>
+        /// Die Randbedingung der ersten Seite (IFC <c>ElementReferences[0].AdjacentType</c> eines CAD-Exports, Konzept
+        /// HottCAD-Verbund 3.1); <see cref="Randbedingung.Innen"/> = beheizt; <c>null</c> = keine Angabe oder <c>btaNone</c>.
+        /// </summary>
+        public Randbedingung? RandbedingungSeiteA { get; set; }
+
+        /// <summary>Die Randbedingung der zweiten Seite (<c>ElementReferences[1].AdjacentType</c>); sonst wie <see cref="RandbedingungSeiteA"/>.</summary>
+        public Randbedingung? RandbedingungSeiteB { get; set; }
+
+        /// <summary>Die Orientierung der ersten Seite [°], 0 = Nord, im Uhrzeigersinn (<c>ElementReferences[0].Orientation (°)</c>); <c>null</c> = keine.</summary>
+        public double? OrientierungSeiteA { get; set; }
+
+        /// <summary>Die Orientierung der zweiten Seite [°] (<c>ElementReferences[1].Orientation (°)</c>); <c>null</c> = keine.</summary>
+        public double? OrientierungSeiteB { get; set; }
+
+        /// <summary>
+        /// <b>Die wirksame Randbedingung aus den beiden Seiten</b>: die nicht beheizte Seite; beide beheizt →
+        /// <see cref="Randbedingung.Innen"/>; <c>null</c> = die Datei führt keine Seiten (dann gilt <see cref="Randbedingung"/>).
+        /// </summary>
+        public Randbedingung? RandbedingungWirksam { get; set; }
+
+        /// <summary>Der Beleg der wirksamen Seite: <see cref="BELEG_KELLERDECKE"/>, <see cref="BELEG_OBERSTE_DECKE"/> oder <c>null</c>.</summary>
+        public string RandbedingungBeleg { get; set; }
+
+        /// <summary>Beleg der Seite <c>btaCellarCeiling</c>: unbeheizt, weil darunter der Keller liegt.</summary>
+        public const string BELEG_KELLERDECKE = "Kellerdecke";
+
+        /// <summary>Beleg der Seite <c>btaUppermostStorey</c>: unbeheizt, weil darüber der Dachraum liegt.</summary>
+        public const string BELEG_OBERSTE_DECKE = "oberste Geschossdecke";
+
         /// <summary>Die angrenzenden Räume in Dateireihenfolge (0 bis 2).</summary>
         public List<AbbildNachbar> Nachbarn { get; } = new List<AbbildNachbar>();
 
@@ -576,6 +624,18 @@ namespace WindowsFormsApplication1
         public double? GWert { get; set; }
 
         /// <summary>
+        /// Der Rahmenanteil [0–1] einer Öffnung aus der Datei (IFC <c>HSETU_EcoCad.FractionOfFrame</c>, Konzept HottCAD-Verbund
+        /// 3.3); <c>null</c> = keiner, dann gilt die Vorgabe des Gebäudes. Der g-Wert bleibt davon unberührt.
+        /// </summary>
+        public double? Rahmenanteil { get; set; }
+
+        /// <summary>Die Herkunft des <see cref="Rahmenanteil"/>s (<see cref="Importherkunft.Ifc"/>, wenn gelesen).</summary>
+        public Importherkunft RahmenanteilHerkunft { get; set; } = Importherkunft.Leer;
+
+        /// <summary>Der Beleg des <see cref="Rahmenanteil"/>s: Satz, Eigenschaft und Skala der Datei.</summary>
+        public string RahmenanteilBeleg { get; set; }
+
+        /// <summary>
         /// Die längenbezogenen Wärmebrücken des Bauteils als Summe ψ·L [W/K] (<c>Tab_Bauteil.Psi_L</c>; Export G7c,
         /// IFC <c>EPOS_Bauteil.WaermebrueckeUA</c>); <c>null</c> = keine. Der Leser lässt sie leer.
         /// </summary>
@@ -627,6 +687,13 @@ namespace WindowsFormsApplication1
         /// Welle D). IFC führt die Ringe an den Raumgrenzen (<see cref="AbbildGrenze.RandpunkteM"/>).
         /// </summary>
         public IReadOnlyList<double[]> RandpunkteM { get; set; }
+
+        /// <summary>
+        /// Der Körper des Bauteils, wie die Datei ihn zeichnet (Konzept HottCAD-Verbund 3.2: <c>IfcWall</c>, <c>IfcSlab</c>,
+        /// <c>IfcRoof</c>, <c>IfcWindow</c>, <c>IfcDoor</c>); <c>null</c> = keine Darstellung, nicht lesbar oder über der
+        /// Dreiecksgrenze. Nur Anzeige und Flächengruppen, nie Rechengrundlage (ADR-003).
+        /// </summary>
+        public Dateikoerper Koerper { get; set; }
 
         /// <summary>Meldungen zu genau diesem Bauteil (Geometrie, Aufbau, Verweise).</summary>
         public List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
