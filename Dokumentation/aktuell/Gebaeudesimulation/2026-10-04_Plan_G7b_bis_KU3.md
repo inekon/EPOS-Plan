@@ -7,6 +7,8 @@ Festlegungen stehen in den Konzepten, auf die jede Zeile verweist. Erledigte Wel
 Statuszeile und Protokoll aus diesem Plan heraus; ist KU3 abgenommen, geht das Papier nach
 `ueberholt/`.
 
+**Abgearbeitet (05.10.2026):** Mit KU3-4b (#726) sind alle Wellen dieses Plans umgesetzt, KU3 ist abgeschlossen. Nächster Schritt ist AK2 (E67; G7f läuft in der Sitzung „IFC Modellauswahl“), KU3-6 folgt nach AK2 (E75). Das Papier wartet auf das Verschieben nach `ueberholt/` durch die Orchestrierung.
+
 Quellen: [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kapitel 5, 6, 9,
 10 und 14; [Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 4.6, 5.3, 5.4, 9.2 und
 11; [Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.7 und 7;
@@ -122,7 +124,7 @@ Kühlen/Nacht gebaut (Kühlkonzept, Kopfvermerk).
 | **KU3-4a Anlage, Rechenweg, Bericht** (umgesetzt, #716) | Typ 13, Anlagenzeile mit Anzahl, Rechenweg je Anlagenzeile, Bericht (Erzeugerabschnitt, Kennzahlen F-K11), Wirtschaftlichkeit (Investition, Nutzungsdauer), Ergebnis je Maschine | Schemaschritt 183: Typeintrag, Verweis, Kostenkomponente, Ergebnistabelle | 2–3 | Referenzlauf byte-gleich |
 | **KU3-4c Erzeugerdialog** (umgesetzt, #717) | Erzeugerdialog der Kältemaschine als Razor-Komponente über `KaeltemaschineAnlageCtrl` | keiner | 2–3 | Dialogtests, Sichtabnahme beim Anwender |
 | **KU3-4d Kältestromabrechnung und Stempeltrigger** (umgesetzt, #721) | Kühlträger mit eigenem Zähler in `Kaeltestromabrechnung` für die Kältemaschine (Anteile, Grund- und Leistungspreis, Emissionen je Zähler, Szenario-Mengen); Kostenstempel-Trigger an `Tab_Energieanlagen` um `Kaeltemaschine_Anzahl` erweitern; Berichtsabschnitt und Füllstandsganglinie des Kältespeichers (aus KU3-5); getrennte Projektkopien bei zwei Anlagenzeilen desselben Katalogsatzes | ein Schemaschritt (DROP/CREATE des Triggers) | 2–3 | Datenbankfälle, Referenzlauf byte-gleich |
-| **KU3-4b Referenzprojekt, Basis** (erst mit Testdatenbank 181) | neues Referenzprojekt mit Kältemaschine als Kopie von 1017, Einfrierregel „gesäte Kältemaschinendaten“, Basiswechsel R36 (R-Nummer vor dem Bau anmelden), Wiki und Logbuch | keiner | 1–2 | Vergleich der 18 Projekte plus das neue, Basis neu eingefroren |
+| **KU3-4b Referenzprojekt, Basis** (umgesetzt, #726: Referenzprojekt 1055, Basis R36) | neues Referenzprojekt mit Kältemaschine als Kopie von 1017, Einfrierregel „gesäte Kältemaschinendaten“, Basiswechsel R36 (R-Nummer vor dem Bau anmelden), Wiki und Logbuch | keiner | 1–2 | Vergleich der 18 Projekte plus das neue, Basis neu eingefroren |
 | **KU3-5 Kältespeicher** (E68; umgesetzt, #718) | `VERWENDUNG_KAELTE` am Puffer, Lade- und Entladeweg im Kältekreis, `Entladung_Kuehlung`, Warnkriterien, Dialogtext „wird gerechnet“ | ein Schemaschritt, falls eine Spalte nötig | 3–5 | Proben, Referenzlauf, Basis nur, wenn das Referenzprojekt den Speicher bekommt |
 
 Verbrauch KU3: rund 15–19 Punkte (mit Kältespeicher, E68); je Welle zwei bis drei Opus-Aufträge
