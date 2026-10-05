@@ -22,7 +22,7 @@ lesen“ im Gebäudedialog).
 |---|---|
 | HC-3 | **umgesetzt durch die Sitzung „Gebäudesimulation IFC“** als **#736** (Commits `c3d41727` Kern, `99423740` Hülle und Dialog, `229d13f0` und `0b5f83a5` Proben 33, 36, 37, Papiere bis `76a126f6`), dazu **#737** Flächenfilter-Texte (`9910de03`). Gate 736 grün, CI-Lauf `37361791865` (Abschnitt 4). Protokoll siehe Kopf. Die Sätze zu Probe 33 und 36 in [`LIESMICH_Importproben.md`](../../../Referenzlaeufe/Importproben/LIESMICH_Importproben.md) sind nachgetragen |
 | HC-3, Dublette | eine zweite, parallele Umsetzung dieser Sitzung (`9612fb3a`, `06d8b4f5`, Merge `b64a5133`, Papiere `2f2797b8`) ist **verworfen**, nie gepusht. Sie bleibt auf den Zweigen `worktree-agent-aa321a7f535f499e5` (Code), `worktree-agent-ae21ef8bc37293252` (Papiere) und `sicherung-hc3-duplikat` erhalten — nicht mergen |
-| HC-1 | **läuft** in einem Opus-Agenten im Worktree `.claude/worktrees/agent-a545d1c0434622a4f`, Zweig `worktree-agent-a545d1c0434622a4f`. Committet: Teil 1 `68411baf` zweiseitige Randbedingung, Teil 2 `e6f7dce1` Rahmenanteil, Teil 3 `add95232` Bauteilkörper; Teil 4 Flächenklassifikation in Arbeit |
+| HC-1 | **umgesetzt als #740**: Teil 1 `68411baf` zweiseitige Randbedingung, Teil 2 `e6f7dce1` Rahmenanteil, Teil 3 `add95232` Bauteilkörper, Teil 4 `4670d6d7` Flächenklassifikation; Merge `3c37b6da`, Gate 740 (Abschnitt 4), [Protokoll HC-1](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_HC-1_IFC_Randbedingung_Bauteilkoerper_Flaechen.md) mit Bilanz der sechs Anwenderdateien und offenen Punkten |
 | HC-2 | nicht begonnen (Konzept 6.4) |
 | HC-4 | nicht begonnen (Konzept 6.5) |
 
@@ -30,7 +30,7 @@ lesen“ im Gebäudedialog).
 Zuständigkeit festgelegt und in der Statusdatei angemeldet (wie die Schemanummer), und vor dem Merge wird `origin` geholt
 und auf dieselbe Welle geprüft.
 
-## 3. Abnahmeweg HC-1 (Konzept 6.3)
+## 3. Abnahmeweg HC-1 (Konzept 6.3) — so durchgeführt
 
 1. Agentenbericht lesen; der Worktree ist sauber und Teil 4 committet.
 2. Zweig `worktree-agent-a545d1c0434622a4f` im Hauptbaum mergen — vorher `origin` holen. Der Zweig zweigt vor #736/#737
@@ -48,12 +48,15 @@ und Visual Studio offen ist — Build und Tests laufen im Gate-Worktree.
 
 ## 4. Befunde
 
-- **CI-Lauf `37361791865`** (Stand `76a126f6`, Status #736/#737): beim Schreiben dieses Papiers noch laufend; Ergebnis
-  nachlesen mit `gh run view 37361791865 --json status,conclusion`.
-- **Fremder Befund im alten Gate** (Stand der Dublette `b64a5133`, Lauf nicht zu Ende abgewartet): sieben rote Fälle von
+- **CI-Lauf `37361791865`** (Stand `76a126f6`, Status #736/#737): abgebrochen durch einen neueren Push — kein Nachweis;
+  der letzte grüne Kern-Lauf vor HC-3 ist `37352895205`. Nachweis für HC-3 und HC-1 ist der nächste Kern-Lauf nach dem Push von #740.
+- **Gate 740** auf `3c37b6da`: 19 717 Tests, 19 705 grün, 4 übersprungen, 8 rot und fremd (unten); `EPOS.Kern.Tests`
+  50 min 49 s, keine IFC- oder Ansichtsklasse über 23 s.
+- **Fremder Befund nur auf diesem Windows-Rechner** (im Gate der Dublette `b64a5133` und im Gate 740): sieben rote Fälle von
   `EPOS.Kern.Tests.GebaeudeEinzonennetzTests.Die_Einzonenreihen_des_Bauteilwegs_bleiben_bitgleich` — „Leistungsgrenze“,
-  „AK1 Heizseite“, „ideal“, „Volumen und Raumhöhe“, „Sommerlüftung“, „Kühlung ideal“, „AK1 Kälteseite“. Nicht HC-3;
-  gegen den grünen Lauf auf `origin` prüfen, bevor man ihn jemandem zuschreibt.
+  „AK1 Heizseite“, „ideal“, „Volumen und Raumhöhe“, „Sommerlüftung“, „Kühlung ideal“, „AK1 Kälteseite“, dazu
+  `ZonenuebergabeRechenwegTests.Ideal_an_einer_Zone_rechnet_ohne_Heizkreis` (Rundung in der neunten Stelle). Nicht HC-1
+  oder HC-3; beide Klassen liefen im grünen Kern-Lauf `37352895205` auf ubuntu — gegen die CI klären, nicht reparieren.
 
 ## 5. Offene Punkte aus #736/#737
 
@@ -69,7 +72,6 @@ und Visual Studio offen ist — Build und Tests laufen im Gate-Worktree.
 
 ## 7. Aufräumliste
 
-- Worktrees `agent-aa321a7f535f499e5` und `agent-ae21ef8bc37293252` entfernen (`git worktree remove --force`); die
-  Zweige bleiben stehen.
-- `gate-hc3` bleibt für die Abnahme von HC-1 stehen und wird danach entfernt.
-- `agent-a545d1c0434622a4f` erst nach dem Merge von HC-1 entfernen.
+- Worktrees `agent-aa321a7f535f499e5` und `agent-ae21ef8bc37293252` sind entfernt; die Zweige bleiben stehen.
+- `agent-a545d1c0434622a4f` wird nach dem Push von #740 entfernt, der Zweig bleibt.
+- `gate-hc3` bleibt als Gate-Worktree für HC-2 und HC-4 stehen.

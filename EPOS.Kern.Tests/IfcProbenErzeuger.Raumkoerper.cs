@@ -44,7 +44,42 @@ namespace EPOS.Kern.Tests
                     b => new[] { b.Extrusion(b.Rechteckprofil(4000, 3000, 2000, 1500), 2500) }, gedreht: true),
                 ["ifc4_koerper_nachbarn.ifc"] = Koerpernachbarn("ifc4_koerper_nachbarn.ifc", grenzen: false),
                 ["ifc4_koerper_nachbarn_grenzen.ifc"] = Koerpernachbarn("ifc4_koerper_nachbarn_grenzen.ifc", grenzen: true),
+                ["ifc4_koerper_bauteile.ifc"] = Koerperbauteile(),
             };
+
+        /// <summary>
+        /// <b>Körper der Hüllbauteile</b> (Konzept HottCAD-Verbund 3.2 und 4.2): ein Geschoss, Nord = +y, zwei Räume als
+        /// <c>IfcFacetedBrep</c> nach dem Muster eines CAD-Exports (Raumbezüge, keine Raumgrenzen): „Wohnen“ 5 × 4 × 3 m im
+        /// Ursprung (beheizt, 20 °C) und „Kammer“ 4 × 4 × 3 m bei x = 5,24 m (unbeheizt). Die „Außenwand Süd“ (0,3 m vor
+        /// beiden Räumen, außen, Orientierung 180°) trägt einen Körper als <c>IfcShellBasedSurfaceModel</c> aus
+        /// <c>IfcPolyLoop</c>, ebenso das „Fenster Süd“ (1,5 × 1,2 m) in ihr; die „Innenwand“ (gegen unbeheizt)
+        /// und die „Bodenplatte“ (Erdreich) tragen keinen; ein Dach fehlt (die Decken fallen auf die Normale zurück).
+        /// </summary>
+        private static byte[] Koerperbauteile()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_koerper_bauteile.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Bauteilkörper", null);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcWall sued = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand Süd", "btaOutside", true, 0.3, null, 180, 27.72, 26.82, null, null);
+                b.Koerper(sued, "SurfaceModel", b.Kasten(0, -300, 0, 9240, 0, 3000));
+                IIfcWindow fenster = b.CadFenster(sued, eg, "Fenster Süd", (1500, 1200), 1.8, 1.1, null);
+                b.Koerper(fenster, "SurfaceModel", b.Kasten(1000, -300, 900, 2500, 0, 2100));
+                IIfcWall innen = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Innenwand", "btaUnHeated", true, 0.5, null, null, 12, 12, null, null);
+                IIfcSlab boden = b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Bodenplatte", "btaGround", true, 0.4, null, null, 36, 36, null, null);
+
+                IIfcSpace wohnen = b.RaumEnthalten(eg, "Wohnen", 0, 0, 20, 60, 3000, zerlegt: false);
+                IIfcSpace kammer = b.RaumEnthalten(eg, "Kammer", 5240, 0, 16, 48, 3000, zerlegt: false);
+                b.Koerper(wohnen, "Brep", b.Brep(5000, 4000, 3000, offen: false));
+                b.Koerper(kammer, "Brep", b.Brep(4000, 4000, 3000, offen: false));
+                b.Raumangaben(wohnen, "bhtHeated", 20.0, "mrtLiving");
+                b.Raumangaben(kammer, "bhtUnHeated", null, "mrtStore");
+                b.Bezug(wohnen, sued, fenster, innen, boden);
+                b.Bezug(kammer, sued, innen, boden);
+                return b.Speichern();
+            }
+        }
 
         private static byte[] Koerperprobe(string datei, XbimSchemaVersion schema, string typ, Func<Bau, IIfcRepresentationItem[]> koerper, bool gedreht = false)
         {
@@ -324,6 +359,30 @@ namespace EPOS.Kern.Tests
                 IIfcFacetedBrep b = N<IIfcFacetedBrep>("IfcFacetedBrep");
                 b.Outer = (IIfcClosedShell)schale;
                 return b;
+            }
+
+            /// <summary>
+            /// Ein achsparalleler Kasten [mm] als <c>IfcShellBasedSurfaceModel</c> aus <c>IfcPolyLoop</c> mit
+            /// <c>IfcOpenShell</c> — das Muster der Hüllbauteile eines CAD-Exports.
+            /// </summary>
+            public IIfcRepresentationItem Kasten(double x0, double y0, double z0, double x1, double y1, double z1)
+            {
+                IIfcConnectedFaceSet schale = N<IIfcConnectedFaceSet>("IfcOpenShell");
+                for (int f = 0; f < FLAECHEN.Length; f++)
+                {
+                    IIfcPolyLoop ring = N<IIfcPolyLoop>("IfcPolyLoop");
+                    foreach (int e in FLAECHEN[f])
+                        ring.Polygon.Add(Punkt(x0 + ECKEN[e].Item1 * (x1 - x0), y0 + ECKEN[e].Item2 * (y1 - y0), z0 + ECKEN[e].Item3 * (z1 - z0)));
+                    IIfcFaceOuterBound rand = N<IIfcFaceOuterBound>("IfcFaceOuterBound");
+                    rand.Bound = ring;
+                    rand.Orientation = true;
+                    IIfcFace flaeche = N<IIfcFace>("IfcFace");
+                    flaeche.Bounds.Add(rand);
+                    schale.CfsFaces.Add(flaeche);
+                }
+                IIfcShellBasedSurfaceModel m = N<IIfcShellBasedSurfaceModel>("IfcShellBasedSurfaceModel");
+                m.SbsmBoundary.Add((IIfcShell)schale);
+                return m;
             }
 
             private IIfcCartesianPointList3D Quaderpunkte(double x, double y, double z)

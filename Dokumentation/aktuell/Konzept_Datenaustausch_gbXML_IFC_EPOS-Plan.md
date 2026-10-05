@@ -1968,6 +1968,7 @@ lässt dessen Regeln, die Exporte (5.5, 6.7) und [`ADR-003`](ADR-003_IFC_xBIM_oh
 | daraus die Zone als Menge ihrer Raumkörper (Zuordnung wie im Grundriss, 14.1) | Öffnungen (`IfcOpeningElement`, `IfcWindow`, `IfcDoor`) und jede Ausschneidung |
 | Lage über die Placement-Kette in Weltkoordinaten, Längeneinheit der Datei | Rechnen mit dem Körper: Flächen, Volumen und Zonierung bleiben bei Raumgrenzen und Mengen (3.4, 14.1) — ausgenommen die Trennflächen zwischen Räumen einer Datei ohne Raumgrenzen, die aus gemeinsamen Flächen der Raumkörper kommen (Mehrzonenkonzept 6.2) |
 | Herkunft und Vereinfachung je Raum, sichtbar in der Ansicht | Reparatur: offene, überlappende oder verdrehte Netze werden gezeichnet, wie sie sind |
+| die Körper der Hüllbauteile (`IfcWall`, `IfcSlab`, `IfcRoof`, `IfcWindow`, `IfcDoor`) als Anzeige, mit gemeinsamer Dreiecksgrenze mit den Räumen (HottCAD-Verbund HC-1, #740) | der Bauteilkörper als Rechengröße: Dicke, Schichten und Flächen kommen weiter aus Mengen und Katalog |
 
 **Die Datei bleibt Quelle.** Nichts am Körper wird gerechnet, geschlossen oder ausgeglichen; was der Leser nicht
 lesen kann, fällt benannt auf den Umriss zurück. **„Schematisch“ bleibt der benannte Rückfall** für jeden Raum ohne
