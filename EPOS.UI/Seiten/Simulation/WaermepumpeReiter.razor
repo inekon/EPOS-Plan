@@ -79,67 +79,6 @@
 
         </div>
 
-        @* ZWEITE RASTERZEILE: die Auslegung und darunter die Streuwolke. Die
-           Liste steht ALLEIN in ihrer Zeile und traegt deshalb weiter
-           .epos-simerg-kennzahlenzeile (W11b‑B‑20): In EINER Spalte des
-           auto-fit-Rasters (minmax(320px, 1fr)) schnitt
-           „durchschnittliche Vollbenutzungsstunden:“ die Einheitenspalte ab und
-           schob die Liste in einen Rollbalken. *@
-        <div class="epos-simerg-spalten">
-
-            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
-                <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
-                <dl class="epos-simerg-werte">
-                    @* „-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt
-                       (woertlich :4374). *@
-                    @Wertzeile(Resource.SIMERG_LBL_BIVALENZPUNKT,
-                               Daten.BivalenzpunktVorhanden ? Zahl(Daten.Bivalenzpunkt) : "-", "°C")
-                    @Wertzeile(Resource.SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN,
-                               Daten.Vollbenutzungsstunden.ToString("N0", Kultur), "h/a")
-                    @Wertzeile(Resource.SIMERG_LBL_MIN_SPK_LEISTUNG, Zahl(Daten.MinSpkLeistungKw), "kW")
-
-                    @* Ohne Speicherliste bleibt es beim Altausdruck der Rubrik
-                       (Volumen * 1,16) - woertlich uebernommen, W11a-O-1b. *@
-                    @if (Daten.Puffer.Count == 0)
-                    {
-                        @Wertzeile(Resource.SIMERG_LBL_PUFFERKAPAZITAET,
-                                   Daten.PufferVolumenKwh.ToString(Kultur), "kWh")
-                    }
-                </dl>
-
-            </section>
-
-            @* Die Streuwolke steht ueber BEIDE Spalten (Befund W11b-B-2). In der
-               halben Spalte lief sie rechts aus dem Fenster und legte sich ueber die
-               Modultabelle darunter. *@
-            <section class="epos-simerg-block epos-simerg-diagrammzeile">
-                @* W11b‑B‑17: die drei Punktreihen der Streuwolke, jede abwaehlbar. *@
-                <div class="epos-simerg-schalter">
-                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
-                              Wert="@_swBedarf" WertChanged="@(w => _swBedarf = w)" />
-                    <Schalter Bezeichnung="@Resource.CHART_SEGMENT_HEIZSTAB"
-                              Wert="@_swHeizstab" WertChanged="@(w => _swHeizstab = w)" />
-                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
-                              Wert="@_swProduktion" WertChanged="@(w => _swProduktion = w)" />
-                </div>
-
-                @* DIE STREUWOLKE ALS SVG (Etappe DG-E3, Gruppe (b)): Auf x steht
-                   die AUSSENTEMPERATUR statt der Stunde - das sagt die Achsenart
-                   ihres Modells, nicht ein Parameter hier (DG-E3-11). Gezoomt wird
-                   damit ueber der Temperatur, und die Punktwolke wird nie
-                   gebuendelt: Ihre Verdichtung IST ihre Aussage (DG-E3-5). *@
-                <DiagrammSvg Modell="@ModellStreuwolke" Kennung="simerg-wp-streuwolke"
-                             Vorlagenfeld="stand.bild.waermepumpe_streuwolke" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
-                             VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
-                             Bezeichnung="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR"
-                             Palette="@Farbpalette.Aktuell"
-                             FarbwahlErlaubt="@Farbwahl"
-                             FarbeGewaehlt="FarbeUebernehmen"
-                             FarbeZurueckgesetzt="FarbeVerwerfen" />
-            </section>
-
-        </div>
-
         @* ---- Die Modultabelle; Doppelklick oeffnet den Waermepumpendialog ---- *@
         @if (Daten.Module.Count > 0)
         {
@@ -322,6 +261,68 @@
 
             </KindInhalt>
         </Reiter>
+
+        @* AM ENDE DES REITERS: die Auslegung und darunter die Streuwolke
+           (Anwenderwunsch 05.10.2026) - nach Kennzahlen, Modul- und
+           Speichertabellen und den Unterblaettern mit der Jahresganglinie.
+           Die Liste steht ALLEIN in ihrer Zeile und traegt deshalb weiter
+           .epos-simerg-kennzahlenzeile (W11b‑B‑20): In EINER Spalte des
+           auto-fit-Rasters (minmax(320px, 1fr)) schnitt
+           „durchschnittliche Vollbenutzungsstunden:“ die Einheitenspalte ab und
+           schob die Liste in einen Rollbalken. *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
+                <dl class="epos-simerg-werte">
+                    @* „-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt
+                       (woertlich :4374). *@
+                    @Wertzeile(Resource.SIMERG_LBL_BIVALENZPUNKT,
+                               Daten.BivalenzpunktVorhanden ? Zahl(Daten.Bivalenzpunkt) : "-", "°C")
+                    @Wertzeile(Resource.SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN,
+                               Daten.Vollbenutzungsstunden.ToString("N0", Kultur), "h/a")
+                    @Wertzeile(Resource.SIMERG_LBL_MIN_SPK_LEISTUNG, Zahl(Daten.MinSpkLeistungKw), "kW")
+
+                    @* Ohne Speicherliste bleibt es beim Altausdruck der Rubrik
+                       (Volumen * 1,16) - woertlich uebernommen, W11a-O-1b. *@
+                    @if (Daten.Puffer.Count == 0)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_PUFFERKAPAZITAET,
+                                   Daten.PufferVolumenKwh.ToString(Kultur), "kWh")
+                    }
+                </dl>
+
+            </section>
+
+            @* Die Streuwolke steht ueber BEIDE Spalten (W11b-B-2): In der halben
+               Spalte lief sie rechts aus dem Fenster. *@
+            <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                @* W11b‑B‑17: die drei Punktreihen der Streuwolke, jede abwaehlbar. *@
+                <div class="epos-simerg-schalter">
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
+                              Wert="@_swBedarf" WertChanged="@(w => _swBedarf = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_SEGMENT_HEIZSTAB"
+                              Wert="@_swHeizstab" WertChanged="@(w => _swHeizstab = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
+                              Wert="@_swProduktion" WertChanged="@(w => _swProduktion = w)" />
+                </div>
+
+                @* DIE STREUWOLKE ALS SVG (Etappe DG-E3, Gruppe (b)): Auf x steht
+                   die AUSSENTEMPERATUR statt der Stunde - das sagt die Achsenart
+                   ihres Modells, nicht ein Parameter hier (DG-E3-11). Gezoomt wird
+                   damit ueber der Temperatur, und die Punktwolke wird nie
+                   gebuendelt: Ihre Verdichtung IST ihre Aussage (DG-E3-5). *@
+                <DiagrammSvg Modell="@ModellStreuwolke" Kennung="simerg-wp-streuwolke"
+                             Vorlagenfeld="stand.bild.waermepumpe_streuwolke" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                             VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
+                             Bezeichnung="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
+            </section>
+
+        </div>
 
         @if (Csv.HasDelegate)
         {
