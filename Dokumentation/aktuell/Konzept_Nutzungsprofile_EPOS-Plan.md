@@ -1,6 +1,7 @@
 # Konzept: Nutzungsprofile — Katalog mit Kategorien, Generator der Konditionierungskalender und Zuordnung beim Import (Stufe NP)
 
-> **Rev. 1 — Auftrag aus Entscheid E90 (Q37, 05.10.2026).** Der Anwender hat entschieden: Nutzungsprofile werden ein
+> **Rev. 2 (vereint aus zwei Fassungen vom 05.10.2026) — Auftrag aus Entscheid E90 (Q37, 05.10.2026); Fragen
+> Q38 bis Q47 mit E91 nach Empfehlung entschieden.** Der Anwender hat entschieden: Nutzungsprofile werden ein
 > **frei definierbarer Katalog mit Katalogkategorien** — eine Kategorie für den Katalog nach DIN V 18599-10, eigene
 > Kataloge mit eigenen Profilen, weitere Kataloge für SIA 2024, VDI 2078 usw. —, dazu eine **änderbare Zuordnung** der
 > DIN-Profilnummern und der IFC-Nutzungsklassen auf Profile; Zugang aus dem Gebäudedialog, dem Zonenbaum des Imports
@@ -8,7 +9,8 @@
 > [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md)): Die Normen sind kostenpflichtig, keine
 > Werttabelle aus DIN V 18599-10, SIA 2024 oder VDI 2078 steht im Repositorium. Ausgeliefert wird die **Struktur** —
 > Kategorie, Profilnummern und -namen —; die Werte trägt der Anwender ein oder importiert sie. Dieses Papier arbeitet
-> den Entscheid aus: Festlegungen NP-F1 bis NP-F24, Stufen NP1 bis NP4, Fragen Q38 bis Q47 mit Empfehlung. Register:
+> den Entscheid aus: Festlegungen NP-F1 bis NP-F24, Stufen NP1 bis NP4, Fragen Q38 bis Q47 (entschieden mit E91), Risiken in
+> Kapitel 11. Register:
 > [Status der Gebäudesimulation](Status_Gebaeudesimulation_VDI6007.md) (E90, Stufe NP).
 
 ---
@@ -138,7 +140,7 @@ Nennwert (B11). Die Muster sind **keine** Norm- und keine Messwerte.
 
 ## 3. Festlegungen
 
-Festlegungen nach Empfehlung — Widerspruch möglich bis zur Beauftragung von NP1. Die Fragen mit Entscheidbedarf
+Festlegungen nach Empfehlung; sie gelten mit E91 und der Beauftragung von NP1. Die Fragen mit Entscheidbedarf
 stehen in Kapitel 9.
 
 | Nr. | Festlegung | Grund |
@@ -250,6 +252,25 @@ Feiertagsregeln und dieselbe Reihe von 8 760 Werten wie „Vorlage übernehmen�
 geprüft je Größe und für Gebäude, Zone und Katalogbau. Nur `Bemerkung` (Herkunftstext) und `Nutzung` (Name statt
 Kennung, NP-F15) unterscheiden sich, und genau das prüft der Test mit.
 
+### 4.4 Einbau in den Kern
+
+Was der Schritt NP-S1 und die Stufen NP1 und NP2 an den Lesern und Schreibern der Nutzung ändern; der Rechenweg
+bleibt unberührt (NP-F24).
+
+| Stelle | heute | künftig | Stufe |
+|---|---|---|---|
+| `RaumnutzungCtrl` (neu, `EPOS.Kern/Controller/`) | — | Kategorien und Profile lesen; anlegen, duplizieren (auch in eine andere Kategorie), umbenennen, löschen mit Rückfrage zur Zuordnung (NP-F19); Kennwerte, Zeilenbild und Stundenprofil schreiben; `ProfilUebernehmen` an Gebäude, Zone und Katalogbau über `Raumnutzungsgenerator` und `Konditionierungsarbeit`; Zuordnung lesen und pflegen | NP1 |
+| `DbWerte.KOND_NUTZUNG_*`, `KOND_NUTZUNGEN`, `Zonenplan.NUTZUNGEN` | Auswahl- und Prüfliste der vier Kennungen | als Auswahl- und Prüfliste ersetzt durch den Katalog; die vier Kennungen bleiben als Konstanten, weil Bestandswerte sie tragen (Anzeige über die Ressourcen, Pufferauslegung, NP-F15) | NP1, NP2 |
+| `KonditionierungCtrl` (`NutzungDerHerkunft`, `NutzungSetzen`), `KonditionierungsvorlageCtrl` | Kennung aus der festen Liste | Text (Profilname oder alte Kennung), Längenprüfung wie im Schema | NP1 |
+| `KonditionierungNutzung` (Aufzählung in `EPOS.UI/Dialoge/Bedarf/KonditionierungDaten.cs`), Hüllen `KonditionierungHuelle`, `GebaeudeImportZonen` | vier feste Werte | Text mit Vorschlägen aus dem Katalog bzw. Profilverweis des Arbeitsstands (NP-F23) | NP2, NP3 |
+| `Zonenplan.NutzungAusKlasse`, `Din18599Nutzung` | feste Tabellen im Code | Vorgabe im Code, Leser aus `Tab_Raumnutzungszuordnung` (NP-F12) | NP2 |
+| `GebaeudeZonierung.RAUMTYP_KLASSE` | Raumtyp der Datei (ohne `mrt`) → Nutzungsklasse | bleibt im Code; eine Zeile der Art `HOTTCAD_RAUMTYP` geht ihr vor | NP2 |
+| `IfcAbbildBauer` (`EPOS_Zone.Nutzung`) | nur übernommen, wenn der Wert eine der Kennungen aus `Zonenplan.NUTZUNGEN` ist | Name eines Profils → Profil; alte Kennung → EPOS-Muster gleicher Nutzung; sonst „(nicht im Katalog)“, der Text bleibt (NP-F23) | NP2 |
+| IFC-Export (`IfcKonditionierungssatz`), IDS `Setup/Vorlage/EPOS_Export.ids` | `Nutzung` als Text der Kalendernutzung | unverändert: die Kalendernutzung ist dann der Profilname; das IDS führt `Nutzung` als `IFCLABEL` ohne Wertvorgabe und bleibt, wie es ist | — |
+| `PufferAuslegungCtrl`, `Nutzungsprofil.Ableiten` | Kennung → Pufferprofil über `Z_Nutzungsprofil` (Quelle `KONDITIONIERUNG`) | dieselbe Tabelle, gesät um die Musternamen (NP-F15) | NP1 |
+| `Vdi6007Rechenweg` | Hinweis `SIMENG_KOND_NUTZUNG_LEER` | unverändert; der Löser liest nur die Kalender | — |
+| Katalogpaket (`Katalogpaket.json`, Katalogabgleich der Katalogfassung), `Werkzeuge/Auslieferungsvorlage` | — | die ausgelieferten Zeilen der fünf Tabellen gehören zum Katalogpaket; ein Projektpaket trägt keine Profile, weil am Ziel nur Kopien liegen (NP-F14, NP-F21) | NP1 |
+
 ---
 
 ## 5. Auslieferung
@@ -318,7 +339,7 @@ der Struktur: SIA 2024 nummeriert Raumnutzungen mit Punkten und gibt Tagesverlä
 | `IFC_KLASSE` | Wohnen, Schlafen, Kueche | EPOS-Muster Wohnen | B2, unverändert |
 | `IFC_KLASSE` | Sport, Gastronomie, Lager, Verkehr, Technik | die gleichnamigen neuen Muster | **nur bei Ja zu Q42** |
 | `DIN_NUMMER` | 31, 35 → Sport; 12, 13 → Gastronomie; 20, 41 → Lager; 19 → Verkehr | neue Muster | **nur bei Ja zu Q42** (19 und 20 erst nach Bestätigung aus 5.2) |
-| `HOTTCAD_RAUMTYP` | — | keine Zeile | Raumtyp-Codes (`mrt…`) sind im Befund HottCAD belegt, eine Bedeutung je Code noch nicht |
+| `HOTTCAD_RAUMTYP` | — | keine Zeile | Raumtyp-Codes (`mrt…`) sind im Befund HottCAD belegt; ihre Nutzungsklasse gibt weiter `GebaeudeZonierung.RAUMTYP_KLASSE` im Code (4.4), eine Zeile hier geht ihr vor |
 
 Die DIN-Nummern zeigen ausgeliefert auf **EPOS-Muster**, nicht auf die leeren DIN-Profile (NP-F13); wer Normwerte
 eingetragen hat, stellt die Zuordnung auf sein Duplikat um (NP-F19).
@@ -361,9 +382,13 @@ Vorlagenverwaltung, auf beiden Plattformen (NP-F22). Drei Bereiche:
 
 - **KI-Feldkarten**: die Felder des Profileditors und der Zuordnung als Feldkarte nach dem Muster
   `KiKonditionierungsfelder.cs`; die KI-Sicht der Zone nennt das Profil.
-- **Wiki** (NP4): neue Seite „Nutzungsprofile“ (Programm Dokumentation), Nachzug der Quellen „Gebäudeimport“,
-  „Mehrzonenmodell“ und „Gebäude“; Logbuch-Entwurf ein Satz je sichtbarer Änderung; keine Normwerte und keine
-  Produktdaten im Wiki ([Konzept Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) 13).
+- **Wiki** (NP4): neue Seite „Nutzungsprofile“ (Programm Dokumentation), Nachzug der Quellen „Gebäudeimport“
+  (Zonenbaum, Herleitungszeile), „Mehrzonenmodell“, „Gebäude“ und „Konditionierung“ (Vorlage neben Profil); nur die
+  Funktion, wie sie ist; keine Normwerte und keine Produktdaten im Wiki
+  ([Konzept Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) 13). Logbuch-Entwurf, ein Satz: „Nutzungsprofile
+  sind ein eigener Katalog mit Kategorien; Gebäude und Zonen übernehmen ihre Kalender aus einem Profil, und der
+  Gebäudeimport ordnet Nutzungen über änderbare Zuordnungen zu.“ Die Versionsnummer erfragt die Sitzung beim
+  Anwender; hochgeladen wird gebündelt.
 - **bunit**: Blatt, Editor, Zuordnung, Zonenbaum mit Gruppen und Herleitung, Rückfragen; **Fensterprobe**, wenn
   Dialogkopf oder Schlussleiste berührt werden.
 
@@ -408,11 +433,17 @@ der CSV-Import nutzt den vorhandenen Dateidienst).
 | `ZonenReferenzprojektWacheTests`, `ZonenHeizkreisReferenzprojektWacheTests`, `KonditionierungReferenzprojektWacheTests` | NP1, NP2 | 1051, 1052 und 1054 mit ihren Zonen- und Gebäudekalendern unverändert |
 | Referenzlauf gegen die aktuelle Basis | NP1, NP2 | byte-gleich (NP-F24) |
 | bunit, Fensterprobe, Rasterprobe bei Bedarf | NP3 | Blatt und Zugänge |
+| `AuslieferungsvorlagenWacheTests`, `KatalogpaketAuslieferungWacheTests`, Prüfbericht der Auslieferungsvorlage | NP1 | ausgelieferte Zeilen im Katalogpaket, eigene Zeilen entfernt, kein Kennwert in Normkategorien (NP-F21) |
+| `IfcQuelldateienDurchgangTests`, `ZonenimportProbenTests`, Proben des Zonenbaums | NP2 | Import aller Quelldateien mit Zuordnung statt fester Tabellen; `EPOS_Zone.Nutzung` mit Profilname, alter Kennung und unbekanntem Text (4.4) |
+| IFC-Rundreise, `IdsWacheTests` | NP2 | exportierte Nutzung = Profilname, erneuter Import findet das Profil wieder (NP-F23); IDS unverändert gültig |
+| Windows-Schale auf Linux kompiliert, gestörter Lauf | NP3 | Hüllen und Nähte der Schale; Oberfläche ohne Katalogzeilen (leere Datenbank) benannt statt still |
 | `DokumentationLinkWacheTests`, `WikiProduktdatenWacheTests` | NP4 | Wiki-Quellen, Verweise |
 
 ---
 
 ## 9. Fragen an den Anwender mit Empfehlung
+
+Alle zehn Fragen sind mit **E91** nach Empfehlung entschieden; die Empfehlung ist damit die Festlegung.
 
 | Nr. | Frage | Empfehlung | Was daran hängt |
 |---|---|---|---|
@@ -433,22 +464,22 @@ der CSV-Import nutzt den vorhandenen Dateidienst).
 
 ### 10.1 Festlegungen
 
-NP-F1 bis NP-F24 in Kapitel 3 — nach Empfehlung, Widerspruch möglich bis zur Beauftragung von NP1.
+NP-F1 bis NP-F24 in Kapitel 3 — nach Empfehlung, gültig mit E91 und der Beauftragung von NP1.
 
 ### 10.2 Fragen
 
 | Nr. | Gegenstand | fällig vor | Stand |
 |---|---|---|---|
-| Q38 | Beleuchtung | NP1 | offen |
-| Q39 | Gerätenennwert | NP1 | offen |
-| Q40 | Personennennwert | NP1 | offen |
-| Q41 | `Tab_Zone.Nutzungsprofil` | NP1 (Schemaschritt) | offen |
-| Q42 | Zuordnung der neuen Muster | NP1 (Saat) | offen |
-| Q43 | Werte der neuen Muster | NP1 (Saat) | offen |
-| Q44 | Nutzungstage je Jahr | NP1 | offen |
-| Q45 | Vorlagen und Profile nebeneinander | NP1 | offen |
-| Q46 | Profile aus der Projektdatei | NP4 | offen |
-| Q47 | Namen der DIN-Profile | NP1 (Saat) | offen |
+| Q38 | Beleuchtung | NP1 | entschieden (E91) |
+| Q39 | Gerätenennwert | NP1 | entschieden (E91) |
+| Q40 | Personennennwert | NP1 | entschieden (E91) |
+| Q41 | `Tab_Zone.Nutzungsprofil` | NP1 (Schemaschritt) | entschieden (E91) |
+| Q42 | Zuordnung der neuen Muster | NP1 (Saat) | entschieden (E91) |
+| Q43 | Werte der neuen Muster | NP1 (Saat) | entschieden (E91) |
+| Q44 | Nutzungstage je Jahr | NP1 | entschieden (E91) |
+| Q45 | Vorlagen und Profile nebeneinander | NP1 | entschieden (E91) |
+| Q46 | Profile aus der Projektdatei | NP4 | entschieden (E91) |
+| Q47 | Namen der DIN-Profile | NP1 (Saat) | entschieden (E91) |
 
 ### 10.3 Abgrenzung
 
@@ -467,3 +498,51 @@ sechste Größe in dieser Stufe.
 - [ADR-001](ADR-001_Schema-Ausrollung.md) — Schemaschritt und Tabellenneubau
 - [BETRIEB_SQLITE](BETRIEB_SQLITE.md) — SQL-Dialekt
 - [Konzept Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) — Wiki, Logbuch, Produktdaten
+- [Status iOS-Migration](Status_iOS_Migration.md) — Zeile „Schemaschritt angemeldet“
+- Schemaschritt 176 `KonditionierungNutzungSchema` (Nutzung an der Kalenderkopie), Schemaschritt 178
+  `ProzessNutzungSchema` (`Tab_Nutzungsprofil_STAMM`, `Z_Nutzungsprofil` der Pufferauslegung)
+- [Projektkontext `CLAUDE.md`](../../CLAUDE.md) — Datenhaltung, SQL-Dialekt, Regressionsnetz
+
+### 10.5 Zusammenführung der Fassungen (05.10.2026)
+
+Zum Entscheid E90 entstanden am 05.10.2026 zwei Fassungen dieses Papiers; Grundlage der vereinten Rev. 2 ist die
+Fassung mit Parametersatz und Generator (A). Aus der Fassung mit Vorlagen je Größe (B) ist übernommen bzw. verworfen:
+
+- Übernommen: die Risiken als eigenes Kapitel 11 (Tabellenneubau in Anwenderdatenbanken, Lizenz der Normnamen, Parallelsitzungen am Zuordnungsdialog).
+- Übernommen: die Einbauliste der Leser und Schreiber im Kern als 4.4, ergänzt um den Filter in `IfcAbbildBauer`, den IFC-Export samt IDS und die Raumtyp-Klassen-Tabelle.
+- Übernommen: die Nachweise am Import (`IfcQuelldateienDurchgangTests`, Zonenimportproben), an Auslieferung und Katalogpaket, die Windows-Schale und der gestörte Lauf in Kapitel 8.
+- Übernommen: die Wiki-Seite „Konditionierung“ im Nachzug und der Logbuch-Satz, umformuliert auf Kopien statt Verweise.
+- Übernommen: die Verweise auf die Schemaschritte 176 und 178 und auf `CLAUDE.md`.
+- Verworfen: die Tabellen `Tab_Nutzungskategorie_STAMM` und `Tab_Nutzungsprofil_STAMM` — der zweite Name gehört seit Schemaschritt 178 der Pufferauslegung (B6, NP-F2).
+- Verworfen: `ID_Nutzungsprofil` an Vorlage, Kalenderkopie, Zone und Gebäude — eine Herkunft als ID am Ziel widerspricht 1.2 und NP-F14; die Zone trägt eine Textkopie (Q41, E91).
+- Verworfen: die Profilwerte als Konditionierungsvorlagen je Größe (`Z_Nutzungsprofil_Vorlage`) — das Profil ist ein Parametersatz mit Generator (NP-F1), die 14 Vorlagen bleiben daneben (Q45, E91).
+- Verworfen: die Umschlüsselung der Kennungen auf Profil-IDs (Entscheidvorschlag N‑3) — vorhandene Werte bleiben unverändert (NP-F15).
+- Verworfen: Nummern und Kurznamen für SIA 2024 und VDI 2078 (Entscheidvorschlag N‑2 über DIN hinaus) — beide Kategorien kommen leer (5.3), für DIN gilt Q47 (E91).
+- Verworfen: ein eigenes Profilfeld am Gebäude (Entscheidvorschlag N‑1) — das Gebäude bekommt das Profil als Kalenderkopie mit Nutzungstext, die Zone ohne eigene Kalender folgt dem Gebäude über die Kaskade (B4).
+- Verworfen: die Zapf-Nutzungsart am Profil als Weg der Pufferauslegung — er bleibt bei `Z_Nutzungsprofil` (NP-F15).
+- Verworfen: der Menüpunkt im Katalogmenü — das Blatt hat keinen (NP-F22, E56).
+- Verworfen: die Vorbelegung aus der flächengrößten Klasse unter jeder Zonierungsregel — sie bleibt bei Z6 wie heute; eine Erweiterung wäre ein eigener Entscheid.
+- Verworfen: die Stufen NP0 bis NP3 mit 4 PT — es gelten NP1 bis NP4 mit 19–28 PT (Kapitel 7).
+- Die Entscheidvorschläge N‑1 bis N‑3 der Fassung B waren offen und keine Entscheide des Anwenders; sie widersprechen E91 nicht und sind mit den genannten Punkten erledigt.
+
+---
+
+## 11. Risiken
+
+- **Tabellenneubau in Anwenderdatenbanken:** `Tab_Konditionierungskalender` und `Tab_Konditionierungsvorlage_STAMM`
+  werden zeilengleich neu gebaut (4.2). Eine Anwenderdatenbank mit eigenen Sichten oder abweichenden Indizes darf
+  dabei nichts verlieren — Zeilenzahl und Prüfsumme vor und nach dem Schritt im Nachweis, Sicherung nach
+  [BETRIEB_SQLITE](BETRIEB_SQLITE.md) vor dem Schritt wie bei jedem Tabellenneubau.
+- **Lizenz der Normnamen:** Nummer und Name der DIN-Profile gelten als Tatsachen ohne Werte; ausgeliefert wird nur, was
+  der Anwender an seiner Ausgabe bestätigt hat (Q47). Im Zweifel bleibt eine Nummer weg; SIA 2024 und VDI 2078 kommen
+  leer (5.3).
+- **Normwerte über die Hintertür:** Werte aus einer Projektdatei (Q46) oder aus der Datenbank des Entwicklers dürfen
+  nie in die Auslieferung — die Katalogwache und der Prüfbericht der Auslieferungsvorlage halten die Grenze (NP-F21).
+- **Pufferauslegung:** Wer die Nutzungsspalte umbaut, trifft die Quelle `KONDITIONIERUNG` von `Z_Nutzungsprofil`
+  (B6). Der Test „alte Kennung und Mustername ergeben dasselbe Pufferprofil“ (Kapitel 8) hält das.
+- **Parallelsitzungen am Import:** Die Sitzung IFC-Ganglinie und die Arbeit am Zonenbaum ändern
+  `GebaeudeImportDialog.razor`, `GebaeudeImportZonen.cs`, `Zonenplan.cs`, `ZonenplanCtrl.cs` und die `Sqproj*`-Leser;
+  Zusammenführungskonflikte sind zu erwarten. Vor NP2 und NP3 `origin` zusammenführen, NP2 erst nach deren Merge oder
+  in verabredeten Dateien (Kapitel 7).
+- **Neue Muster ändern die Vorbelegung:** Mit Q42 belegt der Import Zonen vor, die heute „keine“ Nutzung bekommen; die
+  Importproben bekommen ihre Erwartung in NP2 neu, Rechenweg und Referenzbasis bleiben unberührt.
