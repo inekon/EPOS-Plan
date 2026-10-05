@@ -426,9 +426,11 @@ namespace WindowsFormsApplication1
                 // Minuten umkehrt. Dann wäre der ganze Rest der Stunde „geregelt" mit falschem
                 // Vorzeichen im Mittel. Erkennbar ist das nur am Mittel, und nur dann wird gesucht —
                 // jeder Abschnitt mit zulässigem Mittel bleibt Zeichen für Zeichen wie zuvor.
-                if (MittelVerletzt(fall, in ab, xMittel))
+                if (MittelVerletzt(fall, in ab, xMittel) || LeitwertMittelVerletzt(fall, in ab, xMittel))
                 {
-                    double tauInnen = ErsteInnereVerletzung(fall, in ab, x, tau, in r);
+                    double tauInnen = ab.System.Geregelt
+                        ? ErsteInnereVerletzung(fall, in ab, x, tau, in r)
+                        : ErsteInnereVerletzungLeitwert(fall, in ab, x, tau, in r);
                     if (tauInnen < tau)
                     {
                         tau = tauInnen;
@@ -1465,12 +1467,65 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Bucht eine Lage mit Leitwert (Übergabe gesättigt oder im Regelbereich, beide Seiten) im Mittel
+        /// <paramref name="xMittel"/> eine Leistung mit falschem Vorzeichen — genau über den Zahlenrand, mit dem
+        /// die Abschnittsregel in <see cref="Schritt"/> abbräche? Die Raumluft des freien Laufs mit Leitwert kann
+        /// im Innern des Abschnitts über θ_H steigen und bis zum Ende wieder fallen; Endpunkt und Bisektion sehen
+        /// das nicht (Befund Abschnittsregel bei steifer Zone, Übergabeweg).
+        /// </summary>
+        private static bool LeitwertMittelVerletzt(Betriebsfall fall, in Abschnitt ab, Vektor2 xMittel)
+        {
+            if (!ab.MitLeitwert) return false;
+            double q = ab.LeitwertWK * (ab.ThetaHC - ab.Ausgang(2, xMittel));
+            double rand = Rechenrand.Zu(0.0) + ab.LeitwertWK * Rechenrand.Zu(ab.ThetaHC);
+            switch (fall)
+            {
+                case Betriebsfall.UebergabeGesaettigt:
+                case Betriebsfall.UebergabeRegelbereich:
+                    return -q > rand;
+                case Betriebsfall.KuehluebergabeGesaettigt:
+                case Betriebsfall.KuehluebergabeRegelbereich:
+                    return q > rand;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Der erste Austritt einer Lage mit Leitwert aus ihrem Gültigkeitsband im Innern des Abschnitts: Die
+        /// Raumluft ist c + a₁·e^(λ₁t) + a₂·e^(λ₂t) und hat höchstens ein Extremum, die exakte Nullstelle der
+        /// Ableitung (<see cref="Uebergangsrechner.NullstelleAbleitung"/>). Ist die Lage dort verletzt, sucht die
+        /// Bisektion auf [0; t*] — dort ist die Raumluft monoton — den ersten Austritt; die Stunde geht danach mit
+        /// der Fallwahl am neuen Zustand weiter. Ohne Verletzung kommt <paramref name="tau"/> unverändert zurück.
+        /// Gerechnet wird nur, wenn das Mittel die Abschnittsregel verletzt (<see cref="LeitwertMittelVerletzt"/>);
+        /// jeder andere Abschnitt bleibt Zeichen für Zeichen.
+        /// </summary>
+        private static double ErsteInnereVerletzungLeitwert(Betriebsfall fall, in Abschnitt ab, Vektor2 x, double tau, in Stundenrand r)
+        {
+            double tStern = ab.System.Rechner.NullstelleAbleitung(ab.System.Z20, ab.System.Z21, ab.System.Rechner.A * x + ab.B);
+            if (!(tStern > 0.0) || !(tStern < tau)) return tau;
+            if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tStern).Ende(x, ab.B), in r)) return tau;
+            double unten = 0.0, oben = tStern;
+            for (int i = 0; i < HALBIERUNGEN; i++)
+            {
+                double mitte = 0.5 * (unten + oben);
+                if (!(mitte > unten) || !(mitte < oben)) break;
+                if (Verletzt(fall, in ab, ab.System.Rechner.Bei(mitte).Ende(x, ab.B), in r)) oben = mitte;
+                else unten = mitte;
+            }
+            return oben;
+        }
+
+        /// <summary>
         /// <b>Der erste Umschaltpunkt im Innern eines geregelten Abschnitts</b> (Rechenbefund RB-Z4).
         /// Bei festen Randbedingungen ist die Leistung q(t) = c + a₁·e^(−λ₁t) + a₂·e^(−λ₂t) mit reellen
         /// λ₁, λ₂ &gt; 0; ihre Ableitung hat höchstens eine Nullstelle, q ist auf [0; τ] also unimodal.
         /// Der Goldene Schnitt findet das Minimum der Heizleistung (das Maximum beim Kühlen); ist der
         /// Fall dort verletzt, sucht die Bisektion auf [0; t_min] — dort ist q monoton — den ersten
-        /// Umschaltpunkt, wie die Bisektion des Endpunkts (Rand der Rechenschritte 7.1). Die Stunde geht
+        /// Umschaltpunkt, wie die Bisektion des Endpunkts (Rand der Rechenschritte 7.1). Findet der Goldene
+        /// Schnitt kein verletztes Minimum — bei einer steifen Zone ist q nach wenigen Sekunden zahlengleich
+        /// konstant und das Minimum liegt vor dieser Ebene —, gilt die exakte Nullstelle der Ableitung
+        /// (<see cref="Uebergangsrechner.NullstelleAbleitung"/>) als t_min. Die Stunde geht
         /// danach mit der Fallwahl am neuen Zustand weiter (freier Lauf); so bucht kein Abschnitt Wärme
         /// und Kälte gegeneinander, und die Bilanz bleibt die des Modells. Ohne Verletzung im Innern
         /// kommt <paramref name="tau"/> unverändert zurück.
@@ -1500,8 +1555,19 @@ namespace WindowsFormsApplication1
                 if (!(hi - lo > Rechenrand.Zu(tau))) break;
             }
             double tMin = fc < fd ? c : d;
-            if (!(tMin > 0.0) || !(tMin < tau)) return tau;
-            if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tMin).Ende(x, ab.B), in r)) return tau;
+            if (!(tMin > 0.0) || !(tMin < tau) || !Verletzt(fall, in ab, ab.System.Rechner.Bei(tMin).Ende(x, ab.B), in r))
+            {
+                // Der Rückfall auf das exakte Extremum (Befund Abschnittsregel bei steifer Zone): Klingen beide
+                // Moden weit vor dem Abschnittsende ab, ist q auf dem größten Teil von [0; τ] zahlengleich
+                // konstant. Der Goldene Schnitt sieht dann nur diese Ebene und verfehlt das kurze Minimum am
+                // Anfang. Die Nullstelle der Ableitung am Abschnittsbeginn ist davon unberührt; sie wird nur
+                // gerechnet, wenn der Goldene Schnitt nichts gefunden hat — jeder Abschnitt, den er findet,
+                // bleibt Zeichen für Zeichen.
+                double tStern = ab.System.Rechner.NullstelleAbleitung(ab.System.Z20, ab.System.Z21, ab.System.Rechner.A * x + ab.B);
+                if (!(tStern > 0.0) || !(tStern < tau)) return tau;
+                if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tStern).Ende(x, ab.B), in r)) return tau;
+                tMin = tStern;
+            }
 
             double unten = 0.0, oben = tMin;
             for (int i = 0; i < HALBIERUNGEN; i++)
