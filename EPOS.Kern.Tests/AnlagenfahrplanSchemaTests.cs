@@ -48,7 +48,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(ZonenKaeltespitzeSchema.SCHRITT + 1, AnlagenfahrplanSchema.SCHRITT);
             Assert.Equal(186, AnlagenfahrplanSchema.SCHRITT);
-            Assert.Equal(AnlagenfahrplanSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= AnlagenfahrplanSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == AnlagenfahrplanSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);
@@ -65,23 +65,27 @@ namespace EPOS.Kern.Tests
                 AnlagenfahrplanSchema.SPALTEN.Select(x => x.Tabelle + "." + x.Spalte).ToArray());
         }
 
-        /// <summary>Die Anlagen-Anweisung nennt die zwei Spalten zuletzt; die Variante ohne sie hat zwei Platzhalter weniger.</summary>
+        /// <summary>
+        /// Die Anlagen-Anweisung nennt die zwei Spalten nach der Albedo (danach nur noch die drei der freien Kühlung,
+        /// Schritt 187); die Variante ohne sie hat zwei Platzhalter weniger als die Variante des Stands 186.
+        /// </summary>
         [Fact]
         public void Die_Anlagenanweisung_fuehrt_die_zwei_Spalten_zuletzt()
         {
-            string mit = AnlagenSql.SQL_ANLAGE_INSERT, ohne = AnlagenSql.SQL_ANLAGE_INSERT_OHNE_FAHRPLAN;
+            string mit = AnlagenSql.SQL_ANLAGE_INSERT_OHNE_FREIE_KUEHLUNG, ohne = AnlagenSql.SQL_ANLAGE_INSERT_OHNE_FAHRPLAN;
             Assert.Contains("Albedo, Zeitprogramm, Vorlauf_Max)", mit, StringComparison.Ordinal);
             Assert.DoesNotContain("Zeitprogramm", ohne, StringComparison.Ordinal);
             int platzhalter = mit.Count(c => c == '?');
             Assert.Equal(platzhalter - 2, ohne.Count(c => c == '?'));
+            int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count;
             DbParam[] p = AnlagenSql.AnlagenParameter(1, new WErzeugerModel { Zeitprogramm = "x", Vorlauf_Max = 55.0 });
-            Assert.Equal(platzhalter, p.Length);
-            Assert.Equal("x", p[p.Length - 2].Wert);
-            Assert.Equal(55.0, p[p.Length - 1].Wert);
+            Assert.Equal(platzhalter + frei, p.Length);
+            Assert.Equal("x", p[p.Length - frei - 2].Wert);
+            Assert.Equal(55.0, p[p.Length - frei - 1].Wert);
             (string sql, DbParam[] werte) = AnlagenSql.Einfuegen(1, new WErzeugerModel(), null, false);
             Assert.Equal(ohne, sql);
             Assert.Equal(platzhalter - 2, werte.Length);
-            Assert.Equal(mit, AnlagenSql.Einfuegen(1, new WErzeugerModel(), null, true).Sql);
+            Assert.Equal(mit, AnlagenSql.Einfuegen(1, new WErzeugerModel(), null, true, false).Sql);
             // Die Fachspaltenrettung des Speicherwegs sieht die zwei Spalten als Modellspalten.
             Assert.DoesNotContain(AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM, WizardCtrl.Fachspalten(), StringComparer.OrdinalIgnoreCase);
             Assert.DoesNotContain(AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX, WizardCtrl.Fachspalten(), StringComparer.OrdinalIgnoreCase);
@@ -135,7 +139,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Vorlauf_Max IS NOT NULL"));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ANLAGEN);
             List<string> ergebnis = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ERGEBNIS);
-            Assert.Equal(new[] { "Zeitprogramm", "Vorlauf_Max" }, anlagen.Skip(anlagen.Count - 2).ToArray());
+            // Hinter den zwei Spalten stehen allein die drei der freien Kühlung (Schritt 187).
+            int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count;
+            Assert.Equal(new[] { "Zeitprogramm", "Vorlauf_Max" }, anlagen.Skip(anlagen.Count - frei - 2).Take(2).ToArray());
             Assert.Equal(AnlagenfahrplanSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - 6).ToArray());
             Assert.Equal(21 + 6, ergebnis.Count);
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",

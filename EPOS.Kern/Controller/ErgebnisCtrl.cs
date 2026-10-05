@@ -117,6 +117,9 @@ namespace WindowsFormsApplication1
             // AK2-1 (Schritt 186): die Komfort- und Fahrplanspalten des Energiebedarfs - ebenso vor der
             // Transaktion gefragt; auf einer Datenbank davor bleibt die Zeile, wie sie war.
             bool komfortEnergie = AnlagenfahrplanSchema.ErgebnisspaltenVorhanden();
+            // KU3-6a (Schritt 187): die Zaehler der freien Kuehlung an beiden Ergebnistabellen der Waermepumpe -
+            // ebenso vor der Transaktion gefragt; auf einer Datenbank davor bleiben die Zeilen, wie sie waren.
+            bool freieKuehlungWp = FreieKuehlungSoleSchema.ErgebnisspaltenVorhanden();
             bool kuehlkreisSpalten = heizkreisSpalten &&
                                      System.Linq.Enumerable.All(KuehluebergabeSchema.SpaltenKuehlkreis,
                                          s => DataRepository.SpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key));
@@ -353,8 +356,9 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_DECKUNG_PROZESS + ", " +
                             KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ", " +
                             KuehlungSchema.SPALTE_KAELTEPRODUKTION_WP + ", " +
-                            KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?, ?,?)";
+                            KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG +
+                            (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?, ?,?" + (freieKuehlungWp ? ", ?,?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = wpId });
@@ -373,6 +377,12 @@ namespace WindowsFormsApplication1
                             // Schritt 119: die Kaelteseite - NULL, solange keine Kaelteerzeugung gerechnet ist.
                             p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Kaelteproduktion_WP) });
                             p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Stromverbrauch_Kuehlung) });
+                            // Schritt 187 (KU3-6a): die freie Kuehlung - NULL, solange sie nicht erhoben ist.
+                            if (freieKuehlungWp)
+                            {
+                                p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.FreieKuehlung_MWh) });
+                                p.Add(new DbParam("@f2", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Waermepumpe.FreieKuehlung_Stunden) });
+                            }
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -388,8 +398,9 @@ namespace WindowsFormsApplication1
                                 KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG + ", " +
                                 KuehlungSchema.SPALTE_KAELTESTROM_NETZBEZUG + ", " +
                                 KuehlungSchema.SPALTE_MODUL_KUEHL_CARRIER + ", " +
-                                KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER + ") " +
-                                "VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?)";
+                                KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER +
+                                (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?" + (freieKuehlungWp ? ", ?,?" : "") + ")";
                             foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
                             {
                                 {
@@ -411,6 +422,11 @@ namespace WindowsFormsApplication1
                                     p.Add(new DbParam("@k5", DbParamTyp.Integer)
                                         { Wert = mo.Kuehl_CarrierId.HasValue && mo.Kuehl_CarrierId.Value > 0
                                                      ? (object)(mo.Kuehl_EigenerZaehler == true ? 1 : 0) : DBNull.Value });
+                                    if (freieKuehlungWp)
+                                    {
+                                        p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = WertOderNull(mo.FreieKuehlung_MWh) });
+                                        p.Add(new DbParam("@f2", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.FreieKuehlung_Stunden) });
+                                    }
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -1138,6 +1154,9 @@ namespace WindowsFormsApplication1
                 // Schritt 119: die Kaelteseite - NULL bleibt null ("keine Kaelteerzeugung gerechnet").
                 w.Kaelteproduktion_WP = DN(rw, KuehlungSchema.SPALTE_KAELTEPRODUKTION_WP);
                 w.Stromverbrauch_Kuehlung = DN(rw, KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG);
+                // Schritt 187 (KU3-6a): die freie Kuehlung - NULL bleibt null; eine fehlende Spalte gilt wie NULL.
+                w.FreieKuehlung_MWh = DN(rw, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_MWH);
+                w.FreieKuehlung_Stunden = GanzOderNull(rw, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_STUNDEN);
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_WP_MODUL + " WHERE ID_ErgebnisWaermepumpe = ? ORDER BY ID",
@@ -1160,6 +1179,8 @@ namespace WindowsFormsApplication1
                             ? (int?)Convert.ToInt32(kuehltraeger.Value) : null;
                         double? zaehler = DN(rm, KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER);
                         mo.Kuehl_EigenerZaehler = zaehler.HasValue ? (bool?)(zaehler.Value != 0) : null;
+                        mo.FreieKuehlung_MWh = DN(rm, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_MWH);
+                        mo.FreieKuehlung_Stunden = GanzOderNull(rm, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_STUNDEN);
                         w.Module.Add(mo);
                     }
 

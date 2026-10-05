@@ -145,6 +145,15 @@ namespace WindowsFormsApplication1
         /// Zaehler</b> (geschrieben als 1), <b><c>false</c> = anteilig am Netzbezug</b>, die Vorgabe
         /// — geschrieben als NULL, nie als 0 (<see cref="AnlagenSql.EigenerZaehlerOderNull"/>).
         /// </param>
+        /// <param name="FreieKuehlung">
+        /// Führt der Wirt die Felder der freien Kühlung über die Wärmequelle (Schemaschritt
+        /// <see cref="FreieKuehlungSoleSchema.SCHRITT"/>, KU3-6)? Nur dann werden <paramref name="KuehlFrei"/>,
+        /// <paramref name="KuehlFreiGraedigkeitK"/> und <paramref name="KuehlFreiLeistungKw"/> geschrieben —
+        /// wie gelesen, NULL bleibt NULL (Festwert bzw. Kälteleistung der Kennlinie).
+        /// </param>
+        /// <param name="KuehlFrei">Der Schalter <c>Kuehl_Frei</c> (geschrieben als 0/1).</param>
+        /// <param name="KuehlFreiGraedigkeitK">Die Grädigkeit [K], 0 … 20; NULL = Festwert.</param>
+        /// <param name="KuehlFreiLeistungKw">Die Leistungsgrenze [kW], &gt; 0; NULL = Kälteleistung der Kennlinie.</param>
         public sealed record KonfigurationFelder(bool? Heizstab = null,
                                                  bool? Sperrung = null,
                                                  int? SperrzeitVon = null,
@@ -157,7 +166,11 @@ namespace WindowsFormsApplication1
                                                  bool? KuehlEigenerZaehler = null,
                                                  bool Betriebszeiten = false,
                                                  string Zeitprogramm = null,
-                                                 double? VorlaufMax = null);
+                                                 double? VorlaufMax = null,
+                                                 bool FreieKuehlung = false,
+                                                 bool KuehlFrei = false,
+                                                 double? KuehlFreiGraedigkeitK = null,
+                                                 double? KuehlFreiLeistungKw = null);
 
         /// <summary>
         /// Schreibt die Konfigurationsfelder EINER Anlagenzeile — der Speicherweg des
@@ -267,6 +280,30 @@ namespace WindowsFormsApplication1
                         new DbParam("@id", idAnlage),
                         new DbParam("@proj", idProjekt));
                     if (!okZeiten)
+                        return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
+                            "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
+                            bezeichner);
+                }
+
+                // KU3-6 (Schemaschritt FreieKuehlungSoleSchema.SCHRITT): die freie Kuehlung ueber die
+                // Waermequelle - nur wenn der Wirt die Felder fuehrt und die Datenbank die Spalten traegt.
+                // Ein Wert ausserhalb der Pruefklausel faellt zu NULL wie im Anlegeweg (AnlagenSql).
+                if (felder.FreieKuehlung && FreieKuehlungSoleSchema.AnlagenspaltenVorhanden())
+                {
+                    bool okFrei = DataRepository.ExecuteSQL(
+                        "UPDATE Tab_Energieanlagen SET " + FreieKuehlungSoleSchema.SPALTE_KUEHL_FREI + " = ?, " +
+                        FreieKuehlungSoleSchema.SPALTE_GRAEDIGKEIT + " = ?, " +
+                        FreieKuehlungSoleSchema.SPALTE_LEISTUNG + " = ? WHERE ID = ? AND ID_Projekt = ?",
+                        ProjektPuffer.Par("@kuehlfrei", DbParamTyp.Integer, felder.KuehlFrei ? 1 : 0),
+                        ProjektPuffer.Par("@kuehlfreigraed", DbParamTyp.Double,
+                            AnlagenSql.FreieKuehlungGraedigkeitZulaessig(felder.KuehlFreiGraedigkeitK)
+                                ? felder.KuehlFreiGraedigkeitK : null),
+                        ProjektPuffer.Par("@kuehlfreileist", DbParamTyp.Double,
+                            AnlagenSql.FreieKuehlungLeistungZulaessig(felder.KuehlFreiLeistungKw)
+                                ? felder.KuehlFreiLeistungKw : null),
+                        new DbParam("@id", idAnlage),
+                        new DbParam("@proj", idProjekt));
+                    if (!okFrei)
                         return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
                             "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
                             bezeichner);
@@ -689,6 +726,13 @@ namespace WindowsFormsApplication1
             // eine Datenbank vor dem Schritt (etwa ein aelterer Stand auf iOS) laeuft unveraendert.
             item.Zeitprogramm = Text(dt, row, AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM);
             item.Vorlauf_Max = Kommazahl(dt, row, AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX);
+
+            // --- Freie Kuehlung ueber die Waermequelle (Schemaschritt FreieKuehlungSoleSchema.SCHRITT, KU3-6a) --
+            // Der Schalter: 1 = an, sonst aus; eine fehlende Spalte gilt wie 0. Graedigkeit und Leistungsgrenze
+            // ausdruecklich mit null - NULL heisst Festwert bzw. Kaelteleistung der Kennlinie.
+            item.Kuehl_Frei = Zahl(dt, row, FreieKuehlungSoleSchema.SPALTE_KUEHL_FREI) == 1;
+            item.Kuehl_Frei_Graedigkeit_K = Kommazahl(dt, row, FreieKuehlungSoleSchema.SPALTE_GRAEDIGKEIT);
+            item.Kuehl_Frei_Leistung_kW = Kommazahl(dt, row, FreieKuehlungSoleSchema.SPALTE_LEISTUNG);
         }
 
         /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>

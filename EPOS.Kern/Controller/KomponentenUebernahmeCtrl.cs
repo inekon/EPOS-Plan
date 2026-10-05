@@ -325,6 +325,8 @@ namespace WindowsFormsApplication1
             DbVorgang v = null;
             // AK2-1: der Stand der Anlagenspalten, VOR dem Vorgang erfragt (AnlagenSql.Einfuegen).
             bool mitFahrplan = AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
+            // KU3-6a: ebenso der Stand der Spalten der freien Kuehlung (FreieKuehlungSoleSchema).
+            bool mitFreierKuehlung = FreieKuehlungSoleSchema.AnlagenspaltenVorhanden();
             var neueGeraeteIds = new List<int>();     // Reihenfolge = quellGeraete
             var neuePufferNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -420,7 +422,7 @@ namespace WindowsFormsApplication1
                     PufferverweiseUmschreiben(a, pufferAbbildung, warnungen);
                     GeraetefkSetzen(plan, a, fkZiel);
 
-                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(idZiel, a, pufferCache, mitFahrplan);
+                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(idZiel, a, pufferCache, mitFahrplan, mitFreierKuehlung);
                     Ausfuehren(v, sqlAnlage, werteAnlage);
                 }
 

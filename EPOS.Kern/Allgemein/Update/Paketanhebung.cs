@@ -311,6 +311,10 @@ namespace WindowsFormsApplication1
             // die Spalten kommen leer an (immer verfügbar, Vorlauf der Anlage, „nicht erhoben").
             new Stufe(AnlagenfahrplanSchema.SCHRITT, Art.Ddl,
                       "Anlagenfahrplan: Zeitprogramm und Vorlauf_Max am Erzeuger, Komfort und Fahrplanbegrenzung im Ergebnis"),
+            // Ein älteres Paket führt keine freie Kühlung über die Wärmequelle; der Schalter kommt aus (0), Grädigkeit,
+            // Leistungsgrenze und die Zähler im Ergebnis kommen leer an (Festwert, Kälteleistung, „nicht erhoben").
+            new Stufe(FreieKuehlungSoleSchema.SCHRITT, Art.Ddl,
+                      "Freie Kühlung über die Wärmequelle: Schalter, Grädigkeit, Leistungsgrenze; Kälte und Stunden im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

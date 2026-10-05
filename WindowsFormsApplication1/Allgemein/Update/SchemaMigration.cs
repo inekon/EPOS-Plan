@@ -5156,6 +5156,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ANLAGENFAHRPLAN = AnlagenfahrplanSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="FreieKuehlungSoleSchema.SCHRITT"/> — <b>freie Kühlung über die Wärmequelle</b>
+        /// (KU3-6a): <c>Kuehl_Frei</c>, <c>Kuehl_Frei_Graedigkeit_K</c> und <c>Kuehl_Frei_Leistung_kW</c> an
+        /// <c>Tab_Energieanlagen</c>, <c>FreieKuehlung_MWh</c> und <c>FreieKuehlung_Stunden</c> an den beiden
+        /// Ergebnistabellen der Wärmepumpe.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Schalter entsteht aus, die übrigen Spalten leer.</para>
+        /// </summary>
+        public const int SCHRITT_FREIE_KUEHLUNG_SOLE = FreieKuehlungSoleSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7482,6 +7492,13 @@ namespace WindowsFormsApplication1
                         "Zeitprogramm und Vorlaufangebot eines Erzeugers und der Komfort des gekoppelten Laufs " +
                         "haetten keinen Platz. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_Anlagenfahrplan),
+            // FREIE KUEHLUNG UEBER DIE WAERMEQUELLE (KU3-6a). Quelle ist FreieKuehlungSoleSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_FREIE_KUEHLUNG_SOLE,
+                        "Tab_Energieanlagen.Kuehl_Frei*, Tab_ErgebnisWaermepumpe(Modul).FreieKuehlung_*",
+                        "Schalter, Graedigkeit und Leistungsgrenze der freien Kuehlung ueber die Waermequelle und ihre " +
+                        "Zaehler im Ergebnis haetten keinen Platz. KEIN Rechenergebnis aendert sich - der Schalter " +
+                        "entsteht aus, die Spalten leer.",
+                        Schritt_FreieKuehlungSole),
         };
 
         /// <summary>
@@ -14161,6 +14178,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Anlagenfahrplan - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Freie Kühlung über die Wärmequelle" — Anlass und Wirkung stehen bei <see cref="SCHRITT_FREIE_KUEHLUNG_SOLE"/>,
+        /// die Anweisungen bei <see cref="FreieKuehlungSoleSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_FreieKuehlungSole(Lauf l)
+        {
+            string nr = FreieKuehlungSoleSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in FreieKuehlungSoleSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = FreieKuehlungSoleSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!FreieKuehlungSoleSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Kuehl_Frei*, FreieKuehlung_MWh und FreieKuehlung_Stunden stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Freie Kuehlung ueber die Waermequelle - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

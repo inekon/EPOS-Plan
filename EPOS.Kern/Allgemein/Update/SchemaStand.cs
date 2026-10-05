@@ -907,7 +907,12 @@ namespace WindowsFormsApplication1
         /// <c>Zeitprogramm</c> und <c>Vorlauf_Max</c> an <c>Tab_Energieanlagen</c>, sechs Komfort- und
         /// Fahrplanspalten an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="AnlagenfahrplanSchema"/>).
         /// <b>Ergebnisneutral:</b> Die Spalten entstehen leer; ohne Kopplung bleiben sie es.
-        public const int Zielversion = AnlagenfahrplanSchema.SCHRITT;
+        /// Danach, mit der FREIEN KÜHLUNG ÜBER DIE WÄRMEQUELLE (KU3-6a), steht das Ziel auf
+        /// <see cref="FreieKuehlungSoleSchema.SCHRITT"/>: Schalter, Grädigkeit und Leistungsgrenze an
+        /// <c>Tab_Energieanlagen</c>, Kälte und Stunden der freien Kühlung an den beiden Ergebnistabellen der
+        /// Wärmepumpe (<see cref="FreieKuehlungSoleSchema"/>). <b>Ergebnisneutral:</b> Der Schalter entsteht aus,
+        /// die übrigen Spalten leer.
+        public const int Zielversion = FreieKuehlungSoleSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

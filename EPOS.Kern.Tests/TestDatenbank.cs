@@ -942,6 +942,9 @@ namespace EPOS.Kern.Tests
                 // Schritt AnlagenfahrplanSchema.SCHRITT (AK2-1): Zeitprogramm und Vorlauf_Max am Erzeuger, Komfort-
                 // und Fahrplanspalten im Energiebedarf. Ohne Saat; die Spalten bleiben leer.
                 AnlagenfahrplanSchema.Ausfuehren(null);
+                // Schritt FreieKuehlungSoleSchema.SCHRITT (KU3-6a): Schalter, Graedigkeit und Leistungsgrenze der
+                // freien Kuehlung am Erzeuger, ihre Zaehler im Ergebnis der Waermepumpe. Ohne Saat.
+                FreieKuehlungSoleSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

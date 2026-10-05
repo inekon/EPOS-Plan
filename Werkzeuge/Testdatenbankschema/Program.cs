@@ -2884,6 +2884,26 @@ namespace Testdatenbankschema
                                   AnlagenfahrplanSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt FreieKuehlungSoleSchema.SCHRITT (KU3-6a): Kuehl_Frei, Kuehl_Frei_Graedigkeit_K und
+            //      Kuehl_Frei_Leistung_kW an Tab_Energieanlagen, FreieKuehlung_MWh und FreieKuehlung_Stunden an den
+            //      beiden Ergebnistabellen der Waermepumpe. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_FreieKuehlungSole bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Schalter entsteht aus, die Spalten leer.
+            string nrFreiKuehl = FreieKuehlungSoleSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFreiKuehl + " - freie Kuehlung ueber die Waermequelle: " +
+                              (FreieKuehlungSoleSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtFreiKuehl = new List<string>();
+                angelegt += FreieKuehlungSoleSchema.Ausfuehren(berichtFreiKuehl);
+                foreach (string zeile in berichtFreiKuehl)
+                    Console.WriteLine("Schritt " + nrFreiKuehl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFreiKuehl + " - vollstaendig: " +
+                                  FreieKuehlungSoleSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

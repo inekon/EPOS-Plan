@@ -617,6 +617,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? Stromverbrauch_Kuehlung;
 
+        /// <summary>
+        /// KU3-6 (Schemaschritt <see cref="FreieKuehlungSoleSchema.SCHRITT"/>): die Kälte aller Wärmepumpen,
+        /// die frei über die Wärmequelle gedeckt wurde [MWh/a] — ein Teil von <see cref="Kaelteproduktion_WP"/>.
+        /// <c>null</c> = nicht erhoben; Spalte <c>FreieKuehlung_MWh</c>.
+        /// </summary>
+        public double? FreieKuehlung_MWh;
+
+        /// <summary>
+        /// Die Stunden mit freier Kühlung [h], 0 … 8760 (eine Stunde zählt, in der irgendeine Wärmepumpe frei
+        /// kühlt). <c>null</c> = nicht erhoben; Spalte <c>FreieKuehlung_Stunden</c>.
+        /// </summary>
+        public int? FreieKuehlung_Stunden;
+
         public List<ErgebnisWaermepumpeModulModel> Module = new List<ErgebnisWaermepumpeModulModel>();
     }
 
@@ -650,6 +663,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Abrechnungsart des Laufs bei abweichendem Kühlträger: <c>true</c> = eigener Zähler; <c>null</c>/<c>false</c> = anteilig.</summary>
         public bool? Kuehl_EigenerZaehler;
+
+        /// <summary>
+        /// KU3-6 (Schemaschritt <see cref="FreieKuehlungSoleSchema.SCHRITT"/>): die frei über die Wärmequelle
+        /// gedeckte Kälte der Anlage [MWh/a] — ein Teil von <see cref="Kaelteproduktion"/>. <c>null</c> = nicht erhoben.
+        /// </summary>
+        public double? FreieKuehlung_MWh;
+
+        /// <summary>Die Stunden der Anlage mit freier Kühlung [h], 0 … 8760. <c>null</c> = nicht erhoben.</summary>
+        public int? FreieKuehlung_Stunden;
     }
 
     // Detail: BHKW-Aggregat (Tab_ErgebnisBHKW) + Modulliste.

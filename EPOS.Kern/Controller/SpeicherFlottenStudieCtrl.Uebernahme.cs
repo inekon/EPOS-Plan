@@ -159,6 +159,8 @@ public static partial class SpeicherFlottenStudieCtrl
         DbVorgang v = null;
         // AK2-1: der Stand der Anlagenspalten, VOR dem Vorgang erfragt (AnlagenSql.Einfuegen).
         bool mitFahrplan = AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
+        // KU3-6a: ebenso der Stand der Spalten der freien Kuehlung (FreieKuehlungSoleSchema).
+        bool mitFreierKuehlung = FreieKuehlungSoleSchema.AnlagenspaltenVorhanden();
         try
         {
             v = DataRepository.Vorgang();
@@ -195,7 +197,7 @@ public static partial class SpeicherFlottenStudieCtrl
                         ID_Type = WizardItemClass.SP_TYP,
                         ID_SP = neueGeraeteId
                     };
-                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(projektId, zeile, null, mitFahrplan);
+                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(projektId, zeile, null, mitFahrplan, mitFreierKuehlung);
                     int neueAnlageId = v.EinfuegenUndId(sqlAnlage, werteAnlage);
                     angelegt.Add(new FlottenUebernahmeAnlage(e.Id ?? "", neueAnlageId, neueGeraeteId,
                                                              name, true, n));
