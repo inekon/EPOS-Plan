@@ -62,6 +62,10 @@ namespace WindowsFormsApplication1
         internal string Zone { get; init; } = "";
         internal string Nutzung { get; init; }
         internal int? Profilnummer { get; init; }
+
+        /// <summary>Die Zonierung der Projektdatei, aus der die Zone stammt (E87); <c>null</c> = keine Zone der Projektdatei (Gebäude, IFC).</summary>
+        internal SqprojZonierung? Zonierung { get; set; }
+
         internal IReadOnlyList<Groessenkonditionierung> Groessen { get; init; } = Array.Empty<Groessenkonditionierung>();
         internal List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
 

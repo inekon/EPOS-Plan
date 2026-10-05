@@ -45669,7 +45669,7 @@ chart</value>
     <value>The table {0} has version {1}, which the reader does not know — the values are read, please check.</value>
   </data>
   <data name="IMP_SQ_PROT_ZU_GROSS" xml:space="preserve">
-    <value>The project file has {0} bytes and exceeds the limit of {1} bytes — it is not read.</value>
+    <value>The project file has {0} MB and exceeds the limit of {1} MB — it is not read.</value>
   </data>
   <data name="IMP_SQ_PROT_KEIN_HOTTCAD" xml:space="preserve">
     <value>A project file ({0}) can only be added to an IFC file from HottCAD.</value>
@@ -45802,6 +45802,30 @@ chart</value>
   </data>
   <data name="GIMP_DLG_SQ_HINWEIS" xml:space="preserve">
     <value>The project file supplies zones, usage and time profiles per zone; the IFC file remains the source of the geometry. The conditioning per zone is saved with origin “from project file”.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONIERUNG" xml:space="preserve">
+    <value>Zoning: {0} ({1} zones); {2} available ({3}).</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONIERUNG_EINE" xml:space="preserve">
+    <value>Zoning: {0} ({1} zones); only one zoning available.</value>
+  </data>
+  <data name="IMP_SQ_ZONIERUNG_DIN" xml:space="preserve">
+    <value>DIN V 18599 zones</value>
+  </data>
+  <data name="IMP_SQ_ZONIERUNG_SIM" xml:space="preserve">
+    <value>Simulation zones</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG" xml:space="preserve">
+    <value>Zoning</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT_DIN" xml:space="preserve">
+    <value>from project file (DIN zones)</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT_SIM" xml:space="preserve">
+    <value>from project file (simulation zones)</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG_FRAGE" xml:space="preserve">
+    <value>Changing the zoning rebuilds the zone plan; {0} manual steps will be lost. Change?</value>
   </data>
 </root>
 

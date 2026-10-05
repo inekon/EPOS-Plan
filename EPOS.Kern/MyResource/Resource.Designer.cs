@@ -34189,6 +34189,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Projektdatei (DIN-Zonen) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_HERKUNFT_DIN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_HERKUNFT_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Projektdatei (Simulationszonen) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_HERKUNFT_SIM {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_HERKUNFT_SIM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei liefert Zonen, Nutzung und Zeitprofile je Zone; die IFC-Datei bleibt die Quelle der Geometrie. Gespeichert wird die Konditionierung je Zone mit Herkunft „aus Projektdatei“. ähnelt.
         /// </summary>
         public static string GIMP_DLG_SQ_HINWEIS {
@@ -34338,6 +34356,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SQ_ZONEN_WERT {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SQ_ZONEN_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_ZONIERUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_ZONIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechsel der Zonierung baut den Zonenplan neu auf; {0} Schritte von Hand gehen verloren. Wechseln? ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQ_ZONIERUNG_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQ_ZONIERUNG_FRAGE", resourceCulture);
             }
         }
         
@@ -41308,11 +41344,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung: {0} ({1} Zonen); {2} vorhanden ({3}). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_ZONIERUNG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_ZONIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung: {0} ({1} Zonen); nur eine Zonierung vorhanden. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_ZONIERUNG_EINE {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_ZONIERUNG_EINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei ist mit {0} MB größer als die Grenze von {1} MB — sie wird nicht gelesen. ähnelt.
         /// </summary>
         public static string IMP_SQ_PROT_ZU_GROSS {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN-V-18599-Zonen ähnelt.
+        /// </summary>
+        public static string IMP_SQ_ZONIERUNG_DIN {
+            get {
+                return ResourceManager.GetString("IMP_SQ_ZONIERUNG_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulationszonen ähnelt.
+        /// </summary>
+        public static string IMP_SQ_ZONIERUNG_SIM {
+            get {
+                return ResourceManager.GetString("IMP_SQ_ZONIERUNG_SIM", resourceCulture);
             }
         }
         

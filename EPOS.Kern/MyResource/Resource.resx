@@ -45676,7 +45676,7 @@ Chart</value>
     <value>Die Tabelle {0} trägt die Fassung {1}, die der Leser nicht kennt — die Werte werden gelesen, bitte prüfen.</value>
   </data>
   <data name="IMP_SQ_PROT_ZU_GROSS" xml:space="preserve">
-    <value>Die Projektdatei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen.</value>
+    <value>Die Projektdatei ist mit {0} MB größer als die Grenze von {1} MB — sie wird nicht gelesen.</value>
   </data>
   <data name="IMP_SQ_PROT_KEIN_HOTTCAD" xml:space="preserve">
     <value>Eine Projektdatei ({0}) lässt sich nur zu einer IFC-Datei aus HottCAD dazuladen.</value>
@@ -45809,6 +45809,30 @@ Chart</value>
   </data>
   <data name="GIMP_DLG_SQ_HINWEIS" xml:space="preserve">
     <value>Die Projektdatei liefert Zonen, Nutzung und Zeitprofile je Zone; die IFC-Datei bleibt die Quelle der Geometrie. Gespeichert wird die Konditionierung je Zone mit Herkunft „aus Projektdatei“.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONIERUNG" xml:space="preserve">
+    <value>Zonierung: {0} ({1} Zonen); {2} vorhanden ({3}).</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONIERUNG_EINE" xml:space="preserve">
+    <value>Zonierung: {0} ({1} Zonen); nur eine Zonierung vorhanden.</value>
+  </data>
+  <data name="IMP_SQ_ZONIERUNG_DIN" xml:space="preserve">
+    <value>DIN-V-18599-Zonen</value>
+  </data>
+  <data name="IMP_SQ_ZONIERUNG_SIM" xml:space="preserve">
+    <value>Simulationszonen</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG" xml:space="preserve">
+    <value>Zonierung</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT_DIN" xml:space="preserve">
+    <value>aus Projektdatei (DIN-Zonen)</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT_SIM" xml:space="preserve">
+    <value>aus Projektdatei (Simulationszonen)</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG_FRAGE" xml:space="preserve">
+    <value>Der Wechsel der Zonierung baut den Zonenplan neu auf; {0} Schritte von Hand gehen verloren. Wechseln?</value>
   </data>
 </root>
 

@@ -5,6 +5,24 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     /// <summary>
+    /// <b>Das Dateiprofil der Projektdatei</b> (E87, F4): die Größengrenze, losgelöst von der IFC-Grenze
+    /// (<see cref="IfcImportProfil"/>). Der Leser liest nur die Profil-, Zonen- und Raumtabellen; die Größe der Projektdateien
+    /// stammt aus eingebetteten Bildern, die nie gelesen werden. Die Hülle wählt die Grenze je Plattform
+    /// (<see cref="GrenzeFuerPlattform"/>) und belegt damit <see cref="GebaeudeImportAblauf.ProjektdateiMaxBytes"/>.
+    /// </summary>
+    internal static class SqprojProfil
+    {
+        /// <summary>Die Grenze unter Windows: 250 MB.</summary>
+        internal const long MAX_BYTES = 250L * 1024 * 1024;
+
+        /// <summary>Die Grenze auf iOS: 100 MB (bis zur Messung nach dem Muster G4-8 benannt abgelehnt darüber).</summary>
+        internal const long MAX_BYTES_IOS = 100L * 1024 * 1024;
+
+        /// <summary>Die Grenze einer Plattform.</summary>
+        internal static long GrenzeFuerPlattform(bool ios) => ios ? MAX_BYTES_IOS : MAX_BYTES;
+    }
+
+    /// <summary>
     /// <b>Die Profilklassen der Projektdatei</b> (<c>PdProfile.ProfileType</c>, Befund 3.3): gelesen werden nur die fünf
     /// Klassen mit einer Größe in EPOS-Plan; alle anderen werden gezählt und benannt übersprungen.
     /// </summary>
