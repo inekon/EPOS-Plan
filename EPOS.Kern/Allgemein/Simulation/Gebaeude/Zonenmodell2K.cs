@@ -1470,7 +1470,10 @@ namespace WindowsFormsApplication1
         /// λ₁, λ₂ &gt; 0; ihre Ableitung hat höchstens eine Nullstelle, q ist auf [0; τ] also unimodal.
         /// Der Goldene Schnitt findet das Minimum der Heizleistung (das Maximum beim Kühlen); ist der
         /// Fall dort verletzt, sucht die Bisektion auf [0; t_min] — dort ist q monoton — den ersten
-        /// Umschaltpunkt, wie die Bisektion des Endpunkts (Rand der Rechenschritte 7.1). Die Stunde geht
+        /// Umschaltpunkt, wie die Bisektion des Endpunkts (Rand der Rechenschritte 7.1). Findet der Goldene
+        /// Schnitt kein verletztes Minimum — bei einer steifen Zone ist q nach wenigen Sekunden zahlengleich
+        /// konstant und das Minimum liegt vor dieser Ebene —, gilt die exakte Nullstelle der Ableitung
+        /// (<see cref="Uebergangsrechner.NullstelleAbleitung"/>) als t_min. Die Stunde geht
         /// danach mit der Fallwahl am neuen Zustand weiter (freier Lauf); so bucht kein Abschnitt Wärme
         /// und Kälte gegeneinander, und die Bilanz bleibt die des Modells. Ohne Verletzung im Innern
         /// kommt <paramref name="tau"/> unverändert zurück.
@@ -1500,8 +1503,19 @@ namespace WindowsFormsApplication1
                 if (!(hi - lo > Rechenrand.Zu(tau))) break;
             }
             double tMin = fc < fd ? c : d;
-            if (!(tMin > 0.0) || !(tMin < tau)) return tau;
-            if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tMin).Ende(x, ab.B), in r)) return tau;
+            if (!(tMin > 0.0) || !(tMin < tau) || !Verletzt(fall, in ab, ab.System.Rechner.Bei(tMin).Ende(x, ab.B), in r))
+            {
+                // Der Rückfall auf das exakte Extremum (Befund Abschnittsregel bei steifer Zone): Klingen beide
+                // Moden weit vor dem Abschnittsende ab, ist q auf dem größten Teil von [0; τ] zahlengleich
+                // konstant. Der Goldene Schnitt sieht dann nur diese Ebene und verfehlt das kurze Minimum am
+                // Anfang. Die Nullstelle der Ableitung am Abschnittsbeginn ist davon unberührt; sie wird nur
+                // gerechnet, wenn der Goldene Schnitt nichts gefunden hat — jeder Abschnitt, den er findet,
+                // bleibt Zeichen für Zeichen.
+                double tStern = ab.System.Rechner.NullstelleAbleitung(ab.System.Z20, ab.System.Z21, ab.System.Rechner.A * x + ab.B);
+                if (!(tStern > 0.0) || !(tStern < tau)) return tau;
+                if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tStern).Ende(x, ab.B), in r)) return tau;
+                tMin = tStern;
+            }
 
             double unten = 0.0, oben = tMin;
             for (int i = 0; i < HALBIERUNGEN; i++)
