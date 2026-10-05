@@ -57,6 +57,10 @@ internal static class Dateifilter
         [".ifcxml"] = "public.xml",
         [".ifczip"] = "public.zip-archive",
         [".gbxml"] = "public.xml",
+        // Projektdatei des CAD-Programms (Datenaustauschkonzept 16.4): eine SQLite-
+        // Datei unter eigener Endung ohne registrierte Typkennung - ausdruecklich
+        // public.data, damit der Waehler sie nicht ausgraut.
+        [".sqproj"] = ALLES,
     };
 
     /// <summary>
