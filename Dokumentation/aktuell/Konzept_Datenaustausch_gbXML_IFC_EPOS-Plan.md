@@ -2118,11 +2118,11 @@ wird nur, was Kapitel 16.3 nennt; der Leser hält keine Verbindung über den Imp
 **Räume und Zonen.** `BmBuilding → BmFloor → BmRoom` (über `FloorUUID`) und `BmZone` mit `BmZoneReference`
 (`UUID` = Zone, `ReferenceToUUID` = Raum, `ReferenceClass` `TModelRoom`). Der Abgleich mit den `IfcSpace` der
 IFC-Datei läuft über den **Raumnamen je Geschoss** (Geschossname aus `BmFloor` gegen `IfcBuildingStorey.Name`), zweitens
-über `BmRoom.BIMUUID` ↔ `IfcSpace.GlobalId` (GUID in Klammern ↔ 22-stellige Base64-Form, umkodiert); trifft kein Weg,
+über `BmRoom.GId` ↔ `IfcSpace.GlobalId` (dieselbe GUID, einmal als Text, einmal in der 22-stelligen Base64-Form, umkodiert — Befund Kapitel 6.6; `BIMUUID` ist die Gebäude-GUID und trifft nichts); trifft kein Weg,
 bleibt der Raum unzugeordnet und wird benannt. Zonen vom `ZoneType` 6 (Simulationszonen mit Profilgruppe) und 5
-(Nutzungszonen mit DIN-V-18599-Profil) werden freie Zonen des Zonenplans (E79) mit Name und Nutzung; trägt ein Raum
+(DIN-V-18599-Zonen mit Nutzungsprofil; beide decken in gerechneten Dateien alle Räume ab, Befund 6.4) werden freie Zonen des Zonenplans (E79) mit Name und Nutzung; trägt ein Raum
 mehrere Zonen, gilt die Simulationszone; Zonen ohne Raum werden als leere Zonen gemeldet und nicht angelegt. Die
-übrigen `ZoneType`-Codes (2, 8, 10) werden gezählt und übersprungen.
+übrigen `ZoneType`-Codes (2 Wohneinheit, 7 Lüftungszone, 10 Systemzonen, 0 und 8 unbekannt) werden gezählt und übersprungen.
 
 **Nutzung.** Die DIN-V-18599-10-Profilnummer (`PdProfileUsage.ProfileUsageType`) wird über eine feste Tabelle im Kern
 auf die Nutzung der Zone abgebildet: Büroprofile (Einzel-, Gruppen-, Großraumbüro, Besprechung, Schalter) → BUERO;
