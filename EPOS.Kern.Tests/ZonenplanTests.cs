@@ -97,6 +97,23 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Der_Raumhaken_im_Plan_laesst_den_Raum_in_seiner_Zone_und_oeffnet_die_Zuordnung()
+        {
+            GebaeudeAbbild a = Zonenhaus();
+            Zonenplan p = Zonenplan.Vorschlag(a, 0, Z4);
+            AbbildRaum lager = a.Gebaeude[0].Raeume.Single(r => r.Name == "Lager");
+            string zoneLager = p.ZoneVon(lager.Kennung);
+            string warm = p.Zonen.First(z => p.ZoneBeheizt(z.Schluessel) == true).Schluessel;
+            Assert.NotEqual(true, p.ZoneBeheizt(zoneLager));
+            Assert.False(p.Zuordnen(new[] { lager.Kennung }, warm).Ok);
+            Assert.True(p.BeheizungSetzen(lager.Kennung, true).Ok);
+            Assert.Equal(zoneLager, p.ZoneVon(lager.Kennung));
+            Assert.True(p.Zuordnen(new[] { lager.Kennung }, warm).Ok);
+            Assert.Equal(warm, p.ZoneVon(lager.Kennung));
+            Assert.False(p.BeheizungSetzen("gibt es nicht", true).Ok);
+        }
+
+        [Fact]
         public void Umhaengungen_gehen_als_Eingang_in_den_Plan()
         {
             GebaeudeAbbild a = Zonenhaus();

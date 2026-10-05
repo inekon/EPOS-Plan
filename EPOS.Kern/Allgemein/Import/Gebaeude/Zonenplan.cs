@@ -92,7 +92,7 @@ namespace WindowsFormsApplication1
 
         private readonly GebaeudeAbbild _abbild;
         private readonly int _index;
-        private readonly IReadOnlyDictionary<string, bool> _haken;
+        private readonly Dictionary<string, bool> _haken;
         private readonly string _praefix;
         private readonly List<Planzone> _zonen = new List<Planzone>();
         private readonly Dictionary<string, string> _zoneJeRaum = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -103,7 +103,8 @@ namespace WindowsFormsApplication1
         {
             _abbild = abbild;
             _index = index;
-            _haken = haken;
+            _haken = haken == null ? new Dictionary<string, bool>(StringComparer.Ordinal)
+                                   : new Dictionary<string, bool>(haken.ToDictionary(p => p.Key, p => p.Value), StringComparer.Ordinal);
             _praefix = string.Equals(abbild?.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
                 ? IfcImportProfil.MELDUNGSPRAEFIX : GbxmlImportProfil.MELDUNGSPRAEFIX;
         }
@@ -349,6 +350,18 @@ namespace WindowsFormsApplication1
             if (z == null) return Ab(PLAN_ZONE_UNBEKANNT, schluessel ?? "");
             if (nutzung != null && !NUTZUNGEN.Contains(nutzung)) return Ab(PLAN_NUTZUNG_UNGUELTIG, nutzung);
             z.Nutzung = nutzung;
+            return new Planschritt(true);
+        }
+
+        /// <summary>
+        /// <b>Stellt den Haken „beheizt“ eines Raums um</b> (der Ausweg bei ungleicher Beheizung): Der Raum bleibt in seiner
+        /// Zone; ist sie danach gemischt beheizt, warnt die Zonierung. Ein unbekannter Raum lehnt benannt ab.
+        /// </summary>
+        internal Planschritt BeheizungSetzen(string raum, bool beheizt)
+        {
+            if (raum == null || !Gebaeude.Raeume.Any(r => string.Equals(r.Kennung, raum, StringComparison.Ordinal)))
+                return Ab(PLAN_RAUM_UNBEKANNT, raum ?? "");
+            _haken[raum] = beheizt;
             return new Planschritt(true);
         }
 
