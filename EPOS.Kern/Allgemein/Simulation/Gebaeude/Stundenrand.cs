@@ -114,6 +114,14 @@ namespace WindowsFormsApplication1
         /// <summary>Der Grund der Anlagenseite zur Schranke (Paarungsregel 5.3).</summary>
         internal Verfuegbarkeitsgrund Verfuegbarkeitsgrund { get; private init; }
 
+        /// <summary>
+        /// Der Anlagengrund, der eine Kappung an der Schranke begleitet (Paarungsregel 5.3): der Grund des Fahrplans;
+        /// nennt er keinen, ist die Summe der Nennleistungen die Grenze — <see cref="Verfuegbarkeitsgrund.Leistungsgrenze"/>.
+        /// So trägt jede gekappte Stunde einen Grund (Probe 11.1, F-A12).
+        /// </summary>
+        internal Verfuegbarkeitsgrund GrundBeiKappung
+            => Verfuegbarkeitsgrund == Verfuegbarkeitsgrund.KeineBegrenzung ? Verfuegbarkeitsgrund.Leistungsgrenze : Verfuegbarkeitsgrund;
+
         /// <summary>Ist die Schranke der Verfügbarkeit die kleinere Leistungsgrenze — trägt <see cref="HeizleistungMaxW"/> sie?</summary>
         internal bool VerfuegbarkeitIstGrenze { get; private init; }
 

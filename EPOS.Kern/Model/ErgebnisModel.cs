@@ -150,6 +150,13 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen die Übergabe die Grenze war [h]; nur mit wirksamer Kopplung.</summary>
         public double? UebergabeBegrenztStundenH;
 
+        /// <summary>
+        /// <c>Fahrplan_Begrenzt_Stunden</c> je Gebäude [h] (AK2): Stunden, in denen die Schranke der Anlagenverfügbarkeit
+        /// die Heizleistung gekappt hat; null ohne Fahrplan. Keine Spalte in <c>Tab_ErgebnisGebaeude</c> — die
+        /// Projektzahl steht in <c>Tab_ErgebnisEnergiebedarf</c>.
+        /// </summary>
+        public int? FahrplanBegrenztStundenH;
+
         // ---- Kälteseite der Kopplung (E37, KAK-S3) — dasselbe Muster: null ohne Kühlkopplung ----
 
         /// <summary>

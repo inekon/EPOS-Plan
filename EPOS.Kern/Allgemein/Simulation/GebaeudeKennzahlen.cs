@@ -113,6 +113,9 @@ namespace WindowsFormsApplication1
                     e.UebergabeBegrenztStundenH = hk.UebergabeBegrenztStundenH;
                 }
 
+                // Anlagenkopplung (AK2): die Stunden an der Schranke der Verfügbarkeit - null ohne Fahrplan.
+                e.FahrplanBegrenztStundenH = vdi.FahrplanBegrenztStunden;
+
                 // Kälteseite (E37): die Kennzahlen des Kältekreises je Gebäude.
                 KuehlkreisErgebnis kk = vdi.Kuehlkreis;
                 if (kk != null)

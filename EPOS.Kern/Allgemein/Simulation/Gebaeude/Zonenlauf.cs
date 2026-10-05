@@ -47,6 +47,7 @@ namespace WindowsFormsApplication1
         // Stufe KP3 (Festlegung 20): der Kappungsanteil je Stunde, auch ohne Kopplung - eigener Akkumulator.
         private readonly double[] _kappung = new double[8760];
         private double _kappungH;
+        private readonly bool[] _fahrplan;                  // AK2: Stunden an der Schranke der Verfügbarkeit, nur mit Fahrplan
         private readonly Innenumkehrzaehler _messung;      // Messung RP2a, nur mit Schalter
         private int _gedeckelt;                             // RP2a: Stunden über der Obergrenze der Innenprüfung
 
@@ -73,6 +74,7 @@ namespace WindowsFormsApplication1
             _kVorlauf = _kuehlgekoppelt ? new double[8760] : null;
             _kRuecklauf = _kuehlgekoppelt ? new double[8760] : null;
             _kBegrenzt = _kuehlgekoppelt ? new double[8760] : null;
+            _fahrplan = eingang.FahrplanWirksam ? new bool[8760] : null;
         }
 
         /// <summary>Die Zone des Laufs.</summary>
@@ -140,6 +142,7 @@ namespace WindowsFormsApplication1
             _summeW += s.HeizleistungW;
             _kappung[h] = s.HeizleistungMaxAnteil;
             _kappungH += s.HeizleistungMaxAnteil;
+            if (_fahrplan != null) _fahrplan[h] = s.VerfuegbarkeitBegrenzt;
             _messung?.Aufnehmen(in s);
             if (s.InnenpruefungGedeckelt) _gedeckelt++;
 
@@ -241,6 +244,7 @@ namespace WindowsFormsApplication1
                 Innenumkehr = _messung?.Ergebnis(),
                 StundenInnenpruefungGedeckelt = _gedeckelt,
                 Erdreich = eingang.Erdreich,
+                FahrplanBegrenzt = _fahrplan,
             };
         }
 

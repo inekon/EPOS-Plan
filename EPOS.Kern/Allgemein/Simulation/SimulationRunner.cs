@@ -409,6 +409,12 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.UebergabeBegrenztStundenH = heizkreis.UebergabeBegrenztStundenH;
             }
 
+            // ANLAGENKOPPLUNG AK2 (8.3): die Stunden, in denen der Fahrplan in mindestens einem Gebaeude gekappt
+            // hat. Keine solche Stunde bleibt NULL - so schreiben die Projekte ohne greifende Schranke dieselbe
+            // Zeile wie vorher (Referenzlauf byte-gleich, SpaltenNurMitWert).
+            int fahrplanStunden = simulation_Waermebedarf.FahrplanBegrenztStunden();
+            if (fahrplanStunden > 0) m.Energiebedarf.FahrplanBegrenztStundenH = fahrplanStunden;
+
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.
             KuehlkreisProjekt kuehlkreis = simulation_Waermebedarf.Kuehlkreis;

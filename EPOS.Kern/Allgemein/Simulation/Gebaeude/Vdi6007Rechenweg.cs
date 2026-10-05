@@ -89,6 +89,14 @@ namespace WindowsFormsApplication1
         internal double KuehlVorlaufAnlageC { get; set; } = double.NaN;
 
         /// <summary>
+        /// <b>Die Schranke der Anlagenverfügbarkeit je Zone</b> (AK2, 5.3, 6.2) für den nächsten Aufruf — von
+        /// der Fassade verteilt (Projekt → Gebäude → Zone) und auf den Rechenmaßstab dieses Wegs umgerechnet;
+        /// Eintrag 0 gilt dem Gebäude ohne Zonenschleife. <c>null</c> = keine Schranke, der Bestand. Das Modul
+        /// liest damit keine Anlagendaten: Es bekommt die fertige Reihe.
+        /// </summary>
+        internal IReadOnlyList<Anlagenverfuegbarkeit[]> VerfuegbarkeitJeZone { get; set; }
+
+        /// <summary>
         /// Verhältnis wirkliches Gebäude : Katalogbau für eine FEST eingetragene Nennleistung der
         /// Übergabe (H7) — gesetzt von der Fassade; NaN = hergeleitet rechnen (erster Lauf der
         /// Verhältnisrechnung). Ohne feste Nennleistung wirkungslos.
@@ -163,6 +171,9 @@ namespace WindowsFormsApplication1
                     throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig, wer + ": Der Klimakalender des Laufs fehlt.");
 
                 GebaeudeModellEingang eingang = EingangBauen(gebaeude, gemeinsam);
+                // AK2: die Schranke der Verfügbarkeit (ein Eingang = Eintrag 0).
+                if (VerfuegbarkeitJeZone != null && VerfuegbarkeitJeZone.Count > 0)
+                    eingang.Verfuegbarkeit = VerfuegbarkeitJeZone[0];
 
                 // Stufe KP3 (Entwurf KP3, Festlegungen 1 und 2): die Aufheizrampe NACH dem Bauen -
                 // Uebergabe, Kaelte, F21 und die stuendliche Kuehlpruefung haben die Reihe ohne Rampe
@@ -221,7 +232,7 @@ namespace WindowsFormsApplication1
                 // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
                 Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index,
                     gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
-                    AnlagenVorlaufC);
+                    AnlagenVorlaufC, VerfuegbarkeitJeZone);
                 LetztesMehrzonenergebnis = m;
 
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
@@ -720,6 +731,8 @@ namespace WindowsFormsApplication1
             // aendert ihre Reihenfolge, gelesen wird er nur in den neuen Feldern des Ergebnisses.
             var kappung = new double[8760];
             double kappungH = 0.0;
+            // AK2 (4.5): die Stunden an der Schranke der Anlagenverfügbarkeit - nur mit Fahrplan.
+            bool[] fahrplan = eingang.FahrplanWirksam ? new bool[8760] : null;
 
             for (int h = 0; h < 8760; h++)
             {
@@ -740,6 +753,7 @@ namespace WindowsFormsApplication1
                 summeW += s.HeizleistungW;
                 kappung[h] = s.HeizleistungMaxAnteil;
                 kappungH += s.HeizleistungMaxAnteil;
+                if (fahrplan != null) fahrplan[h] = s.VerfuegbarkeitBegrenzt;
                 messung?.Aufnehmen(in s);
                 if (s.InnenpruefungGedeckelt) gedeckelt++;
 
@@ -839,6 +853,7 @@ namespace WindowsFormsApplication1
                 Innenumkehr = messung?.Ergebnis(),
                 StundenInnenpruefungGedeckelt = gedeckelt,
                 Erdreich = eingang.Erdreich,
+                FahrplanBegrenzt = fahrplan,
             };
         }
 

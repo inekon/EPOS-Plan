@@ -97,6 +97,36 @@ namespace EPOS.Kern.Tests
                 "Kältefassade oder Anlagenfahrplan nennen ein Modul (E21, AK2):\n" + string.Join("\n", funde));
         }
 
+        /// <summary>
+        /// <b>Satz 5 (AK2, Architektur 1.2):</b> Das Modul <c>Gebaeude/</c> liest keine Anlagendaten. Es bekommt die
+        /// Schranke der Verfügbarkeit fertig über den Stundenrand (<c>Anlagenverfuegbarkeit</c>); den
+        /// <c>Anlagenfahrplan</c>, seine Erzeuger und die Anlagenquellen nennt es nicht.
+        /// </summary>
+        private static readonly string[] Anlagenquellen =
+        {
+            "Anlagenfahrplan", "Fahrplanerzeuger", "WErzeugerModel", "WErzeugerCtrl", "Tab_Energieanlagen",
+            "Sperrprofil", "Sperrfenster", "Anlagenzeitprogramm", "WaermesenkeClass", "KonfigurationCtrl", "Kaskade",
+            "Tab_Pufferspeicher", "Tab_WP", "Tab_Heizkessel", "Tab_BHKW",
+        };
+
+        [Fact]
+        public void Satz5_Gebaeude_liest_keine_Anlagendaten()
+        {
+            var funde = Funde(Dateien(Gebaeudeordner()), Anlagenquellen.Select(Wort).ToArray());
+            Assert.True(funde.Count == 0,
+                "Das Modul Gebaeude/ liest Anlagendaten (AK2, 5.3):\n" + string.Join("\n", funde));
+        }
+
+        /// <summary>Gegenprobe zu Satz 3 und 5: Der Anlagenfahrplan liegt neben den Fassaden, nicht in <c>Gebaeude/</c>, und nennt die Anlagenquellen wirklich.</summary>
+        [Fact]
+        public void Der_Anlagenfahrplan_liegt_neben_den_Fassaden()
+        {
+            string datei = Path.Combine(Simulationsordner(), "Anlagenfahrplan.cs");
+            Assert.True(File.Exists(datei), "Datei fehlt: " + datei);
+            Assert.False(File.Exists(Path.Combine(Gebaeudeordner(), "Anlagenfahrplan.cs")));
+            Assert.NotEmpty(Funde(new[] { datei }, new[] { Wort("WErzeugerCtrl") }));
+        }
+
         [Fact]
         public void Satz4_Ausser_der_Weiche_nennt_keine_Kerndatei_den_Altweg()
         {

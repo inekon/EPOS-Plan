@@ -521,7 +521,7 @@ namespace WindowsFormsApplication1
                 {
                     VerfuegbarkeitAnteil = r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0,
                     Verfuegbarkeitsgrund = r.VerfuegbarkeitIstGrenze && akkKappung > 0.0
-                        ? r.Verfuegbarkeitsgrund : Verfuegbarkeitsgrund.KeineBegrenzung,
+                        ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                     MessungUmkehrJ = mUmkehrJ,
                     MessungUmkehrAbschnitte = mUmkehrAb,
                     MessungBandKs = mBandKs,
@@ -581,7 +581,7 @@ namespace WindowsFormsApplication1
                 VerfuegbarkeitAnteil = VerfuegbarkeitAnteilDerStunde(tauJeGrund, akkKappung, in r),
                 VorlaufAnlageAnteil = tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage] / STUNDE_S,
                 Verfuegbarkeitsgrund = VerfuegbarkeitAnteilDerStunde(tauJeGrund, akkKappung, in r) > 0.0
-                    ? r.Verfuegbarkeitsgrund : Verfuegbarkeitsgrund.KeineBegrenzung,
+                    ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                 MessungUmkehrJ = mUmkehrJ,
                 MessungUmkehrAbschnitte = mUmkehrAb,
                 MessungBandKs = mBandKs,
@@ -802,7 +802,7 @@ namespace WindowsFormsApplication1
                 {
                     VerfuegbarkeitAnteil = r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0,
                     Verfuegbarkeitsgrund = r.VerfuegbarkeitIstGrenze && akkKappung > 0.0
-                        ? r.Verfuegbarkeitsgrund : Verfuegbarkeitsgrund.KeineBegrenzung,
+                        ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                     MessungUmkehrJ = mUmkehrJ,
                     MessungUmkehrAbschnitte = mUmkehrAb,
                     MessungBandKs = mBandKs,
@@ -845,7 +845,7 @@ namespace WindowsFormsApplication1
                 VerfuegbarkeitAnteil = tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] / STUNDE_S,
                 VorlaufAnlageAnteil = tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage] / STUNDE_S,
                 Verfuegbarkeitsgrund = tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] > 0.0
-                    ? r.Verfuegbarkeitsgrund : Verfuegbarkeitsgrund.KeineBegrenzung,
+                    ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                 MessungUmkehrJ = mUmkehrJ,
                 MessungUmkehrAbschnitte = mUmkehrAb,
                 MessungBandKs = mBandKs,

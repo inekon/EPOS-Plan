@@ -416,6 +416,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Erdreichkennwerte Erdreich { get; init; }
 
+        /// <summary>
+        /// Die Stunden, in denen die Schranke der Anlagenverfügbarkeit gekappt hat (AK2, Begrenzungsgrund
+        /// <c>VERFUEGBARKEIT</c>; am Mehrzonengebäude: in mindestens einer Zone); <c>null</c> ohne Fahrplan.
+        /// </summary>
+        internal bool[] FahrplanBegrenzt { get; init; }
+
+        /// <summary><c>Fahrplan_Begrenzt_Stunden</c> [h]: Zahl der Stunden von <see cref="FahrplanBegrenzt"/>; <c>null</c> ohne Fahrplan.</summary>
+        internal int? FahrplanBegrenztStunden => FahrplanBegrenzt?.Count(b => b);
+
         internal GebaeudeModellErgebnis Skaliert(double faktor)
         {
             var heiz = new double[8760];
@@ -438,6 +447,7 @@ namespace WindowsFormsApplication1
                 Innenumkehr = Innenumkehr?.Skaliert(faktor),
                 StundenInnenpruefungGedeckelt = StundenInnenpruefungGedeckelt,
                 Erdreich = Erdreich,
+                FahrplanBegrenzt = FahrplanBegrenzt,
             };
         }
     }
