@@ -2904,6 +2904,25 @@ namespace Testdatenbankschema
                                   FreieKuehlungSoleSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt VorlaufwahlSchema.SCHRITT (VW1a): Vorlaufwahl_Stunden, Vorlauf_Darueber_Stunden und
+            //      Vorlauf_Darunter_Stunden an Tab_ErgebnisWaermepumpeModul. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Vorlaufwahl bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer.
+            string nrVorlaufwahl = VorlaufwahlSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVorlaufwahl + " - Ausweis der Vorlaufwahl der Waermepumpe: " +
+                              (VorlaufwahlSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVorlaufwahl = new List<string>();
+                angelegt += VorlaufwahlSchema.Ausfuehren(berichtVorlaufwahl);
+                foreach (string zeile in berichtVorlaufwahl)
+                    Console.WriteLine("Schritt " + nrVorlaufwahl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVorlaufwahl + " - vollstaendig: " +
+                                  VorlaufwahlSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

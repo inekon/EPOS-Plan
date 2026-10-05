@@ -315,6 +315,9 @@ namespace WindowsFormsApplication1
             // Leistungsgrenze und die Zähler im Ergebnis kommen leer an (Festwert, Kälteleistung, „nicht erhoben").
             new Stufe(FreieKuehlungSoleSchema.SCHRITT, Art.Ddl,
                       "Freie Kühlung über die Wärmequelle: Schalter, Grädigkeit, Leistungsgrenze; Kälte und Stunden im Ergebnis"),
+            // Ein älteres Paket führt keinen Ausweis der Vorlaufwahl; die Spalten kommen leer an („keine Wahl").
+            new Stufe(VorlaufwahlSchema.SCHRITT, Art.Ddl,
+                      "Vorlaufwahl der Wärmepumpe: Stunden je Kennlinienstützstelle, darüber und darunter im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

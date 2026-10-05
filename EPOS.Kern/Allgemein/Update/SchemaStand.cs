@@ -912,7 +912,10 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Energieanlagen</c>, Kälte und Stunden der freien Kühlung an den beiden Ergebnistabellen der
         /// Wärmepumpe (<see cref="FreieKuehlungSoleSchema"/>). <b>Ergebnisneutral:</b> Der Schalter entsteht aus,
         /// die übrigen Spalten leer.
-        public const int Zielversion = FreieKuehlungSoleSchema.SCHRITT;
+        /// Danach, mit dem AUSWEIS DER VORLAUFWAHL (VW1a), steht das Ziel auf <see cref="VorlaufwahlSchema.SCHRITT"/>:
+        /// Stunden je Kennlinienstützstelle, darüber und darunter an <c>Tab_ErgebnisWaermepumpeModul</c>
+        /// (<see cref="VorlaufwahlSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer.
+        public const int Zielversion = VorlaufwahlSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
