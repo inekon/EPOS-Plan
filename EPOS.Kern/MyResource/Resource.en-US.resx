@@ -44645,6 +44645,24 @@ chart</value>
   <data name="GEXP_IFC_LUFTWECHSEL" xml:space="preserve">
     <value>Infiltration air change rate in 1/h</value>
   </data>
+  <data name="GEXP_IFC_LUFTWECHSEL_NUTZER" xml:space="preserve">
+    <value>User ventilation air change rate in 1/h</value>
+  </data>
+  <data name="GEXP_IFC_KALENDER_GRUNDWERT" xml:space="preserve">
+    <value>Base value in the unit of the quantity: 1/h for ventilation, fraction 0 … 1 for equipment and persons</value>
+  </data>
+  <data name="GEXP_IFC_KALENDER_WOCHE" xml:space="preserve">
+    <value>Standard week: 168 hourly values, Monday 0:00 first, separated by semicolons, “aus” = switched off; unit of the quantity (°C, 1/h, fraction 0 … 1)</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_KONDITIONIERUNG" xml:space="preserve">
+    <value>For each zone, EPOS_Zone carries usage and setpoints; for each calendar a set EPOS_Kalender_&lt;quantity&gt; carries the standard week as text and the periods as “Type;Start;End;HolidayRule;Value”.</value>
+  </data>
+  <data name="IMP_IFC_KOND_HERKUNFT" xml:space="preserve">
+    <value>from IFC file (EPOS)</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOND_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Room {0}: {1} not readable and skipped ({2}).</value>
+  </data>
   <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
     <value>IFC export from EPOS-Plan, stage S1: semantic, without geometry.</value>
   </data>
@@ -45472,6 +45490,156 @@ chart</value>
   </data>
   <data name="GIMP_DLG_PLAN_OK_GESPERRT" xml:space="preserve">
     <value>{0} rooms are not assigned to a zone – OK is blocked until every room has a zone.</value>
+  </data>
+  <data name="IMP_SQ_PROT_KEINE_DATEI" xml:space="preserve">
+    <value>The file {0} is not a readable project file (SQLite) — it is not added; the IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The project file could not be read: {0}. The IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_TABELLE_FEHLT" xml:space="preserve">
+    <value>The project file lacks tables ({0}) — it is not added; the IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_FASSUNG" xml:space="preserve">
+    <value>Project file read, room table version {0}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_FASSUNG_UNBEKANNT" xml:space="preserve">
+    <value>The table {0} has version {1}, which the reader does not know — the values are read, please check.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZU_GROSS" xml:space="preserve">
+    <value>The project file has {0} bytes and exceeds the limit of {1} bytes — it is not read.</value>
+  </data>
+  <data name="IMP_SQ_PROT_KEIN_HOTTCAD" xml:space="preserve">
+    <value>A project file ({0}) can only be added to an IFC file from HottCAD.</value>
+  </data>
+  <data name="IMP_SQ_PROT_NICHT_GELESEN" xml:space="preserve">
+    <value>Read the IFC file first, then add the project file.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONENTYP_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{1} zones of type {0} are skipped (only usage and simulation zones are taken over).</value>
+  </data>
+  <data name="IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{1} profiles of class {0} are skipped (no quantity in EPOS-Plan).</value>
+  </data>
+  <data name="IMP_SQ_PROT_BETRIEBSART" xml:space="preserve">
+    <value>{1} time profiles carry operating mode {0} (counted, not interpreted).</value>
+  </data>
+  <data name="IMP_SQ_PROT_TAGESART_UNBEKANNT" xml:space="preserve">
+    <value>The profile group {0} carries day type {1}, which the reader does not interpret — the daily curves apply on all days.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT" xml:space="preserve">
+    <value>{0} sections carry an unknown section type — they are treated as a period.</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_OHNE_TREFFER" xml:space="preserve">
+    <value>{0} rooms of the project file find no IFC room (neither by name and storey nor by identifier): {1}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>{0} IFC rooms have no counterpart in the project file: {1}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONE_LEER" xml:space="preserve">
+    <value>The zone {0} of the project file has no matched room — it is not created.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONE_ABGELEHNT" xml:space="preserve">
+    <value>The zone {0} of the project file could not be created ({1}).</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_BEHEIZUNG" xml:space="preserve">
+    <value>The room {0} does not match the heating of zone {1} and stays unassigned.</value>
+  </data>
+  <data name="IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG" xml:space="preserve">
+    <value>The zone {0} carries usage profile no. {1} without a counterpart — it stays without use.</value>
+  </data>
+  <data name="IMP_SQ_PROT_WERT_BEGRENZT" xml:space="preserve">
+    <value>Zone {0}, {1}: {2} values were outside {3} and are limited.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BILANZ" xml:space="preserve">
+    <value>Project file: {0} rooms matched, {1} not matched, {2} IFC rooms without counterpart, {3} zones taken over.</value>
+  </data>
+  <data name="GIMP_BELEG_SQPROJ" xml:space="preserve">
+    <value>from project file: {0}.{1}, profile {2}</value>
+  </data>
+  <data name="IMP_SQ_PROT_TAGESART_ANNAHME" xml:space="preserve">
+    <value>The profile group {0} carries day type {1}; a {2}-day week is assumed (meaning not documented in the project file).</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUMART_ABWEICHUNG" xml:space="preserve">
+    <value>{0} matched rooms carry different room types in project file and IFC: {1}.</value>
+  </data>
+  <data name="GIMP_BELEG_SQPROJ_TAGESART" xml:space="preserve">
+    <value>day type {0} assumed as {1}-day week</value>
+  </data>
+  <data name="GIMP_DLG_SQ_KNOPF" xml:space="preserve">
+    <value>Add project file (.sqproj)…</value>
+  </data>
+  <data name="GIMP_DLG_SQ_KNOPF_GRUND" xml:space="preserve">
+    <value>A project file (.sqproj) can only be added to an IFC file exported by HottCAD (ObjectType “TModel…” on the building or a room).</value>
+  </data>
+  <data name="GIMP_DLG_SQ_TITEL" xml:space="preserve">
+    <value>Choose project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FILTER" xml:space="preserve">
+    <value>Project file of the CAD program (*.sqproj)|*.sqproj</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ENTFERNEN" xml:space="preserve">
+    <value>Remove project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_UEBERNEHMEN" xml:space="preserve">
+    <value>Take over zones of the project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_GRUPPE" xml:space="preserve">
+    <value>Project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FASSUNG" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="GIMP_DLG_SQ_RAEUME" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="GIMP_DLG_SQ_RAEUME_WERT" xml:space="preserve">
+    <value>{0} matched · {1} unmatched · {2} IFC rooms without counterpart</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN_WERT" xml:space="preserve">
+    <value>{0} taken over of {1}</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN_OFFEN" xml:space="preserve">
+    <value>{0} in the file, not yet taken over</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFILE" xml:space="preserve">
+    <value>Time profiles</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFILE_WERT" xml:space="preserve">
+    <value>{0} time profiles, {1} sections</value>
+  </data>
+  <data name="GIMP_DLG_SQ_JE_GROESSE" xml:space="preserve">
+    <value>Per quantity</value>
+  </data>
+  <data name="GIMP_DLG_SQ_GROESSE_WERT" xml:space="preserve">
+    <value>{0}: {1} zones from the daily curve, {2} from the usage profile</value>
+  </data>
+  <data name="GIMP_DLG_SQ_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="GIMP_DLG_SQ_OHNE_TREFFER" xml:space="preserve">
+    <value>Project file rooms without IFC room ({0})</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT" xml:space="preserve">
+    <value>from project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFIL" xml:space="preserve">
+    <value>Usage profile {0} per DIN V 18599</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FRAGE_TITEL" xml:space="preserve">
+    <value>Take over zones of the project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FRAGE" xml:space="preserve">
+    <value>The zones of the project file replace the zone plan; {0} manual steps will be lost. Take over?</value>
+  </data>
+  <data name="GIMP_DLG_SQ_KEIN_PLAN" xml:space="preserve">
+    <value>The zones of the project file need the zone tree — the file carries only one zoning rule for this building; nothing is taken over.</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HINWEIS" xml:space="preserve">
+    <value>The project file supplies zones, usage and time profiles per zone; the IFC file remains the source of the geometry. The conditioning per zone is saved with origin “from project file”.</value>
   </data>
 </root>
 

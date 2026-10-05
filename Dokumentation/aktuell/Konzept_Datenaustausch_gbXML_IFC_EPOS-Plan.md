@@ -1105,6 +1105,8 @@ Grundlage ist die Abbildungstabelle aus Befund S, 5; hier auf die Tabellen des M
 | `Tab_Gebaeude` | `IfcBuilding` | `Pset_BuildingCommon.YearOfConstruction` (Text!) als Bandmitte, `EPOS_Gebaeude.Baualtersklasse` mit dem Klassennamen, `EPOS_Ergebnis` mit den Summen |
 | `Tab_Zone` | `IfcSpace` (`PredefinedType = SPACE`) | `Qto_SpaceBaseQuantities`: `NetFloorArea` ← `Nutzflaeche`, `Height` ← `Raumhoehe`, `NetVolume` ← `Volumen`. `Pset_SpaceThermalRequirements`: `SpaceTemperature` ← `Raumsolltemperatur_Tag`, `SpaceTemperatureSummerMax` ← `Maximaleraumtemperatur`, `DiscontinuedHeating` ← Nachtabsenkung gesetzt, `NaturalVentilationRate` ← `Luftwechsel_Nutzer`. `LongName` = Zonenname |
 | `Tab_Zone.IstBeheizt = 0` | `IfcSpace` ohne `Pset_SpaceThermalRequirements` | `EPOS_Zone.IstBeheizt = FALSE` |
+| Nutzung und Matrixzellen der Zone | `IfcSpace`, Satz `EPOS_Zone` | `Nutzung` (`IfcLabel`: WOHNEN, BUERO, SCHULE; ohne Nutzung fehlt sie), `Heizsollwert_Tag` ← `Raumsolltemperatur_Tag`, `Heizsollwert_Nacht` ← `Raumsolltemperatur_Nachtabsenkung` (nur > 0), `Kuehlsollwert` ← `Kuehl_Sollwert` (Temperatur in Kelvin wie oben), `Luftwechsel_Nutzer` ← `Luftwechsel_Nutzer` (`IfcReal`, 1/h im `Description`) — je Zelle Zone vor Gebäude, wie die Zone rechnet. Der Klassenweg hat keine Zone und schreibt sie nicht; ohne Zone bleibt die Datei byte-gleich |
+| Konditionierungskalender der Zone | `IfcSpace`, je Größe ein Satz `EPOS_Kalender_<Größe>` (HEIZSOLL, KUEHLSOLL, LUEFTUNG, GERAETE, PERSONEN) | genau eine Grundangabe: `Grundwert` (Temperatur bzw. `IfcReal` in 1/h oder Anteil 0 … 1), `Aus` (`IfcBoolean` TRUE) oder `Woche` (`IfcText`, die 168 Zellen wie in der Datenbank, Montag 0 Uhr zuerst, „aus“ = abgeschaltet); dazu `Nennwert_W` (`IfcPowerMeasure`), `Bemerkung` (Herkunft und Vermerk) und je Periode `Periode_<Rang>` (`IfcText`) im festen Format `Art;Beginn;Ende;Feiertagsregel;Angabe` — Tage 1 … 365 (0 bei einer Feiertagsregel), Feiertagsregel leer bei einem Zeitraum, Angabe `wert=<Zahl>`, `aus`, `woche=<168 Zellen>` oder `wochentag=<1 … 7>`, Zahlen in invarianter Kultur; der Bezeichner der Periode steht im `Description`. Eine Zone ohne Kalender trägt keinen Satz. Der Beipackzettel nennt die Sätze (`GEXP_PROT_BEIPACK_KONDITIONIERUNG`) |
 | mehrere Zonen | zusätzlich `IfcZone` + `IfcRelAssignsToGroup` | im **Einzonenfall weglassen** — eine Gruppe mit einem Element ist Rauschen |
 | `Tab_Bauteil` AUSSENWAND/INNENWAND | `IfcWall` | `Pset_WallCommon.ThermalTransmittance` ← `U_Wert`, `.IsExternal`; `Qto_WallBaseQuantities.GrossSideArea` ← `Flaeche` |
 | DACH | `IfcSlab` `PredefinedType = ROOF` (bzw. `IfcRoof`) | `Qto_SlabBaseQuantities.GrossArea` |
@@ -2128,7 +2130,16 @@ mehrere Zonen, gilt die Simulationszone; Zonen ohne Raum werden als leere Zonen 
 auf die Nutzung der Zone abgebildet: Büroprofile (Einzel-, Gruppen-, Großraumbüro, Besprechung, Schalter) → BUERO;
 Schulprofile (Klassenzimmer, Hörsaal, Bibliothek) → SCHULE; Wohnprofile (70, 71 und die Wohnzeilen der Norm) → WOHNEN;
 alles andere → keine Nutzung, die Nummer steht im Beleg. Die Tabelle ist sprachneutral und wird mit Nummer und Normname
-in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen.
+in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen. Festgelegt sind (SQ-1, `Din18599Nutzung`): **BUERO** 1–5, **SCHULE** 8, 9, 28, 29,
+**WOHNEN** 70, 71. Trägt eine Simulationszone kein eigenes Nutzungsprofil, gilt das der Nutzungszone, mit der sie die
+meisten Räume teilt, sonst die Profilnummer ihrer Gruppe (`PdProfileGroup.ProfileUsageType`).
+
+**Abgleichsschlüssel (Befund Kapitel 6):** `BmRoom.GId` ist dieselbe GUID wie `IfcSpace.GlobalId`; der Abgleich läuft
+deshalb zuerst über `GId` ↔ `GlobalId`, dann über den Raumnamen je Geschoss; `BIMUUID` ist die Gebäude-GUID. Die
+Raumart (`RoomType` ↔ `mrt…`) ist ein Beleg, kein Schlüssel. **Tagesart als Annahme:** `ProfileUsageDayType` 4 →
+Montag–Freitag, 5 → Montag–Samstag, 6 → alle Tage, benannt (`IMP_SQ_PROT_TAGESART_ANNAHME`) und im Beleg genannt; die
+Stunden mit `OperatingModeType` 2 belegen die Nachtstunden (der Nachtwert der freien Tage), gerechnet wird mit den
+Werten der Kurve.
 
 **Vorgabe-Matrix aus dem Nutzungsprofil** (Konditionierungskonzept 3.3): `NominalRoomTemperature` → Zeile TAG des
 Heizsollwerts; `DropOfTemperatureSetback` → NACHT als Absenkung mit `Von`/`Bis` aus `PeriodOfOperationFrom/To` bzw.
@@ -2160,7 +2171,29 @@ der Vorlage der Nutzung (E79). Jeder Wert bleibt im Dialog änderbar; eine Hand�
 
 **IFC-Export (E80):** Der eigene IFC-Export schreibt die vorhandenen Daten der Zonen auch zurück: Nutzung, Sollwerte
 und Kalender als `EPOS_Zone`-Eigenschaften (Standardwoche als Text, Perioden als Liste), zusätzlich zu
-`Pset_SpaceThermalRequirements`. Das ist eine Ergänzung der Stufe G7c und wird mit SQ-3 gebaut.
+`Pset_SpaceThermalRequirements`. Das ist eine Ergänzung der Stufe G7c.
+
+**Gebauter Stand (05.10.2026):**
+
+- **Schlüssel:** Der Raumabgleich läuft zuerst über `BmRoom.GId` ↔ `IfcSpace.GlobalId`, dann über den Raumnamen je
+  Geschoss (`BmFloor.Name` gegen `IfcBuildingStorey.Name`); was keiner trifft, bleibt benannt unzugeordnet.
+- **Codes:** `ZoneType` 6 (Simulationszone) und 5 (Nutzungszone) werden Zonen, 2, 8 und 10 gezählt und übersprungen;
+  `ProfileGroupType` 4 ist die Gebäudegruppe; die Nutzung folgt der festen Tabelle `Din18599Nutzung` (BUERO 1–5,
+  SCHULE 8, 9, 28, 29, WOHNEN 70, 71), jede andere Nummer steht nur im Beleg.
+- **Annahmen:** Tagesart 4 → Montag–Freitag, 5 → Montag–Samstag, 6 → alle Tage, unbekannte Codes → alle Tage, benannt;
+  an freien Tagen trägt der Heizsollwert den niedrigsten, der Kühlsollwert den höchsten Wert der Stunden außerhalb der
+  Nutzungszeit, Lüftung, Geräte und Personen „aus“. Personen-Nennwert = `RatedPersonOccupancyRate` ×
+  `SpecificRatedDryHeatEmission` (ohne Wärmeabgabe 70 W je Person), Geräte-Nennwert = spezifische Leistung × Nutzfläche,
+  sonst der Nennwert aus dem Nutzungsprofil; der Anteil TAG aus den Vollnutzungsstunden je Betriebsstunde, ohne Angabe
+  100 %.
+- **Einzonenweg:** Trägt genau eine Zone der Projektdatei abgeglichene Räume, nimmt das Gebäude deren Konditionierung,
+  sonst die der Gebäudegruppe (`BmBuilding.ProfileGroupUUID`) — als Gebäudekalender ohne Zone (Konditionierungskonzept
+  5.1), derselbe Schreibweg und Beleg wie bei den Zonen. Im Mehrzonenweg trägt das Gebäude keine.
+- **IFC-Export und Rundlauf:** Die Sätze `EPOS_Zone` und `EPOS_Kalender_<Größe>` stehen in 6.3; die Anreicherung (6.6)
+  schreibt dieselben Sätze und ersetzt die eines früheren Durchlaufs, statt sie zu doppeln. Der IFC-Leser nimmt sie je
+  `IfcSpace` als Zonen-Konditionierung zurück (Herkunft „aus IFC-Datei (EPOS)“); der Zonenplan übernimmt sie mit der
+  Rangfolge **Projektdatei vor IFC-`EPOS_*` vor Vorlage**. Ein nicht lesbarer Satz oder Periodentext wird benannt
+  übersprungen (`IMP_IFC_PROT_KOND_UEBERSPRUNGEN`), der Rest des Kalenders bleibt.
 
 ### 16.4 Der Weg im Dialog
 
@@ -2175,9 +2208,9 @@ Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. O
 
 | Stufe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
-| **SQ-1 — Kern-Leser und Abbildung** | `Import/Sqproj/`: Leser (ReadOnly, Fassungsprüfung, Tabellenprüfung), Abbild (Räume, Zonen, Profile, Kurven, Abschnitte), Raumabgleich gegen das IFC-Abbild, Zonenplan-Übernahme, Konditionierung je Zone (Matrix, Standardwoche, Perioden, Nennwerte) als Kalenderzeilen mit Herkunft; Meldungen de/en; synthetische `.sqproj`-Proben (Erzeuger im Test, nur die benötigten Tabellen) | Proben 33–36 | **3–4 PT** |
-| **SQ-2 — Dialog** | Knopf, Bilanz, Zonenbaum mit Projektdatei, Speichern der Kalender, Dateiweg Windows und iOS (Stream → Arbeitskopie) | Probe 37 (bunit), Sichtprobe Windows | **1–2 PT** |
-| **SQ-3 — Export und Papiere** | `EPOS_Zone`-Sätze im IFC-Export (Nutzung, Sollwerte, Kalender), Rundlauf Export → Leser; dieses Kapitel als „So gebaut“, Konditionierungskonzept 5.5 (Leser), Mehrzonenkonzept 6.4, Wiki, Logbuch, Protokoll | Probe 38, Wachen | **1 PT** |
+| **SQ-1 — Kern-Leser und Abbildung** | `Import/Sqproj/`: Leser (ReadOnly, Fassungsprüfung, Tabellenprüfung), Abbild (Räume, Zonen, Profile, Kurven, Abschnitte), Raumabgleich gegen das IFC-Abbild, Zonenplan-Übernahme, Konditionierung je Zone (Matrix, Standardwoche, Perioden, Nennwerte) als Kalenderzeilen mit Herkunft; Meldungen de/en; synthetische `.sqproj`-Proben (Erzeuger im Test, nur die benötigten Tabellen) | Proben 33–36; Stand 05.10.2026: gebaut | **3–4 PT** |
+| **SQ-2 — Dialog** | Knopf, Bilanz, Zonenbaum mit Projektdatei, Speichern der Kalender, Dateiweg Windows und iOS (Stream → Arbeitskopie) | Probe 37 (bunit), Sichtprobe Windows; Stand 05.10.2026: gebaut | **1–2 PT** |
+| **SQ-3 — Export und Papiere** | `EPOS_Zone`-Sätze im IFC-Export (Nutzung, Sollwerte, Kalender), Rundlauf Export → Leser; dieses Kapitel als „So gebaut“, Konditionierungskonzept 5.5 (Leser), Mehrzonenkonzept 6.4, Wiki, Logbuch, Protokoll | Probe 38, Wachen; Stand 05.10.2026: gebaut | **1 PT** |
 | | **zusammen** | | **5–7 PT** |
 
 ### 16.6 Regeln
@@ -2201,3 +2234,9 @@ Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. O
 | 36 | **Zonenplan** | Zonen der Projektdatei werden freie Zonen mit Nutzung aus der Profilnummer; Räume in mehreren Zonen folgen der Simulationszone; leere Zonen gemeldet |
 | 37 | **Dialog** (bunit) | Knopf nur bei HottCAD-IFC, Bilanz, Zonenbaum mit Projektdatei, Speichern schreibt Kalender, Perioden und Vorgaben mit Herkunft |
 | 38 | **Rundlauf Export** | `EPOS_Zone`-Sätze des IFC-Exports kommen über den IFC-Leser als Zonen-Konditionierung zurück |
+
+Stand 05.10.2026: Proben 33 bis 38 grün — 33 `SqprojLeserTests`, 34 `SqprojRaumabgleichTests`, 35
+`SqprojKonditionierungTests`, 36 `SqprojZonenTests`, 37 `GebaeudeImportProjektdateiDialogTests` (bunit) und
+`SqprojHuelleTests`, 38 `IfcKonditionierungRundlaufTests` (Referenzprojekt 1052: drei Zonen, Woche byteweise, Perioden
+und Nennwerte gleich, zweiter Export byte-gleich; alle Angabearten; Gegenproben ohne `EPOS_*`) und der Fall der
+Anreicherung in `IfcAnreicherungTests`.

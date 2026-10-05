@@ -151,6 +151,9 @@ namespace WindowsFormsApplication1
         public IReadOnlyDictionary<string, bool> Uebersteuerungen { get; internal set; }
             = new Dictionary<string, bool>(StringComparer.Ordinal);
 
+        /// <summary>Der Stand der dazugeladenen HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
+        internal SqprojStand Projektdatei { get; set; }
+
         /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
         public GebaeudeFeldzeile Zeile(string zielfeld)
         {

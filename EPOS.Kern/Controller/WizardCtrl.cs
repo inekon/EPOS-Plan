@@ -2900,6 +2900,18 @@ namespace WindowsFormsApplication1
                     paarungen = alle;
                 }
 
+                // 3b) Stufe SQ-3: Einzonenweg mit Projektdatei - die Konditionierung der Gebaeudegruppe bzw. der einen
+                //     Zone als Gebaeudekalender (Eigentuemer Gebaeude ohne Zone), derselbe Schreibweg wie bei den Zonen.
+                if (item.Importherkunft.Gebaeudekonditionierung != null)
+                {
+                    string fehler = ZonenplanCtrl.ProjektdateiUebernehmen(idKopie, null, item.Importherkunft.Gebaeudekonditionierung);
+                    if (fehler != null)
+                    {
+                        herkunftsfehler = fehler;
+                        return 0;
+                    }
+                }
+
                 GebaeudeImportCtrl.Ergebnis herkunft = new GebaeudeImportCtrl().SchreibeHerkunft(
                     idKopie, item.Importherkunft.Quelle, paarungen, Vorgangsklammer.Aktueller);
                 if (!herkunft.Ok)

@@ -83,6 +83,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal string Nutzung { get; set; }
 
+        /// <summary>Die Konditionierung aus der HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
+        internal Zonenkonditionierung Projektdatei { get; set; }
+
         public override string ToString() => Name + " (" + Raeume.Count.ToString(CultureInfo.InvariantCulture) + " Räume)";
     }
 
@@ -607,7 +610,7 @@ namespace WindowsFormsApplication1
                 if (raeume.Any(r => _beheizt(r) != warm)) Melden(PruefStufe.Warnung, PLAN_BEHEIZUNG_GEMISCHT, pz.Name);
                 var zone = new Importzone
                 {
-                    Schluessel = pz.Schluessel, Name = pz.Name, IstBeheizt = warm, Nutzung = pz.Nutzung,
+                    Schluessel = pz.Schluessel, Name = pz.Name, IstBeheizt = warm, Nutzung = pz.Nutzung, Projektdatei = pz.Projektdatei,
                     Quellkennung = pz.Quellkennung ?? (raeume.Count == 1 ? raeume[0].Kennung : Gebaeude.Kennung),
                     Handgeaendert = pz.Angelegt || pz.Geaendert,
                 };
