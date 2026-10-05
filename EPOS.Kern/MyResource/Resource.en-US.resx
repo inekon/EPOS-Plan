@@ -44645,6 +44645,24 @@ chart</value>
   <data name="GEXP_IFC_LUFTWECHSEL" xml:space="preserve">
     <value>Infiltration air change rate in 1/h</value>
   </data>
+  <data name="GEXP_IFC_LUFTWECHSEL_NUTZER" xml:space="preserve">
+    <value>User ventilation air change rate in 1/h</value>
+  </data>
+  <data name="GEXP_IFC_KALENDER_GRUNDWERT" xml:space="preserve">
+    <value>Base value in the unit of the quantity: 1/h for ventilation, fraction 0 … 1 for equipment and persons</value>
+  </data>
+  <data name="GEXP_IFC_KALENDER_WOCHE" xml:space="preserve">
+    <value>Standard week: 168 hourly values, Monday 0:00 first, separated by semicolons, “aus” = switched off; unit of the quantity (°C, 1/h, fraction 0 … 1)</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_KONDITIONIERUNG" xml:space="preserve">
+    <value>For each zone, EPOS_Zone carries usage and setpoints; for each calendar a set EPOS_Kalender_&lt;quantity&gt; carries the standard week as text and the periods as “Type;Start;End;HolidayRule;Value”.</value>
+  </data>
+  <data name="IMP_IFC_KOND_HERKUNFT" xml:space="preserve">
+    <value>from IFC file (EPOS)</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOND_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Room {0}: {1} not readable and skipped ({2}).</value>
+  </data>
   <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
     <value>IFC export from EPOS-Plan, stage S1: semantic, without geometry.</value>
   </data>

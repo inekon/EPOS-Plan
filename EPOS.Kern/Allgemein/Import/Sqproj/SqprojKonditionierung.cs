@@ -15,6 +15,8 @@ namespace WindowsFormsApplication1
         Nutzungsprofil,
         /// <summary>Aus der Tagesganglinie (<c>PdProfileTimeCurve</c>) als Kalender mit Standardwoche und Perioden.</summary>
         Ganglinie,
+        /// <summary>Aus einer IFC-Datei von EPOS-Plan (<c>EPOS_Zone</c>, <c>EPOS_Kalender_*</c>, Datenaustauschkonzept 6.3).</summary>
+        IfcDatei,
     }
 
     /// <summary>Der Beleg einer Zelle: Tabelle und Spalte der Projektdatei, Profilnummer (Nutzungsprofil) bzw. Profilname.</summary>
@@ -40,8 +42,11 @@ namespace WindowsFormsApplication1
         internal IReadOnlyList<Vorgabebeleg> Vorgaben { get; init; } = Array.Empty<Vorgabebeleg>();
         internal int Begrenzt { get; init; }
 
+        /// <summary>Eine fertige Bemerkung (Herkunft „aus IFC-Datei (EPOS)“); <c>null</c> = der Beleg der Ganglinie.</summary>
+        internal string BemerkungText { get; init; }
+
         /// <summary>Die Bemerkung des Kalenders (≤ 200 Zeichen) — der Beleg der Ganglinie; <c>null</c> ohne Kalender.</summary>
-        internal string Bemerkung => Kalender == null ? null : SqprojProtokoll.Beleg(KalenderBeleg);
+        internal string Bemerkung => Kalender == null ? null : BemerkungText ?? SqprojProtokoll.Beleg(KalenderBeleg);
 
         /// <summary>Der Wert einer Vorgabezeile (<c>null</c> = keine).</summary>
         internal Matrixzelle Vorgabe(string zeile) => Vorgaben.FirstOrDefault(v => v.Zeile == zeile)?.Zelle;

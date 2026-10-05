@@ -30850,6 +30850,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundwert in der Einheit der Größe: 1/h bei der Lüftung, Anteil 0 … 1 bei Geräten und Personen ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_KALENDER_GRUNDWERT {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_KALENDER_GRUNDWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardwoche: 168 Stundenwerte, Montag 0 Uhr zuerst, durch Semikolon getrennt, „aus“ = abgeschaltet; Einheit der Größe (°C, 1/h, Anteil 0 … 1) ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_KALENDER_WOCHE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_KALENDER_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzmodell: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Körper sind schematisch erzeugt und bilden den tatsächlichen Grundriss nicht ab. Maße nicht abgreifen. ähnelt.
         /// </summary>
         public static string GEXP_IFC_KENNZEICHNUNG_SCHEMATISCH {
@@ -30864,6 +30882,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_IFC_LUFTWECHSEL {
             get {
                 return ResourceManager.GetString("GEXP_IFC_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechsel der Nutzerlüftung in 1/h ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_LUFTWECHSEL_NUTZER {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_LUFTWECHSEL_NUTZER", resourceCulture);
             }
         }
         
@@ -31305,6 +31332,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PROT_BEIPACK_KAELTE {
             get {
                 return ResourceManager.GetString("GEXP_PROT_BEIPACK_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Zone trägt EPOS_Zone Nutzung und Sollwerte, je Kalender ein Satz EPOS_Kalender_&lt;Größe&gt; die Standardwoche als Text und die Perioden als „Art;Beginn;Ende;Feiertagsregel;Angabe“. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_BEIPACK_KONDITIONIERUNG {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_BEIPACK_KONDITIONIERUNG", resourceCulture);
             }
         }
         
@@ -38743,6 +38779,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus IFC-Datei (EPOS) ähnelt.
+        /// </summary>
+        public static string IMP_IFC_KOND_HERKUNFT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_KOND_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäudemodell wird aufgebaut … ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ABBILD {
@@ -39189,6 +39234,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_KOERPER_OHNE_PAAR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_OHNE_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0}: {1} nicht lesbar und übersprungen ({2}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOND_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOND_UEBERSPRUNGEN", resourceCulture);
             }
         }
         
