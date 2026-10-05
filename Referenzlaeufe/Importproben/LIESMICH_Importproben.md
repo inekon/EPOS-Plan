@@ -75,7 +75,7 @@ KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
 | `ifc4_koerper_nachbarn_grenzen.ifc` | Gegenprobe zu `ifc4_koerper_nachbarn.ifc`: dieselben Räume mit Raumgrenzen der 2. Ebene für Wand und Decke (Gegenstücke) — die Raumgrenzen gehen vor, die Körperpaare werden nur gezählt | selbst erzeugt | eigenes Werk |
 | `ifc4_verlust.ifc` | von Hand geschriebene Kleinstdatei (< 5 KB), absichtlich beschädigt: ein unbekannter Entitätstyp und ein Verweis ins Leere — beide Verlustkanäle | von Hand geschrieben | eigenes Werk |
 
-## HottCAD-Projektdatei (Stufe SQ-1, Proben 33–36)
+## HottCAD-Projektdatei (Stufe SQ-1, Proben 33–36, Zonierungswahl HC-3)
 
 Keine Datei in diesem Ordner: Eine Projektdatei (`.sqproj`) ist SQLite und gehört nach der `*.sqlite`-Regel nie ins
 Repositorium. Die Proben entstehen **zur Laufzeit** im Test durch `EPOS.Kern.Tests/SqprojProbenErzeuger.cs` unter einem
@@ -83,7 +83,7 @@ temporären Pfad — deterministisch (feste Kennungen, feste Reihenfolge), nur d
 neutrale Raum- und Profilnamen, runde Werte: `Standard()` (Regelfall: Typ 5 und Typ 6 decken je alle Räume, Kennung,
 Name je Geschoss, Raum ohne Gegenstück, Tagesarten 4, 5, 6 und ein unbekannter Code, Betriebsart 2 in der Nacht,
 Abschnitte mit Wochentagsschaltern und über den Jahreswechsel, übersprungene Klassen und Zonentypen) und
-`Unvollstaendig()` (eine Simulationszone mit einem Teil der Räume). Anwenderdateien liegen nur lokal unter
+`Unvollstaendig()` (eine Simulationszone mit einem Teil der Räume). Probe 36 (`SqprojZonenTests`) hält die Zonierungswahl: beide Zonierungen mit der Vorgabe DIN-V-18599-Zonen und der Wahl Simulationszonen, nur eine Zonierung ohne Wahl und den Protokollsatz, der beide Zonierungen nennt. Probe 33 (`SqprojLeserTests`) hält die eigene Größengrenze der Projektdatei: 250 MB Windows, 100 MB iOS (`SqprojProfil.MAX_BYTES`, `MAX_BYTES_IOS`). Anwenderdateien liegen nur lokal unter
 `Quellen/*.sqproj` (`.gitignore`) und laufen allein in `SqprojQuelldateienDiagnoseTests`.
 
 **Feste Tabelle Profilnummer → Nutzung** (`EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`, Nummern nach
