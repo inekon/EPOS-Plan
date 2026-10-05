@@ -538,6 +538,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Bauart des Geraets (<c>Typ</c>: Luft-Wasser, Sole-Wasser, Wasser-Wasser) —
+        /// Projektkopie vor Katalog, wie die Anlagenzeile sie in <c>ID_WP</c> fuehrt;
+        /// <c>null</c>, wenn es das Geraet nicht gibt. KU3-6 (F2): Der Sperrgrund der freien
+        /// Kuehlung ueber die Waermequelle fragt sie, bevor der Lauf sie benannt ablehnt.
+        /// </summary>
+        public static string BauartDesGeraets(int idWp, int idProjekt)
+        {
+            if (idWp <= 0) return null;
+            try
+            {
+                string sql = ProjektgeraetVorhanden(idWp, idProjekt)
+                    ? "SELECT Typ FROM Tab_WP WHERE ID = ?"
+                    : "SELECT Typ FROM Tab_WP_STAMM WHERE ID = ?";
+                object v = DataRepository.ExecuteScalar(sql, new DbParam("@id", idWp));
+                return v == null || v == DBNull.Value ? null : Convert.ToString(v);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Lesen der Bauart: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Die benannte Ablehnung, wenn es die Projektkopie nicht gibt — mit dem
         /// haeufigsten Grund zuerst.
         /// </summary>

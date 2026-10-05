@@ -149,7 +149,13 @@ namespace WindowsFormsApplication1
                     // Abrechnungsart (false = anteilig, NULL) - gelesen mit der Zeile, also
                     // unveraendert, wenn niemand sie angefasst hat.
                     KuehlIdCarrier: daten.KuehlCarrierId ?? 0,
-                    KuehlEigenerZaehler: daten.KuehlEigenerZaehler == true), daten));
+                    KuehlEigenerZaehler: daten.KuehlEigenerZaehler == true,
+                    // KU3-6 (F1): die drei Anlagenfelder der freien Kuehlung ueber die Waermequelle -
+                    // der Gruppenschalter sagt dem Kern, dass sie geschrieben werden sollen.
+                    FreieKuehlung: true,
+                    KuehlFrei: daten.KuehlFrei,
+                    KuehlFreiGraedigkeitK: daten.KuehlFreiGraedigkeitK,
+                    KuehlFreiLeistungKw: daten.KuehlFreiLeistungKw), daten));
 
             // ET-5: der gewaehlte Traeger gehoert dem Projekt zugeordnet. Idempotent;
             // er steht auch dann an, wenn der Satz sonst unveraendert blieb.
