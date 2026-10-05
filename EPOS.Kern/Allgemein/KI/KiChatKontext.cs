@@ -61,6 +61,8 @@ namespace WindowsFormsApplication1
         public const string B_HEIZKESSEL = "Heizkessel";
         /// <summary>Hilfe.</summary>
         public const string B_HILFE = "Hilfe";
+        /// <summary>Kältemaschine (Katalog und Anlage).</summary>
+        public const string B_KAELTEMASCHINE = "Kältemaschine";
         /// <summary>Klimadaten.</summary>
         public const string B_KLIMADATEN = "Klimadaten";
         /// <summary>Kosten und Preise.</summary>
@@ -114,7 +116,7 @@ namespace WindowsFormsApplication1
         {
             BEREICH_UNBEKANNT,
             B_ADMIN, B_ASSISTENT, B_BERICHT, B_BHKW, B_BRAUCHWASSER, B_GEBAEUDE,
-            B_HAUPTFENSTER, B_HEIZKESSEL, B_HILFE, B_KLIMADATEN, B_KOSTEN, B_LIZENZ,
+            B_HAUPTFENSTER, B_HEIZKESSEL, B_HILFE, B_KAELTEMASCHINE, B_KLIMADATEN, B_KOSTEN, B_LIZENZ,
             B_PHOTOVOLTAIK, B_PROJEKT, B_PROZESSWAERME, B_PUFFERSPEICHER, B_SIMULATION,
             B_SOLARTHERMIE, B_STROMSPEICHER, B_STROMVERBRAUCHER, B_VARIANTEN,
             B_WAERMEBEDARF, B_WAERMEPUMPE, B_WIRTSCHAFT,
@@ -257,6 +259,9 @@ namespace WindowsFormsApplication1
             { "Form_WechselrichterImport",     B_PHOTOVOLTAIK },
             { "Form_Wirtschaftlichkeit",       B_WIRTSCHAFT },
             { "Form_Zapfprofil",               B_BRAUCHWASSER },
+            // Die Kältemaschine (KU3): Katalog- und Anlagendialog tragen eigene Hilfeschluessel.
+            { "KaeltemaschineKatalog",         B_KAELTEMASCHINE },
+            { "KaeltemaschineAnlage",          B_KAELTEMASCHINE },
             // Die Betriebskalender gelten fuer Brauchwasser, Prozesswaerme und Strom; ihr Bereich
             // ist der des Simulationslaufs, in dem sie wirken.
             { "Form_Betriebskalender",         B_SIMULATION },

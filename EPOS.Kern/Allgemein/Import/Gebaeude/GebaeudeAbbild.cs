@@ -306,6 +306,12 @@ namespace WindowsFormsApplication1
         /// <summary>Fläche [m²]; <c>null</c> = nicht gelesen.</summary>
         public double? FlaecheM2 { get; set; }
 
+        /// <summary>
+        /// Stammt <see cref="FlaecheM2"/> aus dem Grundriss (<see cref="GrundrissM"/>, Gaußsche Trapezformel), weil die Datei
+        /// für den Raum keine Flächenmenge führt (IFC, Mehrzonenkonzept 6.5)? <c>false</c> = aus der Datei oder keine.
+        /// </summary>
+        public bool FlaecheAusGrundriss { get; set; }
+
         /// <summary>Volumen [m³]; <c>null</c> = nicht gelesen.</summary>
         public double? VolumenM3 { get; set; }
 
