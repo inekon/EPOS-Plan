@@ -111,6 +111,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int? Baujahr { get; internal set; }
 
+        /// <summary>
+        /// Lässt sich die Raumtemperatur der Datei als Heizsollwert übernehmen (<see cref="GebaeudeCadSollwert.Moeglich"/>)?
+        /// Mindestens ein beheizter Raum trägt eine CAD-Raumtemperatur, keiner einen Norm-Sollwert. Der Dialog
+        /// zeigt den Schalter nur dann.
+        /// </summary>
+        public bool CadSollwertMoeglich { get; internal set; }
+
+        /// <summary>Wirkt der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" in diesem Satz?</summary>
+        public bool CadSollwertAktiv { get; internal set; }
+
         /// <summary>Die angewandte Zonenregel (<c>X4</c> in G4c).</summary>
         public string Zonenregel { get; }
 
@@ -140,6 +150,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyDictionary<string, bool> Uebersteuerungen { get; internal set; }
             = new Dictionary<string, bool>(StringComparer.Ordinal);
+
+        /// <summary>Der Stand der dazugeladenen HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
+        internal SqprojStand Projektdatei { get; set; }
 
         /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
         public GebaeudeFeldzeile Zeile(string zielfeld)

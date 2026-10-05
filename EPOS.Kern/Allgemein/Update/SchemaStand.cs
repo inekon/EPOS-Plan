@@ -903,7 +903,19 @@ namespace WindowsFormsApplication1
         /// Danach, mit der KÄLTESPITZE JE ZONE (MZ-Rest), steht das Ziel auf <see cref="ZonenKaeltespitzeSchema.SCHRITT"/>:
         /// Kältespitze und Kühlstunden an <c>Tab_ErgebnisZone</c> (<see cref="ZonenKaeltespitzeSchema"/>).
         /// <b>Ergebnisneutral:</b> Die Spalten entstehen leer und bleiben es ohne wirksame Kühlung.
-        public const int Zielversion = ZonenKaeltespitzeSchema.SCHRITT;
+        /// Danach, mit dem ANLAGENFAHRPLAN (AK2-1), steht das Ziel auf <see cref="AnlagenfahrplanSchema.SCHRITT"/>:
+        /// <c>Zeitprogramm</c> und <c>Vorlauf_Max</c> an <c>Tab_Energieanlagen</c>, sechs Komfort- und
+        /// Fahrplanspalten an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="AnlagenfahrplanSchema"/>).
+        /// <b>Ergebnisneutral:</b> Die Spalten entstehen leer; ohne Kopplung bleiben sie es.
+        /// Danach, mit der FREIEN KÜHLUNG ÜBER DIE WÄRMEQUELLE (KU3-6a), steht das Ziel auf
+        /// <see cref="FreieKuehlungSoleSchema.SCHRITT"/>: Schalter, Grädigkeit und Leistungsgrenze an
+        /// <c>Tab_Energieanlagen</c>, Kälte und Stunden der freien Kühlung an den beiden Ergebnistabellen der
+        /// Wärmepumpe (<see cref="FreieKuehlungSoleSchema"/>). <b>Ergebnisneutral:</b> Der Schalter entsteht aus,
+        /// die übrigen Spalten leer.
+        /// Danach, mit dem AUSWEIS DER VORLAUFWAHL (VW1a), steht das Ziel auf <see cref="VorlaufwahlSchema.SCHRITT"/>:
+        /// Stunden je Kennlinienstützstelle, darüber und darunter an <c>Tab_ErgebnisWaermepumpeModul</c>
+        /// (<see cref="VorlaufwahlSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer.
+        public const int Zielversion = VorlaufwahlSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

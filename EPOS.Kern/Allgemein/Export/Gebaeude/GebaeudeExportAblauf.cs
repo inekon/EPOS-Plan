@@ -113,6 +113,8 @@ namespace WindowsFormsApplication1
         internal const string BEIPACK_IDS = P + "BEIPACK_IDS";
         /// <summary>I — Der Kältebedarf ist sensibel, ohne Entfeuchtung (Kühlkonzept 9.2).</summary>
         internal const string BEIPACK_KAELTE = P + "BEIPACK_KAELTE";
+        /// <summary>I — IFC: Je Zone tragen <c>EPOS_Zone</c> und <c>EPOS_Kalender_*</c> Nutzung, Sollwerte und Kalender (6.3, 16.3).</summary>
+        internal const string BEIPACK_KONDITIONIERUNG = P + "BEIPACK_KONDITIONIERUNG";
 
         /// <summary>Der Dateiname der IDS-Datei der Auslieferung (<c>{app}\Vorlage\EPOS_Export.ids</c>).</summary>
         internal const string IDS_DATEI = "EPOS_Export.ids";
@@ -594,6 +596,18 @@ namespace WindowsFormsApplication1
                 double gewinne = z.Interne_Waermegewinne ?? (_geb.Nutzflaeche > 0.0 ? _geb.Interne_Waermegewinne * a / _geb.Nutzflaeche : 0.0);
                 double? personen = z.Bewohner ?? (_geb.Flaeche_Nutzer > 0.0 ? a / _geb.Flaeche_Nutzer : (double?)null);
                 bool gekuehlt = z.IstBeheizt && Gekuehlt(z);
+                // Die Konditionierung der Zone für die EPOS_*-Sätze (Datenaustauschkonzept 6.3, 16.3): die Matrixzellen, wie die
+                // Zone sie rechnet (Zone vor Gebäude), Nutzung und Kalender; der Klassenweg hat keine Zone und trägt keine.
+                AbbildKonditionierung konditionierung = null;
+                if (!_klassenweg)
+                {
+                    konditionierung = _satz.Zonenkonditionierung(z);
+                    konditionierung.HeizsollTagC = z.Raumsolltemperatur_Tag ?? _geb.Raumsolltemperatur_Tag;
+                    double nacht = z.Raumsolltemperatur_Nachtabsenkung ?? _geb.Raumsolltemperatur_Nachtabsenkung;
+                    konditionierung.HeizsollNachtC = nacht > 0.0 ? nacht : null;
+                    konditionierung.KuehlsollC = z.Kuehl_Sollwert ?? _geb.Kuehl_Sollwert;
+                    konditionierung.LuftwechselNutzerJeH = z.Luftwechsel_Nutzer ?? _geb.Luftwechsel_Nutzer;
+                }
                 return new AbbildRaum
                 {
                     Kennung = kennung,
@@ -614,6 +628,7 @@ namespace WindowsFormsApplication1
                     ZonenKennung = _klassenweg ? GebaeudeExportKennung.KlassenZone(_gebId) : GebaeudeExportKennung.Zone(z.ID),
                     Beschreibung = T("GEXP_DATEI_MITTELWERT"),
                     ZonenBeschreibung = T(nameof(MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007)),
+                    Konditionierung = konditionierung,
                 };
             }
 

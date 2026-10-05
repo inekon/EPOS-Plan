@@ -6287,6 +6287,13 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitBisErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    // Anlagenkopplung AK2 (9.3): der hoechste Vorlauf der Gruppe „Betriebszeiten"; das
+                    // Zeitprogramm ist ein Raster und bleibt der Hand vorbehalten.
+                    new KiDialogFeld("vorlauf_max",
+                                     "KomponentenKonfigurationKiSicht.VorlaufMax",
+                                     KiDialogTexte.WpaVorlaufMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaVorlaufMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
                     new KiDialogFeld("bivalenter_betrieb",
                                      "KomponentenKonfigurationKiSicht.BivalenterBetrieb",
                                      KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,
@@ -6305,7 +6312,7 @@ namespace WindowsFormsApplication1
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
 
                     // ---- Die Gruppe „Kuehlbetrieb" DIESER Waermepumpe (Stufe KU2 Welle 3)
-                    //      - dieselben fuenf Felder und Wege wie unter Form_WP_Anlage.
+                    //      - dieselben acht Felder und Wege wie unter Form_WP_Anlage (KU3-6: samt freier Kuehlung).
                     new KiDialogFeld("kuehlbetrieb", "KomponentenKonfigurationKiSicht.Kuehlbetrieb",
                                      KiDialogTexte.WpaKuehlbetriebName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaKuehlbetriebErl),
@@ -6323,7 +6330,22 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaKuehltraegerErl, leerErlaubt: true),
                     new KiDialogFeld("kuehl_abrechnung", "KomponentenKonfigurationKiSicht.KuehlAbrechnung",
                                      KiDialogTexte.WpaAbrechnungName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.WpaAbrechnungErl)
+                                     KiDialogTexte.WpaAbrechnungErl),
+
+                    // KU3-6: die freie Kuehlung ueber die Waermequelle. Der Schalter ist in der
+                    // Maske WEICH gesperrt (Bauart nicht Sole-/Wasser-Wasser, Quelle nicht
+                    // gepflegt); die Sichtklasse lehnt dieselbe Setzung benannt ab.
+                    new KiDialogFeld("kuehl_frei", "KomponentenKonfigurationKiSicht.KuehlFrei",
+                                     KiDialogTexte.WpaKuehlFreiName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaKuehlFreiErl),
+                    new KiDialogFeld("kuehl_frei_graedigkeit", "KomponentenKonfigurationKiSicht.KuehlFreiGraedigkeitK",
+                                     KiDialogTexte.WpaKuehlFreiGraedigkeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaKuehlFreiGraedigkeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("kuehl_frei_leistung", "KomponentenKonfigurationKiSicht.KuehlFreiLeistungKw",
+                                     KiDialogTexte.WpaKuehlFreiLeistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaKuehlFreiLeistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -6962,6 +6984,21 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehl_abrechnung", "WaermepumpeAnlageKiSicht.KuehlAbrechnung",
                                      KiDialogTexte.WpaAbrechnungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaAbrechnungErl),
+
+                    // KU3-6: die freie Kuehlung ueber die Waermequelle. Der Schalter ist in der
+                    // Maske WEICH gesperrt (Bauart nicht Sole-/Wasser-Wasser, Quelle nicht
+                    // gepflegt); die Sichtklasse lehnt dieselbe Setzung benannt ab.
+                    new KiDialogFeld("kuehl_frei", "WaermepumpeAnlageKiSicht.KuehlFrei",
+                                     KiDialogTexte.WpaKuehlFreiName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaKuehlFreiErl),
+                    new KiDialogFeld("kuehl_frei_graedigkeit", "WaermepumpeAnlageKiSicht.KuehlFreiGraedigkeitK",
+                                     KiDialogTexte.WpaKuehlFreiGraedigkeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaKuehlFreiGraedigkeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("kuehl_frei_leistung", "WaermepumpeAnlageKiSicht.KuehlFreiLeistungKw",
+                                     KiDialogTexte.WpaKuehlFreiLeistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaKuehlFreiLeistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
 
                     // ---- Die Felder des Geraets (Stammfeldblock) --------------------
                     new KiDialogFeld("hersteller", "WaermepumpeAnlageKiSicht.Firma",

@@ -52,7 +52,7 @@ namespace WindowsFormsApplication1
         /// Die Kennlinienwahl eines Moduls am gerechneten Vorlauf (6.1): alle Kennlinien des
         /// Geräts aufsteigend nach Vorlauf, die Stunden je Stützstelle und die Stunden außerhalb.
         /// </summary>
-        private sealed class Kennlinienwahl
+        internal sealed class Kennlinienwahl
         {
             internal _Kenndaten[] Kurven;
             internal int[] Stunden;
@@ -60,6 +60,76 @@ namespace WindowsFormsApplication1
             internal double DarueberMax = double.NegativeInfinity;
             internal int Darunter;
             internal double DarunterMin = double.PositiveInfinity;
+
+            /// <summary>Eine Wahl über Stützstellen ohne Kennlinienwerte — allein für Proben der Zählung (VW1a).</summary>
+            internal static Kennlinienwahl FuerVorlaeufe(params int[] vorlaeufe)
+                => new Kennlinienwahl
+                {
+                    Kurven = vorlaeufe.Select(v => new _Kenndaten { Vorlauf = v }).ToArray(),
+                    Stunden = new int[vorlaeufe.Length],
+                };
+
+            /// <summary>
+            /// Zählt eine Stunde am gerechneten Vorlauf <paramref name="vorlauf"/> (F-A8): die gewählte Stützstelle
+            /// und, falls außerhalb, darüber oder darunter. Bei <see cref="Vorlauflage.Verboten"/> zählt sie nichts.
+            /// </summary>
+            internal Vorlauflage Zaehlen(double vorlauf, bool extrapolationErlaubt, out int stelle)
+            {
+                int[] vorlaeufe = new int[Kurven.Length];
+                for (int k = 0; k < vorlaeufe.Length; k++) vorlaeufe[k] = Kurven[k].Vorlauf;
+                Vorlauflage lage = VorlaufAuswerten(vorlaeufe, vorlauf, extrapolationErlaubt, out stelle);
+                switch (lage)
+                {
+                    case Vorlauflage.Verboten:
+                        return lage;
+                    case Vorlauflage.Darueber:
+                        Darueber++;
+                        if (vorlauf > DarueberMax) DarueberMax = vorlauf;
+                        break;
+                    case Vorlauflage.Darunter:
+                        Darunter++;
+                        if (vorlauf < DarunterMin) DarunterMin = vorlauf;
+                        break;
+                }
+                Stunden[stelle]++;
+                return lage;
+            }
+
+            /// <summary>
+            /// Der Ausweis fürs Ergebnis (VW1a, Schemaschritt <see cref="VorlaufwahlSchema.SCHRITT"/>): je Stützstelle
+            /// die Stunden INNERHALB der Stützstellen, dazu darüber und darunter — drei getrennte Zähler, deren Summe
+            /// alle gezählten Stunden ergibt. (Die Protokollmeldung zählt die Stunden außerhalb zusätzlich bei der
+            /// obersten bzw. untersten Stützstelle, mit der sie rechnen.)
+            /// </summary>
+            internal VorlaufwahlAusweis Ausweis()
+            {
+                var paare = new List<KeyValuePair<double, int>>();
+                int oben = Kurven.Length - 1;
+                for (int k = 0; k < Kurven.Length; k++)
+                {
+                    int h = Stunden[k];
+                    if (k == oben) h -= Darueber;
+                    if (k == 0) h -= Darunter;
+                    paare.Add(new KeyValuePair<double, int>(Kurven[k].Vorlauf, h));
+                }
+                return new VorlaufwahlAusweis(VorlaufwahlSchema.StundenText(paare), Darueber, Darunter);
+            }
+        }
+
+        /// <summary>
+        /// Der Ausweis der Vorlaufwahl eines Moduls (VW1a): der Spaltentext „Vorlauf:Stunden;…“ der Stunden innerhalb
+        /// der Stützstellen und die Stunden darüber und darunter.
+        /// </summary>
+        internal sealed record VorlaufwahlAusweis(string StundenText, int Darueber, int Darunter);
+
+        /// <summary>
+        /// Der Ausweis der Vorlaufwahl von Modul <paramref name="index"/> (VW1a); <c>null</c>, wenn das Modul keine
+        /// Kennlinienwahl am Vorlauf hatte (keine Kopplung, reines Warmwassermodul).
+        /// </summary>
+        internal VorlaufwahlAusweis VorlaufwahlDesModuls(int index)
+        {
+            Kennlinienwahl w = index >= 0 && index < wp_kennlinienwahl.Count ? wp_kennlinienwahl[index] : null;
+            return w?.Ausweis();
         }
 
         // Je Modul die Kennlinienwahl am gerechneten Vorlauf; null = fester Vorlauf (Bestand).
@@ -1108,26 +1178,14 @@ namespace WindowsFormsApplication1
             double v = Heizkreisvorlauf[stunde];
             if (double.IsNaN(v) || double.IsInfinity(v)) return fest;
 
-            int[] vorlaeufe = new int[wahl.Kurven.Length];
-            for (int k = 0; k < vorlaeufe.Length; k++) vorlaeufe[k] = wahl.Kurven[k].Vorlauf;
-            switch (VorlaufAuswerten(vorlaeufe, v, Extrapolation_Erlaubt, out int stelle))
+            if (wahl.Zaehlen(v, Extrapolation_Erlaubt, out int stelle) == Vorlauflage.Verboten)
             {
-                case Vorlauflage.Verboten:
-                    string bezeichner = wp_model[index]?.Bezeichner ?? "";
-                    Fehlertext = string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN,
-                                               bezeichner, v.ToString("0.0"), vorlaeufe[vorlaeufe.Length - 1]);
-                    SimulationProtokoll.Aktuell.Fehlermeldung(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + Fehlertext);
-                    return null;
-                case Vorlauflage.Darueber:
-                    wahl.Darueber++;
-                    if (v > wahl.DarueberMax) wahl.DarueberMax = v;
-                    break;
-                case Vorlauflage.Darunter:
-                    wahl.Darunter++;
-                    if (v < wahl.DarunterMin) wahl.DarunterMin = v;
-                    break;
+                string bezeichner = wp_model[index]?.Bezeichner ?? "";
+                Fehlertext = string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN,
+                                           bezeichner, v.ToString("0.0"), wahl.Kurven[wahl.Kurven.Length - 1].Vorlauf);
+                SimulationProtokoll.Aktuell.Fehlermeldung(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + Fehlertext);
+                return null;
             }
-            wahl.Stunden[stelle]++;
             return wahl.Kurven[stelle];
         }
 

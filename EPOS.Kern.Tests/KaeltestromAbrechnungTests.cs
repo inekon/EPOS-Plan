@@ -79,8 +79,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Kuehl_EigenerZaehler", AnlagenSql.SQL_ANLAGE_INSERT, StringComparison.Ordinal);
             int platzhalter = AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?');
             // 72: 66 + die fuenf Felder des Kollektorfelds (Welle M2) + die Bodenalbedo der Anlage
-            // (AlbedoSchema.SCHRITT).
-            Assert.Equal(72, platzhalter);
+            // (AlbedoSchema.SCHRITT); 74 mit Zeitprogramm und Vorlauf_Max (AnlagenfahrplanSchema.SCHRITT);
+            // 77 mit Kuehl_Frei, Kuehl_Frei_Graedigkeit_K und Kuehl_Frei_Leistung_kW (FreieKuehlungSoleSchema.SCHRITT).
+            Assert.Equal(77, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
 
             Assert.Null(AnlagenSql.EigenerZaehlerOderNull(null));
@@ -171,7 +172,9 @@ namespace EPOS.Kern.Tests
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= 119);
             Assert.True(KuehlungSchema.Schritt119Vollstaendig());
             foreach (SchemaSpalte s in KuehlungSchema.Schritt119Spalten())
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" +
+                                      // Die Kältemaschine des Referenzprojekts 1055 (KU3-4b) trägt Kühlträger und eigenen Zähler.
+                                      (s.Tabelle == "Tab_Energieanlagen" ? " AND ID_Projekt <> 1055" : "")));
 
             try
             {

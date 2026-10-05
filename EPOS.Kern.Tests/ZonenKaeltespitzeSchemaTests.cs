@@ -18,11 +18,11 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         [Fact]
-        public void Die_Nummer_ist_185_das_Ziel_und_die_Paketanhebung_fuehrt_DDL()
+        public void Die_Nummer_ist_185_im_Ziel_und_die_Paketanhebung_fuehrt_DDL()
         {
             // Vorläufig hinter KaeltemaschineAnlageSchema + 2; nach dem Merge von KU3-4d an KaeltestromabrechnungSchema + 1.
             Assert.Equal(185, ZonenKaeltespitzeSchema.SCHRITT);
-            Assert.Equal(ZonenKaeltespitzeSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(ZonenKaeltespitzeSchema.SCHRITT <= SchemaStand.Zielversion);
             Assert.Equal(Paketanhebung.Art.Ddl, Paketanhebung.Stufen.Single(x => x.Nr == ZonenKaeltespitzeSchema.SCHRITT).Wirkung);
             Assert.Equal(ZonenUebergabeSchema.SPALTENZAHL_ERGEBNIS_ZONE + 2, ZonenKaeltespitzeSchema.SPALTENZAHL_ERGEBNIS_ZONE);
         }

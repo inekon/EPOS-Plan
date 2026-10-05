@@ -5631,6 +5631,44 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     cursor: grab;
 }
 
+/* Der Umschalter "Dateikoerper | Exportmodell" (15.4): zwei Knoepfe mit aria-pressed, gedrueckt wie der
+   Bereichsknopf der Diagramme. Darunter die Kennzeichenzeile, der Hinweis zur Dreiecksgrenze und die
+   aufklappbare Liste der Raeume mit der Herkunft ihres Koerpers. */
+.epos-gebansicht-modus {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-gebansicht-modusknopf {
+    min-height: 32px;
+}
+
+.epos-gebansicht-modusknopf[aria-pressed="true"] {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+.epos-gebansicht-kennzeichen,
+.epos-gebansicht-vereinfacht {
+    margin: 0;
+}
+
+.epos-gebansicht-raumherkunft ul {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.epos-gebansicht-raumherkunft li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .epos-gebansicht-zone--0 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-0); }
 .epos-gebansicht-zone--1 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-1); }
 .epos-gebansicht-zone--2 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-2); }
@@ -5780,6 +5818,72 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     margin: 0;
     padding-left: 1.2em;
     color: var(--epos-stufe-warnung);
+}
+
+/* Der Zonenbaum (Mehrzonenkonzept 6.4): links der Baum mit der Knopfleiste, rechts die nicht zugeordneten
+   Raeume - im schmalen Fenster darunter (flex-wrap der Andockung). Die Raumzeilen sind eingerueckt, die
+   Knopfleisten und die Zeile "Zone hinzufuegen" brechen um; die Sperre am OK steht in der Warnfarbe. */
+.epos-gebimport-offenspalte {
+    flex: 1 1 18rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.epos-gebimport-offentitel {
+    margin: 0;
+    font-size: inherit;
+    font-weight: 600;
+}
+
+.epos-gebimport-planraumname {
+    padding-left: 1.5em;
+}
+
+/* Die Projektdatei des CAD-Programms (Datenaustauschkonzept 16.4): Knoepfe neben der Dateizeile, die Bilanz als
+   Begriffsliste, Listen ohne Aufzaehlungszeichen, das Kennzeichen "aus Projektdatei" leise neben dem Zonennamen. */
+.epos-gebimport-projektdatei {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin: 6px 0;
+}
+
+.epos-gebimport-sqliste {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-gebimport-sqherkunft {
+    display: block;
+    font-size: 0.85em;
+}
+
+.epos-gebimport-okhinweis,
+.epos-gebimport-planleiste,
+.epos-gebimport-neuezone {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 4px 12px;
+    margin-top: 6px;
+}
+
+.epos-gebimport-planleiste .epos-feld,
+.epos-gebimport-neuezone .epos-feld {
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+.epos-gebimport-okhinweis {
+    align-items: center;
+    color: var(--epos-stufe-warnung);
+}
+
+.epos-gebimport-zonenname {
+    min-width: 8rem;
 }
 
 /* Der Gebaeudeexport (gbXML, Stufe G7a): Format und Umfang als Text wie der Kopf des Imports,

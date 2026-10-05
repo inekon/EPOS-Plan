@@ -38,6 +38,13 @@
         /// <summary>Zonenregel Z4 „je Geschoss" (Mehrzonenkonzept 6.5) — die Vorgabe des Zonenimports (E50, M7).</summary>
         public const string ZONENREGEL_Z4 = "Z4";
 
+        /// <summary>
+        /// Zonenregel Z6: nach Raumtemperatur und Nutzung (Mehrzonenkonzept 6.1) — gebäudeweit je Beheizung und auf
+        /// ganze °C gerundeter Raumsolltemperatur; die Nutzungsklasse benennt die Zone und ordnet Räume ohne Temperatur zu.
+        /// Wählbar auch ohne Raumgrenzen.
+        /// </summary>
+        public const string ZONENREGEL_Z6 = "Z6";
+
         /// <summary>Zonenregel Z5: eine Zone je Gebäude — der Einzonen-Weg auf <c>Tab_Gebaeude</c>, die einzige Regel in G4a.</summary>
         public const string ZONENREGEL_Z5 = "Z5";
 

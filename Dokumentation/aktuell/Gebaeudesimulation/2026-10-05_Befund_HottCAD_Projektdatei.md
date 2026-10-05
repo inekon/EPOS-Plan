@@ -1,0 +1,720 @@
+# Befund: HottCAD-Projektdatei (`.sqproj`) und IFC-Export — wo Räume, Zonen, Nutzungsprofile, Bauteile und Kalender liegen
+
+**Stand:** 05.10.2026 · **Auftrag:** Struktur der Projektdatei
+`2026-06-24_SV-Vaihingen Altbau Bestand test.sqproj` und des zugehörigen Ordners
+`IFC_Ganglinie_Beispiele` auf Y: analysieren (Container, Formate, Tabellen, XML-Knoten),
+ohne Produktdaten zu kopieren; dazu die IFC-Datei `Sportheim_1970_unsaniert.ifc` lesen.
+**Methode:** Kopie der Projektdatei im Scratchpad, geöffnet mit `immutable=1`; Schema über
+`sqlite_master` und `PRAGMA table_info`, Verknüpfungen über Zähl-Joins, XML- und
+Medien-BLOBs nur auf Knoten- und Attributnamen ausgewertet. Die IFC-Datei wurde als
+STEP-Text mit Regex zerlegt. Es wurden **keine Werte** übernommen: keine Hersteller- und
+Typangaben, keine Kennwerte, keine Adressen; Raumnamen und Profilbezeichnungen stehen hier
+nicht. Alle Zahlen sind Zeilen- und Knotenzählungen.
+**Zweiter Durchgang:** Die Zahlencodes wurden an allen **sieben** Projektdateien des Ordners
+geprüft (21 bis 211 MB, lokale Kopien unter `C:\Temp\IFC_Ganglinie_Beispiele`; die Dateien
+tragen dasselbe Schema, `XmTables` bis Fassung 17.6). Kapitel 6 enthält die daraus belegten
+Codetabellen; Kapitel 3.2 und 3.5 sind danach berichtigt — die zuerst untersuchte Datei war
+in zwei Punkten ein Sonderfall.
+
+Vorarbeiten, auf die dieser Befund aufsetzt: [Befund C (IFC-Recherche)](2026-09-15_Befund_C_IFC-Recherche.md),
+[Befund N (IFC-Import-Entwurf)](2026-09-15_Befund_N_IFC-Import_Entwurf.md),
+[Befund P (Zonen und Materialien in IFC)](2026-09-15_Befund_P_IFC_Zonen_Materialien.md),
+[Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kapitel 6 und die Entscheide
+E72, E73 und E79 der [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md).
+
+
+## 0. Das Ergebnis in neun Punkten
+
+1. **Die `.sqproj` ist eine SQLite-3-Datenbank** (Seitengröße 4096, 5 262 Seiten, 21,5 MB,
+   Journal `delete`, kein `user_version`/`application_id`), kein ZIP, kein XML-Container.
+   Erzeuger laut `PrProject`: Hottgenroth „Energieberater 18599 3D PLUS“, Fassung 12.4.3.1.
+   688 Tabellen und 805 Indizes, davon **99 Tabellen belegt**; das Schema ist ein
+   generisches Produktschema mit Präfixfamilien (`Bm` Gebäude, `Pd` Profile, `Pm` Anlage,
+   `Tc` Katalog, `Sm` Standort, `Pr` Projekt, `Xm` Verwaltung …).
+2. **Räume liegen relational:** `BmBuilding` (1) → `BmFloor` (3) → `BmRoom` (56) über
+   `FloorUUID`; je Raum eine Geometrie als **XML in `BmData.ClassValue`** (Polygon, Höhen,
+   Einfügepunkt, Attribute `temperature`, `air_change`, `heating_type`, `room_type`).
+   Daneben eine DIN-277-Flächenzeile je Raum in `BmBuildingSpace` und eine anlagenseitige
+   Spiegelung `PmSpace`/`PmSpaceArea`, verknüpft über `PmBuildingReference`.
+3. **Zonen liegen in `BmZone`** (alle mit `ParentUUID` = Gebäude). `ZoneType` trennt
+   mehrere Zonierungen desselben Gebäudes, die nebeneinander bestehen: **5 = DIN-V-18599-Zone**
+   (trägt über `PdProfileReference` ein Nutzungsprofil), **6 = Simulationszone** (trägt über
+   `ProfileGroupUUID` eine Profilgruppe mit zehn Zeitprofilklassen), **2 = Nutzungs- oder
+   Wohneinheit** (Heizlast je Einheit), 7 = Lüftungszone, 10 = drei feste Systemzonen. Die
+   Zuordnung Raum → Zone steht in **`BmZoneReference`** (`UUID` = Zone, `ReferenceToUUID` =
+   Raum); in sechs der sieben Dateien ist sie vollständig — jeder Raum liegt in genau einer
+   18599-Zone und einer Simulationszone, in Wohngebäuden zusätzlich in einer Wohneinheit.
+4. **Nutzungsprofile liegen in `PdProfile`** (372 Zeilen) mit 1:1-Zusatztabellen je
+   Profilklasse: `PdProfileUsage` (DIN-V-18599-10-Nutzungsprofil, die Profilnummer steht in
+   `ProfileUsageType`), `PdProfileHeating`, `PdProfileCooling`, `PdProfilePerson`,
+   `PdProfileVentilation`, `PdProfileDevice`, `PdProfileLighting`, `PdProfileElectrical`,
+   `PdProfileDrinkingWater`, `PdProfileHumidity`, `PdProfileSunShading`. Die **Tagesganglinie**
+   jedes Zeitprofils liegt in **`PdProfileTimeCurve`: genau 24 Zeilen je Profil**
+   (`HourType` 1–24, `Ratio`, `Temperature`, `SpecificRatedAirChange`, `OperatingModeType`).
+5. **Kalender liegen in `PdProfileTaskSerial`**: je Zeitprofil eine Zeile mit `TaskStartDay`/
+   `TaskEndDay` (Tag 1–365), sieben Wochentagsschaltern, `TaskPeriodType`, Start- und
+   Enddatum; die Verknüpfung läuft über `PdProfileTaskSerialReference`. In dieser Datei gilt
+   jedes Profil ganzjährig ohne Wochentagsunterschied (alle Schalter 0, Tag 1–365); die
+   Tagesart steht an der Profilgruppe (`PdProfileGroup.ProfileUsageDayType`, drei Werte).
+6. **Bauteile liegen relational — in sechs von sieben Dateien vollständig.** `BmElement`
+   führt jedes Bauteil auf zwei Ebenen: `RepositoryLevel` 2 ist das **CAD-Objekt** (eine
+   Wand, Decke, Öffnung mit Geometrie-XML in `BmData`), `RepositoryLevel` 3 die
+   **raumbezogene Hüllfläche** (ein Wandstück je angrenzendem Raum, mit `UValue`, Netto- und
+   Bruttofläche, Orientierung, `AdjacentType` und dem Aufbau über `CatalogDimUUID`).
+   `ElementType` unterscheidet Wand (1), Tür (2), Fenster (3), Geschossdecke (4), Dach (5),
+   Bodenplatte (11), Öffnung (13), Verschattung (18), Luftdurchlass (19), je mit
+   1:1-Zusatztabelle (`BmElementWall`, `BmElementWindow` mit g-Wert und Rahmenanteil,
+   `BmElementDoor`, `BmElementStorey`, `BmElementRoof`, `BmElementBaseSlap`,
+   `BmElementShadingDevice`, `BmElementOpening`, `BmElementAirPassage`). **Raum → Bauteil**
+   steht in `BmElementReference` (`ReferenceFromUUID` = Raum, `ReferenceToUUID` = Hüllfläche,
+   `ReferenceType` = Rolle am Raum, `AdjacentType`, `UValue`, `Fx`, Transmissionsverlust).
+   **Aufbauten** liegen in `TcBuildingElementDimension` (U-Wert) mit Schichten in
+   `TcBuildingElementDimensionLayer` (Dicke, λ, Dichte, Wärmekapazität). Die zuerst
+   untersuchte Sportheim-Datei enthielt davon nur Decken, Dächer und Bodenplatten — ein
+   Zwischenstand ohne gerechnete Hülle. Proprietär bleiben das DIN-18599-Rechenmodell
+   (`WDIN18599DataModel`, `*.BDExit`-Tabellen in `PrMedia`) und das 3D-Grafikmodell (gzip in
+   `GmMedia`); beides braucht ein Leser nicht.
+7. **Klimadaten liegen in `SmDiagram.DiagramMedia` als JSON** (UTF-8 mit BOM, 1,1 MB):
+   neun Stundenreihen à 8 760 Werte (Bewölkung, Wind, Trockentemperatur, relative Feuchte,
+   Direkt-, Diffus-, Global-, langwellige und atmosphärische Gegenstrahlung) mit `StartTime`,
+   `TimeBetweenValues`, `Unit`, dazu `Site` (Länge, Breite, Höhe, Zeitzone, TRY-Region) und
+   `DataSource` (`Provider`, `ClimateExtremeType`, `PeriodStart`). Der Standort selbst steht
+   in `SmSite` (Koordinaten, `TRYRegion`, Norm-Außentemperaturen nach mehreren Normen).
+8. **Der IFC-Export** (`Sportheim_1970_unsaniert.ifc`, IFC4, Xbim-Exporter) gehört zu
+   derselben Art Projekt: 56 `IfcSpace` in 3 `IfcBuildingStorey` wie die 56 Räume in 3
+   Geschossen der Projektdatei. Er trägt Geometrie, Bauteile mit Schichtaufbauten und
+   U-Werten und Raum-Sollwerte in Hottgenroth-eigenen Eigenschaftssätzen `HSETU_*`, aber
+   **keine Zonen, keine Nutzungsprofile, keine Tagesganglinien, keine Kalender, keine
+   Klimareihen** — das bestätigt E72. Wer Nutzung und Zeitverhalten eines HottCAD-Projekts
+   übernehmen will, muss die `.sqproj` lesen.
+9. **Der Schlüssel zwischen beiden Dateien ist `GId`:** Die IFC-`GlobalId` (22 Zeichen
+   Base64) ist die kodierte Form der GUID in `BmRoom.GId` bzw. `BmElement.GId` (und des
+   `@GUID` der Geometrie-XML). Am Wohngebäude geprüft: 20 von 20 Räumen, 3 von 3 Geschossen,
+   alle 75 CAD-Wände und 31 von 32 Fenstern treffen. Raum- und Bauteilzuordnung zwischen
+   IFC-Export und Projektdatei ist damit ohne Namensabgleich möglich.
+
+
+## 1. Der Ordner `IFC_Ganglinie_Beispiele`
+
+| Inhalt | Format | Befund |
+|---|---|---|
+| 1 Projektdatei `*.sqproj` | SQLite 3 | Gegenstand von Kapitel 2 bis 4 |
+| 8 IFC-Dateien in der Wurzel (Typologie-Beispiele: Mehrfamilienhaus klein/mittel, Sportheim in drei Fassungen, Produktion mit Verwaltung, Verwaltung mit Montage, Wohngebäude EH55) | IFC4 (4) und IFC2X3 (4), alle vom Xbim-Exporter „Hottgenroth Model“, 3,3–14 MB | 20 bis 113 `IfcSpace`, 2 bis 7 Geschosse; nur die Sportheim-IFC4-Datei trägt 134 `IfcSolarDevice` (PV-Module) |
+| 4 Ordner je Bauvorhaben (Straßennamen; hier nicht wiedergegeben) | je 1 IFC4 (3,8–23,5 MB, 33 bis 272 Räume, 5–6 Geschosse) + 3 CSV | IFC-Export und drei **Ergebnis-Ganglinien** derselben Simulation |
+| `temperaturverlauf.txt` | 15 Byte Text | Vermerk „TRY 2024 Normal“ — der Klimadatensatz der Ganglinien |
+
+**Die CSV-Ganglinien** (je 8 766 Zeilen) sind Windows-1252, Trenner `;`, Dezimalkomma,
+mit abschließendem `;` je Zeile. Fünf Kopfzeilen (`Projekt:`, `Zeitraum: Jahresansicht`,
+`Darstellung: Stundenmittelwerte`, `Diagramm: …`, Leerzeile), dann die Spaltenzeile, dann
+8 760 Stundenzeilen mit `Zeit[Stunde]` 1–8760:
+
+| Datei | Spalten |
+|---|---|
+| `Heizung_Kühlung-*.csv` | `Zeit[Stunde];Heizung[kW];Kühlung[kW];` |
+| `Temperatur-*.csv` | `Zeit[Stunde];Außenluft[°C];` |
+| `thermische_Lasten-*.csv` | `Zeit[Stunde];Lüftungswärme[kW];Solare Last[kW];Beleuchtung[kW];Personen[kW];Geräte[kW];` |
+
+Das ist das Format, das ein `GanglinienImportAblauf` für den Vergleich HottCAD ↔ EPOS-Plan
+lesen müsste: Stundenmittel in kW, ohne Zeitstempel, Stunde 1 = 1. Januar 0–1 Uhr.
+
+
+## 2. Container und Schema der Projektdatei
+
+### 2.1 Container
+
+SQLite 3 (`SQLite format 3\0`, geschrieben mit SQLite 3.40), 4096-Byte-Seiten, 5 262 Seiten,
+Freiliste leer, Journal `delete`, `user_version` 0. Die Datei lässt sich mit jedem
+SQLite-Treiber lesen, `immutable=1` genügt (keine WAL-Dateien). Fremdschlüssel sind im
+Schema **nicht** deklariert (`PRAGMA foreign_key_list` leer); alle Beziehungen laufen über
+`UUID`-Textspalten, die Verknüpfungen in Kapitel 3 sind durch Zähl-Joins belegt.
+
+### 2.2 Schemaregister und Familien
+
+Die Tabelle `XmTables` (688 Zeilen) ist das **Register des Schemas**: je Tabelle `Name`,
+`Type` („2.000“), eine **Tabellenfassung** `Version` (14.4 bis 17.6 — 515 Tabellen stehen auf
+14.4, die Gebäude- und Profiltabellen auf 15.1 bis 16.7), `TableType`, `ContainerType`
+(15 Werte, die Familien) und Stempel. Daraus lässt sich ein Leser **versionsabhängig**
+machen, ohne das Schema zu raten.
+
+| Präfix | Tabellen | Familie (aus Spaltennamen erschlossen) | hier belegt |
+|---|---|---|---|
+| `Tc` | 198 | Katalog (Bauteile, Geräte, PV-Module, Hersteller, VDI-3805-Datensätze, Textbausteine) | 11 |
+| `Pm` | 107 | Anlage (Räume anlagenseitig, Erzeuger, Verteilung, Kessel, Zeitreihen) | 8 |
+| `Nm` | 77 | Netz (Rohr-, Abgas-, Leitungsnetz) | 3 |
+| `Bm` | 63 | Gebäudemodell (Gebäude, Geschoss, Raum, Zone, Bauteil, Daten, Medien) | 23 |
+| `Em` | 54 | Elektro | 3 |
+| `Fm` | 45 | Facility/Termine (unter anderem `FmAppointment`) | 0 |
+| `Pd` | 38 | Profile (Nutzung, Zeitkurven, Kalender) | 20 |
+| `Xm` | 24 | Verwaltung (Register, Projektinhalt, Einstellungen) | 6 |
+| `Cm` | 23 | Kontakte, Adressen | 4 |
+| `Pr` | 15 | Projekt (Einstellungen, Journal, Medien) | 8 |
+| `Sm` | 12 | Standort und Klima | 2 |
+| `Fc`, `Ec`, `Gm` | 12 / 11 / 9 | Finanzen, Wirtschaftlichkeit, Grafikmodell | 0 / 5 / 3 |
+
+**Gemeinsames Spaltenmuster** jeder Tabelle: `UUID` (Text, Primärschlüssel), `GId`, `Id`,
+`SeqNum`, `SortNum`, `ShortDesc`, `LongDesc`, `InfoDesc`, `StampCreate/Edit/Sync`, `MId`,
+`ProjectUUID`, ein `Sync*`-Block (sieben Spalten) und meist `GeneratorType`, `StateType`,
+`VariantType`, `VariantRoot`, `EditModeType`. Katalogtabellen (`Tc*`) nutzen `UId`/`OId`
+statt `UUID`. Fachspalten sind überwiegend `INTEGER`-Codes (`…Type`) und `FLOAT`; Zeiten
+sind `DATE` als Text, Delphi-Nullzeit `1899-12-30 00:00:00` bedeutet „leer“.
+
+### 2.3 Belegte Tabellen (Auszug nach Zeilen)
+
+| Zeilen | Tabelle | Inhalt |
+|---|---|---|
+| 7 320 | `PdProfileTimeCurve` | 305 Zeitprofile × 24 Stunden |
+| 688 | `XmTables` | Schemaregister |
+| 372 / 305 / 305 / 305 | `PdProfile` / `PdProfileGroupReference` / `PdProfileTaskSerial` / `PdProfileTaskSerialReference` | Profile, Gruppenzuordnung, Kalender |
+| 113 | `BmData` | Geometrie-XML und Farben je Objekt |
+| 90 / 56 | `PmSpaceArea` / `PmSpace` | Heizflächen und Räume anlagenseitig |
+| 76 | `PrProjectSetting` | Berechnungsvorgaben und Seitenschalter |
+| 62 / 56 / 56 / 56 | `BmBuildingSpace` / `BmRoom` / `BmRoomData` / `BmZoneReference` | Flächen, Räume, Raumdaten, Raum→Zone |
+| 56 / 38 / 39 / 31 / 31 / 30 / 29 ×6 | `PdProfileUsage` / `PdProfileHeating` / `PdProfilePerson` / `PdProfileCooling` / `PdProfileVentilation` / `PdProfileSunShading` / übrige Profilklassen | Zusatztabellen je Profilklasse |
+| 47 / 47 / 47 / 37 / 34 / 8 / 2 | `BmElement` / `BmElementDimensioning` / `BmElementEnergyConsulting` / `BmElementRoof` / `BmElementReference` / `BmElementStorey` / `BmElementBaseSlap` | Bauteile (Decken, Dächer, Bodenplatten) |
+| 35 / 35 / 19 | `BmZone` / `BmZoneData` / `BmPropertySet` | Zonen, Zonendaten, Zonenfarben |
+| 40 / 18 | `PrJournalEntry` / `PrJournal` | Änderungsjournal (106 KB `JournalData`) |
+| 16 / 13 | `PdProfileGroup` / `PdProfileReference` | Profilgruppen, Profil→Zone |
+| 13 / 2 / 1 / 1 | `PrMedia` / `BmMedia` / `GmMedia` / `SmDiagram` | eingebettete Medien, siehe 3.7 |
+| 3 / 3 / 1 / 1 / 1 | `BmFloor` / `BmFloorData` / `BmBuilding` / `BmBuildingData` / `SmSite` | Geschosse, Gebäude, Standort |
+| 3 / 1 / 1 / 1 / 8 | `PmPlant` / `PmHeatingBoiler` / `PmDevice` / `NmNet` / `EmCable` | Anlage |
+| 2 / 2 / 1 / 1 / 1 / 1 | `TcCatalog` / `TcCatalogContent` / `TcBasis` / `TcManufacturer` / `TcPVModuleTechData` / `TcProfileElement` | **Katalogauszug mit Herstellerdaten** (nicht wiedergegeben) |
+
+Nicht belegt, aber vorhanden und für einen Leser erwähnenswert: `PmTimeSeries` (BLOB,
+Zeitreihen der Anlage), `TcPropertySet`, `XmSetting` (BLOB), `FmAppointment` (einzige
+Tabelle mit einer Kalenderspalte im Wortsinn, `GoogleCalendarIdentifier`).
+
+
+## 3. Wo liegt was
+
+### 3.1 Gebäude, Geschoss, Raum
+
+```
+BmBuilding (1) ──BuildingUUID── BmFloor (3) ──FloorUUID── BmRoom (56) ──UUID── BmRoomData (56)
+      │                                                        │
+      ├── BmBuildingSpace (62): je Raum (56), je Geschoss (3), je Gebäude (3)
+      │       Flächen nach DIN 277: UsableAreaN1…N7, TechnicalArea, TrafficArea, NetArea,
+      │       ConstructionArea, GrossArea, Gross-/Net-/ConstructionVolume — je Wert, Vorgabe, Zustand
+      └── BmData (113, ReferenceUUID → Objekt): 56 × Raumgeometrie-XML, 3 × Geschoss-XML,
+              13 × Bauteil-XML, 6 × Gebäude (XML building_data, PlotOptions, print_layouts; 3 Skalare),
+              32 × Zone (nur Farbwerte „A;R;G;B“, kein XML)
+```
+
+`BmRoom` hat 192 Spalten: Geometrie (`Area`, `Volume`, `Height`, `ClearHeight`, Boden-,
+Wand- und Deckenflächen je mit Berechnungsregel), Codes (`RoomType`, `SpaceType`,
+`HeatingType`, `CoolingType`, `VentilationType`), **Sollwerte** (`InsideTemperature`,
+`HeatingRatedInsideTemperature`, `CoolingRatedInsideTemperature`, Luftwechselraten,
+`AirExchangeRate50`), **Ergebnisse** der Heiz- und Kühllastrechnung (`HeatingLoad`,
+`HeatingRatedHeatingLoad`, `TransmissionLoad`-Aufteilung auf Fußboden/Radiator/Wand/
+Decke/Elektro/Lüftung, `CoolingLoad`, `HeatDemand`, `CoolingDemand`) und Lüftung nach
+DIN 1946-6. `BmRoom.ProfileGroupUUID` und `RoomGroupUUID` zeigen in dieser Datei auf
+nichts Vorhandenes — die Nutzung hängt an der Zone, nicht am Raum. `BmFloor` und `BmBuilding`
+tragen dieselben Last- und Lüftungsspalten aggregiert; `BmBuilding` dazu Baujahr,
+Gebäudetyp-Codes, Wärmeschutzstandard, Hüllkennwerte (`UmValue`, `Cwirk`).
+
+**Raumgeometrie-XML** in `BmData.ClassValue` (Wurzel `<geometry>`): je Raum
+`Room/room[@GUID, @external_guid, @floor, @name, @short_name, @number, @room_type,
+@component_type, @heating_type, @temperature, @air_change, @height, @area,
+@userDefinedLivingArea]` mit `points/p` (Grundrisspolygon, hier 4–6 Punkte je Raum),
+`polygons/plg[@height, @type, @with_holes]/points/p`, `heights/height_ext`,
+`insertation_point/p`, `transform_origin/p`, `LivingAreaCalculationRule/rule(minZ,
+percentage)`. Die `GUID` der Räume ist das Bindeglied zu `external_guid` der Bauteile
+(Dachsegmente nennen in `refs/item[@room]` den Raum).
+
+Anlagenseitig gibt es dieselben Räume noch einmal: `PmSpace` (56, 139 Spalten, Heizflächen-
+und Auslegungsspalten), `PmSpaceArea` (90 Heizflächen, `PlantSpaceUUID` → `PmSpace`) und
+`PmBuildingReference` (56 Zeilen `ReferenceFromUUID` = `PmSpace`, `ReferenceToUUID` =
+`BmRoom`; eine Zeile Anlage → Gebäude).
+
+### 3.2 Zonen
+
+`BmZone` (35 Zeilen, 195 Spalten, wie `BmRoom` plus `ZoneType`, `ZoneSubType`,
+`EscapeRouteType`, `FacadeType`, `LCANonResidentialType`, `BWZId`, `BIMUUID`) hängt mit
+`ParentUUID` am Gebäude (`ParentClassType` 4). `ZoneType` trennt **mehrere Zonierungen
+desselben Gebäudes**, die nebeneinander bestehen; die Deutung ist an sieben Dateien belegt
+(Kapitel 6.4):
+
+| `ZoneType` | Verknüpfung | Deutung | Beleg |
+|---|---|---|---|
+| 5 | je Zone ein Nutzungsprofil (`PdProfile` Typ 2) über `PdProfileReference`; Räume über `BmZoneReference` | **DIN-V-18599-Zone** | in sechs Dateien decken die Typ-5-Zonen alle Räume genau einmal ab (1 bis 12 Zonen je Gebäude) |
+| 6 | je Zone eine `PdProfileGroup` (`ProfileGroupUUID`) mit den zehn Zeitprofilklassen; Räume über `BmZoneReference`; `HeatingLoad` > 0 | **Simulationszone** mit Tagesganglinien | decken die Räume ebenfalls vollständig ab (2 bis 14 Zonen); Produktionsbau: 11 Typ-5- und 11 Typ-6-Zonen |
+| 2 | Räume über `BmZoneReference` (4 bis 14 je Zone, kein Raum doppelt), Farbsatz, `Area` und `HeatingLoad` > 0 | **Nutzungs- oder Wohneinheit** (Heizlast je Einheit) | nur in den Wohngebäuden: 44 Einheiten im großen Mehrfamilienhaus, 30 und 12 in den anderen; im Produktionsbau keine |
+| 7 | Nutzungs-, Personen- und Lüftungsprofil über `PdProfileReference`, wenige Räume | Lüftungszone (DIN 1946-6) | nur eine Datei (3 Zonen), Deutung aus den Profilklassen |
+| 10 | nichts außer Farbe | feste Systemzonen | in **jeder** Datei genau 3 Zeilen |
+| 0 | `SpaceType` 4, `ParentClassType` 17 (Geschoss) | Geschosszone, unbekannt | nur eine Datei, 3 Zeilen = 3 Geschosse mit Zonen |
+| 8 | keine | unbekannt | nur Sportheim, 1 Zeile |
+
+**Raum → Zone:** `BmZoneReference` (`UUID` = Zone, `ReferenceToUUID` = Raum,
+`ReferenceClassType` 1, `ReferenceClass` `TModelRoom`); ein Raum steht mehrfach darin, einmal
+je Zonierung. In sechs Dateien ist jeder Raum einer 18599-Zone und einer Simulationszone
+zugeordnet. Die Sportheim-Datei ist der Sonderfall: 12 Typ-5- und 14 Typ-6-Zonen angelegt,
+aber nur eine Simulationszone mit Räumen — ein Zwischenstand der Zonierung. Für den Import
+nach E79 heißt das: Die Zuordnung ist relational lesbar, aber gegen die Raumliste zu prüfen
+(„nicht zugeordnete Räume“).
+
+**Schlüssel zum IFC-Export:** `BmRoom.GId`, `BmZone.GId`, `BmElement.GId` und das `@GUID` der
+Geometrie-XML sind GUIDs; die IFC-`GlobalId` ist dieselbe GUID in der 22-stelligen
+Base64-Kodierung (Kapitel 6.6). `BIMUUID` ist ein anderer Wert (Gebäude-GUID in
+Klammerschreibweise) und **nicht** der IFC-Schlüssel.
+
+### 3.3 Nutzungsprofile und Tagesganglinien
+
+```
+BmZone(ZoneType 5) ◄──ReferenceToUUID── PdProfileReference ──UUID──► PdProfile(ProfileType 2) ──UUID── PdProfileUsage
+BmZone(ZoneType 6) ──ProfileGroupUUID──► PdProfileGroup ◄──UUID── PdProfileGroupReference ──ReferenceToUUID──► PdProfile(ProfileType 4…21)
+                                                                                                                       │ UUID
+                                                                             PdProfileTimeCurve (24 Zeilen) ◄──ProfileUUID──┤
+                                                                             PdProfile<Klasse> (1:1) ◄──UUID────────────────┤
+                                                                             PdProfileTaskSerialReference ──ReferenceToUUID─┘
+```
+
+**`PdProfile`** (372 Zeilen): `ProfileType` (Klassencode), `ProfileSourceType` (**4 = Normprofil**:
+in sechs Dateien dieselben 44 Nutzungsprofile mit den Nummern 1 bis 71 der DIN V 18599-10 —
+der eingebettete Normkatalog; **0 = Projektprofil**; die mit dem Altprojekte-Viewer gespeicherte
+Datei trägt den Katalog nicht),
+`StandardType`, `Active`, `PeriodStartDate`/`PeriodEndDate`, `RoomType`,
+`CapacityLimitingType`, `FloorType`, `ProfileGroupUUID`, `PDMUUID`. Die Klassencodes und
+ihre 1:1-Zusatztabellen (gleicher `UUID`), wie sie die Zähl-Joins belegen:
+
+| `ProfileType` | Zeilen | Zusatztabelle | `ReferenceClass` in den Verweistabellen | Zeitkurve |
+|---|---|---|---|---|
+| 2 | 56 | `PdProfileUsage` | — (nur `PdProfileReference` → Zone) | nein |
+| 4 | 29 | `PdProfileDevice` | `TModelProfileDevice` | ja, `Ratio` 0–1 |
+| 5 | 30 | `PdProfileSunShading` | `TModelProfileSunShading` | ja |
+| 6 | 38 | `PdProfileHeating` | `TModelProfileHeating` | ja, `Temperature` (Sollwert) |
+| 7 | 31 | `PdProfileCooling` | `TModelProfileCooling` | ja, `Temperature` (Sollwert) |
+| 8 | 39 | `PdProfilePerson` | `TModelProfilePerson` | ja, `Ratio` 0–1 |
+| 9 | 29 | `PdProfileLighting` | `TModelProfileLighting` | ja, `Ratio` 0–1 |
+| 10 | 31 | `PdProfileVentilation` | `TModelProfileVentilation` | ja, `SpecificRatedAirChange` |
+| 14 | 29 | `PdProfileHumidity` | `TModelProfileHumidity` | ja, `Ratio` |
+| 16 | 29 | `PdProfileElectrical` | `TModelProfileElectrical` | ja, `Ratio` |
+| 21 | 29 | `PdProfileDrinkingWater` | `TModelProfileDrinkingWater` | ja, `Ratio` 0–1 |
+| 13 / 20 | 1 / 1 | `PdProfileBuildingElement` / `PdProfileValve` | — | nein |
+| 3 | 0 (2 in einer anderen Datei) | `PdProfileTariff`, dazu `PdProfileContractRateTariff` | — | nein |
+
+**`PdProfileUsage`** (56 Spalten) ist das **DIN-V-18599-10-Nutzungsprofil**: `ProfileUsageType`
+trägt die Profilnummer (hier Werte 1–47, 70, 71 — die Nummern der Norm-Tabelle),
+`PeriodOfOperationFrom/To`, `HeatedFrom/To`, `CoolingOperatingTimeFrom/To`,
+`HVACOperatingTimeFrom/To` (als `DATE`, hier alle auf der Nullzeit), `UserCount`,
+`NominalRoomTemperature` (dazu je einmal `…DinEn12831` und `…OenEn12831`),
+`DropOfTemperatureSetback`, `SupplyAirChange`, `MinimumExternalAirFlowBasedOnPersons/Area`,
+`AnnualEffectiveLoadHoursOfPersons/Devices`, `DailyEffectiveLoadHoursOfPersons/Devices`,
+`SpecificThermalOutputPowerOfPersons`, `SpecificThermalOutputOfDevices`,
+`MaintenanceIllumination`, `RelativeAbsence`, `PersonActivityClassType`. Das ist genau der
+Spaltensatz der Norm-Tabelle 4 — ein Leser kann die Profile **mit der Profilnummer** auf
+die eigenen Konditionierungsvorlagen abbilden (E79: „DIN-V-18599-Profile als spätere Welle“).
+
+**`PdProfileTimeCurve`** (7 320 = 305 × 24 Zeilen): `ProfileUUID`, `CurveId` und `HourType`
+(beide 1–24, Stunde des Tages), `HourValue` (dasselbe als Gleitzahl), `OperatingModeType`
+(je Stunde **1 = Betriebsstunde**, **2 = außerhalb der Nutzungszeit**: Profile mit beiden
+Werten führen 2 nachts und 1 von 10 bis 20 Uhr; durchgehend 2 heißt „nie in Betrieb“, etwa
+Kühlung oder Sonnenschutz ohne Anlage, Kapitel 6.5), `Ratio` (0–1, bei Feuchte bis 0,4, bei Elektro bis 0,073),
+`Temperature` (nur Heizen 15–21 und Kühlen 25–28), `SpecificRatedAirChange` (nur Lüftung,
+0–5), `MinSpecificRatedAirChange`, `MaxSpecificRatedAirChange`. **Eine Kurve je Profil,
+keine Unterscheidung Werktag/Wochenende innerhalb des Profils** — die Tagesart ist an der
+Gruppe (`PdProfileGroup.ProfileUsageDayType`: 13 Gruppen mit 4, je eine mit 5 und 6).
+
+Die klassenspezifischen Zusatztabellen tragen die Nennwerte, auf die `Ratio` wirkt:
+`PdProfilePerson` (`RatedPersonOccupancyRate`, `SpecificRatedDryHeatEmission`,
+`SpecificRatedHumitHeatEmission`, Aktivitätsklasse), `PdProfileHeating`
+(`RatedFlowTemperature`, `RatedReturnFlowTemperature`, `SpecificRatedThermalCapacity`,
+`AmountOfRatedConvectiveThermalOutput`), analog Kühlung, Lüftung, Geräte, Beleuchtung,
+Elektro, Trinkwasser, Feuchte, Sonnenschutz; alle mit `ProfileTimeType` und
+`ProfileDayType` (hier 0).
+
+### 3.4 Kalender
+
+**`PdProfileTaskSerial`** (305 Zeilen, eine je Zeitprofil): `TaskType`, `TaskSerialType`,
+`TaskPeriodType` (304 × 1, 1 × 4), `TaskStartDate`/`TaskEndDate`/`TaskHasFinishDate`,
+`TaskStartDay`/`TaskEndDay` (**Tag im Jahr**, hier überall 1–365), die sieben Schalter
+`TaskMonday … TaskSunday` (hier überall 0), `TaskOperatingSerialDesc`. Die Zuordnung zum
+Profil läuft über **`PdProfileTaskSerialReference`** (`UUID` = Kalenderzeile,
+`ReferenceToUUID` = Profil, `ReferenceClass` wie oben). Das Modell erlaubt also je Profil
+**mehrere Gültigkeitsabschnitte** (Jahresabschnitt × Wochentage); diese Datei nutzt nur den
+Ganzjahresabschnitt. Zusätzlich trägt `PdProfile` selbst `PeriodStartDate`/`PeriodEndDate`.
+Ferien-, Feiertags- oder Heizperiodenkalender des Gebäudes (wie EPOS-Plans
+Konditionierungskalender) gibt es als eigene Tabelle **nicht**; die Heizperiode wird über
+`PrProjectSetting` (`SettingKey` `Nutzungsprofile_Kalender`, Seitenschalter) und die
+Rechenvorgaben gesteuert.
+
+### 3.5 Bauteile
+
+**Vorbemerkung nach dem Vergleich der sieben Dateien:** Die Sportheim-Datei enthält nur
+Decken, Dächer und Bodenplatten (47 Zeilen) und ist damit ein **Zwischenstand ohne
+gerechnete Hülle**; die sechs anderen Dateien führen 337 bis 3 032 Bauteile mit Wänden,
+Fenstern, Türen, Verschattungen und Aufbauten vollständig in Tabellen. Das Modell ist in allen
+Dateien dasselbe und wird in **Kapitel 6.2 und 6.3** beschrieben (zwei Ebenen `RepositoryLevel`
+2 und 3, Raumbezug in `BmElementReference`, Aufbauten in `TcBuildingElementDimension`). Der
+folgende Absatz beschreibt die Spalten anhand der Sportheim-Datei; die Aussage „Wände nur in
+Binärströmen“ gilt **allein für diesen Zwischenstand**.
+
+**`BmElement`** (47 Zeilen, 149 Spalten): `ElementType` (4 = Geschossdecke 8×, 5 = Dach 37×,
+11 = Bodenplatte 2×), `ElementSubType`, `ElementUsageType`, `AdjacentType`,
+`AdjacentEntityType`, `RepositoryType`/`RepositoryLevel`, Maße (`Height`, `Width`,
+`Thickness`, `Orientation`, `Slope`, `GrossArea`, `NetArea`, `Volume`, `Perimeter`),
+Bauphysik (`UValue`, `UValueMarker`, `R`, `RMinDIN4108`, `AlphaI`, `AlphaE`,
+`SpecificComponentMass`, `Cp03`, `Cp10`, `EmissionCoefficient`, `AbsorptionCoefficient`,
+`TransmissionCoefficient`, `GTot`, `AmountOfFrame`, `SunShadingCoefficient`,
+`ReductionFactor`), Zusatzdämmung innen/außen (`AddIns…`), Akustik (`Acoustic…`),
+Katalogbezug (`CatalogUUID`, `CatalogSystemUUID`, `CatalogBasisUUID`, `CatalogDimUUID` —
+der Katalog selbst ist **nicht** in der Datei, die UUIDs zeigen ins Leere), `BIMUUID`.
+Je Zeile eine 1:1-Zusatztabelle: `BmElementStorey` (`StoreyType`, `ElevationOfRefHeight`,
+`GroundArea`, `GroundPerimeter`), `BmElementRoof` (`RoofType`, `RidgeHeight`, `RoofSlope`,
+`GableSlope`, `Overhang`, `H1`, `H2`, `S1`, `S2`), `BmElementBaseSlap`; dazu
+`BmElementDimensioning` und `BmElementEnergyConsulting` (47 je). **`BmElementReference`**
+(34 Zeilen) verknüpft Dachsegmente mit Räumen (`ReferenceFromType` 1, `ReferenceToType` 16,
+`AdjacentType`, `Rsi`, `Rse`, `Fx`, `Bu`, `TransmissionHeatLossCoefficient`); die 34
+entsprechen den 34 `segments/item` der Dach-XML.
+
+**Bauteil-XML** in `BmData` (13 Zeilen, Wurzel `<geometry>`): `Platform/platform[@GUID,
+@external_guid, @floor, @thickness, @u_value, @u_value_default_typo, @against_air,
+@against_soil, @against_unheated, @is_hole, @is_platform, @is_auto_generated,
+@building_hull_added]` mit `points/p` und `repositories/val` (10 Decken/Platten) und
+`Roof/roof[@GUID, @type, @ridge_height, @thickness, @gable_mode]` mit
+`external_roof_parts/part[@type]/points/p`, `segments/item[@guid,
+@object_type]/refs/item[@guid, @room]` und `rooms/val` (3 Dächer).
+
+**Wände, Fenster, Türen, Verschattung:** keine Tabellenzeilen. Sie liegen in
+
+- `BmMedia` (MediaType 1, ZIP 54 KB) → `externals.xml`, Wurzel `<topitem>`, **242 ×
+  `externals/external[@GUID, @external_type, @floor, @is_standalone, @name, @parentGuid]`**
+  mit `points/p` — die Öffnungen und Anbauteile der Räume (der IFC-Export zählt 80 Fenster,
+  4 Türen, 81 Öffnungen, 49 Verschattungen);
+- `BmMedia` (MediaType 11, XML 188 KB) → `<topitem>` mit `application_control`
+  (Umgebung, Gelände), `layer_management` (963 Layer) und `settings` (CAD-Einstellungen,
+  Schattenrechnung, Fenster- und Türbreiten) — die **CAD-Projektdatei**;
+- `GmMedia` (gzip, entpackt 1,5 MB) → serialisierte .NET-Objektgraphen des 3D-Modells
+  (Typnamen `Hstac.GemeinsameSchicht.…`), nicht ohne die Anwendungsklassen lesbar;
+- `PrMedia` (MediaType 0, 575 KB) → Binärstrom mit Kopf `WDIN18599DataModel`
+  (.NET-`BinaryFormatter`-Signatur) — das **Rechenmodell der DIN-V-18599-Bilanz** samt
+  Hüllflächen; `PrMedia` (MediaType 1, ZIP 180 KB) → neun Tabellen `TableProjekt`,
+  `TableHuellfl` (638 KB), `TableHausDat`, `TableAnbauDat`, `TableAnlage`, `TableResult`,
+  `TableZusatz` (602 KB), `TableHeizung`, `TableWasser` im Format `.BDExit` (binärer
+  Tabellenexport mit Feldkopf `PROJEKT_ID`, `PROJEKT_NR`, `SUBTYPE` …) — ein Austauschformat
+  der Energieberater-Produktfamilie.
+
+In diesem Zwischenstand ist die Hülle aus der Projektdatei nur über proprietäre Formate zu
+bekommen. In den sechs gerechneten Dateien liegt sie relational (Kapitel 6.2); der IFC-Export
+liefert sie zusätzlich offen (Kapitel 4) und bleibt der Weg des Mehrzonenkonzepts. Der
+IFC-Export des Sportheims (205 Wände) stammt vom 01.10.2026 und damit von einem späteren
+Stand als diese Projektdatei vom 24.06.2026.
+
+### 3.6 Standort und Klima
+
+`SmSite` (1 Zeile, 76 Spalten): Ort, Postleitzahl, `Latitude`/`Longitude` (auch als
+Rahmen Nordost/Südwest), `PlaceID`, `HeightOverNN`, Geländehöhen, `AmbientTemperature`,
+`AnnualMeanExternalTemperature`, `ExternalDesignTemperature` je in Fassungen EN 12831,
+EN 12831:2017, Meteonorm 7, OIB, `GroundWaterLevel`, `AnnualMeanGroundTemperature`,
+`AccumulatedPrecipitation`, **`TRYRegion`**, `Timezone`, `RegionalFactor`,
+`CoolingLoadZoneType`, ISO-3166-Codes, `HorizonUUID`, `TerrainUUID`.
+
+**Die Klimareihen** stehen in `SmDiagram.DiagramMedia` (JSON, UTF-8 mit BOM, 1,1 MB) —
+Wurzelschlüssel `ClimateValues`, `Site`, `DataSource`:
+
+```
+ClimateValues.{CloudCoverage, WindSpeed, DryBulbTemperature, RelativeHumidity,
+               DirectIrradiation, DiffuseIrradiation, GlobalIrradiation,
+               LongWaveIrradiation, AtmosphericCounterIrradiation}
+   .{StartTime: str, TimeBetweenValues: str, Unit: str, Values: [8760 Zahlen]}
+Site.{Longitude, Latitude, HeightOverNN, Timezone: float, TryRegion: int}
+DataSource.{Provider: int, ClimateExtremeType: int, PeriodStart: str}
+```
+
+Das ist ein vollständiger Stundenklimasatz im Raster 8 760 — direkt vergleichbar mit der
+Klimatabelle von EPOS-Plan (Trockentemperatur, Direkt-, Diffus-, Globalstrahlung); Wind,
+Feuchte, Bewölkung und langwellige Strahlung liegen zusätzlich vor. `SmDiagramPoint` und
+`SmDiagramRow` (leer) tragen die TRY-Spalten `TRYT`, `TRYP`, `TRYWR`, `TRYWG`, `TRYN`,
+`TRYX`, `TRYRF`, `TRYB`, `TRYD`, `TRYA`, `TRYE`, `TRYIL` — die Spaltenkennungen des
+DWD-TRY-Formats.
+
+### 3.7 Ergebnisse, Einstellungen, Anlage, Katalog
+
+- **Ergebnisse:** auf Raum-, Geschoss- und Gebäudeebene in den Lastspalten von `BmRoom`,
+  `BmFloor`, `BmBuilding`; als Zusammenfassung in `PrMedia` (MediaType 11, 766 Byte XML,
+  Namensraum `hottgenroth.de/VariantData.xsd`): `SimulationData/Building[@HeatDemand,
+  @HeatingLoad, @CoolingDemand, @CoolingLoad]` mit `HeatGainSources[@Constructions,
+  @Devices, @Heater, @Illumination, @People, @Solar, @Ventilation]`,
+  `HeatLossSources[@Constructions, @Cooler, @Ventilation]` und
+  `SummerHeatProtection[@DegreeHoursOfExcessiveTemperature…]`; ein LCCA-Textstrom
+  (73 KB, `<LCCA BuildingElements=…>`); neun JPEG-Bilder (0,27–0,57 MB, Diagramme und
+  Ansichten). **Stundenreihen der Simulation (die CSV-Ganglinien) liegen nicht in der
+  Projektdatei**; `PmTimeSeries` ist leer.
+- **Einstellungen:** `PrProjectSetting` (76 Zeilen; `SettingType`, `SettingKey`,
+  `SettingValue`, `SettingData`, Min/Max/Default) mit Rechenvorgaben
+  (`HeatLoadCalculationType`, `ThermalBridgeCalculationMethod`, `ThermalBridgeValue`,
+  `InternalTemperatureCorrectionMethod`, `AltitudeCorrection`, `UseTGAVentilation`,
+  `PS_SIM_*`, `PS_HUMIDITY_IS_ENABLED`) und Seitenschaltern des Programms
+  (`Nutzungsprofile`, `Nutzungsprofile_Kalender`, `Klimadaten`, `Gebaeude_Bauteile`,
+  `Ergebnisse_Zonen`, `PV_Anlage`, `WP_Anlage`, `Wirtschaftlichkeit` …);
+  `PrProjectOption` (9 typisierte Optionen); `XmProjectContent` (51 Inhaltsarten).
+- **Anlage:** `PmPlant` (3), `PmPlantData`, `PmHeatingBoiler` (1, 72 Spalten), `PmDevice`
+  (1), `PmDistribution`, `PmConnection`, `NmNet`/`NmNetSetting`/`NmNetProperty`,
+  `EmPlant`, `EmCable` (8), `CmConnect` (7); Wirtschaftlichkeit `EcCalculation`,
+  `EcCalculationParam`, `EcCost`, `EcFinancing`.
+- **Katalogauszug:** `TcCatalog`, `TcCatalogContent`, `TcBasis` (212 Spalten),
+  `TcManufacturer`, `TcPVModuleTechData`, `TcProfileElement` (183 Spalten mit
+  `VDI3805DataSet*`-Feldern), `TcMedia` (ein BMP). Hier liegen Hersteller- und Typdaten
+  der verwendeten PV-Module — **nicht wiedergegeben**, und für einen Import ohne Belang.
+
+
+## 4. Die IFC-Datei `Sportheim_1970_unsaniert.ifc`
+
+**Kopf:** ISO-10303-21, `FILE_SCHEMA IFC4`, Exporter `Xbim.IO.MemoryModel` („Processor
+version 6.0.0.0“), Projektname „Hottgenroth Model“, Organisation Hottgenroth Software AG,
+74 202 Zeilen, 7,6 MB. 17 `IfcSIUnit` (m, m², m³, °C, W, Pa, kg, s, rad, lx, lm, cd, A, V,
+N, Hz, sr); Längen in Metern, Schichtdicken im `IfcMaterialLayer` in Millimetern.
+
+**Räumliche Struktur:** `IfcProject` → `IfcSite` (Name = Ort) → `IfcBuilding`
+(`ObjectType` `TModelBuilding`) → 3 `IfcBuildingStorey` (`TModelFloor`, Elevation gesetzt)
+→ 56 `IfcSpace` (`TModelRoom`, Name = Raumname, kein `LongName`), aggregiert über
+`IfcRelAggregates` (21/15/20 Räume je Geschoss). Die `ObjectType`-Werte sind die
+**Klassennamen des HottCAD-Objektmodells** (`TModel…`) — dieselben Bezeichner wie die
+`ReferenceClass`-Spalten der Projektdatei. Das erlaubt eine robuste Klassifikation beim
+Import unabhängig von der IFC-Klasse.
+
+**Bauteile:** 205 `IfcWall` (`TModelBuildingElementWall`), 112 `IfcSlab` (90
+`TModelBuildingElementStorey`, 22 `TModelBuildingElementBaseSlap`), 39 `IfcRoof`, 80
+`IfcWindow`, 4 `IfcDoor`, 81 `IfcOpeningElement` (Voids/Fills), 49
+`IfcBuildingElementProxy` als `TModelBuildingElementShadingDevice` (41 davon als Kind eines
+Fensters über `IfcRelAggregates`), 134 `IfcSolarDevice` `.SOLARPANEL.` (`TModelPVModule`,
+der Name trägt die Hersteller-Typbezeichnung) in einem `IfcDistributionSystem`
+(`IfcRelAssignsToGroup`, `IfcRelServicesBuildings`). Typobjekte: 7 `IfcSlabType`, 4
+`IfcWallType`, 3 `IfcWindowType`, 3 `IfcRoofType`, 3 `IfcDoorType`, 1 `IfcSolarDeviceType`.
+Elemente hängen über `IfcRelContainedInSpatialStructure` am Geschoss; die PV-Module am
+Gebäude.
+
+**Geometrie:** Räume als `Body`/`Brep` (`IfcFacetedBrep`, 56). Von den Bauteilen haben nur
+die **Hüllbauteile** eine Körperdarstellung (`Body`/`SurfaceModel`,
+`IfcShellBasedSurfaceModel`): 92 von 205 Wänden, 10 von 112 Platten, 3 von 39 Dächern, 78
+von 80 Fenstern, alle 134 PV-Module; 113 Wände, 102 Platten, 36 Dächer und alle 49
+Verschattungen sind **geometrielos** (Innenbauteile und Raumanteile, nur Mengen und
+Eigenschaften). Schichtaufbauten (`IfcMaterialLayerSetUsage` → `IfcMaterialLayerSet`,
+1–3 Schichten, 105 Sätze) nur an den 92 + 10 + 3 Hüllbauteilen; je `IfcMaterial`
+`Pset_MaterialCommon.MassDensity` und `Pset_MaterialThermal.ThermalConductivity`
+(in der IFC2X3-Fassung als `IfcGeneralMaterialProperties`/`IfcThermalMaterialProperties`).
+**Keine `IfcRelSpaceBoundary`**, keine `IfcRelConnectsElements`; die Raum-Bauteil-Beziehung
+steht in **56 `IfcRelReferencedInSpatialStructure`** („Spatial references of space …“):
+je Raum die Liste seiner Wände, Platten, Dächer, Fenster, Türen (typisch 4 Wände, 1–2
+Platten, 0–1 Dach, 0–5 Fenster). Das ist der Raumbezug, den E73 meint — er nennt das
+Bauteil, nicht den Nachbarraum.
+
+**Eigenschaftssätze** (3 296 `IfcPropertySet`, 12 822 `IfcPropertySingleValue`, 7 356
+`IfcPropertyEnumeratedValue`; Enumerationen als `IfcLabel` mit Code-Präfix, etwa
+`mrt…` für Raumtyp, `bht…` für Beheizung):
+
+| Pset | an | Eigenschaften (Namen) |
+|---|---|---|
+| `HSETU_BauteilAllgemein` | allen Bauteilen, Räumen, Geschossen, Gebäude | `ElementType`, `AdjacentType`, `LoadBearingType`, `Orientation (°)`, `Orientation.Type`, `RadiatorPositionType`, `EmbeddedSystemPositionType`, `EcoIndexType`, `ColourType`, `GUID`, `ID`, `Identifier`, `Name`, `Number`, `Generator`, `Comments`, Stempel |
+| `HSETU_Bauteilreferenzen` | Bauteilen | `ElementReferences[0].AdjacentType`, `…[0].Orientation (°)`, `…[1].AdjacentType`, `…[1].Orientation (°)`, `ElementAssignmentDirectionType`, `ElementAssignmentFlowDirectionType`, `UValue (W/(m² K))` |
+| `HSETU_BauteilEnergetischeBewertung` | Bauteilen | `ElementEnergyConsultingProperties.FxElementType`, `.CladdingSurface` (Wert, Vorgabe, Zustand) |
+| `HSETU_EcoCad` | Bauteilen, Räumen, Geschossen, Gebäude | `ElementType`, `NetArea`, `CoatingArea`, `FractionOfFrame`, `Dimensions.DIN18599V2011.CharacteristicNetArea` |
+| `HSETU_BauteilSchallschutzbetrachtungen` | Bauteilen | `Acoustic.BodyText` |
+| `HSETU_DachAllgemein` / `HSETU_SlabAllgemein` | Dach / Platten | `RoofType`, `Slope (°)`, `Orientation` / `BaseSlapType`, `GroundType`, `InstallationType`, `ElevationOfRefHeight (m)`, Perimeterdämmung λ |
+| `HSETU_RaumAllgemein` | Räumen | `RoomType`, `HeatingType`, **`InsideTemperature (°C)`**, `RatedMinAirExchangeRate (1/h)`, `RoomVentilationType`, `LevelOfBasicFloor (m)` |
+| `HSETU_RaumHeizung` (+ `…Fußboden`, `…Radiator`, `…Wand`) | Räumen | `Heating.HeatingLoad (W)`, `Heating.RatedHeatingLoad (W)`, `Heating.AdditionalHeatingLoad (W)`, `Heating.HeatingLoadType`, Anteile je Übergabeart |
+| `HSETU_RaumMappingNachDIN12831` | Räumen | `DesignLoads.Load/RatedLoad/TransmissionLoad/VentilationLoad/AdditionalLoad (W)`, `Ventilation.InfiltrationHeatLoss`, `.SupplyHeatLoss`, `.SurplusHeatLoss`, `.SupplyAirTemperature (°C)`, `Info` |
+| `HSETU_RaumMappingNachDIN1946-6` / `HSETU_RaumLüftungstechnik` | Räumen | Luftvolumenströme (Feuchteschutz, reduziert, Nenn, Intensiv, je Durchlass), `Ventilation.VentilationLoadType`, `CombustionAirSupply.AirSupplyType` |
+| `HSETU_RaumWandflächen` / `HSETU_RaumDeckenflächen` | Räumen | `AreaCalculationRule (m)` |
+| `HSETU_GeschossAllgemein` | Geschossen | `FloorType`, `ElevationOfRefHeight (m)` |
+| `HSETU_Gebäude…` (Allgemein, Information, Berechnungsvorgaben, Lüftungstechnik, EnergetischeBewertung…) | Gebäude | `BuildingType`, `BuildingUsageType`, `BuildingHeatInsulationStandardType`, `BuildingEnergyEfficientType`, `YearOfConstruction (Datum)`, `Constructed`, `Calculation.BuildingCalcType`, `.BuildingCalcBasisType`, `.ThermalBridgeCalcType`, `Ventilation.AirExchangeRate50`, `.PressureExponent`, Anzahl Geschosse, Belegung, Wärmeschutz |
+| `HSETU_EIMBauteilAllgemein` | PV-Modulen | `SeqNum`, `SymbolId` |
+| `Pset_WallCommon`, `Pset_SlabCommon`, `Pset_RoofCommon`, `Pset_WindowCommon`, `Pset_DoorCommon` | Bauteilen | `LoadBearing`, **`ThermalTransmittance`** (hier mit der Einheit `W/(m K)` beschriftet — der Wert ist ein U-Wert) |
+
+**Mengen** (`IfcElementQuantity`, 673): `HSETU_BauteilQuantities` (440: `Height`, `Width`,
+`Length`, `Thickness`, `GrossArea`, `NetArea`, `CoatingArea`, `CoatingThickness`, `Volume`),
+`HSETU_RaumQuantities` + `…Fußbodenfläche-`, `…Wandflächen-`, `…DeckenflächenQuantities` (je
+56: `Area`, `Volume`, `Height`, `ClearHeight`, `FloorHeight`, `Perimeter`, `UsefulArea`,
+`LivingArea`, `EnclosureSurface`, `FloorGeometry.*`), `HSETU_GeschossQuantities`,
+`HSETU_Gebäude*Quantities`.
+
+**Was in der IFC-Datei fehlt** (geprüft über alle Eigenschaftsnamen): `IfcZone`,
+`IfcSpatialZone`, `IfcGroup` außer dem PV-System, `IfcTimeSeries`, `IfcWorkCalendar`,
+Nutzungsprofile (kein Name mit „Profil“, „Nutzung“, „Usage“, „Schedule“, „Occupancy“ außer
+`BuildingUsageType` am Gebäude), g-Werte (`GTot`, `SolarHeatGain`), Nachtabsenkung,
+Personen-, Geräte-, Beleuchtungslasten, Klimareihen. Je Raum stehen nur **eine
+Solltemperatur, der Mindestluftwechsel, Raumtyp und Beheizungsart** — der Befund hinter E72.
+
+**IFC2X3-Fassungen** desselben Gebäudes (`Sportheim_Bestand-1970_test_ifc3.ifc`,
+`…1997_test_ifc4.ifc`, beide `FILE_SCHEMA IFC2X3` trotz Namenszusatz): gleiche
+Entitätszahlen (205/112/80/56/3), ohne PV-Module, Materialeigenschaften in den
+IFC2X3-Klassen, `IfcPresentationStyleAssignment` statt direktem `IfcStyledItem`.
+
+
+## 5. Folgerungen für EPOS-Plan und offene Punkte
+
+**Für den IFC-Import (Mehrzonenkonzept Kapitel 6, Wellen Z6/ZB-1):**
+
+- `ObjectType` = `TModel…` ist ein verlässlicher Klassifikator für HottCAD-Dateien; die
+  Raum-Bauteil-Liste in `IfcRelReferencedInSpatialStructure` ersetzt die fehlenden
+  Raumgrenzen für die Zuordnung Bauteil → Raum (nicht für Nachbarschaften, E73).
+- `HSETU_RaumAllgemein.InsideTemperature`, `.HeatingType`, `.RoomType` tragen die
+  Z6-Eingaben; `Pset_*Common.ThermalTransmittance` den U-Wert trotz falscher Einheitsangabe.
+- Schichtaufbauten gibt es nur an Hüllbauteilen mit Körper; Innenbauteile kommen ohne
+  Aufbau — die Rangfolge „Aufbau vor U-Wert“ fällt dort auf den U-Wert zurück.
+
+**Für einen späteren `.sqproj`-Leseweg** (nicht beauftragt, hier nur die Lage):
+
+- Mit `Microsoft.Data.Sqlite`, das der Kern ohnehin nutzt, sind **Nutzungsprofile mit
+  DIN-V-18599-Profilnummer, 24-Stunden-Tagesganglinien je Profilklasse, Kalenderabschnitte
+  und der 8 760-Stunden-Klimasatz** direkt lesbar — plattformfrei, ohne Fremdbibliothek.
+  Das wäre der Weg, die „DIN-V-18599-Profile als spätere Welle“ (E79) aus Anwenderprojekten
+  zu übernehmen statt sie nachzutippen.
+- Räume, Geschosse, Zonen, die Raum→Zone-Zuordnung **und in gerechneten Dateien auch die
+  Hülle** (raumbezogene Bauteile mit U-Wert, Fläche, Orientierung, Randbedingung und Aufbau,
+  Kapitel 6.2) sind relational. Ein `.sqproj`-Leser könnte damit mehr als der IFC-Import:
+  Zonen, Nutzung, Zeit, Klima und Nachbarschaft (`AdjacentType` je Hüllfläche) in einem Zug.
+  IFC-Export und Projektdatei desselben Projekts sind über `GId` ↔ `GlobalId` je Raum und
+  Bauteil verknüpfbar (Kapitel 6.6).
+- `XmTables.Version` erlaubt eine Fassungsprüfung vor dem Lesen.
+
+**Geklärt am Vergleich der sieben Dateien (Kapitel 6):** `ZoneType`, `ProfileType`,
+`ProfileSourceType`, `OperatingModeType`, `ElementType`, `RepositoryLevel`, `AdjacentType`
+1/2/3/5, `ReferenceType`, `ReferenceClassType`, `RoomType`, `HeatingType`, der Schlüssel
+`GId`. **Offen bleibt:** `ProfileUsageDayType` (4, 5, 6 — hängt nicht eindeutig an der
+Profilnummer), `TaskPeriodType` 4 (je Datei höchstens ein Elektroprofil), `ZoneType` 0 und 8,
+`AdjacentType` 6 und 7 (nur an Geschossdecken, vermutlich Dachraum und Keller), die
+Herkunft der `PdProfileReference`-Zeilen auf Räume mit Quell-UUID außerhalb der Datei
+(vermutlich globaler Profilkatalog), der Aufbau von `.BDExit`. Keine der sieben Dateien
+nutzt Wochentags- oder Jahresabschnitte des Kalenders.
+
+**Was dieser Befund nicht enthält:** Werte. Keine Raumnamen, keine Profilbezeichnungen,
+keine Kennzahlen, keine Hersteller- oder Typangaben, keine Adressen; die Skripte der
+Auswertung lagen im Scratchpad und sind nicht im Repositorium.
+
+
+## 6. Codes, an sieben Projektdateien geprüft
+
+### 6.1 Die sieben Dateien
+
+Alle sieben tragen dasselbe Schema (688 Tabellen, `XmTables` bis 17.6) und wurden zuletzt am
+05.10.2026 geöffnet (Journal). Sechs stammen aus dem „Energieberater 18599 3D PLUS“, eine
+(bv4) wurde mit dem „Altprojekte-Viewer“ 12.4.7.2 gespeichert und trägt deshalb weder den
+Normprofil-Katalog noch die 44 Standardprofile.
+
+| Datei | Geschosse | Räume | Zonen (Typ 2 / 5 / 6 / 7 / 10) | Bauteile `BmElement` | Zeitprofile | Besonderheit |
+|---|---|---|---|---|---|---|
+| Sportheim (Kapitel 2 bis 4) | 3 | 56 | 5 / 12 / 14 / – / 3 (+1 Typ 8) | 47 | 305 | nur Decken, Dächer, Bodenplatten; eine Zone mit Räumen |
+| Produktionsbau mit Verwaltung | 2 | 49 | – / 11 / 11 / – / 3 | 832 | 226 | PV-Anlage mit 1 107 Modulen in `EmPVModule`/`EmDevice` |
+| Wohngebäude EH55 | 3 | 20 | – / 1 / – / – / 3 | 337 | 0 | keine Simulationszone, keine Zeitprofile, kein Klimasatz |
+| Bauvorhaben 1 (bv1) | 6 | 106 | 12 / 1 / 2 / 3 / 3 (+3 Typ 0) | 1 671 | 50 | Lüftungszonen, 240 Raum-Profile (Person, Lüftung), Luftdurchlässe, Balkone |
+| Bauvorhaben 2 (bv2) | 6 | 272 | 44 / 2 / 2 / – / 3 | 3 032 | 47 | 211 MB, davon rund 120 MB PNG-Bilder in `BmMedia` |
+| Bauvorhaben 3 (bv3) | 6 | 196 | 30 / 1 / 2 / – / 3 | 2 489 | 35 | Rohrnetz-Schema (`NmSchemaElement`) |
+| Bauvorhaben 4 (bv4) | 5 | 33 | – / 1 / 7 / – / 3 | 481 | 116 | Altprojekte-Viewer, Tarifprofile (`PdProfileTariff`) |
+
+Die Dateigröße machen die eingebetteten Bilder (`BmMedia`, MediaType 15 = PNG, bis 31 MB je
+Bild) und das gzip-Grafikmodell (`GmMedia`) aus, nicht die Fachtabellen.
+
+### 6.2 Bauteile: zwei Ebenen, Raumbezug, Aufbau
+
+```
+BmElement (RepositoryLevel 2, RepositoryType 3)  ─ CAD-Objekt: eine Zeile je Wand, Decke, Dach, Öffnung,
+    │   Dachfenster; Geometrie-XML in BmData (geometry/Wall, Platform, Roof, RoomElements, RoofWindow);
+    │   ParentUUID → Trägerbauteil (Fenster/Tür → Wand, Dachfenster → Dach, Verschattung → Fenster)
+    │
+    └─ RepositoryElementUUID ◄── BmElement (RepositoryLevel 3, RepositoryType 1)  ─ raumbezogene Hüllfläche:
+                                   ein Stück je angrenzendem Raum; UValue, GrossArea, NetArea, Orientation,
+                                   AdjacentType; CatalogDimUUID → TcBuildingElementDimension (Aufbau)
+                                   ▲
+         BmRoom ──ReferenceFromUUID── BmElementReference ──ReferenceToUUID──┘
+                 (ReferenceType = Rolle am Raum, AdjacentType, Orientation, UValue, Fx, Bu,
+                  ThermalBridgeValue, TransmissionHeatLossCoefficient, TransmissionHeatLoss)
+
+TcBuildingElementDimension (UValue, RValue, Thickness, FractionOfFrame, GValue, …)
+    └─ DimensionUId ◄── TcBuildingElementDimensionLayer (LayerType, MaterialType, Thickness,
+                         ThermalConductivity, Density, HeatCapacity, Emissivity, Diffusionswiderstand, MaterialUId)
+```
+
+Belegt an allen sechs gerechneten Dateien: jede Level-3-Zeile (außer Verschattungen) zeigt
+mit `RepositoryElementUUID` auf genau eine Level-2-Zeile; jede Level-3-Zeile hat eine
+`BmElementReference` von einem Raum; `UValue`, `NetArea`, `GrossArea` sind auf Level 3
+durchgehend gefüllt, `CatalogDimUUID` trifft `TcBuildingElementDimension` bei 74 bis 100 %
+der Hüllflächen; alle Aufbauten haben `UValue` > 0, alle Schichten `ThermalConductivity` und
+`Thickness` > 0 (1 bis 24 Schichten je Aufbau). `AdjacentTemperature` trägt überall den
+Platzhalter −987654321,99 („nicht gesetzt“). Eine Wand mit zwei Räumen hat zwei Level-3-Zeilen
+mit demselben CAD-Objekt; ihr `AdjacentType` nennt die Beheizung des **anderen** Raums.
+
+### 6.3 Codetabellen Bauteile
+
+| Spalte | Code | Bedeutung | Beleg |
+|---|---|---|---|
+| `BmElement.ElementType` | 1 | Wand | 1:1 `BmElementWall`; XML `geometry/Wall` |
+| | 2 | Tür | 1:1 `BmElementDoor`; XML `opening[@type='Door']` |
+| | 3 | Fenster, auch Dachfenster | 1:1 `BmElementWindow`; `ParentElementType` 1 (Wand) oder 5 (Dach) |
+| | 4 | Geschossdecke | 1:1 `BmElementStorey`; XML `Platform` |
+| | 5 | Dach | 1:1 `BmElementRoof` |
+| | 11 | Bodenplatte | 1:1 `BmElementBaseSlap`; `AdjacentType` 5 |
+| | 13 | Öffnung ohne Füllung | 1:1 `BmElementOpening`; XML `opening[@type='Hole']` |
+| | 18 | Verschattung | 1:1 `BmElementShadingDevice`; nur Level 3, `ParentElementType` 3 |
+| | 19 | Luftdurchlass | 1:1 `BmElementAirPassage` |
+| `RepositoryLevel` / `RepositoryType` | 2 / 3 | CAD-Objekt | hat Geometrie-XML, kein `BmElementReference` |
+| | 3 / 1 | raumbezogene Hüllfläche | hat `BmElementReference`, `RepositoryElementUUID` → Level 2 |
+| `AdjacentType` (Level 3, `BmElementReference`) | 1 | beheizter Nachbarraum | Nachbarraum `HeatingType` 1 in 926 von 960 Paaren |
+| | 2 | unbeheizter Nachbarraum | Nachbarraum `HeatingType` 2 überwiegend; auch Pufferräume |
+| | 3 | Außenluft | einseitige Wände, alle Fenster, alle Dächer; XML `outer_wall='True'` |
+| | 5 | Erdreich | alle Bodenplatten, Kellerwände |
+| | 6, 7 | weitere Randbedingungen | nur an Geschossdecken (6) bzw. Decken und wenigen Wänden (7); vermutlich Dachraum und Keller — **offen** |
+| | 0 | ohne (CAD-Objekte, Verschattungen) | |
+| `BmElementReference.ReferenceType` | 1 / 2 | Außenwand / Innenwand | Wand mit `AdjacentType` 3, 5 / 1, 2, 7 |
+| | 3 / 4 | Außentür / Innentür | |
+| | 5 / 6 | Fenster außen / Fenster gegen unbeheizt | |
+| | 7 / 8 | Decke oben / Boden unten | 8 auch für Bodenplatten |
+| | 9 | Dach | |
+| | 10, 25 | Dachfenster (zwei Rollen) | je 36 im Produktionsbau = 36 `RoofWindow` |
+| | 0 / 12 | Verschattung, Öffnung / Luftdurchlass | |
+| `ReferenceClassType` (alle `*Reference`-Tabellen) | 1 / 2 / 4 / 11 / 16 / 17 | `TModelRoom` / `TModelZone` / `TModelBuilding` / `TModelProfile*` / `TModelBuildingElement` / `TModelFloor` | `ReferenceClass`-Text daneben; 16 aus `BmElementReference.ReferenceToType`, 17 aus `BmBuildingSpace.ParentElementType` |
+| XML `wall/@wall_type` | `Inner`, `OuterContour`, `OuterSingle` | Innenwand, Außenwand der Kontur, freistehende Außenwand | 1 624 Wände |
+| XML `roof/@type` | `Polygonal`, `Flat`, `Saddleback`, `External` | Dachform | |
+| XML `floor/@type` | `Standard`, `Cellar`, `Roof` | Geschossart | |
+| XML `opening/@type`, `@form` | `Window`, `Door`, `Hole`; `formRechteck`, `formKreis`, `formPolygon` | | |
+| XML `platform/@against_air`, `@against_soil`, `@against_unheated` | `True`/`False` | Randbedingung der Platte | deckt sich mit `AdjacentType` 3 / 5 / 2 |
+
+### 6.4 Codetabellen Räume und Zonen
+
+`BmRoom.RoomType` ist der Zahlencode zum String `room_type` der Geometrie-XML (Präfix `mrt`);
+derselbe String steht im IFC-Export in `HSETU_RaumAllgemein.RoomType`. Belegt an 732 Räumen:
+
+| Code | `mrt…` | Code | `mrt…` | Code | `mrt…` |
+|---|---|---|---|---|---|
+| 0 | None | 11 | Bath | 31 | Fitness |
+| 1 | Living | 12 | WC | 33 | Locker |
+| 2 | Sleeping | 14 | Office | 34 | Store |
+| 3 | Child | 15 | Conference | 35 | Storage |
+| 4 | Kitchen | 23 | Basement | 36 | Connection |
+| 5 | Eating | 24 | CentralHeating | 41 | Workshop |
+| 6 | Hall | 25 | Roof | 42 | Garage |
+| 7 | Guests | 26 | Stairway | 44 | Wintergarden |
+| 9 | AdjoiningRoom | 30 | Sauna | 52 | HallWay |
+| 10 | StorageRoom | | | 53 | Shaft |
+
+`BmRoom.HeatingType`: **1 = `Heated`, 2 = `Unheated`, 4 = `SeparatelyHeated`** (XML
+`heating_type`, IFC `bht…`). `BmRoom.SpaceType` ist immer 1, `BmZone.SpaceType` immer 2
+(Raum gegen Zone), `BmZone.ParentClassType` 4 = Gebäude, 17 = Geschoss. `ZoneType` siehe 3.2.
+`BmBuildingSpace.ParentElementType`: 1 Raum, 4 Gebäude, 17 Geschoss.
+
+### 6.5 Codetabellen Profile und Kalender
+
+| Spalte | Code | Bedeutung | Beleg |
+|---|---|---|---|
+| `PdProfile.ProfileType` | 2 | Nutzungsprofil DIN V 18599-10 | 1:1 `PdProfileUsage`, Verweis von Typ-5-Zonen |
+| | 3 | Tarif | 1:1 `PdProfileTariff` (eine Datei) |
+| | 4 / 5 / 6 / 7 / 8 / 9 / 10 | Beleuchtung / Sonnenschutz / Heizung / Kühlung / Personen / Geräte / Lüftung | 1:1-Zusatztabelle und `ReferenceClass` in allen Dateien gleich |
+| | 14 / 16 / 21 | Trinkwasser / Elektro / Feuchte | ebenso |
+| | 13 / 20 | Bauteil-Vorgabeprofil / Ventil | je eine Zeile, nur Sportheim |
+| `ProfileSourceType` | 4 / 0 | Normprofil des eingebetteten Katalogs / Projektprofil | 44 Normprofile mit identischen Nummern in sechs Dateien |
+| `PdProfileUsage.ProfileUsageType` | 1 … 71 | Profilnummer nach DIN V 18599-10 | 44 verschiedene Nummern, Bereich 1–47 und 70–71 |
+| `PdProfileTimeCurve.OperatingModeType` | 1 / 2 | Betriebsstunde / außerhalb der Nutzungszeit | gemischte Profile: 2 in den Stunden 1–9 und 21–24, 1 von 10 bis 20; Mode-2-Stunden haben `Ratio` 0 und Absenk- oder Nullwerte |
+| `PdProfileTimeCurve.HourType`, `CurveId` | 1 … 24 | Stunde des Tages | in allen Dateien genau 24 Zeilen je Profil |
+| `PdProfileGroup.ProfileGroupType` | 4 / 5 | Gebäudegruppe (eine je Datei, `BmBuilding.ProfileGroupUUID`) / Zonengruppe (`BmZone.ProfileGroupUUID`) | |
+| `PdProfileGroup.ProfileUsageType` | 1 … 71 | Profilnummer der Zone | |
+| `PdProfileGroup.ProfileUsageDayType` | 4 / 5 / 6 | Tagesart, vermutlich 5-, 6-, 7-Tage-Woche | **offen**: Profilnummer 19 kommt mit 4 und 6 vor |
+| `PdProfileTaskSerial.TaskPeriodType` | 1 / 4 | Jahresabschnitt / unbekannt | 4 nur je ein Elektroprofil in zwei Dateien |
+| `TaskStartDay`, `TaskEndDay`, `TaskMonday … TaskSunday` | | Gültigkeit | in allen sieben Dateien 1–365 und alle Schalter 0 — Wochentags- und Jahresabschnitte sind im Modell vorgesehen, aber ungenutzt |
+
+### 6.6 Schlüssel zum IFC-Export
+
+Die IFC-`GlobalId` ist die 22-stellige Base64-Form (Zeichensatz `0–9 A–Z a–z _ $`) einer
+128-Bit-GUID. Dekodiert trifft sie am Wohngebäude EH55 (IFC4, 20 Räume) **`BmRoom.GId`** bei
+20 von 20 Räumen, das `@GUID` der Geometrie-XML bei 20 Räumen und 3 Geschossen, **`BmElement.GId`**
+bei 75 von 75 CAD-Wänden (Level 2), 31 von 32 Fenstern, 11 Platten und 8 Dächern. Die 117
+`IfcWall` des Exports sind also die 75 CAD-Wände plus abgeleitete Stücke mit eigenen GUIDs.
+`BmRoom.UUID` und `BIMUUID` treffen nichts. Ein Leser, der Projektdatei und IFC-Export
+zusammenführt, schlüsselt über `GId`.

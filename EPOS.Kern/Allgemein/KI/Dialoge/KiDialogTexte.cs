@@ -454,6 +454,8 @@
         internal static string WpaSperrungErl => MyResource.Resource.KI_DLG_WPA_SPERRUNG_ERL;
         internal static string WpaSperrzeitVonName => MyResource.Resource.WPA_LBL_VON;
         internal static string WpaSperrzeitVonErl => MyResource.Resource.KI_DLG_WPA_SPERRZEIT_VON_ERL;
+        internal static string WpaVorlaufMaxName => MyResource.Resource.WPA_LBL_VORLAUF_MAX;
+        internal static string WpaVorlaufMaxErl => MyResource.Resource.KI_DLG_WPA_VORLAUF_MAX_ERL;
         internal static string WpaSperrzeitBisName => MyResource.Resource.WPA_LBL_BIS;
         internal static string WpaSperrzeitBisErl => MyResource.Resource.KI_DLG_WPA_SPERRZEIT_BIS_ERL;
         internal static string WpaSperrfensterName => MyResource.Resource.WPA_GRP_SPERRZEITEN;
@@ -504,6 +506,14 @@
         internal static string WpaKuehltraegerErl => MyResource.Resource.KI_DLG_WPA_KUEHLTRAEGER_ERL;
         internal static string WpaAbrechnungName => MyResource.Resource.WPK_LBL_ABRECHNUNG;
         internal static string WpaAbrechnungErl => MyResource.Resource.KI_DLG_WPA_ABRECHNUNG_ERL;
+
+        // KU3-6: die freie Kuehlung ueber die Waermequelle - Namen aus der Maske (WPK_*).
+        internal static string WpaKuehlFreiName => MyResource.Resource.WPK_CHK_KUEHL_FREI;
+        internal static string WpaKuehlFreiErl => MyResource.Resource.KI_DLG_WPA_KUEHL_FREI_ERL;
+        internal static string WpaKuehlFreiGraedigkeitName => MyResource.Resource.WPK_LBL_KUEHL_FREI_GRAEDIGKEIT;
+        internal static string WpaKuehlFreiGraedigkeitErl => MyResource.Resource.KI_DLG_WPA_KUEHL_FREI_GRAEDIGKEIT_ERL;
+        internal static string WpaKuehlFreiLeistungName => MyResource.Resource.WPK_LBL_KUEHL_FREI_LEISTUNG;
+        internal static string WpaKuehlFreiLeistungErl => MyResource.Resource.KI_DLG_WPA_KUEHL_FREI_LEISTUNG_ERL;
 
         // =================================================================== Feldarten
 

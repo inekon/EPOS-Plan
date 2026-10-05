@@ -260,6 +260,34 @@ namespace WindowsFormsApplication1
         // Stelle stand - der Referenzlauf ist das Gate dafuer.
 
         /// <summary>
+        /// <b>Die Spalten des Schemaschritts 186 in der Projektzeile</b> (Anlagenkopplung 8.3; AK2-2a, AK2-2b): die
+        /// Stunden an der Schranke des Fahrplans und die Komfortkennzahlen des Projekts (5.5, F8, F9). Erhoben wird
+        /// für jedes Projekt, dessen Fahrplan lief — Anlagenkopplung ab AK1 und mindestens ein gekoppeltes Gebäude
+        /// auf dem VDI-Weg (F12, E83) —, auch ohne greifende Schranke: dann steht <c>Fahrplan_Begrenzt_Stunden</c>
+        /// auf 0, nicht NULL. Ein Projekt ohne Fahrplan schreibt alle NULL und damit dieselbe Zeile wie vorher
+        /// (Referenzlauf byte-gleich, <c>SpaltenNurMitWert</c>). Eine Seite ohne erhobenes Gebäude bleibt NULL.
+        /// </summary>
+        internal static void AnlagenfahrplanSpaltenSetzen(ErgebnisEnergiebedarfModel e, bool fahrplanWirksam,
+                                                          int fahrplanStunden,
+                                                          Komfortkennzahlen heizen, Komfortkennzahlen kuehlen)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            if (!fahrplanWirksam) return;
+            e.FahrplanBegrenztStundenH = Math.Max(0, fahrplanStunden);
+            if (heizen != null)
+            {
+                e.KomfortUnterschreitungsstundenH = heizen.Stunden;
+                e.KomfortKelvinstundenKh = heizen.Kelvinstunden;
+                e.KomfortLaengsteStreckeH = heizen.LaengsteStrecke;
+            }
+            if (kuehlen != null)
+            {
+                e.KomfortUeberschreitungsstundenH = kuehlen.Stunden;
+                e.KomfortKelvinstundenKuehlungKh = kuehlen.Kelvinstunden;
+            }
+        }
+
+        /// <summary>
         /// EIGENANTEIL der Waermepumpe [MWh]: Direktdeckung (Phase B) plus der ihr
         /// zugerechnete Anteil an der bedarfsdeckenden Speicherentladung plus Heizstab
         /// (er gehoert zur WP, <c>Tab_WP.Heizung</c> je Modul).
@@ -408,6 +436,17 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.RuecklaufMittelC = double.IsNaN(heizkreis.RuecklaufMittelC) ? (double?)null : heizkreis.RuecklaufMittelC;
                 m.Energiebedarf.UebergabeBegrenztStundenH = heizkreis.UebergabeBegrenztStundenH;
             }
+
+            // ANLAGENKOPPLUNG AK2 (8.3; F12, E83): die Stunden, in denen der Fahrplan in mindestens einem Gebaeude
+            // gekappt hat, und die Komfortkennzahlen - fuer jedes Projekt, dessen Fahrplan lief (Kopplung ab AK1,
+            // ein gekoppeltes Gebaeude auf dem VDI-Weg), auch ohne greifende Schranke (dann 0 Stunden). Ein
+            // Projekt ohne Fahrplan schreibt NULL und dieselbe Zeile wie vorher (SpaltenNurMitWert).
+            bool fahrplanWirksam = simulation_Waermebedarf.FahrplanWirksam;
+            int fahrplanStunden = fahrplanWirksam ? simulation_Waermebedarf.FahrplanBegrenztStunden() : 0;
+            (Komfortkennzahlen komfortHeizen, Komfortkennzahlen komfortKuehlen) = fahrplanWirksam
+                ? simulation_Waermebedarf.KomfortProjekt()
+                : (null, null);
+            AnlagenfahrplanSpaltenSetzen(m.Energiebedarf, fahrplanWirksam, fahrplanStunden, komfortHeizen, komfortKuehlen);
 
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.
@@ -581,6 +620,14 @@ namespace WindowsFormsApplication1
                         w.Kaelteproduktion_WP = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.KaelteGesamtKwh) / 1000.0;
                         w.Stromverbrauch_Kuehlung = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.StromGesamtKwh) / 1000.0;
                     }
+
+                    // KU3-6 (F4): freie Kühlung über die Wärmequelle - nur, wenn sie an einer Wärmepumpe
+                    // wirksam ist; sonst bleiben beide Felder null und die Spalten NULL.
+                    if (kaskade.Erzeuger.Any(e => e.Maschine == null && e.FreieKuehlungSole))
+                    {
+                        w.FreieKuehlung_MWh = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.KaelteFreiKwh) / 1000.0;
+                        w.FreieKuehlung_Stunden = kaskade.StundenFreieKuehlungWp;
+                    }
                 }
 
                 // Modulauflistung.
@@ -594,6 +641,15 @@ namespace WindowsFormsApplication1
                     mo.Heizstab = wp.Modul_Heizstab[i] / 1000.0;
                     mo.Betriebsstunden = wp.Modul_WP_Laufzeit[i];
                     if (kaskade != null) KaelteseiteDesModuls(mo, kaskade, i);
+                    // VW1a (Schemaschritt 188, E88): der Ausweis der Kennlinienwahl am gerechneten Vorlauf -
+                    // nur fuer ein Modul mit Kennlinienwahl; sonst bleiben die drei Felder null.
+                    SimulationWaermepumpe.VorlaufwahlAusweis vw = wp.VorlaufwahlDesModuls(i);
+                    if (vw != null)
+                    {
+                        mo.Vorlaufwahl_Stunden = vw.StundenText;
+                        mo.Vorlauf_Darueber_Stunden = vw.Darueber;
+                        mo.Vorlauf_Darunter_Stunden = vw.Darunter;
+                    }
                     w.Module.Add(mo);
                 }
 
@@ -1254,6 +1310,12 @@ namespace WindowsFormsApplication1
                 mo.Kaelteproduktion = e.KaelteGesamtKwh / 1000.0;
                 mo.Stromverbrauch_Kuehlung = e.StromGesamtKwh / 1000.0;
                 mo.Kaeltestrom_Netzbezug = e.NetzbezugKwh / 1000.0;
+                // KU3-6 (F4): die freie Kühlung über die Wärmequelle - nur, wenn sie wirksam ist.
+                if (e.FreieKuehlungSole)
+                {
+                    mo.FreieKuehlung_MWh = e.KaelteFreiKwh / 1000.0;
+                    mo.FreieKuehlung_Stunden = e.StundenFreieKuehlung;
+                }
                 if (e.Kuehltraeger > 0)
                 {
                     mo.Kuehl_CarrierId = e.Kuehltraeger;

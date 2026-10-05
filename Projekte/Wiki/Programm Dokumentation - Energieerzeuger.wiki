@@ -42,6 +42,18 @@ Jede Kachel öffnet den Dialog der jeweiligen Technik; die verlinkten Seiten erk
 | Kühlung || [[Grundlagen/Kühlung|Grundlagen]] || [[Programm Dokumentation/Kühlung|Anwendung]] || —
 |}
 
+== Betriebszeiten ==
+{{Anker|betriebszeiten}}
+
+Im Konfigurationsdialog einer Wärmepumpe – erreichbar über den Knopf ''Konfiguration…'' der Wärmepumpen Verwaltung und über Simulation › Konfiguration – legt die Gruppe '''Betriebszeiten''' fest, wann und mit welchem Vorlauf die Anlage zur Verfügung steht. Sie wirkt mit der Projekteinstellung '''Anlagenkopplung''' ''Fahrplan (AK2)'' auf die gekoppelt gerechneten Gebäude: Steht die Anlage nicht oder nur teilweise zur Verfügung, sinkt dort die Raumtemperatur, statt dass ein Rest ungedeckt bleibt (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#komfort|Komfortstunden]]).
+
+* '''Sperrzeit''' – die Sperrfenster der Anlage, wie in der Gruppe ''Sperrzeiten'' gepflegt.
+* '''Zeitprogramm''' – der Knopf ''Wochenraster bearbeiten'' öffnet ein Raster mit 7 × 24 Feldern, Montag 0 Uhr bis Sonntag 23 Uhr. Jedes Feld trägt einen Faktor von 0 (gesperrt) bis 1 (volle Leistung); 0,5 heißt halbe Leistung. Ohne Zeitprogramm ist die Anlage immer verfügbar; die Zeile unter dem Knopf nennt, wie viele Wochenstunden voll verfügbar und wie viele gesperrt sind. Ein gespeichertes Zeitprogramm, das nicht genau 168 Faktoren zwischen 0 und 1 enthält, nennt der Dialog als Fehler mit der gefundenen Zahl; es wird nicht aufgefüllt.
+* '''Höchster Vorlauf''' – der höchste Vorlauf, den die Anlage bietet, in °C. Leer gilt der projektierte Vorlauf der Anlage, der als grauer Text im Feld steht. Verlangt ein gekoppeltes Gebäude einen höheren Vorlauf, gilt dieser Wert.
+* '''Vorrang der Sperrzeit''' – Sperrzeit und Zeitprogramm gelten zusammen; in einer Stunde, in der beide etwas vorgeben, geht die Sperrzeit vor. Überschneiden sie sich, nennt der Dialog die Zahl der betroffenen Wochenstunden.
+
+Die Verfügbarkeit rechnet das Programm einmal je Projekt vorab (Profilweg): Ein Pufferspeicher geht nur als Vorrat über die Dauer einer Sperre ein, Ladezustände werden dabei nicht verfolgt. Die Komfortstunden sind deshalb eine obere Abschätzung.
+
 == Siehe auch ==
 
 * [[Erzeuger und Speicher auswählen]] – der zugehörige Schritt im Programmablauf mit den Angaben je Gerätegattung

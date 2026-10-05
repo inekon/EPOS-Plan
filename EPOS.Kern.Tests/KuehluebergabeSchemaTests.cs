@@ -195,6 +195,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Das Gebäude des Referenzprojekts der Anlagenkopplung 1047 (Kopie von 10599).</summary>
         private const int GEBAEUDE_REFERENZ_KOPPLUNG = 10653;
 
+        /// <summary>Das Gebäude der Kopie von 1047 im Referenzprojekt des Fahrplans 1056 (AK2-4): dieselbe Kühlübergabe.</summary>
+        private const int GEBAEUDE_REFERENZ_FAHRPLAN = 10662;
+
         /// <summary>
         /// Alle Strukturen stehen, die Sicht ist die geltende, alle neuen Spalten sind leer (der
         /// Schalter 0) — bis auf die gesäte Kühlübergabe des Referenzprojekts der Anlagenkopplung
@@ -226,22 +229,26 @@ namespace EPOS.Kern.Tests
             foreach (SchemaSpalte s in GebaeudeSchema.Kuehluebergabespalten.Concat(KuehluebergabeSchema.Ergebnisspalten))
             {
                 string ausser = s.Tabelle == "Tab_Gebaeude"
-                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) : "";
+                    ? " AND ID NOT IN (" + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", " +
+                      GEBAEUDE_REFERENZ_FAHRPLAN.ToString(CultureInfo.InvariantCulture) + ")" : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));
                 if (!GebaeudeSchema.KUEHLUEBERGABE_SCHALTER.Contains(s.Name))
                     Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" + ausser));
             }
-            DataRow referenz = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
-                                                           new DbParam("?", GEBAEUDE_REFERENZ_KOPPLUNG)).Rows[0];
-            foreach (SchemaSpalte s in GebaeudeSchema.Kuehluebergabespalten.Where(x => x.Tabelle == "Tab_Gebaeude"))
+            foreach (int gebaeude in new[] { GEBAEUDE_REFERENZ_KOPPLUNG, GEBAEUDE_REFERENZ_FAHRPLAN })
             {
-                if (s.Name == "Kuehluebergabe_Aktiv")
-                    Assert.Equal(1L, Convert.ToInt64(referenz[s.Name], CultureInfo.InvariantCulture));
-                else if (s.Name == "Kuehl_Uebergabe_Art")
-                    Assert.Equal(DbWerte.KUEHLUEBERGABE_KUEHLDECKE, Convert.ToString(referenz[s.Name], CultureInfo.InvariantCulture));
-                else
-                    Assert.Equal(DBNull.Value, referenz[s.Name]);
+                DataRow referenz = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
+                                                               new DbParam("?", gebaeude)).Rows[0];
+                foreach (SchemaSpalte s in GebaeudeSchema.Kuehluebergabespalten.Where(x => x.Tabelle == "Tab_Gebaeude"))
+                {
+                    if (s.Name == "Kuehluebergabe_Aktiv")
+                        Assert.Equal(1L, Convert.ToInt64(referenz[s.Name], CultureInfo.InvariantCulture));
+                    else if (s.Name == "Kuehl_Uebergabe_Art")
+                        Assert.Equal(DbWerte.KUEHLUEBERGABE_KUEHLDECKE, Convert.ToString(referenz[s.Name], CultureInfo.InvariantCulture));
+                    else
+                        Assert.Equal(DBNull.Value, referenz[s.Name]);
+                }
             }
             foreach (KeyValuePair<string, string> s in KuehluebergabeSchema.SpaltenKuehlkreis)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + ErgebnisGebaeudeSchema.TAB + "] WHERE [" + s.Key + "] IS NOT NULL"));

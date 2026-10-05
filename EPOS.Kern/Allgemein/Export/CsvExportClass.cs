@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace WindowsFormsApplication1
 {
@@ -77,7 +78,7 @@ namespace WindowsFormsApplication1
         /// Zahl, die mit ihr reisen muss — beim Kältebedarf „sensibel, ohne Entfeuchtung" (K5).
         /// <c>null</c> oder leer = die Datei beginnt wie bisher mit der Spaltenzeile.
         /// </param>
-        public static void Export(string vorschlagDateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten,
+        public static async Task Export(string vorschlagDateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten,
                                   bool viertelstundenwerte = false, IReadOnlyList<string> kopfzeilen = null)
         {
             if (spalten == null || spalten.Count == 0)
@@ -94,7 +95,7 @@ namespace WindowsFormsApplication1
             // Der Ordner geht MIT im Dateinamen hinein: Ein Startordner allein wird von
             // Windows ignoriert, sobald sich das System für die Anwendung bereits einen
             // zuletzt verwendeten Ordner gemerkt hat. Der Adapter setzt beides.
-            string dateiname = Dienste.Datei.DateiSpeichern(
+            string dateiname = await Dienste.Datei.DateiSpeichernAsync(
                 "CSV Export",
                 "CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*",
                 Path.Combine(startOrdner, vorschlagDateiname));

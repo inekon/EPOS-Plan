@@ -1061,6 +1061,25 @@ namespace WindowsFormsApplication1
                         }
                     }
 
+                    // 4) Die Nutzung je Zone (Zonenplan): die ausgelieferten Vorlagen dieser Nutzung als Kalenderkopien an der
+                    //    Zone - über den Vorlagenweg im selben Vorgang (je Größe ein Sicherungspunkt).
+                    using (Vorgangsklammer.Setzen(v))
+                    {
+                        for (int i = 0; i < zonen.Count && i < vorschlag.Zonennutzungen.Count; i++)
+                        {
+                            string fehlerNutzung = ZonenplanCtrl.NutzungUebernehmen(idGebaeude, zonen[i].ID, vorschlag.Zonennutzungen[i]);
+                            if (fehlerNutzung != null) throw new InvalidOperationException(fehlerNutzung);
+                        }
+                        // 5) Die Konditionierung aus der HottCAD-Projektdatei (SQ-1): ersetzt die Kopien der Vorlagen, wo sie
+                        //    etwas liefert — im selben Vorgang.
+                        for (int i = 0; i < zonen.Count && i < vorschlag.Zonenkonditionierungen.Count; i++)
+                        {
+                            if (vorschlag.Zonenkonditionierungen[i] == null) continue;
+                            string fehlerProjektdatei = ZonenplanCtrl.ProjektdateiUebernehmen(idGebaeude, zonen[i].ID, vorschlag.Zonenkonditionierungen[i]);
+                            if (fehlerProjektdatei != null) throw new InvalidOperationException(fehlerProjektdatei);
+                        }
+                    }
+
                     v.Commit();
                 }
             }

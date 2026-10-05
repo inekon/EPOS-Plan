@@ -323,6 +323,10 @@ namespace WindowsFormsApplication1
             // Verbindungstupel holte. Ein Fehler beim Verbindungsaufbau soll in denselben
             // catch laufen; deshalb kein using, sondern Dispose im finally.
             DbVorgang v = null;
+            // AK2-1: der Stand der Anlagenspalten, VOR dem Vorgang erfragt (AnlagenSql.Einfuegen).
+            bool mitFahrplan = AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
+            // KU3-6a: ebenso der Stand der Spalten der freien Kuehlung (FreieKuehlungSoleSchema).
+            bool mitFreierKuehlung = FreieKuehlungSoleSchema.AnlagenspaltenVorhanden();
             var neueGeraeteIds = new List<int>();     // Reihenfolge = quellGeraete
             var neuePufferNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -418,8 +422,8 @@ namespace WindowsFormsApplication1
                     PufferverweiseUmschreiben(a, pufferAbbildung, warnungen);
                     GeraetefkSetzen(plan, a, fkZiel);
 
-                    Ausfuehren(v, AnlagenSql.SQL_ANLAGE_INSERT,
-                               AnlagenSql.AnlagenParameter(idZiel, a, pufferCache));
+                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(idZiel, a, pufferCache, mitFahrplan, mitFreierKuehlung);
+                    Ausfuehren(v, sqlAnlage, werteAnlage);
                 }
 
                 v.Commit();

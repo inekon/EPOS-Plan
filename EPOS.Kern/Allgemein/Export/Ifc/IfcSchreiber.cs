@@ -153,6 +153,8 @@ namespace WindowsFormsApplication1
             meldungen.AddRange(geometrie);
             if (geometrie.Count == 0 && abbild.Gebaeude.Count == 1)
                 meldungen.Add(new PruefMeldung(PruefStufe.Info, GbxmlSchreiber.GEOMETRIE_OHNE));
+            if (abbild.Gebaeude.Any(g => g.Raeume.Any(r => r.Konditionierung != null)))
+                meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeExportAblauf.BEIPACK_KONDITIONIERUNG));
             return meldungen;
         }
 
@@ -612,13 +614,22 @@ namespace WindowsFormsApplication1
                          Temperatur("SpaceTemperatureSummerMax", r.SollKuehlenC),
                          r.Nachtabsenkung.HasValue ? Wert("DiscontinuedHeating", new IfcBoolean(r.Nachtabsenkung.Value)) : null,
                          r.LuftwechselNutzerJeH.HasValue ? Wert("NaturalVentilationRate", new IfcNumericMeasure(Endlich(r.LuftwechselNutzerJeH.Value))) : null);
-                Satz(s, r.Kennung, EPOS_ZONE,
-                     Wert("IstBeheizt", new IfcBoolean(r.Beheizt)),
-                     r.ZonenKennung == null ? null : Wert("Kennung", new IfcIdentifier(r.ZonenKennung)),
-                     Zahl("LuftwechselInfiltration", r.LuftwechselJeH, "GEXP_IFC_LUFTWECHSEL"),
-                     Zahl("Personen", r.Personen, null),
-                     Zahl("GeraeteWm2", r.GeraeteWm2, null),
-                     Zahl("LichtWm2", r.LichtWm2, null));
+                var zone = new List<IfcPropertySingleValue>
+                {
+                    Wert("IstBeheizt", new IfcBoolean(r.Beheizt)),
+                    r.ZonenKennung == null ? null : Wert("Kennung", new IfcIdentifier(r.ZonenKennung)),
+                    Zahl("LuftwechselInfiltration", r.LuftwechselJeH, "GEXP_IFC_LUFTWECHSEL"),
+                    Zahl("Personen", r.Personen, null),
+                    Zahl("GeraeteWm2", r.GeraeteWm2, null),
+                    Zahl("LichtWm2", r.LichtWm2, null),
+                };
+                // Nutzung, Matrixzellen und Kalender der Zone (6.3, 16.3); ohne Konditionierung bleibt die Datei byte-gleich.
+                zone.AddRange(IfcKonditionierungssatz.Zonenwerte(r.Konditionierung).Select(Satzwert));
+                Satz(s, r.Kennung, EPOS_ZONE, zone.ToArray());
+                if (r.Konditionierung != null)
+                    foreach (AbbildKalender k in r.Konditionierung.Kalender)
+                        Satz(s, r.Kennung, IfcKonditionierungssatz.Satzname(k.Kalender.Groesse),
+                             IfcKonditionierungssatz.Kalenderwerte(k).Select(Satzwert).ToArray());
                 if (r.Beheizt)
                 {
                     Ergebnis(s, r.Kennung, r.FlaecheM2);
@@ -1001,6 +1012,23 @@ namespace WindowsFormsApplication1
                     if (einheit != null) p.Unit = einheit;
                     if (beschreibung != null) p.Description = T(_profil, beschreibung);
                 });
+
+            /// <summary>Ein Wert der Konditionierungssätze in seinem IFC-Typ (<see cref="IfcSatzwertart"/>).</summary>
+            private IfcPropertySingleValue Satzwert(IfcSatzwert w)
+            {
+                IfcPropertySingleValue p;
+                switch (w.Art)
+                {
+                    case IfcSatzwertart.Temperatur: p = Temperatur(w.Name, w.Zahl); break;
+                    case IfcSatzwertart.Zahl: p = Zahl(w.Name, w.Zahl, w.Beschreibung); break;
+                    case IfcSatzwertart.Leistung: p = w.Zahl.HasValue ? Wert(w.Name, new IfcPowerMeasure(Endlich(w.Zahl.Value))) : null; break;
+                    case IfcSatzwertart.Kennwort: p = Wert(w.Name, new IfcLabel(w.Text ?? ""), null, w.Beschreibung); break;
+                    case IfcSatzwertart.Wahrheit: p = Wert(w.Name, new IfcBoolean(w.Wahr == true), null, w.Beschreibung); break;
+                    default: p = Wert(w.Name, new IfcText(w.Text ?? ""), null, w.Beschreibung); break;
+                }
+                if (p != null && w.BeschreibungWoertlich != null) p.Description = new IfcText(w.BeschreibungWoertlich);
+                return p;
+            }
 
             private IfcPropertySingleValue Zahl(string name, double? wert, string beschreibung)
                 => wert.HasValue ? Wert(name, new IfcReal(Endlich(wert.Value)), null, beschreibung) : null;

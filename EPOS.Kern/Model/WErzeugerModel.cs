@@ -259,6 +259,47 @@
         public double? Albedo;
 
         // =============================================================================
+        // Anlagenfahrplan (Schemaschritt AnlagenfahrplanSchema.SCHRITT, AK2-1; Anlagenkopplung 8.2)
+        // =============================================================================
+
+        /// <summary>
+        /// <c>Zeitprogramm</c> - 168 Verfügbarkeitsfaktoren 0…1 der Anlage, Montag 00:00 bis Sonntag
+        /// 23:00, als Text im Format des Sollwertprofils (Trennzeichen <c>;</c>). <b>NULL = immer
+        /// verfügbar</b>; gelesen und geprüft von <see cref="Anlagenzeitprogramm"/>. Die Sperrzeit geht
+        /// vor (F7). Eine MODELLspalte: Sie reist durch Löschen + Neuanlegen, NULL bleibt NULL.
+        /// </summary>
+        public string Zeitprogramm;
+
+        /// <summary>
+        /// <c>Vorlauf_Max</c> - das Vorlaufangebot der Anlage [°C]. <b>NULL = <see cref="Vorlauf"/></b>
+        /// (die Anlage bietet ihren projektierten Vorlauf). Eine MODELLspalte, NULL-treu.
+        /// </summary>
+        public double? Vorlauf_Max;
+
+        // =============================================================================
+        // Freie Kühlung über die Wärmequelle (Schemaschritt FreieKuehlungSoleSchema.SCHRITT, KU3-6a)
+        // =============================================================================
+
+        /// <summary>
+        /// <c>Kuehl_Frei</c> - deckt die Wärmepumpe im Kühlbetrieb Kälte vor dem Verdichter direkt aus
+        /// ihrer Wärmequelle? <b>Vorgabe <c>false</c></b> (Spalte NOT NULL, 0/1). Wirksam nur mit einer
+        /// Sole- oder Wasserquelle (F2). Eine MODELLspalte: Sie reist durch Löschen + Neuanlegen.
+        /// </summary>
+        public bool Kuehl_Frei;
+
+        /// <summary>
+        /// <c>Kuehl_Frei_Graedigkeit_K</c> - die Grädigkeit des Wärmetauschers der freien Kühlung [K],
+        /// 0 … 20. <b>NULL = Festwert</b> der Kälterechnung. Eine MODELLspalte, NULL-treu.
+        /// </summary>
+        public double? Kuehl_Frei_Graedigkeit_K;
+
+        /// <summary>
+        /// <c>Kuehl_Frei_Leistung_kW</c> - die Leistungsgrenze der freien Kühlung [kW], &gt; 0.
+        /// <b>NULL = Kälteleistung der Kennlinie</b> in der Stunde. Eine MODELLspalte, NULL-treu.
+        /// </summary>
+        public double? Kuehl_Frei_Leistung_kW;
+
+        // =============================================================================
         // PV-Modellwahl und Wechselrichter (Paket B des PV-Ertragsmodells, Stufe E2)
         // =============================================================================
         //

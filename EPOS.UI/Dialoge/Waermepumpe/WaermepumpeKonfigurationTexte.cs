@@ -85,6 +85,56 @@ public sealed class WaermepumpeKonfigurationTexte
     public string SperrHinzufuegen { get; set; } = T("WPA_BTN_SPERR_HINZU", "Fenster hinzufügen");
     public string SperrEntfernen { get; set; } = T("WPA_BTN_SPERR_ENTFERNEN", "Entfernen");
     public string HinweisSperrLeer { get; set; } = T("WPA_HINWEIS_SPERR_LEER", "Keine Sperrzeiten — die Wärmepumpe darf jederzeit laufen.");
+
+    // --- Betriebszeiten (Anlagenkopplung 9.3) ----------------------------------------
+
+    /// <summary>WPA_GRP_BETRIEBSZEITEN — die Gruppe mit Zeitprogramm und höchstem Vorlauf.</summary>
+    public string GruppeBetriebszeiten { get; set; } = T("WPA_GRP_BETRIEBSZEITEN", "Betriebszeiten");
+
+    /// <summary>WPA_LBL_ZEITPROGRAMM</summary>
+    public string LabelZeitprogramm { get; set; } = T("WPA_LBL_ZEITPROGRAMM", "Zeitprogramm");
+
+    /// <summary>WPA_BTN_ZEITPROGRAMM — öffnet das Wochenraster.</summary>
+    public string KnopfZeitprogramm { get; set; } = T("WPA_BTN_ZEITPROGRAMM", "Wochenraster bearbeiten");
+
+    /// <summary>WPA_BTN_ZEITPROGRAMM_SCHLIESSEN — klappt das Wochenraster wieder zu.</summary>
+    public string KnopfZeitprogrammSchliessen { get; set; } = T("WPA_BTN_ZEITPROGRAMM_SCHLIESSEN", "Wochenraster schließen");
+
+    /// <summary>WPA_HRL_ZEITPROGRAMM_LEER</summary>
+    public string ZeileZeitprogrammLeer { get; set; } = T("WPA_HRL_ZEITPROGRAMM_LEER", "Nicht gepflegt — die Anlage ist immer verfügbar.");
+
+    /// <summary>WPA_HRL_ZEITPROGRAMM_GEPFLEGT — {0} volle, {1} gesperrte Wochenstunden.</summary>
+    public string ZeileZeitprogrammGepflegt { get; set; } = T("WPA_HRL_ZEITPROGRAMM_GEPFLEGT",
+        "Gepflegt: {0} von 168 Wochenstunden mit voller Verfügbarkeit, {1} gesperrt.");
+
+    /// <summary>WPA_HRL_ZEITPROGRAMM_FAKTOREN</summary>
+    public string ZeileZeitprogrammFaktoren { get; set; } = T("WPA_HRL_ZEITPROGRAMM_FAKTOREN",
+        "Faktor je Wochenstunde von 0 (gesperrt) bis 1 (volle Leistung), Montag 0 Uhr bis Sonntag 23 Uhr.");
+
+    /// <summary>WPA_LBL_VORLAUF_MAX</summary>
+    public string LabelVorlaufMax { get; set; } = T("WPA_LBL_VORLAUF_MAX", "Höchster Vorlauf");
+
+    /// <summary>WPA_HRL_VORLAUF_MAX — {0} = projektierter Vorlauf.</summary>
+    public string ZeileVorlaufMax { get; set; } = T("WPA_HRL_VORLAUF_MAX", "Vorgabe: projektierter Vorlauf {0} °C; leer = Vorgabe.");
+
+    /// <summary>WPA_HRL_VORLAUF_MAX_OHNE — ohne projektierten Vorlauf.</summary>
+    public string ZeileVorlaufMaxOhne { get; set; } = T("WPA_HRL_VORLAUF_MAX_OHNE", "Leer = projektierter Vorlauf der Anlage.");
+
+    /// <summary>WPA_HINWEIS_SPERRZEIT_VORRANG</summary>
+    public string HinweisSperrzeitVorrang { get; set; } = T("WPA_HINWEIS_SPERRZEIT_VORRANG",
+        "Sperrzeit und Zeitprogramm gelten zusammen; die Sperrzeit geht vor.");
+
+    /// <summary>WPA_HRL_BETRIEBSZEITEN_WIRKUNG</summary>
+    public string ZeileBetriebszeitenWirkung { get; set; } = T("WPA_HRL_BETRIEBSZEITEN_WIRKUNG",
+        "Zeitprogramm und höchster Vorlauf wirken mit der Anlagenkopplung auf die gekoppelten Gebäude des Projekts.");
+
+    /// <summary>WPA_MSG_VORLAUF_MAX_BEREICH — {0} … {1} °C.</summary>
+    public string MeldungVorlaufMaxBereich { get; set; } = T("WPA_MSG_VORLAUF_MAX_BEREICH",
+        "Der höchste Vorlauf muss zwischen {0} und {1} °C liegen.");
+
+    /// <summary>WPA_INFO_SPERRZEIT_ZEITPROGRAMM — {0} überschnittene Wochenstunden.</summary>
+    public string InfoSperrzeitZeitprogramm { get; set; } = T("WPA_INFO_SPERRZEIT_ZEITPROGRAMM",
+        "Sperrzeit und Zeitprogramm überschneiden sich in {0} Wochenstunden mit Faktor über 0; dort gilt die Sperrzeit.");
     public string HinweisSperrUebertrag { get; set; } = T("WPA_HINWEIS_SPERR_UEBERTRAG",
         "Ein Fenster über Mitternacht läuft in den Folgetag; gesperrt ist jede Stunde, deren Beginn im Fenster liegt.");
     public string EinheitStunden { get; set; } = T("WPA_EINHEIT_STUNDEN", "h");
@@ -176,6 +226,47 @@ public sealed class WaermepumpeKonfigurationTexte
     /// <summary>WPK_MSG_HILFSSTROM_BEREICH — die Prüfregel (0 ≤ x &lt; 100 %).</summary>
     public string MeldungHilfsstromBereich { get; set; } = T("WPK_MSG_HILFSSTROM_BEREICH",
         "Der Hilfsstromanteil muss mindestens 0 % und weniger als 100 % betragen.");
+
+    // --- Freie Kühlung über die Wärmequelle (KU3-6, F2, F6) ----------------------
+
+    /// <summary>WPK_CHK_KUEHL_FREI — der Schalter.</summary>
+    public string LabelKuehlFrei { get; set; } = T("WPK_CHK_KUEHL_FREI", "Freie Kühlung über die Wärmequelle");
+
+    /// <summary>WPK_HRL_KUEHL_FREI — was die freie Kühlung tut.</summary>
+    public string HinweisKuehlFrei { get; set; } = T("WPK_HRL_KUEHL_FREI",
+        "Liegt die Quellentemperatur plus Grädigkeit unter dem Kühl-Vorlauf, deckt die Wärmequelle die Kälte der Stunde direkt — vor dem Verdichter.");
+
+    /// <summary>WPK_LBL_KUEHL_FREI_GRAEDIGKEIT — die Grädigkeit des Wärmetauschers [K].</summary>
+    public string LabelKuehlFreiGraedigkeit { get; set; } = T("WPK_LBL_KUEHL_FREI_GRAEDIGKEIT", "Grädigkeit des Wärmetauschers");
+
+    /// <summary>WPK_PH_KUEHL_FREI_GRAEDIGKEIT — Vorgabe-Anzeige.</summary>
+    public string PlatzhalterKuehlFreiGraedigkeit { get; set; } = T("WPK_PH_KUEHL_FREI_GRAEDIGKEIT", "Vorgabe: 3,0 K");
+
+    /// <summary>WPK_HRL_KUEHL_FREI_GRAEDIGKEIT — die Herleitung der Vorgabe.</summary>
+    public string HinweisKuehlFreiGraedigkeit { get; set; } = T("WPK_HRL_KUEHL_FREI_GRAEDIGKEIT",
+        "Leer = 3,0 K. Temperaturabstand zwischen Quelle und Kaltwasser am Wärmetauscher, 0 bis 20 K.");
+
+    /// <summary>WPK_LBL_KUEHL_FREI_LEISTUNG — die Leistungsgrenze der freien Kühlung [kW].</summary>
+    public string LabelKuehlFreiLeistung { get; set; } = T("WPK_LBL_KUEHL_FREI_LEISTUNG", "Leistungsgrenze");
+
+    /// <summary>WPK_PH_KUEHL_FREI_LEISTUNG — Vorgabe-Anzeige.</summary>
+    public string PlatzhalterKuehlFreiLeistung { get; set; } = T("WPK_PH_KUEHL_FREI_LEISTUNG", "Vorgabe: Kälteleistung der Kennlinie");
+
+    /// <summary>WPK_MSG_KUEHL_FREI_GRAEDIGKEIT — die Prüfregel (0 bis 20 K).</summary>
+    public string MeldungKuehlFreiGraedigkeit { get; set; } = T("WPK_MSG_KUEHL_FREI_GRAEDIGKEIT",
+        "Die Grädigkeit der freien Kühlung muss zwischen 0 und 20 K liegen.");
+
+    /// <summary>WPK_MSG_KUEHL_FREI_LEISTUNG — die Prüfregel (&gt; 0 kW).</summary>
+    public string MeldungKuehlFreiLeistung { get; set; } = T("WPK_MSG_KUEHL_FREI_LEISTUNG",
+        "Die Leistungsgrenze der freien Kühlung muss größer als 0 kW sein.");
+
+    /// <summary>WPK_FREI_SPERR_BAUART — Sperrgrund: keine Sole-/Wasser-Wasser-Maschine.</summary>
+    public string SperrgrundFreiBauart { get; set; } = T("WPK_FREI_SPERR_BAUART",
+        "Freie Kühlung nur an einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe — diese Maschine nutzt die Außenluft.");
+
+    /// <summary>WPK_FREI_SPERR_QUELLE — Sperrgrund: Wärmequelle nicht gepflegt (Außenluft, leer, Pufferspeicher).</summary>
+    public string SperrgrundFreiQuelle { get; set; } = T("WPK_FREI_SPERR_QUELLE",
+        "Freie Kühlung braucht eine gepflegte Wärmequelle (Erdreich, Konstant, Profil oder CSV) — Außenluft, keine Angabe und Pufferspeicher wirken nicht.");
 
     /// <summary>WPK_LBL_KUEHLTRAEGER — der Stromträger des Kältestroms (K9).</summary>
     public string LabelKuehltraeger { get; set; } = T("WPK_LBL_KUEHLTRAEGER", "Stromträger des Kältestroms");

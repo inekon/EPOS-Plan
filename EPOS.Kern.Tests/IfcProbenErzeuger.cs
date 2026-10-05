@@ -34,7 +34,7 @@ namespace EPOS.Kern.Tests
     /// m² ohne Prefix. Die Erwartungswerte stehen in <c>IfcImportTests</c> und folgen aus den Zahlen
     /// hier.</para>
     /// </summary>
-    internal static class IfcProbenErzeuger
+    internal static partial class IfcProbenErzeuger
     {
         /// <summary>Der feste Zeitstempel im Kopf jeder Probe.</summary>
         public const string ZEITSTEMPEL = "2026-09-25T00:00:00";
@@ -62,6 +62,8 @@ namespace EPOS.Kern.Tests
                 ["ifc4_vorhangfassade.ifc"] = Fassadenhaus(),
                 ["ifc4_haus_materialnamen.ifc"] = Haus(XbimSchemaVersion.Ifc4, "ifc4_haus_materialnamen.ifc", materialnamen: true),
                 ["ifc4_zonen.ifc"] = Zonenhaus(),
+                ["ifc4_z6_sollwerte.ifc"] = Z6Sollwerte(),
+                ["ifc4_z6_cad.ifc"] = Z6Cad(),
             };
         }
 
@@ -639,6 +641,84 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Zonenregel Z6 mit Sollwerten des Standards</b> (Mehrzonenkonzept 6.1): IFC4, zwei Geschosse, Räume über die
+        /// Zerlegung, keine Raumgrenzen, keine Bauteile; Heizsollwert je Raum als <c>Pset_SpaceThermalRequirements.SpaceTemperature</c>.
+        /// EG: „Büro 1" 30 m² 20 °C, „Büro 2" 25 m² 20,4 °C, „Flur" 15 m² 15 °C, „WC" 2,5 m² 24 °C (unter der Mindestgröße),
+        /// „Lager 1" 20 m² 15 °C; OG: „Besprechung" 20 m² 19,6 °C, „Lager 2" 10 m² und „Archiv" 12 m² ohne Sollwert.
+        /// </summary>
+        public static byte[] Z6Sollwerte()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_z6_sollwerte.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Zonenprobe", null);
+                IIfcBuildingStorey eg = b.Geschoss(g, "EG", 0);
+                IIfcBuildingStorey og = b.Geschoss(g, "OG", 3000);
+                (IIfcBuildingStorey S, string Nr, string Name, double M2, double? C)[] raeume =
+                {
+                    (eg, "1", "Büro 1", 30, 20.0), (eg, "2", "Büro 2", 25, 20.4), (eg, "3", "Flur", 15, 15.0),
+                    (eg, "4", "WC", 2.5, 24.0), (eg, "5", "Lager 1", 20, 15.0),
+                    (og, "6", "Besprechung", 20, 19.6), (og, "7", "Lager 2", 10, null), (og, "8", "Archiv", 12, null),
+                };
+                double x = 0.0;
+                foreach (var r in raeume)
+                {
+                    IIfcSpace raum = b.Raum(r.S, r.Nr, r.Name, x, 0, r.M2, 2500, r.M2 * 2.5, beheizt: false);
+                    if (r.C.HasValue) b.Solltemperatur(raum, r.C.Value);
+                    x += 1000;
+                }
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
+        /// <b>Zonenregel Z6 nach dem Muster eines CAD-Exports</b> (Mehrzonenkonzept 6.1, 6.5): IFC4, Räume über das
+        /// Enthaltensein, keine Raumgrenzen; je Raum ein Satz <c>CAD_RaumAllgemein</c> mit <c>HeatingType</c>,
+        /// <c>InsideTemperature (°C)</c> und <c>RoomType</c> (Aufzählung mit Präfix <c>mrt</c>), Bauteile mit Raumbezügen.
+        /// EG: „Büroraum" 40 m² beheizt 20 °C Office, „Büroraum 2" 30 m² beheizt 20 °C Office, „Flur" 20 m² beheizt 15 °C Hall,
+        /// „WC-Raum" 6 m² beheizt 20 °C WC, „Lagerraum" 25 m² unbeheizt ohne Temperatur Store; OG: „Wohnraum" 35 m² getrennt
+        /// beheizt 20 °C Living, „Raum 7" 12 m² beheizt ohne Temperatur Office, „Abstellraum" 10 m² unbeheizt 10 °C Store; dazu im EG
+        /// „Dusche" 3 m² beheizt 24 °C Shower unter der Mindestgröße, deren einzige Grenzfläche („Wand Dusche") am Flur (15 °C) liegt.
+        /// </summary>
+        public static byte[] Z6Cad()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_z6_cad.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Zonenprobe", null);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                IIfcBuildingStorey og = b.GeschossEnthalten(g, "OG", 2800);
+                IIfcSlab decke = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Decke EG/OG", "btaHeated", false, 1.0, null, null, 140, 140, null, null);
+                IIfcSlab boden = b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Bodenplatte", "btaGround", true, 0.4, null, null, 121, 121, null, null);
+                IIfcSlab dach = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke", "btaUppermostStorey", true, 0.3, null, null, 57, 57, null, null);
+                IIfcWall sued = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand Süd", "btaOutside", true, 0.3, null, 180, 40, 40, null, null);
+                IIfcWall nord = b.CadBauteil<IIfcWall>(og, "IfcWall", "Außenwand Nord", "btaOutside", true, 0.3, null, 0, 40, 40, null, null);
+                IIfcWall duschwand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand Dusche", "btaHeated", false, 1.5, null, null, 5, 5, null, null);
+                (IIfcBuildingStorey S, string Name, double M2, string Art, double? C, string Typ, IIfcProduct[] Bauteile)[] raeume =
+                {
+                    (eg, "Büroraum", 40, "bhtHeated", 20.0, "mrtOffice", new IIfcProduct[] { boden, decke, sued }),
+                    (eg, "Büroraum 2", 30, "bhtHeated", 20.0, "mrtOffice", new IIfcProduct[] { boden, decke, sued }),
+                    (eg, "Flur", 20, "bhtHeated", 15.0, "mrtHall", new IIfcProduct[] { boden, decke, duschwand }),
+                    (eg, "WC-Raum", 6, "bhtHeated", 20.0, "mrtWC", new IIfcProduct[] { boden, decke }),
+                    (eg, "Lagerraum", 25, "bhtUnHeated", null, "mrtStore", new IIfcProduct[] { boden, decke, sued }),
+                    (og, "Wohnraum", 35, "bhtSeparatelyHeated", 20.0, "mrtLiving", new IIfcProduct[] { decke, dach, nord }),
+                    (og, "Raum 7", 12, "bhtHeated", null, "mrtOffice", new IIfcProduct[] { decke, dach }),
+                    (og, "Abstellraum", 10, "bhtUnHeated", 10.0, "mrtStore", new IIfcProduct[] { decke, dach, nord }),
+                    (eg, "Dusche", 3, "bhtHeated", 24.0, "mrtShower", new IIfcProduct[] { boden, duschwand }),
+                };
+                double x = 150;
+                foreach (var r in raeume)
+                {
+                    IIfcSpace raum = b.RaumEnthalten(r.S, r.Name, x, 150, r.M2, r.M2 * 2.5, 2500, zerlegt: false);
+                    b.Raumangaben(raum, r.Art, r.C, r.Typ);
+                    b.Bezug(raum, r.Bauteile);
+                    x += 1000;
+                }
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
         /// <b>Zwei Räume übereinander ohne Raumgrenzen und ohne Raumbezug</b> (Mehrzonenkonzept 6.5, Trenndecke ohne
         /// Raumgrenzen): EG „Wohnen“ 6 × 5 m im Ursprung, OG „Schlafen“ 6 × 5 m um 2 m nach Osten versetzt — die
         /// Grundrisse überdecken sich auf 4 × 5 = 20 m². Mit <paramref name="grundriss"/> tragen beide Räume eine
@@ -667,6 +747,71 @@ namespace EPOS.Kern.Tests
                 b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Oberste Decke", "btaOutside", true, 0.2, null, null, 30, 30, null, null);
                 if (decke)
                     b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Decke EG/OG", "btaHeated", false, 1.0, null, null, 40, 40, null, null);
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Befunde der Importproben 13–18</b> (Mehrzonenkonzept 6.1, 6.2, 6.5) in einer Datei: EG „Wohnen“ 30 m² mit
+        /// Flächenmenge und einem Grundriss von 36 m², „Arbeitsraum“ ohne Flächenmenge mit Grundriss 4 × 5 m, „Büro“ mit
+        /// <c>PredefinedType = INTERNAL</c> und <c>IsExternal = TRUE</c>, „Terrasse“ nur mit <c>IsExternal = TRUE</c>; OG
+        /// „Schlafen“ 30 m². Ohne <c>IsExternal</c> an den Bauteilen: die Geschossdecke (FLOOR) mit zwei inneren Grenzen je
+        /// 30 m² und einem äußeren Randstreifen 6 × 0,1 m, die Kragplatte (FLOOR) mit zwei inneren Grenzen je 30 m² und einer
+        /// äußeren von 10 m², die Bodenplatte (BASESLAB) mit einer Grenze <c>EXTERNAL</c>; ein Dach ohne Flächenmenge aus einer
+        /// Platte (ROOF), dessen Grenze (30 m²) am Dach hängt; eine Stütze mit einer Grenze von 0,6 m².
+        /// </summary>
+        public static byte[] Importbefunde()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_importbefunde.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Befundhaus", "2010");
+                IIfcBuildingStorey eg = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcBuildingStorey og = b.Geschoss(g, "Obergeschoss", 2800);
+                var ext = IfcInternalOrExternalEnum.EXTERNAL;
+                var innen = IfcInternalOrExternalEnum.INTERNAL;
+                double[] hoch = { 0, 0, 1 }, runter = { 0, 0, -1 }, sued = { 0, -1, 0 };
+
+                IIfcSpace wohnen = b.Raum(eg, "0.01", "Wohnen", 0, 0, 30, 2500, 75, beheizt: true);
+                b.Grundriss(wohnen, (0, 0), (6000, 0), (6000, 6000), (0, 6000));
+                IIfcSpace arbeit = b.RaumEnthalten(eg, "Arbeitsraum", 7000, 0, null, null, null, zerlegt: true);
+                b.Grundriss(arbeit, (0, 0), (4000, 0), (4000, 5000), (0, 5000));
+                IIfcSpace buero = b.RaumEnthalten(eg, "Büro", 12000, 0, 20, 50, 2500, zerlegt: true);
+                buero.PredefinedType = IfcSpaceTypeEnum.INTERNAL;
+                b.Eigenschaft(buero, "Pset_SpaceCommon", "IsExternal", new IfcBoolean(true));
+                IIfcSpace terrasse = b.RaumEnthalten(eg, "Terrasse", 17000, 0, 12, 30, 2500, zerlegt: true);
+                b.Eigenschaft(terrasse, "Pset_SpaceCommon", "IsExternal", new IfcBoolean(true));
+                IIfcSpace schlafen = b.Raum(og, "1.01", "Schlafen", 0, 0, 30, 2500, 75, beheizt: true);
+
+                // Die Geschossdecke: innen, mit einem äußeren Randstreifen von 0,6 m² (1 % der Grenzfläche).
+                IIfcSlab decke = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Geschossdecke", "btaHeated", false, 0.5, null, null, 30, 30, null, null);
+                decke.PredefinedType = IfcSlabTypeEnum.FLOOR;
+                b.Grenze2(wohnen, decke, innen, hoch, new double[] { 0, 0, 2500 }, new double[] { 6000, 0, 2500 }, new double[] { 6000, 5000, 2500 }, new double[] { 0, 5000, 2500 });
+                b.Grenze2(schlafen, decke, innen, runter, new double[] { 0, 0, 0 }, new double[] { 0, 5000, 0 }, new double[] { 6000, 5000, 0 }, new double[] { 6000, 0, 0 });
+                b.Grenze2(schlafen, decke, ext, runter, new double[] { 0, 5000, 0 }, new double[] { 0, 5100, 0 }, new double[] { 6000, 5100, 0 }, new double[] { 6000, 5000, 0 });
+
+                // Die Kragplatte: zwei innere Grenzen und eine äußere von 10 m² (14 %) — bleibt außen.
+                IIfcSlab krag = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Kragplatte", "btaHeated", false, 0.5, null, null, 40, 40, null, null);
+                krag.PredefinedType = IfcSlabTypeEnum.FLOOR;
+                b.Grenze2(wohnen, krag, innen, hoch, new double[] { 0, 0, 2500 }, new double[] { 6000, 0, 2500 }, new double[] { 6000, 5000, 2500 }, new double[] { 0, 5000, 2500 });
+                b.Grenze2(schlafen, krag, innen, runter, new double[] { 0, 0, 0 }, new double[] { 0, 5000, 0 }, new double[] { 6000, 5000, 0 }, new double[] { 6000, 0, 0 });
+                b.Grenze2(schlafen, krag, ext, runter, new double[] { 6000, 0, 0 }, new double[] { 6000, 5000, 0 }, new double[] { 8000, 5000, 0 }, new double[] { 8000, 0, 0 });
+
+                // Die Bodenplatte mit einer Grenze EXTERNAL statt EXTERNAL_EARTH.
+                IIfcSlab boden = b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Bodenplatte", "btaGround", true, 0.4, null, null, 30, 30, null, null);
+                boden.PredefinedType = IfcSlabTypeEnum.BASESLAB;
+                b.Grenze2(wohnen, boden, ext, runter, new double[] { 0, 0, 0 }, new double[] { 0, 5000, 0 }, new double[] { 6000, 5000, 0 }, new double[] { 6000, 0, 0 });
+
+                // Das zerlegte Dach ohne Flächenmenge: die Grenze hängt am Dach, nicht an seiner einzigen Platte.
+                IIfcRoof dach = b.CadBauteil<IIfcRoof>(og, "IfcRoof", "Dach", "btaOutside", true, 0.2, null, null, null, null, null, null);
+                IIfcSlab dachplatte = b.CadBauteil<IIfcSlab>(og, "IfcSlab", "Dachplatte", "btaOutside", true, 0.2, null, null, null, null, null, null);
+                dachplatte.PredefinedType = IfcSlabTypeEnum.ROOF;
+                b.Teil(dach, dachplatte);
+                b.Grenze2(schlafen, dach, ext, hoch, new double[] { 0, 0, 2500 }, new double[] { 6000, 0, 2500 }, new double[] { 6000, 5000, 2500 }, new double[] { 0, 5000, 2500 });
+
+                // Eine Stütze mit Raumgrenze — kein Bauteil der Hülle.
+                IIfcColumn stuetze = b.CadBauteil<IIfcColumn>(eg, "IfcColumn", "Stütze", "btaHeated", false, null, null, null, null, null, null, null);
+                b.Grenze2(wohnen, stuetze, innen, sued, new double[] { 1000, 1000, 0 }, new double[] { 1300, 1000, 0 }, new double[] { 1300, 1000, 2000 }, new double[] { 1000, 1000, 2000 });
                 return b.Speichern();
             }
         }
@@ -770,7 +915,7 @@ namespace EPOS.Kern.Tests
         //  Der Bauhelfer — schemafrei über die IIfc*-Schnittstellen
         // ==================================================================
 
-        private sealed class Bau : IDisposable
+        private sealed partial class Bau : IDisposable
         {
             private readonly MemoryModel _m;
             private readonly ITransaction _t;
@@ -1112,6 +1257,19 @@ namespace EPOS.Kern.Tests
             }
 
             /// <summary>Die Beheizungsart eines Raums nach dem Muster des CAD-Exports (<c>HeatingType</c>, Aufzählung).</summary>
+            /// <summary>Der Heizsollwert eines Raums als <c>Pset_SpaceThermalRequirements.SpaceTemperature</c> [°C].</summary>
+            public void Solltemperatur(IIfcSpace r, double temperaturC)
+                => Satz(r, "Pset_SpaceThermalRequirements", ("SpaceTemperature", new IfcThermodynamicTemperatureMeasure(temperaturC)));
+
+            /// <summary>Beheizungsart, Raumtemperatur und Raumtyp eines CAD-Exports in einem Satz <c>CAD_RaumAllgemein</c>.</summary>
+            public void Raumangaben(IIfcSpace r, string beheizungsart, double? temperaturC, string raumtyp)
+            {
+                var liste = new List<IIfcProperty> { Aufzaehlung("HeatingType", beheizungsart) };
+                if (temperaturC.HasValue) liste.Add(Einzel("InsideTemperature (°C)", new IfcReal(temperaturC.Value)));
+                liste.Add(Aufzaehlung("RoomType", raumtyp));
+                SatzMit(r, "CAD_RaumAllgemein", liste);
+            }
+
             public void Beheizungsart(IIfcSpace r, string wert, double? temperaturC = null)
             {
                 var liste = new List<IIfcProperty> { Aufzaehlung("HeatingType", wert) };
@@ -1373,6 +1531,12 @@ namespace EPOS.Kern.Tests
                 }
                 return g;
             }
+
+            /// <summary>Hängt <paramref name="teil"/> über <c>IfcRelAggregates</c> an <paramref name="ganzes"/>.</summary>
+            public void Teil(IIfcObjectDefinition ganzes, IIfcObjectDefinition teil) => Zerlegen(ganzes, teil);
+
+            /// <summary>Eine einzelne Eigenschaft in einem eigenen Satz <paramref name="satz"/>.</summary>
+            public void Eigenschaft(IIfcObject o, string satz, string name, IIfcValue wert) => Satz(o, satz, (name, wert));
 
             /// <summary>Zwei Grenzen als Gegenstücke (<c>CorrespondingBoundary</c> beidseitig).</summary>
             public void Gegenstuecke(IIfcRelSpaceBoundary a, IIfcRelSpaceBoundary b)

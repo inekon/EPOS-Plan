@@ -146,6 +146,13 @@ public sealed class KomponentenKonfigurationKiSicht
         set { if (Anlage is { } a) a.SperrzeitVon = value; }
     }
 
+    /// <summary>Der höchste Vorlauf der Anlage [°C] (Gruppe „Betriebszeiten"); leer = projektierter Vorlauf.</summary>
+    public double? VorlaufMax
+    {
+        get => Anlage?.VorlaufMax;
+        set { if (Anlage is { } a) a.VorlaufMax = value; }
+    }
+
     /// <summary>Ende der täglichen Sperrzeit [h/Tag].</summary>
     public int? SperrzeitBis
     {
@@ -237,6 +244,27 @@ public sealed class KomponentenKonfigurationKiSicht
     /// <summary>Die zwei Abrechnungsarten der Maske — dieselben Texte wie ihre Optionsgruppe.</summary>
     public IReadOnlyList<KiWahleintrag> KuehlAbrechnungWahl
         => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.AbrechnungWahl();
+
+    /// <summary>„Freie Kühlung über die Wärmequelle" (KU3-6) — gesperrt ohne Sole-/Wasser-Wasser-Bauart oder gepflegte Quelle.</summary>
+    public bool KuehlFrei
+    {
+        get => Anlage?.KuehlFrei ?? false;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.KuehlFreiSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Die Grädigkeit des Wärmetauschers der freien Kühlung [K]; leer = 3,0 K.</summary>
+    public double? KuehlFreiGraedigkeitK
+    {
+        get => Anlage?.KuehlFreiGraedigkeitK;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.KuehlFreiGraedigkeitSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Die Leistungsgrenze der freien Kühlung [kW]; leer = Kälteleistung der Kennlinie.</summary>
+    public double? KuehlFreiLeistungKw
+    {
+        get => Anlage?.KuehlFreiLeistungKw;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.KuehlFreiLeistungSetzen(Anlage, Gaben, value);
+    }
 
     private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? Anlage => AnlageLesen?.Invoke();
 

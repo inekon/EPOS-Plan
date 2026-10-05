@@ -64,7 +64,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportStand stand = Zuordnen(gaben);
 
             GebaeudeZonierungDaten zon = Assert.IsType<GebaeudeZonierungDaten>(stand.Zonierung);
-            Assert.Equal(new[] { "Z1", "Z2", "Z4", "Z5" }, zon.Regeln.Select(r => r.Schluessel));
+            Assert.Equal(new[] { "Z1", "Z2", "Z4", "Z6", "Z5" }, zon.Regeln.Select(r => r.Schluessel));
             Assert.Equal("Z4", zon.Regel);
             Assert.Equal("Z4 – eine Zone je Geschoss", zon.RegelText);
             Assert.False(zon.Einzonig);

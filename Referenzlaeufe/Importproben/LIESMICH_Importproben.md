@@ -58,7 +58,51 @@ KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
 | `ifc4_vorhangfassade.ifc` | Fassadenhaus: ein beheizter Raum (80 m²), zwei Vorhangfassaden (`IfcCurtainWall`, Süd 25 m² mit U-Wert 1,3, West 20 m² ohne U-Wert), Ost- und Nordwand mit U-Wert am Wandtyp, ein Fenster, Dach- und Bodenplatte — Vorhangfassaden im Bauteilvorschlag transparent, in den Summenfeldern unter „Sonstige Flächen" | selbst erzeugt | eigenes Werk |
 | `ifc4_haus_materialnamen.ifc` | das Probenhaus (`ifc4_haus.ifc`) mit Schichtsätzen an Außenwänden, Dach, Keller- und Geschossdecke und Innenwand: Materialnamen, wie Autorensysteme sie schreiben (angehängte Kennungen, Marken wie „bewehrt"/„Verputzt", Namen deutscher und englischer Vorlagen, `Air`, eine Schraffur als Schicht, ein Sammelname ohne Treffer), die Stoffwerte in `Pset_MaterialThermal`/`Pset_MaterialCommon` voller Nullen — die Probe des Namensabgleichs N1…N7 im Bauteilvorschlag | selbst erzeugt | eigenes Werk |
 | `ifc4_zonen.ifc` | Zonenhaus: Keller, Erd- und Obergeschoss mit sechs Räumen, Raumgrenzen der 2. Ebene, Polygone an einer Fassade über zwei Geschosse und an der Geschossdecke, ein Gegenstück der Datei, eine Grenze ohne Gegenstück, geschachtelte und mehrfache `IfcZone`, Klassifikation, ein Raum unter der Mindestgröße, Beheizungsregeln B3 und B5 — die Probe der Zonierung Z1, Z2, Z4 und des Vorschlags mehrerer Zonen (G6c) | selbst erzeugt | eigenes Werk |
+| `ifc4_z6_sollwerte.ifc` | Zonenregel Z6 mit Heizsollwerten des Standards (`Pset_SpaceThermalRequirements.SpaceTemperature`): zwei Geschosse, acht Räume ohne Raumgrenzen und ohne Bauteile, Sollwerte 20/20,4/19,6 °C, 15 °C und 24 °C (ein WC unter der Mindestgröße), zwei Räume ohne Sollwert — Gruppen nach gerundeter Temperatur, Räume ohne Temperatur nach der Nutzung, Mindestgröße zur nächstliegenden Temperatur | selbst erzeugt | eigenes Werk |
+| `ifc4_z6_cad.ifc` | Zonenregel Z6 nach dem Muster eines CAD-Exports: Satz `CAD_RaumAllgemein` mit `HeatingType`, `InsideTemperature (°C)` und `RoomType` (Präfix `mrt`), Räume über das Enthaltensein, Bauteile mit Raumbezügen, keine Raumgrenzen; beheizt, getrennt beheizt und unbeheizt, Räume ohne Temperatur — Raumtyp, Raumtemperatur ohne Sollwert, Übersteuerung der Beheizung | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_extrusion_polygon.ifc` | Raumkörper (G7f-1, Probe 29): ein Raum mit `IfcExtrudedAreaSolid` über `IfcArbitraryClosedProfileDef` mit `IfcPolyline` (L-Form, 14 m² × 3 m), Längen in mm | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_extrusion_bogen.ifc` | Raumkörper mit Bögen: Verbundkurve aus `IfcPolyline` und getrimmtem `IfcCircle`, dieselbe Form als `IfcIndexedPolyCurve` mit `IfcArcIndex`, ein `IfcCircleProfileDef` — Vermerk „Bogen“ | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_extrusion_loch.ifc` | Raumkörper aus `IfcArbitraryProfileDefWithVoids`: außen `IfcIndexedPolyCurve` 6 m × 4 m, ein Loch 2 m × 2 m — Brückenkante | selbst erzeugt | eigenes Werk |
+| `ifc2x3_koerper_brep.ifc` | Raumkörper als `IfcFacetedBrep` in IFC2X3 (Quader 4 × 3 × 2,5 m, eine Fläche mit `Orientation = false`) | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_dreiecksnetz.ifc` | Raumkörper als `IfcTriangulatedFaceSet` (Quader, zwölf Dreiecke) — Randkanten ohne Diagonalen | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_vieleckssatz.ifc` | Raumkörper als `IfcPolygonalFaceSet` (Quader, sechs Vierecke) | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_abgebildet.ifc` | Raumkörper als `IfcMappedItem` mit `IfcCartesianTransformationOperator3DnonUniform` (Versatz, Maßstab 2 : 1 : 3) | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_beschnitt.ifc` | Raumkörper als `IfcBooleanClippingResult` (Quader minus Halbraum) — nur der erste Operand, Vermerk „ohne Beschnitt“ | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_offen.ifc` | Raumkörper als `IfcShellBasedSurfaceModel` mit `IfcOpenShell` (Quader ohne Decke) — Vermerk „offen“, nicht geschlossen | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_advancedbrep.ifc` | Raumkörper als `IfcAdvancedBrep` — benannt nicht lesbar (`IMP_IFC_PROT_KOERPER_ART`), der Raum bleibt ohne Körper | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_platzierung.ifc` | Raumkörper hinter einer Placement-Kette: Gebäude um 90° gedreht und versetzt, Geschoss 3 m höher, Raum versetzt; Längen in mm | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_nachbarn.ifc` | Trennflächen aus Raumkörpern (G7f-4): drei Räume als `IfcFacetedBrep` auf zwei Geschossen ohne Raumgrenzen, mit Raumbezügen — „Büro“ und „Flur“ (EG) durch eine Wand von 0,24 m (`Pset_WallCommon.ThermalTransmittance` 1,2) getrennt, „Büro 2“ (OG) 0,3 m über dem Büro; zwei Temperaturen für Z6 | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_nachbarn_grenzen.ifc` | Gegenprobe zu `ifc4_koerper_nachbarn.ifc`: dieselben Räume mit Raumgrenzen der 2. Ebene für Wand und Decke (Gegenstücke) — die Raumgrenzen gehen vor, die Körperpaare werden nur gezählt | selbst erzeugt | eigenes Werk |
 | `ifc4_verlust.ifc` | von Hand geschriebene Kleinstdatei (< 5 KB), absichtlich beschädigt: ein unbekannter Entitätstyp und ein Verweis ins Leere — beide Verlustkanäle | von Hand geschrieben | eigenes Werk |
+
+## HottCAD-Projektdatei (Stufe SQ-1, Proben 33–36)
+
+Keine Datei in diesem Ordner: Eine Projektdatei (`.sqproj`) ist SQLite und gehört nach der `*.sqlite`-Regel nie ins
+Repositorium. Die Proben entstehen **zur Laufzeit** im Test durch `EPOS.Kern.Tests/SqprojProbenErzeuger.cs` unter einem
+temporären Pfad — deterministisch (feste Kennungen, feste Reihenfolge), nur die Tabellen und Spalten, die der Leser liest,
+neutrale Raum- und Profilnamen, runde Werte: `Standard()` (Regelfall: Typ 5 und Typ 6 decken je alle Räume, Kennung,
+Name je Geschoss, Raum ohne Gegenstück, Tagesarten 4, 5, 6 und ein unbekannter Code, Betriebsart 2 in der Nacht,
+Abschnitte mit Wochentagsschaltern und über den Jahreswechsel, übersprungene Klassen und Zonentypen) und
+`Unvollstaendig()` (eine Simulationszone mit einem Teil der Räume). Anwenderdateien liegen nur lokal unter
+`Quellen/*.sqproj` (`.gitignore`) und laufen allein in `SqprojQuelldateienDiagnoseTests`.
+
+**Feste Tabelle Profilnummer → Nutzung** (`EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`, Nummern nach
+DIN V 18599-10 Tabelle 4, 70 und 71 die Wohnzeilen der Projektdatei); jede andere Nummer ergibt keine Nutzung und steht
+im Beleg:
+
+| Nr. | Normname | Nutzung |
+|---|---|---|
+| 1 | Einzelbüro | BUERO |
+| 2 | Gruppenbüro | BUERO |
+| 3 | Großraumbüro | BUERO |
+| 4 | Besprechung, Sitzung, Seminar | BUERO |
+| 5 | Schalterhalle | BUERO |
+| 8 | Klassenzimmer | SCHULE |
+| 9 | Hörsaal, Auditorium | SCHULE |
+| 28 | Bibliothek – Lesesaal | SCHULE |
+| 29 | Bibliothek – Freihandbereich | SCHULE |
+| 70 | Wohnen (Einfamilienhaus) | WOHNEN |
+| 71 | Wohnen (Mehrfamilienhaus) | WOHNEN |
 
 ## Katalog-, Geräte-, Ganglinien- und Klimaimporte
 

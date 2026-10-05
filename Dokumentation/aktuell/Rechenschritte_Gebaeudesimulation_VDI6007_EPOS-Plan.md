@@ -24,7 +24,7 @@ Probe), macht die Kühlung zum vierten Kanal mit den fünf Betriebsfällen und g
 Kühlakkumulatoren, ergänzt Schritt H der Anlagenkopplung als Vorgriff (7.4), führt acht Kennzahlen
 mit `Ueberhitzungsstunden` und die Skalierung aus einem Lauf (8.2, 8.3), stellt die Rechenzeit als
 Prüfmodus-Messung (10.5), ersetzt die festen Schemaschrittnummern durch die Papiernamen M3, M3-G2
-und M4 und stellt die Wortwahl zum Bestandsweg auf E26 (Übergang bis zur Stufe GA, Zeitpunkt offen).
+und M4 und stellt die Wortwahl zum Bestandsweg auf E26; mit E89 (05.10.2026) bleibt er dauerhaft wählbar, die Stufe GA entfällt.
 **Zweck:** Das Rechenbuch des Stundenmodells. Es führt die Rechnung in Schritten vor — je
 Schritt die Formeln, die Eingaben mit Einheit und Datenquelle, die Ausgaben und die Stelle in
 der Reihenfolge. Damit kann ein Fachplaner ein Ergebnis nachvollziehen und ein Entwickler den
@@ -64,9 +64,8 @@ in K/W, Leitwerte G in W/K, Kapazitäten C in J/K.
 **modellfreien Vorbereitungsschritt** (Klimareihen, Verbrauch und Flächen des Projekts) und danach
 über **eine einzige Weiche** genau ein Rechenmodul (E20). **Dieses Papier
 beschreibt das Modul `Gebaeude/`** — den VDI-Weg. Der Tagesbilanz-Weg wird Zeichen für Zeichen in
-das Modul `Altweg/` verschoben, bekommt keine neue Funktion und **bleibt für die Dauer des
-Übergangs als eingefrorener Bestandsweg** neben dem VDI-Weg stehen (E23, E26); abgelöst wird er
-mit der Stufe **GA — Altweg ablösen**, deren Zeitpunkt offen ist (Q24). Er wird hier nur
+das Modul `Altweg/` verschoben, bekommt keine neue Funktion und **bleibt dauerhaft als eingefrorener
+Bestandsweg** neben dem VDI-Weg stehen (E23, E89); eine Stufe zu seiner Ablösung gibt es nicht. Er wird hier nur
 dort genannt, wo eine Zahl gegen ihn gehalten wird. **Keines der beiden Module ruft das andere.**
 Die Kälteseite verlässt denselben Lauf über die zweite Fassade `SimulationKaeltebedarf` (E21) — es
 gibt keine zweite Gebäuderechnung für sie.
@@ -1632,10 +1631,8 @@ Zwei harte Bedingungen bleiben, jede aus eigenem Grund:
 - Der Tagesbilanz-Weg selbst ändert sich nicht — weder seine Gewichte noch sein Vorlauf von
   15 Tagen. Er wird **Zeichen für Zeichen nach `Altweg/` verschoben** und bekommt danach keine
   Funktion mehr, nur noch Fehlerbehebung; die Verschiebung ist mit einem **byte-gleichen**
-  Referenzlauf abzunehmen, bevor dieses Modul angebunden wird (E20). Er bleibt **für die Dauer des
-  Übergangs** als eingefrorener Bestandsweg — ohne Kühllast (0 mit benanntem Hinweis), ohne
-  Anlagenkopplung, ohne Zonen (E23, E26) — und wird mit der Stufe **GA** abgelöst, deren Zeitpunkt
-  offen ist (Q24); dieses Modul muss dann ohne ihn arbeiten.
+  Referenzlauf abzunehmen, bevor dieses Modul angebunden wird (E20). Er bleibt **dauerhaft** als eingefrorener, gepflegter Bestandsweg — ohne Kühllast (0 mit benanntem Hinweis), ohne
+  Anlagenkopplung, ohne Zonen (E23, E89); dieses Modul arbeitet ohne ihn (Modultrennungswache).
 
 ---
 
@@ -2025,12 +2022,12 @@ Jede Zeile ist eine bewusste Festlegung, keine Lücke. Die Begründung steht jew
 **Was hier nicht steht: der Unterschied zum bisherigen Rechenweg.** Diese Tabelle führt
 Abweichungen von der **Richtlinie**. Der Tagesbilanz-Weg ist nach E20 kein zweiter, gleichrangiger
 Weg, gegen den hier abgegrenzt würde, sondern der **Bestandsweg**, den der VDI-Weg als
-Vorgabe ablöst: eigenes Modul, keine neue Funktion, **eingefroren für die Dauer des Übergangs**
-(E23, E26) und mit der Stufe **GA** abgelöst, deren Zeitpunkt offen ist (Q24). Wo eine Zeile ihn
+Vorgabe ablöst: eigenes Modul, keine neue Funktion, **dauerhaft eingefroren und gepflegt**
+(E23, E89). Wo eine Zeile ihn
 unten nennt, geht es um eine Zahl, die bei ihm bleibt. Wer beide Wege an einem Gebäude
 nebeneinander sehen will, findet sie im **Vergleich alt/neu im Bedarfsdialog**; er entsteht mit G2
-und bleibt **bis zur Ablösung** — solange gibt es zwei Rechenwege nebeneinander, und der Vergleich
-steht in der Löschliste der Stufe GA (Umsetzungskonzept 6).
+und bleibt **dauerhaft** (E89) — solange gibt es zwei Rechenwege nebeneinander, und der Vergleich
+steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
 
 | # | Abweichung | Was die Richtlinie sagt | Warum in EPOS-Plan | Verweis |
 |---|---|---|---|---|
@@ -2045,7 +2042,7 @@ steht in der Löschliste der Stufe GA (Umsetzungskonzept 6).
 | 9 | **a_kon = 0,09** als Vorgabe | Blatt 2, Tabelle A5: je Verglasung 0,02 bis 0,09, mit innen liegendem Sonnenschutz bis 0,52 | 0,09 gilt für 3-fach-Wärmeschutz. Die Tabellenwerte aus Blatt 2 sind je Verglasungsart zu übernehmen | Konzept N1.3 |
 | 10 | **α_kon,i = 2,7** global, **α_A = 25** als Festwert | Blatt 1, Seite 10: die konvektiven Werte sind je Bauteil vorzugeben (Testräume 1,7 Boden/Decke, 2,7 Wände/Fenster, 5,0 Kühldecke, außen 20,0); Gl. (38) legt nur die Summenbildung α_A = α_kon,A + α_str,A fest | Im Klassenweg gibt es keine Bauteile, nur zwei Gruppen; α_A = 25 ist die Summe der Testraumwerte 20,0 + 5,0, **kein gesetzter Normwert** (1.3). Die Normtestfälle laufen mit den Bauteilwerten; für Testbeispiel 11 ist der eigene Kühldeckenknoten die **vermutete** Ursache und die offene Aufgabe (10.3) | Konzept N1.3 |
 | 11 | **c·ρ = 0,34 Wh/(m³K)** | Testbeispiel 12 schreibt 1,1953 kJ/(m³K) = 0,332 vor | 0,34 stammt aus DIN EN 12831 und gilt für Projektrechnungen; die Normfälle rechnen mit 1,1953 | Konzept N1.3 |
-| 12 | **Bestandsgewichte gestrichen** (0,83 / 0,95 / 0,45 / 0,83) | — (die Gewichte sind eine Kalibrierung, keine Norm) | Im Stundenmodell gehen die Transmissionsverluste ungewichtet mit U·A ein; jede Fläche bekommt statt dessen ihre eigene Randbedingung. Faktor **und** Randbedingung wären eine doppelte Minderung. Der Bestandsweg behält seine Gewichte bis zu seiner Ablösung (Stufe GA, Zeitpunkt offen) — er ist der eingefrorene Bestandsweg (E23, E26) | Entscheid E2, E20, E23, E26, Konzept N1.6 |
+| 12 | **Bestandsgewichte gestrichen** (0,83 / 0,95 / 0,45 / 0,83) | — (die Gewichte sind eine Kalibrierung, keine Norm) | Im Stundenmodell gehen die Transmissionsverluste ungewichtet mit U·A ein; jede Fläche bekommt statt dessen ihre eigene Randbedingung. Faktor **und** Randbedingung wären eine doppelte Minderung. Der Bestandsweg behält seine Gewichte dauerhaft — er ist der eingefrorene Bestandsweg (E23, E89) | Entscheid E2, E20, E23, E26, Konzept N1.6 |
 | 13 | **Validierung nur gegen Blatt 1** | Blatt 3 verweist zur Validierung auf Testbeispiele der VDI 2078 bzw. VDI 6020 | Deren Referenzergebnisse liegen nur auf den Datenträgern und setzen TRY05 Würzburg voraus; beides wird nach Entscheid E5 nicht beschafft. Ausgewiesen wird deshalb „validiert an den zwölf Testbeispielen der VDI 6007 Blatt 1" — nicht „validiert nach VDI 6020/2078" | Konzept N1.10 (E5), N1.11 (E6) |
 | 14 | **Der Klassenweg gibt die Katalog-U-Werte nicht wieder** | Der U-Wert enthält R_si; das Netz führt den inneren Übergang über (25)–(28) und die Dreieckschaltung — beide sind im Bauteilweg widerspruchsfrei, weil R_1 und R_Rest aus den Schichten folgen | Im Klassenweg wird R_si/A vom U-Wert abgezogen, im Netz liegt an seiner Stelle R_conv,AW parallel (R_conv,IW + R_rad) = R_innen,eff. Der wirksame Leitwert ist deshalb kleiner als Σ(U·A)_opak — für das Gebäude aus Kapitel 9 607,48 statt 686,95 W/K (−11,6 %). Der Abzug bleibt, weil der innere Übergang sonst zweimal zählt; die Minderung ist je Referenzgebäude auszuweisen, bevor die Basis neu eingefroren wird. Mit G3 entfällt die Frage | A4, 9.6, 10.4 |
 | 15 | **Verteilung der Strahlungslasten flächenproportional** | (45)/(46): die bestrahlte Fläche und die zu ihr parallelen Bauteile werden nicht beaufschlagt, Gewichte mit A_v je Orientierung | `Tab_Gebaeude` führt keine opaken Flächen je Orientierung, also ist A_v nicht rechenbar; in G1 gilt A_v = 0. Die Wirkung wird in **G0** einmal gemessen: derselbe Lauf mit A_v = 0 gegen einen Lauf mit A_v aus den Fensterflächen je Orientierung (E3). Mit dem Bauteilkatalog (G3) oder neuen Spalten in 1.1 wird auf (45)/(46) umgestellt | E3, E4 |
@@ -2071,13 +2068,12 @@ steht in der Löschliste der Stufe GA (Umsetzungskonzept 6).
 - [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
   — Kapitel 1 (Weiche und Datenfluss, Kernklassen, Gebäudespalten-Schritt M3, Ergebnisreihen,
   Tests), Kapitel 2 (Gebäudedialog mit der U·A-Tabelle), Kapitel 4 (Reihenfolge und Abnahme je
-  Stufe), Kapitel 6 (Löschliste der Stufe GA).
+  Stufe), Kapitel 6 (Inventar der Altweg-Bestandteile).
 - [`ADR-002_Stundenmodell_VDI6007_Einbindung.md`](ADR-002_Stundenmodell_VDI6007_Einbindung.md)
   — der Entscheid: Stundenmodell als Vorgabemodell, eine Naht, Neu-Einfrieren der Basis.
 - [`ADR-006_Trennung_Altweg_VDI6007.md`](ADR-006_Trennung_Altweg_VDI6007.md)
   — die Trennung der Rechenwege: Weiche am Eingang, modellfreier Vorbereitungsschritt, Modul
-  `Altweg/` als eingefrorener Bestandsweg für die Dauer des Übergangs (E23, E26), Ablösung mit
-  der Stufe GA.
+  `Altweg/` als eingefrorener, dauerhaft wählbarer Bestandsweg (E23, E89); die Stufe GA entfällt.
 - [`Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md`](Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md)
   — die Prüfung vom 17.09.2026: Entscheid E26, Befunde je Blickwinkel, Festlegungen F-Ü1 bis F-D1.
 - [`Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md`](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)

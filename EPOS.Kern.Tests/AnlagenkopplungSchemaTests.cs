@@ -335,14 +335,15 @@ namespace EPOS.Kern.Tests
             // Gesät sind allein das Referenzprojekt der Anlagenkopplung 1047 (Einfrierregel „gesäte
             // Auslegungsdaten der Übergabe", anlagenkopplung_1047_referenzprojekt.py) und das Referenzprojekt
             // Zonen mit Heizkreis 1054 (AK1z, referenzprojekt_1054_zonen_heizkreis.cs): je die Stufe AK1
-            // und am Gebäude Heizkreis, Radiator und Heizkurve, alles Übrige leer.
-            const string GEBAEUDE_1054 = "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1054)";
+            // und am Gebäude Heizkreis, Radiator und Heizkurve, alles Übrige leer. Dazu die Kopie von 1047 im
+            // Referenzprojekt des Fahrplans 1056 (AK2-4, referenzprojekt_1056_fahrplan.py) mit denselben Zellen.
+            const string GEBAEUDE_1054 = "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1054, 1056))";
             foreach (SchemaSpalte s in AnlagenkopplungSchema.UebergabeSpalten().Concat(AnlagenkopplungSchema.Ergebnisspalten))
             {
                 string ausser = s.Tabelle == "Tab_Gebaeude"
                     ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + " AND ID NOT IN " + GEBAEUDE_1054
                     : s.Tabelle == "Tab_Einstellungen"
-                        ? " AND ID_Projekt NOT IN (" + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", 1054)"
+                        ? " AND ID_Projekt NOT IN (" + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", 1054, 1056)"
                         : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));

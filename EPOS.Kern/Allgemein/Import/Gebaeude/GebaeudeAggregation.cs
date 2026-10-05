@@ -119,9 +119,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Bildet den Satz eines Gebäudes.</summary>
         /// <param name="uebersteuert">Raumkennung → beheizt (die Haken der Raumliste); <c>null</c> = keine.</param>
+        /// <param name="raumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen"
+        /// (<see cref="GebaeudeCadSollwert"/>); wirkt nur, wenn <see cref="GebaeudeImportSatz.CadSollwertMoeglich"/>.</param>
         internal static GebaeudeImportSatz Bilden(GebaeudeAbbild abbild, int index, char? klasse,
                                                   GebaeudeQuelle quelle, GebaeudeImportProfil profil,
-                                                  IReadOnlyDictionary<string, bool> uebersteuert = null)
+                                                  IReadOnlyDictionary<string, bool> uebersteuert = null,
+                                                  bool raumtemperaturAlsSollwert = false)
         {
             AbbildGebaeude g = abbild.Gebaeude[index];
             Importherkunft datei = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
@@ -192,7 +195,8 @@ namespace WindowsFormsApplication1
             Fenster(aktiv, datei, k, z, meldungen);
             Waermebruecken(k, z);
             Lueftung(beheizt, datei, z, meldungen);
-            Sollwerte(beheizt, datei, z, meldungen);
+            bool cadMoeglich = GebaeudeCadSollwert.Moeglich(beheizt);
+            Sollwerte(beheizt, datei, z, meldungen, profil, g.Anzeigename, cadMoeglich && raumtemperaturAlsSollwert);
 
             // Prüfgrößen und abgeleitete Felder (gesamte Fensterfläche, Bauweise) übernimmt nie jemand.
             foreach (GebaeudeFeldzeile r in zeilen)
@@ -216,6 +220,8 @@ namespace WindowsFormsApplication1
             {
                 Uebersteuerungen = abweichungen,
                 Baujahr = g.Baujahr,
+                CadSollwertMoeglich = cadMoeglich,
+                CadSollwertAktiv = cadMoeglich && raumtemperaturAlsSollwert,
             };
 
             // Obergrenze der Zonen (3.3) — für X4 ist es genau eine.
@@ -1032,9 +1038,14 @@ namespace WindowsFormsApplication1
         /// trägt, sonst die Vorgabe 20 °C; der Nachtsollwert als Vorgabe 18 °C, höchstens der
         /// Tagsollwert; die Nachtzeit als Vorgabe 22 bis 6 Uhr, übernommen als ausdrückliche Werte. Jede
         /// Vorgabe mit Herkunft „Vorgabe" und Beleg, änderbar im Dialog und im Editor.
+        ///
+        /// <para><b>Die Raumtemperatur der Datei</b> (<paramref name="cad"/>, nur auf Wunsch des Anwenders und nur ohne
+        /// Norm-Sollwert): der Tagsollwert ist das flächengewichtete Mittel der CAD-Raumtemperaturen der beheizten
+        /// Räume (<see cref="GebaeudeCadSollwert"/>), Herkunft Datei mit Beleg <c>GIMP_BELEG_SOLLWERT_CAD</c>; über
+        /// 2 K Spanne ein Hinweis. Der Name einer Zone trägt nie einen Sollwert.</para>
         /// </summary>
         private static void Sollwerte(List<AbbildRaum> beheizt, Importherkunft datei, Dictionary<string, GebaeudeFeldzeile> z,
-                                      List<PruefMeldung> meldungen)
+                                      List<PruefMeldung> meldungen, GebaeudeImportProfil profil, string gebaeudename, bool cad)
         {
             GebaeudeFeldzeile tag = z[GebaeudeZielfelder.SOLL_TAG];
             tag.VorgabeWert = GebaeudeStammCtrl.SOLLTEMPERATUR_TAG_VORGABE;
@@ -1049,6 +1060,14 @@ namespace WindowsFormsApplication1
                 else
                     meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "SOLLWERT_UNEINHEITLICH",
                         Zahl(min), Zahl(max), Zahl(werte.Count), Zahl(beheizt.Count - werte.Count)));
+            }
+            else if (cad && GebaeudeCadSollwert.Bilden(beheizt) is GebaeudeCadSollwert.Mittel m)
+            {
+                Setzen(tag, m.Wert, datei, new GebaeudeBeleg(GebaeudeCadSollwert.BELEG,
+                    Zahl(m.Raeume), Zahl(m.MinC), Zahl(m.MaxC), Zahl(m.OhneTemperatur)));
+                if (m.SpanneGross)
+                    meldungen.Add(new PruefMeldung(PruefStufe.Warnung, profil.Meldung(GebaeudeCadSollwert.SOLLWERT_CAD_SPANNE),
+                        gebaeudename ?? "", Zahl(m.MinC), Zahl(m.MaxC), Zahl(GebaeudeCadSollwert.SPANNE_GRENZE_K)));
             }
             if (!tag.Wert.HasValue) VorgabeUebernehmen(tag);
 

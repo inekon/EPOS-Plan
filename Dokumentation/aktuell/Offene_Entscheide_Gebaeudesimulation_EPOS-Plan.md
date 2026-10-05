@@ -1,5 +1,7 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
+**Nachgezogen 05.10.2026 — E89 (Konzept N1.70):** Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe GA entfällt; **Q24** und **Q25** sind gegenstandslos, **U17** hängt nicht mehr an GA, **A15** gilt ohne Ende des Rückweg-Tests. Wo dieses Register GA, „bis GA“, die Ablösung oder die Löschliste nennt, gilt: Der Bestandteil bleibt dauerhaft; die Liste im Umsetzungskonzept 6.1 ist Inventar.
+
 **Stand 25.09.2026, nach den Entscheiden E16–E38 sowie der Prüfung vom 17.09.2026; mit dem Abschluss
 von G3 (25.09.2026) die Vermerke unter A1, A14 und F-M1. E39 und E40 (Konzept N1.44, N1.45) berühren
 keinen Registerpunkt. E48 (26.09.2026, Konzept N1.53) ist unter D2 und D17 vermerkt. E49 (26.09.2026,
@@ -144,7 +146,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **U1** | Ein Schreibweg im Katalogeditor ab G1; „Speichern unter…" bleibt als nicht schließender Zweitknopf. | **G1** | — |
 | **U3** | `Platzhalter` am `Zahlenfeld`, rein additiv. | **G1** | — |
 | **U7** | Ortszeit-Kalender (Option (a)); die Probe gegen `Tab_Klimadaten.WE` bleibt. | **G1** | — |
-| **A15** | Option (a): ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` bis GA in der jeweils aktuellen Basis; GB-Arbeitskopie nur bis zum Merge G1 + G2; Rückweg-Test nur dieses Projekt, endet mit GA. | **G1 + G2** | — |
+| **A15** | Option (a): ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` dauerhaft (E89) in der jeweils aktuellen Basis; GB-Arbeitskopie nur bis zum Merge G1 + G2; Rückweg-Test nur dieses Projekt, bleibt dauerhaft. | **G1 + G2** | — |
 | **U6** | Verfahren: in G1 beide Zeitbezüge an der einen Stelle (Klimaklasse, A18) messen, Entscheid vor dem Einfrieren. | **Einfrieren von G1 + G2** | **Endwahl erledigt** (E29, 23.09.2026): Stundenanfang |
 | **A18** | Der Klimaweg bleibt eigene Klasse, ausschließlich vom Eingangsbauer gerufen. | **G1** | — |
 | **A10** | Der Gebäudedialog zieht mit G1 nach `EPOS.UI.Daten`. | **G1** | — |
@@ -212,6 +214,8 @@ Vermerk und bleiben als Begründung stehen.
 
 ### Q24 — wann ist der VDI-Weg bewährt genug, dass GA beauftragt wird?
 
+**Gegenstandslos mit E89 (05.10.2026):** Die Stufe GA entfällt, der Altweg bleibt dauerhaft wählbar ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.70). Der folgende Text hält den Entscheid E27 als Vorgeschichte fest.
+
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), das Ablösekriterium — GA wird beauftragbar und fällig, sobald alle vier Bedingungen erfüllt sind: (1) alle Referenz- und Bestandsprojekte des Anwenders sind auf VDI 6007 gerechnet und die Abweichung zum Altweg ist je Projekt erklärt, (2) eine Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg, (3) KU1 und, falls beauftragt, AK1 sind abgenommen, (4) die Ausbauprobe ist grün. Geprüft wird mit jeder Abnahme; der Stand steht in der [Statusdatei](Status_Gebaeudesimulation_VDI6007.md), Abschnitt 2, Zeile GA.
 
 - **Frage:** Wann ist der VDI-Weg so bewährt, dass die Stufe **GA — Altweg ablösen** beauftragt
@@ -248,6 +252,8 @@ Vermerk und bleiben als Begründung stehen.
   [Prüfprotokoll](Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md) Kapitel 1.
 
 ### Q25 — Umfang der Stufe GA
+
+**Gegenstandslos mit E89 (05.10.2026):** Die Stufe GA entfällt; die Liste im Umsetzungskonzept 6.1 ist nur noch Inventar der Altweg-Bestandteile. Der folgende Text hält den Entscheid E27 als Vorgeschichte fest.
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) — vollständige Ablösung nach der Löschliste ([Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kapitel 6).
 
@@ -296,8 +302,7 @@ Vermerk und bleiben als Begründung stehen.
   ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md)). Das Raummodell bleibt das der Richtlinie, die Normtestbeispiele rechnen
   weiter mit idealer Regelung; jede Stufe ist je Gebäude oder Projekt wählbar mit Vorgabe aus und
   eigenem Einfrierschritt. AK2 und AK3 ändern den Grundsatz „erst Bedarf, dann Deckung" für die
-  Gebäude des VDI-Wegs; Gebäude auf dem Altweg gehen bis zu dessen Ablösung (Stufe GA, Zeitpunkt
-  offen, Q24) als feste Last ein (E23, E26).
+  Gebäude des VDI-Wegs; Gebäude auf dem Altweg gehen als feste Last ein (E23, E89: der Altweg bleibt dauerhaft wählbar).
 - **Optionen:**
   - **(a) AK1 nach G2; AK2 nach abgenommenem AK1 und einer Feldphase, AK3 danach** — der Nutzen (Aufheizspitzen,
     Vorlauf für die Wärmepumpen-Kennlinien) kommt früh, das Risiko für die Deckungsrechnung spät.
@@ -356,7 +361,7 @@ zwei Register zwei Antworten bekommen.
 **Durch E20 überholt (16.09.2026).** Der Gebäudedialog ist in VDI-6007-Struktur aufgebaut, die
 Modellparameter sind immer sichtbar und bearbeitbar; Felder, die nur der Altweg liest, stehen in einem
 eingeklappten Abschnitt „Tagesbilanz (Bestandsweg)", der nur bei einem Gebäude auf dem Altweg
-erscheint (für die Dauer des Übergangs bis zur Stufe GA, E23, E26). Festlegung in Kapitel 8; Konzept
+erscheint (dauerhaft, E23, E89). Festlegung in Kapitel 8; Konzept
 N1.25, N1.28, N1.31, ADR-006.
 
 ### U3 — `Platzhalter` am Standardbaustein `Zahlenfeld`
@@ -671,7 +676,7 @@ hier gekürzt.
 
 ### U17 — Altweg-Gebäude ohne Tagesverteilung: Lauf abbrechen oder Gebäude benannt ablehnen
 
-**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (c), nach Empfehlung — ein Altweg-Gebäude ohne Tagesverteilung wird benannt abgelehnt, mit GA; bis dahin gilt (a).
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (c), nach Empfehlung — ein Altweg-Gebäude ohne Tagesverteilung wird benannt abgelehnt, aber nicht vor einem Auftrag, der den Nachweis des Altwegs neu einfriert (E89, GA entfällt); bis dahin gilt (a).
 
 - **Frage:** Bricht ein Altweg-Gebäude ohne Tagesverteilung wie heute den **gesamten** Lauf ab —
   auch für die VDI-Gebäude desselben Projekts — oder wird das Gebäude künftig benannt abgelehnt,
@@ -687,14 +692,14 @@ hier gekürzt.
   - **(b) Gebäude benannt ablehnen** — der Lauf geht für die übrigen Gebäude weiter, das Gebäude
     erscheint mit Meldung; das ändert Altweg-Verhalten, bricht den byte-gleichen Rückweg-Test und
     ist ein Einfrieranlass am Altweg.
-  - **(c) (b), aber erst mit GA** — nach der Ablösung gibt es kein Altweg-Gebäude mehr; ein Gebäude
+  - **(c) (b), aber erst mit GA** (GA entfällt mit E89; es gibt weiterhin Altweg-Gebäude) — ein Gebäude
     ohne Modelldaten wird dann wie jede fehlende Eingangsgröße benannt abgelehnt.
-- **Empfehlung des Papiers:** **(c)** — benannt ablehnen, aber erst mit GA, weil jede frühere
+- **Empfehlung des Papiers:** **(c)** — benannt ablehnen, aber (GA entfällt mit E89) erst mit einem Auftrag, der den Altweg neu einfriert, weil jede frühere
   Änderung am Altweg-Verhalten den Rückweg-Test bricht und einen eigenen Einfrieranlass verlangt;
   bis dahin gilt (a), als Wirkung benannt in Systementwurf 6 (K4) und Umsetzungskonzept 1.5.
 - **Folge bei Nichtentscheid:** Es bleibt bei (a); nichts blockiert G1 — die Wirkung im gemischten
   Projekt muss dem Anwender aber bekannt sein.
-- **Fällig vor:** der **Beauftragung von GA**.
+- **Fällig vor:** dem Auftrag, der den Nachweis des Altwegs neu einfriert (E89: GA entfällt).
 - **Quelle:** [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 1.5;
   [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) 3 und 6 (K4);
   [Prüfprotokoll](Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md) 3.1 (F-Ü6).
@@ -1476,7 +1481,7 @@ Hochrechnung, Konzept N1.45).
 
 ### A15 — was geschieht mit der letzten reinen Bestandsbasis?
 
-**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` bis GA in der jeweils aktuellen Basis; die GB-Arbeitskopie nur bis zum Merge G1 + G2; der Rückweg-Test umfasst nur dieses Projekt und endet mit GA.
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` dauerhaft (E89) in der jeweils aktuellen Basis; die GB-Arbeitskopie nur bis zum Merge G1 + G2; der Rückweg-Test umfasst nur dieses Projekt und bleibt dauerhaft.
 
 - **Frage:** Was geschieht mit der letzten Referenzbasis, die noch ohne Stundenmodell entstanden
   ist und gegen die der Nachweis des Rückwegs (Tagesbilanz) läuft?
@@ -1484,7 +1489,7 @@ Hochrechnung, Konzept N1.45).
   nicht mehr im Repositorium, gerechnet wird ausschließlich gegen die aktuelle Basis". Der
   Systementwurf empfiehlt denselben Ausweg wie die Softwarearchitektur.
 - **Optionen:**
-  - **(a) Ein Referenzprojekt, das bis zur Stufe GA auf dem Altweg steht** und in der jeweils
+  - **(a) Ein Referenzprojekt, das dauerhaft (E89) auf dem Altweg steht** und in der jeweils
     **aktuellen** Basis mitgefroren wird — dann prüft jeder Lauf **beide** Wege gegen dieselbe,
     aktuelle Basis, und die neuen Reihen entstehen für dieses Projekt gar nicht erst. Die GB-Basis
     bleibt nur bis zum Merge von G1 und G2 und wandert dann mit ihrem Protokoll in die Geschichte.
@@ -1496,8 +1501,8 @@ Hochrechnung, Konzept N1.45).
   (F-Ü7): kein zweiter Basisordner; die gitignorierte Arbeitskopie gegen die GB-Basis nur bis zum
   Merge G1 + G2, danach ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` in der jeweils
   aktuellen Basis; Umfang des Rückweg-Tests allein dieses Referenzprojekt, nicht alle Gebäude; der
-  Test endet mit GA, dann geht das Projekt auf VDI 6007 über und die Basis wird neu eingefroren.
-  **E23 (16.09.2026), präzisiert durch E26:** das Projekt bleibt bis zur Stufe GA auf dem Altweg
+  Test bleibt dauerhaft (E89).
+  **E23 (16.09.2026), E89:** das Projekt bleibt dauerhaft auf dem Altweg
   (Konzept N1.28, N1.31). A15 ist mit E27 nach dieser Empfehlung entschieden.
 - **Folge bei Nichtentscheid:** **G1 + G2 blockiert**: Der Einfrierschritt kann nicht abgenommen
   werden, weil unklar ist, wogegen der Rückweg künftig gemessen wird.
@@ -1972,7 +1977,7 @@ des Systementwurfs).
 seine Nachbarn (Katalog-, Skalierungs- und Bedarfsdialog) sind in **VDI-6007-Struktur** aufgebaut, die
 Modellparameter immer sichtbar und bearbeitbar; Felder, die nur der Altweg liest, stehen in einem
 eingeklappten Abschnitt „Tagesbilanz (Bestandsweg)", der nur bei einem Gebäude auf dem Altweg erscheint
-(für die Dauer des Übergangs bis zur Stufe GA, E23, E26); der Schalter heißt „Rechenweg" mit Vorgabe
+(dauerhaft, E23, E89); der Schalter heißt „Rechenweg" mit Vorgabe
 „VDI 6007" und Wert „Tagesbilanz"; ein
 Gebäude auf dem Altweg trägt im Bericht „Tagesbilanz (Bestandsweg)" statt des Produktausweises
 (Konzept N1.25, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)).
@@ -1981,8 +1986,8 @@ Gebäude auf dem Altweg trägt im Bericht „Tagesbilanz (Bestandsweg)" statt de
 [Papier](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) Kapitel 13.2 und sind mit E24 zur Kenntnis genommen. Dasselbe Papier
 fand das Feld `Nutzungszeit` der Erzeuger ohne einen einzigen Leser im Rechenkern und legt fest, dass
 AK2 es nicht wiederbelebt; ob es entfällt, ist ein gewöhnlicher Aufräumpunkt. Die leserlosen Spalten
-`WW_Bedarf` und `Waermebedarf` aus Befund X stehen dagegen in der Löschliste der Stufe GA
-(Umsetzungskonzept 6, Q25).
+`WW_Bedarf` und `Waermebedarf` aus Befund X stehen dagegen im Inventar der Altweg-Bestandteile
+(Umsetzungskonzept 6.1).
 
 **Aus den Konditionierungsprofilen (E52, E53, Rev. 3):** Die Festlegungen **F1 bis F22** (F3 ersetzt, F20 mit E53
 entschieden, F22 je Größe) stehen im
@@ -2060,9 +2065,9 @@ Wirkung: F-P4, F-K4, F-A3 und F-Ü7. Zahlen der Richtlinien stehen nicht in dies
 | **F-Ü2** | `IGebaeudeRechenweg.Rechnen` liefert aus einem Aufruf die Reihe und den unskalierten Jahreswert `VerbrauchAltKwh`; das VDI-Modul läuft einmal mit Skalierung als Nachmultiplikation in der Fassade, den Altweg ruft die Fassade im Verbrauchsfall zweimal wie im Bestand, und die Rückrechnung liegt hinter der Weiche |
 | **F-Ü3** | Der Klimakalender hat zwei Teile — `Klimakalender.Gemeinsam` (`WE[365]`, `Stundentemperatur[8760]`, `WochentagJan1`, Monatsgrenzen) und `Klimakalender.Altweg` (`Sol_*`, `A_Temp`, `TagTyp_W/NW`) —, und die Weiche reicht dem VDI-Modul nur den gemeinsamen Teil, dem Altweg beide |
 | **F-Ü4** | Die Wache heißt `Modultrennungswache` (Test `EPOS.Kern.Tests/ModultrennungswacheTests.cs`) und prüft, dass keine Datei unter `Gebaeude/` einen Bezeichner aus `Altweg/` oder eine Altweg-Datenquelle nennt, keine Datei unter `Altweg/` einen Bezeichner aus `Gebaeude/`, die Kältefassade `Altweg/` nicht nennt und die statische Ausbauprobe grün ist |
-| **F-Ü5** | Die NULL-Vorgabe von `Fensterflaeche_Ost`/`_West` (je die Hälfte von `Fensterflaeche_Ost_West`) bildet der Vorbereitungsschritt, nicht das VDI-Modul, und nur für den Übergang; die Stufe GA füllt beide Spalten einmalig, bevor sie das Bestandsfeld entfernt |
+| **F-Ü5** | Die NULL-Vorgabe von `Fensterflaeche_Ost`/`_West` (je die Hälfte von `Fensterflaeche_Ost_West`) bildet der Vorbereitungsschritt, nicht das VDI-Modul, dauerhaft (E89); das Bestandsfeld bleibt |
 | **F-Ü6** | Das VDI-Modul wirft keine Ausnahme, sondern legt eine Meldung der Stufe Fehler im Protokollkanal ab und gibt `false` zurück, der Lauf endet an derselben Stelle wie heute; ein Altweg-Gebäude ohne Tagesverteilung bricht wie heute den ganzen Lauf ab — als Wirkung benannt und offener Punkt **U17** |
-| **F-Ü7** | Für den Rückweg-Test gilt Systementwurf 8.4: kein zweiter Basisordner, die Arbeitskopie gegen die GB-Basis nur bis G1 + G2, danach ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` in der jeweils aktuellen Basis als einziger Gegenstand des Tests, der mit GA endet (Empfehlung zu **A15**, A15 bleibt offen) |
+| **F-Ü7** | Für den Rückweg-Test gilt Systementwurf 8.4: kein zweiter Basisordner, die Arbeitskopie gegen die GB-Basis nur bis G1 + G2, danach ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` in der jeweils aktuellen Basis als einziger Gegenstand des Tests, der dauerhaft bleibt (E89; zu **A15**) |
 | **F-Ü8** | Die Wochenendmaske `WE[365]` bildet der Vorbereitungsschritt aus dem Wochentag des 1. Januar des Referenzjahres (Ortszeit-Kalender, Konzept 4.4, Q21), eine Probe hält sie gegen `Tab_Klimadaten.WE` derselben Region; **U7** bleibt offen und steht mit **U6** in Kapitel 0 |
 | **F-Ü9** | `Werkzeuge/Auslieferungsvorlage` weist im Prüfbericht jede Zeile von `Tab_Gebaeude_STAMM` mit gesetztem `Gebaeude_Modell` aus; Vorgabe ist NULL |
 | **F-Ü10** | Der Ergänzungsvermerk in ADR-002 beschränkt sich auf Entscheidung 3, Satz 3, und ersetzt diesen Satz durch den Hinweis auf E20 und ADR-006 |
@@ -2192,9 +2197,9 @@ abweichend von der Empfehlung.
   dort. Mit Katalogkalendern braucht die Tabelle einen dritten Eigentümer, den Kopierweg Katalog → Projekt, das Schloss
   ausgelieferter Sätze und die Pflege in der Auslieferungsvorlage.
 - **Optionen:**
-  - **(a) Nein** — der Katalog kommt abgeleitet ins Projekt; Katalogkalender mit GA prüfen.
+  - **(a) Nein** — der Katalog kommt abgeleitet ins Projekt; Katalogkalender ohne Termin prüfen (GA entfällt mit E89).
   - **(b) Ja** — mit Eigentümer `ID_Gebaeude_Stamm`, Kopierweg Katalog → Projekt und Auslieferungsvorlage.
-- **Empfehlung des Papiers:** **(a)** jetzt, (b) mit GA.
+- **Empfehlung des Papiers:** **(a)** jetzt, (b) ohne Termin (GA entfällt mit E89).
 - **Folge bei Nichtentscheid:** Eigentümerspalte, Kopierweg und Auslieferungsvorlage wären unbestimmt.
 - **Fällig vor:** **KP1**.
 - **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.4, 5.1, 5.5, 7, 8 und 9.2 (P3).
@@ -2373,7 +2378,7 @@ abweichend von der Empfehlung.
   - **(a) Ja** — die Bestandsspalte ist die Zelle und wirkt über den Generator; P7 (a) gilt im Kern weiter, der
     Wortlaut „bleibt ungelesen" entfällt; wo die Spalte heute gefüllt ist, ändert sich der Kühlfahrplan (Testdatenbank:
     nirgends).
-  - **(b) Nein** — eine neue Zelle in der Vorgabetabelle, die Bestandsspalte bleibt ungelesen bis GA; zwei Spalten
+  - **(b) Nein** — eine neue Zelle in der Vorgabetabelle, die Bestandsspalte bleibt ungelesen (GA entfällt mit E89); zwei Spalten
     gleicher Bedeutung.
 - **Empfehlung des Papiers:** **(a)**.
 - **Folge bei Nichtentscheid:** Die Kühlspalte der Matrix hätte keinen festen Ort für den Nachtwert.
@@ -2487,7 +2492,7 @@ stehen im [Teilkonzept](Konzept_Konditionierungsprofile_EPOS-Plan.md) Kapitel 9.
 | F2 | Die Zone erbt die Matrix je Zelle und je Größe den ganzen Kalender oder führt einen eigenen; Anlegen erhält Zonenwerte (Rev. 2 fortgeschrieben) | KP1 |
 | F3 | Ersetzt durch den Auftrag vom 26.09.2026: Vorgabe-Matrix, Vorlagen im Katalog und Werkzeuge der Karte | — |
 | F4 | Zwei STRICT-Tabellen, die Woche als 168-Werte-Text nach H8 | KP1 |
-| F5 | Abgeleitet bis angelegt, die Matrix ist der Generator; kein DML an Bestandsdaten, alte Spalten bis GA (Rev. 2 fortgeschrieben) | KP1 |
+| F5 | Abgeleitet bis angelegt, die Matrix ist der Generator; kein DML an Bestandsdaten, alte Spalten bleiben (E89; Rev. 2 fortgeschrieben) | KP1 |
 | F6 | Lineare Treppe, letzte Stufe in der Sprungstunde | KP3 |
 | F7 | Bemessung mit der geschlossenen Stufenformel in einem Lauf, Nachweisband; Überlagerung und Vorausrechnung nur als Prüforakel | KP3 |
 | F8 | Rundung auf das kleinste haltende n, keine Mindestrampe | KP3 |

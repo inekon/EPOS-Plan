@@ -112,7 +112,8 @@ namespace WindowsFormsApplication1
                                                   Func<long?, Konditionierungssatz> konditionierung = null,
                                                   Aufheizvorgabe aufheizvorgabe = null,
                                                   double aufheizleistungTestW = double.NaN,
-                                                  double vorlaufAnlageC = double.NaN)
+                                                  double vorlaufAnlageC = double.NaN,
+                                                  IReadOnlyList<Anlagenverfuegbarkeit[]> verfuegbarkeitJeZone = null)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -126,6 +127,12 @@ namespace WindowsFormsApplication1
                                                            out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
                                                            out Dictionary<(int, int), double> deltaVorlauf,
                                                            out double zeitAdiabat, vorlaufAnlageC);
+
+            // AK2 (6.2, zweite Verteilungsstufe): die Schranke je Zone - von der Fassade verteilt, in der
+            // Reihenfolge der Zonen; ohne Reihe bleibt jede Zone, wie sie ist.
+            if (verfuegbarkeitJeZone != null)
+                for (int z = 0; z < zonen.Count && z < verfuegbarkeitJeZone.Count; z++)
+                    zonen[z].Eingang.Verfuegbarkeit = verfuegbarkeitJeZone[z];
 
             // Die Schleife.
             var schleife = new Zonenschleife(zonen, wer);
@@ -303,7 +310,24 @@ namespace WindowsFormsApplication1
                 Erdreich = ergebnisse.Select(e => e.Erdreich).FirstOrDefault(e => e != null),
                 GleichzeitigHeizenKwh = kuehlWirksam ? gleichHeizKwh : (double?)null,
                 GleichzeitigKuehlenKwh = kuehlWirksam ? gleichKuehlKwh : (double?)null,
+                FahrplanBegrenzt = FahrplanJeStunde(ergebnisse),
             };
+        }
+
+        /// <summary>
+        /// Die Stunden an der Schranke der Verfügbarkeit (AK2) am Gebäude: in mindestens einer Zone; <c>null</c>,
+        /// wenn keine Zone einen Fahrplan trug.
+        /// </summary>
+        private static bool[] FahrplanJeStunde(IReadOnlyList<GebaeudeModellErgebnis> ergebnisse)
+        {
+            bool[] gebaeude = null;
+            foreach (GebaeudeModellErgebnis e in ergebnisse)
+            {
+                if (e.FahrplanBegrenzt == null) continue;
+                gebaeude ??= new bool[8760];
+                for (int h = 0; h < 8760; h++) gebaeude[h] |= e.FahrplanBegrenzt[h];
+            }
+            return gebaeude;
         }
 
         /// <summary>

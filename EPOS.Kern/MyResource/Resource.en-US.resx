@@ -28216,6 +28216,9 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
     <value>Heat pump "{0}": cooling mode is set, but the project does not calculate cooling (project setting "Calculate cooling" off) — the unit only heats.</value>
   </data>
+  <data name="SIMENG_KAELTE_WP_FREI_OHNE_QUELLE" xml:space="preserve">
+    <value>Heat pump "{0}": free cooling via the heat source is not calculated — it requires a brine-to-water or water-to-water heat pump with the heat source ground, constant, profile or CSV; the unit cools by its compressor only.</value>
+  </data>
   <data name="SIMENG_KAELTE_WP_QUELLSPEICHER" xml:space="preserve">
     <value>Heat pump "{0}": cooling mode with a source storage is not calculated — the unit only heats.</value>
   </data>
@@ -28398,6 +28401,39 @@ Do you want to allow this?</value>
   </data>
   <data name="WPK_MSG_HILFSSTROM_BEREICH" xml:space="preserve">
     <value>The auxiliary power share must be at least 0 % and less than 100 %.</value>
+  </data>
+  <data name="WPK_CHK_KUEHL_FREI" xml:space="preserve">
+    <value>Free cooling via the heat source</value>
+  </data>
+  <data name="WPK_HRL_KUEHL_FREI" xml:space="preserve">
+    <value>If the source temperature plus approach is below the cooling flow temperature, the heat source covers the cooling of that hour directly — ahead of the compressor.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Heat exchanger approach</value>
+  </data>
+  <data name="WPK_PH_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Default: 3.0 K</value>
+  </data>
+  <data name="WPK_HRL_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Empty = 3.0 K. Temperature difference between source and chilled water at the heat exchanger, 0 to 20 K.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>Capacity limit</value>
+  </data>
+  <data name="WPK_PH_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>Default: cooling capacity of the characteristic curve</value>
+  </data>
+  <data name="WPK_MSG_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>The approach of free cooling must be between 0 and 20 K.</value>
+  </data>
+  <data name="WPK_MSG_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>The capacity limit of free cooling must be greater than 0 kW.</value>
+  </data>
+  <data name="WPK_FREI_SPERR_BAUART" xml:space="preserve">
+    <value>Free cooling only with a brine-to-water or water-to-water heat pump — this machine uses the outdoor air.</value>
+  </data>
+  <data name="WPK_FREI_SPERR_QUELLE" xml:space="preserve">
+    <value>Free cooling needs a maintained heat source (ground, constant, profile or CSV) — outdoor air, no entry and buffer tank do not work.</value>
   </data>
   <data name="WPK_LBL_KUEHLTRAEGER" xml:space="preserve">
     <value>Electricity carrier for cooling</value>
@@ -30145,6 +30181,15 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_HILFSSTROM_ERL" xml:space="preserve">
     <value>Power for pumps and fans of the cooling circuit as a percentage of the compressor work; at least 0 and less than 100, empty means “no surcharge”.</value>
   </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_ERL" xml:space="preserve">
+    <value>Cooling directly from the heat source ahead of the compressor while the source temperature plus approach is below the cooling flow temperature; effective only with a brine-to-water or water-to-water machine with a maintained heat source.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Approach of the free-cooling heat exchanger in kelvin, 0 to 20; empty means 3.0 K.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_LEISTUNG_ERL" xml:space="preserve">
+    <value>Maximum cooling capacity of free cooling in kW, greater than 0; empty means the cooling capacity of the characteristic curve in that hour.</value>
+  </data>
   <data name="KI_DLG_WPA_KUEHLTRAEGER_ERL" xml:space="preserve">
     <value>The electricity carrier of the cooling electricity; empty means “as in heating mode”. Another electricity carrier of the project prices and rates the cooling electricity according to the billing option.</value>
   </data>
@@ -30768,6 +30813,15 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMENG_AK_SOLLWERTPROFIL_WERT" xml:space="preserve">
     <value>The set point schedule has the value {1} °C at position {0}; permitted are {2} … {3} °C. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_WERTZAHL" xml:space="preserve">
+    <value>The time schedule of the unit “{0}” has {1} values instead of {2} — no padding, no truncation.</value>
+  </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_KEINE_ZAHL" xml:space="preserve">
+    <value>The time schedule of the unit “{0}” contains no number at position {1} (decimal point, separator “;”).</value>
+  </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_WERT" xml:space="preserve">
+    <value>The time schedule of the unit “{0}” has the factor {2} at position {1}; permitted are 0 … 1.</value>
   </data>
   <data name="SIMENG_AK_SOLLWERTPROFIL_KALENDER" xml:space="preserve">
     <value>The weekend days of the run do not form a weekly calendar; the set point schedule cannot be assigned to weekdays. The run stops for this building.</value>
@@ -33019,6 +33073,12 @@ Do you want to allow this?</value>
   <data name="GIMP_HERKUNFT_IFC" xml:space="preserve">
     <value>IFC file</value>
   </data>
+  <data name="GIMP_HERKUNFT_IFC_KOERPER" xml:space="preserve">
+    <value>IFC file (body)</value>
+  </data>
+  <data name="GIMP_BELEG_KOERPER" xml:space="preserve">
+    <value>Separating area from the space bodies: {0} / {1}, {2} m²</value>
+  </data>
   <data name="GIMP_HERKUNFT_KATALOG" xml:space="preserve">
     <value>Catalogue</value>
   </data>
@@ -33394,6 +33454,57 @@ Do you want to allow this?</value>
   <data name="GIMP_ANS_KOERPER_BEDIENUNG" xml:space="preserve">
     <value>Drag to rotate, right-click to pan, mouse wheel to zoom; clicking a solid selects its zone.</value>
   </data>
+  <data name="GANS_MODUS" xml:space="preserve">
+    <value>Solid display</value>
+  </data>
+  <data name="GANS_DATEIKOERPER" xml:space="preserve">
+    <value>File solids</value>
+  </data>
+  <data name="GANS_EXPORTMODELL" xml:space="preserve">
+    <value>Export model</value>
+  </data>
+  <data name="GANS_KENNZEICHEN" xml:space="preserve">
+    <value>{0} rooms from file, {1} from outline, {2} schematic</value>
+  </data>
+  <data name="GANS_VEREINFACHT" xml:space="preserve">
+    <value>simplified: {0}</value>
+  </data>
+  <data name="GANS_ZU_GROSS" xml:space="preserve">
+    <value>File solids too large ({0} triangles, limit {1}) — all rooms shown as prisms from their outline.</value>
+  </data>
+  <data name="GANS_HERKUNFT_DATEI" xml:space="preserve">
+    <value>from file</value>
+  </data>
+  <data name="GANS_HERKUNFT_UMRISS" xml:space="preserve">
+    <value>from outline</value>
+  </data>
+  <data name="GANS_HERKUNFT_SCHEMATISCH" xml:space="preserve">
+    <value>schematic</value>
+  </data>
+  <data name="GANS_RAEUME" xml:space="preserve">
+    <value>Rooms and origin of their solids</value>
+  </data>
+  <data name="GANS_RAUM_HERKUNFT" xml:space="preserve">
+    <value>{0} — solid {1}</value>
+  </data>
+  <data name="GANS_VERMERK_BOGEN" xml:space="preserve">
+    <value>arc as chords</value>
+  </data>
+  <data name="GANS_VERMERK_LOCH" xml:space="preserve">
+    <value>hole omitted</value>
+  </data>
+  <data name="GANS_VERMERK_UNEBEN" xml:space="preserve">
+    <value>non-planar face</value>
+  </data>
+  <data name="GANS_VERMERK_OHNEBESCHNITT" xml:space="preserve">
+    <value>without clipping</value>
+  </data>
+  <data name="GANS_VERMERK_OFFEN" xml:space="preserve">
+    <value>open shell</value>
+  </data>
+  <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
+    <value>outer shell only</value>
+  </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Storeys</value>
   </data>
@@ -33488,13 +33599,25 @@ Do you want to allow this?</value>
     <value>Surfaces per zone</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
-    <value>errors only</value>
+    <value>Only surfaces with a finding</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
-    <value>without counterpart only</value>
+    <value>Only surfaces without an adjacent surface</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_UWERT" xml:space="preserve">
-    <value>without U-value only</value>
+    <value>Only surfaces without U-value and build-up</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_ERLAEUTERUNG" xml:space="preserve">
+    <value>The filters only narrow the displayed list; together they apply as “and”. Everything is always saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_FEHLER_HINWEIS" xml:space="preserve">
+    <value>Shows only surfaces for which the “Finding” column states something: no adjacent surface, no U-value, estimated area or a record from room bodies. Affects the display only; everything is saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS" xml:space="preserve">
+    <value>Shows only partition surfaces for which the import found no counterpart in the neighbouring zone. They are calculated against an unheated room. Affects the display only; everything is saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_UWERT_HINWEIS" xml:space="preserve">
+    <value>Shows only surfaces that have neither a U-value nor a layer build-up (from the file or assigned). Affects the display only; everything is saved.</value>
   </data>
   <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
     <value>The “Finding” column states what a surface lacks: no counterpart (calculated against unheated), no U-value or an estimated area. The filters show only these surfaces; the search looks in all columns.</value>
@@ -33768,6 +33891,12 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_IFC_PROT_PLATZIERUNGSART" xml:space="preserve">
     <value>{0} building components with placement {1} are taken over without orientation; only IfcLocalPlacement is evaluated.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ART" xml:space="preserve">
+    <value>{0} space bodies of type {1} cannot be read; the spaces are shown from their outline or schematically.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_GELESEN" xml:space="preserve">
+    <value>Space bodies from the file: {0} spaces with a body, {1} without, {2} triangles.</value>
   </data>
   <data name="IMP_IFC_PROT_EIGENSCHAFTSART" xml:space="preserve">
     <value>Property {1} is given as {0}; single and bounded values are read — it is skipped.</value>
@@ -39035,6 +39164,21 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_FLAECHE_UNBEKANNT" xml:space="preserve">
     <value>{0} space boundaries carry a geometry that cannot be evaluated without a geometry kernel ({1}) — their area remains empty.</value>
   </data>
+  <data name="IMP_IFC_PROT_AUSSEN_WIDERSPRUCH" xml:space="preserve">
+    <value>{0} spaces carry PredefinedType = INTERNAL and at the same time Pset_SpaceCommon.IsExternal = TRUE — the attribute applies, heating follows the remaining rules ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHE_GRUNDRISS" xml:space="preserve">
+    <value>{0} spaces without an area quantity receive the area of their floor plan ({1} m²; {2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_DACHPLATTE" xml:space="preserve">
+    <value>{0} decomposed roofs carry their space boundaries themselves — the {1} boundaries apply to their only slab.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0} space boundaries belong to no element of the envelope ({1}, {2} m²) — they enter no element area.</value>
+  </data>
+  <data name="IMP_IFC_PROT_AUSSEN_SPLITTER" xml:space="preserve">
+    <value>{0} elements with internal space boundaries carry only an external edge strip (below 5 % of their boundary area) — they are treated as internal ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
   </data>
@@ -39100,6 +39244,51 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² after the manual assignment — it remains and is not merged; merging is recommended.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>{0} rooms are in no zone ({1}) — they do not count towards the zone area; assign them before saving.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_LEER" xml:space="preserve">
+    <value>Zone “{0}” holds no room (0 m²) — it is not taken over.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG_GEMISCHT" xml:space="preserve">
+    <value>Zone “{0}” holds heated and unheated rooms — it counts as heated; check the rooms' “heated” ticks.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZUORDNUNG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} rooms are not assigned to a zone ({1}) — not saved; assign the rooms or choose “Assign rest by rule”.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NAME_LEER" xml:space="preserve">
+    <value>A zone needs a name.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NAME_DOPPELT" xml:space="preserve">
+    <value>The zone name “{0}” already exists.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG" xml:space="preserve">
+    <value>The use {0} cannot be chosen for a zone (residential, office, school or none).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Zone {0} does not exist.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Room {0} does not belong to this building.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_GESCHOSS_UNBEKANNT" xml:space="preserve">
+    <value>Storey {0} holds no room of this building.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG" xml:space="preserve">
+    <value>Room “{0}” and zone “{1}” are not heated alike — not assigned; first change the room's “heated” tick.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_BEHEIZUNG_TEIL" xml:space="preserve">
+    <value>{0} rooms of the storey are heated differently from zone “{2}” and stay where they were ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>The building computes no more than {0} zones — no further zone created.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REGEL_UNGUELTIG" xml:space="preserve">
+    <value>Rule {0} does not apply to this building (available: {1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REST_AUSSERHALB" xml:space="preserve">
+    <value>{0} rooms stay outside the zones under rule {2} ({1}).</value>
   </data>
   <data name="IMP_IFC_PROT_STRUKTUR_ENTHALTEN" xml:space="preserve">
     <value>Building {0}: {1} storeys and {2} spaces are attached by containment (IfcRelContainedInSpatialStructure) instead of decomposition (IfcRelAggregates) — they are imported as if decomposed.</value>
@@ -39220,6 +39409,51 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
     <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² after the manual assignment — it remains and is not merged; merging is recommended.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAEUME_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>{0} rooms are in no zone ({1}) — they do not count towards the zone area; assign them before saving.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_LEER" xml:space="preserve">
+    <value>Zone “{0}” holds no room (0 m²) — it is not taken over.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG_GEMISCHT" xml:space="preserve">
+    <value>Zone “{0}” holds heated and unheated rooms — it counts as heated; check the rooms' “heated” ticks.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZUORDNUNG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} rooms are not assigned to a zone ({1}) — not saved; assign the rooms or choose “Assign rest by rule”.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NAME_LEER" xml:space="preserve">
+    <value>A zone needs a name.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NAME_DOPPELT" xml:space="preserve">
+    <value>The zone name “{0}” already exists.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_NUTZUNG_UNGUELTIG" xml:space="preserve">
+    <value>The use {0} cannot be chosen for a zone (residential, office, school or none).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Zone {0} does not exist.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Room {0} does not belong to this building.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_GESCHOSS_UNBEKANNT" xml:space="preserve">
+    <value>Storey {0} holds no room of this building.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG" xml:space="preserve">
+    <value>Room “{0}” and zone “{1}” are not heated alike — not assigned; first change the room's “heated” tick.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL" xml:space="preserve">
+    <value>{0} rooms of the storey are heated differently from zone “{2}” and stay where they were ({1}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>The building computes no more than {0} zones — no further zone created.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REGEL_UNGUELTIG" xml:space="preserve">
+    <value>Rule {0} does not apply to this building (available: {1}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REST_AUSSERHALB" xml:space="preserve">
+    <value>{0} rooms stay outside the zones under rule {2} ({1}).</value>
   </data>
   <data name="ZGEO_SCHEMATISCH" xml:space="preserve">
     <value>{0} rooms without an outline from space boundaries are drawn schematically as rectangles, lined up per storey — their position is invented: {1}</value>
@@ -42623,6 +42857,18 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
     <value>The separating slab between {0} and {1} carries only {2} m² from the spatial references against {3} m² heated floor area of the smaller storey ({4} %) — the file does not reference all slab parts. The pair of storeys is not considered coupled; please check the separating area.</value>
   </data>
+  <data name="IMP_IFC_PROT_GRENZEN_AUS_KOERPER" xml:space="preserve">
+    <value>Building "{0}" has no space boundaries; {1} separating areas from the space bodies connect adjacent spaces — separating walls {2} m², separating slabs {3} m². The zones count as coupled through them; external areas still come from quantities and spatial references.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT" xml:space="preserve">
+    <value>Building "{0}" has space boundaries; they take precedence. The space bodies show {1} separating areas (separating walls {2} m², separating slabs {3} m²), which are only counted.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERPAAR_SCHWACH" xml:space="preserve">
+    <value>The separating slabs from the space bodies between {0} and {1} cover only {2} m² against {3} m² heated floor area of the smaller storey ({4} %). The pair of storeys is not considered coupled; please check the bodies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_OHNE_PAAR" xml:space="preserve">
+    <value>{0} spaces carry a body but share no area with another space: {1}. They remain without a separating area from the bodies.</value>
+  </data>
   <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
     <value>{0} interior walls without an adjacent space (interior by IsExternal or adjacency) count one-sided as internal mass: {1} m² gross area.</value>
   </data>
@@ -44465,6 +44711,24 @@ chart</value>
   <data name="GEXP_IFC_LUFTWECHSEL" xml:space="preserve">
     <value>Infiltration air change rate in 1/h</value>
   </data>
+  <data name="GEXP_IFC_LUFTWECHSEL_NUTZER" xml:space="preserve">
+    <value>User ventilation air change rate in 1/h</value>
+  </data>
+  <data name="GEXP_IFC_KALENDER_GRUNDWERT" xml:space="preserve">
+    <value>Base value in the unit of the quantity: 1/h for ventilation, fraction 0 … 1 for equipment and persons</value>
+  </data>
+  <data name="GEXP_IFC_KALENDER_WOCHE" xml:space="preserve">
+    <value>Standard week: 168 hourly values, Monday 0:00 first, separated by semicolons, “aus” = switched off; unit of the quantity (°C, 1/h, fraction 0 … 1)</value>
+  </data>
+  <data name="GEXP_PROT_BEIPACK_KONDITIONIERUNG" xml:space="preserve">
+    <value>For each zone, EPOS_Zone carries usage and setpoints; for each calendar a set EPOS_Kalender_&lt;quantity&gt; carries the standard week as text and the periods as “Type;Start;End;HolidayRule;Value”.</value>
+  </data>
+  <data name="IMP_IFC_KOND_HERKUNFT" xml:space="preserve">
+    <value>from IFC file (EPOS)</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOND_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Room {0}: {1} not readable and skipped ({2}).</value>
+  </data>
   <data name="GEXP_IFC_DATEI_STUFE" xml:space="preserve">
     <value>IFC export from EPOS-Plan, stage S1: semantic, without geometry.</value>
   </data>
@@ -44927,6 +45191,9 @@ chart</value>
   <data name="SIMENG_KAELTE_KM_KUEHLTRAEGER" xml:space="preserve">
     <value>Chiller "{0}": the cooling electricity is charged to the electricity carrier "{1}" — {2}.</value>
   </data>
+  <data name="SIMENG_KAELTE_KM_KUEHLTRAEGER_MENGE" xml:space="preserve">
+    <value>Chiller "{0}": {1} MWh/a of grid import for cooling (cooling electricity {2} MWh/a) are charged to the electricity carrier "{3}".</value>
+  </data>
   <data name="KM_ANLAGE_FEHLT" xml:space="preserve">
     <value>The chiller plant no longer exists.</value>
   </data>
@@ -45130,6 +45397,450 @@ chart</value>
   </data>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
     <value>Cold storage “{0}”: cooling is switched off for the project — it is not calculated.</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z6" xml:space="preserve">
+    <value>Z6 – by room temperature and use</value>
+  </data>
+  <data name="GIMP_ZONE_OHNE_SOLLWERT" xml:space="preserve">
+    <value>no set point</value>
+  </data>
+  <data name="GIMP_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>(unheated)</value>
+  </data>
+  <data name="GIMP_NUTZUNG_BUERO" xml:space="preserve">
+    <value>Office</value>
+  </data>
+  <data name="GIMP_NUTZUNG_WOHNEN" xml:space="preserve">
+    <value>Living</value>
+  </data>
+  <data name="GIMP_NUTZUNG_SCHLAFEN" xml:space="preserve">
+    <value>Sleeping</value>
+  </data>
+  <data name="GIMP_NUTZUNG_GASTRONOMIE" xml:space="preserve">
+    <value>Catering</value>
+  </data>
+  <data name="GIMP_NUTZUNG_KUECHE" xml:space="preserve">
+    <value>Kitchen</value>
+  </data>
+  <data name="GIMP_NUTZUNG_SPORT" xml:space="preserve">
+    <value>Sports</value>
+  </data>
+  <data name="GIMP_NUTZUNG_VERKEHR" xml:space="preserve">
+    <value>Circulation</value>
+  </data>
+  <data name="GIMP_NUTZUNG_SANITAER" xml:space="preserve">
+    <value>Sanitary</value>
+  </data>
+  <data name="GIMP_NUTZUNG_LAGER" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="GIMP_NUTZUNG_TECHNIK" xml:space="preserve">
+    <value>Plant room</value>
+  </data>
+  <data name="GIMP_NUTZUNG_SONSTIGE" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="SIMENG_AK2_PROFILWEG_NAEHERUNG" xml:space="preserve">
+    <value>System coupling: The operating schedule is calculated on the profile path — storage only as a reserve over the blocking period, no states of charge. The comfort hours are an upper estimate.</value>
+  </data>
+  <data name="SIMENG_AK2_FESTE_LAST" xml:space="preserve">
+    <value>System coupling: {0} building(s) enter as a fixed load (legacy path or uncoupled) — they draw on the availability but have no feedback and no comfort hours.</value>
+  </data>
+  <data name="GIMP_DLG_CAD_SOLLWERT" xml:space="preserve">
+    <value>Use the room temperature of the file as heating setpoint</value>
+  </data>
+  <data name="GIMP_DLG_CAD_SOLLWERT_HINWEIS" xml:space="preserve">
+    <value>Default: standard temperature; the value stays editable. When ticked, the daytime heating setpoint of the building and of every heated zone becomes the area-weighted mean of the room temperatures of its heated spaces in the file.</value>
+  </data>
+  <data name="GIMP_DLG_SP_SOLLWERT" xml:space="preserve">
+    <value>Heating setpoint day</value>
+  </data>
+  <data name="GIMP_BELEG_SOLLWERT_CAD" xml:space="preserve">
+    <value>Area-weighted mean of the room temperatures of the file from {0} heated spaces ({1} to {2} °C; {3} spaces without a value)</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_SOLLWERT_CAD" xml:space="preserve">
+    <value>Zone "{0}": daytime heating setpoint {1} °C from the room temperature of the file ({2} spaces with, {3} without a value).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_SOLLWERT_CAD" xml:space="preserve">
+    <value>Zone "{0}": daytime heating setpoint {1} °C from the room temperature of the file ({2} spaces with, {3} without a value).</value>
+  </data>
+  <data name="IMP_IFC_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
+    <value>"{0}": the averaged room temperatures of the file range from {1} to {2} °C — more than {3} K; check the averaged heating setpoint.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
+    <value>"{0}": the averaged room temperatures of the file range from {1} to {2} °C — more than {3} K; check the averaged heating setpoint.</value>
+  </data>
+  <data name="GEB_BEDARFSBEGRIFF_RUECKWIRKUNG" xml:space="preserve">
+    <value>with feedback</value>
+  </data>
+  <data name="GEB_BEDARFSBEGRIFF_FESTE_LAST" xml:space="preserve">
+    <value>fixed load</value>
+  </data>
+  <data name="GEB_BERICHT_FESTE_LAST" xml:space="preserve">
+    <value>Buildings as fixed load: {0} — they are calculated on the daily-balance path or without coupling, draw on the plant availability and have neither feedback nor comfort hours.</value>
+  </data>
+  <data name="WPA_GRP_BETRIEBSZEITEN" xml:space="preserve">
+    <value>Operating times</value>
+  </data>
+  <data name="WPA_LBL_ZEITPROGRAMM" xml:space="preserve">
+    <value>Time schedule</value>
+  </data>
+  <data name="WPA_BTN_ZEITPROGRAMM" xml:space="preserve">
+    <value>Edit weekly grid</value>
+  </data>
+  <data name="WPA_BTN_ZEITPROGRAMM_SCHLIESSEN" xml:space="preserve">
+    <value>Close weekly grid</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_LEER" xml:space="preserve">
+    <value>Not maintained — the unit is always available.</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_GEPFLEGT" xml:space="preserve">
+    <value>Maintained: {0} of 168 weekly hours fully available, {1} blocked.</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_FAKTOREN" xml:space="preserve">
+    <value>Factor per weekly hour from 0 (blocked) to 1 (full output), Monday 0:00 to Sunday 23:00.</value>
+  </data>
+  <data name="WPA_LBL_VORLAUF_MAX" xml:space="preserve">
+    <value>Maximum flow temperature</value>
+  </data>
+  <data name="WPA_HRL_VORLAUF_MAX" xml:space="preserve">
+    <value>Default: planned flow temperature {0} °C; empty = default.</value>
+  </data>
+  <data name="WPA_HRL_VORLAUF_MAX_OHNE" xml:space="preserve">
+    <value>Empty = planned flow temperature of the unit.</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERRZEIT_VORRANG" xml:space="preserve">
+    <value>Blocking period and time schedule apply together; the blocking period takes precedence.</value>
+  </data>
+  <data name="WPA_HRL_BETRIEBSZEITEN_WIRKUNG" xml:space="preserve">
+    <value>Time schedule and maximum flow temperature act on the coupled buildings of the project when system coupling is active.</value>
+  </data>
+  <data name="WPA_MSG_VORLAUF_MAX_BEREICH" xml:space="preserve">
+    <value>The maximum flow temperature must lie between {0} and {1} °C.</value>
+  </data>
+  <data name="WPA_INFO_SPERRZEIT_ZEITPROGRAMM" xml:space="preserve">
+    <value>Blocking period and time schedule overlap in {0} weekly hours with a factor above 0; the blocking period applies there.</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_STUNDEN" xml:space="preserve">
+    <value>Underheating hours</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_KELVIN" xml:space="preserve">
+    <value>Kelvin hours</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_STRECKE" xml:space="preserve">
+    <value>Longest run</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_QUELLE" xml:space="preserve">
+    <value>Hours of the occupancy period more than 1.0 K below the set point</value>
+  </data>
+  <data name="GEBB_KACHEL_RESTBEDARF" xml:space="preserve">
+    <value>Residual demand (project, last run)</value>
+  </data>
+  <data name="GEBB_KACHEL_RESTBEDARF_QUELLE" xml:space="preserve">
+    <value>Heat no generator covered — shown alongside the comfort hours</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_UEBER" xml:space="preserve">
+    <value>Overcooling-limit hours</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_KELVIN_KUEHL" xml:space="preserve">
+    <value>Kelvin hours cooling</value>
+  </data>
+  <data name="GEBB_KACHEL_BEDARFSBEGRIFF" xml:space="preserve">
+    <value>Demand basis</value>
+  </data>
+  <data name="GEBB_KACHEL_FAHRPLAN_BEGRENZT" xml:space="preserve">
+    <value>Hours limited by schedule</value>
+  </data>
+  <data name="GEBB_HRL_KOMFORT_OHNE" xml:space="preserve">
+    <value>Comfort hours exist only for a building calculated with coupling.</value>
+  </data>
+  <data name="GEBB_BILD_KOMFORTWOCHE" xml:space="preserve">
+    <value>Room temperature and set point — week with the largest underheating</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_RAUMLUFT" xml:space="preserve">
+    <value>Room air</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_SOLLWERT" xml:space="preserve">
+    <value>Set point</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_UNTERSCHREITUNG" xml:space="preserve">
+    <value>Underheating</value>
+  </data>
+  <data name="GEBB_HRL_KOMFORTWOCHE" xml:space="preserve">
+    <value>The week from {0}; the counted underheating hours are marked.</value>
+  </data>
+  <data name="KI_DLG_WPA_VORLAUF_MAX_ERL" xml:space="preserve">
+    <value>Maximum flow temperature the unit offers [°C]; empty = planned flow temperature. Acts with system coupling: if a coupled building demands more, this value applies.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NEU" xml:space="preserve">
+    <value>Zone {0}</value>
+  </data>
+  <data name="GIMP_DLG_SP_NUTZUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_WURZEL" xml:space="preserve">
+    <value>Building “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_WAEHLEN" xml:space="preserve">
+    <value>Select zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NAME" xml:space="preserve">
+    <value>Name of zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_NUTZUNG" xml:space="preserve">
+    <value>Use of zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NUTZUNG_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZONE_LEER" xml:space="preserve">
+    <value>no room</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_RAUM_WAEHLEN" xml:space="preserve">
+    <value>Select room “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NAME" xml:space="preserve">
+    <value>Name of the new zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_NUTZUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN_OK" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ANLEGEN" xml:space="preserve">
+    <value>Add zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_LOESCHEN" xml:space="preserve">
+    <value>Delete zone(s)</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN" xml:space="preserve">
+    <value>Remove zoning</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZUORDNEN" xml:space="preserve">
+    <value>Add rooms to the selected zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZUORDNEN_GRUND" xml:space="preserve">
+    <value>Select exactly one zone as target and – to add – at least one room.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_GESCHOSS" xml:space="preserve">
+    <value>Storey</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_GESCHOSS_KNOPF" xml:space="preserve">
+    <value>Storey to zone</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_REST_REGEL" xml:space="preserve">
+    <value>Rule for the rest</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_REST" xml:space="preserve">
+    <value>Assign the rest by rule</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_HINWEIS" xml:space="preserve">
+    <value>Tick boxes select zones and rooms; the buttons act on the selection. A click in the floor plan assigns the room to the target zone. Rooms of equal heating form a zone; a room’s “heated” box is the way out.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_EINZONIG" xml:space="preserve">
+    <value>The plan yields one zone: the building is taken over as a single zone as without zoning; name and use of this zone are not taken over.</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_PLAN_HINWEIS" xml:space="preserve">
+    <value>The zone plan yields one zone – the building is taken over as one zone with components; name and use of this zone are not taken over.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OFFEN_TITEL" xml:space="preserve">
+    <value>Unassigned rooms ({0})</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OFFEN_LEER" xml:space="preserve">
+    <value>All rooms are assigned to a zone.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUSSERHALB" xml:space="preserve">
+    <value>The rule leaves {0} rooms outside every zone (unheated); they do not block OK.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Remove zoning</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>All rooms are taken out of their zones and then appear under “Unassigned rooms”; the zones of the rule proposal are dropped, zones you added stay empty. Remove zoning?</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_OK_GESPERRT" xml:space="preserve">
+    <value>{0} rooms are not assigned to a zone – OK is blocked until every room has a zone.</value>
+  </data>
+  <data name="IMP_SQ_PROT_KEINE_DATEI" xml:space="preserve">
+    <value>The file {0} is not a readable project file (SQLite) — it is not added; the IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The project file could not be read: {0}. The IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_TABELLE_FEHLT" xml:space="preserve">
+    <value>The project file lacks tables ({0}) — it is not added; the IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_FASSUNG" xml:space="preserve">
+    <value>Project file read, room table version {0}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_FASSUNG_UNBEKANNT" xml:space="preserve">
+    <value>The table {0} has version {1}, which the reader does not know — the values are read, please check.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZU_GROSS" xml:space="preserve">
+    <value>The project file has {0} MB and exceeds the limit of {1} MB — it is not read.</value>
+  </data>
+  <data name="IMP_SQ_PROT_KEIN_HOTTCAD" xml:space="preserve">
+    <value>A project file ({0}) can only be added to an IFC file from HottCAD.</value>
+  </data>
+  <data name="IMP_SQ_PROT_NICHT_GELESEN" xml:space="preserve">
+    <value>Read the IFC file first, then add the project file.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONENTYP_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{1} zones of type {0} are skipped (only usage and simulation zones are taken over).</value>
+  </data>
+  <data name="IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{1} profiles of class {0} are skipped (no quantity in EPOS-Plan).</value>
+  </data>
+  <data name="IMP_SQ_PROT_BETRIEBSART" xml:space="preserve">
+    <value>{1} time profiles carry operating mode {0} (counted, not interpreted).</value>
+  </data>
+  <data name="IMP_SQ_PROT_TAGESART_UNBEKANNT" xml:space="preserve">
+    <value>The profile group {0} carries day type {1}, which the reader does not interpret — the daily curves apply on all days.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT" xml:space="preserve">
+    <value>{0} sections carry an unknown section type — they are treated as a period.</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_OHNE_TREFFER" xml:space="preserve">
+    <value>{0} rooms of the project file find no IFC room (neither by name and storey nor by identifier): {1}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>{0} IFC rooms have no counterpart in the project file: {1}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONE_LEER" xml:space="preserve">
+    <value>The zone {0} of the project file has no matched room — it is not created.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONE_ABGELEHNT" xml:space="preserve">
+    <value>The zone {0} of the project file could not be created ({1}).</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_BEHEIZUNG" xml:space="preserve">
+    <value>The room {0} does not match the heating of zone {1} and stays unassigned.</value>
+  </data>
+  <data name="IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG" xml:space="preserve">
+    <value>The zone {0} carries usage profile no. {1} without a counterpart — it stays without use.</value>
+  </data>
+  <data name="IMP_SQ_PROT_WERT_BEGRENZT" xml:space="preserve">
+    <value>Zone {0}, {1}: {2} values were outside {3} and are limited.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BILANZ" xml:space="preserve">
+    <value>Project file: {0} rooms matched, {1} not matched, {2} IFC rooms without counterpart, {3} zones taken over.</value>
+  </data>
+  <data name="GIMP_BELEG_SQPROJ" xml:space="preserve">
+    <value>from project file: {0}.{1}, profile {2}</value>
+  </data>
+  <data name="IMP_SQ_PROT_TAGESART_ANNAHME" xml:space="preserve">
+    <value>The profile group {0} carries day type {1}; a {2}-day week is assumed (meaning not documented in the project file).</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUMART_ABWEICHUNG" xml:space="preserve">
+    <value>{0} matched rooms carry different room types in project file and IFC: {1}.</value>
+  </data>
+  <data name="GIMP_BELEG_SQPROJ_TAGESART" xml:space="preserve">
+    <value>day type {0} assumed as {1}-day week</value>
+  </data>
+  <data name="GIMP_DLG_SQ_KNOPF" xml:space="preserve">
+    <value>Add project file (.sqproj)…</value>
+  </data>
+  <data name="GIMP_DLG_SQ_KNOPF_GRUND" xml:space="preserve">
+    <value>A project file (.sqproj) can only be added to an IFC file exported by HottCAD (ObjectType “TModel…” on the building or a room).</value>
+  </data>
+  <data name="GIMP_DLG_SQ_TITEL" xml:space="preserve">
+    <value>Choose project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FILTER" xml:space="preserve">
+    <value>Project file of the CAD program (*.sqproj)|*.sqproj</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ENTFERNEN" xml:space="preserve">
+    <value>Remove project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_UEBERNEHMEN" xml:space="preserve">
+    <value>Take over zones of the project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_GRUPPE" xml:space="preserve">
+    <value>Project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FASSUNG" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="GIMP_DLG_SQ_RAEUME" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="GIMP_DLG_SQ_RAEUME_WERT" xml:space="preserve">
+    <value>{0} matched · {1} unmatched · {2} IFC rooms without counterpart</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN_WERT" xml:space="preserve">
+    <value>{0} taken over of {1}</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONEN_OFFEN" xml:space="preserve">
+    <value>{0} in the file, not yet taken over</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFILE" xml:space="preserve">
+    <value>Time profiles</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFILE_WERT" xml:space="preserve">
+    <value>{0} time profiles, {1} sections</value>
+  </data>
+  <data name="GIMP_DLG_SQ_JE_GROESSE" xml:space="preserve">
+    <value>Per quantity</value>
+  </data>
+  <data name="GIMP_DLG_SQ_GROESSE_WERT" xml:space="preserve">
+    <value>{0}: {1} zones from the daily curve, {2} from the usage profile</value>
+  </data>
+  <data name="GIMP_DLG_SQ_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="GIMP_DLG_SQ_OHNE_TREFFER" xml:space="preserve">
+    <value>Project file rooms without IFC room ({0})</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT" xml:space="preserve">
+    <value>from project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_PROFIL" xml:space="preserve">
+    <value>Usage profile {0} per DIN V 18599</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FRAGE_TITEL" xml:space="preserve">
+    <value>Take over zones of the project file</value>
+  </data>
+  <data name="GIMP_DLG_SQ_FRAGE" xml:space="preserve">
+    <value>The zones of the project file replace the zone plan; {0} manual steps will be lost. Take over?</value>
+  </data>
+  <data name="GIMP_DLG_SQ_KEIN_PLAN" xml:space="preserve">
+    <value>The zones of the project file need the zone tree — the file carries only one zoning rule for this building; nothing is taken over.</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HINWEIS" xml:space="preserve">
+    <value>The project file supplies zones, usage and time profiles per zone; the IFC file remains the source of the geometry. The conditioning per zone is saved with origin “from project file”.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONIERUNG" xml:space="preserve">
+    <value>Zoning: {0} ({1} zones); {2} available ({3}).</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONIERUNG_EINE" xml:space="preserve">
+    <value>Zoning: {0} ({1} zones); only one zoning available.</value>
+  </data>
+  <data name="IMP_SQ_ZONIERUNG_DIN" xml:space="preserve">
+    <value>DIN V 18599 zones</value>
+  </data>
+  <data name="IMP_SQ_ZONIERUNG_SIM" xml:space="preserve">
+    <value>Simulation zones</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG" xml:space="preserve">
+    <value>Zoning</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT_DIN" xml:space="preserve">
+    <value>from project file (DIN zones)</value>
+  </data>
+  <data name="GIMP_DLG_SQ_HERKUNFT_SIM" xml:space="preserve">
+    <value>from project file (simulation zones)</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG_FRAGE" xml:space="preserve">
+    <value>Changing the zoning rebuilds the zone plan; {0} manual steps will be lost. Change?</value>
+  </data>
+  <data name="GIMP_DLG_SQ_ZONIERUNG_WERT" xml:space="preserve">
+    <value>{0} ({1} zones)</value>
   </data>
 </root>
 

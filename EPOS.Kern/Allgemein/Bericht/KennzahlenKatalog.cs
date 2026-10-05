@@ -55,6 +55,17 @@ namespace WindowsFormsApplication1
 
         private static ErgebnisEnergiebedarfModel E(VariantenDaten v) { return v?.Ergebnis?.Energiebedarf; }
         private static ErgebnisWaermepumpeModel WP(VariantenDaten v) { return v?.Ergebnis?.Waermepumpe; }
+
+        /// <summary>
+        /// VW1b: die Summe eines Stundenfelds der Vorlaufwahl über die Module mit Wert; null, wenn kein Modul am
+        /// gerechneten Vorlauf gewählt hat.
+        /// </summary>
+        private static double? VorlaufStunden(VariantenDaten v, Func<ErgebnisWaermepumpeModulModel, int?> feld)
+        {
+            List<int> werte = (WP(v)?.Module ?? new List<ErgebnisWaermepumpeModulModel>())
+                .Where(m => m != null && feld(m).HasValue).Select(m => feld(m).Value).ToList();
+            return werte.Count == 0 ? (double?)null : werte.Sum();
+        }
         private static ErgebnisBHKWModel BH(VariantenDaten v) { return v?.Ergebnis?.BHKW; }
         private static ErgebnisHeizkesselModel HK(VariantenDaten v) { return v?.Ergebnis?.Heizkessel; }
         private static ErgebnisSolarthermieModel SO(VariantenDaten v) { return v?.Ergebnis?.Solarthermie; }
@@ -185,6 +196,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden freier Kühlung [h/a] (Summe über die Maschinen).</summary>
         public const string SCHLUESSEL_KM_FREI_STUNDEN = "kaelte.km.frei_stunden";
+
+        /// <summary>
+        /// Kälte der Wärmepumpen in freier Kühlung über die Wärmequelle [MWh/a] (KU3-6) — Summe über die
+        /// Wärmepumpen; null, wenn an keiner die freie Kühlung wirkt.
+        /// </summary>
+        public const string SCHLUESSEL_WP_FREI = "kaelte.wp.frei";
+
+        /// <summary>Stunden freier Kühlung der Wärmepumpen [h/a] (KU3-6); null ohne wirksame freie Kühlung.</summary>
+        public const string SCHLUESSEL_WP_FREI_STUNDEN = "kaelte.wp.frei_stunden";
+
+        /// <summary>
+        /// Stunden, in denen der gerechnete Heizkreisvorlauf unter der untersten Kennlinienstützstelle der Wärmepumpe lag
+        /// [h/a] (VW1b, E88) — Summe über die Module mit Kennlinienwahl am Vorlauf; null ohne Kennlinienwahl.
+        /// </summary>
+        public const string SCHLUESSEL_WP_VORLAUF_DARUNTER = "wp.vorlauf.darunter_stunden";
+
+        /// <summary>Stunden über der obersten Kennlinienstützstelle [h/a] (VW1b, E88); null ohne Kennlinienwahl.</summary>
+        public const string SCHLUESSEL_WP_VORLAUF_DARUEBER = "wp.vorlauf.darueber_stunden";
 
         /// <summary>Taktstunden unter der Mindestteillast [h/a] (Summe über die Maschinen).</summary>
         public const string SCHLUESSEL_KM_TAKT = "kaelte.km.takt";
@@ -464,6 +493,14 @@ namespace WindowsFormsApplication1
                 }));
             l.Add(new Kennzahl("eff.wp_vbh", "Vollbenutzungsstunden WP", "Heat pump full-load hours", "h/a", GR_EFFIZIENZ, "N0", false,
                 v => WP(v) == null ? (double?)null : WP(v).Vollbenutzungsstunden));
+            // VW1b (E88): die Stunden außerhalb der Kennlinienstützstellen am gerechneten Vorlauf - Summe über die
+            // Module mit Kennlinienwahl, sonst null.
+            l.Add(new Kennzahl(SCHLUESSEL_WP_VORLAUF_DARUNTER, "Stunden unter der untersten Kennlinienstützstelle",
+                "Hours below the lowest characteristic curve point", "h/a", GR_EFFIZIENZ, "N0", true,
+                v => VorlaufStunden(v, m => m.Vorlauf_Darunter_Stunden)));
+            l.Add(new Kennzahl(SCHLUESSEL_WP_VORLAUF_DARUEBER, "Stunden über der obersten Kennlinienstützstelle",
+                "Hours above the highest characteristic curve point", "h/a", GR_EFFIZIENZ, "N0", true,
+                v => VorlaufStunden(v, m => m.Vorlauf_Darueber_Stunden)));
             // ETAPPE E2 — die Zeile hieß bis dahin „Betriebsstunden BHKW" und zeigte
             // Betriebsstunden_Gesamt. Der WERT ist unverändert, die BESCHRIFTUNG sagt jetzt,
             // was er ist: die Summe THERMISCHER Vollbenutzungsstunden über alle Module. Sie
@@ -520,6 +557,13 @@ namespace WindowsFormsApplication1
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_ERZEUGUNG, "Kälteerzeugung Wärmepumpe (sensibel)",
                 "Heat pump cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
                 v => WP(v)?.Kaelteproduktion_WP));
+            // KU3-6: die freie Kühlung der Wärmepumpen über die Wärmequelle - nur mit Wirkung, sonst null.
+            l.Add(new Kennzahl(SCHLUESSEL_WP_FREI, "Kälte in freier Kühlung der Wärmepumpe (sensibel)",
+                "Heat pump free cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                v => WP(v)?.FreieKuehlung_MWh));
+            l.Add(new Kennzahl(SCHLUESSEL_WP_FREI_STUNDEN, "Stunden freier Kühlung der Wärmepumpe (sensibel)",
+                "Heat pump free cooling hours (sensible)", "h/a", GR_KAELTE, "N0", true,
+                v => WP(v)?.FreieKuehlung_Stunden));
             // KU3-4: die Kältemaschinen - nur mit gerechneter Kältemaschine, sonst null (Gruppe unverändert).
             l.Add(new Kennzahl(SCHLUESSEL_KM_ERZEUGUNG, "Kälteerzeugung Kältemaschinen (sensibel)",
                 "Chiller cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,

@@ -993,4 +993,93 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Single(cut.FindAll("select"));                           // nur die Einheit
         Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_BEDARF, "diagramm").Lesen());
     }
+    // =================================================================================
+    // Anlagenkopplung AK2 (Konzept 9.4, 5.5): Komfort neben Restbedarf
+    // =================================================================================
+
+    /// <summary>Ein gekoppelter Satz mit Komfortkennzahlen, Restbedarf und Fahrplan.</summary>
+    private static GebaeudeBedarfDaten KomfortSatz(bool erhoben) => new()
+    {
+        Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, VollbenutzungsstundenH = 2048.0,
+        MonatswerteMwh = new double[12], Modelltext = "VDI 6007, gekoppelt (AK1)", IstVdi6007 = true,
+        IstGekoppelt = true, VorlaufMittelC = 35.3, RuecklaufMittelC = 32.06, UebergabeBegrenztStundenH = 210.9,
+        KomfortUnterschreitungsstundenH = erhoben ? 273 : null,
+        KomfortKelvinstundenKh = erhoben ? 412.46 : null,
+        KomfortLaengsteStreckeH = erhoben ? 5 : null,
+        RestbedarfProjektMwh = 1.234,
+        Bedarfsbegriff = erhoben ? "mit Rückwirkung" : "",
+        FahrplanBegrenztStundenH = erhoben ? 120 : null
+    };
+
+    /// <summary>
+    /// Die drei Komfortkacheln stehen NEBEN dem Restbedarf (Regel 5.5) im Abschnitt „Wärmebedarf"; im Lauf mit
+    /// Fahrplan dazu der Bedarfsbegriff und die Stunden am Fahrplan.
+    /// </summary>
+    [Fact]
+    public void Komfortkacheln_stehen_neben_dem_Restbedarf()
+    {
+        var cut = Aufbauen(KomfortSatz(erhoben: true));
+
+        IReadOnlyList<IElement> k = cut.FindAll("div.gebb-komfort .epos-kennzahlkachel");
+        Assert.Equal(6, k.Count);
+        Assert.Equal("Unterschreitungsstunden", Kachel(k[0], "titel"));
+        Assert.Equal("273 h", Kachel(k[0], "wert"));
+        Assert.Equal("412,5 Kh", Kachel(k[1], "wert"));
+        Assert.Equal("5 h", Kachel(k[2], "wert"));
+        Assert.Equal("Restbedarf (Projekt, letzter Lauf)", Kachel(k[3], "titel"));
+        Assert.Equal("1,23 MWh/a", Kachel(k[3], "wert"));
+        Assert.Equal("mit Rückwirkung", Kachel(k[4], "wert"));
+        Assert.Equal("120 h", Kachel(k[5], "wert"));
+        Assert.Equal("erhoben", cut.Find("div.gebb-komfort").GetAttribute("data-komfort"));
+        Assert.NotNull(cut.Find("section[data-seite=waerme]").QuerySelector("div.gebb-komfort"));
+    }
+
+    /// <summary>Ein gekoppeltes Gebäude ohne erhobene Kennzahl zeigt „—" und die Zeile dazu (K18) — der Restbedarf bleibt.</summary>
+    [Fact]
+    public void Ohne_erhobenen_Komfort_zeigen_die_Kacheln_den_Strich()
+    {
+        var cut = Aufbauen(KomfortSatz(erhoben: false));
+
+        IReadOnlyList<IElement> k = cut.FindAll("div.gebb-komfort .epos-kennzahlkachel");
+        Assert.Equal(4, k.Count);
+        Assert.Equal("—", Kachel(k[0], "wert"));
+        Assert.Equal("—", Kachel(k[1], "wert"));
+        Assert.Equal("—", Kachel(k[2], "wert"));
+        Assert.Equal("1,23 MWh/a", Kachel(k[3], "wert"));
+        Assert.Contains("Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude.", cut.Markup);
+    }
+
+    /// <summary>Ohne Kopplung steht kein Komfortblock — jedes Bestandsgebäude bleibt, wie es war.</summary>
+    [Fact]
+    public void Ohne_Kopplung_steht_kein_Komfortblock()
+    {
+        var cut = Aufbauen(VdiSatz());
+        Assert.Empty(cut.FindAll("div.gebb-komfort"));
+    }
+
+    /// <summary>Das Bild „Raumtemperatur und Sollwert" steht nur mit Delegat, mit seiner Zeile, und wird einmal gerechnet.</summary>
+    [Fact]
+    public void Das_Komfortwochenbild_steht_nur_mit_Delegat()
+    {
+        int aufrufe = 0;
+        var luft = new double[168];
+        var soll = new double[168];
+        var maske = new bool[168];
+        for (int h = 0; h < 168; h++) { soll[h] = 21.0; luft[h] = h < 10 ? 18.5 : 20.8; maske[h] = h < 10; }
+        Zeichenmodell bild = ChartRenderer.KomfortwocheModell("Raumtemperatur und Sollwert", luft, soll, maske,
+                                                              new ChartRenderer.Komfortwochennamen());
+        var cut = Render<GebaeudeBedarfDialog>(p => p
+            .Add(x => x.Daten, KomfortSatz(erhoben: true))
+            .Add(x => x.Bildauftrag, s => s ? DAUER : GANG)
+            .Add(x => x.BildauftragKomfortwoche, () => { aufrufe++; return bild; })
+            .Add(x => x.HinweisKomfortwoche, "Die Woche ab 1. Januar; markiert sind die gezählten Unterschreitungsstunden."));
+
+        Assert.Equal(2, cut.FindAll("svg.epos-flaeche").Count);
+        Assert.Contains("Die Woche ab 1. Januar", cut.Markup);
+        Assert.DoesNotContain("NaN", cut.Markup);
+        cut.Render();
+        Assert.Equal(1, aufrufe);
+
+        Assert.Single(Aufbauen(KomfortSatz(erhoben: true)).FindAll("svg.epos-flaeche"));
+    }
 }

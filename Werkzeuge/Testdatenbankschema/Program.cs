@@ -2865,6 +2865,64 @@ namespace Testdatenbankschema
                                   ZonenKaeltespitzeSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt AnlagenfahrplanSchema.SCHRITT (AK2-1): Zeitprogramm und Vorlauf_Max an Tab_Energieanlagen,
+            //      sechs Komfort- und Fahrplanspalten an Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Anlagenfahrplan bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer.
+            string nrFahrplan = AnlagenfahrplanSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFahrplan + " - Anlagenfahrplan: " +
+                              (AnlagenfahrplanSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtFahrplan = new List<string>();
+                angelegt += AnlagenfahrplanSchema.Ausfuehren(berichtFahrplan);
+                foreach (string zeile in berichtFahrplan)
+                    Console.WriteLine("Schritt " + nrFahrplan + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFahrplan + " - vollstaendig: " +
+                                  AnlagenfahrplanSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt FreieKuehlungSoleSchema.SCHRITT (KU3-6a): Kuehl_Frei, Kuehl_Frei_Graedigkeit_K und
+            //      Kuehl_Frei_Leistung_kW an Tab_Energieanlagen, FreieKuehlung_MWh und FreieKuehlung_Stunden an den
+            //      beiden Ergebnistabellen der Waermepumpe. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_FreieKuehlungSole bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Schalter entsteht aus, die Spalten leer.
+            string nrFreiKuehl = FreieKuehlungSoleSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFreiKuehl + " - freie Kuehlung ueber die Waermequelle: " +
+                              (FreieKuehlungSoleSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtFreiKuehl = new List<string>();
+                angelegt += FreieKuehlungSoleSchema.Ausfuehren(berichtFreiKuehl);
+                foreach (string zeile in berichtFreiKuehl)
+                    Console.WriteLine("Schritt " + nrFreiKuehl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFreiKuehl + " - vollstaendig: " +
+                                  FreieKuehlungSoleSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt VorlaufwahlSchema.SCHRITT (VW1a): Vorlaufwahl_Stunden, Vorlauf_Darueber_Stunden und
+            //      Vorlauf_Darunter_Stunden an Tab_ErgebnisWaermepumpeModul. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Vorlaufwahl bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer.
+            string nrVorlaufwahl = VorlaufwahlSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVorlaufwahl + " - Ausweis der Vorlaufwahl der Waermepumpe: " +
+                              (VorlaufwahlSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVorlaufwahl = new List<string>();
+                angelegt += VorlaufwahlSchema.Ausfuehren(berichtVorlaufwahl);
+                foreach (string zeile in berichtVorlaufwahl)
+                    Console.WriteLine("Schritt " + nrVorlaufwahl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVorlaufwahl + " - vollstaendig: " +
+                                  VorlaufwahlSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

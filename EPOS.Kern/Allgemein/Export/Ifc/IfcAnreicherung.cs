@@ -332,7 +332,8 @@ namespace WindowsFormsApplication1
         // ==================================================================
 
         /// <summary>Eine Eigenschaft, die geschrieben werden soll: ersetzt sie eine vorhandene oder kommt sie nur hinzu?</summary>
-        private sealed record Angabe(string Name, IfcValue Wert, IfcUnit Einheit, string Beschreibung, bool Ersetzen);
+        private sealed record Angabe(string Name, IfcValue Wert, IfcUnit Einheit, string Beschreibung, bool Ersetzen,
+                                     string BeschreibungWoertlich = null);
 
         /// <summary>Das Ziel einer Zuordnung im Abbild.</summary>
         private enum Zielart
@@ -584,13 +585,25 @@ namespace WindowsFormsApplication1
                                   r.Nachtabsenkung.HasValue ? Wert("DiscontinuedHeating", new IfcBoolean(r.Nachtabsenkung.Value)) : null,
                                   r.LuftwechselNutzerJeH.HasValue ? Wert("NaturalVentilationRate", new IfcNumericMeasure(Endlich(r.LuftwechselNutzerJeH.Value))) : null);
                 }
-                Eigen(o, IfcSchreiber.EPOS_ZONE,
-                      Wert("IstBeheizt", new IfcBoolean(r.Beheizt)),
-                      r.ZonenKennung == null ? null : Wert("Kennung", new IfcIdentifier(r.ZonenKennung)),
-                      Zahl("LuftwechselInfiltration", r.LuftwechselJeH, "GEXP_IFC_LUFTWECHSEL"),
-                      Zahl("Personen", r.Personen, null),
-                      Zahl("GeraeteWm2", r.GeraeteWm2, null),
-                      Zahl("LichtWm2", r.LichtWm2, null));
+                var zone = new List<Angabe>
+                {
+                    Wert("IstBeheizt", new IfcBoolean(r.Beheizt)),
+                    r.ZonenKennung == null ? null : Wert("Kennung", new IfcIdentifier(r.ZonenKennung)),
+                    Zahl("LuftwechselInfiltration", r.LuftwechselJeH, "GEXP_IFC_LUFTWECHSEL"),
+                    Zahl("Personen", r.Personen, null),
+                    Zahl("GeraeteWm2", r.GeraeteWm2, null),
+                    Zahl("LichtWm2", r.LichtWm2, null),
+                };
+                zone.AddRange(IfcKonditionierungssatz.Zonenwerte(r.Konditionierung).Select(Satzwert));
+                Eigen(o, IfcSchreiber.EPOS_ZONE, zone.ToArray());
+                // Die Kalendersätze (6.3, 16.3): je Größe der Satz eines früheren Durchlaufs ersetzt, ein überholter entfernt —
+                // nie doppelt.
+                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                {
+                    AbbildKalender k = r.Konditionierung?.KalenderVon(g);
+                    Eigen(o, IfcKonditionierungssatz.Satzname(g),
+                          k == null ? Array.Empty<Angabe>() : IfcKonditionierungssatz.Kalenderwerte(k).Select(Satzwert).ToArray());
+                }
                 if (!r.Beheizt) return;
                 if (eins) Ergebnis(o, r.Kennung, r.FlaecheM2);
                 else if (_ergebnisse != null && _ergebnisse.JeKennung.ContainsKey(r.Kennung)
@@ -973,7 +986,24 @@ namespace WindowsFormsApplication1
                     p.NominalValue = a.Wert;
                     if (a.Einheit != null) p.Unit = a.Einheit;
                     if (a.Beschreibung != null) p.Description = IfcSchreiber.T(_profil, a.Beschreibung);
+                    if (a.BeschreibungWoertlich != null) p.Description = new IfcText(a.BeschreibungWoertlich);
                 });
+
+            /// <summary>Ein Wert der Konditionierungssätze als Fachwert von EPOS (<see cref="IfcSatzwertart"/>).</summary>
+            private Angabe Satzwert(IfcSatzwert w)
+            {
+                Angabe a;
+                switch (w.Art)
+                {
+                    case IfcSatzwertart.Temperatur: a = Temperatur(w.Name, w.Zahl); break;
+                    case IfcSatzwertart.Zahl: a = Zahl(w.Name, w.Zahl, w.Beschreibung); break;
+                    case IfcSatzwertart.Leistung: a = w.Zahl.HasValue ? Wert(w.Name, new IfcPowerMeasure(Endlich(w.Zahl.Value)), Watt()) : null; break;
+                    case IfcSatzwertart.Kennwort: a = Wert(w.Name, new IfcLabel(w.Text ?? ""), null, w.Beschreibung); break;
+                    case IfcSatzwertart.Wahrheit: a = Wert(w.Name, new IfcBoolean(w.Wahr == true), null, w.Beschreibung); break;
+                    default: a = Wert(w.Name, new IfcText(w.Text ?? ""), null, w.Beschreibung); break;
+                }
+                return a == null || w.BeschreibungWoertlich == null ? a : a with { BeschreibungWoertlich = w.BeschreibungWoertlich };
+            }
 
             /// <summary>Ein Fachwert von EPOS: ersetzt eine vorhandene Eigenschaft.</summary>
             private static Angabe Wert(string name, IfcValue wert, IfcUnit einheit = null, string beschreibung = null)

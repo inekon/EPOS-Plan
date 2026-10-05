@@ -219,6 +219,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool GeschosseGekoppelt { get; set; }
 
+        /// <summary>
+        /// Die Flächenpaare der Raumkörper (<see cref="Koerpernachbarschaft"/>): gezählt immer, gebildet nur ohne
+        /// Raumgrenzen (<see cref="KoerperpaareGebildet"/>) — Rangfolge Raumgrenzen vor Körpern vor Raumbezügen.
+        /// </summary>
+        public int ZahlKoerperpaare { get; set; }
+
+        /// <summary>Summe der Trennwände aus den Körperpaaren [m²].</summary>
+        public double KoerperTrennwandM2 { get; set; }
+
+        /// <summary>Summe der Trenndecken aus den Körperpaaren [m²].</summary>
+        public double KoerperTrenndeckeM2 { get; set; }
+
+        /// <summary>Tragen Trennflächen aus den Körperpaaren die Nachbarschaft der Räume (Gebäude ohne Raumgrenzen)?</summary>
+        public bool KoerperpaareGebildet { get; set; }
+
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
 
@@ -306,6 +321,12 @@ namespace WindowsFormsApplication1
         /// <summary>Fläche [m²]; <c>null</c> = nicht gelesen.</summary>
         public double? FlaecheM2 { get; set; }
 
+        /// <summary>
+        /// Stammt <see cref="FlaecheM2"/> aus dem Grundriss (<see cref="GrundrissM"/>, Gaußsche Trapezformel), weil die Datei
+        /// für den Raum keine Flächenmenge führt (IFC, Mehrzonenkonzept 6.5)? <c>false</c> = aus der Datei oder keine.
+        /// </summary>
+        public bool FlaecheAusGrundriss { get; set; }
+
         /// <summary>Volumen [m³]; <c>null</c> = nicht gelesen.</summary>
         public double? VolumenM3 { get; set; }
 
@@ -314,6 +335,12 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = nicht gelesen — dann gilt Volumen ÷ Fläche (Umsetzungskonzept 3.4).
         /// </summary>
         public double? HoeheM { get; set; }
+
+        /// <summary>
+        /// Der Körper des Raums aus der Datei (IFC: <c>IfcSpace</c>, Darstellung „Body“; Datenaustauschkonzept 15.3),
+        /// formatfrei in Weltkoordinaten [m]; <c>null</c> = keiner. gbXML lässt ihn leer. Nur Anzeige.
+        /// </summary>
+        public Dateikoerper Koerper { get; set; }
 
         /// <summary>Ist der Raum beheizt?</summary>
         public bool Beheizt { get; set; } = true;
@@ -359,6 +386,13 @@ namespace WindowsFormsApplication1
         /// <c>Pset_SpaceThermalRequirements.NaturalVentilationRate</c>); <c>null</c> = keiner. Der Leser lässt ihn leer.
         /// </summary>
         public double? LuftwechselNutzerJeH { get; set; }
+
+        /// <summary>
+        /// Die Konditionierung der Zone dieses Raums — Nutzung, Matrixzellen und Kalender (IFC <c>EPOS_Zone</c> und
+        /// <c>EPOS_Kalender_*</c>, Datenaustauschkonzept 6.3 und 16.3); <c>null</c> = keine. Der Export setzt sie je Zone
+        /// (nicht auf dem Klassenweg), der IFC-Leser nimmt sie aus einer Datei mit diesen Sätzen zurück.
+        /// </summary>
+        public AbbildKonditionierung Konditionierung { get; set; }
 
         /// <summary>Kennung des Geschosses; <c>null</c> = keine.</summary>
         public string GeschossKennung { get; set; }
@@ -417,6 +451,15 @@ namespace WindowsFormsApplication1
         /// Leser lässt ihn leer.
         /// </summary>
         public string ZonenBeschreibung { get; set; }
+
+        /// <summary>
+        /// Die Raumtemperatur eines CAD-Exports [°C] (IFC <c>InsideTemperature (°C)</c> aus einem beliebigen Satz) —
+        /// für die Zonenregel Z6, wenn <see cref="SollHeizenC"/> fehlt, und als Heizsollwert nur auf Wunsch des Anwenders
+        /// (<see cref="GebaeudeCadSollwert"/>, Schalter im Zuordnungsdialog, Vorgabe aus). <c>null</c> = keine.
+        /// <see cref="Raumtyp"/> trägt unter IFC <c>HSETU_RaumAllgemein.RoomType</c> ohne Präfix <c>mrt</c>, sonst
+        /// <c>Pset_SpaceCommon.Category</c> bzw. <c>ObjectType</c> — er benennt die Nutzungsklasse der Regel Z6.
+        /// </summary>
+        public double? RaumtemperaturC { get; set; }
     }
 
     /// <summary>Ein Nachbarraum eines Bauteils samt der Sicht dieses Raums auf die Fläche.</summary>
@@ -513,6 +556,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Grundrisse der beiden Räume überdecken sich; die Fläche ist die Überlappung.</summary>
         public const string TRENNDECKE_GRUNDRISS = "GRUNDRISS";
+
+        /// <summary>Trenndecke aus einem Flächenpaar der Raumkörper (<see cref="Koerpernachbarschaft"/>).</summary>
+        public const string TRENNDECKE_KOERPER = "KOERPER";
 
         /// <summary>Azimut [°], 0 = Nord, im Uhrzeigersinn; <c>null</c> = unbestimmt (auch bei waagerechten Flächen).</summary>
         public double? AzimutGrad { get; set; }
@@ -629,6 +675,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyList<double[]> RandpunkteM { get; set; }
 
+        /// <summary>Woher die Grenze stammt: eine Raumgrenze der Datei oder ein Flächenpaar der Raumkörper.</summary>
+        public Grenzherkunft Herkunft { get; set; } = Grenzherkunft.Raumgrenze;
+
         /// <summary>Die Kennung der Gegengrenze aus der Datei (<c>CorrespondingBoundary</c>); <c>null</c> = keine.</summary>
         public string GegenstueckKennung { get; set; }
 
@@ -712,5 +761,79 @@ namespace WindowsFormsApplication1
 
         /// <summary>Nur R-Wert, keine vollständigen Stoffwerte — die Schicht ist masselos (3.6, Punkt 2).</summary>
         public bool NurRWert => !Vollstaendig && RWertM2KW > 0.0 && !(DickeM > 0.0 && LambdaWmK > 0.0);
+    }
+
+    /// <summary>Ein Konditionierungskalender einer Zone mit seiner Bemerkung (Herkunft und Vermerk, ≤ 200 Zeichen).</summary>
+    internal sealed record AbbildKalender(Konditionierungskalender Kalender, string Bemerkung);
+
+    /// <summary>
+    /// <b>Die Konditionierung einer Zone im Abbild</b> (Datenaustauschkonzept 6.3, 16.3): die Nutzung, die vier Matrixzellen,
+    /// wie die Zone sie rechnet (Heizsollwert Tag und Nacht, Kühlsollwert, Luftwechsel der Nutzer), und die angelegten Kalender
+    /// je Größe. Formatfrei; der IFC-Export schreibt sie als <c>EPOS_Zone</c> und <c>EPOS_Kalender_&lt;Größe&gt;</c>, der
+    /// IFC-Leser liest sie zurück und gibt sie über <see cref="AlsZonenkonditionierung"/> an den Zonenplan.
+    /// </summary>
+    internal sealed class AbbildKonditionierung
+    {
+        /// <summary>Die Nutzung (<c>WOHNEN</c>, <c>BUERO</c>, <c>SCHULE</c>); <c>null</c> = keine.</summary>
+        public string Nutzung { get; set; }
+
+        /// <summary>Heizsollwert Tag [°C] — die Zelle HEIZSOLL/TAG.</summary>
+        public double? HeizsollTagC { get; set; }
+
+        /// <summary>Heizsollwert Nacht [°C] — die Zelle HEIZSOLL/NACHT.</summary>
+        public double? HeizsollNachtC { get; set; }
+
+        /// <summary>Kühlsollwert [°C] — die Zelle KUEHLSOLL/TAG.</summary>
+        public double? KuehlsollC { get; set; }
+
+        /// <summary>Luftwechsel der Nutzer [1/h] — die Zelle LUEFTUNG/TAG.</summary>
+        public double? LuftwechselNutzerJeH { get; set; }
+
+        /// <summary>Die Kalender in der Reihenfolge der Größen (<see cref="Konditionierungsgroessen.Alle"/>).</summary>
+        public List<AbbildKalender> Kalender { get; } = new List<AbbildKalender>();
+
+        /// <summary>Der Kalender einer Größe; <c>null</c> = keiner.</summary>
+        internal AbbildKalender KalenderVon(Konditionierungsgroesse g) => Kalender.Find(k => k.Kalender.Groesse == g);
+
+        /// <summary>Trägt die Zone etwas — eine Zelle, eine Nutzung oder einen Kalender?</summary>
+        internal bool Traegt => Nutzung != null || HeizsollTagC.HasValue || HeizsollNachtC.HasValue || KuehlsollC.HasValue
+                                || LuftwechselNutzerJeH.HasValue || Kalender.Count > 0;
+
+        /// <summary>
+        /// <b>Die Konditionierung für den Zonenplan</b> — derselbe Schreibweg wie die Projektdatei
+        /// (<see cref="ZonenplanCtrl.ProjektdateiUebernehmen"/>): je Größe die Zellen als Vorgaben und der Kalender mit
+        /// Herkunft <see cref="Konditionierungsherkunft.IfcDatei"/>; die Bemerkung nennt die Herkunft „aus IFC-Datei (EPOS)“
+        /// und den mitgereisten Vermerk.
+        /// </summary>
+        internal Zonenkonditionierung AlsZonenkonditionierung(string zone)
+        {
+            var groessen = new List<Groessenkonditionierung>();
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                var vorgaben = new List<Vorgabebeleg>();
+                void Zelle(string zeile, double? wert)
+                {
+                    if (wert is double w && double.IsFinite(w))
+                        vorgaben.Add(new Vorgabebeleg(zeile, Matrixzelle.AusWert(w), null));
+                }
+                if (g == Konditionierungsgroesse.Heizsoll)
+                {
+                    Zelle(DbWerte.KOND_ZEILE_TAG, HeizsollTagC);
+                    Zelle(DbWerte.KOND_ZEILE_NACHT, HeizsollNachtC);
+                }
+                if (g == Konditionierungsgroesse.Kuehlsoll) Zelle(DbWerte.KOND_ZEILE_TAG, KuehlsollC);
+                if (g == Konditionierungsgroesse.Lueftung) Zelle(DbWerte.KOND_ZEILE_TAG, LuftwechselNutzerJeH);
+                AbbildKalender k = KalenderVon(g);
+                groessen.Add(new Groessenkonditionierung
+                {
+                    Groesse = g,
+                    Herkunft = k != null || vorgaben.Count > 0 ? Konditionierungsherkunft.IfcDatei : Konditionierungsherkunft.Vorlage,
+                    Kalender = k?.Kalender,
+                    BemerkungText = k == null ? null : IfcKonditionierungssatz.Herkunftsbemerkung(k.Bemerkung),
+                    Vorgaben = vorgaben,
+                });
+            }
+            return new Zonenkonditionierung { Zone = zone ?? "", Nutzung = Nutzung, Groessen = groessen };
+        }
     }
 }

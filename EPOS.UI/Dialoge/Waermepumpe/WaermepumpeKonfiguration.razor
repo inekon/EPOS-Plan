@@ -130,6 +130,44 @@
                 </Formulargruppe>
             }
 
+            @* ANLAGENKOPPLUNG AK2 (Konzept 9.3): die Gruppe „Betriebszeiten" - Zeitprogramm als Wochenraster
+               (leer = immer verfuegbar), hoechster Vorlauf (leer = projektierter Vorlauf) und der Vorrang der
+               Sperrzeit. Die Nutzungszeit steht hier nicht: Sie wirkt nicht (Konzept 8.2). *@
+            <Formulargruppe Titel="@Texte.GruppeBetriebszeiten">
+                <KindInhalt>
+                    <div class="epos-wp-betriebszeiten" data-gruppe="betriebszeiten">
+                        <p class="epos-stammblattwerte-abschnitt">@Texte.LabelZeitprogramm</p>
+                        <div class="epos-zeilenknoepfe">
+                            <button type="button" class="epos-knopf" data-aktion="zeitprogramm"
+                                    @onclick="ZeitprogrammUmschalten">@(_rasterOffen ? Texte.KnopfZeitprogrammSchliessen : Texte.KnopfZeitprogramm)</button>
+                        </div>
+                        <Herleitungszeile Text="@ZeitprogrammZeile(Daten, Texte)" />
+                        @if (ZeitprogrammFehler(Daten) is string zpFehler)
+                        {
+                            <Warnbanner Stufe="WarnStufe.Warnung" Text="@zpFehler" />
+                        }
+                        @if (_rasterOffen)
+                        {
+                            <Wochenraster Wert="@_rasterWerte" WertChanged="BeiZeitprogramm"
+                                          Vorgabe="@IMMER_VERFUEGBAR" Min="0" Max="1" Nachkommastellen="2"
+                                          Kennung="wp-zeitprogramm" Aktiv="@Aktiv" />
+                            <Herleitungszeile Text="@Texte.ZeileZeitprogrammFaktoren" />
+                        }
+                        <Zahlenfeld Bezeichnung="@Texte.LabelVorlaufMax" Feldname="@FELD_VORLAUF_MAX" Einheit="°C"
+                                    Wert="@Daten.VorlaufMax" Min="@VORLAUF_MAX_MIN" Max="@VORLAUF_MAX_MAX"
+                                    Platzhalter="@(Daten.Vorlauf is int v && v > 0 ? v.ToString(System.Globalization.CultureInfo.CurrentCulture) : "")"
+                                    Aktiv="@Aktiv" WertChanged="BeiVorlaufMax" />
+                        <Herleitungszeile Text="@VorlaufMaxZeile(Daten, Texte)" />
+                        <Herleitungszeile Text="@Texte.HinweisSperrzeitVorrang" />
+                        @if (UeberschneidungSperrzeit(Daten) is int ueber && ueber > 0)
+                        {
+                            <Herleitungszeile Text="@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.InfoSperrzeitZeitprogramm, ueber)" />
+                        }
+                        <p class="epos-leisezeile">@Texte.ZeileBetriebszeitenWirkung</p>
+                    </div>
+                </KindInhalt>
+            </Formulargruppe>
+
             <Formulargruppe Titel="@Texte.GruppeBetrieb">
                 <KindInhalt>
                     <Schalter Bezeichnung="@Texte.LabelBivalent" Wert="@Daten.BivalenterBetrieb"
@@ -238,6 +276,42 @@
                                         Platzhalter="@Texte.PlatzhalterHilfsstrom" Min="0"
                                         Aktiv="@Aktiv" WertChanged="BeiHilfsstrom" />
                             <Herleitungszeile Text="@Texte.HinweisHilfsstrom" />
+
+                            @* FREIE KUEHLUNG UEBER DIE WAERMEQUELLE (KU3-6, F2, F6). Wirksam nur an
+                               einer Sole-/Wasser-Wasser-Maschine mit gepflegter Quelle; sonst ist
+                               der Schalter WEICH gesperrt wie der Kuehlbetrieb (aria-disabled +
+                               title, der Klick meldet den Grund, Ausschalten geht immer). EIN
+                               Kaestchen fuer beide Lagen - die Sperre haengt am preventDefault. *@
+                            <label class="epos-schalter epos-wp-kuehl-frei" title="@KuehlFreiSperrgrund">
+                                <input class="epos-schalter-kasten" type="checkbox" checked="@Daten.KuehlFrei"
+                                       disabled="@(!Aktiv)" aria-disabled="@(KuehlFreiGesperrt ? "true" : null)"
+                                       @onclick="BeiKuehlFreiKlick" @onclick:preventDefault="@KuehlFreiGesperrt"
+                                       @onchange="BeiKuehlFrei" />
+                                <span class="epos-feld-text">@Texte.LabelKuehlFrei</span>
+                            </label>
+                            @if (_freiMeldung.Length > 0)
+                            {
+                                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_freiMeldung" />
+                            }
+                            else if (KuehlFreiSperrgrund is string freiGrund)
+                            {
+                                <Herleitungszeile Text="@freiGrund" />
+                            }
+
+                            @if (Daten.KuehlFrei)
+                            {
+                                <Herleitungszeile Text="@Texte.HinweisKuehlFrei" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlFreiGraedigkeit" Einheit="K"
+                                            Feldname="@Texte.LabelKuehlFreiGraedigkeit" Wert="@Daten.KuehlFreiGraedigkeitK"
+                                            Platzhalter="@Texte.PlatzhalterKuehlFreiGraedigkeit" Min="0" Max="20"
+                                            Aktiv="@Aktiv" WertChanged="BeiKuehlFreiGraedigkeit" />
+                                <Herleitungszeile Text="@Texte.HinweisKuehlFreiGraedigkeit" />
+
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlFreiLeistung" Einheit="kW"
+                                            Feldname="@Texte.LabelKuehlFreiLeistung" Wert="@Daten.KuehlFreiLeistungKw"
+                                            Platzhalter="@Texte.PlatzhalterKuehlFreiLeistung" Min="0"
+                                            Aktiv="@Aktiv" WertChanged="BeiKuehlFreiLeistung" />
+                            }
 
                             <Auswahlfeld Bezeichnung="@Texte.LabelKuehltraeger" Eintraege="@TraegerEintraege"
                                          Auswahl="@Daten.KuehlCarrierId" Platzhalter="@Texte.PlatzhalterKuehltraeger"
@@ -391,6 +465,121 @@
     private Task BeiSperrzeitVon(int? wert)  { Daten.SperrzeitVon = wert;      return Melden(); }
     private Task BeiSperrzeitBis(int? wert)  { Daten.SperrzeitBis = wert;      return Melden(); }
 
+    // ---- Betriebszeiten (Anlagenkopplung 9.3) ------------------------------------
+
+    /// <summary>Feldname des höchsten Vorlaufs — für Mangelklasse und Hilfe-Assistent.</summary>
+    public const string FELD_VORLAUF_MAX = "wp-vorlauf-max";
+
+    /// <summary>Untere Grenze des höchsten Vorlaufs [°C].</summary>
+    public const double VORLAUF_MAX_MIN = 20.0;
+
+    /// <summary>Obere Grenze des höchsten Vorlaufs [°C].</summary>
+    public const double VORLAUF_MAX_MAX = 120.0;
+
+    /// <summary>Die Vorgabe des Rasters ohne Zeitprogramm: 168-mal Faktor 1 (immer verfügbar).</summary>
+    private static readonly IReadOnlyList<double> IMMER_VERFUEGBAR = Enumerable.Repeat(1.0, Wochenraster.WERTE).ToArray();
+
+    private bool _rasterOffen;
+    private double[]? _rasterWerte;
+
+    /// <summary>Öffnet das Raster mit dem gelesenen Programm (ein ungültiger Text öffnet leer) oder klappt es zu.</summary>
+    private void ZeitprogrammUmschalten()
+    {
+        _rasterOffen = !_rasterOffen;
+        if (_rasterOffen) _rasterWerte = ZeitprogrammWerte(Daten.Zeitprogramm);
+    }
+
+    /// <summary>Das Raster meldet ein Programm (oder <c>null</c> = verworfen): Es wird als Text geschrieben.</summary>
+    private Task BeiZeitprogramm(double[]? werte)
+    {
+        _rasterWerte = werte;
+        Daten.Zeitprogramm = werte is null ? null : AnlagenkopplungSchema.WochenprofilSchreiben(werte);
+        return Melden();
+    }
+
+    private Task BeiVorlaufMax(double? wert) { Daten.VorlaufMax = wert; return Melden(); }
+
+    /// <summary>Die 168 Faktoren eines gültigen Programms; <c>null</c> für leer oder ungültig.</summary>
+    public static double[]? ZeitprogrammWerte(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text) || Anlagenzeitprogramm.Pruefen(text) is not null) return null;
+        AnlagenkopplungSchema.Wochenprofil p = AnlagenkopplungSchema.WochenprofilLesen(text);
+        return p.Befund == AnlagenkopplungSchema.WochenprofilBefund.Gelesen ? p.Werte : null;
+    }
+
+    /// <summary>
+    /// Der benannte Fehler des gespeicherten Zeitprogramms (167 Werte, keine Zahl, Faktor außerhalb 0 … 1) — aus
+    /// dem Leser des Kerns (<see cref="Anlagenzeitprogramm.Pruefen"/>), nie aufgefüllt; <c>null</c> = gültig oder leer.
+    /// </summary>
+    public static string? ZeitprogrammFehler(WaermepumpeAnlageDaten daten)
+        => daten is null || string.IsNullOrWhiteSpace(daten.Zeitprogramm)
+            ? null
+            : Anlagenzeitprogramm.Pruefen(daten.Zeitprogramm, daten.Bezeichner);
+
+    /// <summary>
+    /// <b>Die Prüfregel der Betriebszeiten</b> — EINE Stelle für beide Wirte: ein gültiges Zeitprogramm und ein
+    /// höchster Vorlauf in den Grenzen. <c>null</c> = in Ordnung.
+    /// </summary>
+    public static string? BetriebszeitenFehler(WaermepumpeAnlageDaten daten, WaermepumpeKonfigurationTexte? texte)
+    {
+        if (daten is null) return null;
+        if (ZeitprogrammFehler(daten) is string f) return f;
+        if (daten.VorlaufMax is double v && (double.IsNaN(v) || v < VORLAUF_MAX_MIN || v > VORLAUF_MAX_MAX))
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                 (texte ?? new WaermepumpeKonfigurationTexte()).MeldungVorlaufMaxBereich,
+                                 VORLAUF_MAX_MIN, VORLAUF_MAX_MAX);
+        return null;
+    }
+
+    /// <summary>Die Zeile unter dem Knopf: nicht gepflegt, oder volle und gesperrte Wochenstunden.</summary>
+    public static string ZeitprogrammZeile(WaermepumpeAnlageDaten daten, WaermepumpeKonfigurationTexte texte)
+    {
+        double[]? w = ZeitprogrammWerte(daten?.Zeitprogramm);
+        if (w is null) return texte.ZeileZeitprogrammLeer;
+        return string.Format(System.Globalization.CultureInfo.CurrentCulture, texte.ZeileZeitprogrammGepflegt,
+                             w.Count(x => x >= 1.0), w.Count(x => x <= 0.0));
+    }
+
+    /// <summary>Die Herleitung des höchsten Vorlaufs: die Vorgabe aus dem projektierten Vorlauf der Anlage.</summary>
+    public static string VorlaufMaxZeile(WaermepumpeAnlageDaten daten, WaermepumpeKonfigurationTexte texte)
+        => daten?.Vorlauf is int v && v > 0
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, texte.ZeileVorlaufMax, v)
+            : texte.ZeileVorlaufMaxOhne;
+
+    /// <summary>
+    /// Wochenstunden, in denen die Sperrzeit gilt und das Zeitprogramm einen Faktor über 0 trägt — dort gilt die
+    /// Sperrzeit (Konzept 9.5, Info). 0 ohne Programm oder ohne Sperrzeit.
+    /// </summary>
+    public static int UeberschneidungSperrzeit(WaermepumpeAnlageDaten daten)
+    {
+        double[]? w = ZeitprogrammWerte(daten?.Zeitprogramm);
+        if (w is null || daten is null) return 0;
+        var gesperrt = new bool[Wochenraster.WERTE];
+        if (daten.Sperrfenster is { } liste)
+        {
+            foreach (SperrfensterZeile f in liste)
+            {
+                if (f.VonH is not double von || f.DauerH is not double dauer || dauer <= 0) continue;
+                for (int tag = 0; tag < 7; tag++)
+                {
+                    if (!f.GiltAm(tag)) continue;
+                    for (int h = (int)Math.Floor(von); h < (int)Math.Ceiling(von + dauer); h++)
+                        gesperrt[((tag * 24 + h) % Wochenraster.WERTE + Wochenraster.WERTE) % Wochenraster.WERTE] = true;
+                }
+            }
+        }
+        else if (daten.Sperrung && daten.SperrzeitVon is int a && daten.SperrzeitBis is int b && a != b
+                 && a >= 0 && a < 24 && b >= 0 && b < 24)
+        {
+            for (int tag = 0; tag < 7; tag++)
+                for (int h = a; h != b; h = (h + 1) % 24)
+                    gesperrt[tag * 24 + h] = true;
+        }
+        int n = 0;
+        for (int i = 0; i < Wochenraster.WERTE; i++) if (gesperrt[i] && w[i] > 0.0) n++;
+        return n;
+    }
+
     // ---- Sperrfenster (Welle V14) ------------------------------------------------
 
     /// <summary>Die Fenster der Vorlagen — dieselben wie das Sperrprofil der Pufferauslegung.</summary>
@@ -475,6 +664,7 @@
     private WaermepumpeKuehlGaben? _kuehlGabenGefragt;
     private IReadOnlyList<KuehlVorlaufEintrag> _vorlaeufe = Array.Empty<KuehlVorlaufEintrag>();
     private string? _sperrgrund;
+    private string? _freiSperrgrund;
 
     private void KuehlgabenFragen()
     {
@@ -485,6 +675,8 @@
         _vorlaeufe = Kuehlung.Vorlaeufe?.Invoke(Daten.IdWp) ?? Array.Empty<KuehlVorlaufEintrag>();
         _sperrgrund = Kuehlung.Sperrgrund?.Invoke(Daten.IdWp);
         if (string.IsNullOrEmpty(_sperrgrund)) _sperrgrund = null;
+        _freiSperrgrund = Kuehlung.FreiSperrgrund?.Invoke(Daten.IdWp);
+        if (string.IsNullOrEmpty(_freiSperrgrund)) _freiSperrgrund = null;
     }
 
     /// <summary>Der Sperrgrund des Kühlbetriebs für das gewählte Gerät; <c>null</c> = frei.</summary>
@@ -568,6 +760,47 @@
         return Melden();
     }
 
+    // ---- Freie Kühlung über die Wärmequelle (KU3-6) ----
+
+    /// <summary>Die Meldung eines gesperrten Einschaltversuchs der freien Kühlung; verfällt mit der nächsten Eingabe.</summary>
+    private string _freiMeldung = "";
+
+    /// <summary>Warum die freie Kühlung an dieser Anlage nicht wirkt; <c>null</c> = wirksam (oder keine Gaben).</summary>
+    public string? KuehlFreiSperrgrund { get { KuehlgabenFragen(); return _freiSperrgrund; } }
+
+    /// <summary>Weich gesperrt: ein Grund liegt vor und der Schalter ist aus — Ausschalten geht immer.</summary>
+    private bool KuehlFreiGesperrt => !Daten.KuehlFrei && KuehlFreiSperrgrund is not null;
+
+    private Task BeiKuehlFreiKlick()
+    {
+        if (KuehlFreiGesperrt) _freiMeldung = KuehlFreiSperrgrund ?? "";
+        return Task.CompletedTask;
+    }
+
+    private Task BeiKuehlFrei(ChangeEventArgs e)
+    {
+        _kuehlMeldung = "";
+        _freiMeldung = "";
+        bool wert = e.Value is bool b && b;
+        if (wert && KuehlFreiSperrgrund is string grund) { _freiMeldung = grund; return Melden(); }
+        Daten.KuehlFrei = wert;
+        return Melden();
+    }
+
+    private Task BeiKuehlFreiGraedigkeit(double? wert)
+    {
+        _freiMeldung = "";
+        Daten.KuehlFreiGraedigkeitK = wert;
+        return Melden();
+    }
+
+    private Task BeiKuehlFreiLeistung(double? wert)
+    {
+        _freiMeldung = "";
+        Daten.KuehlFreiLeistungKw = wert;
+        return Melden();
+    }
+
     private Task BeiKuehltraeger(int? id)
     {
         _kuehlMeldung = "";
@@ -598,6 +831,35 @@
     {
         string? grund = daten is null ? null : gaben?.Sperrgrund?.Invoke(daten.IdWp);
         return string.IsNullOrEmpty(grund) ? null : grund;
+    }
+
+    /// <summary>Der Sperrgrund der freien Kühlung für das Gerät des Feldsatzes; <c>null</c> = wirksam (oder keine Gaben).</summary>
+    public static string? FreieKuehlungSperrgrund(WaermepumpeAnlageDaten daten, WaermepumpeKuehlGaben? gaben)
+    {
+        string? grund = daten is null ? null : gaben?.FreiSperrgrund?.Invoke(daten.IdWp);
+        return string.IsNullOrEmpty(grund) ? null : grund;
+    }
+
+    /// <summary>
+    /// <b>Die Regel F2 der freien Kühlung</b> aus Bauart und Wärmequelle — für die Wirte, die
+    /// beides kennen: wirksam nur an einer Sole-Wasser- oder Wasser-Wasser-Maschine mit
+    /// gepflegter Quelle (Erdreich, Konstant, Profil, CSV). Luft-Wasser oder eine ungepflegte
+    /// Bauart nennt die Bauart; Außenluft, leer und Pufferspeicher nennen die Quelle. Was der
+    /// Wirt nicht kennt, steht als <c>null</c> und wird nicht geprüft (Bauart oder Quelle).
+    /// <c>null</c> = wirksam.
+    /// </summary>
+    public static string? FreieKuehlungSperrgrundAus(string? bauart, string? wqTyp, WaermepumpeKonfigurationTexte? texte)
+    {
+        texte ??= new WaermepumpeKonfigurationTexte();
+        if (bauart is not null &&
+            bauart != DbWerte.WP_BAUART_SOLE_WASSER && bauart != DbWerte.WP_BAUART_WASSER_WASSER)
+            return texte.SperrgrundFreiBauart;
+        if (wqTyp is null) return null;
+        return wqTyp switch
+        {
+            DbWerte.WQ_TYP_ERDREICH or DbWerte.WQ_TYP_KONSTANT or DbWerte.WQ_TYP_PROFIL or DbWerte.WQ_TYP_CSV => null,
+            _ => texte.SperrgrundFreiQuelle
+        };
     }
 
     /// <summary>Weicht der Kühlträger des Feldsatzes vom Stromträger des Projekts ab? (E34)</summary>
@@ -633,8 +895,11 @@
     /// <summary>
     /// <b>Die Prüfregel der Kühlfelder</b> — EINE Stelle für beide Wirte (Anlagendialog und
     /// Simulation › Konfiguration): der Hilfsstromanteil 0 ≤ x &lt; 1 (K23) und ein Kühlbetrieb,
-    /// der gesperrt ist (Gerätewechsel nach dem Setzen). <c>null</c> = in Ordnung. Dieselben zwei
-    /// Regeln hält der Schreibweg des Kerns (<c>WPCtrl.KuehlkonfigurationSchreiben</c>).
+    /// der gesperrt ist (Gerätewechsel nach dem Setzen); bei eingeschalteter freier Kühlung die
+    /// Grädigkeit 0 bis 20 K und die Leistungsgrenze &gt; 0 kW (KU3-6, F1; leer = Vorgabe). Ein
+    /// Sperrgrund der freien Kühlung ist KEIN Fehler — der Lauf lehnt sie benannt ab (F2).
+    /// <c>null</c> = in Ordnung. Die ersten zwei Regeln hält auch der Schreibweg des Kerns
+    /// (<c>WPCtrl.KuehlkonfigurationSchreiben</c>), die zwei der freien Kühlung das Schema (CHECK).
     /// </summary>
     public static string? KuehlFehler(WaermepumpeAnlageDaten daten, WaermepumpeKuehlGaben? gaben,
                                       WaermepumpeKonfigurationTexte texte)
@@ -643,6 +908,13 @@
         if (daten.KuehlHilfsstromanteil is double a && (double.IsNaN(a) || a < 0 || a >= 1))
             return (texte ?? new WaermepumpeKonfigurationTexte()).MeldungHilfsstromBereich;
         if (daten.Kuehlbetrieb && KuehlbetriebSperrgrund(daten, gaben) is string grund) return grund;
+        if (daten.Kuehlbetrieb && daten.KuehlFrei)
+        {
+            if (daten.KuehlFreiGraedigkeitK is double g && (double.IsNaN(g) || g < 0 || g > 20))
+                return (texte ?? new WaermepumpeKonfigurationTexte()).MeldungKuehlFreiGraedigkeit;
+            if (daten.KuehlFreiLeistungKw is double kw && (double.IsNaN(kw) || kw <= 0))
+                return (texte ?? new WaermepumpeKonfigurationTexte()).MeldungKuehlFreiLeistung;
+        }
         return null;
     }
 }

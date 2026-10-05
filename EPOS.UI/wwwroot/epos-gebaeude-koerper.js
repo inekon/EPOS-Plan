@@ -8,6 +8,16 @@
 // durchscheinender und gestrichelt umrandet; die Kennzeichnung in Worten steht im HTML daneben (Razor).
 // Dazu ein Raster am Boden und ein Nordpfeil. Keine Anzeigetexte hier.
 //
+// ZWEI DARSTELLUNGEN (Datenaustauschkonzept 15.4; daten.modus). "exportmodell" ist die Ansicht oben.
+// "dateikoerper" zeichnet je Raum mit Dateikoerper das Dreiecksnetz der Datei als BufferGeometry: die Punkte
+// (float32, relativ zum Bezugspunkt daten.bezugspunkt) und Indizes (int32) stehen in EINEM Bytefeld je Gebaeude
+// (Uint8Array, Little-Endian), das Verzeichnis daten.dateikoerper nennt je Raum die Byte-Offsets und Zahlen. Das
+// Netz liegt relativ, das Mesh steht am Bezugspunkt - so bleiben auch georeferenzierte Koordinaten um 10^6 m auf
+// den Zentimeter genau. Material beidseitig (offene Netze bleiben sichtbar), flach schattiert; die Linien sind
+// die Randkanten der Datei als LineSegments (keine EdgesGeometry - die zeigte die Triangulationsdiagonalen).
+// Raeume ohne Dateikoerper stehen als Prisma aus dem Umriss da, ohne Platten. aktualisieren() nimmt einen
+// Wechsel der Darstellung entgegen; Modul und Kamera bleiben.
+//
 // KOORDINATEN. Die Daten sind Meter: x nach Osten, y nach Norden, z nach oben. three.js rechnet mit
 // y nach oben; abgebildet wird (x, y, z) -> (x, z, -y), Norden zeigt also nach -z.
 //
@@ -84,40 +94,35 @@ function deckflaeche(punkte, z, material) {
     return new THREE.Mesh(g, material);
 }
 
-/** Baut die Szene aus den Daten; gibt die Ausdehnung zurueck. */
-function bauen(daten) {
+/** Ein Prisma aus dem Umriss: je Polygon extrudiert, Kanten, mit Platten nur im Exportmodell. */
+function prisma(k, ziel, mitPlatten, box) {
     const z = zustand;
-    entsorgeGruppe(z.gruppe);
-    z.koerper = [];
-    const box = new THREE.Box3();
-    const ziel = daten.ziel ?? null;
+    const zielzone = ziel !== null && k.zone === ziel;
+    const grundfarbe = new THREE.Color(farbe(z.canvas, k.stelle));
+    const material = new THREE.MeshLambertMaterial({
+        color: grundfarbe, transparent: true, opacity: k.schematisch ? 0.45 : 0.8,
+        side: THREE.DoubleSide, depthWrite: !k.schematisch,
+    });
+    const linie = k.schematisch
+        ? new THREE.LineDashedMaterial({ color: 0x333333, dashSize: 0.4, gapSize: 0.25 })
+        : new THREE.LineBasicMaterial({ color: zielzone ? 0x000000 : 0x555555 });
 
-    for (const k of daten.koerper ?? []) {
-        const zielzone = ziel !== null && k.zone === ziel;
-        const grundfarbe = new THREE.Color(farbe(z.canvas, k.stelle));
-        const material = new THREE.MeshLambertMaterial({
-            color: grundfarbe, transparent: true, opacity: k.schematisch ? 0.45 : 0.8,
-            side: THREE.DoubleSide, depthWrite: !k.schematisch,
-        });
-        const linie = k.schematisch
-            ? new THREE.LineDashedMaterial({ color: 0x333333, dashSize: 0.4, gapSize: 0.25 })
-            : new THREE.LineBasicMaterial({ color: zielzone ? 0x000000 : 0x555555 });
+    (k.polygone ?? []).forEach((polygon, pi) => {
+        if (!polygon || polygon.length < 3) return;
+        const form = new THREE.Shape(polygon.map(p => new THREE.Vector2(p.x, p.y)));
+        const g = new THREE.ExtrudeGeometry(form, { depth: k.hoehe, bevelEnabled: false });
+        g.rotateX(-Math.PI / 2);
+        g.translate(0, k.unterkante, 0);
+        const mesh = new THREE.Mesh(g, material);
+        mesh.userData = { zone: k.zone ?? null, raum: k.raum };
+        z.gruppe.add(mesh);
+        z.koerper.push(mesh);
 
-        (k.polygone ?? []).forEach((polygon, pi) => {
-            if (!polygon || polygon.length < 3) return;
-            const form = new THREE.Shape(polygon.map(p => new THREE.Vector2(p.x, p.y)));
-            const g = new THREE.ExtrudeGeometry(form, { depth: k.hoehe, bevelEnabled: false });
-            g.rotateX(-Math.PI / 2);
-            g.translate(0, k.unterkante, 0);
-            const mesh = new THREE.Mesh(g, material);
-            mesh.userData = { zone: k.zone ?? null, raum: k.raum };
-            z.gruppe.add(mesh);
-            z.koerper.push(mesh);
+        const kanten = new THREE.LineSegments(new THREE.EdgesGeometry(g), linie);
+        if (k.schematisch) kanten.computeLineDistances();
+        z.gruppe.add(kanten);
 
-            const kanten = new THREE.LineSegments(new THREE.EdgesGeometry(g), linie);
-            if (k.schematisch) kanten.computeLineDistances();
-            z.gruppe.add(kanten);
-
+        if (mitPlatten) {
             // Platten je Kante, wo ein Bauteil bekannt ist; leicht nach aussen versetzt.
             const arten = (k.kanten && k.kanten[pi]) || [];
             for (let i = 0; i < polygon.length; i++) {
@@ -134,10 +139,71 @@ function bauen(daten) {
             }
             if (k.boden) z.gruppe.add(deckflaeche(polygon, k.unterkante - PLATTE_ABSTAND, plattenmaterial(k.boden)));
             if (k.decke) z.gruppe.add(deckflaeche(polygon, k.unterkante + k.hoehe + PLATTE_ABSTAND, plattenmaterial(k.decke)));
+        }
 
-            g.computeBoundingBox();
-            box.union(g.boundingBox);
-        });
+        g.computeBoundingBox();
+        box.union(g.boundingBox);
+    });
+}
+
+/** Ein Abschnitt des Bytefelds als eigenes, ausgerichtetes Feld (Little-Endian wie alle Zielplattformen). */
+function abschnitt(feld, ab, zahl, Art) {
+    const bytes = feld.slice(ab, ab + zahl * 4);
+    return new Art(bytes.buffer, bytes.byteOffset, zahl);
+}
+
+/** Der Dateikoerper eines Raums: Netz relativ zum Bezugspunkt, Mesh am Bezugspunkt, Randkanten als Linien. */
+function dateinetz(e, feld, bezug, ziel, box) {
+    const z = zustand;
+    const roh = abschnitt(feld, e.punkteAb, e.punktZahl * 3, Float32Array);
+    // Achsen wie v3: (x, y, z) -> (x, z, -y); eine Drehung, der Umlauf der Dreiecke bleibt.
+    const lage = new Float32Array(roh.length);
+    for (let i = 0; i < roh.length; i += 3) {
+        lage[i] = roh[i];
+        lage[i + 1] = roh[i + 2];
+        lage[i + 2] = -roh[i + 1];
+    }
+    const position = new THREE.BufferAttribute(lage, 3);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', position);
+    g.setIndex(new THREE.BufferAttribute(new Uint32Array(abschnitt(feld, e.dreieckeAb, e.dreieckZahl * 3, Int32Array)), 1));
+    g.computeVertexNormals();
+    const material = new THREE.MeshLambertMaterial({
+        color: new THREE.Color(farbe(z.canvas, e.stelle)), transparent: true, opacity: 0.8,
+        side: THREE.DoubleSide, flatShading: true,
+    });
+    const ort = v3(bezug[0], bezug[1], bezug[2]);
+    const mesh = new THREE.Mesh(g, material);
+    mesh.position.copy(ort);
+    mesh.userData = { zone: e.zone ?? null, raum: e.raum };
+    z.gruppe.add(mesh);
+    z.koerper.push(mesh);
+
+    const k = new THREE.BufferGeometry();
+    k.setAttribute('position', position);
+    k.setIndex(new THREE.BufferAttribute(new Uint32Array(abschnitt(feld, e.kantenAb, e.kantenZahl * 2, Int32Array)), 1));
+    const zielzone = ziel !== null && e.zone === ziel;
+    const kanten = new THREE.LineSegments(k, new THREE.LineBasicMaterial({ color: zielzone ? 0x000000 : 0x555555 }));
+    kanten.position.copy(ort);
+    z.gruppe.add(kanten);
+
+    g.computeBoundingBox();
+    box.union(g.boundingBox.clone().translate(ort));
+}
+
+/** Baut die Szene aus den Daten (und dem Bytefeld der Dateikoerper); gibt die Ausdehnung zurueck. */
+function bauen(daten, feld) {
+    const z = zustand;
+    entsorgeGruppe(z.gruppe);
+    z.koerper = [];
+    const box = new THREE.Box3();
+    const ziel = daten.ziel ?? null;
+    const dateimodus = daten.modus === 'dateikoerper';
+
+    for (const k of daten.koerper ?? []) prisma(k, ziel, !dateimodus, box);
+    if (dateimodus && feld) {
+        const bezug = daten.bezugspunkt ?? [0, 0, 0];
+        for (const e of daten.dateikoerper ?? []) dateinetz(e, feld, bezug, ziel, box);
     }
     if (box.isEmpty()) box.set(new THREE.Vector3(-5, 0, -5), new THREE.Vector3(5, 3, 5));
 
@@ -211,10 +277,10 @@ function webgl() {
 }
 
 /**
- * Legt die Ansicht am canvas an. Gibt false zurueck, wenn die Umgebung kein WebGL kann (dann bleibt
+ * Legt die Ansicht am canvas an; feld ist das Bytefeld der Dateikoerper (nur im Modus "dateikoerper"). Gibt false zurueck, wenn die Umgebung kein WebGL kann (dann bleibt
  * das canvas leer und der Baustein meldet es benannt).
  */
-export function erzeugen(canvas, daten, rueckruf) {
+export function erzeugen(canvas, daten, rueckruf, feld) {
     entsorgen();
     if (!canvas || !webgl()) return false;
     let renderer;
@@ -247,17 +313,20 @@ export function erzeugen(canvas, daten, rueckruf) {
         zustand.beobachter = new ResizeObserver(groesseAnpassen);
         zustand.beobachter.observe(canvas);
     }
-    const box = bauen(daten || {});
+    const box = bauen(daten || {}, feld || null);
     groesseAnpassen();
     kamera(box);
     zeichnen();
     return true;
 }
 
-/** Neue Daten (andere Zuordnung, andere Zielzone); die Kamera bleibt, wo der Anwender sie hingedreht hat. */
-export function aktualisieren(daten) {
+/**
+ * Neue Daten (andere Zuordnung, andere Zielzone, andere Darstellung samt Bytefeld); die Kamera bleibt, wo der
+ * Anwender sie hingedreht hat.
+ */
+export function aktualisieren(daten, feld) {
     if (!zustand) return false;
-    bauen(daten || {});
+    bauen(daten || {}, feld || null);
     zeichnen();
     return true;
 }

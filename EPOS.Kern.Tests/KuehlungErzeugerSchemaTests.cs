@@ -35,6 +35,12 @@ namespace EPOS.Kern.Tests
         /// <summary>Das Projektgerät der Kopie von 1017 im Referenzprojekt der Anlagenkopplung 1047.</summary>
         private const int WP_REFERENZ_KOPPLUNG = 1672046;
 
+        /// <summary>Die Kopie im Referenzprojekt der Kältemaschine 1055 (KU3-4b): ohne Kühlbetrieb, Kühlwerte reisen mit.</summary>
+        private const int WP_REFERENZ_KAELTEMASCHINE = 1672051;
+
+        /// <summary>Die Kopie von 1047 im Referenzprojekt des Fahrplans 1056 (AK2-4): Kühlbetrieb wie 1047.</summary>
+        private const int WP_REFERENZ_FAHRPLAN = 1672052;
+
         /// <summary>Ein Katalogsatz mit Kühlkennlinie (60 Stützstellen, Laststufen gepflegt).</summary>
         private const int STAMM_MIT_KUEHLKENNLINIE = 42;
 
@@ -133,8 +139,9 @@ namespace EPOS.Kern.Tests
             int platzhalter = AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?');
             // 66 seit Schemaschritt 119: die Abrechnungsart des Kältestroms (E34) steht daneben;
             // 67 mit der Bodenalbedo (AlbedoSchema), 72 mit den fünf Feldern des Kollektorfelds
-            // (SolarthermieFelderSchema).
-            Assert.Equal(72, platzhalter);
+            // (SolarthermieFelderSchema), 74 mit Zeitprogramm und Vorlauf_Max (AnlagenfahrplanSchema),
+            // 77 mit den drei Feldern der freien Kühlung über die Wärmequelle (FreieKuehlungSoleSchema).
+            Assert.Equal(77, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
         }
 
@@ -162,21 +169,29 @@ namespace EPOS.Kern.Tests
             // Die Kälteerzeuger: das Projektgerät von 1017 und seine Kopie im Referenzprojekt der
             // Anlagenkopplung 1047 (anlagenkopplung_1047_referenzprojekt.py).
             string saat = WP_KOPIE.ToString(CultureInfo.InvariantCulture) + ", " +
-                          WP_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture);
+                          WP_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", " +
+                          WP_REFERENZ_FAHRPLAN.ToString(CultureInfo.InvariantCulture);
             foreach (string t in new[] { "Tab_WP", "Tab_WP_STAMM" })
             {
                 Assert.True(Zahl("SELECT COUNT(*) FROM [" + t + "]") > 0);
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE Kuehlbetrieb <> 0 AND ID NOT IN (" + saat + ")"));
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE (Kuehl_Vorlauf IS NOT NULL " +
-                                      "OR Kuehl_Hilfsstromanteil IS NOT NULL) AND ID NOT IN (" + saat + ")"));
+                                      "OR Kuehl_Hilfsstromanteil IS NOT NULL) AND ID NOT IN (" + saat + ", " +
+                                      WP_REFERENZ_KAELTEMASCHINE.ToString(CultureInfo.InvariantCulture) + ")"));
             }
-            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG })
+            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG, WP_REFERENZ_FAHRPLAN })
                 Assert.Equal("1|18|0.05", Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
                                           "|" + Zahl("SELECT Kuehl_Vorlauf FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
                                           "|" + Convert.ToString(DataRepository.ExecuteScalar(
                                               "SELECT Kuehl_Hilfsstromanteil FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)),
                                               CultureInfo.InvariantCulture));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kuehl_ID_Carrier IS NOT NULL"));
+            Assert.Equal("0|18|0.05", Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + WP_REFERENZ_KAELTEMASCHINE.ToString(CultureInfo.InvariantCulture)) +
+                                      "|" + Zahl("SELECT Kuehl_Vorlauf FROM Tab_WP WHERE ID = " + WP_REFERENZ_KAELTEMASCHINE.ToString(CultureInfo.InvariantCulture)) +
+                                      "|" + Convert.ToString(DataRepository.ExecuteScalar(
+                                          "SELECT Kuehl_Hilfsstromanteil FROM Tab_WP WHERE ID = " + WP_REFERENZ_KAELTEMASCHINE.ToString(CultureInfo.InvariantCulture)),
+                                          CultureInfo.InvariantCulture));
+            // Einen Kühlträger trägt allein die Kältemaschine des Referenzprojekts 1055 (KU3-4b).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kuehl_ID_Carrier IS NOT NULL AND ID_Projekt <> 1055"));
 
             DataTable fk = DataRepository.GetDataTable(
                 "SELECT \"table\" AS ziel, \"to\" AS zielspalte, on_delete FROM pragma_foreign_key_list('Tab_Energieanlagen') " +

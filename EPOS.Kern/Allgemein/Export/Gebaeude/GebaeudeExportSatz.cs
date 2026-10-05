@@ -100,6 +100,32 @@ namespace WindowsFormsApplication1
         internal IReadOnlyDictionary<int, IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender>> Zonenkalender { get; init; }
             = new Dictionary<int, IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender>>();
 
+        /// <summary>Die Bemerkung der Zonenkalender je Zonen-Id und Größe (Herkunft und Vermerk); leer = keine.</summary>
+        internal IReadOnlyDictionary<int, IReadOnlyDictionary<Konditionierungsgroesse, string>> Zonenvermerke { get; init; }
+            = new Dictionary<int, IReadOnlyDictionary<Konditionierungsgroesse, string>>();
+
+        /// <summary>Die Nutzung der Kalenderkopien je Zonen-Id (<see cref="ZonenplanCtrl.Nutzung"/>); eine Zone ohne Nutzung fehlt.</summary>
+        internal IReadOnlyDictionary<int, string> Zonennutzungen { get; init; } = new Dictionary<int, string>();
+
+        /// <summary>
+        /// <b>Die Konditionierung einer Zone für die <c>EPOS_*</c>-Sätze des IFC-Exports</b>: Nutzung, die angelegten Kalender
+        /// der Zone mit Bemerkung (in der Reihenfolge der Größen) — ohne die Matrixzellen, die der Ablauf ergänzt.
+        /// </summary>
+        internal AbbildKonditionierung Zonenkonditionierung(ZoneModel zone)
+        {
+            var k = new AbbildKonditionierung();
+            if (zone == null) return k;
+            if (Zonennutzungen != null && Zonennutzungen.TryGetValue(zone.ID, out string nutzung)) k.Nutzung = nutzung;
+            if (Zonenkalender == null || !Zonenkalender.TryGetValue(zone.ID, out IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> eigen)
+                || eigen == null) return k;
+            IReadOnlyDictionary<Konditionierungsgroesse, string> vermerke = null;
+            Zonenvermerke?.TryGetValue(zone.ID, out vermerke);
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                if (eigen.TryGetValue(g, out Konditionierungskalender kalender) && kalender != null)
+                    k.Kalender.Add(new AbbildKalender(kalender, vermerke != null && vermerke.TryGetValue(g, out string v) ? v : null));
+            return k;
+        }
+
         /// <summary>Wird das Gebäude auf dem Klassenweg exportiert (keine Zone)?</summary>
         internal bool Klassenweg => Zonen == null || Zonen.Count == 0;
 
@@ -148,6 +174,8 @@ namespace WindowsFormsApplication1
             Plz = string.IsNullOrWhiteSpace(plz) ? null : plz.Trim(),
             Gebaeudekalender = Gebaeudekalender,
             Zonenkalender = Zonenkalender,
+            Zonenvermerke = Zonenvermerke,
+            Zonennutzungen = Zonennutzungen,
             Ergebnis = Ergebnis,
             Rechenzeitpunkt = Rechenzeitpunkt,
             Wetterdatensatz = Wetterdatensatz,
@@ -175,6 +203,8 @@ namespace WindowsFormsApplication1
             Plz = Plz,
             Gebaeudekalender = Gebaeudekalender,
             Zonenkalender = Zonenkalender,
+            Zonenvermerke = Zonenvermerke,
+            Zonennutzungen = Zonennutzungen,
             Ergebnis = ergebnis,
             Rechenzeitpunkt = ergebnis != null ? rechenzeitpunkt : null,
             Wetterdatensatz = ergebnis != null ? wetterdatensatz : null,
@@ -224,6 +254,21 @@ namespace WindowsFormsApplication1
                     konditionierung.Kalender(KonditionierungCtrl.Eigner.Zone(g.ID_Gebaeude, z.ID), out _);
                 if (k.Count > 0) zonenkalender[z.ID] = k;
             }
+            // Bemerkung und Nutzung der Zonenkalender für die EPOS_*-Sätze des IFC-Exports (Datenaustauschkonzept 6.3, 16.3).
+            var vermerke = new Dictionary<int, IReadOnlyDictionary<Konditionierungsgroesse, string>>();
+            var nutzungen = new Dictionary<int, string>();
+            foreach (ZoneModel z in zonen)
+            {
+                if (zonenkalender.ContainsKey(z.ID))
+                {
+                    Konditionierungsstand stand = konditionierung.StandLesen(KonditionierungCtrl.Eigner.Zone(g.ID_Gebaeude, z.ID), out _);
+                    var b = new Dictionary<Konditionierungsgroesse, string>();
+                    foreach (Konditionierungsgroesse groesse in Konditionierungsgroessen.Alle)
+                        if (stand?.Herkunft(groesse)?.Bemerkung() is string text) b[groesse] = text;
+                    vermerke[z.ID] = b;
+                }
+                if (ZonenplanCtrl.Nutzung(z.ID) is string nutzung) nutzungen[z.ID] = nutzung;
+            }
 
             // Die Ergebnisse des letzten Laufs (G7c, Teil 2) über den Leser der Ergebnisseite.
             ErgebnisModel lauf = new ErgebnisCtrl().Load(idProjekt);
@@ -267,6 +312,8 @@ namespace WindowsFormsApplication1
                 Plz = string.IsNullOrWhiteSpace(plz) ? null : plz.Trim(),
                 Gebaeudekalender = gebaeudekalender,
                 Zonenkalender = zonenkalender,
+                Zonenvermerke = vermerke,
+                Zonennutzungen = nutzungen,
             };
         }
     }

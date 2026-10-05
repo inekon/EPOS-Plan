@@ -54,8 +54,11 @@ namespace WindowsFormsApplication1
         /// <param name="z">Die Zonierung der Anfrage.</param>
         /// <param name="v">Der Bauteilvorschlag darauf; <c>null</c> = keiner.</param>
         /// <param name="haken">Die Haken der Raumliste (Raumkennung → beheizt).</param>
+        /// <param name="plan">Der Zonenplan der Anfrage (Zonenbaum); <c>null</c> = keiner.</param>
+        /// <param name="schritt">Was der letzte Schritt am Plan ergab.</param>
         internal static GebaeudeZonierungDaten ZonierungDaten(GebaeudeZonierung z, GebaeudeBauteilvorschlag v,
-                                                              IReadOnlyDictionary<string, bool> haken)
+                                                              IReadOnlyDictionary<string, bool> haken, Zonenplan plan = null,
+                                                              (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) schritt = default)
         {
             if (z == null || z.Gebaeude == null || z.Regeln.Count <= 1) return null;
             bool mehr = GebaeudeImportHuelle.Mehrzonig(z);
@@ -78,6 +81,7 @@ namespace WindowsFormsApplication1
                     Volumen = MitEinheit(iz.VolumenM3, "m³"),
                     Beheizt = iz.IstBeheizt,
                     Hinweis = Zonenhinweis(iz),
+                    Sollwert = mitVorschlag ? MitEinheit(v.Zonen[i].Raumsolltemperatur_Tag, "°C") : "",
                     Raumliste = iz.Raeume.Select(r => Raumdaten(z, r, h)).ToList(),
                 });
             }
@@ -98,7 +102,90 @@ namespace WindowsFormsApplication1
                 Flaechenprofil = mitVorschlag ? Flaechenprofil() : null,
                 Flaechen = mitVorschlag ? Flaechen(z, v) : Array.Empty<GebaeudeFlaechenzeileDaten>(),
                 Ablehnungen = Ablehnungen(z),
+                Plan = plan == null ? null : PlanDaten(plan, z, zonen, schritt),
             };
+        }
+
+        /// <summary>
+        /// <b>Der Zonenplan als Daten des Zonenbaums</b>: je Zone Schlüssel, Name, Nutzung, Beheizung, Räume, Fläche und der
+        /// Sollwert der gebildeten Zone; die nicht zugeordneten Räume; Geschosse und Nutzungen der Klapplisten; die Meldung des
+        /// letzten Schritts. Der Schlüssel im Grundriss ist der der gebildeten Zonierung — aus dem Plan der Planschlüssel,
+        /// aus der Regel (noch kein Schritt) der Schlüssel der Regelzone, aus der die Planzone stammt.
+        /// </summary>
+        internal static GebaeudeZonenplanDaten PlanDaten(Zonenplan plan, GebaeudeZonierung z, IReadOnlyList<GebaeudeZonenzeileDaten> zonen,
+                                                         (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) schritt)
+        {
+            bool ausPlan = ReferenceEquals(z?.Plan, plan);
+            var gebildet = new HashSet<string>(z?.Zonen.Select(x => x.Schluessel) ?? Enumerable.Empty<string>(), StringComparer.Ordinal);
+            var liste = new List<GebaeudePlanzoneDaten>();
+            foreach (Planzone pz in plan.Zonen)
+            {
+                string ansicht = ausPlan ? pz.Schluessel : pz.Herkunft ?? "";
+                if (!gebildet.Contains(ansicht)) ansicht = "";
+                IReadOnlyList<AbbildRaum> raeume = plan.RaeumeVon(pz.Schluessel);
+                double? flaeche = raeume.Any(r => r.FlaecheM2 > 0.0) ? raeume.Where(r => r.FlaecheM2 > 0.0).Sum(r => r.FlaecheM2.Value) : 0.0;
+                liste.Add(new GebaeudePlanzoneDaten
+                {
+                    Schluessel = pz.Schluessel,
+                    Ansichtsschluessel = ansicht,
+                    Name = pz.Name,
+                    Nutzung = pz.Nutzung,
+                    Beheizt = plan.ZoneBeheizt(pz.Schluessel),
+                    Raeume = raeume.Count.ToString(CultureInfo.CurrentCulture),
+                    Flaeche = MitEinheit(flaeche, "m²"),
+                    Sollwert = pz.Projektdatei?.HeizsollTag is double sq ? MitEinheit(sq, "°C")
+                             : zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? sw : Leer,
+                    Raumliste = raeume.Select(r => Planraum(plan, r)).ToList(),
+                    AusProjektdatei = pz.Projektdatei != null && !pz.Projektdatei.AusIfc,
+                    Herkunft = pz.Projektdatei == null || pz.Projektdatei.AusIfc ? ""
+                             : pz.Projektdatei.Zonierung == SqprojZonierung.Din18599 ? GebaeudeZonierungSchluessel.HERKUNFT_DIN
+                             : pz.Projektdatei.Zonierung == SqprojZonierung.Simulation ? GebaeudeZonierungSchluessel.HERKUNFT_SIMULATION
+                             : GebaeudePlanschrittArt.PROJEKTDATEI,
+                    HerkunftText = pz.Projektdatei == null || pz.Projektdatei.AusIfc ? ""
+                                 : pz.Projektdatei.Zonierung == SqprojZonierung.Din18599 ? MyResource.Resource.GIMP_DLG_SQ_HERKUNFT_DIN
+                                 : pz.Projektdatei.Zonierung == SqprojZonierung.Simulation ? MyResource.Resource.GIMP_DLG_SQ_HERKUNFT_SIM
+                                 : MyResource.Resource.GIMP_DLG_SQ_HERKUNFT,
+                    Profiltext = pz.Projektdatei?.Profilnummer is int nr
+                        ? Formatieren(MyResource.Resource.GIMP_DLG_SQ_PROFIL, nr.ToString(CultureInfo.CurrentCulture)) : "",
+                });
+            }
+            int n = plan.Zonen.Count + 1;
+            string neu = Formatieren(MyResource.Resource.GIMP_DLG_PLAN_ZONE_NEU, n);
+            while (plan.Zonen.Any(x => string.Equals(x.Name, neu, StringComparison.OrdinalIgnoreCase)))
+                neu = Formatieren(MyResource.Resource.GIMP_DLG_PLAN_ZONE_NEU, ++n);
+            return new GebaeudeZonenplanDaten
+            {
+                Zonen = liste,
+                NichtZugeordnet = plan.NichtZugeordnet.Select(r => Planraum(plan, r)).ToList(),
+                Ausserhalb = plan.RaeumeAusserhalb.Count,
+                Geschosse = plan.Geschosse.Select(g => new GebaeudeZonenregelDaten(g, Geschosstext(plan, g))).ToList(),
+                Nutzungen = new[]
+                {
+                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_WOHNEN, MyResource.Resource.KOND_LBL_NUTZUNG_WOHNEN),
+                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_BUERO, MyResource.Resource.KOND_LBL_NUTZUNG_BUERO),
+                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_SCHULE, MyResource.Resource.KOND_LBL_NUTZUNG_SCHULE),
+                },
+                Einzonig = plan.Zonen.Count(x => plan.RaeumeVon(x.Schluessel).Count > 0) <= 1,
+                NeuerName = neu,
+                Schrittmeldung = schritt.Meldung == null ? null : GebaeudeImportHuelle.MeldungDaten(schritt.Meldung),
+                LetzterAbgelehnt = schritt.Abgelehnt,
+                Verworfen = schritt.Verworfen,
+            };
+        }
+
+        private static string Geschosstext(Zonenplan plan, string kennung)
+        {
+            string name = plan.Gebaeude.Geschosse.FirstOrDefault(s => s.Kennung == kennung)?.Anzeigename;
+            return string.IsNullOrWhiteSpace(name) ? kennung ?? Leer : name;
+        }
+
+        private static GebaeudePlanraumDaten Planraum(Zonenplan plan, AbbildRaum r)
+        {
+            var zeile = new GebaeudeRaumzeile(r, plan.Haken);
+            string geschoss = plan.Gebaeude.Geschosse.FirstOrDefault(s => s.Kennung == r.GeschossKennung)?.Anzeigename
+                              ?? (string.IsNullOrWhiteSpace(r.GeschossName) ? Leer : r.GeschossName.Trim());
+            return new GebaeudePlanraumDaten(r.Kennung, zeile.Anzeigename, geschoss, MitEinheit(r.FlaecheM2, "m²"),
+                                             plan.Beheizt(r), zeile.BeheiztLautDatei);
         }
 
         /// <summary>Die Meldungen des Kerns, mit denen er eine Zuordnung von Hand ablehnt (Welle D2).</summary>
@@ -291,6 +378,9 @@ namespace WindowsFormsApplication1
                 if (ohneGegenstueck) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_OHNE_GEGENSTUECK);
                 if (ohneU) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_OHNE_UWERT);
                 if (geschaetzt) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_GESCHAETZT);
+                // Trennfläche aus den Raumkörpern: der Beleg (Raumpaar, Fläche) in den Befund, die Herkunft „aus Datei (Körper)“.
+                bool koerper = zl.Beleg?.Schluessel == GebaeudeBauteilzeile.BELEG_KOERPER;
+                if (koerper) befund.Add(GebaeudeZuordnungsModell.BelegText(zl.Beleg));
 
                 Importherkunft herkunft = GebaeudeZuordnungsModell.HerkunftAusSchluessel(b.Herkunft);
                 string zone = zl.Zone >= 0 && zl.Zone < v.Zonen.Count ? v.Zonen[zl.Zone].Bezeichner : Leer;
@@ -310,7 +400,7 @@ namespace WindowsFormsApplication1
                                    : b.ID_Aufbau.HasValue ? Katalogwert.AusText(MyResource.Resource.GIMP_BT_AUS_SCHICHTEN)
                                    : Katalogwert.Leer)
                     .MitText(SP_AUFBAU, aufbau)
-                    .MitText(SP_HERKUNFT, GebaeudeZuordnungsModell.HerkunftText(herkunft))
+                    .MitText(SP_HERKUNFT, koerper ? MyResource.Resource.GIMP_HERKUNFT_IFC_KOERPER : GebaeudeZuordnungsModell.HerkunftText(herkunft))
                     .MitText(SP_BEFUND, string.Join("; ", befund));
                 zeile.Schluessel = i.ToString(CultureInfo.InvariantCulture);
                 zeilen.Add(new GebaeudeFlaechenzeileDaten(zeile, befund.Count > 0, ohneGegenstueck, ohneU));

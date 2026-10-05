@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Grundriss neben der Zonenliste: Klick und Raumwahl hängen einen Raum um, eine abgelehnte Zuordnung zeigt die Meldung
 /// des Kerns samt Raumhaken als Ausweg, ein Regelwechsel verwirft die Zuordnungen von Hand erst nach Rückfrage.
 /// </summary>
-public class GebaeudeImportZonenDialogTests : EposBunitContext
+public partial class GebaeudeImportZonenDialogTests : EposBunitContext
 {
     public GebaeudeImportZonenDialogTests()
     {
@@ -247,36 +247,6 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
     //  Zonen
     // =====================================================================
 
-    [Fact]
-    public void Die_Zonenliste_klappt_die_Raeume_auf_und_der_Haken_stellt_alle_Raeume_der_Zone_um()
-    {
-        var p = new Protokoll();
-        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(p);
-        Einlesen(cut);
-
-        IReadOnlyList<IElement> zonen = cut.FindAll(".epos-gebimport-zonen > tbody > tr.epos-gebimport-zone");
-        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss" }, zonen.Select(z => z.GetAttribute("data-zone")));
-        Assert.Contains("unter der Mindestgröße", zonen[0].TextContent);
-        Assert.Contains("Räume ordnen Sie im Grundriss von Hand zu.", cut.Markup);   // der Weg von Hand: der Grundriss
-        Assert.Empty(cut.FindAll(".epos-gebimport-zonenraumliste"));
-
-        IElement klappe = zonen[1].QuerySelector("button.epos-gebimport-aufklappen")!;
-        Assert.Equal("false", klappe.GetAttribute("aria-expanded"));
-        klappe.Click();
-        IElement raeume = cut.Find(".epos-gebimport-zonenraumliste");
-        Assert.Equal(new[] { "r-wohnen", "r-kueche" }, raeume.QuerySelectorAll("tr[data-raum]").Select(r => r.GetAttribute("data-raum")));
-        Assert.Contains("B6", raeume.TextContent);
-        Assert.Contains("Beleg Annahme", raeume.TextContent);
-        Assert.Contains("EG", raeume.TextContent);
-
-        // Der Haken „beheizt" des Kellers: sein Raum wird umgestellt, die Zonierung neu gebildet.
-        Schalter(cut, "Zone „Kellergeschoss“ beheizt").Change(true);
-        Assert.True(p.Anfragen.Last().BeheiztUebersteuert["r-keller"]);
-        Assert.Equal("A1", p.Anfragen.Last().Zonenregel ?? "A1");
-        Schalter(cut, "Zone „Kellergeschoss“ beheizt").Change(false);
-        Assert.False(p.Anfragen.Last().BeheiztUebersteuert.ContainsKey("r-keller"));   // wie die Datei: keine Übersteuerung
-    }
-
     // =====================================================================
     //  Flächen je Zone
     // =====================================================================
@@ -292,13 +262,13 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.Equal(30, cut.Instance.Flaechenzeilen.Count);
         Assert.Equal(30, liste.Instance.Angezeigt.Count);
 
-        Schalter(cut, "nur ohne Gegenstück").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(true);
         Assert.Equal(10, cut.Instance.Flaechenzeilen.Count);          // 0, 3, …, 27
-        Schalter(cut, "nur ohne U-Wert").Change(true);
+        Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").Change(true);
         Assert.Equal(2, cut.Instance.Flaechenzeilen.Count);           // 0 und 15
-        Schalter(cut, "nur ohne Gegenstück").Change(false);
-        Schalter(cut, "nur ohne U-Wert").Change(false);
-        Schalter(cut, "nur Fehler").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(false);
+        Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").Change(false);
+        Schalter(cut, "Nur Flächen mit Befund").Change(true);
         Assert.Equal(14, cut.Instance.Flaechenzeilen.Count);          // Vielfache von 3 oder 5 unter 30
         Assert.Equal(14, cut.FindComponent<Katalogliste>().Instance.Angezeigt.Count);
 
@@ -331,9 +301,9 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.Equal("Take over as zones with components", englisch.AlsZonen);
         Assert.Equal("Zones", englisch.GruppeZonen);
         Assert.Equal("Surfaces per zone", englisch.GruppeFlaechen);
-        Assert.Equal("errors only", englisch.FilterFehler);
-        Assert.Equal("without counterpart only", englisch.FilterOhneGegenstueck);
-        Assert.Equal("without U-value only", englisch.FilterOhneUWert);
+        Assert.Equal("Only surfaces with a finding", englisch.FilterFehler);
+        Assert.Equal("Only surfaces without an adjacent surface", englisch.FilterOhneGegenstueck);
+        Assert.Equal("Only surfaces without U-value and build-up", englisch.FilterOhneUWert);
         Assert.Equal("Use the coarser rule: {0}", englisch.GroebereRegel);
         Assert.Equal("Heated area", englisch.BilanzFlaeche);
 
@@ -342,7 +312,7 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         Einlesen(cut, englisch.DateiKnopf.TrimEnd('…', '.'));
         Assert.Contains("Take over as zones with components", cut.Find(".epos-gebimport-bauteile").TextContent);
         Assert.Contains("Surfaces per zone", cut.Markup);
-        Assert.Contains("errors only", cut.Markup);
+        Assert.Contains("Only surfaces with a finding", cut.Markup);
     }
 
     [Fact]
@@ -385,10 +355,11 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
             c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)g["Pruefen"]);
         });
         Einlesen(cut);
-        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-zonen")));
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-zonenbaum")));
 
-        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss" },
-                     cut.FindAll(".epos-gebimport-zonen > tbody > tr.epos-gebimport-zone").Select(z => z.GetAttribute("data-zone")));
+        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss" }, Zonenzeilen(cut));
+        Assert.Equal(new[] { "Z:1", "Z:2", "Z:3" },
+                     cut.FindAll(".epos-gebimport-zonenbaum tr.epos-gebimport-planzone").Select(z => z.GetAttribute("data-zone")));
         Assert.Equal("Z4", cut.Instance.Zonenregel);
         Assert.NotEmpty(cut.Instance.Flaechenzeilen);
         Assert.Contains(cut.Instance.Flaechenzeilen, z => z.Text("RAND") == "Nachbarzone" && z.Text("NACHBARZONE") == "Obergeschoss");
@@ -397,7 +368,7 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         // Nach den Zonen der Datei: Flächen ohne Gegenstück, der Filter zeigt nur sie.
         IElement wahl = cut.FindAll("select").First(s => s.TextContent.Contains("Z4 –"));
         wahl.Change(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z1", StringComparison.Ordinal)).GetAttribute("value"));
-        Schalter(cut, "nur ohne Gegenstück").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(true);
         Assert.NotEmpty(cut.Instance.Flaechenzeilen);
         Assert.All(cut.Instance.Flaechenzeilen, z => Assert.Contains("ohne Gegenstück", z.Text("BEFUND")));
     }
@@ -549,189 +520,7 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         => cut.Find(".epos-gebansicht g[data-raum='" + kennung + "']");
 
     private static IEnumerable<string?> Zonenzeilen(IRenderedComponent<GebaeudeImportDialog> cut)
-        => cut.FindAll(".epos-gebimport-zonen > tbody > tr.epos-gebimport-zone").Select(z => z.GetAttribute("data-zone")).ToList();
-
-    [Fact]
-    public void Der_Grundriss_steht_neben_der_Zonenliste_und_ein_Klick_ordnet_mit_der_Umhaengung_neu_zu()
-    {
-        var p = new Protokoll();
-        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(p, StandMitGrundriss);
-        Einlesen(cut);
-
-        // Die Andockung: Zonenliste und Grundriss in einem Block; die Zonenliste darin mit ihren acht Spalten.
-        IElement block = cut.Find(".epos-gebimport-zonenblock");
-        Assert.NotNull(block.QuerySelector(".epos-gebimport-zonenspalte > .epos-raster-huelle > table.epos-gebimport-zonen"));
-        Assert.NotNull(block.QuerySelector(".epos-gebimport-grundrissspalte .epos-gebansicht svg.epos-gebansicht-bild"));
-        Assert.Equal(8, cut.FindAll(".epos-gebimport-zonen > thead > tr > th").Count);
-        Assert.Contains("Räume ordnen Sie im Grundriss von Hand zu.", block.TextContent);
-
-        // Der Kopf: die Zonen und „als eigene Zone"; vorgewählt ist die erste Zone.
-        IElement wahl = Wahl(cut, "Räume zuordnen zu");
-        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "als eigene Zone" }, wahl.QuerySelectorAll("option").Select(o => o.TextContent));
-        Assert.Equal("Kellergeschoss", wahl.QuerySelectorAll("option").Single(o => o.HasAttribute("selected")).TextContent);
-        Assert.Equal(KG_U, Ansicht(cut).Instance.GewaehlteZone);
-
-        // Die Küche als eigene Zone: Raumkennung, kein Zonenschlüssel — danach drei Zonen, die Bilanz zählt mit.
-        Ziel(cut, "als eigene Zone");
-        Assert.Null(Ansicht(cut).Instance.GewaehlteZone);
-        Geschoss(cut, "Erdgeschoss");
-        int vorher = p.Anfragen.Count;
-        Raumbild(cut, "r-kueche").Click();
-        Assert.Equal(vorher + 1, p.Anfragen.Count);
-        Assert.Equal(new[] { new GebaeudeRaumumhaengung("r-kueche", null) }, p.Anfragen.Last().Umhaengungen);
-        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Küche" }, Zonenzeilen(cut));
-        Assert.Equal("3", cut.Find("dl.epos-gebimport-bilanz dd").TextContent);
-        Assert.Equal("HAND|r-kueche", Raumbild(cut, "r-kueche").GetAttribute("data-zone"));
-        Assert.Contains("von Hand", cut.Find(".epos-gebansicht-legendeneintrag[data-zone='HAND|r-kueche']").TextContent);
-
-        // Ein zweiter Klick kommt dahinter: die Küche zurück ins Erdgeschoss, die Handzone entfällt.
-        Ziel(cut, "Erdgeschoss");
-        Raumbild(cut, "r-kueche").Click();
-        Assert.Equal(new[] { new GebaeudeRaumumhaengung("r-kueche", null), new GebaeudeRaumumhaengung("r-kueche", EG_B) },
-                     p.Anfragen.Last().Umhaengungen);
-        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss" }, Zonenzeilen(cut));
-
-        // Übernommen wird erst mit OK — mit den Zuordnungen in ihrer Reihenfolge.
-        Assert.Empty(p.Uebernommen);
-        Ok(cut);
-        Assert.Equal(new[] { new GebaeudeRaumumhaengung("r-kueche", null), new GebaeudeRaumumhaengung("r-kueche", EG_B) },
-                     Assert.Single(p.Uebernommen).Umhaengungen);
-    }
-
-    [Fact]
-    public void Bei_ungleicher_Beheizung_steht_die_Meldung_des_Kerns_und_der_Raumhaken_ist_der_Ausweg()
-    {
-        var p = new Protokoll();
-        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(p, StandMitGrundriss);
-        Einlesen(cut);
-        Geschoss(cut, "Erdgeschoss");
-
-        // Die beheizte Küche in den unbeheizten Keller: Der Kern lehnt ab, die Zuordnung fällt wieder heraus.
-        Raumbild(cut, "r-kueche").Click();
-        Assert.Empty(cut.Instance.Umhaengungen);
-        Assert.Null(p.Anfragen.Last().Umhaengungen);                       // der Stand ist wieder der ohne sie
-        Assert.Contains(p.Anfragen, a => a.Umhaengungen is { Count: 1 });   // gefragt wurde der Kern
-        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss" }, Zonenzeilen(cut));
-        Assert.Contains("nicht gleich beheizt", cut.Instance.Ablehnung);
-
-        IElement ausweg = cut.Find(".epos-gebimport-ausweg");
-        Assert.Equal("r-kueche", ausweg.GetAttribute("data-raum"));
-        Assert.Equal("IMP_X_UMHAENGEN_BEHEIZUNG", ausweg.GetAttribute("data-kennung"));
-        Assert.Contains("Raum „Küche“ und Zone „Kellergeschoss“ sind nicht gleich beheizt", ausweg.QuerySelector(".epos-warnbanner")!.TextContent);
-        Assert.Contains("Mit dem Umstellen wird „Küche“ der Zone „Kellergeschoss“ zugeordnet.", ausweg.TextContent);
-
-        // Nichts still übersteuert: Keine Anfrage trug bis hier einen Haken für die Küche.
-        Assert.DoesNotContain(p.Anfragen, a => a.BeheiztUebersteuert.ContainsKey("r-kueche"));
-
-        // Der Ausweg: der Raumhaken — erst wenn der Anwender ihn umstellt, folgt die Zuordnung.
-        IElement haken = ausweg.QuerySelector("label.epos-schalter input")!;
-        Assert.Contains("Beheizt: Küche", ausweg.QuerySelector("label.epos-schalter")!.TextContent);
-        Assert.True(haken.HasAttribute("checked"));
-        haken.Change(false);
-        GebaeudeZuordnungsanfrage letzte = p.Anfragen.Last();
-        Assert.False(letzte.BeheiztUebersteuert["r-kueche"]);
-        Assert.Equal(new[] { new GebaeudeRaumumhaengung("r-kueche", KG_U) }, letzte.Umhaengungen);
-        Assert.Empty(cut.FindAll(".epos-gebimport-ausweg"));
-        Assert.Equal("", cut.Instance.Ablehnung);
-        Assert.Equal(KG_U, Raumbild(cut, "r-kueche").GetAttribute("data-zone"));
-        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss" }, Zonenzeilen(cut));
-    }
-
-    [Fact]
-    public void Ein_Regelwechsel_verwirft_die_Zuordnungen_von_Hand_erst_nach_Rueckfrage()
-    {
-        var p = new Protokoll();
-        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(p, StandMitGrundriss);
-        Einlesen(cut);
-        Ziel(cut, "als eigene Zone");
-        Geschoss(cut, "Erdgeschoss");
-        Raumbild(cut, "r-kueche").Click();
-        Assert.Single(cut.Instance.Umhaengungen);
-
-        // „Nein": Regel und Zuordnungen bleiben; die Klappliste zeigt wieder die gebildete Regel.
-        int anfragen = p.Anfragen.Count;
-        RegelWaehlen(cut, "A3");
-        Assert.True(cut.Instance.RegelFrageOffen);
-        Assert.Equal(anfragen, p.Anfragen.Count);                          // gefragt, nicht zugeordnet
-        IElement frage = cut.Find(".epos-rueckfrage");
-        Assert.Contains("Die Zuordnungen von Hand (1) gelten nur unter der gebildeten Regel", frage.TextContent);
-        IElement nein = frage.QuerySelectorAll("button").Single(k => k.TextContent == "Nein");
-        Assert.Contains("epos-knopf--primaer", nein.ClassName);           // Vorgabe „Nein"
-        nein.Click();
-        Assert.False(cut.Instance.RegelFrageOffen);
-        Assert.Equal(anfragen, p.Anfragen.Count);
-        Assert.Equal("A1", cut.Instance.Zonenregel);
-        Assert.Single(cut.Instance.Umhaengungen);
-        Assert.Equal("A1 – je Geschoss", Regelwahl(cut).QuerySelectorAll("option").Single(o => o.HasAttribute("selected")).TextContent);
-
-        // „Ja": die neue Regel — ohne die Zuordnungen von Hand; der Grundriss steht dann nur zur Anzeige da.
-        RegelWaehlen(cut, "A3");
-        cut.FindAll(".epos-rueckfrage button").Single(k => k.TextContent == "Ja").Click();
-        Assert.False(cut.Instance.RegelFrageOffen);
-        Assert.Equal("A3", p.Anfragen.Last().Zonenregel);
-        Assert.Null(p.Anfragen.Last().Umhaengungen);
-        Assert.Empty(cut.Instance.Umhaengungen);
-        Assert.NotNull(cut.Find(".epos-gebimport-grundriss .epos-gebansicht-nuranzeige"));
-        Assert.Empty(cut.FindAll(".epos-gebimport-raumweg"));
-
-        // Ohne Zuordnungen von Hand fragt ein Regelwechsel nicht.
-        RegelWaehlen(cut, "A1");
-        Assert.False(cut.Instance.RegelFrageOffen);
-        Assert.Equal("A1", p.Anfragen.Last().Zonenregel);
-    }
-
-    [Fact]
-    public void Eine_neue_Datei_verwirft_die_Zuordnungen_von_Hand_ohne_Frage()
-    {
-        var p = new Protokoll();
-        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(p, StandMitGrundriss);
-        Einlesen(cut);
-        Ziel(cut, "als eigene Zone");
-        Geschoss(cut, "Erdgeschoss");
-        Raumbild(cut, "r-kueche").Click();
-        Assert.Single(cut.Instance.Umhaengungen);
-
-        Einlesen(cut);
-        Assert.False(cut.Instance.RegelFrageOffen);
-        Assert.Empty(cut.Instance.Umhaengungen);
-        Assert.Null(p.Anfragen.Last().Umhaengungen);
-        Assert.Equal("g-kg", Ansicht(cut).Instance.GezeigtesGeschoss!.Kennung);   // der Grundriss auf Anfang
-        Assert.Equal(KG_U, Ansicht(cut).Instance.GewaehlteZone);
-    }
-
-    [Fact]
-    public void Der_Weg_ohne_Grundriss_haengt_den_gewaehlten_Raum_um_auch_ohne_Umriss()
-    {
-        var p = new Protokoll();
-        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(p, StandMitGrundriss);
-        Einlesen(cut);
-
-        // Die Raumwahl nennt die Räume des gezeigten Geschosses mit ihrer Zone — und den ohne Umriss.
-        Assert.Equal(new[] { "Keller – Kellergeschoss" }, Wahl(cut, "Raum").QuerySelectorAll("option").Select(o => o.TextContent));
-        Geschoss(cut, "Erdgeschoss");
-        Assert.Equal(new[] { "Wohnen – Erdgeschoss", "Küche – Erdgeschoss", "Schacht – Erdgeschoss (ohne Umriss)" },
-                     Wahl(cut, "Raum").QuerySelectorAll("option").Select(o => o.TextContent));
-        Assert.Empty(cut.FindAll(".epos-gebansicht g[data-raum='r-schacht']"));
-
-        // Den Schacht als eigene Zone — über die Liste und „Umhängen".
-        Ziel(cut, "als eigene Zone");
-        Waehlen(Wahl(cut, "Raum"), t => t.StartsWith("Schacht", StringComparison.Ordinal));
-        IElement knopf = cut.Find("button.epos-gebimport-umhaengen");
-        Assert.Equal("Umhängen", knopf.TextContent);
-        knopf.Click();
-        Assert.Equal(new[] { new GebaeudeRaumumhaengung("r-schacht", null) }, p.Anfragen.Last().Umhaengungen);
-        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Schacht" }, Zonenzeilen(cut));
-        Assert.StartsWith("Schacht – Schacht", Wahl(cut, "Raum").QuerySelectorAll("option").Single(o => o.HasAttribute("selected")).TextContent);
-
-        // Liegt der Raum schon in der Zielzone, fragt der Dialog den Kern nicht und sagt es leise.
-        Ziel(cut, "Erdgeschoss");
-        Waehlen(Wahl(cut, "Raum"), t => t.StartsWith("Wohnen", StringComparison.Ordinal));
-        int anfragen = p.Anfragen.Count;
-        cut.Find("button.epos-gebimport-umhaengen").Click();
-        Assert.Equal(anfragen, p.Anfragen.Count);
-        Assert.Equal("„Wohnen“ liegt schon in der Zone „Erdgeschoss“.", cut.Find(".epos-gebimport-umhaengnotiz").TextContent);
-        Assert.Single(cut.Instance.Umhaengungen);
-    }
+        => cut.FindAll(".epos-gebimport-zonenbaum tr.epos-gebimport-planzone input.epos-gebimport-zonenname").Select(z => z.GetAttribute("value"));
 
     [Fact]
     public void Ohne_Zonenliste_steht_der_Grundriss_als_eigener_Abschnitt_zur_Anzeige()
@@ -756,7 +545,7 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         int anfragen = p.Anfragen.Count;
         Raumbild(cut, "r-keller").Click();
         Assert.Equal(anfragen, p.Anfragen.Count);
-        Assert.Empty(cut.Instance.Umhaengungen);
+        Assert.Empty(cut.Instance.Planschritte);
     }
 
     /// <summary>
@@ -780,7 +569,7 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
             c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)g["Pruefen"]);
         });
         Einlesen(cut);
-        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-zonenblock .epos-gebansicht")));
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-grundriss .epos-gebansicht")));
 
         // Das Kellergeschoss steht vorn — schematisch gekennzeichnet.
         GebaeudeAnsichtDaten daten = Ansicht(cut).Instance.Daten!;
@@ -788,7 +577,6 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.NotEmpty(cut.FindAll(".epos-gebansicht-schematisch"));
         string kueche = daten.Geschosse.SelectMany(x => x.Raeume).Single(r => r.Name == "Küche").Kennung;
         string lager = daten.Geschosse.SelectMany(x => x.Raeume).Single(r => r.Name == "Lager").Kennung;
-        string erdgeschoss = daten.Zonen.Single(z => z.Name == "Erdgeschoss").Schluessel;
 
         // Die Küche als eigene Zone.
         Ziel(cut, "als eigene Zone");
@@ -802,19 +590,21 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         Geschoss(cut, "Kellergeschoss");
         Raumbild(cut, lager).Click();
         Assert.Contains("nicht gleich beheizt", cut.Instance.Ablehnung);
-        Assert.Equal("IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG", cut.Find(".epos-gebimport-ausweg").GetAttribute("data-kennung"));
-        Assert.Single(cut.Instance.Umhaengungen);
+        Assert.Equal("IMP_IFC_PROT_PLAN_BEHEIZUNG", cut.Find(".epos-gebimport-ausweg").GetAttribute("data-kennung"));
+        Assert.Single(cut.Instance.Planschritte);
 
-        // Der Ausweg: der Haken am Grundriss (nicht der der Raumliste) — das Lager beheizt folgt dem Erdgeschoss,
-        // das Kellergeschoss entfällt.
+        // Der Ausweg: der Haken am Zonenbaum (nicht der der Raumliste) — das Lager beheizt folgt dem Erdgeschoss,
+        // das Kellergeschoss bleibt als leere Zone im Plan stehen.
         IElement ausweg = cut.Find(".epos-gebimport-ausweg label.epos-schalter");
         Assert.Contains("Beheizt: Lager", ausweg.TextContent);
         Assert.False(ausweg.QuerySelector("input")!.HasAttribute("checked"));
         ausweg.QuerySelector("input")!.Change(true);
-        Assert.Equal(new[] { new GebaeudeRaumumhaengung(kueche, null), new GebaeudeRaumumhaengung(lager, erdgeschoss) },
-                     cut.Instance.Umhaengungen);
-        Assert.Equal(new[] { "Erdgeschoss", "Obergeschoss", "Küche" }, Zonenzeilen(cut));
-        Assert.Equal(erdgeschoss, Ansicht(cut).Instance.Daten!.Raum(lager)!.Zone);
+        Assert.Equal(new[] { GebaeudePlanschrittArt.EIGENE, GebaeudePlanschrittArt.HAKEN, GebaeudePlanschrittArt.ZUORDNEN },
+                     cut.Instance.Planschritte.Select(x => x.Art));
+        Assert.Equal(new[] { lager }, cut.Instance.Planschritte[2].Raeume);
+        Assert.Equal("Z:2", cut.Instance.Planschritte[2].Zone);
+        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss", "Küche" }, Zonenzeilen(cut));
+        Assert.Equal("Z:2", Ansicht(cut).Instance.Daten!.Raum(lager)!.Zone);
         Assert.Empty(cut.FindAll(".epos-gebimport-ausweg"));
     }
 

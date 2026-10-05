@@ -224,5 +224,67 @@ namespace EPOS.Kern.Tests
             Assert.True(p0.IstFehlerfrei, string.Join(" | ", p0.Hinweise));
             Assert.True(werte.Sum() > 0.0);
         }
+
+        /// <summary>
+        /// <b>Die Raumtemperatur der Datei als Heizsollwert</b> (Schalter im Zuordnungsdialog): die Probe
+        /// <c>ifc4_z6_cad.ifc</c> nach Z6 mit Schalter ein — das Gebäude trägt das Mittel 19,3 °C, die beheizten Zonen
+        /// ihr Mittel als <c>Raumsolltemperatur_Tag</c> (20,1 und 15 °C), die übrigen Sollwertspalten bleiben NULL; alles in
+        /// dem Vorgang, der die Gebäudeliste speichert.
+        /// </summary>
+        [Fact]
+        public async Task Mit_Schalter_tragen_Gebaeude_und_Zonen_den_Sollwert_aus_der_Raumtemperatur()
+        {
+            if (!_db.Vorhanden) return;
+            const string NAME = "Zonenprobe CAD-Sollwert";
+            const string Z6 = IfcImportProfil.ZONENREGEL_Z6;
+
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
+            GebaeudeImportweg weg = ((Func<GebaeudeImportweg>)gaben["ImportGaben"])();
+            var lesen = (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)weg.Gaben["Lesen"];
+            GebaeudeLesestand gelesen = await lesen(System.IO.Path.Combine(IfcProbenTests.Ordner(), "ifc4_z6_cad.ifc"), null, CancellationToken.None);
+            Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
+            var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)weg.Gaben["Zuordnen"];
+            GebaeudeImportStand aus = zuordnen(new GebaeudeZuordnungsanfrage(0, KLASSE_E, Keine, Zonenregel: Z6));
+            Assert.True(aus.CadSollwertMoeglich);
+            Assert.Equal(20.0, aus.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.SOLL_TAG).Wert);
+            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, KLASSE_E, Keine, Zonenregel: Z6, RaumtemperaturAlsSollwert: true));
+            Assert.Equal(19.3, stand.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.SOLL_TAG).Wert);
+            Assert.True(stand.Bauteile!.Moeglich, stand.Bauteile.Ablehnung);
+
+            var ergebnis = new GebaeudeImportErgebnis(0, KLASSE_E, NAME, Keine, stand.Zeilen.ToList(), AlsZone: true, Zonenregel: Z6,
+                                                       RaumtemperaturAlsSollwert: true);
+            var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)weg.Gaben["Pruefen"];
+            Assert.DoesNotContain(pruefen(ergebnis), m => m.Stufe == EPOS.UI.Bausteine.WarnStufe.Fehler);
+            Assert.Null(await ((Func<GebaeudeImportErgebnis, Task<string>>)weg.Gaben["Uebernehmen"])(ergebnis));
+
+            IReadOnlyDictionary<string, object> editor = weg.EditorGaben();
+            var arbeit = new GebaeudeArbeitsstand();
+            arbeit.Laden((GebaeudeKatalogDaten)editor["Daten"], neu: true);
+            GebaeudePruefbefund befund = arbeit.Pruefen(true, GebaeudeKatalogHuelle.Prueftexte(), GebaeudeKatalogHuelle.Texte());
+            Assert.True(befund == null, befund?.Meldung);
+            arbeit.Ableiten();
+            var speichern = (Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>)editor["Speichern"];
+            Assert.True(speichern(arbeit.Stand, true, arbeit.Stand.Name).Erfolg);
+            GebaeudeProjektZeile zeile = weg.Aufnehmen();
+            Assert.NotNull(zeile);
+            ((List<GebaeudeProjektZeile>)gaben["Zeilen"]).Add(zeile);
+            ((Action)gaben["Geaendert"])();
+            Z_ProjGebModel neu = modelle.Single(m => m.Gebaeudename == NAME);
+
+            (bool ok, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle);
+            Assert.True(ok, meldung);
+            int kopie = Kopie(neu.ID_Z);
+
+            Assert.Equal(19.3, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Raumsolltemperatur_Tag FROM Tab_Gebaeude WHERE ID = ?", new DbParam("@g", kopie)), CultureInfo.InvariantCulture), 6);
+            List<ZoneModel> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(kopie).ToList();
+            _aus.WriteLine(string.Join("; ", zonen.Select(z => z.Bezeichner + "=" + z.Raumsolltemperatur_Tag)));
+            Assert.Equal(new double?[] { 20.1, 15.0 }, zonen.Where(z => z.IstBeheizt).Select(z => z.Raumsolltemperatur_Tag));
+            Assert.All(zonen.Where(z => !z.IstBeheizt), z => Assert.Null(z.Raumsolltemperatur_Tag));
+            Assert.All(zonen, z => Assert.Null(z.Raumsolltemperatur_Nachtabsenkung));
+            Assert.All(zonen, z => Assert.Null(z.Raumsolltemperatur_Wochenende));
+            Assert.All(zonen, z => Assert.Null(z.Raumsolltemperatur_Ferien));
+        }
     }
 }

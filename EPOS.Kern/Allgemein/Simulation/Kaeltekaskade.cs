@@ -62,10 +62,36 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Kaeltemaschine Maschine;
 
-        /// <summary>Stunden in freier Kühlung (nur Kältemaschine).</summary>
+        /// <summary>
+        /// <b>Freie Kühlung über die Wärmequelle</b> (KU3-6, F2/F3) — nur für eine Wärmepumpe: Der Schalter
+        /// <c>Kuehl_Frei</c> der Anlagenzeile ist gesetzt UND die Quelle trägt ihn (Sole-Wasser oder
+        /// Wasser-Wasser mit <c>WQ_Typ</c> Erdreich, Konstant, Profil oder CSV). Sonst false — die Stunde
+        /// rechnet Zeichen für Zeichen wie ohne Schalter.
+        /// </summary>
+        public bool FreieKuehlungSole;
+
+        /// <summary>
+        /// Grädigkeit des Wärmetauschers der freien Kühlung [K] (<c>Kuehl_Frei_Graedigkeit_K</c>; NULL =
+        /// <see cref="KaelteFestwerte.FREIE_KUEHLUNG_SOLE_GRAEDIGKEIT_K"/>).
+        /// </summary>
+        public double FreieKuehlungGraedigkeitK = KaelteFestwerte.FREIE_KUEHLUNG_SOLE_GRAEDIGKEIT_K;
+
+        /// <summary>
+        /// Leistungsgrenze der freien Kühlung [kW] (<c>Kuehl_Frei_Leistung_kW</c>); <c>null</c> = die
+        /// Kälteleistung der Kühlkennlinie in der Stunde.
+        /// </summary>
+        public double? FreieKuehlungLeistungKw;
+
+        /// <summary>
+        /// Kaltwasser-Vorlauf [°C], gegen den die freie Kühlung der Wärmepumpe geprüft wird — der gepflegte
+        /// <c>Tab_WP.Kuehl_Vorlauf</c>, ohne ihn der Vorlauf der Kennlinie.
+        /// </summary>
+        public double KuehlVorlaufC;
+
+        /// <summary>Stunden in freier Kühlung (Kältemaschine über den Rückkühler, Wärmepumpe über die Quelle).</summary>
         public int StundenFreieKuehlung;
 
-        /// <summary>Kälte aus freier Kühlung [kWh] (nur Kältemaschine).</summary>
+        /// <summary>Kälte aus freier Kühlung [kWh] (Kältemaschine über den Rückkühler, Wärmepumpe über die Quelle).</summary>
         public double KaelteFreiKwh;
 
         /// <summary>Stunden mit Kennlinie am Rand (nur Kältemaschine).</summary>
@@ -247,6 +273,23 @@ namespace WindowsFormsApplication1
         public double[] Rest_stuendlich = new double[STUNDEN];
 
         /// <summary>
+        /// Kälte der Wärmepumpen aus freier Kühlung über die Wärmequelle je Stunde [kWh] (KU3-6) — Teil
+        /// der Erzeugerkälte; eine Stunde mit Wert &gt; 0 zählt einmal, gleich wie viele Wärmepumpen frei kühlen.
+        /// </summary>
+        public double[] FreieKuehlungWp_stuendlich = new double[STUNDEN];
+
+        /// <summary>Stunden, in denen irgendeine Wärmepumpe frei über ihre Wärmequelle kühlte (KU3-6).</summary>
+        public int StundenFreieKuehlungWp
+        {
+            get
+            {
+                int n = 0;
+                foreach (double v in FreieKuehlungWp_stuendlich) if (v > 0) n++;
+                return n;
+            }
+        }
+
+        /// <summary>
         /// <b>Die Kältespeicher der Kaskade</b> (KU3-5, E68; Kühlkonzept 5.5 Schritt 4) — Puffer mit der
         /// Verwendung <see cref="SimulationPufferspeicher.VERWENDUNG_KAELTE"/>, gerechnet in Listenreihenfolge.
         /// Leer: Die Stundenschleife rechnet Zeichen für Zeichen wie ohne Speicher.
@@ -392,6 +435,7 @@ namespace WindowsFormsApplication1
             Array.Clear(Deckung_stuendlich, 0, STUNDEN);
             Array.Clear(Stromverbrauch_Kuehlung_stuendlich, 0, STUNDEN);
             Array.Clear(Rest_stuendlich, 0, STUNDEN);
+            Array.Clear(FreieKuehlungWp_stuendlich, 0, STUNDEN);
             BedarfGesamtKwh = 0;
             DeckungGesamtKwh = 0;
             StromGesamtKwh = 0;
@@ -464,22 +508,53 @@ namespace WindowsFormsApplication1
                         case KennlinienLage.EinzelneStuetzstelle: e.StundenEinzelpunkt++; break;
                     }
 
-                    double kapazitaet = anteil * p.Pkuehl;
-                    if (!(kapazitaet > 0) || !(p.Eer > 0)) continue;
-
                     double last = rest + lade;
-                    double deckung = last < kapazitaet ? last : kapazitaet;
+
+                    // KU3-6 (F3): freie Kühlung über die Wärmequelle VOR dem Verdichter - solange
+                    // Quellentemperatur plus Grädigkeit den Kaltwasser-Vorlauf nicht übersteigen, bis zur
+                    // Leistungsgrenze (ohne sie die Kälteleistung der Kennlinie) im offenen Zeitanteil.
+                    double frei = 0.0;
+                    if (e.FreieKuehlungSole && t + e.FreieKuehlungGraedigkeitK <= e.KuehlVorlaufC)
+                    {
+                        double grenze = e.FreieKuehlungLeistungKw ?? p.Pkuehl;
+                        double moeglich = anteil * grenze;
+                        if (moeglich > 0) frei = last < moeglich ? last : moeglich;
+                    }
+
+                    // Der Rest der Stunde über den Verdichter nach Kennlinie. Ohne freie Kühlung ist
+                    // restLast == last, und die Stunde rechnet Zeichen für Zeichen wie zuvor.
+                    double kapazitaet = anteil * p.Pkuehl;
+                    double restLast = frei > 0 ? last - frei : last;
+                    double verdichterKaelte = 0.0;
+                    double verdichter = 0.0;
+                    if (restLast > 0 && kapazitaet > 0 && p.Eer > 0)
+                    {
+                        verdichterKaelte = restLast < kapazitaet ? restLast : kapazitaet;
+                        verdichter = verdichterKaelte / p.Eer;
+
+                        // Welle M4, WP1: Taktverlust nach EN 14825 auch im Kühlbetrieb - die
+                        // Mindestleistung als Anteil der Kühlleistung der Stunde. Ohne Mindestanteil
+                        // rechnet die Stunde wie zuvor.
+                        if (e.Mindestanteil > 0)
+                            verdichter += Taktverlust(e, h, verdichterKaelte, verdichter, e.Mindestanteil * p.Pkuehl);
+                    }
+                    if (!(frei > 0) && !(verdichterKaelte > 0)) continue;
+
+                    double deckung = frei > 0 ? frei + verdichterKaelte : verdichterKaelte;
                     double raum = deckung < rest ? deckung : rest;
                     double ladung = deckung - raum;
-                    double verdichter = deckung / p.Eer;
-
-                    // Welle M4, WP1: Taktverlust nach EN 14825 auch im Kühlbetrieb - die
-                    // Mindestleistung als Anteil der Kühlleistung der Stunde. Ohne Mindestanteil
-                    // rechnet die Stunde wie zuvor.
-                    if (e.Mindestanteil > 0)
-                        verdichter += Taktverlust(e, h, deckung, verdichter, e.Mindestanteil * p.Pkuehl);
 
                     double strom = verdichter * (1.0 + e.Hilfsstromanteil);
+                    if (frei > 0)
+                    {
+                        // Pumpenstrom der freien Kühlung: EER-Ersatz wie am Rückkühler, mit Hilfsstrom.
+                        double freiStrom = frei / KaelteFestwerte.FREIE_KUEHLUNG_EER;
+                        verdichter += freiStrom;
+                        strom += freiStrom * (1.0 + e.Hilfsstromanteil);
+                        e.StundenFreieKuehlung++;
+                        e.KaelteFreiKwh += frei;
+                        FreieKuehlungWp_stuendlich[h] += frei;
+                    }
 
                     e.Kaelte_stuendlich[h] = deckung;
                     e.Strom_stuendlich[h] = strom;

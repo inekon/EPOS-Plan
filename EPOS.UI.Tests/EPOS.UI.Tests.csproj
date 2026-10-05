@@ -34,6 +34,12 @@
     <ProjectReference Include="..\EPOS.UI.Daten\EPOS.UI.Daten.csproj" />
   </ItemGroup>
 
+  <!-- Der Erzeuger der HottCAD-Projektdateien (Probe 37): zur Laufzeit erzeugte Kleinstdateien fuer den Dialog mit der
+       echten Huelle; der Teil mit Kerntypen (SqprojProbenErzeuger.Ifc.cs) bleibt in EPOS.Kern.Tests. -->
+  <ItemGroup>
+    <Compile Include="..\EPOS.Kern.Tests\SqprojProbenErzeuger.cs" Link="Proben\SqprojProbenErzeuger.cs" />
+  </ItemGroup>
+
   <!-- xUnit-Einstellungen (Auftrag #531): Sammlungen seriell, hoechstens zwei Threads -
        dieselben Werte wie die Schalter in Gate und Workflows. Ohne sie melden parallele
        Sammlungen Masken gleichzeitig an der prozessweiten KiMaskenbruecke an (sporadisch

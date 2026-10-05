@@ -939,6 +939,15 @@ namespace EPOS.Kern.Tests
                 // Schritt ZonenKaeltespitzeSchema.SCHRITT (MZ-Rest): Kaeltespitze und Kuehlstunden je Zone im
                 // Zonenergebnis. Ohne Sicht; die Spalten bleiben leer.
                 ZonenKaeltespitzeSchema.Ausfuehren(null);
+                // Schritt AnlagenfahrplanSchema.SCHRITT (AK2-1): Zeitprogramm und Vorlauf_Max am Erzeuger, Komfort-
+                // und Fahrplanspalten im Energiebedarf. Ohne Saat; die Spalten bleiben leer.
+                AnlagenfahrplanSchema.Ausfuehren(null);
+                // Schritt FreieKuehlungSoleSchema.SCHRITT (KU3-6a): Schalter, Graedigkeit und Leistungsgrenze der
+                // freien Kuehlung am Erzeuger, ihre Zaehler im Ergebnis der Waermepumpe. Ohne Saat.
+                FreieKuehlungSoleSchema.Ausfuehren(null);
+                // Schritt VorlaufwahlSchema.SCHRITT (VW1a): Stunden je Kennlinienstuetzstelle, darueber und darunter
+                // an der Modulzeile des Waermepumpenergebnisses. Ohne Saat; die Spalten bleiben leer.
+                VorlaufwahlSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -1381,6 +1381,17 @@ in allen vier Vierteln tragen alle den Stundenwert. Direktverbrauch, Überschuss
 entstehen je Viertelstunde gegen `Rest_Strombedarf_viertelstuendlich`; die Stundenreihen sind die
 Mittel ihrer Viertel. Der Reiter „Photovoltaik" zeigt den Überschuss vor dem Speicher.
 
+**BHKW-Einspeisung.** Die Kaskade zieht den BHKW-Strom je Viertelstunde stundenkonstant und ungeklemmt vom
+Strombedarf ab; was danach negativ steht, nimmt kein Verbraucher des Anschlusses ab. Ohne Speicherflotte ist die
+BHKW-Einspeisung je Viertelstunde dieser negative Rest, max(0, −Rest_q), gebildet direkt nach der Kaskade, mit und
+ohne Photovoltaik (`SimulationControl.BhkwEinspeisung_viertelstuendlich` [kW], Stundenmittel
+`BhkwEinspeisungDesLaufs` [kWh/h]; `SimulationPV.BhkwUeberschuss` ist dieselbe Größe, eine Formel
+`BhkwUeberschussKw`). BHKW-Reiter (Linie und Kennzahl), Zeitreihensatz `BHKW_UEBERSCHUSS` (Berichtsbild,
+Excel-Monatsblock), der KWK-Split der Strommatrix und über ihn die Wirtschaftlichkeit lesen diese eine Reihe; die
+Energiebilanz Netzbezug + PV-Eigenverbrauch + BHKW-Strom − Einspeisung = Strombedarf aller Verbraucher schließt je
+Viertelstunde. Mit Speicherflotte ist die BHKW-Netzeinspeisung der Flottenbilanz die Quelle. Netzbezug, Reststrom und
+der Reststrombedarf der BHKW-Zeile bleiben davon unberührt.
+
 **Einspeisegrenze.** P_grenz in kW, oder in % als Anteil der installierten Leistung (kWp). Je
 Viertelstunde: E_ein = min(Ü − Ladung − Standby aus PV, P_grenz), Abregelung = Rest. Der Speicher
 lädt vor dem Abregeln (`SimulationControl.PvEinspeisungAufteilen` nach der Speicherphase). Ohne

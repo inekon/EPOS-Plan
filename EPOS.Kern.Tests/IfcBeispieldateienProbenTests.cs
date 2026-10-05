@@ -53,7 +53,8 @@ namespace EPOS.Kern.Tests
                     List<AbbildBauteil> alle = g.Bauteile.Concat(g.Bauteile.SelectMany(b => b.Oeffnungen)).ToList();
                     List<AbbildGrenze> grenzen = g.Bauteile.SelectMany(b => b.Grenzen).Concat(g.Bauteile.SelectMany(b => b.Oeffnungen).SelectMany(o => o.Grenzen)).ToList();
                     _aus.WriteLine("P13 Gebäude " + g.Anzeigename + ": Geschosse " + g.Geschosse.Count + ", Räume " + g.Raeume.Count + " (beheizt "
-                                   + g.Raeume.Count(r => r.Beheizt) + ", Grundriss " + g.Raeume.Count(r => r.GrundrissM != null) + "), Raumfläche "
+                                   + g.Raeume.Count(r => r.Beheizt) + ", Grundriss " + g.Raeume.Count(r => r.GrundrissM != null) + ", Fläche aus Grundriss "
+                                   + g.Raeume.Count(r => r.FlaecheAusGrundriss) + "), Raumfläche "
                                    + Z(g.Raeume.Sum(r => r.FlaecheM2 ?? 0)) + " m² (beheizt " + Z(g.Raeume.Where(r => r.Beheizt).Sum(r => r.FlaecheM2 ?? 0))
                                    + "), Grenzen " + g.ZahlGrenzen + " (2. Ebene " + g.ZahlGrenzenZweiteEbene + ", mit Polygon "
                                    + grenzen.Count(x => x.FlaecheM2.HasValue) + ", mit Gegenstück " + grenzen.Count(x => x.GegenstueckKennung != null)
@@ -63,6 +64,11 @@ namespace EPOS.Kern.Tests
                                    + g.Bauteile.Count(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG) + "/"
                                    + g.Bauteile.Count(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_GESCHOSS) + "/"
                                    + g.Bauteile.Count(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_GRUNDRISS));
+                    _aus.WriteLine("P15 Beheizungsregeln: " + string.Join(", ", g.Raeume.GroupBy(r => (r.Beheizungsregel ?? "—") + (r.Beheizt ? "+" : "-"))
+                                   .OrderBy(x => x.Key, StringComparer.Ordinal).Select(x => x.Key + " " + x.Count())));
+                    _aus.WriteLine("P14 Grenzen ohne Polygon: " + grenzen.Count(x => !x.FlaecheM2.HasValue) + "; ohne Bauteil: " + string.Join("; ", a.Meldungen
+                                   .Where(m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL" || m.Schluessel == "IMP_IFC_PROT_GRENZEN_DACHPLATTE")
+                                   .Select(m => m.Schluessel.Replace("IMP_IFC_PROT_", "") + " " + string.Join("/", m.Werte))));
                     _aus.WriteLine("P14 Polygonflächen Σ " + Z(grenzen.Where(x => !x.Virtuell).Sum(x => x.FlaecheM2 ?? 0)) + " m² (Bauteile "
                                    + Z(g.Bauteile.SelectMany(b => b.Grenzen).Where(x => !x.Virtuell).Sum(x => x.FlaecheM2 ?? 0)) + ", Öffnungen "
                                    + Z(g.Bauteile.SelectMany(b => b.Oeffnungen).SelectMany(o => o.Grenzen).Sum(x => x.FlaecheM2 ?? 0))

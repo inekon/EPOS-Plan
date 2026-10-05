@@ -167,7 +167,7 @@ namespace EPOS.Kern.Tests
             GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0);
             Assert.Equal("Z4", z.Vorgabe);
             Assert.Equal("Z4", z.Regel);
-            Assert.Equal(new[] { "Z4", "Z5" }, z.Regeln);
+            Assert.Equal(new[] { "Z4", "Z6", "Z5" }, z.Regeln);   // Z6: Temperaturen bzw. Beheizung bilden Gruppen
             Assert.False(z.HatRaumgrenzen);
             Assert.False(Hat(z.Meldungen, "KEINE_GRENZEN"));
             Assert.False(Hat(z.Meldungen, "GRENZEN_ENTKOPPELT"));
@@ -556,7 +556,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Gegenprobe_die_uebrigen_Proben_bleiben_ohne_die_neuen_Meldungen()
         {
-            IEnumerable<string> proben = IfcProbenErzeuger.Alle().Keys.Where(k => k != PROBE && !k.EndsWith(".ifczip", StringComparison.Ordinal))
+            IEnumerable<string> proben = IfcProbenErzeuger.Alle().Keys.Where(k => k != PROBE && k != "ifc4_z6_cad.ifc" && !k.EndsWith(".ifczip", StringComparison.Ordinal))
                                                           .Append("ifc4_verlust.ifc");
             foreach (string probe in proben)
             {

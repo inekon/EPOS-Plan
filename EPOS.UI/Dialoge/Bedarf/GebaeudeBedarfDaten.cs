@@ -116,6 +116,37 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Die leise Zeile unter der Vorlaufkachel, fertig formuliert: Übergabeart und Auslegungspunkt.</summary>
     public string Heizkreiszeile { get; init; } = "";
 
+    // ---- Anlagenkopplung AK2 (Konzept 9.4, 5.5, 6.2): Komfort neben Restbedarf ------------
+    //
+    // Erhoben nur am gekoppelt gerechneten Gebäude; sonst null - die Kacheln zeigen dann „—" (K18).
+
+    /// <summary>Stunden der Nutzungszeit mehr als die Schwelle unter dem Heizsollwert [h]; <c>null</c> = nicht erhoben.</summary>
+    public int? KomfortUnterschreitungsstundenH { get; init; }
+
+    /// <summary>Summe der Unterschreitungen [Kh]; <c>null</c> = nicht erhoben.</summary>
+    public double? KomfortKelvinstundenKh { get; init; }
+
+    /// <summary>Längste zusammenhängende Unterschreitung [h]; <c>null</c> = nicht erhoben.</summary>
+    public int? KomfortLaengsteStreckeH { get; init; }
+
+    /// <summary>Kälteseite: Stunden über dem Kühlsollwert [h]; <c>null</c> = nicht erhoben.</summary>
+    public int? KomfortUeberschreitungsstundenH { get; init; }
+
+    /// <summary>Kälteseite: Summe der Überschreitungen [Kh]; <c>null</c> = nicht erhoben.</summary>
+    public double? KomfortKelvinstundenKuehlungKh { get; init; }
+
+    /// <summary>Wärmerestbedarf des Projekts aus dem letzten Lauf [MWh/a] — steht neben den Komfortstunden.</summary>
+    public double? RestbedarfProjektMwh { get; init; }
+
+    /// <summary>Der Bedarfsbegriff im Lauf mit Fahrplan („mit Rückwirkung" / „feste Last"); leer ohne Fahrplan.</summary>
+    public string Bedarfsbegriff { get; init; } = "";
+
+    /// <summary>Stunden, in denen der Anlagenfahrplan das Gebäude begrenzt hat [h]; <c>null</c> ohne Fahrplan.</summary>
+    public int? FahrplanBegrenztStundenH { get; init; }
+
+    /// <summary>Sind am Gebäude Komfortkennzahlen erhoben?</summary>
+    public bool KomfortErhoben => KomfortUnterschreitungsstundenH.HasValue || KomfortUeberschreitungsstundenH.HasValue;
+
     // ---- E37: der Kältekreis (Anlagenkopplung 8.3, 10.5), gespiegelt zum Heizkreis ----------
     //
     // Nur für ein kühlgekoppelt gerechnetes Gebäude; die Kacheln stehen im Abschnitt

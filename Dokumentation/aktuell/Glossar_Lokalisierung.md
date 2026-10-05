@@ -373,7 +373,7 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | Heizsollwert | heating setpoint | untere Kante des Sollwertbands im Bild „Raumtemperatur" |
 | obere Raumtemperatur | maximum indoor temperature | Bestandsfeld `Maximaleraumtemperatur`; obere Kante des Sollwertbands |
 | Überhitzungsstunden | overheating hours | Stunden der Nutzungszeit über der oberen Raumtemperatur |
-| Vergleich der Rechenwege | comparison of calculation methods | Tabelle im Bedarfsdialog, bis Stufe GA |
+| Vergleich der Rechenwege | comparison of calculation methods | Tabelle im Bedarfsdialog, dauerhaft (E89) |
 | Baustoff | building material | Katalog „Baustoffe" (Stufe G3) |
 | herstellerneutral | manufacturer-neutral | Baustoff ohne Hersteller (Norm- oder Richtwert) |
 | Bauteilaufbau | construction build-up | Katalog „Bauteilaufbauten"; Schichten innen → außen |

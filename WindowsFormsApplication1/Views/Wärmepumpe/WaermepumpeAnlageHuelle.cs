@@ -107,7 +107,11 @@ namespace WindowsFormsApplication1
                 // KU2 Welle 3 (Kuehlkonzept 8.2): die Kuehlgaben der Konfiguration -
                 // Stuetzstellen, Sperrgrund und Stromtraeger des Projekts, plattformfrei gebaut.
                 // Ohne Projekt keine Gruppe "Kuehlbetrieb".
-                ["Kuehlung"] = projektId > 0 ? WaermepumpeKuehlGabenBau.Bauen(projektId) : null,
+                // KU3-6 (F2): mit der Quelle der Anlagenzeile traegt der Satz den Sperrgrund der
+                // freien Kuehlung; eine neue Anlage ohne Zeile kennt ihre Quelle noch nicht.
+                ["Kuehlung"] = projektId > 0
+                    ? WaermepumpeKuehlGabenBau.Bauen(projektId, modell != null ? (modell.WQ_Typ ?? "") : null)
+                    : null,
 
                 ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
@@ -594,6 +598,11 @@ namespace WindowsFormsApplication1
                 KuehlCarrierId = m.Kuehl_ID_Carrier,
                 KuehlEigenerZaehler = m.Kuehl_EigenerZaehler,
 
+                // KU3-6 (F1): die freie Kuehlung ueber die Waermequelle - drei Felder der Anlagenzeile.
+                KuehlFrei = m.Kuehl_Frei,
+                KuehlFreiGraedigkeitK = m.Kuehl_Frei_Graedigkeit_K,
+                KuehlFreiLeistungKw = m.Kuehl_Frei_Leistung_kW,
+
                 Modulkosten = m.Modulkosten,
                 Volumen = m.Volumen,
                 Solaranteil = m.Solaranteil,
@@ -612,6 +621,8 @@ namespace WindowsFormsApplication1
             // Anwenderauftrag 30.09.2026: ein Ruecklauf 0/leer wird aus dem Vorlauf
             // vorbelegt (Kern-Regel ueber TemperaturVorbelegung) - im FELDSATZ; ins Modell
             // kommt er erst mit dem OK (NachModell).
+            // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
+            BetriebszeitenAbbildung.Lesen(m, d);
             TemperaturVorbelegung.Waermepumpe(d);
             return d;
         }
@@ -631,6 +642,8 @@ namespace WindowsFormsApplication1
             m.Sperrzeit_von = d.SperrzeitVon ?? 0;
             // V14: die Liste der Sperrfenster - sie ueberfuehrt das Altfenster (Sperrung = 0).
             SperrfensterAbbildung.NachModell(d, m);
+            // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
+            BetriebszeitenAbbildung.Schreiben(d, m);
             m.Ruecklauf = d.Ruecklauf ?? 0;
             m.Vorlauf = d.Vorlauf ?? 0;
             m.Bivalenter_Betrieb = d.BivalenterBetrieb;
@@ -676,6 +689,11 @@ namespace WindowsFormsApplication1
             // Zeile sie traegt (KuehlfelderGeladen, gesetzt beim Fuellen in AusModell).
             m.Kuehl_ID_Carrier = d.KuehlCarrierId is int kt && kt > 0 ? kt : (int?)null;
             m.Kuehl_EigenerZaehler = d.KuehlEigenerZaehler == true ? true : (bool?)null;
+            // KU3-6 (F1): die drei Felder der freien Kuehlung reisen mit der Anlagenzeile;
+            // leere Werte bleiben NULL (Festwert bzw. Kaelteleistung der Kennlinie).
+            m.Kuehl_Frei = d.KuehlFrei;
+            m.Kuehl_Frei_Graedigkeit_K = d.KuehlFreiGraedigkeitK;
+            m.Kuehl_Frei_Leistung_kW = d.KuehlFreiLeistungKw;
             if (m.KuehlfelderGeladen)
             {
                 m.Kuehlbetrieb = d.Kuehlbetrieb;

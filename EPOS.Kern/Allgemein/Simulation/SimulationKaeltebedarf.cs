@@ -648,6 +648,13 @@ namespace WindowsFormsApplication1
                     s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungStunden", e.StundenFreieKuehlung));
                     s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungMwh", e.KaelteFreiKwh / 1000.0));
                 }
+                // KU3-6: die Wärmepumpe mit wirksamer freier Kühlung über die Wärmequelle - eigene
+                // Schlüssel; ohne sie bleibt die Datei Zeichen für Zeichen wie zuvor.
+                else if (e.FreieKuehlungSole)
+                {
+                    s.Add(new KeyValuePair<string, double>(p + "WpFreieKuehlungStunden", e.StundenFreieKuehlung));
+                    s.Add(new KeyValuePair<string, double>(p + "WpFreieKuehlungMwh", e.KaelteFreiKwh / 1000.0));
+                }
             }
             // KU3-5: die Kältespeicher - nur, wenn einer rechnet; sonst kein neuer Schlüssel.
             if (k.Speicher != null)

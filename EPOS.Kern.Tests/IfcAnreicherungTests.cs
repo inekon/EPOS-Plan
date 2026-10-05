@@ -346,9 +346,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Reichert an und liefert die Bytes und die Bilanz.</summary>
         private static byte[] Anreichern(byte[] datei, out GebaeudeAnreicherungBilanz bilanz, ImportquelleModel quelle = null,
-                                         GebaeudeExportProfil profil = null, Action<IModel> eingriff = null)
+                                         GebaeudeExportProfil profil = null, Action<IModel> eingriff = null,
+                                         Action<GbxmlAbbild> anpassen = null)
         {
             GbxmlAbbild abbild = Abbild();
+            anpassen?.Invoke(abbild);
             using (var ziel = new MemoryStream())
             {
                 var a = new IfcAnreicherung(IfcErgebnisse.AusAbbild(abbild)) { VorDerPruefung = eingriff };
@@ -562,6 +564,47 @@ namespace EPOS.Kern.Tests
                 Assert.Single(Saetze((IIfcObject)Objekt(m, G_GEBAEUDE), IfcSchreiber.EPOS_RECHENLAUF));
                 Assert.Single(m.Instances.OfType<IIfcMaterialLayerSet>());
                 Assert.Equal(m.Instances.OfType<IIfcRoot>().Count(), m.Instances.OfType<IIfcRoot>().Select(r => (string)r.GlobalId).Distinct().Count());
+            }
+        }
+
+        /// <summary>
+        /// Probe 38 an der Anreicherung (6.6, 16.3): Die Zone mit Konditionierung bekommt <c>EPOS_Zone</c> mit Nutzung und
+        /// Sollwerten und je Kalender genau einen Satz <c>EPOS_Kalender_*</c>; ein zweiter Durchlauf ersetzt sie, statt sie zu
+        /// doppeln, und ein Kalender, den die Zone nicht mehr trägt, verschwindet. Der Leser nimmt die Sätze zurück.
+        /// </summary>
+        [Fact]
+        public void Anreicherung_ergaenzt_die_Kalendersaetze_einmal_und_ersetzt_sie_im_zweiten_Durchlauf()
+        {
+            void Mit(GbxmlAbbild a) => a.Gebaeude[0].Raeume.Single(r => r.Name == "Wohnen").Konditionierung = IfcKonditionierungRundlaufTests.Synthetisch();
+            byte[] erste = Anreichern(Fremdhaus(), out GebaeudeAnreicherungBilanz b1, anpassen: Mit);
+            Assert.True(b1.Geschrieben, string.Join("\n", b1.Meldungen.Select(m => m.Schluessel + " " + string.Join("|", m.Werte))));
+            byte[] zweite = Anreichern(erste, out GebaeudeAnreicherungBilanz b2, anpassen: Mit);
+            Assert.True(b2.Geschrieben);
+            using (MemoryModel m = IfcExportProbe.Modell(zweite))
+            {
+                var wohnen = (IIfcObject)Objekt(m, G_WOHNEN);
+                foreach (string satz in new[] { "EPOS_Kalender_HEIZSOLL", "EPOS_Kalender_LUEFTUNG", "EPOS_Kalender_PERSONEN" })
+                    Assert.Single(Saetze(wohnen, satz));
+                Assert.Empty(Saetze(wohnen, "EPOS_Kalender_GERAETE"));
+                Assert.Empty(Saetze((IIfcObject)Objekt(m, G_KUECHE), "EPOS_Kalender_HEIZSOLL"));
+                Assert.Equal("BUERO", IfcExportProbe.Eigenschaften(wohnen)[IfcSchreiber.EPOS_ZONE]["Nutzung"].NominalValue.ToString());
+                Assert.Equal(m.Instances.OfType<IIfcRoot>().Count(), m.Instances.OfType<IIfcRoot>().Select(r => (string)r.GlobalId).Distinct().Count());
+            }
+            AbbildRaum zurueck = IfcExportProbe.Lesen(zweite).Gebaeude[0].Raeume.Single(r => r.Kennung == G_WOHNEN);
+            IfcKonditionierungRundlaufTests.Gleich(IfcKonditionierungRundlaufTests.Synthetisch(), zurueck.Konditionierung);
+
+            // Dritter Durchlauf ohne Personen: der überholte Satz verschwindet.
+            byte[] dritte = Anreichern(zweite, out _, anpassen: a =>
+            {
+                AbbildKonditionierung k = IfcKonditionierungRundlaufTests.Synthetisch();
+                k.Kalender.RemoveAll(x => x.Kalender.Groesse == Konditionierungsgroesse.Personen);
+                a.Gebaeude[0].Raeume.Single(r => r.Name == "Wohnen").Konditionierung = k;
+            });
+            using (MemoryModel m = IfcExportProbe.Modell(dritte))
+            {
+                var wohnen = (IIfcObject)Objekt(m, G_WOHNEN);
+                Assert.Empty(Saetze(wohnen, "EPOS_Kalender_PERSONEN"));
+                Assert.Single(Saetze(wohnen, "EPOS_Kalender_HEIZSOLL"));
             }
         }
 

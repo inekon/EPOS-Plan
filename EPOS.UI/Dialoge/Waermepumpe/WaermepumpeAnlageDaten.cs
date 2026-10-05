@@ -77,6 +77,16 @@ public sealed class WaermepumpeAnlageDaten
     /// </summary>
     public List<SperrfensterZeile>? Sperrfenster { get; set; }
 
+    /// <summary>
+    /// Das Zeitprogramm der Anlage (<c>Tab_Energieanlagen.Zeitprogramm</c>, Anlagenkopplung 9.3): 168 Faktoren
+    /// 0 … 1 im Format des Sollwertprofils; <c>null</c> = nicht gepflegt, die Anlage ist immer verfügbar. Ein
+    /// ungültiger Text bleibt stehen, wie er gelesen wurde — der Dialog nennt den Fehler.
+    /// </summary>
+    public string? Zeitprogramm { get; set; }
+
+    /// <summary>Der höchste Vorlauf der Anlage [°C] (<c>Vorlauf_Max</c>); <c>null</c> = der projektierte <see cref="Vorlauf"/>.</summary>
+    public double? VorlaufMax { get; set; }
+
     /// <summary>Bivalenter Betrieb.</summary>
     public bool BivalenterBetrieb { get; set; }
 
@@ -160,6 +170,21 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Abrechnung des Kältestroms bei abweichendem Träger (<c>Kuehl_EigenerZaehler</c>, E34): <c>true</c> = eigener Zähler, sonst anteilig am Netzbezug.</summary>
     public bool? KuehlEigenerZaehler { get; set; }
 
+    // --- Freie Kühlung über die Wärmequelle (KU3-6, Festlegungen F1, F2, F6) ----
+    //
+    // Drei Felder der ANLAGENZEILE (Tab_Energieanlagen). Wirksam nur an einer Sole-/Wasser-
+    // Wasser-Maschine mit gepflegter Wärmequelle; den Grund, warum nicht, reicht der Wirt
+    // über WaermepumpeKuehlGaben.FreiSperrgrund.
+
+    /// <summary>„Freie Kühlung über die Wärmequelle" (<c>Tab_Energieanlagen.Kuehl_Frei</c>).</summary>
+    public bool KuehlFrei { get; set; }
+
+    /// <summary>Grädigkeit des Wärmetauschers [K], 0 bis 20 (<c>Kuehl_Frei_Graedigkeit_K</c>); <c>null</c> = Vorgabe 3,0 K.</summary>
+    public double? KuehlFreiGraedigkeitK { get; set; }
+
+    /// <summary>Leistungsgrenze der freien Kühlung [kW], &gt; 0 (<c>Kuehl_Frei_Leistung_kW</c>); <c>null</c> = Kälteleistung der Kennlinie.</summary>
+    public double? KuehlFreiLeistungKw { get; set; }
+
     // --- Taktverlust (Welle M4, WP1) — Werte des Geräts, nur zur Anzeige --------
 
     /// <summary>
@@ -199,6 +224,8 @@ public sealed class WaermepumpeAnlageDaten
         SperrzeitVon = SperrzeitVon,
         SperrzeitBis = SperrzeitBis,
         Sperrfenster = Sperrfenster?.Select(z => z.Kopie()).ToList(),
+        Zeitprogramm = Zeitprogramm,
+        VorlaufMax = VorlaufMax,
         BivalenterBetrieb = BivalenterBetrieb,
         CarrierId = CarrierId,
         Betriebsart = Betriebsart,
@@ -216,6 +243,9 @@ public sealed class WaermepumpeAnlageDaten
         KuehlHilfsstromanteil = KuehlHilfsstromanteil,
         KuehlCarrierId = KuehlCarrierId,
         KuehlEigenerZaehler = KuehlEigenerZaehler,
+        KuehlFrei = KuehlFrei,
+        KuehlFreiGraedigkeitK = KuehlFreiGraedigkeitK,
+        KuehlFreiLeistungKw = KuehlFreiLeistungKw,
         MindestleistungKw = MindestleistungKw,
         TaktverlustfaktorCd = TaktverlustfaktorCd,
         Modulkosten = Modulkosten,
@@ -224,7 +254,7 @@ public sealed class WaermepumpeAnlageDaten
         RendeMix = RendeMix
     };
 
-    /// <summary>Schreibt die fünf Kühlfelder eines anderen Satzes zurück — der Abbrechen-Weg der Konfiguration.</summary>
+    /// <summary>Schreibt die acht Kühlfelder eines anderen Satzes zurück — der Abbrechen-Weg der Konfiguration.</summary>
     public void KuehlfelderAus(WaermepumpeAnlageDaten quelle)
     {
         if (quelle is null) return;
@@ -233,6 +263,9 @@ public sealed class WaermepumpeAnlageDaten
         KuehlHilfsstromanteil = quelle.KuehlHilfsstromanteil;
         KuehlCarrierId = quelle.KuehlCarrierId;
         KuehlEigenerZaehler = quelle.KuehlEigenerZaehler;
+        KuehlFrei = quelle.KuehlFrei;
+        KuehlFreiGraedigkeitK = quelle.KuehlFreiGraedigkeitK;
+        KuehlFreiLeistungKw = quelle.KuehlFreiLeistungKw;
     }
 }
 
@@ -255,6 +288,14 @@ public sealed class WaermepumpeKuehlGaben
 
     /// <summary>Der Sperrgrund des Kühlbetriebs eines Geräts (keine Kennlinie, Quellspeicher); <c>null</c> = frei.</summary>
     public Func<int, string?>? Sperrgrund { get; init; }
+
+    /// <summary>
+    /// Warum die freie Kühlung über die Wärmequelle an dieser Anlage nicht wirkt (KU3-6, F2):
+    /// Bauart nicht Sole-/Wasser-Wasser oder Wärmequelle nicht gepflegt (Außenluft, leer,
+    /// Pufferspeicher). Je Gerät gefragt wie <see cref="Sperrgrund"/>; <c>null</c> = wirksam.
+    /// Die Regel samt Texten steht in <c>WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus</c>.
+    /// </summary>
+    public Func<int, string?>? FreiSperrgrund { get; init; }
 
     /// <summary>Die Stromträger des Projekts für die Wahl des Kühlträgers — Id und Name.</summary>
     public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; init; } = Array.Empty<(int, string)>();

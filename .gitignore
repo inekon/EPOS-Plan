@@ -457,3 +457,7 @@ Referenzlaeufe/Schemakopien/*
 # Liegt der Klon unter Dokumente/EPOS-Plan, schreibt die laufende Anwendung ihre mitgelieferten
 # Vorlagen und die Ablagedatei in die Repowurzel. Laufzeiterzeugnis, nie versioniert.
 /Berichtsvorlagen/
+
+# HottCAD-Projektdateien (SQLite) sind Anwenderdaten: nur lokal fuer die Diagnose
+# (SqprojQuelldateienDiagnoseTests), nie versioniert (Datenaustauschkonzept 16.6 Nr. 1).
+Quellen/*.sqproj

@@ -17,15 +17,22 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Fable 5.1 orchestriert und übernimmt das Anspruchsvolle:** Es plant, zerlegt Aufträge,
-  prüft Ergebnisse, führt zusammen und berichtet; Konzeptarbeit, schwierige Analysen, die
-  Fehlersuche im Rechenweg und die Zusammenführung widersprüchlicher Stände übernimmt es selbst
-  oder gibt sie an Agenten mit `model: fable`.
+- **Fable 5.1 orchestriert nur:** Es plant, schneidet Aufträge, wählt das Modell, nimmt
+  Ergebnisse ab, entscheidet bei widersprüchlichen Befunden, bereitet Anwenderentscheide vor und
+  berichtet. Alles andere wird delegiert — auch Hüllen, Nachzüge, Konzeptabsätze, Status- und
+  Protokollpflege, Merges und Gates; Fable fasst Dateien nur an, wenn ein Agentenaufruf teurer
+  wäre als die Änderung selbst (eine Zeile, ein Verweis).
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
-  und Zeit: `model: opus` (Opus 5.5) für Implementierung, Tests, Hüllen, Nachzüge, Papiere und
-  Konfliktauflösung; `model: sonnet` für Suchen, Dateilisten, kleine Textpflege und Vorlagen;
-  `model: haiku` für Zählungen, Encoding- und Zeilenendenprüfungen. Das Modell bei jedem
-  Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
+  und Zeit:
+
+  | Modell | Aufgaben |
+  |---|---|
+  | `model: opus` (Opus 5.5, `opus-umsetzung`) | Rechenweg, Schema, Tests, Hüllen und Dialoge, Fehlersuche im Code, Konfliktauflösung mit Fachinhalt, Konzeptabsätze mit Fachinhalt, Referenzprojekte und Basen einfrieren |
+  | `model: sonnet` (`sonnet-mechanik`) | Inventare und Suchen, Status-, Protokoll- und Indexpflege nach Vorlage, Ressourcen in beiden Sprachen, Wiki-Quellen und Logbuch-Entwürfe, Gate fahren und Zahlen melden, Merges ohne Fachkonflikt, CI-Protokolle auswerten, Vergleichstabellen aus vorliegenden Zahlen |
+  | `model: haiku` (`haiku-pruefung`) | Zählungen, BOM-, Encoding- und Zeilenendenprüfungen, Konfliktmarker, LFS-Zeiger, Dateilisten |
+  | `model: fable` | nur, wenn die Orchestrierung selbst eine schwierige Analyse in einem frischen Kontext braucht |
+
+  Das Modell bei jedem Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
 - **Agentenaufträge** sind vollständig und repo-relativ formuliert (keine absoluten Pfade —
   sie lenken Worktree-Sitzungen in den Hauptbaum), nennen das Ziel, die Abnahme (Build,
   Tests, Referenzlauf) und die Regeln dieser Datei, die gelten. Agenten arbeiten im eigenen
@@ -165,7 +172,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-04_R35_Zonenuebergabe`, neunzehn Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-05_R38_Vorlaufwahl`, einundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -187,7 +194,10 @@ Lüftung, Ferien, Heizperiode) und Aufheizoptimierung, gehalten von
 drei Zonen mit Zonenkalendern, gehalten von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests`, und steht nicht in
 der CI-Auswahl,
 Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude und einer Zone mit eigener Übergabe (Konvektor 70/50 °C, Proportionalband 2 K) — die Übergabe je Zone am gemeinsamen Vorlauf, Rücklauf massenstromgewichtet —, gehalten von `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
-allein Projekt 1040 bis zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
+Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1056 rechnet als Kopie von 1047 mit Anlagenfahrplan — Nachtsperre der Wärmepumpe 0 bis 6 Uhr, Zeitprogramm 0 in denselben Stunden an Kessel und BHKW, `Vorlauf_Max` 50 °C — und schreibt Komfortstunden, gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus,
+allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
@@ -214,13 +224,16 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   Kaskadenplatz der Wärmepumpe, ihr Kühlbetrieb, `Kuehl_Vorlauf` und `Kuehl_Hilfsstromanteil`,
   Kühlträger und Abrechnungsart ihrer Anlagenzeile (`Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`)
   und die Kühlkennlinie des Projektgeräts samt Vorlauf-Stützstellen (`Tab_Kenndaten_Kuehlung`);
+- gesäte Kältemaschinendaten eines Referenzprojekts: die Anlagenzeile seiner Kältemaschine (`Kaeltemaschine_Anzahl`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), ihre Projektkopie `Tab_Kaeltemaschine` (Nennkälteleistung, EER, Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung, `Kuehl_Vorlauf`, `Kuehl_Hilfsstromanteil`) samt `Tab_Kenndaten_Kaeltemaschine`, sein Kältespeicher (Pufferzeile mit Verwendung Kälte, Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, Bereitschaftsverlust, Schwellen) und die Kaskade (`Tool_1` bis `Tool_6`), dazu das Anlegen oder Entfernen eines solchen Referenzprojekts;
 - gesäte Auslegungsdaten der Übergabe: die Kopplungsstufe `Tab_Einstellungen.Anlagenkopplung`
   eines Referenzprojekts, an seinen Gebäuden `Heizkreis_Aktiv` und die Übergabespalten (Art,
   Exponent, Nennleistung, Auslegungspunkt, Heizkurve, `Regler_Proportionalband`,
   `Sollwertprofil`), `Kuehluebergabe_Aktiv`, die Spalten `Kuehl_Uebergabe_*` und
   `Kuehl_Auslegung_*` und `Kuehl_Vorlaufgrenze`, an seinen Zonen die sieben Übergabespalten von `Tab_Zone` (`Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn`, `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`, `Regler_Proportionalband`), die Kaskade eines gekoppelten Referenzprojekts
   (`Tab_Einstellungen.Tool_1` bis `Tool_4`, sie entscheidet, ob die Wärmepumpe am gerechneten
-  Vorlauf Wärme liefert), dazu das Anlegen oder Entfernen eines gekoppelten Referenzprojekts;
+  Vorlauf Wärme liefert), ihr Anlagenfahrplan in `Tab_Energieanlagen` (Sperrzeit `Sperrung`, `Sperrzeit_von`,
+  `Sperrzeit_bis` samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`), dazu das Anlegen oder Entfernen eines
+  gekoppelten Referenzprojekts;
 - gesäte Zapfprofil-Eingaben eines Referenzprojekts: `Tab_TwwProjekt` (`Weg`, Seed,
   Realisierungen, Temperaturen, Bilanzgrenze), seine Zonen (`Tab_TwwZone`) und Wohnungstypen,
   die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, und das Umstellen eines

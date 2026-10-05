@@ -92,6 +92,9 @@ namespace WindowsFormsApplication1
         private readonly List<string> _seiteUnbestimmt = new List<string>();
         private readonly List<string> _ohneGebaeude = new List<string>();
         private readonly SortedDictionary<string, int> _platzierungsart = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        private double _winkel = 1.0;
+        private readonly SortedDictionary<string, int> _koerperNichtLesbar = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        private readonly HashSet<int> _gebaeudeMitDarstellung = new HashSet<int>();
         private readonly List<Schale> _schalen = new List<Schale>();
 
         private sealed class Schale
@@ -124,6 +127,7 @@ namespace WindowsFormsApplication1
             _abbild.LaengenFaktorNachMeter = _einheiten.Laenge;
             _abbild.FlaechenFaktorNachM2 = _einheiten.Flaeche;
             _abbild.VolumenFaktorNachM3 = _einheiten.Volumen;
+            _winkel = IfcRaumkoerper.Winkelfaktor(projekt);
             Kontext(projekt);
 
             List<IIfcBuilding> gebaeude = Sortiert<IIfcBuilding>().ToList();
@@ -144,6 +148,7 @@ namespace WindowsFormsApplication1
 
             Raumbezuege();
             Bauteile();
+            Koerpertrennflaechen();
             GrundrissTrenndecken();
             ReferenzenMelden();
             Melden(0.9);
@@ -485,6 +490,8 @@ namespace WindowsFormsApplication1
             r.SollHeizenC = Sollwert(s);
             Beheizung(s, r, langname, name, g);
             r.Klassifikation = Klassifikation(s);
+            RaumtypLesen(s, r);
+            r.Konditionierung = KonditionierungLesen(s, r, g);
 
             g.Raeume.Add(r);
             _raum[s.EntityLabel] = r;
@@ -499,6 +506,32 @@ namespace WindowsFormsApplication1
                 try { r.GrundrissM = IfcRaumgrundriss.Lesen(s, rahmen.Value, _einheiten.Laenge); }
                 catch (Exception) { r.GrundrissM = null; }   // eine unlesbare Darstellung ist kein Grundriss
             }
+            Raumkoerper(s, r, gi, rahmen);
+        }
+
+        /// <summary>
+        /// <b>Der Körper des Raums aus der Datei</b> (Datenaustauschkonzept 15.2, Stufe G7f-1): nur Anzeige, nie
+        /// Rechengrundlage. Ohne Weltrahmen (<c>IfcGridPlacement</c>, <c>IfcLinearPlacement</c>) kein Körper; nicht
+        /// lesbare Arten werden je Art gezählt (<c>KOERPER_ART</c>).
+        /// </summary>
+        private void Raumkoerper(IIfcSpace s, AbbildRaum r, int gi, IfcRahmen? rahmen)
+        {
+            if (s.Representation == null) return;
+            _gebaeudeMitDarstellung.Add(gi);
+            if (!rahmen.HasValue) return;
+            var nichtLesbar = new List<string>();
+            r.Koerper = IfcRaumkoerper.Lesen(s, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar);
+            foreach (string art in nichtLesbar)
+                _koerperNichtLesbar[art] = _koerperNichtLesbar.TryGetValue(art, out int z) ? z + 1 : 1;
+        }
+
+        /// <summary>Je Gebäude die Räume mit <c>PredefinedType = INTERNAL</c> und <c>IsExternal = TRUE</c> (Regel B2 ohne Wirkung).</summary>
+        private readonly Dictionary<AbbildGebaeude, List<string>> _aussenWiderspruch = new Dictionary<AbbildGebaeude, List<string>>();
+
+        private static void Zaehlen(Dictionary<AbbildGebaeude, List<string>> ziel, AbbildGebaeude g, string raum)
+        {
+            if (!ziel.TryGetValue(g, out List<string> liste)) ziel[g] = liste = new List<string>();
+            liste.Add(raum);
         }
 
         /// <summary>Die Temperatur [°C], oberhalb derer ein Raum nach Regel B3 beheizt ist.</summary>
@@ -507,7 +540,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Beheizt oder unbeheizt — die Regeln B1 bis B4 und B6</b> (Mehrzonenkonzept 6.1; B5 folgt
         /// nach den Raumgrenzen, <see cref="Untergeschosse"/>): B1 <c>PredefinedType = EXTERNAL</c>, B2
-        /// <c>Pset_SpaceCommon.IsExternal = TRUE</c>, B3 der Heizsollwert aus
+        /// <c>Pset_SpaceCommon.IsExternal = TRUE</c> (nicht gegen ein ausdrückliches <c>PredefinedType = INTERNAL</c>: dann
+        /// gilt das Attribut, benannt <c>IMP_IFC_PROT_AUSSEN_WIDERSPRUCH</c>), B3 der Heizsollwert aus
         /// <c>Pset_SpaceThermalRequirements</c> — nur mit auflösbarer Temperatureinheit — über 12 °C
         /// beheizt, sonst unbeheizt, ersatzweise die Beheizungsart eines CAD-Exports
         /// (<see cref="Beheizungsart"/>), B4 die Namensregel, B6 sonst beheizt. Die erste Regel, die trägt,
@@ -523,7 +557,11 @@ namespace WindowsFormsApplication1
                 return;
             }
             bool? aussen = Wahrheit(IfcEigenschaften.Finden(_bezuege, s, "Pset_SpaceCommon", "IsExternal"));
-            if (aussen == true)
+            // B2 nur ohne Widerspruch: Erklärt das Attribut den Raum ausdrücklich als Innenraum (INTERNAL), geht es dem
+            // Satz vor — IsExternal = TRUE bleibt dann ohne Wirkung, benannt je Gebäude (AUSSEN_WIDERSPRUCH).
+            if (aussen == true && art == IfcSpaceTypeEnum.INTERNAL)
+                Zaehlen(_aussenWiderspruch, g, r.Name ?? r.Kennung);
+            else if (aussen == true)
             {
                 Setzen(r, false, BeheiztQuelle.Attribut, "B2", "IsExternal");
                 return;
@@ -643,6 +681,35 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>Der Raumtyp eines CAD-Exports (<c>HSETU_RaumAllgemein</c>, Aufzählung mit Präfix <c>mrt</c>).</summary>
+        internal const string RAUMTYP = "RoomType";
+
+        /// <summary>
+        /// <b>Raumtyp und Raumtemperatur</b> für die Zonenregel Z6 (Mehrzonenkonzept 6.1): der Raumtyp aus
+        /// <see cref="RAUMTYP"/> eines beliebigen Satzes ohne Präfix <c>mrt</c> (<c>mrtOffice</c> → <c>Office</c>), sonst
+        /// <c>Pset_SpaceCommon.Category</c>, sonst <c>ObjectType</c>, sonst <c>null</c> — sprachneutral, wie in der Datei;
+        /// dazu die Raumtemperatur der Datei (<see cref="Raumtemperatur"/>), die nie als Sollwert gilt.
+        /// </summary>
+        private void RaumtypLesen(IIfcSpace s, AbbildRaum r)
+        {
+            r.RaumtemperaturC = Raumtemperatur(s)?.TemperaturC;
+            string typ = null;
+            IfcFund f = IfcEigenschaften.AlleMitNamen(_bezuege, s, new[] { RAUMTYP }).FirstOrDefault();
+            if (f != null)
+                typ = f.Eigenschaft is IIfcPropertyEnumeratedValue aufz
+                    ? aufz.EnumerationValues?.Select(IfcEigenschaften.Textwert).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t))
+                    : f.Eigenschaft is IIfcPropertySingleValue einzel ? IfcEigenschaften.Textwert(einzel.NominalValue) : null;
+            typ = typ?.Trim();
+            if (typ != null && typ.Length > 3 && typ.StartsWith("mrt", StringComparison.Ordinal)) typ = typ.Substring(3);
+            if (string.IsNullOrWhiteSpace(typ))
+            {
+                IfcFund kategorie = IfcEigenschaften.Finden(_bezuege, s, "Pset_SpaceCommon", "Category");
+                typ = kategorie?.Eigenschaft is IIfcPropertySingleValue k ? IfcEigenschaften.Textwert(k.NominalValue) : null;
+            }
+            if (string.IsNullOrWhiteSpace(typ)) typ = IfcEigenschaften.Text(s.ObjectType);
+            r.Raumtyp = string.IsNullOrWhiteSpace(typ) ? null : typ.Trim();
+        }
+
         /// <summary>
         /// <b>Die Raumtemperatur eines CAD-Exports</b>: die Eigenschaft <see cref="RAUMTEMPERATUR"/> aus einem beliebigen
         /// Satz des Raums, nur mit der Einheit °C im Namen (<c>InsideTemperature (°C)</c>) und im Band
@@ -672,6 +739,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void BeheizungsartMelden()
         {
+            foreach (KeyValuePair<AbbildGebaeude, List<string>> g in _aussenWiderspruch)
+                g.Key.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "AUSSEN_WIDERSPRUCH", Ganz(g.Value.Count), Beispiele(g.Value)));
             foreach (KeyValuePair<AbbildGebaeude, SortedDictionary<string, int[]>> g in _beheizungsart)
                 foreach (KeyValuePair<string, int[]> m in g.Value)
                     g.Key.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BEHEIZUNGSART", Ganz(m.Value[0]), Ganz(m.Value[1]), m.Key));
@@ -835,6 +904,81 @@ namespace WindowsFormsApplication1
         /// In IFC4X3 ist der Satz entfallen und wird nicht gelesen. Gelesen wird die untere Wintergrenze,
         /// sonst die untere Grenze, sonst der Sollwert des Bands.
         /// </summary>
+        /// <summary>
+        /// <b>Die Konditionierung der Zone aus den eigenen Sätzen von EPOS-Plan</b> (Datenaustauschkonzept 6.3, 16.3):
+        /// <c>EPOS_Zone</c> (Nutzung, Heiz- und Kühlsollwert, Luftwechsel der Nutzer) und je Größe
+        /// <c>EPOS_Kalender_&lt;Größe&gt;</c> (<see cref="IfcKonditionierungssatz"/>). Eine Datei ohne diese Werte ergibt
+        /// <c>null</c>; ein nicht lesbarer Satz oder Periodentext wird benannt übersprungen (<c>KOND_UEBERSPRUNGEN</c>).
+        /// </summary>
+        private AbbildKonditionierung KonditionierungLesen(IIfcSpace s, AbbildRaum r, AbbildGebaeude g)
+        {
+            Dictionary<string, List<IfcSatzwert>> saetze = null;
+            // HasProperties ist hier das Vorwärtsattribut von IfcPropertySet (Wache: Bezeichner „ps“).
+            foreach (IIfcPropertySet ps in IfcEigenschaften.Saetze(_bezuege, s).OfType<IIfcPropertySet>())
+            {
+                string name = IfcEigenschaften.Text(ps.Name);
+                if (name == null || !(name == IfcSchreiber.EPOS_ZONE || name.StartsWith(IfcKonditionierungssatz.PRAEFIX_KALENDER, StringComparison.Ordinal)))
+                    continue;
+                saetze ??= new Dictionary<string, List<IfcSatzwert>>(StringComparer.Ordinal);
+                if (!saetze.TryGetValue(name, out List<IfcSatzwert> werte)) saetze[name] = werte = new List<IfcSatzwert>();
+                foreach (IIfcPropertySingleValue e in ps.HasProperties.OfType<IIfcPropertySingleValue>())
+                    werte.Add(Satzwert(e));
+            }
+            if (saetze == null) return null;
+            var k = new AbbildKonditionierung();
+            if (saetze.TryGetValue(IfcSchreiber.EPOS_ZONE, out List<IfcSatzwert> zone))
+            {
+                IfcSatzwert W(string n) => zone.FirstOrDefault(w => w.Name == n);
+                string nutzung = W(IfcKonditionierungssatz.NUTZUNG)?.Text?.Trim();
+                k.Nutzung = Zonenplan.NUTZUNGEN.Contains(nutzung) ? nutzung : null;
+                k.HeizsollTagC = W(IfcKonditionierungssatz.HEIZSOLL_TAG)?.Zahl;
+                k.HeizsollNachtC = W(IfcKonditionierungssatz.HEIZSOLL_NACHT)?.Zahl;
+                k.KuehlsollC = W(IfcKonditionierungssatz.KUEHLSOLL)?.Zahl;
+                k.LuftwechselNutzerJeH = W(IfcKonditionierungssatz.LUFTWECHSEL_NUTZER)?.Zahl;
+            }
+            var uebersprungen = new List<string>();
+            foreach (Konditionierungsgroesse groesse in Konditionierungsgroessen.Alle)
+                if (saetze.TryGetValue(IfcKonditionierungssatz.Satzname(groesse), out List<IfcSatzwert> werte)
+                    && IfcKonditionierungssatz.KalenderLesen(groesse, werte, uebersprungen) is AbbildKalender kalender)
+                    k.Kalender.Add(kalender);
+            if (uebersprungen.Count > 0)
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KOND_UEBERSPRUNGEN", r.Name ?? r.Kennung,
+                    Ganz(uebersprungen.Count), string.Join(", ", uebersprungen)));
+            return k.Traegt ? k : null;
+        }
+
+        /// <summary>Ein Wert eines eigenen Satzes: Temperaturen nach °C (Einheit der Eigenschaft vor der des Projekts), auf vier Stellen.</summary>
+        private IfcSatzwert Satzwert(IIfcPropertySingleValue e)
+        {
+            string name = e.Name.ToString() ?? "";
+            string beschreibung = IfcEigenschaften.Text(e.Description);
+            IIfcValue v = e.NominalValue;
+            // Der Typname gilt für IFC4 und IFC2X3 gleich (die Werttypen sind je Schema eigene Strukturen).
+            switch (v?.GetType().Name)
+            {
+                case "IfcThermodynamicTemperatureMeasure":
+                {
+                    double? t = IfcEigenschaften.Zahl(v);
+                    if (t.HasValue)
+                        t = e.Unit is IIfcSIUnit si && si.Name == Xbim.Ifc4.Interfaces.IfcSIUnitName.KELVIN ? t.Value - 273.15
+                            : e.Unit is IIfcSIUnit c && c.Name == Xbim.Ifc4.Interfaces.IfcSIUnitName.DEGREE_CELSIUS ? t.Value
+                            : _einheiten.NachCelsius(t.Value);
+                    return new IfcSatzwert(name, IfcSatzwertart.Temperatur, t.HasValue ? Math.Round(t.Value, Kalenderwoche.NACHKOMMASTELLEN) : null);
+                }
+                case "IfcBoolean":
+                case "IfcLogical":
+                    return new IfcSatzwert(name, IfcSatzwertart.Wahrheit, Wahr: IfcEigenschaften.Wahrheit(v), BeschreibungWoertlich: beschreibung);
+                case "IfcText":
+                case "IfcLabel":
+                case "IfcIdentifier":
+                    return new IfcSatzwert(name, IfcSatzwertart.Text, Text: IfcEigenschaften.Textwert(v), BeschreibungWoertlich: beschreibung);
+                default:
+                    double? z = IfcEigenschaften.Zahl(v);
+                    return new IfcSatzwert(name, IfcSatzwertart.Zahl, z.HasValue ? Math.Round(z.Value, Kalenderwoche.NACHKOMMASTELLEN) : null,
+                                           BeschreibungWoertlich: beschreibung);
+            }
+        }
+
         private double? Sollwert(IIfcSpace s)
         {
             if (_abbild.SchemaStand == IfcSchemaStand.Ifc4x3) return null;
@@ -883,9 +1027,39 @@ namespace WindowsFormsApplication1
                     RueckfallMerken(gi, platz == 0 ? "NetFloorArea" : "GrossFloorArea", herkunft[platz].Value);
             }
             RueckfaelleMelden(gi);
+            FlaecheAusGrundriss(g, raeume);
 
-            if (raeume.Count == 0 || raeume.All(kv => !(_raumflaechen[kv.Key][0] > 0.0) && !(_raumflaechen[kv.Key][1] > 0.0)))
+            if (raeume.Count == 0 || raeume.All(kv => !(_raumflaechen[kv.Key][0] > 0.0) && !(_raumflaechen[kv.Key][1] > 0.0)
+                                                      && !kv.Value.FlaecheAusGrundriss))
                 g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KEINE_RAEUME", g.Anzeigename, Ganz(raeume.Count)));
+        }
+
+        /// <summary>
+        /// <b>Die Raumfläche aus dem Grundriss</b> (Mehrzonenkonzept 6.5): Führt die Datei für einen Raum keine Flächenmenge —
+        /// weder Netto noch Brutto, auch nicht über die Rückfallnamen —, gilt die Fläche seines Grundrisses
+        /// (<see cref="AbbildRaum.GrundrissM"/>, Gaußsche Trapezformel) als Raumfläche, gekennzeichnet über
+        /// <see cref="AbbildRaum.FlaecheAusGrundriss"/> und benannt je Gebäude (<c>IMP_IFC_PROT_FLAECHE_GRUNDRISS</c>, I).
+        /// Ein Raum mit einer Flächenmenge bleibt unberührt.
+        /// </summary>
+        private void FlaecheAusGrundriss(AbbildGebaeude g, List<KeyValuePair<int, AbbildRaum>> raeume)
+        {
+            var namen = new List<string>();
+            double summe = 0.0;
+            foreach (KeyValuePair<int, AbbildRaum> kv in raeume)
+            {
+                AbbildRaum r = kv.Value;
+                if (r.FlaecheM2.HasValue || _raumflaechen[kv.Key][0] > 0.0 || _raumflaechen[kv.Key][1] > 0.0) continue;
+                if (r.GrundrissM == null || r.GrundrissM.Count < 3) continue;
+                double f = Math.Abs(Grundrissueberlappung.Flaeche(r.GrundrissM));
+                if (!(f > 0.0)) continue;
+                r.FlaecheM2 = f;
+                r.FlaecheAusGrundriss = true;
+                summe += f;
+                namen.Add(r.Name ?? r.Kennung);
+            }
+            if (namen.Count > 0)
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "FLAECHE_GRUNDRISS", Ganz(namen.Count),
+                    Zahl(Math.Round(summe, 1)), Beispiele(namen)));
         }
 
         // ==================================================================
@@ -934,10 +1108,56 @@ namespace WindowsFormsApplication1
             return nachName || nachTyp;
         }
 
+        /// <summary>Bauteile, deren äußere Raumgrenzen als Splitter nicht entschieden (<see cref="IstAussenSplitter"/>).</summary>
+        private readonly List<string> _aussenSplitter = new List<string>();
+
+        /// <summary>Je Platte eines zerlegten Dachs das Dach, dessen Raumgrenzen sie trägt (<see cref="Bauteile"/>).</summary>
+        private readonly Dictionary<int, int> _grenzenUebertrag = new Dictionary<int, int>();
+
+        /// <summary>Zerlegte Dächer, deren Raumgrenzen auf ihre Platte übergingen, und die Zahl dieser Grenzen.</summary>
+        private int _daecherUebertragen, _dachgrenzenUebertragen;
+
+        /// <summary>Die Raumgrenzen, die ein Bauteil oder eine Öffnung des Abbilds übernommen hat (Kennung der Grenze).</summary>
+        private readonly HashSet<int> _grenzenUebernommen = new HashSet<int>();
+
+        /// <summary>
+        /// <b>Raumgrenzen ohne Bauteilfläche</b> (Mehrzonenkonzept 6.2): Jede Grenze der gewählten Ebene (die 2. Ebene, wenn die
+        /// Datei welche führt), die kein Bauteil und keine Öffnung des Abbilds übernommen hat, wird je Art gezählt — die Klasse
+        /// ihres Bauteils (Stütze, Träger, mehrteiliges Dach, virtuelles Element …), ohne Bauteil „—“ — und benannt
+        /// (<c>IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL</c>, I, mit Anzahl und Fläche je Art). Ihre Geometrie liest der Leser; sie
+        /// gehört nur zu keinem Bauteil der Hülle.
+        /// </summary>
+        private void GrenzenOhneBauteilMelden()
+        {
+            if (_aussenSplitter.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "AUSSEN_SPLITTER", Ganz(_aussenSplitter.Count), Beispiele(_aussenSplitter)));
+            if (_daecherUebertragen > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "GRENZEN_DACHPLATTE", Ganz(_daecherUebertragen), Ganz(_dachgrenzenUebertragen)));
+            bool nurZweite = _abbild.ZahlRaumgrenzenZweiteEbene > 0;
+            var arten = new SortedDictionary<string, (int Zahl, double FlaecheM2)>(StringComparer.Ordinal);
+            foreach (IIfcRelSpaceBoundary rsb in Sortiert<IIfcRelSpaceBoundary>())
+            {
+                if (_grenzenUebernommen.Contains(rsb.EntityLabel)) continue;
+                if (nurZweite && !IstZweiteEbene(rsb, _abbild.SchemaStand, out _)) continue;
+                IIfcElement e = rsb.RelatedBuildingElement;
+                string art = (e == null ? "—" : e.ExpressType.ExpressName)
+                             + (rsb.PhysicalOrVirtualBoundary == IfcPhysicalOrVirtualEnum.VIRTUAL ? " (VIRTUAL)" : "");
+                IfcRahmen? rahmen = rsb.RelatingSpace is IIfcSpace raum && _raumRahmen.TryGetValue(raum.EntityLabel, out IfcRahmen r) ? r : (IfcRahmen?)null;
+                IfcGrenzgeometrie.Flaeche f = IfcGrenzgeometrie.Lesen(rsb, rahmen, _einheiten.Laenge);
+                arten.TryGetValue(art, out (int Zahl, double FlaecheM2) n);
+                arten[art] = (n.Zahl + 1, n.FlaecheM2 + (f?.FlaecheM2 ?? 0.0));
+            }
+            foreach (KeyValuePair<string, (int Zahl, double FlaecheM2)> a in arten.OrderByDescending(x => x.Value.FlaecheM2).ThenBy(x => x.Key, StringComparer.Ordinal))
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "GRENZEN_OHNE_BAUTEIL", Ganz(a.Value.Zahl), a.Key,
+                    Zahl(Math.Round(a.Value.FlaecheM2, 1))));
+        }
+
         /// <summary>Die Raumgrenzen eines Bauteils — die der 2. Ebene, wenn es welche gibt, sonst alle.</summary>
         private List<IIfcRelSpaceBoundary> GrenzenVon(IIfcElement e)
         {
-            if (!_grenzen.TryGetValue(e.EntityLabel, out List<IIfcRelSpaceBoundary> alle)) return new List<IIfcRelSpaceBoundary>();
+            if (!_grenzen.TryGetValue(e.EntityLabel, out List<IIfcRelSpaceBoundary> alle)
+                && !(_grenzenUebertrag.TryGetValue(e.EntityLabel, out int dach) && _grenzen.TryGetValue(dach, out alle)))
+                return new List<IIfcRelSpaceBoundary>();
             List<IIfcRelSpaceBoundary> zweite = alle.Where(g => _grenzenZweiteEbene.Contains(g.EntityLabel)).ToList();
             return zweite.Count > 0 ? zweite : alle;
         }
@@ -960,7 +1180,17 @@ namespace WindowsFormsApplication1
                     || IfcEigenschaften.MengeRueckfall(_bezuege, dach, RUECKFALL_BAUTEIL_BRUTTO, _einheiten, out _, out _).HasValue)
                     foreach (IIfcElement t in teile) uebersprungen.Add(t.EntityLabel);
                 else
+                {
                     uebersprungen.Add(dach.EntityLabel);
+                    // Die Raumgrenzen eines zerlegten Dachs: Hängen sie am Dach und trägt seine einzige Platte keine
+                    // eigenen, gelten sie für die Platte (Mehrzonenkonzept 6.5) — sonst gingen sie verloren.
+                    if (teile.Count == 1 && _grenzen.ContainsKey(dach.EntityLabel) && !_grenzen.ContainsKey(teile[0].EntityLabel))
+                    {
+                        _grenzenUebertrag[teile[0].EntityLabel] = dach.EntityLabel;
+                        _dachgrenzenUebertragen += GrenzenVon(dach).Count;
+                        _daecherUebertragen++;
+                    }
+                }
             }
             // Eine Vorhangfassade zählt als Ganzes; ihre Platten und Pfosten nicht noch einmal.
             foreach (IIfcCurtainWall fassade in Sortiert<IIfcCurtainWall>())
@@ -1164,7 +1394,8 @@ namespace WindowsFormsApplication1
             List<IIfcRelSpaceBoundary> grenzen = GrenzenVon(e);
             // Ohne IsExternal und ohne Raumgrenze: die Angrenzung eines CAD-Exports (Mehrzonenkonzept 6.5).
             (Randbedingung Rand, bool? Zonenboden)? angrenzung = !istAussen.HasValue && grenzen.Count == 0 ? Angrenzung(e) : null;
-            Randbedingung rand = Rand(istAussen, grenzen, dach, bodenplatte, angrenzung?.Rand);
+            Randbedingung rand = Rand(istAussen, grenzen, dach, bodenplatte, angrenzung?.Rand, out bool splitter);
+            if (splitter) _aussenSplitter.Add(IfcEigenschaften.Text(e.Name) ?? e.GlobalId.ToString());
 
             int gi = GebaeudeVon(e, grenzen);
             var b = new AbbildBauteil
@@ -1272,7 +1503,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Randbedingung (3.5 Nr. 4): <c>IsExternal</c> (Vorkommnis vor Typ) entscheidet; fehlt es,
         /// entscheidet <c>InternalOrExternalBoundary</c> der Raumgrenzen (<c>EXTERNAL_EARTH</c> = Erdreich,
-        /// <c>EXTERNAL*</c> = außen, <c>INTERNAL</c> = innen), bei <c>NOTDEFINED</c> die Zählregel: außen, wenn
+        /// <c>EXTERNAL*</c> = außen, an einer Bodenplatte erdberührt wie unter <c>IsExternal</c>, <c>INTERNAL</c> = innen;
+        /// äußere Grenzen, die nur ein Splitter sind, entscheiden nicht, <see cref="IstAussenSplitter"/>, gemeldet über
+        /// <paramref name="splitter"/>), bei <c>NOTDEFINED</c> die Zählregel: außen, wenn
         /// genau eine physische Raumgrenze auf das Bauteil zeigt. Ein Dach ohne jede Angabe gilt als außen,
         /// eine Bodenplatte als erdberührt — beides ist ihre Definition. Ohne beides gilt die
         /// <paramref name="angrenzung"/> eines CAD-Exports (<see cref="ANGRENZUNG"/>, Mehrzonenkonzept 6.5)
@@ -1280,17 +1513,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Randbedingung Rand(bool? istAussen, IReadOnlyCollection<IIfcRelSpaceBoundary> grenzen, bool dach, bool bodenplatte,
                                            Randbedingung? angrenzung = null)
+            => Rand(istAussen, grenzen, dach, bodenplatte, angrenzung, out _);
+
+        /// <summary>Die Randbedingung wie oben; <paramref name="splitter"/> sagt, ob äußere Grenzen als Splitter nicht entschieden.</summary>
+        internal static Randbedingung Rand(bool? istAussen, IReadOnlyCollection<IIfcRelSpaceBoundary> grenzen, bool dach, bool bodenplatte,
+                                           Randbedingung? angrenzung, out bool splitter)
         {
+            splitter = false;
             bool erde = grenzen.Any(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_EARTH);
             if (istAussen == true) return erde || bodenplatte ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
             if (istAussen == false) return Randbedingung.Innen;
             if (grenzen.Count > 0)
             {
                 if (erde) return Randbedingung.Erdreich;
-                if (grenzen.Any(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL
-                                     || g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_WATER
-                                     || g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_FIRE))
-                    return Randbedingung.Aussenluft;
+                List<IIfcRelSpaceBoundary> aussen = grenzen.Where(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL
+                                                                       || g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_WATER
+                                                                       || g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL_FIRE).ToList();
+                if (aussen.Count > 0 && IstAussenSplitter(aussen, grenzen))
+                {
+                    splitter = true;
+                    grenzen = grenzen.Except(aussen).ToList();
+                }
+                else if (aussen.Count > 0)
+                    return bodenplatte ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
                 if (grenzen.All(g => g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.INTERNAL))
                     return Randbedingung.Innen;
                 if (grenzen.Count(g => g.PhysicalOrVirtualBoundary == IfcPhysicalOrVirtualEnum.PHYSICAL) == 1)
@@ -1301,6 +1546,33 @@ namespace WindowsFormsApplication1
             if (dach) return Randbedingung.Aussenluft;
             if (bodenplatte) return Randbedingung.Erdreich;
             return Randbedingung.Unbekannt;
+        }
+
+        /// <summary>Der Flächenanteil, unter dem die äußeren Raumgrenzen eines Bauteils mit inneren Grenzen nicht entscheiden.</summary>
+        internal const double AUSSEN_SPLITTER_ANTEIL = 0.05;
+
+        /// <summary>
+        /// <b>Ein äußerer Splitter</b> (Mehrzonenkonzept 6.2): Trägt ein Bauteil auch innere Raumgrenzen und haben seine äußeren
+        /// Grenzen alle ein lesbares Polygon, zusammen aber weniger als <see cref="AUSSEN_SPLITTER_ANTEIL"/> der gelesenen
+        /// Grenzfläche des Bauteils, entscheiden sie die Randbedingung nicht — ein Randstreifen (FZK-Haus: 0,82 m² an einer
+        /// Geschossdecke von 170,6 m² Grenzfläche) macht keine Decke zum Dach.
+        /// </summary>
+        internal static bool IstAussenSplitter(IReadOnlyCollection<IIfcRelSpaceBoundary> aussen, IReadOnlyCollection<IIfcRelSpaceBoundary> alle)
+        {
+            if (aussen.Count == alle.Count) return false;
+            double flaecheAussen = 0.0, flaecheAlle = 0.0;
+            foreach (IIfcRelSpaceBoundary g in alle)
+            {
+                IfcGrenzgeometrie.Flaeche f = IfcGrenzgeometrie.Lesen(g, null, 1.0);
+                bool gelesen = f != null && f.Fehler == null;
+                if (aussen.Contains(g))
+                {
+                    if (!gelesen) return false;
+                    flaecheAussen += f.FlaecheM2;
+                }
+                if (gelesen) flaecheAlle += f.FlaecheM2;
+            }
+            return flaecheAlle > 0.0 && flaecheAussen < AUSSEN_SPLITTER_ANTEIL * flaecheAlle;
         }
 
         /// <summary>
@@ -1495,6 +1767,184 @@ namespace WindowsFormsApplication1
             foreach (int r in wahl) b.Nachbarn.Add(new AbbildNachbar(_raum[r].Kennung, null));
             _bezugswaende[gi] = _bezugswaende.TryGetValue(gi, out int w) ? w + 1 : 1;
             return true;
+        }
+
+        /// <summary>Höchstzahl der Raumnamen in <c>IMP_IFC_PROT_KOERPER_OHNE_PAAR</c>.</summary>
+        internal const int KOERPER_OHNE_PAAR_NAMEN = 5;
+
+        /// <summary>
+        /// <b>Die Trennflächen aus den Raumkörpern</b> (Mehrzonenkonzept 6.2, „Trennflächen aus Raumkörpern“): Je Gebäude
+        /// die Flächenpaare der Körper (<see cref="Koerpernachbarschaft"/>). Rangfolge Raumgrenzen vor Körpern vor
+        /// Raumbezügen:
+        /// <list type="bullet">
+        /// <item>Mit Raumgrenzen werden die Paare nur gezählt (<c>IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT</c>, I).</item>
+        /// <item>Ohne Raumgrenzen wird je Paar ein Trennbauteil mit zwei Grenzen der Herkunft <see cref="Grenzherkunft.Koerper"/>
+        /// gebildet (Fläche = Schnittfläche, Gegenstücke wechselseitig). U-Wert, Aufbau und Dicke stammen vom Bauteil der
+        /// gleichen Art, das beide Räume referenzieren (Richtung passend, Fläche am nächsten), sonst von einer Innenwand
+        /// bzw. Decke, die einer der Räume referenziert, bei einer Decke sonst von der größten freien Decke des
+        /// Geschosspaars (<see cref="FreieDecke"/>), sonst bleibt der U-Wert offen (Vorgabe). Ein so abgedecktes Bauteil
+        /// geht in den Paaren auf, wenn jeder Raum, der es referenziert, an einem dieser Paare liegt (seine Öffnungen gehen
+        /// an das größte Paar); sonst gibt es die Fläche seiner Paare ab und trägt nur den Rest weiter. Die Trenndecken aus den Raumbezügen eines Geschosspaars weichen den Körperdecken, wo ein
+        /// Körperpaar das Geschosspaar verbindet; sonst bleiben sie als Rückfall. Außenflächen bleiben unberührt.</item>
+        /// </list>
+        /// Meldungen: <c>IMP_IFC_PROT_GRENZEN_AUS_KOERPER</c> (I), <c>IMP_IFC_PROT_KOERPER_OHNE_PAAR</c> (I); den
+        /// Kopplungswächter der Körperdecken (<c>IMP_IFC_PROT_KOERPERPAAR_SCHWACH</c>, W) führt <see cref="ReferenzenMelden"/>.
+        /// </summary>
+        private void Koerpertrennflaechen()
+        {
+            for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
+            {
+                AbbildGebaeude g = _abbild.Gebaeude[gi];
+                if (g.Raeume.Count(r => r.Koerper != null) < 2) continue;
+                List<Koerperpaar> paare = Koerpernachbarschaft.Paare(g.Raeume);
+                g.ZahlKoerperpaare = paare.Count;
+                g.KoerperTrennwandM2 = Math.Round(paare.Where(p => !p.Decke).Sum(p => p.FlaecheM2), 6);
+                g.KoerperTrenndeckeM2 = Math.Round(paare.Where(p => p.Decke).Sum(p => p.FlaecheM2), 6);
+                if (g.ZahlGrenzen > 0)
+                {
+                    if (paare.Count > 0)
+                        g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPERPAARE_GEZAEHLT", g.Anzeigename, Ganz(paare.Count),
+                            Zahl(Math.Round(g.KoerperTrennwandM2, 2)), Zahl(Math.Round(g.KoerperTrenndeckeM2, 2))));
+                    continue;
+                }
+                var mitPaar = new HashSet<int>(paare.SelectMany(p => new[] { p.RaumA, p.RaumB }));
+                List<string> ohne = Enumerable.Range(0, g.Raeume.Count).Where(i => g.Raeume[i].Koerper != null && !mitPaar.Contains(i))
+                                              .Select(i => string.IsNullOrWhiteSpace(g.Raeume[i].Name) ? g.Raeume[i].Kennung : g.Raeume[i].Name.Trim()).ToList();
+                if (ohne.Count > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_OHNE_PAAR", Ganz(ohne.Count),
+                        string.Join(", ", ohne.Take(KOERPER_OHNE_PAAR_NAMEN)) + (ohne.Count > KOERPER_OHNE_PAAR_NAMEN ? ", …" : "")));
+                if (paare.Count == 0) continue;
+                g.KoerperpaareGebildet = true;
+
+                // Bauteil → die Räume dieses Gebäudes, die es über die Raumbezüge referenzieren (Raumkennungen).
+                var bezug = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+                foreach (KeyValuePair<int, List<int>> e in _raumbezug.OrderBy(x => x.Key))
+                {
+                    if (!(_modell.Instances[e.Key] is IIfcRoot wurzel)) continue;
+                    var raeume = new HashSet<string>(e.Value.Where(r => _raumGebaeude.TryGetValue(r, out int x) && x == gi).Select(r => _raum[r].Kennung),
+                                                     StringComparer.Ordinal);
+                    if (raeume.Count > 0) bezug[wurzel.GlobalId.ToString()] = raeume;
+                }
+                HashSet<string> Bezug(AbbildBauteil b) => bezug.TryGetValue(b.Kennung, out HashSet<string> r) ? r : null;
+                bool Innen(AbbildBauteil b) => b.Randbedingung != Randbedingung.Aussenluft && b.Randbedingung != Randbedingung.Erdreich;
+                bool IstWand(AbbildBauteil b) => b.Quelltyp != null && b.Quelltyp.IndexOf("Wall", StringComparison.OrdinalIgnoreCase) >= 0
+                                                 && !b.Quelltyp.StartsWith("IfcCurtainWall", StringComparison.OrdinalIgnoreCase);
+                bool IstDecke(AbbildBauteil b) => string.Equals(b.Quelltyp, "IfcSlab", StringComparison.OrdinalIgnoreCase)
+                                                  && b.Quellart != nameof(IfcSlabTypeEnum.ROOF) && b.Quellart != nameof(IfcSlabTypeEnum.BASESLAB);
+                bool Richtung(AbbildBauteil b, Koerperpaar p)
+                {
+                    if (p.Decke || !b.AzimutGrad.HasValue) return true;
+                    double az = Math.Atan2(p.NormaleA[0], p.NormaleA[1]) * 180.0 / Math.PI;
+                    double d = Math.Abs(((b.AzimutGrad.Value - az) % 180.0 + 180.0) % 180.0);
+                    return Math.Min(d, 180.0 - d) <= Koerpernachbarschaft.WAND_NEIGUNG_GRAD;
+                }
+
+                List<AbbildBauteil> bestand = g.Bauteile.ToList();
+                var neu = new List<(AbbildBauteil Teil, Koerperpaar Paar, List<AbbildBauteil> Abgedeckt)>();
+                var kennungen = new Dictionary<string, int>(StringComparer.Ordinal);
+                foreach (Koerperpaar p in paare)
+                {
+                    AbbildRaum ra = g.Raeume[p.RaumA], rb = g.Raeume[p.RaumB];
+                    Func<AbbildBauteil, bool> art = p.Decke ? (Func<AbbildBauteil, bool>)IstDecke : IstWand;
+                    bool Beide(AbbildBauteil b) { HashSet<string> r = Bezug(b); return r != null && r.Contains(ra.Kennung) && r.Contains(rb.Kennung); }
+                    bool Einer(AbbildBauteil b) { HashSet<string> r = Bezug(b); return r != null && (r.Contains(ra.Kennung) || r.Contains(rb.Kennung)); }
+                    List<AbbildBauteil> beide = bestand.Where(b => Innen(b) && art(b) && Beide(b) && Richtung(b, p)).ToList();
+                    AbbildBauteil vorlage = beide.OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault()
+                        ?? bestand.Where(b => Innen(b) && art(b) && Einer(b) && Richtung(b, p)
+                                              && (p.Decke ? b.Art == Bauteilart.Decke : b.Art == Bauteilart.Innenwand))
+                                  .OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault();
+                    // Eine Decke ohne Bezug: die größte freie Decke des Geschosspaars, im oberen Geschoss vor dem unteren
+                    // (wie die Trenndecke aus dem Grundriss).
+                    if (vorlage == null && p.Decke)
+                    {
+                        string o = (p.Oben == p.RaumA ? ra : rb).GeschossKennung, u = (p.Oben == p.RaumA ? rb : ra).GeschossKennung;
+                        vorlage = bestand.Where(b => FreieDecke(b) && b.GeschossKennung != null && (b.GeschossKennung == o || b.GeschossKennung == u))
+                                         .OrderByDescending(b => b.GeschossKennung == o).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).FirstOrDefault();
+                    }
+                    var abgedeckt = new List<AbbildBauteil>(beide);
+                    if (vorlage != null && !abgedeckt.Contains(vorlage)) abgedeckt.Add(vorlage);
+
+                    string kennung = (vorlage?.Kennung ?? "KOERPER") + "|" + ra.Kennung + "|" + rb.Kennung;
+                    int n = kennungen.TryGetValue(kennung, out int k) ? k + 1 : 1;
+                    kennungen[kennung] = n;
+                    if (n > 1) kennung += "|" + Ganz(n);
+                    AbbildRaum oben = p.Decke ? (p.Oben == p.RaumA ? ra : rb) : null;
+                    var t = new AbbildBauteil
+                    {
+                        Kennung = kennung, Quelltyp = vorlage?.Quelltyp ?? (p.Decke ? "IfcSlab" : "IfcWall"), Name = vorlage?.Name,
+                        Quellart = vorlage?.Quellart, Art = p.Decke ? Bauteilart.Decke : Bauteilart.Innenwand,
+                        Randbedingung = Randbedingung.Innen, BruttoflaecheM2 = p.FlaecheM2,
+                        UWertWm2K = vorlage?.UWertWm2K, UWertQuelle = vorlage?.UWertQuelle, Aufbau = vorlage?.Aufbau,
+                        DickeM = vorlage?.DickeM ?? (p.AbstandM > 0.0 ? p.AbstandM : (double?)null),
+                        NeigungGrad = p.Decke ? (double?)null : 90.0,
+                        GeschossKennung = oben?.GeschossKennung ?? ra.GeschossKennung,
+                        Trenndeckenherkunft = p.Decke ? AbbildBauteil.TRENNDECKE_KOERPER : null,
+                    };
+                    if (p.Decke) Paar(t, oben == ra ? rb : ra, oben);
+                    else { t.Nachbarn.Add(new AbbildNachbar(ra.Kennung, null)); t.Nachbarn.Add(new AbbildNachbar(rb.Kennung, null)); }
+                    double[] normaleB = p.NormaleA.Select(x => -x).ToArray();
+                    t.Grenzen.Add(new AbbildGrenze
+                    {
+                        Kennung = kennung + "|A", RaumKennung = ra.Kennung, Lage = Randbedingung.Innen, FlaecheM2 = p.FlaecheM2,
+                        SchwerpunktM = p.SchwerpunktA, Normale = p.NormaleA, RandpunkteM = p.RandA, GegenstueckKennung = kennung + "|B",
+                        Herkunft = Grenzherkunft.Koerper,
+                    });
+                    t.Grenzen.Add(new AbbildGrenze
+                    {
+                        Kennung = kennung + "|B", RaumKennung = rb.Kennung, Lage = Randbedingung.Innen, FlaecheM2 = p.FlaecheM2,
+                        SchwerpunktM = p.SchwerpunktB, Normale = normaleB, RandpunkteM = p.RandB, GegenstueckKennung = kennung + "|A",
+                        Herkunft = Grenzherkunft.Koerper,
+                    });
+                    neu.Add((t, p, abgedeckt));
+                }
+
+                // Abgedeckte Bauteile gehen auf, wenn jeder Raum, der sie referenziert, an einem ihrer Paare liegt.
+                var verbraucht = new HashSet<AbbildBauteil>();
+                foreach (AbbildBauteil b in neu.SelectMany(x => x.Abgedeckt).Distinct())
+                {
+                    var anPaaren = new HashSet<string>(neu.Where(x => x.Abgedeckt.Contains(b))
+                        .SelectMany(x => new[] { g.Raeume[x.Paar.RaumA].Kennung, g.Raeume[x.Paar.RaumB].Kennung }), StringComparer.Ordinal);
+                    HashSet<string> r = Bezug(b);
+                    if (r == null || r.All(anPaaren.Contains)) { verbraucht.Add(b); continue; }
+                    // Teilweise abgedeckt: Das Bauteil gibt die Fläche seiner Paare ab; was bleibt, trägt es weiter.
+                    if (!b.BruttoflaecheM2.HasValue) continue;
+                    double rest = b.BruttoflaecheM2.Value - neu.Where(x => x.Abgedeckt.Contains(b)).Sum(x => x.Paar.FlaecheM2);
+                    if (rest < Koerpernachbarschaft.FLAECHE_MIN_M2) { verbraucht.Add(b); continue; }
+                    if (b.NettoflaecheM2.HasValue) b.NettoflaecheM2 = b.NettoflaecheM2.Value * rest / b.BruttoflaecheM2.Value;
+                    b.BruttoflaecheM2 = Math.Round(rest, 6);
+                }
+
+                // Die Trenndecken aus den Raumbezügen eines Geschosspaars weichen den Körperdecken dieses Paars.
+                _trenndecken.TryGetValue(gi, out SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>> geschosspaare);
+                var koerperdecken = new SortedDictionary<(string Unten, string Oben), List<AbbildBauteil>>();
+                foreach ((AbbildBauteil t, Koerperpaar p, _) in neu.Where(x => x.Paar.Decke))
+                {
+                    AbbildRaum o = g.Raeume[p.Oben], u = g.Raeume[p.Oben == p.RaumA ? p.RaumB : p.RaumA];
+                    if (u.GeschossKennung == null || o.GeschossKennung == null || u.GeschossKennung == o.GeschossKennung) continue;
+                    (string, string) schluessel = (u.GeschossKennung, o.GeschossKennung);
+                    if (!koerperdecken.TryGetValue(schluessel, out List<AbbildBauteil> l)) koerperdecken[schluessel] = l = new List<AbbildBauteil>();
+                    l.Add(t);
+                }
+                foreach (KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>> kd in koerperdecken)
+                {
+                    if (geschosspaare != null && geschosspaare.TryGetValue(kd.Key, out List<AbbildBauteil> alt))
+                        foreach (AbbildBauteil b in alt.Where(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG)) verbraucht.Add(b);
+                    if (geschosspaare == null) _trenndecken[gi] = geschosspaare = new SortedDictionary<(string, string), List<AbbildBauteil>>();
+                    geschosspaare[kd.Key] = kd.Value;
+                }
+
+                // Die Öffnungen eines aufgegangenen Bauteils gehen an sein größtes Paar.
+                foreach (AbbildBauteil b in bestand.Where(verbraucht.Contains))
+                {
+                    if (b.Oeffnungen.Count == 0) continue;
+                    AbbildBauteil ziel = neu.Where(x => x.Abgedeckt.Contains(b)).OrderByDescending(x => x.Paar.FlaecheM2).Select(x => x.Teil).FirstOrDefault();
+                    ziel?.Oeffnungen.AddRange(b.Oeffnungen);
+                }
+                g.Bauteile.RemoveAll(verbraucht.Contains);
+                g.Bauteile.AddRange(neu.Select(x => x.Teil));
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "GRENZEN_AUS_KOERPER", g.Anzeigename, Ganz(paare.Count),
+                    Zahl(Math.Round(g.KoerperTrennwandM2, 2)), Zahl(Math.Round(g.KoerperTrenndeckeM2, 2))));
+            }
         }
 
         /// <summary>Kleinste Überlappung zweier Grundrisse übereinanderliegender Räume, ab der sie eine Trenndecke teilen [m²].</summary>
@@ -1693,7 +2143,9 @@ namespace WindowsFormsApplication1
                     double referenziert = p.Value.Sum(t => t.BruttoflaecheM2 ?? 0.0);
                     double flaeche = referenziert;
                     // Die Überlappung der Grundrisse ist gemessen, keine Teilmenge: keine Schätzung.
-                    bool gemessen = p.Value.All(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_GRUNDRISS);
+                    bool gemessen = p.Value.All(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_GRUNDRISS
+                                                     || t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_KOERPER);
+                    bool koerper = p.Value.All(t => t.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_KOERPER);
                     if (kleiner > 0.0 && referenziert < kleiner && !gemessen)
                     {
                         Schaetzen(p.Value, referenziert, kleiner);
@@ -1702,7 +2154,7 @@ namespace WindowsFormsApplication1
                             Zahl(Math.Round(kleiner, 2)), Zahl(Math.Round(referenziert, 2))));
                     }
                     if (flaeche >= TRENNDECKE_ANTEIL_MIN * kleiner) { tragend.Add(p.Key); continue; }
-                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "TRENNDECKE_KLEIN", Name(p.Key.Unten), Name(p.Key.Oben),
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + (koerper ? "KOERPERPAAR_SCHWACH" : "TRENNDECKE_KLEIN"), Name(p.Key.Unten), Name(p.Key.Oben),
                         Zahl(Math.Round(flaeche, 2)), Zahl(Math.Round(kleiner, 2)), Ganz((int)Math.Round(100.0 * flaeche / kleiner))));
                 }
                 g.GeschosseGekoppelt = Gekoppelt(warm.Keys, tragend);
@@ -1863,6 +2315,7 @@ namespace WindowsFormsApplication1
         {
             foreach (IIfcRelSpaceBoundary g in grenzen.OrderBy(x => x.EntityLabel))
             {
+                _grenzenUebernommen.Add(g.EntityLabel);
                 IIfcSpace raum = g.RelatingSpace as IIfcSpace;
                 var a = new AbbildGrenze
                 {
@@ -2309,6 +2762,16 @@ namespace WindowsFormsApplication1
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KEINE_MENGEN", Ganz(_ohneMengen.Count), Beispiele(_ohneMengen)));
             foreach (KeyValuePair<string, int> art in _platzierungsart)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "PLATZIERUNGSART", Ganz(art.Value), art.Key));
+            foreach (KeyValuePair<string, int> art in _koerperNichtLesbar)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_ART", Ganz(art.Value), art.Key));
+            for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
+            {
+                if (!_gebaeudeMitDarstellung.Contains(gi)) continue;
+                AbbildGebaeude g = _abbild.Gebaeude[gi];
+                int mit = g.Raeume.Count(x => x.Koerper != null);
+                _abbild.Gebaeude[gi].Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_GELESEN", Ganz(mit),
+                    Ganz(g.Raeume.Count - mit), Ganz(g.Raeume.Sum(x => x.Koerper?.DreieckZahl ?? 0))));
+            }
             if (_seiteUnbestimmt.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "SEITE_UNBESTIMMT", Ganz(_seiteUnbestimmt.Count), Beispiele(_seiteUnbestimmt)));
             if (_ohneGebaeude.Count > 0)
@@ -2318,6 +2781,7 @@ namespace WindowsFormsApplication1
             KeinUWert();
             Schichtmeldungen();
 
+            GrenzenOhneBauteilMelden();
             foreach (KeyValuePair<string, int> art in _flaecheUnbekannt)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "FLAECHE_UNBEKANNT", Ganz(art.Value), art.Key));
 

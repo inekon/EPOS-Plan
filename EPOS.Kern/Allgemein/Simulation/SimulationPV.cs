@@ -109,6 +109,9 @@ namespace WindowsFormsApplication1
         /// nicht auf 0, damit die SpeicherEngine ihn laden kann). Er ist KEINE
         /// PV-Erzeugung und gehört nicht in <see cref="Ueberschuss"/> — sonst würde
         /// er als PV-Einspeisung vergütet. Hier getrennt ausgewiesen [kWh je Stunde].
+        /// Im Lauf ist das dieselbe Größe wie <see cref="SimulationControl.BhkwEinspeisungDesLaufs"/>
+        /// (Stundenmittel der Viertelstundenbilanz aus <see cref="SimulationControl.BhkwUeberschussKw(double)"/>);
+        /// Bericht, Reiter und Wirtschaftlichkeit lesen die Reihe des Laufs, nicht diese.
         /// </summary>
         public double[] BhkwUeberschuss = new double[8760];
 
@@ -566,7 +569,9 @@ namespace WindowsFormsApplication1
                     // V1 (PV-Konzept § 2.3, Etappe P1): Ein NEGATIVER Restbedarf ist
                     // BHKW-Überschuss — kein Bedarf und keine PV-Größe.
                     double bedarf = Math.Max(0, bedarfRoh);
-                    double bhkw = Math.Max(0, -bedarfRoh);
+                    // Dieselbe Formel wie die Einspeisereihe des Laufs
+                    // (SimulationControl.BhkwEinspeisung_viertelstuendlich) auf demselben Rest.
+                    double bhkw = SimulationControl.BhkwUeberschussKw(bedarfRoh);
 
                     double direkt = Math.Min(erzeugung, bedarf);
                     double ueberschuss = erzeugung - direkt;
