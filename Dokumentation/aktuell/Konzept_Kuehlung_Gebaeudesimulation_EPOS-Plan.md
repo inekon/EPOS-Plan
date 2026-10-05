@@ -2809,6 +2809,17 @@ in Stunden über der Kälteleistung. Die **Rechenprobe gegen die Handrechnung je
 Kältestrom gegen die Handrechnung aus den gesäten Stützstellen; mit 7 °C deckt die Maschine 91,9 % bei
 einer Jahresarbeitszahl Kälte von 3,25.
 
+**So gebaut (KU3-4b, 04.10.2026):** Das Referenzprojekt **1055 „Kältemaschine mit Kältespeicher“** ist eine
+Kopie von 1017 auf dem Kopierweg des Programms
+([`referenzprojekt_1055_kaeltemaschine.py`](../../Referenzlaeufe/Skripte/referenzprojekt_1055_kaeltemaschine.py)):
+Die Wärmepumpe heizt nur; die Kälte deckt eine Kältemaschine 20 kW mit Trockenkühler (Projektkopie des Katalogsatzes
+200 kW, auf ein Zehntel skaliert; Hilfsstrom der Rückkühlung 0,6 kW, Hilfsstromanteil 0,05) über einen eigenen Zähler mit
+dem zweiten Stromträger des Projekts (5.3, 4.6), gepuffert von einem Kaltwasserspeicher 2 m³ (6/12 °C). Gerechnet: 4,08 MWh
+Kältebedarf zu 100,0 % gedeckt, Kältestrom 1,26 MWh, EER-Jahreswert 3,25, keine Stunde freier Kühlung, Kältespeicher mit
+2,52 MWh Ladung und 2,42 MWh Entladung; 1017 bleibt byte-gleich. Gehalten von
+`EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` und der Einfrierregel „gesäte Kältemaschinendaten“
+([`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md)); in die Basis kommt 1055 mit dem nächsten Einfrieren.
+
 ### 10.5 Die Einfrierschritte — und warum KU1 zu G1 + G2 gehört
 
 Die Einfrierkette der Gebäudesimulation benennt ihre Anlässe über den Gegenstand, nicht über

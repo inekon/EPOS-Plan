@@ -492,6 +492,33 @@ Brennstoff und Emissionen.
 > wer einen davon ändert, friert ebenfalls neu ein. Gehalten wird der Rechenweg von der Basis selbst
 > (`Geb[n].Erdreich_B`, `Erdreich_Ug`, `Erdreich_Umfangsquelle` im Export).
 
+## Die Einfrierregel „gesäte Kältemaschinendaten“ (Referenzprojekt 1055)
+
+Weiterer Ort derselben Falle. Projekt 1055 „Kältemaschine mit Kältespeicher“ ist das einzige Referenzprojekt, dessen
+Kälte eine Kältemaschine deckt: mit Trockenkühler (Rückkühlung aus der Außentemperatur, freie Kühlung, sobald die
+Rückkühlung 3 K unter dem Kaltwasser liegt), Kennlinie aus Rückkühl- und Kaltwassertemperatur, Mindestteillast und Takt,
+Hilfsstrom der Rückkühlung und Hilfsstromanteil, über einen eigenen Zähler mit einem abweichenden Stromträger
+abgerechnet und von einem Kaltwasserspeicher gepuffert. Jede dieser Größen verschiebt Kälteerzeugung, Kältestrom,
+Speicherbilanz, Kosten und Emissionen.
+
+> **Wer gesäte Kältemaschinendaten eines Referenzprojekts in der Testdatenbank ändert, friert im selben Schritt die
+> Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen sind die Anlagenzeile der Kältemaschine (Typ 13: `ID_Kaeltemaschine`, `Kaeltemaschine_Anzahl`,
+> `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), ihre Projektkopie in `Tab_Kaeltemaschine` (`Nennkaelteleistung_kW`,
+> `Nenn_EER`, `Rueckkuehlart`, `Mindestteillast_Prozent`, `Hilfsstrom_Rueckkuehlung_kW`, `Kaltwasser_Vorlauf_Min`,
+> `Kuehl_Vorlauf`, `Kuehl_Hilfsstromanteil`) samt ihren Kennlinienpunkten in `Tab_Kenndaten_Kaeltemaschine`, der
+> Kältespeicher (Pufferzeile mit `Verwendung` = `Kaelte`, `Gesamtvolumen`, `Vorlauf`/`Ruecklauf`,
+> `Bereitschaftsverluste`, Schwellen, Schichtung) samt Anlagenzeile, die Kaskade `Tool_1` bis `Tool_6` und der
+> Kühlbetrieb der Wärmepumpe des Projekts (aus). Ebenso betroffen ist das Anlegen oder Entfernen eines Referenzprojekts
+> mit Kältemaschine.
+>
+> Die Zeilen legt [`Skripte/referenzprojekt_1055_kaeltemaschine.py`](Skripte/referenzprojekt_1055_kaeltemaschine.py)
+> an (unten); gehalten werden sie von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` (jede gesäte Zelle, die
+> Kopie von 1017, ein Lauf mit Kälte allein aus der Kältemaschine, eigenem Zähler und Ladung und Entladung des
+> Kältespeichers). Die Vorlage 1017 bleibt unverändert; für 1055 gelten daneben die Regeln „gesäte Gebäudedaten“ und
+> „gesäte Kältedaten“ wie für 1017.
+
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
 
 Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
@@ -758,7 +785,7 @@ die Wärmeübergabe je Zone (a); die achtzehn Projekte rechnen byte-gleich, neu 
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -938,6 +965,51 @@ zwei Läufe bitgleich). Das Skript ist wiederholbar wie das von 1052 (Rückgabe 
 Bauplan), `integrity_check` und `foreign_key_check` und ersetzt erst dann die Datenbank. Die Kopie fällt auf
 `MAX(Tab_Projekt.ID) + 1`; vorausgesetzt ist 1053 als höchste Projekt-ID. Nach einer Neufassung der Testdatenbank wird
 es nach 1051, 1052 und 1053 gezogen.
+
+### Das Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“
+
+Projekt **1055 „Kältemaschine mit Kältespeicher“** ist die Kopie des Kühlreferenzprojekts 1017 auf dem Kopierweg des
+Programms (`ProjektDuplizierenCtrl`, 9 390 Zeilen in 25 Tabellen, Zeilenzahlen gleich der Vorlage) — dasselbe Gebäude
+nach VDI 6007 mit Kühlung (Sollwert 24 °C, Kühlleistungsgrenze 15 kW), dieselben Anlagen und Träger. Die Wärmepumpe
+heizt nur; die Kälte deckt allein die Kältemaschine. Das Paar 1017/1055 ist zugleich der Vergleich Wärmepumpe im
+Kühlbetrieb gegen Kältemaschine. Gesät sind:
+
+| Ort | Zelle | Wert |
+|---|---|---|
+| `Tab_WP` (Kopie von 1017033) | `Kuehlbetrieb` | 0 (Kühlkennlinie, `Kuehl_Vorlauf` 18 und Hilfsstromanteil reisen mit, wirkungslos) |
+| `Tab_Kaeltemaschine` (Kopie des Katalogsatzes 2, Trockenkühler, auf ein Zehntel skaliert) | `Bezeichner` | „Kältemaschine 20 kW mit Trockenkühler“ |
+| | `Nennkaelteleistung_kW` / `Nenn_EER` | 20 kW / 4,0 |
+| | `Rueckkuehlart` / `Mindestteillast_Prozent` | `TROCKENKUEHLER` / 20 % |
+| | `Hilfsstrom_Rueckkuehlung_kW` / `Kuehl_Hilfsstromanteil` | 0,6 kW / 0,05 |
+| | `Kaltwasser_Vorlauf_Min` / `Kuehl_Vorlauf` | 5 °C / leer (Kaltwasser = kleinste Stützstelle 6 °C) |
+| `Tab_Kenndaten_Kaeltemaschine` | sechs Punkte, Rückkühlung 25/35/45 °C × Kaltwasser 6/12 °C | Leistung 21,5/20,0/18,0 und 24,0/22,5/20,5 kW, EER 5,0/4,0/3,1 und 5,8/4,7/3,6 |
+| `Tab_Energieanlagen` (Typ 13) | `Bezeichner`, `Kaeltemaschine_Anzahl` | „Kältemaschine 20 kW“, 1 |
+| | `Kuehl_ID_Carrier` / `Kuehl_EigenerZaehler` | 58 „Elektrische Energie 2“ (zweiter Stromträger des Projekts, Netzbezug trägt 54) / 1 |
+| `Tab_Pufferspeicher` | „Kaltwasserspeicher“, `Speichertyp`, `Verwendung` | `Pufferspeicher`, `Kaelte` |
+| | `Gesamtvolumen` / `Vorlauf` / `Ruecklauf` | 2 000 l / 6 °C / 12 °C (13,9 kWh) |
+| | `Bereitschaftsverluste`; Schwellen Ein/Aus/Reserve; `Schwelle_Aus_Nachrang` | 1 kWh/24 h; 10/95/10 %; leer |
+| | Nutzungsflags, `Schichten_Anzahl` | 0, eine Schicht |
+| `Tab_Energieanlagen` (Typ 12) | `ID_PUFFER` | die Anlagenzeile des Kaltwasserspeichers |
+| `Tab_Einstellungen` | `Tool_1` bis `Tool_6`, `Kuehlbetrieb` | wie 1017 (BHKW, Heizkessel, Wärmepumpe, –, –, Stromspeicher), 1 |
+| `Tab_Projekt` | `Beschreibung`; `Kosten_Geaendert` | Zweck des Projekts; Kostenstempel leer |
+
+Die Werte: 20 kW decken die Spitze von 1017 auch an der heißesten Stützstelle (45/6 °C: 18 kW), die Mindestteillast liegt
+bei 4 kW; der Katalogsatz mit 200 kW taktete jede Stunde. Ein abweichender Kühlträger macht die Abrechnungsart wirksam
+(mit dem Netzbezugsträger wäre der eigene Zähler ein wirkungsloser Haken). Der Speicher fasst knapp eine Stunde der
+Kühlspitze. Gerechnet: Kältebedarf 4,08 MWh, gedeckt 100,0 % (1017 mit der Wärmepumpe: 98,2 %), Kälte der Maschine
+4,19 MWh, Kältestrom 1,26 MWh (vollständig Netzbezug über den eigenen Zähler mit Träger 58), EER-Jahreswert 3,25,
+0 Stunden freier Kühlung (der Trockenkühler erreicht 3 °C Rückkühlung an Kühltagen nicht), 166 Taktstunden;
+Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht noch
+nicht in der Basis und nicht in der CI-Auswahl; es gilt die Einfrierregel „gesäte Kältemaschinendaten“ oben.
+
+```bash
+python3 Referenzlaeufe/Skripte/referenzprojekt_1055_kaeltemaschine.py Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Das Skript ist wiederholbar (steht 1055 schon, Abbruch ohne Schreiben mit Rückgabe 0), schreibt in einer Transaktion
+ohne `VACUUM`, prüft Vorlage, Katalogsatz, Träger, Zeilenzahlen der Kopie, `foreign_key_check` und `integrity_check`
+und rollt bei jeder Abweichung zurück. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1054 als
+höchste. Nach einer Neufassung der Testdatenbank wird es nach 1054 gezogen.
 
 ### Das Referenzprojekt 1051 „Konditionierung“
 
