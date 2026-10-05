@@ -120,6 +120,9 @@ namespace WindowsFormsApplication1
             // KU3-6a (Schritt 187): die Zaehler der freien Kuehlung an beiden Ergebnistabellen der Waermepumpe -
             // ebenso vor der Transaktion gefragt; auf einer Datenbank davor bleiben die Zeilen, wie sie waren.
             bool freieKuehlungWp = FreieKuehlungSoleSchema.ErgebnisspaltenVorhanden();
+            // VW1a (Schritt 188): der Ausweis der Vorlaufwahl an der Modulzeile der Waermepumpe - ebenso vor der
+            // Transaktion gefragt; auf einer Datenbank davor bleibt die Zeile, wie sie war.
+            bool vorlaufwahlWp = VorlaufwahlSchema.ErgebnisspaltenVorhanden();
             bool kuehlkreisSpalten = heizkreisSpalten &&
                                      System.Linq.Enumerable.All(KuehluebergabeSchema.SpaltenKuehlkreis,
                                          s => DataRepository.SpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key));
@@ -399,8 +402,10 @@ namespace WindowsFormsApplication1
                                 KuehlungSchema.SPALTE_KAELTESTROM_NETZBEZUG + ", " +
                                 KuehlungSchema.SPALTE_MODUL_KUEHL_CARRIER + ", " +
                                 KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER +
-                                (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") + ") " +
-                                "VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?" + (freieKuehlungWp ? ", ?,?" : "") + ")";
+                                (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") +
+                                (vorlaufwahlWp ? ", " + string.Join(", ", VorlaufwahlSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?" + (freieKuehlungWp ? ", ?,?" : "") +
+                                (vorlaufwahlWp ? ", ?,?,?" : "") + ")";
                             foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
                             {
                                 {
@@ -426,6 +431,13 @@ namespace WindowsFormsApplication1
                                     {
                                         p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = WertOderNull(mo.FreieKuehlung_MWh) });
                                         p.Add(new DbParam("@f2", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.FreieKuehlung_Stunden) });
+                                    }
+                                    if (vorlaufwahlWp)
+                                    {
+                                        p.Add(new DbParam("@v1", DbParamTyp.VarWChar)
+                                            { Wert = string.IsNullOrEmpty(mo.Vorlaufwahl_Stunden) ? DBNull.Value : (object)mo.Vorlaufwahl_Stunden });
+                                        p.Add(new DbParam("@v2", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.Vorlauf_Darueber_Stunden) });
+                                        p.Add(new DbParam("@v3", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.Vorlauf_Darunter_Stunden) });
                                     }
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
@@ -1181,6 +1193,9 @@ namespace WindowsFormsApplication1
                         mo.Kuehl_EigenerZaehler = zaehler.HasValue ? (bool?)(zaehler.Value != 0) : null;
                         mo.FreieKuehlung_MWh = DN(rm, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_MWH);
                         mo.FreieKuehlung_Stunden = GanzOderNull(rm, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_STUNDEN);
+                        mo.Vorlaufwahl_Stunden = TextOderNull(rm, VorlaufwahlSchema.SPALTE_VORLAUFWAHL_STUNDEN);
+                        mo.Vorlauf_Darueber_Stunden = GanzOderNull(rm, VorlaufwahlSchema.SPALTE_DARUEBER_STUNDEN);
+                        mo.Vorlauf_Darunter_Stunden = GanzOderNull(rm, VorlaufwahlSchema.SPALTE_DARUNTER_STUNDEN);
                         w.Module.Add(mo);
                     }
 
@@ -2332,5 +2347,9 @@ namespace WindowsFormsApplication1
         { return r.Table.Columns.Contains(col) && r[col] != DBNull.Value && Convert.ToBoolean(r[col]); }
         private static string S(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? r[col].ToString() : ""; }
+
+        /// <summary>Text oder <c>null</c> — fehlt die Spalte oder steht NULL, bleibt es <c>null</c> (NULL-erhaltend).</summary>
+        private static string TextOderNull(DataRow r, string col)
+        { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? r[col].ToString() : null; }
     }
 }

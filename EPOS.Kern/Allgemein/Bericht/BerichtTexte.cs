@@ -349,6 +349,12 @@ namespace WindowsFormsApplication1
             { "Stunden freier Kühlung", "Free cooling hours" },
             { "Taktstunden Kältemaschinen", "Chiller cycling hours" },
             { "Stunden an der Leistungsgrenze", "Hours at the capacity limit" },
+            // VW1b (E88) - die Vorlaufwahl der Wärmepumpe am gerechneten Vorlauf.
+            { "Wärmepumpe", "Heat pump" },
+            { "Vorlaufwahl der Kennlinie", "Characteristic curve selected by supply temperature" },
+            { "Stunden außerhalb der Stützstellen", "Hours outside the curve points" },
+            { "darunter", "below" },
+            { "darüber", "above" },
             { "Kältestrom", "Cooling electricity" },
             { "Jahresarbeitszahl Kälte", "Seasonal EER (cooling)" },
             { "Netzbezug Kältestrom", "Grid import cooling electricity" },

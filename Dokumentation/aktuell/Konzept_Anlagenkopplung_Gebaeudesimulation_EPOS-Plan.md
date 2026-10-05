@@ -1,5 +1,7 @@
 # Konzept: Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur (Anlagenkopplung)
 
+> **Nachgezogen 05.10.2026 — Entscheid E89** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.70): Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe **GA — Altweg ablösen** entfällt, Q24 und Q25 sind gegenstandslos. Wo dieses Papier GA, „bis zur Ablösung“ oder die Löschliste nennt, gilt: Der Sonderfall „feste Last“ samt Hinweis und Ausweis bleibt dauerhaft und steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
+
 > **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Altweg ist
 > **Übergang bis zur Stufe GA** (Zeitpunkt damals offen, Q24; seit E27 entschieden) statt dauerhafter Bestandsweg, und seine
 > Sonderfälle stehen in der Löschliste dieser Stufe; die Verteilung in AK2 ist als **Zweipass**
@@ -102,7 +104,7 @@ abgenommenem AK1 und einer Feldphase, AK3 danach (12.1, 12.3). Geführt wird die
 | Papier | Was dort steht, worauf dieses Papier aufsetzt |
 |---|---|
 | [Konzept Gebäudesimulation](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | Rechenweg (4), ideale Regelung und `Heizleistung_Max` (4.5), Zeitraster und Ergebnisreihen (4.6), Skalierung E8 (4.7), Gebäudespalten (6.1), Stufen (11), Fragen samt **Q26** (13), Abgrenzung (15), Nachträge **N1.25**, **N1.26**, **N1.27** |
-| [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) | die Trennung der Rechenwege (E20): Fassade `SimulationWaermebedarf` als **eine Weiche am Eingang**, modellfreier Vorbereitungsschritt `GebaeudeVorbereitung`, Module `Gebaeude/` und `Altweg/`; mit **E23** und **E26** bleibt `Altweg/` als eingefrorener Bestandsweg **für die Dauer des Übergangs** — die Stufe **GA** löst ihn ab, ihr Zeitpunkt ist offen (Q24) |
+| [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) | die Trennung der Rechenwege (E20): Fassade `SimulationWaermebedarf` als **eine Weiche am Eingang**, modellfreier Vorbereitungsschritt `GebaeudeVorbereitung`, Module `Gebaeude/` und `Altweg/`; mit **E23** und **E89** bleibt `Altweg/` als eingefrorener Bestandsweg **dauerhaft** wählbar — die Stufe **GA** entfällt |
 | [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) | das Iterationsmuster: Gauß-Seidel je Stunde, feste Reihenfolge, Abbruchmaße (0,01 K bzw. 0,1 W), Höchstzahl, benannter Fehler — **AK3 erbt es** |
 | [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) | Klassen und Fassaden (1.2, 1.3), Abhängigkeitsregeln und `Modultrennungswache` (1.7), Integration des Laufs (4.1), Stufentabelle (5) |
 | [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | Systemmatrix und die drei Betriebsfälle (4.2–4.4), exakte Diskretisierung (5), **Stundenschleife Schritt F** (7) — dort wird Schritt **H** eingesetzt |
@@ -139,7 +141,7 @@ Quelltextbelege tragen `Datei:Zeile` und sind für dieses Papier **selbst nachge
    **kippt den Grundsatz „erst Bedarf, dann Deckung"**: Der Bedarf wird Ergebnis der Deckung. Das
    ist der teuerste Satz dieses Papiers, und er steht in Kapitel 6. **Alle drei wirken auf
    Gebäude des VDI-Wegs**; ein Gebäude auf dem Altweg — dem Bestandsweg, der nach **E23** und
-   **E26** bis zu seiner Ablösung durch die Stufe **GA** weiterläuft (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27) —
+   **E89** dauerhaft wählbar bleibt —
    geht in Deckung, Verfügbarkeit und Kopplung als **feste Last** ein: sein Bedarfsvektor wie
    heute, ohne Rückwirkung und ohne Komfortstunden, im Bericht benannt (6.2, 6.4, 9.4).
 3. **Der größte sichtbare Gewinn kommt aus der billigsten Stufe.** AK1 kappt die **Aufheizspitze**,
@@ -229,16 +231,14 @@ dieses Papiers.
 | Laufordnung | erst Bedarf, dann Deckung | unverändert in AK1 und AK2; **AK3 kehrt sie um** |
 | Normstatus | Rechenkern nach VDI 6007 Blatt 1 (E10) | **unverändert** — das Raummodell ist dasselbe, die Erweiterung ist benannt |
 
-**Und was E23 und E26 daran ändern (16./17.09.2026).** Der Altweg läuft als eingefrorener
-Bestandsweg neben dem VDI-Weg weiter — **als Übergang**, den die Stufe **GA** ablöst, sobald der
-VDI-Weg bewährt genug ist; wann das ist, sagt **Q24**, mit E27 entschieden: sobald die vier
-Bedingungen erfüllt sind, darunter die Abnahme von KU1 und, falls beauftragt, von AK1 (11.4). Für
+**Und was E23 und E89 daran ändern.** Der Altweg läuft als eingefrorener, gepflegter
+Bestandsweg dauerhaft neben dem VDI-Weg weiter; die Stufe **GA** entfällt. Für
 die Anlagenkopplung heißt das:
-Über die ganze Laufzeit dieses Vorhabens stehen **zwei Bedarfsbegriffe je Gebäude nebeneinander**
+Dauerhaft stehen **zwei Bedarfsbegriffe je Gebäude nebeneinander**
 — der Kanal führt beide, die Deckung unterscheidet sie nicht; **nur der VDI-Weg hat eine
 Rückwirkung**. Ein Gebäude auf dem Altweg geht als **feste Last** ein (6.2, 6.4). AK2 und AK3
-warten deshalb **nicht** auf die Stufe GA: Ihre Vorbedingung ist **AK1 und eine Feldphase**
-(12.1, 12.3); mit GA fällt der Sonderfall „feste Last" ersatzlos weg.
+hängen deshalb **nicht** an einer Ablösung des Altwegs: Ihre Vorbedingung ist **AK1 und eine Feldphase**
+(12.1, 12.3); der Sonderfall „feste Last" bleibt dauerhaft (E89).
 
 ### 1.3 Was ausdrücklich **nicht** aufgehoben wird
 
@@ -305,7 +305,7 @@ zusammenwachsen können, ohne dass Nummern kollidieren.
 | **F-A15** | Die **Iteration** hat Abbruchmaße, eine Höchstzahl und einen **benannten Fehler** bei Nichtkonvergenz (Gebäude, Stunde, Beteiligte) — nie eine stille Näherung | ADR-005 | Rechenprobe: erzwungene Nichtkonvergenz erzeugt den benannten Fehler | AK3 |
 | **F-A16** | Die **Kälteseite** trägt zu jeder Größe der Wärmeseite ein Gegenstück — Kaltwasser-Vorlauf, Kühlkennlinie, Kühlflächenexponent, Überschreitungsstunden — **oder** die Abweichung steht benannt in der Abweichungsliste (7.4). Die Ergebniszahlen der Kälteseite in AK1 sind `Kuehl_Vorlauf_Mittel`, `Kuehl_Ruecklauf_Mittel` und `Kuehl_Uebergabe_Begrenzt_Stunden` (8.3, E37); die Komfortzahlen kommen mit AK2 | E21, E22, E37 | Probe „Symmetrie der Anlagenkopplung" gegen die Liste in 7.4 | AK1/AK2 |
 | **F-A17** | Jede Stufe ist **je Projekt wählbar** und **je Gebäude schaltbar**, Vorgabe **aus**; ein Gebäude mit eingeschaltetem Heizkreis in einem Projekt ohne Kopplung trägt einen **benannten Hinweis**, keine stille Null | E22 | bunit-Fall am Gebäudedialog; Meldung in beiden Sprachen (9.5) | AK1 |
-| **F-A18** | Ein Gebäude auf dem **Altweg** (Tagesbilanz, Bestandsweg) bekommt **keine Anlagenkopplung, solange es dort rechnet** — benannter Hinweis, nie eine stille Null; der Altweg wird nicht angefasst und geht als **feste Last** in Verteilung und Deckung ein. Hinweis und Sonderfall gelten bis zur Ablösung (Stufe **GA**, Zeitpunkt offen) und stehen in deren Löschliste | E20, E23, E26 | Rechenprobe „Altweg-Gebäude ohne Kopplung mit Hinweis"; `Modultrennungswache` grün | AK1 |
+| **F-A18** | Ein Gebäude auf dem **Altweg** (Tagesbilanz, Bestandsweg) bekommt **keine Anlagenkopplung, solange es dort rechnet** — benannter Hinweis, nie eine stille Null; der Altweg wird nicht angefasst und geht als **feste Last** in Verteilung und Deckung ein. Hinweis und Sonderfall gelten dauerhaft (E89) und stehen im Inventar der Altweg-Bestandteile | E20, E23, E89 | Rechenprobe „Altweg-Gebäude ohne Kopplung mit Hinweis"; `Modultrennungswache` grün | AK1 |
 | **F-A19** | **Vorlauf- und Rücklaufmittel** je Gebäude sowie die **Heizkreisreihen** stehen im Referenzlauf-Export — **bedingt** geschrieben, damit die Bestandsordner byte-gleich bleiben | 8.3 | Referenzlauf: Projekte ohne Kopplung byte-gleich | AK1 |
 
 ### 2.2 Nichtfunktionale Anforderungen
@@ -327,11 +327,11 @@ zusammenwachsen können, ohne dass Nummern kollidieren.
 | # | Randbedingung | Wirkung |
 |---|---|---|
 | **B-A1** | **Wählbarkeit und Vorgabe „aus"** — die Stufe steht je Projekt, der Heizkreis je Gebäude; Vorgabe ist überall aus | Bestandsprojekte rechnen unverändert (N-A3) |
-| **B-A2** | **Ein Einfrierschritt je aktivierter Stufe**, einzeln begründet in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md); die Stufe **GA** ist ein eigener, weiterer Anlass (E26) | drei zusätzliche Einfrierschritte über die Laufzeit des Vorhabens, nicht einer |
+| **B-A2** | **Ein Einfrierschritt je aktivierter Stufe**, einzeln begründet in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md); eine Stufe **GA** als weiterer Anlass entfällt (E89) | drei zusätzliche Einfrierschritte über die Laufzeit des Vorhabens, nicht einer |
 | **B-A3** | **Normstatus** — das Raummodell bleibt VDI 6007 Blatt 1; Übergabe, Heizkurve und Fahrplan sind **EPOS-Erweiterungen**; die Normtestbeispiele rechnen weiter mit idealer Regelung; **E10** bleibt Wort für Wort | keine neue Normbeschaffung, keine Änderung am Produktausweis |
 | **B-A4** | **Kälteseite spiegelbildlich (E21)** — jede Größe bekommt ein Gegenstück oder eine benannte Abweichung | Kapitel 7 führt die Liste |
 | **B-A5** | **Modultrennung (E20)** — AK1 liegt in `Gebaeude/`, bis auf die Kennlinienwahl der Erzeugerseite (6.1); `Altweg/` wird nicht angefasst; der Wächter `Modultrennungswache` gilt unverändert | der Altweg bekommt keine Kopplung — er läuft bis zu seiner Ablösung unverändert weiter |
-| **B-A6** | **Zwei Bedarfsbegriffe nebeneinander (E23, E26)** — AK2 setzt **AK1 abgenommen und eine Feldphase** voraus, AK3 folgt auf AK2 und eine Feldphase; der Altweg läuft für die Dauer des Übergangs weiter, seine Gebäude gehen als **feste Last** ein | der Kanal führt beide Begriffe, die Deckung unterscheidet sie nicht; **nur der VDI-Weg hat eine Rückwirkung** (6.2, 6.4); mit der Stufe **GA** bleibt ein Bedarfsbegriff übrig |
+| **B-A6** | **Zwei Bedarfsbegriffe nebeneinander (E23, E89)** — AK2 setzt **AK1 abgenommen und eine Feldphase** voraus, AK3 folgt auf AK2 und eine Feldphase; der Altweg läuft dauerhaft weiter, seine Gebäude gehen als **feste Last** ein | der Kanal führt beide Begriffe, die Deckung unterscheidet sie nicht; **nur der VDI-Weg hat eine Rückwirkung** (6.2, 6.4) |
 | **B-A7** | **E1 und E8** gelten unverändert: Stundenmodell als Vorgabe, Skalierung als Verhältnisrechnung innerhalb des Moduls | AK1 setzt **G2** voraus; die Skalierung ist mit begrenzter Übergabe nicht mehr proportional (**H7**) |
 | **B-A8** | [**ADR-001**](ADR-001_Schema-Ausrollung.md) — jede Schemaänderung ist ein nummerierter Schritt über `SchemaMigration`; **die Nummer vergibt der Schritt bei seiner Beauftragung** (A11) | dieses Papier führt `AK-S1` bis `AK-S3`, keine Zahlen |
 | **B-A9** | [**ADR-005**](ADR-005_Zonenkopplung_Mehrzonenmodell.md) — Gauß-Seidel je Stunde, feste Reihenfolge, Abbruchmaße, Höchstzahl, benannter Fehler | AK3 erbt das Muster; es wird nicht neu erfunden (6.3) |
@@ -639,8 +639,8 @@ auf 24 Stunden verteilt wird. **Das stündliche Zwischenergebnis wird verworfen.
 Das ist die genaue Stelle, an der der Altweg für dieses Vorhaben unbrauchbar ist: Er rechnet eine
 Raumtemperatur — und wirft sie weg. **Der Altweg bekommt daher keine Anlagenkopplung, weder jetzt
 noch später** (E20, B-A5); ein Gebäude auf dem Altweg trägt den benannten Hinweis aus F-A18. Und
-weil der Altweg mit **E23** und **E26** bis zu seiner Ablösung (Stufe GA, ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27)
-unverändert weiterläuft, bleiben `WE_Absenkung`, `Ferien_Absenkung` und der ganze Zweig so lange
+weil der Altweg mit **E23** und **E89** dauerhaft
+unverändert weiterläuft, bleiben `WE_Absenkung`, `Ferien_Absenkung` und der ganze Zweig
 bei ihm: Das Zeitprogramm aus 4.3 ist **nicht** ihr Nachfolger, sondern ihr Gegenstück auf dem
 VDI-Weg — beide Wege führen ihre eigene Absenkung, und keiner erbt die des anderen.
 
@@ -1045,8 +1045,7 @@ Ergebnis (9.4, 11.1).
 Stellt der Anwender ein Altweg-Gebäude auf den VDI-Weg um, ändert sich sein Bedarfsvektor und
 damit der Verteilungsschlüssel jeder Stunde; die Verfügbarkeitsanteile **der übrigen Gebäude**
 verschieben sich, und ihre Komfortkennzahlen ändern sich, obwohl an ihnen nichts geändert wurde.
-Dasselbe geschieht in einem Zug mit der Stufe **GA**, die alle verbliebenen Altweg-Gebäude umstellt
-(ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27). **Festlegung: Der Bericht nennt je Projekt, wie viele Gebäude als feste
+Dasselbe geschieht, wenn der Anwender ein Altweg-Gebäude auf VDI 6007 umstellt (der Altweg bleibt wählbar, E89). **Festlegung: Der Bericht nennt je Projekt, wie viele Gebäude als feste
 Last eingehen** — eine Komfortkennzahl aus einem gemischten Projekt ist ohne diese Zahl nicht
 vergleichbar. Die Umstellung ist kein Fehler, sondern das gewollte Ergebnis eines genaueren
 Modells; unbenannt wäre sie ein stiller Ergebnissprung.
@@ -1280,8 +1279,8 @@ die vierte Welle von AK1 gebaut hat.
 2. **Kein Altweg — und damit kein Bestandsweghinweis.** Die Kälteseite hat keinen
    Tagesbilanz-Weg (E20, E21, E23); der Hinweis aus F-A18 hat auf der Kälteseite kein Gegenstück,
    weil es dort nichts gibt, worauf er zeigen könnte. Ein Altweg-Gebäude liefert Kältebedarf 0 mit
-   benanntem Hinweis (Kühlkonzept F-K18), und das bleibt so, bis die Stufe **GA** den Altweg ablöst
-   (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27).
+   benanntem Hinweis (Kühlkonzept F-K18), und das bleibt so, solange das Gebäude auf dem Altweg
+   gewählt ist (E89).
 3. **Keine Kältenetzverluste** — das ist bereits eine benannte Abweichung des Kühlkonzepts (14) und
    bleibt eine; die Anlagenkopplung ändert daran nichts.
 4. **Aufgehoben mit E37.** Der Auslegungspunkt der Kühlübergabe kam hier aus der Anlage
@@ -1824,7 +1823,7 @@ Sprachneutral im Kern, Text in der Oberfläche; je Meldung beide `.resx` und dan
 | Anlass | Stufe | Inhalt |
 |---|---|---|
 | Übergabe reicht nicht, Raumtemperatur fällt | **Info**, einmal je Gebäude und Lauf | Zahl der Stunden und größte Unterschreitung |
-| Gebäude auf dem Altweg mit aktivem Heizkreis | **Hinweis**, einmal je Gebäude und Lauf | „Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung — die Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet" (F-A18); der Schlüssel gilt **für die Dauer des Übergangs** und steht als Eintrag **„Meldung ‚Altweg-Gebäude ohne Anlagenkopplung' samt Ressourcenschlüssel"** in der **Löschliste der Stufe GA** (E26, ADR-006) |
+| Gebäude auf dem Altweg mit aktivem Heizkreis | **Hinweis**, einmal je Gebäude und Lauf | „Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung — die Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet" (F-A18); der Schlüssel gilt **dauerhaft** (E89) und steht als Eintrag **„Meldung ‚Altweg-Gebäude ohne Anlagenkopplung' samt Ressourcenschlüssel"** im **Inventar der Altweg-Bestandteile** (ADR-006) |
 | Heizkreis aktiv, Projektstufe „aus" | **Hinweis**, einmal je Gebäude | die Eingaben gelten, sobald die Stufe gesetzt ist (F-A17) |
 | Auslegungsvorlauf unter der Auslegungs-Raumtemperatur | **Fehler** | benannt, mit beiden Werten; der Lauf bricht für dieses Gebäude ab (Q18-Regel des Stundenwegs) |
 | Gerechneter Vorlauf außerhalb der Kennlinien-Stützstellen | **Hinweis**, einmal je Gerät und Vorlauf | wie auf der Heizseite heute (`SimulationWaermepumpe.cs:1900-1903`) |
@@ -1841,12 +1840,12 @@ Sprachneutral im Kern, Text in der Oberfläche; je Meldung beide `.resx` und dan
 | Flächenkühlung, Gebläsekonvektor | **Info** | Estrich masselos bzw. sensibel ohne Entfeuchtung (K5) |
 | Heizseite gekoppelt, Kühlung wirksam, Kälteseite nicht gekoppelt | **Hinweis** | „Kühlung ideal — keine Kühlübergabe gewählt" |
 
-**Jeder Altweg-Sonderfall dieses Papiers wird bei seiner Entstehung in die Löschliste der Stufe GA
-eingetragen** — Regel aus [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md), Wortlaut in E26. Für die
+**Jeder Altweg-Sonderfall dieses Papiers wird bei seiner Entstehung ins Inventar der Altweg-Bestandteile
+eingetragen** — Regel aus [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md). Für die
 Anlagenkopplung sind das drei Einträge: die Meldung „Altweg-Gebäude ohne Anlagenkopplung" samt
 Ressourcenschlüssel (oben), die Behandlung als **feste Last** in Verteilung und Deckung (6.2) und
 der Ausweis des Rechenwegs samt der Zahl der festen Lasten im Bericht (9.4). Sie werden mit AK1
-und AK2 angelegt und mit GA in einem Zug entfernt; die Liste selbst führt das Umsetzungskonzept.
+und AK2 angelegt und bleiben dauerhaft; das Inventar selbst führt das Umsetzungskonzept (6.1).
 
 ### 9.6 Maskenreihenfolge und Tests je Maske
 
@@ -2244,9 +2243,8 @@ die Probe **„ein Erzeuger ohne Grenzen ist bitgleich zu AK1"** als Gate — da
 
 ### 11.4 Referenzprojekt, Einfrierschritte und die Reihenfolge, die Läufe spart
 
-**Die Einfrierkette der Gebäudesimulation** kennt GB, G1 + G2 (mit KU1) und G6d; KU2 kommt hinzu,
-und die Stufe **GA** schließt sie ab — sie ist mit **E26** ein eigener Einfrieranlass und wird
-nach **Q24** (entschieden mit E27) fällig, sobald ihre vier Bedingungen erfüllt sind
+**Die Einfrierkette der Gebäudesimulation** kennt GB, G1 + G2 (mit KU1) und G6d; KU2 kommt hinzu;
+die Stufe **GA** entfällt (E89), eine Ablösung des Altwegs ist kein Einfrieranlass
 ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 10.5,
 [Referenzlaeufe/LIESMICH.md](../../Referenzlaeufe/LIESMICH.md)). Die Anlagenkopplung fügt **je
 aktivierter Stufe einen** hinzu — und **jede Stufe erzeugt eine neue Datei**, also gibt es keinen
@@ -2277,15 +2275,11 @@ stateDiagram-v2
   Basis_G1G2 --> Basis_AK1 : AK1 — Heizkreis, EIN Projekt bewegt sich
   Basis_AK1 --> Basis_AK2 : AK2 — Fahrplan und Komfortstunden, nach einer Feldphase
   Basis_AK2 --> Basis_AK3 : AK3 — geschlossener Kreis
-  Basis_AK3 --> Basis_GA : GA — Altweg abloesen, faellig nach den vier Bedingungen aus Q24
-  Basis_GA --> [*]
+  Basis_AK3 --> [*] : Altweg bleibt waehlbar (E89)
 ```
 
-Die Stufe **GA** steht hier am Ende, weil sie die letzte des Stufenplans ist; sie ist **keine**
-Vorbedingung der AK-Stufen. Umgekehrt gilt seit **Q24** (entschieden mit E27): Die Abnahme von
-**AK1** ist — sofern AK1 beauftragt ist — eine der vier Bedingungen, unter denen GA fällig wird;
-AK2 und AK3 sind es nicht, und GA kann sie überholen (E26). Für dieses Papier hat sie genau eine Wirkung: Der Sonderfall „feste Last" und die drei
-Einträge aus 9.5 entfallen, und die Verteilung aus 6.2 kennt nur noch einen Bedarfsbegriff.
+Eine Stufe **GA** gibt es nicht (E89); der Altweg bleibt dauerhaft wählbar. Für dieses Papier folgt daraus: Der Sonderfall „feste Last" und die drei
+Einträge aus 9.5 bleiben, und die Verteilung aus 6.2 kennt weiterhin zwei Bedarfsbegriffe.
 
 **Das Referenzprojekt.** Ein Projekt der Testdatenbank (Kopie eines Einzelgebäude-Projekts)
 bekommt `Heizkreis_Aktiv = 1`, Übergabeart Radiator und eine gefahrene Heizkurve; mit AK2 zusätzlich
@@ -2340,7 +2334,7 @@ Stunden an allen Tagen, damit sie die Sperre nicht auffangen; kein Pufferspeiche
 1 249 Stunden an der Schranke, 1 854 Komfort-Unterschreitungsstunden (1047: 875), 3 883,19 Kh (1047: 1 281,04), längste
 Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh, im Protokoll der Hinweis der Näherung des Profilwegs. Die
 Einfrierregel „gesäte Auslegungsdaten der Übergabe" umfasst den Anlagenfahrplan eines gekoppelten Referenzprojekts
-(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-05_R37_Fahrplan` mit
+(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-05_R38_Vorlaufwahl` mit
 einundzwanzig Projekten: die zwanzig alten je Wert gleich, 18 byte-gleich, 1047 und 1054 nur mit den neuen Zeilen in
 `aggregate.csv`; 1056 steht nicht in der CI-Auswahl und wird von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`
 gehalten.
@@ -2438,9 +2432,8 @@ braucht.
 Gebäude- und Kühlspalten — drei Schemaschritte mit drei Einfriernachweisen für dieselbe Sache wären
 der einzige vermeidbare Posten der Rechnung. **Die Regel, die Fehler spart:** AK1 kommt **nach**
 G2, nie davor; eine Übergaberechnung auf einem Modell, das noch wandert, macht jeden Nachweis
-unlesbar. **Die Regel, die mit E23 und E26 hinzukommt:** AK2 wartet nicht auf die Stufe GA
-(ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27), sondern hängt an **AK1 und einer Feldphase** — der Altweg läuft bis zu
-seiner Ablösung weiter, und seine Gebäude gehen so lange als feste Last ein (6.2, 12.1).
+unlesbar. **Die Regel, die mit E23 und E26 hinzukommt:** AK2 hängt an **AK1 und einer Feldphase**, nicht an einer Ablösung des Altwegs — der Altweg bleibt
+wählbar (E89), und seine Gebäude gehen als feste Last ein (6.2, 12.1).
 
 **Der Stufenplan ist entschieden** (E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32), Q26, Option (a)
 nach Empfehlung): **AK1 nach G2; AK2 nach abgenommenem AK1 und einer Feldphase; AK3 danach**, nach
@@ -2556,7 +2549,7 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
 | **Der Exponent wird als Normwert gelesen** | Ein Anwender hält 1,3 für eine Vorschrift und ändert ihn nie, obwohl seine Anlage anders ist | Jede Vorgabe steht **als Zahl** in der Herleitungszeile und auf der Wiki-Seite, mit dem Satz „Vorgabe von EPOS-Plan, einstellbar" (12.4) |
 | **Flächenheizung ohne Estrichmasse** (3.6) | Die gerechnete Aufheizzeit ist zu kurz; wer eine Nachtabsenkung bewertet, bekommt ein zu günstiges Ergebnis | Die Grenze steht an jeder Zahl — Dialog, Bericht, Wiki —, und eine Info-Meldung nennt sie je Lauf (9.5) |
 | **Komfortstunden verdecken den Restbedarf** (5.5) | Ein Variantenvergleich sieht aus, als wäre ein Deckungsproblem verschwunden, obwohl es nur die Kennzahl gewechselt hat | **Regel: Wo Komfortstunden stehen, steht der Restbedarf daneben** — und umgekehrt; die Berichtsprobe prüft beides |
-| **Zwei Bedarfsbegriffe nebeneinander** (E23, E26 — bis zur Stufe GA) | In einem Projekt mit beiden Rechenwegen stammt ein Teil des Bedarfs aus der Tagesbilanz ohne Rückwirkung und ein Teil aus dem VDI-Weg mit Rückwirkung; eine fehlende Komfortstunde liest sich dann wie ein gutes Ergebnis | **Der Bericht nennt je Gebäude den Rechenweg** (9.4), und die Komfortkennzahlen weisen aus, für wie viele Gebäude sie gar nicht entstehen können; die Probe „Altweg-Gebäude als feste Last" hält beide Seiten fest (11.1) |
+| **Zwei Bedarfsbegriffe nebeneinander** (E23, E89 — dauerhaft) | In einem Projekt mit beiden Rechenwegen stammt ein Teil des Bedarfs aus der Tagesbilanz ohne Rückwirkung und ein Teil aus dem VDI-Weg mit Rückwirkung; eine fehlende Komfortstunde liest sich dann wie ein gutes Ergebnis | **Der Bericht nennt je Gebäude den Rechenweg** (9.4), und die Komfortkennzahlen weisen aus, für wie viele Gebäude sie gar nicht entstehen können; die Probe „Altweg-Gebäude als feste Last" hält beide Seiten fest (11.1) |
 | **Der Profilweg ist zu pessimistisch** (5.4) | Ein Speicher, der die Sperrzeit überbrückt, erzeugt in der Rechnung Komfortstunden, die es nicht gibt | Speichervorrat über die Sperrdauer wird berücksichtigt; die Näherung steht **im Bericht**, nicht im Kleingedruckten |
 | **AK3 wächst zum Anlagensimulator** | Ein Vorhaben, das nicht endet: Rohrnetz, Pumpen, Regelkreise, Taktverhalten | Kapitel 15 ist die Grenze, und sie wird nicht stillschweigend verschoben; **H6** stellt AK3 ausdrücklich unter Vorbehalt |
 | **Die Umkehr der Laufordnung bricht Bestandsverhalten** (AK3) | `SimulationControl` ist der älteste Rumpf im Kern; eine Stundenschleife daraus zu machen berührt Kaskade, Speicher, Strombilanz und Wirtschaftlichkeit auf einmal | AK3 **erst nach AK2 und nach einer Feldphase** (E23); „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; das Prüforakel aus 11.2 |
@@ -2586,11 +2579,10 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
 - **Sommerlicher Wärmeschutz nach DIN 4108-2**, Nachweise nach **GEG** oder **DIN V 18599**,
   Nutzungsprofile für Nichtwohngebäude.
 - **Anlagenkopplung auf dem Tagesbilanz-Weg.** Der Altweg ist der eingefrorene Bestandsweg ohne
-  neue Funktion, der als Übergang bis zu seiner Ablösung durch die Stufe **GA** weiterläuft
-  (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27); er bekommt keine Kopplung, weder jetzt noch später (E20, E23, E26,
+  neue Funktion, der dauerhaft wählbar bleibt (E89); er bekommt keine Kopplung, weder jetzt noch später (E20, E23, E89,
   [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Das ist eine **Festlegung**, kein Vorbehalt — ein
-  Altweg-Gebäude trägt den Hinweis aus F-A18 und geht als **feste Last** ein (6.2), bis GA den
-  Sonderfall mit dem Modul entfernt.
+  Altweg-Gebäude trägt den Hinweis aus F-A18 und geht als **feste Last** ein (6.2); der
+  Sonderfall bleibt mit dem Modul (E89).
 - **Vorlaufabhängigkeit von Brauchwasser und Prozesswärme.** Sie haben keine Raumtemperatur und
   keine Übergabe (6.4).
 - **Temperaturabhängiger Wirkungsgrad von Kessel und BHKW.** AK3 führt die Rückwirkung für die

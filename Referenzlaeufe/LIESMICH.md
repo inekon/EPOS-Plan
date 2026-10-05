@@ -630,7 +630,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-05_R37_Fahrplan`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-05_R38_Vorlaufwahl`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -645,11 +645,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe` und die Basis R36 (Kältemaschine) am 05.10.2026**
-(53 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026**
+(54 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 53 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 54 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -659,11 +659,11 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-05_R37_Fahrplan/`** — **einundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056), **646 CSV**, **4 265 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 05.10.2026, Stand `328a0dc`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **186**, 87 764 992 Byte, LFS-SHA-256
-`63b0bdaef4236c96201922c1537fdfc83e20f2bb2a8fc29bf6894fa046b76d60`, mit den Projekten 1053 bis 1056; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+**`2026-10-05_R38_Vorlaufwahl/`** — **einundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056), **646 CSV**, **4 271 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 05.10.2026, Stand `bd365fe`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **188**, 87 736 320 Byte, LFS-SHA-256
+`69322344353951b482a1bc1e5ad6aa9af2dd0e8de453324ac8cd48aa0a83b090`, mit den Projekten 1053 bis 1056; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -685,28 +685,25 @@ und `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme
 Projekt 1056. 1050, 1052, 1054, 1055 und 1056 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
 rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Komfortspalten für jedes gekoppelte Projekt (F12, E83) und Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4) — die Zahlen der zwanzig Vorgängerprojekte sind unverändert, 1047 und 1054 tragen sechs bzw. vier neue Spalten, neu ist 1056.**
+> **Anlass: Ausweis der Vorlaufwahl der Wärmepumpe (VW1, E88) — die Zahlen aller einundzwanzig Projekte sind unverändert, 1047 und 1056 tragen je drei neue Zeilen in `aggregate.csv`.**
 >
-> Der Lauf schreibt `Fahrplan_Begrenzt_Stunden` und die Komfortkennzahlen in `Tab_ErgebnisEnergiebedarf` für jedes Projekt,
-> dessen Anlagenfahrplan lief (Kopplung ab AK1, ein gekoppeltes Gebäude auf dem VDI-Weg), nicht erst bei greifender
-> Schranke; ohne greifende Schranke steht `Fahrplan_Begrenzt_Stunden` auf 0. Der Rechenweg ist sonst unverändert:
-> **Gegen R36 sind die zwanzig Vorgängerprojekte je Wert PASS, 18 Projekte vollständig byte-gleich, von 1047 und 1054
-> je 37 bzw. 27 CSV byte-gleich.** In `aggregate.csv` stehen neu bei 1047 `Energiebedarf.Fahrplan_Begrenzt_Stunden` 0,
-> `Komfort_Unterschreitungsstunden` 875, `Komfort_Kelvinstunden` 1 281,04, `Komfort_Laengste_Strecke` 11,
-> `Komfort_Ueberschreitungsstunden` 32 und `Komfort_Kelvinstunden_Kuehlung` 43; bei 1054 die vier Heizspalten
-> (0, 2 162, 2 138,59, 16 — ohne Kühlung bleiben die zwei Kühlspalten leer). Keine bestehende Zeile ändert sich.
->
-> **Neu ist Projekt 1056**, Kopie von 1047 mit Nachtsperre der Wärmepumpe, Zeitprogramm an Kessel und BHKW und
-> Vorlaufgrenze 50 °C (Abschnitt „Das Referenzprojekt 1056“ unten). Der Vergleichslauf meldet 1056 als „nur im
-> Vergleichslauf vorhanden“, weil R36 das Projekt nicht kennt; 1056 bringt 38 CSV und 226 Skalare dazu (gesamt 646 CSV,
-> 4 265 Skalare). 1056 steht nicht in der CI-Auswahl.
+> Schemaschritt 188 (`VorlaufwahlSchema`) legt an `Tab_ErgebnisWaermepumpeModul` die Spalten `Vorlaufwahl_Stunden`
+> (Paare `Vorlauf:Stunden`, im Export mit Komma getrennt), `Vorlauf_Darueber_Stunden` und `Vorlauf_Darunter_Stunden` an;
+> der Lauf füllt sie nur, wenn die Wärmepumpe ihre Kennlinie am gerechneten Vorlauf wählt (Anlagenkopplung), sonst
+> bleiben sie leer und der Referenzexport führt sie nicht. Schemaschritt 187 (freie Kühlung über die Wärmequelle) ändert
+> an keinem Referenzprojekt eine Zahl. Der Rechenweg ist unverändert: **Gegen R37 sind 19 Projekte
+> vollständig byte-gleich; 1047 und 1056 tragen allein drei neue Zeilen in `aggregate.csv`, die der Vergleich als
+> „Eintrag nur im Vergleichslauf“ meldet, alle übrigen 37 CSV beider Projekte sind byte-gleich.** Neu stehen bei 1047
+> `WaermepumpeModul[0].Vorlaufwahl_Stunden` `35:1549,45:1782,55:122`, `Vorlauf_Darunter_Stunden` 1 851 und
+> `Vorlauf_Darueber_Stunden` 0; bei 1056 `35:1122,45:1411,55:101`, 1 475 und 0. Je Projekt drei Skalare mehr
+> (gesamt 646 CSV, 4 271 Skalare). Keine gesäten Daten sind neu, darum keine neue Einfrierregel.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
->   --ziel Referenzlaeufe/2026-10-05_R37_Fahrplan
+>   --ziel Referenzlaeufe/2026-10-05_R38_Vorlaufwahl
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
@@ -779,14 +776,14 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `3878da28c64ade18ca935e27e2472570833ee2b5693ac93e027e8ccbe3bda392`**. **Die Basis bleibt:** Die acht CI-Projekte
 > rechnen gegen R36 je Projekt PASS, 262 CSV byte-gleich.
 
-### Die Vorgängerbasis R36 (Kältemaschine)
+### Die Vorgängerbasis R37 (Fahrplan)
 
-Zwanzig Projekte, 608 CSV, 4 029 Skalare, auf Linux eingefroren gegen die Testdatenbank `fc67a865…` (Schemastand 185,
-mit den Projekten 1053, 1054 und 1055), gehoben auf Schemastand 186; mit R37 aus dem Arbeitsbaum gefallen, Protokoll und
-Anlass (das Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, KU3-4b) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R37 sind
-die Komfortspalten für jedes gekoppelte Projekt (F12, E83) und das Referenzprojekt 1056; die zwanzig Projekte rechnen je
-Wert gleich, 1047 und 1054 tragen nur neue Spalten in `aggregate.csv`, neu ist 1056.
+Einundzwanzig Projekte, 646 CSV, 4 265 Skalare, auf Linux eingefroren gegen die Testdatenbank `63b0bdae…` (Schemastand
+186, mit den Projekten 1053 bis 1056), gehoben auf Schemastand 188; mit R38 aus dem Arbeitsbaum gefallen, Protokoll und
+Anlass (Komfortspalten für jedes gekoppelte Projekt, F12 und E83, und das Referenzprojekt 1056, AK2-4) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R38 ist
+der Ausweis der Vorlaufwahl der Wärmepumpe (VW1, E88); 19 Projekte sind byte-gleich, 1047 und 1056 tragen nur drei neue
+Zeilen in `aggregate.csv`.
 
 ## Was hier liegt
 
@@ -1012,7 +1009,7 @@ bei 4 kW; der Katalogsatz mit 200 kW taktete jede Stunde. Ein abweichender Kühl
 Kühlspitze. Gerechnet: Kältebedarf 4,08 MWh, gedeckt 100,0 % (1017 mit der Wärmepumpe: 98,2 %), Kälte der Maschine
 4,19 MWh, Kältestrom 1,26 MWh (vollständig Netzbezug über den eigenen Zähler mit Träger 58), EER-Jahreswert 3,25,
 0 Stunden freier Kühlung (der Trockenkühler erreicht 3 °C Rückkühlung an Kühltagen nicht), 166 Taktstunden;
-Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R37
+Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R38
 und nicht in der CI-Auswahl; es gilt die Einfrierregel „gesäte Kältemaschinendaten“ oben.
 
 ```bash
@@ -1054,9 +1051,11 @@ Sperrfenster), Zeilenzahlen der Kopie, die gesetzten Zellen, `foreign_key_check`
 jeder Abweichung zurück. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1055 als höchste. Nach
 einer Neufassung der Testdatenbank wird es nach 1055 gezogen.
 
-Ergebnis in R37: `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
+Ergebnis in R38 (unverändert seit R37): `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
 3 883,19 Kh (1047: 1 281,04), längste Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh; Überschreitungsstunden 32
-und 43 Kh wie 1047. Das Laufprotokoll trägt den Hinweis der Näherung des Profilwegs. 1056 steht in der Basis R37 und
+und 43 Kh wie 1047. Das Laufprotokoll trägt den Hinweis der Näherung des Profilwegs. Die Wärmepumpe wählt ihre Kennlinie
+am gerechneten Vorlauf: 35 °C 1 122 h, 45 °C 1 411 h, 55 °C 101 h, darunter 1 475 h, darüber 0 h (1047: 1 549, 1 782,
+122, darunter 1 851 h). 1056 steht in der Basis R38 und
 nicht in der CI-Auswahl; gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`.
 
 ### Das Referenzprojekt 1051 „Konditionierung“
@@ -1130,7 +1129,7 @@ ersten Stand ohne Lastgang zieht es nach), prüft
 Zielzellen, die Unversehrtheit von 1018, `integrity_check` und `foreign_key_check` in einer Arbeitsdatei und ersetzt
 erst dann die Datenbank. Nach einer Neufassung der Testdatenbank wird es **nach 1052** gezogen.
 
-**Die einundzwanzig Projekte der Basis R37:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
+**Die einundzwanzig Projekte der Basis R38:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055 und 1056. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1050, 1052, 1054, 1055
 und 1056 stehen nicht in der CI-Auswahl).
 

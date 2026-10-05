@@ -172,7 +172,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-05_R37_Fahrplan`, einundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-05_R38_Vorlaufwahl`, einundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -196,6 +196,7 @@ der CI-Auswahl,
 Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude und einer Zone mit eigener Übergabe (Konvektor 70/50 °C, Proportionalband 2 K) — die Übergabe je Zone am gemeinsamen Vorlauf, Rücklauf massenstromgewichtet —, gehalten von `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1056 rechnet als Kopie von 1047 mit Anlagenfahrplan — Nachtsperre der Wärmepumpe 0 bis 6 Uhr, Zeitprogramm 0 in denselben Stunden an Kessel und BHKW, `Vorlauf_Max` 50 °C — und schreibt Komfortstunden, gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus,
 allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte

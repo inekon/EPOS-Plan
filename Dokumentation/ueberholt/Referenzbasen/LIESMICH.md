@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-05_R37_Fahrplan`](../../../Referenzlaeufe/2026-10-05_R37_Fahrplan/);
+> [`Referenzlaeufe/2026-10-05_R38_Vorlaufwahl`](../../../Referenzlaeufe/2026-10-05_R38_Vorlaufwahl/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -82,6 +82,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-03_R34_Erdreich` | 03.10.2026 | Basis nach dem Erdreichwiderstand nach DIN EN ISO 13370 (Bauteile am Erdreich), der allgemeinen Innenprüfung der Abschnittsregel im Zonenmodell und den neuen Referenzprojekten 1051 „Konditionierung“ und 1052 „Zonen“, auf Linux eingefroren; Testdatenbank `bb8dd3dc…` (Schemastand 176), gehoben bis Schemastand 181; achtzehn Projekte, 548 CSV, 3 568 Skalare — abgelöst durch R35 am 04.10.2026 | [`2026-10-03_R34_Erdreich/protokoll.txt`](2026-10-03_R34_Erdreich/protokoll.txt) |
 | `2026-10-04_R35_Zonenuebergabe` | 04.10.2026 | Basis nach der Wärmeübergabe je Zone (AK1z, E63) und dem neuen Referenzprojekt 1054 „Zonen mit Heizkreis“, auf Linux eingefroren; Testdatenbank `905096ae…` (Schemastand 185); neunzehn Projekte, 576 CSV, 3 791 Skalare; mit R36 abgelöst. |
 | `2026-10-05_R36_Kaeltemaschine` | 05.10.2026 | Basis mit dem neuen Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“ (KU3-4b, Einfrierregel „gesäte Kältemaschinendaten“), auf Linux eingefroren; Testdatenbank `fc67a865…` (Schemastand 185), gehoben auf Schemastand 186; zwanzig Projekte, 608 CSV, 4 029 Skalare — abgelöst durch R37 am 05.10.2026 | [`2026-10-05_R36_Kaeltemaschine/protokoll.txt`](2026-10-05_R36_Kaeltemaschine/protokoll.txt) |
+| `2026-10-05_R37_Fahrplan` | 05.10.2026 | Basis mit den Komfortspalten für jedes gekoppelte Projekt (F12, E83) und dem neuen Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4), auf Linux eingefroren; Testdatenbank `63b0bdae…` (Schemastand 186), gehoben auf Schemastand 188; einundzwanzig Projekte, 646 CSV, 4 265 Skalare — abgelöst durch R38 am 05.10.2026 | [`2026-10-05_R37_Fahrplan/protokoll.txt`](2026-10-05_R37_Fahrplan/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4577,6 +4578,43 @@ Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R36 beschrieben �
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055 \
 >   --ziel Referenzlaeufe/2026-10-05_R36_Kaeltemaschine
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R37 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R37 beschrieben — den Anlass (die Komfortspalten für jedes gekoppelte Projekt, F12 und E83, und das Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, AK2-4) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `bd365fe`, Testdatenbank Schemastand 188.
+
+**Abgelöst wurde R37 durch `2026-10-05_R38_Vorlaufwahl`** (Ausweis der Vorlaufwahl der Wärmepumpe, VW1, E88): Die einundzwanzig Projekte rechnen unverändert, 19 Projekte vollständig byte-gleich, 1047 und 1056 tragen nur je drei neue Zeilen in `aggregate.csv` (`WaermepumpeModul[0].Vorlaufwahl_Stunden`, `Vorlauf_Darueber_Stunden`, `Vorlauf_Darunter_Stunden`).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Komfortspalten für jedes gekoppelte Projekt (F12, E83) und Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4) — die Zahlen der zwanzig Vorgängerprojekte sind unverändert, 1047 und 1054 tragen sechs bzw. vier neue Spalten, neu ist 1056.**
+>
+> Der Lauf schreibt `Fahrplan_Begrenzt_Stunden` und die Komfortkennzahlen in `Tab_ErgebnisEnergiebedarf` für jedes Projekt,
+> dessen Anlagenfahrplan lief (Kopplung ab AK1, ein gekoppeltes Gebäude auf dem VDI-Weg), nicht erst bei greifender
+> Schranke; ohne greifende Schranke steht `Fahrplan_Begrenzt_Stunden` auf 0. Der Rechenweg ist sonst unverändert:
+> **Gegen R36 sind die zwanzig Vorgängerprojekte je Wert PASS, 18 Projekte vollständig byte-gleich, von 1047 und 1054
+> je 37 bzw. 27 CSV byte-gleich.** In `aggregate.csv` stehen neu bei 1047 `Energiebedarf.Fahrplan_Begrenzt_Stunden` 0,
+> `Komfort_Unterschreitungsstunden` 875, `Komfort_Kelvinstunden` 1 281,04, `Komfort_Laengste_Strecke` 11,
+> `Komfort_Ueberschreitungsstunden` 32 und `Komfort_Kelvinstunden_Kuehlung` 43; bei 1054 die vier Heizspalten
+> (0, 2 162, 2 138,59, 16 — ohne Kühlung bleiben die zwei Kühlspalten leer). Keine bestehende Zeile ändert sich.
+>
+> **Neu ist Projekt 1056**, Kopie von 1047 mit Nachtsperre der Wärmepumpe, Zeitprogramm an Kessel und BHKW und
+> Vorlaufgrenze 50 °C (Abschnitt „Das Referenzprojekt 1056“ unten). Der Vergleichslauf meldet 1056 als „nur im
+> Vergleichslauf vorhanden“, weil R36 das Projekt nicht kennt; 1056 bringt 38 CSV und 226 Skalare dazu (gesamt 646 CSV,
+> 4 265 Skalare). 1056 steht nicht in der CI-Auswahl.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
+>   --ziel Referenzlaeufe/2026-10-05_R37_Fahrplan
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),

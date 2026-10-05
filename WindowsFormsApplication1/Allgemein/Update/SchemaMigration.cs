@@ -5166,6 +5166,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_FREIE_KUEHLUNG_SOLE = FreieKuehlungSoleSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="VorlaufwahlSchema.SCHRITT"/> — <b>Ausweis der Vorlaufwahl der Wärmepumpe</b>
+        /// (VW1a): <c>Vorlaufwahl_Stunden</c>, <c>Vorlauf_Darueber_Stunden</c> und <c>Vorlauf_Darunter_Stunden</c>
+        /// an <c>Tab_ErgebnisWaermepumpeModul</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten entstehen leer.</para>
+        /// </summary>
+        public const int SCHRITT_VORLAUFWAHL = VorlaufwahlSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7499,6 +7508,12 @@ namespace WindowsFormsApplication1
                         "Zaehler im Ergebnis haetten keinen Platz. KEIN Rechenergebnis aendert sich - der Schalter " +
                         "entsteht aus, die Spalten leer.",
                         Schritt_FreieKuehlungSole),
+            // AUSWEIS DER VORLAUFWAHL DER WAERMEPUMPE (VW1a). Quelle ist VorlaufwahlSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_VORLAUFWAHL,
+                        "Tab_ErgebnisWaermepumpeModul.Vorlaufwahl_Stunden/Vorlauf_Darueber_Stunden/Vorlauf_Darunter_Stunden",
+                        "Die Stunden je Kennlinienstuetzstelle der Waermepumpe haetten im Ergebnis keinen Platz. " +
+                        "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_Vorlaufwahl),
         };
 
         /// <summary>
@@ -14232,6 +14247,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Freie Kuehlung ueber die Waermequelle - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ausweis der Vorlaufwahl" — Anlass und Wirkung stehen bei <see cref="SCHRITT_VORLAUFWAHL"/>,
+        /// die Anweisungen bei <see cref="VorlaufwahlSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Vorlaufwahl(Lauf l)
+        {
+            string nr = VorlaufwahlSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in VorlaufwahlSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = VorlaufwahlSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!VorlaufwahlSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Vorlaufwahl_Stunden, Vorlauf_Darueber_Stunden und Vorlauf_Darunter_Stunden stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ausweis der Vorlaufwahl der Waermepumpe - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

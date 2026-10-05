@@ -8367,6 +8367,32 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-size: 11px;
     color: var(--epos-text-leise);
 }
+/* Die Hilfepille im Kopf des Hauptfensters: mit der Maus liegt der Rahmen enger
+   um die Symbole (Anwenderwunsch), die Symbole selbst bleiben 16 px. Mit dem
+   Finger (pointer: coarse, iPad) bleibt das Beruehrungsziel bei 44 px. */
+@media (pointer: fine) {
+    .epos-hauptfenster-rechts .epos-hilfepille {
+        border-radius: 14px;
+    }
+    .epos-hauptfenster-rechts .epos-hilfepille__feld {
+        min-width: 28px;
+        min-height: 26px;
+        padding: 0 5px;
+    }
+}
+/* Die Hilfepille im Kopf des Hauptfensters ist mit der Maus kleiner gezeichnet
+   (Anwenderwunsch: Umrandung und Groesse der Knoepfe Hilfe/Assistent). Mit dem
+   Finger (pointer: coarse, iPad) bleibt das Beruehrungsziel bei 44 px. */
+@media (pointer: fine) {
+    .epos-hauptfenster-rechts .epos-hilfepille {
+        border-radius: 16px;
+    }
+    .epos-hauptfenster-rechts .epos-hilfepille__feld {
+        min-width: 30px;
+        min-height: 28px;
+        padding: 0 5px;
+    }
+}
 
 /* ==================================================================== */
 /* KATALOGDIALOGE - Anwenderwunsch 05.09.2026                           */

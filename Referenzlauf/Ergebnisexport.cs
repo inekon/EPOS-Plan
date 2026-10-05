@@ -66,6 +66,10 @@ namespace WindowsFormsApplication1.Referenzlauf
             // Ergebnistabellen der Waermepumpe - dieselbe Regel, sie stehen erst in aggregate.csv, wenn ein Lauf sie
             // erhebt. (Gleichnamige Spalten der Kaeltemaschine sind nie NULL und gehen unveraendert mit.)
             foreach (string s in FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // Schemaschritt 188 (VW1a): der Ausweis der Vorlaufwahl an der Modulzeile der Waermepumpe - dieselbe
+            // Regel, er steht erst in aggregate.csv, wenn ein Modul am gerechneten Vorlauf waehlt. Der Text
+            // „Vorlauf:Stunden;...“ geht als Textskalar mit (DbWert setzt das Trennzeichen ';' auf ',').
+            foreach (string s in VorlaufwahlSchema.SPALTEN_ERGEBNIS) namen.Add(s);
             return namen;
         }
 

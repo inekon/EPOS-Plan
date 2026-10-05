@@ -22,6 +22,8 @@ namespace WindowsFormsApplication1
     /// Kälte), Word und Excel.
     /// <b>Katalog v13</b> ergänzt die Kennzahlen der freien Kühlung der Wärmepumpe über die Wärmequelle
     /// (<c>kaelte.wp.frei</c>, <c>kaelte.wp.frei_stunden</c>; KU3-6) mit ihren erzeugten Einträgen.
+    /// <b>Katalog v14</b> ergänzt die Stunden der Wärmepumpe außerhalb der Kennlinienstützstellen am gerechneten Vorlauf
+    /// (<c>wp.vorlauf.darunter_stunden</c>, <c>wp.vorlauf.darueber_stunden</c>; VW1b, E88) mit ihren erzeugten Einträgen.
     /// Alle im Kontext Stand, ohne Zwilling der Paarsicht; die Positionsform <c>stand.&lt;n&gt;.*</c> gilt für sie wie
     /// für jeden Standwert. Die Quellen lesen nur den Wertesatz — das gespeicherte Ergebnis und den Zeitreihensatz des
     /// Laufs —, nie die Datenbank.
@@ -36,6 +38,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Fassung der freien Kühlung der Wärmepumpe über die Wärmequelle (Katalog v13, KU3-6).</summary>
         internal const int FASSUNG_FREIE_KUEHLUNG_WP = 13;
+
+        /// <summary>Die Fassung des Ausweises der Vorlaufwahl der Wärmepumpe (Katalog v14, VW1b).</summary>
+        internal const int FASSUNG_VORLAUFWAHL_WP = 14;
 
         /// <summary>
         /// Die Kennzahlen der Kältemaschine als Anlage (Schemaschritt 183) kamen mit Katalog v12 — ihre erzeugten
@@ -59,9 +64,19 @@ namespace WindowsFormsApplication1
             KennzahlenKatalog.SCHLUESSEL_WP_FREI, KennzahlenKatalog.SCHLUESSEL_WP_FREI_STUNDEN,
         };
 
+        /// <summary>
+        /// Die Kennzahlen der Vorlaufwahl der Wärmepumpe (Schemaschritt 188, VW1b) kamen mit Katalog v14 — ihre
+        /// erzeugten Einträge stehen erst ab dieser Fassung.
+        /// </summary>
+        private static readonly HashSet<string> KennzahlenVorlaufwahlWp = new(StringComparer.Ordinal)
+        {
+            KennzahlenKatalog.SCHLUESSEL_WP_VORLAUF_DARUNTER, KennzahlenKatalog.SCHLUESSEL_WP_VORLAUF_DARUEBER,
+        };
+
         /// <summary>Die Fassung, seit der die erzeugten Einträge einer Kennzahl im Katalog stehen.</summary>
         internal static int SeitDerKennzahl(string schluessel) =>
-            KennzahlenFreieKuehlungWp.Contains(schluessel) ? FASSUNG_FREIE_KUEHLUNG_WP
+            KennzahlenVorlaufwahlWp.Contains(schluessel) ? FASSUNG_VORLAUFWAHL_WP
+            : KennzahlenFreieKuehlungWp.Contains(schluessel) ? FASSUNG_FREIE_KUEHLUNG_WP
             : KennzahlenStromKaelte.Contains(schluessel) ? FASSUNG_STROM_KAELTE : 1;
 
         /// <summary>Die Einträge der Fassung 10 in Katalogfolge.</summary>

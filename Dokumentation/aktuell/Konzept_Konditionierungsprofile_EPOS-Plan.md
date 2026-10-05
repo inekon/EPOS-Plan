@@ -203,8 +203,8 @@ Referenzprojekt nutzt eine Sonderregel aus B2 — die Bitgleichheit braucht Prob
   KU3 behält Kältemaschine, freie Kühlung, Kältespeicher, Export, Vorkühlen und **Kühlung je Zone**; einen
   Kühlkalender der Zone gibt es erst mit KU3.
 - **Altweg.** Projekt 1040 und jedes Gebäude auf dem Tagesbilanz-Weg lesen weder Kalender noch Matrixzellen noch Rampe,
-  bis GA (ADR-006); für sie zeigt die Matrix nur die Felder, die der Altweg liest. Dieser Hinweis ist ein
-  Altweg-Sonderfall und kommt mit KP2 in die Löschliste von GA.
+  dauerhaft (E89, ADR-006); für sie zeigt die Matrix nur die Felder, die der Altweg liest. Dieser Hinweis ist ein
+  Altweg-Sonderfall und kommt mit KP2 ins Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
 - **Anlagenkopplung.** Der Erzeugerfahrplan (AK2) ist Verfügbarkeit der Anlage — derselbe Rasterbaustein, eine andere
   Größe. Die Heizperiode schaltet keinen Erzeuger ab, sondern die Raumheizung (E53); wer einen Erzeuger außerhalb der
   Heizperiode abschalten will, nutzt dessen Fahrplan. `Sollwertprofil` bleibt Bestandsweg von AK1, ein angelegter
@@ -963,7 +963,7 @@ Projektdatei vor IFC-`EPOS_*` vor Vorlage der Nutzung; ein nicht lesbarer Period
 Die manuelle Aufheizzeit reist mit „Projekt duplizieren", Variante und `.wpx`, nicht zwischen Katalog und Projekt (kein
 Katalogfeld; die Übernahme lässt NULL); die Importe gbXML und IFC schreiben NULL.
 
-**Die alten Spalten bleiben** bis GA (F5): Zellen der Matrix, Eingaben von Altweg und Katalog, Ziel des Imports,
+**Die alten Spalten bleiben** dauerhaft (F5, E89): Zellen der Matrix, Eingaben von Altweg und Katalog, Ziel des Imports,
 Quelle des Exports; bei angelegtem Kalender ruhen sie für diese Größe. `Sollwertprofil` bleibt für AK1 lesbar, die
 Gruppe „Wärmeübergabe" bietet „In den Kalender übernehmen" an (KP2).
 
@@ -1269,7 +1269,7 @@ zur Beauftragung der genannten Stufe billig.
 | F2 | *Fortgeschrieben (Rev. 2):* Die Zone erbt die Matrix je Zelle (leer = Gebäude) und je Größe den ganzen Kalender oder führt einen eigenen; „übernehmen und anpassen"; Anlegen erhält Zonenwerte (3.3, 3.4) | Vorgabenkaskade von heute; nur so bleibt Anlegen ergebnisneutral | KP1 |
 | F3 | *Ersetzt durch den Auftrag vom 26.09.2026:* statt Voreinstellungen im Code Matrix, Vorlagen im Katalog und Werkzeuge der Karte (3.5) | Ergänzung des Auftrags | — |
 | F4 | STRICT-Tabellen, die Woche als H8-Text (5.1, 5.2) | `CLAUDE.md` (STRICT, IDs, CHECK); H8 gilt für einen Wochenvektor | KP1 |
-| F5 | *Fortgeschrieben (Rev. 2):* Abgeleitet bis angelegt — die Matrix ist der Generator, ohne angelegten Kalender rechnet der Lauf aus ihr; kein DML an Bestandsdaten, alte Spalten bis GA (3.3, 5.4) | bitgleich durch Bau; Altweg, Import, Export lesen weiter | KP1 |
+| F5 | *Fortgeschrieben (Rev. 2):* Abgeleitet bis angelegt — die Matrix ist der Generator, ohne angelegten Kalender rechnet der Lauf aus ihr; kein DML an Bestandsdaten, alte Spalten bleiben (E89; 3.3, 5.4) | bitgleich durch Bau; Altweg, Import, Export lesen weiter | KP1 |
 | F6 | Lineare Treppe, letzte Stufe in der Sprungstunde (4.1) | „sukzessiver Anstieg"; n = 1 ist heute | KP3 |
 | F7 | Bemessung mit der geschlossenen Stufenformel in einem Lauf, Nachweisband, Überlagerung und Vorausrechnung nur als Prüforakel (4.3) | exakt bei festen Randwerten, sicher sonst; kein Zweitlauf | KP3 |
 | F8 | Rundung auf das kleinste haltende n, keine Mindestrampe (4.6) | eine Rampe von 1 h verschiebt den Sprung nur | KP3 |
@@ -1528,7 +1528,7 @@ N1.55, N1.56, N1.59–N1.67); [Register](Offene_Entscheide_Gebaeudesimulation_EP
 8.6, 9.2, 10.1); [Mehrzonenmodell](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (2.6, 2.9);
 [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (4, 5, 7.2, 8.2, 8.3, 9);
 [Datenaustausch](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) (13);
-[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (6, Löschliste GA);
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (6.1, Inventar der Altweg-Bestandteile);
 [ADR-001](ADR-001_Schema-Ausrollung.md); [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md);
 [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md);
 [BETRIEB_SQLITE](BETRIEB_SQLITE.md) § 6; [Konzept Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) 13;
