@@ -431,7 +431,9 @@ namespace WindowsFormsApplication1
             // braucht keinen Rang, siehe HeizwaermeEinesGebaeudes.
             var werte = new double[STUNDEN_JAHR];
             int vorher = SimulationProtokoll.Aktuell.Fehler.Count;
-            if (!sim.HeizwaermeEinesGebaeudes(gebaeude, 0, werte))
+            // AK2-2b: im gekoppelten Projekt mit demselben Anlagenfahrplan wie der Lauf - sonst zeigte die
+            // Auskunft andere Zahlen als der Lauf.
+            if (!sim.HeizwaermeEinesGebaeudesWieImLauf(idProjekt, idKlimaregion, gebaeude, werte))
             {
                 // Der benannte Grund aus dem Laufprotokoll (Stufe G6a) - dieselbe Lesart wie beim
                 // Hochrechnungsfaktor der Uebernahme.

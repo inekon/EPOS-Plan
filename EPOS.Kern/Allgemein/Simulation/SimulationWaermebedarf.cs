@@ -1250,6 +1250,41 @@ namespace WindowsFormsApplication1
             return (Komfortkennzahlen.Projekt(heiz), Komfortkennzahlen.Projekt(kuehl));
         }
 
+        /// <summary>
+        /// <b>Ein Gebaeude wie im Lauf, samt Anlagenfahrplan</b> (AK2-2b, Bedarfsauskunft): Steht das Gebaeude als
+        /// Projektkopie im Projekt und ist das Projekt gekoppelt, laeuft dieselbe Vorbereitung wie im Lauf
+        /// (<see cref="FahrplanVorbereiten"/>: Fahrplan, Pass 1 ueber die gespeicherten Gebaeude, Verteilung), und das
+        /// Gebaeude rechnet mit seiner Schranke auf Merkplatz 0. Sonst — kein gekoppeltes Projekt, ein noch nicht
+        /// gespeichertes Gebaeude — genau <see cref="HeizwaermeEinesGebaeudes"/>. Den Schluessel liefert der
+        /// gespeicherte Stand der uebrigen Gebaeude; der Arbeitsstand des Dialogs rechnet nur selbst.
+        /// <c>false</c> = benannter Abbruch wie im Lauf.
+        /// </summary>
+        internal bool HeizwaermeEinesGebaeudesWieImLauf(int idProjekt, int idKlimaregion, ProjektGebaeudeModel item, double[] ziel)
+        {
+            if (item != null && item.ID_Gebaeude > 0 && idProjekt > 0)
+            {
+                var ctrl = new ProjektGebaeudeCtrl();
+                ctrl.ReadAll(idProjekt);
+                int stelle = -1;
+                for (int i = 0; i < ctrl.rows; i++)
+                    if (ctrl.items[i].ID_Gebaeude == item.ID_Gebaeude) { stelle = i; break; }
+                if (stelle >= 0)
+                {
+                    if (!FahrplanVorbereiten(idProjekt, idKlimaregion, ctrl)) return false;
+                    GebaeudeErgebnisse.Leeren();
+                    _schrankeAktuell = _schrankeJeGebaeude != null ? _schrankeJeGebaeude[stelle] : null;
+                }
+            }
+            try
+            {
+                return HeizwaermeEinesGebaeudes(item, 0, ziel);
+            }
+            finally
+            {
+                _schrankeAktuell = null;
+            }
+        }
+
         /// <summary>Lief der Anlagenfahrplan (Projektstufe und mindestens ein gekoppeltes Gebaeude auf dem VDI-Weg)?</summary>
         internal bool FahrplanWirksam => _fahrplan != null;
 
