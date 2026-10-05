@@ -238,6 +238,18 @@ namespace WindowsFormsApplication1
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
 
         /// <summary>
+        /// Die Flächen der Raum- und Bauteilkörper nach Randbedingung (<see cref="Flaechenklassifikation"/>, Konzept HottCAD-Verbund
+        /// 4.2); <c>null</c> = kein Raumkörper. Nur Anzeige und Gegenprobe: nie geschrieben, keine Rechengröße.
+        /// </summary>
+        public IReadOnlyList<Flaechengruppenzeile> Flaechengruppen { get; set; }
+
+        /// <summary>Die Bilanz je Gruppe [m²]: Dreiecksflächen der Raumkörper, R7 aus den Öffnungen der Hülle; <c>null</c> = keine.</summary>
+        public IReadOnlyDictionary<Flaechengruppe, double> FlaechengruppenBilanzM2 { get; set; }
+
+        /// <summary>Die Bauteilflächen des Mengensatzes je Gruppe [m²] — die Gegenprobe zur Bilanz; <c>null</c> = keine.</summary>
+        public IReadOnlyDictionary<Flaechengruppe, double> FlaechengruppenMengeM2 { get; set; }
+
+        /// <summary>
         /// Der Beschreibungstext, den der Export in <c>Campus/Description</c> schreibt (Produktausweis,
         /// Wasserzeichen der Testlizenz, Vermerke; G7a); <c>null</c> = keiner. Der Leser lässt ihn leer.
         /// </summary>
@@ -341,6 +353,12 @@ namespace WindowsFormsApplication1
         /// formatfrei in Weltkoordinaten [m]; <c>null</c> = keiner. gbXML lässt ihn leer. Nur Anzeige.
         /// </summary>
         public Dateikoerper Koerper { get; set; }
+
+        /// <summary>
+        /// Die Kennungen der Bauteile, auf die der Raum verweist (IFC <c>IfcRelReferencedInSpatialStructure</c>), in
+        /// Dateireihenfolge — Eingang der Flächenklassifikation; leer = keine.
+        /// </summary>
+        public List<string> Bezugsbauteile { get; } = new List<string>();
 
         /// <summary>Ist der Raum beheizt?</summary>
         public bool Beheizt { get; set; } = true;

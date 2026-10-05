@@ -150,6 +150,8 @@ namespace WindowsFormsApplication1
             Bauteile();
             Koerpertrennflaechen();
             GrundrissTrenndecken();
+            // Die Flächen der Körper nach Randbedingung (Konzept HottCAD-Verbund 4.2) — Anzeige und Gegenprobe.
+            foreach (AbbildGebaeude g in _abbild.Gebaeude) Flaechenklassifikation.Klassifizieren(g, _drehung);
             ReferenzenMelden();
             Melden(0.9);
 
@@ -1894,6 +1896,8 @@ namespace WindowsFormsApplication1
                     if (!(p is IIfcElement)) continue;
                     if (!_raumbezug.TryGetValue(p.EntityLabel, out List<int> liste)) _raumbezug[p.EntityLabel] = liste = new List<int>();
                     if (!liste.Contains(raum.EntityLabel)) liste.Add(raum.EntityLabel);
+                    string kennung = p.GlobalId.ToString();
+                    if (!_raum[raum.EntityLabel].Bezugsbauteile.Contains(kennung)) _raum[raum.EntityLabel].Bezugsbauteile.Add(kennung);
                 }
             }
             foreach (List<int> liste in _raumbezug.Values) liste.Sort();

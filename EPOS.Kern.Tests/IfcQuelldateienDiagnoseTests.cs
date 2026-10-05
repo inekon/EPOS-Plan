@@ -97,6 +97,16 @@ namespace EPOS.Kern.Tests
                     _aus.WriteLine("Randbedingung wirksam: " + string.Join(", ", g.Bauteile.Concat(g.Bauteile.SelectMany(x => x.Oeffnungen))
                         .GroupBy(x => x.RandbedingungWirksam?.ToString() ?? "ohne Seiten").OrderBy(x => x.Key, StringComparer.Ordinal)
                         .Select(x => x.Key + " " + x.Count())));
+                    // Flächengruppen nach Randbedingung (Konzept HottCAD-Verbund 4.2): Bilanz und Gegenprobe je Gruppe — nur Zahlen.
+                    if (g.FlaechengruppenBilanzM2 != null)
+                    {
+                        _aus.WriteLine("Flächengruppen [m² Körper / Menge]: " + string.Join(", ", g.FlaechengruppenBilanzM2.OrderBy(x => x.Key)
+                            .Select(x => x.Key + " " + Z(x.Value) + "/" + Z(g.FlaechengruppenMengeM2[x.Key]))));
+                        _aus.WriteLine("Flächengruppen: Bauteilkörper " + g.Bauteile.Count(x => x.Koerper != null) + " + Öffnungen "
+                                       + g.Bauteile.SelectMany(x => x.Oeffnungen).Count(x => x.Koerper != null) + ", Flächen ohne Bauteil "
+                                       + g.Flaechengruppen.Count(x => x.Beleg == Flaechenklassifikation.BELEG_OHNE_BAUTEIL)
+                                       + ", Abweichung > 5 %: " + string.Join(" ", Flaechenklassifikation.Abweichungen(g)));
+                    }
 
                     // Raumkörper aus der Datei (G7f-1): Arten, mit/ohne Körper, Dreiecke — nur Protokoll.
                     List<AbbildRaum> mitKoerper = g.Raeume.Where(r => r.Koerper != null).ToList();

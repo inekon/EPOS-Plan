@@ -33899,6 +33899,12 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_BAUTEILKOERPER_GRENZE" xml:space="preserve">
     <value>{0} Bauteilkörper nicht geladen: Räume und Bauteile zusammen dürfen {1} Dreiecke nicht überschreiten, die Räume tragen schon {2}.</value>
   </data>
+  <data name="IMP_IFC_PROT_FLAECHE_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0}: {1} Flächen der Raumkörper ({2} m²) ohne passendes Bauteil — Gruppe aus der Flächennormale (nur Anzeige).</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHENGRUPPE_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: Gruppe {1} der Randbedingungen hat {2} m² Körperfläche gegen {3} m² Bauteilfläche — Hinweis, keine Rechengröße.</value>
+  </data>
   <data name="IMP_IFC_PROT_BAUTEILKOERPER_ART" xml:space="preserve">
     <value>{0} Bauteilkörper der Art {1} sind nicht lesbar; die Bauteile werden ohne Körper dargestellt.</value>
   </data>

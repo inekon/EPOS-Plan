@@ -33892,6 +33892,12 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_BAUTEILKOERPER_GRENZE" xml:space="preserve">
     <value>{0} element bodies not loaded: spaces and elements together may not exceed {1} triangles, the spaces already carry {2}.</value>
   </data>
+  <data name="IMP_IFC_PROT_FLAECHE_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0}: {1} space body faces ({2} m²) without a matching element — group taken from the face normal (display only).</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHENGRUPPE_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: boundary group {1} has {2} m² of body area against {3} m² of element area — a hint, not a calculation value.</value>
+  </data>
   <data name="IMP_IFC_PROT_BAUTEILKOERPER_ART" xml:space="preserve">
     <value>{0} element bodies of type {1} cannot be read; the elements are shown without a body.</value>
   </data>
