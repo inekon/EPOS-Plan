@@ -1428,6 +1428,17 @@ eine reine Projekttabelle ohne Stammfassung, also **zwei `SchemaSpalte`-Einträg
   `Tab_QuellprofilDaten` (`:2136-2151`) käme erst in Frage, wenn Profile wiederverwendbar werden
   sollen (**H8**).
 
+**So gebaut (AK2-1, 05.10.2026).** Schemaschritt **186** `AnlagenfahrplanSchema`
+(`EPOS.Kern/Allgemein/Update/AnlagenfahrplanSchema.cs`, Paketanhebung Art Ddl, ohne Saat) legt an
+`Tab_Energieanlagen` `Zeitprogramm` (TEXT) und `Vorlauf_Max` (REAL) an, beide nullbar. `WErzeugerModel` trägt
+beide Felder; `AnlagenSql.Einfuegen` schreibt sie NULL-erhaltend als letzte Spalten der Anlagen-Anweisung und lässt
+sie auf einer Datenbank ohne die Spalten weg. Speichern, Assistent, Komponentenübernahme und Flottenübernahme legen
+Anlagenzeilen allein über diesen Weg an; Projektduplikat und Projektpaket kopieren alle Spalten der Tabelle und
+tragen beide mit. Den Text liest `Anlagenzeitprogramm` (`EPOS.Kern/Allgemein/Simulation/`): 168 Faktoren 0 … 1 im
+Format des Sollwertprofils, leer = immer verfügbar, jeder Verstoß ein benannter Fehler
+(`SIMENG_AK2_ZEITPROGRAMM_*`), Wochenbeginn aus der Wochenendmaske wie beim Sollwertprofil. Der Rechenweg liest
+beide Spalten noch nicht.
+
 ### 8.3 `AK-S3` — die Ergebnisspalten und die Reihen
 
 Nach dem Muster des Kanalschritts, der die Spalten je Tabelle **namentlich** führt
@@ -1458,6 +1469,12 @@ und `KuehlVorlaufgrenze_H` (der Anteil davon an der Vorlaufgrenze, 7.2). Alle nu
 selben Schritt in `SpaltenNurMitWert` des Referenzlauf-Exports, sonst wäre ein neuer NULL-Schlüssel in
 `aggregate.csv` FAIL. Die Komfortgegenstücke `Komfort_Ueberschreitungsstunden` und
 `Komfort_Kelvinstunden_Kuehlung` kommen mit AK2.
+
+**So gebaut (AK2-1, 05.10.2026).** Derselbe Schemaschritt **186** legt an `Tab_ErgebnisEnergiebedarf` sechs
+nullbare Spalten an: `Komfort_Unterschreitungsstunden`, `Komfort_Laengste_Strecke`, `Fahrplan_Begrenzt_Stunden`
+und `Komfort_Ueberschreitungsstunden` (INTEGER, Prüfklausel 0 … 8760), `Komfort_Kelvinstunden` und
+`Komfort_Kelvinstunden_Kuehlung` (REAL, Prüfklausel ≥ 0). `ErgebnisCtrl` schreibt und liest sie nur, wenn die
+Datenbank sie trägt (NULL = „nicht erhoben"); alle sechs stehen in `SpaltenNurMitWert` des Referenzlauf-Exports.
 
 **Die Reihen bleiben draußen.** Die 8 760 Werte je Reihe gehören nicht in die Datenbank (dieselbe
 Regel wie für alle Ergebnisreihen); sie reisen über den Referenzlauf-Export als
