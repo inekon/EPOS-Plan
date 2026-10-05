@@ -600,12 +600,23 @@ namespace WindowsFormsApplication1
                 }
 
                 if (e.Kuehltraeger > 0)
-                    Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.SIMENG_KAELTE_KUEHLTRAEGER_MENGE, e.Bezeichner,
-                        (e.NetzbezugKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                        (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                        Emissionsquelle.TraegerName(e.Kuehltraeger)));
+                    Protokoll.Hinweis(KuehltraegerMengeHinweis(e, Emissionsquelle.TraegerName(e.Kuehltraeger)));
             }
+        }
+
+        /// <summary>
+        /// Der Hinweis zum Netzbezug des Kältestroms mit abweichendem Kühlträger — für die
+        /// Wärmepumpe und die Kältemaschine (<see cref="Kaelteerzeuger.Maschine"/>) je mit eigenem Text.
+        /// </summary>
+        internal static string KuehltraegerMengeHinweis(Kaelteerzeuger e, string traeger)
+        {
+            string vorlage = e.Maschine != null
+                ? MyResource.Resource.SIMENG_KAELTE_KM_KUEHLTRAEGER_MENGE
+                : MyResource.Resource.SIMENG_KAELTE_KUEHLTRAEGER_MENGE;
+            return string.Format(CultureInfo.CurrentCulture, vorlage, e.Bezeichner,
+                (e.NetzbezugKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                traeger);
         }
 
         /// <summary>
