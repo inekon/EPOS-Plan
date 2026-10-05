@@ -85,6 +85,56 @@ public sealed class WaermepumpeKonfigurationTexte
     public string SperrHinzufuegen { get; set; } = T("WPA_BTN_SPERR_HINZU", "Fenster hinzufügen");
     public string SperrEntfernen { get; set; } = T("WPA_BTN_SPERR_ENTFERNEN", "Entfernen");
     public string HinweisSperrLeer { get; set; } = T("WPA_HINWEIS_SPERR_LEER", "Keine Sperrzeiten — die Wärmepumpe darf jederzeit laufen.");
+
+    // --- Betriebszeiten (Anlagenkopplung 9.3) ----------------------------------------
+
+    /// <summary>WPA_GRP_BETRIEBSZEITEN — die Gruppe mit Zeitprogramm und höchstem Vorlauf.</summary>
+    public string GruppeBetriebszeiten { get; set; } = T("WPA_GRP_BETRIEBSZEITEN", "Betriebszeiten");
+
+    /// <summary>WPA_LBL_ZEITPROGRAMM</summary>
+    public string LabelZeitprogramm { get; set; } = T("WPA_LBL_ZEITPROGRAMM", "Zeitprogramm");
+
+    /// <summary>WPA_BTN_ZEITPROGRAMM — öffnet das Wochenraster.</summary>
+    public string KnopfZeitprogramm { get; set; } = T("WPA_BTN_ZEITPROGRAMM", "Wochenraster bearbeiten");
+
+    /// <summary>WPA_BTN_ZEITPROGRAMM_SCHLIESSEN — klappt das Wochenraster wieder zu.</summary>
+    public string KnopfZeitprogrammSchliessen { get; set; } = T("WPA_BTN_ZEITPROGRAMM_SCHLIESSEN", "Wochenraster schließen");
+
+    /// <summary>WPA_HRL_ZEITPROGRAMM_LEER</summary>
+    public string ZeileZeitprogrammLeer { get; set; } = T("WPA_HRL_ZEITPROGRAMM_LEER", "Nicht gepflegt — die Anlage ist immer verfügbar.");
+
+    /// <summary>WPA_HRL_ZEITPROGRAMM_GEPFLEGT — {0} volle, {1} gesperrte Wochenstunden.</summary>
+    public string ZeileZeitprogrammGepflegt { get; set; } = T("WPA_HRL_ZEITPROGRAMM_GEPFLEGT",
+        "Gepflegt: {0} von 168 Wochenstunden mit voller Verfügbarkeit, {1} gesperrt.");
+
+    /// <summary>WPA_HRL_ZEITPROGRAMM_FAKTOREN</summary>
+    public string ZeileZeitprogrammFaktoren { get; set; } = T("WPA_HRL_ZEITPROGRAMM_FAKTOREN",
+        "Faktor je Wochenstunde von 0 (gesperrt) bis 1 (volle Leistung), Montag 0 Uhr bis Sonntag 23 Uhr.");
+
+    /// <summary>WPA_LBL_VORLAUF_MAX</summary>
+    public string LabelVorlaufMax { get; set; } = T("WPA_LBL_VORLAUF_MAX", "Höchster Vorlauf");
+
+    /// <summary>WPA_HRL_VORLAUF_MAX — {0} = projektierter Vorlauf.</summary>
+    public string ZeileVorlaufMax { get; set; } = T("WPA_HRL_VORLAUF_MAX", "Vorgabe: projektierter Vorlauf {0} °C; leer = Vorgabe.");
+
+    /// <summary>WPA_HRL_VORLAUF_MAX_OHNE — ohne projektierten Vorlauf.</summary>
+    public string ZeileVorlaufMaxOhne { get; set; } = T("WPA_HRL_VORLAUF_MAX_OHNE", "Leer = projektierter Vorlauf der Anlage.");
+
+    /// <summary>WPA_HINWEIS_SPERRZEIT_VORRANG</summary>
+    public string HinweisSperrzeitVorrang { get; set; } = T("WPA_HINWEIS_SPERRZEIT_VORRANG",
+        "Sperrzeit und Zeitprogramm gelten zusammen; die Sperrzeit geht vor.");
+
+    /// <summary>WPA_HRL_BETRIEBSZEITEN_WIRKUNG</summary>
+    public string ZeileBetriebszeitenWirkung { get; set; } = T("WPA_HRL_BETRIEBSZEITEN_WIRKUNG",
+        "Zeitprogramm und höchster Vorlauf wirken mit der Anlagenkopplung auf die gekoppelten Gebäude des Projekts.");
+
+    /// <summary>WPA_MSG_VORLAUF_MAX_BEREICH — {0} … {1} °C.</summary>
+    public string MeldungVorlaufMaxBereich { get; set; } = T("WPA_MSG_VORLAUF_MAX_BEREICH",
+        "Der höchste Vorlauf muss zwischen {0} und {1} °C liegen.");
+
+    /// <summary>WPA_INFO_SPERRZEIT_ZEITPROGRAMM — {0} überschnittene Wochenstunden.</summary>
+    public string InfoSperrzeitZeitprogramm { get; set; } = T("WPA_INFO_SPERRZEIT_ZEITPROGRAMM",
+        "Sperrzeit und Zeitprogramm überschneiden sich in {0} Wochenstunden mit Faktor über 0; dort gilt die Sperrzeit.");
     public string HinweisSperrUebertrag { get; set; } = T("WPA_HINWEIS_SPERR_UEBERTRAG",
         "Ein Fenster über Mitternacht läuft in den Folgetag; gesperrt ist jede Stunde, deren Beginn im Fenster liegt.");
     public string EinheitStunden { get; set; } = T("WPA_EINHEIT_STUNDEN", "h");

@@ -152,6 +152,23 @@ Den Strahlungsanteil bringt die Art mit (Kühldecke und Flächenkühlung 0,5, Ge
 
 Unter den Feldern steht, ob die Kühlübergabe im geöffneten Projekt wirkt und woran es fehlt, der Auslegungstag mit seiner Kühllast, der Kaltwasser-Vorlauf und seine Herkunft. Zwei Zeilen stehen immer da: '''Die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze''' – EPOS-Plan prüft nicht, ob an der Kühlfläche Tauwasser ausfällt –, und die Kühlübergabe rechnet '''sensibel, ohne Entfeuchtung'''. Widersprüchliche Angaben meldet ''OK'' mit den Werten: Vorlauf, Rücklauf und Raumtemperatur des Auslegungspunkts müssen aufsteigen.
 
+== Komfortstunden ==
+{{Anker|komfort}}
+
+Rechnet ein Gebäude gekoppelt, kann die Raumtemperatur unter den Sollwert fallen – weil die Übergabe nicht reicht oder weil die Anlage nach ihren [[Programm Dokumentation/Energieerzeuger#betriebszeiten|Betriebszeiten]] nicht zur Verfügung steht. Die '''Komfortstunden''' zählen das:
+
+* '''Unterschreitungsstunden''' – Stunden der Nutzungszeit, in denen die Raumluft mehr als '''1,0 K''' unter dem Heizsollwert liegt;
+* '''Kelvinstunden''' – die Summe dieser Unterschreitungen in Kh; sie sagt, wie tief die Raumtemperatur fiel;
+* '''Längste Strecke''' – die längste zusammenhängende Folge solcher Stunden.
+
+Die Schwelle 1,0 K ist eine Vorgabe von EPOS-Plan, kein Normwert. Gezählt wird nur in der '''Nutzungszeit''', also in den Stunden, in denen der Tagsollwert gilt; eine Stunde in der Nachtabsenkung oder mit Heizung aus zählt nicht. Bei mehreren Zonen zählt eine Stunde, wenn eine beheizte Zone die Schwelle reißt; die Kelvinstunden sind nach der Fläche der Zonen gewichtet. Mit Kühlung zählen die '''Überschreitungsstunden''' und ihre Kelvinstunden spiegelbildlich die Stunden über dem Kühlsollwert.
+
+'''Komfort neben Restbedarf.''' Mit Kopplung ist ein Teil der Unterdeckung keine fehlende Wärme mehr, sondern eine gesunkene Raumtemperatur. Deshalb steht neben den Komfortstunden immer der '''Restbedarf''' des Projekts – im Bedarfsdialog wie im Bericht.
+
+'''Feste Last.''' Im Lauf mit Fahrplan rechnet nur ein Gebäude nach VDI 6007 mit Wärmeübergabe ''mit Rückwirkung''. Jedes andere Gebäude – auf dem Rechenweg Tagesbilanz oder ohne Wärmeübergabe – geht als '''feste Last''' ein: Es zehrt an der Verfügbarkeit der Anlage, sein Bedarf bleibt aber wie ohne Fahrplan, und es hat keine Komfortstunden. Der Bericht nennt je Gebäude den Bedarfsbegriff und je Projekt die Zahl der Gebäude als feste Last.
+
+'''Profilweg.''' Die Verfügbarkeit der Anlagen rechnet das Programm einmal je Projekt vorab; ein Pufferspeicher geht nur als Vorrat über die Dauer einer Sperre ein. Die Komfortstunden sind deshalb eine Näherung und eher zu hoch als zu niedrig; der Bericht nennt das.
+
 == Lüftung ==
 {{Anker|lueftung}}
 
@@ -234,6 +251,8 @@ Rechnet das Gebäude mit [[#heizkreis|Wärmeübergabe]], zeigt der Wärmebedarf 
 * in der Zeile '''Rechenweg''' den Zusatz ''gekoppelt (AK1)'';
 * zwei Kacheln: '''Vorlauf / Rücklauf''' – die Mittel über die Stunden mit Heizbetrieb, darunter Übergabeart und Auslegungspunkt – und '''Stunden mit begrenzter Übergabe''', in denen die Übergabe weniger lieferte, als der Sollwert verlangte;
 * das Bild '''Vorlauf und Rücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Heizbetrieb bleiben im Bild leer. Der Bericht führt dieselben Zahlen je Gebäude im Abschnitt ''Heizkreis und Übergabe''.
+* die Kacheln der [[#komfort|Komfortstunden]] – Unterschreitungsstunden, Kelvinstunden, längste Strecke – und daneben den '''Restbedarf''' des Projekts aus dem letzten Lauf; nicht erhobene Werte stehen als „—“. Im Lauf mit Fahrplan kommen der Bedarfsbegriff (''mit Rückwirkung'' oder ''feste Last'') und die Stunden am Fahrplan dazu;
+* das Bild '''Raumtemperatur und Sollwert''' für die Woche mit der größten Unterschreitung: Raumluft und Sollwert als zwei Linien, die gezählten Unterschreitungsstunden markiert. Der Bericht führt Komfortstunden und Restbedarf im Abschnitt ''Komfort und Restbedarf''.
 
 Rechnet das Gebäude mit [[#kuehluebergabe|Kühlübergabe]], trägt die Zeile '''Rechenweg''' ebenfalls den Zusatz ''gekoppelt (AK1)'', und der Abschnitt '''Kältebedarf''' zeigt zusätzlich:
 * zwei Kacheln: '''Kühlvorlauf / Kühlrücklauf''' – die Mittel über die Stunden mit Kühlbetrieb, darunter Art, Auslegungspunkt und der Vermerk ''sensibel'' – und '''Stunden mit begrenzter Kühlübergabe''', in denen die Kühlübergabe weniger aufnahm, als der Kühlsollwert verlangte, davon die Stunden an der Vorlaufgrenze;
@@ -252,6 +271,7 @@ Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistu
 * Ohne eingeschaltete Kühlung ist der Kühlbedarf eine Auskunft über das Gebäude und geht in keinen Kanal. Mit Kühlung geht er als Kältebedarf in den Kanal ''Kühlung'' und bleibt ungedeckt, weil kein Wärmeerzeuger Kälte deckt (siehe [[Programm Dokumentation/Kühlung|Kühlung]]).
 * Der Kühlbedarf ist sensible Kälte ohne Entfeuchtung.
 * Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude'''; mit mehreren Zonen stellt jede Zone ihre eigene Übergabe am gemeinsamen Vorlauf ein (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]). Die Kühlübergabe gilt für ein Gebäude mit höchstens einer Zone – mit mehreren Zonen rechnet die Kühlung je Zone ideal; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm.
+* Der Fahrplan der Anlagen ist eine Vorabrechnung je Projekt ohne Ladezustand der Speicher; die Komfortschwelle ist ein fester Wert von 1,0 K.
 * Die Kühlübergabe kennt '''einen Kaltwasserkreis je Gebäude''' mit festem Vorlauf; eine Kühlkurve und eine Wahl der Kühlkennlinie je Stunde gibt es nicht, und die Flächenkühlung rechnet ohne Estrichmasse. Sie rechnet sensibel ohne Entfeuchtung, die Vorlaufgrenze ist eine Vorgabe, keine Taupunktrechnung. Ein eigenes Zeitprogramm für den Kühlsollwert gibt es nicht.
 * Ohne Zone rechnet das Modell wie der Bestandsweg das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch. Mit Zonen rechnet es die Hülle seiner Zonen ohne Hochrechnung.
 

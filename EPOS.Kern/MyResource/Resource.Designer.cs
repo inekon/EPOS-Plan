@@ -25146,6 +25146,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung ähnelt.
+        /// </summary>
+        public static string GEBB_BILD_KOMFORTWOCHE {
+            get {
+                return ResourceManager.GetString("GEBB_BILD_KOMFORTWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlvorlauf und Kühlrücklauf ähnelt.
         /// </summary>
         public static string GEBB_BILD_KUEHLVORLAUF_RUECKLAUF {
@@ -25272,6 +25281,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Woche ab {0}; markiert sind die gezählten Unterschreitungsstunden. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_KOMFORTWOCHE {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_KOMFORTWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_KOMFORT_OHNE {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_KOMFORT_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden ohne Kühlbetrieb bleiben im Bild leer; der Kaltwasser-Vorlauf ist fest, der Rücklauf gehört zur gelieferten Kühlleistung. ähnelt.
         /// </summary>
         public static string GEBB_HRL_KUEHLVORLAUF_LUECKEN {
@@ -25335,6 +25362,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsbegriff ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_BEDARFSBEGRIFF {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_BEDARFSBEGRIFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit begrenzter Übergabe ähnelt.
         /// </summary>
         public static string GEBB_KACHEL_BEGRENZT {
@@ -25349,6 +25385,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_KACHEL_BEGRENZT_QUELLE {
             get {
                 return ResourceManager.GetString("GEBB_KACHEL_BEGRENZT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden am Fahrplan begrenzt ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_FAHRPLAN_BEGRENZT {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_FAHRPLAN_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kelvinstunden ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KOMFORT_KELVIN {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KOMFORT_KELVIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kelvinstunden Kühlung ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KOMFORT_KELVIN_KUEHL {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KOMFORT_KELVIN_KUEHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden der Nutzungszeit mehr als 1,0 K unter dem Sollwert ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KOMFORT_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KOMFORT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Längste Strecke ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KOMFORT_STRECKE {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KOMFORT_STRECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unterschreitungsstunden ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KOMFORT_STUNDEN {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KOMFORT_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschreitungsstunden Kühlung ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KOMFORT_UEBER {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KOMFORT_UEBER", resourceCulture);
             }
         }
         
@@ -25385,6 +25484,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_KACHEL_KUEHL_BEGRENZT_QUELLE {
             get {
                 return ResourceManager.GetString("GEBB_KACHEL_KUEHL_BEGRENZT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restbedarf (Projekt, letzter Lauf) ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_RESTBEDARF {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_RESTBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme, die kein Erzeuger gedeckt hat — steht neben den Komfortstunden ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_RESTBEDARF_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_RESTBEDARF_QUELLE", resourceCulture);
             }
         }
         
@@ -25529,6 +25646,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_LBL_WARMWASSER_PROJEKT {
             get {
                 return ResourceManager.GetString("GEBB_LBL_WARMWASSER_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumluft ähnelt.
+        /// </summary>
+        public static string GEBB_LEG_KOMFORT_RAUMLUFT {
+            get {
+                return ResourceManager.GetString("GEBB_LEG_KOMFORT_RAUMLUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sollwert ähnelt.
+        /// </summary>
+        public static string GEBB_LEG_KOMFORT_SOLLWERT {
+            get {
+                return ResourceManager.GetString("GEBB_LEG_KOMFORT_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unterschreitung ähnelt.
+        /// </summary>
+        public static string GEBB_LEG_KOMFORT_UNTERSCHREITUNG {
+            get {
+                return ResourceManager.GetString("GEBB_LEG_KOMFORT_UNTERSCHREITUNG", resourceCulture);
             }
         }
         
@@ -29148,6 +29292,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_BAK_QUELLE {
             get {
                 return ResourceManager.GetString("GEB_BAK_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die feste Last ähnelt.
+        /// </summary>
+        public static string GEB_BEDARFSBEGRIFF_FESTE_LAST {
+            get {
+                return ResourceManager.GetString("GEB_BEDARFSBEGRIFF_FESTE_LAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Rückwirkung ähnelt.
+        /// </summary>
+        public static string GEB_BEDARFSBEGRIFF_RUECKWIRKUNG {
+            get {
+                return ResourceManager.GetString("GEB_BEDARFSBEGRIFF_RUECKWIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude als feste Last: {0} — sie rechnen auf dem Tagesbilanz-Weg oder ohne Kopplung, zehren an der Verfügbarkeit der Anlage und haben weder Rückwirkung noch Komfortstunden. ähnelt.
+        /// </summary>
+        public static string GEB_BERICHT_FESTE_LAST {
+            get {
+                return ResourceManager.GetString("GEB_BERICHT_FESTE_LAST", resourceCulture);
             }
         }
         
@@ -57104,6 +57275,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_VORLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Vorlauf, den die Anlage bietet [°C]; leer = projektierter Vorlauf. Wirkt mit der Anlagenkopplung: Verlangt ein gekoppeltes Gebäude mehr, gilt dieser Wert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_VORLAUF_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_VORLAUF_MAX_ERL", resourceCulture);
             }
         }
         
@@ -115020,6 +115200,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenraster bearbeiten ähnelt.
+        /// </summary>
+        public static string WPA_BTN_ZEITPROGRAMM {
+            get {
+                return ResourceManager.GetString("WPA_BTN_ZEITPROGRAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenraster schließen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_ZEITPROGRAMM_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("WPA_BTN_ZEITPROGRAMM_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitrechnen ähnelt.
         /// </summary>
         public static string WPA_CHK_HEIZSTAB {
@@ -115079,6 +115277,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_GRP_AUSLEGUNG {
             get {
                 return ResourceManager.GetString("WPA_GRP_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebszeiten ähnelt.
+        /// </summary>
+        public static string WPA_GRP_BETRIEBSZEITEN {
+            get {
+                return ResourceManager.GetString("WPA_GRP_BETRIEBSZEITEN", resourceCulture);
             }
         }
         
@@ -115155,6 +115362,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit und Zeitprogramm gelten zusammen; die Sperrzeit geht vor. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_SPERRZEIT_VORRANG {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_SPERRZEIT_VORRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Sperrzeiten — die Wärmepumpe darf jederzeit laufen. ähnelt.
         /// </summary>
         public static string WPA_HINWEIS_SPERR_LEER {
@@ -115173,11 +115389,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm und höchster Vorlauf wirken mit der Anlagenkopplung auf die gekoppelten Gebäude des Projekts. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_BETRIEBSZEITEN_WIRKUNG {
+            get {
+                return ResourceManager.GetString("WPA_HRL_BETRIEBSZEITEN_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizstab dieser Wärmepumpe wird bei Unterdeckung zugeschaltet. ähnelt.
         /// </summary>
         public static string WPA_HRL_HEIZSTAB {
             get {
                 return ResourceManager.GetString("WPA_HRL_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: projektierter Vorlauf {0} °C; leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_VORLAUF_MAX {
+            get {
+                return ResourceManager.GetString("WPA_HRL_VORLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = projektierter Vorlauf der Anlage. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_VORLAUF_MAX_OHNE {
+            get {
+                return ResourceManager.GetString("WPA_HRL_VORLAUF_MAX_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor je Wochenstunde von 0 (gesperrt) bis 1 (volle Leistung), Montag 0 Uhr bis Sonntag 23 Uhr. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_ZEITPROGRAMM_FAKTOREN {
+            get {
+                return ResourceManager.GetString("WPA_HRL_ZEITPROGRAMM_FAKTOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gepflegt: {0} von 168 Wochenstunden mit voller Verfügbarkeit, {1} gesperrt. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_ZEITPROGRAMM_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WPA_HRL_ZEITPROGRAMM_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht gepflegt — die Anlage ist immer verfügbar. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_ZEITPROGRAMM_LEER {
+            get {
+                return ResourceManager.GetString("WPA_HRL_ZEITPROGRAMM_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit und Zeitprogramm überschneiden sich in {0} Wochenstunden mit Faktor über 0; dort gilt die Sperrzeit. ähnelt.
+        /// </summary>
+        public static string WPA_INFO_SPERRZEIT_ZEITPROGRAMM {
+            get {
+                return ResourceManager.GetString("WPA_INFO_SPERRZEIT_ZEITPROGRAMM", resourceCulture);
             }
         }
         
@@ -115299,11 +115578,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Vorlauf ähnelt.
+        /// </summary>
+        public static string WPA_LBL_VORLAUF_MAX {
+            get {
+                return ResourceManager.GetString("WPA_LBL_VORLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Auswahl: ähnelt.
         /// </summary>
         public static string WPA_LBL_WP {
             get {
                 return ResourceManager.GetString("WPA_LBL_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm ähnelt.
+        /// </summary>
+        public static string WPA_LBL_ZEITPROGRAMM {
+            get {
+                return ResourceManager.GetString("WPA_LBL_ZEITPROGRAMM", resourceCulture);
             }
         }
         
@@ -115349,6 +115646,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_MSG_KENNLINIEN_UEBERNOMMEN {
             get {
                 return ResourceManager.GetString("WPA_MSG_KENNLINIEN_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der höchste Vorlauf muss zwischen {0} und {1} °C liegen. ähnelt.
+        /// </summary>
+        public static string WPA_MSG_VORLAUF_MAX_BEREICH {
+            get {
+                return ResourceManager.GetString("WPA_MSG_VORLAUF_MAX_BEREICH", resourceCulture);
             }
         }
         

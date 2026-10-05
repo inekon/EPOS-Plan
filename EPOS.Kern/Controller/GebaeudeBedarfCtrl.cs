@@ -129,6 +129,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die obere Raumtemperatur [°C] — obere Kante des Sollwertbands; <c>null</c> ohne VDI-Lauf.</summary>
         internal double? ObereRaumtemperaturC;
 
+        /// <summary>
+        /// Die gezählten Unterschreitungsstunden der Heizseite (Anlagenkopplung AK2, 5.5) — die Maske der
+        /// <c>Komfortkennzahlen</c>, aus der das Bild „Raumtemperatur und Sollwert" seine Woche wählt (E80);
+        /// <c>null</c>, solange am Gebäude kein Komfort erhoben ist (ungekoppelt, Tagesbilanz).
+        /// </summary>
+        internal bool[] KomfortMaske;
+
         // ---- Stufe KU1: der Abschnitt „Kältebedarf" (Kühlkonzept 8.4; E21, F-K18) ----
 
         /// <summary>
@@ -468,6 +475,9 @@ namespace WindowsFormsApplication1
             GebaeudeModellErgebnis vdi = sim.GebaeudeErgebnisse.Ergebnis(0);
             if (vdi != null)
             {
+                // Anlagenkopplung AK2 (5.5, E80): die Maske der Heizseite - nur am gekoppelten Gebaeude.
+                if (GebaeudeKennzahlen.KomfortErhoben(vdi))
+                    ergebnis.KomfortMaske = Komfortkennzahlen.Heizseite(vdi)?.Maske;
                 ergebnis.KuehlenergieMwh = vdi.KuehlenergieMwh;
                 ergebnis.Erdreich = vdi.Erdreich;
                 ergebnis.KuehlstundenH = vdi.StundenMitKuehlbedarf;
@@ -606,6 +616,29 @@ namespace WindowsFormsApplication1
                 zone.HeizsollwertC = r.Heizsollwert;
             }
             return zone;
+        }
+
+        /// <summary>
+        /// <b>Der Wärmerestbedarf des Projekts aus dem letzten gespeicherten Lauf</b> [MWh/a] (Anlagenkopplung 5.5,
+        /// AK2-3): die Zahl, die neben den Komfortstunden steht — mit Kopplung ist ein Teil der Unterdeckung eine
+        /// gesunkene Raumtemperatur. Gelesen, nicht gerechnet; <c>null</c> ohne Projekt oder ohne Lauf.
+        /// </summary>
+        internal static double? RestbedarfDesProjektsMwh(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT e.Waermerestbedarf FROM " + ErgebnisCtrl.TAB_ENERGIE + " e INNER JOIN " +
+                    ErgebnisCtrl.TAB_KOPF + " k ON k.ID = e.ID_Ergebnis WHERE k.ID_Projekt = ? ORDER BY k.ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0 || dt.Rows[0][0] == DBNull.Value) return null;
+                return Convert.ToDouble(dt.Rows[0][0], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>

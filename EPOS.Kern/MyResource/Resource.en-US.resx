@@ -45305,5 +45305,107 @@ chart</value>
   <data name="IMP_GBXML_PROT_SOLLWERT_CAD_SPANNE" xml:space="preserve">
     <value>"{0}": the averaged room temperatures of the file range from {1} to {2} °C — more than {3} K; check the averaged heating setpoint.</value>
   </data>
+  <data name="GEB_BEDARFSBEGRIFF_RUECKWIRKUNG" xml:space="preserve">
+    <value>with feedback</value>
+  </data>
+  <data name="GEB_BEDARFSBEGRIFF_FESTE_LAST" xml:space="preserve">
+    <value>fixed load</value>
+  </data>
+  <data name="GEB_BERICHT_FESTE_LAST" xml:space="preserve">
+    <value>Buildings as fixed load: {0} — they are calculated on the daily-balance path or without coupling, draw on the plant availability and have neither feedback nor comfort hours.</value>
+  </data>
+  <data name="WPA_GRP_BETRIEBSZEITEN" xml:space="preserve">
+    <value>Operating times</value>
+  </data>
+  <data name="WPA_LBL_ZEITPROGRAMM" xml:space="preserve">
+    <value>Time schedule</value>
+  </data>
+  <data name="WPA_BTN_ZEITPROGRAMM" xml:space="preserve">
+    <value>Edit weekly grid</value>
+  </data>
+  <data name="WPA_BTN_ZEITPROGRAMM_SCHLIESSEN" xml:space="preserve">
+    <value>Close weekly grid</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_LEER" xml:space="preserve">
+    <value>Not maintained — the unit is always available.</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_GEPFLEGT" xml:space="preserve">
+    <value>Maintained: {0} of 168 weekly hours fully available, {1} blocked.</value>
+  </data>
+  <data name="WPA_HRL_ZEITPROGRAMM_FAKTOREN" xml:space="preserve">
+    <value>Factor per weekly hour from 0 (blocked) to 1 (full output), Monday 0:00 to Sunday 23:00.</value>
+  </data>
+  <data name="WPA_LBL_VORLAUF_MAX" xml:space="preserve">
+    <value>Maximum flow temperature</value>
+  </data>
+  <data name="WPA_HRL_VORLAUF_MAX" xml:space="preserve">
+    <value>Default: planned flow temperature {0} °C; empty = default.</value>
+  </data>
+  <data name="WPA_HRL_VORLAUF_MAX_OHNE" xml:space="preserve">
+    <value>Empty = planned flow temperature of the unit.</value>
+  </data>
+  <data name="WPA_HINWEIS_SPERRZEIT_VORRANG" xml:space="preserve">
+    <value>Blocking period and time schedule apply together; the blocking period takes precedence.</value>
+  </data>
+  <data name="WPA_HRL_BETRIEBSZEITEN_WIRKUNG" xml:space="preserve">
+    <value>Time schedule and maximum flow temperature act on the coupled buildings of the project when system coupling is active.</value>
+  </data>
+  <data name="WPA_MSG_VORLAUF_MAX_BEREICH" xml:space="preserve">
+    <value>The maximum flow temperature must lie between {0} and {1} °C.</value>
+  </data>
+  <data name="WPA_INFO_SPERRZEIT_ZEITPROGRAMM" xml:space="preserve">
+    <value>Blocking period and time schedule overlap in {0} weekly hours with a factor above 0; the blocking period applies there.</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_STUNDEN" xml:space="preserve">
+    <value>Underheating hours</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_KELVIN" xml:space="preserve">
+    <value>Kelvin hours</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_STRECKE" xml:space="preserve">
+    <value>Longest run</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_QUELLE" xml:space="preserve">
+    <value>Hours of the occupancy period more than 1.0 K below the set point</value>
+  </data>
+  <data name="GEBB_KACHEL_RESTBEDARF" xml:space="preserve">
+    <value>Residual demand (project, last run)</value>
+  </data>
+  <data name="GEBB_KACHEL_RESTBEDARF_QUELLE" xml:space="preserve">
+    <value>Heat no generator covered — shown alongside the comfort hours</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_UEBER" xml:space="preserve">
+    <value>Overcooling-limit hours</value>
+  </data>
+  <data name="GEBB_KACHEL_KOMFORT_KELVIN_KUEHL" xml:space="preserve">
+    <value>Kelvin hours cooling</value>
+  </data>
+  <data name="GEBB_KACHEL_BEDARFSBEGRIFF" xml:space="preserve">
+    <value>Demand basis</value>
+  </data>
+  <data name="GEBB_KACHEL_FAHRPLAN_BEGRENZT" xml:space="preserve">
+    <value>Hours limited by schedule</value>
+  </data>
+  <data name="GEBB_HRL_KOMFORT_OHNE" xml:space="preserve">
+    <value>Comfort hours exist only for a building calculated with coupling.</value>
+  </data>
+  <data name="GEBB_BILD_KOMFORTWOCHE" xml:space="preserve">
+    <value>Room temperature and set point — week with the largest underheating</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_RAUMLUFT" xml:space="preserve">
+    <value>Room air</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_SOLLWERT" xml:space="preserve">
+    <value>Set point</value>
+  </data>
+  <data name="GEBB_LEG_KOMFORT_UNTERSCHREITUNG" xml:space="preserve">
+    <value>Underheating</value>
+  </data>
+  <data name="GEBB_HRL_KOMFORTWOCHE" xml:space="preserve">
+    <value>The week from {0}; the counted underheating hours are marked.</value>
+  </data>
+  <data name="KI_DLG_WPA_VORLAUF_MAX_ERL" xml:space="preserve">
+    <value>Maximum flow temperature the unit offers [°C]; empty = planned flow temperature. Acts with system coupling: if a coupled building demands more, this value applies.</value>
+  </data>
 </root>
 
