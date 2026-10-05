@@ -1447,6 +1447,15 @@ folgt aus ihren Räumen (Haken der Raumliste).
   ein Raum ohne Paarung liegt außerhalb, wenn die gespeicherte Regel ihn draußen lässt, sonst ist er
   nicht zugeordnet. Eine leere Zone wird nicht gespeichert und kommt nicht wieder.
 
+**Zonenplan mit Projektdatei** (Datenaustauschkonzept 16.3, 16.4): Ist zur IFC-Datei eines HottCAD-Exports die
+Projektdatei dazugeladen, ersetzt der Schritt „Zonen der Projektdatei übernehmen“ die Zonierung des Plans durch die
+Simulations- und Nutzungszonen der Projektdatei (`SqprojZonen`), je Zone mit Nutzung aus der DIN-V-18599-Profilnummer
+und der Konditionierung aus Ganglinie und Nutzungsprofil (`Planzone.Projektdatei`); IFC-Räume ohne Gegenstück bleiben
+nicht zugeordnet, leere Zonen werden gemeldet und nicht angelegt. Trägt eine IFC-Datei von EPOS-Plan je Raum die Sätze
+`EPOS_Zone` und `EPOS_Kalender_*`, übernimmt schon der Regelvorschlag die Konditionierung des ersten Raums der Zone, der
+sie trägt — mit der Rangfolge Projektdatei vor IFC-`EPOS_*` vor Vorlage. Beim Speichern schreibt
+`ZonenplanCtrl.ProjektdateiUebernehmen` die Kalender und Zellen nach den Vorlagen der Nutzung.
+
 **Was der Anwender sonst ändern kann:** Haken „beheizt" je Raum (die angrenzenden Flächen wechseln ihre
 Randbedingung) und „alles in eine Zone" (der Einzonen-Rückfall). Nach jeder Änderung rechnet der Dialog
 die Bilanz neu.
