@@ -30776,6 +30776,15 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_AK_SOLLWERTPROFIL_WERT" xml:space="preserve">
     <value>Das Sollwert-Zeitprogramm hat an Stelle {0} den Wert {1} °C; zulässig sind {2} … {3} °C. Der Lauf bricht für dieses Gebäude ab.</value>
   </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_WERTZAHL" xml:space="preserve">
+    <value>Das Zeitprogramm der Anlage „{0}“ hat {1} statt {2} Werte — kein Auffüllen, kein Abschneiden.</value>
+  </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_KEINE_ZAHL" xml:space="preserve">
+    <value>Das Zeitprogramm der Anlage „{0}“ enthält an Stelle {1} keine Zahl (Dezimalpunkt, Trennzeichen „;“).</value>
+  </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_WERT" xml:space="preserve">
+    <value>Das Zeitprogramm der Anlage „{0}“ hat an Stelle {1} den Faktor {2}; zulässig sind 0 … 1.</value>
+  </data>
   <data name="SIMENG_AK_SOLLWERTPROFIL_KALENDER" xml:space="preserve">
     <value>Die Wochenendtage des Laufs ergeben keinen Wochenkalender; das Sollwert-Zeitprogramm lässt sich keinem Wochentag zuordnen. Der Lauf bricht für dieses Gebäude ab.</value>
   </data>

@@ -30769,6 +30769,15 @@ Do you want to allow this?</value>
   <data name="SIMENG_AK_SOLLWERTPROFIL_WERT" xml:space="preserve">
     <value>The set point schedule has the value {1} °C at position {0}; permitted are {2} … {3} °C. The run stops for this building.</value>
   </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_WERTZAHL" xml:space="preserve">
+    <value>The time schedule of the unit “{0}” has {1} values instead of {2} — no padding, no truncation.</value>
+  </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_KEINE_ZAHL" xml:space="preserve">
+    <value>The time schedule of the unit “{0}” contains no number at position {1} (decimal point, separator “;”).</value>
+  </data>
+  <data name="SIMENG_AK2_ZEITPROGRAMM_WERT" xml:space="preserve">
+    <value>The time schedule of the unit “{0}” has the factor {2} at position {1}; permitted are 0 … 1.</value>
+  </data>
   <data name="SIMENG_AK_SOLLWERTPROFIL_KALENDER" xml:space="preserve">
     <value>The weekend days of the run do not form a weekly calendar; the set point schedule cannot be assigned to weekdays. The run stops for this building.</value>
   </data>

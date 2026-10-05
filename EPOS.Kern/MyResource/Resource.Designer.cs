@@ -86439,6 +86439,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitprogramm der Anlage „{0}“ enthält an Stelle {1} keine Zahl (Dezimalpunkt, Trennzeichen „;“). ähnelt.
+        /// </summary>
+        public static string SIMENG_AK2_ZEITPROGRAMM_KEINE_ZAHL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK2_ZEITPROGRAMM_KEINE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitprogramm der Anlage „{0}“ hat an Stelle {1} den Faktor {2}; zulässig sind 0 … 1. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK2_ZEITPROGRAMM_WERT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK2_ZEITPROGRAMM_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitprogramm der Anlage „{0}“ hat {1} statt {2} Werte — kein Auffüllen, kein Abschneiden. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK2_ZEITPROGRAMM_WERTZAHL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK2_ZEITPROGRAMM_WERTZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung; die Eingaben der Wärmeübergabe gelten, sobald das Gebäude auf VDI 6007 rechnet. ähnelt.
         /// </summary>
         public static string SIMENG_AK_ALTWEG_OHNE_KOPPLUNG {
