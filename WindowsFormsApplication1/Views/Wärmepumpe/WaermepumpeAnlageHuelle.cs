@@ -612,6 +612,8 @@ namespace WindowsFormsApplication1
             // Anwenderauftrag 30.09.2026: ein Ruecklauf 0/leer wird aus dem Vorlauf
             // vorbelegt (Kern-Regel ueber TemperaturVorbelegung) - im FELDSATZ; ins Modell
             // kommt er erst mit dem OK (NachModell).
+            // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
+            BetriebszeitenAbbildung.Lesen(m, d);
             TemperaturVorbelegung.Waermepumpe(d);
             return d;
         }
@@ -631,6 +633,8 @@ namespace WindowsFormsApplication1
             m.Sperrzeit_von = d.SperrzeitVon ?? 0;
             // V14: die Liste der Sperrfenster - sie ueberfuehrt das Altfenster (Sperrung = 0).
             SperrfensterAbbildung.NachModell(d, m);
+            // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
+            BetriebszeitenAbbildung.Schreiben(d, m);
             m.Ruecklauf = d.Ruecklauf ?? 0;
             m.Vorlauf = d.Vorlauf ?? 0;
             m.Bivalenter_Betrieb = d.BivalenterBetrieb;

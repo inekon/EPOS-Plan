@@ -146,6 +146,13 @@ public sealed class KomponentenKonfigurationKiSicht
         set { if (Anlage is { } a) a.SperrzeitVon = value; }
     }
 
+    /// <summary>Der höchste Vorlauf der Anlage [°C] (Gruppe „Betriebszeiten"); leer = projektierter Vorlauf.</summary>
+    public double? VorlaufMax
+    {
+        get => Anlage?.VorlaufMax;
+        set { if (Anlage is { } a) a.VorlaufMax = value; }
+    }
+
     /// <summary>Ende der täglichen Sperrzeit [h/Tag].</summary>
     public int? SperrzeitBis
     {

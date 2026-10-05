@@ -6287,6 +6287,13 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitBisErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    // Anlagenkopplung AK2 (9.3): der hoechste Vorlauf der Gruppe „Betriebszeiten"; das
+                    // Zeitprogramm ist ein Raster und bleibt der Hand vorbehalten.
+                    new KiDialogFeld("vorlauf_max",
+                                     "KomponentenKonfigurationKiSicht.VorlaufMax",
+                                     KiDialogTexte.WpaVorlaufMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaVorlaufMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
                     new KiDialogFeld("bivalenter_betrieb",
                                      "KomponentenKonfigurationKiSicht.BivalenterBetrieb",
                                      KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,

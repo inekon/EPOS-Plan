@@ -479,7 +479,8 @@
         // verletzte Regel meldet und hält den Dialog offen.
         if (ok && Anlage is not null)
         {
-            string? fehler = WaermepumpeKonfiguration.KuehlFehler(Anlage, Kuehlung, Texte);
+            string? fehler = WaermepumpeKonfiguration.KuehlFehler(Anlage, Kuehlung, Texte)
+                             ?? WaermepumpeKonfiguration.BetriebszeitenFehler(Anlage, Texte);
             if (fehler is not null) { _kuehlWarnung = fehler; return Task.CompletedTask; }
         }
         _kuehlWarnung = "";

@@ -45387,5 +45387,8 @@ Chart</value>
   <data name="GEBB_HRL_KOMFORTWOCHE" xml:space="preserve">
     <value>Die Woche ab {0}; markiert sind die gezählten Unterschreitungsstunden.</value>
   </data>
+  <data name="KI_DLG_WPA_VORLAUF_MAX_ERL" xml:space="preserve">
+    <value>Höchster Vorlauf, den die Anlage bietet [°C]; leer = projektierter Vorlauf. Wirkt mit der Anlagenkopplung: Verlangt ein gekoppeltes Gebäude mehr, gilt dieser Wert.</value>
+  </data>
 </root>
 

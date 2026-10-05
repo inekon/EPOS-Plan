@@ -57207,6 +57207,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Vorlauf, den die Anlage bietet [°C]; leer = projektierter Vorlauf. Wirkt mit der Anlagenkopplung: Verlangt ein gekoppeltes Gebäude mehr, gilt dieser Wert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_VORLAUF_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_VORLAUF_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalkulationszinssatz i der Barwertrechnung nach VDI 2067. Er bestimmt, wie stark spätere Zahlungen gegenüber heutigen abgewertet werden. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_ZINS_ERL {

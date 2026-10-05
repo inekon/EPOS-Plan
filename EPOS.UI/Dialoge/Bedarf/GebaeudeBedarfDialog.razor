@@ -154,6 +154,37 @@
             </Kachelraster>
         </div>
     }
+
+    @* ---- Anlagenkopplung AK2 (Konzept 9.4, 5.5, 6.2): die Komfortkacheln NEBEN dem Restbedarf - nie ohne
+       ihn. Auf dem VDI-Weg immer da; erhoben nur am gekoppelt gerechneten Gebaeude, sonst „—" (K18). Dazu im
+       Lauf mit Fahrplan der Bedarfsbegriff und die Stunden am Fahrplan. *@
+    @if (Daten.IstVdi6007)
+    {
+        <div class="gebb-komfort" data-komfort="@(Daten.KomfortErhoben ? "erhoben" : "ohne")">
+            <Kachelraster>
+                <KindInhalt>
+                    <Kennzahlkachel Titel="@KachelKomfortStunden" Wert="@Stunden(Daten.KomfortUnterschreitungsstundenH)" Quelle="@QuelleKomfort" />
+                    <Kennzahlkachel Titel="@KachelKomfortKelvin" Wert="@Kelvinstunden(Daten.KomfortKelvinstundenKh)" />
+                    <Kennzahlkachel Titel="@KachelKomfortStrecke" Wert="@Stunden(Daten.KomfortLaengsteStreckeH)" />
+                    <Kennzahlkachel Titel="@KachelRestbedarf" Wert="@RestbedarfWert" Quelle="@QuelleRestbedarf" />
+                    @if (Daten.KomfortUeberschreitungsstundenH.HasValue)
+                    {
+                        <Kennzahlkachel Titel="@KachelKomfortUeber" Wert="@Stunden(Daten.KomfortUeberschreitungsstundenH)" />
+                        <Kennzahlkachel Titel="@KachelKomfortKelvinKuehl" Wert="@Kelvinstunden(Daten.KomfortKelvinstundenKuehlungKh)" />
+                    }
+                    @if (Daten.Bedarfsbegriff.Length > 0)
+                    {
+                        <Kennzahlkachel Titel="@KachelBedarfsbegriff" Wert="@Daten.Bedarfsbegriff" />
+                        <Kennzahlkachel Titel="@KachelFahrplanBegrenzt" Wert="@Stunden(Daten.FahrplanBegrenztStundenH)" />
+                    }
+                </KindInhalt>
+            </Kachelraster>
+            @if (!Daten.KomfortErhoben)
+            {
+                <Herleitungszeile Text="@HinweisKomfortOhne" />
+            }
+        </div>
+    }
     </section>
 
     @* ---- Die Zonen (Stufe G6b, Anwenderentscheid A2): eine Zeile je Zone, auch unbeheizt -
@@ -333,6 +364,19 @@
                      FarbeGewaehlt="FarbeUebernehmen"
                      FarbeZurueckgesetzt="FarbeVerwerfen" />
         <Herleitungszeile Text="@HinweisVorlaufLuecken" />
+    }
+
+    @* ---- Raumtemperatur und Sollwert (Anlagenkopplung AK2, E80): die Woche mit der groessten
+       Unterschreitung, die gezaehlten Stunden markiert. Nur mit erhobenem Komfort und einer Stunde. *@
+    @if (BildauftragKomfortwoche is not null)
+    {
+        <DiagrammSvg Modell="@Komfortwochenmodell" Kennung="gebaeude-komfortwoche" Bezeichnung="@BildtextKomfortwoche"
+                     PlatzhalterText="@PlatzhalterBild" Einheit="°C"
+                     Palette="@Farbpalette.Aktuell"
+                     FarbwahlErlaubt="@Farbwahl"
+                     FarbeGewaehlt="FarbeUebernehmen"
+                     FarbeZurueckgesetzt="FarbeVerwerfen" />
+        <Herleitungszeile Text="@HinweisKomfortwoche" />
     }
 
     @* ---- Kaeltebedarf (Stufe KU1; Kuehlkonzept 8.4; E21, F-K18, K5, K6) ----
@@ -531,6 +575,81 @@
     /// gerechnetes Gebäude. <c>null</c> = kein Bild.
     /// </summary>
     [Parameter] public Func<Zeichenmodell?>? BildauftragVorlauf { get; set; }
+
+    // --- Anlagenkopplung AK2 (Konzept Anlagenkopplung 9.4, 5.5) -------------------------
+
+    /// <summary>Liefert das Bild „Raumtemperatur und Sollwert" (Woche mit der größten Unterschreitung); <c>null</c> = kein Bild.</summary>
+    [Parameter] public Func<Zeichenmodell?>? BildauftragKomfortwoche { get; set; }
+
+    /// <summary><c>GEBB_BILD_KOMFORTWOCHE</c></summary>
+    [Parameter] public string BildtextKomfortwoche { get; set; } = "Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung";
+
+    /// <summary><c>GEBB_HRL_KOMFORTWOCHE</c>, fertig formuliert mit dem Wochenbeginn.</summary>
+    [Parameter] public string HinweisKomfortwoche { get; set; } = "";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_STUNDEN</c></summary>
+    [Parameter] public string KachelKomfortStunden { get; set; } = "Unterschreitungsstunden";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_KELVIN</c></summary>
+    [Parameter] public string KachelKomfortKelvin { get; set; } = "Kelvinstunden";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_STRECKE</c></summary>
+    [Parameter] public string KachelKomfortStrecke { get; set; } = "Längste Strecke";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_QUELLE</c></summary>
+    [Parameter] public string QuelleKomfort { get; set; } = "Stunden der Nutzungszeit mehr als 1,0 K unter dem Sollwert";
+
+    /// <summary><c>GEBB_KACHEL_RESTBEDARF</c></summary>
+    [Parameter] public string KachelRestbedarf { get; set; } = "Restbedarf (Projekt, letzter Lauf)";
+
+    /// <summary><c>GEBB_KACHEL_RESTBEDARF_QUELLE</c></summary>
+    [Parameter] public string QuelleRestbedarf { get; set; } = "Wärme, die kein Erzeuger gedeckt hat — steht neben den Komfortstunden";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_UEBER</c></summary>
+    [Parameter] public string KachelKomfortUeber { get; set; } = "Überschreitungsstunden Kühlung";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_KELVIN_KUEHL</c></summary>
+    [Parameter] public string KachelKomfortKelvinKuehl { get; set; } = "Kelvinstunden Kühlung";
+
+    /// <summary><c>GEBB_KACHEL_BEDARFSBEGRIFF</c></summary>
+    [Parameter] public string KachelBedarfsbegriff { get; set; } = "Bedarfsbegriff";
+
+    /// <summary><c>GEBB_KACHEL_FAHRPLAN_BEGRENZT</c></summary>
+    [Parameter] public string KachelFahrplanBegrenzt { get; set; } = "Stunden am Fahrplan begrenzt";
+
+    /// <summary><c>GEBB_HRL_KOMFORT_OHNE</c></summary>
+    [Parameter] public string HinweisKomfortOhne { get; set; } = "Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude.";
+
+    /// <summary>„273 h" — eine Stundenzahl; ohne Wert der Leertext („—").</summary>
+    private string Stunden(int? h)
+        => h is int w ? w.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) + " " + EinheitStundenZahl : LeerText;
+
+    /// <summary>„412,5 Kh" — Kelvinstunden; ohne Wert der Leertext.</summary>
+    private string Kelvinstunden(double? kh)
+        => kh is double w ? w.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " Kh" : LeerText;
+
+    /// <summary>„12,34 MWh/a" — der Restbedarf des Projekts; ohne Lauf der Leertext.</summary>
+    private string RestbedarfWert
+        => Daten.RestbedarfProjektMwh is double r
+            ? r.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " MWh/a"
+            : LeerText;
+
+    /// <summary>Das Bild der Komfortwoche — einmal gerechnet, damit der Zoom stehen bleibt.</summary>
+    private Zeichenmodell? _komfortwochenmodell;
+    private bool _komfortwochenmodellGerechnet;
+    private Zeichenmodell? Komfortwochenmodell
+    {
+        get
+        {
+            if (BildauftragKomfortwoche is null) return null;
+            if (!_komfortwochenmodellGerechnet)
+            {
+                _komfortwochenmodell = BildauftragKomfortwoche();
+                _komfortwochenmodellGerechnet = true;
+            }
+            return _komfortwochenmodell;
+        }
+    }
 
     /// <summary><c>GEBB_BILD_VORLAUF_RUECKLAUF</c></summary>
     [Parameter] public string BildtextVorlauf { get; set; } = "Vorlauf und Rücklauf";

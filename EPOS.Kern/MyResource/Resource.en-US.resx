@@ -45380,5 +45380,8 @@ chart</value>
   <data name="GEBB_HRL_KOMFORTWOCHE" xml:space="preserve">
     <value>The week from {0}; the counted underheating hours are marked.</value>
   </data>
+  <data name="KI_DLG_WPA_VORLAUF_MAX_ERL" xml:space="preserve">
+    <value>Maximum flow temperature the unit offers [°C]; empty = planned flow temperature. Acts with system coupling: if a coupled building demands more, this value applies.</value>
+  </data>
 </root>
 
