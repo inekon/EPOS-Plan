@@ -83,4 +83,31 @@ public class MehrfachauswahlTests : BunitContext
         cut.FindAll(".epos-leiste button")[1].Click();   // Keine
         Assert.Equal(new[] { 1 }, neu);
     }
+
+    /// <summary>
+    /// <b>Waagerecht</b> stellt die Eintraege als umbrechende Zeile (Klasse
+    /// <c>epos-mehrfachauswahl--zeile</c>) — die Bauart der Reihenschalter ueber einem
+    /// Diagramm; ohne den Schalter bleibt die Liste senkrecht wie in jedem Dialog.
+    /// Eintraege, Trennlinie und Reihenfolge bleiben dieselben.
+    /// </summary>
+    [Fact]
+    public void Waagerecht_setzt_die_Zeilenklasse_und_laesst_die_Eintraege_wie_sie_sind()
+    {
+        var senkrecht = Render<Mehrfachauswahl>(p => p
+            .Add(x => x.Eintraege, Drei)
+            .Add(x => x.AbsatzNach, 1));
+        var waagerecht = Render<Mehrfachauswahl>(p => p
+            .Add(x => x.Eintraege, Drei)
+            .Add(x => x.AbsatzNach, 1)
+            .Add(x => x.Waagerecht, true));
+
+        Assert.DoesNotContain("epos-mehrfachauswahl--zeile",
+            senkrecht.Find("div.epos-mehrfachauswahl").ClassList);
+        Assert.Contains("epos-mehrfachauswahl--zeile",
+            waagerecht.Find("div.epos-mehrfachauswahl").ClassList);
+        Assert.Equal(
+            senkrecht.FindAll(".epos-mehrfachauswahl-liste .epos-feld-text").Select(e => e.TextContent),
+            waagerecht.FindAll(".epos-mehrfachauswahl-liste .epos-feld-text").Select(e => e.TextContent));
+        Assert.Single(waagerecht.FindAll("hr.epos-mehrfachauswahl-absatz"));
+    }
 }

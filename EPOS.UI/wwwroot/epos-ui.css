@@ -3216,6 +3216,26 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     border-top: 1px solid var(--epos-rahmen-leise);
 }
 
+/* REIHENSCHALTER UEBER EINEM DIAGRAMM (Mehrfachauswahl Waagerecht="true"): die
+   Eintraege nebeneinander in einer Zeile wie .epos-simerg-schalter, bei vielen
+   Reihen umbrechend statt abgeschnitten; kein rollender Bereich. Die Trennlinie
+   nach der Summenreihe steht senkrecht zwischen den Eintraegen. */
+.epos-mehrfachauswahl--zeile .epos-mehrfachauswahl-liste {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    max-height: none;
+    overflow: visible;
+}
+
+.epos-mehrfachauswahl--zeile .epos-mehrfachauswahl-absatz {
+    align-self: stretch;
+    margin: 4px 0;
+    border-top: 0;
+    border-left: 1px solid var(--epos-rahmen-leise);
+}
+
 /* ==================================================================== */
 /* KOSTENLEISTE (iU9-W6.0f)                                             */
 /*                                                                      */
