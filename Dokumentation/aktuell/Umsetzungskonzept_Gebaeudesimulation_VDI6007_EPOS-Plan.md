@@ -54,6 +54,12 @@
 > Rückfrage (E38) samt der erst dort gemessenen iOS-Größengrenze und dem Trimming-Nachweis, der
 > Schemaschritt `Baujahr` (G4a, in Arbeit).
 
+> **E89 (05.10.2026, [Konzept N1.70](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)):** Der Altweg bleibt dauerhaft als
+> wählbarer Rechenweg; die Stufe **GA — Altweg ablösen** entfällt endgültig, Q24 und Q25 sind gegenstandslos. Wo dieses
+> Papier GA, die Ablösung, „bis GA" oder die Löschliste nennt, gilt: der Bestandteil bleibt dauerhaft; Kapitel 6.1 ist
+> nur noch Inventar der Altweg-Bestandteile. Fachänderungen werden nur im VDI-Weg gemacht, der Altweg wird gepflegt,
+> nicht weiterentwickelt.
+>
 > **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Diese Fassung nimmt die Stufe **GA — Altweg
 > ablösen** als letzte Stufe ohne Termin wieder auf (Kapitel 4) und führt ihre **Löschliste** in
 > Kapitel 6; sie stellt den Vertrag des Vorbereitungsschritts, den zweiteiligen Klimakalender, den
@@ -2078,12 +2084,12 @@ ist G4b vor der Feldphase von G4a gebaut, mit den Rechenregeln aus **E45**.
 | **G4c — gbXML-Import** | **Pflicht nach E9** (Konzept N1.13): Lesemodell und Einheiten, Aggregation auf das Zonenmodell, Zuordnungsdialog mit Herkunft je Feld, Beispieldateien; LINQ to XML statt `XmlSerializer`, Versionswert `6.01` | Importprobe bestanden; **Referenzlauf unverändert**; **vor G4a** (D1, mit E27 entschieden; 3.8). **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden, samt Schemaschritt 138 (S-F); elf selbst erzeugte Proben bestanden, Referenzlauf 13/13 byte-gleich; offen die Windows-Sichtabnahme | **17–28 PT** nach [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md), Kapitel 10 (einschließlich der dorthin vorgezogenen Persistenz der Zuordnung) |
 | **G5 — Geometrieableitung** | eigene Auswertung von `IfcExtrudedAreaSolid` und Placement-Kette, Öffnungsabzug | nur bei Bedarf aus der Praxis | 30–60 PT |
 | **G7 — Exporte** | gbXML- und IFC-Export (E9) — eigenes Papier: [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md). Dort steht auch der **Gebäudebetrachter (E11)**: ein Zonengeometrie-Modell im Kern, 2D-Grundriss je Geschoss mit G6c, schematische Körper mit G7b (Nachtrag 1; Konzept N1.16) | dort | dort |
-| **GA — Altweg ablösen** (letzte Stufe; beauftragbar und fällig, sobald das Ablösekriterium Q24 erfüllt ist — E27) | Modul `Simulation/Altweg/`, Weiche, `IGebaeudeRechenweg`, `Modultrennungswache`, Schalter „Rechenweg", Abschnitt „Tagesbilanz (Bestandsweg)", Spalte „Rechenweg" im Wirt, Vergleich alt/neu samt `modellErzwungen`, Ausweis „Tagesbilanz (Bestandsweg)", Kältebedarf-0-Hinweis, AK-Sonderfall „feste Last", Spalte `Gebaeude_Modell` und die nur vom Altweg gelesenen Spalten (`DROP COLUMN` je Tabelle, Sichtneubau; davor `Fensterflaeche_Ost`/`_West` einmalig füllen), `Tab_DBTagV`/`Tab_DBTagVDaten`, Schreibstellen der Flags `Wochenende`/`Ferien`, Referenzprojekt auf VDI 6007 umstellen, Rückweg-Test einstellen — **vollständige Ablösung nach der Löschliste in Kapitel 6** (Q25, mit E27 entschieden; Quellen Konzept N1.25 Punkt 4, N1.31, Befund X Kapitel 4) | **Ausbauprobe** grün: ein Bau mit umbenanntem Ordner `Altweg/` übersetzt nach Entfernen der Weiche, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt byte-gleich; **eigener, begründeter Einfrierschritt**; Logbuch-Eintrag | **5–8 PT** — in keiner Summe; Ablösekriterium Q24 (Kapitel 5), geprüft mit jeder Abnahme, Stand in der Statusdatei |
+| **GA — Altweg ablösen: entfällt (E89)** — der Altweg bleibt dauerhaft wählbar; die Zeile ist nur noch Inventar | Modul `Simulation/Altweg/`, Weiche, `IGebaeudeRechenweg`, `Modultrennungswache`, Schalter „Rechenweg", Abschnitt „Tagesbilanz (Bestandsweg)", Spalte „Rechenweg" im Wirt, Vergleich alt/neu samt `modellErzwungen`, Ausweis „Tagesbilanz (Bestandsweg)", Kältebedarf-0-Hinweis, AK-Sonderfall „feste Last", Spalte `Gebaeude_Modell` und die nur vom Altweg gelesenen Spalten (`DROP COLUMN` je Tabelle, Sichtneubau; davor `Fensterflaeche_Ost`/`_West` einmalig füllen), `Tab_DBTagV`/`Tab_DBTagVDaten`, Schreibstellen der Flags `Wochenende`/`Ferien`, Referenzprojekt auf VDI 6007 umstellen, Rückweg-Test einstellen — **vollständige Ablösung nach der Löschliste in Kapitel 6** (Q25, mit E27 entschieden; Quellen Konzept N1.25 Punkt 4, N1.31, Befund X Kapitel 4) | **Ausbauprobe** grün: ein Bau mit umbenanntem Ordner `Altweg/` übersetzt nach Entfernen der Weiche, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt byte-gleich; **eigener, begründeter Einfrierschritt**; Logbuch-Eintrag | **5–8 PT** — in keiner Summe; Ablösekriterium Q24 (Kapitel 5), geprüft mit jeder Abnahme, Stand in der Statusdatei |
 
 **Summen:** G0 + GB 3–6 PT; **G1.0 (Trennung) 3–5 PT**; bis einschließlich G1+G2
 **24–35,5 PT**; bis G3 32–47,5 PT; bis G4a 45,5–68,5 PT — ohne M4, das mit Schemaschritt 95
 erbracht ist. **Die 5–8 PT der Stufe GA stecken in
-keiner Summe** — sie wird fällig, sobald das Ablösekriterium Q24 erfüllt ist (E26, E27). Der gbXML-Import (G4c) kommt
+keiner Summe** — die Stufe entfällt mit E89. Der gbXML-Import (G4c) kommt
 mit **17–28 PT** hinzu — **er steckt in keiner der Summen oben**. Diese Zahl und die Exporte (G7)
 rechnet das [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) in Kapitel 10;
 sie schließt die Persistenz der Zuordnung ein (Schemaschritt S-F, zwei Tabellen), die dort zu G4c
@@ -2218,18 +2224,17 @@ Entscheidvermerk.
   Verbesserung, die beide Wege beträfe, wird allein im VDI-Weg gebaut. Das Risiko „zwei Rechenwege
   nebeneinander" gilt **bis GA**; Modultrennung, `Modultrennungswache` und Ausbauprobe halten seine
   Kosten klein.
-- **Die Bauweise der Stufe GA selbst.** Was sie entfernt, führt die Löschliste in 6.1; wie ihr
-  Schemaschritt gebaut und die Basis eingefroren wird, folgt den Regeln von 1.6 und 1.8, sobald
-  GA beauftragt ist — nach E27 dann, wenn das Ablösekriterium Q24 erfüllt ist (Kapitel 5).
+- **Eine Stufe GA.** Sie entfällt mit E89; der Altweg bleibt dauerhaft wählbar, 6.1 ist nur noch
+  sein Inventar.
 
-### 6.1 Löschliste der Stufe GA — Altweg ablösen
+### 6.1 Inventar der Altweg-Bestandteile (vormals Löschliste der Stufe GA)
 
-Die Stufe **GA** ist die letzte des Plans (E26, 17.09.2026). Mit **E27** (22.09.2026,
-[Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) ist entschieden: Sie wird
-beauftragbar und fällig, sobald die vier Bedingungen des Ablösekriteriums erfüllt sind (**Q24**,
-Kapitel 5), und sie ist die **vollständige Ablösung** nach dieser Liste (**Q25**) — keine
-Teilablösung, kein Rest des Bestandswegs im Produkt. Ihr Aufwand **5–8 PT** steckt in keiner Summe
-(Kapitel 4). Quellen: Konzept N1.25 Punkt 4 und N1.31,
+**Mit E89 ist diese Liste gegenstandslos als Löschliste:** Der Altweg bleibt dauerhaft als wählbarer
+Rechenweg, die Stufe **GA — Altweg ablösen** entfällt, das Ablösekriterium (**Q24**) und der Umfang
+(**Q25**) sind gegenstandslos ([Konzept N1.70](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)).
+Die Liste dient nur noch als **Inventar der Altweg-Bestandteile** — was zum Altweg gehört und mit
+ihm gepflegt wird; die Spalte „Was die Stufe GA entfernt oder umstellt" liest sich als „was zum
+Altweg gehört". Quellen: Konzept N1.25 Punkt 4 und N1.31,
 [Befund X](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) Kapitel 4
 (dort die Erhebung je Stelle). **Regel** ([`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md),
 Entscheidung 6): **Jede Stufe, die einen Altweg-Sonderfall einführt** — Hinweistext,
