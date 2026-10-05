@@ -145,6 +145,9 @@ namespace WindowsFormsApplication1
         /// <summary>Lichte Höhe [m] der Datei; <c>null</c> = keine (dann gilt V/A).</summary>
         internal double? HoeheM { get; init; }
 
+        /// <summary>Der Körper aus der Datei (15.3), nur Anzeige; <c>null</c> = keiner (gbXML, Export, nicht lesbar).</summary>
+        internal Dateikoerper Koerper { get; init; }
+
         /// <summary>Die Seiten des Raums in der Reihenfolge der Bauteile.</summary>
         internal List<Umrissseite> Seiten { get; } = new List<Umrissseite>();
     }
@@ -313,6 +316,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Deckengrenzen des schematischen Rechtecks als Streifen wie <see cref="BodenStreifen"/>.</summary>
         internal IReadOnlyList<Kantenabschnitt> DeckenStreifen { get; init; } = Array.Empty<Kantenabschnitt>();
+
+        /// <summary>
+        /// Der Körper des Raums, wie die Datei ihn zeichnet (Datenaustauschkonzept 15.3) — „aus Datei“; <c>null</c> =
+        /// kein Dateikörper. Nur Anzeige: Er ersetzt weder <see cref="Polygone"/> noch <see cref="Herkunft"/> und speist
+        /// weder Fläche noch Zonierung.
+        /// </summary>
+        internal Dateikoerper Koerper { get; init; }
 
         public override string ToString() => Name + " (" + Herkunft + ", " + Polygone.Count.ToString(CultureInfo.InvariantCulture) + " Polygone)";
     }
@@ -523,6 +533,12 @@ namespace WindowsFormsApplication1
         /// <summary>Trägt die Geometrie einen schematischen Umriss? Dann ist „schematisch" Pflicht an Bild und Datei.</summary>
         internal bool Schematisch => Raeume.Any(r => r.Herkunft == Geometrieherkunft.Schematisch && r.Polygone.Count > 0);
 
+        /// <summary>Trägt mindestens ein Raum einen Körper aus der Datei (15.3)?</summary>
+        internal bool HatDateikoerper => Raeume.Any(r => r.Koerper != null);
+
+        /// <summary>Die Dreiecke aller Dateikörper (15.4: die Ansicht hält sie gegen <see cref="Dateikoerper.DREIECKSGRENZE"/>).</summary>
+        internal int DateikoerperDreiecke => Raeume.Sum(r => r.Koerper?.DreieckZahl ?? 0);
+
         /// <summary>
         /// Die Nachbarpaare (Stufe G7b): je Trennfläche, die genau zwei Räume teilen, beide Seiten — mit dem
         /// nachgezogenen Gegenstück und dem Stand des Aneinanderlegens; nach Bauteilkennung geordnet.
@@ -687,6 +703,7 @@ namespace WindowsFormsApplication1
                     Angelegt = e.Angelegt,
                     BodenStreifen = e.BodenStreifen,
                     DeckenStreifen = e.DeckenStreifen,
+                    Koerper = r.Koerper,
                 });
             }
             z.Raeume = raeume;

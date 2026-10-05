@@ -58,13 +58,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, g.ZahlGrenzen);
             Assert.All(g.Raeume, r => Assert.NotNull(r.GrundrissM));
             AbbildBauteil paar = Assert.Single(g.Bauteile, b => b.Trenndeckenherkunft != null);
-            Assert.Equal(AbbildBauteil.TRENNDECKE_GRUNDRISS, paar.Trenndeckenherkunft);
+            // Beide Räume tragen einen Körper: Das Körperpaar geht dem Grundriss vor (Mehrzonenkonzept 6.2), mit derselben Überlappung.
+            Assert.Equal(AbbildBauteil.TRENNDECKE_KOERPER, paar.Trenndeckenherkunft);
             Assert.Equal(20.0, paar.BruttoflaecheM2.Value, 3);
             Assert.Equal(1.0, paar.UWertWm2K.Value, 6);
             Assert.Equal(2, paar.Nachbarn.Count);
             Assert.DoesNotContain(g.Bauteile, b => b.Name == "Decke EG/OG" && b.Trenndeckenherkunft == null);   // in dem Paar aufgegangen
             Assert.True(g.GeschosseGekoppelt);
-            Assert.Contains(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_GRUNDRISS");
+            Assert.Contains(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_AUS_KOERPER");
+            Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_GRUNDRISS");
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_REFERENZ");
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_GESCHAETZT");
 

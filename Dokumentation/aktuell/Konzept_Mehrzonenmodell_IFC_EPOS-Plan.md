@@ -1309,6 +1309,27 @@ Umrechnung selbst bräuchte Bauteildicken und die Gehrung an jeder Ecke, also Ge
 Abweichung ist zu **beziffern** (Kapitel 8, Probe 17); das Bruttomaß bleibt als verworfene
 Möglichkeit Teil der Begründung.
 
+**Trennflächen aus Raumkörpern.** Führt eine Datei keine Raumgrenzen, aber Raumkörper (Datenaustauschkonzept 15.3),
+kommt die Nachbarschaft der Räume aus den Körpern: Je Körper werden die Dreiecke gleicher Normale und gleichen
+Ebenenabstands zu ebenen Flächen zusammengefasst; zwei Flächen verschiedener Räume sind ein Paar, wenn ihre Normalen
+gegenläufig sind (höchstens 1°), sie einander zugewandt höchstens 0,8 m auseinanderliegen (Wand- oder Deckendicke) und
+sich ihre Projektionen auf die gemeinsame Ebene um mindestens 0,1 m² überschneiden. Die Trennfläche ist die
+Schnittfläche (Summe der Schnitte der Dreiecke beider Flächen); eine Normale waagerecht ± 10° ergibt eine Trennwand,
+sonst eine Trenndecke mit dem Raum, dessen Fläche nach unten weist, als oberem. Je Paar entsteht ein Trennbauteil mit
+zwei Grenzen der Herkunft „Körper“, wechselseitig Gegenstück; Seiten, Paarbildung, Gegenprobe (6.6) und Mindestgröße
+(M8) laufen darüber wie über Raumgrenzen. U-Wert, Aufbau und Dicke nimmt das Trennbauteil vom Bauteil gleicher Art,
+das beide Räume referenzieren, sonst von einer Innenwand bzw. Decke, die einer der Räume referenziert, bei einer Decke
+sonst von der freien Decke des Geschosspaars, sonst gilt die Vorgabe; die Zeile des Bauteilvorschlags trägt die
+Herkunft „IFC-Datei (Körper)“ mit Raumpaar und Fläche als Beleg. Ein abgedecktes Bauteil der Datei geht in seinen
+Paaren auf, wenn jeder Raum, der es referenziert, an einem davon liegt, sonst trägt es nur den Rest seiner Fläche. Die
+Trenndecken aus Raumbezügen (6.5) weichen den Körperdecken, wo ein Körperpaar das Geschosspaar verbindet, und bleiben
+sonst Rückfall; der Kopplungswächter gilt für die Körperdecken ebenso (`IMP_IFC_PROT_KOERPERPAAR_SCHWACH`). Die
+Rangfolge lautet **Raumgrenzen vor Körpern vor Raumbezügen**: Mit Raumgrenzen werden die Körperpaare nur gezählt
+(`IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT`). Mit Körperpaaren gelten die Zonen als gekoppelt; statt `GRENZEN_ENTKOPPELT`
+meldet der Import `IMP_IFC_PROT_GRENZEN_AUS_KOERPER` (Zahl, Σ Trennwand, Σ Trenndecke), Räume mit Körper ohne jede
+Trennfläche `IMP_IFC_PROT_KOERPER_OHNE_PAAR`. Z1 bis Z3 bleiben an Raumgrenzen gebunden. Außenflächen kommen weiter aus
+Mengen und Raumbezügen; Flächen und Volumen der Räume bleiben Mengen der Datei.
+
 ### 6.3 Materialien → Aufbauten
 
 Die Kette `IfcMaterialLayerSetUsage` → `IfcMaterialLayerSet` → `IfcMaterialLayer` hängt am Bauteil

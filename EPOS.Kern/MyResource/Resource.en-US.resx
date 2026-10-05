@@ -33019,6 +33019,12 @@ Do you want to allow this?</value>
   <data name="GIMP_HERKUNFT_IFC" xml:space="preserve">
     <value>IFC file</value>
   </data>
+  <data name="GIMP_HERKUNFT_IFC_KOERPER" xml:space="preserve">
+    <value>IFC file (body)</value>
+  </data>
+  <data name="GIMP_BELEG_KOERPER" xml:space="preserve">
+    <value>Separating area from the space bodies: {0} / {1}, {2} m²</value>
+  </data>
   <data name="GIMP_HERKUNFT_KATALOG" xml:space="preserve">
     <value>Catalogue</value>
   </data>
@@ -33394,6 +33400,57 @@ Do you want to allow this?</value>
   <data name="GIMP_ANS_KOERPER_BEDIENUNG" xml:space="preserve">
     <value>Drag to rotate, right-click to pan, mouse wheel to zoom; clicking a solid selects its zone.</value>
   </data>
+  <data name="GANS_MODUS" xml:space="preserve">
+    <value>Solid display</value>
+  </data>
+  <data name="GANS_DATEIKOERPER" xml:space="preserve">
+    <value>File solids</value>
+  </data>
+  <data name="GANS_EXPORTMODELL" xml:space="preserve">
+    <value>Export model</value>
+  </data>
+  <data name="GANS_KENNZEICHEN" xml:space="preserve">
+    <value>{0} rooms from file, {1} from outline, {2} schematic</value>
+  </data>
+  <data name="GANS_VEREINFACHT" xml:space="preserve">
+    <value>simplified: {0}</value>
+  </data>
+  <data name="GANS_ZU_GROSS" xml:space="preserve">
+    <value>File solids too large ({0} triangles, limit {1}) — all rooms shown as prisms from their outline.</value>
+  </data>
+  <data name="GANS_HERKUNFT_DATEI" xml:space="preserve">
+    <value>from file</value>
+  </data>
+  <data name="GANS_HERKUNFT_UMRISS" xml:space="preserve">
+    <value>from outline</value>
+  </data>
+  <data name="GANS_HERKUNFT_SCHEMATISCH" xml:space="preserve">
+    <value>schematic</value>
+  </data>
+  <data name="GANS_RAEUME" xml:space="preserve">
+    <value>Rooms and origin of their solids</value>
+  </data>
+  <data name="GANS_RAUM_HERKUNFT" xml:space="preserve">
+    <value>{0} — solid {1}</value>
+  </data>
+  <data name="GANS_VERMERK_BOGEN" xml:space="preserve">
+    <value>arc as chords</value>
+  </data>
+  <data name="GANS_VERMERK_LOCH" xml:space="preserve">
+    <value>hole omitted</value>
+  </data>
+  <data name="GANS_VERMERK_UNEBEN" xml:space="preserve">
+    <value>non-planar face</value>
+  </data>
+  <data name="GANS_VERMERK_OHNEBESCHNITT" xml:space="preserve">
+    <value>without clipping</value>
+  </data>
+  <data name="GANS_VERMERK_OFFEN" xml:space="preserve">
+    <value>open shell</value>
+  </data>
+  <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
+    <value>outer shell only</value>
+  </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Storeys</value>
   </data>
@@ -33768,6 +33825,12 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_IFC_PROT_PLATZIERUNGSART" xml:space="preserve">
     <value>{0} building components with placement {1} are taken over without orientation; only IfcLocalPlacement is evaluated.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ART" xml:space="preserve">
+    <value>{0} space bodies of type {1} cannot be read; the spaces are shown from their outline or schematically.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_GELESEN" xml:space="preserve">
+    <value>Space bodies from the file: {0} spaces with a body, {1} without, {2} triangles.</value>
   </data>
   <data name="IMP_IFC_PROT_EIGENSCHAFTSART" xml:space="preserve">
     <value>Property {1} is given as {0}; single and bounded values are read — it is skipped.</value>
@@ -42637,6 +42700,18 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_IFC_PROT_TRENNDECKE_KLEIN" xml:space="preserve">
     <value>The separating slab between {0} and {1} carries only {2} m² from the spatial references against {3} m² heated floor area of the smaller storey ({4} %) — the file does not reference all slab parts. The pair of storeys is not considered coupled; please check the separating area.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_AUS_KOERPER" xml:space="preserve">
+    <value>Building "{0}" has no space boundaries; {1} separating areas from the space bodies connect adjacent spaces — separating walls {2} m², separating slabs {3} m². The zones count as coupled through them; external areas still come from quantities and spatial references.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT" xml:space="preserve">
+    <value>Building "{0}" has space boundaries; they take precedence. The space bodies show {1} separating areas (separating walls {2} m², separating slabs {3} m²), which are only counted.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERPAAR_SCHWACH" xml:space="preserve">
+    <value>The separating slabs from the space bodies between {0} and {1} cover only {2} m² against {3} m² heated floor area of the smaller storey ({4} %). The pair of storeys is not considered coupled; please check the bodies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_OHNE_PAAR" xml:space="preserve">
+    <value>{0} spaces carry a body but share no area with another space: {1}. They remain without a separating area from the bodies.</value>
   </data>
   <data name="IMP_IFC_PROT_INNEN_EINSEITIG" xml:space="preserve">
     <value>{0} interior walls without an adjacent space (interior by IsExternal or adjacency) count one-sided as internal mass: {1} m² gross area.</value>

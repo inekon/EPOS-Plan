@@ -638,4 +638,152 @@ public class GebaeudeAnsichtTests : EposBunitContext
                      Raum(cut, "r-lager").GetAttribute("aria-label"));
         Assert.Contains("Floor plan", cut.Markup);
     }
+
+    // =====================================================================
+    //  Dateikörper (G7f-2; Datenaustauschkonzept 15.4, Probe 26 erweitert und Probe 30)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Körperdaten mit einem Dateikörper für Wohnen: zwei Dreiecke (ein offenes Netz), vier Randkanten, die
+    /// Vermerke Bogen und Offen. Küche bleibt Prisma aus dem Umriss, Lager und Flur schematisch.
+    /// </summary>
+    private static GebaeudeAnsichtDaten DateiDaten(int? grenze = null)
+    {
+        GebaeudeAnsichtDaten d = KoerperDaten();
+        var datei = new GebaeudeAnsichtDateikoerper(
+            new float[] { 0, 0, 0, 6, 0, 0, 6, 8, 0, 0, 8, 0 }, new[] { 0, 1, 2, 0, 2, 3 }, new[] { 0, 1, 1, 2, 2, 3, 0, 3 },
+            2, "FacetedBrep", new[] { "Bogen", "Offen" });
+        return d with
+        {
+            Koerperraeume = new[] { d.Koerperraeume[0] with { Dateikoerper = datei, Herkunft = Koerperherkunft.Datei }, d.Koerperraeume[1] },
+            Bezugspunkt = new[] { 1_000_000.0, 2_000_000.0, 0.0 },
+            Dreiecksgrenze = grenze ?? GebaeudeAnsichtDaten.DREIECKSGRENZE,
+        };
+    }
+
+    private static IElement Modusknopf(IRenderedComponent<GebaeudeAnsicht> cut, string schluessel)
+        => cut.Find(".epos-gebansicht-modus button[data-modus='" + schluessel + "']");
+
+    [Fact]
+    public void GA6_Probe30_Mit_Dateikoerper_Umschalter_Vorgabe_Dateikoerper_Wechsel_und_zurueck()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var erzeugen = modul.Setup<bool>("erzeugen", _ => true);
+        erzeugen.SetResult(true);
+        var aktualisieren = modul.SetupVoid("aktualisieren", _ => true);
+        aktualisieren.SetVoidResult();
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(DateiDaten());
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.Single(erzeugen.Invocations));
+
+        // Vorgabe Dateikörper: Szene, Rückweg und das Bytefeld (zwölf Floats, zehn Indizes, acht Kantenindizes).
+        Assert.Equal("dateikoerper", cut.Instance.KoerperModus);
+        Assert.Equal("dateikoerper", cut.Find(".epos-gebansicht-koerperansicht").GetAttribute("data-modus"));
+        Assert.Equal("true", Modusknopf(cut, "dateikoerper").GetAttribute("aria-pressed"));
+        Assert.Equal("false", Modusknopf(cut, "exportmodell").GetAttribute("aria-pressed"));
+        Assert.Equal("Dateikörper", Modusknopf(cut, "dateikoerper").TextContent);
+        Assert.Equal("Exportmodell", Modusknopf(cut, "exportmodell").TextContent);
+        IReadOnlyList<object?> argumente = erzeugen.Invocations.Single().Arguments;
+        Assert.Equal(4, argumente.Count);
+        Assert.Equal(4 * (12 + 6 + 8), Assert.IsType<byte[]>(argumente[3]).Length);
+
+        // Die Kennzeichenzeile zählt: Wohnen aus Datei, Küche aus Umriss, Lager und Flur schematisch.
+        IElement zeile = cut.Find(".epos-gebansicht-kennzeichen");
+        Assert.Equal(("1", "1", "2"), (zeile.GetAttribute("data-datei"), zeile.GetAttribute("data-umriss"), zeile.GetAttribute("data-schematisch")));
+        Assert.Equal("1 Räume aus Datei, 1 aus Umriss, 2 schematisch", zeile.TextContent);
+        IElement vereinfacht = cut.Find(".epos-gebansicht-vereinfacht");
+        Assert.Equal("Bogen,Offen", vereinfacht.GetAttribute("data-vermerke"));
+        Assert.Equal("vereinfacht: Bogen als Sehnenzug, offene Schale", vereinfacht.TextContent);
+        IElement wohnen = cut.Find(".epos-gebansicht-raumherkunft li[data-raum='r-wohnen']");
+        Assert.Equal("datei", wohnen.GetAttribute("data-herkunft"));
+        Assert.StartsWith("Wohnen — Körper aus Datei", wohnen.GetAttribute("title"));
+        Assert.Equal("umriss", cut.Find(".epos-gebansicht-raumherkunft li[data-raum='r-kueche']").GetAttribute("data-herkunft"));
+        Assert.Equal("schematisch", cut.Find(".epos-gebansicht-raumherkunft li[data-raum='r-flur']").GetAttribute("data-herkunft"));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-zugross"));
+
+        // Auf Exportmodell: dieselbe Szene am Modul, aktualisiert ohne Bytefeld; keine Kennzeichenzeile.
+        Modusknopf(cut, "exportmodell").Click();
+        cut.WaitForAssertion(() => Assert.Single(aktualisieren.Invocations));
+        Assert.Equal("exportmodell", cut.Instance.KoerperModus);
+        Assert.Single(aktualisieren.Invocations.First().Arguments);
+        Assert.Equal("true", Modusknopf(cut, "exportmodell").GetAttribute("aria-pressed"));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-kennzeichen"));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-raumherkunft"));
+
+        // Und zurück: wieder mit Bytefeld; das Modul ist nur einmal geladen, die Szene nur einmal erzeugt.
+        Modusknopf(cut, "dateikoerper").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, aktualisieren.Invocations.Count));
+        Assert.IsType<byte[]>(aktualisieren.Invocations.Last().Arguments[1]);
+        Assert.Single(erzeugen.Invocations);
+        Assert.Single(JSInterop.Invocations.Where(a => a.Identifier == "import"));
+    }
+
+    [Fact]
+    public void GA6_Ohne_Dateikoerper_kein_Umschalter_und_das_Exportmodell()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var erzeugen = JSInterop.SetupModule(MODUL).Setup<bool>("erzeugen", _ => true);
+        erzeugen.SetResult(true);
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(KoerperDaten());
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.Single(erzeugen.Invocations));
+        Assert.Equal("exportmodell", cut.Instance.KoerperModus);
+        Assert.Empty(cut.FindAll(".epos-gebansicht-modus"));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-kennzeichen"));
+        Assert.Equal(3, erzeugen.Invocations.Single().Arguments.Count);
+    }
+
+    [Fact]
+    public void GA6_Ueber_der_Grenze_der_Hinweis_alle_Raeume_als_Prisma_und_kein_Bytefeld()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var erzeugen = JSInterop.SetupModule(MODUL).Setup<bool>("erzeugen", _ => true);
+        erzeugen.SetResult(true);
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(DateiDaten(grenze: 1));
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.Single(erzeugen.Invocations));
+
+        Assert.Equal("dateikoerper", cut.Instance.KoerperModus);
+        IElement hinweis = cut.Find(".epos-gebansicht-zugross");
+        Assert.Equal(("2", "1"), (hinweis.GetAttribute("data-dreiecke"), hinweis.GetAttribute("data-grenze")));
+        Assert.Equal("Dateikörper zu groß (2 Dreiecke, Grenze 1) — alle Räume als Prisma aus dem Umriss.", hinweis.TextContent.Trim());
+        Assert.Equal("0", cut.Find(".epos-gebansicht-kennzeichen").GetAttribute("data-datei"));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-vereinfacht"));
+        // Kein Dateikörper-Aufruf: drei Argumente, keine Netze in der Szene.
+        Assert.Equal(3, erzeugen.Invocations.Single().Arguments.Count);
+        Assert.DoesNotContain("\"dateikoerper\":[{", System.Text.Json.JsonSerializer.Serialize(erzeugen.Invocations.Single().Arguments[1]));
+    }
+
+    [Fact]
+    public void GA6_Die_Dateiszene_traegt_Kennungen_und_Zahlen_keinen_Anzeigetext()
+    {
+        GebaeudeAnsichtDaten d = DateiDaten();
+        string json = System.Text.Json.JsonSerializer.Serialize(GebaeudeAnsicht.SzeneDatei(d, ZONE_EG, d.Koerperfeld()));
+        Assert.Contains("\"modus\":\"dateikoerper\"", json);
+        Assert.Contains("\"bezugspunkt\":[1000000,2000000,0]", json);
+        Assert.Contains("\"raum\":\"r-wohnen\",\"zone\":\"" + ZONE_EG + "\",\"stelle\":1,\"punkteAb\":0,\"punktZahl\":4,\"dreieckeAb\":48,\"dreieckZahl\":2,\"kantenAb\":72,\"kantenZahl\":4", json);
+        Assert.Contains("\"raum\":\"r-kueche\"", json);
+        foreach (string text in new[] { "Wohnen", "Küche", "Erdgeschoss", "Kellergeschoss", "m²", "Bogen", "Dateikörper" })
+            Assert.DoesNotContain(text, json);
+        Assert.Equal(json, System.Text.Json.JsonSerializer.Serialize(GebaeudeAnsicht.SzeneDatei(DateiDaten(), ZONE_EG, DateiDaten().Koerperfeld())));
+    }
+
+    [Fact]
+    public void GA6_Die_Texte_der_Dateikoerper_stehen_englisch_unter_en_US()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        using var englisch = new Kulturvorrichtung("en-US");
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(DateiDaten());
+        cut.FindAll("button[role=tab]")[1].Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebansicht-kennzeichen")));
+        Assert.Equal("File solids", Modusknopf(cut, "dateikoerper").TextContent);
+        Assert.Equal("Export model", Modusknopf(cut, "exportmodell").TextContent);
+        Assert.Equal("1 rooms from file, 1 from outline, 2 schematic", cut.Find(".epos-gebansicht-kennzeichen").TextContent);
+        Assert.Equal("simplified: arc as chords, open shell", cut.Find(".epos-gebansicht-vereinfacht").TextContent);
+        Assert.StartsWith("Wohnen — solid from file", cut.Find(".epos-gebansicht-raumherkunft li[data-raum='r-wohnen']").GetAttribute("title"));
+    }
 }

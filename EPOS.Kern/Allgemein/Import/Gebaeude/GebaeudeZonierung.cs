@@ -473,7 +473,9 @@ namespace WindowsFormsApplication1
             z.Vorgabe = vorgabe;
             z.HatRaumgrenzen = grenzen;
             z.Regel = regel ?? vorgabe;
-            if (!grenzen && !z.Gebaeude.GeschosseGekoppelt)
+            // Trennflächen aus den Raumkörpern tragen die Nachbarschaft wie Raumgrenzen (6.2); Z1 bis Z3 bleiben an diese gebunden.
+            bool koerper = !grenzen && z.Gebaeude.KoerperpaareGebildet;
+            if (!grenzen && !z.Gebaeude.GeschosseGekoppelt && !koerper)
                 z.Melden(PruefStufe.Warnung, KEINE_GRENZEN, z.Gebaeude.Anzeigename);
             else if (grenzen && string.Equals(z.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) && z.Gebaeude.ZahlGrenzenZweiteEbene == 0)
                 z.Melden(PruefStufe.Warnung, NUR_1STLEVEL, z.Gebaeude.Anzeigename, Ganz(z.Gebaeude.ZahlGrenzen));
@@ -496,7 +498,7 @@ namespace WindowsFormsApplication1
             }
             // Ohne Raumgrenzen und ohne tragende Trenndecken aus den Raumbezügen sind die Zonen entkoppelt (6.5); mit
             // ihnen nur, wenn sie nicht alle beheizten Zonen verbinden (geprüft nach den Seiten, mit den Haken).
-            bool bezug = !grenzen && z.Gebaeude.GeschosseGekoppelt;
+            bool bezug = !grenzen && (z.Gebaeude.GeschosseGekoppelt || koerper);
             if (!grenzen && !bezug)
                 z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
 

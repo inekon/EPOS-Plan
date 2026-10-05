@@ -80,6 +80,7 @@ namespace WindowsFormsApplication1
                     FlaecheM2 = r.FlaecheM2,
                     VolumenM3 = r.VolumenM3,
                     HoeheM = r.HoeheM,
+                    Koerper = r.Koerper,
                 };
                 jeRaum[r.Kennung] = (r, u);
                 e.Raeume.Add(u);

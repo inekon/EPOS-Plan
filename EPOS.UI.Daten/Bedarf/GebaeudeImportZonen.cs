@@ -291,6 +291,9 @@ namespace WindowsFormsApplication1
                 if (ohneGegenstueck) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_OHNE_GEGENSTUECK);
                 if (ohneU) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_OHNE_UWERT);
                 if (geschaetzt) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_GESCHAETZT);
+                // Trennfläche aus den Raumkörpern: der Beleg (Raumpaar, Fläche) in den Befund, die Herkunft „aus Datei (Körper)“.
+                bool koerper = zl.Beleg?.Schluessel == GebaeudeBauteilzeile.BELEG_KOERPER;
+                if (koerper) befund.Add(GebaeudeZuordnungsModell.BelegText(zl.Beleg));
 
                 Importherkunft herkunft = GebaeudeZuordnungsModell.HerkunftAusSchluessel(b.Herkunft);
                 string zone = zl.Zone >= 0 && zl.Zone < v.Zonen.Count ? v.Zonen[zl.Zone].Bezeichner : Leer;
@@ -310,7 +313,7 @@ namespace WindowsFormsApplication1
                                    : b.ID_Aufbau.HasValue ? Katalogwert.AusText(MyResource.Resource.GIMP_BT_AUS_SCHICHTEN)
                                    : Katalogwert.Leer)
                     .MitText(SP_AUFBAU, aufbau)
-                    .MitText(SP_HERKUNFT, GebaeudeZuordnungsModell.HerkunftText(herkunft))
+                    .MitText(SP_HERKUNFT, koerper ? MyResource.Resource.GIMP_HERKUNFT_IFC_KOERPER : GebaeudeZuordnungsModell.HerkunftText(herkunft))
                     .MitText(SP_BEFUND, string.Join("; ", befund));
                 zeile.Schluessel = i.ToString(CultureInfo.InvariantCulture);
                 zeilen.Add(new GebaeudeFlaechenzeileDaten(zeile, befund.Count > 0, ohneGegenstueck, ohneU));
