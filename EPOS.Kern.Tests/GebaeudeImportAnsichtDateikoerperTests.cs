@@ -247,6 +247,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(Enum.GetNames(typeof(Koerpervermerk)), GebaeudeAnsichtDateikoerper.VERMERKE);
             foreach (string sprache in new[] { "de-DE", "en-US" })
+            {
                 using (new Kulturvorrichtung(sprache))
                 {
                     var texte = new GebaeudeAnsichtTexte();
@@ -258,6 +259,7 @@ namespace EPOS.Kern.Tests
                         Assert.Equal(text, texte.Vermerk(v));
                     }
                 }
+            }
             using (new Kulturvorrichtung("en-US"))
                 Assert.Equal("open shell", new GebaeudeAnsichtTexte().Vermerk("Offen"));
             Assert.Equal("offene Schale", new GebaeudeAnsichtTexte().Vermerk("Offen"));
