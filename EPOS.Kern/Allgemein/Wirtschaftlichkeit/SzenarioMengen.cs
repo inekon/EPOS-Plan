@@ -125,7 +125,11 @@ namespace WindowsFormsApplication1
                     // Kühlträger und Abrechnungsart sind Konfiguration und bleiben. Ohne sie verlöre
                     // ein Mengenszenario Kosten und Emissionen des Kältestroms eines Kühlträgers.
                     Kaelteproduktion_WP = Mal(w.Kaelteproduktion_WP, f),
-                    Stromverbrauch_Kuehlung = Mal(w.Stromverbrauch_Kuehlung, f)
+                    Stromverbrauch_Kuehlung = Mal(w.Stromverbrauch_Kuehlung, f),
+                    // KU3-6: freie Kühlung über die Wärmequelle wie bei der Kältemaschine - die Kälte skaliert,
+                    // die Stunden bleiben; null bleibt null.
+                    FreieKuehlung_MWh = Mal(w.FreieKuehlung_MWh, f),
+                    FreieKuehlung_Stunden = w.FreieKuehlung_Stunden
                 };
                 if (w.Module != null)
                     foreach (ErgebnisWaermepumpeModulModel mo in w.Module)
@@ -140,6 +144,8 @@ namespace WindowsFormsApplication1
                             Kaelteproduktion = Mal(mo.Kaelteproduktion, f),
                             Stromverbrauch_Kuehlung = Mal(mo.Stromverbrauch_Kuehlung, f),
                             Kaeltestrom_Netzbezug = Mal(mo.Kaeltestrom_Netzbezug, f),
+                            FreieKuehlung_MWh = Mal(mo.FreieKuehlung_MWh, f),
+                            FreieKuehlung_Stunden = mo.FreieKuehlung_Stunden,
                             Kuehl_CarrierId = mo.Kuehl_CarrierId,
                             Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler
                         });

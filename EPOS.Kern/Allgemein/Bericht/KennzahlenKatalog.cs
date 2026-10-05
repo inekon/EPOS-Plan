@@ -186,6 +186,15 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden freier Kühlung [h/a] (Summe über die Maschinen).</summary>
         public const string SCHLUESSEL_KM_FREI_STUNDEN = "kaelte.km.frei_stunden";
 
+        /// <summary>
+        /// Kälte der Wärmepumpen in freier Kühlung über die Wärmequelle [MWh/a] (KU3-6) — Summe über die
+        /// Wärmepumpen; null, wenn an keiner die freie Kühlung wirkt.
+        /// </summary>
+        public const string SCHLUESSEL_WP_FREI = "kaelte.wp.frei";
+
+        /// <summary>Stunden freier Kühlung der Wärmepumpen [h/a] (KU3-6); null ohne wirksame freie Kühlung.</summary>
+        public const string SCHLUESSEL_WP_FREI_STUNDEN = "kaelte.wp.frei_stunden";
+
         /// <summary>Taktstunden unter der Mindestteillast [h/a] (Summe über die Maschinen).</summary>
         public const string SCHLUESSEL_KM_TAKT = "kaelte.km.takt";
 
@@ -520,6 +529,13 @@ namespace WindowsFormsApplication1
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_ERZEUGUNG, "Kälteerzeugung Wärmepumpe (sensibel)",
                 "Heat pump cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
                 v => WP(v)?.Kaelteproduktion_WP));
+            // KU3-6: die freie Kühlung der Wärmepumpen über die Wärmequelle - nur mit Wirkung, sonst null.
+            l.Add(new Kennzahl(SCHLUESSEL_WP_FREI, "Kälte in freier Kühlung der Wärmepumpe (sensibel)",
+                "Heat pump free cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                v => WP(v)?.FreieKuehlung_MWh));
+            l.Add(new Kennzahl(SCHLUESSEL_WP_FREI_STUNDEN, "Stunden freier Kühlung der Wärmepumpe",
+                "Heat pump free cooling hours", "h/a", GR_KAELTE, "N0", true,
+                v => WP(v)?.FreieKuehlung_Stunden));
             // KU3-4: die Kältemaschinen - nur mit gerechneter Kältemaschine, sonst null (Gruppe unverändert).
             l.Add(new Kennzahl(SCHLUESSEL_KM_ERZEUGUNG, "Kälteerzeugung Kältemaschinen (sensibel)",
                 "Chiller cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
