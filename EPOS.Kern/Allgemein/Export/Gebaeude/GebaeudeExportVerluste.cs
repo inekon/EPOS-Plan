@@ -53,6 +53,10 @@ namespace WindowsFormsApplication1
             // Schritt 181 (E63, AK1z): der Auslegungspunkt und das Proportionalband der Zone.
             ["Auslegung_Vorlauf"] = V, ["Auslegung_Ruecklauf"] = V, ["Auslegung_Raumtemperatur"] = V,
             ["Regler_Proportionalband"] = V,
+            // NP1 (Schritt 189, Q41): die Textkopie des Profilnamens an der Zone. Der Export nimmt sie nicht mit;
+            // die Nutzung der Zone führt der IFC-Export als Zelle Nutzung von EPOS_Zone aus den Kalenderkopien
+            // (RaumnutzungCtrl.ProfilUebernehmen schreibt beides zugleich), und der Import setzt sie dort wieder.
+            ["Nutzungsprofil"] = N,
         };
 
         /// <summary>Die Felder eines Bauteils.</summary>
