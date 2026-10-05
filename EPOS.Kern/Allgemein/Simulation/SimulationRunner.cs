@@ -415,6 +415,25 @@ namespace WindowsFormsApplication1
             int fahrplanStunden = simulation_Waermebedarf.FahrplanBegrenztStunden();
             if (fahrplanStunden > 0) m.Energiebedarf.FahrplanBegrenztStundenH = fahrplanStunden;
 
+            // ANLAGENKOPPLUNG AK2-2b (5.5, F8, F9): die Komfortkennzahlen des Projekts - dieselbe Regel: erhoben,
+            // sobald der Fahrplan in mindestens einer Stunde gekappt hat; sonst NULL, und jedes Projekt ohne
+            // greifende Schranke (auch die AK1-Referenzprojekte) schreibt dieselbe Zeile wie vorher.
+            if (fahrplanStunden > 0)
+            {
+                (Komfortkennzahlen heiz, Komfortkennzahlen kuehl) = simulation_Waermebedarf.KomfortProjekt();
+                if (heiz != null)
+                {
+                    m.Energiebedarf.KomfortUnterschreitungsstundenH = heiz.Stunden;
+                    m.Energiebedarf.KomfortKelvinstundenKh = heiz.Kelvinstunden;
+                    m.Energiebedarf.KomfortLaengsteStreckeH = heiz.LaengsteStrecke;
+                }
+                if (kuehl != null)
+                {
+                    m.Energiebedarf.KomfortUeberschreitungsstundenH = kuehl.Stunden;
+                    m.Energiebedarf.KomfortKelvinstundenKuehlungKh = kuehl.Kelvinstunden;
+                }
+            }
+
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.
             KuehlkreisProjekt kuehlkreis = simulation_Waermebedarf.Kuehlkreis;

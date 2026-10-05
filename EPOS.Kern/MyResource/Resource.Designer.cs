@@ -86439,6 +86439,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} Gebäude gehen als feste Last ein (Altweg oder ungekoppelt) — sie zehren an der Verfügbarkeit, haben aber keine Rückwirkung und keine Komfortstunden. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK2_FESTE_LAST {
+            get {
+                return ResourceManager.GetString("SIMENG_AK2_FESTE_LAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: Der Fahrplan rechnet nach dem Profilweg — Speicher nur als Vorrat über die Sperrdauer, keine Ladezustände. Die Komfortstunden sind eine obere Abschätzung. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK2_PROFILWEG_NAEHERUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK2_PROFILWEG_NAEHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitprogramm der Anlage „{0}“ enthält an Stelle {1} keine Zahl (Dezimalpunkt, Trennzeichen „;“). ähnelt.
         /// </summary>
         public static string SIMENG_AK2_ZEITPROGRAMM_KEINE_ZAHL {

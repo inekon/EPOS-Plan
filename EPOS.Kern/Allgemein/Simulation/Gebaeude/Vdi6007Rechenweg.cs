@@ -854,6 +854,7 @@ namespace WindowsFormsApplication1
                 StundenInnenpruefungGedeckelt = gedeckelt,
                 Erdreich = eingang.Erdreich,
                 FahrplanBegrenzt = fahrplan,
+                Kuehlsollwertreihe = eingang.KuehlungWirksam ? (double[])eingang.ThetaMax.Clone() : null,
             };
         }
 

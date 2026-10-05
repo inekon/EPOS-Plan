@@ -45275,5 +45275,11 @@ chart</value>
   <data name="GIMP_NUTZUNG_SONSTIGE" xml:space="preserve">
     <value>Other</value>
   </data>
+  <data name="SIMENG_AK2_PROFILWEG_NAEHERUNG" xml:space="preserve">
+    <value>System coupling: The operating schedule is calculated on the profile path — storage only as a reserve over the blocking period, no states of charge. The comfort hours are an upper estimate.</value>
+  </data>
+  <data name="SIMENG_AK2_FESTE_LAST" xml:space="preserve">
+    <value>System coupling: {0} building(s) enter as a fixed load (legacy path or uncoupled) — they draw on the availability but have no feedback and no comfort hours.</value>
+  </data>
 </root>
 

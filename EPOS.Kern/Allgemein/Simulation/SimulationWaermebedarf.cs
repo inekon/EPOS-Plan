@@ -578,6 +578,8 @@ namespace WindowsFormsApplication1
             Heizkreis = HeizkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
             // Die Kälteseite (E37): der Kältekreis des Projekts, ohne kühlgekoppeltes Gebäude null.
             Kuehlkreis = KuehlkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
+            // AK2-2b (6.2, 5.4): Naeherung des Profilwegs und Gebaeude als feste Last - nur mit Fahrplan.
+            FahrplanHinweise();
 
             //com.I_Watt_To_Kw(ref Waermebedarf);
             // K1: Der Heizkanal trägt an dieser Stelle genau das, was bisher der
@@ -1229,7 +1231,46 @@ namespace WindowsFormsApplication1
             return stunde.Count(b => b);
         }
 
+        /// <summary>
+        /// <b>Die Komfortkennzahlen des Projekts</b> (AK2-2b, 5.5, F8, F9) über die gekoppelten Gebäude
+        /// (<see cref="GebaeudeKennzahlen.KomfortErhoben"/>): Stunden = Stunden, in denen mindestens ein Gebäude
+        /// zählt; Kelvinstunden = Summe; längste Strecke = Maximum. <c>Heizen</c>/<c>Kuehlen</c> <c>null</c>, wenn
+        /// kein Gebäude dieser Seite erhoben ist.
+        /// </summary>
+        internal (Komfortkennzahlen Heizen, Komfortkennzahlen Kuehlen) KomfortProjekt()
+        {
+            var heiz = new List<Komfortkennzahlen>();
+            var kuehl = new List<Komfortkennzahlen>();
+            foreach (GebaeudeModellErgebnis e in GebaeudeErgebnisse.Alle)
+            {
+                if (!GebaeudeKennzahlen.KomfortErhoben(e)) continue;
+                heiz.Add(Komfortkennzahlen.Heizseite(e));
+                kuehl.Add(Komfortkennzahlen.Kuehlseite(e));
+            }
+            return (Komfortkennzahlen.Projekt(heiz), Komfortkennzahlen.Projekt(kuehl));
+        }
+
+        /// <summary>Lief der Anlagenfahrplan (Projektstufe und mindestens ein gekoppeltes Gebaeude auf dem VDI-Weg)?</summary>
+        internal bool FahrplanWirksam => _fahrplan != null;
+
+        /// <summary>
+        /// Die beiden Hinweise der Anlagenkopplung AK2 im Laufprotokoll (6.2, 5.4; F5): die Naeherung des Profilwegs,
+        /// sobald der Fahrplan in mindestens einer Stunde gekappt hat, und die Zahl der Gebaeude als feste Last.
+        /// </summary>
+        private void FahrplanHinweise()
+        {
+            if (_fahrplan == null) return;
+            if (FahrplanBegrenztStunden() > 0)
+                SimulationProtokoll.Aktuell.HinweisEinmal("ak2-profilweg-naeherung",
+                                                          MyResource.Resource.SIMENG_AK2_PROFILWEG_NAEHERUNG);
+            if (FahrplanFesteLastGebaeude > 0)
+                SimulationProtokoll.Aktuell.HinweisEinmal("ak2-feste-last",
+                    string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK2_FESTE_LAST,
+                                  FahrplanFesteLastGebaeude));
+        }
+
         private Anlagenfahrplan _fahrplan;
+        private bool[] _fahrplanGekoppelt;
         private Anlagenverfuegbarkeit[][][] _schrankeJeGebaeude;
         private Anlagenverfuegbarkeit[][] _schrankeAktuell;
         private bool _pass1;
@@ -1247,6 +1288,7 @@ namespace WindowsFormsApplication1
         private bool FahrplanVorbereiten(int idProjekt, int idKlimaregion, ProjektGebaeudeCtrl ctrl)
         {
             _fahrplan = null;
+            _fahrplanGekoppelt = null;
             _schrankeJeGebaeude = null;
             _schrankeAktuell = null;
             FahrplanFesteLastGebaeude = 0;
@@ -1278,6 +1320,7 @@ namespace WindowsFormsApplication1
                 return false;
             }
             for (int i = 0; i < ctrl.rows; i++) if (!gekoppelt[i]) FahrplanFesteLastGebaeude++;
+            _fahrplanGekoppelt = gekoppelt;
 
             // Pass 1: der unbegrenzte Bedarf je Gebaeude (und je Zone der gekoppelten Zonenschleifen).
             double[][] schluessel = null;
@@ -1708,9 +1751,13 @@ namespace WindowsFormsApplication1
         {
             double[] reiheKw = (double[])reiheW.Clone();
             WPPlan.Core.BhkwPlan.WattToKw(reiheKw);
-            return GebaeudeKennzahlen.Bilden(index, item.ID_Gebaeude, item.Gebaeudename,
-                                             Gebaeuderechenweg.Wirksam(item.Gebaeude_Modell),
-                                             reiheKw, GebaeudeErgebnisse.Ergebnis(index));
+            ErgebnisGebaeudeModel e = GebaeudeKennzahlen.Bilden(index, item.ID_Gebaeude, item.Gebaeudename,
+                                                                Gebaeuderechenweg.Wirksam(item.Gebaeude_Modell),
+                                                                reiheKw, GebaeudeErgebnisse.Ergebnis(index));
+            // AK2-2b (F5): der Bedarfsbegriff je Gebaeude - nur im Lauf mit Anlagenfahrplan.
+            if (_fahrplan != null && _fahrplanGekoppelt != null && index >= 0 && index < _fahrplanGekoppelt.Length)
+                e.Bedarfsbegriff = _fahrplanGekoppelt[index] ? Bedarfsbegriff.Rueckwirkung : Bedarfsbegriff.FesteLast;
+            return e;
         }
 
         /// <summary>

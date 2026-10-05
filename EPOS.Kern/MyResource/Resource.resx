@@ -45282,5 +45282,11 @@ Chart</value>
   <data name="GIMP_NUTZUNG_SONSTIGE" xml:space="preserve">
     <value>Sonstige</value>
   </data>
+  <data name="SIMENG_AK2_PROFILWEG_NAEHERUNG" xml:space="preserve">
+    <value>Anlagenkopplung: Der Fahrplan rechnet nach dem Profilweg — Speicher nur als Vorrat über die Sperrdauer, keine Ladezustände. Die Komfortstunden sind eine obere Abschätzung.</value>
+  </data>
+  <data name="SIMENG_AK2_FESTE_LAST" xml:space="preserve">
+    <value>Anlagenkopplung: {0} Gebäude gehen als feste Last ein (Altweg oder ungekoppelt) — sie zehren an der Verfügbarkeit, haben aber keine Rückwirkung und keine Komfortstunden.</value>
+  </data>
 </root>
 

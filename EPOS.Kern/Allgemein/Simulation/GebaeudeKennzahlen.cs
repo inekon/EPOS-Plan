@@ -30,6 +30,14 @@ namespace WindowsFormsApplication1
     internal static class GebaeudeKennzahlen
     {
         /// <summary>
+        /// <b>Werden am Gebäude Komfortkennzahlen erhoben?</b> (AK2-2b, F8) Nur am gekoppelten Gebäude des VDI-Wegs:
+        /// Heizkreis (AK1), Kältekreis (E37) oder Fahrplan (AK2) war wirksam. Altweg und ungekoppelte Gebäude
+        /// bekommen keine — sie haben keine Rückwirkung (F5).
+        /// </summary>
+        internal static bool KomfortErhoben(GebaeudeModellErgebnis vdi)
+            => vdi != null && (vdi.Heizkreis != null || vdi.Kuehlkreis != null || vdi.FahrplanBegrenzt != null);
+
+        /// <summary>
         /// Die Ergebniszeile eines Gebäudes.
         /// </summary>
         /// <param name="merkplatz">Der Merkplatz im Lauf (ab 0).</param>
@@ -115,6 +123,24 @@ namespace WindowsFormsApplication1
 
                 // Anlagenkopplung (AK2): die Stunden an der Schranke der Verfügbarkeit - null ohne Fahrplan.
                 e.FahrplanBegrenztStundenH = vdi.FahrplanBegrenztStunden;
+
+                // Anlagenkopplung (AK2-2b, 5.5, F8, F9): die Komfortkennzahlen - nur am gekoppelten Gebaeude.
+                if (KomfortErhoben(vdi))
+                {
+                    Komfortkennzahlen heiz = Komfortkennzahlen.Heizseite(vdi);
+                    if (heiz != null)
+                    {
+                        e.KomfortUnterschreitungsstundenH = heiz.Stunden;
+                        e.KomfortKelvinstundenKh = heiz.Kelvinstunden;
+                        e.KomfortLaengsteStreckeH = heiz.LaengsteStrecke;
+                    }
+                    Komfortkennzahlen kuehl = Komfortkennzahlen.Kuehlseite(vdi);
+                    if (kuehl != null)
+                    {
+                        e.KomfortUeberschreitungsstundenH = kuehl.Stunden;
+                        e.KomfortKelvinstundenKuehlungKh = kuehl.Kelvinstunden;
+                    }
+                }
 
                 // Kälteseite (E37): die Kennzahlen des Kältekreises je Gebäude.
                 KuehlkreisErgebnis kk = vdi.Kuehlkreis;

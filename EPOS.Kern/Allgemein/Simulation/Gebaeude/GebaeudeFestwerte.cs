@@ -58,6 +58,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const double VIER_K_GRENZE_K = 4.0;
 
+        /// <summary>
+        /// <b>Die Komfortschwelle</b> [K] (Anlagenkopplung 5.5, F8, Entscheid E79): Eine Stunde der Nutzungszeit
+        /// zählt als Unterschreitung des Heizsollwerts (bzw. als Überschreitung des Kühlsollwerts), wenn die
+        /// Raumluft um <b>mehr</b> als diesen Betrag danebenliegt. Ein Festwert, keine Eingabe; ohne Schwelle
+        /// zählte jede numerische Kleinigkeit als Komfortverlust.
+        /// </summary>
+        internal const double KOMFORT_SCHWELLE_K = 1.0;
+
         /// <summary>Umrechnung Wh → J.</summary>
         internal const double SEKUNDEN_JE_STUNDE = 3600.0;
 

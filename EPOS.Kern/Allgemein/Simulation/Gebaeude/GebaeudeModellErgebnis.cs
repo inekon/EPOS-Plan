@@ -425,6 +425,16 @@ namespace WindowsFormsApplication1
         /// <summary><c>Fahrplan_Begrenzt_Stunden</c> [h]: Zahl der Stunden von <see cref="FahrplanBegrenzt"/>; <c>null</c> ohne Fahrplan.</summary>
         internal int? FahrplanBegrenztStunden => FahrplanBegrenzt?.Count(b => b);
 
+        /// <summary>
+        /// Der Kühlsollwert je Stunde [°C] (die obere Regelgrenze des Lösers, mit Kühlkalender seine Reihe) — nur mit
+        /// wirksamer Kühlung, sonst <c>null</c>. Grundlage der Überschreitung der Kälteseite (AK2-2b, F9).
+        /// </summary>
+        internal double[] Kuehlsollwertreihe { get; init; }
+
+        /// <summary>Der Kühlsollwert der Stunde [°C]: aus <see cref="Kuehlsollwertreihe"/>, sonst der Skalar; +∞ ohne Kühlung.</summary>
+        internal double KuehlsollwertBei(int h)
+            => Kuehlsollwertreihe != null ? Kuehlsollwertreihe[h] : KuehlSollwert ?? double.PositiveInfinity;
+
         internal GebaeudeModellErgebnis Skaliert(double faktor)
         {
             var heiz = new double[8760];
@@ -448,6 +458,7 @@ namespace WindowsFormsApplication1
                 StundenInnenpruefungGedeckelt = StundenInnenpruefungGedeckelt,
                 Erdreich = Erdreich,
                 FahrplanBegrenzt = FahrplanBegrenzt,
+                Kuehlsollwertreihe = Kuehlsollwertreihe,
             };
         }
     }
