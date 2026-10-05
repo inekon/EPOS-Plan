@@ -1,6 +1,6 @@
 # Protokoll KU3-4b — Referenzprojekt 1055 Kältemaschine mit Kältespeicher (05.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Welle KU3-4b (E67, E68), ein Opus-Auftrag und ein Nachzug, Commits `1fc3f30`, `821dafd`, `54b6df7`, `4df54a5`, `c754255`, `6ebcf5b`, Merge `7b79b22`, Hinweistext `2e287c6`. Statuszeile #727.
+**Sitzung:** Gebäudesimulation (Cloud), Welle KU3-4b (E67, E68), ein Opus-Auftrag und ein Nachzug, Commits `1fc3f30`, `821dafd`, `54b6df7`, `4df54a5`, `c754255`, `6ebcf5b`, Merge `7b79b22`, Hinweistext `2e287c6`. Statuszeile #728.
 **Entscheid:** keiner neu beim Anwender. Kein Schemaschritt; neue Einfrierregel „gesäte Kältemaschinendaten“, Basis R36 (eingefroren in einem parallelen Auftrag).
 
 ## 1 Auftrag
