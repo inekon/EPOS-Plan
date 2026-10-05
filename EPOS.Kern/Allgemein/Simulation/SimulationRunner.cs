@@ -620,6 +620,14 @@ namespace WindowsFormsApplication1
                         w.Kaelteproduktion_WP = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.KaelteGesamtKwh) / 1000.0;
                         w.Stromverbrauch_Kuehlung = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.StromGesamtKwh) / 1000.0;
                     }
+
+                    // KU3-6 (F4): freie Kühlung über die Wärmequelle - nur, wenn sie an einer Wärmepumpe
+                    // wirksam ist; sonst bleiben beide Felder null und die Spalten NULL.
+                    if (kaskade.Erzeuger.Any(e => e.Maschine == null && e.FreieKuehlungSole))
+                    {
+                        w.FreieKuehlung_MWh = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.KaelteFreiKwh) / 1000.0;
+                        w.FreieKuehlung_Stunden = kaskade.StundenFreieKuehlungWp;
+                    }
                 }
 
                 // Modulauflistung.
@@ -1293,6 +1301,12 @@ namespace WindowsFormsApplication1
                 mo.Kaelteproduktion = e.KaelteGesamtKwh / 1000.0;
                 mo.Stromverbrauch_Kuehlung = e.StromGesamtKwh / 1000.0;
                 mo.Kaeltestrom_Netzbezug = e.NetzbezugKwh / 1000.0;
+                // KU3-6 (F4): die freie Kühlung über die Wärmequelle - nur, wenn sie wirksam ist.
+                if (e.FreieKuehlungSole)
+                {
+                    mo.FreieKuehlung_MWh = e.KaelteFreiKwh / 1000.0;
+                    mo.FreieKuehlung_Stunden = e.StundenFreieKuehlung;
+                }
                 if (e.Kuehltraeger > 0)
                 {
                     mo.Kuehl_CarrierId = e.Kuehltraeger;

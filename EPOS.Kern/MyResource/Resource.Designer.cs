@@ -89193,6 +89193,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Freie Kühlung über die Wärmequelle wird nicht gerechnet — sie braucht eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe mit der Wärmequelle Erdreich, Konstant, Profil oder CSV; die Maschine kühlt nur über den Verdichter. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_FREI_OHNE_QUELLE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_FREI_OHNE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Die Kühlkennlinie für den Vorlauf {1} °C liegt in Heizlage (Kälteleistung am Verdampfer im Heizbetrieb, kein EER) — sie wird nicht als Kühlkennlinie gelesen; die Maschine kühlt nicht. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_WP_HEIZLAGE {

@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 12;
+        public const int KATALOGFASSUNG = 13;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die letzte Katalogfassung, die Einträge mit Ausgabe Word brachte (Katalog v4; v5 brachte nur die Blattmarken der
         /// Excel-Vorlage, BV-E7, v6 die Blattmarke der Diagrammdaten, BV-E8, v7 die drei Tabellen mit reiner Excel-Quelle, v8 die Positionsmuster und v9 die Vergleichsliste und den Kennzahlblock der erzeugten Blätter, alle BV-E9; v10 die
-        /// Ergebnisbilder, den Speicherlauf und die solare Deckung des Simulationsergebnisses, wieder mit Word; v11 den Betrieb je Heizkessel, Word und Excel; v12 die Stromlast des BHKW, die Kälteproduktion und die Pufferauslegung, Word und Excel) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
+        /// Ergebnisbilder, den Speicherlauf und die solare Deckung des Simulationsergebnisses, wieder mit Word; v11 den Betrieb je Heizkessel, Word und Excel; v12 die Stromlast des BHKW, die Kälteproduktion und die Pufferauslegung, Word und Excel; v13 die freie Kühlung der Wärmepumpe über die Wärmequelle, Word und Excel) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
         /// Word-Vorlage kann keinen Schlüssel einer reinen Excel-Fassung nutzen; sie braucht darum keine neue Fassung.
         /// </summary>
         public static int KatalogfassungWord

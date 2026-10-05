@@ -20,6 +20,8 @@ namespace WindowsFormsApplication1
     /// <b>Katalog v12</b> ergänzt zwei Ergebnisbilder (<see cref="Berichtsbilder.ErgebnisbilderFassung12"/>): die Stromlast
     /// des BHKW (<c>stand.bild.bhkw_strom</c>) und die Kälteproduktion (<c>stand.bild.kaelte_produktion</c>, leer ohne
     /// Kälte), Word und Excel.
+    /// <b>Katalog v13</b> ergänzt die Kennzahlen der freien Kühlung der Wärmepumpe über die Wärmequelle
+    /// (<c>kaelte.wp.frei</c>, <c>kaelte.wp.frei_stunden</c>; KU3-6) mit ihren erzeugten Einträgen.
     /// Alle im Kontext Stand, ohne Zwilling der Paarsicht; die Positionsform <c>stand.&lt;n&gt;.*</c> gilt für sie wie
     /// für jeden Standwert. Die Quellen lesen nur den Wertesatz — das gespeicherte Ergebnis und den Zeitreihensatz des
     /// Laufs —, nie die Datenbank.
@@ -31,6 +33,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Fassung der Stromlast des BHKW und der Kälteproduktion (Katalog v12).</summary>
         internal const int FASSUNG_STROM_KAELTE = 12;
+
+        /// <summary>Die Fassung der freien Kühlung der Wärmepumpe über die Wärmequelle (Katalog v13, KU3-6).</summary>
+        internal const int FASSUNG_FREIE_KUEHLUNG_WP = 13;
 
         /// <summary>
         /// Die Kennzahlen der Kältemaschine als Anlage (Schemaschritt 183) kamen mit Katalog v12 — ihre erzeugten
@@ -45,9 +50,19 @@ namespace WindowsFormsApplication1
             KennzahlenKatalog.SCHLUESSEL_KM_TAKT,
         };
 
+        /// <summary>
+        /// Die Kennzahlen der freien Kühlung der Wärmepumpe über die Wärmequelle (Schemaschritt 187, KU3-6) kamen
+        /// mit Katalog v13 — ihre erzeugten Einträge stehen erst ab dieser Fassung.
+        /// </summary>
+        private static readonly HashSet<string> KennzahlenFreieKuehlungWp = new(StringComparer.Ordinal)
+        {
+            KennzahlenKatalog.SCHLUESSEL_WP_FREI, KennzahlenKatalog.SCHLUESSEL_WP_FREI_STUNDEN,
+        };
+
         /// <summary>Die Fassung, seit der die erzeugten Einträge einer Kennzahl im Katalog stehen.</summary>
         internal static int SeitDerKennzahl(string schluessel) =>
-            KennzahlenStromKaelte.Contains(schluessel) ? FASSUNG_STROM_KAELTE : 1;
+            KennzahlenFreieKuehlungWp.Contains(schluessel) ? FASSUNG_FREIE_KUEHLUNG_WP
+            : KennzahlenStromKaelte.Contains(schluessel) ? FASSUNG_STROM_KAELTE : 1;
 
         /// <summary>Die Einträge der Fassung 10 in Katalogfolge.</summary>
         private static IEnumerable<Vorlagenfeld> Ergebnisse()

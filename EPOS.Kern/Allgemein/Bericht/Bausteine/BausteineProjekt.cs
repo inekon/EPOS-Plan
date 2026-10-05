@@ -450,6 +450,14 @@ namespace WindowsFormsApplication1
                 paare.Add(Wert(k, wp.Stromverbrauch_Kuehlung, 2, "MWh/a"));
                 paare.Add("Jahresarbeitszahl Kälte");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ, 2, ""));
+                // KU3-6: freie Kühlung über die Wärmequelle - nur, wenn sie an einer Wärmepumpe wirkt.
+                if (wp.FreieKuehlung_MWh.HasValue)
+                {
+                    paare.Add("Kälte in freier Kühlung der Wärmepumpe");
+                    paare.Add(k.F(wp.FreieKuehlung_MWh.Value, 1) + " MWh/a");
+                    paare.Add("Stunden freier Kühlung der Wärmepumpe");
+                    paare.Add(k.F(wp.FreieKuehlung_Stunden ?? 0, 0) + " h/a");
+                }
             }
             if (mitKm)
             {
