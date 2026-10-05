@@ -42,6 +42,8 @@ namespace WindowsFormsApplication1
         private static bool? _uebergabespaltenVorhanden;
         private static string _pfadKopplung;
         private static bool? _kopplungVorhanden;
+        private static string _pfadNutzungsprofil;
+        private static bool? _nutzungsprofilVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -85,6 +87,8 @@ namespace WindowsFormsApplication1
                 _uebergabespaltenVorhanden = null;
                 _pfadKopplung = null;
                 _kopplungVorhanden = null;
+                _pfadNutzungsprofil = null;
+                _nutzungsprofilVorhanden = null;
             }
         }
 
@@ -158,6 +162,28 @@ namespace WindowsFormsApplication1
             {
                 _pfadUebergabe = pfad;
                 _uebergabespaltenVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Zone</c> die Spalte <c>Nutzungsprofil</c> (Schritt <see cref="RaumnutzungSchema.SCHRITT"/>)?
+        /// Gemerkt je Datenbankpfad wie <see cref="UebergabespaltenVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool NutzungsprofilVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_nutzungsprofilVorhanden.HasValue && string.Equals(pfad, _pfadNutzungsprofil, StringComparison.OrdinalIgnoreCase))
+                    return _nutzungsprofilVorhanden.Value;
+            }
+
+            bool da = RaumnutzungSchema.ZonenspalteVorhanden();
+            lock (_sperre)
+            {
+                _pfadNutzungsprofil = pfad;
+                _nutzungsprofilVorhanden = da;
             }
             return da;
         }

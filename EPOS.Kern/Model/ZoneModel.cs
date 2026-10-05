@@ -124,6 +124,12 @@ namespace WindowsFormsApplication1
         /// <summary>IFC-GUID oder gbXML-id der Quellentität; <c>null</c> = keine.</summary>
         public string Quellkennung;
 
+        /// <summary>
+        /// NP1 (Schemaschritt <see cref="RaumnutzungSchema.SCHRITT"/>, Q41): der Name des übernommenen Nutzungsprofils als
+        /// Kopie, nie eine ID; <c>null</c> = keins.
+        /// </summary>
+        public string Nutzungsprofil;
+
         /// <summary>Die Bauteile der Zone; beim Speichern gilt die Listenreihenfolge als Rang.</summary>
         public List<BauteilModel> Bauteile = new List<BauteilModel>();
 

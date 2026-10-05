@@ -2923,6 +2923,27 @@ namespace Testdatenbankschema
                                   VorlaufwahlSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt RaumnutzungSchema.SCHRITT (NP1a): Katalog der Nutzungsprofile (fuenf Tabellen samt Saat),
+            //      freie Nutzung an Tab_Konditionierungskalender und Tab_Konditionierungsvorlage_STAMM (Tabellenneubau),
+            //      Tab_Zone.Nutzungsprofil. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Raumnutzung
+            //      bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest Katalog oder Zonenspalte; die Kalender behalten
+            //      Zeilen, IDs und Nutzungen.
+            string nrRaumnutzung = RaumnutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrRaumnutzung + " - Katalog der Nutzungsprofile: " +
+                              (RaumnutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtRaumnutzung = new List<string>();
+                angelegt += RaumnutzungSchema.Ausfuehren(berichtRaumnutzung);
+                foreach (string zeile in berichtRaumnutzung)
+                    Console.WriteLine("Schritt " + nrRaumnutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrRaumnutzung + " - vollstaendig: " +
+                                  RaumnutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -318,6 +318,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keinen Ausweis der Vorlaufwahl; die Spalten kommen leer an („keine Wahl").
             new Stufe(VorlaufwahlSchema.SCHRITT, Art.Ddl,
                       "Vorlaufwahl der Wärmepumpe: Stunden je Kennlinienstützstelle, darüber und darunter im Ergebnis"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (das Ziel führt ihn samt Saat); die Nutzung seiner
+            // Kalender bleibt, wie sie ist, und der Profilname der Zone kommt leer an.
+            new Stufe(RaumnutzungSchema.SCHRITT, Art.Ddl,
+                      "Katalog der Nutzungsprofile, freie Nutzung an Kalender und Vorlage, Profilname an der Zone"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

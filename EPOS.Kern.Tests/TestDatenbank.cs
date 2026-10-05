@@ -948,6 +948,9 @@ namespace EPOS.Kern.Tests
                 // Schritt VorlaufwahlSchema.SCHRITT (VW1a): Stunden je Kennlinienstuetzstelle, darueber und darunter
                 // an der Modulzeile des Waermepumpenergebnisses. Ohne Saat; die Spalten bleiben leer.
                 VorlaufwahlSchema.Ausfuehren(null);
+                // Schritt RaumnutzungSchema.SCHRITT (NP1a): Katalog der Nutzungsprofile samt Saat, freie Nutzung an
+                // Kalender und Vorlage (Tabellenneubau), Tab_Zone.Nutzungsprofil. Wiederholbar, ergebnisneutral.
+                RaumnutzungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -9052,6 +9052,9 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="ZONE_MSG_WERT" xml:space="preserve">
     <value>Zone “{0}”: {1}</value>
   </data>
+  <data name="ZONE_FELD_NUTZUNGSPROFIL" xml:space="preserve">
+    <value>Usage profile</value>
+  </data>
   <data name="ZONE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The zones of the building could not be saved: {0}</value>
   </data>
