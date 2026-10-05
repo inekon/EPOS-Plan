@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Der Beleg einer Zelle: Tabelle und Spalte der Projektdatei, Profilnummer (Nutzungsprofil) bzw. Profilname.</summary>
-    internal sealed record Zellbeleg(string Tabelle, string Spalte, int? Profilnummer, string Profil)
+    internal sealed record Zellbeleg(string Tabelle, string Spalte, int? Profilnummer, string Profil, int? TagesartCode = null, int? Tage = null)
     {
         /// <summary>Der Belegtext in der Sprache der Oberfläche (<c>GIMP_BELEG_SQPROJ</c>).</summary>
         public override string ToString() => SqprojProtokoll.Beleg(this);
@@ -66,15 +66,24 @@ namespace WindowsFormsApplication1
         /// <summary>Liefert die Projektdatei für mindestens eine Größe etwas?</summary>
         internal bool Liefert => Groessen.Any(g => g.Herkunft != Konditionierungsherkunft.Vorlage);
 
-        /// <summary>Der Heizsollwert Tag (Ganglinie: der häufigste Wert Montag 0–23 Uhr, sonst Matrix) — für die Zonenzeile.</summary>
+        private const int TAG_VON = 8;
+        private const int TAG_BIS = 18;
+
+        /// <summary>
+        /// Der Heizsollwert Tag — für die Zonenzeile: bei einer Ganglinie der häufigste Wert Montag 8 bis 18 Uhr (bei
+        /// Gleichstand der höhere), sonst die Zelle TAG der Matrix.
+        /// </summary>
         internal double? HeizsollTag
         {
             get
             {
                 Groessenkonditionierung h = Groesse(Konditionierungsgroesse.Heizsoll);
                 if (h.Kalender?.Standardwoche is IReadOnlyList<double> w)
-                    return w.Take(24).Where(double.IsFinite).GroupBy(x => x).OrderByDescending(g => g.Count()).ThenByDescending(g => g.Key)
-                            .Select(g => (double?)g.Key).FirstOrDefault();
+                {
+                    List<double> tag = w.Skip(TAG_VON).Take(TAG_BIS - TAG_VON).Where(double.IsFinite).ToList();
+                    if (tag.Count == 0) return null;
+                    return tag.GroupBy(x => x).OrderByDescending(g => g.Count()).ThenByDescending(g => g.Key).First().Key;
+                }
                 Matrixzelle z = h.Vorgabe(DbWerte.KOND_ZEILE_TAG);
                 return z != null && z.Belegt && !z.Aus ? z.Wert : null;
             }
@@ -86,8 +95,9 @@ namespace WindowsFormsApplication1
     /// Datenbank, deterministisch.
     /// <list type="bullet">
     /// <item><b>Ganglinie</b> → Kalender: die 24 Stunden zur Standardwoche (168 Zellen) nach der Tagesart der Gruppe — alle
-    /// Tage, oder Werktage (dann Samstag und Sonntag beim Heiz- und Kühlsollwert der Nachtwert, d. h. der niedrigste bzw.
-    /// höchste Wert der Kurve, bei Lüftung, Geräten und Personen „aus“); eine Stunde ohne Wert ist „aus“. Nennwert bei
+    /// Tage, Montag–Samstag oder Montag–Freitag (angenommen, <see cref="SqprojTagesart"/>; an den freien Tagen beim Heiz- und
+    /// Kühlsollwert der Nachtwert, d. h. der niedrigste bzw. höchste Wert der Stunden außerhalb der Nutzungszeit — Betriebsart
+    /// 2 —, sonst der ganzen Kurve; bei Lüftung, Geräten und Personen „aus“); eine Stunde ohne Wert ist „aus“. Nennwert bei
     /// Personen <c>RatedPersonOccupancyRate</c> × <c>SpecificRatedDryHeatEmission</c> (ohne Wärmeabgabe 70 W je Person),
     /// bei Geräten die spezifische Leistung × Nutzfläche, sonst der Nennwert aus dem Nutzungsprofil.</item>
     /// <item><b>Abschnitte</b> → Perioden der Art ZEITRAUM (Rang 100 + k): eine eigene Woche bei Wochentagsschaltern (die
@@ -132,7 +142,8 @@ namespace WindowsFormsApplication1
                     double[] woche = Woche(zp, g, gruppe.Tagesart, ref begrenzt);
                     double? nennwert = Nennwert(zp, g, flaecheM2) ?? vorgaben.FirstOrDefault(v => v.Zeile == DbWerte.KOND_ZEILE_NENNWERT)?.Zelle.Wert;
                     kalender = Kalender(zp, g, woche, Konditionierungsgroessen.HatNennwert(g) ? nennwert : null);
-                    beleg = new Zellbeleg(TAB_KURVE, SqprojProfilklasse.Kurvenspalte(zp.Klasse), profil?.Profilnummer, zp.Name);
+                    beleg = new Zellbeleg(TAB_KURVE, SqprojProfilklasse.Kurvenspalte(zp.Klasse), profil?.Profilnummer ?? gruppe.Profilnummer, zp.Name,
+                                          gruppe.TagesartCode, SqprojProtokoll.Wochentage(gruppe.Tagesart));
                 }
                 Konditionierungsherkunft herkunft = kalender != null ? Konditionierungsherkunft.Ganglinie
                     : vorgaben.Count > 0 ? Konditionierungsherkunft.Nutzungsprofil : Konditionierungsherkunft.Vorlage;
@@ -159,15 +170,22 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < tag.Length; h++)
                 tag[h] = zp.Stunden[h] is double v ? Math.Round(Begrenzen(g, v, ref begrenzt), Kalenderwoche.NACHKOMMASTELLEN) : double.NaN;
             double nacht = double.NaN;
-            List<double> endlich = tag.Where(double.IsFinite).ToList();
+            // Die Stunden außerhalb der Nutzungszeit (OperatingModeType 2) belegen die Nachtstunden; gerechnet wird mit den
+            // Werten der Kurve. Ohne solche Stunden gilt die ganze Kurve.
+            List<double> endlich = Enumerable.Range(0, tag.Length).Where(h => zp.Betriebsarten[h] == 2 && double.IsFinite(tag[h])).Select(h => tag[h]).ToList();
+            if (endlich.Count == 0) endlich = tag.Where(double.IsFinite).ToList();
             if (endlich.Count > 0 && g == Konditionierungsgroesse.Heizsoll) nacht = endlich.Min();
             if (endlich.Count > 0 && g == Konditionierungsgroesse.Kuehlsoll) nacht = endlich.Max();
             var woche = new double[Kalenderwoche.WOCHENWERTE];
             for (int d = 0; d < 7; d++)
                 for (int h = 0; h < Kalenderwoche.TAGESSTUNDEN; h++)
-                    woche[Kalenderwoche.Stelle(d, h)] = tagesart == SqprojTagesart.Werktage && d >= 5 ? nacht : tag[h];
+                    woche[Kalenderwoche.Stelle(d, h)] = Frei(tagesart, d) ? nacht : tag[h];
             return woche;
         }
+
+        /// <summary>Ist der Wochentag (0 = Montag) nach der Tagesart frei — Sonntag bei sechs, Samstag und Sonntag bei fünf Tagen?</summary>
+        internal static bool Frei(SqprojTagesart tagesart, int tag)
+            => tagesart == SqprojTagesart.Werktage ? tag >= 5 : tagesart == SqprojTagesart.WerktageSamstag && tag == 6;
 
         /// <summary>Der Kalender aus Woche und Abschnitten (Regeln: Klassenkopf).</summary>
         internal static Konditionierungskalender Kalender(SqprojZeitprofil zp, Konditionierungsgroesse g, double[] woche, double? nennwert)

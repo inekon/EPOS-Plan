@@ -26,6 +26,8 @@ namespace WindowsFormsApplication1
         internal const string KLASSE_UEBERSPRUNGEN = PRAEFIX + "KLASSE_UEBERSPRUNGEN";
         internal const string BETRIEBSART = PRAEFIX + "BETRIEBSART";
         internal const string TAGESART_UNBEKANNT = PRAEFIX + "TAGESART_UNBEKANNT";
+        internal const string TAGESART_ANNAHME = PRAEFIX + "TAGESART_ANNAHME";
+        internal const string RAUMART_ABWEICHUNG = PRAEFIX + "RAUMART_ABWEICHUNG";
         internal const string ABSCHNITTSART_UNBEKANNT = PRAEFIX + "ABSCHNITTSART_UNBEKANNT";
         internal const string RAUM_OHNE_TREFFER = PRAEFIX + "RAUM_OHNE_TREFFER";
         internal const string IFC_RAUM_OHNE_GEGENSTUECK = PRAEFIX + "IFC_RAUM_OHNE_GEGENSTUECK";
@@ -42,9 +44,30 @@ namespace WindowsFormsApplication1
         /// <summary>Höchstens so viele Namen nennt eine Meldung (wie der Zonenplan).</summary>
         internal const int NAMEN_MAX = 5;
 
-        /// <summary>Die belegten Tagesarten: 4 alle Tage, 5 Werktage (Befund 3.3: 13 Gruppen mit 4, je eine mit 5 und 6).</summary>
+        /// <summary>Der Belegzusatz der Tagesart-Annahme (<c>GIMP_BELEG_SQPROJ_TAGESART</c>).</summary>
+        internal const string BELEG_TAGESART = "GIMP_BELEG_SQPROJ_TAGESART";
+
+        /// <summary>Die belegten Tagesarten als Annahme: 4 Montag–Freitag, 5 Montag–Samstag, 6 alle Tage; sonst unbekannt.</summary>
         internal static SqprojTagesart Tagesart(int? code)
-            => code == 4 ? SqprojTagesart.AlleTage : code == 5 ? SqprojTagesart.Werktage : SqprojTagesart.Unbekannt;
+            => code == 4 ? SqprojTagesart.Werktage : code == 5 ? SqprojTagesart.WerktageSamstag
+             : code == 6 ? SqprojTagesart.AlleTage : SqprojTagesart.Unbekannt;
+
+        /// <summary>Die Zahl der Tage je Woche einer angenommenen Tagesart (5, 6, 7); <c>null</c> bei unbekannt.</summary>
+        internal static int? Wochentage(SqprojTagesart t)
+            => t == SqprojTagesart.Werktage ? 5 : t == SqprojTagesart.WerktageSamstag ? 6 : t == SqprojTagesart.AlleTage ? 7 : (int?)null;
+
+        /// <summary>
+        /// Die Raumartcodes <c>BmRoom.RoomType</c> und ihr <c>mrt…</c>-Text (derselbe wie <c>HSETU_RaumAllgemein.RoomType</c>
+        /// im IFC, Befund Kapitel 6) — nur ein Abgleichsbeleg, kein Schlüssel.
+        /// </summary>
+        internal static readonly IReadOnlyDictionary<int, string> RAUMARTEN = new SortedDictionary<int, string>
+        {
+            [0] = "mrtNone", [1] = "mrtLiving", [2] = "mrtSleeping", [3] = "mrtChild", [4] = "mrtKitchen", [5] = "mrtEating",
+            [6] = "mrtHall", [7] = "mrtGuests", [9] = "mrtAdjoiningRoom", [10] = "mrtStorageRoom", [11] = "mrtBath", [12] = "mrtWC",
+            [14] = "mrtOffice", [15] = "mrtConference", [23] = "mrtBasement", [24] = "mrtCentralHeating", [25] = "mrtRoof",
+            [26] = "mrtStairway", [30] = "mrtSauna", [31] = "mrtFitness", [33] = "mrtLocker", [34] = "mrtStore", [35] = "mrtStorage",
+            [36] = "mrtConnection", [41] = "mrtWorkshop", [42] = "mrtGarage", [44] = "mrtWintergarden", [52] = "mrtHallWay", [53] = "mrtShaft",
+        };
 
         /// <summary>Der belegte Abschnittscode (<c>TaskPeriodType</c>): 1.</summary>
         internal const int ABSCHNITTSART_BELEGT = 1;
@@ -72,6 +95,8 @@ namespace WindowsFormsApplication1
             if (b == null) return null;
             string profil = b.Profilnummer.HasValue ? Z(b.Profilnummer.Value) : (b.Profil ?? "");
             string text = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GIMP_BELEG_SQPROJ, b.Tabelle, b.Spalte, profil);
+            if (b.TagesartCode is int code && b.Tage is int tage)
+                text += "; " + string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GIMP_BELEG_SQPROJ_TAGESART, Z(code), Z(tage));
             return text.Length <= KonditionierungSchema.BEMERKUNG_MAX_ZEICHEN ? text : text.Substring(0, KonditionierungSchema.BEMERKUNG_MAX_ZEICHEN);
         }
     }

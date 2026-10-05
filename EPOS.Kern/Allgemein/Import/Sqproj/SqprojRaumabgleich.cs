@@ -7,12 +7,14 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Der Raumabgleich Projektdatei ↔ IFC-Abbild</b> (Datenaustauschkonzept 16.3): zuerst über den <b>Raumnamen je
+    /// <b>Der Raumabgleich Projektdatei ↔ IFC-Abbild</b> (Datenaustauschkonzept 16.3, Befund Kapitel 6): zuerst über die
+    /// Kennung <c>BmRoom.GId</c> ↔ <c>IfcSpace.GlobalId</c> (die GUID umkodiert in die 22-stellige IFC-Form,
+    /// <see cref="IfcKennung"/>; <c>BIMUUID</c> ist die Gebäude-GUID und trifft nichts), zweitens über den <b>Raumnamen je
     /// Geschoss</b> (Geschossname aus <c>BmFloor</c> gegen <c>IfcBuildingStorey.Name</c>; Groß- und Kleinschreibung und
-    /// Leerraum am Rand zählen nicht, ein Name, der im Geschoss doppelt vorkommt, trifft nicht), zweitens über
-    /// <c>BmRoom.BIMUUID</c> ↔ <c>IfcSpace.GlobalId</c> (die GUID umkodiert in die 22-stellige IFC-Form,
-    /// <see cref="IfcKennung"/>). Trifft kein Weg, bleibt der Raum unzugeordnet und wird benannt
-    /// (<c>IMP_SQ_PROT_RAUM_OHNE_TREFFER</c>, bis fünf Namen). Jeder IFC-Raum trifft höchstens einmal.
+    /// Leerraum am Rand zählen nicht, ein Name, der im Geschoss doppelt vorkommt, trifft nicht). Trifft kein Weg, bleibt der
+    /// Raum unzugeordnet und wird benannt (<c>IMP_SQ_PROT_RAUM_OHNE_TREFFER</c>, bis fünf Namen). Jeder IFC-Raum trifft
+    /// höchstens einmal. Die Raumart (<c>RoomType</c> ↔ <c>mrt…</c>) ist ein dritter Beleg, kein Schlüssel: eine
+    /// abweichende Raumart eines Paars wird benannt (<c>IMP_SQ_PROT_RAUMART_ABWEICHUNG</c>).
     /// </summary>
     internal sealed class SqprojRaumabgleich
     {
@@ -23,10 +25,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die Paarungen Raumkennung der Projektdatei → Raumkennung des IFC-Abbilds, in Raumreihenfolge der Projektdatei.</summary>
         internal IReadOnlyDictionary<string, string> Paarungen => _ifcJeRaum;
 
+        /// <summary>Paare mit abweichender Raumart (Projektdatei, IFC), in Raumreihenfolge.</summary>
+        internal List<SqprojRaum> RaumartAbweichend { get; } = new List<SqprojRaum>();
+
         /// <summary>Über den Namen je Geschoss abgeglichen.</summary>
         internal int UeberName { get; private set; }
 
-        /// <summary>Über <c>BIMUUID</c> ↔ <c>GlobalId</c> abgeglichen.</summary>
+        /// <summary>Über <c>GId</c> ↔ <c>GlobalId</c> abgeglichen.</summary>
         internal int UeberKennung { get; private set; }
 
         /// <summary>Abgeglichene Räume zusammen.</summary>
@@ -54,37 +59,54 @@ namespace WindowsFormsApplication1
             string Geschoss(AbbildRaum r) => r.GeschossName
                 ?? (r.GeschossKennung != null && geschossName.TryGetValue(r.GeschossKennung, out string n) ? n : null);
 
-            // Name je Geschoss: nur eindeutige Schlüssel auf beiden Seiten treffen.
-            var ifcJeSchluessel = ifc.Raeume.GroupBy(r => Schluessel(Geschoss(r), r.Name), StringComparer.Ordinal)
-                                            .Where(g => g.Count() == 1).ToDictionary(g => g.Key, g => g.Single(), StringComparer.Ordinal);
-            var doppelt = new HashSet<string>(projekt.Raeume.GroupBy(r => Schluessel(r.GeschossName, r.Name), StringComparer.Ordinal)
-                                                     .Where(g => g.Count() > 1).Select(g => g.Key), StringComparer.Ordinal);
             var vergeben = new HashSet<string>(StringComparer.Ordinal);
-            foreach (SqprojRaum r in projekt.Raeume)
-            {
-                string s = Schluessel(r.GeschossName, r.Name);
-                if (s == null || doppelt.Contains(s) || !ifcJeSchluessel.TryGetValue(s, out AbbildRaum treffer) || !vergeben.Add(treffer.Kennung)) continue;
-                a._ifcJeRaum[r.Uuid] = treffer.Kennung;
-                a.UeberName++;
-            }
-            // BIMUUID ↔ GlobalId für die übrigen.
+            var paar = new Dictionary<string, AbbildRaum>(StringComparer.OrdinalIgnoreCase);
+            // 1) GId ↔ GlobalId.
             var ifcJeKennung = new Dictionary<string, AbbildRaum>(StringComparer.Ordinal);
             foreach (AbbildRaum r in ifc.Raeume) ifcJeKennung.TryAdd(r.Kennung ?? "", r);
             foreach (SqprojRaum r in projekt.Raeume)
             {
-                if (a._ifcJeRaum.ContainsKey(r.Uuid)) continue;
-                string k = IfcKennung(r.Bimuuid);
-                if (k != null && ifcJeKennung.TryGetValue(k, out AbbildRaum treffer) && vergeben.Add(treffer.Kennung))
+                string k = IfcKennung(r.Gid);
+                if (k == null || !ifcJeKennung.TryGetValue(k, out AbbildRaum treffer) || !vergeben.Add(treffer.Kennung)) continue;
+                paar[r.Uuid] = treffer;
+                a.UeberKennung++;
+            }
+            // 2) Name je Geschoss für die übrigen: nur eindeutige Schlüssel auf beiden Seiten treffen.
+            var ifcJeSchluessel = ifc.Raeume.Where(r => !vergeben.Contains(r.Kennung))
+                                            .GroupBy(r => Schluessel(Geschoss(r), r.Name), StringComparer.Ordinal)
+                                            .Where(g => g.Key != null && g.Count() == 1).ToDictionary(g => g.Key, g => g.Single(), StringComparer.Ordinal);
+            List<SqprojRaum> offen = projekt.Raeume.Where(r => !paar.ContainsKey(r.Uuid)).ToList();
+            var doppelt = new HashSet<string>(offen.GroupBy(r => Schluessel(r.GeschossName, r.Name) ?? "", StringComparer.Ordinal)
+                                                   .Where(g => g.Count() > 1).Select(g => g.Key), StringComparer.Ordinal);
+            foreach (SqprojRaum r in offen)
+            {
+                string s = Schluessel(r.GeschossName, r.Name);
+                if (s != null && !doppelt.Contains(s) && ifcJeSchluessel.TryGetValue(s, out AbbildRaum treffer) && vergeben.Add(treffer.Kennung))
                 {
-                    a._ifcJeRaum[r.Uuid] = treffer.Kennung;
-                    a.UeberKennung++;
+                    paar[r.Uuid] = treffer;
+                    a.UeberName++;
                 }
-                else a.OhneTreffer.Add(r);
+            }
+            foreach (SqprojRaum r in projekt.Raeume)
+            {
+                if (!paar.TryGetValue(r.Uuid, out AbbildRaum t))
+                {
+                    a.OhneTreffer.Add(r);
+                    continue;
+                }
+                a._ifcJeRaum[r.Uuid] = t.Kennung;
+                // 3) Die Raumart als Beleg: nur wenn beide Seiten eine mrt-Angabe tragen.
+                if (r.Raumart is int code && SqprojProtokoll.RAUMARTEN.TryGetValue(code, out string mrt)
+                    && t.Raumtyp is string it && it.StartsWith("mrt", StringComparison.Ordinal) && !string.Equals(it.Trim(), mrt, StringComparison.Ordinal))
+                    a.RaumartAbweichend.Add(r);
             }
             a.IfcOhneGegenstueck.AddRange(ifc.Raeume.Where(r => !vergeben.Contains(r.Kennung)));
             if (a.OhneTreffer.Count > 0)
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.RAUM_OHNE_TREFFER, SqprojProtokoll.Z(a.OhneTreffer.Count),
                     SqprojProtokoll.Namen(a.OhneTreffer.Select(r => r.Name))));
+            if (a.RaumartAbweichend.Count > 0)
+                a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.RAUMART_ABWEICHUNG, SqprojProtokoll.Z(a.RaumartAbweichend.Count),
+                    SqprojProtokoll.Namen(a.RaumartAbweichend.Select(r => r.Name))));
             if (a.IfcOhneGegenstueck.Count > 0)
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.IFC_RAUM_OHNE_GEGENSTUECK, SqprojProtokoll.Z(a.IfcOhneGegenstueck.Count),
                     SqprojProtokoll.Namen(a.IfcOhneGegenstueck.Select(Zonenplan.Raumname))));

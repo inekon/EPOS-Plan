@@ -11,7 +11,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Ein Raum der Projektdatei</b> (<c>BmRoom</c>): Kennung, Name (<c>ShortDesc</c>), Geschoss über <c>FloorUUID</c>,
-    /// die BIM-Kennung (<c>BIMUUID</c>, GUID in Klammerschreibweise) und Fläche und Volumen der Datei.
+    /// die GUID <c>GId</c> (dieselbe GUID wie die <c>IfcSpace.GlobalId</c> des HottCAD-Exports, Befund Kapitel 6), der
+    /// Raumartcode <c>RoomType</c> und Fläche und Volumen der Datei.
     /// </summary>
     internal sealed class SqprojRaum
     {
@@ -19,7 +20,8 @@ namespace WindowsFormsApplication1
         internal string Name { get; init; } = "";
         internal string GeschossUuid { get; init; }
         internal string GeschossName { get; init; }
-        internal string Bimuuid { get; init; }
+        internal string Gid { get; init; }
+        internal int? Raumart { get; init; }
         internal double? FlaecheM2 { get; init; }
         internal double? VolumenM3 { get; init; }
 
@@ -68,6 +70,9 @@ namespace WindowsFormsApplication1
         /// <summary>Der Name des (ersten) Gebäudes aus <c>BmBuilding</c>.</summary>
         internal string Gebaeudename { get; set; }
 
+        /// <summary>Die Gebäudegruppe (<c>BmBuilding.ProfileGroupUUID</c>, <c>ProfileGroupType</c> 4) — der Weg für die Gebäudeebene; <c>null</c> = keine.</summary>
+        internal SqprojProfilgruppe Gebaeudegruppe { get; set; }
+
         /// <summary>Die Geschosse nach Name.</summary>
         internal List<SqprojGeschoss> Geschosse { get; } = new List<SqprojGeschoss>();
 
@@ -83,7 +88,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die übersprungenen Profilklassen (Beleuchtung, Elektro, Trinkwasser, Feuchte, Sonnenschutz …): Code → Zahl.</summary>
         internal SortedDictionary<int, int> KlassenUebersprungen { get; } = new SortedDictionary<int, int>();
 
-        /// <summary>Die gezählten Betriebsarten der Zeitkurven (<c>OperatingModeType</c>): Code → Zahl der Profile; nicht gedeutet.</summary>
+        /// <summary>Die Betriebsarten der Zeitkurven (<c>OperatingModeType</c>, 1 Betriebsstunde, 2 außerhalb der Nutzungszeit): Code → Zahl der Profile, die ihn tragen.</summary>
         internal SortedDictionary<int, int> Betriebsarten { get; } = new SortedDictionary<int, int>();
 
         /// <summary>Was beim Lesen aufgefallen ist.</summary>

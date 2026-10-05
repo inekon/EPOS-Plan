@@ -32434,6 +32434,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesart {0} als {1}-Tage-Woche angenommen ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SQPROJ_TAGESART {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SQPROJ_TAGESART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die flächengewichtet aus {0} Bauteilen ({1} m²) ähnelt.
         /// </summary>
         public static string GIMP_BELEG_U_GEWICHTET {
@@ -40759,6 +40768,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} abgeglichene Räume tragen in Projektdatei und IFC verschiedene Raumarten: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUMART_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUMART_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} passt in der Beheizung nicht zur Zone {1} und bleibt nicht zugeordnet. ähnelt.
         /// </summary>
         public static string IMP_SQ_PROT_RAUM_BEHEIZUNG {
@@ -40782,6 +40800,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_TABELLE_FEHLT {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Profilgruppe {0} trägt die Tagesart {1}; angenommen ist eine {2}-Tage-Woche (Bedeutung in der Projektdatei nicht belegt). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_TAGESART_ANNAHME {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_TAGESART_ANNAHME", resourceCulture);
             }
         }
         

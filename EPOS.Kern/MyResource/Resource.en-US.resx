@@ -45539,5 +45539,14 @@ chart</value>
   <data name="GIMP_BELEG_SQPROJ" xml:space="preserve">
     <value>from project file: {0}.{1}, profile {2}</value>
   </data>
+  <data name="IMP_SQ_PROT_TAGESART_ANNAHME" xml:space="preserve">
+    <value>The profile group {0} carries day type {1}; a {2}-day week is assumed (meaning not documented in the project file).</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUMART_ABWEICHUNG" xml:space="preserve">
+    <value>{0} matched rooms carry different room types in project file and IFC: {1}.</value>
+  </data>
+  <data name="GIMP_BELEG_SQPROJ_TAGESART" xml:space="preserve">
+    <value>day type {0} assumed as {1}-day week</value>
+  </data>
 </root>
 

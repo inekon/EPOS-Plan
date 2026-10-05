@@ -50,16 +50,19 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Die Tagesart einer Profilgruppe</b> (<c>PdProfileGroup.ProfileUsageDayType</c>). Belegt sind 4, 5 und 6 (Befund 3.3);
-    /// gedeutet werden nur 4 (alle Tage) und 5 (Werktage Montag bis Freitag) — jeder andere Code gilt als „alle Tage“ und
-    /// wird benannt (<c>IMP_SQ_PROT_TAGESART_UNBEKANNT</c>, Regel 16.6 Nr. 2).
+    /// <b>Die Tagesart einer Profilgruppe</b> (<c>PdProfileGroup.ProfileUsageDayType</c>). Belegt sind 4, 5 und 6; ihre
+    /// Bedeutung ist im Befund offen. <b>Festlegung als Annahme</b> (benannt mit <c>IMP_SQ_PROT_TAGESART_ANNAHME</c> und im
+    /// Beleg): 4 → Montag–Freitag, 5 → Montag–Samstag, 6 → alle Tage; jeder andere Code gilt als „alle Tage“ und wird benannt
+    /// (<c>IMP_SQ_PROT_TAGESART_UNBEKANNT</c>, Regel 16.6 Nr. 2).
     /// </summary>
     internal enum SqprojTagesart
     {
-        /// <summary>Die Kurve gilt an allen sieben Tagen.</summary>
+        /// <summary>Die Kurve gilt an allen sieben Tagen (Code 6, angenommen).</summary>
         AlleTage,
-        /// <summary>Die Kurve gilt Montag bis Freitag; Samstag und Sonntag tragen „aus“ bzw. den Nachtwert.</summary>
+        /// <summary>Montag bis Freitag (Code 4, angenommen); Samstag und Sonntag tragen „aus“ bzw. den Nachtwert.</summary>
         Werktage,
+        /// <summary>Montag bis Samstag (Code 5, angenommen); der Sonntag trägt „aus“ bzw. den Nachtwert.</summary>
+        WerktageSamstag,
         /// <summary>Ein ungedeuteter Code — behandelt wie <see cref="AlleTage"/>, benannt.</summary>
         Unbekannt,
     }
@@ -125,6 +128,9 @@ namespace WindowsFormsApplication1
         internal string Name { get; init; } = "";
         internal int Klasse { get; init; }
         internal double?[] Stunden { get; } = new double?[24];
+
+        /// <summary>Die Betriebsart je Stunde (<c>OperatingModeType</c>: 1 Betriebsstunde, 2 außerhalb der Nutzungszeit); <c>null</c> = keine.</summary>
+        internal int?[] Betriebsarten { get; } = new int?[24];
         internal int? Betriebsart { get; set; }
 
         /// <summary>Personen: Belegung aus <c>RatedPersonOccupancyRate</c> (gelesen als Personenzahl).</summary>
@@ -151,6 +157,12 @@ namespace WindowsFormsApplication1
         internal string Uuid { get; init; } = "";
         internal string Name { get; init; } = "";
         internal int? TagesartCode { get; init; }
+
+        /// <summary>Die Profilnummer der Gruppe (<c>PdProfileGroup.ProfileUsageType</c>); <c>null</c> = keine.</summary>
+        internal int? Profilnummer { get; init; }
+
+        /// <summary>Die Art der Gruppe (<c>ProfileGroupType</c>: 4 Gebäudegruppe, 5 Zonengruppe).</summary>
+        internal int? Gruppenart { get; init; }
         internal SqprojTagesart Tagesart { get; init; }
         internal SortedDictionary<int, SqprojZeitprofil> Profile { get; } = new SortedDictionary<int, SqprojZeitprofil>();
 

@@ -66,8 +66,9 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 SqprojNutzungsprofil profil = z.Nutzungsprofil ?? GeteiltesProfil(z, projekt);
-                string nutzung = Din18599Nutzung.Nutzung(profil?.Profilnummer);
-                if (profil?.Profilnummer is int nr && nutzung == null)
+                int? nummer = profil?.Profilnummer ?? z.Gruppe?.Profilnummer;
+                string nutzung = Din18599Nutzung.Nutzung(nummer);
+                if (nummer is int nr && nutzung == null)
                     e.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.NUTZUNG_OHNE_ABBILDUNG, z.Name, SqprojProtokoll.Z(nr)));
                 Planschritt angelegt = Anlegen(plan, z.Name, nutzung);
                 if (!angelegt.Ok)

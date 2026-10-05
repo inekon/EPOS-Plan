@@ -160,7 +160,8 @@ namespace WindowsFormsApplication1
                     Name = Name(z),
                     GeschossUuid = geschoss,
                     GeschossName = geschoss != null && geschossName.TryGetValue(geschoss, out string gn) ? gn : null,
-                    Bimuuid = Text(z, "BIMUUID"),
+                    Gid = Text(z, "GId"),
+                    Raumart = Ganz(z, "RoomType"),
                     FlaecheM2 = Positiv(Zahl(z, "Area")),
                     VolumenM3 = Positiv(Zahl(z, "Volume")),
                 });
@@ -271,13 +272,22 @@ namespace WindowsFormsApplication1
             var gruppeGelesen = new Dictionary<string, SqprojProfilgruppe>(StringComparer.OrdinalIgnoreCase);
             int abschnittsartUnbekannt = 0;
             var tagesartGemeldet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (SqprojZone zone in zonen)
+            string gebaeudegruppe = Zeilen(c, SQL_GEBAEUDE).Select(z => Text(z, "ProfileGroupUUID")).Where(u => u != null)
+                                                           .OrderBy(u => u, StringComparer.Ordinal).FirstOrDefault();
+            // Die Zonengruppen in Zonenreihenfolge, zuletzt die Gebäudegruppe (Gebäudeebene).
+            var traeger = zonen.Select(z => (Zone: z, Gruppe: gruppeJeZone.TryGetValue(z.Uuid, out string g) ? g : null)).ToList();
+            if (gebaeudegruppe != null) traeger.Add((null, gebaeudegruppe));
+            foreach ((SqprojZone zone, string gu) in traeger)
             {
-                if (!gruppeJeZone.TryGetValue(zone.Uuid, out string gu) || !gruppen.TryGetValue(gu, out Dictionary<string, object> gz)) continue;
+                if (gu == null || !gruppen.TryGetValue(gu, out Dictionary<string, object> gz)) continue;
                 if (!gruppeGelesen.TryGetValue(gu, out SqprojProfilgruppe gruppe))
                 {
                     int? code = Ganz(gz, "ProfileUsageDayType");
-                    gruppe = new SqprojProfilgruppe { Uuid = gu, Name = Name(gz), TagesartCode = code, Tagesart = SqprojProtokoll.Tagesart(code) };
+                    gruppe = new SqprojProfilgruppe
+                    {
+                        Uuid = gu, Name = Name(gz), TagesartCode = code, Tagesart = SqprojProtokoll.Tagesart(code),
+                        Profilnummer = Ganz(gz, "ProfileUsageType"), Gruppenart = Ganz(gz, "ProfileGroupType"),
+                    };
                     List<Dictionary<string, object>> mitglieder = (profileJeGruppe.TryGetValue(gu, out List<string> l) ? l : new List<string>())
                         .Where(profile.ContainsKey).Select(u => profile[u])
                         .OrderBy(Name, StringComparer.Ordinal).ThenBy(p => Text(p, "UUID"), StringComparer.Ordinal).ToList();
@@ -302,6 +312,7 @@ namespace WindowsFormsApplication1
                             int? h = Ganz(kz, "HourType");
                             if (h is int stunde && stunde >= 1 && stunde <= 24 && !zp.Stunden[stunde - 1].HasValue)
                                 zp.Stunden[stunde - 1] = Zahl(kz, spalte);
+                            if (h is int st && st >= 1 && st <= 24) zp.Betriebsarten[st - 1] ??= Ganz(kz, "OperatingModeType");
                             zp.Betriebsart ??= Ganz(kz, "OperatingModeType");
                         }
                         foreach (Dictionary<string, object> s in (abschnitteJeProfil.TryGetValue(pu, out List<string> sl) ? sl : new List<string>())
@@ -315,15 +326,20 @@ namespace WindowsFormsApplication1
                         gruppe.Profile[k] = zp;
                         a.Zeitprofile++;
                         a.Abschnitte += zp.Abschnitte.Count;
-                        int ba = zp.Betriebsart ?? -1;
-                        a.Betriebsarten[ba] = a.Betriebsarten.TryGetValue(ba, out int n) ? n + 1 : 1;
+                        foreach (int ba in zp.Betriebsarten.Select(b => b ?? -1).Distinct().OrderBy(b => b))
+                            a.Betriebsarten[ba] = a.Betriebsarten.TryGetValue(ba, out int n) ? n + 1 : 1;
                     }
                     gruppeGelesen[gu] = gruppe;
                 }
-                zone.Gruppe = gruppe;
-                if (gruppe.Tagesart == SqprojTagesart.Unbekannt && tagesartGemeldet.Add(gu))
+                if (zone != null) zone.Gruppe = gruppe;
+                else a.Gebaeudegruppe = gruppe;
+                if (!tagesartGemeldet.Add(gu)) continue;
+                if (gruppe.Tagesart == SqprojTagesart.Unbekannt)
                     a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.TAGESART_UNBEKANNT, gruppe.Name,
                         gruppe.TagesartCode.HasValue ? SqprojProtokoll.Z(gruppe.TagesartCode.Value) : "—"));
+                else
+                    a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.TAGESART_ANNAHME, gruppe.Name,
+                        SqprojProtokoll.Z(gruppe.TagesartCode.Value), SqprojProtokoll.Z(SqprojProtokoll.Wochentage(gruppe.Tagesart).Value)));
             }
             foreach (KeyValuePair<int, int> p in a.Betriebsarten)
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.BETRIEBSART,

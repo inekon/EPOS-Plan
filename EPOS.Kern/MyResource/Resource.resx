@@ -45546,5 +45546,14 @@ Chart</value>
   <data name="GIMP_BELEG_SQPROJ" xml:space="preserve">
     <value>aus Projektdatei: {0}.{1}, Profil {2}</value>
   </data>
+  <data name="IMP_SQ_PROT_TAGESART_ANNAHME" xml:space="preserve">
+    <value>Die Profilgruppe {0} trägt die Tagesart {1}; angenommen ist eine {2}-Tage-Woche (Bedeutung in der Projektdatei nicht belegt).</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUMART_ABWEICHUNG" xml:space="preserve">
+    <value>{0} abgeglichene Räume tragen in Projektdatei und IFC verschiedene Raumarten: {1}.</value>
+  </data>
+  <data name="GIMP_BELEG_SQPROJ_TAGESART" xml:space="preserve">
+    <value>Tagesart {0} als {1}-Tage-Woche angenommen</value>
+  </data>
 </root>
 
