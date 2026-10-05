@@ -1804,7 +1804,7 @@ Lauf mit Fahrplan) die Kacheln Unterschreitungsstunden, Kelvinstunden und längs
 des Projekts aus dem letzten gespeicherten Lauf (`GebaeudeBedarfCtrl.RestbedarfDesProjektsMwh`); ein nicht erhobener
 Wert zeigt „—" samt Zeile (K18). Mit Kälteseite kommen Überschreitungsstunden und Kelvinstunden der Kühlung dazu, im
 Lauf mit Fahrplan der Bedarfsbegriff („mit Rückwirkung" / „feste Last") und die Stunden am Fahrplan. Das Bild
-„Raumtemperatur und Sollwert" (E80) zeigt die Woche mit der größten Unterschreitung (`Komfortwoche.GroessteUnterschreitung`
+„Raumtemperatur und Sollwert" (E81) zeigt die Woche mit der größten Unterschreitung (`Komfortwoche.GroessteUnterschreitung`
 über die Komfortmaske der Bedarfsauskunft, Wochenbeginn an einem Tagesbeginn, Gleichstand früher): Raumluft, Sollwert
 gestrichelt, die gezählten Stunden als markierte Reihe (`ChartRenderer.KomfortwocheModell`, drei Proben in
 `Proben/ChartProben`, Messlatte 211). **Bericht:** Die Tafel „Komfort und Restbedarf" im Abschnitt der Gebäudeergebnisse
@@ -2328,7 +2328,7 @@ Gebäude (Gästezimmer 293,9, Gastronomie 1 106,5). Die Basis ist `2026-10-04_R3
 Projekten; 1054 steht nicht in der CI-Auswahl
 ([`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md), „Das Referenzprojekt 1054").
 
-**So gebaut (AK2-4, 05.10.2026).** Die Komfortspalten stehen für jedes gekoppelte Projekt (F12, E83):
+**So gebaut (AK2-4, 05.10.2026).** Die Komfortspalten stehen für jedes gekoppelte Projekt (F12, E84):
 `SimulationRunner.AnlagenfahrplanSpaltenSetzen` schreibt `Fahrplan_Begrenzt_Stunden` und die Komfortkennzahlen,
 sobald der Anlagenfahrplan lief (Kopplung ab AK1, ein gekoppeltes Gebäude auf dem VDI-Weg) — ohne greifende Schranke
 mit 0 Fahrplanstunden statt NULL; ein Projekt ohne Kopplung bleibt NULL. Das Referenzprojekt des Fahrplans ist
