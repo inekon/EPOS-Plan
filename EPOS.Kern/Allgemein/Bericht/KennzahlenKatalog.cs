@@ -533,8 +533,8 @@ namespace WindowsFormsApplication1
             l.Add(new Kennzahl(SCHLUESSEL_WP_FREI, "Kälte in freier Kühlung der Wärmepumpe (sensibel)",
                 "Heat pump free cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
                 v => WP(v)?.FreieKuehlung_MWh));
-            l.Add(new Kennzahl(SCHLUESSEL_WP_FREI_STUNDEN, "Stunden freier Kühlung der Wärmepumpe",
-                "Heat pump free cooling hours", "h/a", GR_KAELTE, "N0", true,
+            l.Add(new Kennzahl(SCHLUESSEL_WP_FREI_STUNDEN, "Stunden freier Kühlung der Wärmepumpe (sensibel)",
+                "Heat pump free cooling hours (sensible)", "h/a", GR_KAELTE, "N0", true,
                 v => WP(v)?.FreieKuehlung_Stunden));
             // KU3-4: die Kältemaschinen - nur mit gerechneter Kältemaschine, sonst null (Gruppe unverändert).
             l.Add(new Kennzahl(SCHLUESSEL_KM_ERZEUGUNG, "Kälteerzeugung Kältemaschinen (sensibel)",
