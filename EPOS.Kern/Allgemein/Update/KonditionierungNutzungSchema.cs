@@ -165,7 +165,19 @@ namespace WindowsFormsApplication1
                 Convert.ToInt64(vorlagen, CultureInfo.InvariantCulture) == 0) return null;
             object n = v.Skalar(SQL_VORLAGE_NUTZUNG, new DbParam("@b", name), new DbParam("@g", groesse ?? ""));
             string nutzung = n == null || n == DBNull.Value ? null : Convert.ToString(n, CultureInfo.InvariantCulture);
-            return nutzung != null && DbWerte.KOND_NUTZUNGEN.Contains(nutzung) ? nutzung : null;
+            return Nutzungstext(nutzung);
+        }
+
+        /// <summary>
+        /// <b>Die Nutzung als freier Text</b> (Konzept Nutzungsprofile NP-F15): getrimmt, 1 bis
+        /// <see cref="RaumnutzungSchema.NUTZUNG_MAX_ZEICHEN"/> Zeichen — der Profilname oder eine der vier alten
+        /// Kennungen (<see cref="DbWerte.KOND_NUTZUNGEN"/>), dieselbe Regel wie der <c>CHECK</c> der Spalte seit
+        /// Schritt <see cref="RaumnutzungSchema.SCHRITT"/>. <c>null</c> für leer oder zu lang.
+        /// </summary>
+        public static string Nutzungstext(string nutzung)
+        {
+            string n = nutzung?.Trim();
+            return string.IsNullOrEmpty(n) || n.Length > RaumnutzungSchema.NUTZUNG_MAX_ZEICHEN ? null : n;
         }
 
         /// <summary>Wie viele Kalenderzeilen die Saat noch füllen würde.</summary>

@@ -40476,7 +40476,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Template {0} does not exist.</value>
   </data>
   <data name="KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT" xml:space="preserve">
-    <value>“{0}” is not one of the four template usages.</value>
+    <value>The usage “{0}” is longer than 120 characters.</value>
   </data>
   <data name="KOND_MSG_VORLAGE_ALS_QUELLE" xml:space="preserve">
     <value>A template cannot be saved as a template — use “Duplicate…” instead.</value>

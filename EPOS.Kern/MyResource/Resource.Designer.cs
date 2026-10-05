@@ -69568,7 +69568,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine der vier Nutzungen einer Vorlage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzung „{0}“ ist länger als 120 Zeichen. ähnelt.
         /// </summary>
         public static string KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT {
             get {

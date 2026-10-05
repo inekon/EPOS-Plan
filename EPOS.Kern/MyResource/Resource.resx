@@ -40483,7 +40483,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Vorlage {0} gibt es nicht.</value>
   </data>
   <data name="KOND_MSG_VORLAGE_NUTZUNG_UNBEKANNT" xml:space="preserve">
-    <value>„{0}“ ist keine der vier Nutzungen einer Vorlage.</value>
+    <value>Die Nutzung „{0}“ ist länger als 120 Zeichen.</value>
   </data>
   <data name="KOND_MSG_VORLAGE_ALS_QUELLE" xml:space="preserve">
     <value>Eine Vorlage lässt sich nicht als Vorlage speichern — dafür gibt es „Duplizieren…“.</value>
