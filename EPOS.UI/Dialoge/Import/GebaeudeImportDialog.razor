@@ -82,6 +82,21 @@
    OHNE SCHREIBDELEGAT ist OK WEICH gesperrt (aria-disabled mit Grund, der Versuch meldet sich):
    Ein OK, das schliesst, ohne zu uebernehmen, behauptete eine Uebernahme, die nicht stattfand.
 
+   DIE PROJEKTDATEI DES CAD-PROGRAMMS (.sqproj, Datenaustauschkonzept 16.4): Neben der Dateizeile im Kopf steht der
+   Knopf "Projektdatei dazuladen (.sqproj)" - nur aktiv, wenn die Datenseite fuer das gewaehlte Gebaeude meldet, dass die
+   Gebaeudedatei aus dem passenden CAD-Programm stammt (ProjektdateiMoeglich), sonst ausgegraut mit dem Grund als
+   Tooltip. Er oeffnet den Dateidienst mit dem Filter .sqproj und reicht den Pfad an die Huelle, die Strom und Namen an den
+   Kern gibt; jede Ablehnung (zu gross, fehlende Tabelle, keine lesbare Datei) steht als Banner, die Gebaeudedaten
+   bleiben. Gelesen zeigt der Kopf die Bilanz (Datei, Fassung, Raeume abgeglichen / nicht abgeglichen / ohne
+   Gegenstueck, Zonen, Zeitprofile und Abschnitte, nach der Uebernahme die Zonen je Groesse, das Uebersprungene mit
+   Grund) und die schwerste Meldung als Banner. Die Uebernahme der Zonen ist ein SCHRITT am Zonenplan (PROJEKTDATEI) -
+   bestehen schon Schritte von Hand, erst nach Rueckfrage; ohne Zonenbaum sagt ein Hinweis, dass nichts uebernommen
+   wird. Der Baum zeigt die Zonen der Projektdatei mit Nutzung, Profilnummer (Tooltip) und Heizsollwert Tag aus der
+   Ganglinie, je Zone das Kennzeichen "aus Projektdatei" (data-herkunft); rechts stehen die nicht zugeordneten Raeume
+   und darunter die Raeume der Projektdatei ohne Gegenstueck. "Projektdatei entfernen" setzt Stand und Plan zurueck;
+   ein anderes Gebaeude entfernt sie ebenfalls. Gespeichert wird wie immer in einem Vorgang - der Kern schreibt die
+   Konditionierung je Zone mit dem Beleg in der Bemerkung des Kalenders.
+
    WAEHREND EINES LAUFS steht KEIN Kreuz: Esc bricht dann den Lauf ab, statt zu schliessen
    (Muster ImportUeberlagerung/KatalogImportDialog). Waehrend der Uebernahme ist Esc ohne
    Wirkung. Enter ist nicht belegt. *@
@@ -143,6 +158,76 @@
                 <dt>@Texte.KopfGroesse</dt><dd>@kopf.Groesse</dd>
                 <dt>@Texte.KopfZonenregel</dt><dd>@(stand.Zonierung?.RegelText ?? kopf.Zonenregel)</dd>
             </dl>
+        }
+        @if (ProjektdateiLesen is not null)
+        {
+            @* DIE PROJEKTDATEI (Datenaustauschkonzept 16.4): Knopf, Bilanz und schwerste Meldung; Schluessel steuern. *@
+            <div class="epos-gebimport-projektdatei">
+                <button type="button" class="epos-knopf epos-gebimport-sq-laden" data-aktion="projektdatei"
+                        disabled="@(Beschaeftigt || !stand.ProjektdateiMoeglich)"
+                        title="@(stand.ProjektdateiMoeglich ? null : Texte.SqKnopfGrund)" @onclick="BeiProjektdatei">@Texte.SqKnopf</button>
+                @if (stand.Projektdatei is not null)
+                {
+                    <button type="button" class="epos-knopf epos-gebimport-sq-entfernen" data-aktion="projektdatei-entfernen"
+                            disabled="@Beschaeftigt" @onclick="BeiProjektdateiEntfernen">@Texte.SqEntfernen</button>
+                }
+            </div>
+            @if (stand.Projektdatei is GebaeudeProjektdateiDaten sq)
+            {
+                @if (sq.Schwerste is GebaeudeImportMeldung sqs)
+                {
+                    <div class="epos-gebimport-sqbanner" data-kennung="@sqs.Kennung">
+                        <Warnbanner Stufe="@sqs.Stufe" Text="@sqs.Text" />
+                    </div>
+                }
+                @if (sq.Gelesen)
+                {
+                    IReadOnlyList<GebaeudeImportMeldung> uebersprungen = Uebersprungen(sq);
+                    <dl class="epos-gebimport-kopf epos-gebimport-sqbilanz">
+                        <dt>@Texte.SqGruppe</dt><dd data-wert="datei">@sq.Dateiname</dd>
+                        <dt>@Texte.SqFassung</dt><dd data-wert="fassung">@sq.Fassung</dd>
+                        <dt>@Texte.SqRaeume</dt><dd data-wert="raeume">@Format(Texte.SqRaeumeWert, sq.Abgeglichen, sq.NichtAbgeglichen, sq.OhneGegenstueck)</dd>
+                        <dt>@Texte.SqZonen</dt><dd data-wert="zonen">@(sq.Uebernommen is int u ? Format(Texte.SqZonenWert, u, sq.Zonen) : Format(Texte.SqZonenOffen, sq.Zonen))</dd>
+                        <dt>@Texte.SqProfile</dt><dd data-wert="profile">@Format(Texte.SqProfileWert, sq.Zeitprofile, sq.Abschnitte)</dd>
+                        @if (sq.Groessen.Count > 0)
+                        {
+                            <dt>@Texte.SqJeGroesse</dt>
+                            <dd>
+                                <ul class="epos-gebimport-sqliste">
+                                    @foreach (GebaeudeProjektdateiGroesse g in sq.Groessen)
+                                    {
+                                        <li data-groesse="@g.Schluessel">@g.Text</li>
+                                    }
+                                </ul>
+                            </dd>
+                        }
+                        @if (uebersprungen.Count > 0)
+                        {
+                            <dt>@Texte.SqUebersprungen</dt>
+                            <dd>
+                                <ul class="epos-gebimport-sqliste epos-gebimport-squebersprungen">
+                                    @foreach (GebaeudeImportMeldung m in uebersprungen)
+                                    {
+                                        <li data-kennung="@m.Kennung">@m.Text</li>
+                                    }
+                                </ul>
+                            </dd>
+                        }
+                    </dl>
+                    @if (stand.Zonierung?.Plan is null)
+                    {
+                        <Herleitungszeile Text="@Texte.SqKeinPlan" />
+                    }
+                    else if (sq.Uebernommen is null)
+                    {
+                        <div class="epos-gebimport-projektdatei">
+                            <button type="button" class="epos-knopf" data-aktion="projektdatei-uebernehmen" disabled="@Beschaeftigt"
+                                    @onclick="ZonenDerProjektdatei">@Texte.SqUebernehmen</button>
+                        </div>
+                    }
+                    <Herleitungszeile Text="@Texte.SqHinweis" />
+                }
+            }
         }
         @if (!string.IsNullOrEmpty(_lesestand.SchonImportiert))
         {
@@ -332,7 +417,8 @@
                                 {
                                     bool offen = _offeneZonen.Contains(zone.Schluessel);
                                     string klapptext = Format(offen ? Texte.ZoneZuklappen : Texte.ZoneAufklappen, zone.Name);
-                                    <tr @key="zone.Schluessel" class="epos-gebimport-planzone" data-zone="@zone.Schluessel">
+                                    <tr @key="zone.Schluessel" class="epos-gebimport-planzone" data-zone="@zone.Schluessel"
+                                        data-herkunft="@(zone.AusProjektdatei ? GebaeudePlanschrittArt.PROJEKTDATEI : null)">
                                         <td>
                                             <input type="checkbox" class="epos-gebimport-wahl" checked="@_zonenwahl.Contains(zone.Schluessel)"
                                                    aria-label="@Format(Texte.ZoneWaehlen, zone.Name)" disabled="@Beschaeftigt"
@@ -347,9 +433,15 @@
                                             <input type="text" class="epos-eingabe epos-gebimport-zonenname" value="@zone.Name"
                                                    aria-label="@Format(Texte.ZoneName, zone.Name)" disabled="@Beschaeftigt"
                                                    @onchange="e => BeiUmbenennen(zone, e)" />
+                                            @if (zone.AusProjektdatei)
+                                            {
+                                                <span class="epos-leisezeile epos-gebimport-sqherkunft"
+                                                      title="@(zone.Profiltext.Length > 0 ? zone.Profiltext : null)">@Texte.SqHerkunft</span>
+                                            }
                                         </td>
                                         <td>
                                             <select class="epos-eingabe epos-gebimport-nutzung" aria-label="@Format(Texte.ZoneNutzung, zone.Name)"
+                                                    title="@(zone.Profiltext.Length > 0 ? zone.Profiltext : null)"
                                                     disabled="@Beschaeftigt" value="@(zone.Nutzung ?? "")" @onchange="e => BeiNutzung(zone, e)">
                                                 <option value="" selected="@(zone.Nutzung is null)">@Texte.NutzungKeine</option>
                                                 @foreach (GebaeudeZonenregelDaten n in plan.Nutzungen)
@@ -475,6 +567,16 @@
                     @if (plan.Ausserhalb > 0)
                     {
                         <Herleitungszeile Text="@Format(Texte.PlanAusserhalb, plan.Ausserhalb)" />
+                    }
+                    @if (stand.Projektdatei is { Gelesen: true, RaeumeOhneTreffer.Count: > 0 } sqo)
+                    {
+                        <h3 class="epos-gebimport-offentitel">@Format(Texte.SqOhneTreffer, sqo.RaeumeOhneTreffer.Count)</h3>
+                        <ul class="epos-gebimport-sqliste epos-gebimport-sqohnetreffer">
+                            @foreach (string r in sqo.RaeumeOhneTreffer)
+                            {
+                                <li>@r</li>
+                            }
+                        </ul>
                     }
                 </div>
             </div>
@@ -708,6 +810,10 @@
     @* Die Rueckfrage vor "Zonierung aufheben" - Vorgabe "Nein", Esc antwortet "Nein". *@
     <Rueckfrage Offen="@_aufhebenFrage" TitelText="@Texte.PlanAufhebenTitel" Frage="@Texte.PlanAufhebenFrage" VorgabeNein="true"
                 Beantwortet="AufhebenBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
+
+    @* Die Rueckfrage vor der Uebernahme der Zonen der Projektdatei, solange Schritte von Hand bestehen - Vorgabe "Nein". *@
+    <Rueckfrage Offen="@_sqFrage" TitelText="@Texte.SqFrageTitel" Frage="@Format(Texte.SqFrage, _planschritte.Count)" VorgabeNein="true"
+                Beantwortet="SqBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
 </div>
 
 @code {
@@ -749,6 +855,15 @@
 
     /// <summary>Der Dialog ist zu: das Ergebnis nach einer Übernahme, <c>null</c> bei Abbrechen, ✕ und Esc.</summary>
     [Parameter] public EventCallback<GebaeudeImportErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>Der Dateiwähler der Projektdatei (Filter <c>.sqproj</c>); <c>null</c> als Antwort = abgebrochen.</summary>
+    [Parameter] public Func<Task<string?>>? ProjektdateiWaehlen { get; set; }
+
+    /// <summary>Lädt die Projektdatei zum Gebäude (Pfad, Gebäudeindex) dazu; <c>null</c> = kein Knopf.</summary>
+    [Parameter] public Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>? ProjektdateiLesen { get; set; }
+
+    /// <summary>„Projektdatei entfernen“ an der Datenseite.</summary>
+    [Parameter] public Action? ProjektdateiEntfernen { get; set; }
 
     /// <summary>Die Beschriftungen (Bündel).</summary>
     [Parameter] public GebaeudeImportTexte Texte { get; set; } = new();
@@ -944,6 +1059,9 @@
     public bool AlsZoneWirksam => _stand?.Bauteile is { Moeglich: true } && (_alsZoneWahl ?? true);
 
     private bool Beschaeftigt => _laeuft || _schreibt;
+
+    /// <summary>Steht die Rückfrage vor der Übernahme der Zonen der Projektdatei?</summary>
+    private bool _sqFrage;
 
     private string WirksamerHilfeSchluessel
         => Profil is { HilfeSchluessel.Length: > 0 } p ? p.HilfeSchluessel : HilfeSchluessel;
@@ -1141,6 +1259,7 @@
         _neueZone = false;
         _plangeschoss = _restregel = null;
         _aufhebenFrage = false;
+        _sqFrage = false;
         _planhinweis = null;
     }
 
@@ -1681,6 +1800,94 @@
         _cadSollwert = false;
         ZonenZuruecksetzen();
         _nameGeaendert = false;
+        _meldung = "";
+        // Die Projektdatei gehört zum Gebäude — ein anderes nimmt sie nicht mit.
+        if (_stand?.Projektdatei is not null) ProjektdateiEntfernen?.Invoke();
+        NeuZuordnen();
+    }
+
+    // =====================================================================
+    // Projektdatei dazuladen (Datenaustauschkonzept 16.4)
+    // =====================================================================
+
+    /// <summary>Die Meldungen der Projektdatei ohne Bilanz und Fassung — das Übersprungene mit Grund.</summary>
+    private static IReadOnlyList<GebaeudeImportMeldung> Uebersprungen(GebaeudeProjektdateiDaten sq)
+        => sq.Meldungen.Where(m => m.Kennung is not null && !m.Kennung.EndsWith("_BILANZ", StringComparison.Ordinal)
+                                   && !m.Kennung.EndsWith("_FASSUNG", StringComparison.Ordinal)).ToList();
+
+    /// <summary>Trägt der Plan die Zonen der Projektdatei?</summary>
+    private bool PlanMitProjektdatei => _planschritte.Exists(s => s.Art == GebaeudePlanschrittArt.PROJEKTDATEI);
+
+    /// <summary>
+    /// Der Knopf „Projektdatei dazuladen“: Dateiwahl, Lesen über die Datenseite (mit Abbruch), dann die Übernahme der Zonen
+    /// als Schritt am Plan. Eine frühere Übernahme fällt mit der neuen Datei weg; eine Ablehnung steht als Banner.
+    /// </summary>
+    private async Task BeiProjektdatei()
+    {
+        if (Beschaeftigt || ProjektdateiLesen is null || _stand is not { ProjektdateiMoeglich: true }) return;
+        string? pfad = ProjektdateiWaehlen is null ? null : await ProjektdateiWaehlen();
+        if (string.IsNullOrEmpty(pfad)) return;
+
+        _laeuft = true;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        GebaeudeProjektdateiDaten? sq = null;
+        try
+        {
+            sq = await ProjektdateiLesen(pfad, _gebaeudeIndex, _abbruch.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Abgebrochen — still.
+        }
+        finally
+        {
+            _laeuft = false;
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+        if (PlanMitProjektdatei)
+        {
+            PlanZuruecksetzen();
+            _offeneZonen.Clear();
+        }
+        if (sq is { Gelesen: true }) ZonenDerProjektdatei();
+        else NeuZuordnen();
+    }
+
+    /// <summary>Die Zonen der Projektdatei in den Plan — mit Schritten von Hand erst nach Rückfrage.</summary>
+    private void ZonenDerProjektdatei()
+    {
+        NeuZuordnen();
+        if (_stand?.Zonierung?.Plan is null || Beschaeftigt) return;
+        if (_planschritte.Count > 0)
+        {
+            _sqFrage = true;
+            return;
+        }
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI));
+    }
+
+    /// <summary>Die Antwort der Rückfrage: „Ja“ verwirft die Schritte von Hand und übernimmt die Zonen der Projektdatei.</summary>
+    private void SqBeantwortet(bool? antwort)
+    {
+        _sqFrage = false;
+        if (antwort != true) return;
+        PlanZuruecksetzen();
+        _offeneZonen.Clear();
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI));
+    }
+
+    /// <summary>„Projektdatei entfernen“: Stand ohne Projektdatei; trug der Plan ihre Zonen, steht wieder der Regelvorschlag.</summary>
+    private void BeiProjektdateiEntfernen()
+    {
+        if (Beschaeftigt) return;
+        ProjektdateiEntfernen?.Invoke();
+        if (PlanMitProjektdatei)
+        {
+            PlanZuruecksetzen();
+            _offeneZonen.Clear();
+        }
         _meldung = "";
         NeuZuordnen();
     }

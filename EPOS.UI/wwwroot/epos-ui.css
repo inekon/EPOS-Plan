@@ -5841,6 +5841,26 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     padding-left: 1.5em;
 }
 
+/* Die Projektdatei des CAD-Programms (Datenaustauschkonzept 16.4): Knoepfe neben der Dateizeile, die Bilanz als
+   Begriffsliste, Listen ohne Aufzaehlungszeichen, das Kennzeichen "aus Projektdatei" leise neben dem Zonennamen. */
+.epos-gebimport-projektdatei {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin: 6px 0;
+}
+
+.epos-gebimport-sqliste {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-gebimport-sqherkunft {
+    display: block;
+    font-size: 0.85em;
+}
+
 .epos-gebimport-okhinweis,
 .epos-gebimport-planleiste,
 .epos-gebimport-neuezone {

@@ -501,7 +501,7 @@ public sealed record GebaeudeProjektdateiGroesse(string Schluessel, string Text,
 /// <summary>
 /// <b>Die dazugeladene Projektdatei</b> (Datenaustauschkonzept 16.4) für den Kopf des Zuordnungsdialogs: Datei, Fassung,
 /// Raumabgleich, Zonen, Zeitprofile und Abschnitte, nach der Übernahme die Zonen je Größe; dazu die Meldungen mit der
-/// schwersten als Banner. Abgelehnt: <see cref="Ablehnung"/> nennt den Grund, die IFC-Daten bleiben.
+/// schwersten als Banner. Abgelehnt: <see cref="Ablehnung"/> nennt den Grund, die Daten der Gebäudedatei bleiben.
 /// </summary>
 public sealed record GebaeudeProjektdateiDaten
 {
@@ -520,11 +520,11 @@ public sealed record GebaeudeProjektdateiDaten
     /// <summary>Räume abgeglichen.</summary>
     public int Abgeglichen { get; init; }
 
-    /// <summary>Räume der Projektdatei ohne IFC-Raum.</summary>
+    /// <summary>Räume der Projektdatei ohne Raum der Gebäudedatei.</summary>
     public int NichtAbgeglichen { get; init; }
 
-    /// <summary>IFC-Räume ohne Gegenstück in der Projektdatei.</summary>
-    public int IfcOhneGegenstueck { get; init; }
+    /// <summary>Räume der Gebäudedatei ohne Gegenstück in der Projektdatei.</summary>
+    public int OhneGegenstueck { get; init; }
 
     /// <summary>Die Zonen der belegten Typen in der Datei.</summary>
     public int Zonen { get; init; }
@@ -538,7 +538,7 @@ public sealed record GebaeudeProjektdateiDaten
     /// <summary>Gelesene Abschnitte.</summary>
     public int Abschnitte { get; init; }
 
-    /// <summary>Die Namen der Räume der Projektdatei ohne IFC-Raum (Geschoss/Name).</summary>
+    /// <summary>Die Namen der Räume der Projektdatei ohne Raum der Gebäudedatei (Geschoss/Name).</summary>
     public IReadOnlyList<string> RaeumeOhneTreffer { get; init; } = Array.Empty<string>();
 
     /// <summary>Nach der Übernahme: je Größe die Zonen aus Ganglinie und Nutzungsprofil; vorher leer.</summary>
@@ -770,7 +770,7 @@ public sealed record GebaeudeImportStand
     public EPOS.UI.Dialoge.Bedarf.GebaeudeAnsichtDaten? Ansicht { get; init; }
 
     /// <summary>
-    /// Lässt sich zum gewählten Gebäude eine Projektdatei dazuladen (IFC aus HottCAD)? Sonst steht der Knopf ausgegraut mit
+    /// Lässt sich zum gewählten Gebäude eine Projektdatei dazuladen (Gebäudedatei aus dem passenden CAD-Programm)? Sonst steht der Knopf ausgegraut mit
     /// Grund (Datenaustauschkonzept 16.4).
     /// </summary>
     public bool ProjektdateiMoeglich { get; init; }

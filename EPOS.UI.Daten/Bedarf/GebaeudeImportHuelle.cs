@@ -484,7 +484,7 @@ namespace WindowsFormsApplication1
                 Fassung = p.Fassung ?? "",
                 Abgeglichen = p.Abgeglichen,
                 NichtAbgeglichen = p.NichtAbgeglichen,
-                IfcOhneGegenstueck = p.IfcOhneGegenstueck,
+                OhneGegenstueck = p.IfcOhneGegenstueck,
                 Zonen = p.Zonen,
                 Uebernommen = _sqZonen?.Uebernommen,
                 Zeitprofile = p.Zeitprofile,
