@@ -913,14 +913,15 @@ namespace WindowsFormsApplication1
         private AbbildKonditionierung KonditionierungLesen(IIfcSpace s, AbbildRaum r, AbbildGebaeude g)
         {
             Dictionary<string, List<IfcSatzwert>> saetze = null;
-            foreach (IIfcPropertySet satz in IfcEigenschaften.Saetze(_bezuege, s).OfType<IIfcPropertySet>())
+            // HasProperties ist hier das Vorwärtsattribut von IfcPropertySet (Wache: Bezeichner „ps“).
+            foreach (IIfcPropertySet ps in IfcEigenschaften.Saetze(_bezuege, s).OfType<IIfcPropertySet>())
             {
-                string name = IfcEigenschaften.Text(satz.Name);
+                string name = IfcEigenschaften.Text(ps.Name);
                 if (name == null || !(name == IfcSchreiber.EPOS_ZONE || name.StartsWith(IfcKonditionierungssatz.PRAEFIX_KALENDER, StringComparison.Ordinal)))
                     continue;
                 saetze ??= new Dictionary<string, List<IfcSatzwert>>(StringComparer.Ordinal);
                 if (!saetze.TryGetValue(name, out List<IfcSatzwert> werte)) saetze[name] = werte = new List<IfcSatzwert>();
-                foreach (IIfcPropertySingleValue e in satz.HasProperties.OfType<IIfcPropertySingleValue>())
+                foreach (IIfcPropertySingleValue e in ps.HasProperties.OfType<IIfcPropertySingleValue>())
                     werte.Add(Satzwert(e));
             }
             if (saetze == null) return null;
