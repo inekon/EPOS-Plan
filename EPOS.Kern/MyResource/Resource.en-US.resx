@@ -33599,13 +33599,25 @@ Do you want to allow this?</value>
     <value>Surfaces per zone</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
-    <value>errors only</value>
+    <value>Only surfaces with a finding</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
-    <value>without counterpart only</value>
+    <value>Only surfaces without an adjacent surface</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_UWERT" xml:space="preserve">
-    <value>without U-value only</value>
+    <value>Only surfaces without U-value and build-up</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_ERLAEUTERUNG" xml:space="preserve">
+    <value>The filters only narrow the displayed list; together they apply as “and”. Everything is always saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_FEHLER_HINWEIS" xml:space="preserve">
+    <value>Shows only surfaces for which the “Finding” column states something: no adjacent surface, no U-value, estimated area or a record from room bodies. Affects the display only; everything is saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS" xml:space="preserve">
+    <value>Shows only partition surfaces for which the import found no counterpart in the neighbouring zone. They are calculated against an unheated room. Affects the display only; everything is saved.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_UWERT_HINWEIS" xml:space="preserve">
+    <value>Shows only surfaces that have neither a U-value nor a layer build-up (from the file or assigned). Affects the display only; everything is saved.</value>
   </data>
   <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
     <value>The “Finding” column states what a surface lacks: no counterpart (calculated against unheated), no U-value or an estimated area. The filters show only these surfaces; the search looks in all columns.</value>
