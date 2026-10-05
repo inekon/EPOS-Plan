@@ -87735,6 +87735,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: {1} MWh/a Netzbezug des Kältestroms (Kältestrom {2} MWh/a) tragen den Stromträger „{3}“. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_KUEHLTRAEGER_MENGE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_KUEHLTRAEGER_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: Das Klima führt keine Luftfeuchte — der Nasskühler rechnet in {1} Stunden mit der Außentemperatur − 3 K statt der Feuchtkugeltemperatur. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE {

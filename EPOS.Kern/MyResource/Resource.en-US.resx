@@ -45017,6 +45017,9 @@ chart</value>
   <data name="SIMENG_KAELTE_KM_KUEHLTRAEGER" xml:space="preserve">
     <value>Chiller "{0}": the cooling electricity is charged to the electricity carrier "{1}" — {2}.</value>
   </data>
+  <data name="SIMENG_KAELTE_KM_KUEHLTRAEGER_MENGE" xml:space="preserve">
+    <value>Chiller "{0}": {1} MWh/a of grid import for cooling (cooling electricity {2} MWh/a) are charged to the electricity carrier "{3}".</value>
+  </data>
   <data name="KM_ANLAGE_FEHLT" xml:space="preserve">
     <value>The chiller plant no longer exists.</value>
   </data>

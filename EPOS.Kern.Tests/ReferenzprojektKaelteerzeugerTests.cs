@@ -87,8 +87,9 @@ namespace EPOS.Kern.Tests
             Assert.True(Leer(Skalar("SELECT WQ_Typ FROM Tab_Energieanlagen WHERE ID = 10211")));
 
             // Die Kühlkennlinien der Projektseite - die Saat an 1017 und ihre Kopie im Referenzprojekt
-            // der Anlagenkopplung 1047 (anlagenkopplung_1047_referenzprojekt.py), sonst keine.
-            Assert.Equal(20L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung")));
+            // der Anlagenkopplung 1047 (anlagenkopplung_1047_referenzprojekt.py) und im Referenzprojekt der
+            // Kältemaschine 1055 (referenzprojekt_1055_kaeltemaschine.py, dort ohne Kühlbetrieb), sonst keine.
+            Assert.Equal(30L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung")));
             Assert.Equal(10L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = " + WP)));
             List<KuehlkennlinienZeile> zeilen = KenndatenKuehlungCtrl.ZeilenProjekt(WP);
             Assert.Equal(10, zeilen.Count);

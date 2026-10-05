@@ -1,27 +1,27 @@
-﻿# Referenzlauf (Kern) vom 04.10.2026 11:02
+﻿# Referenzlauf (Kern) vom 05.10.2026 00:09
 
-Quelle:        /home/user/EPOS-Plan/.claude/worktrees/ak1z/Referenzlaeufe/Kenndaten_Test.sqlite
-Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/ak1z/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Quelle:        /home/user/EPOS-Plan/.claude/worktrees/r36/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/r36/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
 Kultur:        de-DE
-Zielordner:    Referenzlaeufe/2026-10-04_R35_Zonenuebergabe
-Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054
+Zielordner:    Referenzlaeufe/2026-10-05_R36_Kaeltemaschine
+Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055
 Dauer:         00:00:09
 
 ## Ablauf
 
 ```
 Referenzlauf (Kern) gestartet.
-Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/ak1z
-Zielordner:    Referenzlaeufe/2026-10-04_R35_Zonenuebergabe
+Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/r36
+Zielordner:    Referenzlaeufe/2026-10-05_R36_Kaeltemaschine
 
-Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/ak1z/Referenzlaeufe/Kenndaten_Test.sqlite
-Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/ak1z/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (80 MB)
-DB-Pfad der App verifiziert: /home/user/EPOS-Plan/.claude/worktrees/ak1z/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/r36/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/r36/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (83 MB)
+DB-Pfad der App verifiziert: /home/user/EPOS-Plan/.claude/worktrees/r36/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
 
 Projektlandschaft wird gelesen ...
-33 Projekte in Tab_Projekt.
+34 Projekte in Tab_Projekt.
 
-Gewaehlte Referenzprojekte (19):
+Gewaehlte Referenzprojekte (20):
   - Projekt 1007 "Laurentiuskirche"
       Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
       Grund:       per --projekte vorgegeben
@@ -78,6 +78,9 @@ Gewaehlte Referenzprojekte (19):
       Grund:       per --projekte vorgegeben
   - Projekt 1054 "Referenzprojekt Zonen mit Heizkreis"
       Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1055 "Kältemaschine mit Kältespeicher"
+      Ausstattung: Tools: BHKW, Heizkessel, Wärmepumpe, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW,Puffer,Typ13
       Grund:       per --projekte vorgegeben
 
 Projekt 1007 "Laurentiuskirche" wird gerechnet ...
@@ -177,7 +180,13 @@ Simulation startet fuer Projekt 1054 ...
 Simulation beendet, Ergebnis-Kopf-ID 231.
 Projekt 1054: 28 CSV-Dateien, 223 Skalare.
   OK - 28 Dateien in 00:00
+Projekt 1055 "Kältemaschine mit Kältespeicher" wird gerechnet ...
+Simulation startet fuer Projekt 1055 ...
+Simulation beendet, Ergebnis-Kopf-ID 232.
+Projekt 1055: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
+Projekt 1055: 32 CSV-Dateien, 238 Skalare.
+  OK - 32 Dateien in 00:00
 
 Fertig. Gesamtdauer 00:00:09
-Erfolgreich: 19 von 19
+Erfolgreich: 20 von 20
 ```

@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-04_R35_Zonenuebergabe`](../../../Referenzlaeufe/2026-10-04_R35_Zonenuebergabe/);
+> [`Referenzlaeufe/2026-10-05_R36_Kaeltemaschine`](../../../Referenzlaeufe/2026-10-05_R36_Kaeltemaschine/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -80,6 +80,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-02_R32_Solarthermie` | 02.10.2026 | Basis nach der Welle M2 Solarthermie (Arbeitstemperatur des Kollektorfelds von 1049 aus dem Speicher, Diffus-Einfallswinkelkorrektur, Solarkreisfelder, Bezugsfläche), auf Linux eingefroren; Testdatenbank `486d5b0c…`, getragen bis zur Fassung `7debfd8a…` (Schemastand 165); sechzehn Projekte, 487 CSV, 3 081 Skalare — abgelöst durch R33 am 02.10.2026 | [`2026-10-02_R32_Solarthermie/protokoll.txt`](2026-10-02_R32_Solarthermie/protokoll.txt) |
 | `2026-10-02_R33_Viertelstunden` | 02.10.2026 | Basis nach der Welle M5 „Strom in Viertelstunden“ (PV-Bilanz je Viertelstunde nach dem Sonnenstand, Einspeisegrenze, Standby und Selbstentladung), auf Linux eingefroren; Testdatenbank `2b0dc246…` (Schemastand 168), gehoben bis Schemastand 176; sechzehn Projekte, 487 CSV, 3 082 Skalare — abgelöst durch R34 am 03.10.2026 | [`2026-10-02_R33_Viertelstunden/protokoll.txt`](2026-10-02_R33_Viertelstunden/protokoll.txt) |
 | `2026-10-03_R34_Erdreich` | 03.10.2026 | Basis nach dem Erdreichwiderstand nach DIN EN ISO 13370 (Bauteile am Erdreich), der allgemeinen Innenprüfung der Abschnittsregel im Zonenmodell und den neuen Referenzprojekten 1051 „Konditionierung“ und 1052 „Zonen“, auf Linux eingefroren; Testdatenbank `bb8dd3dc…` (Schemastand 176), gehoben bis Schemastand 181; achtzehn Projekte, 548 CSV, 3 568 Skalare — abgelöst durch R35 am 04.10.2026 | [`2026-10-03_R34_Erdreich/protokoll.txt`](2026-10-03_R34_Erdreich/protokoll.txt) |
+| `2026-10-04_R35_Zonenuebergabe` | 04.10.2026 | Basis nach der Wärmeübergabe je Zone (AK1z, E63) und dem neuen Referenzprojekt 1054 „Zonen mit Heizkreis“, auf Linux eingefroren; Testdatenbank `905096ae…` (Schemastand 185); neunzehn Projekte, 576 CSV, 3 791 Skalare; mit R36 abgelöst. |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4507,5 +4508,46 @@ gehoben bis Schemastand 176 (leere Felder und Katalogspalten, kein Rechenweg); m
 Protokoll, Anlass (PV-Bilanz je Viertelstunde, Welle M5) und alle Nachträge der Schemaschritte 166 bis 176 unter
 [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Der Wechsel zu R34
 ist der Rechenweg des Erdreichs (a), dazu die zwei neuen Projekte.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R35 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat bis zum 05.10.2026 die Basis R35 beschrieben — den Anlass (Wärmeübergabe je Zone, AK1z, E63, das Referenzprojekt 1054) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `b845355`, Testdatenbank Schemastand 185.
+
+**Abgelöst wurde R35 durch `2026-10-05_R36_Kaeltemaschine`** (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, KU3-4b, Einfrierregel „gesäte Kältemaschinendaten“): Die neunzehn Projekte der Basis rechnen byte-gleich (19/19 PASS, 576/576 CSV), neu ist allein 1055.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Wärmeübergabe je Zone (AK1z, E63) — die Zahlen der achtzehn Vorgängerprojekte sind unverändert, neu ist allein 1054.**
+>
+> Bei gekoppelter Anlage (AK1) rechnet der Schritt H die Wärmeübergabe je Zone am gemeinsamen Vorlauf des Gebäudes: Jede
+> Zone trägt ihre eigene Übergabeart, Auslegung und ihr Proportionalband, der Rücklauf des Gebäudes ist
+> massenstromgewichtet, und die Stunden, in denen die Übergabe an ihre Grenze kommt, werden je Zone gezählt. Schemaschritt
+> 181 legt dafür an `Tab_Zone` vier Spalten (`Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`,
+> `Regler_Proportionalband`; leer heißt „wie Gebäude“) und an `Tab_ErgebnisZone` drei Ergebnisspalten (`Vorlauf_Mittel_C`,
+> `Ruecklauf_Mittel_C`, `Uebergabe_Begrenzt_H`) an. Der Einzonenweg und die ungekoppelten Mehrzonengebäude rechnen
+> unverändert: **Gegen R34 sind die achtzehn Vorgängerprojekte 18/18 PASS und 548/548 CSV byte-gleich.**
+>
+> **Neu ist Projekt 1054 „Zonen mit Heizkreis“**, Kopie von 1052 mit AK1, Radiator und Heizkurve am Gebäude und einer
+> Konvektorzone (Gastronomie und Verwaltung: Auslegung 70/50 °C, Proportionalband 2 K; Abschnitt „Das Referenzprojekt
+> 1054“ unten). Ergebnis: Heizwärme 47,58 MWh, Spitze 26,05 kW, Vorlauf/Rücklauf im Mittel 39,53/36,08 °C, 1 339 begrenzte
+> Stunden (Gästezimmer 293,9 h, Gastronomie 1 106,5 h); die beheizten Zonen stehen im Aufheizzustand GEKOPPELT. Der
+> Vergleichslauf meldet 1054 als „nur im Vergleichslauf vorhanden“, weil R34 das Projekt nicht kennt.
+>
+> **Gegenprobe:** Der Vergleich der neunzehn Projekte gegen R34 steht bei 18/18 PASS, die 548 CSV der Vorgänger sind
+> byte-gleich; 1054 bringt 28 CSV und 223 Skalare dazu. Aufbau und Ausstattung je Projekt stehen im `protokoll.txt` der
+> Basis.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054 \
+>   --ziel Referenzlaeufe/2026-10-04_R35_Zonenuebergabe
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

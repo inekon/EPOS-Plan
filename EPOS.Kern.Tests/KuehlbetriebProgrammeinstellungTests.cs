@@ -164,7 +164,7 @@ namespace EPOS.Kern.Tests
         /// Die Referenzprojekte mit Kühlung — ausdrücklich eingeschaltet (Einfrierregel „gesäte
         /// Kältedaten"): 1017 und seine Kopie im Referenzprojekt der Anlagenkopplung 1047.
         /// </summary>
-        private static readonly int[] REFERENZEN_MIT_KUEHLUNG = { 1017, 1047 };
+        private static readonly int[] REFERENZEN_MIT_KUEHLUNG = { 1017, 1047, 1055 };   // 1055: Kopie von 1017 (KU3-4b)
 
         /// <summary>
         /// Nach KU-S2 trägt jedes vorhandene Projekt 0 — auch wenn die Programmeinstellung an

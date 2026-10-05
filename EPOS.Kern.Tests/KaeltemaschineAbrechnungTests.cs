@@ -400,5 +400,22 @@ namespace EPOS.Kern.Tests
             Assert.Equal(kalt.Q_max, z.Zellen[1].Zahl.Value, 1);
             Assert.True(z.Zellen[3].Zahl.Value > 0);
         }
+
+        /// <summary>
+        /// Der Hinweis zum Netzbezug des Kältestroms nennt die Kältemaschine als Kältemaschine — nicht mit dem
+        /// Text der Wärmepumpe (Referenzprojekt 1055); die Wärmepumpe behält ihren Text.
+        /// </summary>
+        [Fact]
+        public void Der_Kuehltraegerhinweis_nennt_die_Kaeltemaschine_als_Kaeltemaschine()
+        {
+            var km = new Kaelteerzeuger { Bezeichner = "Kältemaschine 20 kW", Modulindex = -1, Maschine = new Kaeltemaschine(),
+                                          NetzbezugKwh = 1256.0, StromGesamtKwh = 1256.0 };
+            Assert.Equal("Kältemaschine „Kältemaschine 20 kW“: 1,26 MWh/a Netzbezug des Kältestroms (Kältestrom 1,26 MWh/a) "
+                         + "tragen den Stromträger „Elektrische Energie 2“.",
+                         SimulationControl.KuehltraegerMengeHinweis(km, "Elektrische Energie 2"));
+
+            var wp = new Kaelteerzeuger { Bezeichner = "WP 1", Modulindex = 0, NetzbezugKwh = 500.0, StromGesamtKwh = 1000.0 };
+            Assert.StartsWith("Wärmepumpe „WP 1“: 0,50 MWh/a", SimulationControl.KuehltraegerMengeHinweis(wp, "Strom"));
+        }
     }
 }

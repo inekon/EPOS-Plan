@@ -165,7 +165,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-04_R35_Zonenuebergabe`, neunzehn Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-05_R36_Kaeltemaschine`, zwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -187,6 +187,7 @@ Lüftung, Ferien, Heizperiode) und Aufheizoptimierung, gehalten von
 drei Zonen mit Zonenkalendern, gehalten von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests`, und steht nicht in
 der CI-Auswahl,
 Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude und einer Zone mit eigener Übergabe (Konvektor 70/50 °C, Proportionalband 2 K) — die Übergabe je Zone am gemeinsamen Vorlauf, Rücklauf massenstromgewichtet —, gehalten von `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 allein Projekt 1040 bis zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
@@ -214,6 +215,7 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   Kaskadenplatz der Wärmepumpe, ihr Kühlbetrieb, `Kuehl_Vorlauf` und `Kuehl_Hilfsstromanteil`,
   Kühlträger und Abrechnungsart ihrer Anlagenzeile (`Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`)
   und die Kühlkennlinie des Projektgeräts samt Vorlauf-Stützstellen (`Tab_Kenndaten_Kuehlung`);
+- gesäte Kältemaschinendaten eines Referenzprojekts: die Anlagenzeile seiner Kältemaschine (`Kaeltemaschine_Anzahl`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), ihre Projektkopie `Tab_Kaeltemaschine` (Nennkälteleistung, EER, Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung, `Kuehl_Vorlauf`, `Kuehl_Hilfsstromanteil`) samt `Tab_Kenndaten_Kaeltemaschine`, sein Kältespeicher (Pufferzeile mit Verwendung Kälte, Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, Bereitschaftsverlust, Schwellen) und die Kaskade (`Tool_1` bis `Tool_6`), dazu das Anlegen oder Entfernen eines solchen Referenzprojekts;
 - gesäte Auslegungsdaten der Übergabe: die Kopplungsstufe `Tab_Einstellungen.Anlagenkopplung`
   eines Referenzprojekts, an seinen Gebäuden `Heizkreis_Aktiv` und die Übergabespalten (Art,
   Exponent, Nennleistung, Auslegungspunkt, Heizkurve, `Regler_Proportionalband`,
