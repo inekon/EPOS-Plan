@@ -17,11 +17,13 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Fable 5.1 orchestriert nur:** Es plant, schneidet Aufträge, wählt das Modell, nimmt
-  Ergebnisse ab, entscheidet bei widersprüchlichen Befunden, bereitet Anwenderentscheide vor und
-  berichtet. Alles andere wird delegiert — auch Hüllen, Nachzüge, Konzeptabsätze, Status- und
-  Protokollpflege, Merges und Gates; Fable fasst Dateien nur an, wenn ein Agentenaufruf teurer
-  wäre als die Änderung selbst (eine Zeile, ein Verweis).
+- **Fable 5.1 nur, wenn es unbedingt nötig ist:** Es schneidet Aufträge, wählt das Modell,
+  nimmt Ergebnisse ab, entscheidet bei widersprüchlichen Befunden, bereitet Anwenderentscheide
+  vor und berichtet — in knappen Zügen. Alles andere wird delegiert, auch Merges und
+  Konfliktlösung, Gates, CI-Prüfung und CI-Vermerke, Status- und Protokollpflege, Hüllen,
+  Nachzüge und Konzeptabsätze; Fable fasst Dateien nur an, wenn ein Agentenaufruf teurer wäre
+  als die Änderung selbst (eine Zeile, ein Verweis). Geplante Check-ins (Routinen) lösen
+  einen Agenten aus, statt Fable arbeiten zu lassen.
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
   und Zeit:
 
