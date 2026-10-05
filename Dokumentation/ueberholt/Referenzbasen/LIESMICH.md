@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-05_R36_Kaeltemaschine`](../../../Referenzlaeufe/2026-10-05_R36_Kaeltemaschine/);
+> [`Referenzlaeufe/2026-10-05_R37_Fahrplan`](../../../Referenzlaeufe/2026-10-05_R37_Fahrplan/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -81,6 +81,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-02_R33_Viertelstunden` | 02.10.2026 | Basis nach der Welle M5 „Strom in Viertelstunden“ (PV-Bilanz je Viertelstunde nach dem Sonnenstand, Einspeisegrenze, Standby und Selbstentladung), auf Linux eingefroren; Testdatenbank `2b0dc246…` (Schemastand 168), gehoben bis Schemastand 176; sechzehn Projekte, 487 CSV, 3 082 Skalare — abgelöst durch R34 am 03.10.2026 | [`2026-10-02_R33_Viertelstunden/protokoll.txt`](2026-10-02_R33_Viertelstunden/protokoll.txt) |
 | `2026-10-03_R34_Erdreich` | 03.10.2026 | Basis nach dem Erdreichwiderstand nach DIN EN ISO 13370 (Bauteile am Erdreich), der allgemeinen Innenprüfung der Abschnittsregel im Zonenmodell und den neuen Referenzprojekten 1051 „Konditionierung“ und 1052 „Zonen“, auf Linux eingefroren; Testdatenbank `bb8dd3dc…` (Schemastand 176), gehoben bis Schemastand 181; achtzehn Projekte, 548 CSV, 3 568 Skalare — abgelöst durch R35 am 04.10.2026 | [`2026-10-03_R34_Erdreich/protokoll.txt`](2026-10-03_R34_Erdreich/protokoll.txt) |
 | `2026-10-04_R35_Zonenuebergabe` | 04.10.2026 | Basis nach der Wärmeübergabe je Zone (AK1z, E63) und dem neuen Referenzprojekt 1054 „Zonen mit Heizkreis“, auf Linux eingefroren; Testdatenbank `905096ae…` (Schemastand 185); neunzehn Projekte, 576 CSV, 3 791 Skalare; mit R36 abgelöst. |
+| `2026-10-05_R36_Kaeltemaschine` | 05.10.2026 | Basis mit dem neuen Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“ (KU3-4b, Einfrierregel „gesäte Kältemaschinendaten“), auf Linux eingefroren; Testdatenbank `fc67a865…` (Schemastand 185), gehoben auf Schemastand 186; zwanzig Projekte, 608 CSV, 4 029 Skalare — abgelöst durch R37 am 05.10.2026 | [`2026-10-05_R36_Kaeltemaschine/protokoll.txt`](2026-10-05_R36_Kaeltemaschine/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4545,6 +4546,37 @@ Der Abschnitt „Aktuelle Basis“ hat bis zum 05.10.2026 die Basis R35 beschrie
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054 \
 >   --ziel Referenzlaeufe/2026-10-04_R35_Zonenuebergabe
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R36 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R36 beschrieben — den Anlass (das Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, KU3-4b) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `328a0dc`, Testdatenbank Schemastand 186.
+
+**Abgelöst wurde R36 durch `2026-10-05_R37_Fahrplan`** (Komfortspalten für jedes gekoppelte Projekt, F12 und E83, und das Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, AK2-4): Die zwanzig Projekte der Basis rechnen je Wert gleich (20/20 Werte PASS), 18 Projekte vollständig byte-gleich, 1047 und 1054 tragen nur sechs bzw. vier neue Zeilen in `aggregate.csv` (Komfort- und Fahrplanspalten); neu ist 1056.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“ (KU3-4b) — die Zahlen der neunzehn Vorgängerprojekte sind unverändert, neu ist allein 1055.**
+>
+> Die Einfrierregel „gesäte Kältemaschinendaten“ (Abschnitt „Die Einfrierregel „gesäte Kältemaschinendaten“ (Referenzprojekt
+> 1055)“ oben) verlangt eine neue Basis, sobald ein Referenzprojekt eine Kältemaschine führt. Der Rechenweg ist unverändert:
+> **Gegen R35 sind die neunzehn Vorgängerprojekte 19/19 PASS und 576/576 CSV byte-gleich.**
+>
+> **Neu ist Projekt 1055**, Kopie von 1017 mit Kältemaschine und Kältespeicher statt Wärmepumpe im Kühlbetrieb (Abschnitt „Das
+> Referenzprojekt 1055“ unten). Der Vergleichslauf meldet 1055 als „nur im Vergleichslauf vorhanden“, weil R35 das Projekt nicht
+> kennt; 1055 bringt 32 CSV und 238 Skalare dazu (gesamt 608 CSV, 4 029 Skalare). 1055 steht nicht in der CI-Auswahl.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055 \
+>   --ziel Referenzlaeufe/2026-10-05_R36_Kaeltemaschine
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
