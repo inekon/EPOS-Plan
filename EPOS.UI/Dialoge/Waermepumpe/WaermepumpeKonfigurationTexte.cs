@@ -227,6 +227,47 @@ public sealed class WaermepumpeKonfigurationTexte
     public string MeldungHilfsstromBereich { get; set; } = T("WPK_MSG_HILFSSTROM_BEREICH",
         "Der Hilfsstromanteil muss mindestens 0 % und weniger als 100 % betragen.");
 
+    // --- Freie Kühlung über die Wärmequelle (KU3-6, F2, F6) ----------------------
+
+    /// <summary>WPK_CHK_KUEHL_FREI — der Schalter.</summary>
+    public string LabelKuehlFrei { get; set; } = T("WPK_CHK_KUEHL_FREI", "Freie Kühlung über die Wärmequelle");
+
+    /// <summary>WPK_HRL_KUEHL_FREI — was die freie Kühlung tut.</summary>
+    public string HinweisKuehlFrei { get; set; } = T("WPK_HRL_KUEHL_FREI",
+        "Liegt die Quellentemperatur plus Grädigkeit unter dem Kühl-Vorlauf, deckt die Wärmequelle die Kälte der Stunde direkt — vor dem Verdichter.");
+
+    /// <summary>WPK_LBL_KUEHL_FREI_GRAEDIGKEIT — die Grädigkeit des Wärmetauschers [K].</summary>
+    public string LabelKuehlFreiGraedigkeit { get; set; } = T("WPK_LBL_KUEHL_FREI_GRAEDIGKEIT", "Grädigkeit des Wärmetauschers");
+
+    /// <summary>WPK_PH_KUEHL_FREI_GRAEDIGKEIT — Vorgabe-Anzeige.</summary>
+    public string PlatzhalterKuehlFreiGraedigkeit { get; set; } = T("WPK_PH_KUEHL_FREI_GRAEDIGKEIT", "Vorgabe: 3,0 K");
+
+    /// <summary>WPK_HRL_KUEHL_FREI_GRAEDIGKEIT — die Herleitung der Vorgabe.</summary>
+    public string HinweisKuehlFreiGraedigkeit { get; set; } = T("WPK_HRL_KUEHL_FREI_GRAEDIGKEIT",
+        "Leer = 3,0 K. Temperaturabstand zwischen Quelle und Kaltwasser am Wärmetauscher, 0 bis 20 K.");
+
+    /// <summary>WPK_LBL_KUEHL_FREI_LEISTUNG — die Leistungsgrenze der freien Kühlung [kW].</summary>
+    public string LabelKuehlFreiLeistung { get; set; } = T("WPK_LBL_KUEHL_FREI_LEISTUNG", "Leistungsgrenze");
+
+    /// <summary>WPK_PH_KUEHL_FREI_LEISTUNG — Vorgabe-Anzeige.</summary>
+    public string PlatzhalterKuehlFreiLeistung { get; set; } = T("WPK_PH_KUEHL_FREI_LEISTUNG", "Vorgabe: Kälteleistung der Kennlinie");
+
+    /// <summary>WPK_MSG_KUEHL_FREI_GRAEDIGKEIT — die Prüfregel (0 bis 20 K).</summary>
+    public string MeldungKuehlFreiGraedigkeit { get; set; } = T("WPK_MSG_KUEHL_FREI_GRAEDIGKEIT",
+        "Die Grädigkeit der freien Kühlung muss zwischen 0 und 20 K liegen.");
+
+    /// <summary>WPK_MSG_KUEHL_FREI_LEISTUNG — die Prüfregel (&gt; 0 kW).</summary>
+    public string MeldungKuehlFreiLeistung { get; set; } = T("WPK_MSG_KUEHL_FREI_LEISTUNG",
+        "Die Leistungsgrenze der freien Kühlung muss größer als 0 kW sein.");
+
+    /// <summary>WPK_FREI_SPERR_BAUART — Sperrgrund: keine Sole-/Wasser-Wasser-Maschine.</summary>
+    public string SperrgrundFreiBauart { get; set; } = T("WPK_FREI_SPERR_BAUART",
+        "Freie Kühlung nur an einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe — diese Maschine nutzt die Außenluft.");
+
+    /// <summary>WPK_FREI_SPERR_QUELLE — Sperrgrund: Wärmequelle nicht gepflegt (Außenluft, leer, Pufferspeicher).</summary>
+    public string SperrgrundFreiQuelle { get; set; } = T("WPK_FREI_SPERR_QUELLE",
+        "Freie Kühlung braucht eine gepflegte Wärmequelle (Erdreich, Konstant, Profil oder CSV) — Außenluft, keine Angabe und Pufferspeicher wirken nicht.");
+
     /// <summary>WPK_LBL_KUEHLTRAEGER — der Stromträger des Kältestroms (K9).</summary>
     public string LabelKuehltraeger { get; set; } = T("WPK_LBL_KUEHLTRAEGER", "Stromträger des Kältestroms");
 

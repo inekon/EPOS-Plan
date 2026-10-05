@@ -58053,6 +58053,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte direkt aus der Wärmequelle vor dem Verdichter, solange Quellentemperatur plus Grädigkeit unter dem Kühl-Vorlauf liegt; nur an einer Sole-Wasser- oder Wasser-Wasser-Maschine mit gepflegter Wärmequelle wirksam. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KUEHL_FREI_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KUEHL_FREI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grädigkeit des Wärmetauschers der freien Kühlung in Kelvin, 0 bis 20; leer heißt 3,0 K. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KUEHL_FREI_GRAEDIGKEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KUEHL_FREI_GRAEDIGKEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Kälteleistung der freien Kühlung in kW, größer als 0; leer heißt Kälteleistung der Kennlinie in der Stunde. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KUEHL_FREI_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KUEHL_FREI_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur des Kaltwassers in °C, gewählt aus den Stützstellen der Kühlkennlinie; leer heißt „kleinster Stützwert“. Zwischenwerte gibt es nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_KUEHL_VORLAUF_ERL {
@@ -117081,11 +117108,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freie Kühlung über die Wärmequelle ähnelt.
+        /// </summary>
+        public static string WPK_CHK_KUEHL_FREI {
+            get {
+                return ResourceManager.GetString("WPK_CHK_KUEHL_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur mit Kühlfunktion ähnelt.
         /// </summary>
         public static string WPK_CHK_NUR_KUEHLUNG {
             get {
                 return ResourceManager.GetString("WPK_CHK_NUR_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freie Kühlung nur an einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe — diese Maschine nutzt die Außenluft. ähnelt.
+        /// </summary>
+        public static string WPK_FREI_SPERR_BAUART {
+            get {
+                return ResourceManager.GetString("WPK_FREI_SPERR_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freie Kühlung braucht eine gepflegte Wärmequelle (Erdreich, Konstant, Profil oder CSV) — Außenluft, keine Angabe und Pufferspeicher wirken nicht. ähnelt.
+        /// </summary>
+        public static string WPK_FREI_SPERR_QUELLE {
+            get {
+                return ResourceManager.GetString("WPK_FREI_SPERR_QUELLE", resourceCulture);
             }
         }
         
@@ -117122,6 +117176,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_HRL_KUEHLTRAEGER_WEITERE {
             get {
                 return ResourceManager.GetString("WPK_HRL_KUEHLTRAEGER_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liegt die Quellentemperatur plus Grädigkeit unter dem Kühl-Vorlauf, deckt die Wärmequelle die Kälte der Stunde direkt — vor dem Verdichter. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_KUEHL_FREI {
+            get {
+                return ResourceManager.GetString("WPK_HRL_KUEHL_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = 3,0 K. Temperaturabstand zwischen Quelle und Kaltwasser am Wärmetauscher, 0 bis 20 K. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_KUEHL_FREI_GRAEDIGKEIT {
+            get {
+                return ResourceManager.GetString("WPK_HRL_KUEHL_FREI_GRAEDIGKEIT", resourceCulture);
             }
         }
         
@@ -117225,6 +117297,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grädigkeit des Wärmetauschers ähnelt.
+        /// </summary>
+        public static string WPK_LBL_KUEHL_FREI_GRAEDIGKEIT {
+            get {
+                return ResourceManager.GetString("WPK_LBL_KUEHL_FREI_GRAEDIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungsgrenze ähnelt.
+        /// </summary>
+        public static string WPK_LBL_KUEHL_FREI_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WPK_LBL_KUEHL_FREI_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühl-Vorlauf ähnelt.
         /// </summary>
         public static string WPK_LBL_KUEHL_VORLAUF {
@@ -117315,6 +117405,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Grädigkeit der freien Kühlung muss zwischen 0 und 20 K liegen. ähnelt.
+        /// </summary>
+        public static string WPK_MSG_KUEHL_FREI_GRAEDIGKEIT {
+            get {
+                return ResourceManager.GetString("WPK_MSG_KUEHL_FREI_GRAEDIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungsgrenze der freien Kühlung muss größer als 0 kW sein. ähnelt.
+        /// </summary>
+        public static string WPK_MSG_KUEHL_FREI_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WPK_MSG_KUEHL_FREI_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die anteilig am Netzbezug (Vorgabe) ähnelt.
         /// </summary>
         public static string WPK_OPT_ANTEILIG {
@@ -117347,6 +117455,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_PH_KUEHLTRAEGER {
             get {
                 return ResourceManager.GetString("WPK_PH_KUEHLTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: 3,0 K ähnelt.
+        /// </summary>
+        public static string WPK_PH_KUEHL_FREI_GRAEDIGKEIT {
+            get {
+                return ResourceManager.GetString("WPK_PH_KUEHL_FREI_GRAEDIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: Kälteleistung der Kennlinie ähnelt.
+        /// </summary>
+        public static string WPK_PH_KUEHL_FREI_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WPK_PH_KUEHL_FREI_LEISTUNG", resourceCulture);
             }
         }
         
