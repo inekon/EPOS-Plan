@@ -558,11 +558,11 @@ public class GebaeudeImportZonenDialogTests : EposBunitContext
         IRenderedComponent<GebaeudeImportDialog> cut = Bauen(p, StandMitGrundriss);
         Einlesen(cut);
 
-        // Die Andockung: Zonenliste und Grundriss in einem Block; die Zonenliste darin mit ihren acht Spalten.
+        // Die Andockung: Zonenliste und Grundriss in einem Block; die Zonenliste darin mit ihren neun Spalten.
         IElement block = cut.Find(".epos-gebimport-zonenblock");
         Assert.NotNull(block.QuerySelector(".epos-gebimport-zonenspalte > .epos-raster-huelle > table.epos-gebimport-zonen"));
         Assert.NotNull(block.QuerySelector(".epos-gebimport-grundrissspalte .epos-gebansicht svg.epos-gebansicht-bild"));
-        Assert.Equal(8, cut.FindAll(".epos-gebimport-zonen > thead > tr > th").Count);
+        Assert.Equal(9, cut.FindAll(".epos-gebimport-zonen > thead > tr > th").Count);
         Assert.Contains("Räume ordnen Sie im Grundriss von Hand zu.", block.TextContent);
 
         // Der Kopf: die Zonen und „als eigene Zone"; vorgewählt ist die erste Zone.
