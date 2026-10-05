@@ -392,7 +392,8 @@ namespace WindowsFormsApplication1
             if (anfrage == null || _ablauf.Abbild == null) return new GebaeudeImportStand();
 
             IReadOnlyDictionary<string, bool> haken = anfrage.BeheiztUebersteuert ?? new Dictionary<string, bool>();
-            GebaeudeImportSatz satz = _ablauf.Zuordnen(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken);
+            GebaeudeImportSatz satz = _ablauf.Zuordnen(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken,
+                                                       anfrage.RaumtemperaturAlsSollwert);
             foreach (KeyValuePair<string, double?> hand in anfrage.Handwerte ?? new Dictionary<string, double?>())
                 satz.ManuellSetzen(hand.Key, hand.Value);
             satz.FolgevorgabenNachziehen();
@@ -402,10 +403,11 @@ namespace WindowsFormsApplication1
             // Anfrage (Regel, Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung, Zuordnung von
             // Hand) bildet sie neu, mit dem Namensabgleich samt den Zuordnungen des Dialogs.
             VorschlagBilden(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), anfrage.Zonenregel, haken,
-                            anfrage.Baustoffzuordnungen, anfrage.Umhaengungen);
+                            anfrage.Baustoffzuordnungen, anfrage.Umhaengungen, anfrage.RaumtemperaturAlsSollwert);
 
             return new GebaeudeImportStand
             {
+                CadSollwertMoeglich = satz.CadSollwertMoeglich,
                 Kopftext = GebaeudeZuordnungsModell.KopfText(satz),
                 Vorschlagsname = GebaeudeZuordnungsModell.Vorschlagsname(satz),
                 Raeume = _ablauf.Raeume(anfrage.Gebaeudeindex, haken).Select(RaumDaten).ToList(),
@@ -431,11 +433,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void VorschlagBilden(int index, char? klasse, string regel, IReadOnlyDictionary<string, bool> haken,
                                      IReadOnlyDictionary<string, int?> zuordnungen,
-                                     IReadOnlyList<GebaeudeRaumumhaengung> umhaengungen = null)
+                                     IReadOnlyList<GebaeudeRaumumhaengung> umhaengungen = null, bool cadSollwert = false)
         {
             _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken, umhaengungen);
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
-                                                         Mehrzonig(_zonierung) ? _zonierung : null);
+                                                         Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert);
             _geometrie = GebaeudeGrundriss.Bilden(_ablauf.Abbild, index, _zonierung);
         }
 
@@ -527,7 +529,7 @@ namespace WindowsFormsApplication1
         {
             if (ergebnis == null || _ablauf.Abbild == null) return null;
             GebaeudeImportSatz satz = _ablauf.Zuordnen(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse),
-                                                       ergebnis.BeheiztUebersteuert);
+                                                       ergebnis.BeheiztUebersteuert, ergebnis.RaumtemperaturAlsSollwert);
             foreach (GebaeudeFeldzeileDaten z in ergebnis.Zeilen ?? Array.Empty<GebaeudeFeldzeileDaten>())
             {
                 if (z == null) continue;
@@ -540,7 +542,8 @@ namespace WindowsFormsApplication1
             // Zonierung und Bauteilvorschlag zum Ergebnis — mit Regel und Baustoffzuordnungen des
             // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt.
             VorschlagBilden(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse), ergebnis.Zonenregel,
-                            ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen, ergebnis.Umhaengungen);
+                            ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen, ergebnis.Umhaengungen,
+                            ergebnis.RaumtemperaturAlsSollwert);
             _alsZone = ergebnis.AlsZone && !_vorschlag.Abgelehnt;
             _baustoffzuordnungen = Wirksame(ergebnis.Baustoffzuordnungen, _vorschlag);
             return satz;

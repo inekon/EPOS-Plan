@@ -145,6 +145,16 @@
             </KindInhalt>
         </Formularraster>
         <Herleitungszeile Text="@stand.Kopftext" />
+        @if (stand.CadSollwertMoeglich)
+        {
+            @* DER HEIZSOLLWERT AUS DER RAUMTEMPERATUR DER DATEI: nur, wenn beheizte Raeume eine CAD-Raumtemperatur
+               tragen und kein Norm-Sollwert vorliegt; Vorgabe aus (Normtemperatur). Der Schalter laeuft wie die
+               Uebersteuerungen in den Kern und ordnet neu zu - das Sollwertfeld bleibt danach von Hand aenderbar. *@
+            <div class="epos-gebimport-cadsollwert" data-schluessel="@GebaeudeImportSchalter.RAUMTEMPERATUR_ALS_SOLLWERT">
+                <Schalter Bezeichnung="@Texte.CadSollwert" Wert="@_cadSollwert" WertChanged="BeiCadSollwert" Aktiv="@(!Beschaeftigt)" />
+            </div>
+            <Herleitungszeile Text="@Texte.CadSollwertHinweis" />
+        }
 
         @if (stand.Zonierung is GebaeudeZonierungDaten zon)
         {
@@ -302,6 +312,7 @@
                                         <th class="epos-gebimport-zahl">@Texte.SpalteRaeume</th>
                                         <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
                                         <th class="epos-gebimport-zahl">@Texte.SpalteVolumen</th>
+                                        <th class="epos-gebimport-zahl">@Texte.SpalteSollwert</th>
                                         <th>@Texte.SpalteBeheizt</th>
                                         <th>@Texte.SpalteHinweis</th>
                                     </tr>
@@ -323,6 +334,7 @@
                                             <td class="epos-gebimport-zahl">@zone.Raeume</td>
                                             <td class="epos-gebimport-zahl">@zone.Flaeche</td>
                                             <td class="epos-gebimport-zahl">@zone.Volumen</td>
+                                            <td class="epos-gebimport-zahl epos-gebimport-zonensollwert">@zone.Sollwert</td>
                                             <td>
                                                 <Schalter Bezeichnung="@Format(Texte.ZoneBeheizt, zone.Name)" Wert="@zone.Beheizt"
                                                           WertChanged="b => BeiZoneBeheizt(zone, b)" Aktiv="@(!Beschaeftigt)" />
@@ -658,6 +670,15 @@
     /// <summary>Die Zuordnungen des Abschnitts „Baustoffe", wie sie im Ergebnis stünden (Prüfhilfe für Tests).</summary>
     public IReadOnlyDictionary<string, int?> Baustoffzuordnungen => _baustoffzuordnungen;
 
+    /// <summary>
+    /// Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" — Vorgabe aus; eine neue Datei und ein
+    /// anderes Gebäude setzen ihn zurück.
+    /// </summary>
+    private bool _cadSollwert;
+
+    /// <summary>Der Schalter, wie er wirkt: nur, solange der Stand ihn anbietet (Prüfhilfe für Tests).</summary>
+    public bool CadSollwertWirksam => _cadSollwert && (_stand?.CadSollwertMoeglich ?? true);
+
     /// <summary>Die gewählte Zonenregel (Schlüssel); <c>null</c> = die Vorgabe der Datei. Eine neue Datei und ein anderes Gebäude setzen sie zurück.</summary>
     private string? _regel;
 
@@ -855,6 +876,7 @@
         _handhaken.Clear();
         _baustoffzuordnungen.Clear();
         _alsZoneWahl = null;
+        _cadSollwert = false;
         ZonenZuruecksetzen();
         _name = "";
         _nameGeaendert = false;
@@ -912,7 +934,7 @@
         => new(_gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
                new Dictionary<string, double?>(_handwerte, StringComparer.Ordinal),
                new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
-               _regel, _umhaengungen.Count > 0 ? _umhaengungen.ToList() : null);
+               _regel, _umhaengungen.Count > 0 ? _umhaengungen.ToList() : null, CadSollwertWirksam);
 
     private void StandUebernehmen(GebaeudeImportStand stand)
     {
@@ -1305,6 +1327,7 @@
         _handhaken.Clear();
         _baustoffzuordnungen.Clear();
         _alsZoneWahl = null;
+        _cadSollwert = false;
         ZonenZuruecksetzen();
         _nameGeaendert = false;
         _meldung = "";
@@ -1315,6 +1338,15 @@
     {
         if (beheizt == raum.BeheiztLautDatei) _uebersteuert.Remove(raum.Kennung);
         else _uebersteuert[raum.Kennung] = beheizt;
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    /// <summary>Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" — ordnet neu zu.</summary>
+    private void BeiCadSollwert(bool wert)
+    {
+        if (Beschaeftigt || wert == _cadSollwert) return;
+        _cadSollwert = wert;
         _meldung = "";
         NeuZuordnen();
     }
@@ -1396,7 +1428,7 @@
                new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
                _zeilen.ToList(), AlsZoneWirksam,
                new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
-               Zonenregel, _umhaengungen.Count > 0 ? _umhaengungen.ToList() : null);
+               Zonenregel, _umhaengungen.Count > 0 ? _umhaengungen.ToList() : null, CadSollwertWirksam);
 
     private async Task BeiLeiste(bool ok)
     {

@@ -94,6 +94,10 @@ public sealed record GebaeudeLesestand(
 /// als eigene Zone; <c>null</c> = keine. Die Datenseite legt sie auf den Vorschlag der Regel; eine andere
 /// Regel verwirft sie (der Dialog fragt vorher).
 /// </param>
+/// <param name="RaumtemperaturAlsSollwert">
+/// Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" (Schlüssel
+/// <see cref="GebaeudeImportSchalter.RAUMTEMPERATUR_ALS_SOLLWERT"/>); Vorgabe aus = die Normtemperatur.
+/// </param>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -101,7 +105,8 @@ public sealed record GebaeudeZuordnungsanfrage(
     IReadOnlyDictionary<string, double?>? Handwerte = null,
     IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
     string? Zonenregel = null,
-    IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null)
+    IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null,
+    bool RaumtemperaturAlsSollwert = false)
 {
     /// <summary>
     /// Dieselbe Anfrage mit einer Zuordnung von Hand hinter den bisherigen — der Weg eines Klicks im
@@ -417,6 +422,12 @@ public sealed record GebaeudeZonenzeileDaten
     /// <summary>Der Hinweis zur Zone; leer = keiner.</summary>
     public string Hinweis { get; init; } = "";
 
+    /// <summary>
+    /// Der Heizsollwert am Tag der Zone mit Einheit, wenn sie einen eigenen trägt (Raumtemperatur der Datei);
+    /// sonst das Leerzeichen der Liste (GIMP_WERT_LEER) — der Wert des Gebäudes.
+    /// </summary>
+    public string Sollwert { get; init; } = "";
+
     /// <summary>Die Räume der Zone in Dateireihenfolge.</summary>
     public IReadOnlyList<GebaeudeZonenraumDaten> Raumliste { get; init; } = Array.Empty<GebaeudeZonenraumDaten>();
 }
@@ -493,6 +504,12 @@ public sealed record GebaeudeZonierungDaten
 /// </summary>
 public sealed record GebaeudeImportStand
 {
+    /// <summary>
+    /// Lässt sich die Raumtemperatur der Datei als Heizsollwert übernehmen? Mindestens ein beheizter Raum trägt eine
+    /// CAD-Raumtemperatur und keiner einen Norm-Sollwert — nur dann zeigt der Dialog den Schalter.
+    /// </summary>
+    public bool CadSollwertMoeglich { get; init; }
+
     /// <summary>Die Bilanzzeile des Kopfs (Datei, Gebäude, Klasse, Zahl der Werte je Herkunft).</summary>
     public string Kopftext { get; init; } = "";
 
@@ -558,6 +575,7 @@ public sealed record GebaeudeImportStand
 /// Die Zuordnungen von Hand in ihrer Reihenfolge; <c>null</c> = keine. Gespeichert werden sie mit den
 /// Zonen und den Raumpaarungen erst mit der Gebäudeliste.
 /// </param>
+/// <param name="RaumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen".</param>
 public sealed record GebaeudeImportErgebnis(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -567,7 +585,8 @@ public sealed record GebaeudeImportErgebnis(
     bool AlsZone = false,
     IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
     string? Zonenregel = null,
-    IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null)
+    IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null,
+    bool RaumtemperaturAlsSollwert = false)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)
@@ -749,6 +768,15 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_SP_HINWEIS</summary>
     public string SpalteHinweis { get; set; } = Resource.GIMP_DLG_SP_HINWEIS;
 
+    /// <summary>GIMP_DLG_SP_SOLLWERT — Spalte „Heizsollwert Tag" der Zonenliste.</summary>
+    public string SpalteSollwert { get; set; } = Resource.GIMP_DLG_SP_SOLLWERT;
+
+    /// <summary>GIMP_DLG_CAD_SOLLWERT — der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen".</summary>
+    public string CadSollwert { get; set; } = Resource.GIMP_DLG_CAD_SOLLWERT;
+
+    /// <summary>GIMP_DLG_CAD_SOLLWERT_HINWEIS — der Hinweis am Schalter (Vorgabe Normtemperatur, Wert änderbar).</summary>
+    public string CadSollwertHinweis { get; set; } = Resource.GIMP_DLG_CAD_SOLLWERT_HINWEIS;
+
     /// <summary>GIMP_DLG_ZONE_AUFKLAPPEN — {0} = Zone.</summary>
     public string ZoneAufklappen { get; set; } = Resource.GIMP_DLG_ZONE_AUFKLAPPEN;
 
@@ -907,4 +935,11 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_GESPERRT — Einleitung der Fehler, die die Übernahme sperren.</summary>
     public string Gesperrt { get; set; } = Resource.GIMP_DLG_GESPERRT;
+}
+
+/// <summary>Die sprachneutralen Schlüssel der Schalter des Zuordnungsdialogs (als <c>data-schluessel</c>).</summary>
+public static class GebaeudeImportSchalter
+{
+    /// <summary>Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen".</summary>
+    public const string RAUMTEMPERATUR_ALS_SOLLWERT = "RaumtemperaturAlsSollwert";
 }
