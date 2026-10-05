@@ -1753,6 +1753,9 @@
         // KU2 Welle 3: die Prüfregel der Kühlfelder - EINE Stelle für beide Wirte.
         string? kuehl = WaermepumpeKonfiguration.KuehlFehler(Daten, Kuehlung, KonfigTexte);
         if (kuehl is not null) return (kuehl, MANGEL_KUEHLUNG);
+        // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf - dieselbe Regel wie in Simulation › Konfiguration.
+        string? zeiten = WaermepumpeKonfiguration.BetriebszeitenFehler(Daten, KonfigTexte);
+        if (zeiten is not null) return (zeiten, MANGEL_KUEHLUNG);
         return (null, "");
     }
 

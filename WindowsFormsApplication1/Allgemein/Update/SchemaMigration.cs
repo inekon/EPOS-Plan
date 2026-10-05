@@ -5147,6 +5147,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ZONEN_KAELTESPITZE = ZonenKaeltespitzeSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="AnlagenfahrplanSchema.SCHRITT"/> — <b>der Anlagenfahrplan</b> (AK2-1):
+        /// <c>Zeitprogramm</c> und <c>Vorlauf_Max</c> an <c>Tab_Energieanlagen</c>, sechs Komfort- und
+        /// Fahrplanspalten an <c>Tab_ErgebnisEnergiebedarf</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten entstehen leer.</para>
+        /// </summary>
+        public const int SCHRITT_ANLAGENFAHRPLAN = AnlagenfahrplanSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7467,6 +7476,12 @@ namespace WindowsFormsApplication1
                         "Die Kaeltespitze einer Zone waere nur im Lauf, nicht im gespeicherten Ergebnis. KEIN " +
                         "Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_ZonenKaeltespitze),
+            // ANLAGENFAHRPLAN (AK2-1). Quelle ist AnlagenfahrplanSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ANLAGENFAHRPLAN,
+                        "Tab_Energieanlagen.Zeitprogramm/Vorlauf_Max, Tab_ErgebnisEnergiebedarf.Komfort_*",
+                        "Zeitprogramm und Vorlaufangebot eines Erzeugers und der Komfort des gekoppelten Laufs " +
+                        "haetten keinen Platz. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_Anlagenfahrplan),
         };
 
         /// <summary>
@@ -14092,6 +14107,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Kaeltespitze je Zone - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Anlagenfahrplan" — Anlass und Wirkung stehen bei <see cref="SCHRITT_ANLAGENFAHRPLAN"/>,
+        /// die Anweisungen bei <see cref="AnlagenfahrplanSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Anlagenfahrplan(Lauf l)
+        {
+            string nr = AnlagenfahrplanSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in AnlagenfahrplanSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = AnlagenfahrplanSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!AnlagenfahrplanSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Zeitprogramm, Vorlauf_Max und die Komfortspalten stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Anlagenfahrplan - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

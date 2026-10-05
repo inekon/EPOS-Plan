@@ -59,6 +59,9 @@ namespace WindowsFormsApplication1.Referenzlauf
             // begrenzter Kuehluebergabe - dieselbe Regel, sie stehen erst in aggregate.csv, wenn
             // ein Lauf die Kuehluebergabe rechnet.
             foreach (SchemaSpalte s in KuehluebergabeSchema.Ergebnisspalten) namen.Add(s.Name);
+            // Schemaschritt 186 (AK2-1, Anlagenkopplung 8.3): Komfort und Fahrplanbegrenzung - dieselbe
+            // Regel, sie stehen erst in aggregate.csv, wenn ein Lauf gekoppelt rechnet.
+            foreach (string s in AnlagenfahrplanSchema.SPALTEN_ERGEBNIS) namen.Add(s);
             return namen;
         }
 

@@ -517,8 +517,11 @@ namespace WindowsFormsApplication1
                     x.A,
                     x.B,
                     abschnitte,
-                    heizleistungMaxAnteil: akkKappung / STUNDE_S)
+                    heizleistungMaxAnteil: r.VerfuegbarkeitIstGrenze ? 0.0 : akkKappung / STUNDE_S)
                 {
+                    VerfuegbarkeitAnteil = r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0,
+                    Verfuegbarkeitsgrund = r.VerfuegbarkeitIstGrenze && akkKappung > 0.0
+                        ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                     MessungUmkehrJ = mUmkehrJ,
                     MessungUmkehrAbschnitte = mUmkehrAb,
                     MessungBandKs = mBandKs,
@@ -561,10 +564,11 @@ namespace WindowsFormsApplication1
                 vorlauf,
                 ruecklauf,
                 (Begrenzungsgrund)grund,
-                tauJeGrund[(int)Begrenzungsgrund.Uebergabe] / STUNDE_S,
+                (tauJeGrund[(int)Begrenzungsgrund.Uebergabe] + tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage]) / STUNDE_S,
                 // Mit Übergabe wie gehabt aus den Gründen; eine Stunde nur mit Kühlübergabe heizt ideal
                 // und trägt den Anteil aus dem eigenen Akkumulator (Entwurf KP3, Festlegung 20).
-                r.MitUebergabe ? tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S : akkKappung / STUNDE_S,
+                r.MitUebergabe ? tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S
+                    : r.VerfuegbarkeitIstGrenze ? 0.0 : akkKappung / STUNDE_S,
                 tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S,
                 kuehlVorlauf,
                 kuehlRuecklauf,
@@ -574,6 +578,10 @@ namespace WindowsFormsApplication1
                 tauJeGrundKuehl[(int)Begrenzungsgrund.KuehlleistungMax] / STUNDE_S,
                 tauJeGrundKuehl[(int)Begrenzungsgrund.KeineKaelte] / STUNDE_S)
             {
+                VerfuegbarkeitAnteil = VerfuegbarkeitAnteilDerStunde(tauJeGrund, akkKappung, in r),
+                VorlaufAnlageAnteil = tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage] / STUNDE_S,
+                Verfuegbarkeitsgrund = VerfuegbarkeitAnteilDerStunde(tauJeGrund, akkKappung, in r) > 0.0
+                    ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                 MessungUmkehrJ = mUmkehrJ,
                 MessungUmkehrAbschnitte = mUmkehrAb,
                 MessungBandKs = mBandKs,
@@ -582,8 +590,21 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// Der Grund einer gekappten Heizleistung (4.5): Ist die Schranke der Anlagenverfügbarkeit die kleinere
+        /// Grenze, heißt er <see cref="Begrenzungsgrund.Verfuegbarkeit"/>, sonst wie im Bestand
+        /// <see cref="Begrenzungsgrund.HeizleistungMax"/>.
+        /// </summary>
+        private static Begrenzungsgrund KappungsgrundHeizen(in Stundenrand r)
+            => r.VerfuegbarkeitIstGrenze ? Begrenzungsgrund.Verfuegbarkeit : Begrenzungsgrund.HeizleistungMax;
+
+        /// <summary>Zeitanteil der Stunde an der Schranke der Verfügbarkeit [–]: mit Übergabe aus den Gründen, sonst aus der Kappung.</summary>
+        private static double VerfuegbarkeitAnteilDerStunde(Span<double> tauJeGrund, double akkKappung, in Stundenrand r)
+            => r.MitUebergabe ? tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] / STUNDE_S
+               : r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0;
+
         /// <summary>Zahl der Begrenzungsgründe beider Seiten (Länge der Zeitsummen je Grund).</summary>
-        private const int GRUENDE = 8;
+        private const int GRUENDE = 10;
 
         // Das Muster der zuletzt gerechneten Stunde (G6b W3): Fallfolge und Abschnittsdauern.
         private readonly Betriebsfall[] _letzteFolge = new Betriebsfall[ABSCHNITTSDECKEL];
@@ -777,8 +798,11 @@ namespace WindowsFormsApplication1
                     x.A,
                     x.B,
                     n,
-                    heizleistungMaxAnteil: akkKappung / STUNDE_S)
+                    heizleistungMaxAnteil: r.VerfuegbarkeitIstGrenze ? 0.0 : akkKappung / STUNDE_S)
                 {
+                    VerfuegbarkeitAnteil = r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0,
+                    Verfuegbarkeitsgrund = r.VerfuegbarkeitIstGrenze && akkKappung > 0.0
+                        ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                     MessungUmkehrJ = mUmkehrJ,
                     MessungUmkehrAbschnitte = mUmkehrAb,
                     MessungBandKs = mBandKs,
@@ -807,7 +831,7 @@ namespace WindowsFormsApplication1
                 vorlauf,
                 ruecklauf,
                 (Begrenzungsgrund)grund,
-                tauJeGrund[(int)Begrenzungsgrund.Uebergabe] / STUNDE_S,
+                (tauJeGrund[(int)Begrenzungsgrund.Uebergabe] + tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage]) / STUNDE_S,
                 tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S,
                 tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S,
                 double.NaN,
@@ -818,6 +842,10 @@ namespace WindowsFormsApplication1
                 0.0,
                 0.0)
             {
+                VerfuegbarkeitAnteil = tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] / STUNDE_S,
+                VorlaufAnlageAnteil = tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage] / STUNDE_S,
+                Verfuegbarkeitsgrund = tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] > 0.0
+                    ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                 MessungUmkehrJ = mUmkehrJ,
                 MessungUmkehrAbschnitte = mUmkehrAb,
                 MessungBandKs = mBandKs,
@@ -856,7 +884,7 @@ namespace WindowsFormsApplication1
                 phiStern = Waermeuebergabe.LeistungGesaettigtW(k, vorlauf, theta0, s);
                 thetaStern = theta0 + s * phiStern;
                 leitwert = Waermeuebergabe.SteigungOffenWK(k, phiStern, vorlauf, thetaStern);
-                grund = Begrenzungsgrund.Uebergabe;
+                grund = r.VorlaufAnlageGekappt ? Begrenzungsgrund.VorlaufAnlage : Begrenzungsgrund.Uebergabe;
             }
             else
             {
@@ -883,8 +911,9 @@ namespace WindowsFormsApplication1
         {
             switch (fall)
             {
-                case Betriebsfall.UebergabeGesaettigt: return Begrenzungsgrund.Uebergabe;
-                case Betriebsfall.Heizgrenze: return Begrenzungsgrund.HeizleistungMax;
+                case Betriebsfall.UebergabeGesaettigt:
+                    return r.VorlaufAnlageGekappt ? Begrenzungsgrund.VorlaufAnlage : Begrenzungsgrund.Uebergabe;
+                case Betriebsfall.Heizgrenze: return KappungsgrundHeizen(in r);
                 case Betriebsfall.Totband:
                     return r.MitHeizung && Aufbauen(Betriebsfall.HeizenGeregelt, in r).Ausgang(2, x) > 0.0
                         ? Begrenzungsgrund.Heizgrenze : Begrenzungsgrund.KeineBegrenzung;
@@ -1087,7 +1116,7 @@ namespace WindowsFormsApplication1
 
             // Die Gründe und Fälle der Seite (Spiegel: Heizgrenze ↔ KeineKaelte usw.).
             Begrenzungsgrund grundNichts = heizen ? Begrenzungsgrund.Heizgrenze : Begrenzungsgrund.KeineKaelte;
-            Begrenzungsgrund grundLeistungMax = heizen ? Begrenzungsgrund.HeizleistungMax : Begrenzungsgrund.KuehlleistungMax;
+            Begrenzungsgrund grundLeistungMax = heizen ? KappungsgrundHeizen(in r) : Begrenzungsgrund.KuehlleistungMax;
             Betriebsfall fallGrenze = heizen ? Betriebsfall.Heizgrenze : Betriebsfall.Kuehlgrenze;
 
             // Der freie Lauf ohne Heizung am Abschnittsbeginn und die Antwort der Raumluft auf
@@ -1152,7 +1181,7 @@ namespace WindowsFormsApplication1
                 fall = heizen ? Betriebsfall.UebergabeGesaettigt : Betriebsfall.KuehluebergabeGesaettigt;
                 // Die Vorlaufgrenze der Kälteseite (7.2) ist nur dann der Grund, wenn die Übergabe
                 // gesättigt ist UND der Vorlauf an der Grenze steht.
-                grund = heizen ? Begrenzungsgrund.Uebergabe
+                grund = heizen ? (sr.VorlaufGekappt ? Begrenzungsgrund.VorlaufAnlage : Begrenzungsgrund.Uebergabe)
                         : sr.VorlaufGekappt ? Begrenzungsgrund.VorlaufgrenzeKuehlung : Begrenzungsgrund.KuehlUebergabe;
             }
             else
@@ -1879,13 +1908,13 @@ namespace WindowsFormsApplication1
             /// <summary>Strahlungsanteil der Übergabe [–].</summary>
             internal double Strahlungsanteil { get; }
 
-            /// <summary>Kälteseite: Steht der Vorlauf an der Vorlaufgrenze (7.2)? Wärmeseite: nie.</summary>
+            /// <summary>Kälteseite: Steht der Vorlauf an der Vorlaufgrenze (7.2)? Wärmeseite: am Angebot der Anlage (F6, AK2).</summary>
             internal bool VorlaufGekappt { get; }
 
             /// <summary>Die Wärmeseite (Schritt H).</summary>
             internal static Seitenrand Heizseite(in Stundenrand r)
                 => new Seitenrand(r.ThetaSoll, r.VorlaufC, r.HeizleistungMaxW, r.Uebergabe,
-                                  r.HeizungStrahlungsanteil, false);
+                                  r.HeizungStrahlungsanteil, r.VorlaufAnlageGekappt);
 
             /// <summary>Die Kälteseite (Schritt K, E37).</summary>
             internal static Seitenrand Kaelteseite(in Stundenrand r)

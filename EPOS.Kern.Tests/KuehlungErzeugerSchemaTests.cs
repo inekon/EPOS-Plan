@@ -38,6 +38,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Die Kopie im Referenzprojekt der Kältemaschine 1055 (KU3-4b): ohne Kühlbetrieb, Kühlwerte reisen mit.</summary>
         private const int WP_REFERENZ_KAELTEMASCHINE = 1672051;
 
+        /// <summary>Die Kopie von 1047 im Referenzprojekt des Fahrplans 1056 (AK2-4): Kühlbetrieb wie 1047.</summary>
+        private const int WP_REFERENZ_FAHRPLAN = 1672052;
+
         /// <summary>Ein Katalogsatz mit Kühlkennlinie (60 Stützstellen, Laststufen gepflegt).</summary>
         private const int STAMM_MIT_KUEHLKENNLINIE = 42;
 
@@ -136,8 +139,8 @@ namespace EPOS.Kern.Tests
             int platzhalter = AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?');
             // 66 seit Schemaschritt 119: die Abrechnungsart des Kältestroms (E34) steht daneben;
             // 67 mit der Bodenalbedo (AlbedoSchema), 72 mit den fünf Feldern des Kollektorfelds
-            // (SolarthermieFelderSchema).
-            Assert.Equal(72, platzhalter);
+            // (SolarthermieFelderSchema), 74 mit Zeitprogramm und Vorlauf_Max (AnlagenfahrplanSchema).
+            Assert.Equal(74, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
         }
 
@@ -165,7 +168,8 @@ namespace EPOS.Kern.Tests
             // Die Kälteerzeuger: das Projektgerät von 1017 und seine Kopie im Referenzprojekt der
             // Anlagenkopplung 1047 (anlagenkopplung_1047_referenzprojekt.py).
             string saat = WP_KOPIE.ToString(CultureInfo.InvariantCulture) + ", " +
-                          WP_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture);
+                          WP_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", " +
+                          WP_REFERENZ_FAHRPLAN.ToString(CultureInfo.InvariantCulture);
             foreach (string t in new[] { "Tab_WP", "Tab_WP_STAMM" })
             {
                 Assert.True(Zahl("SELECT COUNT(*) FROM [" + t + "]") > 0);
@@ -174,7 +178,7 @@ namespace EPOS.Kern.Tests
                                       "OR Kuehl_Hilfsstromanteil IS NOT NULL) AND ID NOT IN (" + saat + ", " +
                                       WP_REFERENZ_KAELTEMASCHINE.ToString(CultureInfo.InvariantCulture) + ")"));
             }
-            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG })
+            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG, WP_REFERENZ_FAHRPLAN })
                 Assert.Equal("1|18|0.05", Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
                                           "|" + Zahl("SELECT Kuehl_Vorlauf FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
                                           "|" + Convert.ToString(DataRepository.ExecuteScalar(

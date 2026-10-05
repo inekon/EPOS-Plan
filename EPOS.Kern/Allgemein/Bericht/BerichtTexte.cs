@@ -138,6 +138,16 @@ namespace WindowsFormsApplication1
             { "Vorlauf Mittel [°C]", "Mean flow [°C]" },
             { "Rücklauf Mittel [°C]", "Mean return [°C]" },
             { "Übergabe begrenzt [h/a]", "Emission limited [h/a]" },
+            // Anlagenkopplung AK2 (Konzept 9.4, 5.5): Komfort neben Restbedarf
+            { "Komfort und Restbedarf (Simulationsergebnis Stamm)", "Comfort and residual demand (base simulation result)" },
+            { "Bedarfsbegriff", "Demand basis" },
+            { "Unterschreitung [h/a]", "Underheating [h/a]" },
+            { "Kelvinstunden [Kh/a]", "Kelvin hours [Kh/a]" },
+            { "Längste Strecke [h]", "Longest run [h]" },
+            { "Fahrplan begrenzt [h/a]", "Limited by schedule [h/a]" },
+            { "Restbedarf [MWh/a]", "Residual demand [MWh/a]" },
+            { "Gezählt werden Stunden der Nutzungszeit, in denen die Raumtemperatur mehr als 1,0 K unter dem Sollwert liegt; mit Kopplung ist ein Teil der Unterdeckung eine gesunkene Raumtemperatur, deshalb steht der Restbedarf daneben.",
+              "Counted are hours of the occupancy period in which the room temperature is more than 1.0 K below the set point; with coupling, part of the shortfall is a lower room temperature, which is why the residual demand is shown alongside." },
             // KU3-3: der Kaeltebedarf je Zone
             { "Kältebedarf je Zone", "Cooling demand per zone" },
             { "Kältebedarf [MWh/a]", "Cooling demand [MWh/a]" },

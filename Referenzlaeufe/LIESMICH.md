@@ -266,10 +266,13 @@ entstehen oder verschwinden.
 > `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur` und `Regler_Proportionalband`. Betroffen ist außerdem die **Kaskade** eines gekoppelten
 > Referenzprojekts (`Tab_Einstellungen.Tool_1` bis `Tool_4`): Sie entscheidet, ob die Wärmepumpe Wärme
 > liefert und damit, ob die Kennlinienwahl am gerechneten Vorlauf (Anlagenkopplung 6.1) auf ein Ergebnis
-> wirkt; für den Platz der Wärmepumpe gilt zugleich die Regel „gesäte Kältedaten". Ebenso betroffen ist
-> das Anlegen oder Entfernen eines gekoppelten Referenzprojekts.
+> wirkt; für den Platz der Wärmepumpe gilt zugleich die Regel „gesäte Kältedaten". Betroffen ist ferner der
+> **Anlagenfahrplan** eines gekoppelten Referenzprojekts an seinen Anlagen in `Tab_Energieanlagen`: die Sperrzeit
+> (`Sperrung`, `Sperrzeit_von`, `Sperrzeit_bis`, dazu Zeilen in `Tab_Sperrfenster`), das Zeitprogramm (`Zeitprogramm`)
+> und das Vorlaufangebot (`Vorlauf_Max`, ersatzweise `Vorlauf`) — sie kappen über den Profilweg die Raumheizung und
+> erzeugen die Komfortstunden. Ebenso betroffen ist das Anlegen oder Entfernen eines gekoppelten Referenzprojekts.
 >
-> **Rechenwirkung haben die Projekte 1047 und 1054.** Projekt **1047 „Referenz Anlagenkopplung AK1"**, die Kopie von 1017:
+> **Rechenwirkung haben die Projekte 1047, 1054 und 1056.** Projekt **1047 „Referenz Anlagenkopplung AK1"**, die Kopie von 1017:
 > Kopplungsstufe „AK1", Gebäude 10653 mit Heizkreis (Radiator, Heizkurve gefahren) und Kühlübergabe
 > (Kühldecke), alle übrigen Übergabespalten leer, also die EPOS-Vorgaben der Art, und die Kaskade BHKW,
 > Wärmepumpe, Elektrokessel (in 1017: BHKW, Elektrokessel, Wärmepumpe) — neun Zellen samt der Kopie aus
@@ -281,6 +284,11 @@ entstehen oder verschwinden.
 > `Regler_Proportionalband` 2,0 — acht Zellen (Kopplungsstufe, drei Gebäudespalten, vier Zonenzellen) samt der Kopie aus
 > [`Skripte/referenzprojekt_1054_zonen_heizkreis.cs`](Skripte/referenzprojekt_1054_zonen_heizkreis.cs); alle
 > übrigen Übergabespalten von Gebäude und Zonen stehen leer.
+> Projekt **1056 „Referenz Kopplung mit Fahrplan"**, die Kopie von 1047 (unten „Das Referenzprojekt 1056“): an der
+> Wärmepumpe `Sperrung` 1, `Sperrzeit_von` 0, `Sperrzeit_bis` 6 und `Vorlauf_Max` 50, an Kessel und BHKW das
+> `Zeitprogramm` 0 von 0 bis 6 Uhr an allen Tagen, sonst 1 — sechs Zellen samt der Kopie aus
+> [`Skripte/referenzprojekt_1056_fahrplan.py`](Skripte/referenzprojekt_1056_fahrplan.py). 1047 und 1054 stehen ohne
+> Sperrung, Zeitprogramm und `Vorlauf_Max`; auch das ist eine Setzung.
 > Eine leere Spalte ist hier eine Setzung wie eine gefüllte: Wer eine Vorgabe von Hand einträgt, ändert
 > die Basis. Die übrigen Referenzprojekte stehen ohne Kopplungsstufe und ohne Haken; ihre
 > Gebäude rechnen ideal.
@@ -622,7 +630,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-05_R36_Kaeltemaschine`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-05_R37_Fahrplan`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -637,11 +645,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich` und `2026-10-04_R35_Zonenuebergabe` am 05.10.2026**
-(52 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe` und die Basis R36 (Kältemaschine) am 05.10.2026**
+(53 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 52 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 53 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -651,11 +659,11 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-05_R36_Kaeltemaschine/`** — **zwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055), **608 CSV**, **4 029 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 05.10.2026, Stand `7b79b22`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **185**, 87 089 152 Byte, LFS-SHA-256
-`fc67a865e3739592399d4357768a45c2c7a45a1469b69835c7733a0d3a7702eb`, mit den Projekten 1053, 1054 und 1055; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+**`2026-10-05_R37_Fahrplan/`** — **einundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056), **646 CSV**, **4 265 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 05.10.2026, Stand `328a0dc`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **186**, 87 764 992 Byte, LFS-SHA-256
+`63b0bdaef4236c96201922c1537fdfc83e20f2bb2a8fc29bf6894fa046b76d60`, mit den Projekten 1053 bis 1056; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -672,25 +680,33 @@ das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des 
 Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
 die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
 `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
-Zonenübergabe von Projekt 1054. 1050, 1052, 1054 und 1055 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
-rechnet alle zwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+und `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056. 1050, 1052, 1054, 1055 und 1056 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
+rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“ (KU3-4b) — die Zahlen der neunzehn Vorgängerprojekte sind unverändert, neu ist allein 1055.**
+> **Anlass: Komfortspalten für jedes gekoppelte Projekt (F12, E83) und Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4) — die Zahlen der zwanzig Vorgängerprojekte sind unverändert, 1047 und 1054 tragen sechs bzw. vier neue Spalten, neu ist 1056.**
 >
-> Die Einfrierregel „gesäte Kältemaschinendaten“ (Abschnitt „Die Einfrierregel „gesäte Kältemaschinendaten“ (Referenzprojekt
-> 1055)“ oben) verlangt eine neue Basis, sobald ein Referenzprojekt eine Kältemaschine führt. Der Rechenweg ist unverändert:
-> **Gegen R35 sind die neunzehn Vorgängerprojekte 19/19 PASS und 576/576 CSV byte-gleich.**
+> Der Lauf schreibt `Fahrplan_Begrenzt_Stunden` und die Komfortkennzahlen in `Tab_ErgebnisEnergiebedarf` für jedes Projekt,
+> dessen Anlagenfahrplan lief (Kopplung ab AK1, ein gekoppeltes Gebäude auf dem VDI-Weg), nicht erst bei greifender
+> Schranke; ohne greifende Schranke steht `Fahrplan_Begrenzt_Stunden` auf 0. Der Rechenweg ist sonst unverändert:
+> **Gegen R36 sind die zwanzig Vorgängerprojekte je Wert PASS, 18 Projekte vollständig byte-gleich, von 1047 und 1054
+> je 37 bzw. 27 CSV byte-gleich.** In `aggregate.csv` stehen neu bei 1047 `Energiebedarf.Fahrplan_Begrenzt_Stunden` 0,
+> `Komfort_Unterschreitungsstunden` 875, `Komfort_Kelvinstunden` 1 281,04, `Komfort_Laengste_Strecke` 11,
+> `Komfort_Ueberschreitungsstunden` 32 und `Komfort_Kelvinstunden_Kuehlung` 43; bei 1054 die vier Heizspalten
+> (0, 2 162, 2 138,59, 16 — ohne Kühlung bleiben die zwei Kühlspalten leer). Keine bestehende Zeile ändert sich.
 >
-> **Neu ist Projekt 1055**, Kopie von 1017 mit Kältemaschine und Kältespeicher statt Wärmepumpe im Kühlbetrieb (Abschnitt „Das
-> Referenzprojekt 1055“ unten). Der Vergleichslauf meldet 1055 als „nur im Vergleichslauf vorhanden“, weil R35 das Projekt nicht
-> kennt; 1055 bringt 32 CSV und 238 Skalare dazu (gesamt 608 CSV, 4 029 Skalare). 1055 steht nicht in der CI-Auswahl.
+> **Neu ist Projekt 1056**, Kopie von 1047 mit Nachtsperre der Wärmepumpe, Zeitprogramm an Kessel und BHKW und
+> Vorlaufgrenze 50 °C (Abschnitt „Das Referenzprojekt 1056“ unten). Der Vergleichslauf meldet 1056 als „nur im
+> Vergleichslauf vorhanden“, weil R36 das Projekt nicht kennt; 1056 bringt 38 CSV und 226 Skalare dazu (gesamt 646 CSV,
+> 4 265 Skalare). 1056 steht nicht in der CI-Auswahl.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055 \
->   --ziel Referenzlaeufe/2026-10-05_R36_Kaeltemaschine
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
+>   --ziel Referenzlaeufe/2026-10-05_R37_Fahrplan
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
@@ -756,13 +772,21 @@ rechnet alle zwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **86 257 664 Byte, LFS-SHA-256 `889d0699bdd9e264938ea9b3cb419f82716828e31f65a450fac1f652d4933cdf`**. **Die Basis
 > bleibt:** 1053 ist kein Referenzprojekt; der Referenzlauf der neunzehn Projekte meldet je Projekt PASS.
 
-### Die Vorgängerbasis R35 `2026-10-04_R35_Zonenuebergabe`
+> **Nachtrag — Schemaschritt 186 (Anlagenfahrplan), Basis unverändert.**
+> `AnlagenfahrplanSchema` (186 = 185 + 1) legt an `Tab_Energieanlagen` `Zeitprogramm` und `Vorlauf_Max`, an
+> `Tab_ErgebnisEnergiebedarf` sechs Komfort- und Fahrplanspalten an, alle leer, ohne Saat; der Rechenweg liest sie nicht.
+> Die Testdatenbank steht auf **186**: **86 917 120 Byte, LFS-SHA-256
+> `3878da28c64ade18ca935e27e2472570833ee2b5693ac93e027e8ccbe3bda392`**. **Die Basis bleibt:** Die acht CI-Projekte
+> rechnen gegen R36 je Projekt PASS, 262 CSV byte-gleich.
 
-Neunzehn Projekte, 576 CSV, 3 791 Skalare, auf Linux eingefroren gegen die Testdatenbank `905096ae…` (Schemastand 185,
-mit den Projekten 1053 und 1054); mit R36 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Wärmeübergabe je Zone,
-AK1z, E63, das Referenzprojekt 1054) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R36 ist
-das Referenzprojekt 1055 (Kältemaschine mit Kältespeicher); die neunzehn Projekte rechnen byte-gleich, neu ist allein 1055.
+### Die Vorgängerbasis R36 (Kältemaschine)
+
+Zwanzig Projekte, 608 CSV, 4 029 Skalare, auf Linux eingefroren gegen die Testdatenbank `fc67a865…` (Schemastand 185,
+mit den Projekten 1053, 1054 und 1055), gehoben auf Schemastand 186; mit R37 aus dem Arbeitsbaum gefallen, Protokoll und
+Anlass (das Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, KU3-4b) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R37 sind
+die Komfortspalten für jedes gekoppelte Projekt (F12, E83) und das Referenzprojekt 1056; die zwanzig Projekte rechnen je
+Wert gleich, 1047 und 1054 tragen nur neue Spalten in `aggregate.csv`, neu ist 1056.
 
 ## Was hier liegt
 
@@ -774,7 +798,7 @@ das Referenzprojekt 1055 (Kältemaschine mit Kältespeicher); die neunzehn Proje
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben), `referenzprojekt_1056_fahrplan.py` (Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, Kopie von 1047; die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -988,7 +1012,7 @@ bei 4 kW; der Katalogsatz mit 200 kW taktete jede Stunde. Ein abweichender Kühl
 Kühlspitze. Gerechnet: Kältebedarf 4,08 MWh, gedeckt 100,0 % (1017 mit der Wärmepumpe: 98,2 %), Kälte der Maschine
 4,19 MWh, Kältestrom 1,26 MWh (vollständig Netzbezug über den eigenen Zähler mit Träger 58), EER-Jahreswert 3,25,
 0 Stunden freier Kühlung (der Trockenkühler erreicht 3 °C Rückkühlung an Kühltagen nicht), 166 Taktstunden;
-Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R36
+Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R37
 und nicht in der CI-Auswahl; es gilt die Einfrierregel „gesäte Kältemaschinendaten“ oben.
 
 ```bash
@@ -999,6 +1023,41 @@ Das Skript ist wiederholbar (steht 1055 schon, Abbruch ohne Schreiben mit Rückg
 ohne `VACUUM`, prüft Vorlage, Katalogsatz, Träger, Zeilenzahlen der Kopie, `foreign_key_check` und `integrity_check`
 und rollt bei jeder Abweichung zurück. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1054 als
 höchste. Nach einer Neufassung der Testdatenbank wird es nach 1054 gezogen.
+
+### Das Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“
+
+Projekt **1056 „Referenz Kopplung mit Fahrplan“** ist die Kopie des gekoppelten Referenzprojekts 1047 auf dem Kopierweg
+des Programms (`ProjektDuplizierenCtrl`, 9 390 Zeilen in 25 Tabellen, Zeilenzahlen gleich der Vorlage) — dasselbe
+Gebäude mit Heizkreis (Radiator, Heizkurve) und Kühlübergabe, dieselbe Kaskade BHKW, Wärmepumpe, Kessel, kein
+Pufferspeicher. In ihm greift der Anlagenfahrplan (Anlagenkopplung AK2, Profilweg): Das Paar 1047/1056 ist der Vergleich
+ohne und mit Fahrplan. Gesät sind:
+
+| Ort | Zelle | Wert |
+|---|---|---|
+| `Tab_Energieanlagen`, Wärmepumpe (Typ 1) | `Sperrung`, `Sperrzeit_von`, `Sperrzeit_bis` | 1, 0, 6 (Nachtsperre 0 bis 6 Uhr) |
+| `Tab_Energieanlagen`, Wärmepumpe (Typ 1) | `Vorlauf_Max` | 50 °C (`Vorlauf` der Anlage 55 °C) |
+| `Tab_Energieanlagen`, Kessel (Typ 10) und BHKW (Typ 11) | `Zeitprogramm` | 168 Wochenwerte, 0 von 0 bis 6 Uhr, sonst 1, jeden Tag |
+| `Tab_Projekt` | `Beschreibung` | Zweck des Projekts (neutral) |
+
+Warum so: Das Altfenster `Sperrung`/`Sperrzeit_von`/`Sperrzeit_bis` rechnet „Stunde ≥ von und < bis“ ohne Übertrag über
+Mitternacht — ein Fenster 22 bis 6 Uhr sperrte keine Stunde; deshalb die Nachtsperre 0 bis 6 Uhr. Ohne das Zeitprogramm
+fingen Kessel und BHKW die gesperrte Wärmepumpe auf, und die Schranke griffe nie. `Vorlauf_Max` 50 °C ist der
+Abschaltpunkt: An kalten Stunden fordert die Heizkurve mehr, und die Wärmepumpe fällt aus.
+
+```bash
+python3 Referenzlaeufe/Skripte/referenzprojekt_1056_fahrplan.py Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Das Skript ist wiederholbar (steht 1056 schon, Abbruch ohne Schreiben mit Rückgabe 0), schreibt in einer Transaktion
+ohne `VACUUM`, prüft Vorlage (Kopplungsstufe, Heizkreis, Kaskade, Anlagen ohne Fahrplan, kein Puffer, keine
+Sperrfenster), Zeilenzahlen der Kopie, die gesetzten Zellen, `foreign_key_check` und `integrity_check` und rollt bei
+jeder Abweichung zurück. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1055 als höchste. Nach
+einer Neufassung der Testdatenbank wird es nach 1055 gezogen.
+
+Ergebnis in R37: `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
+3 883,19 Kh (1047: 1 281,04), längste Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh; Überschreitungsstunden 32
+und 43 Kh wie 1047. Das Laufprotokoll trägt den Hinweis der Näherung des Profilwegs. 1056 steht in der Basis R37 und
+nicht in der CI-Auswahl; gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`.
 
 ### Das Referenzprojekt 1051 „Konditionierung“
 
@@ -1071,9 +1130,9 @@ ersten Stand ohne Lastgang zieht es nach), prüft
 Zielzellen, die Unversehrtheit von 1018, `integrity_check` und `foreign_key_check` in einer Arbeitsdatei und ersetzt
 erst dann die Datenbank. Nach einer Neufassung der Testdatenbank wird es **nach 1052** gezogen.
 
-**Die zwanzig Projekte der Basis R36:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
-1046, 1047, 1049, 1050, 1051, 1052, 1054 und 1055. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1050, 1052, 1054 und 1055
-stehen nicht in der CI-Auswahl).
+**Die einundzwanzig Projekte der Basis R37:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
+1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055 und 1056. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1050, 1052, 1054, 1055
+und 1056 stehen nicht in der CI-Auswahl).
 
 ## Die wichtigste Regel
 

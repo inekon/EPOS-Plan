@@ -274,6 +274,46 @@
             <simpleValue>LichtWm2</simpleValue>
           </baseName>
         </property>
+        <property dataType="IFCLABEL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Nutzung</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Heizsollwert_Tag</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Heizsollwert_Nacht</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Kuehlsollwert</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>EPOS_Zone</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>Luftwechsel_Nutzer</simpleValue>
+          </baseName>
+        </property>
         <property dataType="IFCAREAMEASURE" cardinality="optional">
           <propertySet>
             <simpleValue>Qto_SpaceBaseQuantities</simpleValue>

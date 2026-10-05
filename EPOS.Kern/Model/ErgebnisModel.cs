@@ -72,6 +72,19 @@ namespace WindowsFormsApplication1
     /// Spitzenwerte haben beide Rechenwege; die übrigen Größen gibt es nur auf dem VDI-Weg —
     /// auf dem Tagesbilanz-Weg sind sie <c>null</c> („nicht gerechnet", nie 0).
     /// </summary>
+    /// <summary>
+    /// <b>Die beiden Bedarfsbegriffe eines Projekts mit Anlagenfahrplan</b> (Anlagenkopplung 6.2, E23, F5): Der
+    /// Kanal führt beide, die Deckung unterscheidet sie nicht; nur der VDI-Weg mit Kopplung hat eine Rückwirkung.
+    /// </summary>
+    public enum Bedarfsbegriff
+    {
+        /// <summary>Gekoppelt gerechnet: Die Verfügbarkeit wirkt auf Raumtemperatur, Bedarf und Komfortstunden zurück.</summary>
+        Rueckwirkung,
+
+        /// <summary>Feste Last: Bedarfsvektor wie ohne Fahrplan, zehrt an der Verfügbarkeit, keine Rückwirkung.</summary>
+        FesteLast,
+    }
+
     public class ErgebnisGebaeudeModel
     {
         /// <summary>Die Gebäudezeile des Projekts (<c>Tab_Gebaeude.ID</c>).</summary>
@@ -149,6 +162,39 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden, in denen die Übergabe die Grenze war [h]; nur mit wirksamer Kopplung.</summary>
         public double? UebergabeBegrenztStundenH;
+
+        /// <summary>
+        /// <c>Fahrplan_Begrenzt_Stunden</c> je Gebäude [h] (AK2): Stunden, in denen die Schranke der Anlagenverfügbarkeit
+        /// die Heizleistung gekappt hat; null ohne Fahrplan. Keine Spalte in <c>Tab_ErgebnisGebaeude</c> — die
+        /// Projektzahl steht in <c>Tab_ErgebnisEnergiebedarf</c>.
+        /// </summary>
+        public int? FahrplanBegrenztStundenH;
+
+        // ---- Komfort und Bedarfsbegriff (AK2-2b; Anlagenkopplung 5.5, 6.2, F5, F8, F9) — keine Spalten in
+        // Tab_ErgebnisGebaeude: Die Projektwerte stehen in Tab_ErgebnisEnergiebedarf, die Darstellung je Gebäude
+        // ist Sache des Berichts (AK2-3). null = nicht erhoben (Gebäude nicht gekoppelt bzw. ohne wirksame Kühlung).
+
+        /// <summary>Stunden der Nutzungszeit mit Unterschreitung des Heizsollwerts um mehr als die Komfortschwelle [h].</summary>
+        public int? KomfortUnterschreitungsstundenH;
+
+        /// <summary>Summe der Unterschreitungen dieser Stunden [Kh], über die Zonen flächengewichtet.</summary>
+        public double? KomfortKelvinstundenKh;
+
+        /// <summary>Längste zusammenhängende Folge solcher Stunden [h].</summary>
+        public int? KomfortLaengsteStreckeH;
+
+        /// <summary>Kälteseite (F9): Stunden der Nutzungszeit mit Überschreitung des Kühlsollwerts [h].</summary>
+        public int? KomfortUeberschreitungsstundenH;
+
+        /// <summary>Kälteseite (F9): Summe der Überschreitungen [Kh].</summary>
+        public double? KomfortKelvinstundenKuehlungKh;
+
+        /// <summary>
+        /// <b>Der Bedarfsbegriff des Gebäudes</b> im Lauf mit Anlagenfahrplan (F5): mit Rückwirkung (VDI-Weg,
+        /// gekoppelt) oder als feste Last (Altweg oder ungekoppelt — zehrt an der Verfügbarkeit, keine
+        /// Komfortstunden, kein gerechneter Vorlauf). <c>null</c> ohne Fahrplan.
+        /// </summary>
+        public Bedarfsbegriff? Bedarfsbegriff;
 
         // ---- Kälteseite der Kopplung (E37, KAK-S3) — dasselbe Muster: null ohne Kühlkopplung ----
 
@@ -455,6 +501,39 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>Kuehl_Uebergabe_Begrenzt_Stunden</c> [h]: Stunden, in denen die Kühlübergabe (mindestens eines Gebäudes) die Grenze war.</summary>
         public double? KuehlUebergabeBegrenztStundenH;
+
+        // ---- Anlagenfahrplan und Komfort (Schemaschritt 186, AK2-1; Anlagenkopplung 8.3) ----
+        //
+        // null heißt „nicht erhoben" — kein Gebäude rechnete gekoppelt. Der Referenzlauf-Export nimmt eine
+        // NULL-Spalte nicht auf (SpaltenNurMitWert); ein Projekt ohne Kopplung schreibt dieselben Zeilen.
+
+        /// <summary><c>Komfort_Unterschreitungsstunden</c> [h]: Stunden der Nutzungszeit unter dem Sollwert.</summary>
+        public int? KomfortUnterschreitungsstundenH;
+
+        /// <summary><c>Komfort_Kelvinstunden</c> [Kh]: Summe der Unterschreitungen.</summary>
+        public double? KomfortKelvinstundenKh;
+
+        /// <summary><c>Komfort_Laengste_Strecke</c> [h]: längste zusammenhängende Unterschreitung.</summary>
+        public int? KomfortLaengsteStreckeH;
+
+        /// <summary><c>Fahrplan_Begrenzt_Stunden</c> [h]: Stunden, in denen der Fahrplan die Grenze war.</summary>
+        public int? FahrplanBegrenztStundenH;
+
+        /// <summary><c>Komfort_Ueberschreitungsstunden</c> [h]: Stunden der Nutzungszeit über dem Kühlsollwert.</summary>
+        public int? KomfortUeberschreitungsstundenH;
+
+        /// <summary><c>Komfort_Kelvinstunden_Kuehlung</c> [Kh]: Summe der Überschreitungen des Kühlsollwerts.</summary>
+        public double? KomfortKelvinstundenKuehlungKh;
+
+        /// <summary>
+        /// <b>Komfort und Restbedarf nebeneinander</b> (Anlagenkopplung 5.5, F8): Wo Komfortstunden ausgewiesen
+        /// werden, steht der Restbedarf daneben — mit Kopplung ist ein Teil der Unterdeckung eine gesunkene
+        /// Raumtemperatur. <c>null</c>, solange keine Komfortstunden erhoben sind.
+        /// </summary>
+        public (int Unterschreitungsstunden, double KelvinstundenKh, int LaengsteStreckeH, double WaermerestbedarfMwh)? KomfortUndRestbedarf
+            => KomfortUnterschreitungsstundenH.HasValue
+                ? (KomfortUnterschreitungsstundenH.Value, KomfortKelvinstundenKh ?? 0.0, KomfortLaengsteStreckeH ?? 0, Waermerestbedarf)
+                : null;
     }
 
     /// <summary>

@@ -463,6 +463,23 @@ namespace WindowsFormsApplication1
         /// <summary>Ist der Vorschlag einer mit mehreren Zonen (Zonierung, nicht Z5/X4)?</summary>
         internal bool Mehrzonig => Zonierung != null && !Zonierung.Einzonig;
 
+        /// <summary>
+        /// Die Nutzung je Zone in der Reihenfolge von <see cref="Zonen"/> (<c>WOHNEN</c>, <c>BUERO</c>, <c>SCHULE</c>,
+        /// <c>null</c> = keine) — aus dem <see cref="Zonenplan"/>; beim Speichern bekommt jede Zone mit Nutzung die
+        /// ausgelieferten Vorlagen dieser Nutzung als Kalenderkopien. Leer = keine Nutzung.
+        /// </summary>
+        internal IReadOnlyList<string> Zonennutzungen => _nutzungen;
+
+        private readonly List<string> _nutzungen = new List<string>();
+
+        /// <summary>
+        /// Die Konditionierung aus der HottCAD-Projektdatei je Zone in der Reihenfolge von <see cref="Zonen"/> (<c>null</c> =
+        /// keine); beim Speichern ersetzt sie nach der Nutzung die Kalenderkopien der Vorlagen (Datenaustauschkonzept 16.3).
+        /// </summary>
+        internal IReadOnlyList<Zonenkonditionierung> Zonenkonditionierungen => _projektdatei;
+
+        private readonly List<Zonenkonditionierung> _projektdatei = new List<Zonenkonditionierung>();
+
         // ==================================================================
         //  Inhalt
         // ==================================================================
@@ -1010,6 +1027,12 @@ namespace WindowsFormsApplication1
                 _v.Zonierung = zon;
                 _v._meldungen.AddRange(zon.Meldungen);
                 if (zon.Abgelehnt) return;
+                // Der Zonenplan: mit nicht zugeordneten Räumen wird nicht gespeichert (Mehrzonenkonzept 6.4).
+                if (zon.Plan?.Abschlusspruefung() is PruefMeldung offen)
+                {
+                    _v._meldungen.Add(offen);
+                    return;
+                }
                 if (zon.ZuVieleZonen)
                 {
                     Fehler(ZU_VIELE_ZONEN, Ganz(zon.Zonen.Count), Ganz(GebaeudeZonenregeln.PFLEGEGRENZE), zon.Vorschlagsregel ?? "");
@@ -1039,6 +1062,8 @@ namespace WindowsFormsApplication1
                     };
                     if (satz.CadSollwertAktiv && iz.IstBeheizt) ZonensollwertAusDatei(m, iz);
                     _v._zonen.Add(m);
+                    _v._nutzungen.Add(iz.Nutzung);
+                    _v._projektdatei.Add(iz.Projektdatei);
                     foreach (AbbildRaum r in iz.Raeume)
                         _v._raeume.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Zone, m.ID));
                     if (!(m.Nutzflaeche > 0.0)) Fehler(ZONE_OHNE_NUTZFLAECHE, m.Bezeichner);

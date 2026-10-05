@@ -807,6 +807,15 @@ mit welchem Wirkungsgrad, zu welchem Preis — das bleibt Sache von `SimulationC
 Kaskade. Sie sagt nur, **wie viel höchstens ankommen kann**. Die Deckung rechnet danach wie heute,
 gegen den nun kleineren Bedarf.
 
+**So gebaut (AK2-2a, 05.10.2026).** `Verfuegbarkeitsgrund` und die Naht `Anlagenverfuegbarkeit` (`LeistungKw`,
+`VorlaufC`, `Grund`) stehen in `EPOS.Kern/Allgemein/Simulation/Anlagenverfuegbarkeit.cs`, neben den Fassaden.
+`Begrenzungsgrund` trägt am Ende `VorlaufAnlage` und `Verfuegbarkeit`; `UMSCHALTUNG` ist noch nicht gebaut. Das Modul
+`Gebaeude/` bekommt die Reihe je Zone am `GebaeudeModellEingang` (`Verfuegbarkeit`) und über
+`Stundenrand.MitVerfuegbarkeit` in den Stundenrand; es liest keine Anlagendaten (`ModultrennungswacheTests`, Satz 5).
+Greift die Schranke, trägt das `Stundenergebnis` den Gebäudegrund `Verfuegbarkeit` und daneben den Anlagengrund
+(`Verfuegbarkeitsgrund`; nennt der Fahrplan keinen, `LEISTUNGSGRENZE`), dazu `VerfuegbarkeitAnteil` und
+`VorlaufAnlageAnteil`.
+
 ### 5.4 Profilweg oder echte Kopplung (H4)
 
 | Weg | Wie | Dafür | Dagegen |
@@ -821,6 +830,16 @@ Kapazität** berücksichtigen (`Q_max` steht bereits als berechnete Größe bere
 Sperrdauer**, nicht als Ladezustand je Stunde. Damit ist die Aussage „eine zweistündige Sperrzeit
 ist durch den Speicher gedeckt, eine achtstündige nicht" möglich, ohne den Kreis zu schließen —
 und der Bericht nennt die Näherung.
+
+**So gebaut (AK2-2a, 05.10.2026).** `Anlagenfahrplan` (`EPOS.Kern/Allgemein/Simulation/Anlagenfahrplan.cs`) rechnet
+die 8 760 Verfügbarkeiten einmal je Projekt aus den belegten Plätzen der Wärmekaskade (Wärmepumpe, Heizkessel, BHKW,
+Senke Heizwärme). Nennleistung je Typ: Wärmepumpe `Tab_WP.Nennleistung`, Heizkessel `Tab_Heizkessel.Ptherm`, BHKW
+`Tab_BHKW.Ptherm`. Verfügbarkeit je Stunde: Sperrprofil der Wärmepumpe (geht vor), sonst der Faktor des
+Zeitprogramms (Wochenbeginn aus dem Kalender), dazu der Abschaltpunkt des bivalenten Betriebs wie im Bestand.
+Vorlaufangebot: das höchste `Vorlauf_Max` (Rückfall `Vorlauf`) der verfügbaren Erzeuger; trägt einer keins, gibt es
+keine Grenze. Der Speichervorrat (Σ `Q_max` der Heizungsspeicher) füllt je zusammenhängendem Sperrblock höchstens
+Vorrat ÷ Blocklänge je Stunde; reicht er nicht, heißt der Grund `SPEICHER_LEER`. Eine Stunde ohne Ausfall trägt im
+Lauf keine Schranke: Die Summe der Nennleistungen allein kappt auf dem Profilweg nicht.
 
 ### 5.5 Komfortstunden — die eine neue Aussage
 
@@ -853,6 +872,22 @@ Bedarf ist gar nicht erst entstanden. Das ist eine **Verschiebung zwischen zwei 
 sie muss im Bericht nebeneinander stehen, sonst sieht ein Vergleich zweier Varianten so aus, als
 wäre ein Problem verschwunden. **Regel:** Wo Komfortstunden ausgewiesen werden, steht der
 Restbedarf daneben — und umgekehrt.
+
+**So gebaut (AK2-2b, 05.10.2026).** `Komfortkennzahlen` (`EPOS.Kern/Allgemein/Simulation/Gebaeude/Komfortkennzahlen.cs`)
+zählt aus dem Ergebnis des VDI-Wegs; die Schwelle ist der Festwert `GebaeudeFestwerte.KOMFORT_SCHWELLE_K` = 1,0 K
+(E79), keine Eingabe. **Nutzungszeit** ist die der übrigen Kennzahlen (`NutzungBei`: Nachtzeit bzw. Personenkalender,
+ohne Rampenstunden der Aufheizoptimierung) und ein endlicher Heizsollwert — eine Stunde mit Heizung „aus" zählt
+nicht. **Zonen → Gebäude:** Eine Gebäudestunde zählt, wenn mindestens eine beheizte Zone die Schwelle reißt; die
+Kelvinstunden sind flächengewichtet über die beheizten Zonen (eine kleine Zone wiegt wenig, eine Stunde zählt aber
+voll); die längste Strecke läuft über die Gebäudestunden. **Gebäude → Projekt:** Stunden = Stunden, in denen
+mindestens ein Gebäude zählt; Kelvinstunden = Summe; längste Strecke = Maximum. Erhoben wird nur am gekoppelten
+Gebäude (Heizkreis, Kältekreis oder Fahrplan wirksam); Altweg und ungekoppelte Gebäude bleiben ohne Kennzahl.
+`ErgebnisGebaeudeModel` trägt die fünf Werte je Gebäude (keine Spalte); die Projektspalten schreibt
+`SimulationRunner.AnlagenfahrplanSpaltenSetzen` erst, wenn der Fahrplan in mindestens einer Stunde gekappt hat —
+sonst NULL. Grund: Schon AK1 allein erzeugt Unterschreitungen (die Aufheizspitze am Morgen nach der Absenkung reißt
+an der Übergabe die Schwelle; im Probegebäude 273 h im Jahr), und die AK1-Referenzprojekte schrieben sonst neue
+Spalten. Die Erhebung auch ohne greifende Schranke ist ein Einfrierschritt (AK2-4). Komfort und Restbedarf stehen
+nebeneinander in `ErgebnisEnergiebedarfModel` (`KomfortUndRestbedarf`).
 
 ---
 ## 6. Kopplungsschema je Stufe
@@ -1021,6 +1056,27 @@ der Deckungslauf sieht den kleineren Bedarf **erst danach**. Ein Erzeuger, der w
 Begrenzung weniger liefert, wird also nicht doppelt gezählt — aber der Speicher füllt sich in der
 Rechnung so, als hätte er den ursprünglichen Bedarf gedeckt. **Das ist der Preis des Profilwegs**,
 und er steht im Bericht (5.4).
+
+**So gebaut (AK2-2a, 05.10.2026).** Der Zweipass sitzt in `SimulationWaermebedarf.FahrplanVorbereiten` vor der
+Gebäudeschleife und wirkt nur mit Projektstufe und mindestens einem gekoppelten Gebäude auf dem VDI-Weg (F10).
+Pass 1 rechnet alle Gebäude unbegrenzt auf einer frisch gelesenen Gebäudeliste (Altweg und ungekoppelte Gebäude
+zehren als feste Last mit); er entfällt bei genau einem Gebäude ohne Zonenschleife. `Verfuegbarkeitsverteilung`
+verteilt proportional mit Randfall und Rundungsrest, die zweite Stufe gibt die Gebäudeschranke nach dem Schlüssel
+der Zonen weiter. Im Weg mit Nachmultiplikation wird die Schranke auf den Katalogbau umgerechnet; bei
+Verbrauchsangabe liefert ein Probelauf ohne Schranke den Faktor. `Fahrplan_Begrenzt_Stunden` zählt die Stunden mit
+`Verfuegbarkeit` je Gebäude (`ErgebnisGebaeudeModel`) und je Projekt (`Tab_ErgebnisEnergiebedarf`, ohne gekappte
+Stunde NULL). Offen für AK2-2b: Komfortkennzahlen, Kennzeichnung der festen Last im Bericht, Kälteseite,
+Laufprotokoll-Hinweise.
+
+**So gebaut (AK2-2b, 05.10.2026).** Im Lauf mit Fahrplan trägt jede Zeile von `GebaeudeKennzahlenListe` ihren
+`Bedarfsbegriff` (`Rueckwirkung` oder `FesteLast`; ohne Fahrplan `null`) — ein Feld, keine Spalte; die Darstellung ist
+AK2-3. Ein Gebäude als feste Last zehrt, hat keine Komfortkennzahlen und keinen gerechneten Vorlauf. Das
+Laufprotokoll nennt zwei Hinweise (beide Sprachen): die Näherung des Profilwegs (`SIMENG_AK2_PROFILWEG_NAEHERUNG`,
+sobald der Fahrplan in einer Stunde gekappt hat) und die Zahl der Gebäude als feste Last (`SIMENG_AK2_FESTE_LAST`,
+nur bei mindestens einem). Die Bedarfsauskunft (`GebaeudeBedarfCtrl.Rechnen`) rechnet ein gespeichertes
+Projektgebäude über `HeizwaermeEinesGebaeudesWieImLauf` mit derselben Fahrplanvorbereitung wie der Lauf; den
+Schlüssel des Pass 1 liefert der gespeicherte Stand der übrigen Gebäude. Ein noch nicht gespeichertes Gebäude rechnet
+ohne Fahrplan.
 
 ### 6.3 AK3 — der geschlossene Kreis
 
@@ -1255,6 +1311,15 @@ die vierte Welle von AK1 gebaut hat.
 Einen eigenen Schalter hat die Kälteseite **wie** die Wärmeseite (`Kuehluebergabe_Aktiv`, E37 A1);
 das ist keine Abweichung.
 
+**So gebaut (AK2-2b, 05.10.2026).** Die Komfortkennzahlen der Kälteseite (`Komfort_Ueberschreitungsstunden`,
+`Komfort_Kelvinstunden_Kuehlung`) zählen spiegelbildlich: Raumluft über dem Kühlsollwert der Stunde
+(`GebaeudeModellErgebnis.Kuehlsollwertreihe`, mit Kühlkalender seine Reihe) um mehr als die Schwelle, in der
+Nutzungszeit, nur mit wirksamer Kühlung; Zonen und Projekt wie auf der Wärmeseite (5.5). Eine weitere Abweichung
+bleibt benannt offen: **`UMSCHALTUNG` ist nicht gebaut.** Die Tagesbetriebsart der reversiblen Maschine (K8a)
+entsteht in der Kältekaskade (`Kaeltekaskade`) aus den Tagessummen des Projektbedarfs, also nach der Gebäuderechnung und hinter der
+Naht; der Profilweg müsste dafür Pass 1 immer fahren und den Kältebedarf einbeziehen. Das gehört zur echten
+Kopplung (AK3) oder in einen eigenen Auftrag; bis dahin trägt ein Kühltag auf der Heizseite keine Schranke.
+
 ---
 
 ## 8. Datenmodell
@@ -1428,6 +1493,17 @@ eine reine Projekttabelle ohne Stammfassung, also **zwei `SchemaSpalte`-Einträg
   `Tab_QuellprofilDaten` (`:2136-2151`) käme erst in Frage, wenn Profile wiederverwendbar werden
   sollen (**H8**).
 
+**So gebaut (AK2-1, 05.10.2026).** Schemaschritt **186** `AnlagenfahrplanSchema`
+(`EPOS.Kern/Allgemein/Update/AnlagenfahrplanSchema.cs`, Paketanhebung Art Ddl, ohne Saat) legt an
+`Tab_Energieanlagen` `Zeitprogramm` (TEXT) und `Vorlauf_Max` (REAL) an, beide nullbar. `WErzeugerModel` trägt
+beide Felder; `AnlagenSql.Einfuegen` schreibt sie NULL-erhaltend als letzte Spalten der Anlagen-Anweisung und lässt
+sie auf einer Datenbank ohne die Spalten weg. Speichern, Assistent, Komponentenübernahme und Flottenübernahme legen
+Anlagenzeilen allein über diesen Weg an; Projektduplikat und Projektpaket kopieren alle Spalten der Tabelle und
+tragen beide mit. Den Text liest `Anlagenzeitprogramm` (`EPOS.Kern/Allgemein/Simulation/`): 168 Faktoren 0 … 1 im
+Format des Sollwertprofils, leer = immer verfügbar, jeder Verstoß ein benannter Fehler
+(`SIMENG_AK2_ZEITPROGRAMM_*`), Wochenbeginn aus der Wochenendmaske wie beim Sollwertprofil. Der Rechenweg liest
+beide Spalten noch nicht.
+
 ### 8.3 `AK-S3` — die Ergebnisspalten und die Reihen
 
 Nach dem Muster des Kanalschritts, der die Spalten je Tabelle **namentlich** führt
@@ -1458,6 +1534,12 @@ und `KuehlVorlaufgrenze_H` (der Anteil davon an der Vorlaufgrenze, 7.2). Alle nu
 selben Schritt in `SpaltenNurMitWert` des Referenzlauf-Exports, sonst wäre ein neuer NULL-Schlüssel in
 `aggregate.csv` FAIL. Die Komfortgegenstücke `Komfort_Ueberschreitungsstunden` und
 `Komfort_Kelvinstunden_Kuehlung` kommen mit AK2.
+
+**So gebaut (AK2-1, 05.10.2026).** Derselbe Schemaschritt **186** legt an `Tab_ErgebnisEnergiebedarf` sechs
+nullbare Spalten an: `Komfort_Unterschreitungsstunden`, `Komfort_Laengste_Strecke`, `Fahrplan_Begrenzt_Stunden`
+und `Komfort_Ueberschreitungsstunden` (INTEGER, Prüfklausel 0 … 8760), `Komfort_Kelvinstunden` und
+`Komfort_Kelvinstunden_Kuehlung` (REAL, Prüfklausel ≥ 0). `ErgebnisCtrl` schreibt und liest sie nur, wenn die
+Datenbank sie trägt (NULL = „nicht erhoben"); alle sechs stehen in `SpaltenNurMitWert` des Referenzlauf-Exports.
 
 **Die Reihen bleiben draußen.** Die 8 760 Werte je Reihe gehören nicht in die Datenbank (dieselbe
 Regel wie für alle Ergebnisreihen); sie reisen über den Referenzlauf-Export als
@@ -1678,6 +1760,20 @@ Im Anlagendialog der Simulation, neben Sperrzeit und Priorität:
 Das Feld **`Nutzungszeit`** erscheint hier **nicht** — es wirkt nicht (8.2), und ein Feld, das
 nichts tut, gehört in keine Maske, die von Betriebszeiten handelt.
 
+**So gebaut (AK2-3, 05.10.2026).** Die Gruppe „Betriebszeiten" steht im Baustein `WaermepumpeKonfiguration`
+(`EPOS.UI/Dialoge/Waermepumpe/`), also in beiden Wirten — Anlagendialog der Wärmepumpe und Simulation › Konfiguration —
+unter den Sperrzeiten: Knopf „Wochenraster bearbeiten" öffnet den Baustein `Wochenraster` (Faktoren 0 … 1, Vorgabe
+168-mal 1, leer = immer verfügbar), darunter die Zeile mit vollen und gesperrten Wochenstunden, das Feld „Höchster
+Vorlauf" (Platzhalter und Herleitungszeile aus `Vorlauf`, leer = Vorgabe, Grenzen 20 … 120 °C), der Satz zum Vorrang
+der Sperrzeit und als Info die Zahl der Wochenstunden, in denen Sperrzeit und Zeitprogramm sich überschneiden. Die
+Prüfregel `WaermepumpeKonfiguration.BetriebszeitenFehler` liest über `Anlagenzeitprogramm.Pruefen` (167 Werte, keine
+Zahl, Faktor außerhalb 0 … 1 benannt, kein Auffüllen) und hält in beiden Wirten den Dialog offen. `WaermepumpeAnlageDaten`
+trägt `Zeitprogramm` und `VorlaufMax`; `BetriebszeitenAbbildung` (`EPOS.UI.Daten/Erzeuger/`) bildet beide NULL-erhaltend
+zwischen Anlagenzeile und Feldsatz ab und reicht sie dem schmalen Schreibweg `WErzeugerCtrl.KonfigurationSchreiben`
+(Schalter `Betriebszeiten`; ohne ihn fasst der Weg die Spalten nicht an). Der Hilfe-Assistent führt `vorlauf_max`; das
+Zeitprogramm bleibt der Hand vorbehalten. Heizkessel und BHKW haben in dieser Maske keine Anlagenkonfiguration; ihre
+Betriebszeiten bleiben ohne Eingabe (die Spalten tragen sie, der Fahrplan liest sie).
+
 ### 9.4 Projekteinstellung, Bedarfsdialog, Bericht
 
 - **Projekteinstellung „Anlagenkopplung"** — ein Auswahlfeld mit den Werten „aus" (Vorgabe),
@@ -1702,6 +1798,23 @@ nichts tut, gehört in keine Maske, die von Betriebszeiten handelt.
   Fahrplan EPOS-Erweiterungen sind (B-A3).
 - **`AbweichungsErmittler`** führt Übergabeart und Kopplungsstufe im Variantenvergleich — sonst
   sieht ein Vergleich zweier Varianten mit verschiedener Kopplung wie ein Modellwechsel aus.
+
+**So gebaut (AK2-3, 05.10.2026).** **Bedarfsdialog:** Im Abschnitt „Wärmebedarf" stehen am gekoppelten Gebäude (oder im
+Lauf mit Fahrplan) die Kacheln Unterschreitungsstunden, Kelvinstunden und längste Strecke **neben** dem Restbedarf
+des Projekts aus dem letzten gespeicherten Lauf (`GebaeudeBedarfCtrl.RestbedarfDesProjektsMwh`); ein nicht erhobener
+Wert zeigt „—" samt Zeile (K18). Mit Kälteseite kommen Überschreitungsstunden und Kelvinstunden der Kühlung dazu, im
+Lauf mit Fahrplan der Bedarfsbegriff („mit Rückwirkung" / „feste Last") und die Stunden am Fahrplan. Das Bild
+„Raumtemperatur und Sollwert" (E82) zeigt die Woche mit der größten Unterschreitung (`Komfortwoche.GroessteUnterschreitung`
+über die Komfortmaske der Bedarfsauskunft, Wochenbeginn an einem Tagesbeginn, Gleichstand früher): Raumluft, Sollwert
+gestrichelt, die gezählten Stunden als markierte Reihe (`ChartRenderer.KomfortwocheModell`, drei Proben in
+`Proben/ChartProben`, Messlatte 211). **Bericht:** Die Tafel „Komfort und Restbedarf" im Abschnitt der Gebäudeergebnisse
+steht nur, wenn der Lauf einen greifenden Fahrplan hatte (`Fahrplan_Begrenzt_Stunden` gesetzt oder eine Zeile mit
+Bedarfsbegriff): je Gebäude Bedarfsbegriff, Komfortwerte und Stunden am Fahrplan, darunter die Projektzeile mit dem
+Wärmerestbedarf daneben, die Zahl der Gebäude als feste Last und der Hinweis zum Profilweg. Die Komfortwerte je Gebäude
+haben keine Spalte (AK2-1); aus der Datenbank gelesen stehen sie als „—", die Projektzeile trägt die Werte. Den
+Bedarfsbegriff leitet der Bericht aus der gespeicherten Zeile her (VDI-Weg mit Heizkreis = mit Rückwirkung). Neue
+Platzhalter gibt es nicht; die Katalogfassung bleibt. Die Projekteinstellung, der Variantenvergleich
+(`AbweichungsErmittler`) und der Satz „Fahrplan" am Ausweis nach E10 sind nicht Teil dieser Welle.
 
 ### 9.5 Meldungen und Ressourcen
 
@@ -2215,6 +2328,23 @@ Gebäude (Gästezimmer 293,9, Gastronomie 1 106,5). Die Basis ist `2026-10-04_R3
 Projekten; 1054 steht nicht in der CI-Auswahl
 ([`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md), „Das Referenzprojekt 1054").
 
+**So gebaut (AK2-4, 05.10.2026).** Die Komfortspalten stehen für jedes gekoppelte Projekt (F12, E85):
+`SimulationRunner.AnlagenfahrplanSpaltenSetzen` schreibt `Fahrplan_Begrenzt_Stunden` und die Komfortkennzahlen,
+sobald der Anlagenfahrplan lief (Kopplung ab AK1, ein gekoppeltes Gebäude auf dem VDI-Weg) — ohne greifende Schranke
+mit 0 Fahrplanstunden statt NULL; ein Projekt ohne Kopplung bleibt NULL. Das Referenzprojekt des Fahrplans ist
+**1056 „Referenz Kopplung mit Fahrplan"**, eine Kopie von 1047 auf dem Kopierweg des Programms
+(`Referenzlaeufe/Skripte/referenzprojekt_1056_fahrplan.py`): an der Wärmepumpe `Sperrung` 1 mit `Sperrzeit_von` 0 und
+`Sperrzeit_bis` 6 — das Altfenster kennt keinen Übertrag über Mitternacht, ein Fenster 22 bis 6 Uhr sperrte keine
+Stunde — und `Vorlauf_Max` 50 °C (Abschaltpunkt), an Kessel und BHKW ein Zeitprogramm mit Faktor 0 in denselben
+Stunden an allen Tagen, damit sie die Sperre nicht auffangen; kein Pufferspeicher (1047 führt keinen). Gerechnet:
+1 249 Stunden an der Schranke, 1 854 Komfort-Unterschreitungsstunden (1047: 875), 3 883,19 Kh (1047: 1 281,04), längste
+Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh, im Protokoll der Hinweis der Näherung des Profilwegs. Die
+Einfrierregel „gesäte Auslegungsdaten der Übergabe" umfasst den Anlagenfahrplan eines gekoppelten Referenzprojekts
+(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-05_R37_Fahrplan` mit
+einundzwanzig Projekten: die zwanzig alten je Wert gleich, 18 byte-gleich, 1047 und 1054 nur mit den neuen Zeilen in
+`aggregate.csv`; 1056 steht nicht in der CI-Auswahl und wird von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`
+gehalten.
+
 ### 11.5 CI, iOS und ChartProben
 
 - **Der Nachweis liegt auf `kern.yml` (ubuntu):** Bau und Tests des Filters, SQL-Dialekt-Prüfer,
@@ -2344,6 +2474,18 @@ im Gebäudekonzept Kapitel 13 und im Register als Begründung stehen.
 - **Die Grenzen stehen auf der Seite**, nicht im Kleingedruckten: keine Estrichmasse bei
   Flächenheizungen, ein Heizkreis je Gebäude, keine Heizlastberechnung nach Norm, in AK2 ein
   Fahrplan ohne Ladezustand.
+
+**So gebaut (AK2-3, 05.10.2026).** Repo-Quellen fortgeschrieben: `Programm Dokumentation - Energieerzeuger.wiki`
+(Abschnitt „Betriebszeiten", Anker `betriebszeiten`: Sperrzeit, Zeitprogramm im Wochenraster, höchster Vorlauf, Vorrang
+der Sperrzeit, Profilweg) und `Programm Dokumentation - Gebäudemodell VDI 6007.wiki` (Abschnitt „Komfortstunden", Anker
+`komfort`: Definition, Schwelle 1,0 K als Vorgabe von EPOS-Plan, Nutzungszeit, Komfort neben Restbedarf, feste Last,
+Profilweg-Näherung; dazu Ergebnisse und Grenzen). Der Upload steht aus (gebündelt). **Logbuch-Entwurf**, Version offen:
+
+- „Im Konfigurationsdialog der Wärmepumpe legt die Gruppe ‚Betriebszeiten' ein Zeitprogramm und den höchsten Vorlauf
+  der Anlage fest."
+- „Der Wärmebedarf eines gekoppelt gerechneten Gebäudes zeigt die Komfortstunden neben dem Restbedarf und die Woche mit
+  der größten Unterschreitung."
+- „Der Bericht enthält mit Anlagenfahrplan den Abschnitt ‚Komfort und Restbedarf'."
 
 ---
 

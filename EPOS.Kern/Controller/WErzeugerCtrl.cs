@@ -154,7 +154,10 @@ namespace WindowsFormsApplication1
                                                  double? Abschaltpunkt = null,
                                                  int? IdCarrier = null,
                                                  int? KuehlIdCarrier = null,
-                                                 bool? KuehlEigenerZaehler = null);
+                                                 bool? KuehlEigenerZaehler = null,
+                                                 bool Betriebszeiten = false,
+                                                 string Zeitprogramm = null,
+                                                 double? VorlaufMax = null);
 
         /// <summary>
         /// Schreibt die Konfigurationsfelder EINER Anlagenzeile — der Speicherweg des
@@ -249,6 +252,25 @@ namespace WindowsFormsApplication1
                     return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
                         "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
                         bezeichner);
+
+                // Anlagenkopplung AK2 (9.3): die Gruppe „Betriebszeiten" - Zeitprogramm und hoechster Vorlauf,
+                // nur wenn der Wirt sie fuehrt (Betriebszeiten) und die Datenbank die Spalten traegt. Beide Werte
+                // gehen wie gelesen zurueck: NULL bleibt NULL (leer = immer verfuegbar bzw. Vorgabe Vorlauf).
+                if (felder.Betriebszeiten && AnlagenfahrplanSchema.AnlagenspaltenVorhanden())
+                {
+                    bool okZeiten = DataRepository.ExecuteSQL(
+                        "UPDATE Tab_Energieanlagen SET " + AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM + " = ?, " +
+                        AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX + " = ? WHERE ID = ? AND ID_Projekt = ?",
+                        ProjektPuffer.Par("@zeitprogramm", DbParamTyp.VarWChar,
+                            string.IsNullOrWhiteSpace(felder.Zeitprogramm) ? null : felder.Zeitprogramm),
+                        ProjektPuffer.Par("@vorlaufmax", DbParamTyp.Double, felder.VorlaufMax),
+                        new DbParam("@id", idAnlage),
+                        new DbParam("@proj", idProjekt));
+                    if (!okZeiten)
+                        return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
+                            "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
+                            bezeichner);
+                }
 
                 // ET-2 wie in Update(): Wer den Heizstab einschaltet, hebt die Anlage in
                 // die elektrische Welt. Idempotent, und ein Fehlschlag bricht nichts ab.
@@ -351,8 +373,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                bool ok = DataRepository.ExecuteSQL(AnlagenSql.SQL_ANLAGE_INSERT,
-                                                    AnlagenSql.AnlagenParameter(ID_Projekt, this));
+                (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(ID_Projekt, this);
+                bool ok = DataRepository.ExecuteSQL(sqlAnlage, werteAnlage);
                 if (ok) { StromTraegerNachziehen(); SenkenAnlegen(); ProjektGeaendert(); }
                 return ok;
             }
@@ -661,6 +683,12 @@ namespace WindowsFormsApplication1
             item.Uebertrager_Graedigkeit_K = Kommazahl(dt, row, SolarthermieFelderSchema.SPALTE_GRAEDIGKEIT);
             item.Kollektor_Spreizung_K = Kommazahl(dt, row, SolarthermieFelderSchema.SPALTE_SPREIZUNG);
             item.Arbeitstemperatur_Weg = Text(dt, row, SolarthermieFelderSchema.SPALTE_ARBEITSTEMPERATUR);
+
+            // --- Anlagenfahrplan (Schemaschritt AnlagenfahrplanSchema.SCHRITT, AK2-1) ------
+            // Ausdruecklich mit null - NULL heisst „immer verfuegbar" bzw. „Vorlauf der Anlage";
+            // eine Datenbank vor dem Schritt (etwa ein aelterer Stand auf iOS) laeuft unveraendert.
+            item.Zeitprogramm = Text(dt, row, AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM);
+            item.Vorlauf_Max = Kommazahl(dt, row, AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX);
         }
 
         /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>

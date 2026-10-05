@@ -451,8 +451,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Anwenderauftrag 30.09.2026: das Ganzzahlfeld „Nutzungsdauer" ist in den Kostendialog
         // gegangen, mit ihm das Feld nutzungsdauer der Feldkarte (5 -> 4).
         new("WaermepumpeAnlageDialog", 4, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
-        new("WaermepumpeKonfiguration", 18, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
-            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld; die vier Felder je Sperrfenster (Beginn, Dauer, " +
+        new("WaermepumpeKonfiguration", 19, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld; das Zeitprogramm der Gruppe „Betriebszeiten“ ist ein " +
+            "Wochenraster mit 168 Faktoren und steht nicht in der KI-Sicht, der höchste Vorlauf als „vorlauf_max“; " +
+            "die vier Felder je Sperrfenster (Beginn, Dauer, " +
             "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“"),
         new("WaermepumpeReiter", 8),
         new("WaermesenkeDialog", 9),

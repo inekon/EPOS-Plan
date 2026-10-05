@@ -2145,8 +2145,8 @@ namespace WindowsFormsApplication1
 
                     // Anweisung und Parameter stehen zentral (siehe SQL_ANLAGE_INSERT):
                     // dieselbe Wahrheit, die auch WErzeugerCtrl.Insert benutzt.
-                    if (!DataRepository.ExecuteSQL(SQL_ANLAGE_INSERT,
-                                                   AnlagenParameter(projektID, item, pufferCache)))
+                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(projektID, item, pufferCache);
+                    if (!DataRepository.ExecuteSQL(sqlAnlage, werteAnlage))
                     {
                         SpVariantenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
                         FachspaltenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
@@ -2898,6 +2898,18 @@ namespace WindowsFormsApplication1
                     var alle = new List<GebaeudeQuellzuordnung>(paarungen);
                     alle.AddRange(zone.Zuordnungen);
                     paarungen = alle;
+                }
+
+                // 3b) Stufe SQ-3: Einzonenweg mit Projektdatei - die Konditionierung der Gebaeudegruppe bzw. der einen
+                //     Zone als Gebaeudekalender (Eigentuemer Gebaeude ohne Zone), derselbe Schreibweg wie bei den Zonen.
+                if (item.Importherkunft.Gebaeudekonditionierung != null)
+                {
+                    string fehler = ZonenplanCtrl.ProjektdateiUebernehmen(idKopie, null, item.Importherkunft.Gebaeudekonditionierung);
+                    if (fehler != null)
+                    {
+                        herkunftsfehler = fehler;
+                        return 0;
+                    }
                 }
 
                 GebaeudeImportCtrl.Ergebnis herkunft = new GebaeudeImportCtrl().SchreibeHerkunft(

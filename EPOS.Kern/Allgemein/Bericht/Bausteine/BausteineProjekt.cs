@@ -596,6 +596,93 @@ namespace WindowsFormsApplication1
             HeizkreisSchreiben(k, stamm, zeilen);
             // E37: der Kaeltekreis der kuehlgekoppelt gerechneten Gebaeude.
             KuehlkreisSchreiben(k, stamm, zeilen);
+            // ANLAGENKOPPLUNG AK2 (Konzept 9.4, 5.5): Komfort neben Restbedarf - nur mit Fahrplan.
+            KomfortSchreiben(k, stamm, zeilen);
+        }
+
+        /// <summary>Überschrift des Abschnitts Komfort (Anlagenkopplung AK2) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_KOMFORT = "Komfort und Restbedarf (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Komforttafel — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_KOMFORT =
+            "Gezählt werden Stunden der Nutzungszeit, in denen die Raumtemperatur mehr als 1,0 K unter dem Sollwert liegt; mit Kopplung ist ein Teil der Unterdeckung eine gesunkene Raumtemperatur, deshalb steht der Restbedarf daneben.";
+
+        /// <summary>
+        /// Hatte der Lauf einen Fahrplan, der gegriffen hat? Die Projektspalte <c>Fahrplan_Begrenzt_Stunden</c> ist
+        /// dann gesetzt (sonst NULL), oder eine Gebäudezeile trägt ihren <see cref="Bedarfsbegriff"/>.
+        /// </summary>
+        internal static bool LaufMitFahrplan(VariantenDaten v, List<ErgebnisGebaeudeModel> zeilen)
+            => v?.Ergebnis?.Energiebedarf?.FahrplanBegrenztStundenH.HasValue == true
+               || (zeilen != null && zeilen.Any(g => g.Bedarfsbegriff.HasValue));
+
+        /// <summary>
+        /// Der Bedarfsbegriff eines Gebäudes im Lauf mit Fahrplan (F5): wie der Lauf ihn setzte, sonst aus der
+        /// gespeicherten Zeile hergeleitet — VDI-Weg mit gekoppeltem Heizkreis = mit Rückwirkung, jedes andere
+        /// Gebäude = feste Last (dieselbe Regel wie <c>SimulationWaermebedarf.FahrplanVorbereiten</c>).
+        /// </summary>
+        internal static Bedarfsbegriff BedarfsbegriffImLauf(ErgebnisGebaeudeModel g)
+            => g.Bedarfsbegriff ?? (g.IstVdi6007 && g.IstGekoppelt ? Bedarfsbegriff.Rueckwirkung : Bedarfsbegriff.FesteLast);
+
+        /// <summary>Der Anzeigetext eines Bedarfsbegriffs — dieselben Wörter wie im Bedarfsdialog.</summary>
+        internal static string Bedarfsbegrifftext(Bedarfsbegriff b)
+            => b == Bedarfsbegriff.Rueckwirkung
+                ? MyResource.Resource.GEB_BEDARFSBEGRIFF_RUECKWIRKUNG
+                : MyResource.Resource.GEB_BEDARFSBEGRIFF_FESTE_LAST;
+
+        /// <summary>
+        /// <b>ANLAGENKOPPLUNG AK2 — Komfort neben Restbedarf</b> (Konzept 9.4, 5.5, 6.2): je Gebäude der
+        /// Bedarfsbegriff, die Unterschreitungsstunden, die Kelvinstunden, die längste Strecke und die Stunden am
+        /// Fahrplan; darunter die Projektzeile mit dem Wärmerestbedarf daneben, die Zahl der Gebäude als feste Last
+        /// und der Hinweis zum Profilweg. Ein Wert, den der Lauf nicht erhoben hat, steht als „—".
+        ///
+        /// <para><b>Der Abschnitt entfällt</b>, wenn der Lauf keinen greifenden Fahrplan hatte — jedes Projekt ohne
+        /// Kopplung und jedes Referenzprojekt ohne Zeitprogramm.</para>
+        /// </summary>
+        private static void KomfortSchreiben(WordKontext k, VariantenDaten stamm, List<ErgebnisGebaeudeModel> zeilen)
+        {
+            if (!LaufMitFahrplan(stamm, zeilen)) return;
+            ErgebnisEnergiebedarfModel e = stamm?.Ergebnis?.Energiebedarf;
+
+            int[] b = { 2300, 1700, 1300, 1300, 1200, 1200, k.Inhaltsbreite - 9000 };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            string[] titel = { "Gebäude", "Bedarfsbegriff", "Unterschreitung [h/a]", "Kelvinstunden [Kh/a]",
+                               "Längste Strecke [h]", "Fahrplan begrenzt [h/a]", "Restbedarf [MWh/a]" };
+            for (int i = 0; i < titel.Length; i++)
+                kopf.Append(k.Zelle(titel[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            int festeLast = 0;
+            foreach (ErgebnisGebaeudeModel g in zeilen)
+            {
+                Bedarfsbegriff begriff = BedarfsbegriffImLauf(g);
+                if (begriff == Bedarfsbegriff.FesteLast) festeLast++;
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename, b[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(Bedarfsbegrifftext(begriff), b[1], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(g.KomfortUnterschreitungsstundenH is int h ? k.F(h, 0) : "—", b[2], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.KomfortKelvinstundenKh is double kh ? k.F(kh, 1) : "—", b[3], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.KomfortLaengsteStreckeH is int l ? k.F(l, 0) : "—", b[4], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.FahrplanBegrenztStundenH is int f ? k.F(f, 0) : "—", b[5], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle("—", b[6], false, null, JustificationValues.Right));
+                t.Append(tr);
+            }
+
+            var summe = new TableRow();
+            summe.Append(k.Zelle("Projekt", b[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            summe.Append(k.Zelle("", b[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            summe.Append(k.Zelle(e?.KomfortUnterschreitungsstundenH is int ph ? k.F(ph, 0) : "—", b[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(e?.KomfortKelvinstundenKh is double pk ? k.F(pk, 1) : "—", b[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(e?.KomfortLaengsteStreckeH is int pl ? k.F(pl, 0) : "—", b[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(e?.FahrplanBegrenztStundenH is int pf ? k.F(pf, 0) : "—", b[5], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(e != null ? k.F(e.Waermerestbedarf, 2) : "—", b[6], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            t.Append(summe);
+
+            k.Ueberschrift2(UEBERSCHRIFT_KOMFORT);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_KOMFORT);
+            k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.GEB_BERICHT_FESTE_LAST, festeLast));
+            k.HinweisRoh(MyResource.Resource.SIMENG_AK2_PROFILWEG_NAEHERUNG);
         }
 
         /// <summary>

@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-10-03.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-10-05.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-10-03.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-10-05.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -57,10 +57,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **244 Bilder**; **208** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **247 Bilder**; **211** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-03.sha256` nennt alle 208 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-05.sha256` nennt alle 211 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -579,3 +579,21 @@ deckt bis 30 kW.
 Das sind **2 neue Bilder**. Kein Bild von vorher ändert sich: Die 200 Zeilen der bisherigen Messlatte stehen unverändert
 in `Messlatte_2026-10-03.sha256`, dazu die zwei neuen. Die Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`)
 ist auf Windows nachzuziehen: zwei Zeilen neu, alle übrigen gleich.
+
+## Raumtemperatur und Sollwert (Anlagenkopplung AK2, Bedarfsdialog)
+
+`ChartRenderer.Komfortwoche` zeichnet die Woche mit der größten Unterschreitung (`Komfortwoche.GroessteUnterschreitung`),
+1 240 × 560: die Raumluft in `SERIE_1`, den Heizsollwert gestrichelt in `SERIE_3` und die gezählten
+Unterschreitungsstunden als dritte Reihe in `SERIE_2` — nur in diesen Stunden, sonst Lücke. Die synthetische Woche steht
+in `Program.Anlagenkopplung.cs`: Sollwert 21/17 °C, an den ersten drei Morgen 1,5 bis 3 K Unterschreitung.
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `komfortwoche_gebaeude` | Raumluft, Markierung und Sollwert in ihren Rollenfarben |
+| Gegenprobe | `komfortwoche_markierung_wirkt` | die Markierung der Unterschreitung kommt im Bild an |
+| SVG-Probe | `svg_komfortwoche_markierung` | drei Reihenpfade; die Markierung zerfällt in einen Teilpfad je Morgen, kein „NaN“ |
+
+Das sind eine Maßprobe und eine Gegenprobe — **3 neue Bilder** — und eine SVG-Probe. Kein Bild von vorher ändert sich:
+Die 208 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-10-05.sha256`, dazu die drei neuen. Die
+Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: drei Zeilen neu, alle übrigen
+gleich.

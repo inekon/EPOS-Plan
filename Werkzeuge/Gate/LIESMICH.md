@@ -12,7 +12,7 @@ Regeln, die beide voraussetzen: Tests nie ohne die Schalter `-- xUnit.Paralleliz
 `EPOS.Referenzlauf` vor jedem Referenzlauf bauen; das Bildmaß der Windows-Liste gilt nur auf Windows. Kommen Probebilder
 hinzu, zieht das nächste Windows-Gate die lokale Liste nach — jede alte Zeile muss gleich bleiben, die neuen kommen dazu.
 Ändert eine gewollte Bildänderung Zeilen, nennt der Abschnitt der Etappe in `Proben/ChartProben/LIESMICH.md` genau diese
-Bilder, und nur sie dürfen abweichen. Gegenwärtig (`Messlatte_2026-10-03.sha256`): sechs Bilder der BHKW-Stromlast neu, keines
+Bilder, und nur sie dürfen abweichen. Gegenwärtig (`Messlatte_2026-10-05.sha256`): drei Bilder der Komfortwoche (Anlagenkopplung AK2) neu, keines
 geändert.
 
 ## Referenzlauf und Plattform

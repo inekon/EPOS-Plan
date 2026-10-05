@@ -114,7 +114,19 @@ namespace WindowsFormsApplication1
             // es haengt an den Brauchwasserprofilen bzw. dem Zapfprofil und laeuft im Kanal Warmwasser.
             double? warmwasser = GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(projektId, projekt.m_ID_Klimaregion);
 
-            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser);
+            // Anlagenkopplung AK2 (5.5): der Restbedarf des Projekts steht neben den Komfortstunden.
+            double? restbedarf = GebaeudeBedarfCtrl.RestbedarfDesProjektsMwh(projektId);
+            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser,
+                                              restbedarf);
+
+            // Das Bild „Raumtemperatur und Sollwert" (AK2, E80): die Woche mit der größten Unterschreitung -
+            // nur, wenn am Gebäude Komfort erhoben ist und eine Stunde zählt.
+            int komfortStart = ergebnis.KomfortMaske != null
+                ? Komfortwoche.GroessteUnterschreitung(ergebnis.HeizsollwertC, ergebnis.RaumtemperaturC, ergebnis.KomfortMaske)
+                : -1;
+            Func<Zeichenmodell> komfortbild = komfortStart >= 0
+                ? () => Komfortwochenmodell(ergebnis, komfortStart)
+                : null;
 
             // Das Bild "Raumtemperatur" gibt es nur auf dem VDI-Weg (Konzept 8.2).
             Func<Zeichenmodell> raumbild = ergebnis.RaumtemperaturC != null
@@ -160,6 +172,24 @@ namespace WindowsFormsApplication1
                 ["BildauftragRaumtemperatur"] = raumbild,
                 ["BildauftragKaelte"] = kaeltebild,
                 ["BildauftragVorlauf"] = vorlaufbild,
+                ["BildauftragKomfortwoche"] = komfortbild,
+                ["BildtextKomfortwoche"] = Text_("GEBB_BILD_KOMFORTWOCHE", "Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung"),
+                ["HinweisKomfortwoche"] = komfortStart >= 0
+                    ? string.Format(CultureInfo.CurrentCulture,
+                                    Text_("GEBB_HRL_KOMFORTWOCHE", "Die Woche ab {0}; markiert sind die gezählten Unterschreitungsstunden."),
+                                    Wochenbeginn(komfortStart))
+                    : "",
+                ["KachelKomfortStunden"] = Text_("GEBB_KACHEL_KOMFORT_STUNDEN", "Unterschreitungsstunden"),
+                ["KachelKomfortKelvin"] = Text_("GEBB_KACHEL_KOMFORT_KELVIN", "Kelvinstunden"),
+                ["KachelKomfortStrecke"] = Text_("GEBB_KACHEL_KOMFORT_STRECKE", "Längste Strecke"),
+                ["QuelleKomfort"] = Text_("GEBB_KACHEL_KOMFORT_QUELLE", "Stunden der Nutzungszeit mehr als 1,0 K unter dem Sollwert"),
+                ["KachelRestbedarf"] = Text_("GEBB_KACHEL_RESTBEDARF", "Restbedarf (Projekt, letzter Lauf)"),
+                ["QuelleRestbedarf"] = Text_("GEBB_KACHEL_RESTBEDARF_QUELLE", "Wärme, die kein Erzeuger gedeckt hat — steht neben den Komfortstunden"),
+                ["KachelKomfortUeber"] = Text_("GEBB_KACHEL_KOMFORT_UEBER", "Überschreitungsstunden Kühlung"),
+                ["KachelKomfortKelvinKuehl"] = Text_("GEBB_KACHEL_KOMFORT_KELVIN_KUEHL", "Kelvinstunden Kühlung"),
+                ["KachelBedarfsbegriff"] = Text_("GEBB_KACHEL_BEDARFSBEGRIFF", "Bedarfsbegriff"),
+                ["KachelFahrplanBegrenzt"] = Text_("GEBB_KACHEL_FAHRPLAN_BEGRENZT", "Stunden am Fahrplan begrenzt"),
+                ["HinweisKomfortOhne"] = Text_("GEBB_HRL_KOMFORT_OHNE", "Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude."),
                 ["BildtextVorlauf"] = Text_("GEBB_BILD_VORLAUF_RUECKLAUF", "Vorlauf und Rücklauf"),
                 ["KachelVorlaufRuecklauf"] = Text_("GEBB_KACHEL_VORLAUF_RUECKLAUF", "Vorlauf / Rücklauf"),
                 ["KachelBegrenzt"] = Text_("GEBB_KACHEL_BEGRENZT", "Stunden mit begrenzter Übergabe"),
@@ -234,8 +264,9 @@ namespace WindowsFormsApplication1
         /// Anzeigekante.
         /// </summary>
         private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich,
-                                                 double? warmwasserProjektMwh = null)
+                                                 double? warmwasserProjektMwh = null, double? restbedarfProjektMwh = null)
         {
+            ErgebnisGebaeudeModel zeile = ergebnis.Ergebniszeile;
             var monate = new double[12];
             for (int m = 0; m < 12 && m < ergebnis.MonatswerteMwh.Length; m++)
                 monate[m] = ergebnis.MonatswerteMwh[m];
@@ -258,6 +289,15 @@ namespace WindowsFormsApplication1
                 RuecklaufMittelC = ergebnis.Gekoppelt ? ergebnis.RuecklaufMittelC : null,
                 UebergabeBegrenztStundenH = ergebnis.Gekoppelt ? ergebnis.UebergabeBegrenztStundenH : null,
                 Heizkreiszeile = ergebnis.Gekoppelt ? Heizkreiszeile(ergebnis) : "",
+                // Anlagenkopplung AK2 (5.5, 6.2): Komfort neben Restbedarf, Bedarfsbegriff, Fahrplanstunden.
+                KomfortUnterschreitungsstundenH = zeile?.KomfortUnterschreitungsstundenH,
+                KomfortKelvinstundenKh = zeile?.KomfortKelvinstundenKh,
+                KomfortLaengsteStreckeH = zeile?.KomfortLaengsteStreckeH,
+                KomfortUeberschreitungsstundenH = zeile?.KomfortUeberschreitungsstundenH,
+                KomfortKelvinstundenKuehlungKh = zeile?.KomfortKelvinstundenKuehlungKh,
+                RestbedarfProjektMwh = restbedarfProjektMwh,
+                Bedarfsbegriff = zeile?.Bedarfsbegriff is Bedarfsbegriff bb ? Bedarfsbegrifftext(bb) : "",
+                FahrplanBegrenztStundenH = zeile?.FahrplanBegrenztStundenH,
                 // E37: der Kaeltekreis - nur kuehlgekoppelt, aus demselben Ergebnis.
                 IstKuehlgekoppelt = ergebnis.KuehlGekoppelt,
                 KuehlVorlaufMittelC = ergebnis.KuehlGekoppelt ? ergebnis.KuehlVorlaufMittelC : null,
@@ -474,6 +514,31 @@ namespace WindowsFormsApplication1
         /// Das Bild „Raumtemperatur" (Stufe G2): Raumluft und operativ mit dem Sollwertband —
         /// gezeichnet im Kern (<c>ChartRenderer.RaumtemperaturModell</c>).
         /// </summary>
+        /// <summary>Das Bild „Raumtemperatur und Sollwert" (AK2, E80): die Woche ab <paramref name="start"/>.</summary>
+        private static Zeichenmodell Komfortwochenmodell(GebaeudeBedarfErgebnis ergebnis, int start)
+            => ChartRenderer.KomfortwocheModell(
+                Text_("GEBB_BILD_KOMFORTWOCHE", "Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung"),
+                Komfortwoche.Ausschnitt(ergebnis.RaumtemperaturC, start),
+                Komfortwoche.Ausschnitt(ergebnis.HeizsollwertC, start),
+                Komfortwoche.Ausschnitt(ergebnis.KomfortMaske, start),
+                new ChartRenderer.Komfortwochennamen
+                {
+                    Raumluft = Text_("GEBB_LEG_KOMFORT_RAUMLUFT", "Raumluft"),
+                    Sollwert = Text_("GEBB_LEG_KOMFORT_SOLLWERT", "Sollwert"),
+                    Unterschreitung = Text_("GEBB_LEG_KOMFORT_UNTERSCHREITUNG", "Unterschreitung"),
+                });
+
+        /// <summary>Der Tag, an dem die Woche beginnt — im festen Raster ohne Schaltjahr („3. Februar").</summary>
+        internal static string Wochenbeginn(int startStunde)
+            => new DateTime(2001, 1, 1).AddHours(Math.Max(0, startStunde))
+                .ToString("d. MMMM", CultureInfo.CurrentCulture);
+
+        /// <summary>Der Anzeigetext eines Bedarfsbegriffs — dieselben Wörter wie im Bericht.</summary>
+        internal static string Bedarfsbegrifftext(Bedarfsbegriff b)
+            => b == Bedarfsbegriff.Rueckwirkung
+                ? Text_("GEB_BEDARFSBEGRIFF_RUECKWIRKUNG", "mit Rückwirkung")
+                : Text_("GEB_BEDARFSBEGRIFF_FESTE_LAST", "feste Last");
+
         private static Zeichenmodell Raumtemperaturmodell(GebaeudeBedarfErgebnis ergebnis)
             => Raumtemperaturmodell(ergebnis.RaumtemperaturC, ergebnis.OperativeTemperaturC,
                                     ergebnis.HeizsollwertC, ergebnis.ObereRaumtemperaturC);

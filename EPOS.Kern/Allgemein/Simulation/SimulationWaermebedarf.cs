@@ -529,14 +529,23 @@ namespace WindowsFormsApplication1
             double[] Waermebedarf_EinGebaeude = new double[8760];
             GebaeudeKennzahlenListe.Clear();
 
+            // ANLAGENKOPPLUNG (AK2, 6.2; F4, F10): Fahrplan und Zweipass - nur mit Projektstufe und
+            // mindestens einem gekoppelten Gebaeude auf dem VDI-Weg; sonst ohne jede Wirkung.
+            if (!FahrplanVorbereiten(ID_Projekt, ID_Klimaregion, ctrl)) return;
+
             for (int i = 0; i < ctrl.rows; i++)
             {
+                // AK2: die Schranke dieses Gebaeudes je Zone (null = keine).
+                _schrankeAktuell = _schrankeJeGebaeude != null ? _schrankeJeGebaeude[i] : null;
+
                 // Der Rumpf je Gebäude ist die Fassade HeizwaermeEinesGebaeudes (Vorbereitung,
                 // Weiche, genau ein Rechenweg), damit der Gebaeudedialog GENAU DIESE Rechnung
                 // fuer EIN Gebaeude fahren kann. false = eine Vorbedingung des Rechenwegs
                 // fehlt (Tagesbilanz: die Tagesverteilung), und der Abbruch der
                 // Bedarfsrechnung bleibt an derselben Stelle wie bisher.
-                if (!HeizwaermeEinesGebaeudes(ctrl.items[i], i, Waermebedarf_EinGebaeude)) return;
+                bool gerechnet = HeizwaermeEinesGebaeudes(ctrl.items[i], i, Waermebedarf_EinGebaeude);
+                _schrankeAktuell = null;
+                if (!gerechnet) return;
 
                 // E30: die Kennzahlen des Gebaeudes fuer Tab_ErgebnisGebaeude - aus einer
                 // KOPIE der Einzelreihe, nach derselben Umrechnung W -> kW wie der Heizkanal
@@ -569,6 +578,8 @@ namespace WindowsFormsApplication1
             Heizkreis = HeizkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
             // Die Kälteseite (E37): der Kältekreis des Projekts, ohne kühlgekoppeltes Gebäude null.
             Kuehlkreis = KuehlkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
+            // AK2-2b (6.2, 5.4): Naeherung des Profilwegs und Gebaeude als feste Last - nur mit Fahrplan.
+            FahrplanHinweise();
 
             //com.I_Watt_To_Kw(ref Waermebedarf);
             // K1: Der Heizkanal trägt an dieser Stelle genau das, was bisher der
@@ -1176,7 +1187,304 @@ namespace WindowsFormsApplication1
             _vdi6007.KuehlVorlaufAnlageC = Waermeuebergabe.StufeAn(stufe) && KuehlbetriebProjekt
                 ? KuehlVorlaufAnlageC : double.NaN;
             _vdi6007.NennleistungSkalierung = 1.0;
-            _vdi6007.Probelauf = false;
+            _vdi6007.Probelauf = _pass1;
+            // AK2: die Schranke setzen erst die Laeufe selbst - mit dem Massstab ihres Rechenwegs.
+            _vdi6007.VerfuegbarkeitJeZone = null;
+        }
+
+        // =====================================================================
+        //  Anlagenkopplung, Stufe AK2: Fahrplan, Zweipass, Verteilung (6.2)
+        // =====================================================================
+
+        /// <summary>Der Fahrplan des Projekts aus dem letzten Lauf; <c>null</c> ohne wirksame Kopplung (F10).</summary>
+        internal Anlagenfahrplan Fahrplan => _fahrplan;
+
+        /// <summary>
+        /// Testnaht der Proben „Zweipass trifft den Schluessel" und „ohne Sperrung byte-gleich": <c>true</c> rechnet
+        /// den Lauf ohne Fahrplan - wie vor AK2. Der Lauf setzt sie nie.
+        /// </summary>
+        internal bool FahrplanUnterdrueckt { get; set; }
+
+        /// <summary>Zahl der Gebaeude, die als feste Last an der Verfuegbarkeit zehren (Altweg oder ungekoppelt; F5).</summary>
+        internal int FahrplanFesteLastGebaeude { get; private set; }
+
+        /// <summary>Lief der Zweipass mit einem Pass 1 (Schluessel aus dem unbegrenzten Lauf)?</summary>
+        internal bool FahrplanMitPass1 { get; private set; }
+
+        /// <summary>
+        /// <b>Die Schranke je Gebaeude und Zone</b> nach der Verteilung (Zeilenindex → Zone → 8760, Massstab des
+        /// wirklichen Gebaeudes, kW); Eintrag <c>null</c> fuer ein Gebaeude ohne Rueckwirkung. Nur fuer Proben.
+        /// </summary>
+        internal Anlagenverfuegbarkeit[][][] SchrankeJeGebaeude => _schrankeJeGebaeude;
+
+        /// <summary>
+        /// Die Stunden, in denen die Schranke der Verfügbarkeit in mindestens einem Gebäude gekappt hat (AK2,
+        /// <c>Fahrplan_Begrenzt_Stunden</c> des Projekts); 0 ohne Fahrplan.
+        /// </summary>
+        internal int FahrplanBegrenztStunden()
+        {
+            if (_fahrplan == null) return 0;
+            var stunde = new bool[8760];
+            foreach (GebaeudeModellErgebnis e in GebaeudeErgebnisse.Alle)
+                if (e?.FahrplanBegrenzt != null)
+                    for (int h = 0; h < 8760; h++) stunde[h] |= e.FahrplanBegrenzt[h];
+            return stunde.Count(b => b);
+        }
+
+        /// <summary>
+        /// <b>Die Komfortkennzahlen des Projekts</b> (AK2-2b, 5.5, F8, F9) über die gekoppelten Gebäude
+        /// (<see cref="GebaeudeKennzahlen.KomfortErhoben"/>): Stunden = Stunden, in denen mindestens ein Gebäude
+        /// zählt; Kelvinstunden = Summe; längste Strecke = Maximum. <c>Heizen</c>/<c>Kuehlen</c> <c>null</c>, wenn
+        /// kein Gebäude dieser Seite erhoben ist.
+        /// </summary>
+        internal (Komfortkennzahlen Heizen, Komfortkennzahlen Kuehlen) KomfortProjekt()
+        {
+            var heiz = new List<Komfortkennzahlen>();
+            var kuehl = new List<Komfortkennzahlen>();
+            foreach (GebaeudeModellErgebnis e in GebaeudeErgebnisse.Alle)
+            {
+                if (!GebaeudeKennzahlen.KomfortErhoben(e)) continue;
+                heiz.Add(Komfortkennzahlen.Heizseite(e));
+                kuehl.Add(Komfortkennzahlen.Kuehlseite(e));
+            }
+            return (Komfortkennzahlen.Projekt(heiz), Komfortkennzahlen.Projekt(kuehl));
+        }
+
+        /// <summary>
+        /// <b>Ein Gebaeude wie im Lauf, samt Anlagenfahrplan</b> (AK2-2b, Bedarfsauskunft): Steht das Gebaeude als
+        /// Projektkopie im Projekt und ist das Projekt gekoppelt, laeuft dieselbe Vorbereitung wie im Lauf
+        /// (<see cref="FahrplanVorbereiten"/>: Fahrplan, Pass 1 ueber die gespeicherten Gebaeude, Verteilung), und das
+        /// Gebaeude rechnet mit seiner Schranke auf Merkplatz 0. Sonst — kein gekoppeltes Projekt, ein noch nicht
+        /// gespeichertes Gebaeude — genau <see cref="HeizwaermeEinesGebaeudes"/>. Den Schluessel liefert der
+        /// gespeicherte Stand der uebrigen Gebaeude; der Arbeitsstand des Dialogs rechnet nur selbst.
+        /// <c>false</c> = benannter Abbruch wie im Lauf.
+        /// </summary>
+        internal bool HeizwaermeEinesGebaeudesWieImLauf(int idProjekt, int idKlimaregion, ProjektGebaeudeModel item, double[] ziel)
+        {
+            if (item != null && item.ID_Gebaeude > 0 && idProjekt > 0)
+            {
+                var ctrl = new ProjektGebaeudeCtrl();
+                ctrl.ReadAll(idProjekt);
+                int stelle = -1;
+                for (int i = 0; i < ctrl.rows; i++)
+                    if (ctrl.items[i].ID_Gebaeude == item.ID_Gebaeude) { stelle = i; break; }
+                if (stelle >= 0)
+                {
+                    if (!FahrplanVorbereiten(idProjekt, idKlimaregion, ctrl)) return false;
+                    GebaeudeErgebnisse.Leeren();
+                    _schrankeAktuell = _schrankeJeGebaeude != null ? _schrankeJeGebaeude[stelle] : null;
+                }
+            }
+            try
+            {
+                return HeizwaermeEinesGebaeudes(item, 0, ziel);
+            }
+            finally
+            {
+                _schrankeAktuell = null;
+            }
+        }
+
+        /// <summary>Lief der Anlagenfahrplan (Projektstufe und mindestens ein gekoppeltes Gebaeude auf dem VDI-Weg)?</summary>
+        internal bool FahrplanWirksam => _fahrplan != null;
+
+        /// <summary>
+        /// Die beiden Hinweise der Anlagenkopplung AK2 im Laufprotokoll (6.2, 5.4; F5): die Naeherung des Profilwegs,
+        /// sobald der Fahrplan in mindestens einer Stunde gekappt hat, und die Zahl der Gebaeude als feste Last.
+        /// </summary>
+        private void FahrplanHinweise()
+        {
+            if (_fahrplan == null) return;
+            if (FahrplanBegrenztStunden() > 0)
+                SimulationProtokoll.Aktuell.HinweisEinmal("ak2-profilweg-naeherung",
+                                                          MyResource.Resource.SIMENG_AK2_PROFILWEG_NAEHERUNG);
+            if (FahrplanFesteLastGebaeude > 0)
+                SimulationProtokoll.Aktuell.HinweisEinmal("ak2-feste-last",
+                    string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK2_FESTE_LAST,
+                                  FahrplanFesteLastGebaeude));
+        }
+
+        private Anlagenfahrplan _fahrplan;
+        private bool[] _fahrplanGekoppelt;
+        private Anlagenverfuegbarkeit[][][] _schrankeJeGebaeude;
+        private Anlagenverfuegbarkeit[][] _schrankeAktuell;
+        private bool _pass1;
+
+        /// <summary>
+        /// <b>Fahrplan und Verteilung vor der Gebaeudeschleife</b> (Anlagenkopplung 6.2, F4, F5, F10). Ohne
+        /// Projektstufe oder ohne gekoppeltes Gebaeude auf dem VDI-Weg geschieht nichts — jedes Gebaeude rechnet
+        /// Zeichen fuer Zeichen wie ohne AK2. Sonst: der <see cref="Anlagenfahrplan"/> einmal je Projekt;
+        /// <b>Pass 1</b> rechnet jedes Gebaeude unbegrenzt (Altweg und ungekoppelte Gebaeude liefern ihren
+        /// Bedarfsvektor und zehren als feste Last mit) und liefert den Schluessel; die Schranke wird je Stunde
+        /// proportional verteilt, im Gebaeude ein zweites Mal auf die Zonen. Pass 1 entfaellt bei genau einem
+        /// zehrenden Gebaeude ohne Zonenschleife: Ihm gehoert die ganze Schranke. <c>false</c> = benannter
+        /// Abbruch (ungueltiges Zeitprogramm, Fehler im Pass 1).
+        /// </summary>
+        private bool FahrplanVorbereiten(int idProjekt, int idKlimaregion, ProjektGebaeudeCtrl ctrl)
+        {
+            _fahrplan = null;
+            _fahrplanGekoppelt = null;
+            _schrankeJeGebaeude = null;
+            _schrankeAktuell = null;
+            FahrplanFesteLastGebaeude = 0;
+            FahrplanMitPass1 = false;
+
+            string stufe = AnlagenkopplungProjekt;
+            if (FahrplanUnterdrueckt || !Waermeuebergabe.StufeAn(stufe) || ctrl.rows == 0) return true;
+            var gekoppelt = new bool[ctrl.rows];
+            bool irgendeins = false, zonenschleife = false;
+            for (int i = 0; i < ctrl.rows; i++)
+            {
+                ProjektGebaeudeModel item = ctrl.items[i];
+                gekoppelt[i] = ReferenceEquals(RechenwegWaehlen(item), _vdi6007)
+                               && Waermeuebergabe.KopplungWirksamFuer(item, stufe);
+                irgendeins |= gekoppelt[i];
+                if (gekoppelt[i] && Vdi6007Rechenweg.Mehrzonenweg(item)) zonenschleife = true;
+            }
+            if (!irgendeins) return true;
+
+            try
+            {
+                _fahrplan = Anlagenfahrplan.AusProjekt(idProjekt, Stundentemperatur,
+                    Anlagenzeitprogramm.WochentagAusWochenende(_kalender.Gemeinsam.WochenendeOrtszeit), idKlimaregion);
+            }
+            catch (AnlagenzeitprogrammFehler f)
+            {
+                Fehlertext = f.Message;
+                SimulationProtokoll.Aktuell.Fehlermeldung(f.Message);
+                return false;
+            }
+            for (int i = 0; i < ctrl.rows; i++) if (!gekoppelt[i]) FahrplanFesteLastGebaeude++;
+            _fahrplanGekoppelt = gekoppelt;
+
+            // Pass 1: der unbegrenzte Bedarf je Gebaeude (und je Zone der gekoppelten Zonenschleifen).
+            double[][] schluessel = null;
+            IReadOnlyList<double[]>[] zonenSchluessel = new IReadOnlyList<double[]>[ctrl.rows];
+            if (ctrl.rows > 1 || zonenschleife)
+            {
+                FahrplanMitPass1 = true;
+                var frisch = new ProjektGebaeudeCtrl();
+                frisch.ReadAll(idProjekt);
+                schluessel = new double[ctrl.rows][];
+                _pass1 = true;
+                try
+                {
+                    for (int i = 0; i < ctrl.rows && i < frisch.rows; i++)
+                    {
+                        schluessel[i] = new double[8760];
+                        if (!HeizwaermeEinesGebaeudes(frisch.items[i], i, schluessel[i])) return false;
+                        if (gekoppelt[i] && Vdi6007Rechenweg.Mehrzonenweg(frisch.items[i])
+                            && _vdi6007.LetztesMehrzonenergebnis != null)
+                            zonenSchluessel[i] = _vdi6007.LetztesMehrzonenergebnis.Zonen.Select(z => z.HeizlastW).ToList();
+                    }
+                }
+                finally
+                {
+                    _pass1 = false;
+                }
+            }
+
+            _schrankeJeGebaeude = Verteilen(_fahrplan, ctrl, gekoppelt, schluessel, zonenSchluessel);
+            return true;
+        }
+
+        /// <summary>
+        /// Die beiden Verteilungsstufen (6.2, F4): Projekt → Gebaeude nach dem unbegrenzten Bedarf der Stunde,
+        /// Gebaeude → Zonen nach demselben Schluessel. Ohne Schluessel (ein Gebaeude) gehoert die ganze Schranke
+        /// dem Gebaeude. Reicht die Schranke fuer den Bedarf nicht und nennt der Fahrplan keinen Grund, heisst
+        /// er <see cref="Verfuegbarkeitsgrund.Leistungsgrenze"/> (Probe „Verfuegbarkeit traegt immer einen Grund").
+        ///
+        /// <para><b>Festlegung AK2-2a (Befund 1054):</b> Eine Stunde OHNE Ausfall (Grund des Fahrplans
+        /// <see cref="Verfuegbarkeitsgrund.KeineBegrenzung"/>) traegt im Lauf keine Schranke (NaN) — die Summe der
+        /// Nennleistungen allein kappt das Gebaeude auf dem Profilweg nicht; die Unterdeckung bleibt dort Sache der
+        /// Deckungsrechnung wie vor AK2. Mit <paramref name="leistungsgrenzeAlsSchranke"/> = <c>true</c> gilt die
+        /// Summe auch dann (Grund <c>LEISTUNGSGRENZE</c>); das ist ein Entscheid samt neuer Basis.</para>
+        /// </summary>
+        internal static Anlagenverfuegbarkeit[][][] Verteilen(Anlagenfahrplan fahrplan, ProjektGebaeudeCtrl ctrl, bool[] gekoppelt,
+                                                             double[][] schluessel, IReadOnlyList<double[]>[] zonenSchluessel)
+        {
+            int n = ctrl.rows;
+            var ids = new long[n];
+            for (int i = 0; i < n; i++) ids[i] = ctrl.items[i].ID_Gebaeude;
+            return Verteilen(fahrplan, ids, gekoppelt, schluessel, zonenSchluessel, false);
+        }
+
+        /// <summary>Die Verteilung ohne Datenbank — <see cref="Verteilen(Anlagenfahrplan, ProjektGebaeudeCtrl, bool[], double[][], IReadOnlyList{double[]}[])"/>.</summary>
+        internal static Anlagenverfuegbarkeit[][][] Verteilen(Anlagenfahrplan fahrplan, IReadOnlyList<long> ids, bool[] gekoppelt,
+                                                             double[][] schluessel, IReadOnlyList<double[]>[] zonenSchluessel,
+                                                             bool leistungsgrenzeAlsSchranke = false)
+        {
+            int n = ids.Count;
+            var ergebnis = new Anlagenverfuegbarkeit[n][][];
+            var gebaeudeReihe = new Anlagenverfuegbarkeit[n][];
+            for (int i = 0; i < n; i++) if (gekoppelt[i]) gebaeudeReihe[i] = new Anlagenverfuegbarkeit[8760];
+
+            var bedarfKw = new double[n];
+            for (int h = 0; h < 8760; h++)
+            {
+                Anlagenverfuegbarkeit v = fahrplan.Stunde(h);
+                if (!leistungsgrenzeAlsSchranke && v.Grund == Verfuegbarkeitsgrund.KeineBegrenzung)
+                    v = v.MitLeistung(double.NaN);
+                double schranke = v.LeistungKw;
+                double[] anteil;
+                if (schluessel == null)
+                {
+                    anteil = new double[n];
+                    for (int i = 0; i < n; i++) anteil[i] = schranke;
+                }
+                else
+                {
+                    double summe = 0.0;
+                    for (int i = 0; i < n; i++)
+                    {
+                        bedarfKw[i] = schluessel[i] != null ? schluessel[i][h] / 1000.0 : 0.0;
+                        if (bedarfKw[i] > 0.0) summe += bedarfKw[i];
+                    }
+                    if (v.Grund == Verfuegbarkeitsgrund.KeineBegrenzung && summe > schranke)
+                        v = v.MitGrund(Verfuegbarkeitsgrund.Leistungsgrenze);
+                    anteil = Verfuegbarkeitsverteilung.Verteilen(schranke, ids, bedarfKw);
+                }
+                for (int i = 0; i < n; i++)
+                    if (gebaeudeReihe[i] != null) gebaeudeReihe[i][h] = v.MitLeistung(anteil[i]);
+            }
+
+            for (int i = 0; i < n; i++)
+            {
+                if (gebaeudeReihe[i] == null) continue;
+                IReadOnlyList<double[]> zonen = zonenSchluessel?[i];
+                if (zonen == null || zonen.Count <= 1)
+                {
+                    ergebnis[i] = new[] { gebaeudeReihe[i] };
+                    continue;
+                }
+                var zIds = new long[zonen.Count];
+                for (int z = 0; z < zIds.Length; z++) zIds[z] = z;
+                var jeZone = new Anlagenverfuegbarkeit[zonen.Count][];
+                for (int z = 0; z < jeZone.Length; z++) jeZone[z] = new Anlagenverfuegbarkeit[8760];
+                var key = new double[zonen.Count];
+                for (int h = 0; h < 8760; h++)
+                {
+                    for (int z = 0; z < key.Length; z++) key[z] = zonen[z][h];
+                    double[] teil = Verfuegbarkeitsverteilung.Verteilen(gebaeudeReihe[i][h].LeistungKw, zIds, key);
+                    for (int z = 0; z < key.Length; z++) jeZone[z][h] = gebaeudeReihe[i][h].MitLeistung(teil[z]);
+                }
+                ergebnis[i] = jeZone;
+            }
+            return ergebnis;
+        }
+
+        /// <summary>Die Schranke je Zone auf den Rechenmassstab des Laufs: Leistung durch <paramref name="faktor"/> (E8).</summary>
+        private static Anlagenverfuegbarkeit[][] AufMassstab(Anlagenverfuegbarkeit[][] schranke, double faktor)
+        {
+            if (schranke == null) return null;
+            if (!(faktor > 0.0) || double.IsInfinity(faktor) || faktor == 1.0) return schranke;
+            var s = new Anlagenverfuegbarkeit[schranke.Length][];
+            for (int z = 0; z < schranke.Length; z++)
+            {
+                s[z] = new Anlagenverfuegbarkeit[schranke[z].Length];
+                for (int h = 0; h < s[z].Length; h++) s[z][h] = schranke[z][h].MitLeistung(schranke[z][h].LeistungKw / faktor);
+            }
+            return s;
         }
 
         /// <summary>
@@ -1291,18 +1599,43 @@ namespace WindowsFormsApplication1
                                           && item.Uebergabe_Leistung_Nenn.HasValue)
                                          || (Kuehluebergabe.KopplungWirksamFuer(item, _vdi6007.Anlagenkopplung, _vdi6007.Kuehlbetrieb)
                                              && item.Kuehl_Uebergabe_Leistung_Nenn.HasValue));
-            bool zweiLaeufe = festeNennleistung && !vorbereitung.IstFlaeche;
+            // AK2 (6.2): Mit Schranke muss der Faktor der Verhaeltnisrechnung VOR dem Lauf feststehen - die
+            // Schranke gilt dem wirklichen Gebaeude und wird auf den Katalogbau umgerechnet. Bei Verbrauchsangabe
+            // liefert ihn ein Probelauf ohne Schranke (derselbe Lauf wie ohne AK2, bitgleich).
+            double faktorVorgabe = double.NaN;
+            if (_schrankeAktuell != null && ReferenceEquals(weg, _vdi6007) && !vorbereitung.IstFlaeche)
+            {
+                _vdi6007.NennleistungSkalierung = festeNennleistung ? double.NaN : 1.0;
+                _vdi6007.Probelauf = true;
+                bool probe = weg.Rechnen(item, index, ziel, gemeinsam, out double verbrauchProbeKwh);
+                _vdi6007.Probelauf = _pass1;
+                _vdi6007.NennleistungSkalierung = 1.0;
+                if (probe && verbrauchProbeKwh > 0.0 && !double.IsInfinity(verbrauchProbeKwh))
+                {
+                    double FlaecheAltProbe = vorbereitung.FlaecheAlt;
+                    double FlaecheNeuProbe = vorbereitung.VerbrauchNeu / verbrauchProbeKwh * FlaecheAltProbe;
+                    faktorVorgabe = FlaecheNeuProbe / FlaecheAltProbe;
+                }
+            }
+            bool faktorVorab = vorbereitung.IstFlaeche || !double.IsNaN(faktorVorgabe);
+            bool zweiLaeufe = festeNennleistung && !faktorVorab;
             if (festeNennleistung && vorbereitung.IstFlaeche)
                 _vdi6007.NennleistungSkalierung = item.Z_AuswahlWohnflaeche / item.Nutzflaeche;
+            else if (festeNennleistung && faktorVorab)
+                _vdi6007.NennleistungSkalierung = faktorVorgabe;
             if (zweiLaeufe)
             {
                 _vdi6007.NennleistungSkalierung = double.NaN;
                 _vdi6007.Probelauf = true;
             }
+            if (_schrankeAktuell != null && ReferenceEquals(weg, _vdi6007) && faktorVorab)
+                _vdi6007.VerfuegbarkeitJeZone = AufMassstab(_schrankeAktuell,
+                    vorbereitung.IstFlaeche ? item.Z_AuswahlWohnflaeche / item.Nutzflaeche : faktorVorgabe);
 
             double verbrauchAltKwh;
             bool gerechnet = weg.Rechnen(item, index, ziel, gemeinsam, out verbrauchAltKwh);
-            _vdi6007.Probelauf = false;
+            _vdi6007.Probelauf = _pass1;
+            _vdi6007.VerfuegbarkeitJeZone = null;
             if (!gerechnet) return false;
 
             double faktor;
@@ -1322,10 +1655,14 @@ namespace WindowsFormsApplication1
                     return false;
                 }
                 double FlaecheAlt = vorbereitung.FlaecheAlt;
-                double FlaecheNeu = vorbereitung.VerbrauchNeu / verbrauchAltKwh * FlaecheAlt;
+                // AK2: Mit Schranke gilt der Faktor des Probelaufs - die Verhaeltnisrechnung beschreibt das
+                // Gebaeude, die Schranke nur, was davon ankommt.
+                double FlaecheNeu = double.IsNaN(faktorVorgabe)
+                    ? vorbereitung.VerbrauchNeu / verbrauchAltKwh * FlaecheAlt
+                    : faktorVorgabe * FlaecheAlt;
                 item.Z_AuswahlWohnflaeche = FlaecheNeu;
                 item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
-                faktor = FlaecheNeu / FlaecheAlt;
+                faktor = double.IsNaN(faktorVorgabe) ? FlaecheNeu / FlaecheAlt : faktorVorgabe;
             }
 
             if (double.IsNaN(faktor) || double.IsInfinity(faktor) || faktor < 0.0)
@@ -1408,8 +1745,12 @@ namespace WindowsFormsApplication1
                                     KlimakalenderGemeinsam gemeinsam)
         {
             _vdi6007.NennleistungSkalierung = 1.0;
-            _vdi6007.Probelauf = false;
-            if (!weg.Rechnen(item, index, ziel, gemeinsam, out double _)) return false;
+            _vdi6007.Probelauf = _pass1;
+            // AK2: Die Zonen rechnen im Massstab des wirklichen Gebaeudes - die Schranke unveraendert.
+            _vdi6007.VerfuegbarkeitJeZone = _schrankeAktuell;
+            bool gerechnet = weg.Rechnen(item, index, ziel, gemeinsam, out double _);
+            _vdi6007.VerfuegbarkeitJeZone = null;
+            if (!gerechnet) return false;
 
             // Die Bezugsfläche der Zonen - bei genau einer ihre, ab zwei die Summe der beheizten
             // (Stufe G6b; der Lauf hat die Zonen eben gerechnet).
@@ -1445,9 +1786,13 @@ namespace WindowsFormsApplication1
         {
             double[] reiheKw = (double[])reiheW.Clone();
             WPPlan.Core.BhkwPlan.WattToKw(reiheKw);
-            return GebaeudeKennzahlen.Bilden(index, item.ID_Gebaeude, item.Gebaeudename,
-                                             Gebaeuderechenweg.Wirksam(item.Gebaeude_Modell),
-                                             reiheKw, GebaeudeErgebnisse.Ergebnis(index));
+            ErgebnisGebaeudeModel e = GebaeudeKennzahlen.Bilden(index, item.ID_Gebaeude, item.Gebaeudename,
+                                                                Gebaeuderechenweg.Wirksam(item.Gebaeude_Modell),
+                                                                reiheKw, GebaeudeErgebnisse.Ergebnis(index));
+            // AK2-2b (F5): der Bedarfsbegriff je Gebaeude - nur im Lauf mit Anlagenfahrplan.
+            if (_fahrplan != null && _fahrplanGekoppelt != null && index >= 0 && index < _fahrplanGekoppelt.Length)
+                e.Bedarfsbegriff = _fahrplanGekoppelt[index] ? Bedarfsbegriff.Rueckwirkung : Bedarfsbegriff.FesteLast;
+            return e;
         }
 
         /// <summary>

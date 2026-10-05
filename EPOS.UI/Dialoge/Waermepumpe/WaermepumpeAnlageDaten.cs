@@ -77,6 +77,16 @@ public sealed class WaermepumpeAnlageDaten
     /// </summary>
     public List<SperrfensterZeile>? Sperrfenster { get; set; }
 
+    /// <summary>
+    /// Das Zeitprogramm der Anlage (<c>Tab_Energieanlagen.Zeitprogramm</c>, Anlagenkopplung 9.3): 168 Faktoren
+    /// 0 … 1 im Format des Sollwertprofils; <c>null</c> = nicht gepflegt, die Anlage ist immer verfügbar. Ein
+    /// ungültiger Text bleibt stehen, wie er gelesen wurde — der Dialog nennt den Fehler.
+    /// </summary>
+    public string? Zeitprogramm { get; set; }
+
+    /// <summary>Der höchste Vorlauf der Anlage [°C] (<c>Vorlauf_Max</c>); <c>null</c> = der projektierte <see cref="Vorlauf"/>.</summary>
+    public double? VorlaufMax { get; set; }
+
     /// <summary>Bivalenter Betrieb.</summary>
     public bool BivalenterBetrieb { get; set; }
 
@@ -199,6 +209,8 @@ public sealed class WaermepumpeAnlageDaten
         SperrzeitVon = SperrzeitVon,
         SperrzeitBis = SperrzeitBis,
         Sperrfenster = Sperrfenster?.Select(z => z.Kopie()).ToList(),
+        Zeitprogramm = Zeitprogramm,
+        VorlaufMax = VorlaufMax,
         BivalenterBetrieb = BivalenterBetrieb,
         CarrierId = CarrierId,
         Betriebsart = Betriebsart,

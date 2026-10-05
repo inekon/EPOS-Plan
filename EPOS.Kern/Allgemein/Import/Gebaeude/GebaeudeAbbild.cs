@@ -387,6 +387,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? LuftwechselNutzerJeH { get; set; }
 
+        /// <summary>
+        /// Die Konditionierung der Zone dieses Raums — Nutzung, Matrixzellen und Kalender (IFC <c>EPOS_Zone</c> und
+        /// <c>EPOS_Kalender_*</c>, Datenaustauschkonzept 6.3 und 16.3); <c>null</c> = keine. Der Export setzt sie je Zone
+        /// (nicht auf dem Klassenweg), der IFC-Leser nimmt sie aus einer Datei mit diesen Sätzen zurück.
+        /// </summary>
+        public AbbildKonditionierung Konditionierung { get; set; }
+
         /// <summary>Kennung des Geschosses; <c>null</c> = keine.</summary>
         public string GeschossKennung { get; set; }
 
@@ -754,5 +761,79 @@ namespace WindowsFormsApplication1
 
         /// <summary>Nur R-Wert, keine vollständigen Stoffwerte — die Schicht ist masselos (3.6, Punkt 2).</summary>
         public bool NurRWert => !Vollstaendig && RWertM2KW > 0.0 && !(DickeM > 0.0 && LambdaWmK > 0.0);
+    }
+
+    /// <summary>Ein Konditionierungskalender einer Zone mit seiner Bemerkung (Herkunft und Vermerk, ≤ 200 Zeichen).</summary>
+    internal sealed record AbbildKalender(Konditionierungskalender Kalender, string Bemerkung);
+
+    /// <summary>
+    /// <b>Die Konditionierung einer Zone im Abbild</b> (Datenaustauschkonzept 6.3, 16.3): die Nutzung, die vier Matrixzellen,
+    /// wie die Zone sie rechnet (Heizsollwert Tag und Nacht, Kühlsollwert, Luftwechsel der Nutzer), und die angelegten Kalender
+    /// je Größe. Formatfrei; der IFC-Export schreibt sie als <c>EPOS_Zone</c> und <c>EPOS_Kalender_&lt;Größe&gt;</c>, der
+    /// IFC-Leser liest sie zurück und gibt sie über <see cref="AlsZonenkonditionierung"/> an den Zonenplan.
+    /// </summary>
+    internal sealed class AbbildKonditionierung
+    {
+        /// <summary>Die Nutzung (<c>WOHNEN</c>, <c>BUERO</c>, <c>SCHULE</c>); <c>null</c> = keine.</summary>
+        public string Nutzung { get; set; }
+
+        /// <summary>Heizsollwert Tag [°C] — die Zelle HEIZSOLL/TAG.</summary>
+        public double? HeizsollTagC { get; set; }
+
+        /// <summary>Heizsollwert Nacht [°C] — die Zelle HEIZSOLL/NACHT.</summary>
+        public double? HeizsollNachtC { get; set; }
+
+        /// <summary>Kühlsollwert [°C] — die Zelle KUEHLSOLL/TAG.</summary>
+        public double? KuehlsollC { get; set; }
+
+        /// <summary>Luftwechsel der Nutzer [1/h] — die Zelle LUEFTUNG/TAG.</summary>
+        public double? LuftwechselNutzerJeH { get; set; }
+
+        /// <summary>Die Kalender in der Reihenfolge der Größen (<see cref="Konditionierungsgroessen.Alle"/>).</summary>
+        public List<AbbildKalender> Kalender { get; } = new List<AbbildKalender>();
+
+        /// <summary>Der Kalender einer Größe; <c>null</c> = keiner.</summary>
+        internal AbbildKalender KalenderVon(Konditionierungsgroesse g) => Kalender.Find(k => k.Kalender.Groesse == g);
+
+        /// <summary>Trägt die Zone etwas — eine Zelle, eine Nutzung oder einen Kalender?</summary>
+        internal bool Traegt => Nutzung != null || HeizsollTagC.HasValue || HeizsollNachtC.HasValue || KuehlsollC.HasValue
+                                || LuftwechselNutzerJeH.HasValue || Kalender.Count > 0;
+
+        /// <summary>
+        /// <b>Die Konditionierung für den Zonenplan</b> — derselbe Schreibweg wie die Projektdatei
+        /// (<see cref="ZonenplanCtrl.ProjektdateiUebernehmen"/>): je Größe die Zellen als Vorgaben und der Kalender mit
+        /// Herkunft <see cref="Konditionierungsherkunft.IfcDatei"/>; die Bemerkung nennt die Herkunft „aus IFC-Datei (EPOS)“
+        /// und den mitgereisten Vermerk.
+        /// </summary>
+        internal Zonenkonditionierung AlsZonenkonditionierung(string zone)
+        {
+            var groessen = new List<Groessenkonditionierung>();
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                var vorgaben = new List<Vorgabebeleg>();
+                void Zelle(string zeile, double? wert)
+                {
+                    if (wert is double w && double.IsFinite(w))
+                        vorgaben.Add(new Vorgabebeleg(zeile, Matrixzelle.AusWert(w), null));
+                }
+                if (g == Konditionierungsgroesse.Heizsoll)
+                {
+                    Zelle(DbWerte.KOND_ZEILE_TAG, HeizsollTagC);
+                    Zelle(DbWerte.KOND_ZEILE_NACHT, HeizsollNachtC);
+                }
+                if (g == Konditionierungsgroesse.Kuehlsoll) Zelle(DbWerte.KOND_ZEILE_TAG, KuehlsollC);
+                if (g == Konditionierungsgroesse.Lueftung) Zelle(DbWerte.KOND_ZEILE_TAG, LuftwechselNutzerJeH);
+                AbbildKalender k = KalenderVon(g);
+                groessen.Add(new Groessenkonditionierung
+                {
+                    Groesse = g,
+                    Herkunft = k != null || vorgaben.Count > 0 ? Konditionierungsherkunft.IfcDatei : Konditionierungsherkunft.Vorlage,
+                    Kalender = k?.Kalender,
+                    BemerkungText = k == null ? null : IfcKonditionierungssatz.Herkunftsbemerkung(k.Bemerkung),
+                    Vorgaben = vorgaben,
+                });
+            }
+            return new Zonenkonditionierung { Zone = zone ?? "", Nutzung = Nutzung, Groessen = groessen };
+        }
     }
 }

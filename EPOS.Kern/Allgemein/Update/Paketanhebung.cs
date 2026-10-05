@@ -307,6 +307,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keine Kältespitze je Zone; die Spalten kommen leer an.
             new Stufe(ZonenKaeltespitzeSchema.SCHRITT, Art.Ddl,
                       "Kältespitze und Kühlstunden je Zone im Ergebnis"),
+            // Ein älteres Paket führt kein Zeitprogramm und kein Vorlaufangebot am Erzeuger und keine Komfortspalten;
+            // die Spalten kommen leer an (immer verfügbar, Vorlauf der Anlage, „nicht erhoben").
+            new Stufe(AnlagenfahrplanSchema.SCHRITT, Art.Ddl,
+                      "Anlagenfahrplan: Zeitprogramm und Vorlauf_Max am Erzeuger, Komfort und Fahrplanbegrenzung im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -659,6 +659,18 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// Der Zonenbaum: Die Liste der nicht zugeordneten Räume dockt neben dem Baum an und bricht schmal darunter um; die
+    /// Knopfleisten brechen um; die Sperre am OK steht in der Warnfarbe (Token).
+    /// </summary>
+    [Fact]
+    public void ZB_Der_Zonenbaum_dockt_die_offenen_Raeume_an_und_die_Knopfleisten_brechen_um()
+    {
+        Assert.Contains("min-width: 0", Regelblock(".epos-gebimport-offenspalte {"), StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-gebimport-planleiste,"), StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-stufe-warnung)", Regelblock(".epos-gebimport-okhinweis {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Auftrag #572 (Befund 26.09.2026):</b> Die Zapfprofil-Überlagerung IN der
     /// Überlagerung „Brauchwasser…" stand nicht im Fenster, sondern im Kasten der äußeren —
     /// links und rechts abgeschnitten, mit Querrollbalken, die Wirtsliste schien unten durch.

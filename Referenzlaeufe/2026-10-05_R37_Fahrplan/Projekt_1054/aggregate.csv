@@ -112,6 +112,10 @@ Energiebedarf.Waermebedarf_Prozess;0
 Energiebedarf.Vorlauf_Mittel;39.53
 Energiebedarf.Ruecklauf_Mittel;36.08
 Energiebedarf.Uebergabe_Begrenzt_Stunden;1339.42
+Energiebedarf.Komfort_Unterschreitungsstunden;2162
+Energiebedarf.Komfort_Kelvinstunden;2138.59
+Energiebedarf.Komfort_Laengste_Strecke;16
+Energiebedarf.Fahrplan_Begrenzt_Stunden;0
 BHKW.Waermebedarf;47.58
 BHKW.Restwaermebedarf;18.47
 BHKW.Strombedarf;0
