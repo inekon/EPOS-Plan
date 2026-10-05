@@ -156,9 +156,9 @@
     }
 
     @* ---- Anlagenkopplung AK2 (Konzept 9.4, 5.5, 6.2): die Komfortkacheln NEBEN dem Restbedarf - nie ohne
-       ihn. Auf dem VDI-Weg immer da; erhoben nur am gekoppelt gerechneten Gebaeude, sonst „—" (K18). Dazu im
+       ihn. Am gekoppelt gerechneten Gebaeude (oder im Lauf mit Fahrplan); ein nicht erhobener Wert zeigt „—" (K18). Dazu im
        Lauf mit Fahrplan der Bedarfsbegriff und die Stunden am Fahrplan. *@
-    @if (Daten.IstVdi6007)
+    @if (Daten.IstVdi6007 && (Daten.IstGekoppelt || Daten.IstKuehlgekoppelt || Daten.KomfortErhoben || Daten.Bedarfsbegriff.Length > 0))
     {
         <div class="gebb-komfort" data-komfort="@(Daten.KomfortErhoben ? "erhoben" : "ohne")">
             <Kachelraster>
