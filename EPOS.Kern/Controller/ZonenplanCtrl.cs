@@ -78,6 +78,76 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Gibt einer Zone die Konditionierung aus der HottCAD-Projektdatei</b> (Datenaustauschkonzept 16.3, SQ-1) — nach
+        /// <see cref="NutzungUebernehmen"/> und über dieselben reinen Schritte der Konditionierung: je Größe, für die die
+        /// Projektdatei etwas liefert, weicht zuerst die Kalenderkopie der Vorlage (Rangfolge „Profil vor Vorlage“), dann
+        /// setzt <see cref="Konditionierungsarbeit.ZelleSetzen"/> die Zellen des Nutzungsprofils (Bestand oder Vorgabetabelle,
+        /// wie die Matrix es verlangt) und zuletzt tritt der Kalender der Ganglinie an (Rangfolge „Ganglinie vor Profil“) —
+        /// mit dem Beleg in <c>Bemerkung</c> (≤ 200 Zeichen). Was die Projektdatei nicht liefert, bleibt bei der Vorlage der
+        /// Nutzung. Eine unbeheizte Zone bekommt keinen Heiz- und Kühlwert (Zonenregel). Läuft im Vorgang des Aufrufers, wenn
+        /// einer angemeldet ist (<see cref="Vorgangsklammer"/>, Sicherungspunkt).
+        /// </summary>
+        /// <returns><c>null</c>, wenn alles übernommen ist; sonst die erste Ablehnung.</returns>
+        internal static string ProjektdateiUebernehmen(int idGebaeude, int idZone, Zonenkonditionierung konditionierung)
+        {
+            if (konditionierung == null || !konditionierung.Liefert) return null;
+            var kond = new KonditionierungCtrl();
+            Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
+            Konditionierungszone zone = stand?.Zone(idZone);
+            if (zone == null) return gelesen ?? "";
+            var kalender = new List<Konditionierungsgroesse>();
+            int geschrieben = 0;
+            foreach (Groessenkonditionierung g in konditionierung.Groessen)
+            {
+                if (g.Herkunft == Konditionierungsherkunft.Vorlage) continue;
+                if (!zone.IstBeheizt && (g.Groesse == Konditionierungsgroesse.Heizsoll || g.Groesse == Konditionierungsgroesse.Kuehlsoll)) continue;
+                var ort = new Konditionierungsort(g.Groesse, idZone);
+                if (stand.Zone(idZone).Stand.Kalender(g.Groesse) != null)
+                {
+                    Konditionierungsschritt weg = Konditionierungsarbeit.Verwerfen(stand, ort);
+                    if (!weg.Ok) return weg.Meldung ?? "";
+                    stand = weg.Stand;
+                }
+                foreach (Vorgabebeleg v in g.Vorgaben)
+                {
+                    Konditionierungsschritt schritt = Konditionierungsarbeit.ZelleSetzen(stand, ort, v.Zeile, v.Zelle);
+                    if (schritt.Rueckfrage)
+                    {
+                        Konditionierungsschritt geteilt = Konditionierungsarbeit.LuftwechselAufteilen(stand);
+                        if (!geteilt.Ok) return geteilt.Meldung;
+                        schritt = Konditionierungsarbeit.ZelleSetzen(geteilt.Stand, ort, v.Zeile, v.Zelle);
+                    }
+                    if (!schritt.Ok || schritt.Rueckfrage) return schritt.Meldung ?? "";
+                    stand = schritt.Stand;
+                }
+                if (g.Kalender != null)
+                {
+                    Konditionierungsstand ebene = stand.Zone(idZone).Stand;
+                    stand = stand.MitEbene(idZone, ebene.MitKalender(g.Groesse, g.Kalender, new Kalenderherkunft(null, g.Bemerkung)));
+                    kalender.Add(g.Groesse);
+                }
+                geschrieben++;
+            }
+            if (geschrieben == 0) return null;
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                KonditionierungCtrl.Eigner ziel = KonditionierungCtrl.Eigner.Zone(idGebaeude, idZone);
+                KonditionierungCtrl.Ergebnis e = kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), stand.Gebaeude, true, out _);
+                if (e.Ok) e = kond.StandSchreiben(v, ziel, stand.Zone(idZone).Stand, true, out _);
+                if (!e.Ok)
+                {
+                    v.Rollback();
+                    return e.Meldung;
+                }
+                if (konditionierung.Nutzung != null)
+                    foreach (Konditionierungsgroesse groesse in kalender) KonditionierungCtrl.NutzungSetzen(ziel, groesse, konditionierung.Nutzung);
+                v.Commit();
+            }
+            return null;
+        }
+
+        /// <summary>
         /// <b>Der gespeicherte Plan derselben Datei</b> (gleicher SHA-256) in diesem Projekt: das jüngste Gebäude des Projekts
         /// aus dieser Datei, seine jüngste Quelle mit diesem Hash, deren Raumpaarungen auf Zonen, die Zonen des Gebäudes in
         /// ihrer Reihenfolge mit Bezeichner und der Nutzung ihrer Kalenderkopien (<see cref="Zonenplan.AusGespeichert"/>).

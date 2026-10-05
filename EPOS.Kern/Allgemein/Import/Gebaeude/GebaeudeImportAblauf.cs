@@ -54,6 +54,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die Gebäude der Datei für die Klappliste — Name, sonst Kennung (U13: eines je Lauf).</summary>
         public IReadOnlyList<string> Gebaeude => _gebaeude;
 
+        /// <summary>Die dazugeladene HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
+        internal SqprojStand Projektdatei { get; private set; }
+
+        /// <summary>
+        /// Der Ordner der Arbeitskopie einer Projektdatei — für Prüfstände ersetzbar. Vorgabe: ein Unterordner des
+        /// Temp-Ordners der Plattform (unter iOS im App-Container); die Kopie wird nach dem Lesen gelöscht.
+        /// </summary>
+        internal Func<string> Arbeitsordner { get; set; } = () => Path.Combine(Path.GetTempPath(), "epos-sqproj");
+
         /// <summary>
         /// Liegt die Größe innerhalb der Grenze des Profils? Die Hülle fragt das VOR dem Öffnen des
         /// Stroms (Softwarearchitektur 3.4); eine Grenze von 0 oder weniger heißt „keine".
@@ -83,6 +92,7 @@ namespace WindowsFormsApplication1
             _gebaeude.Clear();
             Abbild = null;
             Quelle = null;
+            Projektdatei = null;
             Profil = profil ?? throw new ArgumentNullException(nameof(profil));
 
             if (quelle == null) return 0;
@@ -221,6 +231,120 @@ namespace WindowsFormsApplication1
         }
 
         // ==================================================================
+        // 1b — Projektdatei dazuladen (HottCAD, Stufe SQ-1)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Ist das IFC-Abbild ein HottCAD-Export?</b> Format IFC und ein <c>ObjectType</c> der Klasse <c>TModel…</c> am
+        /// Gebäude oder an einem Raum (Befund Kapitel 4 und 5) — nur dann gibt es eine Projektdatei dazu.
+        /// </summary>
+        internal static bool IstHottcad(GebaeudeAbbild abbild, int gebaeudeIndex)
+        {
+            if (abbild == null || !string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)) return false;
+            if (gebaeudeIndex < 0 || gebaeudeIndex >= abbild.Gebaeude.Count) return false;
+            AbbildGebaeude g = abbild.Gebaeude[gebaeudeIndex];
+            static bool TModel(string s) => s != null && s.Trim().StartsWith("TModel", StringComparison.Ordinal);
+            return TModel(g.Art) || g.Raeume.Exists(r => TModel(r.Raumtyp));
+        }
+
+        /// <summary><b>Lädt die Projektdatei von einem Pfad dazu</b> — die Datei des Anwenders wird nur gelesen (siehe Stromfassung).</summary>
+        internal SqprojStand ProjektdateiLesen(string pfad, int gebaeudeIndex, CancellationToken abbruch = default)
+        {
+            if (string.IsNullOrWhiteSpace(pfad) || !File.Exists(pfad))
+                return Projektdatei = new SqprojStand(GebaeudeQuelle.NurName(pfad ?? ""), null, 0, null, null, null,
+                    new PruefMeldung(PruefStufe.Fehler, SqprojProtokoll.KEINE_DATEI, GebaeudeQuelle.NurName(pfad ?? "")));
+            using (FileStream f = new FileStream(pfad, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                return ProjektdateiLesen(f, pfad, gebaeudeIndex, abbruch);
+        }
+
+        /// <summary>
+        /// <b>Lädt die HottCAD-Projektdatei dazu</b> (Datenaustauschkonzept 16.2, 16.4): nur nach einem gelesenen
+        /// HottCAD-IFC (<see cref="IstHottcad"/>, sonst <c>IMP_SQ_PROT_KEIN_HOTTCAD</c>), Größe gegen die Grenze des
+        /// IFC-Profils (<c>IMP_SQ_PROT_ZU_GROSS</c>), dann der Strom in eine <b>Arbeitskopie</b> unter
+        /// <see cref="Arbeitsordner"/> — gelesen wird allein die Kopie, nur lesend; sie wird danach gelöscht, an der Datei
+        /// des Anwenders bleibt keine Spur. Danach der Raumabgleich gegen das Gebäude <paramref name="gebaeudeIndex"/>.
+        /// Eine Ablehnung lässt die IFC-Daten unberührt. Wirft nur beim Abbruch.
+        /// </summary>
+        internal SqprojStand ProjektdateiLesen(Stream quelle, string dateiname, int gebaeudeIndex, CancellationToken abbruch = default)
+        {
+            string name = GebaeudeQuelle.NurName(dateiname ?? "");
+            SqprojStand Ab(string schluessel, params string[] werte)
+                => Projektdatei = new SqprojStand(name, null, 0, null, null, null, new PruefMeldung(PruefStufe.Fehler, schluessel, werte));
+            if (Abbild == null) return Ab(SqprojProtokoll.NICHT_GELESEN);
+            if (!IstHottcad(Abbild, gebaeudeIndex)) return Ab(SqprojProtokoll.KEIN_HOTTCAD, name);
+            if (quelle == null) return Ab(SqprojProtokoll.KEINE_DATEI, name);
+            long grenze = Profil?.MaxBytes > 0 ? Profil.MaxBytes : long.MaxValue;
+            if (quelle.CanSeek && quelle.Length - quelle.Position > grenze)
+                return Ab(SqprojProtokoll.ZU_GROSS, (quelle.Length - quelle.Position).ToString(CultureInfo.InvariantCulture),
+                          grenze.ToString(CultureInfo.InvariantCulture));
+
+            string ordner = Arbeitsordner();
+            Directory.CreateDirectory(ordner);
+            string kopie = Path.Combine(ordner, Path.GetRandomFileName() + ".sqproj");
+            try
+            {
+                long bytes = 0;
+                string hash;
+                using (var ziel = new FileStream(kopie, FileMode.CreateNew, FileAccess.Write))
+                using (var sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
+                {
+                    var block = new byte[81920];
+                    int n;
+                    while ((n = quelle.Read(block, 0, block.Length)) > 0)
+                    {
+                        abbruch.ThrowIfCancellationRequested();
+                        bytes += n;
+                        if (bytes > grenze)
+                            return Ab(SqprojProtokoll.ZU_GROSS, bytes.ToString(CultureInfo.InvariantCulture), grenze.ToString(CultureInfo.InvariantCulture));
+                        ziel.Write(block, 0, n);
+                        sha.AppendData(block, 0, n);
+                    }
+                    hash = Convert.ToHexStringLower(sha.GetHashAndReset());
+                }
+                SqprojAbbild a = SqprojLeser.Lesen(kopie);
+                if (a.Abgelehnt)
+                    return Projektdatei = new SqprojStand(name, hash, bytes, a, null, a.Meldungen, a.Ablehnung);
+                SqprojRaumabgleich abgleich = SqprojRaumabgleich.Bilden(a, Abbild.Gebaeude[gebaeudeIndex]);
+                var meldungen = new List<PruefMeldung>(a.Meldungen);
+                meldungen.AddRange(abgleich.Meldungen);
+                return Projektdatei = new SqprojStand(name, hash, bytes, a, abgleich, meldungen, null);
+            }
+            catch (IOException ex)
+            {
+                return Ab(SqprojProtokoll.LESEFEHLER, ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Ab(SqprojProtokoll.LESEFEHLER, ex.Message);
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(kopie)) File.Delete(kopie);
+                }
+                catch (IOException) { /* bleibt im Temp-Ordner, der nächste Lauf stört sich nicht daran */ }
+                catch (UnauthorizedAccessException) { }
+            }
+        }
+
+        /// <summary>
+        /// <b>Übernimmt die Zonen der Projektdatei in den Plan</b> (<see cref="SqprojZonen.Uebernehmen"/>) und hängt die
+        /// Bilanz an (<c>IMP_SQ_PROT_BILANZ</c>: abgeglichen, nicht abgeglichen, IFC ohne Gegenstück, Zonen übernommen).
+        /// Ohne gelesene Projektdatei ein leeres Ergebnis.
+        /// </summary>
+        internal SqprojZonenergebnis ProjektdateiUebernehmen(Zonenplan plan)
+        {
+            SqprojStand p = Projektdatei;
+            if (p == null || p.Abgelehnt) return new SqprojZonenergebnis();
+            SqprojZonenergebnis e = SqprojZonen.Uebernehmen(plan, p.Abbild, p.Abgleich);
+            e.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.BILANZ,
+                SqprojProtokoll.Z(p.Abgeglichen), SqprojProtokoll.Z(p.NichtAbgeglichen), SqprojProtokoll.Z(p.IfcOhneGegenstueck),
+                SqprojProtokoll.Z(e.Uebernommen)));
+            return e;
+        }
+
+        // ==================================================================
         // 2 — Zuordnen
         // ==================================================================
 
@@ -247,8 +371,10 @@ namespace WindowsFormsApplication1
                                            bool raumtemperaturAlsSollwert = false)
         {
             GebaeudePruefen(gebaeudeIndex);
-            return GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert,
-                                              raumtemperaturAlsSollwert);
+            GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert,
+                                                                 raumtemperaturAlsSollwert);
+            if (satz != null) satz.Projektdatei = Projektdatei;
+            return satz;
         }
 
         /// <summary>

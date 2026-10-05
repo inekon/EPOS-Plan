@@ -472,6 +472,14 @@ namespace WindowsFormsApplication1
 
         private readonly List<string> _nutzungen = new List<string>();
 
+        /// <summary>
+        /// Die Konditionierung aus der HottCAD-Projektdatei je Zone in der Reihenfolge von <see cref="Zonen"/> (<c>null</c> =
+        /// keine); beim Speichern ersetzt sie nach der Nutzung die Kalenderkopien der Vorlagen (Datenaustauschkonzept 16.3).
+        /// </summary>
+        internal IReadOnlyList<Zonenkonditionierung> Zonenkonditionierungen => _projektdatei;
+
+        private readonly List<Zonenkonditionierung> _projektdatei = new List<Zonenkonditionierung>();
+
         // ==================================================================
         //  Inhalt
         // ==================================================================
@@ -1055,6 +1063,7 @@ namespace WindowsFormsApplication1
                     if (satz.CadSollwertAktiv && iz.IstBeheizt) ZonensollwertAusDatei(m, iz);
                     _v._zonen.Add(m);
                     _v._nutzungen.Add(iz.Nutzung);
+                    _v._projektdatei.Add(iz.Projektdatei);
                     foreach (AbbildRaum r in iz.Raeume)
                         _v._raeume.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Zone, m.ID));
                     if (!(m.Nutzflaeche > 0.0)) Fehler(ZONE_OHNE_NUTZFLAECHE, m.Bezeichner);

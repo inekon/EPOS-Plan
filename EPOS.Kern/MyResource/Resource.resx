@@ -45480,5 +45480,71 @@ Chart</value>
   <data name="GIMP_DLG_PLAN_OK_GESPERRT" xml:space="preserve">
     <value>{0} Räume sind keiner Zone zugeordnet – OK ist gesperrt, bis jeder Raum eine Zone hat.</value>
   </data>
+  <data name="IMP_SQ_PROT_KEINE_DATEI" xml:space="preserve">
+    <value>Die Datei {0} ist keine lesbare Projektdatei (SQLite) — sie wird nicht dazugeladen; die IFC-Daten bleiben.</value>
+  </data>
+  <data name="IMP_SQ_PROT_LESEFEHLER" xml:space="preserve">
+    <value>Die Projektdatei ließ sich nicht lesen: {0}. Die IFC-Daten bleiben.</value>
+  </data>
+  <data name="IMP_SQ_PROT_TABELLE_FEHLT" xml:space="preserve">
+    <value>Der Projektdatei fehlen Tabellen ({0}) — sie wird nicht dazugeladen; die IFC-Daten bleiben.</value>
+  </data>
+  <data name="IMP_SQ_PROT_FASSUNG" xml:space="preserve">
+    <value>Projektdatei gelesen, Fassung der Raumtabelle {0}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_FASSUNG_UNBEKANNT" xml:space="preserve">
+    <value>Die Tabelle {0} trägt die Fassung {1}, die der Leser nicht kennt — die Werte werden gelesen, bitte prüfen.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZU_GROSS" xml:space="preserve">
+    <value>Die Projektdatei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen.</value>
+  </data>
+  <data name="IMP_SQ_PROT_KEIN_HOTTCAD" xml:space="preserve">
+    <value>Eine Projektdatei ({0}) lässt sich nur zu einer IFC-Datei aus HottCAD dazuladen.</value>
+  </data>
+  <data name="IMP_SQ_PROT_NICHT_GELESEN" xml:space="preserve">
+    <value>Erst die IFC-Datei lesen, dann die Projektdatei dazuladen.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONENTYP_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{1} Zonen vom Typ {0} sind übersprungen (nur Nutzungs- und Simulationszonen werden übernommen).</value>
+  </data>
+  <data name="IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{1} Profile der Klasse {0} sind übersprungen (keine Größe in EPOS-Plan).</value>
+  </data>
+  <data name="IMP_SQ_PROT_BETRIEBSART" xml:space="preserve">
+    <value>{1} Zeitprofile tragen die Betriebsart {0} (gezählt, nicht gedeutet).</value>
+  </data>
+  <data name="IMP_SQ_PROT_TAGESART_UNBEKANNT" xml:space="preserve">
+    <value>Die Profilgruppe {0} trägt die Tagesart {1}, die der Leser nicht deutet — die Tageskurven gelten an allen Tagen.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT" xml:space="preserve">
+    <value>{0} Abschnitte tragen eine unbekannte Abschnittsart — sie gelten als Zeitraum.</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_OHNE_TREFFER" xml:space="preserve">
+    <value>{0} Räume der Projektdatei finden keinen IFC-Raum (weder über Name und Geschoss noch über die Kennung): {1}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>{0} IFC-Räume haben kein Gegenstück in der Projektdatei: {1}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONE_LEER" xml:space="preserve">
+    <value>Die Zone {0} der Projektdatei hat keinen abgeglichenen Raum — sie wird nicht angelegt.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONE_ABGELEHNT" xml:space="preserve">
+    <value>Die Zone {0} der Projektdatei ließ sich nicht anlegen ({1}).</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_BEHEIZUNG" xml:space="preserve">
+    <value>Der Raum {0} passt in der Beheizung nicht zur Zone {1} und bleibt nicht zugeordnet.</value>
+  </data>
+  <data name="IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG" xml:space="preserve">
+    <value>Die Zone {0} trägt das Nutzungsprofil Nr. {1} ohne Entsprechung — sie bleibt ohne Nutzung.</value>
+  </data>
+  <data name="IMP_SQ_PROT_WERT_BEGRENZT" xml:space="preserve">
+    <value>Zone {0}, {1}: {2} Werte lagen außerhalb {3} und sind begrenzt.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BILANZ" xml:space="preserve">
+    <value>Projektdatei: {0} Räume abgeglichen, {1} nicht abgeglichen, {2} IFC-Räume ohne Gegenstück, {3} Zonen übernommen.</value>
+  </data>
+  <data name="GIMP_BELEG_SQPROJ" xml:space="preserve">
+    <value>aus Projektdatei: {0}.{1}, Profil {2}</value>
+  </data>
 </root>
 

@@ -45473,5 +45473,71 @@ chart</value>
   <data name="GIMP_DLG_PLAN_OK_GESPERRT" xml:space="preserve">
     <value>{0} rooms are not assigned to a zone – OK is blocked until every room has a zone.</value>
   </data>
+  <data name="IMP_SQ_PROT_KEINE_DATEI" xml:space="preserve">
+    <value>The file {0} is not a readable project file (SQLite) — it is not added; the IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The project file could not be read: {0}. The IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_TABELLE_FEHLT" xml:space="preserve">
+    <value>The project file lacks tables ({0}) — it is not added; the IFC data remain.</value>
+  </data>
+  <data name="IMP_SQ_PROT_FASSUNG" xml:space="preserve">
+    <value>Project file read, room table version {0}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_FASSUNG_UNBEKANNT" xml:space="preserve">
+    <value>The table {0} has version {1}, which the reader does not know — the values are read, please check.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZU_GROSS" xml:space="preserve">
+    <value>The project file has {0} bytes and exceeds the limit of {1} bytes — it is not read.</value>
+  </data>
+  <data name="IMP_SQ_PROT_KEIN_HOTTCAD" xml:space="preserve">
+    <value>A project file ({0}) can only be added to an IFC file from HottCAD.</value>
+  </data>
+  <data name="IMP_SQ_PROT_NICHT_GELESEN" xml:space="preserve">
+    <value>Read the IFC file first, then add the project file.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONENTYP_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{1} zones of type {0} are skipped (only usage and simulation zones are taken over).</value>
+  </data>
+  <data name="IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{1} profiles of class {0} are skipped (no quantity in EPOS-Plan).</value>
+  </data>
+  <data name="IMP_SQ_PROT_BETRIEBSART" xml:space="preserve">
+    <value>{1} time profiles carry operating mode {0} (counted, not interpreted).</value>
+  </data>
+  <data name="IMP_SQ_PROT_TAGESART_UNBEKANNT" xml:space="preserve">
+    <value>The profile group {0} carries day type {1}, which the reader does not interpret — the daily curves apply on all days.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT" xml:space="preserve">
+    <value>{0} sections carry an unknown section type — they are treated as a period.</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_OHNE_TREFFER" xml:space="preserve">
+    <value>{0} rooms of the project file find no IFC room (neither by name and storey nor by identifier): {1}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>{0} IFC rooms have no counterpart in the project file: {1}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONE_LEER" xml:space="preserve">
+    <value>The zone {0} of the project file has no matched room — it is not created.</value>
+  </data>
+  <data name="IMP_SQ_PROT_ZONE_ABGELEHNT" xml:space="preserve">
+    <value>The zone {0} of the project file could not be created ({1}).</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_BEHEIZUNG" xml:space="preserve">
+    <value>The room {0} does not match the heating of zone {1} and stays unassigned.</value>
+  </data>
+  <data name="IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG" xml:space="preserve">
+    <value>The zone {0} carries usage profile no. {1} without a counterpart — it stays without use.</value>
+  </data>
+  <data name="IMP_SQ_PROT_WERT_BEGRENZT" xml:space="preserve">
+    <value>Zone {0}, {1}: {2} values were outside {3} and are limited.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BILANZ" xml:space="preserve">
+    <value>Project file: {0} rooms matched, {1} not matched, {2} IFC rooms without counterpart, {3} zones taken over.</value>
+  </data>
+  <data name="GIMP_BELEG_SQPROJ" xml:space="preserve">
+    <value>from project file: {0}.{1}, profile {2}</value>
+  </data>
 </root>
 

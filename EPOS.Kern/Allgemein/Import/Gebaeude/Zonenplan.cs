@@ -33,6 +33,9 @@ namespace WindowsFormsApplication1
         /// <summary>Von Hand verändert (Räume hinein oder heraus) — unter der Mindestgröße eine Warnung statt eines Zuschlags.</summary>
         internal bool Geaendert { get; set; }
 
+        /// <summary>Die Konditionierung aus der HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
+        internal Zonenkonditionierung Projektdatei { get; set; }
+
         internal Planzone Kopie() => (Planzone)MemberwiseClone();
 
         public override string ToString() => Schluessel + " " + Name + (Nutzung == null ? "" : " [" + Nutzung + "]");

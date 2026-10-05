@@ -32425,6 +32425,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Projektdatei: {0}.{1}, Profil {2} ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die flächengewichtet aus {0} Bauteilen ({1} m²) ähnelt.
         /// </summary>
         public static string GIMP_BELEG_U_GEWICHTET {
@@ -40638,6 +40647,195 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_MSG_BILANZ {
             get {
                 return ResourceManager.GetString("IMP_MSG_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Abschnitte tragen eine unbekannte Abschnittsart — sie gelten als Zeitraum. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {1} Zeitprofile tragen die Betriebsart {0} (gezählt, nicht gedeutet). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei: {0} Räume abgeglichen, {1} nicht abgeglichen, {2} IFC-Räume ohne Gegenstück, {3} Zonen übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_BILANZ {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei gelesen, Fassung der Raumtabelle {0}. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_FASSUNG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_FASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tabelle {0} trägt die Fassung {1}, die der Leser nicht kennt — die Werte werden gelesen, bitte prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_FASSUNG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_FASSUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} IFC-Räume haben kein Gegenstück in der Projektdatei: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei {0} ist keine lesbare Projektdatei (SQLite) — sie wird nicht dazugeladen; die IFC-Daten bleiben. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_KEINE_DATEI {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_KEINE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Projektdatei ({0}) lässt sich nur zu einer IFC-Datei aus HottCAD dazuladen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_KEIN_HOTTCAD {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_KEIN_HOTTCAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {1} Profile der Klasse {0} sind übersprungen (keine Größe in EPOS-Plan). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei ließ sich nicht lesen: {0}. Die IFC-Daten bleiben. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst die IFC-Datei lesen, dann die Projektdatei dazuladen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_NICHT_GELESEN {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_NICHT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} trägt das Nutzungsprofil Nr. {1} ohne Entsprechung — sie bleibt ohne Nutzung. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} passt in der Beheizung nicht zur Zone {1} und bleibt nicht zugeordnet. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUM_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUM_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume der Projektdatei finden keinen IFC-Raum (weder über Name und Geschoss noch über die Kennung): {1}. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUM_OHNE_TREFFER {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUM_OHNE_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektdatei fehlen Tabellen ({0}) — sie wird nicht dazugeladen; die IFC-Daten bleiben. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_TABELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Profilgruppe {0} trägt die Tagesart {1}, die der Leser nicht deutet — die Tageskurven gelten an allen Tagen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_TAGESART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_TAGESART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0}, {1}: {2} Werte lagen außerhalb {3} und sind begrenzt. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_WERT_BEGRENZT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_WERT_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {1} Zonen vom Typ {0} sind übersprungen (nur Nutzungs- und Simulationszonen werden übernommen). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_ZONENTYP_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_ZONENTYP_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} der Projektdatei ließ sich nicht anlegen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_ZONE_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_ZONE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} der Projektdatei hat keinen abgeglichenen Raum — sie wird nicht angelegt. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_ZONE_LEER {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_ZONE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_ZU_GROSS", resourceCulture);
             }
         }
         
