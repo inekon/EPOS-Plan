@@ -1063,6 +1063,9 @@
     /// <summary>Steht die Rückfrage vor der Übernahme der Zonen der Projektdatei?</summary>
     private bool _sqFrage;
 
+    /// <summary>Steht die Rückfrage vor der Übernahme der Zonen der Projektdatei offen (Prüfhilfe für Tests)?</summary>
+    public bool ProjektdateiFrageOffen => _sqFrage;
+
     private string WirksamerHilfeSchluessel
         => Profil is { HilfeSchluessel.Length: > 0 } p ? p.HilfeSchluessel : HilfeSchluessel;
 
