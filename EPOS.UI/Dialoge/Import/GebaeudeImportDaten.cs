@@ -172,6 +172,11 @@ public static class GebaeudePlanschrittArt
     public const string REST = "REST";
     /// <summary>Den Haken „beheizt" eines Raums im Plan umstellen (Räume mit einem Raum, Beheizt).</summary>
     public const string HAKEN = "HAKEN";
+    /// <summary>
+    /// Die Zonen der dazugeladenen Projektdatei übernehmen (Datenaustauschkonzept 16.4): ersetzt die Zonierung des Plans durch
+    /// die Zonen der Projektdatei samt Konditionierung je Zone; ohne gelesene Projektdatei lehnt die Datenseite ab.
+    /// </summary>
+    public const string PROJEKTDATEI = "PROJEKTDATEI";
 }
 
 /// <summary>
@@ -480,6 +485,70 @@ public sealed record GebaeudePlanzoneDaten
 
     /// <summary>Die Räume der Zone in Dateireihenfolge.</summary>
     public IReadOnlyList<GebaeudePlanraumDaten> Raumliste { get; init; } = Array.Empty<GebaeudePlanraumDaten>();
+
+    /// <summary>Stammt die Zone aus der Projektdatei (Kennzeichen <c>data-herkunft</c>)?</summary>
+    public bool AusProjektdatei { get; init; }
+
+    /// <summary>Das Nutzungsprofil der Projektdatei als Tooltip („Nutzungsprofil 1 nach DIN V 18599“); leer = keines.</summary>
+    public string Profiltext { get; init; } = "";
+}
+
+/// <summary>Je Größe der Konditionierung: wie viele übernommene Zonen sie aus der Ganglinie bzw. dem Nutzungsprofil bekommen.</summary>
+/// <param name="Schluessel">Das Kennwort der Größe (sprachneutral, <c>data-groesse</c>).</param>
+/// <param name="Text">Die Zeile als Anzeigetext.</param>
+public sealed record GebaeudeProjektdateiGroesse(string Schluessel, string Text, int Ganglinie, int Nutzungsprofil);
+
+/// <summary>
+/// <b>Die dazugeladene Projektdatei</b> (Datenaustauschkonzept 16.4) für den Kopf des Zuordnungsdialogs: Datei, Fassung,
+/// Raumabgleich, Zonen, Zeitprofile und Abschnitte, nach der Übernahme die Zonen je Größe; dazu die Meldungen mit der
+/// schwersten als Banner. Abgelehnt: <see cref="Ablehnung"/> nennt den Grund, die IFC-Daten bleiben.
+/// </summary>
+public sealed record GebaeudeProjektdateiDaten
+{
+    /// <summary>Der Dateiname ohne Pfad.</summary>
+    public string Dateiname { get; init; } = "";
+
+    /// <summary>Die benannte Ablehnung als Meldung; <c>null</c> = gelesen.</summary>
+    public GebaeudeImportMeldung? Ablehnung { get; init; }
+
+    /// <summary>Gelesen (nicht abgelehnt)?</summary>
+    public bool Gelesen => Ablehnung is null;
+
+    /// <summary>Die Fassung der Raumtabelle; leer = keine.</summary>
+    public string Fassung { get; init; } = "";
+
+    /// <summary>Räume abgeglichen.</summary>
+    public int Abgeglichen { get; init; }
+
+    /// <summary>Räume der Projektdatei ohne IFC-Raum.</summary>
+    public int NichtAbgeglichen { get; init; }
+
+    /// <summary>IFC-Räume ohne Gegenstück in der Projektdatei.</summary>
+    public int IfcOhneGegenstueck { get; init; }
+
+    /// <summary>Die Zonen der belegten Typen in der Datei.</summary>
+    public int Zonen { get; init; }
+
+    /// <summary>Die übernommenen Zonen; <c>null</c> = noch nicht übernommen.</summary>
+    public int? Uebernommen { get; init; }
+
+    /// <summary>Gelesene Zeitprofile.</summary>
+    public int Zeitprofile { get; init; }
+
+    /// <summary>Gelesene Abschnitte.</summary>
+    public int Abschnitte { get; init; }
+
+    /// <summary>Die Namen der Räume der Projektdatei ohne IFC-Raum (Geschoss/Name).</summary>
+    public IReadOnlyList<string> RaeumeOhneTreffer { get; init; } = Array.Empty<string>();
+
+    /// <summary>Nach der Übernahme: je Größe die Zonen aus Ganglinie und Nutzungsprofil; vorher leer.</summary>
+    public IReadOnlyList<GebaeudeProjektdateiGroesse> Groessen { get; init; } = Array.Empty<GebaeudeProjektdateiGroesse>();
+
+    /// <summary>Alle Meldungen (Leser, Abgleich, Übernahme) — das Übersprungene mit Grund.</summary>
+    public IReadOnlyList<GebaeudeImportMeldung> Meldungen { get; init; } = Array.Empty<GebaeudeImportMeldung>();
+
+    /// <summary>Die schwerste Meldung als Banner (Fehler vor Warnung); <c>null</c> = keine Warnung.</summary>
+    public GebaeudeImportMeldung? Schwerste { get; init; }
 }
 
 /// <summary>
@@ -699,6 +768,15 @@ public sealed record GebaeudeImportStand
     /// Einzonenweg; <c>null</c> ohne gelesenes Gebäude.
     /// </summary>
     public EPOS.UI.Dialoge.Bedarf.GebaeudeAnsichtDaten? Ansicht { get; init; }
+
+    /// <summary>
+    /// Lässt sich zum gewählten Gebäude eine Projektdatei dazuladen (IFC aus HottCAD)? Sonst steht der Knopf ausgegraut mit
+    /// Grund (Datenaustauschkonzept 16.4).
+    /// </summary>
+    public bool ProjektdateiMoeglich { get; init; }
+
+    /// <summary>Die dazugeladene Projektdatei; <c>null</c> = keine.</summary>
+    public GebaeudeProjektdateiDaten? Projektdatei { get; init; }
 }
 
 /// <summary>
@@ -1177,6 +1255,71 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_GESPERRT — Einleitung der Fehler, die die Übernahme sperren.</summary>
     public string Gesperrt { get; set; } = Resource.GIMP_DLG_GESPERRT;
+
+    // ---- Projektdatei dazuladen (Datenaustauschkonzept 16.4) ----
+
+    /// <summary>GIMP_DLG_SQ_KNOPF</summary>
+    public string SqKnopf { get; set; } = Resource.GIMP_DLG_SQ_KNOPF;
+
+    /// <summary>GIMP_DLG_SQ_KNOPF_GRUND</summary>
+    public string SqKnopfGrund { get; set; } = Resource.GIMP_DLG_SQ_KNOPF_GRUND;
+
+    /// <summary>GIMP_DLG_SQ_ENTFERNEN</summary>
+    public string SqEntfernen { get; set; } = Resource.GIMP_DLG_SQ_ENTFERNEN;
+
+    /// <summary>GIMP_DLG_SQ_UEBERNEHMEN</summary>
+    public string SqUebernehmen { get; set; } = Resource.GIMP_DLG_SQ_UEBERNEHMEN;
+
+    /// <summary>GIMP_DLG_SQ_GRUPPE</summary>
+    public string SqGruppe { get; set; } = Resource.GIMP_DLG_SQ_GRUPPE;
+
+    /// <summary>GIMP_DLG_SQ_FASSUNG</summary>
+    public string SqFassung { get; set; } = Resource.GIMP_DLG_SQ_FASSUNG;
+
+    /// <summary>GIMP_DLG_SQ_RAEUME</summary>
+    public string SqRaeume { get; set; } = Resource.GIMP_DLG_SQ_RAEUME;
+
+    /// <summary>GIMP_DLG_SQ_RAEUME_WERT</summary>
+    public string SqRaeumeWert { get; set; } = Resource.GIMP_DLG_SQ_RAEUME_WERT;
+
+    /// <summary>GIMP_DLG_SQ_ZONEN</summary>
+    public string SqZonen { get; set; } = Resource.GIMP_DLG_SQ_ZONEN;
+
+    /// <summary>GIMP_DLG_SQ_ZONEN_WERT</summary>
+    public string SqZonenWert { get; set; } = Resource.GIMP_DLG_SQ_ZONEN_WERT;
+
+    /// <summary>GIMP_DLG_SQ_ZONEN_OFFEN</summary>
+    public string SqZonenOffen { get; set; } = Resource.GIMP_DLG_SQ_ZONEN_OFFEN;
+
+    /// <summary>GIMP_DLG_SQ_PROFILE</summary>
+    public string SqProfile { get; set; } = Resource.GIMP_DLG_SQ_PROFILE;
+
+    /// <summary>GIMP_DLG_SQ_PROFILE_WERT</summary>
+    public string SqProfileWert { get; set; } = Resource.GIMP_DLG_SQ_PROFILE_WERT;
+
+    /// <summary>GIMP_DLG_SQ_JE_GROESSE</summary>
+    public string SqJeGroesse { get; set; } = Resource.GIMP_DLG_SQ_JE_GROESSE;
+
+    /// <summary>GIMP_DLG_SQ_UEBERSPRUNGEN</summary>
+    public string SqUebersprungen { get; set; } = Resource.GIMP_DLG_SQ_UEBERSPRUNGEN;
+
+    /// <summary>GIMP_DLG_SQ_OHNE_TREFFER</summary>
+    public string SqOhneTreffer { get; set; } = Resource.GIMP_DLG_SQ_OHNE_TREFFER;
+
+    /// <summary>GIMP_DLG_SQ_HERKUNFT</summary>
+    public string SqHerkunft { get; set; } = Resource.GIMP_DLG_SQ_HERKUNFT;
+
+    /// <summary>GIMP_DLG_SQ_FRAGE_TITEL</summary>
+    public string SqFrageTitel { get; set; } = Resource.GIMP_DLG_SQ_FRAGE_TITEL;
+
+    /// <summary>GIMP_DLG_SQ_FRAGE</summary>
+    public string SqFrage { get; set; } = Resource.GIMP_DLG_SQ_FRAGE;
+
+    /// <summary>GIMP_DLG_SQ_KEIN_PLAN</summary>
+    public string SqKeinPlan { get; set; } = Resource.GIMP_DLG_SQ_KEIN_PLAN;
+
+    /// <summary>GIMP_DLG_SQ_HINWEIS</summary>
+    public string SqHinweis { get; set; } = Resource.GIMP_DLG_SQ_HINWEIS;
 }
 
 /// <summary>Die sprachneutralen Schlüssel der Schalter des Zuordnungsdialogs (als <c>data-schluessel</c>).</summary>

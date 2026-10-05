@@ -328,6 +328,9 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary><b>Entfernt die dazugeladene Projektdatei</b> (Knopf „Projektdatei entfernen“) — die IFC-Daten bleiben.</summary>
+        internal void ProjektdateiEntfernen() => Projektdatei = null;
+
         /// <summary>
         /// <b>Übernimmt die Zonen der Projektdatei in den Plan</b> (<see cref="SqprojZonen.Uebernehmen"/>) und hängt die
         /// Bilanz an (<c>IMP_SQ_PROT_BILANZ</c>: abgeglichen, nicht abgeglichen, IFC ohne Gegenstück, Zonen übernommen).

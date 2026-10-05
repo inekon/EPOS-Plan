@@ -133,8 +133,12 @@ namespace WindowsFormsApplication1
                     Beheizt = plan.ZoneBeheizt(pz.Schluessel),
                     Raeume = raeume.Count.ToString(CultureInfo.CurrentCulture),
                     Flaeche = MitEinheit(flaeche, "m²"),
-                    Sollwert = zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? sw : Leer,
+                    Sollwert = pz.Projektdatei?.HeizsollTag is double sq ? MitEinheit(sq, "°C")
+                             : zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? sw : Leer,
                     Raumliste = raeume.Select(r => Planraum(plan, r)).ToList(),
+                    AusProjektdatei = pz.Projektdatei != null,
+                    Profiltext = pz.Projektdatei?.Profilnummer is int nr
+                        ? Formatieren(MyResource.Resource.GIMP_DLG_SQ_PROFIL, nr.ToString(CultureInfo.CurrentCulture)) : "",
                 });
             }
             int n = plan.Zonen.Count + 1;
