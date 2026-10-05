@@ -5,7 +5,7 @@
 
 ## 1 Auftrag
 
-Stufe AK2 der Anlagenkopplung (Arbeitsplan `Dokumentation/aktuell/Gebaeudesimulation/2026-10-05_Plan_AK2.md`): der Erzeugerfahrplan als Verfügbarkeit je Stunde, die Verteilung auf Gebäude und Zonen im Zweipass, die vierte Grenze im Schritt H und die Komfortkennzahlen. Dieses Protokoll deckt die ersten drei Wellen; Oberfläche, Bericht und Wiki (AK2-3) und das Referenzprojekt 1056 mit Basis R37 (AK2-4) folgen.
+Stufe AK2 der Anlagenkopplung (Arbeitsplan `Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_Plan_AK2.md`): der Erzeugerfahrplan als Verfügbarkeit je Stunde, die Verteilung auf Gebäude und Zonen im Zweipass, die vierte Grenze im Schritt H und die Komfortkennzahlen. Dieses Protokoll deckt die ersten drei Wellen; Oberfläche, Bericht und Wiki (AK2-3) und das Referenzprojekt 1056 mit Basis R37 (AK2-4) folgen.
 
 ## 2 Vorgehen
 
