@@ -228,7 +228,10 @@ namespace Auslieferungsvorlage.Tests
             // 168 seit dem Schemaschritt 183 (KaeltemaschineAnlageSchema, KU3-4): Tab_ErgebnisKaeltemaschine,
             // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
             //
-            Assert.Equal(168, befund.Strict);
+            // 173 seit dem Schemaschritt 189 (RaumnutzungSchema, NP1a): die fuenf Tabellen des Katalogs der
+            // Nutzungsprofile, STRICT von ihrer ersten Zeile an; der Neubau von Kalender und Vorlage haelt STRICT.
+            //
+            Assert.Equal(173, befund.Strict);
         }
 
         // =============================================================================

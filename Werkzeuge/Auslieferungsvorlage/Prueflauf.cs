@@ -109,6 +109,69 @@ namespace Auslieferungsvorlage
 
             // ---- 8. Konditionierung (Konzept Konditionierungsprofile 5.5, 5.7, E54) ----
             ok &= Konditionierung();
+
+            // ---- 9. Nutzungsprofile (Konzept Nutzungsprofile NP-F21) -----------------
+            ok &= Nutzungsprofile();
+            return ok;
+        }
+
+        // =================================================================================
+        //  Die neunte Frage — der Katalog der Nutzungsprofile (Konzept Nutzungsprofile NP-F21)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Was der Katalog der Nutzungsprofile in der Vorlage trägt.</b> Gezählt werden je Kategorie die Profile
+        /// (gesperrt und eigen) und die Zuordnungen; geprüft wird dreierlei: die ausgelieferte Saat steht vollständig
+        /// (<see cref="RaumnutzungSchema.OffeneSaat"/>), <b>kein Kennwert, kein Zeilenbild, kein Stundenprofil in einer
+        /// Normkategorie</b> (DIN V 18599-10, SIA 2024, VDI 2078 — Normwerte werden nie ausgeliefert) und nach
+        /// <c>--kataloge readonly</c> keine eigene Zeile mehr. Steht der Schemaschritt nicht, ist das ein Hinweis.
+        /// </summary>
+        private bool Nutzungsprofile()
+        {
+            _bericht.Leer();
+            _bericht.Zeile("Nutzungsprofile");
+            if (!DataRepository.TabelleVorhanden(RaumnutzungSchema.TAB_KATALOG))
+            {
+                _bericht.Zeile("        Schemaschritt " + RaumnutzungSchema.SCHRITT + " steht nicht — nichts zu pruefen");
+                return true;
+            }
+
+            DataTable kategorien = DataRepository.GetDataTable(
+                "SELECT k.\"Bezeichner\", k.\"Art\", " +
+                "(SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p WHERE p.\"ID_Katalog\" = k.\"ID\" AND p.\"ReadOnly\" = 1) AS gesperrt, " +
+                "(SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p WHERE p.\"ID_Katalog\" = k.\"ID\" AND p.\"ReadOnly\" = 0) AS eigen " +
+                "FROM \"" + RaumnutzungSchema.TAB_KATALOG + "\" k ORDER BY k.\"Reihenfolge\", k.\"Bezeichner\"");
+            foreach (DataRow r in kategorien.Rows)
+                _bericht.Zeile("        Kategorie " + Convert.ToString(r["Bezeichner"]).PadRight(20) + " (" + Convert.ToString(r["Art"]) +
+                               ")  Profile gesperrt " + Convert.ToString(r["gesperrt"]) + ", eigen " + Convert.ToString(r["eigen"]));
+            long zuordnungen = Vorlagenbau.Zaehle(RaumnutzungSchema.TAB_ZUORDNUNG);
+            _bericht.Zeile("        Zuordnungen: " + zuordnungen);
+            _bericht.Leer();
+
+            bool ok = true;
+            int offen = RaumnutzungSchema.OffeneSaat();
+            ok &= Befund(offen == 0, "ausgelieferte Saat der Nutzungsprofile vollstaendig: offen " + offen);
+
+            string norm = string.Join(", ", RaumnutzungSchema.ARTEN_NORM.Select(a => "'" + a + "'"));
+            string normProfile = "SELECT p.\"ID\" FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p JOIN \"" +
+                                 RaumnutzungSchema.TAB_KATALOG + "\" k ON k.\"ID\" = p.\"ID_Katalog\" WHERE k.\"Art\" IN (" + norm + ")";
+            long kennwerte = Vorlagenbau.Zaehle2(
+                "SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ID\" IN (" + normProfile + ") AND (" +
+                string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => "\"" + s.Spalte + "\" IS NOT NULL")) + ")");
+            long zeilen = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
+            long stunden = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
+            ok &= Befund(kennwerte + zeilen + stunden == 0,
+                         "Werte in Normkategorien: Profile mit Kennwert " + kennwerte + ", Zeilenbild " + zeilen + ", Stundenprofile " +
+                         stunden + "   (Normwerte werden nie ausgeliefert)");
+
+            long eigene = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_KATALOG + "\" WHERE \"ReadOnly\" = 0")
+                          + Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ReadOnly\" = 0")
+                          + Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" WHERE \"ReadOnly\" = 0");
+            if (KatalogeVollstaendig)
+                _bericht.Zeile("        eigene Zeilen des Katalogs: " + eigene +
+                               "   (Modus alle — sie bleiben; mit --kataloge readonly fielen sie)");
+            else
+                ok &= Befund(eigene == 0, "eigene Zeilen des Katalogs der Nutzungsprofile nach --kataloge readonly: " + eigene);
             return ok;
         }
 
