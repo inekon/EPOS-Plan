@@ -1388,9 +1388,10 @@ Ein Dialog, vier Abschnitte, ein OK. Der Aufbau folgt dem Konfliktdialog
 `Katalogliste`, weil die Institute-Datei 78 **Räume** und über 2 000 Flächen liefert; unter der
 Vorbelegung Z4 werden daraus wenige Zonen, unter einer Regel „je Raum eine Zone" 78. (1) **Kopf** —
 Datei, Schema, Gebäudewahl, Zonenregel Z1…Z5, Bilanz (Zonen, beheizte Fläche, Volumen, Σ
-Außenfläche, Σ Trennfläche) und Warnbanner mit der schwersten Meldungsstufe. (2) **Zonen** — je
-Zone Name, Regel, Räume, Fläche, Volumen, Haken „beheizt", Knöpfe „zusammenlegen"/„trennen";
-aufgeklappt die Raumliste mit `LongName`, Geschoss, Fläche, Beheizungsregel B1…B6 und Beleg.
+Außenfläche, Σ Trennfläche) und Warnbanner mit der schwersten Meldungsstufe. (2) **Zonen** — der
+Zonenbaum Gebäude → Zonen → Räume (mit Geschoss) und daneben die Liste „nicht zugeordnete Räume";
+je Zone Name, Nutzung, Räume, Fläche, Volumen, Haken „beheizt"; je Raum `LongName`, Geschoss,
+Fläche, Beheizungsregel B1…B6 und Beleg.
 (3) **Flächen je Zone** — Bauteilart, Fläche, Azimut, Neigung, Randbedingung, Nachbarzone, U-Wert,
 Aufbau, Herkunft, Beleg, mit den Filtern „nur Fehler", „nur ohne Gegenstück", „nur ohne U-Wert",
 „nur ohne Stoffwerte". (4) **Baustoffe** — IFC-Name, Abgleichstufe N1…N7, zugeordneter Baustoff,
@@ -1403,11 +1404,52 @@ Gebäudeimport mit eigener Zuordnung, die das Projekt beim Speichern merkt; Leit
 Unwahrheit (Datenaustauschkonzept 1.4, Nr. 6). Er bekommt **keinen eigenen Maskenschlüssel und
 keine Menüzeile**, sondern erscheint als **Überlagerung im Gebäudedialog** (**A17**).
 
-**Was der Anwender ändern kann:** Regel wählen (der Vorschlag wird neu gebildet, Handeingriffe nach
-Rückfrage verworfen), Zone umbenennen, Räume zusammenlegen (Innengrenzen zwischen ihnen entfallen),
-Zone trennen (vormals interne Flächen werden zu Trennflächen), Haken „beheizt" (die angrenzenden
-Flächen wechseln ihre Randbedingung), „alles in eine Zone" (der Einzonen-Rückfall). Nach jeder
-Änderung rechnet der Dialog die Bilanz neu.
+**Der Zonenplan** (`EPOS.Kern/Allgemein/Import/Gebaeude/Zonenplan.cs`) ist das Modell hinter Abschnitt (2):
+eine geordnete Liste **freier Zonen** — je Zone ein stabiler, sprachneutraler Schlüssel `Z:<n>` (innerhalb
+eines Plans nie wiederverwendet), ein Name (im Plan eindeutig ohne Unterschied der Schreibung) und eine
+**Nutzung** `WOHNEN`, `BUERO`, `SCHULE` oder keine — und die Zuordnung jedes Raums zu einer Zone. Ein Raum
+ohne Zone ist **nicht zugeordnet**; ein Raum, den die Regel bewusst draußen lässt (die unbeheizten Räume
+unter Z5/X4, eine unbeheizte Zone ohne Fläche nach 6.5), liegt **außerhalb**. Die Beheizung einer Zone
+folgt aus ihren Räumen (Haken der Raumliste).
+
+- **Entstehen:** Der Plan entsteht aus dem Regelvorschlag nach 6.1 samt Mindestgröße M8 — jede
+  Vorschlagszone wird eine freie Zone mit ihrem Namen; unter Z6 trägt sie die Nutzung ihrer
+  Nutzungsklasse mit der größten Fläche (Büro → `BUERO`; Wohnen, Schlafen, Küche, Sanitär → `WOHNEN`;
+  sonst keine), unter den übrigen Regeln keine. Gespeicherte Zuordnungen von Hand (`Raumumhaengung`)
+  gehen als Eingang in diesen Vorschlag ein. Danach wird der Plan **nur noch von Hand** geändert.
+- **Operationen** — jede deterministisch; was nicht geht, wird benannt abgelehnt und lässt den Plan
+  unverändert: Zone anlegen (am Ende, leer), löschen (ihre Räume sind danach nicht zugeordnet),
+  umbenennen, Nutzung setzen; **Zonierung aufheben** (alle Räume nicht zugeordnet, die Zonen des
+  Vorschlags entfallen, die angelegten bleiben leer stehen); **Räume zuordnen** (Mehrfachwahl, alle oder
+  keinen; ein Raum anderer Beheizung als die Zone wird benannt abgelehnt, der Ausweg ist der Haken
+  „beheizt" des Raums; ohne Zielzone werden die Räume herausgenommen); **Geschoss zuordnen** (die gleich
+  beheizten Räume des Geschosses, die übrigen bleiben benannt, wo sie waren); **Rest nach Regel
+  zuordnen** (nur die nicht zugeordneten Räume: in die Zone aus derselben Regelzone, sonst in die
+  gleichnamige gleicher Beheizung, sonst in eine neue; was die Regel draußen lässt, liegt danach
+  außerhalb); **nach Regel neu bilden** (der Regelwechsel; Handeingriffe nach Rückfrage verworfen). Eine
+  Zone über der Pflegegrenze von 50 Zonen wird nicht angelegt.
+- **Zonierung aus dem Plan:** Seiten, Trennflächen (Raumgrenzen, Körperpaare, Raumbezüge), Gegenprobe,
+  Obergrenze M12 und Meldungen bilden sich wie in 6.1 bis 6.6, aber über die freien Zonen. Die
+  Mindestgröße M8 wirkt nur im Regelvorschlag: Eine Zone des Plans unter der Mindestgröße wird nicht
+  zugeschlagen, sondern benannt (als Warnung, wenn sie von Hand verändert ist). Nicht zugeordnete Räume
+  liegen in keiner Zone und zählen nicht zur Zonenfläche (Warnung `RAEUME_NICHT_ZUGEORDNET` mit Zahl und
+  bis fünf Namen); eine Zone ohne Raum steht in der Bilanz mit 0 m² und wird nicht übernommen (Info
+  `ZONE_LEER`).
+- **OK:** Mit nicht zugeordneten Räumen wird nicht gespeichert (`ZUORDNUNG_UNVOLLSTAENDIG`, Fehler); der
+  Dialog bietet dafür „Rest nach Regel zuordnen". Beim Speichern trägt `Tab_Zone.Bezeichner` den
+  Zonennamen; eine Zone mit Nutzung bekommt je Größe die erste ausgelieferte Konditionierungsvorlage
+  dieser Nutzung als Kalenderkopie über den Weg „Vorlage übernehmen" (Kopie trägt die Nutzung in
+  `Tab_Konditionierungskalender.Nutzung`; eine unbeheizte Zone ohne Heiz- und Kühlkalender; fragt die
+  Lüftung nach dem Aufteilen der Gesamtangabe, wird aufgeteilt); ohne Nutzung bekommt sie keinen
+  Kalender. `Tab_Importzuordnung` paart jeden Raum mit seiner Zone, `Tab_Importquelle.Zonenregel` hält
+  die Regel. Ein erneuter Import derselben Datei (gleicher SHA-256) findet daraus den Plan wieder:
+  Zonen in ihrer Reihenfolge mit Bezeichner und der Nutzung ihrer Kalender, die Räume über ihre Paarung;
+  ein Raum ohne Paarung liegt außerhalb, wenn die gespeicherte Regel ihn draußen lässt, sonst ist er
+  nicht zugeordnet. Eine leere Zone wird nicht gespeichert und kommt nicht wieder.
+
+**Was der Anwender sonst ändern kann:** Haken „beheizt" je Raum (die angrenzenden Flächen wechseln ihre
+Randbedingung) und „alles in eine Zone" (der Einzonen-Rückfall). Nach jeder Änderung rechnet der Dialog
+die Bilanz neu.
 
 **Vier Regeln, die nicht verhandelbar sind:** Nichts wird ohne OK geschrieben; **jede Zahl trägt
 ihre Herkunft und ihren Beleg** — eine Zelle ohne Beleg ist eine Vorgabe; kein Anzeigetext ist
