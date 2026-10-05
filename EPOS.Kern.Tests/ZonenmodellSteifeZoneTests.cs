@@ -96,5 +96,40 @@ namespace EPOS.Kern.Tests
             Assert.Equal(AW, m.ThetaMAw);
             Assert.Equal(IW, m.ThetaMIw);
         }
+
+        /// <summary>
+        /// Der Übergabeweg (Anlagenkopplung, Schritt H): Auch eine Lage mit Leitwert kann im Innern umkehren. In
+        /// dieser Stunde (Übergabe 3,8 kW, Vorlauf 38,5 °C, Reglerband 0,8 K, warme Innenbauteilmasse) steigt die
+        /// Raumluft im Regelbereich binnen Minuten über θ_H und fällt bis zum Ende wieder darunter; Endpunkt und
+        /// Bisektion sind zulässig, das Mittel bucht −410 W. Vor der Behebung brach die Stunde mit der
+        /// Abschnittsregel ab (Betriebsfall UebergabeRegelbereich); jetzt endet die Lage am ersten Austritt aus
+        /// ihrem Band, keine Kälte, keine negative Heizleistung, die Bilanz geschlossen.
+        /// </summary>
+        [Fact]
+        public void Uebergabelage_endet_am_ersten_Austritt_aus_ihrem_Band()
+        {
+            var p = new ErsatzparameterRC(537803.541451471, 121195781.36188146, 2.6208567176662157E-06, 0.006146696482124655,
+                                          6.607277234873157E-05, 0.00012223847087180391, 3.977585888381774E-05,
+                                          0.00039707692708850574, 0.00010747078736655913, 1762.195, 1268.193, 1466.932);
+            const double aw = 11.82828947956695, iw = 22.65064015652276;
+            var k = new Uebergabekennwerte(3787.0579619366013, 1.1896461120758421, 55.0, 45.0, 20.0);
+            var r = new Stundenrand(15.657371592548383, 23.58216891697709, 18.844836257791535, double.PositiveInfinity, 0.0, 0.0, 0.0,
+                                    heizleistungMaxW: 11133.483932881376, uebergabe: k, vorlaufC: 38.54865103892453,
+                                    reglerbandK: 0.8049389947228782);
+            var m = new Zonenmodell2K(p, "Übergabe");
+            m.Zuruecksetzen(aw, iw);
+
+            Stundenergebnis e = m.Schritt(in r);
+            Stundenmuster muster = m.LetztesMuster;
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0} Abschnitte ({1}), Heizen {2:G6} W, Raumluft {3:F4} °C",
+                                         e.Abschnitte, string.Join(", ", muster.Folge.ToArray()), e.HeizleistungW, e.ThetaAirMittel));
+
+            Assert.True(e.Abschnitte >= 3);
+            Assert.Equal(Betriebsfall.UebergabeRegelbereich, muster.Folge[1]);
+            Assert.True(muster.Dauer[1] < Zonenmodell2K.STUNDE_S - muster.Dauer[0]);
+            Assert.True(e.HeizleistungW >= 0.0);
+            Assert.Equal(0.0, e.KuehlleistungW);
+            Bilanz(p, aw, iw, in r, in e);
+        }
     }
 }
