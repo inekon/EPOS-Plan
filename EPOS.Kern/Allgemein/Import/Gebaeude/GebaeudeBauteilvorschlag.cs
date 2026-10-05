@@ -67,6 +67,15 @@ namespace WindowsFormsApplication1
         /// <summary>Der U-Wert aus den Schichten des Aufbaus [W/(m²K)]; <c>null</c> = kein Aufbau.</summary>
         internal double? USchichten { get; set; }
 
+        /// <summary>
+        /// Der Beleg der Zeile; gesetzt für Trennflächen aus den Raumkörpern (<see cref="BELEG_KOERPER"/>: Raum A, Raum B,
+        /// Fläche) — die Herkunft lautet dann „aus Datei (Körper)“. <c>null</c> = keiner.
+        /// </summary>
+        internal GebaeudeBeleg Beleg { get; set; }
+
+        /// <summary>Belegschlüssel einer Trennfläche aus den Raumkörpern: {0} Raum A, {1} Raum B, {2} Fläche [m²].</summary>
+        internal const string BELEG_KOERPER = "GIMP_BELEG_KOERPER";
+
         /// <summary>Kurzfassung für Tests.</summary>
         public override string ToString()
             => Bauteil.Bauteilart + " " + Bauteil.Bezeichner + " " + Bauteil.Flaeche.ToString("0.###", CultureInfo.InvariantCulture)
@@ -1186,6 +1195,10 @@ namespace WindowsFormsApplication1
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
                 Setzen(z, neigung, hn, azimut, ha);
+                // Trennfläche aus den Raumkörpern: Herkunft „aus Datei (Körper)“ mit Raumpaar und Fläche als Beleg.
+                if (s.Grenzen.Count == 2 && s.Grenzen.All(g => g.Herkunft == Grenzherkunft.Koerper))
+                    z.Beleg = new GebaeudeBeleg(GebaeudeBauteilzeile.BELEG_KOERPER, Raumname(s.Grenzen[0].RaumKennung),
+                                                Raumname(s.Grenzen[1].RaumKennung), Zahl(Math.Round(s.Grenzen[0].FlaecheM2 ?? 0.0, 2)));
                 if (transparent)
                 {
                     _vorhangfassaden++;
@@ -1197,6 +1210,13 @@ namespace WindowsFormsApplication1
                 else Opak(z, s, art, rand == Bauteilrand.Zone ? Bauteilrand.Unbeheizt : rand, gespiegelt, feld);
                 if (rand == Bauteilrand.Unbeheizt) { _unbeheizt++; _unbeheiztM2 += flaeche; }
                 Abschliessen(z);
+            }
+
+            /// <summary>Der Name eines Raums der Datei, sonst seine Kennung.</summary>
+            private string Raumname(string kennung)
+            {
+                AbbildRaum r = _abbild.Gebaeude.SelectMany(x => x.Raeume).FirstOrDefault(x => x.Kennung == kennung);
+                return r == null || string.IsNullOrWhiteSpace(r.Name) ? kennung : r.Name.Trim();
             }
 
             private void Oeffnungszeile(AbbildBauteil wirt, AbbildBauteil o, Bauteilrand rand, int? nachbar, bool gespiegelt)

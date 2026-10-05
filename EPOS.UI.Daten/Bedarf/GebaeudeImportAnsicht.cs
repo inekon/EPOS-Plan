@@ -11,7 +11,8 @@ namespace WindowsFormsApplication1
     /// Übersetzt die <see cref="Zonengeometrie"/> des Kerns in das DTO der Komponente
     /// <c>GebaeudeAnsicht</c>: je Geschoss die Räume mit ihren Polygonen in Metern, der Zone als Schlüssel
     /// und der Herkunft als Wert; je Zone Schlüssel, Name (derselbe wie in der Zonenliste), Stelle und
-    /// Beheizung; die Hinweise der Geometrie als Anzeigetexte. Gerechnet wird hier nichts — die Geometrie
+    /// Beheizung; die Hinweise der Geometrie als Anzeigetexte; je Raum den Körper aus der Datei (Punkte relativ
+    /// zum Bezugspunkt des Gebäudes) und die Herkunft des Körpers als Wert. Gerechnet wird hier nichts — die Geometrie
     /// ist die des Kerns, nur ihre Gestalt wechselt.
     /// </summary>
     internal static class GebaeudeImportAnsicht
@@ -37,6 +38,7 @@ namespace WindowsFormsApplication1
                 .Select(z => new GebaeudeAnsichtZone(z.Schluessel, zonenname?.Invoke(z.Stelle) ?? z.Name, z.Stelle, z.IstBeheizt,
                                                      z.Herkunft == Geometrieherkunft.Schematisch, z.Handgeaendert))
                 .ToList();
+            double[] bezug = Bezugspunkt(geometrie);
             return new GebaeudeAnsichtDaten
             {
                 Geschosse = geschosse,
@@ -44,7 +46,9 @@ namespace WindowsFormsApplication1
                 Schematisch = geometrie.Schematisch,
                 Umhaengbar = umhaengbar,
                 Hinweise = geometrie.Meldungen.Select(GebaeudeZuordnungsModell.MeldungText).ToList(),
-                Koerperraeume = geometrie.Raeume.Select(r => Koerperraum(geometrie, r)).ToList(),
+                Koerperraeume = geometrie.Raeume.Select(r => Koerperraum(geometrie, r, bezug)).ToList(),
+                Bezugspunkt = bezug,
+                Dreiecksgrenze = Dateikoerper.DREIECKSGRENZE,
                 Geschosslagen = geometrie.Geschosse.Select(g => new GebaeudeAnsichtGeschosslage(g.Kennung ?? "", g.LageM)).ToList(),
             };
         }
@@ -53,13 +57,49 @@ namespace WindowsFormsApplication1
         /// Die Körperangaben eines Raums (G7b): die Raumhöhe — die des Raums, sonst die der Zone (V/A), sonst keine —
         /// und je Kante, Boden und Decke die Art des ersten Bauteils, das die Geometrie dort kennt.
         /// </summary>
-        private static GebaeudeAnsichtKoerperraum Koerperraum(Zonengeometrie geometrie, Raumumriss r)
+        private static GebaeudeAnsichtKoerperraum Koerperraum(Zonengeometrie geometrie, Raumumriss r, double[] bezug)
         {
             double? hoehe = r.HoeheM ?? (r.Zone >= 0 && r.Zone < geometrie.Zonen.Count ? geometrie.Zonen[r.Zone].HoeheM : null);
             List<IReadOnlyList<string>> kanten = r.Polygone
                 .Select(p => (IReadOnlyList<string>)p.Kanten.Select(k => Art(k.Grenzen)).ToList())
                 .ToList();
-            return new GebaeudeAnsichtKoerperraum(r.RaumKennung, hoehe, kanten, Art(r.Boden), Art(r.Decke));
+            return new GebaeudeAnsichtKoerperraum(r.RaumKennung, hoehe, kanten, Art(r.Boden), Art(r.Decke))
+            {
+                Dateikoerper = r.Koerper == null ? null : Koerper(r.Koerper, bezug),
+                Herkunft = r.Koerper != null ? Koerperherkunft.Datei
+                    : r.Herkunft == Geometrieherkunft.Schematisch ? Koerperherkunft.Schematisch : Koerperherkunft.Umriss,
+            };
+        }
+
+        /// <summary>
+        /// Der Bezugspunkt der Dateikörper (15.4): je Achse der kleinste Punkt aller Körper; ohne Körper (0, 0, 0).
+        /// </summary>
+        private static double[] Bezugspunkt(Zonengeometrie geometrie)
+        {
+            var bezug = new[] { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity };
+            foreach (Raumumriss r in geometrie.Raeume)
+            {
+                if (r.Koerper == null) continue;
+                foreach (double[] p in r.Koerper.PunkteM)
+                    for (int i = 0; i < 3; i++) bezug[i] = Math.Min(bezug[i], p[i]);
+            }
+            return double.IsPositiveInfinity(bezug[0]) ? new double[3] : bezug;
+        }
+
+        /// <summary>Der Dateikörper als Folgen für die Ansicht: Punkte relativ zum Bezugspunkt (float), Indizes flach.</summary>
+        private static GebaeudeAnsichtDateikoerper Koerper(Dateikoerper k, double[] bezug)
+        {
+            var punkte = new float[k.PunkteM.Count * 3];
+            for (int i = 0; i < k.PunkteM.Count; i++)
+                for (int a = 0; a < 3; a++) punkte[3 * i + a] = (float)(k.PunkteM[i][a] - bezug[a]);
+            var dreiecke = new int[k.Dreiecke.Count * 3];
+            for (int i = 0; i < k.Dreiecke.Count; i++)
+                for (int a = 0; a < 3; a++) dreiecke[3 * i + a] = k.Dreiecke[i][a];
+            var kanten = new int[k.Randkanten.Count * 2];
+            for (int i = 0; i < k.Randkanten.Count; i++)
+                for (int a = 0; a < 2; a++) kanten[2 * i + a] = k.Randkanten[i][a];
+            return new GebaeudeAnsichtDateikoerper(punkte, dreiecke, kanten, k.DreieckZahl, k.Art,
+                                                   k.Vermerke.Select(v => v.ToString()).ToList());
         }
 
         /// <summary>Die Bauteilart der ersten Grenze als sprachneutraler Schlüssel; <c>null</c> ohne Grenze.</summary>
