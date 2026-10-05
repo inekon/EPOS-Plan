@@ -9,7 +9,7 @@ Die Wärmepumpe wählt bei gekoppeltem Heizkreis je Stunde die Vorlaufstufe ihre
 
 ## 2 Vorgehen
 
-Zwei Opus-Agenten nacheinander: VW1a (Schema, Modell, Ergebnisweg, Testdatenbank), VW1b (Kennzahlen, Katalogfassung, Bericht, Wiki, Basis R38). Die Papiere schrieb ein Sonnet-Agent. Gate 737 fährt die Orchestrierung danach.
+Zwei Opus-Agenten nacheinander: VW1a (Schema, Modell, Ergebnisweg, Testdatenbank), VW1b (Kennzahlen, Katalogfassung, Bericht, Wiki, Basis R38). Die Papiere schrieb ein Sonnet-Agent. Gate 738 fährt die Orchestrierung danach.
 
 ## 3 Ergebnis
 
@@ -23,7 +23,7 @@ Der Ausweis entsteht nur bei Kennlinienwahl; ohne sie bleiben die Spalten NULL. 
 
 ## 5 Nachweise
 
-Abnahme der Wellen wie oben (VW1a 1 232, VW1b 1 288 Tests grün, SQL 2 376/0, Referenzlauf 21/21 PASS gegen R38). Gate 737 steht in der Statuszeile #737 der Statusdatei. Messwert für die Feldphase (H6): rund 35 % der Stunden mit Kennlinienwahl liegen unter der untersten Stützstelle 35 °C, keine darüber.
+Abnahme der Wellen wie oben (VW1a 1 232, VW1b 1 288 Tests grün, SQL 2 376/0, Referenzlauf 21/21 PASS gegen R38). Gate 738 steht in der Statuszeile #738 der Statusdatei. Messwert für die Feldphase (H6): rund 35 % der Stunden mit Kennlinienwahl liegen unter der untersten Stützstelle 35 °C, keine darüber.
 
 ## 6 Offenes
 
