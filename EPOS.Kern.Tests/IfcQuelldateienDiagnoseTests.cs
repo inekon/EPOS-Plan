@@ -162,6 +162,13 @@ namespace EPOS.Kern.Tests
                             _aus.WriteLine("  Z6-Zone " + zone.Name + (zone.IstBeheizt ? " [beheizt]" : " [unbeheizt]") + ": " + Z(zone.FlaecheM2) + " m², "
                                            + zone.Raeume.Count + " Räume, Klassen " + string.Join("/", zone.Raeume.Select(GebaeudeZonierung.Nutzungsklasse).Distinct())
                                            + (zone.Zugeschlagen.Count > 0 ? ", zugeschlagen " + string.Join("; ", zone.Zugeschlagen) : ""));
+                        // Der Zonenplan aus dem Z6-Vorschlag (Mehrzonenkonzept 6.4): Zonen mit Nutzung, offene und äußere Räume.
+                        Zonenplan plan = Zonenplan.Vorschlag(a.Abbild, gi, IfcImportProfil.ZONENREGEL_Z6);
+                        _aus.WriteLine("Plan Z6: " + plan.Zonen.Count + " Zonen, nicht zugeordnet " + plan.NichtZugeordnet.Count
+                                       + ", außerhalb " + plan.RaeumeAusserhalb.Count);
+                        foreach (Planbilanzzeile b in plan.Bilanz())
+                            _aus.WriteLine("  Planzone " + b.Schluessel + " " + b.Name + ": Nutzung " + (b.Nutzung ?? "keine") + ", "
+                                           + b.Raeume + " Räume, " + Z(b.FlaecheM2) + " m²");
                     }
                     else _aus.WriteLine("Z6: nicht wählbar");
                     if (vorgabe.Regeln.Contains(IfcImportProfil.ZONENREGEL_Z4))

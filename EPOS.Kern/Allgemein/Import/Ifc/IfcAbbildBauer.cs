@@ -491,6 +491,7 @@ namespace WindowsFormsApplication1
             Beheizung(s, r, langname, name, g);
             r.Klassifikation = Klassifikation(s);
             RaumtypLesen(s, r);
+            r.Konditionierung = KonditionierungLesen(s, r, g);
 
             g.Raeume.Add(r);
             _raum[s.EntityLabel] = r;
@@ -903,6 +904,81 @@ namespace WindowsFormsApplication1
         /// In IFC4X3 ist der Satz entfallen und wird nicht gelesen. Gelesen wird die untere Wintergrenze,
         /// sonst die untere Grenze, sonst der Sollwert des Bands.
         /// </summary>
+        /// <summary>
+        /// <b>Die Konditionierung der Zone aus den eigenen Sätzen von EPOS-Plan</b> (Datenaustauschkonzept 6.3, 16.3):
+        /// <c>EPOS_Zone</c> (Nutzung, Heiz- und Kühlsollwert, Luftwechsel der Nutzer) und je Größe
+        /// <c>EPOS_Kalender_&lt;Größe&gt;</c> (<see cref="IfcKonditionierungssatz"/>). Eine Datei ohne diese Werte ergibt
+        /// <c>null</c>; ein nicht lesbarer Satz oder Periodentext wird benannt übersprungen (<c>KOND_UEBERSPRUNGEN</c>).
+        /// </summary>
+        private AbbildKonditionierung KonditionierungLesen(IIfcSpace s, AbbildRaum r, AbbildGebaeude g)
+        {
+            Dictionary<string, List<IfcSatzwert>> saetze = null;
+            // HasProperties ist hier das Vorwärtsattribut von IfcPropertySet (Wache: Bezeichner „ps“).
+            foreach (IIfcPropertySet ps in IfcEigenschaften.Saetze(_bezuege, s).OfType<IIfcPropertySet>())
+            {
+                string name = IfcEigenschaften.Text(ps.Name);
+                if (name == null || !(name == IfcSchreiber.EPOS_ZONE || name.StartsWith(IfcKonditionierungssatz.PRAEFIX_KALENDER, StringComparison.Ordinal)))
+                    continue;
+                saetze ??= new Dictionary<string, List<IfcSatzwert>>(StringComparer.Ordinal);
+                if (!saetze.TryGetValue(name, out List<IfcSatzwert> werte)) saetze[name] = werte = new List<IfcSatzwert>();
+                foreach (IIfcPropertySingleValue e in ps.HasProperties.OfType<IIfcPropertySingleValue>())
+                    werte.Add(Satzwert(e));
+            }
+            if (saetze == null) return null;
+            var k = new AbbildKonditionierung();
+            if (saetze.TryGetValue(IfcSchreiber.EPOS_ZONE, out List<IfcSatzwert> zone))
+            {
+                IfcSatzwert W(string n) => zone.FirstOrDefault(w => w.Name == n);
+                string nutzung = W(IfcKonditionierungssatz.NUTZUNG)?.Text?.Trim();
+                k.Nutzung = Zonenplan.NUTZUNGEN.Contains(nutzung) ? nutzung : null;
+                k.HeizsollTagC = W(IfcKonditionierungssatz.HEIZSOLL_TAG)?.Zahl;
+                k.HeizsollNachtC = W(IfcKonditionierungssatz.HEIZSOLL_NACHT)?.Zahl;
+                k.KuehlsollC = W(IfcKonditionierungssatz.KUEHLSOLL)?.Zahl;
+                k.LuftwechselNutzerJeH = W(IfcKonditionierungssatz.LUFTWECHSEL_NUTZER)?.Zahl;
+            }
+            var uebersprungen = new List<string>();
+            foreach (Konditionierungsgroesse groesse in Konditionierungsgroessen.Alle)
+                if (saetze.TryGetValue(IfcKonditionierungssatz.Satzname(groesse), out List<IfcSatzwert> werte)
+                    && IfcKonditionierungssatz.KalenderLesen(groesse, werte, uebersprungen) is AbbildKalender kalender)
+                    k.Kalender.Add(kalender);
+            if (uebersprungen.Count > 0)
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KOND_UEBERSPRUNGEN", r.Name ?? r.Kennung,
+                    Ganz(uebersprungen.Count), string.Join(", ", uebersprungen)));
+            return k.Traegt ? k : null;
+        }
+
+        /// <summary>Ein Wert eines eigenen Satzes: Temperaturen nach °C (Einheit der Eigenschaft vor der des Projekts), auf vier Stellen.</summary>
+        private IfcSatzwert Satzwert(IIfcPropertySingleValue e)
+        {
+            string name = e.Name.ToString() ?? "";
+            string beschreibung = IfcEigenschaften.Text(e.Description);
+            IIfcValue v = e.NominalValue;
+            // Der Typname gilt für IFC4 und IFC2X3 gleich (die Werttypen sind je Schema eigene Strukturen).
+            switch (v?.GetType().Name)
+            {
+                case "IfcThermodynamicTemperatureMeasure":
+                {
+                    double? t = IfcEigenschaften.Zahl(v);
+                    if (t.HasValue)
+                        t = e.Unit is IIfcSIUnit si && si.Name == Xbim.Ifc4.Interfaces.IfcSIUnitName.KELVIN ? t.Value - 273.15
+                            : e.Unit is IIfcSIUnit c && c.Name == Xbim.Ifc4.Interfaces.IfcSIUnitName.DEGREE_CELSIUS ? t.Value
+                            : _einheiten.NachCelsius(t.Value);
+                    return new IfcSatzwert(name, IfcSatzwertart.Temperatur, t.HasValue ? Math.Round(t.Value, Kalenderwoche.NACHKOMMASTELLEN) : null);
+                }
+                case "IfcBoolean":
+                case "IfcLogical":
+                    return new IfcSatzwert(name, IfcSatzwertart.Wahrheit, Wahr: IfcEigenschaften.Wahrheit(v), BeschreibungWoertlich: beschreibung);
+                case "IfcText":
+                case "IfcLabel":
+                case "IfcIdentifier":
+                    return new IfcSatzwert(name, IfcSatzwertart.Text, Text: IfcEigenschaften.Textwert(v), BeschreibungWoertlich: beschreibung);
+                default:
+                    double? z = IfcEigenschaften.Zahl(v);
+                    return new IfcSatzwert(name, IfcSatzwertart.Zahl, z.HasValue ? Math.Round(z.Value, Kalenderwoche.NACHKOMMASTELLEN) : null,
+                                           BeschreibungWoertlich: beschreibung);
+            }
+        }
+
         private double? Sollwert(IIfcSpace s)
         {
             if (_abbild.SchemaStand == IfcSchemaStand.Ifc4x3) return null;

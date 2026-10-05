@@ -943,6 +943,23 @@ Die Vorgabe U_g der Bodenplatte (`Erdreich_U_Wirksam`, E65) kam mit **Schritt 18
 | Auslieferungsvorlage | Katalogvorgaben, Katalogkalender, ausgelieferte Vorlagen und die Kalender der Beispielprojekte reisen mit | Die Projektbereinigung erfasst Vorgaben und Kalender über `ID_Gebaeude` als Folgetabellen und lässt Katalog- und Vorlagenzeilen (`ID_Gebaeude` leer) stehen (`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs:24-40, 75-87`); die Katalogbereinigung (`--kataloge readonly`) räumt eigene Vorlagen und entfernte Katalogbauten samt Kaskade; der **Prüfbericht** zählt Vorlagen, Vorgaben, Kalender und Perioden je Eigentümerart; die Werkzeugtests zählen vier STRICT-Tabellen mehr |
 | `SqlDialektPruefer`, KI-Wissen | neue Anweisungen, neue Handlungen | Prüfer ziehen; Aktionswissen „Matrix", „Kalender anlegen", „Vorlage übernehmen", „Nachtauskühlung", „Aufheizoptimierung" |
 
+**Leser aus der HottCAD-Projektdatei** (Datenaustauschkonzept 16, E80): Wird zum IFC-Import die Projektdatei
+dazugeladen, bildet `SqprojKonditionierung` je Zone aus Tagesganglinie und DIN-V-18599-Nutzungsprofil einen formatfreien
+Satz (`Zonenkonditionierung`: Kalender mit Standardwoche und Perioden, Vorgabezellen, je Größe Herkunft und Beleg). Beim
+Speichern schreibt `ZonenplanCtrl.ProjektdateiUebernehmen` ihn nach den Vorlagen der Nutzung über die reinen Schritte
+dieses Konzepts in denselben Vorgang: Je gelieferter Größe weicht die Kalenderkopie der Vorlage, `ZelleSetzen` trägt die
+Zellen des Profils ein (Bestand oder Vorgabetabelle), der Kalender der Ganglinie tritt mit dem Beleg in `Bemerkung` an.
+Größen ohne Angabe der Projektdatei behalten die Vorlage. Kein neues Schema. Im Einzonenweg nimmt das Gebäude die
+Konditionierung der einen Zone bzw. der Gebäudegruppe der Projektdatei als Gebäudekalender (Eigentümer Gebäude ohne
+Zone, 5.1) — `ProjektdateiUebernehmen` ohne Zone, derselbe Weg und Beleg.
+
+**Leser aus der IFC-Datei (`EPOS_*`)** (Datenaustauschkonzept 6.3, 16.3): Der IFC-Export schreibt je Zone die Nutzung,
+die Zellen Heizsollwert Tag und Nacht, Kühlsollwert und Luftwechsel der Nutzer in `EPOS_Zone` und je angelegtem Kalender
+einen Satz `EPOS_Kalender_<Größe>` (Grundangabe, Standardwoche als Text wie in 5.2, Nennwert, Bemerkung, Perioden als
+`Art;Beginn;Ende;Feiertagsregel;Angabe`). Der IFC-Leser nimmt sie je Raum zurück (`AbbildKonditionierung`); der
+Zonenplan gibt sie als `Zonenkonditionierung` mit Herkunft „aus IFC-Datei (EPOS)“ an denselben Schreibweg. Rangfolge:
+Projektdatei vor IFC-`EPOS_*` vor Vorlage der Nutzung; ein nicht lesbarer Periodentext fällt benannt weg.
+
 Die manuelle Aufheizzeit reist mit „Projekt duplizieren", Variante und `.wpx`, nicht zwischen Katalog und Projekt (kein
 Katalogfeld; die Übernahme lässt NULL); die Importe gbXML und IFC schreiben NULL.
 

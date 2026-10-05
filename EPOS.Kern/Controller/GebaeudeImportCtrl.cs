@@ -410,7 +410,10 @@ namespace WindowsFormsApplication1
     /// <param name="Vorschlag">Der Bauteilvorschlag, wenn das Gebäude als Zone mit Bauteilen kommt; <c>null</c> = nur die Summenfelder.</param>
     /// <param name="Baustoffzuordnungen">Die Zuordnungen des Dialogs, normalisierter Materialname → Katalogbaustoff
     /// (<c>Tab_Baustoff_STAMM.ID</c>), <c>null</c> als Wert = die gemerkte Zuordnung entfernen; <c>null</c> = keine.</param>
+    /// <param name="Gebaeudekonditionierung">Einzonenweg mit Projektdatei: die Konditionierung der Gebäudegruppe bzw. der
+    /// einen Zone, die das Gebäude als Gebäudekalender nimmt (<see cref="SqprojZonen.Gebaeudekonditionierung"/>); <c>null</c> = keine.</param>
     internal sealed record GebaeudeImportHerkunft(GebaeudeQuelle Quelle, IReadOnlyList<GebaeudeQuellzuordnung> Paarungen,
                                                   GebaeudeBauteilvorschlag Vorschlag = null,
-                                                  IReadOnlyDictionary<string, int?> Baustoffzuordnungen = null);
+                                                  IReadOnlyDictionary<string, int?> Baustoffzuordnungen = null,
+                                                  Zonenkonditionierung Gebaeudekonditionierung = null);
 }
