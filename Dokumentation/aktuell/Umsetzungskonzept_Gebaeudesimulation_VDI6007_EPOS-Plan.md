@@ -115,7 +115,7 @@ Die Befunde, auf denen jede Codeaussage dieses Papiers steht:
 | [`Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md`](Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md) | IFC-Import: Importmuster, xBIM-Paket und Lizenz, Klassen, Abbildungsregeln, Sonderfälle, Plattform |
 | [`Gebaeudesimulation/2026-09-15_Befund_R_gbXML_Schema_Werkzeuge.md`](Gebaeudesimulation/2026-09-15_Befund_R_gbXML_Schema_Werkzeuge.md) | gbXML: Schema und Versionswert, was die Autorensysteme liefern, LINQ to XML statt `XmlSerializer`, Aufwand von Import und Export (E9) |
 | [`Gebaeudesimulation/2026-09-15_Befund_S_IFC-Export_ohne_Geometriekernel.md`](Gebaeudesimulation/2026-09-15_Befund_S_IFC-Export_ohne_Geometriekernel.md) | IFC-Export ohne Geometriekernel, Rückgabe angereicherter Dateien — und die daraus folgende Auflage an **diesen** Import (3.2) |
-| [`Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md`](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) | Feldzuordnung je Spalte (nur Altweg / beide / nur VDI), Aufrufstellen des Tagesbilanz-Wegs, was der Vorbereitungsschritt liefern muss, Umfang der Verschiebung (E20); sein Kapitel 4 ist die Grundlage der **Löschliste der Stufe GA** (Kapitel 6) |
+| [`Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md`](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) | Feldzuordnung je Spalte (nur Altweg / beide / nur VDI), Aufrufstellen des Tagesbilanz-Wegs, was der Vorbereitungsschritt liefern muss, Umfang der Verschiebung (E20); sein Kapitel 4 ist die Grundlage des **Inventars der Altweg-Bestandteile** (Kapitel 6.1) |
 
 Dieses Papier sagt, **was gebaut wird, in welcher Reihenfolge und woran es abgenommen ist**. Es
 erfindet nichts: Jede Aussage über den Quelltext trägt Datei und Zeile aus den drei Befunden; was
@@ -143,8 +143,7 @@ korrigiert, ist je Stelle benannt (1.10).
    (A16). Der Puffer
    (`:188`, Watt) und die eine Umrechnung nach kW (`:222`) bleiben unberührt. Der Altweg ist der
    **eingefrorene Bestandsweg des Übergangs** (E23, E26): Er steht neben dem VDI-Weg, samt Weiche,
-   Schalter und Spalten, bekommt keine neue Funktion und fällt mit der Stufe **GA — Altweg
-   ablösen**, die fällig wird, sobald das Ablösekriterium Q24 erfüllt ist (E27).
+   Schalter und Spalten, bekommt keine neue Funktion und bleibt dauerhaft wählbar (E89).
 
 2. **Zwei stille Fallen entscheiden über die Reihenfolge der Merges.** Das Modellfeld
    `Fensterflaeche_Ost` trägt heute die Spalte `Fensterflaeche_Ost_West`
@@ -184,11 +183,9 @@ korrigiert, ist je Stelle benannt (1.10).
 
 6. **Reihenfolge:** G0 (Löser, keine Wirkung) → GB (Bestandsbefunde) → M2 Umbenennung → M3 Schema
    → G1 + G2 gemeinsam → G3 → G4 → G5 (der Klimaspalten-Schritt M4 ist durch Schemaschritt 95
-   vorweggenommen, 1.7), und als letzte Stufe **GA — Altweg
-   ablösen** (E26, 17.09.2026), **fällig nach dem Ablösekriterium Q24 (E27)**: Der
-   Tagesbilanz-Weg trägt den Übergang, der VDI-Weg löst ihn später vollständig ab. Was GA
-   entfernt, steht als **Löschliste** in Kapitel 6 (Q25, vollständige Ablösung nach E27); ihre
-   5–8 PT stecken in keiner Summe dieses Papiers.
+   vorweggenommen, 1.7), und als letzte Stufe die Pflege des Altwegs: Der Tagesbilanz-Weg bleibt dauerhaft als
+   wählbarer Rechenweg (E89), eine Stufe zu seiner Ablösung gibt es nicht. Was zu ihm gehört, steht als
+   **Inventar** in Kapitel 6.1.
    **G1 beginnt mit der Verschiebung des Altwegs** in sein Modul und einem **byte-gleichen**
    Referenzlauf — erst danach wird der VDI-Weg angebunden. **G4 trägt nach E9 zwei Importe:** den
    IFC-Import (G4a/G4b, Kapitel 3) und den **gbXML-Import als Pflichtteil G4c**; die beiden
@@ -196,7 +193,7 @@ korrigiert, ist je Stelle benannt (1.10).
    [Datenaustauschkonzepts](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md). G5 bleibt die
    Geometrieableitung, nur bei Bedarf aus der Praxis. **Die Basis wird in diesem Papier zweimal neu
    eingefroren: mit GB und mit G1 + G2**; der nächste Anlass der Einfrierkette, **G6d**, gehört zum
-   [Mehrzonenmodell](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md); **GA schließt die Kette ab** (1.8).
+   [Mehrzonenmodell](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md); die Kette der Einfrieranlässe endet mit der Basis nach G6d und den folgenden Fachstufen (1.8).
    Alles dazwischen muss
    `GESAMT: PASS` melden — sonst ist hinterher nicht
    mehr zu sagen, ob eine Abweichung vom Schema oder vom Modell kommt.
@@ -252,7 +249,7 @@ und schrumpft auf rund zwanzig Zeilen:
    `Sol_*`, `A_Temp` und `TagTyp_W/NW` — die isotropen Tagesmittel und die Tagestypen, die **allein
    die Tagesbilanz** braucht (heute `KlimakalenderLesen:513-537` und
    `Stundentemperatur_aus_DB:912-920`, Anweisung für Anweisung). Die Weiche reicht dem VDI-Modul
-   **nur** `Gemeinsam`, dem Altweg **beides**; der Altweg-Teil fällt mit der Stufe GA.
+   **nur** `Gemeinsam`, dem Altweg **beides**; der Altweg-Teil bleibt mit dem Altweg (E89).
 3. **Die Weiche** liest den Rechenweg des Gebäudes (`Tab_Gebaeude.Gebaeude_Modell`; NULL = VDI 6007
    nach E1) und ruft **genau ein Modul**.
 4. **Zwei getrennte Module.** `EPOS.Kern/Allgemein/Simulation/Altweg/` trägt den Tagesbilanz-Weg —
@@ -261,12 +258,11 @@ und schrumpft auf rund zwanzig Zeilen:
 
 **Weiche und Altwegmodul leben, solange der Altweg lebt** (E23, E26). Der Tagesbilanz-Weg ist der
 **eingefrorene Bestandsweg des Übergangs**: VDI 6007 ist die Vorgabe (E1), die Tagesbilanz bleibt
-ausdrücklich wählbar, bis die Stufe **GA** sie ablöst (fällig nach dem Ablösekriterium Q24,
-E27). **Fassade und
-Vorbereitungsschritt bleiben über die Ablösung hinaus** — sie sind die Gliederung der
-Gebäudebedarfsrechnung und tragen auch danach Klima, Verbrauch und Flächen. **Weiche,
-`IGebaeudeRechenweg` und die Modultrennungswache leben bis GA** und stehen mit ihrem Umfang in der
-Löschliste (Kapitel 6).
+ausdrücklich wählbar und bleibt es dauerhaft (E89). **Fassade und
+Vorbereitungsschritt** sind die Gliederung der
+Gebäudebedarfsrechnung und tragen Klima, Verbrauch und Flächen für beide Wege. **Weiche,
+`IGebaeudeRechenweg` und die Modultrennungswache bleiben dauerhaft** und stehen mit ihrem Umfang im
+Inventar (Kapitel 6.1).
 
 **Die Verbrauchs-Rückrechnung ist kein zweiter Verzweigungspunkt mehr.** Sie braucht
 `VerbrauchAlt` aus **demselben** Modell, das anschließend den Bedarf rechnet
@@ -306,8 +302,8 @@ Vorbereitungsschritt liest und die Kühllast je Stunde aus **demselben Lauf** de
 `Gebaeude/` entgegennimmt (`GebaeudeModellErgebnis.KuehlbedarfKwh`, 1.4) — **keine zweite
 Gebäuderechnung**. Einen Altweg gibt es auf der Kälteseite nicht: Ein Gebäude auf dem
 Tagesbilanz-Weg liefert Kältebedarf **0** mit benanntem Hinweis, weil die Tagesbilanz keine
-Raumtemperatur führt; dieser Hinweis ist ein Altweg-Sonderfall und steht deshalb in der Löschliste
-der Stufe GA (Kapitel 6). Kanal, Senken, Erzeuger und Dialoge der Kälteseite stehen im
+Raumtemperatur führt; dieser Hinweis ist ein Altweg-Sonderfall und steht deshalb im Inventar
+der Altweg-Bestandteile (Kapitel 6.1). Kanal, Senken, Erzeuger und Dialoge der Kälteseite stehen im
 [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) (Stufe KU1), nicht hier.
 
 **Zwei Bestandsgrenzen fallen dabei auf.** `HeizwaermebedarfGeb` (`:31`) und `MaxP` (`:56`) sind
@@ -524,7 +520,7 @@ setzt den Pfad aus `Simulation` + Listeneintrag zusammen und prüft ihn mit
 Vergleich zweier Wege im Bedarfsdialog (2.7) überhaupt zu holen. Der Parameter wirkt allein auf der
 **gelesenen Modellinstanz**, schreibt nichts und ruft dieselbe Weiche wie der Lauf (Hausregel
 „Eine Auskunft ruft den Rechenweg des Laufs", `EPOS.Kern/CLAUDE.md:186`); er lebt, solange der
-Vergleich alt/neu lebt — also **bis zur Stufe GA** (E23/E26; 2.7, Löschliste Kapitel 6). Zweitens:
+Vergleich alt/neu lebt — also dauerhaft (E89; 2.7, Inventar Kapitel 6.1). Zweitens:
 `GebaeudeModellEingang` bekommt einen **`Pruefmodus`**-Schalter (UTC-Reihenfolge, isotrope `Sol_*`,
 θ_eq ohne Absorptionsterm); ein Test hält den Kern damit gegen die Prototypzahlen aus Konzept 5 auf
 1e-6 relativ, und der Unterschied zum Auslieferungsweg wird je Referenzprojekt ausgewiesen
@@ -558,7 +554,7 @@ Module, kein Modellparameter in einer Bestandsmethode:
 
 ```
 IGebaeudeRechenweg weg = (Modell(item) == DbWerte.GEBAEUDE_MODELL_TAGESBILANZ)
-                       ? _altweg      // Altweg/TagesbilanzRechenweg   - Uebergang, faellt mit GA
+                       ? _altweg      // Altweg/TagesbilanzRechenweg   - bleibt dauerhaft (E89)
                        : _vdi6007;    // Gebaeude/Vdi6007Rechenweg     - NULL faellt hierher (E1)
 return weg.Rechnen(item, index, ziel, kalender.Gemeinsam, out double verbrauchAltKwh);
 ```
@@ -568,7 +564,7 @@ VDI-Modul bekommt `WE[365]`, `Stundentemperatur[8760]`, `WochentagJan1` und die 
 mehr braucht es aus dieser Quelle nicht. Den **Altweg-Teil** (`Sol_*`, `A_Temp`, `TagTyp_W/NW`)
 bekommt allein `_altweg`, und zwar beim Aufbau je Lauf aus dem Vorbereitungsergebnis; so nennt
 keine Datei unter `Gebaeude/` den Bezeichner `Klimakalender.Altweg`, und die Modultrennungswache
-kann genau das prüfen (1.9). Mit der Stufe GA fällt der Altweg-Teil und mit ihm der Parameter.
+kann genau das prüfen (1.9). Der Parameter bleibt mit dem Altweg-Teil (E89).
 
 Der Vorbereitungsschritt läuft **davor** und ist modellfrei (1.1). **Ein Aufruf liefert beides:**
 die Reihe in `ziel[]` und den unskalierten Jahreswert `VerbrauchAltKwh` (F-Ü2) — deshalb läuft das
@@ -584,8 +580,8 @@ Ergebnisträger (1.4).
 **Die Wirkung davon ist auszusprechen.** `:197` bricht mit `return` die **ganze** Bedarfsrechnung
 ab, nicht nur das eine Gebäude: **Ein Altweg-Gebäude ohne Tagesverteilung beendet den gesamten
 Lauf — auch für die VDI-Gebäude desselben Projekts.** Das ist das Verhalten des Bestands und bleibt
-es bis GA. **Entschieden ist (U17, E27):** Das Gebäude wird künftig benannt abgelehnt, aber **erst
-mit GA**, weil die Änderung Altweg-Verhalten ändert und den byte-gleichen Nachweis berührt
+es (E89). **Entschieden ist (U17, E27):** Das Gebäude wird künftig benannt abgelehnt, aber **nicht vor
+einem Auftrag, der den byte-gleichen Nachweis des Altwegs neu einfriert**, weil die Änderung Altweg-Verhalten ändert und den byte-gleichen Nachweis berührt
 (Kapitel 5). **Der Tagesbilanz-Zweig bekommt dabei keine Zeile
 neuen Codes:** die Bestandsmethoden wandern Zeichen für Zeichen nach `Altweg/`, und **kein
 Parameter „Modellwahl" erreicht sie** — damit ist A16 gegenstandslos.
@@ -758,8 +754,8 @@ bleibt vollständig (`…/Vorlagenbau.cs:113-116`).
 der Katalog in das Projekt kopiert wird; **Vorgabe für die Auslieferung ist NULL** — ein
 Katalogsatz mit `TAGESBILANZ` brächte den Altweg beim Anwender still zurück.
 `Werkzeuge/Auslieferungsvorlage` weist deshalb im Prüfbericht **jede Zeile von
-`Tab_Gebaeude_STAMM` mit gesetztem `Gebaeude_Modell` namentlich aus**. Mit der Stufe GA entfällt
-der Prüfpunkt zusammen mit der Spalte (Kapitel 6).
+`Tab_Gebaeude_STAMM` mit gesetztem `Gebaeude_Modell` namentlich aus**. Der Prüfpunkt bleibt
+zusammen mit der Spalte (Kapitel 6.1).
 
 ### 1.7 Stufe G1 — die drei G2-Spalten, der Klimaspalten-Schritt M4 und `DbWerte`
 
@@ -897,8 +893,7 @@ Link…>`): eine Änderung wirkt auf beiden Wegen.
 
 **Die Einfrierschritte.** In diesem Papier frieren **GB** und **G1 + G2** neu ein; die weiteren
 Anlässe der Kette stehen in den Schwesterpapieren — **G6d** im Mehrzonenmodell, **KU2** im
-Kühlkonzept, **AK1–AK3** in der Anlagenkopplung —, und **GA — Altweg ablösen** schließt sie ab
-(E26; fällig nach dem Ablösekriterium Q24, E27). Dazu gilt als eigener, begründeter Anlass eine **ergebniswirksame
+Kühlkonzept, **AK1–AK3** in der Anlagenkopplung —, und der Altweg bleibt dauerhaft wählbar (E89), eine Stufe zu seiner Ablösung gibt es nicht. Dazu gilt als eigener, begründeter Anlass eine **ergebniswirksame
 Fehlerbehebung im Altweg nach der Verschiebung** (Softwarearchitektur 2.8, Systementwurf 8.3).
 
 - **GB** (Stufe vor G1, E4): `_prevRoomTemp` wird von `static` (`EPOS.Kern/Allgemein/BhkwPlan.cs:51`,
@@ -929,8 +924,8 @@ Fehlerbehebung im Altweg nach der Verschiebung** (Softwarearchitektur 2.8, Syste
   Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` wird darin mit eingefroren** (F-Ü7). Das
   ist mit **E27** entschieden (A15, 22.09.2026,
   [Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)): **genau ein** solches
-  Referenzprojekt, bis GA in der jeweils aktuellen Basis; die Arbeitskopie gegen die GB-Basis nur
-  bis zum Merge G1 + G2; der Rückweg-Test rechnet nur dieses Projekt und endet mit GA.
+  Referenzprojekt, dauerhaft in der jeweils aktuellen Basis (E89); die Arbeitskopie gegen die GB-Basis nur
+  bis zum Merge G1 + G2; der Rückweg-Test rechnet nur dieses Projekt und bleibt dauerhaft.
   Die GB-Basis ist bis zu diesem Merge die aktuelle Basis
   und wandert danach mit ihrem Protokoll nach `Dokumentation/ueberholt/Referenzbasen/`, wie jede
   Basis vor ihr; **einen zweiten Basisordner gibt es nicht**
@@ -939,12 +934,9 @@ Fehlerbehebung im Altweg nach der Verschiebung** (Softwarearchitektur 2.8, Syste
   das Zonenprojekt der Testdatenbank und die Regel „gesäte Zonendaten"; außerhalb dieses Papiers,
   hier nur genannt, damit die Einfrierkette vollständig ist.
 
-**GA — Altweg ablösen ist ein eigener Einfrierschritt** (E26; fällig nach dem Ablösekriterium
-Q24, E27). Bis dahin
-stehen das Referenzprojekt auf dem Altweg (A15) und der Rückweg-Test in **jeder** Basis, und die
-vier Altweg-Spalten bleiben im Schema ([`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md)). Mit GA
-geht das Referenzprojekt auf VDI 6007 über, der Rückweg-Test wird eingestellt, die Altweg-Spalten
-fallen, und die Basis wird neu eingefroren — Umfang: Löschliste in Kapitel 6.
+**Das Referenzprojekt auf dem Altweg (A15) und der Rückweg-Test stehen dauerhaft in jeder Basis**
+(E89), und die vier Altweg-Spalten bleiben im Schema ([`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md)); ein
+Einfrierschritt zur Ablösung des Altwegs entfällt. Umfang des Altwegs: Inventar in Kapitel 6.1.
 
 **Der erste Schritt von G1 friert nichts ein: er muss byte-gleich sein.** Die Verschiebung des
 Altwegs nach `Simulation/Altweg/` samt Fassade und Vorbereitungsschritt ist ergebnisneutral und
@@ -973,8 +965,8 @@ summiert richtig. Dazu **der Rückweg-Test** (E1/N1.1) in der Fassung des
 G1 + G2** läuft er auf einer gitignorierten Arbeitskopie mit `Gebaeude_Modell = 'TAGESBILANZ'`
 gegen die GB-Basis, getragen von einem eigenen Modus des Referenzlaufs; **ab dem Einfrieren von
 G1 + G2** ist sein Gegenstand allein das **eine Referenzprojekt auf dem Altweg in der jeweils
-aktuellen Basis** — nicht jedes Altweg-Gebäude —, und er **endet mit der Stufe GA**. Bis dahin ist
-er der laufende Nachweis, dass der Bestandsweg unverändert rechnet.
+aktuellen Basis** — nicht jedes Altweg-Gebäude —, und er **bleibt dauerhaft** (E89). Er ist
+der laufende Nachweis, dass der Bestandsweg unverändert rechnet.
 
 **`TestDatenbank` zieht das Schema selbst nach** (`:197-241`, Spalten über `SpalteSicherstellen`,
 Tabellen über die Kern-Schemaklasse `:224-239`, zuletzt
@@ -1019,8 +1011,8 @@ Die Gegenprobe hält Liste gegen Dateien: **Der Ordner `Altweg/` existiert und i
 sonst prüft der Wächter nichts und ist still grün (dieselbe Gegenprobe, die `DoubleWacheTests` für
 seine Ausnahmeliste führt).
 
-**Die Wache lebt bis zur Stufe GA** (E26; fällig nach dem Ablösekriterium Q24, E27) — mit dem Ordner `Altweg/`, den
-sie bewacht; Satz 4 ist die Vorstufe des **Gates von GA**, der vollständigen **Ausbauprobe**: Ein
+**Die Wache bleibt dauerhaft** (E89) — mit dem Ordner `Altweg/`, den
+sie bewacht; Satz 4 ist die Vorstufe der vollständigen **Ausbauprobe** als Nachweis der Eigenständigkeit beider Wege (kein Gate einer Ablösung): Ein
 Bau mit umbenanntem Ordner `Altweg/` übersetzt, nachdem die Weiche entfernt ist, und der
 Referenzlauf **aller** Projekte ohne Altweg-Gebäude bleibt byte-gleich (Kapitel 6). Dazu
 `DokumentationLinkWacheTests` (`:133` Verweise, `:170` „Der_Index_nennt_jedes_Papier") und
@@ -1194,8 +1186,8 @@ vier Spalten, davon zwei sichtbare: **Gebäudetyp** (die Tagesverteilung hängt 
 **Fensterfläche Ost/West** (schreibgesperrt, gerechnete Summe aus Ost und West); `Wochenende` und
 `Ferien` sind abgeleitete Flags, die die Hülle setzt und die der Dialog nicht zeigt (Befund X 5.1).
 Dazu tritt unter „Wärmeleitwerte" die vierte Zeile mit dem gewichteten Wert (2.5). **Der Abschnitt
-bleibt bis zur Ablösung** (Stufe GA, fällig nach dem Ablösekriterium Q24; E23, E26, E27) und steht mit dem Schalter in der
-Löschliste (Kapitel 6); bei einem Gebäude auf VDI 6007 erscheint er nicht.
+bleibt dauerhaft** (E89) und steht mit dem Schalter im
+Inventar (Kapitel 6.1); bei einem Gebäude auf VDI 6007 erscheint er nicht.
 
 **Reiter 2 „Temperaturen und Ferien"** bleibt, verliert aber die Gruppen
 „Wärmebrückenverlustkoeffizienten" und „Abmessung Anschluß" (ihre sechs Werte stehen jetzt in der
@@ -1227,14 +1219,14 @@ Summenzeile derselben Ansicht steht.
 | Raumhöhe | m | `Raumhoehe` | — | **ja** | beide | > 0 |
 | Luftwechselrate | 1/h | `Luftwechselrate` | — | **ja** | beide | > 0 |
 
-*Gruppe „Tagesbilanz (Bestandsweg)"* — eingeklappt, **nur bei einem Gebäude auf dem Altweg**, bis
-zur Stufe GA (E23, E26):
+*Gruppe „Tagesbilanz (Bestandsweg)"* — eingeklappt, **nur bei einem Gebäude auf dem Altweg**, dauerhaft
+(E89):
 
 | Feld | Einheit | Bindung | Weg | Bemerkung |
 |---|---|---|---|---|
 | Gebäudetyp | — | `Typ` | nur Altweg | wählt die Tagesverteilung aus `Abfrage_Tagverteilung` |
 | Fensterfläche Ost/West | m² | `Fensterflaeche_Ost_West` | nur Altweg | **schreibgesperrt**: gerechnete Summe aus Ost und West (2.6) |
-| (`Wochenende`, `Ferien`) | 0/1 | abgeleitete Flags, gesetzt beim Übernehmen des zweiten Reiters (`GebaeudeKatalogDialog.razor:953`, `:955`; Träger `GebaeudeKatalogDaten.cs:139`, `:142`; Stand 22.09.2026) | nur Altweg | **nicht gezeigt** — Ableitungen, keine Eingaben. Die Schreibstellen bleiben bis GA, damit ein Gebäude auf dem Altweg dieselben Werte behält (Befund X 4.3, X1), und stehen in der Löschliste (Kapitel 6) |
+| (`Wochenende`, `Ferien`) | 0/1 | abgeleitete Flags, gesetzt beim Übernehmen des zweiten Reiters (`GebaeudeKatalogDialog.razor:953`, `:955`; Träger `GebaeudeKatalogDaten.cs:139`, `:142`; Stand 22.09.2026) | nur Altweg | **nicht gezeigt** — Ableitungen, keine Eingaben. Die Schreibstellen bleiben dauerhaft (E89), damit ein Gebäude auf dem Altweg dieselben Werte behält (Befund X 4.3, X1), und stehen im Inventar (Kapitel 6.1) |
 
 **Fußnote zur Bauart.** Bei leerer Auswahl liefert `BauweiseAusBauart` ein **absolutes** 50
 (`Gebaeudebauweise.cs:66`), nicht `Wohnfläche × 50`; die neue Prüfregel fiele damit für jedes
@@ -1249,7 +1241,7 @@ bearbeitbar** (E20) — auch bei einem Gebäude auf dem Altweg, wo sie nach der 
 
 | Feld | Einheit | Bindung (neue Spalte, 1.6) | Vorgabe-Anzeige | Weg | Prüfregel | Sichtbar |
 |---|---|---|---|---|---|---|
-| **Rechenweg** | — | `Modell` (`Gebaeude_Modell`); **NULL = „VDI 6007"**, zweiter Wert „Tagesbilanz" (E1, E20, E23) | — | Weiche | Wert aus `DbWerte.GEBAEUDE_MODELL_*` | immer, **bis GA** |
+| **Rechenweg** | — | `Modell` (`Gebaeude_Modell`); **NULL = „VDI 6007"**, zweiter Wert „Tagesbilanz" (E1, E20, E23) | — | Weiche | Wert aus `DbWerte.GEBAEUDE_MODELL_*` | immer (E89) |
 | Rahmenanteil | — | `Rahmenanteil` | Vorgabe 0,3 | nur VDI | 0 ≤ x < 1 | **immer** |
 | Verschattungsfaktor | — | `Verschattungsfaktor` | Vorgabe 0,9 | nur VDI | 0 < x ≤ 1 | **immer** |
 | Masseanteil außen | — | `Masseanteil_Aussen` | Vorgabe 0,3 | nur VDI | 0,05 ≤ x ≤ 0,95 | **immer** |
@@ -1382,8 +1374,8 @@ IFC-Import. Heute leitet die Hülle sie aus drei Feldern ab
 **`GebaeudeDialog.razor` bekommt drei Dinge:**
 
 1. eine **Spalte „Rechenweg"** in der Projektliste (heute Wahl + Name, `:75-89`) — ohne sie ist E1
-   für den Anwender unsichtbar; sie bleibt, **solange es zwei Wege gibt**, also bis zur Stufe GA
-   (E23, E26; Löschliste Kapitel 6);
+   für den Anwender unsichtbar; sie bleibt, **solange es zwei Wege gibt**, also dauerhaft
+   (E89; Inventar Kapitel 6.1);
 2. **zwei leise Kennzahlen** im Detailblock „Gebäude: Verbrauch" (`:154-195`): H_ges [W/K] und den
    Rechenweg als Text — bei einem Gebäude auf dem Altweg **„Tagesbilanz (Bestandsweg)"** statt des
    Produktausweises nach E10 (E20, E23) —, beide nur lesend wie die fünf vorhandenen Felder;
@@ -1399,7 +1391,7 @@ der Controller den vierten Parameter `modellErzwungen` und sein Ergebnis die sec
 Kennzahlen; beides steht in 1.4 und gehört in den Merge G1+G2. **Der Vergleich bleibt, solange
 der Altweg besteht** (E23, E26) — mit ihm `modellErzwungen` und das Feld `Vergleich` des DTO: Er
 ist Teil des Übergangs, die Entscheidungshilfe des Anwenders, solange beide Rechenwege wählbar
-sind, und fällt mit der Stufe GA (Löschliste Kapitel 6). Die Eigenständigkeit des VDI-Wegs berührt
+sind, und bleibt mit dem Altweg (E89; Inventar Kapitel 6.1). Die Eigenständigkeit des VDI-Wegs berührt
 er nicht: Das VDI-Modul rechnet ohne den Altweg, der Vergleich ist eine Anzeige, die der Controller
 aus zwei Auskünften zusammensetzt. Ein Gebäude auf dem Altweg trägt in diesem Dialog — wie im
 Bericht — die Zeile **„Tagesbilanz (Bestandsweg)"**.
@@ -1441,9 +1433,9 @@ Herleitungszeile sagt, dass aus Fläche und Verbrauch der **Skalierungsfaktor** 
 entsteht. Die vier Größen dieses Dialogs liest **jeder** Rechenweg (Befund X 1.3); ein
 Bestandswegabschnitt gehört hier deshalb nicht hinein. Der Dialog heißt in diesem Papier fortan
 **Skalierungsdialog**; der Klassenname folgt, wenn die Hülle umzieht (2.8). `GebaeudetypDialog` ist
-von E1/E2 nicht betroffen — seine Tagesverteilungen behalten ihren Rechenleser im Bestandsweg bis
-zur Stufe GA (E23, E26); dann entfallen `Tab_DBTagV`/`Tab_DBTagVDaten` samt `_STAMM` und der
-Dialog nach der Löschliste (Q25, vollständige Ablösung nach E27; Kapitel 6).
+von E1/E2 nicht betroffen — seine Tagesverteilungen behalten ihren Rechenleser im Bestandsweg dauerhaft
+(E89); `Tab_DBTagV`/`Tab_DBTagVDaten` samt `_STAMM` und der
+Dialog bleiben mit ihm (Inventar Kapitel 6.1).
 
 ### 2.8 Die Hülle nach `EPOS.UI.Daten`
 
@@ -2077,7 +2069,7 @@ ist G4b vor der Feldphase von G4a gebaut, mit den Rechenregeln aus **E45**.
 | **M3 — Schema** | der Gebäudespalten-Schritt M3 (die drei G2-Spalten verschmolzen, U5; Nummer bei Beauftragung, F-S1), Umbenennung `Wohnflaeche` → `Nutzflaeche` zuerst (E19, F-S2), `GebaeudeSchema.cs`, Sichtneubau, Namensleser statt `row[0…57]` — der Leser und `SQL_VIEW_NEU` schreiben die acht nicht-ASCII-Bezeichner **buchstabengetreu** (`k_Wert_Außenwand`, `Flaeche_Außenwand`, `WBVK_Anschluß_*`, `Abmessung_Anschluß_*`), Umlautregel [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) § 6.1, und der Feldbestandstest prüft sie namentlich; `DbWerte`, Katalogkopie NULL-erhaltend, `TestDatenbank` nachziehen | gegen die GB-Basis **byte-gleich** (Spalten bleiben NULL, kein Leser rechnet damit). Die Probe ist der Sichtneubau: `ProjektGebaeudeCtrl` liefert alle 58 Bestandsfelder unverändert; dazu `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` grün | 1,5–2 PT |
 | **M4 — Klimaspalten** (**umgesetzt**, durch Schemaschritt 95 vom 19.09.2026 vorweggenommen) | eigener Schritt (1.7): `Gegenstrahlung`, `Luftfeuchte`, `Bedeckungsgrad` in `Tab_Solar(_STAMM)`, `Quelle` und `Importdatum` in `Tab_Klimaregion(_STAMM)`, mit Schritt 97 `Szenario` und `Bezugsjahr`; keine `Windgeschwindigkeit` (F-S3); `TmyHourlyData`, `SaveTmyData`, `SolardatenCtrl`, `DwdTryLeser`; Quellen und Bedienweg im [Konzept Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md) | erbracht: kein Datenteil, alle Spalten im Bestand NULL, kein Rechenweg liest sie — Referenzlauf **byte-gleich**; Nachweise `KlimaspaltenTests` und `KlimaSzenarioTests` (Konzept Klimadatenquellen Kapitel 11) | **erbracht — in keiner Summe** |
 | **G1.0 — Trennung der Rechenwege** (erster Schritt von G1, E20) | Modul `Simulation/Altweg/` anlegen und den Tagesbilanz-Weg **Zeichen für Zeichen** hineinschieben (drei Methoden aus `SimulationWaermebedarf.cs`, vier Physikfunktionen aus `BhkwPlan.cs` samt Vortemperatur; `BhkwPlan.cs` bleibt als Datei, seine neun Vektorhelfer wandern nicht); Fassade und Weiche in `HeizwaermeEinesGebaeudes`, **modellfreier Vorbereitungsschritt**, `IGebaeudeRechenweg`, `Modultrennungswache` (1.9); `BhkwPlanRueckgabeTests` nachziehen | gegen die GB-Basis **byte-gleich** — die Verschiebung ist ergebnisneutral, **kein Einfrieranlass**. Eine Abweichung ist ein Fehler der Verschiebung; nach der Anbindung des VDI-Wegs wäre sie nicht mehr von der Modellwirkung zu trennen. Kern-Filter grün, `SqlDialektPruefer` unberührt | **3–5 PT** |
-| **G1 + G2 — das Modell und seine Darstellung** | `GebaeudeModellEingang`, `GebaeudeModellErgebnis`, das Modul `Simulation/Gebaeude/` hinter der Weiche (G1.0), Vorlauf 30 Tage, Plausibilitätsprüfungen, Ergebnisexport; Dialogumbau in VDI-Struktur (Kapitel 2, **9,0 PT** einschließlich Bestandswegabschnitt), Hülle nach `EPOS.UI.Daten`, 63 Texte; Raumtemperatur-Bild, Kühlbedarf, drei Spitzenwerte, Vergleich im Bedarfsdialog, Sommerlüftung und Infiltration/Nutzerlüftung, Wiki-Seite | **alle dreizehn Referenzprojekte ändern sich** (+7 bis +33 %), drei neue CSV je VDI-Gebäude — **Basis vollständig neu einfrieren** (E1/Q14). Dazu der **Rückweg-Test** (F-Ü7): bis zu diesem Merge auf einer **Arbeitskopie** (`Referenzlaeufe/Arbeitskopie/`, gitignoriert), die `Gebaeude_Modell = 'TAGESBILANZ'` setzt, gegen die GB-Basis — die eingefrorene Testdatenbank bleibt unberührt, der Schalter dafür ist ein eigener Modus des Referenzlaufs; **ab dem Einfrieren genau ein Referenzprojekt auf dem Altweg in der neuen Basis** (A15, mit E27 entschieden), das **bis zur Stufe GA** in der jeweils aktuellen Basis steht; der Rückweg-Test rechnet nur dieses Projekt. `ChartProben` grün; Sichtabnahme Windows; Kriterien Konzept 10.4 (2) und (3), (4) in der in G0 neu bestimmten Fassung (F-S6); **Strahlungsweg: VDI 2078 Testbeispiel 7.1/7.2 (Typ 2, ± 0,2 °C / ± 5 W), aus den gedruckten Klimaparametern Anhang A1/B1 ohne TRY** (Konzept N1.9); **Logbuch-Eintrag entworfen, Versionsnummer beim Anwender erfragt**, Wiki-Seite „Gebäudemodell VDI 6007" und die geänderte Seite „Gebäude" im nächsten gebündelten Upload | 16–22 PT |
+| **G1 + G2 — das Modell und seine Darstellung** | `GebaeudeModellEingang`, `GebaeudeModellErgebnis`, das Modul `Simulation/Gebaeude/` hinter der Weiche (G1.0), Vorlauf 30 Tage, Plausibilitätsprüfungen, Ergebnisexport; Dialogumbau in VDI-Struktur (Kapitel 2, **9,0 PT** einschließlich Bestandswegabschnitt), Hülle nach `EPOS.UI.Daten`, 63 Texte; Raumtemperatur-Bild, Kühlbedarf, drei Spitzenwerte, Vergleich im Bedarfsdialog, Sommerlüftung und Infiltration/Nutzerlüftung, Wiki-Seite | **alle dreizehn Referenzprojekte ändern sich** (+7 bis +33 %), drei neue CSV je VDI-Gebäude — **Basis vollständig neu einfrieren** (E1/Q14). Dazu der **Rückweg-Test** (F-Ü7): bis zu diesem Merge auf einer **Arbeitskopie** (`Referenzlaeufe/Arbeitskopie/`, gitignoriert), die `Gebaeude_Modell = 'TAGESBILANZ'` setzt, gegen die GB-Basis — die eingefrorene Testdatenbank bleibt unberührt, der Schalter dafür ist ein eigener Modus des Referenzlaufs; **ab dem Einfrieren genau ein Referenzprojekt auf dem Altweg in der neuen Basis** (A15, mit E27 entschieden), das **dauerhaft** (E89) in der jeweils aktuellen Basis steht; der Rückweg-Test rechnet nur dieses Projekt. `ChartProben` grün; Sichtabnahme Windows; Kriterien Konzept 10.4 (2) und (3), (4) in der in G0 neu bestimmten Fassung (F-S6); **Strahlungsweg: VDI 2078 Testbeispiel 7.1/7.2 (Typ 2, ± 0,2 °C / ± 5 W), aus den gedruckten Klimaparametern Anhang A1/B1 ohne TRY** (Konzept N1.9); **Logbuch-Eintrag entworfen, Versionsnummer beim Anwender erfragt**, Wiki-Seite „Gebäudemodell VDI 6007" und die geänderte Seite „Gebäude" im nächsten gebündelten Upload | 16–22 PT |
 | **G3 — Bauteilkatalog** | `Tab_Baustoff_STAMM`, `Tab_Bauteil`, `Tab_Bauteilschicht`, Baustoffdialog samt **Zeile in `EPOS.UI/Bausteine/Menuetabelle.cs`** unter Administration (das Menü ist Daten; kein Untermenü mit nur einem Punkt), Bauteilweg mit Kettenmatrix-Reduktion, geneigte Fenster, echte Hülle statt Nachmultiplikation. **Gebaut:** alle acht Tabellen in den Schritten 132–134, die Verwaltungen „Baustoffe" und „Bauteilaufbauten" gemeinsam unter Administration › Gebäude, Zonen- und Bauteildialog im Gebäudedialog, die Übernahme als eine Zone mit Hochrechnung (E40) | Reduktion trifft die Normwerte der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C. **Erfüllt (25.09.2026):** die Reduktion trifft die Parameter der Testräume in 12 von 12 Testbeispielen relativ ≤ 10⁻³, die Normfälle damit 11 von 12 im Band; Grenzfall bis 4,7·10⁻¹⁶ relativ (15 Testgebäude), im Jahreslauf 1,3·10⁻¹⁴; Referenzlauf 13/13 unverändert ([Protokoll G3](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md)) | 8–12 PT |
 | **G4a — IFC-Import** | Kapitel 3: Paket und Lizenzseite, Leser, Azimut, Zuordnung, Vorgabetabelle, Dialog und Hülle, Importprobe, iOS | Importprobe bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme; genau ein iOS-Lauf, ausschließlich nach ausdrücklicher Rückfrage bei der Abnahme (E38). **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden, selbst erzeugte Proben bestanden, Referenzlauf 13/13 byte-gleich; offen die Windows-Sichtabnahme, der eine iOS-Lauf nach Rückfrage und der Schemaschritt `Baujahr` (in Arbeit) (3.8, [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)) | 13,5–21 PT |
 | **G4b — IFC und gbXML auf Bauteilebene** | auf Wunsch **eine** Zone mit je Bauteil einer Zeile in `Tab_Bauteil` (Nettofläche, Azimut samt Nordwinkel, Neigung, Randbedingung, U, g, Herkunft `IFC`/`GBXML`, Quellkennung) und den Aufbauten samt Schichten als Projektkopien; innere Masse nach Datenlage, U-Wert leer neben vollständigen Schichten, Vorhangfassaden transparent (E45). **Gebaut:** Schalter „Als Zone mit Bauteilen übernehmen“ im Zuordnungsdialog, Schreibweg in einem Vorgang samt Herkunft, Zielfeld Innenflächenfaktor (3.4) | nach G3; mit **E44** vor der Feldphase von G4a. Importproben bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme. **Erfüllt (25.09.2026):** Durchgang über die Datenbank (eine Zone mit 34 Bauteilen, Bauteilweg im Lauf), Referenzlauf 14/14 unverändert gegen R16; offen die Windows-Sichtabnahme ([Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md), [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49) | 4–6 PT |
@@ -2105,7 +2097,7 @@ Entwicklung **und Nachweis**; Agentenarbeit verkürzt die Kalenderzeit, nicht di
 
 **Was zwischen GB und G1+G2 gilt:** jeder Merge läuft gegen die GB-Basis und muss `GESAMT: PASS`
 melden — **G1.0 ausdrücklich byte-gleich**. **In diesem Papier frieren nur GB und G1+G2 neu ein**; die
-weiteren Anlässe der Kette bis GA stehen in 1.8. Wer M3 und G1
+weiteren Anlässe der Kette stehen in 1.8. Wer M3 und G1
 zusammenlegt, kann hinterher nicht mehr sagen, ob eine Abweichung vom Schema oder vom Modell kommt —
 genau die Trennung, die E4 für GB begründet; dasselbe gilt für G1.0 und die Anbindung des VDI-Wegs.
 
@@ -2134,8 +2126,8 @@ Ablösekriterium: **GA wird beauftragbar und fällig, sobald alle vier Bedingung
 Abweichung zum Altweg ist je Projekt erklärt; (2) eine Feldphase von mindestens einer Heizperiode
 ohne offenen Fehler am VDI-Weg; (3) KU1 und, falls beauftragt, AK1 sind abgenommen; (4) die
 Ausbauprobe ist grün. Geprüft wird mit jeder Abnahme, der Stand steht in der
-[Statusdatei](Status_Gebaeudesimulation_VDI6007.md). Zu Q25 ist der Umfang die **vollständige
-Ablösung nach der Löschliste** in Kapitel 6. Beide Fragen führt das Konzept, nicht dieses Papier.
+[Statusdatei](Status_Gebaeudesimulation_VDI6007.md). Zu Q25 war der Umfang die vollständige
+Ablösung nach der Liste in Kapitel 6. Beide Fragen sind mit **E89** gegenstandslos (der Altweg bleibt dauerhaft wählbar, 6.1 ist Inventar); das Konzept führt sie, nicht dieses Papier.
 
 **Stand der Fragen dieses Papiers:** Mit **E27** nach Empfehlung entschieden sind **U1, U3, U5,
 U7, U8, U10, U12 und U17**; bei **U6** ist das **Verfahren** entschieden (in G1 beide Zeitbezüge
@@ -2166,7 +2158,7 @@ Entscheidvermerk.
 | **U14** | Fensterabzug: Wandfläche = `GrossSideArea` **minus** Fenster und Außentüren — oder die Öffnungen in der Wandfläche belassen, wie `GrossSideArea` sie liefert? | **Abziehen.** Das Modell führt Wand und Fenster getrennt mit je eigenem U-Wert; ohne Abzug zählt die Öffnung zweimal. Wird die Differenz negativ: `NetSideArea`, sonst Warnung und 0 — **mit E38 (24.09.2026) nach Empfehlung entschieden**, gilt auch für den gbXML-Import (G4c; dort A = 0, Zeile rot, `IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV`) |
 | **U15** | Die drei ψ-Werte und die drei Anschlusslängen beim IFC-Import als **Vorgabe je Baualtersklasse** setzen oder **leer** lassen? | **ψ als Vorgabe, Längen leer.** IFC liefert weder das eine noch das andere; eine geratene Anschlusslänge sähe aus wie eine gemessene, ein ψ-Vorgabewert ist als Klassenwert erkennbar. Beide tragen Herkunft `Vorgabe` bzw. `Leer` — **mit E38 (24.09.2026) nach Empfehlung entschieden**, gilt auch für den gbXML-Import (G4c) |
 | **U16** | Soll `ios.yml` um einen **Gerätebau** ergänzt werden (heute baut der Lauf für den Simulator, `:123-127`, und dort wird nie getrimmt) — oder genügt ein einmaliger Nachweis von Hand? | **Einmaliger Nachweis in G4-8**, nach Rückfrage. Ein dauerhafter Release-Zweig verdoppelt die Laufzeit eines Workflows, der zehnfach zählt; erst wenn xBIM im Feld ist, lohnt die Dauerprüfung — **mit E18 (16.09.2026) nach Empfehlung entschieden**; **mit E38 (24.09.2026) ergänzt:** genau ein iOS-Lauf (`ios.yml`) bei der Abnahme von G4a, ausschließlich nach ausdrücklicher Rückfrage beim Anwender |
-| **U17** | Ein Altweg-Gebäude ohne Tagesverteilung bricht heute den **ganzen** Lauf ab (`SimulationWaermebedarf.cs:197`, `:590-595`) — auch für die VDI-Gebäude desselben Projekts (1.5). Lauf abbrechen wie heute oder das Gebäude benannt ablehnen? | **Benannt ablehnen, aber erst mit GA** — bis dahin bleibt das Verhalten des Bestands, weil die Änderung Altweg-Verhalten ändert und den byte-gleichen Nachweis berührt (F-Ü6) — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
+| **U17** | Ein Altweg-Gebäude ohne Tagesverteilung bricht heute den **ganzen** Lauf ab (`SimulationWaermebedarf.cs:197`, `:590-595`) — auch für die VDI-Gebäude desselben Projekts (1.5). Lauf abbrechen wie heute oder das Gebäude benannt ablehnen? | **Benannt ablehnen, aber nicht vor einem Auftrag, der den Nachweis des Altwegs neu einfriert** (E89) — bis dahin bleibt das Verhalten des Bestands, weil die Änderung Altweg-Verhalten ändert und den byte-gleichen Nachweis berührt (F-Ü6) — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 
 ---
 
@@ -2190,9 +2182,9 @@ Entscheidvermerk.
   16.09.2026 nimmt ihn auf** — die Folgen regelt das Kühlkonzept, Konzept N1.18),
   Bauteilaktivierung, Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die
   Raumtemperatur (seit E22 eigenes Papier [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md), Stufen AK1 nach G2, AK2 und AK3
-  danach — **sie warten nicht auf die Stufe GA** (E23, E26): Sie wirken auf VDI-Gebäude, ein
-  Gebäude auf dem Bestandsweg geht bis GA als feste Last ein — ein Altweg-Sonderfall, der in der
-  Löschliste unten steht), sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG/DIN V 18599,
+  danach — **der Altweg bleibt wählbar (E89)**: Sie wirken auf VDI-Gebäude, ein
+  Gebäude auf dem Bestandsweg geht als feste Last ein — ein Altweg-Sonderfall, der im
+  Inventar unten steht), sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG/DIN V 18599,
   Verschattung durch Nachbarbebauung, Wärmerückgewinnung, Nutzungsprofile für Nichtwohngebäude,
   Scan-to-BIM, die Validierung an gemessenen Verbräuchen.
 - **Normnachweise, die ohne Datenträger nicht führbar sind.** Nach E5 werden weder die Datenträger
@@ -2222,7 +2214,7 @@ Entscheidvermerk.
   in die Stufe **GB**, also **vor** die Verschiebung (Kapitel 4); eine ergebniswirksame
   Fehlerbehebung nach der Verschiebung ist ein eigener, begründeter Einfrieranlass (1.8). Eine
   Verbesserung, die beide Wege beträfe, wird allein im VDI-Weg gebaut. Das Risiko „zwei Rechenwege
-  nebeneinander" gilt **bis GA**; Modultrennung, `Modultrennungswache` und Ausbauprobe halten seine
+  nebeneinander" bleibt bestehen (E89); Modultrennung, `Modultrennungswache` und Ausbauprobe halten seine
   Kosten klein.
 - **Eine Stufe GA.** Sie entfällt mit E89; der Altweg bleibt dauerhaft wählbar, 6.1 ist nur noch
   sein Inventar.
@@ -2233,15 +2225,14 @@ Entscheidvermerk.
 Rechenweg, die Stufe **GA — Altweg ablösen** entfällt, das Ablösekriterium (**Q24**) und der Umfang
 (**Q25**) sind gegenstandslos ([Konzept N1.70](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)).
 Die Liste dient nur noch als **Inventar der Altweg-Bestandteile** — was zum Altweg gehört und mit
-ihm gepflegt wird; die Spalte „Was die Stufe GA entfernt oder umstellt" liest sich als „was zum
-Altweg gehört". Quellen: Konzept N1.25 Punkt 4 und N1.31,
+ihm gepflegt wird. Quellen: Konzept N1.25 Punkt 4 und N1.31,
 [Befund X](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) Kapitel 4
 (dort die Erhebung je Stelle). **Regel** ([`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md),
 Entscheidung 6): **Jede Stufe, die einen Altweg-Sonderfall einführt** — Hinweistext,
 Ressourcenschlüssel, Sonderweg in Verteilung, Deckung oder Bericht —, **trägt ihn im selben
 Auftrag hier ein.**
 
-| Bereich | Was die Stufe GA entfernt oder umstellt | Quelle |
+| Bereich | Was zum Altweg gehört (dauerhaft, E89) | Quelle |
 |---|---|---|
 | **Datenbank** | zuerst `Fensterflaeche_Ost`/`_West` einmalig aus `Fensterflaeche_Ost_West` füllen (je die Hälfte, wo NULL; F-Ü5); dann je `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` `DROP COLUMN` für `Gebaeude_Modell`, `Fensterflaeche_Ost_West`, `Wochenende`, `Ferien`; im selben Schritt die leserlosen Spalten `WW_Bedarf` und `Waermebedarf`; Sicht `Abfrage_Projektgebaeude` neu aus `GebaeudeSchema.SQL_VIEW_NEU` ohne diese Spalten, der Namensleser zieht mit; `Tab_DBTagV`/`Tab_DBTagVDaten` samt `_STAMM` und `GebaeudetypDialog` (Q25, E27); `DbWerte.GEBAEUDE_MODELL_*`; Testdatenbank auf den Schemastand; der Prüfpunkt der Auslieferungsvorlage zu `Gebaeude_Modell` (F-Ü9) entfällt mit der Spalte | Befund X 4.1; 1.6; Konzept 6.1, 6.4 |
 | **Quelltext** | Modul `Simulation/Altweg/` (`TagesbilanzRechenweg`, `TagesbilanzPhysik`, `Tagesbilanzzustand`, rund 435 Zeilen); die Weiche in `HeizwaermeEinesGebaeudes` (`RechenwegWaehlen`, die Felder `_altweg` und `_vdi6007`, der Testzugang `Tagesbilanzweg`, die NULL-Regel `MODELL_OHNE_ANGABE`) und `IGebaeudeRechenweg`; die NULL-Vorgabe von Ost/West aus dem Bestandsfeld (`GebaeudeVorbereitung.FensterflaechenOstWest`, nach dem Füllen der Spalten) — die Fassade wird zum geraden Aufruf des einen Moduls, die Verbrauchs-Rückrechnung zur reinen Nachmultiplikation; `Klimakalender.Altweg` (Klasse `KlimakalenderAltweg`: `Sol_*`, `A_Temp`, `TagTyp_W/NW`) samt dem Aufbau je Lauf in `KlimakalenderLesen` (1.5); das Feld `ProjektGebaeudeModel.Gebaeude_Modell` samt seiner Leserzeile in `ProjektGebaeudeCtrl.ReadAll`; `modellErzwungen` an `GebaeudeBedarfCtrl.Rechnen` samt `GebaeudeBedarfErgebnis.Modell`/`ModellErzwungen` (1.4); die Auskunft `Gebaeuderechenweg` (`OhneAngabe`, `Wirksam`, `IstVdi6007`; G1, Welle 5) und `Gebaeudehuellbilanz.TransmissionGewichtetWK` samt den Gewichtskonstanten; die `Modultrennungswache` (1.9) | Befund X 4.2; 1.1, 1.4, 1.5, 1.9 |
