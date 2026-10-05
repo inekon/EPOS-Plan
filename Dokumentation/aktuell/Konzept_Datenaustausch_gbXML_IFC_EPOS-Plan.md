@@ -2112,7 +2112,7 @@ heutige Vorgabe zurück; es wird nichts geraten.
 Die Projektdatei wird mit `Microsoft.Data.Sqlite` **nur lesend** geöffnet (`Mode=ReadOnly`, nie `VACUUM`, nie ein
 Schreibzugriff, keine Journale neben der Datei des Anwenders). Der Leser prüft zuerst `XmTables.Version` und das
 Vorhandensein der benötigten Tabellen; fehlt eine, wird der Import der Projektdatei benannt abgelehnt, die IFC-Daten
-bleiben. Ein Stream (iOS) wird in eine Arbeitskopie im App-Container gelegt, Größengrenze wie beim IFC-Import. Gelesen
+bleiben. Ein Stream (iOS) wird in eine Arbeitskopie im App-Container gelegt. Die Projektdatei hat eine eigene Größengrenze (`SqprojProfil`: 250 MB unter Windows, 100 MB auf iOS), losgelöst von der IFC-Grenze (50 bzw. 20 MB): Der Leser liest nur die Profil-, Zonen- und Raumtabellen, die Größe der Anwenderdatei stammt aus eingebetteten Bildern. Die iOS-Grenze ist gesetzt, ihre Messung wie beim IFC-Import steht aus; `ZU_GROSS` nennt Größe und Grenze in MB. Gelesen
 wird nur, was Kapitel 16.3 nennt; der Leser hält keine Verbindung über den Import hinaus.
 
 ### 16.3 Die Abbildung
@@ -2121,17 +2121,14 @@ wird nur, was Kapitel 16.3 nennt; der Leser hält keine Verbindung über den Imp
 (`UUID` = Zone, `ReferenceToUUID` = Raum, `ReferenceClass` `TModelRoom`). Der Abgleich mit den `IfcSpace` der
 IFC-Datei läuft über den **Raumnamen je Geschoss** (Geschossname aus `BmFloor` gegen `IfcBuildingStorey.Name`), zweitens
 über `BmRoom.GId` ↔ `IfcSpace.GlobalId` (dieselbe GUID, einmal als Text, einmal in der 22-stelligen Base64-Form, umkodiert — Befund Kapitel 6.6; `BIMUUID` ist die Gebäude-GUID und trifft nichts); trifft kein Weg,
-bleibt der Raum unzugeordnet und wird benannt. Zonen vom `ZoneType` 6 (Simulationszonen mit Profilgruppe) und 5
-(DIN-V-18599-Zonen mit Nutzungsprofil; beide decken in gerechneten Dateien alle Räume ab, Befund 6.4) werden freie Zonen des Zonenplans (E79) mit Name und Nutzung; trägt ein Raum
-mehrere Zonen, gilt die Simulationszone; Zonen ohne Raum werden als leere Zonen gemeldet und nicht angelegt. Die
-übrigen `ZoneType`-Codes (2 Wohneinheit, 7 Lüftungszone, 10 Systemzonen, 0 und 8 unbekannt) werden gezählt und übersprungen.
+bleibt der Raum unzugeordnet und wird benannt. Die **Zonierung** ist ein Parameter (`SqprojZonierung`): `Din18599` (Vorgabe, `ZoneType` 5, DIN-V-18599-Zonen mit Nutzungsprofil) oder `Simulation` (`ZoneType` 6, Simulationszonen mit Profilgruppe), wählbar. Die Räume gehören der wirksamen Zonierung und werden deren freie Zonen des Zonenplans (E79) mit Name und Nutzung; die andere Zonierung liefert nur das Nutzungsprofil (bei der DIN-Zone: ihr eigenes Profil und, wo vorhanden, die Profilgruppe der Simulationszone, mit der sie die meisten Räume teilt). Fehlt die gewählte Zonierung, gilt ohne ausdrückliche Wahl die vorhandene. Zonen ohne Raum werden nur für die wirksame Zonierung als leere Zonen gemeldet und nicht angelegt. Die übrigen `ZoneType`-Codes (2 Wohneinheit, 7 Lüftungszone, 10 Systemzonen, 0 und 8 unbekannt) werden gezählt und übersprungen. Das Protokoll nennt die wirksame Zonierung vor der Bilanz (`IMP_SQ_PROT_ZONIERUNG`, bei nur einer vorhandenen `…_ZONIERUNG_EINE`); `Zonenkonditionierung.Zonierung` trägt sie weiter, und der Einzonenweg zählt nur belegte Zonen der wirksamen Zonierung.
 
 **Nutzung.** Die DIN-V-18599-10-Profilnummer (`PdProfileUsage.ProfileUsageType`) wird über eine feste Tabelle im Kern
 auf die Nutzung der Zone abgebildet: Büroprofile (Einzel-, Gruppen-, Großraumbüro, Besprechung, Schalter) → BUERO;
 Schulprofile (Klassenzimmer, Hörsaal, Bibliothek) → SCHULE; Wohnprofile (70, 71 und die Wohnzeilen der Norm) → WOHNEN;
 alles andere → keine Nutzung, die Nummer steht im Beleg. Die Tabelle ist sprachneutral und wird mit Nummer und Normname
 in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen. Festgelegt sind (SQ-1, `Din18599Nutzung`): **BUERO** 1–5, **SCHULE** 8, 9, 28, 29,
-**WOHNEN** 70, 71. Trägt eine Simulationszone kein eigenes Nutzungsprofil, gilt das der Nutzungszone, mit der sie die
+**WOHNEN** 70, 71. Trägt die wirksame Zone kein eigenes Nutzungsprofil, gilt das der anderen Zonierung, mit der sie die
 meisten Räume teilt, sonst die Profilnummer ihrer Gruppe (`PdProfileGroup.ProfileUsageType`).
 
 **Abgleichsschlüssel (Befund Kapitel 6):** `BmRoom.GId` ist dieselbe GUID wie `IfcSpace.GlobalId`; der Abgleich läuft
@@ -2202,7 +2199,7 @@ deren `ObjectType` `TModel…` oder Erzeuger HottCAD ist, sonst ausgegraut mit G
 Bilanz: Räume abgeglichen / nicht abgeglichen, Zonen übernommen, Profile je Größe, Abschnitte, Übersprungenes mit Grund.
 Der Zonenbaum (E79) zeigt die Zonen der Projektdatei mit Nutzung; nicht abgeglichene Räume stehen rechts. Die
 Konditionierung je Zone erscheint in der Zonenzeile (Heizsollwert Tag aus der Ganglinie, Nutzung) und nach dem
-Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. Ohne Projektdatei bleibt alles wie heute.
+Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. Ohne Projektdatei bleibt alles wie heute. Enthält die gelesene Datei beide Zonierungen, steht neben dem Knopf das Wahlfeld **„DIN-V-18599-Zonen | Simulationszonen“** (`select[data-zonierung]`, Werte `din` und `sim`, Vorgabe DIN); bei nur einer Zonierung fehlt es. Der Wechsel läuft als Planschritt `PROJEKTDATEI` mit dem Feld `Zonierung` ohne erneutes Lesen (das Abbild bleibt im Speicher) und fragt nach, wenn Handschritte verloren gingen; „Nein“ stellt die Wahl zurück. Die Bilanz nennt die Zonierung (`dd[data-wert="zonierung"]`), und jede Zone trägt ihre Herkunft (`data-herkunft` = `projektdatei-din` oder `projektdatei-sim`, Text „aus Projektdatei (DIN-Zonen)“ bzw. „(Simulationszonen)“). Eine Wahl vor der Übernahme gilt erst für die nächste Übernahme.
 
 ### 16.5 Stufen und Aufwand
 
@@ -2211,6 +2208,7 @@ Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. O
 | **SQ-1 — Kern-Leser und Abbildung** | `Import/Sqproj/`: Leser (ReadOnly, Fassungsprüfung, Tabellenprüfung), Abbild (Räume, Zonen, Profile, Kurven, Abschnitte), Raumabgleich gegen das IFC-Abbild, Zonenplan-Übernahme, Konditionierung je Zone (Matrix, Standardwoche, Perioden, Nennwerte) als Kalenderzeilen mit Herkunft; Meldungen de/en; synthetische `.sqproj`-Proben (Erzeuger im Test, nur die benötigten Tabellen) | Proben 33–36; Stand 05.10.2026: gebaut | **3–4 PT** |
 | **SQ-2 — Dialog** | Knopf, Bilanz, Zonenbaum mit Projektdatei, Speichern der Kalender, Dateiweg Windows und iOS (Stream → Arbeitskopie) | Probe 37 (bunit), Sichtprobe Windows; Stand 05.10.2026: gebaut | **1–2 PT** |
 | **SQ-3 — Export und Papiere** | `EPOS_Zone`-Sätze im IFC-Export (Nutzung, Sollwerte, Kalender), Rundlauf Export → Leser; dieses Kapitel als „So gebaut“, Konditionierungskonzept 5.5 (Leser), Mehrzonenkonzept 6.4, Wiki, Logbuch, Protokoll | Probe 38, Wachen; Stand 05.10.2026: gebaut | **1 PT** |
+| **HC-3 — Nachzug E87** | Zonierungswahl mit Vorgabe DIN-V-18599-Zone, eigene Größengrenze der Projektdatei (250 MB Windows, 100 MB iOS), Wahlfeld im Dialog mit Herkunft je Zone | Proben 33, 36, 37 erweitert; Stand 05.10.2026: gebaut | **1 PT** |
 | | **zusammen** | | **5–7 PT** |
 
 ### 16.6 Regeln
@@ -2228,11 +2226,11 @@ Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. O
 
 | Nr. | Probe | Kriterium |
 |---|---|---|
-| 33 | **Leser und Fassung** | selbst erzeugte Kleinstdatei mit `XmTables`, `BmBuilding/Floor/Room`, `BmZone/BmZoneReference`, `PdProfile*`, `PdProfileTimeCurve`, `PdProfileTaskSerial(+Reference)`, `PdProfileGroup(+Reference)`: Räume, Zonen, Profile und Abschnitte kommen vollständig an; fehlende Tabelle → benannte Ablehnung; Schreibversuch unmöglich (ReadOnly) |
+| 33 | **Leser und Fassung** | selbst erzeugte Kleinstdatei mit `XmTables`, `BmBuilding/Floor/Room`, `BmZone/BmZoneReference`, `PdProfile*`, `PdProfileTimeCurve`, `PdProfileTaskSerial(+Reference)`, `PdProfileGroup(+Reference)`: Räume, Zonen, Profile und Abschnitte kommen vollständig an; fehlende Tabelle → benannte Ablehnung; Schreibversuch unmöglich (ReadOnly); Grenze 250/100 MB mit Gegenprobe IFC-Grenze, `ZU_GROSS` in MB |
 | 34 | **Raumabgleich** | Räume treffen über Name je Geschoss, über `BIMUUID` ↔ `GlobalId`, und bleiben benannt unzugeordnet, wenn beides fehlt |
 | 35 | **Konditionierung** | Heiz-/Kühlsollwert, Lüftung, Geräte, Personen aus Ganglinie und Nutzungsprofil ergeben die erwarteten 168 Zellen, Nennwerte und Perioden; Tagesart Werktage lässt das Wochenende „aus“; Grenzen benannt begrenzt; Rangfolge Ganglinie vor Profil vor Vorlage |
-| 36 | **Zonenplan** | Zonen der Projektdatei werden freie Zonen mit Nutzung aus der Profilnummer; Räume in mehreren Zonen folgen der Simulationszone; leere Zonen gemeldet |
-| 37 | **Dialog** (bunit) | Knopf nur bei HottCAD-IFC, Bilanz, Zonenbaum mit Projektdatei, Speichern schreibt Kalender, Perioden und Vorgaben mit Herkunft |
+| 36 | **Zonenplan** | Zonen der Projektdatei werden freie Zonen mit Nutzung aus der Profilnummer; Räume gehören der wirksamen Zonierung (Vorgabe DIN, Wahl Simulation, nur eine vorhanden); leere Zonen nur der wirksamen Zonierung gemeldet; Protokollsatz zur Zonierung |
+| 37 | **Dialog** (bunit) | Knopf nur bei HottCAD-IFC, Bilanz, Zonenbaum mit Projektdatei, Speichern schreibt Kalender, Perioden und Vorgaben mit Herkunft; Wahlfeld nur bei beiden Zonierungen, Wechsel mit und ohne Rückfrage |
 | 38 | **Rundlauf Export** | `EPOS_Zone`-Sätze des IFC-Exports kommen über den IFC-Leser als Zonen-Konditionierung zurück |
 
 Stand 05.10.2026: Proben 33 bis 38 grün — 33 `SqprojLeserTests`, 34 `SqprojRaumabgleichTests`, 35
