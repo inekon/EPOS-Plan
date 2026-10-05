@@ -1,7 +1,7 @@
 # Protokoll AK2 Teil 2 — Oberfläche, Bericht, Wiki, Referenzprojekt 1056, Basis R37 (05.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Wellen AK2-3 und AK2-4 (E67, E82, E84), Commits AK2-3 `57b5a1f`, `fdb3a3d`, `1778f85`, `9559052`, `c23b511`, `80e733b`, Merge `5872a3c`, Nachzug `3c5d6c8`; AK2-4 `bffc903`, `328a0dc`, `2e58f60`, `ea33867`, `b80c8ad`, `ead2d52`, Merge `e1487e7`, `c5e405c`, `8a2adbe`
-**Entscheid:** E82 (Bild Woche), E84 (Komfortspalten je gekoppeltem Projekt), E83 (Nennleistung erst mit AK3). Schemaschritt 186 aus Teil 1; Basis R37.
+**Sitzung:** Gebäudesimulation (Cloud), Wellen AK2-3 und AK2-4 (E67, E83, E85), Commits AK2-3 `57b5a1f`, `fdb3a3d`, `1778f85`, `9559052`, `c23b511`, `80e733b`, Merge `5872a3c`, Nachzug `3c5d6c8`; AK2-4 `bffc903`, `328a0dc`, `2e58f60`, `ea33867`, `b80c8ad`, `ead2d52`, Merge `e1487e7`, `c5e405c`, `8a2adbe`
+**Entscheid:** E83 (Bild Woche), E85 (Komfortspalten je gekoppeltem Projekt), E84 (Nennleistung erst mit AK3). Schemaschritt 186 aus Teil 1; Basis R37.
 
 ## 1 Auftrag
 
@@ -21,7 +21,7 @@ Zwei Wellen, je ein Worktree, Commits sofort, kein Push. Gate 731 auf dem Merge 
 - 34 Ressourcenschlüssel; ChartProben-Messlatte `Messlatte_2026-10-05.sha256` (211 Zeilen, drei neue Bilder); Wiki Energieerzeuger („Betriebszeiten“) und Gebäudemodell VDI 6007 („Komfortstunden“); Logbuch-Entwurf Konzept 12.4.
 
 **AK2-4 (Referenzprojekt 1056, Komfortspalten, Basis R37).**
-- F12/E84 in `SimulationRunner.AnlagenfahrplanSpaltenSetzen`: Komfortspalten, sobald der Fahrplan lief; `Fahrplan_Begrenzt_Stunden` 0 statt NULL.
+- F12/E85 in `SimulationRunner.AnlagenfahrplanSpaltenSetzen`: Komfortspalten, sobald der Fahrplan lief; `Fahrplan_Begrenzt_Stunden` 0 statt NULL.
 - Referenzprojekt **1056 „Referenz Kopplung mit Fahrplan“**, Kopie von 1047 auf dem Kopierweg des Programms (Gebäude 10662, Wärmepumpe 1672052, Kessel 1018353): Wärmepumpe `Sperrung` 1, 0–6 Uhr (Altfenster ohne Mitternachtsübertrag), `Vorlauf_Max` 50 (Vorlauf 55); Kessel und BHKW Zeitprogramm 0 von 0 bis 6 Uhr; kein Puffer. Skript `Referenzlaeufe/Skripte/referenzprojekt_1056_fahrplan.py`.
 - Wache `FahrplanReferenzprojektWacheTests` (3), elf Zähltests um 1056.
 - Basis **R37 `2026-10-05_R37_Fahrplan`**: 21 Projekte, 646 CSV, 4 265 Skalare, 78 MB; 18 Projekte byte-gleich mit R36; 1047 und 1054 nur neue Zeilen in `aggregate.csv` (1047: Fahrplanstunden 0, Unterschreitung 875 h, 1 281,04 Kh, längste Strecke 11 h, Überschreitung 32 h / 43 Kh; 1054: 0, 2 162 h, 2 138,59 Kh, 16 h); 1056 neu (Fahrplanstunden 1 249, Unterschreitung 1 854 h, 3 883,19 Kh, längste Strecke 16 h, Restbedarf 0).
@@ -30,8 +30,8 @@ Zwei Wellen, je ein Worktree, Commits sofort, kein Push. Gate 731 auf dem Merge 
 
 ## 4 Festlegungen
 
-- E83: Nennleistung der Erzeuger nicht als Schranke in AK2, erst mit AK3.
-- E84: Komfortspalten für jedes gekoppelte Projekt, auch ohne kappende Stunde.
+- E84: Nennleistung der Erzeuger nicht als Schranke in AK2, erst mit AK3.
+- E85: Komfortspalten für jedes gekoppelte Projekt, auch ohne kappende Stunde.
 - Betriebszeiten nur an der Wärmepumpen-Maske; Kessel und BHKW tragen den Wert aus der Datenbank ohne Eingabe.
 
 ## 5 Nachweise

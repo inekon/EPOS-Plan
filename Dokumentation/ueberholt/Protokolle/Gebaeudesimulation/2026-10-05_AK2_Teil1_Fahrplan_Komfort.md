@@ -1,7 +1,7 @@
 # Protokoll AK2 Teil 1 — Anlagenfahrplan als Verfügbarkeit, Komfortkennzahlen (05.10.2026)
 
-**Sitzung:** Gebäudesimulation (Cloud), Wellen AK2-1, AK2-2a, AK2-2b (E22, E67, E81, E82), Commits AK2-1 `e852670`, `7dbe3d1`, `d754c27`, `a846719`, `d30b432`, `059d102`, `4e1213e`, Merge `0c66e02`; AK2-2a `566e123`, `bd318b0`, `9199c3e`, `0139922`; AK2-2b `574986b`, `ea39e24`, `ed08f04`, `4c73015`; Merge origin `2317087`.
-**Entscheid:** E81 und E82 (Anwender, 05.10.2026; die Entscheide Q30 und Q31 heißen nach der Kollision mit dem Zonenbaum der IFC-Sitzung E81 und E82, E79 gehört dieser Sitzung). Offen: Q32 (Nennleistung als Schranke). Schemaschritt 186; Basis R36 unverändert.
+**Sitzung:** Gebäudesimulation (Cloud), Wellen AK2-1, AK2-2a, AK2-2b (E22, E67, E82, E83), Commits AK2-1 `e852670`, `7dbe3d1`, `d754c27`, `a846719`, `d30b432`, `059d102`, `4e1213e`, Merge `0c66e02`; AK2-2a `566e123`, `bd318b0`, `9199c3e`, `0139922`; AK2-2b `574986b`, `ea39e24`, `ed08f04`, `4c73015`; Merge origin `2317087`.
+**Entscheid:** E82 und E83 (Anwender, 05.10.2026; die Entscheide Q30 und Q31 heißen nach der Kollision mit dem Zonenbaum der IFC-Sitzung E82 und E83, E79 gehört dieser Sitzung). Offen: Q32 (Nennleistung als Schranke). Schemaschritt 186; Basis R36 unverändert.
 
 ## 1 Auftrag
 
@@ -26,7 +26,7 @@ Drei Wellen in strenger Folge, je ein Worktree, Commits sofort, kein Push. AK2-1
 - Zähler `Fahrplan_Begrenzt_Stunden` (NULL ohne Kappung); Modultrennungswache Satz 5.
 
 **AK2-2b (Komfortkennzahlen).**
-- `Komfortkennzahlen`: Schwelle 1,0 K als Festwert `KOMFORT_SCHWELLE_K` (E81), Nutzungszeit; Zone → Gebäude: Stunde zählt bei mindestens einer Zone, Kelvinstunden flächengewichtet; Gebäude → Projekt: Stunden bei mindestens einem Gebäude, Kelvinstunden Summe, längste Strecke Maximum. Kälteseite spiegelbildlich.
+- `Komfortkennzahlen`: Schwelle 1,0 K als Festwert `KOMFORT_SCHWELLE_K` (E82), Nutzungszeit; Zone → Gebäude: Stunde zählt bei mindestens einer Zone, Kelvinstunden flächengewichtet; Gebäude → Projekt: Stunden bei mindestens einem Gebäude, Kelvinstunden Summe, längste Strecke Maximum. Kälteseite spiegelbildlich.
 - `Bedarfsbegriff` je Gebäude (Rückwirkung oder feste Last), `KomfortUndRestbedarf`; Hinweise `SIMENG_AK2_PROFILWEG_NAEHERUNG` und `SIMENG_AK2_FESTE_LAST`; Bedarfsauskunft `GebaeudeBedarfCtrl` mit Fahrplan.
 - Projektspalten nur bei greifender Schranke, sonst NULL (byte-gleich). `Umschaltung` bleibt als Verfügbarkeitsgrund benannt offen (Konzept 7.4).
 
@@ -35,7 +35,7 @@ Drei Wellen in strenger Folge, je ein Worktree, Commits sofort, kein Push. AK2-1
 - **Befund:** Die Nennleistung als Schranke (`LEISTUNGSGRENZE`) kappt das Referenzprojekt 1054 in 10 Stunden (Kessel 80 kW und BHKW 30,8 kW liegen unter dem unbegrenzten Bedarf). Deshalb kappen vorerst nur Ausfälle: Sperrzeit, Zeitprogramm, Abschaltpunkt, Speicher leer. Der Schalter `leistungsgrenzeAlsSchranke` steht auf `false`.
 - **Q32 (offen, beim Anwender):** Soll die Nennleistung als Schranke gelten? Vorschlag: erst mit AK3.
 - **Befund Bestand:** Kein Referenzprojekt hat `Sperrung = 1`; 15 Projekte tragen eine inaktive Sperrzeit 14–17 Uhr; gekoppelt rechnen nur 1047 und 1054. Darum ändert AK2 keine Referenzzahl.
-- Entscheide Q30/Q31 heißen E81/E82 (Kollision mit E79 der IFC-Sitzung beim Merge `2317087`).
+- Entscheide Q30/Q31 heißen E82/E83 (Kollision mit E79 der IFC-Sitzung beim Merge `2317087`).
 
 ## 5 Nachweise
 
