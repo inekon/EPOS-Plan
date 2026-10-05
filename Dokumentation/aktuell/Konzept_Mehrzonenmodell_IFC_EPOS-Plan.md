@@ -1158,7 +1158,9 @@ Entsprechungen), B5 Untergeschoss ohne `EXTERNAL`-Grenze, B6 sonst beheizt.
 **Regel Z6 — nach Raumtemperatur und Nutzung.** Für Dateien ohne Zonen, Klassifikation und Raumgrenzen, die je Raum
 eine Temperatur und einen Raumtyp tragen (CAD-Exporte). **Gruppenschlüssel** je Raum: die wirksame Beheizung (mit den
 Haken der Raumliste) und die auf ganze °C gerundete Raumsolltemperatur — der Heizsollwert des Standards (B3), sonst die
-Raumtemperatur der Datei (`InsideTemperature (°C)`, nur zur Gruppenbildung, nie als Sollwert übernommen). Ein Raum ohne
+Raumtemperatur der Datei (`InsideTemperature (°C)`, zur Gruppenbildung). **Der Zonenname trägt keinen Sollwert:** „15 °C –
+Verkehr, Lager" ist ein Name; die Zone erbt den Heizsollwert des Gebäudes (Vorgabe Normtemperatur oder Eingabe), einen
+eigenen bekommt sie nur über den Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" (6.5). Ein Raum ohne
 Temperatur geht zur Temperaturgruppe gleicher Beheizung, in der seine **Nutzungsklasse** die größte Fläche hat (bei
 Gleichstand die wärmere); gibt es keine, bildet er mit seinesgleichen eine Gruppe „ohne Sollwert" je Nutzungsklasse. Die
 Nutzungsklasse (Büro, Wohnen, Schlafen, Gastronomie, Küche, Sport, Verkehr, Sanitär, Lager, Technik, Sonstige) folgt aus
@@ -1603,8 +1605,17 @@ Geometrierechnung (ADR-003):
   `bhtSeparatelyHeated` (getrennt beheizt) entscheidet nach der Raumtemperatur des Exports
   (`InsideTemperature (°C)` aus einem beliebigen Satz des Raums, nur mit der Einheit °C im Namen): wie Regel B3
   über 12 °C beheizt, sonst unbeheizt, benannt je Gebäude mit Raum und Temperatur
-  (`IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR`, I). Die Temperatur stuft nur ein — als Sollwert wird sie nicht
-  übernommen. Ohne Raumtemperatur und bei jedem anderen Wert sagt die Datei nicht, ob der Raum in der Hülle liegt;
+  (`IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR`, I). Die Temperatur stuft ein; als Heizsollwert gilt die Vorgabe
+  (Normtemperatur, 20 °C Tag, 18 °C Nacht) oder die Eingabe des Anwenders. **Nur auf Wunsch** übernimmt der Schalter
+  „Raumtemperatur der Datei als Heizsollwert übernehmen" im Kopf des Zuordnungsdialogs (Schlüssel
+  `RaumtemperaturAlsSollwert`, Vorgabe aus; sichtbar, wenn beheizte Räume eine Raumtemperatur und keiner einen
+  Norm-Sollwert trägt) die Raumtemperatur: der Tagsollwert des Gebäudes ist das flächengewichtete Mittel der
+  Raumtemperaturen der beheizten Räume, gerundet auf 0,1 °C (Herkunft Datei, Beleg `GIMP_BELEG_SOLLWERT_CAD` mit Zahl
+  der Räume, Spanne und Räumen ohne Angabe; Räume ohne Temperatur bleiben außen vor), der Nachtsollwert folgt der
+  Regel des Einzonenwegs; das Feld bleibt änderbar. Im Mehrzonenweg trägt jede beheizte Zone das Mittel ihrer
+  beheizten Räume als `Raumsolltemperatur_Tag` (`IMP_IFC_PROT_ZONE_SOLLWERT_CAD`, I), die übrigen Sollwertspalten und
+  unbeheizte Zonen bleiben leer; über 2 K Spanne je Gebäude bzw. Zone `IMP_IFC_PROT_SOLLWERT_CAD_SPANNE` (W).
+  Gespeichert wird mit der Zonenliste in einem Vorgang. Ohne Raumtemperatur und bei jedem anderen Wert sagt die Datei nicht, ob der Raum in der Hülle liegt;
   es gelten B4 bis B6, benannt (`IMP_IFC_PROT_BEHEIZUNGSART_OFFEN`, I, mit Zahl und Wert).
 - **Wärmekapazität masseloser Schichten:** IFC4-Exporte führen je Baustoff oft Dichte und Wärmeleitfähigkeit,
   aber keine `SpecificHeatCapacity`. Dann gilt c des Baustoffs, den der Namensabgleich (6.3) im Katalog der
