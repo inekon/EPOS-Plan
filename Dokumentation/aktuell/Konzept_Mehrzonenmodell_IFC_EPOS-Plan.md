@@ -1455,6 +1455,11 @@ nicht zugeordnet, leere Zonen werden gemeldet und nicht angelegt. Trägt eine IF
 sie trägt — mit der Rangfolge Projektdatei vor IFC-`EPOS_*` vor Vorlage. Beim Speichern schreibt
 `ZonenplanCtrl.ProjektdateiUebernehmen` die Kalender und Zellen nach den Vorlagen der Nutzung.
 
+> **Vermerk 05.10.2026 (E90):** Die Nutzung der Zone (`WOHNEN`, `BUERO`, `SCHULE` oder keine) wird ein Nutzungsprofil
+> aus einem Katalog mit Kategorien; die Vorbelegung aus Nutzungsklasse und DIN-Profilnummer geht über eine änderbare
+> Zuordnung, der Zonenbaum führt die Profile gruppiert nach Kategorie mit Herleitungszeile, gespeichert werden weiter
+> nur Kopien. Ausgearbeitet in [Konzept Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md) (Stufe NP).
+
 **Was der Anwender sonst ändern kann:** Haken „beheizt" je Raum (die angrenzenden Flächen wechseln ihre
 Randbedingung) und „alles in eine Zone" (der Einzonen-Rückfall). Nach jeder Änderung rechnet der Dialog
 die Bilanz neu.
