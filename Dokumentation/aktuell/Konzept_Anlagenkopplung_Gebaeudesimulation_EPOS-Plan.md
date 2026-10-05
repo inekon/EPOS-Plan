@@ -873,6 +873,22 @@ sie muss im Bericht nebeneinander stehen, sonst sieht ein Vergleich zweier Varia
 wäre ein Problem verschwunden. **Regel:** Wo Komfortstunden ausgewiesen werden, steht der
 Restbedarf daneben — und umgekehrt.
 
+**So gebaut (AK2-2b, 05.10.2026).** `Komfortkennzahlen` (`EPOS.Kern/Allgemein/Simulation/Gebaeude/Komfortkennzahlen.cs`)
+zählt aus dem Ergebnis des VDI-Wegs; die Schwelle ist der Festwert `GebaeudeFestwerte.KOMFORT_SCHWELLE_K` = 1,0 K
+(E79), keine Eingabe. **Nutzungszeit** ist die der übrigen Kennzahlen (`NutzungBei`: Nachtzeit bzw. Personenkalender,
+ohne Rampenstunden der Aufheizoptimierung) und ein endlicher Heizsollwert — eine Stunde mit Heizung „aus" zählt
+nicht. **Zonen → Gebäude:** Eine Gebäudestunde zählt, wenn mindestens eine beheizte Zone die Schwelle reißt; die
+Kelvinstunden sind flächengewichtet über die beheizten Zonen (eine kleine Zone wiegt wenig, eine Stunde zählt aber
+voll); die längste Strecke läuft über die Gebäudestunden. **Gebäude → Projekt:** Stunden = Stunden, in denen
+mindestens ein Gebäude zählt; Kelvinstunden = Summe; längste Strecke = Maximum. Erhoben wird nur am gekoppelten
+Gebäude (Heizkreis, Kältekreis oder Fahrplan wirksam); Altweg und ungekoppelte Gebäude bleiben ohne Kennzahl.
+`ErgebnisGebaeudeModel` trägt die fünf Werte je Gebäude (keine Spalte); die Projektspalten schreibt
+`SimulationRunner.AnlagenfahrplanSpaltenSetzen` erst, wenn der Fahrplan in mindestens einer Stunde gekappt hat —
+sonst NULL. Grund: Schon AK1 allein erzeugt Unterschreitungen (die Aufheizspitze am Morgen nach der Absenkung reißt
+an der Übergabe die Schwelle; im Probegebäude 273 h im Jahr), und die AK1-Referenzprojekte schrieben sonst neue
+Spalten. Die Erhebung auch ohne greifende Schranke ist ein Einfrierschritt (AK2-4). Komfort und Restbedarf stehen
+nebeneinander in `ErgebnisEnergiebedarfModel` (`KomfortUndRestbedarf`).
+
 ---
 ## 6. Kopplungsschema je Stufe
 
@@ -1051,6 +1067,16 @@ Verbrauchsangabe liefert ein Probelauf ohne Schranke den Faktor. `Fahrplan_Begre
 `Verfuegbarkeit` je Gebäude (`ErgebnisGebaeudeModel`) und je Projekt (`Tab_ErgebnisEnergiebedarf`, ohne gekappte
 Stunde NULL). Offen für AK2-2b: Komfortkennzahlen, Kennzeichnung der festen Last im Bericht, Kälteseite,
 Laufprotokoll-Hinweise.
+
+**So gebaut (AK2-2b, 05.10.2026).** Im Lauf mit Fahrplan trägt jede Zeile von `GebaeudeKennzahlenListe` ihren
+`Bedarfsbegriff` (`Rueckwirkung` oder `FesteLast`; ohne Fahrplan `null`) — ein Feld, keine Spalte; die Darstellung ist
+AK2-3. Ein Gebäude als feste Last zehrt, hat keine Komfortkennzahlen und keinen gerechneten Vorlauf. Das
+Laufprotokoll nennt zwei Hinweise (beide Sprachen): die Näherung des Profilwegs (`SIMENG_AK2_PROFILWEG_NAEHERUNG`,
+sobald der Fahrplan in einer Stunde gekappt hat) und die Zahl der Gebäude als feste Last (`SIMENG_AK2_FESTE_LAST`,
+nur bei mindestens einem). Die Bedarfsauskunft (`GebaeudeBedarfCtrl.Rechnen`) rechnet ein gespeichertes
+Projektgebäude über `HeizwaermeEinesGebaeudesWieImLauf` mit derselben Fahrplanvorbereitung wie der Lauf; den
+Schlüssel des Pass 1 liefert der gespeicherte Stand der übrigen Gebäude. Ein noch nicht gespeichertes Gebäude rechnet
+ohne Fahrplan.
 
 ### 6.3 AK3 — der geschlossene Kreis
 
@@ -1284,6 +1310,15 @@ die vierte Welle von AK1 gebaut hat.
 
 Einen eigenen Schalter hat die Kälteseite **wie** die Wärmeseite (`Kuehluebergabe_Aktiv`, E37 A1);
 das ist keine Abweichung.
+
+**So gebaut (AK2-2b, 05.10.2026).** Die Komfortkennzahlen der Kälteseite (`Komfort_Ueberschreitungsstunden`,
+`Komfort_Kelvinstunden_Kuehlung`) zählen spiegelbildlich: Raumluft über dem Kühlsollwert der Stunde
+(`GebaeudeModellErgebnis.Kuehlsollwertreihe`, mit Kühlkalender seine Reihe) um mehr als die Schwelle, in der
+Nutzungszeit, nur mit wirksamer Kühlung; Zonen und Projekt wie auf der Wärmeseite (5.5). Eine weitere Abweichung
+bleibt benannt offen: **`UMSCHALTUNG` ist nicht gebaut.** Die Tagesbetriebsart der reversiblen Maschine (K8a)
+entsteht in der Kältekaskade (`Kaeltekaskade`) aus den Tagessummen des Projektbedarfs, also nach der Gebäuderechnung und hinter der
+Naht; der Profilweg müsste dafür Pass 1 immer fahren und den Kältebedarf einbeziehen. Das gehört zur echten
+Kopplung (AK3) oder in einen eigenen Auftrag; bis dahin trägt ein Kühltag auf der Heizseite keine Schranke.
 
 ---
 
