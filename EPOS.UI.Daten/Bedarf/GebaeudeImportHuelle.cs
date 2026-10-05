@@ -89,6 +89,8 @@ namespace WindowsFormsApplication1
         private (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) _schritt;
         private Zonengeometrie _geometrie;
         private bool _alsZone;
+        /// <summary>Der Index des zuletzt zugeordneten Gebäudes der Datei (für die Konditionierung im Einzonenweg).</summary>
+        private int _gebaeudeindex;
 
         /// <summary>Was die Übernahme der Projektdatei am Plan ergab (Schritt <see cref="GebaeudePlanschrittArt.PROJEKTDATEI"/>); <c>null</c> = keine.</summary>
         private SqprojZonenergebnis _sqZonen;
@@ -535,6 +537,7 @@ namespace WindowsFormsApplication1
                 satz.ManuellSetzen(hand.Key, hand.Value);
             satz.FolgevorgabenNachziehen();
             _satz = satz;
+            _gebaeudeindex = anfrage.Gebaeudeindex;
 
             // Zonierung und Bauteilvorschlag mit derselben Klasse und denselben Raumhaken — jede
             // Anfrage (Regel, Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung, Zuordnung von
@@ -777,6 +780,7 @@ namespace WindowsFormsApplication1
             }
             satz.FolgevorgabenNachziehen();
             _satz = satz;
+            _gebaeudeindex = ergebnis.Gebaeudeindex;
 
             // Zonierung und Bauteilvorschlag zum Ergebnis — mit Regel und Baustoffzuordnungen des
             // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt.
@@ -1144,7 +1148,10 @@ namespace WindowsFormsApplication1
         internal GebaeudeImportHerkunft Herkunft
             => _satz == null || Quelle == null ? null
              : new GebaeudeImportHerkunft(QuelleDesLaufs, GebaeudeImportCtrl.Einzonenpaarungen(_satz), _alsZone ? _vorschlag : null,
-                                          _baustoffzuordnungen.Count > 0 ? _baustoffzuordnungen : null);
+                                          _baustoffzuordnungen.Count > 0 ? _baustoffzuordnungen : null,
+                                          // Einzonenweg mit Projektdatei (SQ-3): das Gebäude nimmt die Konditionierung der
+                                          // Gebäudegruppe bzw. der einen Zone als Gebäudekalender.
+                                          !_alsZone || _vorschlag?.Mehrzonig != true ? _ablauf.Gebaeudekonditionierung(_gebaeudeindex) : null);
 
         /// <summary>
         /// Die Quelle, wie sie gemerkt wird: Kommt das Gebäude mit mehreren Zonen (Stufe G6c), trägt sie die

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using SpeicherEngine;
@@ -345,6 +346,21 @@ namespace WindowsFormsApplication1
                 SqprojProtokoll.Z(p.Abgeglichen), SqprojProtokoll.Z(p.NichtAbgeglichen), SqprojProtokoll.Z(p.IfcOhneGegenstueck),
                 SqprojProtokoll.Z(e.Uebernommen)));
             return e;
+        }
+
+        /// <summary>
+        /// <b>Die Konditionierung des Gebäudes im Einzonenweg</b> aus der dazugeladenen Projektdatei
+        /// (<see cref="SqprojZonen.Gebaeudekonditionierung"/>) — Fläche und Volumen aus den beheizten Räumen des Gebäudes;
+        /// <c>null</c> ohne gelesene Projektdatei oder wenn sie nichts liefert.
+        /// </summary>
+        internal Zonenkonditionierung Gebaeudekonditionierung(int gebaeudeIndex)
+        {
+            SqprojStand p = Projektdatei;
+            if (p == null || p.Abgelehnt || Abbild == null || gebaeudeIndex < 0 || gebaeudeIndex >= Abbild.Gebaeude.Count) return null;
+            List<AbbildRaum> warm = Abbild.Gebaeude[gebaeudeIndex].Raeume.Where(r => r.Beheizt).ToList();
+            double flaeche = warm.Sum(r => r.FlaecheM2 ?? 0.0), volumen = warm.Sum(r => r.VolumenM3 ?? 0.0);
+            Zonenkonditionierung k = SqprojZonen.Gebaeudekonditionierung(p.Abbild, p.Abgleich, flaeche > 0.0 ? flaeche : null, volumen > 0.0 ? volumen : null);
+            return k != null && k.Liefert ? k : null;
         }
 
         // ==================================================================

@@ -183,6 +183,50 @@ namespace EPOS.Kern.Tests
             Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, ZonenplanCtrl.Nutzung(zonen.Single(z => z.Bezeichner == "Simulation OG").ID));
         }
 
+        /// <summary>
+        /// Einzonenweg mit Projektdatei (SQ-3): Mehrere belegte Zonen und eine Gebäudegruppe — das Gebäude nimmt die
+        /// Konditionierung der Gebäudegruppe als Gebäudekalender (Eigentümer Gebäude ohne Zone), mit dem Beleg der Projektdatei;
+        /// im Mehrzonenweg trägt die Herkunft keine. Ohne Gebäudegruppe und mit mehreren Zonen gibt es keine.
+        /// </summary>
+        [Fact]
+        public async Task Einzonenweg_nimmt_die_Gebaeudegruppe_als_Gebaeudekalender()
+        {
+            using var db = new TestDatenbank();
+            (GebaeudeImportHuelle h, IReadOnlyDictionary<string, object> gaben) = await Gelesen();
+            IReadOnlyDictionary<string, bool> haken = AlleBeheizt(gaben);
+            SqprojProbenErzeuger probe = SqprojProbenErzeuger.Zonenhaus();
+            probe.Gebaeudegruppe = "G1";
+            Assert.True((await Dazuladen(gaben, probe)).Gelesen);
+            var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)gaben["Pruefen"];
+            GebaeudeImportStand stand = Zuordnen(gaben, haken);
+            pruefen(new GebaeudeImportErgebnis(0, null, "Zonenhaus", haken, stand.Zeilen.ToList()));
+            Zonenkonditionierung k = h.Herkunft!.Gebaeudekonditionierung;
+            Assert.NotNull(k);
+            Assert.Equal(Konditionierungsherkunft.Ganglinie, k.Groesse(Konditionierungsgroesse.Heizsoll).Herkunft);
+            Assert.Equal(DbWerte.KOND_NUTZUNG_WOHNEN, k.Nutzung);
+
+            // Im Mehrzonenweg mit den Zonen der Projektdatei: keine Gebäudekonditionierung.
+            var schritte = new[] { new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI) };
+            GebaeudeImportStand mehr = Zuordnen(gaben, haken, schritte);
+            pruefen(new GebaeudeImportErgebnis(0, null, "Zonenhaus", haken, mehr.Zeilen.ToList(), AlsZone: true, Zonenregel: "Z4",
+                                               Planschritte: schritte, Plangrundhaken: haken));
+            Assert.Null(h.Herkunft!.Gebaeudekonditionierung);
+
+            if (!db.Vorhanden) return;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(PROJEKT);
+            ProjektGebaeudeModel g = ctrl.items[0];
+            Assert.Null(ZonenplanCtrl.ProjektdateiUebernehmen(g.ID_Gebaeude, null, k));
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT \"Groesse\", \"Bemerkung\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Gebaeude\" = ? AND \"ID_Zone\" IS NULL ORDER BY \"Groesse\"",
+                new DbParam("@g", g.ID_Gebaeude));
+            Dictionary<string, string> bemerkung = t.Rows.Cast<DataRow>().ToDictionary(
+                r => Convert.ToString(r[0], CultureInfo.InvariantCulture),
+                r => r[1] is DBNull ? "" : Convert.ToString(r[1], CultureInfo.InvariantCulture));
+            Assert.StartsWith("aus Projektdatei:", bemerkung[DbWerte.KOND_GROESSE_HEIZSOLL]);
+            Assert.Contains("PdProfileTimeCurve.Temperature", bemerkung[DbWerte.KOND_GROESSE_HEIZSOLL]);
+        }
+
         [Fact]
         public void Der_iOS_Dateifilter_bietet_die_Projektdatei_an()
         {

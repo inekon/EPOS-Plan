@@ -95,6 +95,32 @@ namespace WindowsFormsApplication1
             return e;
         }
 
+        /// <summary>
+        /// <b>Die Konditionierung des Gebäudes im Einzonenweg</b> (Datenaustauschkonzept 16.3, Konditionierungskonzept 5.1):
+        /// Trägt genau eine Zone der Projektdatei abgeglichene Räume, gilt ihre Konditionierung (Nutzungsprofil wie bei
+        /// <see cref="Uebernehmen"/>); sonst die der Gebäudegruppe (<see cref="SqprojAbbild.Gebaeudegruppe"/>) mit der Nutzung
+        /// aus ihrer Profilnummer und dem Nutzungsprofil derselben Nummer, falls eine Zone es führt. <c>null</c> ohne beides.
+        /// Fläche und Volumen sind die des Gebäudes (die beheizten Räume der Datei).
+        /// </summary>
+        internal static Zonenkonditionierung Gebaeudekonditionierung(SqprojAbbild projekt, SqprojRaumabgleich abgleich, double? flaecheM2, double? volumenM3)
+        {
+            if (projekt == null || projekt.Abgelehnt) return null;
+            List<SqprojZone> belegt = projekt.Zonen.Where(z => abgleich != null && z.Raeume.Any(r => abgleich.IfcRaum(r) != null)).ToList();
+            string name = string.IsNullOrWhiteSpace(projekt.Gebaeudename) ? "Gebäude" : projekt.Gebaeudename.Trim();
+            if (belegt.Count == 1)
+            {
+                SqprojZone z = belegt[0];
+                SqprojNutzungsprofil profil = z.Nutzungsprofil ?? GeteiltesProfil(z, projekt);
+                string nutzung = Din18599Nutzung.Nutzung(profil?.Profilnummer ?? z.Gruppe?.Profilnummer);
+                return SqprojKonditionierung.Bilden(name, nutzung, profil, z.Gruppe, flaecheM2, volumenM3);
+            }
+            SqprojProfilgruppe gruppe = projekt.Gebaeudegruppe;
+            if (gruppe == null) return null;
+            SqprojNutzungsprofil gleich = gruppe.Profilnummer is int nr
+                ? projekt.Zonen.Select(z => z.Nutzungsprofil).FirstOrDefault(p => p?.Profilnummer == nr) : null;
+            return SqprojKonditionierung.Bilden(name, Din18599Nutzung.Nutzung(gruppe.Profilnummer), gleich, gruppe, flaecheM2, volumenM3);
+        }
+
         /// <summary>Das Nutzungsprofil der Nutzungszone, mit der eine Zone die meisten Räume teilt; <c>null</c> = keine.</summary>
         internal static SqprojNutzungsprofil GeteiltesProfil(SqprojZone zone, SqprojAbbild projekt)
         {

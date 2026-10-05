@@ -87,22 +87,26 @@ namespace WindowsFormsApplication1
         /// Nutzung. Eine unbeheizte Zone bekommt keinen Heiz- und Kühlwert (Zonenregel). Läuft im Vorgang des Aufrufers, wenn
         /// einer angemeldet ist (<see cref="Vorgangsklammer"/>, Sicherungspunkt).
         /// </summary>
+        /// <param name="idZone">Die Zone; <c>null</c> = das Gebäude selbst (Einzonenweg: Gebäudekalender ohne Zone,
+        /// Konditionierungskonzept 5.1).</param>
         /// <returns><c>null</c>, wenn alles übernommen ist; sonst die erste Ablehnung.</returns>
-        internal static string ProjektdateiUebernehmen(int idGebaeude, int idZone, Zonenkonditionierung konditionierung)
+        internal static string ProjektdateiUebernehmen(int idGebaeude, int? idZone, Zonenkonditionierung konditionierung)
         {
             if (konditionierung == null || !konditionierung.Liefert) return null;
             var kond = new KonditionierungCtrl();
             Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
-            Konditionierungszone zone = stand?.Zone(idZone);
-            if (zone == null) return gelesen ?? "";
+            if (stand == null) return gelesen ?? "";
+            Konditionierungszone zone = idZone is int iz ? stand.Zone(iz) : null;
+            if (idZone.HasValue && zone == null) return gelesen ?? "";
+            Konditionierungsstand Ebene(Konditionierungsarbeitsstand s) => idZone is int z ? s.Zone(z).Stand : s.Gebaeude;
             var kalender = new List<Konditionierungsgroesse>();
             int geschrieben = 0;
             foreach (Groessenkonditionierung g in konditionierung.Groessen)
             {
                 if (g.Herkunft == Konditionierungsherkunft.Vorlage) continue;
-                if (!zone.IstBeheizt && (g.Groesse == Konditionierungsgroesse.Heizsoll || g.Groesse == Konditionierungsgroesse.Kuehlsoll)) continue;
+                if (zone != null && !zone.IstBeheizt && (g.Groesse == Konditionierungsgroesse.Heizsoll || g.Groesse == Konditionierungsgroesse.Kuehlsoll)) continue;
                 var ort = new Konditionierungsort(g.Groesse, idZone);
-                if (stand.Zone(idZone).Stand.Kalender(g.Groesse) != null)
+                if (Ebene(stand).Kalender(g.Groesse) != null)
                 {
                     Konditionierungsschritt weg = Konditionierungsarbeit.Verwerfen(stand, ort);
                     if (!weg.Ok) return weg.Meldung ?? "";
@@ -122,7 +126,7 @@ namespace WindowsFormsApplication1
                 }
                 if (g.Kalender != null)
                 {
-                    Konditionierungsstand ebene = stand.Zone(idZone).Stand;
+                    Konditionierungsstand ebene = Ebene(stand);
                     stand = stand.MitEbene(idZone, ebene.MitKalender(g.Groesse, g.Kalender, new Kalenderherkunft(null, g.Bemerkung)));
                     kalender.Add(g.Groesse);
                 }
@@ -132,9 +136,9 @@ namespace WindowsFormsApplication1
             using (DbVorgang v = DataRepository.Vorgang())
             using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
             {
-                KonditionierungCtrl.Eigner ziel = KonditionierungCtrl.Eigner.Zone(idGebaeude, idZone);
+                KonditionierungCtrl.Eigner ziel = idZone is int z ? KonditionierungCtrl.Eigner.Zone(idGebaeude, z) : KonditionierungCtrl.Eigner.Gebaeude(idGebaeude);
                 KonditionierungCtrl.Ergebnis e = kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), stand.Gebaeude, true, out _);
-                if (e.Ok) e = kond.StandSchreiben(v, ziel, stand.Zone(idZone).Stand, true, out _);
+                if (e.Ok && idZone.HasValue) e = kond.StandSchreiben(v, ziel, Ebene(stand), true, out _);
                 if (!e.Ok)
                 {
                     v.Rollback();
