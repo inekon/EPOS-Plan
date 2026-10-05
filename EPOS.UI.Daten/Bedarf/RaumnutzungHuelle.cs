@@ -347,12 +347,15 @@ namespace WindowsFormsApplication1
                                                                       KonditionierungTexte kt)
         {
             var liste = new List<RaumnutzungVorschauzeile>();
+            if (v?.Inhalt == null) return liste;
             foreach (Vorgabezeile z in v.Inhalt.Vorgabezeilen().OrderBy(z => Rang(z.Zeile)))
                 liste.Add(new RaumnutzungVorschauzeile(Zeilenname(z.Zeile, kt), Werttext(z.Wert, z.Aus, g, kt),
                                                        Fenster(z.Von, z.Bis), ""));
 
+            // Ein angelegter Kalender (Stundenprofil oder Feiertagsregeln) bringt seine Standardwoche mit;
+            // eine Grundangabe ohne Woche fuehrt keine.
             Konditionierungskalender k = v.Inhalt.Kalender(g);
-            if (k != null && k.Standardwoche.Count > 0)
+            if (k?.Standardwoche is { Count: > 0 })
                 liste.Add(new RaumnutzungVorschauzeile(kt.ZeileVorlage, Wochentext(k.Standardwoche, g), "", ""));
             return liste;
         }
