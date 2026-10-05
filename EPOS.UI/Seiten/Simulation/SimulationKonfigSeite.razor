@@ -2376,10 +2376,34 @@
         {
             _konfigKatalog = Parameter?.WaermepumpeTraegerkatalog?.Invoke()
                              ?? Array.Empty<EnergietraegerWahl.Eintrag>();
-            _konfigKuehlung = Parameter?.WaermepumpeKuehlGaben?.Invoke();
+            _konfigKuehlung = MitFreiSperrgrund(Parameter?.WaermepumpeKuehlGaben?.Invoke(), zeile);
         }
 
         _ebene1 = Editor.Komponentenkonfig;
+    }
+
+    /// <summary>
+    /// Die Kühlgaben samt Sperrgrund der freien Kühlung (KU3-6, F2), wenn der Weg ihn nicht
+    /// selbst reicht: Die Kartenzeile kennt die Bauart (<c>BauartGebunden</c> = Luft-Wasser oder
+    /// ungepflegt) und die Seite den Quellentyp der Anlage. Ohne Quellenweg prüft der Grund
+    /// allein die Bauart.
+    /// </summary>
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? MitFreiSperrgrund(
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? gaben, ErzeugerZeile zeile)
+    {
+        if (gaben is null || gaben.FreiSperrgrund is not null) return gaben;
+        int idAnlage = zeile.IdAnlage;
+        bool luft = zeile.BauartGebunden;
+        return new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben
+        {
+            Vorlaeufe = gaben.Vorlaeufe,
+            Sperrgrund = gaben.Sperrgrund,
+            Stromtraeger = gaben.Stromtraeger,
+            ProjektStromtraeger = gaben.ProjektStromtraeger,
+            FreiSperrgrund = _ => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus(
+                luft ? WindowsFormsApplication1.DbWerte.WP_BAUART_LUFT_WASSER : null,
+                Dienste?.QuelleTyp?.Invoke(idAnlage), null)
+        };
     }
 
     /// <summary>

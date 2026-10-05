@@ -245,6 +245,27 @@ public sealed class KomponentenKonfigurationKiSicht
     public IReadOnlyList<KiWahleintrag> KuehlAbrechnungWahl
         => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.AbrechnungWahl();
 
+    /// <summary>„Freie Kühlung über die Wärmequelle" (KU3-6) — gesperrt ohne Sole-/Wasser-Wasser-Bauart oder gepflegte Quelle.</summary>
+    public bool KuehlFrei
+    {
+        get => Anlage?.KuehlFrei ?? false;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.KuehlFreiSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Die Grädigkeit des Wärmetauschers der freien Kühlung [K]; leer = 3,0 K.</summary>
+    public double? KuehlFreiGraedigkeitK
+    {
+        get => Anlage?.KuehlFreiGraedigkeitK;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.KuehlFreiGraedigkeitSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Die Leistungsgrenze der freien Kühlung [kW]; leer = Kälteleistung der Kennlinie.</summary>
+    public double? KuehlFreiLeistungKw
+    {
+        get => Anlage?.KuehlFreiLeistungKw;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.KuehlFreiLeistungSetzen(Anlage, Gaben, value);
+    }
+
     private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? Anlage => AnlageLesen?.Invoke();
 
     private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? Gaben => Kuehlgaben?.Invoke();

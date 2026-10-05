@@ -179,6 +179,27 @@ public sealed class WaermepumpeAnlageKiSicht
     /// <summary>Die zwei Abrechnungsarten der Maske — dieselben Texte wie ihre Optionsgruppe.</summary>
     public IReadOnlyList<KiWahleintrag> KuehlAbrechnungWahl => WaermepumpeKuehlKiWege.AbrechnungWahl();
 
+    /// <summary>„Freie Kühlung über die Wärmequelle" (KU3-6) — gesperrt ohne Sole-/Wasser-Wasser-Bauart oder gepflegte Quelle.</summary>
+    public bool KuehlFrei
+    {
+        get => D?.KuehlFrei ?? false;
+        set => WaermepumpeKuehlKiWege.KuehlFreiSetzen(D, G, value);
+    }
+
+    /// <summary>Die Grädigkeit des Wärmetauschers der freien Kühlung [K]; leer = 3,0 K.</summary>
+    public double? KuehlFreiGraedigkeitK
+    {
+        get => D?.KuehlFreiGraedigkeitK;
+        set => WaermepumpeKuehlKiWege.KuehlFreiGraedigkeitSetzen(D, G, value);
+    }
+
+    /// <summary>Die Leistungsgrenze der freien Kühlung [kW]; leer = Kälteleistung der Kennlinie.</summary>
+    public double? KuehlFreiLeistungKw
+    {
+        get => D?.KuehlFreiLeistungKw;
+        set => WaermepumpeKuehlKiWege.KuehlFreiLeistungSetzen(D, G, value);
+    }
+
     // ---- Die Stammfelder des Geräts ---------------------------------------------
 
     public string Firma { get => D?.Firma ?? ""; set { if (D is { } d) d.Firma = value ?? ""; } }

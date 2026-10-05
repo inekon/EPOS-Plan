@@ -28406,6 +28406,39 @@ Möchten Sie das zulassen?</value>
   <data name="WPK_MSG_HILFSSTROM_BEREICH" xml:space="preserve">
     <value>Der Hilfsstromanteil muss mindestens 0 % und weniger als 100 % betragen.</value>
   </data>
+  <data name="WPK_CHK_KUEHL_FREI" xml:space="preserve">
+    <value>Freie Kühlung über die Wärmequelle</value>
+  </data>
+  <data name="WPK_HRL_KUEHL_FREI" xml:space="preserve">
+    <value>Liegt die Quellentemperatur plus Grädigkeit unter dem Kühl-Vorlauf, deckt die Wärmequelle die Kälte der Stunde direkt — vor dem Verdichter.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Grädigkeit des Wärmetauschers</value>
+  </data>
+  <data name="WPK_PH_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Vorgabe: 3,0 K</value>
+  </data>
+  <data name="WPK_HRL_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Leer = 3,0 K. Temperaturabstand zwischen Quelle und Kaltwasser am Wärmetauscher, 0 bis 20 K.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>Leistungsgrenze</value>
+  </data>
+  <data name="WPK_PH_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>Vorgabe: Kälteleistung der Kennlinie</value>
+  </data>
+  <data name="WPK_MSG_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Die Grädigkeit der freien Kühlung muss zwischen 0 und 20 K liegen.</value>
+  </data>
+  <data name="WPK_MSG_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>Die Leistungsgrenze der freien Kühlung muss größer als 0 kW sein.</value>
+  </data>
+  <data name="WPK_FREI_SPERR_BAUART" xml:space="preserve">
+    <value>Freie Kühlung nur an einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe — diese Maschine nutzt die Außenluft.</value>
+  </data>
+  <data name="WPK_FREI_SPERR_QUELLE" xml:space="preserve">
+    <value>Freie Kühlung braucht eine gepflegte Wärmequelle (Erdreich, Konstant, Profil oder CSV) — Außenluft, keine Angabe und Pufferspeicher wirken nicht.</value>
+  </data>
   <data name="WPK_LBL_KUEHLTRAEGER" xml:space="preserve">
     <value>Stromträger des Kältestroms</value>
   </data>
@@ -30151,6 +30184,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_WPA_HILFSSTROM_ERL" xml:space="preserve">
     <value>Strom für Pumpen und Ventilatoren des Kältekreises in Prozent der Verdichterarbeit; mindestens 0 und weniger als 100, leer heißt „kein Zuschlag“.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_ERL" xml:space="preserve">
+    <value>Kälte direkt aus der Wärmequelle vor dem Verdichter, solange Quellentemperatur plus Grädigkeit unter dem Kühl-Vorlauf liegt; nur an einer Sole-Wasser- oder Wasser-Wasser-Maschine mit gepflegter Wärmequelle wirksam.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Grädigkeit des Wärmetauschers der freien Kühlung in Kelvin, 0 bis 20; leer heißt 3,0 K.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_LEISTUNG_ERL" xml:space="preserve">
+    <value>Höchste Kälteleistung der freien Kühlung in kW, größer als 0; leer heißt Kälteleistung der Kennlinie in der Stunde.</value>
   </data>
   <data name="KI_DLG_WPA_KUEHLTRAEGER_ERL" xml:space="preserve">
     <value>Der Stromträger des Kältestroms; leer heißt „wie Heizbetrieb“. Ein anderer Stromträger des Projekts bepreist und bewertet den Kältestrom nach der Abrechnungsart.</value>

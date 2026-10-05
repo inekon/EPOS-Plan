@@ -28399,6 +28399,39 @@ Do you want to allow this?</value>
   <data name="WPK_MSG_HILFSSTROM_BEREICH" xml:space="preserve">
     <value>The auxiliary power share must be at least 0 % and less than 100 %.</value>
   </data>
+  <data name="WPK_CHK_KUEHL_FREI" xml:space="preserve">
+    <value>Free cooling via the heat source</value>
+  </data>
+  <data name="WPK_HRL_KUEHL_FREI" xml:space="preserve">
+    <value>If the source temperature plus approach is below the cooling flow temperature, the heat source covers the cooling of that hour directly — ahead of the compressor.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Heat exchanger approach</value>
+  </data>
+  <data name="WPK_PH_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Default: 3.0 K</value>
+  </data>
+  <data name="WPK_HRL_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>Empty = 3.0 K. Temperature difference between source and chilled water at the heat exchanger, 0 to 20 K.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>Capacity limit</value>
+  </data>
+  <data name="WPK_PH_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>Default: cooling capacity of the characteristic curve</value>
+  </data>
+  <data name="WPK_MSG_KUEHL_FREI_GRAEDIGKEIT" xml:space="preserve">
+    <value>The approach of free cooling must be between 0 and 20 K.</value>
+  </data>
+  <data name="WPK_MSG_KUEHL_FREI_LEISTUNG" xml:space="preserve">
+    <value>The capacity limit of free cooling must be greater than 0 kW.</value>
+  </data>
+  <data name="WPK_FREI_SPERR_BAUART" xml:space="preserve">
+    <value>Free cooling only with a brine-to-water or water-to-water heat pump — this machine uses the outdoor air.</value>
+  </data>
+  <data name="WPK_FREI_SPERR_QUELLE" xml:space="preserve">
+    <value>Free cooling needs a maintained heat source (ground, constant, profile or CSV) — outdoor air, no entry and buffer tank do not work.</value>
+  </data>
   <data name="WPK_LBL_KUEHLTRAEGER" xml:space="preserve">
     <value>Electricity carrier for cooling</value>
   </data>
@@ -30144,6 +30177,15 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_WPA_HILFSSTROM_ERL" xml:space="preserve">
     <value>Power for pumps and fans of the cooling circuit as a percentage of the compressor work; at least 0 and less than 100, empty means “no surcharge”.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_ERL" xml:space="preserve">
+    <value>Cooling directly from the heat source ahead of the compressor while the source temperature plus approach is below the cooling flow temperature; effective only with a brine-to-water or water-to-water machine with a maintained heat source.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_GRAEDIGKEIT_ERL" xml:space="preserve">
+    <value>Approach of the free-cooling heat exchanger in kelvin, 0 to 20; empty means 3.0 K.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_FREI_LEISTUNG_ERL" xml:space="preserve">
+    <value>Maximum cooling capacity of free cooling in kW, greater than 0; empty means the cooling capacity of the characteristic curve in that hour.</value>
   </data>
   <data name="KI_DLG_WPA_KUEHLTRAEGER_ERL" xml:space="preserve">
     <value>The electricity carrier of the cooling electricity; empty means “as in heating mode”. Another electricity carrier of the project prices and rates the cooling electricity according to the billing option.</value>

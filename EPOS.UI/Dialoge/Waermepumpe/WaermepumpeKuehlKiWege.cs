@@ -4,7 +4,7 @@ using KiKern;
 namespace EPOS.UI.Dialoge.Waermepumpe;
 
 /// <summary>
-/// Die fünf Felder der Gruppe „Kühlbetrieb" für den Hilfe-Assistenten (Stufe KU2 Welle 3;
+/// Die acht Felder der Gruppe „Kühlbetrieb" (fünf der Stufe KU2, drei der freien Kühlung KU3-6) für den Hilfe-Assistenten (Stufe KU2 Welle 3;
 /// Kühlkonzept 8.2, Entscheide E15, E33, E34) — EIN Weg für die zwei Sichtklassen, deren Masken
 /// die Konfiguration der Wärmepumpe zeigen: <see cref="WaermepumpeAnlageKiSicht"/> (Anlagendialog)
 /// und <c>KomponentenKonfigurationKiSicht</c> (Konfiguration der Simulation).
@@ -36,6 +36,33 @@ public static class WaermepumpeKuehlKiWege
         if (wert && WaermepumpeKonfiguration.KuehlbetriebSperrgrund(d, gaben) is string grund)
             throw new InvalidOperationException(grund);
         d.Kuehlbetrieb = wert;
+    }
+
+    /// <summary>„Freie Kühlung über die Wärmequelle" setzen (KU3-6); ein gesperrter Schalter nennt seinen Grund.</summary>
+    public static void KuehlFreiSetzen(WaermepumpeAnlageDaten? daten, WaermepumpeKuehlGaben? gaben, bool wert)
+    {
+        WaermepumpeAnlageDaten d = Setzbar(daten, gaben);
+        if (wert && WaermepumpeKonfiguration.FreieKuehlungSperrgrund(d, gaben) is string grund)
+            throw new InvalidOperationException(grund);
+        d.KuehlFrei = wert;
+    }
+
+    /// <summary>Die Grädigkeit der freien Kühlung [K] setzen; leer = 3,0 K, sonst 0 bis 20.</summary>
+    public static void KuehlFreiGraedigkeitSetzen(WaermepumpeAnlageDaten? daten, WaermepumpeKuehlGaben? gaben, double? kelvin)
+    {
+        WaermepumpeAnlageDaten d = Setzbar(daten, gaben);
+        if (kelvin is double g && (double.IsNaN(g) || g < 0 || g > 20))
+            throw new InvalidOperationException(new WaermepumpeKonfigurationTexte().MeldungKuehlFreiGraedigkeit);
+        d.KuehlFreiGraedigkeitK = kelvin;
+    }
+
+    /// <summary>Die Leistungsgrenze der freien Kühlung [kW] setzen; leer = Kälteleistung der Kennlinie, sonst &gt; 0.</summary>
+    public static void KuehlFreiLeistungSetzen(WaermepumpeAnlageDaten? daten, WaermepumpeKuehlGaben? gaben, double? kw)
+    {
+        WaermepumpeAnlageDaten d = Setzbar(daten, gaben);
+        if (kw is double l && (double.IsNaN(l) || l <= 0))
+            throw new InvalidOperationException(new WaermepumpeKonfigurationTexte().MeldungKuehlFreiLeistung);
+        d.KuehlFreiLeistungKw = kw;
     }
 
     /// <summary>Den Kühl-Vorlauf setzen; leer = kleinster Stützwert.</summary>

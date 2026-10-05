@@ -277,6 +277,42 @@
                                         Aktiv="@Aktiv" WertChanged="BeiHilfsstrom" />
                             <Herleitungszeile Text="@Texte.HinweisHilfsstrom" />
 
+                            @* FREIE KUEHLUNG UEBER DIE WAERMEQUELLE (KU3-6, F2, F6). Wirksam nur an
+                               einer Sole-/Wasser-Wasser-Maschine mit gepflegter Quelle; sonst ist
+                               der Schalter WEICH gesperrt wie der Kuehlbetrieb (aria-disabled +
+                               title, der Klick meldet den Grund, Ausschalten geht immer). EIN
+                               Kaestchen fuer beide Lagen - die Sperre haengt am preventDefault. *@
+                            <label class="epos-schalter epos-wp-kuehl-frei" title="@KuehlFreiSperrgrund">
+                                <input class="epos-schalter-kasten" type="checkbox" checked="@Daten.KuehlFrei"
+                                       disabled="@(!Aktiv)" aria-disabled="@(KuehlFreiGesperrt ? "true" : null)"
+                                       @onclick="BeiKuehlFreiKlick" @onclick:preventDefault="@KuehlFreiGesperrt"
+                                       @onchange="BeiKuehlFrei" />
+                                <span class="epos-feld-text">@Texte.LabelKuehlFrei</span>
+                            </label>
+                            @if (_freiMeldung.Length > 0)
+                            {
+                                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_freiMeldung" />
+                            }
+                            else if (KuehlFreiSperrgrund is string freiGrund)
+                            {
+                                <Herleitungszeile Text="@freiGrund" />
+                            }
+
+                            @if (Daten.KuehlFrei)
+                            {
+                                <Herleitungszeile Text="@Texte.HinweisKuehlFrei" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlFreiGraedigkeit" Einheit="K"
+                                            Feldname="@Texte.LabelKuehlFreiGraedigkeit" Wert="@Daten.KuehlFreiGraedigkeitK"
+                                            Platzhalter="@Texte.PlatzhalterKuehlFreiGraedigkeit" Min="0" Max="20"
+                                            Aktiv="@Aktiv" WertChanged="BeiKuehlFreiGraedigkeit" />
+                                <Herleitungszeile Text="@Texte.HinweisKuehlFreiGraedigkeit" />
+
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlFreiLeistung" Einheit="kW"
+                                            Feldname="@Texte.LabelKuehlFreiLeistung" Wert="@Daten.KuehlFreiLeistungKw"
+                                            Platzhalter="@Texte.PlatzhalterKuehlFreiLeistung" Min="0"
+                                            Aktiv="@Aktiv" WertChanged="BeiKuehlFreiLeistung" />
+                            }
+
                             <Auswahlfeld Bezeichnung="@Texte.LabelKuehltraeger" Eintraege="@TraegerEintraege"
                                          Auswahl="@Daten.KuehlCarrierId" Platzhalter="@Texte.PlatzhalterKuehltraeger"
                                          Aktiv="@Aktiv" AuswahlChanged="BeiKuehltraeger" />
@@ -628,6 +664,7 @@
     private WaermepumpeKuehlGaben? _kuehlGabenGefragt;
     private IReadOnlyList<KuehlVorlaufEintrag> _vorlaeufe = Array.Empty<KuehlVorlaufEintrag>();
     private string? _sperrgrund;
+    private string? _freiSperrgrund;
 
     private void KuehlgabenFragen()
     {
@@ -638,6 +675,8 @@
         _vorlaeufe = Kuehlung.Vorlaeufe?.Invoke(Daten.IdWp) ?? Array.Empty<KuehlVorlaufEintrag>();
         _sperrgrund = Kuehlung.Sperrgrund?.Invoke(Daten.IdWp);
         if (string.IsNullOrEmpty(_sperrgrund)) _sperrgrund = null;
+        _freiSperrgrund = Kuehlung.FreiSperrgrund?.Invoke(Daten.IdWp);
+        if (string.IsNullOrEmpty(_freiSperrgrund)) _freiSperrgrund = null;
     }
 
     /// <summary>Der Sperrgrund des Kühlbetriebs für das gewählte Gerät; <c>null</c> = frei.</summary>
@@ -721,6 +760,47 @@
         return Melden();
     }
 
+    // ---- Freie Kühlung über die Wärmequelle (KU3-6) ----
+
+    /// <summary>Die Meldung eines gesperrten Einschaltversuchs der freien Kühlung; verfällt mit der nächsten Eingabe.</summary>
+    private string _freiMeldung = "";
+
+    /// <summary>Warum die freie Kühlung an dieser Anlage nicht wirkt; <c>null</c> = wirksam (oder keine Gaben).</summary>
+    public string? KuehlFreiSperrgrund { get { KuehlgabenFragen(); return _freiSperrgrund; } }
+
+    /// <summary>Weich gesperrt: ein Grund liegt vor und der Schalter ist aus — Ausschalten geht immer.</summary>
+    private bool KuehlFreiGesperrt => !Daten.KuehlFrei && KuehlFreiSperrgrund is not null;
+
+    private Task BeiKuehlFreiKlick()
+    {
+        if (KuehlFreiGesperrt) _freiMeldung = KuehlFreiSperrgrund ?? "";
+        return Task.CompletedTask;
+    }
+
+    private Task BeiKuehlFrei(ChangeEventArgs e)
+    {
+        _kuehlMeldung = "";
+        _freiMeldung = "";
+        bool wert = e.Value is bool b && b;
+        if (wert && KuehlFreiSperrgrund is string grund) { _freiMeldung = grund; return Melden(); }
+        Daten.KuehlFrei = wert;
+        return Melden();
+    }
+
+    private Task BeiKuehlFreiGraedigkeit(double? wert)
+    {
+        _freiMeldung = "";
+        Daten.KuehlFreiGraedigkeitK = wert;
+        return Melden();
+    }
+
+    private Task BeiKuehlFreiLeistung(double? wert)
+    {
+        _freiMeldung = "";
+        Daten.KuehlFreiLeistungKw = wert;
+        return Melden();
+    }
+
     private Task BeiKuehltraeger(int? id)
     {
         _kuehlMeldung = "";
@@ -751,6 +831,35 @@
     {
         string? grund = daten is null ? null : gaben?.Sperrgrund?.Invoke(daten.IdWp);
         return string.IsNullOrEmpty(grund) ? null : grund;
+    }
+
+    /// <summary>Der Sperrgrund der freien Kühlung für das Gerät des Feldsatzes; <c>null</c> = wirksam (oder keine Gaben).</summary>
+    public static string? FreieKuehlungSperrgrund(WaermepumpeAnlageDaten daten, WaermepumpeKuehlGaben? gaben)
+    {
+        string? grund = daten is null ? null : gaben?.FreiSperrgrund?.Invoke(daten.IdWp);
+        return string.IsNullOrEmpty(grund) ? null : grund;
+    }
+
+    /// <summary>
+    /// <b>Die Regel F2 der freien Kühlung</b> aus Bauart und Wärmequelle — für die Wirte, die
+    /// beides kennen: wirksam nur an einer Sole-Wasser- oder Wasser-Wasser-Maschine mit
+    /// gepflegter Quelle (Erdreich, Konstant, Profil, CSV). Luft-Wasser oder eine ungepflegte
+    /// Bauart nennt die Bauart; Außenluft, leer und Pufferspeicher nennen die Quelle. Was der
+    /// Wirt nicht kennt, steht als <c>null</c> und wird nicht geprüft (Bauart oder Quelle).
+    /// <c>null</c> = wirksam.
+    /// </summary>
+    public static string? FreieKuehlungSperrgrundAus(string? bauart, string? wqTyp, WaermepumpeKonfigurationTexte? texte)
+    {
+        texte ??= new WaermepumpeKonfigurationTexte();
+        if (bauart is not null &&
+            bauart != DbWerte.WP_BAUART_SOLE_WASSER && bauart != DbWerte.WP_BAUART_WASSER_WASSER)
+            return texte.SperrgrundFreiBauart;
+        if (wqTyp is null) return null;
+        return wqTyp switch
+        {
+            DbWerte.WQ_TYP_ERDREICH or DbWerte.WQ_TYP_KONSTANT or DbWerte.WQ_TYP_PROFIL or DbWerte.WQ_TYP_CSV => null,
+            _ => texte.SperrgrundFreiQuelle
+        };
     }
 
     /// <summary>Weicht der Kühlträger des Feldsatzes vom Stromträger des Projekts ab? (E34)</summary>
@@ -786,8 +895,11 @@
     /// <summary>
     /// <b>Die Prüfregel der Kühlfelder</b> — EINE Stelle für beide Wirte (Anlagendialog und
     /// Simulation › Konfiguration): der Hilfsstromanteil 0 ≤ x &lt; 1 (K23) und ein Kühlbetrieb,
-    /// der gesperrt ist (Gerätewechsel nach dem Setzen). <c>null</c> = in Ordnung. Dieselben zwei
-    /// Regeln hält der Schreibweg des Kerns (<c>WPCtrl.KuehlkonfigurationSchreiben</c>).
+    /// der gesperrt ist (Gerätewechsel nach dem Setzen); bei eingeschalteter freier Kühlung die
+    /// Grädigkeit 0 bis 20 K und die Leistungsgrenze &gt; 0 kW (KU3-6, F1; leer = Vorgabe). Ein
+    /// Sperrgrund der freien Kühlung ist KEIN Fehler — der Lauf lehnt sie benannt ab (F2).
+    /// <c>null</c> = in Ordnung. Die ersten zwei Regeln hält auch der Schreibweg des Kerns
+    /// (<c>WPCtrl.KuehlkonfigurationSchreiben</c>), die zwei der freien Kühlung das Schema (CHECK).
     /// </summary>
     public static string? KuehlFehler(WaermepumpeAnlageDaten daten, WaermepumpeKuehlGaben? gaben,
                                       WaermepumpeKonfigurationTexte texte)
@@ -796,6 +908,13 @@
         if (daten.KuehlHilfsstromanteil is double a && (double.IsNaN(a) || a < 0 || a >= 1))
             return (texte ?? new WaermepumpeKonfigurationTexte()).MeldungHilfsstromBereich;
         if (daten.Kuehlbetrieb && KuehlbetriebSperrgrund(daten, gaben) is string grund) return grund;
+        if (daten.Kuehlbetrieb && daten.KuehlFrei)
+        {
+            if (daten.KuehlFreiGraedigkeitK is double g && (double.IsNaN(g) || g < 0 || g > 20))
+                return (texte ?? new WaermepumpeKonfigurationTexte()).MeldungKuehlFreiGraedigkeit;
+            if (daten.KuehlFreiLeistungKw is double kw && (double.IsNaN(kw) || kw <= 0))
+                return (texte ?? new WaermepumpeKonfigurationTexte()).MeldungKuehlFreiLeistung;
+        }
         return null;
     }
 }
