@@ -93,6 +93,10 @@ namespace EPOS.Kern.Tests
                         _aus.WriteLine("  " + gr.Count() + "× " + gr.Key + ", Fläche " + Z(gr.Sum(r => r.FlaecheM2 ?? 0))
                                        + " m², Volumen " + Z(gr.Sum(r => r.VolumenM3 ?? 0)) + " m³");
                     _aus.WriteLine("Gebäudemeldungen: " + Text(g.Meldungen));
+                    // Bauteile und Öffnungen je wirksamer Randbedingung (Konzept HottCAD-Verbund 3.1) — nur Zahlen.
+                    _aus.WriteLine("Randbedingung wirksam: " + string.Join(", ", g.Bauteile.Concat(g.Bauteile.SelectMany(x => x.Oeffnungen))
+                        .GroupBy(x => x.RandbedingungWirksam?.ToString() ?? "ohne Seiten").OrderBy(x => x.Key, StringComparer.Ordinal)
+                        .Select(x => x.Key + " " + x.Count())));
 
                     // Raumkörper aus der Datei (G7f-1): Arten, mit/ohne Körper, Dreiecke — nur Protokoll.
                     List<AbbildRaum> mitKoerper = g.Raeume.Where(r => r.Koerper != null).ToList();

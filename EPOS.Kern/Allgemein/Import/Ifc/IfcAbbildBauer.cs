@@ -1308,6 +1308,119 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>Die Namen der Angrenzung je Seite (<c>HSETU_Bauteilreferenzen</c>, Konzept HottCAD-Verbund 3.1).</summary>
+        internal static readonly IReadOnlyList<string> SEITE_ANGRENZUNG = new[] { "ElementReferences[0].AdjacentType", "ElementReferences[1].AdjacentType" };
+
+        /// <summary>Die Namen der Orientierung je Seite; die Datei hängt die Einheit an (<c>Orientation (°)</c>).</summary>
+        internal static readonly IReadOnlyList<string> SEITE_ORIENTIERUNG = new[] { "ElementReferences[0].Orientation", "ElementReferences[1].Orientation" };
+
+        /// <summary>Der Platzhalter des CAD-Exports für „keine Orientierung“ (<c>botNone (-987654321,99)</c>): alles darunter ist keine.</summary>
+        internal const double ORIENTIERUNG_PLATZHALTER = -1.0e6;
+
+        /// <summary>Die beiden Seiten eines Bauteils, wie die Datei sie führt, und die wirksame Seite daraus.</summary>
+        internal sealed class Seitenangabe
+        {
+            public (Randbedingung Rand, bool? Zonenboden, string Beleg)?[] Seite { get; } = new (Randbedingung, bool?, string)?[2];
+            public string[] Code { get; } = new string[2];
+            public string[] Ort { get; } = new string[2];
+            public double?[] Orientierung { get; } = new double?[2];
+            public bool Gefunden { get; set; }
+            public int WirksamIndex { get; set; } = -1;
+            public (Randbedingung Rand, bool? Zonenboden, string Beleg)? Wirksam { get; set; }
+
+            public void Uebertragen(AbbildBauteil b)
+            {
+                if (!Gefunden) return;
+                b.RandbedingungSeiteA = Seite[0]?.Rand;
+                b.RandbedingungSeiteB = Seite[1]?.Rand;
+                b.OrientierungSeiteA = Orientierung[0];
+                b.OrientierungSeiteB = Orientierung[1];
+                b.RandbedingungWirksam = Wirksam?.Rand;
+                b.RandbedingungBeleg = Wirksam?.Beleg;
+            }
+        }
+
+        /// <summary>
+        /// <b>Ein Code der Seite</b> (<c>bta…</c>, Präfix und Schreibweise egal) → Randbedingung, Zonenboden und Beleg;
+        /// <c>btaNone</c>, leer und jeder unbekannte Wert → <c>null</c> (keine Angabe).
+        /// </summary>
+        internal static (Randbedingung Rand, bool? Zonenboden, string Beleg)? SeiteAbbilden(string code)
+        {
+            string wert = (code ?? "").Trim();
+            string kern = wert.StartsWith("bta", StringComparison.OrdinalIgnoreCase) ? wert.Substring(3) : wert;
+            if (!ANGRENZUNG_ABBILDUNG.TryGetValue(kern, out (Randbedingung Rand, bool? Zonenboden) a)) return null;
+            string beleg = string.Equals(kern, "CellarCeiling", StringComparison.OrdinalIgnoreCase) ? AbbildBauteil.BELEG_KELLERDECKE
+                         : string.Equals(kern, "UppermostStorey", StringComparison.OrdinalIgnoreCase) ? AbbildBauteil.BELEG_OBERSTE_DECKE
+                         : null;
+            return (a.Rand, a.Zonenboden, beleg);
+        }
+
+        /// <summary>
+        /// <b>Die wirksame Seite</b> (Konzept HottCAD-Verbund 3.1): die erste nicht beheizte Seite; tragen alle Seiten mit
+        /// Angabe <c>btaHeated</c>, ist das Bauteil innen; ohne jede Angabe <c>-1</c>.
+        /// </summary>
+        internal static int WirksameSeite(IReadOnlyList<(Randbedingung Rand, bool? Zonenboden, string Beleg)?> seiten)
+        {
+            for (int i = 0; i < seiten.Count; i++)
+                if (seiten[i].HasValue && seiten[i].Value.Rand != Randbedingung.Innen) return i;
+            for (int i = 0; i < seiten.Count; i++)
+                if (seiten[i].HasValue) return i;
+            return -1;
+        }
+
+        /// <summary>
+        /// <b>Die Orientierung einer Seite</b> [°]: eine Zahl, oder der Text des CAD-Exports <c>botS (180)</c> mit der Zahl in
+        /// Klammern (Dezimalkomma); der Platzhalter <c>-987654321,99</c> und alles Unlesbare → <c>null</c>.
+        /// </summary>
+        internal static double? OrientierungLesen(IIfcProperty p)
+        {
+            if (!(p is IIfcPropertySingleValue einzel) || einzel.NominalValue == null) return null;
+            double? zahl = IfcEigenschaften.Zahl(einzel.NominalValue);
+            if (!zahl.HasValue)
+            {
+                string t = IfcEigenschaften.Textwert(einzel.NominalValue) ?? "";
+                int auf = t.LastIndexOf('('), zu = t.LastIndexOf(')');
+                string kern = auf >= 0 && zu > auf ? t.Substring(auf + 1, zu - auf - 1) : t;
+                if (double.TryParse(kern.Trim().Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)) zahl = w;
+            }
+            if (!zahl.HasValue || double.IsNaN(zahl.Value) || double.IsInfinity(zahl.Value) || zahl.Value < ORIENTIERUNG_PLATZHALTER) return null;
+            double grad = zahl.Value % 360.0;
+            return grad < 0.0 ? grad + 360.0 : grad;
+        }
+
+        /// <summary>Die beiden Seiten eines Bauteils aus beliebigen Sätzen (Vorkommnis vor Typ).</summary>
+        private Seitenangabe Seiten(IIfcElement e)
+        {
+            var s = new Seitenangabe();
+            for (int i = 0; i < 2; i++)
+            {
+                IfcFund f = IfcEigenschaften.AlleMitNamen(_bezuege, e, new[] { SEITE_ANGRENZUNG[i] }).FirstOrDefault();
+                if (f != null)
+                {
+                    s.Gefunden = true;
+                    string wert = f.Eigenschaft is IIfcPropertyEnumeratedValue aufz
+                        ? aufz.EnumerationValues?.Select(IfcEigenschaften.Textwert).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t))
+                        : f.Eigenschaft is IIfcPropertySingleValue einzel ? IfcEigenschaften.Textwert(einzel.NominalValue) : null;
+                    s.Code[i] = (wert ?? "").Trim();
+                    s.Ort[i] = f.Satz + "." + f.Eigenschaft.Name;
+                    s.Seite[i] = SeiteAbbilden(s.Code[i]);
+                }
+                IfcFund o = IfcEigenschaften.AlleMitNamen(_bezuege, e, new[] { SEITE_ORIENTIERUNG[i] }).FirstOrDefault();
+                if (o != null) s.Orientierung[i] = OrientierungLesen(o.Eigenschaft);
+            }
+            s.WirksamIndex = WirksameSeite(s.Seite);
+            s.Wirksam = s.WirksamIndex < 0 ? null : s.Seite[s.WirksamIndex];
+            return s;
+        }
+
+        /// <summary>Die wirksame Seite als Angrenzung, gezählt wie die des allgemeinen Satzes.</summary>
+        private (Randbedingung Rand, bool? Zonenboden)? WirksamZaehlen(Seitenangabe s)
+        {
+            (Randbedingung Rand, bool? Zonenboden, string Beleg) w = s.Wirksam.Value;
+            Zaehlen(_angrenzung, Ziel(w.Rand) + "\u0001" + s.Ort[s.WirksamIndex] + "\u0001" + s.Code[s.WirksamIndex]);
+            return (w.Rand, w.Zonenboden);
+        }
+
         private static string Ziel(Randbedingung r)
         {
             switch (r)
@@ -1392,8 +1505,12 @@ namespace WindowsFormsApplication1
             if (e is IIfcPlate && istAussen != true) return;
 
             List<IIfcRelSpaceBoundary> grenzen = GrenzenVon(e);
-            // Ohne IsExternal und ohne Raumgrenze: die Angrenzung eines CAD-Exports (Mehrzonenkonzept 6.5).
-            (Randbedingung Rand, bool? Zonenboden)? angrenzung = !istAussen.HasValue && grenzen.Count == 0 ? Angrenzung(e) : null;
+            // Die beiden Seiten eines CAD-Exports (HSETU_Bauteilreferenzen, Konzept HottCAD-Verbund 3.1).
+            Seitenangabe seiten = Seiten(e);
+            // Ohne IsExternal und ohne Raumgrenze: die Angrenzung eines CAD-Exports (Mehrzonenkonzept 6.5) — die wirksame
+            // Seite vor der Angrenzung des allgemeinen Satzes, diese als Rückfall für Dateien ohne Seiten.
+            (Randbedingung Rand, bool? Zonenboden)? angrenzung = !istAussen.HasValue && grenzen.Count == 0
+                ? (seiten.Wirksam.HasValue ? WirksamZaehlen(seiten) : Angrenzung(e)) : null;
             Randbedingung rand = Rand(istAussen, grenzen, dach, bodenplatte, angrenzung?.Rand, out bool splitter);
             if (splitter) _aussenSplitter.Add(IfcEigenschaften.Text(e.Name) ?? e.GlobalId.ToString());
 
@@ -1406,6 +1523,7 @@ namespace WindowsFormsApplication1
                 Quellart = plattenart?.ToString(),
                 Randbedingung = rand,
             };
+            seiten.Uebertragen(b);
             b.Art = Art(e, rand, dach, bodenplatte, plattenart, gi, grenzen);
             b.NeigungGrad = senkrecht ? 90.0 : dach ? 0.0 : b.Art == Bauteilart.Bodenplatte ? 180.0 : (double?)null;
 
@@ -2297,6 +2415,7 @@ namespace WindowsFormsApplication1
             b.BruttoflaecheM2 = flaeche;
             if (!flaeche.HasValue) _ohneMengen.Add(b.Kennung);
 
+            Seiten(o).Uebertragen(b);
             UWert(o, "Pset_" + klasse + "Common", b);
             IfcFund g = IfcEigenschaften.Finden(_bezuege, o, "Pset_DoorWindowGlazingType", "SolarHeatGainTransmittance");
             b.GWert = g == null ? null : Zahl(g);

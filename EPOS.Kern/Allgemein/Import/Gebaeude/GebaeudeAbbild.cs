@@ -503,6 +503,36 @@ namespace WindowsFormsApplication1
         /// <summary>Die Randbedingung aus dem Typ; <see cref="Randbedingung.Innen"/> heißt „über die Nachbarn entscheiden".</summary>
         public Randbedingung Randbedingung { get; set; }
 
+        /// <summary>
+        /// Die Randbedingung der ersten Seite (IFC <c>ElementReferences[0].AdjacentType</c> eines CAD-Exports, Konzept
+        /// HottCAD-Verbund 3.1); <see cref="Randbedingung.Innen"/> = beheizt; <c>null</c> = keine Angabe oder <c>btaNone</c>.
+        /// </summary>
+        public Randbedingung? RandbedingungSeiteA { get; set; }
+
+        /// <summary>Die Randbedingung der zweiten Seite (<c>ElementReferences[1].AdjacentType</c>); sonst wie <see cref="RandbedingungSeiteA"/>.</summary>
+        public Randbedingung? RandbedingungSeiteB { get; set; }
+
+        /// <summary>Die Orientierung der ersten Seite [°], 0 = Nord, im Uhrzeigersinn (<c>ElementReferences[0].Orientation (°)</c>); <c>null</c> = keine.</summary>
+        public double? OrientierungSeiteA { get; set; }
+
+        /// <summary>Die Orientierung der zweiten Seite [°] (<c>ElementReferences[1].Orientation (°)</c>); <c>null</c> = keine.</summary>
+        public double? OrientierungSeiteB { get; set; }
+
+        /// <summary>
+        /// <b>Die wirksame Randbedingung aus den beiden Seiten</b>: die nicht beheizte Seite; beide beheizt →
+        /// <see cref="Randbedingung.Innen"/>; <c>null</c> = die Datei führt keine Seiten (dann gilt <see cref="Randbedingung"/>).
+        /// </summary>
+        public Randbedingung? RandbedingungWirksam { get; set; }
+
+        /// <summary>Der Beleg der wirksamen Seite: <see cref="BELEG_KELLERDECKE"/>, <see cref="BELEG_OBERSTE_DECKE"/> oder <c>null</c>.</summary>
+        public string RandbedingungBeleg { get; set; }
+
+        /// <summary>Beleg der Seite <c>btaCellarCeiling</c>: unbeheizt, weil darunter der Keller liegt.</summary>
+        public const string BELEG_KELLERDECKE = "Kellerdecke";
+
+        /// <summary>Beleg der Seite <c>btaUppermostStorey</c>: unbeheizt, weil darüber der Dachraum liegt.</summary>
+        public const string BELEG_OBERSTE_DECKE = "oberste Geschossdecke";
+
         /// <summary>Die angrenzenden Räume in Dateireihenfolge (0 bis 2).</summary>
         public List<AbbildNachbar> Nachbarn { get; } = new List<AbbildNachbar>();
 

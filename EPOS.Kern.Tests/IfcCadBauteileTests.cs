@@ -255,5 +255,75 @@ namespace EPOS.Kern.Tests
                                 R.ResourceManager.GetString(P + schluessel, CultureInfo.GetCultureInfo("en-US")));
             }
         }
+
+        // ------------------------------------------------------------------
+        //  Zweiseitige Randbedingung (Konzept HottCAD-Verbund 3.1)
+        // ------------------------------------------------------------------
+
+        [Theory]
+        [InlineData("btaOutside", (int)Randbedingung.Aussenluft, null)]
+        [InlineData("btaGround", (int)Randbedingung.Erdreich, null)]
+        [InlineData("btaHeated", (int)Randbedingung.Innen, null)]
+        [InlineData("btaUnHeated", (int)Randbedingung.Unbeheizt, null)]
+        [InlineData("btaCellarCeiling", (int)Randbedingung.Unbeheizt, AbbildBauteil.BELEG_KELLERDECKE)]
+        [InlineData("BTAUPPERMOSTSTOREY", (int)Randbedingung.Unbeheizt, AbbildBauteil.BELEG_OBERSTE_DECKE)]
+        public void Die_Codes_der_Seiten_werden_abgebildet(string code, int rand, string beleg)
+        {
+            var s = IfcAbbildBauer.SeiteAbbilden(code);
+            Assert.True(s.HasValue);
+            Assert.Equal((Randbedingung)rand, s.Value.Rand);
+            Assert.Equal(beleg, s.Value.Beleg);
+        }
+
+        [Theory]
+        [InlineData("btaNone")]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("btaIrgendwas")]
+        public void Ohne_Code_hat_die_Seite_keinen_Wert(string code) => Assert.Null(IfcAbbildBauer.SeiteAbbilden(code));
+
+        [Theory]
+        [InlineData("btaHeated", "btaUnHeated", 1)]
+        [InlineData("btaOutside", "btaHeated", 0)]
+        [InlineData("btaHeated", "btaHeated", 0)]
+        [InlineData("btaNone", "btaHeated", 1)]
+        [InlineData("btaNone", "btaNone", -1)]
+        [InlineData("btaHeated", "btaCellarCeiling", 1)]
+        public void Die_wirksame_Seite_ist_die_nicht_beheizte(string a, string b, int erwartet)
+            => Assert.Equal(erwartet, IfcAbbildBauer.WirksameSeite(new[] { IfcAbbildBauer.SeiteAbbilden(a), IfcAbbildBauer.SeiteAbbilden(b) }));
+
+        [Fact]
+        public void Die_Seiten_der_Probe_stehen_am_Bauteil_und_die_wirksame_Seite_entscheidet()
+        {
+            GebaeudeImportAblauf a = Lesen("ifc4_z6_cad.ifc");
+            AbbildBauteil decke = Bauteil(a, "Decke EG/OG"), dach = Bauteil(a, "Oberste Decke"), boden = Bauteil(a, "Bodenplatte");
+            AbbildBauteil sued = Bauteil(a, "Außenwand Süd"), nord = Bauteil(a, "Außenwand Nord"), dusche = Bauteil(a, "Wand Dusche");
+
+            Assert.Equal(Randbedingung.Innen, decke.RandbedingungSeiteA);
+            Assert.Equal(Randbedingung.Innen, decke.RandbedingungSeiteB);
+            Assert.Equal(Randbedingung.Innen, decke.RandbedingungWirksam);
+            Assert.Null(decke.OrientierungSeiteA);
+
+            Assert.Equal(Randbedingung.Innen, dach.RandbedingungSeiteA);
+            Assert.Equal(Randbedingung.Unbeheizt, dach.RandbedingungSeiteB);
+            Assert.Equal(Randbedingung.Unbeheizt, dach.RandbedingungWirksam);
+            Assert.Equal(AbbildBauteil.BELEG_OBERSTE_DECKE, dach.RandbedingungBeleg);
+            Assert.Equal(Randbedingung.Unbeheizt, dach.Randbedingung);
+
+            Assert.Equal(Randbedingung.Erdreich, boden.RandbedingungWirksam);
+            Assert.Null(boden.RandbedingungSeiteB);
+
+            Assert.Equal(Randbedingung.Aussenluft, sued.RandbedingungWirksam);
+            Nah(180.0, sued.OrientierungSeiteA);
+            Assert.Null(sued.OrientierungSeiteB);
+            Assert.Equal(Randbedingung.Aussenluft, sued.Randbedingung);
+            Nah(0.0, nord.OrientierungSeiteA);
+            Assert.Null(nord.RandbedingungSeiteB);
+
+            // Ohne Seiten: der Rückfall auf die Angrenzung des allgemeinen Satzes, die Seitenfelder bleiben leer.
+            Assert.Null(dusche.RandbedingungSeiteA);
+            Assert.Null(dusche.RandbedingungWirksam);
+            Assert.Equal(Randbedingung.Innen, dusche.Randbedingung);
+        }
     }
 }

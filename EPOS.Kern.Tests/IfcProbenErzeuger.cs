@@ -694,6 +694,13 @@ namespace EPOS.Kern.Tests
                 IIfcWall sued = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand Süd", "btaOutside", true, 0.3, null, 180, 40, 40, null, null);
                 IIfcWall nord = b.CadBauteil<IIfcWall>(og, "IfcWall", "Außenwand Nord", "btaOutside", true, 0.3, null, 0, 40, 40, null, null);
                 IIfcWall duschwand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Wand Dusche", "btaHeated", false, 1.5, null, null, 5, 5, null, null);
+                // Die zwei Seiten (HSETU_Bauteilreferenzen, Konzept HottCAD-Verbund 3.1); die Wand Dusche ohne — der Rückfall.
+                const string OHNE = "botNone (-987654321,99)";
+                b.Seiten(decke, ("btaHeated", OHNE), ("btaHeated", OHNE));
+                b.Seiten(boden, ("btaGround", OHNE));
+                b.Seiten(dach, ("btaHeated", OHNE), ("btaUppermostStorey", OHNE));
+                b.Seiten(sued, ("btaOutside", "botS (180)"), ("btaHeated", "botN (-987654321,99)"));
+                b.Seiten(nord, ("btaOutside", "botN (0)"), ("btaNone", OHNE));
                 (IIfcBuildingStorey S, string Name, double M2, string Art, double? C, string Typ, IIfcProduct[] Bauteile)[] raeume =
                 {
                     (eg, "Büroraum", 40, "bhtHeated", 20.0, "mrtOffice", new IIfcProduct[] { boden, decke, sued }),
@@ -1078,6 +1085,18 @@ namespace EPOS.Kern.Tests
             /// Die Raumbezüge eines Raums nach dem Muster eines CAD-Exports ohne Raumgrenzen: ein
             /// <c>IfcRelReferencedInSpatialStructure</c> je Raum mit den angrenzenden Bauteilen.
             /// </summary>
+            /// <summary>Die Seiten eines Bauteils nach dem Muster des CAD-Exports: je Seite Angrenzung (Aufzählung) und Orientierung (Text).</summary>
+            public void Seiten(IIfcElement e, params (string Angrenzung, string Orientierung)[] seiten)
+            {
+                var liste = new List<IIfcProperty>();
+                for (int i = 0; i < seiten.Length; i++)
+                {
+                    liste.Add(Aufzaehlung("ElementReferences[" + i + "].AdjacentType", seiten[i].Angrenzung));
+                    liste.Add(Einzel("ElementReferences[" + i + "].Orientation (°)", new IfcLabel(seiten[i].Orientierung)));
+                }
+                SatzMit(e, "CAD_Bauteilreferenzen", liste);
+            }
+
             public void Bezug(IIfcSpace raum, params IIfcProduct[] bauteile)
             {
                 IIfcRelReferencedInSpatialStructure r = Wurzel<IIfcRelReferencedInSpatialStructure>("IfcRelReferencedInSpatialStructure",
