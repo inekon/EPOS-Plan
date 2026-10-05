@@ -196,7 +196,7 @@ der CI-Auswahl,
 Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude und einer Zone mit eigener Übergabe (Konvektor 70/50 °C, Proportionalband 2 K) — die Übergabe je Zone am gemeinsamen Vorlauf, Rücklauf massenstromgewichtet —, gehalten von `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1056 rechnet als Kopie von 1047 mit Anlagenfahrplan — Nachtsperre der Wärmepumpe 0 bis 6 Uhr, Zeitprogramm 0 in denselben Stunden an Kessel und BHKW, `Vorlauf_Max` 50 °C — und schreibt Komfortstunden, gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
-allein Projekt 1040 bis zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
+allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
