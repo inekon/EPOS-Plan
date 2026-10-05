@@ -18,7 +18,7 @@ Kapitel 6 (Zonierungsregeln Z1–Z6, 6.5 Rückfälle, 6.7 Grundrissansicht),
 Herkunft je Feld, Plattformweg), 14 (Körperansicht) und 15 (Raumkörper, G7f),
 [ADR-003](../ADR-003_IFC_xBIM_ohne_Geometriekernel.md) (xBIM ohne Geometriekernel), die Entscheide
 E72, E73 und E79 der [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md), der
-[Plan G7b bis KU3](2026-10-04_Plan_G7b_bis_KU3.md) als Muster des Wellenzuschnitts. Code:
+[Plan G7b bis KU3](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_Plan_G7b_bis_KU3.md) als Muster des Wellenzuschnitts. Code:
 `EPOS.Kern/Allgemein/Import/Ifc/`, `EPOS.Kern/Allgemein/Import/Gebaeude/`,
 `EPOS.UI/Bausteine/GebaeudeAnsicht.razor`, `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs`.
 
