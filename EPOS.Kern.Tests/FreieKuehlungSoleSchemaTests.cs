@@ -36,7 +36,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(AnlagenfahrplanSchema.SCHRITT + 1, FreieKuehlungSoleSchema.SCHRITT);
             Assert.Equal(187, FreieKuehlungSoleSchema.SCHRITT);
-            Assert.Equal(FreieKuehlungSoleSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= FreieKuehlungSoleSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == FreieKuehlungSoleSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);
@@ -149,7 +149,9 @@ namespace EPOS.Kern.Tests
             foreach (string t in FreieKuehlungSoleSchema.TABELLEN_ERGEBNIS)
             {
                 List<string> erg = DataRepository.SpaltenVonTabelle(t);
-                Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS.ToArray(), erg.Skip(erg.Count - 2).ToArray());
+                // An der Modulzeile stehen dahinter allein die drei Spalten der Vorlaufwahl (Schritt 188).
+                int danach = t == VorlaufwahlSchema.TAB_ERGEBNIS_WP_MODUL ? VorlaufwahlSchema.SPALTEN_ERGEBNIS.Count : 0;
+                Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS.ToArray(), erg.Skip(erg.Count - danach - 2).Take(2).ToArray());
             }
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",
                                                                        new DbParam("@n", FreieKuehlungSoleSchema.TAB_ANLAGEN)));
