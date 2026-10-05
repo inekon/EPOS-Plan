@@ -525,6 +525,51 @@ namespace WindowsFormsApplication1
                 _koerperNichtLesbar[art] = _koerperNichtLesbar.TryGetValue(art, out int z) ? z + 1 : 1;
         }
 
+        /// <summary>
+        /// Der Anteil der <see cref="Dateikoerper.DREIECKSGRENZE"/>, unter dem die Raumkörper eines Gebäudes bleiben müssen,
+        /// damit auch die Körper der Hüllbauteile geladen werden (Konzept HottCAD-Verbund 3.2).
+        /// </summary>
+        internal const double BAUTEILKOERPER_RAUMANTEIL = 2.0 / 3.0;
+
+        /// <summary>Je Gebäude: Dreiecke der Raumkörper, Bauteile mit Körper, deren Dreiecke, ausgelassen wegen der Grenze.</summary>
+        private readonly Dictionary<int, (int Raum, int Bauteile, int Dreiecke, int Ausgelassen)> _bauteilkoerper
+            = new Dictionary<int, (int, int, int, int)>();
+
+        /// <summary>Die nicht lesbaren Träger der Bauteilkörper je Art (getrennt von denen der Räume).</summary>
+        private readonly SortedDictionary<string, int> _bauteilkoerperNichtLesbar = new SortedDictionary<string, int>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// <b>Der Körper eines Hüllbauteils aus der Datei</b> (Konzept HottCAD-Verbund 3.2): derselbe Leser wie für Räume
+        /// (<see cref="IfcRaumkoerper"/>), nur Anzeige. Ohne Darstellung oder Weltrahmen kein Körper, kein Fehler. Die
+        /// Dreiecksgrenze gilt für Räume und Bauteile zusammen: Bauteilkörper nur, wenn die Räume unter
+        /// <see cref="BAUTEILKOERPER_RAUMANTEIL"/> der Grenze bleiben und die Summe die Grenze nicht überschreitet.
+        /// </summary>
+        private void Bauteilkoerper(IIfcElement e, AbbildBauteil b, int gi)
+        {
+            if (gi < 0 || !(e is IIfcWall || e is IIfcSlab || e is IIfcRoof || e is IIfcWindow || e is IIfcDoor)) return;
+            if (e.Representation == null) return;
+            if (!_bauteilkoerper.TryGetValue(gi, out (int Raum, int Bauteile, int Dreiecke, int Ausgelassen) stand))
+                stand = (_abbild.Gebaeude[gi].Raeume.Sum(r => r.Koerper?.DreieckZahl ?? 0), 0, 0, 0);
+            if (stand.Raum >= Dateikoerper.DREIECKSGRENZE * BAUTEILKOERPER_RAUMANTEIL)
+            {
+                _bauteilkoerper[gi] = (stand.Raum, stand.Bauteile, stand.Dreiecke, stand.Ausgelassen + 1);
+                return;
+            }
+            IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(e.ObjectPlacement, _wurzel, out _);
+            if (!rahmen.HasValue) { _bauteilkoerper[gi] = stand; return; }
+            var nichtLesbar = new List<string>();
+            Dateikoerper k = IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar);
+            foreach (string art in nichtLesbar) Zaehlen(_bauteilkoerperNichtLesbar, art);
+            if (k == null) { _bauteilkoerper[gi] = stand; return; }
+            if (stand.Raum + stand.Dreiecke + k.DreieckZahl > Dateikoerper.DREIECKSGRENZE)
+            {
+                _bauteilkoerper[gi] = (stand.Raum, stand.Bauteile, stand.Dreiecke, stand.Ausgelassen + 1);
+                return;
+            }
+            b.Koerper = k;
+            _bauteilkoerper[gi] = (stand.Raum, stand.Bauteile + 1, stand.Dreiecke + k.DreieckZahl, stand.Ausgelassen);
+        }
+
         /// <summary>Je Gebäude die Räume mit <c>PredefinedType = INTERNAL</c> und <c>IsExternal = TRUE</c> (Regel B2 ohne Wirkung).</summary>
         private readonly Dictionary<AbbildGebaeude, List<string>> _aussenWiderspruch = new Dictionary<AbbildGebaeude, List<string>>();
 
@@ -1610,6 +1655,7 @@ namespace WindowsFormsApplication1
                        ?? (b.Aufbau != null && b.Aufbau.Schichten.Count > 0 && b.Aufbau.Schichten.All(x => x.DickeM > 0.0)
                            ? b.Aufbau.Schichten.Sum(x => x.DickeM.Value) : (double?)null);
             b.GeschossKennung = _elementGeschoss.TryGetValue(e.EntityLabel, out string geschoss) ? geschoss : null;
+            Bauteilkoerper(e, b, gi);
 
             foreach (IIfcRelVoidsElement rel in _bezuege.Oeffnungen(e))
             {
@@ -1617,8 +1663,8 @@ namespace WindowsFormsApplication1
                 foreach (IIfcRelFillsElement fuellung in _bezuege.Fuellungen(oeffnung))
                 {
                     IIfcElement f = fuellung.RelatedBuildingElement;
-                    if (f is IIfcWindow fenster) b.Oeffnungen.Add(Oeffnung(fenster, "Window", Bauteilart.Fenster, b));
-                    else if (f is IIfcDoor tuer) b.Oeffnungen.Add(Oeffnung(tuer, "Door", Bauteilart.Tuer, b));
+                    if (f is IIfcWindow fenster) b.Oeffnungen.Add(Oeffnung(fenster, "Window", Bauteilart.Fenster, b, gi));
+                    else if (f is IIfcDoor tuer) b.Oeffnungen.Add(Oeffnung(tuer, "Door", Bauteilart.Tuer, b, gi));
                     if (f != null) _gefuellt.Add(f.EntityLabel);
                 }
             }
@@ -1627,8 +1673,8 @@ namespace WindowsFormsApplication1
             foreach (IIfcElement t in Teile(e))
             {
                 if (_gefuellt.Contains(t.EntityLabel)) continue;
-                if (t is IIfcWindow fenster) b.Oeffnungen.Add(Oeffnung(fenster, "Window", Bauteilart.Fenster, b));
-                else if (t is IIfcDoor tuer) b.Oeffnungen.Add(Oeffnung(tuer, "Door", Bauteilart.Tuer, b));
+                if (t is IIfcWindow fenster) b.Oeffnungen.Add(Oeffnung(fenster, "Window", Bauteilart.Fenster, b, gi));
+                else if (t is IIfcDoor tuer) b.Oeffnungen.Add(Oeffnung(tuer, "Door", Bauteilart.Tuer, b, gi));
                 else continue;
                 _gefuellt.Add(t.EntityLabel);
                 _dachteilOeffnungen++;
@@ -2412,7 +2458,7 @@ namespace WindowsFormsApplication1
             _seiteUnbestimmt.Add(b.Kennung);
         }
 
-        private AbbildBauteil Oeffnung(IIfcElement o, string klasse, Bauteilart art, AbbildBauteil wirt)
+        private AbbildBauteil Oeffnung(IIfcElement o, string klasse, Bauteilart art, AbbildBauteil wirt, int gi = -1)
         {
             var b = new AbbildBauteil
             {
@@ -2451,6 +2497,7 @@ namespace WindowsFormsApplication1
             IfcFund g = IfcEigenschaften.Finden(_bezuege, o, "Pset_DoorWindowGlazingType", "SolarHeatGainTransmittance");
             b.GWert = g == null ? null : Zahl(g);
             Rahmenanteil(o, b);
+            Bauteilkoerper(o, b, gi);
             GrenzenUebernehmen(b, GrenzenVon(o));
             b.GeschossKennung = _elementGeschoss.TryGetValue(o.EntityLabel, out string geschoss) ? geschoss : wirt.GeschossKennung;
             return b;
@@ -2915,6 +2962,17 @@ namespace WindowsFormsApplication1
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "PLATZIERUNGSART", Ganz(art.Value), art.Key));
             foreach (KeyValuePair<string, int> art in _koerperNichtLesbar)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_ART", Ganz(art.Value), art.Key));
+            foreach (KeyValuePair<string, int> art in _bauteilkoerperNichtLesbar)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BAUTEILKOERPER_ART", Ganz(art.Value), art.Key));
+            foreach (KeyValuePair<int, (int Raum, int Bauteile, int Dreiecke, int Ausgelassen)> bk in _bauteilkoerper.OrderBy(x => x.Key))
+            {
+                AbbildGebaeude g = _abbild.Gebaeude[bk.Key];
+                if (bk.Value.Bauteile > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BAUTEILKOERPER_GELESEN", Ganz(bk.Value.Bauteile), Ganz(bk.Value.Dreiecke)));
+                if (bk.Value.Ausgelassen > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "BAUTEILKOERPER_GRENZE", Ganz(bk.Value.Ausgelassen),
+                        Ganz(Dateikoerper.DREIECKSGRENZE), Ganz(bk.Value.Raum)));
+            }
             for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
             {
                 if (!_gebaeudeMitDarstellung.Contains(gi)) continue;

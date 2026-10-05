@@ -39085,6 +39085,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteilkörper der Art {1} sind nicht lesbar; die Bauteile werden ohne Körper dargestellt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUTEILKOERPER_ART {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUTEILKOERPER_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkörper aus der Datei: {0} Bauteile mit Körper, {1} Dreiecke (nur Anzeige). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUTEILKOERPER_GELESEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUTEILKOERPER_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteilkörper nicht geladen: Räume und Bauteile zusammen dürfen {1} Dreiecke nicht überschreiten, die Räume tragen schon {2}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUTEILKOERPER_GRENZE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUTEILKOERPER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Standardmenge {1} (Qto_*BaseQuantities) — der Wert stammt aus der Menge {3} im Mengensatz {2}. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL {

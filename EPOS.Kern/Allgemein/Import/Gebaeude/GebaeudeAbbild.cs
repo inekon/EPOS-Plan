@@ -670,6 +670,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyList<double[]> RandpunkteM { get; set; }
 
+        /// <summary>
+        /// Der Körper des Bauteils, wie die Datei ihn zeichnet (Konzept HottCAD-Verbund 3.2: <c>IfcWall</c>, <c>IfcSlab</c>,
+        /// <c>IfcRoof</c>, <c>IfcWindow</c>, <c>IfcDoor</c>); <c>null</c> = keine Darstellung, nicht lesbar oder über der
+        /// Dreiecksgrenze. Nur Anzeige und Flächengruppen, nie Rechengrundlage (ADR-003).
+        /// </summary>
+        public Dateikoerper Koerper { get; set; }
+
         /// <summary>Meldungen zu genau diesem Bauteil (Geometrie, Aufbau, Verweise).</summary>
         public List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
     }

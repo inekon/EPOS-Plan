@@ -33893,6 +33893,15 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_KOERPER_GELESEN" xml:space="preserve">
     <value>Raumkörper aus der Datei: {0} Räume mit Körper, {1} ohne, {2} Dreiecke.</value>
   </data>
+  <data name="IMP_IFC_PROT_BAUTEILKOERPER_GELESEN" xml:space="preserve">
+    <value>Bauteilkörper aus der Datei: {0} Bauteile mit Körper, {1} Dreiecke (nur Anzeige).</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUTEILKOERPER_GRENZE" xml:space="preserve">
+    <value>{0} Bauteilkörper nicht geladen: Räume und Bauteile zusammen dürfen {1} Dreiecke nicht überschreiten, die Räume tragen schon {2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUTEILKOERPER_ART" xml:space="preserve">
+    <value>{0} Bauteilkörper der Art {1} sind nicht lesbar; die Bauteile werden ohne Körper dargestellt.</value>
+  </data>
   <data name="IMP_IFC_PROT_EIGENSCHAFTSART" xml:space="preserve">
     <value>Die Eigenschaft {1} ist als {0} angegeben; gelesen werden Einzel- und Bereichswerte — sie wird übergangen.</value>
   </data>
