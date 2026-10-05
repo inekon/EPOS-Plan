@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,8 +13,10 @@ namespace EPOS.Kern.Tests
     /// <b>Erzeugt HottCAD-Projektdateien im Kleinstformat</b> (Datenaustauschkonzept 16.7, Proben 33–36) — zur Laufzeit,
     /// deterministisch, unter einem temporären Pfad: eine <c>.sqproj</c> ist SQLite und gehört nie ins Repositorium. Die
     /// Tabellen tragen nur die Spalten, die der Leser liest (Befund Kapitel 2 und 3.1–3.4); Namen sind neutral, Werte rund.
+    /// Ohne Kerntypen, damit <c>EPOS.UI.Tests</c> die Datei verlinken kann; das passende IFC-Abbild steht in
+    /// <c>SqprojProbenErzeuger.Ifc.cs</c>.
     /// </summary>
-    internal sealed class SqprojProbenErzeuger
+    internal sealed partial class SqprojProbenErzeuger
     {
         private readonly List<(string Tabelle, object[] Werte)> _zeilen = new List<(string, object[])>();
         private readonly HashSet<string> _ohne = new HashSet<string>(StringComparer.Ordinal);
@@ -250,33 +253,53 @@ namespace EPOS.Kern.Tests
                 .Gruppe("G1", "Gruppe", 6, 1)
                 .Zeitprofil("H1", "Heizen", 6, "G1", h => h >= 6 && h < 18 ? 21.0 : 17.0);
 
+        /// <summary>
+        /// <b>Das Zonenhaus</b> zur IFC-Probe <c>ifc4_zonen.ifc</c> (Lager im Keller; Wohnen, Küche im EG; Schlafen, Bad,
+        /// Abstellraum im OG): Simulationszonen EG (Ganglinie Heizen und Personen, Profil 71), OG (Profil 1) und Keller
+        /// (Profil 20 ohne Entsprechung), dazu die Nutzungszonen. Gemeinsam für den Datenbanktest und die Dialogprobe 37.
+        /// </summary>
+        internal static SqprojProbenErzeuger Zonenhaus()
+            => new SqprojProbenErzeuger()
+                .Geschoss("FK", "Kellergeschoss").Geschoss("FE", "Erdgeschoss").Geschoss("FO", "Obergeschoss")
+                .Raum("R1", "Lager", "FK", null, 20.0).Raum("R2", "Wohnen", "FE", null, 30.0).Raum("R3", "Küche", "FE", null, 10.0)
+                .Raum("R4", "Schlafen", "FO", null, 20.0).Raum("R5", "Bad", "FO", null, 8.0).Raum("R6", "Abstellraum", "FO", null, 4.0)
+                .Zone("Z1", "Simulation EG", 6, "G1", "R2", "R3")
+                .Zone("Z2", "Simulation OG", 6, "G2", "R4", "R5", "R6")
+                .Zone("Z3", "Keller", 6, null, "R1")
+                .Zone("Z4", "Nutzung EG", 5, null, "R2", "R3")
+                .Zone("Z5", "Nutzung OG", 5, null, "R4", "R5", "R6")
+                .Zone("Z6", "Nutzung Keller", 5, null, "R1")
+                .Nutzung("U4", "Profil Wohnen", "Z4", 71, NULLZEIT, NULLZEIT, null, 20.0, null, 0.5,
+                         null, null, null, null, null, null)
+                .Nutzung("U5", "Profil Buero", "Z5", 1, Uhr(7), Uhr(18), null, 21.0, 4.0, null,
+                         null, null, null, null, null, null)
+                .Nutzung("U6", "Profil Lager", "Z6", 20, NULLZEIT, NULLZEIT, null, null, null, null,
+                         null, null, null, null, null, null)
+                .Gruppe("G1", "Gruppe EG", 6, 71)
+                .Zeitprofil("H1", "Heizen EG", 6, "G1", h => h >= 6 && h < 22 ? 20.0 : 17.0)
+                .Zeitprofil("P1", "Personen EG", 8, "G1", _ => 1.0, personen: 3.0, wattJePerson: 80.0)
+                .Gruppe("G2", "Gruppe OG", 4, 1);
+
+        /// <summary>
+        /// Schreibt die IFC-Probe <c>ifc4_zonen.ifc</c> als HottCAD-Export (<c>ObjectType</c> <c>TModelBuilding</c> am Gebäude)
+        /// unter einen temporären Pfad (der Aufrufer löscht ihn).
+        /// </summary>
+        internal static string HottcadZonenhaus(string wurzel)
+        {
+            string quelle = File.ReadAllText(Path.Combine(wurzel, "Referenzlaeufe", "Importproben", "ifc4_zonen.ifc"));
+            const string ALT = "'Zonenhaus',$,$,";
+            if (!quelle.Contains(ALT, StringComparison.Ordinal)) throw new InvalidOperationException("ifc4_zonen.ifc: IfcBuilding nicht gefunden.");
+            string ziel = Path.Combine(Path.GetDirectoryName(TempPfad("ifc")), "zonenhaus-" + Guid.NewGuid().ToString("N") + ".ifc");
+            File.WriteAllText(ziel, quelle.Replace(ALT, "'Zonenhaus',$,'TModelBuilding',", StringComparison.Ordinal));
+            return ziel;
+        }
+
         /// <summary>Ein temporärer Pfad für eine Probe (der Aufrufer löscht ihn).</summary>
         internal static string TempPfad(string name)
         {
             string ordner = Path.Combine(Path.GetTempPath(), "epos-sqproj-test");
             Directory.CreateDirectory(ordner);
             return Path.Combine(ordner, name + "-" + Guid.NewGuid().ToString("N") + ".sqproj");
-        }
-
-        /// <summary>
-        /// <b>Das passende IFC-Abbild</b> der Standardprobe (HottCAD-Gebäude, <c>TModelBuilding</c>): Räume A, B (EG), C,
-        /// X (OG; die GlobalId aus <see cref="GID_D"/>) und Y (OG, ohne Gegenstück); Fläche wie in der Probe.
-        /// </summary>
-        internal static GebaeudeAbbild IfcAbbild(string art = "TModelBuilding")
-        {
-            var a = new GebaeudeAbbild { Format = GebaeudeQuelle.FORMAT_IFC };
-            var g = new AbbildGebaeude { Kennung = "0000000000000000000GEB", Name = "Probegebäude", Art = art };
-            g.Geschosse.Add(new AbbildGeschoss { Kennung = "0000000000000000000G01", Name = "EG" });
-            g.Geschosse.Add(new AbbildGeschoss { Kennung = "0000000000000000000G02", Name = "OG" });
-            void R(string kennung, string name, string geschoss, double flaeche, string raumtyp = null)
-                => g.Raeume.Add(new AbbildRaum { Kennung = kennung, Name = name, GeschossKennung = geschoss, FlaecheM2 = flaeche, VolumenM3 = flaeche * 3.0, Raumtyp = raumtyp });
-            R("0000000000000000000R0A", "Raum A", "0000000000000000000G01", 20.0, "mrtOffice");
-            R("0000000000000000000R0B", "raum b ", "0000000000000000000G01", 30.0);
-            R("0000000000000000000R0C", "Raum C", "0000000000000000000G02", 40.0, "mrtOffice");
-            R(SqprojRaumabgleich.IfcKennung(GID_D), "Raum X", "0000000000000000000G02", 10.0);
-            R("0000000000000000000R0Y", "Raum Y", "0000000000000000000G02", 10.0);
-            a.Gebaeude.Add(g);
-            return a;
         }
     }
 }

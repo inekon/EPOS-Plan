@@ -33,27 +33,7 @@ namespace EPOS.Kern.Tests
             try { File.Delete(_pfad); } catch (IOException) { }
         }
 
-        private static SqprojProbenErzeuger Zonenhaus()
-            => new SqprojProbenErzeuger()
-                .Geschoss("FK", "Kellergeschoss").Geschoss("FE", "Erdgeschoss").Geschoss("FO", "Obergeschoss")
-                .Raum("R1", "Lager", "FK", null, 20.0).Raum("R2", "Wohnen", "FE", null, 30.0).Raum("R3", "Küche", "FE", null, 10.0)
-                .Raum("R4", "Schlafen", "FO", null, 20.0).Raum("R5", "Bad", "FO", null, 8.0).Raum("R6", "Abstellraum", "FO", null, 4.0)
-                .Zone("Z1", "Simulation EG", 6, "G1", "R2", "R3")
-                .Zone("Z2", "Simulation OG", 6, "G2", "R4", "R5", "R6")
-                .Zone("Z3", "Keller", 6, null, "R1")
-                .Zone("Z4", "Nutzung EG", 5, null, "R2", "R3")
-                .Zone("Z5", "Nutzung OG", 5, null, "R4", "R5", "R6")
-                .Zone("Z6", "Nutzung Keller", 5, null, "R1")
-                .Nutzung("U4", "Profil Wohnen", "Z4", 71, SqprojProbenErzeuger.NULLZEIT, SqprojProbenErzeuger.NULLZEIT, null, 20.0, null, 0.5,
-                         null, null, null, null, null, null)
-                .Nutzung("U5", "Profil Buero", "Z5", 1, SqprojProbenErzeuger.Uhr(7), SqprojProbenErzeuger.Uhr(18), null, 21.0, 4.0, null,
-                         null, null, null, null, null, null)
-                .Nutzung("U6", "Profil Lager", "Z6", 20, SqprojProbenErzeuger.NULLZEIT, SqprojProbenErzeuger.NULLZEIT, null, null, null, null,
-                         null, null, null, null, null, null)
-                .Gruppe("G1", "Gruppe EG", 6, 71)
-                .Zeitprofil("H1", "Heizen EG", 6, "G1", h => h >= 6 && h < 22 ? 20.0 : 17.0)
-                .Zeitprofil("P1", "Personen EG", 8, "G1", _ => 1.0, personen: 3.0, wattJePerson: 80.0)
-                .Gruppe("G2", "Gruppe OG", 4, 1);
+        private static SqprojProbenErzeuger Zonenhaus() => SqprojProbenErzeuger.Zonenhaus();
 
         private static List<(string Groesse, string Nutzung, string Bemerkung, string Woche)> Kalender(int idZone)
         {
