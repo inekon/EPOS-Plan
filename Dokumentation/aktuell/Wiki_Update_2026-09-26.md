@@ -775,6 +775,8 @@ den Statuszeilen #358–#403; ein eigener Eintrag entfiele als Dopplung nach Reg
   Katalogverwaltungen. (#540)
 - Seit 26.09.2026: Der Katalog der Brauchwasser-Nutzungsarten führt einen Hoteltyp. (#546)
 - Seit 26.09.2026: Ecodesign-Zapfprofile lassen sich in der Auslegung nach Wohneinheiten skalieren. (#546)
+- Im Ergebnisreiter Wärmepumpe steht der Block Auslegung mit dem Diagramm „Leistung über Außentemperatur“ am Ende, unter den Jahresganglinien. (#741)
+- In der Simulation stehen die Reihenschalter von Wärme- und Stromgang nebeneinander in einer Zeile wie in den übrigen Ergebnisreitern. (#742)
 
 *Mit E12 ergänzt:* Statuszeile #377 zählte zu dieser Version „die Logbuch-Sätze 1–14 (+ #361)“;
 für den Rasterfußzeilen-Befund aus #361 (Fußzeile der Rasterkarte bei hoher Zeilenschrift nicht
