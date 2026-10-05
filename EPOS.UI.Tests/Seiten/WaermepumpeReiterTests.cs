@@ -158,12 +158,13 @@ public class WaermepumpeReiterTests : EposBunitContext
             true);
     }
 
-    // Die DREI Schalterzeilen in der Reihenfolge des Markups: die Streuwolke
-    // steht ueber den Unterblaettern, im Blatt „Wärmeproduktion" folgen erst
-    // „sortiert" (die Darstellungsart) und dann die vier Reihen (W11b‑B‑17).
-    private const int STREUWOLKE = 0;
-    private const int SORTIERT = 1;
-    private const int GANGLINIE = 2;
+    // Die DREI Schalterzeilen in der Reihenfolge des Markups: im Blatt
+    // „Wärmeproduktion" erst „sortiert" (die Darstellungsart) und dann die vier
+    // Reihen (W11b‑B‑17); die Streuwolke steht mit der Auslegung am Ende des
+    // Reiters, unter den Unterblaettern.
+    private const int SORTIERT = 0;
+    private const int GANGLINIE = 1;
+    private const int STREUWOLKE = 2;
 
     /// <summary>Die Beschriftungen einer Schalterzeile, in ihrer Reihenfolge.</summary>
     private static string[] Zeile(IRenderedComponent<WaermepumpeReiter> seite, int nr)
@@ -450,7 +451,7 @@ public class WaermepumpeReiterTests : EposBunitContext
 
     /// <summary>
     /// Das SVG-Diagramm des sichtbaren UNTERBLATTS — es steht neben der Streuwolke,
-    /// die ueber den Blaettern liegt, also wird die ausdruecklich uebergangen.
+    /// die unter den Blaettern liegt, also wird die ausdruecklich uebergangen.
     /// </summary>
     private static DiagrammSvg Bild(IRenderedComponent<WaermepumpeReiter> seite)
         => seite.FindComponents<DiagrammSvg>()
@@ -470,7 +471,7 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Empty(seite.FindAll("img"));
         Assert.Contains(_auftraege, a => a.Bild == Bilder.WpLeistungTemperatur);
 
-        Assert.Equal(new[] { "simerg-wp-streuwolke", "simerg-wp-produktion" },
+        Assert.Equal(new[] { "simerg-wp-produktion", "simerg-wp-streuwolke" },
                      seite.FindComponents<DiagrammSvg>()
                           .Select(b => b.Instance.Kennung).ToArray());
         Assert.Equal("kW", Bild(seite).Einheit);
@@ -527,5 +528,39 @@ public class WaermepumpeReiterTests : EposBunitContext
                    b => Assert.Equal(new[] { "Bereich", "1:1" },
                                      b.FindAll("button.epos-diagramm-knopf")
                                       .Select(k => k.TextContent.Trim()).ToArray()));
+    }
+
+    /// <summary>
+    /// <b>Die Auslegung steht am Ende des Reiters</b> (Anwenderwunsch 05.10.2026):
+    /// erst die Kennzahlen Wärme und Strom, dann Modul- und Speichertabelle, dann
+    /// die Unterblätter mit der Jahresganglinie und zuletzt der Block „Auslegung“
+    /// mit dem Bild „Leistung über Außentemperatur“.
+    /// </summary>
+    [Fact]
+    public void Die_Auslegung_steht_nach_der_Ganglinie_am_Ende()
+    {
+        var seite = Zeichnen(Erg(), temperaturen: true);
+
+        var folge = seite.FindAll(
+                "h2.epos-gruppenkopf-titel, table.epos-raster, button[role='tab'], div.epos-simerg-schalter")
+            .Select(e => e.TagName.ToLowerInvariant() switch
+            {
+                "h2" => e.TextContent.Trim(),
+                "table" => "Tabelle",
+                "button" => "Blatt",
+                _ => "Schalter",
+            })
+            .ToArray();
+
+        Assert.Equal(new[]
+        {
+            "Wärme", "Strom", "Tabelle", "Tabelle",
+            "Blatt", "Blatt", "Blatt", "Schalter", "Schalter",
+            "Auslegung", "Schalter",
+        }, folge);
+
+        // Die Streuwolke ist das letzte Bild, die Ganglinie steht davor.
+        Assert.Equal("simerg-wp-streuwolke",
+                     seite.FindComponents<DiagrammSvg>().Last().Instance.Kennung);
     }
 }
