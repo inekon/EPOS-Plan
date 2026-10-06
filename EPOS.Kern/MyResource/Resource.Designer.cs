@@ -68848,6 +68848,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die manuelle Aufheizzeit gibt es nur für ein Gebäude im Projekt (Knopf „Hülle und Zonen…“), nicht am Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_KI_NUR_PROJEKT {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_KI_NUR_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzeit manuell (h) ähnelt.
         /// </summary>
         public static string KOND_AUFH_MANUELL_LBL {

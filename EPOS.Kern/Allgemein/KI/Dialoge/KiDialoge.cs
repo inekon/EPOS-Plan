@@ -6097,6 +6097,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkHeizleistungMaxName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkHeizleistungMaxErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    // Stufe KP3, Welle O2 (E59): die manuelle Aufheizzeit - nur im Projekt, Zonen erben sie.
+                    new KiDialogFeld("aufheizzeit_manuell", "GebaeudeKatalogKiSicht.AufheizzeitManuellH",
+                                     KiDialogTexte.GebkAufheizzeitManuellName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAufheizzeitManuellErl,
+                                     einheit: KiDialogTexte.EINHEIT_STUNDE, leerErlaubt: true, min: 1, max: 47),
                     new KiDialogFeld("aussenbauteile_strahlung", "GebaeudeKatalogKiSicht.AussenbauteileStrahlung",
                                      KiDialogTexte.GebkAussenbauteileStrahlungName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.GebkAussenbauteileStrahlungErl),

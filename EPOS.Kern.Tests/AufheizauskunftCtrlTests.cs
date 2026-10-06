@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using EPOS.UI.Dialoge.Bedarf;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -174,6 +176,38 @@ namespace EPOS.Kern.Tests
 
             Assert.Null(AufheizauskunftCtrl.ManuellSchreiben(id, null));
             Assert.Null(AufheizauskunftCtrl.ManuellLesen(id));
+        }
+
+        /// <summary>
+        /// <b>Der Gebäudeeditor im Projekt</b> (Welle O2): <c>ProjektGaben</c> reicht den Wert der Projektkopie und die
+        /// Vorschläge (auch bei ausgeschaltetem Schalter), der OK-Weg <c>ProjektSchreiben</c> schreibt ihn mit den
+        /// Gebäudedaten; „Speichern unter" (Katalog) nimmt ihn nicht mit, weil der Katalog keine Spalte hat.
+        /// </summary>
+        [Fact]
+        public void Der_Gebaeudeeditor_im_Projekt_liest_schlaegt_vor_und_schreibt_im_OK_Weg()
+        {
+            if (!_db.Vorhanden) return;
+            const int PROJEKT = 1007;
+            int idZ = Z_ProjGebCtrl.LiesProjekt(PROJEKT)[0].ID_Z;
+            int idGebaeude = GebaeudeBedarfCtrl.TabGebaeudeId(idZ);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeKatalogHuelle.ProjektGaben(PROJEKT, idZ);
+            var daten = (GebaeudeKatalogDaten)gaben["Daten"];
+            var vorschlag = (AufheizzeitManuellDaten)gaben["Aufheizzeit"];
+            Assert.Null(daten.AufheizzeitManuellH);
+            Assert.False(vorschlag.SchalterAn);
+            Assert.True(vorschlag.HatSpanne, "Spanne aus τ₂ auch bei ausgeschaltetem Schalter");
+            Assert.InRange(vorschlag.VonH.Value, 1, 47);
+            Assert.InRange(vorschlag.BisH.Value, vorschlag.VonH.Value, 47);
+
+            daten.AufheizzeitManuellH = 7;
+            Assert.True(GebaeudeKatalogHuelle.ProjektSchreiben(PROJEKT, idGebaeude, daten).Erfolg);
+            Assert.Equal(7, AufheizauskunftCtrl.ManuellLesen(idGebaeude));
+            var wieder = (GebaeudeKatalogDaten)GebaeudeKatalogHuelle.ProjektGaben(PROJEKT, idZ)["Daten"];
+            Assert.Equal(7, wieder.AufheizzeitManuellH);
+
+            wieder.AufheizzeitManuellH = null;
+            Assert.True(GebaeudeKatalogHuelle.ProjektSchreiben(PROJEKT, idGebaeude, wieder).Erfolg);
+            Assert.Null(AufheizauskunftCtrl.ManuellLesen(idGebaeude));
         }
 
         [Theory]

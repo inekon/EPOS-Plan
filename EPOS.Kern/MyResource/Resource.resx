@@ -47223,5 +47223,8 @@ Chart</value>
   <data name="KI_DLG_GEBB_NACHTAUSKUEHLUNG_ERL" xml:space="preserve">
     <value>Stunden mit wirksamer Nachtauskühlung; leer ohne Nachtauskühlung.</value>
   </data>
+  <data name="KOND_AUFH_MANUELL_KI_NUR_PROJEKT" xml:space="preserve">
+    <value>Die manuelle Aufheizzeit gibt es nur für ein Gebäude im Projekt (Knopf „Hülle und Zonen…“), nicht am Katalogsatz.</value>
+  </data>
 </root>
 

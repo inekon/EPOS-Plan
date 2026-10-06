@@ -47216,5 +47216,8 @@ chart</value>
   <data name="KI_DLG_GEBB_NACHTAUSKUEHLUNG_ERL" xml:space="preserve">
     <value>Hours with effective night purge ventilation; empty without night purge ventilation.</value>
   </data>
+  <data name="KOND_AUFH_MANUELL_KI_NUR_PROJEKT" xml:space="preserve">
+    <value>The manual preheat time exists only for a building in the project (button “Envelope and zones…”), not for a catalogue record.</value>
+  </data>
 </root>
 
