@@ -3465,7 +3465,7 @@ Jetzt Datei auswählen?</value>
     <value>Fläche [m²]:</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_PRUEFUNG" xml:space="preserve">
-    <value>Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation)</value>
+    <value>Auslegungsprüfung nach VDI 4640 Blatt 2</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_QUELLSYSTEM" xml:space="preserve">
     <value>Quellsystem</value>
@@ -3476,6 +3476,9 @@ Jetzt Datei auswählen?</value>
   <data name="SIMQ_ERDREICH_HINWEIS_FESTGESTEIN" xml:space="preserve">
     <value>
   Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
+    <value>Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -3491,6 +3494,27 @@ Jetzt Datei auswählen?</value>
   </data>
   <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
     <value>(DIN 4710, Vorbelegung aus der Klimaregion)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT" xml:space="preserve">
+    <value>Keine Vorprüfung aus Auslegungswerten möglich — es fehlt {0}.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT" xml:space="preserve">
+    <value>die Heizleistung oder der COP am Normpunkt der Kennlinie von „{0}“</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP" xml:space="preserve">
+    <value>eine Wärmepumpe an der Anlage</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE" xml:space="preserve">
+    <value>die Klimazone (Volllaststunden nach DIN 4710)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_KOPF" xml:space="preserve">
+    <value>Vorprüfung aus Auslegungswerten (noch kein Simulationslauf)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_MODUL" xml:space="preserve">
+    <value>  {0}: Q_N = {1} kW, COP = {2} ({3}) → Entzugsleistung ≈ {4} W</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_SUMME" xml:space="preserve">
+    <value>  Entzugsleistung ≈ Q_N · (1 − 1/COP) = {0} W; Jahresentzugsarbeit ≈ {0} W · {1} h/a (Klimazone nach DIN 4710) = {2} kWh/a</value>
   </data>
   <data name="SIMQ_KARTE_GEWAEHLT" xml:space="preserve">
     <value>Gewählte Zone: {0}</value>
@@ -3564,8 +3588,8 @@ Für größere Tiefen das Quellsystem 'Erdsonde' wählen.</value>
   <data name="SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF" xml:space="preserve">
     <value>(noch kein Simulationslauf)
 
-Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und
-Jahresvolllaststunden aus einem Simulationslauf.</value>
+Ohne Lauf rechnet die Prüfung aus Auslegungswerten; nach einem Simulationslauf
+prüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden.</value>
   </data>
   <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
     <value>Erdkollektor</value>
@@ -45360,8 +45384,32 @@ Chart</value>
   <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
     <value>Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet?</value>
   </data>
-  <data name="KMA_REITER_KNOPF" xml:space="preserve">
-    <value>Kältemaschinen…</value>
+  <data name="START_E_KUEHL_TITEL" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="START_E_KUEHL_TEXT" xml:space="preserve">
+    <value>Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion</value>
+  </data>
+  <data name="START_E_KUEHL_KM" xml:space="preserve">
+    <value>Kältemaschinen</value>
+  </data>
+  <data name="START_E_KUEHL_WP" xml:space="preserve">
+    <value>Wärmepumpen im Kühlbetrieb</value>
+  </data>
+  <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
+    <value>{0} ({1} ×)</value>
+  </data>
+  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
+    <value>Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an.</value>
+  </data>
+  <data name="START_E_KUEHL_LEER" xml:space="preserve">
+    <value>Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts.</value>
+  </data>
+  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
+    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb.</value>
+  </data>
+  <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
+    <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
   </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Kältemaschinen im Projekt</value>
@@ -46200,9 +46248,6 @@ Chart</value>
   <data name="RNP_FRAGE_ZUORDNUNG_LOESCHEN" xml:space="preserve">
     <value>Die Zuordnung „{0}“ löschen?</value>
   </data>
-  <data name="RNP_TXT_TAGE" xml:space="preserve">
-    <value>erzeugt: {0} Nutzungstage, Quelle: {1} Tage</value>
-  </data>
   <data name="RNP_BTN_PROFIL_UEBERNEHMEN" xml:space="preserve">
     <value>Nutzungsprofil übernehmen…</value>
   </data>
@@ -46347,6 +46392,51 @@ Chart</value>
   <data name="GANS_RAND_TREFFER_BAUTEIL" xml:space="preserve">
     <value>Gewählt: Bauteil {0} — {1}</value>
   </data>
+  <data name="GEB_BTN_NEU_LESEN" xml:space="preserve">
+    <value>Datei erneut lesen…</value>
+  </data>
+  <data name="GEB_BTN_NEU_LESEN_HINWEIS" xml:space="preserve">
+    <value>Die Importdatei des markierten Gebäudes erneut lesen und das Gebäude nach Zonen und nach Randbedingung ansehen – gespeichert wird nichts</value>
+  </data>
+  <data name="GEB_NL_TITEL" xml:space="preserve">
+    <value>Importdatei erneut lesen</value>
+  </data>
+  <data name="GEB_NL_DATEI_TITEL" xml:space="preserve">
+    <value>Importdatei „{0}“ wählen</value>
+  </data>
+  <data name="GEB_NL_QUELLE" xml:space="preserve">
+    <value>Importquelle: {0} ({1}), importiert am {2}</value>
+  </data>
+  <data name="GEB_NL_PASSEND" xml:space="preserve">
+    <value>Die Datei „{0}“ stimmt mit der Importquelle überein. Die Ansicht zeigt die Datei; gespeichert wird nichts.</value>
+  </data>
+  <data name="GEB_NL_HASH_ABWEICHEND" xml:space="preserve">
+    <value>Die Datei „{0}“ (geändert am {1}) ist nicht die Datei des Imports: SHA-256 {2}… statt {3}…. Es wird keine Ansicht gezeigt.</value>
+  </data>
+  <data name="GEB_NL_NICHT_LESBAR" xml:space="preserve">
+    <value>Die Datei „{0}“ ist nicht lesbar: {1}</value>
+  </data>
+  <data name="GEB_NL_FORMAT_UNBEKANNT" xml:space="preserve">
+    <value>Die Datei „{0}“ hat nicht das Format der Importquelle ({1}).</value>
+  </data>
+  <data name="GEB_NL_ZU_GROSS" xml:space="preserve">
+    <value>Die Datei „{0}“ ist mit {1} größer als die Grenze von {2} auf diesem Gerät.</value>
+  </data>
+  <data name="GEB_NL_KEINE_QUELLE" xml:space="preserve">
+    <value>Dieses Gebäude hat keine Importquelle.</value>
+  </data>
+  <data name="GEB_NL_NUR_GEOMETRIE" xml:space="preserve">
+    <value>Die Zonen stammen allein aus der Geometriedatei ({0}); eine Projektdatei und Zuordnungen von Hand sind in dieser Ansicht nicht enthalten.</value>
+  </data>
+  <data name="GEB_NL_ZONENREGEL" xml:space="preserve">
+    <value>Die Zonen folgen der Regel der Datei ({0}); Zuordnungen von Hand sind in dieser Ansicht nicht enthalten.</value>
+  </data>
+  <data name="GEB_NL_ANDERE_DATEI" xml:space="preserve">
+    <value>Andere Datei wählen…</value>
+  </data>
+  <data name="GEB_NL_LAEUFT" xml:space="preserve">
+    <value>Die Datei wird gelesen …</value>
+  </data>
   <data name="RNP_KI_KATEGORIE_NAME" xml:space="preserve">
     <value>Kategorie</value>
   </data>
@@ -46379,6 +46469,48 @@ Chart</value>
   </data>
   <data name="RNP_MSG_HERKUNFT_PROFIL" xml:space="preserve">
     <value>aus Nutzungsprofil {0}</value>
+  </data>
+  <data name="RNP_IMP_NICHT_IM_KATALOG" xml:space="preserve">
+    <value>{0} (nicht im Katalog)</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_IFC" xml:space="preserve">
+    <value>aus IFC-Klasse {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_DIN" xml:space="preserve">
+    <value>aus DIN-Nr. {0} der Projektdatei</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMTYP" xml:space="preserve">
+    <value>aus Raumtyp {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_DATEI" xml:space="preserve">
+    <value>aus der Nutzung der Datei</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_GESPEICHERT" xml:space="preserve">
+    <value>aus dem früheren Import</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="RNP_IMP_AUS_DATEI" xml:space="preserve">
+    <value>{0} aus der Datei</value>
+  </data>
+  <data name="RNP_IMP_UND" xml:space="preserve">
+    <value>und</value>
+  </data>
+  <data name="RNP_IMP_EINZONE_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag aus DIN-Nr. {0}: {1} — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“</value>
+  </data>
+  <data name="KOND_LBL_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>Nutzungsprofil {0}</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_PROFIL" xml:space="preserve">
+    <value>aus Nutzungsprofil {0}</value>
+  </data>
+  <data name="RNP_TXT_NUTZUNGSTAGE" xml:space="preserve">
+    <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen)</value>
+  </data>
+  <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
+    <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2}</value>
   </data>
 </root>
 

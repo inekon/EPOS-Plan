@@ -29638,6 +29638,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei erneut lesen… ähnelt.
+        /// </summary>
+        public static string GEB_BTN_NEU_LESEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_NEU_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Importdatei des markierten Gebäudes erneut lesen und das Gebäude nach Zonen und nach Randbedingung ansehen – gespeichert wird nichts ähnelt.
+        /// </summary>
+        public static string GEB_BTN_NEU_LESEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_NEU_LESEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
         /// </summary>
         public static string GEB_BTN_SIMULATION {
@@ -30039,6 +30057,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_LOESCHFRAGE {
             get {
                 return ResourceManager.GetString("GEB_MSG_LOESCHFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Andere Datei wählen… ähnelt.
+        /// </summary>
+        public static string GEB_NL_ANDERE_DATEI {
+            get {
+                return ResourceManager.GetString("GEB_NL_ANDERE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatei „{0}“ wählen ähnelt.
+        /// </summary>
+        public static string GEB_NL_DATEI_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_DATEI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ hat nicht das Format der Importquelle ({1}). ähnelt.
+        /// </summary>
+        public static string GEB_NL_FORMAT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("GEB_NL_FORMAT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ (geändert am {1}) ist nicht die Datei des Imports: SHA-256 {2}… statt {3}…. Es wird keine Ansicht gezeigt. ähnelt.
+        /// </summary>
+        public static string GEB_NL_HASH_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("GEB_NL_HASH_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Gebäude hat keine Importquelle. ähnelt.
+        /// </summary>
+        public static string GEB_NL_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEB_NL_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei wird gelesen … ähnelt.
+        /// </summary>
+        public static string GEB_NL_LAEUFT {
+            get {
+                return ResourceManager.GetString("GEB_NL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist nicht lesbar: {1} ähnelt.
+        /// </summary>
+        public static string GEB_NL_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("GEB_NL_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen stammen allein aus der Geometriedatei ({0}); eine Projektdatei und Zuordnungen von Hand sind in dieser Ansicht nicht enthalten. ähnelt.
+        /// </summary>
+        public static string GEB_NL_NUR_GEOMETRIE {
+            get {
+                return ResourceManager.GetString("GEB_NL_NUR_GEOMETRIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ stimmt mit der Importquelle überein. Die Ansicht zeigt die Datei; gespeichert wird nichts. ähnelt.
+        /// </summary>
+        public static string GEB_NL_PASSEND {
+            get {
+                return ResourceManager.GetString("GEB_NL_PASSEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importquelle: {0} ({1}), importiert am {2} ähnelt.
+        /// </summary>
+        public static string GEB_NL_QUELLE {
+            get {
+                return ResourceManager.GetString("GEB_NL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatei erneut lesen ähnelt.
+        /// </summary>
+        public static string GEB_NL_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen folgen der Regel der Datei ({0}); Zuordnungen von Hand sind in dieser Ansicht nicht enthalten. ähnelt.
+        /// </summary>
+        public static string GEB_NL_ZONENREGEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_ZONENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist mit {1} größer als die Grenze von {2} auf diesem Gerät. ähnelt.
+        /// </summary>
+        public static string GEB_NL_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("GEB_NL_ZU_GROSS", resourceCulture);
             }
         }
         
@@ -66872,15 +67007,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen… ähnelt.
-        /// </summary>
-        public static string KMA_REITER_KNOPF {
-            get {
-                return ResourceManager.GetString("KMA_REITER_KNOPF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
         /// </summary>
         public static string KMA_SP_ANZAHL {
@@ -68610,6 +68736,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_GRUNDANGABE {
             get {
                 return ResourceManager.GetString("KOND_LBL_GRUNDANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string KOND_LBL_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_HERKUNFT_PROFIL", resourceCulture);
             }
         }
         
@@ -70986,6 +71121,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_ZUSTAND_MATRIX {
             get {
                 return ResourceManager.GetString("KOND_TXT_ZUSTAND_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_PROFIL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_PROFIL", resourceCulture);
             }
         }
         
@@ -88293,6 +88437,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} aus der Datei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_AUS_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_AUS_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus DIN-Nr. {0}: {1} — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_EINZONE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_EINZONE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (nicht im Katalog) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_NICHT_IM_KATALOG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_NICHT_IM_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Nutzung der Datei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus DIN-Nr. {0} der Projektdatei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_DIN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem früheren Import ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_HAND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus IFC-Klasse {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_IFC {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Raumtyp {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMTYP {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die und ähnelt.
+        /// </summary>
+        public static string RNP_IMP_UND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_UND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie des im Blatt „Nutzungsprofile“ gewählten Profils (nur lesbar); gewechselt wird sie im Katalogbaum. ähnelt.
         /// </summary>
         public static string RNP_KI_KATEGORIE_ERL {
@@ -89067,6 +89301,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen) ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NUTZUNGSTAGE {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NUTZUNGSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2} ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NUTZUNGSTAGE_FERIEN {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NUTZUNGSTAGE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Nutzungsprofilkatalog ist in dieser Datenbank nicht angelegt. ähnelt.
         /// </summary>
         public static string RNP_TXT_OHNE_TABELLEN {
@@ -89108,15 +89360,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_TXT_SOFORT {
             get {
                 return ResourceManager.GetString("RNP_TXT_SOFORT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die erzeugt: {0} Nutzungstage, Quelle: {1} Tage ähnelt.
-        /// </summary>
-        public static string RNP_TXT_TAGE {
-            get {
-                return ResourceManager.GetString("RNP_TXT_TAGE", resourceCulture);
             }
         }
         
@@ -94637,7 +94880,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsprüfung nach VDI 4640 Blatt 2 ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_GB_PRUEFUNG {
             get {
@@ -94679,6 +94922,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_HINWEIS_FESTGESTEIN {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_HINWEIS_FESTGESTEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück. ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT", resourceCulture);
             }
         }
         
@@ -94859,8 +95111,8 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (noch kein Simulationslauf)
         ///
-        ///Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und
-        ///Jahresvolllaststunden aus einem Simulationslauf. ähnelt.
+        ///Ohne Lauf rechnet die Prüfung aus Auslegungswerten; nach einem Simulationslauf
+        ///prüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden. ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF {
             get {
@@ -94991,6 +95243,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_VERLEGETIEFE {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_VERLEGETIEFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Vorprüfung aus Auslegungswerten möglich — es fehlt {0}. ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Heizleistung oder der COP am Normpunkt der Kennlinie von „{0}“ ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eine Wärmepumpe an der Anlage ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Klimazone (Volllaststunden nach DIN 4710) ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorprüfung aus Auslegungswerten (noch kein Simulationslauf) ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_KOPF {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die   {0}: Q_N = {1} kW, COP = {2} ({3}) → Entzugsleistung ≈ {4} W ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_MODUL {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die   Entzugsleistung ≈ Q_N · (1 − 1/COP) = {0} W; Jahresentzugsarbeit ≈ {0} W · {1} h/a (Klimazone nach DIN 4710) = {2} kWh/a ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_SUMME {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_SUMME", resourceCulture);
             }
         }
         
@@ -102402,6 +102717,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_E_KOPF {
             get {
                 return ResourceManager.GetString("START_E_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an. ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KEINE_KM {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KEINE_KM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} ×) ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM_ANZAHL {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts. ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_LEER {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb. ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_TEXT {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_TITEL {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen im Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_WP {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_WP", resourceCulture);
             }
         }
         

@@ -451,6 +451,106 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Empty(Zeige(Kollektor(), lauf: MitLauf()).FindAll(".epos-erdreich-laufstand"));
     }
 
+    // ================================================================== Vorprüfung und Sondenhinweis
+
+    /// <summary>Auslegungswerte eines Sole-Geräts: 10 kW, COP 4,5 bei B0/W35.</summary>
+    private static WpAuslegung[] EinGeraet()
+        => new[] { new WpAuslegung("WP Sole", 10, 4.5, "B0/W35") };
+
+    /// <summary>
+    /// Bei der ERDSONDE sagt eine leise Zeile unter der Vorschau, dass die Quelltemperatur
+    /// konstant ist und der Entzug nicht zurückwirkt; beim Kollektor steht sie nicht.
+    /// </summary>
+    [Fact]
+    public void Bei_der_Sonde_steht_der_Hinweis_zur_konstanten_Quelltemperatur()
+    {
+        const string kern = "ganzjährig konstanten Quelltemperatur";
+
+        var sonde = Zeige(Sonde());
+        Assert.Contains(sonde.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains(kern));
+
+        var kollektor = Zeige(Kollektor());
+        Assert.DoesNotContain(kollektor.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains(kern));
+    }
+
+    /// <summary>
+    /// OHNE Lauf, aber mit Auslegungswerten rechnet die VORPRÜFUNG — gekennzeichnet, mit
+    /// der Herleitung und der Prüfung nach Tabelle B2.
+    /// </summary>
+    [Fact]
+    public void Ohne_Lauf_steht_die_gekennzeichnete_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = EinGeraet() });
+
+        Assert.True(cut.Instance.IstVorpruefung);
+        Assert.Equal("Vorprüfung aus Auslegungswerten (noch kein Simulationslauf)",
+                     cut.Find(".epos-erdreich-vorpruefung").TextContent.Trim());
+        Assert.DoesNotContain("noch kein Simulationslauf", cut.Instance.Pruefungstext);
+        // 10 kW · (1 − 1/4,5) = 7 778 W
+        Assert.Contains("7.778 W", cut.Instance.Pruefungstext);
+        Assert.Contains("W/m", cut.Instance.Pruefungstext);
+    }
+
+    /// <summary>Ein Laufergebnis ERSETZT die Vorprüfung samt Kennzeichnung.</summary>
+    [Fact]
+    public void Das_Laufergebnis_ersetzt_die_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = EinGeraet() }, lauf: MitLauf(9000));
+
+        Assert.False(cut.Instance.IstVorpruefung);
+        Assert.Empty(cut.FindAll(".epos-erdreich-vorpruefung"));
+        Assert.Contains("9.000 W", cut.Instance.Pruefungstext);
+        Assert.DoesNotContain("7.778", cut.Instance.Pruefungstext);
+    }
+
+    /// <summary>Ein Lauf aus dem Dialog ersetzt die Vorprüfung, die vorher stand.</summary>
+    [Fact]
+    public void Der_Lauf_aus_dem_Dialog_ersetzt_die_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = EinGeraet() },
+            simulieren: _ => Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>(
+                (MitLauf(), null)));
+        Assert.True(cut.Instance.IstVorpruefung);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+
+        Assert.False(cut.Instance.IstVorpruefung);
+        Assert.Empty(cut.FindAll(".epos-erdreich-vorpruefung"));
+    }
+
+    /// <summary>
+    /// Eine Luft-Wasser-Wärmepumpe: keine Vorprüfung, allein der Hinweis, dass die
+    /// Erdreichquelle in der Simulation nicht gerechnet wird.
+    /// </summary>
+    [Fact]
+    public void Bei_Luft_Wasser_steht_der_Hinweis_statt_der_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = new[] { new WpAuslegung("WP Luft", 10, 4, "A2/W35", true) } });
+
+        Assert.False(cut.Instance.IstVorpruefung);
+        Assert.Empty(cut.FindAll(".epos-erdreich-vorpruefung"));
+        Assert.Contains("Luft-Wasser-Anlage", cut.Instance.Pruefungstext);
+        Assert.DoesNotContain("noch kein Simulationslauf", cut.Instance.Pruefungstext);
+        Assert.DoesNotContain("W/m", cut.Instance.Pruefungstext);
+    }
+
+    /// <summary>Fehlt ein Auslegungswert, gibt es keine Vorprüfung — der Bereich nennt ihn.</summary>
+    [Fact]
+    public void Fehlt_ein_Wert_nennt_der_Bereich_ihn()
+    {
+        var ohneCop = Zeige(Sonde() with { Auslegung = new[] { new WpAuslegung("WP Sole", 10, 0, "") } });
+        Assert.False(ohneCop.Instance.IstVorpruefung);
+        Assert.Contains("noch kein Simulationslauf", ohneCop.Instance.Pruefungstext);
+        Assert.Contains("Keine Vorprüfung aus Auslegungswerten möglich", ohneCop.Instance.Pruefungstext);
+        Assert.Contains("„WP Sole“", ohneCop.Instance.Pruefungstext);
+
+        var ohneWp = Zeige(Sonde());
+        Assert.Contains("eine Wärmepumpe an der Anlage", ohneWp.Instance.Pruefungstext);
+
+        var ohneZone = Zeige(Sonde() with { Auslegung = EinGeraet(), Klimazone = 0 });
+        Assert.Contains("die Klimazone", ohneZone.Instance.Pruefungstext);
+    }
+
     // ================================================================== Änderungshinweis
 
     /// <summary>

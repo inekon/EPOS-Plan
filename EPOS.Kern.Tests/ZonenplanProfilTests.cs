@@ -132,8 +132,20 @@ namespace EPOS.Kern.Tests
             // Die Klappliste trägt die Profile des Katalogs und den Text der Zone; die Zone zeigt ihren Schlüssel.
             GebaeudeZonenplanDaten daten = GebaeudeImportZonen.PlanDaten(plan, null, Array.Empty<GebaeudeZonenzeileDaten>(), (null, false, 0));
             Assert.Contains(daten.Nutzungen, n => n.Schluessel == "#" + MusterId(RaumnutzungSaat.TECHNIK) && n.Text == RaumnutzungSaat.TECHNIK);
-            Assert.Contains(daten.Nutzungen, n => n.Schluessel == "Großraum Nord" && n.Text == "Großraum Nord");
+            Assert.Contains(daten.Nutzungen, n => n.Schluessel == "Großraum Nord" && n.Text == "Großraum Nord (nicht im Katalog)");
             Assert.Equal("Großraum Nord", daten.Zonen[0].Nutzung);
+
+            // NP2b-1: die Klappliste je Kategorie — zuerst ohne Gruppe der Text ohne Profil, dann je Kategorie ihre Profile in
+            // der Ordnung des Katalogs; dieselben Einträge wie die flache Liste.
+            GebaeudeNutzungsgruppe ohne = daten.Nutzungsgruppen[0];
+            Assert.Equal("", ohne.Titel);
+            Assert.Equal(new[] { "Großraum Nord" }, ohne.Eintraege.Select(e => e.Schluessel));
+            var ctrl = new RaumnutzungCtrl();
+            RaumnutzungCtrl.Kategorie muster = ctrl.Kategorien().Single(k => k.Art == RaumnutzungSchema.ART_EPOS_MUSTER);
+            GebaeudeNutzungsgruppe mustergruppe = daten.Nutzungsgruppen.Single(g => g.Titel == muster.Bezeichner);
+            Assert.Equal(ctrl.Profile(muster.Id).Select(p => "#" + p.Id), mustergruppe.Eintraege.Select(e => e.Schluessel));
+            Assert.Equal(daten.Nutzungen.Select(e => e.Schluessel).OrderBy(x => x, StringComparer.Ordinal),
+                         daten.Nutzungsgruppen.SelectMany(g => g.Eintraege).Select(e => e.Schluessel).OrderBy(x => x, StringComparer.Ordinal));
 
             // Wählbar bleibt der Text nur an seiner Zone; ein anderer unbekannter Text wird benannt abgelehnt.
             Assert.True(plan.NutzungSetzen(z.Schluessel, "#" + MusterId(RaumnutzungSaat.LAGER)).Ok);

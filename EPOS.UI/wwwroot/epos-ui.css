@@ -23,6 +23,7 @@
     --epos-schriftgroesse: 13px;            /* 9,75 pt - Dialoge            */
     --epos-schriftgroesse-gruppenkopf: 13px; /* 10 pt fett - Abschnittsbalken */
     --epos-schriftgroesse-kartentitel: 16px; /* 12 pt fett - Kacheltitel    */
+    --epos-schriftgroesse-bereichsreiter: 15px; /* 11,25 pt - Reiter der Bereichszeile */
 
     /* ---- Karten und Chips (KartenStil, erster Block) ------------------ */
     --epos-rahmen: #b4b2a9;                 /* RAHMEN                       */
@@ -6172,6 +6173,76 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     }
 }
 
+/* Die Reiterzeile eines BEREICHS (Berichte & Kosten): die zweite Ebene unter den
+   Hauptreitern der Startseite. Sie steht als eigene Zeile auf leiser Flaeche,
+   ihre Titel sind etwas groesser und in der Textfarbe, der aktive Reiter liegt
+   hell auf der Flaeche und traegt den Unterstrich wie jeder Reiter des Hauses.
+   Den Modifikator setzt das Wurzelelement der Seite; die Kindselektoren halten
+   ihn von jedem Reiter fern, der weiter innen steht. Alle uebrigen Reiter des
+   Hauses bleiben bei der leisen Leiste. */
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile {
+    align-items: stretch;
+    padding: 4px 8px 0 4px;
+    background: var(--epos-flaeche);
+    border-bottom: 2px solid var(--epos-rahmen);
+}
+
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf {
+    color: var(--epos-text);
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+}
+
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf--aktiv,
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf--aktiv:hover:not(:disabled):not([aria-disabled="true"]) {
+    color: var(--epos-quelle-text);
+    background: var(--epos-flaeche-hell);
+    border-bottom-color: var(--epos-quelle-rahmen);
+}
+
+/* Ein gesperrter Reiter bleibt gesperrt - die Regel oben truege sonst ihre
+   Textfarbe ueber die Hausregel. */
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf:disabled,
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf[aria-disabled="true"] {
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf--status {
+    min-height: 56px;
+    padding: 6px 18px 4px;
+}
+
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste .epos-reiter-titel {
+    font-size: var(--epos-schriftgroesse-bereichsreiter);
+    font-weight: 600;
+}
+
+.epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste .epos-reiter-status {
+    font-size: var(--epos-schriftgroesse);
+}
+
+@media (max-width: 900px) {
+    /* In eigener Zeile steht das Ende mit Abstand zur Linie darunter. */
+    .epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leistenende {
+        padding: 4px 0 6px 4px;
+    }
+}
+
+/* Im erzwungenen Farbmodus faellt jede Flaeche weg: Die Linie der Zeile und der
+   Unterstrich des aktiven Reiters tragen dann den Zustand allein. */
+@media (forced-colors: active) {
+    .epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile {
+        border-bottom-color: CanvasText;
+    }
+
+    .epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf--aktiv {
+        border-bottom-color: Highlight;
+    }
+}
+
 /* --------------------------------------------------------------------------
    Die EINE Projektliste (iU9-W15a.1).
 
@@ -7901,6 +7972,31 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 
 .epos-startkachel-wahl .epos-optionsgruppe-titel {
     display: none;
+}
+
+/* Die Kachel „Kuehlung": unter der Kachel stehen die Kaeltemaschinen des Projekts und die
+   Schalter der Waermepumpen mit Kuehlfunktion untereinander, nicht nebeneinander wie die
+   Weiche der Solarthermie. */
+.epos-startkachel-kuehlwahl {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 6px 0 10px;
+}
+
+.epos-startkachel-kuehlgruppe {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-startkachel-kuehltitel {
+    font-weight: 600;
+}
+
+.epos-startkachel-kuehlliste {
+    margin: 0;
+    padding-left: 1.2em;
 }
 
 /* ---- Projektzusammenfassung (Reiter Simulation) ------------------------

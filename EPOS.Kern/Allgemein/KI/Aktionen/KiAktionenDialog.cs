@@ -1545,6 +1545,8 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = es darf gesetzt werden.
         /// </summary>
         /// <remarks>
+        /// <b>Die Felder des Blatts „Nutzungsprofile“ (<c>np_*</c>) sind ausgenommen</b> (NP2b-5b): Das Blatt ist katalogweit
+        /// und gehört nicht zum gesperrten Satz; ausgelieferte Profile lehnt sein Zugang ab.
         /// <b>Ein Feld, das den SATZ WAEHLT, ist ausgenommen</b>
         /// (<see cref="KiDialogFeld.Satzwahl"/>, Welle #456): Es schreibt nichts in den
         /// geschuetzten Satz, es wechselt nur, welcher bearbeitet wird. Ohne diese
@@ -1554,6 +1556,9 @@ namespace WindowsFormsApplication1
         private static string Schreibschutz(string maske, KiFeldzugang zugang)
         {
             if (zugang != null && zugang.Feld.Satzwahl) return null;
+            // NP2b-5b: Das Blatt „Nutzungsprofile“ ist katalogweit (NP-F3) — der Schreibschutz des gesperrten Gebäudes gilt
+            // für seine Felder np_* nicht; ein ausgeliefertes Profil lehnt der Zugang des Blatts selbst ab.
+            if (zugang != null && KiNutzungsprofilfelder.Finde(zugang.Feld.Name) != null) return null;
             return KiMaskenbruecke.Haken(maske).IstSchreibgeschuetzt() ? Schutzabsage(maske) : null;
         }
 

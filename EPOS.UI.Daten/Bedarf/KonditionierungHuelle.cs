@@ -520,7 +520,9 @@ namespace WindowsFormsApplication1
                 List<KonditionierungProfilposten> posten = an.Posten.Select(x => new KonditionierungProfilposten(
                     Oberflaeche(x.Groesse), x.Weg != Raumnutzungsweg.Keiner, x.Uebernommen, x.Ersetzt, x.Unbeheizt,
                     x.Nennwert.HasValue ? x.Nennwertherleitung ?? "" : "", RaumnutzungHuelle.Hinweistext(x.Hinweis, t))).ToList();
-                return new KonditionierungProfilergebnis(true, "", neu, name ?? p.Bezeichner ?? "", posten, an.Aufgeteilt, p.IstLeer);
+                string tage = p.IstLeer ? "" : RaumnutzungHuelle.Nutzungstagezeile(p, a.Gebaeude.Bestand, t, a.Referenzjahr);
+                return new KonditionierungProfilergebnis(true, "", neu, name ?? p.Bezeichner ?? "", posten, an.Aufgeteilt, p.IstLeer,
+                                                         tage);
             }
             catch (ArgumentException ex)
             {

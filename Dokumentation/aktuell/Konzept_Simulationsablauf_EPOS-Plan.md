@@ -1506,7 +1506,8 @@ von Groß- und Kleinschreibung.
 Vorlage fest (`Katalogpaket.Festschreiben`: Saat, Prüfsummen auf den heutigen Stand,
 `Katalogfassung`) und legt `Katalogpaket.json` neben die Vorlage: alle gesperrten Sätze des
 Registers mit Schlüssel, Prüfsumme, Werten und Kindzeilen, dazu die Fassung (`--katalogfassung`,
-Vorgabe das Datum als JJJJMMTT). Eine JSON-Datei statt des Formats des Katalogimports: Jener liest
+Vorgabe das Datum als JJJJMMTT; die Setup-Kette gibt sie als JJJJMMTTnn aus dem Freigaberegister
+`Setup/Katalogfassungen.txt` mit, Setup-Konzept Abschnitt 6.5). Eine JSON-Datei statt des Formats des Katalogimports: Jener liest
 Herstellerformate ohne Schlüssel und Prüfsumme, und das CSV-Paket des Zapfprofilgenerators trennt
 Zahl und Text nicht — die Prüfsumme braucht beides. Das Paket ist deterministisch (Tabellen in der
 Folge des Registers, Sätze nach Schlüssel, Werte in Spaltenfolge, ASCII mit LF) und trägt keinen

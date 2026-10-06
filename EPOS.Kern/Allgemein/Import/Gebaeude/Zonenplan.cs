@@ -27,6 +27,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Name der Nutzung (<see cref="Planprofil.Name"/>); <c>null</c> = keine.</summary>
         internal string Nutzung => Profil?.Name;
 
+        /// <summary>
+        /// Woher das Profil kommt (Herleitungszeile des Zonenbaums): Zuordnung mit Schlüssel, Datei, gespeicherter Plan oder
+        /// Hand; <c>null</c> = keine Quelle (keine Nutzung, keine Regel mit Vorbelegung).
+        /// </summary>
+        internal Profilquelle Quelle { get; set; }
+
         /// <summary>Der Schlüssel der Regelzone, aus der sie stammt (<see cref="Importzone.Schluessel"/>); <c>null</c> = von Hand angelegt.</summary>
         internal string Herkunft { get; set; }
 
@@ -226,6 +232,7 @@ namespace WindowsFormsApplication1
                 if (jeId.ContainsKey(id)) continue;
                 Planzone z = plan.Neu(plan.FreierName(name), string.IsNullOrWhiteSpace(nutzung) ? null : plan.Vorbelegung.AusText(nutzung),
                                       null, null, angelegt: false);
+                if (z.Profil != null) z.Quelle = new Profilquelle(Profilquelle.GESPEICHERT);
                 jeId[id] = z.Schluessel;
             }
             var eigene = new HashSet<string>(plan.Gebaeude.Raeume.Select(r => r.Kennung), StringComparer.Ordinal);
@@ -260,8 +267,10 @@ namespace WindowsFormsApplication1
             if (zon.Abgelehnt) return;
             foreach (Importzone iz in zon.Zonen)
             {
-                Planzone z = Neu(FreierName(iz.Name), NutzungAus(zon.Regel, iz, Bedarf(zon.Regel)), iz.Schluessel, iz.Quellkennung,
+                (Planprofil vorbelegt, Profilquelle quelle) = NutzungMitQuelle(zon.Regel, iz, Bedarf(zon.Regel));
+                Planzone z = Neu(FreierName(iz.Name), vorbelegt, iz.Schluessel, iz.Quellkennung,
                                  angelegt: iz.Schluessel.StartsWith(GebaeudeZonierung.HAND_PRAEFIX, StringComparison.Ordinal));
+                z.Quelle = quelle;
                 z.Geaendert = iz.Handgeaendert;
                 foreach (AbbildRaum r in iz.Raeume) _zoneJeRaum[r.Kennung] = z.Schluessel;
                 // Die Konditionierung aus einer IFC-Datei von EPOS-Plan (EPOS_Zone, EPOS_Kalender_*): die des ersten Raums der
@@ -270,7 +279,11 @@ namespace WindowsFormsApplication1
                 if (iz.Raeume.Select(r => r.Konditionierung).FirstOrDefault(k => k != null) is AbbildKonditionierung k)
                 {
                     z.Projektdatei = k.AlsZonenkonditionierung(z.Name);
-                    z.Profil ??= string.IsNullOrWhiteSpace(k.Nutzung) ? null : Vorbelegung.AusText(k.Nutzung);
+                    if (z.Profil == null && !string.IsNullOrWhiteSpace(k.Nutzung))
+                    {
+                        z.Profil = Vorbelegung.AusText(k.Nutzung);
+                        z.Quelle = new Profilquelle(Profilquelle.DATEI);
+                    }
                 }
             }
             foreach (AbbildRaum r in Gebaeude.Raeume)
@@ -331,17 +344,24 @@ namespace WindowsFormsApplication1
         /// keine Nutzung. Ohne <paramref name="vorbelegung"/> gilt die Vorgabe im Code.
         /// </summary>
         internal static Planprofil NutzungAus(string regel, Importzone zone, Raumnutzungsvorbelegung vorbelegung = null)
+            => NutzungMitQuelle(regel, zone, vorbelegung).Profil;
+
+        /// <summary>
+        /// Wie <see cref="NutzungAus"/>, dazu der Zuordnungsschlüssel, aus dem das Profil folgt (Art und Schlüssel: Raumtyp oder
+        /// Nutzungsklasse) — auch wenn er auf „keine“ führt; ohne Vorbelegung (unbeheizt, andere Regel) beides <c>null</c>.
+        /// </summary>
+        internal static (Planprofil Profil, Profilquelle Quelle) NutzungMitQuelle(string regel, Importzone zone, Raumnutzungsvorbelegung vorbelegung = null)
         {
             if (zone == null || !zone.IstBeheizt || !string.Equals(regel, IfcImportProfil.ZONENREGEL_Z6, StringComparison.Ordinal)
                 || zone.Raeume.Count == 0)
-                return null;
+                return (null, null);
             Raumnutzungsvorbelegung v = vorbelegung ?? Raumnutzungsvorbelegung.Vorgabe;
             (string Art, string Schluessel) schluessel = zone.Raeume.GroupBy(v.Herleitung)
                 .Select(gr => (Schluessel: gr.Key, A: gr.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0), N: gr.Count()))
                 .OrderByDescending(k => k.A).ThenByDescending(k => k.N).ThenBy(k => k.Schluessel.Schluessel, StringComparer.Ordinal)
                 .ThenBy(k => k.Schluessel.Art, StringComparer.Ordinal)
                 .First().Schluessel;
-            return v.Aufloesen(schluessel.Art, schluessel.Schluessel);
+            return (v.Aufloesen(schluessel.Art, schluessel.Schluessel), new Profilquelle(schluessel.Art, schluessel.Schluessel));
         }
 
         /// <summary>Die Vorbelegung nur, wenn die Regel sie braucht (Z6) — sonst liest der Plan keine Datenbank.</summary>
@@ -370,6 +390,7 @@ namespace WindowsFormsApplication1
             if (_zonen.Count >= GebaeudeZonenregeln.PFLEGEGRENZE)
                 return Ab(PLAN_ZU_VIELE_ZONEN, GebaeudeZonenregeln.PFLEGEGRENZE.ToString(CultureInfo.InvariantCulture));
             Planzone z = Neu(n, nutzung, null, null, angelegt: true);
+            z.Quelle = nutzung == null ? null : Profilquelle.Hand;
             return new Planschritt(true, null, z.Schluessel);
         }
 
@@ -414,6 +435,7 @@ namespace WindowsFormsApplication1
             Planzone z = Zone(schluessel);
             if (z == null) return Ab(PLAN_ZONE_UNBEKANNT, schluessel ?? "");
             z.Profil = nutzung;
+            z.Quelle = nutzung == null ? null : Profilquelle.Hand;
             return new Planschritt(true);
         }
 

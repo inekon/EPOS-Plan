@@ -280,7 +280,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("EnergietraegerEinstellungen", 21),
         new("EnergietraegerVarianteDialog", 2),
         new("ErgebnisReiter", 1),
-        new("ErzeugerReiter", 1),
+        new("ErzeugerReiter", 2, "die Schalter der Kachel „Kühlung“ schreiben den Kühlbetrieb des Geräts sofort über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, kein Einstellwert der Startseite"),
         new("ErtragBonus", 2),
         // Welle #465: die Kenndaten des Stammblatts samt Wohnfläche und Bauart (Katalogfelder
         // gebaeudetyp, gebaeudeart, baualtersklasse, verwendung, wohnflaeche, bauart,
@@ -354,9 +354,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Handlung schreibt sofort mit eigenem Knopf. NP3c: Die 28 Kennwerte des Profileditors führt die
         // Feldkarte KiNutzungsprofilfelder (np_*, Feldtafel am Entwurf des Blatts), dazu die Kategorie (nur
         // lesbar) und die Zuordnungszeilen als Raster zum Lesen; die Zahl bleibt 31.
-        new("RaumnutzungBlatt", 31, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
+        new("RaumnutzungBlatt", 30, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
             "Außenluft samt Einheit und die Lasten führt die Feldkarte KiNutzungsprofilfelder als np_* am ENTWURF " +
-            "des Profileditors (in den Katalog erst mit „Speichern“ des Blatts, NP-F3); die Zuordnungszeilen (Art, " +
+            "des Profileditors (in den Katalog erst mit „Speichern“ des Blatts, NP-F3); die Nutzungstage im Jahr sind " +
+            "abgeleitet (E93), eine Lesezeile ohne Eingabe, und stehen nur lesbar als np_tage_jahr; die Zuordnungszeilen (Art, " +
             "Schlüssel, Profil) stehen als Raster zum Lesen. Profilwahl je Zeile sowie Art und Schlüssel einer neuen " +
             "Zeile gehören zu Handlungen, die sofort in den Katalog schreiben — Klicks des Anwenders"),
         new("KonditionierungVorlagenverwaltung", 5, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name, " +

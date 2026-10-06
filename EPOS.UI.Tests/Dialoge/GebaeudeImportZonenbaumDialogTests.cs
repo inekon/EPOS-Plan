@@ -70,7 +70,10 @@ public partial class GebaeudeImportZonenDialogTests
         bool offen = Zonenzeile(cut, zone).QuerySelector("button.epos-gebimport-aufklappen")!.GetAttribute("aria-expanded") == "true";
         if (!offen) Aufklappen(cut, zone);
         var raeume = new List<string?>();
-        for (IElement? z = Zonenzeile(cut, zone).NextElementSibling; z is not null && z.ClassList.Contains("epos-gebimport-planraum"); z = z.NextElementSibling)
+        // NP2b: unter der Zone kann die Herleitungszeile stehen, danach die Räume.
+        IElement? erste = Zonenzeile(cut, zone).NextElementSibling;
+        if (erste is not null && erste.ClassList.Contains("epos-gebimport-planherleitung")) erste = erste.NextElementSibling;
+        for (IElement? z = erste; z is not null && z.ClassList.Contains("epos-gebimport-planraum"); z = z.NextElementSibling)
             raeume.Add(z.GetAttribute("data-raum"));
         if (!offen) Aufklappen(cut, zone);
         return raeume;

@@ -5599,7 +5599,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebAngabeartName, KiParameterTyp.Text,
                                      KiDialogTexte.GebAngabeartErl,
                                      leerErlaubt: true, nurLesen: true)
-                },
+                }
+                // ---- Das Blatt „Nutzungsprofile" des Gebaeudeimports (NP2b-5a): Der Dialog reicht seinen Zugang
+                //      ueber den Importdialog an das Blatt; die Felder np_* loest GebaeudeKiSicht als Feldtafel auf.
+                .Concat(KiNutzungsprofilfelder.Dialogfelder("GebaeudeKiSicht")).ToArray(),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),

@@ -232,6 +232,14 @@
                             </dd>
                         }
                     </dl>
+                    @* NP2b-4 (Anwenderentscheid 06.10.2026): im Einzonenweg der Vorschlag aus der DIN-Nummer der Datei als
+                       Hinweis - kein Auswahlfeld, gesetzt wird nichts; zugewiesen wird im Gebaeudeeditor. *@
+                    @if (sq.Einzonenvorschlag.Length > 0 && (stand.Zonierung is not { Einzonig: false } || !AlsZoneWirksam))
+                    {
+                        <div class="epos-gebimport-sqvorschlag">
+                            <Herleitungszeile Text="@sq.Einzonenvorschlag" />
+                        </div>
+                    }
                     @if (stand.Zonierung?.Plan is null)
                     {
                         <Herleitungszeile Text="@Texte.SqKeinPlan" />
@@ -471,9 +479,26 @@
                                                     title="@(zone.Profiltext.Length > 0 ? zone.Profiltext : null)"
                                                     disabled="@Beschaeftigt" value="@(zone.Nutzung ?? "")" @onchange="e => BeiNutzung(zone, e)">
                                                 <option value="" selected="@(zone.Nutzung is null)">@Texte.NutzungKeine</option>
-                                                @foreach (GebaeudeZonenregelDaten n in plan.Nutzungen)
+                                                @* Konzept Nutzungsprofile 6.2: die Profile je Kategorie als optgroup; ohne Gruppe
+                                                   die alten Kennungen und Texte "(nicht im Katalog)". *@
+                                                @foreach (GebaeudeNutzungsgruppe gruppe in plan.Nutzungsgruppen)
                                                 {
-                                                    <option value="@n.Schluessel" selected="@(n.Schluessel == zone.Nutzung)">@n.Text</option>
+                                                    @if (gruppe.Titel.Length == 0)
+                                                    {
+                                                        @foreach (GebaeudeZonenregelDaten n in gruppe.Eintraege)
+                                                        {
+                                                            <option value="@n.Schluessel" selected="@(n.Schluessel == zone.Nutzung)">@n.Text</option>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <optgroup label="@gruppe.Titel">
+                                                            @foreach (GebaeudeZonenregelDaten n in gruppe.Eintraege)
+                                                            {
+                                                                <option value="@n.Schluessel" selected="@(n.Schluessel == zone.Nutzung)">@n.Text</option>
+                                                            }
+                                                        </optgroup>
+                                                    }
                                                 }
                                             </select>
                                         </td>
@@ -492,6 +517,17 @@
                                         <td class="epos-gebimport-zahl">@zone.Raeume</td>
                                         <td class="epos-gebimport-zahl epos-gebimport-zonensollwert">@zone.Sollwert</td>
                                     </tr>
+                                    @* Konzept Nutzungsprofile 6.2: die Herleitungszeile unter der Zone - Profil und Kategorie, Quelle
+                                       der Vorbelegung, Groessen aus der Datei (NP-F16), Kennwerte in Kurzform. *@
+                                    @if (zone.Herleitung is GebaeudeProfilherleitung herleitung)
+                                    {
+                                        <tr @key="@(zone.Schluessel + "|herleitung")" class="epos-gebimport-planherleitung" data-zone="@zone.Schluessel"
+                                            data-quelle="@(herleitung.Quellart.Length > 0 ? herleitung.Quellart : null)">
+                                            <td></td>
+                                            <td></td>
+                                            <td colspan="6"><Herleitungszeile Text="@herleitung.Text" /></td>
+                                        </tr>
+                                    }
                                     @if (offen)
                                     {
                                         foreach (GebaeudePlanraumDaten raum in zone.Raumliste)
@@ -520,8 +556,8 @@
                     {
                         <div class="epos-gebimport-neuezone">
                             <Textfeld Bezeichnung="@Texte.PlanName" Wert="@_neuName" WertChanged="w => _neuName = w ?? string.Empty" />
-                            <Auswahlfeld Bezeichnung="@Texte.PlanNutzung" Eintraege="@Nutzungsliste(plan)" Auswahl="@_neuNutzung"
-                                         AuswahlChanged="i => _neuNutzung = i" Platzhalter="@Texte.NutzungKeine" Aktiv="@(!Beschaeftigt)" />
+                            <Auswahlfeld Bezeichnung="@Texte.PlanNutzung" Eintraege="@Nutzungsliste(plan)" Auswahl="@NeuNutzungStelle(plan)"
+                                         AuswahlChanged="i => NeuNutzungWaehlen(plan, i)" Platzhalter="@Texte.NutzungKeine" Aktiv="@(!Beschaeftigt)" />
                             <button type="button" class="epos-knopf epos-gebimport-anlegen-ok" disabled="@Beschaeftigt"
                                     @onclick="() => BeiAnlegen(plan)">@Texte.PlanAnlegenOk</button>
                             <button type="button" class="epos-knopf epos-gebimport-anlegen-verwerfen"
@@ -855,7 +891,7 @@
         @if (_nutzungsblatt && Raumnutzung is not null)
         {
             <EPOS.UI.Dialoge.Bedarf.RaumnutzungBlatt Katalogweg="@Raumnutzung" Texte="@RaumnutzungTexte"
-                                                    GroessenTexte="@RaumnutzungGroessen" />
+                                                    GroessenTexte="@RaumnutzungGroessen" KiZugang="@RaumnutzungKi" />
         }
     </KindInhalt>
 </Ueberlagerung>
@@ -919,6 +955,12 @@
 
     /// <summary>Die Texte des Nutzungsprofilkatalogs (Präfix <c>RNP_</c>).</summary>
     [Parameter] public RaumnutzungTexte RaumnutzungTexte { get; set; } = new();
+
+    /// <summary>
+    /// Der Zugang des Assistenten zum Blatt (NP2b-5a, wie im Gebäudeeditor): Der Wirt reicht ihn, seine Sicht löst darüber
+    /// die Felder <c>np_*</c> auf; <c>null</c> = das Blatt bleibt ohne Assistenten.
+    /// </summary>
+    [Parameter] public RaumnutzungKiZugang? RaumnutzungKi { get; set; }
 
     /// <summary>Die Namen der Größen und Zeilen für die Vorschau des Blatts (Bündel der Konditionierung).</summary>
     [Parameter] public KonditionierungTexte RaumnutzungGroessen { get; set; } = new();
@@ -1021,7 +1063,12 @@
     /// <summary>Die Zeile „Zone hinzufügen": offen, Name, Nutzung (Stelle in der Liste; <c>null</c> = keine).</summary>
     private bool _neueZone;
     private string _neuName = "";
-    private int? _neuNutzung;
+    /// <summary>
+    /// Die gewählte Nutzung der Zeile „Zone hinzufügen“ als SCHLÜSSEL (NP2b-3): Nach dem Blatt „Nutzungsprofile…“ liest der
+    /// Plan Katalog und Zuordnung neu, die Liste kann sich verschieben — die Wahl bleibt dieselbe Nutzung; fehlt sie danach,
+    /// ist keine gewählt. <c>null</c> = keine.
+    /// </summary>
+    private string? _neuNutzung;
 
     /// <summary>Die Wahl der Klapplisten „Geschoss" und „Regel für den Rest" (Stelle); <c>null</c> = die Vorgabe.</summary>
     private int? _plangeschoss, _restregel;
@@ -1746,6 +1793,17 @@
     private static IReadOnlyList<(int Id, string Text)> Nutzungsliste(GebaeudeZonenplanDaten plan)
         => plan.Nutzungen.Select((n, i) => (i, n.Text)).ToList();
 
+    /// <summary>Die Stelle der gewählten Nutzung in der Liste des Plans; <c>null</c> = keine oder nicht mehr darin.</summary>
+    private int? NeuNutzungStelle(GebaeudeZonenplanDaten plan)
+    {
+        for (int i = 0; i < plan.Nutzungen.Count; i++)
+            if (string.Equals(plan.Nutzungen[i].Schluessel, _neuNutzung, StringComparison.Ordinal)) return i;
+        return null;
+    }
+
+    private void NeuNutzungWaehlen(GebaeudeZonenplanDaten plan, int? stelle)
+        => _neuNutzung = stelle is int i && i >= 0 && i < plan.Nutzungen.Count ? plan.Nutzungen[i].Schluessel : null;
+
     /// <summary>„Zone hinzufügen": öffnet die Zeile mit Name (Vorgabe „Zone n") und Nutzung.</summary>
     private void BeiZoneHinzufuegen(GebaeudeZonenplanDaten plan)
     {
@@ -1756,7 +1814,7 @@
 
     private void BeiAnlegen(GebaeudeZonenplanDaten plan)
     {
-        string? nutzung = _neuNutzung is int i && i >= 0 && i < plan.Nutzungen.Count ? plan.Nutzungen[i].Schluessel : null;
+        string? nutzung = NeuNutzungStelle(plan) is int i ? plan.Nutzungen[i].Schluessel : null;
         if (Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.ANLEGEN, Name: _neuName, Nutzung: nutzung))) _neueZone = false;
     }
 

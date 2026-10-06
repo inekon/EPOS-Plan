@@ -150,7 +150,17 @@ namespace WindowsFormsApplication1.Referenzlauf
                 dateien += Vektor(zielOrdner, "wp_strom.csv", wp.WP_Strombedarf_stuendlich, summen);
                 dateien += Vektor(zielOrdner, "heizstab.csv", wp.Heizstab_stuendlich, summen);
                 dateien += Vektor(zielOrdner, "wp_restwaerme.csv", wp.waermerestbedarf_stuendlich, summen);
-                dateien += Vektor(zielOrdner, "wp_quellentemperatur.csv", wp.Temperatur, summen);
+                // Die TATSAECHLICHE Quelltemperatur, wie die Kaskade sie gerechnet hat
+                // (WaermequelleClass.Quelltemperatur bzw. stuendlich am geteilten
+                // Quellpuffer) - Regel: nur das ERSTE WP-Modul, weitere Module bekommen
+                // keine eigene Datei. Name und Aggregatschluessel bleiben, damit der
+                // Vergleich gegen die Basis moeglich bleibt. Die Aussentemperatur steht
+                // in stundentemperatur.csv.
+                IReadOnlyList<double[]> quelltemperaturen = wp.Quelltemperaturen;
+                double[] quelle = (quelltemperaturen != null && quelltemperaturen.Count > 0 &&
+                                   quelltemperaturen[0] != null)
+                    ? quelltemperaturen[0] : wp.Temperatur;
+                dateien += Vektor(zielOrdner, "wp_quellentemperatur.csv", quelle, summen);
                 dateien += Vektor(zielOrdner, "wp_warmwasserbedarf.csv", wp.Warmwasserbedarf_stuendlich, summen);
             }
 

@@ -4,7 +4,7 @@
 > den Wellen SQ-1 bis SQ-3 (#731, E80, Datenaustauschkonzept Nachtrag 3) bereits gebaut; dieses
 > Papier beschreibt dazu den Nachzug nach **E87** (Wahl der Zonierung, Vorgabe
 > DIN-V-18599-Zone, Größengrenze). **E87** entscheidet die Fragen F1 bis F5 (Kapitel 7); es ist
-> nichts mehr offen. Umsetzung in den Wellen HC-1 bis HC-4 (Kapitel 6).
+> nichts mehr offen. Umsetzung in den Wellen HC-1 bis HC-4 (Kapitel 6); **alle vier Wellen sind gebaut (HC-3 #736, HC-1 #740, HC-2 #746, HC-4 #754), offen bleibt nur 5.3.**
 
 Der Anwender hat am 05.10.2026 drei Ziele genannt: **(2)** alle sinnvollen Informationen aus
 der IFC-Datei nutzen, nicht aus der `.sqproj`; **(3)** was in der IFC fehlt und wesentlich ist,
@@ -300,7 +300,7 @@ als Startplan, Ziehen mit der Maus, Windows-Sichtabnahme, iOS-Lauf für den Date
 | 1 | **HC-3** Nachzug E87 an SQ | Wahl „DIN-Zonen \| Simulationszonen“ mit Vorgabe 5, Protokoll, Quelle im Zonenplan, Größengrenze 250/100 MB, Nachtrag 3 berichtigt | 0,5–1 | nein | keine |
 | 2 | **HC-1** Kern: IFC vollenden und Flächen klassifizieren | zweiseitige Randbedingung, Bauteilkörper, Rahmenanteil; Flächengruppen R0–R7 je Raumkörper mit Bilanz — **HC-1 umgesetzt (#740)**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_HC-1_IFC_Randbedingung_Bauteilkoerper_Flaechen.md) | 2–3 | nein | keine |
 | 3 | **HC-2** Ansicht: Farbmodus Randbedingung | Umschalter, Legende, 2D-Kanten und Schraffur, 3D-Dreiecksfarben und Bauteilkörper — **HC-2 umgesetzt (#746)**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-2_Farbmodus_Randbedingung.md) | 1–2 | nein | keine |
-| 4 | **HC-4** „Datei erneut lesen“ | Ansicht im Gebäudedialog aus der gespeicherten Importquelle, Hashprüfung, beide Farbmodi | 1 | nein | keine |
+| 4 | **HC-4** „Datei erneut lesen“ | Ansicht im Gebäudedialog aus der gespeicherten Importquelle, Hashprüfung, beide Farbmodi — **HC-4 umgesetzt (#754)**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-4_Datei_erneut_lesen.md) | 1 | nein | keine |
 
 HC-3 geht vor, weil der Anwender die Projektdateien jetzt importiert und die Vorgabe
 DIN-Zone sofort wirken soll. Maßstab wie im Plan G7b bis KU3: 1 PT ≈ 0,8–1 Punkt des
@@ -344,6 +344,8 @@ die Sichtabnahme auf Windows, die iPad-Sichtprobe hängt an der offenen Probe 31
 | Kern und Hülle | Opus | `GebaeudeImportCtrl.LesenQuellen` liefert Dateiname und Hash; `GebaeudeHuelle`: Datei über `Dienste.Datei` wählen (Vorbelegung Dateiname), Hash prüfen, Abbild lesen, `GebaeudeAnsichtDaten` bauen; nichts schreiben | `GebaeudeHuelleTests` mit passendem und abweichendem Hash |
 | Dialog | Opus | Knopf „Datei erneut lesen“ im Gebäudedialog (nur bei importiertem Gebäude), eingebettete `GebaeudeAnsicht` mit beiden Farbmodi, Hinweis bei abweichendem Hash | bunit `GebaeudeDialogImportTests` erweitert |
 | Papiere | Sonnet | Datenaustauschkonzept 14 (Ort der Ansicht), Statuszeile, Protokoll, Wiki-Quelle des Gebäudedialogs | Link-Wache grün |
+
+**Gebauter Stand (#754):** Knopf, Dateiwahl, Prüfung, Ansicht in beiden Farbmodi und Hinweis bei abweichendem Hash sind umgesetzt, die Ansicht als eigene Überlagerung statt eingebettet; die vier Abweichungen vom Entwurf (Überlagerung nach Hausregel DL-2, kein Knopf im Assistenten, Dateiname im Titel des Wählers statt wörtlich vorbelegt, Dateidatum der Projektdatei nicht gezeigt) und die fehlende Laufanzeige beim ersten Lesen stehen im [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-4_Datei_erneut_lesen.md).
 
 
 ## 7. Fragen — alle entschieden (E87, 05.10.2026)

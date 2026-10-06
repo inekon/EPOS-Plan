@@ -3449,7 +3449,7 @@ Select file now?</value>
     <value>Area [m²]:</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_PRUEFUNG" xml:space="preserve">
-    <value>Design check according to VDI 4640 Part 2 (after the simulation)</value>
+    <value>Design check according to VDI 4640 Part 2</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_QUELLSYSTEM" xml:space="preserve">
     <value>Source system</value>
@@ -3460,6 +3460,9 @@ Select file now?</value>
   <data name="SIMQ_ERDREICH_HINWEIS_FESTGESTEIN" xml:space="preserve">
     <value>
   Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
+    <value>The borehole heat exchanger uses a source temperature that is constant all year, made up of the mean ground temperature and a depth allowance; the heat extraction does not act back on it.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -3475,6 +3478,27 @@ Select file now?</value>
   </data>
   <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
     <value>(DIN 4710, default from the climate region)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT" xml:space="preserve">
+    <value>No preliminary check from design values possible — {0} is missing.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT" xml:space="preserve">
+    <value>the heating capacity or the COP at the rating point of the performance map of “{0}”</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP" xml:space="preserve">
+    <value>a heat pump assigned to the system</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE" xml:space="preserve">
+    <value>the climate zone (full-load hours according to DIN 4710)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_KOPF" xml:space="preserve">
+    <value>Preliminary check from design values (no simulation run yet)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_MODUL" xml:space="preserve">
+    <value>  {0}: Q_N = {1} kW, COP = {2} ({3}) → extraction rate ≈ {4} W</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_SUMME" xml:space="preserve">
+    <value>  Extraction rate ≈ Q_N · (1 − 1/COP) = {0} W; annual extracted energy ≈ {0} W · {1} h/a (climate zone according to DIN 4710) = {2} kWh/a</value>
   </data>
   <data name="SIMQ_KARTE_GEWAEHLT" xml:space="preserve">
     <value>Selected zone: {0}</value>
@@ -3548,8 +3572,8 @@ For greater depths select the source system 'borehole heat exchanger'.</value>
   <data name="SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF" xml:space="preserve">
     <value>(no simulation run yet)
 
-The check requires maximum extraction rate, annual extracted energy and
-annual full-load hours from a simulation run.</value>
+Without a run the check uses design values; after a simulation run it checks
+the run's extraction rate, annual extracted energy and full-load hours.</value>
   </data>
   <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
     <value>Horizontal ground collector</value>
@@ -45353,8 +45377,32 @@ chart</value>
   <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
     <value>The project chillers cannot be opened — is a project open?</value>
   </data>
-  <data name="KMA_REITER_KNOPF" xml:space="preserve">
-    <value>Chillers…</value>
+  <data name="START_E_KUEHL_TITEL" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="START_E_KUEHL_TEXT" xml:space="preserve">
+    <value>Chillers of the project and heat pumps with cooling function</value>
+  </data>
+  <data name="START_E_KUEHL_KM" xml:space="preserve">
+    <value>Chillers</value>
+  </data>
+  <data name="START_E_KUEHL_WP" xml:space="preserve">
+    <value>Heat pumps in cooling mode</value>
+  </data>
+  <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
+    <value>{0} ({1} ×)</value>
+  </data>
+  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
+    <value>No chiller in the project — click the tile to add one.</value>
+  </data>
+  <data name="START_E_KUEHL_LEER" xml:space="preserve">
+    <value>The project has no chiller and no heat pump with cooling function. Clicking the tile opens the chillers of the project.</value>
+  </data>
+  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
+    <value>The project does not calculate cooling (project setting “Calculate cooling” under Simulation › Configuration is off): chillers and heat pumps in cooling mode stay out of operation in the simulation.</value>
+  </data>
+  <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
+    <value>The cooling mode of the heat pump could not be saved.</value>
   </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Chillers in the project</value>
@@ -46193,9 +46241,6 @@ chart</value>
   <data name="RNP_FRAGE_ZUORDNUNG_LOESCHEN" xml:space="preserve">
     <value>Delete the mapping “{0}”?</value>
   </data>
-  <data name="RNP_TXT_TAGE" xml:space="preserve">
-    <value>generated: {0} usage days, source: {1} days</value>
-  </data>
   <data name="RNP_BTN_PROFIL_UEBERNEHMEN" xml:space="preserve">
     <value>Apply usage profile…</value>
   </data>
@@ -46340,6 +46385,51 @@ chart</value>
   <data name="GANS_RAND_TREFFER_BAUTEIL" xml:space="preserve">
     <value>Selected: component {0} — {1}</value>
   </data>
+  <data name="GEB_BTN_NEU_LESEN" xml:space="preserve">
+    <value>Read file again…</value>
+  </data>
+  <data name="GEB_BTN_NEU_LESEN_HINWEIS" xml:space="preserve">
+    <value>Read the import file of the selected building again and view the building by zones and by boundary condition – nothing is saved</value>
+  </data>
+  <data name="GEB_NL_TITEL" xml:space="preserve">
+    <value>Read import file again</value>
+  </data>
+  <data name="GEB_NL_DATEI_TITEL" xml:space="preserve">
+    <value>Select import file "{0}"</value>
+  </data>
+  <data name="GEB_NL_QUELLE" xml:space="preserve">
+    <value>Import source: {0} ({1}), imported on {2}</value>
+  </data>
+  <data name="GEB_NL_PASSEND" xml:space="preserve">
+    <value>The file "{0}" matches the import source. The view shows the file; nothing is saved.</value>
+  </data>
+  <data name="GEB_NL_HASH_ABWEICHEND" xml:space="preserve">
+    <value>The file "{0}" (modified on {1}) is not the imported file: SHA-256 {2}… instead of {3}…. No view is shown.</value>
+  </data>
+  <data name="GEB_NL_NICHT_LESBAR" xml:space="preserve">
+    <value>The file "{0}" cannot be read: {1}</value>
+  </data>
+  <data name="GEB_NL_FORMAT_UNBEKANNT" xml:space="preserve">
+    <value>The file "{0}" does not have the format of the import source ({1}).</value>
+  </data>
+  <data name="GEB_NL_ZU_GROSS" xml:space="preserve">
+    <value>At {1}, the file "{0}" exceeds the limit of {2} on this device.</value>
+  </data>
+  <data name="GEB_NL_KEINE_QUELLE" xml:space="preserve">
+    <value>This building has no import source.</value>
+  </data>
+  <data name="GEB_NL_NUR_GEOMETRIE" xml:space="preserve">
+    <value>The zones come from the geometry file alone ({0}); a project file and manual assignments are not included in this view.</value>
+  </data>
+  <data name="GEB_NL_ZONENREGEL" xml:space="preserve">
+    <value>The zones follow the rule of the file ({0}); manual assignments are not included in this view.</value>
+  </data>
+  <data name="GEB_NL_ANDERE_DATEI" xml:space="preserve">
+    <value>Select another file…</value>
+  </data>
+  <data name="GEB_NL_LAEUFT" xml:space="preserve">
+    <value>Reading the file …</value>
+  </data>
   <data name="RNP_KI_KATEGORIE_NAME" xml:space="preserve">
     <value>Category</value>
   </data>
@@ -46372,6 +46462,48 @@ chart</value>
   </data>
   <data name="RNP_MSG_HERKUNFT_PROFIL" xml:space="preserve">
     <value>from usage profile {0}</value>
+  </data>
+  <data name="RNP_IMP_NICHT_IM_KATALOG" xml:space="preserve">
+    <value>{0} (not in catalogue)</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_IFC" xml:space="preserve">
+    <value>from IFC class {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_DIN" xml:space="preserve">
+    <value>from DIN no. {0} of the project file</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMTYP" xml:space="preserve">
+    <value>from room type {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_DATEI" xml:space="preserve">
+    <value>from the usage in the file</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_GESPEICHERT" xml:space="preserve">
+    <value>from the previous import</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_HAND" xml:space="preserve">
+    <value>set by hand</value>
+  </data>
+  <data name="RNP_IMP_AUS_DATEI" xml:space="preserve">
+    <value>{0} from the file</value>
+  </data>
+  <data name="RNP_IMP_UND" xml:space="preserve">
+    <value>and</value>
+  </data>
+  <data name="RNP_IMP_EINZONE_VORSCHLAG" xml:space="preserve">
+    <value>Suggestion from DIN no. {0}: {1} — assign it in the building editor with “Apply usage profile…”</value>
+  </data>
+  <data name="KOND_LBL_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>Usage profile {0}</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_PROFIL" xml:space="preserve">
+    <value>from usage profile {0}</value>
+  </data>
+  <data name="RNP_TXT_NUTZUNGSTAGE" xml:space="preserve">
+    <value>Usage days per year: {0} (from weekly pattern and public holidays)</value>
+  </data>
+  <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
+    <value>Usage days per year: {0} (from weekly pattern and public holidays), minus {1} holiday-period days = {2}</value>
   </data>
 </root>
 

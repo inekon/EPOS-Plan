@@ -83,7 +83,7 @@
                 </th>
                 @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
                 {
-                    string? herkunft = Bearbeitung.Herkunft(g);
+                    string? herkunft = Bearbeitung.HerkunftText(g);
                     <td class="epos-kond-herkunft @Spaltenklasse(g)" data-groesse="@((int)g)">
                         @if (VorlageZeigen.HasDelegate && !Lesemodus && Bearbeitung.MitVorlagen)
                         {
