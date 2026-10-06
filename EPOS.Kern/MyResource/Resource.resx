@@ -47247,5 +47247,149 @@ Chart</value>
   <data name="KOND_AUFH_MANUELL_KI_NUR_PROJEKT" xml:space="preserve">
     <value>Die manuelle Aufheizzeit gibt es nur für ein Gebäude im Projekt (Knopf „Hülle und Zonen…“), nicht am Katalogsatz.</value>
   </data>
+  <data name="BV_AUFH_NACHTAUSKUEHLSTUNDEN" xml:space="preserve">
+    <value>Nachtauskühlstunden</value>
+  </data>
+  <data name="BV_AUFH_SOMMERLUEFTUNGSSTUNDEN" xml:space="preserve">
+    <value>Sommerlüftungsstunden</value>
+  </data>
+  <data name="BV_AUFH_ZUSTAND" xml:space="preserve">
+    <value>Aufheizoptimierung</value>
+  </data>
+  <data name="BV_AUFH_ART" xml:space="preserve">
+    <value>Art der Aufheizzeit</value>
+  </data>
+  <data name="BV_AUFH_ZEIT_MAX" xml:space="preserve">
+    <value>Längste Aufheizzeit t_auf,max</value>
+  </data>
+  <data name="BV_AUFH_ZEIT_MANUELL" xml:space="preserve">
+    <value>Aufheizzeit manuell</value>
+  </data>
+  <data name="BV_AUFH_LEISTUNG" xml:space="preserve">
+    <value>Aufheizleistung P_auf</value>
+  </data>
+  <data name="BV_AUFH_TAGE" xml:space="preserve">
+    <value>Rampentage</value>
+  </data>
+  <data name="BV_AUFH_STUNDEN" xml:space="preserve">
+    <value>Aufheizstunden Σ</value>
+  </data>
+  <data name="BV_AUFH_LAENGSTE" xml:space="preserve">
+    <value>Längste Rampe</value>
+  </data>
+  <data name="BV_AUFH_BEGRENZT" xml:space="preserve">
+    <value>Tage durch die Absenkdauer begrenzt (W2)</value>
+  </data>
+  <data name="BV_AUFH_UNERREICHBAR" xml:space="preserve">
+    <value>Tage ohne erreichbare Rampe (W1)</value>
+  </data>
+  <data name="BV_AUFH_KAPPUNG" xml:space="preserve">
+    <value>Kappungsstunden an der Heizleistungsgrenze</value>
+  </data>
+  <data name="BV_AUFH_AUFSCHLAG" xml:space="preserve">
+    <value>Aufschlag (Projekteinstellung)</value>
+  </data>
+  <data name="BV_AUFH_AUFSCHLAG_WERT" xml:space="preserve">
+    <value>{0} h / {1} % (es gilt der größere Wert)</value>
+  </data>
+  <data name="BV_AUFH_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegungsgröße Φ_HL + Φ_RH</value>
+  </data>
+  <data name="BV_AUFH_AUSLEGUNGSHEIZLAST" xml:space="preserve">
+    <value>davon Auslegungsheizlast Φ_HL</value>
+  </data>
+  <data name="BV_AUFH_ZUSCHLAG" xml:space="preserve">
+    <value>davon Aufheizzuschlag Φ_RH</value>
+  </data>
+  <data name="BV_AUFH_HINWEISE" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="BV_AUFH_KURZ_ZEILE" xml:space="preserve">
+    <value>Konditionierung – {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_AUS" xml:space="preserve">
+    <value>aus</value>
+  </data>
+  <data name="BV_AUFH_KURZ_NACHT" xml:space="preserve">
+    <value>Nacht {0}–{1} Uhr</value>
+  </data>
+  <data name="BV_AUFH_KURZ_WOCHENENDE" xml:space="preserve">
+    <value>Wochenende {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_FERIEN" xml:space="preserve">
+    <value>Ferien {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_SAISON" xml:space="preserve">
+    <value>Saison {0}–{1}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_DATUM" xml:space="preserve">
+    <value>d.M.</value>
+  </data>
+  <data name="BV_AUFH_KURZ_KALENDER" xml:space="preserve">
+    <value>eigener Kalender</value>
+  </data>
+  <data name="BV_AUFH_KURZ_VORLAGE" xml:space="preserve">
+    <value>Vorlage „{0}“</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__NACHTAUSKUEHLSTUNDEN" xml:space="preserve">
+    <value>Stunden mit wirksamer Nachtauskühlung des laufenden Gebäudes; leer ohne Nachtauskühlung, nur auf dem Weg nach VDI 6007.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SOMMERLUEFTUNGSSTUNDEN" xml:space="preserve">
+    <value>Stunden mit eingeschalteter Sommerlüftung des laufenden Gebäudes; leer ohne Sommerlüftung, nur auf dem Weg nach VDI 6007.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSTAND" xml:space="preserve">
+    <value>Zustand der Aufheizoptimierung des laufenden Gebäudes (bemessen, unerreichbar, gekoppelt); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZART" xml:space="preserve">
+    <value>Wirksame Art der Aufheizzeit des laufenden Gebäudes (täglich, fest oder manuell mit Wert); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT" xml:space="preserve">
+    <value>Längste Aufheizzeit t_auf,max des laufenden Gebäudes in Stunden, bei Art manuell der manuelle Wert; leer ohne Aufheizoptimierung oder bei unerreichbarer Bemessung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_MANUELL" xml:space="preserve">
+    <value>Manuelle Aufheizzeit des laufenden Gebäudes in Stunden; leer, wenn das Gebäude der Art des Projekts folgt.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZ_AUSSENTEMPERATUR" xml:space="preserve">
+    <value>Außentemperatur der Bemessung T_a,B des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZLEISTUNG" xml:space="preserve">
+    <value>Aufheizleistung P_auf des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZQUELLE" xml:space="preserve">
+    <value>Quelle der Aufheizleistung des laufenden Gebäudes (Heizleistungsgrenze, Zielleistung oder gemischt); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE" xml:space="preserve">
+    <value>Tage mit einer Aufheizrampe des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZSTUNDEN" xml:space="preserve">
+    <value>Summe der Rampenstunden des laufenden Gebäudes im Jahr; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_LAENGSTE" xml:space="preserve">
+    <value>Längste Rampe des Jahres des laufenden Gebäudes in Stunden; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_BEGRENZT" xml:space="preserve">
+    <value>Tage, an denen die Absenkdauer die Rampe des laufenden Gebäudes begrenzt hat (W2); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_UNERREICHBAR" xml:space="preserve">
+    <value>Tage ohne erreichbare Rampe bis 48 h des laufenden Gebäudes (W1); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__KAPPUNGSSTUNDEN" xml:space="preserve">
+    <value>Kappungsstunden an der Heizleistungsgrenze des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSHEIZLAST" xml:space="preserve">
+    <value>Stationäre Auslegungsheizlast Φ_HL des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSCHLAG" xml:space="preserve">
+    <value>Aufheizzuschlag Φ_RH des laufenden Gebäudes (Teil der Aufheizleistung über der stationären Last); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSGROESSE" xml:space="preserve">
+    <value>Auslegungsgröße Φ_HL + Φ_RH des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZHINWEISE" xml:space="preserve">
+    <value>Die Hinweise W1 bis W5 der Aufheizoptimierung des laufenden Gebäudes, je Hinweis eine Zeile; leer ohne Anlass.</value>
+  </data>
+  <data name="VF_HAT__AUFHEIZUNG" xml:space="preserve">
+    <value>Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit Aufheizoptimierung gerechnet?</value>
+  </data>
 </root>
 

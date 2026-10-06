@@ -59,6 +59,16 @@ namespace WindowsFormsApplication1
                     // Stufe G6b: mit den Zonenzeilen des Laufs (Tab_ErgebnisZone, E30).
                     // AK1z (E63): mit dem Heizkreis je Zone, wenn eine Zone gekoppelt gerechnet hat.
                     int idGebaeude = (int)(ProjektDetails.D(g, "ID") ?? 0);
+
+                    // KP3 Welle O3a (B19, Teilkonzept 7.6): die Kurzform der Konditionierung je Groesse mit dem Namen der
+                    // uebernommenen Vorlage - nur fuer ein Gebaeude mit eigener Angabe; sonst bleibt der Abschnitt, wie er war.
+                    if (stamm.Details.Konditionierung != null &&
+                        stamm.Details.Konditionierung.TryGetValue(idGebaeude, out Konditionierungsstand kond))
+                    {
+                        List<(string Beschriftung, string Text)> kurz = Aufheizbericht.Konditionierung(kond, k.Kultur);
+                        if (kurz.Count > 0) k.Eigenschaften(kurz.SelectMany(x => new[] { x.Beschriftung, x.Text }).ToArray());
+                    }
+
                     ZonentabelleSchreiben(k, stamm.Details, g, ErgebnisZonen(stamm, idGebaeude),
                                           GebaeudeZeilen(stamm).FirstOrDefault(x => x.ID_Gebaeude == idGebaeude));
                 }
@@ -583,6 +593,8 @@ namespace WindowsFormsApplication1
             if (zeilen.Count == 0) return;
 
             k.Ueberschrift2(UEBERSCHRIFT_GEBAEUDE_ERGEBNIS);
+            // KP3 Welle O3a: der Aufschlag der Projekteinstellung - die Ergebniszeile traegt ihn nicht.
+            (double? H, double? Prozent)? aufschlag = Aufheizbericht.Aufschlag(stamm.Details);
             foreach (ErgebnisGebaeudeModel g in zeilen)
             {
                 k.Ueberschrift3Roh(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename);
@@ -590,8 +602,14 @@ namespace WindowsFormsApplication1
                 // Stufe KU1 (Kuehlkonzept 6.4): Der Zusatz „(informativ)" ist entfallen - mit eingeschalteter
                 // Kuehlung ist die Kuehlenergie der Kaeltebedarf des Gebaeudes; ein Gebaeude ohne wirksame Kuehlung
                 // laeuft frei und zeigt „—" (E32, K18). BV-E5: dieselbe Tafel wie in {{tabelle.gebaeude.ergebnis}}.
-                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Gebaeudeergebnis(g, BerichtTexte.Englisch, k.Kultur)));
+                // KP3 Welle O3a: mit den Lueftungs-, Aufheiz- und Auslegungszeilen (Festlegungen 30, 41) - nur mit Wert.
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Gebaeudeergebnis(g, BerichtTexte.Englisch, k.Kultur, aufschlag)));
+                // Festlegung 30: W1-W5 als benannte Hinweiszeilen unter der Tafel des Gebaeudes, nur mit Anlass.
+                foreach (string hinweis in Aufheizbericht.Hinweise(g, k.Kultur)) k.HinweisRoh(hinweis);
             }
+
+            // E60 (Festlegung 41): neben der Auslegungsgroesse der Hinweis, dass die ideale Spitze keine ist.
+            if (zeilen.Any(g => Aufheizbericht.Auslegungsgroesse(g).HasValue)) k.HinweisRoh(Aufheizbericht.HinweisSpitze(k.Kultur));
 
             if (zeilen.Any(g => !g.IstVdi6007))
                 k.Hinweis("Der Tagesbilanz-Weg (Bestandsweg) liefert weder Raumtemperatur noch Kühllast.");
