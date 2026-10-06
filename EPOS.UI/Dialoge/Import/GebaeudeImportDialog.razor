@@ -232,6 +232,14 @@
                             </dd>
                         }
                     </dl>
+                    @* NP2b-4 (Anwenderentscheid 06.10.2026): im Einzonenweg der Vorschlag aus der DIN-Nummer der Datei als
+                       Hinweis - kein Auswahlfeld, gesetzt wird nichts; zugewiesen wird im Gebaeudeeditor. *@
+                    @if (sq.Einzonenvorschlag.Length > 0 && (stand.Zonierung is not { Einzonig: false } || !AlsZoneWirksam))
+                    {
+                        <div class="epos-gebimport-sqvorschlag">
+                            <Herleitungszeile Text="@sq.Einzonenvorschlag" />
+                        </div>
+                    }
                     @if (stand.Zonierung?.Plan is null)
                     {
                         <Herleitungszeile Text="@Texte.SqKeinPlan" />

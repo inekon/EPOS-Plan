@@ -199,6 +199,45 @@ namespace EPOS.Kern.Tests
             Assert.Fail("Keine Z6-Probe mit zwei Zonen und einer Vorbelegung aus der Nutzungsklasse.");
         }
 
+        /// <summary>
+        /// <b>Der Einzonenweg der Projektdatei</b> (NP2b-4, Anwenderentscheid 06.10.2026): Liefert die Datei eine DIN-Nummer
+        /// (hier über die Gebäudegruppe), nennt der Stand den Vorschlag „Vorschlag aus DIN-Nr. n: Profil · Kategorie — zuweisbar
+        /// im Gebäudeeditor …“; gesetzt wird nichts. Ohne Nummer gibt es keinen Vorschlag.
+        /// </summary>
+        [Fact]
+        public async Task Der_Einzonenweg_nennt_den_Vorschlag_aus_der_DIN_Nummer_und_setzt_nichts()
+        {
+            if (!_db.Vorhanden) return;
+            foreach (bool mitGruppe in new[] { false, true })
+            {
+                var h = new GebaeudeImportHuelle();
+                IReadOnlyDictionary<string, object> gaben = h.Gaben();
+                var lesen = (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)gaben["Lesen"];
+                Assert.True((await lesen(Merken(SqprojProbenErzeuger.HottcadZonenhaus(Wurzel())), null, CancellationToken.None)).Gelesen);
+                SqprojProbenErzeuger probe = SqprojProbenErzeuger.Zonenhaus();
+                if (mitGruppe) probe.Gebaeudegruppe = "G1";
+                var dazu = (Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>)gaben["ProjektdateiLesen"];
+                Assert.True((await dazu(Merken(probe.Schreiben(SqprojProbenErzeuger.TempPfad("einzone"))), 0, CancellationToken.None)).Gelesen);
+                var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)gaben["Zuordnen"];
+                GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, null, new Dictionary<string, bool>(), null, null, "Z4",
+                                                                                   null, false, null, null));
+                string vorschlag = stand.Projektdatei!.Einzonenvorschlag;
+                Assert.All(h.Plan.Zonen, z => Assert.Null(z.Profil));     // gesetzt wird nichts
+                if (!mitGruppe)
+                {
+                    Assert.Equal("", vorschlag);
+                    continue;
+                }
+                System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(vorschlag,
+                    @"^Vorschlag aus DIN-Nr\. (\d+): (.+) — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“$");
+                Assert.True(m.Success, vorschlag);
+                Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
+                Planprofil p = v.AusDinNummer(int.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture));
+                Assert.Equal(RaumnutzungSaat.WOHNEN, p.Name);
+                Assert.Equal(p.Name + " · " + v.Kategorie(p.Id), m.Groups[2].Value);
+            }
+        }
+
         private string Merken(string pfad)
         {
             _dateien.Add(pfad);

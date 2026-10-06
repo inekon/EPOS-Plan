@@ -636,6 +636,12 @@ public sealed record GebaeudeProjektdateiDaten
 
     /// <summary>Die schwerste Meldung als Banner (Fehler vor Warnung); <c>null</c> = keine Warnung.</summary>
     public GebaeudeImportMeldung? Schwerste { get; init; }
+
+    /// <summary>
+    /// Der Vorschlag des Einzonenwegs als Hinweiszeile („Vorschlag aus DIN-Nr. 1: Büro · EPOS-Muster — zuweisbar im
+    /// Gebäudeeditor über „Nutzungsprofil übernehmen…““); kein Auswahlfeld, gesetzt wird nichts. Leer = keiner.
+    /// </summary>
+    public string Einzonenvorschlag { get; init; } = "";
 }
 
 /// <summary>

@@ -193,6 +193,24 @@ namespace WindowsFormsApplication1
                                                flaecheM2, volumenM3);
         }
 
+        /// <summary>
+        /// <b>Die DIN-V-18599-Nummer des Einzonenwegs</b> (NP2b-4): dieselbe Wahl wie <see cref="Gebaeudekonditionierung"/> —
+        /// trägt genau eine Zone abgeglichene Räume, die Nummer ihres Nutzungsprofils bzw. ihrer Gruppe, sonst die der
+        /// Gebäudegruppe; <c>null</c> ohne. Ein Vorschlag für den Gebäudeeditor, gesetzt wird nichts.
+        /// </summary>
+        internal static int? Gebaeudeprofilnummer(SqprojAbbild projekt, SqprojRaumabgleich abgleich, SqprojZonierung zonierung = SqprojZonierung.Din18599)
+        {
+            if (projekt == null || projekt.Abgelehnt) return null;
+            SqprojZonierung wirksam = Wirksam(projekt, abgleich, zonierung);
+            List<SqprojZone> belegt = projekt.Zonen.Where(z => Gehoert(z, wirksam) && abgleich != null && z.Raeume.Any(r => abgleich.IfcRaum(r) != null)).ToList();
+            if (belegt.Count == 1)
+            {
+                SqprojZone z = belegt[0];
+                return (z.Nutzungsprofil ?? GeteiltesProfil(z, projekt))?.Profilnummer ?? (z.Gruppe ?? GeteilteGruppe(z, projekt))?.Profilnummer;
+            }
+            return projekt.Gebaeudegruppe?.Profilnummer;
+        }
+
         /// <summary>Das Nutzungsprofil der Nutzungszone, mit der eine Zone die meisten Räume teilt; <c>null</c> = keine.</summary>
         internal static SqprojNutzungsprofil GeteiltesProfil(SqprojZone zone, SqprojAbbild projekt)
         {

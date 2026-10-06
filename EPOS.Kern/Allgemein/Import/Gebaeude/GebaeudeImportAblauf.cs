@@ -361,6 +361,17 @@ namespace WindowsFormsApplication1
         /// (<see cref="SqprojZonen.Gebaeudekonditionierung"/>) — Fläche und Volumen aus den beheizten Räumen des Gebäudes;
         /// <c>null</c> ohne gelesene Projektdatei oder wenn sie nichts liefert.
         /// </summary>
+        /// <summary>
+        /// Die DIN-V-18599-Nummer des Gebäudes im Einzonenweg aus der dazugeladenen Projektdatei
+        /// (<see cref="SqprojZonen.Gebaeudeprofilnummer"/>) — nur der Vorschlag, gesetzt wird kein Profil; <c>null</c> ohne.
+        /// </summary>
+        internal int? Gebaeudeprofilnummer(int gebaeudeIndex)
+        {
+            SqprojStand p = Projektdatei;
+            if (p == null || p.Abgelehnt || Abbild == null || gebaeudeIndex < 0 || gebaeudeIndex >= Abbild.Gebaeude.Count) return null;
+            return SqprojZonen.Gebaeudeprofilnummer(p.Abbild, p.Abgleich, p.Gewaehlt);
+        }
+
         internal Zonenkonditionierung Gebaeudekonditionierung(int gebaeudeIndex)
         {
             SqprojStand p = Projektdatei;

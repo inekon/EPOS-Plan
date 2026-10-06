@@ -17,7 +17,7 @@ public partial class GebaeudeImportZonenDialogTests
 {
     /// <summary>Der Zonenbaum mit einer Umformung jedes Stands der Hülle (der Katalog, den die Testumgebung nicht hat).</summary>
     private IRenderedComponent<GebaeudeImportDialog> ZonenbaumUmgeformt(Zonenbaumprobe p, Func<GebaeudeImportStand, GebaeudeImportStand> umformen,
-                                                                       RaumnutzungWeg? katalog = null)
+                                                                       RaumnutzungWeg? katalog = null, bool projektdatei = false)
     {
         string probe = Path.Combine(Wurzel(), "Referenzlaeufe", "Importproben", "ifc4_zonen.ifc");
         var huelle = new GebaeudeImportHuelle();
@@ -34,6 +34,9 @@ public partial class GebaeudeImportZonenDialogTests
             c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)(_ => Array.Empty<GebaeudeImportMeldung>()));
             c.Add(x => x.Uebernehmen, (Func<GebaeudeImportErgebnis, Task<string?>>)(e => { p.Uebernommen.Add(e); return Task.FromResult<string?>(null); }));
             if (katalog is not null) c.Add(x => x.Raumnutzung, katalog);
+            if (projektdatei)
+                c.Add(x => x.ProjektdateiLesen, (Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>)((_, _, _) =>
+                    Task.FromResult(new GebaeudeProjektdateiDaten())));
         });
         Einlesen(cut);
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-zonenbaum")));
@@ -107,6 +110,31 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.Equal("Büro · EPOS-Muster — aus DIN-Nr. 1 der Projektdatei; Heizen und Personen aus der Datei; Mo–Fr · 7–18 h · 21 °C",
                      zeile.TextContent.Trim());
         Assert.Same(zeile, cut.FindAll("tr.epos-gebimport-planzone")[0].NextElementSibling);
+    }
+
+    /// <summary>
+    /// <b>Der Einzonenweg der Projektdatei</b> (NP2b-4): Ergibt die Datei eine Zone, steht der Vorschlag aus der DIN-Nummer als
+    /// Hinweiszeile im Block der Projektdatei — ohne Auswahlfeld; im Mehrzonenweg (als Zonen übernommen) steht er nicht.
+    /// </summary>
+    [Fact]
+    public void Der_Einzonenweg_zeigt_den_Vorschlag_aus_der_DIN_Nummer_als_Hinweis()
+    {
+        const string VORSCHLAG = "Vorschlag aus DIN-Nr. 1: Büro · EPOS-Muster — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“";
+        bool einzonig = true;
+        IRenderedComponent<GebaeudeImportDialog> cut = ZonenbaumUmgeformt(new Zonenbaumprobe(), s => s with
+        {
+            Projektdatei = new GebaeudeProjektdateiDaten { Dateiname = "haus.sqproj", Einzonenvorschlag = VORSCHLAG },
+            Zonierung = einzonig ? s.Zonierung! with { Einzonig = true } : s.Zonierung,
+        }, projektdatei: true);
+
+        IElement hinweis = cut.Find(".epos-gebimport-sqvorschlag");
+        Assert.Equal(VORSCHLAG, hinweis.TextContent.Trim());
+        Assert.Empty(hinweis.QuerySelectorAll("select, input"));
+
+        einzonig = false;
+        cut.Find("[data-aktion=\"anlegen\"]").Click();
+        cut.Find(".epos-gebimport-anlegen-ok").Click();
+        Assert.Empty(cut.FindAll(".epos-gebimport-sqvorschlag"));
     }
 
     /// <summary>
