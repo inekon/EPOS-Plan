@@ -113,7 +113,7 @@
                         </div>
                         @if (Nutzungsvorschlaege is { Count: > 0 } vorschlaege)
                         {
-                            <Suchauswahl Bezeichnung="@Texte.LabelNutzungVorschlag" Eintraege="@Vorschlagseintraege"
+                            <Suchauswahl Bezeichnung="@LabelNutzungVorschlag" Eintraege="@Vorschlagseintraege"
                                          Auswahl="@((int?)null)" AuswahlChanged="VorschlagGewaehlt" />
                         }
                     </KindInhalt>
@@ -345,6 +345,9 @@
     /// dann bleibt der freie Text.
     /// </summary>
     [Parameter] public IReadOnlyList<string>? Nutzungsvorschlaege { get; set; }
+
+    /// <summary>Die Beschriftung der Vorschläge (<c>RNP_LBL_NUTZUNG_VORSCHLAG</c>, Bündel des Nutzungsprofilkatalogs).</summary>
+    [Parameter] public string LabelNutzungVorschlag { get; set; } = "Vorschlag aus dem Katalog";
 
     private IReadOnlyList<(int Id, string Text)> Vorschlagseintraege
         => (Nutzungsvorschlaege ?? Array.Empty<string>()).Select((t, i) => (i, t)).ToList();

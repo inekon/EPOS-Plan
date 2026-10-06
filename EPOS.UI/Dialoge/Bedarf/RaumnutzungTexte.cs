@@ -342,6 +342,9 @@ public sealed class RaumnutzungTexte
     /// <summary>Die Kopfzeile der Zone ({0} = zuletzt übernommenes Profil) (<c>RNP_TXT_ZONENKOPF</c>).</summary>
     public string Zonenkopf { get; set; } = "Nutzungsprofil: {0}";
 
+    /// <summary>Die Vorschläge der Nutzung in „Als Vorlage speichern…" (<c>RNP_LBL_NUTZUNG_VORSCHLAG</c>, NP-F15).</summary>
+    public string LabelNutzungVorschlag { get; set; } = "Vorschlag aus dem Katalog";
+
     /// <summary>Der Knopf am Zonenbaum des Imports (<c>RNP_BTN_PROFILE_IMPORT</c>).</summary>
     public string KnopfProfileImport { get; set; } = "Nutzungsprofile…";
 

@@ -114,6 +114,7 @@
                                UebernehmenSperre="@(groesse == KonditionierungGroesse.Kuehlen ? Kuehlsperre : null)"
                                Verweigert="Verweigert"
                                Nutzungsvorschlaege="@Bearbeitung.Nutzungsvorschlaege()"
+                               LabelNutzungVorschlag="@ProfilTexte.LabelNutzungVorschlag"
                                AlsVorlageSpeichern="@(Bearbeitung.Bietet(KonditionierungHandlung.AlsVorlageSpeichern)
                                                       ? e => Bearbeitung.AlsVorlageSpeichern(groesse, e) : null)"
                                VorlageGespeichert="VorlagenGeaendert" Abgelehnt="Abgelehnt"

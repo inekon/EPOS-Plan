@@ -445,9 +445,6 @@ public sealed class KonditionierungTexte
     /// <summary><c>KOND_LBL_VORLAGE_NUTZUNG</c> — Vorlage</summary>
     public string LabelVorlageNutzung { get; set; } = "Nutzung";
 
-    /// <summary><c>RNP_LBL_NUTZUNG_VORSCHLAG</c> — die Vorschläge der Nutzung aus dem Katalog der Nutzungsprofile (NP-F15)</summary>
-    public string LabelNutzungVorschlag { get; set; } = "Vorschlag aus dem Katalog";
-
     /// <summary>
     /// <c>KOND_LBL_NUTZUNG_WOHNEN</c> — Anzeigewert der Nutzung <c>WOHNEN</c> (der Persistenzwert bleibt
     /// deutsch)
