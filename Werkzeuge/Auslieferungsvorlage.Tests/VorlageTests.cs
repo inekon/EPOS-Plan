@@ -285,7 +285,7 @@ namespace Auslieferungsvorlage.Tests
 
             Assert.True(befund.Tabellen, "Die Tabellen der Importherkunft fehlen in der Vorlage.");
             Assert.Equal(0L, befund.Zeilen);
-            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0)",
+            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0, Tab_Raumgrundriss 0)",
                             File.ReadAllText(_v.Ziel + ".bericht.txt"));
         }
 
