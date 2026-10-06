@@ -243,6 +243,84 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", NAME_AUSLIEFERUNG));
         }
 
+        /// <summary>
+        /// <b>Still speichern vor dem Löschen</b> (Anwenderentscheid 06.10.2026): Eine eben übernommene,
+        /// ungespeicherte Zeile des Satzes bekommt über den stillen Speicherweg der Hülle (derselbe wie OK)
+        /// ihre Kopie samt Kalendern und Zonen; die Rückfrage nennt das Projekt. Nach dem Löschen bleibt die
+        /// Kopie unverändert, und das spätere OK schreibt nichts neu.
+        /// </summary>
+        [Fact]
+        public void Still_speichern_vor_dem_Loeschen_erhaelt_die_Kopie_samt_Zonen_und_Kalendern()
+        {
+            using var db = new TestDatenbank();
+            using var kultur = new Kulturvorrichtung();
+            const int PROJEKT = 1030;
+            string projektname = Projektname(PROJEKT);
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, projektname, modelle, wizard: false);
+            var zeilen = (List<EPOS.UI.Dialoge.Bedarf.GebaeudeProjektZeile>)gaben["Zeilen"];
+            var aufnehmen = (Func<string, EPOS.UI.Dialoge.Bedarf.GebaeudeProjektZeile>)gaben["StammSatz"];
+            var hinweis = (Func<string, string>)gaben["KatalogLoeschhinweis"];
+            var speichern = (Func<string>)gaben["ListeSpeichern"];
+
+            Assert.DoesNotContain(projektname, hinweis(NAME_KONDITIONIERUNG));
+            EPOS.UI.Dialoge.Bedarf.GebaeudeProjektZeile zeile = aufnehmen(NAME_KONDITIONIERUNG);
+            zeilen.Add(zeile);
+            ((Action)gaben["Geaendert"])();
+            Assert.False(zeile.HatProjektkopie);
+            Assert.Contains(projektname, hinweis(NAME_KONDITIONIERUNG));
+
+            long zuordnungen = Zahl("SELECT COUNT(*) FROM Z_ProjektGebaeude WHERE ID_Projekt = ?", PROJEKT);
+            Assert.Equal("", speichern());
+            Assert.True(zeile.HatProjektkopie);
+            Assert.True(zeile.IdZ < GebaeudeHuelle.STARTINDEX);
+            Assert.Equal(zuordnungen + 1, Zahl("SELECT COUNT(*) FROM Z_ProjektGebaeude WHERE ID_Projekt = ?", PROJEKT));
+            string KOPIE = "SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = " + zeile.IdZ.ToString(CultureInfo.InvariantCulture);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM (" + KOPIE + ")"));
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_Konditionierungskalender WHERE ID_Gebaeude_Stamm = ?", STAMM_KONDITIONIERUNG),
+                         Zahl("SELECT COUNT(*) FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IN (" + KOPIE + ")"));
+            Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IN (" + KOPIE + ")") > 0);
+            Assert.Contains(projektname, GebaeudeStammCtrl.Projektkopien(NAME_KONDITIONIERUNG));
+            string vorher = Abdruck(KOPIE);
+            long kopieId = Zahl(KOPIE);
+
+            Assert.True(GebaeudeStammCtrl.Loeschen(NAME_KONDITIONIERUNG));
+            foreach (EPOS.UI.Dialoge.Bedarf.GebaeudeProjektZeile z in zeilen)
+                if (z.IdKatalog == STAMM_KONDITIONIERUNG) z.IdKatalog = null;   // wie der Dialog nach dem Löschen
+            Assert.Equal(vorher, Abdruck(KOPIE));
+
+            // Das OK danach: derselbe Abgleich findet nichts zu schreiben - die Kopie bleibt dieselbe.
+            ((Action)gaben["Geaendert"])();
+            Assert.True(new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle).Gelungen);
+            Assert.Equal(kopieId, Zahl(KOPIE));
+            Assert.Equal(vorher, Abdruck(KOPIE));
+        }
+
+        /// <summary>
+        /// <b>Scheitert das stille Speichern, steht die Meldung des Kerns da</b> — der Satz der Zeile ist
+        /// schon weg (etwa aus einem zweiten Fenster gelöscht): „Katalogsatz fehlt", die Zeile bleibt
+        /// ungespeichert.
+        /// </summary>
+        [Fact]
+        public void Scheitert_das_stille_Speichern_kommt_die_Meldung()
+        {
+            using var db = new TestDatenbank();
+            using var kultur = new Kulturvorrichtung();
+            const int PROJEKT = 1030;
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, Projektname(PROJEKT), modelle, wizard: false);
+            var zeilen = (List<EPOS.UI.Dialoge.Bedarf.GebaeudeProjektZeile>)gaben["Zeilen"];
+            EPOS.UI.Dialoge.Bedarf.GebaeudeProjektZeile zeile = ((Func<string, EPOS.UI.Dialoge.Bedarf.GebaeudeProjektZeile>)gaben["StammSatz"])(NAME_FREI);
+            zeilen.Add(zeile);
+            Assert.True(GebaeudeStammCtrl.Loeschen(NAME_FREI));
+
+            string meldung = ((Func<string>)gaben["ListeSpeichern"])();
+            Assert.Contains(NAME_FREI, meldung);
+            Assert.False(zeile.HatProjektkopie);
+            Assert.True(zeile.IdZ >= GebaeudeHuelle.STARTINDEX);
+            Assert.False(GebaeudeHuelle.Gaben(PROJEKT, "", Z_ProjGebCtrl.LiesProjekt(PROJEKT), wizard: true).ContainsKey("ListeSpeichern"));
+        }
+
         [Fact]
         public void Ein_Auslieferungssatz_wird_benannt_abgelehnt()
         {

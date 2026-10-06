@@ -607,6 +607,18 @@
     [Parameter] public Func<string, string>? KatalogLoeschhinweis { get; set; }
 
     /// <summary>
+    /// <b>Der stille Speicherweg der Projektliste</b> (Anwenderentscheid 06.10.2026) — derselbe Weg
+    /// wie OK, nur ohne Schließen (<c>WizardCtrl.Speichere_Projekt_Gebaeudeliste</c>, ein Abgleich:
+    /// das spätere OK findet nichts mehr zu schreiben). Danach trägt jede neue Zeile ihre echte
+    /// Zuordnungs-Id und ihre Projektkopie; Auswahl und Liste bleiben dieselben Objekte. Gerufen,
+    /// bevor ein Katalogsatz gelöscht wird, aus dem eine ungespeicherte Zeile stammt, und bevor
+    /// „Gebäude im Projekt bearbeiten…" oder „Exportieren…" eine ungespeicherte Zeile öffnen.
+    /// Rückgabe: leer bei Erfolg, sonst die Meldung — dann geschieht nichts weiter. Ohne Delegat
+    /// (Assistent) bleibt es bei der weichen Sperre.
+    /// </summary>
+    [Parameter] public Func<string>? ListeSpeichern { get; set; }
+
+    /// <summary>
     /// Meldet der Hülle, dass sich die Projektliste geändert hat — aufgenommen, entfernt
     /// oder eine Zeile bearbeitet.
     ///
@@ -1679,6 +1691,14 @@
         _loeschfrage = false;
         if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
 
+        // Anwenderentscheid 06.10.2026: Stammt eine eben übernommene, noch ungespeicherte Zeile aus
+        // diesem Satz, entsteht ihre Kopie zuerst (stilles Speichern); sonst fände das OK den Satz
+        // nicht mehr. Scheitert das Speichern, wird nicht gelöscht.
+        int satz = _katalogzeile.Id;
+        if (ListeSpeichern is not null && Zeilen.Any(z => !z.HatProjektkopie && z.IdKatalog == satz)
+            && !StillSpeichern(amKatalog: true))
+            return;
+
         if (!KatalogLoeschen(_katalogzeile.Bezeichner))
         {
             string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
@@ -1758,6 +1778,23 @@
         _neulesenOffen = false;
         _neulesenStand = null;
         _neulesenGeschoss = null;
+    }
+
+    /// <summary>
+    /// <b>Der eine stille Speicherweg</b> (<see cref="ListeSpeichern"/>): bei Erfolg gilt keine Zeile
+    /// mehr als ungespeichert geändert, die Wahl bleibt und ihr Detailblock zieht nach; sonst steht
+    /// die Meldung als Warnung — unter der Katalogleiste (<paramref name="amKatalog"/>) oder oben.
+    /// </summary>
+    private bool StillSpeichern(bool amKatalog)
+    {
+        if (ListeSpeichern is null) return false;
+        string fehler = ListeSpeichern() ?? "";
+        if (fehler.Length > 0) { Melden(fehler, WarnStufe.Warnung, amKatalog); return false; }
+        _geaenderteZeilen.Clear();
+        // Der Detailblock zeigt die Projektzeile nur, solange kein Katalogsatz markiert ist (das
+        // Löschen wirkt auf den markierten Satz - er bleibt markiert).
+        if (_gewaehlt is not null && _katalogzeile is null) ProjektzeileWaehlen(_gewaehlt);
+        return true;
     }
 
     private void Melden(string text, WarnStufe stufe, bool amKatalog = false)

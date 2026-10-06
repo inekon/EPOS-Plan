@@ -82,9 +82,11 @@ public class GebaeudeDialogTests : EposBunitContext
         Func<IReadOnlyDictionary<string, object>>? gebaeudetypGaben = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? bedarfGaben = null,
         Action? geaendert = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Func<string>? listeSpeichern = null)
     {
         return Render<GebaeudeDialog>(p => p
+            .Add(x => x.ListeSpeichern, listeSpeichern)
             .Add(x => x.Zeilen, zeilen ?? new List<GebaeudeProjektZeile> { Zeile(1) })
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Katalogzeilen, () => Katalog())
@@ -830,6 +832,85 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Null(kopie.IdKatalog);
         Assert.Equal(1, fremd.IdKatalog);
         Assert.Contains(kopie, cut.Instance.Zeilen);
+        Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// <b>Ungespeicherte Zeile aus dem zu löschenden Satz: erst still speichern</b> (Anwenderentscheid
+    /// 06.10.2026). Die Rückfrage nennt das Projekt (der Hinweis kommt aus der Hülle), nach dem „Ja"
+    /// läuft der Speicherweg genau einmal VOR dem Löschen; die Zeile trägt danach ihre Kopie, ihr
+    /// Verweis ist geleert, Auswahl und Liste bleiben.
+    /// </summary>
+    [Fact]
+    public void Loeschen_mit_ungespeicherter_Zeile_speichert_zuerst()
+    {
+        var ablauf = new List<string>();
+        GebaeudeProjektZeile neu = Zeile(100000, "Haus 2010");
+        neu.IdKatalog = 2;
+        GebaeudeProjektZeile alt = Zeile(1, "Haus 1990");
+        alt.HatProjektkopie = true;
+        alt.IdKatalog = 1;
+        var zeilen = new List<GebaeudeProjektZeile> { alt, neu };
+        var cut = Aufbauen(zeilen: zeilen,
+                           katalogLoeschen: n => { ablauf.Add("loeschen " + n); return true; },
+                           katalogLoeschsperre: _ => "",
+                           katalogLoeschhinweis: _ => "Das Gebäude wird aus der Datenbank gelöscht. Die Projekte Projekt X behalten ihre Kopie.",
+                           listeSpeichern: () => { ablauf.Add("speichern"); neu.IdZ = 77; neu.HatProjektkopie = true; return ""; });
+
+        KatalogWaehlen(cut, "Haus 2010");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Assert.Contains("Projekt X", cut.Instance.Loeschfrage);
+        Assert.Empty(ablauf);                                   // „Nein" speichert nichts
+
+        Knopf(cut, "Ja").Click();
+        Assert.Equal(new[] { "speichern", "loeschen Haus 2010" }, ablauf);
+        Assert.Equal(77, neu.IdZ);
+        Assert.Null(neu.IdKatalog);
+        Assert.Equal(1, alt.IdKatalog);
+        Assert.Same(zeilen, cut.Instance.Zeilen);
+        Assert.Equal(2, cut.Instance.Zeilen.Count);
+        Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
+    }
+
+    /// <summary>Scheitert das stille Speichern, wird nicht gelöscht; die Meldung steht unter der Katalogleiste.</summary>
+    [Fact]
+    public void Scheitert_das_stille_Speichern_wird_nicht_geloescht()
+    {
+        int geloescht = 0;
+        GebaeudeProjektZeile neu = Zeile(100000, "Haus 2010");
+        neu.IdKatalog = 2;
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { neu },
+                           katalogLoeschen: _ => { geloescht++; return true; },
+                           katalogLoeschsperre: _ => "",
+                           katalogLoeschhinweis: _ => "",
+                           listeSpeichern: () => "Die Gebäudeliste wurde nicht gespeichert.");
+
+        KatalogWaehlen(cut, "Haus 2010");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(0, geloescht);
+        Assert.Equal(2, neu.IdKatalog);
+        Assert.Equal("Die Gebäudeliste wurde nicht gespeichert.", cut.Instance.Meldung);
+        Assert.True(cut.Instance.MeldungAmKatalog);
+    }
+
+    /// <summary>Stammt keine ungespeicherte Zeile aus dem Satz, wird nicht gespeichert.</summary>
+    [Fact]
+    public void Loeschen_ohne_ungespeicherte_Zeile_des_Satzes_speichert_nicht()
+    {
+        int gespeichert = 0;
+        GebaeudeProjektZeile neu = Zeile(100000, "Haus 1990");
+        neu.IdKatalog = 1;
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { neu },
+                           katalogLoeschsperre: _ => "", katalogLoeschhinweis: _ => "",
+                           listeSpeichern: () => { gespeichert++; return ""; });
+
+        KatalogWaehlen(cut, "Hotel Sonne");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(0, gespeichert);
         Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
     }
 
