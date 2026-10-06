@@ -19796,6 +19796,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="KI_BANNER_ERKLAEREN_TOOLTIP" xml:space="preserve">
     <value>Diese Meldung vom Hilfe-Assistenten erklären lassen</value>
   </data>
+  <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
+    <value>Meldung ausblenden</value>
+  </data>
   <data name="KI_CHAT_DIALOGNAME" xml:space="preserve">
     <value>Dialog: {0}</value>
   </data>

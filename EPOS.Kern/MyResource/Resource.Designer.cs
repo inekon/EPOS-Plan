@@ -110903,6 +110903,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ausblenden ähnelt.
+        /// </summary>
+        public static string WARNBANNER_SCHLIESSEN_TOOLTIP {
+            get {
+                return ResourceManager.GetString("WARNBANNER_SCHLIESSEN_TOOLTIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Inhalt anzeigen... ähnelt.
         /// </summary>
         public static string WBAD_BTN_ANZEIGEN {

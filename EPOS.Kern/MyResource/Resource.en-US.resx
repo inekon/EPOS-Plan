@@ -19807,6 +19807,9 @@ Please go through the project page again so that the data of the selected projec
   <data name="KI_BANNER_ERKLAEREN_TOOLTIP" xml:space="preserve">
     <value>Have the help assistant explain this message</value>
   </data>
+  <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
+    <value>Hide message</value>
+  </data>
   <data name="KI_CHAT_DIALOGNAME" xml:space="preserve">
     <value>Dialog: {0}</value>
   </data>
