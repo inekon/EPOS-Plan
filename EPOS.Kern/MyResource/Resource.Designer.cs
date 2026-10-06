@@ -29638,6 +29638,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei erneut lesen… ähnelt.
+        /// </summary>
+        public static string GEB_BTN_NEU_LESEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_NEU_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Importdatei des markierten Gebäudes erneut lesen und das Gebäude nach Zonen und nach Randbedingung ansehen – gespeichert wird nichts ähnelt.
+        /// </summary>
+        public static string GEB_BTN_NEU_LESEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_NEU_LESEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
         /// </summary>
         public static string GEB_BTN_SIMULATION {
@@ -30039,6 +30057,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_LOESCHFRAGE {
             get {
                 return ResourceManager.GetString("GEB_MSG_LOESCHFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Andere Datei wählen… ähnelt.
+        /// </summary>
+        public static string GEB_NL_ANDERE_DATEI {
+            get {
+                return ResourceManager.GetString("GEB_NL_ANDERE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatei „{0}“ wählen ähnelt.
+        /// </summary>
+        public static string GEB_NL_DATEI_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_DATEI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ hat nicht das Format der Importquelle ({1}). ähnelt.
+        /// </summary>
+        public static string GEB_NL_FORMAT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("GEB_NL_FORMAT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ (geändert am {1}) ist nicht die Datei des Imports: SHA-256 {2}… statt {3}…. Es wird keine Ansicht gezeigt. ähnelt.
+        /// </summary>
+        public static string GEB_NL_HASH_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("GEB_NL_HASH_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Gebäude hat keine Importquelle. ähnelt.
+        /// </summary>
+        public static string GEB_NL_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEB_NL_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei wird gelesen … ähnelt.
+        /// </summary>
+        public static string GEB_NL_LAEUFT {
+            get {
+                return ResourceManager.GetString("GEB_NL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist nicht lesbar: {1} ähnelt.
+        /// </summary>
+        public static string GEB_NL_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("GEB_NL_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen stammen allein aus der Geometriedatei ({0}); eine Projektdatei und Zuordnungen von Hand sind in dieser Ansicht nicht enthalten. ähnelt.
+        /// </summary>
+        public static string GEB_NL_NUR_GEOMETRIE {
+            get {
+                return ResourceManager.GetString("GEB_NL_NUR_GEOMETRIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ stimmt mit der Importquelle überein. Die Ansicht zeigt die Datei; gespeichert wird nichts. ähnelt.
+        /// </summary>
+        public static string GEB_NL_PASSEND {
+            get {
+                return ResourceManager.GetString("GEB_NL_PASSEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importquelle: {0} ({1}), importiert am {2} ähnelt.
+        /// </summary>
+        public static string GEB_NL_QUELLE {
+            get {
+                return ResourceManager.GetString("GEB_NL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatei erneut lesen ähnelt.
+        /// </summary>
+        public static string GEB_NL_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen folgen der Regel der Datei ({0}); Zuordnungen von Hand sind in dieser Ansicht nicht enthalten. ähnelt.
+        /// </summary>
+        public static string GEB_NL_ZONENREGEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_ZONENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist mit {1} größer als die Grenze von {2} auf diesem Gerät. ähnelt.
+        /// </summary>
+        public static string GEB_NL_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("GEB_NL_ZU_GROSS", resourceCulture);
             }
         }
         
