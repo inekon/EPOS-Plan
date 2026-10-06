@@ -2185,7 +2185,7 @@ Entscheidvermerk.
   danach — **der Altweg bleibt wählbar (E89)**: Sie wirken auf VDI-Gebäude, ein
   Gebäude auf dem Bestandsweg geht als feste Last ein — ein Altweg-Sonderfall, der im
   Inventar unten steht), sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG/DIN V 18599,
-  Verschattung durch Nachbarbebauung, Wärmerückgewinnung, Nutzungsprofile für Nichtwohngebäude,
+  Verschattung durch Nachbarbebauung, Wärmerückgewinnung, Normwerte der Nutzungsprofile für Nichtwohngebäude (E90: EPOS-Muster und eigene Profile sind zulässig, siehe [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)),
   Scan-to-BIM, die Validierung an gemessenen Verbräuchen.
 - **Normnachweise, die ohne Datenträger nicht führbar sind.** Nach E5 werden weder die Datenträger
   der Richtlinien noch DWD-Testreferenzjahre beschafft; die Testbeispiele 8–16 der VDI 6020 und

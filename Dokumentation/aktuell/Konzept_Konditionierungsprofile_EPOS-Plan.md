@@ -996,7 +996,7 @@ Feld einer Zeile darf leer sein** und heißt dann „wie die Ebene darüber": Zo
 eine Vorlage gehört **genau einer Größe** (P11); `Bezeichner` TEXT NOT NULL `CHECK (length(Bezeichner) BETWEEN 1 AND 80)`,
 eindeutig **je Größe** ohne Unterschied von Groß- und Kleinschreibung (`UNIQUE (Groesse, Bezeichner COLLATE NOCASE)`) —
 „Büro" darf in jeder der fünf Listen stehen; `Beschreibung` TEXT `CHECK (length(Beschreibung) <= 400)`; `Nutzung` TEXT
-`CHECK (Nutzung IS NULL OR Nutzung IN ('WOHNEN','BUERO','SCHULE','SONSTIGE'))`; `ReadOnly` INTEGER NOT NULL DEFAULT 0
+`CHECK (Nutzung IS NULL OR length(Nutzung) BETWEEN 1 AND 120)` — `Nutzung` ist freier Text (NP-F15, Schemaschritt 189, [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)); `ReadOnly` INTEGER NOT NULL DEFAULT 0
 `CHECK IN (0,1)`. Der Inhalt einer Vorlage steht mit dem Eigentümer `ID_Vorlage` in Vorgabe-, Kalender- und
 Periodentabelle, **nur in ihrer Größe**: die Vorgabezeilen ihrer Spalte, höchstens ein Kalender samt Perioden, keine
 Periode der Art FERIEN (3.5); keine Zeilen `NENNWERT` und `SAISON`, keine Saisonperiode und kein `Nennwert` am Kalender (E54); der Controller hält die Größe gleich, ein Datenbankfall prüft es. **Namensregel:**

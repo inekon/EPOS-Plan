@@ -2458,7 +2458,7 @@ führen die Konzeptpapiere, die sie stellen, und das
   [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md); ihre Bausteine
   stehen in 1.2, 1.3 und 1.5),
   sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG oder DIN V 18599, Verschattung durch
-  Nachbarbebauung, Wärmerückgewinnung, Nutzungsprofile für Nichtwohngebäude, Scan-to-BIM,
+  Nachbarbebauung, Wärmerückgewinnung, Normwerte der Nutzungsprofile für Nichtwohngebäude (E90: EPOS-Muster und eigene Profile sind zulässig, siehe [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)), Scan-to-BIM,
   Validierung an gemessenen Verbräuchen.
 - **Entscheide.** Dieses Papier entscheidet nichts, was dem Anwender zusteht: **A1 bis A19** waren
   Fragen mit Empfehlung und sind **alle entschieden oder überholt**: ADR-004 und ADR-005 sind
