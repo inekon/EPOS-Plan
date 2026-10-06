@@ -130,8 +130,14 @@ public sealed class BerichtStand
     /// </summary>
     public IReadOnlyList<(int Id, string Text)> Szenarien { get; set; } = Array.Empty<(int, string)>();
 
-    /// <summary>Das gewählte Szenario (0 = „Erwartet“, die Vorgabe).</summary>
+    /// <summary>Das gewählte Szenario (0 = „Erwartet“, die Vorgabe; <see cref="SZENARIO_VALERI"/> = alle drei).</summary>
     public int SzenarioId { get; set; }
+
+    /// <summary>
+    /// Die Nummer des vierten Eintrags der Klappliste „Alle drei Szenarien (VALERI)“ (Entscheid VB‑Q1 a): kein Szenario,
+    /// sondern die Szenariodarstellung VALERI; die Nummern 0 bis 2 bleiben die Szenarien der Wirtschaftlichkeitsseite.
+    /// </summary>
+    public const int SZENARIO_VALERI = 3;
 }
 
 /// <summary>
@@ -144,7 +150,8 @@ public sealed class BerichtStand
 /// <param name="MitWirtschaftlichkeit">Der Baustein „Wirtschaftlichkeit" wird angehakt.</param>
 /// <param name="Varianten">Die angehakten Versionen der Vergleichsgruppe samt Stamm und Referenz.</param>
 /// <param name="SzenarioId">Das Szenario der Einzelheiten auf der Wirtschaftlichkeitsseite — die Berichtsseite übernimmt
-/// es als Vorbelegung ihrer Klappliste (dieselben Nummern, <see cref="BerichtStand.Szenarien"/>).</param>
+/// es als Vorbelegung ihrer Klappliste (dieselben Nummern, <see cref="BerichtStand.Szenarien"/>); in der Darstellung
+/// „ValERI-Bewertung“ <see cref="BerichtStand.SZENARIO_VALERI"/> (Entscheid VB‑Q6 a).</param>
 /// <param name="SzenarioText">Sein Anzeigetext.</param>
 public sealed record BerichtVorbelegung(bool MitWirtschaftlichkeit, IReadOnlyList<int> Varianten,
                                         int SzenarioId, string SzenarioText);

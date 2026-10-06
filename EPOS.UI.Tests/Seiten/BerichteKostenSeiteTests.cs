@@ -536,6 +536,53 @@ public class BerichteKostenSeiteTests : BunitContext
     }
 
     /// <summary>
+    /// VB‑Q6 a: Steht die Wirtschaftlichkeitsseite in der Darstellung „ValERI-Bewertung“, belegt „Zum Bericht ›“ die
+    /// Klappliste der Berichtsseite mit dem vierten Eintrag „Alle drei Szenarien (VALERI)“ vor, und die leise Zeile nennt
+    /// ihn; in der Darstellung „Kennzahlen“ bleibt es beim Szenario der Einzelheiten.
+    /// </summary>
+    [Fact]
+    public void Zum_Bericht_aus_der_ValERI_Darstellung_belegt_alle_drei_Szenarien_vor()
+    {
+        const string VALERI = "Alle drei Szenarien (VALERI)";
+        IReadOnlyDictionary<string, object>? Gaben(string s)
+        {
+            IReadOnlyDictionary<string, object>? g = GabenMitGruppe(s);
+            if (s != BerichteKostenSeite.SEITE_BERICHT) return g;
+            var laden = (Func<BerichtStand>)g!["Laden"];
+            return new Dictionary<string, object>
+            {
+                ["Laden"] = new Func<BerichtStand>(() =>
+                {
+                    BerichtStand b = laden();
+                    b.Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig"), (BerichtStand.SZENARIO_VALERI, VALERI) };
+                    return b;
+                }),
+                ["BausteinWirtschaft"] = WIRTSCHAFT
+            };
+        }
+
+        var cut = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.SeitenGaben, (string s) => Gaben(s))
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_WIRTSCHAFT));
+        cut.FindAll(".epos-wirt-umschalter-knopf")[1].Click();               // „ValERI-Bewertung“
+        cut.FindAll(".epos-wirt-berichtknopf")[0].Click();
+
+        Assert.Equal(BerichteKostenSeite.SEITE_BERICHT, cut.Instance.AktiveSeite);
+        BerichtSeite bericht = cut.FindComponent<BerichtSeite>().Instance;
+        Assert.Equal(BerichtStand.SZENARIO_VALERI, bericht.Szenariowahl);
+        Assert.Contains(WIRTSCHAFT, bericht.AktiveBausteine);
+        // Der Text der Vorbelegung kommt aus der Ressource der Oberflächensprache (BK_BER_SZENARIO_VALERI).
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.BK_BER_SZENARIO_VALERI, cut.Find(".epos-bericht-vorbelegt").TextContent);
+
+        // Gegenprobe: aus der Darstellung „Kennzahlen“ das Szenario der Einzelheiten (Günstig).
+        var kennzahlen = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.SeitenGaben, (string s) => Gaben(s))
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_WIRTSCHAFT));
+        kennzahlen.FindAll(".epos-wirt-berichtknopf")[0].Click();
+        Assert.Equal(1, kennzahlen.FindComponent<BerichtSeite>().Instance.Szenariowahl);
+    }
+
+    /// <summary>
     /// Ohne Ergebnisse ist der Knopf weich gesperrt: Ein Klick wechselt nicht, und nichts
     /// wartet auf die Berichtsseite.
     /// </summary>

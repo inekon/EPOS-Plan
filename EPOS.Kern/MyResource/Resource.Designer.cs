@@ -8184,6 +8184,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle drei Szenarien (VALERI) ähnelt.
+        /// </summary>
+        public static string BK_BER_SZENARIO_VALERI {
+            get {
+                return ResourceManager.GetString("BK_BER_SZENARIO_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellen — Projekt: {0} ähnelt.
         /// </summary>
         public static string BK_BER_TITEL {
@@ -48693,7 +48702,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. Nur mit angehaktem Baustein Wirtschaftlichkeit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. „Alle drei Szenarien (VALERI)“ zeigt je Stand die Kennzahlen in Ungünstig, Erwartet und Günstig nebeneinander, alles Übrige in Erwartet. Nur mit angehaktem Baustein Wirtschaftlichkeit. ähnelt.
         /// </summary>
         public static string KI_DLG_BKB_SZENARIO_ERL {
             get {
