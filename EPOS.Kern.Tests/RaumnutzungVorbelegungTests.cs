@@ -35,7 +35,12 @@ namespace EPOS.Kern.Tests
             Assert.False(v.MitKatalog);
             foreach ((int n, string kennung) in Din18599Nutzung.Tabelle)
                 Assert.Equal(new Planprofil(null, kennung), v.AusDinNummer(n));
-            Assert.Null(v.AusDinNummer(31));
+            // Zählung DIN/TS 18599-10:2025 (E96): 30, 31 Bibliothek → Schule; 28, 29 der Zählung 2018 führen nicht mehr dahin.
+            Assert.Equal(new Planprofil(null, DbWerte.KOND_NUTZUNG_SCHULE), v.AusDinNummer(30));
+            Assert.Equal(new Planprofil(null, DbWerte.KOND_NUTZUNG_SCHULE), v.AusDinNummer(31));
+            Assert.Null(v.AusDinNummer(28));
+            Assert.Null(v.AusDinNummer(29));
+            Assert.Null(v.AusDinNummer(33));   // Turnhalle: Sport hat keine alte Kennung
             Assert.Null(v.AusDinNummer(19));   // Verkehr und Lager haben keine alte Kennung: ohne Katalog keine Nutzung
             Assert.Null(v.AusDinNummer(20));
             Assert.Null(v.AusDinNummer(null));
@@ -80,9 +85,9 @@ namespace EPOS.Kern.Tests
             Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
             foreach (string k in new[] { "Sport", "Gastronomie", "Lager", "Verkehr", "Technik" })
                 Assert.Equal(new Planprofil(MusterId(k), k), v.AusKlasse(k));
-            Assert.Equal(RaumnutzungSaat.SPORT, v.AusDinNummer(31)?.Name);
+            Assert.Equal(RaumnutzungSaat.SPORT, v.AusDinNummer(33)?.Name);
             Assert.Equal(RaumnutzungSaat.GASTRONOMIE, v.AusDinNummer(12)?.Name);
-            Assert.Equal(RaumnutzungSaat.LAGER, v.AusDinNummer(41)?.Name);
+            Assert.Equal(RaumnutzungSaat.LAGER, v.AusDinNummer(43)?.Name);
             // 19 und 20 zählen 2018 und 2025 gleich (E96): Verkehrsflächen → Verkehr; Lager, Technik, Archiv → Lager.
             Assert.Equal(new Planprofil(MusterId(RaumnutzungSaat.VERKEHR), RaumnutzungSaat.VERKEHR), v.AusDinNummer(19));
             Assert.Equal(new Planprofil(MusterId(RaumnutzungSaat.LAGER), RaumnutzungSaat.LAGER), v.AusDinNummer(20));
@@ -103,13 +108,33 @@ namespace EPOS.Kern.Tests
             // der die Zeile fehlt).
             Assert.Equal(2, DataRepository.ExecuteNonQuery(
                 "DELETE FROM \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" WHERE \"Art\" = ? AND \"Schluessel\" IN (?, ?)",
-                new DbParam("@a", RaumnutzungSchema.ZUORDNUNG_DIN), new DbParam("@s1", "1"), new DbParam("@s2", "31")));
+                new DbParam("@a", RaumnutzungSchema.ZUORDNUNG_DIN), new DbParam("@s1", "1"), new DbParam("@s2", "33")));
 
             Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
             Assert.Equal(new Planprofil(schule, RaumnutzungSaat.SCHULE), v.AusKlasse("Buero"));
             Assert.Null(v.AusKlasse("Kueche"));
             Assert.Equal(new Planprofil(MusterId(RaumnutzungSaat.BUERO), RaumnutzungSaat.BUERO), v.AusDinNummer(1));
-            Assert.Null(v.AusDinNummer(31));
+            Assert.Null(v.AusDinNummer(33));
+        }
+
+        /// <summary>
+        /// <b>Die Zuordnung zählt nach der DIN/TS 18599-10:2025</b> (E96, Anwender 06.10.2026): HottCAD nummeriert wie die Ausgabe
+        /// 2025 — 30, 31 Bibliothek → Schule, 33 Turnhalle und 37 Fitnessraum → Sport, 43 Lagerhallen → Lager, 19 → Verkehr,
+        /// 20 → Lager; die Nummern 28, 29, 35, 41 der Zählung 2018 und 44 bis 47 (keine Normnummern) belegen nichts vor.
+        /// </summary>
+        [Fact]
+        public void Die_Zuordnung_belegt_nach_der_Zaehlung_2025_vor()
+        {
+            if (!_db.Vorhanden) return;
+            Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
+            foreach ((int n, string muster) in new[]
+            {
+                (30, RaumnutzungSaat.SCHULE), (31, RaumnutzungSaat.SCHULE), (33, RaumnutzungSaat.SPORT), (37, RaumnutzungSaat.SPORT),
+                (43, RaumnutzungSaat.LAGER), (19, RaumnutzungSaat.VERKEHR), (20, RaumnutzungSaat.LAGER),
+            })
+                Assert.Equal(new Planprofil(MusterId(muster), muster), v.AusDinNummer(n));
+            foreach (int n in new[] { 28, 29, 35, 41, 44, 45, 46, 47 })
+                Assert.Null(v.AusDinNummer(n));
         }
 
         [Fact]

@@ -25,15 +25,22 @@ namespace WindowsFormsApplication1
     //      zuerst geparkt (Nummer leer, Hilfsname), dann gesetzt.
     //   3. Die uebrigen Nutzungen der Ausgabe 2025 (19) entstehen ohne Werte; fehlt die Kategorie, entsteht
     //      sie aus der Saat.
-    //   4. Die Zuordnung DIN_NUMMER bekommt die ausgelieferten Zeilen 19 -> EPOS-Muster Verkehr und
+    //   4. Die Zuordnung DIN_NUMMER zaehlt nach der Ausgabe 2025: Der Schluessel ist die Nummer der
+    //      HottCAD-Projektdatei (PdProfileUsage.ProfileUsageType), und HottCAD zaehlt nach der DIN/TS
+    //      18599-10:2025-10 (E96, Anwender 06.10.2026; Konzept 5.4). Die ausgelieferten Zeilen ab 22 der Saat
+    //      2018 (ZUORDNUNG_2018: 28, 29 Bibliothek, 31 Turnhalle, 35 Fitnessraum, 41 Lagerhallen) bekommen den
+    //      Schluessel derselben Nutzung in 2025 (30, 31, 33, 37, 43); Id und Profil bleiben. Der neue Schluessel
+    //      31 ist der alte der Turnhalle: Die Zeilen werden zuerst geparkt (Hilfsschluessel), dann gesetzt.
+    //      Steht auf dem neuen Schluessel schon eine andere Zeile (eine eigene des Anwenders), bleibt sie, und
+    //      die ausgelieferte entfaellt - benannt im Migrationsprotokoll.
+    //   5. Die Zuordnung DIN_NUMMER bekommt die ausgelieferten Zeilen 19 -> EPOS-Muster Verkehr und
     //      20 -> EPOS-Muster Lager (E96, Konzept 5.4) - nur, wenn fuer den Schluessel noch keine Zeile steht;
     //      eine Zeile des Anwenders (auch "keine") bleibt. 19 und 20 zaehlen 2018 und 2025 gleich.
     //
     // WAS ER NICHT ANFASST: eigene Kategorien, Profile und Zuordnungen des Anwenders, jedes Profil, das
-    // nicht zur Saat 2018 gehoert, jede Zeile der Zuordnung, die schon steht, und jeden Schluessel DIN_NUMMER
-    // ab 22 (er schluesselt die Nummer der HottCAD-Projektdatei, deren Zaehlung ab 22 kein Beleg im
-    // Repositorium entscheidet; Konzept 5.4) und die Profilnamen, die als Kopie an Zone und Kalender stehen
-    // (Q41). Trifft der Umbau auf eine fremde Zeile
+    // nicht zur Saat 2018 gehoert, jede eigene Zeile der Zuordnung, das Profil jeder stehenden Zeile, die
+    // Schluessel 44 bis 47 der Projektdatei (keine Normnummern, ohne Zuordnung) und die Profilnamen, die als
+    // Kopie an Zone und Kalender stehen (Q41). Trifft der Umbau auf eine fremde Zeile
     // gleichen Namens oder gleicher Nummer, bricht er benannt ab und nimmt alles zurueck.
     //
     // DIE SAAT EINER NEUEN DATENBANK steht schon in RaumnutzungSaat (Ausgabe 2025); Schritt 189 saet sie
@@ -49,7 +56,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>NP5b</b> — die ausgelieferte Kategorie DIN auf die DIN/TS 18599-10:2025-10: Name, Quellenhinweis,
-    /// Nummern und Namen der 43 Nutzungen, Ids bleiben, dazu die Zuordnung DIN 19 und 20 (E96). EINE Quelle für Migration,
+    /// Nummern und Namen der 43 Nutzungen, Ids bleiben, dazu die Zuordnung DIN nach der Zählung 2025 und DIN 19 und 20 (E96).
+    /// EINE Quelle für Migration,
     /// Werkzeug, Testkopie und
     /// Nachweis (ADR-001 Option C). Anlass und Grenzen stehen im Kopf der Datei.
     /// </summary>
@@ -69,6 +77,24 @@ namespace WindowsFormsApplication1
         /// <summary>Die ausgelieferten Zuordnungszeilen der <see cref="SCHLUESSEL_ZUORDNUNG"/> — aus der Saat, eine Quelle.</summary>
         public static IReadOnlyList<RaumnutzungSaatzuordnung> Zuordnungen { get; } = RaumnutzungSaat.Zuordnungen
             .Where(z => z.Art == RaumnutzungSchema.ZUORDNUNG_DIN && SCHLUESSEL_ZUORDNUNG.Contains(z.Schluessel)).ToList();
+
+        /// <summary>
+        /// Die ausgelieferten Zeilen <c>DIN_NUMMER</c> ab 22 der Saat von Schritt 189 vor E96 — Schlüssel nach der Zählung
+        /// 2018 und EPOS-Muster —, eingefroren, damit der Schritt sie erkennt. Ihre Schlüssel nach der Zählung 2025
+        /// (<see cref="Nummer2025"/>) stehen mit denselben Mustern in <see cref="RaumnutzungSaat.Zuordnungen"/>.
+        /// </summary>
+        public static readonly IReadOnlyList<(string Schluessel, string Profil)> ZUORDNUNG_2018 = new[]
+        {
+            ("28", RaumnutzungSaat.SCHULE), ("29", RaumnutzungSaat.SCHULE), ("31", RaumnutzungSaat.SPORT),
+            ("35", RaumnutzungSaat.SPORT), ("41", RaumnutzungSaat.LAGER),
+        };
+
+        /// <summary>
+        /// Die Schlüssel der <see cref="ZUORDNUNG_2018"/>, die allein die Zählung 2018 trägt (28, 29, 35, 41; 31 ist 2025 die
+        /// Bibliothek – Freihandbereich): Steht einer davon ausgeliefert, zählt die Zuordnung noch nach 2018.
+        /// </summary>
+        public static IReadOnlyList<string> SCHLUESSEL_NUR_2018 { get; } = ZUORDNUNG_2018.Select(z => z.Schluessel)
+            .Except(ZUORDNUNG_2018.Select(z => Nummer2025(z.Schluessel)), StringComparer.Ordinal).ToList();
 
         /// <summary>Der Name der Kategorie in der Saat von Schritt 189 vor E96 (Ausgabe 2018).</summary>
         public const string KATEGORIE_DIN_2018 = "DIN V 18599-10";
@@ -170,6 +196,27 @@ namespace WindowsFormsApplication1
             "SELECT ?, ?, p.\"ID\", 1 FROM " + P + " p JOIN " + K + " k ON k.\"ID\" = p.\"ID_Katalog\" " +
             "WHERE k.\"ReadOnly\" = 1 AND k.\"Art\" = ? AND p.\"ReadOnly\" = 1 AND p.\"Bezeichner\" = ? COLLATE NOCASE";
 
+        private const string Z = "\"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\"";
+
+        /// <summary>Die ausgelieferte Zeile der Zuordnung unter (Art, Schlüssel).</summary>
+        internal const string SQL_ZUORDNUNG_AUSGELIEFERT =
+            "SELECT \"ID\" FROM " + Z + " WHERE \"ReadOnly\" = 1 AND \"Art\" = ? AND \"Schluessel\" = ? COLLATE NOCASE";
+
+        /// <summary>Wie viele ausgelieferte Zeilen der Zuordnung stehen unter (Art, Schlüssel)?</summary>
+        internal const string SQL_ZAHL_ZUORDNUNG_AUSGELIEFERT =
+            "SELECT COUNT(*) FROM " + Z + " WHERE \"ReadOnly\" = 1 AND \"Art\" = ? AND \"Schluessel\" = ? COLLATE NOCASE";
+
+        /// <summary>Den Schlüssel einer Zeile der Zuordnung setzen (Parken und Umstellen).</summary>
+        internal const string SQL_ZUORDNUNG_SCHLUESSEL = "UPDATE " + Z + " SET \"Schluessel\" = ? WHERE \"ID\" = ?";
+
+        /// <summary>Trägt eine ANDERE Zeile derselben Art den Schlüssel? Liefert ihre Auslieferungsmarke.</summary>
+        internal const string SQL_ZUORDNUNG_BELEGT =
+            "SELECT \"ReadOnly\" FROM " + Z + " WHERE \"Art\" = ? AND \"ID\" <> ? AND \"Schluessel\" = ? COLLATE NOCASE " +
+            "ORDER BY \"ID\" LIMIT 1";
+
+        /// <summary>Eine ausgelieferte Zeile der Zuordnung entfernen.</summary>
+        internal const string SQL_ZUORDNUNG_ENTFERNEN = "DELETE FROM " + Z + " WHERE \"ID\" = ? AND \"ReadOnly\" = 1";
+
         /// <summary>Steht die Nutzung genau so (Nummer, Name, ausgeliefert) in der Kategorie?</summary>
         internal const string SQL_ZAHL_PROFIL_GENAU =
             "SELECT COUNT(*) FROM " + P + " WHERE \"ID_Katalog\" = ? AND \"ReadOnly\" = 1 AND \"Nummer\" = ? AND \"Bezeichner\" = ?";
@@ -186,14 +233,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Wie viel noch fehlt: die Kategorie unter dem Namen 2018 (1), die Kategorie 2025 fehlt (1 und je Nutzung 1) oder
-        /// trägt andere Texte (1), je Nutzung der Ausgabe 2025, die nicht genau so steht (1), je Schlüssel der
+        /// trägt andere Texte (1), je Nutzung der Ausgabe 2025, die nicht genau so steht (1), je ausgelieferte Zeile der
+        /// Zuordnung, die noch nach 2018 zählt (1, <see cref="ZuordnungOffen"/>), je Schlüssel der
         /// <see cref="SCHLUESSEL_ZUORDNUNG"/> ohne Zeile (1). −1 ohne die Tabellen von Schritt 189.
         /// </summary>
         public static int Offen()
         {
             if (!Voraussetzungen().All(DataRepository.TabelleVorhanden)) return -1;
             RaumnutzungSaatkategorie din = KategorieDin;
-            int offen = 0;
+            int offen = ZuordnungOffen((sql, p) => DataRepository.ExecuteScalar(sql, p));
             foreach (RaumnutzungSaatzuordnung z in Zuordnungen)
                 if (Zahl(DataRepository.ExecuteScalar(RaumnutzungSchema.SQL_ZAHL_ZUORDNUNG_GESAAT,
                                                       new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel))) == 0)
@@ -212,7 +260,7 @@ namespace WindowsFormsApplication1
             return offen;
         }
 
-        /// <summary>Steht die Kategorie DIN auf der Ausgabe 2025, und trägt die Zuordnung die Schlüssel 19 und 20?</summary>
+        /// <summary>Steht die Kategorie DIN auf der Ausgabe 2025, zählt die Zuordnung nach 2025, und trägt sie die Schlüssel 19 und 20?</summary>
         public static bool Vollstaendig() => Offen() == 0;
 
         // =================================================================
@@ -220,8 +268,8 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>
-        /// Führt den Schritt in EINEM Vorgang aus — Umbau der Fassung 2018, Kategorie und Nutzungen der Ausgabe 2025, Zuordnung
-        /// DIN 19 und 20 —
+        /// Führt den Schritt in EINEM Vorgang aus — Umbau der Fassung 2018, Zuordnung nach der Zählung 2025, Kategorie und
+        /// Nutzungen der Ausgabe 2025, Zuordnung DIN 19 und 20 —
         /// für Migration der Schale, <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c>. <b>Wiederholbar.</b>
         /// Fehlt eine Voraussetzung, belegt eine fremde Zeile Name oder Nummer oder fehlt ein ausgeliefertes Muster der
         /// Zuordnung, wirft er benannt und nimmt alles zurück.
@@ -237,7 +285,8 @@ namespace WindowsFormsApplication1
                                                         " ist nicht gelaufen.");
             if (Vollstaendig())
             {
-                bericht?.Add("steht bereits - Kategorie DIN/TS 18599-10 mit 43 Nutzungen, Zuordnung DIN 19 und 20; nichts zu tun");
+                bericht?.Add("steht bereits - Kategorie DIN/TS 18599-10 mit 43 Nutzungen, Zuordnung DIN nach der Zaehlung 2025 " +
+                             "samt 19 und 20; nichts zu tun");
                 return 0;
             }
 
@@ -246,14 +295,15 @@ namespace WindowsFormsApplication1
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 zeilen.AddRange(AlteFassungUmbauen(v, ref aenderungen));
+                zeilen.AddRange(ZuordnungUmstellen(v, ref aenderungen));
                 zeilen.AddRange(Saat(v, ref aenderungen));
                 zeilen.AddRange(ZuordnungErgaenzen(v, ref aenderungen));
                 v.Commit();
             }
             if (bericht != null)
                 foreach (string z in zeilen) bericht.Add(z);
-            bericht?.Add("KEIN Kennwert und keine Zeile des Anwenders geaendert, die Zuordnung nur ergaenzt; der Referenzlauf bleibt " +
-                         "byte-gleich");
+            bericht?.Add("KEIN Kennwert und keine Zeile des Anwenders geaendert, von der Zuordnung nur ausgelieferte Schluessel " +
+                         "umgestellt und Zeilen ergaenzt; der Referenzlauf bleibt byte-gleich");
             return aenderungen;
         }
 
@@ -303,6 +353,68 @@ namespace WindowsFormsApplication1
                                             new DbParam("@i", u.Id));
             }
             zeilen.Add(T(umbau.Count) + " ausgelieferte(s) Profil(e) auf Nummer und Namen der Ausgabe 2025 umgestellt (Ids bleiben)");
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Wie viele ausgelieferte Zeilen der Zuordnung noch nach der Zählung 2018 stehen: keine, solange keiner der
+        /// <see cref="SCHLUESSEL_NUR_2018"/> ausgeliefert steht (dann ist 31 schon die Bibliothek – Freihandbereich), sonst
+        /// jede ausgelieferte Zeile auf einem Schlüssel der <see cref="ZUORDNUNG_2018"/>.
+        /// </summary>
+        private static int ZuordnungOffen(Func<string, DbParam[], object> skalar)
+        {
+            long Ausgeliefert(string schluessel)
+                => Zahl(skalar(SQL_ZAHL_ZUORDNUNG_AUSGELIEFERT,
+                               new[] { new DbParam("@a", RaumnutzungSchema.ZUORDNUNG_DIN), new DbParam("@s", schluessel) }));
+            if (SCHLUESSEL_NUR_2018.Sum(Ausgeliefert) == 0) return 0;
+            return (int)ZUORDNUNG_2018.Sum(z => Ausgeliefert(z.Schluessel));
+        }
+
+        /// <summary>
+        /// Die Zuordnung <c>DIN_NUMMER</c> auf die Zählung 2025 im laufenden Vorgang (E96, Anwender 06.10.2026): jede
+        /// ausgelieferte Zeile auf einem Schlüssel der <see cref="ZUORDNUNG_2018"/> bekommt den Schlüssel derselben Nutzung in
+        /// 2025 (<see cref="Nummer2025"/>); Id und Profil bleiben. Erst parken, dann setzen — der neue Schlüssel 31 ist der alte
+        /// der Turnhalle. Trägt eine andere Zeile den neuen Schlüssel, bleibt sie, und die ausgelieferte entfällt benannt.
+        /// Zählt die Zuordnung schon nach 2025, tut er nichts. Auch Schritt 189 ruft ihn vor seiner Saat.
+        /// </summary>
+        internal static List<string> ZuordnungUmstellen(DbVorgang v, ref int aenderungen)
+        {
+            var zeilen = new List<string>();
+            if (ZuordnungOffen((sql, p) => v.Skalar(sql, p)) == 0) return zeilen;
+
+            var umbau = new List<(long Id, string Alt, string Neu)>();
+            foreach ((string Schluessel, string Profil) z in ZUORDNUNG_2018)
+            {
+                long? id = Id(v.Skalar(SQL_ZUORDNUNG_AUSGELIEFERT, new DbParam("@a", RaumnutzungSchema.ZUORDNUNG_DIN),
+                                       new DbParam("@s", z.Schluessel)));
+                if (id != null) umbau.Add((id.Value, z.Schluessel, Nummer2025(z.Schluessel)));
+            }
+
+            // Parken (Hilfsschluessel), dann setzen - (Art, Schluessel) ist eindeutig, und 31 wechselt die Nutzung.
+            foreach ((long Id, string Alt, string Neu) u in umbau)
+                v.Ausfuehren(SQL_ZUORDNUNG_SCHLUESSEL, new DbParam("@s", Hilfsname(u.Id)), new DbParam("@i", u.Id));
+            var umgestellt = new List<string>();
+            var entfallen = new List<string>();
+            foreach ((long Id, string Alt, string Neu) u in umbau)
+            {
+                object belegt = v.Skalar(SQL_ZUORDNUNG_BELEGT, new DbParam("@a", RaumnutzungSchema.ZUORDNUNG_DIN),
+                                         new DbParam("@i", u.Id), new DbParam("@s", u.Neu));
+                if (belegt != null && belegt != DBNull.Value)
+                {
+                    aenderungen += v.Ausfuehren(SQL_ZUORDNUNG_ENTFERNEN, new DbParam("@i", u.Id));
+                    entfallen.Add(u.Alt);
+                    zeilen.Add("Zuordnung " + RaumnutzungSchema.ZUORDNUNG_DIN + " " + u.Alt + " (Zaehlung 2018): die ausgelieferte " +
+                               "Zeile entfaellt - auf " + u.Neu + " steht schon eine " + (Zahl(belegt) == 0 ? "eigene" : "ausgelieferte") +
+                               " Zeile, sie bleibt");
+                    continue;
+                }
+                aenderungen += v.Ausfuehren(SQL_ZUORDNUNG_SCHLUESSEL, new DbParam("@s", u.Neu), new DbParam("@i", u.Id));
+                umgestellt.Add(u.Alt + " -> " + u.Neu);
+            }
+            zeilen.Insert(0, "Zuordnung " + RaumnutzungSchema.ZUORDNUNG_DIN + " auf die Zaehlung 2025 (HottCAD, E96): " +
+                             T(umgestellt.Count) + " ausgelieferte Zeile(n) umgestellt" +
+                             (umgestellt.Count > 0 ? " (" + string.Join(", ", umgestellt) + ")" : "") + ", " +
+                             T(entfallen.Count) + " entfallen");
             return zeilen;
         }
 

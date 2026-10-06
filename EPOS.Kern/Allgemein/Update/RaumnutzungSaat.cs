@@ -30,12 +30,14 @@ namespace WindowsFormsApplication1
     //   VDI 2078         leer, nur Beschreibung und Quellenhinweis (Konzept 5.3).
     //   Zuordnung        die heutigen festen Paare (Din18599Nutzung, Zonenplan.NutzungAusKlasse) und
     //                    die Paare der neuen Muster (Konzept 5.4, Q42). Der Schluessel DIN_NUMMER ist die
-    //                    Nummer der HottCAD-Projektdatei (PdProfileUsage.ProfileUsageType), nicht die Nummer
-    //                    des Katalogs: Er zaehlt wie bisher nach DIN V 18599-10:2018-09 (28, 29, 31, 35, 41),
-    //                    weil keine Projektdatei im Repositorium belegt, dass HottCAD wie die DIN/TS 2025
-    //                    zaehlt (Konzept 5.4, B10). DIN 19 (Verkehrsflaechen) und 20 (Lager, Technik, Archiv)
-    //                    zaehlen in beiden Ausgaben gleich und fuehren auf die Muster Verkehr und Lager (E96);
-    //                    eine Datenbank, die Schritt 189 ohne sie durchlief, bekommt sie aus Schritt 190.
+    //                    Nummer der HottCAD-Projektdatei (PdProfileUsage.ProfileUsageType); HottCAD zaehlt
+    //                    nach der DIN/TS 18599-10:2025-10 wie die Kategorie DIN (E96, Anwender 06.10.2026;
+    //                    Konzept 5.4, B10): 30, 31 Bibliothek, 33 Turnhalle, 37 Fitnessraum, 43 Lagerhallen.
+    //                    44 bis 47 der Datei sind keine Normnummern und bleiben ohne Zeile; 70 und 71 sind
+    //                    die Wohnzeilen der Datei. DIN 19 (Verkehrsflaechen) und 20 (Lager, Technik, Archiv)
+    //                    fuehren auf die Muster Verkehr und Lager (E96). Eine Datenbank, die Schritt 189 mit
+    //                    der Zaehlung 2018 (28, 29, 31, 35, 41) oder ohne 19 und 20 durchlief, stellt
+    //                    Schritt 190 um bzw. ergaenzt sie.
     //   Z_Nutzungsprofil die Musternamen Buero und Schule unter Quelle KONDITIONIERUNG auf BUERO_SCHULE,
     //                    wie die Kennungen BUERO und SCHULE (NP-F15); Wohnen und Sonstige bleiben
     //                    Vorgabe wie WOHNEN und SONSTIGE.
@@ -451,16 +453,16 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die ausgelieferte Zuordnung (Konzept 5.4): die heutigen festen Paare und die der neuen Muster (Q42).
         /// Jede zeigt auf ein EPOS-Muster, nie auf ein leeres DIN-Profil (NP-F13). Der Schlüssel <c>DIN_NUMMER</c> ist die
-        /// Nummer der Projektdatei und zählt nach DIN V 18599-10:2018-09, nicht nach der Kategorie DIN/TS 18599-10 (Kopf);
-        /// 19 und 20 zählen in beiden Ausgaben gleich (E96, <see cref="RaumnutzungDinTsSchema.SCHLUESSEL_ZUORDNUNG"/>).
+        /// Nummer der Projektdatei; sie zählt wie die Kategorie DIN/TS 18599-10 nach der Ausgabe 2025 (E96, Kopf;
+        /// die Zeilen der Zählung 2018 stellt <see cref="RaumnutzungDinTsSchema.ZuordnungUmstellen"/> um).
         /// </summary>
         public static IReadOnlyList<RaumnutzungSaatzuordnung> Zuordnungen { get; } =
             Paare(RaumnutzungSchema.ZUORDNUNG_DIN, BUERO, "1", "2", "3", "4", "5")
-            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SCHULE, "8", "9", "28", "29"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SCHULE, "8", "9", "30", "31"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, WOHNEN, "70", "71"))
-            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SPORT, "31", "35"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SPORT, "33", "37"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, GASTRONOMIE, "12", "13"))
-            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, LAGER, "20", "41"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, LAGER, "20", "43"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, VERKEHR, "19"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_IFC, BUERO, "Buero"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_IFC, WOHNEN, "Wohnen", "Schlafen", "Kueche"))

@@ -41,7 +41,9 @@ namespace WindowsFormsApplication1
     // neun EPOS-Muster samt Zeilenbild, die 43 Nutzungen der DIN/TS 18599-10:2025-10 ohne Werte (E96), die
     // Zuordnung und in Z_Nutzungsprofil die Musternamen Buero und Schule unter Quelle KONDITIONIERUNG
     // (NP-F15). Steht noch die Kategorie DIN der Saat 2018, stellt RaumnutzungDinTsSchema.AlteFassungUmbauen
-    // sie vor der Saat auf die Ausgabe 2025 (Schritt 190) - sonst entstuende eine zweite Kategorie.
+    // sie vor der Saat auf die Ausgabe 2025 (Schritt 190) - sonst entstuende eine zweite Kategorie -, und
+    // RaumnutzungDinTsSchema.ZuordnungUmstellen die Zuordnung DIN_NUMMER auf die Zaehlung 2025 - sonst saete
+    // die Saat 30, 33, 37, 43 neben 28, 29, 35, 41.
     //
     // ALLES IN EINEM VORGANG ohne Fremdschluessel (DROP einer Elterntabelle loest sonst die Kaskade aus);
     // vor dem Commit: foreign_key_check leer und die Kindtabellen verweisen namentlich auf die
@@ -579,10 +581,11 @@ namespace WindowsFormsApplication1
                         zeilen.Add(TAB_ZONE + "." + SPALTE_ZONE_NUTZUNGSPROFIL + " angelegt (leer)");
                     }
 
-                    // ---- 4. Die Saat - vorher eine Kategorie DIN der Saat 2018 auf die Ausgabe 2025 (Schritt 190),
-                    //      sonst legte die Saat neben ihr eine zweite an.
+                    // ---- 4. Die Saat - vorher eine Kategorie DIN der Saat 2018 auf die Ausgabe 2025 und die Zuordnung
+                    //      DIN_NUMMER auf die Zaehlung 2025 (Schritt 190), sonst legte die Saat neben ihnen zweite an.
                     int umbau = 0;
                     zeilen.AddRange(RaumnutzungDinTsSchema.AlteFassungUmbauen(v, ref umbau));
+                    zeilen.AddRange(RaumnutzungDinTsSchema.ZuordnungUmstellen(v, ref umbau));
                     zeilen.AddRange(Saat(v));
 
                     // ---- Die Zeugen, noch INNERHALB der Transaktion.
