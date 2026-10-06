@@ -248,8 +248,8 @@ namespace EPOS.Kern.Tests
         public void Die_Vorschlaege_beim_Umschalten_aendern_das_Ergebnis_nicht()
         {
             RaumnutzungProfilDaten d = Kennwertprofil();
-            // Personen nur als Zeilenbild: ein Stundenprofil der Personen lehnt der Übernahmeschritt an einem Ziel ohne
-            // Personenzeilen benannt ab (Befund NP4c, siehe Die_Vorschau_nennt_die_Ablehnung_des_Schritts).
+            // Auch das Stundenprofil der Personen: es bringt seine Woche selbst mit und braucht keine Personenzeile des
+            // neutralen Ziels (siehe Die_Vorschau_zeigt_das_Stundenprofil_der_Personen_an_einem_Ziel_ohne_Personenzeilen).
             foreach (KonditionierungGroesse g in new[] { KonditionierungGroesse.Heizen, KonditionierungGroesse.Personen, KonditionierungGroesse.Lueftung })
             {
                 Konditionierungsgroesse kg = Konditionierungsgroessen.Alle[(int)g];
@@ -262,7 +262,6 @@ namespace EPOS.Kern.Tests
                 Bitgleich(vorher, RaumnutzungCtrl.Vorschau(RaumnutzungHuelle.Kern(z), kg).Woche, g + " Zeilenbild");
 
                 // Stundenprofil aus dem bisherigen Weg: dieselbe Woche (an der Lüftung als Anteile der Außenluft).
-                if (g == KonditionierungGroesse.Personen) continue;
                 RaumnutzungProfilDaten s = d.Kopie();
                 RaumnutzungBild.StundenprofilSetzen(s, g, RaumnutzungBildHuelle.Stundenvorschlag(d, g));
                 Assert.Equal(RaumnutzungBildweg.Stundenprofil, RaumnutzungBild.Weg(s, g));
@@ -275,20 +274,32 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Lehnt der Übernahmeschritt am neutralen Ziel ab, nennt die Vorschau seinen Grund statt „nicht belegt" — hier ein
-        /// Stundenprofil der Personen an einem Ziel ohne Personenzeilen (der Schritt bildet den Standardfahrplan aus der
-        /// Matrix des Ziels; ohne Angabe der Personen lehnt er ab).
+        /// Lehnt der Übernahme        /// <summary>
+        /// Ein Stundenprofil der Personen an einem Ziel ohne Personenzeilen (das neutrale Vorschauziel trägt keine): Der
+        /// Übernahmeschritt bildet den Fahrplan aus der Woche des Profils und braucht keine Zeile des Ziels — die Vorschau
+        /// ist belegt und zeigt das Stundenprofil, ohne Meldung (Befund NP4c, Auftrag NP4d).
         /// </summary>
         [Fact]
-        public void Die_Vorschau_nennt_die_Ablehnung_des_Schritts()
+        public void Die_Vorschau_zeigt_das_Stundenprofil_der_Personen_an_einem_Ziel_ohne_Personenzeilen()
         {
             RaumnutzungProfilDaten d = Kennwertprofil();
-            RaumnutzungBild.StundenSetzen(d, KonditionierungGroesse.Personen, RaumnutzungTagesart.Werktag,
-                                          Enumerable.Range(0, 24).Select(h => h is >= 8 and < 18 ? 1.0 : 0.0).ToArray());
+            double[] tag = Enumerable.Range(0, 24).Select(h => h is >= 8 and < 18 ? 1.0 : 0.0).ToArray();
+            RaumnutzungBild.StundenSetzen(d, KonditionierungGroesse.Personen, RaumnutzungTagesart.Werktag, tag);
+
+            RaumnutzungCtrl.Profilvorschau k = RaumnutzungCtrl.Vorschau(RaumnutzungHuelle.Kern(d), Konditionierungsgroesse.Personen);
+            Assert.Equal(Raumnutzungsweg.Stundenprofil, k.Weg);
+            Assert.True(k.Woche != null, "ohne Woche: " + k.Meldung);
+            Assert.Null(k.Meldung);
+            // Ohne freien Tag gilt der Werktag an allen Tagen; die typische Woche liegt ohne Ferien und Feiertage.
+            Bitgleich(Enumerable.Range(0, 168).Select(i => tag[i % 24]).ToArray(), k.Woche, "Personen");
+
             RaumnutzungBildvorschau v = RaumnutzungBildHuelle.Vorschau(d, KonditionierungGroesse.Personen, RaumnutzungBildHuelle.Texte());
             Assert.Equal(RaumnutzungBildweg.Stundenprofil, v.Weg);
-            Assert.False(v.Belegt);
-            Assert.Contains("PERSONEN", v.Hinweis);
+            Assert.True(v.Belegt, v.Hinweis);
+            Assert.Equal(100.0, v.Woche![10]);               // Montag 10 Uhr, Anteil in Prozent
+            Assert.Equal(0.0, v.Woche[3]);                   // Montag 3 Uhr
+            Assert.NotNull(v.Teppich);
+            Assert.DoesNotContain("PERSONEN", v.Hinweis ?? "");
         }
     }
 }
