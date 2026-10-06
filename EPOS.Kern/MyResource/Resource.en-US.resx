@@ -47471,5 +47471,9 @@ chart</value>
   <data name="VF_STAND__TABELLE__GEBAEUDE" xml:space="preserve">
     <value>The building table of the current case, without deviation: one group row per building, below it calculation method, heat demand, peak loads, on the VDI method the cooling and room figures, the ventilation and preheat rows and the notes W1 to W5; only in the block {{#je stand}}.</value>
   </data>
+  <data name="BV_A1B_NACHWEIS_STROMSTEUER" xml:space="preserve">
+    <value> · Electricity tax: high-efficiency {0}, spatial connection {1}</value>
+    <comment>Stromsteuer-Vermerk der Nachweiszeile der Wirtschaftlichkeit; {0} hocheffizient, {1} räumlicher Zusammenhang (ja/nein klein).</comment>
+  </data>
 </root>
 

@@ -94,6 +94,30 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Rote Probe (KP3-A1b):</b> Der Ermittler formatierte Zahlen fest in de-DE — auch im englischen Bericht
+        /// („2,0 K“ statt „2.0 K“). Sie folgen jetzt der Kultur der Berichtssprache (<see cref="BerichtTexte.Kultur"/>).
+        /// </summary>
+        [Theory]
+        [InlineData(true, "2.0 K", "3.0 K", "0.0 %", "10.0 %")]
+        [InlineData(false, "2,0 K", "3,0 K", "0,0 %", "10,0 %")]
+        public void Zahlen_folgen_der_Berichtssprache(bool englisch, string abzugS, string abzugV, string aufschlagS, string aufschlagV)
+        {
+            using (BerichtTexte.ImLauf(englisch))
+            {
+                List<Abweichung> liste = AbweichungsErmittler.Vergleiche(
+                    Details(true), Details(true, DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 3.0, aufschlagProzent: 10.0));
+                Abweichung abzug = Finde(liste, R.ABW_MERKMAL_AUFH_ABZUG);
+                Abweichung aufschlag = Finde(liste, R.ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT);
+                Assert.NotNull(abzug);
+                Assert.NotNull(aufschlag);
+                Assert.Equal(abzugS, abzug.WertStamm);
+                Assert.Equal(abzugV, abzug.WertVariante);
+                Assert.Equal(aufschlagS, aufschlag.WertStamm);
+                Assert.Equal(aufschlagV, aufschlag.WertVariante);
+            }
+        }
+
         /// <summary>NULL und die Vorgabe heißen dasselbe — Bemessung „kälteste Stunde“, Abzug 2 K, Reserve 20 %, Art täglich, kein Aufschlag.</summary>
         [Fact]
         public void NULL_und_Vorgabe_sind_keine_Abweichung()

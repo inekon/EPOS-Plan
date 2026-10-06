@@ -317,7 +317,12 @@ namespace WindowsFormsApplication1
         private static Func<string, string> Anzeige(Merkmal f)
             => f != null && Anzeigenamen.TryGetValue(f.Tabelle + "." + f.Spalte, out Func<string, string> a) ? a : null;
 
-        private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
+        /// <summary>
+        /// Die Kultur der Zahlen: die der Berichtssprache (<see cref="BerichtTexte.Kultur"/> — im Lauf eines Berichts
+        /// dessen Sprache, sonst die Oberflächensprache), wie die übrigen Berichtsbausteine. Bei jedem Zugriff gelesen,
+        /// damit ein englischer Bericht „1.5“ und ein deutscher „1,5“ zeigt.
+        /// </summary>
+        private static CultureInfo Zahlkultur => BerichtTexte.Kultur;
 
         /// <summary>
         /// Vergleicht die Konfiguration einer Variante gegen den Stamm.
@@ -346,7 +351,7 @@ namespace WindowsFormsApplication1
                     liste.Add(new Abweichung
                     {
                         Gewerk = g.Key, Merkmal = MERKMAL_ANZAHL,
-                        WertStamm = nS.ToString(DE), WertVariante = nV.ToString(DE)
+                        WertStamm = nS.ToString(Zahlkultur), WertVariante = nV.ToString(Zahlkultur)
                     });
             }
 
@@ -396,7 +401,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static string AnzahlText(int n)
         {
-            return n > 0 ? n.ToString(DE) : BESTAND_FEHLT;
+            return n > 0 ? n.ToString(Zahlkultur) : BESTAND_FEHLT;
         }
 
         /// <summary>
@@ -561,7 +566,7 @@ namespace WindowsFormsApplication1
             }
             double? d = Zahl(r, f);
             if (!d.HasValue) return "—";
-            string txt = d.Value.ToString("N" + f.Dez, DE);
+            string txt = d.Value.ToString("N" + f.Dez, Zahlkultur);
             return string.IsNullOrEmpty(f.Einheit) ? txt : txt + " " + f.Einheit;
         }
     }

@@ -842,8 +842,9 @@ namespace WindowsFormsApplication1
                 !string.IsNullOrEmpty(Unternehmensart))
                 t += " · Unternehmensart " + Unternehmensart;
             if (HocheffizienzNachweis || RaeumlicherZusammenhang)
-                t += " · Stromsteuer: hocheffizient " + (HocheffizienzNachweis ? "ja" : "nein") +
-                     ", räumlicher Zusammenhang " + (RaeumlicherZusammenhang ? "ja" : "nein");
+                // Der Vermerk in der Sprache der Berichtskultur (KP3-A1b); die Wahrheitswerte aus den Ja/Nein-Texten, klein.
+                t += string.Format(kultur, RessourceIn("BV_A1B_NACHWEIS_STROMSTEUER", kultur, " · Stromsteuer: hocheffizient {0}, räumlicher Zusammenhang {1}"),
+                                   JaNeinIn(HocheffizienzNachweis, kultur), JaNeinIn(RaeumlicherZusammenhang, kultur));
             if (EinspeiseverguetungKWK.HasValue && EinspeiseverguetungKWK.Value != 0)
                 t += " · Einspeisevergütung KWK " +
                      EinspeiseverguetungKWK.Value.ToString("N3", kultur) + " €/kWh";
@@ -851,6 +852,22 @@ namespace WindowsFormsApplication1
             // Zeile Zeichen für Zeichen die von vorher.
             t += RisikoModul.Nachweis(this, kultur);
             return t;
+        }
+
+        /// <summary>Ein Ressourcentext in der Sprache der übergebenen Kultur; fehlt er, der deutsche Rückfall.</summary>
+        private static string RessourceIn(string schluessel, System.Globalization.CultureInfo kultur, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel, kultur); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        /// <summary>„ja“/„nein“ (englisch „yes“/„no“) in der Sprache der übergebenen Kultur.</summary>
+        private static string JaNeinIn(bool wert, System.Globalization.CultureInfo kultur)
+        {
+            string t = wert ? RessourceIn("ALLG_BTN_JA", kultur, "Ja") : RessourceIn("ALLG_BTN_NEIN", kultur, "Nein");
+            return t.ToLower(kultur);
         }
 
         /// <summary>Flache Kopie (z. B. für den Kapitalwert-Verlauf mit abweichendem
