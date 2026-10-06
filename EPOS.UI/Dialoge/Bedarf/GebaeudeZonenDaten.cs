@@ -278,7 +278,7 @@ public sealed class BauteilDaten
 /// <c>false</c>) oder aus dem Stammkatalog; <see cref="UWert"/> im Kern gerechnet, <c>null</c> =
 /// nicht bestimmbar.
 /// </summary>
-public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert);
+public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert, bool Ersatz = false);
 
 /// <summary>
 /// <b>Ein Luftstrom zwischen zwei Zonen</b> eines Gebäudes (Stufe G6b; <c>Tab_Zonenluftstrom</c>) — das

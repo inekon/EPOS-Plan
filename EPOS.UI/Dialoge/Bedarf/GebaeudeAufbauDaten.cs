@@ -65,6 +65,21 @@ public static class GebaeudeAnsichtAufbaustufen
         _ => "ohne",
     };
 
+    /// <summary>
+    /// Die Stufe einer Bauteilzeile des Zonendialogs — derselbe Vertrag wie <c>Bauteilzuordnung.Stufe(BauteilModel, …)</c> des
+    /// Kerns (Wache in <c>GebaeudeAufbauHuelleTests</c>): Fenster und Vorhangfassade transparent; mit Aufbau, der kein
+    /// Ersatzaufbau ist (<paramref name="ersatzaufbau"/>), A; mit U-Wert, der nicht aus der Vorgabe stammt, B; sonst C.
+    /// </summary>
+    public static Aufbaustufe Stufe(BauteilDaten b, bool ersatzaufbau)
+    {
+        if (b.Bauteilart is WindowsFormsApplication1.DbWerte.BAUTEILART_FENSTER or WindowsFormsApplication1.DbWerte.BAUTEILART_VORHANGFASSADE)
+            return Aufbaustufe.Transparent;
+        if (b.MitAufbau && !ersatzaufbau) return Aufbaustufe.A;
+        if (b.UWert.HasValue && !string.Equals(b.Herkunft, WindowsFormsApplication1.DbWerte.HERKUNFT_VORGABE, StringComparison.Ordinal))
+            return Aufbaustufe.B;
+        return Aufbaustufe.C;
+    }
+
     /// <summary>Ist die Stufe „nicht vollständig zugeordnet" (B oder C) — der Filter des Zonendialogs und der Liste?</summary>
     public static bool Unvollstaendig(Aufbaustufe s) => s is Aufbaustufe.B or Aufbaustufe.C;
 }
