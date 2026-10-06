@@ -120,6 +120,42 @@ namespace Auslieferungsvorlage.Tests
             });
         }
 
+        /// <summary>
+        /// <b>Eine eigene Zeile auf einem ausgelieferten Schlüssel fällt, die ausgelieferte wird nachgesät</b> (E96): Vor
+        /// E96 waren DIN 19 und 20 frei; eine eigene Zeile darauf bleibt in Schritt 190 stehen, fällt in der Auslieferung mit
+        /// den eigenen Zeilen — und die Vorlage trägt danach die ausgelieferte Zeile auf das Muster.
+        /// </summary>
+        [Fact]
+        public void Eine_eigene_Zeile_auf_DIN_20_faellt_und_die_ausgelieferte_wird_nachgesaet()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Bearbeiten(quelle, () =>
+            {
+                Assert.True(RaumnutzungDinTsSchema.Vollstaendig(), "Die Testdatenbank steht vor Schritt " + RaumnutzungDinTsSchema.SCHRITT + ".");
+                DataRepository.ExecuteNonQuery("UPDATE \"Tab_Raumnutzungszuordnung\" SET \"ID_Profil\" = NULL, \"ReadOnly\" = 0 " +
+                                               "WHERE \"Art\" = 'DIN_NUMMER' AND \"Schluessel\" = '20'");
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "alle");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("entfernt: 1 eigene Zuordnung(en)", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("zurueckgestellt, 1 nachgesaet", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      ausgelieferte Saat der Nutzungsprofile vollstaendig: offen 0", e.Ausgabe, StringComparison.Ordinal);
+            Lesen(ziel, () =>
+            {
+                Assert.Equal(RaumnutzungSaat.Zuordnungen.Count, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungszuordnung\""));
+                Assert.Equal(1, Zahl(
+                    "SELECT COUNT(*) FROM \"Tab_Raumnutzungszuordnung\" z JOIN \"Tab_Raumnutzungsprofil\" p ON p.\"ID\" = z.\"ID_Profil\" " +
+                    "WHERE z.\"Art\" = 'DIN_NUMMER' AND z.\"Schluessel\" = '20' AND z.\"ReadOnly\" = 1 AND p.\"Bezeichner\" = ?",
+                    new DbParam("@p", RaumnutzungSaat.LAGER)));
+                Assert.True(RaumnutzungDinTsSchema.Vollstaendig());
+            });
+        }
+
         private static long Zahl(string sql, params DbParam[] p)
         {
             object w = DataRepository.ExecuteScalar(sql, p);

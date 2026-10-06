@@ -237,7 +237,8 @@ namespace Auslieferungsvorlage
         /// traegt er eine verlaessliche Auslieferungsmarke, und Werte aus Projektdateien gehoeren nie in die Auslieferung): eigene Zuordnungen,
         /// eigene Profile und eigene Kategorien fallen (Zeilenbild und Stundenprofile ueber die Kaskade), die
         /// ausgelieferten Zuordnungen zeigen danach wieder auf ihr Saatprofil (<see cref="RaumnutzungSaat.Zuordnungen"/>) —
-        /// auch wenn der Anwender eine auf sein eigenes Profil oder auf „keine" gestellt hatte (NP-F19).
+        /// auch wenn der Anwender eine auf sein eigenes Profil oder auf „keine" gestellt hatte (NP-F19). Fehlt danach eine
+        /// ausgelieferte Zeile, weil eine eigene Zeile ihren Schlüssel trug (DIN 19 und 20 vor E96), wird sie nachgesät.
         /// Steht der Schemaschritt nicht, gibt es nichts zu tun.
         /// </summary>
         internal void RaumnutzungBereinigen()
@@ -262,8 +263,13 @@ namespace Auslieferungsvorlage
                     "\" k ON k.\"ID\" = p.\"ID_Katalog\" WHERE k.\"Bezeichner\" = ? COLLATE NOCASE AND p.\"Bezeichner\" = ? COLLATE NOCASE)",
                     new DbParam("@k", z.Kategorie), new DbParam("@p", z.Profil), new DbParam("@a", z.Art),
                     new DbParam("@s", z.Schluessel), new DbParam("@k2", z.Kategorie), new DbParam("@p2", z.Profil));
+            long nachgesaet = 0;
+            foreach (RaumnutzungSaatzuordnung z in RaumnutzungSaat.Zuordnungen)
+                nachgesaet += DataRepository.ExecuteNonQuery(RaumnutzungSchema.SQL_SAAT_ZUORDNUNG,
+                    new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel), new DbParam("@k", z.Kategorie), new DbParam("@p", z.Profil));
             _bericht.Zeile("    entfernt: " + zuordnungen + " eigene Zuordnung(en), " + profile + " eigene(s) Profil(e), " +
-                           kategorien + " eigene Kategorie(n); " + zurueck + " ausgelieferte Zuordnung(en) auf ihr Saatprofil zurueckgestellt");
+                           kategorien + " eigene Kategorie(n); " + zurueck + " ausgelieferte Zuordnung(en) auf ihr Saatprofil zurueckgestellt, " +
+                           nachgesaet + " nachgesaet");
         }
 
         // =================================================================================
