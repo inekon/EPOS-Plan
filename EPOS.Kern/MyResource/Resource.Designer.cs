@@ -29548,11 +29548,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst mit OK entsteht seine Projektkopie, die Zonen tragen kann. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten entsteht seine Projektkopie, die Zonen tragen kann. ähnelt.
         /// </summary>
-        public static string GEBZ_SPERRE_NEUE_ZEILE {
+        public static string GEBZ_SPERRE_PROJEKT_ASSISTENT {
             get {
-                return ResourceManager.GetString("GEBZ_SPERRE_NEUE_ZEILE", resourceCulture);
+                return ResourceManager.GetString("GEBZ_SPERRE_PROJEKT_ASSISTENT", resourceCulture);
             }
         }
         
@@ -30394,7 +30394,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit dem Speichern entstehen – nach Abschluss des Assistenten lässt sich sein Wärmebedarf berechnen. ähnelt.
         /// </summary>
         public static string GEB_MSG_BEDARF_ZONE_UNGESPEICHERT {
             get {
@@ -30507,6 +30507,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_LOESCHFRAGE {
             get {
                 return ResourceManager.GetString("GEB_MSG_LOESCHFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wird aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopie. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LOESCHHINWEIS_KOPIEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LOESCHHINWEIS_KOPIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäude werden aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopien. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Gebäude gibt es keine Projektkopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_PROJEKTKOPIE_FEHLT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_PROJEKTKOPIE_FEHLT", resourceCulture);
             }
         }
         
@@ -30682,11 +30709,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich in die Datenbank übernehmen. ähnelt.
         /// </summary>
-        public static string GEB_SPERRE_IN_DB_NEUE_ZEILE {
+        public static string GEB_SPERRE_IN_DB_ASSISTENT {
             get {
-                return ResourceManager.GetString("GEB_SPERRE_IN_DB_NEUE_ZEILE", resourceCulture);
+                return ResourceManager.GetString("GEB_SPERRE_IN_DB_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst nach Abschluss des Assistenten löschbar – eine übernommene Zeile stammt aus diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_LOESCHEN_ASSISTENT {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_LOESCHEN_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – exportiert wird die Kopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_WAHL_EXPORT {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_WAHL_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – „Fläche und Verbrauch“ skaliert die Kopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_WAHL_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_WAHL_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – bearbeitet wird die Kopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_WAHL_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_WAHL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – berechnet wird der Wärmebedarf der Kopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_WAHL_SIMULATION {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_WAHL_SIMULATION", resourceCulture);
             }
         }
         
@@ -30741,6 +30813,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_TITEL_IN_DB {
             get {
                 return ResourceManager.GetString("GEB_TITEL_IN_DB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzfläche [m²] ähnelt.
+        /// </summary>
+        public static string GEB_TXT_EINHEIT_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEB_TXT_EINHEIT_FLAECHE", resourceCulture);
             }
         }
         
@@ -31552,7 +31633,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Exportiert wird der gespeicherte Stand des Gebäudes; Änderungen in dieser Liste gelten erst nach OK. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportiert wird der gespeicherte Stand des Gebäudes; noch nicht gespeicherte Änderungen in dieser Liste sind darin nicht enthalten. ähnelt.
         /// </summary>
         public static string GEXP_GESPEICHERTER_STAND {
             get {
@@ -32578,20 +32659,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich exportieren. ähnelt.
+        /// </summary>
+        public static string GEXP_SPERRE_ASSISTENT {
+            get {
+                return ResourceManager.GetString("GEXP_SPERRE_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erst die Meldungen bestätigen. ähnelt.
         /// </summary>
         public static string GEXP_SPERRE_BESTAETIGEN {
             get {
                 return ResourceManager.GetString("GEXP_SPERRE_BESTAETIGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren. ähnelt.
-        /// </summary>
-        public static string GEXP_SPERRE_UNGESPEICHERT {
-            get {
-                return ResourceManager.GetString("GEXP_SPERRE_UNGESPEICHERT", resourceCulture);
             }
         }
         
@@ -51132,7 +51213,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUART_ERL {
             get {
@@ -51924,7 +52005,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebedarf bzw. die Wohnfläche in der Einheit, die die Bedarfsart nennt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebedarf bzw. die Nutzfläche in der Einheit, die die Bedarfsart nennt. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBW_WERT_ERL {
             get {
@@ -51969,7 +52050,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe: Nutzfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_ANGABEART_ERL {
             get {
@@ -52041,7 +52122,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohn- oder Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_WOHNFLAECHE_ERL {
             get {
@@ -104854,15 +104935,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an. ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_KEINE_KM {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_KEINE_KM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_KM {
@@ -104881,15 +104953,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts. ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_LEER {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_LEER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string START_E_KUEHL_MSG_FEHLER {
@@ -104899,16 +104962,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb. ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_PROJEKT_AUS {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_PROJEKT_AUS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung mit Kältemaschinen und Wärmepumpen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_TEXT {
             get {
@@ -104917,7 +104971,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung und Kälteanlagen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_TITEL {
             get {
@@ -112946,6 +113000,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ausblenden ähnelt.
+        /// </summary>
+        public static string WARNBANNER_SCHLIESSEN_TOOLTIP {
+            get {
+                return ResourceManager.GetString("WARNBANNER_SCHLIESSEN_TOOLTIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Inhalt anzeigen... ähnelt.
         /// </summary>
         public static string WBAD_BTN_ANZEIGEN {
@@ -119984,6 +120047,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIZ_SPEICHERN_FEHLER_TITEL {
             get {
                 return ResourceManager.GetString("WIZ_SPEICHERN_FEHLER_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiter ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_BEARBEITER {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_BEARBEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellt am ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_ERSTELLT {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_ERSTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geändert am ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_GEAENDERT {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_KLIMA {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunde ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_KUNDE {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_KUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Letzte Simulation ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_SIMULATION {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdaten ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_TITEL {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_VARIANTEN {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante von ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_VARIANTE_VON {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_VARIANTE_VON", resourceCulture);
             }
         }
         

@@ -3148,14 +3148,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Zeigt die Listenzeile noch auf denselben Katalogsatz wie die vorhandene Kopie?
-        /// Mit Verweis auf beiden Seiten entscheidet die Id; ohne Verweis auf beiden Seiten
-        /// der Gebäudename (Altbestand). Ein Verweis nur auf einer Seite gilt als geändert.
+        /// Trägt die Kopie einen Verweis, entscheidet die Id; eine Zeile ohne Verweis gilt dann
+        /// als geändert. <b>Trägt die Kopie keinen Verweis</b> (Altbestand, oder ihr Katalogsatz
+        /// wurde gelöscht und die Beziehung hat den Verweis geleert), entscheidet allein der
+        /// Gebäudename: Eine Liste, die noch den Verweis von VOR dem Löschen trägt (der
+        /// Gebäudedialog löscht den Satz, während seine Projektliste offen ist), darf die
+        /// vollständige Kopie samt Zonen nicht durch eine neue aus dem Katalog ersetzen — den
+        /// Satz gibt es nicht mehr, oder seine Id ist an einen neuen Satz vergeben.
         /// </summary>
         private static bool GleicherKatalogsatz(Z_ProjGebModel item, int? stammKopie, string nameKopie)
         {
             int? stammZeile = item.ID_Gebaeude_Stamm.HasValue && item.ID_Gebaeude_Stamm.Value > 0
                 ? item.ID_Gebaeude_Stamm : null;
-            if (stammZeile.HasValue || stammKopie.HasValue)
+            if (stammKopie.HasValue)
                 return stammZeile == stammKopie;
             return string.Equals(item.Gebaeudename ?? "", nameKopie ?? "", StringComparison.Ordinal);
         }

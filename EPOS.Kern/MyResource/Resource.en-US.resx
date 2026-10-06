@@ -14724,9 +14724,6 @@ Please check all entries!</value>
   <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
     <value>Please enter a name.</value>
   </data>
-  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
-    <value>The building has not been saved in the project yet – it can be saved to the database after OK.</value>
-  </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>from project {0}, {1}</value>
   </data>
@@ -23315,16 +23312,16 @@ Do you want to allow this?</value>
     <value>The description of the marked record.</value>
   </data>
   <data name="KI_DLG_GEB_WOHNFLAECHE_ERL" xml:space="preserve">
-    <value>The living or usable area of the marked record as shown on the screen. It is changed with the “Change…” button.</value>
+    <value>The usable floor area of the marked record as shown on the screen. It is changed with the “Change…” button.</value>
   </data>
   <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
-    <value>The kind of entry: living area, or a consumption figure the area is derived from.</value>
+    <value>The kind of entry: usable floor area, or a consumption figure the area is derived from.</value>
   </data>
   <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
     <value>The kind of entry for this building; it determines the unit and the calculation path of the figure beside it.</value>
   </data>
   <data name="KI_DLG_GEBW_WERT_ERL" xml:space="preserve">
-    <value>The heat demand or the living area, in the unit named by the kind of entry.</value>
+    <value>The heat demand or the usable floor area, in the unit named by the kind of entry.</value>
   </data>
   <data name="KI_DLG_GEBW_NUTZUNGSGRAD_ERL" xml:space="preserve">
     <value>The annual efficiency of the boiler as a fraction, e.g. 0.85 for 85 %. It is only needed for a fuel figure.</value>
@@ -23375,7 +23372,7 @@ Do you want to allow this?</value>
     <value>Residential building, or commercial and other; the use decides which list the building types come from.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
-    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and living area.</value>
+    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and usable floor area.</value>
   </data>
   <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
     <value>The total living or usable area of the building.</value>
@@ -33722,7 +33719,7 @@ Do you want to allow this?</value>
     <value>its catalogue record “{0}” cannot be found in the building catalogue — without it there are no building data to calculate from. Please select the building from the catalogue again.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
-    <value>the building comes from an import with a zone and building elements that are only created with OK – it is saved with OK, after which its heat requirement can be calculated.</value>
+    <value>the building comes from an import with a zone and building elements that are only created when it is saved – its heat requirement can be calculated once the wizard has finished.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Building file</value>
@@ -34641,9 +34638,6 @@ Do you want to allow this?</value>
   </data>
   <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
     <value>Edit the building data of this project building, create zones and building components – the project copy is written, not the catalogue</value>
-  </data>
-  <data name="GEBZ_SPERRE_NEUE_ZEILE" xml:space="preserve">
-    <value>The building has not been saved in the project yet – its project copy, which can carry zones, is created with OK.</value>
   </data>
   <data name="GEBZ_TITEL_PROJEKT" xml:space="preserve">
     <value>Building in the project: envelope and zones</value>
@@ -38369,9 +38363,6 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
     <value>Write the data of the building in the project — as gbXML with schematic room geometry or as IFC with zones, component areas and layer build-ups without geometry</value>
   </data>
-  <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
-    <value>The building is not yet saved in the project. Save with OK first, then export.</value>
-  </data>
   <data name="GEXP_LBL_FORMAT" xml:space="preserve">
     <value>Format</value>
   </data>
@@ -38391,7 +38382,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Without a postal code the file carries no site and no north direction. The entry is not saved.</value>
   </data>
   <data name="GEXP_GESPEICHERTER_STAND" xml:space="preserve">
-    <value>The saved state of the building is exported; changes in this list only apply after OK.</value>
+    <value>The saved state of the building is exported; changes in this list that have not been saved yet are not included.</value>
   </data>
   <data name="GEXP_GRP_MELDUNGEN" xml:space="preserve">
     <value>Before writing</value>
@@ -45411,10 +45402,10 @@ chart</value>
     <value>The project chillers cannot be opened — is a project open?</value>
   </data>
   <data name="START_E_KUEHL_TITEL" xml:space="preserve">
-    <value>Cooling</value>
+    <value>Cooling and chillers</value>
   </data>
   <data name="START_E_KUEHL_TEXT" xml:space="preserve">
-    <value>Chillers of the project and heat pumps with cooling function</value>
+    <value>Cooling with chillers and heat pumps</value>
   </data>
   <data name="START_E_KUEHL_KM" xml:space="preserve">
     <value>Chillers</value>
@@ -45424,15 +45415,6 @@ chart</value>
   </data>
   <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
     <value>{0} ({1} ×)</value>
-  </data>
-  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
-    <value>No chiller in the project — click the tile to add one.</value>
-  </data>
-  <data name="START_E_KUEHL_LEER" xml:space="preserve">
-    <value>The project has no chiller and no heat pump with cooling function. Clicking the tile opens the chillers of the project.</value>
-  </data>
-  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
-    <value>The project does not calculate cooling (project setting “Calculate cooling” under Simulation › Configuration is off): chillers and heat pumps in cooling mode stay out of operation in the simulation.</value>
   </data>
   <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
     <value>The cooling mode of the heat pump could not be saved.</value>
@@ -47239,6 +47221,75 @@ chart</value>
   </data>
   <data name="KOND_AUFH_MANUELL_KI_NUR_PROJEKT" xml:space="preserve">
     <value>The manual preheat time exists only for a building in the project (button “Envelope and zones…”), not for a catalogue record.</value>
+  </data>
+  <data name="GEB_SPERRE_IN_DB_ASSISTENT" xml:space="preserve">
+    <value>The building has not been saved in the project yet – it can be saved to the database once the wizard has finished.</value>
+  </data>
+  <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
+    <value>Can be deleted only after the wizard has finished – a row taken over into the project comes from this building.</value>
+  </data>
+  <data name="GEB_MSG_PROJEKTKOPIE_FEHLT" xml:space="preserve">
+    <value>There is no project copy of this building in the project.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_FLAECHE" xml:space="preserve">
+    <value>Select a building in the project first – “Area and consumption” scales the copy in the project.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_PROJEKT" xml:space="preserve">
+    <value>Select a building in the project first – the copy in the project is edited.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_EXPORT" xml:space="preserve">
+    <value>Select a building in the project first – the copy in the project is exported.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_SIMULATION" xml:space="preserve">
+    <value>Select a building in the project first – the heat demand of the copy in the project is calculated.</value>
+  </data>
+  <data name="GEB_TXT_EINHEIT_FLAECHE" xml:space="preserve">
+    <value>Usable floor area [m²]</value>
+  </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN" xml:space="preserve">
+    <value>The building is deleted from the database. The projects {0} keep their copy.</value>
+  </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR" xml:space="preserve">
+    <value>The buildings are deleted from the database. The projects {0} keep their copies.</value>
+  </data>
+  <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
+    <value>Hide message</value>
+  </data>
+  <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
+    <value>The building has not been saved in the project yet – its project copy, which can carry zones, is created once the wizard has finished.</value>
+  </data>
+  <data name="GEXP_SPERRE_ASSISTENT" xml:space="preserve">
+    <value>The building has not been saved in the project yet – it can be exported once the wizard has finished.</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_TITEL" xml:space="preserve">
+    <value>Project details</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_KUNDE" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_BEARBEITER" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_ERSTELLT" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_GEAENDERT" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_KLIMA" xml:space="preserve">
+    <value>Climate region</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_VARIANTE_VON" xml:space="preserve">
+    <value>Variant of</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_VARIANTEN" xml:space="preserve">
+    <value>Variants</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_SIMULATION" xml:space="preserve">
+    <value>Last simulation</value>
   </data>
 </root>
 

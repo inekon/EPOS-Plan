@@ -195,10 +195,14 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Der Unterreiter „Kälte Produktion Chart“ und die Kältedeckung der Übersicht zeigen die Deckung der Wärmepumpe im Kühlbetrieb auch nach einem Wechsel zur Startseite. (#724; Version bestätigt der Anwender beim Upload)
 - Der Ergebnisreiter Wärmepumpe zeigt die Jahresarbeitszahl der Wärmepumpe und des Systems mit Heizstab sowie eine Spalte JAZ je Modul, wahlweise mit Heizstab. (#749; Version bestätigt der Anwender beim Upload)
 - Die Berichtskennzahl Jahresarbeitszahl rechnet die Heizstabwärme mit. (#749; Version bestätigt der Anwender beim Upload)
-- Im Reiter Energieerzeuger der Startseite ersetzt die Kachel ‚Kühlung‘ den Knopf ‚Kältemaschinen…‘; sie zeigt die Kältemaschinen des Projekts und schaltet den Kühlbetrieb der Wärmepumpen mit Kühlfunktion direkt. (#758; Version bestätigt der Anwender beim Upload)
+- Im Reiter Energieerzeuger der Startseite ersetzt die Kachel ‚Kühlung und Kälteanlagen‘ den Knopf ‚Kältemaschinen…‘; sie zeigt die Kältemaschinen des Projekts und schaltet den Kühlbetrieb der Wärmepumpen mit Kühlfunktion direkt. (#758; Version bestätigt der Anwender beim Upload)
 - Der Dialog Wärmequelle Erdreich prüft die Auslegung nach VDI 4640 Blatt 2 schon vor dem ersten Simulationslauf als Vorprüfung aus Heizleistung und COP der Wärmepumpe. (#759; Version bestätigt der Anwender beim Upload)
 - Ein ohne Schloss ausgelieferter Katalogsatz, den eine neue Programmfassung gesperrt mitbringt, wird beim Katalogabgleich an Ihren gleichnamigen Satz angebunden, übernimmt den Auslieferungsstand und wird künftig nachgeführt. (#763; Version bestätigt der Anwender beim Upload)
 - Im Gebäudedialog erscheinen Hinweise zu ‚Gebäude in DB löschen‘ und ‚Gebäude in DB ändern…‘ direkt unter den Katalogknöpfen; ein gesperrtes Gebäude nennt den Grund schon am Knopf. (#771; Version bestätigt der Anwender beim Upload)
+Meldungen in langen Dialogen bleiben beim Rollen unter der Kopfzeile sichtbar und lassen sich mit einem Kreuz ausblenden. (#775; Version bestätigt der Anwender beim Upload)
+Ein Gebäude lässt sich aus der Datenbank löschen, auch wenn Projekte eine Kopie davon führen; die Projekte behalten ihre Kopie. (#776; Version bestätigt der Anwender beim Upload)
+Im Gebäudedialog speichern Löschen, ‚Gebäude im Projekt bearbeiten…‘, ‚Exportieren…‘, ‚In DB übernehmen‘ und ‚Simulation…‘ eine eben übernommene Zeile vorher selbst; im Assistenten lässt sich ein Katalogsatz, aus dem eine noch nicht gespeicherte Zeile stammt, erst nach Abschluss löschen; ‚Baustoff-Zuordnungen…‘ steht neben ‚Importieren (gbXML, IFC)…‘, und die Flächenangabe heißt Nutzfläche. (#776; Version bestätigt der Anwender beim Upload)
+Im Projektassistenten nutzt die Projektliste die volle Fensterhöhe, und über den Kacheln stehen die Daten des gewählten Projekts. (#778; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
