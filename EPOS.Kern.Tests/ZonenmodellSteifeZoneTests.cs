@@ -15,8 +15,8 @@ namespace EPOS.Kern.Tests
     /// auf ihrem positiven Endwert. Endpunkt und Ableitung am Ende sind dann zulässig bzw. null, die
     /// Innenprüfung (RP2a) sieht keinen Vorzeichenwechsel der Ableitung, und der Goldene Schnitt der
     /// Mittelprüfung (RB-Z4) sieht nur die Ebene — der Abschnitt blieb die ganze Stunde geregelt und buchte im
-    /// Mittel Kälte. Die Probe hält den Rückfall auf das exakte Extremum: Der Abschnitt endet am ersten
-    /// Nulldurchgang, danach läuft die Zone frei.
+    /// Mittel Kälte. Die Probe hält den Schnitt am exakten Extremum (die Nullstelle der Ableitung, Regelweg der
+    /// Innenprüfung und der Mittelprüfung): Der Abschnitt endet am ersten Nulldurchgang, danach läuft die Zone frei.
     /// </summary>
     public class ZonenmodellSteifeZoneTests
     {

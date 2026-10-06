@@ -400,9 +400,9 @@ namespace WindowsFormsApplication1
 
                 // Die allgemeine Innenprüfung (Rechenweg RP2a, Entscheid E62): Jeder geregelte Abschnitt, dessen
                 // Leistung im Innern das Vorzeichen wechselt, und jeder Totband-Abschnitt, dessen Raumluft das Band
-                // im Innern verlässt, endet am ersten Austritt — auch bei zulässigem Mittel und Endpunkt. Gesucht
-                // wird nur, wenn die Ableitung an Anfang und Ende verschiedene Vorzeichen trägt und das Extremum
-                // die Grenze verletzt (InnenUmkehr); jeder andere Abschnitt bleibt Zeichen für Zeichen.
+                // im Innern verlässt, endet am ersten Austritt — auch bei zulässigem Mittel und Endpunkt. Das
+                // Extremum ist die exakte Nullstelle der Ableitung (InneresExtremum); geschnitten wird nur, wenn sie im
+                // Innern liegt und die Grenze verletzt (InnenUmkehr) — jeder andere Abschnitt bleibt Zeichen für Zeichen.
                 if (InnenUmkehr(fall, in ab, x, u.Ende(x, ab.B), tau, in r, out double tExtremum, out double grenze, out double richtung))
                 {
                     if (abschnitte < InnenpruefungObergrenzeFuerProbe)
@@ -424,13 +424,12 @@ namespace WindowsFormsApplication1
                 // kann nach dem Beginn unter null fallen und bis zum Ende wieder steigen — etwa wenn die
                 // Innenbauteilmasse wärmer als die Raumluft ist und die schnelle Mode die Last binnen
                 // Minuten umkehrt. Dann wäre der ganze Rest der Stunde „geregelt" mit falschem
-                // Vorzeichen im Mittel. Erkennbar ist das nur am Mittel, und nur dann wird gesucht —
-                // jeder Abschnitt mit zulässigem Mittel bleibt Zeichen für Zeichen wie zuvor.
+                // Vorzeichen im Mittel. Das Netz für alles, was die Innenprüfung nicht schneidet (Lagen mit
+                // Leitwert, Abschnitte ab der Obergrenze): Nur bei verletztem Mittel wird gesucht, am exakten
+                // Extremum wie in der Innenprüfung — jeder Abschnitt mit zulässigem Mittel bleibt Zeichen für Zeichen.
                 if (MittelVerletzt(fall, in ab, xMittel) || LeitwertMittelVerletzt(fall, in ab, xMittel))
                 {
-                    double tauInnen = ab.System.Geregelt
-                        ? ErsteInnereVerletzung(fall, in ab, x, tau, in r)
-                        : ErsteInnereVerletzungLeitwert(fall, in ab, x, tau, in r);
+                    double tauInnen = ErsteInnereVerletzung(fall, in ab, x, tau, in r);
                     if (tauInnen < tau)
                     {
                         tau = tauInnen;
@@ -1492,84 +1491,41 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der erste Austritt einer Lage mit Leitwert aus ihrem Gültigkeitsband im Innern des Abschnitts: Die
-        /// Raumluft ist c + a₁·e^(λ₁t) + a₂·e^(λ₂t) und hat höchstens ein Extremum, die exakte Nullstelle der
-        /// Ableitung (<see cref="Uebergangsrechner.NullstelleAbleitung"/>). Ist die Lage dort verletzt, sucht die
-        /// Bisektion auf [0; t*] — dort ist die Raumluft monoton — den ersten Austritt; die Stunde geht danach mit
-        /// der Fallwahl am neuen Zustand weiter. Ohne Verletzung kommt <paramref name="tau"/> unverändert zurück.
-        /// Gerechnet wird nur, wenn das Mittel die Abschnittsregel verletzt (<see cref="LeitwertMittelVerletzt"/>);
-        /// jeder andere Abschnitt bleibt Zeichen für Zeichen.
+        /// <b>Das innere Extremum eines Abschnitts</b> (Rechenweg RP2a, Regelweg jeder Suche nach einer inneren
+        /// Umkehr): Der dritte Ausgang (Leistung bzw. Raumluft) ist auf dem Abschnitt c + a₁·e^(λ₁t) + a₂·e^(λ₂t) mit
+        /// reellen λ₁, λ₂ &lt; 0; seine Ableitung hat höchstens eine Nullstelle, und die ist geschlossen bekannt
+        /// (<see cref="Uebergangsrechner.NullstelleAbleitung"/>, im zusammenfallenden Zweig t* = −p/r). Geliefert wird
+        /// sie nur strikt im Innern, 0 &lt; t* &lt; τ, sonst <c>NaN</c>. Der Weg hängt weder an der Ableitung am
+        /// Abschnittsende — in einer schnellen Zone (beide Moden lange vor dem Ende abgeklungen, langsame Zeitkonstante
+        /// unter rund τ/37) ist sie nur noch Rundungsrauschen — noch an einer Suche über [0; τ], die dort nur die Ebene
+        /// des Endwerts sähe. Eine ungenaue Lage von t* bei fast gleichen Eigenwerten schadet nicht: Am Extremum ist der
+        /// Ausgang flach, und jede Prüfung danach misst den Ausgang selbst.
         /// </summary>
-        private static double ErsteInnereVerletzungLeitwert(Betriebsfall fall, in Abschnitt ab, Vektor2 x, double tau, in Stundenrand r)
+        private static double InneresExtremum(in Abschnitt ab, Vektor2 x, double tau)
         {
             double tStern = ab.System.Rechner.NullstelleAbleitung(ab.System.Z20, ab.System.Z21, ab.System.Rechner.A * x + ab.B);
-            if (!(tStern > 0.0) || !(tStern < tau)) return tau;
-            if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tStern).Ende(x, ab.B), in r)) return tau;
-            double unten = 0.0, oben = tStern;
-            for (int i = 0; i < HALBIERUNGEN; i++)
-            {
-                double mitte = 0.5 * (unten + oben);
-                if (!(mitte > unten) || !(mitte < oben)) break;
-                if (Verletzt(fall, in ab, ab.System.Rechner.Bei(mitte).Ende(x, ab.B), in r)) oben = mitte;
-                else unten = mitte;
-            }
-            return oben;
+            return tStern > 0.0 && tStern < tau ? tStern : double.NaN;
         }
 
         /// <summary>
-        /// <b>Der erste Umschaltpunkt im Innern eines geregelten Abschnitts</b> (Rechenbefund RB-Z4).
-        /// Bei festen Randbedingungen ist die Leistung q(t) = c + a₁·e^(−λ₁t) + a₂·e^(−λ₂t) mit reellen
-        /// λ₁, λ₂ &gt; 0; ihre Ableitung hat höchstens eine Nullstelle, q ist auf [0; τ] also unimodal.
-        /// Der Goldene Schnitt findet das Minimum der Heizleistung (das Maximum beim Kühlen); ist der
-        /// Fall dort verletzt, sucht die Bisektion auf [0; t_min] — dort ist q monoton — den ersten
-        /// Umschaltpunkt, wie die Bisektion des Endpunkts (Rand der Rechenschritte 7.1). Findet der Goldene
-        /// Schnitt kein verletztes Minimum — bei einer steifen Zone ist q nach wenigen Sekunden zahlengleich
-        /// konstant und das Minimum liegt vor dieser Ebene —, gilt die exakte Nullstelle der Ableitung
-        /// (<see cref="Uebergangsrechner.NullstelleAbleitung"/>) als t_min. Die Stunde geht
-        /// danach mit der Fallwahl am neuen Zustand weiter (freier Lauf); so bucht kein Abschnitt Wärme
-        /// und Kälte gegeneinander, und die Bilanz bleibt die des Modells. Ohne Verletzung im Innern
-        /// kommt <paramref name="tau"/> unverändert zurück.
+        /// <b>Der erste Austritt im Innern eines Abschnitts, dessen Mittel die Abschnittsregel verletzt</b> (Rechenbefund
+        /// RB-Z4) — für die geregelten Fälle wie für die Lagen mit Leitwert (Übergabe gesättigt oder im Regelbereich,
+        /// beide Seiten). Der dritte Ausgang hat höchstens ein Extremum, das exakte <see cref="InneresExtremum"/>. Ist der
+        /// Fall dort über den Zahlenrand hinaus verletzt (<see cref="Verletzt"/>), sucht die Bisektion auf [0; t*] — dort
+        /// ist der Ausgang monoton — den ersten Austritt, wie die Bisektion des Endpunkts (Rand der Rechenschritte 7.1):
+        /// höchstens <see cref="HALBIERUNGEN"/> Halbierungen, Abbruch, sobald die Mitte nicht mehr echt zwischen ihren
+        /// Grenzen liegt. Die Stunde geht danach mit der Fallwahl am neuen Zustand weiter (freier Lauf); so bucht kein
+        /// Abschnitt Wärme und Kälte gegeneinander, und die Bilanz bleibt die des Modells. Ohne inneres Extremum oder ohne
+        /// Verletzung dort kommt <paramref name="tau"/> unverändert zurück — ein Mittel mit falschem Vorzeichen fällt dann
+        /// laut als Abschnittsregel. Gerechnet wird nur, wenn das Mittel die Regel verletzt
+        /// (<see cref="MittelVerletzt"/>, <see cref="LeitwertMittelVerletzt"/>).
         /// </summary>
         private static double ErsteInnereVerletzung(Betriebsfall fall, in Abschnitt ab, Vektor2 x, double tau, in Stundenrand r)
         {
-            double vz = fall == Betriebsfall.HeizenGeregelt ? 1.0 : -1.0;
-            double invPhi = 0.5 * (Math.Sqrt(5.0) - 1.0);
-            double lo = 0.0, hi = tau;
-            double c = hi - invPhi * (hi - lo), d = lo + invPhi * (hi - lo);
-            double fc = vz * ab.Ausgang(2, ab.System.Rechner.Bei(c).Ende(x, ab.B));
-            double fd = vz * ab.Ausgang(2, ab.System.Rechner.Bei(d).Ende(x, ab.B));
-            for (int i = 0; i < HALBIERUNGEN; i++)
-            {
-                if (fc < fd)
-                {
-                    hi = d; d = c; fd = fc;
-                    c = hi - invPhi * (hi - lo);
-                    fc = vz * ab.Ausgang(2, ab.System.Rechner.Bei(c).Ende(x, ab.B));
-                }
-                else
-                {
-                    lo = c; c = d; fc = fd;
-                    d = lo + invPhi * (hi - lo);
-                    fd = vz * ab.Ausgang(2, ab.System.Rechner.Bei(d).Ende(x, ab.B));
-                }
-                if (!(hi - lo > Rechenrand.Zu(tau))) break;
-            }
-            double tMin = fc < fd ? c : d;
-            if (!(tMin > 0.0) || !(tMin < tau) || !Verletzt(fall, in ab, ab.System.Rechner.Bei(tMin).Ende(x, ab.B), in r))
-            {
-                // Der Rückfall auf das exakte Extremum (Befund Abschnittsregel bei steifer Zone): Klingen beide
-                // Moden weit vor dem Abschnittsende ab, ist q auf dem größten Teil von [0; τ] zahlengleich
-                // konstant. Der Goldene Schnitt sieht dann nur diese Ebene und verfehlt das kurze Minimum am
-                // Anfang. Die Nullstelle der Ableitung am Abschnittsbeginn ist davon unberührt; sie wird nur
-                // gerechnet, wenn der Goldene Schnitt nichts gefunden hat — jeder Abschnitt, den er findet,
-                // bleibt Zeichen für Zeichen.
-                double tStern = ab.System.Rechner.NullstelleAbleitung(ab.System.Z20, ab.System.Z21, ab.System.Rechner.A * x + ab.B);
-                if (!(tStern > 0.0) || !(tStern < tau)) return tau;
-                if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tStern).Ende(x, ab.B), in r)) return tau;
-                tMin = tStern;
-            }
-
-            double unten = 0.0, oben = tMin;
+            double tStern = InneresExtremum(in ab, x, tau);
+            if (!(tStern > 0.0)) return tau;
+            if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tStern).Ende(x, ab.B), in r)) return tau;
+            double unten = 0.0, oben = tStern;
             for (int i = 0; i < HALBIERUNGEN; i++)
             {
                 double mitte = 0.5 * (unten + oben);
@@ -1592,14 +1548,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die innere Umkehr eines Abschnitts</b> (Rechenweg RP2a): Der dritte Ausgang ist auf dem Abschnitt
-        /// c + a₁·e^(λ₁t) + a₂·e^(λ₂t) und hat höchstens ein Extremum. Es liegt genau dann im Innern, wenn die
-        /// Ableitung an Anfang und Ende verschiedene Vorzeichen trägt — nur dann wird es bestimmt
-        /// (<see cref="Uebergangsrechner.NullstelleAbleitung"/>). Geprüft wird die Grenze, die das Extremum
-        /// verletzen kann: geregeltes Heizen am Minimum gegen q = 0, geregeltes Kühlen am Maximum gegen q = 0,
-        /// das Totband am Minimum gegen θ_soll (mit Heizung) und am Maximum gegen θ_max (mit Kühlung). Wahr nur,
-        /// wenn Anfang und Ende zulässig sind und das Extremum die Grenze über den Zahlenrand hinaus verletzt;
-        /// dann tragen <paramref name="tExtremum"/>, <paramref name="grenze"/> und <paramref name="richtung"/>
-        /// (−1 Minimum, +1 Maximum) die Lage. Die Überschreitung ist richtung·(z − grenze).
+        /// c + a₁·e^(λ₁t) + a₂·e^(λ₂t) und hat höchstens ein Extremum, die exakte Nullstelle der Ableitung
+        /// (<see cref="InneresExtremum"/>). Sie entscheidet allein, ob das Extremum im Innern liegt; die Ableitung am
+        /// Abschnittsende wird nicht gelesen. Die Art des Extremums folgt aus dem Vorzeichen der Ableitung am Anfang
+        /// (fällt der Ausgang, ist es ein Minimum). Geprüft wird die Grenze, die das Extremum verletzen kann:
+        /// geregeltes Heizen am Minimum gegen q = 0, geregeltes Kühlen am Maximum gegen q = 0, das Totband am Minimum
+        /// gegen θ_soll (mit Heizung) und am Maximum gegen θ_max (mit Kühlung). Wahr nur, wenn das Extremum strikt im
+        /// Innern liegt (0 &lt; t* &lt; τ), Anfang und Ende bis auf den Zahlenrand (<see cref="Rechenrand.Zu"/>) zulässig
+        /// sind und das Extremum die Grenze über den Zahlenrand hinaus verletzt; dann tragen
+        /// <paramref name="tExtremum"/>, <paramref name="grenze"/> und <paramref name="richtung"/> (−1 Minimum, +1
+        /// Maximum) die Lage. Die Überschreitung ist richtung·(z − grenze).
         /// </summary>
         private static bool InnenUmkehr(Betriebsfall fall, in Abschnitt ab, Vektor2 x, Vektor2 xEnde, double tau, in Stundenrand r,
                                         out double tExtremum, out double grenze, out double richtung)
@@ -1610,8 +1568,7 @@ namespace WindowsFormsApplication1
             if (fall != Betriebsfall.HeizenGeregelt && fall != Betriebsfall.KuehlenGeregelt && fall != Betriebsfall.Totband)
                 return false;
             double w0 = Ableitung(in ab, x);
-            double wE = Ableitung(in ab, xEnde);
-            if (!(w0 * wE < 0.0)) return false;
+            if (!(w0 != 0.0)) return false;
             richtung = w0 < 0.0 ? -1.0 : 1.0;
             switch (fall)
             {
@@ -1630,8 +1587,8 @@ namespace WindowsFormsApplication1
             double rand = Rechenrand.Zu(grenze);
             if (richtung * (ab.Ausgang(2, x) - grenze) > rand) return false;
             if (richtung * (ab.Ausgang(2, xEnde) - grenze) > rand) return false;
-            double tStern = ab.System.Rechner.NullstelleAbleitung(ab.System.Z20, ab.System.Z21, ab.System.Rechner.A * x + ab.B);
-            if (!(tStern > 0.0) || !(tStern < tau)) return false;
+            double tStern = InneresExtremum(in ab, x, tau);
+            if (!(tStern > 0.0)) return false;
             Vektor2 xs = ab.System.Rechner.Bei(tStern).Ende(x, ab.B);
             if (!(richtung * (ab.Ausgang(2, xs) - grenze) > rand)) return false;
             tExtremum = tStern;
