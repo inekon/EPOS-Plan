@@ -14,18 +14,10 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public sealed class AufheizzeitManuellFeldTests : EposBunitContext
 {
-    private readonly Kulturvorrichtung _kultur = new();
-
     public AufheizzeitManuellFeldTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing) _kultur.Dispose();
-        base.Dispose(disposing);
     }
 
     private static readonly AufheizzeitManuellDaten VORSCHLAG = new()
