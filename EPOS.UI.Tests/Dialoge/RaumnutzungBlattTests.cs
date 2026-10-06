@@ -4,6 +4,7 @@ using System.Linq;
 using AngleSharp.Dom;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using Xunit;
 
@@ -137,11 +138,35 @@ public class RaumnutzungBlattTests : EposBunitContext
         return w;
     }
 
+    /// <summary>Die Hilfepille des Blatts braucht den Hilfedienst; im Prüfstand einer ohne Wirkung.</summary>
+    public RaumnutzungBlattTests() => Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
+
     private IRenderedComponent<RaumnutzungBlatt> Blatt(Probeweg w)
         => Render<RaumnutzungBlatt>(p => p
                .Add(x => x.Katalogweg, w?.Weg())
                .Add(x => x.Texte, new RaumnutzungTexte())
                .Add(x => x.GroessenTexte, new KonditionierungTexte()));
+
+    // =====================================================================
+    //  Die Hilfepille
+    // =====================================================================
+
+    /// <summary>
+    /// Das Blatt trägt seine Hilfepille selbst — auch ohne Gaben —, mit dem Schlüssel der Seite „Nutzungsprofile"
+    /// (help_mapping.txt); keiner seiner zwei Wirte zeichnet eine.
+    /// </summary>
+    [Fact]
+    public void Das_Blatt_traegt_die_Hilfepille_der_Seite_Nutzungsprofile()
+    {
+        foreach (IRenderedComponent<RaumnutzungBlatt> cut in new[] { Blatt(Probekatalog()), Blatt(null) })
+        {
+            InfoKnopf knopf = cut.FindComponent<InfoKnopf>().Instance;
+            Assert.Equal("Nutzungsprofile.btn_Help", knopf.Schluessel);
+            Assert.Equal(new RaumnutzungTexte().Blatt, knopf.Dialogname);
+            Assert.Single(cut.FindComponents<InfoKnopf>());
+            Assert.NotNull(cut.Find(".epos-raumnutzung-kopf .epos-raumnutzung-sofort"));
+        }
+    }
 
     // =====================================================================
     //  Der Katalogbaum

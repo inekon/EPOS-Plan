@@ -120,6 +120,8 @@ Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen ne
 |-
 | Katalog ''Bauteilaufbauten'' || <code>Bauteilaufbau.btn_Help</code> || [[Programm Dokumentation/Baustoffe und Bauteilaufbauten#bauteilaufbauten|Baustoffe und Bauteilaufbauten]]
 |-
+| Blatt ''Nutzungsprofile'' (Katalog und Zuordnung) || <code>Nutzungsprofile.btn_Help</code> || [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]]
+|-
 | Zuordnungsdialog des Gebäudeimports (gbXML, IFC) || <code>Form_GebaeudeImport.btn_Help</code> || [[Programm Dokumentation/Gebäudeimport#zuordnung|Gebäudeimport]]
 |-
 | Gebäudeexport (gbXML) || <code>GebaeudeExport.btn_Help</code> || [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]]

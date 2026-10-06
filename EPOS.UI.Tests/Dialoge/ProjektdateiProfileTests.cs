@@ -193,6 +193,7 @@ public class ProjektdateiProfileTests : EposBunitContext
             Zuordnungen = () => Array.Empty<RaumnutzungZuordnungDaten>(),
         };
         int geaendert = 0;
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());   // die Hilfepille des Blatts
         IRenderedComponent<RaumnutzungBlatt> cut = Render<RaumnutzungBlatt>(c =>
         {
             c.Add(x => x.Katalogweg, weg);
