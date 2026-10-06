@@ -88311,6 +88311,681 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler ähnelt.
+        /// </summary>
+        public static string RNP_CSV_ART_FEHLER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_ART_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ignoriert ähnelt.
+        /// </summary>
+        public static string RNP_CSV_ART_IGNORIERT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_ART_IGNORIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernommen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_ART_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_ART_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersetzen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_BTN_ERSETZEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_BTN_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV exportieren… ähnelt.
+        /// </summary>
+        public static string RNP_CSV_BTN_EXPORT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_BTN_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV importieren… ähnelt.
+        /// </summary>
+        public static string RNP_CSV_BTN_IMPORT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_BTN_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern… ähnelt.
+        /// </summary>
+        public static string RNP_CSV_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überspringen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_BTN_UEBERSPRINGEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_BTN_UEBERSPRINGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string RNP_CSV_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile exportieren ähnelt.
+        /// </summary>
+        public static string RNP_CSV_DLG_EXPORT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_DLG_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile importieren ähnelt.
+        /// </summary>
+        public static string RNP_CSV_DLG_IMPORT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_DLG_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Profile gibt es in der Zielkategorie schon. Ersetzen oder überspringen? ähnelt.
+        /// </summary>
+        public static string RNP_CSV_FRAGE_VORHANDEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_FRAGE_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die umgerechnet in Heiz_Soll_Ausserhalb = {0} °C ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_ABSENKUNG {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_ABSENKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Heiz_Soll nicht umzurechnen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_ABSENKUNG_OHNE_SOLL {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_ABSENKUNG_OHNE_SOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heiz_Soll_Ausserhalb hat Vorrang ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_ABSENKUNG_VORRANG {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_ABSENKUNG_VORRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist weder 0 noch 1 ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_BIT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_BIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalte steht doppelt in der Kopfzeile ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_DOPPELSPALTE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_DOPPELSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Einheit der Außenluft (1/h oder m3/hm2) ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_EINHEIT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft ohne Einheit — beide Außenluftwerte bleiben leer ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_EINHEIT_FEHLT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_EINHEIT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} liegt außerhalb {1} … {2} ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_GRENZEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_GRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezimalkomma in „{0}“ — der Dezimaltrenner ist der Punkt ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_KOMMA {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht schon in Zeile {1} — Zeile nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Bezeichner — Zeile nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_NAME_LEER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nummer „{0}“ steht schon in Zeile {1} — Zeile nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_NUMMER_DOPPELT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_NUMMER_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nummer „{0}“ trägt in der Zielkategorie schon „{1}“ — Zeile nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_NUMMER_VORHANDEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_NUMMER_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist nicht größer als 0 ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_POSITIV {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — Zeile nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine ganze Stunde 0 … 24 ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_STUNDE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte nicht lesbar oder außerhalb der Grenzen der Größe ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_STUNDEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Werte statt 24 ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_STUNDEN_ZAHL {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_STUNDEN_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeleitet aus Wochenmuster, Feiertagen und Ferien ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_TAGE_JAHR {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_TAGE_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die länger als {0} Zeichen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_TEXT_LAENGE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_TEXT_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die länger als {0} Zeichen — Zeile nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_TEXT_ZEILE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_TEXT_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ohne Spalte in der Kopfzeile ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_UEBERZAEHLIG {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_UEBERZAEHLIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbekannte Spalte ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ sind nicht sieben Ziffern 0/1 (Montag bis Sonntag) ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_WOCHE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Zahl ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_ZAHL {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilenbild nicht übernommen: {0} ähnelt.
+        /// </summary>
+        public static string RNP_CSV_GRUND_ZEILE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_GRUND_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_ART {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0} ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Export ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_EXPORT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grund ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_GRUND {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Import ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_IMPORT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_KATEGORIE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_KATEGORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldungen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_MELDUNGEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_MELDUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der neuen Kategorie ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_NAME {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (neue Kategorie) ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_NEUE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_NEUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalte ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_SPALTE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_STAND {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_WERTE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_ZEILE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielkategorie ähnelt.
+        /// </summary>
+        public static string RNP_CSV_LBL_ZIEL {
+            get {
+                return ResourceManager.GetString("RNP_CSV_LBL_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Profile angelegt, {1} ersetzt, {2} übersprungen, {3} nicht übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Profile gespeichert: {1} ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist nicht in UTF-8 kodiert — als „CSV UTF-8“ speichern. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_KEIN_UTF8 {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_KEIN_UTF8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keine Zeile. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_LEER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei lässt sich nicht lesen: {0} ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält kein übernehmbares Profil. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_NICHTS {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_NICHTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopfzeile hat keine Spalte „Bezeichner“. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_OHNE_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_OHNE_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei lässt sich nicht schreiben: {0} ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_SCHREIBFEHLER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_SCHREIBFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert unter {0}; das Teilen ließ sich nicht öffnen. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_TEILEN_FEHLER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_TEILEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopfzeile trennt mit Komma — das Trennzeichen ist das Semikolon. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_MSG_TRENNER {
+            get {
+                return ResourceManager.GetString("RNP_CSV_MSG_TRENNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der neuen Kategorie fehlt. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_SPERRE_NAME {
+            get {
+                return ResourceManager.GetString("RNP_CSV_SPERRE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_CSV_STAND_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_STAND_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neu ähnelt.
+        /// </summary>
+        public static string RNP_CSV_STAND_NEU {
+            get {
+                return ResourceManager.GetString("RNP_CSV_STAND_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhanden ähnelt.
+        /// </summary>
+        public static string RNP_CSV_STAND_VORHANDEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_STAND_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhandene Profile ähnelt.
+        /// </summary>
+        public static string RNP_CSV_TITEL_VORHANDEN {
+            get {
+                return ResourceManager.GetString("RNP_CSV_TITEL_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die UTF-8, Semikolon, Dezimalpunkt; eine Kopfzeile mit den Spaltennamen, eine Zeile je Profil. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_TXT_FORMAT {
+            get {
+                return ResourceManager.GetString("RNP_CSV_TXT_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gezeigt sind die ignorierten Werte und die Fehler; „Übernehmen“ schreibt nur die Profile im Stand „neu“ oder „vorhanden“. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_TXT_HINWEISE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_TXT_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Werte werden übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_CSV_TXT_KEINE_HINWEISE {
+            get {
+                return ResourceManager.GetString("RNP_CSV_TXT_KEINE_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} übernommen, {1} ignoriert, {2} Fehler ähnelt.
+        /// </summary>
+        public static string RNP_CSV_TXT_ZAEHLUNG {
+            get {
+                return ResourceManager.GetString("RNP_CSV_TXT_ZAEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Gesamtangabe des Luftwechsels wird in Infiltration und Nutzerlüftung aufgeteilt; der wirksame Luftwechsel bleibt. ähnelt.
         /// </summary>
         public static string RNP_FRAGE_AUFTEILEN {

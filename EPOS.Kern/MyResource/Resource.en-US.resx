@@ -46457,5 +46457,230 @@ chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Usage days per year: {0} (from weekly pattern and public holidays), minus {1} holiday-period days = {2}</value>
   </data>
+  <data name="RNP_CSV_MSG_LEER" xml:space="preserve">
+    <value>The file contains no rows.</value>
+  </data>
+  <data name="RNP_CSV_MSG_KEIN_UTF8" xml:space="preserve">
+    <value>The file is not UTF-8 encoded — save it as “CSV UTF-8”.</value>
+  </data>
+  <data name="RNP_CSV_MSG_TRENNER" xml:space="preserve">
+    <value>The header row is separated by commas — the separator is the semicolon.</value>
+  </data>
+  <data name="RNP_CSV_MSG_OHNE_BEZEICHNER" xml:space="preserve">
+    <value>The header row has no “Bezeichner” column.</value>
+  </data>
+  <data name="RNP_CSV_MSG_NICHTS" xml:space="preserve">
+    <value>The file contains no profile that can be imported.</value>
+  </data>
+  <data name="RNP_CSV_MSG_ERGEBNIS" xml:space="preserve">
+    <value>{0} profiles created, {1} replaced, {2} skipped, {3} not imported.</value>
+  </data>
+  <data name="RNP_CSV_GRUND_UNBEKANNT" xml:space="preserve">
+    <value>unknown column</value>
+  </data>
+  <data name="RNP_CSV_GRUND_DOPPELSPALTE" xml:space="preserve">
+    <value>column appears twice in the header row</value>
+  </data>
+  <data name="RNP_CSV_GRUND_TAGE_JAHR" xml:space="preserve">
+    <value>derived from weekly pattern, public holidays and holidays</value>
+  </data>
+  <data name="RNP_CSV_GRUND_UEBERZAEHLIG" xml:space="preserve">
+    <value>value without a column in the header row</value>
+  </data>
+  <data name="RNP_CSV_GRUND_KOMMA" xml:space="preserve">
+    <value>decimal comma in “{0}” — the decimal separator is the point</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ZAHL" xml:space="preserve">
+    <value>“{0}” is not a number</value>
+  </data>
+  <data name="RNP_CSV_GRUND_GRENZEN" xml:space="preserve">
+    <value>{0} is outside {1} … {2}</value>
+  </data>
+  <data name="RNP_CSV_GRUND_POSITIV" xml:space="preserve">
+    <value>{0} is not greater than 0</value>
+  </data>
+  <data name="RNP_CSV_GRUND_STUNDE" xml:space="preserve">
+    <value>“{0}” is not a whole hour 0 … 24</value>
+  </data>
+  <data name="RNP_CSV_GRUND_BIT" xml:space="preserve">
+    <value>“{0}” is neither 0 nor 1</value>
+  </data>
+  <data name="RNP_CSV_GRUND_WOCHE" xml:space="preserve">
+    <value>“{0}” is not seven digits 0/1 (Monday to Sunday)</value>
+  </data>
+  <data name="RNP_CSV_GRUND_EINHEIT" xml:space="preserve">
+    <value>“{0}” is not an outdoor air unit (1/h or m3/hm2)</value>
+  </data>
+  <data name="RNP_CSV_GRUND_EINHEIT_FEHLT" xml:space="preserve">
+    <value>outdoor air without unit — both outdoor air values remain empty</value>
+  </data>
+  <data name="RNP_CSV_GRUND_TEXT_LAENGE" xml:space="preserve">
+    <value>longer than {0} characters</value>
+  </data>
+  <data name="RNP_CSV_GRUND_TEXT_ZEILE" xml:space="preserve">
+    <value>longer than {0} characters — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_NAME_LEER" xml:space="preserve">
+    <value>no name — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_NAME_DOPPELT" xml:space="preserve">
+    <value>“{0}” already appears in row {1} — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_NUMMER_DOPPELT" xml:space="preserve">
+    <value>number “{0}” already appears in row {1} — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_NUMMER_VORHANDEN" xml:space="preserve">
+    <value>number “{0}” already belongs to “{1}” in the target category — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_PROFIL" xml:space="preserve">
+    <value>{0} — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ABSENKUNG" xml:space="preserve">
+    <value>converted to Heiz_Soll_Ausserhalb = {0} °C</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ABSENKUNG_VORRANG" xml:space="preserve">
+    <value>Heiz_Soll_Ausserhalb takes precedence</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ABSENKUNG_OHNE_SOLL" xml:space="preserve">
+    <value>cannot be converted without Heiz_Soll</value>
+  </data>
+  <data name="RNP_CSV_GRUND_STUNDEN_ZAHL" xml:space="preserve">
+    <value>{0} values instead of 24</value>
+  </data>
+  <data name="RNP_CSV_GRUND_STUNDEN" xml:space="preserve">
+    <value>hourly values not readable or outside the limits of the quantity</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ZEILE" xml:space="preserve">
+    <value>row pattern not imported: {0}</value>
+  </data>
+  <data name="RNP_CSV_BTN_IMPORT" xml:space="preserve">
+    <value>Import CSV…</value>
+  </data>
+  <data name="RNP_CSV_BTN_EXPORT" xml:space="preserve">
+    <value>Export CSV…</value>
+  </data>
+  <data name="RNP_CSV_LBL_IMPORT" xml:space="preserve">
+    <value>CSV import</value>
+  </data>
+  <data name="RNP_CSV_LBL_EXPORT" xml:space="preserve">
+    <value>CSV export</value>
+  </data>
+  <data name="RNP_CSV_LBL_DATEI" xml:space="preserve">
+    <value>File: {0}</value>
+  </data>
+  <data name="RNP_CSV_LBL_ZIEL" xml:space="preserve">
+    <value>Target category</value>
+  </data>
+  <data name="RNP_CSV_LBL_NEUE" xml:space="preserve">
+    <value>(new category)</value>
+  </data>
+  <data name="RNP_CSV_LBL_NAME" xml:space="preserve">
+    <value>Name of the new category</value>
+  </data>
+  <data name="RNP_CSV_LBL_KATEGORIE" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="RNP_CSV_LBL_ZEILE" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="RNP_CSV_LBL_SPALTE" xml:space="preserve">
+    <value>Column</value>
+  </data>
+  <data name="RNP_CSV_LBL_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="RNP_CSV_LBL_GRUND" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="RNP_CSV_LBL_NUMMER" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="RNP_CSV_LBL_PROFIL" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="RNP_CSV_LBL_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="RNP_CSV_LBL_WERTE" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="RNP_CSV_LBL_MELDUNGEN" xml:space="preserve">
+    <value>Messages</value>
+  </data>
+  <data name="RNP_CSV_ART_UEBERNOMMEN" xml:space="preserve">
+    <value>imported</value>
+  </data>
+  <data name="RNP_CSV_ART_IGNORIERT" xml:space="preserve">
+    <value>ignored</value>
+  </data>
+  <data name="RNP_CSV_ART_FEHLER" xml:space="preserve">
+    <value>error</value>
+  </data>
+  <data name="RNP_CSV_STAND_NEU" xml:space="preserve">
+    <value>new</value>
+  </data>
+  <data name="RNP_CSV_STAND_VORHANDEN" xml:space="preserve">
+    <value>exists</value>
+  </data>
+  <data name="RNP_CSV_STAND_ABGELEHNT" xml:space="preserve">
+    <value>not imported</value>
+  </data>
+  <data name="RNP_CSV_TXT_ZAEHLUNG" xml:space="preserve">
+    <value>{0} imported, {1} ignored, {2} errors</value>
+  </data>
+  <data name="RNP_CSV_TXT_FORMAT" xml:space="preserve">
+    <value>UTF-8, semicolon, decimal point; one header row with the column names, one row per profile.</value>
+  </data>
+  <data name="RNP_CSV_TXT_HINWEISE" xml:space="preserve">
+    <value>Shown are the ignored values and the errors; “Apply” writes only the profiles with status “new” or “exists”.</value>
+  </data>
+  <data name="RNP_CSV_TXT_KEINE_HINWEISE" xml:space="preserve">
+    <value>All values are imported.</value>
+  </data>
+  <data name="RNP_CSV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="RNP_CSV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RNP_CSV_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save…</value>
+  </data>
+  <data name="RNP_CSV_BTN_ERSETZEN" xml:space="preserve">
+    <value>Replace</value>
+  </data>
+  <data name="RNP_CSV_BTN_UEBERSPRINGEN" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="RNP_CSV_FRAGE_VORHANDEN" xml:space="preserve">
+    <value>{0} profiles already exist in the target category. Replace or skip?</value>
+  </data>
+  <data name="RNP_CSV_TITEL_VORHANDEN" xml:space="preserve">
+    <value>Existing profiles</value>
+  </data>
+  <data name="RNP_CSV_SPERRE_NAME" xml:space="preserve">
+    <value>The name of the new category is missing.</value>
+  </data>
+  <data name="RNP_CSV_DLG_IMPORT" xml:space="preserve">
+    <value>Import usage profiles</value>
+  </data>
+  <data name="RNP_CSV_DLG_EXPORT" xml:space="preserve">
+    <value>Export usage profiles</value>
+  </data>
+  <data name="RNP_CSV_DATEIFILTER" xml:space="preserve">
+    <value>CSV files (*.csv)|*.csv|All files (*.*)|*.*</value>
+  </data>
+  <data name="RNP_CSV_MSG_GESPEICHERT" xml:space="preserve">
+    <value>{0} profiles saved: {1}</value>
+  </data>
+  <data name="RNP_CSV_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>Saved to {0}; sharing could not be opened.</value>
+  </data>
+  <data name="RNP_CSV_MSG_LESEFEHLER" xml:space="preserve">
+    <value>The file cannot be read: {0}</value>
+  </data>
+  <data name="RNP_CSV_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>The file cannot be written: {0}</value>
+  </data>
 </root>
 

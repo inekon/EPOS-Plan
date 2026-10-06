@@ -941,5 +941,135 @@ namespace WindowsFormsApplication1
 
         private static string Text(DataRow r, string spalte)
             => r[spalte] == DBNull.Value ? null : Convert.ToString(r[spalte], CultureInfo.InvariantCulture);
+
+        #region CSV-Import und -Export (Stufe NP4a; Konzept Nutzungsprofile 6.1, 6.4, NP-F11, NP-F20)
+
+        /// <summary>Der Export einer Kategorie: die Bytes des CSV-Formats (<see cref="RaumnutzungCsv"/>) oder die benannte Ablehnung.</summary>
+        public sealed record CsvAusgabe(bool Ok, string Meldung, string Kategorie, int Profile, byte[] Inhalt);
+
+        /// <summary>Was „Übernehmen" geschrieben hat; <c>IdKatalog</c> ist die Zielkategorie (auch eine neu angelegte).</summary>
+        public sealed record CsvBilanz(bool Ok, string Meldung, long IdKatalog, int Angelegt, int Ersetzt, int Uebersprungen, int Abgelehnt);
+
+        /// <summary>
+        /// Schreibt eine Kategorie — auch eine ausgelieferte — im CSV-Format 6.4: alle Profile mit Kennwerten, Stundenprofilen
+        /// und Zeilenbild; <c>Nutzungstage_Jahr</c> nie (E93). Eine Kategorie ohne Profile ergibt die Kopfzeile allein.
+        /// </summary>
+        public CsvAusgabe CsvExportieren(long idKatalog)
+        {
+            string bereit = Bereit();
+            if (bereit != null) return new CsvAusgabe(false, bereit, null, 0, null);
+            Kategorie k = KategorieLesen(idKatalog);
+            if (k == null) return new CsvAusgabe(false, Fehlt(MyResource.Resource.RAUMNUTZUNG_MSG_KATEGORIE_FEHLT, idKatalog), null, 0, null);
+            List<Raumnutzungsprofil> profile = Profile(idKatalog);
+            return new CsvAusgabe(true, null, k.Bezeichner, profile.Count, RaumnutzungCsv.SchreibenBytes(profile));
+        }
+
+        /// <summary>Liest die Bytes einer Datei und gleicht sie mit der Zielkategorie ab (<c>null</c> = neue Kategorie); schreibt nichts.</summary>
+        public RaumnutzungCsvLesung CsvPruefen(byte[] inhalt, long? idKatalog)
+        {
+            RaumnutzungCsvLesung lesung = RaumnutzungCsv.Lesen(inhalt);
+            CsvAbgleichen(lesung, idKatalog);
+            return lesung;
+        }
+
+        /// <summary>
+        /// Gleicht die Zeilen mit der Zielkategorie ab: ein gleichnamiges Profil (ohne Unterschied der Schreibung) heißt
+        /// „vorhanden" — die Rückfrage ersetzen/überspringen führt der Aufrufer; eine Nummer, die dort ein anderes Profil trägt,
+        /// lehnt die Zeile benannt ab (NP-F5). Jeder Abgleich ersetzt den vorigen.
+        /// </summary>
+        public void CsvAbgleichen(RaumnutzungCsvLesung lesung, long? idKatalog)
+        {
+            if (lesung == null) throw new ArgumentNullException(nameof(lesung));
+            lesung.Zielmeldungen.Clear();
+            foreach (RaumnutzungCsvZeile z in lesung.Zeilen)
+            {
+                z.Zielablehnung = null;
+                z.Vorhanden = null;
+            }
+            if (lesung.Abbruch != null || idKatalog is not long id || !Lesbar()) return;
+            List<Raumnutzungsprofil> ziel = Profile(id);
+            foreach (RaumnutzungCsvZeile z in lesung.Zeilen.Where(x => x.Ablehnung == null))
+            {
+                Raumnutzungsprofil gleich = ziel.FirstOrDefault(p => string.Equals(p.Bezeichner, z.Profil.Bezeichner, StringComparison.OrdinalIgnoreCase));
+                z.Vorhanden = gleich?.Id;
+                if (z.Profil.Nummer == null) continue;
+                Raumnutzungsprofil andere = ziel.FirstOrDefault(p => p.Id != (gleich?.Id ?? 0) &&
+                                                                     string.Equals(p.Nummer, z.Profil.Nummer, StringComparison.OrdinalIgnoreCase));
+                if (andere == null) continue;
+                z.Zielablehnung = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RNP_CSV_GRUND_NUMMER_VORHANDEN,
+                                                z.Profil.Nummer, andere.Bezeichner);
+                lesung.Zielmeldungen.Add(new RaumnutzungCsvMeldung(z.Zeile, RaumnutzungCsv.SPALTE_NUMMER, RaumnutzungCsvArt.Fehler, z.Zielablehnung));
+            }
+        }
+
+        /// <summary>
+        /// <b>Übernehmen</b>: schreibt die übernehmbaren Zeilen in eine eigene Zielkategorie (<paramref name="idKatalog"/>) oder in
+        /// eine neue (<paramref name="neueKategorie"/>, Art <c>EIGEN</c>) — nie in eine ausgelieferte. Ein vorhandenes Profil gleichen
+        /// Namens wird nach <paramref name="ersetzen"/> an Ort und Stelle ersetzt (die Zuordnungen zeigen weiter darauf) oder
+        /// übersprungen. Ein Vorgang: Gelingt eine Zeile nicht, bleibt nichts geschrieben.
+        /// </summary>
+        public CsvBilanz CsvUebernehmen(RaumnutzungCsvLesung lesung, long? idKatalog, string neueKategorie, bool ersetzen)
+        {
+            if (lesung == null) throw new ArgumentNullException(nameof(lesung));
+            string bereit = Bereit();
+            if (bereit != null) return CsvAbgelehnt(bereit);
+            if (lesung.Abbruch != null) return CsvAbgelehnt(lesung.Abbruch);
+            string name = neueKategorie, beschreibung = null, quelle = null;
+            string m = idKatalog is long id ? ZielkategoriePruefen(id) : KategorieTexte(ref name, ref beschreibung, ref quelle, 0);
+            if (m != null) return CsvAbgelehnt(m);
+            CsvAbgleichen(lesung, idKatalog);
+            List<RaumnutzungCsvZeile> zeilen = lesung.Uebernehmbare.ToList();
+            int abgelehnt = lesung.Zeilen.Count - zeilen.Count;
+            if (zeilen.Count == 0) return CsvAbgelehnt(MyResource.Resource.RNP_CSV_MSG_NICHTS);
+
+            int angelegt = 0, ersetzt = 0, uebersprungen = 0;
+            Ergebnis e = Schreibe(v =>
+            {
+                long ziel = idKatalog ?? KategorieEinfuegen(v, name, beschreibung, quelle);
+                foreach (RaumnutzungCsvZeile z in zeilen)
+                {
+                    Raumnutzungsprofil p = z.Profil.Kopie();
+                    p.IdKatalog = ziel;
+                    p.Ausgeliefert = false;
+                    p.Id = z.Vorhanden ?? 0;
+                    string f = Profilpruefung(p);
+                    if (f != null) return Ergebnis.Fehler(f);
+                    if (z.Vorhanden.HasValue)
+                    {
+                        if (!ersetzen)
+                        {
+                            uebersprungen++;
+                            continue;
+                        }
+                        CsvErsetzen(v, p);
+                        ersetzt++;
+                        continue;
+                    }
+                    ProfilEinfuegen(v, p);
+                    angelegt++;
+                }
+                return Ergebnis.MitId(ziel);
+            });
+            if (!e.Ok) return CsvAbgelehnt(e.Meldung);
+            return new CsvBilanz(true, string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RNP_CSV_MSG_ERGEBNIS,
+                                                     angelegt, ersetzt, uebersprungen, abgelehnt),
+                                 e.Id, angelegt, ersetzt, uebersprungen, abgelehnt);
+        }
+
+        private static CsvBilanz CsvAbgelehnt(string meldung) => new CsvBilanz(false, meldung ?? "", 0, 0, 0, 0, 0);
+
+        /// <summary>Ersetzt Kopf, Kennwerte, Zeilenbild und Stunden eines eigenen Profils an Ort und Stelle (wie <see cref="ProfilAendern"/>).</summary>
+        private static void CsvErsetzen(DbVorgang v, Raumnutzungsprofil p)
+        {
+            List<DbParam> par = KopfParameter(p);
+            par.Add(new DbParam("@id", p.Id));
+            v.Ausfuehren("UPDATE \"" + RaumnutzungSchema.TAB_PROFIL + "\" SET " +
+                         string.Join(", ", SPALTEN_ALLE.Select(c => "\"" + c + "\" = ?")) + " WHERE \"ID\" = ? AND \"ReadOnly\" = 0", par.ToArray());
+            v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" = ?", new DbParam("@id", p.Id));
+            v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" = ?", new DbParam("@id", p.Id));
+            InhaltEinfuegen(v, p, p.Id);
+        }
+
+        #endregion
     }
 }
