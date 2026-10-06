@@ -786,4 +786,338 @@ public class GebaeudeAnsichtTests : EposBunitContext
         Assert.Equal("simplified: arc as chords, open shell", cut.Find(".epos-gebansicht-vereinfacht").TextContent);
         Assert.StartsWith("Wohnen — solid from file", cut.Find(".epos-gebansicht-raumherkunft li[data-raum='r-wohnen']").GetAttribute("title"));
     }
+
+    // =====================================================================
+    //  Farbmodus „Randbedingung" (HC-2 Teil A; HottCAD-Verbund 4.3)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Dateikörperdaten mit Gruppen: Wohnen trägt je Dreieck R1 und R3, an den Kanten R1, R2, R0, R1, ein Fenster als
+    /// Marke auf der Südkante (ein Viertel bis zur Hälfte) und einen Boden auf dem Erdreich (R3); die Küche einen neutralen
+    /// Boden (R0); dazu die Gruppenliste und ein Fensterkörper.
+    /// </summary>
+    private static GebaeudeAnsichtDaten RandDaten(int? grenze = null)
+    {
+        GebaeudeAnsichtDaten d = DateiDaten(grenze);
+        GebaeudeAnsichtKoerperraum wohnen = d.Koerperraeume[0];
+        var fenster = new GebaeudeAnsichtDateikoerper(
+            new float[] { 1.5f, 0, 1, 3, 0, 1, 3, 0, 2 }, new[] { 0, 1, 2 }, new[] { 0, 1, 1, 2 }, 1, "FacetedBrep", Array.Empty<string>());
+        return d with
+        {
+            Koerperraeume = new[]
+            {
+                wohnen with
+                {
+                    Dateikoerper = wohnen.Dateikoerper! with { Gruppen = new byte[] { 1, 3 } },
+                    Kantengruppen = new[] { (IReadOnlyList<Randgruppe?>)new Randgruppe?[] { Randgruppe.R1, Randgruppe.R2, Randgruppe.R0, Randgruppe.R1 } },
+                    Kantenmarken = new[] { new GebaeudeAnsichtKantenmarke(0, 0, 0.25, 0.5, "f-1") },
+                    Bodengruppe = Randgruppe.R3,
+                },
+                d.Koerperraeume[1] with { Bodengruppe = Randgruppe.R0 },
+            },
+            Flaechengruppen = new[]
+            {
+                new GebaeudeAnsichtFlaechengruppe(Randgruppe.R0, 12, 2), new GebaeudeAnsichtFlaechengruppe(Randgruppe.R1, 78, 12),
+                new GebaeudeAnsichtFlaechengruppe(Randgruppe.R2, 12, 2), new GebaeudeAnsichtFlaechengruppe(Randgruppe.R3, 36, 4),
+                new GebaeudeAnsichtFlaechengruppe(Randgruppe.R4, 0, 0), new GebaeudeAnsichtFlaechengruppe(Randgruppe.R5, 36, 4),
+                new GebaeudeAnsichtFlaechengruppe(Randgruppe.R6, 0, 0), new GebaeudeAnsichtFlaechengruppe(Randgruppe.R7, 1.8, 0),
+            },
+            Bauteilkoerper = new[] { new GebaeudeAnsichtBauteilkoerper("f-1", Randgruppe.R7, fenster) },
+        };
+    }
+
+    private static IElement Farbmodusknopf(IRenderedComponent<GebaeudeAnsicht> cut, string schluessel)
+        => cut.Find(".epos-gebansicht-farbmodus button[data-farbmodus='" + schluessel + "']");
+
+    private static IElement Randschalter(IRenderedComponent<GebaeudeAnsicht> cut, string gruppe)
+        => cut.Find(".epos-gebansicht-randlegende button[data-gruppe='" + gruppe + "']");
+
+    private IRenderedComponent<GebaeudeAnsicht> ImRandmodus(GebaeudeAnsichtDaten daten)
+    {
+        IRenderedComponent<GebaeudeAnsicht> cut = Zeige(daten);
+        Erdgeschoss(cut);
+        Farbmodusknopf(cut, "randbedingung").Click();
+        cut.WaitForAssertion(() => Assert.Equal("randbedingung", cut.Instance.Farbmodus));
+        return cut;
+    }
+
+    [Fact]
+    public void HC2_Der_Umschalter_steht_in_der_Leiste_vorgewaehlt_Zonen_und_wechselt_auf_Randbedingung()
+    {
+        IRenderedComponent<GebaeudeAnsicht> cut = Zeige(RandDaten());
+        Erdgeschoss(cut);
+        Assert.Equal("zonen", cut.Instance.Farbmodus);
+        Assert.Equal("Zonen", Farbmodusknopf(cut, "zonen").TextContent);
+        Assert.Equal("Randbedingung", Farbmodusknopf(cut, "randbedingung").TextContent);
+        Assert.Equal("Farbmodus", cut.Find(".epos-gebansicht-farbmodus").GetAttribute("aria-label"));
+        Assert.Equal("true", Farbmodusknopf(cut, "zonen").GetAttribute("aria-pressed"));
+        Assert.False(Farbmodusknopf(cut, "randbedingung").HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-farbmodus-hinweis"));
+        Assert.Empty(cut.FindAll("line.epos-gebansicht-kante"));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-randlegende"));
+
+        Farbmodusknopf(cut, "randbedingung").Click();
+        cut.WaitForAssertion(() => Assert.Equal("randbedingung", cut.Instance.Farbmodus));
+        Assert.Equal("true", Farbmodusknopf(cut, "randbedingung").GetAttribute("aria-pressed"));
+        Assert.Equal("randbedingung", cut.Find("svg.epos-gebansicht-bild").GetAttribute("data-farbmodus"));
+        Assert.NotEmpty(cut.FindAll("line.epos-gebansicht-kante"));
+        // Die Zonenlegende weicht der Gruppenlegende; zurück auf Zonen ist das Bild wie vorher.
+        Assert.Empty(cut.FindAll(".epos-gebansicht-legendeneintrag[data-zone]"));
+        Farbmodusknopf(cut, "zonen").Click();
+        cut.WaitForAssertion(() => Assert.Equal("zonen", cut.Instance.Farbmodus));
+        Assert.Empty(cut.FindAll("line.epos-gebansicht-kante"));
+        Assert.NotEmpty(cut.FindAll(".epos-gebansicht-legendeneintrag[data-zone]"));
+    }
+
+    [Fact]
+    public void HC2_Die_Legende_nennt_Gruppen_mit_Farbe_Flaeche_und_Schalter_Decken_nur_in_der_Legende()
+    {
+        IRenderedComponent<GebaeudeAnsicht> cut = ImRandmodus(RandDaten());
+        IReadOnlyList<IElement> eintraege = cut.FindAll(".epos-gebansicht-randlegende li");
+        // R4 und R6 ohne Fläche und Dreiecke stehen nicht da.
+        Assert.Equal(new[] { "R0", "R1", "R2", "R3", "R5", "R7" }, eintraege.Select(e => e.GetAttribute("data-gruppe")));
+        Assert.Equal("Flächen nach Randbedingung", cut.Find(".epos-gebansicht-randlegende").GetAttribute("aria-label"));
+        IElement r1 = Randschalter(cut, "R1");
+        Assert.Equal("R1 Wand gegen außen", r1.QuerySelector(".epos-gebansicht-zonenname")!.TextContent);
+        Assert.Equal("78,00 m²", r1.QuerySelector(".epos-gebansicht-randflaeche")!.TextContent);
+        Assert.Equal("background:" + GebaeudeAnsichtRandgruppen.FARBEN[1], r1.QuerySelector(".epos-gebansicht-farbfeld")!.GetAttribute("style"));
+        Assert.Equal("R1 Wand gegen außen anzeigen", r1.GetAttribute("aria-label"));
+        Assert.Equal("true", r1.GetAttribute("aria-pressed"));
+        Assert.Equal("nur Legende und Bilanz", Randschalter(cut, "R5").QuerySelector(".epos-gebansicht-marke")!.TextContent);
+        Assert.Null(r1.QuerySelector(".epos-gebansicht-marke"));
+
+        // Der Schalter blendet R1 aus: Kanten weg, Schalter aus; noch einmal und sie sind wieder da.
+        Assert.Equal(2, cut.FindAll("line.epos-gebansicht-kante[data-gruppe='R1']").Count);
+        r1.Click();
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.GruppeSichtbar(Randgruppe.R1)));
+        Assert.Equal("false", Randschalter(cut, "R1").GetAttribute("aria-pressed"));
+        Assert.Empty(cut.FindAll("line.epos-gebansicht-kante[data-gruppe='R1']"));
+        Assert.Single(cut.FindAll("line.epos-gebansicht-kante[data-gruppe='R2']"));
+        Randschalter(cut, "R1").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll("line.epos-gebansicht-kante[data-gruppe='R1']").Count));
+    }
+
+    [Fact]
+    public void HC2_Kanten_in_der_Gruppenfarbe_Fenster_als_Marke_Boden_schraffiert_oder_weiss()
+    {
+        IRenderedComponent<GebaeudeAnsicht> cut = ImRandmodus(RandDaten());
+        IElement wohnen = Raum(cut, "r-wohnen");
+        IReadOnlyList<IElement> kanten = wohnen.QuerySelectorAll("line.epos-gebansicht-kante").ToList();
+        Assert.Equal(new[] { "R1", "R2", "R0", "R1" }, kanten.Select(k => k.GetAttribute("data-gruppe")));
+        Assert.Equal(new[] { "0:0", "0:1", "0:2", "0:3" }, kanten.Select(k => k.GetAttribute("data-kante")));
+        Assert.Equal(new[] { GebaeudeAnsichtRandgruppen.FARBEN[1], GebaeudeAnsichtRandgruppen.FARBEN[2], GebaeudeAnsichtRandgruppen.FARBEN[0],
+                             GebaeudeAnsichtRandgruppen.FARBEN[1] }, kanten.Select(k => k.GetAttribute("stroke")));
+        // Die erste Kante (0|0) → (6|0) in Metern, y gespiegelt; die letzte schließt (0|8) → (0|0).
+        Assert.Equal(("0.000", "0.000", "6.000", "0.000"),
+                     (kanten[0].GetAttribute("x1"), kanten[0].GetAttribute("y1"), kanten[0].GetAttribute("x2"), kanten[0].GetAttribute("y2")));
+        Assert.Equal(("0.000", "-8.000", "0.000", "0.000"),
+                     (kanten[3].GetAttribute("x1"), kanten[3].GetAttribute("y1"), kanten[3].GetAttribute("x2"), kanten[3].GetAttribute("y2")));
+
+        // Das Fenster: ein Viertel bis zur Hälfte der Südkante, in R7.
+        IElement fenster = wohnen.QuerySelector("line.epos-gebansicht-oeffnung")!;
+        Assert.Equal(("R7", "f-1", GebaeudeAnsichtRandgruppen.FARBEN[7]), (fenster.GetAttribute("data-gruppe"), fenster.GetAttribute("data-bauteil"), fenster.GetAttribute("stroke")));
+        Assert.Equal(("1.500", "3.000"), (fenster.GetAttribute("x1"), fenster.GetAttribute("x2")));
+
+        // Der Boden: Wohnen schraffiert nach R3, die Küche weiß (R0); die Schraffuren stehen als Muster im Bild.
+        Assert.Equal("R3", wohnen.GetAttribute("data-boden"));
+        Assert.Equal("fill:url(#epos-gebansicht-schraffur-3)", wohnen.QuerySelector("polygon")!.GetAttribute("style"));
+        Assert.Equal("fill:#ffffff", Raum(cut, "r-kueche").QuerySelector("polygon")!.GetAttribute("style"));
+        Assert.Equal(new[] { "epos-gebansicht-schraffur-3", "epos-gebansicht-schraffur-4" },
+                     cut.FindAll("pattern.epos-gebansicht-schraffur").Select(p => p.Id));
+        Assert.Equal(GebaeudeAnsichtRandgruppen.FARBEN[3], cut.Find("#epos-gebansicht-schraffur-3 line").GetAttribute("stroke"));
+
+        // R7 und R3 ausgeblendet: keine Marke, der Boden weiß.
+        Randschalter(cut, "R7").Click();
+        Randschalter(cut, "R3").Click();
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("line.epos-gebansicht-oeffnung")));
+        Assert.Equal("fill:#ffffff", Raum(cut, "r-wohnen").QuerySelector("polygon")!.GetAttribute("style"));
+
+        // Dieselben Daten geben zeichengleich dasselbe Markup.
+        Assert.Equal(OhneBindungen(ImRandmodus(RandDaten()).Markup), OhneBindungen(ImRandmodus(RandDaten()).Markup));
+    }
+
+    [Fact]
+    public void HC2_Ohne_Klassifikation_ist_Randbedingung_benannt_gesperrt()
+    {
+        IRenderedComponent<GebaeudeAnsicht> cut = Zeige(Daten());
+        Erdgeschoss(cut);
+        IElement knopf = Farbmodusknopf(cut, "randbedingung");
+        string grund = "Randbedingung nicht wählbar: Für dieses Gebäude liegen keine klassifizierten Körper aus der Datei vor.";
+        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.Equal(grund, knopf.GetAttribute("title"));
+        Assert.Equal(grund, cut.Find(".epos-gebansicht-farbmodus-hinweis").TextContent);
+        knopf.Click();
+        Assert.Equal("zonen", cut.Instance.Farbmodus);
+        Assert.Empty(cut.FindAll("line.epos-gebansicht-kante"));
+
+        // Über der Dreiecksgrenze: Prismen ohne Gruppen, der Grund ist die Grenze.
+        IRenderedComponent<GebaeudeAnsicht> gross = Zeige(RandDaten(grenze: 1));
+        Assert.True(Farbmodusknopf(gross, "randbedingung").HasAttribute("disabled"));
+        Assert.Equal("Randbedingung nicht wählbar: Die Körper überschreiten die Dreiecksgrenze, die Räume stehen als Prismen ohne Gruppen da.",
+                     gross.Find(".epos-gebansicht-farbmodus-hinweis").TextContent);
+        IRenderedComponent<GebaeudeAnsicht> verworfen = Zeige(Daten() with { RandgruppenZuGross = true });
+        Assert.StartsWith("Randbedingung nicht wählbar: Die Körper überschreiten", verworfen.Find(".epos-gebansicht-farbmodus-hinweis").TextContent);
+    }
+
+    [Fact]
+    public void HC2_Die_Szene_traegt_Farbmodus_Farbtafel_Schalter_Gruppenbytes_und_Bauteilkoerper()
+    {
+        GebaeudeAnsichtDaten d = RandDaten();
+        GebaeudeAnsichtKoerperfeld feld = d.Koerperfeld();
+        // Teil 1 wie bisher (Wohnen: 12 + 6 + 8 Werte), Teil 2 das Fenster (9 + 3 + 4), Teil 3 zwei Gruppenbytes, aufgefüllt.
+        Assert.Equal(4 * (12 + 6 + 8) + 4 * (9 + 3 + 4) + 4, feld.Bytes.Length);
+        GebaeudeAnsichtKoerperfeldEintrag fenster = Assert.Single(feld.Bauteile);
+        Assert.Equal(("f-1", 7, 4 * (12 + 6 + 8)), (fenster.Bauteil, fenster.Gruppe, fenster.PunkteAb));
+        int ab = feld.Verzeichnis.Single().GruppenAb;
+        Assert.Equal(4 * (12 + 6 + 8) + 4 * (9 + 3 + 4), ab);
+        Assert.Equal(new byte[] { 1, 3 }, feld.Bytes.Skip(ab).Take(2));
+
+        bool[] schalter = { true, false, true, true, true, true, true, true };
+        string json = System.Text.Json.JsonSerializer.Serialize(GebaeudeAnsicht.SzeneDatei(d, ZONE_EG, feld, "randbedingung", schalter));
+        Assert.Contains("\"kantenAb\":72,\"kantenZahl\":4,\"gruppenAb\":" + ab, json);
+        Assert.Contains("\"farbmodus\":\"randbedingung\"", json);
+        Assert.Contains("\"randfarben\":[\"" + string.Join("\",\"", GebaeudeAnsichtRandgruppen.FARBEN) + "\"]", json);
+        Assert.Contains("\"randsichtbar\":[true,false,true,true,true,true,true,true]", json);
+        Assert.Contains("\"bauteilesichtbar\":true", json);
+        Assert.Contains("\"bauteilesichtbar\":false", System.Text.Json.JsonSerializer.Serialize(
+            GebaeudeAnsicht.SzeneDatei(d, ZONE_EG, feld, "randbedingung", schalter, bauteilesichtbar: false)));
+        Assert.Contains("\"bauteile\":[{\"bauteil\":\"f-1\",\"gruppe\":7,\"punkteAb\":104,\"punktZahl\":3,\"dreieckeAb\":140,\"dreieckZahl\":1,\"kantenAb\":152,\"kantenZahl\":2}]", json);
+        foreach (string text in new[] { "Wohnen", "Wand", "m²", "Randbedingung" })
+            Assert.DoesNotContain(text, json);
+        // Das Exportmodell trägt Farbmodus, Farbtafel und Schalter ebenso; ohne Angabe der Modus Zonen, alles sichtbar.
+        string export = System.Text.Json.JsonSerializer.Serialize(GebaeudeAnsicht.Szene(d, ZONE_EG));
+        Assert.Contains("\"farbmodus\":\"zonen\"", export);
+        Assert.Contains("\"randsichtbar\":[true,true,true,true,true,true,true,true]", export);
+        Assert.Contains("\"bauteilesichtbar\":true", export);
+    }
+
+    [Fact]
+    public void HC2_Der_Bauteilschalter_steht_nur_unter_den_Koerpern_und_geht_als_bauteilesichtbar_an_das_Modul()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var erzeugen = modul.Setup<bool>("erzeugen", _ => true);
+        erzeugen.SetResult(true);
+        var aktualisieren = modul.SetupVoid("aktualisieren", _ => true);
+        aktualisieren.SetVoidResult();
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(RandDaten());
+        Erdgeschoss(cut);
+        Farbmodusknopf(cut, "randbedingung").Click();
+        cut.WaitForAssertion(() => Assert.Equal("randbedingung", cut.Instance.Farbmodus));
+        // Im Grundriss gibt es keine Bauteilkörper, also keinen Schalter.
+        Assert.Empty(cut.FindAll(".epos-gebansicht-bauteilschalter"));
+
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.Single(erzeugen.Invocations));
+        Assert.Contains("\"bauteilesichtbar\":true", System.Text.Json.JsonSerializer.Serialize(erzeugen.Invocations.Single().Arguments[1]));
+        IElement schalter = cut.Find(".epos-gebansicht-randlegende .epos-gebansicht-bauteilschalter");
+        Assert.Equal("true", schalter.GetAttribute("aria-pressed"));
+        Assert.Equal("Bauteilkörper anzeigen", schalter.GetAttribute("aria-label"));
+        Assert.Equal("Bauteilkörper", schalter.QuerySelector(".epos-gebansicht-zonenname")!.TextContent);
+        Assert.Equal("1", schalter.QuerySelector(".epos-gebansicht-randflaeche")!.TextContent);
+
+        schalter.Click();
+        cut.WaitForAssertion(() => Assert.Single(aktualisieren.Invocations));
+        Assert.False(cut.Instance.BauteileSichtbar);
+        Assert.Equal("false", cut.Find(".epos-gebansicht-bauteilschalter").GetAttribute("aria-pressed"));
+        string szene = System.Text.Json.JsonSerializer.Serialize(aktualisieren.Invocations.Single().Arguments[0]);
+        Assert.Contains("\"bauteilesichtbar\":false", szene);
+        Assert.Contains("\"farbmodus\":\"randbedingung\"", szene);
+        Assert.Single(erzeugen.Invocations);
+
+        // Zurück auf Zonen: die Zonenlegende, kein Schalter; die Szene meldet den Modus Zonen.
+        Farbmodusknopf(cut, "zonen").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, aktualisieren.Invocations.Count));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-bauteilschalter"));
+        Assert.Contains("\"farbmodus\":\"zonen\"", System.Text.Json.JsonSerializer.Serialize(aktualisieren.Invocations.Last().Arguments[0]));
+    }
+
+    [Fact]
+    public async Task HC2_Der_Klick_meldet_Gruppe_und_Bauteil_in_der_Infozeile_im_Modus_Zonen_wie_bisher()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        JSInterop.SetupModule(MODUL).Setup<bool>("erzeugen", _ => true).SetResult(true);
+        var zonen = new List<string>();
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(RandDaten(), zonen);
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.KoerperGezeigt));
+
+        // Modus Zonen: der Rückruf trägt Gruppe und Bauteil als null - die Zone wird gemeldet, keine Infozeile.
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(ZONE_EG, "r-wohnen", null, null));
+        Assert.Equal(new[] { ZONE_EG }, zonen);
+        Assert.Null(cut.Instance.Treffer);
+        Assert.Empty(cut.FindAll(".epos-gebansicht-treffer"));
+
+        Farbmodusknopf(cut, "randbedingung").Click();
+        cut.WaitForAssertion(() => Assert.Equal("randbedingung", cut.Instance.Farbmodus));
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(ZONE_EG, "r-wohnen", 1, null));
+        cut.WaitForAssertion(() => Assert.Equal("Gewählt: Raum Wohnen — R1 Wand gegen außen", cut.Find(".epos-gebansicht-treffer").TextContent));
+        IElement zeile = cut.Find(".epos-gebansicht-treffer");
+        Assert.Equal(("r-wohnen", "1"), (zeile.GetAttribute("data-raum"), zeile.GetAttribute("data-gruppe")));
+        Assert.Equal(new[] { ZONE_EG, ZONE_EG }, zonen);
+
+        // Ein Bauteilkörper hat keinen Raum und keine Zone: nur die Infozeile.
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(null, null, 7, "f-1"));
+        cut.WaitForAssertion(() => Assert.Equal("Gewählt: Bauteil f-1 — R7 Fenster und Türen", cut.Find(".epos-gebansicht-treffer").TextContent));
+        Assert.Equal("f-1", cut.Find(".epos-gebansicht-treffer").GetAttribute("data-bauteil"));
+        Assert.Equal(2, zonen.Count);
+
+        // Ein entartetes Dreieck (255) ist ohne Gruppe.
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(ZONE_EG, "r-wohnen", 255, null));
+        cut.WaitForAssertion(() => Assert.Equal("Gewählt: Raum Wohnen — ohne Gruppe", cut.Find(".epos-gebansicht-treffer").TextContent));
+
+        // Zurück auf Zonen: die Infozeile fällt weg.
+        Farbmodusknopf(cut, "zonen").Click();
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-gebansicht-treffer")));
+        Assert.Null(cut.Instance.Treffer);
+    }
+
+    [Fact]
+    public void HC2_Farbmodus_und_Schalter_gehen_ueber_aktualisieren_an_die_Koerper()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var erzeugen = modul.Setup<bool>("erzeugen", _ => true);
+        erzeugen.SetResult(true);
+        var aktualisieren = modul.SetupVoid("aktualisieren", _ => true);
+        aktualisieren.SetVoidResult();
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(RandDaten());
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.Single(erzeugen.Invocations));
+        Assert.Contains("\"farbmodus\":\"zonen\"", System.Text.Json.JsonSerializer.Serialize(erzeugen.Invocations.Single().Arguments[1]));
+
+        Farbmodusknopf(cut, "randbedingung").Click();
+        cut.WaitForAssertion(() => Assert.Single(aktualisieren.Invocations));
+        string szene = System.Text.Json.JsonSerializer.Serialize(aktualisieren.Invocations.Single().Arguments[0]);
+        Assert.Contains("\"farbmodus\":\"randbedingung\"", szene);
+        Assert.IsType<byte[]>(aktualisieren.Invocations.Single().Arguments[1]);
+        // Die Legende steht auch unter den Körpern; ihr Schalter geht an das Modul.
+        Randschalter(cut, "R0").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, aktualisieren.Invocations.Count));
+        Assert.Contains("\"randsichtbar\":[false,true,true,true,true,true,true,true]",
+                        System.Text.Json.JsonSerializer.Serialize(aktualisieren.Invocations.Last().Arguments[0]));
+        Assert.Single(erzeugen.Invocations);
+    }
+
+    [Fact]
+    public void HC2_Die_Texte_des_Farbmodus_stehen_englisch_unter_en_US()
+    {
+        using var englisch = new Kulturvorrichtung("en-US");
+        IRenderedComponent<GebaeudeAnsicht> cut = Zeige(RandDaten());
+        Assert.Equal("Zones", Farbmodusknopf(cut, "zonen").TextContent);
+        Assert.Equal("Boundary condition", Farbmodusknopf(cut, "randbedingung").TextContent);
+        Farbmodusknopf(cut, "randbedingung").Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebansicht-randlegende")));
+        Assert.Equal("R1 wall to outside", Randschalter(cut, "R1").QuerySelector(".epos-gebansicht-zonenname")!.TextContent);
+        Assert.Equal("78.00 m²", Randschalter(cut, "R1").QuerySelector(".epos-gebansicht-randflaeche")!.TextContent);
+        Assert.Equal("legend and balance only", Randschalter(cut, "R5").QuerySelector(".epos-gebansicht-marke")!.TextContent);
+        var texte = new GebaeudeAnsichtTexte();
+        Assert.Equal(("Component bodies", "no group"), (texte.RandBauteilkoerper, texte.RandKeine));
+        Assert.Equal("Selected: component {0} — {1}", texte.RandTrefferBauteil);
+        Assert.Equal("Selected: room {0} — {1}", texte.RandTrefferRaum);
+        Assert.Equal("Boundary condition not available: this building has no classified solids from the file.",
+                     Zeige(Daten()).Find(".epos-gebansicht-farbmodus-hinweis").TextContent);
+    }
 }

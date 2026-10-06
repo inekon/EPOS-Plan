@@ -24840,6 +24840,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Farbmodus ähnelt.
+        /// </summary>
+        public static string GANS_FARBMODUS {
+            get {
+                return ResourceManager.GetString("GANS_FARBMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randbedingung ähnelt.
+        /// </summary>
+        public static string GANS_FARBMODUS_RAND {
+            get {
+                return ResourceManager.GetString("GANS_FARBMODUS_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string GANS_FARBMODUS_ZONEN {
+            get {
+                return ResourceManager.GetString("GANS_FARBMODUS_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus Datei ähnelt.
         /// </summary>
         public static string GANS_HERKUNFT_DATEI {
@@ -24890,6 +24917,168 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_RAEUME {
             get {
                 return ResourceManager.GetString("GANS_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkörper ähnelt.
+        /// </summary>
+        public static string GANS_RAND_BAUTEILKOERPER {
+            get {
+                return ResourceManager.GetString("GANS_RAND_BAUTEILKOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} m² ähnelt.
+        /// </summary>
+        public static string GANS_RAND_FLAECHE {
+            get {
+                return ResourceManager.GetString("GANS_RAND_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Gruppe ähnelt.
+        /// </summary>
+        public static string GANS_RAND_KEINE {
+            get {
+                return ResourceManager.GetString("GANS_RAND_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächen nach Randbedingung ähnelt.
+        /// </summary>
+        public static string GANS_RAND_LEGENDE {
+            get {
+                return ResourceManager.GetString("GANS_RAND_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Legende und Bilanz ähnelt.
+        /// </summary>
+        public static string GANS_RAND_NUR_LEGENDE {
+            get {
+                return ResourceManager.GetString("GANS_RAND_NUR_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randbedingung nicht wählbar: Für dieses Gebäude liegen keine klassifizierten Körper aus der Datei vor. ähnelt.
+        /// </summary>
+        public static string GANS_RAND_OHNE_KLASSIFIKATION {
+            get {
+                return ResourceManager.GetString("GANS_RAND_OHNE_KLASSIFIKATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die innen, thermisch neutral ähnelt.
+        /// </summary>
+        public static string GANS_RAND_R0 {
+            get {
+                return ResourceManager.GetString("GANS_RAND_R0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wand gegen außen ähnelt.
+        /// </summary>
+        public static string GANS_RAND_R1 {
+            get {
+                return ResourceManager.GetString("GANS_RAND_R1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wand gegen unbeheizt ähnelt.
+        /// </summary>
+        public static string GANS_RAND_R2 {
+            get {
+                return ResourceManager.GetString("GANS_RAND_R2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wand oder Boden gegen Erdreich ähnelt.
+        /// </summary>
+        public static string GANS_RAND_R3 {
+            get {
+                return ResourceManager.GetString("GANS_RAND_R3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Boden gegen unbeheizt oder außen ähnelt.
+        /// </summary>
+        public static string GANS_RAND_R4 {
+            get {
+                return ResourceManager.GetString("GANS_RAND_R4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decke oder Dach gegen außen ähnelt.
+        /// </summary>
+        public static string GANS_RAND_R5 {
+            get {
+                return ResourceManager.GetString("GANS_RAND_R5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decke gegen unbeheizt ähnelt.
+        /// </summary>
+        public static string GANS_RAND_R6 {
+            get {
+                return ResourceManager.GetString("GANS_RAND_R6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster und Türen ähnelt.
+        /// </summary>
+        public static string GANS_RAND_R7 {
+            get {
+                return ResourceManager.GetString("GANS_RAND_R7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} anzeigen ähnelt.
+        /// </summary>
+        public static string GANS_RAND_SCHALTER {
+            get {
+                return ResourceManager.GetString("GANS_RAND_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: Bauteil {0} — {1} ähnelt.
+        /// </summary>
+        public static string GANS_RAND_TREFFER_BAUTEIL {
+            get {
+                return ResourceManager.GetString("GANS_RAND_TREFFER_BAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: Raum {0} — {1} ähnelt.
+        /// </summary>
+        public static string GANS_RAND_TREFFER_RAUM {
+            get {
+                return ResourceManager.GetString("GANS_RAND_TREFFER_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randbedingung nicht wählbar: Die Körper überschreiten die Dreiecksgrenze, die Räume stehen als Prismen ohne Gruppen da. ähnelt.
+        /// </summary>
+        public static string GANS_RAND_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("GANS_RAND_ZU_GROSS", resourceCulture);
             }
         }
         

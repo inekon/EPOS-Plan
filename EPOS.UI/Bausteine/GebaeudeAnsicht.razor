@@ -54,6 +54,17 @@
    unterste Geschoss mit einem Umriss (GebaeudeAnsichtDaten.GeschossOderVorgabe - dieselbe Stelle
    fragt der Wirt). Der Wirt kann die Wahl binden (Geschoss/GeschossChanged).
 
+   DER FARBMODUS "ZONEN | RANDBEDINGUNG" (HottCAD-Verbund 4.3, HC-2) steht am rechten Ende der Leiste "Grundriss | Koerper"
+   und gilt fuer beide Reiter; der Zustand lebt in der Komponente, gespeichert wird nichts. "Randbedingung" faerbt nach den
+   Gruppen R0 bis R7 der Flaechenklassifikation (Farbtafel GebaeudeAnsichtRandgruppen.FARBEN - die eine Stelle): im Grundriss
+   jede Kante in der Gruppe ihrer senkrechten Flaechen, Fenster und Tueren (R7) als Marke auf der Kante, die Bodenflaeche
+   schraffiert nach R3/R4, weiss bei R0; Decken (R5, R6) stehen nur in Legende und Bilanz. Die Legende nennt je Gruppe Farbe,
+   Flaechensumme und einen Schalter (aria-pressed), der die Gruppe im Grundriss und - ueber die Szene - in den Koerpern aus-
+   und einblendet. Ohne Klassifikation (gbXML ohne Koerper, Prismenrueckfall ueber der Dreiecksgrenze) ist "Randbedingung"
+   gesperrt und eine Zeile nennt den Grund - nie still verschwunden. Gesteuert wird ueber FARBMODUS_ZONEN und FARBMODUS_RAND
+   (data-farbmodus), nie ueber den Text. Die Szene traegt farbmodus, randfarben und randsichtbar, je Dateikoerper gruppenAb
+   und die Bauteilkoerper aus dem zweiten Teil des Bytefelds (GebaeudeAnsichtDaten.Koerperfeld).
+
    ZAHLEN IM SVG stehen invariant mit drei Nachkommastellen (GebaeudeAnsichtZeichnung): Dieselben
    Daten geben in jeder Sprache dasselbe Markup. Die Beschriftungen entstehen ueber den
    RenderTreeBuilder - ein SVG-Element "text" waere im Razor-Markup der Texttransition vorbehalten. *@
@@ -86,7 +97,14 @@
                     </KindInhalt>
                 </Reiterblatt>
             </KindInhalt>
+            <Leistenende>
+                @Farbmodusschalter(daten)
+            </Leistenende>
         </Reiter>
+        @if (!daten.RandbedingungWaehlbar)
+        {
+            <p class="epos-leisezeile epos-gebansicht-farbmodus-hinweis" role="note">@RandGrund(daten)</p>
+        }
         @if (!daten.Umhaengbar)
         {
             <p class="epos-leisezeile epos-gebansicht-nuranzeige">@Texte.NurAnzeige</p>
@@ -121,6 +139,12 @@
 
     /// <summary>Der Schlüssel der Körperdarstellung „Exportmodell" (Umriss extrudiert, Platten je Bauteil).</summary>
     internal const string MODUS_EXPORTMODELL = "exportmodell";
+
+    /// <summary>Der Schlüssel des Farbmodus „Zonen" (Farbe je Zone).</summary>
+    internal const string FARBMODUS_ZONEN = "zonen";
+
+    /// <summary>Der Schlüssel des Farbmodus „Randbedingung" (Farbe je Gruppe R0 bis R7).</summary>
+    internal const string FARBMODUS_RAND = "randbedingung";
 
     /// <summary>Das Modul der Körperansicht (statisches Web-Asset der Bibliothek).</summary>
     public const string MODUL_KOERPER = "./_content/EPOS.UI/epos-gebaeude-koerper.js";
@@ -194,6 +218,37 @@
 
     /// <summary>Die Darstellung, die das Modul zuletzt bekam.</summary>
     private string? _gezeigterModus;
+
+    /// <summary>Der gewählte Farbmodus; gilt nur, solange „Randbedingung" wählbar ist.</summary>
+    private string _farbmodus = FARBMODUS_ZONEN;
+
+    /// <summary>Je Gruppe eingeblendet? Die Schalter der Legende.</summary>
+    private readonly bool[] _sichtbar = Enumerable.Repeat(true, GebaeudeAnsichtRandgruppen.ZAHL).ToArray();
+
+    /// <summary>Sind die Bauteilkörper eingeblendet? Der Schalter der Legende (nur Körperansicht, Farbmodus „Randbedingung").</summary>
+    private bool _bauteileSichtbar = true;
+
+    /// <summary>Sind die Bauteilkörper eingeblendet (Prüfhilfe für Tests)?</summary>
+    public bool BauteileSichtbar => _bauteileSichtbar;
+
+    /// <summary>Das zuletzt getroffene Dreieck — für die Infozeile unter dem Bild.</summary>
+    private Koerpertreffer? _treffer;
+
+    /// <summary>Farbmodus und Schalter, die das Modul zuletzt bekam.</summary>
+    private string? _gezeigterFarbmodus;
+    private string? _gezeigteSchalter;
+
+    /// <summary>
+    /// Der gezeigte Farbmodus (Prüfhilfe für Tests): <see cref="FARBMODUS_RAND"/> nur, wenn gewählt und wählbar, sonst
+    /// <see cref="FARBMODUS_ZONEN"/>.
+    /// </summary>
+    public string Farbmodus => Daten is { RandbedingungWaehlbar: true } && _farbmodus == FARBMODUS_RAND ? FARBMODUS_RAND : FARBMODUS_ZONEN;
+
+    /// <summary>Ist der Farbmodus „Randbedingung" gezeigt?</summary>
+    private bool ImRandmodus => string.Equals(Farbmodus, FARBMODUS_RAND, StringComparison.Ordinal);
+
+    /// <summary>Ist die Gruppe eingeblendet (Prüfhilfe für Tests)?</summary>
+    public bool GruppeSichtbar(Randgruppe g) => _sichtbar[(int)g];
 
     /// <summary>Das Bytefeld der Dateikörper und die Daten, aus denen es gebildet ist.</summary>
     private GebaeudeAnsichtKoerperfeld? _feld;
@@ -277,13 +332,21 @@
             else
             {
                 GebaeudeAnsichtZeichnung.Ausschnitt a = GebaeudeAnsichtZeichnung.AusschnittVon(g);
-                <svg class="@Bildklasse" viewBox="@a.ViewBox" role="group" aria-label="@Format(Texte.Bild, Geschossname(g))">
+                <svg class="@Bildklasse" viewBox="@a.ViewBox" role="group" aria-label="@Format(Texte.Bild, Geschossname(g))"
+                     data-farbmodus="@Farbmodus">
+                    @if (ImRandmodus)
+                    {
+                        @Schraffuren(a.Schrift)
+                    }
                     @foreach (GebaeudeAnsichtRaum raum in g.Raeume)
                     {
                         if (raum.Polygone.Count == 0) continue;
                         GebaeudeAnsichtRaum r = raum;
                         string beschreibung = Beschreibung(daten, r);
+                        GebaeudeAnsichtKoerperraum? angaben = ImRandmodus ? daten.Koerperraum(r.Kennung) : null;
+                        string? boden = ImRandmodus ? Bodenstil(angaben) : null;
                         <g class="@Raumklasse(daten, r)" data-raum="@r.Kennung" data-zone="@r.Zone"
+                           data-boden="@(ImRandmodus ? angaben?.Bodengruppe?.ToString() : null)"
                            tabindex="@(Bedienbar ? "0" : null)" role="@(Bedienbar ? "button" : "img")"
                            aria-label="@beschreibung"
                            @onclick="() => BeiRaum(r)" @onkeydown="e => BeiRaumtaste(e, r)">
@@ -291,13 +354,23 @@
                             @foreach (var polygon in r.Polygone)
                             {
                                 if (polygon.Count < 3) continue;
-                                <polygon points="@GebaeudeAnsichtZeichnung.Punkte(polygon)" />
+                                <polygon points="@GebaeudeAnsichtZeichnung.Punkte(polygon)" style="@boden" />
+                            }
+                            @if (angaben is not null)
+                            {
+                                @Kanten(r, angaben)
                             }
                             @Beschriftung(r, a.Schrift)
                         </g>
                     }
                 </svg>
             }
+            @if (ImRandmodus)
+            {
+                @Randlegende(daten, false)
+            }
+            else
+            {
             <ul class="epos-gebansicht-legende" aria-label="@Texte.Legende">
                 @foreach (GebaeudeAnsichtZone zone in ZonenIm(daten, g))
                 {
@@ -331,8 +404,148 @@
                     </li>
                 }
             </ul>
+            }
         </div>
     };
+
+    // =====================================================================
+    //  Farbmodus „Randbedingung" (HottCAD-Verbund 4.3)
+    // =====================================================================
+
+    /// <summary>Der Umschalter „Zonen | Randbedingung" am Ende der Leiste; „Randbedingung" ohne Klassifikation gesperrt.</summary>
+    private RenderFragment Farbmodusschalter(GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        <div class="epos-gebansicht-farbmodus" role="group" aria-label="@Texte.Farbmodus" data-farbmodus="@Farbmodus">
+            <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_ZONEN"
+                    aria-pressed="@(ImRandmodus ? "false" : "true")" @onclick="() => BeiFarbmodus(FARBMODUS_ZONEN)">@Texte.FarbmodusZonen</button>
+            <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_RAND"
+                    aria-pressed="@(ImRandmodus ? "true" : "false")" disabled="@(!daten.RandbedingungWaehlbar)"
+                    title="@(daten.RandbedingungWaehlbar ? null : RandGrund(daten))"
+                    @onclick="() => BeiFarbmodus(FARBMODUS_RAND)">@Texte.FarbmodusRand</button>
+        </div>
+    };
+
+    /// <summary>Warum „Randbedingung" nicht wählbar ist — über der Grenze oder ohne Klassifikation.</summary>
+    private string RandGrund(GebaeudeAnsichtDaten daten)
+        => daten.RandgruppenZuGross || (daten.HatRandgruppen && daten.DateikoerperZuGross) ? Texte.RandZuGross : Texte.RandOhneKlassifikation;
+
+    /// <summary>
+    /// Die Legende der Gruppen: je Gruppe mit Fläche oder Dreiecken Farbe, Name, Flächensumme und ein Schalter (aria-pressed),
+    /// Decken mit dem Vermerk „nur Legende und Bilanz".
+    /// </summary>
+    private RenderFragment Randlegende(GebaeudeAnsichtDaten daten, bool mitBauteilen) => __builder =>
+    {
+        <ul class="epos-gebansicht-legende epos-gebansicht-randlegende" aria-label="@Texte.RandLegende">
+            @if (mitBauteilen)
+            {
+                <li class="epos-gebansicht-legendeneintrag epos-gebansicht-randeintrag epos-gebansicht-randeintrag--bauteile" data-bauteile="true">
+                    <button type="button" class="epos-diagramm-knopf epos-gebansicht-randschalter epos-gebansicht-bauteilschalter"
+                            aria-pressed="@(_bauteileSichtbar ? "true" : "false")" aria-label="@Format(Texte.RandSchalter, Texte.RandBauteilkoerper)"
+                            @onclick="BeiBauteilen">
+                        <span class="epos-gebansicht-zonenname">@Texte.RandBauteilkoerper</span>
+                        <span class="epos-gebansicht-randflaeche">@daten.Bauteilkoerper.Count.ToString("N0", CultureInfo.CurrentCulture)</span>
+                    </button>
+                </li>
+            }
+            @foreach (GebaeudeAnsichtFlaechengruppe eintrag in daten.Flaechengruppen.Where(x => x.FlaecheM2 > 0 || x.DreieckZahl > 0))
+            {
+                Randgruppe gruppe = eintrag.Gruppe;
+                string name = Texte.Gruppenname(gruppe);
+                <li class="epos-gebansicht-legendeneintrag epos-gebansicht-randeintrag" data-gruppe="@gruppe">
+                    <button type="button" class="epos-diagramm-knopf epos-gebansicht-randschalter" data-gruppe="@gruppe"
+                            aria-pressed="@(_sichtbar[(int)gruppe] ? "true" : "false")" aria-label="@Format(Texte.RandSchalter, name)"
+                            @onclick="() => BeiGruppe(gruppe)">
+                        <span class="epos-gebansicht-farbfeld" style="@("background:" + GebaeudeAnsichtRandgruppen.Farbe(gruppe))" aria-hidden="true"></span>
+                        <span class="epos-gebansicht-zonenname">@name</span>
+                        <span class="epos-gebansicht-randflaeche">@Format(Texte.RandFlaeche, eintrag.FlaecheM2.ToString("N2", CultureInfo.CurrentCulture))</span>
+                        @if (GebaeudeAnsichtRandgruppen.NurLegende(gruppe))
+                        {
+                            <span class="epos-gebansicht-marke">@Texte.RandNurLegende</span>
+                        }
+                    </button>
+                </li>
+            }
+        </ul>
+    };
+
+    /// <summary>Die Schraffuren des Bodens für R3 und R4 (Musterkacheln in Metern, um 45° gedreht).</summary>
+    private static RenderFragment Schraffuren(double schrift) => __builder =>
+    {
+        string s = GebaeudeAnsichtZeichnung.Zahl(Math.Max(schrift, 0.01) * GebaeudeAnsichtZeichnung.SCHRAFFUR_ANTEIL);
+        string strich = GebaeudeAnsichtZeichnung.Zahl(Math.Max(schrift, 0.01) * GebaeudeAnsichtZeichnung.SCHRAFFUR_ANTEIL * 0.35);
+        <defs>
+            @foreach (Randgruppe g in new[] { Randgruppe.R3, Randgruppe.R4 })
+            {
+                <pattern id="@Schraffurkennung(g)" class="epos-gebansicht-schraffur" data-gruppe="@g" patternUnits="userSpaceOnUse"
+                         width="@s" height="@s" patternTransform="rotate(45)">
+                    <rect width="@s" height="@s" fill="#ffffff" />
+                    <line x1="0" y1="0" x2="0" y2="@s" stroke="@GebaeudeAnsichtRandgruppen.Farbe(g)" stroke-width="@strich" />
+                </pattern>
+            }
+        </defs>
+    };
+
+    /// <summary>Die Kennung der Schraffur einer Gruppe (fest: dieselben Daten geben dasselbe Markup).</summary>
+    internal static string Schraffurkennung(Randgruppe g) => "epos-gebansicht-schraffur-" + ((int)g).ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Die Füllung des Bodens: schraffiert nach R3/R4, sonst weiß; eine ausgeblendete Gruppe bleibt weiß.</summary>
+    private string Bodenstil(GebaeudeAnsichtKoerperraum? angaben)
+        => angaben?.Bodengruppe is Randgruppe g && g is Randgruppe.R3 or Randgruppe.R4 && _sichtbar[(int)g]
+            ? "fill:url(#" + Schraffurkennung(g) + ")"
+            : "fill:#ffffff";
+
+    /// <summary>Die Kanten eines Raums in der Farbe ihrer Gruppe und die Öffnungen (R7) als Marken darauf.</summary>
+    private RenderFragment Kanten(GebaeudeAnsichtRaum r, GebaeudeAnsichtKoerperraum angaben) => __builder =>
+    {
+        if (angaben.Kantengruppen is { } gruppen)
+        {
+            for (int pi = 0; pi < r.Polygone.Count && pi < gruppen.Count; pi++)
+            {
+                IReadOnlyList<GebaeudeAnsichtPunkt> polygon = r.Polygone[pi];
+                if (polygon.Count < 3) continue;
+                for (int e = 0; e < polygon.Count && e < gruppen[pi].Count; e++)
+                {
+                    if (gruppen[pi][e] is not Randgruppe g || !_sichtbar[(int)g]) continue;
+                    GebaeudeAnsichtZeichnung.Strecke s = GebaeudeAnsichtZeichnung.StreckeVon(polygon, e, 0.0, 1.0);
+                    <line class="epos-gebansicht-kante" data-gruppe="@g" data-kante="@(pi.ToString(CultureInfo.InvariantCulture) + ":" + e.ToString(CultureInfo.InvariantCulture))"
+                          x1="@s.X1" y1="@s.Y1" x2="@s.X2" y2="@s.Y2" stroke="@GebaeudeAnsichtRandgruppen.Farbe(g)" />
+                }
+            }
+        }
+        if (_sichtbar[(int)Randgruppe.R7])
+        {
+            foreach (GebaeudeAnsichtKantenmarke m in angaben.Kantenmarken)
+            {
+                if (m.Polygon < 0 || m.Polygon >= r.Polygone.Count || r.Polygone[m.Polygon].Count < 3 || m.Kante >= r.Polygone[m.Polygon].Count) continue;
+                GebaeudeAnsichtZeichnung.Strecke s = GebaeudeAnsichtZeichnung.StreckeVon(r.Polygone[m.Polygon], m.Kante, m.Von, m.Bis);
+                <line class="epos-gebansicht-oeffnung" data-gruppe="@Randgruppe.R7" data-bauteil="@m.Bauteil"
+                      x1="@s.X1" y1="@s.Y1" x2="@s.X2" y2="@s.Y2" stroke="@GebaeudeAnsichtRandgruppen.Farbe(Randgruppe.R7)" />
+            }
+        }
+    };
+
+    private void BeiFarbmodus(string schluessel)
+    {
+        if (schluessel == FARBMODUS_RAND && Daten is not { RandbedingungWaehlbar: true }) return;
+        if (!string.Equals(_farbmodus, schluessel, StringComparison.Ordinal)) _treffer = null;
+        _farbmodus = schluessel;
+    }
+
+    private void BeiGruppe(Randgruppe g) => _sichtbar[(int)g] = !_sichtbar[(int)g];
+
+    private void BeiBauteilen() => _bauteileSichtbar = !_bauteileSichtbar;
+
+    /// <summary>Die Schalter als Zeichenkette (Vergleich, ob das Modul neu zu versorgen ist); zuletzt der Bauteilschalter.</summary>
+    private string Schalterstand => string.Concat(_sichtbar.Select(x => x ? '1' : '0')) + (_bauteileSichtbar ? 'b' : '-');
+
+    /// <summary>Die Infozeile zum zuletzt getroffenen Dreieck: Raum oder Bauteil und der Name der Gruppe.</summary>
+    private string Treffertext(GebaeudeAnsichtDaten daten, Koerpertreffer t)
+    {
+        string gruppe = t.Gruppe is int g && g >= 0 && g < GebaeudeAnsichtRandgruppen.ZAHL ? Texte.Gruppenname((Randgruppe)g) : Texte.RandKeine;
+        return t.Bauteil is { Length: > 0 } bauteil
+            ? Format(Texte.RandTrefferBauteil, bauteil, gruppe)
+            : Format(Texte.RandTrefferRaum, daten.Raum(t.Raum)?.Name ?? t.Raum ?? "", gruppe);
+    }
 
     /// <summary>
     /// Name und Fläche eines Raums als zwei SVG-Textzeilen — über den Baum gebaut (siehe Kopf); ohne Platz
@@ -389,13 +602,28 @@
     /// <summary>
     /// Der Klick auf einen Körper (aus dem Modul): meldet dem Wirt den Schlüssel der Zone. Ein Raum ohne Zone,
     /// ein unbekannter Schlüssel, eine gesperrte Ansicht oder ein Wirt ohne Delegat melden nichts.
+    /// Im Farbmodus „Randbedingung" trägt das Modul dazu die Gruppe des getroffenen Dreiecks (0–7, 255 = ohne) und bei
+    /// einem Bauteilkörper dessen Kennung; beides steht dann in der Infozeile unter dem Bild — auch ohne Wirt und in einer
+    /// gesperrten Ansicht, denn sie zeigt nur an. Im Modus „Zonen" sind beide <c>null</c>.
     /// </summary>
     [JSInvokable("ZoneGewaehlt")]
-    public Task BeiKoerperklick(string? zone, string? raum)
+    public async Task BeiKoerperklick(string? zone, string? raum, int? gruppe = null, string? bauteil = null)
     {
-        if (!Aktiv || !ZoneGewaehlt.HasDelegate || Daten?.Zone(zone) is not GebaeudeAnsichtZone z) return Task.CompletedTask;
-        return InvokeAsync(() => ZoneGewaehlt.InvokeAsync(z.Schluessel));
+        if (ImRandmodus && (gruppe is not null || bauteil is not null))
+            await InvokeAsync(() =>
+            {
+                _treffer = new Koerpertreffer(raum, gruppe, bauteil);
+                StateHasChanged();
+            });
+        if (!Aktiv || !ZoneGewaehlt.HasDelegate || Daten?.Zone(zone) is not GebaeudeAnsichtZone z) return;
+        await InvokeAsync(() => ZoneGewaehlt.InvokeAsync(z.Schluessel));
     }
+
+    /// <summary>Das zuletzt im Körper getroffene Dreieck (Farbmodus „Randbedingung").</summary>
+    private sealed record Koerpertreffer(string? Raum, int? Gruppe, string? Bauteil);
+
+    /// <summary>Der zuletzt getroffene Raum, die Gruppe und das Bauteil (Prüfhilfe für Tests); ohne Treffer <c>null</c>.</summary>
+    public (string? Raum, int? Gruppe, string? Bauteil)? Treffer => _treffer is { } t ? (t.Raum, t.Gruppe, t.Bauteil) : null;
 
     // =====================================================================
     //  Körper
@@ -469,7 +697,18 @@
             {
                 <canvas @ref="_canvas" class="epos-gebansicht-canvas" role="img" aria-label="@Texte.KoerperBild"></canvas>
                 <p class="epos-leisezeile epos-gebansicht-bedienung">@Texte.KoerperBedienung</p>
+                @if (ImRandmodus && _treffer is { } treffer)
+                {
+                    <p class="epos-leisezeile epos-gebansicht-treffer" role="status" data-raum="@treffer.Raum"
+                       data-gruppe="@(treffer.Gruppe?.ToString())" data-bauteil="@treffer.Bauteil">@Treffertext(daten, treffer)</p>
+                }
             }
+            @if (ImRandmodus)
+            {
+                @Randlegende(daten, ImDateimodus && daten.Bauteilkoerper.Count > 0)
+            }
+            else
+            {
             <ul class="epos-gebansicht-legende" aria-label="@Texte.Legende">
                 @foreach (GebaeudeAnsichtZone zone in daten.Zonen.Where(z => koerper.Any(k => string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal))))
                 {
@@ -500,6 +739,7 @@
                     </li>
                 }
             </ul>
+            }
             @if (ImDateimodus && koerper.Count > 0)
             {
                 <details class="epos-gebansicht-raumherkunft">
@@ -545,19 +785,36 @@
     /// „schematisch", Polygone in Metern und die Bauteilarten an Kante, Boden und Decke; dazu die Zielzone.
     /// Nur Kennungen und Zahlen — kein Anzeigetext.
     /// </summary>
-    public static object Szene(GebaeudeAnsichtDaten daten, string? ziel) => new
+    public static object Szene(GebaeudeAnsichtDaten daten, string? ziel, string farbmodus = FARBMODUS_ZONEN,
+                               IReadOnlyList<bool>? sichtbar = null, bool bauteilesichtbar = true) => new
     {
         ziel,
         modus = MODUS_EXPORTMODELL,
         koerper = daten.Koerper().Select(k => Prisma(daten, k)).ToList(),
+        farbmodus,
+        randfarben = GebaeudeAnsichtRandgruppen.FARBEN,
+        randsichtbar = Sichtbar(sichtbar),
+        bauteilesichtbar,
     };
+
+    private static bool[] Sichtbar(IReadOnlyList<bool>? sichtbar)
+        => Enumerable.Range(0, GebaeudeAnsichtRandgruppen.ZAHL).Select(i => sichtbar is null || i >= sichtbar.Count || sichtbar[i]).ToArray();
 
     /// <summary>
     /// Die Szene im Modus Dateikörper: die Prismen der Räume ohne gezeigten Dateikörper wie im Exportmodell, je Raum
     /// mit Dateikörper Raum- und Zonenschlüssel, Farbstelle und sein Eintrag im Verzeichnis des Bytefelds, dazu der
     /// Bezugspunkt [m]. Nur Kennungen und Zahlen — kein Anzeigetext.
     /// </summary>
-    public static object SzeneDatei(GebaeudeAnsichtDaten daten, string? ziel, GebaeudeAnsichtKoerperfeld feld)
+    /// <remarks>
+    /// Mit Randgruppen trägt die Szene dazu <c>farbmodus</c> (<see cref="FARBMODUS_ZONEN"/> oder <see cref="FARBMODUS_RAND"/>),
+    /// <c>randfarben</c> (die Farbtafel nach Gruppenindex), <c>randsichtbar</c> (je Gruppe der Schalter der Legende), je
+    /// Dateikörper <c>gruppenAb</c> (Byte-Offset der Gruppenbytes, −1 = keine) und <c>bauteile</c>: je Bauteilkörper Kennung,
+    /// Gruppe und seine Abschnitte im zweiten Teil des Bytefelds; <c>bauteilesichtbar</c> ist der Legendenschalter der
+    /// Bauteilkörper (beide Szenen tragen ihn, gezeichnet werden Bauteilkörper nur im Farbmodus „Randbedingung").
+    /// </remarks>
+    public static object SzeneDatei(GebaeudeAnsichtDaten daten, string? ziel, GebaeudeAnsichtKoerperfeld feld,
+                                    string farbmodus = FARBMODUS_ZONEN, IReadOnlyList<bool>? sichtbar = null,
+                                    bool bauteilesichtbar = true)
     {
         IReadOnlyList<GebaeudeAnsichtDateiraum> raeume = daten.Dateiansicht();
         var verzeichnis = new Dictionary<string, GebaeudeAnsichtKoerperfeldEintrag>(StringComparer.Ordinal);
@@ -579,7 +836,20 @@
                     punkteAb = e.PunkteAb, punktZahl = e.PunktZahl,
                     dreieckeAb = e.DreieckeAb, dreieckZahl = e.DreieckZahl,
                     kantenAb = e.KantenAb, kantenZahl = e.KantenZahl,
+                    gruppenAb = e.GruppenAb,
                 };
+            }).ToList(),
+            farbmodus,
+            randfarben = GebaeudeAnsichtRandgruppen.FARBEN,
+            randsichtbar = Sichtbar(sichtbar),
+            bauteilesichtbar,
+            bauteile = feld.Bauteile.Select(e => new
+            {
+                bauteil = e.Bauteil,
+                gruppe = e.Gruppe,
+                punkteAb = e.PunkteAb, punktZahl = e.PunktZahl,
+                dreieckeAb = e.DreieckeAb, dreieckZahl = e.DreieckZahl,
+                kantenAb = e.KantenAb, kantenZahl = e.KantenZahl,
             }).ToList(),
         };
     }
@@ -615,8 +885,8 @@
                 _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL_KOERPER);
                 _rueckweg ??= DotNetObjectReference.Create(this);
                 bool gezeichnet = Dateinetze(daten) is { } feld
-                    ? await _modul.InvokeAsync<bool>("erzeugen", _canvas, SzeneDatei(daten, GewaehlteZone, feld), _rueckweg, feld.Bytes)
-                    : await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone), _rueckweg);
+                    ? await _modul.InvokeAsync<bool>("erzeugen", _canvas, SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar), _rueckweg, feld.Bytes)
+                    : await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar), _rueckweg);
                 if (!gezeichnet)
                 {
                     _koerperFehlt = true;
@@ -626,15 +896,17 @@
                 _koerperAktiv = true;
             }
             else if (!ReferenceEquals(_gezeigteDaten, daten) || !string.Equals(_gezeigtesZiel, GewaehlteZone, StringComparison.Ordinal)
-                     || !string.Equals(_gezeigterModus, KoerperModus, StringComparison.Ordinal))
+                     || !string.Equals(_gezeigterModus, KoerperModus, StringComparison.Ordinal)
+                     || !string.Equals(_gezeigterFarbmodus, Farbmodus, StringComparison.Ordinal)
+                     || !string.Equals(_gezeigteSchalter, Schalterstand, StringComparison.Ordinal))
             {
                 // Der Stand gilt als gezeigt, sobald er unterwegs ist: ein schneller zweiter Wechsel vergleicht
                 // gegen ihn, nicht gegen den vorigen.
                 Merken(daten);
                 if (Dateinetze(daten) is { } feld)
-                    await _modul!.InvokeVoidAsync("aktualisieren", SzeneDatei(daten, GewaehlteZone, feld), feld.Bytes);
+                    await _modul!.InvokeVoidAsync("aktualisieren", SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar), feld.Bytes);
                 else
-                    await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone));
+                    await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar));
                 return;
             }
             Merken(daten);
@@ -655,6 +927,8 @@
         _gezeigteDaten = daten;
         _gezeigtesZiel = GewaehlteZone;
         _gezeigterModus = KoerperModus;
+        _gezeigterFarbmodus = Farbmodus;
+        _gezeigteSchalter = Schalterstand;
     }
 
     /// <summary>
@@ -680,6 +954,8 @@
         _gezeigteDaten = null;
         _gezeigtesZiel = null;
         _gezeigterModus = null;
+        _gezeigterFarbmodus = null;
+        _gezeigteSchalter = null;
         try { await _modul.InvokeVoidAsync("entsorgen"); }
         catch (Exception) { /* die WebView ist schon weg - dann gibt es nichts zu lösen */ }
     }
@@ -729,7 +1005,8 @@
     private string Raumklasse(GebaeudeAnsichtDaten daten, GebaeudeAnsichtRaum r)
         => "epos-gebansicht-raum " + Zonenklasse(daten, r.Zone)
            + (r.Schematisch ? " epos-gebansicht-raum--schematisch" : "")
-           + (IstZiel(r.Zone) ? " epos-gebansicht-raum--ziel" : "");
+           + (IstZiel(r.Zone) ? " epos-gebansicht-raum--ziel" : "")
+           + (ImRandmodus ? " epos-gebansicht-raum--rand" : "");
 
     private string Legendenklasse(GebaeudeAnsichtZone z)
         => IstZiel(z.Schluessel) ? "epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--ziel" : "epos-gebansicht-legendeneintrag";

@@ -43,6 +43,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// Baustein <c>DiagrammSvg</c>: Der Zeitausschnitt ist die viewBox seiner
 /// Zeichenfläche, „Bereich" und „1:1" bedienen sie, und kein Zoom kostet mehr
 /// einen Rundlauf in den Kern (DG-E3-9).</para>
+/// <para>Im Kesselreiter steht die Auslegung am Ende, nach der Jahresganglinie
+/// (Anwenderwunsch 06.10.2026) — dieselbe Folge wie im Wärmepumpenreiter.</para>
 /// </summary>
 public class ErzeugerReiterTests : EposBunitContext
 {
@@ -444,13 +446,11 @@ public class ErzeugerReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Anwenderwunsch 09.09.2026 (W11b‑B‑22).</b> „Wärme", „Strom" und
-    /// „Auslegung" standen als h3-Unterabschnitte UNTEREINANDER in EINER Spalte,
-    /// der Brennstoffblock als einzige Gruppe mit dunklem Balken daneben. Jetzt
-    /// sind es VIER gleichrangige Hauptgruppen mit Balken in ZWEI Rasterzeilen:
-    /// oben Wärme | Strom (wie im Bedarfs- und im Übersichtsreiter), darunter
-    /// Auslegung | Brennstoffverbrauch. Kein <c>h3</c> bleibt übrig; die
-    /// Zeilenfolge JEDER Gruppe ist die von W11b‑B‑15.
+    /// <b>Die Kennzahlen in Hauptgruppen mit Balken.</b> Oben Wärme | Strom
+    /// nebeneinander (wie im Bedarfs- und im Übersichtsreiter), darunter der
+    /// Brennstoffverbrauch und der Betrieb je in eigener Rasterzeile, am Ende des
+    /// Reiters die Auslegung (Anwenderwunsch 06.10.2026). Kein <c>h3</c> bleibt
+    /// übrig; die Zeilenfolge JEDER Gruppe ist die von W11b‑B‑15.
     /// </summary>
     [Fact]
     public void Kessel_gliedert_seine_Felder_in_vier_Gruppen_mit_Balken()
@@ -459,15 +459,17 @@ public class ErzeugerReiterTests : EposBunitContext
 
         // Der fünfte Balken steht über der Kesseltabelle - sein Titel trägt seit
         // W11b‑B‑23 keinen Doppelpunkt mehr (SIMERG_GRP_MODULE_SPK).
-        // #568: die dritte Rasterzeile „Betrieb".
-        Assert.Equal(new[] { "Wärme", "Strom", "Auslegung", "Brennstoffverbrauch der Spitzenkessel",
-                             "Betrieb", "Wärmeproduktion der einzelnen Spitzenkessel" },
+        // #568: die dritte Rasterzeile „Betrieb"; die Auslegung steht am Ende.
+        Assert.Equal(new[] { "Wärme", "Strom", "Brennstoffverbrauch der Spitzenkessel",
+                             "Betrieb", "Wärmeproduktion der einzelnen Spitzenkessel", "Auslegung" },
                      seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
         Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
 
-        // Zwei Rasterzeilen mit je zwei Listen - nicht vier Gruppen in einer.
-        Assert.Equal(2, seite.FindAll("div.epos-simerg-spalten")
-                             .Count(z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2));
+        // Vier Rasterzeilen: nur die erste trägt zwei Listen (Wärme | Strom),
+        // Brennstoff, Betrieb und Auslegung stehen je allein.
+        Assert.Equal(new[] { 2, 1, 1, 1 },
+                     seite.FindAll("div.epos-simerg-spalten")
+                          .Select(z => z.QuerySelectorAll("dl.epos-simerg-werte").Length).ToArray());
 
         var listen = seite.FindAll("dl.epos-simerg-werte");
         Assert.Equal(5, listen.Count);          // vier Gruppen + der Brennstoffblock
@@ -481,14 +483,54 @@ public class ErzeugerReiterTests : EposBunitContext
             new[] { "Strombedarf:", "Reststrombedarf:" },
             listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
-            new[] { "Gesamte Wärmeleistung der Heizkessel:", "Maximale Brennstoffleistung Gas (Hu):" },
+            new[] { "Gasverbrauch (Hu):", "Ölverbrauch:" },
             listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
             new[] { "Betriebsstunden gesamt", "Starts", "Bereitschaftsstunden", "Bereitschaftsverlust" },
+            listen[3].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Gesamte Wärmeleistung der Heizkessel:", "Maximale Brennstoffleistung Gas (Hu):" },
             listen[4].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
 
         Assert.Equal(new[] { "Restwärmebedarf nach Kessel:", "Reststrombedarf:" },
                      seite.FindAll("dt.epos-simerg-abschluss").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// <b>Die Auslegung steht am Ende des Reiters</b> (Anwenderwunsch 06.10.2026),
+    /// dieselbe Folge wie im Wärmepumpenreiter: erst Wärme und Strom, dann
+    /// Brennstoffverbrauch und Betrieb, dann die Kesseltabelle, die zwei
+    /// Schalterzeilen und die Jahresganglinie, zuletzt der Block „Auslegung“ —
+    /// nur noch gefolgt vom Knopf des CSV-Exports.
+    /// </summary>
+    [Fact]
+    public void Kessel_zeigt_die_Auslegung_nach_der_Ganglinie_am_Ende()
+    {
+        var seite = KesselZeichnen(Kessel(), csv: () => { });
+
+        var folge = seite.FindAll(
+                "h2.epos-gruppenkopf-titel, table.epos-raster, div.epos-simerg-schalter, "
+                + "div.epos-diagramm-svg, button.epos-simerg-knopf")
+            .Select(e => e.TagName.ToLowerInvariant() switch
+            {
+                "h2" => e.TextContent.Trim(),
+                "table" => "Tabelle",
+                "button" => "CSV",
+                _ => e.ClassList.Contains("epos-diagramm-svg") ? "Ganglinie" : "Schalter",
+            })
+            .ToArray();
+
+        Assert.Equal(new[]
+        {
+            "Wärme", "Strom", "Brennstoffverbrauch der Spitzenkessel", "Betrieb",
+            "Wärmeproduktion der einzelnen Spitzenkessel", "Tabelle",
+            "Schalter", "Schalter", "Ganglinie",
+            "Auslegung", "CSV",
+        }, folge);
+
+        // Die Ganglinie ist das einzige Bild des Reiters und steht vor der Auslegung.
+        Assert.Equal("simerg-heizkessel",
+                     Assert.Single(seite.FindComponents<DiagrammSvg>()).Instance.Kennung);
     }
 
     /// <summary>
