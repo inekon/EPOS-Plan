@@ -772,6 +772,23 @@ Kurzform und das Leistenende in eigener Zeile; die Warnung in `--epos-warn-text`
 Fenster, die Seite rollt nicht quer. Ein langer Stammname kürzt sich mit Auslassung (voller Name im
 `title`), wird es enger, fällt die Beschriftung „Stamm:“ weg. Rückgabe `0` = kein Verstoß.
 
+## Rollprobe „Berichte & Kosten“ — Seite `/berichtekosten`
+
+Dieselbe Seite wie die Sichtprobe, gemessen wird aber der **Reiterwechsel**: Die Probe klickt bei
+1 280 × 600 und 820 × 700 nacheinander auf die vier Reiter (hin und zurück) und misst nach jedem
+Klick die Rollposition des Fensters und jedes rollenden Vorfahren, ob die Reiterleiste im Fenster
+liegt, ob die neue Seite direkt unter ihr beginnt und ob der Fokus auf der Seitenwurzel steht. Jede
+der vier Seiten fokussiert beim ersten Zeichnen ihre Wurzel; ohne `preventScroll` rollt Chromium
+eine Seite, die nicht ganz ins Fenster passt, ins Bild und schiebt die Leiste hinaus.
+
+```bash
+node berichtescrollprobe.mjs --url http://127.0.0.1:5299 [--fotos /tmp/rollfotos]
+node berichtescrollprobe.mjs --gegenprobe   # Fokus ohne preventScroll nachgestellt: muss rot sein
+```
+
+Rückgabe `0` = kein Verstoß. Gegenprobe rot bei Wirtschaftlichkeit und Bericht (Fenster gerollt um
+153 bis 253 px), Übersicht und Kosten passen mit den synthetischen Ständen ganz ins Fenster.
+
 ## Konditionierungsprobe (Stufe KP2) — Seite `/konditionierungsprobe`
 
 **Zweck.** Die Cloud-Vorabnahme der Oberflächenwellen von KP2 (Entwurf KP2, Abschnitt 7): der echte
