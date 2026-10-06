@@ -216,5 +216,79 @@ namespace EPOS.Kern.Tests
                                                                    new DbParam("@g", GEBAEUDE)), CultureInfo.InvariantCulture);
             Assert.Null(GebaeudeNeulesenHuelle.Angabe(new GebaeudeProjektZeile { IdZ = idZ, HatProjektkopie = true }));
         }
-    }
+    
+        // ---------------------------------------------------------------- HC-5 (F7): Grundriss übernehmen
+
+        private sealed class Fragedialog : IDialogDienst
+        {
+            internal bool Antwort;
+            internal readonly List<string> Fragen = new List<string>();
+            public void Meldung(string text, string titel = null) { }
+            public void Warnung(string text, string titel = null) { }
+            public void Fehler(string text, string titel = null) { }
+            public bool Frage(string text, string titel = null, bool warnend = false, bool vorgabeNein = false)
+            {
+                Fragen.Add(text);
+                return Antwort;
+            }
+            public JaNeinAbbruch Wahl(string text, string titel = null) => JaNeinAbbruch.Abbruch;
+            public void Warten(bool an) { }
+        }
+
+        [Fact]
+        public async Task F7_Grundriss_uebernehmen_nur_bei_passender_Pruefsumme_nach_Rueckfrage_und_einmal()
+        {
+            if (!_db.Vorhanden) return;
+            (GebaeudeProjektZeile _, ImportquelleModel q) = Importiert();
+            string pfad = Probe("ifc4_koerper_nachbarn.ifc");
+            byte[] b = File.ReadAllBytes(pfad);
+            var quelle = new ImportquelleModel
+            {
+                ID = q.ID, ID_Gebaeude = q.ID_Gebaeude, Format = "IFC", Dateiname = Path.GetFileName(pfad),
+                Hash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(b)), Groesse = b.LongLength, Zeitpunkt = q.Zeitpunkt,
+            };
+            IDialogDienst dialogVorher = Dienste.Dialog;
+            var dialog = new Fragedialog();
+            Dienste.Dialog = dialog;
+            try
+            {
+                long Zeilen() => Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Raumgrundriss\" WHERE \"ID_Importquelle\" = ?", new DbParam("@q", q.ID)), CultureInfo.InvariantCulture);
+                Assert.Equal(0, Zeilen());
+
+                // Abweichende Prüfsumme: kein Knopf.
+                GebaeudeNeulesestand anders = await new GebaeudeNeulesenHuelle(ios: false).LesenAsync(Probe("ifc4_haus.ifc"), quelle, "");
+                Assert.Equal(GebaeudeNeulesezustand.HashAbweichend, anders.Zustand);
+                Assert.Null(anders.GrundrissNachtragen);
+
+                GebaeudeNeulesestand s = await new GebaeudeNeulesenHuelle(ios: false).LesenAsync(pfad, quelle, "");
+                Assert.Equal(GebaeudeNeulesezustand.Passend, s.Zustand);
+                Assert.NotNull(s.GrundrissNachtragen);
+                int raeume = s.GrundrissRaeume;
+                Assert.True(raeume >= 2);
+                Assert.Equal(0, Zeilen());   // das Lesen schreibt nichts
+
+                dialog.Antwort = false;
+                Assert.Null(await s.GrundrissNachtragen!());
+                Assert.Single(dialog.Fragen);
+                Assert.Contains(raeume.ToString(CultureInfo.InvariantCulture), dialog.Fragen[0]);
+                Assert.Equal(0, Zeilen());
+
+                dialog.Antwort = true;
+                string hinweis = await s.GrundrissNachtragen!();
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.GEB_NL_GRUNDRISS_GESCHRIEBEN, raeume), hinweis);
+                Assert.Equal(raeume, Zeilen());
+
+                // Gespeichert und gleich: kein Angebot mehr.
+                GebaeudeNeulesestand danach = await new GebaeudeNeulesenHuelle(ios: false).LesenAsync(pfad, quelle, "");
+                Assert.Equal(GebaeudeNeulesezustand.Passend, danach.Zustand);
+                Assert.Null(danach.GrundrissNachtragen);
+                Assert.Equal(0, danach.GrundrissRaeume);
+            }
+            finally
+            {
+                Dienste.Dialog = dialogVorher;
+            }
+        }
+}
 }
