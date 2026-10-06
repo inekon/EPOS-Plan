@@ -724,15 +724,7 @@ namespace WindowsFormsApplication1
                 : new KonditionierungVorlageDaten(v.Id, Oberflaeche(v.Groesse), v.Bezeichner ?? "", v.Beschreibung ?? "",
                                                   Nutzung(v.Nutzung), v.Ausgeliefert);
 
-        private static KonditionierungNutzung Nutzung(string wert)
-        {
-            for (int i = 0; i < DbWerte.KOND_NUTZUNGEN.Count; i++)
-                if (string.Equals(DbWerte.KOND_NUTZUNGEN[i], wert, StringComparison.Ordinal)) return (KonditionierungNutzung)(i + 1);
-            return KonditionierungNutzung.Keine;
-        }
-
-        private static string Nutzung(KonditionierungNutzung n)
-            => n == KonditionierungNutzung.Keine ? null : DbWerte.KOND_NUTZUNGEN[(int)n - 1];
+        private static string Nutzung(string wert) => KonditionierungNutzungSchema.Nutzungstext(wert);
 
         /// <summary>
         /// „Als Vorlage speichern…" — der Inhalt aus dem Arbeitsstand (E54), geschrieben sofort (Festlegung
@@ -750,7 +742,7 @@ namespace WindowsFormsApplication1
                 Ebenenergebnis inhalt = Konditionierungsarbeit.AlsVorlage(Arbeitsstand(s, art, bezug), Ort(o));
                 if (!inhalt.Ok) return new KonditionierungVorlageErgebnis(false, inhalt.Meldung, null);
                 KonditionierungCtrl.Ergebnis e = vorlagen.SpeichernAus(inhalt.Stand, Kern(o.Groesse), eingabe?.Name,
-                                                                       eingabe?.Beschreibung, Nutzung(eingabe?.Nutzung ?? KonditionierungNutzung.Keine),
+                                                                       eingabe?.Beschreibung, Nutzung(eingabe?.Nutzung),
                                                                        out long id);
                 return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(id)) : null);
             }

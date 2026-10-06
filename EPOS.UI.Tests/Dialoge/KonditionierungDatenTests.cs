@@ -241,6 +241,9 @@ public sealed class KonditionierungDatenTests
         VorlageLoeschen = _ => VORLAGE_GUT,
         VorlageDuplizieren = (_, _) => VORLAGE_GUT,
         VorlageKopieren = (_, _) => VORLAGE_GUT,
+        // Stufe NP3b: Nutzungsprofil übernehmen braucht Liste und Schritt.
+        Nutzungsprofile = () => Array.Empty<KonditionierungProfilwahl>(),
+        ProfilUebernehmen = (_, _) => KonditionierungProfilergebnis.Fehler(""),
         Kopierziele = _ => Array.Empty<KonditionierungKopierziel>(),
         Zeitfenster = (s, _, _) => Gut(s),
         Feiertage = (s, _, _) => Gut(s),
@@ -292,6 +295,11 @@ public sealed class KonditionierungDatenTests
         {
             VorlageKopieren = (_, _) => VORLAGE_GUT,
             Kopierziele = _ => Array.Empty<KonditionierungKopierziel>()
+        },
+        KonditionierungHandlung.ProfilUebernehmen => new()
+        {
+            Nutzungsprofile = () => Array.Empty<KonditionierungProfilwahl>(),
+            ProfilUebernehmen = (_, _) => KonditionierungProfilergebnis.Fehler("")
         },
         _ => throw new ArgumentOutOfRangeException(nameof(h))
     };
@@ -389,9 +397,13 @@ public sealed class KonditionierungDatenTests
         Assert.Equal(DbWerte.KOND_ZEILEN, Enum.GetNames<KonditionierungZeile>().Select(n => n.ToUpperInvariant()));
         Assert.Equal(DbWerte.KOND_ARTEN, Enum.GetNames<KonditionierungPeriodenart>().Select(n => n.ToUpperInvariant()));
         Assert.Equal(Enum.GetNames<Angabeart>(), Enum.GetNames<KonditionierungAngabe>());
-        Assert.Equal(DbWerte.KOND_NUTZUNGEN,
-                     Enum.GetNames<KonditionierungNutzung>().Where(n => n != nameof(KonditionierungNutzung.Keine))
-                         .Select(n => n.ToUpperInvariant()));
+        // NP3b (NP-F15): Die Nutzung ist Text; die vier alten Kennungen zeigt die Anzeige übersetzt, jeder andere Text
+        // (ein Profilname) steht, wie er ist.
+        var t = new KonditionierungTexte();
+        Assert.Equal(new[] { t.NutzungWohnen, t.NutzungBuero, t.NutzungSchule, t.NutzungSonstige },
+                     DbWerte.KOND_NUTZUNGEN.Select(t.Nutzungsanzeige));
+        Assert.Equal("Gastronomie", t.Nutzungsanzeige(" Gastronomie "));
+        Assert.Equal(t.NutzungKeine, t.Nutzungsanzeige(null));
     }
 
     [Fact]

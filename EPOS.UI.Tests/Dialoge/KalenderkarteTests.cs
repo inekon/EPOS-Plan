@@ -352,8 +352,8 @@ public class KalenderkarteTests : EposBunitContext
         abfrage.QuerySelector(".epos-kond-vorlage-name input")!.Input(name);
         abfrage = Karte(cut, g).QuerySelector(".epos-kond-vorlage-speichern")!;
         abfrage.QuerySelector("textarea")!.Input(beschreibung);
-        IElement nutzungen = Karte(cut, g).QuerySelector(".epos-kond-vorlage-speichern select")!;
-        nutzungen.Change(nutzungen.QuerySelectorAll("option").First(o => o.TextContent.Trim() == nutzung).GetAttribute("value")!);
+        // NP3b (NP-F15): die Nutzung ist freier Text.
+        Karte(cut, g).QuerySelector(".epos-kond-vorlage-nutzung input")!.Input(nutzung);
     }
 
     [Fact]
@@ -374,7 +374,7 @@ public class KalenderkarteTests : EposBunitContext
         // Geschrieben ist sofort - in die Ablage, mit Nutzung, ohne Nennwert; die Zeile sagt es.
         KonditionierungsvorlageCtrl.Vorlage neu = ablage.Liste(Konditionierungsgroesse.Personen).Single(v => v.Bezeichner == "Kontor");
         Assert.False(neu.Ausgeliefert);
-        Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, neu.Nutzung);
+        Assert.Equal("Büro", neu.Nutzung);   // freier Text (NP-F15); Bestandswerte behalten ihre Kennung
         Assert.Equal("eigene Anwesenheit", neu.Beschreibung);
         Konditionierungsstand inhalt = ablage.Inhalt(neu.Id, out _).Inhalt;
         Assert.Equal(0.8, inhalt.Vorgabe(Konditionierungsgroesse.Personen, DbWerte.KOND_ZEILE_TAG).Wert, 10);
@@ -392,7 +392,7 @@ public class KalenderkarteTests : EposBunitContext
         Assert.Empty(_meldungen);
 
         // Aus der Heizspalte: die Saison bleibt dem Objekt (E54).
-        AlsVorlageAusfuellen(cut, KonditionierungGroesse.Heizen, "Mit Saison", "", "ohne Angabe");
+        AlsVorlageAusfuellen(cut, KonditionierungGroesse.Heizen, "Mit Saison", "", "");
         Karte(cut, KonditionierungGroesse.Heizen).QuerySelector("button.epos-kond-vorlage-schreiben")!.Click();
         KonditionierungsvorlageCtrl.Vorlage heiz = ablage.Liste(Konditionierungsgroesse.Heizsoll).Single(v => v.Bezeichner == "Mit Saison");
         Assert.Null(heiz.Nutzung);

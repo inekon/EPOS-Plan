@@ -113,6 +113,7 @@
                                Uebernehmen="@Rueckruf(KonditionierungHandlung.VorlageUebernehmen, () => Bearbeitung.VorlageUebernehmen(groesse))"
                                UebernehmenSperre="@(groesse == KonditionierungGroesse.Kuehlen ? Kuehlsperre : null)"
                                Verweigert="Verweigert"
+                               Nutzungsvorschlaege="@Bearbeitung.Nutzungsvorschlaege()"
                                AlsVorlageSpeichern="@(Bearbeitung.Bietet(KonditionierungHandlung.AlsVorlageSpeichern)
                                                       ? e => Bearbeitung.AlsVorlageSpeichern(groesse, e) : null)"
                                VorlageGespeichert="VorlagenGeaendert" Abgelehnt="Abgelehnt"

@@ -46238,5 +46238,8 @@ chart</value>
   <data name="RNP_LBL_VORSCHAU_GROESSE" xml:space="preserve">
     <value>Quantity of the preview</value>
   </data>
+  <data name="RNP_LBL_NUTZUNG_VORSCHLAG" xml:space="preserve">
+    <value>Suggestion from the catalogue</value>
+  </data>
 </root>
 

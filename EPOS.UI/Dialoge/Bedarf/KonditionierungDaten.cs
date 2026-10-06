@@ -111,25 +111,6 @@ public enum KonditionierungAngabe
     WieWochentag = 3
 }
 
-/// <summary>Die Nutzung einer Vorlage (<c>DbWerte.KOND_NUTZUNGEN</c>; <see cref="Keine"/> = ohne Angabe).</summary>
-public enum KonditionierungNutzung
-{
-    /// <summary>Ohne Angabe (Spalte leer).</summary>
-    Keine = 0,
-
-    /// <summary>Wohnen.</summary>
-    Wohnen = 1,
-
-    /// <summary>Büro.</summary>
-    Buero = 2,
-
-    /// <summary>Schule.</summary>
-    Schule = 3,
-
-    /// <summary>Sonstige.</summary>
-    Sonstige = 4
-}
-
 /// <summary>Die Quelle des Werkzeugs „Zeitstruktur übernehmen" (Entwurf KP2, Festlegung 11).</summary>
 public enum KonditionierungZeitstruktur
 {
@@ -609,10 +590,10 @@ public sealed record KonditionierungErgebnis(bool Ok, string Meldung, Konditioni
 /// <param name="Groesse">Die eine Größe der Vorlage (P11).</param>
 /// <param name="Name">Der Name, eindeutig je Größe; Daten, nicht übersetzt (Glossar § 10).</param>
 /// <param name="Beschreibung">Die Beschreibung; leer = ohne.</param>
-/// <param name="Nutzung">Die Nutzung.</param>
+/// <param name="Nutzung">Die Nutzung als Text (NP-F15) — ein Profilname oder eine der vier alten Kennungen; <c>null</c> = ohne Angabe.</param>
 /// <param name="Ausgeliefert">Gehört die Vorlage zur Auslieferung (Schloss)?</param>
 public sealed record KonditionierungVorlageDaten(long Id, KonditionierungGroesse Groesse, string Name,
-                                                 string Beschreibung, KonditionierungNutzung Nutzung,
+                                                 string Beschreibung, string? Nutzung,
                                                  bool Ausgeliefert);
 
 /// <summary>
@@ -624,7 +605,9 @@ public sealed record KonditionierungVorlageDaten(long Id, KonditionierungGroesse
 public sealed record KonditionierungFeiertag(string Regel, string Name);
 
 /// <summary>Was „Als Vorlage speichern…" erfragt (Teilkonzept 7.4): Name, Beschreibung, Nutzung.</summary>
-public sealed record KonditionierungVorlageEingabe(string Name, string Beschreibung, KonditionierungNutzung Nutzung);
+/// <remarks>Die Nutzung ist freier Text, höchstens 120 Zeichen (Konzept Nutzungsprofile NP-F15) — ein Profilname, eine
+/// der vier alten Kennungen oder leer (<c>null</c> = ohne Angabe).</remarks>
+public sealed record KonditionierungVorlageEingabe(string Name, string Beschreibung, string? Nutzung);
 
 /// <summary>
 /// Ein erlaubtes Ziel von „Kopieren nach …" (Teilkonzept 3.5, 7.4) — der Dialog zeigt nur diese. Wo die

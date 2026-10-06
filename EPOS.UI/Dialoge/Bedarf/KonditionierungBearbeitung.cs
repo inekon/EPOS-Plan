@@ -1284,6 +1284,13 @@ public sealed class KonditionierungBearbeitung
         return _profile;
     }
 
+    /// <summary>
+    /// <b>Die Vorschläge der Nutzung</b> für „Als Vorlage speichern…" (NP-F15): die Namen des Katalogs der Nutzungsprofile,
+    /// jeder einmal; <c>null</c> ohne den Katalog — dann bleibt der freie Text.
+    /// </summary>
+    public IReadOnlyList<string>? Nutzungsvorschlaege()
+        => MitProfilen ? Profile().Select(p => p.Name).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().ToList() : null;
+
     /// <summary>Liest die Liste beim nächsten Zugriff neu — nach dem Blatt „Nutzungsprofile".</summary>
     public void ProfileNeuLaden()
     {

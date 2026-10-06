@@ -88437,6 +88437,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus dem Katalog ähnelt.
+        /// </summary>
+        public static string RNP_LBL_NUTZUNG_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("RNP_LBL_NUTZUNG_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Personen im Betrieb ähnelt.
         /// </summary>
         public static string RNP_LBL_PERSONEN_ANTEIL {

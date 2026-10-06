@@ -342,9 +342,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,
         // Beschreibung und Nutzung der Abfrage „Als Vorlage speichern…“ (Festlegung 13: eine Handlung mit
         // eigenem OK, die sofort schreibt).
-        new("Kalenderkarte", 4, "die Auswahlliste der Vorlagen führt die Feldkarte als kond_<größe>_vorlage mit der " +
-            "Aktion von „Übernehmen“; Name, Beschreibung und Nutzung gehören zur Handlung „Als Vorlage " +
-            "speichern…“, die mit eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
+        // NP3b (NP-F15): die Nutzung der Abfrage ist freier Text, dazu die Vorschläge aus dem Katalog der
+        // Nutzungsprofile als Suchauswahl, die den Text setzt: 4 → 5.
+        new("Kalenderkarte", 5, "die Auswahlliste der Vorlagen führt die Feldkarte als kond_<größe>_vorlage mit der " +
+            "Aktion von „Übernehmen“; Name, Beschreibung, Nutzung (freier Text) und der Vorschlag aus dem Katalog " +
+            "gehören zur Handlung „Als Vorlage speichern…“, die mit eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
         // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung; dazu
         // Zielgröße, Name, Komfort- und Absenksollwert der Abfrage „Kopieren nach …“ (Teilkonzept 3.5, 7.4): 4 → 5.
         // NP3a (Konzept Nutzungsprofile 6.1, NP-F3): die Felder des Profileditors und der Zuordnung stehen am

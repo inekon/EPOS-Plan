@@ -141,6 +141,7 @@ namespace WindowsFormsApplication1
             t.LabelVorlageName = Text_("KOND_LBL_VORLAGE_NAME", t.LabelVorlageName);
             t.LabelVorlageBeschreibung = Text_("KOND_LBL_VORLAGE_BESCHREIBUNG", t.LabelVorlageBeschreibung);
             t.LabelVorlageNutzung = Text_("KOND_LBL_VORLAGE_NUTZUNG", t.LabelVorlageNutzung);
+            t.LabelNutzungVorschlag = Text_("RNP_LBL_NUTZUNG_VORSCHLAG", t.LabelNutzungVorschlag);
             t.NutzungWohnen = Text_("KOND_LBL_NUTZUNG_WOHNEN", t.NutzungWohnen);
             t.NutzungBuero = Text_("KOND_LBL_NUTZUNG_BUERO", t.NutzungBuero);
             t.NutzungSchule = Text_("KOND_LBL_NUTZUNG_SCHULE", t.NutzungSchule);
