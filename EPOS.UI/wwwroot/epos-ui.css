@@ -14565,6 +14565,159 @@ td.epos-vorlage-katalogbeschreibung {
     }
 }
 
+/* ===================================================================== */
+/*  DAS BLATT „NUTZUNGSPROFILE" (Stufe NP3a; Konzept Nutzungsprofile 6.1) */
+/* ===================================================================== */
+/* Drei Bereiche: Katalogbaum, Profileditor und Vorschau. Ab 900 CSS-Pixeln
+   Behaelterbreite stehen sie nebeneinander (Baum und Vorschau schmal, der
+   Editor nimmt den Rest), darunter untereinander — dieselbe Schwelle wie
+   Katalograhmen und Stammblatt. Jeder Bereich rollt fuer sich. */
+.epos-raumnutzung {
+    container-type: inline-size;
+    container-name: epos-raumnutzung;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-raumnutzung-sofort {
+    margin: 0;
+}
+
+.epos-raumnutzung-reiter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-raumnutzung-meldung {
+    margin: 0;
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-raumnutzung-sperrzeile {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-raumnutzung-spalten {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-raumnutzung-baum,
+.epos-raumnutzung-editor,
+.epos-raumnutzung-vorschau {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-raumnutzung-ueberschrift {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.epos-raumnutzung-kategorien,
+.epos-raumnutzung-profile {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-raumnutzung-profile {
+    padding-left: var(--epos-rand);
+}
+
+.epos-raumnutzung-kategorie,
+.epos-raumnutzung-profil {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-raumnutzung-kategorie {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.epos-raumnutzung-art {
+    color: var(--epos-text-leise);
+    font-size: 0.85rem;
+}
+
+.epos-raumnutzung-profil-waehlen[aria-pressed="true"] {
+    font-weight: 600;
+    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
+    padding-left: 8px;
+}
+
+.epos-raumnutzung-baumknoepfe,
+.epos-raumnutzung-editorknoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-raumnutzung-leer,
+.epos-raumnutzung-kategorie-leer,
+.epos-raumnutzung-ohnewahl,
+.epos-raumnutzung-ohnewerte,
+.epos-raumnutzung-lesend,
+.epos-raumnutzung-nurlesend,
+.epos-raumnutzung-nichtbelegt,
+.epos-raumnutzung-hinweis,
+.epos-raumnutzung-vorschau-leer {
+    margin: 0;
+}
+
+.epos-raumnutzung-vorschau-groesse {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.epos-raumnutzung-zeilenbild,
+.epos-raumnutzung-stunden,
+.epos-raumnutzung-vorschauzeilen,
+.epos-raumnutzung-zuordnungen {
+    width: 100%;
+}
+
+.epos-raumnutzung-zuordnung-profil {
+    max-width: 100%;
+}
+
+.epos-raumnutzung-zuordnung-neu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+@container epos-raumnutzung (min-width: 900px) {
+    .epos-raumnutzung-spalten {
+        grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr) minmax(220px, 1fr);
+    }
+}
+
+@container epos-raumnutzung (max-width: 599.98px) {
+    .epos-raumnutzung-zuordnungen td.epos-zellenaktionen {
+        white-space: normal;
+    }
+
+    .epos-raumnutzung-zuordnungen .epos-zellenaktionen-inhalt {
+        flex-wrap: wrap;
+    }
+}
+
 /* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
@@ -14831,158 +14984,5 @@ td.epos-vorlage-katalogbeschreibung {
 
     .epos-projektkopf .epos-formularraster {
         grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-/* ===================================================================== */
-/*  DAS BLATT „NUTZUNGSPROFILE" (Stufe NP3a; Konzept Nutzungsprofile 6.1) */
-/* ===================================================================== */
-/* Drei Bereiche: Katalogbaum, Profileditor und Vorschau. Ab 900 CSS-Pixeln
-   Behaelterbreite stehen sie nebeneinander (Baum und Vorschau schmal, der
-   Editor nimmt den Rest), darunter untereinander — dieselbe Schwelle wie
-   Katalograhmen und Stammblatt. Jeder Bereich rollt fuer sich. */
-.epos-raumnutzung {
-    container-type: inline-size;
-    container-name: epos-raumnutzung;
-    display: flex;
-    flex-direction: column;
-    gap: var(--epos-rand);
-    min-width: 0;
-}
-
-.epos-raumnutzung-sofort {
-    margin: 0;
-}
-
-.epos-raumnutzung-reiter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.epos-raumnutzung-meldung {
-    margin: 0;
-    color: var(--epos-stufe-fehler);
-}
-
-.epos-raumnutzung-sperrzeile {
-    margin: 0;
-    color: var(--epos-text-leise);
-}
-
-.epos-raumnutzung-spalten {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--epos-rand);
-    min-width: 0;
-}
-
-.epos-raumnutzung-baum,
-.epos-raumnutzung-editor,
-.epos-raumnutzung-vorschau {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-}
-
-.epos-raumnutzung-ueberschrift {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.epos-raumnutzung-kategorien,
-.epos-raumnutzung-profile {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.epos-raumnutzung-profile {
-    padding-left: var(--epos-rand);
-}
-
-.epos-raumnutzung-kategorie,
-.epos-raumnutzung-profil {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    min-height: var(--epos-touchziel);
-}
-
-.epos-raumnutzung-kategorie {
-    flex-direction: column;
-    align-items: stretch;
-}
-
-.epos-raumnutzung-art {
-    color: var(--epos-text-leise);
-    font-size: 0.85rem;
-}
-
-.epos-raumnutzung-profil-waehlen[aria-pressed="true"] {
-    font-weight: 600;
-    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
-    padding-left: 8px;
-}
-
-.epos-raumnutzung-baumknoepfe,
-.epos-raumnutzung-editorknoepfe {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.epos-raumnutzung-leer,
-.epos-raumnutzung-kategorie-leer,
-.epos-raumnutzung-ohnewahl,
-.epos-raumnutzung-ohnewerte,
-.epos-raumnutzung-lesend,
-.epos-raumnutzung-nurlesend,
-.epos-raumnutzung-nichtbelegt,
-.epos-raumnutzung-hinweis,
-.epos-raumnutzung-vorschau-leer {
-    margin: 0;
-}
-
-.epos-raumnutzung-vorschau-groesse {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-}
-
-.epos-raumnutzung-zeilenbild,
-.epos-raumnutzung-stunden,
-.epos-raumnutzung-vorschauzeilen,
-.epos-raumnutzung-zuordnungen {
-    width: 100%;
-}
-
-.epos-raumnutzung-zuordnung-profil {
-    max-width: 100%;
-}
-
-.epos-raumnutzung-zuordnung-neu {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-@container epos-raumnutzung (min-width: 900px) {
-    .epos-raumnutzung-spalten {
-        grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr) minmax(220px, 1fr);
-    }
-}
-
-@container epos-raumnutzung (max-width: 599.98px) {
-    .epos-raumnutzung-zuordnungen td.epos-zellenaktionen {
-        white-space: normal;
-    }
-
-    .epos-raumnutzung-zuordnungen .epos-zellenaktionen-inhalt {
-        flex-wrap: wrap;
     }
 }
