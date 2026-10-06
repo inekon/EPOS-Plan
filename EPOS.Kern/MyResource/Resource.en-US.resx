@@ -46280,5 +46280,8 @@ chart</value>
   <data name="RNP_KI_OHNE_BLATT" xml:space="preserve">
     <value>The “Usage profiles” sheet is not open — choose the “Usage profiles…” button first.</value>
   </data>
+  <data name="RNP_MSG_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>from usage profile {0}</value>
+  </data>
 </root>
 

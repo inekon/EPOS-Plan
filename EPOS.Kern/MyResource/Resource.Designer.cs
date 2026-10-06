@@ -88779,6 +88779,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string RNP_MSG_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_MSG_HERKUNFT_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gehört zur Auslieferung — nur duplizieren ähnelt.
         /// </summary>
         public static string RNP_TXT_AUSGELIEFERT {

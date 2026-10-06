@@ -46287,5 +46287,8 @@ Chart</value>
   <data name="RNP_KI_OHNE_BLATT" xml:space="preserve">
     <value>Das Blatt „Nutzungsprofile“ ist nicht geöffnet — zuerst den Knopf „Nutzungsprofile…“ wählen.</value>
   </data>
+  <data name="RNP_MSG_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>aus Nutzungsprofil {0}</value>
+  </data>
 </root>
 

@@ -112,6 +112,66 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Rote Probe NP3c: <b>Profil Büro und Vorlage Büro</b> — drei EPOS-Muster (Wohnen, Büro, Schule) tragen mit Absicht
+        /// den Namen einer ausgelieferten Konditionierungsvorlage (<see cref="RaumnutzungSaat.BUERO"/>). Die Herkunft eines
+        /// übernommenen Kalenders nannte nur den Namen; der OK-Weg fand darüber zuerst die gleichnamige Vorlage (oder behielt
+        /// die Nutzung des alten Kalenders gleicher Herkunft) und schrieb deren alte Kennung „BUERO". Die Herkunft bezeichnet
+        /// das Profil jetzt über ihre Art: Die Nutzung des Kalenders ist der Profilname, und die Bemerkung sagt „aus
+        /// Nutzungsprofil …". Die Vorlage bleibt bei ihrer Herkunft und Nutzung.
+        /// </summary>
+        [Fact]
+        public void Profil_Buero_und_Vorlage_Buero_die_Nutzung_des_Kalenders_ist_der_Profilname()
+        {
+            if (!_db.Vorhanden) return;
+            var (gebaeude, zone) = Kopie("NP3c Herkunft");
+            Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, RaumnutzungCtrl.Kalendernutzung(gebaeude, zone));   // der Bestand der Zone
+            Assert.NotEmpty(new KonditionierungsvorlageCtrl().Liste(Konditionierungsgroesse.Heizsoll)
+                                .Where(v => v.Bezeichner == RaumnutzungSaat.BUERO));                  // die gleichnamige Vorlage
+
+            Raumnutzungsprofil profil = Muster(RaumnutzungSaat.BUERO);
+            var kond = new KonditionierungCtrl();
+            Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(gebaeude, null, out string m);
+            Assert.True(stand != null, m);
+            RaumnutzungCtrl.Anwendung a = RaumnutzungCtrl.ProfilAnwenden(stand, profil, zone, 120.0);
+            Assert.True(a.Ok, a.Meldung);
+            Konditionierungszone ziel = a.Stand.Zonen.Single(z => z.Id == zone);
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                if (ziel.Stand.Kalender(g) != null && a.Posten.Any(p => p.Uebernommen && p.Groesse == g))
+                {
+                    Assert.True(ziel.Stand.Herkunft(g).IstProfil, g.ToString());
+                    Assert.Equal(RaumnutzungSaat.BUERO, ziel.Stand.Herkunft(g).Vorlage);
+                }
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                Assert.True(kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Gebaeude(gebaeude), a.Stand.Gebaeude, true, out _).Ok);
+                foreach (Konditionierungszone z in a.Stand.Zonen)
+                    Assert.True(kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Zone(gebaeude, z.Id), z.Stand, true, out _).Ok);
+                v.Commit();
+            }
+
+            List<string> nutzungen = Nutzungen(gebaeude, zone);
+            Assert.Equal(a.Posten.Count(p => p.Uebernommen), nutzungen.Count);
+            Assert.All(nutzungen, n => Assert.Equal(RaumnutzungSaat.BUERO, n));
+            Assert.Equal(RaumnutzungSaat.BUERO, RaumnutzungCtrl.Kalendernutzung(gebaeude, zone));
+
+            // Zurückgelesen bleibt die Art der Herkunft erhalten — ein zweites OK schreibt nichts um.
+            Konditionierungsarbeitsstand wieder = kond.ArbeitsstandLesen(gebaeude, null, out m);
+            Assert.True(wieder != null, m);
+            Konditionierungszone gelesen = wieder.Zonen.Single(z => z.Id == zone);
+            Assert.Contains(Konditionierungsgroessen.Alle, g => gelesen.Stand.Herkunft(g).IstProfil
+                                                                && gelesen.Stand.Herkunft(g).Vorlage == RaumnutzungSaat.BUERO);
+            string bemerkung = Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Bemerkung FROM Tab_Konditionierungskalender WHERE ID_Gebaeude = ? AND ID_Zone = ? AND Nutzung = ? LIMIT 1",
+                new DbParam("@g", gebaeude), new DbParam("@z", zone), new DbParam("@n", RaumnutzungSaat.BUERO)), CultureInfo.InvariantCulture);
+            Kalenderherkunft h = Kalenderherkunft.AusBemerkung(bemerkung);
+            Assert.True(h.IstProfil, bemerkung);
+            Assert.Equal(new Kalenderherkunft(RaumnutzungSaat.BUERO, null, istProfil: true).Bemerkung(), bemerkung);
+            Assert.False(Kalenderherkunft.AusBemerkung(new Kalenderherkunft(RaumnutzungSaat.BUERO, null).Bemerkung()).IstProfil);
+        }
+
+        /// <summary>
         /// Rote Probe NP-F10 im Datenbankweg: Ohne Maße liest <c>ProfilUebernehmen</c> Fläche und lichte Höhe des Ziels
         /// selbst (<see cref="RaumnutzungCtrl.Zielmasse"/>); Außenluft in m³/(h·m²) wird mit der Höhe umgerechnet, ohne
         /// Höhe benannt nicht gesetzt.
