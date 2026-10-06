@@ -538,9 +538,13 @@ unter `Referenzlaeufe/Normzahlen/`. Jeder verletzte Posten bricht mit Rückgabe 
 `Katalogpaket.json`: Es schreibt zuerst den Auslieferungsstand in der Vorlage fest (Schlüssel und
 Prüfsumme jedes gesperrten Satzes der Stufe-1-Kataloge, `Tab_Applikation.Katalogfassung`) und legt
 dieselben Sätze samt Kennlinien als Paket daneben. Die Fassung kommt aus `--katalogfassung <n>`
-(Vorgabe: das Datum des Laufs als JJJJMMTT) und muss mit jeder Auslieferung wachsen — nur ein
-neueres Paket gleicht beim Anwender ab. `build-setup.ps1` prüft nach dem Werkzeuglauf, dass die
-Datei da ist; das `.iss` nimmt sie in `[Files]` mit. Format und Regeln:
+und muss mit jeder Auslieferung wachsen — nur ein neueres Paket gleicht beim Anwender ab.
+`build-setup.ps1` gibt sie immer mit: als `JJJJMMTTnn` aus `-Katalogfassung <n>` bzw.
+`EPOS_KATALOGFASSUNG` oder, ohne Angabe, als nächsten Wert aus dem Freigaberegister
+[`Setup/Katalogfassungen.txt`](../../Setup/Katalogfassungen.txt) (Abschnitt 6.5.4, E1 und E4).
+Das Skript löscht ein altes Paket vor dem Werkzeuglauf und prüft danach, dass die Datei da ist und
+die Fassung des Laufs trägt; das `.iss` nimmt sie in `[Files]` mit. Ohne Werkzeugvorgabe gilt das
+Datum des Laufs als `JJJJMMTT`. Format und Regeln:
 [`Konzept_Simulationsablauf_EPOS-Plan.md`](Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 20.
 
 Der Stand **entsteht vor jedem Übersetzungslauf neu** — er liegt deshalb NICHT im Repository
@@ -549,13 +553,13 @@ Der Stand **entsteht vor jedem Übersetzungslauf neu** — er liegt deshalb NICH
 Werkzeugs (Rückgabe 0 = erzeugt und abgenommen, sonst Grund auf stderr und keine Zieldatei):
 
 ```powershell
-dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle.sqlite> <ziel.sqlite> [--beispiele …] [--trocken]
+dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle.sqlite> <ziel.sqlite> [--beispiele …] [--katalogfassung <n>] [--trocken]
 ```
 
 `build-setup.ps1` ruft es selbst auf, unmittelbar vor `ISCC`:
 
 ```powershell
-.\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite
+.\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite [-Katalogfassung 2026100601] [-Probe]
 ```
 
 Die Quelle kommt aus dem Parameter `-Quelldatenbank` oder aus der Umgebungsvariablen
@@ -641,18 +645,27 @@ und in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 8a. Hier geht es nur 
   `EPOS-Katalogpaket` in Formatversion 2 (lesbar ab 1), UTF-8 ohne BOM, LF und deterministisch. Ab
   20 MB warnt das Werkzeug.
 - **Fassung:** `--katalogfassung <n>` (`Werkzeuge/Auslieferungsvorlage/Argumente.cs`) ist eine
-  ganze Zahl ab 1. Ohne Angabe gilt das Datum des Laufs als `JJJJMMTT`. Der Abgleich beim Anwender
+  ganze Zahl ab 1 (`int`, ebenso `Tab_Applikation.Katalogfassung` im Kern). Ohne Angabe gilt das
+  Datum des Laufs als `JJJJMMTT`; die Setup-Kette gibt sie immer als `JJJJMMTTnn` mit (E1). Der Abgleich beim Anwender
   läuft nur, wenn diese Zahl größer ist als die Fassung der Datenbank. Das ist **nicht** dieselbe
   Zahl wie die Katalogfassung der Word-Vorlagen (`Vorlagenfeldkatalog.KatalogfassungWord`,
   `Werkzeuge/Berichtsvorlage --katalogfassung`, Eigenschaft `EPOS.Katalogfassung` in `custom.xml`).
 - **Ablage:** Das Paket liegt neben der Vorlage unter `Setup/Vorlage/Katalogpaket.json`
   (`Katalogpaket.Pfad`). Es steht in `.gitignore`, liegt nicht im Repository und nicht in LFS. Die
-  CI lädt es nicht als eigenes Artefakt hoch, der Prüfbericht `Kenndaten.sqlite.bericht.txt` mit
-  dem Abschnitt 4b landet aber im Artefakt `setup-protokoll`.
-- **`Setup/build-setup.ps1`:** Das Skript ruft das Werkzeug ohne `--katalogfassung` auf, es gilt
-  also die Datumsvorgabe. Nach dem Lauf prüft es, dass `Katalogpaket.json` vorhanden ist. Vor dem
-  Lauf löscht es nur `Kenndaten.sqlite`, nicht das alte Paket. Im Trockenlauf (`-VorlageNurPruefen`)
-  prüft es das Paket nicht.
+  CI lädt es nicht hoch; ins Artefakt `setup-protokoll` kommen der Prüfbericht
+  `Kenndaten.sqlite.bericht.txt` mit dem Abschnitt 4b und `katalogpaket.txt` mit dem Kopf des
+  Pakets (Format, Formatversion, Fassung, Satzzahl je Tabelle).
+- **`Setup/build-setup.ps1`:** Das Skript bestimmt die Fassung des Katalogpakets
+  (`-Katalogfassung`, `EPOS_KATALOGFASSUNG` oder der nächste Wert aus dem Freigaberegister) und
+  reicht sie als `--katalogfassung` an das Werkzeug. Vor dem Lauf löscht es `Kenndaten.sqlite`
+  und `Katalogpaket.json`, nach dem Lauf prüft es, dass das Paket vorhanden ist und die Fassung des
+  Laufs im Kopf trägt. Im Trockenlauf (`-VorlageNurPruefen`) bleiben beide Dateien, und es prüft
+  Vorlage und Kopf des vorhandenen Pakets.
+- **Freigaberegister:** `Setup/Katalogfassungen.txt` führt je ausgelieferter Fassung eine Zeile
+  `<JJJJMMTTnn> <JJJJ-MM-TT> <Programmversion>`, streng wachsend. Außerhalb eines Probelaufs
+  (`-Probe`, Trockenlauf) bricht das Skript ab, wenn die Fassung nicht größer ist als jede
+  eingetragene und als die heutige Datumsfassung `JJJJMMTT`, und trägt sie nach Übersetzen und
+  Signieren ein. Der CI-Setup-Lauf ist ein Probelauf.
 - **`Setup/EPOS-Plan.iss`:** `#define Katalogpaket` bricht mit `#error` ab, wenn die Datei fehlt.
   Die Datei steht in `[Files]` mit `DestDir: "{app}\Vorlage"`, `Flags: ignoreversion` und
   `Components: programm`. Ein Update ersetzt das Paket mit dem Programm, die Deinstallation nimmt
@@ -679,8 +692,12 @@ und in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 8a. Hier geht es nur 
     Schlüssel und Prüfsummen des Pakets) läuft in `kern.yml`.
   - `EPOS.Kern.Tests/KatalogabgleichTests` und `EPOS.UI.Tests/Dialoge/KatalogabgleichDialogTests`
     halten den Abgleich.
-  - `EPOS.Kern.Tests/KatalogpaketAuslieferungWacheTests` hält nur die Ordner der Zapfprofilpakete
-    im `.iss` (`Katalogpaket_frei`, `Katalogpaket_A100`), nicht `Katalogpaket.json`.
+  - `EPOS.Kern.Tests/KatalogpaketAuslieferungWacheTests` hält die Ordner der Zapfprofilpakete
+    im `.iss` (`Katalogpaket_frei`, `Katalogpaket_A100`).
+  - `EPOS.Kern.Tests/KatalogpaketSetupWacheTests` hält den Lieferweg von `Katalogpaket.json`:
+    Define, `#error` und `[Files]`-Eintrag im `.iss`, Löschen, Durchreichen und Prüfen in
+    `build-setup.ps1`, die `.gitignore`-Zeile, das Freigaberegister samt Regel und den
+    Kopf-Schritt im Job `installer`.
   - `AuslieferungsvorlagenWacheTests` und `BerichtsvorlageDateiWacheTests` halten die Word- und
     Excel-Vorlagen und deren Lieferwege, nicht das Katalogpaket.
 - **ReadOnly-Sätze für Heizkessel und PV:** Das Werkzeug meldet im Prüfbericht unter Schritt 3 je
@@ -693,17 +710,12 @@ und in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 8a. Hier geht es nur 
 
 #### 6.5.2 Lücke
 
-1. **Fassung ohne Freigaberegel:** Zwei Setup-Läufe am selben Tag ergeben dieselbe Fassung, auch
-   wenn sich der Inhalt unterscheidet. Eine Installation vom Vormittag gleicht dann mit dem
-   Nachmittagsstand nicht ab. Nirgends ist festgehalten, welche Fassung zuletzt ausgeliefert wurde,
-   und nichts verhindert, dass ein späteres Setup eine kleinere Fassung trägt.
-2. **Altes Paket kann durchrutschen:** `build-setup.ps1` löscht ein liegen gebliebenes
-   `Katalogpaket.json` nicht. Die Prüfung „Datei vorhanden“ besteht deshalb auch mit einem Paket aus
-   einem früheren Lauf. Ob Fassung und Sätze des Pakets zur Vorlage im selben Ordner passen, prüft
-   nach dem Schreiben niemand.
-3. **Keine Wache für den Lieferweg:** Define, `#error` und `[Files]`-Eintrag von
-   `Katalogpaket.json` im `.iss` sowie Löschen, Prüfen und Durchreichen in `build-setup.ps1` hält
-   keine Wache. Das `.iss` mit diesem Eintrag ist noch nie übersetzt worden.
+1. **Fassung ohne Freigaberegel:** geschlossen mit Schritt 4 (Freigaberegister, `JJJJMMTTnn`).
+2. **Paket und Vorlage im selben Ordner:** `build-setup.ps1` löscht ein altes Paket und prüft die
+   Fassung im Kopf (Schritt 1). Ob die Sätze des Pakets zu den gesperrten Sätzen der Vorlage
+   passen, prüft nach dem Schreiben niemand (Schritt 3).
+3. **Lieferweg nie übersetzt:** Die Wache hält ihn (Schritt 1), das `.iss` mit dem Eintrag ist aber
+   noch nie übersetzt worden (Schritt 7).
 4. **Prüfbericht ohne ReadOnly-Bilanz:** Je Registerkatalog fehlen drei Angaben: „Zeilen in der
    Vorlage, davon gesperrt mit Schlüssel (im Paket), ungesperrt (ohne Schlüssel, nie
    abgeglichen)“. Es fehlt auch eine Warnung, wenn ein Katalog Zeilen hat, aber keinen Paketsatz,
@@ -725,7 +737,7 @@ und in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 8a. Hier geht es nur 
 Jeder Schritt ist ein eigener Auftrag. Agenten bauen, prüfen den SQL-Dialekt und laufen die
 betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Merge.
 
-1. **Paket frisch erzeugen und durchreichen** (`Setup/build-setup.ps1`)
+1. **Paket frisch erzeugen und durchreichen** (`Setup/build-setup.ps1`) — **umgesetzt**
    - **Änderung:** Vor dem Werkzeuglauf auch `Setup/Vorlage/Katalogpaket.json` löschen (nicht im
      Trockenlauf). Neuer Parameter `-Katalogfassung <n>` (Umgebungsvariable
      `EPOS_KATALOGFASSUNG`), der als `--katalogfassung` an das Werkzeug geht. Der Trockenlauf prüft
@@ -762,11 +774,12 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
    - **Tests:** K6 (Rücklesen) und K7 (Quelle mit älterem Schemastand) in `KatalogpaketVorlageTests`.
    - **Abnahme:** Werkzeugtests grün.
    - **Setup-Lauf:** keiner.
-4. **Freigaberegister der Fassung** (Entscheid E1 und E4)
+4. **Freigaberegister der Fassung** (Entscheid E1 und E4) — **umgesetzt**
    - **Änderung:** Eine versionierte Datei hält Fassung, Datum und Programmversion jeder
-     ausgelieferten Fassung, Entscheid E4, Vorschlag `Setup/Katalogfassungen.txt`. `build-setup.ps1` bricht ab,
-     wenn `-Katalogfassung` nicht größer ist als der letzte Eintrag. Ausgenommen ist ein Probelauf
-     (Schalter `-Probe`, schreibt nichts ins Register). Nach einem freigegebenen Lauf trägt das
+     ausgelieferten Fassung, Entscheid E4: `Setup/Katalogfassungen.txt`. `build-setup.ps1` bricht ab,
+     wenn `-Katalogfassung` nicht größer ist als der letzte Eintrag und als die heutige
+     Datumsfassung `JJJJMMTT`; ohne Angabe schlägt es den nächsten Wert vor. Ausgenommen sind ein
+     Probelauf (Schalter `-Probe`, schreibt nichts ins Register) und der Trockenlauf. Nach einem freigegebenen Lauf trägt das
      Skript die Zeile nach. Committet wird sie wie jede Änderung nur auf Auftrag.
    - **Wache:** `KatalogpaketSetupWacheTests` prüft, dass das Register streng wächst und das Skript
      es liest.
@@ -782,7 +795,7 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
      ändert nichts.
    - **Abnahme:** Test grün, Referenzlauf unberührt (kein Rechenweg).
    - **Setup-Lauf:** keiner.
-6. **CI-Artefakt** (`.github/workflows/windows.yml`, Job `installer`)
+6. **CI-Artefakt** (`.github/workflows/windows.yml`, Job `installer`) — **umgesetzt**
    - **Änderung:** Den Kopf des Pakets (Format, Fassung, Satzzahl je Tabelle) als
      `katalogpaket.txt` neben den Prüfbericht in `artifacts/setup` legen (Entscheid E5: nur der Kopf,
      nicht das Paket).
@@ -1016,6 +1029,11 @@ Windows-Installation, nicht auf dem Entwicklungsrechner:
     ohne jede Einstellung darin auf; **ohne** Häkchen → der Ordner fehlt, das
     Programm läuft unverändert, und der Wähler startet im bisherigen
     Vorgabeordner
+11. **Katalogpaket** (Abschnitt 6.5), vor dem Bau der Auslieferungsvorlage: In der
+    produktiven Quelle führen Heizkessel (`Tab_Heizkessel_STAMM`) und PV (`Tab_PV_STAMM`) ihre
+    ausgelieferten Sätze mit `ReadOnly = 1` — nur gesperrte Sätze stehen im Paket und werden
+    beim Anwender nachgeführt. Nach dem Lauf steht die Fassung des Pakets in
+    `Setup\Katalogfassungen.txt` und wird mit der Freigabe committet.
 
 Eine Automatisierung über GitHub Actions ist möglich (`windows-latest` bringt
 das .NET-SDK mit, Inno Setup ist per `choco install innosetup` nachrüstbar),
@@ -1046,8 +1064,16 @@ vollständigen Handlauf.
 3. Aufruf:
 
    ```powershell
-   .\build-setup.ps1 -Quelldatenbank <Pfad>\Kenndaten.sqlite -Beispiele <Ordner mit .wpx oder leer> [-Iscc <Pfad>]
+   .\build-setup.ps1 -Quelldatenbank <Pfad>\Kenndaten.sqlite -Beispiele <Ordner mit .wpx oder leer> [-Katalogfassung <JJJJMMTTnn>] [-Iscc <Pfad>]
    ```
+
+   `-Katalogfassung` (oder `EPOS_KATALOGFASSUNG`) setzt die Fassung des Katalogpakets
+   (Abschnitt 6.5.4, E1). Ohne Angabe schlägt das Skript den nächsten Wert aus
+   `Setup\Katalogfassungen.txt` vor: den ersten Tageslauf von heute, oder den nächsten, wenn
+   heute schon freigegeben wurde. Eine Fassung, die nicht größer ist als jede eingetragene und
+   als die heutige Datumsfassung `JJJJMMTT`, bricht den Lauf vor der Veröffentlichung ab. Ein
+   Lauf, der nicht ausgeliefert wird, bekommt `-Probe`: Dann hält das Skript die Fassung nicht
+   gegen das Register und trägt nichts ein.
 
    Kein `-Kataloge` nötig: Seit Anwenderentscheid **#160‑E‑1a** (Befund
    #160‑F‑1, Abschnitt 6.1) ist die Vorgabe von `Werkzeuge\Auslieferungsvorlage`
@@ -1063,7 +1089,9 @@ vollständigen Handlauf.
    übersetzen" auf der Konsole (Abschnitt 4), dazwischen Version und Größe der
    Veröffentlichung sowie der Vorlage. Der Prüfbericht der Vorlage entsteht
    daneben als `Setup\Vorlage\Kenndaten.sqlite.bericht.txt` (Abschnitt 6.1); das
-   fertige Setup liegt danach unter `Setup\Ausgabe`.
+   fertige Setup liegt danach unter `Setup\Ausgabe`. Nach dem Katalogpaket nennt der Lauf
+   dessen Fassung und Größe; ohne `-Probe` folgt am Ende der Schritt „Fassung des
+   Katalogpakets ins Freigaberegister eintragen".
 5. Rückgabecode von `Werkzeuge\Auslieferungsvorlage` — `build-setup.ps1` bricht
    in jedem Fall mit ab und gibt die Meldung des Werkzeugs weiter:
    - **2** — Aufruf oder Quelle falsch: `-Quelldatenbank` und den angegebenen
@@ -1075,10 +1103,14 @@ vollständigen Handlauf.
      aufrufen (siehe Schritt 3 oben).
    - **5** — fachlicher Abbruch: Meldung auf der Konsole lesen, betrifft die
      Quelle selbst (z. B. eine gescheiterte Prüfung).
+
+   Dazu bricht das Skript selbst ab, wenn das Katalogpaket fehlt oder eine andere Fassung
+   trägt als der Lauf, und wenn das Freigaberegister unlesbar ist oder nicht streng wächst.
 6. Nach dem Lauf zurückmelden: die vollständige Konsolenausgabe, der Inhalt von
    `Setup\Vorlage\Kenndaten.sqlite.bericht.txt` und — sobald `ISCC.exe` lief —
    dessen Meldungen (Erfolg mit Pfad und Größe, oder der Fehlertext mit
-   Zeilennummer im `.iss`).
+   Zeilennummer im `.iss`). Nach einer Freigabe die neue Zeile in
+   `Setup\Katalogfassungen.txt` mit committen lassen.
 
 **Lauf in der CI (Anwenderentscheid „#160‑E‑1: CI" vom 11.09.2026).** Dieselbe
 Kette fährt der Job `installer` in `.github/workflows/windows.yml` auf
@@ -1107,13 +1139,16 @@ bricht deshalb ab, sobald darunter noch eine Datei mit
 `version https://git-lfs` beginnt. Er lädt den WebView2-Bootstrapper
 nach (er steht in `.gitignore` und fehlt im Klon), prüft `ISCC.exe` im
 Runner-Image und ruft dann Schritt 3 von oben mit `-Quelldatenbank
-Referenzlaeufe/Kenndaten_Test.sqlite`, ohne `-Kataloge` (Vorgabe seit
+Referenzlaeufe/Kenndaten_Test.sqlite` und `-Probe` (die Fassung des Katalogpakets
+kommt als Vorschlag aus dem Register, eingetragen wird nichts), ohne `-Kataloge` (Vorgabe seit
 #160‑E‑1a: `alle`) und ohne `-Beispiele` — das Repository führt keinen
 gepflegten Beispielsatz, und ohne diesen Schalter bleibt die Vorlage
 projektfrei (6.1, Schritt 4). Zurück kommen drei Dinge, 14 Tage
 lang: der übersetzte Installer aus `Setup\Ausgabe`, der Prüfbericht der
 Vorlage (er steht zusätzlich im Lauf selbst — er ist der Beleg, dass keines
-der 24 Prüfprojekte in den Installer gewandert ist) und das Skriptprotokoll.
+der 24 Prüfprojekte in den Installer gewandert ist) und das Skriptprotokoll; neben dem
+Prüfbericht liegt `katalogpaket.txt` mit dem Kopf des Katalogpakets (Format, Formatversion,
+Fassung, Satzzahl je Tabelle; Abschnitt 6.5.4, E5).
 **Grenzen:** Das Ergebnis ist ein Prüfstück, kein Auslieferungsstand — die
 Quelle ist die Testdatenbank, nicht der gepflegte Katalogstand. Signiert wird
 nicht (Abschnitt 9; der Job hat bewusst keine Geheimnisse), installiert wird

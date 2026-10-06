@@ -21,6 +21,7 @@ Erststart die Arbeitsdatenbank des Kontos anlegt.
 | `EPOS_Export.ids` | von Hand — die Exportzusage des IFC-Exports (IDS 1.0, buildingSMART): je Entität die Attribute, Eigenschaften und Mengen, die eine EPOS-Datei sicher trägt, ohne Geometrie; sie reist mit der Auslieferung nach `{app}\Vorlage\`, nicht als zweite Datei je Export (Datenaustauschkonzept 6.4). Der Wächter `EPOS.Kern.Tests/IdsWacheTests.cs` hält sie gegen eine frisch geschriebene Datei; die Exportbilanz nennt sie im Beipackzettel | **ja** |
 | `Kenndaten.sqlite` | erzeugt von `Werkzeuge/Auslieferungsvorlage` | nein |
 | `Kenndaten.sqlite.bericht.txt` | erzeugt im selben Lauf — der Prüfbericht | nein |
+| `Katalogpaket.json` | erzeugt im selben Lauf — das Katalogpaket der Fassung (Konzept Setup 6.5); `build-setup.ps1` löscht es vor jedem Lauf und prüft danach, dass es die Fassung des Laufs trägt | nein |
 
 Die frühere `Kenndaten.accdb` gibt es hier nicht mehr: Access wurde beim Kunden nie produktiv
 eingesetzt (Anwenderrahmen 09.09.2026), und mit Entscheid **#157‑E‑1** (Weg **W3**) ist die
@@ -36,6 +37,17 @@ dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- \
     "Setup\Vorlage\Kenndaten.sqlite" \
     --beispiele Beispiele\pakete --kataloge alle
 ```
+
+`Setup/build-setup.ps1` ruft das Werkzeug ebenso auf und gibt dazu die **Fassung des
+Katalogpakets** als `--katalogfassung` mit. Sie zählt als `JJJJMMTTnn` (Datum und Tageslauf,
+z. B. `2026100601`) und kommt aus `-Katalogfassung <n>` oder der Umgebungsvariablen
+`EPOS_KATALOGFASSUNG`. Ohne Angabe schlägt das Skript den nächsten Wert aus dem
+Freigaberegister [`Setup/Katalogfassungen.txt`](../Katalogfassungen.txt) vor. Eine Fassung muss
+größer sein als jede eingetragene und als die heutige Datumsfassung `JJJJMMTT`, sonst bricht das
+Skript ab. Nach einem vollständig erfolgreichen Lauf trägt es Fassung, Datum und Programmversion
+ins Register ein; mit `-Probe` (so läuft die CI) und im Trockenlauf `-VorlageNurPruefen` hält es
+die Fassung nicht gegen das Register und schreibt nichts hinein. Die eingetragene Zeile wird nur
+auf Auftrag committet.
 
 Rückgabe `0` heißt: erzeugt **und** abgenommen. Jeder andere Wert ist ein Abbruch mit Grund auf
 `stderr`, und dann liegt hier **keine** Datei — ein halber Auslieferungsstand soll beim nächsten
@@ -66,6 +78,15 @@ daneben und nennt je Tabelle die Zeilen vorher und nachher, die Projektliste, de
 2. **Datenschutzwächter** — „keine Zeile in einer der 47 Projekttabellen außerhalb der
    Beispiele", keine Pfadangabe (`C:\Users\…`), keine Lizenz-/KI-Tabelle.
 3. **Katalogzahlen** — plausibel, und keine `*_STAMM`-Tabelle unerwartet leer.
+
+Dazu zwei Punkte zum Katalogpaket:
+
+4. **Gesperrte Sätze der Quelle** — vor jeder Auslieferungsvorlage in der produktiven Quelle
+   prüfen, dass Heizkessel (`Tab_Heizkessel_STAMM`) und PV (`Tab_PV_STAMM`) ihre ausgelieferten
+   Sätze mit `ReadOnly = 1` führen. Nur gesperrte Sätze stehen im Paket und werden beim Anwender
+   nachgeführt; ungesperrte verhalten sich dort wie eigene Sätze.
+5. **Fassung des Katalogpakets** — der Lauf ohne `-Probe` hat die Fassung in
+   `Setup/Katalogfassungen.txt` eingetragen; die Zeile gehört mit der Freigabe ins Repository.
 
 Steht im Bericht eine Zeile mit `WARNUNG` oder `FEHLER`, wird sie erklärt, bevor die Datei in
 ein Setup wandert.
