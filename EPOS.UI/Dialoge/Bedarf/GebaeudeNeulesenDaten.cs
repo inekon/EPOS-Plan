@@ -57,6 +57,16 @@ public sealed class GebaeudeNeulesestand
     /// <summary>Die Ansicht; allein bei <see cref="GebaeudeNeulesezustand.Passend"/>, sonst <c>null</c>.</summary>
     public GebaeudeAnsichtDaten? Ansicht { get; init; }
 
+    /// <summary>
+    /// HC-5 (F7): „Grundriss übernehmen“ — nur bei passender Prüfsumme und nur, wenn für die Quelle noch keine oder ältere
+    /// Grundrisse gespeichert sind; <c>null</c> = kein Knopf. Fragt zurück, schreibt und liefert die Hinweiszeile
+    /// (<c>null</c> = abgelehnt, nichts geschrieben).
+    /// </summary>
+    public Func<Task<string?>>? GrundrissNachtragen { get; init; }
+
+    /// <summary>Die Zahl der Räume, deren Grundriss „Grundriss übernehmen“ schriebe.</summary>
+    public int GrundrissRaeume { get; init; }
+
     /// <summary>Bietet der Dialog eine andere Dateiwahl an? Bei jedem Fehlzustand außer „keine Quelle“.</summary>
     public bool AndereDateiAnbieten => Zustand is not GebaeudeNeulesezustand.Passend and not GebaeudeNeulesezustand.KeineQuelle;
 }

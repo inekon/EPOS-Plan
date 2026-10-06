@@ -5185,6 +5185,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_RAUMNUTZUNG = RaumnutzungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="RaumgrundrissSchema.SCHRITT"/> — <b>Grundriss je importiertem Raum</b> (HC-5):
+        /// <c>Tab_Raumgrundriss</c> als Kindliste von <c>Tab_Importquelle</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Tabelle entsteht leer; kein Rechenweg liest sie.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMGRUNDRISS = RaumgrundrissSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7530,6 +7538,12 @@ namespace WindowsFormsApplication1
                         "Nutzungsprofile haetten keinen Katalog, die Nutzung der Kalender bliebe auf vier Kennungen beschraenkt " +
                         "und die Zone truege ihren Profilnamen nicht. KEIN Rechenergebnis aendert sich.",
                         Schritt_Raumnutzung),
+            // GRUNDRISS JE IMPORTIERTEM RAUM (HC-5). Quelle ist RaumgrundrissSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMGRUNDRISS,
+                        "Tab_Raumgrundriss",
+                        "Importierte Gebaeude koennten den Grundriss ihrer Raeume nicht speichern; Export und Exportmodell " +
+                        "blieben schematisch. KEIN Rechenergebnis aendert sich - die Tabelle entsteht leer.",
+                        Schritt_Raumgrundriss),
         };
 
         /// <summary>
@@ -14373,6 +14387,59 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Katalog der Nutzungsprofile - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Grundriss je importiertem Raum" — Anlass und Wirkung stehen bei <see cref="SCHRITT_RAUMGRUNDRISS"/>,
+        /// die Anweisungen bei <see cref="RaumgrundrissSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Raumgrundriss(Lauf l)
+        {
+            string nr = RaumgrundrissSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumgrundrissSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = RaumgrundrissSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumgrundrissSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tab_Raumgrundriss oder ihr Index stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Grundriss je importiertem Raum - " +
+                    (angelegt == 0 ? "stand bereits." : "Tabelle angelegt.") + " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

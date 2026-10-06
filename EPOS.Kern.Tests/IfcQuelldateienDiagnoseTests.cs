@@ -581,6 +581,43 @@ namespace EPOS.Kern.Tests
             Assert.All(cp, m => Assert.Equal(PruefStufe.Info, m.Stufe));
         }
 
+        /// <summary>
+        /// <b>HC-5 — Grundriss je Raum an den Anwenderdateien</b> (Konzept HottCAD-Verbund 11.2, 11.8): je Datei die Zahl der
+        /// Räume, die Herleitungen, die Vermerke und die Flächenabweichung des Gebäudes (Σ Ringflächen gegen Σ Raumflächen).
+        /// Gehalten wird: Jeder Raum mit Körper bekommt einen Grundriss, keiner ist leer, und die Ableitung ist
+        /// deterministisch. Fehlt die Datei, endet der Fall mit ihrem Namen im Protokoll.
+        /// </summary>
+        [Theory]
+        [InlineData("MFH_mittel_1984.ifc")]
+        [InlineData("MFH-Klein-unsaniert-1964.ifc")]
+        [InlineData("Sportheim_1970_unsaniert.ifc")]
+        [InlineData("Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc")]
+        [InlineData("WG-EH55_Poroton-GModG-2026.ifc")]
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc")]
+        public void Grundriss_je_Raum_der_Anwenderdatei(string datei)
+        {
+            GebaeudeImportAblauf a = Anwenderdatei(datei);
+            if (a == null) return;
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            IReadOnlyList<Raumgrundriss> gr = GebaeudeRaumgrundrisse.Bilden(a.Abbild, 0);
+            int mitKoerper = g.Raeume.Count(r => r.Koerper != null);
+            string Herleitungen() => string.Join(", ", gr.GroupBy(x => x.Herleitung).OrderBy(x => x.Key).Select(x => x.Key + " " + x.Count()));
+            string Vermerke() => string.Join(", ", gr.SelectMany(x => x.Vermerke).GroupBy(v => v).OrderBy(x => x.Key).Select(x => x.Key + " " + x.Count()));
+            double ringe = gr.Sum(x => x.RingflaecheM2);
+            double raeume = gr.Sum(x => g.Raeume.First(r => Quellkennung.Kuerzen(r.Kennung) == x.Quellkennung).FlaecheM2 ?? 0.0);
+            _aus.WriteLine(datei + ": " + g.Raeume.Count + " Räume, " + mitKoerper + " mit Körper, " + gr.Count + " Grundrisse (" +
+                           Herleitungen() + "); Vermerke: " + (Vermerke().Length == 0 ? "keine" : Vermerke()) + "; Ringe " + Z(ringe) +
+                           " m² gegen Räume " + Z(raeume) + " m² (" + Z(raeume > 0 ? (ringe - raeume) / raeume * 100.0 : (double?)null) + " %); " +
+                           gr.Count(x => x.Vermerke.Contains(Grundrissvermerk.Flaeche)) + " Räume über 10 %");
+
+            Assert.True(gr.Count >= mitKoerper, datei + ": nicht jeder Raum mit Körper trägt einen Grundriss");
+            // Ohne Raumgrenzen (CAD-Export) kommt jeder Grundriss aus dem Körper, nie aus dem Ring eines Bauteils.
+            if (g.ZahlGrenzen == 0) Assert.All(gr, x => Assert.Equal(Geometrieherkunft.Dateikoerper, x.Herkunft));
+            Assert.All(gr, x => Assert.True(x.RingflaecheM2 > 0 && x.HoeheM > 0 && x.Ringe.Count > 0, datei + " " + x));
+            Assert.Equal(string.Join("\n", gr.Select(x => x + x.RingeText)),
+                         string.Join("\n", GebaeudeRaumgrundrisse.Bilden(a.Abbild, 0).Select(x => x + x.RingeText)));
+        }
+
         /// <summary>Eine Anwenderdatei unter <c>Quellen/</c>, gelesen; <c>null</c>, wenn sie fehlt (oder nur ein LFS-Zeiger liegt).</summary>
         private GebaeudeImportAblauf Anwenderdatei(string datei)
         {

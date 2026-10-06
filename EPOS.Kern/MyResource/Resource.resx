@@ -46545,5 +46545,71 @@ Chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2}</value>
   </data>
+  <data name="ZGEO_DATEIKOERPER" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus dem Grundriss ihres Dateikörpers (aus Dateikörper) — Dachschrägen und Höhenversprünge sind vereinfacht: {1}</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_DATEIKOERPER" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus dem Grundriss der Importdatei in der Datei (aus Dateikörper). Dachschrägen und Höhenversprünge sind vereinfacht.</value>
+  </data>
+  <data name="GEXP_DATEI_DATEIKOERPER" xml:space="preserve">
+    <value>Stufe 2: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie sind Prismen aus dem Grundriss der Importdatei, Dachschrägen und Höhenversprünge sind vereinfacht.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS" xml:space="preserve">
+    <value>IFC-Export aus EPOS-Plan, Stufe S3: Raumkörper als Prismen aus dem Grundriss der Importdatei – Dachschrägen und Höhenversprünge vereinfacht.</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_GRUNDRISS" xml:space="preserve">
+    <value>Prisma aus dem Grundriss der Importdatei (aus Dateikörper){0}</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_FLAECHE" xml:space="preserve">
+    <value>{0} Räume: Die Fläche des Grundrisses weicht mehr als 10 % von der Raumfläche der Datei ab (gespeichert wird er trotzdem): {1}</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_HERLEITUNG" xml:space="preserve">
+    <value>Grundriss je Raum: {0} Räume — {1} aus den Bodenflächen des Körpers, {2} aus den Deckenflächen, {3} als konvexe Hülle, {4} aus Raumgrenzen.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_KNOPF" xml:space="preserve">
+    <value>Grundriss übernehmen</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_TITEL" xml:space="preserve">
+    <value>Grundriss übernehmen</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_ANGEBOT" xml:space="preserve">
+    <value>Für {0} Räume liegt ein Grundriss aus der Datei vor, der beim Gebäude noch nicht gespeichert ist.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FRAGE" xml:space="preserve">
+    <value>Den Grundriss von {0} Räumen aus „{1}“ beim Gebäude speichern? Er dient nur der Ansicht und dem Export; die Rechnung bleibt unverändert.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_GESCHRIEBEN" xml:space="preserve">
+    <value>Grundriss von {0} Räumen übernommen.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FEHLER" xml:space="preserve">
+    <value>Grundriss nicht übernommen: {0}</value>
+  </data>
+  <data name="GANS_HERKUNFT_GRUNDRISS" xml:space="preserve">
+    <value>aus Dateikörper (Grundriss)</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_EXPORT" xml:space="preserve">
+    <value>{0} Räume aus Dateikörper, {1} aus Umriss, {2} schematisch</value>
+  </data>
+  <data name="GANS_GVERMERK_STUFEN" xml:space="preserve">
+    <value>Stufen im Boden</value>
+  </data>
+  <data name="GANS_GVERMERK_UEBERLAPPUNG" xml:space="preserve">
+    <value>Überlappung</value>
+  </data>
+  <data name="GANS_GVERMERK_SPLITTER" xml:space="preserve">
+    <value>Splitter entfallen</value>
+  </data>
+  <data name="GANS_GVERMERK_KONVEX" xml:space="preserve">
+    <value>konvexe Hülle</value>
+  </data>
+  <data name="GANS_GVERMERK_DACHSCHRAEGE" xml:space="preserve">
+    <value>Dachschräge</value>
+  </data>
+  <data name="GANS_GVERMERK_GESCHOSSLAGE" xml:space="preserve">
+    <value>Boden abseits der Geschosslage</value>
+  </data>
+  <data name="GANS_GVERMERK_FLAECHE" xml:space="preserve">
+    <value>Fläche weicht ab</value>
+  </data>
 </root>
 

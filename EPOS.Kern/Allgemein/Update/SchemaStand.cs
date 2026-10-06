@@ -918,7 +918,10 @@ namespace WindowsFormsApplication1
         /// Danach, mit dem KATALOG DER NUTZUNGSPROFILE (NP1a), steht das Ziel auf <see cref="RaumnutzungSchema.SCHRITT"/>:
         /// fünf Katalogtabellen samt Saat, freie Nutzung an Kalender und Vorlage (Tabellenneubau), Profilname an der Zone
         /// (<see cref="RaumnutzungSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest Katalog oder Zonenspalte.
-        public const int Zielversion = RaumnutzungSchema.SCHRITT;
+        /// Danach, mit dem GRUNDRISS JE IMPORTIERTEM RAUM (HC-5), steht das Ziel auf <see cref="RaumgrundrissSchema.SCHRITT"/>:
+        /// <c>Tab_Raumgrundriss</c>, eine Kindliste der Importquelle (<see cref="RaumgrundrissSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; sie entsteht leer.
+        public const int Zielversion = RaumgrundrissSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

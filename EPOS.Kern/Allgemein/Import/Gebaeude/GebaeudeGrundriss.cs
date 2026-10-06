@@ -39,11 +39,26 @@ namespace WindowsFormsApplication1
         /// <param name="abbild">Das gelesene Abbild.</param>
         /// <param name="index">Das Gebäude (eines je Lauf).</param>
         /// <param name="zonierung">Die Zonierung desselben Gebäudes; <c>null</c> = keine.</param>
-        internal static Zonengeometrie Bilden(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung = null)
-            => Zonengeometrie.AusRaumgrenzen(Eingang(abbild, index, zonierung));
+        /// <param name="grundrisse">Die Grundrisse je Raum (HC-5) nach ihrer Quellkennung; <c>null</c> = die am Raum des Abbilds
+        /// (<see cref="AbbildRaum.Grundrisse"/>, Export).</param>
+        internal static Zonengeometrie Bilden(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung = null,
+                                              IReadOnlyList<Raumgrundriss> grundrisse = null)
+            => Zonengeometrie.AusRaumgrenzen(Eingang(abbild, index, zonierung, grundrisse));
+
+        /// <summary>
+        /// <b>Die Zonengeometrie mit dem frisch abgeleiteten Grundriss je Raum</b> (HC-5; Import und „Datei erneut lesen“): dieselben
+        /// Grundrisse, die der Import speichert (<see cref="GebaeudeRaumgrundrisse.Bilden"/>), stehen vor dem Rechteckersatz.
+        /// </summary>
+        internal static Zonengeometrie BildenMitGrundriss(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung,
+                                                          out IReadOnlyList<Raumgrundriss> grundrisse)
+        {
+            grundrisse = GebaeudeRaumgrundrisse.Bilden(abbild, index);
+            return Bilden(abbild, index, zonierung, grundrisse);
+        }
 
         /// <summary>Der formatfreie Eingang der Zonengeometrie (Regeln: Klassenkopf).</summary>
-        internal static Umrisseingang Eingang(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung = null)
+        internal static Umrisseingang Eingang(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung = null,
+                                              IReadOnlyList<Raumgrundriss> grundrisse = null)
         {
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return new Umrisseingang();
             AbbildGebaeude g = abbild.Gebaeude[index];
@@ -65,6 +80,11 @@ namespace WindowsFormsApplication1
                 foreach (Importzone z in zonierung.Zonen)
                     e.Zonen.Add(new Umrisszone(z.Schluessel, z.Name, z.IstBeheizt, z.FlaecheM2, z.VolumenM3, z.HoeheM, z.Handgeaendert));
 
+            // Grundrisse je Raum nach ihrer (gekürzten) Quellkennung.
+            var jeKennung = new Dictionary<string, Raumgrundriss>(StringComparer.Ordinal);
+            foreach (Raumgrundriss gr in grundrisse ?? Array.Empty<Raumgrundriss>())
+                if (gr?.Quellkennung != null) jeKennung.TryAdd(gr.Quellkennung, gr);
+
             // Räume in der Reihenfolge der Datei.
             var jeRaum = new Dictionary<string, (AbbildRaum Abbild, Umrissraum Umriss)>(StringComparer.Ordinal);
             foreach (AbbildRaum r in g.Raeume)
@@ -81,6 +101,9 @@ namespace WindowsFormsApplication1
                     VolumenM3 = r.VolumenM3,
                     HoeheM = r.HoeheM,
                     Koerper = r.Koerper,
+                    Grundrisse = grundrisse == null
+                        ? r.Grundrisse ?? Array.Empty<Raumgrundriss>()
+                        : jeKennung.TryGetValue(Quellkennung.Kuerzen(r.Kennung), out Raumgrundriss eigener) ? new[] { eigener } : Array.Empty<Raumgrundriss>(),
                 };
                 jeRaum[r.Kennung] = (r, u);
                 e.Raeume.Add(u);

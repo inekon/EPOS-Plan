@@ -145,6 +145,9 @@ namespace WindowsFormsApplication1
                                             Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten);
                 foreach (AbbildGebaeude g in abbild.Gebaeude) _gebaeude.Add(g.Anzeigename);
                 Dateihinweise(abbild, Quelle.Dateiname);
+                // HC-5: Flächenabweichung (F8) und Herleitungen der Grundrisse je Raum - dieselben, die der Import speichert.
+                for (int i = 0; i < abbild.Gebaeude.Count; i++)
+                    _meldungen.AddRange(GebaeudeRaumgrundrisse.Meldungen(GebaeudeRaumgrundrisse.Bilden(abbild, i)));
             }
             catch (OperationCanceledException)
             {

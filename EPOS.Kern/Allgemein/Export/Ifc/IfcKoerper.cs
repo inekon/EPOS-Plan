@@ -106,6 +106,7 @@ namespace WindowsFormsApplication1
         /// <summary>Das Prisma eines Raums über seinem Rechteck; <c>null</c> = entartet.</summary>
         internal IfcProductDefinitionShape Raum(Raumkoerper k)
         {
+            if (k != null && k.AusGrundriss) return Grundriss(k);
             if (k == null || k.Schale.Count < 2 || !(k.HoeheM > 0.0)) return null;
             // Die Decke der Schale trägt die Ecken des Rechtecks in Umlaufrichtung c0, c1, c2, c3.
             IReadOnlyList<double[]> decke = k.Schale[1];
@@ -116,6 +117,61 @@ namespace WindowsFormsApplication1
             var ecken = decke.Select(p => new[] { p[0], p[1], k.BodenM }).ToList();
             return Darstellung(Prisma(ecken, c0, new[] { 0.0, 0.0, 1.0 }, u, k.HoeheM, 0.0));
         }
+
+        /// <summary>
+        /// <b>Die Prismen aus Grundrissen</b> (HC-5, F10): je Prisma ein <c>IfcExtrudedAreaSolid</c> über einem
+        /// <c>IfcArbitraryClosedProfileDef</c> — mit Löchern <c>IfcArbitraryProfileDefWithVoids</c> —, das Profil in den Koordinaten
+        /// des Modells, die Lage im Punkt (0, 0, Boden) ohne Drehung, längs +z um die Höhe; alle als Träger derselben Darstellung
+        /// „Body“. <c>null</c> = kein Prisma.
+        /// </summary>
+        private IfcProductDefinitionShape Grundriss(Raumkoerper k)
+        {
+            var koerper = new List<IfcExtrudedAreaSolid>();
+            foreach (Grundrissprisma p in k.Prismen)
+            {
+                if (!(p.HoeheM > 0.0) || p.Aussen.Count < 3) continue;
+                IfcPolyline aussen = Linienzug(p.Aussen);
+                List<IfcPolyline> loecher = p.Loecher.Where(l => l.Count >= 3).Select(Linienzug).ToList();
+                IfcProfileDef profil = loecher.Count == 0
+                    ? Neu<IfcArbitraryClosedProfileDef>(r =>
+                    {
+                        r.ProfileType = IfcProfileTypeEnum.AREA;
+                        r.OuterCurve = aussen;
+                    })
+                    : Neu<IfcArbitraryProfileDefWithVoids>(r =>
+                    {
+                        r.ProfileType = IfcProfileTypeEnum.AREA;
+                        r.OuterCurve = aussen;
+                        foreach (IfcPolyline l in loecher) r.InnerCurves.Add(l);
+                    });
+                Koerper++;
+                double boden = p.BodenM, hoehe = p.HoeheM;
+                koerper.Add(Neu<IfcExtrudedAreaSolid>(e =>
+                {
+                    e.SweptArea = profil;
+                    e.Position = Neu<IfcAxis2Placement3D>(a => a.Location = Neu<IfcCartesianPoint>(c => c.SetXYZ(0, 0, Z(boden))));
+                    e.ExtrudedDirection = Neu<IfcDirection>(x => x.SetXYZ(0, 0, 1));
+                    e.Depth = hoehe;
+                }));
+            }
+            if (koerper.Count == 0) return null;
+            IfcShapeRepresentation darstellung = Neu<IfcShapeRepresentation>(s =>
+            {
+                s.ContextOfItems = Koerperkontext;
+                s.RepresentationIdentifier = BODY;
+                s.RepresentationType = SWEPT_SOLID;
+                foreach (IfcExtrudedAreaSolid x in koerper) s.Items.Add(x);
+            });
+            return Neu<IfcProductDefinitionShape>(p => p.Representations.Add(darstellung));
+        }
+
+        /// <summary>Ein geschlossener Linienzug in der Ebene (Schlusspunkt = Anfangspunkt).</summary>
+        private IfcPolyline Linienzug(IReadOnlyList<double[]> ring)
+            => Neu<IfcPolyline>(l =>
+            {
+                foreach (double[] p in ring.Concat(new[] { ring[0] }))
+                    l.Points.Add(Neu<IfcCartesianPoint>(c => c.SetXY(Z(p[0]), Z(p[1]))));
+            });
 
         /// <summary>Die Platte einer Wand-, Boden- oder Deckenfläche, <see cref="PLATTE_M"/> nach außen; <c>null</c> = entartet.</summary>
         internal IfcProductDefinitionShape Flaeche(Koerperflaeche f)

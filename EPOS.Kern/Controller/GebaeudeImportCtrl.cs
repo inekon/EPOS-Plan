@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
     /// <c>Building/@id</c> (<see cref="Einzonenpaarungen"/>); die übrigen Zielarten trägt der Weg
     /// schon, befüllt werden sie mit G6c.</para>
     /// </summary>
-    public sealed class GebaeudeImportCtrl
+    public sealed partial class GebaeudeImportCtrl
     {
         /// <summary>Was ein Schreibversuch ergeben hat; bei Erfolg die Kennung der neuen Quelle.</summary>
         public sealed record Ergebnis(bool Ok, string Meldung, int IdImportquelle)
@@ -231,9 +231,14 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Mit <paramref name="vorgang"/> läuft das Schreiben im Vorgang des Aufrufers (als
         /// Sicherungspunkt), sonst in einem eigenen. Eine Ablehnung schreibt nichts.</para>
+        ///
+        /// <para><b>HC-5:</b> Mit <paramref name="grundrisse"/> schreibt derselbe Vorgang je Raum eine Zeile in
+        /// <c>Tab_Raumgrundriss</c>; die Zone kommt aus der Paarung des Raums mit dem Ziel Zone (über die Kennung der
+        /// Datei, nicht über einen Namen), ohne Paarung bleibt sie NULL.</para>
         /// </summary>
         internal Ergebnis SchreibeHerkunft(int idGebaeude, GebaeudeQuelle quelle,
-                                           IReadOnlyList<GebaeudeQuellzuordnung> zuordnungen, DbVorgang vorgang = null)
+                                           IReadOnlyList<GebaeudeQuellzuordnung> zuordnungen, DbVorgang vorgang = null,
+                                           IReadOnlyList<Raumgrundriss> grundrisse = null)
         {
             List<GebaeudeQuellzuordnung> liste = (zuordnungen ?? Array.Empty<GebaeudeQuellzuordnung>()).ToList();
             string fehler = Pruefen(quelle, liste);
@@ -286,6 +291,16 @@ namespace WindowsFormsApplication1
                                        ") VALUES (" + BaustoffCtrl.Fragezeichen(ImportzuordnungSchema.Zuordnungsspalten.Count) + ")";
                     foreach ((GebaeudeQuellzuordnung paarung, int ziel) in zeilen)
                         v.Ausfuehren(einfuegen, Zuordnungswerte(idQuelle, paarung, ziel).ToArray());
+
+                    // HC-5: die Grundrisse je Raum an dieselbe Quelle, die Zone aus der Paarung Raum -> Zone.
+                    if (grundrisse is { Count: > 0 })
+                    {
+                        var zoneJeKennung = new Dictionary<string, int>(StringComparer.Ordinal);
+                        foreach ((GebaeudeQuellzuordnung paarung, int ziel) in zeilen)
+                            if (paarung.Ziel == ImportZiel.Zone)
+                                zoneJeKennung.TryAdd(Quellkennung.Kuerzen(paarung.Quellkennung), ziel);
+                        GrundrisseEinfuegen(v, idQuelle, grundrisse, zoneJeKennung);
+                    }
 
                     v.Commit();
                     return Ergebnis.Gut(idQuelle);
@@ -436,8 +451,11 @@ namespace WindowsFormsApplication1
     /// (<c>Tab_Baustoff_STAMM.ID</c>), <c>null</c> als Wert = die gemerkte Zuordnung entfernen; <c>null</c> = keine.</param>
     /// <param name="Gebaeudekonditionierung">Einzonenweg mit Projektdatei: die Konditionierung der Gebäudegruppe bzw. der
     /// einen Zone, die das Gebäude als Gebäudekalender nimmt (<see cref="SqprojZonen.Gebaeudekonditionierung"/>); <c>null</c> = keine.</param>
+    /// <param name="Raumgrundrisse">HC-5: die Grundrisse je Raum (<see cref="GebaeudeRaumgrundrisse.Bilden"/>), die
+    /// <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/> an die Quelle schreibt; <c>null</c> = keine.</param>
     internal sealed record GebaeudeImportHerkunft(GebaeudeQuelle Quelle, IReadOnlyList<GebaeudeQuellzuordnung> Paarungen,
                                                   GebaeudeBauteilvorschlag Vorschlag = null,
                                                   IReadOnlyDictionary<string, int?> Baustoffzuordnungen = null,
-                                                  Zonenkonditionierung Gebaeudekonditionierung = null);
+                                                  Zonenkonditionierung Gebaeudekonditionierung = null,
+                                                  IReadOnlyList<Raumgrundriss> Raumgrundrisse = null);
 }

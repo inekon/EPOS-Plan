@@ -24903,11 +24903,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dachschräge ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_DACHSCHRAEGE {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_DACHSCHRAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche weicht ab ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_FLAECHE {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Boden abseits der Geschosslage ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_GESCHOSSLAGE {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_GESCHOSSLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die konvexe Hülle ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_KONVEX {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_KONVEX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Splitter entfallen ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_SPLITTER {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_SPLITTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufen im Boden ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_STUFEN {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überlappung ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_UEBERLAPPUNG {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_UEBERLAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus Datei ähnelt.
         /// </summary>
         public static string GANS_HERKUNFT_DATEI {
             get {
                 return ResourceManager.GetString("GANS_HERKUNFT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Dateikörper (Grundriss) ähnelt.
+        /// </summary>
+        public static string GANS_HERKUNFT_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GANS_HERKUNFT_GRUNDRISS", resourceCulture);
             }
         }
         
@@ -24935,6 +25007,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_KENNZEICHEN {
             get {
                 return ResourceManager.GetString("GANS_KENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume aus Dateikörper, {1} aus Umriss, {2} schematisch ähnelt.
+        /// </summary>
+        public static string GANS_KENNZEICHEN_EXPORT {
+            get {
+                return ResourceManager.GetString("GANS_KENNZEICHEN_EXPORT", resourceCulture);
             }
         }
         
@@ -30124,6 +30205,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für {0} Räume liegt ein Grundriss aus der Datei vor, der beim Gebäude noch nicht gespeichert ist. ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_ANGEBOT {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_ANGEBOT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss nicht übernommen: {0} ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_FEHLER {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Grundriss von {0} Räumen aus „{1}“ beim Gebäude speichern? Er dient nur der Ansicht und dem Export; die Rechnung bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_FRAGE {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss von {0} Räumen übernommen. ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_GESCHRIEBEN {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_GESCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_KNOPF {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ (geändert am {1}) ist nicht die Datei des Imports: SHA-256 {2}… statt {3}…. Es wird keine Ansicht gezeigt. ähnelt.
         /// </summary>
         public static string GEB_NL_HASH_ABWEICHEND {
@@ -30931,6 +31066,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 2: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie sind Prismen aus dem Grundriss der Importdatei, Dachschrägen und Höhenversprünge sind vereinfacht. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_DATEIKOERPER {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_DATEIKOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzschichtung {0} ähnelt.
         /// </summary>
         public static string GEXP_DATEI_ERSATZ_AUFBAU {
@@ -31350,6 +31494,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_IFC_DATEI_STUFE_S3 {
             get {
                 return ResourceManager.GetString("GEXP_IFC_DATEI_STUFE_S3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Export aus EPOS-Plan, Stufe S3: Raumkörper als Prismen aus dem Grundriss der Importdatei – Dachschrägen und Höhenversprünge vereinfacht. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prisma aus dem Grundriss der Importdatei (aus Dateikörper){0} ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ELEMENT_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ELEMENT_GRUNDRISS", resourceCulture);
             }
         }
         
@@ -31926,6 +32088,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PROT_GEOMETRIE_ABGELEHNT {
             get {
                 return ResourceManager.GetString("GEXP_PROT_GEOMETRIE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume stehen als Prisma aus dem Grundriss der Importdatei in der Datei (aus Dateikörper). Dachschrägen und Höhenversprünge sind vereinfacht. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_GEOMETRIE_DATEIKOERPER {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_GEOMETRIE_DATEIKOERPER", resourceCulture);
             }
         }
         
@@ -39180,6 +39351,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_GELESEN {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume: Die Fläche des Grundrisses weicht mehr als 10 % von der Raumfläche der Datei ab (gespeichert wird er trotzdem): {1} ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_GRUNDRISS_FLAECHE {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_GRUNDRISS_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss je Raum: {0} Räume — {1} aus den Bodenflächen des Körpers, {2} aus den Deckenflächen, {3} als konvexe Hülle, {4} aus Raumgrenzen. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_GRUNDRISS_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_GRUNDRISS_HERLEITUNG", resourceCulture);
             }
         }
         
@@ -121568,6 +121757,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZGEO_ANORDNUNG_ABGELEHNT {
             get {
                 return ResourceManager.GetString("ZGEO_ANORDNUNG_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume stehen als Prisma aus dem Grundriss ihres Dateikörpers (aus Dateikörper) — Dachschrägen und Höhenversprünge sind vereinfacht: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_DATEIKOERPER {
+            get {
+                return ResourceManager.GetString("ZGEO_DATEIKOERPER", resourceCulture);
             }
         }
         

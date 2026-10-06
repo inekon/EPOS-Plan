@@ -231,6 +231,8 @@ namespace WindowsFormsApplication1
             {SchemaKatalog.TAB_BAUTEIL, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
             // Gebaeudesimulation G4c (S-F): dasselbe fuer das Zonenziel der Importpaarung.
             {SchemaKatalog.TAB_IMPORTZUORDNUNG, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
+            // HC-5 (RaumgrundrissSchema): dasselbe fuer die Zone des Raumgrundrisses.
+            {SchemaKatalog.TAB_RAUMGRUNDRISS, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
             // Namensabgleich der Baustoffe (BaustoffabgleichSchema): "ID_Baustoff" meint in FK_MAP die
             // PROJEKTKOPIE Tab_Baustoff; die gemerkte Zuordnung zeigt dagegen auf den KATALOG, der nie im
             // Plan steht - die Kopie zeigt auf denselben Katalogbaustoff. Die deklarierte Beziehung hat
@@ -339,6 +341,9 @@ namespace WindowsFormsApplication1
             // die Eintraege reiste ein importiertes Projekt still ohne seine Herkunft.
             {SchemaKatalog.TAB_IMPORTQUELLE,    "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {SchemaKatalog.TAB_IMPORTZUORDNUNG, "ID_Importquelle IN (SELECT ID FROM Tab_Importquelle WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
+            // HC-5 (RaumgrundrissSchema): der Grundriss je Raum zweistufig wie die Paarung - Gebaeude -> Importquelle ->
+            // Raumgrundriss; ID_Zone (nullbar) zeigt per FK_OVERRIDE auf die Zonenkopie.
+            {SchemaKatalog.TAB_RAUMGRUNDRISS,  "ID_Importquelle IN (SELECT ID FROM Tab_Importquelle WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
 
             // Gebaeudesimulation G6b (Schritt S-G, Mehrzonenkonzept 4.4) - von Hand und DREISTUFIG
             // wie das Bauteil: Gebaeude -> Zone -> Luftstrom, gefiltert ueber die Zone A (beide Zonen

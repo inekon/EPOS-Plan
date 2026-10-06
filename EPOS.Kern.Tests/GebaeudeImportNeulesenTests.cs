@@ -187,7 +187,7 @@ namespace EPOS.Kern.Tests
         private const int GEBAEUDE = 10614;
 
         private static readonly string[] TABELLEN =
-            { "Tab_Importquelle", "Tab_Importzuordnung", "Tab_Gebaeude", "Tab_Zone", "Tab_Bauteil", "Tab_Bauteilaufbau", "Tab_Baustoff" };
+            { "Tab_Importquelle", "Tab_Importzuordnung", "Tab_Raumgrundriss", "Tab_Gebaeude", "Tab_Zone", "Tab_Bauteil", "Tab_Bauteilaufbau", "Tab_Baustoff" };
 
         private static long[] Zaehlen()
             => TABELLEN.Select(t => Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + t + "\""),

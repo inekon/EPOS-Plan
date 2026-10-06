@@ -951,6 +951,8 @@ namespace EPOS.Kern.Tests
                 // Schritt RaumnutzungSchema.SCHRITT (NP1a): Katalog der Nutzungsprofile samt Saat, freie Nutzung an
                 // Kalender und Vorlage (Tabellenneubau), Tab_Zone.Nutzungsprofil. Wiederholbar, ergebnisneutral.
                 RaumnutzungSchema.Ausfuehren(null);
+                // Schritt RaumgrundrissSchema.SCHRITT (HC-5): Tab_Raumgrundriss an der Importquelle. Ohne Saat, leer.
+                RaumgrundrissSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
