@@ -14857,6 +14857,18 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB" xml:space="preserve">
     <value>Stromverbrauch Heizstab:</value>
   </data>
+  <data name="SIMERG_LBL_JAZ_WP" xml:space="preserve">
+    <value>Jahresarbeitszahl WP:</value>
+  </data>
+  <data name="SIMERG_LBL_JAZ_SYSTEM" xml:space="preserve">
+    <value>Jahresarbeitszahl mit Heizstab:</value>
+  </data>
+  <data name="SIMERG_TIP_JAZ_WP" xml:space="preserve">
+    <value>Jahresarbeitszahl der Wärmepumpe allein: Wärmeproduktion WP ÷ Stromverbrauch WP. Ohne Strom steht ein Strich.</value>
+  </data>
+  <data name="SIMERG_TIP_JAZ_SYSTEM" xml:space="preserve">
+    <value>Jahresarbeitszahl des Systems mit Heizstab (Bilanzgrenze nach VDI 4650): (Wärmeproduktion WP + Wärme des Heizstabs) ÷ (Stromverbrauch WP + Stromverbrauch Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Dieselbe Rechnung wie die Kennzahl „Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab“ im Bericht. Ohne Strom steht ein Strich.</value>
+  </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_SPK" xml:space="preserve">
     <value>Wärmeproduktion der Spitzenkessel:</value>
   </data>
@@ -42326,6 +42338,21 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="SIM_SPALTE_TAKTSTROM" xml:space="preserve">
     <value>Mehrstrom Takten [MWh/a]</value>
+  </data>
+  <data name="SIMERG_SPALTE_JAZ" xml:space="preserve">
+    <value>JAZ</value>
+  </data>
+  <data name="SIMERG_SPALTE_JAZ_HEIZSTAB" xml:space="preserve">
+    <value>JAZ mit Heizstab</value>
+  </data>
+  <data name="SIMERG_TIP_SPALTE_JAZ" xml:space="preserve">
+    <value>Jahresarbeitszahl des Moduls ohne Heizstab: Wärmeproduktion ÷ Stromverbrauch. Ohne Strom steht ein Strich.</value>
+  </data>
+  <data name="SIMERG_TIP_SPALTE_JAZ_HEIZSTAB" xml:space="preserve">
+    <value>Jahresarbeitszahl des Moduls mit seinem Heizstab: (Wärmeproduktion + Heizstab) ÷ (Stromverbrauch + Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Ohne Strom steht ein Strich.</value>
+  </data>
+  <data name="SIMERG_CHK_JAZ_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab in die JAZ einrechnen</value>
   </data>
   <data name="SIM_SPALTE_ANFAHRVERLUST" xml:space="preserve">
     <value>Anfahrverlust [kWh/a]</value>
