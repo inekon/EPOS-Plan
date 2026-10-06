@@ -17,6 +17,7 @@ namespace EPOS.Kern.Tests
         internal const string GC = "{a1000000-0000-0000-0000-00000000000c}";
         internal const string AW1 = "{b0000000-0000-0000-0000-000000000001}";
         internal const string AW2 = "{b0000000-0000-0000-0000-000000000002}";
+        internal const string AW2B = "{b0000000-0000-0000-0000-00000000002b}";
         internal const string AW3A = "{b0000000-0000-0000-0000-00000000003a}";
         internal const string AW3B = "{b0000000-0000-0000-0000-00000000003b}";
         internal const string AWX = "{b0000000-0000-0000-0000-0000000000ff}";
@@ -34,7 +35,8 @@ namespace EPOS.Kern.Tests
         internal static readonly double U_AW2 = 1.0 / (0.13 + 0.2 / 2.0 + 0.12 / 0.04 + 0.04);
 
         /// <summary>
-        /// Räume A (EG) und C (OG); Aufbauten AW1 (Beton innen, Dämmung außen), AW2 (dicker gedämmt, unbenutzt), AW3A/AW3B
+        /// Räume A (EG) und C (OG); Aufbauten AW1 (Beton innen, Dämmung außen), AW2 (dicker gedämmt, unbenutzt), AW2B (U 0,5 % über
+        /// AW2, andere Schichten, unbenutzt), AW3A/AW3B
         /// (beide U 0,8, verschiedene Schichten, unbenutzt), AWX (Rohdichte als Platzhalter, unbenutzt), DE (Decke: Dämmung oben);
         /// Hüllflächen G1…G7 (G4 mit Null-Kennung als Aufbau, G5 Decke zwischen A und C, G6 doppelt mit verschiedenen Aufbauten).
         /// </summary>
@@ -49,6 +51,7 @@ namespace EPOS.Kern.Tests
                 .Aufbau(AW2, "Wand neu", U_AW2)
                 .Schicht("L21", AW2, 0, "Beton", 0.2, 2.0, 2400.0, 1.0)
                 .Schicht("L22", AW2, 1, "Daemmstoff", 0.12, 0.04, 30.0, 1.5, daemmung: true)
+                .Aufbau(AW2B, "Wand neu B", U_AW2 * 1.005).Schicht("L2B", AW2B, 0, "Mauerwerk", 0.5, 0.2, 800.0, 1.0)
                 .Aufbau(AW3A, "Wand A", 0.8).Schicht("L3A", AW3A, 0, "Mauerwerk", 0.3, 0.5, 1200.0, 1.0)
                 .Aufbau(AW3B, "Wand B", 0.8).Schicht("L3B", AW3B, 0, "Mauerwerk", 0.36, 0.6, 1400.0, 1.0)
                 .Aufbau(AWX, "Wand X", 0.7).Schicht("LX", AWX, 0, "Mauerwerk", 0.3, 0.5, SqprojProbenErzeuger.PLATZHALTER, 1.0)
@@ -114,7 +117,7 @@ namespace EPOS.Kern.Tests
             Assert.False(a.Abgelehnt, a.Ablehnung?.ToString());
             Assert.True(a.BauteileGelesen);
             Assert.Equal(8, a.Huellflaechen.Count);
-            Assert.Equal(6, a.Aufbauten.Count);
+            Assert.Equal(7, a.Aufbauten.Count);
             Assert.Contains(a.Meldungen, m => m.Schluessel == SqprojProtokoll.BAUTEILE);
 
             // SortNum aufsteigend = innen → außen; c in kJ/(kg·K) · 1 000.
@@ -185,7 +188,8 @@ namespace EPOS.Kern.Tests
             Assert.False(w1.UAbweichend);
             Assert.True(w1.UeberGuid);
 
-            // Rang 2: anderer Stand — der Katalog trifft das U der IFC eindeutig (auch unbenutzt).
+            // Rang 2: anderer Stand — der Katalog trifft das U der IFC (auch unbenutzt); von zwei Aufbauten im Band entscheidet
+            // das gleiche U.
             SqprojAufbauentscheid w2 = E("W2");
             Assert.Equal(Aufbaurang.Projektkatalog, w2.Rang);
             Assert.Equal(SqprojAufbauProbe.N(SqprojAufbauProbe.AW2), w2.Aufbau.Kennung);

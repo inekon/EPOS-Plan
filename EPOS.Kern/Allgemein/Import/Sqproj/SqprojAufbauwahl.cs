@@ -52,7 +52,8 @@ namespace WindowsFormsApplication1
     /// mehrere Hüllflächen mit verschiedenen Aufbauten, wird nicht geraten.</item>
     /// <item><b>Rang 1</b>: der Aufbau an der Hüllfläche, wenn sein U auf <see cref="U_TOLERANZ"/> zum U der IFC passt (ohne IFC-U
     /// direkt). <b>Rang 2</b>: sonst der Aufbau im Katalog der Datei (auch unbenutzte), dessen U eindeutig das U der IFC trifft
-    /// (gleiche Schichtfolgen zählen als einer; mehrere verschiedene: nicht raten). Sonst bleibt das Bauteil auf dem Weg der IFC
+    /// (gleiche Schichtfolgen zählen als einer; liegen mehrere im Band, entscheidet ein eindeutig gleiches U
+    /// (<see cref="U_GLEICH"/>); sonst nicht raten). Sonst bleibt das Bauteil auf dem Weg der IFC
     /// (Rang 3 bzw. 4, entschieden im <see cref="GebaeudeBauteilvorschlag"/>).</item>
     /// <item><b>Richtung</b>: die Schichten laufen innen → außen aus Sicht des Innenraums der Hüllfläche
     /// (<see cref="SqprojHuellflaeche.InnenRaum"/>); liegt dieser Raum im IFC-Bauteil nicht an erster Stelle, wird die Folge
@@ -64,6 +65,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Die Toleranz des U-Abgleichs (E97): |U₁/U₂ − 1| ≤ 1 %.</summary>
         internal const double U_TOLERANZ = 0.01;
+
+        /// <summary>Ein „gleiches“ U (Befund N.7): |U₁/U₂ − 1| ≤ 0,01 % — entscheidet unter mehreren Katalogtreffern im Band.</summary>
+        internal const double U_GLEICH = 1e-4;
 
         private readonly Dictionary<AbbildBauteil, SqprojAufbauentscheid> _je = new Dictionary<AbbildBauteil, SqprojAufbauentscheid>(ReferenceEqualityComparer.Instance);
         private readonly Dictionary<string, AbbildAufbau> _abbilder = new Dictionary<string, AbbildAufbau>(StringComparer.Ordinal);
@@ -157,6 +161,9 @@ namespace WindowsFormsApplication1
             {
                 List<List<SqprojAufbau>> gruppen = katalog.Where(a => Passt(a.UWert.Value, uIfc.Value))
                                                           .GroupBy(a => a.Signatur, StringComparer.Ordinal).Select(g => g.ToList()).ToList();
+                // Liegen mehrere Schichtfolgen im Band, entscheidet ein gleiches U (Befund N.7: < 0,01 %), wenn es eindeutig ist.
+                List<List<SqprojAufbau>> gleich = gruppen.Where(g => Math.Abs(g[0].UWert.Value / uIfc.Value - 1.0) <= U_GLEICH).ToList();
+                if (gruppen.Count > 1 && gleich.Count == 1) gruppen = gleich;
                 if (gruppen.Count == 1)
                 {
                     gewaehlt = gruppen[0][0];
