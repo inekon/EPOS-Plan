@@ -317,7 +317,7 @@ namespace WindowsFormsApplication1
                 if (!string.IsNullOrWhiteSpace(_abbild.Plz))
                     campus.Add(new XElement(NS + "Location",
                         new XElement(NS + "ZipcodeOrPostalCode", Klartext(_abbild.Plz.Trim())),
-                        new XElement(NS + "CADModelAzimuth", Zahl(_abbild.NordwinkelGrad ?? Exportnordwinkel(_geometrie, _koerper) ?? 0.0))));
+                        new XElement(NS + "CADModelAzimuth", Zahl(Exportnordwinkel(_geometrie, _koerper) ?? _abbild.NordwinkelGrad ?? 0.0))));
                 campus.Add(Gebaeude(g));
 
                 foreach (AbbildBauteil f in flaechen)
@@ -527,10 +527,10 @@ namespace WindowsFormsApplication1
                 surface.Add(Rechteck(f));
                 Koerperflaeche flaeche = Koerperflaeche(f);
                 if (flaeche != null) surface.Add(new XElement(NS + "PlanarGeometry", Ring(flaeche.PunkteM)));
+                else if (_koerper != null && !InnereMasse(f)) _ohnePolygon.Add(f.Name ?? f.Kennung);
                 // HC-5c: An einem Prisma kann eine Fläche auf mehreren Kanten stehen; das Schema kennt je Surface EINEN PolyLoop.
                 if (flaeche != null && _koerper.Raum(flaeche.RaumKennung)?.AusGrundriss == true
                     && _koerper.Flaechen(flaeche.RaumKennung, f.Kennung).Count > 1) _teilplatten.Add(f.Name ?? f.Kennung);
-                else if (_koerper != null && !InnereMasse(f)) _ohnePolygon.Add(f.Name ?? f.Kennung);
                 for (int i = 0; i < f.Oeffnungen.Count; i++)
                     surface.Add(Oeffnung(f.Oeffnungen[i], flaeche, i, f.Oeffnungen.Count));
                 return surface;
