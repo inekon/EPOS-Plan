@@ -792,6 +792,11 @@
         internal static string SimAufheizReserveErl => MyResource.Resource.KI_DLG_SIM_AUFH_RESERVE_ERL;
         internal static string SimAufheizArtName => MyResource.Resource.SIMKONF_AUFH_LBL_ART;
         internal static string SimAufheizArtErl => MyResource.Resource.KI_DLG_SIM_AUFH_ART_ERL;
+        // Der Aufschlag (KP3, Welle O1b; E59 (2)): Namen = Beschriftungen der zwei Felder.
+        internal static string SimAufheizAufschlagHName => MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H;
+        internal static string SimAufheizAufschlagHErl => MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_KI_H_ERL;
+        internal static string SimAufheizAufschlagProzentName => MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT;
+        internal static string SimAufheizAufschlagProzentErl => MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_KI_PROZENT_ERL;
         // Die Einspeisegrenze (Welle M5, PV3): Namen = Beschriftungen des Abschnitts.
         internal static string SimEinspeisegrenzeName => MyResource.Resource.SIMKONF_LBL_EINSPEISEGRENZE;
         internal static string SimEinspeisegrenzeErl => MyResource.Resource.KI_DLG_SIM_EINSPEISEGRENZE_ERL;

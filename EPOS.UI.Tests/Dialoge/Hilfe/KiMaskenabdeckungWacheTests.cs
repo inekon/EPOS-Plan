@@ -434,7 +434,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Feldkarte führt sie als netzverlust_* und zirkulation_* (9 → 17).
         // Welle M5 (PV3): der Abschnitt „Einspeisegrenze" mit Wert und Einheit - die Feldkarte führt sie
         // als einspeisegrenze und einspeisegrenze_einheit (17 → 19).
-        new("SimulationKonfigSeite", 24),
+        // KP3 O1b (E59 (2)): der Aufschlag unter der Art in Stunden und Prozent - die Feldkarte führt
+        // ihn als aufheiz_aufschlag_h und aufheiz_aufschlag_prozent (Aufheizoptimierung 9 → 11, 24 → 26).
+        new("SimulationKonfigSeite", 26),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

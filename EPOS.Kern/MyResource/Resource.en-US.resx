@@ -46994,5 +46994,26 @@ chart</value>
   <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
     <value>All three scenarios (VALERI)</value>
   </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_LBL_H" xml:space="preserve">
+    <value>Surcharge (h)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT" xml:space="preserve">
+    <value>Surcharge (%)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL" xml:space="preserve">
+    <value>The surcharge lengthens every preheat ramp that a step of the heating calendar triggers and that already preheats: n steps (preheat time n − 1 h, n &gt; 1) become n′ = min(48, n + max(surcharge h, ⌈n · surcharge % / 100⌉)), at most up to the end of the setback. The larger of the two values applies; empty or 0 means no surcharge. It does not act on the manual preheat time of a building; the longest preheat time remains the designed time.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL_AUS" xml:space="preserve">
+    <value>A surcharge of {0} h and {1} % is stored; it only acts once preheat optimisation is switched on.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE" xml:space="preserve">
+    <value>· surcharge: longest ramp n′ = {0} instead of {1} steps</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_KI_H_ERL" xml:space="preserve">
+    <value>Surcharge on the preheat ramp in whole hours, 0 to 24; empty or 0 = no surcharge (saved as empty). The larger value of hours and percent applies: n′ = min(48, n + max(h, ⌈n · % / 100⌉)), only on ramps of a calendar step with n &gt; 1, not on the manual preheat time. Only with preheat optimisation switched on; saved immediately.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_KI_PROZENT_ERL" xml:space="preserve">
+    <value>Surcharge on the preheat ramp in percent of the step count n, 0 to 100, rounded up to whole steps; empty or 0 = no surcharge (saved as empty). The larger value of hours and percent applies. Only with preheat optimisation switched on; saved immediately.</value>
+  </data>
 </root>
 

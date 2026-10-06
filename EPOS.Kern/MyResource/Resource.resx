@@ -47001,5 +47001,26 @@ Chart</value>
   <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
     <value>Alle drei Szenarien (VALERI)</value>
   </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_LBL_H" xml:space="preserve">
+    <value>Aufschlag (h)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT" xml:space="preserve">
+    <value>Aufschlag (%)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL" xml:space="preserve">
+    <value>Der Aufschlag verlängert jede Aufheizrampe, die ein Sprung des Heizkalenders auslöst und die schon vorheizt: Aus n Stufen (Aufheizzeit n − 1 h, n &gt; 1) werden n′ = min(48, n + max(Aufschlag h, ⌈n · Aufschlag % / 100⌉)), höchstens bis zum Ende der Absenkung. Es gilt der größere der beiden Werte; leer oder 0 heißt kein Aufschlag. Auf die manuelle Aufheizzeit eines Gebäudes wirkt er nicht; t_auf,max bleibt die bemessene Zeit.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL_AUS" xml:space="preserve">
+    <value>Gespeichert ist ein Aufschlag von {0} h und {1} %; er wirkt erst mit eingeschalteter Aufheizoptimierung.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE" xml:space="preserve">
+    <value>· Aufschlag: längste Rampe n′ = {0} statt {1} Stufen</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_KI_H_ERL" xml:space="preserve">
+    <value>Aufschlag auf die Aufheizrampe in ganzen Stunden, 0 bis 24; leer oder 0 = kein Aufschlag (gespeichert als leer). Es gilt der größere Wert aus Stunden und Prozent: n′ = min(48, n + max(h, ⌈n · % / 100⌉)), nur auf Rampen eines Kalendersprungs mit n &gt; 1, nicht auf die manuelle Aufheizzeit. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_KI_PROZENT_ERL" xml:space="preserve">
+    <value>Aufschlag auf die Aufheizrampe in Prozent der Stufenzahl n, 0 bis 100, aufgerundet auf ganze Stufen; leer oder 0 = kein Aufschlag (gespeichert als leer). Es gilt der größere Wert aus Stunden und Prozent. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
 </root>
 

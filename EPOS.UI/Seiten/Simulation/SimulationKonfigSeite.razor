@@ -330,7 +330,12 @@
        ρ in % und Art der Aufheizzeit. Jedes Feld schreibt sofort die GANZE Einstellung
        (AufheizvorgabeSchreiben, normalisiert nach Festlegung 24: Vorgaben als NULL, ein getippter
        Wert bleibt); scheitert es, kehrt der Abschnitt zurueck (@key) und die Seite sagt es. Die
-       Herleitungszeilen je Gebaeude stehen nur mit ihrem Delegaten (AufheizHerleitung). *@
+       Herleitungszeilen je Gebaeude stehen nur mit ihrem Delegaten (AufheizHerleitung).
+       Unter der Art (Welle O1b; E59 (2), Festlegungen 35, 36) der Aufschlag in Stunden (0-24) und
+       Prozent (0-100): 0 und leer schreiben NULL, jedes andere Feld traegt ihn unveraendert mit; n'
+       steht in der Herleitungszeile je Gebaeude (die Huelle rechnet es mit der Formel des Kerns).
+       Bei Schalter aus stehen die Felder nicht da - ein gespeicherter Aufschlag bleibt (Festlegung 36)
+       und eine Zeile nennt ihn samt dem Grund, warum er nicht wirkt. *@
     @if (Parameter?.Laden is not null)
     {
         <fieldset class="epos-simkonfig-einstellungen" disabled="@_daten.Gesperrt">
@@ -477,6 +482,19 @@
                                              Auswahl="@(Aufheizung.IstFest ? 1 : 0)"
                                              Aktiv="@(!_daten.Gesperrt)"
                                              AuswahlChanged="AufheizArtGewaehlt" />
+                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H"
+                                              Wert="@Aufheizung.AufschlagH"
+                                              Min="0" Max="@WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX"
+                                              Platzhalter="@Vorgabetext(0)"
+                                              Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="AufheizAufschlagHGesetzt" />
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT"
+                                            Wert="@Aufheizung.AufschlagProzent"
+                                            Min="0" Max="@WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX"
+                                            Platzhalter="@Vorgabetext(0)"
+                                            Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="AufheizAufschlagProzentGesetzt" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_AUFSCHLAG_HRL" />
                                 <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AN" />
                                 @if (_parameter.Anlagenkopplung == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1)
                                 {
@@ -490,6 +508,10 @@
                             else
                             {
                                 <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AUS" />
+                                @if (Aufheizung.HatAufschlag)
+                                {
+                                    <Herleitungszeile Text="@AufschlagAusZeile" />
+                                }
                             }
                         </KindInhalt>
                     </Formularraster>
@@ -1483,7 +1505,7 @@
     private void AufheizSchalterGesetzt(bool an)
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
     }
 
     private void AufheizBemessungGewaehlt(int? index)
@@ -1491,13 +1513,13 @@
         if (index is null) return;
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         string? bemessung = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
     }
 
     private void AufheizAbzugGesetzt(double? wert)
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
     }
 
     /// <summary>Die Reserve kommt in Prozent und wird als Anteil gespeichert (Festlegung 15).</summary>
@@ -1505,7 +1527,7 @@
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         double? anteil = prozent is double p ? p / 100.0 : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent));
     }
 
     private void AufheizArtGewaehlt(int? index)
@@ -1513,8 +1535,36 @@
         if (index is null) return;
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         string? art = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!, a.AufschlagH, a.AufschlagProzent));
     }
+
+    /// <summary>
+    /// Der Aufschlag in Stunden (Welle O1b, E59 (2)); 0 und leer werden NULL — die Normalisierung macht
+    /// der Record (Festlegung 36), die Grenzen 0 … 24 das Feld.
+    /// </summary>
+    private void AufheizAufschlagHGesetzt(int? stunden)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                    stunden, a.AufschlagProzent));
+    }
+
+    /// <summary>Der Aufschlag in Prozent von n (Welle O1b, E59 (2)); 0 und leer werden NULL (Festlegung 36).</summary>
+    private void AufheizAufschlagProzentGesetzt(double? prozent)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                    a.AufschlagH, prozent));
+    }
+
+    /// <summary>
+    /// Die Zeile bei Schalter aus mit gespeichertem Aufschlag (Festlegung 36: aus behält ihn) — sie nennt
+    /// beide Werte und den Grund, warum er nicht wirkt.
+    /// </summary>
+    private string AufschlagAusZeile
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_AUFSCHLAG_HRL_AUS,
+                         Aufheizung.AufschlagHWirksam.ToString(System.Globalization.CultureInfo.CurrentCulture),
+                         Aufheizung.AufschlagProzentWirksam.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
 
     /// <summary>
     /// Schreibt die ganze Einstellung SOFORT über die Naht der Hülle (Muster Kühlschalter). Steht
