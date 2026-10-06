@@ -51,6 +51,10 @@
                     @onclick="ZuordnungsreiterWaehlen">@Texte.ReiterZuordnung</button>
         </div>
 
+        @* NP4b (Q46): Kopfknopf "Aus Projektdatei..." - eigene Komponente, eigener Weg; danach liest das Blatt neu. *@
+        <ProjektdateiProfile Weg="@Weg.Projektdatei" Knopftext="@Weg.Projektdatei?.Texte.KnopfBlatt"
+                             Uebernommen="() => Melden(RaumnutzungErgebnis.Gut)" />
+
         @if (_meldung is not null)
         {
             <p class="epos-raumnutzung-meldung" role="alert">@_meldung</p>

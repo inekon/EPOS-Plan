@@ -342,6 +342,9 @@ public sealed class RaumnutzungWeg
     /// <summary>Der Grund, warum der Katalog nicht zu haben ist (fehlende Tabellen); <c>null</c> = er ist da.</summary>
     public string? Sperrgrund { get; init; }
 
+    /// <summary>Profile aus einer Projektdatei in eine eigene Kategorie (NP4b, Q46); <c>null</c> = kein Knopf.</summary>
+    public ProjektdateiProfileWeg? Projektdatei { get; init; }
+
     /// <summary>Die Kategorien in der Reihenfolge des Kerns — die ausgelieferten zuerst.</summary>
     public Func<IReadOnlyList<RaumnutzungKategorieDaten>>? Kategorien { get; init; }
 

@@ -14843,6 +14843,52 @@ td.epos-vorlage-katalogbeschreibung {
     gap: 6px;
 }
 
+/* NP4b (Konzept Nutzungsprofile Q46): Profile aus einer Projektdatei - Knopf, Vorschau und die Rueckfrage
+   "Ergaenzen | Ersetzen" als Knopfwahl; im Blatt "Nutzungsprofile" und im Gebaeudeimport. */
+.epos-projektdateiprofile {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.epos-projektdateiprofile-oeffnen,
+.epos-projektdateiprofile-knoepfe .epos-knopf {
+    min-height: var(--epos-touchziel);
+    align-self: flex-start;
+}
+
+.epos-projektdateiprofile-vorschau {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-projektdateiprofile-kopf,
+.epos-projektdateiprofile-meldungstitel {
+    margin: 0;
+    font-weight: 600;
+}
+
+.epos-projektdateiprofile-werte {
+    color: var(--epos-text-leise);
+    font-size: 0.85rem;
+}
+
+.epos-projektdateiprofile-meldungen {
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 0.85rem;
+}
+
+.epos-projektdateiprofile-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

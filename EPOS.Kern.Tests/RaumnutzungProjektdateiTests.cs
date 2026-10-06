@@ -282,6 +282,96 @@ namespace EPOS.Kern.Tests
             Assert.Equal(vorher, c.Kategorien().Count);
         }
 
+        // =================================================================
+        //  Hülle (Vorschau, Weg des Imports, Weg des Blatts)
+        // =================================================================
+
+        private sealed class Dateiwahl : IDateiDienst
+        {
+            internal string Pfad;
+            internal string Filter;
+            public string DateiOeffnen(string titel, string filter, string startOrdner)
+            {
+                Filter = filter;
+                return Pfad;
+            }
+            public string DateiSpeichern(string titel, string filter, string vorschlag) => null;
+            public string OrdnerWaehlen(string titel, string startOrdner) => null;
+            public bool MitSystemOeffnen(string pfad) => false;
+        }
+
+        [Fact]
+        public void Huelle_Vorschau_markiert_Vorhandenes_und_die_Uebernahme_meldet_die_Zahlen()
+        {
+            if (!_db.Vorhanden) return;
+            (_, Projektdateiprofile s) = Standard();
+            EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileVorschau v = ProjektdateiProfileHuelle.Vorschau(s);
+            Assert.False(v.KategorieVorhanden);
+            Assert.Equal(new[] { "1", "71" }, v.Zeilen.Select(z => z.Nummer));
+            Assert.All(v.Zeilen, z => Assert.False(z.Vorhanden));
+            Assert.All(v.Zeilen, z => Assert.False(string.IsNullOrEmpty(z.Werte)));
+            Assert.Equal(s.Meldungen, v.Meldungen);
+
+            EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileErgebnis e = ProjektdateiProfileHuelle.Uebernehmen(s, false);
+            Assert.True(e.Ok, e.Meldung);
+            CultureInfo c = CultureInfo.CurrentCulture;
+            Assert.Equal(string.Format(c, R.RNP_PD_ERGEBNIS, s.Kategorie, 2.ToString(c), 0.ToString(c), 0.ToString(c), 0.ToString(c)), e.Meldung);
+
+            v = ProjektdateiProfileHuelle.Vorschau(s);
+            Assert.True(v.KategorieVorhanden);
+            Assert.All(v.Zeilen, z => Assert.True(z.Vorhanden));
+            Assert.Equal(0, v.Neue);
+        }
+
+        [Fact]
+        public void Huelle_Importweg_bildet_die_geladene_Datei_ab_und_ohne_Datei_eine_Ablehnung()
+        {
+            if (!_db.Vorhanden) return;
+            (SqprojAbbild a, _) = Standard();
+            SqprojStand stand = new SqprojStand("Import.sqproj", null, 0, a, null, null, null);
+            EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileWeg weg = ProjektdateiProfileHuelle.ImportWeg(() => stand);
+            Assert.NotNull(weg);
+            EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileVorschau v = weg.Laden().GetAwaiter().GetResult();
+            Assert.Equal(SqprojRaumnutzung.Kategoriename("Import.sqproj"), v.Kategorie);
+            Assert.Equal(2, v.Zeilen.Count);
+            Assert.True(weg.Uebernehmen(false).Ok);
+            Assert.NotNull(new RaumnutzungCtrl().KategorieMitNamen(v.Kategorie));
+
+            stand = null;
+            v = weg.Laden().GetAwaiter().GetResult();
+            Assert.True(v.Abgelehnt);
+            Assert.False(weg.Uebernehmen(false).Ok);
+        }
+
+        [Fact]
+        public void Huelle_Blattweg_waehlt_die_Datei_ueber_den_Dateidienst()
+        {
+            if (!_db.Vorhanden) return;
+            IDateiDienst vorher = Dienste.Datei;
+            var wahl = new Dateiwahl();
+            try
+            {
+                Dienste.Datei = wahl;
+                EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileWeg weg = ProjektdateiProfileHuelle.BlattWeg(ios: false);
+                Assert.NotNull(weg);
+                // Abgebrochen: keine Vorschau, nichts geschrieben.
+                Assert.Null(weg.Laden().GetAwaiter().GetResult());
+                Assert.Equal(R.GIMP_DLG_SQ_FILTER, wahl.Filter);
+                Assert.False(weg.Uebernehmen(false).Ok);
+
+                wahl.Pfad = Probe(SqprojProbenErzeuger.Standard());
+                EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileVorschau v = weg.Laden().GetAwaiter().GetResult();
+                Assert.False(v.Abgelehnt, v.Ablehnung);
+                Assert.Equal(SqprojRaumnutzung.Kategoriename(Path.GetFileName(wahl.Pfad)), v.Kategorie);
+                Assert.True(weg.Uebernehmen(false).Ok);
+                Assert.Equal(2, new RaumnutzungCtrl().Profile(new RaumnutzungCtrl().KategorieMitNamen(v.Kategorie).Id).Count);
+            }
+            finally
+            {
+                Dienste.Datei = vorher;
+            }
+        }
+
         private static string Text(string muster, params string[] werte) => string.Format(CultureInfo.CurrentCulture, muster, werte);
     }
 }
