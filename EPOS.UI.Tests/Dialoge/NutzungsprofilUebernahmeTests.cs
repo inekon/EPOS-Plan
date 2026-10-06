@@ -188,6 +188,41 @@ public class NutzungsprofilUebernahmeTests : EposBunitContext
         Assert.True(b.Angelegt(KonditionierungGroesse.Heizen));
     }
 
+    /// <summary>
+    /// Rote Probe NP-F10: Außenluft in m³/(h·m²) ohne lichte Höhe des Ziels setzt die Lüftung benannt nicht; mit der
+    /// Raumhöhe des Gebäudes bzw. der Zone wird sie umgerechnet und übernommen.
+    /// </summary>
+    [Fact]
+    public void Aussenluft_je_Flaeche_braucht_die_lichte_Hoehe_des_Ziels()
+    {
+        var t = new RaumnutzungTexte();
+        // Ohne Höhe: benannt, nicht gesetzt.
+        var (_, ohne, _) = Aufbauen(Weg());
+        Assert.Null(ohne.Zielhoehe);
+        ohne.ProfilWaehlen(13);
+        Assert.Contains(ohne.Profilhinweise(), h => h.Contains("m³/(h·m²)"));
+        // Das Profil trägt nur die Lüftung: am Gebäude ist nichts zu übernehmen, der Grund ist der Hinweis.
+        Assert.Contains("m³/(h·m²)", ohne.Profilsperre(t));
+        Assert.False(ohne.Profilwoche(KonditionierungGroesse.Lueftung) is not null);
+
+        // Mit der Raumhöhe des Gebäudes: 3 m³/(h·m²) ÷ 3 m = 1 1/h, rund um die Uhr.
+        GebaeudeKatalogDaten satz = KalenderkarteTests.Satz();
+        satz.Raumhoehe = 3;
+        var (_, mit, _) = Aufbauen(Weg(), satz);
+        Assert.Equal(3, mit.Zielhoehe);
+        mit.ProfilWaehlen(13);
+        Assert.Empty(mit.Profilhinweise());
+        Assert.True(mit.ProfilUebernehmenFragen(t));
+        mit.Beantworten(true);
+        Assert.True(mit.Angelegt(KonditionierungGroesse.Lueftung));
+
+        // An der Zone gilt ihre eigene Höhe vor der des Gebäudes.
+        var zone = new ZoneDaten { Id = 7, Bezeichner = "Halle", Nutzflaeche = 40, Raumhoehe = 6, Konditionierung = new KonditionierungDaten() };
+        var (_, anZone, _) = Aufbauen(Weg(), satz, zone);
+        Assert.Equal(6, anZone.Zielhoehe);
+        Assert.Equal(40, anZone.Zielflaeche);
+    }
+
     [Fact]
     public void Am_Gebaeude_ist_ein_leeres_Profil_weich_gesperrt()
     {

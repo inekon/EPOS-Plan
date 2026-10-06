@@ -407,6 +407,48 @@ namespace WindowsFormsApplication1
         /// <param name="lichteHoehe">Die lichte Höhe des Ziels für Außenluft in m³/(h·m²); <c>null</c> = ohne.</param>
         public Uebernahme ProfilUebernehmen(long idProfil, long idGebaeude, long? idZone, double? flaeche, double? lichteHoehe = null)
         {
+            return Uebernehmen(idProfil, idGebaeude, idZone, flaeche, lichteHoehe);
+        }
+
+        /// <summary>
+        /// <b>Profil übernehmen mit den Maßen des Ziels</b> (Stufe NP3b, NP-F10, Q39, Q40): Fläche und lichte Höhe liest
+        /// der Weg selbst — an der Zone ihre Nutzfläche und Raumhöhe (leer = die des Gebäudes), am Gebäude dessen
+        /// Nutzfläche und Raumhöhe (<see cref="Zielmasse"/>); sonst wie
+        /// <see cref="ProfilUebernehmen(long, long, long?, double?, double?)"/>.
+        /// </summary>
+        public Uebernahme ProfilUebernehmen(long idProfil, long idGebaeude, long? idZone)
+        {
+            (double? flaeche, double? hoehe) = Zielmasse(idGebaeude, idZone);
+            return Uebernehmen(idProfil, idGebaeude, idZone, flaeche, hoehe);
+        }
+
+        /// <summary>
+        /// <b>Fläche und lichte Höhe eines Ziels</b> aus der Datenbank (NP-F10): an der Zone <c>Tab_Zone.Nutzflaeche</c>
+        /// und <c>Raumhoehe</c> (leer = die Raumhöhe des Gebäudes), am Gebäude <c>Tab_Gebaeude.Nutzflaeche</c> und
+        /// <c>Raumhoehe</c>; ein Wert ≤ 0 heißt „ohne".
+        /// </summary>
+        public static (double? Flaeche, double? LichteHoehe) Zielmasse(long idGebaeude, long? idZone)
+        {
+            System.Data.DataTable g = DataRepository.GetDataTable(
+                "SELECT \"Nutzflaeche\", \"Raumhoehe\" FROM \"Tab_Gebaeude\" WHERE \"ID\" = ?", new DbParam("@g", idGebaeude));
+            double? flaeche = g.Rows.Count > 0 ? Zahl(g.Rows[0]["Nutzflaeche"]) : null;
+            double? hoehe = g.Rows.Count > 0 ? Zahl(g.Rows[0]["Raumhoehe"]) : null;
+            if (idZone.HasValue)
+            {
+                System.Data.DataTable z = DataRepository.GetDataTable(
+                    "SELECT \"Nutzflaeche\", \"Raumhoehe\" FROM \"Tab_Zone\" WHERE \"ID\" = ? AND \"ID_Gebaeude\" = ?",
+                    new DbParam("@z", idZone.Value), new DbParam("@g", idGebaeude));
+                flaeche = z.Rows.Count > 0 ? Zahl(z.Rows[0]["Nutzflaeche"]) : null;
+                if (z.Rows.Count > 0 && Zahl(z.Rows[0]["Raumhoehe"]) is double eigene) hoehe = eigene;
+            }
+            return (Masz(flaeche), Masz(hoehe));
+        }
+
+        private static double? Zahl(object wert)
+            => wert == null || wert == DBNull.Value ? null : Convert.ToDouble(wert, CultureInfo.InvariantCulture);
+
+        private Uebernahme Uebernehmen(long idProfil, long idGebaeude, long? idZone, double? flaeche, double? lichteHoehe)
+        {
             string bereit = Bereit();
             if (bereit != null) return Uebernahme.Fehler(bereit);
             Raumnutzungsprofil profil = ProfilLesen(idProfil);

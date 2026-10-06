@@ -1313,8 +1313,12 @@ public sealed class KonditionierungBearbeitung
     /// </summary>
     public double? Zielflaeche => Positiv(_zone is ZoneDaten z ? z.Nutzflaeche : Stand.WohnflaecheGesamt);
 
-    /// <summary>Die lichte Höhe des Ziels für Außenluft in m³/(h·m²) (NP-F10); <c>null</c> = ohne.</summary>
-    public double? Zielhoehe => null;
+    /// <summary>
+    /// <b>Die lichte Höhe des Ziels</b> für Außenluft in m³/(h·m²) (NP-F10): an der Zone ihre Raumhöhe, leer die des
+    /// Gebäudes, am Gebäude und Katalogbau die Raumhöhe des Feldsatzes; <c>null</c> = ohne — dann setzt die Übernahme die
+    /// Lüftung eines flächenbezogenen Profils benannt nicht.
+    /// </summary>
+    public double? Zielhoehe => Positiv(_zone is ZoneDaten z ? z.Raumhoehe ?? Stand.Raumhoehe : Stand.Raumhoehe);
 
     private static double? Positiv(double? w) => w is double x && double.IsFinite(x) && x > 0.0 ? x : null;
 
@@ -1368,7 +1372,8 @@ public sealed class KonditionierungBearbeitung
         KonditionierungProfilergebnis? e = Profilprobe();
         if (e is null) return t.GrundOhneWahl;
         if (!e.Ok) return string.IsNullOrEmpty(e.Meldung) ? t.GrundOhneWahl : e.Meldung;
-        if (!IstZone && !e.Posten.Any(p => p.Uebernommen)) return t.GrundOhneWerte;
+        if (!IstZone && !e.Posten.Any(p => p.Uebernommen))
+            return e.OhneWerte ? t.GrundOhneWerte : Profilhinweise().FirstOrDefault() ?? t.GrundOhneWerte;
         return null;
     }
 

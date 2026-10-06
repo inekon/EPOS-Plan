@@ -111,6 +111,42 @@ namespace EPOS.Kern.Tests
             Assert.Equal(RaumnutzungSaat.GASTRONOMIE, RaumnutzungCtrl.Kalendernutzung(gebaeude, zone));
         }
 
+        /// <summary>
+        /// Rote Probe NP-F10 im Datenbankweg: Ohne Maße liest <c>ProfilUebernehmen</c> Fläche und lichte Höhe des Ziels
+        /// selbst (<see cref="RaumnutzungCtrl.Zielmasse"/>); Außenluft in m³/(h·m²) wird mit der Höhe umgerechnet, ohne
+        /// Höhe benannt nicht gesetzt.
+        /// </summary>
+        [Fact]
+        public void Der_Datenbankweg_liest_Flaeche_und_Hoehe_des_Ziels()
+        {
+            if (!_db.Vorhanden) return;
+            var (gebaeude, zone) = Kopie("NP3b Maße");
+            var c = new RaumnutzungCtrl();
+            RaumnutzungCtrl.Ergebnis kat = c.KategorieAnlegen("NP3b Probe", null, null);
+            Assert.True(kat.Ok, kat.Meldung);
+            RaumnutzungCtrl.Ergebnis prof = c.ProfilAnlegen(new Raumnutzungsprofil
+            {
+                IdKatalog = kat.Id, Bezeichner = "Halle Probe", Nutzung_Von = 0, Nutzung_Bis = 24, Nutzungstage_Woche = "1111111",
+                Aussenluft = 3, Aussenluft_Einheit = RaumnutzungSchema.EINHEIT_JE_FLAECHE,
+            });
+            Assert.True(prof.Ok, prof.Meldung);
+
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Zone SET Raumhoehe = 3, Nutzflaeche = 50 WHERE ID = ?", new DbParam("@z", zone));
+            Assert.Equal((50.0, 3.0), RaumnutzungCtrl.Zielmasse(gebaeude, zone));
+            RaumnutzungCtrl.Uebernahme mit = c.ProfilUebernehmen(prof.Id, gebaeude, zone);
+            Assert.True(mit.Ok, mit.Meldung);
+            Assert.True(mit.Posten.Single(p => p.Groesse == Konditionierungsgroesse.Lueftung).Uebernommen);
+
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Zone SET Raumhoehe = NULL WHERE ID = ?", new DbParam("@z", zone));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET Raumhoehe = 0 WHERE ID = ?", new DbParam("@g", gebaeude));
+            Assert.Null(RaumnutzungCtrl.Zielmasse(gebaeude, zone).LichteHoehe);
+            RaumnutzungCtrl.Uebernahme ohne = c.ProfilUebernehmen(prof.Id, gebaeude, zone);
+            Assert.True(ohne.Ok, ohne.Meldung);
+            RaumnutzungCtrl.Uebernahmeposten luft = ohne.Posten.Single(p => p.Groesse == Konditionierungsgroesse.Lueftung);
+            Assert.False(luft.Uebernommen);
+            Assert.Equal(Raumnutzungshinweis.LueftungOhneHoehe, luft.Hinweis);
+        }
+
         /// <summary>Die reine Anwendung und der Datenbankweg sehen dasselbe Ergebnis (ein Schritt für beide).</summary>
         [Fact]
         public void Reine_Anwendung_und_Datenbankweg_tragen_dieselben_Posten()
