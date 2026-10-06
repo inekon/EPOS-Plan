@@ -40,6 +40,7 @@ public class RaumnutzungBlattTests : EposBunitContext
             Profile = id => Profile.Where(p => p.IdKategorie == id).ToList(),
             Zuordnungen = () => Zuordnungen.ToList(),
             Vorschau = (p, flaeche, hoehe) => Vorschau(p),
+            Nutzungstage = p => p.NutzungstageWoche == "1111100" ? 252 : 365,
             KategorieAnlegen = (bez, besch, quelle) =>
             {
                 Spur.Add("KategorieAnlegen:" + bez);
@@ -128,7 +129,7 @@ public class RaumnutzungBlattTests : EposBunitContext
         w.Profile.Add(new RaumnutzungProfilDaten
         {
             Id = PROFIL_EIGEN, IdKategorie = KAT_EIGEN, Nummer = "", Bezeichner = "Mein Büro",
-            HeizSoll = 21, KuehlSoll = 26, NutzungstageWoche = "1111100", NutzungstageJahr = 250,
+            HeizSoll = 21, KuehlSoll = 26, NutzungstageWoche = "1111100",
             NutzungVon = 7, NutzungBis = 18, GeraeteLeistung = 8, PersonenFlaeche = 12,
         });
         w.Zuordnungen.Add(new RaumnutzungZuordnungDaten(21, RaumnutzungZuordnungsart.DinNummer, "1", PROFIL_MUSTER, true));
@@ -191,6 +192,27 @@ public class RaumnutzungBlattTests : EposBunitContext
     //  Der Profileditor
     // =====================================================================
 
+    /// <summary>
+    /// E93: Die Nutzungstage im Jahr sind keine Eingabe — das Blatt zeigt sie als Lesezeile aus dem Weg der Hülle
+    /// (Wochenmuster und Feiertage) und folgt einer Änderung des Wochenmusters; ohne Delegat steht keine Zeile da.
+    /// </summary>
+    [Fact]
+    public void Die_Nutzungstage_sind_eine_Lesezeile_aus_dem_Weg()
+    {
+        Probeweg w = Probekatalog();
+        IRenderedComponent<RaumnutzungBlatt> cut = Blatt(w);
+        cut.Find("[data-kategorie=\"2\"] .epos-raumnutzung-kategorie-waehlen").Click();
+        cut.Find("[data-profil=\"12\"] .epos-raumnutzung-profil-waehlen").Click();
+
+        Assert.Equal("Nutzungstage im Jahr: 252 (aus Wochenmuster und Feiertagen)",
+                     cut.Find(".epos-raumnutzung-tage .epos-herleitung-text").TextContent);
+        Assert.DoesNotContain("Nutzungstage je Jahr", cut.Markup);
+        cut.InvokeAsync(() => cut.Instance.Arbeitsstand!.NutzungstageWoche = "1111111");
+        cut.Render();
+        Assert.Equal("Nutzungstage im Jahr: 365 (aus Wochenmuster und Feiertagen)",
+                     cut.Find(".epos-raumnutzung-tage .epos-herleitung-text").TextContent);
+    }
+
     /// <summary>Ein eigenes Profil lässt sich ändern; der Editor gibt den ganzen Feldsatz weiter.</summary>
     [Fact]
     public void Ein_eigenes_Profil_laesst_sich_aendern()
@@ -207,7 +229,6 @@ public class RaumnutzungBlattTests : EposBunitContext
         cut.Find(".epos-raumnutzung-speichern").Click();
         Assert.Contains("ProfilAendern:12", w.Spur);
         Assert.NotNull(w.Geschrieben);
-        Assert.Equal(250, w.Geschrieben.NutzungstageJahr);
         Assert.Equal(8, w.Geschrieben.GeraeteLeistung);
     }
 
@@ -455,6 +476,7 @@ public class RaumnutzungBlattTests : EposBunitContext
         Assert.Equal(7, zugang.Lesen("np_nutzung_von"));
         Assert.Equal("1/h", zugang.Lesen("np_luft_einheit"));
         Assert.Equal(false, zugang.Lesen("np_feiertage"));
+        Assert.Equal(252, zugang.Lesen("np_tage_jahr"));   // abgeleitet (E93), nur lesbar
 
         cut.InvokeAsync(() =>
         {
@@ -464,12 +486,14 @@ public class RaumnutzungBlattTests : EposBunitContext
             zugang.Setzen("np_feiertage", true);
             zugang.Setzen("np_woche", "1111110");
             zugang.Setzen("np_kategorie", "Fremd");   // nur lesbar: nimmt nichts an
+            zugang.Setzen("np_tage_jahr", 200);        // nur lesbar: nimmt nichts an
         });
         Assert.Equal(22.5, cut.Instance.Arbeitsstand!.HeizSoll);
         Assert.Equal(0.5, cut.Instance.Arbeitsstand.PersonenAnteil);
         Assert.Equal(50.0, zugang.Lesen("np_personen_anteil"));
         Assert.Equal(RaumnutzungLuftEinheit.JeFlaeche, cut.Instance.Arbeitsstand.LuftEinheit);
         Assert.Equal("Eigene Profile", zugang.Lesen("np_kategorie"));
+        Assert.Equal(365, zugang.Lesen("np_tage_jahr"));   // folgt dem neuen Wochenmuster
         Assert.Throws<InvalidOperationException>(() => zugang.Setzen("np_woche", "12"));
         Assert.Throws<InvalidOperationException>(() => zugang.Setzen("np_luft_einheit", "l/s"));
         // Der Katalog bleibt unberührt, bis der Anwender „Speichern" klickt.

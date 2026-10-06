@@ -46200,9 +46200,6 @@ Chart</value>
   <data name="RNP_FRAGE_ZUORDNUNG_LOESCHEN" xml:space="preserve">
     <value>Die Zuordnung „{0}“ löschen?</value>
   </data>
-  <data name="RNP_TXT_TAGE" xml:space="preserve">
-    <value>erzeugt: {0} Nutzungstage, Quelle: {1} Tage</value>
-  </data>
   <data name="RNP_BTN_PROFIL_UEBERNEHMEN" xml:space="preserve">
     <value>Nutzungsprofil übernehmen…</value>
   </data>
@@ -46415,6 +46412,12 @@ Chart</value>
   </data>
   <data name="KOND_TXT_ZUSTAND_PROFIL" xml:space="preserve">
     <value>aus Nutzungsprofil {0}</value>
+  </data>
+  <data name="RNP_TXT_NUTZUNGSTAGE" xml:space="preserve">
+    <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen)</value>
+  </data>
+  <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
+    <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2}</value>
   </data>
 </root>
 

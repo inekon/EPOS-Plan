@@ -59,6 +59,22 @@ namespace WindowsFormsApplication1
                                              string Nennwertherleitung, Raumnutzungshinweis Hinweis);
 
     /// <summary>
+    /// <b>Die abgeleiteten Nutzungstage eines Profils</b> (E93) im festen Raster von 365 Tagen — keine Eingabe:
+    /// <see cref="Raumnutzungsgenerator.Nutzungstage"/> zählt sie aus Wochenmuster, Feiertagen und Ferien des Ziels.
+    /// </summary>
+    /// <param name="Wochenmuster">Die Tage des Wochenmusters (<c>Nutzungstage_Woche</c>, leer = alle sieben).</param>
+    /// <param name="Feiertage">Die Nutzungstage, die die Feiertage „wie Sonntag" nehmen (Saldo; 0 ohne die Vorgabe).</param>
+    /// <param name="Ferientage">Die übrigen Nutzungstage in den Ferienzeiträumen des Ziels; 0 ohne Ziel.</param>
+    public readonly record struct Raumnutzungstage(int Wochenmuster, int Feiertage, int Ferientage)
+    {
+        /// <summary>Die Nutzungstage aus Wochenmuster und Feiertagen — die Zahl des Profils selbst.</summary>
+        public int OhneFerien => Wochenmuster - Feiertage;
+
+        /// <summary>Die Nutzungstage am Ziel: ohne Feiertage und ohne Ferientage.</summary>
+        public int Tage => OhneFerien - Ferientage;
+    }
+
+    /// <summary>
     /// <b>Der Generator der Nutzungsprofile</b> (Konzept Nutzungsprofile 4.3, NP-F1, NP-F6, NP-F7, NP-F9, NP-F10, Q38–Q40):
     /// macht aus einem <see cref="Raumnutzungsprofil"/> je Größe eine <see cref="Konditionierungsvorlage"/> — dieselbe
     /// Form, die eine ausgelieferte Vorlage hat —, die <see cref="Konditionierungsarbeit.VorlageUebernehmen"/> wie jede
@@ -217,7 +233,7 @@ namespace WindowsFormsApplication1
             if (tag.Traegt) s = s.MitVorgabe(g, DbWerte.KOND_ZEILE_TAG, tag.Zelle());
             if (!ausser.Traegt || (tag.Traegt && ausser.Gleich(tag))) return s;     // durchgehend: nur die Zeile Tag
 
-            bool[] genutzt = Nutzungstage(p);
+            bool[] genutzt = Wochenmuster(p);
             bool ganztags = Ganztags(von, bis);
             if (!ganztags)
                 s = s.MitVorgabe(g, DbWerte.KOND_ZEILE_NACHT, ausser.Zelle(Stunde(bis), Stunde(von)));
@@ -258,7 +274,7 @@ namespace WindowsFormsApplication1
             => w.HasValue ? Math.Round(w.Value, NACHKOMMA, MidpointRounding.AwayFromZero) : (double?)null;
 
         /// <summary>Die Nutzungstage Mo … So; ohne Angabe alle sieben.</summary>
-        private static bool[] Nutzungstage(Raumnutzungsprofil p)
+        private static bool[] Wochenmuster(Raumnutzungsprofil p)
         {
             var t = new bool[TAGE];
             string w = p.Nutzungstage_Woche;
@@ -310,7 +326,7 @@ namespace WindowsFormsApplication1
                 hinweis = Raumnutzungshinweis.StundenprofilUnlesbar;
                 return null;
             }
-            bool[] genutzt = Nutzungstage(p);
+            bool[] genutzt = Wochenmuster(p);
             var woche = new double[Kalenderwoche.WOCHENWERTE];
             for (int d = 0; d < TAGE; d++)
                 for (int h = 0; h < STUNDEN; h++)
@@ -390,6 +406,72 @@ namespace WindowsFormsApplication1
             }
             return null;
         }
+
+        // =================================================================
+        //  Nutzungstage im Jahr (E93)
+        // =================================================================
+
+        private const int TAGE_IM_JAHR = 365;
+        private const int SONNTAG = 6;
+
+        /// <summary>
+        /// <b>Die Nutzungstage im Jahr, abgeleitet</b> (E93) — im festen Raster von 365 Tagen, ohne Datenbank: die Tage des
+        /// Wochenmusters (Wochentag des 1. Januar aus <paramref name="referenzjahr"/>), bei <c>Feiertage_Wie_Sonntag</c> die
+        /// neun Feiertage in der Lage von <see cref="Kalenderregel.Feiertag"/> (<see cref="Feiertage.Jahrestag"/>) wie ein
+        /// Sonntag, und die Nutzungstage, die in einen Ferienzeitraum des Ziels fallen (Grenze 0 oder 366 = „aus", Beginn nach
+        /// Ende = über den Jahreswechsel; ein ungültiger Zeitraum zählt nicht). Der Generator liest die Zahl nicht.
+        /// </summary>
+        /// <param name="profil">Das Profil.</param>
+        /// <param name="ferien">Die Ferienzeiträume des Ziels (die des Gebäudes); <c>null</c> = ohne Ziel.</param>
+        /// <param name="referenzjahr">Das Bezugsjahr der Wochentage und Feiertage.</param>
+        public static Raumnutzungstage Nutzungstage(Raumnutzungsprofil profil, Matrixeingang ferien = null,
+                                                    int referenzjahr = Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE)
+        {
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            bool[] genutzt = Wochenmuster(profil);
+            int w0 = Konditionierungsarbeitsstand.WochentagDesErstenJanuar(referenzjahr);
+            var feiertag = new bool[TAGE_IM_JAHR + 1];
+            if (profil.Feiertage_Wie_Sonntag == true)
+                foreach (string regel in DbWerte.KOND_FEIERTAGE)
+                {
+                    int t = Feiertage.Jahrestag(regel, referenzjahr);
+                    if (t >= 1 && t <= TAGE_IM_JAHR) feiertag[t] = true;
+                }
+            bool[] frei = Ferientage(ferien);
+
+            int muster = 0, mitFeiertagen = 0, ferientage = 0;
+            for (int t = 1; t <= TAGE_IM_JAHR; t++)
+            {
+                int wochentag = (w0 + t - 1) % TAGE;
+                if (genutzt[wochentag]) muster++;
+                if (!(feiertag[t] ? genutzt[SONNTAG] : genutzt[wochentag])) continue;
+                mitFeiertagen++;
+                if (frei[t]) ferientage++;
+            }
+            return new Raumnutzungstage(muster, muster - mitFeiertagen, ferientage);
+        }
+
+        /// <summary>Die Tage 1 … 365 in einem Ferienzeitraum des Ziels (Index = Jahrestag).</summary>
+        private static bool[] Ferientage(Matrixeingang b)
+        {
+            var frei = new bool[TAGE_IM_JAHR + 1];
+            if (b == null) return frei;
+            for (int k = 0; k < Matrixeingang.FERIENZEITRAEUME; k++)
+            {
+                double von = b.Ferienbeginn[k], bis = b.Ferienende[k];
+                if (!Ferientag(von) || !Ferientag(bis)) continue;
+                for (int t = (int)von; ; t = t % TAGE_IM_JAHR + 1)
+                {
+                    frei[t] = true;
+                    if (t == (int)bis) break;
+                }
+            }
+            return frei;
+        }
+
+        /// <summary>Ein ganzer Jahrestag 1 … 365 — 0 und 366 heißen „aus".</summary>
+        private static bool Ferientag(double tag)
+            => double.IsFinite(tag) && tag >= 1.0 && tag <= TAGE_IM_JAHR && tag == Math.Floor(tag);
 
         // =================================================================
         //  Nennwerte (Q38–Q40)

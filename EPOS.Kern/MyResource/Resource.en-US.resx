@@ -46193,9 +46193,6 @@ chart</value>
   <data name="RNP_FRAGE_ZUORDNUNG_LOESCHEN" xml:space="preserve">
     <value>Delete the mapping “{0}”?</value>
   </data>
-  <data name="RNP_TXT_TAGE" xml:space="preserve">
-    <value>generated: {0} usage days, source: {1} days</value>
-  </data>
   <data name="RNP_BTN_PROFIL_UEBERNEHMEN" xml:space="preserve">
     <value>Apply usage profile…</value>
   </data>
@@ -46408,6 +46405,12 @@ chart</value>
   </data>
   <data name="KOND_TXT_ZUSTAND_PROFIL" xml:space="preserve">
     <value>from usage profile {0}</value>
+  </data>
+  <data name="RNP_TXT_NUTZUNGSTAGE" xml:space="preserve">
+    <value>Usage days per year: {0} (from weekly pattern and public holidays)</value>
+  </data>
+  <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
+    <value>Usage days per year: {0} (from weekly pattern and public holidays), minus {1} holiday-period days = {2}</value>
   </data>
 </root>
 

@@ -642,8 +642,6 @@ namespace WindowsFormsApplication1
             if (m != null) return m;
             if (p.Nutzungstage_Woche != null && (p.Nutzungstage_Woche.Length != 7 || p.Nutzungstage_Woche.Any(c => c != '0' && c != '1')))
                 return Kennwert("Nutzungstage_Woche", p.Nutzungstage_Woche);
-            if (p.Nutzungstage_Jahr.HasValue && (p.Nutzungstage_Jahr < 1 || p.Nutzungstage_Jahr > 365))
-                return Kennwert("Nutzungstage_Jahr", p.Nutzungstage_Jahr);
             m = Groesse("Heiz_Soll", p.Heiz_Soll, Konditionierungsgroesse.Heizsoll)
                 ?? Groesse("Heiz_Soll_Ausserhalb", p.Heiz_Soll_Ausserhalb, Konditionierungsgroesse.Heizsoll)
                 ?? Groesse("Kuehl_Soll", p.Kuehl_Soll, Konditionierungsgroesse.Kuehlsoll)

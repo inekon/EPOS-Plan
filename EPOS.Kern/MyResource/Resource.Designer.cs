@@ -89175,6 +89175,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen) ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NUTZUNGSTAGE {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NUTZUNGSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2} ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NUTZUNGSTAGE_FERIEN {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NUTZUNGSTAGE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Nutzungsprofilkatalog ist in dieser Datenbank nicht angelegt. ähnelt.
         /// </summary>
         public static string RNP_TXT_OHNE_TABELLEN {
@@ -89216,15 +89234,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_TXT_SOFORT {
             get {
                 return ResourceManager.GetString("RNP_TXT_SOFORT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die erzeugt: {0} Nutzungstage, Quelle: {1} Tage ähnelt.
-        /// </summary>
-        public static string RNP_TXT_TAGE {
-            get {
-                return ResourceManager.GetString("RNP_TXT_TAGE", resourceCulture);
             }
         }
         

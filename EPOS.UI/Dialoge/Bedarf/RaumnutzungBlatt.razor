@@ -198,13 +198,17 @@
                                                       WertChanged="@(v => { s.BetriebBis = v; })" />
                                         <Textfeld Bezeichnung="@Texte.LabelWoche" Wert="@s.NutzungstageWoche" Hoechstlaenge="7"
                                                   NurLesen="@lesend" WertChanged="@(v => { s.NutzungstageWoche = v ?? ""; })" />
-                                        <Ganzzahlfeld Bezeichnung="@Texte.LabelTageJahr" Min="0" Max="365"
-                                                      Wert="@s.NutzungstageJahr" Aktiv="@(!lesend)"
-                                                      WertChanged="@(v => { s.NutzungstageJahr = v; })" />
                                         <Schalter Bezeichnung="@Texte.LabelFeiertage" Wert="@(s.FeiertageWieSonntag == true)"
                                                   Aktiv="@(!lesend)" WertChanged="@(v => { s.FeiertageWieSonntag = v; })" />
                                     </KindInhalt>
                                 </Formularraster>
+                                @* Die Nutzungstage im Jahr sind keine Eingabe: abgeleitet aus Wochenmuster und Feiertagen (E93). *@
+                                @if (Weg.Nutzungstage?.Invoke(s) is int tage)
+                                {
+                                    <div class="epos-raumnutzung-tage">
+                                        <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.TextNutzungstage, tage)" />
+                                    </div>
+                                }
                             </KindInhalt>
                         </Formulargruppe>
 
@@ -535,6 +539,7 @@
 
     protected override void OnParametersSet()
     {
+        if (KiZugang is not null) KiZugang.Nutzungstage = Weg.Nutzungstage;
         if (ReferenceEquals(_kiZugang, KiZugang)) return;
         _kiZugang?.Loesen(this);
         _kiZugang = KiZugang;

@@ -650,7 +650,8 @@ namespace WindowsFormsApplication1
         /// <b>„Vorlage übernehmen"</b> am Ort (P11, P12): nur in der Größe der Vorlage; die Zellen der
         /// Vorlage in die Spalte, der Kalender angelegt (<see cref="VorlageEintragen"/>). Dieselben
         /// Regeln wie „Zelle setzen" und „Anlegen": Zonenregel, Rückfrage „aufteilen" (F5),
-        /// Zonenkalender am Gebäude (B4), P1, Folgen (F2).
+        /// Zonenkalender am Gebäude (B4), P1 — nur ohne eigene <c>NENNWERT</c>-Zelle der Personen in der Vorlage (E93) —,
+        /// Folgen (F2).
         /// </summary>
         public static Konditionierungsschritt VorlageUebernehmen(Konditionierungsarbeitsstand stand, Konditionierungsort ort,
                                                                  Konditionierungsvorlage vorlage)
@@ -684,7 +685,10 @@ namespace WindowsFormsApplication1
             }
             if (ort.Groesse == Konditionierungsgroesse.Personen)
                 neu = Personenvorschlag(neu, ort, ohneAnteil: true);
-            neu = Personenlast(stand, neu, ort);
+            // P1 nur ohne eigenen Personennennwert der Vorlage (E93): Bringt sie einen (Nutzungsprofil mit Q40), sind
+            // Personen- und Gerätewert getrennt angegeben, und der Gerätewert des Ziels bleibt.
+            if (!EigenerPersonennennwert(inhalt))
+                neu = Personenlast(stand, neu, ort);
             string fehler = Folgen(stand, ref neu);
             if (fehler != null) return Konditionierungsschritt.Fehler(fehler);
 
@@ -821,6 +825,16 @@ namespace WindowsFormsApplication1
             Konditionierungsstand e = stand.Ebene(ort.Zone).MitVorgabe(Konditionierungsgroesse.Personen,
                                                                      DbWerte.KOND_ZEILE_NENNWERT, Matrixzelle.AusWert(vorschlag));
             return stand.MitEbene(ort.Zone, e);
+        }
+
+        /// <summary>
+        /// Bringt die Vorlage eine eigene <c>NENNWERT</c>-Zelle der Personen (ein Nutzungsprofil mit Personenkennwert, Q40)?
+        /// Dann gilt P1 bei ihrer Übernahme nicht (E93) — Personen- und Gerätewert sind getrennt angegeben.
+        /// </summary>
+        private static bool EigenerPersonennennwert(Konditionierungsstand inhalt)
+        {
+            Matrixzelle n = inhalt.Vorgabe(Konditionierungsgroesse.Personen, DbWerte.KOND_ZEILE_NENNWERT);
+            return n != null && n.Belegt;
         }
 
         /// <summary>

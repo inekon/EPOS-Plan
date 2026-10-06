@@ -1262,7 +1262,7 @@ public class KiDialogkatalogTests : IDisposable
             Assert.True(feld is not null, f.Schluessel);
             Assert.Equal("GebaeudeKatalogKiSicht." + f.Schluessel, feld!.Eigenschaftspfad);
             Assert.True(IstTafelfeld(KiMaskennamen.GEBAEUDE_KATALOG, feld), f.Schluessel);
-            Assert.Equal(f.Kennwert == KiNutzungsprofilfelder.Kennwert.Kategorie, feld.NurLesen);
+            Assert.Equal(f.Kennwert is KiNutzungsprofilfelder.Kennwert.Kategorie or KiNutzungsprofilfelder.Kennwert.TageJahr, feld.NurLesen);   // Nutzungstage abgeleitet (E93)
             Assert.Equal(f.Typ, feld.Typ);
             Assert.False(string.IsNullOrWhiteSpace(feld.Erlaeuterung), f.Schluessel);
         }
