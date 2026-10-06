@@ -273,4 +273,75 @@ public sealed class RaumnutzungTexte
 
     /// <summary>Die Zeile des Tagesvergleichs (<c>RNP_TXT_TAGE</c>, {0} = erzeugt, {1} = Quelle).</summary>
     public string TextTage { get; set; } = "erzeugt: {0} Nutzungstage, Quelle: {1} Tage";
+
+    // ------------------------------------------------------------------ Nutzungsprofil übernehmen (Stufe NP3b)
+
+    /// <summary>Der Knopf im Reiter Konditionierung und im Zonendialog (<c>RNP_BTN_PROFIL_UEBERNEHMEN</c>).</summary>
+    public string KnopfUebernehmenProfil { get; set; } = "Nutzungsprofil übernehmen…";
+
+    /// <summary>Die Überschrift der Auswahl und der Rückfrage (<c>RNP_LBL_UEBERNAHME</c>).</summary>
+    public string TitelUebernahme { get; set; } = "Nutzungsprofil übernehmen";
+
+    /// <summary>Der Knopf der Auswahl (<c>RNP_BTN_UEBERNEHMEN</c>).</summary>
+    public string KnopfUebernehmen { get; set; } = "Übernehmen";
+
+    /// <summary>Schließt die Auswahl ohne Übernahme (<c>RNP_BTN_SCHLIESSEN</c>).</summary>
+    public string KnopfSchliessen { get; set; } = "Schließen";
+
+    /// <summary>Die leise Zeile unter der Auswahl (<c>RNP_TXT_UEBERNAHME_OK</c>).</summary>
+    public string HinweisUebernahme { get; set; } = "Das Profil geht in den Arbeitsstand; gespeichert wird mit OK. Eigene Perioden und Ausnahmetage bleiben.";
+
+    /// <summary>Leere Liste (<c>RNP_TXT_KEIN_PROFIL</c>).</summary>
+    public string TextKeinProfil { get; set; } = "Der Katalog führt kein Nutzungsprofil.";
+
+    /// <summary>Kurzform eines Profils ohne Kennwerte (NP-F13) (<c>RNP_TXT_OHNE_WERTE_KURZ</c>).</summary>
+    public string TextOhneWerteKurz { get; set; } = "ohne Werte";
+
+    /// <summary>Die sieben Wochentage, kurz, durch Komma getrennt (Kurzform der Liste) (<c>RNP_TXT_TAGE_KURZ</c>).</summary>
+    public string TageKurz { get; set; } = "Mo,Di,Mi,Do,Fr,Sa,So";
+
+    /// <summary>Die Nennwertzeile ({0} = Größe, {1} = Herleitung) (<c>RNP_TXT_NENNWERT</c>).</summary>
+    public string Nennwertzeile { get; set; } = "Nennwert {0}: {1}";
+
+    /// <summary>Erster Satz der Rückfrage ({0} = Profilname) (<c>RNP_FRAGE_UEBERNEHMEN</c>).</summary>
+    public string FrageUebernehmen { get; set; } = "Das Nutzungsprofil „{0}“ übernehmen?";
+
+    /// <summary>Eine Zeile der Rückfrage ({0} = Größe, {1} = was geschieht) (<c>RNP_FRAGE_ZEILE</c>).</summary>
+    public string FrageZeile { get; set; } = "{0}: {1}";
+
+    /// <summary>Größe ohne Kalender am Ziel (<c>RNP_FRAGE_UEBERNIMMT</c>).</summary>
+    public string FrageUebernimmt { get; set; } = "wird übernommen";
+
+    /// <summary>Größe mit Kalender am Ziel (P12) (<c>RNP_FRAGE_ERSETZT</c>).</summary>
+    public string FrageErsetzt { get; set; } = "ersetzt den Matrixbereich des Kalenders; eigene Perioden und Ausnahmetage bleiben";
+
+    /// <summary>Größe, die das Profil nicht trägt (NP-F6) (<c>RNP_FRAGE_BLEIBT</c>).</summary>
+    public string FrageBleibt { get; set; } = "nicht belegt — bleibt, wie es ist";
+
+    /// <summary>Heizen und Kühlen an einer unbeheizten Zone (<c>RNP_FRAGE_UNBEHEIZT</c>).</summary>
+    public string FrageUnbeheizt { get; set; } = "unbeheizte Zone — übersprungen";
+
+    /// <summary>Zusatz, wenn die Lüftung die Aufteilung verlangt (E56 F5 (a)) (<c>RNP_FRAGE_AUFTEILEN</c>).</summary>
+    public string FrageAufteilen { get; set; } = "Die Gesamtangabe des Luftwechsels wird in Infiltration und Nutzerlüftung aufgeteilt; der wirksame Luftwechsel bleibt.";
+
+    /// <summary>Leeres Profil an einer Zone (NP-F13) (<c>RNP_FRAGE_OHNE_WERTE</c>).</summary>
+    public string FrageOhneWerte { get; set; } = "Profil ohne Werte: kein Kalender, die Zone trägt nur den Namen.";
+
+    /// <summary>Zusatz an einer Zone ({0} = Profilname) (<c>RNP_FRAGE_NAME</c>).</summary>
+    public string FrageName { get; set; } = "Die Zone trägt danach das Nutzungsprofil „{0}“.";
+
+    /// <summary>Weiche Sperre von „Übernehmen“ am Gebäude (<c>RNP_GRUND_OHNE_WERTE</c>).</summary>
+    public string GrundOhneWerte { get; set; } = "Profil ohne Werte — hier gibt es nichts zu übernehmen; Duplizieren, um Werte einzutragen.";
+
+    /// <summary>Weiche Sperre von „Übernehmen“ ohne Wahl (<c>RNP_GRUND_OHNE_WAHL</c>).</summary>
+    public string GrundOhneWahl { get; set; } = "Zuerst ein Profil wählen.";
+
+    /// <summary>Meldung nach „Ja“ ({0} = Profilname) (<c>RNP_TXT_UEBERNOMMEN</c>).</summary>
+    public string TextUebernommen { get; set; } = "Nutzungsprofil „{0}“ übernommen — gespeichert wird mit OK.";
+
+    /// <summary>Die Kopfzeile der Zone ({0} = zuletzt übernommenes Profil) (<c>RNP_TXT_ZONENKOPF</c>).</summary>
+    public string Zonenkopf { get; set; } = "Nutzungsprofil: {0}";
+
+    /// <summary>Die Reiterleiste der Wochenvorschau (aria-label) (<c>RNP_LBL_VORSCHAU_GROESSE</c>).</summary>
+    public string LabelVorschauGroesse { get; set; } = "Größe der Vorschau";
 }

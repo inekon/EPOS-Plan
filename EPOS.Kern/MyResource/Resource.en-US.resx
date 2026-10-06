@@ -46169,5 +46169,74 @@ chart</value>
   <data name="RNP_TXT_TAGE" xml:space="preserve">
     <value>generated: {0} usage days, source: {1} days</value>
   </data>
+  <data name="RNP_BTN_PROFIL_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply usage profile…</value>
+  </data>
+  <data name="RNP_LBL_UEBERNAHME" xml:space="preserve">
+    <value>Apply usage profile</value>
+  </data>
+  <data name="RNP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="RNP_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="RNP_TXT_UEBERNAHME_OK" xml:space="preserve">
+    <value>The profile is applied to the working copy and saved with OK. Custom periods and exception days are kept.</value>
+  </data>
+  <data name="RNP_TXT_KEIN_PROFIL" xml:space="preserve">
+    <value>The catalogue contains no usage profile.</value>
+  </data>
+  <data name="RNP_TXT_OHNE_WERTE_KURZ" xml:space="preserve">
+    <value>no values</value>
+  </data>
+  <data name="RNP_TXT_TAGE_KURZ" xml:space="preserve">
+    <value>Mon,Tue,Wed,Thu,Fri,Sat,Sun</value>
+  </data>
+  <data name="RNP_TXT_NENNWERT" xml:space="preserve">
+    <value>Rated value {0}: {1}</value>
+  </data>
+  <data name="RNP_FRAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply the usage profile “{0}”?</value>
+  </data>
+  <data name="RNP_FRAGE_ZEILE" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="RNP_FRAGE_UEBERNIMMT" xml:space="preserve">
+    <value>is applied</value>
+  </data>
+  <data name="RNP_FRAGE_ERSETZT" xml:space="preserve">
+    <value>replaces the matrix part of the calendar; custom periods and exception days are kept</value>
+  </data>
+  <data name="RNP_FRAGE_BLEIBT" xml:space="preserve">
+    <value>not set — stays as it is</value>
+  </data>
+  <data name="RNP_FRAGE_UNBEHEIZT" xml:space="preserve">
+    <value>unheated zone — skipped</value>
+  </data>
+  <data name="RNP_FRAGE_AUFTEILEN" xml:space="preserve">
+    <value>The total air change rate is split into infiltration and user ventilation; the effective air change stays the same.</value>
+  </data>
+  <data name="RNP_FRAGE_OHNE_WERTE" xml:space="preserve">
+    <value>Profile without values: no calendar, the zone only takes the name.</value>
+  </data>
+  <data name="RNP_FRAGE_NAME" xml:space="preserve">
+    <value>The zone then carries the usage profile “{0}”.</value>
+  </data>
+  <data name="RNP_GRUND_OHNE_WERTE" xml:space="preserve">
+    <value>Profile without values — nothing to apply here; duplicate it to enter values.</value>
+  </data>
+  <data name="RNP_GRUND_OHNE_WAHL" xml:space="preserve">
+    <value>Select a profile first.</value>
+  </data>
+  <data name="RNP_TXT_UEBERNOMMEN" xml:space="preserve">
+    <value>Usage profile “{0}” applied — it is saved with OK.</value>
+  </data>
+  <data name="RNP_TXT_ZONENKOPF" xml:space="preserve">
+    <value>Usage profile: {0}</value>
+  </data>
+  <data name="RNP_LBL_VORSCHAU_GROESSE" xml:space="preserve">
+    <value>Quantity of the preview</value>
+  </data>
 </root>
 

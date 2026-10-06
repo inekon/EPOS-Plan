@@ -1,0 +1,165 @@
+﻿@* NUTZUNGSPROFIL UEBERNEHMEN (Stufe NP3b; Konzept Nutzungsprofile 6.2, NP-F13, NP-F17, NP-F18) - EIN Baustein fuer
+   den Reiter "Konditionierung" des Gebaeudeeditors (Gebaeude und Katalogbau) und die Zonenmatrix des Zonendialogs.
+
+   Der Knopf "Nutzungsprofil uebernehmen..." oeffnet die Auswahl: die Profile des Katalogs gruppiert nach Kategorie,
+   je Zeile Name und Kennwerte in Kurzform; ein Profil ohne Werte heisst so und bekommt keine Vorschau (NP-F13). Zum
+   gewaehlten Profil die Vorschau der Woche je Groesse und die Nennwertzeilen mit Herleitung (NP-F18) - beides aus
+   einem PROBELAUF am Arbeitsstand, der nichts aendert. "Uebernehmen" stellt die Rueckfrage nach P12 (Vorgabe "Nein",
+   sobald ein Kalender ersetzt wird); "Ja" traegt das Profil in den Arbeitsstand, GESCHRIEBEN WIRD MIT DEM OK des
+   Editors. Die Rueckfrage zeigt der Wirt (Reiter bzw. Zonenmatrix) ueber Bearbeitung.OffeneFrage.
+
+   Kein Delegat, kein Knopf: ohne die beiden Delegaten des Wegs (KonditionierungWeg.Nutzungsprofile,
+   .ProfilUebernehmen) steht hier nichts. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1.Zeichnung
+
+@if (Bearbeitung.MitProfilen && !Lesemodus)
+{
+    <div class="epos-nutzungsuebernahme">
+        @if (!_offen)
+        {
+            <button type="button" class="epos-knopf epos-nutzungsuebernahme-oeffnen"
+                    @onclick="Oeffnen">@Texte.KnopfUebernehmenProfil</button>
+        }
+        else
+        {
+            <section class="epos-nutzungsuebernahme-auswahl" aria-label="@Texte.TitelUebernahme">
+                <h3 class="epos-nutzungsuebernahme-titel">@Texte.TitelUebernahme</h3>
+
+                @if (Profile.Count == 0)
+                {
+                    <p class="epos-leisezeile epos-nutzungsuebernahme-leer">@Texte.TextKeinProfil</p>
+                }
+                else
+                {
+                    <div class="epos-nutzungsuebernahme-liste" role="listbox" aria-label="@Texte.Blatt">
+                        @foreach (IGrouping<string, KonditionierungProfilwahl> gruppe in Profile.GroupBy(p => p.Kategorie))
+                        {
+                            <div class="epos-nutzungsuebernahme-gruppe" role="group" aria-label="@gruppe.Key" @key="gruppe.Key">
+                                <p class="epos-nutzungsuebernahme-kategorie" aria-hidden="true">@gruppe.Key</p>
+                                @foreach (KonditionierungProfilwahl p in gruppe)
+                                {
+                                    KonditionierungProfilwahl profil = p;
+                                    bool gewaehlt = profil.Id == Bearbeitung.GewaehltesProfil;
+                                    <button type="button" role="option" @key="profil.Id" data-profil="@profil.Id"
+                                            class="epos-textknopf epos-nutzungsuebernahme-profil @(profil.OhneWerte ? "epos-nutzungsuebernahme-profil--leer" : "")"
+                                            aria-selected="@(gewaehlt ? "true" : "false")"
+                                            @onclick="() => Waehlen(profil.Id)">
+                                        <span class="epos-nutzungsuebernahme-name">@profil.Anzeige</span>
+                                        <span class="epos-nutzungsuebernahme-kurz">@profil.Kurzform</span>
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (Bearbeitung.Profilwahl is KonditionierungProfilwahl wahl)
+                {
+                    <div class="epos-nutzungsuebernahme-vorschau" data-profil="@wahl.Id">
+                        @if (wahl.OhneWerte)
+                        {
+                            <p class="epos-leisezeile epos-nutzungsuebernahme-ohnewerte">@Texte.TextOhneWerte</p>
+                        }
+                        else
+                        {
+                            <div class="epos-kond-groessen epos-nutzungsuebernahme-groessen" role="tablist"
+                                 aria-label="@Texte.LabelVorschauGroesse">
+                                @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+                                {
+                                    KonditionierungGroesse groesse = g;
+                                    bool aktiv = groesse == _groesse;
+                                    <button type="button" role="tab" data-groesse="@((int)groesse)"
+                                            class="epos-knopf epos-kond-groesse @(aktiv ? "epos-knopf--gewaehlt" : "")"
+                                            aria-selected="@(aktiv ? "true" : "false")" tabindex="@(aktiv ? 0 : -1)"
+                                            @onclick="() => _groesse = groesse">@Bearbeitung.Groessenname(groesse)</button>
+                                }
+                            </div>
+                            @if (Bearbeitung.Profilvorschau(_groesse) is Zeichenmodell modell)
+                            {
+                                <DiagrammSvg Modell="@modell" Kennung="@("np-vorschau-" + (int)_groesse)"
+                                             Bezeichnung="@Texte.Vorschau" OhneZoom="true" />
+                            }
+                            else
+                            {
+                                <p class="epos-leisezeile epos-nutzungsuebernahme-nichtbelegt">@Texte.TextNichtBelegt</p>
+                            }
+                        }
+                        @foreach (string zeile in Bearbeitung.Profilnennwerte(Texte))
+                        {
+                            <Herleitungszeile Text="@zeile" />
+                        }
+                        @foreach (string hinweis in Bearbeitung.Profilhinweise())
+                        {
+                            <p class="epos-leisezeile epos-nutzungsuebernahme-hinweis">@hinweis</p>
+                        }
+                    </div>
+                }
+
+                <div class="epos-zeilenknoepfe epos-nutzungsuebernahme-knoepfe">
+                    <button type="button" class="epos-knopf epos-nutzungsuebernahme-uebernehmen"
+                            aria-disabled="@(Sperre is null ? null : "true")" title="@Sperre"
+                            @onclick="Uebernehmen">@Texte.KnopfUebernehmen</button>
+                    <button type="button" class="epos-knopf epos-nutzungsuebernahme-schliessen"
+                            @onclick="Schliessen">@Texte.KnopfSchliessen</button>
+                </div>
+                <p class="epos-leisezeile epos-nutzungsuebernahme-ok">@Texte.HinweisUebernahme</p>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Die Bearbeitung des Wirts — am Gebäude, am Katalogbau oder an einer Zone.</summary>
+    [Parameter, EditorRequired] public KonditionierungBearbeitung Bearbeitung { get; set; } = default!;
+
+    /// <summary>Die Texte des Nutzungsprofilkatalogs (Präfix <c>RNP_</c>).</summary>
+    [Parameter] public RaumnutzungTexte Texte { get; set; } = new();
+
+    /// <summary>Ein ausgelieferter Satz oder ein gesperrter Editor: dann steht hier nichts.</summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary>Nach jeder Handlung, die den Wirt neu zeichnen lässt (Wahl, Rückfrage, Übernahme).</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private bool _offen;
+    private KonditionierungGroesse _groesse = KonditionierungGroesse.Heizen;
+
+    private IReadOnlyList<KonditionierungProfilwahl> Profile => Bearbeitung.Profile();
+
+    private string? Sperre => Bearbeitung.Profilsperre(Texte);
+
+    /// <summary>Steht die Auswahl offen? Prüfhilfe für die Tests.</summary>
+    public bool Offen => _offen;
+
+    private void Oeffnen()
+    {
+        Bearbeitung.ProfileNeuLaden();
+        _offen = true;
+    }
+
+    private void Schliessen()
+    {
+        _offen = false;
+        Bearbeitung.ProfilWaehlen(null);
+    }
+
+    private async Task Waehlen(long id)
+    {
+        Bearbeitung.ProfilWaehlen(id);
+        if (Bearbeitung.Profilwoche(_groesse) is null)
+            foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+                if (Bearbeitung.Profilwoche(g) is not null)
+                {
+                    _groesse = g;
+                    break;
+                }
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task Uebernehmen()
+    {
+        if (Bearbeitung.ProfilUebernehmenFragen(Texte)) await Geaendert.InvokeAsync();
+    }
+}

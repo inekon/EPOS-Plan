@@ -158,6 +158,29 @@ namespace WindowsFormsApplication1
             t.FrageKategorieLoeschen = Text_("RNP_FRAGE_KATEGORIE_LOESCHEN", t.FrageKategorieLoeschen);
             t.FrageZuordnungLoeschen = Text_("RNP_FRAGE_ZUORDNUNG_LOESCHEN", t.FrageZuordnungLoeschen);
             t.TextTage = Text_("RNP_TXT_TAGE", t.TextTage);
+            t.KnopfUebernehmenProfil = Text_("RNP_BTN_PROFIL_UEBERNEHMEN", t.KnopfUebernehmenProfil);
+            t.TitelUebernahme = Text_("RNP_LBL_UEBERNAHME", t.TitelUebernahme);
+            t.KnopfUebernehmen = Text_("RNP_BTN_UEBERNEHMEN", t.KnopfUebernehmen);
+            t.KnopfSchliessen = Text_("RNP_BTN_SCHLIESSEN", t.KnopfSchliessen);
+            t.HinweisUebernahme = Text_("RNP_TXT_UEBERNAHME_OK", t.HinweisUebernahme);
+            t.TextKeinProfil = Text_("RNP_TXT_KEIN_PROFIL", t.TextKeinProfil);
+            t.TextOhneWerteKurz = Text_("RNP_TXT_OHNE_WERTE_KURZ", t.TextOhneWerteKurz);
+            t.TageKurz = Text_("RNP_TXT_TAGE_KURZ", t.TageKurz);
+            t.Nennwertzeile = Text_("RNP_TXT_NENNWERT", t.Nennwertzeile);
+            t.FrageUebernehmen = Text_("RNP_FRAGE_UEBERNEHMEN", t.FrageUebernehmen);
+            t.FrageZeile = Text_("RNP_FRAGE_ZEILE", t.FrageZeile);
+            t.FrageUebernimmt = Text_("RNP_FRAGE_UEBERNIMMT", t.FrageUebernimmt);
+            t.FrageErsetzt = Text_("RNP_FRAGE_ERSETZT", t.FrageErsetzt);
+            t.FrageBleibt = Text_("RNP_FRAGE_BLEIBT", t.FrageBleibt);
+            t.FrageUnbeheizt = Text_("RNP_FRAGE_UNBEHEIZT", t.FrageUnbeheizt);
+            t.FrageAufteilen = Text_("RNP_FRAGE_AUFTEILEN", t.FrageAufteilen);
+            t.FrageOhneWerte = Text_("RNP_FRAGE_OHNE_WERTE", t.FrageOhneWerte);
+            t.FrageName = Text_("RNP_FRAGE_NAME", t.FrageName);
+            t.GrundOhneWerte = Text_("RNP_GRUND_OHNE_WERTE", t.GrundOhneWerte);
+            t.GrundOhneWahl = Text_("RNP_GRUND_OHNE_WAHL", t.GrundOhneWahl);
+            t.TextUebernommen = Text_("RNP_TXT_UEBERNOMMEN", t.TextUebernommen);
+            t.Zonenkopf = Text_("RNP_TXT_ZONENKOPF", t.Zonenkopf);
+            t.LabelVorschauGroesse = Text_("RNP_LBL_VORSCHAU_GROESSE", t.LabelVorschauGroesse);
             return t;
         }
 
@@ -416,7 +439,7 @@ namespace WindowsFormsApplication1
             _ => t.TextNichtBelegt,
         };
 
-        private static string Hinweistext(Raumnutzungshinweis h, RaumnutzungTexte t) => h switch
+        internal static string Hinweistext(Raumnutzungshinweis h, RaumnutzungTexte t) => h switch
         {
             Raumnutzungshinweis.ProfilOhneWerte => t.TextOhneWerte,
             Raumnutzungshinweis.LueftungOhneHoehe => Text_("RNP_TXT_HINWEIS_HOEHE",
@@ -427,6 +450,74 @@ namespace WindowsFormsApplication1
                 "Ein Stundenprofil ist nicht lesbar; die Kennwerte gelten."),
             _ => "",
         };
+
+        /// <summary>
+        /// <b>Die Liste „Nutzungsprofil übernehmen…"</b> (Stufe NP3b; Konzept Nutzungsprofile 6.2): alle Profile in der
+        /// Ordnung des Katalogs — Kategorien wie der Kern sie liefert, darin nach Nummer, dann Name —, mit den Kennwerten
+        /// in Kurzform. Leer ohne Katalogtabellen.
+        /// </summary>
+        internal static IReadOnlyList<KonditionierungProfilwahl> Profilwahl()
+        {
+            if (!RaumnutzungCtrl.Lesbar()) return Array.Empty<KonditionierungProfilwahl>();
+            var ctrl = new RaumnutzungCtrl();
+            RaumnutzungTexte t = Texte();
+            var liste = new List<KonditionierungProfilwahl>();
+            foreach (RaumnutzungCtrl.Kategorie k in ctrl.Kategorien())
+                foreach (Raumnutzungsprofil p in ctrl.Profile(k.Id))
+                    liste.Add(Wahl(k.Bezeichner, p, t));
+            return liste;
+        }
+
+        /// <summary>Ein Profil als Eintrag der Liste „Nutzungsprofil übernehmen…".</summary>
+        internal static KonditionierungProfilwahl Wahl(string kategorie, Raumnutzungsprofil p, RaumnutzungTexte t)
+            => new KonditionierungProfilwahl(p.Id, kategorie ?? "", p.Nummer ?? "", p.Bezeichner ?? "",
+                                             p.IstLeer ? t.TextOhneWerteKurz : Kurzform(p, t), p.IstLeer);
+
+        /// <summary>
+        /// <b>Die Kennwerte in Kurzform</b>: Wochentage, Nutzungszeit, Heizsollwert, Außenluft, Geräte und Personen, soweit
+        /// belegt, durch „ · " getrennt („Mo–Fr · 7–18 h · 21 °C · 4 m³/(h·m²) · 10 W/m²"). Ein Profil nur mit Zeilenbild oder
+        /// Stundenprofil nennt, was es an Kennwerten trägt; leer = keiner.
+        /// </summary>
+        internal static string Kurzform(Raumnutzungsprofil p, RaumnutzungTexte t)
+        {
+            if (p == null) return "";
+            CultureInfo c = CultureInfo.CurrentCulture;
+            var teile = new List<string>();
+            string tage = Wochentage(p.Nutzungstage_Woche, t);
+            if (tage.Length > 0) teile.Add(tage);
+            if (p.Nutzung_Von.HasValue && p.Nutzung_Bis.HasValue)
+                teile.Add(p.Nutzung_Von.Value.ToString(c) + "–" + p.Nutzung_Bis.Value.ToString(c) + " h");
+            if (p.Heiz_Soll.HasValue) teile.Add(p.Heiz_Soll.Value.ToString("0.#", c) + " °C");
+            if (p.Aussenluft.HasValue)
+                teile.Add(p.Aussenluft.Value.ToString("0.##", c) + " " +
+                          (string.Equals(p.Aussenluft_Einheit, RaumnutzungSchema.EINHEIT_JE_FLAECHE, StringComparison.Ordinal)
+                              ? "m³/(h·m²)" : "1/h"));
+            double licht = (p.Beleuchtung_Leistung ?? 0.0) * (p.Beleuchtung_Anteil ?? 1.0);
+            if (p.Geraete_Leistung.HasValue || p.Beleuchtung_Leistung.HasValue)
+                teile.Add(((p.Geraete_Leistung ?? 0.0) + licht).ToString("0.#", c) + " W/m²");
+            if (p.Personen_Flaeche.HasValue) teile.Add(p.Personen_Flaeche.Value.ToString("0.#", c) + " m²/P");
+            return string.Join(" · ", teile);
+        }
+
+        /// <summary>Die Nutzungstage „1111100" als „Mo–Fr", Läufe mit Bindestrich, sonst mit Komma; leer = ohne Angabe.</summary>
+        private static string Wochentage(string woche, RaumnutzungTexte t)
+        {
+            if (woche == null || woche.Length != 7) return "";
+            string[] namen = (t.TageKurz ?? "").Split(',');
+            if (namen.Length != 7) return "";
+            var laeufe = new List<string>();
+            int i = 0;
+            while (i < 7)
+            {
+                if (woche[i] != '1') { i++; continue; }
+                int j = i;
+                while (j + 1 < 7 && woche[j + 1] == '1') j++;
+                laeufe.Add(j == i ? namen[i].Trim() : j == i + 1 ? namen[i].Trim() + ", " + namen[j].Trim()
+                                                    : namen[i].Trim() + "–" + namen[j].Trim());
+                i = j + 1;
+            }
+            return string.Join(", ", laeufe);
+        }
 
         /// <summary>„erzeugt: … Nutzungstage, Quelle: … Tage" (NP-F8) im festen Raster von 365 Tagen.</summary>
         private static string Tagezeile(RaumnutzungProfilDaten d, RaumnutzungTexte t)

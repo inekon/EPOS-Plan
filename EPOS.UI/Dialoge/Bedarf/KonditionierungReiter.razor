@@ -46,6 +46,14 @@
         </div>
     }
 
+    @* Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofil übernehmen…" - in den Arbeitsstand, mit OK
+       geschrieben; kein Delegat, kein Knopf. *@
+    @if (Bearbeitung.MitWeg && !Altweg)
+    {
+        <NutzungsprofilUebernahme Bearbeitung="@Bearbeitung" Texte="@ProfilTexte" Lesemodus="@Lesemodus"
+                                  Geaendert="Geaendert" />
+    }
+
     @if (Bearbeitung.Sperrgrund is string sperre)
     {
         <p class="epos-leisezeile epos-kond-sperrzeile">@sperre</p>
@@ -221,6 +229,9 @@
 
     /// <summary>Die Texte der VDI-Struktur (Platzhalter der Lüftung und der Kühlung).</summary>
     [Parameter] public GebaeudeHuelleTexte HuelleTexte { get; set; } = new();
+
+    /// <summary>Die Texte von „Nutzungsprofil übernehmen…" (Bündel des Nutzungsprofilkatalogs, Präfix <c>RNP_</c>).</summary>
+    [Parameter] public RaumnutzungTexte ProfilTexte { get; set; } = new();
 
     /// <summary>Steht der Editor in der Betriebsart Projekt? Nur dann „Aus dem Katalog erneut übernehmen…" (Festlegung 4).</summary>
     [Parameter] public bool Projekt { get; set; }

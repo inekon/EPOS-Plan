@@ -77,6 +77,12 @@
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@NutzflaecheZeile" />
+    @* Stufe NP3b (Konzept Nutzungsprofile 6.2): die Kopfzeile nennt das zuletzt übernommene Nutzungsprofil -
+       Tab_Zone.Nutzungsprofil bzw. die Nutzung der Kalender. *@
+    @if (Profilzeile.Length > 0)
+    {
+        <p class="epos-leisezeile epos-zonendialog-profil">@Profilzeile</p>
+    }
 
     @* Stufe G6b (W2): die Werte der Zone - ein leeres Feld uebernimmt den Wert des Gebaeudes und
        zeigt ihn als Platzhalter "Vorgabe: ..." aus der Vorgabenkaskade des Kerns (Zonenvorgaben),
@@ -135,7 +141,7 @@
 
             @* Stufe KP2, Welle U4: die Vorgabe-Matrix der Zone (Teilkonzept 3.4, 7.3). *@
             <ZonenKonditionierung Bearbeitung="@_kond" Texte="@KonditionierungTexte" HuelleTexte="@HuelleTexte"
-                                  JaText="@JaText" NeinText="@NeinText"
+                                  JaText="@JaText" NeinText="@NeinText" ProfilTexte="@RaumnutzungTexte"
                                   Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
         </KindInhalt>
     </Gruppenkopf>
@@ -870,6 +876,24 @@
         => !NutzflaechePflicht && NutzflaecheGebaeude is double a
             ? string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterNutzflaeche, Zahl(a, 2))
             : "";
+
+    /// <summary>Die Texte von „Nutzungsprofil übernehmen…" (Bündel des Nutzungsprofilkatalogs, Präfix <c>RNP_</c>).</summary>
+    [Parameter] public RaumnutzungTexte RaumnutzungTexte { get; set; } = new();
+
+    /// <summary>
+    /// „Nutzungsprofil: Büro" (Stufe NP3b): das zuletzt übernommene Profil der Zone, sonst die Nutzung ihrer Kalender —
+    /// eine der vier alten Kennungen übersetzt (NP-F15); leer = keines.
+    /// </summary>
+    private string Profilzeile
+    {
+        get
+        {
+            string? name = !string.IsNullOrWhiteSpace(_stand.Nutzungsprofil) ? _stand.Nutzungsprofil : _stand.Kalendernutzung;
+            if (string.IsNullOrWhiteSpace(name)) return "";
+            return string.Format(CultureInfo.CurrentCulture, RaumnutzungTexte.Zonenkopf,
+                                 KonditionierungTexte.Nutzungsanzeige(name.Trim()));
+        }
+    }
 
     private string NutzflaecheZeile
         => string.Format(CultureInfo.CurrentCulture, NutzflaechePflicht ? Texte.ZeileNutzflaechePflicht : Texte.ZeileNutzflaeche,
