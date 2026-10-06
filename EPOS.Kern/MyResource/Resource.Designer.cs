@@ -119295,6 +119295,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiter ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_BEARBEITER {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_BEARBEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellt am ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_ERSTELLT {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_ERSTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geändert am ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_GEAENDERT {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_KLIMA {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunde ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_KUNDE {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_KUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Letzte Simulation ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_SIMULATION {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdaten ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_TITEL {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_VARIANTEN {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante von ähnelt.
+        /// </summary>
+        public static string WIZ_STECKBRIEF_VARIANTE_VON {
+            get {
+                return ResourceManager.GetString("WIZ_STECKBRIEF_VARIANTE_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projektassistent ähnelt.
         /// </summary>
         public static string WIZ_TITEL {

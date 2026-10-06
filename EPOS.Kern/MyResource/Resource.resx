@@ -47016,5 +47016,35 @@ Chart</value>
   <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
     <value>Alle drei Szenarien (VALERI)</value>
   </data>
+  <data name="WIZ_STECKBRIEF_TITEL" xml:space="preserve">
+    <value>Projektdaten</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_KUNDE" xml:space="preserve">
+    <value>Kunde</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_BEARBEITER" xml:space="preserve">
+    <value>Bearbeiter</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_ERSTELLT" xml:space="preserve">
+    <value>Erstellt am</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_GEAENDERT" xml:space="preserve">
+    <value>Geändert am</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_KLIMA" xml:space="preserve">
+    <value>Klimaregion</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_VARIANTE_VON" xml:space="preserve">
+    <value>Variante von</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_SIMULATION" xml:space="preserve">
+    <value>Letzte Simulation</value>
+  </data>
 </root>
 

@@ -130,6 +130,14 @@
        hoch. Wer sie je Wirt anders will, setzt das Token am Wirt. */
     --epos-listenhoehe: 22rem;
 
+    /* DAS LINKE BAND DES PROJEKTASSISTENTEN (Anwenderwunsch 06.10.2026: "Die
+       Auswahl-Box fuer die Projekte ist sehr klein"). Das Band ist so hoch wie
+       das Fenster abzueglich der Koepfe darueber (Menueband, Marke, Seitentitel),
+       mindestens aber so hoch, dass Suche, einige Zeilen und "Projekt oeffnen"
+       Platz haben. */
+    --epos-assistent-band-abzug: 14rem;
+    --epos-assistent-band-min: 24rem;
+
     /* DIE OBERGRENZE EINES DIAGRAMMS (Windows-Abnahme V2 07.09.2026, Befund
        W11b-B-4: "Simulation Uebersicht: Die Charts sind optisch zu gross").
        Jahresganglinie, Dauerlinie, Streuwolke, Speicherverlauf und
@@ -1242,6 +1250,54 @@ body {
 
 .epos-assistent > .epos-assistent-inhalt:first-child ~ .epos-assistent-fuss {
     grid-column: 1 / 3;
+}
+
+/* DER STECKBRIEF DES MARKIERTEN PROJEKTS steht ueber den Kacheln, nicht im
+   schmalen Band - dort ginge jede Zeile der Liste ab. Die Felder fliessen als
+   Raster in die Breite (Beschriftung leise ueber dem Wert); die Beschreibung
+   nimmt eine ganze Zeile und haelt hoechstens zwei Zeilen, der volle Text
+   steht im title. */
+.epos-projektsteckbrief {
+    margin: 0 0 var(--epos-rand) 0;
+    padding: 10px 12px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+}
+
+.epos-projektsteckbrief-name {
+    margin: 0 0 6px 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.epos-projektsteckbrief-felder {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 6px 16px;
+    margin: 0;
+}
+
+.epos-projektsteckbrief-feld dt {
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+}
+
+.epos-projektsteckbrief-feld dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-projektsteckbrief-feld.epos-projektsteckbrief-beschreibung {
+    grid-column: 1 / -1;
+}
+
+.epos-projektsteckbrief-beschreibung dd {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* ==========================================================================
@@ -6365,6 +6421,31 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     margin: 0;
     color: var(--epos-text-leise);
     font-size: 0.9em;
+}
+
+/* DIE PROJEKTLISTE FUELLT DAS BAND (Anwenderwunsch 06.10.2026). Das Band des
+   Assistenten hat die Hoehe des Fensters (abzueglich der Koepfe) und bleibt beim
+   Rollen der Kacheln stehen; darin nimmt die Liste alles, was Ueberschrift,
+   Suche, Zaehler und "Projekt oeffnen" uebrig lassen, und rollt in sich. Die
+   Hoechsthoehe --epos-listenhoehe faellt hier - wie im Katalograhmen. In einem
+   sehr kleinen Fenster haelt die Liste samt Suche mindestens 14 rem, dann rollt
+   das Band. */
+.epos-assistentseite .epos-assistent-band {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: max(var(--epos-assistent-band-min), calc(100dvh - var(--epos-assistent-band-abzug)));
+}
+
+.epos-assistentseite .epos-assistent-band > .epos-projektliste {
+    flex: 1 1 0;
+    min-height: 14rem;
+}
+
+.epos-assistentseite .epos-assistent-band > .epos-projektliste > .epos-raster-huelle {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
 }
 
 /* ---- Die drei Spalten der Auswahl (Windows-Abnahme 05.09.2026, Befund
