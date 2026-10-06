@@ -42714,6 +42714,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KABG_BERICHT" xml:space="preserve">
     <value>{0} neu, {1} aktualisiert, {2} behalten, {3} ausgelaufen</value>
   </data>
+  <data name="KABG_BERICHT_ANGEBUNDEN" xml:space="preserve">
+    <value>, {0} angebunden</value>
+  </data>
   <data name="KABG_HINWEIS_BEHALTEN_GEAENDERT" xml:space="preserve">
     <value>Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor.</value>
   </data>
@@ -42725,6 +42728,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KABG_HINWEIS_AUSGELAUFEN" xml:space="preserve">
     <value>Der Satz ist in der Auslieferung entfallen; er bleibt in Ihrem Katalog.</value>
+  </data>
+  <data name="KABG_HINWEIS_ANGEBUNDEN" xml:space="preserve">
+    <value>Ihr gleichnamiger Satz entspricht dem Auslieferungsstand. Er ist jetzt dem Auslieferungssatz zugeordnet, gesperrt und wird mit künftigen Fassungen nachgeführt.</value>
+  </data>
+  <data name="KABG_HINWEIS_ANGEBUNDEN_BEHALTEN" xml:space="preserve">
+    <value>Ihr gleichnamiger Satz weicht vom Auslieferungsstand ab. Er ist jetzt dem Auslieferungssatz zugeordnet und gesperrt; Ihre Werte bleiben, der Auslieferungsstand liegt als Vergleich vor.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Mehrere eigene Sätze tragen den Namen „{0}“; der Auslieferungssatz wurde weder eingefügt noch zugeordnet.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_FREMDER_SCHLUESSEL" xml:space="preserve">
+    <value>Der Name „{0}“ gehört schon zu einem anderen Auslieferungssatz; der Auslieferungssatz wurde weder eingefügt noch zugeordnet.</value>
   </data>
   <data name="KABG_SATZ_NICHT_IM_PAKET" xml:space="preserve">
     <value>Der Satz steht nicht im Katalogpaket.</value>
@@ -42770,6 +42785,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KABG_AKTION_BERICHT" xml:space="preserve">
     <value>Abgleich</value>
+  </data>
+  <data name="KABG_AKTION_ANGEBUNDEN" xml:space="preserve">
+    <value>angebunden</value>
+  </data>
+  <data name="KABG_AKTION_ANGEBUNDEN_BEHALTEN" xml:space="preserve">
+    <value>angebunden, behalten</value>
   </data>
   <data name="KABG_KATALOG_WP" xml:space="preserve">
     <value>Wärmepumpen</value>

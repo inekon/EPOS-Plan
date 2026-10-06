@@ -708,6 +708,176 @@ namespace EPOS.Kern.Tests
                                   "AND COALESCE(Kosten, -1) <> 1"));
         }
 
+        // =============================================================================
+        //  Anbinden: ungesperrt ausgeliefert, später in der Quelle gesperrt
+        // =============================================================================
+
+        private const string EINSCHICHT = "Einschicht 5 Tage";
+        private const string EINSCHICHT_SCHLUESSEL = "PW:EINSCHICHT_5_TAGE";
+
+        /// <summary>Macht aus dem gesperrten Satz eine Anwenderzeile, wie sie ein ungesperrt ausgelieferter Satz hinterlässt.</summary>
+        private static long AlsUngesperrtAusgeliefert(string bezeichner)
+        {
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Prozesswaerme_STAMM SET \"ReadOnly\" = 0, Katalog_Schluessel = NULL, " +
+                                           "Katalog_Pruefsumme = NULL WHERE Bezeichner = ?", new DbParam("@b", bezeichner));
+            return Zahl("SELECT ID FROM Tab_Prozesswaerme_STAMM WHERE Bezeichner = '" + bezeichner + "'");
+        }
+
+        /// <summary>Die Probe als frisches Paket (veränderbar).</summary>
+        private static Katalogpaket ProbeKopie() => Katalogpaket.AusBytes(Katalogpaket.Lesen(Probe).Bytes());
+
+        private static Katalogpaketsatz Satz(Katalogpaket p, string schluessel) =>
+            p.Tabellen.Single(t => t.Tabelle == "Tab_Prozesswaerme_STAMM").Saetze.Single(s => s.Schluessel == schluessel);
+
+        /// <summary>Die Folgefassung: der Satz mit einem neuen Wert für <c>Monat_1</c> und neuer Prüfsumme.</summary>
+        private static Katalogpaket Folgefassung(double monat1)
+        {
+            Katalogpaket p = ProbeKopie();
+            p.Fassung += 1;
+            Katalogpaketsatz s = Satz(p, EINSCHICHT_SCHLUESSEL);
+            s.Werte["Monat_1"] = monat1;
+            s.Pruefsumme = Neusumme(Pw, s);
+            return p;
+        }
+
+        private static string Zeilenstand(long id) =>
+            Text("SELECT \"ReadOnly\" || '|' || COALESCE(Katalog_Schluessel, '∅') || '|' || COALESCE(Katalog_Pruefsumme, '∅') || '|' || " +
+                 "Katalog_Ausgelaufen FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Gleicher Inhalt: Die eine gleichnamige Zeile ohne Schlüssel wird angebunden — ID bleibt, Schlüssel und
+        /// Prüfsumme des Pakets, gesperrt; kein Doppel. Die Folgefassung führt die unveränderte Zeile nach.
+        /// </summary>
+        [Fact]
+        public void Anbinden_bei_gleichem_Inhalt_und_die_Folgefassung_fuehrt_nach()
+        {
+            if (!_db.Vorhanden) return;
+
+            long id = AlsUngesperrtAusgeliefert(EINSCHICHT);
+            Katalogpaket paket = ProbeKopie();
+            string summe = Satz(paket, EINSCHICHT_SCHLUESSEL).Pruefsumme;
+            string projektVorher = Projektbild();
+
+            KatalogabgleichErgebnis plan = Katalogabgleich.Ausfuehren(paket, nurPruefen: true);
+            Assert.Equal("0|∅|∅|0", Zeilenstand(id));
+            Assert.Equal(Katalogabgleich.AKTION_ANGEBUNDEN, plan.Eintraege.Single().Aktion);
+
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            Assert.Equal((0, 0, 0, 0, 1), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen, e.Angebunden));
+            KatalogabgleichEintrag z = e.Eintraege.Single();
+            Assert.Equal((Katalogabgleich.AKTION_ANGEBUNDEN, EINSCHICHT_SCHLUESSEL, R.KABG_HINWEIS_ANGEBUNDEN),
+                         (z.Aktion, z.Schluessel, z.Hinweis));
+            Assert.False(z.Wiederherstellbar);
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + summe + "|0", Zeilenstand(id));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Prozesswaerme_STAMM WHERE Bezeichner = '" + EINSCHICHT + "'"));
+            // Das Protokoll kennt nur die Aktionen seines Schemaschritts: angebunden steht als AKTUALISIERT mit eigenem Hinweis.
+            Assert.Contains(Katalogabgleich.Protokoll(), p => p.Aktion == Katalogabgleich.AKTION_AKTUALISIERT &&
+                                                              p.Schluessel == EINSCHICHT_SCHLUESSEL &&
+                                                              p.Hinweis == R.KABG_HINWEIS_ANGEBUNDEN);
+            Assert.EndsWith(string.Format(CultureInfo.CurrentCulture, R.KABG_BERICHT_ANGEBUNDEN, 1), e.Zusammenfassung());
+            Assert.Equal(projektVorher, Projektbild());
+
+            // Derselbe Lauf erzwungen: nichts mehr zu tun.
+            KatalogabgleichErgebnis erneut = Katalogabgleich.Ausfuehren(paket, nurPruefen: false, erzwingen: true);
+            Assert.Empty(erneut.Eintraege);
+
+            // Folgefassung: die angebundene, unveränderte Zeile wird nachgeführt.
+            Katalogpaket folge = Folgefassung(4711);
+            KatalogabgleichErgebnis f = Katalogabgleich.Ausfuehren(folge, nurPruefen: false);
+            Assert.True(f.Ausgefuehrt, f.Meldung);
+            Assert.Equal(Katalogabgleich.AKTION_AKTUALISIERT, f.Eintraege.Single().Aktion);
+            Assert.Equal(4711.0, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Monat_1 FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture)), CultureInfo.InvariantCulture));
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + Satz(folge, EINSCHICHT_SCHLUESSEL).Pruefsumme + "|0", Zeilenstand(id));
+            Assert.Equal(projektVorher, Projektbild());
+        }
+
+        /// <summary>
+        /// Abweichender Inhalt: angebunden, die Werte des Anwenders bleiben (ANGEBUNDEN_BEHALTEN). Danach gilt die
+        /// Zeile als geänderte gesperrte Zeile — die Folgefassung behält sie, und der Auslieferungsstand lässt sich
+        /// wiederherstellen.
+        /// </summary>
+        [Fact]
+        public void Anbinden_mit_Anwenderstand_bei_abweichendem_Inhalt()
+        {
+            if (!_db.Vorhanden) return;
+
+            long id = AlsUngesperrtAusgeliefert(EINSCHICHT);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Prozesswaerme_STAMM SET Beschreibung = 'eigene Fassung' WHERE ID = ?",
+                                           new DbParam("@id", id));
+            Katalogpaket paket = ProbeKopie();
+            string summe = Satz(paket, EINSCHICHT_SCHLUESSEL).Pruefsumme;
+
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            Assert.Equal((0, 0, 1, 0, 1), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen, e.Angebunden));
+            KatalogabgleichEintrag z = e.Eintraege.Single();
+            Assert.Equal((Katalogabgleich.AKTION_ANGEBUNDEN_BEHALTEN, R.KABG_HINWEIS_ANGEBUNDEN_BEHALTEN), (z.Aktion, z.Hinweis));
+            Assert.True(z.Wiederherstellbar);
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + summe + "|0", Zeilenstand(id));
+            Assert.Equal("eigene Fassung", Text("SELECT Beschreibung FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture)));
+            Assert.Contains(Katalogabgleich.Protokoll(), p => p.Aktion == Katalogabgleich.AKTION_BEHALTEN &&
+                                                              p.Schluessel == EINSCHICHT_SCHLUESSEL &&
+                                                              p.Hinweis == R.KABG_HINWEIS_ANGEBUNDEN_BEHALTEN);
+
+            // Folgefassung: die Zeile weicht vom Lieferstand ab - behalten wie jede geänderte gesperrte Zeile.
+            Katalogpaket folge = Folgefassung(4711);
+            KatalogabgleichErgebnis f = Katalogabgleich.Ausfuehren(folge, nurPruefen: false);
+            KatalogabgleichEintrag b = f.Eintraege.Single();
+            Assert.Equal((Katalogabgleich.AKTION_BEHALTEN, R.KABG_HINWEIS_BEHALTEN_GEAENDERT), (b.Aktion, b.Hinweis));
+            Assert.Equal("eigene Fassung", Text("SELECT Beschreibung FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture)));
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + summe + "|0", Zeilenstand(id));
+
+            // Wiederherstellen bringt den Auslieferungsstand der Folgefassung, an derselben ID.
+            (bool ok, string meldung) = Katalogabgleich.Wiederherstellen(folge, "Tab_Prozesswaerme_STAMM", EINSCHICHT_SCHLUESSEL);
+            Assert.True(ok, meldung);
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + Satz(folge, EINSCHICHT_SCHLUESSEL).Pruefsumme + "|0", Zeilenstand(id));
+        }
+
+        /// <summary>Zwei gleichnamige Zeilen ohne Schlüssel (Name ohne Unterschied der Schreibung): kein Anbinden.</summary>
+        [Fact]
+        public void Kein_Anbinden_bei_zwei_gleichnamigen_Zeilen()
+        {
+            if (!_db.Vorhanden) return;
+
+            long id = AlsUngesperrtAusgeliefert(EINSCHICHT);
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Prozesswaerme_STAMM (Bezeichner, \"ReadOnly\", Katalog_Ausgelaufen) " +
+                                           "VALUES (?, 0, 0)", new DbParam("@b", EINSCHICHT.ToLowerInvariant()));
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(ProbeKopie(), nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            KatalogabgleichEintrag z = e.Eintraege.Single();
+            Assert.Equal((Katalogabgleich.AKTION_BEHALTEN, 0, 1),
+                         (z.Aktion, e.Angebunden, e.Behalten));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.KABG_HINWEIS_NAME_MEHRDEUTIG, EINSCHICHT), z.Hinweis);
+            Assert.False(z.Wiederherstellbar);
+            Assert.Equal("0|∅|∅|0", Zeilenstand(id));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Prozesswaerme_STAMM WHERE lower(Bezeichner) = lower('" + EINSCHICHT +
+                                  "') AND Katalog_Schluessel IS NOT NULL"));
+            (bool ok, _) = Katalogabgleich.Wiederherstellen(ProbeKopie(), "Tab_Prozesswaerme_STAMM", EINSCHICHT_SCHLUESSEL);
+            Assert.False(ok);
+        }
+
+        /// <summary>Die gleichnamige Zeile trägt schon einen anderen Schlüssel: kein Anbinden, eigener Hinweis.</summary>
+        [Fact]
+        public void Kein_Anbinden_bei_fremdem_Schluessel()
+        {
+            if (!_db.Vorhanden) return;
+
+            long id = AlsUngesperrtAusgeliefert(EINSCHICHT);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Prozesswaerme_STAMM SET Katalog_Schluessel = 'PW:ANDERER_SATZ' WHERE ID = ?",
+                                           new DbParam("@id", id));
+
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(ProbeKopie(), nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            KatalogabgleichEintrag z = e.Eintraege.Single(x => x.Schluessel == EINSCHICHT_SCHLUESSEL);
+            Assert.Equal(Katalogabgleich.AKTION_BEHALTEN, z.Aktion);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.KABG_HINWEIS_NAME_FREMDER_SCHLUESSEL, EINSCHICHT), z.Hinweis);
+            Assert.Equal(0, e.Angebunden);
+            Assert.Equal("0|PW:ANDERER_SATZ|∅|1", Zeilenstand(id));   // der fremde Schlüssel läuft aus, wie jeder Satz ohne Paketzeile
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Prozesswaerme_STAMM WHERE Bezeichner = '" + EINSCHICHT + "'"));
+        }
+
         private static string Neusumme(Katalogtabelle t, Katalogpaketsatz s) =>
             Katalogfassung.Pruefsumme(t, s.Werte, s.Kinder.ToDictionary(k => k.Key,
                 k => (IReadOnlyList<IReadOnlyDictionary<string, object>>)k.Value.Cast<IReadOnlyDictionary<string, object>>().ToList()));

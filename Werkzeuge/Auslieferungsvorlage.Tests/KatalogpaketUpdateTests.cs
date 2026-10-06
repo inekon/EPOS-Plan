@@ -15,7 +15,8 @@ namespace Auslieferungsvorlage.Tests
     ///   <item><b>Fassung n</b> aus einer unveränderten Kopie der Testdatenbank;</item>
     ///   <item><b>Fassung n + 1</b> aus einer Kopie, in der zwei gesperrte BHKW-Sätze (A, B) eine andere
     ///   elektrische Leistung tragen und ein im Modus <c>alle</c> ungesperrt ausgelieferter Heizkessel (D) gesperrt
-    ///   ist.</item>
+    ///   ist;</item>
+    ///   <item><b>Fassung n + 2</b> wie n + 1, dazu trägt der Heizkessel D eine andere thermische Leistung.</item>
     /// </list>
     /// Beide Läufe im Modus <c>alle</c> mit den benannten Ausnahmen der Testdatenbank
     /// (<see cref="Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK"/>). Die Testdatenbank selbst wird nie geöffnet.
@@ -24,6 +25,7 @@ namespace Auslieferungsvorlage.Tests
     {
         internal const int FASSUNG_N = 2026100601;
         internal const int FASSUNG_N1 = 2026100602;
+        internal const int FASSUNG_N2 = 2026100603;
 
         private readonly Arbeitsordner _ordner = new Arbeitsordner();
 
@@ -60,22 +62,37 @@ namespace Auslieferungsvorlage.Tests
             VorlageN1 = Path.Combine(_ordner.Datei("n1"), "Kenndaten.sqlite");
             LaufN1 = Werkzeuglauf.StartenMitAusnahmen(quelleN1, VorlageN1,
                                                       "--katalogfassung", FASSUNG_N1.ToString(CultureInfo.InvariantCulture));
+            if (LaufN1.Code != 0) return;
+
+            // Fassung n + 2: der Stand von n + 1, dazu eine neue Leistung am nun gesperrten Heizkessel D.
+            string quelleN2 = _ordner.Datei("quelle_n2.sqlite");
+            File.Copy(quelleN1, quelleN2);
+            Ausfuehren(quelleN2,
+                "UPDATE \"Tab_Heizkessel_STAMM\" SET \"Ptherm\" = COALESCE(\"Ptherm\", 0) + 1 WHERE \"Bezeichner\" = '" +
+                NameD.Replace("'", "''") + "'");
+            Directory.CreateDirectory(_ordner.Datei("n2"));
+            VorlageN2 = Path.Combine(_ordner.Datei("n2"), "Kenndaten.sqlite");
+            LaufN2 = Werkzeuglauf.StartenMitAusnahmen(quelleN2, VorlageN2,
+                                                      "--katalogfassung", FASSUNG_N2.ToString(CultureInfo.InvariantCulture));
         }
 
         internal bool Vorhanden { get; }
         internal string VorlageN { get; }
         internal string VorlageN1 { get; }
+        internal string VorlageN2 { get; }
         internal Werkzeuglauf.Ergebnis LaufN { get; }
         internal Werkzeuglauf.Ergebnis LaufN1 { get; }
+        internal Werkzeuglauf.Ergebnis LaufN2 { get; }
         internal string SchluesselA { get; }
         internal string SchluesselB { get; }
         internal string NameD { get; }
 
-        /// <summary>Beide Fassungen sind gebaut.</summary>
-        internal bool Bereit => Vorhanden && LaufN?.Code == 0 && LaufN1?.Code == 0;
+        /// <summary>Alle drei Fassungen sind gebaut.</summary>
+        internal bool Bereit => Vorhanden && LaufN?.Code == 0 && LaufN1?.Code == 0 && LaufN2?.Code == 0;
 
         internal string PaketN => Katalogpaket.Pfad(VorlageN);
         internal string PaketN1 => Katalogpaket.Pfad(VorlageN1);
+        internal string PaketN2 => Katalogpaket.Pfad(VorlageN2);
 
         /// <summary>Ein neuer Datenordner mit Sicherungsordner, wie ihn die Anwendung neben der Datenbank führt.</summary>
         internal string NeuerDatenordner()
@@ -289,38 +306,56 @@ namespace Auslieferungsvorlage.Tests
         }
 
         /// <summary>
-        /// <b>Bekannte Grenze (Konzept Setup 6.5.5, „später gesperrter Satz“):</b> Ein Satz, der im Modus <c>alle</c>
-        /// ungesperrt ausgeliefert wurde, liegt beim Anwender ohne Schlüssel. Sperrt die Quelle ihn später, trägt das
-        /// Paket n + 1 ihn mit einem neu gebildeten Schlüssel, den die Anwenderdatenbank nicht kennt. Der Abgleich
-        /// fügt ihn NICHT ein, weil der Name im Katalog belegt ist: Er behält die vorhandene Zeile (Aktion
-        /// <c>BEHALTEN</c> mit dem Hinweis „Name belegt“, nicht wiederherstellbar), und es entsteht kein Doppel. Die
-        /// Zeile bleibt dafür ungesperrt und ohne Schlüssel und wird auch von späteren Fassungen nie nachgeführt. Die
-        /// Probe hält dieses Verhalten fest; ändert es sich, ist die Grenze im Konzept nachzuziehen.
+        /// <b>Später gesperrter Satz (Konzept Setup 6.5.5):</b> Ein Satz, der im Modus <c>alle</c> ungesperrt
+        /// ausgeliefert wurde, liegt beim Anwender ohne Schlüssel. Sperrt die Quelle ihn später, trägt das Paket n + 1
+        /// ihn mit einem neu gebildeten Schlüssel. Der Abgleich bindet die eine gleichnamige, ungesperrte Zeile ohne
+        /// Schlüssel an (Aktion <c>ANGEBUNDEN</c>, Inhalt gleich): Schlüssel, Prüfsumme des Pakets, gesperrt, dieselbe
+        /// ID, kein Doppel. Die Fassung n + 2 mit neuer Leistung führt die angebundene, unveränderte Zeile nach.
         /// </summary>
         [Fact]
-        public void U3_Spaeter_gesperrter_Satz_bleibt_ungesperrt_und_wird_nicht_doppelt_eingefuegt()
+        public void U3_Spaeter_gesperrter_Satz_wird_angebunden_und_von_der_Folgefassung_nachgefuehrt()
         {
             if (!_k.Bereit) return;
 
             string db = Bereitstellen(_k.NeuerDatenordner(), _k.VorlageN);
             string name = _k.NameD.Replace("'", "''");
-            string abfrage = "SELECT \"ReadOnly\", IIF(\"Katalog_Schluessel\" IS NULL, 0, 1) FROM \"Tab_Heizkessel_STAMM\" " +
-                             "WHERE \"Bezeichner\" = '" + name + "' ORDER BY \"ID\"";
-            Assert.Equal(new[] { "0|0" }, Katalogupdate.Zeilen(db, abfrage));
-            Katalogpaketsatz imPaket = Katalogpaket.Lesen(_k.PaketN1).Tabellen
-                                                   .Single(t => t.Tabelle == "Tab_Heizkessel_STAMM").Saetze
-                                                   .Single(x => x.Bezeichner == _k.NameD);
+            string abfrage = "SELECT \"ID\", \"ReadOnly\", COALESCE(\"Katalog_Schluessel\", '-'), COALESCE(\"Katalog_Pruefsumme\", '-'), " +
+                             "\"Ptherm\" FROM \"Tab_Heizkessel_STAMM\" WHERE \"Bezeichner\" = '" + name + "' ORDER BY \"ID\"";
+            List<string> vorher = Katalogupdate.Zeilen(db, abfrage);
+            Assert.Single(vorher);
+            string[] v = vorher[0].Split('|');
+            Assert.Equal(("0", "-", "-"), (v[1], v[2], v[3]));
+            Katalogpaketsatz Satz(string paket) => Katalogpaket.Lesen(paket).Tabellen
+                                                               .Single(t => t.Tabelle == "Tab_Heizkessel_STAMM").Saetze
+                                                               .Single(x => x.Bezeichner == _k.NameD);
+            Katalogpaketsatz n1 = Satz(_k.PaketN1);
+            Katalogpaketsatz n2 = Satz(_k.PaketN2);
+            Assert.Equal(n1.Schluessel, n2.Schluessel);
+            Assert.NotEqual(n1.Pruefsumme, n2.Pruefsumme);
 
             KatalogabgleichErgebnis e = Gegen(db, () =>
                 Katalogabgleich.BeimStart(Katalogpaket.Pfad(_k.VorlageN1), () => ""));
 
             Assert.True(e.Ausgefuehrt, e.Meldung);
             KatalogabgleichEintrag d = e.Eintraege.Single(x => x.Tabelle == "Tab_Heizkessel_STAMM");
-            Assert.Equal(imPaket.Schluessel, d.Schluessel);
-            Assert.Equal(Katalogabgleich.AKTION_BEHALTEN, d.Aktion);
-            Assert.Contains(_k.NameD, d.Hinweis);
+            Assert.Equal((n1.Schluessel, Katalogabgleich.AKTION_ANGEBUNDEN), (d.Schluessel, d.Aktion));
             Assert.False(d.Wiederherstellbar);
-            Assert.Equal(new[] { "0|0" }, Katalogupdate.Zeilen(db, abfrage));
+            Assert.Equal(1, e.Angebunden);
+            Assert.Equal(new[] { string.Join("|", v[0], "1", n1.Schluessel, n1.Pruefsumme, v[4]) },
+                         Katalogupdate.Zeilen(db, abfrage));
+
+            // Fassung n + 2: die angebundene Zeile ist unverändert - sie wird nachgeführt, an derselben ID.
+            string pthermN2 = Katalogupdate.Wert(_k.VorlageN2, "SELECT \"Ptherm\" FROM \"Tab_Heizkessel_STAMM\" WHERE \"Bezeichner\" = '" +
+                                                               name + "'");
+            Assert.NotEqual(v[4], pthermN2);
+            KatalogabgleichErgebnis f = Gegen(db, () =>
+                Katalogabgleich.BeimStart(Katalogpaket.Pfad(_k.VorlageN2), () => ""));
+            Assert.True(f.Ausgefuehrt, f.Meldung);
+            Assert.Equal(Katalogupdate.FASSUNG_N1, f.FassungVorher);
+            KatalogabgleichEintrag d2 = f.Eintraege.Single(x => x.Tabelle == "Tab_Heizkessel_STAMM");
+            Assert.Equal((n2.Schluessel, Katalogabgleich.AKTION_AKTUALISIERT), (d2.Schluessel, d2.Aktion));
+            Assert.Equal(new[] { string.Join("|", v[0], "1", n2.Schluessel, n2.Pruefsumme, pthermN2) },
+                         Katalogupdate.Zeilen(db, abfrage));
         }
     }
 }
