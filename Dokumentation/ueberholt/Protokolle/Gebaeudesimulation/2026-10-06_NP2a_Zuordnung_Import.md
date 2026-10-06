@@ -12,7 +12,7 @@
 
 ## 2 Nachweise
 
-Agentenabnahme: Kern 1296 grün, UI 241 grün, SQL 0 Fundstellen, Schale 0 Fehler, Referenzlauf 21/21 PASS, CSV 646 byte-gleich. Gate `gate_haupt.sh NP2a` auf `1a268145` (NP2a und NP3c auf NP3b): Kern-Filter rc=0; ChartProben grün, 211 Hashes gleich; KiKern 549/549, SpeicherEngine 397/397, SpeicherPlanung 27/28 (1 übersprungen), EPOS.UI.Tests 7583/7583, EPOS.Kern.Tests 11245/11248 (3 übersprungen); Dokumentationswachen 35/35; Referenzlauf 21/21 gegen R38: GESAMT PASS (6 872 111 Werte), CSV byte-gleich 646/646; gestörter Lauf PASS; Windows-Schale rc=0; Designer 15 285 Einträge unverändert; SqlDialektPruefer 2 434 Texte, 0 Fundstellen; Werkzeugtests 124/49/24/39; Konfliktmarker keine. Die Statuszeile ist #749.
+Agentenabnahme: Kern 1296 grün, UI 241 grün, SQL 0 Fundstellen, Schale 0 Fehler, Referenzlauf 21/21 PASS, CSV 646 byte-gleich. Gate `gate_haupt.sh NP2a` auf `1a268145` (NP2a und NP3c auf NP3b): Kern-Filter rc=0; ChartProben grün, 211 Hashes gleich; KiKern 549/549, SpeicherEngine 397/397, SpeicherPlanung 27/28 (1 übersprungen), EPOS.UI.Tests 7583/7583, EPOS.Kern.Tests 11245/11248 (3 übersprungen); Dokumentationswachen 35/35; Referenzlauf 21/21 gegen R38: GESAMT PASS (6 872 111 Werte), CSV byte-gleich 646/646; gestörter Lauf PASS; Windows-Schale rc=0; Designer 15 285 Einträge unverändert; SqlDialektPruefer 2 434 Texte, 0 Fundstellen; Werkzeugtests 124/49/24/39; Konfliktmarker keine. Die Statuszeile ist #752.
 
 ## 3 Offenes
 

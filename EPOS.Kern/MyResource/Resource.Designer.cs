@@ -92109,6 +92109,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab in die JAZ einrechnen ähnelt.
+        /// </summary>
+        public static string SIMERG_CHK_JAZ_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMERG_CHK_JAZ_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss anzeigen ähnelt.
         /// </summary>
         public static string SIMERG_CHK_PV_UEBERSCHUSS {
@@ -92526,6 +92535,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_GESAMT_WAERMEBEDARF {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_GESAMT_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl mit Heizstab: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_JAZ_SYSTEM {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_JAZ_SYSTEM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl WP: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_JAZ_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_JAZ_WP", resourceCulture);
             }
         }
         
@@ -93097,6 +93124,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die JAZ ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_JAZ {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_JAZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die JAZ mit Heizstab ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_JAZ_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_JAZ_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Clipping [kWh/a] ähnelt.
         /// </summary>
         public static string SIMERG_SPALTE_WR_CLIPPING {
@@ -93295,6 +93340,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl des Systems mit Heizstab (Bilanzgrenze nach VDI 4650): (Wärmeproduktion WP + Wärme des Heizstabs) ÷ (Stromverbrauch WP + Stromverbrauch Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Dieselbe Rechnung wie die Kennzahl „Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab“ im Bericht. Ohne Strom steht ein Strich. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_JAZ_SYSTEM {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_JAZ_SYSTEM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl der Wärmepumpe allein: Wärmeproduktion WP ÷ Stromverbrauch WP. Ohne Strom steht ein Strich. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_JAZ_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_JAZ_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe: zwischen 30 % und 100 % der Nennleistung linear von η₃₀ nach η₁₀₀, darunter η₃₀. Ein leeres η₃₀ nimmt die Normvorgabe nach Bauart (Brennwertkessel η₁₀₀ + 0,06, Niedertemperaturkessel η₁₀₀, Standardkessel η₁₀₀ − 0,03). Der mittlere Wirkungsgrad ist die Wärme der Laufstunden durch ihren Brennstoff, ohne Anfahr- und Bereitschaftsverlust; der Teillastbrennstoff ist der Mehrverbrauch gegenüber einem Betrieb mit η₁₀₀ — negativ, wo die Teilla [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string SIMERG_TIP_KENNLINIE_SPK {
@@ -93318,6 +93381,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_MAX_WAERMELAST {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_MAX_WAERMELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl des Moduls ohne Heizstab: Wärmeproduktion ÷ Stromverbrauch. Ohne Strom steht ein Strich. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_SPALTE_JAZ {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_SPALTE_JAZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl des Moduls mit seinem Heizstab: (Wärmeproduktion + Heizstab) ÷ (Stromverbrauch + Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Ohne Strom steht ein Strich. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_SPALTE_JAZ_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_SPALTE_JAZ_HEIZSTAB", resourceCulture);
             }
         }
         

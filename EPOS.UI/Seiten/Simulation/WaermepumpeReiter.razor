@@ -74,6 +74,13 @@
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, Zahl(Daten.StromverbrauchMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, Zahl(Daten.HeizstabStromverbrauchMwh), MWH)
+                    @* Die zwei Jahresarbeitszahlen aus den Mengen darueber - gerechnet im Kern
+                       (Jahresarbeitszahl), hier nur angezeigt; ohne Strom ein Strich. Die mit
+                       Heizstab ist dieselbe Rechnung wie die Kennzahl eff.jaz des Berichts. *@
+                    @Wertzeile(Resource.SIMERG_LBL_JAZ_WP, Jaz(Daten.JazWaermepumpe), "",
+                               titel: Resource.SIMERG_TIP_JAZ_WP)
+                    @Wertzeile(Resource.SIMERG_LBL_JAZ_SYSTEM, Jaz(Daten.JazMitHeizstab), "",
+                               titel: Resource.SIMERG_TIP_JAZ_SYSTEM)
                 </dl>
             </section>
 
@@ -82,6 +89,13 @@
         @* ---- Die Modultabelle; Doppelklick oeffnet den Waermepumpendialog ---- *@
         @if (Daten.Module.Count > 0)
         {
+            @* Der Schalter stellt die Spalte JAZ von „ohne Heizstab" (Vorgabe) auf „mit Heizstab"
+               des Moduls um; Kopf und Kurztext nennen die Bilanzgrenze, die gerade gilt. Der
+               Zustand gilt fuer die Ansicht und wird nicht gespeichert. *@
+            <div class="epos-simerg-schalter">
+                <Schalter Bezeichnung="@Resource.SIMERG_CHK_JAZ_HEIZSTAB"
+                          Wert="@_jazMitHeizstab" WertChanged="@(w => _jazMitHeizstab = w)" />
+            </div>
             <table class="epos-raster">
                 <thead>
                     <tr>
@@ -90,6 +104,10 @@
                         <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
                         <th scope="col">@Resource.SIM_SPALTE_STROMVERBRAUCH</th>
                         <th scope="col">@Resource.SIM_SPALTE_HEIZSTAB</th>
+                        <th scope="col"
+                            title="@(_jazMitHeizstab ? Resource.SIMERG_TIP_SPALTE_JAZ_HEIZSTAB : Resource.SIMERG_TIP_SPALTE_JAZ)">
+                            @(_jazMitHeizstab ? Resource.SIMERG_SPALTE_JAZ_HEIZSTAB : Resource.SIMERG_SPALTE_JAZ)
+                        </th>
                         <th scope="col">@Resource.SIM_SPALTE_BETRIEBSSTUNDEN</th>
                         @* Welle M4 (WP1): Starts und Mehrstrom aus Taktverlust - nur, wenn ein
                            Modul mit Mindestleistung rechnet; sonst bleibt die Tabelle, wie sie war. *@
@@ -109,6 +127,7 @@
                             <td class="epos-simerg-zahl">@Zahl(m.WaermeproduktionMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.StrombedarfMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.HeizstabMwh)</td>
+                            <td class="epos-simerg-zahl">@Jaz(_jazMitHeizstab ? m.JazMitHeizstab : m.Jaz)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.LaufzeitStunden)</td>
                             @if (MitTakt)
                             {
@@ -401,6 +420,9 @@
     private bool _pgProduktion = true;
     private bool _pgHeizstab = true;
 
+    // Die Spalte JAZ der Modultabelle: Vorgabe OHNE Heizstab; nur fuer die Ansicht.
+    private bool _jazMitHeizstab;
+
     private Task ModulGewaehlt() => ModulOeffnen.InvokeAsync();
 
     /// <summary>
@@ -448,6 +470,12 @@
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
+    /// <summary>
+    /// Eine Jahresarbeitszahl aus dem Kern mit zwei Nachkommastellen; <c>null</c> (kein Strom)
+    /// wird ein Strich — dasselbe Zeichen wie in den Taktspalten der Modultabelle.
+    /// </summary>
+    private static string Jaz(double? wert) => wert.HasValue ? Zahl(wert.Value) : "—";
+
     /// <summary>Rechnet ein Modul den Taktverlust (Welle M4, WP1)? Dann stehen Starts und Mehrstrom in der Tabelle.</summary>
     private bool MitTakt => Daten?.Module?.Any(m => m.MitTakt) == true;
 
@@ -455,11 +483,13 @@
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
     /// die ABSCHLUSSZEILE einer Gruppe — den Rest, der nach allen Erzeugern uebrig
     /// bleibt (W11b‑B‑15); ohne den Schalter bleibt das Markup unveraendert.
+    /// <paramref name="titel"/> ist der Kurztext an Beschriftung und Wert (die Formel einer
+    /// Jahresarbeitszahl); ohne ihn laesst Blazor das Attribut weg.
     /// </summary>
     private RenderFragment Wertzeile(string text, string wert, string einheit,
-                                     bool betont = false) => @<text>
-        <dt class="@Zeilenklasse(betont)">@text</dt>
-        <dd class="@Zeilenklasse(betont)">@wert</dd>
+                                     bool betont = false, string? titel = null) => @<text>
+        <dt class="@Zeilenklasse(betont)" title="@titel">@text</dt>
+        <dd class="@Zeilenklasse(betont)" title="@titel">@wert</dd>
         <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
 
@@ -481,12 +511,18 @@
     {
         if (Daten is null) return Array.Empty<Anzeigeschalter>();
 
-        var liste = new List<Anzeigeschalter>
+        var liste = new List<Anzeigeschalter>();
+
+        // Die Bilanzgrenze der Spalte JAZ - nur, wo die Modultabelle steht.
+        if (Daten.Module.Count > 0)
+            liste.Add(Umschalter(Resource.SIMERG_CHK_JAZ_HEIZSTAB, () => _jazMitHeizstab, w => _jazMitHeizstab = w));
+
+        liste.AddRange(new[]
         {
             Umschalter(Resource.CHART_LEGENDE_WAERMEBEDARF, () => _swBedarf, w => _swBedarf = w),
             Umschalter(Resource.CHART_SEGMENT_HEIZSTAB, () => _swHeizstab, w => _swHeizstab = w),
             Umschalter(Resource.CHART_LEGENDE_WAERMEPRODUKTION, () => _swProduktion, w => _swProduktion = w)
-        };
+        });
 
         if (AktivesBlatt == "PRODUKTION")
         {

@@ -447,9 +447,9 @@ public class ErzeugerReiterTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Kennzahlen in Hauptgruppen mit Balken.</b> Oben Wärme | Strom
-    /// nebeneinander (wie im Bedarfs- und im Übersichtsreiter), darunter der
-    /// Brennstoffverbrauch und der Betrieb je in eigener Rasterzeile, am Ende des
-    /// Reiters die Auslegung (Anwenderwunsch 06.10.2026). Kein <c>h3</c> bleibt
+    /// nebeneinander (wie im Bedarfs- und im Übersichtsreiter), darunter ebenso
+    /// Brennstoffverbrauch | Betrieb, am Ende des Reiters die Auslegung allein in
+    /// ihrer Rasterzeile. Kein <c>h3</c> bleibt
     /// übrig; die Zeilenfolge JEDER Gruppe ist die von W11b‑B‑15.
     /// </summary>
     [Fact]
@@ -459,15 +459,14 @@ public class ErzeugerReiterTests : EposBunitContext
 
         // Der fünfte Balken steht über der Kesseltabelle - sein Titel trägt seit
         // W11b‑B‑23 keinen Doppelpunkt mehr (SIMERG_GRP_MODULE_SPK).
-        // #568: die dritte Rasterzeile „Betrieb"; die Auslegung steht am Ende.
+        // Die Auslegung steht am Ende.
         Assert.Equal(new[] { "Wärme", "Strom", "Brennstoffverbrauch der Spitzenkessel",
                              "Betrieb", "Wärmeproduktion der einzelnen Spitzenkessel", "Auslegung" },
                      seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
         Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
 
-        // Vier Rasterzeilen: nur die erste trägt zwei Listen (Wärme | Strom),
-        // Brennstoff, Betrieb und Auslegung stehen je allein.
-        Assert.Equal(new[] { 2, 1, 1, 1 },
+        // Drei Rasterzeilen: Wärme | Strom, Brennstoff | Betrieb, die Auslegung allein.
+        Assert.Equal(new[] { 2, 2, 1 },
                      seite.FindAll("div.epos-simerg-spalten")
                           .Select(z => z.QuerySelectorAll("dl.epos-simerg-werte").Length).ToArray());
 
@@ -560,6 +559,33 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Single(seite.FindAll("[role='alert']"));
         Assert.Equal(4, seite.FindAll("dl.epos-simerg-werte").Count);   // ohne Brennstoffliste
+    }
+
+    /// <summary>
+    /// <b>Brennstoff | Betrieb bleiben nebeneinander, auch ohne Brennstoffzeile.</b>
+    /// Die Brennstoffgruppe verschwindet nicht, sie trägt ihren Leerhinweis; die
+    /// Betriebsgruppe steht rechts daneben in derselben Rasterzeile — wie Wärme |
+    /// Strom in der ersten. Beide Leerhinweise (nicht gelaufen, kein Brennstoff).
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Kessel_haelt_Brennstoff_und_Betrieb_ohne_Brennstoffzeile_nebeneinander(bool brennstoffDefiniert)
+    {
+        var seite = KesselZeichnen(Kessel(), brennstoffe: Array.Empty<Brennstoffzeile>(),
+                                   brennstoffDefiniert: brennstoffDefiniert);
+
+        var zeilen = seite.FindAll("div.epos-simerg-spalten");
+        Assert.Equal(3, zeilen.Count);
+        var gruppen = zeilen[1].QuerySelectorAll("section.epos-simerg-block");
+        Assert.Equal(2, gruppen.Length);
+        Assert.Equal("Brennstoffverbrauch der Spitzenkessel",
+                     gruppen[0].QuerySelector("h2.epos-gruppenkopf-titel")!.TextContent.Trim());
+        Assert.Null(gruppen[0].QuerySelector("dl.epos-simerg-werte"));
+        Assert.NotNull(gruppen[0].QuerySelector("[role='alert'], [role='status']"));
+        Assert.Equal("Betrieb",
+                     gruppen[1].QuerySelector("h2.epos-gruppenkopf-titel")!.TextContent.Trim());
+        Assert.NotNull(gruppen[1].QuerySelector("dl.epos-simerg-werte"));
     }
 
     // ---- W11b‑B‑21: die drei Reihen des Kesselbildes sind wählbar ----------

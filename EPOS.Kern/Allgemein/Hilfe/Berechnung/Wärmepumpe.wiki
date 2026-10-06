@@ -148,7 +148,9 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 |-
 | <math>\vartheta_{\mathrm{biv,erg}}</math> || ermittelter Bivalenzpunkt || °C || (13)
 |-
-| <math>\mathrm{JAZ}</math> || Jahresarbeitszahl || — || (14)
+| <math>\mathrm{JAZ}</math> || Jahresarbeitszahl mit Heizstab || — || (14)
+|-
+| <math>\mathrm{JAZ}_{\mathrm{WP}}</math> || Jahresarbeitszahl der Wärmepumpe allein || — || (14)
 |-
 | <math>Q_{\mathrm{WP}}(t)</math>, <math>E_{\mathrm{WP}}(t)</math> || Wärme und Verdichterstrom des Moduls in der Stunde, Deckung und Ladung zusammen || kWh || Schritte 4 und 5
 |-
@@ -346,15 +348,16 @@ Der ausgewiesene '''Bivalenzpunkt''' ist ein '''Ergebnis''', keine Eingabe: die 
 :: <math>\vartheta_{\mathrm{Luft}}(t)</math> – Außentemperatur der Stunde [°C]
 :: <math>Q_{\mathrm{Rest}}(t)</math> – offener Rest vor dem Heizstab; nur Stunden mit einem Rest zählen [kWh]
 
-Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den Heizstab ein:
+Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet. Mit Heizstab gilt die Bilanzgrenze der Anlage nach VDI 4650: Die Wärme des Heizstabs steht im Zähler, sein Strom im Nenner; nach (12) ist seine Wärme gleich seinem Strom.
 
-: <math>\displaystyle \mathrm{JAZ} = \frac{Q_{\mathrm{a}}}{E_{\mathrm{a}} + E_{\mathrm{HS,a}}}</math> &nbsp;&nbsp;(14)
-:: <math>\mathrm{JAZ}</math> – Jahresarbeitszahl des Moduls [–]
-:: <math>Q_{\mathrm{a}}</math> – Wärmeproduktion des Moduls im Jahr [kWh]
+: <math>\displaystyle \mathrm{JAZ} = \frac{Q_{\mathrm{a}} + E_{\mathrm{HS,a}}}{E_{\mathrm{a}} + E_{\mathrm{HS,a}}}, \qquad \mathrm{JAZ}_{\mathrm{WP}} = \frac{Q_{\mathrm{a}}}{E_{\mathrm{a}}}</math> &nbsp;&nbsp;(14)
+:: <math>\mathrm{JAZ}</math> – Jahresarbeitszahl mit Heizstab [–]
+:: <math>\mathrm{JAZ}_{\mathrm{WP}}</math> – Jahresarbeitszahl der Wärmepumpe allein [–]
+:: <math>Q_{\mathrm{a}}</math> – Wärmeproduktion der Wärmepumpe im Jahr, ohne Heizstab [kWh]
 :: <math>E_{\mathrm{a}}</math> – Strombedarf der Wärmepumpe im Jahr [kWh]
-:: <math>E_{\mathrm{HS,a}}</math> – Strombedarf des Heizstabs im Jahr [kWh]
+:: <math>E_{\mathrm{HS,a}}</math> – Strombedarf des Heizstabs im Jahr, gleich seiner Wärme [kWh]
 
-<math>E_{\mathrm{a}}</math> enthält den Mehrstrom des Taktens aus Schritt 8; die Jahresarbeitszahl sinkt damit um den Taktverlust.
+Beide Zahlen entstehen aus den Summen über alle Module und je Modul aus dessen eigenen Summen; ohne Strom gibt es keine Jahresarbeitszahl. Ohne Heizstab sind sie gleich, mit Heizstab sinkt <math>\mathrm{JAZ}</math>, je mehr er deckt. <math>E_{\mathrm{a}}</math> enthält den Mehrstrom des Taktens aus Schritt 8; die Jahresarbeitszahl sinkt damit um den Taktverlust.
 
 === Schritt 8 — Takten unter der Mindestleistung ===
 
@@ -399,8 +402,8 @@ Der Mehrstrom geht in den Strombedarf der Stunde, des Moduls und des Jahres ein.
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — je Modul Wärmeproduktion, Strombedarf, Laufzeit und Heizstabanteil, mit Mindestleistung dazu Starts und Mehrstrom des Taktens; in der Gruppe „Auslegung" Bivalenzpunkt, durchschnittliche Vollbenutzungsstunden und Minimale Spitzenkesselleistung, dazu der Stromverbrauch des Heizstabs und die Ganglinien von Produktion, Strombedarf und Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>.
-* '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Wärmepumpe an der Jahreswärme. Die Jahresarbeitszahl <math>\mathrm{JAZ}</math> steht nicht dort, sondern im Bericht („Jahresarbeitszahl (JAZ) WP").
+* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — im Block „Strom“ die Jahresarbeitszahlen <math>\mathrm{JAZ}_{\mathrm{WP}}</math> und <math>\mathrm{JAZ}</math> nach (14); je Modul Wärmeproduktion, Strombedarf, Heizstabanteil, Jahresarbeitszahl (ohne Heizstab, auf Wunsch mit) und Laufzeit, mit Mindestleistung dazu Starts und Mehrstrom des Taktens; in der Gruppe „Auslegung" Bivalenzpunkt, durchschnittliche Vollbenutzungsstunden und Minimale Spitzenkesselleistung, dazu der Stromverbrauch des Heizstabs und die Ganglinien von Produktion, Strombedarf und Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>.
+* '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Wärmepumpe an der Jahreswärme. Die Jahresarbeitszahl <math>\mathrm{JAZ}</math> steht nicht dort, sondern im Reiter „Wärmepumpe" und im Bericht („Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab").
 * '''Simulationsergebnis, Reiter „Ergebnis"''' — der Anteil der Wärmepumpe am Strombedarf.
 * '''Simulationsprotokoll''' — Kappungen nach oben und unten mit Stundenzahl und Temperaturbereich, Extrapolationshinweis, nicht auflösbare Quellen, Bivalenztemperatur auf dem Vorbelegungswert.
 * '''Bericht''' und '''Wirtschaftlichkeit''' — Strommengen, JAZ und Vollbenutzungsstunden.

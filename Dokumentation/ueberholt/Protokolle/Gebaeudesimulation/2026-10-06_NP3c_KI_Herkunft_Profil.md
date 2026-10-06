@@ -10,7 +10,7 @@
 
 ## 2 Nachweise
 
-Agentenabnahme: UI 7583/7583, Kern-Auswahl 1196/1196, Referenzlauf 21/21 PASS, CSV 646 byte-gleich. Gate `gate_haupt.sh NP2a` auf `1a268145` (NP2a und NP3c auf NP3b): alles grün, Zahlen wie im [Protokoll NP2a](2026-10-06_NP2a_Zuordnung_Import.md). Merge mit dem HC-2-Stand `7b771f82`: nur die `.resx` im Konflikt, vereinigt (15 309 Einträge je Sprache, keine Doppelten, XML gültig, Designer gleich). Die Statuszeile ist #750.
+Agentenabnahme: UI 7583/7583, Kern-Auswahl 1196/1196, Referenzlauf 21/21 PASS, CSV 646 byte-gleich. Gate `gate_haupt.sh NP2a` auf `1a268145` (NP2a und NP3c auf NP3b): alles grün, Zahlen wie im [Protokoll NP2a](2026-10-06_NP2a_Zuordnung_Import.md). Merge mit dem HC-2-Stand `7b771f82`: nur die `.resx` im Konflikt, vereinigt (15 309 Einträge je Sprache, keine Doppelten, XML gültig, Designer gleich). Die Statuszeile ist #753.
 
 ## 3 Offenes
 
