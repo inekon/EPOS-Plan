@@ -141,6 +141,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // NP3a (Konzept Nutzungsprofile 6.1, NP-F22): das Blatt „Nutzungsprofile" im Katalogeditor - der
         // Katalog ist projektübergreifend (NP-F3) und schreibt sofort; der WIRT meldet an, nicht das Blatt.
         new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
+        new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U3 (Teilkonzept 7.5): der Inhalt der aufgeklappten Kalenderkarte.
         new("KalenderkarteInhalt",            "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U3 (Festlegung 15): die Periodenliste der aufgeklappten Kalenderkarte.
@@ -360,6 +362,11 @@ public sealed class KiMaskenabdeckungWacheTests
             "abgeleitet (E93), eine Lesezeile ohne Eingabe, und stehen nur lesbar als np_tage_jahr; die Zuordnungszeilen (Art, " +
             "Schlüssel, Profil) stehen als Raster zum Lesen. Profilwahl je Zeile sowie Art und Schlüssel einer neuen " +
             "Zeile gehören zu Handlungen, die sofort in den Katalog schreiben — Klicks des Anwenders"),
+        // NP4a (Konzept Nutzungsprofile 6.1, 6.4): Zielkategorie und Name einer neuen Kategorie des CSV-Imports, die
+        // Kategorie des Exports.
+        new("RaumnutzungCsvAustausch", 3, "Zielkategorie und Name der neuen Kategorie gehören zur Handlung „CSV importieren…“, die " +
+            "erst mit „Übernehmen“ in den Katalog schreibt, die Kategorie zur Handlung „CSV exportieren…“, die eine Datei " +
+            "schreibt — Dateiwahlen und Klicks des Anwenders, kein Einstellwert des Gebäudes"),
         new("KonditionierungVorlagenverwaltung", 5, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name, " +
             "Komfort- und Absenksollwert zur Handlung „Kopieren nach …“; beide schreiben mit eigenem OK sofort — kein " +
             "Einstellwert des Gebäudes"),

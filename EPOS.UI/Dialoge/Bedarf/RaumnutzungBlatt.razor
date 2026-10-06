@@ -42,6 +42,8 @@
     }
     else
     {
+        <RaumnutzungCsvAustausch Weg="@Weg.Csv" Kategorien="@Kategorien"
+                                 Geaendert="@(async () => { NeuLaden(); if (Geaendert.HasDelegate) await Geaendert.InvokeAsync(); })" />
         <div class="epos-raumnutzung-reiter" role="tablist">
             <button type="button" class="epos-knopf epos-raumnutzung-reiter-profile" role="tab"
                     aria-selected="@((!_zuordnungsreiter).ToString().ToLowerInvariant())"

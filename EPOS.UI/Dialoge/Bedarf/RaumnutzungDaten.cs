@@ -397,6 +397,9 @@ public sealed class RaumnutzungWeg
     /// <summary>Eine eigene Zuordnungszeile löschen.</summary>
     public Func<long, RaumnutzungErgebnis>? ZuordnungLoeschen { get; init; }
 
+    /// <summary>CSV-Import und -Export (NP4a) — der Weg der Komponente <c>RaumnutzungCsvAustausch</c>; <c>null</c> = keine Knöpfe.</summary>
+    public RaumnutzungCsvWeg? Csv { get; init; }
+
     /// <summary>Bietet das Bündel die Verwaltung des Katalogs an (Lesen genügt nicht)?</summary>
     public bool MitKatalog => Kategorien is not null && Profile is not null;
 }

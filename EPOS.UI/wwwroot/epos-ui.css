@@ -14843,6 +14843,54 @@ td.epos-vorlage-katalogbeschreibung {
     gap: 6px;
 }
 
+/* CSV-IMPORT UND -EXPORT DER NUTZUNGSPROFILE (Stufe NP4a; Konzept Nutzungsprofile 6.1, 6.4)
+   Knopfzeile im Kopf des Blatts, darunter der offene Bereich (Import mit Vorschau und Meldungen
+   bzw. Export); die Tabellen stehen in .epos-raster-huelle und rollen dort. */
+.epos-raumnutzung-csv {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-raumnutzung-csv-bereich {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: var(--epos-rand);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 4px;
+}
+
+.epos-raumnutzung-csv-titel,
+.epos-raumnutzung-csv-untertitel {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.epos-raumnutzung-csv-meldung,
+.epos-raumnutzung-csv-datei,
+.epos-raumnutzung-csv-format,
+.epos-raumnutzung-csv-ohnehinweise {
+    margin: 0;
+}
+
+.epos-raumnutzung-csv-fehler {
+    margin: 0;
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-raumnutzung-csv-profil--abgelehnt td,
+.epos-raumnutzung-csv-hinweis--ignoriert td {
+    color: var(--epos-text-leise);
+}
+
+.epos-raumnutzung-csv-hinweis--fehler td {
+    color: var(--epos-stufe-fehler);
+    font-weight: 600;
+}
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
