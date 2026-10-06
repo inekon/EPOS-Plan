@@ -231,9 +231,6 @@ public sealed class RaumnutzungTexte
     /// <summary>Die Tagesart „nutzungsfreier Tag" (<c>RNP_LBL_TAGESART_FREI</c>).</summary>
     public string TagesartFrei { get; set; } = "nutzungsfreier Tag";
 
-    /// <summary>Die Zeile „nur lesend, Bearbeitung folgt" (<c>RNP_TXT_NUR_LESEND</c>).</summary>
-    public string HinweisNurLesend { get; set; } = "Zeilenbild und Stundenprofile werden hier nur angezeigt.";
-
     // ------------------------------------------------------------------ Zustände und Meldungen
 
     /// <summary>Der Kurztext des Schlosses (<c>RNP_TXT_AUSGELIEFERT</c>).</summary>

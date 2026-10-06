@@ -90588,15 +90588,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilenbild und Stundenprofile werden hier nur angezeigt. ähnelt.
-        /// </summary>
-        public static string RNP_TXT_NUR_LESEND {
-            get {
-                return ResourceManager.GetString("RNP_TXT_NUR_LESEND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen) ähnelt.
         /// </summary>
         public static string RNP_TXT_NUTZUNGSTAGE {

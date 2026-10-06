@@ -46155,9 +46155,6 @@ Chart</value>
   <data name="RNP_LBL_TAGESART_FREI" xml:space="preserve">
     <value>nutzungsfreier Tag</value>
   </data>
-  <data name="RNP_TXT_NUR_LESEND" xml:space="preserve">
-    <value>Zeilenbild und Stundenprofile werden hier nur angezeigt.</value>
-  </data>
   <data name="RNP_TXT_AUSGELIEFERT" xml:space="preserve">
     <value>Gehört zur Auslieferung — nur duplizieren</value>
   </data>

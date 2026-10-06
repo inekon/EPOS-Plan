@@ -144,7 +144,6 @@ namespace WindowsFormsApplication1
             t.LabelWochentage = Text_("RNP_LBL_WOCHENTAGE", t.LabelWochentage);
             t.TagesartWerktag = Text_("RNP_LBL_TAGESART_WERKTAG", t.TagesartWerktag);
             t.TagesartFrei = Text_("RNP_LBL_TAGESART_FREI", t.TagesartFrei);
-            t.HinweisNurLesend = Text_("RNP_TXT_NUR_LESEND", t.HinweisNurLesend);
 
             t.Ausgeliefert = Text_("RNP_TXT_AUSGELIEFERT", t.Ausgeliefert);
             t.TextLeer = Text_("RNP_TXT_LEER", t.TextLeer);

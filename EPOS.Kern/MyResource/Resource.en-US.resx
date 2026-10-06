@@ -46148,9 +46148,6 @@ chart</value>
   <data name="RNP_LBL_TAGESART_FREI" xml:space="preserve">
     <value>non-usage day</value>
   </data>
-  <data name="RNP_TXT_NUR_LESEND" xml:space="preserve">
-    <value>Row pattern and hourly profiles are shown here for reading only.</value>
-  </data>
   <data name="RNP_TXT_AUSGELIEFERT" xml:space="preserve">
     <value>Part of the delivery — duplicate only</value>
   </data>
