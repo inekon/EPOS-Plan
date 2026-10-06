@@ -193,6 +193,51 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Szenario: Erwartet", "Szenario: Günstig", "Szenario: Ungünstig" }, bloecke);
         }
 
+        /// <summary>
+        /// In VALERI-Darstellung (Etappe VB‑E3, VB‑Q9 a) trägt das Blatt „Wirtschaftlichkeit“ unter dem Titel die Kopfzeile
+        /// „Wortbericht in VALERI-Darstellung“ — und keine Kopfzeile des Szenarios, auch wenn die Konfiguration daneben
+        /// Ungünstig trägt; alles darunter ist Zelle für Zelle das Blatt des Erwartet-Berichts, eine Zeile tiefer.
+        /// </summary>
+        [Theory]
+        [InlineData(BerichtVorlagenMesslatteTests.PROBE_1030)]
+        [InlineData(BerichtVorlagenMesslatteTests.PROBE_GRUPPE)]
+        public void Die_Mappe_nennt_die_VALERI_Darstellung_in_einer_Kopfzeile(string probe)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string erwartet = Pfad("erwartet-" + probe + ".xlsx");
+            new ExcelBerichtGenerator().Erzeuge(BerichtVorlagenMesslatteTests.Probe(probe),
+                                                Konfig(WirtschaftlichkeitSzenario.ERWARTET), erwartet);
+            string valeri = Pfad("valeri-" + probe + ".xlsx");
+            new ExcelBerichtGenerator().Erzeuge(BerichtVorlagenMesslatteTests.Probe(probe),
+                                                KonfigValeri(WirtschaftlichkeitSzenario.WORST), valeri);
+
+            using var wbE = new XLWorkbook(erwartet);
+            using var wbV = new XLWorkbook(valeri);
+            IXLWorksheet e = wbE.Worksheet(BerichtTexte.T("Wirtschaftlichkeit"));
+            IXLWorksheet v = wbV.Worksheet(BerichtTexte.T("Wirtschaftlichkeit"));
+
+            Assert.Equal(e.Cell(1, 1).GetString(), v.Cell(1, 1).GetString());
+            Assert.Equal("Wortbericht in VALERI-Darstellung", v.Cell(2, 1).GetString());
+            Assert.True(v.Cell(2, 1).Style.Font.Bold);
+            Assert.StartsWith("i = ", v.Cell(3, 1).GetString(), StringComparison.Ordinal);
+            Assert.Equal(3, v.SheetView.SplitRow);
+            Assert.DoesNotContain(v.CellsUsed(), c => c.GetString().StartsWith("Szenario des Wortberichts", StringComparison.Ordinal));
+
+            int letzte = e.LastRowUsed().RowNumber();
+            Assert.Equal(letzte + 1, v.LastRowUsed().RowNumber());
+            int spalten = Math.Max(e.LastColumnUsed().ColumnNumber(), v.LastColumnUsed().ColumnNumber());
+            var abweichungen = new List<string>();
+            for (int r = 2; r <= letzte; r++)
+                for (int s = 1; s <= spalten; s++)
+                {
+                    string a = Inhalt(e.Cell(r, s)), b = Inhalt(v.Cell(r + 1, s));
+                    if (a != b) abweichungen.Add("Z" + r + "/S" + s + ": „" + a + "“ ↔ „" + b + "“");
+                }
+            Assert.True(abweichungen.Count == 0, string.Join("\n", abweichungen.Take(20)));
+        }
+
         // =====================================================================
         //  (e) VALERI-Darstellung (Etappe VB‑E2)
         // =====================================================================

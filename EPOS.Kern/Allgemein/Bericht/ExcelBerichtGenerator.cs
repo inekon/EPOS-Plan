@@ -585,6 +585,15 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.Bold = true;
                 r += 1;
             }
+            // VB‑E3 (VB‑Q9 a): In VALERI-Darstellung nennt eine Kopfzeile die Darstellung des Wortberichts; das Blatt
+            // selbst bleibt, wie es ist (seine drei Spaltengruppen sind schon die VALERI-Form). Das Leitszenario ist dann
+            // Erwartet, die Kopfzeile des Szenarios entfällt.
+            if (WirtschaftsBerichtswerte.IstValeri(konfig))
+            {
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BER_VALERI_WORTBERICHT;
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                r += 1;
+            }
 
             if (alle.Count == 0)
             {
@@ -1311,8 +1320,9 @@ namespace WindowsFormsApplication1
             IXLColumn letzteSpalte = ws.LastColumnUsed();
             if (letzteSpalte != null) breit = Math.Max(breit, letzteSpalte.ColumnNumber());
             for (int i = 2; i <= breit; i++) ws.Column(i).Width = 18;
-            // Fixiert bleiben Titel und Parameterzeile — mit der Kopfzeile des Szenarios (E31) eine Zeile mehr.
-            ws.SheetView.FreezeRows(wortszenario == WirtschaftlichkeitSzenario.ERWARTET ? 2 : 3);
+            // Fixiert bleiben Titel und Parameterzeile — mit der Kopfzeile des Szenarios (E31) oder der VALERI-Darstellung
+            // (VB‑E3) eine Zeile mehr; beide schließen einander aus (VALERI hat das Leitszenario Erwartet).
+            ws.SheetView.FreezeRows(wortszenario == WirtschaftlichkeitSzenario.ERWARTET && !WirtschaftsBerichtswerte.IstValeri(konfig) ? 2 : 3);
             return verlaufSzenarien;
         }
 
