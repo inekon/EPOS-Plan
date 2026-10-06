@@ -453,7 +453,9 @@ iOS-Lauf nötig (keine Änderung an Hülle oder `Dienste.*`). Der Kern-Lauf auf 
 Nachweis.
 
 
-## 7. Offene Fragen an den Anwender
+## 7. Fragen an den Anwender — entschieden (E95, 06.10.2026)
+
+Alle Empfehlungen sind übernommen; die Empfehlung ist damit der Entscheid. Reihenfolge: BA-1 nach HC-5.
 
 1. **Gilt in Stufe A der U-Wert der Datei vor dem U aus den Schichten?** — Empfehlung: **ja.** Die
    Schichten liefern R₁ und C₁, der U-Wert der Datei die Transmission. Abweichungen über 10 % stehen
