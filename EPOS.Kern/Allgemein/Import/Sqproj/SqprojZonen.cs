@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -110,6 +111,9 @@ namespace WindowsFormsApplication1
                 double? flaeche = Summe(drin.Select(r => r.FlaecheM2)) ?? Summe(z.Raeume.Select(r => projekt.Raum(r)?.FlaecheM2)) ?? z.FlaecheM2;
                 double? volumen = Summe(drin.Select(r => r.VolumenM3)) ?? Summe(z.Raeume.Select(r => projekt.Raum(r)?.VolumenM3)) ?? z.VolumenM3;
                 Planzone pz = plan.Zone(angelegt.Schluessel);
+                // Die Herleitung des Zonenbaums: das Profil folgt aus der DIN-Nummer der Projektdatei (Zuordnung DIN_NUMMER).
+                pz.Quelle = nutzung != null && nummer is int din
+                    ? new Profilquelle(RaumnutzungSchema.ZUORDNUNG_DIN, din.ToString(CultureInfo.InvariantCulture)) : null;
                 Zonenkonditionierung k = SqprojKonditionierung.Bilden(pz.Name, nutzung?.Name, profil, gruppe, flaeche, volumen);
                 k.Zonierung = wirksam;
                 pz.Projektdatei = k;

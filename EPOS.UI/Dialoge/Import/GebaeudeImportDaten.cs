@@ -473,6 +473,36 @@ public sealed record GebaeudeZonenregelDaten(string Schluessel, string Text);
 /// <param name="Eintraege">Die Einträge (Schlüssel, Anzeigetext) in der Ordnung des Katalogs.</param>
 public sealed record GebaeudeNutzungsgruppe(string Titel, IReadOnlyList<GebaeudeZonenregelDaten> Eintraege);
 
+/// <summary>
+/// <b>Die Herleitungszeile einer Zone des Zonenbaums</b> (Konzept Nutzungsprofile 6.2, NP-F16): Profil und Kategorie, woher
+/// die Vorbelegung kommt, welche Größen die Datei liefert, und die Kennwerte des Profils in Kurzform — alles Anzeigetexte der
+/// Hülle.
+/// </summary>
+/// <param name="Profil">Der Name des Profils (bzw. der Text „(nicht im Katalog)“); „keine“, wenn die Quelle auf keins führt.</param>
+/// <param name="Kategorie">Der Name der Kategorie; leer ohne Katalog.</param>
+/// <param name="Quellart">Die Art der Quelle, sprachneutral (<c>data-quelle</c>): eine Art der Zuordnung (Nutzungsklasse,
+/// <c>DIN_NUMMER</c>, Raumtyp), <c>DATEI</c>, <c>GESPEICHERT</c>, <c>HAND</c>; leer = keine.</param>
+/// <param name="Quelle">Die Quelle als Text („aus DIN-Nr. 1 der Projektdatei“, „von Hand“); leer = keine.</param>
+/// <param name="Dateigroessen">Was die Datei liefert („Heizen und Personen aus der Datei“, Datei vor Profil); leer = nichts.</param>
+/// <param name="Kennwerte">Die Kennwerte des Profils in Kurzform („Mo–Fr · 7–18 h · 21 °C“); leer = keine.</param>
+public sealed record GebaeudeProfilherleitung(string Profil, string Kategorie, string Quellart, string Quelle, string Dateigroessen,
+                                              string Kennwerte)
+{
+    /// <summary>Die Zeile: „Profil · Kategorie — Quelle; Größen aus der Datei; Kennwerte“, was leer ist, fällt weg.</summary>
+    public string Text
+    {
+        get
+        {
+            string kopf = Kategorie.Length > 0 ? Profil + " · " + Kategorie : Profil;
+            if (Quelle.Length > 0) kopf += " — " + Quelle;
+            var teile = new List<string> { kopf };
+            if (Dateigroessen.Length > 0) teile.Add(Dateigroessen);
+            if (Kennwerte.Length > 0) teile.Add(Kennwerte);
+            return string.Join("; ", teile);
+        }
+    }
+}
+
 /// <summary>Ein Raum des Zonenbaums oder der Liste „Nicht zugeordnete Räume".</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Wahl (<c>data-raum</c>).</param>
 /// <param name="Name">Anzeigename.</param>
@@ -527,6 +557,9 @@ public sealed record GebaeudePlanzoneDaten
 
     /// <summary>Das Nutzungsprofil der Projektdatei als Tooltip („Nutzungsprofil 1 nach DIN V 18599“); leer = keines.</summary>
     public string Profiltext { get; init; } = "";
+
+    /// <summary>Die Herleitungszeile unter der Zone (Profil, Quelle, Größen aus der Datei, Kennwerte); <c>null</c> = keine.</summary>
+    public GebaeudeProfilherleitung? Herleitung { get; init; }
 }
 
 /// <summary>Je Größe der Konditionierung: wie viele übernommene Zonen sie aus der Ganglinie bzw. dem Nutzungsprofil bekommen.</summary>

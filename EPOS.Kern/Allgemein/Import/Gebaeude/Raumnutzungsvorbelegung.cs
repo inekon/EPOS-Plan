@@ -28,6 +28,30 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// <b>Woher das Profil einer Planzone kommt</b> (Konzept Nutzungsprofile 6.2, Herleitungszeile des Zonenbaums): eine Art der
+    /// Zuordnung (<see cref="RaumnutzungSchema.ZUORDNUNG_DIN"/>, <see cref="RaumnutzungSchema.ZUORDNUNG_IFC"/>,
+    /// <see cref="RaumnutzungSchema.ZUORDNUNG_HOTTCAD"/>) mit ihrem Schlüssel (DIN-Nummer, Nutzungsklasse, Raumtyp), die Nutzung
+    /// der Datei (<see cref="DATEI"/>, <c>EPOS_Zone.Nutzung</c>), der gespeicherte Plan (<see cref="GESPEICHERT"/>) oder die
+    /// Wahl von Hand (<see cref="HAND"/>). Sprachneutral — den Text bildet die Hülle.
+    /// </summary>
+    /// <param name="Art">Die Art der Quelle.</param>
+    /// <param name="Schluessel">Der Schlüssel der Zuordnung; <c>null</c> für Datei, gespeicherten Plan und Hand.</param>
+    internal sealed record Profilquelle(string Art, string Schluessel = null)
+    {
+        /// <summary>Die Nutzung der Datei selbst (<c>EPOS_Zone.Nutzung</c> einer IFC-Datei von EPOS-Plan).</summary>
+        internal const string DATEI = "DATEI";
+
+        /// <summary>Die Nutzung des gespeicherten Plans eines früheren Imports derselben Datei.</summary>
+        internal const string GESPEICHERT = "GESPEICHERT";
+
+        /// <summary>Von Hand gewählt (Zonenbaum: Klappliste der Zone, „Zone hinzufügen“ mit Nutzung).</summary>
+        internal const string HAND = "HAND";
+
+        /// <summary>Von Hand gewählt.</summary>
+        internal static readonly Profilquelle Hand = new Profilquelle(HAND);
+    }
+
+    /// <summary>
     /// <b>Die Vorbelegung der Nutzung beim Import</b> (Konzept Nutzungsprofile NP-F12, 4.4, 5.4): ein Leser der Zuordnung
     /// <c>Tab_Raumnutzungszuordnung</c> (Art <c>DIN_NUMMER</c>, <c>IFC_KLASSE</c>, <c>HOTTCAD_RAUMTYP</c>) mit der Vorgabe im
     /// Code als Rückfall: Trägt die Zuordnung eine Zeile für (Art, Schlüssel), gilt sie — auch „keine“ (<c>ID_Profil</c>

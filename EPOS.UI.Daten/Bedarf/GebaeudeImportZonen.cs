@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
 using SpeicherEngine;
 
@@ -118,6 +119,7 @@ namespace WindowsFormsApplication1
             bool ausPlan = ReferenceEquals(z?.Plan, plan);
             var gebildet = new HashSet<string>(z?.Zonen.Select(x => x.Schluessel) ?? Enumerable.Empty<string>(), StringComparer.Ordinal);
             var liste = new List<GebaeudePlanzoneDaten>();
+            RaumnutzungTexte kurz = null;
             foreach (Planzone pz in plan.Zonen)
             {
                 string ansicht = ausPlan ? pz.Schluessel : pz.Herkunft ?? "";
@@ -147,6 +149,7 @@ namespace WindowsFormsApplication1
                                  : MyResource.Resource.GIMP_DLG_SQ_HERKUNFT,
                     Profiltext = pz.Projektdatei?.Profilnummer is int nr
                         ? Formatieren(MyResource.Resource.GIMP_DLG_SQ_PROFIL, nr.ToString(CultureInfo.CurrentCulture)) : "",
+                    Herleitung = Herleitung(plan.Vorbelegung, pz, ref kurz),
                 });
             }
             int n = plan.Zonen.Count + 1;
@@ -214,6 +217,57 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static string Profiltext(Planprofil p)
             => p == null ? "" : p.NichtImKatalog ? Formatieren(MyResource.Resource.RNP_IMP_NICHT_IM_KATALOG, p.Name ?? "") : Kennungstext(p.Name);
+
+        /// <summary>
+        /// <b>Die Herleitungszeile einer Zone</b> (Konzept Nutzungsprofile 6.2, NP-F16): Profil und Kategorie, die Quelle der
+        /// Vorbelegung (<see cref="Planzone.Quelle"/>: IFC-Klasse, Raumtyp, DIN-Nummer der Projektdatei, Nutzung der Datei,
+        /// früherer Import, von Hand), die Größen, die die Datei liefert (sie gehen dem Profil vor), und die Kennwerte des
+        /// Profils in Kurzform. <c>null</c> ohne Profil und ohne Quelle.
+        /// </summary>
+        internal static GebaeudeProfilherleitung Herleitung(Raumnutzungsvorbelegung v, Planzone pz, ref RaumnutzungTexte kurz)
+        {
+            Planprofil p = pz?.Profil;
+            Profilquelle q = pz?.Quelle;
+            if (p == null && q == null) return null;
+            Raumnutzungsprofil profil = p?.Id is long id ? v?.Profil(id) : null;
+            string kennwerte = "";
+            if (profil != null && !profil.IstLeer)
+            {
+                kurz ??= RaumnutzungHuelle.Texte();
+                kennwerte = RaumnutzungHuelle.Kurzform(profil, kurz);
+            }
+            return new GebaeudeProfilherleitung(
+                p == null ? MyResource.Resource.GIMP_DLG_PLAN_NUTZUNG_KEINE : Profiltext(p),
+                p?.Id is long k ? v?.Kategorie(k)?.Trim() ?? "" : "",
+                q?.Art ?? "", Quellentext(q), Dateigroessen(pz.Projektdatei), kennwerte);
+        }
+
+        /// <summary>Die Quelle der Vorbelegung als Text („aus IFC-Klasse Buero“, „aus DIN-Nr. 1 der Projektdatei“, „von Hand“).</summary>
+        internal static string Quellentext(Profilquelle q) => q?.Art switch
+        {
+            RaumnutzungSchema.ZUORDNUNG_IFC => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_IFC, q.Schluessel ?? ""),
+            RaumnutzungSchema.ZUORDNUNG_HOTTCAD => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_RAUMTYP, q.Schluessel ?? ""),
+            RaumnutzungSchema.ZUORDNUNG_DIN => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_DIN, q.Schluessel ?? ""),
+            Profilquelle.DATEI => MyResource.Resource.RNP_IMP_QUELLE_DATEI,
+            Profilquelle.GESPEICHERT => MyResource.Resource.RNP_IMP_QUELLE_GESPEICHERT,
+            Profilquelle.HAND => MyResource.Resource.RNP_IMP_QUELLE_HAND,
+            _ => "",
+        };
+
+        /// <summary>
+        /// Die Größen, die die Datei liefert (Ganglinie, DIN-Nutzungsprofil oder EPOS-Kalender — nicht die Vorlage), als „Heizen
+        /// und Personen aus der Datei“ (Rangfolge Datei vor Profil, NP-F16); leer = keine.
+        /// </summary>
+        internal static string Dateigroessen(Zonenkonditionierung k)
+        {
+            if (k == null) return "";
+            List<string> namen = k.Groessen.Where(g => g.Herkunft != Konditionierungsherkunft.Vorlage)
+                                  .Select(g => Konditionierungsarbeit.Groessenname(g.Groesse)).ToList();
+            if (namen.Count == 0) return "";
+            string liste = namen.Count == 1 ? namen[0]
+                         : string.Join(", ", namen.Take(namen.Count - 1)) + " " + MyResource.Resource.RNP_IMP_UND + " " + namen[namen.Count - 1];
+            return Formatieren(MyResource.Resource.RNP_IMP_AUS_DATEI, liste);
+        }
 
         /// <summary>Der Anzeigetext einer alten Kennung; jeder andere Text bleibt, wie er ist.</summary>
         private static string Kennungstext(string kennung) => kennung switch

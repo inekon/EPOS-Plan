@@ -80,4 +80,29 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.Equal(GebaeudePlanschrittArt.NUTZUNG, p.Letzter.Art);
         Assert.Equal("#2", p.Letzter.Nutzung);
     }
+
+    /// <summary>
+    /// Unter einer Zone mit Herleitung steht die Herleitungszeile (Profil · Kategorie — Quelle; Größen aus der Datei;
+    /// Kennwerte) mit der Art der Quelle als <c>data-quelle</c>; eine Zone ohne Herleitung trägt keine Zeile.
+    /// </summary>
+    [Fact]
+    public void Unter_der_Zone_steht_die_Herleitungszeile()
+    {
+        var p = new Zonenbaumprobe();
+        var h = new GebaeudeProfilherleitung("Büro", "EPOS-Muster", "DIN_NUMMER", "aus DIN-Nr. 1 der Projektdatei",
+                                             "Heizen und Personen aus der Datei", "Mo–Fr · 7–18 h · 21 °C");
+        IRenderedComponent<GebaeudeImportDialog> cut = ZonenbaumUmgeformt(p, s => MitPlan(s, plan => plan with
+        {
+            Zonen = plan.Zonen.Select((z, i) => i == 0 ? z with { Herleitung = h } : z).ToList(),
+        }));
+
+        string erste = cut.FindAll("tr.epos-gebimport-planzone")[0].GetAttribute("data-zone")!;
+        IReadOnlyList<IElement> zeilen = cut.FindAll("tr.epos-gebimport-planherleitung");
+        IElement zeile = Assert.Single(zeilen);
+        Assert.Equal(erste, zeile.GetAttribute("data-zone"));
+        Assert.Equal("DIN_NUMMER", zeile.GetAttribute("data-quelle"));
+        Assert.Equal("Büro · EPOS-Muster — aus DIN-Nr. 1 der Projektdatei; Heizen und Personen aus der Datei; Mo–Fr · 7–18 h · 21 °C",
+                     zeile.TextContent.Trim());
+        Assert.Same(zeile, cut.FindAll("tr.epos-gebimport-planzone")[0].NextElementSibling);
+    }
 }

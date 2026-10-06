@@ -509,6 +509,17 @@
                                         <td class="epos-gebimport-zahl">@zone.Raeume</td>
                                         <td class="epos-gebimport-zahl epos-gebimport-zonensollwert">@zone.Sollwert</td>
                                     </tr>
+                                    @* Konzept Nutzungsprofile 6.2: die Herleitungszeile unter der Zone - Profil und Kategorie, Quelle
+                                       der Vorbelegung, Groessen aus der Datei (NP-F16), Kennwerte in Kurzform. *@
+                                    @if (zone.Herleitung is GebaeudeProfilherleitung herleitung)
+                                    {
+                                        <tr @key="@(zone.Schluessel + "|herleitung")" class="epos-gebimport-planherleitung" data-zone="@zone.Schluessel"
+                                            data-quelle="@(herleitung.Quellart.Length > 0 ? herleitung.Quellart : null)">
+                                            <td></td>
+                                            <td></td>
+                                            <td colspan="6"><Herleitungszeile Text="@herleitung.Text" /></td>
+                                        </tr>
+                                    }
                                     @if (offen)
                                     {
                                         foreach (GebaeudePlanraumDaten raum in zone.Raumliste)
