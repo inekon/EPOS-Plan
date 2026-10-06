@@ -67,7 +67,9 @@ namespace EPOS.Kern.Tests
                                                            // v12: der Schalter der Pufferauslegungstafel ist so alt wie sie.
                                                            && f.Schluessel != "hat.tabelle.pufferauslegung"
                                                            // v12 (KU3-4d): ebenso der Schalter der Kältespeichertafel.
-                                                           && f.Schluessel != "hat.tabelle.kaeltespeicher"),
+                                                           && f.Schluessel != "hat.tabelle.kaeltespeicher"
+                                                           // v15 (VB‑E4): ebenso der Schalter der Kennzahlen je Szenario.
+                                                           && f.Schluessel != "hat.tabelle.wirtschaft_szenarien"),
                        f => Assert.Equal(4, f.Seit));
             // Die Fassung 11 brachte Word-Schlüssel; spätere Fassungen heben die Word-Fassung weiter (v12: Strom- und Kältebild, Pufferauslegungstafel).
             Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 11);

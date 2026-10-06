@@ -40519,7 +40519,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Szenario der Wirtschaftlichkeit:</value>
   </data>
   <data name="KI_DLG_BKB_SZENARIO_ERL" xml:space="preserve">
-    <value>Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. Nur mit angehaktem Baustein Wirtschaftlichkeit.</value>
+    <value>Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. „Alle drei Szenarien (VALERI)“ zeigt je Stand die Kennzahlen in Ungünstig, Erwartet und Günstig nebeneinander, alles Übrige in Erwartet. Nur mit angehaktem Baustein Wirtschaftlichkeit.</value>
   </data>
   <data name="KOND_MSG_KATALOGBAU_GESPERRT" xml:space="preserve">
     <value>Der Katalogbau {0} gehört zur Auslieferung (Schloss) — seine Matrix und seine Kalender lassen sich nicht ändern. Legen Sie über „Duplizieren…“ einen eigenen Satz an.</value>
@@ -46970,6 +46970,36 @@ Chart</value>
   </data>
   <data name="RNP_ED_KI_STUNDEN_ERL" xml:space="preserve">
     <value>Ein Stundenprofil im Entwurf des Profileditors (Größe, Tagesart WERKTAG oder FREI, 24 Werte mit Semikolon in der Einheit des Profils); nur lesbar, Kennzeichen die Nummer ab 1. Bearbeitet wird im Blatt.</value>
+  </data>
+  <data name="BK_BER_VORBELEGT_VALERI" xml:space="preserve">
+    <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit. Der Bericht zeigt die Kennzahlen je Szenario (Ungünstig, Erwartet, Günstig); die übrigen Tafeln stehen im Szenario Erwartet. Gemerkt wird die Auswahl mit „Erstellen“.</value>
+  </data>
+  <data name="WIRT_BER_KENNZAHLEN_VALERI" xml:space="preserve">
+    <value>Kennzahlen je Szenario</value>
+  </data>
+  <data name="WIRT_BER_VALERI_MAPPE" xml:space="preserve">
+    <value>Jahresreihen und Kennzahlen von Günstig und Ungünstig: Tabellenbericht, Blatt „Wirtschaftlichkeit“.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_RUECKFALL" xml:space="preserve">
+    <value>⚠ Für {0} fehlen Ergebnisse ({1}) — die Tafel steht deshalb allein im Szenario „{2}“.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_WORTBERICHT" xml:space="preserve">
+    <value>Wortbericht in VALERI-Darstellung</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>{0} › „Kennzahlen je Szenario“</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>„Kennzahlen je Szenario“</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>„Kennzahlen je Szenario“, „Szenarien Ungünstig / Erwartet / Günstig“</value>
+  </data>
+  <data name="VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN" xml:space="preserve">
+    <value>Die Kennzahlen der Wirtschaftlichkeit des laufenden Stands je Szenario (VALERI-Darstellung): Spalten Ungünstig, Erwartet und Günstig; fehlt dem Stand ein Szenario, steht die Tafel allein in Erwartet mit einem Hinweis darunter; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
+    <value>Alle drei Szenarien (VALERI)</value>
   </data>
 </root>
 

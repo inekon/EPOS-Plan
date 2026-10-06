@@ -193,6 +193,253 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Szenario: Erwartet", "Szenario: Günstig", "Szenario: Ungünstig" }, bloecke);
         }
 
+        /// <summary>
+        /// In VALERI-Darstellung (Etappe VB‑E3, VB‑Q9 a) trägt das Blatt „Wirtschaftlichkeit“ unter dem Titel die Kopfzeile
+        /// „Wortbericht in VALERI-Darstellung“ — und keine Kopfzeile des Szenarios, auch wenn die Konfiguration daneben
+        /// Ungünstig trägt; alles darunter ist Zelle für Zelle das Blatt des Erwartet-Berichts, eine Zeile tiefer.
+        /// </summary>
+        [Theory]
+        [InlineData(BerichtVorlagenMesslatteTests.PROBE_1030)]
+        [InlineData(BerichtVorlagenMesslatteTests.PROBE_GRUPPE)]
+        public void Die_Mappe_nennt_die_VALERI_Darstellung_in_einer_Kopfzeile(string probe)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string erwartet = Pfad("erwartet-" + probe + ".xlsx");
+            new ExcelBerichtGenerator().Erzeuge(BerichtVorlagenMesslatteTests.Probe(probe),
+                                                Konfig(WirtschaftlichkeitSzenario.ERWARTET), erwartet);
+            string valeri = Pfad("valeri-" + probe + ".xlsx");
+            new ExcelBerichtGenerator().Erzeuge(BerichtVorlagenMesslatteTests.Probe(probe),
+                                                KonfigValeri(WirtschaftlichkeitSzenario.WORST), valeri);
+
+            using var wbE = new XLWorkbook(erwartet);
+            using var wbV = new XLWorkbook(valeri);
+            IXLWorksheet e = wbE.Worksheet(BerichtTexte.T("Wirtschaftlichkeit"));
+            IXLWorksheet v = wbV.Worksheet(BerichtTexte.T("Wirtschaftlichkeit"));
+
+            Assert.Equal(e.Cell(1, 1).GetString(), v.Cell(1, 1).GetString());
+            Assert.Equal("Wortbericht in VALERI-Darstellung", v.Cell(2, 1).GetString());
+            Assert.True(v.Cell(2, 1).Style.Font.Bold);
+            Assert.StartsWith("i = ", v.Cell(3, 1).GetString(), StringComparison.Ordinal);
+            Assert.Equal(3, v.SheetView.SplitRow);
+            Assert.DoesNotContain(v.CellsUsed(), c => c.GetString().StartsWith("Szenario des Wortberichts", StringComparison.Ordinal));
+
+            int letzte = e.LastRowUsed().RowNumber();
+            Assert.Equal(letzte + 1, v.LastRowUsed().RowNumber());
+            int spalten = Math.Max(e.LastColumnUsed().ColumnNumber(), v.LastColumnUsed().ColumnNumber());
+            var abweichungen = new List<string>();
+            for (int r = 2; r <= letzte; r++)
+                for (int s = 1; s <= spalten; s++)
+                {
+                    string a = Inhalt(e.Cell(r, s)), b = Inhalt(v.Cell(r + 1, s));
+                    if (a != b) abweichungen.Add("Z" + r + "/S" + s + ": „" + a + "“ ↔ „" + b + "“");
+                }
+            Assert.True(abweichungen.Count == 0, string.Join("\n", abweichungen.Take(20)));
+        }
+
+        // =====================================================================
+        //  (e) VALERI-Darstellung (Etappe VB‑E2)
+        // =====================================================================
+
+        private const string KENNZAHLEN_VALERI = "Kennzahlen je Szenario";
+
+        /// <summary>
+        /// In VALERI-Darstellung steht an der Stelle der Kennzahltafel je Stand eine Tafel „Kennzahlen je Szenario“ mit
+        /// Kennzahl | Ungünstig | Erwartet | Günstig. Die Spalte eines Szenarios ist Zelle für Zelle die Spalte des Stands
+        /// in der Kennzahltafel eines Einzelberichts dieses Szenarios. Das Leitszenario ist Erwartet — auch wenn die
+        /// Konfiguration daneben Ungünstig trägt —: Szenarienübersicht, Sensitivität und Mehrjahresübersicht sind die des
+        /// Erwartet-Berichts. Die Hinweiszeile nennt die Mappe, die Anhang-E-Stellen nennen die neue Tafel. Geschrieben
+        /// wird ohne Datenbank.
+        /// </summary>
+        [Theory]
+        [InlineData(BerichtVorlagenMesslatteTests.PROBE_1030)]
+        [InlineData(BerichtVorlagenMesslatteTests.PROBE_GRUPPE)]
+        public void In_VALERI_Darstellung_stehen_die_Kennzahlen_je_Stand_in_drei_Szenarien(string probe)
+        {
+            string vorlage = Berichtsdatenproben.Berichtsvorlage();
+            if (vorlage == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string erwartet = Wort(probe, WirtschaftlichkeitSzenario.ERWARTET, vorlage, "erwartet");
+            string unguenstig = Wort(probe, WirtschaftlichkeitSzenario.WORST, vorlage, "unguenstig");
+            string guenstig = Wort(probe, WirtschaftlichkeitSzenario.BEST, vorlage, "guenstig");
+
+            BerichtsDaten daten = Gesammelt(probe);
+            string valeri = Pfad("valeri-" + probe + ".docx");
+            List<string> zugriffe = BerichtWertesatzTests.OhneDatenbank(() =>
+                new WordBerichtGenerator().Erzeuge(daten, KonfigValeri(WirtschaftlichkeitSzenario.WORST), valeri, vorlage));
+            Assert.True(zugriffe.Count == 0, "Datenbankzugriffe beim Schreiben:\n" + string.Join("\n", zugriffe.Take(20)));
+
+            List<string> absaetze = Absaetze(valeri);
+            Assert.Contains(KENNZAHLEN_VALERI, absaetze);
+            Assert.Contains(R.WIRT_BER_VALERI_MAPPE, absaetze);
+            Assert.DoesNotContain(KENNZAHLEN_ERWARTET, absaetze);
+            Assert.DoesNotContain(KENNZAHLEN_UNGUENSTIG, absaetze);
+            Assert.DoesNotContain(absaetze, a => a.Contains("steht deshalb", StringComparison.Ordinal));
+
+            // Je Stand eine Tafel, Spaltenfolge Ungünstig | Erwartet | Günstig.
+            List<string> struktur = Berichtsstruktur.Word(valeri);
+            List<string> abschnitt = Abschnitt(struktur, KENNZAHLEN_VALERI);
+            List<string> tafeln = abschnitt.Where(z => z.StartsWith("Tabelle ", StringComparison.Ordinal)).ToList();
+            Assert.Equal(daten.Varianten.Count, tafeln.Count);
+            Assert.All(tafeln, z => Assert.EndsWith("| Kopf: Kennzahl | Ungünstig | Erwartet | Günstig", z));
+            Assert.Equal(daten.Varianten.Count, abschnitt.Count(z => z.StartsWith("Absatz [Heading3]", StringComparison.Ordinal)));
+
+            // Die Spalten der ersten Tafel (Stamm) sind die Stammspalten der Einzelberichte.
+            List<string> tafel = Tafel(valeri, KENNZAHLEN_VALERI);
+            List<string> tafelE = Tafel(erwartet, KENNZAHLEN_ERWARTET);
+            List<string> tafelU = Tafel(unguenstig, KENNZAHLEN_UNGUENSTIG);
+            List<string> tafelG = Tafel(guenstig, "Kennzahlen im Szenario „Günstig“");
+            Assert.Equal(tafelE.Count, tafel.Count);
+            for (int i = 1; i < tafel.Count; i++)
+            {
+                string[] z = tafel[i].Split(" | ");
+                Assert.Equal(4, z.Length);
+                Assert.Equal(tafelE[i].Split(" | ")[0], z[0]);
+                Assert.Equal(tafelU[i].Split(" | ")[1], z[1]);
+                Assert.Equal(tafelE[i].Split(" | ")[1], z[2]);
+                Assert.Equal(tafelG[i].Split(" | ")[1], z[3]);
+            }
+
+            // Das Leitszenario ist Erwartet.
+            List<string> strukturE = Berichtsstruktur.Word(erwartet);
+            string uebersicht = string.Format(R.WIRT_SZ_UEBERSCHRIFT, R.WIRT_SZEN_WORST, R.WIRT_SZEN_ERWARTET, R.WIRT_SZEN_BEST);
+            foreach (string kapitel in new[] { uebersicht, "Sensitivitätsanalyse (Szenario „Erwartet“)", R.WIRT_MJ_TITEL })
+                Assert.Equal(Abschnitt(strukturE, kapitel), Abschnitt(struktur, kapitel));
+            Assert.NotEmpty(Abschnitt(struktur, uebersicht));
+
+            // Anhang E: die Punkte 1, 7 und 9 nennen die neue Tafel.
+            string anhang = string.Join("\n", absaetze);
+            Assert.Contains("„" + KENNZAHLEN_VALERI + "“", anhang);
+            Assert.DoesNotContain("„" + KENNZAHLEN_ERWARTET + "“", anhang);
+        }
+
+        /// <summary>
+        /// Fehlt einem Stand Ungünstig, steht SEINE Tafel ganz in Erwartet (eine Zahlspalte) mit der Hinweiszeile davor;
+        /// die übrigen Stände behalten ihre drei Spalten, und der Rückfall der Einzelwahl greift nicht.
+        /// </summary>
+        [Fact]
+        public void In_VALERI_Darstellung_faellt_ein_Stand_ohne_Unguenstig_auf_Erwartet_zurueck()
+        {
+            string vorlage = Berichtsdatenproben.Berichtsvorlage();
+            if (vorlage == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = BerichtVorlagenMesslatteTests.Probe(BerichtVorlagenMesslatteTests.PROBE_GRUPPE);
+            VariantenDaten stamm = daten.Varianten.First(v => v.IstStamm);
+            Assert.Equal(1, daten.Wirtschaftlichkeit.RemoveAll(
+                e => e.IdProjekt == stamm.IdProjekt && e.Szenario == WirtschaftlichkeitSzenario.WORST));
+            string ziel = Pfad("valeri-rueckfall.docx");
+            new WordBerichtGenerator().Erzeuge(daten, KonfigValeri(WirtschaftlichkeitSzenario.ERWARTET), ziel, vorlage);
+
+            List<string> abschnitt = Abschnitt(Berichtsstruktur.Word(ziel), KENNZAHLEN_VALERI);
+            string satz = string.Format(R.WIRT_BER_VALERI_RUECKFALL, "Stamm", R.WIRT_SZEN_WORST, R.WIRT_SZEN_ERWARTET);
+            int hinweis = abschnitt.IndexOf("Absatz [Hinweis] " + satz);
+            Assert.True(hinweis > 0, "Die Rückfallzeile fehlt:\n" + string.Join("\n", abschnitt));
+            List<string> tafeln = abschnitt.Where(z => z.StartsWith("Tabelle ", StringComparison.Ordinal)).ToList();
+            Assert.Equal(2, tafeln.Count);
+            Assert.EndsWith("| Kopf: Kennzahl | Erwartet", tafeln[0]);
+            Assert.EndsWith("| Kopf: Kennzahl | Ungünstig | Erwartet | Günstig", tafeln[1]);
+            Assert.StartsWith("Tabelle ", abschnitt[hinweis + 1]);
+
+            Assert.DoesNotContain(string.Format(R.WIRT_BER_SZENARIO_RUECKFALL, "Stamm", R.WIRT_SZEN_WORST, R.WIRT_SZEN_ERWARTET),
+                                  Absaetze(ziel));
+        }
+
+        /// <summary>
+        /// Paarsicht (VB‑Q5 a): je Stand A und B eine Tafel, A zuerst; die Deklarationszeile steht einmal davor.
+        /// </summary>
+        [Fact]
+        public void In_VALERI_Darstellung_zeigt_die_Paarsicht_je_Stand_A_und_B_eine_Tafel()
+        {
+            string vorlage = Berichtsdatenproben.Berichtsvorlage();
+            if (vorlage == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = BerichtVorlagenMesslatteTests.Probe(BerichtVorlagenMesslatteTests.PROBE_GRUPPE);
+            VariantenDaten stamm = daten.Varianten.First(v => v.IstStamm);
+            VariantenDaten a = daten.Varianten.First(v => !v.IstStamm);
+            daten.Sicht = new Vergleichssicht { Sicht = Vergleichssicht.PAAR, IdA = a.IdProjekt, IdB = stamm.IdProjekt };
+            string ziel = Pfad("valeri-paar.docx");
+            new WordBerichtGenerator().Erzeuge(daten, KonfigValeri(WirtschaftlichkeitSzenario.ERWARTET), ziel, vorlage);
+
+            List<string> abschnitt = Abschnitt(Berichtsstruktur.Word(ziel), KENNZAHLEN_VALERI);
+            List<string> staende = abschnitt.Where(z => z.StartsWith("Absatz [Heading3]", StringComparison.Ordinal)).ToList();
+            Assert.Equal(2, staende.Count);
+            Assert.EndsWith(a.Anzeige, staende[0]);
+            Assert.Contains("Stamm", staende[1]);
+            Assert.Equal(2, abschnitt.Count(z => z.StartsWith("Tabelle ", StringComparison.Ordinal)));
+            string deklaration = Referenzwahl.Deklarationszeile(Referenzwahl.Name(a), Referenzwahl.Name(stamm));
+            Assert.Equal(1, abschnitt.Count(z => z == "Absatz [Hinweis] " + deklaration));
+        }
+
+        // =====================================================================
+        //  VB‑E4: der Platzhalter stand.tabelle.wirtschaft_szenarien (Katalog v15)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Platzhalter <c>stand.tabelle.wirtschaft_szenarien</c> (VB‑Q8 a) trägt je Stand dieselbe Tafel wie das
+        /// Kapitel in VALERI-Darstellung, steht mit seinem Schalter in Fassung 15, je Stand in Word und Excel; fehlt einem
+        /// Stand Ungünstig, trägt seine Tafel den Rückfallhinweis. Die Anhang-E-Tafel des Vorlagenwegs nennt in
+        /// VALERI-Darstellung die neue Tafel, sonst wie bisher die Kennzahlen im Szenario.
+        /// </summary>
+        [Fact]
+        public void Der_Platzhalter_der_Kennzahlen_je_Szenario_gleicht_der_Tafel_des_Kapitels()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Vorlagenfeld feld = Vorlagenfeldkatalog.Finde("stand.tabelle.wirtschaft_szenarien");
+            Assert.NotNull(feld);
+            Assert.Equal(15, feld.Seit);
+            Assert.Equal(Vorlagenfeldart.Tabelle, feld.Art);
+            Assert.Equal(Vorlagenfeldkontext.Stand, feld.Kontext);
+            Assert.Equal(Vorlagenausgabe.Beide, feld.Ausgaben);
+            Vorlagenfeld schalter = Vorlagenfeldkatalog.Finde("hat.tabelle.wirtschaft_szenarien");
+            Assert.NotNull(schalter);
+            Assert.Equal(15, schalter.Seit);
+            Assert.True(Berichtsbedarf.IstWirtschaftswert(feld.Schluessel));
+
+            BerichtsDaten daten = Gesammelt(BerichtVorlagenMesslatteTests.PROBE_GRUPPE, d =>
+            {
+                VariantenDaten s = d.Varianten.First(v => v.IstStamm);
+                d.Wirtschaftlichkeit.RemoveAll(e => e.IdProjekt == s.IdProjekt && e.Szenario == WirtschaftlichkeitSzenario.WORST);
+            });
+            Berichtswerte w = Berichtswerte.Aus(daten, KonfigValeri(WirtschaftlichkeitSzenario.ERWARTET), false, null);
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                Berichtstabelle soll = Berichtstabellen.WirtschaftskennzahlenSzenarien(daten, daten.Wirtschaft, v, false, w.Kultur);
+                Berichtstabelle ist = Vorlagenfeldkatalog.Loese(feld, w.MitStand(v), Array.Empty<Formatangabe>()).Tabelle;
+                Assert.NotNull(ist);
+                Assert.Equal(Text(soll), Text(ist));
+                Assert.Equal(soll.Hinweise, ist.Hinweise);
+                if (v.IstStamm)
+                    Assert.Equal(string.Format(R.WIRT_BER_VALERI_RUECKFALL, "Stamm", R.WIRT_SZEN_WORST, R.WIRT_SZEN_ERWARTET),
+                                 ist.Hinweise[0]);
+                else Assert.Equal(4, ist.Kopf.Zellen.Count);
+            }
+
+            // Anhang E im Vorlagenweg: VALERI nennt die Tafel „Kennzahlen je Szenario“, die Einzeldarstellung nicht.
+            Vorlagenfeld anhang = Vorlagenfeldkatalog.Finde("tabelle.anhang_e.checkliste");
+            string valeri = Text(Vorlagenfeldkatalog.Loese(anhang, w, Array.Empty<Formatangabe>()).Tabelle);
+            Berichtswerte einzeln = Berichtswerte.Aus(daten, Konfig(WirtschaftlichkeitSzenario.ERWARTET), false, null);
+            string einzelText = Text(Vorlagenfeldkatalog.Loese(anhang, einzeln, Array.Empty<Formatangabe>()).Tabelle);
+            Assert.Contains("„" + KENNZAHLEN_VALERI + "“", valeri);
+            Assert.DoesNotContain("„" + KENNZAHLEN_VALERI + "“", einzelText);
+            Assert.Contains("„" + KENNZAHLEN_ERWARTET + "“", einzelText);
+        }
+
+        /// <summary>Kopf und Zeilen einer Tafel als Text, Zellen mit „ | “ getrennt.</summary>
+        private static string Text(Berichtstabelle t)
+        {
+            IEnumerable<Tabellenzeile> zeilen = (t.Kopf == null ? Enumerable.Empty<Tabellenzeile>() : new[] { t.Kopf }).Concat(t.Zeilen);
+            return string.Join("\n", zeilen.Select(z => string.Join(" | ", z.Zellen.Select(c => c.Text))));
+        }
+
         // =====================================================================
         //  Helfer
         // =====================================================================
@@ -201,6 +448,14 @@ namespace EPOS.Kern.Tests
         {
             BerichtsKonfiguration k = Berichtsdatenproben.VolleKonfiguration();
             k.Szenario = szenario;
+            return k;
+        }
+
+        /// <summary>Die volle Konfiguration in VALERI-Darstellung; <paramref name="szenario"/> steht daneben.</summary>
+        private static BerichtsKonfiguration KonfigValeri(string szenario)
+        {
+            BerichtsKonfiguration k = Konfig(szenario);
+            k.Szenariodarstellung = BerichtsKonfiguration.DARSTELLUNG_VALERI;
             return k;
         }
 

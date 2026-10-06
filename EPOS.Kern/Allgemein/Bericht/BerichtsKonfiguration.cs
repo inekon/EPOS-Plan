@@ -219,6 +219,57 @@ namespace WindowsFormsApplication1
 
         private string _szenario = WirtschaftlichkeitSzenario.ERWARTET;
 
+        /// <summary>Szenariodarstellung: ein Szenario (<see cref="Szenario"/>) im ganzen Baustein — die Vorgabe.</summary>
+        public const string DARSTELLUNG_EINZELN = "EINZELN";
+
+        /// <summary>
+        /// Szenariodarstellung „Alle drei Szenarien (VALERI)“ (Etappe VB‑E1, Entscheide VB‑Q2 a, VB‑Q3 a): je Stand eine
+        /// Tafel „Kennzahlen je Szenario“ mit Ungünstig | Erwartet | Günstig; alle übrigen Tafeln, Bilder und Positionen
+        /// stehen im Leitszenario Erwartet.
+        /// </summary>
+        public const string DARSTELLUNG_VALERI = "VALERI";
+
+        /// <summary>
+        /// Die Szenariodarstellung des Wirtschaftlichkeitsberichts: <see cref="DARSTELLUNG_EINZELN"/> (Vorgabe) oder
+        /// <see cref="DARSTELLUNG_VALERI"/>. Ein eigenes Feld neben <see cref="Szenario"/>, das davon unberührt bleibt.
+        /// Duldsam gelesen (<see cref="NormiereDarstellung"/>): fehlend, leer, unbekannt oder von anderer Art heißt
+        /// einzeln. Geschrieben wird das Feld nur in VALERI-Darstellung — das JSON einer Einzelwahl bleibt byte-gleich,
+        /// und ältere Fassungen lesen es unverändert.
+        /// </summary>
+        [JsonIgnore]
+        public string Szenariodarstellung
+        {
+            get { return _szenariodarstellung; }
+            set { _szenariodarstellung = NormiereDarstellung(value); }
+        }
+
+        private string _szenariodarstellung = DARSTELLUNG_EINZELN;
+
+        /// <summary>Steht der Wirtschaftlichkeitsbericht in VALERI-Darstellung?</summary>
+        [JsonIgnore]
+        public bool IstValeri { get { return _szenariodarstellung == DARSTELLUNG_VALERI; } }
+
+        /// <summary>Das Feld <see cref="Szenariodarstellung"/> im JSON: nur in VALERI-Darstellung geschrieben.</summary>
+        [JsonInclude]
+        [JsonPropertyName(nameof(Szenariodarstellung))]
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        private string SzenariodarstellungJson
+        {
+            get { return IstValeri ? DARSTELLUNG_VALERI : null; }
+            set { Szenariodarstellung = value; }
+        }
+
+        /// <summary>
+        /// Der Schlüssel einer Szenariodarstellung: <see cref="DARSTELLUNG_VALERI"/> (Groß-/Kleinschreibung und Rand
+        /// gleich), sonst <see cref="DARSTELLUNG_EINZELN"/>.
+        /// </summary>
+        public static string NormiereDarstellung(string wert)
+        {
+            return string.Equals(wert?.Trim(), DARSTELLUNG_VALERI, StringComparison.OrdinalIgnoreCase)
+                ? DARSTELLUNG_VALERI : DARSTELLUNG_EINZELN;
+        }
+
         /// <summary>Standardkonfiguration (Bausteine laut Katalog-Standard).</summary>
         public static BerichtsKonfiguration Standard()
         {

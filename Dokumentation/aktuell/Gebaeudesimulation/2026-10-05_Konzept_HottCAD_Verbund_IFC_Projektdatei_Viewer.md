@@ -290,6 +290,9 @@ Nachzug der drei Annahmen (Tagesart, Personenzahl, Geräteleistung), gespeichert
 als Startplan, Ziehen mit der Maus, Windows-Sichtabnahme, iOS-Lauf für den Dateifilter
 `.sqproj`. Nichts davon ist Voraussetzung für HC-1 bis HC-4.
 
+Bauteilaufbauten aus der Projektdatei (`TcBuildingElementDimension` mit Schichten), Zuordnungsstufen je
+Bauteil und Farbmodus „Aufbau“: [Konzept Bauteilaufbau beim Gebäudeimport](2026-10-06_Konzept_Bauteilaufbau_Import.md).
+
 
 ## 6. Wellenzuschnitt
 

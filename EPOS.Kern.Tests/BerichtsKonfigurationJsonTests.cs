@@ -126,6 +126,53 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// Die Szenariodarstellung (Etappe VB‑E1): ein eigenes Feld neben dem Szenario. Fehlend, leer, unbekannt oder von
+        /// anderer Art liest es sich als einzeln, ohne die übrige Auswahl zu kosten; geschrieben wird es nur in
+        /// VALERI-Darstellung — das JSON einer Einzelwahl bleibt byte-gleich. Das Szenario daneben bleibt unberührt.
+        /// </summary>
+        [Fact]
+        public void Die_Szenariodarstellung_liest_sich_duldsam_und_uebersteht_den_Rundlauf()
+        {
+            // Fehlendes Feld: der Altbestand und die Vorgabe.
+            Assert.Equal(BerichtsKonfiguration.DARSTELLUNG_EINZELN, BerichtsKonfiguration.AusJson(ALT).Szenariodarstellung);
+            Assert.False(BerichtsKonfiguration.AusJson(ALT).IstValeri);
+            Assert.Equal(BerichtsKonfiguration.DARSTELLUNG_EINZELN, BerichtsKonfiguration.Standard().Szenariodarstellung);
+
+            // Unbekannt, leer, null und ein Wert anderer Art.
+            foreach (string wert in new[] { "\"Drei\"", "\"\"", "null", "2", "{\"x\":1}", "[1]" })
+            {
+                BerichtsKonfiguration k = BerichtsKonfiguration.AusJson(
+                    "{\"Ausgabe\":\"Excel\",\"VariantenIds\":[7],\"Szenario\":\"" + WirtschaftlichkeitSzenario.BEST + "\",\"Szenariodarstellung\":" + wert + "}");
+                Assert.Equal(BerichtsKonfiguration.DARSTELLUNG_EINZELN, k.Szenariodarstellung);
+                Assert.Equal(WirtschaftlichkeitSzenario.BEST, k.Szenario);
+                Assert.Equal("Excel", k.Ausgabe);
+                Assert.Equal(new[] { 7 }, k.VariantenIds);
+            }
+
+            // Duldsam in der Schreibweise.
+            Assert.True(BerichtsKonfiguration.AusJson("{\"Szenariodarstellung\":\" valeri \"}").IstValeri);
+
+            // Einzeln: das JSON bleibt das der Fassung ohne Feld.
+            BerichtsKonfiguration einzeln = BerichtsKonfiguration.AusJson(ALT);
+            string ohneFeld = einzeln.NachJson();
+            Assert.DoesNotContain("Szenariodarstellung", ohneFeld);
+            einzeln.Szenariodarstellung = "EINZELN";
+            Assert.Equal(ohneFeld, einzeln.NachJson());
+
+            // VALERI übersteht den Rundlauf; das Szenario daneben bleibt, wie es ist.
+            BerichtsKonfiguration valeri = BerichtsKonfiguration.AusJson(ALT);
+            valeri.Szenario = WirtschaftlichkeitSzenario.WORST;
+            valeri.Szenariodarstellung = BerichtsKonfiguration.DARSTELLUNG_VALERI;
+            string json = valeri.NachJson();
+            Assert.Contains("\"Szenariodarstellung\":\"VALERI\"", json);
+            BerichtsKonfiguration zurueck = BerichtsKonfiguration.AusJson(json);
+            Assert.True(zurueck.IstValeri);
+            Assert.Equal(WirtschaftlichkeitSzenario.WORST, zurueck.Szenario);
+            Assert.Equal(new[] { 3, 5 }, zurueck.VariantenIds);
+            Assert.Equal("Beide", zurueck.Ausgabe);
+        }
+
         /// <summary>Der Rundlauf über die Tabelle <c>Berichtskonfiguration</c> mit <see cref="BerichtCtrl"/> (unverändert).</summary>
         [Fact]
         public void Speichern_und_Laden_ueber_die_Tabelle_behaelt_die_Vorlagenwahl()

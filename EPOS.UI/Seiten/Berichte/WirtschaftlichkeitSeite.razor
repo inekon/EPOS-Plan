@@ -1281,7 +1281,9 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Ohne preventScroll rollt der Browser die hohe Seite ins Bild und schiebt die
+        // Reiterleiste von „Berichte & Kosten" aus dem Blick.
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>Liest Liste, Parameterzeile und Ergebnisse neu ein.</summary>
@@ -1930,11 +1932,13 @@
         foreach ((int Id, string Text) z in _stand.Szenarien)
             if (z.Id == _stand.SzenarioId) { szenario = z.Text; break; }
 
+        // VB‑Q6 a: Die Darstellung „ValERI-Bewertung“ belegt die VALERI-Darstellung des Berichts vor.
+        bool valeri = IstValeri;
         await ZumBericht.InvokeAsync(new BerichtVorbelegung(
             MitWirtschaftlichkeit: true,
             Varianten: new List<int>(_gewaehlt),
-            SzenarioId: _stand.SzenarioId,
-            SzenarioText: szenario));
+            SzenarioId: valeri ? BerichtStand.SZENARIO_VALERI : _stand.SzenarioId,
+            SzenarioText: valeri ? Texte.ZumBerichtValeri : szenario));
     }
 
     // =====================================================================

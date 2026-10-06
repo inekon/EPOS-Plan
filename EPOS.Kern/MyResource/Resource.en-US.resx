@@ -40512,7 +40512,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Economic scenario:</value>
   </data>
   <data name="KI_DLG_BKB_SZENARIO_ERL" xml:space="preserve">
-    <value>The scenario of the economic evaluation in the report: Expected, Favourable or Unfavourable. Key figure table, multi-year overview, bridge, cumulative present values, CHP bonus and operating costs follow it; the scenario overview and the sensitivity stay as they are. Only with the section Economic viability ticked.</value>
+    <value>The scenario of the economic evaluation in the report: Expected, Favourable or Unfavourable. Key figure table, multi-year overview, bridge, cumulative present values, CHP bonus and operating costs follow it; the scenario overview and the sensitivity stay as they are. “All three scenarios (VALERI)” shows the key figures of each case in Unfavourable, Expected and Favourable side by side, everything else in Expected. Only with the section Economic viability ticked.</value>
   </data>
   <data name="KOND_MSG_KATALOGBAU_GESPERRT" xml:space="preserve">
     <value>Catalogue building {0} belongs to the delivery (locked) — its matrix and calendars cannot be changed. Use “Duplicate…” to create your own record.</value>
@@ -46963,6 +46963,36 @@ chart</value>
   </data>
   <data name="RNP_ED_KI_STUNDEN_ERL" xml:space="preserve">
     <value>An hourly profile in the draft of the profile editor (quantity, day type WERKTAG or FREI, 24 values separated by semicolons in the unit of the profile); read-only, identified by its number from 1. Editing happens on the sheet.</value>
+  </data>
+  <data name="BK_BER_VORBELEGT_VALERI" xml:space="preserve">
+    <value>Preset from “Economics”: {0} versions selected, section Economic viability. The report shows the key figures per scenario (Unfavourable, Expected, Favourable); the other panels use the Expected scenario. The selection is saved with “Create”.</value>
+  </data>
+  <data name="WIRT_BER_KENNZAHLEN_VALERI" xml:space="preserve">
+    <value>Key figures by scenario</value>
+  </data>
+  <data name="WIRT_BER_VALERI_MAPPE" xml:space="preserve">
+    <value>Annual series and key figures of the favourable and unfavourable scenarios: workbook, sheet “Economic evaluation”.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_RUECKFALL" xml:space="preserve">
+    <value>⚠ Results missing for {0} ({1}) — the table therefore shows scenario “{2}” only.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_WORTBERICHT" xml:space="preserve">
+    <value>Word report in VALERI presentation</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>{0} › key figures by scenario</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>key figures by scenario</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>key figures by scenario, scenarios Unfavourable / Expected / Favourable</value>
+  </data>
+  <data name="VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN" xml:space="preserve">
+    <value>The economic key figures of the current case per scenario (VALERI presentation): columns unfavourable, expected and favourable; if the case lacks a scenario, the table shows expected only with a note below; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
+    <value>All three scenarios (VALERI)</value>
   </data>
 </root>
 

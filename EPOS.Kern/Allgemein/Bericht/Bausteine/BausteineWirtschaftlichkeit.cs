@@ -97,15 +97,28 @@ namespace WindowsFormsApplication1
             if (veraltet != null) k.HinweisRoh(veraltet);
 
             // ---------------- Vergleichstabelle (Szenario des Berichts) ----------------
-            // E31: Die Überschrift nennt den Anzeigetext des Szenarios; für Erwartet derselbe Wortlaut wie die
-            // Übersetzung von „Kennzahlen im Szenario „Erwartet““.
-            k.Ueberschrift2Roh(string.Format(k.Kultur, MyResource.Resource.WIRT_BER_KENNZAHLEN_SZENARIO,
-                                             VerlaufZeilen.Szenarioname(szenario)));
-            // ETAPPE E7: Der Zeitbezug steht im Tabellenkopf statt in vier von
-            // zweiundzwanzig Zeilentiteln — erst dadurch passt derselbe Schlüssel in
-            // Kennzahlen- UND Mehrjahrestabelle.
-            k.HinweisRoh(MyResource.Resource.WIRT_ZEILE_JAHR1);
-            SchreibeVergleich(k, daten, alle, szenario, werte);
+            if (WirtschaftsBerichtswerte.IstValeri(konfig))
+            {
+                // VB‑E2 (VB‑Q2 a, Mischform D3): In VALERI-Darstellung tritt an die Stelle der einen Kennzahltafel je
+                // Stand die Tafel „Kennzahlen je Szenario“ (Ungünstig | Erwartet | Günstig); alles Übrige steht im
+                // Leitszenario Erwartet. Die Jahresreihen von Günstig und Ungünstig nennt die Hinweiszeile in der Mappe.
+                k.Ueberschrift2Roh(MyResource.Resource.WIRT_BER_KENNZAHLEN_VALERI);
+                k.HinweisRoh(MyResource.Resource.WIRT_ZEILE_JAHR1);
+                k.HinweisRoh(MyResource.Resource.WIRT_BER_VALERI_MAPPE);
+                SchreibeVergleichValeri(k, daten, alle, werte);
+            }
+            else
+            {
+                // E31: Die Überschrift nennt den Anzeigetext des Szenarios; für Erwartet derselbe Wortlaut wie die
+                // Übersetzung von „Kennzahlen im Szenario „Erwartet““.
+                k.Ueberschrift2Roh(string.Format(k.Kultur, MyResource.Resource.WIRT_BER_KENNZAHLEN_SZENARIO,
+                                                 VerlaufZeilen.Szenarioname(szenario)));
+                // ETAPPE E7: Der Zeitbezug steht im Tabellenkopf statt in vier von
+                // zweiundzwanzig Zeilentiteln — erst dadurch passt derselbe Schlüssel in
+                // Kennzahlen- UND Mehrjahrestabelle.
+                k.HinweisRoh(MyResource.Resource.WIRT_ZEILE_JAHR1);
+                SchreibeVergleich(k, daten, alle, szenario, werte);
+            }
 
             // ---------------- KWK-Zuschlag je Modul (E6 → E7) ----------------
             SchreibeKwkgModule(k, daten, alle, szenario);
@@ -609,6 +622,45 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------- Tabellen
+
+        /// <summary>
+        /// VB‑E2 — die Kennzahlen in VALERI-Darstellung: je Stand (<see cref="Berichtstabellen.Kennzahlstaende"/>; in
+        /// der Paarsicht A und B, VB‑Q5 a) eine Tafel „Kennzahlen je Szenario“
+        /// (<see cref="Berichtstabellen.WirtschaftskennzahlenSzenarien"/>). Der Rückfallsatz eines Stands ohne Günstig
+        /// oder Ungünstig steht vor seiner Tafel, die Warnungen der Zellen darunter; in der Paarsicht steht die
+        /// Deklarationszeile einmal vor den Tafeln.
+        /// </summary>
+        private static void SchreibeVergleichValeri(WordKontext k, BerichtsDaten daten,
+                                                    List<WirtschaftlichkeitErgebnis> alle, WirtschaftsBerichtswerte werte)
+        {
+            if (!daten.Varianten.Any(v => v.IstStamm)) return;
+            List<VariantenDaten> staende = Berichtstabellen.Kennzahlstaende(daten);
+            if (staende.Count == 0) return;
+
+            if (daten.Sicht != null && daten.Sicht.IstPaar)
+                k.HinweisRoh(Referenzwahl.Deklarationszeile(
+                    Referenzwahl.Name(staende[0]),
+                    Referenzwahl.Name(daten.Varianten.FirstOrDefault(
+                        v => daten.IdGruppenreferenz > 0 ? v.IdProjekt == daten.IdGruppenreferenz : v.IstStamm))));
+
+            foreach (VariantenDaten v in staende)
+            {
+                k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
+                Berichtstabelle tafel = Berichtstabellen.WirtschaftskennzahlenSzenarien(daten, werte, v, BerichtTexte.Englisch, k.Kultur);
+                if (tafel.Spalten.Count == 0) continue;
+                werte.ValeriSzenarien(v.IdProjekt, out List<string> fehlend);
+                int vorher = fehlend.Count > 0 && tafel.Hinweise.Count > 0 ? 1 : 0;
+                for (int i = 0; i < vorher; i++) k.HinweisRoh(tafel.Hinweise[i]);
+                k.Fuege(WordTabellenschreiber.Direkt(k, tafel));
+                for (int i = vorher; i < tafel.Hinweise.Count; i++) k.HinweisRoh(tafel.Hinweise[i]);
+                k.Abstand();
+            }
+
+            // Der Kurztext der Wärmegestehungskosten einmal unter den Tafeln (wie in SchreibeVergleich).
+            if (alle != null && alle.Any(e => e != null && e.Gestehungskosten.HasValue))
+                k.HinweisRoh(MyResource.Resource.WIRT_ZEILE_GESTEHUNGSKOSTEN + ": " +
+                             MyResource.Resource.WIRT_GESTEHUNG_KURZTEXT + ".");
+        }
 
         private static void SchreibeVergleich(WordKontext k, BerichtsDaten daten,
                                               List<WirtschaftlichkeitErgebnis> alle, string szenario,

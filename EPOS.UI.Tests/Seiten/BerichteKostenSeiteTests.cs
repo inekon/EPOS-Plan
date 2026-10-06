@@ -536,6 +536,54 @@ public class BerichteKostenSeiteTests : BunitContext
     }
 
     /// <summary>
+    /// VB‑Q6 a: Steht die Wirtschaftlichkeitsseite in der Darstellung „ValERI-Bewertung“, belegt „Zum Bericht ›“ die
+    /// Klappliste der Berichtsseite mit dem vierten Eintrag „Alle drei Szenarien (VALERI)“ vor, und die leise Zeile nennt
+    /// ihn; in der Darstellung „Kennzahlen“ bleibt es beim Szenario der Einzelheiten.
+    /// </summary>
+    [Fact]
+    public void Zum_Bericht_aus_der_ValERI_Darstellung_belegt_alle_drei_Szenarien_vor()
+    {
+        const string VALERI = "Alle drei Szenarien (VALERI)";
+        IReadOnlyDictionary<string, object>? Gaben(string s)
+        {
+            IReadOnlyDictionary<string, object>? g = GabenMitGruppe(s);
+            if (s != BerichteKostenSeite.SEITE_BERICHT) return g;
+            var laden = (Func<BerichtStand>)g!["Laden"];
+            return new Dictionary<string, object>
+            {
+                ["Laden"] = new Func<BerichtStand>(() =>
+                {
+                    BerichtStand b = laden();
+                    b.Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig"), (BerichtStand.SZENARIO_VALERI, VALERI) };
+                    return b;
+                }),
+                ["BausteinWirtschaft"] = WIRTSCHAFT
+            };
+        }
+
+        var cut = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.SeitenGaben, (string s) => Gaben(s))
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_WIRTSCHAFT));
+        cut.FindAll(".epos-wirt-umschalter-knopf")[1].Click();               // „ValERI-Bewertung“
+        cut.FindAll(".epos-wirt-berichtknopf")[0].Click();
+
+        Assert.Equal(BerichteKostenSeite.SEITE_BERICHT, cut.Instance.AktiveSeite);
+        BerichtSeite bericht = cut.FindComponent<BerichtSeite>().Instance;
+        Assert.Equal(BerichtStand.SZENARIO_VALERI, bericht.Szenariowahl);
+        Assert.Contains(WIRTSCHAFT, bericht.AktiveBausteine);
+        // Die leise Zeile trägt den eigenen Satz der VALERI-Darstellung aus der Oberflächensprache (BK_BER_VORBELEGT_VALERI).
+        Assert.Equal(bericht.Vorbelegungszeile.Trim(), cut.Find(".epos-bericht-vorbelegt").TextContent.Trim());
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.BK_BER_VORBELEGT_VALERI.Split("{0}")[0], bericht.Vorbelegungszeile);
+
+        // Gegenprobe: aus der Darstellung „Kennzahlen“ das Szenario der Einzelheiten (Günstig).
+        var kennzahlen = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.SeitenGaben, (string s) => Gaben(s))
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_WIRTSCHAFT));
+        kennzahlen.FindAll(".epos-wirt-berichtknopf")[0].Click();
+        Assert.Equal(1, kennzahlen.FindComponent<BerichtSeite>().Instance.Szenariowahl);
+    }
+
+    /// <summary>
     /// Ohne Ergebnisse ist der Knopf weich gesperrt: Ein Klick wechselt nicht, und nichts
     /// wartet auf die Berichtsseite.
     /// </summary>
@@ -702,5 +750,24 @@ public class BerichteKostenSeiteTests : BunitContext
         Assert.Equal("0", Navknoepfe(cut)[1].GetAttribute("tabindex"));
         Assert.NotNull(cut.Find("#bk-blatt-KOSTEN"));
         Assert.Empty(cut.FindAll("#bk-blatt-UEBERSICHT"));
+    }
+
+    /// <summary>
+    /// Jede der vier Seiten fokussiert beim ersten Zeichnen ihre Wurzel (Tastaturbedienung) —
+    /// aber mit <c>preventScroll</c>: Sonst rollt der Browser die hohe Seite ins Bild und die
+    /// Reiterleiste verschwindet aus dem Blick (Anwenderbefund 06.10.2026, gemessen mit
+    /// <c>Proben/Rasterprobe/berichtescrollprobe.mjs</c>).
+    /// </summary>
+    [Fact]
+    public void Jede_Seite_fokussiert_ihre_Wurzel_ohne_zu_rollen()
+    {
+        var cut = Zeige();
+        for (int i = 1; i < 4; i++) Navknoepfe(cut)[i].Click();
+
+        var fokusse = JSInterop.Invocations
+            .Where(a => a.Identifier == "Blazor._internal.domWrapper.focus")
+            .ToList();
+        Assert.True(fokusse.Count >= 4, $"nur {fokusse.Count} Fokusaufrufe für vier Seiten");
+        Assert.All(fokusse, a => Assert.Equal(true, a.Arguments[1]));
     }
 }

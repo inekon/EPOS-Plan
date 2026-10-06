@@ -8220,6 +8220,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle drei Szenarien (VALERI) ähnelt.
+        /// </summary>
+        public static string BK_BER_SZENARIO_VALERI {
+            get {
+                return ResourceManager.GetString("BK_BER_SZENARIO_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellen — Projekt: {0} ähnelt.
         /// </summary>
         public static string BK_BER_TITEL {
@@ -8252,6 +8261,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORBELEGT {
             get {
                 return ResourceManager.GetString("BK_BER_VORBELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit. Der Bericht zeigt die Kennzahlen je Szenario (Ungünstig, Erwartet, Günstig); die übrigen Tafeln stehen im Szenario Erwartet. Gemerkt wird die Auswahl mit „Erstellen“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORBELEGT_VALERI {
+            get {
+                return ResourceManager.GetString("BK_BER_VORBELEGT_VALERI", resourceCulture);
             }
         }
         
@@ -48792,7 +48810,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. Nur mit angehaktem Baustein Wirtschaftlichkeit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. „Alle drei Szenarien (VALERI)“ zeigt je Stand die Kennzahlen in Ungünstig, Erwartet und Günstig nebeneinander, alles Übrige in Erwartet. Nur mit angehaktem Baustein Wirtschaftlichkeit. ähnelt.
         /// </summary>
         public static string KI_DLG_BKB_SZENARIO_ERL {
             get {
@@ -111524,6 +111542,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennzahlen der Wirtschaftlichkeit des laufenden Stands je Szenario (VALERI-Darstellung): Spalten Ungünstig, Erwartet und Günstig; fehlt dem Stand ein Szenario, steht die Tafel allein in Erwartet mit einem Hinweis darunter; nur im Block {{#je stand}}. ähnelt.
+        /// </summary>
+        public static string VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN {
+            get {
+                return ResourceManager.GetString("VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: Ist das Ergebnis des laufenden Stands älter als die letzte Projektänderung? ähnelt.
         /// </summary>
         public static string VF_STAND__VERALTET {
@@ -112739,6 +112766,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} › „Kennzahlen je Szenario“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_1_STELLE_WORT_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_AE_1_STELLE_WORT_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzen und Lasten ähnelt.
         /// </summary>
         public static string WIRT_AE_1_THEMA {
@@ -113072,6 +113108,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Kennzahlen je Szenario“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_7_STELLE_WORT_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_AE_7_STELLE_WORT_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung ähnelt.
         /// </summary>
         public static string WIRT_AE_7_THEMA {
@@ -113185,6 +113230,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_AE_9_STELLE_WORT {
             get {
                 return ResourceManager.GetString("WIRT_AE_9_STELLE_WORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Kennzahlen je Szenario“, „Szenarien Ungünstig / Erwartet / Günstig“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_STELLE_WORT_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_STELLE_WORT_VALERI", resourceCulture);
             }
         }
         
@@ -113648,6 +113702,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen je Szenario ähnelt.
+        /// </summary>
+        public static string WIRT_BER_KENNZAHLEN_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_BER_KENNZAHLEN_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Für {0} fehlt das Ergebnis im Szenario „{1}“ — die Wirtschaftlichkeit steht deshalb im Szenario „{2}“. ähnelt.
         /// </summary>
         public static string WIRT_BER_SZENARIO_RUECKFALL {
@@ -113662,6 +113725,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BER_SZENARIO_WORTBERICHT {
             get {
                 return ResourceManager.GetString("WIRT_BER_SZENARIO_WORTBERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresreihen und Kennzahlen von Günstig und Ungünstig: Tabellenbericht, Blatt „Wirtschaftlichkeit“. ähnelt.
+        /// </summary>
+        public static string WIRT_BER_VALERI_MAPPE {
+            get {
+                return ResourceManager.GetString("WIRT_BER_VALERI_MAPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Für {0} fehlen Ergebnisse ({1}) — die Tafel steht deshalb allein im Szenario „{2}“. ähnelt.
+        /// </summary>
+        public static string WIRT_BER_VALERI_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_BER_VALERI_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht in VALERI-Darstellung ähnelt.
+        /// </summary>
+        public static string WIRT_BER_VALERI_WORTBERICHT {
+            get {
+                return ResourceManager.GetString("WIRT_BER_VALERI_WORTBERICHT", resourceCulture);
             }
         }
         
