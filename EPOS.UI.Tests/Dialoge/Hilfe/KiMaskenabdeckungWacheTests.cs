@@ -138,6 +138,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("Kalenderkarte",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U2 (E56 F4 (a)): die Vorlagenverwaltung als Blatt im Katalogeditor.
         new("KonditionierungVorlagenverwaltung", "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // NP3a (Konzept Nutzungsprofile 6.1, NP-F22): das Blatt „Nutzungsprofile" im Katalogeditor - der
+        // Katalog ist projektübergreifend (NP-F3) und schreibt sofort; der WIRT meldet an, nicht das Blatt.
+        new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U3 (Teilkonzept 7.5): der Inhalt der aufgeklappten Kalenderkarte.
         new("KalenderkarteInhalt",            "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U3 (Festlegung 15): die Periodenliste der aufgeklappten Kalenderkarte.
@@ -344,6 +347,13 @@ public sealed class KiMaskenabdeckungWacheTests
             "speichern…“, die mit eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
         // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung; dazu
         // Zielgröße, Name, Komfort- und Absenksollwert der Abfrage „Kopieren nach …“ (Teilkonzept 3.5, 7.4): 4 → 5.
+        // NP3a (Konzept Nutzungsprofile 6.1, NP-F3): die Felder des Profileditors und der Zuordnung stehen am
+        // KATALOG der Nutzungsprofile, nicht am Gebäude - der Katalog gilt projektübergreifend und jede
+        // Handlung schreibt sofort mit eigenem Knopf. Die Übernahme ins Gebäude ist NP3b.
+        new("RaumnutzungBlatt", 31, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
+            "Außenluft samt Einheit und die Lasten sind Kennwerte eines KATALOGPROFILS, kein Einstellwert des " +
+            "Gebäudes; Art, Schlüssel und Profilwahl gehören zur Zuordnungstabelle. Alle schreiben sofort über " +
+            "eigene Knöpfe (NP-F3); „Nutzungsprofil übernehmen…“ ans Gebäude kommt mit NP3b"),
         new("KonditionierungVorlagenverwaltung", 5, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name, " +
             "Komfort- und Absenksollwert zur Handlung „Kopieren nach …“; beide schreiben mit eigenem OK sofort — kein " +
             "Einstellwert des Gebäudes"),

@@ -5789,11 +5789,54 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     color: var(--epos-text-leise);
 }
 
+/* Farbmodus "Randbedingung" (HottCAD-Verbund 4.3): Die Farben der Gruppen R0 bis R7 stehen einmal in
+   GebaeudeAnsichtRandgruppen.FARBEN und kommen als Attribut ins SVG; hier stehen nur Strichbreiten,
+   Abstaende und der Zustand der Schalter. */
+.epos-gebansicht-farbmodus {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.epos-gebansicht-kante,
+.epos-gebansicht-oeffnung {
+    stroke-linecap: butt;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+}
+
+.epos-gebansicht-kante {
+    stroke-width: 4px;
+}
+
+.epos-gebansicht-oeffnung {
+    stroke-width: 8px;
+}
+
+.epos-gebansicht-randschalter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-gebansicht-randschalter[aria-pressed="false"] {
+    opacity: 0.45;
+}
+
+.epos-gebansicht-randschalter[aria-pressed="false"] .epos-gebansicht-zonenname {
+    text-decoration: line-through;
+}
+
+.epos-gebansicht-randflaeche {
+    color: var(--epos-text-leise);
+    font-variant-numeric: tabular-nums;
+}
+
 @media (forced-colors: active) {
     .epos-gebansicht-raum polygon { fill: Canvas; stroke: CanvasText; }
     .epos-gebansicht-raum:focus-visible polygon { stroke: Highlight; }
     .epos-gebansicht-raum text { fill: CanvasText; }
     .epos-gebansicht-farbfeld { background: Canvas; border-color: CanvasText; }
+    .epos-gebansicht-kante, .epos-gebansicht-oeffnung { stroke: CanvasText; }
 }
 
 /* Die Andockung im Zuordnungsdialog: Zonenliste und Grundriss nebeneinander, im schmalen Fenster
@@ -14562,6 +14605,159 @@ td.epos-vorlage-katalogbeschreibung {
 @container epos-kond (min-width: 900px) {
     .epos-kond-zonenzeile:not(.epos-kond--aktiv) {
         display: flex;
+    }
+}
+
+/* ===================================================================== */
+/*  DAS BLATT „NUTZUNGSPROFILE" (Stufe NP3a; Konzept Nutzungsprofile 6.1) */
+/* ===================================================================== */
+/* Drei Bereiche: Katalogbaum, Profileditor und Vorschau. Ab 900 CSS-Pixeln
+   Behaelterbreite stehen sie nebeneinander (Baum und Vorschau schmal, der
+   Editor nimmt den Rest), darunter untereinander — dieselbe Schwelle wie
+   Katalograhmen und Stammblatt. Jeder Bereich rollt fuer sich. */
+.epos-raumnutzung {
+    container-type: inline-size;
+    container-name: epos-raumnutzung;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-raumnutzung-sofort {
+    margin: 0;
+}
+
+.epos-raumnutzung-reiter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-raumnutzung-meldung {
+    margin: 0;
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-raumnutzung-sperrzeile {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-raumnutzung-spalten {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-raumnutzung-baum,
+.epos-raumnutzung-editor,
+.epos-raumnutzung-vorschau {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-raumnutzung-ueberschrift {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.epos-raumnutzung-kategorien,
+.epos-raumnutzung-profile {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-raumnutzung-profile {
+    padding-left: var(--epos-rand);
+}
+
+.epos-raumnutzung-kategorie,
+.epos-raumnutzung-profil {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-raumnutzung-kategorie {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.epos-raumnutzung-art {
+    color: var(--epos-text-leise);
+    font-size: 0.85rem;
+}
+
+.epos-raumnutzung-profil-waehlen[aria-pressed="true"] {
+    font-weight: 600;
+    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
+    padding-left: 8px;
+}
+
+.epos-raumnutzung-baumknoepfe,
+.epos-raumnutzung-editorknoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-raumnutzung-leer,
+.epos-raumnutzung-kategorie-leer,
+.epos-raumnutzung-ohnewahl,
+.epos-raumnutzung-ohnewerte,
+.epos-raumnutzung-lesend,
+.epos-raumnutzung-nurlesend,
+.epos-raumnutzung-nichtbelegt,
+.epos-raumnutzung-hinweis,
+.epos-raumnutzung-vorschau-leer {
+    margin: 0;
+}
+
+.epos-raumnutzung-vorschau-groesse {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.epos-raumnutzung-zeilenbild,
+.epos-raumnutzung-stunden,
+.epos-raumnutzung-vorschauzeilen,
+.epos-raumnutzung-zuordnungen {
+    width: 100%;
+}
+
+.epos-raumnutzung-zuordnung-profil {
+    max-width: 100%;
+}
+
+.epos-raumnutzung-zuordnung-neu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+@container epos-raumnutzung (min-width: 900px) {
+    .epos-raumnutzung-spalten {
+        grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr) minmax(220px, 1fr);
+    }
+}
+
+@container epos-raumnutzung (max-width: 599.98px) {
+    .epos-raumnutzung-zuordnungen td.epos-zellenaktionen {
+        white-space: normal;
+    }
+
+    .epos-raumnutzung-zuordnungen .epos-zellenaktionen-inhalt {
+        flex-wrap: wrap;
     }
 }
 

@@ -2058,6 +2058,6 @@ M12 und M13 entschieden**, alle nach Empfehlung. M11 bleibt mit seiner Stufe zu 
 - **Kühlung als vierter Kanal** (**E12 vom 16.09.2026 nimmt ihn auf** — die Kühllast je Zone und ihre
   Deckung regelt das Kühlkonzept, Konzept N1.18), Kältemaschinen, Bauteilaktivierung, Nachweise nach
   GEG/DIN V 18599,
-  sommerlicher Wärmeschutz nach DIN 4108-2, Nutzungsprofile für Nichtwohngebäude, Validierung an
+  sommerlicher Wärmeschutz nach DIN 4108-2, Normwerte der Nutzungsprofile für Nichtwohngebäude (E90: EPOS-Muster und eigene Profile sind zulässig, siehe [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)), Validierung an
   gemessenen Verbräuchen — wie in Konzept 15 abgegrenzt.
 - **Die Entscheidung, ob und wann G6 beauftragt wird.** Dieses Papier legt vor.

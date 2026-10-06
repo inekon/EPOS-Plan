@@ -1105,7 +1105,7 @@ Grundlage ist die Abbildungstabelle aus Befund S, 5; hier auf die Tabellen des M
 | `Tab_Gebaeude` | `IfcBuilding` | `Pset_BuildingCommon.YearOfConstruction` (Text!) als Bandmitte, `EPOS_Gebaeude.Baualtersklasse` mit dem Klassennamen, `EPOS_Ergebnis` mit den Summen |
 | `Tab_Zone` | `IfcSpace` (`PredefinedType = SPACE`) | `Qto_SpaceBaseQuantities`: `NetFloorArea` ← `Nutzflaeche`, `Height` ← `Raumhoehe`, `NetVolume` ← `Volumen`. `Pset_SpaceThermalRequirements`: `SpaceTemperature` ← `Raumsolltemperatur_Tag`, `SpaceTemperatureSummerMax` ← `Maximaleraumtemperatur`, `DiscontinuedHeating` ← Nachtabsenkung gesetzt, `NaturalVentilationRate` ← `Luftwechsel_Nutzer`. `LongName` = Zonenname |
 | `Tab_Zone.IstBeheizt = 0` | `IfcSpace` ohne `Pset_SpaceThermalRequirements` | `EPOS_Zone.IstBeheizt = FALSE` |
-| Nutzung und Matrixzellen der Zone | `IfcSpace`, Satz `EPOS_Zone` | `Nutzung` (`IfcLabel`: WOHNEN, BUERO, SCHULE; ohne Nutzung fehlt sie), `Heizsollwert_Tag` ← `Raumsolltemperatur_Tag`, `Heizsollwert_Nacht` ← `Raumsolltemperatur_Nachtabsenkung` (nur > 0), `Kuehlsollwert` ← `Kuehl_Sollwert` (Temperatur in Kelvin wie oben), `Luftwechsel_Nutzer` ← `Luftwechsel_Nutzer` (`IfcReal`, 1/h im `Description`) — je Zelle Zone vor Gebäude, wie die Zone rechnet. Der Klassenweg hat keine Zone und schreibt sie nicht; ohne Zone bleibt die Datei byte-gleich |
+| Nutzung und Matrixzellen der Zone | `IfcSpace`, Satz `EPOS_Zone` | `Nutzung` (`IfcLabel`, freier Text, E90; ohne Nutzung fehlt sie), `Heizsollwert_Tag` ← `Raumsolltemperatur_Tag`, `Heizsollwert_Nacht` ← `Raumsolltemperatur_Nachtabsenkung` (nur > 0), `Kuehlsollwert` ← `Kuehl_Sollwert` (Temperatur in Kelvin wie oben), `Luftwechsel_Nutzer` ← `Luftwechsel_Nutzer` (`IfcReal`, 1/h im `Description`) — je Zelle Zone vor Gebäude, wie die Zone rechnet. Der Klassenweg hat keine Zone und schreibt sie nicht; ohne Zone bleibt die Datei byte-gleich |
 | Konditionierungskalender der Zone | `IfcSpace`, je Größe ein Satz `EPOS_Kalender_<Größe>` (HEIZSOLL, KUEHLSOLL, LUEFTUNG, GERAETE, PERSONEN) | genau eine Grundangabe: `Grundwert` (Temperatur bzw. `IfcReal` in 1/h oder Anteil 0 … 1), `Aus` (`IfcBoolean` TRUE) oder `Woche` (`IfcText`, die 168 Zellen wie in der Datenbank, Montag 0 Uhr zuerst, „aus“ = abgeschaltet); dazu `Nennwert_W` (`IfcPowerMeasure`), `Bemerkung` (Herkunft und Vermerk) und je Periode `Periode_<Rang>` (`IfcText`) im festen Format `Art;Beginn;Ende;Feiertagsregel;Angabe` — Tage 1 … 365 (0 bei einer Feiertagsregel), Feiertagsregel leer bei einem Zeitraum, Angabe `wert=<Zahl>`, `aus`, `woche=<168 Zellen>` oder `wochentag=<1 … 7>`, Zahlen in invarianter Kultur; der Bezeichner der Periode steht im `Description`. Eine Zone ohne Kalender trägt keinen Satz. Der Beipackzettel nennt die Sätze (`GEXP_PROT_BEIPACK_KONDITIONIERUNG`) |
 | mehrere Zonen | zusätzlich `IfcZone` + `IfcRelAssignsToGroup` | im **Einzonenfall weglassen** — eine Gruppe mit einem Element ist Rauschen |
 | `Tab_Bauteil` AUSSENWAND/INNENWAND | `IfcWall` | `Pset_WallCommon.ThermalTransmittance` ← `U_Wert`, `.IsExternal`; `Qto_WallBaseQuantities.GrossSideArea` ← `Flaeche` |
@@ -1969,6 +1969,7 @@ lässt dessen Regeln, die Exporte (5.5, 6.7) und [`ADR-003`](ADR-003_IFC_xBIM_oh
 | Lage über die Placement-Kette in Weltkoordinaten, Längeneinheit der Datei | Rechnen mit dem Körper: Flächen, Volumen und Zonierung bleiben bei Raumgrenzen und Mengen (3.4, 14.1) — ausgenommen die Trennflächen zwischen Räumen einer Datei ohne Raumgrenzen, die aus gemeinsamen Flächen der Raumkörper kommen (Mehrzonenkonzept 6.2) |
 | Herkunft und Vereinfachung je Raum, sichtbar in der Ansicht | Reparatur: offene, überlappende oder verdrehte Netze werden gezeichnet, wie sie sind |
 | die Körper der Hüllbauteile (`IfcWall`, `IfcSlab`, `IfcRoof`, `IfcWindow`, `IfcDoor`) als Anzeige, mit gemeinsamer Dreiecksgrenze mit den Räumen (HottCAD-Verbund HC-1, #740) | der Bauteilkörper als Rechengröße: Dicke, Schichten und Flächen kommen weiter aus Mengen und Katalog |
+| die Hüllflächen der Raumkörper in acht Gruppen R0–R7 als Farbmodus „Randbedingung“ der Ansicht, mit Legende und Flächensummen (HottCAD-Verbund HC-2, #746) | die Gruppe als Rechengröße oder Persistenz: Anzeige am Abbild, die Berechnung liest sie nicht |
 
 **Die Datei bleibt Quelle.** Nichts am Körper wird gerechnet, geschlossen oder ausgeglichen; was der Leser nicht
 lesen kann, fällt benannt auf den Umriss zurück. **„Schematisch“ bleibt der benannte Rückfall** für jeden Raum ohne
@@ -2095,6 +2096,8 @@ DIN-V-18599-Nummer, je Profilklasse die 24-Stunden-Tagesganglinien aus `PdProfil
 `PdProfileTaskSerial`; **die Hülle kommt weiter aus dem IFC-Export.** Dieser Nachtrag legt die Stufe **SQ** vor. Er
 ergänzt Kapitel 15 und das Mehrzonenkonzept 6.4 (Zonenplan, E79) und lässt Leser, Exporte und ADR-003 unberührt.
 
+**Vermerk E90 (05.10.2026):** Die feste Tabelle `Din18599Nutzung` wird mit NP2 zur Vorgabe im Code hinter der änderbaren Zuordnung von DIN-Profilnummer, IFC-Nutzungsklasse und HottCAD-Raumtyp (NP-F12); `EPOS_Zone.Nutzung` ist freier Text ([Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)).
+
 ### 16.1 Ziel und Abgrenzung
 
 | Gehört dazu | Gehört nicht dazu |
@@ -2128,7 +2131,7 @@ bleibt der Raum unzugeordnet und wird benannt. Die **Zonierung** ist ein Paramet
 auf die Nutzung der Zone abgebildet: Büroprofile (Einzel-, Gruppen-, Großraumbüro, Besprechung, Schalter) → BUERO;
 Schulprofile (Klassenzimmer, Hörsaal, Bibliothek) → SCHULE; Wohnprofile (70, 71 und die Wohnzeilen der Norm) → WOHNEN;
 alles andere → keine Nutzung, die Nummer steht im Beleg. Die Tabelle ist sprachneutral und wird mit Nummer und Normname
-in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen. Festgelegt sind (SQ-1, `Din18599Nutzung`): **BUERO** 1–5, **SCHULE** 8, 9, 28, 29,
+in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen. Festgelegt sind (SQ-1, `Din18599Nutzung`; mit NP2 Vorgabe im Code, E90): **BUERO** 1–5, **SCHULE** 8, 9, 28, 29,
 **WOHNEN** 70, 71. Trägt die wirksame Zone kein eigenes Nutzungsprofil, gilt das der anderen Zonierung, mit der sie die
 meisten Räume teilt, sonst die Profilnummer ihrer Gruppe (`PdProfileGroup.ProfileUsageType`).
 

@@ -2,6 +2,8 @@
 
 **Nachgezogen 05.10.2026 — E89 (Konzept N1.70):** Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe GA entfällt; **Q24** und **Q25** sind gegenstandslos, **U17** hängt nicht mehr an GA, **A15** gilt ohne Ende des Rückweg-Tests. Wo dieses Register GA, „bis GA“, die Ablösung oder die Löschliste nennt, gilt: Der Bestandteil bleibt dauerhaft; die Liste im Umsetzungskonzept 6.1 ist Inventar.
 
+**Nachgezogen 06.10.2026 — E90 bis E92 (Konzept N1.71):** E90 (05.10.2026) beantwortet Q37 (Nutzung der Zonen): frei definierbare Nutzungsprofile als Katalog mit Kategorien, dazu eine änderbare Zuordnung; E91 (05.10.2026) entscheidet **Q38 bis Q47** des Konzepts [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md) nach Empfehlung; E92 legt die Zuständigkeit der Stufe NP fest. Alle drei standen nicht als offener Punkt in diesem Register und berühren keinen Registerpunkt; die Zählung der offenen Punkte (2) bleibt. Der Ausschluss „Nutzungsprofile für Nichtwohngebäude“ gilt nur noch für Normwerte (P4, E90).
+
 **Stand 25.09.2026, nach den Entscheiden E16–E38 sowie der Prüfung vom 17.09.2026; mit dem Abschluss
 von G3 (25.09.2026) die Vermerke unter A1, A14 und F-M1. E39 und E40 (Konzept N1.44, N1.45) berühren
 keinen Registerpunkt. E48 (26.09.2026, Konzept N1.53) ist unter D2 und D17 vermerkt. E49 (26.09.2026,
@@ -67,7 +69,7 @@ Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.
 **Umfang in Zahlen.** **2 offene Punkte** (Stand 03.10.2026): im Mehrzonenkonzept M11 (fällig vor G6d), im
 Teilkonzept Konditionierungsprofile P14 (Aufheizreserve ρ nach der Messung in RP1, fällig vor dem Einfrieren von KP3);
 Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Punkt mehr.
-**P15 bis P17** (03.10.2026, Konzept N1.68) sind entschieden: der Aufschlag nur kalenderbezogen auf Rampen mit n > 1
+**E90 bis E92** (05.10.2026, Konzept N1.71) sind entschieden — Q37 mit E90, Q38 bis Q47 des Konzepts Nutzungsprofile mit E91 nach Empfehlung, die Zuständigkeit der Stufe NP mit E92 —; die Zählung bleibt bei 2. **P15 bis P17** (03.10.2026, Konzept N1.68) sind entschieden: der Aufschlag nur kalenderbezogen auf Rampen mit n > 1
 (P16), die Auslegungsgröße als Auslegungsheizlast plus Aufheizzuschlag P_auf − Φ_stat (P17 (b)), die Vorschlagsspanne
 der manuellen Aufheizzeit aus τ₂ des Gebäudes (P15 (b), abweichend von der Empfehlung); die Zählung ist wieder bei 2.
 **E59** (02.10.2026, Konzept N1.68) nimmt eine Vorgabe des Anwenders auf — die Rampe je Gebäude, ein Aufschlag in

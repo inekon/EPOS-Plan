@@ -23,7 +23,7 @@ lesen“ im Gebäudedialog).
 | HC-3 | **umgesetzt durch die Sitzung „Gebäudesimulation IFC“** als **#736** (Commits `c3d41727` Kern, `99423740` Hülle und Dialog, `229d13f0` und `0b5f83a5` Proben 33, 36, 37, Papiere bis `76a126f6`), dazu **#737** Flächenfilter-Texte (`9910de03`). Gate 736 grün, CI-Lauf `37361791865` (Abschnitt 4). Protokoll siehe Kopf. Die Sätze zu Probe 33 und 36 in [`LIESMICH_Importproben.md`](../../../Referenzlaeufe/Importproben/LIESMICH_Importproben.md) sind nachgetragen |
 | HC-3, Dublette | eine zweite, parallele Umsetzung dieser Sitzung (`9612fb3a`, `06d8b4f5`, Merge `b64a5133`, Papiere `2f2797b8`) ist **verworfen**, nie gepusht. Sie bleibt auf den Zweigen `worktree-agent-aa321a7f535f499e5` (Code), `worktree-agent-ae21ef8bc37293252` (Papiere) und `sicherung-hc3-duplikat` erhalten — nicht mergen |
 | HC-1 | **umgesetzt als #740**: Teil 1 `68411baf` zweiseitige Randbedingung, Teil 2 `e6f7dce1` Rahmenanteil, Teil 3 `add95232` Bauteilkörper, Teil 4 `4670d6d7` Flächenklassifikation; Merge `3c37b6da`, Gate 740 (Abschnitt 4), [Protokoll HC-1](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_HC-1_IFC_Randbedingung_Bauteilkoerper_Flaechen.md) mit Bilanz der sechs Anwenderdateien und offenen Punkten |
-| HC-2 | nicht begonnen (Konzept 6.4) |
+| HC-2 | **umgesetzt als #746**: Teil A `5dc3bc5d`, `b696ca49`, `b74d6db6`, Teil B `481ed1db`, `22686e53`; Merge `aa223199`, Fix `8c048d02`; [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-2_Farbmodus_Randbedingung.md). Nächste Welle: HC-4 nach Zuruf |
 | HC-4 | nicht begonnen (Konzept 6.5) |
 
 **Lehre aus der Dublette:** Eine Ankündigung per Sitzungsnachricht genügt nicht. Vor dem Start einer Welle wird ihre
