@@ -79,6 +79,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(1051)]
         [InlineData(1007)]
+        [InlineData(1052)]
         public void Auslegungsheizlast_und_Aufheizzuschlag_der_Auskunft_sind_die_der_Ergebniszeile(int projekt)
         {
             if (!_db.Vorhanden) return;
@@ -108,7 +109,8 @@ namespace EPOS.Kern.Tests
                 }
                 Bit(zeilen[i].AufheizLeistungKw, an[i].LeistungKw, wo + ", P_auf");
             }
-            _ = mitWert; // Befund O2-B1 (unten): heute 0 - die Gleichheit gilt dann für null.
+            // E97 (Befund O2-B1 behoben): jedes optimierte Gebäude trägt seine Auslegungsheizlast, auch ohne Kopplung.
+            Assert.Equal(zeilen.Count, mitWert);
 
             // Schalter aus: ohne „auch ohne Schalter" keine Auskunft, mit ihr dieselbe Bemessung wie mit Schalter an.
             Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, new Aufheizvorgabe(false, vorgabe.Bemessung,
@@ -128,22 +130,34 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Befund O2-B1 (rote Probe, geparkt):</b> Φ_HL (<c>GebaeudeModellEingang.AuslegungsheizlastW</c>) entsteht nur in
-        /// <c>KopplungAufloesen</c>, also bei wirksamer Anlagenkopplung — ein gekoppeltes Einzonengebäude bemisst aber
-        /// nicht (GEKOPPELT, W5). Damit bleiben <c>Auslegungsheizlast_Kw</c> und die Auslegungsgröße (E60, Festlegung 41)
-        /// für jedes optimierte Gebäude leer. Die Behebung ist eine Kernänderung samt Basis (Export der Ergebniszeile) und
-        /// gehört nicht in die Oberflächenwelle O2.
+        /// <b>Befund O2-B1, behoben mit E97:</b> Φ_HL entstand nur in <c>KopplungAufloesen</c>, also bei wirksamer
+        /// Anlagenkopplung — ein gekoppeltes Gebäude bemisst aber nicht (GEKOPPELT, W5). Damit blieben
+        /// <c>Auslegungsheizlast_Kw</c> und die Auslegungsgröße (E60, Festlegung 41) für jedes optimierte Gebäude leer.
+        /// Jetzt bildet <c>GebaeudeModellEingang.Auslegungslasten</c> Φ_HL ohne Kopplung mit demselben Ausdruck: Einzone
+        /// (1007, Schalter an und — über den benannten Parameter — aus) und Zonen (1052, Summe der beheizten Zonen).
         /// </summary>
-        [Fact(Skip = "Befund O2-B1: Auslegungsheizlast nur bei wirksamer Kopplung - Kernnachzug zu R5, nicht O2")]
-        public void Ein_optimiertes_Gebaeude_traegt_eine_Auslegungsheizlast()
+        [Theory]
+        [InlineData(1007)]
+        [InlineData(1052)]
+        public void Ein_optimiertes_Gebaeude_traegt_eine_Auslegungsheizlast(int projekt)
         {
             if (!_db.Vorhanden) return;
-            Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(1007, new Aufheizvorgabe(true, null, null, null, null)));
             var ctrl = new ProjektGebaeudeCtrl();
-            ctrl.ReadAll(1007);
-            Aufheizauskunft a = AufheizauskunftCtrl.Projektgebaeude(1007, ctrl.items[0].ID_Gebaeude, false);
+            ctrl.ReadAll(projekt);
+            int id = ctrl.items[0].ID_Gebaeude;
+
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, new Aufheizvorgabe(true, null, null, null, null)));
+            Aufheizauskunft a = AufheizauskunftCtrl.Projektgebaeude(projekt, id, false);
             Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN, a.Zustand);
-            Assert.True(a.AuslegungsheizlastKw > 0.0);
+            Assert.True(a.AuslegungsheizlastKw > 0.0, "Φ_HL " + a.AuslegungsheizlastKw);
+            Assert.True(a.AufheizzuschlagKw >= 0.0, "Φ_RH " + a.AufheizzuschlagKw);
+
+            // Schalter aus: der benannte Parameter bemisst wie mit Schalter an, Bit für Bit.
+            Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, new Aufheizvorgabe(false, null, null, null, null)));
+            Assert.Null(AufheizauskunftCtrl.Projektgebaeude(projekt, id, false));
+            Aufheizauskunft aus = AufheizauskunftCtrl.Projektgebaeude(projekt, id, true);
+            Bit(a.AuslegungsheizlastKw, aus.AuslegungsheizlastKw, "Φ_HL bei Schalter aus");
+            Bit(a.AufheizzuschlagKw, aus.AufheizzuschlagKw, "Φ_RH bei Schalter aus");
         }
 
         private static void Bit(double? soll, double? ist, string wo)

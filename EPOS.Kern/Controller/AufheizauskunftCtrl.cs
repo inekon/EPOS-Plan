@@ -35,14 +35,9 @@ namespace WindowsFormsApplication1
             if (gebaeude == null || idProjekt <= 0 || idKlimaregion <= 0) return null;
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
             sim.KlimakalenderLesen(idKlimaregion);
-            Aufheizvorgabe vorgabe = sim.AufheizvorgabeProjekt;
-            if (!vorgabe.An)
-            {
-                if (!auchOhneSchalter) return null;
-                sim.AufheizvorgabeProjekt = new Aufheizvorgabe(true, vorgabe.Bemessung, vorgabe.AbzugK, vorgabe.Reserve,
-                                                               vorgabe.Art, vorgabe.AufschlagH, vorgabe.AufschlagProzent);
-            }
-            return sim.AufheizbemessungEinesGebaeudes(gebaeude);
+            if (!sim.AufheizvorgabeProjekt.An && !auchOhneSchalter) return null;
+            // E97: der benannte Parameter statt der Testnaht AufheizvorgabeProjekt (Setter) - gilt nur für diesen Aufruf.
+            return sim.AufheizbemessungEinesGebaeudes(gebaeude, auchOhneSchalter: auchOhneSchalter);
         }
 
         /// <summary>

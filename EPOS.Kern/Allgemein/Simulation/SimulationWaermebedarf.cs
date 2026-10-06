@@ -1507,13 +1507,20 @@ namespace WindowsFormsApplication1
         /// und rechnet kein Jahr des Gebäudes (im Mehrzonenweg mit Regelpaaren nur den adiabaten Vorlauf der
         /// 4-K-Regel, den die Zonen des Laufs ebenso brauchen).</para>
         /// </summary>
-        internal Aufheizauskunft AufheizbemessungEinesGebaeudes(ProjektGebaeudeModel item)
+        /// <param name="item">Das Gebäude, gelesen wie im Lauf.</param>
+        /// <param name="auchOhneSchalter">Bemisst bei ausgeschalteter Optimierung mit den gespeicherten Werten der
+        /// Projektvorgabe, als wäre der Schalter an (<see cref="Aufheizvorgabe.Eingeschaltet"/>; Festlegung 41: der
+        /// Bedarfsdialog nimmt bei Schalter aus die Auskunft). Gilt nur für diesen Aufruf — der nächste Lauf und die
+        /// nächste Auskunft lesen wieder die Projektvorgabe (<see cref="VdiWegEinstellen"/>).</param>
+        internal Aufheizauskunft AufheizbemessungEinesGebaeudes(ProjektGebaeudeModel item, bool auchOhneSchalter = false)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             var leer = new Aufheizauskunft { ID_Gebaeude = item.ID_Gebaeude, Gebaeudename = item.Gebaeudename ?? "" };
             if (!ReferenceEquals(RechenwegWaehlen(item), _vdi6007)) return leer with { Tagesbilanz = true };
 
             VdiWegEinstellen();
+            if (auchOhneSchalter && _vdi6007.Aufheizvorgabe != null)
+                _vdi6007.Aufheizvorgabe = _vdi6007.Aufheizvorgabe.Eingeschaltet();
             Aufheizvorgabe vorgabe = _vdi6007.Aufheizvorgabe;
             if (vorgabe == null || !vorgabe.An) return leer;
             // E64: die wirksame Reserve und ob sie die Vorgabe ist - die Herleitungszeile nennt die Quelle.
