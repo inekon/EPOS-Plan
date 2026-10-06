@@ -1075,17 +1075,18 @@ namespace WindowsFormsApplication1
                         }
                     }
 
-                    // 4) Die Nutzung je Zone (Zonenplan): die ausgelieferten Vorlagen dieser Nutzung als Kalenderkopien an der
-                    //    Zone - über den Vorlagenweg im selben Vorgang (je Größe ein Sicherungspunkt).
+                    // 4) Das Nutzungsprofil je Zone (Zonenplan): über den Generator als Kalenderkopien an der Zone, mit Fläche
+                    //    und lichter Höhe der Zone - im selben Vorgang (je Größe ein Sicherungspunkt).
                     using (Vorgangsklammer.Setzen(v))
                     {
-                        for (int i = 0; i < zonen.Count && i < vorschlag.Zonennutzungen.Count; i++)
+                        for (int i = 0; i < zonen.Count && i < vorschlag.Zonenprofile.Count; i++)
                         {
-                            string fehlerNutzung = ZonenplanCtrl.NutzungUebernehmen(idGebaeude, zonen[i].ID, vorschlag.Zonennutzungen[i]);
+                            string fehlerNutzung = ZonenplanCtrl.NutzungUebernehmen(idGebaeude, zonen[i].ID, vorschlag.Zonenprofile[i],
+                                                                                    zonen[i].Nutzflaeche, zonen[i].Raumhoehe);
                             if (fehlerNutzung != null) throw new InvalidOperationException(fehlerNutzung);
                         }
-                        // 5) Die Konditionierung aus der HottCAD-Projektdatei (SQ-1): ersetzt die Kopien der Vorlagen, wo sie
-                        //    etwas liefert — im selben Vorgang.
+                        // 5) Die Konditionierung aus der HottCAD-Projektdatei (SQ-1): ersetzt die Kopien des Profils, wo sie
+                        //    etwas liefert (Datei vor Profil, NP-F16) — im selben Vorgang.
                         for (int i = 0; i < zonen.Count && i < vorschlag.Zonenkonditionierungen.Count; i++)
                         {
                             if (vorschlag.Zonenkonditionierungen[i] == null) continue;

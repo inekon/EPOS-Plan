@@ -262,7 +262,7 @@ namespace EPOS.Kern.Tests
             Zonenkonditionierung k = h.Herkunft!.Gebaeudekonditionierung;
             Assert.NotNull(k);
             Assert.Equal(Konditionierungsherkunft.Ganglinie, k.Groesse(Konditionierungsgroesse.Heizsoll).Herkunft);
-            Assert.Equal(DbWerte.KOND_NUTZUNG_WOHNEN, k.Nutzung);
+            Assert.Equal(RaumnutzungSaat.WOHNEN, k.Nutzung);   // NP-F14: der Profilname der Zuordnung DIN_NUMMER
 
             // Im Mehrzonenweg mit den Zonen der Projektdatei: keine Gebäudekonditionierung.
             var schritte = new[] { new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI, Zonierung: GebaeudeZonierungSchluessel.SIMULATION) };

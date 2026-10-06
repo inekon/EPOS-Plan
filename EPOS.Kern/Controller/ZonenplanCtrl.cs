@@ -25,12 +25,22 @@ namespace WindowsFormsApplication1
         /// aufgeteilt — der wirksame Luftwechsel bleibt. Läuft im Vorgang des Aufrufers, wenn einer angemeldet ist
         /// (<see cref="Vorgangsklammer"/>, Sicherungspunkt).
         /// </summary>
+        /// <param name="profil">Das Profil der Zone (<see cref="Planzone.Profil"/>); <c>null</c> = keins.</param>
+        /// <param name="flaeche">Die Fläche der Zone [m²] für die Nennwerte; <c>null</c> = ohne.</param>
+        /// <param name="lichteHoehe">Die lichte Höhe der Zone [m] für Außenluft je Fläche; <c>null</c> = ohne.</param>
         /// <returns><c>null</c>, wenn alles übernommen ist; sonst die erste Ablehnung.</returns>
-        internal static string NutzungUebernehmen(int idGebaeude, int idZone, string nutzung)
+        internal static string NutzungUebernehmen(int idGebaeude, int idZone, Planprofil profil, double? flaeche = null, double? lichteHoehe = null)
         {
-            if (nutzung == null) return null;
-            if (!Zonenplan.NUTZUNGEN.Contains(nutzung))
-                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG, nutzung);
+            if (profil == null) return null;
+            Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
+            string kennung = profil.Id.HasValue ? DbWerte.KOND_NUTZUNGEN.FirstOrDefault(k => v.AusKennung(k)?.Id == profil.Id) : profil.Name;
+            return kennung == null ? null : VorlagenUebernehmen(idGebaeude, idZone, kennung);
+        }
+
+        /// <summary>Der Vorlagenweg einer alten Kennung (ohne Katalog): je Größe die erste ausgelieferte Vorlage dieser Nutzung.</summary>
+        private static string VorlagenUebernehmen(int idGebaeude, int idZone, string nutzung)
+        {
+            if (!Zonenplan.NUTZUNGEN.Contains(nutzung)) return null;
             var vorlagen = new KonditionierungsvorlageCtrl();
             var kond = new KonditionierungCtrl();
             Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
@@ -154,7 +164,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der gespeicherte Plan derselben Datei</b> (gleicher SHA-256) in diesem Projekt: das jüngste Gebäude des Projekts
         /// aus dieser Datei, seine jüngste Quelle mit diesem Hash, deren Raumpaarungen auf Zonen, die Zonen des Gebäudes in
-        /// ihrer Reihenfolge mit Bezeichner und der Nutzung ihrer Kalenderkopien (<see cref="Zonenplan.AusGespeichert"/>).
+        /// ihrer Reihenfolge mit Bezeichner und ihrer Nutzung (<see cref="Zonennutzung"/>; <see cref="Zonenplan.AusGespeichert"/>
+        /// findet darüber das Profil wieder, NP-F23).
         /// <c>null</c>, wenn es keinen gibt oder keine Raumpaarung auf eine Zone zeigt.
         /// </summary>
         internal static Zonenplan Gespeichert(int idProjekt, string hash, GebaeudeAbbild abbild, int index,
@@ -176,8 +187,26 @@ namespace WindowsFormsApplication1
                 .Select(p => (jeKurz[p.Quellkennung], p.ID_Zone.Value)).ToList();
             if (paarungen.Count == 0) return null;
             List<(int Id, string Name, string Nutzung)> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(treffer.IdGebaeude)
-                .Select(z => (z.ID, z.Bezeichner, Nutzung(z.ID))).ToList();
+                .Select(z => (z.ID, z.Bezeichner, Zonennutzung(z.ID))).ToList();
             return Zonenplan.AusGespeichert(abbild, index, quelle.Zonenregel, haken, zonen, paarungen);
+        }
+
+        /// <summary>
+        /// <b>Die Nutzung einer Zone</b> (Konzept Nutzungsprofile Q41, NP-F23): <c>Tab_Zone.Nutzungsprofil</c>, sonst die Nutzung
+        /// ihrer Kalenderkopien (<see cref="Nutzung"/>); <c>null</c> = keine. Damit findet der erneute Import auch ein Profil
+        /// ohne Kalender (ohne Kennwerte, NP-F13) oder einen Text „nicht im Katalog“ wieder.
+        /// </summary>
+        internal static string Zonennutzung(int idZone)
+        {
+            if (RaumnutzungSchema.ZonenspalteVorhanden())
+            {
+                object w = DataRepository.ExecuteScalar(
+                    "SELECT \"" + RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL + "\" FROM \"" + RaumnutzungSchema.TAB_ZONE + "\" WHERE \"ID\" = ?",
+                    new DbParam("@z", idZone));
+                if (w != null && w != DBNull.Value && KonditionierungNutzungSchema.Nutzungstext(Convert.ToString(w, CultureInfo.InvariantCulture)) is string n)
+                    return n;
+            }
+            return Nutzung(idZone);
         }
 
         /// <summary>Die Nutzung der Kalenderkopien einer Zone: die der ersten Größe mit Nutzung; <c>null</c> = keine.</summary>

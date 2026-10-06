@@ -62,7 +62,9 @@ namespace EPOS.Kern.Tests
 
             GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, plan.Haken, null, plan.Zonieren());
             Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler).Select(m => m.Schluessel)));
-            Assert.Equal(new[] { null, DbWerte.KOND_NUTZUNG_BUERO, null }, v.Zonennutzungen);
+            // NP-F23: mit Katalog trägt der Plan das Profil — die alte Kennung führt auf das EPOS-Muster gleicher Nutzung.
+            Assert.Equal(new[] { null, RaumnutzungSaat.BUERO, null }, v.Zonennutzungen);
+            Assert.True(v.Zonenprofile[1].Id.HasValue);
 
             GebaeudeZonenCtrl.Vorschlagsergebnis e;
             using (DbVorgang vorgang = DataRepository.Vorgang())
@@ -96,7 +98,7 @@ namespace EPOS.Kern.Tests
             Zonenplan wieder = ZonenplanCtrl.Gespeichert(PROJEKT, erneut.Quelle.Hash, erneut.Abbild, 0);
             Assert.NotNull(wieder);
             Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Wohnung oben" }, wieder.Zonen.Select(z => z.Name));
-            Assert.Equal(new[] { null, DbWerte.KOND_NUTZUNG_BUERO, null }, wieder.Zonen.Select(z => z.Nutzung));
+            Assert.Equal(new[] { null, RaumnutzungSaat.BUERO, null }, wieder.Zonen.Select(z => z.Nutzung));   // NP-F23: als Profil wiedergefunden
             foreach (Planzone z in plan.Zonen)
                 Assert.Equal(plan.RaeumeVon(z.Schluessel).Select(r => r.Kennung),
                              wieder.RaeumeVon(wieder.Zonen.Single(x => x.Name == z.Name).Schluessel).Select(r => r.Kennung));
