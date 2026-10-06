@@ -33,12 +33,12 @@
 
    DIE REIHENFOLGE DES REITERS. Die Kennzahlen stehen in gleichrangigen
    Hauptgruppen mit dunklem Balken: oben Waerme | Strom nebeneinander (wie im
-   Bedarfs- und im Uebersichtsreiter), darunter in je eigener Rasterzeile der
-   Brennstoffverbrauch der Spitzenkessel und der Betrieb. Es folgen die
-   Kesseltabelle ueber die volle Breite, die zwei Schalterzeilen und die
-   Jahresganglinie; AM ENDE steht die Auslegung (Anwenderwunsch 06.10.2026) -
-   dieselbe Folge wie im Waermepumpenreiter. Die Zeilenfolge innerhalb jeder
-   Gruppe bleibt. *@
+   Bedarfs- und im Uebersichtsreiter), darunter ebenso nebeneinander der
+   Brennstoffverbrauch der Spitzenkessel | Betrieb. Es folgen die Hinweise auf
+   Platzhalter-Wirkungsgrade, die Kesseltabelle ueber die volle Breite, die zwei
+   Schalterzeilen und die Jahresganglinie; AM ENDE steht die Auslegung allein in
+   ihrer Rasterzeile - dieselbe Folge wie im Waermepumpenreiter. Die Zeilenfolge
+   innerhalb jeder Gruppe bleibt. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1.Zeichnung
@@ -97,9 +97,11 @@
 
         </div>
 
-        @* ZWEITE RASTERZEILE: der Brennstoffverbrauch der Spitzenkessel - unter
-           Waerme und Strom und nicht auf der Hoehe der Waerme, ueber die er
-           nichts sagt. *@
+        @* ZWEITE RASTERZEILE: Brennstoffverbrauch der Spitzenkessel links,
+           Betrieb rechts - dasselbe Raster wie Waerme | Strom. Beide Gruppen
+           stehen immer: Ohne sichtbaren Brennstoff zeigt die Brennstoffgruppe
+           ihren Leerhinweis statt zu verschwinden, die Betriebsgruppe hat keine
+           Bedingung. *@
         <div class="epos-simerg-spalten">
 
             <section class="epos-simerg-block">
@@ -107,8 +109,8 @@
                 @* LEERHINWEIS STATT LEEREM BALKEN (W11b‑B‑23) - dieselbe Meldung
                    in derselben Form wie im BHKW-Reiter. Sichtbar ist eine
                    Brennstoffzeile, wenn ihr Jahreswert > 0 ist ODER ein Kessel des
-                   Projekts diesen Brennstoff fuehrt; bleibt keine uebrig, stand
-                   hier bisher ein Balken ohne Inhalt. *@
+                   Projekts diesen Brennstoff fuehrt; bleibt keine uebrig, steht
+                   der Hinweis statt eines Balkens ohne Inhalt. *@
                 @if (SichtbareBrennstoffe == 0)
                 {
                     @* BH-1: dieselbe Trennung wie im BHKW-Reiter. „Kein Brennstoff
@@ -136,12 +138,9 @@
                 }
             </section>
 
-        </div>
-
-        @* DRITTE RASTERZEILE (#568): der Betrieb der Kessel - aus den Zählern der
-           Stundenbilanz (Laufstunden, Starts, betriebsbereite Stillstandsstunden,
-           Bereitschaftsverlust). *@
-        <div class="epos-simerg-spalten">
+            @* #568: der Betrieb der Kessel - aus den Zählern der Stundenbilanz
+               (Laufstunden, Starts, betriebsbereite Stillstandsstunden,
+               Bereitschaftsverlust). *@
             <section class="epos-simerg-block">
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_BETRIEB" />
                 <dl class="epos-simerg-werte">
@@ -183,6 +182,7 @@
                     }
                 </dl>
             </section>
+
         </div>
 
         @* #568: Ein Wirkungsgrad von genau 1,0 ist ein Platzhalter - der Brennstoffeinsatz
@@ -290,10 +290,9 @@
                      FarbeGewaehlt="FarbeUebernehmen"
                      FarbeZurueckgesetzt="FarbeVerwerfen" />
 
-        @* AM ENDE DES REITERS: die Auslegung (Anwenderwunsch 06.10.2026) - nach
-           Kennzahlen, Brennstoff, Betrieb, Kesseltabelle und der Jahresganglinie,
-           dieselbe Folge wie im Waermepumpenreiter. Die Gruppe steht allein in
-           ihrer Rasterzeile, wie der Betrieb. *@
+        @* AM ENDE DES REITERS: die Auslegung - nach Kennzahlen, Brennstoff |
+           Betrieb, Kesseltabelle und der Jahresganglinie, dieselbe Folge wie im
+           Waermepumpenreiter. Die Gruppe steht allein in ihrer Rasterzeile. *@
         <div class="epos-simerg-spalten">
             <section class="epos-simerg-block">
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
