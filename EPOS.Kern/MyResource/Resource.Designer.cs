@@ -13145,6 +13145,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Stromsteuer: hocheffizient {0}, räumlicher Zusammenhang {1} ähnelt.
+        /// </summary>
+        public static string BV_A1B_NACHWEIS_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("BV_A1B_NACHWEIS_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit ähnelt.
         /// </summary>
         public static string BV_AUFH_ART {

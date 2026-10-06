@@ -47478,5 +47478,9 @@ Chart</value>
   <data name="VF_STAND__TABELLE__GEBAEUDE" xml:space="preserve">
     <value>Die Gebäudetafel des laufenden Stands, ohne Abweichung: je Gebäude eine Gruppenzeile, darunter Rechenweg, Wärmebedarf, Spitzenlasten, auf dem VDI-Weg die Kühl- und Raumkennzahlen, die Lüftungs- und Aufheizzeilen und die Hinweise W1 bis W5; nur im Block {{#je stand}}.</value>
   </data>
+  <data name="BV_A1B_NACHWEIS_STROMSTEUER" xml:space="preserve">
+    <value> · Stromsteuer: hocheffizient {0}, räumlicher Zusammenhang {1}</value>
+    <comment>Stromsteuer-Vermerk der Nachweiszeile der Wirtschaftlichkeit; {0} hocheffizient, {1} räumlicher Zusammenhang (ja/nein klein).</comment>
+  </data>
 </root>
 
