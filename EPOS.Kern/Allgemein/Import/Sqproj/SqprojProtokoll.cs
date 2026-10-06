@@ -44,6 +44,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die wirksame Zonierung, nur eine vorhanden (E87): Zonierung, Zahl.</summary>
         internal const string ZONIERUNG_EINE = PRAEFIX + "ZONIERUNG_EINE";
 
+        /// <summary>Die Bauteiltabellen fehlen (BA-4b): Tabellen — es bleibt beim Stand ohne Aufbauten.</summary>
+        internal const string BAUTEILE_FEHLEN = PRAEFIX + "BAUTEILE_FEHLEN";
+        /// <summary>Die Bauteiltabellen sind nicht lesbar (BA-4b): Grund.</summary>
+        internal const string BAUTEILE_UNLESBAR = PRAEFIX + "BAUTEILE_UNLESBAR";
+        /// <summary>Gelesene Bauteile (BA-4b): Hüllflächen, Aufbauten, davon mit Schichten, Schichten.</summary>
+        internal const string BAUTEILE = PRAEFIX + "BAUTEILE";
+
         /// <summary>Der Belegtext je Zelle: Tabelle, Spalte, Profilnummer bzw. Profil.</summary>
         internal const string BELEG = "GIMP_BELEG_SQPROJ";
 

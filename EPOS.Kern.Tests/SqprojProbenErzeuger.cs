@@ -55,6 +55,61 @@ namespace EPOS.Kern.Tests
             ["PdProfileTaskSerialReference"] = new[] { "UUID", "ReferenceToUUID", "ReferenceClass" },
         };
 
+        /// <summary>
+        /// Die Bauteiltabellen (BA-4b) — nur geschrieben, wenn die Probe eine Bauteilzeile trägt (<see cref="MitBauteilen"/>);
+        /// sonst fehlen sie wie in einer Datei ohne Hülle.
+        /// </summary>
+        internal static readonly IReadOnlyDictionary<string, string[]> BAUTEIL_SPALTEN = new Dictionary<string, string[]>
+        {
+            ["BmElement"] = new[] { "UUID", "GId", "RepositoryLevel", "ElementType", "AdjacentType", "CatalogDimUUID", "UValue", "NetArea" },
+            ["BmElementReference"] = new[] { "UUID", "Id", "SortNum", "ReferenceFromUUID", "ReferenceToUUID", "ReferenceType" },
+            ["TcBuildingElementDimension"] = new[]
+            {
+                "UId", "ShortDesc", "LongDesc", "UValue", "Thickness", "InternalCoefficientOfHeatTransfer", "ExternalCoefficientOfHeatTransfer",
+            },
+            ["TcBuildingElementDimensionLayer"] = new[]
+            {
+                "UId", "DimensionUId", "SortNum", "ShortDesc", "LayerType", "MaterialType", "MaterialGroupType", "Thickness",
+                "ThermalConductivity", "Density", "HeatCapacity",
+            },
+        };
+
+        /// <summary>Der Platzhalter „nicht gesetzt“ der Projektdatei.</summary>
+        internal const double PLATZHALTER = -987654321.99;
+
+        /// <summary>Trägt die Probe Bauteiltabellen?</summary>
+        internal bool MitBauteilen { get; set; }
+
+        /// <summary>Eine Level-3-Hüllfläche (<c>BmElement</c>).</summary>
+        internal SqprojProbenErzeuger Huellflaeche(string uuid, string gid, int elementtyp, string aufbau, double? u, double? netto, int nachbarart = 1)
+        {
+            MitBauteilen = true;
+            return Zeile("BmElement", uuid, gid, 3, elementtyp, nachbarart, aufbau, u, netto);
+        }
+
+        /// <summary>Ein Raumbezug einer Hüllfläche (<c>BmElementReference</c>).</summary>
+        internal SqprojProbenErzeuger Bezug(string uuid, string raum, string flaeche, int rolle, int sort = 0)
+        {
+            MitBauteilen = true;
+            return Zeile("BmElementReference", uuid, 0, sort, raum, flaeche, rolle);
+        }
+
+        /// <summary>Ein Aufbau (<c>TcBuildingElementDimension</c>); Rsi/Rse als Widerstände wie in der Datei.</summary>
+        internal SqprojProbenErzeuger Aufbau(string uid, string name, double u, double rsi = 0.13, double rse = 0.04)
+        {
+            MitBauteilen = true;
+            return Zeile("TcBuildingElementDimension", uid, name, null, u, null, rsi, rse);
+        }
+
+        /// <summary>Eine Schicht (<c>TcBuildingElementDimensionLayer</c>); c in kJ/(kg·K) wie in der Datei.</summary>
+        internal SqprojProbenErzeuger Schicht(string uid, string aufbau, int sort, string name, double d, double lambda, double rho, double cKj,
+                                               bool daemmung = false)
+        {
+            MitBauteilen = true;
+            return Zeile("TcBuildingElementDimensionLayer", uid, aufbau, sort, name, daemmung ? 3 : 0, daemmung ? 1 : 0, daemmung ? 5 : 2,
+                         d, lambda, rho, cKj);
+        }
+
         /// <summary>Die Delphi-Nullzeit — „keine Angabe“.</summary>
         internal const string NULLZEIT = "1899-12-30 00:00:00";
 
@@ -153,7 +208,8 @@ namespace EPOS.Kern.Tests
                 c.Open();
                 using (SqliteTransaction t = c.BeginTransaction())
                 {
-                    foreach (KeyValuePair<string, string[]> tab in SPALTEN.Where(p => !_ohne.Contains(p.Key)))
+                    foreach (KeyValuePair<string, string[]> tab in SPALTEN.Concat(MitBauteilen ? BAUTEIL_SPALTEN : Enumerable.Empty<KeyValuePair<string, string[]>>())
+                                                                          .Where(p => !_ohne.Contains(p.Key)))
                     {
                         using (SqliteCommand k = c.CreateCommand())
                         {
@@ -175,7 +231,7 @@ namespace EPOS.Kern.Tests
 
         private static void Einfuegen(SqliteConnection c, SqliteTransaction t, string tabelle, object[] werte)
         {
-            string[] spalten = SPALTEN[tabelle];
+            string[] spalten = SPALTEN.TryGetValue(tabelle, out string[] sp) ? sp : BAUTEIL_SPALTEN[tabelle];
             using (SqliteCommand k = c.CreateCommand())
             {
                 k.Transaction = t;

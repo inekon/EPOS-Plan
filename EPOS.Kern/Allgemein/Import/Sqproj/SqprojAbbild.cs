@@ -107,6 +107,15 @@ namespace WindowsFormsApplication1
         internal int Abschnitte { get; set; }
 
         /// <summary>Der Raum zu einer Kennung; <c>null</c> = unbekannt.</summary>
+        /// <summary>Die raumbezogenen Hüllflächen (<c>BmElement</c> Level 3, BA-4b); leer ohne Bauteiltabellen.</summary>
+        internal List<SqprojHuellflaeche> Huellflaechen { get; } = new List<SqprojHuellflaeche>();
+
+        /// <summary>Der Aufbaukatalog der Datei (<c>TcBuildingElementDimension</c>, auch unbenutzte) nach Kennung (Normalform).</summary>
+        internal Dictionary<string, SqprojAufbau> Aufbauten { get; } = new Dictionary<string, SqprojAufbau>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Sind die vier Bauteiltabellen gelesen? Fehlen sie, bleibt es beim Stand ohne Aufbauten (benannt gemeldet).</summary>
+        internal bool BauteileGelesen { get; set; }
+
         internal SqprojRaum Raum(string uuid)
             => uuid == null ? null : Raeume.Find(r => string.Equals(r.Uuid, uuid, StringComparison.OrdinalIgnoreCase));
     }
