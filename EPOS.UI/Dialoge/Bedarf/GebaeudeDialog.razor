@@ -275,8 +275,9 @@
                 }
 
                 @* Stufe G3 (Welle D2): die Projektkopie samt Zonen und Bauteilen. Eine noch nicht
-                   gespeicherte Zeile hat keine Projektkopie - weich gesperrt, der Versuch nennt den
-                   Grund. Kein Delegat, kein Knopf. *@
+                   gespeicherte Zeile hat keine Projektkopie: Der Klick speichert die Projektliste
+                   zuerst still (ListeSpeichern, wie OK ohne Schliessen) und oeffnet dann den Editor;
+                   nur ohne diesen Weg (Assistent) weich gesperrt. Kein Delegat, kein Knopf. *@
                 @if (ProjektGaben is not null)
                 {
                     @if (_gewaehlt is null)
@@ -284,7 +285,7 @@
                         <button type="button" class="epos-knopf epos-gebaeude-projekt" aria-disabled="true" title="@SperreWahlProjekt"
                                 @onclick="() => Melden(SperreWahlProjekt, WarnStufe.Hinweis)">@BtnProjektText</button>
                     }
-                    else if (!_gewaehlt.HatProjektkopie)
+                    else if (!_gewaehlt.HatProjektkopie && ListeSpeichern is null)
                     {
                         <button type="button" class="epos-knopf epos-gebaeude-projekt" aria-disabled="true" title="@SperreNeueZeile"
                                 @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">@BtnProjektText</button>
@@ -297,7 +298,8 @@
                 }
 
                 @* Stufe G7a (Welle W3): der Gebaeudeexport im Format gbXML - aus der Projektkopie. Eine
-                   noch nicht gespeicherte Zeile hat keine: weich gesperrt, der Versuch nennt den Grund.
+                   noch nicht gespeicherte Zeile hat keine: Der Klick speichert die Liste zuerst still,
+                   ohne Speicherweg weich gesperrt.
                    Kein Delegat, kein Knopf (die Huelle reicht ihn nur bei angeschaltetem Schalter). *@
                 @if (ExportGaben is not null)
                 {
@@ -306,7 +308,7 @@
                         <button type="button" class="epos-knopf epos-gebaeude-export" aria-disabled="true" title="@SperreWahlExport"
                                 @onclick="() => Melden(SperreWahlExport, WarnStufe.Hinweis)">@BtnExportText</button>
                     }
-                    else if (!_gewaehlt.HatProjektkopie)
+                    else if (!_gewaehlt.HatProjektkopie && ListeSpeichern is null)
                     {
                         <button type="button" class="epos-knopf epos-gebaeude-export" aria-disabled="true" title="@SperreExport"
                                 @onclick="() => Melden(SperreExport, WarnStufe.Hinweis)">@BtnExportText</button>
@@ -1549,7 +1551,7 @@
     private void BeiProjekt()
     {
         if (_gewaehlt is null || ProjektGaben is null) return;
-        if (!_gewaehlt.HatProjektkopie) { Melden(SperreNeueZeile, WarnStufe.Hinweis); return; }
+        if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(SperreNeueZeile)) return;
         _meldung = "";
         _projektGaben = ProjektGaben(_gewaehlt);
         if (_projektGaben is null) Melden(SperreNeueZeile, WarnStufe.Hinweis);
@@ -1576,7 +1578,7 @@
     private void BeiExport()
     {
         if (_gewaehlt is null || ExportGaben is null) return;
-        if (!_gewaehlt.HatProjektkopie) { Melden(SperreExport, WarnStufe.Hinweis); return; }
+        if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(SperreExport)) return;
         _meldung = "";
         _exportGaben = ExportGaben(_gewaehlt, _geaenderteZeilen.Contains(_gewaehlt));
         if (_exportGaben is null) Melden(SperreExport, WarnStufe.Hinweis);
@@ -1778,6 +1780,19 @@
         _neulesenOffen = false;
         _neulesenStand = null;
         _neulesenGeschoss = null;
+    }
+
+    /// <summary>
+    /// Vor dem Öffnen einer ungespeicherten Zeile: still speichern; ohne Speicherweg die weiche
+    /// Sperre <paramref name="sperre"/>. <c>true</c>, wenn die Zeile danach ihre Projektkopie trägt.
+    /// </summary>
+    private bool VorherSpeichern(string sperre)
+    {
+        if (ListeSpeichern is null) { Melden(sperre, WarnStufe.Hinweis); return false; }
+        if (!StillSpeichern(amKatalog: false)) return false;
+        if (_gewaehlt is { HatProjektkopie: true }) return true;
+        Melden(sperre, WarnStufe.Hinweis);
+        return false;
     }
 
     /// <summary>
