@@ -46250,5 +46250,68 @@ chart</value>
   <data name="RNP_KI_ZONE_PROFIL_ERL" xml:space="preserve">
     <value>The usage profile last applied to the zone (a copied name, not a link to the catalogue); empty = none. It is applied via “Apply usage profile…” with a confirmation and saved with OK.</value>
   </data>
+  <data name="GANS_FARBMODUS" xml:space="preserve">
+    <value>Colour mode</value>
+  </data>
+  <data name="GANS_FARBMODUS_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GANS_FARBMODUS_RAND" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="GANS_RAND_OHNE_KLASSIFIKATION" xml:space="preserve">
+    <value>Boundary condition not available: this building has no classified solids from the file.</value>
+  </data>
+  <data name="GANS_RAND_ZU_GROSS" xml:space="preserve">
+    <value>Boundary condition not available: the solids exceed the triangle limit; the rooms are shown as prisms without groups.</value>
+  </data>
+  <data name="GANS_RAND_LEGENDE" xml:space="preserve">
+    <value>Surfaces by boundary condition</value>
+  </data>
+  <data name="GANS_RAND_FLAECHE" xml:space="preserve">
+    <value>{0} m²</value>
+  </data>
+  <data name="GANS_RAND_SCHALTER" xml:space="preserve">
+    <value>Show {0}</value>
+  </data>
+  <data name="GANS_RAND_NUR_LEGENDE" xml:space="preserve">
+    <value>legend and balance only</value>
+  </data>
+  <data name="GANS_RAND_R0" xml:space="preserve">
+    <value>interior, thermally neutral</value>
+  </data>
+  <data name="GANS_RAND_R1" xml:space="preserve">
+    <value>wall to outside</value>
+  </data>
+  <data name="GANS_RAND_R2" xml:space="preserve">
+    <value>wall to unheated</value>
+  </data>
+  <data name="GANS_RAND_R3" xml:space="preserve">
+    <value>wall or floor to ground</value>
+  </data>
+  <data name="GANS_RAND_R4" xml:space="preserve">
+    <value>floor to unheated or outside</value>
+  </data>
+  <data name="GANS_RAND_R5" xml:space="preserve">
+    <value>ceiling or roof to outside</value>
+  </data>
+  <data name="GANS_RAND_R6" xml:space="preserve">
+    <value>ceiling to unheated</value>
+  </data>
+  <data name="GANS_RAND_R7" xml:space="preserve">
+    <value>windows and doors</value>
+  </data>
+  <data name="GANS_RAND_BAUTEILKOERPER" xml:space="preserve">
+    <value>Component bodies</value>
+  </data>
+  <data name="GANS_RAND_KEINE" xml:space="preserve">
+    <value>no group</value>
+  </data>
+  <data name="GANS_RAND_TREFFER_RAUM" xml:space="preserve">
+    <value>Selected: room {0} — {1}</value>
+  </data>
+  <data name="GANS_RAND_TREFFER_BAUTEIL" xml:space="preserve">
+    <value>Selected: component {0} — {1}</value>
+  </data>
 </root>
 

@@ -25,6 +25,15 @@
 // ueber den Raycaster einen Koerper und meldet dem Baustein Zonenschluessel und Raumkennung
 // (rueckruf.invokeMethodAsync('ZoneGewaehlt', zone, raum)) - Kennungen, nie ein Name.
 //
+// FARBMODUS "randbedingung" (HottCAD-Verbund 4.3; daten.farbmodus). Jedes Dreieck eines Dateikoerpers traegt die Farbe
+// seiner Gruppe R0 bis R7 aus daten.randfarben (die EINE Farbtafel kommt aus GebaeudeAnsichtRandgruppen.FARBEN, hier steht
+// keine zweite); die Gruppenbytes stehen im dritten Teil des Bytefelds ab e.gruppenAb, ein Byte je Dreieck, 255 = entartet
+// (neutral grau wie ein Raum ohne Zone, nicht ausgelassen). R0 ist halbtransparent, die uebrigen Gruppen decken.
+// daten.randsichtbar blendet je Gruppe aus - an Raum- und Bauteilkoerpern. Die Bauteilkoerper (daten.bauteile, zweiter Teil
+// des Bytefelds) stehen nur in diesem Modus als eigene Netze in ihrer Gruppenfarbe da, abschaltbar ueber
+// daten.bauteilesichtbar. Prismen ohne Gruppen stehen neutral und ohne Platten da. Der Klick meldet zusaetzlich Gruppe und
+// Bauteilkennung. Im Modus "zonen" bleibt alles wie oben; der Rueckruf traegt dann Gruppe und Bauteil als null.
+//
 // DETERMINISTISCH. Keine Zufallsfarben, keine Animation: gezeichnet wird bei Aenderung (Kamera,
 // Groesse, Daten). Kann die Umgebung kein WebGL, wirft erzeugen() nicht, sondern gibt false zurueck -
 // der Baustein meldet das benannt statt eines leeren Bildes.
@@ -42,6 +51,13 @@ const PLATTENFARBE = {
     Tuer: 0xa47148, Dach: 0x8d7b68, Decke: 0xc9c5bc, Bodenplatte: 0x7a756c, Sonstiges: 0xcfcac0,
 };
 const DURCHSICHTIG = { Fenster: true, Vorhangfassade: true };
+
+/** Der Gruppenwert eines entarteten Dreiecks (GebaeudeAnsichtRandgruppen.KEINE). */
+const KEINE = 255;
+/** Die Zahl der Gruppen R0 bis R7. */
+const GRUPPEN = 8;
+/** Die Deckung von R0: die Huelle bleibt von aussen und innen lesbar. */
+const R0_DECKUNG = 0.28;
 
 let zustand = null;
 
@@ -65,6 +81,94 @@ function entsorgeGruppe(gruppe) {
         if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => m.dispose());
     });
     gruppe.clear();
+}
+
+/** Ist der Farbmodus "randbedingung" gewaehlt? */
+function imRandmodus(daten) { return daten.farbmodus === 'randbedingung'; }
+
+/** Ist die Gruppe eingeblendet? Ohne Schalter oder fuer entartete Dreiecke (255) immer. */
+function gruppeSichtbar(daten, gruppe) {
+    if (gruppe < 0 || gruppe >= GRUPPEN) return true;
+    const s = daten.randsichtbar;
+    return !Array.isArray(s) || s[gruppe] !== false;
+}
+
+/**
+ * Ordnet die Dreiecke eines Netzes nach ihrer Gruppe (reine Funktion, ohne three.js - der node-Lauf prueft sie).
+ * dreiecke: Indextripel (Int32Array/Uint32Array), gruppen: ein Byte je Dreieck oder null, sichtbar: (gruppe) => bool.
+ * Gibt den umsortierten Index (Uint32Array), je vorkommender und sichtbarer Gruppe einen Abschnitt {gruppe, ab, zahl}
+ * (ab und zahl in Indizes, aufsteigend nach Gruppe, 255 zuletzt) und je umsortiertem Dreieck seine Gruppe zurueck.
+ * Ausgeblendete Gruppen fallen ganz heraus - so trifft sie auch der Klick nicht. Ohne Gruppenbytes ist jedes Dreieck 255.
+ */
+export function randaufbau(dreiecke, gruppen, sichtbar) {
+    const zahl = Math.floor(dreiecke.length / 3);
+    const je = new Uint32Array(256);
+    const gruppeVon = i => (gruppen && i < gruppen.length ? gruppen[i] : KEINE);
+    for (let i = 0; i < zahl; i++) je[gruppeVon(i)]++;
+    // Reihenfolge: R0 bis R7, dann alle uebrigen Werte (255 = entartet) - eine feste, deterministische Folge.
+    const start = new Int32Array(256).fill(-1);
+    let summe = 0;
+    const abschnitte = [];
+    for (let g = 0; g < 256; g++) {
+        if (je[g] === 0 || !sichtbar(g)) continue;
+        start[g] = summe;
+        abschnitte.push({ gruppe: g, ab: summe * 3, zahl: je[g] * 3 });
+        summe += je[g];
+    }
+    const index = new Uint32Array(summe * 3);
+    const dreieckGruppe = new Uint8Array(summe);
+    const stelle = start.slice();
+    for (let i = 0; i < zahl; i++) {
+        const g = gruppeVon(i);
+        const d = stelle[g];
+        if (d < 0) continue;
+        stelle[g]++;
+        index[d * 3] = dreiecke[i * 3];
+        index[d * 3 + 1] = dreiecke[i * 3 + 1];
+        index[d * 3 + 2] = dreiecke[i * 3 + 2];
+        dreieckGruppe[d] = g;
+    }
+    return { index, abschnitte, dreieckGruppe };
+}
+
+/**
+ * Das Material einer Gruppe, je Szene einmal (alle Netze derselben Gruppe teilen es; entsorgeGruppe gibt es frei).
+ * Warum Geometriegruppen mit eigenem Material und kein Farbattribut je Ecke: R0 braucht ein durchscheinendes Material
+ * OHNE depthWrite (sonst verdeckt die Huelle, was dahinter liegt, je nach Zeichenfolge - sie flackert), die uebrigen
+ * Gruppen ein deckendes MIT depthWrite. Ein Farbattribut trueg nur ein Material je Netz; Transparenz je Dreieck hiesse
+ * alle Dreiecke durchscheinend zu sortieren. Gruppen trennen das sauber, Ausblenden ist ein fehlender Abschnitt, und der
+ * Index bleibt geteilt (keine verdreifachten Ecken).
+ */
+function randmaterial(daten, gruppe, bauteil) {
+    const z = zustand;
+    const schluessel = gruppe + (bauteil ? '|b' : '|r');
+    let m = z.randmaterial.get(schluessel);
+    if (m) return m;
+    const tafel = Array.isArray(daten.randfarben) ? daten.randfarben : [];
+    const farbwert = gruppe >= 0 && gruppe < GRUPPEN && tafel[gruppe] ? tafel[gruppe] : farbe(z.canvas, -1);
+    const r0 = gruppe === 0;
+    m = new THREE.MeshLambertMaterial({
+        color: new THREE.Color(farbwert), side: THREE.DoubleSide, flatShading: true,
+        transparent: r0, opacity: r0 ? R0_DECKUNG : 1, depthWrite: !r0,
+        // Bauteilkoerper liegen an den Raumflaechen an: leicht nach hinten versetzt, damit die Raumflaeche vorn bleibt.
+        polygonOffset: bauteil, polygonOffsetFactor: bauteil ? 1 : 0, polygonOffsetUnits: bauteil ? 1 : 0,
+    });
+    z.randmaterial.set(schluessel, m);
+    return m;
+}
+
+/** Baut aus Lage und Aufbau eine Geometrie mit je Gruppe einem Abschnitt und dem passenden Material. */
+function randgeometrie(position, aufbau, daten, bauteil) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', position);
+    g.setIndex(new THREE.BufferAttribute(aufbau.index, 1));
+    const materialien = [];
+    aufbau.abschnitte.forEach((a, i) => {
+        g.addGroup(a.ab, a.zahl, i);
+        materialien.push(randmaterial(daten, a.gruppe, bauteil));
+    });
+    g.computeVertexNormals();
+    return { geometrie: g, materialien };
 }
 
 /** Ein Viereck als Platte: zwei Dreiecke aus vier Punkten. */
@@ -95,10 +199,11 @@ function deckflaeche(punkte, z, material) {
 }
 
 /** Ein Prisma aus dem Umriss: je Polygon extrudiert, Kanten, mit Platten nur im Exportmodell. */
-function prisma(k, ziel, mitPlatten, box) {
+function prisma(k, ziel, mitPlatten, box, rand) {
     const z = zustand;
     const zielzone = ziel !== null && k.zone === ziel;
-    const grundfarbe = new THREE.Color(farbe(z.canvas, k.stelle));
+    // Im Randmodus kennt ein Prisma keine Gruppen: neutral grau wie ein Raum ohne Zone.
+    const grundfarbe = new THREE.Color(farbe(z.canvas, rand ? -1 : k.stelle));
     const material = new THREE.MeshLambertMaterial({
         color: grundfarbe, transparent: true, opacity: k.schematisch ? 0.45 : 0.8,
         side: THREE.DoubleSide, depthWrite: !k.schematisch,
@@ -114,7 +219,7 @@ function prisma(k, ziel, mitPlatten, box) {
         g.rotateX(-Math.PI / 2);
         g.translate(0, k.unterkante, 0);
         const mesh = new THREE.Mesh(g, material);
-        mesh.userData = { zone: k.zone ?? null, raum: k.raum };
+        mesh.userData = { zone: k.zone ?? null, raum: k.raum, gruppen: null, bauteil: null };
         z.gruppe.add(mesh);
         z.koerper.push(mesh);
 
@@ -153,8 +258,9 @@ function abschnitt(feld, ab, zahl, Art) {
 }
 
 /** Der Dateikoerper eines Raums: Netz relativ zum Bezugspunkt, Mesh am Bezugspunkt, Randkanten als Linien. */
-function dateinetz(e, feld, bezug, ziel, box) {
+function dateinetz(e, feld, bezug, ziel, box, daten) {
     const z = zustand;
+    const rand = imRandmodus(daten);
     const roh = abschnitt(feld, e.punkteAb, e.punktZahl * 3, Float32Array);
     // Achsen wie v3: (x, y, z) -> (x, z, -y); eine Drehung, der Umlauf der Dreiecke bleibt.
     const lage = new Float32Array(roh.length);
@@ -164,18 +270,33 @@ function dateinetz(e, feld, bezug, ziel, box) {
         lage[i + 2] = -roh[i + 1];
     }
     const position = new THREE.BufferAttribute(lage, 3);
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', position);
-    g.setIndex(new THREE.BufferAttribute(new Uint32Array(abschnitt(feld, e.dreieckeAb, e.dreieckZahl * 3, Int32Array)), 1));
-    g.computeVertexNormals();
-    const material = new THREE.MeshLambertMaterial({
-        color: new THREE.Color(farbe(z.canvas, e.stelle)), transparent: true, opacity: 0.8,
-        side: THREE.DoubleSide, flatShading: true,
-    });
+    const dreiecke = abschnitt(feld, e.dreieckeAb, e.dreieckZahl * 3, Int32Array);
+    const bauteil = e.bauteil ?? null;
     const ort = v3(bezug[0], bezug[1], bezug[2]);
-    const mesh = new THREE.Mesh(g, material);
+    let g, mesh;
+    if (rand) {
+        // Gruppen je Dreieck: Raeume aus dem dritten Teil des Felds, ein Bauteilkoerper traegt seine eine Gruppe.
+        let gruppen = null;
+        if (bauteil !== null) gruppen = new Uint8Array(e.dreieckZahl).fill(e.gruppe);
+        else if (Number.isInteger(e.gruppenAb) && e.gruppenAb >= 0) gruppen = feld.slice(e.gruppenAb, e.gruppenAb + e.dreieckZahl);
+        const aufbau = randaufbau(dreiecke, gruppen, gr => gruppeSichtbar(daten, gr));
+        const netz = randgeometrie(position, aufbau, daten, bauteil !== null);
+        g = netz.geometrie;
+        mesh = new THREE.Mesh(g, netz.materialien);
+        mesh.userData = { zone: e.zone ?? null, raum: e.raum ?? null, gruppen: aufbau.dreieckGruppe, bauteil };
+    } else {
+        g = new THREE.BufferGeometry();
+        g.setAttribute('position', position);
+        g.setIndex(new THREE.BufferAttribute(new Uint32Array(dreiecke), 1));
+        g.computeVertexNormals();
+        const material = new THREE.MeshLambertMaterial({
+            color: new THREE.Color(farbe(z.canvas, e.stelle)), transparent: true, opacity: 0.8,
+            side: THREE.DoubleSide, flatShading: true,
+        });
+        mesh = new THREE.Mesh(g, material);
+        mesh.userData = { zone: e.zone ?? null, raum: e.raum, gruppen: null, bauteil: null };
+    }
     mesh.position.copy(ort);
-    mesh.userData = { zone: e.zone ?? null, raum: e.raum };
     z.gruppe.add(mesh);
     z.koerper.push(mesh);
 
@@ -196,14 +317,23 @@ function bauen(daten, feld) {
     const z = zustand;
     entsorgeGruppe(z.gruppe);
     z.koerper = [];
+    z.randmaterial = new Map();
     const box = new THREE.Box3();
     const ziel = daten.ziel ?? null;
     const dateimodus = daten.modus === 'dateikoerper';
 
-    for (const k of daten.koerper ?? []) prisma(k, ziel, !dateimodus, box);
+    const rand = imRandmodus(daten);
+    for (const k of daten.koerper ?? []) prisma(k, ziel, !dateimodus && !rand, box, rand);
     if (dateimodus && feld) {
         const bezug = daten.bezugspunkt ?? [0, 0, 0];
-        for (const e of daten.dateikoerper ?? []) dateinetz(e, feld, bezug, ziel, box);
+        for (const e of daten.dateikoerper ?? []) dateinetz(e, feld, bezug, ziel, box, daten);
+        // Die Bauteilkoerper nur im Randmodus, nur mit Schalter und nur, wo ihre Gruppe eingeblendet ist.
+        if (rand && daten.bauteilesichtbar !== false) {
+            for (const b of daten.bauteile ?? []) {
+                if (!gruppeSichtbar(daten, b.gruppe) || !(b.dreieckZahl > 0)) continue;
+                dateinetz({ ...b, raum: null, zone: null }, feld, bezug, ziel, box, daten);
+            }
+        }
     }
     if (box.isEmpty()) box.set(new THREE.Vector3(-5, 0, -5), new THREE.Vector3(5, 3, 5));
 
@@ -264,8 +394,22 @@ function beiZeigerOben(e) {
     z.strahl.setFromCamera(zeiger, z.kamera);
     const treffer = z.strahl.intersectObjects(z.koerper, false);
     if (treffer.length === 0) return;
-    const d = treffer[0].object.userData;
-    z.rueckruf.invokeMethodAsync('ZoneGewaehlt', d.zone, d.raum).catch(() => { });
+    const t = trefferWahl(treffer);
+    const d = t.object.userData;
+    const gruppe = d.gruppen && t.faceIndex !== undefined && t.faceIndex < d.gruppen.length ? d.gruppen[t.faceIndex] : null;
+    z.rueckruf.invokeMethodAsync('ZoneGewaehlt', d.zone ?? null, d.raum ?? null, gruppe, d.bauteil ?? null).catch(() => { });
+}
+
+/**
+ * Der gemeinte Treffer: der vorderste, der nicht in der durchscheinenden R0 liegt - durch sie hindurch sieht der Anwender,
+ * was er anklickt; trifft der Strahl nur R0, die vorderste R0-Flaeche.
+ */
+export function trefferWahl(treffer) {
+    for (const t of treffer) {
+        const g = t.object.userData.gruppen;
+        if (!g || t.faceIndex === undefined || g[t.faceIndex] !== 0) return t;
+    }
+    return treffer[0];
 }
 
 /** Ist WebGL in dieser Umgebung verfuegbar? */
@@ -304,7 +448,7 @@ export function erzeugen(canvas, daten, rueckruf, feld) {
 
     zustand = {
         canvas, renderer, szene, gruppe, kamera: kam, steuerung, rueckruf,
-        strahl: new THREE.Raycaster(), koerper: [], unten: null, beobachter: null,
+        strahl: new THREE.Raycaster(), koerper: [], unten: null, beobachter: null, randmaterial: new Map(),
     };
     steuerung.addEventListener('change', zeichnen);
     canvas.addEventListener('pointerdown', beiZeigerUnten);
@@ -329,6 +473,28 @@ export function aktualisieren(daten, feld) {
     bauen(daten || {}, feld || null);
     zeichnen();
     return true;
+}
+
+/**
+ * Pruefhilfe fuer Proben: was die Szene gerade traegt - je Koerpernetz Raum, Bauteil und je Abschnitt Gruppe, Indexzahl und
+ * Deckung, dazu die Geometrien und Programme, die der Renderer haelt (Lecks bei wiederholtem aktualisieren). Ohne Szene null.
+ */
+export function stand() {
+    const z = zustand;
+    if (!z) return null;
+    const netze = z.koerper.map(m => ({
+        raum: m.userData.raum ?? null,
+        bauteil: m.userData.bauteil ?? null,
+        abschnitte: Array.isArray(m.material)
+            ? m.geometry.groups.map(g => ({
+                gruppe: m.userData.gruppen && g.count > 0 ? m.userData.gruppen[g.start / 3] : null,
+                zahl: g.count, deckung: m.material[g.materialIndex].opacity,
+                tiefe: m.material[g.materialIndex].depthWrite, farbe: '#' + m.material[g.materialIndex].color.getHexString(),
+            }))
+            : [{ gruppe: null, zahl: m.geometry.index ? m.geometry.index.count : 0, deckung: m.material.opacity,
+                tiefe: m.material.depthWrite, farbe: '#' + m.material.color.getHexString() }],
+    }));
+    return { netze, geometrien: z.renderer.info.memory.geometries, programme: (z.renderer.info.programs || []).length };
 }
 
 /** Gibt Renderer, Geometrien und Ereignisse frei; mehrfach aufrufbar. */

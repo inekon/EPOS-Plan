@@ -5789,11 +5789,54 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     color: var(--epos-text-leise);
 }
 
+/* Farbmodus "Randbedingung" (HottCAD-Verbund 4.3): Die Farben der Gruppen R0 bis R7 stehen einmal in
+   GebaeudeAnsichtRandgruppen.FARBEN und kommen als Attribut ins SVG; hier stehen nur Strichbreiten,
+   Abstaende und der Zustand der Schalter. */
+.epos-gebansicht-farbmodus {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.epos-gebansicht-kante,
+.epos-gebansicht-oeffnung {
+    stroke-linecap: butt;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+}
+
+.epos-gebansicht-kante {
+    stroke-width: 4px;
+}
+
+.epos-gebansicht-oeffnung {
+    stroke-width: 8px;
+}
+
+.epos-gebansicht-randschalter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-gebansicht-randschalter[aria-pressed="false"] {
+    opacity: 0.45;
+}
+
+.epos-gebansicht-randschalter[aria-pressed="false"] .epos-gebansicht-zonenname {
+    text-decoration: line-through;
+}
+
+.epos-gebansicht-randflaeche {
+    color: var(--epos-text-leise);
+    font-variant-numeric: tabular-nums;
+}
+
 @media (forced-colors: active) {
     .epos-gebansicht-raum polygon { fill: Canvas; stroke: CanvasText; }
     .epos-gebansicht-raum:focus-visible polygon { stroke: Highlight; }
     .epos-gebansicht-raum text { fill: CanvasText; }
     .epos-gebansicht-farbfeld { background: Canvas; border-color: CanvasText; }
+    .epos-gebansicht-kante, .epos-gebansicht-oeffnung { stroke: CanvasText; }
 }
 
 /* Die Andockung im Zuordnungsdialog: Zonenliste und Grundriss nebeneinander, im schmalen Fenster

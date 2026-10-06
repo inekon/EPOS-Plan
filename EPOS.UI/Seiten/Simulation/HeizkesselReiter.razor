@@ -31,16 +31,14 @@
    ABGEWAEHLT heisst KEINE Reihe und nicht „alle" - die Huelle zeichnet dann den
    Leerhinweis des Renderers.
 
-   KENNZAHLEN IN VIER GRUPPEN (Anwenderwunsch 09.09.2026, W11b‑B‑22). Bis
-   dahin standen „Waerme", „Strom" und „Auslegung" als h3-Unterabschnitte
-   UNTEREINANDER in EINER Spalte, und der Brennstoffblock lag als einzige
-   Gruppe mit dunklem Balken oben rechts daneben - drei Ueberschriftenarten in
-   einem Block, und die zwei Kategorien, die der Reiterstapel sonst ueberall
-   nebeneinander stellt, hintereinander. Jetzt sind es VIER gleichrangige
-   Hauptgruppen mit dunklem Balken in ZWEI Rasterzeilen: oben Waerme | Strom
-   (wie im Bedarfs- und im Uebersichtsreiter), darunter Auslegung |
-   Brennstoffverbrauch der Spitzenkessel. Keine Zahl faellt weg, keine
-   Reihenfolge innerhalb einer Gruppe aendert sich. *@
+   DIE REIHENFOLGE DES REITERS. Die Kennzahlen stehen in gleichrangigen
+   Hauptgruppen mit dunklem Balken: oben Waerme | Strom nebeneinander (wie im
+   Bedarfs- und im Uebersichtsreiter), darunter in je eigener Rasterzeile der
+   Brennstoffverbrauch der Spitzenkessel und der Betrieb. Es folgen die
+   Kesseltabelle ueber die volle Breite, die zwei Schalterzeilen und die
+   Jahresganglinie; AM ENDE steht die Auslegung (Anwenderwunsch 06.10.2026) -
+   dieselbe Folge wie im Waermepumpenreiter. Die Zeilenfolge innerhalb jeder
+   Gruppe bleibt. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1.Zeichnung
@@ -99,19 +97,10 @@
 
         </div>
 
-        @* ZWEITE RASTERZEILE: die zwei uebrigen Gruppen. Der Brennstoffblock
-           stand vorher OBEN RECHTS neben der Kennzahlenliste und damit auf der
-           Hoehe der Waerme, ueber die er nichts sagt. *@
+        @* ZWEITE RASTERZEILE: der Brennstoffverbrauch der Spitzenkessel - unter
+           Waerme und Strom und nicht auf der Hoehe der Waerme, ueber die er
+           nichts sagt. *@
         <div class="epos-simerg-spalten">
-
-            <section class="epos-simerg-block">
-                <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
-                <dl class="epos-simerg-werte">
-                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_KESSEL, Zahl(Daten.MaxKesselleistungKw), "kW")
-                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW",
-                               hinweis: Resource.SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS)
-                </dl>
-            </section>
 
             <section class="epos-simerg-block">
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_BRENNSTOFF_SPK" />
@@ -300,6 +289,21 @@
                      FarbwahlErlaubt="@Farbwahl"
                      FarbeGewaehlt="FarbeUebernehmen"
                      FarbeZurueckgesetzt="FarbeVerwerfen" />
+
+        @* AM ENDE DES REITERS: die Auslegung (Anwenderwunsch 06.10.2026) - nach
+           Kennzahlen, Brennstoff, Betrieb, Kesseltabelle und der Jahresganglinie,
+           dieselbe Folge wie im Waermepumpenreiter. Die Gruppe steht allein in
+           ihrer Rasterzeile, wie der Betrieb. *@
+        <div class="epos-simerg-spalten">
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_KESSEL, Zahl(Daten.MaxKesselleistungKw), "kW")
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW",
+                               hinweis: Resource.SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS)
+                </dl>
+            </section>
+        </div>
 
         @if (Csv.HasDelegate)
         {

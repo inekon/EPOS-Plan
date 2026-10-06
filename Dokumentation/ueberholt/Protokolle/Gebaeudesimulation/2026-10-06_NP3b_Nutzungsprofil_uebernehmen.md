@@ -28,7 +28,7 @@ Kein Schemaschritt, keine neue Basis (R38 bleibt). Anwenderentscheid 06.10.2026:
 
 ## 5 Nachweise
 
-Gate auf `74d2337a`, alles grün: Kern-Filter rc=0; ChartProben grün, 211 Hashes gleich mit `Messlatte_2026-10-05.sha256`; KiKern 549/549, SpeicherEngine 397/397, SpeicherPlanung 27/28 (1 übersprungen), EPOS.UI.Tests 7575/7575, EPOS.Kern.Tests 11233/11236 (3 übersprungen); Dokumentationswachen 35/35; Referenzlauf 21/21 gegen R38: GESAMT PASS (6 872 111 Werte), CSV byte-gleich 646/646; gestörter Lauf PASS; Windows-Schale rc=0; Designer 15 274 Einträge unverändert, wiederholbar; SqlDialektPruefer 2 434 Texte, 0 Fundstellen; Werkzeugtests Formularkarte 124, Auslieferungsvorlage 49, Gebaeudevergleich 24, ZapfprofilValidierung 39; BOM in Markdown nur die zwei Bestandsfunde (seit 26.09.); Konfliktmarker keine. Die Statuszeile ist #746 der Statusdatei.
+Gate auf `74d2337a`, alles grün: Kern-Filter rc=0; ChartProben grün, 211 Hashes gleich mit `Messlatte_2026-10-05.sha256`; KiKern 549/549, SpeicherEngine 397/397, SpeicherPlanung 27/28 (1 übersprungen), EPOS.UI.Tests 7575/7575, EPOS.Kern.Tests 11233/11236 (3 übersprungen); Dokumentationswachen 35/35; Referenzlauf 21/21 gegen R38: GESAMT PASS (6 872 111 Werte), CSV byte-gleich 646/646; gestörter Lauf PASS; Windows-Schale rc=0; Designer 15 274 Einträge unverändert, wiederholbar; SqlDialektPruefer 2 434 Texte, 0 Fundstellen; Werkzeugtests Formularkarte 124, Auslieferungsvorlage 49, Gebaeudevergleich 24, ZapfprofilValidierung 39; BOM in Markdown nur die zwei Bestandsfunde (seit 26.09.); Konfliktmarker keine. Die Statuszeile ist #748 der Statusdatei.
 
 ## 6 Offenes
 
