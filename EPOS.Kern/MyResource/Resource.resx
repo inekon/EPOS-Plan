@@ -14734,6 +14734,9 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
     <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen.</value>
   </data>
+  <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
+    <value>Erst nach Abschluss des Assistenten löschbar – eine übernommene Zeile stammt aus diesem Gebäude.</value>
+  </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>aus Projekt {0}, {1}</value>
   </data>

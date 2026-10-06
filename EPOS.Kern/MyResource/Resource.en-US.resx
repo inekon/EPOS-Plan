@@ -14727,6 +14727,9 @@ Please check all entries!</value>
   <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
     <value>The building has not been saved in the project yet – it can be saved to the database after OK.</value>
   </data>
+  <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
+    <value>Can be deleted only after the wizard has finished – a row taken over into the project comes from this building.</value>
+  </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>from project {0}, {1}</value>
   </data>

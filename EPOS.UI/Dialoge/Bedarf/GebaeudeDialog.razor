@@ -199,12 +199,12 @@
                 }
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
-                @if (_loeschsperre.Length > 0)
+                @if (LoeschsperreAnzeige.Length > 0)
                 {
-                    @* Der Grund am Bedienelement: gesperrt (Auslieferungssatz), der Versuch
-                       meldet ihn unter der Leiste. *@
+                    @* Der Grund am Bedienelement: gesperrt (Auslieferungssatz, im Assistenten auch
+                       der Satz einer ungespeicherten Zeile), der Versuch meldet ihn unter der Leiste. *@
                     <button type="button" class="epos-knopf epos-gebaeude-db-loeschen"
-                            aria-disabled="true" title="@_loeschsperre"
+                            aria-disabled="true" title="@LoeschsperreAnzeige"
                             @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
                 }
                 else
@@ -759,6 +759,9 @@
 
     /// <summary>Grund der weichen Sperre bei einer noch nicht gespeicherten Zeile — <c>GEB_SPERRE_IN_DB_NEUE_ZEILE</c>.</summary>
     [Parameter] public string SperreInDb { get; set; } = Resource.GEB_SPERRE_IN_DB_NEUE_ZEILE;
+
+    /// <summary>Grund der Löschsperre im Assistenten — <c>GEB_SPERRE_LOESCHEN_ASSISTENT</c>.</summary>
+    [Parameter] public string SperreLoeschenAssistent { get; set; } = Resource.GEB_SPERRE_LOESCHEN_ASSISTENT;
 
     [Parameter] public bool Wizard { get; set; }
 
@@ -1680,6 +1683,8 @@
         string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
         _loeschsperre = sperre;
         if (sperre.Length > 0) { Melden(sperre, WarnStufe.Warnung, amKatalog: true); return; }
+        string assistentsperre = AssistentLoeschsperre();
+        if (assistentsperre.Length > 0) { Melden(assistentsperre, WarnStufe.Hinweis, amKatalog: true); return; }
 
         _loeschhinweis = KatalogLoeschhinweis?.Invoke(_katalogzeile.Bezeichner) ?? "";
         _meldung = "";
@@ -1820,6 +1825,24 @@
         _meldung = text ?? "";
         _meldungStufe = stufe;
         _meldungAmKatalog = amKatalog;
+    }
+
+    /// <summary>
+    /// Der Sperrgrund am Knopf „Gebäude in DB löschen": zuerst der des Katalogs (Auslieferungssatz),
+    /// sonst der des Assistenten (<see cref="AssistentLoeschsperre"/>); leer = löschbar.
+    /// </summary>
+    private string LoeschsperreAnzeige => _loeschsperre.Length > 0 ? _loeschsperre : AssistentLoeschsperre();
+
+    /// <summary>
+    /// Anwenderentscheid 06.10.2026: Im Assistenten (kein stiller Speicherweg, gespeichert wird erst
+    /// an seinem Ende) ist ein Katalogsatz gesperrt, aus dem eine ungespeicherte Projektzeile stammt —
+    /// sonst fände das spätere Speichern den Satz nicht mehr. Andere Sätze bleiben löschbar.
+    /// </summary>
+    private string AssistentLoeschsperre()
+    {
+        if (ListeSpeichern is not null || _katalogzeile is null) return "";
+        int satz = _katalogzeile.Id;
+        return Zeilen.Any(z => !z.HatProjektkopie && z.IdKatalog == satz) ? SperreLoeschenAssistent : "";
     }
 
     /// <summary>Liest den Löschsperrgrund des markierten Katalogsatzes neu.</summary>

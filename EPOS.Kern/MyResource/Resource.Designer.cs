@@ -30295,6 +30295,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst nach Abschluss des Assistenten löschbar – eine übernommene Zeile stammt aus diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_LOESCHEN_ASSISTENT {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_LOESCHEN_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – exportiert wird die Kopie im Projekt. ähnelt.
         /// </summary>
         public static string GEB_SPERRE_WAHL_EXPORT {

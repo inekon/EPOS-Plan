@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using Xunit;
+using R = WindowsFormsApplication1.MyResource.Resource;
 
 namespace EPOS.UI.Tests.Dialoge;
 
@@ -912,6 +913,57 @@ public class GebaeudeDialogTests : EposBunitContext
 
         Assert.Equal(0, gespeichert);
         Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Anwenderentscheid 06.10.2026: Im Assistenten (kein stiller Speicherweg) ist der Satz einer
+    /// ungespeicherten Zeile weich gesperrt — Grund am Knopf, der Klick meldet ihn unter der
+    /// Katalogleiste, es wird weder gefragt noch gelöscht.
+    /// </summary>
+    [Fact]
+    public void Im_Assistenten_ist_der_Satz_einer_ungespeicherten_Zeile_gesperrt()
+    {
+        int geloescht = 0;
+        GebaeudeProjektZeile neu = Zeile(100000, "Haus 2010");
+        neu.IdKatalog = 2;
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { neu }, wizard: true,
+                           katalogLoeschen: _ => { geloescht++; return true; },
+                           katalogLoeschsperre: _ => "", katalogLoeschhinweis: _ => "");
+
+        KatalogWaehlen(cut, "Haus 2010");
+        var knopf = Knopf(cut, "Gebäude in DB löschen");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(R.GEB_SPERRE_LOESCHEN_ASSISTENT, knopf.GetAttribute("title"));
+        Assert.Contains("Assistenten", R.GEB_SPERRE_LOESCHEN_ASSISTENT);
+
+        knopf.Click();
+        Assert.Equal(R.GEB_SPERRE_LOESCHEN_ASSISTENT, cut.Instance.Meldung);
+        Assert.True(cut.Instance.MeldungAmKatalog);
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Ja");   // keine Rückfrage
+        Assert.Equal(0, geloescht);
+    }
+
+    /// <summary>
+    /// Eine ungespeicherte Zeile sperrt im Assistenten nur IHREN Satz: Ein anderer Satz bleibt löschbar
+    /// (gesperrt sind sonst nur Auslieferungssätze).
+    /// </summary>
+    [Fact]
+    public void Im_Assistenten_bleiben_andere_Saetze_loeschbar()
+    {
+        var geloescht = new List<string>();
+        GebaeudeProjektZeile neu = Zeile(100000, "Haus 2010");
+        neu.IdKatalog = 2;
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { neu }, wizard: true,
+                           katalogLoeschen: n => { geloescht.Add(n); return true; },
+                           katalogLoeschsperre: _ => "", katalogLoeschhinweis: _ => "");
+
+        KatalogWaehlen(cut, "Haus 1990");
+        var knopf = Knopf(cut, "Gebäude in DB löschen");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+        Knopf(cut, "Ja").Click();
+        Assert.Equal(new[] { "Haus 1990" }, geloescht);
+        Assert.Equal(2, neu.IdKatalog);
     }
 
     /// <summary>Ohne Projekt, das den Satz führt, bleibt die Rückfrage die alte — ohne Zusatz.</summary>
