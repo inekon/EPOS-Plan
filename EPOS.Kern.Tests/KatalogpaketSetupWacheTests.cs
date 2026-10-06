@@ -71,7 +71,17 @@ namespace EPOS.Kern.Tests
             Assert.True(loeschen < werkzeuglauf, "Das alte Katalogpaket muss VOR dem Werkzeuglauf geloescht werden.");
             Assert.True(durchreichen < werkzeuglauf, "--katalogfassung muss in die Argumente des Werkzeuglaufs.");
 
+            // Benannte Ausnahmen vom Abbruch bei leerem Paketteil (E2): je Katalog ein --ohne-paket.
+            Assert.Matches(new Regex(@"^\s*\[string\[\]\] \$OhnePaket,", RegexOptions.Multiline), ps);
+            int ausnahmen = Stelle(ps, "$vorlageArgs += '--ohne-paket'; $vorlageArgs += $katalog.Trim()");
+            Assert.True(ausnahmen < werkzeuglauf, "--ohne-paket muss in die Argumente des Werkzeuglaufs.");
+            Assert.True(ps.LastIndexOf("foreach ($eintrag in @($OhnePaket))", ausnahmen, StringComparison.Ordinal) >= 0,
+                        "Die Ausnahmen kommen aus -OhnePaket.");
+
             string danach = ps.Substring(werkzeuglauf);
+            // Die eigenen Rueckgabecodes des Werkzeugs haben je eine Meldung (Setup/Vorlage/LIESMICH.md).
+            foreach (int code in new[] { 4, 6, 7, 8 })
+                Assert.Contains("if ($LASTEXITCODE -eq " + code.ToString(CultureInfo.InvariantCulture) + ") {", danach);
             Assert.Contains("if (-not (Test-Path $Katalogpaket))", danach);
             Assert.Contains("$paketKopf.Fassung -ne $KatalogfassungWert", danach);
             int trocken = Stelle(danach, "Trockenlauf ohne vorhandenes Katalogpaket");
@@ -128,12 +138,17 @@ namespace EPOS.Kern.Tests
             Assert.Matches(new Regex(@"if \(\$Probe -or \$VorlageNurPruefen\) \{[^}]*\}\s*else \{\s*KatalogfassungGegenRegister \$KatalogfassungWert \$RegisterFassungen \$Heute",
                                      RegexOptions.Singleline), ps);
 
-            // Eingetragen wird erst nach ISCC und Signieren und nie im Probe- oder Trockenlauf.
+            // Eingetragen wird nur mit -Freigabe, erst nach ISCC und Signieren und nie im Probe- oder Trockenlauf;
+            // -Freigabe zusammen mit -Probe oder -VorlageNurPruefen bricht vor allem anderen ab.
+            Assert.Matches(new Regex(@"^\s*\[switch\] \$Freigabe,", RegexOptions.Multiline), ps);
+            int widerspruch = Stelle(ps, "if ($Freigabe -and ($Probe -or $VorlageNurPruefen)) {");
+            Assert.True(widerspruch < Stelle(ps, "$RegisterFassungen = FreigaberegisterLesen $Freigaberegister"),
+                        "-Freigabe mit -Probe oder -VorlageNurPruefen muss vor dem Lesen des Registers abbrechen.");
             int iscc = Stelle(ps, "& $Iscc @isccArgs");
             int signieren = Stelle(ps, "if ($Sign) {");
             int eintragen = Stelle(ps, "FreigabeEintragen $Freigaberegister $KatalogfassungWert $Version");
             Assert.True(eintragen > iscc && eintragen > signieren, "Die Freigabe darf erst nach Uebersetzen und Signieren eingetragen werden.");
-            const string NUR_FREIGABE = "if (-not ($Probe -or $VorlageNurPruefen)) {";
+            const string NUR_FREIGABE = "if ($Freigabe -and -not ($Probe -or $VorlageNurPruefen)) {";
             int bedingung = ps.LastIndexOf(NUR_FREIGABE, eintragen, StringComparison.Ordinal);
             Assert.True(bedingung > signieren, "Der Eintrag muss unter '" + NUR_FREIGABE + "' stehen.");
             Assert.DoesNotContain("\n}", ps.Substring(bedingung, eintragen - bedingung));
@@ -158,7 +173,23 @@ namespace EPOS.Kern.Tests
             int job = Stelle(yml, "\n  installer:\n");
             string installer = yml.Substring(job);
 
-            Assert.Matches(new Regex(@"\$aufruf = @\('-File', 'Setup/build-setup\.ps1', '-Quelldatenbank', \$quelle, '-Probe'\)"), installer);
+            Assert.Matches(new Regex(@"\$aufruf = @\('-File', 'Setup/build-setup\.ps1', '-Quelldatenbank', \$quelle, '-Probe', '-OhnePaket', \$ohnePaket\)"), installer);
+            Assert.DoesNotContain("'-Freigabe'", installer);   // der CI-Lauf gibt nie frei
+
+            // Die benannten Ausnahmen (E2): dieselbe Liste wie in den Werkzeugtests, jeder Name ein Registerkatalog.
+            Match liste = Regex.Match(installer, @"^\s*\$ohnePaket = '(?<liste>[^']*)'\s*$", RegexOptions.Multiline);
+            Assert.True(liste.Success, "Keine Zeile $ohnePaket = '...' im Job installer.");
+            string[] ci = liste.Groups["liste"].Value.Split(',').Select(t => t.Trim()).ToArray();
+            Assert.Contains("Tab_Heizkessel_STAMM", ci);
+            Assert.Contains("Tab_PV_STAMM", ci);
+            foreach (string t in ci)
+                Assert.True(WindowsFormsApplication1.Katalogfassung.Tabelle(t)?.Tabelle == t,
+                            "Kein Registerkatalog in der Schreibweise des Registers: " + t);
+            string werkzeuglauf = Lesen("Werkzeuge", "Auslieferungsvorlage.Tests", "Werkzeuglauf.cs");
+            int anfang = Stelle(werkzeuglauf, "LEERE_PAKETTEILE_DER_TESTDATENBANK =");
+            string block = werkzeuglauf.Substring(anfang, werkzeuglauf.IndexOf("};", anfang, StringComparison.Ordinal) - anfang);
+            string[] tests = Regex.Matches(block, "\"(?<t>[^\"]+)\"").Select(m => m.Groups["t"].Value).ToArray();
+            Assert.Equal(tests.OrderBy(t => t, StringComparer.Ordinal), ci.OrderBy(t => t, StringComparer.Ordinal));
 
             int schritt = Stelle(installer, "- name: Kopf des Katalogpakets");
             int naechster = installer.IndexOf("\n      - name:", schritt + 1, StringComparison.Ordinal);

@@ -316,7 +316,13 @@ jobs:
           # -Probe: Der CI-Lauf wird nicht ausgeliefert. Die Fassung des Katalogpakets
           # schlaegt das Skript aus Setup/Katalogfassungen.txt vor, haelt sie aber nicht
           # gegen das Register und traegt nichts ein (Konzept 6.5.4, E4).
-          $aufruf = @('-File', 'Setup/build-setup.ps1', '-Quelldatenbank', $quelle, '-Probe')
+          # -OhnePaket: Die Testdatenbank fuehrt in diesen Registerkatalogen Zeilen, aber keinen
+          # gesperrten Satz mit Schluessel; ohne benannte Ausnahme bricht das Werkzeug dort mit
+          # Code 6 ab (Konzept 6.5.4, E2). Dieselbe Liste nehmen die Werkzeugtests
+          # (Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK); pwsh -File bindet keine Arrays,
+          # deshalb ein Text mit Kommas.
+          $ohnePaket = 'Tab_Heizkessel_STAMM,Tab_PV_STAMM,Tab_Brennstoff_Stamm,Tab_DBTagV_STAMM,Tab_Pufferspeicher_STAMM,Tab_Solarkollektoren_STAMM,Tab_Solarganglinie_STAMM,Tab_Stromspeicher_STAMM,Tab_Stromverbrauchertyp_STAMM,Tab_Stromverbraucher_STAMM,Tab_Stromganglinie_STAMM'
+          $aufruf = @('-File', 'Setup/build-setup.ps1', '-Quelldatenbank', $quelle, '-Probe', '-OhnePaket', $ohnePaket)
           if ('${{ inputs.schnell }}' -eq 'true') { $aufruf += '-Schnell' }
           Write-Host ("Aufruf: pwsh " + ($aufruf -join ' '))
 

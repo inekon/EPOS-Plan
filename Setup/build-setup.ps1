@@ -77,11 +77,25 @@
 
 .PARAMETER Probe
     Probelauf: Die Fassung des Katalogpakets wird nicht gegen das Register
-    gehalten, und ins Register wird nichts geschrieben. Ohne -Probe traegt das
+    gehalten, und ins Register wird nichts geschrieben. Der CI-Setup-Lauf ist
+    immer ein Probelauf. Schliesst -Freigabe aus.
+
+.PARAMETER Freigabe
+    Gibt die Fassung des Katalogpakets frei: Nur mit diesem Schalter traegt das
     Skript nach einem vollstaendig erfolgreichen Lauf (Setup uebersetzt und, wenn
     verlangt, signiert) Fassung, Datum und Programmversion als neue Zeile in
-    Setup\Katalogfassungen.txt ein. Committet wird die Zeile wie jede Aenderung
-    nur auf Auftrag. Der CI-Setup-Lauf ist immer ein Probelauf.
+    Setup\Katalogfassungen.txt ein. Ein Handlauf ohne -Freigabe haelt die Fassung
+    ebenso gegen das Register, schreibt aber nichts hinein. -Probe und
+    -VorlageNurPruefen schreiben nie und schliessen -Freigabe aus. Committet wird
+    die Zeile wie jede Aenderung nur auf Auftrag.
+
+.PARAMETER OhnePaket
+    Benannte Ausnahmen vom Abbruch bei leerem Paketteil (Konzept Setup 6.5.4 E2):
+    Registerkataloge (Tabellenname, etwa Tab_PV_STAMM), die Zeilen, aber keinen
+    gesperrten Satz mit Schluessel fuehren duerfen. Mehrere Namen als Liste oder
+    mit ',' bzw. ';' getrennt; jeder geht als eigenes --ohne-paket <Katalog> an
+    Werkzeuge\Auslieferungsvorlage und steht dort im Pruefbericht. Ohne Angabe
+    bricht das Werkzeug bei jedem leeren Paketteil mit Code 6 ab.
 
 .PARAMETER SkipPublish
     Überspringt die Veröffentlichung und übersetzt nur das Setup — praktisch,
@@ -127,6 +141,12 @@
     .\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite
 
 .EXAMPLE
+    .\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite -Freigabe
+
+.EXAMPLE
+    .\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite -OhnePaket Tab_PV_STAMM
+
+.EXAMPLE
     .\build-setup.ps1 -SkipPublish -Schnell
 #>
 
@@ -139,6 +159,8 @@ param(
     [switch] $VorlageNurPruefen,
     [string] $Katalogfassung,
     [switch] $Probe,
+    [switch] $Freigabe,
+    [string[]] $OhnePaket,
     [switch] $SkipPublish,
     [switch] $Schnell,
     [string] $Iscc,
@@ -353,6 +375,10 @@ function FreigabeEintragen([string] $Datei, [int] $Fassung, [string] $Programmve
     [System.IO.File]::AppendAllText($Datei, $vorsatz + $zeile + $nl, [System.Text.UTF8Encoding]::new($false))
 }
 
+if ($Freigabe -and ($Probe -or $VorlageNurPruefen)) {
+    throw "-Freigabe schliesst -Probe und -VorlageNurPruefen aus: Ein Probe- oder Trockenlauf gibt keine Fassung frei."
+}
+
 $Heute = (Get-Date).ToString('yyyyMMdd', [System.Globalization.CultureInfo]::InvariantCulture)
 $RegisterFassungen = FreigaberegisterLesen $Freigaberegister
 if (-not $Katalogfassung) { $Katalogfassung = $env:EPOS_KATALOGFASSUNG }
@@ -369,7 +395,12 @@ if ($Probe -or $VorlageNurPruefen) {
 }
 else {
     KatalogfassungGegenRegister $KatalogfassungWert $RegisterFassungen $Heute
-    Hinweis "Fassung des Katalogpakets: $KatalogfassungWert ($herkunft; wird nach erfolgreichem Lauf ins Register eingetragen)"
+    if ($Freigabe) {
+        Hinweis "Fassung des Katalogpakets: $KatalogfassungWert ($herkunft; -Freigabe: wird nach erfolgreichem Lauf ins Register eingetragen)"
+    }
+    else {
+        Hinweis "Fassung des Katalogpakets: $KatalogfassungWert ($herkunft; gegen das Register gehalten, ohne -Freigabe kein Eintrag)"
+    }
 }
 
 # Herstellerdaten (VDI 3805 und die zwei CEC-Listen). Anwenderentscheid W6-O-9 vom
@@ -789,6 +820,13 @@ $vorlageArgs = @($Quelldatenbank, $VorlageDb)
 if ($Beispiele)          { $vorlageArgs += '--beispiele'; $vorlageArgs += $Beispiele }
 if ($Kataloge)           { $vorlageArgs += '--kataloge'; $vorlageArgs += $Kataloge }
 $vorlageArgs += '--katalogfassung'; $vorlageArgs += $KatalogfassungWert.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+# Benannte Ausnahmen vom Abbruch bei leerem Paketteil (E2): je Katalog ein --ohne-paket. Aus der
+# CI kommt die Liste als ein Text mit Kommas (pwsh -File bindet keine Arrays).
+foreach ($eintrag in @($OhnePaket)) {
+    foreach ($katalog in ([string] $eintrag -split '[,;]')) {
+        if ($katalog.Trim()) { $vorlageArgs += '--ohne-paket'; $vorlageArgs += $katalog.Trim() }
+    }
+}
 if ($VorlageNurPruefen)  { $vorlageArgs += '--trocken' }
 
 & dotnet run --project $VorlageWerkzeug -c Release -- @vorlageArgs
@@ -799,6 +837,28 @@ Werkzeuge\Auslieferungsvorlage ist mit Code 4 fehlgeschlagen (Katalogwaechter,
 #160-F-1): Die Quelle fuehrt Katalogzeilen ohne ReadOnly = TRUE. Das tritt nur
 bei ausdruecklichem -Kataloge readonly auf - die Vorgabe ist seit Entscheid
 #160-E-1a bereits 'alle'; -Kataloge weglassen oder auf 'alle' setzen.
+"@
+    }
+    if ($LASTEXITCODE -eq 6) {
+        throw @"
+Werkzeuge\Auslieferungsvorlage ist mit Code 6 fehlgeschlagen (leerer Paketteil,
+Konzept Setup 6.5.4 E2): Ein Registerkatalog fuehrt Zeilen, aber keinen gesperrten
+Satz mit Schluessel; die Meldung oben nennt ihn. Gesperrte Saetze in der Quelle
+pflegen oder den Katalog benannt ausnehmen: -OhnePaket <Katalog>.
+"@
+    }
+    if ($LASTEXITCODE -eq 7) {
+        throw @"
+Werkzeuge\Auslieferungsvorlage ist mit Code 7 fehlgeschlagen (Konzept Setup 6.5.3,
+Schritt 3): Das zurueckgelesene Katalogpaket passt nicht zur Vorlage. Vorlage und
+Paket sind geloescht; die Abweichungen stehen oben.
+"@
+    }
+    if ($LASTEXITCODE -eq 8) {
+        throw @"
+Werkzeuge\Auslieferungsvorlage ist mit Code 8 fehlgeschlagen (Konzept Setup 6.5.4
+E3): Der Schemastand der Quelle ist aelter als der Zielstand der Schemakette. Die
+Quelle einmal mit der aktuellen Anwendung oeffnen; danach ist sie angehoben.
 "@
     }
     throw "Werkzeuge\Auslieferungsvorlage ist mit Code $LASTEXITCODE fehlgeschlagen - kein Setup gebaut."
@@ -889,9 +949,10 @@ if ($Sign) {
 #  Ergebnis
 # ---------------------------------------------------------------------------
 
-# Freigabe der Fassung des Katalogpakets (Konzept 6.5.4 E4): erst hier, nach Uebersetzen
-# und Signieren - ein gescheiterter Lauf traegt nichts ein. Probe- und Trockenlaeufe nie.
-if (-not ($Probe -or $VorlageNurPruefen)) {
+# Freigabe der Fassung des Katalogpakets (Konzept 6.5.4 E4): nur mit -Freigabe, erst hier,
+# nach Uebersetzen und Signieren - ein gescheiterter Lauf traegt nichts ein. Probe- und
+# Trockenlaeufe nie.
+if ($Freigabe -and -not ($Probe -or $VorlageNurPruefen)) {
     Schritt 'Fassung des Katalogpakets ins Freigaberegister eintragen'
     FreigabeEintragen $Freigaberegister $KatalogfassungWert $Version
     Hinweis "$KatalogfassungWert in $Freigaberegister eingetragen - committen nur auf Auftrag."
