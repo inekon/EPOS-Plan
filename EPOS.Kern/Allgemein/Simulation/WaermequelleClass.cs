@@ -754,6 +754,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Geometrie und Bohrlochkennwerte des Sondenfeldes einer Anlage (Konzept Simulationsablauf
+        /// 23.3). Bis die Anlagenzeile eigene Spalten dafür trägt, gilt für jede Anlage die Norm
+        /// (<see cref="Sondenfeldgeometrie.Norm"/>); die vorgesehenen Spalten nennt
+        /// <see cref="Sondenfeldgeometrie"/>.
+        /// </summary>
+        public static Sondenfeldgeometrie SondenfeldgeometrieDerAnlage(int idEnergieanlage)
+        {
+            return Sondenfeldgeometrie.Norm;
+        }
+
+        /// <summary>
         /// Baut das Sondenfeld (Konzept Simulationsablauf 23) einer Anlage, deren Quelle als
         /// Erdsonde rechnet — dieselbe Weiche wie in <see cref="Quelltemperatur"/>: Wärmequelle
         /// Erdreich, Bauart nicht Luft-Wasser, Quellsystem Sonde oder Kollektor mit
@@ -785,7 +796,8 @@ namespace WindowsFormsApplication1
                 ErdreichTemperatur.Bodenkennwerte boden = ErdreichTemperatur.Bodentyp(bodentyp);
 
                 double tu = ErdreichTemperatur.SondenTemperatur(aussentemp, tiefe);
-                return new Erdsondenfeld(tiefe, anzahl, boden.Lambda, boden.RhoCp, tu);
+                return new Erdsondenfeld(tiefe, anzahl, boden.Lambda, boden.RhoCp, tu,
+                                         SondenfeldgeometrieDerAnlage(idEnergieanlage));
             }
             catch (Exception ex)
             {

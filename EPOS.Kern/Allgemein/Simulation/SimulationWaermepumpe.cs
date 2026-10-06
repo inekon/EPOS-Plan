@@ -300,6 +300,41 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<KeyValuePair<int, Erdsondenfeld>> Sondenfelder { get { return _sondenfelder; } }
 
         /// <summary>
+        /// <b>Vorgabe des zweiten Feldlaufs</b> je Anlage (Konzept 23.4): was der erste Lauf über das
+        /// Feld gelernt hat.
+        /// </summary>
+        public sealed class Feldvorgabe
+        {
+            /// <summary>Nettolast jedes Vorjahres je Stunde [kW]: Entzug minus Rückspeisung des ersten Laufs.</summary>
+            public double[] VorjahrLastKw;
+
+            /// <summary>Rückspeisung des Rechenjahres je Stunde [kW] (Kühlwärme, positiv), aus dem ersten Lauf.</summary>
+            public double[] RueckspeisungKw;
+        }
+
+        /// <summary>
+        /// Vorgabe des zweiten Feldlaufs je Anlagen-ID; null im ersten Lauf. Überlebt <see cref="Init"/>
+        /// mit Absicht — <c>SimulationControl.Do_Simulation</c> setzt sie vor dem zweiten Lauf und
+        /// verwirft sie am Beginn jedes neuen Laufs.
+        /// </summary>
+        private Dictionary<int, Feldvorgabe> _feldvorgabe;
+
+        /// <summary>Rückspeisung des Rechenjahres je Anlage [kW je Stunde], aus der Feldvorgabe.</summary>
+        private readonly Dictionary<int, double[]> _sondeRueckspeisung = new Dictionary<int, double[]>();
+
+        /// <summary>Setzt (oder verwirft mit null) die Vorgabe des zweiten Feldlaufs.</summary>
+        public void FeldvorgabeSetzen(Dictionary<int, Feldvorgabe> vorgabe)
+        {
+            _feldvorgabe = vorgabe;
+        }
+
+        /// <summary>Die Vorgabe des zweiten Feldlaufs je Anlagen-ID; null ohne zweiten Lauf (für Tests und Auswertung).</summary>
+        internal IReadOnlyDictionary<int, Feldvorgabe> FeldvorgabeAktuell { get { return _feldvorgabe; } }
+
+        /// <summary>true, solange die Vorgabe eines zweiten Feldlaufs gesetzt ist.</summary>
+        public bool ZweiterFeldlauf { get { return _feldvorgabe != null; } }
+
+        /// <summary>
         /// Meldet ein Modul an seinem Sondenfeld an (eines je Anlage) und belegt seine
         /// Quelltemperatur mit der Reihe ohne Last des Rechenjahres vor.
         /// </summary>
@@ -316,14 +351,30 @@ namespace WindowsFormsApplication1
             {
                 feld = WaermequelleClass.Sondenfeld(idAnlage, wpTyp, Temperatur);
                 if (feld == null) return;
-                double vorjahrKwh = VorjahreSchaetzen(feld, idProjekt, idAnlage);
+                double entzugKwh = 0, rueckKwh = 0;
+                if (_feldvorgabe != null && _feldvorgabe.TryGetValue(idAnlage, out Feldvorgabe v) && v != null
+                    && v.VorjahrLastKw != null)
+                {
+                    // Zweiter Feldlauf: n − 1 Vorjahre tragen die Stundenlast des ersten Laufs.
+                    feld.VorjahreSetzenStuendlich(v.VorjahrLastKw, feld.Betrachtungsjahr - 1);
+                    for (int s = 0; s < 8760; s++)
+                    {
+                        double r = v.RueckspeisungKw != null && s < v.RueckspeisungKw.Length ? v.RueckspeisungKw[s] : 0.0;
+                        entzugKwh += v.VorjahrLastKw[s] + r;
+                        rueckKwh += r;
+                    }
+                }
+                else
+                {
+                    entzugKwh = VorjahreSchaetzen(feld, idProjekt, idAnlage);
+                }
                 _sondenfelder.Add(new KeyValuePair<int, Erdsondenfeld>(idAnlage, feld));
 
                 SimulationProtokoll.Aktuell.HinweisEinmal(
                     "erdsonde-feld-" + idAnlage,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_ERDSONDE_FELD,
                         idAnlage, feld.Anzahl, feld.LaengeM, feld.Lambda, feld.TUngestoert,
-                        feld.Vorjahre + 1, vorjahrKwh));
+                        feld.Vorjahre + 1, entzugKwh, feld.Vorjahre, rueckKwh));
             }
 
             _sondeJeModul[index] = feld;
@@ -331,10 +382,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schätzt die Last der Vorjahre aus der VDI-4640-Vorprüfung der Anlage (Jahresentzug =
-        /// Σ Q_N · (1 − 1/COP) · Volllaststunden der Klimazone), verteilt nach Heizgradstunden.
-        /// Ohne Vorprüfung rechnet das Feld ohne Vorjahre. Liefert die geschätzte
-        /// Jahresentzugsarbeit [kWh/a] (0 ohne Schätzung).
+        /// Startschätzung des ERSTEN Feldlaufs (Konzept 23.4): die Last der Vorjahre aus der
+        /// VDI-4640-Vorprüfung der Anlage (Jahresentzug = Σ Q_N · (1 − 1/COP) · Volllaststunden der
+        /// Klimazone), verteilt nach Heizgradstunden. Ohne Vorprüfung rechnet der erste Lauf ohne
+        /// Vorjahre; der zweite Lauf ersetzt beides durch die eigene Stundenlast. Liefert die
+        /// geschätzte Jahresentzugsarbeit [kWh/a] (0 ohne Schätzung).
         /// </summary>
         private double VorjahreSchaetzen(Erdsondenfeld feld, int idProjekt, int idAnlage)
         {
@@ -348,16 +400,10 @@ namespace WindowsFormsApplication1
             catch { pw = null; }
 
             if (pw == null || pw.Quelle != VDI4640Pruefung.Pruefquelle.Vorpruefung || !(pw.JahresentzugKWh > 0))
-            {
-                SimulationProtokoll.Aktuell.HinweisEinmal(
-                    "erdsonde-ohne-vorjahre-" + idAnlage,
-                    string.Format(MyResource.Resource.SIMENG_ERDSONDE_OHNE_VORJAHRE,
-                        idAnlage, pw != null ? pw.Fehlt : ""));
                 return 0;
-            }
 
             feld.VorjahreSetzen(feld.MonatslastenAusJahresentzug(pw.JahresentzugKWh, Temperatur),
-                                Erdsondenfeld.BETRACHTUNGSJAHR - 1);
+                                feld.Betrachtungsjahr - 1);
             return pw.JahresentzugKWh;
         }
 
@@ -2949,6 +2995,7 @@ namespace WindowsFormsApplication1
             Array.Clear(_sondeJeModul, 0, _sondeJeModul.Length);
             Array.Clear(_sondeEntzugBisher, 0, _sondeEntzugBisher.Length);
             _sondenfelder.Clear();
+            _sondeRueckspeisung.Clear();
 
             // D5a: Rechenebenen und Quellentnahme-Meldungen gehören zum Laufzustand. Die
             // Kaskadenschleife setzt die Ebenen je Lauf neu; ohne Rücksetzen liefen sie

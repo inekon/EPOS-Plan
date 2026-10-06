@@ -41766,10 +41766,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Source temperature of plant {0}: the CSV file “{1}” is missing or does not provide 8,760 hourly values — the outdoor temperature is used instead.</value>
   </data>
   <data name="SIMENG_ERDSONDE_FELD" xml:space="preserve">
-    <value>Borehole heat exchanger of plant {0}: borefield with extraction feedback, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), undisturbed temperature {4:0.00} °C, year of assessment {5}, estimated annual heat extraction of previous years {6:N0} kWh.</value>
-  </data>
-  <data name="SIMENG_ERDSONDE_OHNE_VORJAHRE" xml:space="preserve">
-    <value>Borehole heat exchanger of plant {0}: without a VDI 4640 preliminary check ({1}) the borefield is calculated without previous years — the brine temperature applies to the first year of operation.</value>
+    <value>Borehole heat exchanger of plant {0}: borefield with extraction feedback, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), undisturbed temperature {4:0.00} °C, year of assessment {5} after {7} previous years carrying the hourly load of the first borefield pass: extraction {6:N0} kWh/a.</value>
   </data>
   <data name="SIMENG_ERDSONDE_FELD_FEHLT" xml:space="preserve">
     <value>Borehole heat exchanger of plant {0}: the borefield could not be set up ({1}) — the constant source temperature is used.</value>

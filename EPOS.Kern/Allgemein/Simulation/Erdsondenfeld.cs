@@ -75,6 +75,12 @@ namespace WindowsFormsApplication1
         /// <summary>Bohrlochwiderstand R_b [m·K/W].</summary>
         public double Rb { get; }
 
+        /// <summary>Betrachtungsjahr n: Das Rechenjahr folgt auf n − 1 Vorjahre.</summary>
+        public int Betrachtungsjahr { get; }
+
+        /// <summary>Geometrie und Bohrlochkennwerte, mit denen das Feld rechnet (bereinigt).</summary>
+        public Sondenfeldgeometrie Geometrie { get; }
+
         /// <summary>Gesamte Sondenlänge N · H [m].</summary>
         public double Sondenmeter { get { return LaengeM * Anzahl; } }
 
@@ -101,11 +107,9 @@ namespace WindowsFormsApplication1
         /// <param name="lambda">Wärmeleitfähigkeit λ [W/(m·K)], &gt; 0.</param>
         /// <param name="rhoCpMJ">volumetrische Wärmekapazität ρ·c_p [MJ/(m³·K)], &gt; 0.</param>
         /// <param name="tUngestoert">ungestörte Erdreichtemperatur T_u [°C].</param>
-        /// <param name="jahreRaster">Länge des Zeitrasters in Jahren (mindestens 1).</param>
+        /// <param name="geometrie">Geometrie und Bohrlochkennwerte; null = <see cref="Sondenfeldgeometrie.Norm"/>.</param>
         public Erdsondenfeld(double laengeM, int anzahl, double lambda, double rhoCpMJ, double tUngestoert,
-                             int jahreRaster = BETRACHTUNGSJAHR,
-                             double abstandM = SONDENABSTAND_M, double rb = BOHRLOCHWIDERSTAND,
-                             double bohrlochradiusM = BOHRLOCHRADIUS_M, double kopfueberdeckungM = KOPFUEBERDECKUNG_M)
+                             Sondenfeldgeometrie geometrie = null)
         {
             if (!(laengeM > 0)) throw new ArgumentOutOfRangeException(nameof(laengeM));
             if (!(lambda > 0)) throw new ArgumentOutOfRangeException(nameof(lambda));
@@ -116,13 +120,15 @@ namespace WindowsFormsApplication1
             Lambda = lambda;
             A_m2s = lambda / (rhoCpMJ * 1.0e6);
             TUngestoert = tUngestoert;
-            AbstandM = abstandM > 0 ? abstandM : SONDENABSTAND_M;
-            Rb = rb >= 0 ? rb : BOHRLOCHWIDERSTAND;
-            _rbRadius = bohrlochradiusM > 0 ? bohrlochradiusM : BOHRLOCHRADIUS_M;
-            _kopf = kopfueberdeckungM >= 0 ? kopfueberdeckungM : KOPFUEBERDECKUNG_M;
+            Geometrie = (geometrie ?? Sondenfeldgeometrie.Norm).Bereinigt();
+            AbstandM = Geometrie.AbstandM;
+            Rb = Geometrie.Bohrlochwiderstand;
+            _rbRadius = Geometrie.BohrlochradiusM;
+            _kopf = Geometrie.KopfueberdeckungM;
+            Betrachtungsjahr = Geometrie.Betrachtungsjahr;
 
             AbstaendeBilden(out _abstaende, out _gewichte);
-            RasterRechnen(Math.Max(1, jahreRaster) + 1);
+            RasterRechnen(Betrachtungsjahr + 1);
 
             double[] g = new double[STUNDEN + 1];
             for (int k = 1; k <= STUNDEN; k++) g[k] = G(k);
@@ -320,6 +326,66 @@ namespace WindowsFormsApplication1
                 }
                 for (int s = 0; s < 24; s++) _vorjahr[tag * 24 + s] = dT;
             }
+        }
+
+        /// <summary>
+        /// Setzt den Beitrag der Vorjahre aus einer Stundenlast (zweiter Feldlauf, Konzept 23.4):
+        /// <paramref name="vorjahre"/> Jahre, deren jedes die Last <paramref name="lastKw"/> [kW] je
+        /// Stunde trägt (Entzug positiv, Rückspeisung negativ). Weil alle Vorjahre dieselbe Reihe
+        /// tragen, fassen sich ihre Pulsantworten zu EINEM Kern zusammen,
+        ///
+        ///   S(m) = Σ_{y=1}^{n−1} [G(m + 1 + y·8760) − G(m + y·8760)],  m = −8760 … 8758,
+        ///
+        /// und der Beitrag ist eine einzige Faltung über ein Jahr: ΔT_V(t) = Σ_i q_i · S(t − 1 − i).
+        /// Stundengenau, ohne Monats- oder Tagesblöcke; Aufwand 8760² Multiplikationen.
+        /// </summary>
+        public void VorjahreSetzenStuendlich(double[] lastKw, int vorjahre)
+        {
+            Array.Clear(_vorjahr, 0, _vorjahr.Length);
+            Vorjahre = 0;
+            if (lastKw == null || lastKw.Length < STUNDEN || vorjahre <= 0) return;
+            Vorjahre = vorjahre;
+
+            // G an jeder ganzen Stunde bis (n + 1) Jahre
+            int gLaenge = (vorjahre + 1) * STUNDEN + 1;
+            double[] g = new double[gLaenge];
+            for (int k = 1; k < gLaenge; k++) g[k] = G(k);
+
+            // Kern S über m + STUNDEN = 0 … 2·STUNDEN − 2
+            double[] kern = new double[2 * STUNDEN];
+            for (int m = -STUNDEN; m < STUNDEN - 1; m++)
+            {
+                double summe = 0.0;
+                for (int y = 1; y <= vorjahre; y++)
+                {
+                    int k = m + y * STUNDEN;
+                    summe += g[k + 1] - g[k];
+                }
+                kern[m + STUNDEN] = summe;
+            }
+
+            double[] q = new double[STUNDEN];
+            for (int i = 0; i < STUNDEN; i++)
+                q[i] = double.IsFinite(lastKw[i]) ? lastKw[i] * 1000.0 / Sondenmeter : 0.0;
+
+            for (int t = 0; t < STUNDEN; t++)
+            {
+                double dT = 0.0;
+                int basis = t - 1 + STUNDEN;    // Index von S(t − 1 − i) ist basis − i
+                for (int i = 0; i < STUNDEN; i++) dT += q[i] * kern[basis - i];
+                _vorjahr[t] = dT;
+            }
+        }
+
+        /// <summary>
+        /// Die im Rechenjahr gemeldete Last je Stunde [kW] (Entzug positiv, Rückspeisung negativ);
+        /// nicht gemeldete Stunden stehen auf 0.
+        /// </summary>
+        public double[] LastKw()
+        {
+            double[] r = new double[STUNDEN];
+            for (int s = 0; s < _gemeldet && s < STUNDEN; s++) r[s] = _last[s] * Sondenmeter / 1000.0;
+            return r;
         }
 
         /// <summary>

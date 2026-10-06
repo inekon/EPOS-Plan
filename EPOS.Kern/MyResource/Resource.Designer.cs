@@ -92415,7 +92415,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde der Anlage {0}: Sondenfeld mit Entzugsrückwirkung, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), ungestörte Temperatur {4:0.00} °C, Betrachtungsjahr {5}, geschätzte Jahresentzugsarbeit der Vorjahre {6:N0} kWh. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde der Anlage {0}: Sondenfeld mit Entzugsrückwirkung, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), ungestörte Temperatur {4:0.00} °C, Betrachtungsjahr {5} nach {7} Vorjahren mit der Stundenlast des ersten Feldlaufs: Entzug {6:N0} kWh/a. ähnelt.
         /// </summary>
         public static string SIMENG_ERDSONDE_FELD {
             get {
@@ -92429,15 +92429,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_ERDSONDE_FELD_FEHLT {
             get {
                 return ResourceManager.GetString("SIMENG_ERDSONDE_FELD_FEHLT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde der Anlage {0}: Ohne Vorprüfung nach VDI 4640 ({1}) rechnet das Sondenfeld ohne Vorjahre — die Soletemperatur gilt für das erste Betriebsjahr. ähnelt.
-        /// </summary>
-        public static string SIMENG_ERDSONDE_OHNE_VORJAHRE {
-            get {
-                return ResourceManager.GetString("SIMENG_ERDSONDE_OHNE_VORJAHRE", resourceCulture);
             }
         }
         
