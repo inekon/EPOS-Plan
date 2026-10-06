@@ -77,6 +77,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Func<string, bool>? katalogLoeschen = null,
         Func<string, IReadOnlyDictionary<string, object>>? katalogGaben = null,
         Func<string, string>? katalogLoeschsperre = null,
+        Func<string, string>? katalogLoeschhinweis = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>? wohnflaecheGaben = null,
         Func<IReadOnlyDictionary<string, object>>? gebaeudetypGaben = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? bedarfGaben = null,
@@ -94,6 +95,7 @@ public class GebaeudeDialogTests : EposBunitContext
             .Add(x => x.StammSatz, n => Zeile(100000, n))
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
             .Add(x => x.KatalogLoeschsperre, katalogLoeschsperre)
+            .Add(x => x.KatalogLoeschhinweis, katalogLoeschhinweis)
             .Add(x => x.KatalogGaben, katalogGaben)
             .Add(x => x.WohnflaecheGaben, wohnflaecheGaben)
             .Add(x => x.GebaeudetypGaben, gebaeudetypGaben)
@@ -682,14 +684,14 @@ public class GebaeudeDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Löschsperre der Verwaltung gilt auch hier</b> (#487): Führt ein Projekt den
-    /// Satz (oder ist er ein Auslieferungssatz), steht der benannte Grund als Warnung — ohne
-    /// Rückfrage, ohne Löschversuch.
+    /// <b>Ein Auslieferungssatz ist gesperrt</b>: Der benannte Grund steht als Warnung — ohne
+    /// Rückfrage, ohne Löschversuch. Ein Satz, den Projekte führen, ist es nicht mehr
+    /// (Anwenderentscheid 06.10.2026, <see cref="Loeschen_nennt_die_Projekte_die_ihre_Kopie_behalten"/>).
     /// </summary>
     [Fact]
     public void Loeschen_eines_gesperrten_Satzes_nennt_den_Grund()
     {
-        const string GRUND = "In Projekten verwendet (Projekt A) – Löschen gesperrt; dort zuerst entfernen.";
+        const string GRUND = "Dieser Datensatz ist schreibgeschützt und kann nicht gelöscht werden.";
         bool gerufen = false;
         string gefragt = "";
         var cut = Aufbauen(katalogLoeschen: _ => { gerufen = true; return true; },
@@ -702,6 +704,56 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(GRUND, cut.Instance.Meldung);
         Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
         Assert.False(gerufen);
+    }
+
+    /// <summary>
+    /// <b>Anwenderentscheid 06.10.2026:</b> Ein Satz, den Projekte führen, ist löschbar — der
+    /// Knopf trägt keine Sperre, die Rückfrage nennt die Projekte samt ihrer bleibenden Kopie.
+    /// Nach dem Löschen trägt die Projektzeile, die auf den Satz verwies, keinen Verweis mehr
+    /// (die Datenbank leert ihn per <c>SET NULL</c>); eine fremde Zeile behält ihren.
+    /// </summary>
+    [Fact]
+    public void Loeschen_nennt_die_Projekte_die_ihre_Kopie_behalten()
+    {
+        const string HINWEIS = "Das Gebäude wird aus der Datenbank gelöscht. Die Projekte P1, P2 behalten ihre Kopie.";
+        GebaeudeProjektZeile kopie = Zeile(1, "Haus 2010");
+        kopie.IdKatalog = 2;
+        GebaeudeProjektZeile fremd = Zeile(2, "Haus 1990");
+        kopie.HatProjektkopie = true;
+        fremd.IdKatalog = 1;
+        string gefragt = "";
+        string geloescht = "";
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { kopie, fremd },
+                           katalogLoeschen: n => { geloescht = n; return true; },
+                           katalogLoeschsperre: _ => "",
+                           katalogLoeschhinweis: n => { gefragt = n; return HINWEIS; });
+
+        KatalogWaehlen(cut, "Haus 2010");
+        var knopf = Knopf(cut, "Gebäude in DB löschen");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+
+        Assert.Equal("Haus 2010", gefragt);
+        Assert.Contains("wirklich gelöscht", cut.Instance.Loeschfrage);
+        Assert.EndsWith(HINWEIS, cut.Instance.Loeschfrage);
+        Assert.Contains("P1, P2 behalten ihre Kopie", cut.Markup);
+
+        Knopf(cut, "Ja").Click();
+        Assert.Equal("Haus 2010", geloescht);
+        Assert.Null(kopie.IdKatalog);
+        Assert.Equal(1, fremd.IdKatalog);
+        Assert.Contains(kopie, cut.Instance.Zeilen);
+        Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
+    }
+
+    /// <summary>Ohne Projekt, das den Satz führt, bleibt die Rückfrage die alte — ohne Zusatz.</summary>
+    [Fact]
+    public void Loeschen_ohne_Projektkopie_fragt_ohne_Zusatz()
+    {
+        var cut = Aufbauen(katalogLoeschsperre: _ => "", katalogLoeschhinweis: _ => "");
+        KatalogWaehlen(cut, "Hotel Sonne");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Assert.Equal("Soll Hotel Sonne wirklich gelöscht werden ?", cut.Instance.Loeschfrage);
     }
 
     /// <summary>Ohne markierten Katalogsatz: die Bitte um eine Wahl statt einer leeren Rückfrage.</summary>
@@ -738,7 +790,7 @@ public class GebaeudeDialogTests : EposBunitContext
     [Fact]
     public void Die_Loeschsperre_steht_unter_der_Listenleiste_nicht_oben()
     {
-        const string GRUND = "In Projekten verwendet (Projekt A) – Löschen gesperrt; dort zuerst entfernen.";
+        const string GRUND = "Dieser Datensatz ist schreibgeschützt und kann nicht gelöscht werden.";
         var cut = Aufbauen(katalogLoeschsperre: _ => GRUND);
 
         KatalogWaehlen(cut, "Haus 2010");

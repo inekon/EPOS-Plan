@@ -190,8 +190,8 @@
                         @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
                 @if (_loeschsperre.Length > 0)
                 {
-                    @* Der Grund am Bedienelement: gesperrt (Auslieferungssatz, von einem
-                       Projekt gefuehrt), der Versuch meldet ihn unter der Leiste. *@
+                    @* Der Grund am Bedienelement: gesperrt (Auslieferungssatz), der Versuch
+                       meldet ihn unter der Leiste. *@
                     <button type="button" class="epos-knopf epos-gebaeude-db-loeschen"
                             aria-disabled="true" title="@_loeschsperre"
                             @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
@@ -561,11 +561,17 @@
     [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
 
     /// <summary>
-    /// Der Sperrgrund eines Katalogsatzes — dieselbe weiche Löschsperre wie in der
-    /// Gebäudeverwaltung (Auslieferungssatz, von einem Projekt geführt; der Text nennt die
-    /// Projekte). Leer heißt löschbar; ein Grund steht als Warnung, statt nachzufragen.
+    /// Der Sperrgrund eines Katalogsatzes — allein der Auslieferungssatz ist gesperrt
+    /// (Anwenderentscheid 06.10.2026). Leer heißt löschbar; ein Grund steht als Warnung,
+    /// statt nachzufragen.
     /// </summary>
     [Parameter] public Func<string, string>? KatalogLoeschsperre { get; set; }
+
+    /// <summary>
+    /// Der Zusatz der Rückfrage: die Projekte, die eine Kopie des Satzes führen und sie
+    /// behalten (<c>GebaeudeStammCtrl.Loeschhinweis</c>). Leer, wenn keines.
+    /// </summary>
+    [Parameter] public Func<string, string>? KatalogLoeschhinweis { get; set; }
 
     /// <summary>
     /// Meldet der Hülle, dass sich die Projektliste geändert hat — aufgenommen, entfernt
@@ -1006,8 +1012,12 @@
     /// <summary>Steht der Wärmebedarf des Gebäudes? Prüfhilfe für die Tests.</summary>
     public bool BedarfOffen => _bedarfGaben is not null;
 
-    private string Loeschfrage
-        => string.Format(MeldungLoeschfrage, _katalogzeile?.Bezeichner ?? "");
+    /// <summary>Die Rückfrage vor dem Löschen, samt den Projekten, die ihre Kopie behalten.</summary>
+    public string Loeschfrage
+        => string.Format(MeldungLoeschfrage, _katalogzeile?.Bezeichner ?? "")
+           + (_loeschhinweis.Length > 0 ? " " + _loeschhinweis : "");
+
+    private string _loeschhinweis = "";
 
     protected override void OnInitialized()
     {
@@ -1597,8 +1607,9 @@
 
     /// <summary>
     /// „Gebäude in DB löschen" — ohne markierten Katalogsatz die Bitte um eine Wahl; ist
-    /// der Satz gesperrt (Auslieferungssatz, von einem Projekt geführt), steht der
-    /// benannte Grund als Warnung, und es wird nicht erst nachgefragt. Sonst die Rückfrage.
+    /// der Satz gesperrt (Auslieferungssatz), steht der benannte Grund als Warnung, und es
+    /// wird nicht erst nachgefragt. Sonst die Rückfrage; sie nennt die Projekte, die eine
+    /// Kopie führen und behalten.
     /// </summary>
     private void BeiKatalogLoeschen()
     {
@@ -1608,6 +1619,7 @@
         _loeschsperre = sperre;
         if (sperre.Length > 0) { Melden(sperre, WarnStufe.Warnung, amKatalog: true); return; }
 
+        _loeschhinweis = KatalogLoeschhinweis?.Invoke(_katalogzeile.Bezeichner) ?? "";
         _meldung = "";
         _loeschfrage = true;
     }
@@ -1630,8 +1642,16 @@
             return;
         }
 
+        // Die Kopien im Projekt bleiben; ihr Verweis ist in der Datenbank jetzt leer
+        // (SET NULL). Die offene Liste zieht ihn nach, damit das Speichern die Kopie als
+        // unverändert erkennt und kein späterer Satz derselben Id sie anbindet.
+        int geloescht = _katalogzeile.Id;
+        foreach (GebaeudeProjektZeile z in Zeilen)
+            if (z.IdKatalog == geloescht) z.IdKatalog = null;
+
         _katalogzeile = null;
         _katalogGewaehlt = "";
+        _loeschhinweis = "";
         KatalogLaden();
         Melden(MeldungGeloescht, WarnStufe.Hinweis, amKatalog: true);
     }
