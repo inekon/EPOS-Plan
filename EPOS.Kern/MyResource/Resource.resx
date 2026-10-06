@@ -6113,6 +6113,18 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_VORBELEGT" xml:space="preserve">
     <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Wirtschaftlichkeit im gewählten Szenario und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
   </data>
+  <data name="BK_BER_KARTE_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="BK_BER_KARTE_INHALT" xml:space="preserve">
+    <value>Inhalt</value>
+  </data>
+  <data name="BK_BER_KARTE_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="BK_BER_KARTE_AUSGABE" xml:space="preserve">
+    <value>Ausgabe</value>
+  </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
 

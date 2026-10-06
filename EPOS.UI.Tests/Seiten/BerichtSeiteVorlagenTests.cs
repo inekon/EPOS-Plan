@@ -109,18 +109,24 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
     // =====================================================================
 
     [Fact]
-    public void Die_Gruppe_steht_ueber_den_Bausteinen_mit_drei_Vorlagen_Sperrgrund_und_Schloss()
+    public void Die_Gruppe_steht_in_der_Karte_Vorlage_rechts_mit_drei_Vorlagen_Sperrgrund_und_Schloss()
     {
         var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1));
 
         IElement gruppe = cut.Find(".epos-vorlage");
-        Assert.Contains("Vorlage:", gruppe.QuerySelector(".epos-untergruppe")!.TextContent);
+        // Der Kartentitel „Vorlage“ steht darüber; die Gruppe trägt ihren Namen nur noch als aria-label.
+        Assert.Contains("Vorlage", gruppe.GetAttribute("aria-label"));
+        Assert.Null(gruppe.QuerySelector(".epos-untergruppe"));
         Assert.Contains("Word-Vorlage:", gruppe.QuerySelector(".epos-feld-text")!.TextContent);
 
-        // Oben rechts UEBER den Haekchen: in derselben Spalte, vor der Bausteinliste.
-        IElement spalte = gruppe.ParentElement!;
-        var kinder = spalte.Children.ToList();
-        Assert.True(kinder.IndexOf(gruppe) < kinder.FindIndex(k => k.ClassList.Contains("epos-mehrfachauswahl")));
+        // Anordnung B: die Gruppe in der Karte „Vorlage“ der rechten Spalte, VOR der Karte „Ausgabe“;
+        // die Bausteine stehen in der Karte „Inhalt“ der linken Spalte.
+        IElement karte = gruppe.ParentElement!;
+        Assert.Contains("epos-bericht-karte--vorlage", karte.ClassName);
+        var rechts = karte.ParentElement!.Children.ToList();
+        Assert.Contains("epos-bericht-rechts", karte.ParentElement!.ClassName);
+        Assert.True(rechts.IndexOf(karte) < rechts.FindIndex(k => k.ClassList.Contains("epos-bericht-karte--ausgabe")));
+        Assert.NotNull(cut.Find(".epos-bericht-links .epos-bericht-karte--inhalt").QuerySelector(".epos-mehrfachauswahl"));
 
         var optionen = gruppe.QuerySelectorAll("select option");
         Assert.Equal(new[] { "Standard (EPOS-Plan)", "Kurzbericht Kunde", "Alte Vorlage" },
@@ -133,6 +139,58 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         IElement schloss = cut.Find(".epos-vorlage-wahl .epos-schloss");
         Assert.StartsWith("Mitgelieferte Vorlage", schloss.GetAttribute("aria-label"));
         Assert.Equal("", schloss.TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Anordnung B</b> (Anwenderentscheide BL-Q1 bis BL-Q5): links die Karten „Varianten“ und „Inhalt“, rechts
+    /// in fester Breite „Vorlage“ und „Ausgabe“ — in dieser Folge im Markup, das ist unter 900 px die Lesefolge.
+    /// Die Zeile „Excel-Vorlage“ steht in der Karte „Ausgabe“ unter der Optionsgruppe (BL-Q3 a), darunter
+    /// Zielordner und „Erstellen“ mit der leisen Erklärzeile; Alle/Keine in „Varianten“, das Szenario in „Inhalt“.
+    /// </summary>
+    [Fact]
+    public void BL_B_Vier_Karten_in_zwei_Spalten_und_die_Excelzeile_unter_der_Ausgabe()
+    {
+        var cut = Render<BerichtSeite>(p => p
+            .Add(x => x.Laden, () => { BerichtStand s = Stand(); s.AusgabeId = 2; return s; })
+            .Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.ExcelVorlagen, new[] { OhneExcel, Kennzahlmappe })
+            .Add(x => x.ExcelVorlageId, 10)
+            .Add(x => x.ExcelVorlageIdChanged, (int? _) => { }));
+
+        IElement raster = cut.Find(".epos-bericht-raster");
+        Assert.Equal(new[] { "epos-bericht-links", "epos-bericht-rechts" },
+                     raster.Children.Select(k => k.ClassList.First(c => c is "epos-bericht-links" or "epos-bericht-rechts")));
+
+        // Die Kartenfolge im Markup ist die Lesefolge (keine order-Regel).
+        Assert.Equal(new[] { "varianten", "inhalt", "vorlage", "ausgabe" },
+                     cut.FindAll(".epos-bericht-karte")
+                        .Select(k => k.ClassList.First(c => c.StartsWith("epos-bericht-karte--", StringComparison.Ordinal))
+                                                .Substring("epos-bericht-karte--".Length)));
+        Assert.Equal(4, cut.FindAll(".epos-bericht-karte > h2.epos-bericht-kartentitel").Count);
+        Assert.Equal(2, raster.QuerySelectorAll(".epos-bericht-links > .epos-bericht-karte").Length);
+        Assert.Equal(2, raster.QuerySelectorAll(".epos-bericht-rechts > .epos-bericht-karte").Length);
+
+        IElement varianten = cut.Find(".epos-bericht-karte--varianten");
+        Assert.Equal(new[] { "Alle", "Keine" }, varianten.QuerySelectorAll(".epos-leiste button").Select(b => b.TextContent.Trim()));
+
+        IElement ausgabe = cut.Find(".epos-bericht-karte--ausgabe");
+        var kinder = ausgabe.Children.ToList();
+        int optionen = kinder.FindIndex(k => k.QuerySelector(".epos-optionsgruppe-titel") is not null || k.ClassList.Contains("epos-optionsgruppe"));
+        int excel = kinder.FindIndex(k => k.ClassList.Contains("epos-vorlage--excel"));
+        int ziel = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
+        int ausloesen = kinder.FindIndex(k => k.ClassList.Contains("epos-bericht-ausloesen"));
+        Assert.True(optionen >= 0 && optionen < excel && excel < ziel && ziel < ausloesen,
+                    $"Folge Optionen {optionen}, Excel {excel}, Ziel {ziel}, Erstellen {ausloesen}");
+        Assert.NotNull(kinder[excel].QuerySelector(".epos-vorlage-excel select"));
+        // Keine doppelte Beschriftung unter dem Kartentitel: die Optionsgruppe ohne legend, mit aria-label.
+        IElement gruppe = kinder[optionen];
+        Assert.Null(gruppe.QuerySelector("legend"));
+        Assert.Equal("Ausgabe:", gruppe.GetAttribute("aria-label"));
+        Assert.Empty(cut.Find(".epos-bericht-karte--vorlage").QuerySelectorAll(".epos-vorlage-excel"));
+
+        IElement leiste = kinder[ausloesen];
+        Assert.Equal("Erstellen", leiste.QuerySelector(".epos-knopf--primaer")!.TextContent.Trim());
+        Assert.StartsWith("Jeder Bericht rechnet neu", leiste.QuerySelector(".epos-herleitung-text")!.TextContent);
     }
 
     [Fact]
