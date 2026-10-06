@@ -815,8 +815,8 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
 5. **Ende-zu-Ende-Nachweis Neuinstallation und Update** (`Werkzeuge/Auslieferungsvorlage.Tests`,
    Klasse `KatalogpaketUpdateTests`) — **umgesetzt**
    - **Ablauf:** Das Werkzeug baut aus Kopien der Testdatenbank Vorlage und Paket der Fassung n und
-     der Fassung n + 1 (zwei gesperrte Sätze geändert, ein ungesperrter Satz gesperrt), im Modus `alle`
-     mit den benannten Ausnahmen. Der Startweg des Kerns läuft auf Anwenderkopien wie in
+     der Fassungen n, n + 1 (zwei gesperrte Sätze geändert, ein ungesperrter Satz gesperrt) und n + 2
+     (dazu ein neuer Wert am nun gesperrten Satz), im Modus `alle` mit den benannten Ausnahmen. Der Startweg des Kerns läuft auf Anwenderkopien wie in
      `Program.Main`: `Erstbereitstellung`, Schemastand, `Katalogabgleich.BeimStart` mit dem Paket neben
      der Vorlage. Die Schemamigration liegt in der Windows-Schale; die Probe hält stattdessen fest, dass
      die bereitgestellte Vorlage auf dem Zielstand der Schemakette steht.
@@ -824,7 +824,8 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
      dem Paket. U2 Update mit älterer Fassung: Sicherung in `DB-Backup`, der unveränderte Paketsatz
      nachgeführt, die Anpassung eines gesperrten Satzes behalten, eigene Zeile und Projektdaten
      unverändert, Protokoll und Fassung n + 1; ein zweiter Start mit gleicher Fassung gleicht nicht ab
-     und ändert die Datei nicht. U3 hält die bekannte Grenze „später gesperrter Satz“ (6.5.5).
+     und ändert die Datei nicht. U3 „später gesperrter Satz“ (6.5.5): Fassung n + 1 bindet die
+     gleichnamige Anwenderzeile an (gleiche ID, kein Doppel), Fassung n + 2 führt sie nach.
    - **Abnahme:** Werkzeugtests grün (`kern.yml`, Schritt Auslieferungsvorlage-Tests), Referenzlauf
      unberührt (kein Rechenweg).
    - **Setup-Lauf:** keiner.
@@ -890,7 +891,8 @@ Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
   Windows-Freigabe; sie braucht einen iOS-Lauf.
 - **E7 Ungesperrte Katalogzeilen im Modus `alle`:** Sie bleiben ungesperrt, der Prüfbericht weist
   sie aus (Schritt 2, umgesetzt). Ob ein Satz ausgeliefert und nachgeführt wird, entscheidet die
-  Pflege der Quelle, nicht das Werkzeug.
+  Pflege der Quelle, nicht das Werkzeug. Sperrt die Quelle einen solchen Satz später, bindet der
+  Abgleich ihn beim Anwender an die vorhandene Zeile (6.5.5).
 
 #### 6.5.5 Risiken
 
@@ -906,15 +908,31 @@ Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
     vergibt die Kollisionsfolge einen anderen Zusatz, fügt der Abgleich einen zweiten Satz ein,
     statt zu aktualisieren.
   - **Gegenmittel:** Freigabeprobe 7 (b) mit einer echten Altdatenbank.
-- **Später gesperrter Satz (bekannte Grenze).**
+- **Später gesperrter Satz.**
   - **Lage:** Ein Satz, den die Quelle im Modus `alle` ungesperrt ausgeliefert hat, liegt beim
     Anwender ohne Schlüssel. Sperrt die Quelle ihn für eine spätere Fassung, trägt das Paket ihn mit
-    einem neu gebildeten Schlüssel. Weil sein Name im Katalog belegt ist, fügt der Abgleich ihn nicht
-    ein (kein Doppel), sondern behält die vorhandene Zeile mit dem Hinweis „Name belegt“. Die Zeile
-    bleibt ungesperrt und ohne Schlüssel und wird auch von späteren Fassungen nie nachgeführt.
-  - **Nachweis:** `KatalogpaketUpdateTests.U3` in `Werkzeuge/Auslieferungsvorlage.Tests`.
-  - **Gegenmittel:** Pflege der Quelle (E7): Ein Satz, der nachgeführt werden soll, wird gesperrt
-    ausgeliefert, bevor eine Installation ihn ungesperrt erhält.
+    einem neu gebildeten Schlüssel, den die Anwenderdatenbank nicht kennt.
+  - **Regel (Anbinden):** Trägt in derselben Katalogtabelle genau eine Zeile den Namen des
+    Paketsatzes (ohne Unterschied von Groß- und Kleinschreibung) und ist sie ohne Schlüssel und
+    ungesperrt, bekommt sie Schlüssel, die Prüfsumme des Paketsatzes und `ReadOnly = 1`. Ihre ID,
+    ihre Werte und ihre Kindzeilen bleiben, Projektkopien und Zuordnungen über die ID stimmen
+    weiter; gelöscht und neu angelegt wird nichts.
+    - Inhalt gleich dem Paketsatz (Vergleich über die Prüfsumme): `ANGEBUNDEN`. Künftige Fassungen
+      führen die Zeile nach wie jede gesperrte Zeile.
+    - Inhalt weicht ab: `ANGEBUNDEN_BEHALTEN`. Ob der Anwender geändert hat, lässt sich nicht
+      feststellen; seine Werte bleiben. Danach gilt die Zeile als geänderte gesperrte Zeile: Sie
+      bleibt behalten, solange sie vom Lieferstand abweicht, und lässt sich auf den
+      Auslieferungsstand zurücksetzen.
+    - Nicht angebunden, sondern behalten wird bei mehreren gleichnamigen Zeilen ohne Schlüssel
+      (Hinweis „mehrdeutig“), bei einer gleichnamigen Zeile mit anderem Schlüssel (Hinweis „gehört
+      einem anderen Auslieferungssatz“) und bei einer gesperrten Zeile ohne Schlüssel („Name belegt“).
+  - **Protokoll:** `Tab_Katalogabgleich.Aktion` lässt nur die Aktionen seines Schemaschritts zu.
+    Ein angebundener Satz steht dort als `AKTUALISIERT` (gleicher Inhalt) bzw. `BEHALTEN`
+    (abweichender Inhalt), kenntlich am eigenen Hinweis; Ergebnis und Dialog führen die Status
+    „angebunden“ und „angebunden, behalten“, der Bericht zählt „n angebunden“.
+  - **Nachweis:** `KatalogabgleichTests` (gleicher und abweichender Inhalt, zwei gleichnamige Zeilen,
+    fremder Schlüssel, Folgefassung) und `KatalogpaketUpdateTests.U3` in
+    `Werkzeuge/Auslieferungsvorlage.Tests`.
 - **Downgrade.** Ein älteres Setup über ein neueres bringt ein Paket kleinerer Fassung mit. Der
   Kern gleicht dann nicht ab (`BeimStart`: Fassung der Datenbank ≥ Paket), der Katalog bleibt auf
   dem neueren Stand. Das ist gewollt und gehört in die Laufanleitung.
