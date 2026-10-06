@@ -14850,6 +14850,18 @@ Please check all entries!</value>
   <data name="SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB" xml:space="preserve">
     <value>Power consumption heating element:</value>
   </data>
+  <data name="SIMERG_LBL_JAZ_WP" xml:space="preserve">
+    <value>SPF heat pump:</value>
+  </data>
+  <data name="SIMERG_LBL_JAZ_SYSTEM" xml:space="preserve">
+    <value>SPF incl. heating element:</value>
+  </data>
+  <data name="SIMERG_TIP_JAZ_WP" xml:space="preserve">
+    <value>Seasonal performance factor of the heat pump alone: heat production HP ÷ power consumption HP. Without power consumption a dash is shown.</value>
+  </data>
+  <data name="SIMERG_TIP_JAZ_SYSTEM" xml:space="preserve">
+    <value>Seasonal performance factor of the system incl. heating element (balance boundary per VDI 4650): (heat production HP + heat of the heating element) ÷ (power consumption HP + power consumption heating element); the heating element delivers as much heat as it draws power. Same calculation as the key figure “Heat pump system SPF incl. backup heater” in the report. Without power consumption a dash is shown.</value>
+  </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_SPK" xml:space="preserve">
     <value>Heat production of the top boilers:</value>
   </data>
@@ -42319,6 +42331,21 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="SIM_SPALTE_TAKTSTROM" xml:space="preserve">
     <value>Cycling extra power [MWh/a]</value>
+  </data>
+  <data name="SIMERG_SPALTE_JAZ" xml:space="preserve">
+    <value>SPF</value>
+  </data>
+  <data name="SIMERG_SPALTE_JAZ_HEIZSTAB" xml:space="preserve">
+    <value>SPF incl. immersion heater</value>
+  </data>
+  <data name="SIMERG_TIP_SPALTE_JAZ" xml:space="preserve">
+    <value>Seasonal performance factor of the module without immersion heater: heat production ÷ power consumption. Without power consumption a dash is shown.</value>
+  </data>
+  <data name="SIMERG_TIP_SPALTE_JAZ_HEIZSTAB" xml:space="preserve">
+    <value>Seasonal performance factor of the module incl. its immersion heater: (heat production + immersion heater) ÷ (power consumption + immersion heater); the immersion heater delivers as much heat as it draws power. Without power consumption a dash is shown.</value>
+  </data>
+  <data name="SIMERG_CHK_JAZ_HEIZSTAB" xml:space="preserve">
+    <value>Include immersion heater in SPF</value>
   </data>
   <data name="SIM_SPALTE_ANFAHRVERLUST" xml:space="preserve">
     <value>Start-up loss [kWh/a]</value>
