@@ -464,13 +464,16 @@ namespace WindowsFormsApplication1
         internal bool Mehrzonig => Zonierung != null && !Zonierung.Einzonig;
 
         /// <summary>
-        /// Die Nutzung je Zone in der Reihenfolge von <see cref="Zonen"/> (<c>WOHNEN</c>, <c>BUERO</c>, <c>SCHULE</c>,
-        /// <c>null</c> = keine) — aus dem <see cref="Zonenplan"/>; beim Speichern bekommt jede Zone mit Nutzung die
-        /// ausgelieferten Vorlagen dieser Nutzung als Kalenderkopien. Leer = keine Nutzung.
+        /// Das Nutzungsprofil je Zone in der Reihenfolge von <see cref="Zonen"/> (<c>null</c> = keine) — aus dem
+        /// <see cref="Zonenplan"/> (<see cref="Planzone.Profil"/>); beim Speichern wird es über den Generator übernommen
+        /// (<see cref="ZonenplanCtrl.NutzungUebernehmen"/>). Leer = keine Nutzung.
         /// </summary>
-        internal IReadOnlyList<string> Zonennutzungen => _nutzungen;
+        internal IReadOnlyList<Planprofil> Zonenprofile => _profile;
 
-        private readonly List<string> _nutzungen = new List<string>();
+        /// <summary>Der Name der Nutzung je Zone (<see cref="Zonenprofile"/>); <c>null</c> = keine.</summary>
+        internal IReadOnlyList<string> Zonennutzungen => _profile.Select(p => p?.Name).ToList();
+
+        private readonly List<Planprofil> _profile = new List<Planprofil>();
 
         /// <summary>
         /// Die Konditionierung aus der HottCAD-Projektdatei je Zone in der Reihenfolge von <see cref="Zonen"/> (<c>null</c> =
@@ -1062,7 +1065,7 @@ namespace WindowsFormsApplication1
                     };
                     if (satz.CadSollwertAktiv && iz.IstBeheizt) ZonensollwertAusDatei(m, iz);
                     _v._zonen.Add(m);
-                    _v._nutzungen.Add(iz.Nutzung);
+                    _v._profile.Add(iz.Profil);
                     _v._projektdatei.Add(iz.Projektdatei);
                     foreach (AbbildRaum r in iz.Raeume)
                         _v._raeume.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Zone, m.ID));

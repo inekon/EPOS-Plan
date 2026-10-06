@@ -18,8 +18,14 @@ namespace WindowsFormsApplication1
         /// <summary>Der Name der Zone (<c>Tab_Zone.Bezeichner</c> beim Speichern); im Plan eindeutig ohne Unterschied der Schreibung.</summary>
         internal string Name { get; set; } = "";
 
-        /// <summary>Die Nutzung (<see cref="Zonenplan.NUTZUNGEN"/>); <c>null</c> = keine.</summary>
-        internal string Nutzung { get; set; }
+        /// <summary>
+        /// Das Nutzungsprofil (Konzept Nutzungsprofile NP-F23): Id und Name eines Profils des Katalogs, ohne Katalog eine
+        /// der alten Kennungen, ein Text ohne Profil mit Befund „nicht im Katalog“; <c>null</c> = keine.
+        /// </summary>
+        internal Planprofil Profil { get; set; }
+
+        /// <summary>Der Name der Nutzung (<see cref="Planprofil.Name"/>); <c>null</c> = keine.</summary>
+        internal string Nutzung => Profil?.Name;
 
         /// <summary>Der Schlüssel der Regelzone, aus der sie stammt (<see cref="Importzone.Schluessel"/>); <c>null</c> = von Hand angelegt.</summary>
         internal string Herkunft { get; set; }
@@ -65,7 +71,10 @@ namespace WindowsFormsApplication1
         /// <summary>Das Präfix der Zonenschlüssel.</summary>
         internal const string SCHLUESSEL_PRAEFIX = "Z:";
 
-        /// <summary>Die wählbaren Nutzungen einer Zone — die Nutzungen der ausgelieferten Konditionierungsvorlagen; dazu „keine“ (<c>null</c>).</summary>
+        /// <summary>
+        /// Die alten Kennungen der Nutzung — wählbar nur ohne Katalog (Vorgabe im Code); mit Katalog wählt die Zone ein Profil
+        /// (<see cref="Raumnutzungsvorbelegung"/>). Die Kennungen bleiben, weil Bestandswerte sie tragen.
+        /// </summary>
         internal static readonly IReadOnlyList<string> NUTZUNGEN = new[] { DbWerte.KOND_NUTZUNG_WOHNEN, DbWerte.KOND_NUTZUNG_BUERO, DbWerte.KOND_NUTZUNG_SCHULE };
 
         /// <summary>Meldung (F): Speichern mit nicht zugeordneten Räumen — Zahl und bis fünf Namen.</summary>
@@ -101,9 +110,12 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<string, string> _zoneJeRaum = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly HashSet<string> _ausserhalb = new HashSet<string>(StringComparer.Ordinal);
         private int _naechste = 1;
+        private Raumnutzungsvorbelegung _vorbelegung;
 
-        private Zonenplan(GebaeudeAbbild abbild, int index, IReadOnlyDictionary<string, bool> haken)
+        private Zonenplan(GebaeudeAbbild abbild, int index, IReadOnlyDictionary<string, bool> haken,
+                          Raumnutzungsvorbelegung vorbelegung = null)
         {
+            _vorbelegung = vorbelegung;
             _abbild = abbild;
             _index = index;
             _haken = haken == null ? new Dictionary<string, bool>(StringComparer.Ordinal)
@@ -123,6 +135,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zonen in Planreihenfolge.</summary>
         internal IReadOnlyList<Planzone> Zonen => _zonen;
+
+        /// <summary>
+        /// Die Vorbelegung der Nutzung (Zuordnung vor Vorgabe im Code, NP-F12): die übergebene, sonst beim ersten Bedarf aus
+        /// der Datenbank gelesen (<see cref="Raumnutzungsvorbelegung.Lesen"/>; ohne Datenbank die Vorgabe).
+        /// </summary>
+        internal Raumnutzungsvorbelegung Vorbelegung => _vorbelegung ??= Raumnutzungsvorbelegung.Lesen();
 
         /// <summary>Die Haken der Raumliste, mit denen der Plan gebildet ist; <c>null</c> = wie gelesen.</summary>
         internal IReadOnlyDictionary<string, bool> Haken => _haken;
@@ -171,38 +189,43 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der Plan aus dem Regelvorschlag</b>: die Zonierung nach <paramref name="regel"/> (<c>null</c> = Vorgabe der Datei)
         /// mit den Haken und den Umhängungen (der Eingang der gespeicherten Zuordnungen von Hand, in ihrer Reihenfolge), jede
-        /// Zone eine freie Zone mit ihrem Namen — unter Z6 mit der Nutzung aus der Nutzungsklasse (<see cref="NutzungAusKlasse"/>),
-        /// sonst ohne. Räume, die der Vorschlag außerhalb lässt, liegen außerhalb. <c>null</c> ohne Gebäude.
+        /// Zone eine freie Zone mit ihrem Namen — unter Z6 mit dem Profil der Nutzungsklasse (<see cref="NutzungAus"/>: Zuordnung
+        /// vor <see cref="NutzungAusKlasse"/>), sonst ohne. Räume, die der Vorschlag außerhalb lässt, liegen außerhalb.
+        /// <c>null</c> ohne Gebäude.
         /// </summary>
         internal static Zonenplan Vorschlag(GebaeudeAbbild abbild, int index, string regel = null,
                                             IReadOnlyDictionary<string, bool> haken = null,
-                                            IReadOnlyList<Raumumhaengung> umhaengungen = null)
+                                            IReadOnlyList<Raumumhaengung> umhaengungen = null,
+                                            Raumnutzungsvorbelegung vorbelegung = null)
         {
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return null;
-            var plan = new Zonenplan(abbild, index, haken);
+            var plan = new Zonenplan(abbild, index, haken, vorbelegung);
             plan.AusRegelBilden(regel, umhaengungen);
             return plan;
         }
 
         /// <summary>
         /// <b>Der gespeicherte Plan</b> eines früheren Imports derselben Datei: die Zonen in der gespeicherten Reihenfolge mit
-        /// Namen und Nutzung, die Räume über ihre Paarung (Raumkennung → Zonen-Id). Ein Raum ohne Paarung liegt außerhalb,
+        /// Namen und Nutzung (der gespeicherte Text als Profil, <see cref="Raumnutzungsvorbelegung.AusText"/>: Profilname →
+        /// Profil, alte Kennung → EPOS-Muster, sonst „nicht im Katalog“), die Räume über ihre Paarung (Raumkennung → Zonen-Id). Ein Raum ohne Paarung liegt außerhalb,
         /// wenn die gespeicherte Regel ihn draußen lässt, sonst ist er nicht zugeordnet; eine Paarung auf eine unbekannte
         /// Zone oder einen fremden Raum bleibt unbeachtet. <c>null</c> ohne Gebäude.
         /// </summary>
         internal static Zonenplan AusGespeichert(GebaeudeAbbild abbild, int index, string regel, IReadOnlyDictionary<string, bool> haken,
                                                  IReadOnlyList<(int Id, string Name, string Nutzung)> zonen,
-                                                 IReadOnlyList<(string Raum, int IdZone)> paarungen)
+                                                 IReadOnlyList<(string Raum, int IdZone)> paarungen,
+                                                 Raumnutzungsvorbelegung vorbelegung = null)
         {
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return null;
-            var plan = new Zonenplan(abbild, index, haken);
+            var plan = new Zonenplan(abbild, index, haken, vorbelegung);
             (IReadOnlyList<string> regeln, string vorgabe, bool _) = GebaeudeZonierung.Waehlbar(abbild, index);
             plan.Regel = regel != null && regeln.Contains(regel) ? regel : vorgabe;
             var jeId = new Dictionary<int, string>();
             foreach ((int id, string name, string nutzung) in zonen ?? Array.Empty<(int, string, string)>())
             {
                 if (jeId.ContainsKey(id)) continue;
-                Planzone z = plan.Neu(plan.FreierName(name), NUTZUNGEN.Contains(nutzung) ? nutzung : null, null, null, angelegt: false);
+                Planzone z = plan.Neu(plan.FreierName(name), string.IsNullOrWhiteSpace(nutzung) ? null : plan.Vorbelegung.AusText(nutzung),
+                                      null, null, angelegt: false);
                 jeId[id] = z.Schluessel;
             }
             var eigene = new HashSet<string>(plan.Gebaeude.Raeume.Select(r => r.Kennung), StringComparer.Ordinal);
@@ -219,7 +242,7 @@ namespace WindowsFormsApplication1
         /// <summary>Eine tiefe Kopie — für Rückgängig im Dialog.</summary>
         internal Zonenplan Kopie()
         {
-            var k = new Zonenplan(_abbild, _index, _haken) { Regel = Regel, Ablehnung = Ablehnung, _naechste = _naechste };
+            var k = new Zonenplan(_abbild, _index, _haken, _vorbelegung) { Regel = Regel, Ablehnung = Ablehnung, _naechste = _naechste };
             k._zonen.AddRange(_zonen.Select(z => z.Kopie()));
             foreach (KeyValuePair<string, string> p in _zoneJeRaum) k._zoneJeRaum[p.Key] = p.Value;
             k._ausserhalb.UnionWith(_ausserhalb);
@@ -237,28 +260,29 @@ namespace WindowsFormsApplication1
             if (zon.Abgelehnt) return;
             foreach (Importzone iz in zon.Zonen)
             {
-                Planzone z = Neu(FreierName(iz.Name), NutzungAus(zon.Regel, iz), iz.Schluessel, iz.Quellkennung,
+                Planzone z = Neu(FreierName(iz.Name), NutzungAus(zon.Regel, iz, Bedarf(zon.Regel)), iz.Schluessel, iz.Quellkennung,
                                  angelegt: iz.Schluessel.StartsWith(GebaeudeZonierung.HAND_PRAEFIX, StringComparison.Ordinal));
                 z.Geaendert = iz.Handgeaendert;
                 foreach (AbbildRaum r in iz.Raeume) _zoneJeRaum[r.Kennung] = z.Schluessel;
                 // Die Konditionierung aus einer IFC-Datei von EPOS-Plan (EPOS_Zone, EPOS_Kalender_*): die des ersten Raums der
-                // Zone, der sie trägt — Rangfolge Projektdatei (ersetzt die Zonierung, SqprojZonen) vor IFC-EPOS_* vor Vorlage.
+                // Zone, der sie trägt — Rangfolge Projektdatei (ersetzt die Zonierung, SqprojZonen) vor IFC-EPOS_* vor Profil.
+                // EPOS_Zone.Nutzung: Profilname → Profil, alte Kennung → EPOS-Muster, sonst bleibt der Text (NP-F23).
                 if (iz.Raeume.Select(r => r.Konditionierung).FirstOrDefault(k => k != null) is AbbildKonditionierung k)
                 {
                     z.Projektdatei = k.AlsZonenkonditionierung(z.Name);
-                    z.Nutzung ??= k.Nutzung;
+                    z.Profil ??= string.IsNullOrWhiteSpace(k.Nutzung) ? null : Vorbelegung.AusText(k.Nutzung);
                 }
             }
             foreach (AbbildRaum r in Gebaeude.Raeume)
                 if (!_zoneJeRaum.ContainsKey(r.Kennung)) _ausserhalb.Add(r.Kennung);
         }
 
-        private Planzone Neu(string name, string nutzung, string herkunft, string quellkennung, bool angelegt)
+        private Planzone Neu(string name, Planprofil profil, string herkunft, string quellkennung, bool angelegt)
         {
             var z = new Planzone
             {
                 Schluessel = SCHLUESSEL_PRAEFIX + (_naechste++).ToString(CultureInfo.InvariantCulture),
-                Name = name, Nutzung = nutzung, Herkunft = herkunft, Quellkennung = quellkennung, Angelegt = angelegt,
+                Name = name, Profil = profil, Herkunft = herkunft, Quellkennung = quellkennung, Angelegt = angelegt,
             };
             _zonen.Add(z);
             return z;
@@ -284,6 +308,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Nutzung einer Nutzungsklasse (Z6): Büro → <c>BUERO</c>; Wohnen, Schlafen, Küche → <c>WOHNEN</c>; Sanitär,
         /// Verkehr, Lager, Technik, Sport, Gastronomie und Sonstige allein ergeben keine (<c>null</c>).
+        /// <para><b>Vorgabe im Code</b> (NP-F12): Vorrang hat die Zuordnung <c>IFC_KLASSE</c> (<see cref="Raumnutzungsvorbelegung"/>).</para>
         /// </summary>
         internal static string NutzungAusKlasse(string klasse)
         {
@@ -298,21 +323,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Nutzung einer Vorschlagszone: unter Z6 die der Nutzungsklasse mit der größten Fläche (Gleichstand: mehr Räume,
-        /// dann Klasse ordinal — dieselbe Ordnung wie der Zonenname), unter jeder anderen Regel keine. Vorbelegt wird nur eine
-        /// beheizte Zone; eine unbeheizte bekommt keine Nutzung.
+        /// Das Profil einer Vorschlagszone: unter Z6 das des Zuordnungsschlüssels mit der größten Fläche (Gleichstand: mehr
+        /// Räume, dann Schlüssel ordinal — dieselbe Ordnung wie der Zonenname), unter jeder anderen Regel keins. Der Schlüssel
+        /// eines Raums ist sein Raumtyp, wenn die Zuordnung eine Zeile <c>HOTTCAD_RAUMTYP</c> dafür trägt, sonst seine
+        /// Nutzungsklasse (<see cref="Raumnutzungsvorbelegung.Herleitung"/>); aufgelöst wird über die Zuordnung vor der
+        /// Vorgabe im Code (<see cref="NutzungAusKlasse"/>). Vorbelegt wird nur eine beheizte Zone; eine unbeheizte bekommt
+        /// keine Nutzung. Ohne <paramref name="vorbelegung"/> gilt die Vorgabe im Code.
         /// </summary>
-        internal static string NutzungAus(string regel, Importzone zone)
+        internal static Planprofil NutzungAus(string regel, Importzone zone, Raumnutzungsvorbelegung vorbelegung = null)
         {
             if (zone == null || !zone.IstBeheizt || !string.Equals(regel, IfcImportProfil.ZONENREGEL_Z6, StringComparison.Ordinal)
                 || zone.Raeume.Count == 0)
                 return null;
-            string klasse = zone.Raeume.GroupBy(GebaeudeZonierung.Nutzungsklasse)
-                .Select(gr => (Klasse: gr.Key, A: gr.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0), N: gr.Count()))
-                .OrderByDescending(k => k.A).ThenByDescending(k => k.N).ThenBy(k => k.Klasse, StringComparer.Ordinal)
-                .First().Klasse;
-            return NutzungAusKlasse(klasse);
+            Raumnutzungsvorbelegung v = vorbelegung ?? Raumnutzungsvorbelegung.Vorgabe;
+            (string Art, string Schluessel) schluessel = zone.Raeume.GroupBy(v.Herleitung)
+                .Select(gr => (Schluessel: gr.Key, A: gr.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0), N: gr.Count()))
+                .OrderByDescending(k => k.A).ThenByDescending(k => k.N).ThenBy(k => k.Schluessel.Schluessel, StringComparer.Ordinal)
+                .ThenBy(k => k.Schluessel.Art, StringComparer.Ordinal)
+                .First().Schluessel;
+            return v.Aufloesen(schluessel.Art, schluessel.Schluessel);
         }
+
+        /// <summary>Die Vorbelegung nur, wenn die Regel sie braucht (Z6) — sonst liest der Plan keine Datenbank.</summary>
+        private Raumnutzungsvorbelegung Bedarf(string regel)
+            => string.Equals(regel, IfcImportProfil.ZONENREGEL_Z6, StringComparison.Ordinal) ? Vorbelegung : null;
 
         // ==================================================================
         //  Operationen
@@ -321,10 +355,18 @@ namespace WindowsFormsApplication1
         /// <summary><b>Legt eine Zone an</b> (am Ende, ohne Raum); der Schlüssel steht im Schritt.</summary>
         internal Planschritt ZoneAnlegen(string name, string nutzung)
         {
+            Planprofil profil = null;
+            if (!string.IsNullOrWhiteSpace(nutzung) && !Vorbelegung.Wahl(nutzung, null, out profil))
+                return Ab(PLAN_NUTZUNG_UNGUELTIG, nutzung);
+            return ProfilzoneAnlegen(name, profil);
+        }
+
+        /// <summary><b>Legt eine Zone mit einem Profil an</b> (am Ende, ohne Raum); der Schlüssel steht im Schritt.</summary>
+        internal Planschritt ProfilzoneAnlegen(string name, Planprofil nutzung)
+        {
             string n = (name ?? "").Trim();
             if (n.Length == 0) return Ab(PLAN_NAME_LEER);
             if (NameVergeben(n, null)) return Ab(PLAN_NAME_DOPPELT, n);
-            if (nutzung != null && !NUTZUNGEN.Contains(nutzung)) return Ab(PLAN_NUTZUNG_UNGUELTIG, nutzung);
             if (_zonen.Count >= GebaeudeZonenregeln.PFLEGEGRENZE)
                 return Ab(PLAN_ZU_VIELE_ZONEN, GebaeudeZonenregeln.PFLEGEGRENZE.ToString(CultureInfo.InvariantCulture));
             Planzone z = Neu(n, nutzung, null, null, angelegt: true);
@@ -353,13 +395,25 @@ namespace WindowsFormsApplication1
             return new Planschritt(true);
         }
 
-        /// <summary><b>Setzt die Nutzung einer Zone</b>: eine der <see cref="NUTZUNGEN"/> oder <c>null</c> (keine).</summary>
+        /// <summary>
+        /// <b>Setzt die Nutzung einer Zone</b> über ihren Text (<see cref="Raumnutzungsvorbelegung.Wahl"/>: Auswahlschlüssel,
+        /// Profilname oder alte Kennung; ohne Katalog eine der <see cref="NUTZUNGEN"/>) oder <c>null</c> (keine). Ein Text ohne
+        /// Profil ist nur wählbar, wenn er schon an der Zone steht.
+        /// </summary>
         internal Planschritt NutzungSetzen(string schluessel, string nutzung)
+        {
+            Planprofil profil = null;
+            if (!string.IsNullOrWhiteSpace(nutzung) && !Vorbelegung.Wahl(nutzung, Zone(schluessel)?.Profil, out profil))
+                return Ab(PLAN_NUTZUNG_UNGUELTIG, nutzung);
+            return ProfilSetzen(schluessel, profil);
+        }
+
+        /// <summary><b>Setzt das Profil einer Zone</b> oder <c>null</c> (keine).</summary>
+        internal Planschritt ProfilSetzen(string schluessel, Planprofil nutzung)
         {
             Planzone z = Zone(schluessel);
             if (z == null) return Ab(PLAN_ZONE_UNBEKANNT, schluessel ?? "");
-            if (nutzung != null && !NUTZUNGEN.Contains(nutzung)) return Ab(PLAN_NUTZUNG_UNGUELTIG, nutzung);
-            z.Nutzung = nutzung;
+            z.Profil = nutzung;
             return new Planschritt(true);
         }
 
@@ -475,7 +529,7 @@ namespace WindowsFormsApplication1
                 bool warm = Beheizt(r);
                 Planzone ziel = _zonen.FirstOrDefault(z => z.Herkunft == iz.Schluessel && Passt(z, warm))
                                 ?? _zonen.FirstOrDefault(z => string.Equals(z.Name, iz.Name, StringComparison.OrdinalIgnoreCase) && Passt(z, warm))
-                                ?? Neu(FreierName(iz.Name), NutzungAus(regel, iz), iz.Schluessel, iz.Quellkennung, angelegt: false);
+                                ?? Neu(FreierName(iz.Name), NutzungAus(regel, iz, Bedarf(regel)), iz.Schluessel, iz.Quellkennung, angelegt: false);
                 _zoneJeRaum[r.Kennung] = ziel.Schluessel;
             }
             return draussen.Count == 0 ? new Planschritt(true)

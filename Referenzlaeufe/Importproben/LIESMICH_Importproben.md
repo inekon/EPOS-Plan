@@ -86,23 +86,37 @@ Abschnitte mit Wochentagsschaltern und über den Jahreswechsel, übersprungene K
 `Unvollstaendig()` (eine Simulationszone mit einem Teil der Räume). Probe 36 (`SqprojZonenTests`) hält die Zonierungswahl: beide Zonierungen mit der Vorgabe DIN-V-18599-Zonen und der Wahl Simulationszonen, nur eine Zonierung ohne Wahl und den Protokollsatz, der beide Zonierungen nennt. Probe 33 (`SqprojLeserTests`) hält die eigene Größengrenze der Projektdatei: 250 MB Windows, 100 MB iOS (`SqprojProfil.MAX_BYTES`, `MAX_BYTES_IOS`). Anwenderdateien liegen nur lokal unter
 `Quellen/*.sqproj` (`.gitignore`) und laufen allein in `SqprojQuelldateienDiagnoseTests`.
 
-**Feste Tabelle Profilnummer → Nutzung** (`EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`, Nummern nach
-DIN V 18599-10 Tabelle 4, 70 und 71 die Wohnzeilen der Projektdatei); jede andere Nummer ergibt keine Nutzung und steht
-im Beleg:
+**Zuordnung Profilnummer → Nutzungsprofil** (Konzept Nutzungsprofile 5.4, NP-F12): Die Nummer nach DIN V 18599-10
+Tabelle 4 (70 und 71 die Wohnzeilen der Projektdatei) führt über die Zuordnung `DIN_NUMMER` in
+`Tab_Raumnutzungszuordnung` auf ein Profil des Katalogs; fehlt die Zeile oder liegt kein Katalog vor, gilt die Vorgabe im
+Code (`EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`), deren Kennung auf das EPOS-Muster gleicher Nutzung führt
+(`Raumnutzungsvorbelegung`). Jede andere Nummer ergibt keine Nutzung und steht im Beleg. Ausgeliefert:
 
-| Nr. | Normname | Nutzung |
-|---|---|---|
-| 1 | Einzelbüro | BUERO |
-| 2 | Gruppenbüro | BUERO |
-| 3 | Großraumbüro | BUERO |
-| 4 | Besprechung, Sitzung, Seminar | BUERO |
-| 5 | Schalterhalle | BUERO |
-| 8 | Klassenzimmer | SCHULE |
-| 9 | Hörsaal, Auditorium | SCHULE |
-| 28 | Bibliothek – Lesesaal | SCHULE |
-| 29 | Bibliothek – Freihandbereich | SCHULE |
-| 70 | Wohnen (Einfamilienhaus) | WOHNEN |
-| 71 | Wohnen (Mehrfamilienhaus) | WOHNEN |
+| Nr. | Normname | Profil (EPOS-Muster) | Vorgabe im Code |
+|---|---|---|---|
+| 1 | Einzelbüro | Büro | BUERO |
+| 2 | Gruppenbüro | Büro | BUERO |
+| 3 | Großraumbüro | Büro | BUERO |
+| 4 | Besprechung, Sitzung, Seminar | Büro | BUERO |
+| 5 | Schalterhalle | Büro | BUERO |
+| 8 | Klassenzimmer | Schule | SCHULE |
+| 9 | Hörsaal, Auditorium | Schule | SCHULE |
+| 12 | Kantine | Gastronomie | — |
+| 13 | Restaurant | Gastronomie | — |
+| 28 | Bibliothek – Lesesaal | Schule | SCHULE |
+| 29 | Bibliothek – Freihandbereich | Schule | SCHULE |
+| 31 | Turnhalle | Sport | — |
+| 35 | Fitnessraum | Sport | — |
+| 41 | Lagerhallen, Logistikhallen | Lager | — |
+| 70 | Wohnen (Einfamilienhaus) | Wohnen | WOHNEN |
+| 71 | Wohnen (Mehrfamilienhaus) | Wohnen | WOHNEN |
+
+Unter der Zonenregel Z6 belegt der Zonenplan eine beheizte Zone mit dem Profil ihrer Nutzungsklasse vor (Zuordnung
+`IFC_KLASSE`, Vorgabe `Zonenplan.NutzungAusKlasse`): Büro → Büro; Wohnen, Schlafen, Küche → Wohnen; Sport, Gastronomie,
+Lager, Verkehr und Technik → das gleichnamige EPOS-Muster (ohne Katalog: keine); Sanitär und Sonstige → keine. Eine Zeile
+`HOTTCAD_RAUMTYP` (ausgeliefert keine) geht der Nutzungsklasse des Raumtyps vor. `EPOS_Zone.Nutzung` einer IFC-Datei von
+EPOS-Plan wird als Profilname gelesen, eine alte Kennung führt auf das EPOS-Muster gleicher Nutzung, jeder andere Text
+bleibt mit dem Befund „nicht im Katalog“ (`ZonenplanProfilTests`, `RaumnutzungVorbelegungTests`, `ZonenimportZuordnungTests`).
 
 ## Katalog-, Geräte-, Ganglinien- und Klimaimporte
 
