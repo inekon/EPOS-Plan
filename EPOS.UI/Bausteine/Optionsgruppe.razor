@@ -28,7 +28,7 @@
    eigene; das aria-label bleibt und nennt in jeder Rubrik dieselbe Wahl. *@
 
 <fieldset class="@Klasse" role="@Rolle" aria-label="@Bezeichnung">
-    @if (NurEintrag is null && !string.IsNullOrEmpty(Bezeichnung))
+    @if (NurEintrag is null && TitelSichtbar && !string.IsNullOrEmpty(Bezeichnung))
     {
         <legend class="epos-optionsgruppe-titel">@Bezeichnung</legend>
     }
@@ -59,6 +59,13 @@
 @code {
     /// <summary>Titel der Gruppe (die <c>legend</c>). Leer = ohne Titel.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>
+    /// Steht der Titel sichtbar als <c>legend</c> da? <c>false</c>, wo eine Ueberschrift
+    /// darueber dasselbe schon sagt (Kartentitel); der Name der Gruppe bleibt dann als
+    /// <c>aria-label</c> fuer die Sprachausgabe.
+    /// </summary>
+    [Parameter] public bool TitelSichtbar { get; set; } = true;
 
     /// <summary>Die Optionen in Anzeigereihenfolge.</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; }

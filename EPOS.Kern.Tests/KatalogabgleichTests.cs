@@ -708,6 +708,241 @@ namespace EPOS.Kern.Tests
                                   "AND COALESCE(Kosten, -1) <> 1"));
         }
 
+        // =============================================================================
+        //  Anbinden: ungesperrt ausgeliefert, später in der Quelle gesperrt
+        // =============================================================================
+
+        private const string EINSCHICHT = "Einschicht 5 Tage";
+        private const string EINSCHICHT_SCHLUESSEL = "PW:EINSCHICHT_5_TAGE";
+
+        /// <summary>Macht aus dem gesperrten Satz eine Anwenderzeile, wie sie ein ungesperrt ausgelieferter Satz hinterlässt.</summary>
+        private static long AlsUngesperrtAusgeliefert(string bezeichner)
+        {
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Prozesswaerme_STAMM SET \"ReadOnly\" = 0, Katalog_Schluessel = NULL, " +
+                                           "Katalog_Pruefsumme = NULL WHERE Bezeichner = ?", new DbParam("@b", bezeichner));
+            return Zahl("SELECT ID FROM Tab_Prozesswaerme_STAMM WHERE Bezeichner = '" + bezeichner + "'");
+        }
+
+        /// <summary>Die Probe als frisches Paket (veränderbar).</summary>
+        private static Katalogpaket ProbeKopie() => Katalogpaket.AusBytes(Katalogpaket.Lesen(Probe).Bytes());
+
+        private static Katalogpaketsatz Satz(Katalogpaket p, string schluessel) =>
+            p.Tabellen.Single(t => t.Tabelle == "Tab_Prozesswaerme_STAMM").Saetze.Single(s => s.Schluessel == schluessel);
+
+        /// <summary>Die Folgefassung: der Satz mit einem neuen Wert für <c>Monat_1</c> und neuer Prüfsumme.</summary>
+        private static Katalogpaket Folgefassung(double monat1)
+        {
+            Katalogpaket p = ProbeKopie();
+            p.Fassung += 1;
+            Katalogpaketsatz s = Satz(p, EINSCHICHT_SCHLUESSEL);
+            s.Werte["Monat_1"] = monat1;
+            s.Pruefsumme = Neusumme(Pw, s);
+            return p;
+        }
+
+        private static string Zeilenstand(long id) =>
+            Text("SELECT \"ReadOnly\" || '|' || COALESCE(Katalog_Schluessel, '∅') || '|' || COALESCE(Katalog_Pruefsumme, '∅') || '|' || " +
+                 "Katalog_Ausgelaufen FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Gleicher Inhalt: Die eine gleichnamige Zeile ohne Schlüssel wird angebunden — ID bleibt, Schlüssel und
+        /// Prüfsumme des Pakets, gesperrt; kein Doppel. Die Folgefassung führt die unveränderte Zeile nach.
+        /// </summary>
+        [Fact]
+        public void Anbinden_bei_gleichem_Inhalt_und_die_Folgefassung_fuehrt_nach()
+        {
+            if (!_db.Vorhanden) return;
+
+            long id = AlsUngesperrtAusgeliefert(EINSCHICHT);
+            Katalogpaket paket = ProbeKopie();
+            string summe = Satz(paket, EINSCHICHT_SCHLUESSEL).Pruefsumme;
+            string projektVorher = Projektbild();
+
+            KatalogabgleichErgebnis plan = Katalogabgleich.Ausfuehren(paket, nurPruefen: true);
+            Assert.Equal("0|∅|∅|0", Zeilenstand(id));
+            Assert.Equal(Katalogabgleich.AKTION_ANGEBUNDEN, plan.Eintraege.Single().Aktion);
+
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            Assert.Equal((0, 0, 0, 0, 1), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen, e.Angebunden));
+            KatalogabgleichEintrag z = e.Eintraege.Single();
+            Assert.Equal((Katalogabgleich.AKTION_ANGEBUNDEN, EINSCHICHT_SCHLUESSEL, R.KABG_HINWEIS_ANGEBUNDEN),
+                         (z.Aktion, z.Schluessel, z.Hinweis));
+            Assert.False(z.Wiederherstellbar);
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + summe + "|0", Zeilenstand(id));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Prozesswaerme_STAMM WHERE Bezeichner = '" + EINSCHICHT + "'"));
+            // Das Protokoll kennt nur die Aktionen seines Schemaschritts: angebunden steht als AKTUALISIERT mit eigenem Hinweis.
+            Assert.Contains(Katalogabgleich.Protokoll(), p => p.Aktion == Katalogabgleich.AKTION_AKTUALISIERT &&
+                                                              p.Schluessel == EINSCHICHT_SCHLUESSEL &&
+                                                              p.Hinweis == R.KABG_HINWEIS_ANGEBUNDEN);
+            Assert.EndsWith(string.Format(CultureInfo.CurrentCulture, R.KABG_BERICHT_ANGEBUNDEN, 1), e.Zusammenfassung());
+            Assert.Equal(projektVorher, Projektbild());
+
+            // Derselbe Lauf erzwungen: nichts mehr zu tun.
+            KatalogabgleichErgebnis erneut = Katalogabgleich.Ausfuehren(paket, nurPruefen: false, erzwingen: true);
+            Assert.Empty(erneut.Eintraege);
+
+            // Folgefassung: die angebundene, unveränderte Zeile wird nachgeführt.
+            Katalogpaket folge = Folgefassung(4711);
+            KatalogabgleichErgebnis f = Katalogabgleich.Ausfuehren(folge, nurPruefen: false);
+            Assert.True(f.Ausgefuehrt, f.Meldung);
+            Assert.Equal(Katalogabgleich.AKTION_AKTUALISIERT, f.Eintraege.Single().Aktion);
+            Assert.Equal(4711.0, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Monat_1 FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture)), CultureInfo.InvariantCulture));
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + Satz(folge, EINSCHICHT_SCHLUESSEL).Pruefsumme + "|0", Zeilenstand(id));
+            Assert.Equal(projektVorher, Projektbild());
+        }
+
+        /// <summary>
+        /// Abweichender Inhalt: angebunden und mit dem Lieferstand überschrieben (ANGEBUNDEN_UEBERSCHRIEBEN) — die
+        /// Zeile war nie gesperrt. Dieselbe ID, die Werte des Paketsatzes, gezählt unter „angebunden"; im Protokoll
+        /// als AKTUALISIERT mit eigenem Hinweis. Beim Start läuft die Sicherung vorher, auch wenn der Plan nur aus
+        /// dieser Anbindung besteht. Die Folgefassung führt die Zeile danach nach.
+        /// </summary>
+        [Fact]
+        public void Anbinden_ueberschreibt_abweichenden_Inhalt_mit_dem_Lieferstand()
+        {
+            if (!_db.Vorhanden) return;
+
+            Katalogabgleich.StartberichtAbholen();
+            long id = AlsUngesperrtAusgeliefert(EINSCHICHT);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Prozesswaerme_STAMM SET Beschreibung = 'eigene Fassung', Monat_1 = 1234 WHERE ID = ?",
+                                           new DbParam("@id", id));
+            Katalogpaket paket = ProbeKopie();
+            string summe = Satz(paket, EINSCHICHT_SCHLUESSEL).Pruefsumme;
+            string beschreibung = Convert.ToString(Satz(paket, EINSCHICHT_SCHLUESSEL).Werte["Beschreibung"], CultureInfo.InvariantCulture);
+            string projektVorher = Projektbild();
+
+            KatalogabgleichErgebnis plan = Katalogabgleich.Ausfuehren(paket, nurPruefen: true);
+            KatalogabgleichEintrag geplant = plan.Eintraege.Single();
+            Assert.Equal(Katalogabgleich.AKTION_ANGEBUNDEN_UEBERSCHRIEBEN, geplant.Aktion);
+            Assert.False(geplant.Wiederherstellbar);
+            Assert.Equal("0|∅|∅|0", Zeilenstand(id));
+
+            string datei = Path.Combine(_db.Ordner, Katalogpaket.DATEINAME);
+            paket.Speichern(datei);
+            int sicherungen = 0;
+            bool sicherungVorDemSchreiben = false;
+            KatalogabgleichErgebnis e = Katalogabgleich.BeimStart(datei, () =>
+            {
+                sicherungen++;
+                sicherungVorDemSchreiben = Zeilenstand(id) == "0|∅|∅|0";
+                return "sicherung.sqlite";
+            });
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            Assert.Equal((1, true, "sicherung.sqlite"), (sicherungen, sicherungVorDemSchreiben, e.Sicherung));
+            Assert.Equal((0, 0, 0, 0, 1), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen, e.Angebunden));
+            KatalogabgleichEintrag z = e.Eintraege.Single();
+            Assert.Equal((Katalogabgleich.AKTION_ANGEBUNDEN_UEBERSCHRIEBEN, R.KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN), (z.Aktion, z.Hinweis));
+            Assert.False(z.Wiederherstellbar);
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + summe + "|0", Zeilenstand(id));
+            Assert.Equal(beschreibung, Text("SELECT COALESCE(Beschreibung, '') FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture)));
+            Assert.Equal(summe, Katalogfassung.PruefsummeDerZeile(Pw, Katalogfassung.VorhandeneFachspalten(Pw),
+                DataRepository.GetDataTable("SELECT * FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture)).Rows[0],
+                Katalogfassung.LeseOhneVorgang));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Prozesswaerme_STAMM WHERE Bezeichner = '" + EINSCHICHT + "'"));
+            Assert.Contains(Katalogabgleich.Protokoll(), p => p.Aktion == Katalogabgleich.AKTION_AKTUALISIERT &&
+                                                              p.Schluessel == EINSCHICHT_SCHLUESSEL &&
+                                                              p.Hinweis == R.KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN);
+            Assert.DoesNotContain(Katalogabgleich.Protokoll(), p => p.Aktion == Katalogabgleich.AKTION_BEHALTEN);
+            Assert.Contains("sicherung.sqlite", Katalogabgleich.StartberichtAbholen().Starttext());
+            Assert.Equal(projektVorher, Projektbild());
+
+            // Folgefassung: die angebundene Zeile entspricht dem Lieferstand und wird nachgeführt.
+            Katalogpaket folge = Folgefassung(4711);
+            KatalogabgleichErgebnis f = Katalogabgleich.Ausfuehren(folge, nurPruefen: false);
+            Assert.True(f.Ausgefuehrt, f.Meldung);
+            Assert.Equal(Katalogabgleich.AKTION_AKTUALISIERT, f.Eintraege.Single().Aktion);
+            Assert.Equal(4711.0, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Monat_1 FROM Tab_Prozesswaerme_STAMM WHERE ID = " + id.ToString(CultureInfo.InvariantCulture)), CultureInfo.InvariantCulture));
+            Assert.Equal("1|" + EINSCHICHT_SCHLUESSEL + "|" + Satz(folge, EINSCHICHT_SCHLUESSEL).Pruefsumme + "|0", Zeilenstand(id));
+            Assert.Equal(projektVorher, Projektbild());
+        }
+
+        /// <summary>
+        /// Überschreiben beim Anbinden führt die Kindzeilen nach wie AKTUALISIERT: Der Baustoff behält seine ID, die
+        /// eigenen Synonyme des Anwenders weichen den gelieferten, die gesperrt eingefügt werden.
+        /// </summary>
+        [Fact]
+        public void Anbinden_mit_Ueberschreiben_fuehrt_die_Kindzeilen_nach()
+        {
+            if (!_db.Vorhanden) return;
+
+            const string baustoff = "Leichtputz 1000";
+            long id = Zahl("SELECT ID FROM Tab_Baustoff_STAMM WHERE Bezeichner = '" + baustoff + "'");
+            Katalogpaket paket = Katalogpaket.AusBytes(Katalogpaket.AusDatenbank(2).Bytes());
+            Katalogpaketsatz satz = paket.Tabellen.Single(t => t.Tabelle == "Tab_Baustoff_STAMM").Saetze.Single(s => s.Bezeichner == baustoff);
+            int synonyme = satz.Kinder["Tab_Baustoffsynonym_STAMM"].Count;
+            Assert.True(synonyme > 0);
+            string synonymeVorher = Text("SELECT group_concat(Materialname || '/' || Sprache, ';') FROM (SELECT Materialname, Sprache " +
+                                         "FROM Tab_Baustoffsynonym_STAMM WHERE ID_Baustoff = " + id + " ORDER BY Materialname, Sprache)");
+
+            // Ungesperrt ausgeliefert und vom Anwender gepflegt: ohne Schlüssel, eigener λ-Wert, eigenes Synonym.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Baustoff_STAMM SET \"ReadOnly\" = 0, Katalog_Schluessel = NULL, Katalog_Pruefsumme = NULL, " +
+                                           "Lambda = 0.99 WHERE ID = ?", new DbParam("@id", id));
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Baustoffsynonym_STAMM WHERE ID_Baustoff = ?", new DbParam("@id", id));
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Baustoffsynonym_STAMM (Materialname, Sprache, ID_Baustoff, \"ReadOnly\") " +
+                                           "VALUES ('eigener Putz', 'de', ?, 0)", new DbParam("@id", id));
+
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false, erzwingen: true);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            KatalogabgleichEintrag z = e.Eintraege.Single(x => x.Schluessel == satz.Schluessel);
+            Assert.Equal(Katalogabgleich.AKTION_ANGEBUNDEN_UEBERSCHRIEBEN, z.Aktion);
+            Assert.Equal(1, e.Angebunden);
+            Assert.Equal(id, Zahl("SELECT ID FROM Tab_Baustoff_STAMM WHERE Katalog_Schluessel = '" + satz.Schluessel + "'"));
+            Assert.Equal(1L, Zahl("SELECT \"ReadOnly\" FROM Tab_Baustoff_STAMM WHERE ID = " + id));
+            Assert.Equal(satz.Pruefsumme, Text("SELECT Katalog_Pruefsumme FROM Tab_Baustoff_STAMM WHERE ID = " + id));
+            Assert.Equal(Convert.ToDouble(satz.Werte["Lambda"], CultureInfo.InvariantCulture),
+                         Convert.ToDouble(DataRepository.ExecuteScalar("SELECT Lambda FROM Tab_Baustoff_STAMM WHERE ID = " + id), CultureInfo.InvariantCulture));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Baustoffsynonym_STAMM WHERE Materialname = 'eigener Putz'"));
+            Assert.Equal((long)synonyme, Zahl("SELECT COUNT(*) FROM Tab_Baustoffsynonym_STAMM WHERE ID_Baustoff = " + id + " AND \"ReadOnly\" = 1"));
+            Assert.Equal(synonymeVorher, Text("SELECT group_concat(Materialname || '/' || Sprache, ';') FROM (SELECT Materialname, Sprache " +
+                                              "FROM Tab_Baustoffsynonym_STAMM WHERE ID_Baustoff = " + id + " ORDER BY Materialname, Sprache)"));
+        }
+
+        /// <summary>Zwei gleichnamige Zeilen ohne Schlüssel (Name ohne Unterschied der Schreibung): kein Anbinden.</summary>
+        [Fact]
+        public void Kein_Anbinden_bei_zwei_gleichnamigen_Zeilen()
+        {
+            if (!_db.Vorhanden) return;
+
+            long id = AlsUngesperrtAusgeliefert(EINSCHICHT);
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Prozesswaerme_STAMM (Bezeichner, \"ReadOnly\", Katalog_Ausgelaufen) " +
+                                           "VALUES (?, 0, 0)", new DbParam("@b", EINSCHICHT.ToLowerInvariant()));
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(ProbeKopie(), nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            KatalogabgleichEintrag z = e.Eintraege.Single();
+            Assert.Equal((Katalogabgleich.AKTION_BEHALTEN, 0, 1),
+                         (z.Aktion, e.Angebunden, e.Behalten));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.KABG_HINWEIS_NAME_MEHRDEUTIG, EINSCHICHT), z.Hinweis);
+            Assert.False(z.Wiederherstellbar);
+            Assert.Equal("0|∅|∅|0", Zeilenstand(id));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Prozesswaerme_STAMM WHERE lower(Bezeichner) = lower('" + EINSCHICHT +
+                                  "') AND Katalog_Schluessel IS NOT NULL"));
+            (bool ok, _) = Katalogabgleich.Wiederherstellen(ProbeKopie(), "Tab_Prozesswaerme_STAMM", EINSCHICHT_SCHLUESSEL);
+            Assert.False(ok);
+        }
+
+        /// <summary>Die gleichnamige Zeile trägt schon einen anderen Schlüssel: kein Anbinden, eigener Hinweis.</summary>
+        [Fact]
+        public void Kein_Anbinden_bei_fremdem_Schluessel()
+        {
+            if (!_db.Vorhanden) return;
+
+            long id = AlsUngesperrtAusgeliefert(EINSCHICHT);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Prozesswaerme_STAMM SET Katalog_Schluessel = 'PW:ANDERER_SATZ' WHERE ID = ?",
+                                           new DbParam("@id", id));
+
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(ProbeKopie(), nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            KatalogabgleichEintrag z = e.Eintraege.Single(x => x.Schluessel == EINSCHICHT_SCHLUESSEL);
+            Assert.Equal(Katalogabgleich.AKTION_BEHALTEN, z.Aktion);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, R.KABG_HINWEIS_NAME_FREMDER_SCHLUESSEL, EINSCHICHT), z.Hinweis);
+            Assert.Equal(0, e.Angebunden);
+            Assert.Equal("0|PW:ANDERER_SATZ|∅|1", Zeilenstand(id));   // der fremde Schlüssel läuft aus, wie jeder Satz ohne Paketzeile
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Prozesswaerme_STAMM WHERE Bezeichner = '" + EINSCHICHT + "'"));
+        }
+
         private static string Neusumme(Katalogtabelle t, Katalogpaketsatz s) =>
             Katalogfassung.Pruefsumme(t, s.Werte, s.Kinder.ToDictionary(k => k.Key,
                 k => (IReadOnlyList<IReadOnlyDictionary<string, object>>)k.Value.Cast<IReadOnlyDictionary<string, object>>().ToList()));

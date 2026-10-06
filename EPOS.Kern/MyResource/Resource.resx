@@ -3465,7 +3465,7 @@ Jetzt Datei auswählen?</value>
     <value>Fläche [m²]:</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_PRUEFUNG" xml:space="preserve">
-    <value>Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation)</value>
+    <value>Auslegungsprüfung nach VDI 4640 Blatt 2</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_QUELLSYSTEM" xml:space="preserve">
     <value>Quellsystem</value>
@@ -3476,6 +3476,9 @@ Jetzt Datei auswählen?</value>
   <data name="SIMQ_ERDREICH_HINWEIS_FESTGESTEIN" xml:space="preserve">
     <value>
   Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
+    <value>Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -3491,6 +3494,27 @@ Jetzt Datei auswählen?</value>
   </data>
   <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
     <value>(DIN 4710, Vorbelegung aus der Klimaregion)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT" xml:space="preserve">
+    <value>Keine Vorprüfung aus Auslegungswerten möglich — es fehlt {0}.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT" xml:space="preserve">
+    <value>die Heizleistung oder der COP am Normpunkt der Kennlinie von „{0}“</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP" xml:space="preserve">
+    <value>eine Wärmepumpe an der Anlage</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE" xml:space="preserve">
+    <value>die Klimazone (Volllaststunden nach DIN 4710)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_KOPF" xml:space="preserve">
+    <value>Vorprüfung aus Auslegungswerten (noch kein Simulationslauf)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_MODUL" xml:space="preserve">
+    <value>  {0}: Q_N = {1} kW, COP = {2} ({3}) → Entzugsleistung ≈ {4} W</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_SUMME" xml:space="preserve">
+    <value>  Entzugsleistung ≈ Q_N · (1 − 1/COP) = {0} W; Jahresentzugsarbeit ≈ {0} W · {1} h/a (Klimazone nach DIN 4710) = {2} kWh/a</value>
   </data>
   <data name="SIMQ_KARTE_GEWAEHLT" xml:space="preserve">
     <value>Gewählte Zone: {0}</value>
@@ -3564,8 +3588,8 @@ Für größere Tiefen das Quellsystem 'Erdsonde' wählen.</value>
   <data name="SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF" xml:space="preserve">
     <value>(noch kein Simulationslauf)
 
-Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und
-Jahresvolllaststunden aus einem Simulationslauf.</value>
+Ohne Lauf rechnet die Prüfung aus Auslegungswerten; nach einem Simulationslauf
+prüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden.</value>
   </data>
   <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
     <value>Erdkollektor</value>
@@ -6088,6 +6112,18 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   </data>
   <data name="BK_BER_VORBELEGT" xml:space="preserve">
     <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Wirtschaftlichkeit im gewählten Szenario und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
+  </data>
+  <data name="BK_BER_KARTE_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="BK_BER_KARTE_INHALT" xml:space="preserve">
+    <value>Inhalt</value>
+  </data>
+  <data name="BK_BER_KARTE_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="BK_BER_KARTE_AUSGABE" xml:space="preserve">
+    <value>Ausgabe</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
@@ -42714,6 +42750,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KABG_BERICHT" xml:space="preserve">
     <value>{0} neu, {1} aktualisiert, {2} behalten, {3} ausgelaufen</value>
   </data>
+  <data name="KABG_BERICHT_ANGEBUNDEN" xml:space="preserve">
+    <value>, {0} angebunden</value>
+  </data>
   <data name="KABG_HINWEIS_BEHALTEN_GEAENDERT" xml:space="preserve">
     <value>Ihre Anpassung bleibt; der neue Auslieferungsstand liegt als Vergleich vor.</value>
   </data>
@@ -42725,6 +42764,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KABG_HINWEIS_AUSGELAUFEN" xml:space="preserve">
     <value>Der Satz ist in der Auslieferung entfallen; er bleibt in Ihrem Katalog.</value>
+  </data>
+  <data name="KABG_HINWEIS_ANGEBUNDEN" xml:space="preserve">
+    <value>Ihr gleichnamiger Satz entspricht dem Auslieferungsstand. Er ist jetzt dem Auslieferungssatz zugeordnet, gesperrt und wird mit künftigen Fassungen nachgeführt.</value>
+  </data>
+  <data name="KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Ihr gleichnamiger Satz weicht vom Auslieferungsstand ab. Er ist jetzt dem Auslieferungssatz zugeordnet, gesperrt und hat den Lieferstand übernommen (Ihre abweichenden Werte sind in der Sicherung); künftige Fassungen führen ihn nach.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Mehrere eigene Sätze tragen den Namen „{0}“; der Auslieferungssatz wurde weder eingefügt noch zugeordnet.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_FREMDER_SCHLUESSEL" xml:space="preserve">
+    <value>Der Name „{0}“ gehört schon zu einem anderen Auslieferungssatz; der Auslieferungssatz wurde weder eingefügt noch zugeordnet.</value>
   </data>
   <data name="KABG_SATZ_NICHT_IM_PAKET" xml:space="preserve">
     <value>Der Satz steht nicht im Katalogpaket.</value>
@@ -42770,6 +42821,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KABG_AKTION_BERICHT" xml:space="preserve">
     <value>Abgleich</value>
+  </data>
+  <data name="KABG_AKTION_ANGEBUNDEN" xml:space="preserve">
+    <value>angebunden</value>
+  </data>
+  <data name="KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>angebunden, Lieferstand übernommen</value>
   </data>
   <data name="KABG_KATALOG_WP" xml:space="preserve">
     <value>Wärmepumpen</value>
@@ -45360,8 +45417,32 @@ Chart</value>
   <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
     <value>Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet?</value>
   </data>
-  <data name="KMA_REITER_KNOPF" xml:space="preserve">
-    <value>Kältemaschinen…</value>
+  <data name="START_E_KUEHL_TITEL" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="START_E_KUEHL_TEXT" xml:space="preserve">
+    <value>Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion</value>
+  </data>
+  <data name="START_E_KUEHL_KM" xml:space="preserve">
+    <value>Kältemaschinen</value>
+  </data>
+  <data name="START_E_KUEHL_WP" xml:space="preserve">
+    <value>Wärmepumpen im Kühlbetrieb</value>
+  </data>
+  <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
+    <value>{0} ({1} ×)</value>
+  </data>
+  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
+    <value>Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an.</value>
+  </data>
+  <data name="START_E_KUEHL_LEER" xml:space="preserve">
+    <value>Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts.</value>
+  </data>
+  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
+    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb.</value>
+  </data>
+  <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
+    <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
   </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Kältemaschinen im Projekt</value>

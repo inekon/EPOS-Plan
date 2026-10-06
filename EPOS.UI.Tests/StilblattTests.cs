@@ -813,6 +813,55 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// Die <b>Bereichszeile</b> (Berichte &amp; Kosten): Der Modifikator <c>epos-reiter--bereich</c>
+    /// hebt die Reiterzeile über Token hervor — Titelgröße aus
+    /// <c>--epos-schriftgroesse-bereichsreiter</c> (15 px, kleiner als der Kacheltitel der
+    /// Hauptreiter), eigene Fläche, aktiver Reiter hell mit dem Unterstrich des Hauses, 2-px-Linie,
+    /// Knopf mit Statuszeile 56 px. Keine Festfarbe, und im Kontrastmodus tragen Linie und
+    /// Unterstrich den Zustand. Die Hausregeln der übrigen Reiter bleiben unverändert.
+    /// </summary>
+    [Fact]
+    public void Die_Bereichszeile_hebt_die_Reiterzeile_ueber_Token_hervor()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.Contains("--epos-schriftgroesse-bereichsreiter: 15px;", css, StringComparison.Ordinal);
+
+        const string Wurzel = ".epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile";
+        string zeile = Regelblock(Wurzel + " {");
+        Assert.Contains("background: var(--epos-flaeche);", zeile, StringComparison.Ordinal);
+        Assert.Contains("border-bottom: 2px solid var(--epos-rahmen);", zeile, StringComparison.Ordinal);
+
+        Assert.Contains("font-size: var(--epos-schriftgroesse-bereichsreiter);",
+            Regelblock(Wurzel + " > .epos-reiter-leiste .epos-reiter-titel"), StringComparison.Ordinal);
+        Assert.Contains("font-size: var(--epos-schriftgroesse);",
+            Regelblock(Wurzel + " > .epos-reiter-leiste .epos-reiter-status"), StringComparison.Ordinal);
+        Assert.Contains("min-height: 56px",
+            Regelblock(Wurzel + " > .epos-reiter-leiste > .epos-reiter-knopf--status"), StringComparison.Ordinal);
+        string aktiv = Regelblock(Wurzel + " > .epos-reiter-leiste > .epos-reiter-knopf--aktiv");
+        Assert.Contains("background: var(--epos-flaeche-hell);", aktiv, StringComparison.Ordinal);
+        Assert.Contains("border-bottom-color: var(--epos-quelle-rahmen);", aktiv, StringComparison.Ordinal);
+
+        // Keine Festfarbe in den Regeln des Modifikators.
+        foreach (string block in css.Split('}').Where(b => b.Contains(".epos-reiter--bereich", StringComparison.Ordinal)))
+        {
+            string rumpf = block[(block.LastIndexOf('{') + 1)..];
+            Assert.DoesNotMatch(@"#[0-9a-fA-F]{3,8}\b|rgb\(", rumpf);
+        }
+
+        // Kontrastmodus: Linie und Unterstrich tragen den Zustand.
+        int kontrast = css.IndexOf(Wurzel + " > .epos-reiter-leiste > .epos-reiter-knopf--aktiv {\n        border-bottom-color: Highlight;",
+                                   StringComparison.Ordinal);
+        Assert.True(kontrast > 0 && css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal)
+                    > css.IndexOf(Wurzel + " {", StringComparison.Ordinal),
+                    "Der Kontrastmodus der Bereichszeile fehlt");
+
+        // Die Hausleiste bleibt leise: Ihre Grundregeln tragen weiter 12 px und 52 px.
+        Assert.Contains("font-size: 12px;", Regelblock(".epos-reiter-status {"), StringComparison.Ordinal);
+        Assert.Contains("min-height: 52px", Regelblock(".epos-reiter-knopf--status"), StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-text-leise);", Regelblock(".epos-reiter-knopf {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Stufe KP2, Welle U0b (Entwurf KP2 Festlegung 7):</b> Das Wochenraster der Kalenderkarten
     /// ordnet sich nach der Breite seines BEHÄLTERS an — Container-Abfrage wie der Katalograhmen,
     /// keine Medienabfrage —: je Tag 4 × 6 als Vorgabe, 2 × 12 ab 600 px, 7 × 24 als feste Tabelle ab
@@ -991,6 +1040,39 @@ public sealed class StilblattTests
     {
         Assert.Contains("max-width: 1160px", Regelblock(".epos-dialog {"), StringComparison.Ordinal);
         Assert.Contains("max-width: none", Regelblock(".epos-dialog.epos-gebk-editor {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Die Berichtsseite in vier Karten (Anordnung B, BL-Q1 bis BL-Q5):</b> Die rechte Spalte ist ein Bedienblock
+    /// fester Breite <c>minmax(420px, 480px)</c> (Vorbild <c>.epos-simreiter</c>), unter 900 px steht alles
+    /// einspaltig — ohne <c>order</c>, die Markup-Folge ist die Lesefolge. Die Karten tragen Token statt Festfarben,
+    /// im Hochkontrast einen Systemrahmen.
+    /// </summary>
+    [Fact]
+    public void BL_B_Die_Berichtsseite_steht_in_zwei_Spalten_mit_fester_rechter_Breite()
+    {
+        string raster = Regelblock(".epos-bericht-raster {");
+        Assert.Contains("grid-template-columns: minmax(0, 1fr) minmax(420px, 480px)", raster, StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", Regelblock(".epos-bericht-spalte {"), StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        int regel = css.IndexOf("\n.epos-bericht-raster {", StringComparison.Ordinal);
+        string schmal = Abfrageblock(css.Substring(regel), "@media (max-width: 900px) {");
+        Assert.Contains(".epos-bericht-raster {\n        grid-template-columns: minmax(0, 1fr);", schmal, StringComparison.Ordinal);
+        Assert.DoesNotContain("order:", schmal, StringComparison.Ordinal);
+
+        string karte = Regelblock(".epos-bericht-karte {");
+        Assert.Contains("border: 1px solid var(--epos-karte-rahmen)", karte, StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-karte-flaeche)", karte, StringComparison.Ordinal);
+        Assert.Contains("padding: var(--epos-karte-rand)", karte, StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-karte-titel)", Regelblock(".epos-bericht-kartentitel {"), StringComparison.Ordinal);
+        foreach (string r in new[] { ".epos-bericht-raster {", ".epos-bericht-spalte {", ".epos-bericht-karte {",
+                                     ".epos-bericht-kartentitel {", ".epos-bericht-ausloesen {",
+                                     ".epos-bericht-ausloesen .epos-herleitung {" })
+            Assert.DoesNotContain("#", Regelblock(r), StringComparison.Ordinal);
+
+        string hoch = Abfrageblock(css.Substring(regel), "@media (forced-colors: active) {");
+        Assert.Contains(".epos-bericht-karte {\n        border: 1px solid CanvasText;", hoch, StringComparison.Ordinal);
     }
 
     /// <summary>

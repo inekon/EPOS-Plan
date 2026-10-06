@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Energieerzeuger
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Energieerzeuger.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Der Reiter '''Energieerzeuger''' der Startseite bestückt das Projekt mit der Technik. Sieben Kacheln stehen zur Wahl – Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher und Pufferspeicher; ein Klick auf eine Kachel öffnet den zugehörigen Verwaltungsdialog. Mehrere Technologien lassen sich kombinieren, und sobald für eine Technologie ein Datensatz im Projekt liegt, zeigt ihre Kachel einen grünen Statuspunkt.
+Der Reiter '''Energieerzeuger''' der Startseite bestückt das Projekt mit der Technik. Acht Kacheln stehen zur Wahl – Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Pufferspeicher und Kühlung; ein Klick auf eine Kachel öffnet den zugehörigen Dialog. Mehrere Technologien lassen sich kombinieren, und sobald für eine Technologie ein Datensatz im Projekt liegt, zeigt ihre Kachel einen grünen Statuspunkt.
 
 == Eingaben ==
 
@@ -10,7 +10,7 @@ Der Reiter '''Energieerzeuger''' der Startseite bestückt das Projekt mit der Te
 * '''Solarthermie''' – die beiden Schalter ''Profil'' und ''Ganglinie'' wählen den Dialog. ''Profil'' öffnet die ''Eingabe der Solarkollektoren'' mit Kollektortyp, Fläche, Neigung und Azimut, ''Ganglinie'' die Zuordnung einer fertigen Solarthermieganglinie; voreingestellt ist ''Profil''. Ist dem Projekt eine vollständige Ganglinie zugeordnet, rechnet die Simulation sie anstelle des Kollektorfelds, mit dessen Senken, Puffer und Kaskadenplatz ([[Programm Dokumentation/Solarthermie#ganglinie|Ganglinie statt Kollektorfeld]]).
 * '''Photovoltaik''' – öffnet die ''Verwaltung Photovoltaik Module'' mit Modultyp, Modulanzahl, Neigung und Azimut; mehrere Teilfelder für unterschiedliche Dachflächen sind möglich.
 * '''Stromspeicher''' und '''Pufferspeicher''' – öffnen die Dialoge ''Verwaltung Stromspeicher'' und ''Verwaltung Pufferspeicher''. Zugeordnet und mit Schaltschwellen versehen wird der Pufferspeicher anschließend in der Simulationskonfiguration.
-* '''Kältemaschine''' – der Knopf ''Kältemaschinen…'' öffnet den Dialog ''Kältemaschinen im Projekt'' mit den Anlagen aus dem Kältemaschinen-Katalog; Einzelheiten unter [[Programm Dokumentation/Kühlung#kaeltemaschine|Kühlung]].
+* '''Kühlung''' – die Kachel zeigt die Kältemaschinen des Projekts und darunter die Wärmepumpen mit Kühlfunktion, je mit einem Schalter, ob sie im Kühlbetrieb mitlaufen. Ein Klick auf die Kachel öffnet den Dialog ''Kältemaschinen im Projekt'' zum Anlegen und Bearbeiten der Kältemaschinen. Der Schalter einer Wärmepumpe speichert sofort und ist derselbe wie ''Maschine auch zum Kühlen benutzen'' in ihrer Konfiguration; ein gesperrter Schalter nennt seinen Grund darunter. Rechnet das Projekt keine Kälte, sagt die Kachel das; Einzelheiten unter [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung]].
 * '''Statuspunkt''' – ein grüner Punkt an der Kachel zeigt an, dass für diese Technologie bereits Daten im Projekt vorliegen, ein grauer, dass keine vorliegen; bei der Solarthermie genügt dafür ein Kollektorsatz oder eine vollständige Ganglinie mit 8 760 Stundenwerten.
 
 == Die Techniken im Überblick ==
