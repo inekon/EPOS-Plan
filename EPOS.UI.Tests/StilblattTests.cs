@@ -1043,6 +1043,39 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Die Berichtsseite in vier Karten (Anordnung B, BL-Q1 bis BL-Q5):</b> Die rechte Spalte ist ein Bedienblock
+    /// fester Breite <c>minmax(420px, 480px)</c> (Vorbild <c>.epos-simreiter</c>), unter 900 px steht alles
+    /// einspaltig — ohne <c>order</c>, die Markup-Folge ist die Lesefolge. Die Karten tragen Token statt Festfarben,
+    /// im Hochkontrast einen Systemrahmen.
+    /// </summary>
+    [Fact]
+    public void BL_B_Die_Berichtsseite_steht_in_zwei_Spalten_mit_fester_rechter_Breite()
+    {
+        string raster = Regelblock(".epos-bericht-raster {");
+        Assert.Contains("grid-template-columns: minmax(0, 1fr) minmax(420px, 480px)", raster, StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", Regelblock(".epos-bericht-spalte {"), StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        int regel = css.IndexOf("\n.epos-bericht-raster {", StringComparison.Ordinal);
+        string schmal = Abfrageblock(css.Substring(regel), "@media (max-width: 900px) {");
+        Assert.Contains(".epos-bericht-raster {\n        grid-template-columns: minmax(0, 1fr);", schmal, StringComparison.Ordinal);
+        Assert.DoesNotContain("order:", schmal, StringComparison.Ordinal);
+
+        string karte = Regelblock(".epos-bericht-karte {");
+        Assert.Contains("border: 1px solid var(--epos-karte-rahmen)", karte, StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-karte-flaeche)", karte, StringComparison.Ordinal);
+        Assert.Contains("padding: var(--epos-karte-rand)", karte, StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-karte-titel)", Regelblock(".epos-bericht-kartentitel {"), StringComparison.Ordinal);
+        foreach (string r in new[] { ".epos-bericht-raster {", ".epos-bericht-spalte {", ".epos-bericht-karte {",
+                                     ".epos-bericht-kartentitel {", ".epos-bericht-ausloesen {",
+                                     ".epos-bericht-ausloesen .epos-herleitung {" })
+            Assert.DoesNotContain("#", Regelblock(r), StringComparison.Ordinal);
+
+        string hoch = Abfrageblock(css.Substring(regel), "@media (forced-colors: active) {");
+        Assert.Contains(".epos-bericht-karte {\n        border: 1px solid CanvasText;", hoch, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Der Rumpf einer At-Regel (<c>@container …</c>, <c>@media …</c>) samt ihrer Regeln — bis zur
     /// Klammer, die sie schließt.
     /// </summary>
