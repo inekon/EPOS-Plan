@@ -45873,6 +45873,12 @@ Chart</value>
   <data name="IMP_SQ_PROT_RAUM_OHNE_TREFFER" xml:space="preserve">
     <value>{0} Räume der Projektdatei finden keinen IFC-Raum (weder über Name und Geschoss noch über die Kennung): {1}.</value>
   </data>
+  <data name="IMP_SQ_PROT_RAUM_HERKUNFT" xml:space="preserve">
+    <value>{0} Räume über die HottCAD-Kennung GUID abgeglichen ({1} über die IFC-Kennung, {2} über Name und Geschoss).</value>
+  </data>
+  <data name="IMP_SQ_PROT_GUID_MEHRDEUTIG" xml:space="preserve">
+    <value>{0} Räume tragen eine HottCAD-Kennung GUID, die nicht eindeutig ist, und werden nicht über sie zugeordnet: {1}.</value>
+  </data>
   <data name="IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>{0} IFC-Räume haben kein Gegenstück in der Projektdatei: {1}.</value>
   </data>

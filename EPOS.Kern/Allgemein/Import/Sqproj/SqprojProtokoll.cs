@@ -30,6 +30,8 @@ namespace WindowsFormsApplication1
         internal const string RAUMART_ABWEICHUNG = PRAEFIX + "RAUMART_ABWEICHUNG";
         internal const string ABSCHNITTSART_UNBEKANNT = PRAEFIX + "ABSCHNITTSART_UNBEKANNT";
         internal const string RAUM_OHNE_TREFFER = PRAEFIX + "RAUM_OHNE_TREFFER";
+        internal const string RAUM_HERKUNFT = PRAEFIX + "RAUM_HERKUNFT";
+        internal const string GUID_MEHRDEUTIG = PRAEFIX + "GUID_MEHRDEUTIG";
         internal const string IFC_RAUM_OHNE_GEGENSTUECK = PRAEFIX + "IFC_RAUM_OHNE_GEGENSTUECK";
         internal const string ZONE_LEER = PRAEFIX + "ZONE_LEER";
         internal const string ZONE_ABGELEHNT = PRAEFIX + "ZONE_ABGELEHNT";
