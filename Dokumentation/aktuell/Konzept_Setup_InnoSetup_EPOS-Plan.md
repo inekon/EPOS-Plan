@@ -914,24 +914,31 @@ Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
     einem neu gebildeten Schlüssel, den die Anwenderdatenbank nicht kennt.
   - **Regel (Anbinden):** Trägt in derselben Katalogtabelle genau eine Zeile den Namen des
     Paketsatzes (ohne Unterschied von Groß- und Kleinschreibung) und ist sie ohne Schlüssel und
-    ungesperrt, bekommt sie Schlüssel, die Prüfsumme des Paketsatzes und `ReadOnly = 1`. Ihre ID,
-    ihre Werte und ihre Kindzeilen bleiben, Projektkopien und Zuordnungen über die ID stimmen
-    weiter; gelöscht und neu angelegt wird nichts.
-    - Inhalt gleich dem Paketsatz (Vergleich über die Prüfsumme): `ANGEBUNDEN`. Künftige Fassungen
-      führen die Zeile nach wie jede gesperrte Zeile.
-    - Inhalt weicht ab: `ANGEBUNDEN_BEHALTEN`. Ob der Anwender geändert hat, lässt sich nicht
-      feststellen; seine Werte bleiben. Danach gilt die Zeile als geänderte gesperrte Zeile: Sie
-      bleibt behalten, solange sie vom Lieferstand abweicht, und lässt sich auf den
-      Auslieferungsstand zurücksetzen.
+    ungesperrt, bekommt sie Schlüssel, die Prüfsumme des Paketsatzes und `ReadOnly = 1`. Ihre ID
+    bleibt, Projektkopien und Zuordnungen über die ID stimmen weiter; die Zeile selbst wird weder
+    gelöscht noch neu angelegt. Künftige Fassungen führen sie nach wie jede gesperrte Zeile.
+    - Inhalt gleich dem Paketsatz (Vergleich über die Prüfsumme): `ANGEBUNDEN`. Werte und
+      Kindzeilen bleiben.
+    - Inhalt weicht ab: `ANGEBUNDEN_UEBERSCHRIEBEN`. Die Zeile war nie gesperrt und übernimmt den
+      Lieferstand: Der Abgleich schreibt die Werte des Paketsatzes auf die vorhandene ID und führt
+      die Kindzeilen nach (etwa die Synonyme eines Baustoffs, gesperrt eingefügt), genau wie bei
+      `AKTUALISIERT`. Die abweichenden Werte des Anwenders stehen in der Sicherung, die vor jedem
+      Abgleich angelegt wird, auch wenn er nur aus Anbindungen besteht. Projektkopien bleiben
+      unberührt.
     - Nicht angebunden, sondern behalten wird bei mehreren gleichnamigen Zeilen ohne Schlüssel
       (Hinweis „mehrdeutig“), bei einer gleichnamigen Zeile mit anderem Schlüssel (Hinweis „gehört
       einem anderen Auslieferungssatz“) und bei einer gesperrten Zeile ohne Schlüssel („Name belegt“).
   - **Protokoll:** `Tab_Katalogabgleich.Aktion` lässt nur die Aktionen seines Schemaschritts zu.
-    Ein angebundener Satz steht dort als `AKTUALISIERT` (gleicher Inhalt) bzw. `BEHALTEN`
-    (abweichender Inhalt), kenntlich am eigenen Hinweis; Ergebnis und Dialog führen die Status
-    „angebunden“ und „angebunden, behalten“, der Bericht zählt „n angebunden“.
-  - **Nachweis:** `KatalogabgleichTests` (gleicher und abweichender Inhalt, zwei gleichnamige Zeilen,
-    fremder Schlüssel, Folgefassung) und `KatalogpaketUpdateTests.U3` in
+    Ein angebundener Satz steht dort als `AKTUALISIERT`, gleich ob sein Inhalt gleich war oder
+    überschrieben wurde, kenntlich am eigenen Hinweis („angebunden, Lieferstand übernommen (Ihre
+    abweichenden Werte sind in der Sicherung)“); Ergebnis und Dialog führen die Status „angebunden“
+    und „angebunden, Lieferstand übernommen“, beide zählen in „n angebunden“, keiner in „behalten“.
+  - **Wiederherstellen und Nur prüfen:** Ein angebundener Satz ist kein behaltener Satz und bietet
+    kein „Auslieferungsstand wiederherstellen“; „Nur prüfen“ zeigt die Anbindung samt Status, ohne
+    zu schreiben.
+  - **Nachweis:** `KatalogabgleichTests` (gleicher Inhalt, abweichender Inhalt mit Überschreiben,
+    Sicherung beim Start und Folgefassung, Kindzeilen eines Baustoffs, zwei gleichnamige Zeilen,
+    fremder Schlüssel) und `KatalogpaketUpdateTests.U3` in
     `Werkzeuge/Auslieferungsvorlage.Tests`.
 - **Downgrade.** Ein älteres Setup über ein neueres bringt ein Paket kleinerer Fassung mit. Der
   Kern gleicht dann nicht ab (`BeimStart`: Fassung der Datenbank ≥ Paket), der Katalog bleibt auf
