@@ -239,7 +239,7 @@ namespace EPOS.Kern.Tests
             Assert.StartsWith("aus Projektdatei:", bemerkung[DbWerte.KOND_GROESSE_HEIZSOLL]);
             Assert.Contains("PdProfileTimeCurve.Temperature", bemerkung[DbWerte.KOND_GROESSE_HEIZSOLL]);
             Assert.Contains("PdProfileTimeCurve.Ratio", bemerkung[DbWerte.KOND_GROESSE_PERSONEN]);
-            Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, ZonenplanCtrl.Nutzung(zonen.Single(z => z.Bezeichner == "Simulation OG").ID));
+            Assert.Equal(RaumnutzungSaat.BUERO, ZonenplanCtrl.Nutzung(zonen.Single(z => z.Bezeichner == "Simulation OG").ID));
         }
 
         /// <summary>

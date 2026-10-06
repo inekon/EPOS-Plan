@@ -45,6 +45,66 @@ namespace EPOS.Kern.Tests
             return ctrl.Profile(katalog).Single(p => p.Bezeichner == name).Id;
         }
 
+        private static System.Collections.Generic.List<(string Groesse, string Nutzung)> Kalender(int idZone)
+        {
+            var t = DataRepository.GetDataTable(
+                "SELECT \"Groesse\", \"Nutzung\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Zone\" = ? ORDER BY \"Groesse\"",
+                new DbParam("@z", idZone));
+            return t.Rows.Cast<System.Data.DataRow>()
+                    .Select(r => (Convert.ToString(r[0], System.Globalization.CultureInfo.InvariantCulture),
+                                  r[1] is DBNull ? null : Convert.ToString(r[1], System.Globalization.CultureInfo.InvariantCulture)))
+                    .ToList();
+        }
+
+        /// <summary>
+        /// Speichern über den Generator (NP-F16, NP-F13, NP-F23): ein neues Muster (Sport) schreibt seine Kalender mit dem
+        /// Profilnamen und <c>Tab_Zone.Nutzungsprofil</c>; ein Profil ohne Kennwerte (Sonstige) nur den Namen; ein Text ohne
+        /// Profil bleibt an der Zone. Der erneute Import derselben Datei findet alle drei wieder.
+        /// </summary>
+        [Fact]
+        public void Speichern_ueber_den_Generator_und_Wiederfinden_beim_erneuten_Import()
+        {
+            if (!_db.Vorhanden) return;
+            var pg = new ProjektGebaeudeCtrl();
+            pg.ReadAll(1045);
+            ProjektGebaeudeModel g = pg.items[0];
+            GebaeudeImportAblauf ablauf = BauteilvorschlagProbe.Lesen("ifc4_zonen.ifc");
+            Zonenplan plan = Zonenplan.Vorschlag(ablauf.Abbild, 0, IfcImportProfil.ZONENREGEL_Z4);
+            Assert.Equal(3, plan.Zonen.Count);
+            Assert.True(plan.NutzungSetzen(plan.Zonen[0].Schluessel, RaumnutzungSaat.SONSTIGE).Ok);
+            Assert.True(plan.NutzungSetzen(plan.Zonen[1].Schluessel, "#" + MusterId(RaumnutzungSaat.SPORT)).Ok);
+            plan.Zonen[2].Profil = new Planprofil(null, "Großraum Nord", NichtImKatalog: true);   // wie aus EPOS_Zone.Nutzung
+
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, plan.Haken, null, plan.Zonieren());
+            Assert.False(v.Abgelehnt);
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            {
+                GebaeudeZonenCtrl.Vorschlagsergebnis e = new GebaeudeZonenCtrl().VorschlagSchreiben(g.ID_Gebaeude, v, vorgang);
+                Assert.True(e.Ok, e.Meldung);
+                Assert.True(new GebaeudeImportCtrl().SchreibeHerkunft(g.ID_Gebaeude, ablauf.Quelle, e.Zuordnungen, vorgang).Ok);
+                vorgang.Commit();
+            }
+            var zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude).ToList();
+            Assert.Equal(new[] { RaumnutzungSaat.SONSTIGE, RaumnutzungSaat.SPORT, "Großraum Nord" }, zonen.Select(z => z.Nutzungsprofil));
+            Assert.Empty(Kalender(zonen[0].ID));
+            var sport = Kalender(zonen[1].ID);
+            Assert.NotEmpty(sport);
+            Assert.All(sport, k => Assert.Equal(RaumnutzungSaat.SPORT, k.Nutzung));
+            Assert.Empty(Kalender(zonen[2].ID));
+            Assert.Equal(RaumnutzungSaat.SONSTIGE, ZonenplanCtrl.Zonennutzung(zonen[0].ID));
+            Assert.Null(ZonenplanCtrl.Nutzung(zonen[0].ID));
+
+            GebaeudeImportAblauf erneut = BauteilvorschlagProbe.Lesen("ifc4_zonen.ifc");
+            Zonenplan wieder = ZonenplanCtrl.Gespeichert(1045, erneut.Quelle.Hash, erneut.Abbild, 0);
+            Assert.NotNull(wieder);
+            Assert.Equal(new[]
+                {
+                    new Planprofil(MusterId(RaumnutzungSaat.SONSTIGE), RaumnutzungSaat.SONSTIGE),
+                    new Planprofil(MusterId(RaumnutzungSaat.SPORT), RaumnutzungSaat.SPORT),
+                    new Planprofil(null, "Großraum Nord", NichtImKatalog: true),
+                }, wieder.Zonen.Select(z => z.Profil));
+        }
+
         [Fact]
         public void Profilname_der_Datei_fuehrt_zum_selben_Profil()
         {

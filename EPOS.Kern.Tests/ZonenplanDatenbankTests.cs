@@ -88,10 +88,11 @@ namespace EPOS.Kern.Tests
             Assert.NotEmpty(groessen);
             List<(string Groesse, string Nutzung)> kalender = Kalender(zonen[1].ID);
             Assert.Equal(groessen, kalender.Select(k => k.Groesse).OrderBy(x => x, StringComparer.Ordinal));
-            Assert.All(kalender, k => Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, k.Nutzung));
+            Assert.All(kalender, k => Assert.Equal(RaumnutzungSaat.BUERO, k.Nutzung));   // NP-F14: der Profilname
             Assert.Empty(Kalender(zonen[0].ID));
             Assert.Empty(Kalender(zonen[2].ID));
-            Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, ZonenplanCtrl.Nutzung(zonen[1].ID));
+            Assert.Equal(RaumnutzungSaat.BUERO, ZonenplanCtrl.Nutzung(zonen[1].ID));
+            Assert.Equal(RaumnutzungSaat.BUERO, zonen[1].Nutzungsprofil);
 
             // Erneuter Import derselben Datei: der Plan kommt mit Namen, Nutzung und Räumen wieder.
             GebaeudeImportAblauf erneut = BauteilvorschlagProbe.Lesen("ifc4_zonen.ifc");

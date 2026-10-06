@@ -102,7 +102,7 @@ namespace EPOS.Kern.Tests
             {
                 Assert.True(eg.ContainsKey(gr), gr);
                 Assert.DoesNotContain("PdProfile", eg[gr].Bemerkung ?? "");
-                Assert.Equal(DbWerte.KOND_NUTZUNG_WOHNEN, eg[gr].Nutzung);
+                Assert.Equal(RaumnutzungSaat.WOHNEN, eg[gr].Nutzung);   // NP-F14: Profilname
             }
             Konditionierungsarbeitsstand ks = new KonditionierungCtrl().ArbeitsstandLesen(g.ID_Gebaeude, null, out string m);
             Assert.Null(m);
@@ -114,7 +114,7 @@ namespace EPOS.Kern.Tests
             Matrixeingang b = ks.Zone(zonen[2].ID).Stand.Bestand;
             Assert.Equal(21.0, Konditionierungsarbeit.Bestandswert(b, Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_TAG));
             Assert.Equal(17.0, Konditionierungsarbeit.Bestandswert(b, Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_NACHT));
-            Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, ZonenplanCtrl.Nutzung(zonen[2].ID));
+            Assert.Equal(RaumnutzungSaat.BUERO, ZonenplanCtrl.Nutzung(zonen[2].ID));
         }
     }
 }

@@ -1075,23 +1075,19 @@ namespace WindowsFormsApplication1
                         }
                     }
 
-                    // 4) Das Nutzungsprofil je Zone (Zonenplan): über den Generator als Kalenderkopien an der Zone, mit Fläche
-                    //    und lichter Höhe der Zone - im selben Vorgang (je Größe ein Sicherungspunkt).
+                    // 4) Je Zone das Nutzungsprofil des Zonenplans über den Generator (Fläche und lichte Höhe der Zone) und
+                    //    danach die Konditionierung der HottCAD-Projektdatei (SQ-1), die die Kopien des Profils ersetzt, wo
+                    //    sie etwas liefert (Datei vor Profil, NP-F16) - im selben Vorgang (je Größe ein Sicherungspunkt).
                     using (Vorgangsklammer.Setzen(v))
                     {
-                        for (int i = 0; i < zonen.Count && i < vorschlag.Zonenprofile.Count; i++)
+                        for (int i = 0; i < zonen.Count; i++)
                         {
-                            string fehlerNutzung = ZonenplanCtrl.NutzungUebernehmen(idGebaeude, zonen[i].ID, vorschlag.Zonenprofile[i],
-                                                                                    zonen[i].Nutzflaeche, zonen[i].Raumhoehe);
-                            if (fehlerNutzung != null) throw new InvalidOperationException(fehlerNutzung);
-                        }
-                        // 5) Die Konditionierung aus der HottCAD-Projektdatei (SQ-1): ersetzt die Kopien des Profils, wo sie
-                        //    etwas liefert (Datei vor Profil, NP-F16) — im selben Vorgang.
-                        for (int i = 0; i < zonen.Count && i < vorschlag.Zonenkonditionierungen.Count; i++)
-                        {
-                            if (vorschlag.Zonenkonditionierungen[i] == null) continue;
-                            string fehlerProjektdatei = ZonenplanCtrl.ProjektdateiUebernehmen(idGebaeude, zonen[i].ID, vorschlag.Zonenkonditionierungen[i]);
-                            if (fehlerProjektdatei != null) throw new InvalidOperationException(fehlerProjektdatei);
+                            Planprofil profil = i < vorschlag.Zonenprofile.Count ? vorschlag.Zonenprofile[i] : null;
+                            Zonenkonditionierung datei = i < vorschlag.Zonenkonditionierungen.Count ? vorschlag.Zonenkonditionierungen[i] : null;
+                            string fehlerZone = datei == null
+                                ? ZonenplanCtrl.NutzungUebernehmen(idGebaeude, zonen[i].ID, profil, zonen[i].Nutzflaeche, zonen[i].Raumhoehe)
+                                : ZonenplanCtrl.ProjektdateiUebernehmen(idGebaeude, zonen[i].ID, datei, profil, zonen[i].Nutzflaeche, zonen[i].Raumhoehe);
+                            if (fehlerZone != null) throw new InvalidOperationException(fehlerZone);
                         }
                     }
 
