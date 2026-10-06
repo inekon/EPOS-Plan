@@ -424,4 +424,38 @@ public class KonditionierungKn6Tests : EposBunitContext
         Assert.Equal(BUERO, feld.Lesen());
         AlleBuero(cut);
     }
+
+    /// <summary>
+    /// <b>Profil und gleichnamige Vorlage</b> (NP2b-5c): Trägt jeder Kalender als Herkunft das Nutzungsprofil „Büro“
+    /// (<see cref="KonditionierungKalender.HerkunftProfil"/>), nennt die Zeile „Vorlage“ das Profil als solches, die Karte
+    /// „aus Nutzungsprofil Büro“, und weder die Herkunft der Größe noch die Liste „alle Größen“ hält es für die Vorlage
+    /// „Büro“ — unterschieden über die Herkunftsart, nicht über den Namen.
+    /// </summary>
+    [Fact]
+    public void Profil_und_gleichnamige_Vorlage_unterscheidet_die_Herkunftsart()
+    {
+        GebaeudeKatalogDaten satz = KonditionierungVorlagenDialogTests.Vollsatz();
+        satz.Konditionierung ??= new KonditionierungDaten();
+        foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+        {
+            var k = new KonditionierungKalender { Zustand = KonditionierungZustand.Angelegt, Vorlage = BUERO, HerkunftProfil = true };
+            k.Perioden.Add(new KonditionierungPeriode { Rang = 100, Matrixbereich = true });
+            satz.Konditionierung.Spalte(g).Kalender = k;
+        }
+        var cut = Editor(satz);
+        KonditionierungBearbeitung b = cut.Instance.Konditionierungsbearbeitung;
+
+        foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+        {
+            Assert.Null(b.Herkunft(g));
+            Assert.Equal("Nutzungsprofil " + BUERO, b.HerkunftText(g));
+            Assert.Equal("aus Nutzungsprofil " + BUERO, b.Zustand(g));
+        }
+        Assert.Null(b.HerkunftAlle());
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "kond_vorlage_alle")!.Lesen());
+
+        KonditionierungVorlagenDialogTests.ReiterWaehlen(cut, REITER);
+        Assert.All(cut.FindAll("tr.epos-kond-herkunftzeile td.epos-kond-herkunft"),
+                   td => Assert.Equal("Nutzungsprofil " + BUERO, td.TextContent.Trim()));
+    }
 }

@@ -450,11 +450,21 @@ public sealed class KonditionierungBearbeitung
     public bool Angelegt(KonditionierungGroesse g) => Kalender(g)?.Zustand == KonditionierungZustand.Angelegt;
 
     /// <summary>
-    /// Die Herkunft des angelegten Kalenders — der Name der zuletzt übernommenen Vorlage (Zeile „Vorlage"
-    /// der Matrix, Teilkonzept 7.2); <c>null</c> = keine.
+    /// Die Herkunft des angelegten Kalenders — der Name der zuletzt übernommenen VORLAGE (Teilkonzept 7.2; Lesen von
+    /// <c>kond_&lt;größe&gt;_vorlage</c>, Liste „alle Größen“); <c>null</c> = keine. Ein aus einem Nutzungsprofil übernommener
+    /// Kalender (<see cref="KonditionierungKalender.HerkunftProfil"/>) hat keine Vorlage, auch wenn eine gleichnamige
+    /// existiert — unterschieden über die Herkunftsart, nicht über den Namen (NP2b-5c).
     /// </summary>
     public string? Herkunft(KonditionierungGroesse g)
-        => Angelegt(g) && Kalender(g)?.Vorlage is { Length: > 0 } v ? v : null;
+        => Angelegt(g) && Kalender(g) is { HerkunftProfil: false, Vorlage: { Length: > 0 } v } ? v : null;
+
+    /// <summary>
+    /// Die Herkunft als Anzeigetext der Zeile „Vorlage“ der Matrix: der Name der Vorlage, bei einem Nutzungsprofil
+    /// „Nutzungsprofil …“ (<see cref="KonditionierungTexte.HerkunftProfil"/>); <c>null</c> = keine.
+    /// </summary>
+    public string? HerkunftText(KonditionierungGroesse g)
+        => !Angelegt(g) || Kalender(g) is not { Vorlage: { Length: > 0 } v } k ? null
+         : k.HerkunftProfil ? string.Format(CultureInfo.CurrentCulture, Texte.HerkunftProfil, v) : v;
 
     /// <summary>
     /// Die Zustandszeile der eingeklappten Karte (Teilkonzept 7.1): „aus der Matrix", „aus Vorlage
@@ -467,7 +477,8 @@ public sealed class KonditionierungBearbeitung
         if (VomGebaeude(g)) return t.ZustandGebaeude;
         if (k is null || k.Zustand == KonditionierungZustand.Abgeleitet) return t.ZustandMatrix;
         if (k.Zustand == KonditionierungZustand.VomGebaeude) return IstZone ? t.ZustandMatrix : t.ZustandGebaeude;
-        if (!string.IsNullOrEmpty(k.Vorlage)) return string.Format(CultureInfo.CurrentCulture, t.ZustandVorlage, k.Vorlage);
+        if (!string.IsNullOrEmpty(k.Vorlage))
+            return string.Format(CultureInfo.CurrentCulture, k.HerkunftProfil ? t.ZustandProfil : t.ZustandVorlage, k.Vorlage);
         return k.EigenePerioden == 1
             ? t.ZustandAngelegtEine
             : string.Format(CultureInfo.CurrentCulture, t.ZustandAngelegt, k.EigenePerioden);

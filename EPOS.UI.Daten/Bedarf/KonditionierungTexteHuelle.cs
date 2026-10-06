@@ -70,6 +70,8 @@ namespace WindowsFormsApplication1
             // Zustand einer Kalenderkarte
             t.ZustandMatrix = Text_("KOND_TXT_ZUSTAND_MATRIX", t.ZustandMatrix);
             t.ZustandVorlage = Text_("KOND_TXT_ZUSTAND_VORLAGE", t.ZustandVorlage);
+            t.ZustandProfil = Text_("RNP_MSG_HERKUNFT_PROFIL", t.ZustandProfil);
+            t.HerkunftProfil = Text_("RNP_LBL_HERKUNFT_PROFIL", t.HerkunftProfil);
             t.ZustandAngelegt = Text_("KOND_TXT_ZUSTAND_ANGELEGT", t.ZustandAngelegt);
             t.ZustandAngelegtEine = Text_("KOND_TXT_ZUSTAND_ANGELEGT_EINE", t.ZustandAngelegtEine);
             t.ZustandGebaeude = Text_("KOND_TXT_ZUSTAND_GEBAEUDE", t.ZustandGebaeude);
