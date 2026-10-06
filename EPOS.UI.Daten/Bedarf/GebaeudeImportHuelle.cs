@@ -606,13 +606,14 @@ namespace WindowsFormsApplication1
                 ManuellHerkunftText = GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Manuell),
                 Bauteile = BauteileDaten(_vorschlag),
                 Baustoffe = BaustoffeDaten(_vorschlag, anfrage.Baustoffzuordnungen),
+                Aufbauten = GebaeudeAufbauHuelle.Aufbauliste(_vorschlag),
                 KlasseDerDatei = GebaeudeZuordnungsModell.KlasseDerDatei(satz),
                 KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
                 Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken, _plan, _schritt),
-                Ansicht = GebaeudeImportAnsicht.AnsichtDaten(_geometrie, umhaengbar,
+                Ansicht = GebaeudeAufbauHuelle.MitAufbau(GebaeudeImportAnsicht.AnsichtDaten(_geometrie, umhaengbar,
                                                              GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag),
                                                              anfrage.Gebaeudeindex >= 0 && anfrage.Gebaeudeindex < (_ablauf.Abbild?.Gebaeude.Count ?? 0)
-                                                                 ? _ablauf.Abbild.Gebaeude[anfrage.Gebaeudeindex] : null),
+                                                                 ? _ablauf.Abbild.Gebaeude[anfrage.Gebaeudeindex] : null), _vorschlag),
                 ProjektdateiMoeglich = GebaeudeImportAblauf.IstHottcad(_ablauf.Abbild, anfrage.Gebaeudeindex),
                 Projektdatei = ProjektdateiDaten() is GebaeudeProjektdateiDaten pd ? pd with { Einzonenvorschlag = Einzonenvorschlag() } : null,
             };

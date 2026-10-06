@@ -754,6 +754,11 @@
             </div>
         }
 
+        @if (stand.Bauteile is not null)
+        {
+            @Aufbauliste(stand)
+        }
+
         @if (stand.Baustoffe is { Zeilen.Count: > 0 } baustoffe)
         {
             @* DIE BAUSTOFFE (Namensabgleich): je Materialname der Datei die Stufe, der zugeordnete
@@ -782,8 +787,14 @@
                         @foreach (GebaeudeMaterialzeileDaten eintrag in baustoffe.Zeilen)
                         {
                             GebaeudeMaterialzeileDaten z = eintrag;
-                            <tr @key="z.Name" class="@Baustoffzeilenklasse(z)" data-schluessel="@z.Schluessel">
-                                <td class="epos-gebimport-materialname">@z.Name</td>
+                            <tr @key="z.Name" class="@(Baustoffzeilenklasse(z) + (z.Schluessel == _baustoffziel ? " epos-gebimport-baustoff--ziel" : ""))" data-schluessel="@z.Schluessel">
+                                <td class="epos-gebimport-materialname">
+                                    @if (z.Schluessel == _baustoffziel)
+                                    {
+                                        <span class="epos-gebimport-zielmarke" tabindex="-1" @ref="_baustoffmarke"></span>
+                                    }
+                                    @z.Name
+                                </td>
                                 <td class="epos-gebimport-zahl">@z.Schichten.ToString(CultureInfo.CurrentCulture)</td>
                                 <td class="@("epos-gebimport-abgleich epos-gebimport-abgleich--" + (z.AbgleichSchluessel ?? "").ToLowerInvariant())"
                                     title="@(z.Beleg.Length > 0 ? z.Beleg : null)">@z.Abgleich</td>
@@ -1239,6 +1250,13 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_baustoffzielNeu)
+        {
+            _baustoffzielNeu = false;
+            // Rollen gewollt: der Sprung aus Steckbrief oder Aufbauliste führt zur Zeile des Materialnamens.
+            try { await _baustoffmarke.FocusAsync(preventScroll: false); }
+            catch (Exception) { /* die Zeile ist nicht (mehr) gezeichnet */ }
+        }
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         await _wurzel.FocusAsync(preventScroll: true);
@@ -1484,7 +1502,8 @@
             </div>
         }
         <GebaeudeAnsicht Daten="@ansicht" GewaehlteZone="@Zielzone(ansicht)" Geschoss="@_geschoss" GeschossChanged="BeiGeschoss"
-                         RaumUmgehaengt="BeiUmhaengen" ZoneGewaehlt="BeiZoneGewaehlt" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht" />
+                         RaumUmgehaengt="BeiUmhaengen" ZoneGewaehlt="BeiZoneGewaehlt" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht"
+                         ZurBaustoffzuordnung="BeiBaustoffsprung" />
         if (_konflikt is Umhaengkonflikt k && stand.Zonierung?.Plan is null)
         {
             @Konfliktbanner(k)
@@ -2271,6 +2290,137 @@
     };
 
     /// <summary>Gelb, wo ein Name einen Baustoff braucht und keinen trifft; vorgemerkt, wo der Dialog etwas geändert hat.</summary>
+    // =====================================================================
+    //  Liste „Bauteilaufbauten" (Konzept Bauteilaufbau 5.4 b, BA-3)
+    // =====================================================================
+
+    /// <summary>Der Materialname, zu dem der letzte Sprung führte (Abschnitt „Baustoffe"); <c>null</c> = keiner.</summary>
+    private string? _baustoffziel;
+    private bool _baustoffzielNeu;
+    private ElementReference _baustoffmarke;
+
+    /// <summary>Zeigt die Liste nur die Stufen B und C?</summary>
+    private bool _nurBC;
+
+    /// <summary>Die aufgeklappten Zeilen (Schlüssel).</summary>
+    private readonly HashSet<string> _aufbauOffen = new(StringComparer.Ordinal);
+
+    /// <summary>Das Ziel des letzten Sprungs in die Baustoffe (Prüfhilfe für Tests).</summary>
+    public string? Baustoffziel => _baustoffziel;
+
+    /// <summary>Der Sprung in den Abschnitt „Baustoffe" (aus Steckbrief oder Liste): markiert die Zeile und rollt zu ihr.</summary>
+    private void BeiBaustoffsprung(string schluessel)
+    {
+        _baustoffziel = schluessel;
+        _baustoffzielNeu = true;
+    }
+
+    private void BeiAufbauzeile(string schluessel)
+    {
+        if (!_aufbauOffen.Remove(schluessel)) _aufbauOffen.Add(schluessel);
+    }
+
+    /// <summary>
+    /// Die Liste „Bauteilaufbauten": je Aufbau Stufe, Art, Zahl und Fläche der Bauteile, U der Datei, U aus den Schichten,
+    /// C₁,korr je m², was fehlt; aufgeklappt die Schichten. Handlungen: Schichten zeigen, Baustoff zuordnen (Sprung). Eine
+    /// schlichte Tabelle ohne Virtualisierung — die Zahl der Aufbauten ist klein (je Konstruktion einer).
+    /// </summary>
+    private RenderFragment Aufbauliste(GebaeudeImportStand stand) => __builder =>
+    {
+        IReadOnlyList<GebaeudeAufbaulistenzeileDaten> zeilen = stand.Aufbauten;
+        <Gruppenkopf Titel="@Texte.GruppeAufbauten" />
+        @if (zeilen.Count == 0)
+        {
+            <p class="epos-leisezeile epos-gebimport-aufbauten-leer">@Texte.AbLeer</p>
+            return;
+        }
+        <label class="epos-gebimport-aufbaufilter">
+            <input type="checkbox" checked="@_nurBC" @onchange="e => _nurBC = e.Value is true" />
+            @Texte.AbNurBC
+        </label>
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-gebimport-aufbauten">
+                <thead>
+                    <tr>
+                        <th>@Texte.AbSpalteStufe</th>
+                        <th>@Texte.AbSpalteAufbau</th>
+                        <th>@Texte.AbSpalteArt</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteBauteile</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteFlaeche</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteUDatei</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteUSchichten</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteC1</th>
+                        <th>@Texte.AbSpalteFehlt</th>
+                        <th>@Texte.AbSpalteHandlung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (GebaeudeAufbaulistenzeileDaten eintrag in zeilen.Where(z => !_nurBC || GebaeudeAnsichtAufbaustufen.Unvollstaendig(z.Stufe)))
+                    {
+                        GebaeudeAufbaulistenzeileDaten z = eintrag;
+                        bool offen = _aufbauOffen.Contains(z.Schluessel);
+                        <tr @key="z.Schluessel" class="@(offen ? "epos-gebimport-aufbauzeile epos-gebimport-aufbauzeile--offen" : "epos-gebimport-aufbauzeile")"
+                            data-schluessel="@z.Schluessel" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(z.Stufe)">
+                            <td>
+                                <span class="epos-gebansicht-farbfeld" style="@("background:" + GebaeudeAnsichtAufbaustufen.Farbe(z.Stufe))" aria-hidden="true"></span>
+                                @Texte.Ansicht.Stufenname(z.Stufe)
+                            </td>
+                            <td>
+                                @z.Aufbau
+                                @if (z.Typaufbau.Length > 0)
+                                {
+                                    <span class="epos-leisezeile epos-gebimport-typaufbau">@z.Typaufbau</span>
+                                }
+                            </td>
+                            <td>@z.Art</td>
+                            <td class="epos-gebimport-zahl">@z.Bauteile.ToString(CultureInfo.CurrentCulture)</td>
+                            <td class="epos-gebimport-zahl">@z.Flaeche</td>
+                            <td class="epos-gebimport-zahl">@z.UDatei</td>
+                            <td class="epos-gebimport-zahl">@z.USchichten</td>
+                            <td class="epos-gebimport-zahl">@z.C1korr</td>
+                            <td class="epos-gebimport-aufbaufehlt">@z.Fehlt</td>
+                            <td>
+                                <div class="epos-gebimport-aufbauhandlungen">
+                                    @if (z.Schichten.Count > 0)
+                                    {
+                                        <button type="button" class="epos-knopf epos-gebimport-aufbauschichten" aria-expanded="@(offen ? "true" : "false")"
+                                                @onclick="() => BeiAufbauzeile(z.Schluessel)">@Texte.AbSchichten</button>
+                                    }
+                                    @if (z.Materialschluessel is { } material && stand.Baustoffe is { Zeilen.Count: > 0 })
+                                    {
+                                        <button type="button" class="epos-knopf epos-gebimport-aufbaubaustoff" data-material="@material"
+                                                @onclick="() => BeiBaustoffsprung(material)">@Texte.AbZurBaustoff</button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                        string schichtschluessel = z.Schluessel + "|s";
+                        @if (offen)
+                        {
+                            <tr @key="schichtschluessel" class="epos-gebimport-aufbauschichtzeile">
+                                <td colspan="10">
+                                    <ul class="epos-gebimport-aufbauschichtliste">
+                                        @foreach (BauteilsteckbriefSchicht sch in z.Schichten)
+                                        {
+                                            <li class="@(sch.Weggelassen ? "epos-steckbrief-schicht--weggelassen" : null)" data-herkunft="@sch.HerkunftSchluessel">
+                                                @sch.Name · @sch.Dicke · λ @sch.Lambda · ρ @sch.Rohdichte · c @sch.Cp · @sch.Herkunft
+                                                @if (sch.Weggelassen)
+                                                {
+                                                    <span class="epos-steckbrief-grund">(@sch.Grund)</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <Herleitungszeile Text="@Texte.AbHinweis" />
+    };
+
     private static string? Baustoffzeilenklasse(GebaeudeMaterialzeileDaten z)
     {
         string klasse = (z.OhneTreffer ? "epos-gebimport-zeile--gelb " : "") + (z.Vorgemerkt ? "epos-gebimport-baustoff--vorgemerkt" : "");

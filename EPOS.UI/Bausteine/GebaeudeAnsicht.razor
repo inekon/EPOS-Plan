@@ -65,6 +65,16 @@
    (data-farbmodus), nie ueber den Text. Die Szene traegt farbmodus, randfarben und randsichtbar, je Dateikoerper gruppenAb
    und die Bauteilkoerper aus dem zweiten Teil des Bytefelds (GebaeudeAnsichtDaten.Koerperfeld).
 
+   DER FARBMODUS "AUFBAU" (Konzept Bauteilaufbau 5.4, BA-3) ist der dritte im Umschalter: Raumflaechen (ueber das Bauteil je
+   Dreieck der Flaechenklassifikation) und Bauteilkoerper in der Farbe der Zuordnungsstufe ihres Bauteils (Farbtafel
+   GebaeudeAnsichtAufbaustufen.FARBEN - die eine Stelle), R0 halbtransparent; im Grundriss die Kanten nach der Stufe ihres
+   Bauteils. Die Legende nennt je Stufe Zahl und Flaeche, aussen und innen getrennt, mit Schalter. Ohne Stufen (kein
+   Bauteilvorschlag) oder ohne Klassifikation ist "Aufbau" gesperrt mit Grund. Die Szene traegt aufbaufarben,
+   aufbausichtbar, je Dateikoerper stufenAb (vierter Teil des Bytefelds) und je Bauteilkoerper stufe.
+   DER STECKBRIEF: Ein Klick auf einen Bauteilkoerper oder eine Raumflaeche (das Modul meldet das Dreieck, die Daten
+   kennen sein Bauteil) oder auf eine Grundrisskante im Modus "Aufbau" oeffnet neben dem Bild den Baustein
+   Bauteilsteckbrief, wenn die Daten einen fuer das Bauteil tragen. Er schreibt nichts.
+
    ZAHLEN IM SVG stehen invariant mit drei Nachkommastellen (GebaeudeAnsichtZeichnung): Dieselben
    Daten geben in jeder Sprache dasselbe Markup. Die Beschriftungen entstehen ueber den
    RenderTreeBuilder - ein SVG-Element "text" waere im Razor-Markup der Texttransition vorbehalten. *@
@@ -104,6 +114,10 @@
         @if (!daten.RandbedingungWaehlbar)
         {
             <p class="epos-leisezeile epos-gebansicht-farbmodus-hinweis" role="note">@RandGrund(daten)</p>
+        }
+        else if (!daten.AufbauWaehlbar)
+        {
+            <p class="epos-leisezeile epos-gebansicht-aufbau-hinweis" role="note">@AufbauGrund(daten)</p>
         }
         @if (!daten.Umhaengbar)
         {
@@ -145,6 +159,9 @@
 
     /// <summary>Der Schlüssel des Farbmodus „Randbedingung" (Farbe je Gruppe R0 bis R7).</summary>
     internal const string FARBMODUS_RAND = "randbedingung";
+
+    /// <summary>Der Schlüssel des Farbmodus „Aufbau" (Farbe je Zuordnungsstufe, BA-3).</summary>
+    internal const string FARBMODUS_AUFBAU = "aufbau";
 
     /// <summary>Das Modul der Körperansicht (statisches Web-Asset der Bibliothek).</summary>
     public const string MODUL_KOERPER = "./_content/EPOS.UI/epos-gebaeude-koerper.js";
@@ -242,7 +259,33 @@
     /// Der gezeigte Farbmodus (Prüfhilfe für Tests): <see cref="FARBMODUS_RAND"/> nur, wenn gewählt und wählbar, sonst
     /// <see cref="FARBMODUS_ZONEN"/>.
     /// </summary>
-    public string Farbmodus => Daten is { RandbedingungWaehlbar: true } && _farbmodus == FARBMODUS_RAND ? FARBMODUS_RAND : FARBMODUS_ZONEN;
+    public string Farbmodus => Daten is { RandbedingungWaehlbar: true } && _farbmodus == FARBMODUS_RAND ? FARBMODUS_RAND
+        : Daten is { AufbauWaehlbar: true } && _farbmodus == FARBMODUS_AUFBAU ? FARBMODUS_AUFBAU : FARBMODUS_ZONEN;
+
+    /// <summary>Ist der Farbmodus „Aufbau" gezeigt?</summary>
+    private bool ImAufbaumodus => string.Equals(Farbmodus, FARBMODUS_AUFBAU, StringComparison.Ordinal);
+
+    /// <summary>Ist ein Modus mit Gruppen je Dreieck gezeigt („Randbedingung" oder „Aufbau")?</summary>
+    private bool ImGruppenmodus => ImRandmodus || ImAufbaumodus;
+
+    /// <summary>Je Stufe eingeblendet? Die Schalter der Aufbaulegende.</summary>
+    private readonly bool[] _stufeSichtbar = Enumerable.Repeat(true, GebaeudeAnsichtAufbaustufen.ZAHL).ToArray();
+
+    /// <summary>Ist die Stufe eingeblendet (Prüfhilfe für Tests)?</summary>
+    public bool StufeSichtbar(Aufbaustufe s) => _stufeSichtbar[(int)s];
+
+    /// <summary>Die Kennung des Bauteils, dessen Steckbrief offen ist; <c>null</c> = keiner.</summary>
+    private string? _steckbrief;
+
+    /// <summary>Der offene Steckbrief (Prüfhilfe für Tests); <c>null</c> = keiner.</summary>
+    public BauteilsteckbriefDaten? GezeigterSteckbrief
+        => _steckbrief is not null && Daten is not null && Daten.Steckbriefe.TryGetValue(_steckbrief, out BauteilsteckbriefDaten? d) ? d : null;
+
+    /// <summary>Der Sprung des Steckbriefs in die Baustoffzuordnung (Schlüssel des Materialnamens); ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback<string> ZurBaustoffzuordnung { get; set; }
+
+    /// <summary>Der Sprung des Steckbriefs in den Bauteildialog (Id des gespeicherten Bauteils); ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback<int> ZumBauteil { get; set; }
 
     /// <summary>Ist der Farbmodus „Randbedingung" gezeigt?</summary>
     private bool ImRandmodus => string.Equals(Farbmodus, FARBMODUS_RAND, StringComparison.Ordinal);
@@ -343,8 +386,8 @@
                         if (raum.Polygone.Count == 0) continue;
                         GebaeudeAnsichtRaum r = raum;
                         string beschreibung = Beschreibung(daten, r);
-                        GebaeudeAnsichtKoerperraum? angaben = ImRandmodus ? daten.Koerperraum(r.Kennung) : null;
-                        string? boden = ImRandmodus ? Bodenstil(angaben) : null;
+                        GebaeudeAnsichtKoerperraum? angaben = ImGruppenmodus ? daten.Koerperraum(r.Kennung) : null;
+                        string? boden = ImRandmodus ? Bodenstil(angaben) : ImAufbaumodus ? "fill:#ffffff" : null;
                         <g class="@Raumklasse(daten, r)" data-raum="@r.Kennung" data-zone="@r.Zone"
                            data-boden="@(ImRandmodus ? angaben?.Bodengruppe?.ToString() : null)"
                            tabindex="@(Bedienbar ? "0" : null)" role="@(Bedienbar ? "button" : "img")"
@@ -356,7 +399,11 @@
                                 if (polygon.Count < 3) continue;
                                 <polygon points="@GebaeudeAnsichtZeichnung.Punkte(polygon)" style="@boden" />
                             }
-                            @if (angaben is not null)
+                            @if (angaben is not null && ImAufbaumodus)
+                            {
+                                @Aufbaukanten(r, angaben, daten)
+                            }
+                            else if (angaben is not null)
                             {
                                 @Kanten(r, angaben)
                             }
@@ -368,6 +415,11 @@
             @if (ImRandmodus)
             {
                 @Randlegende(daten, false)
+            }
+            else if (ImAufbaumodus)
+            {
+                @Aufbaulegende(daten)
+                @Steckbriefblock()
             }
             else
             {
@@ -417,11 +469,15 @@
     {
         <div class="epos-gebansicht-farbmodus" role="group" aria-label="@Texte.Farbmodus" data-farbmodus="@Farbmodus">
             <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_ZONEN"
-                    aria-pressed="@(ImRandmodus ? "false" : "true")" @onclick="() => BeiFarbmodus(FARBMODUS_ZONEN)">@Texte.FarbmodusZonen</button>
+                    aria-pressed="@(ImGruppenmodus ? "false" : "true")" @onclick="() => BeiFarbmodus(FARBMODUS_ZONEN)">@Texte.FarbmodusZonen</button>
             <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_RAND"
                     aria-pressed="@(ImRandmodus ? "true" : "false")" disabled="@(!daten.RandbedingungWaehlbar)"
                     title="@(daten.RandbedingungWaehlbar ? null : RandGrund(daten))"
                     @onclick="() => BeiFarbmodus(FARBMODUS_RAND)">@Texte.FarbmodusRand</button>
+            <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_AUFBAU"
+                    aria-pressed="@(ImAufbaumodus ? "true" : "false")" disabled="@(!daten.AufbauWaehlbar)"
+                    title="@(daten.AufbauWaehlbar ? null : AufbauGrund(daten))"
+                    @onclick="() => BeiFarbmodus(FARBMODUS_AUFBAU)">@Texte.FarbmodusAufbau</button>
         </div>
     };
 
@@ -527,6 +583,7 @@
     private void BeiFarbmodus(string schluessel)
     {
         if (schluessel == FARBMODUS_RAND && Daten is not { RandbedingungWaehlbar: true }) return;
+        if (schluessel == FARBMODUS_AUFBAU && Daten is not { AufbauWaehlbar: true }) return;
         if (!string.Equals(_farbmodus, schluessel, StringComparison.Ordinal)) _treffer = null;
         _farbmodus = schluessel;
     }
@@ -536,11 +593,115 @@
     private void BeiBauteilen() => _bauteileSichtbar = !_bauteileSichtbar;
 
     /// <summary>Die Schalter als Zeichenkette (Vergleich, ob das Modul neu zu versorgen ist); zuletzt der Bauteilschalter.</summary>
-    private string Schalterstand => string.Concat(_sichtbar.Select(x => x ? '1' : '0')) + (_bauteileSichtbar ? 'b' : '-');
+    private string Schalterstand => string.Concat(_sichtbar.Select(x => x ? '1' : '0')) + (_bauteileSichtbar ? 'b' : '-')
+                                    + string.Concat(_stufeSichtbar.Select(x => x ? '1' : '0'));
+
+    /// <summary>Warum „Aufbau" nicht wählbar ist — ohne Stufen, sonst der Grund von „Randbedingung".</summary>
+    private string AufbauGrund(GebaeudeAnsichtDaten daten) => daten.HatAufbaustufen ? RandGrund(daten) : Texte.AufbauOhneStufen;
+
+    private void BeiStufe(Aufbaustufe s) => _stufeSichtbar[(int)s] = !_stufeSichtbar[(int)s];
+
+    /// <summary>
+    /// Die Legende der Stufen (BA-3): je Stufe mit Bauteilen Farbe, Name, Zahl und Fläche außen und innen und ein Schalter
+    /// (aria-pressed).
+    /// </summary>
+    private RenderFragment Aufbaulegende(GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        <table class="epos-raster epos-gebansicht-aufbaulegende" aria-label="@Texte.AufbauLegende">
+            <thead>
+                <tr>
+                    <th>@Texte.AufbauLegende</th>
+                    <th class="epos-gebimport-zahl">@Texte.AufbauAussen</th>
+                    <th class="epos-gebimport-zahl">@Texte.AufbauInnen</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (GebaeudeAnsichtAufbausumme eintrag in daten.Aufbausummen.Where(x => x.ZahlAussen + x.ZahlInnen > 0))
+                {
+                    Aufbaustufe stufe = eintrag.Stufe;
+                    string name = Texte.Stufenname(stufe);
+                    <tr class="epos-gebansicht-aufbaueintrag" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)">
+                        <td>
+                            <button type="button" class="epos-diagramm-knopf epos-gebansicht-randschalter epos-gebansicht-stufenschalter"
+                                    data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)"
+                                    aria-pressed="@(_stufeSichtbar[(int)stufe] ? "true" : "false")" aria-label="@Format(Texte.AufbauSchalter, name)"
+                                    @onclick="() => BeiStufe(stufe)">
+                                <span class="epos-gebansicht-farbfeld" style="@("background:" + GebaeudeAnsichtAufbaustufen.Farbe(stufe))" aria-hidden="true"></span>
+                                <span class="epos-gebansicht-zonenname">@name</span>
+                            </button>
+                        </td>
+                        <td class="epos-gebimport-zahl epos-gebansicht-aufbau-aussen">@Format(Texte.AufbauZahl, eintrag.ZahlAussen, eintrag.FlaecheAussenM2.ToString("N1", CultureInfo.CurrentCulture))</td>
+                        <td class="epos-gebimport-zahl epos-gebansicht-aufbau-innen">@Format(Texte.AufbauZahl, eintrag.ZahlInnen, eintrag.FlaecheInnenM2.ToString("N1", CultureInfo.CurrentCulture))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    };
+
+    /// <summary>Die Kanten eines Raums im Modus „Aufbau": in der Farbe der Stufe ihres Bauteils; ein Klick öffnet den Steckbrief.</summary>
+    private RenderFragment Aufbaukanten(GebaeudeAnsichtRaum r, GebaeudeAnsichtKoerperraum angaben, GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        if (angaben.Kantenbauteile is { } bauteile)
+        {
+            for (int pi = 0; pi < r.Polygone.Count && pi < bauteile.Count; pi++)
+            {
+                IReadOnlyList<GebaeudeAnsichtPunkt> polygon = r.Polygone[pi];
+                if (polygon.Count < 3) continue;
+                for (int e = 0; e < polygon.Count && e < bauteile[pi].Count; e++)
+                {
+                    if (bauteile[pi][e] is not { } bauteil) continue;
+                    Aufbaustufe stufe = daten.StufeVon(bauteil);
+                    if (!_stufeSichtbar[(int)stufe]) continue;
+                    GebaeudeAnsichtZeichnung.Strecke s = GebaeudeAnsichtZeichnung.StreckeVon(polygon, e, 0.0, 1.0);
+                    <line class="epos-gebansicht-kante" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)" data-bauteil="@bauteil"
+                          data-kante="@(pi.ToString(CultureInfo.InvariantCulture) + ":" + e.ToString(CultureInfo.InvariantCulture))"
+                          x1="@s.X1" y1="@s.Y1" x2="@s.X2" y2="@s.Y2" stroke="@GebaeudeAnsichtAufbaustufen.Farbe(stufe)"
+                          @onclick="() => SteckbriefOeffnen(bauteil)" @onclick:stopPropagation="true" />
+                }
+            }
+        }
+        if (_stufeSichtbar[(int)Aufbaustufe.Transparent])
+        {
+            foreach (GebaeudeAnsichtKantenmarke m in angaben.Kantenmarken)
+            {
+                if (m.Polygon < 0 || m.Polygon >= r.Polygone.Count || r.Polygone[m.Polygon].Count < 3 || m.Kante >= r.Polygone[m.Polygon].Count) continue;
+                GebaeudeAnsichtZeichnung.Strecke s = GebaeudeAnsichtZeichnung.StreckeVon(r.Polygone[m.Polygon], m.Kante, m.Von, m.Bis);
+                string bauteil = m.Bauteil;
+                Aufbaustufe stufe = daten.StufeVon(bauteil);
+                <line class="epos-gebansicht-oeffnung" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)" data-bauteil="@bauteil"
+                      x1="@s.X1" y1="@s.Y1" x2="@s.X2" y2="@s.Y2" stroke="@GebaeudeAnsichtAufbaustufen.Farbe(stufe)"
+                      @onclick="() => SteckbriefOeffnen(bauteil)" @onclick:stopPropagation="true" />
+            }
+        }
+    };
+
+    /// <summary>Öffnet den Steckbrief eines Bauteils, wenn die Daten einen tragen; sonst bleibt der offene stehen.</summary>
+    private void SteckbriefOeffnen(string? bauteil)
+    {
+        if (bauteil is not null && Daten is not null && Daten.Steckbriefe.ContainsKey(bauteil)) _steckbrief = bauteil;
+    }
+
+    private void SteckbriefSchliessen() => _steckbrief = null;
+
+    /// <summary>Der Steckbrief neben dem Bild, wenn einer offen ist.</summary>
+    private RenderFragment Steckbriefblock() => __builder =>
+    {
+        if (GezeigterSteckbrief is { } sb)
+        {
+            <Bauteilsteckbrief Daten="@sb" Texte="@Texte.Steckbrief" StufenName="@Texte.Stufenname(sb.Stufe)"
+                               ZurBaustoffzuordnung="@ZurBaustoffzuordnung" ZumBauteil="@ZumBauteil" Geschlossen="SteckbriefSchliessen" />
+        }
+    };
 
     /// <summary>Die Infozeile zum zuletzt getroffenen Dreieck: Raum oder Bauteil und der Name der Gruppe.</summary>
     private string Treffertext(GebaeudeAnsichtDaten daten, Koerpertreffer t)
     {
+        if (ImAufbaumodus)
+        {
+            string wer = t.Bauteil is { Length: > 0 } b ? b : daten.Raum(t.Raum)?.Name ?? t.Raum ?? "";
+            string stufe = t.Gruppe is int s && s >= 0 && s < GebaeudeAnsichtAufbaustufen.ZAHL ? Texte.Stufenname((Aufbaustufe)s) : Texte.RandKeine;
+            return Format(Texte.AufbauTreffer, wer, stufe);
+        }
         string gruppe = t.Gruppe is int g && g >= 0 && g < GebaeudeAnsichtRandgruppen.ZAHL ? Texte.Gruppenname((Randgruppe)g) : Texte.RandKeine;
         return t.Bauteil is { Length: > 0 } bauteil
             ? Format(Texte.RandTrefferBauteil, bauteil, gruppe)
@@ -607,12 +768,17 @@
     /// gesperrten Ansicht, denn sie zeigt nur an. Im Modus „Zonen" sind beide <c>null</c>.
     /// </summary>
     [JSInvokable("ZoneGewaehlt")]
-    public async Task BeiKoerperklick(string? zone, string? raum, int? gruppe = null, string? bauteil = null)
+    public async Task BeiKoerperklick(string? zone, string? raum, int? gruppe = null, string? bauteil = null, int? dreieck = null)
     {
-        if (ImRandmodus && (gruppe is not null || bauteil is not null))
+        // BA-3: eine Raumfläche kennt ihr Bauteil über die Flächenklassifikation (Dreieck des Dateikörpers).
+        string? flaeche = bauteil;
+        if (flaeche is null && dreieck is int t && t >= 0 && Daten?.Koerperraum(raum)?.Dreiecksbauteile is { } je && t < je.Count)
+            flaeche = je[t];
+        if (ImGruppenmodus && (gruppe is not null || bauteil is not null))
             await InvokeAsync(() =>
             {
-                _treffer = new Koerpertreffer(raum, gruppe, bauteil);
+                _treffer = new Koerpertreffer(raum, gruppe, ImAufbaumodus ? flaeche : bauteil);
+                SteckbriefOeffnen(flaeche);
                 StateHasChanged();
             });
         if (!Aktiv || !ZoneGewaehlt.HasDelegate || Daten?.Zone(zone) is not GebaeudeAnsichtZone z) return;
@@ -706,15 +872,20 @@
             {
                 <canvas @ref="_canvas" class="epos-gebansicht-canvas" role="img" aria-label="@Texte.KoerperBild"></canvas>
                 <p class="epos-leisezeile epos-gebansicht-bedienung">@Texte.KoerperBedienung</p>
-                @if (ImRandmodus && _treffer is { } treffer)
+                @if (ImGruppenmodus && _treffer is { } treffer)
                 {
                     <p class="epos-leisezeile epos-gebansicht-treffer" role="status" data-raum="@treffer.Raum"
                        data-gruppe="@(treffer.Gruppe?.ToString())" data-bauteil="@treffer.Bauteil">@Treffertext(daten, treffer)</p>
                 }
+                @Steckbriefblock()
             }
             @if (ImRandmodus)
             {
                 @Randlegende(daten, ImDateimodus && daten.Bauteilkoerper.Count > 0)
+            }
+            else if (ImAufbaumodus)
+            {
+                @Aufbaulegende(daten)
             }
             else
             {
@@ -802,7 +973,8 @@
     /// Nur Kennungen und Zahlen — kein Anzeigetext.
     /// </summary>
     public static object Szene(GebaeudeAnsichtDaten daten, string? ziel, string farbmodus = FARBMODUS_ZONEN,
-                               IReadOnlyList<bool>? sichtbar = null, bool bauteilesichtbar = true) => new
+                               IReadOnlyList<bool>? sichtbar = null, bool bauteilesichtbar = true,
+                               IReadOnlyList<bool>? stufensichtbar = null) => new
     {
         ziel,
         modus = MODUS_EXPORTMODELL,
@@ -811,7 +983,12 @@
         randfarben = GebaeudeAnsichtRandgruppen.FARBEN,
         randsichtbar = Sichtbar(sichtbar),
         bauteilesichtbar,
+        aufbaufarben = GebaeudeAnsichtAufbaustufen.FARBEN,
+        aufbausichtbar = Stufensichtbar(stufensichtbar),
     };
+
+    private static bool[] Stufensichtbar(IReadOnlyList<bool>? sichtbar)
+        => Enumerable.Range(0, GebaeudeAnsichtAufbaustufen.ZAHL).Select(i => sichtbar is null || i >= sichtbar.Count || sichtbar[i]).ToArray();
 
     private static bool[] Sichtbar(IReadOnlyList<bool>? sichtbar)
         => Enumerable.Range(0, GebaeudeAnsichtRandgruppen.ZAHL).Select(i => sichtbar is null || i >= sichtbar.Count || sichtbar[i]).ToArray();
@@ -830,7 +1007,7 @@
     /// </remarks>
     public static object SzeneDatei(GebaeudeAnsichtDaten daten, string? ziel, GebaeudeAnsichtKoerperfeld feld,
                                     string farbmodus = FARBMODUS_ZONEN, IReadOnlyList<bool>? sichtbar = null,
-                                    bool bauteilesichtbar = true)
+                                    bool bauteilesichtbar = true, IReadOnlyList<bool>? stufensichtbar = null)
     {
         IReadOnlyList<GebaeudeAnsichtDateiraum> raeume = daten.Dateiansicht();
         var verzeichnis = new Dictionary<string, GebaeudeAnsichtKoerperfeldEintrag>(StringComparer.Ordinal);
@@ -853,12 +1030,15 @@
                     dreieckeAb = e.DreieckeAb, dreieckZahl = e.DreieckZahl,
                     kantenAb = e.KantenAb, kantenZahl = e.KantenZahl,
                     gruppenAb = e.GruppenAb,
+                    stufenAb = e.StufenAb,
                 };
             }).ToList(),
             farbmodus,
             randfarben = GebaeudeAnsichtRandgruppen.FARBEN,
             randsichtbar = Sichtbar(sichtbar),
             bauteilesichtbar,
+            aufbaufarben = GebaeudeAnsichtAufbaustufen.FARBEN,
+            aufbausichtbar = Stufensichtbar(stufensichtbar),
             bauteile = feld.Bauteile.Select(e => new
             {
                 bauteil = e.Bauteil,
@@ -866,6 +1046,7 @@
                 punkteAb = e.PunkteAb, punktZahl = e.PunktZahl,
                 dreieckeAb = e.DreieckeAb, dreieckZahl = e.DreieckZahl,
                 kantenAb = e.KantenAb, kantenZahl = e.KantenZahl,
+                stufe = e.Stufe,
             }).ToList(),
         };
     }
@@ -901,8 +1082,8 @@
                 _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL_KOERPER);
                 _rueckweg ??= DotNetObjectReference.Create(this);
                 bool gezeichnet = Dateinetze(daten) is { } feld
-                    ? await _modul.InvokeAsync<bool>("erzeugen", _canvas, SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar), _rueckweg, feld.Bytes)
-                    : await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar), _rueckweg);
+                    ? await _modul.InvokeAsync<bool>("erzeugen", _canvas, SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar), _rueckweg, feld.Bytes)
+                    : await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar), _rueckweg);
                 if (!gezeichnet)
                 {
                     _koerperFehlt = true;
@@ -920,9 +1101,9 @@
                 // gegen ihn, nicht gegen den vorigen.
                 Merken(daten);
                 if (Dateinetze(daten) is { } feld)
-                    await _modul!.InvokeVoidAsync("aktualisieren", SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar), feld.Bytes);
+                    await _modul!.InvokeVoidAsync("aktualisieren", SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar), feld.Bytes);
                 else
-                    await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar));
+                    await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar));
                 return;
             }
             Merken(daten);

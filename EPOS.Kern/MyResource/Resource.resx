@@ -47118,5 +47118,257 @@ Chart</value>
   <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
     <value>Alle drei Szenarien (VALERI)</value>
   </data>
+  <data name="GANS_FARBMODUS_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="GANS_AUFBAU_OHNE_STUFEN" xml:space="preserve">
+    <value>„Aufbau“ ist gesperrt: Es liegen keine Zuordnungsstufen der Bauteile vor (kein Bauteilvorschlag).</value>
+  </data>
+  <data name="GANS_AUFBAU_LEGENDE" xml:space="preserve">
+    <value>Zuordnungsstufen des Aufbaus</value>
+  </data>
+  <data name="GANS_AUFBAU_AUSSEN" xml:space="preserve">
+    <value>Außen</value>
+  </data>
+  <data name="GANS_AUFBAU_INNEN" xml:space="preserve">
+    <value>Innen</value>
+  </data>
+  <data name="GANS_AUFBAU_ZAHL" xml:space="preserve">
+    <value>{0} · {1} m²</value>
+  </data>
+  <data name="GANS_AUFBAU_SCHALTER" xml:space="preserve">
+    <value>{0} ein- oder ausblenden</value>
+  </data>
+  <data name="GANS_AUFBAU_TREFFER" xml:space="preserve">
+    <value>Gewählt: {0} — Stufe {1}</value>
+  </data>
+  <data name="GANS_STUFE_A" xml:space="preserve">
+    <value>A – vollständiger Aufbau</value>
+  </data>
+  <data name="GANS_STUFE_B" xml:space="preserve">
+    <value>B – U aus Datei, Ersatzaufbau</value>
+  </data>
+  <data name="GANS_STUFE_C" xml:space="preserve">
+    <value>C – nur Geometrie, U aus Vorgabe</value>
+  </data>
+  <data name="GANS_STUFE_TRANSPARENT" xml:space="preserve">
+    <value>Transparent (nicht bewertet)</value>
+  </data>
+  <data name="GANS_STUFE_OHNE" xml:space="preserve">
+    <value>Ohne Bauteil</value>
+  </data>
+  <data name="BTSB_TITEL" xml:space="preserve">
+    <value>Bauteilsteckbrief</value>
+  </data>
+  <data name="BTSB_SCHLIESSEN" xml:space="preserve">
+    <value>Steckbrief schließen</value>
+  </data>
+  <data name="BTSB_KENNUNG" xml:space="preserve">
+    <value>Kennung</value>
+  </data>
+  <data name="BTSB_STUFE" xml:space="preserve">
+    <value>Zuordnungsstufe</value>
+  </data>
+  <data name="BTSB_GRP_RECHNUNG" xml:space="preserve">
+    <value>Rechengrößen</value>
+  </data>
+  <data name="BTSB_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="BTSB_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="BTSB_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="BTSB_RAND" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="BTSB_UWERT" xml:space="preserve">
+    <value>U-Wert</value>
+  </data>
+  <data name="BTSB_R1" xml:space="preserve">
+    <value>R₁ (Ersatzwiderstand)</value>
+  </data>
+  <data name="BTSB_C1" xml:space="preserve">
+    <value>C₁ (wirksame Kapazität)</value>
+  </data>
+  <data name="BTSB_KAPAZITAET" xml:space="preserve">
+    <value>Flächenbezogene Wärmekapazität</value>
+  </data>
+  <data name="BTSB_ANZEIGE" xml:space="preserve">
+    <value>R₁ und C₁ sind nur für diese Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet; die Simulation bleibt unverändert.</value>
+  </data>
+  <data name="BTSB_GRP_AUFBAU" xml:space="preserve">
+    <value>Aufbau (innen → außen)</value>
+  </data>
+  <data name="BTSB_SP_SCHICHT" xml:space="preserve">
+    <value>Schicht</value>
+  </data>
+  <data name="BTSB_SP_DICKE" xml:space="preserve">
+    <value>Dicke</value>
+  </data>
+  <data name="BTSB_SP_LAMBDA" xml:space="preserve">
+    <value>λ</value>
+  </data>
+  <data name="BTSB_SP_RHO" xml:space="preserve">
+    <value>ρ</value>
+  </data>
+  <data name="BTSB_SP_CP" xml:space="preserve">
+    <value>c</value>
+  </data>
+  <data name="BTSB_SP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="BTSB_WEGGELASSEN" xml:space="preserve">
+    <value>weggelassen: {0}</value>
+  </data>
+  <data name="BTSB_ERSATZ" xml:space="preserve">
+    <value>Ersatzaufbau: {0}</value>
+  </data>
+  <data name="BTSB_KEIN_AUFBAU" xml:space="preserve">
+    <value>Kein Aufbau</value>
+  </data>
+  <data name="BTSB_FEHLT" xml:space="preserve">
+    <value>Es fehlt: {0}</value>
+  </data>
+  <data name="BTSB_GWERT" xml:space="preserve">
+    <value>g-Wert</value>
+  </data>
+  <data name="BTSB_RAHMEN" xml:space="preserve">
+    <value>Rahmenanteil</value>
+  </data>
+  <data name="BTSB_ZUR_BAUSTOFFZUORDNUNG" xml:space="preserve">
+    <value>Zur Baustoffzuordnung</value>
+  </data>
+  <data name="BTSB_ZUM_BAUTEIL" xml:space="preserve">
+    <value>Bauteil bearbeiten</value>
+  </data>
+  <data name="BTSB_NUR_ANZEIGE" xml:space="preserve">
+    <value>Der Steckbrief zeigt nur an; geändert wird in der Baustoffzuordnung bzw. im Bauteildialog.</value>
+  </data>
+  <data name="BTSB_HK_DATEI" xml:space="preserve">
+    <value>aus Datei</value>
+  </data>
+  <data name="BTSB_HK_SCHICHTEN" xml:space="preserve">
+    <value>aus Schichten</value>
+  </data>
+  <data name="BTSB_HK_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="BTSB_HK_PROJEKTDATEI" xml:space="preserve">
+    <value>aus Projektdatei</value>
+  </data>
+  <data name="BTSB_HK_KATALOG" xml:space="preserve">
+    <value>aus Katalog</value>
+  </data>
+  <data name="BTSB_HK_MANUELL" xml:space="preserve">
+    <value>manuell</value>
+  </data>
+  <data name="BTSB_U_ABWEICHUNG" xml:space="preserve">
+    <value>U der Datei {0} weicht um {1} % vom U aus den Schichten {2} ab; es gilt das U der Datei, die Schichten liefern R₁ und C₁.</value>
+  </data>
+  <data name="BTSB_ERSATZ_DICKE" xml:space="preserve">
+    <value>{0}, Dämmdicke {1} cm</value>
+  </data>
+  <data name="BTSB_ERSATZ_LAMBDA" xml:space="preserve">
+    <value>{0}, λ der tragenden Schicht {1} W/(mK)</value>
+  </data>
+  <data name="BTSB_ERSATZ_OHNE" xml:space="preserve">
+    <value>{0}, ohne Abgleich</value>
+  </data>
+  <data name="BTSB_GRUND_DUENN" xml:space="preserve">
+    <value>dünner als 5 mm und ohne Gewicht an R und C</value>
+  </data>
+  <data name="BTSB_GRUND_SPERRE" xml:space="preserve">
+    <value>Folie, Sperre oder Abdichtung unter 2 % an R</value>
+  </data>
+  <data name="BTSB_LUECKE_SCHICHTEN" xml:space="preserve">
+    <value>keine Schichten</value>
+  </data>
+  <data name="BTSB_LUECKE_DICKE" xml:space="preserve">
+    <value>Dicke einer Schicht</value>
+  </data>
+  <data name="BTSB_LUECKE_LAMBDA" xml:space="preserve">
+    <value>λ einer Schicht</value>
+  </data>
+  <data name="BTSB_LUECKE_RHO" xml:space="preserve">
+    <value>ρ einer Schicht</value>
+  </data>
+  <data name="BTSB_LUECKE_CP" xml:space="preserve">
+    <value>c einer Schicht</value>
+  </data>
+  <data name="BTSB_LUECKE_DAEMMUNG" xml:space="preserve">
+    <value>eine Dämmschicht</value>
+  </data>
+  <data name="BTSB_LUECKE_SPEICHER" xml:space="preserve">
+    <value>eine speichernde Schicht</value>
+  </data>
+  <data name="BTSB_OHNE_RECHNUNG" xml:space="preserve">
+    <value>R₁ und C₁ ohne vollständigen Aufbau nicht bestimmbar.</value>
+  </data>
+  <data name="GIMP_GRP_AUFBAUTEN" xml:space="preserve">
+    <value>Bauteilaufbauten</value>
+  </data>
+  <data name="GIMP_AB_SP_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="GIMP_AB_SP_ART" xml:space="preserve">
+    <value>Bauteilart</value>
+  </data>
+  <data name="GIMP_AB_SP_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="GIMP_AB_SP_FLAECHE" xml:space="preserve">
+    <value>Fläche [m²]</value>
+  </data>
+  <data name="GIMP_AB_SP_UDATEI" xml:space="preserve">
+    <value>U Datei [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_USCHICHTEN" xml:space="preserve">
+    <value>U Schichten [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_C1" xml:space="preserve">
+    <value>C₁,korr [kJ/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_STUFE" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="GIMP_AB_SP_FEHLT" xml:space="preserve">
+    <value>Es fehlt</value>
+  </data>
+  <data name="GIMP_AB_SP_HANDLUNG" xml:space="preserve">
+    <value>Handlung</value>
+  </data>
+  <data name="GIMP_AB_NUR_BC" xml:space="preserve">
+    <value>Nur Stufe B und C</value>
+  </data>
+  <data name="GIMP_AB_ZUR_BAUSTOFF" xml:space="preserve">
+    <value>Baustoff zuordnen</value>
+  </data>
+  <data name="GIMP_AB_LEER" xml:space="preserve">
+    <value>Keine Aufbauten im Vorschlag.</value>
+  </data>
+  <data name="GIMP_AB_OHNE_AUFBAU" xml:space="preserve">
+    <value>ohne Aufbau</value>
+  </data>
+  <data name="GIMP_AB_HINWEIS" xml:space="preserve">
+    <value>Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau.</value>
+  </data>
+  <data name="GIMP_AB_SCHICHTEN" xml:space="preserve">
+    <value>Schichten</value>
+  </data>
+  <data name="GIMP_AB_TYP" xml:space="preserve">
+    <value>Typaufbau: {0}</value>
+  </data>
+  <data name="ZOND_SP_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="ZOND_FILTER_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Ohne vollständige Zuordnung</value>
+  </data>
+  <data name="ZOND_AUFBAU_TITEL" xml:space="preserve">
+    <value>Zuordnungsstufe {0}: {1}</value>
+  </data>
 </root>
 

@@ -173,6 +173,12 @@ namespace WindowsFormsApplication1
         /// Aufbau der Datei. Ein Ersatzaufbau hat keine Quellentität (<see cref="Quelltyp"/> und <see cref="Kennung"/> leer).
         /// </summary>
         internal Ersatzergebnis Ersatz { get; init; }
+
+        /// <summary>
+        /// Je Schicht (in der Reihenfolge von <c>Aufbau.Schichten</c>) der Stoffname der Datei — die Anzeige im
+        /// Bauteilsteckbrief (BA-3); leer = keiner bekannt (etwa beim Ersatzaufbau, dessen Schichten Katalogbaustoffe tragen).
+        /// </summary>
+        internal IReadOnlyList<string> Schichtnamen { get; set; } = Array.Empty<string>();
     }
 
     /// <summary>Eine Schicht der Datei, die die Relevanzregel weggelassen hat: Stoffname, Dicke [m], Grund, Anteile an R und C [–].</summary>
@@ -1767,6 +1773,7 @@ namespace WindowsFormsApplication1
                                                     katalog ? Importherkunft.Katalog : _datei,
                                                     schichten.Select(x => x.Stamm).ToArray(), quellen);
                 zeile.Weggelassen = weggelassen;
+                zeile.Schichtnamen = schichten.Select(x => x.Quelle?.Name?.Trim() ?? "").ToArray();
                 foreach (GebaeudeWeggelasseneSchicht w in weggelassen)
                     Merken(_unerheblich, stamm + ": " + w.Name + " ("
                                          + Zahl(Math.Round(1000.0 * w.Dicke_M, 2)) + " mm)");

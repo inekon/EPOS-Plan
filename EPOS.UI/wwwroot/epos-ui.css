@@ -5839,6 +5839,111 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-variant-numeric: tabular-nums;
 }
 
+/* Farbmodus "Aufbau" (Konzept Bauteilaufbau 5.4, BA-3): Die Farben der Stufen stehen einmal in
+   GebaeudeAnsichtAufbaustufen.FARBEN und kommen als Attribut ins SVG bzw. als Stil des Farbfelds. Im Modus
+   "Aufbau" sind Kanten und Oeffnungen anklickbar (Steckbrief). */
+.epos-gebansicht-kante[data-stufe],
+.epos-gebansicht-oeffnung[data-stufe] {
+    pointer-events: stroke;
+    cursor: pointer;
+}
+
+.epos-gebansicht-aufbaulegende {
+    margin: 6px 0 0;
+}
+
+.epos-gebansicht-aufbaulegende td.epos-gebimport-zahl {
+    color: var(--epos-text-leise);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Der Bauteilsteckbrief: eine Tafel neben dem Bild (breit) bzw. darunter (schmal). */
+.epos-gebansicht-koerperansicht:has(> .epos-steckbrief) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+    column-gap: 12px;
+    align-items: start;
+}
+
+.epos-gebansicht-koerperansicht:has(> .epos-steckbrief) > * {
+    grid-column: 1;
+}
+
+.epos-gebansicht-koerperansicht > .epos-steckbrief {
+    grid-column: 2;
+    grid-row: 1 / span 12;
+}
+
+@media (max-width: 900px) {
+    .epos-gebansicht-koerperansicht:has(> .epos-steckbrief) {
+        display: block;
+    }
+}
+
+.epos-steckbrief {
+    border: 1px solid var(--epos-rand);
+    background: var(--epos-flaeche);
+    padding: 8px 10px;
+    margin: 6px 0 0;
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.epos-steckbrief-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-steckbrief-name {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.epos-steckbrief-gruppe {
+    margin: 10px 0 4px;
+    font-size: 0.9rem;
+}
+
+.epos-steckbrief-werte {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 2px 10px;
+    margin: 4px 0;
+}
+
+.epos-steckbrief-werte dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-steckbrief-herkunft,
+.epos-steckbrief-grund {
+    color: var(--epos-text-leise);
+}
+
+.epos-steckbrief-schicht--weggelassen td {
+    color: var(--epos-text-leise);
+    text-decoration: line-through;
+}
+
+.epos-steckbrief-schicht--weggelassen .epos-steckbrief-grund {
+    display: block;
+    text-decoration: none;
+}
+
+.epos-steckbrief-spruenge {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.epos-gebimport-aufbauzeile--offen td {
+    border-bottom: 0;
+}
+
 @media (forced-colors: active) {
     .epos-gebansicht-raum polygon { fill: Canvas; stroke: CanvasText; }
     .epos-gebansicht-raum:focus-visible polygon { stroke: Highlight; }

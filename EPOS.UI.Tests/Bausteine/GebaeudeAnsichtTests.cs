@@ -981,7 +981,7 @@ public class GebaeudeAnsichtTests : EposBunitContext
         Assert.Contains("\"bauteilesichtbar\":true", json);
         Assert.Contains("\"bauteilesichtbar\":false", System.Text.Json.JsonSerializer.Serialize(
             GebaeudeAnsicht.SzeneDatei(d, ZONE_EG, feld, "randbedingung", schalter, bauteilesichtbar: false)));
-        Assert.Contains("\"bauteile\":[{\"bauteil\":\"f-1\",\"gruppe\":7,\"punkteAb\":104,\"punktZahl\":3,\"dreieckeAb\":140,\"dreieckZahl\":1,\"kantenAb\":152,\"kantenZahl\":2}]", json);
+        Assert.Contains("\"bauteile\":[{\"bauteil\":\"f-1\",\"gruppe\":7,\"punkteAb\":104,\"punktZahl\":3,\"dreieckeAb\":140,\"dreieckZahl\":1,\"kantenAb\":152,\"kantenZahl\":2,\"stufe\":-1}]", json);
         foreach (string text in new[] { "Wohnen", "Wand", "m²", "Randbedingung" })
             Assert.DoesNotContain(text, json);
         // Das Exportmodell trägt Farbmodus, Farbtafel und Schalter ebenso; ohne Angabe der Modus Zonen, alles sichtbar.

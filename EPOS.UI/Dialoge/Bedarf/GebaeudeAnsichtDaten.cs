@@ -163,6 +163,41 @@ public sealed record GebaeudeAnsichtDaten
     /// <summary>Überschreiten die Dateikörper die <see cref="Dreiecksgrenze"/>? Dann zeigt die Ansicht die Prismen.</summary>
     public bool DateikoerperZuGross => DateikoerperDreiecke > Dreiecksgrenze;
 
+    // ------------------------------------------------------------------
+    //  Farbmodus „Aufbau" (Konzept Bauteilaufbau 5.4, BA-3)
+    // ------------------------------------------------------------------
+
+    /// <summary>Die Zuordnungsstufe je Bauteilkennung der Datei; leer = kein Bauteilvorschlag (dann ist „Aufbau" gesperrt).</summary>
+    public IReadOnlyDictionary<string, Aufbaustufe> Bauteilstufen { get; init; } = new Dictionary<string, Aufbaustufe>(StringComparer.Ordinal);
+
+    /// <summary>Die Legende des Farbmodus „Aufbau": Zahl und Fläche je Stufe, außen und innen getrennt.</summary>
+    public IReadOnlyList<GebaeudeAnsichtAufbausumme> Aufbausummen { get; init; } = Array.Empty<GebaeudeAnsichtAufbausumme>();
+
+    /// <summary>Der Steckbrief je Bauteilkennung — geöffnet beim Klick auf Bauteilkörper oder Raumfläche; leer = keiner.</summary>
+    public IReadOnlyDictionary<string, BauteilsteckbriefDaten> Steckbriefe { get; init; } = new Dictionary<string, BauteilsteckbriefDaten>(StringComparer.Ordinal);
+
+    /// <summary>Liegen Stufen vor (ein Bauteilvorschlag bzw. gespeicherte Bauteile)?</summary>
+    public bool HatAufbaustufen => Bauteilstufen.Count > 0;
+
+    /// <summary>
+    /// Ist der Farbmodus „Aufbau" wählbar? Nur mit Stufen und mit der Flächenklassifikation, die je Dreieck das Bauteil kennt
+    /// (dieselbe Grundlage wie „Randbedingung").
+    /// </summary>
+    public bool AufbauWaehlbar => HatAufbaustufen && RandbedingungWaehlbar;
+
+    /// <summary>Die Stufe eines Bauteils; ohne Kennung oder unbekannt <see cref="Aufbaustufe.OhneBauteil"/>.</summary>
+    public Aufbaustufe StufeVon(string? bauteil)
+        => bauteil is not null && Bauteilstufen.TryGetValue(bauteil, out Aufbaustufe s) ? s : Aufbaustufe.OhneBauteil;
+
+    /// <summary>
+    /// Das Stufenbyte eines Raumdreiecks: entartet (Gruppe 255) bleibt 255, eine neutrale Innenfläche (R0) wird
+    /// <see cref="GebaeudeAnsichtAufbaustufen.INNEN_NEUTRAL"/>, sonst die Stufe des Bauteils, das die Fläche bestimmt.
+    /// </summary>
+    public byte Stufenbyte(byte gruppe, string? bauteil)
+        => gruppe >= GebaeudeAnsichtRandgruppen.ZAHL ? GebaeudeAnsichtAufbaustufen.KEINE
+           : gruppe == (byte)Randgruppe.R0 ? GebaeudeAnsichtAufbaustufen.INNEN_NEUTRAL
+           : (byte)StufeVon(bauteil);
+
     /// <summary>
     /// <b>Die Dateikörper als Bytefeld</b> für das Modul (15.4): je Raum mit Dateikörper, in der Reihenfolge von
     /// <see cref="Koerperraeume"/>, erst die Punkte (float32, je Punkt x, y, z relativ zum <see cref="Bezugspunkt"/>),
@@ -182,6 +217,9 @@ public sealed record GebaeudeAnsichtDaten
     /// Dreiecke — 0 bis 7 = R0 bis R7, <see cref="GebaeudeAnsichtRandgruppen.KEINE"/> = ohne Gruppe (entartetes Dreieck);
     /// der Byte-Offset steht in <see cref="GebaeudeAnsichtKoerperfeldEintrag.GruppenAb"/> (−1 = keine). Das Feld endet auf
     /// vier Byte aufgefüllt.</item>
+    /// <item><b>Stufenbytes</b> (BA-3, nur mit <see cref="Bauteilstufen"/>): je Raum mit Gruppen und
+    /// <see cref="GebaeudeAnsichtKoerperraum.Dreiecksbauteile"/> ein Byte je Dreieck (<see cref="Stufenbyte"/>), Offset in
+    /// <see cref="GebaeudeAnsichtKoerperfeldEintrag.StufenAb"/>; ein Bauteilkörper trägt seine Stufe im Eintrag.</item>
     /// </list>
     /// Teil 2 und 3 stehen hinter allen Abschnitten des ersten: Jeder Leser, der über die Offsets des Verzeichnisses geht, liest
     /// unverändert; ohne Klassifikation sind beide leer und das Feld ist byteweise das bisherige.
@@ -190,7 +228,9 @@ public sealed record GebaeudeAnsichtDaten
     {
         long laenge = 0;
         foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
-            if (k.Dateikoerper is { } d) laenge += 4L * (d.Punkte.Count + d.Dreiecke.Count + d.Randkanten.Count) + (d.Gruppen?.Count ?? 0);
+            if (k.Dateikoerper is { } d)
+                laenge += 4L * (d.Punkte.Count + d.Dreiecke.Count + d.Randkanten.Count) + (d.Gruppen?.Count ?? 0)
+                          + (HatAufbaustufen && d.Gruppen is not null && k.Dreiecksbauteile is not null ? d.Gruppen.Count : 0);
         foreach (GebaeudeAnsichtBauteilkoerper b in Bauteilkoerper)
             laenge += 4L * (b.Koerper.Punkte.Count + b.Koerper.Dreiecke.Count + b.Koerper.Randkanten.Count);
         laenge = (laenge + 3) / 4 * 4;
@@ -206,12 +246,26 @@ public sealed record GebaeudeAnsichtDaten
         }
         var bauteile = new List<GebaeudeAnsichtKoerperfeldEintrag>();
         foreach (GebaeudeAnsichtBauteilkoerper b in Bauteilkoerper)
-            bauteile.Add(Abschnitte(bytes, ref stelle, "", b.Koerper) with { Bauteil = b.Bauteil, Gruppe = (int)b.Gruppe });
+            bauteile.Add(Abschnitte(bytes, ref stelle, "", b.Koerper) with
+            {
+                Bauteil = b.Bauteil, Gruppe = (int)b.Gruppe, Stufe = HatAufbaustufen ? (int)StufeVon(b.Bauteil) : -1,
+            });
         for (int i = 0; i < raeume.Count; i++)
         {
             if (raeume[i].Gruppen is not { } gruppen) continue;
             verzeichnis[i] = verzeichnis[i] with { GruppenAb = stelle };
             foreach (byte x in gruppen) bytes[stelle++] = x;
+        }
+        // Teil 4 (BA-3): je Raum mit Gruppen und Bauteil je Dreieck das Stufenbyte — nur mit Stufen.
+        if (HatAufbaustufen)
+        {
+            var mitKoerper = Koerperraeume.Where(k => k.Dateikoerper is not null).ToList();
+            for (int i = 0; i < raeume.Count; i++)
+            {
+                if (raeume[i].Gruppen is not { } gruppen || mitKoerper[i].Dreiecksbauteile is not { } je) continue;
+                verzeichnis[i] = verzeichnis[i] with { StufenAb = stelle };
+                for (int t = 0; t < gruppen.Count; t++) bytes[stelle++] = Stufenbyte(gruppen[t], t < je.Count ? je[t] : null);
+            }
         }
         return new GebaeudeAnsichtKoerperfeld(bytes, verzeichnis) { Bauteile = bauteile };
     }
@@ -388,6 +442,15 @@ public sealed record GebaeudeAnsichtKoerperraum(
 
     /// <summary>HC-5: die Vermerke des Grundrisses als Schlüssel (Namen von <c>Grundrissvermerk</c>); leer = keine.</summary>
     public IReadOnlyList<string> Grundrissvermerke { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// BA-3: je Dreieck des Dateikörpers die Kennung des Bauteils, das die Fläche bestimmt (Flächenklassifikation); <c>null</c>
+    /// = ohne Klassifikation. Der Klick auf eine Raumfläche öffnet über sie den Steckbrief.
+    /// </summary>
+    public IReadOnlyList<string?>? Dreiecksbauteile { get; init; }
+
+    /// <summary>BA-3: je Polygon und Kante das Bauteil ihrer senkrechten Flächen (flächengrößtes); <c>null</c> = keine.</summary>
+    public IReadOnlyList<IReadOnlyList<string?>>? Kantenbauteile { get; init; }
 }
 
 /// <summary>Boden und Höhe eines Prismas aus dem Grundriss [m] (HC-5).</summary>
@@ -544,6 +607,12 @@ public sealed record GebaeudeAnsichtKoerperfeldEintrag(
 
     /// <summary>Die Gruppe des Bauteilkörpers (0–7); −1 bei Räumen.</summary>
     public int Gruppe { get; init; } = -1;
+
+    /// <summary>BA-3: Byte-Offset der Stufenbytes eines Raums (ein Byte je Dreieck); −1 = keine.</summary>
+    public int StufenAb { get; init; } = -1;
+
+    /// <summary>BA-3: die Stufe des Bauteilkörpers (<see cref="Aufbaustufe"/>); −1 = ohne Stufen bzw. bei Räumen.</summary>
+    public int Stufe { get; init; } = -1;
 }
 
 /// <summary>Die Höhenlage eines Geschosses für die Körper; <c>null</c> = unbekannt (dann gestapelt).</summary>
@@ -763,6 +832,42 @@ public sealed class GebaeudeAnsichtTexte
 
     /// <summary>GANS_RAND_TREFFER_BAUTEIL — Infozeile nach dem Klick auf einen Bauteilkörper, {0} = Bauteil, {1} = Gruppe.</summary>
     public string RandTrefferBauteil { get; set; } = Resource.GANS_RAND_TREFFER_BAUTEIL;
+
+    /// <summary>Der Knopf des Farbmodus „Aufbau" (<c>GANS_FARBMODUS_AUFBAU</c>).</summary>
+    public string FarbmodusAufbau { get; set; } = Resource.GANS_FARBMODUS_AUFBAU;
+
+    /// <summary>Der Grund der Sperre ohne Stufen (<c>GANS_AUFBAU_OHNE_STUFEN</c>).</summary>
+    public string AufbauOhneStufen { get; set; } = Resource.GANS_AUFBAU_OHNE_STUFEN;
+
+    /// <summary>Die Legende der Stufen (<c>GANS_AUFBAU_LEGENDE</c>).</summary>
+    public string AufbauLegende { get; set; } = Resource.GANS_AUFBAU_LEGENDE;
+
+    /// <summary>Spaltenkopf „Außen" (<c>GANS_AUFBAU_AUSSEN</c>).</summary>
+    public string AufbauAussen { get; set; } = Resource.GANS_AUFBAU_AUSSEN;
+
+    /// <summary>Spaltenkopf „Innen" (<c>GANS_AUFBAU_INNEN</c>).</summary>
+    public string AufbauInnen { get; set; } = Resource.GANS_AUFBAU_INNEN;
+
+    /// <summary>Zahl und Fläche: {0} Zahl, {1} Fläche (<c>GANS_AUFBAU_ZAHL</c>).</summary>
+    public string AufbauZahl { get; set; } = Resource.GANS_AUFBAU_ZAHL;
+
+    /// <summary>Kurztext des Schalters einer Stufe, {0} Name (<c>GANS_AUFBAU_SCHALTER</c>).</summary>
+    public string AufbauSchalter { get; set; } = Resource.GANS_AUFBAU_SCHALTER;
+
+    /// <summary>Infozeile eines Treffers: {0} Bauteil oder Raum, {1} Stufe (<c>GANS_AUFBAU_TREFFER</c>).</summary>
+    public string AufbauTreffer { get; set; } = Resource.GANS_AUFBAU_TREFFER;
+
+    /// <summary>Die Namen der Stufen nach <see cref="Aufbaustufe"/> (<c>GANS_STUFE_A</c> … <c>GANS_STUFE_OHNE</c>).</summary>
+    public IReadOnlyList<string> Aufbaustufen { get; set; } = new[]
+    {
+        Resource.GANS_STUFE_A, Resource.GANS_STUFE_B, Resource.GANS_STUFE_C, Resource.GANS_STUFE_TRANSPARENT, Resource.GANS_STUFE_OHNE,
+    };
+
+    /// <summary>Der Name einer Stufe.</summary>
+    public string Stufenname(Aufbaustufe s) => (int)s < Aufbaustufen.Count ? Aufbaustufen[(int)s] : s.ToString();
+
+    /// <summary>Die Texte des Bauteilsteckbriefs.</summary>
+    public BauteilsteckbriefTexte Steckbrief { get; set; } = new();
 
     /// <summary>GANS_RAND_R0 … GANS_RAND_R7 — die Namen der Gruppen nach dem Gruppenindex.</summary>
     public IReadOnlyList<string> Randgruppen { get; set; } = new[]
