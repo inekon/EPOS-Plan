@@ -2,8 +2,10 @@
 
 > **Stand der Stufe: NP1 bis NP4 gebaut** (Wiki-Quellen und Logbuch-Entwurf mit NP4e nachgezogen; Upload gebündelt, Version beim Anwender).
 > **NP5b gebaut:** Die Kategorie DIN führt die DIN/TS 18599-10:2025-10 — 43 Nutzungen mit Nummer und Name, ohne Werte
-> (E96, Schemaschritt 190, 5.2); die Zuordnung `DIN_NUMMER` zählt weiter nach der Projektdatei (5.4).
+> (E96, Schemaschritt 190, 5.2).
 > **NP5c gebaut:** DIN 19 → Muster Verkehr, DIN 20 → Muster Lager stehen in der Zuordnung (Schritt 190 und Saat, 5.4).
+> **NP5d gebaut:** HottCAD zählt nach der Ausgabe 2025 (Anwender, 06.10.2026); die Zuordnung `DIN_NUMMER` und
+> `Din18599Nutzung` zählen wie die Kategorie DIN (30, 31 → Schule, 33, 37 → Sport, 43 → Lager; Schritt 190 und Saat, 5.4).
 
 > **Rev. 2 (vereint aus zwei Fassungen vom 05.10.2026) — Auftrag aus Entscheid E90 (Q37, 05.10.2026); Fragen
 > Q38 bis Q47 mit E91 nach Empfehlung entschieden.** Der Anwender hat entschieden: Nutzungsprofile werden ein
@@ -88,14 +90,14 @@ Welle“ vorgemerkt ([Befund HottCAD-Projektdatei](Gebaeudesimulation/2026-10-05
 |---|---|---|
 | B1 | Der Zonenbaum des Imports bietet je Zone ein `<select>` aus `plan.Nutzungen`; die Hülle füllt es aus der festen Liste `DbWerte.KOND_NUTZUNG_WOHNEN/BUERO/SCHULE`; der Kern führt dieselbe Liste als `Zonenplan.NUTZUNGEN` | `EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor:403–449`, `EPOS.UI.Daten/Bedarf/GebaeudeImportZonen.cs:154–158`, `EPOS.Kern/Allgemein/Import/Gebaeude/Zonenplan.cs:68` |
 | B2 | Vorbelegung aus der IFC-Nutzungsklasse (Regel Z6): Büro → `BUERO`; Wohnen, Schlafen, Küche → `WOHNEN`; Sanitär, Verkehr, Lager, Technik, Sport, Gastronomie, Sonstige → keine | `Zonenplan.cs:288–298` (`NutzungAusKlasse`) |
-| B3 | Vorbelegung aus der DIN-V-18599-10-Nummer der HottCAD-Projektdatei: 1–5 → `BUERO`, 8, 9, 28, 29 → `SCHULE`, 70, 71 → `WOHNEN`, jede andere → keine; die Nummern sind die der Projektdatei und zählen nach DIN V 18599-10:2018-09 (28, 29 Bibliothek) — nicht nach der Kategorie DIN/TS 18599-10 des Katalogs (5.4). Die Muster ohne alte Kennung (Gastronomie 12, 13; Verkehr 19; Lager 20, 41; Sport 31, 35) erreicht allein die Zuordnung des Katalogs, nicht diese Vorgabe | `EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`; ausgewiesen in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` |
+| B3 | Vorbelegung aus der DIN-Nummer der HottCAD-Projektdatei: 1–5 → `BUERO`, 8, 9, 30, 31 → `SCHULE`, 70, 71 → `WOHNEN`, jede andere → keine; die Nummern sind die der Projektdatei und zählen wie die Kategorie DIN/TS 18599-10 des Katalogs nach der Ausgabe 2025 (30, 31 Bibliothek; Anwender, 06.10.2026, 5.4). Die Muster ohne alte Kennung (Gastronomie 12, 13; Verkehr 19; Lager 20, 43; Sport 33, 37) erreicht allein die Zuordnung des Katalogs, nicht diese Vorgabe | `EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`; ausgewiesen in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` |
 | B4 | Speichern: `ZonenplanCtrl.NutzungUebernehmen` legt je Größe aus `Konditionierungsgroessen.Alle` die erste ausgelieferte Vorlage dieser Nutzung als Kalenderkopie an (`Konditionierungsarbeit.VorlageUebernehmen`); `ProjektdateiUebernehmen` mit der Rangfolge Ganglinie vor DIN-Nutzungsprofil der Datei vor Vorlage — Dateiwerte verwerfen die Vorlagenkopie je Größe. Der Rechenweg liest die Nutzung nicht, nur die Kalender; Kaskade Zone vor Gebäude | `EPOS.Kern/Controller/ZonenplanCtrl.cs:29–74`, `:81–148`; `GebaeudeModellEingang.cs:1234–1258`, `:2537–2622`, `:2710–2722`; `Zonenvorgaben.cs:166–205`; `Konditionierungdatenweg.cs:46–109` |
 | B5 | Es gibt keine Spalte `Tab_Zone.Nutzung` (E81). Die Nutzung liegt nur als Kopie in `Tab_Konditionierungskalender.Nutzung` (Schritt 176), mit `CHECK` auf `WOHNEN`, `BUERO`, `SCHULE`, `SONSTIGE`; derselbe `CHECK` steht an `Tab_Konditionierungsvorlage_STAMM.Nutzung`. Eine unbeheizte Zone ohne Heiz- und Kühlkalender verliert ihre Nutzung beim erneuten Import | `EPOS.Kern/Allgemein/Update/KonditionierungNutzungSchema.cs:61`, `KonditionierungVorlagenSchema.cs:170` |
 | B6 | **Namenskollision:** `Tab_Nutzungsprofil_STAMM` (fünf Profile der Pufferauslegung: WOHNEN, BEHERBERGUNG, PFLEGE, BUERO_SCHULE, GEWERBE) und `Z_Nutzungsprofil` (Quellen `ZAPF`, `KONDITIONIERUNG`, `GEBAEUDEART` → Pufferprofil) bestehen seit Schemaschritt 178. Die Quelle `KONDITIONIERUNG` liest genau die Kalenderspalte `Nutzung` aus B5 (`BUERO`, `SCHULE` → `BUERO_SCHULE`); Schritt 176 hat die Nutzung eigens für diesen Weg an die Kalenderkopie gelegt | `EPOS.Kern/Allgemein/Update/ProzessNutzungSchema.cs`, `EPOS.Kern/Allgemein/Pufferauslegung/NutzungsprofilZuordnung.cs:44–45`, `Nutzungsprofil.cs:48–55` |
 | B7 | Ausgelieferte Vorlagen: `Tab_Konditionierungsvorlage_STAMM`, 14 Zeilen, `ReadOnly`, „EPOS-Muster mit runden Werten, weder Norm- noch Messwerte“ — Werte in 2.3 | [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.5 (F22), 5.7 |
 | B8 | Die Vorlagenverwaltung ist ein Blatt im Katalogeditor ohne Menüpunkt (E56): `KonditionierungVorlagenverwaltung.razor`, „Als Vorlage speichern…“ in `Kalenderkarte.razor` (fragt die Nutzung aus der festen Liste), „Vorlagen verwalten“ in `KonditionierungReiter.razor`; Gebäudeeditor `GebaeudeKatalogDialog.razor` Reiter Konditionierung (:554–564, Blatt :758–767); Zonendialog `ZonenDialog.razor` (Konditionierungsreiter :137); Projektliste `GebaeudeDialog.razor` (:184–187 Import, :369 Importdialog); Controller `KonditionierungsvorlageCtrl.cs`, `KonditionierungCtrl.cs` | `EPOS.UI/Dialoge/Bedarf/`, `EPOS.Kern/Controller/` |
 | B9 | DIN V 18599-10 steht im Repositorium nur als **Nutzungszeiten-Tabelle** (Beginn, Ende, Stunden je Tag, Tage je Jahr; Nummern 1–41 teils in Sammelzeilen); Sollwerte, Luftwechsel und innere Lasten stehen nicht darin | [Grundlagen 1](Grundlagen_1_Normen_Regelwerke_TWW-Zapfprofile.md) 1.1, 1.4 |
-| B10 | HottCAD-Projektdateien liefern je Zone die DIN-Profilnummer (`PdProfileUsage.ProfileUsageType`, beobachtet 1–47, 70, 71) und den Spaltensatz der Norm-Tabelle (Nutzungszeit, Personen, Raumtemperatur, Absenkung, Außenluft, Lasten, Beleuchtung); EPOS liest sie als Herkunft „Nutzungsprofil“. 44–47, 70 und 71 sind in keiner Ausgabe der Norm eine Nummer (2025 endet bei 43, Wohngebäude ohne Nummer) — Werte der Projektdatei; ob die Datei ab 22 wie 2018 oder wie 2025 zählt, belegt keine Datei im Repositorium (5.4) | `EPOS.Kern/Allgemein/Import/Sqproj/SqprojKonditionierung.cs:136–166`; [Befund HottCAD](Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md) |
+| B10 | HottCAD-Projektdateien liefern je Zone die DIN-Profilnummer (`PdProfileUsage.ProfileUsageType`, beobachtet 1–47, 70, 71) und den Spaltensatz der Norm-Tabelle (Nutzungszeit, Personen, Raumtemperatur, Absenkung, Außenluft, Lasten, Beleuchtung); EPOS liest sie als Herkunft „Nutzungsprofil“. 44–47, 70 und 71 sind in keiner Ausgabe der Norm eine Nummer (2025 endet bei 43, Wohngebäude ohne Nummer) — Werte der Projektdatei; 44–47 bleiben ohne Zuordnung, 70 und 71 führen auf Wohnen. Die Nummern 1–43 zählen nach der DIN/TS 18599-10:2025-10 (in HottCAD hat „Turnhalle“ die Nummer 33; Anwender, 06.10.2026, 5.4) | `EPOS.Kern/Allgemein/Import/Sqproj/SqprojKonditionierung.cs:136–166`; [Befund HottCAD](Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md) |
 | B11 | Nennwerte: Geräte tragen `Interne_Waermegewinne` [W] als Nennwert des Kalenders, Personen den Nennwert Zahl × 70 W (`Matrixeingang.PERSON_W`); die ausgelieferte Personenvorlage trägt keinen Nennwert und wirkt nur als Nutzungszeit der Komfortkennzahlen. Nennwerte haben nur Geräte und Personen (`Konditionierungsgroessen.HatNennwert`) | `EPOS.Kern/Allgemein/Simulation/Gebaeude/Konditionierung/Matrixeingang.cs:21`, `:84–88`; `Konditionierungsgroesse.cs:136` |
 
 ### 2.2 Was die Normprofile gemeinsam haben
@@ -363,7 +365,8 @@ nicht als Profil in der Kategorie; sie führen über das Muster Wohnen und die W
 44 bis 47 sind in keiner Ausgabe eine Nummer der Norm (B10). Schemaschritt 190 (`RaumnutzungDinTsSchema`) stellt eine
 Datenbank mit der Saat 2018 um: Kategorie umbenannt, die 24 ausgelieferten Profile auf Nummer und Namen 2025 (Ids
 bleiben, eine Zuordnung oder ein Duplikat des Anwenders zeigt danach auf dieselbe Nutzung), die übrigen 19 ohne Werte
-angelegt; Zeilen des Anwenders und die Zuordnung bleiben, wie sie sind.
+angelegt; Zeilen des Anwenders bleiben, wie sie sind, die ausgelieferte Zuordnung `DIN_NUMMER` ab 22 wechselt auf die
+Zählung 2025 (5.4).
 
 ### 5.3 Kategorien „SIA 2024“ und „VDI 2078“ (leer)
 
@@ -376,30 +379,32 @@ der Struktur: SIA 2024 nummeriert Raumnutzungen mit Punkten und gibt Tagesverlä
 | Art | Schlüssel | Profil (ausgeliefert) | Quelle |
 |---|---|---|---|
 | `DIN_NUMMER` | 1, 2, 3, 4, 5 | EPOS-Muster Büro | B3, unverändert |
-| `DIN_NUMMER` | 8, 9, 28, 29 | EPOS-Muster Schule | B3, unverändert |
+| `DIN_NUMMER` | 8, 9, 30, 31 | EPOS-Muster Schule | B3; Bibliothek nach der Zählung 2025 |
 | `DIN_NUMMER` | 70, 71 | EPOS-Muster Wohnen | B3, unverändert |
 | `IFC_KLASSE` | Buero | EPOS-Muster Büro | B2, unverändert |
 | `IFC_KLASSE` | Wohnen, Schlafen, Kueche | EPOS-Muster Wohnen | B2, unverändert |
 | `IFC_KLASSE` | Sport, Gastronomie, Lager, Verkehr, Technik | die gleichnamigen neuen Muster | **nur bei Ja zu Q42** |
-| `DIN_NUMMER` | 31, 35 → Sport; 12, 13 → Gastronomie; 20, 41 → Lager; 19 → Verkehr | neue Muster | Q42; 19 und 20 mit E96 bestätigt (Schritt 190) |
+| `DIN_NUMMER` | 33, 37 → Sport; 12, 13 → Gastronomie; 20, 43 → Lager; 19 → Verkehr | neue Muster | Q42; 19 und 20 mit E96 bestätigt, Zählung 2025 (Schritt 190) |
 | `HOTTCAD_RAUMTYP` | — | keine Zeile | Raumtyp-Codes (`mrt…`) sind im Befund HottCAD belegt; ihre Nutzungsklasse gibt weiter `GebaeudeZonierung.RAUMTYP_KLASSE` im Code (4.4), eine Zeile hier geht ihr vor |
 
 Die DIN-Nummern zeigen ausgeliefert auf **EPOS-Muster**, nicht auf die leeren DIN-Profile (NP-F13); wer Normwerte
 eingetragen hat, stellt die Zuordnung auf sein Duplikat um (NP-F19).
 
 **Zählung der Schlüssel `DIN_NUMMER`.** Der Schlüssel ist die Nummer der HottCAD-Projektdatei
-(`PdProfileUsage.ProfileUsageType`), nicht die Nummer der Kategorie DIN/TS 18599-10. Er zählt wie ausgeliefert nach
-DIN V 18599-10:2018-09: 28, 29 (Bibliothek) → Schule, 31, 35 (Turnhalle, Fitnessraum) → Sport, 41 (Lagerhallen) → Lager;
-1 bis 13 sind von der Neunummerierung nicht berührt. Ob HottCAD ab 22 wie 2018 oder durchgehend wie 2025 zählt (dann
-30, 31 → Schule, 33, 37 → Sport, 43 → Lager), belegt keine Datei im Repositorium: Die Importproben entstehen synthetisch
-mit den Nummern 1, 20 und 71 und runden Werten, die Projektdateien des Anwenders liegen nur lokal. Entscheiden kann ein
-Fingerabdruck an einer echten Datei — Sollwert, Absenkung, Außenluft und Personenwärme einer Zone mit einer Nummer ab 22
-gegen die eigene Ausgabe des Anwenders. Bis dahin bleiben Saat und `Din18599Nutzung` bei 2018, und eine Nummer ab 22
-der Projektdatei trifft im Katalog DIN/TS auf eine andere Nutzung (etwa 28: Lesesaal in der Datei, Messe/Kongress im
-Katalog). 19 und 20 zählen in beiden Ausgaben gleich (Verkehrsflächen; Lager, Technik, Archiv; E96) und führen ausgeliefert
+(`PdProfileUsage.ProfileUsageType`). **HottCAD zählt nach der DIN/TS 18599-10:2025-10** (Anwender, 06.10.2026, Teil von
+E96; in HottCAD hat „Turnhalle“ die Nummer 33): Die Nummer der Datei ist die Nummer der Kategorie DIN/TS 18599-10, ab 22
+gilt 2018 22.1–22.3 → 22–24, 23–41 → 25–43. Ausgeliefert führen 30, 31 (Bibliothek – Lesesaal, Freihandbereich) → Schule,
+33, 37 (Turnhalle, Fitnessraum) → Sport, 43 (Lagerhallen) → Lager; 1 bis 21 sind von der Neunummerierung nicht berührt.
+44 bis 47 sind keine Normnummern (Bedeutung unbekannt) und bleiben ohne Zuordnung, 70 und 71 führen auf Wohnen.
+Schemaschritt 190 stellt eine Datenbank, deren Zuordnung nach 2018 zählt (28, 29, 31, 35, 41), auf dieselbe Nutzung in
+2025 um: Id und Profil der ausgelieferten Zeile bleiben, auch ein vom Anwender gewähltes Profil oder „keine“; der neue
+Schlüssel 31 (Freihandbereich) ist der alte der Turnhalle, die Zeilen werden deshalb erst geparkt, dann gesetzt. Steht auf
+dem neuen Schlüssel schon eine eigene Zeile des Anwenders, bleibt sie, und die ausgelieferte Zeile entfällt — benannt im
+Migrationsprotokoll. Schritt 189 ruft den Umbau vor seiner Saat; beide Wege enden im selben Bestand. 19 und 20 zählen in
+beiden Ausgaben gleich (Verkehrsflächen; Lager, Technik, Archiv; E96) und führen ausgeliefert
 auf Verkehr und Lager: Die Saat einer neuen Datenbank trägt sie (27 Zuordnungen, davon 18 `DIN_NUMMER`), eine Datenbank, die
 Schritt 189 ohne sie durchlief, bekommt sie aus Schritt 190 — nur, wo für den Schlüssel noch keine Zeile steht; eine Zeile des
-Anwenders, auch „keine“, bleibt. `Din18599Nutzung` führt sie wie 12, 13, 31, 35 und 41 nicht: Diese Muster haben keine alte
+Anwenders, auch „keine“, bleibt. `Din18599Nutzung` führt sie wie 12, 13, 33, 37 und 43 nicht: Diese Muster haben keine alte
 Kennung, ohne Katalog bleibt die Zone ohne Nutzung, und die Nummer steht im Beleg.
 
 ---
