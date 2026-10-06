@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Bausteine;
 
 namespace WindowsFormsApplication1
 {
@@ -193,7 +194,23 @@ namespace WindowsFormsApplication1
                 // W15a-E-1: Das linke Band zeigt nur den Namen; die Variantenherkunft
                 // steht dort als leise Zeile darunter (keine Artspalte, kein Platz).
                 ["ArtVarianteText"] = Text_("PRJ_LIST_ART_VARIANTE", "Variante"),
-                ["VarianteVonFormat"] = Text_("PRJ_LIST_VARIANTE_VON", "Variante von {0}")
+                ["VarianteVonFormat"] = Text_("PRJ_LIST_VARIANTE_VON", "Variante von {0}"),
+
+                // Der Steckbrief unter der Projektliste (Anwenderwunsch 06.10.2026).
+                ["SteckbriefLaden"] = new Func<int, ProjektSteckbrief>(Steckbrief),
+                ["SteckbriefTexte"] = new ProjektSteckbriefTexte
+                {
+                    Titel = Text_("WIZ_STECKBRIEF_TITEL", "Projektdaten"),
+                    Beschreibung = Text_("WIZ_STECKBRIEF_BESCHREIBUNG", "Beschreibung"),
+                    Kunde = Text_("WIZ_STECKBRIEF_KUNDE", "Kunde"),
+                    Bearbeiter = Text_("WIZ_STECKBRIEF_BEARBEITER", "Bearbeiter"),
+                    Erstellt = Text_("WIZ_STECKBRIEF_ERSTELLT", "Erstellt am"),
+                    Geaendert = Text_("WIZ_STECKBRIEF_GEAENDERT", "Geändert am"),
+                    Klima = Text_("WIZ_STECKBRIEF_KLIMA", "Klimaregion"),
+                    VarianteVon = Text_("WIZ_STECKBRIEF_VARIANTE_VON", "Variante von"),
+                    Varianten = Text_("WIZ_STECKBRIEF_VARIANTEN", "Varianten"),
+                    Simulation = Text_("WIZ_STECKBRIEF_SIMULATION", "Letzte Simulation")
+                }
             };
         }
 
@@ -379,6 +396,17 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Projektliste konnte nicht gelesen werden: " + ex.Message);
                 return new List<ProjektKopfZeile>();
+            }
+        }
+
+        /// <summary>Der Steckbrief zum markierten Projekt; <c>null</c> bei einem Lesefehler.</summary>
+        private static ProjektSteckbrief Steckbrief(int idProjekt)
+        {
+            try { return ProjektCtrl.Steckbrief(idProjekt); }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Projektsteckbrief konnte nicht gelesen werden: " + ex.Message);
+                return null;
             }
         }
 

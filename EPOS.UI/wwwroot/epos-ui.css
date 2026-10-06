@@ -130,6 +130,14 @@
        hoch. Wer sie je Wirt anders will, setzt das Token am Wirt. */
     --epos-listenhoehe: 22rem;
 
+    /* DAS LINKE BAND DES PROJEKTASSISTENTEN (Anwenderwunsch 06.10.2026: "Die
+       Auswahl-Box fuer die Projekte ist sehr klein"). Das Band ist so hoch wie
+       das Fenster abzueglich der Koepfe darueber (Menueband, Marke, Seitentitel),
+       mindestens aber so hoch, dass Suche, einige Zeilen und "Projekt oeffnen"
+       Platz haben. */
+    --epos-assistent-band-abzug: 14rem;
+    --epos-assistent-band-min: 24rem;
+
     /* DIE OBERGRENZE EINES DIAGRAMMS (Windows-Abnahme V2 07.09.2026, Befund
        W11b-B-4: "Simulation Uebersicht: Die Charts sind optisch zu gross").
        Jahresganglinie, Dauerlinie, Streuwolke, Speicherverlauf und
@@ -1215,6 +1223,73 @@ body {
 
 .epos-assistent > .epos-assistent-inhalt:first-child ~ .epos-assistent-fuss {
     grid-column: 1 / 3;
+}
+
+/* DIE PROJEKTLISTE FUELLT DAS BAND (Anwenderwunsch 06.10.2026). Das Band des
+   Assistenten hat die Hoehe des Fensters (abzueglich der Koepfe) und bleibt beim
+   Rollen der Kacheln stehen; darin nimmt die Liste alles, was Ueberschrift,
+   Steckbrief und "Projekt oeffnen" uebrig lassen, und rollt in sich. Die
+   Hoechsthoehe --epos-listenhoehe faellt hier - wie im Katalograhmen. In einem
+   sehr kleinen Fenster haelt die Liste mindestens 8 rem, dann rollt das Band. */
+.epos-assistentseite .epos-assistent-band {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: max(var(--epos-assistent-band-min), calc(100dvh - var(--epos-assistent-band-abzug)));
+}
+
+.epos-assistentseite .epos-assistent-band > .epos-projektliste {
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+.epos-assistentseite .epos-assistent-band > .epos-projektliste > .epos-raster-huelle {
+    flex: 1 1 0;
+    min-height: 8rem;
+    max-height: none;
+}
+
+/* DER STECKBRIEF DES MARKIERTEN PROJEKTS: Beschriftung und Wert als
+   zweispaltiges Raster in kleiner Schrift, damit er ins 280 px schmale Band
+   passt; lange Werte brechen um. Die Beschreibung haelt hoechstens drei
+   Zeilen, der volle Text steht im title. */
+.epos-projektsteckbrief {
+    flex: 0 0 auto;
+    padding: 8px 10px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+}
+
+.epos-projektsteckbrief-name {
+    margin: 0 0 6px 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.epos-projektsteckbrief-felder {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 8px;
+    margin: 0;
+    font-size: 0.9em;
+}
+
+.epos-projektsteckbrief-felder dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-projektsteckbrief-felder dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-projektsteckbrief-felder dd.epos-projektsteckbrief-beschreibung {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* ==========================================================================

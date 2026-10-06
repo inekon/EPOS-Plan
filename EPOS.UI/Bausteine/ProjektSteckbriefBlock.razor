@@ -1,0 +1,80 @@
+﻿@* Der Steckbrief des gewaehlten Projekts unter der Projektliste des Assistenten
+   (Anwenderwunsch 06.10.2026: „Projektdaten wie Erstellungs- und Aenderungsdatum,
+   erstellt, ... koennten mit angezeigt werden bei Auswahl Projekt").
+
+   NUR WAS DIE DATENBANK FUEHRT. Ein Feld ohne Wert erscheint nicht - keine leere
+   Zeile, kein Strich. Ohne Steckbrief (kein Projekt markiert) zeichnet der Baustein
+   gar nichts.
+
+   KEINE DATENBANK: Der Steckbrief kommt fertig als [Parameter]
+   (ProjektCtrl.Steckbrief ueber die Huelle). Die Datumsangaben formatiert die
+   Oberflaeche nach der laufenden Kultur (de-DE: TT.MM.JJJJ HH:mm). *@
+
+@namespace EPOS.UI.Bausteine
+
+@using System.Globalization
+@using WindowsFormsApplication1
+
+@if (Steckbrief is not null)
+{
+    <section class="epos-projektsteckbrief" aria-label="@Texte.Titel">
+        <h3 class="epos-projektsteckbrief-name">@Steckbrief.Name</h3>
+        @if (Felder.Count > 0)
+        {
+            <dl class="epos-projektsteckbrief-felder">
+                @foreach ((string bezeichnung, string wert, string klasse) in Felder)
+                {
+                    <dt>@bezeichnung</dt>
+                    <dd class="@klasse" title="@(klasse.Length > 0 ? wert : null)">@wert</dd>
+                }
+            </dl>
+        }
+    </section>
+}
+
+@code {
+    /// <summary>Das markierte Projekt; <c>null</c> = nichts zeichnen.</summary>
+    [Parameter] public ProjektSteckbrief? Steckbrief { get; set; }
+
+    /// <summary>Die Beschriftungen (Bündel, Hausregel ab zehn Texten).</summary>
+    [Parameter] public ProjektSteckbriefTexte Texte { get; set; } = new();
+
+    /// <summary>Die belegten Felder in fester Reihenfolge; leere fallen heraus.</summary>
+    private List<(string Bezeichnung, string Wert, string Klasse)> Felder
+    {
+        get
+        {
+            var felder = new List<(string, string, string)>();
+            ProjektSteckbrief? s = Steckbrief;
+            if (s is null) return felder;
+
+            Text(felder, Texte.Beschreibung, s.Beschreibung, "epos-projektsteckbrief-beschreibung");
+            Text(felder, Texte.Kunde, s.Kunde);
+            Text(felder, Texte.Bearbeiter, s.Bearbeiter);
+            Text(felder, Texte.Klima, s.Klimaregion);
+            Text(felder, Texte.VarianteVon, s.StammName);
+            if (s.Varianten > 0)
+                felder.Add((Texte.Varianten, s.Varianten.ToString(CultureInfo.CurrentCulture), ""));
+            Datum(felder, Texte.Erstellt, s.Erstellt);
+            Datum(felder, Texte.Geaendert, s.Geaendert);
+            Datum(felder, Texte.Simulation, s.LetzteSimulation);
+            return felder;
+        }
+    }
+
+    private static void Text(List<(string, string, string)> felder, string bezeichnung, string? wert,
+        string klasse = "")
+    {
+        if (!string.IsNullOrWhiteSpace(wert)) felder.Add((bezeichnung, wert.Trim(), klasse));
+    }
+
+    /// <summary>
+    /// Datum mit Uhrzeit im kurzen Muster der laufenden Kultur — de-DE
+    /// <c>06.10.2026 14:05</c>, en-US <c>10/6/2026 2:05 PM</c>.
+    /// </summary>
+    private static void Datum(List<(string, string, string)> felder, string bezeichnung, DateTime? wert)
+    {
+        if (wert is DateTime d && d > DateTime.MinValue)
+            felder.Add((bezeichnung, d.ToString("g", CultureInfo.CurrentCulture), ""));
+    }
+}

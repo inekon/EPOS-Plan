@@ -215,6 +215,15 @@
     [Parameter] public Action<int, string>? ProjektMarkiert { get; set; }
 
     /// <summary>
+    /// Der Steckbrief eines Projekts für den Block unter der Liste (Anwenderwunsch
+    /// 06.10.2026; <c>ProjektCtrl.Steckbrief</c> über die Hülle). <c>null</c> = kein Block.
+    /// </summary>
+    [Parameter] public Func<int, ProjektSteckbrief?>? SteckbriefLaden { get; set; }
+
+    /// <summary>Die Beschriftungen des Steckbriefs (<c>WIZ_STECKBRIEF_*</c>).</summary>
+    [Parameter] public ProjektSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>
     /// „Projekt öffnen" bzw. Doppelklick in der Liste — macht das markierte Projekt
     /// zum aktiven und schließt den Assistenten (Nutzerwunsch 30.08.2026).
     /// </summary>
@@ -381,6 +390,8 @@
 
     private int _schritt;
     private int _markiertId;
+    private int _steckbriefId;
+    private ProjektSteckbrief? _steckbrief;
     private string _markiertName = "";
     private string _meldung = "";
     private string _meldungTitel = "";
@@ -676,6 +687,13 @@
         builder.AddComponentParameter(i++, nameof(ProjektListe.VarianteVonFormat), VarianteVonFormat);
         builder.CloseComponent();
 
+        // Der Steckbrief des markierten Projekts (Anwenderwunsch 06.10.2026) - zwischen
+        // Liste und „Projekt öffnen", damit er beim Waehlen dort steht, wo der Blick ist.
+        builder.OpenComponent<ProjektSteckbriefBlock>(i++);
+        builder.AddComponentParameter(i++, nameof(ProjektSteckbriefBlock.Steckbrief), MarkierterSteckbrief());
+        builder.AddComponentParameter(i++, nameof(ProjektSteckbriefBlock.Texte), SteckbriefTexte);
+        builder.CloseComponent();
+
         builder.OpenElement(i++, "div");
         builder.AddAttribute(i++, "class", "epos-leiste");
         builder.OpenElement(i++, "button");
@@ -689,6 +707,20 @@
         builder.CloseElement();
         builder.CloseElement();
     };
+
+    /// <summary>
+    /// Der Steckbrief zur Markierung, je Projekt EINMAL geholt — der Zeichenlauf fragt
+    /// sonst bei jedem Tastendruck in der Suche erneut.
+    /// </summary>
+    private ProjektSteckbrief? MarkierterSteckbrief()
+    {
+        if (_steckbriefId != _markiertId)
+        {
+            _steckbriefId = _markiertId;
+            _steckbrief = _markiertId > 0 ? SteckbriefLaden?.Invoke(_markiertId) : null;
+        }
+        return _steckbrief;
+    }
 
     private void BeiMarkierung(ProjektKopfZeile? zeile)
     {
