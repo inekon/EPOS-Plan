@@ -322,6 +322,9 @@ namespace WindowsFormsApplication1
             // Kalender bleibt, wie sie ist, und der Profilname der Zone kommt leer an.
             new Stufe(RaumnutzungSchema.SCHRITT, Art.Ddl,
                       "Katalog der Nutzungsprofile, freie Nutzung an Kalender und Vorlage, Profilname an der Zone"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile; die Kategorie DIN des Ziels steht schon auf der Ausgabe 2025.
+            new Stufe(RaumnutzungDinTsSchema.SCHRITT, Art.Katalog,
+                      "Kategorie DIN der Nutzungsprofile nach DIN/TS 18599-10:2025-10: Nummern und Namen ohne Werte"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -951,6 +951,9 @@ namespace EPOS.Kern.Tests
                 // Schritt RaumnutzungSchema.SCHRITT (NP1a): Katalog der Nutzungsprofile samt Saat, freie Nutzung an
                 // Kalender und Vorlage (Tabellenneubau), Tab_Zone.Nutzungsprofil. Wiederholbar, ergebnisneutral.
                 RaumnutzungSchema.Ausfuehren(null);
+                // Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E94): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
+                // Nummern und Namen ohne Werte, Ids bleiben. Wiederholbar, ergebnisneutral.
+                RaumnutzungDinTsSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

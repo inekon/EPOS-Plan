@@ -45963,7 +45963,7 @@ chart</value>
     <value>EPOS patterns</value>
   </data>
   <data name="RNP_LBL_ART_DIN" xml:space="preserve">
-    <value>DIN V 18599-10</value>
+    <value>DIN/TS 18599-10</value>
   </data>
   <data name="RNP_LBL_ART_SIA" xml:space="preserve">
     <value>SIA 2024</value>

@@ -89607,7 +89607,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die DIN V 18599-10 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN/TS 18599-10 ähnelt.
         /// </summary>
         public static string RNP_LBL_ART_DIN {
             get {
