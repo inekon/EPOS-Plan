@@ -745,10 +745,10 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
    - **Änderung:** Je Registerkatalog eine Zeile „Zeilen / gesperrt mit Schlüssel / ungesperrt“.
      Eine `WARNUNG` mit Katalogname, wenn ein Katalog Zeilen hat, aber keinen Paketsatz. Eine
      Sammelwarnung über alle ungesperrten Zeilen der Registerkataloge mit dem Hinweis, dass sie
-     beim Anwender nie abgeglichen werden. Ob eine Warnung den Lauf abbricht, regelt Entscheid E2
-     (Schalter `--paketpflicht`, Rückgabecode wie der Katalogwächter).
+     beim Anwender nie abgeglichen werden. Nach Entscheid E2 bricht das Werkzeug bei einem leeren Paketteil
+     mit eigenem Rückgabecode ab, außer der Katalog steht in der benannten Ausnahme (`--ohne-paket <Katalog>`).
    - **Tests:** neue Fälle K4 und K5 in `Werkzeuge/Auslieferungsvorlage.Tests/KatalogpaketVorlageTests`.
-     Gegen die Testdatenbank müssen Heizkessel und PV als Warnung erscheinen. Eine Quelle mit
+     Gegen die Testdatenbank melden Heizkessel und PV den leeren Paketteil und brechen ab, mit benannter Ausnahme laufen sie durch. Eine Quelle mit
      gesperrten Sätzen ergibt keine Warnung.
    - **Abnahme:** Werkzeugtests grün (`kern.yml`, Schritt Auslieferungsvorlage-Tests), SQL-Dialekt
      grün.
@@ -758,13 +758,13 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
      Es vergleicht Fassung und Satzzahl mit `Tab_Applikation.Katalogfassung` und den gesperrten
      Sätzen der Vorlage. Bei einer Abweichung liefert es einen Rückgabecode ≠ 0 und löscht beide
      Dateien. Dazu warnt das Werkzeug, wenn der Schemastand der Quelle unter dem Zielstand der
-     Schemakette (`SchemaStand.Zielversion` im Kern) liegt (Lücke 5). Ob es dann abbricht, regelt Entscheid E3.
+     Schemakette (`SchemaStand.Zielversion` im Kern) liegt (Lücke 5). Nach Entscheid E3 bricht es dann ab.
    - **Tests:** K6 (Rücklesen) und K7 (Quelle mit älterem Schemastand) in `KatalogpaketVorlageTests`.
    - **Abnahme:** Werkzeugtests grün.
    - **Setup-Lauf:** keiner.
 4. **Freigaberegister der Fassung** (Entscheid E1 und E4)
    - **Änderung:** Eine versionierte Datei hält Fassung, Datum und Programmversion jeder
-     ausgelieferten Fassung, Vorschlag `Setup/Katalogfassungen.txt`. `build-setup.ps1` bricht ab,
+     ausgelieferten Fassung, Entscheid E4, Vorschlag `Setup/Katalogfassungen.txt`. `build-setup.ps1` bricht ab,
      wenn `-Katalogfassung` nicht größer ist als der letzte Eintrag. Ausgenommen ist ein Probelauf
      (Schalter `-Probe`, schreibt nichts ins Register). Nach einem freigegebenen Lauf trägt das
      Skript die Zeile nach. Committet wird sie wie jede Änderung nur auf Auftrag.
@@ -784,8 +784,8 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
    - **Setup-Lauf:** keiner.
 6. **CI-Artefakt** (`.github/workflows/windows.yml`, Job `installer`)
    - **Änderung:** Den Kopf des Pakets (Format, Fassung, Satzzahl je Tabelle) als
-     `katalogpaket.txt` neben den Prüfbericht in `artifacts/setup` legen und, je nach Entscheid E5,
-     das Paket selbst dazu.
+     `katalogpaket.txt` neben den Prüfbericht in `artifacts/setup` legen (Entscheid E5: nur der Kopf,
+     nicht das Paket).
    - **Abnahme:** YAML-Prüfung lokal, kein Lauf ausgelöst.
    - **Setup-Lauf:** keiner.
 7. **Setup-Lauf und Freigabeprobe** (nach den Schritten 1 bis 6)
@@ -800,7 +800,7 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
      - **(c) Update mit gleicher Fassung:** kein Abgleich.
      - **(d) Deinstallation ohne Löschen der Daten:** Datenbank bleibt, Paket ist weg.
    - **Abnahme:** Protokoll unter `Dokumentation/ueberholt/Protokolle/`, Statuszeile.
-8. **iOS** (nur bei Entscheid E6 = b)
+8. **iOS** (Entscheid E6, eigene Welle nach der Windows-Freigabe)
    - **Änderung:** Paket als `MauiAsset` neben die Seed-Datenbank (`EPOS.iOS/EPOS.iOS.csproj`).
      `IosPfade.Auslieferungsvorlage` zeigt auf den Bestand. Der Start der App ruft
      `Katalogabgleich.BeimStart` nach der Migration auf. Der Prüfmodus prüft die Fassung.
@@ -816,53 +816,28 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
    - **Abnahme:** `DokumentationLinkWacheTests` grün.
    - **Setup-Lauf:** keiner.
 
-#### 6.5.4 Offene Anwenderentscheide
+#### 6.5.4 Festgelegte Entscheide
 
-- **E1 Zählweise der Fassung**
-  - (a) Datum `JJJJMMTT` wie heute.
-  - (b) Laufende Nummer 1, 2, 3 …
-  - (c) `JJJJMMTTnn`, also Datum und Tageslauf; das passt bis zum Jahr 2147 in den Ganzzahltyp.
-  - **Empfehlung (c):** bleibt größer als jede heutige Datumsfassung, lässt mehrere Freigaben am
-    Tag zu und ist lesbar. `build-setup.ps1` schlägt den nächsten Wert aus dem Register vor.
-- **E2 Leerer Paketteil eines Registerkatalogs mit Zeilen**
-  - (a) nur Warnung im Prüfbericht;
-  - (b) Abbruch mit eigenem Rückgabecode, abschaltbar je Katalog über eine benannte Ausnahme
-    (`--ohne-paket Tab_PV_STAMM`);
-  - (c) Abbruch ohne Ausnahme.
-  - **Empfehlung (b):** Ein leerer Paketteil ist bei einer echten Auslieferung fast immer ein
-    Pflegefehler der Quelle. Die Testdatenbank im CI-Setup-Lauf läuft mit den benannten Ausnahmen
-    für Heizkessel und PV.
-- **E3 Quelle mit älterem Schemastand**
-  - (a) Warnung;
-  - (b) Abbruch;
-  - (c) das Werkzeug hebt die Arbeitskopie vor Schritt 4b selbst an.
-  - **Empfehlung (b):** Die Quelle wird mit der aktuellen Anwendung einmal geöffnet und ist dann
-    angehoben. (c) zöge die Schalenmigration ins Werkzeug.
-- **E4 Ort des Freigaberegisters**
-  - (a) versionierte Datei unter `Setup/`;
-  - (b) nur die Statusdatei bzw. das Freigabeprotokoll;
-  - (c) GitHub-Release-Tag.
-  - **Empfehlung (a):** Nur eine Datei im Repository kann das Skript maschinell prüfen. Tags
-    pusht Claude nicht.
-- **E5 Paket als CI-Artefakt**
-  - (a) nur der Kopf (`katalogpaket.txt`);
-  - (b) dazu das ganze Paket im Artefakt `setup-protokoll`;
-  - (c) nichts Zusätzliches.
-  - **Empfehlung (a):** Der Kopf genügt als Nachweis. Das Paket steckt ohnehin im Installer, und
-    wer es braucht, holt es dort heraus.
-- **E6 iOS**
-  - (a) kein Abgleich, neue Katalogsätze erst mit einer neuen Datenbank;
-  - (b) Paket als App-Bestand und Abgleich beim Start (Schritt 8);
-  - (c) Abgleich nur auf Zuruf über den Dialog.
-  - **Empfehlung (b), als eigene Welle nach der Windows-Freigabe:** gleicher Kernweg, kein neuer
-    Fachcode. Er braucht aber einen iOS-Lauf.
-- **E7 Ungesperrte Katalogzeilen im Modus `alle`**
-  - (a) so lassen und im Bericht ausweisen (Schritt 2);
-  - (b) das Werkzeug sperrt in der Vorlage alle Zeilen der Registerkataloge;
-  - (c) für die Registerkataloge gilt der Modus `readonly`.
-  - **Empfehlung (a):** Ob ein Satz ausgeliefert und nachgeführt wird, entscheidet die Pflege der
-    Quelle, nicht das Werkzeug. (b) hebt auch den Schreibschutz der Oberfläche auf, der an
-    `ReadOnly` hängt.
+Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
+
+- **E1 Zählweise der Fassung:** Die Fassung des Katalogpakets zählt als `JJJJMMTTnn`, also Datum und
+  Tageslauf; sie bleibt größer als jede frühere Datumsfassung und passt bis zum Jahr 2147 in den
+  Ganzzahltyp. `build-setup.ps1` schlägt den nächsten Wert aus dem Register vor.
+- **E2 Leerer Paketteil eines Registerkatalogs mit Zeilen:** Das Werkzeug bricht mit eigenem
+  Rückgabecode ab; je Katalog lässt sich das über eine benannte Ausnahme abschalten
+  (`--ohne-paket Tab_PV_STAMM`). Die Testdatenbank im CI-Setup-Lauf läuft mit den benannten
+  Ausnahmen für Heizkessel und PV.
+- **E3 Quelle mit älterem Schemastand:** Das Werkzeug bricht ab. Die Quelle wird mit der aktuellen
+  Anwendung einmal geöffnet und ist dann angehoben.
+- **E4 Ort des Freigaberegisters:** Das Register ist eine versionierte Datei unter `Setup/`, die das
+  Skript maschinell prüft.
+- **E5 Paket als CI-Artefakt:** Das Artefakt trägt nur den Kopf des Pakets (`katalogpaket.txt`); das
+  Paket selbst steckt im Installer.
+- **E6 iOS:** Paket als App-Bestand und Abgleich beim Start (Schritt 8), als eigene Welle nach der
+  Windows-Freigabe; sie braucht einen iOS-Lauf.
+- **E7 Ungesperrte Katalogzeilen im Modus `alle`:** Sie bleiben ungesperrt, der Prüfbericht weist
+  sie aus (Schritt 2). Ob ein Satz ausgeliefert und nachgeführt wird, entscheidet die Pflege der
+  Quelle, nicht das Werkzeug.
 
 #### 6.5.5 Risiken
 
@@ -890,7 +865,7 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
 - **Prüfsummendrift durch Schemaschritte.**
   - **Gefahr:** Ein Katalog-DML-Schritt, der nach dem Bau der Vorlage läuft und gesperrte Sätze
     ändert, ohne deren Prüfsumme nachzuziehen, macht ausgelieferte Sätze zu „Anpassungen“.
-  - **Gegenmittel:** Entscheid E3. Außerdem gilt als Regel für künftige Katalog-DML-Schritte, dass
+  - **Gegenmittel:** Abbruch bei älterem Schemastand (Entscheid E3). Außerdem gilt als Regel für künftige Katalog-DML-Schritte, dass
     sie die gespeicherte Prüfsumme gesperrter Sätze mitschreiben.
 - **Zwei Bedeutungen von „Katalogfassung“.** Fassung des Katalogpakets (Datum oder Zähler) und
   Feldkatalog der Word-Vorlagen sind verschiedene Zahlen mit demselben Wort. Parameter, Bericht und
