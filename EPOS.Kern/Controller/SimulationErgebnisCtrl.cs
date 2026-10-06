@@ -316,7 +316,21 @@ namespace WindowsFormsApplication1
         public sealed record WpModulZeile(string Name, double GrenzleistungKw,
                                           double WaermeproduktionMwh, double StrombedarfMwh,
                                           double HeizstabMwh, double LaufzeitStunden,
-                                          bool MitTakt = false, int Starts = 0, double TaktstromMwh = 0);
+                                          bool MitTakt = false, int Starts = 0, double TaktstromMwh = 0)
+        {
+            /// <summary>
+            /// Die Jahresarbeitszahl des Moduls OHNE Heizstab [–] = Wärmeproduktion ÷ Strombedarf;
+            /// <c>null</c> ohne Strom (<see cref="Jahresarbeitszahl.Waermepumpe"/>).
+            /// </summary>
+            public double? Jaz => Jahresarbeitszahl.Waermepumpe(WaermeproduktionMwh, StrombedarfMwh);
+
+            /// <summary>
+            /// Die Jahresarbeitszahl des Moduls MIT seinem Heizstab [–] = (Wärmeproduktion + Heizstab) ÷
+            /// (Strombedarf + Heizstab); <c>null</c> ohne Strom (<see cref="Jahresarbeitszahl.MitHeizstab"/>).
+            /// </summary>
+            public double? JazMitHeizstab =>
+                Jahresarbeitszahl.MitHeizstab(WaermeproduktionMwh, StrombedarfMwh, HeizstabMwh);
+        }
 
         /// <summary>Eine Zeile der Pufferspeichertabelle (Konzept 6.6).</summary>
         /// <param name="BereitschaftTemperatur">Welle M7, PS1 (c): Bereitschaftsverlust nach Temperatur je Zone.</param>
@@ -337,6 +351,20 @@ namespace WindowsFormsApplication1
             public double StromverbrauchMwh;
             public double HeizstabStromverbrauchMwh;
             public double WaermeproduktionMwh;
+
+            /// <summary>
+            /// Die Jahresarbeitszahl der Wärmepumpe allein [–] = <see cref="WaermeproduktionMwh"/> ÷
+            /// <see cref="StromverbrauchMwh"/>; <c>null</c> ohne Strom (<see cref="Jahresarbeitszahl.Waermepumpe"/>).
+            /// </summary>
+            public double? JazWaermepumpe => Jahresarbeitszahl.Waermepumpe(WaermeproduktionMwh, StromverbrauchMwh);
+
+            /// <summary>
+            /// Die Jahresarbeitszahl des Systems mit Heizstab [–] — dieselbe Rechnung wie die Kennzahl
+            /// <c>eff.jaz</c> des Berichts (<see cref="Jahresarbeitszahl.MitHeizstab"/>); <c>null</c> ohne Strom.
+            /// </summary>
+            public double? JazMitHeizstab =>
+                Jahresarbeitszahl.MitHeizstab(WaermeproduktionMwh, StromverbrauchMwh, HeizstabStromverbrauchMwh);
+
             public double Vollbenutzungsstunden;
             public double MinSpkLeistungKw;
             public List<WpModulZeile> Module = new List<WpModulZeile>();
