@@ -203,7 +203,7 @@ und Abnahme liegen bei der Sitzung Wirtschaftlichkeit; Registereintrag → R‑E
 Verfügbarkeit (Berichterstellung oder Wirtschaftlichkeit).
 
 **Nicht Teil dieses Auftrags:** Sensitivität je Szenario (bleibt Erwartet), Umbau des Excel-Blatts (außer der einen
-Kopfzeile), neue Diagrammbilder (ChartProben unverändert), eine dreispaltige Mehrjahrestafel (D1, nicht gewählt).
+Kopfzeile), neue Diagrammbilder (ChartProben unverändert), eine dreispaltige Mehrjahrestafel (D1, nicht gewählt), die ausführliche Excel-Vorlage (sie nimmt den Platzhalter `stand.tabelle.wirtschaft_szenarien` nicht auf — Entscheid 06.10.2026 nach Empfehlung).
 
 ### 7. Etappenplan VB‑E1 bis VB‑E6
 

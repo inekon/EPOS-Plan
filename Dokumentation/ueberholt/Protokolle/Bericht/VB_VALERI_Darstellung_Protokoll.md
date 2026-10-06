@@ -170,8 +170,8 @@ Anwender zu bestätigen). Upload ausstehend, folgt gebündelt mit der nächsten 
 
 - Sichtabnahme unter Windows (WebView2): Word-Bericht 1030 in VALERI-Darstellung, Excel-Kopfzeile, Klappliste,
   Vorbelegung, KI-Feld.
-- Entscheid: Soll die ausführliche Excel-Vorlage um `stand.tabelle.wirtschaft_szenarien` ergänzt werden (Befund
+- Entschieden 06.10.2026 nach Empfehlung: **nein**, die ausführliche Excel-Vorlage bleibt Nachbildung des Standardberichts (die Bausteinvorlagen führen den Schlüssel). Frage war: Soll die ausführliche Excel-Vorlage um `stand.tabelle.wirtschaft_szenarien` ergänzt werden (Befund
   Abschnitt 3, VB‑E4)?
 - Wiki-Upload und Logbuch-Version (VB‑E6, Version beim Anwender erfragen).
-- Push-SHA und CI-Kennung nach dem Push nachtragen.
+- Gepusht `cf0ec4442` am 06.10.2026; Nachweis: Kern-Lauf 37503127843 auf ubuntu grün (Stand `cc9faeffc` enthält den Push).
 - Die zehn fremd roten Kern-Tests an ihre Sitzungen melden (NP2b‑4, RP2a, AK1z).

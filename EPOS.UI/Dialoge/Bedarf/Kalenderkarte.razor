@@ -234,6 +234,7 @@
     {
         if (!_fokusFaellig || Lesemodus || Vorlagen is null) return;
         _fokusFaellig = false;
+        // Rollen gewollt: gezielter Sprung, der Wirt verlangt die Vorlagenwahl ausdrücklich (ListeZeigen).
         await _wahl.FocusAsync(preventScroll: false);
     }
 

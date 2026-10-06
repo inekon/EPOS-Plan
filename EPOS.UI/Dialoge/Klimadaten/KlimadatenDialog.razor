@@ -1039,7 +1039,7 @@
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         await RegionenLaden();
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
         StateHasChanged();
     }
 

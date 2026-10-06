@@ -344,6 +344,7 @@
 
         _fokusNachziehen = false;
         if (_zeile is not null && _stellen.TryGetValue(_zeile.Name, out ElementReference stelle))
+            // Rollen gewollt: Tastaturnavigation, die angesprungene Stelle des Menübands soll ins Bild.
             await stelle.FocusAsync();
     }
 
