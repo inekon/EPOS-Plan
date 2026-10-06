@@ -44,7 +44,7 @@ Ohne Befund: P6c im Gesamtlauf grün; der frühere rote Lauf lief gegen eine Dat
 
 ## 6 Gate 786
 
-⟨GATE786⟩
+Gate 786 (Hauptbaum, `42bf8935`, 47 min): 20 341 Tests, 20 337 grün, 4 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 758, EPOS.Kern 11 609 mit 3 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-06_R39_Auslegungsheizlast` PASS, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 466 Texte, 0 Fundstellen; Auslieferungsvorlage-Tests 60/60
 
 ## 7 Offen
 
