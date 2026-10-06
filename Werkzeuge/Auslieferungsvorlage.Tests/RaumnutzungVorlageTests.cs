@@ -107,7 +107,7 @@ namespace Auslieferungsvorlage.Tests
                     "SELECT \"ID\", '1', 'Probeprofil', 20, 10 FROM \"Tab_Raumnutzungskatalog\" WHERE \"Bezeichner\" = 'Projektdatei Probe.sqproj'");
             });
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "alle");
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Schritt 3d — Katalog der Nutzungsprofile", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("ok      eigene Zeilen des Katalogs der Nutzungsprofile: 0", e.Ausgabe, StringComparison.Ordinal);
