@@ -46232,5 +46232,50 @@ chart</value>
   <data name="GANS_RAND_TREFFER_BAUTEIL" xml:space="preserve">
     <value>Selected: component {0} — {1}</value>
   </data>
+  <data name="GEB_BTN_NEU_LESEN" xml:space="preserve">
+    <value>Read file again…</value>
+  </data>
+  <data name="GEB_BTN_NEU_LESEN_HINWEIS" xml:space="preserve">
+    <value>Read the import file of the selected building again and view the building by zones and by boundary condition – nothing is saved</value>
+  </data>
+  <data name="GEB_NL_TITEL" xml:space="preserve">
+    <value>Read import file again</value>
+  </data>
+  <data name="GEB_NL_DATEI_TITEL" xml:space="preserve">
+    <value>Select import file "{0}"</value>
+  </data>
+  <data name="GEB_NL_QUELLE" xml:space="preserve">
+    <value>Import source: {0} ({1}), imported on {2}</value>
+  </data>
+  <data name="GEB_NL_PASSEND" xml:space="preserve">
+    <value>The file "{0}" matches the import source. The view shows the file; nothing is saved.</value>
+  </data>
+  <data name="GEB_NL_HASH_ABWEICHEND" xml:space="preserve">
+    <value>The file "{0}" (modified on {1}) is not the imported file: SHA-256 {2}… instead of {3}…. No view is shown.</value>
+  </data>
+  <data name="GEB_NL_NICHT_LESBAR" xml:space="preserve">
+    <value>The file "{0}" cannot be read: {1}</value>
+  </data>
+  <data name="GEB_NL_FORMAT_UNBEKANNT" xml:space="preserve">
+    <value>The file "{0}" does not have the format of the import source ({1}).</value>
+  </data>
+  <data name="GEB_NL_ZU_GROSS" xml:space="preserve">
+    <value>At {1}, the file "{0}" exceeds the limit of {2} on this device.</value>
+  </data>
+  <data name="GEB_NL_KEINE_QUELLE" xml:space="preserve">
+    <value>This building has no import source.</value>
+  </data>
+  <data name="GEB_NL_NUR_GEOMETRIE" xml:space="preserve">
+    <value>The zones come from the geometry file alone ({0}); a project file and manual assignments are not included in this view.</value>
+  </data>
+  <data name="GEB_NL_ZONENREGEL" xml:space="preserve">
+    <value>The zones follow the rule of the file ({0}); manual assignments are not included in this view.</value>
+  </data>
+  <data name="GEB_NL_ANDERE_DATEI" xml:space="preserve">
+    <value>Select another file…</value>
+  </data>
+  <data name="GEB_NL_LAEUFT" xml:space="preserve">
+    <value>Reading the file …</value>
+  </data>
 </root>
 
