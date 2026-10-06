@@ -81,7 +81,7 @@ public class GebaeudeWohnflaecheDialogTests : EposBunitContext
         Assert.Contains("Beschreibung:", cut.Markup);
         Assert.Contains("Baualtersklasse:", cut.Markup);   // E47: die Zeile zeigt die Klasse, nicht das Jahr
         Assert.Contains("Art der Angabe:", cut.Markup);
-        Assert.Contains("Wärmebedarf/Wohnfläche:", cut.Markup);
+        Assert.Contains("Wärmebedarf/Nutzfläche:", cut.Markup);
         Assert.Contains("Jahresnutzungsgrad:", cut.Markup);
         Assert.Contains("Dezentrale Warmwasserbereitung", cut.Markup);
         Assert.Contains("z.B. 0.85 für 85%", cut.Markup);
@@ -121,6 +121,31 @@ public class GebaeudeWohnflaecheDialogTests : EposBunitContext
     {
         var cut = Aufbauen(einheit: "Wohnfläche [m²]");
         Assert.Equal("m²", cut.Instance.Einheitszeichen);
+    }
+
+    /// <summary>
+    /// <b>Nutzfläche in der Anzeige</b> (Anwenderentscheid 06.10.2026): Klappliste und Feld
+    /// „Art der Angabe" zeigen „Nutzfläche [m²]"; der gespeicherte Steuerwert „Wohnfläche [m²]"
+    /// bleibt Auswahl und Ergebnis — keine Datenänderung.
+    /// </summary>
+    [Fact]
+    public void Die_Flaechenangabe_heisst_in_der_Anzeige_Nutzflaeche()
+    {
+        GebaeudeWohnflaecheErgebnis? ergebnis = null;
+        var cut = Render<GebaeudeWohnflaecheDialog>(p => p
+            .Add(x => x.Wert, 150.0)
+            .Add(x => x.Jahresnutzungsgrad, 1.0)
+            .Add(x => x.Einheit, "Wohnfläche [m²]")
+            .Add(x => x.Geschlossen, e => ergebnis = e));
+
+        Assert.Contains("Nutzfläche [m²]", cut.Find("select").TextContent);
+        Assert.DoesNotContain("Wohnfläche [m²]", cut.Markup);
+        Assert.Equal("Wohnfläche [m²]", cut.Instance.GewaehlteEinheit);
+        Assert.Equal("m²", cut.Instance.Einheitszeichen);
+
+        cut.Find("select").Change("0");
+        cut.Find("select").Change("5");   // zurück auf die Flächenangabe
+        Assert.Equal("Wohnfläche [m²]", cut.Instance.GewaehlteEinheit);
     }
 
     [Fact]
@@ -198,7 +223,7 @@ public class GebaeudeWohnflaecheDialogTests : EposBunitContext
         Knopf(cut, "OK").Click();
 
         Assert.False(gerufen);
-        Assert.Contains("Wärmebedarf/Wohnfläche", cut.Instance.Meldung);
+        Assert.Contains("Wärmebedarf/Nutzfläche", cut.Instance.Meldung);
         Assert.Single(cut.FindAll("[role=alert]"));
     }
 

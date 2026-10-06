@@ -14769,6 +14769,21 @@ Please check all entries!</value>
   <data name="GEB_MSG_LOESCHFRAGE" xml:space="preserve">
     <value>Do you really want to delete {0}?</value>
   </data>
+  <data name="GEB_SPERRE_WAHL_FLAECHE" xml:space="preserve">
+    <value>Select a building in the project first – “Area and consumption” scales the copy in the project.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_PROJEKT" xml:space="preserve">
+    <value>Select a building in the project first – the copy in the project is edited.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_EXPORT" xml:space="preserve">
+    <value>Select a building in the project first – the copy in the project is exported.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_SIMULATION" xml:space="preserve">
+    <value>Select a building in the project first – the heat demand of the copy in the project is calculated.</value>
+  </data>
+  <data name="GEB_TXT_EINHEIT_FLAECHE" xml:space="preserve">
+    <value>Usable floor area [m²]</value>
+  </data>
   <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN" xml:space="preserve">
     <value>The building is deleted from the database. The projects {0} keep their copy.</value>
   </data>
@@ -23321,16 +23336,16 @@ Do you want to allow this?</value>
     <value>The description of the marked record.</value>
   </data>
   <data name="KI_DLG_GEB_WOHNFLAECHE_ERL" xml:space="preserve">
-    <value>The living or usable area of the marked record as shown on the screen. It is changed with the “Change…” button.</value>
+    <value>The usable floor area of the marked record as shown on the screen. It is changed with the “Change…” button.</value>
   </data>
   <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
-    <value>The kind of entry: living area, or a consumption figure the area is derived from.</value>
+    <value>The kind of entry: usable floor area, or a consumption figure the area is derived from.</value>
   </data>
   <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
     <value>The kind of entry for this building; it determines the unit and the calculation path of the figure beside it.</value>
   </data>
   <data name="KI_DLG_GEBW_WERT_ERL" xml:space="preserve">
-    <value>The heat demand or the living area, in the unit named by the kind of entry.</value>
+    <value>The heat demand or the usable floor area, in the unit named by the kind of entry.</value>
   </data>
   <data name="KI_DLG_GEBW_NUTZUNGSGRAD_ERL" xml:space="preserve">
     <value>The annual efficiency of the boiler as a fraction, e.g. 0.85 for 85 %. It is only needed for a fuel figure.</value>
@@ -23381,7 +23396,7 @@ Do you want to allow this?</value>
     <value>Residential building, or commercial and other; the use decides which list the building types come from.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
-    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and living area.</value>
+    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and usable floor area.</value>
   </data>
   <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
     <value>The total living or usable area of the building.</value>

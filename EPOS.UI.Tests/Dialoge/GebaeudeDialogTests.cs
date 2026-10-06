@@ -455,7 +455,10 @@ public class GebaeudeDialogTests : EposBunitContext
 
         Assert.Contains("Haus 1990", cut.Markup);
         Assert.Contains("Ein Haus", cut.Markup);
-        Assert.Contains("Wohnfläche [m²]", cut.Markup);
+        // Die Art der Angabe heisst in der Anzeige „Nutzfläche [m²]"; gespeichert bleibt der Steuerwert.
+        Assert.Contains("Nutzfläche [m²]", cut.Markup);
+        Assert.DoesNotContain("Wohnfläche [m²]", cut.Markup);
+        Assert.Equal("Wohnfläche [m²]", cut.Instance.Zeilen[0].Einheit);
     }
 
     [Fact]
@@ -519,7 +522,91 @@ public class GebaeudeDialogTests : EposBunitContext
         cut.FindAll("button.epos-anlagenwahl").Last().Click();
 
         Assert.Null(cut.Instance.Gewaehlt);
-        Assert.True(Knopf(cut, "Simulation...").HasAttribute("disabled"));
+        var knopf = Knopf(cut, "Simulation...");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_SIMULATION, knopf.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// <b>Grund am Bedienelement</b> (Anwenderentscheid 06.10.2026): Ist in der Projektliste kein
+    /// Gebäude gewählt — etwa weil der Anwender ein Modellgebäude in der DB-Liste markiert hat —,
+    /// sind „Fläche und Verbrauch…", „Gebäude im Projekt bearbeiten…", „Exportieren…" und
+    /// „Simulation…" weich gesperrt: <c>aria-disabled</c>, nicht <c>disabled</c>, der Kurztext nennt
+    /// den Grund, und der Versuch meldet ihn, ohne etwas zu öffnen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Projektwahl_nennen_die_Knoepfe_der_Fussleiste_den_Grund()
+    {
+        int geoeffnet = 0;
+        var cut = Render<GebaeudeDialog>(p => p
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile> { Zeile(1) })
+            .Add(x => x.Katalogzeilen, () => Katalog())
+            .Add(x => x.Katalogprofil, Profil())
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "Katalogtext", "150,00"))
+            .Add(x => x.StammSatz, n => Zeile(100000, n))
+            .Add(x => x.WohnflaecheGaben, _ => { geoeffnet++; return new Dictionary<string, object>(); })
+            .Add(x => x.ProjektGaben, _ => { geoeffnet++; return null; })
+            .Add(x => x.ExportGaben, (_, _) => { geoeffnet++; return null; })
+            .Add(x => x.BedarfGaben, _ => { geoeffnet++; return null; }));
+
+        KatalogWaehlen(cut, "Hotel Sonne");      // die Wahl in der DB-Liste nimmt die Projektwahl weg
+        Assert.Null(cut.Instance.Gewaehlt);
+
+        var faelle = new[]
+        {
+            ("button.epos-gebaeude-flaeche", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_FLAECHE),
+            ("button.epos-gebaeude-projekt", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_PROJEKT),
+            ("button.epos-gebaeude-export", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_EXPORT),
+            ("button.epos-gebaeude-simulation", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_SIMULATION),
+        };
+        foreach ((string waehler, string grund) in faelle)
+        {
+            var knopf = cut.Find(waehler);
+            Assert.False(knopf.HasAttribute("disabled"), waehler);
+            Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+            Assert.Equal(grund, knopf.GetAttribute("title"));
+            Assert.StartsWith("Erst ein Gebäude im Projekt wählen", grund);
+            knopf.Click();
+            Assert.Equal(grund, cut.Instance.Meldung);
+        }
+        Assert.Equal(0, geoeffnet);
+        Assert.False(cut.Instance.WohnflaecheOffen);
+
+        // Mit Projektwahl: frei, ohne Sperrgrund.
+        cut.FindAll("button.epos-anlagenwahl").First().Click();
+        Assert.NotNull(cut.Instance.Gewaehlt);
+        Assert.Null(cut.Find("button.epos-gebaeude-flaeche").GetAttribute("aria-disabled"));
+        Assert.Null(cut.Find("button.epos-gebaeude-simulation").GetAttribute("aria-disabled"));
+        cut.Find("button.epos-gebaeude-flaeche").Click();
+        Assert.True(cut.Instance.WohnflaecheOffen);
+    }
+
+    /// <summary>
+    /// Nach „In das Projekt übernehmen" ist das neue Projektgebäude gewählt — „Fläche und
+    /// Verbrauch…" ist sofort bedienbar und öffnet die Angabe für genau diese Zeile; die
+    /// Detailanzeige zeigt die Art der Angabe als „Nutzfläche [m²]".
+    /// </summary>
+    [Fact]
+    public void Nach_der_Uebernahme_ist_das_neue_Projektgebaeude_gewaehlt()
+    {
+        GebaeudeProjektZeile? skaliert = null;
+        var zeilen = new List<GebaeudeProjektZeile> { Zeile(1) };
+        var cut = Aufbauen(zeilen: zeilen,
+                           wohnflaecheGaben: z => { skaliert = z; return new Dictionary<string, object>(); });
+
+        KatalogWaehlen(cut, "Hotel Sonne");
+        Assert.Null(cut.Instance.Gewaehlt);
+        Uebernehmen(cut).Click();
+
+        Assert.Equal(2, zeilen.Count);
+        Assert.Same(zeilen[1], cut.Instance.Gewaehlt);
+        Assert.Equal("Hotel Sonne", cut.Instance.Gewaehlt!.Name);
+        var knopf = cut.Find("button.epos-gebaeude-flaeche");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+        Assert.Same(zeilen[1], skaliert);
+        Assert.Contains("Nutzfläche [m²]", cut.Markup);
     }
 
     [Fact]

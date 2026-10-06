@@ -236,7 +236,9 @@
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detailBeschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="3" />
             <Textfeld Bezeichnung="@LabelWohnflaeche" Wert="@_detailWohnflaeche" NurLesen="true" />
-            <Textfeld Bezeichnung="@LabelEinheit" Wert="@_detailEinheit" NurLesen="true" />
+            @* Die Art der Angabe als ANZEIGE (Flaechenangabe): der gespeicherte Steuerwert
+               „Wohnfläche [m²]" heisst „Nutzfläche [m²]"; _detailEinheit bleibt der Steuerwert. *@
+            <Textfeld Bezeichnung="@LabelEinheit" Wert="@Flaechenangabe.Anzeige(_detailEinheit)" NurLesen="true" />
             @* Stufe G1 (Konzept 2.7): zwei leise Kennzahlen, nur lesend. *@
             <Textfeld Bezeichnung="@LabelHges" Wert="@_detailHges" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelRechenweg" Wert="@_detailRechenweg" NurLesen="true" />
@@ -257,22 +259,39 @@
            Leiste. *@
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
             <Aktionen>
-                <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                        @onclick="BeiAendern">@BtnAendernText</button>
+                @* Grund am Bedienelement: ohne Wahl in der Projektliste weich gesperrt - der
+                   Kurztext nennt den Grund, der Versuch meldet ihn (die Wahl in der DB-Liste
+                   genuegt nicht: skaliert wird die Kopie im Projekt). *@
+                @if (_gewaehlt is null)
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-flaeche" aria-disabled="true"
+                            title="@SperreWahlFlaeche"
+                            @onclick="() => Melden(SperreWahlFlaeche, WarnStufe.Hinweis)">@BtnAendernText</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-flaeche"
+                            @onclick="BeiAendern">@BtnAendernText</button>
+                }
 
                 @* Stufe G3 (Welle D2): die Projektkopie samt Zonen und Bauteilen. Eine noch nicht
                    gespeicherte Zeile hat keine Projektkopie - weich gesperrt, der Versuch nennt den
                    Grund. Kein Delegat, kein Knopf. *@
                 @if (ProjektGaben is not null)
                 {
-                    @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie)
+                    @if (_gewaehlt is null)
                     {
-                        <button type="button" class="epos-knopf" aria-disabled="true" title="@SperreNeueZeile"
+                        <button type="button" class="epos-knopf epos-gebaeude-projekt" aria-disabled="true" title="@SperreWahlProjekt"
+                                @onclick="() => Melden(SperreWahlProjekt, WarnStufe.Hinweis)">@BtnProjektText</button>
+                    }
+                    else if (!_gewaehlt.HatProjektkopie)
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-projekt" aria-disabled="true" title="@SperreNeueZeile"
                                 @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">@BtnProjektText</button>
                     }
                     else
                     {
-                        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                        <button type="button" class="epos-knopf epos-gebaeude-projekt"
                                 title="@BtnProjektHinweis" @onclick="BeiProjekt">@BtnProjektText</button>
                     }
                 }
@@ -282,14 +301,19 @@
                    Kein Delegat, kein Knopf (die Huelle reicht ihn nur bei angeschaltetem Schalter). *@
                 @if (ExportGaben is not null)
                 {
-                    @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie)
+                    @if (_gewaehlt is null)
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-export" aria-disabled="true" title="@SperreWahlExport"
+                                @onclick="() => Melden(SperreWahlExport, WarnStufe.Hinweis)">@BtnExportText</button>
+                    }
+                    else if (!_gewaehlt.HatProjektkopie)
                     {
                         <button type="button" class="epos-knopf epos-gebaeude-export" aria-disabled="true" title="@SperreExport"
                                 @onclick="() => Melden(SperreExport, WarnStufe.Hinweis)">@BtnExportText</button>
                     }
                     else
                     {
-                        <button type="button" class="epos-knopf epos-gebaeude-export" disabled="@(_gewaehlt is null)"
+                        <button type="button" class="epos-knopf epos-gebaeude-export"
                                 title="@BtnExportHinweis" @onclick="BeiExport">@BtnExportText</button>
                     }
                 }
@@ -309,9 +333,18 @@
                    Projekt und damit auch nichts zu rechnen. *@
                 @if (BedarfGaben is not null)
                 {
-                    <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                            title="@BtnSimulationHinweis"
-                            @onclick="BeiSimulation">@BtnSimulationText</button>
+                    @if (_gewaehlt is null)
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-simulation" aria-disabled="true"
+                                title="@SperreWahlSimulation"
+                                @onclick="() => Melden(SperreWahlSimulation, WarnStufe.Hinweis)">@BtnSimulationText</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-simulation"
+                                title="@BtnSimulationHinweis"
+                                @onclick="BeiSimulation">@BtnSimulationText</button>
+                    }
                 }
 
                 @* Der Zwilling des Menuepunkts "Gebaeudetypen" (Entscheid DL-Q1 b):
@@ -750,6 +783,18 @@
     /// <summary><c>GEBZ_SPERRE_NEUE_ZEILE</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie.</summary>
     [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_NEUE_ZEILE;
 
+    /// <summary>Grund am Knopf „Fläche und Verbrauch…" ohne Wahl in der Projektliste (<c>GEB_SPERRE_WAHL_FLAECHE</c>).</summary>
+    [Parameter] public string SperreWahlFlaeche { get; set; } = Resource.GEB_SPERRE_WAHL_FLAECHE;
+
+    /// <summary>Grund am Knopf „Gebäude im Projekt bearbeiten…" ohne Wahl (<c>GEB_SPERRE_WAHL_PROJEKT</c>).</summary>
+    [Parameter] public string SperreWahlProjekt { get; set; } = Resource.GEB_SPERRE_WAHL_PROJEKT;
+
+    /// <summary>Grund am Knopf „Exportieren…" ohne Wahl (<c>GEB_SPERRE_WAHL_EXPORT</c>).</summary>
+    [Parameter] public string SperreWahlExport { get; set; } = Resource.GEB_SPERRE_WAHL_EXPORT;
+
+    /// <summary>Grund am Knopf „Simulation…" ohne Wahl (<c>GEB_SPERRE_WAHL_SIMULATION</c>).</summary>
+    [Parameter] public string SperreWahlSimulation { get; set; } = Resource.GEB_SPERRE_WAHL_SIMULATION;
+
     /// <summary><c>GEBZ_TITEL_PROJEKT</c> — der Titel der Überlagerung des Editors in der Betriebsart Projekt.</summary>
     [Parameter] public string TitelProjekteditor { get; set; } = Resource.GEBZ_TITEL_PROJEKT;
 
@@ -761,7 +806,7 @@
     [Parameter] public string LabelGebaeudeart { get; set; } = "Gebäudeart";
     [Parameter] public string LabelGebaeudename { get; set; } = "Gebäudename:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
-    [Parameter] public string LabelWohnflaeche { get; set; } = "Wohn-/Nutzfläche:";
+    [Parameter] public string LabelWohnflaeche { get; set; } = "Nutzfläche:";
     [Parameter] public string LabelEinheit { get; set; } = "Art der Angabe:";
 
     /// <summary>Kopf der Spalte „Rechenweg" der Projektliste (<c>GEB_SP_RECHENWEG</c>).</summary>
@@ -1077,7 +1122,7 @@
             GebaeudeartLesen = () => _detailArt,
             BeschreibungLesen = () => _detailBeschreibung,
             WohnflaecheLesen = () => _detailWohnflaeche,
-            AngabeartLesen = () => _detailEinheit
+            AngabeartLesen = () => Flaechenangabe.Anzeige(_detailEinheit)
         };
     }
 
@@ -1256,7 +1301,7 @@
         _detailArt = detail?.Art ?? k.Text(Katalogfilterprofil.SpGebaeudeart);
         _detailBeschreibung = detail?.Beschreibung ?? "";
         _detailWohnflaeche = detail?.Wohnflaeche ?? k.Text(Katalogfilterprofil.SpFlaecheM2);
-        _detailEinheit = "Wohnfläche [m²]";
+        _detailEinheit = Flaechenangabe.GESPEICHERT;
         _detailHges = Leitwert(detail?.HgesWK);
         _detailRechenweg = detail?.Rechenweg ?? "";
     }
