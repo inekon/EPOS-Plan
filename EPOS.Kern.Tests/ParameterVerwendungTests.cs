@@ -103,6 +103,33 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Ein Beleg im Variantenvergleich nennt das Merkmal, nicht die Zeile</b> (KP3-A1): Zeilenverweise
+        /// „AbweichungsErmittler.cs:NN“ veralteten mit jeder neuen Merkmalszeile. Die Fundstelle nennt das Merkmal
+        /// als „AbweichungsErmittler.Felder (Tabelle.Spalte)“, und genau dieses Merkmal steht in
+        /// <see cref="AbweichungsErmittler.Felder"/>.
+        /// </summary>
+        [Fact]
+        public void Belege_im_Variantenvergleich_nennen_ein_vorhandenes_Merkmal()
+        {
+            var merkmale = new HashSet<string>(AbweichungsErmittler.Felder.Select(f => f.Tabelle + "." + f.Spalte));
+            var muster = new System.Text.RegularExpressions.Regex(@"AbweichungsErmittler\.Felder \(([^)]+)\)");
+            int belege = 0;
+            foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+                foreach (ParameterEintrag e in ParameterVerwendung.Katalog(art))
+                {
+                    string fundstelle = e.Fundstelle ?? "";
+                    Assert.DoesNotContain("AbweichungsErmittler.cs:", fundstelle);
+                    foreach (System.Text.RegularExpressions.Match m in muster.Matches(fundstelle))
+                    {
+                        belege++;
+                        Assert.True(merkmale.Contains(m.Groups[1].Value),
+                                    art + "." + e.Spalte + " nennt das Merkmal " + m.Groups[1].Value + ", das der Ermittler nicht führt");
+                    }
+                }
+            Assert.NotEqual(0, belege);
+        }
+
+        /// <summary>
         /// <c>Keine</c> steht allein: Wer nicht verwendet wird, traegt keine zweite Stufe —
         /// sonst waere die Kennzeichnung in der Uebersicht widerspruechlich.
         /// </summary>
