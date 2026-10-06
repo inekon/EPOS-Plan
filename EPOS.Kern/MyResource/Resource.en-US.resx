@@ -46346,5 +46346,38 @@ chart</value>
   <data name="GANS_RAND_TREFFER_BAUTEIL" xml:space="preserve">
     <value>Selected: component {0} — {1}</value>
   </data>
+  <data name="RNP_IMP_NICHT_IM_KATALOG" xml:space="preserve">
+    <value>{0} (not in catalogue)</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_IFC" xml:space="preserve">
+    <value>from IFC class {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_DIN" xml:space="preserve">
+    <value>from DIN no. {0} of the project file</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMTYP" xml:space="preserve">
+    <value>from room type {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_DATEI" xml:space="preserve">
+    <value>from the usage in the file</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_GESPEICHERT" xml:space="preserve">
+    <value>from the previous import</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_HAND" xml:space="preserve">
+    <value>set by hand</value>
+  </data>
+  <data name="RNP_IMP_AUS_DATEI" xml:space="preserve">
+    <value>{0} from the file</value>
+  </data>
+  <data name="RNP_IMP_UND" xml:space="preserve">
+    <value>and</value>
+  </data>
+  <data name="RNP_IMP_EINZONE_VORSCHLAG" xml:space="preserve">
+    <value>Suggestion from DIN no. {0}: {1} — assign it in the building editor with “Apply usage profile…”</value>
+  </data>
+  <data name="RNP_LBL_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>Usage profile {0}</value>
+  </data>
 </root>
 

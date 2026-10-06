@@ -471,9 +471,26 @@
                                                     title="@(zone.Profiltext.Length > 0 ? zone.Profiltext : null)"
                                                     disabled="@Beschaeftigt" value="@(zone.Nutzung ?? "")" @onchange="e => BeiNutzung(zone, e)">
                                                 <option value="" selected="@(zone.Nutzung is null)">@Texte.NutzungKeine</option>
-                                                @foreach (GebaeudeZonenregelDaten n in plan.Nutzungen)
+                                                @* Konzept Nutzungsprofile 6.2: die Profile je Kategorie als optgroup; ohne Gruppe
+                                                   die alten Kennungen und Texte "(nicht im Katalog)". *@
+                                                @foreach (GebaeudeNutzungsgruppe gruppe in plan.Nutzungsgruppen)
                                                 {
-                                                    <option value="@n.Schluessel" selected="@(n.Schluessel == zone.Nutzung)">@n.Text</option>
+                                                    @if (gruppe.Titel.Length == 0)
+                                                    {
+                                                        @foreach (GebaeudeZonenregelDaten n in gruppe.Eintraege)
+                                                        {
+                                                            <option value="@n.Schluessel" selected="@(n.Schluessel == zone.Nutzung)">@n.Text</option>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <optgroup label="@gruppe.Titel">
+                                                            @foreach (GebaeudeZonenregelDaten n in gruppe.Eintraege)
+                                                            {
+                                                                <option value="@n.Schluessel" selected="@(n.Schluessel == zone.Nutzung)">@n.Text</option>
+                                                            }
+                                                        </optgroup>
+                                                    }
                                                 }
                                             </select>
                                         </td>

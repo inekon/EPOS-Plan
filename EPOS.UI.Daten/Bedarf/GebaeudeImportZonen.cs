@@ -160,6 +160,7 @@ namespace WindowsFormsApplication1
                 Ausserhalb = plan.RaeumeAusserhalb.Count,
                 Geschosse = plan.Geschosse.Select(g => new GebaeudeZonenregelDaten(g, Geschosstext(plan, g))).ToList(),
                 Nutzungen = Nutzungsliste(plan),
+                Nutzungsgruppen = Nutzungsgruppen(plan),
                 Einzonig = plan.Zonen.Count(x => plan.RaeumeVon(x.Schluessel).Count > 0) <= 1,
                 NeuerName = neu,
                 Schrittmeldung = schritt.Meldung == null ? null : GebaeudeImportHuelle.MeldungDaten(schritt.Meldung),
@@ -174,15 +175,45 @@ namespace WindowsFormsApplication1
         /// dazu jeder Text einer Planzone, zu dem kein Profil passt — er bleibt wählbar, solange er an der Zone steht.
         /// </summary>
         internal static IReadOnlyList<GebaeudeZonenregelDaten> Nutzungsliste(Zonenplan plan)
+            => Nutzungseintraege(plan).Select(e => e.Eintrag).ToList();
+
+        /// <summary>
+        /// <b>Die Nutzungen der Klappliste je Kategorie</b> (Konzept Nutzungsprofile 6.2, Zeile „Zonenbaum des Imports“): zuerst
+        /// ohne Gruppe (Titel leer) die Einträge ohne Kategorie — die alten Kennungen ohne Katalog und jeder Text einer Planzone,
+        /// zu dem kein Profil passt, mit dem Zusatz „(nicht im Katalog)“ —, dann je Kategorie ihre Profile in der Ordnung des
+        /// Katalogs; „keine“ steht davor als Platzhalter. Dieselben Einträge wie <see cref="Nutzungsliste"/>.
+        /// </summary>
+        internal static IReadOnlyList<GebaeudeNutzungsgruppe> Nutzungsgruppen(Zonenplan plan)
         {
-            var liste = new List<GebaeudeZonenregelDaten>();
-            foreach ((string schluessel, string name, string art) in plan.Vorbelegung.Auswahl())
-                liste.Add(new GebaeudeZonenregelDaten(schluessel, art == null ? Kennungstext(name) : name));
+            List<(GebaeudeZonenregelDaten Eintrag, string Kategorie)> alle = Nutzungseintraege(plan);
+            var gruppen = new List<GebaeudeNutzungsgruppe>();
+            List<GebaeudeZonenregelDaten> ohne = alle.Where(e => e.Kategorie == null).Select(e => e.Eintrag).ToList();
+            if (ohne.Count > 0) gruppen.Add(new GebaeudeNutzungsgruppe("", ohne));
+            foreach (string kategorie in alle.Select(e => e.Kategorie).Where(k => k != null).Distinct(StringComparer.Ordinal))
+                gruppen.Add(new GebaeudeNutzungsgruppe(kategorie,
+                    alle.Where(e => string.Equals(e.Kategorie, kategorie, StringComparison.Ordinal)).Select(e => e.Eintrag).ToList()));
+            return gruppen;
+        }
+
+        /// <summary>Die Einträge der Klappliste mit dem Namen ihrer Kategorie (<c>null</c> = ohne).</summary>
+        private static List<(GebaeudeZonenregelDaten Eintrag, string Kategorie)> Nutzungseintraege(Zonenplan plan)
+        {
+            var liste = new List<(GebaeudeZonenregelDaten Eintrag, string Kategorie)>();
+            foreach ((string schluessel, string name, string art, string kategorie) in plan.Vorbelegung.Auswahl())
+                liste.Add((new GebaeudeZonenregelDaten(schluessel, art == null ? Kennungstext(name) : name),
+                           art == null || string.IsNullOrWhiteSpace(kategorie) ? null : kategorie.Trim()));
             foreach (Planprofil p in plan.Zonen.Select(z => z.Profil).Where(p => p != null && !p.Id.HasValue))
-                if (!liste.Any(x => string.Equals(x.Schluessel, p.Schluessel, StringComparison.Ordinal)))
-                    liste.Add(new GebaeudeZonenregelDaten(p.Schluessel, Kennungstext(p.Name)));
+                if (!liste.Any(x => string.Equals(x.Eintrag.Schluessel, p.Schluessel, StringComparison.Ordinal)))
+                    liste.Add((new GebaeudeZonenregelDaten(p.Schluessel, Profiltext(p)), null));
             return liste;
         }
+
+        /// <summary>
+        /// Der Anzeigetext eines Profilverweises ohne Id: eine alte Kennung mit ihrem Text, ein Text ohne Profil mit dem Zusatz
+        /// „(nicht im Katalog)“ (<see cref="Planprofil.BEFUND_NICHT_IM_KATALOG"/>).
+        /// </summary>
+        internal static string Profiltext(Planprofil p)
+            => p == null ? "" : p.NichtImKatalog ? Formatieren(MyResource.Resource.RNP_IMP_NICHT_IM_KATALOG, p.Name ?? "") : Kennungstext(p.Name);
 
         /// <summary>Der Anzeigetext einer alten Kennung; jeder andere Text bleibt, wie er ist.</summary>
         private static string Kennungstext(string kennung) => kennung switch

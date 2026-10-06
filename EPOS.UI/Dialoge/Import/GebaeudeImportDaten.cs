@@ -465,6 +465,14 @@ public sealed record GebaeudeBaustoffeDaten
 /// <param name="Text">Der Anzeigetext („Z4 – eine Zone je Geschoss").</param>
 public sealed record GebaeudeZonenregelDaten(string Schluessel, string Text);
 
+/// <summary>
+/// Eine Gruppe der Nutzungsklappliste des Zonenbaums (<c>&lt;optgroup&gt;</c>): die Profile einer Kategorie; Titel leer =
+/// Einträge ohne Kategorie (alte Kennungen ohne Katalog, Texte „(nicht im Katalog)“), sie stehen ohne Gruppe.
+/// </summary>
+/// <param name="Titel">Der Name der Kategorie; leer = ohne Gruppe.</param>
+/// <param name="Eintraege">Die Einträge (Schlüssel, Anzeigetext) in der Ordnung des Katalogs.</param>
+public sealed record GebaeudeNutzungsgruppe(string Titel, IReadOnlyList<GebaeudeZonenregelDaten> Eintraege);
+
 /// <summary>Ein Raum des Zonenbaums oder der Liste „Nicht zugeordnete Räume".</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Wahl (<c>data-raum</c>).</param>
 /// <param name="Name">Anzeigename.</param>
@@ -617,6 +625,19 @@ public sealed record GebaeudeZonenplanDaten
 
     /// <summary>Die Nutzungen (Schlüssel, Anzeigetext) der Klappliste; „keine" ist der Platzhalter.</summary>
     public IReadOnlyList<GebaeudeZonenregelDaten> Nutzungen { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
+
+    /// <summary>
+    /// Dieselben Nutzungen je Kategorie für die Klappliste je Zone (<c>&lt;optgroup&gt;</c>); zuerst die ohne Gruppe. Ohne
+    /// eigene Gruppen stehen die <see cref="Nutzungen"/> als eine Gruppe ohne Titel.
+    /// </summary>
+    public IReadOnlyList<GebaeudeNutzungsgruppe> Nutzungsgruppen
+    {
+        get => _nutzungsgruppen ?? (Nutzungen.Count == 0 ? Array.Empty<GebaeudeNutzungsgruppe>()
+                                                         : new[] { new GebaeudeNutzungsgruppe("", Nutzungen) });
+        init => _nutzungsgruppen = value;
+    }
+
+    private readonly IReadOnlyList<GebaeudeNutzungsgruppe>? _nutzungsgruppen;
 
     /// <summary>Ergibt der Plan genau eine Zone (Einzonenweg: Name und Nutzung werden nicht übernommen)?</summary>
     public bool Einzonig { get; init; }

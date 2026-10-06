@@ -88293,6 +88293,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} aus der Datei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_AUS_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_AUS_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus DIN-Nr. {0}: {1} — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_EINZONE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_EINZONE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (nicht im Katalog) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_NICHT_IM_KATALOG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_NICHT_IM_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Nutzung der Datei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus DIN-Nr. {0} der Projektdatei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_DIN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem früheren Import ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_HAND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus IFC-Klasse {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_IFC {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Raumtyp {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMTYP {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die und ähnelt.
+        /// </summary>
+        public static string RNP_IMP_UND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_UND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie des im Blatt „Nutzungsprofile“ gewählten Profils (nur lesbar); gewechselt wird sie im Katalogbaum. ähnelt.
         /// </summary>
         public static string RNP_KI_KATEGORIE_ERL {
@@ -88631,6 +88721,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_LBL_HEIZ_SOLL {
             get {
                 return ResourceManager.GetString("RNP_LBL_HEIZ_SOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string RNP_LBL_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_HERKUNFT_PROFIL", resourceCulture);
             }
         }
         
