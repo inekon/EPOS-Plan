@@ -2226,7 +2226,8 @@ namespace WindowsFormsApplication1
                 Klimazone = KlimaregionCtrl.KlimazoneJeProjekt(m_ID_Projekt),
                 Spreizung = (oSpreiz != null && Convert.ToDouble(oSpreiz) > 0)
                     ? Convert.ToDouble(oSpreiz) : 0.0,
-                Aussentemperatur = AussentemperaturLaden()
+                Aussentemperatur = AussentemperaturLaden(),
+                Auslegung = QuelleErdreichHuelle.Auslegung(m_ID_Projekt, idAnlage)
             };
 
             return QuelleErdreichHuelle.Gaben(daten);

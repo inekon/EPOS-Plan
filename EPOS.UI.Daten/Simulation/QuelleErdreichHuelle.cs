@@ -69,6 +69,8 @@ namespace WindowsFormsApplication1
                 ["GbStandort"] = MyResource.Resource.SIMQ_ERDREICH_GB_STANDORT,
                 ["GbVorschau"] = MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU,
                 ["GbPruefung"] = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG,
+                ["VorpruefungKopf"] = MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_KOPF,
+                ["HinweisSondeKonstant"] = MyResource.Resource.SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT,
                 ["RbKollektor"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR,
                 ["RbSonde"] = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE,
                 ["RbKollektorWahl"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL,
@@ -130,6 +132,21 @@ namespace WindowsFormsApplication1
 
                 ["HilfeSchluessel"] = "Form_QuelleErdreich.btn_Help"
             };
+        }
+
+        /// <summary>
+        /// Die AUSLEGUNGSWERTE der Wärmepumpen dieser Anlage für die Vorprüfung ohne Lauf:
+        /// Heizleistung und COP am Normpunkt der Kennlinie der Projektkopie, gelesen im
+        /// Kern (<c>ErdreichVorpruefungCtrl</c>). Ein Lesefehler ergibt eine leere Liste —
+        /// der Dialog nennt dann den fehlenden Wert.
+        /// </summary>
+        internal static IReadOnlyList<WpAuslegung> Auslegung(int idProjekt, int idAnlage)
+        {
+            var liste = new List<WpAuslegung>();
+            foreach (VDI4640Pruefung.Auslegungswert a in
+                     ErdreichVorpruefungCtrl.Auslegungswerte(idProjekt, idAnlage))
+                liste.Add(new WpAuslegung(a.Modul, a.NennheizleistungKw, a.Cop, a.Normpunkt, a.LuftWasser));
+            return liste;
         }
 
         /// <summary>

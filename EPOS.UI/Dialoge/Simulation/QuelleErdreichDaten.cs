@@ -76,4 +76,24 @@ public sealed record QuelleErdreichDaten
     /// das an.
     /// </summary>
     public double[]? Aussentemperatur { get; init; }
+
+    /// <summary>
+    /// Die Auslegungswerte der Wärmepumpen an dieser Quelle (Heizleistung und COP am
+    /// Normpunkt der Kennlinie, je Modul) für die VORPRÜFUNG ohne Simulationslauf. Die
+    /// Hülle liest sie über <c>ErdreichVorpruefungCtrl</c>; <c>null</c> oder leer heißt
+    /// „keine Wärmepumpe" — dann sagt der Dialog, welcher Wert fehlt.
+    /// </summary>
+    public IReadOnlyList<WpAuslegung>? Auslegung { get; init; }
 }
+
+/// <summary>
+/// Die Auslegungswerte EINES Wärmepumpenmoduls an der Quelle: Heizleistung und COP am
+/// Normpunkt seiner Kennlinie (Sole/Wasser B0/W35). Ein Wert <c>&lt;= 0</c> heißt „fehlt".
+/// </summary>
+/// <param name="Modul">Bezeichnung des Geräts.</param>
+/// <param name="NennheizleistungKw">Heizleistung am Normpunkt [kW].</param>
+/// <param name="Cop">Leistungszahl am Normpunkt.</param>
+/// <param name="Normpunkt">Kurzname des Normpunkts, z. B. „B0/W35"; leer, wenn er fehlt.</param>
+/// <param name="LuftWasser">Luft-Wasser-Wärmepumpe: Die Erdreichquelle wirkt in der Simulation nicht.</param>
+public sealed record WpAuslegung(string Modul, double NennheizleistungKw, double Cop, string Normpunkt,
+                                 bool LuftWasser = false);

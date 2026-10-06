@@ -3465,7 +3465,7 @@ Jetzt Datei auswählen?</value>
     <value>Fläche [m²]:</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_PRUEFUNG" xml:space="preserve">
-    <value>Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation)</value>
+    <value>Auslegungsprüfung nach VDI 4640 Blatt 2</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_QUELLSYSTEM" xml:space="preserve">
     <value>Quellsystem</value>
@@ -3476,6 +3476,9 @@ Jetzt Datei auswählen?</value>
   <data name="SIMQ_ERDREICH_HINWEIS_FESTGESTEIN" xml:space="preserve">
     <value>
   Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
+    <value>Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -3491,6 +3494,27 @@ Jetzt Datei auswählen?</value>
   </data>
   <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
     <value>(DIN 4710, Vorbelegung aus der Klimaregion)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT" xml:space="preserve">
+    <value>Keine Vorprüfung aus Auslegungswerten möglich — es fehlt {0}.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT" xml:space="preserve">
+    <value>die Heizleistung oder der COP am Normpunkt der Kennlinie von „{0}“</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP" xml:space="preserve">
+    <value>eine Wärmepumpe an der Anlage</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE" xml:space="preserve">
+    <value>die Klimazone (Volllaststunden nach DIN 4710)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_KOPF" xml:space="preserve">
+    <value>Vorprüfung aus Auslegungswerten (noch kein Simulationslauf)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_MODUL" xml:space="preserve">
+    <value>  {0}: Q_N = {1} kW, COP = {2} ({3}) → Entzugsleistung ≈ {4} W</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_SUMME" xml:space="preserve">
+    <value>  Entzugsleistung ≈ Q_N · (1 − 1/COP) = {0} W; Jahresentzugsarbeit ≈ {0} W · {1} h/a (Klimazone nach DIN 4710) = {2} kWh/a</value>
   </data>
   <data name="SIMQ_KARTE_GEWAEHLT" xml:space="preserve">
     <value>Gewählte Zone: {0}</value>
@@ -3564,8 +3588,8 @@ Für größere Tiefen das Quellsystem 'Erdsonde' wählen.</value>
   <data name="SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF" xml:space="preserve">
     <value>(noch kein Simulationslauf)
 
-Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und
-Jahresvolllaststunden aus einem Simulationslauf.</value>
+Ohne Lauf rechnet die Prüfung aus Auslegungswerten; nach einem Simulationslauf
+prüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden.</value>
   </data>
   <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
     <value>Erdkollektor</value>

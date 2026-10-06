@@ -3449,7 +3449,7 @@ Select file now?</value>
     <value>Area [m²]:</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_PRUEFUNG" xml:space="preserve">
-    <value>Design check according to VDI 4640 Part 2 (after the simulation)</value>
+    <value>Design check according to VDI 4640 Part 2</value>
   </data>
   <data name="SIMQ_ERDREICH_GB_QUELLSYSTEM" xml:space="preserve">
     <value>Source system</value>
@@ -3460,6 +3460,9 @@ Select file now?</value>
   <data name="SIMQ_ERDREICH_HINWEIS_FESTGESTEIN" xml:space="preserve">
     <value>
   Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
+    <value>The borehole heat exchanger uses a source temperature that is constant all year, made up of the mean ground temperature and a depth allowance; the heat extraction does not act back on it.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -3475,6 +3478,27 @@ Select file now?</value>
   </data>
   <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
     <value>(DIN 4710, default from the climate region)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT" xml:space="preserve">
+    <value>No preliminary check from design values possible — {0} is missing.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT" xml:space="preserve">
+    <value>the heating capacity or the COP at the rating point of the performance map of “{0}”</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP" xml:space="preserve">
+    <value>a heat pump assigned to the system</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE" xml:space="preserve">
+    <value>the climate zone (full-load hours according to DIN 4710)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_KOPF" xml:space="preserve">
+    <value>Preliminary check from design values (no simulation run yet)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_MODUL" xml:space="preserve">
+    <value>  {0}: Q_N = {1} kW, COP = {2} ({3}) → extraction rate ≈ {4} W</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORPRUEFUNG_SUMME" xml:space="preserve">
+    <value>  Extraction rate ≈ Q_N · (1 − 1/COP) = {0} W; annual extracted energy ≈ {0} W · {1} h/a (climate zone according to DIN 4710) = {2} kWh/a</value>
   </data>
   <data name="SIMQ_KARTE_GEWAEHLT" xml:space="preserve">
     <value>Selected zone: {0}</value>
@@ -3548,8 +3572,8 @@ For greater depths select the source system 'borehole heat exchanger'.</value>
   <data name="SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF" xml:space="preserve">
     <value>(no simulation run yet)
 
-The check requires maximum extraction rate, annual extracted energy and
-annual full-load hours from a simulation run.</value>
+Without a run the check uses design values; after a simulation run it checks
+the run's extraction rate, annual extracted energy and full-load hours.</value>
   </data>
   <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
     <value>Horizontal ground collector</value>
