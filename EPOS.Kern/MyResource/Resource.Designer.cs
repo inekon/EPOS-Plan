@@ -68614,6 +68614,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string KOND_LBL_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_HERKUNFT_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Infiltration ähnelt.
         /// </summary>
         public static string KOND_LBL_INFILTRATION {
@@ -70986,6 +70995,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_ZUSTAND_MATRIX {
             get {
                 return ResourceManager.GetString("KOND_TXT_ZUSTAND_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_PROFIL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_PROFIL", resourceCulture);
             }
         }
         
@@ -88721,15 +88739,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_LBL_HEIZ_SOLL {
             get {
                 return ResourceManager.GetString("RNP_LBL_HEIZ_SOLL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil {0} ähnelt.
-        /// </summary>
-        public static string RNP_LBL_HERKUNFT_PROFIL {
-            get {
-                return ResourceManager.GetString("RNP_LBL_HERKUNFT_PROFIL", resourceCulture);
             }
         }
         

@@ -215,13 +215,13 @@ public sealed class KonditionierungTexte
     public string ZustandVorlage { get; set; } = "aus Vorlage {0}";
 
     /// <summary>
-    /// <c>RNP_MSG_HERKUNFT_PROFIL</c> — die Zustandszeile eines aus einem Nutzungsprofil übernommenen Kalenders (NP2b-5c);
+    /// <c>KOND_TXT_ZUSTAND_PROFIL</c> — die Zustandszeile eines aus einem Nutzungsprofil übernommenen Kalenders (NP2b-5c);
     /// „{0}“ ist der Name des Profils
     /// </summary>
     public string ZustandProfil { get; set; } = "aus Nutzungsprofil {0}";
 
     /// <summary>
-    /// <c>RNP_LBL_HERKUNFT_PROFIL</c> — die Zeile „Vorlage“ der Matrix für einen aus einem Nutzungsprofil übernommenen
+    /// <c>KOND_LBL_HERKUNFT_PROFIL</c> — die Zeile „Vorlage“ der Matrix für einen aus einem Nutzungsprofil übernommenen
     /// Kalender (NP2b-5c); „{0}“ ist der Name des Profils
     /// </summary>
     public string HerkunftProfil { get; set; } = "Nutzungsprofil {0}";
