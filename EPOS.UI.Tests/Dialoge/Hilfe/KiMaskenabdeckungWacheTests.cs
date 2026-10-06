@@ -351,11 +351,14 @@ public sealed class KiMaskenabdeckungWacheTests
         // Zielgröße, Name, Komfort- und Absenksollwert der Abfrage „Kopieren nach …“ (Teilkonzept 3.5, 7.4): 4 → 5.
         // NP3a (Konzept Nutzungsprofile 6.1, NP-F3): die Felder des Profileditors und der Zuordnung stehen am
         // KATALOG der Nutzungsprofile, nicht am Gebäude - der Katalog gilt projektübergreifend und jede
-        // Handlung schreibt sofort mit eigenem Knopf. Die Übernahme ins Gebäude ist NP3b.
+        // Handlung schreibt sofort mit eigenem Knopf. NP3c: Die 28 Kennwerte des Profileditors führt die
+        // Feldkarte KiNutzungsprofilfelder (np_*, Feldtafel am Entwurf des Blatts), dazu die Kategorie (nur
+        // lesbar) und die Zuordnungszeilen als Raster zum Lesen; die Zahl bleibt 31.
         new("RaumnutzungBlatt", 31, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
-            "Außenluft samt Einheit und die Lasten sind Kennwerte eines KATALOGPROFILS, kein Einstellwert des " +
-            "Gebäudes; Art, Schlüssel und Profilwahl gehören zur Zuordnungstabelle. Alle schreiben sofort über " +
-            "eigene Knöpfe (NP-F3); „Nutzungsprofil übernehmen…“ ans Gebäude kommt mit NP3b"),
+            "Außenluft samt Einheit und die Lasten führt die Feldkarte KiNutzungsprofilfelder als np_* am ENTWURF " +
+            "des Profileditors (in den Katalog erst mit „Speichern“ des Blatts, NP-F3); die Zuordnungszeilen (Art, " +
+            "Schlüssel, Profil) stehen als Raster zum Lesen. Profilwahl je Zeile sowie Art und Schlüssel einer neuen " +
+            "Zeile gehören zu Handlungen, die sofort in den Katalog schreiben — Klicks des Anwenders"),
         new("KonditionierungVorlagenverwaltung", 5, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name, " +
             "Komfort- und Absenksollwert zur Handlung „Kopieren nach …“; beide schreiben mit eigenem OK sofort — kein " +
             "Einstellwert des Gebäudes"),

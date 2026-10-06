@@ -416,4 +416,127 @@ public class RaumnutzungBlattTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-raumnutzung-zuordnung-neu-knopf"));
         Assert.Empty(cut.FindAll(".epos-raumnutzung-zuordnung-loeschen"));
     }
+
+    // =====================================================================
+    //  Der Zugang des Assistenten (NP3c)
+    // =====================================================================
+
+    private IRenderedComponent<RaumnutzungBlatt> BlattMitZugang(Probeweg w, RaumnutzungKiZugang zugang)
+        => Render<RaumnutzungBlatt>(p => p
+               .Add(x => x.Katalogweg, w.Weg())
+               .Add(x => x.Texte, new RaumnutzungTexte())
+               .Add(x => x.GroessenTexte, new KonditionierungTexte())
+               .Add(x => x.KiZugang, zugang));
+
+    /// <summary>
+    /// Die Feldkarte des Profileditors liest und setzt den ENTWURF des Blatts (KiNutzungsprofilfelder): ohne
+    /// Profil leer und abgelehnt, nach der Wahl die Kennwerte samt Kategorie, die Anteile in Prozent, die
+    /// Einheit der Außenluft als Wahl; geschrieben wird erst mit „Speichern".
+    /// </summary>
+    [Fact]
+    public void Der_Zugang_liest_und_setzt_den_Entwurf_des_Profileditors()
+    {
+        Probeweg w = Probekatalog();
+        var zugang = new RaumnutzungKiZugang();
+        IRenderedComponent<RaumnutzungBlatt> cut = BlattMitZugang(w, zugang);
+
+        Assert.True(zugang.Angebunden);
+        Assert.Null(zugang.Lesen("np_name"));
+        var ohneProfil = Assert.Throws<InvalidOperationException>(() => zugang.Setzen("np_heiz_soll", 22.0));
+        Assert.Equal(WindowsFormsApplication1.KiNutzungsprofilfelder.GrundOhneProfil, ohneProfil.Message);
+
+        cut.Find("[data-kategorie=\"2\"] .epos-raumnutzung-kategorie-waehlen").Click();
+        cut.Find("[data-profil=\"12\"] .epos-raumnutzung-profil-waehlen").Click();
+        Assert.Equal("Mein Büro", zugang.Lesen("np_name"));
+        Assert.Equal("Eigene Profile", zugang.Lesen("np_kategorie"));
+        Assert.Equal(21.0, zugang.Lesen("np_heiz_soll"));
+        Assert.Equal(7, zugang.Lesen("np_nutzung_von"));
+        Assert.Equal("1/h", zugang.Lesen("np_luft_einheit"));
+        Assert.Equal(false, zugang.Lesen("np_feiertage"));
+
+        cut.InvokeAsync(() =>
+        {
+            zugang.Setzen("np_heiz_soll", 22.5);
+            zugang.Setzen("np_personen_anteil", 50.0);
+            zugang.Setzen("np_luft_einheit", "m³/(h·m²)");
+            zugang.Setzen("np_feiertage", true);
+            zugang.Setzen("np_woche", "1111110");
+            zugang.Setzen("np_kategorie", "Fremd");   // nur lesbar: nimmt nichts an
+        });
+        Assert.Equal(22.5, cut.Instance.Arbeitsstand!.HeizSoll);
+        Assert.Equal(0.5, cut.Instance.Arbeitsstand.PersonenAnteil);
+        Assert.Equal(50.0, zugang.Lesen("np_personen_anteil"));
+        Assert.Equal(RaumnutzungLuftEinheit.JeFlaeche, cut.Instance.Arbeitsstand.LuftEinheit);
+        Assert.Equal("Eigene Profile", zugang.Lesen("np_kategorie"));
+        Assert.Throws<InvalidOperationException>(() => zugang.Setzen("np_woche", "12"));
+        Assert.Throws<InvalidOperationException>(() => zugang.Setzen("np_luft_einheit", "l/s"));
+        // Der Katalog bleibt unberührt, bis der Anwender „Speichern" klickt.
+        Assert.Empty(w.Spur);
+
+        cut.Find(".epos-raumnutzung-speichern").Click();
+        Assert.Contains("ProfilAendern:12", w.Spur);
+        Assert.Equal(22.5, w.Geschrieben!.HeizSoll);
+        Assert.Equal("1111110", w.Geschrieben.NutzungstageWoche);
+        Assert.True(w.Geschrieben.FeiertageWieSonntag);
+    }
+
+    /// <summary>
+    /// Ein ausgeliefertes Profil lehnt mit dem Grund des Schlosses ab; die Zuordnungszeilen stehen als Raster
+    /// zum Lesen (Nummer ab 1, Art wie die Tabelle, Profilname oder leer); verschwindet das Blatt, löst es sich.
+    /// </summary>
+    [Fact]
+    public void Der_Zugang_lehnt_am_ausgelieferten_Profil_ab_und_fuehrt_die_Zuordnungszeilen()
+    {
+        Probeweg w = Probekatalog();
+        var zugang = new RaumnutzungKiZugang();
+        IRenderedComponent<RaumnutzungBlatt> cut = BlattMitZugang(w, zugang);
+        cut.Find("[data-kategorie=\"1\"] .epos-raumnutzung-kategorie-waehlen").Click();
+        cut.Find("[data-profil=\"11\"] .epos-raumnutzung-profil-waehlen").Click();
+
+        var grund = Assert.Throws<InvalidOperationException>(() => zugang.Setzen("np_heiz_soll", 18.0));
+        Assert.Equal(WindowsFormsApplication1.KiNutzungsprofilfelder.GrundAusgeliefert, grund.Message);
+        Assert.Equal(20.0, zugang.Lesen("np_heiz_soll"));
+
+        IReadOnlyList<RaumnutzungZuordnungKiZeile> zeilen = zugang.Zuordnungen;
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal("1", zeilen[0].Nummer);
+        Assert.Equal("1", zeilen[0].Schluessel);
+        Assert.Equal("1 Wohnen", zeilen[0].Profil);
+        Assert.Equal(new RaumnutzungTexte().ZuordnungsartIfc, zeilen[1].Art);
+        Assert.Equal("Buero", zeilen[1].Schluessel);
+        Assert.Equal("", zeilen[1].Profil);
+
+        cut.Instance.Dispose();
+        Assert.False(zugang.Angebunden);
+        Assert.Empty(zugang.Zuordnungen);
+        Assert.Equal(WindowsFormsApplication1.KiNutzungsprofilfelder.GrundOhneBlatt,
+                     Assert.Throws<InvalidOperationException>(() => zugang.Setzen("np_name", "x")).Message);
+    }
+
+    /// <summary>
+    /// Über die Anmeldung des Wirts: Die Felder <c>np_*</c> des Gebäudeeditors erreichen den Entwurf des offenen
+    /// Blatts; bei geschlossenem Blatt lesen sie leer, und Setzen nennt den Weg zum Blatt.
+    /// </summary>
+    [Fact]
+    public void Die_Feldkarte_des_Wirts_erreicht_das_offene_Blatt()
+    {
+        IRenderedComponent<GebaeudeKatalogDialog> cut = Wirt(Probekatalog().Weg());
+        string maske = WindowsFormsApplication1.KiMaskennamen.GEBAEUDE_KATALOG;
+        WindowsFormsApplication1.KiFeldzugang Feld(string name)
+            => WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(maske, name)!;
+
+        Assert.Null(Feld("np_name").Lesen());
+        Assert.Throws<InvalidOperationException>(() => Feld("np_name").Setzen("x"));
+
+        cut.Find(".epos-kond-nutzungsprofile").Click();
+        cut.Find("[data-kategorie=\"2\"] .epos-raumnutzung-kategorie-waehlen").Click();
+        cut.Find("[data-profil=\"12\"] .epos-raumnutzung-profil-waehlen").Click();
+        Assert.Equal("Mein Büro", Feld("np_name").Lesen());
+
+        cut.InvokeAsync(() => Feld("np_kuehl_soll").Setzen(25.0));
+        Assert.Equal(25.0, cut.FindComponent<RaumnutzungBlatt>().Instance.Arbeitsstand!.KuehlSoll);
+
+        cut.Find(".epos-blatt-zurueck").Click();
+        Assert.Null(Feld("np_kuehl_soll").Lesen());
+    }
 }

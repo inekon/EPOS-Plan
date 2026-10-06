@@ -970,14 +970,43 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     }
 
     /// <inheritdoc />
-    public object? Lesen(string schluessel) => _tafel.Lesen(Konditionierung, schluessel);
+    public object? Lesen(string schluessel)
+        => RaumnutzungKiZugang.IstFeld(schluessel) ? Nutzungsprofile?.Lesen(schluessel)
+           : _tafel.Lesen(Konditionierung, schluessel);
 
     /// <summary>
     /// <inheritdoc />
     /// Ein Zeitfenster hat nur beide Grenzen zusammen (E53, E43): Die erste gesetzte Grenze wartet auf
-    /// die zweite — erst beide oder keine gehen an den Weg, wie im Reiter.
+    /// die zweite — erst beide oder keine gehen an den Weg, wie im Reiter. Die Felder des Blatts
+    /// „Nutzungsprofile" (<c>np_*</c>) gehen an dessen Entwurf.
     /// </summary>
-    public void Setzen(string schluessel, object? wert) => _tafel.Setzen(Konditionierung, schluessel, wert);
+    public void Setzen(string schluessel, object? wert)
+    {
+        if (!RaumnutzungKiZugang.IstFeld(schluessel))
+        {
+            _tafel.Setzen(Konditionierung, schluessel, wert);
+            return;
+        }
+        if (Nutzungsprofile is null) throw new InvalidOperationException(KiNutzungsprofilfelder.GrundOhneBlatt);
+        Nutzungsprofile.Setzen(schluessel, wert);
+    }
+
+    // =====================================================================
+    //  Das Blatt „Nutzungsprofile" (NP3c; Konzept Nutzungsprofile 6.1)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Zugang zum Blatt „Nutzungsprofile" — nur der Katalogeditor trägt das Blatt und reicht ihn; ohne
+    /// ihn (Verwaltung) oder bei geschlossenem Blatt lesen die Felder <c>np_*</c> leer und Setzen lehnt ab.
+    /// </summary>
+    public RaumnutzungKiZugang? Nutzungsprofile { get; init; }
+
+    /// <summary>
+    /// Die Zeilen der Zuordnungstabelle des Blatts als RASTER zum LESEN (Art, Schlüssel, Profil); Profilwahl,
+    /// neue Zeile und Löschen schreiben sofort in den Katalog und bleiben Klicks des Anwenders.
+    /// </summary>
+    public IReadOnlyList<RaumnutzungZuordnungKiZeile> Nutzungsprofilzuordnungen
+        => Nutzungsprofile?.Zuordnungen ?? Array.Empty<RaumnutzungZuordnungKiZeile>();
 }
 
 /// <summary>

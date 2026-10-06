@@ -358,6 +358,12 @@ public sealed class KonditionierungKalender
     /// <summary>Der Vermerk des zuletzt angewandten Werkzeugs; <c>null</c> = keiner.</summary>
     public string? Vermerk { get; set; }
 
+    /// <summary>
+    /// Die Art der Herkunft (NP3c): <c>true</c> = <see cref="Vorlage"/> nennt ein übernommenes Nutzungsprofil
+    /// („aus Nutzungsprofil …"), nicht eine Konditionierungsvorlage gleichen Namens.
+    /// </summary>
+    public bool HerkunftProfil { get; set; }
+
     /// <summary>Die Perioden in Rangfolge, die ranghöchste zuerst.</summary>
     public List<KonditionierungPeriode> Perioden { get; set; } = new();
 
