@@ -114,7 +114,9 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1));
 
         IElement gruppe = cut.Find(".epos-vorlage");
-        Assert.Contains("Vorlage:", gruppe.QuerySelector(".epos-untergruppe")!.TextContent);
+        // Der Kartentitel „Vorlage“ steht darüber; die Gruppe trägt ihren Namen nur noch als aria-label.
+        Assert.Contains("Vorlage", gruppe.GetAttribute("aria-label"));
+        Assert.Null(gruppe.QuerySelector(".epos-untergruppe"));
         Assert.Contains("Word-Vorlage:", gruppe.QuerySelector(".epos-feld-text")!.TextContent);
 
         // Anordnung B: die Gruppe in der Karte „Vorlage“ der rechten Spalte, VOR der Karte „Ausgabe“;
@@ -180,6 +182,10 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.True(optionen >= 0 && optionen < excel && excel < ziel && ziel < ausloesen,
                     $"Folge Optionen {optionen}, Excel {excel}, Ziel {ziel}, Erstellen {ausloesen}");
         Assert.NotNull(kinder[excel].QuerySelector(".epos-vorlage-excel select"));
+        // Keine doppelte Beschriftung unter dem Kartentitel: die Optionsgruppe ohne legend, mit aria-label.
+        IElement gruppe = kinder[optionen];
+        Assert.Null(gruppe.QuerySelector("legend"));
+        Assert.Equal("Ausgabe:", gruppe.GetAttribute("aria-label"));
         Assert.Empty(cut.Find(".epos-bericht-karte--vorlage").QuerySelectorAll(".epos-vorlage-excel"));
 
         IElement leiste = kinder[ausloesen];

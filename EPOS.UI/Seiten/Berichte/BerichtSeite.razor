@@ -206,7 +206,6 @@
                 <section class="epos-bericht-karte epos-bericht-karte--vorlage" aria-label="@Resource.BK_BER_KARTE_VORLAGE">
                     <h2 class="epos-bericht-kartentitel">@Resource.BK_BER_KARTE_VORLAGE</h2>
                     <div class="epos-vorlage" role="group" aria-label="@Vt.Gruppe">
-                        <p class="epos-untergruppe">@Vt.Gruppe</p>
 
                         @if (_gruppenfehler.Length > 0)
                         {
@@ -337,7 +336,8 @@
             @* --------------------------------------------------- Ausgabe *@
             <section class="epos-bericht-karte epos-bericht-karte--ausgabe" aria-label="@Resource.BK_BER_KARTE_AUSGABE">
                 <h2 class="epos-bericht-kartentitel">@Resource.BK_BER_KARTE_AUSGABE</h2>
-                <Optionsgruppe Bezeichnung="@LabelAusgabe" Eintraege="@Ausgabeformen"
+                @* Der Kartentitel "Ausgabe" sagt es schon; der Gruppenname bleibt als aria-label. *@
+                <Optionsgruppe Bezeichnung="@LabelAusgabe" TitelSichtbar="false" Eintraege="@Ausgabeformen"
                                Auswahl="@_stand.AusgabeId" Aktiv="@(!_laeuft)"
                                AuswahlChanged="BeiAusgabe" />
 
