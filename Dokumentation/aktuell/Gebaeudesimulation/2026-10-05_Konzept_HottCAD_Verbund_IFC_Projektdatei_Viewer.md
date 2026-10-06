@@ -644,7 +644,9 @@ Tests mit `--filter` und committet sofort; das Gate fährt die Orchestrierung ei
 (byte-gleich erwartet). Sichtabnahme unter Windows (Exportmodell der HottCAD-Datei mit 49 Räumen, IFC-Export in
 einem fremden Betrachter); kein iOS-Lauf.
 
-### 11.9 Offene Fragen an den Anwender
+### 11.9 Fragen an den Anwender — entschieden (E94, 06.10.2026)
+
+Alle Empfehlungen sind übernommen; die Spalte „Empfehlung“ ist damit der Entscheid.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
