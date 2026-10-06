@@ -876,7 +876,8 @@
 
         if (werte.Quelle == VDI4640Pruefung.Pruefquelle.Keine)
         {
-            _pruefung = PruefungKeinLauf + "\n\n" + werte.Fehlt;
+            // Luft-Wasser: allein der Hinweis, dass die Quelle nicht gerechnet wird.
+            _pruefung = werte.Unwirksam ? werte.Fehlt : PruefungKeinLauf + "\n\n" + werte.Fehlt;
             return;
         }
 
@@ -921,7 +922,8 @@
                 Modul = a.Modul ?? "",
                 NennheizleistungKw = a.NennheizleistungKw,
                 Cop = a.Cop,
-                Normpunkt = a.Normpunkt ?? ""
+                Normpunkt = a.Normpunkt ?? "",
+                LuftWasser = a.LuftWasser
             };
     }
 

@@ -484,6 +484,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Kurzname des Normpunkts, z. B. „B0/W35"; leer, wenn er fehlt.</summary>
             public string Normpunkt = "";
+
+            /// <summary>
+            /// Luft-Wasser-Wärmepumpe (oder Bauart leer, wie im Lauf): Die Erdreichquelle
+            /// wird in der Simulation nicht gerechnet — dann gibt es keine Vorprüfung.
+            /// </summary>
+            public bool LuftWasser;
         }
 
         /// <summary>Woher die Größen der Prüfung stammen.</summary>
@@ -521,6 +527,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Hinweis, welcher Wert für die Vorprüfung fehlt; sonst leer.</summary>
             public string Fehlt = "";
+
+            /// <summary>
+            /// true, wenn eine Luft-Wasser-Wärmepumpe an der Quelle hängt: Die Quelle wirkt
+            /// in der Simulation nicht, <see cref="Fehlt"/> trägt dann diesen Hinweis.
+            /// </summary>
+            public bool Unwirksam;
         }
 
         /// <summary>
@@ -559,6 +571,20 @@ namespace WindowsFormsApplication1
                 w.Fehlt = string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_FEHLT,
                                         MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP);
                 return w;
+            }
+
+            // Luft-Wasser: Die Erdreichquelle wird nicht gerechnet - derselbe Hinweis wie
+            // nach einem Lauf (ErdreichAuswertung.ErgebnisZuordnen), keine Vorprüfung.
+            foreach (Auslegungswert m in liste)
+            {
+                if (m.LuftWasser)
+                {
+                    w.Unwirksam = true;
+                    w.Fehlt = string.Format(ci,
+                        Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_WIRKUNGSLOS),
+                        MyResource.Resource.SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER);
+                    return w;
+                }
             }
 
             foreach (Auslegungswert m in liste)

@@ -518,6 +518,22 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-erdreich-vorpruefung"));
     }
 
+    /// <summary>
+    /// Eine Luft-Wasser-Wärmepumpe: keine Vorprüfung, allein der Hinweis, dass die
+    /// Erdreichquelle in der Simulation nicht gerechnet wird.
+    /// </summary>
+    [Fact]
+    public void Bei_Luft_Wasser_steht_der_Hinweis_statt_der_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = new[] { new WpAuslegung("WP Luft", 10, 4, "A2/W35", true) } });
+
+        Assert.False(cut.Instance.IstVorpruefung);
+        Assert.Empty(cut.FindAll(".epos-erdreich-vorpruefung"));
+        Assert.Contains("Luft-Wasser-Anlage", cut.Instance.Pruefungstext);
+        Assert.DoesNotContain("noch kein Simulationslauf", cut.Instance.Pruefungstext);
+        Assert.DoesNotContain("W/m", cut.Instance.Pruefungstext);
+    }
+
     /// <summary>Fehlt ein Auslegungswert, gibt es keine Vorprüfung — der Bereich nennt ihn.</summary>
     [Fact]
     public void Fehlt_ein_Wert_nennt_der_Bereich_ihn()

@@ -60,7 +60,10 @@ namespace WindowsFormsApplication1
                     Modul = name ?? "",
                     NennheizleistungKw = n != null ? n.PthermKw : 0,
                     Cop = n != null ? n.Cop : 0,
-                    Normpunkt = n != null ? (n.Interpoliert ? "≈ " : "") + n.Name : ""
+                    Normpunkt = n != null ? (n.Interpoliert ? "≈ " : "") + n.Name : "",
+                    // dieselbe Regel wie im Lauf (ErdreichAuswertung.IstLuftWasser)
+                    LuftWasser = string.IsNullOrEmpty(typ) ||
+                                 string.Equals(typ.Trim(), DbWerte.WP_BAUART_LUFT_WASSER, StringComparison.OrdinalIgnoreCase)
                 });
             }
             return liste;

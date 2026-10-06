@@ -87,6 +87,26 @@ namespace EPOS.Kern.Tests
             Assert.Contains("die Klimazone (Volllaststunden nach DIN 4710)", ohneZone.Fehlt);
         }
 
+        /// <summary>
+        /// Eine Luft-Wasser-Wärmepumpe an der Quelle: keine Vorprüfung, sondern der Hinweis,
+        /// dass die Erdreichquelle in der Simulation nicht gerechnet wird — derselbe wie nach einem Lauf.
+        /// </summary>
+        [Fact]
+        public void Luft_Wasser_gibt_keine_Vorpruefung_sondern_den_Hinweis()
+        {
+            VDI4640Pruefung.Auslegungswert luft = Modul("WP Luft", 10, 4);
+            luft.LuftWasser = true;
+
+            VDI4640Pruefung.Pruefwerte w = VDI4640Pruefung.Vorpruefung(new[] { luft }, 6);
+
+            Assert.Equal(VDI4640Pruefung.Pruefquelle.Keine, w.Quelle);
+            Assert.True(w.Unwirksam);
+            Assert.Contains("Luft-Wasser-Anlage", w.Fehlt);
+            Assert.Contains("unwirksam", w.Fehlt);
+            Assert.Equal(0.0, w.MaxEntzugW);
+            Assert.False(VDI4640Pruefung.Vorpruefung(new[] { Modul("WP Sole", 10, 4) }, 6).Unwirksam);
+        }
+
         [Fact]
         public void Das_Laufergebnis_hat_Vorrang()
         {
@@ -124,6 +144,7 @@ namespace EPOS.Kern.Tests
             Assert.True(werte[0].Cop > 1);
             Assert.Equal("B0/W35", werte[0].Normpunkt);
             Assert.NotEqual("", werte[0].Modul);
+            Assert.False(werte[0].LuftWasser);
 
             // Fremde Anlage oder fremdes Projekt: keine Werte.
             Assert.Empty(ErdreichVorpruefungCtrl.Auslegungswerte(1030, 10211));

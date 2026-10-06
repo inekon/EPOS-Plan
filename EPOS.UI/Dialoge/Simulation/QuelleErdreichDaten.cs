@@ -94,4 +94,6 @@ public sealed record QuelleErdreichDaten
 /// <param name="NennheizleistungKw">Heizleistung am Normpunkt [kW].</param>
 /// <param name="Cop">Leistungszahl am Normpunkt.</param>
 /// <param name="Normpunkt">Kurzname des Normpunkts, z. B. „B0/W35"; leer, wenn er fehlt.</param>
-public sealed record WpAuslegung(string Modul, double NennheizleistungKw, double Cop, string Normpunkt);
+/// <param name="LuftWasser">Luft-Wasser-Wärmepumpe: Die Erdreichquelle wirkt in der Simulation nicht.</param>
+public sealed record WpAuslegung(string Modul, double NennheizleistungKw, double Cop, string Normpunkt,
+                                 bool LuftWasser = false);

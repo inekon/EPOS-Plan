@@ -145,7 +145,7 @@ namespace WindowsFormsApplication1
             var liste = new List<WpAuslegung>();
             foreach (VDI4640Pruefung.Auslegungswert a in
                      ErdreichVorpruefungCtrl.Auslegungswerte(idProjekt, idAnlage))
-                liste.Add(new WpAuslegung(a.Modul, a.NennheizleistungKw, a.Cop, a.Normpunkt));
+                liste.Add(new WpAuslegung(a.Modul, a.NennheizleistungKw, a.Cop, a.Normpunkt, a.LuftWasser));
             return liste;
         }
 
