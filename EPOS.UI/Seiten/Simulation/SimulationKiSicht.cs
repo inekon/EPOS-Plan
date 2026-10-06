@@ -536,7 +536,7 @@ public sealed class SimulationKiSicht
         set
         {
             WindowsFormsApplication1.Aufheizvorgabe a = Aufheizstand;
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(value, a.Bemessung, a.AbzugK, a.Reserve, a.Art));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(value, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -552,7 +552,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNGEN,
                                      WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, wert, a.AbzugK, a.Reserve, a.Art));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, wert, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -574,7 +574,7 @@ public sealed class SimulationKiSicht
                 throw new InvalidOperationException(Resource.KI_DLG_SIM_AUFH_NUR_ABZUG);
             Bereich(value, WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MIN_K,
                     WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MAX_K, Resource.SIMKONF_AUFH_LBL_ABZUG);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, value, a.Reserve, a.Art));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, value, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -590,7 +590,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             Bereich(value, 1.0, 100.0, Resource.SIMKONF_AUFH_LBL_RESERVE);
             double? anteil = value is double p ? p / 100.0 : null;
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -606,7 +606,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_ARTEN,
                                      WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, wert));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, wert, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -616,6 +616,37 @@ public sealed class SimulationKiSicht
         new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH, Resource.SIMKONF_AUFH_ART_TAEGLICH),
         new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, Resource.SIMKONF_AUFH_ART_FEST)
     };
+
+    // Der Aufschlag (Welle O1b; E59 (2), Festlegungen 35, 36): zwei Felder über denselben Delegaten,
+    // nur bei Schalter an (sonst benannt abgelehnt wie die Maske, die sie dann nicht zeigt); 0 und
+    // leer werden NULL (der Record normalisiert), die übrigen Werte gehen unverändert mit.
+
+    /// <summary>Der Aufschlag in Stunden 0 … 24; <c>null</c> = leer (kein Aufschlag).</summary>
+    public int? AufheizAufschlagH
+    {
+        get => Aufheizstand.AufschlagH;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            Bereich(value, 0, WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX, Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                        value, a.AufschlagProzent));
+        }
+    }
+
+    /// <summary>Der Aufschlag in Prozent der Stufenzahl n, 0 … 100; <c>null</c> = leer (kein Aufschlag).</summary>
+    public double? AufheizAufschlagProzent
+    {
+        get => Aufheizstand.AufschlagProzent;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            Bereich(value, 0, WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX,
+                    Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                        a.AufschlagH, value));
+        }
+    }
 
     // =====================================================================
     //  Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3)

@@ -578,6 +578,25 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
         set { if (Daten is GebaeudeKatalogDaten d) d.HeizleistungMax = value; }
     }
 
+    /// <summary>
+    /// Die manuelle Aufheizzeit des Projektgebäudes in h (Stufe KP3, Welle O2; E59) — derselbe Arbeitsstand wie das Feld
+    /// im Reiter „Konditionierung", geschrieben im OK-Weg; leer = Art des Projekts. Nur in der Betriebsart Projekt,
+    /// außerhalb 1–47 benannt abgelehnt.
+    /// </summary>
+    public int? AufheizzeitManuellH
+    {
+        get => Daten?.AufheizzeitManuellH;
+        set
+        {
+            if (Betriebsart != GebaeudeKatalogModus.Projekt.ToString())
+                throw new InvalidOperationException(WindowsFormsApplication1.MyResource.Resource.KOND_AUFH_MANUELL_KI_NUR_PROJEKT);
+            if (value is int h && (h < 1 || h > 47))
+                throw new ArgumentOutOfRangeException(nameof(value), string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    WindowsFormsApplication1.MyResource.Resource.KOND_AUFH_MANUELL_MSG_BEREICH, 1, 47));
+            if (Daten is GebaeudeKatalogDaten d) d.AufheizzeitManuellH = value;
+        }
+    }
+
     /// <summary>Rechnet Sonneneinstrahlung und langwellige Abstrahlung auf die opaken Außenbauteile ein (VDI 6007).</summary>
     public bool AussenbauteileStrahlung
     {

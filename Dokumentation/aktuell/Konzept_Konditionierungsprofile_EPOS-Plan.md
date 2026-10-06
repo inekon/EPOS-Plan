@@ -805,6 +805,14 @@ aus keine Auslegungsgröße ist. Ein Filter auf der Lastreihe gehört nicht in d
 ([Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)); die Rampe senkt die
 Spitze geschlossen geregelt.
 
+**Auslegungsheizlast ohne Anlagenkopplung (E97).** Φ_HL ist die stationäre Last am Auslegungspunkt, aus der die
+Anlagenkopplung ihre Nennleistung herleitet, und entsteht auch ohne Kopplung — sonst trüge kein optimiertes Gebäude eine
+Auslegungsgröße, denn ein gekoppeltes bemisst nicht. Es gilt derselbe Ausdruck mit demselben Auslegungstag und derselben
+Auslegungs-Außentemperatur (Feld, sonst das kälteste Tagesmittel abgerundet); jede beheizte Zone steht an ihrer
+Auslegungsraumtemperatur (3.6), unbeheizte Nachbarn an der Auslegungs-Außentemperatur. Ohne Kopplung gibt ein Feld außerhalb
+seiner Grenzen keine Zahl statt eines Fehlers. Ergebniszeile, Auskunft und Ergebnisexport (`Geb[n].AuslegungsheizlastKw`,
+`Geb[n].AufheizzuschlagKw`) tragen beide Teile.
+
 | Hinweis (benannt; Protokoll, Bedarfsdialog, Bericht; der Lauf rechnet weiter) | Kriterium |
 |---|---|
 | **W1** Aufheizleistung reicht nicht | P_auf ≤ Φ_stat(θ_T,max, T_a,B); dazu die Zahl der Tage mit P_auf ≤ Φ_stat bei T_a des Tages |

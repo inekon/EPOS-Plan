@@ -557,7 +557,12 @@ namespace WindowsFormsApplication1
                     "Zuschlag auf die stationäre Last an der kältesten Stunde, wenn das Gebäude keine " +
                     "Heizleistungsgrenze führt - leer 20 %, zulässig 1 bis 100 %; 'Art der Aufheizzeit' - " +
                     "'täglich' (Vorgabe: jeder Tag nach seiner Außentemperatur, höchstens die längste " +
-                    "Aufheizzeit) oder 'fest' (jeder Tag so lange wie der Bemessungsfall). Jedes Feld wird sofort " +
+                    "Aufheizzeit) oder 'fest' (jeder Tag so lange wie der Bemessungsfall). Darunter der Aufschlag " +
+                    "(surcharge) in zwei Feldern 'Aufschlag (h)' 0 bis 24 und 'Aufschlag (%)' 0 bis 100: Er " +
+                    "verlängert jede Rampe eines Kalendersprungs mit n > 1 Stufen auf n' = min(48, n + max(h, " +
+                    "⌈n · %/100⌉)), es gilt der größere Wert; leer oder 0 heißt kein Aufschlag, auf eine manuelle " +
+                    "Aufheizzeit am Gebäude wirkt er nicht, und die Herleitungszeile je Gebäude nennt n' neben n. " +
+                    "Jedes Feld wird sofort " +
                     "gespeichert; ausschalten behält die übrigen Werte. Den Vergleich mit und ohne Rampe liefert " +
                     "eine Projektvariante."),
 
