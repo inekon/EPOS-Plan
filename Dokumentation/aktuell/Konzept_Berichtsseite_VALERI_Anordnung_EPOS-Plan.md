@@ -17,9 +17,9 @@ Fachvorgabe selbst.
 
 **Quellen.** Fachentwurf VALERI-Darstellung und Layout-Entwurf (Scratchpad dieser Sitzung, nicht im Repository —
 ihr Inhalt ist in Teil A und Teil B vollständig übernommen), Mockups
-[`Mockups/Berichtsseite_Anordnung_A.html`](Mockups/Berichtsseite_Anordnung_A.html),
-[`_B.html`](Mockups/Berichtsseite_Anordnung_B.html), [`_C.html`](Mockups/Berichtsseite_Anordnung_C.html) (Bilder
-beim Anwender, nicht im Repository — sie zeigen das Beispielprojekt „Pajunk WP 34-37" mit Kundennamen, siehe
+`Mockups/Berichtsseite_Anordnung_A.html`, `Mockups/Berichtsseite_Anordnung_B.html`,
+`Mockups/Berichtsseite_Anordnung_C.html` (Bilder
+beim Anwender, nicht im Repository — sie zeigen ein Kundenprojekt mit Namen, siehe
 Teil B, Nr. 3), Muster
 [`Konzept_BerichteKosten_Navigation_EPOS-Plan.md`](../ueberholt/Konzept_BerichteKosten_Navigation_EPOS-Plan.md)
 (Aufbau eines Varianten-Konzepts) und
@@ -247,8 +247,8 @@ der Orchestrierung nach dem Merge (ChartProben unverändert, Referenzlauf gegen 
 
 ### 2. Varianten (Mockups)
 
-Mockups: [`Mockups/Berichtsseite_Anordnung_A.html`](Mockups/Berichtsseite_Anordnung_A.html),
-[`_B.html`](Mockups/Berichtsseite_Anordnung_B.html), [`_C.html`](Mockups/Berichtsseite_Anordnung_C.html) — eigene
+Mockups: `Mockups/Berichtsseite_Anordnung_A.html`, `Mockups/Berichtsseite_Anordnung_B.html`,
+`Mockups/Berichtsseite_Anordnung_C.html` — eigene
 Vorschauseiten mit eingebettetem Stil, Token wörtlich aus `epos-ui.css`. Die Bilder der ursprünglichen Prüfung
 (1.890/1.280/820 px) liegen beim Anwender, nicht im Repository: Sie zeigen ein tatsächliches Projekt mit
 Kundennamen; die Mockup-HTML dieses Konzepts tragen stattdessen das Beispielprojekt „Beispielprojekt mit
