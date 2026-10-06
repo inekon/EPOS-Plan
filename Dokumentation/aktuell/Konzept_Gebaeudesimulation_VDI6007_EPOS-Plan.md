@@ -93,6 +93,7 @@ Nachgezogen am 05.10.2026 mit **E88** und **E89** (N1.70): Die Vorlaufwahl der W
 ausgewiesen (Welle VW1, ohne Rechenwirkung). Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe
 **GA — Altweg ablösen** entfällt endgültig, Q24 und Q25 sind gegenstandslos; Kapitel 0, 4.1, 6.1, 8, 10.4, 11, 13,
 14, 15 und 16 folgen.
+Nachgezogen am 06.10.2026 mit **E97** und **E98** (N1.69): Die Oberflächenwellen O1b, O2 und O3 der Aufheizoptimierung sind gebaut — Aufschlag (h, %) in der Projekteinstellung, Gruppe „Aufheizung“ im Bedarfsdialog mit Auslegungsgröße, „Aufheizzeit manuell (h)“ im Gebäudedialog, Bericht (Gebäudetafel, Kurzbericht, Vorlagenfelder, Katalogfassung 16) und Variantenvergleich (Kennzahlgruppe „Gebäude“, Abweichungsmerkmale); die Auslegungsheizlast entsteht auch ohne Anlagenkopplung (E97, Basis R39), die innere Umkehr der geregelten Heizlast im Zonenmodell wird exakt bestimmt; zwei Ergebnisspalten (verwendeter Aufschlag, bemessene Aufheizzeit) folgen mit Welle A (E98).
 Nachgezogen am 06.10.2026 mit **E90** bis **E92** (N1.71): Die Nutzung der Zonen wird ein frei definierbarer Katalog
 von Nutzungsprofilen mit Kategorien (Stufe NP, [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)); der Ausschluss
 in Kapitel 15 gilt nur noch für Normwerte.
@@ -1810,8 +1811,7 @@ und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das eigene Papier
 [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 3; P1–P8 entschieden mit E52, N1.59,
 P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0 bis KP2 umgesetzt (Festlegungen der Umsetzung N1.61, N1.63 und
 N1.66), KP3 entschieden (E58, N1.67; Aufschlag, manuelle Aufheizzeit und Auslegungsgröße mit E59 und
-E60, N1.68) und in Rechenweg, Daten, Referenzprojekt und Basis gebaut (Festlegungen N1.69; Oberflächenwellen O1b bis O3
-und Welle A offen), KP4 mit den Papieren nachgezogen; kein Bestandteil der
+E60, N1.68) und in Rechenweg, Daten, Referenzprojekt und Basis gebaut (Festlegungen N1.69; Oberflächenwellen O1b, O2 und O3 gebaut, Nachtrag N1.69; Welle A offen), KP4 mit den Papieren nachgezogen; kein Bestandteil der
 G-Stufen.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
