@@ -244,12 +244,14 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// <b>Umbenennen reißt die Sperre nicht mehr:</b> Nach der Umbenennung des
-        /// Katalogsatzes stehen seine Projekte unter dem NEUEN Namen, und Löschen scheitert.
-        /// Unter dem alten Namen steht nichts mehr.
+        /// <b>Umbenennen reißt die Verwendung nicht:</b> Nach der Umbenennung des
+        /// Katalogsatzes stehen seine Projekte unter dem NEUEN Namen — in der Verwendung der
+        /// Verwaltung wie in den Projektkopien der Rückfrage. Unter dem alten Namen steht nichts
+        /// mehr. Gelöscht wird der Satz trotzdem (Anwenderentscheid 06.10.2026); die Kopien
+        /// bleiben, nur ihr Verweis wird leer.
         /// </summary>
         [Fact]
-        public void Die_Loeschsperre_haelt_ueber_die_ID_auch_nach_der_Umbenennung()
+        public void Die_Verwendung_haelt_ueber_die_ID_auch_nach_der_Umbenennung()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -263,9 +265,14 @@ namespace EPOS.Kern.Tests
             IReadOnlyList<string> projekte = GebaeudeStammCtrl.Loeschsperre(neuerName);
             Assert.Equal(5, projekte.Count);
             Assert.Contains(PROJEKTNAME, projekte);
+            Assert.Equal(projekte.OrderBy(p => p, StringComparer.Ordinal),
+                         GebaeudeStammCtrl.Projektkopien(neuerName).OrderBy(p => p, StringComparer.Ordinal));
+            Assert.Empty(GebaeudeStammCtrl.Projektkopien(NAME_EFH));
 
-            Assert.False(GebaeudeStammCtrl.Loeschen(neuerName));
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE ID = ?", STAMM_EFH));
+            long kopien = Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Gebaeude_Stamm = ?", STAMM_EFH);
+            Assert.True(GebaeudeStammCtrl.Loeschen(neuerName));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE ID = ?", STAMM_EFH));
+            Assert.Equal(kopien, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Gebaeudename = ? AND ID_Gebaeude_Stamm IS NULL", NAME_EFH));
         }
 
         /// <summary>
@@ -286,8 +293,10 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Rückfall Name:</b> Eine Kopie OHNE Verweis (Altbestand) sperrt weiter über ihren
-        /// Namen — groß/klein egal; ein freier Satz lässt sich löschen.
+        /// <b>Rückfall Name nur in der Verwendung:</b> Eine Kopie OHNE Verweis (Altbestand) steht
+        /// in der Verwendung der Verwaltung weiter unter ihrem Namen — groß/klein egal. Die
+        /// Rückfrage des Projektdialogs nennt sie nicht (<see cref="GebaeudeStammCtrl.Projektkopien"/>
+        /// geht allein über den Verweis), und das Löschen hält sie nicht auf.
         /// </summary>
         [Fact]
         public void Ohne_Verweis_sperrt_weiter_der_Name()
@@ -298,7 +307,7 @@ namespace EPOS.Kern.Tests
             Sql("UPDATE Tab_Gebaeude SET ID_Gebaeude_Stamm = NULL");
             IReadOnlyList<string> projekte = GebaeudeStammCtrl.Loeschsperre(NAME_EFH.ToLowerInvariant());
             Assert.Equal(5, projekte.Count);
-            Assert.False(GebaeudeStammCtrl.Loeschen(NAME_EFH));
+            Assert.Empty(GebaeudeStammCtrl.Projektkopien(NAME_EFH));
 
             // Ein Satz, den kein Projekt fuehrt (und der kein Auslieferungssatz ist), geht.
             Assert.Empty(GebaeudeStammCtrl.Loeschsperre("AltenH-95-EnEV2016"));
@@ -306,50 +315,49 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>„Gebäude in DB löschen" des Projekt-Gebäudedialogs trägt dieselbe Sperre</b>
-        /// wie die Gebäudeverwaltung (#487): Der Sperrgrund nennt die Projekte, die den Satz
-        /// führen, bzw. den Auslieferungssatz; ein freier Satz hat keinen. Die Hülle reicht
-        /// genau diesen Grund und den Kernweg <c>Loeschen</c> herein — ein benutzter Satz
-        /// bleibt auch dann stehen, wenn die Oberfläche ihn doch hereinreicht.
+        /// <b>„Gebäude in DB löschen" des Projekt-Gebäudedialogs sperrt allein den
+        /// Auslieferungssatz</b> (Anwenderentscheid 06.10.2026): Ein Satz, den ein Projekt führt,
+        /// hat keinen Sperrgrund; die Rückfrage nennt das Projekt (<c>Loeschhinweis</c>), und nach
+        /// dem Löschen steht seine Kopie mit leerem Verweis. Die Hülle reicht genau diesen Grund,
+        /// den Hinweis und den Kernweg <c>Loeschen</c> herein.
         /// </summary>
         [Fact]
-        public void Der_Projektdialog_loescht_mit_der_Sperre_der_Verwaltung()
+        public void Der_Projektdialog_sperrt_nur_den_Auslieferungssatz()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            using var kultur = new Kulturvorrichtung();
 
             const string FREI = "AltenH-95-EnEV2016";
             Sql("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 0 WHERE Bezeichner IN (?, ?)", NAME_GMH, FREI);
 
-            // Von einem Projekt gefuehrt: der Grund der Verwaltung, mit dem Projektnamen.
-            IReadOnlyList<string> projekte = GebaeudeStammCtrl.Loeschsperre(NAME_GMH);
-            Assert.NotEmpty(projekte);
-            Assert.Equal(string.Format(CultureInfo.CurrentCulture,
-                             WindowsFormsApplication1.MyResource.Resource.ADM_AW_LOESCHEN_VERWENDET,
-                             string.Join(", ", projekte)),
-                         GebaeudeStammCtrl.Loeschsperrgrund(NAME_GMH));
-
-            // Frei: kein Grund. Auslieferungssatz: der benannte Schreibschutz.
-            Assert.Equal("", GebaeudeStammCtrl.Loeschsperrgrund(FREI));
+            // Von einem Projekt gefuehrt: kein Grund, der Hinweis nennt das Projekt.
+            Assert.Equal("", GebaeudeStammCtrl.Loeschsperrgrund(NAME_GMH));
+            Assert.Contains(Convert.ToString(Wert("SELECT Projektname FROM Tab_Projekt WHERE ID = 1017"), CultureInfo.InvariantCulture),
+                            GebaeudeStammCtrl.Loeschhinweis(NAME_GMH));
             Assert.Equal("", GebaeudeStammCtrl.Loeschsperrgrund(""));
+            Assert.Equal("", GebaeudeStammCtrl.Loeschhinweis(""));
+
+            // Auslieferungssatz: der benannte Schreibschutz.
             Sql("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 1 WHERE Bezeichner = ?", FREI);
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BADM_MSG_SCHREIBGESCHUETZT,
                          GebaeudeStammCtrl.Loeschsperrgrund(FREI));
 
-            // Die Huelle des Projektdialogs: derselbe Grund, derselbe Kernweg.
+            // Die Huelle des Projektdialogs: derselbe Grund, derselbe Hinweis, derselbe Kernweg.
             IReadOnlyDictionary<string, object> gaben =
                 GebaeudeHuelle.Gaben(PROJEKT, PROJEKTNAME, Z_ProjGebCtrl.LiesProjekt(PROJEKT), false);
             var sperre = (Func<string, string>)gaben["KatalogLoeschsperre"];
+            var hinweis = (Func<string, string>)gaben["KatalogLoeschhinweis"];
             var loeschen = (Func<string, bool>)gaben["KatalogLoeschen"];
-            Assert.Equal(GebaeudeStammCtrl.Loeschsperrgrund(NAME_GMH), sperre(NAME_GMH));
-            Assert.False(loeschen(NAME_GMH));
+            Assert.Equal("", sperre(NAME_GMH));
+            Assert.Equal(GebaeudeStammCtrl.Loeschhinweis(NAME_GMH), hinweis(NAME_GMH));
             Assert.False(loeschen(FREI));
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE ID = ?", STAMM_GMH));
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", FREI));
 
-            Sql("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 0 WHERE Bezeichner = ?", FREI);
-            Assert.True(loeschen(FREI));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", FREI));
+            Assert.True(loeschen(NAME_GMH));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE ID = ?", STAMM_GMH));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID = 10599"));
+            Assert.Null(Wert("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID = 10599"));
         }
 
         /// <summary>

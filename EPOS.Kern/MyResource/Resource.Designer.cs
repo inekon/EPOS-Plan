@@ -30097,6 +30097,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wird aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopie. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LOESCHHINWEIS_KOPIEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LOESCHHINWEIS_KOPIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Andere Datei wählen… ähnelt.
         /// </summary>
         public static string GEB_NL_ANDERE_DATEI {

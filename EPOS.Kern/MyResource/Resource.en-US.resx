@@ -14769,6 +14769,9 @@ Please check all entries!</value>
   <data name="GEB_MSG_LOESCHFRAGE" xml:space="preserve">
     <value>Do you really want to delete {0}?</value>
   </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN" xml:space="preserve">
+    <value>The building is deleted from the database. The projects {0} keep their copy.</value>
+  </data>
   <data name="GEB_MSG_LISTE_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The building list was not saved. The project keeps its previous buildings.</value>
   </data>

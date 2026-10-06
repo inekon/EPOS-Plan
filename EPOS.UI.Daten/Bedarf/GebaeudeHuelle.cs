@@ -113,12 +113,14 @@ namespace WindowsFormsApplication1
                 ["StammDetail"] = new Func<string, GebaeudeStammDetail>(Stammdetail),
                 ["StammSatz"] = new Func<string, GebaeudeProjektZeile>(
                     name => Aufnehmen(name, projektId, naechsteId)),
-                // Die Loeschsperre der Gebaeudeverwaltung gilt auch hier - eine Wahrheit im
-                // Kern (GebaeudeStammCtrl.Loeschsperrgrund): Auslieferungssatz oder von einem
-                // Projekt gefuehrt heisst benannte Absage statt Rueckfrage. Geloescht wird
-                // ueber GebaeudeStammCtrl.Loeschen, das dieselbe Sperre noch einmal haelt und
-                // keinen Meldungskasten oeffnet.
+                // Die Loeschsperre - eine Wahrheit im Kern (GebaeudeStammCtrl.Loeschsperrgrund):
+                // allein ein Auslieferungssatz heisst benannte Absage statt Rueckfrage. Ein Satz,
+                // den Projekte fuehren, ist loeschbar (Anwenderentscheid 06.10.2026); die
+                // Rueckfrage nennt sie samt ihrer bleibenden Kopie (Loeschhinweis). Geloescht
+                // wird ueber GebaeudeStammCtrl.Loeschen, das dieselbe Sperre noch einmal haelt
+                // und keinen Meldungskasten oeffnet.
                 ["KatalogLoeschsperre"] = new Func<string, string>(GebaeudeStammCtrl.Loeschsperrgrund),
+                ["KatalogLoeschhinweis"] = new Func<string, string>(GebaeudeStammCtrl.Loeschhinweis),
                 ["KatalogLoeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
                 ["MeldungLoeschFehler"] = Text_("BADM_MSG_LOESCHEN_FEHLER",
                     "Der Datensatz konnte nicht aus der Datenbank gelöscht werden."),
