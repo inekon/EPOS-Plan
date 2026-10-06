@@ -234,6 +234,31 @@ public class BerichtSeiteErgebnisTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-bericht-hinweisband"));
     }
 
+    /// <summary>
+    /// <b>Anordnung B, BL-Q4 a:</b> Das Ergebnis des Laufs — Erfolgszeile, Warnungen, Hinweisklappe — steht in der
+    /// Karte „Ausgabe“ unter „Erstellen“, neben dem Knopf, der es ausgelöst hat; über dem Raster bleibt nichts davon.
+    /// </summary>
+    [Fact]
+    public void BL_B_Das_Ergebnis_steht_in_der_Karte_Ausgabe_unter_Erstellen()
+    {
+        var warnungen = new[] { new Laufhinweisgruppe("Variante „mit PV“", new[] { new Laufhinweispunkt("Klimadaten fehlen") }) };
+        var cut = Laufe(Ergebnis(warnungen: warnungen, hinweise: Hinweisgruppen()));
+
+        IElement ausgabe = cut.Find(".epos-bericht-rechts > .epos-bericht-karte--ausgabe");
+        var kinder = ausgabe.Children.ToList();
+        int ausloesen = kinder.FindIndex(k => k.ClassList.Contains("epos-bericht-ausloesen"));
+        int erfolg = kinder.FindIndex(k => k.ClassList.Contains("epos-bericht-erfolg"));
+        int warnung = kinder.FindIndex(k => k.ClassList.Contains("epos-bericht-warnung"));
+        int klappe = kinder.FindIndex(k => k.QuerySelector(".epos-bericht-hinweisband") is not null
+                                           || k.ClassList.Contains("epos-bericht-hinweisband"));
+        Assert.True(ausloesen >= 0 && ausloesen < erfolg && erfolg < warnung && warnung < klappe,
+                    $"Folge Erstellen {ausloesen}, Erfolg {erfolg}, Warnung {warnung}, Klappe {klappe}");
+
+        IElement wurzel = cut.Find(".epos-seite");
+        Assert.Empty(wurzel.Children.Where(k => k.ClassList.Contains("epos-bericht-erfolg")
+                                               || k.ClassList.Contains("epos-bericht-warnung")));
+    }
+
     [Fact]
     public void Ohne_Dateien_bleibt_es_beim_Fliesstext()
     {

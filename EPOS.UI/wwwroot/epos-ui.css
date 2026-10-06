@@ -12517,6 +12517,72 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     padding-left: 20px;
 }
 
+/* ---- Die Berichtsseite in vier Karten (Anordnung B, BL-Q1 bis BL-Q5) ----
+
+   LINKS, WAS in den Bericht kommt (Karten "Varianten" und "Inhalt"), RECHTS in
+   EINER Breite, wie er aussieht und wohin er geht (Karten "Vorlage" und
+   "Ausgabe" mit "Erstellen" und dem Ergebnis des Laufs). Die rechte Spalte ist
+   ein Bedienblock (Vorbild .epos-simreiter): minmax(420px, 480px) - sie waechst
+   nicht mit, der Platz gehoert der Variantenliste.
+
+   UNTER 900 px einspaltig (Hausschwelle) in der Markup-Folge Varianten, Inhalt,
+   Vorlage, Ausgabe - die Lesefolge, keine order-Regel. */
+.epos-bericht-raster {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 480px);
+    gap: var(--epos-rand);
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .epos-bericht-raster {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.epos-bericht-spalte {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-bericht-karte {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: var(--epos-karte-rand);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+
+.epos-bericht-kartentitel {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-karte-titel);
+}
+
+/* Der Hauptknopf und seine leise Erklaerzeile in einer Leiste; die Zeile
+   bricht unter den Knopf, wenn die Karte schmal wird. */
+.epos-bericht-ausloesen {
+    column-gap: 14px;
+    row-gap: 6px;
+}
+
+.epos-bericht-ausloesen .epos-herleitung {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+@media (forced-colors: active) {
+    .epos-bericht-karte {
+        border: 1px solid CanvasText;
+    }
+}
+
 /* ====================================================================== */
 /* NUTZUNGSDAUERN (AfA) - der Administrationsdialog der Nutzungsdauern.   */
 /*                                                                        */

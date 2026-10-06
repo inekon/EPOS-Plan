@@ -133,7 +133,13 @@
                     new BausteinZeile { Schluessel = "wirtschaftlichkeit", Titel = "Wirtschaftlichkeit" }
                 },
                 AktiveBausteine = new[] { "deckblatt" }
-            })
+            }),
+            // Die Karte "Vorlage" (Anordnung B): eine mitgelieferte und eine eigene Word-Vorlage
+            // samt Pruefzeile - ohne Delegaten stehen keine Knoepfe.
+            ["Vorlagen"] = new[] { new Vorlagenzeile(1, "Standard (EPOS-Plan)", Mitgeliefert: true),
+                                   new Vorlagenzeile(2, "Kurzbericht Kunde") },
+            ["VorlageId"] = (int?)1,
+            ["Pruefzeile"] = new Pruefstand("✓", "geprüft, 36 Platzhalter, keine Befunde")
         }
     };
 }

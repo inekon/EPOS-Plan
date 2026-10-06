@@ -8013,6 +8013,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgabe ähnelt.
+        /// </summary>
+        public static string BK_BER_KARTE_AUSGABE {
+            get {
+                return ResourceManager.GetString("BK_BER_KARTE_AUSGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inhalt ähnelt.
+        /// </summary>
+        public static string BK_BER_KARTE_INHALT {
+            get {
+                return ResourceManager.GetString("BK_BER_KARTE_INHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten ähnelt.
+        /// </summary>
+        public static string BK_BER_KARTE_VARIANTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_KARTE_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_KARTE_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_KARTE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ausgabe: ähnelt.
         /// </summary>
         public static string BK_BER_LBL_AUSGABE {

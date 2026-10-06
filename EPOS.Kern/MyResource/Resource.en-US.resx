@@ -6097,6 +6097,18 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_BER_VORBELEGT" xml:space="preserve">
     <value>Preset from “Economics”: {0} versions selected, section Economic viability, scenario “{1}”. The report shows the economic evaluation in the chosen scenario and the range across all three scenarios; the selection is saved with “Create”.</value>
   </data>
+  <data name="BK_BER_KARTE_VARIANTEN" xml:space="preserve">
+    <value>Versions</value>
+  </data>
+  <data name="BK_BER_KARTE_INHALT" xml:space="preserve">
+    <value>Content</value>
+  </data>
+  <data name="BK_BER_KARTE_VORLAGE" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="BK_BER_KARTE_AUSGABE" xml:space="preserve">
+    <value>Output</value>
+  </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>For this report, {0} project(s) will be simulated again and then economically evaluated.
 
