@@ -293,8 +293,10 @@ namespace WindowsFormsApplication1
         /// gehen über die Weiche in die Spalte ihrer Größe — eine leere Zelle der Vorlage lässt die
         /// des Ziels stehen, also bleiben Nennwert und Saison des Ziels (E54) —, und der Kalender wird
         /// angelegt: der Generator über der ergänzten Matrix mit den <b>Ferienzeiträumen des Ziels</b>,
-        /// darüber Standardwoche und eigene Perioden der Vorlage (<see cref="Zusammenfuehren"/>). Die
-        /// Herkunft ist der Name der Vorlage.
+        /// darüber Standardwoche und eigene Perioden der Vorlage (<see cref="Zusammenfuehren"/>). Bringt
+        /// die Vorlage eine eigene Standardwoche, braucht der Generator keine Angabe der Spalte des Ziels
+        /// (<see cref="Standardfahrplan.Erzeugen(Vorgabematrix, Konditionierungsgroesse, bool, Kalenderangabe)"/>).
+        /// Die Herkunft ist der Name der Vorlage.
         /// </summary>
         /// <param name="ebene">Die Ebene des Ziels.</param>
         /// <param name="zielmatrix">Die WIRKSAME Matrix des Ziels (nach der Kaskade, F2).</param>
@@ -317,11 +319,18 @@ namespace WindowsFormsApplication1
             Matrixspalte vorlagenspalte = vorlagenmatrix.Spalte(groesse);
             Matrixspalte neueSpalte = vorlagenspalte.Erben(zielmatrix.Spalte(groesse));
 
+            // Bringt die Vorlage eine eigene Standardwoche (ein Profil mit Stundenprofil, NP-F9), braucht der Fahrplan
+            // keine Zeile des Ziels: Trägt dessen Spalte keine Angabe, ist die Woche der Vorlage die Grundangabe (Befund
+            // NP4c). Sonst bleibt der Weg, wie er ist — die Grundangabe aus der Matrix, darüber die Woche der Vorlage.
+            Konditionierungskalender ausVorlage = inhalt.Kalender(groesse);
+            Kalenderangabe eigeneWoche = ausVorlage != null && ausVorlage.Grundangabe.Art == Angabeart.Woche
+                ? ausVorlage.Grundangabe
+                : null;
             Fahrplanlesung l = Standardfahrplan.Erzeugen(zielmatrix.MitSpalte(groesse, neueSpalte), groesse,
-                                                         rundlaufPruefen: true);
+                                                         rundlaufPruefen: true, eigeneWoche);
             if (l.Befund != Fahrplanbefund.Erzeugt) return Ebenenergebnis.Fehler(Abgelehnt(l));
 
-            Konditionierungskalender neu = Zusammenfuehren(l.Kalender, inhalt.Kalender(groesse), ebene.Kalender(groesse),
+            Konditionierungskalender neu = Zusammenfuehren(l.Kalender, ausVorlage, ebene.Kalender(groesse),
                                                            out string fehler);
             if (fehler != null) return Ebenenergebnis.Fehler(fehler);
 

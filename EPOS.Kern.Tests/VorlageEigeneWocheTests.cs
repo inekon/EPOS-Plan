@@ -68,23 +68,46 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Profil 1", b.Gebaeude.Herkunft(P).Vorlage);
             Assert.Equal(1, s.Bilanz.ErsetztAnzahl(Konditionierungspostenart.Kalender));
 
-            // P1 (ohne eigenen Personennennwert): der Gerätewert sinkt um das Jahresmittel der Personenwärme.
-            double? vorher = a.Gebaeude.Bestand.InterneWaermegewinne;
-            if (vorher.HasValue)
-                Assert.True(b.Gebaeude.Bestand.InterneWaermegewinne < vorher.Value);
         }
+
+        /// <summary>
+        /// Trägt das Ziel nur den Nennwert der Personen (keine Zeile Tag), geht er in den Fahrplan der eigenen Woche, und
+        /// P1 gilt ohne eigenen Personennennwert der Vorlage: der Gerätewert sinkt um das Jahresmittel der Personenwärme.
+        /// </summary>
+        [Fact]
+        public void Der_Nennwert_des_Ziels_gilt_und_P1_senkt_den_Geraetewert()
+        {
+            Konditionierungsarbeitsstand a = MitGeraeten(KonditionierungsarbeitTests.Stand());
+            a = a.MitGebaeude(a.Gebaeude.MitVorgabe(P, DbWerte.KOND_ZEILE_NENNWERT, Matrixzelle.AusWert(100.0)));
+            Assert.Equal(Fahrplanbefund.KeineAngabe, Standardfahrplan.Erzeugen(a.Matrix(null), P, rundlaufPruefen: true).Befund);
+
+            Konditionierungsarbeitsstand b = KonditionierungsarbeitTests.Gut(
+                Konditionierungsarbeit.VorlageUebernehmen(a, KonditionierungsarbeitTests.Ort(P), Personenvorlage()));
+            Konditionierungskalender k = b.Gebaeude.Kalender(P);
+            WocheGleich(Anwesenheit(), k.Grundangabe);
+            Assert.Equal(100.0, k.Nennwert);
+
+            double erwartet = Math.Round(Konditionierungsarbeit.GeraeteNennwertNachPersonen(500.0, k, b.W0, b.Referenzjahr), 4,
+                                         MidpointRounding.AwayFromZero);
+            Assert.True(erwartet < 500.0);
+            Assert.Equal(erwartet, b.Gebaeude.Bestand.InterneWaermegewinne);
+        }
+
+        /// <summary>Das Probegebäude mit einer Gerätelast von 500 W (runder Phantasiewert).</summary>
+        private static Konditionierungsarbeitsstand MitGeraeten(Konditionierungsarbeitsstand a)
+            => a.MitGebaeude(a.Gebaeude.MitBestand(x => x.InterneWaermegewinne = 500.0));
 
         [Fact]
         public void Mit_eigenem_Personennennwert_bleibt_der_Geraetewert_des_Ziels()
         {
-            Konditionierungsarbeitsstand a = KonditionierungsarbeitTests.Stand();
+            Konditionierungsarbeitsstand a = MitGeraeten(KonditionierungsarbeitTests.Stand());
             Konditionierungsarbeitsstand b = KonditionierungsarbeitTests.Gut(
                 Konditionierungsarbeit.VorlageUebernehmen(a, KonditionierungsarbeitTests.Ort(P), Personenvorlage(nennwert: 200.0)));
 
             Konditionierungskalender k = b.Gebaeude.Kalender(P);
             WocheGleich(Anwesenheit(), k.Grundangabe);
             Assert.Equal(200.0, k.Nennwert);                             // der Nennwert der Spalte geht in den Fahrplan
-            Assert.Equal(a.Gebaeude.Bestand.InterneWaermegewinne, b.Gebaeude.Bestand.InterneWaermegewinne);
+            Assert.Equal(500.0, b.Gebaeude.Bestand.InterneWaermegewinne);  // E93: P1 gilt nicht
         }
 
         [Fact]
