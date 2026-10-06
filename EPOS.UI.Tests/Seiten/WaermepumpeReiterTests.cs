@@ -158,13 +158,15 @@ public class WaermepumpeReiterTests : EposBunitContext
             true);
     }
 
-    // Die DREI Schalterzeilen in der Reihenfolge des Markups: im Blatt
-    // „Wärmeproduktion" erst „sortiert" (die Darstellungsart) und dann die vier
-    // Reihen (W11b‑B‑17); die Streuwolke steht mit der Auslegung am Ende des
-    // Reiters, unter den Unterblaettern.
-    private const int SORTIERT = 0;
-    private const int GANGLINIE = 1;
-    private const int STREUWOLKE = 2;
+    // Die VIER Schalterzeilen in der Reihenfolge des Markups: über der
+    // Modultabelle „Heizstab in die JAZ einrechnen", im Blatt „Wärmeproduktion"
+    // erst „sortiert" (die Darstellungsart) und dann die vier Reihen
+    // (W11b‑B‑17); die Streuwolke steht mit der Auslegung am Ende des Reiters,
+    // unter den Unterblaettern.
+    private const int JAZ = 0;
+    private const int SORTIERT = 1;
+    private const int GANGLINIE = 2;
+    private const int STREUWOLKE = 3;
 
     /// <summary>Die Beschriftungen einer Schalterzeile, in ihrer Reihenfolge.</summary>
     private static string[] Zeile(IRenderedComponent<WaermepumpeReiter> seite, int nr)
@@ -206,7 +208,7 @@ public class WaermepumpeReiterTests : EposBunitContext
     /// BHKW-Reiter). Die Zeilenfolge je Gruppe bleibt die von W11b‑B‑15.
     /// </summary>
     [Fact]
-    public void Die_zehn_Felder_stehen_in_drei_Gruppen_mit_Balken()
+    public void Die_zwoelf_Felder_stehen_in_drei_Gruppen_mit_Balken()
     {
         var seite = Zeichnen(Erg(puffer: false));
 
@@ -223,7 +225,8 @@ public class WaermepumpeReiterTests : EposBunitContext
             new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion WP:", "Restwärmebedarf:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
-            new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:" },
+            new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:",
+                    "Jahresarbeitszahl WP:", "Jahresarbeitszahl mit Heizstab:" },
             listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
             new[] { "Bivalenzpunkt:", "durchschnittliche Vollbenutzungsstunden:",
@@ -280,15 +283,15 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Contains("Kapazität des Pufferspeichers", ohne.Markup);
     }
 
-    /// <summary>Die Modultabelle: sechs Spalten, je Modul eine Zeile.</summary>
+    /// <summary>Die Modultabelle: sieben Spalten (mit der JAZ), je Modul eine Zeile.</summary>
     [Fact]
-    public void Die_Modultabelle_hat_sechs_Spalten()
+    public void Die_Modultabelle_hat_sieben_Spalten()
     {
         var seite = Zeichnen(Erg());
         var raster = seite.FindAll("table.epos-raster");
 
         Assert.Equal(2, raster.Count);                               // Module und Puffer
-        Assert.Equal(6, raster[0].QuerySelectorAll("thead th").Length);
+        Assert.Equal(7, raster[0].QuerySelectorAll("thead th").Length);
         Assert.Equal(8, raster[1].QuerySelectorAll("thead th").Length);
     }
 
@@ -554,7 +557,7 @@ public class WaermepumpeReiterTests : EposBunitContext
 
         Assert.Equal(new[]
         {
-            "Wärme", "Strom", "Tabelle", "Tabelle",
+            "Wärme", "Strom", "Schalter", "Tabelle", "Tabelle",
             "Blatt", "Blatt", "Blatt", "Schalter", "Schalter",
             "Auslegung", "Schalter",
         }, folge);
@@ -562,5 +565,132 @@ public class WaermepumpeReiterTests : EposBunitContext
         // Die Streuwolke ist das letzte Bild, die Ganglinie steht davor.
         Assert.Equal("simerg-wp-streuwolke",
                      seite.FindComponents<DiagrammSvg>().Last().Instance.Kennung);
+    }
+
+    // =====================================================================
+    //  DIE JAHRESARBEITSZAHL (Übergabe „Dialoge und Korrekturen" 05.10.2026,
+    //  Anwenderentscheide 06.10.2026): gerechnet im Kern (Jahresarbeitszahl),
+    //  hier nur angezeigt — zwei Nachkommastellen, ohne Strom ein Strich.
+    // =====================================================================
+
+    /// <summary>Die Werte des Blocks „Strom" ohne die Einheitenspalte, in ihrer Reihenfolge.</summary>
+    private static string[] Stromwerte(IRenderedComponent<WaermepumpeReiter> seite)
+        => seite.FindAll("dl.epos-simerg-werte")[1]
+                .QuerySelectorAll("dd:not(.epos-simerg-einheit)")
+                .Select(d => d.TextContent.Trim()).ToArray();
+
+    /// <summary>Die Zelle der Spalte JAZ in der ersten Modulzeile.</summary>
+    private static string ModulJaz(IRenderedComponent<WaermepumpeReiter> seite)
+        => seite.FindAll("table.epos-raster")[0].QuerySelectorAll("tbody tr")[0]
+                .QuerySelectorAll("td")[5].TextContent.Trim();
+
+    /// <summary>Der Kopf der Spalte JAZ.</summary>
+    private static AngleSharp.Dom.IElement JazKopf(IRenderedComponent<WaermepumpeReiter> seite)
+        => seite.FindAll("table.epos-raster")[0].QuerySelectorAll("thead th")[5];
+
+    /// <summary>
+    /// Der Block „Strom" zeigt nach den zwei Stromverbräuchen die JAZ der Wärmepumpe
+    /// (300 ÷ 75 = 4,00) und die des Systems mit Heizstab ((300 + 2,5) ÷ (75 + 2,5) = 3,90),
+    /// beide mit der Formel als Kurztext an Beschriftung und Wert.
+    /// </summary>
+    [Fact]
+    public void Der_Block_Strom_zeigt_beide_Jahresarbeitszahlen()
+    {
+        var seite = Zeichnen(Erg());
+
+        Assert.Equal(new[] { "75,00", "2,50", "4,00", "3,90" }, Stromwerte(seite));
+
+        var zeilen = seite.FindAll("dl.epos-simerg-werte")[1].QuerySelectorAll("dt");
+        Assert.Null(zeilen[0].GetAttribute("title"));
+        Assert.Contains("÷", zeilen[2].GetAttribute("title"));
+        Assert.Contains("VDI 4650", zeilen[3].GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// Ohne Strom keine Jahresarbeitszahl: ein Strich in beiden Zeilen und in der Spalte
+    /// je Modul — nie eine Division durch null. Mit Heizstab, aber ohne Strom der
+    /// Wärmepumpe gibt es nur die JAZ des Systems.
+    /// </summary>
+    [Fact]
+    public void Ohne_Strom_steht_bei_der_Jahresarbeitszahl_ein_Strich()
+    {
+        var ohne = Erg();
+        ohne.StromverbrauchMwh = 0;
+        ohne.HeizstabStromverbrauchMwh = 0;
+        ohne.Module.Clear();
+        ohne.Module.Add(new SimulationErgebnisCtrl.WpModulZeile("WP 1", 30.0, 0.0, 0.0, 0.0, 0.0));
+
+        var seite = Zeichnen(ohne);
+        Assert.Equal(new[] { "0,00", "0,00", "—", "—" }, Stromwerte(seite));
+        Assert.Equal("—", ModulJaz(seite));
+        Kasten(seite, JAZ, 0).Change(true);
+        Assert.Equal("—", ModulJaz(seite));
+
+        var nurStab = Erg();
+        nurStab.StromverbrauchMwh = 0;
+        nurStab.WaermeproduktionMwh = 0;
+        Assert.Equal(new[] { "0,00", "2,50", "—", "1,00" }, Stromwerte(Zeichnen(nurStab)));
+    }
+
+    /// <summary>
+    /// Die Spalte JAZ rechnet ohne Heizstab (Vorgabe); der Schalter über der Modultabelle
+    /// nimmt ihn dazu. Kopf und Kurztext nennen die Bilanzgrenze, die gerade gilt, und
+    /// der Rückweg stellt die Vorgabe wieder her.
+    /// </summary>
+    [Fact]
+    public void Die_Spalte_JAZ_folgt_dem_Heizstabschalter()
+    {
+        var seite = Zeichnen(Erg());
+
+        Assert.Equal(new[] { "Heizstab in die JAZ einrechnen" }, Zeile(seite, JAZ));
+        Assert.False(Kasten(seite, JAZ, 0).HasAttribute("checked"));
+        Assert.Equal("JAZ", JazKopf(seite).TextContent.Trim());
+        Assert.Contains("ohne Heizstab", JazKopf(seite).GetAttribute("title"));
+        Assert.Equal("4,00", ModulJaz(seite));
+
+        Kasten(seite, JAZ, 0).Change(true);
+
+        Assert.Equal("JAZ mit Heizstab", JazKopf(seite).TextContent.Trim());
+        Assert.Contains("mit seinem Heizstab", JazKopf(seite).GetAttribute("title"));
+        Assert.Equal("3,90", ModulJaz(seite));
+        // Der Block „Strom" bleibt, wie er ist: Der Schalter gilt nur der Spalte.
+        Assert.Equal(new[] { "75,00", "2,50", "4,00", "3,90" }, Stromwerte(seite));
+
+        Kasten(seite, JAZ, 0).Change(false);
+
+        Assert.Equal("JAZ", JazKopf(seite).TextContent.Trim());
+        Assert.Equal("4,00", ModulJaz(seite));
+    }
+
+    /// <summary>
+    /// Der Hilfe-Assistent kennt den Schalter der Spalte JAZ als Anzeigeschalter und setzt
+    /// ihn über denselben Weg wie der Anwender — nur, wo die Modultabelle steht.
+    /// </summary>
+    [Fact]
+    public void Der_Heizstabschalter_steht_bei_den_Anzeigeschaltern()
+    {
+        const string NAME = "Heizstab in die JAZ einrechnen";
+
+        var anzeige = new Ergebnisanzeige();
+        var seite = Render<WaermepumpeReiter>(p => p
+            .AddCascadingValue(anzeige)
+            .Add(x => x.Daten, Erg())
+            .Add(x => x.Modell, Modell));
+
+        Anzeigeschalter schalter = Assert.Single(anzeige.Schalter, s => s.Name == NAME);
+        Assert.False(schalter.An);
+        schalter.An = true;
+        seite.WaitForAssertion(() => Assert.Equal("3,90", ModulJaz(seite)));
+
+        var ohneModule = Erg();
+        ohneModule.Module.Clear();
+        var leer = new Ergebnisanzeige();
+        var ohne = Render<WaermepumpeReiter>(p => p
+            .AddCascadingValue(leer)
+            .Add(x => x.Daten, ohneModule)
+            .Add(x => x.Modell, Modell));
+
+        Assert.DoesNotContain(leer.Schalter, s => s.Name == NAME);
+        Assert.DoesNotContain(NAME, ohne.Markup);
     }
 }

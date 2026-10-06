@@ -471,7 +471,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "Wochenraster mit 168 Faktoren und steht nicht in der KI-Sicht, der höchste Vorlauf als „vorlauf_max“; " +
             "die vier Felder je Sperrfenster (Beginn, Dauer, " +
             "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“"),
-        new("WaermepumpeReiter", 8),
+        new("WaermepumpeReiter", 9, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog"),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.
         new("WirtschaftlichkeitSeite", 8, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +

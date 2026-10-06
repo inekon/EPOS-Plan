@@ -183,6 +183,8 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Die Katalogempfehlung der Hilfsenergiekosten bezieht sich auf den Endenergiebedarf: Heizkessel 1 bis 2 %, BHKW 0,5 bis 1,5 %. (#676; Version bestätigt der Anwender beim Upload)
 - Die Einspeisung des BHKW wird je Viertelstunde bilanziert; der BHKW-Reiter mit seiner Kennzahl, die Strommatrix und die Wirtschaftlichkeit zeigen dieselbe Einspeisung wie der Bericht. (#723; Version bestätigt der Anwender beim Upload)
 - Der Unterreiter „Kälte Produktion Chart“ und die Kältedeckung der Übersicht zeigen die Deckung der Wärmepumpe im Kühlbetrieb auch nach einem Wechsel zur Startseite. (#724; Version bestätigt der Anwender beim Upload)
+- Der Ergebnisreiter Wärmepumpe zeigt die Jahresarbeitszahl der Wärmepumpe und des Systems mit Heizstab sowie eine Spalte JAZ je Modul, wahlweise mit Heizstab. (#749; Version bestätigt der Anwender beim Upload)
+- Die Berichtskennzahl Jahresarbeitszahl rechnet die Heizstabwärme mit. (#749; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

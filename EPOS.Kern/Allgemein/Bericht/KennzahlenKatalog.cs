@@ -483,13 +483,16 @@ namespace WindowsFormsApplication1
                 v => MitKaelteerzeugung(v) ? DeckungKanalKaelte(v) : null));
 
             // ---------------- Effizienz ----------------
-            l.Add(new Kennzahl("eff.jaz", "Jahresarbeitszahl (JAZ) WP", "Heat pump SPF", "–", GR_EFFIZIENZ, "N2", true,
+            // Die JAZ des SYSTEMS mit Heizstab (Bilanzgrenze nach VDI 4650): die Wärme des Heizstabs im
+            // Zähler, sein Strom im Nenner. Die Formel steht EINMAL in Jahresarbeitszahl; der Reiter
+            // „Wärmepumpe“ ruft dieselbe. Der Schlüssel bleibt, gespeicherte Vorlagen greifen weiter.
+            l.Add(new Kennzahl("eff.jaz", "Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab",
+                "Heat pump system SPF incl. backup heater", "–", GR_EFFIZIENZ, "N2", true,
                 v =>
                 {
                     var w = WP(v);
-                    if (w == null) return null;
-                    double strom = w.Stromverbrauch_WP + w.Stromverbrauch_Heizstab;
-                    return strom > 0 ? (double?)(w.Waermeproduktion_WP / strom) : null;
+                    return w == null ? null
+                        : Jahresarbeitszahl.MitHeizstab(w.Waermeproduktion_WP, w.Stromverbrauch_WP, w.Stromverbrauch_Heizstab);
                 }));
             l.Add(new Kennzahl("eff.wp_vbh", "Vollbenutzungsstunden WP", "Heat pump full-load hours", "h/a", GR_EFFIZIENZ, "N0", false,
                 v => WP(v) == null ? (double?)null : WP(v).Vollbenutzungsstunden));
