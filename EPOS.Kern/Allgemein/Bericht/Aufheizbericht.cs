@@ -237,6 +237,8 @@ namespace WindowsFormsApplication1
                 yield return tag == aus && nacht == aus ? aus : tag + "/" + nacht + (einheit.Length > 0 ? " " + einheit : "");
             else if (tag != null)
                 yield return tag + (tag != aus && einheit.Length > 0 ? " " + einheit : "");
+            else if (nacht != null)
+                yield return Tabellenzelle.STRICH + "/" + nacht + (nacht != aus && einheit.Length > 0 ? " " + einheit : "");
             m.Nachtfenster(g, out int? von, out int? bis);
             if (nacht != null && von.HasValue && bis.HasValue)
                 yield return string.Format(kultur, T(nameof(RR.BV_AUFH_KURZ_NACHT), kultur), von.Value, bis.Value);
