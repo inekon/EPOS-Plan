@@ -42732,8 +42732,8 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KABG_HINWEIS_ANGEBUNDEN" xml:space="preserve">
     <value>Ihr gleichnamiger Satz entspricht dem Auslieferungsstand. Er ist jetzt dem Auslieferungssatz zugeordnet, gesperrt und wird mit künftigen Fassungen nachgeführt.</value>
   </data>
-  <data name="KABG_HINWEIS_ANGEBUNDEN_BEHALTEN" xml:space="preserve">
-    <value>Ihr gleichnamiger Satz weicht vom Auslieferungsstand ab. Er ist jetzt dem Auslieferungssatz zugeordnet und gesperrt; Ihre Werte bleiben, der Auslieferungsstand liegt als Vergleich vor.</value>
+  <data name="KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Ihr gleichnamiger Satz weicht vom Auslieferungsstand ab. Er ist jetzt dem Auslieferungssatz zugeordnet, gesperrt und hat den Lieferstand übernommen (Ihre abweichenden Werte sind in der Sicherung); künftige Fassungen führen ihn nach.</value>
   </data>
   <data name="KABG_HINWEIS_NAME_MEHRDEUTIG" xml:space="preserve">
     <value>Mehrere eigene Sätze tragen den Namen „{0}“; der Auslieferungssatz wurde weder eingefügt noch zugeordnet.</value>
@@ -42789,8 +42789,8 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KABG_AKTION_ANGEBUNDEN" xml:space="preserve">
     <value>angebunden</value>
   </data>
-  <data name="KABG_AKTION_ANGEBUNDEN_BEHALTEN" xml:space="preserve">
-    <value>angebunden, behalten</value>
+  <data name="KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>angebunden, Lieferstand übernommen</value>
   </data>
   <data name="KABG_KATALOG_WP" xml:space="preserve">
     <value>Wärmepumpen</value>

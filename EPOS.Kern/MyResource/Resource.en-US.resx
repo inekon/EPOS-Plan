@@ -42725,8 +42725,8 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KABG_HINWEIS_ANGEBUNDEN" xml:space="preserve">
     <value>Your entry of the same name matches the delivered state. It is now linked to the delivered entry, locked and kept up to date by future versions.</value>
   </data>
-  <data name="KABG_HINWEIS_ANGEBUNDEN_BEHALTEN" xml:space="preserve">
-    <value>Your entry of the same name differs from the delivered state. It is now linked to the delivered entry and locked; your values stay, the delivered state is available for comparison.</value>
+  <data name="KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Your entry of the same name differs from the delivered state. It is now linked to the delivered entry, locked and has taken over the delivered state (your differing values are in the backup); future versions keep it up to date.</value>
   </data>
   <data name="KABG_HINWEIS_NAME_MEHRDEUTIG" xml:space="preserve">
     <value>Several entries of your own are named “{0}”; the delivered entry was neither added nor linked.</value>
@@ -42782,8 +42782,8 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KABG_AKTION_ANGEBUNDEN" xml:space="preserve">
     <value>linked</value>
   </data>
-  <data name="KABG_AKTION_ANGEBUNDEN_BEHALTEN" xml:space="preserve">
-    <value>linked, kept</value>
+  <data name="KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>linked, delivered state applied</value>
   </data>
   <data name="KABG_KATALOG_WP" xml:space="preserve">
     <value>Heat pumps</value>

@@ -25,15 +25,17 @@ namespace WindowsFormsApplication1
     // später in der Quelle gesperrt wurde, liegt beim Anwender als Zeile ohne Schlüssel. Trägt in
     // derselben Katalogtabelle GENAU EINE Zeile den Namen des Paketsatzes (ohne Unterschied von Groß-
     // und Kleinschreibung) und ist sie ohne Schlüssel und ungesperrt, bekommt sie Schlüssel, die
-    // Prüfsumme des Paketsatzes und ReadOnly = 1; ihre ID und ihre Werte bleiben, Kindzeilen bleiben:
-    //   Inhalt = Paketsatz (Prüfsumme)                  → ANGEBUNDEN; künftige Fassungen führen sie nach
-    //   Inhalt weicht ab                                → ANGEBUNDEN_BEHALTEN; die Werte des Anwenders
-    //                                                     bleiben, die Zeile gilt danach als geänderte
-    //                                                     gesperrte Zeile (BEHALTEN, solange sie abweicht)
+    // Prüfsumme des Paketsatzes und ReadOnly = 1; ihre ID bleibt, Projektkopien und Zuordnungen über die
+    // ID stimmen weiter. Künftige Fassungen führen sie nach:
+    //   Inhalt = Paketsatz (Prüfsumme)                  → ANGEBUNDEN; Werte und Kindzeilen bleiben
+    //   Inhalt weicht ab                                → ANGEBUNDEN_UEBERSCHRIEBEN; die Zeile war nie
+    //                                                     gesperrt und übernimmt den Lieferstand: Werte und
+    //                                                     Kindzeilen des Paketsatzes wie bei AKTUALISIERT
+    //                                                     (die Werte des Anwenders liegen in der Sicherung)
     //   mehrere gleichnamige Zeilen ohne Schlüssel      → BEHALTEN „Name mehrdeutig“
     //   gleichnamige Zeile mit anderem Schlüssel        → BEHALTEN „Name gehört einem anderen Satz“
     //   einzige gleichnamige Zeile gesperrt             → BEHALTEN „Name belegt“
-    // Im Protokoll steht ANGEBUNDEN als AKTUALISIERT und ANGEBUNDEN_BEHALTEN als BEHALTEN, je mit eigenem
+    // Im Protokoll stehen ANGEBUNDEN und ANGEBUNDEN_UEBERSCHRIEBEN als AKTUALISIERT, je mit eigenem
     // Hinweis (Tab_Katalogabgleich.Aktion lässt nur die Aktionen seines Schemaschritts zu).
     //
     // NIE ANGEFASST: Anwenderzeilen (ohne Schlüssel) und jede Projektkopie (Tab_* mit ID_Projekt;
@@ -80,7 +82,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kann der Auslieferungsstand dieses Satzes wiederhergestellt werden?</summary>
         public bool Wiederherstellbar =>
-            (Aktion == Katalogabgleich.AKTION_BEHALTEN || Aktion == Katalogabgleich.AKTION_ANGEBUNDEN_BEHALTEN) && Id > 0;
+            Aktion == Katalogabgleich.AKTION_BEHALTEN && Id > 0;
 
         internal long Id { get; set; }
         internal Katalogpaketsatz Satz { get; set; }
@@ -107,7 +109,7 @@ namespace WindowsFormsApplication1
         /// <summary>Aktualisierte Sätze.</summary>
         public int Aktualisiert { get; internal set; }
 
-        /// <summary>Behaltene Anpassungen (samt den angebundenen Zeilen mit abweichendem Inhalt).</summary>
+        /// <summary>Behaltene Anpassungen.</summary>
         public int Behalten { get; internal set; }
 
         /// <summary>An eine gleichnamige Anwenderzeile angebundene Sätze (gleicher und abweichender Inhalt).</summary>
@@ -175,8 +177,8 @@ namespace WindowsFormsApplication1
         /// <summary>Gleichnamige Anwenderzeile mit dem Inhalt des Paketsatzes angebunden (Schlüssel, Prüfsumme, gesperrt).</summary>
         public const string AKTION_ANGEBUNDEN = "ANGEBUNDEN";
 
-        /// <summary>Gleichnamige Anwenderzeile angebunden, ihr abweichender Inhalt behalten.</summary>
-        public const string AKTION_ANGEBUNDEN_BEHALTEN = "ANGEBUNDEN_BEHALTEN";
+        /// <summary>Gleichnamige Anwenderzeile angebunden, ihr abweichender Inhalt mit dem Paketsatz überschrieben.</summary>
+        public const string AKTION_ANGEBUNDEN_UEBERSCHRIEBEN = "ANGEBUNDEN_UEBERSCHRIEBEN";
 
         /// <summary>Satz in der Auslieferung entfallen, bleibt stehen.</summary>
         public const string AKTION_AUSGELAUFEN = "AUSGELAUFEN";
@@ -333,8 +335,11 @@ namespace WindowsFormsApplication1
                         {
                             case AKTION_EINGEFUEGT: Einfuegen(v, t, z.Satz); break;
                             case AKTION_AKTUALISIERT: Schreiben(v, t, z.Id, z.Satz); break;
-                            case AKTION_ANGEBUNDEN:
-                            case AKTION_ANGEBUNDEN_BEHALTEN: Anbinden(v, t, z.Id, z.Satz); break;
+                            case AKTION_ANGEBUNDEN: Anbinden(v, t, z.Id, z.Satz); break;
+                            case AKTION_ANGEBUNDEN_UEBERSCHRIEBEN:
+                                Anbinden(v, t, z.Id, z.Satz);   // prüft, dass die Zeile noch ohne Schlüssel ist
+                                Schreiben(v, t, z.Id, z.Satz);
+                                break;
                             case AKTION_AUSGELAUFEN:
                                 v.Ausfuehren("UPDATE \"" + t.Tabelle + "\" SET \"" + Katalogfassung.SPALTE_AUSGELAUFEN +
                                              "\" = 1 WHERE ID = ?", new DbParam("@id", z.Id));
@@ -391,10 +396,9 @@ namespace WindowsFormsApplication1
                                     Katalogfassung.PruefsummeDerZeile(t, spalten, ziel, Katalogfassung.LeseOhneVorgang),
                                     s.Pruefsumme, StringComparison.Ordinal);
                                 e.Angebunden++;
-                                if (!gleich) e.Behalten++;
                                 e.Eintraege.Add(new KatalogabgleichEintrag(t.Tabelle, s.Schluessel, Katalogfassung.Name(t, ziel),
-                                    gleich ? AKTION_ANGEBUNDEN : AKTION_ANGEBUNDEN_BEHALTEN,
-                                    gleich ? MyResource.Resource.KABG_HINWEIS_ANGEBUNDEN : MyResource.Resource.KABG_HINWEIS_ANGEBUNDEN_BEHALTEN)
+                                    gleich ? AKTION_ANGEBUNDEN : AKTION_ANGEBUNDEN_UEBERSCHRIEBEN,
+                                    gleich ? MyResource.Resource.KABG_HINWEIS_ANGEBUNDEN : MyResource.Resource.KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN)
                                 { Satz = s, Id = zielId });
                                 continue;
                             }
@@ -460,13 +464,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Aktion der Protokollzeile. <c>Tab_Katalogabgleich.Aktion</c> lässt nur die Aktionen seines
-        /// Schemaschritts zu; ein angebundener Satz steht deshalb als <c>AKTUALISIERT</c> (gleicher Inhalt)
-        /// bzw. <c>BEHALTEN</c> (abweichender Inhalt) im Protokoll, kenntlich an seinem eigenen Hinweis.
+        /// Schemaschritts zu; ein angebundener Satz steht deshalb als <c>AKTUALISIERT</c> im Protokoll —
+        /// gleicher Inhalt wie überschriebener Inhalt —, kenntlich an seinem eigenen Hinweis.
         /// </summary>
         internal static string Protokollaktion(string aktion) => aktion switch
         {
             AKTION_ANGEBUNDEN => AKTION_AKTUALISIERT,
-            AKTION_ANGEBUNDEN_BEHALTEN => AKTION_BEHALTEN,
+            AKTION_ANGEBUNDEN_UEBERSCHRIEBEN => AKTION_AKTUALISIERT,
             _ => aktion,
         };
 
@@ -554,6 +558,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Bindet eine Anwenderzeile an einen Paketsatz: Schlüssel, Prüfsumme des Paketsatzes, gesperrt, nicht
         /// ausgelaufen. ID, Werte und Kindzeilen bleiben — Projektkopien und Zuordnungen über die ID stimmen weiter.
+        /// Bei abweichendem Inhalt folgt im selben Vorgang <see cref="Schreiben"/> mit den Werten des Pakets.
         /// </summary>
         private static void Anbinden(DbVorgang v, Katalogtabelle t, long id, Katalogpaketsatz s)
         {
@@ -714,7 +719,8 @@ namespace WindowsFormsApplication1
             zeilen.TryGetValue(s.Schluessel, out DataRow r);
             if (r == null && Bezeichner(t).Contains(s.Bezeichner))
             {
-                // Noch nicht angebunden („Nur prüfen"): Die eine anbindbare Zeile bekommt den Auslieferungsstand.
+                // Noch nicht angebunden (kein Abgleich seit dieser Fassung): Die eine anbindbare Zeile bekommt den
+                // Auslieferungsstand — wie es der Abgleich täte; sonst benannt abgelehnt, nie eingefügt.
                 (DataRow ziel, string hinweis) = Anbindbar(t, ZeilenNachName(t, spalten), s);
                 if (ziel == null)
                     return (false, hinweis ?? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KABG_HINWEIS_NAME_BELEGT, s.Bezeichner));

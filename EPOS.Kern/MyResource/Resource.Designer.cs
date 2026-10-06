@@ -41866,11 +41866,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die angebunden, behalten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die angebunden, Lieferstand übernommen ähnelt.
         /// </summary>
-        public static string KABG_AKTION_ANGEBUNDEN_BEHALTEN {
+        public static string KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN {
             get {
-                return ResourceManager.GetString("KABG_AKTION_ANGEBUNDEN_BEHALTEN", resourceCulture);
+                return ResourceManager.GetString("KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN", resourceCulture);
             }
         }
         
@@ -42046,11 +42046,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ihr gleichnamiger Satz weicht vom Auslieferungsstand ab. Er ist jetzt dem Auslieferungssatz zugeordnet und gesperrt; Ihre Werte bleiben, der Auslieferungsstand liegt als Vergleich vor. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihr gleichnamiger Satz weicht vom Auslieferungsstand ab. Er ist jetzt dem Auslieferungssatz zugeordnet, gesperrt und hat den Lieferstand übernommen (Ihre abweichenden Werte sind in der Sicherung); künftige Fassungen führen ihn nach. ähnelt.
         /// </summary>
-        public static string KABG_HINWEIS_ANGEBUNDEN_BEHALTEN {
+        public static string KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN {
             get {
-                return ResourceManager.GetString("KABG_HINWEIS_ANGEBUNDEN_BEHALTEN", resourceCulture);
+                return ResourceManager.GetString("KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN", resourceCulture);
             }
         }
         

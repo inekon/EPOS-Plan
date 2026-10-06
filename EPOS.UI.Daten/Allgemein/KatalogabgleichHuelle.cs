@@ -175,7 +175,7 @@ namespace WindowsFormsApplication1
                 case Katalogabgleich.AKTION_AKTUALISIERT: return MyResource.Resource.KABG_AKTION_AKTUALISIERT;
                 case Katalogabgleich.AKTION_BEHALTEN: return MyResource.Resource.KABG_AKTION_BEHALTEN;
                 case Katalogabgleich.AKTION_ANGEBUNDEN: return MyResource.Resource.KABG_AKTION_ANGEBUNDEN;
-                case Katalogabgleich.AKTION_ANGEBUNDEN_BEHALTEN: return MyResource.Resource.KABG_AKTION_ANGEBUNDEN_BEHALTEN;
+                case Katalogabgleich.AKTION_ANGEBUNDEN_UEBERSCHRIEBEN: return MyResource.Resource.KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN;
                 case Katalogabgleich.AKTION_AUSGELAUFEN: return MyResource.Resource.KABG_AKTION_AUSGELAUFEN;
                 case Katalogabgleich.AKTION_WIEDERHERGESTELLT: return MyResource.Resource.KABG_AKTION_WIEDERHERGESTELLT;
                 case Katalogabgleich.AKTION_KEIN_PAKET: return MyResource.Resource.KABG_AKTION_KEIN_PAKET;
