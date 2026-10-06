@@ -161,7 +161,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Steckbrief eines Projekts (Anwenderwunsch 06.10.2026) — der Block unter
+        /// Der Steckbrief eines Projekts (Anwenderwunsch 06.10.2026) — der Block zum markierten Projekt
         /// der Projektliste des Assistenten; <c>null</c>, wenn es das Projekt nicht gibt.
         ///
         /// <para><b>Eine Abfrage, zwei Unterabfragen.</b> Zahl der Varianten und juengster

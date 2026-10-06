@@ -273,8 +273,8 @@ namespace WindowsFormsApplication1
     public sealed record LoeschBefund(LoeschStand Stand, string Projektname, string Fehlertext = "", int Anzahl = 1);
 
     /// <summary>
-    /// Der Steckbrief eines Projekts fuer den Block unter der Projektliste des
-    /// Assistenten (Anwenderwunsch 06.10.2026): was die Datenbank zu einem Projekt
+    /// Der Steckbrief des in der Projektliste des Assistenten markierten Projekts
+    /// (Anwenderwunsch 06.10.2026): was die Datenbank zu einem Projekt
     /// fuehrt, in EINER Abfrage gelesen. Ein Feld, das die Datenbank nicht fuehrt,
     /// bleibt leer bzw. <c>null</c> — die Oberflaeche laesst es dann weg.
     /// </summary>

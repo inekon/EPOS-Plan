@@ -6,7 +6,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <c>ProjektCtrl.Steckbrief</c> gegen die Testdatenbank (Anwenderwunsch 06.10.2026:
-    /// Projektdaten unter der Projektliste des Assistenten).
+    /// Projektdaten zum markierten Projekt im Assistenten).
     /// </summary>
     [Collection("Testdatenbank")]
     public class ProjektSteckbriefTests
