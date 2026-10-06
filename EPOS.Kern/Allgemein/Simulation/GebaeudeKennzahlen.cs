@@ -343,6 +343,10 @@ namespace WindowsFormsApplication1
             if (AufheizzeitLaengsteH is int l) yield return Paar(nameof(AufheizzeitLaengsteH), l);
             if (AufheizspruengeAus is int w4) yield return Paar(nameof(AufheizspruengeAus), w4);
             if (HeizleistungMaxStundenH is double k) yield return Paar(nameof(HeizleistungMaxStundenH), k);
+            // E97 (Festlegung 41): die Teile der Auslegungsgröße wie die Spalten Auslegungsheizlast_Kw und
+            // Aufheizzuschlag_Kw - nur am Gebäude gesetzt (Aufheizwerte), sonst entsteht kein Schlüssel.
+            if (AuslegungsheizlastKw is double hl) yield return Paar(nameof(AuslegungsheizlastKw), hl);
+            if (AufheizzuschlagKw is double rh) yield return Paar(nameof(AufheizzuschlagKw), rh);
         }
 
         private static KeyValuePair<string, double> Paar(string k, double v) => new KeyValuePair<string, double>(k, v);
