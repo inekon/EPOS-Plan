@@ -161,6 +161,93 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Steckbrief eines Projekts (Anwenderwunsch 06.10.2026) — der Block unter
+        /// der Projektliste des Assistenten; <c>null</c>, wenn es das Projekt nicht gibt.
+        ///
+        /// <para><b>Eine Abfrage, zwei Unterabfragen.</b> Zahl der Varianten und juengster
+        /// Simulationslauf sind je ein Zugriff ueber die Projekt-Id; beide Tabellen sind
+        /// klein. Fehlt <c>Tab_Variante</c> oder <c>Tab_Ergebnis</c> (Altbestand), entfaellt
+        /// der jeweilige Teil, statt die ganze Abfrage zu brechen.</para>
+        ///
+        /// <para>Die Daten werden still gelesen: Ein Fehler ist keine Meldung wert, der
+        /// Block bleibt dann einfach weg.</para>
+        /// </summary>
+        public static ProjektSteckbrief Steckbrief(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                bool mitVarianten = VariantentabelleLesbar();
+                bool mitErgebnis;
+                try { mitErgebnis = StilleDb.TabelleVorhanden("Tab_Ergebnis"); }
+                catch { mitErgebnis = false; }
+
+                string sql =
+                    "SELECT p.ID, p.Projektname, p.Beschreibung, p.Kunde, p.Bearbeiter, " +
+                    "p.Erstelldatum, p.Aenderungsdatum, p.ID_Klimaregion" +
+                    (mitVarianten
+                        ? ", (SELECT s.Projektname FROM " + SchemaKatalog.TAB_VARIANTE + " v " +
+                          "INNER JOIN Tab_Projekt s ON s.ID = v.ID_ProjektRef " +
+                          "WHERE v.ID_Projekt = p.ID LIMIT 1) AS Stammname" +
+                          ", (SELECT COUNT(*) FROM " + SchemaKatalog.TAB_VARIANTE + " w " +
+                          "WHERE w.ID_ProjektRef = p.ID) AS Varianten"
+                        : "") +
+                    (mitErgebnis
+                        ? ", (SELECT MAX(e.Zeitstempel) FROM Tab_Ergebnis e " +
+                          "WHERE e.ID_Projekt = p.ID) AS LetzteSimulation"
+                        : "") +
+                    " FROM Tab_Projekt p WHERE p.ID = ?";
+
+                DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+
+                int idKlima = r["ID_Klimaregion"] != DBNull.Value ? Convert.ToInt32(r["ID_Klimaregion"]) : 0;
+                string klima = "";
+                if (idKlima > 0)
+                {
+                    try { klima = KlimaregionStammCtrl.NameZuProjektregion(idKlima, idProjekt) ?? ""; }
+                    catch { klima = ""; }
+                }
+
+                return new ProjektSteckbrief(
+                    idProjekt,
+                    SpaltenText(dt, r, "Projektname"),
+                    SpaltenText(dt, r, "Beschreibung").Trim(),
+                    SpaltenText(dt, r, "Kunde").Trim(),
+                    SpaltenText(dt, r, "Bearbeiter").Trim(),
+                    SpaltenDatum(dt, r, "Erstelldatum"),
+                    SpaltenDatum(dt, r, "Aenderungsdatum"),
+                    klima.Trim(),
+                    SpaltenText(dt, r, "Stammname"),
+                    SpaltenZahl(dt, r, "Varianten"),
+                    SpaltenDatum(dt, r, "LetzteSimulation"));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Projektsteckbrief konnte nicht gelesen werden: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Datum einer Spalte; <c>null</c>, wenn sie fehlt, leer oder nicht lesbar ist.
+        /// SQLite liefert die Zeitstempel als Text („2026-08-19 00:00:00"); er wird
+        /// kulturunabhaengig gelesen.
+        /// </summary>
+        private static DateTime? SpaltenDatum(DataTable dt, DataRow r, string spalte)
+        {
+            if (!dt.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
+            object v = r[spalte];
+            if (v is DateTime d) return d;
+            return DateTime.TryParse(Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture),
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out DateTime t)
+                ? t
+                : (DateTime?)null;
+        }
+
+        /// <summary>
         /// Die <b>STAMM-Id</b> der Klimaregion des AKTIVEN Projekts
         /// (<c>Tab_Applikation.ID_Projekt</c>), 0 ohne Projekt oder ohne Region - die
         /// Vorbelegung eines neuen Projekts (Nutzerauftrag 02.09.2026, Merge 5).
