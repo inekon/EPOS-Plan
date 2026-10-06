@@ -346,11 +346,46 @@ namespace WindowsFormsApplication1
         public string Berichtsszenario(BerichtsKonfiguration konfig, out List<string> ohneErgebnis)
         {
             ohneErgebnis = new List<string>();
+            // VB‑E1 (VB‑Q3 a): In VALERI-Darstellung ist das Leitszenario fest Erwartet — gleich, welches Szenario die
+            // Konfiguration daneben trägt; die Rückfallregel einer Einzelwahl greift dann nicht.
+            if (IstValeri(konfig)) return WirtschaftlichkeitSzenario.ERWARTET;
             string szenario = WirtschaftlichkeitSzenario.Normiere(konfig?.Szenario);
             if (szenario == WirtschaftlichkeitSzenario.ERWARTET) return szenario;
             foreach (VariantenDaten v in _daten.Varianten)
                 if (ImSzenario(v.IdProjekt, szenario) == null) ohneErgebnis.Add(v.IstStamm ? "Stamm" : v.Anzeige);
             return ohneErgebnis.Count == 0 ? szenario : WirtschaftlichkeitSzenario.ERWARTET;
+        }
+
+        /// <summary>
+        /// Steht der Wirtschaftlichkeitsbericht in VALERI-Darstellung (<see cref="BerichtsKonfiguration.IstValeri"/>,
+        /// Etappe VB‑E1)? Ohne Konfiguration: nein.
+        /// </summary>
+        public static bool IstValeri(BerichtsKonfiguration konfig)
+        {
+            return konfig != null && konfig.IstValeri;
+        }
+
+        /// <summary>
+        /// Die Spaltenfolge der Tafel „Kennzahlen je Szenario“ (VB‑Q2 a): Ungünstig, Erwartet, Günstig — dieselbe Folge
+        /// wie die Szenarienübersicht.
+        /// </summary>
+        public static readonly IReadOnlyList<string> ValeriSpalten = new[]
+        {
+            WirtschaftlichkeitSzenario.WORST, WirtschaftlichkeitSzenario.ERWARTET, WirtschaftlichkeitSzenario.BEST,
+        };
+
+        /// <summary>
+        /// Die Szenarien der Tafel „Kennzahlen je Szenario“ eines Stands (VB‑Q4 a, Regel E31): alle drei
+        /// (<see cref="ValeriSpalten"/>), wenn der Stand Günstig UND Ungünstig trägt; sonst allein Erwartet — die ganze
+        /// Tafel des Stands steht dann im Erwartungsfall, und <paramref name="fehlend"/> nennt die fehlenden Szenarien
+        /// (sonst leer).
+        /// </summary>
+        public IReadOnlyList<string> ValeriSzenarien(int idProjekt, out List<string> fehlend)
+        {
+            fehlend = new List<string>();
+            foreach (string sz in new[] { WirtschaftlichkeitSzenario.WORST, WirtschaftlichkeitSzenario.BEST })
+                if (ImSzenario(idProjekt, sz) == null) fehlend.Add(sz);
+            return fehlend.Count == 0 ? ValeriSpalten : new[] { WirtschaftlichkeitSzenario.ERWARTET };
         }
 
         /// <summary>Die Nachweiszeile des Parametersatzes in einer Kultur (<see cref="WirtschaftlichkeitParameter.Nachweis"/>).</summary>
