@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bericht – Variante B</title>
+<!-- Mockup zum Anwenderwunsch vom 06.10.2026 (Berichte & Kosten › Bericht, Anordnung).
+     Statisch; Token wörtlich aus EPOS.UI/wwwroot/epos-ui.css. Gestrichelt markiert: die
+     Erfolgszeile nach einem Lauf (Zustand). Das Fenster füllt den Sichtbereich; der Inhalt
+     rollt für sich, wie im Reiterblatt. Unter dem Fenster steht die Beschreibung. -->
+<style>
+/* Token woertlich aus EPOS.UI/wwwroot/epos-ui.css (:root) - keine neue Farbe. */
+:root {
+  --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --epos-schriftgroesse: 13px;
+  --epos-schriftgroesse-kartentitel: 16px;
+  --epos-schriftgroesse-bereichsreiter: 15px;
+  --epos-rahmen: #b4b2a9;
+  --epos-rahmen-leise: #d9d7cf;
+  --epos-text: #2c2c2a;
+  --epos-text-leise: #5f5e5a;
+  --epos-text-sehr-leise: #888780;
+  --epos-flaeche: #f5f4ef;
+  --epos-flaeche-hell: #ffffff;
+  --epos-quelle-rahmen: #378ADD;
+  --epos-quelle-text: #185FA5;
+  --epos-warn-rahmen: rgb(200, 138, 0);
+  --epos-warn-flaeche: rgb(255, 246, 224);
+  --epos-warn-text: rgb(138, 91, 0);
+  --epos-ampel-gruen: #007800;
+  --epos-karte-rahmen: #D1D5DB;
+  --epos-karte-flaeche: #ffffff;
+  --epos-karte-flaeche-hover: #EFF6FF;
+  --epos-karte-titel: #0F1F3D;
+  --epos-karte-text: #5A6270;
+  --epos-marke: #005aa0;
+  --epos-rand: 10px;
+  --epos-ecke: 6px;
+  --epos-karte-rand: 16px;
+  --epos-touchziel: 44px;
+  --epos-start-kasten-rahmen: #b4becd;
+  --epos-start-leiste-flaeche: #f0f0f0;
+  --epos-start-reiter-aktiv: #005aa0;
+  --epos-start-text-leise: #696969;
+  /* .epos-warnbanner--erfolg (epos-ui.css Z. 483) */
+  --mock-erfolg-rahmen: rgb(34, 139, 34);
+  --mock-erfolg-flaeche: rgb(240, 250, 240);
+  --mock-erfolg-text: rgb(24, 98, 24);
+  --mock-markierung: #D85A30;              /* = --epos-senke-rahmen, nur Mockup-Markierung */
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--epos-karte-flaeche); color: var(--epos-text);
+       font: var(--epos-schriftgroesse)/1.4 var(--epos-schrift); }
+
+/* ---- Fenster: fuellt den Sichtbereich, der Inhalt rollt fuer sich -------- */
+.fenster { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.app-kopf { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px 4px; }
+.app-kopf .name { color: var(--epos-marke); font-weight: 700; font-size: 18px; line-height: 1; }
+.app-kopf .zeile { color: var(--epos-start-text-leise); font-size: 11px; }
+.pille { width: 28px; height: 28px; border: 1px solid var(--epos-rahmen); border-radius: 14px;
+         display: grid; place-items: center; font-weight: 700; color: var(--epos-quelle-text); }
+.band { display: flex; gap: 10px; padding: 4px 12px 8px; flex-wrap: wrap; }
+.kasten { border: 1px solid var(--epos-start-kasten-rahmen); border-radius: 6px; padding: 6px 10px;
+          display: flex; gap: 10px; align-items: center; }
+.kasten b { white-space: nowrap; }
+.kasten .feld { border: 1px solid var(--epos-rahmen-leise); padding: 5px 8px; min-width: 180px; }
+.kasten--breit { flex: 1 1 auto; }
+.ok { color: var(--epos-ampel-gruen); }
+.hauptleiste { display: flex; flex-wrap: wrap; background: var(--epos-start-leiste-flaeche); padding: 0 8px;
+               border-top: 1px solid var(--epos-rahmen-leise); }
+.hauptleiste span { min-height: 40px; padding: 0 14px; display: flex; align-items: center; font-weight: 600; }
+.hauptleiste .aktiv { background: var(--epos-start-reiter-aktiv); color: #fff; }
+
+/* ---- Bereichszeile (#757): eigene leise Flaeche, 15 px, aktiver Reiter hell */
+.bereich { display: flex; align-items: stretch; gap: 2px; padding: 4px 8px 0 4px; flex-wrap: wrap;
+           background: var(--epos-flaeche); border-bottom: 2px solid var(--epos-rahmen); }
+.bereich .rk { min-height: 56px; padding: 6px 18px 4px; border: 1px solid transparent; border-bottom: 3px solid transparent;
+               border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+               display: flex; flex-direction: column; justify-content: center; color: var(--epos-text); }
+.bereich .rt { font-size: var(--epos-schriftgroesse-bereichsreiter); font-weight: 600; }
+.bereich .rs { font-size: 12px; color: var(--epos-text-leise); white-space: nowrap; }
+.bereich .rk--aktiv { background: var(--epos-flaeche-hell); border-bottom-color: var(--epos-quelle-rahmen); }
+.bereich .rk--aktiv .rt { color: var(--epos-quelle-text); }
+.bereich .rechts { margin-left: auto; display: flex; align-items: center; gap: 10px; padding: 0 8px; }
+.bereich .stamm { font-weight: 700; color: var(--epos-karte-titel); }
+
+/* ---- Inhalt ------------------------------------------------------------ */
+.inhalt { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px 16px 16px; }
+.schluss { display: flex; justify-content: space-between; padding: 8px 12px; border-top: 1px solid var(--epos-rahmen-leise);
+           background: var(--epos-start-leiste-flaeche); }
+
+.untergruppe { margin: 0 0 4px; font-weight: 700; }
+.karte { background: var(--epos-karte-flaeche); border: 1px solid var(--epos-karte-rahmen);
+         border-radius: var(--epos-ecke); padding: var(--epos-karte-rand); display: flex; flex-direction: column;
+         gap: 8px; min-width: 0; }
+.karte > h2 { margin: 0; font-size: var(--epos-schriftgroesse-kartentitel); color: var(--epos-karte-titel); }
+.block { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.trenn { border: 0; border-top: 1px solid var(--epos-rahmen-leise); margin: 4px 0; width: 100%; }
+
+.knopf { min-height: var(--epos-touchziel); min-width: 44px; padding: 4px 12px; font: inherit; color: var(--epos-text);
+         background: var(--epos-flaeche); border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); white-space: nowrap; }
+.knopf--primaer { color: #fff; background: var(--epos-karte-titel); border-color: var(--epos-karte-titel); font-weight: 600; min-width: 140px; }
+.leiste { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.leise { color: var(--epos-text-leise); }
+.herleitung { margin: 0; color: var(--epos-text-leise); }
+
+/* Raster (QuickGrid) */
+.raster-huelle { border: 1px solid var(--epos-rahmen-leise); border-radius: 4px; overflow: auto; }
+table.raster { width: 100%; border-collapse: collapse; }
+.raster th, .raster td { padding: 4px 10px; text-align: left; white-space: nowrap; height: 44px;
+                         border-bottom: 1px solid var(--epos-rahmen-leise); }
+.raster th { background: var(--epos-flaeche); font-weight: 600; height: 36px; }
+.raster tr:last-child td { border-bottom: 0; }
+.schalter { display: inline-block; width: 36px; height: 20px; border-radius: 10px; background: var(--epos-quelle-text);
+            position: relative; vertical-align: middle; }
+.schalter::after { content: ""; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 8px; background: #fff; }
+.schalter--fest { background: var(--epos-text-sehr-leise); }
+
+/* Felder */
+.feldzeile { display: flex; align-items: center; gap: 8px; min-height: var(--epos-touchziel); flex-wrap: wrap; }
+.feldzeile > label { white-space: nowrap; }
+.wahl { display: inline-flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px;
+        padding: 4px 8px; border: 1px solid var(--epos-rahmen); border-radius: 4px; background: #fff; min-width: 150px; flex: 1 1 200px; }
+.wahl::after { content: "▾"; color: var(--epos-text-leise); }
+.pfad { flex: 1 1 120px; min-height: 36px; padding: 7px 8px; border: 1px solid var(--epos-rahmen); border-radius: 4px; background: #fff;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.kennzeichen { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px;
+               background: var(--epos-flaeche); border: 1px solid var(--epos-rahmen-leise); color: var(--epos-text-leise); font-size: 12px; }
+.pruefzeile { display: flex; align-items: baseline; gap: 6px; }
+.pruefzeile .symbol { color: var(--epos-ampel-gruen); font-weight: 700; }
+
+/* Mehrfachauswahl (Haekchen), 44-px-Zeilen */
+.haken { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+.haken label { display: flex; align-items: center; gap: 8px; min-height: var(--epos-touchziel); }
+.kaestchen { width: 20px; height: 20px; border-radius: 3px; border: 1px solid var(--epos-rahmen); background: #fff;
+             display: inline-grid; place-items: center; font-size: 13px; color: #fff; flex: 0 0 20px; }
+.kaestchen--an { background: var(--epos-quelle-text); border-color: var(--epos-quelle-text); }
+.haken label.weich { color: var(--epos-text-sehr-leise); cursor: help; }
+.haken label.weich .kaestchen--an { background: var(--epos-text-sehr-leise); border-color: var(--epos-text-sehr-leise); }
+.haken label.weich small { color: var(--epos-text-sehr-leise); }
+
+/* Optionsgruppe */
+.optionen { display: flex; gap: 4px 18px; flex-wrap: wrap; }
+.optionen label { display: flex; align-items: center; gap: 8px; min-height: var(--epos-touchziel); }
+.rund { width: 18px; height: 18px; border-radius: 9px; border: 1px solid var(--epos-rahmen); background: #fff; display: inline-block; position: relative; }
+.rund--an { border-color: var(--epos-quelle-text); }
+.rund--an::after { content: ""; position: absolute; inset: 4px; border-radius: 5px; background: var(--epos-quelle-text); }
+
+/* Erfolgszeile (Warnbanner Stufe Erfolg mit Aktion "Oeffnen") */
+.erfolg { display: flex; align-items: center; gap: 10px; border: 1px solid var(--mock-erfolg-rahmen);
+          background: var(--mock-erfolg-flaeche); color: var(--mock-erfolg-text); border-radius: var(--epos-ecke);
+          padding: 4px 4px 4px 12px; }
+.erfolg .t { flex: 1 1 auto; min-width: 0; }
+.erfolg .knopf { background: #fff; }
+.hinweisklappe { display: flex; align-items: center; gap: 8px; min-height: var(--epos-touchziel); padding: 0 12px;
+                 border: 1px solid var(--epos-warn-rahmen); background: var(--epos-warn-flaeche); color: var(--epos-warn-text);
+                 border-radius: var(--epos-ecke); }
+.zahlmarke { background: var(--epos-warn-rahmen); color: #fff; border-radius: 9px; padding: 0 7px; font-weight: 700; font-size: 12px; }
+.hinweisklappe .rechts { margin-left: auto; text-decoration: underline; }
+
+/* Mockup-Hilfen */
+.marke { outline: 2px dashed var(--mock-markierung); outline-offset: 3px; }
+.notiz { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; color: var(--epos-text); }
+.notiz h1 { font-size: 20px; color: var(--epos-karte-titel); margin: 0 0 6px; }
+.notiz h2 { font-size: 15px; color: var(--epos-karte-titel); margin: 18px 0 4px; }
+.notiz li { margin: 2px 0; }
+.ausloesen { flex-wrap: wrap; gap: 6px 14px; }
+.ausloesen .herleitung { flex: 1 1 200px; }
+
+.spalten { display: grid; grid-template-columns: minmax(0, 1fr) clamp(420px, 36%, 560px); gap: 16px; align-items: start; }
+.spalte { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.haken { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important; }
+@media (max-width: 899px) { .spalten { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="fenster">
+
+<div class="app-kopf">
+  <div><div class="name">EPOS-Plan</div><div class="zeile">Energieplanungs-Software · Energie · Planung · Optimierung · Simulation</div></div>
+  <div class="pille" aria-hidden="true">i</div>
+</div>
+<div class="band">
+  <div class="kasten kasten--breit"><b>Klimaregion auswählen:</b><span class="feld">Beispielort (TRY 2045)</span><span class="leise">Gilt für alle Berechnungen im Projekt</span></div>
+  <div class="kasten"><b class="ok">✓</b><b>Projekt:</b><span class="feld">Beispielprojekt</span></div>
+</div>
+<nav class="hauptleiste" aria-label="Hauptreiter"><span>Projekt</span><span>Wärmebedarf</span><span>Strombedarf</span><span>Energieerzeuger</span><span>Simulation</span><span class="aktiv">Berichte &amp; Kosten</span></nav>
+<div class="bereich" role="tablist" aria-label="Berichte und Kosten">
+  <div class="rk" role="tab"><span class="rt">Übersicht</span><span class="rs">2 Versionen · simuliert</span></div>
+  <div class="rk" role="tab"><span class="rt">Kosten</span><span class="rs">Träger gepflegt</span></div>
+  <div class="rk" role="tab"><span class="rt">Wirtschaftlichkeit</span><span class="rs">Szenario Erwartet</span></div>
+  <div class="rk rk--aktiv" role="tab" aria-selected="true"><span class="rt">Bericht</span><span class="rs">zuletzt 06.10. 10:42</span></div>
+  <div class="rechts"><span class="stamm">Stamm: Beispielprojekt</span><span class="pille" aria-hidden="true">?</span></div>
+</div>
+<main class="inhalt">
+<div class="spalten">
+  <section class="spalte" aria-label="Was wird berichtet">
+    <div class="karte"><h2>Varianten</h2>
+<p class="untergruppe">Varianten (Referenz: Stamm, fest gewählt):</p>
+<div class="raster-huelle"><table class="raster">
+  <thead><tr><th style="width:56px"></th><th>Art</th><th>Bezeichner</th><th>Projektname</th><th>Stromspeicher</th><th>Simulation</th></tr></thead>
+  <tbody>
+    <tr><td><span class="schalter schalter--fest" title="Der Stamm ist die Referenz und immer dabei"></span></td><td>Stamm</td><td>(Stammprojekt)</td><td>Beispielprojekt</td><td>ohne</td><td class="ok">aktuell</td></tr>
+    <tr><td><span class="schalter"></span></td><td>Variante</td><td>mit Wärmepumpe</td><td>Beispielprojekt mit Wärmepumpe</td><td>ohne</td><td class="ok">aktuell</td></tr>
+  </tbody>
+</table></div>
+<div class="leiste"><button class="knopf">Alle</button><button class="knopf">Keine</button></div></div>
+    <div class="karte">
+<h2>Inhalt</h2><p class="untergruppe">Berichtsbausteine:</p>
+<div class="haken" style="grid-template-columns: repeat(2, minmax(0, 1fr))"><label class="weich" aria-disabled="true" title="Das Deckblatt kommt aus der Vorlage – das Häkchen bleibt gespeichert"><span class="kaestchen kaestchen--an">✓</span><span>Deckblatt <small>(aus der Vorlage)</small></span></label><label><span class="kaestchen kaestchen--an">✓</span><span>Inhaltsverzeichnis</span></label><label><span class="kaestchen kaestchen--an">✓</span><span>Projektbeschreibung</span></label><label><span class="kaestchen kaestchen--an">✓</span><span>Komponenten &amp; Varianten</span></label><label><span class="kaestchen kaestchen--an">✓</span><span>Ergebnisse je Variante</span></label><label><span class="kaestchen kaestchen--an">✓</span><span>Variantenvergleich</span></label><label><span class="kaestchen kaestchen--an">✓</span><span>Wirtschaftlichkeit</span></label><label><span class="kaestchen kaestchen--an">✓</span><span>Anhang</span></label></div>
+<div class="feldzeile"><label>Szenario der Wirtschaftlichkeit:</label><span class="wahl">Erwartet</span></div></div>
+  </section>
+  <section class="spalte" aria-label="Wie und wohin">
+    <div class="karte"><h2>Vorlage</h2>
+<div class="feldzeile"><label>Word-Vorlage:</label><span class="wahl">Standard (EPOS-Plan)</span><span class="kennzeichen" title="mitgeliefert, schreibgeschützt">🔒 mitgeliefert</span></div>
+<div class="leiste"><button class="knopf">Neue Vorlage…</button><button class="knopf">Hinzufügen…</button><button class="knopf">Prüfen</button><button class="knopf">Platzhalter…</button><button class="knopf" aria-label="Weitere Handlungen">…</button></div>
+<div class="pruefzeile" role="status"><span class="symbol" aria-hidden="true">✓</span><p class="herleitung">geprüft, 36 Platzhalter, keine Befunde</p></div></div>
+    <div class="karte"><h2>Ausgabe</h2>
+<div class="optionen" role="radiogroup" aria-label="Ausgabe"><label><span class="rund rund--an"></span>Word</label><label><span class="rund"></span>Excel</label><label><span class="rund"></span>Beide</label></div>
+<div class="feldzeile"><label>Zielordner:</label><span class="pfad">C:\Users\…\Documents</span><button class="knopf">Durchsuchen…</button></div>
+<div class="leiste ausloesen"><button class="knopf knopf--primaer">Erstellen</button><p class="herleitung">Jeder Bericht rechnet neu: alle gewählten Varianten werden simuliert und wirtschaftlich bewertet.</p></div>
+<div class="erfolg marke" role="status"><span class="t">Bericht erstellt: Beispielprojekt_Bericht.docx — Vorlage „Standard (EPOS-Plan)“</span><button class="knopf">Öffnen</button></div>
+<div class="hinweisklappe"><span class="zahlmarke">3</span>3 Hinweise zum Bericht<span class="rechts">anzeigen</span></div></div>
+  </section>
+</div>
+</main>
+<div class="schluss"><button class="knopf">◀ Zurück</button><button class="knopf">Weiter ▶</button></div>
+</div>
+<section class="notiz">
+<h1>Variante B — Konfiguration links, Ausgabe rechts</h1>
+<p>Links, was in den Bericht kommt (Karte „Varianten“, Karte „Inhalt“ mit Bausteinen und Szenario); rechts in einer Spalte fester Breite (<code>clamp(420px, 36 %, 560px)</code>) wie es aussieht (Karte „Vorlage“) und wohin es geht (Karte „Ausgabe“: Format, Zielordner, <b>Erstellen</b> mit Erklärzeile, Erfolgszeile, Hinweise). Die rechte Spalte ist der Bedienblock der Hausregel: ein Hauptknopf mit leiser Erklärzeile.</p>
+<h2>Lesereihenfolge</h2><ol><li>Varianten</li><li>Inhalt: Bausteine, Szenario</li><li>Vorlage</li><li>Ausgabe → <b>Erstellen</b> → Ergebnis</li></ol>
+<p>Links oben beginnen, rechts unten enden — der Weg endet beim Knopf, und das Ergebnis des Laufs steht neben ihm.</p>
+<h2>Unter 900 px</h2><p>Einspaltig in Markup-Reihenfolge: Varianten → Inhalt → Vorlage → Ausgabe/Erstellen. Das ist zugleich die fachliche Reihenfolge; keine <code>order</code>-Regel nötig.</p>
+<h2>Achtung</h2><p>Wählt der Anwender „Excel“ oder „Beide“, wächst die Karte „Vorlage“ um die Zeile „Excel-Vorlage“ und schiebt die Optionsgruppe unter dem Zeiger nach unten. Abhilfe siehe BL‑Q3 im Entwurf.</p>
+</section>
+</body>
+</html>

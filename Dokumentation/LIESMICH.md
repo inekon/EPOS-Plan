@@ -170,6 +170,7 @@ und `README.md`.
 | [`aktuell/Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md`](aktuell/Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md) | Zapfprofilgenerator: Prüfliste zum Entscheid ZU21 — die Setzungen des freien Paketteils, die keine Norm vorgibt, je Zeile mit heutigem Wert, Einheit, Fundstelle und Begründung aus den Nachträgen N12 (p)–(r), N13 und N15 (34 Zeilen: Stochastik- und Anzeigeparameter, fünf Validierungsparameter, Nichtwohn-Vorgabesatz mit fünf Werten je Kategorie, Gruppenregel und Bindung, Wohnen-Kategorien, Ecodesign-Dauer und -Bezug, Ein-/Zweifamilienhaus, Bezugs-Kaltwassertemperatur), dazu 17 numerische Kern-Setzungen zur Kenntnis, drei Gruppen ohne belegten Auslieferungswert; Spalte „Entscheid" leer | 2026-09-25 |
 | [`aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md`](aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md) | Zapfprofilgenerator: erster Rechennachweis der Stufe Z5 an gemessenen Reihen — 21 Objekte aus drei offen lizenzierten Quellen (zwölf norwegische Gebäude, zehn spanische Wohnhäuser, zwei Mehrfamilienhäuser in New York; eine vierte Quelle geprüft und ungeeignet), Rechenweg und Kalibrierung, die vier Abnahmekriterien mit Zahlen, Ursachen der roten Kriterien und sechs Folgen (V1–V5, K5); Abschnitt 7 zweiter Lauf nach den Folgen (belegte Bezugsmengen, Feiertage je Land, Band je Größenklasse als Analyse, Frage ZU35); Abschnitt 8 dritter Lauf (ZU35, Hoteltyp), Abschnitt 9 vierter Lauf (V9, V10; Datenanfragen nicht versandt); nur Verhältniszahlen, Namensnennung nach CC BY 4.0 | 2026-09-26 |
 | [`aktuell/Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md`](aktuell/Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md) | Zapfprofilgenerator: Quellendossier der Kataloge (Posten P13 der Stufe Z0) — Wertemengen `Status` und `Herkunftsart`, Provenienzpflicht, je Wertgruppe (Bedarf mit Bandbreite, Jahresgang, Wochengang, Tagesgang, Bedarfstag, Parameter, DIN-4708-Werte) die zulässigen Quellen mit Regelwerk, Ausgabe, Fundstellenart, Bilanzgrenze und Temperaturbezug, was nie in Repository und Auslieferung steht, lokale Testdaten, fiktiver Testkatalog, Wege für Auslieferungs- und Anwenderdaten, Lizenzstand; ohne Werte | 2026-09-23 |
+| [`aktuell/Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md`](aktuell/Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md) | Berichtsseite: VALERI-Darstellung des Wirtschaftlichkeitsberichts (Teil A, Fachvorgabe VB, Entscheide VB‑Q1…Q9 → Register R‑E32) und Anordnung der Bedienelemente (Teil B, Varianten A/B/C mit Mockups, Entscheide BL‑Q1…Q5), beide nach Empfehlung entschieden (06.10.2026) | 2026-10-06 |
 
 Alle HTML-Mockups liegen zusammen unter `aktuell/Mockups/` (kein Markdown, deshalb keine
 Indexzeile): `Dialog_Formel_Zahlenprobe.html` — alle acht Kostenkategorien mit Dialog,
@@ -181,8 +182,11 @@ Herkunft der Zahlen; die Rechenwege verweisen darauf —, `Ergebnis_Bandbreite_H
 `stromspeicher-optimierung-v2.html`, `Entwurf_Hydraulikuebersicht_Konfiguration.html` und
 `Zapfprofilgenerator_Mockup.html` (Konzept TWW-Zapfprofile mit Dialog, Diagrammen und Auslegungs-Ausblick),
 `Pufferspeicher_Auslegung_Mockup.html` (Pufferspeicher-Auslegung: geführter Dialog in vier Schritten mit Vorlagen,
-Beispielen, Ergebnisblatt und den zwei Einstiegen; Mockup zur Abnahme, Konzept folgt) und
-`BerichteKosten_Navigation_A.html`, `_B.html`, `_C.html` samt gleichnamigen PNG (Konzept Navigation Berichte & Kosten).
+Beispielen, Ergebnisblatt und den zwei Einstiegen; Mockup zur Abnahme, Konzept folgt),
+`BerichteKosten_Navigation_A.html`, `_B.html`, `_C.html` samt gleichnamigen PNG (Konzept Navigation Berichte & Kosten)
+und `Berichtsseite_Anordnung_A.html`, `_B.html`, `_C.html` (Konzept Berichtsseite: VALERI-Darstellung und
+Anordnung; die zugehörigen Bilder liegen beim Anwender, nicht im Repository — sie zeigen ein tatsächliches
+Projekt mit Kundennamen).
 
 ---
 
