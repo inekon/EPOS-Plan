@@ -47384,5 +47384,41 @@ chart</value>
   <data name="VF_HAT__AUFHEIZUNG" xml:space="preserve">
     <value>Data switch: has a building of the case (or of any case) been calculated with preheat optimisation?</value>
   </data>
+  <data name="ABW_MERKMAL_AUFH_SCHALTER" xml:space="preserve">
+    <value>Preheat optimisation</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_BEMESSUNG" xml:space="preserve">
+    <value>Preheat time design basis</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_ABZUG" xml:space="preserve">
+    <value>Deduction ΔT_K</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_RESERVE" xml:space="preserve">
+    <value>Preheat reserve ρ</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_ART" xml:space="preserve">
+    <value>Preheat time mode</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_AUFSCHLAG_H" xml:space="preserve">
+    <value>Surcharge (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT" xml:space="preserve">
+    <value>Surcharge (%)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_MANUELL" xml:space="preserve">
+    <value>Manual preheat time (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_WERT_MANUELL" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="BV_VGL_AUFH_GEBAEUDE" xml:space="preserve">
+    <value>Buildings per project</value>
+  </data>
+  <data name="BV_VGL_AUFH_GEBAEUDE_HINWEIS" xml:space="preserve">
+    <value>The building table with ventilation and preheat values per project; the key figure group “Buildings” shows the deviation from the base.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__GEBAEUDE" xml:space="preserve">
+    <value>The building table of the current case, without deviation: one group row per building, below it calculation method, heat demand, peak loads, on the VDI method the cooling and room figures, the ventilation and preheat rows and the notes W1 to W5; only in the block {{#je stand}}.</value>
+  </data>
 </root>
 
