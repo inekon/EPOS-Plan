@@ -26,7 +26,8 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(191, RaumgrundrissSchema.SCHRITT);
             Assert.Equal(RaumnutzungDinTsSchema.SCHRITT + 1, RaumgrundrissSchema.SCHRITT);
-            Assert.Equal(SchemaStand.Zielversion, RaumgrundrissSchema.SCHRITT);
+            Assert.Equal(RaumgrundrissSchema.SCHRITT + 1, TypaufbauSchema.SCHRITT);   // danach Schritt 192 (BA-2)
+            Assert.True(SchemaStand.Zielversion >= RaumgrundrissSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == RaumgrundrissSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);

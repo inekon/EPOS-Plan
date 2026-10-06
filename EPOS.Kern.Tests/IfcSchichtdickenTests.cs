@@ -68,9 +68,9 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeBauteilvorschlag v = BauteilvorschlagProbe.Vorschlag(PROBE, 0, 'E');
             Assert.False(v.Abgelehnt);
-            Assert.Equal(2, v.Aufbauten.Count);
+            Assert.Equal(2, v.Dateiaufbauten().Count);
             // Wand und Dach rechnen aus den Schichten; die fehlende Grundfläche fällt auf ihre Vorgabe.
-            GebaeudeBauteilzeile[] mitAufbau = v.Zeilen.Where(z => z.Bauteil.ID_Aufbau.HasValue).ToArray();
+            GebaeudeBauteilzeile[] mitAufbau = v.Zeilen.Where(z => (z.Bauteil.ID_Aufbau.HasValue && z.Typaufbau == null)).ToArray();
             Assert.Equal(2, mitAufbau.Length);
             foreach (GebaeudeBauteilzeile z in mitAufbau)
             {

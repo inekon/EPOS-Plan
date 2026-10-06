@@ -39,15 +39,15 @@ namespace EPOS.Kern.Tests
         /// <summary>Der Aufbau einer Zeile.</summary>
         internal static BauteilaufbauModel Aufbau(GebaeudeBauteilvorschlag v, GebaeudeBauteilzeile z)
         {
-            Assert.True(z.Bauteil.ID_Aufbau.HasValue, z.ToString());
+            Assert.True((z.Bauteil.ID_Aufbau.HasValue && z.Typaufbau == null), z.ToString());
             return v.AufbautenJeId[z.Bauteil.ID_Aufbau.Value];
         }
 
         /// <summary>Die Aufbauzeile (samt weggelassenen Schichten) einer Zeile.</summary>
         internal static GebaeudeAufbauzeile AufbauZeile(GebaeudeBauteilvorschlag v, GebaeudeBauteilzeile z)
         {
-            Assert.True(z.Bauteil.ID_Aufbau.HasValue, z.ToString());
-            return Assert.Single(v.Aufbauten, a => a.Aufbau.ID == z.Bauteil.ID_Aufbau.Value);
+            Assert.True((z.Bauteil.ID_Aufbau.HasValue && z.Typaufbau == null), z.ToString());
+            return Assert.Single(v.Dateiaufbauten(), a => a.Aufbau.ID == z.Bauteil.ID_Aufbau.Value);
         }
 
         internal static void Nah(double erwartet, double? ist, double toleranz = 1e-9)
@@ -175,12 +175,12 @@ namespace EPOS.Kern.Tests
 
             // Sechs Aufbauten: je Konstruktion einer, die Geschossdecke zweimal (je Seite).
             Assert.Equal(new[] { "Außenwand mit Innendämmung", "Flachdach", "Kellerdecke", "Innenwand", "Geschossdecke", "Geschossdecke (Gegenseite)" },
-                         v.Aufbauten.Select(a => a.Aufbau.Bezeichner));
-            Assert.All(v.Aufbauten, a => Assert.Equal(DbWerte.HERKUNFT_GBXML, a.Aufbau.Herkunft));
-            Assert.All(v.Aufbauten, a => Assert.Equal("gbxml_haus_si.xml", a.Aufbau.Quelle));
-            Assert.All(v.Aufbauten, a => Assert.Equal("Construction", a.Quelltyp));
-            Assert.All(v.Aufbauten, a => Assert.True(a.RichtungAngenommen));
-            Assert.Equal(new[] { false, false, false, false, false, true }, v.Aufbauten.Select(a => a.Gegenseite));
+                         v.Dateiaufbauten().Select(a => a.Aufbau.Bezeichner));
+            Assert.All(v.Dateiaufbauten(), a => Assert.Equal(DbWerte.HERKUNFT_GBXML, a.Aufbau.Herkunft));
+            Assert.All(v.Dateiaufbauten(), a => Assert.Equal("gbxml_haus_si.xml", a.Aufbau.Quelle));
+            Assert.All(v.Dateiaufbauten(), a => Assert.Equal("Construction", a.Quelltyp));
+            Assert.All(v.Dateiaufbauten(), a => Assert.True(a.RichtungAngenommen));
+            Assert.Equal(new[] { false, false, false, false, false, true }, v.Dateiaufbauten().Select(a => a.Gegenseite));
         }
 
         [Fact]
@@ -191,14 +191,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal('E', v.Baualtersklasse);   // aus dem Baujahr 1965 der Datei (E47: 1958 bis 1968)
             Assert.Equal(DbWerte.HERKUNFT_IFC, v.Zone.Herkunft);
             Assert.Equal(130.0, v.Zone.Nutzflaeche);
-            Assert.Empty(v.Aufbauten);
+            Assert.Empty(v.Dateiaufbauten());
             Assert.Equal(17, v.Zeilen.Count);
 
             // Ohne Stoffwerte keine Aufbauten, nur der U-Wert der Datei (Herkunft IFC).
             Assert.All(v.Zeilen, x =>
             {
                 Assert.NotNull(x.Summenfeld);
-                Assert.Null(x.Bauteil.ID_Aufbau);
+                Assert.True(x.Bauteil.ID_Aufbau == null || x.Typaufbau != null);   // BA-2: höchstens ein Ersatzaufbau
                 Assert.True(x.Bauteil.U_Wert.HasValue);
                 Assert.Equal(Importherkunft.Ifc, x.HerkunftU);
                 Assert.Equal(DbWerte.HERKUNFT_IFC, x.Bauteil.Herkunft);
@@ -376,14 +376,14 @@ namespace EPOS.Kern.Tests
             Assert.False(v.Abgelehnt);
             // Zwei Wandtypen, einer innen zuerst, einer außen zuerst gezählt: beide Aufbauten beginnen
             // raumseitig mit dem Putz und enden mit der Dämmung.
-            GebaeudeAufbauzeile[] waende = v.Aufbauten.Where(x => x.Aufbau.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND).ToArray();
+            GebaeudeAufbauzeile[] waende = v.Dateiaufbauten().Where(x => x.Aufbau.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND).ToArray();
             Assert.Equal(2, waende.Length);
             Assert.All(waende, x => Assert.Equal(new[] { 1400.0, 1200.0, 30.0 }, x.Aufbau.Schichten.Select(s => s.Rho.Value)));
             Assert.All(waende, x => Assert.False(x.RichtungAngenommen));
-            Assert.All(v.Aufbauten, x => Assert.Equal("IfcMaterialLayerSet", x.Quelltyp));
-            Assert.All(v.Aufbauten, x => Assert.Equal(DbWerte.HERKUNFT_IFC, x.Aufbau.Herkunft));
+            Assert.All(v.Dateiaufbauten(), x => Assert.Equal("IfcMaterialLayerSet", x.Quelltyp));
+            Assert.All(v.Dateiaufbauten(), x => Assert.Equal(DbWerte.HERKUNFT_IFC, x.Aufbau.Herkunft));
             // Das Dach: der Beton raumseitig.
-            GebaeudeAufbauzeile dach = Assert.Single(v.Aufbauten, x => x.Aufbau.Bauteilart == DbWerte.BAUTEILART_DACH);
+            GebaeudeAufbauzeile dach = Assert.Single(v.Dateiaufbauten(), x => x.Aufbau.Bauteilart == DbWerte.BAUTEILART_DACH);
             Assert.Equal(new[] { 2400.0, 30.0 }, dach.Aufbau.Schichten.Select(s => s.Rho.Value));
             // Der U-Wert der Datei bleibt neben dem Aufbau stehen (E95-1); ohne ihn trägt die Zeile keinen.
             Assert.All(v.Zeilen.Where(x => x.Bauteil.ID_Aufbau.HasValue), x => { Assert.Equal(x.UDatei, x.Bauteil.U_Wert); Assert.True(x.USchichten > 0.0); });
@@ -398,7 +398,7 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeBauteilvorschlag v = Vorschlag("gbxml_ohne_konstruktionen.xml", 0, 'E');
             Assert.False(v.Abgelehnt);
-            Assert.Empty(v.Aufbauten);
+            Assert.Empty(v.Dateiaufbauten());
             Baualtersvorgabe e = GebaeudeVorgaben.Fuer('E');
             Assert.All(v.Zeilen, x =>
             {
@@ -469,11 +469,11 @@ namespace EPOS.Kern.Tests
             GebaeudeBauteilvorschlag n = Vorschlag("ifc4_schichten_nullwerte.ifc", 0, 'E');
             GebaeudeBauteilvorschlag s = Vorschlag("ifc4_schichten.ifc", 0, 'E');
             Assert.False(n.Abgelehnt);
-            Assert.Empty(n.Aufbauten);
+            Assert.Empty(n.Dateiaufbauten());
             Assert.Equal(4, n.Meldungen.Count(m => m.Schluessel == GebaeudeBauteilvorschlag.STOFFWERTE_UNVOLLSTAENDIG && m.Stufe == PruefStufe.Warnung));
             foreach (GebaeudeBauteilzeile x in n.Zeilen.Where(z => z.Bauteil.Bauteilart != DbWerte.BAUTEILART_FENSTER))
             {
-                Assert.Null(x.Bauteil.ID_Aufbau);
+                Assert.True(x.Bauteil.ID_Aufbau == null || x.Typaufbau != null);   // BA-2: höchstens ein Ersatzaufbau
                 Assert.Equal(Importherkunft.Ifc, x.HerkunftU);
                 Assert.Equal(DbWerte.HERKUNFT_IFC, x.Bauteil.Herkunft);
                 // Derselbe U-Wert wie aus den vollständigen Schichten des Schichtenhauses.
@@ -483,7 +483,7 @@ namespace EPOS.Kern.Tests
             // IFC2X3: die Stoffwerte werden nicht gelesen — Vorgabe der Klasse, ohne Klasse abgelehnt.
             GebaeudeBauteilvorschlag x3 = Vorschlag("ifc2x3_schichten.ifc", 0, 'E');
             Assert.False(x3.Abgelehnt);
-            Assert.Empty(x3.Aufbauten);
+            Assert.Empty(x3.Dateiaufbauten());
             Assert.Equal(GebaeudeVorgaben.Fuer('E').UAussenwand, x3.Zeilen.First(z => z.Bauteil.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND).Bauteil.U_Wert);
             Assert.Equal(DbWerte.HERKUNFT_VORGABE, x3.Zeilen.First(z => z.Bauteil.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND).Bauteil.Herkunft);
             Assert.True(Vorschlag("ifc2x3_schichten.ifc").Abgelehnt);
@@ -491,7 +491,7 @@ namespace EPOS.Kern.Tests
             // gbXML: eine Schicht nur mit R-Wert — U = 1/(0,13 + 0,24/0,8 + 0,18 + 0,04).
             GebaeudeBauteilvorschlag r = Vorschlag("gbxml_rwert_schicht.xml", 0, 'E');
             Assert.False(r.Abgelehnt);
-            Assert.Empty(r.Aufbauten);
+            Assert.Empty(r.Dateiaufbauten());
             GebaeudeBauteilzeile wand = BauteilvorschlagProbe.Zeile(r, "aw-nord");
             Nah(1.0 / (0.13 + 0.3 + 0.18 + 0.04), wand.Bauteil.U_Wert);
             Assert.Equal(DbWerte.HERKUNFT_GBXML, wand.Bauteil.Herkunft);
@@ -654,7 +654,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2.5, z.UDatei);
             Assert.Equal(Importherkunft.GbXml, z.HerkunftU);
             Assert.Equal(Importherkunft.GbXml, z.HerkunftAufbau);
-            Assert.True(z.Bauteil.ID_Aufbau.HasValue);
+            Assert.True((z.Bauteil.ID_Aufbau.HasValue && z.Typaufbau == null));
             Assert.True(z.UAbweichungHinweis);
             Assert.Equal(Bauteilzuordnungsstufe.A, z.Stufe);
             Nah(1.0 / (0.13 + 0.01 + 0.3 + 0.04), z.USchichten, 1e-12);
