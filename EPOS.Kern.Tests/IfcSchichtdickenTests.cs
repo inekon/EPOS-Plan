@@ -75,13 +75,16 @@ namespace EPOS.Kern.Tests
             foreach (GebaeudeBauteilzeile z in mitAufbau)
             {
                 Assert.True(z.USchichten > 0.0, z.ToString());
-                // Die Wand trägt Blech, Dämmung und Beton, das Dach Beton und Dämmung.
-                int soll = z.Bauteil.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND ? 3 : 2;
-                Assert.Equal(soll, BauteilvorschlagProbe.Aufbau(v, z).Schichten.Count);
+                // Die Wand trägt Dämmung und Beton (das 0,9 mm Blech fällt unter die Relevanzregel), das Dach Beton und Dämmung.
+                Assert.Equal(2, BauteilvorschlagProbe.Aufbau(v, z).Schichten.Count);
             }
-            // U der Wand aus 0,9 mm Blech, 0,16 m Dämmung und 0,20 m Beton: 1/(0,13 + 0,0009/50 + 0,16/0,04 + 0,2/2 + 0,04).
+            // Das Blech ist benannt weggelassen: 0,9 mm, unter 2 % an R und an C.
             GebaeudeBauteilzeile wand = v.Zeilen.Single(z => z.Bauteil.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND);
-            BauteilvorschlagProbe.Nah(1.0 / (0.13 + 0.0009 / 50.0 + 4.0 + 0.1 + 0.04), wand.USchichten, 1e-9);
+            GebaeudeWeggelasseneSchicht blech = Assert.Single(BauteilvorschlagProbe.AufbauZeile(v, wand).Weggelassen);
+            Assert.Equal(Schichtrelevanzgrund.Duenn, blech.Grund);
+            BauteilvorschlagProbe.Nah(0.0009, blech.Dicke_M, 1e-12);
+            // U der Wand aus 0,16 m Dämmung und 0,20 m Beton: 1/(0,13 + 0,16/0,04 + 0,2/2 + 0,04).
+            BauteilvorschlagProbe.Nah(1.0 / (0.13 + 4.0 + 0.1 + 0.04), wand.USchichten, 1e-9);
         }
     }
 }

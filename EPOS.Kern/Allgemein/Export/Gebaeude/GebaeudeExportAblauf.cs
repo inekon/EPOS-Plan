@@ -629,6 +629,10 @@ namespace WindowsFormsApplication1
                     Beschreibung = T("GEXP_DATEI_MITTELWERT"),
                     ZonenBeschreibung = T(nameof(MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007)),
                     Konditionierung = konditionierung,
+                    // HC-5 (F10): die Grundrisse der Räume der Zone - nur Gestalt und Lage des Exportmodells.
+                    Grundrisse = !_klassenweg && _satz.Zonengrundrisse != null
+                                 && _satz.Zonengrundrisse.TryGetValue(z.ID, out IReadOnlyList<Raumgrundriss> grundrisse)
+                        ? grundrisse : Array.Empty<Raumgrundriss>(),
                 };
             }
 

@@ -339,6 +339,12 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zeile je Paarung EPOS-Zeile ↔ Quellentität (S-F) — hängt an der Importquelle.</summary>
         public const string TAB_IMPORTZUORDNUNG = "Tab_Importzuordnung";
 
+        /// <summary>
+        /// Ein Grundriss je importiertem Raum (HC-5, <see cref="RaumgrundrissSchema"/>) — hängt an der Importquelle,
+        /// nullbar an der Zone.
+        /// </summary>
+        public const string TAB_RAUMGRUNDRISS = "Tab_Raumgrundriss";
+
         // ------------------------------------------------------------------------
         // GEBAEUDESIMULATION, NAMENSABGLEICH DER BAUSTOFFE (Mehrzonenkonzept 3.5/6.3,
         // E27 zu M9): die Synonymtabelle der Auslieferung und die gemerkten

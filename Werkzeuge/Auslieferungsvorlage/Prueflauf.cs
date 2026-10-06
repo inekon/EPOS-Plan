@@ -416,7 +416,7 @@ namespace Auslieferungsvorlage
         }
 
         /// <summary>
-        /// <b>Beide Tabellen der Importherkunft sind leer</b> (Datenaustauschkonzept 7.4,
+        /// <b>Die drei Tabellen der Importherkunft sind leer</b> (Datenaustauschkonzept 7.4, HC-5 mit <c>Tab_Raumgrundriss</c>,
         /// Softwarearchitektur Gebäudesimulation 2.6). <c>Tab_Importquelle</c> trägt Dateiname und
         /// SHA-256 jeder eingelesenen gbXML- oder IFC-Datei, <c>Tab_Importzuordnung</c> die Kennungen
         /// ihrer Entitäten — in einer ausgelieferten <c>Kenndaten.sqlite</c> wären das Spuren fremder
@@ -428,7 +428,7 @@ namespace Auslieferungsvorlage
         {
             var teile = new List<string>();
             bool ok = true;
-            foreach (string t in new[] { ImportzuordnungSchema.TAB_QUELLE, ImportzuordnungSchema.TAB_ZUORDNUNG })
+            foreach (string t in new[] { ImportzuordnungSchema.TAB_QUELLE, ImportzuordnungSchema.TAB_ZUORDNUNG, RaumgrundrissSchema.TAB })
             {
                 if (!DataRepository.TabelleVorhanden(t))
                 {

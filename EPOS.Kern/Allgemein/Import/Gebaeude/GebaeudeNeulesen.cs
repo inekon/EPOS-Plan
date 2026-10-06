@@ -84,6 +84,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine HottCAD-IFC — die Zonen eines Imports mit Projektdatei sind hier allein die der Geometriedatei.</summary>
         public bool Hottcad { get; internal set; }
+
+        /// <summary>
+        /// HC-5 (F7): die frisch abgeleiteten Grundrisse je Raum — dieselben, die der Import speichert; nur bei
+        /// <see cref="NeulesenZustand.Passend"/>, sonst leer. Geschrieben werden sie allein über den Knopf „Grundriss übernehmen“.
+        /// </summary>
+        internal IReadOnlyList<Raumgrundriss> Raumgrundrisse { get; set; } = Array.Empty<Raumgrundriss>();
     }
 
     /// <summary>
@@ -176,7 +182,8 @@ namespace WindowsFormsApplication1
             ergebnis.Gebaeudeindex = index;
             ergebnis.Zonenregel = regel;
             ergebnis.Zonierung = zonierung;
-            ergebnis.Geometrie = GebaeudeGrundriss.Bilden(abbild, index, zonierung);
+            ergebnis.Geometrie = GebaeudeGrundriss.BildenMitGrundriss(abbild, index, zonierung, out IReadOnlyList<Raumgrundriss> grundrisse);
+            ergebnis.Raumgrundrisse = grundrisse;
             ergebnis.Hottcad = GebaeudeImportAblauf.IstHottcad(abbild, index);
             return ergebnis;
         }

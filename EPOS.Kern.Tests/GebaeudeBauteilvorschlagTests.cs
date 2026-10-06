@@ -43,6 +43,13 @@ namespace EPOS.Kern.Tests
             return v.AufbautenJeId[z.Bauteil.ID_Aufbau.Value];
         }
 
+        /// <summary>Die Aufbauzeile (samt weggelassenen Schichten) einer Zeile.</summary>
+        internal static GebaeudeAufbauzeile AufbauZeile(GebaeudeBauteilvorschlag v, GebaeudeBauteilzeile z)
+        {
+            Assert.True(z.Bauteil.ID_Aufbau.HasValue, z.ToString());
+            return Assert.Single(v.Aufbauten, a => a.Aufbau.ID == z.Bauteil.ID_Aufbau.Value);
+        }
+
         internal static void Nah(double erwartet, double? ist, double toleranz = 1e-9)
         {
             Assert.True(ist.HasValue, "kein Wert, erwartet " + erwartet.ToString("R", CultureInfo.InvariantCulture));
@@ -378,8 +385,8 @@ namespace EPOS.Kern.Tests
             // Das Dach: der Beton raumseitig.
             GebaeudeAufbauzeile dach = Assert.Single(v.Aufbauten, x => x.Aufbau.Bauteilart == DbWerte.BAUTEILART_DACH);
             Assert.Equal(new[] { 2400.0, 30.0 }, dach.Aufbau.Schichten.Select(s => s.Rho.Value));
-            // Der U-Wert folgt aus den Schichten; die Zeile trägt keinen.
-            Assert.All(v.Zeilen.Where(x => x.Bauteil.ID_Aufbau.HasValue), x => { Assert.Null(x.Bauteil.U_Wert); Assert.True(x.USchichten > 0.0); });
+            // Der U-Wert der Datei bleibt neben dem Aufbau stehen (E95-1); ohne ihn trägt die Zeile keinen.
+            Assert.All(v.Zeilen.Where(x => x.Bauteil.ID_Aufbau.HasValue), x => { Assert.Equal(x.UDatei, x.Bauteil.U_Wert); Assert.True(x.USchichten > 0.0); });
         }
 
         // =====================================================================
@@ -628,7 +635,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ein_U_Wert_neben_Schichten_wird_verglichen_es_rechnet_der_Aufbau()
+        public void Ein_U_Wert_neben_Schichten_bleibt_stehen_die_Schichten_liefern_R1_und_C1()
         {
             GbxmlAbbild a = BauteilvorschlagProbe.Synthetisch();
             // Eine Wand: 1 cm Putz + 24 cm Mauerwerk; U aus Schichten 1/(0,13 + 0,01 + 0,3 + 0,04) = 2,0833.
@@ -642,18 +649,39 @@ namespace EPOS.Kern.Tests
             GebaeudeBauteilvorschlag v = BauteilvorschlagProbe.Bilden(a);
             Assert.False(v.Abgelehnt);
             GebaeudeBauteilzeile z = BauteilvorschlagProbe.Zeile(v, "wand");
-            Assert.Null(z.Bauteil.U_Wert);                 // der Bauteilweg rechnet aus den Schichten
+            // E95-1: Das U der Datei gilt in Gl. (27), die Schichten liefern R₁ und C₁; Herkunft je Wert.
+            Assert.Equal(2.5, z.Bauteil.U_Wert);
             Assert.Equal(2.5, z.UDatei);
+            Assert.Equal(Importherkunft.GbXml, z.HerkunftU);
+            Assert.Equal(Importherkunft.GbXml, z.HerkunftAufbau);
+            Assert.True(z.Bauteil.ID_Aufbau.HasValue);
+            Assert.True(z.UAbweichungHinweis);
+            Assert.Equal(Bauteilzuordnungsstufe.A, z.Stufe);
             Nah(1.0 / (0.13 + 0.01 + 0.3 + 0.04), z.USchichten, 1e-12);
             PruefMeldung w = Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.U_ABWEICHUNG);
             Assert.Equal(PruefStufe.Warnung, w.Stufe);
             Assert.Equal("kon-1", w.Werte[0]);
             Assert.Equal("20", w.Werte[3]);   // (2,5 / 2,0833 − 1) · 100 = 20 %
 
-            // Innerhalb von 5 % keine Meldung.
-            aufbau.UWertWm2K = 2.1;
-            wand.UWertWm2K = 2.1;
-            Assert.DoesNotContain(BauteilvorschlagProbe.Bilden(a).Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.U_ABWEICHUNG);
+            // Bis 10 % (hier 8 %) weder Meldung noch Hinweis; das U der Datei gilt trotzdem.
+            aufbau.UWertWm2K = 2.25;
+            wand.UWertWm2K = 2.25;
+            GebaeudeBauteilvorschlag nah = BauteilvorschlagProbe.Bilden(a);
+            Assert.DoesNotContain(nah.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.U_ABWEICHUNG);
+            GebaeudeBauteilzeile zn = BauteilvorschlagProbe.Zeile(nah, "wand");
+            Assert.False(zn.UAbweichungHinweis);
+            Assert.Equal(2.25, zn.Bauteil.U_Wert);
+
+            // Ohne U der Datei: U aus den Schichten wie bisher, die Zeile trägt keinen U-Wert.
+            aufbau.UWertWm2K = null;
+            wand.UWertWm2K = null;
+            GebaeudeBauteilvorschlag ohne = BauteilvorschlagProbe.Bilden(a);
+            GebaeudeBauteilzeile zo = BauteilvorschlagProbe.Zeile(ohne, "wand");
+            Assert.Null(zo.Bauteil.U_Wert);
+            Assert.Null(zo.UDatei);
+            Nah(1.0 / (0.13 + 0.01 + 0.3 + 0.04), zo.USchichten, 1e-12);
+            Assert.False(zo.UAbweichungHinweis);
+            Assert.Equal(Bauteilzuordnungsstufe.A, zo.Stufe);
         }
 
         [Fact]

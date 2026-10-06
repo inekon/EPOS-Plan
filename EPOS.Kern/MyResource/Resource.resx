@@ -37435,7 +37435,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>{0} Flächen ohne Nachbarraum: {1} — keinem Gebäude zugeordnet, nicht übernommen.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
-    <value>Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es rechnen die Schichten.</value>
+    <value>Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es gilt der U-Wert der Datei, die Schichten liefern R₁ und C₁.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
     <value>Aufbau {0}: Stoffwerte unvollständig oder außerhalb des Bereichs ({1}) — kein Aufbau, nur der U-Wert.</value>
@@ -37637,6 +37637,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
     <value>{0} Schicht(en) ohne Stoff verworfen (Schraffur oder leer: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH" xml:space="preserve">
+    <value>{0} Schicht(en) unter der Relevanzschwelle weggelassen (bis 5 mm und je unter 2 % von Widerstand und Wärmekapazität, Folien und Abdichtungen unter 2 % des Widerstands): {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_A" xml:space="preserve">
+    <value>Zuordnungsstufe A (vollständiger Aufbau): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_B" xml:space="preserve">
+    <value>Zuordnungsstufe B (U-Wert der Datei, Aufbau unvollständig): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_C" xml:space="preserve">
+    <value>Zuordnungsstufe C (nur Geometrie): {0} Bauteil(e), {1} m².</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
     <value>{0} Luftschicht(en) rechnen als ruhende Luftschicht nach DIN EN ISO 6946.</value>
@@ -44070,6 +44082,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>
   </data>
+  <data name="PAUS_HERK_NENNINHALTE_OHNE_KATALOG" xml:space="preserve">
+    <value>Zapfprofil-Katalog nicht geladen: feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>
+  </data>
   <data name="PAUS_HERK_RANG1_KEINER" xml:space="preserve">
     <value>kein Wärmeerzeuger im Projekt</value>
   </data>
@@ -46523,6 +46538,84 @@ Chart</value>
   </data>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2}</value>
+  </data>
+  <data name="ZGEO_DATEIKOERPER" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus dem Grundriss ihres Dateikörpers (aus Dateikörper) — Dachschrägen und Höhenversprünge sind vereinfacht: {1}</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_DATEIKOERPER" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus dem Grundriss der Importdatei in der Datei (aus Dateikörper). Dachschrägen und Höhenversprünge sind vereinfacht.</value>
+  </data>
+  <data name="GEXP_DATEI_DATEIKOERPER" xml:space="preserve">
+    <value>Stufe 2: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie sind Prismen aus dem Grundriss der Importdatei, Dachschrägen und Höhenversprünge sind vereinfacht.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS" xml:space="preserve">
+    <value>IFC-Export aus EPOS-Plan, Stufe S3: Raumkörper als Prismen aus dem Grundriss der Importdatei – Dachschrägen und Höhenversprünge vereinfacht.</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_GRUNDRISS" xml:space="preserve">
+    <value>Prisma aus dem Grundriss der Importdatei (aus Dateikörper){0}</value>
+  </data>
+  <data name="ZGEO_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus einer Quelle ohne Nordwinkel; Modell-Nord ist als Nord angenommen: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>Nordwinkel unbekannt, Modell-Nord angenommen — die Importquelle der Grundrisse nennt keinen Nordwinkel; die Bauteilplatten stehen an den Kanten nach Modell-Nord: {0}</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_TEILPLATTEN" xml:space="preserve">
+    <value>{0} Flächen stehen auf mehreren Kanten ihres Prismas; die PlanarGeometry der Fläche zeigt die größte Platte, die Fläche selbst bleibt vollständig: {1}</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_PLATTE" xml:space="preserve">
+    <value>Platte am Prisma aus dem Grundriss der Importdatei (aus Dateikörper), der Kante nach Himmelsrichtung zugeordnet – kein Aufmaß.</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_FLAECHE" xml:space="preserve">
+    <value>{0} Räume: Die Fläche des Grundrisses weicht mehr als 10 % von der Raumfläche der Datei ab (gespeichert wird er trotzdem): {1}</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_HERLEITUNG" xml:space="preserve">
+    <value>Grundriss je Raum: {0} Räume — {1} aus den Bodenflächen des Körpers, {2} aus den Deckenflächen, {3} als konvexe Hülle, {4} aus Raumgrenzen.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_KNOPF" xml:space="preserve">
+    <value>Grundriss übernehmen</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_TITEL" xml:space="preserve">
+    <value>Grundriss übernehmen</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_ANGEBOT" xml:space="preserve">
+    <value>Für {0} Räume liegt ein Grundriss aus der Datei vor, der beim Gebäude noch nicht gespeichert ist.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FRAGE" xml:space="preserve">
+    <value>Den Grundriss von {0} Räumen aus „{1}“ beim Gebäude speichern? Er dient nur der Ansicht und dem Export; die Rechnung bleibt unverändert.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_GESCHRIEBEN" xml:space="preserve">
+    <value>Grundriss von {0} Räumen übernommen.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FEHLER" xml:space="preserve">
+    <value>Grundriss nicht übernommen: {0}</value>
+  </data>
+  <data name="GANS_HERKUNFT_GRUNDRISS" xml:space="preserve">
+    <value>aus Dateikörper (Grundriss)</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_EXPORT" xml:space="preserve">
+    <value>{0} Räume aus Dateikörper, {1} aus Umriss, {2} schematisch</value>
+  </data>
+  <data name="GANS_GVERMERK_STUFEN" xml:space="preserve">
+    <value>Stufen im Boden</value>
+  </data>
+  <data name="GANS_GVERMERK_UEBERLAPPUNG" xml:space="preserve">
+    <value>Überlappung</value>
+  </data>
+  <data name="GANS_GVERMERK_SPLITTER" xml:space="preserve">
+    <value>Splitter entfallen</value>
+  </data>
+  <data name="GANS_GVERMERK_KONVEX" xml:space="preserve">
+    <value>konvexe Hülle</value>
+  </data>
+  <data name="GANS_GVERMERK_DACHSCHRAEGE" xml:space="preserve">
+    <value>Dachschräge</value>
+  </data>
+  <data name="GANS_GVERMERK_GESCHOSSLAGE" xml:space="preserve">
+    <value>Boden abseits der Geschosslage</value>
+  </data>
+  <data name="GANS_GVERMERK_FLAECHE" xml:space="preserve">
+    <value>Fläche weicht ab</value>
   </data>
   <data name="RNP_CSV_MSG_LEER" xml:space="preserve">
     <value>Die Datei enthält keine Zeile.</value>

@@ -231,7 +231,10 @@ namespace Auslieferungsvorlage.Tests
             // 173 seit dem Schemaschritt 189 (RaumnutzungSchema, NP1a): die fuenf Tabellen des Katalogs der
             // Nutzungsprofile, STRICT von ihrer ersten Zeile an; der Neubau von Kalender und Vorlage haelt STRICT.
             //
-            Assert.Equal(173, befund.Strict);
+            // 174 seit dem Schemaschritt 191 (RaumgrundrissSchema, HC-5): Tab_Raumgrundriss, STRICT von ihrer ersten Zeile
+            // an und in der Vorlage LEER.
+            //
+            Assert.Equal(174, befund.Strict);
         }
 
         // =============================================================================
@@ -285,7 +288,7 @@ namespace Auslieferungsvorlage.Tests
 
             Assert.True(befund.Tabellen, "Die Tabellen der Importherkunft fehlen in der Vorlage.");
             Assert.Equal(0L, befund.Zeilen);
-            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0)",
+            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0, Tab_Raumgrundriss 0)",
                             File.ReadAllText(_v.Ziel + ".bericht.txt"));
         }
 

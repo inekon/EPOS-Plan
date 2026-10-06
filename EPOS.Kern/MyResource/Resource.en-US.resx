@@ -37428,7 +37428,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>{0} surfaces without an adjacent space: {1} — assigned to no building, not taken over.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
-    <value>Construction {0}: file U-value {1} W/(m²K), from the layers {2} W/(m²K), deviation {3} % — the layers are used.</value>
+    <value>Construction {0}: file U-value {1} W/(m²K), from the layers {2} W/(m²K), deviation {3} % — the file U-value applies, the layers provide R₁ and C₁.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
     <value>Construction {0}: material data incomplete or out of range ({1}) — no construction, U-value only.</value>
@@ -37630,6 +37630,18 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
     <value>{0} layer(s) without a material discarded (hatch or empty: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH" xml:space="preserve">
+    <value>{0} layer(s) below the relevance threshold omitted (up to 5 mm and each below 2 % of resistance and heat capacity, membranes and sealing below 2 % of resistance): {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_A" xml:space="preserve">
+    <value>Assignment level A (complete construction): {0} element(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_B" xml:space="preserve">
+    <value>Assignment level B (file U-value, construction incomplete): {0} element(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_C" xml:space="preserve">
+    <value>Assignment level C (geometry only): {0} element(s), {1} m².</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
     <value>{0} air layer(s) are calculated as unventilated air layers to EN ISO 6946.</value>
@@ -44063,6 +44075,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>fixed list 100 … 10,000 l, above that a 1,000 l grid</value>
   </data>
+  <data name="PAUS_HERK_NENNINHALTE_OHNE_KATALOG" xml:space="preserve">
+    <value>draw-off profile catalogue not loaded: fixed list 100 … 10,000 l, above that a 1,000 l grid</value>
+  </data>
   <data name="PAUS_HERK_RANG1_KEINER" xml:space="preserve">
     <value>no heat generator in the project</value>
   </data>
@@ -46516,6 +46531,84 @@ chart</value>
   </data>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Usage days per year: {0} (from weekly pattern and public holidays), minus {1} holiday-period days = {2}</value>
+  </data>
+  <data name="ZGEO_DATEIKOERPER" xml:space="preserve">
+    <value>{0} rooms are shown as prisms from the floor plan of their file body (from file body) — sloped roofs and floor steps are simplified: {1}</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_DATEIKOERPER" xml:space="preserve">
+    <value>{0} rooms are written as prisms from the floor plan of the imported file (from file body). Sloped roofs and floor steps are simplified.</value>
+  </data>
+  <data name="GEXP_DATEI_DATEIKOERPER" xml:space="preserve">
+    <value>Level 2: areas, orientations and constructions are those of the EPOS building model; the room geometry consists of prisms from the floor plan of the imported file, sloped roofs and floor steps are simplified.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS" xml:space="preserve">
+    <value>IFC export from EPOS-Plan, level S3: room bodies as prisms from the floor plan of the imported file – sloped roofs and floor steps simplified.</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_GRUNDRISS" xml:space="preserve">
+    <value>Prism from the floor plan of the imported file (from file body){0}</value>
+  </data>
+  <data name="ZGEO_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>{0} rooms are prisms from a source without north angle; model north is assumed as north: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>North angle unknown, model north assumed — the import source of the floor plans has no north angle; the element plates stand on the edges by model north: {0}</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_TEILPLATTEN" xml:space="preserve">
+    <value>{0} surfaces stand on several edges of their prism; the PlanarGeometry of the surface shows the largest plate, the surface itself stays complete: {1}</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_PLATTE" xml:space="preserve">
+    <value>Plate on the prism from the floor plan of the import file (from file body), assigned to the edge by orientation – not a survey.</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_FLAECHE" xml:space="preserve">
+    <value>{0} rooms: the floor plan area differs by more than 10 % from the room area of the file (it is stored anyway): {1}</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_HERLEITUNG" xml:space="preserve">
+    <value>Floor plan per room: {0} rooms — {1} from the floor faces of the body, {2} from the ceiling faces, {3} as convex hull, {4} from space boundaries.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_KNOPF" xml:space="preserve">
+    <value>Store floor plan</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_TITEL" xml:space="preserve">
+    <value>Store floor plan</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_ANGEBOT" xml:space="preserve">
+    <value>A floor plan from the file is available for {0} rooms that is not yet stored with the building.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FRAGE" xml:space="preserve">
+    <value>Store the floor plan of {0} rooms from “{1}” with the building? It is used only for the view and the export; the calculation remains unchanged.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_GESCHRIEBEN" xml:space="preserve">
+    <value>Floor plan of {0} rooms stored.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FEHLER" xml:space="preserve">
+    <value>Floor plan not stored: {0}</value>
+  </data>
+  <data name="GANS_HERKUNFT_GRUNDRISS" xml:space="preserve">
+    <value>from file body (floor plan)</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_EXPORT" xml:space="preserve">
+    <value>{0} rooms from file body, {1} from outline, {2} schematic</value>
+  </data>
+  <data name="GANS_GVERMERK_STUFEN" xml:space="preserve">
+    <value>floor steps</value>
+  </data>
+  <data name="GANS_GVERMERK_UEBERLAPPUNG" xml:space="preserve">
+    <value>overlap</value>
+  </data>
+  <data name="GANS_GVERMERK_SPLITTER" xml:space="preserve">
+    <value>slivers dropped</value>
+  </data>
+  <data name="GANS_GVERMERK_KONVEX" xml:space="preserve">
+    <value>convex hull</value>
+  </data>
+  <data name="GANS_GVERMERK_DACHSCHRAEGE" xml:space="preserve">
+    <value>sloped roof</value>
+  </data>
+  <data name="GANS_GVERMERK_GESCHOSSLAGE" xml:space="preserve">
+    <value>floor away from storey level</value>
+  </data>
+  <data name="GANS_GVERMERK_FLAECHE" xml:space="preserve">
+    <value>area differs</value>
   </data>
   <data name="RNP_CSV_MSG_LEER" xml:space="preserve">
     <value>The file contains no rows.</value>

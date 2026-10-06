@@ -581,6 +581,43 @@ namespace EPOS.Kern.Tests
             Assert.All(cp, m => Assert.Equal(PruefStufe.Info, m.Stufe));
         }
 
+        /// <summary>
+        /// <b>HC-5 — Grundriss je Raum an den Anwenderdateien</b> (Konzept HottCAD-Verbund 11.2, 11.8): je Datei die Zahl der
+        /// Räume, die Herleitungen, die Vermerke und die Flächenabweichung des Gebäudes (Σ Ringflächen gegen Σ Raumflächen).
+        /// Gehalten wird: Jeder Raum mit Körper bekommt einen Grundriss, keiner ist leer, und die Ableitung ist
+        /// deterministisch. Fehlt die Datei, endet der Fall mit ihrem Namen im Protokoll.
+        /// </summary>
+        [Theory]
+        [InlineData("MFH_mittel_1984.ifc")]
+        [InlineData("MFH-Klein-unsaniert-1964.ifc")]
+        [InlineData("Sportheim_1970_unsaniert.ifc")]
+        [InlineData("Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc")]
+        [InlineData("WG-EH55_Poroton-GModG-2026.ifc")]
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc")]
+        public void Grundriss_je_Raum_der_Anwenderdatei(string datei)
+        {
+            GebaeudeImportAblauf a = Anwenderdatei(datei);
+            if (a == null) return;
+            AbbildGebaeude g = a.Abbild.Gebaeude.Single();
+            IReadOnlyList<Raumgrundriss> gr = GebaeudeRaumgrundrisse.Bilden(a.Abbild, 0);
+            int mitKoerper = g.Raeume.Count(r => r.Koerper != null);
+            string Herleitungen() => string.Join(", ", gr.GroupBy(x => x.Herleitung).OrderBy(x => x.Key).Select(x => x.Key + " " + x.Count()));
+            string Vermerke() => string.Join(", ", gr.SelectMany(x => x.Vermerke).GroupBy(v => v).OrderBy(x => x.Key).Select(x => x.Key + " " + x.Count()));
+            double ringe = gr.Sum(x => x.RingflaecheM2);
+            double raeume = gr.Sum(x => g.Raeume.First(r => Quellkennung.Kuerzen(r.Kennung) == x.Quellkennung).FlaecheM2 ?? 0.0);
+            _aus.WriteLine(datei + ": " + g.Raeume.Count + " Räume, " + mitKoerper + " mit Körper, " + gr.Count + " Grundrisse (" +
+                           Herleitungen() + "); Vermerke: " + (Vermerke().Length == 0 ? "keine" : Vermerke()) + "; Ringe " + Z(ringe) +
+                           " m² gegen Räume " + Z(raeume) + " m² (" + Z(raeume > 0 ? (ringe - raeume) / raeume * 100.0 : (double?)null) + " %); " +
+                           gr.Count(x => x.Vermerke.Contains(Grundrissvermerk.Flaeche)) + " Räume über 10 %");
+
+            Assert.True(gr.Count >= mitKoerper, datei + ": nicht jeder Raum mit Körper trägt einen Grundriss");
+            // Ohne Raumgrenzen (CAD-Export) kommt jeder Grundriss aus dem Körper, nie aus dem Ring eines Bauteils.
+            if (g.ZahlGrenzen == 0) Assert.All(gr, x => Assert.Equal(Geometrieherkunft.Dateikoerper, x.Herkunft));
+            Assert.All(gr, x => Assert.True(x.RingflaecheM2 > 0 && x.HoeheM > 0 && x.Ringe.Count > 0, datei + " " + x));
+            Assert.Equal(string.Join("\n", gr.Select(x => x + x.RingeText)),
+                         string.Join("\n", GebaeudeRaumgrundrisse.Bilden(a.Abbild, 0).Select(x => x + x.RingeText)));
+        }
+
         /// <summary>Eine Anwenderdatei unter <c>Quellen/</c>, gelesen; <c>null</c>, wenn sie fehlt (oder nur ein LFS-Zeiger liegt).</summary>
         private GebaeudeImportAblauf Anwenderdatei(string datei)
         {
@@ -647,6 +684,49 @@ namespace EPOS.Kern.Tests
                     _aus.WriteLine(datei + (mit == null ? " ohne" : " mit") + " Abgleich: " + v.Aufbauten.Count + " Aufbauten, "
                                    + v.Zeilen.Count + " Zeilen; " + Text(v.Meldungen.Where(m => m.Stufe != PruefStufe.Info)));
                 }
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Zuordnungsstufen der Anwenderdatei</b> (Konzept Bauteilaufbau beim Import 5.2, BA-1): je Datei mit
+        /// Namensabgleich Zahl und Fläche der Bauteile je Stufe A/B/C, die weggelassenen Schichten und was den Aufbauten
+        /// fehlt — ins Testprotokoll. Geprüft wird nur, dass die Summenzeilen des Protokolls die bewerteten Zeilen
+        /// decken. Fehlt die Datei (oder liegt nur ein LFS-Zeiger), endet der Fall ohne Prüfung.
+        /// </summary>
+        [Theory]
+        [InlineData("MFH_mittel_1984.ifc")]
+        [InlineData("MFH-Klein-unsaniert-1964.ifc")]
+        [InlineData("Sportheim_1970_unsaniert.ifc")]
+        [InlineData("Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc")]
+        [InlineData("WG-EH55_Poroton-GModG-2026.ifc")]
+        [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc")]
+        public void Zuordnungsstufen_der_Anwenderdatei(string datei)
+        {
+            string pfad = Pfad(datei);
+            if (pfad == null) { _aus.WriteLine(datei + " fehlt — übersprungen."); return; }
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            Assert.True(a.Abbild != null && a.Abbild.Gebaeude.Count > 0, Text(a.Meldungen));
+            var abgleich = new Baustoffabgleich(BaustoffabgleichDaten.AusSaat());
+            for (int gi = 0; gi < a.Abbild.Gebaeude.Count; gi++)
+            {
+                GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(a, gi, 'E', null, abgleich);
+                Assert.False(v.Abgelehnt, Text(v.Meldungen));
+                IReadOnlyList<Zuordnungssumme> summen = Bauteilzuordnung.Summen(v.Zeilen);
+                int bewertet = v.Zeilen.Count(z => z.Stufe != Bauteilzuordnungsstufe.Transparent);
+                Assert.Equal(bewertet, summen.Sum(x => x.Zahl));
+                double flaeche = summen.Sum(x => x.Flaeche_M2);
+                string Anteil(Zuordnungssumme x) => x.Stufe + " " + x.Zahl + " (" + Z(x.Flaeche_M2) + " m², "
+                                                    + Z(flaeche > 0.0 ? 100.0 * x.Flaeche_M2 / flaeche : 0.0) + " %)";
+                int weg = v.Aufbauten.Sum(x => x.Weggelassen.Count);
+                int hinweis = v.Zeilen.Count(z => z.UAbweichungHinweis);
+                var fehlt = v.Zeilen.Where(z => z.Stufe == Bauteilzuordnungsstufe.B || z.Stufe == Bauteilzuordnungsstufe.C)
+                                    .GroupBy(z => z.Fehlt).OrderByDescending(g => g.Count())
+                                    .Select(g => g.Key + "×" + g.Count());
+                _aus.WriteLine("STUFEN " + datei + " [" + gi + "]: " + string.Join(", ", summen.Select(Anteil))
+                               + "; weggelassene Schichten " + weg + "; U-Hinweis (>10 %) " + hinweis
+                               + "; fehlt: " + string.Join(", ", fehlt));
             }
         }
     }
@@ -796,15 +876,16 @@ namespace EPOS.Kern.Tests
         /// Erdreichwiderstand nach DIN EN ISO 13370 (Rechenweg RP2a); die Produktion (Bodenplatte 9 952 m², U 2,87) fiel
         /// damit von 225 auf 100 kWh/(m²a), MFH-Klein (ohne Bauteil am Erdreich) blieb. Ohne Raumgrenzen tragen die
         /// Trennflächen aus den Raumkörpern die Nachbarschaft der Räume (Mehrzonenkonzept 6.2): Alle sechs Dateien haben Z4
-        /// als Vorgabe, die Flächen gegen unbeheizte Räume sind vollständig.
+        /// als Vorgabe, die Flächen gegen unbeheizte Räume sind vollständig. Bauteile mit vollständigem Aufbau behalten den
+        /// U-Wert der Datei neben den Schichten (E95-1, BA-1) — das verschiebt MFH mittel, Sportheim und Verwaltung.
         /// </summary>
         private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen, double Q, double Spitze, double Tagesmittel, double QVergleich, double Auslegung)> SOLL
             = new Dictionary<string, (string, int, double, double, double, double, double)>(StringComparer.Ordinal)
             {
-                ["MFH_mittel_1984.ifc"] = ("Z4", 5, 45.17, 26.71, 16.47, 48.12, 19.46),
+                ["MFH_mittel_1984.ifc"] = ("Z4", 5, 46.27, 27.05, 16.73, 51.20, 19.85),
                 ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 41.36, 29.94, 17.46, 53.86, 22.03),
-                ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 59.29, 52.62, 28.05, 71.07, 37.21),
-                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 236.04, 266.65, 132.12, 227.80, 184.64),
+                ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 59.15, 52.58, 28.02, 71.23, 37.17),
+                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 238.31, 263.26, 132.95, 230.10, 185.56),
                 ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 17.67, 21.77, 9.76, 17.47, 14.13),
                 ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 3, 1856.82, 1273.75, 862.81, 1867.99, 1012.48),
             };

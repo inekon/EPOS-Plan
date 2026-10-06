@@ -102,9 +102,14 @@ namespace EPOS.Kern.Tests
             Assert.Null(luft.Rho);
             Assert.Null(luft.Cp);
 
-            // Das Dach ohne die Schraffur; Stahlbeton genau (N3), EPS über das Synonym, die Bahn über das Synonym.
+            // Das Dach ohne die Schraffur; Stahlbeton genau (N3), EPS über das Synonym. Die Bahn trifft über das
+            // Synonym die Bitumenbahn (Abdichtungen) und fällt unter die Relevanzregel — benannt am Aufbau.
             GebaeudeAufbauzeile dach = AufbauDerZeile(v, "Dach");
-            FolgeOderUmkehrung(new int?[] { 56, 39, 10 }, Stamm(dach));
+            FolgeOderUmkehrung(new int?[] { 39, 10 }, Stamm(dach));
+            GebaeudeWeggelasseneSchicht bahn = Assert.Single(dach.Weggelassen);
+            Assert.Equal(Schichtrelevanzgrund.Sperre, bahn.Grund);
+            Assert.True(bahn.AnteilR < Schichtrelevanz.ANTEIL_GRENZE);
+            Assert.Contains(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.SCHICHT_UNERHEBLICH);
 
             // Die Kellerdecke bleibt beim U-Wert der Datei.
             GebaeudeBauteilzeile kd = v.Zeilen.Single(z => z.Bauteil.Bezeichner == "Kellerdecke");
@@ -261,10 +266,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "1", "Beton" }, Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.STOFFWERT_UNGUELTIG).Werte);
             Assert.Equal(new[] { "1", "Solid 123456789" }, Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.SCHICHT_VERWORFEN).Werte);
             Assert.Equal(new[] { "1" }, Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.LUFTSCHICHT).Werte);
-            // Der U-Wert der Wand kommt aus den Schichten (E45/2) — samt der ruhenden Luftschicht nach Tabelle 8.
+            // Der U-Wert der Datei bleibt neben dem Aufbau stehen (E95-1); der aus den Schichten — samt der ruhenden
+            // Luftschicht nach Tabelle 8 — steht daneben, die Abweichung trägt den Hinweis.
             GebaeudeBauteilzeile w = v.Zeilen.Single(x => x.Kennung == "aw");
-            Assert.Null(w.Bauteil.U_Wert);
-            Assert.Equal(Importherkunft.Katalog, w.HerkunftU);
+            Assert.Equal(0.5, w.Bauteil.U_Wert);
+            Assert.Equal(Importherkunft.GbXml, w.HerkunftU);
+            Assert.Equal(Importherkunft.Katalog, w.HerkunftAufbau);
+            Assert.True(w.UAbweichungHinweis);
+            Assert.Equal(Bauteilzuordnungsstufe.A, w.Stufe);
             double rLuft = Bauteilreduktion.Luftschichtwiderstand(0.04, Waermestromrichtung.Horizontal);
             BauteilvorschlagProbe.Nah(1.0 / (0.13 + 0.1 / 0.5 + rLuft + 0.2 / 2.0 + 0.04), w.USchichten, 1e-12);
         }
