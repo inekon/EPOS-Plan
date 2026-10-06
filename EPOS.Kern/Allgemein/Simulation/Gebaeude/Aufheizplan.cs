@@ -53,8 +53,9 @@ namespace WindowsFormsApplication1
         internal int? ManuellH { get; init; }
 
         /// <summary>
-        /// Die stationäre Auslegungsheizlast Φ_HL der Zone [W] (<see cref="GebaeudeModellEingang.AuslegungsheizlastW"/>,
-        /// E60, Festlegung 41); NaN, wo der Eingang sie nicht herleitet (ohne Wärmeübergabe).
+        /// Die stationäre Auslegungsheizlast Φ_HL der Zone [W] (<see cref="GebaeudeModellEingang.Auslegungslasten"/>,
+        /// E60, Festlegung 41; E97: mit und ohne Anlagenkopplung dieselbe Bildung); NaN für eine unbeheizte Zone und wo
+        /// der Auslegungspunkt keine Zahl trägt.
         /// </summary>
         internal double AuslegungsheizlastW { get; init; } = double.NaN;
 
@@ -154,11 +155,13 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // E97: Φ_HL je Zone aus der einen Quelle - mit Kopplung die des Kopplungswegs, ohne sie dieselbe Bildung.
+            double[] auslegungslastW = GebaeudeModellEingang.Auslegungslasten(zonen);
             var ergebnis = new Aufheizzone[n];
             for (int i = 0; i < n; i++)
             {
                 ZonenEingang zone = zonen[i];
-                Aufheizzone a = Einzeln(zone);
+                Aufheizzone a = Einzeln(zone, auslegungslastW[i]);
                 if (zone.Gekoppelt)
                 {
                     double[][] reihen = soll;
@@ -197,8 +200,11 @@ namespace WindowsFormsApplication1
             return summe / (8760 - start);
         }
 
-        /// <summary>Die Zone ohne Nachbarform — die Außenform (Einzone, Welle R2).</summary>
-        private static Aufheizzone Einzeln(ZonenEingang zone)
+        /// <summary>
+        /// Die Zone ohne Nachbarform — die Außenform (Einzone, Welle R2); <paramref name="auslegungsheizlastW"/> ist
+        /// Φ_HL der Zone aus <see cref="GebaeudeModellEingang.Auslegungslasten"/> (E97).
+        /// </summary>
+        private static Aufheizzone Einzeln(ZonenEingang zone, double auslegungsheizlastW)
         {
             GebaeudeModellEingang e = zone.Eingang;
             return new Aufheizzone
@@ -213,7 +219,7 @@ namespace WindowsFormsApplication1
                 Strahlungsanteil = e.HeizungStrahlungsanteil,
                 HeizleistungMaxW = e.HeizleistungMaxW,
                 ManuellH = e.AufheizzeitManuellH,
-                AuslegungsheizlastW = e.AuslegungsheizlastW,
+                AuslegungsheizlastW = auslegungsheizlastW,
                 Nutzungszeit = e.Nutzungszeit,
                 Gekoppelt = e.KopplungWirksam
                             || (e.KopplungAlsIdealeLast
