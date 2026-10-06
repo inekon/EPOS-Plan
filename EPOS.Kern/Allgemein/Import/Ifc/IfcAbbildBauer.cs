@@ -461,6 +461,7 @@ namespace WindowsFormsApplication1
                 Quelltyp = s.ExpressType.ExpressName,
                 Name = langname ?? name,
                 GeschossKennung = geschoss?.GlobalId.ToString(),
+                HottcadGuid = HottcadGuid(s),
             };
             double?[] flaechen =
             {
@@ -726,6 +727,36 @@ namespace WindowsFormsApplication1
                 _beheizungsartOffen[g] = offen = new SortedDictionary<string, int>(StringComparer.Ordinal);
             Zaehlen(offen, ort + "\u0001" + (wert.Length == 0 ? "—" : wert));
             return null;
+        }
+
+        /// <summary>Der Satz der HottCAD-Kennung eines CAD-Exports (an Räumen, Bauteilen, Geschossen).</summary>
+        internal const string HOTTCAD_SATZ = "HSETU_BauteilAllgemein";
+
+        /// <summary>Die HottCAD-Kennung in <see cref="HOTTCAD_SATZ"/>: die GUID des Objekts in der Projektdatei.</summary>
+        internal const string HOTTCAD_GUID = "GUID";
+
+        /// <summary>
+        /// <b>Die Normalform einer GUID</b> für den Abgleich mit der Projektdatei: 32 Hexziffern mit oder ohne Klammern und
+        /// Bindestriche, Groß- und Kleinschreibung egal → <c>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</c> in Kleinbuchstaben.
+        /// <c>null</c>, wenn der Text keine GUID ist.
+        /// </summary>
+        internal static string GuidNormalform(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            string t = text.Trim();
+            if (t.Length >= 2 && t[0] == '{' && t[t.Length - 1] == '}') t = t.Substring(1, t.Length - 2);
+            return Guid.TryParseExact(t, "D", out Guid g) || Guid.TryParseExact(t, "N", out g) ? g.ToString("D") : null;
+        }
+
+        /// <summary>
+        /// <b>Die HottCAD-Kennung eines Objekts</b>: <see cref="HOTTCAD_SATZ"/>.<see cref="HOTTCAD_GUID"/> am Vorkommnis (ein
+        /// Typ trägt seine eigene Kennung, nicht die des Objekts), in der <see cref="GuidNormalform"/>; sonst <c>null</c>.
+        /// </summary>
+        private string HottcadGuid(IIfcObject o)
+        {
+            IfcFund f = IfcEigenschaften.Finden(_bezuege, o, HOTTCAD_SATZ, HOTTCAD_GUID);
+            return f != null && f.Quelle == IfcEigenschaftsquelle.Vorkommnis && f.Eigenschaft is IIfcPropertySingleValue einzel
+                ? GuidNormalform(IfcEigenschaften.Textwert(einzel.NominalValue)) : null;
         }
 
         /// <summary>Der Raumtyp eines CAD-Exports (<c>HSETU_RaumAllgemein</c>, Aufzählung mit Präfix <c>mrt</c>).</summary>
@@ -1600,6 +1631,7 @@ namespace WindowsFormsApplication1
                 Kennung = e.GlobalId.ToString(),
                 Quelltyp = e.ExpressType.ExpressName,
                 Name = IfcEigenschaften.Text(e.Name),
+                HottcadGuid = HottcadGuid(e),
                 Quellart = plattenart?.ToString(),
                 Randbedingung = rand,
             };
@@ -2471,6 +2503,7 @@ namespace WindowsFormsApplication1
                 Kennung = o.GlobalId.ToString(),
                 Quelltyp = o.ExpressType.ExpressName,
                 Name = IfcEigenschaften.Text(o.Name),
+                HottcadGuid = HottcadGuid(o),
                 Art = art,
                 Randbedingung = wirt.Randbedingung,
                 NeigungGrad = wirt.NeigungGrad,

@@ -336,6 +336,13 @@ namespace WindowsFormsApplication1
         /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Die HottCAD-Kennung (<c>HSETU_BauteilAllgemein.GUID</c> am <c>IfcSpace</c>) in der Normalform
+        /// <see cref="IfcAbbildBauer.GuidNormalform"/>; sie gleicht <c>BmRoom.GId</c> der Projektdatei, auch wo die
+        /// <c>GlobalId</c> neu vergeben ist. <c>null</c> = keine oder keine GUID.
+        /// </summary>
+        public string HottcadGuid { get; set; }
+
         /// <summary>Fläche [m²]; <c>null</c> = nicht gelesen.</summary>
         public double? FlaecheM2 { get; set; }
 
@@ -517,6 +524,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Die HottCAD-Kennung (<c>HSETU_BauteilAllgemein.GUID</c>, Vorkommnis) in der Normalform
+        /// <see cref="IfcAbbildBauer.GuidNormalform"/>; sie gleicht der Level-3-<c>GId</c> der Projektdatei, auch wo die
+        /// <c>GlobalId</c> neu vergeben ist. <c>null</c> = keine oder keine GUID.
+        /// </summary>
+        public string HottcadGuid { get; set; }
 
         /// <summary>Die Art, wie die Datei sie nennt (gbXML <c>@surfaceType</c> bzw. <c>@openingType</c>).</summary>
         public string Quellart { get; set; }

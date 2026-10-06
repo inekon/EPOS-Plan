@@ -57,16 +57,24 @@ namespace EPOS.Kern.Tests
                         ablauf.Lesen(s, ifc, GebaeudeImportProfil.FuerDatei(ifc));
                     if (ablauf.Abbild == null) continue;
                     SqprojStand stand = ablauf.ProjektdateiLesen(pfad, 0);
-                    _aus.WriteLine("  IFC " + Path.GetFileName(ifc) + ": abgeglichen " + stand.Abgeglichen + " (Kennung " + stand.Abgleich?.UeberKennung +
+                    _aus.WriteLine("  IFC " + Path.GetFileName(ifc) + ": abgeglichen " + stand.Abgeglichen + " (GUID " + stand.Abgleich?.UeberGuid + ", Kennung " + stand.Abgleich?.UeberKennung +
                                    ", Name " + stand.Abgleich?.UeberName + "), ohne Treffer " + stand.NichtAbgeglichen + ", IFC ohne Gegenstück " + stand.IfcOhneGegenstueck +
                                    (stand.Abgelehnt ? ", " + stand.Ablehnung : ""));
                     if (stand.Abgelehnt) continue;
+                    _aus.WriteLine("  IFC-Räume mit HottCAD-GUID " + ablauf.Abbild.Gebaeude[0].Raeume.Count(r => r.HottcadGuid != null) + " von " +
+                                   ablauf.Abbild.Gebaeude[0].Raeume.Count + ", Bauteile mit GUID " + ablauf.Abbild.Gebaeude[0].Bauteile.Count(x => x.HottcadGuid != null) +
+                                   " von " + ablauf.Abbild.Gebaeude[0].Bauteile.Count + ", GUID mehrdeutig " + stand.Abgleich.GuidMehrdeutig.Count);
+                    foreach (var m in stand.Abgleich.Meldungen) _aus.WriteLine("  Abgleich " + m.Stufe + " " + m);
                     Zonenplan plan = Zonenplan.Vorschlag(ablauf.Abbild, 0);
                     SqprojZonenergebnis e = ablauf.ProjektdateiUebernehmen(plan);
                     foreach (SqprojPlanzone z in e.Zonen)
                         _aus.WriteLine("  Zone " + z.Zone.Name + " [" + (plan.Zone(z.Schluessel).Nutzung ?? "—") + "] Räume " + plan.RaeumeVon(z.Schluessel).Count +
                                        ", " + string.Join(", ", z.Konditionierung.Groessen.Select(g => Konditionierungsgroessen.Kennwort(g.Groesse) + "=" + g.Herkunft)));
                     _aus.WriteLine("  leer " + e.LeereZonen.Count + ", nicht zugeordnet " + plan.NichtZugeordnet.Count);
+                    // Gegenprobe ohne HottCAD-GUID: der Abgleich nur über GlobalId und Name je Geschoss.
+                    foreach (AbbildRaum r in ablauf.Abbild.Gebaeude[0].Raeume) r.HottcadGuid = null;
+                    SqprojRaumabgleich ohne = SqprojRaumabgleich.Bilden(stand.Abbild, ablauf.Abbild.Gebaeude[0]);
+                    _aus.WriteLine("  ohne GUID: abgeglichen " + ohne.Abgeglichen + " (Kennung " + ohne.UeberKennung + ", Name " + ohne.UeberName + ")");
                 }
                 finally
                 {
