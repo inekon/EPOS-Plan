@@ -44109,6 +44109,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>
   </data>
+  <data name="PAUS_HERK_NENNINHALTE_OHNE_KATALOG" xml:space="preserve">
+    <value>Zapfprofil-Katalog nicht geladen: feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>
+  </data>
   <data name="PAUS_HERK_RANG1_KEINER" xml:space="preserve">
     <value>kein Wärmeerzeuger im Projekt</value>
   </data>
