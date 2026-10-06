@@ -38554,6 +38554,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schicht(en) unter der Relevanzschwelle weggelassen (bis 5 mm und je unter 2 % von Widerstand und Wärmekapazität, Folien und Abdichtungen unter 2 % des Widerstands): {1}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schicht(en) ohne Stoff verworfen (Schraffur oder leer: {1}). ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN {
@@ -38577,6 +38586,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufe A (vollständiger Aufbau): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_STUFE_A {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_STUFE_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufe B (U-Wert der Datei, Aufbau unvollständig): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_STUFE_B {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_STUFE_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufe C (nur Geometrie): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_STUFE_C {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_STUFE_C", resourceCulture);
             }
         }
         
@@ -38608,7 +38644,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es rechnen die Schichten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es gilt der U-Wert der Datei, die Schichten liefern R₁ und C₁. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_U_ABWEICHUNG {
             get {

@@ -37441,7 +37441,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>{0} Flächen ohne Nachbarraum: {1} — keinem Gebäude zugeordnet, nicht übernommen.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
-    <value>Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es rechnen die Schichten.</value>
+    <value>Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es gilt der U-Wert der Datei, die Schichten liefern R₁ und C₁.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
     <value>Aufbau {0}: Stoffwerte unvollständig oder außerhalb des Bereichs ({1}) — kein Aufbau, nur der U-Wert.</value>
@@ -37643,6 +37643,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
     <value>{0} Schicht(en) ohne Stoff verworfen (Schraffur oder leer: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH" xml:space="preserve">
+    <value>{0} Schicht(en) unter der Relevanzschwelle weggelassen (bis 5 mm und je unter 2 % von Widerstand und Wärmekapazität, Folien und Abdichtungen unter 2 % des Widerstands): {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_A" xml:space="preserve">
+    <value>Zuordnungsstufe A (vollständiger Aufbau): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_B" xml:space="preserve">
+    <value>Zuordnungsstufe B (U-Wert der Datei, Aufbau unvollständig): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_C" xml:space="preserve">
+    <value>Zuordnungsstufe C (nur Geometrie): {0} Bauteil(e), {1} m².</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
     <value>{0} Luftschicht(en) rechnen als ruhende Luftschicht nach DIN EN ISO 6946.</value>

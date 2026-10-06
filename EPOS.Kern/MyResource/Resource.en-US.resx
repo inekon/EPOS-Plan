@@ -37434,7 +37434,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>{0} surfaces without an adjacent space: {1} — assigned to no building, not taken over.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
-    <value>Construction {0}: file U-value {1} W/(m²K), from the layers {2} W/(m²K), deviation {3} % — the layers are used.</value>
+    <value>Construction {0}: file U-value {1} W/(m²K), from the layers {2} W/(m²K), deviation {3} % — the file U-value applies, the layers provide R₁ and C₁.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
     <value>Construction {0}: material data incomplete or out of range ({1}) — no construction, U-value only.</value>
@@ -37636,6 +37636,18 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
     <value>{0} layer(s) without a material discarded (hatch or empty: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH" xml:space="preserve">
+    <value>{0} layer(s) below the relevance threshold omitted (up to 5 mm and each below 2 % of resistance and heat capacity, membranes and sealing below 2 % of resistance): {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_A" xml:space="preserve">
+    <value>Assignment level A (complete construction): {0} element(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_B" xml:space="preserve">
+    <value>Assignment level B (file U-value, construction incomplete): {0} element(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_C" xml:space="preserve">
+    <value>Assignment level C (geometry only): {0} element(s), {1} m².</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
     <value>{0} air layer(s) are calculated as unventilated air layers to EN ISO 6946.</value>
