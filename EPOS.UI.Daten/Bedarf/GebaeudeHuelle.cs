@@ -176,7 +176,8 @@ namespace WindowsFormsApplication1
                 // eigene Komponente (GebaeudeAdminHuelle) und kennt diesen Weg nicht.
                 // Gerechnet wird aus dem Arbeitsstand - auch eine eben übernommene Zeile ohne
                 // Projektkopie, vor dem OK; allein eine Importzeile, deren Zone mit Bauteilen erst
-                // der Speicherweg anlegt, wartet auf das OK.
+                // der Speicherweg anlegt, rechnet nicht - der Dialog speichert sie zuvor still, im
+                // Assistenten wartet sie auf dessen Abschluss.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     z =>
                     {

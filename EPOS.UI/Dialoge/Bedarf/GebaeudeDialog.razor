@@ -760,10 +760,10 @@
     /// <summary>Was übernommen wird und was im Projekt bleibt — <c>GEB_TEXT_IN_DB_REGEL</c>.</summary>
     [Parameter] public string TextInDbRegel { get; set; } = Resource.GEB_TEXT_IN_DB_REGEL;
 
-    /// <summary>Grund der weichen Sperre bei einer noch nicht gespeicherten Zeile — <c>GEB_SPERRE_IN_DB_NEUE_ZEILE</c>.</summary>
-    [Parameter] public string SperreInDb { get; set; } = Resource.GEB_SPERRE_IN_DB_NEUE_ZEILE;
+    /// <summary>Grund der weichen Sperre einer ungespeicherten Zeile im Assistenten — <c>GEB_SPERRE_IN_DB_ASSISTENT</c>.</summary>
+    [Parameter] public string SperreInDb { get; set; } = Resource.GEB_SPERRE_IN_DB_ASSISTENT;
 
-    /// <summary>Eine Zeile trägt nach dem stillen Speichern keine Projektkopie — <c>GEB_MSG_PROJEKTKOPIE_FEHLT</c>.</summary>
+    /// <summary>Eine Zeile trägt (auch nach dem stillen Speichern) keine Projektkopie — <c>GEB_MSG_PROJEKTKOPIE_FEHLT</c>.</summary>
     [Parameter] public string MeldungProjektkopieFehlt { get; set; } = Resource.GEB_MSG_PROJEKTKOPIE_FEHLT;
 
     /// <summary>Grund der Löschsperre im Assistenten — <c>GEB_SPERRE_LOESCHEN_ASSISTENT</c>.</summary>
@@ -788,8 +788,8 @@
     /// <summary><c>GEXP_BTN_EXPORT_HINWEIS</c> — sein Kurztext.</summary>
     [Parameter] public string BtnExportHinweis { get; set; } = Resource.GEXP_BTN_EXPORT_HINWEIS;
 
-    /// <summary><c>GEXP_SPERRE_UNGESPEICHERT</c> — der Grund der Sperre einer Zeile ohne Projektkopie.</summary>
-    [Parameter] public string SperreExport { get; set; } = Resource.GEXP_SPERRE_UNGESPEICHERT;
+    /// <summary><c>GEXP_SPERRE_ASSISTENT</c> — der Grund der Sperre einer Zeile ohne Projektkopie im Assistenten.</summary>
+    [Parameter] public string SperreExport { get; set; } = Resource.GEXP_SPERRE_ASSISTENT;
 
     /// <summary><c>GEXP_TITEL_FORMATWAHL</c> — der Titel der Überlagerung (Formatwahl gbXML oder IFC).</summary>
     [Parameter] public string TitelExport { get; set; } = Resource.GEXP_TITEL_FORMATWAHL;
@@ -806,8 +806,8 @@
     /// <summary><c>GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT</c> — {0} = Zahl der entfernten Zuordnungen.</summary>
     [Parameter] public string MeldungBaustoffzuordnungenEntfernt { get; set; } = Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT;
 
-    /// <summary><c>GEBZ_SPERRE_NEUE_ZEILE</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie.</summary>
-    [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_NEUE_ZEILE;
+    /// <summary><c>GEBZ_SPERRE_PROJEKT_ASSISTENT</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie im Assistenten.</summary>
+    [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_PROJEKT_ASSISTENT;
 
     /// <summary>Grund am Knopf „Fläche und Verbrauch…" ohne Wahl in der Projektliste (<c>GEB_SPERRE_WAHL_FLAECHE</c>).</summary>
     [Parameter] public string SperreWahlFlaeche { get; set; } = Resource.GEB_SPERRE_WAHL_FLAECHE;
@@ -1568,7 +1568,7 @@
         if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(SperreNeueZeile)) return;
         _meldung = "";
         _projektGaben = ProjektGaben(_gewaehlt);
-        if (_projektGaben is null) Melden(SperreNeueZeile, WarnStufe.Hinweis);
+        if (_projektGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
     }
 
     /// <summary>
@@ -1595,7 +1595,7 @@
         if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(SperreExport)) return;
         _meldung = "";
         _exportGaben = ExportGaben(_gewaehlt, _geaenderteZeilen.Contains(_gewaehlt));
-        if (_exportGaben is null) Melden(SperreExport, WarnStufe.Hinweis);
+        if (_exportGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
     }
 
     /// <summary>„Baustoff-Zuordnungen…" (Nacharbeit G4b) — die Ansicht als Überlagerung, je Klick neu gelesen.</summary>
@@ -1662,6 +1662,15 @@
 
         _meldung = "";
         IReadOnlyDictionary<string, object>? gaben = BedarfGaben(_gewaehlt);
+        // Anwenderentscheid 06.10.2026: Eine ungespeicherte Importzeile, deren Zone mit Bauteilen erst
+        // der Speicherweg anlegt, wird außerhalb des Assistenten zuerst still gespeichert und dann
+        // gerechnet; scheitert das Speichern, steht seine Meldung.
+        if (gaben is null && ListeSpeichern is not null && !_gewaehlt.HatProjektkopie
+            && _gewaehlt.Herkunftsschluessel is not null)
+        {
+            if (!StillSpeichern(amKatalog: false)) return;
+            gaben = BedarfGaben(_gewaehlt);
+        }
         if (gaben is null)
         {
             // Stufe G6a: der benannte Grund der Fassade statt der allgemeinen Meldung.

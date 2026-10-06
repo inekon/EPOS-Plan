@@ -14724,14 +14724,14 @@ Please check all entries!</value>
   <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
     <value>Please enter a name.</value>
   </data>
-  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
-    <value>The building has not been saved in the project yet – it can be saved to the database after OK.</value>
+  <data name="GEB_SPERRE_IN_DB_ASSISTENT" xml:space="preserve">
+    <value>The building has not been saved in the project yet – it can be saved to the database once the wizard has finished.</value>
   </data>
   <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
     <value>Can be deleted only after the wizard has finished – a row taken over into the project comes from this building.</value>
   </data>
   <data name="GEB_MSG_PROJEKTKOPIE_FEHLT" xml:space="preserve">
-    <value>The building was saved but has no project copy.</value>
+    <value>There is no project copy of this building in the project.</value>
   </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>from project {0}, {1}</value>
@@ -33752,7 +33752,7 @@ Do you want to allow this?</value>
     <value>its catalogue record “{0}” cannot be found in the building catalogue — without it there are no building data to calculate from. Please select the building from the catalogue again.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
-    <value>the building comes from an import with a zone and building elements that are only created with OK – it is saved with OK, after which its heat requirement can be calculated.</value>
+    <value>the building comes from an import with a zone and building elements that are only created when it is saved – its heat requirement can be calculated once the wizard has finished.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Building file</value>
@@ -34672,8 +34672,8 @@ Do you want to allow this?</value>
   <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
     <value>Edit the building data of this project building, create zones and building components – the project copy is written, not the catalogue</value>
   </data>
-  <data name="GEBZ_SPERRE_NEUE_ZEILE" xml:space="preserve">
-    <value>The building has not been saved in the project yet – its project copy, which can carry zones, is created with OK.</value>
+  <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
+    <value>The building has not been saved in the project yet – its project copy, which can carry zones, is created once the wizard has finished.</value>
   </data>
   <data name="GEBZ_TITEL_PROJEKT" xml:space="preserve">
     <value>Building in the project: envelope and zones</value>
@@ -38399,8 +38399,8 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
     <value>Write the data of the building in the project — as gbXML with schematic room geometry or as IFC with zones, component areas and layer build-ups without geometry</value>
   </data>
-  <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
-    <value>The building is not yet saved in the project. Save with OK first, then export.</value>
+  <data name="GEXP_SPERRE_ASSISTENT" xml:space="preserve">
+    <value>The building has not been saved in the project yet – it can be exported once the wizard has finished.</value>
   </data>
   <data name="GEXP_LBL_FORMAT" xml:space="preserve">
     <value>Format</value>
@@ -38421,7 +38421,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Without a postal code the file carries no site and no north direction. The entry is not saved.</value>
   </data>
   <data name="GEXP_GESPEICHERTER_STAND" xml:space="preserve">
-    <value>The saved state of the building is exported; changes in this list only apply after OK.</value>
+    <value>The saved state of the building is exported; changes in this list that have not been saved yet are not included.</value>
   </data>
   <data name="GEXP_GRP_MELDUNGEN" xml:space="preserve">
     <value>Before writing</value>

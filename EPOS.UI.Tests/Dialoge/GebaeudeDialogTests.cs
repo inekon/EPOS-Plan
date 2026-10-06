@@ -679,6 +679,77 @@ public class GebaeudeDialogTests : EposBunitContext
                      cut.Instance.Meldung);
     }
 
+    /// <summary>
+    /// Anwenderentscheid 06.10.2026: Eine ungespeicherte Importzeile, deren Zone erst der Speicherweg
+    /// anlegt, wird außerhalb des Assistenten zuerst still gespeichert und dann gerechnet; scheitert das
+    /// Speichern, steht seine Meldung und der Bedarf bleibt zu.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Simulation_einer_Importzeile_speichert_vorher_still(bool gelingt)
+    {
+        int gespeichert = 0;
+        GebaeudeProjektZeile neu = Zeile(100000, "Import");
+        neu.Herkunftsschluessel = "imp-1";
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { neu },
+                           bedarfGaben: z => z.HatProjektkopie ? new Dictionary<string, object>() : null,
+                           listeSpeichern: () =>
+                           {
+                               gespeichert++;
+                               if (!gelingt) return "Die Gebäudeliste wurde nicht gespeichert.";
+                               neu.IdZ = 9; neu.HatProjektkopie = true; neu.Herkunftsschluessel = null;
+                               return "";
+                           });
+
+        Knopf(cut, "Simulation...").Click();
+
+        Assert.Equal(1, gespeichert);
+        Assert.Equal(gelingt, cut.Instance.BedarfOffen);
+        if (!gelingt) Assert.Equal("Die Gebäudeliste wurde nicht gespeichert.", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Anwenderentscheid 06.10.2026: Außerhalb des Assistenten wird still gespeichert — kein Sperr- oder
+    /// Hinweistext des Dialogs nennt dort „OK" als Bedingung. Die Sperrtexte, die nur der Assistent
+    /// zeigt, nennen seinen Abschluss.
+    /// </summary>
+    [Fact]
+    public void Im_Dialog_nennt_kein_Sperr_oder_Hinweistext_OK_als_Bedingung()
+    {
+        var okBedingung = new System.Text.RegularExpressions.Regex(@"\bOK\b");
+        GebaeudeProjektZeile neu = Zeile(100000, "Neu");
+        var cut = Render<GebaeudeDialog>(p => p
+            .Add(x => x.ListeSpeichern, () => "")
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile> { neu })
+            .Add(x => x.Katalogzeilen, () => Katalog())
+            .Add(x => x.Katalogprofil, Profil())
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "Katalogtext", "150,00"))
+            .Add(x => x.KatalogLoeschsperre, _ => "")
+            .Add(x => x.ProjektGaben, _ => null)
+            .Add(x => x.ExportGaben, (_, _) => null)
+            .Add(x => x.InDbUebernehmen, (_, _) => new GebaeudeDbUebernahme(false, "", "", false))
+            .Add(x => x.BedarfGaben, _ => null));
+
+        foreach (string titel in cut.FindAll("[title]").Select(e => e.GetAttribute("title") ?? ""))
+            Assert.DoesNotMatch(okBedingung, titel);
+        foreach (string text in new[] { R.GEXP_GESPEICHERTER_STAND, R.GEB_MSG_PROJEKTKOPIE_FEHLT })
+            Assert.DoesNotMatch(okBedingung, text);
+
+        foreach (string text in new[] { R.GEB_SPERRE_IN_DB_ASSISTENT, R.GEBZ_SPERRE_PROJEKT_ASSISTENT,
+                                        R.GEXP_SPERRE_ASSISTENT, R.GEB_SPERRE_LOESCHEN_ASSISTENT,
+                                        R.GEB_MSG_BEDARF_ZONE_UNGESPEICHERT })
+        {
+            Assert.DoesNotMatch(okBedingung, text);
+            Assert.Contains("Abschluss des Assistenten", text);
+        }
+
+        // Gibt der Speicherweg der Zeile keine Kopie, nennt die Meldung das - keinen OK-Weg.
+        cut.FindAll("button.epos-gebaeude-projekt").Single().Click();
+        Assert.Equal(R.GEB_MSG_PROJEKTKOPIE_FEHLT, cut.Instance.Meldung);
+    }
+
     /// <summary>Esc schließt den Wirt nicht, solange der Bedarf steht.</summary>
     [Fact]
     public void Esc_schliesst_NICHT_wenn_der_Bedarf_offen_ist()

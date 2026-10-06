@@ -104,7 +104,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
     }
 
     [Fact]
-    public void Eine_ungespeicherte_Zeile_ist_weich_gesperrt_und_nennt_den_Grund()
+    public void Im_Assistenten_ist_eine_ungespeicherte_Zeile_weich_gesperrt_und_nennt_den_Grund()
     {
         int gefragt = 0;
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(100000, kopie: false) },
@@ -113,7 +113,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
         IElement knopf = Knopf(cut, KNOPF);
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         Assert.False(knopf.HasAttribute("disabled"));
-        const string GRUND = "Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren.";
+        const string GRUND = "Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich exportieren.";
         Assert.Equal(GRUND, knopf.GetAttribute("title"));
 
         knopf.Click();
@@ -155,7 +155,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
         Knopf(cut, KNOPF).Click();
 
         Assert.False(cut.Instance.ExportOffen);
-        Assert.Contains("noch nicht im Projekt gespeichert", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Contains("keine Projektkopie", cut.Find(".epos-warnbanner").TextContent);
     }
 
     [Fact]

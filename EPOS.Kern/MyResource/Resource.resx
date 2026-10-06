@@ -14731,14 +14731,14 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
     <value>Bitte einen Namen eingeben.</value>
   </data>
-  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen.</value>
+  <data name="GEB_SPERRE_IN_DB_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich in die Datenbank übernehmen.</value>
   </data>
   <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
     <value>Erst nach Abschluss des Assistenten löschbar – eine übernommene Zeile stammt aus diesem Gebäude.</value>
   </data>
   <data name="GEB_MSG_PROJEKTKOPIE_FEHLT" xml:space="preserve">
-    <value>Das Gebäude wurde gespeichert, trägt aber keine Projektkopie.</value>
+    <value>Zu diesem Gebäude gibt es keine Projektkopie im Projekt.</value>
   </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>aus Projekt {0}, {1}</value>
@@ -33759,7 +33759,7 @@ Möchten Sie das zulassen?</value>
     <value>sein Katalogsatz „{0}“ ist im Gebäudekatalog nicht zu finden — ohne ihn gibt es keine Gebäudedaten, aus denen sich rechnen ließe. Bitte das Gebäude neu aus dem Katalog wählen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
-    <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+    <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit dem Speichern entstehen – nach Abschluss des Assistenten lässt sich sein Wärmebedarf berechnen.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Gebäudedatei</value>
@@ -34679,8 +34679,8 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
     <value>Die Gebäudedaten dieses Projektgebäudes bearbeiten, Zonen und Bauteile anlegen – geschrieben wird die Projektkopie, nicht der Katalog</value>
   </data>
-  <data name="GEBZ_SPERRE_NEUE_ZEILE" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst mit OK entsteht seine Projektkopie, die Zonen tragen kann.</value>
+  <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten entsteht seine Projektkopie, die Zonen tragen kann.</value>
   </data>
   <data name="GEBZ_TITEL_PROJEKT" xml:space="preserve">
     <value>Gebäude im Projekt: Hülle und Zonen</value>
@@ -38406,8 +38406,8 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
     <value>Die Daten des Gebäudes im Projekt ausgeben — als gbXML mit schematischer Raumgeometrie oder als IFC mit Zonen, Bauteilflächen und Schichtaufbauten ohne Geometrie</value>
   </data>
-  <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren.</value>
+  <data name="GEXP_SPERRE_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich exportieren.</value>
   </data>
   <data name="GEXP_LBL_FORMAT" xml:space="preserve">
     <value>Format</value>
@@ -38428,7 +38428,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung. Die Eingabe wird nicht gespeichert.</value>
   </data>
   <data name="GEXP_GESPEICHERTER_STAND" xml:space="preserve">
-    <value>Exportiert wird der gespeicherte Stand des Gebäudes; Änderungen in dieser Liste gelten erst nach OK.</value>
+    <value>Exportiert wird der gespeicherte Stand des Gebäudes; noch nicht gespeicherte Änderungen in dieser Liste sind darin nicht enthalten.</value>
   </data>
   <data name="GEXP_GRP_MELDUNGEN" xml:space="preserve">
     <value>Vor dem Schreiben</value>

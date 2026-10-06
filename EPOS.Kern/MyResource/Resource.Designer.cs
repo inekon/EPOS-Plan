@@ -29134,11 +29134,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst mit OK entsteht seine Projektkopie, die Zonen tragen kann. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten entsteht seine Projektkopie, die Zonen tragen kann. ähnelt.
         /// </summary>
-        public static string GEBZ_SPERRE_NEUE_ZEILE {
+        public static string GEBZ_SPERRE_PROJEKT_ASSISTENT {
             get {
-                return ResourceManager.GetString("GEBZ_SPERRE_NEUE_ZEILE", resourceCulture);
+                return ResourceManager.GetString("GEBZ_SPERRE_PROJEKT_ASSISTENT", resourceCulture);
             }
         }
         
@@ -29980,7 +29980,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit dem Speichern entstehen – nach Abschluss des Assistenten lässt sich sein Wärmebedarf berechnen. ähnelt.
         /// </summary>
         public static string GEB_MSG_BEDARF_ZONE_UNGESPEICHERT {
             get {
@@ -30115,7 +30115,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wurde gespeichert, trägt aber keine Projektkopie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Gebäude gibt es keine Projektkopie im Projekt. ähnelt.
         /// </summary>
         public static string GEB_MSG_PROJEKTKOPIE_FEHLT {
             get {
@@ -30295,11 +30295,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich in die Datenbank übernehmen. ähnelt.
         /// </summary>
-        public static string GEB_SPERRE_IN_DB_NEUE_ZEILE {
+        public static string GEB_SPERRE_IN_DB_ASSISTENT {
             get {
-                return ResourceManager.GetString("GEB_SPERRE_IN_DB_NEUE_ZEILE", resourceCulture);
+                return ResourceManager.GetString("GEB_SPERRE_IN_DB_ASSISTENT", resourceCulture);
             }
         }
         
@@ -31219,7 +31219,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Exportiert wird der gespeicherte Stand des Gebäudes; Änderungen in dieser Liste gelten erst nach OK. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportiert wird der gespeicherte Stand des Gebäudes; noch nicht gespeicherte Änderungen in dieser Liste sind darin nicht enthalten. ähnelt.
         /// </summary>
         public static string GEXP_GESPEICHERTER_STAND {
             get {
@@ -32245,20 +32245,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich exportieren. ähnelt.
+        /// </summary>
+        public static string GEXP_SPERRE_ASSISTENT {
+            get {
+                return ResourceManager.GetString("GEXP_SPERRE_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erst die Meldungen bestätigen. ähnelt.
         /// </summary>
         public static string GEXP_SPERRE_BESTAETIGEN {
             get {
                 return ResourceManager.GetString("GEXP_SPERRE_BESTAETIGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren. ähnelt.
-        /// </summary>
-        public static string GEXP_SPERRE_UNGESPEICHERT {
-            get {
-                return ResourceManager.GetString("GEXP_SPERRE_UNGESPEICHERT", resourceCulture);
             }
         }
         

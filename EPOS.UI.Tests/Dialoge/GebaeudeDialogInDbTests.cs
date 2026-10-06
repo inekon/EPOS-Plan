@@ -130,12 +130,12 @@ public class GebaeudeDialogInDbTests : EposBunitContext
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(100000, "Neu", false) });
         IElement knopf = InDbKnopf(cut)!;
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
-        Assert.Equal(R.GEB_SPERRE_IN_DB_NEUE_ZEILE, knopf.GetAttribute("title"));
+        Assert.Equal(R.GEB_SPERRE_IN_DB_ASSISTENT, knopf.GetAttribute("title"));
 
         knopf.Click();
         Assert.False(cut.Instance.InDbOffen);
         Assert.Empty(_aufrufe);
-        Assert.Equal(R.GEB_SPERRE_IN_DB_NEUE_ZEILE, cut.Instance.Meldung);
+        Assert.Equal(R.GEB_SPERRE_IN_DB_ASSISTENT, cut.Instance.Meldung);
     }
 
     /// <summary>
