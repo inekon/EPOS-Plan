@@ -653,7 +653,8 @@ namespace WindowsFormsApplication1
             }
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
                                                          Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert);
-            _geometrie = GebaeudeGrundriss.Bilden(_ablauf.Abbild, index, _zonierung);
+            // HC-5: der frisch abgeleitete Grundriss je Raum vor dem Rechteckersatz (dieselben, die der Import speichert).
+            _geometrie = GebaeudeGrundriss.BildenMitGrundriss(_ablauf.Abbild, index, _zonierung, out _);
         }
 
         /// <summary>

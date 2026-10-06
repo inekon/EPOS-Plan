@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -120,6 +121,8 @@ namespace WindowsFormsApplication1
                         Hinweis = Formatieren(MyResource.Resource.GEB_NL_PASSEND, name),
                         Zonenhinweis = Formatieren(e.Hottcad ? MyResource.Resource.GEB_NL_NUR_GEOMETRIE : MyResource.Resource.GEB_NL_ZONENREGEL, regel),
                         Ansicht = GebaeudeImportAnsicht.AnsichtDaten(e.Geometrie, false, null, e.Gebaeude),
+                        GrundrissRaeume = Nachtragbar(e, q) ? e.Raumgrundrisse.Count(GebaeudeImportCtrl.Speicherbar) : 0,
+                        GrundrissNachtragen = Nachtragbar(e, q) ? () => GrundrissNachtragenAsync(e, q) : null,
                     };
                 case NeulesenZustand.HashAbweichend:
                     return Fehlstand(GebaeudeNeulesezustand.HashAbweichend,
@@ -141,6 +144,41 @@ namespace WindowsFormsApplication1
                     return Fehlstand(GebaeudeNeulesezustand.NichtLesbar,
                         Formatieren(MyResource.Resource.GEB_NL_NICHT_LESBAR, name, grund).Trim());
             }
+        }
+
+        /// <summary>
+        /// HC-5 (F7): Ist „Grundriss übernehmen“ anzubieten? Nur bei passender Prüfsumme (Zustand <c>Passend</c>), mit
+        /// gespeicherter Quelle, mit mindestens einem speicherbaren Grundriss und nur, wenn die gespeicherten Zeilen der Quelle
+        /// fehlen oder vom frischen Stand abweichen.
+        /// </summary>
+        internal static bool Nachtragbar(NeulesenErgebnis e, ImportquelleModel q)
+        {
+            if (e == null || q == null || q.ID <= 0 || e.Zustand != NeulesenZustand.Passend) return false;
+            if (!e.Raumgrundrisse.Any(GebaeudeImportCtrl.Speicherbar)) return false;
+            try
+            {
+                return !GebaeudeImportCtrl.Gleich(new GebaeudeImportCtrl().LesenRaumgrundrisseDerQuelle(q.ID), e.Raumgrundrisse);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// HC-5 (F7): <b>Grundriss übernehmen</b> — nach Rückfrage über den Dialogdienst schreibt der Kern die frisch abgeleiteten
+        /// Grundrisse zur vorhandenen Quelle, in einem Vorgang (die alten Zeilen der Quelle ersetzt, die Zone aus den Paarungen).
+        /// Liefert die Hinweiszeile; <c>null</c> = abgelehnt (nichts geschrieben).
+        /// </summary>
+        internal static async Task<string> GrundrissNachtragenAsync(NeulesenErgebnis e, ImportquelleModel q)
+        {
+            int raeume = e.Raumgrundrisse.Count(GebaeudeImportCtrl.Speicherbar);
+            bool ja = await Dienste.Dialog.FrageAsync(Formatieren(MyResource.Resource.GEB_NL_GRUNDRISS_FRAGE, raeume, q.Dateiname),
+                                                     MyResource.Resource.GEB_NL_GRUNDRISS_TITEL);
+            if (!ja) return null;
+            GebaeudeImportCtrl.Ergebnis erg = new GebaeudeImportCtrl().SchreibeRaumgrundrisse(q.ID, e.Raumgrundrisse);
+            return erg.Ok ? Formatieren(MyResource.Resource.GEB_NL_GRUNDRISS_GESCHRIEBEN, raeume)
+                          : Formatieren(MyResource.Resource.GEB_NL_GRUNDRISS_FEHLER, erg.Meldung);
         }
 
         private static GebaeudeNeulesestand Fehlstand(GebaeudeNeulesezustand zustand, string hinweis)

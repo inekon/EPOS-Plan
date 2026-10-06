@@ -39,7 +39,8 @@ namespace WindowsFormsApplication1
             }
             List<GebaeudeAnsichtZone> zonen = geometrie.Zonen
                 .Select(z => new GebaeudeAnsichtZone(z.Schluessel, zonenname?.Invoke(z.Stelle) ?? z.Name, z.Stelle, z.IstBeheizt,
-                                                     z.Herkunft == Geometrieherkunft.Schematisch, z.Handgeaendert))
+                                                     z.Herkunft == Geometrieherkunft.Schematisch, z.Handgeaendert)
+                             { AusDateikoerper = z.Herkunft == Geometrieherkunft.Dateikoerper })
                 .ToList();
             double[] bezug = Bezugspunkt(geometrie);
             var daten = new GebaeudeAnsichtDaten
@@ -269,7 +270,13 @@ namespace WindowsFormsApplication1
             {
                 Dateikoerper = r.Koerper == null ? null : Koerper(r.Koerper, bezug),
                 Herkunft = r.Koerper != null ? Koerperherkunft.Datei
+                    : r.AusGrundriss ? Koerperherkunft.Grundriss
                     : r.Herkunft == Geometrieherkunft.Schematisch ? Koerperherkunft.Schematisch : Koerperherkunft.Umriss,
+                // HC-5: das Prisma je Polygon aus dem Grundriss (Boden und Höhe des Grundrisses, nicht V/A).
+                Prismen = r.AusGrundriss
+                    ? r.Polygone.Select(p => new GebaeudeAnsichtPrismenlage(p.PrismaBodenM.Value, p.PrismaHoeheM.Value)).ToList()
+                    : null,
+                Grundrissvermerke = r.Grundrissvermerke.Select(v => v.ToString()).ToList(),
             };
         }
 
@@ -318,7 +325,10 @@ namespace WindowsFormsApplication1
             return new GebaeudeAnsichtRaum(
                 r.RaumKennung, r.Name, zone, r.Beheizt, r.Herkunft == Geometrieherkunft.Schematisch,
                 flaeche.HasValue ? GebaeudeZuordnungsModell.ZahlText(Math.Round(flaeche.Value, 2)) + " m²" : MyResource.Resource.GIMP_WERT_LEER,
-                polygone);
+                polygone)
+            {
+                AusDateikoerper = r.Herkunft == Geometrieherkunft.Dateikoerper,
+            };
         }
     }
 }

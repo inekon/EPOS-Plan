@@ -36,7 +36,11 @@ public readonly record struct GebaeudeAnsichtPunkt(double X, double Y);
 /// <param name="Polygone">Die Polygone des Raums; leer = nicht im Grundriss (weder Raumgrenzen noch Fläche).</param>
 public sealed record GebaeudeAnsichtRaum(
     string Kennung, string Name, string? Zone, bool Beheizt, bool Schematisch, string Flaeche,
-    IReadOnlyList<IReadOnlyList<GebaeudeAnsichtPunkt>> Polygone);
+    IReadOnlyList<IReadOnlyList<GebaeudeAnsichtPunkt>> Polygone)
+{
+    /// <summary>HC-5: Der Umriss ist der Grundriss des Dateikörpers (Prisma, „aus Dateikörper“).</summary>
+    public bool AusDateikoerper { get; init; }
+}
 
 /// <summary>
 /// Ein Geschoss des Grundrisses: Kennung, Name, ob es schematische Umrisse trägt, seine Ausdehnung in
@@ -66,7 +70,11 @@ public sealed record GebaeudeAnsichtGeschoss(
 /// <param name="Beheizt">Beheizt oder frei schwingend.</param>
 /// <param name="Schematisch">Mindestens einer ihrer Räume ist schematisch.</param>
 /// <param name="VonHand">Hat eine Zuordnung von Hand sie gebildet oder verändert?</param>
-public sealed record GebaeudeAnsichtZone(string Schluessel, string Name, int Stelle, bool Beheizt, bool Schematisch, bool VonHand);
+public sealed record GebaeudeAnsichtZone(string Schluessel, string Name, int Stelle, bool Beheizt, bool Schematisch, bool VonHand)
+{
+    /// <summary>HC-5: Keiner ihrer Räume ist schematisch, mindestens einer steht aus dem Grundriss seines Dateikörpers.</summary>
+    public bool AusDateikoerper { get; init; }
+}
 
 /// <summary>
 /// <b>Die Daten der Grundrissansicht</b>: die Geschosse mit ihren Räumen, die Zonen, ob irgendein
@@ -245,6 +253,18 @@ public sealed record GebaeudeAnsichtDaten
             foreach (GebaeudeAnsichtRaum r in g.Raeume)
             {
                 GebaeudeAnsichtKoerperraum? angaben = Koerperraum(r.Kennung);
+                if (angaben?.Prismen is { Count: > 0 } prismen && prismen.Count == r.Polygone.Count)
+                {
+                    // HC-5: je Lage (Boden, Höhe) ein Körper mit den Polygonen dieser Lage - in der Folge der Polygone.
+                    foreach (GebaeudeAnsichtPrismenlage lage1 in prismen.Distinct())
+                    {
+                        var teil = new List<IReadOnlyList<GebaeudeAnsichtPunkt>>();
+                        for (int i = 0; i < prismen.Count; i++)
+                            if (prismen[i].Equals(lage1)) teil.Add(r.Polygone[i]);
+                        koerper.Add(new GebaeudeAnsichtKoerper(r with { Polygone = teil }, lage1.BodenM, lage1.HoeheM, false, angaben));
+                    }
+                    continue;
+                }
                 bool vorgabe = angaben?.HoeheM is not (> 0);
                 double hoehe = vorgabe ? VORGABEHOEHE_M : angaben!.HoeheM!.Value;
                 if (r.Polygone.Count == 0) continue;
@@ -277,8 +297,7 @@ public sealed record GebaeudeAnsichtDaten
                 if (datei is not null)
                     raeume.Add(new GebaeudeAnsichtDateiraum(r, Koerperherkunft.Datei, datei, null));
                 else if (prismen.TryGetValue(r.Kennung, out GebaeudeAnsichtKoerper? prisma))
-                    raeume.Add(new GebaeudeAnsichtDateiraum(
-                        r, prisma.Schematisch ? Koerperherkunft.Schematisch : Koerperherkunft.Umriss, null, prisma));
+                    raeume.Add(new GebaeudeAnsichtDateiraum(r, prisma.Herkunft, null, prisma));
             }
         return raeume;
     }
@@ -360,7 +379,19 @@ public sealed record GebaeudeAnsichtKoerperraum(
 
     /// <summary>Die Gruppe der Bodenfläche (die flächengrößte der Flächen nach unten); <c>null</c> = keine bekannt.</summary>
     public Randgruppe? Bodengruppe { get; init; }
+
+    /// <summary>
+    /// HC-5: je Polygon des Raums Boden und Höhe des Prismas aus dem Grundriss des Dateikörpers [m] — dieselbe Folge wie
+    /// <see cref="GebaeudeAnsichtRaum.Polygone"/>; <c>null</c> = kein Grundriss (dann Geschosslage und Raumhöhe).
+    /// </summary>
+    public IReadOnlyList<GebaeudeAnsichtPrismenlage>? Prismen { get; init; }
+
+    /// <summary>HC-5: die Vermerke des Grundrisses als Schlüssel (Namen von <c>Grundrissvermerk</c>); leer = keine.</summary>
+    public IReadOnlyList<string> Grundrissvermerke { get; init; } = Array.Empty<string>();
 }
+
+/// <summary>Boden und Höhe eines Prismas aus dem Grundriss [m] (HC-5).</summary>
+public readonly record struct GebaeudeAnsichtPrismenlage(double BodenM, double HoeheM);
 
 /// <summary>
 /// Die Gruppe einer Fläche nach Randbedingung (HottCAD-Verbund 4.1) — Spiegel der <c>Flaechengruppe</c> des Kerns mit denselben
@@ -443,6 +474,9 @@ public enum Koerperherkunft
 
     /// <summary>Prisma aus einem erfundenen Umriss (Fläche und Seitenverhältnis).</summary>
     Schematisch,
+
+    /// <summary>HC-5: Prisma aus dem Grundriss des Dateikörpers („aus Dateikörper (Grundriss)“).</summary>
+    Grundriss,
 }
 
 /// <summary>
@@ -531,6 +565,10 @@ public sealed record GebaeudeAnsichtKoerper(
 {
     /// <summary>Schematisch: der Umriss erfunden oder die Höhe die Vorgabe.</summary>
     public bool Schematisch => Raum.Schematisch || HoeheVorgabe;
+
+    /// <summary>Die Herkunft des Prismas: aus dem Grundriss des Dateikörpers (HC-5), schematisch oder aus dem Umriss.</summary>
+    public Koerperherkunft Herkunft => Angaben?.Prismen is { Count: > 0 } ? Koerperherkunft.Grundriss
+        : Schematisch ? Koerperherkunft.Schematisch : Koerperherkunft.Umriss;
 }
 
 /// <summary>
@@ -646,6 +684,27 @@ public sealed class GebaeudeAnsichtTexte
     /// <summary>GANS_HERKUNFT_SCHEMATISCH</summary>
     public string HerkunftSchematisch { get; set; } = Resource.GANS_HERKUNFT_SCHEMATISCH;
 
+    /// <summary>GANS_HERKUNFT_GRUNDRISS — HC-5: Prisma aus dem Grundriss des Dateikörpers.</summary>
+    public string HerkunftGrundriss { get; set; } = Resource.GANS_HERKUNFT_GRUNDRISS;
+
+    /// <summary>GANS_KENNZEICHEN_EXPORT — Exportmodell: {0} Räume aus Dateikörper, {1} aus Umriss, {2} schematisch.</summary>
+    public string KennzeichenExport { get; set; } = Resource.GANS_KENNZEICHEN_EXPORT;
+
+    /// <summary>GANS_GVERMERK_&lt;NAME&gt; — der Text je Vermerk eines Grundrisses (Name von <c>Grundrissvermerk</c>).</summary>
+    public IReadOnlyDictionary<string, string> Grundrissvermerke { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["Stufen"] = Resource.GANS_GVERMERK_STUFEN,
+        ["Ueberlappung"] = Resource.GANS_GVERMERK_UEBERLAPPUNG,
+        ["Splitter"] = Resource.GANS_GVERMERK_SPLITTER,
+        ["Konvex"] = Resource.GANS_GVERMERK_KONVEX,
+        ["Dachschraege"] = Resource.GANS_GVERMERK_DACHSCHRAEGE,
+        ["Geschosslage"] = Resource.GANS_GVERMERK_GESCHOSSLAGE,
+        ["Flaeche"] = Resource.GANS_GVERMERK_FLAECHE,
+    };
+
+    /// <summary>Der Text eines Grundrissvermerks nach seinem Schlüssel; unbekannt = der Schlüssel.</summary>
+    public string Grundrissvermerk(string schluessel) => Grundrissvermerke.TryGetValue(schluessel, out string? text) ? text : schluessel;
+
     /// <summary>GANS_RAEUME — Beschriftung der Raumliste mit der Herkunft je Körper.</summary>
     public string Raeume { get; set; } = Resource.GANS_RAEUME;
 
@@ -721,6 +780,7 @@ public sealed class GebaeudeAnsichtTexte
     {
         Koerperherkunft.Datei => HerkunftDatei,
         Koerperherkunft.Schematisch => HerkunftSchematisch,
+        Koerperherkunft.Grundriss => HerkunftGrundriss,
         _ => HerkunftUmriss,
     };
 
