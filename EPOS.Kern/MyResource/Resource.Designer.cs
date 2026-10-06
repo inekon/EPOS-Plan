@@ -31516,6 +31516,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platte am Prisma aus dem Grundriss der Importdatei (aus Dateikörper), der Kante nach Himmelsrichtung zugeordnet – kein Aufmaß. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ELEMENT_PLATTE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ELEMENT_PLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schematischer Körper aus dem EPOS-Gebäudemodell – kein Aufmaß. ähnelt.
         /// </summary>
         public static string GEXP_IFC_ELEMENT_SCHEMATISCH {
@@ -32074,6 +32083,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Flächen stehen auf mehreren Kanten ihres Prismas; die PlanarGeometry der Fläche zeigt die größte Platte, die Fläche selbst bleibt vollständig: {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_FLAECHE_TEILPLATTEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_FLAECHE_TEILPLATTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart „{0}“ hat keine Entsprechung in gbXML; die Datei nennt „Unknown“. ähnelt.
         /// </summary>
         public static string GEXP_PROT_GEBAEUDEART_UNBEKANNT {
@@ -32214,6 +32232,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PROT_NACHBARZONE_UNBEKANNT {
             get {
                 return ResourceManager.GetString("GEXP_PROT_NACHBARZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nordwinkel unbekannt, Modell-Nord angenommen — die Importquelle der Grundrisse nennt keinen Nordwinkel; die Bauteilplatten stehen an den Kanten nach Modell-Nord: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_NORDWINKEL_ANGENOMMEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_NORDWINKEL_ANGENOMMEN", resourceCulture);
             }
         }
         
@@ -121811,6 +121838,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZGEO_NICHT_ANGELEGT {
             get {
                 return ResourceManager.GetString("ZGEO_NICHT_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume stehen als Prisma aus einer Quelle ohne Nordwinkel; Modell-Nord ist als Nord angenommen: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_NORDWINKEL_ANGENOMMEN {
+            get {
+                return ResourceManager.GetString("ZGEO_NORDWINKEL_ANGENOMMEN", resourceCulture);
             }
         }
         

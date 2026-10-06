@@ -46572,6 +46572,18 @@ Chart</value>
   <data name="GEXP_IFC_ELEMENT_GRUNDRISS" xml:space="preserve">
     <value>Prisma aus dem Grundriss der Importdatei (aus Dateikörper){0}</value>
   </data>
+  <data name="ZGEO_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus einer Quelle ohne Nordwinkel; Modell-Nord ist als Nord angenommen: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>Nordwinkel unbekannt, Modell-Nord angenommen — die Importquelle der Grundrisse nennt keinen Nordwinkel; die Bauteilplatten stehen an den Kanten nach Modell-Nord: {0}</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_TEILPLATTEN" xml:space="preserve">
+    <value>{0} Flächen stehen auf mehreren Kanten ihres Prismas; die PlanarGeometry der Fläche zeigt die größte Platte, die Fläche selbst bleibt vollständig: {1}</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_PLATTE" xml:space="preserve">
+    <value>Platte am Prisma aus dem Grundriss der Importdatei (aus Dateikörper), der Kante nach Himmelsrichtung zugeordnet – kein Aufmaß.</value>
+  </data>
   <data name="IMP_GEB_PROT_GRUNDRISS_FLAECHE" xml:space="preserve">
     <value>{0} Räume: Die Fläche des Grundrisses weicht mehr als 10 % von der Raumfläche der Datei ab (gespeichert wird er trotzdem): {1}</value>
   </data>

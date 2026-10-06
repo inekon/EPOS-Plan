@@ -89,6 +89,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// HC-5c: <b>Die Nordrichtung des Exports</b> — die Drehung der Prismenkanten (<see cref="Zonengeometrie.PrismenDrehungGrad"/>),
+        /// wenn jeder Körper ein Prisma aus dem Grundriss ist und sie nicht 0 ist; sonst <c>null</c> (die Vorgabe +y = Nord bleibt —
+        /// schematische Rechtecke liegen immer „Nord oben“).
+        /// </summary>
+        internal static double? Exportnordwinkel(Zonengeometrie z, Zonenkoerper k)
+            => k != null && !k.Schematisch && z?.PrismenDrehungGrad is double d && Math.Abs(d) > 1e-9 ? d : null;
+
+        /// <summary>HC-5c: die Räume mit Prismen, deren Quelle keinen Nordwinkel nennt, als Aufzählung; <c>null</c> = keiner.</summary>
+        internal static string NordwinkelAngenommen(Zonengeometrie z)
+        {
+            List<string> namen = z?.Raeume.Where(r => r.AusGrundriss && r.NordwinkelAngenommen).Select(r => r.Name).ToList();
+            if (namen == null || namen.Count == 0) return null;
+            return namen.Count <= 5 ? string.Join(", ", namen) : string.Join(", ", namen.Take(5)) + ", …";
+        }
+
+        /// <summary>
         /// Die Meldungen der Raumgeometrie für den Plan (die dritte Stelle der Kennzeichnung, 8.4 — der Hinweis im
         /// Exportdialog): schematisch (Info) oder benannt abgelehnt (Warnung); sonst keine.
         /// </summary>
@@ -107,6 +123,8 @@ namespace WindowsFormsApplication1
                     meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_SCHEMATISCH, (k.Raeume.Count - grundriss).ToString(CultureInfo.InvariantCulture)));
                 if (grundriss > 0)
                     meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_DATEIKOERPER, grundriss.ToString(CultureInfo.InvariantCulture)));
+                if (NordwinkelAngenommen(z) is string ohneNord)
+                    meldungen.Add(new PruefMeldung(PruefStufe.Info, NORDWINKEL_ANGENOMMEN, ohneNord));
             }
             return meldungen;
         }
@@ -138,6 +156,12 @@ namespace WindowsFormsApplication1
         internal const string GEOMETRIE_OHNE = "GEXP_PROT_GEOMETRIE_OHNE";
         /// <summary>I — {0} Zahl, {1} Beispiele: Flächen ohne Polygon, obwohl die Datei Raumgeometrie trägt (Raum ohne Körper, Wand an keiner Kante); innere Masse zählt nicht.</summary>
         internal const string FLAECHE_OHNE_POLYGON = "GEXP_PROT_FLAECHE_OHNE_POLYGON";
+
+        /// <summary>HC-5c: I — {0} Zahl, {1} Beispiele: Flächen auf mehreren Prismenkanten; <c>PlanarGeometry</c> zeigt die größte Platte.</summary>
+        internal const string FLAECHE_TEILPLATTEN = "GEXP_PROT_FLAECHE_TEILPLATTEN";
+
+        /// <summary>HC-5c: I — {0} Räume: Die Quelle der Grundrisse nennt keinen Nordwinkel; Modell-Nord ist als Nord angenommen.</summary>
+        internal const string NORDWINKEL_ANGENOMMEN = "GEXP_PROT_NORDWINKEL_ANGENOMMEN";
         /// <summary>I — {0} Zahl, {1} Beispiele: Öffnungen, deren Polygon in der Wandstrecke verkleinert ist.</summary>
         internal const string OEFFNUNG_BEGRENZT = "GEXP_PROT_OEFFNUNG_BEGRENZT";
 
@@ -254,6 +278,7 @@ namespace WindowsFormsApplication1
             private Zonenkoerper _koerper;
             private readonly List<XElement> _ergebnisse = new List<XElement>();
             private readonly List<string> _ohnePolygon = new List<string>();
+            private readonly List<string> _teilplatten = new List<string>();
             private readonly List<string> _begrenzt = new List<string>();
 
             private readonly Dictionary<string, AbbildAufbau> _aufbauJeKennung = new Dictionary<string, AbbildAufbau>(StringComparer.Ordinal);
@@ -292,7 +317,7 @@ namespace WindowsFormsApplication1
                 if (!string.IsNullOrWhiteSpace(_abbild.Plz))
                     campus.Add(new XElement(NS + "Location",
                         new XElement(NS + "ZipcodeOrPostalCode", Klartext(_abbild.Plz.Trim())),
-                        new XElement(NS + "CADModelAzimuth", Zahl(_abbild.NordwinkelGrad ?? 0.0))));
+                        new XElement(NS + "CADModelAzimuth", Zahl(Exportnordwinkel(_geometrie, _koerper) ?? _abbild.NordwinkelGrad ?? 0.0))));
                 campus.Add(Gebaeude(g));
 
                 foreach (AbbildBauteil f in flaechen)
@@ -313,6 +338,9 @@ namespace WindowsFormsApplication1
                 wurzel.Add(_konstruktionen, _schichten, _stoffe, _fenstertypen, _zonen, _ergebnisse);
                 wurzel.Add(Dokumentgeschichte());
                 Sammelmeldung(FLAECHE_OHNE_POLYGON, _ohnePolygon);
+                Sammelmeldung(FLAECHE_TEILPLATTEN, _teilplatten);
+                if (_koerper != null && NordwinkelAngenommen(_geometrie) is string ohneNord)
+                    Meldungen.Add(new PruefMeldung(PruefStufe.Info, NORDWINKEL_ANGENOMMEN, ohneNord));
                 Sammelmeldung(OEFFNUNG_BEGRENZT, _begrenzt);
                 return new XDocument(wurzel);
             }
@@ -500,6 +528,9 @@ namespace WindowsFormsApplication1
                 Koerperflaeche flaeche = Koerperflaeche(f);
                 if (flaeche != null) surface.Add(new XElement(NS + "PlanarGeometry", Ring(flaeche.PunkteM)));
                 else if (_koerper != null && !InnereMasse(f)) _ohnePolygon.Add(f.Name ?? f.Kennung);
+                // HC-5c: An einem Prisma kann eine Fläche auf mehreren Kanten stehen; das Schema kennt je Surface EINEN PolyLoop.
+                if (flaeche != null && _koerper.Raum(flaeche.RaumKennung)?.AusGrundriss == true
+                    && _koerper.Flaechen(flaeche.RaumKennung, f.Kennung).Count > 1) _teilplatten.Add(f.Name ?? f.Kennung);
                 for (int i = 0; i < f.Oeffnungen.Count; i++)
                     surface.Add(Oeffnung(f.Oeffnungen[i], flaeche, i, f.Oeffnungen.Count));
                 return surface;

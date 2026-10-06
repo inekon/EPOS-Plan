@@ -204,7 +204,9 @@ namespace EPOS.Kern.Tests
                                  new DbParam("@t", t)) == 1, t + " fehlt oder ist nicht STRICT.");
             Assert.Equal(new[] { "ID_Importquelle" }, IndexSpalten(ImportzuordnungSchema.INDEX_ZUORDNUNG_QUELLE));
             Assert.Equal(new[] { "Quellkennung" }, IndexSpalten(ImportzuordnungSchema.INDEX_ZUORDNUNG_KENNUNG));
-            Assert.Equal(new[] { "ID" }.Concat(ImportzuordnungSchema.Quellspalten), DataRepository.SpaltenVonTabelle("Tab_Importquelle"));
+            // HC-5c: Schritt 191 hängt den Nordwinkel an die Quelle (RaumgrundrissSchema).
+            Assert.Equal(new[] { "ID" }.Concat(ImportzuordnungSchema.Quellspalten).Concat(new[] { RaumgrundrissSchema.SPALTE_NORDWINKEL }),
+                         DataRepository.SpaltenVonTabelle("Tab_Importquelle"));
             Assert.Equal(new[] { "ID" }.Concat(ImportzuordnungSchema.Zuordnungsspalten),
                          DataRepository.SpaltenVonTabelle("Tab_Importzuordnung"));
 

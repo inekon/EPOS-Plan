@@ -142,7 +142,10 @@ namespace WindowsFormsApplication1
                 Abbild = abbild;
                 Quelle = new GebaeudeQuelle(profil.Format, dateiname, hash, puffer.LongLength, abbild.Schemastand,
                                             Uhr().ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture),
-                                            Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten);
+                                            Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten)
+                {
+                    NordwinkelGrad = abbild.NordwinkelGrad,
+                };
                 foreach (AbbildGebaeude g in abbild.Gebaeude) _gebaeude.Add(g.Anzeigename);
                 Dateihinweise(abbild, Quelle.Dateiname);
                 // HC-5: Flächenabweichung (F8) und Herleitungen der Grundrisse je Raum - dieselben, die der Import speichert.

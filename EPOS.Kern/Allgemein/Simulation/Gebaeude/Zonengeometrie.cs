@@ -131,6 +131,12 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeAggregation.Sektor"/>); <c>null</c> = keine Himmelsrichtung.
         /// </summary>
         internal int? Sektor { get; init; }
+
+        /// <summary>
+        /// HC-5c: der wahre Azimut einer Wand aus Sicht des Raums [°] (dieselbe Quelle wie <see cref="Sektor"/>); <c>null</c> =
+        /// keiner — dann gilt die Mitte des Sektors.
+        /// </summary>
+        internal double? AzimutGrad { get; init; }
     }
 
     /// <summary>Ein Raum des Eingangs — im Weg <see cref="Zonengeometrie.AusFlaechen"/> auch eine Zone als Ganzes.</summary>
@@ -366,6 +372,15 @@ namespace WindowsFormsApplication1
         /// <summary>Stehen die Polygone als Prismen aus gespeicherten bzw. abgeleiteten Grundrissen (HC-5)?</summary>
         internal bool AusGrundriss => Polygone.Count > 0 && Polygone.All(p => p.IstPrisma);
 
+        /// <summary>
+        /// HC-5c: die Bauteilplatten an den Prismen (<see cref="Zonengeometrie"/>, Kantenzuordnung) — Wände je Kante, Boden- und
+        /// Deckenstreifen; je Bauteil die größte Platte zuerst. Leer = kein Prisma oder kein Bauteil.
+        /// </summary>
+        internal IReadOnlyList<Grundrissplatte> Platten { get; init; } = Array.Empty<Grundrissplatte>();
+
+        /// <summary>HC-5c: Nennt die Quelle der Grundrisse keinen Nordwinkel (Modell-Nord = Nord angenommen)?</summary>
+        internal bool NordwinkelAngenommen { get; init; }
+
         public override string ToString() => Name + " (" + Herkunft + ", " + Polygone.Count.ToString(CultureInfo.InvariantCulture) + " Polygone)";
     }
 
@@ -515,6 +530,8 @@ namespace WindowsFormsApplication1
         internal const string OHNE_FLAECHE = "ZGEO_OHNE_FLAECHE";
         /// <summary>I — {0} Zahl, {1} Beispiele: Räume als Prisma aus dem Grundriss ihres Dateikörpers (HC-5).</summary>
         internal const string DATEIKOERPER = "ZGEO_DATEIKOERPER";
+        /// <summary>I — {0} Zahl, {1} Beispiele: Die Quelle der Grundrisse nennt keinen Nordwinkel; Modell-Nord = Nord angenommen (HC-5c).</summary>
+        internal const string NORDWINKEL_ANGENOMMEN = "ZGEO_NORDWINKEL_ANGENOMMEN";
 
         // ==================================================================
         //  Festwerte
@@ -602,6 +619,12 @@ namespace WindowsFormsApplication1
         /// <summary>Gilt die Drehung für die Azimute der Kanten?</summary>
         internal bool NordwinkelAngewandt { get; private set; }
 
+        /// <summary>
+        /// HC-5c: die Drehung der Prismenkanten gegen Nord [°] (wahrer Azimut = Modellazimut − Drehung); <c>null</c> = kein Prisma.
+        /// Der Export schreibt sie als Nordrichtung, wenn kein Raum schematisch ist.
+        /// </summary>
+        internal double? PrismenDrehungGrad { get; private set; }
+
         /// <summary>Der Umriss eines Raums; <c>null</c> = kein solcher Raum.</summary>
         internal Raumumriss Raum(string kennung)
             => Raeume.FirstOrDefault(r => string.Equals(r.RaumKennung, kennung, StringComparison.Ordinal));
@@ -685,6 +708,7 @@ namespace WindowsFormsApplication1
                         e.Platziert.Clear();
                         e.Herleitung = r.Grundrisse[0].Herleitung;
                         e.Grundrissvermerke = r.Grundrisse.SelectMany(g => g.Vermerke).Distinct().OrderBy(v => v).ToList();
+                        e.NordwinkelAngenommen = r.Grundrisse.Any(g => g.NordwinkelUnbekannt);
                         ausGrundriss = r.Grundrisse.Any(g => g.Herkunft == Geometrieherkunft.Dateikoerper)
                             ? Geometrieherkunft.Dateikoerper : Geometrieherkunft.Raumgrenzen;
                     }
@@ -708,6 +732,10 @@ namespace WindowsFormsApplication1
                 }
                 entwurf.Add(e);
             }
+
+            // HC-5c: die Bauteilplatten an den Grundriss-Prismen (Konzept 11.4 „Körper“).
+            PlattenZuordnen(entwurf);
+            z.PrismenDrehungGrad = Prismendrehung(entwurf, drehung);
 
             // Die Nachbarpaare und die Kanten der Wände am Rechteck (Stufe G7b).
             List<Paarentwurf> paare = Paare(entwurf);
@@ -765,6 +793,8 @@ namespace WindowsFormsApplication1
                     DeckenStreifen = e.DeckenStreifen,
                     Koerper = r.Koerper,
                     Grundrissvermerke = e.Grundrissvermerke,
+                    Platten = e.Platten,
+                    NordwinkelAngenommen = e.NordwinkelAngenommen,
                 });
             }
             z.Raeume = raeume;
@@ -849,6 +879,8 @@ namespace WindowsFormsApplication1
             internal List<Grenzverweis> Decke = new List<Grenzverweis>();
             internal List<Grenzverweis> OhneKante = new List<Grenzverweis>();
             internal List<Grundrissvermerk> Grundrissvermerke = new List<Grundrissvermerk>();
+            internal List<Grundrissplatte> Platten = new List<Grundrissplatte>();
+            internal bool NordwinkelAngenommen;
             internal double L, B;
 
             // Stufe G7b — Lage und Kanten des schematischen Rechtecks (nie gedreht).
@@ -1104,6 +1136,7 @@ namespace WindowsFormsApplication1
             Sammel(QUADRAT, PruefStufe.Info, r => r.Herleitung == Umrissherleitung.Quadrat);
             Sammel(OHNE_FLAECHE, PruefStufe.Warnung, r => r.Polygone.Count == 0);
             Sammel(DATEIKOERPER, PruefStufe.Info, r => r.Herkunft == Geometrieherkunft.Dateikoerper && r.Polygone.Count > 0);
+            Sammel(NORDWINKEL_ANGENOMMEN, PruefStufe.Info, r => r.AusGrundriss && r.NordwinkelAngenommen);
             return meldungen;
         }
 
@@ -1142,12 +1175,13 @@ namespace WindowsFormsApplication1
                         flaeche -= g.Ringe[j].FlaecheM2;
                     }
                     IReadOnlyList<double[]> punkte = aussen.PunkteM;
+                    double dreh = g.DrehungGrad ?? drehung;   // HC-5c: die Drehung der Quelle, sonst die des Eingangs
                     var kanten = new List<Umrisskante>(punkte.Count);
                     for (int k = 0; k < punkte.Count; k++)
                     {
                         double[] a = punkte[k], b = punkte[(k + 1) % punkte.Count];
                         double dx = b[0] - a[0], dy = b[1] - a[1], laenge = Math.Sqrt(dx * dx + dy * dy);
-                        double? azimut = laenge > PUNKT_GLEICH_M ? Normiert(ModellAzimut(dy / laenge, -dx / laenge) - drehung) : (double?)null;
+                        double? azimut = laenge > PUNKT_GLEICH_M ? Normiert(ModellAzimut(dy / laenge, -dx / laenge) - dreh) : (double?)null;
                         kanten.Add(new Umrisskante(k, laenge, azimut, Array.Empty<Grenzverweis>()));
                     }
                     polygone.Add(new Umrisspolygon(punkte, kanten, Math.Max(0.0, flaeche), g.BodenM, null)

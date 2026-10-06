@@ -46565,6 +46565,18 @@ chart</value>
   <data name="GEXP_IFC_ELEMENT_GRUNDRISS" xml:space="preserve">
     <value>Prism from the floor plan of the imported file (from file body){0}</value>
   </data>
+  <data name="ZGEO_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>{0} rooms are prisms from a source without north angle; model north is assumed as north: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>North angle unknown, model north assumed — the import source of the floor plans has no north angle; the element plates stand on the edges by model north: {0}</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_TEILPLATTEN" xml:space="preserve">
+    <value>{0} surfaces stand on several edges of their prism; the PlanarGeometry of the surface shows the largest plate, the surface itself stays complete: {1}</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_PLATTE" xml:space="preserve">
+    <value>Plate on the prism from the floor plan of the import file (from file body), assigned to the edge by orientation – not a survey.</value>
+  </data>
   <data name="IMP_GEB_PROT_GRUNDRISS_FLAECHE" xml:space="preserve">
     <value>{0} rooms: the floor plan area differs by more than 10 % from the room area of the file (it is stored anyway): {1}</value>
   </data>

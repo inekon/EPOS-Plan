@@ -115,6 +115,9 @@ namespace WindowsFormsApplication1
         internal const string DATEI_STUFE_S3_GRUNDRISS = "GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS";
         /// <summary>HC-5: die Kennzeichnung eines Raums mit Prismen aus dem Grundriss; {0} = Vermerke (leer = keine).</summary>
         internal const string ELEMENT_GRUNDRISS = "GEXP_IFC_ELEMENT_GRUNDRISS";
+
+        /// <summary>HC-5c: der Vermerk einer Bauteilplatte an einem Grundriss-Prisma (Kantenzuordnung).</summary>
+        internal const string ELEMENT_PLATTE = "GEXP_IFC_ELEMENT_PLATTE";
         internal const string GEOMETRIE_ABGELEHNT_TEXT = "GEXP_IFC_GEOMETRIE_ABGELEHNT";
 
         /// <summary>Der Name der <c>IfcAnnotation</c>, die die Datei als schematisch kennzeichnet.</summary>
@@ -360,6 +363,8 @@ namespace WindowsFormsApplication1
                 if (_geometrie.AnordnungAbgelehnt) Dateibeschreibung.Add(T(_profil, DATEI_ABGELEHNT));
                 Geschichte();
                 if (_koerper != null) _form = new IfcKoerper(_m);
+                // HC-5c: Stehen alle Körper als Prisma aus dem Grundriss, trägt der Kontext die Nordrichtung der Quelle.
+                if (_form != null && GbxmlSchreiber.Exportnordwinkel(_geometrie, _koerper) is double nord) _form.Nordrichtung(nord);
                 IfcProject projekt = Projekt(wurzel, g);
                 IfcSite site = Grundstueck(wurzel);
                 IfcBuilding gebaeude = Gebaeude(g);
@@ -397,6 +402,8 @@ namespace WindowsFormsApplication1
 
                 if (_ergebnisse == null) Meldungen.Add(new PruefMeldung(PruefStufe.Info, OHNE_ERGEBNIS));
                 Sammelmeldung(GbxmlSchreiber.FLAECHE_OHNE_POLYGON, _ohneKoerper);
+                if (_koerper != null && GbxmlSchreiber.NordwinkelAngenommen(_geometrie) is string ohneNord)
+                    Meldungen.Add(new PruefMeldung(PruefStufe.Info, GbxmlSchreiber.NORDWINKEL_ANGENOMMEN, ohneNord));
                 Sammelmeldung(GbxmlSchreiber.OEFFNUNG_BEGRENZT, _begrenzt);
             }
 
@@ -458,6 +465,16 @@ namespace WindowsFormsApplication1
                     if (k != null) return k;
                 }
                 return null;
+            }
+
+            /// <summary>
+            /// HC-5c: die Platten eines Bauteils, wenn seine Fläche an einem Grundriss-Prisma steht (je Kante eine, die größte zuerst);
+            /// <c>null</c> = keine oder ein Rechteckkörper (dort bleibt es bei der einen Fläche).
+            /// </summary>
+            private IReadOnlyList<Koerperflaeche> Plattenflaechen(AbbildBauteil f, Koerperflaeche wand)
+            {
+                if (wand == null || _koerper?.Raum(wand.RaumKennung)?.AusGrundriss != true) return null;
+                return _koerper.Flaechen(wand.RaumKennung, f.Kennung);
             }
 
             /// <summary>Innere Masse einer Zone: beide Nachbarn sind derselbe Raum — sie liegt an keiner Kante.</summary>
@@ -711,7 +728,9 @@ namespace WindowsFormsApplication1
                 IfcElement e = Element(b, rand, null);
                 Flaechen++;
                 Koerperflaeche wand = Koerperflaeche(b);
-                Koerper(e, (_form?.Flaeche(wand)));
+                IReadOnlyList<Koerperflaeche> platten = Plattenflaechen(b, wand);
+                if (platten != null) Koerper(e, _form?.Flaechen(platten), T(_profil, ELEMENT_PLATTE));
+                else Koerper(e, (_form?.Flaeche(wand)));
                 bool zusammen = b.Kennung.StartsWith(PRAEFIX_ZUSAMMENFASSUNG, StringComparison.Ordinal);
                 if (_koerper != null && wand == null && !zusammen && !InnereMasse(b)) _ohneKoerper.Add(b.Name ?? b.Kennung);
                 for (int i = 0; i < b.Oeffnungen.Count; i++)

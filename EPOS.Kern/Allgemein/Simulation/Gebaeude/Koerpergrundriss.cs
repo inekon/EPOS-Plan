@@ -117,6 +117,16 @@ namespace WindowsFormsApplication1
         /// <summary>Die Vermerke, aufsteigend und ohne Doppel.</summary>
         internal IReadOnlyList<Grundrissvermerk> Vermerke { get; init; } = Array.Empty<Grundrissvermerk>();
 
+        /// <summary>
+        /// HC-5c: die Drehung der Prismenkanten gegen Nord [°] — wahrer Azimut = Modellazimut − Drehung; aus der Quelle gelesen
+        /// (<see cref="GebaeudeImportCtrl.Nordangabe"/>). <c>null</c> = die Drehung des Eingangs (Import: frisch abgeleitet).
+        /// Nicht gespeichert: Der Nordwinkel steht an der Quelle.
+        /// </summary>
+        internal double? DrehungGrad { get; init; }
+
+        /// <summary>HC-5c: Nennt die Quelle keinen Nordwinkel (Modell-Nord = Nord angenommen)? Nicht gespeichert.</summary>
+        internal bool NordwinkelUnbekannt { get; init; }
+
         /// <summary>Die Herkunft der Geometrie: aus dem Dateikörper bzw. — Herleitung Boden/Decke — aus den Raumgrenzen.</summary>
         internal Geometrieherkunft Herkunft
             => Herleitung == Umrissherleitung.Boden || Herleitung == Umrissherleitung.Decke

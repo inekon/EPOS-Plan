@@ -121,6 +121,11 @@ namespace WindowsFormsApplication1
         internal Raumkoerper Raum(string kennung)
             => Raeume.FirstOrDefault(r => string.Equals(r.RaumKennung, kennung, StringComparison.Ordinal));
 
+        /// <summary>HC-5c: alle Flächen eines Bauteils aus Sicht eines Raums (an Prismen je Kante eine, die größte zuerst); leer = keine.</summary>
+        internal IReadOnlyList<Koerperflaeche> Flaechen(string raumKennung, string bauteilKennung)
+            => Raum(raumKennung)?.Flaechen.Where(f => string.Equals(f.Verweis?.BauteilKennung, bauteilKennung, StringComparison.Ordinal)).ToList()
+               ?? new List<Koerperflaeche>();
+
         /// <summary>Die Fläche eines Bauteils aus Sicht eines Raums; <c>null</c> = keine (mehrere: die erste).</summary>
         internal Koerperflaeche Flaeche(string raumKennung, string bauteilKennung)
             => Raum(raumKennung)?.Flaechen.FirstOrDefault(f => string.Equals(f.Verweis?.BauteilKennung, bauteilKennung, StringComparison.Ordinal));
@@ -215,7 +220,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der Körper aus Grundrissen</b> (HC-5): je Polygon ein Prisma von seinem Boden um seine Höhe. Die Schale trägt je Prisma
         /// Boden und Decke — mit Löchern als ein Ring mit Steg zum nächsten Punkt des Außenrings — und je Kante eines Rings eine
-        /// Seitenfläche, Normale nach außen. Wände, Boden und Decke der Zone stehen auf keiner Kante (keine Flächen).
+        /// Seitenfläche, Normale nach außen. Die Flächen sind die Bauteilplatten der Kantenzuordnung (HC-5c, <see cref="Raumumriss.Platten"/>).
         /// </summary>
         private static Raumkoerper AusGrundriss(Raumumriss r)
         {
@@ -239,7 +244,22 @@ namespace WindowsFormsApplication1
                     }
             }
             double boden = prismen.Min(x => x.BodenM), oben = prismen.Max(x => x.BodenM + x.HoeheM);
-            return new Raumkoerper { RaumKennung = r.RaumKennung, BodenM = R(boden), HoeheM = R(oben - boden), Schale = schale, Prismen = prismen };
+
+            // HC-5c: die Bauteilplatten an den Prismen (Zonengeometrie, Kantenzuordnung) — kantenschlüssig wie am Rechteck.
+            List<double[][]> ecken = r.Platten.Select(x => x.EckenM.Select(q => P(q, q[2])).ToArray()).ToList();
+            List<double[]> alle = ecken.SelectMany(x => x).ToList();
+            var flaechen = r.Platten.Select((x, i) => new Koerperflaeche
+            {
+                RaumKennung = r.RaumKennung,
+                Verweis = x.Verweis,
+                Stellung = x.Stellung,
+                EckenM = ecken[i],
+                PunkteM = x.Stellung == Grenzstellung.Wand ? Kantenschluessig(ecken[i], alle) : ecken[i].ToList(),
+            }).ToList();
+            return new Raumkoerper
+            {
+                RaumKennung = r.RaumKennung, BodenM = R(boden), HoeheM = R(oben - boden), Schale = schale, Prismen = prismen, Flaechen = flaechen,
+            };
         }
 
         /// <summary>
