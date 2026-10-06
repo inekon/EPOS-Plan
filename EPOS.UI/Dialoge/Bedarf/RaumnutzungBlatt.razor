@@ -30,6 +30,7 @@
 
 @using System.Globalization
 @using System.Linq
+@implements IDisposable
 
 <div class="epos-raumnutzung">
 
@@ -523,6 +524,52 @@
 
     /// <summary>Meldet jede geschriebene Handlung — der Wirt liest Katalog und Zuordnung neu.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Der Zugang des Assistenten (NP3c): Der Wirt reicht ihn, das Blatt bindet sich beim Erscheinen an und
+    /// löst sich beim Verschwinden. Ohne ihn ist das Blatt für den Assistenten nicht zu sehen.
+    /// </summary>
+    [Parameter] public RaumnutzungKiZugang? KiZugang { get; set; }
+
+    private RaumnutzungKiZugang? _kiZugang;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_kiZugang, KiZugang)) return;
+        _kiZugang?.Loesen(this);
+        _kiZugang = KiZugang;
+        _kiZugang?.Anbinden(this, () => _stand, KiKategoriename, KiZuordnungszeilen,
+                            () => _ = InvokeAsync(StateHasChanged));
+    }
+
+    public void Dispose() => _kiZugang?.Loesen(this);
+
+    /// <summary>Der Name der Kategorie des Entwurfs — für das Feld <c>np_kategorie</c>.</summary>
+    private string KiKategoriename()
+        => _stand is RaumnutzungProfilDaten s
+           ? Kategorien.FirstOrDefault(k => k.Id == s.IdKategorie)?.Bezeichner ?? ""
+           : "";
+
+    /// <summary>Die Zeilen der Zuordnungstabelle für den Assistenten — Nummer ab 1, Texte wie die Tabelle.</summary>
+    private IReadOnlyList<RaumnutzungZuordnungKiZeile> KiZuordnungszeilen()
+    {
+        var zeilen = new List<RaumnutzungZuordnungKiZeile>(Zuordnungen.Count);
+        for (int i = 0; i < Zuordnungen.Count; i++)
+        {
+            RaumnutzungZuordnungDaten z = Zuordnungen[i];
+            string profil = "";
+            if (z.IdProfil is long id)
+                foreach (RaumnutzungKategorieDaten k in Kategorien)
+                    if (ProfileVon(k.Id).FirstOrDefault(p => p.Id == id) is RaumnutzungProfilDaten p)
+                    {
+                        profil = p.ToString();
+                        break;
+                    }
+            zeilen.Add(new RaumnutzungZuordnungKiZeile((i + 1).ToString(CultureInfo.InvariantCulture),
+                                                       Zuordnungsartname(z.Art), z.Schluessel, profil));
+        }
+        return zeilen;
+    }
 
     private static readonly IReadOnlyList<RaumnutzungKategorieDaten> KEINE_KATEGORIEN
         = Array.Empty<RaumnutzungKategorieDaten>();

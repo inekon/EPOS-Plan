@@ -6189,6 +6189,10 @@ namespace WindowsFormsApplication1
 
             if (!verwaltung)
             {
+                // ---- Das Blatt „Nutzungsprofile" (NP3c; Konzept Nutzungsprofile 6.1, NP-F22): aus DEM Profil
+                //      KiNutzungsprofilfelder - die Kennwerte des Profileditors als Feldtafel am Entwurf des
+                //      Blatts, die Zuordnungszeilen als Raster zum Lesen. Nur der Katalogeditor trägt das Blatt.
+                felder.AddRange(KiNutzungsprofilfelder.Dialogfelder());
 
                 // ---- Zonen eines Gebaeudes im Projekt (Stufe G6a): ein RASTER zum LESEN, Kennzeichen
                 //      die Nummer ab 1. Anlegen, Oeffnen, Duplizieren, Umordnen und Entfernen bleiben
