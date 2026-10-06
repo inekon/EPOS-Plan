@@ -277,6 +277,11 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Ein Baustein hängt sein Schließen NICHT an `focusout`** (es feuert auch bei Fokuswechseln
   INNERHALB, und Berührung setzt keinen Fokus): Beim Klick daneben schließt eine
   **Schließfläche** (`position: fixed; inset: 0`) mit **drei z-Ebenen**.
+- **Ein Erstfokus rollt nicht: `FocusAsync(preventScroll: true)`**, sonst steht der Vermerk
+  `Rollen gewollt: <Grund>` in derselben oder der Vorzeile. Eine eingebettete Ansicht fokussiert
+  sich nicht selbst, ihr Wirt fokussiert seine äußere Wurzel. Wache
+  [`FokusOhneRollenWacheTests`](../EPOS.UI.Tests/FokusOhneRollenWacheTests.cs), Probe
+  [`fokusprobe.mjs`](../Proben/Rasterprobe/fokusprobe.mjs).
 - **Jede Ebene einer verschachtelten Aufklapp-Struktur führt ihren EIGENEN Offen-Zustand — am
   besten als PFAD** (`_pfad[0]` erste Ebene, `_pfad[1]` zweite): Das gibt Ausschluss je Ebene und
   das Mitfallen ganzer Untermenüs.
