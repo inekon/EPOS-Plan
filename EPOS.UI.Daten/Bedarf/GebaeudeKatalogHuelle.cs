@@ -108,9 +108,12 @@ namespace WindowsFormsApplication1
             // (mit „aus dem Katalog erneut übernehmen").
             GebaeudeKatalogDaten daten = AusModell(kopie);
             daten.Konditionierung = KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude));
+            // Stufe KP3, Welle O2 (E59): die manuelle Aufheizzeit der Projektkopie und ihre Vorschlaege.
+            daten.AufheizzeitManuellH = AufheizauskunftCtrl.ManuellLesen(idGebaeude);
             var gaben = new Dictionary<string, object>(Grundgaben(kopie, GebaeudeKatalogModus.Projekt))
             {
                 ["Daten"] = daten,
+                ["Aufheizzeit"] = Aufheizvorschlaege(idProjekt, idGebaeude),
                 // Der Bezug des Projekts (Kopplung, Referenzjahr, Kuehlbetrieb) wie im Lauf (KP2 U1, 4 (c)).
                 ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Gebaeude, idGebaeude, idProjekt),
                 // „Speichern unter" im PROJEKTMODUS: Der neue Katalogbau bekommt die
@@ -144,8 +147,33 @@ namespace WindowsFormsApplication1
                 idGebaeude, idProjekt, modell, KonditionierungHuelle.Schreibstand(daten, Kalendereigentuemer.Gebaeude));
             if (!e.Ok)
                 return new GebaeudeKatalogErgebnis(false, string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.GEBZ_MSG_GEBAEUDE : e.Meldung);
+            // Stufe KP3, Welle O2 (E59): die manuelle Aufheizzeit gehoert zu den Gebaeudedaten (Schritt 1) - nur
+            // geschrieben, wenn sie sich geaendert hat; eine Datenbank ohne die Spalte lehnt einen Wert benannt ab.
+            if (daten.AufheizzeitManuellH != AufheizauskunftCtrl.ManuellLesen(idGebaeude)
+                && AufheizauskunftCtrl.ManuellSchreiben(idGebaeude, daten.AufheizzeitManuellH) is string grund)
+                return new GebaeudeKatalogErgebnis(false, grund);
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
             return new GebaeudeKatalogErgebnis(true, "");
+        }
+
+        /// <summary>
+        /// Die Vorschläge des Feldes „Aufheizzeit manuell (h)" (Stufe KP3, Welle O2; Festlegung 40): die Auskunft der
+        /// Bemessung der Projektkopie — auch bei ausgeschaltetem Schalter, damit der Vorschlag schon vor dem Einschalten
+        /// steht — mit der bemessenen Zeit und der Spanne aus τ₂ (<see cref="AufheizauskunftCtrl.Vorschlag"/>).
+        /// </summary>
+        internal static AufheizzeitManuellDaten Aufheizvorschlaege(int idProjekt, int idGebaeude)
+        {
+            Aufheizauskunft a = AufheizauskunftCtrl.Projektgebaeude(idProjekt, idGebaeude, true);
+            Aufheizvorschlag v = AufheizauskunftCtrl.Vorschlag(a);
+            return new AufheizzeitManuellDaten
+            {
+                SchalterAn = AufheizauskunftCtrl.SchalterAn(idProjekt),
+                BemessenH = v?.BemessenH,
+                VonH = v?.VonH,
+                BisH = v?.BisH,
+                Tau2H = v == null ? null : a?.Tau2H,
+                Unerreichbar = a?.Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR,
+            };
         }
 
         /// <summary>

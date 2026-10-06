@@ -77,6 +77,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal double? Tau2H { get; init; }
 
+        /// <summary>
+        /// Φ_HL — die stationäre Auslegungsheizlast [kW], skaliert wie <see cref="LeistungKw"/> (E60, Festlegung 41);
+        /// dieselbe Zahl wie <c>Auslegungsheizlast_Kw</c> der Ergebniszeile. <c>null</c> ohne Faktor, ohne Bemessung
+        /// und bei GEKOPPELT. Der Bedarfsdialog liest sie bei ausgeschalteter Optimierung von hier (Welle O2).
+        /// </summary>
+        internal double? AuslegungsheizlastKw { get; init; }
+
+        /// <summary>
+        /// Φ_RH — der Aufheizzuschlag max(0, P_auf − Φ_stat) [kW], skaliert wie <see cref="LeistungKw"/> (E60,
+        /// Festlegung 41); 0 bei UNERREICHBAR, <c>null</c> wie <see cref="AuslegungsheizlastKw"/>.
+        /// </summary>
+        internal double? AufheizzuschlagKw { get; init; }
+
         /// <summary>Verbrauchsangabe: den Faktor bestimmt erst der Jahreslauf (Rückrechnung, E8).</summary>
         internal bool FaktorErstImLauf => Zustand != null && !Skalierungsfaktor.HasValue;
     }

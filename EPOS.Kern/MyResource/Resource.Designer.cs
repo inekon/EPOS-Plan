@@ -25389,6 +25389,402 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die manuell ({0} h) ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_ART_MANUELL {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_ART_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizung ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_GRP {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_GRP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufheizoptimierung ist ausgeschaltet: Die Teile der Auslegungsgröße stammen aus der Bemessung ohne Jahreslauf mit den Werten der Projekteinstellung. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_HRL_AUSKUNFT {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_HRL_AUSKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Verbrauchsangabe entsteht der Skalierungsfaktor erst im Jahreslauf — Aufheizleistung und Auslegungsgröße stehen erst nach der Simulation. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_HRL_FAKTOR_LAUF {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_HRL_FAKTOR_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rampen laufen mit der manuellen Aufheizzeit {0} h; t_auf,max ist die bemessene Zeit. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_HRL_MANUELL {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_HRL_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die ideale Spitze ist bei ausgeschalteter Aufheizoptimierung keine Auslegungsgröße — sie folgt aus dem Sprung des Sollwerts ohne Rampe. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_HRL_SPITZE {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_HRL_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Zone eine eigene Bemessung; das Gebäude zeigt t_auf,max und die längste Rampe als Maximum, P_auf als Summe, Tage und Stunden als Vereinigung der beheizten Zonen. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_HRL_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_HRL_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_ART {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsgröße Φ_HL + Φ_RH: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsheizlast Φ_HL: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_AUSLEGUNGSHEIZLAST {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_AUSLEGUNGSHEIZLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur der Bemessung T_a,B: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_AUSSEN {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage durch die Absenkdauer begrenzt (W2): ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_BEGRENZT {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kappungsstunden an der Heizleistungsgrenze: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_KAPPUNG {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die längste Rampe: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_LAENGSTE {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_LAENGSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizleistung P_auf: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage außerhalb des Nachweisbands (W3): ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_NACHWEISBAND {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_NACHWEISBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle der Aufheizleistung: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ideale Spitze (Stunde): ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_SPITZE_IDEAL {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_SPITZE_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sprünge aus „aus“ ohne Rampe (W4): ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_SPRUENGE_AUS {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_SPRUENGE_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizstunden Σ: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_STUNDEN {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rampentage: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_TAGE {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage ohne erreichbare Rampe (W1): ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_UNERREICHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die längste Aufheizzeit t_auf,max: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_ZEIT_MAX {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_ZEIT_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzuschlag Φ_RH: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_ZUSCHLAG {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_ZUSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zustand: ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_LBL_ZUSTAND {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_LBL_ZUSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kappung (h) ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_SP_KAPPUNG {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_SP_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die längste Rampe (h) ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_SP_LAENGSTE {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_SP_LAENGSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_auf (kW) ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_SP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_SP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rampentage ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_SP_TAGE {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_SP_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die t_auf,max (h) ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_SP_ZEIT {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_SP_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zustand ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_SP_ZUSTAND {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_SP_ZUSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W1 — Aufheizleistung reicht nicht: An {0} Tagen hält keine Rampe bis 48 h; die Rampe füllt dort die Absenkung. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_W1 {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_W1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W1 — Aufheizleistung reicht nicht: Im Bemessungsfall liegt sie nicht über der stationären Heizlast, die Bemessung ist unerreichbar. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_W1_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_W1_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W2 — durch die Absenkdauer begrenzt: An {0} Tagen ist die Absenkung weitgehend wirkungslos. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_W2 {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_W2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W3 — Nachweisband: An {0} Tagen verlässt der Lauf das Nachweisband der Rampe. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_W3 {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_W3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W4 — Übergang aus „aus“ ohne Rampe: {0} Sprünge, darunter der Beginn der Heizperiode. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_W4 {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_W4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W5 — gekoppeltes Gebäude nicht optimiert: Die Übergabe begrenzt die Leistung nach dem Sprung. ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_W5 {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_W5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} h bei {1} °C ({2}) ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_ZEIT_BEI {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_ZEIT_BEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung aus ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_ZUSTAND_AUS {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_ZUSTAND_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bemessen ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_ZUSTAND_BEMESSEN {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_ZUSTAND_BEMESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gekoppelt — nicht optimiert ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_ZUSTAND_GEKOPPELT {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_ZUSTAND_GEKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt — ohne Rampe ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_ZUSTAND_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_ZUSTAND_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unerreichbar — keine Rampe bis 48 h hält ähnelt.
+        /// </summary>
+        public static string GEBB_AUFH_ZUSTAND_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("GEBB_AUFH_ZUSTAND_UNERREICHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung ähnelt.
         /// </summary>
         public static string GEBB_BILD_KOMFORTWOCHE {
@@ -50412,6 +50808,114 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzuschlag Φ_RH in kW: Aufheizleistung über der stationären Last. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFHEIZZUSCHLAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFHEIZZUSCHLAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur des Bemessungsfalls T_a,B in °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_AUSSEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_AUSSEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Kappungsanteile an der Heizleistungsgrenze in Stunden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_KAPPUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_KAPPUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Längste Rampe des Jahres in Stunden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_LAENGSTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_LAENGSTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizleistung P_auf in kW, skaliert wie die Spitzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Aufheizleistung kommt: Heizleistungsgrenze, Zielleistung oder gemischt je Zone. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Rampenstunden des Jahres in Stunden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_STUNDEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_STUNDEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Tage mit einer Aufheizrampe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_TAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_TAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessene längste Aufheizzeit t_auf,max in Stunden; leer bei unerreichbarer Bemessung oder ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_ZEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_ZEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zustand der Aufheizrechnung: bemessen, unerreichbar, gekoppelt oder aus. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUFH_ZUSTAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUFH_ZUSTAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stationäre Auslegungsheizlast Φ_HL in kW. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUSLEGUNGSHEIZLAST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUSLEGUNGSHEIZLAST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsgröße der Heizung: Auslegungsheizlast plus Aufheizzuschlag in kW; bei ausgeschalteter Aufheizoptimierung aus der Bemessung ohne Jahreslauf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_AUSLEGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_AUSLEGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für wen die Bilder Wärmelast und Raumtemperatur gelten: das ganze Gebäude oder eine seiner Zonen; nur bei einem Gebäude mit mehreren Zonen. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBB_DIAGRAMM_ERL {
@@ -50453,6 +50957,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBB_MAX_LAST_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBB_MAX_LAST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit wirksamer Nachtauskühlung; leer ohne Nachtauskühlung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_NACHTAUSKUEHLUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_NACHTAUSKUEHLUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Sommerlüftung; leer ohne Sommerlüftung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_SOMMERLUEFTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_SOMMERLUEFTUNG_ERL", resourceCulture);
             }
         }
         
@@ -68232,6 +68754,159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOMPAUSW_TITEL {
             get {
                 return ResourceManager.GetString("KOMPAUSW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die bemessene Aufheizzeit dieses Gebäudes in das Feld übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_BTN_TITEL {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_BTN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizung ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_GRP {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_GRP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} h liegt außerhalb der Spanne {1}–{2} h — der Wert wird trotzdem gespeichert. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_HRL_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_HRL_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer: Es gilt die Art der Projekteinstellung (täglich oder fest). ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_HRL_LEER {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_HRL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkt erst mit eingeschalteter Aufheizoptimierung in der Projekteinstellung. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_HRL_OHNE_SCHALTER {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_HRL_OHNE_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Bemessung kein Vorschlag: kein Sprung des Heizsollwerts, gekoppeltes Gebäude oder Tagesbilanz. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_HRL_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_HRL_OHNE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bemessung ist unerreichbar (W1) — es gibt keine bemessene Zeit. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_HRL_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_HRL_UNERREICHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die {0} Zonen erben diesen Wert: {1}. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_HRL_ZONEN {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_HRL_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzeit dieses Gebäudes in Stunden, 1 bis 47; leer heißt: Es gilt die Art der Projekteinstellung. Wirkt nur mit eingeschalteter Aufheizoptimierung, die Zonen erben den Wert. Nur im Projekt. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_KI_ERL {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_KI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die manuelle Aufheizzeit gibt es nur für ein Gebäude im Projekt (Knopf „Hülle und Zonen…“), nicht am Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_KI_NUR_PROJEKT {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_KI_NUR_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzeit manuell (h) ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_LBL {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_LBL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die manuelle Aufheizzeit muss zwischen {0} und {1} h liegen. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_MSG_BEREICH {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_MSG_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank kennt die manuelle Aufheizzeit noch nicht — der Wert wurde nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_MSG_OHNE_SPALTE {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_MSG_OHNE_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art des Projekts ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sinnvolle Spanne: {0}–{1} h (aus der Zeitkonstante τ₂ = {2} h) ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_SPANNE {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bemessen: {0} h ähnelt.
+        /// </summary>
+        public static string KOND_AUFH_MANUELL_VORSCHLAG_BEMESSEN {
+            get {
+                return ResourceManager.GetString("KOND_AUFH_MANUELL_VORSCHLAG_BEMESSEN", resourceCulture);
             }
         }
         

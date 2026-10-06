@@ -1534,6 +1534,9 @@ namespace WindowsFormsApplication1
                         AufheizzeitMaxH = g.Gekoppelt ? g.AufheizzeitMaxH : g.AufheizzeitBemessenH,
                         AussenC = Endlich(g.AussenBC), LeistungUnskaliertKw = p, Skalierungsfaktor = 1.0, LeistungKw = p,
                         Quelle = g.Quelle, Art = g.Art, AufheizzeitManuellH = g.ManuellH, Tau2H = Endlich(g.Tau2S / 3600.0),
+                        // E60 (Welle O2): Φ_HL und Φ_RH wie die Ergebniszeile (Aufheizergebnis.Gebaeude), Summe der Zonen.
+                        AuslegungsheizlastKw = g.Gekoppelt ? null : Endlich(g.AuslegungsheizlastW / 1000.0),
+                        AufheizzuschlagKw = g.Gekoppelt ? null : Endlich(g.AufheizzuschlagW / 1000.0),
                     };
                 }
 
@@ -1555,6 +1558,9 @@ namespace WindowsFormsApplication1
                     AussenC = Endlich(b.Wirksam.AussenC), LeistungUnskaliertKw = unskaliert, Skalierungsfaktor = faktor,
                     LeistungKw = faktor.HasValue ? unskaliert * faktor.Value : null, Quelle = b.Quelle,
                     Art = plan.Art, AufheizzeitManuellH = plan.ManuellH, Tau2H = Endlich(b.Wirksam.Tau2S / 3600.0),
+                    // E60 (Welle O2): Φ_HL und Φ_RH wie die Ergebniszeile (Aufheizergebnis.Bilden), skaliert wie P_auf.
+                    AuslegungsheizlastKw = faktor.HasValue ? Endlich(plan.AuslegungsheizlastW / 1000.0) * faktor.Value : null,
+                    AufheizzuschlagKw = faktor.HasValue ? Endlich(plan.AufheizzuschlagW / 1000.0) * faktor.Value : null,
                 };
             }
             catch (GebaeudeModellException ex)
