@@ -1255,14 +1255,17 @@ public class KiDialogkatalogTests : IDisposable
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_KATALOG)!;
 
-        Assert.Equal(29, KiNutzungsprofilfelder.Alle.Count);
+        Assert.Equal(34, KiNutzungsprofilfelder.Alle.Count);
         foreach (KiNutzungsprofilfelder.Feld f in KiNutzungsprofilfelder.Alle)
         {
             KiDialogFeld feld = d.FindeFeld(f.Schluessel)!;
             Assert.True(feld is not null, f.Schluessel);
             Assert.Equal("GebaeudeKatalogKiSicht." + f.Schluessel, feld!.Eigenschaftspfad);
             Assert.True(IstTafelfeld(KiMaskennamen.GEBAEUDE_KATALOG, feld), f.Schluessel);
-            Assert.Equal(f.Kennwert is KiNutzungsprofilfelder.Kennwert.Kategorie or KiNutzungsprofilfelder.Kennwert.TageJahr, feld.NurLesen);   // Nutzungstage abgeleitet (E93)
+            Assert.Equal(f.Kennwert is KiNutzungsprofilfelder.Kennwert.Kategorie or KiNutzungsprofilfelder.Kennwert.TageJahr
+                             or KiNutzungsprofilfelder.Kennwert.WegHeizen or KiNutzungsprofilfelder.Kennwert.WegKuehlen
+                             or KiNutzungsprofilfelder.Kennwert.WegLueftung or KiNutzungsprofilfelder.Kennwert.WegGeraete
+                             or KiNutzungsprofilfelder.Kennwert.WegPersonen, feld.NurLesen);   // Nutzungstage abgeleitet (E93)
             Assert.Equal(f.Typ, feld.Typ);
             Assert.False(string.IsNullOrWhiteSpace(feld.Erlaeuterung), f.Schluessel);
         }
@@ -1280,6 +1283,18 @@ public class KiDialogkatalogTests : IDisposable
             Assert.True(spalte.NurLesen, schluessel);
             Assert.Equal("Nummer", spalte.Zeilenkennzeichen);
             Assert.Equal(KiNutzungsprofilfelder.ZUORDNUNGEN + eigenschaft, spalte.Eigenschaftspfad);
+        }
+
+        // NP4c: Zeilenbild und Stundenprofile des Entwurfs als Raster zum Lesen; der Umschalter je Größe nur lesbar.
+        foreach ((string schluessel, string eigenschaft, string raster) in
+                 KiNutzungsprofilfelder.Zeilenbildspalten.Select(x => (x.Schluessel, x.Eigenschaft, "Nutzungsprofilzeilenbild"))
+                     .Concat(KiNutzungsprofilfelder.Stundenspalten.Select(x => (x.Schluessel, x.Eigenschaft, "Nutzungsprofilstunden"))))
+        {
+            KiDialogFeld spalte = d.FindeFeld(schluessel)!;
+            Assert.True(spalte.IstSpalte, schluessel);
+            Assert.True(spalte.NurLesen, schluessel);
+            Assert.Equal("Nummer", spalte.Zeilenkennzeichen);
+            Assert.Equal("GebaeudeKatalogKiSicht." + raster + "[]." + eigenschaft, spalte.Eigenschaftspfad);
         }
     }
 
@@ -1304,7 +1319,8 @@ public class KiDialogkatalogTests : IDisposable
         // Woche als Text (Karte im Einzelnen); mit KP2 U5 die Abkürzung „alle Größen" (kond_vorlage_alle, E57);
         // mit EV1 der wirksame U-Wert der Bodenplatte (erdreich_u_wirksam, E65); mit NP3c die 29 Felder des
         // Profileditors im Blatt „Nutzungsprofile" und die drei Spalten der Zuordnungstabelle (KiNutzungsprofilfelder).
-        Assert.Equal(89 + 47 + 29 + 3, d.Felder.Count);
+        // Mit NP4c die fünf Umschalter je Größe (nur lesbar) und die Spalten von Zeilenbild (5) und Stundenprofil (3).
+        Assert.Equal(89 + 47 + 34 + 3 + 5 + 3, d.Felder.Count);
         Assert.Equal(47, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {
@@ -1368,7 +1384,8 @@ public class KiDialogkatalogTests : IDisposable
         // „Konditionierung" am selben Arbeitsstand, dieselbe Feldtafel).
         // NP3c: − die Felder des Blatts „Nutzungsprofile" (nur der Editor trägt das Blatt).
         Assert.Equal(editor.Felder.Count - 4 - KiNutzungsprofilfelder.Alle.Count
-                     - KiNutzungsprofilfelder.Zuordnungsspalten.Count, verwaltung.Felder.Count);
+                     - KiNutzungsprofilfelder.Zuordnungsspalten.Count - KiNutzungsprofilfelder.Zeilenbildspalten.Count
+                     - KiNutzungsprofilfelder.Stundenspalten.Count, verwaltung.Felder.Count);
         Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith("zone_", StringComparison.Ordinal));
         Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith(KiNutzungsprofilfelder.PRAEFIX, StringComparison.Ordinal));
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)

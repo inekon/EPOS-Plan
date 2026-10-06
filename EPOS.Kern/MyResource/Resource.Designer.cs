@@ -88986,6 +88986,276 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einfügen ähnelt.
+        /// </summary>
+        public static string RNP_ED_BTN_EINFUEGEN {
+            get {
+                return ResourceManager.GetString("RNP_ED_BTN_EINFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilenbild und Stundenprofil der Größe „{0}“ löschen? Danach gelten die Kennwerte. ähnelt.
+        /// </summary>
+        public static string RNP_ED_FRAGE_KENNWERTE {
+            get {
+                return ResourceManager.GetString("RNP_ED_FRAGE_KENNWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeilenbild der Größe „{0}“ löschen? Danach gilt das Stundenprofil. ähnelt.
+        /// </summary>
+        public static string RNP_ED_FRAGE_STUNDEN {
+            get {
+                return ResourceManager.GetString("RNP_ED_FRAGE_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Stundenprofil der Größe „{0}“ löschen? Danach gilt das Zeilenbild. ähnelt.
+        /// </summary>
+        public static string RNP_ED_FRAGE_ZEILENBILD {
+            get {
+                return ResourceManager.GetString("RNP_ED_FRAGE_ZEILENBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuerst eine Zeile mit 24 Werten eintragen. ähnelt.
+        /// </summary>
+        public static string RNP_ED_GRUND_EINFUEGEN {
+            get {
+                return ResourceManager.GetString("RNP_ED_GRUND_EINFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gelten die Kennwerte oben; die Vorschau zeigt, was daraus entsteht. ähnelt.
+        /// </summary>
+        public static string RNP_ED_HINWEIS_KENNWERTE {
+            get {
+                return ResourceManager.GetString("RNP_ED_HINWEIS_KENNWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch ohne Werte — bis dahin gilt der nächste Weg (Stundenprofil, sonst Kennwerte). ähnelt.
+        /// </summary>
+        public static string RNP_ED_HINWEIS_LEER {
+            get {
+                return ResourceManager.GetString("RNP_ED_HINWEIS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Kennwert Außenluft sind die Stundenwerte der Lüftung Anteile davon. ähnelt.
+        /// </summary>
+        public static string RNP_ED_HINWEIS_LUFT {
+            get {
+                return ResourceManager.GetString("RNP_ED_HINWEIS_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Stundenprofil ergibt eine Standardwoche: der Werktag an den Nutzungstagen, sonst der nutzungsfreie Tag. ähnelt.
+        /// </summary>
+        public static string RNP_ED_HINWEIS_STUNDEN {
+            get {
+                return ResourceManager.GetString("RNP_ED_HINWEIS_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeilenbild gilt wörtlich statt der Kennwerte dieser Größe; eine leere Zeile gilt nicht. ähnelt.
+        /// </summary>
+        public static string RNP_ED_HINWEIS_ZEILENBILD {
+            get {
+                return ResourceManager.GetString("RNP_ED_HINWEIS_ZEILENBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Stundenprofil im Entwurf des Profileditors (Größe, Tagesart WERKTAG oder FREI, 24 Werte mit Semikolon in der Einheit des Profils); nur lesbar, Kennzeichen die Nummer ab 1. Bearbeitet wird im Blatt. ähnelt.
+        /// </summary>
+        public static string RNP_ED_KI_STUNDEN_ERL {
+            get {
+                return ResourceManager.GetString("RNP_ED_KI_STUNDEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Größe im Entwurf des Profileditors ihren Zeitverlauf nimmt: {0} (Kennwerte), {1} (Zeilenbild) oder {2} (Stundenprofil). Nur lesbar — umgeschaltet wird im Blatt mit Rückfrage, ein Klick des Anwenders. ähnelt.
+        /// </summary>
+        public static string RNP_ED_KI_WEG_ERL {
+            get {
+                return ResourceManager.GetString("RNP_ED_KI_WEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Quelle ähnelt.
+        /// </summary>
+        public static string RNP_ED_KI_WEG_NAME {
+            get {
+                return ResourceManager.GetString("RNP_ED_KI_WEG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zeile des Zeilenbilds im Entwurf des Profileditors (Größe, Zeile, Wert in der Einheit des Profils oder „aus“, Nachtfenster, ΔT); nur lesbar, Kennzeichen die Nummer ab 1. Bearbeitet wird im Blatt. ähnelt.
+        /// </summary>
+        public static string RNP_ED_KI_ZEILENBILD_ERL {
+            get {
+                return ResourceManager.GetString("RNP_ED_KI_ZEILENBILD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Zeile einfügen (24 Werte) ähnelt.
+        /// </summary>
+        public static string RNP_ED_LBL_EINFUEGEN {
+            get {
+                return ResourceManager.GetString("RNP_ED_LBL_EINFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Stunde {1} ähnelt.
+        /// </summary>
+        public static string RNP_ED_LBL_STUNDE {
+            get {
+                return ResourceManager.GetString("RNP_ED_LBL_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teppichbild ähnelt.
+        /// </summary>
+        public static string RNP_ED_LBL_TEPPICH {
+            get {
+                return ResourceManager.GetString("RNP_ED_LBL_TEPPICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau der Größe ähnelt.
+        /// </summary>
+        public static string RNP_ED_LBL_VORSCHAU {
+            get {
+                return ResourceManager.GetString("RNP_ED_LBL_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle der Größe ähnelt.
+        /// </summary>
+        public static string RNP_ED_LBL_WEG {
+            get {
+                return ResourceManager.GetString("RNP_ED_LBL_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche ähnelt.
+        /// </summary>
+        public static string RNP_ED_LBL_WOCHE {
+            get {
+                return ResourceManager.GetString("RNP_ED_LBL_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet 24 Werte, gefunden {0}. ähnelt.
+        /// </summary>
+        public static string RNP_ED_MSG_ANZAHL {
+            get {
+                return ResourceManager.GetString("RNP_ED_MSG_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde {0}: „{1}“ ist keine Zahl im Bereich {2} … {3} {4}. ähnelt.
+        /// </summary>
+        public static string RNP_ED_MSG_WERT {
+            get {
+                return ResourceManager.GetString("RNP_ED_MSG_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 24 Werte, durch Leerzeichen oder Tab getrennt ähnelt.
+        /// </summary>
+        public static string RNP_ED_PH_EINFUEGEN {
+            get {
+                return ResourceManager.GetString("RNP_ED_PH_EINFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitverlauf je Größe ähnelt.
+        /// </summary>
+        public static string RNP_ED_TITEL {
+            get {
+                return ResourceManager.GetString("RNP_ED_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle wechseln ähnelt.
+        /// </summary>
+        public static string RNP_ED_TITEL_FRAGE {
+            get {
+                return ResourceManager.GetString("RNP_ED_TITEL_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Bezugsjahr {0}; die Woche liegt im Januar ohne Feiertag. ähnelt.
+        /// </summary>
+        public static string RNP_ED_TXT_BEZUG {
+            get {
+                return ResourceManager.GetString("RNP_ED_TXT_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Größe ist nicht belegt; das Ziel behält seinen Kalender. ähnelt.
+        /// </summary>
+        public static string RNP_ED_TXT_NICHT_BELEGT {
+            get {
+                return ResourceManager.GetString("RNP_ED_TXT_NICHT_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Kennwerten ähnelt.
+        /// </summary>
+        public static string RNP_ED_WEG_KENNWERTE {
+            get {
+                return ResourceManager.GetString("RNP_ED_WEG_KENNWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenprofil ähnelt.
+        /// </summary>
+        public static string RNP_ED_WEG_STUNDEN {
+            get {
+                return ResourceManager.GetString("RNP_ED_WEG_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilenbild ähnelt.
+        /// </summary>
+        public static string RNP_ED_WEG_ZEILENBILD {
+            get {
+                return ResourceManager.GetString("RNP_ED_WEG_ZEILENBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Gesamtangabe des Luftwechsels wird in Infiltration und Nutzerlüftung aufgeteilt; der wirksame Luftwechsel bleibt. ähnelt.
         /// </summary>
         public static string RNP_FRAGE_AUFTEILEN {

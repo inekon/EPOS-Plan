@@ -82,7 +82,7 @@ public sealed record RaumnutzungKategorieDaten(long Id, string Bezeichner, Raumn
 
 /// <summary>
 /// <b>Eine Zeile des Zeilenbilds</b> (NP-F7) — eine Zelle der Vorgabe-Matrix, die ein Profil je Größe
-/// wörtlich mitbringt. In dieser Welle nur lesend angezeigt (Bearbeitung in NP4).
+/// wörtlich mitbringt. Bearbeitet im Editor „Zeitverlauf je Größe" (<see cref="RaumnutzungBildEditor"/>, NP4c).
 /// </summary>
 /// <param name="Groesse">Die Größe.</param>
 /// <param name="Zeile">Die Zeile der Matrix (Tag, Nacht, Wochenende, Ferien) als Anzeigetext des Kerns.</param>
@@ -95,8 +95,8 @@ public sealed record RaumnutzungZeilenbildDaten(KonditionierungGroesse Groesse, 
                                                 int? Von, int? Bis, double? DeltaT);
 
 /// <summary>
-/// <b>Ein Stundenprofil</b> (NP-F9) — je Größe und Tagesart vierundzwanzig Werte. In dieser Welle nur
-/// lesend angezeigt (Bearbeitung in NP4).
+/// <b>Ein Stundenprofil</b> (NP-F9) — je Größe und Tagesart vierundzwanzig Werte. Bearbeitet im Editor
+/// „Zeitverlauf je Größe" (<see cref="RaumnutzungBildEditor"/>, NP4c).
 /// </summary>
 /// <param name="Groesse">Die Größe.</param>
 /// <param name="Tagesart">Werktag oder nutzungsfreier Tag.</param>
@@ -405,4 +405,10 @@ public sealed class RaumnutzungWeg
 
     /// <summary>Bietet das Bündel die Verwaltung des Katalogs an (Lesen genügt nicht)?</summary>
     public bool MitKatalog => Kategorien is not null && Profile is not null;
+
+    /// <summary>
+    /// Der Editor „Zeitverlauf je Größe" (NP4c): Umschalter, Zeilenbild, Stundenprofil und Vorschau — eigenes Bündel;
+    /// ohne es zeigt der Editor Zeilenbild und Stunden nur lesend.
+    /// </summary>
+    public RaumnutzungBildWeg? Bild { get; init; }
 }

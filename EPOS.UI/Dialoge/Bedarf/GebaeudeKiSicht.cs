@@ -39,6 +39,14 @@ public sealed class GebaeudeKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public IReadOnlyList<RaumnutzungZuordnungKiZeile> Nutzungsprofilzuordnungen
         => Nutzungsprofile?.Zuordnungen ?? Array.Empty<RaumnutzungZuordnungKiZeile>();
 
+    /// <summary>Das Zeilenbild im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
+    public IReadOnlyList<RaumnutzungZeilenbildKiZeile> Nutzungsprofilzeilenbild
+        => Nutzungsprofile?.Zeilenbildzeilen ?? Array.Empty<RaumnutzungZeilenbildKiZeile>();
+
+    /// <summary>Die Stundenprofile im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
+    public IReadOnlyList<RaumnutzungStundenKiZeile> Nutzungsprofilstunden
+        => Nutzungsprofile?.Stundenzeilen ?? Array.Empty<RaumnutzungStundenKiZeile>();
+
     /// <inheritdoc />
     public object? Lesen(string schluessel) => RaumnutzungKiZugang.IstFeld(schluessel) ? Nutzungsprofile?.Lesen(schluessel) : null;
 
