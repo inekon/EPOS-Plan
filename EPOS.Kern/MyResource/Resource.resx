@@ -47442,5 +47442,41 @@ Chart</value>
   <data name="WIZ_STECKBRIEF_SIMULATION" xml:space="preserve">
     <value>Letzte Simulation</value>
   </data>
+  <data name="ABW_MERKMAL_AUFH_SCHALTER" xml:space="preserve">
+    <value>Aufheizoptimierung</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_BEMESSUNG" xml:space="preserve">
+    <value>Bemessung der Aufheizzeit</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_ABZUG" xml:space="preserve">
+    <value>Abzug ΔT_K</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_RESERVE" xml:space="preserve">
+    <value>Aufheizreserve ρ</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_ART" xml:space="preserve">
+    <value>Art der Aufheizzeit</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_AUFSCHLAG_H" xml:space="preserve">
+    <value>Aufschlag (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT" xml:space="preserve">
+    <value>Aufschlag (%)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_MANUELL" xml:space="preserve">
+    <value>Aufheizzeit manuell (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_WERT_MANUELL" xml:space="preserve">
+    <value>manuell</value>
+  </data>
+  <data name="BV_VGL_AUFH_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude je Projekt</value>
+  </data>
+  <data name="BV_VGL_AUFH_GEBAEUDE_HINWEIS" xml:space="preserve">
+    <value>Je Projekt die Gebäudetafel mit Lüftungs- und Aufheizwerten; die Abweichung zum Stamm zeigt die Kennzahlgruppe „Gebäude“.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__GEBAEUDE" xml:space="preserve">
+    <value>Die Gebäudetafel des laufenden Stands, ohne Abweichung: je Gebäude eine Gruppenzeile, darunter Rechenweg, Wärmebedarf, Spitzenlasten, auf dem VDI-Weg die Kühl- und Raumkennzahlen, die Lüftungs- und Aufheizzeilen und die Hinweise W1 bis W5; nur im Block {{#je stand}}.</value>
+  </data>
 </root>
 

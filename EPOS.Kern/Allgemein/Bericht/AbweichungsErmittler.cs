@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -202,7 +203,98 @@ namespace WindowsFormsApplication1
                         "ABW_MERKMAL_ZONEN_HT"),
             new Merkmal("Gebäude", ProjektDetails.ZONENMERKMALE, "Huellrechenweg", "Rechenweg der Hülle", "", TEXT,
                         "ABW_MERKMAL_HUELLRECHENWEG"),
+
+            // KP3 Welle O3b (B21; Festlegungen 29 und 39, E59): die Aufheizoptimierung des Projekts, ihre wirksame Art über
+            // die Gebäude und die manuelle Aufheizzeit des ersten Gebäudes - sonst meldete der Vergleich mit und ohne Rampe
+            // (P8) „Keine Abweichungen". NULL heißt die Vorgabe: Bemessung und Art über ihren Anzeigenamen, die Zahlen über
+            // Zahlvorgaben (unten); die Reserve steht als Anteil in der Datenbank und als Prozent im Vergleich.
+            new Merkmal("Gebäude", "Tab_Einstellungen", AufheizvorgabeSchema.SPALTE_SCHALTER, "Aufheizoptimierung", "", JN,
+                        "ABW_MERKMAL_AUFH_SCHALTER"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", AufheizvorgabeSchema.SPALTE_BEMESSUNG, "Bemessung der Aufheizzeit", "", TEXT,
+                        "ABW_MERKMAL_AUFH_BEMESSUNG"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", AufheizvorgabeSchema.SPALTE_ABZUG, "Abzug ΔT_K", "K", 1,
+                        "ABW_MERKMAL_AUFH_ABZUG"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", AufheizvorgabeSchema.SPALTE_RESERVE, "Aufheizreserve ρ", "%", 0,
+                        "ABW_MERKMAL_AUFH_RESERVE"),
+            new Merkmal("Gebäude", AUFHEIZMERKMALE, SPALTE_AUFHEIZART, "Art der Aufheizzeit", "", TEXT,
+                        "ABW_MERKMAL_AUFH_ART"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", AufheizManuellSchema.SPALTE_AUFSCHLAG_H, "Aufschlag (h)", "h", 0,
+                        "ABW_MERKMAL_AUFH_AUFSCHLAG_H"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT, "Aufschlag (%)", "%", 1,
+                        "ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT"),
+            new Merkmal("Gebäude", "Tab_Gebaeude", AufheizManuellSchema.SPALTE_MANUELL, "Aufheizzeit manuell (h)", "h", 0,
+                        "ABW_MERKMAL_AUFH_MANUELL"),
         };
+
+        /// <summary>
+        /// Die Pseudotabelle der Aufheizmerkmale (Muster <see cref="ProjektDetails.ZONENMERKMALE"/>): eine Zeile, aus der Projekt-
+        /// einstellung und allen Gebäuden gebildet (<see cref="Aufheizmerkmale"/>). Sie ist keine Tabelle der Datenbank — eine
+        /// Übernahme findet keine Zielzeile.
+        /// </summary>
+        public const string AUFHEIZMERKMALE = "Aufheizung";
+
+        /// <summary>Die wirksamen Arten der Aufheizzeit über die Gebäude als Steuerwerte, kommagetrennt in der Folge der Ergebnisarten.</summary>
+        public const string SPALTE_AUFHEIZART = "Art";
+
+        /// <summary>
+        /// <b>Die Zeile der Aufheizmerkmale</b> eines Projekts (Festlegung 39): je Gebäude die wirksame Art — „manuell“, wenn es
+        /// eine manuelle Aufheizzeit trägt, sonst die Art der Projekteinstellung (NULL = täglich) —, über alle Gebäude die
+        /// verschiedenen Arten in der Folge täglich, fest, manuell. <c>null</c> ohne Gebäude.
+        /// </summary>
+        public static DataRow Aufheizmerkmale(ProjektDetails d)
+        {
+            if (d?.Gebaeude == null || d.Gebaeude.Rows.Count == 0) return null;
+            DataRow e = d.Einstellungen != null && d.Einstellungen.Rows.Count > 0 ? d.Einstellungen.Rows[0] : null;
+            string projekt = ProjektDetails.S(e, AufheizvorgabeSchema.SPALTE_ART).Trim() == DbWerte.AUFHEIZ_ART_FEST
+                ? DbWerte.AUFHEIZ_ART_FEST : DbWerte.AUFHEIZ_ART_TAEGLICH;
+            var arten = new HashSet<string>(StringComparer.Ordinal);
+            foreach (DataRow g in d.Gebaeude.Rows)
+                arten.Add(ProjektDetails.D(g, AufheizManuellSchema.SPALTE_MANUELL) is double h && h > 0 ? DbWerte.AUFHEIZ_ART_MANUELL : projekt);
+            var dt = new DataTable();
+            dt.Columns.Add(SPALTE_AUFHEIZART, typeof(string));
+            dt.Rows.Add(string.Join(",", DbWerte.AUFHEIZ_ERGEBNIS_ARTEN.Where(arten.Contains)));
+            return dt.Rows[0];
+        }
+
+        /// <summary>Der Anzeigename der Bemessung: NULL und <c>STUNDE</c> heißen beide „kälteste Stunde“ (Variante (a)).</summary>
+        private static string Bemessungsname(string steuerwert)
+            => steuerwert == DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG ? MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG
+             : string.IsNullOrEmpty(steuerwert) || steuerwert == DbWerte.AUFHEIZ_BEMESSUNG_STUNDE ? MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE
+             : steuerwert;
+
+        /// <summary>Der Anzeigename der wirksamen Arten (<see cref="SPALTE_AUFHEIZART"/>): „täglich“, „fest“, „manuell“, mehrere mit Komma.</summary>
+        private static string Artname(string steuerwert)
+        {
+            if (string.IsNullOrEmpty(steuerwert)) return "—";
+            return string.Join(", ", steuerwert.Split(',').Select(a => a switch
+            {
+                DbWerte.AUFHEIZ_ART_TAEGLICH => MyResource.Resource.SIMKONF_AUFH_ART_TAEGLICH,
+                DbWerte.AUFHEIZ_ART_FEST => MyResource.Resource.SIMKONF_AUFH_ART_FEST,
+                DbWerte.AUFHEIZ_ART_MANUELL => MyResource.Resource.ABW_MERKMAL_AUFH_WERT_MANUELL,
+                _ => a,
+            }));
+        }
+
+        /// <summary>
+        /// <b>Zahlvorgaben</b> der Zahlmerkmale, deren NULL einen Wert bedeutet (Schlüssel „Tabelle.Spalte“): der Wert für NULL
+        /// und der Faktor der Anzeige. Verglichen und gezeigt wird der wirksame Wert — NULL und die Vorgabe sind keine Abweichung.
+        /// </summary>
+        private static readonly Dictionary<string, (double Vorgabe, double Faktor)> Zahlvorgaben =
+            new Dictionary<string, (double Vorgabe, double Faktor)>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Tab_Einstellungen." + AufheizvorgabeSchema.SPALTE_ABZUG, (AufheizvorgabeSchema.ABZUG_VORGABE_K, 1.0) },
+                { "Tab_Einstellungen." + AufheizvorgabeSchema.SPALTE_RESERVE, (AufheizvorgabeSchema.RESERVE_VORGABE, 100.0) },
+                { "Tab_Einstellungen." + AufheizManuellSchema.SPALTE_AUFSCHLAG_H, (0.0, 1.0) },
+                { "Tab_Einstellungen." + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT, (0.0, 1.0) },
+            };
+
+        /// <summary>Der wirksame Zahlwert eines Merkmals: der Spaltenwert, NULL über die Zahlvorgabe, mal dem Anzeigefaktor.</summary>
+        private static double? Zahl(DataRow r, Merkmal f)
+        {
+            double? d = ProjektDetails.D(r, f.Spalte);
+            if (!Zahlvorgaben.TryGetValue(f.Tabelle + "." + f.Spalte, out (double Vorgabe, double Faktor) z)) return d;
+            return (d ?? z.Vorgabe) * z.Faktor;
+        }
 
         /// <summary>
         /// <b>Anzeigenamen der Steuerwerte</b> (Drei-Schichten-Regel): Die Datenbank führt deutsche,
@@ -217,6 +309,8 @@ namespace WindowsFormsApplication1
                 { "Tab_Gebaeude.Uebergabe_Art", Waermeuebergabevorgaben.Anzeigename },
                 { "Tab_Gebaeude.Kuehl_Uebergabe_Art", Waermeuebergabevorgaben.KuehlAnzeigename },
                 { ProjektDetails.ZONENMERKMALE + ".Huellrechenweg", ProjektDetails.Huellrechenwegtext },
+                { "Tab_Einstellungen." + AufheizvorgabeSchema.SPALTE_BEMESSUNG, Bemessungsname },
+                { AUFHEIZMERKMALE + "." + SPALTE_AUFHEIZART, Artname },
             };
 
         /// <summary>Der Anzeigeweg eines Textmerkmals mit Steuerwerten; <c>null</c> = der Wert, wie er ist.</summary>
@@ -321,6 +415,8 @@ namespace WindowsFormsApplication1
                 return (d.Einstellungen != null && d.Einstellungen.Rows.Count > 0) ? d.Einstellungen.Rows[0] : null;
             if (f.Tabelle == ProjektDetails.ZONENMERKMALE)
                 return (d.Zonenmerkmale != null && d.Zonenmerkmale.Rows.Count > 0) ? d.Zonenmerkmale.Rows[0] : null;
+            if (f.Tabelle == AUFHEIZMERKMALE)
+                return Aufheizmerkmale(d);
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
                 if (g.Value == f.Tabelle)
                     return d.Komponenten.ContainsKey(g.Key) ? d.Komponenten[g.Key] : null;
@@ -439,7 +535,7 @@ namespace WindowsFormsApplication1
                 bool? x = ProjektDetails.B(a, f.Spalte), y = ProjektDetails.B(b, f.Spalte);
                 return (x ?? false) == (y ?? false);
             }
-            double? u = ProjektDetails.D(a, f.Spalte), v = ProjektDetails.D(b, f.Spalte);
+            double? u = Zahl(a, f), v = Zahl(b, f);
             if (!u.HasValue && !v.HasValue) return true;
             if (!u.HasValue || !v.HasValue) return false;
             double toleranz = Math.Pow(10, -Math.Max(f.Dez, 0)) / 2.0;   // halbe Anzeigestelle
@@ -461,7 +557,7 @@ namespace WindowsFormsApplication1
                 bool? b = ProjektDetails.B(r, f.Spalte);
                 return !b.HasValue ? "—" : (b.Value ? "Ja" : "Nein");
             }
-            double? d = ProjektDetails.D(r, f.Spalte);
+            double? d = Zahl(r, f);
             if (!d.HasValue) return "—";
             string txt = d.Value.ToString("N" + f.Dez, DE);
             return string.IsNullOrEmpty(f.Einheit) ? txt : txt + " " + f.Einheit;

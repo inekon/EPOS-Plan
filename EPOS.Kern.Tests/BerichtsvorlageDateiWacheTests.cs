@@ -613,6 +613,9 @@ namespace EPOS.Kern.Tests
                                            "{{kennzahl.", "{{stand.wirtschaft.", "{{wirtschaft.beste.", "{{vergleich.",
                                            "{{gebaeude.", "{{wirtschaft.warnungen}}", "{{bericht.warnungen}}" })
                 Assert.True(marken.Any(m => m.StartsWith(art, StringComparison.Ordinal)), datei + ": keine Marke „" + art + "…“");
+            // Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Kennzahlgruppe „Gebäude“ und die Gebäudetafel je Stand im Vergleich.
+            Assert.Contains("{{tabelle.vergleich.gebaeude}}", marken);
+            Assert.Contains("{{stand.tabelle.gebaeude}}", marken);
             Assert.Equal(marken.Count(m => m.StartsWith("{{#je", StringComparison.Ordinal)), marken.Count(m => m == "{{/je}}"));
             Assert.Equal(marken.Count(m => m.StartsWith("{{#wenn", StringComparison.Ordinal)), marken.Count(m => m == "{{/wenn}}"));
             Assert.Equal(new[] { "{{ersteller.programm}}" }, main.HeaderParts.SelectMany(h => Marken(h.Header)).ToArray());

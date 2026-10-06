@@ -70,6 +70,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abzug ΔT_K ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_ABZUG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_ART {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag (h) ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_AUFSCHLAG_H {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_AUFSCHLAG_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag (%) ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung der Aufheizzeit ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzeit manuell (h) ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_MANUELL {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizreserve ρ ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_RESERVE {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_SCHALTER {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die manuell ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_WERT_MANUELL {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_WERT_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe rechnen ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_HEIZKREIS {
@@ -14000,6 +14081,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_TEXT_VARIANTEN {
             get {
                 return ResourceManager.GetString("BV_TEXT_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude je Projekt ähnelt.
+        /// </summary>
+        public static string BV_VGL_AUFH_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BV_VGL_AUFH_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Projekt die Gebäudetafel mit Lüftungs- und Aufheizwerten; die Abweichung zum Stamm zeigt die Kennzahlgruppe „Gebäude“. ähnelt.
+        /// </summary>
+        public static string BV_VGL_AUFH_GEBAEUDE_HINWEIS {
+            get {
+                return ResourceManager.GetString("BV_VGL_AUFH_GEBAEUDE_HINWEIS", resourceCulture);
             }
         }
         
@@ -112681,6 +112780,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__TABELLE__ERZEUGER {
             get {
                 return ResourceManager.GetString("VF_STAND__TABELLE__ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudetafel des laufenden Stands, ohne Abweichung: je Gebäude eine Gruppenzeile, darunter Rechenweg, Wärmebedarf, Spitzenlasten, auf dem VDI-Weg die Kühl- und Raumkennzahlen, die Lüftungs- und Aufheizzeilen und die Hinweise W1 bis W5; nur im Block {{#je stand}}. ähnelt.
+        /// </summary>
+        public static string VF_STAND__TABELLE__GEBAEUDE {
+            get {
+                return ResourceManager.GetString("VF_STAND__TABELLE__GEBAEUDE", resourceCulture);
             }
         }
         
