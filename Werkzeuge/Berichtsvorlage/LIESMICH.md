@@ -230,11 +230,12 @@ Standard- und Beispielvorlage nimmt der Modus nicht. Rückgaben wie bei `beispie
 | 5 | Empfehlung | Satz mit `{{wirtschaft.beste.anzeige}}` und `{{wirtschaft.beste.kapitalwert_diff}}`; `{{wirtschaft.vorschlag}}` |
 | 6 | Wirtschaftlichkeit | `{{#wenn hat.bild.wirtschaft.spanne}}` Bildrahmen in voller Breite (Alternativtext `{{bild.wirtschaft.spanne}}`) `{{/wenn}}`; `{{tabelle.wirtschaft.szenarien}}`; `{{wirtschaft.warnungen}}` |
 | 7 | Kühlung (bedingt) | `{{#wenn hat.kaelte}}` Überschrift 2 und Satz mit `{{stamm.kennzahl.kaelte.jahresbedarf}}`, `{{stamm.kennzahl.kaelte.deckungsgrad}}` `{{/wenn}}` |
+| 7a | Aufheizung (bedingt, je Gebäude) | `{{#wenn hat.aufheizung}}` Überschrift 2, darunter `{{#je gebaeude}}` ein Satz aus `{{gebaeude.name}}`, `{{gebaeude.ergebnis.aufheizzeit}}`, `{{gebaeude.ergebnis.aufheiz_aussentemperatur}}`, `{{gebaeude.ergebnis.aufheizleistung}}`, `{{gebaeude.ergebnis.auslegungsgroesse}}`, `{{gebaeude.ergebnis.auslegungsheizlast}}`, `{{gebaeude.ergebnis.aufheizzuschlag}}` und der Absatz `{{gebaeude.ergebnis.aufheizhinweise}}` `{{/je}}` `{{/wenn}}` (Katalog v16, E58 F4 (b)) |
 | 8 | Deckung je Variante | `{{#je stand}}` Überschrift 2 `{{stand.anzeige}}`, zweispaltige Tabelle ohne Rahmen mit `{{stand.bild.deckung_waerme}}` und `{{stand.bild.deckung_strom}}` in halber Breite (7,8 cm, Stufe 2) `{{/je}}` |
 | 9 | Anhang | Kapitelkopf „Anhang“ im Format „EPOS Kapitelkopf“, darunter `{{kapitel.anhang\|ohne titel\|ebene 2}}` |
 | 10 | Mustertabelle | Alternativtext `{{muster.tabelle}}`, Zellen Stamm, Gruppe, Summe, Warnung (englisch Base, Group, Total, Warning) mit Schattierung und Zeichenformat |
 
-Neun Word-Kommentare in der Sprache der Datei erläutern die Stellen; Beispiele darin tragen neutrale Namen mit runden
+Zehn Word-Kommentare in der Sprache der Datei erläutern die Stellen; Beispiele darin tragen neutrale Namen mit runden
 Werten („Variante 1“, „10.000 €“) — kein Hersteller, kein Produkt (`WikiProduktdatenWacheTests`). `custom.xml` führt
 `EPOS.Katalogfassung`, `EPOS.Vorlage` = `kurzbericht` und `EPOS.Sprache` = `de` bzw. `en` (die Vorprüfung fragt zurück,
 wenn die Oberfläche eine andere Sprache spricht). Die Bildrahmen zeigen ein neutrales Platzhalterbild
