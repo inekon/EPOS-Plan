@@ -340,5 +340,5 @@ Lesefolge (Varianten → Inhalt → Vorlage → Ausgabe → Erstellen → Ergebn
 |---|---|---|
 | Konzept (dieses Papier) | Entscheide VB‑Q1–Q9, BL‑Q1–Q5 nach Empfehlung, Fachvorgabe VB, Mockups, Registereintrag R‑E32 | Statuszeile #761 |
 | Layout B | Umsetzung Teil B, Schritte 1–5 | umgesetzt #762 |
-| VALERI VB‑E1–E5 | Umsetzung Teil A, Fachvorgabe VB | umgesetzt #763 |
+| VALERI VB‑E1–E5 | Umsetzung Teil A, Fachvorgabe VB | umgesetzt #765 |
 | VB‑E6 | Wiki-Quelle Berichtsvorlagen/Wirtschaftlichkeit, Logbuchsatz | Wiki-Quellen und Logbuch im Repo, Upload ausstehend |

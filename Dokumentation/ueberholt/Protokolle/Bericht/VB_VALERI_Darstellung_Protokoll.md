@@ -4,7 +4,7 @@ Etappen VB‑E1 bis VB‑E5 des Konzepts
 [`Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md)
 (Teil A, Fachvorgabe VB, Entscheide VB‑Q1–Q9 nach Empfehlung, Register
 [R‑E32](../../../aktuell/Wirtschaftlichkeit_Kosten/Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md)).
-Statusnummer **#763**. Der gültige Stand steht im Code, hier steht, wie es geworden ist. Siehe
+Statusnummer **#765**. Der gültige Stand steht im Code, hier steht, wie es geworden ist. Siehe
 [Statusdatei](../../../aktuell/Status_iOS_Migration.md).
 
 Sitzung „Berichterstellung“, 06.10.2026, Fable 5.1 orchestrierte, drei Opus-5.5-Agenten nacheinander im Worktree
