@@ -54,7 +54,8 @@ namespace WindowsFormsApplication1
         public List<ImportquelleModel> LesenQuellen(int idGebaeude)
         {
             DataTable t = DataRepository.GetDataTable(
-                "SELECT " + QUELLSPALTEN + " FROM \"" + ImportzuordnungSchema.TAB_QUELLE + "\" q " +
+                "SELECT " + QUELLSPALTEN + (RaumgrundrissSchema.NordwinkelVorhanden() ? ", q.\"" + RaumgrundrissSchema.SPALTE_NORDWINKEL + "\"" : "") +
+                " FROM \"" + ImportzuordnungSchema.TAB_QUELLE + "\" q " +
                 "WHERE q.\"ID_Gebaeude\" = ? ORDER BY q.\"ID\" DESC",
                 new DbParam("@g", idGebaeude));
             var liste = new List<ImportquelleModel>();
@@ -243,6 +244,7 @@ namespace WindowsFormsApplication1
             List<GebaeudeQuellzuordnung> liste = (zuordnungen ?? Array.Empty<GebaeudeQuellzuordnung>()).ToList();
             string fehler = Pruefen(quelle, liste);
             if (fehler != null) return Ergebnis.Fehler(fehler);
+            bool mitNordwinkel = RaumgrundrissSchema.NordwinkelVorhanden();
 
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
             try
@@ -285,6 +287,8 @@ namespace WindowsFormsApplication1
                         string.Join(", ", ImportzuordnungSchema.Quellspalten.Select(s => "\"" + s + "\"")) + ") VALUES (" +
                         BaustoffCtrl.Fragezeichen(ImportzuordnungSchema.Quellspalten.Count) + ")",
                         Quellwerte(idGebaeude, quelle).ToArray());
+                    // HC-5c: der Nordwinkel der Datei an derselben Quelle (Schritt RaumgrundrissSchema.SCHRITT).
+                    if (mitNordwinkel) NordwinkelSchreiben(v, idQuelle, quelle.NordwinkelGrad);
 
                     string einfuegen = "INSERT INTO \"" + ImportzuordnungSchema.TAB_ZUORDNUNG + "\" (" +
                                        string.Join(", ", ImportzuordnungSchema.Zuordnungsspalten.Select(s => "\"" + s + "\"")) +
@@ -400,7 +404,9 @@ namespace WindowsFormsApplication1
                 Zeitpunkt = BaustoffCtrl.TextAus(r, "Zeitpunkt") ?? "",
                 Programmfassung = BaustoffCtrl.TextAus(r, "Programmfassung"),
                 Zonenregel = BaustoffCtrl.TextAus(r, "Zonenregel"),
-                FehlendeEntitaeten = BaustoffCtrl.GanzAus(r, "FehlendeEntitaeten") ?? 0
+                FehlendeEntitaeten = BaustoffCtrl.GanzAus(r, "FehlendeEntitaeten") ?? 0,
+                NordwinkelGrad = r.Table.Columns.Contains(RaumgrundrissSchema.SPALTE_NORDWINKEL)
+                    ? BaustoffCtrl.ZahlAus(r, RaumgrundrissSchema.SPALTE_NORDWINKEL) : null,
             };
         }
 

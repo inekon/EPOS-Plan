@@ -31,6 +31,18 @@ namespace WindowsFormsApplication1
     //
     // KEIN ID_Projekt (W16 wie die Herkunftsablage), keine Boolean-Spalte, keine Beziehung ueber Text.
     //
+    // DER NORDWINKEL DER QUELLE (HC-5c, Entscheid 06.10.2026) steht im SELBEN Schritt an der Quelle, nicht je Raum -
+    // er gehoert zur Datei, nicht zum Raum:
+    //
+    //   Tab_Importquelle   Nordwinkel_Grad   REAL NULL   [0, 360); NULL = die Datei nennt keinen
+    //
+    // Bezug und Vorzeichen: die Drehung des Modellsystems gegen geographisch Nord, wie der Leser sie liefert
+    // (GebaeudeAbbild.NordwinkelGrad - IFC: TrueNorth bzw. IfcMapConversion, gbXML: CADModelAzimuth). Es gilt
+    //   wahrer Azimut = Modellazimut - Nordwinkel   (Azimut 0 = Nord, im Uhrzeigersinn, +x des Modells = 90)
+    // fuer jede Quelle, deren Bauteilazimute gedreht sind (IFC); beim gbXML-Weg steht er nur als Angabe da (die
+    // Datei schreibt ihre Azimute selbst, Datenaustauschkonzept 3.2). Der Export dreht damit die Kanten der
+    // Grundriss-Prismen in wahre Azimute und ordnet ihnen die Wandplatten zu (Konzept 11.4 "Koerper").
+    //
     // DIE KETTE. Schritt 190 (NP5, Sitzung Gebaeudesimulation) ist angemeldet, lag beim Bau aber nicht auf
     // origin. Die Nummer haengt deshalb VORLAEUFIG ueber RaumnutzungSchema.SCHRITT + 2 an 189; beim
     // Zusammenfuehren mit Schritt 190 wird diese EINE Zeile auf "<Klasse von 190>.SCHRITT + 1" umgehaengt.
@@ -95,6 +107,16 @@ namespace WindowsFormsApplication1
         public const string SPALTE_HERLEITUNG = "Herleitung";
         public const string SPALTE_VERMERKE = "Vermerke";
 
+        /// <summary>Die Quelle, an der der Nordwinkel steht (<c>Tab_Importquelle</c>).</summary>
+        public const string TAB_QUELLE = ImportzuordnungSchema.TAB_QUELLE;
+
+        /// <summary>
+        /// <b>Der Nordwinkel der Quelle</b> [°] an <see cref="TAB_QUELLE"/> — die Drehung des Modellsystems gegen geographisch
+        /// Nord, wie der Leser sie liefert, normiert auf [0, 360); NULL = die Datei nennt keinen. Wahrer Azimut =
+        /// Modellazimut − Nordwinkel (Kopf der Datei).
+        /// </summary>
+        public const string SPALTE_NORDWINKEL = "Nordwinkel_Grad";
+
         /// <summary>Die Spalten in Schemareihenfolge, ohne <c>ID</c> — die EINE Liste, an der Lesen und Schreiben hängen.</summary>
         public static readonly IReadOnlyList<string> Spalten = new[]
         {
@@ -141,6 +163,11 @@ namespace WindowsFormsApplication1
             "    FOREIGN KEY (\"ID_Zone\") REFERENCES \"Tab_Zone\" (\"ID\") ON DELETE SET NULL\n" +
             ") STRICT";
 
+        /// <summary>Der Nordwinkel an der Quelle — nullbar, CHECK auf [0, 360).</summary>
+        public const string SQL_NORDWINKEL =
+            "ALTER TABLE \"Tab_Importquelle\" ADD COLUMN \"Nordwinkel_Grad\" REAL " +
+            "CHECK (\"Nordwinkel_Grad\" IS NULL OR (\"Nordwinkel_Grad\" >= 0 AND \"Nordwinkel_Grad\" < 360))";
+
         /// <summary>Der Index über <c>ID_Zone</c>.</summary>
         public const string SQL_INDEX_ZONE =
             "CREATE INDEX IF NOT EXISTS \"idx_Raumgrundriss_Zone\" ON \"Tab_Raumgrundriss\" (\"ID_Zone\")";
@@ -158,10 +185,27 @@ namespace WindowsFormsApplication1
         /// <summary>Die Tabellen, die vorher stehen müssen (Eltern der Fremdschlüssel).</summary>
         public static IReadOnlyList<string> Voraussetzungen() => new[] { ImportzuordnungSchema.TAB_QUELLE, SchemaKatalog.TAB_ZONE };
 
-        /// <summary>Stehen Tabelle und Index?</summary>
+        /// <summary>Steht der Nordwinkel an der Quelle?</summary>
+        public static bool NordwinkelVorhanden() => DataRepository.SpalteVorhanden(TAB_QUELLE, SPALTE_NORDWINKEL);
+
+        /// <summary>
+        /// Der Nordwinkel normiert auf [0, 360) und auf 1e-9 ° gerundet — so trägt ihn die Spalte; <c>null</c> bleibt
+        /// <c>null</c>, ebenso ein nicht endlicher Wert.
+        /// </summary>
+        public static double? Normiert(double? grad)
+        {
+            if (!(grad is double g) || double.IsNaN(g) || double.IsInfinity(g)) return null;
+            double a = Math.Round(g % 360.0, 9, MidpointRounding.ToEven);
+            if (a < 0.0) a += 360.0;
+            if (a >= 360.0) a -= 360.0;
+            return a + 0.0;
+        }
+
+        /// <summary>Stehen Tabelle, Index und der Nordwinkel an der Quelle?</summary>
         public static bool Vollstaendig()
         {
             if (!DataRepository.TabelleVorhanden(TAB)) return false;
+            if (!NordwinkelVorhanden()) return false;
             object n = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = ?", new DbParam("@i", INDEX_ZONE));
             return n != null && n != DBNull.Value && Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0;
@@ -185,11 +229,13 @@ namespace WindowsFormsApplication1
             }
 
             bool vorher = DataRepository.TabelleVorhanden(TAB);
+            bool nordwinkel = NordwinkelVorhanden();
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
                     foreach (KeyValuePair<string, string> a in Anweisungen) v.Ausfuehren(a.Value);
+                    if (!nordwinkel) v.Ausfuehren(SQL_NORDWINKEL);
                     v.Commit();
                 }
                 catch
@@ -200,7 +246,9 @@ namespace WindowsFormsApplication1
             }
             int angelegt = !vorher && DataRepository.TabelleVorhanden(TAB) ? 1 : 0;
             bericht?.Add(angelegt == 1 ? "Tab_Raumgrundriss angelegt (leer), Index idx_Raumgrundriss_Zone"
-                                       : "Index idx_Raumgrundriss_Zone nachgezogen");
+                                       : "Index idx_Raumgrundriss_Zone geprueft");
+            bericht?.Add(nordwinkel ? "Tab_Importquelle.Nordwinkel_Grad steht bereits"
+                                    : "Tab_Importquelle.Nordwinkel_Grad angelegt (NULL = unbekannt)");
             bericht?.Add("KEIN DML an Bestandsdaten, der Referenzlauf bleibt byte-gleich");
             return angelegt;
         }

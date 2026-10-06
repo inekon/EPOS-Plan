@@ -157,7 +157,9 @@ namespace WindowsFormsApplication1
             if (!e.Raumgrundrisse.Any(GebaeudeImportCtrl.Speicherbar)) return false;
             try
             {
-                return !GebaeudeImportCtrl.Gleich(new GebaeudeImportCtrl().LesenRaumgrundrisseDerQuelle(q.ID), e.Raumgrundrisse);
+                // HC-5c: auch ein fehlender oder abweichender Nordwinkel der Quelle macht das Nachtragen sinnvoll.
+                return !GebaeudeImportCtrl.Gleich(new GebaeudeImportCtrl().LesenRaumgrundrisseDerQuelle(q.ID), e.Raumgrundrisse)
+                       || !GebaeudeImportCtrl.NordwinkelGleich(q.NordwinkelGrad, e.Abbild?.NordwinkelGrad);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
@@ -176,7 +178,8 @@ namespace WindowsFormsApplication1
             bool ja = await Dienste.Dialog.FrageAsync(Formatieren(MyResource.Resource.GEB_NL_GRUNDRISS_FRAGE, raeume, q.Dateiname),
                                                      MyResource.Resource.GEB_NL_GRUNDRISS_TITEL);
             if (!ja) return null;
-            GebaeudeImportCtrl.Ergebnis erg = new GebaeudeImportCtrl().SchreibeRaumgrundrisse(q.ID, e.Raumgrundrisse);
+            GebaeudeImportCtrl.Ergebnis erg = new GebaeudeImportCtrl().SchreibeRaumgrundrisse(q.ID, e.Raumgrundrisse,
+                                                                                          nordwinkelGrad: e.Abbild?.NordwinkelGrad);
             return erg.Ok ? Formatieren(MyResource.Resource.GEB_NL_GRUNDRISS_GESCHRIEBEN, raeume)
                           : Formatieren(MyResource.Resource.GEB_NL_GRUNDRISS_FEHLER, erg.Meldung);
         }

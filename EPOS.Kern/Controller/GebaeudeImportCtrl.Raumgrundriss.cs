@@ -65,6 +65,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// HC-5c: <b>Gleicht der gespeicherte Nordwinkel dem frisch gelesenen</b> (beide normiert, auf 1e-9 °)? Ohne die Spalte
+        /// (Stand vor dem Schritt) gilt er als gleich — dann ist nichts nachzutragen.
+        /// </summary>
+        internal static bool NordwinkelGleich(double? gespeichert, double? frisch)
+        {
+            if (!RaumgrundrissSchema.NordwinkelVorhanden()) return true;
+            double? a = RaumgrundrissSchema.Normiert(gespeichert), b = RaumgrundrissSchema.Normiert(frisch);
+            if (a.HasValue != b.HasValue) return false;
+            return !a.HasValue || Math.Abs(a.Value - b.Value) <= 1e-9;
+        }
+
+        /// <summary>
         /// <b>Die Grundrisse einer Zone</b> — die Räume, die beim Import dieser Zone zugeordnet wurden, aus der jüngsten
         /// Importquelle ihres Gebäudes. Leer ohne Zeilen oder ohne die Tabelle.
         /// </summary>
@@ -84,8 +96,11 @@ namespace WindowsFormsApplication1
         /// Nachtragens, F7). Die Zone kommt aus den Paarungen der Quelle in <c>Tab_Importzuordnung</c> (Ziel Zone, dieselbe
         /// Kennung). Mit <paramref name="vorgang"/> im Vorgang des Aufrufers, sonst in einem eigenen.
         /// </summary>
-        internal Ergebnis SchreibeRaumgrundrisse(int idImportquelle, IReadOnlyList<Raumgrundriss> grundrisse, DbVorgang vorgang = null)
+        /// <param name="nordwinkelGrad">HC-5c: der frisch gelesene Nordwinkel der Datei; er ersetzt den der Quelle (<c>null</c> = keiner).</param>
+        internal Ergebnis SchreibeRaumgrundrisse(int idImportquelle, IReadOnlyList<Raumgrundriss> grundrisse, DbVorgang vorgang = null,
+                                                 double? nordwinkelGrad = null)
         {
+            bool mitNordwinkel = RaumgrundrissSchema.NordwinkelVorhanden();
             if (!DataRepository.TabelleVorhanden(RaumgrundrissSchema.TAB))
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.HERKUNFT_MSG_NICHT_GESPEICHERT,
                                                      RaumgrundrissSchema.TAB));
@@ -111,6 +126,7 @@ namespace WindowsFormsApplication1
                     v.Ausfuehren("DELETE FROM \"" + RaumgrundrissSchema.TAB + "\" WHERE \"ID_Importquelle\" = ?",
                                  new DbParam("@q", idImportquelle));
                     GrundrisseEinfuegen(v, idImportquelle, grundrisse, zoneJeKennung);
+                    if (mitNordwinkel) NordwinkelSchreiben(v, idImportquelle, nordwinkelGrad);
                     v.Commit();
                     return Ergebnis.Gut(idImportquelle);
                 }
@@ -171,12 +187,45 @@ namespace WindowsFormsApplication1
             return n;
         }
 
+        /// <summary>
+        /// HC-5c: schreibt den Nordwinkel einer Quelle (normiert auf [0, 360), <see cref="RaumgrundrissSchema.Normiert"/>);
+        /// <c>null</c> setzt NULL.
+        /// </summary>
+        private static void NordwinkelSchreiben(DbVorgang v, int idImportquelle, double? nordwinkelGrad)
+        {
+            double? wert = RaumgrundrissSchema.Normiert(nordwinkelGrad);
+            v.Ausfuehren("UPDATE \"" + RaumgrundrissSchema.TAB_QUELLE + "\" SET \"" + RaumgrundrissSchema.SPALTE_NORDWINKEL + "\" = ? WHERE \"ID\" = ?",
+                         new DbParam("@n", DbParamTyp.Double) { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value },
+                         new DbParam("@q", idImportquelle));
+        }
+
+        /// <summary>
+        /// HC-5c: <b>Die Nordangabe einer Quelle</b> — Format und Nordwinkel. Die Drehung der Prismenkanten ist der Nordwinkel,
+        /// wenn die Bauteilazimute der Quelle gedreht sind (IFC), sonst 0 (gbXML: die Datei schreibt ihre Azimute selbst) —
+        /// dieselbe Regel wie <see cref="GebaeudeGrundriss.Eingang"/>. Ohne Nordwinkel gilt Modell-Nord = Nord (Vermerk).
+        /// </summary>
+        internal static (double Drehung, bool Unbekannt) Nordangabe(int idImportquelle)
+        {
+            if (!RaumgrundrissSchema.NordwinkelVorhanden()) return (0.0, true);
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT \"Format\", \"" + RaumgrundrissSchema.SPALTE_NORDWINKEL + "\" FROM \"" + RaumgrundrissSchema.TAB_QUELLE + "\" WHERE \"ID\" = ?",
+                new DbParam("@q", idImportquelle));
+            if (t == null || t.Rows.Count == 0) return (0.0, true);
+            double? nord = BaustoffCtrl.ZahlAus(t.Rows[0], RaumgrundrissSchema.SPALTE_NORDWINKEL);
+            bool ifc = string.Equals(BaustoffCtrl.TextAus(t.Rows[0], "Format"), GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal);
+            return (ifc ? nord ?? 0.0 : 0.0, !nord.HasValue);
+        }
+
         private static List<Raumgrundriss> Grundrisse(DataTable t)
         {
             var liste = new List<Raumgrundriss>();
             if (t == null) return liste;
+            var nordJeQuelle = new Dictionary<int, (double Drehung, bool Unbekannt)>();
             foreach (DataRow r in t.Rows)
             {
+                int idQuelle = Convert.ToInt32(r[RaumgrundrissSchema.SPALTE_ID_IMPORTQUELLE], CultureInfo.InvariantCulture);
+                if (!nordJeQuelle.TryGetValue(idQuelle, out (double Drehung, bool Unbekannt) nord))
+                    nordJeQuelle[idQuelle] = nord = Nordangabe(idQuelle);
                 IReadOnlyList<Grundrissring> ringe = Raumgrundriss.RingeLesen(BaustoffCtrl.TextAus(r, RaumgrundrissSchema.SPALTE_RINGE));
                 Enum.TryParse(BaustoffCtrl.TextAus(r, RaumgrundrissSchema.SPALTE_HERLEITUNG) ?? "", false, out Umrissherleitung herleitung);
                 liste.Add(new Raumgrundriss
@@ -195,6 +244,8 @@ namespace WindowsFormsApplication1
                     Abweichung = BaustoffCtrl.ZahlAus(r, RaumgrundrissSchema.SPALTE_ABWEICHUNG),
                     Herleitung = herleitung,
                     Vermerke = Raumgrundriss.VermerkeLesen(BaustoffCtrl.TextAus(r, RaumgrundrissSchema.SPALTE_VERMERKE)),
+                    DrehungGrad = nord.Drehung,
+                    NordwinkelUnbekannt = nord.Unbekannt,
                 });
             }
             return liste;

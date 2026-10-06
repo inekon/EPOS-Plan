@@ -42,5 +42,8 @@
 
         /// <summary>Beim Lesen verlorene Entitäten (IFC); &gt; 0 sperrt den Round-Trip.</summary>
         public int FehlendeEntitaeten;
+
+        /// <summary>HC-5c: der Nordwinkel der Datei [°] in [0, 360); <c>null</c> = keiner bzw. Spalte fehlt.</summary>
+        public double? NordwinkelGrad;
     }
 }
