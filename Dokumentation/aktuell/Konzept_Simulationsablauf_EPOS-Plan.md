@@ -1746,16 +1746,8 @@ Mittlere Fluidtemperatur zu Beginn der Stunde *t* (Lasten je Sondenmeter *q* in 
   Tabellenzugriff: 8760 · 8759 / 2 ≈ 38 Mio. Multiplikationen je Feld und Jahr, ohne
   Aggregationsfehler. Eine Lastaggregation (Tages- und Monatsblöcke) ist nur nötig, wenn die
   Messung die Grenze von 200 ms je Feld überschreitet.
-- **Vorjahre:** Das Rechenjahr ist das Betrachtungsjahr *n* (Festwert 10). Die Last der n − 1
-  Vorjahre ist unbekannt, bevor der Lauf rechnet; sie wird aus der VDI-4640-Vorprüfung der Anlage
-  geschätzt (Jahresentzug = Σ Q_N · (1 − 1/COP) · Volllaststunden der Klimazone) und nach
-  Heizgradstunden der Außentemperatur (Heizgrenze 15 °C) auf zwölf Monatsblöcke verteilt:
-
-  (6) ΔT_V(t) = Σ_{y=1}^{n−1} Σ_{m=1}^{12} q_{V,m} · [G(t + 8760y − t_{m,0}) − G(t + 8760y − t_{m,1})]
-
-  ΔT_V wird je Tag einmal ausgewertet und gilt für dessen Stunden. Fehlt die Vorprüfung (kein
-  Normpunkt, keine Klimazone), rechnet das Feld ohne Vorjahre und sagt das im Protokoll. Das
-  Protokoll nennt geschätzte und gerechnete Jahresentzugsarbeit nebeneinander.
+- **Vorjahre:** Das Rechenjahr ist das Betrachtungsjahr *n* (Vorgabe 10). Die n − 1 Vorjahre
+  tragen die Stundenlast des Feldes aus einem ersten Feldlauf (Abschnitt 23.4, Gl. 6 und 7).
 
 ### 23.2 Kopplung im Stundenschritt
 
@@ -1781,24 +1773,82 @@ einem Einschalten. Die Reihe steht in `SimulationWaermepumpe.Quelltemperaturen` 
 | D | Festwert 2 m Kopfüberdeckung |
 | n | Festwert Betrachtungsjahr 10 |
 
-Kein Schemaschritt: Alle neuen Größen sind Festwerte der Klasse `Erdsondenfeld`; eine spätere
-Pflege je Anlage (Abstand, R_b, Anordnung, Betrachtungsjahr) wäre ein eigener Schritt.
+Abstand, r_b, R_b, D, n und die Anordnung stehen im Parameterobjekt `Sondenfeldgeometrie` mit den
+Normwerten als Vorgabe; `WaermequelleClass.SondenfeldgeometrieDerAnlage` liefert es je Anlage und
+gibt heute für jede Anlage die Norm. Für die Pflege je Anlage sind diese Spalten in
+`Tab_Energieanlagen` vorgesehen (ein eigener Schemaschritt):
 
-### 23.4 Regeneration
+| Spalte | Typ | Vorgabe |
+|---|---|---|
+| `WQ_Sondenabstand` | REAL, m | 6,0 |
+| `WQ_Bohrlochdurchmesser` | REAL, mm | 150 |
+| `WQ_Bohrlochwiderstand` | REAL, m·K/W | 0,10 |
+| `WQ_Kopfueberdeckung` | REAL, m | 2,0 |
+| `WQ_Betrachtungsjahr` | INTEGER, `CHECK` ≥ 1 | 10 |
+| `WQ_Sondenanordnung` | TEXT (`Quadratisch`) | Quadratisch |
 
-Das Modell nimmt negative Lasten (Rückspeisung) auf. Im Lauf gehen sie noch nicht ein: Die
-Kältekaskade (Kühlbetrieb der Wärmepumpe, freie Kühlung über die Sole) rechnet nach der
-Wärmekaskade, ihre Abwärme steht erst nach der letzten Heizstunde fest. Eine Rückspeisung verlangt
-entweder die Kälteseite stundenweise verschränkt oder einen zweiten Feldlauf mit der Kältelast des
-ersten; das ist offen.
+NULL heißt Vorgabe; ein unbrauchbarer Wert fällt auf die Norm (`Sondenfeldgeometrie.Bereinigt`).
 
-### 23.5 Vorschau im Erdreichdialog
+### 23.4 Zweiter Feldlauf: Vorjahre aus der eigenen Last
+
+Die Last der Vorjahre ist unbekannt, bevor der Lauf rechnet. Deshalb rechnet ein Projekt mit
+Sondenfeld den Simulationsdurchgang (`SimulationControl.Do_Simulation_Intern`) zweimal:
+
+1. **Erster Lauf** mit einer Startschätzung der Vorjahre: aus der VDI-4640-Vorprüfung der Anlage
+   (Jahresentzug = Σ Q_N · (1 − 1/COP) · Volllaststunden der Klimazone), nach Heizgradstunden der
+   Außentemperatur (Heizgrenze 15 °C) auf zwölf Monatsblöcke verteilt; ohne Vorprüfung (kein
+   Normpunkt, keine Klimazone) ohne Vorjahre. Der Lauf sammelt je Feld die stündliche Nettolast
+   q_V,i = Entzug minus Rückspeisung (Abschnitt 23.5).
+2. **Zweiter Lauf** über denselben Durchgang: Die n − 1 Vorjahre tragen genau diese Stundenlast,
+   das Rechenjahr ist Jahr n. Das gilt auch für Projekte ohne Klimazone.
+
+Weil alle Vorjahre dieselbe Reihe tragen, fassen sich ihre Pulsantworten zu einem Kern über
+Stundenabstände m = −8760 … 8758 zusammen, und der Beitrag der Vorjahre ist eine einzige Faltung
+über ein Jahr:
+
+(6) S(m) = Σ_{y=1}^{n−1} [G(m + 1 + 8760y) − G(m + 8760y)]
+
+(7) ΔT_V(t) = Σ_{i=0}^{8759} q_V,i · S(t − 1 − i)
+
+- **Keine Aggregation:** (7) ist stundengenau und kostet 8760² ≈ 77 Mio. Multiplikationen je Feld,
+  gemessen rund 50 ms. Monats- oder Tagesblöcke der Vorjahre sparen dagegen nichts, was zählt, und
+  verschmieren die Stundenspitzen der letzten Vorjahreswochen vor dem Rechenjahr.
+- **Wo der zweite Lauf ansetzt:** am ganzen Durchgang nach Wärme- und Strombedarf, die unverändert
+  bleiben. Die Wärmepumpe rechnet in der Stundenschleife der Speicherstufe zusammen mit Speichern,
+  Kessel und BHKW; ein Durchgang nur der Wärmepumpe hätte keinen eigenen Zustand. Der Durchgang ist
+  wiederholbar: Mit erzwungenem zweitem Lauf rechnen alle Projekte der Referenzbasis byte-gleich.
+- **Protokoll:** Die Meldungen des ersten Laufs verwirft der Lauf (`SimulationProtokoll.Merken`,
+  `ZuruecksetzenAuf`); stehen bleiben die des zweiten. Die Zeile je Feld nennt Betrachtungsjahr,
+  Zahl der Vorjahre, Jahresentzug und Rückspeisung der Vorjahreslast.
+- **Rechenzeit Projekt 1029:** 511 ms mit einem, 705 ms mit zwei Feldläufen (warmer Prozess, ganzer
+  `Simuliere`-Aufruf samt Bedarf); im kalten Prozess 1045 ms gegen 1310 ms.
+
+### 23.5 Regeneration
+
+Kühlwärme, die eine Wärmepumpe mit Erdreichquelle im Kühlbetrieb abgibt, geht als negative Last in
+das Feld ihrer Anlage:
+
+(8) Q_R,h = Σ_e [Q_K,e,h + P_e,h / (1 + h_e)]
+
+mit der gedeckten Kälte Q_K (Verdichter und freie Kühlung über die Sole), dem Kältestrom P samt
+Hilfsstromzuschlag und dem Hilfsstromanteil h (`Kuehl_Hilfsstromanteil`); P / (1 + h) ist die
+Verdichterarbeit, bei freier Kühlung die Pumpenarbeit. Gezählt werden die Kälteerzeuger e, deren
+Modul am Feld hängt (`Tab_WP.Kuehlbetrieb` gesetzt, Kühlkennlinie im Projekt). Weil die
+Kältekaskade nach der Wärmekaskade rechnet, liefert der erste Lauf Q_R; der zweite meldet sie in
+jeder Stunde mit dem Entzug, q_i = (Entzug_i − Q_R,i) / (N·H), und die Vorjahre tragen die
+Nettolast (Gl. 7). Die Kälteseite des zweiten Laufs liest ihre Quelltemperatur aus diesem Feld.
+
+Kältemaschinen speisen nicht ins Erdreich: Ihre Rückkühlung (Luft, Trocken-, Nass- oder
+Wasserkühlwerk) arbeitet gegen die Umgebung. Ein Projekt ohne Kühlbetrieb rechnet bitgleich wie
+ohne Regeneration.
+
+### 23.6 Vorschau im Erdreichdialog
 
 Die Vorschau zeigt die ungestörte Erdreichtemperatur T_u (Gl. 5) als Linie; der Hinweis darunter sagt,
 dass die Soletemperatur im Lauf mit dem Entzug sinkt und ihr Verlauf im Ergebnis steht. Den Verlauf
 des letzten Laufs zeigt der Dialog nicht.
 
-### 23.6 Plan für die echten Erdreichquellen der Referenzprojekte
+### 23.7 Plan für die echten Erdreichquellen der Referenzprojekte
 
 - Die Sole-Wärmepumpen der Referenzprojekte 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 (dazu
   1019 und 1027) bekommen `WQ_Typ` = Erdreich. Je Projekt Sonde, wo die Heizleistung über rund 10 kW

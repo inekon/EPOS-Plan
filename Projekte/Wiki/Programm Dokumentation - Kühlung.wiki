@@ -141,7 +141,8 @@ In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe he
 * '''Kühl-Vorlauf.''' Nur Stützstellen, keine Interpolation, leer die kälteste. Kälter als die Vorlaufgrenze mischt das Gebäude hoch, die Wärmepumpe rechnet aber mit der Leistungszahl ihres Vorlaufs; wärmer als die Auslegung erreicht die Kühlübergabe ihre Nennleistung nicht.
 * '''Rand der Kennlinie.''' Über der obersten Stützstelle wird mit ''Extrapolation der WP-Kennlinie erlauben'' verlängert, sonst gilt ihr Wert, unter der untersten deren Wert; das Laufprotokoll zählt die Stunden. Ein Kühlblock in Heizlage oder mit vertauschten Achsen steht unter ''Kühl-Vorlauf'' gesperrt.
 * '''Mehrere Zonen.''' Dann rechnet die Kühlung je Zone ideal, ohne Kühlübergabe; der Lauf sagt es.
-* '''Nicht abgebildet:''' Entfeuchtung und Taupunkt (die Vorlaufgrenze ist eine Vorgabe), freie Kühlung auch über die Sonde, die Regeneration der Sonde; weitere [[#grenzen|Grenzen]].
+* '''Regeneration der Sonde.''' Kühlt eine Wärmepumpe mit Erdwärmesonde, geht ihre Kühlwärme in das Sondenfeld zurück und hebt die Soletemperatur ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]).
+* '''Nicht abgebildet:''' Entfeuchtung und Taupunkt (die Vorlaufgrenze ist eine Vorgabe), freie Kühlung auch über die Sonde; weitere [[#grenzen|Grenzen]].
 
 == Kühlung einschalten ==
 {{Anker|einschalten}}

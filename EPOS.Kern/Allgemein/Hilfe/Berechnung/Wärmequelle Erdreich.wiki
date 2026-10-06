@@ -94,7 +94,7 @@ Was in die Rechnung hereinkommt:
 |-
 | <math>n_{\mathrm{J}}</math> || Betrachtungsjahr; gerechnet wird das Jahr nach <math>n_{\mathrm{J}} - 1</math> Vorjahren || — || Konstante des Rechenkerns, 10
 |-
-| <math>15</math> || Heizgrenze der Heizgradstunden, nach denen die Vorjahreslast auf die Monate faellt || °C || Konstante des Rechenkerns
+| <math>15</math> || Heizgrenze der Heizgradstunden, nach denen die Startschaetzung der Vorjahre auf die Monate faellt || °C || Konstante des Rechenkerns
 |}
 
 === Variablen ===
@@ -152,7 +152,11 @@ Was die Rechnung selbst bildet:
 |-
 | <math>h(r, \tau)</math> || mittlere Wandtemperatur der endlichen Linienquelle je Abstand || — || (25)
 |-
-| <math>\Delta\vartheta_{\mathrm{V}}(t)</math> || Absenkung durch die Vorjahre || K || (26)
+| <math>S(m)</math> || Pulsantwort aller Vorjahre zum Stundenabstand m || m·K/W || (26)
+|-
+| <math>\Delta\vartheta_{\mathrm{V}}(t)</math> || Absenkung durch die Vorjahre || K || (27)
+|-
+| <math>P_{\mathrm{R}}(t)</math> || Rueckspeisung der Kuehlwaerme in der Stunde t || kW || (28)
 |}
 
 == Rechenweg ==
@@ -406,13 +410,14 @@ Die Sonde rechnet die '''mittlere Soletemperatur''' Stunde fuer Stunde aus dem E
 : <math>\displaystyle \vartheta_{\mathrm{f}}(t) = \vartheta_{\mathrm{S}} - \Delta\vartheta_{\mathrm{V}}(t) - \sum_{i < t} q(i) \cdot \left( G(t - i) - G(t - i - 1) \right) - R_{\mathrm{b}} \cdot q(t - 1)</math> &nbsp;&nbsp;(22)
 :: <math>\vartheta_{\mathrm{f}}(t)</math> – mittlere Soletemperatur zu Beginn der Stunde t; sie ist die Quelltemperatur der Waermepumpe [°C]
 :: <math>\vartheta_{\mathrm{S}}</math> – ungestoerte Erdreichtemperatur nach (7) [°C]
-:: <math>\Delta\vartheta_{\mathrm{V}}(t)</math> – Absenkung durch die Vorjahre nach (26) [K]
+:: <math>\Delta\vartheta_{\mathrm{V}}(t)</math> – Absenkung durch die Vorjahre nach (27) [K]
 :: <math>q(i)</math> – Entzug je Sondenmeter in der Stunde i nach (23) [W/m]
 :: <math>G</math> – Sprungantwort des Feldes nach (24) [m·K/W]
 :: <math>R_{\mathrm{b}}</math> – Bohrlochwiderstand, 0,10 [m·K/W]
-: <math>\displaystyle q(t) = \frac{1\,000 \cdot \sum P_{\mathrm{Q}}(t)}{n_{\mathrm{S}} \cdot \ell_{\mathrm{S}}}</math> &nbsp;&nbsp;(23)
+: <math>\displaystyle q(t) = \frac{1\,000 \cdot \left( \sum P_{\mathrm{Q}}(t) - P_{\mathrm{R}}(t) \right)}{n_{\mathrm{S}} \cdot \ell_{\mathrm{S}}}</math> &nbsp;&nbsp;(23)
 :: <math>q(t)</math> – Entzug je Sondenmeter in der Stunde t [W/m]
 :: <math>\sum P_{\mathrm{Q}}(t)</math> – Entzugsleistung aller Waermepumpen an der Anlage nach (8) [kW]
+:: <math>P_{\mathrm{R}}(t)</math> – Rueckspeisung der Kuehlwaerme nach (28) [kW]
 :: <math>n_{\mathrm{S}}, \ell_{\mathrm{S}}</math> – Anzahl Sonden und Laenge je Sonde [–, m]
 : <math>\displaystyle G(\tau) = \frac{1}{4 \pi \lambda \, n_{\mathrm{S}}} \sum_{j} \sum_{k} h(r_{jk}, \tau)</math> &nbsp;&nbsp;(24)
 :: <math>G(\tau)</math> – Sprungantwort: Absenkung der mittleren Bohrlochwand je W/m Dauerentzug nach der Zeit <math>\tau</math> [m·K/W]
@@ -426,22 +431,30 @@ Die Sonde rechnet die '''mittlere Soletemperatur''' Stunde fuer Stunde aus dem E
 
 Die Sonden stehen im Abstand <math>B = 6</math>&nbsp;m in einem moeglichst quadratischen Raster. Fuer eine sehr lange Einzelsonde geht (25) in die unendliche Linienquelle ueber. <math>G</math> wird einmal je Lauf auf einem logarithmischen Zeitraster gerechnet und fuer jede ganze Stunde abgelegt; die Summe in (22) laeuft ueber alle Vorstunden. Die Temperatur der Stunde t entsteht aus dem Entzug bis zur Stunde t − 1 — die Waermepumpe rechnet die Stunde t also mit der Soletemperatur, die der Entzug der Vorstunden hinterlassen hat.
 
-Gerechnet wird das '''Betrachtungsjahr''' <math>n_{\mathrm{J}} = 10</math>. Die Vorjahre tragen den Jahresentzug der Vorpruefung nach (13), nach Heizgradstunden unter 15 °C auf die zwoelf Monate verteilt:
+Gerechnet wird das '''Betrachtungsjahr''' <math>n_{\mathrm{J}} = 10</math>, und zwar in zwei Laeufen derselben Simulation. Der erste Lauf rechnet mit einer Startschaetzung der Vorjahre — dem Jahresentzug der Vorpruefung nach (13), nach Heizgradstunden unter 15 °C auf die zwoelf Monate verteilt, ohne Vorpruefung ohne Vorjahre — und haelt je Stunde den Entzug des Feldes abzueglich der Rueckspeisung fest. Der zweite Lauf rechnet das Rechenjahr nach <math>n_{\mathrm{J}} - 1</math> Vorjahren, deren jedes genau diese Stundenlast traegt. Weil alle Vorjahre dieselbe Last tragen, fassen sich ihre Antworten zu einer einzigen Faltung ueber ein Jahr zusammen:
 
-: <math>\displaystyle \Delta\vartheta_{\mathrm{V}}(t) = \sum_{y=1}^{n_{\mathrm{J}} - 1} \sum_{m=1}^{12} q_{\mathrm{V},m} \cdot \left( G(t + 8\,760\,y - t_{m,0}) - G(t + 8\,760\,y - t_{m,1}) \right)</math> &nbsp;&nbsp;(26)
-:: <math>\Delta\vartheta_{\mathrm{V}}(t)</math> – Absenkung durch die Vorjahre, je Tag einmal ausgewertet [K]
-:: <math>q_{\mathrm{V},m}</math> – mittlerer Entzug je Sondenmeter im Monat m der Vorjahre [W/m]
-:: <math>t_{m,0}, t_{m,1}</math> – erste und letzte Stunde des Monats m [h]
+: <math>\displaystyle S(m) = \sum_{y=1}^{n_{\mathrm{J}} - 1} \left( G(m + 1 + 8\,760\,y) - G(m + 8\,760\,y) \right), \quad m = -8\,760 \dots 8\,758</math> &nbsp;&nbsp;(26)
+:: <math>G</math> – Sprungantwort des Feldes nach (24) [m·K/W]
 :: <math>y</math> – Abstand des Vorjahrs zum Rechenjahr [a]
 
-Fehlt die Vorpruefung (kein Normpunkt, keine Klimazone), entfaellt (26), und die Soletemperatur gilt fuer das erste Betriebsjahr; das Laufprotokoll sagt es.
+: <math>\displaystyle \Delta\vartheta_{\mathrm{V}}(t) = \sum_{i=0}^{8\,759} q_{\mathrm{V}}(i) \cdot S(t - 1 - i)</math> &nbsp;&nbsp;(27)
+:: <math>q_{\mathrm{V}}(i)</math> – Entzug je Sondenmeter in der Stunde i des ersten Laufs nach (23) [W/m]
+:: <math>S</math> – Pulsantwort aller Vorjahre nach (26) [m·K/W]
+
+Die Absenkung (27) ist stundengenau; die Vorjahre werden nicht zu Monats- oder Tagesbloecken zusammengefasst. Das gilt auch ohne Vorpruefung und ohne Klimazone — dann rechnet nur der erste Lauf ohne Vorjahre.
+
+'''Regeneration.''' Gibt eine Waermepumpe mit Erdreichquelle im Kuehlbetrieb Waerme ab, speist sie in das Feld ihrer Anlage zurueck:
+
+: <math>\displaystyle P_{\mathrm{R}}(t) = \sum_{e} \left( Q_{\mathrm{K},e}(t) + \frac{P_{\mathrm{el,K},e}(t)}{1 + h_{e}} \right)</math> &nbsp;&nbsp;(28)
+:: <math>Q_{\mathrm{K},e}(t)</math> – Kaelte, die die Waermepumpe e in der Stunde deckt, ueber den Verdichter oder als freie Kuehlung ueber die Sole [kWh]
+:: <math>P_{\mathrm{el,K},e}(t)</math> – Kaeltestrom der Waermepumpe e samt Hilfsstrom [kWh]
+:: <math>h_{e}</math> – Hilfsstromanteil des Kaeltekreises [–] Der Bruch in (28) ist die Verdichterarbeit (bei freier Kuehlung die Pumpenarbeit); sie geht mit der Kaelte in die Sole. Die Kaelte steht erst nach der Waermeseite fest; deshalb liefert der erste Lauf <math>P_{\mathrm{R}}(t)</math>, und der zweite zieht sie in (23) Stunde fuer Stunde vom Entzug ab — im Rechenjahr wie in den Vorjahren nach (27). Kaeltemaschinen speisen nicht ins Erdreich; ihre Rueckkuehlung arbeitet gegen die Aussenluft oder ein Kuehlwerk.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
 * '''Rueckwirkung nur an der Sonde.''' Der Kollektor rechnet den ungestoerten Jahresgang nach (6); dass die Waermepumpe den Boden um die Rohre abkuehlt, ist dort nicht abgebildet — die Auslegungspruefung haelt seinen Entzug gegen die Grenzwerte der Tabelle A2.
-* '''Keine Regeneration.''' Kuehlbetrieb und freie Kuehlung geben ihre Waerme nicht an das Sondenfeld zurueck; (22) kennt nur den Entzug der Heizseite.
-* '''Vorjahre aus der Vorpruefung.''' (26) setzt den Jahresentzug aus den Auslegungswerten an, nicht den des Laufs; das Laufprotokoll nennt den geschaetzten Wert.
+* '''Vorjahre wie das Rechenjahr.''' (27) laesst jedes Vorjahr die Stundenlast des ersten Laufs tragen; Bedarfsaenderungen ueber die Jahre und das Altern der Anlage sind nicht abgebildet. Die Rueckspeisung nach (28) stammt aus dem ersten Lauf, die Kaelteseite des zweiten Laufs rechnet aber schon mit dessen Soletemperatur.
 * '''Feste Sondengeometrie.''' Abstand, Anordnung, Bohrlochradius, Bohrlochwiderstand und Kopfueberdeckung sind Konstanten; Grundwasserstroemung wird nicht abgebildet.
 * '''Ein Bodentyp je Anlage.''' Geschichteter Untergrund wird nicht abgebildet — <math>\lambda</math> und <math>\rho \cdot c_{\mathrm{p}}</math> sind je Anlage EIN Wertepaar.
 * '''Die Randbedingungen der Normtabellen werden nicht geprueft.''' Tabelle A2 gilt fuer PE-Rohr 32 × 3,0 mm bei turbulenter Stroemung und Heizgrenztemperatur 12 °C, Tabelle B2 fuer eine Doppel-U-Sonde 32 × 3,0 mit Verfuellung <math>\lambda = 0{,}8</math>&nbsp;W/(m·K), Bohrloch 150 mm und turbulenter Stroemung. Bei laminarer Stroemung sinkt die zulaessige Entzugsleistung um rund 10 % (A2) bzw. auf Faktor 0,79 bis 0,85 (B1) — das ist vom Anwender zu beruecksichtigen.
@@ -458,7 +471,7 @@ Fehlt die Vorpruefung (kein Normpunkt, keine Klimazone), entfaellt (26), und die
 * '''Dialog „Wärmequelle Erdreich"''', Abschnitt „Auslegungsprüfung nach VDI 4640 Blatt 2" — Istwert gegen Grenzwert je Pruefzeile (14), (15) bzw. (18), die Grundlage (Klimazone und Bodenart bzw. <math>\lambda</math>, Sondenzahl, Volllaststunden), der Hinweis mit der erforderlichen Flaeche nach (16) bzw. Sondenlaenge nach (19), dazu Vorbehalt und Frostmeldung nach (21); ohne Lauf die gekennzeichnete Vorpruefung mit ihrer Herleitung nach (12) und (13) oder der Hinweis auf den fehlenden Wert.
 * '''Simulationsergebnis''', Reiter „Wärmepumpe" — <math>P_{\mathrm{th,WP}}(t)</math> und <math>P_{\mathrm{el,WP}}(t)</math>, aus denen (8) den Entzug bildet.
 * '''Simulationsergebnis''', Quelltemperatur der Waermepumpe je Stunde — bei der Sonde die Soletemperatur <math>\vartheta_{\mathrm{f}}(t)</math> nach (22).
-* '''Laufprotokoll''' — die Warnung bei unstimmiger Tiefe (Schritt 5), die Meldung, wenn eine Quelle nicht geprueft werden kann, und je Sonde die Kennwerte des Sondenfelds mit dem geschaetzten Jahresentzug der Vorjahre oder dem Hinweis, dass ohne Vorjahre gerechnet wird.
+* '''Laufprotokoll''' — die Warnung bei unstimmiger Tiefe (Schritt 5), die Meldung, wenn eine Quelle nicht geprueft werden kann, und je Sonde die Kennwerte des Sondenfelds mit Betrachtungsjahr, Zahl der Vorjahre, Jahresentzug und Rueckspeisung der Vorjahreslast.
 
 == Bezüge ==
 {{Anker|bezuege}}
