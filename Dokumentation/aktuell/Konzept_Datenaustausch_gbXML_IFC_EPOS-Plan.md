@@ -1897,6 +1897,10 @@ Verweis trägt das **Gegenstück der Datei** (`CorrespondingBoundary`), nicht da
 **Eine Komponente, ein Umschalter** „Grundriss \| Körper" (Arbeitsname `GebaeudeAnsicht.razor`) —
 nicht zwei Seiten, die auseinanderlaufen.
 
+### 14.2a Ort der Ansicht außerhalb des Imports (HC-4)
+
+Nach dem Import liegt die Ansicht im **Gebäudedialog**: Der Knopf „Datei erneut lesen…“ im Aktionsschlitz öffnet bei einer Projektkopie mit Importquelle die Überlagerung „Importdatei erneut lesen“. Die Geometrie wird nicht gespeichert (E87 F3); `Tab_Importquelle` hält nur den Dateinamen, nie den Pfad, samt Format, Hash, Größe und Zonenregel. Die Datei wählt der Anwender erneut; passt ihr SHA-256, liest der Kern sie auf dem Weg des Imports und zeigt die Ansicht in beiden Farbmodi, ohne etwas zu schreiben. Einzelheiten: [Protokoll HC-4](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-4_Datei_erneut_lesen.md).
+
 ### 14.3 Was sich für G7b und G7e ändert
 
 - **G7b (gbXML Stufe 2)** liest Polygone und Höhen aus dem Zonengeometrie-Modell und schreibt sie
@@ -1970,6 +1974,7 @@ lässt dessen Regeln, die Exporte (5.5, 6.7) und [`ADR-003`](ADR-003_IFC_xBIM_oh
 | Herkunft und Vereinfachung je Raum, sichtbar in der Ansicht | Reparatur: offene, überlappende oder verdrehte Netze werden gezeichnet, wie sie sind |
 | die Körper der Hüllbauteile (`IfcWall`, `IfcSlab`, `IfcRoof`, `IfcWindow`, `IfcDoor`) als Anzeige, mit gemeinsamer Dreiecksgrenze mit den Räumen (HottCAD-Verbund HC-1, #740) | der Bauteilkörper als Rechengröße: Dicke, Schichten und Flächen kommen weiter aus Mengen und Katalog |
 | die Hüllflächen der Raumkörper in acht Gruppen R0–R7 als Farbmodus „Randbedingung“ der Ansicht, mit Legende und Flächensummen (HottCAD-Verbund HC-2, #746) | die Gruppe als Rechengröße oder Persistenz: Anzeige am Abbild, die Berechnung liest sie nicht |
+| die Ansicht eines importierten Gebäudes erneut aus der Importdatei, nach Prüfung der Prüfsumme, im Gebäudedialog (HottCAD-Verbund HC-4, #754) | die Geometrie im Projekt: nichts wird gespeichert, der Zonenplan und die Zuordnung bleiben, wie sie sind |
 
 **Die Datei bleibt Quelle.** Nichts am Körper wird gerechnet, geschlossen oder ausgeglichen; was der Leser nicht
 lesen kann, fällt benannt auf den Umriss zurück. **„Schematisch“ bleibt der benannte Rückfall** für jeden Raum ohne

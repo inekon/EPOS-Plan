@@ -91,7 +91,7 @@ namespace EPOS.Kern.Tests
             GebaeudeAbbild a = BauteilvorschlagProbe.Lesen("ifc4_z6_sollwerte.ifc").Abbild;
             Importzone buero = GebaeudeZonierung.Bilden(a, 0, Z6).Zonen[0];
             Assert.True(buero.IstBeheizt);
-            Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, Zonenplan.NutzungAus(Z6, buero));
+            Assert.Equal(new Planprofil(null, DbWerte.KOND_NUTZUNG_BUERO), Zonenplan.NutzungAus(Z6, buero));
             buero.IstBeheizt = false;
             Assert.Null(Zonenplan.NutzungAus(Z6, buero));
         }

@@ -29638,6 +29638,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei erneut lesen… ähnelt.
+        /// </summary>
+        public static string GEB_BTN_NEU_LESEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_NEU_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Importdatei des markierten Gebäudes erneut lesen und das Gebäude nach Zonen und nach Randbedingung ansehen – gespeichert wird nichts ähnelt.
+        /// </summary>
+        public static string GEB_BTN_NEU_LESEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_NEU_LESEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
         /// </summary>
         public static string GEB_BTN_SIMULATION {
@@ -30039,6 +30057,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_LOESCHFRAGE {
             get {
                 return ResourceManager.GetString("GEB_MSG_LOESCHFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Andere Datei wählen… ähnelt.
+        /// </summary>
+        public static string GEB_NL_ANDERE_DATEI {
+            get {
+                return ResourceManager.GetString("GEB_NL_ANDERE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatei „{0}“ wählen ähnelt.
+        /// </summary>
+        public static string GEB_NL_DATEI_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_DATEI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ hat nicht das Format der Importquelle ({1}). ähnelt.
+        /// </summary>
+        public static string GEB_NL_FORMAT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("GEB_NL_FORMAT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ (geändert am {1}) ist nicht die Datei des Imports: SHA-256 {2}… statt {3}…. Es wird keine Ansicht gezeigt. ähnelt.
+        /// </summary>
+        public static string GEB_NL_HASH_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("GEB_NL_HASH_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Gebäude hat keine Importquelle. ähnelt.
+        /// </summary>
+        public static string GEB_NL_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEB_NL_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei wird gelesen … ähnelt.
+        /// </summary>
+        public static string GEB_NL_LAEUFT {
+            get {
+                return ResourceManager.GetString("GEB_NL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist nicht lesbar: {1} ähnelt.
+        /// </summary>
+        public static string GEB_NL_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("GEB_NL_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen stammen allein aus der Geometriedatei ({0}); eine Projektdatei und Zuordnungen von Hand sind in dieser Ansicht nicht enthalten. ähnelt.
+        /// </summary>
+        public static string GEB_NL_NUR_GEOMETRIE {
+            get {
+                return ResourceManager.GetString("GEB_NL_NUR_GEOMETRIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ stimmt mit der Importquelle überein. Die Ansicht zeigt die Datei; gespeichert wird nichts. ähnelt.
+        /// </summary>
+        public static string GEB_NL_PASSEND {
+            get {
+                return ResourceManager.GetString("GEB_NL_PASSEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importquelle: {0} ({1}), importiert am {2} ähnelt.
+        /// </summary>
+        public static string GEB_NL_QUELLE {
+            get {
+                return ResourceManager.GetString("GEB_NL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatei erneut lesen ähnelt.
+        /// </summary>
+        public static string GEB_NL_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen folgen der Regel der Datei ({0}); Zuordnungen von Hand sind in dieser Ansicht nicht enthalten. ähnelt.
+        /// </summary>
+        public static string GEB_NL_ZONENREGEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_ZONENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist mit {1} größer als die Grenze von {2} auf diesem Gerät. ähnelt.
+        /// </summary>
+        public static string GEB_NL_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("GEB_NL_ZU_GROSS", resourceCulture);
             }
         }
         
@@ -88293,6 +88428,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie des im Blatt „Nutzungsprofile“ gewählten Profils (nur lesbar); gewechselt wird sie im Katalogbaum. ähnelt.
+        /// </summary>
+        public static string RNP_KI_KATEGORIE_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_KATEGORIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie ähnelt.
+        /// </summary>
+        public static string RNP_KI_KATEGORIE_NAME {
+            get {
+                return ResourceManager.GetString("RNP_KI_KATEGORIE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit der Außenluft des gewählten Profils: 1/h (Luftwechsel) oder m³/(h·m²) (Volumenstrom je Fläche, mit der lichten Höhe des Ziels umgerechnet). Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“. ähnelt.
+        /// </summary>
+        public static string RNP_KI_LUFT_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_LUFT_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Außenluft steht in {0} oder {1}. ähnelt.
+        /// </summary>
+        public static string RNP_KI_LUFT_EINHEIT_FALSCH {
+            get {
+                return ResourceManager.GetString("RNP_KI_LUFT_EINHEIT_FALSCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit nennt das Feld „Einheit der Außenluft“ (np_luft_einheit). ähnelt.
+        /// </summary>
+        public static string RNP_KI_LUFT_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_LUFT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt „Nutzungsprofile“ ist nicht geöffnet — zuerst den Knopf „Nutzungsprofile…“ wählen. ähnelt.
+        /// </summary>
+        public static string RNP_KI_OHNE_BLATT {
+            get {
+                return ResourceManager.GetString("RNP_KI_OHNE_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} des im Blatt „Nutzungsprofile“ gewählten Profils; leer = kein Wert. Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“. Ein ausgeliefertes Profil ist schreibgeschützt. ähnelt.
+        /// </summary>
+        public static string RNP_KI_PROFILWERT_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_PROFILWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungstage der Woche des gewählten Profils als sieben Ziffern 0/1, Montag bis Sonntag (etwa 1111100); leer = keine Angabe. Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“. ähnelt.
+        /// </summary>
+        public static string RNP_KI_WOCHE_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_WOCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das zuletzt übernommene Nutzungsprofil der Zone (Name als Kopie, keine Verknüpfung zum Katalog); leer = keines. Übernommen wird über „Nutzungsprofil übernehmen…“ mit Rückfrage, geschrieben mit OK. ähnelt.
         /// </summary>
         public static string RNP_KI_ZONE_PROFIL_ERL {
@@ -88307,6 +88514,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_KI_ZONE_PROFIL_NAME {
             get {
                 return ResourceManager.GetString("RNP_KI_ZONE_PROFIL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} einer Zeile der Zuordnungstabelle im Blatt „Nutzungsprofile“ (nur lesbar, Kennzeichen die Nummer ab 1). Profilwahl, neue Zeile und Löschen schreiben sofort in den Katalog und bleiben Klicks des Anwenders. ähnelt.
+        /// </summary>
+        public static string RNP_KI_ZUORDNUNG_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_ZUORDNUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung ähnelt.
+        /// </summary>
+        public static string RNP_KI_ZUORDNUNG_NAME {
+            get {
+                return ResourceManager.GetString("RNP_KI_ZUORDNUNG_NAME", resourceCulture);
             }
         }
         
@@ -88874,6 +89099,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_LBL_ZUART_IFC {
             get {
                 return ResourceManager.GetString("RNP_LBL_ZUART_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string RNP_MSG_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_MSG_HERKUNFT_PROFIL", resourceCulture);
             }
         }
         

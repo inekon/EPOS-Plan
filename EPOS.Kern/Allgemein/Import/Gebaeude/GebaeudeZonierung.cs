@@ -78,10 +78,13 @@ namespace WindowsFormsApplication1
         internal bool Handgeaendert { get; set; }
 
         /// <summary>
-        /// Die Nutzung der Zone aus dem <see cref="Zonenplan"/> (<c>WOHNEN</c>, <c>BUERO</c>, <c>SCHULE</c>); <c>null</c> = keine.
-        /// Beim Speichern bekommt die Zone die ausgelieferten Vorlagen dieser Nutzung als Kalenderkopien.
+        /// Das Nutzungsprofil der Zone aus dem <see cref="Zonenplan"/> (<see cref="Planzone.Profil"/>); <c>null</c> = keine.
+        /// Beim Speichern wird es über den Generator übernommen (<see cref="ZonenplanCtrl.NutzungUebernehmen"/>).
         /// </summary>
-        internal string Nutzung { get; set; }
+        internal Planprofil Profil { get; set; }
+
+        /// <summary>Der Name der Nutzung (<see cref="Planprofil.Name"/>); <c>null</c> = keine.</summary>
+        internal string Nutzung => Profil?.Name;
 
         /// <summary>Die Konditionierung aus der HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
         internal Zonenkonditionierung Projektdatei { get; set; }
@@ -610,7 +613,7 @@ namespace WindowsFormsApplication1
                 if (raeume.Any(r => _beheizt(r) != warm)) Melden(PruefStufe.Warnung, PLAN_BEHEIZUNG_GEMISCHT, pz.Name);
                 var zone = new Importzone
                 {
-                    Schluessel = pz.Schluessel, Name = pz.Name, IstBeheizt = warm, Nutzung = pz.Nutzung, Projektdatei = pz.Projektdatei,
+                    Schluessel = pz.Schluessel, Name = pz.Name, IstBeheizt = warm, Profil = pz.Profil, Projektdatei = pz.Projektdatei,
                     Quellkennung = pz.Quellkennung ?? (raeume.Count == 1 ? raeume[0].Kennung : Gebaeude.Kennung),
                     Handgeaendert = pz.Angelegt || pz.Geaendert,
                 };
