@@ -666,6 +666,44 @@ public sealed class GebaeudeAnsichtTexte
         ["Mehrschale"] = Resource.GANS_VERMERK_MEHRSCHALE,
     };
 
+    /// <summary>GANS_FARBMODUS — Beschriftung des Umschalters „Zonen | Randbedingung" für die Sprachausgabe.</summary>
+    public string Farbmodus { get; set; } = Resource.GANS_FARBMODUS;
+
+    /// <summary>GANS_FARBMODUS_ZONEN</summary>
+    public string FarbmodusZonen { get; set; } = Resource.GANS_FARBMODUS_ZONEN;
+
+    /// <summary>GANS_FARBMODUS_RAND</summary>
+    public string FarbmodusRand { get; set; } = Resource.GANS_FARBMODUS_RAND;
+
+    /// <summary>GANS_RAND_OHNE_KLASSIFIKATION — „Randbedingung" ist nicht wählbar: keine Klassifikation.</summary>
+    public string RandOhneKlassifikation { get; set; } = Resource.GANS_RAND_OHNE_KLASSIFIKATION;
+
+    /// <summary>GANS_RAND_ZU_GROSS — „Randbedingung" ist nicht wählbar: über der Dreiecksgrenze.</summary>
+    public string RandZuGross { get; set; } = Resource.GANS_RAND_ZU_GROSS;
+
+    /// <summary>GANS_RAND_LEGENDE — Beschriftung der Gruppenlegende.</summary>
+    public string RandLegende { get; set; } = Resource.GANS_RAND_LEGENDE;
+
+    /// <summary>GANS_RAND_FLAECHE — {0} = Flächensumme.</summary>
+    public string RandFlaeche { get; set; } = Resource.GANS_RAND_FLAECHE;
+
+    /// <summary>GANS_RAND_SCHALTER — Beschriftung des Schalters je Gruppe, {0} = Gruppe.</summary>
+    public string RandSchalter { get; set; } = Resource.GANS_RAND_SCHALTER;
+
+    /// <summary>GANS_RAND_NUR_LEGENDE — Decken (R5, R6) stehen im Grundriss nur in Legende und Bilanz.</summary>
+    public string RandNurLegende { get; set; } = Resource.GANS_RAND_NUR_LEGENDE;
+
+    /// <summary>GANS_RAND_R0 … GANS_RAND_R7 — die Namen der Gruppen nach dem Gruppenindex.</summary>
+    public IReadOnlyList<string> Randgruppen { get; set; } = new[]
+    {
+        Resource.GANS_RAND_R0, Resource.GANS_RAND_R1, Resource.GANS_RAND_R2, Resource.GANS_RAND_R3,
+        Resource.GANS_RAND_R4, Resource.GANS_RAND_R5, Resource.GANS_RAND_R6, Resource.GANS_RAND_R7,
+    };
+
+    /// <summary>Der Name einer Gruppe, mit ihrem Kürzel davor („R1 Wand gegen außen").</summary>
+    public string Gruppenname(Randgruppe g)
+        => g + " " + ((int)g < Randgruppen.Count ? Randgruppen[(int)g] : "");
+
     /// <summary>Die Herkunft eines Körpers als Text.</summary>
     public string Herkunft(Koerperherkunft herkunft) => herkunft switch
     {

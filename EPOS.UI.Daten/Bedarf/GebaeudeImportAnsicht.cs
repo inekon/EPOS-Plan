@@ -100,6 +100,7 @@ namespace WindowsFormsApplication1
             {
                 Raumumriss r = geometrie.Raeume.FirstOrDefault(x => string.Equals(x.RaumKennung, k.Kennung, StringComparison.Ordinal));
                 if (k.Dateikoerper == null || r?.Koerper == null) { raeume.Add(k); continue; }
+                bool schematisch = r.Herkunft == Geometrieherkunft.Schematisch;
                 byte[] gruppen = Enumerable.Repeat(GebaeudeAnsichtRandgruppen.KEINE, r.Koerper.DreieckZahl).ToArray();
                 foreach (Flaechengruppenzeile z in g.Flaechengruppen)
                     if (string.Equals(z.Raumkennung, k.Kennung, StringComparison.Ordinal))
@@ -111,8 +112,8 @@ namespace WindowsFormsApplication1
                 {
                     Dateikoerper = k.Dateikoerper with { Gruppen = gruppen },
                     Kantengruppen = r.Polygone.Select(p => (IReadOnlyList<Randgruppe?>)Enumerable.Range(0, p.Punkte.Count)
-                                                        .Select(e => Kantengruppe(r.Koerper, gruppen, p.Punkte, e)).ToList()).ToList(),
-                    Kantenmarken = Kantenmarken(r, oeffnungen),
+                                                        .Select(e => Kantengruppe(r.Koerper, gruppen, p.Punkte, e, schematisch)).ToList()).ToList(),
+                    Kantenmarken = schematisch ? Array.Empty<GebaeudeAnsichtKantenmarke>() : Kantenmarken(r, oeffnungen),
                     Bodengruppe = Bodengruppe(r.Koerper, gruppen),
                 });
             }
@@ -133,8 +134,11 @@ namespace WindowsFormsApplication1
         /// der Kante steht (Toleranz <see cref="KANTE_WINKEL_GRAD"/>), die nicht weiter als <see cref="KANTE_ABSTAND_M"/> von ihrer
         /// Geraden liegen und sie entlang überdecken, je Gruppe nach der überdeckten Fläche gewogen; die flächengrößte gewinnt (bei
         /// Gleichstand die kleinere Nummer). Keine Fläche an der Kante = <c>null</c>, nichts Erfundenes.
+        /// <para>Ein <b>schematischer</b> Umriss (Fläche und Seitenverhältnis, die Lage erfunden — etwa HottCAD ohne Raumgrenzen)
+        /// hat keine Lage, nur Richtungen: Dort zählen alle senkrechten Dreiecke, deren äußere Normale in die äußere Normale der
+        /// Kante zeigt (gegen den Uhrzeigersinn: rechts der Laufrichtung), ohne Abstand und Überdeckung.</para>
         /// </summary>
-        private static Randgruppe? Kantengruppe(Dateikoerper k, byte[] gruppen, IReadOnlyList<double[]> punkte, int e)
+        private static Randgruppe? Kantengruppe(Dateikoerper k, byte[] gruppen, IReadOnlyList<double[]> punkte, int e, bool schematisch)
         {
             double[] a = punkte[e], b = punkte[(e + 1) % punkte.Count];
             double dx = b[0] - a[0], dy = b[1] - a[1], laenge = Math.Sqrt(dx * dx + dy * dy);
@@ -148,7 +152,13 @@ namespace WindowsFormsApplication1
                 if (gruppen[t] >= GebaeudeAnsichtRandgruppen.ZAHL) continue;
                 if (!Normale(k, t, out double[] n, out double flaeche) || Math.Abs(n[2]) > sinWand) continue;
                 double h = Math.Sqrt(n[0] * n[0] + n[1] * n[1]);
-                if (Math.Abs((n[0] * nx + n[1] * ny) / h) < cosKante) continue;
+                double richtung = (n[0] * nx + n[1] * ny) / h;
+                if (schematisch)
+                {
+                    if (richtung >= cosKante) gewicht[gruppen[t]] += flaeche;
+                    continue;
+                }
+                if (Math.Abs(richtung) < cosKante) continue;
                 double tMin = double.PositiveInfinity, tMax = double.NegativeInfinity;
                 bool nah = true;
                 foreach (int i in k.Dreiecke[t])
