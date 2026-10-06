@@ -17,7 +17,10 @@ zwölf Live-Seiten war ein Bot-Upload vom 26.09. oder 28.09. Danach sind alle Se
 Repo-Quelle. Statuszeile #614.
 
 **Nach dem Sammel-Upload #614 geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten Upload:**
-Brauchwasser-Zapfprofil (#615: Katalogimport eines Pakets ohne Spalte „Katalogversion“).
+Brauchwasser-Zapfprofil (#615: Katalogimport eines Pakets ohne Spalte „Katalogversion“);
+Berichtsvorlagen (#762: Berichtsseite in vier Karten); Wirtschaftlichkeit (#762: Berichtsseite
+in vier Karten; #763: VALERI-Darstellung mit allen drei Szenarien) — beide geändert, Upload
+ausstehend.
 
 | Seite | Revision |
 |---|---|
@@ -151,6 +154,13 @@ neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
+
+### Version 1.2.0.7 — nicht veröffentlicht
+
+Version vom Anwender zu bestätigen (Regel 13.4: ein Satz je Auftrag).
+
+- Seit 06.10.2026: Die Berichtsseite ordnet Varianten und Inhalt links, Vorlage und Ausgabe rechts in vier Karten an. (#762)
+- Seit 06.10.2026: Der Wirtschaftlichkeitsbericht lässt sich mit allen drei Szenarien nebeneinander erstellen (VALERI-Darstellung). (#763)
 
 ### Version 1.2.0.6 — nicht veröffentlicht
 
