@@ -132,6 +132,18 @@ public sealed class ZoneDaten
     public List<BauteilDaten> Bauteile { get; set; } = new();
 
     /// <summary>
+    /// <b>Das zuletzt übernommene Nutzungsprofil</b> (<c>Tab_Zone.Nutzungsprofil</c>, Q41, NP-F14) — ein Name als Kopie,
+    /// keine Id; <c>null</c> = keines. „Nutzungsprofil übernehmen…" setzt ihn im Arbeitsstand, das OK schreibt ihn.
+    /// </summary>
+    public string? Nutzungsprofil { get; set; }
+
+    /// <summary>
+    /// Die Nutzung der Kalender der Zone beim Öffnen (<c>Tab_Konditionierungskalender.Nutzung</c>) — nur Anzeige: die
+    /// Kopfzeile nennt sie, wenn die Zone keinen <see cref="Nutzungsprofil"/> trägt. Wird nie geschrieben.
+    /// </summary>
+    public string? Kalendernutzung { get; set; }
+
+    /// <summary>
     /// Die Konditionierung der Zone im Arbeitsstand (Stufe KP2; Teilkonzept 3.4) — leere Zellen heißen
     /// „wie das Gebäude"; <c>null</c> = die Hülle reicht keine. Sie reist mit dem Zonenweg (Schritt 3
     /// des OK-Wegs); ihre <see cref="KonditionierungDaten.Fassung"/> zählt in <see cref="GleicheWerte"/>.
@@ -154,7 +166,7 @@ public sealed class ZoneDaten
     public bool GleicheWerte(ZoneDaten? andere)
     {
         if (andere is null || Id != andere.Id || Bezeichner != andere.Bezeichner || Nutzflaeche != andere.Nutzflaeche
-            || VorlageId != andere.VorlageId || Eingaben() != andere.Eingaben()
+            || VorlageId != andere.VorlageId || Eingaben() != andere.Eingaben() || Nutzungsprofil != andere.Nutzungsprofil
             || Konditionierung?.Fassung != andere.Konditionierung?.Fassung
             || Bauteile.Count != andere.Bauteile.Count) return false;
         for (int i = 0; i < Bauteile.Count; i++)

@@ -488,6 +488,45 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// <b>„Nutzungsprofil übernehmen…" über dem Arbeitsstand</b> (Stufe NP3b; Konzept Nutzungsprofile 6.2): übersetzen,
+        /// <see cref="RaumnutzungCtrl.ProfilAnwenden"/> rechnen, zurück übersetzen; an einer Zone trägt der neue Stand den
+        /// Profilnamen (<see cref="ZoneDaten.Nutzungsprofil"/>, NP-F14) — auch ohne einen Kalender (NP-F13). Geschrieben
+        /// wird nichts.
+        /// </summary>
+        internal static KonditionierungProfilergebnis Profilschritt(KonditionierungStand stand, Kalendereigentuemer art, Bezug bezug,
+                                                                   KonditionierungProfilanfrage anfrage,
+                                                                   Func<long, Raumnutzungsprofil> profile)
+        {
+            if (stand?.Gebaeude == null || anfrage == null)
+                return KonditionierungProfilergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, "—"));
+            Raumnutzungsprofil p = profile(anfrage.IdProfil);
+            if (p == null)
+                return KonditionierungProfilergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.RAUMNUTZUNG_MSG_PROFIL_FEHLT, anfrage.IdProfil.ToString(CultureInfo.InvariantCulture)));
+            try
+            {
+                Konditionierungsarbeitsstand a = Arbeitsstand(stand, art, bezug);
+                RaumnutzungCtrl.Anwendung an = RaumnutzungCtrl.ProfilAnwenden(a, p, anfrage.Zone, anfrage.Flaeche, anfrage.LichteHoehe);
+                if (!an.Ok) return KonditionierungProfilergebnis.Fehler(an.Meldung);
+                KonditionierungStand neu = Stand(stand, a, an.Stand);
+                string name = KonditionierungNutzungSchema.Nutzungstext(p.Bezeichner);
+                if (anfrage.Zone is int zone && neu.Zonen.FirstOrDefault(z => z.Id == zone) is ZoneDaten ziel)
+                    ziel.Nutzungsprofil = name;
+                RaumnutzungTexte t = RaumnutzungHuelle.Texte();
+                List<KonditionierungProfilposten> posten = an.Posten.Select(x => new KonditionierungProfilposten(
+                    Oberflaeche(x.Groesse), x.Weg != Raumnutzungsweg.Keiner, x.Uebernommen, x.Ersetzt, x.Unbeheizt,
+                    x.Nennwert.HasValue ? x.Nennwertherleitung ?? "" : "", RaumnutzungHuelle.Hinweistext(x.Hinweis, t))).ToList();
+                return new KonditionierungProfilergebnis(true, "", neu, name ?? p.Bezeichner ?? "", posten, an.Aufgeteilt, p.IstLeer);
+            }
+            catch (ArgumentException ex)
+            {
+                return KonditionierungProfilergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KOND_MSG_ARBEITSSTAND_UNGUELTIG, ex.Message));
+            }
+        }
+
         // =================================================================================
         // Lesen: die Konditionierung beim Öffnen
         // =================================================================================
@@ -555,7 +594,8 @@ namespace WindowsFormsApplication1
                 ? s => Schritt(s, art, bezug, a => Konditionierungsarbeit.KatalogErneut(
                     a, GebaeudeStammCtrl.KatalogebeneDerKopie(idGebaeude, out _)))
                 : null;
-            return Bauen(art, bezug, projekt, projekt ? idGebaeude : 0, new KonditionierungsvorlageCtrl(), katalog);
+            return Bauen(art, bezug, projekt, projekt ? idGebaeude : 0, new KonditionierungsvorlageCtrl(), katalog,
+                         RaumnutzungCtrl.Lesbar() ? id => new RaumnutzungCtrl().ProfilLesen(id) : null);
         }
 
         /// <summary>
@@ -572,18 +612,25 @@ namespace WindowsFormsApplication1
         /// <param name="bezug">Der Bezug des Projekts; <c>null</c> = der des Katalogs.</param>
         /// <param name="katalogErneut">„Aus dem Katalog erneut übernehmen…" des Prüfstands; <c>null</c> = keiner.</param>
         /// <param name="vorlagen">Die Vorlagen des Prüfstands (etwa <see cref="Konditionierungsvorlagenablage.AusSaat"/>); <c>null</c> = keine.</param>
+        /// <param name="profile">Die Nutzungsprofile des Prüfstands samt Kategorie (Stufe NP3b); <c>null</c> = ohne „Nutzungsprofil übernehmen…".</param>
         internal static KonditionierungWeg ReinerWeg(Kalendereigentuemer art, bool projekt, Bezug bezug = null,
                                                      Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut = null,
-                                                     IKonditionierungsvorlagen vorlagen = null)
-            => Bauen(art, bezug ?? Bezug.Katalog, projekt, 0, vorlagen, katalogErneut);
+                                                     IKonditionierungsvorlagen vorlagen = null,
+                                                     IReadOnlyList<(string Kategorie, Raumnutzungsprofil Profil)> profile = null)
+            => Bauen(art, bezug ?? Bezug.Katalog, projekt, 0, vorlagen, katalogErneut,
+                     profile == null ? null : id => profile.Select(x => x.Profil).FirstOrDefault(p => p.Id == id),
+                     profile == null ? null : () => profile.Select(x => RaumnutzungHuelle.Wahl(x.Kategorie, x.Profil, RaumnutzungHuelle.Texte())).ToList());
 
         /// <summary>
         /// Baut das Bündel: je Handlung ein Delegat über den reinen Schritt. <paramref name="vorlagen"/>
         /// <c>null</c> = ohne die Wege der Vorlagen (ohne Datenbank).
         /// </summary>
+        /// <param name="profile">Der Leseweg der Nutzungsprofile (Stufe NP3b); <c>null</c> = ohne „Nutzungsprofil übernehmen…".</param>
         private static KonditionierungWeg Bauen(Kalendereigentuemer art, Bezug bezug, bool projekt, int idGebaeude,
                                                 IKonditionierungsvorlagen vorlagen,
-                                                Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut)
+                                                Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut,
+                                                Func<long, Raumnutzungsprofil> profile = null,
+                                                Func<IReadOnlyList<KonditionierungProfilwahl>> profilliste = null)
         {
             return new KonditionierungWeg
             {
@@ -598,6 +645,10 @@ namespace WindowsFormsApplication1
                 // Platzhalter der geerbten Zellen.
                 VomGebaeude = (s, o) => Schritt(s, art, bezug, a => Konditionierungsarbeit.VomGebaeudeUebernehmen(a, Ort(o))),
                 Geerbt = (s, zone) => Geerbt(s, art, bezug, zone),
+
+                // Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofil übernehmen…" in den Arbeitsstand.
+                Nutzungsprofile = profile == null ? null : profilliste ?? RaumnutzungHuelle.Profilwahl,
+                ProfilUebernehmen = profile == null ? null : (s, anfrage) => Profilschritt(s, art, bezug, anfrage, profile),
 
                 Vorlagen = vorlagen == null ? null : g => vorlagen.Liste(Kern(g)).Select(VorlageDaten).ToList(),
                 VorlageUebernehmen = vorlagen == null ? null : (s, o, id) => Schritt(s, art, bezug, a =>
@@ -673,15 +724,7 @@ namespace WindowsFormsApplication1
                 : new KonditionierungVorlageDaten(v.Id, Oberflaeche(v.Groesse), v.Bezeichner ?? "", v.Beschreibung ?? "",
                                                   Nutzung(v.Nutzung), v.Ausgeliefert);
 
-        private static KonditionierungNutzung Nutzung(string wert)
-        {
-            for (int i = 0; i < DbWerte.KOND_NUTZUNGEN.Count; i++)
-                if (string.Equals(DbWerte.KOND_NUTZUNGEN[i], wert, StringComparison.Ordinal)) return (KonditionierungNutzung)(i + 1);
-            return KonditionierungNutzung.Keine;
-        }
-
-        private static string Nutzung(KonditionierungNutzung n)
-            => n == KonditionierungNutzung.Keine ? null : DbWerte.KOND_NUTZUNGEN[(int)n - 1];
+        private static string Nutzung(string wert) => KonditionierungNutzungSchema.Nutzungstext(wert);
 
         /// <summary>
         /// „Als Vorlage speichern…" — der Inhalt aus dem Arbeitsstand (E54), geschrieben sofort (Festlegung
@@ -699,7 +742,7 @@ namespace WindowsFormsApplication1
                 Ebenenergebnis inhalt = Konditionierungsarbeit.AlsVorlage(Arbeitsstand(s, art, bezug), Ort(o));
                 if (!inhalt.Ok) return new KonditionierungVorlageErgebnis(false, inhalt.Meldung, null);
                 KonditionierungCtrl.Ergebnis e = vorlagen.SpeichernAus(inhalt.Stand, Kern(o.Groesse), eingabe?.Name,
-                                                                       eingabe?.Beschreibung, Nutzung(eingabe?.Nutzung ?? KonditionierungNutzung.Keine),
+                                                                       eingabe?.Beschreibung, Nutzung(eingabe?.Nutzung),
                                                                        out long id);
                 return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(id)) : null);
             }

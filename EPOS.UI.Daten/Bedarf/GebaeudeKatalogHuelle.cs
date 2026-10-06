@@ -209,6 +209,9 @@ namespace WindowsFormsApplication1
                 KuehlSollwert = z.Kuehl_Sollwert,
                 KuehlSollwertNacht = z.Kuehl_Sollwert_Nacht,
                 KuehlleistungMaxKw = z.Kuehlleistung_Max,
+                // NP3b (Q41, NP-F14): das zuletzt übernommene Nutzungsprofil; die Kalendernutzung nur zur Anzeige.
+                Nutzungsprofil = z.Nutzungsprofil,
+                Kalendernutzung = z.ID > 0 && RaumnutzungCtrl.Lesbar() ? RaumnutzungCtrl.Kalendernutzung(idGebaeude, z.ID) : null,
                 Konditionierung = z.ID > 0
                     ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Zone(idGebaeude, z.ID), gebaeudeebene)
                     : KonditionierungHuelle.Leer(),
@@ -312,6 +315,8 @@ namespace WindowsFormsApplication1
                     z.Kuehl_Sollwert = d.KuehlSollwert;
                     z.Kuehl_Sollwert_Nacht = d.KuehlSollwertNacht;
                     z.Kuehlleistung_Max = d.KuehlleistungMaxKw;
+                    // NP3b: „Nutzungsprofil übernehmen…" setzt den Namen im Arbeitsstand, das OK schreibt ihn.
+                    z.Nutzungsprofil = d.Nutzungsprofil;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel
                     {
                         ID = b.Id,

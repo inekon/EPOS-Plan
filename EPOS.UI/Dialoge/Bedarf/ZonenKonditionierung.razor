@@ -23,6 +23,12 @@
 
 <div class="epos-kond epos-kond-zone">
 
+    @* Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofil übernehmen…" wie am Gebäude. *@
+    @if (Bearbeitung.MitWeg)
+    {
+        <NutzungsprofilUebernahme Bearbeitung="@Bearbeitung" Texte="@ProfilTexte" Geaendert="Geaendert" />
+    }
+
     @if (Bearbeitung.Sperrgrund is string sperre)
     {
         <p class="epos-leisezeile epos-kond-sperrzeile">@sperre</p>
@@ -98,6 +104,9 @@
 
     /// <summary>Die Texte der VDI-Struktur (Platzhalter der Lüftung und der Kühlung).</summary>
     [Parameter] public GebaeudeHuelleTexte HuelleTexte { get; set; } = new();
+
+    /// <summary>Die Texte von „Nutzungsprofil übernehmen…" (Bündel des Nutzungsprofilkatalogs, Präfix <c>RNP_</c>).</summary>
+    [Parameter] public RaumnutzungTexte ProfilTexte { get; set; } = new();
 
     /// <summary>„Ja" der Rückfragen.</summary>
     [Parameter] public string JaText { get; set; } = "Ja";

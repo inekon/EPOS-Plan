@@ -203,6 +203,15 @@ public sealed class ZonenKiSicht : IKiFeldtafel
     /// <summary>Die wirksame Übergabe mit Herkunft je Wert (nur lesen).</summary>
     public string UebergabeWirksam => UebergabeWirksamLesen?.Invoke() ?? "";
 
+    /// <summary>Liest das zuletzt übernommene Nutzungsprofil der Zone (Stufe NP3b).</summary>
+    public Func<string>? NutzungsprofilLesen { get; init; }
+
+    /// <summary>
+    /// Das zuletzt übernommene Nutzungsprofil der Zone (nur lesen; Stufe NP3b, Konzept Nutzungsprofile 6.3) —
+    /// <c>Tab_Zone.Nutzungsprofil</c> bzw. die Nutzung ihrer Kalender, leer = keines.
+    /// </summary>
+    public string Nutzungsprofil => NutzungsprofilLesen?.Invoke() ?? "";
+
     /// <summary>
     /// Die Bearbeitung der Zonenmatrix (<see cref="KonditionierungBearbeitung"/> im Zonenmodus); ohne sie
     /// stehen die Felder der Matrix nicht zur Verfügung.

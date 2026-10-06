@@ -5227,7 +5227,12 @@ namespace WindowsFormsApplication1
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonUebergabeErl, einheit: KiDialogTexte.EINHEIT_KELVIN,
                                      leerErlaubt: true, min: Waermeuebergabevorgaben.BAND_MIN, max: Waermeuebergabevorgaben.BAND_MAX),
                     new KiDialogFeld("uebergabe_wirksam", SICHT + "UebergabeWirksam", KiDialogTexte.ZonUebergabeWirksamName,
-                                     KiParameterTyp.Text, KiDialogTexte.ZonUebergabeWirksamErl, leerErlaubt: true, nurLesen: true)
+                                     KiParameterTyp.Text, KiDialogTexte.ZonUebergabeWirksamErl, leerErlaubt: true, nurLesen: true),
+                    // Stufe NP3b (Konzept Nutzungsprofile 6.3): die KI-Sicht der Zone nennt das zuletzt übernommene
+                    // Nutzungsprofil (Tab_Zone.Nutzungsprofil bzw. die Nutzung der Kalender); übernommen wird über die
+                    // Handlung „Nutzungsprofil übernehmen…" mit Rückfrage, nicht über ein Feld.
+                    new KiDialogFeld("nutzungsprofil", SICHT + "Nutzungsprofil", KiDialogTexte.ZonNutzungsprofilName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonNutzungsprofilErl, leerErlaubt: true, nurLesen: true)
                 }
                 // Stufe KP2, Welle U4 (Teilkonzept 3.4, 7.3): die Zonenmatrix aus dem Profil
                 // KiKonditionierungsfelder (Zonenkarte) - die Sichtklasse beantwortet sie als Feldtafel;

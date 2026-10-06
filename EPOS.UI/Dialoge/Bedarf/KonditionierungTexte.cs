@@ -464,6 +464,21 @@ public sealed class KonditionierungTexte
     public string NutzungKeine { get; set; } = "ohne Angabe";
 
     /// <summary>
+    /// <b>Die Anzeige einer Nutzung</b> (Konzept Nutzungsprofile NP-F15): Die vier alten Kennungen (<c>WOHNEN</c>,
+    /// <c>BUERO</c>, <c>SCHULE</c>, <c>SONSTIGE</c>) zeigt die Oberfläche übersetzt, jeder andere Text — ein Profilname —
+    /// steht, wie er ist; leer = „ohne Angabe".
+    /// </summary>
+    public string Nutzungsanzeige(string? nutzung) => (nutzung ?? "").Trim() switch
+    {
+        "" => NutzungKeine,
+        "WOHNEN" => NutzungWohnen,
+        "BUERO" => NutzungBuero,
+        "SCHULE" => NutzungSchule,
+        "SONSTIGE" => NutzungSonstige,
+        string text => text,
+    };
+
+    /// <summary>
     /// <c>KOND_LBL_VORLAGE_AUSGELIEFERT</c> — Kennzeichnung einer Vorlage der Auslieferung (Schloss)
     /// </summary>
     public string LabelVorlageAusgeliefert { get; set; } = "ausgeliefert";

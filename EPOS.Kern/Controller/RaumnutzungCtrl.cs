@@ -407,6 +407,48 @@ namespace WindowsFormsApplication1
         /// <param name="lichteHoehe">Die lichte Höhe des Ziels für Außenluft in m³/(h·m²); <c>null</c> = ohne.</param>
         public Uebernahme ProfilUebernehmen(long idProfil, long idGebaeude, long? idZone, double? flaeche, double? lichteHoehe = null)
         {
+            return Uebernehmen(idProfil, idGebaeude, idZone, flaeche, lichteHoehe);
+        }
+
+        /// <summary>
+        /// <b>Profil übernehmen mit den Maßen des Ziels</b> (Stufe NP3b, NP-F10, Q39, Q40): Fläche und lichte Höhe liest
+        /// der Weg selbst — an der Zone ihre Nutzfläche und Raumhöhe (leer = die des Gebäudes), am Gebäude dessen
+        /// Nutzfläche und Raumhöhe (<see cref="Zielmasse"/>); sonst wie
+        /// <see cref="ProfilUebernehmen(long, long, long?, double?, double?)"/>.
+        /// </summary>
+        public Uebernahme ProfilUebernehmen(long idProfil, long idGebaeude, long? idZone)
+        {
+            (double? flaeche, double? hoehe) = Zielmasse(idGebaeude, idZone);
+            return Uebernehmen(idProfil, idGebaeude, idZone, flaeche, hoehe);
+        }
+
+        /// <summary>
+        /// <b>Fläche und lichte Höhe eines Ziels</b> aus der Datenbank (NP-F10): an der Zone <c>Tab_Zone.Nutzflaeche</c>
+        /// und <c>Raumhoehe</c> (leer = die Raumhöhe des Gebäudes), am Gebäude <c>Tab_Gebaeude.Nutzflaeche</c> und
+        /// <c>Raumhoehe</c>; ein Wert ≤ 0 heißt „ohne".
+        /// </summary>
+        public static (double? Flaeche, double? LichteHoehe) Zielmasse(long idGebaeude, long? idZone)
+        {
+            System.Data.DataTable g = DataRepository.GetDataTable(
+                "SELECT \"Nutzflaeche\", \"Raumhoehe\" FROM \"Tab_Gebaeude\" WHERE \"ID\" = ?", new DbParam("@g", idGebaeude));
+            double? flaeche = g.Rows.Count > 0 ? Zahl(g.Rows[0]["Nutzflaeche"]) : null;
+            double? hoehe = g.Rows.Count > 0 ? Zahl(g.Rows[0]["Raumhoehe"]) : null;
+            if (idZone.HasValue)
+            {
+                System.Data.DataTable z = DataRepository.GetDataTable(
+                    "SELECT \"Nutzflaeche\", \"Raumhoehe\" FROM \"Tab_Zone\" WHERE \"ID\" = ? AND \"ID_Gebaeude\" = ?",
+                    new DbParam("@z", idZone.Value), new DbParam("@g", idGebaeude));
+                flaeche = z.Rows.Count > 0 ? Zahl(z.Rows[0]["Nutzflaeche"]) : null;
+                if (z.Rows.Count > 0 && Zahl(z.Rows[0]["Raumhoehe"]) is double eigene) hoehe = eigene;
+            }
+            return (Masz(flaeche), Masz(hoehe));
+        }
+
+        private static double? Zahl(object wert)
+            => wert == null || wert == DBNull.Value ? null : Convert.ToDouble(wert, CultureInfo.InvariantCulture);
+
+        private Uebernahme Uebernehmen(long idProfil, long idGebaeude, long? idZone, double? flaeche, double? lichteHoehe)
+        {
             string bereit = Bereit();
             if (bereit != null) return Uebernahme.Fehler(bereit);
             Raumnutzungsprofil profil = ProfilLesen(idProfil);
@@ -421,31 +463,11 @@ namespace WindowsFormsApplication1
                                                        idGebaeude.ToString(CultureInfo.InvariantCulture),
                                                        idZone.Value.ToString(CultureInfo.InvariantCulture)));
 
-            var posten = new List<Uebernahmeposten>();
-            var uebernommen = new List<Konditionierungsgroesse>();
-            foreach (Raumnutzungsgroesse r in Raumnutzungsgenerator.Erzeugen(profil, flaeche, lichteHoehe))
-            {
-                bool unbeheizt = zone != null && !zone.IstBeheizt &&
-                                 (r.Groesse == Konditionierungsgroesse.Heizsoll || r.Groesse == Konditionierungsgroesse.Kuehlsoll);
-                if (r.Vorlage == null || unbeheizt)
-                {
-                    posten.Add(new Uebernahmeposten(r.Groesse, r.Weg, false, false, unbeheizt && r.Vorlage != null, null, null, r.Hinweis));
-                    continue;
-                }
-                bool ersetzt = stand.Ebene(idZone)?.Kalender(r.Groesse) != null;
-                var ort = new Konditionierungsort(r.Groesse, idZone);
-                Konditionierungsschritt schritt = Konditionierungsarbeit.VorlageUebernehmen(stand, ort, r.Vorlage);
-                if (schritt.Rueckfrage)
-                {
-                    Konditionierungsschritt geteilt = Konditionierungsarbeit.LuftwechselAufteilen(stand);
-                    if (!geteilt.Ok) return Uebernahme.Fehler(geteilt.Meldung);
-                    schritt = Konditionierungsarbeit.VorlageUebernehmen(geteilt.Stand, ort, r.Vorlage);
-                }
-                if (!schritt.Ok || schritt.Rueckfrage) return Uebernahme.Fehler(schritt.Meldung ?? "");
-                stand = schritt.Stand;
-                uebernommen.Add(r.Groesse);
-                posten.Add(new Uebernahmeposten(r.Groesse, r.Weg, true, ersetzt, false, r.Nennwert, r.Nennwertherleitung, r.Hinweis));
-            }
+            Anwendung anwendung = ProfilAnwenden(stand, profil, idZone, flaeche, lichteHoehe);
+            if (!anwendung.Ok) return Uebernahme.Fehler(anwendung.Meldung);
+            stand = anwendung.Stand;
+            IReadOnlyList<Uebernahmeposten> posten = anwendung.Posten;
+            List<Konditionierungsgroesse> uebernommen = posten.Where(x => x.Uebernommen).Select(x => x.Groesse).ToList();
 
             string schloss = KonditionierungCtrl.Schloss(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude));
             if (schloss != null) return Uebernahme.Fehler(schloss);
@@ -485,6 +507,111 @@ namespace WindowsFormsApplication1
                 }
             }
             return new Uebernahme(true, null, profil.Bezeichner, posten);
+        }
+
+        /// <summary>
+        /// Das Ergebnis der reinen Anwendung eines Profils auf einen Arbeitsstand (<see cref="ProfilAnwenden"/>): der neue
+        /// Stand, je Größe ein Posten und ob die Gesamtangabe der Lüftung dafür aufgeteilt wurde (E56 F5 (a)).
+        /// </summary>
+        public sealed record Anwendung(bool Ok, string Meldung, Konditionierungsarbeitsstand Stand,
+                                       IReadOnlyList<Uebernahmeposten> Posten, bool Aufgeteilt)
+        {
+            /// <summary>Benannt abgelehnt; der Stand bleibt.</summary>
+            public static Anwendung Fehler(string meldung)
+                => new Anwendung(false, meldung ?? "", null, Array.Empty<Uebernahmeposten>(), false);
+        }
+
+        /// <summary>
+        /// <b>Ein Profil auf einen Arbeitsstand anwenden</b> — rein, ohne Datenbank (Konzept Nutzungsprofile 4.4, 6.2;
+        /// NP-F6, NP-F13, NP-F17, NP-F18): je Größe erzeugt der <see cref="Raumnutzungsgenerator"/> die Vorlage,
+        /// <see cref="Konditionierungsarbeit.VorlageUebernehmen"/> trägt sie ein (am angelegten Kalender ersetzt sie nur den
+        /// Matrixbereich, P12). Eine unbeheizte Zone bekommt weder Heiz- noch Kühlkalender, eine nicht belegte Größe
+        /// keinen; die Rückfrage „aufteilen" der Lüftung wird bejaht — der wirksame Luftwechsel bleibt. Derselbe Schritt
+        /// trägt <see cref="ProfilUebernehmen(long, long, long?, double?, double?)"/> und den OK-Weg der Editoren (die
+        /// Hülle der Konditionierung), damit Vorschau, Rückfrage und Schreiben dasselbe Ergebnis sehen.
+        /// </summary>
+        /// <param name="stand">Der Arbeitsstand des Gebäudes samt Zonen.</param>
+        /// <param name="profil">Das Profil.</param>
+        /// <param name="idZone">Die Zone im Arbeitsstand oder <c>null</c> für das Gebäude.</param>
+        /// <param name="flaeche">Die Fläche des Ziels für die Nennwerte (Q39, Q40); <c>null</c> = der Nennwert des Ziels bleibt.</param>
+        /// <param name="lichteHoehe">Die lichte Höhe des Ziels für Außenluft in m³/(h·m²); <c>null</c> = ohne (NP-F10).</param>
+        public static Anwendung ProfilAnwenden(Konditionierungsarbeitsstand stand, Raumnutzungsprofil profil, long? idZone,
+                                               double? flaeche, double? lichteHoehe = null)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            long? zonenId = idZone;
+            Konditionierungszone zone = zonenId.HasValue ? stand.Zone(zonenId.Value) : null;
+            if (zonenId.HasValue && zone == null)
+                return Anwendung.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RAUMNUTZUNG_MSG_ZONE_FEHLT,
+                                                      "—", idZone.Value.ToString(CultureInfo.InvariantCulture)));
+
+            var posten = new List<Uebernahmeposten>();
+            bool aufgeteilt = false;
+            foreach (Raumnutzungsgroesse r in Raumnutzungsgenerator.Erzeugen(profil, Masz(flaeche), Masz(lichteHoehe)))
+            {
+                bool unbeheizt = zone != null && !zone.IstBeheizt &&
+                                 (r.Groesse == Konditionierungsgroesse.Heizsoll || r.Groesse == Konditionierungsgroesse.Kuehlsoll);
+                if (r.Vorlage == null || unbeheizt)
+                {
+                    posten.Add(new Uebernahmeposten(r.Groesse, r.Weg, false, false, unbeheizt && r.Vorlage != null, null, null, r.Hinweis));
+                    continue;
+                }
+                bool ersetzt = stand.Ebene(zonenId)?.Kalender(r.Groesse) != null;
+                var ort = new Konditionierungsort(r.Groesse, zonenId);
+                Konditionierungsschritt schritt = Konditionierungsarbeit.VorlageUebernehmen(stand, ort, r.Vorlage);
+                if (schritt.Rueckfrage)
+                {
+                    Konditionierungsschritt geteilt = Konditionierungsarbeit.LuftwechselAufteilen(stand);
+                    if (!geteilt.Ok) return Anwendung.Fehler(geteilt.Meldung);
+                    schritt = Konditionierungsarbeit.VorlageUebernehmen(geteilt.Stand, ort, r.Vorlage);
+                    aufgeteilt = true;
+                }
+                if (!schritt.Ok || schritt.Rueckfrage) return Anwendung.Fehler(schritt.Meldung ?? "");
+                stand = schritt.Stand;
+                posten.Add(new Uebernahmeposten(r.Groesse, r.Weg, true, ersetzt, false, r.Nennwert, r.Nennwertherleitung, r.Hinweis));
+            }
+            return new Anwendung(true, null, stand, posten, aufgeteilt);
+        }
+
+        /// <summary>Ein Maß des Ziels (Fläche, Höhe): nur endlich und größer null, sonst „ohne".</summary>
+        private static double? Masz(double? wert)
+            => wert.HasValue && double.IsFinite(wert.Value) && wert.Value > 0.0 ? wert : null;
+
+        /// <summary>
+        /// <b>Die Nutzung der Kalender einer Zone</b> (Konzept Nutzungsprofile 6.2, Kopfzeile des Zonendialogs): der Text
+        /// der Spalte <c>Nutzung</c> am ersten Kalender der Zone, der einen trägt — der Profilname oder eine der vier
+        /// alten Kennungen; <c>null</c> ohne Kalender mit Nutzung oder ohne die Spalte.
+        /// </summary>
+        public static string Kalendernutzung(long idGebaeude, long idZone)
+        {
+            if (!KonditionierungNutzungSchema.SchemaVollstaendig()) return null;
+            KonditionierungCtrl.Eigner eigner = KonditionierungCtrl.Eigner.Zone(idGebaeude, idZone);
+            object n = DataRepository.ExecuteScalar(
+                "SELECT \"Nutzung\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " + eigner.Bedingung() +
+                " AND \"Nutzung\" IS NOT NULL ORDER BY \"ID\" LIMIT 1", eigner.Parameter());
+            return n == null || n == DBNull.Value ? null : KonditionierungNutzungSchema.Nutzungstext(Convert.ToString(n, CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// <b>Die Nutzung eines Kalenders, dessen Herkunft ein Profil nennt</b> (NP-F14, NP-F15): Der OK-Weg der Editoren
+        /// schreibt die Kalender eines übernommenen Profils über den Arbeitsstand; ihre Herkunft ist der Profilname. Nennt
+        /// sie keine Vorlage der Größe, aber ein Profil des Katalogs, ist die Nutzung dieser Name — dasselbe, was
+        /// <see cref="ProfilUebernehmen(long, long, long?, double?, double?)"/> setzt. <c>null</c> ohne Herkunft, ohne
+        /// Katalog oder ohne ein Profil dieses Namens.
+        /// </summary>
+        internal static string NutzungDesProfils(DbVorgang v, string bemerkung)
+        {
+            string name = Kalenderherkunft.AusBemerkung(bemerkung).Vorlage;
+            if (string.IsNullOrEmpty(name)) return null;
+            object da = v.Skalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?",
+                                 new DbParam("@t", RaumnutzungSchema.TAB_PROFIL));
+            if (da == null || da == DBNull.Value || Convert.ToInt64(da, CultureInfo.InvariantCulture) == 0) return null;
+            object n = v.Skalar("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"Bezeichner\" = ?",
+                                new DbParam("@b", name.Trim()));
+            return n == null || n == DBNull.Value || Convert.ToInt64(n, CultureInfo.InvariantCulture) == 0
+                ? null
+                : KonditionierungNutzungSchema.Nutzungstext(name);
         }
 
         // =================================================================

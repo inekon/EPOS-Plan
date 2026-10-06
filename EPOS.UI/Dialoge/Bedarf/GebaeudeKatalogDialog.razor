@@ -554,6 +554,7 @@
             <Reiterblatt Schluessel="@REITER_KONDITIONIERUNG" Titel="@KonditionierungTexte.Reiter">
                 <KindInhalt>
                     <KonditionierungReiter Bearbeitung="@_kond" Texte="@KonditionierungTexte" HuelleTexte="@Texte"
+                                           ProfilTexte="@RaumnutzungTexte"
                                            Projekt="@(Modus == GebaeudeKatalogModus.Projekt)"
                                            Lesemodus="@IstGesperrt" Altweg="@(!IstVdi6007)"
                                            Kuehlsperre="@Kuehlsperre" Sollwertzeile="@Sollwertzeile"
@@ -760,6 +761,7 @@
                              Projektaufbauten="@_projektaufbauten"
                              Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
                              Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
+                             RaumnutzungTexte="@RaumnutzungTexte"
                              Gebaeudestand="@_arbeit" Konditionierung="@Konditionierung"
                              KonditionierungTexte="@KonditionierungTexte" KonditionierungFragen="@KonditionierungFragen"
                              HuelleTexte="@Texte" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein"
@@ -2225,6 +2227,8 @@
     private void NutzungsprofileZurueck()
     {
         _nutzungsblatt = false;
+        // NP3b: „Nutzungsprofil übernehmen…" liest den Katalog danach neu.
+        _kond.ProfileNeuLaden();
         _fokusNachBlatt = true;
     }
 

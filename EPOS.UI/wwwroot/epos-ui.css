@@ -14762,6 +14762,87 @@ td.epos-vorlage-katalogbeschreibung {
 }
 
 /* ==================================================================== */
+/* ---- „Nutzungsprofil übernehmen…" (Stufe NP3b; Konzept Nutzungsprofile 6.2) - EIN Baustein im Reiter
+   „Konditionierung" und in der Zonenmatrix: Liste der Profile gruppiert nach Kategorie in festem Rahmen mit
+   Rollbalken, je Zeile Name und Kennwerte in Kurzform; darunter Vorschau, Nennwertzeilen und Knöpfe. ---- */
+.epos-nutzungsuebernahme {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 0 var(--epos-rand);
+}
+
+.epos-nutzungsuebernahme-auswahl {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: var(--epos-rand);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 6px;
+}
+
+.epos-nutzungsuebernahme-titel {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.epos-nutzungsuebernahme-liste {
+    max-height: var(--epos-listenhoehe);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.epos-nutzungsuebernahme-gruppe {
+    display: flex;
+    flex-direction: column;
+}
+
+.epos-nutzungsuebernahme-kategorie {
+    margin: 6px 0 2px;
+    color: var(--epos-text-leise);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.epos-nutzungsuebernahme-profil {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+    min-height: var(--epos-touchziel);
+    text-align: left;
+}
+
+.epos-nutzungsuebernahme-profil[aria-selected="true"] {
+    font-weight: 600;
+    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
+    padding-left: 8px;
+}
+
+.epos-nutzungsuebernahme-kurz,
+.epos-nutzungsuebernahme-profil--leer .epos-nutzungsuebernahme-name {
+    color: var(--epos-text-leise);
+    font-weight: 400;
+}
+
+.epos-nutzungsuebernahme-kurz {
+    font-size: 0.85rem;
+}
+
+.epos-nutzungsuebernahme-vorschau {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-nutzungsuebernahme-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
