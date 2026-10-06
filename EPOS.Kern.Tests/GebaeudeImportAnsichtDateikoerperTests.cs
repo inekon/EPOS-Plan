@@ -385,13 +385,14 @@ namespace EPOS.Kern.Tests
                 GebaeudeAnsichtKoerperraum k = d.Koerperraum(r.Kennung)!;
                 _aus.WriteLine(r.Name + " (" + u.Herkunft + "): " + Kantentext(k) + "; Polygon "
                                + string.Join(" ", u.Polygone.SelectMany(p => p.Punkte).Select(p => p[0].ToString("0.###", CultureInfo.InvariantCulture) + "," + p[1].ToString("0.###", CultureInfo.InvariantCulture))));
-                Assert.Equal(Geometrieherkunft.Raumgrenzen, u.Herkunft);
             }
             // Büro: die Wand zum beheizten Nachbarn neutral (R0), die übrigen gegen außen, der Boden auf dem Erdreich.
             GebaeudeAnsichtKoerperraum buero = d.Koerperraum(g.Raeume.Single(r => r.Name == "Büro").Kennung)!;
             Assert.Equal(new Randgruppe?[] { Randgruppe.R1, Randgruppe.R0, Randgruppe.R1, Randgruppe.R1 }, buero.Kantengruppen!.Single());
             Assert.Equal(Randgruppe.R3, buero.Bodengruppe);
-            // Büro 2 liegt darüber: alle Wände gegen außen, sein Boden ist die Trenndecke zum beheizten Büro (R0, weiß).
+            Assert.Equal(Geometrieherkunft.Raumgrenzen, zg.Raeume.Single(x => x.RaumKennung == g.Raeume.Single(r => r.Name == "Büro").Kennung).Herkunft);
+            // Büro 2 liegt darüber (Umriss schematisch, Kanten nach Richtung): alle Wände gegen außen, sein Boden ist die
+            // Trenndecke zum beheizten Büro (R0, weiß).
             GebaeudeAnsichtKoerperraum buero2 = d.Koerperraum(g.Raeume.Single(r => r.Name == "Büro 2").Kennung)!;
             Assert.All(buero2.Kantengruppen!.Single(), x => Assert.Equal(Randgruppe.R1, x));
             Assert.Equal(Randgruppe.R0, buero2.Bodengruppe);
