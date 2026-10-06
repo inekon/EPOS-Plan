@@ -693,6 +693,18 @@ public sealed class GebaeudeAnsichtTexte
     /// <summary>GANS_RAND_NUR_LEGENDE — Decken (R5, R6) stehen im Grundriss nur in Legende und Bilanz.</summary>
     public string RandNurLegende { get; set; } = Resource.GANS_RAND_NUR_LEGENDE;
 
+    /// <summary>GANS_RAND_BAUTEILKOERPER — Name des Legendenschalters für die Bauteilkörper (Körperansicht).</summary>
+    public string RandBauteilkoerper { get; set; } = Resource.GANS_RAND_BAUTEILKOERPER;
+
+    /// <summary>GANS_RAND_KEINE — ein getroffenes Dreieck ohne Gruppe (entartet).</summary>
+    public string RandKeine { get; set; } = Resource.GANS_RAND_KEINE;
+
+    /// <summary>GANS_RAND_TREFFER_RAUM — Infozeile nach dem Klick auf einen Raumkörper, {0} = Raum, {1} = Gruppe.</summary>
+    public string RandTrefferRaum { get; set; } = Resource.GANS_RAND_TREFFER_RAUM;
+
+    /// <summary>GANS_RAND_TREFFER_BAUTEIL — Infozeile nach dem Klick auf einen Bauteilkörper, {0} = Bauteil, {1} = Gruppe.</summary>
+    public string RandTrefferBauteil { get; set; } = Resource.GANS_RAND_TREFFER_BAUTEIL;
+
     /// <summary>GANS_RAND_R0 … GANS_RAND_R7 — die Namen der Gruppen nach dem Gruppenindex.</summary>
     public IReadOnlyList<string> Randgruppen { get; set; } = new[]
     {

@@ -45959,5 +45959,17 @@ chart</value>
   <data name="GANS_RAND_R7" xml:space="preserve">
     <value>windows and doors</value>
   </data>
+  <data name="GANS_RAND_BAUTEILKOERPER" xml:space="preserve">
+    <value>Component bodies</value>
+  </data>
+  <data name="GANS_RAND_KEINE" xml:space="preserve">
+    <value>no group</value>
+  </data>
+  <data name="GANS_RAND_TREFFER_RAUM" xml:space="preserve">
+    <value>Selected: room {0} — {1}</value>
+  </data>
+  <data name="GANS_RAND_TREFFER_BAUTEIL" xml:space="preserve">
+    <value>Selected: component {0} — {1}</value>
+  </data>
 </root>
 

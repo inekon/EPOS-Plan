@@ -24921,11 +24921,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkörper ähnelt.
+        /// </summary>
+        public static string GANS_RAND_BAUTEILKOERPER {
+            get {
+                return ResourceManager.GetString("GANS_RAND_BAUTEILKOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} m² ähnelt.
         /// </summary>
         public static string GANS_RAND_FLAECHE {
             get {
                 return ResourceManager.GetString("GANS_RAND_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Gruppe ähnelt.
+        /// </summary>
+        public static string GANS_RAND_KEINE {
+            get {
+                return ResourceManager.GetString("GANS_RAND_KEINE", resourceCulture);
             }
         }
         
@@ -25034,6 +25052,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_RAND_SCHALTER {
             get {
                 return ResourceManager.GetString("GANS_RAND_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: Bauteil {0} — {1} ähnelt.
+        /// </summary>
+        public static string GANS_RAND_TREFFER_BAUTEIL {
+            get {
+                return ResourceManager.GetString("GANS_RAND_TREFFER_BAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: Raum {0} — {1} ähnelt.
+        /// </summary>
+        public static string GANS_RAND_TREFFER_RAUM {
+            get {
+                return ResourceManager.GetString("GANS_RAND_TREFFER_RAUM", resourceCulture);
             }
         }
         
