@@ -788,8 +788,10 @@ namespace WindowsFormsApplication1
         {
             projektCtrl.ReadSingle(m_ID_Projekt);
             CultureInfo k = CultureInfo.CurrentCulture;
+            // KP3 O1b (Festlegung 35): der Aufschlag des Projekts fuer n' der Zeile - gelesen wie im Lauf.
+            Aufheizvorgabe vorgabe = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
             return GebaeudeBedarfCtrl.Aufheizbemessung(m_ID_Projekt, projektCtrl.m_ID_Klimaregion)
-                                     .Select(a => AufheizHerleitungszeile.Zeile(AufheizHerleitungszeile.Aus(a), k))
+                                     .Select(a => AufheizHerleitungszeile.Zeile(AufheizHerleitungszeile.Aus(a, vorgabe), k))
                                      .Where(z => z != null)
                                      .ToList();
         }
@@ -1587,7 +1589,8 @@ namespace WindowsFormsApplication1
     internal sealed record AufheizHerleitungsdaten(
         string Gebaeude, string Zustand, string Bemessung, int? AufheizzeitMaxH, double? AussenC,
         double? LeistungKw, double? LeistungUnskaliertKw, double? Skalierungsfaktor, string Quelle,
-        bool Tagesbilanz = false, string Befund = null, double? ReserveAnteil = null, bool ReserveVorgabe = false);
+        bool Tagesbilanz = false, string Befund = null, double? ReserveAnteil = null, bool ReserveVorgabe = false,
+        int? RampeN = null, int? RampeNAufschlag = null);
 
     /// <summary>
     /// <b>Die Herleitungszeile eines Gebäudes</b> (Teilkonzept 7.6; Entwurf KP3, Festlegung 16): „Name: t_auf,max
@@ -1605,6 +1608,23 @@ namespace WindowsFormsApplication1
                 string.IsNullOrEmpty(a.Gebaeudename) ? a.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) : a.Gebaeudename,
                 a.Zustand, a.Bemessung, a.AufheizzeitMaxH, a.AussenC, a.LeistungKw, a.LeistungUnskaliertKw,
                 a.Skalierungsfaktor, a.Quelle, a.Tagesbilanz, a.Befund, a.ReserveAnteil, a.ReserveVorgabe);
+
+        /// <summary>
+        /// Die Angaben samt Aufschlag (KP3 O1b; E59 (2), Festlegung 35, P16): Bei bemessenem Gebäude ohne manuelle
+        /// Aufheizzeit ist die längste Rampe n = t_auf,max + 1 (Festlegung 37: t = n − 1), n' rechnet der Kern
+        /// (<see cref="Aufheizoptimierung.MitAufschlag(int, Aufheizvorgabe)"/>) — dieselbe Formel wie der Lauf, nur für
+        /// n &gt; 1; ohne Aufschlag, bei n = 1, bei manueller Aufheizzeit, UNERREICHBAR und GEKOPPELT keine Angabe.
+        /// </summary>
+        internal static AufheizHerleitungsdaten Aus(Aufheizauskunft a, Aufheizvorgabe vorgabe)
+        {
+            AufheizHerleitungsdaten d = Aus(a);
+            if (vorgabe == null || !vorgabe.HatAufschlag || a.AufheizzeitManuellH.HasValue
+                || a.Zustand != DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN || a.AufheizzeitMaxH is not int t)
+                return d;
+            int n = t + 1;
+            int nAufschlag = Aufheizoptimierung.MitAufschlag(n, vorgabe);
+            return nAufschlag > n ? d with { RampeN = n, RampeNAufschlag = nAufschlag } : d;
+        }
 
         /// <summary>Die Zeile; <c>null</c> ohne Bemessung (Schalter aus).</summary>
         internal static string Zeile(AufheizHerleitungsdaten d, CultureInfo k)
@@ -1639,12 +1659,17 @@ namespace WindowsFormsApplication1
 
             // B11, Festlegung 16: P_auf gilt dem Katalogbau; der Lauf skaliert es wie die Spitzen.
             if (!d.Skalierungsfaktor.HasValue && d.LeistungUnskaliertKw.HasValue)
-                return zeile + " " + MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR_LAUF;
-            if (d.Skalierungsfaktor is double f && f != 1.0 && d.LeistungUnskaliertKw.HasValue)
-                return zeile + " " + string.Format(k, d.Quelle == DbWerte.AUFHEIZ_QUELLE_GRENZE
-                                                          ? MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR_GRENZE
-                                                          : MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR,
-                                                      Zahl(d.LeistungUnskaliertKw, "0.0", k), Zahl(f, "0.###", k));
+                zeile += " " + MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR_LAUF;
+            else if (d.Skalierungsfaktor is double f && f != 1.0 && d.LeistungUnskaliertKw.HasValue)
+                zeile += " " + string.Format(k, d.Quelle == DbWerte.AUFHEIZ_QUELLE_GRENZE
+                                                    ? MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR_GRENZE
+                                                    : MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR,
+                                                Zahl(d.LeistungUnskaliertKw, "0.0", k), Zahl(f, "0.###", k));
+
+            // KP3 O1b, Festlegung 35: t_auf,max bleibt die bemessene Zeit; der Aufschlag verlängert die Rampe auf n'.
+            if (d.RampeN is int n && d.RampeNAufschlag is int nAufschlag)
+                zeile += " " + string.Format(k, MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE,
+                                             nAufschlag.ToString(k), n.ToString(k));
             return zeile;
         }
 

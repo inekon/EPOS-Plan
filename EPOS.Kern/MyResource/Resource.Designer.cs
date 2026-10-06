@@ -95239,6 +95239,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Aufschlag verlängert jede Aufheizrampe, die ein Sprung des Heizkalenders auslöst und die schon vorheizt: Aus n Stufen (Aufheizzeit n − 1 h, n &gt; 1) werden n′ = min(48, n + max(Aufschlag h, ⌈n · Aufschlag % / 100⌉)), höchstens bis zum Ende der Absenkung. Es gilt der größere der beiden Werte; leer oder 0 heißt kein Aufschlag. Auf die manuelle Aufheizzeit eines Gebäudes wirkt er nicht; t_auf,max bleibt die bemessene Zeit. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_AUFSCHLAG_HRL {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_AUFSCHLAG_HRL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert ist ein Aufschlag von {0} h und {1} %; er wirkt erst mit eingeschalteter Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_AUFSCHLAG_HRL_AUS {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_AUFSCHLAG_HRL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die · Aufschlag: längste Rampe n′ = {0} statt {1} Stufen ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag auf die Aufheizrampe in ganzen Stunden, 0 bis 24; leer oder 0 = kein Aufschlag (gespeichert als leer). Es gilt der größere Wert aus Stunden und Prozent: n′ = min(48, n + max(h, ⌈n · % / 100⌉)), nur auf Rampen eines Kalendersprungs mit n &gt; 1, nicht auf die manuelle Aufheizzeit. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_AUFSCHLAG_KI_H_ERL {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_AUFSCHLAG_KI_H_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag auf die Aufheizrampe in Prozent der Stufenzahl n, 0 bis 100, aufgerundet auf ganze Stufen; leer oder 0 = kein Aufschlag (gespeichert als leer). Es gilt der größere Wert aus Stunden und Prozent. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_AUFSCHLAG_KI_PROZENT_ERL {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_AUFSCHLAG_KI_PROZENT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag (h) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_AUFSCHLAG_LBL_H {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_AUFSCHLAG_LBL_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag (%) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kälteste Stunde − ΔT_K ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_BEMESSUNG_ABZUG {
