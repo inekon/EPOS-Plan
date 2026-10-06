@@ -304,20 +304,19 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Standardbericht: Mit Varianten und Gebäudewerten steht im Vergleich die Gruppe „Gebäude“ und je Stand die
-        /// Gebäudetafel; ohne Variante nicht (die Tafel des Stamms steht schon in der Projektbeschreibung).
+        /// Der Standardbericht: Mit Gebäudewerten steht im Vergleich die Gruppe „Gebäude“ und je Stand die Gebäudetafel — ein
+        /// Stand ohne Gebäudezeile mit dem Grund seiner leeren Tafel; ohne Gebäudewerte entfällt beides (<see cref="Ohne_Werte_entfaellt_die_Gruppe"/>).
         /// </summary>
         [Fact]
-        public void Der_Vergleichsbaustein_zeigt_die_Gebaeudetafel_je_Stand_nur_mit_Varianten()
+        public void Der_Vergleichsbaustein_zeigt_die_Gebaeudetafel_je_Stand_nur_mit_Gebaeudewerten()
         {
             string mit = SchreibeVergleich(Gruppe(new[] { Gebaeude(1, 120, 300, 6, 800, 60.0, 40.0, 10.0) },
-                                                  new[] { Gebaeude(1, 100, 300, 4, 700, 50.0, 40.0, 5.0) }));
+                                                  new[] { Gebaeude(1, 100, 300, 4, 700, 50.0, 40.0, 5.0) },
+                                                  Array.Empty<ErgebnisGebaeudeModel>()));
             Assert.Contains("Gebäude je Projekt", mit, StringComparison.Ordinal);
             Assert.Contains("Aufheizleistung P_auf (Summe der Gebäude)", mit, StringComparison.Ordinal);
             Assert.Contains("Längste Aufheizzeit t_auf,max", mit, StringComparison.Ordinal);
-
-            string ohne = SchreibeVergleich(Gruppe(new[] { Gebaeude(1, 120, 300, 6, 800, 60.0, 40.0, 10.0) }));
-            Assert.DoesNotContain("Gebäude je Projekt", ohne, StringComparison.Ordinal);
+            Assert.Contains(R.BV_GRUND_KEIN_GEBAEUDE, mit, StringComparison.Ordinal);
         }
 
         private static string SchreibeVergleich(BerichtsDaten daten)

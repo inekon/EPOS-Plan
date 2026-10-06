@@ -74,10 +74,21 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>Die Fassung, seit der die erzeugten Einträge einer Kennzahl im Katalog stehen.</summary>
-        internal static int SeitDerKennzahl(string schluessel) =>
+        internal static int SeitDerKennzahl(string schluessel) => Math.Max(
             KennzahlenVorlaufwahlWp.Contains(schluessel) ? FASSUNG_VORLAUFWAHL_WP
             : KennzahlenFreieKuehlungWp.Contains(schluessel) ? FASSUNG_FREIE_KUEHLUNG_WP
-            : KennzahlenStromKaelte.Contains(schluessel) ? FASSUNG_STROM_KAELTE : 1;
+            : KennzahlenStromKaelte.Contains(schluessel) ? FASSUNG_STROM_KAELTE : 1,
+            schluessel != null && SeitJeKennzahl.TryGetValue(schluessel, out int seit) ? seit : 1);
+
+        /// <summary>
+        /// Das <see cref="Kennzahl.Seit"/> jeder Kennzahl über 1 (Gruppe „Gebäude“: Katalog v16, KP3 Welle O3b) — so liefert auch
+        /// der Weg über den Schlüssel dieselbe Fassung wie der über die Kennzahl. Eine Eigenschaft statt eines Feldinitialisierers:
+        /// Die Reihenfolge der statischen Initialisierer über die Teildateien ist nicht festgelegt.
+        /// </summary>
+        private static Dictionary<string, int> SeitJeKennzahl => _seitJeKennzahl ??=
+            KennzahlenKatalog.Alle().Where(k => k.Seit > 1).ToDictionary(k => k.Schluessel, k => k.Seit, StringComparer.Ordinal);
+
+        private static Dictionary<string, int> _seitJeKennzahl;
 
         /// <summary>
         /// Die Fassung, seit der die erzeugten Einträge einer Kennzahl im Katalog stehen: ihr <see cref="Kennzahl.Seit"/>
