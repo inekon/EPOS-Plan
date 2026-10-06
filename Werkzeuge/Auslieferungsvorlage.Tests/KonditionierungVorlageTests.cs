@@ -69,7 +69,7 @@ namespace Auslieferungsvorlage.Tests
                 ZonenInhaltAnlegen(gebaeude, zone);
             });
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly",
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "readonly",
                                                            "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
 
@@ -177,7 +177,7 @@ namespace Auslieferungsvorlage.Tests
                     new DbParam("@ze", DbWerte.KOND_ZEILE_SAISON)));
             });
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly",
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "readonly",
                                                            "--katalogleerung-zulassen");
 
             // Ein Befund macht die Abnahme rot - genau dafuer ist der Pruefbericht da.
@@ -212,7 +212,7 @@ namespace Auslieferungsvorlage.Tests
                     new DbParam("@b", KonditionierungsvorlagenSaattabelle.BUERO)));
             });
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly",
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "readonly",
                                                            "--katalogleerung-zulassen");
 
             Assert.NotEqual(0, e.Code);

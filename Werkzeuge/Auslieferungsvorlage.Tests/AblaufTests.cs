@@ -121,7 +121,7 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "alle", "--trocken");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "alle", "--trocken");
 
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Schritt 2 — Projektdaten entfernen", e.Ausgabe);
@@ -150,8 +150,8 @@ namespace Auslieferungsvorlage.Tests
 
             string a = o.Datei("a.sqlite");
             string b = o.Datei("b.sqlite");
-            Assert.Equal(0, Werkzeuglauf.Starten(quelle, a, "--kataloge", "alle").Code);
-            Assert.Equal(0, Werkzeuglauf.Starten(quelle, b, "--kataloge", "alle").Code);
+            Assert.Equal(0, Werkzeuglauf.StartenMitAusnahmen(quelle, a, "--kataloge", "alle").Code);
+            Assert.Equal(0, Werkzeuglauf.StartenMitAusnahmen(quelle, b, "--kataloge", "alle").Code);
 
             Dictionary<string, long> za = Zeilenzahlen(a);
             Dictionary<string, long> zb = Zeilenzahlen(b);
@@ -175,7 +175,7 @@ namespace Auslieferungsvorlage.Tests
             string ziel = o.Datei("Kenndaten.sqlite");
             File.WriteAllText(ziel, "kein gueltiger Datenbankinhalt");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "alle");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "alle");
 
             Assert.True(e.Code == 0, e.Alles);
             Assert.True(new FileInfo(ziel).Length > 1_000_000);
@@ -203,7 +203,7 @@ namespace Auslieferungsvorlage.Tests
 
             Dictionary<string, long> vorher = StammZeilenzahlen(quelle);
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);   // KEIN --kataloge
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);   // KEIN --kataloge
 
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Modus: alle", e.Ausgabe);
@@ -280,7 +280,7 @@ namespace Auslieferungsvorlage.Tests
 
             string quelldatei = o.Datei("quelle.sqlite");
             File.Copy(Werkzeuglauf.Testdatenbank, quelldatei);
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelldatei, o.Datei("Kenndaten.sqlite"),
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelldatei, o.Datei("Kenndaten.sqlite"),
                                                            "--beispiele", paket, "--trocken");
             Assert.True(e.Code == 5, e.Alles);
             Assert.Contains("FEHLER  Importablage leer (Tab_Importquelle 1, Tab_Importzuordnung 1)", e.Ausgabe);
@@ -321,7 +321,7 @@ namespace Auslieferungsvorlage.Tests
             }
 
             string ziel = o.Datei("Kenndaten.sqlite");
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
             Assert.True(e.Code == 0, e.Alles);
 
             try
@@ -467,7 +467,7 @@ namespace Auslieferungsvorlage.Tests
                       Path.Combine(vdi, "heizkessel_vaillant.vdi"));
 
             string ziel = o.Datei("Kenndaten.sqlite");
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kesselkatalog", vdi);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kesselkatalog", vdi);
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Schritt 3b — Kesselkatalog aus VDI 3805 Blatt 3", e.Ausgabe);
 
@@ -526,7 +526,7 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(
                 quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
 

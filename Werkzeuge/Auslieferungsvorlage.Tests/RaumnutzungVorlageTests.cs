@@ -43,7 +43,7 @@ namespace Auslieferungsvorlage.Tests
             string ziel = o.Datei("Kenndaten.sqlite");
             Bearbeiten(quelle, EigenesAnlegen);
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Schritt 3d — Katalog der Nutzungsprofile", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("entfernt: 1 eigene Zuordnung(en), 1 eigene(s) Profil(e), 1 eigene Kategorie(n); 1 ausgelieferte",
@@ -78,7 +78,7 @@ namespace Auslieferungsvorlage.Tests
                 "UPDATE \"Tab_Raumnutzungsprofil\" SET \"Heiz_Soll\" = 21 WHERE \"Nummer\" = '1' AND \"ID_Katalog\" = " +
                 "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
             Assert.True(e.Code != 0, e.Alles);
             Assert.Contains("FEHLER  Werte in Normkategorien: Profile mit Kennwert 1", e.Ausgabe, StringComparison.Ordinal);
         }
