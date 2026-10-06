@@ -7903,6 +7903,31 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     display: none;
 }
 
+/* Die Kachel „Kuehlung": unter der Kachel stehen die Kaeltemaschinen des Projekts und die
+   Schalter der Waermepumpen mit Kuehlfunktion untereinander, nicht nebeneinander wie die
+   Weiche der Solarthermie. */
+.epos-startkachel-kuehlwahl {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 6px 0 10px;
+}
+
+.epos-startkachel-kuehlgruppe {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-startkachel-kuehltitel {
+    font-weight: 600;
+}
+
+.epos-startkachel-kuehlliste {
+    margin: 0;
+    padding-left: 1.2em;
+}
+
 /* ---- Projektzusammenfassung (Reiter Simulation) ------------------------
 
    DER KASTEN HATTE EINE EIGENE FLAECHE: label70 und die vier Beschriftungen

@@ -1,7 +1,8 @@
 ﻿@* Reiter 4 der Startseite: „Energieerzeuger" (iU9-W16b.2).
 
    Vorbild: Form_Start.tabPage4 - Kopfzeile (label29), Erlaeuterung (label28),
-   SIEBEN Bildkacheln, ein Tippkasten (label58/label59) und die ZWEI
+   SIEBEN Bildkacheln, dazu die Kachel „Kuehlung“ ohne Bild (Kaeltemaschinen und
+   Waermepumpen mit Kuehlfunktion), ein Tippkasten (label58/label59) und die ZWEI
    Auswahlknoepfe der Solarthermie (radioButton_KollektorProfil /
    radioButton_Ganglinie).
 
@@ -20,7 +21,7 @@
    dahin trug JEDE der sieben Kacheln den Wirt epos-startkachel-mit-wahl, und
    die Optionsgruppe stand als eigener Kasten UNTER der Solarthermiekarte -
    zwischen zwei gerahmten Nachbarkacheln las sie sich wie ein Zusatz zum
-   ganzen Reiter. Jetzt bekommt NUR die Solarthermiekachel den Wirt, und der
+   ganzen Reiter. Jetzt bekommen NUR Solarthermie und Kuehlung den Wirt, und der
    traegt den Kartenrahmen; die Kachel darin gibt ihren eigenen ab (Stilblatt),
    beides zusammen ist EINE Karte. Ueber das Markup ginge es nicht: Eine Kachel
    IST ein <button>, und ein <button> darf keine Auswahlknoepfe enthalten. *@
@@ -39,6 +40,7 @@
 
     <Kachelraster Hoechstbreite="404">
         <KindInhalt>
+            @{ KuehlungKachelDaten? kuehlung = Kuehlung?.Invoke(); }
             @foreach (StartKachel kachel in Kacheln)
             {
                 StartKachel k = kachel;
@@ -81,15 +83,77 @@
                             Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
                 }
             }
+
+            @* DIE KACHEL „KUEHLUNG": die Kaelteerzeugung des Projekts an einer Stelle - die Kaeltemaschinen
+               und die Auswahl der Waermepumpen mit Kuehlfunktion. Der Kartenrahmen liegt am Wirt wie bei der
+               Solarthermie: Die Kachel ist ein <button> und oeffnet den Erzeugerdialog der Kaeltemaschinen
+               (Anlegen, Bearbeiten; freie Ansicht KAELTEMASCHINE_ANLAGE ueber Dienste.Navigation, auf beiden
+               Plattformen derselbe Weg). Die Schalter darunter schreiben den Kuehlbetrieb der Waermepumpe
+               ueber denselben Kernweg wie der Konfigurationsdialog (Naht KuehlbetriebSchreiben). *@
+            <div class="epos-startkachel-mit-wahl epos-startkachel-kuehlung">
+                <Kachel Titel="@KuehlungTitelText"
+                        Beschreibung="@KuehlungText"
+                        Zustand="@KuehlungZustand(kuehlung)"
+                        Geklickt="KaeltemaschinenOeffnen" />
+
+                <div class="epos-startkachel-wahl epos-startkachel-kuehlwahl">
+                    @if (kuehlung is not null && !kuehlung.KuehlungRechnen)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@KuehlungProjektAusText" />
+                    }
+
+                    @if (kuehlung is null || kuehlung.Leer)
+                    {
+                        <Herleitungszeile Text="@KuehlungLeerText" />
+                    }
+                    else
+                    {
+                        <div class="epos-startkachel-kuehlgruppe epos-startkachel-kaeltemaschinen">
+                            <span class="epos-startkachel-kuehltitel">@KaeltemaschinenTitelText</span>
+                            @if (kuehlung.Kaeltemaschinen.Count == 0)
+                            {
+                                <Herleitungszeile Text="@KeineKaeltemaschineText" />
+                            }
+                            else
+                            {
+                                <ul class="epos-startkachel-kuehlliste">
+                                    @foreach (KuehlKaeltemaschine km in kuehlung.Kaeltemaschinen)
+                                    {
+                                        <li>@KaeltemaschineAnzeige(km)</li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+
+                        @if (kuehlung.Waermepumpen.Count > 0)
+                        {
+                            <div class="epos-startkachel-kuehlgruppe epos-startkachel-kuehlpumpen">
+                                <span class="epos-startkachel-kuehltitel">@WaermepumpenTitelText</span>
+                                @foreach (KuehlWaermepumpe wp in kuehlung.Waermepumpen)
+                                {
+                                    KuehlWaermepumpe w = wp;
+                                    <div class="epos-startkachel-kuehlpumpe" @key="w.IdWp">
+                                        <Schalter Bezeichnung="@w.Name" Wert="@w.Kuehlbetrieb"
+                                                  Aktiv="@(KuehlbetriebSchreiben is not null && (w.Kuehlbetrieb || w.Sperrgrund is null))"
+                                                  WertChanged="@(an => KuehlbetriebGesetzt(w, an))" />
+                                        @if (w.Sperrgrund is not null && !w.Kuehlbetrieb)
+                                        {
+                                            <Herleitungszeile Text="@w.Sperrgrund" />
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+
+                    @if (!string.IsNullOrEmpty(_kuehlMeldung))
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_kuehlMeldung" />
+                    }
+                </div>
+            </div>
         </KindInhalt>
     </Kachelraster>
-
-    @* DIE KAELTEMASCHINEN DES PROJEKTS (KU3-4c): kein Kachelbild, ein Knopf unter den sieben Kacheln. Der Weg
-       ist Dienste.Navigation und damit auf beiden Plattformen derselbe (freie Ansicht KAELTEMASCHINE_ANLAGE). *@
-    <div class="epos-startreiter-zusatz">
-        <button type="button" class="epos-knopf epos-startreiter-kaeltemaschine"
-                @onclick="KaeltemaschinenOeffnen">@KaeltemaschinenText</button>
-    </div>
 
     <Warnbanner Stufe="WarnStufe.Hinweis" Text="@(TippTitelText + ": " + TippText)" />
 </div>
@@ -133,8 +197,68 @@
     /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Energieerzeuger";
 
-    /// <summary>Beschriftung des Knopfes zu den Kältemaschinen des Projekts.</summary>
-    [Parameter] public string KaeltemaschinenText { get; set; } = WindowsFormsApplication1.MyResource.Resource.KMA_REITER_KNOPF;
+    /// <summary>
+    /// Der Bestand der Kachel „Kühlung“ (Kältemaschinen, Wärmepumpen mit Kühlfunktion, Projektschalter
+    /// „Kühlung rechnen“); bei jedem Zeichnen gefragt, damit die Kachel nach dem Erzeugerdialog und nach
+    /// einem Schalter den gespeicherten Stand zeigt. <c>null</c> = keine Gaben, die Kachel zeigt den Leerhinweis.
+    /// </summary>
+    [Parameter] public Func<KuehlungKachelDaten?>? Kuehlung { get; set; }
+
+    /// <summary>
+    /// Schreibt den Kühlbetrieb einer Wärmepumpe (Id der Projektkopie, an/aus) über den Kernweg des
+    /// Konfigurationsdialogs; Rückgabe <c>null</c> = geschrieben, sonst der Grund. <c>null</c> = die Schalter sind gesperrt.
+    /// </summary>
+    [Parameter] public Func<int, bool, string?>? KuehlbetriebSchreiben { get; set; }
+
+    /// <summary>Titel der Kachel „Kühlung“.</summary>
+    [Parameter] public string KuehlungTitelText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_TITEL;
+
+    /// <summary>Beschreibung der Kachel „Kühlung“.</summary>
+    [Parameter] public string KuehlungText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_TEXT;
+
+    /// <summary>Überschrift der Kältemaschinen auf der Kachel.</summary>
+    [Parameter] public string KaeltemaschinenTitelText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_KM;
+
+    /// <summary>Überschrift der Wärmepumpenauswahl auf der Kachel.</summary>
+    [Parameter] public string WaermepumpenTitelText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_WP;
+
+    /// <summary>Anzeige einer Kältemaschine mit mehreren gleichen Maschinen — {0} Name, {1} Anzahl.</summary>
+    [Parameter] public string KaeltemaschineAnzahlText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_KM_ANZAHL;
+
+    /// <summary>Hinweis ohne Kältemaschine, wenn kühlfähige Wärmepumpen dastehen.</summary>
+    [Parameter] public string KeineKaeltemaschineText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_KEINE_KM;
+
+    /// <summary>Hinweis der leeren Kachel.</summary>
+    [Parameter] public string KuehlungLeerText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_LEER;
+
+    /// <summary>Hinweis, wenn das Projekt keine Kälte rechnet.</summary>
+    [Parameter] public string KuehlungProjektAusText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_PROJEKT_AUS;
+
+    /// <summary>Rückfall der Meldung, wenn das Schreiben ohne Grund scheitert.</summary>
+    [Parameter] public string KuehlbetriebFehlerText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_MSG_FEHLER;
+
+    /// <summary>Der Grund des zuletzt gescheiterten Schalters; leer = nichts zu melden.</summary>
+    private string _kuehlMeldung = "";
+
+    /// <summary>Grüner Punkt, sobald das Projekt eine Kältemaschine oder eine Wärmepumpe im Kühlbetrieb führt.</summary>
+    private static Kachelstand KuehlungZustand(KuehlungKachelDaten? d)
+        => d is not null && (d.Kaeltemaschinen.Count > 0 || d.Waermepumpen.Any(w => w.Kuehlbetrieb))
+            ? Kachelstand.An
+            : Kachelstand.Aus;
+
+    /// <summary>Name der Kältemaschine, bei mehreren gleichen Maschinen samt Anzahl.</summary>
+    private string KaeltemaschineAnzeige(KuehlKaeltemaschine km)
+        => km.Anzahl > 1 ? string.Format(KaeltemaschineAnzahlText, km.Name, km.Anzahl) : km.Name;
+
+    /// <summary>Ein Schalter der Wärmepumpenauswahl — schreibt sofort; ein Grund steht danach unter der Auswahl.</summary>
+    private void KuehlbetriebGesetzt(KuehlWaermepumpe wp, bool an)
+    {
+        if (KuehlbetriebSchreiben is null) return;
+        string? grund = null;
+        try { grund = KuehlbetriebSchreiben(wp.IdWp, an); }
+        catch (Exception) { grund = KuehlbetriebFehlerText; }
+        _kuehlMeldung = string.IsNullOrEmpty(grund) ? "" : grund;
+    }
 
     /// <summary>Öffnet den Erzeugerdialog der Kältemaschinen; ohne Wurzel bleibt der Klick folgenlos.</summary>
     private static void KaeltemaschinenOeffnen()

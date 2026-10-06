@@ -252,7 +252,8 @@
                                     GanglinieChanged="BeiSolarart"
                                     KopfText="@ErzeugerKopfText" Text="@ErzeugerText"
                                     TippTitelText="@ErzeugerTippTitelText" TippText="@ErzeugerTippText"
-                                    ProfilText="@SolarProfilText" GanglinieText="@SolarGanglinieText" />
+                                    ProfilText="@SolarProfilText" GanglinieText="@SolarGanglinieText"
+                                    Kuehlung="@Kuehlung" KuehlbetriebSchreiben="@KuehlbetriebSchreiben" />
                 </KindInhalt>
             </Reiterblatt>
 
@@ -594,6 +595,18 @@
         = "Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus.";
     [Parameter] public string SolarProfilText { get; set; } = "Profil";
     [Parameter] public string SolarGanglinieText { get; set; } = "Ganglinie";
+
+    /// <summary>
+    /// Der Bestand der Kachel „Kühlung“ im Reiter Energieerzeuger (Windows: <c>KuehlungKachelBau.Daten</c>);
+    /// nur durchgereicht. <c>null</c> = die Kachel zeigt ihren Leerhinweis.
+    /// </summary>
+    [Parameter] public Func<KuehlungKachelDaten?>? Kuehlung { get; set; }
+
+    /// <summary>
+    /// Der Schreibweg des Kühlbetriebs einer Wärmepumpe (Id der Projektkopie, an/aus; Rückgabe <c>null</c> =
+    /// geschrieben, sonst der Grund) — Windows: <c>KuehlungKachelBau.KuehlbetriebSchreiben</c>; nur durchgereicht.
+    /// </summary>
+    [Parameter] public Func<int, bool, string?>? KuehlbetriebSchreiben { get; set; }
 
     [Parameter] public string SimulationKopfText { get; set; } = "Simulation durchführen";
     [Parameter] public string SimulationText { get; set; }

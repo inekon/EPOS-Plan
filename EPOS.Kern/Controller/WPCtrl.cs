@@ -475,6 +475,45 @@ namespace WindowsFormsApplication1
             return StilleDb.Zahl(n);
         }
 
+        /// <summary>Eine Wärmepumpe des Projekts mit Kühlfunktion (<see cref="KuehlfaehigeGeraete"/>).</summary>
+        /// <param name="IdWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        /// <param name="Bezeichner">Der Anzeigename des Geräts.</param>
+        /// <param name="Kuehlbetrieb">Läuft das Gerät im Kühlbetrieb mit (<c>Tab_WP.Kuehlbetrieb</c>)?</param>
+        /// <param name="Sperrgrund">Warum sich der Kühlbetrieb nicht einschalten lässt; <c>null</c> = frei.</param>
+        public sealed record KuehlfaehigesGeraet(int IdWp, string Bezeichner, bool Kuehlbetrieb, string Sperrgrund);
+
+        /// <summary>
+        /// <b>Die Wärmepumpen eines Projekts mit Kühlfunktion</b> — die Geräte seiner
+        /// Wärmepumpen-Anlagen (dieselbe Auswahl wie <see cref="AnlagenImKuehlbetrieb"/>), die eine
+        /// Kühlkennlinie im Projekt führen oder eine aus dem Katalog nachholen können
+        /// (<see cref="KuehlkennlinieNachholbar"/>). Ein Gerät ohne Kühlkennlinie kann nicht kühlen und
+        /// fehlt in der Liste. Je Gerät der Stand von <c>Tab_WP.Kuehlbetrieb</c> und der Sperrgrund des
+        /// Schreibwegs (<see cref="KuehlbetriebSperrgrund"/>). Ein Gerät, das mehrere Anlagen tragen,
+        /// steht einmal. Dialogfrei; leere Liste bei jedem Fehler.
+        /// </summary>
+        public static IReadOnlyList<KuehlfaehigesGeraet> KuehlfaehigeGeraete(int idProjekt)
+        {
+            var liste = new List<KuehlfaehigesGeraet>();
+            if (idProjekt <= 0) return liste;
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT DISTINCT w.ID AS ID, w.Bezeichner AS Bezeichner, w.Kuehlbetrieb AS Kuehlbetrieb " +
+                "FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ? AND w.ID_Projekt = ? ORDER BY w.ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP),
+                StilleDb.Par("@wproj", DbParamTyp.Integer, idProjekt));
+            if (dt == null) return liste;
+            foreach (DataRow r in dt.Rows)
+            {
+                int idWp = Convert.ToInt32(r["ID"]);
+                if (!KenndatenKuehlungCtrl.HatKenndatenProjekt(idWp) && !KuehlkennlinieNachholbar(idWp)) continue;
+                bool an = r["Kuehlbetrieb"] != DBNull.Value && Convert.ToInt64(r["Kuehlbetrieb"]) != 0;
+                string name = r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString();
+                liste.Add(new KuehlfaehigesGeraet(idWp, name, an, KuehlbetriebSperrgrund(idWp, idProjekt)));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// <b>Der Kaltwasser-Vorlauf des Kältekanals</b> [°C] (Anlagenkopplung, Kälteseite E37,
         /// 7.2) — der feste Vorlauf, den die Anlage einem kühlgekoppelten Gebäude liefert: der

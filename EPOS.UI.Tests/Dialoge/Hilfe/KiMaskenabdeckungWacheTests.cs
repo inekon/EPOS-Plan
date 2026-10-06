@@ -280,7 +280,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("EnergietraegerEinstellungen", 21),
         new("EnergietraegerVarianteDialog", 2),
         new("ErgebnisReiter", 1),
-        new("ErzeugerReiter", 1),
+        new("ErzeugerReiter", 2, "die Schalter der Kachel „Kühlung“ schreiben den Kühlbetrieb des Geräts sofort über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, kein Einstellwert der Startseite"),
         new("ErtragBonus", 2),
         // Welle #465: die Kenndaten des Stammblatts samt Wohnfläche und Bauart (Katalogfelder
         // gebaeudetyp, gebaeudeart, baualtersklasse, verwendung, wohnflaeche, bauart,
