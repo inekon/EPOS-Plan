@@ -5193,6 +5193,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_RAUMGRUNDRISS = RaumgrundrissSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="TypaufbauSchema.SCHRITT"/> — <b>Typaufbauten</b> (BA-2): Spalte <c>Typaufbau</c> an
+        /// <c>Tab_Bauteilaufbau</c> und <c>Tab_Bauteilaufbau_STAMM</c>, Saat der Typaufbauten samt Schichten.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest die Spalte; kein Referenzprojekt trägt einen Aufbau.</para>
+        /// </summary>
+        public const int SCHRITT_TYPAUFBAU = TypaufbauSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7544,6 +7552,12 @@ namespace WindowsFormsApplication1
                         "Importierte Gebaeude koennten den Grundriss ihrer Raeume nicht speichern; Export und Exportmodell " +
                         "blieben schematisch. KEIN Rechenergebnis aendert sich - die Tabelle entsteht leer.",
                         Schritt_Raumgrundriss),
+            // TYPAUFBAUTEN (BA-2). Quelle ist TypaufbauSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_TYPAUFBAU,
+                        "Tab_Bauteilaufbau.Typaufbau",
+                        "Ein Ersatzaufbau des Gebaeudeimports waere von einem gepflegten Aufbau nicht zu unterscheiden, und der " +
+                        "Katalog truege keine Typaufbauten. KEIN Rechenergebnis aendert sich.",
+                        Schritt_Typaufbau),
         };
 
         /// <summary>
@@ -14386,6 +14400,59 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Katalog der Nutzungsprofile - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Typaufbauten" — Anlass und Wirkung stehen bei <see cref="SCHRITT_TYPAUFBAU"/>, die Anweisungen
+        /// und die Saat bei <see cref="TypaufbauSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Typaufbau(Lauf l)
+        {
+            string nr = TypaufbauSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in TypaufbauSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = TypaufbauSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!TypaufbauSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Spalte Typaufbau oder Saat der Typaufbauten stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Typaufbauten - " + (angelegt == 0 ? "standen bereits." : angelegt + " gesaet.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

@@ -326,6 +326,9 @@ namespace WindowsFormsApplication1
             // Gebäude exportieren schematisch wie vor dem Schritt.
             new Stufe(RaumgrundrissSchema.SCHRITT, Art.Ddl,
                       "Grundriss je importiertem Raum (Ringe, Boden, Höhe, Herleitung) an der Importquelle"),
+            // Ein älteres Paket führt kein Kennzeichen des Ersatzaufbaus; die Spalte kommt leer an (= echter Aufbau).
+            new Stufe(TypaufbauSchema.SCHRITT, Art.Ddl,
+                      "Kennzeichen Typaufbau an Projekt- und Katalogaufbau, Saat der Typaufbauten"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

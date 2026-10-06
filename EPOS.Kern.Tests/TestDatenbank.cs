@@ -953,6 +953,8 @@ namespace EPOS.Kern.Tests
                 RaumnutzungSchema.Ausfuehren(null);
                 // Schritt RaumgrundrissSchema.SCHRITT (HC-5): Tab_Raumgrundriss an der Importquelle. Ohne Saat, leer.
                 RaumgrundrissSchema.Ausfuehren(null);
+                // Schritt TypaufbauSchema.SCHRITT (BA-2): Spalte Typaufbau an Projekt und Katalog, Saat der Typaufbauten.
+                TypaufbauSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

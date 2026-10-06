@@ -309,11 +309,11 @@ namespace EPOS.Kern.Tests
             BauteilaufbauModel fremd = Wand("Wand 3");
             fremd.Schichten[0].ID_Baustoff = 999999;
             Assert.Equal(string.Format(R.BAUTEIL_MSG_SCHICHT_BAUSTOFF, 1, 999999), ctrl.KatalogSpeichern(fremd).Meldung);
-            Assert.Single(ctrl.LesenKatalog());
+            Assert.Single(ctrl.LesenKatalog(), a => a.Typaufbau == null);   // neben den Typaufbauten (BA-2)
 
             // Die Kaskade nimmt die Schichten mit.
             Assert.True(ctrl.KatalogLoeschen(e.Id).Ok);
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilschicht_STAMM"));
+            Assert.Equal((long)TypaufbauSaattabelle.Alle.Sum(t => t.Schichten.Count), Zahl("SELECT COUNT(*) FROM Tab_Bauteilschicht_STAMM"));   // die Typaufbauten bleiben
         }
 
         /// <summary>Ein Katalogaufbau der Auslieferung ist geschützt; ein benutzter Katalogstoff lässt sich nicht löschen.</summary>
@@ -340,7 +340,7 @@ namespace EPOS.Kern.Tests
             KatalogDefinition def = KatalogRegistry.Finde("BAUTEILAUFBAU");
             Assert.Equal(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM, def.Tabelle);
             Assert.Equal(SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM, Assert.Single(def.Datenbloecke).Tabelle);
-            Assert.Single(DublettenPruefung.ScanKatalog(def).Saetze);
+            Assert.Equal(1 + TypaufbauSaattabelle.Alle.Count, DublettenPruefung.ScanKatalog(def).Saetze.Count);   // samt Typaufbauten
             Assert.Equal(1, KatalogBereinigung.VerwendungZaehlen(
                 Assert.Single(KatalogRegistry.Finde("BAUSTOFF").VerwendungsPruefungen),
                 DublettenPruefung.ScanKatalog(KatalogRegistry.Finde("BAUSTOFF")).Saetze.First(s => s.Id == 18), out string f));
@@ -613,7 +613,7 @@ namespace EPOS.Kern.Tests
                          ("Tab_Baustoff", "SELECT COUNT(*) FROM Tab_Baustoff"),
                      })
                 Assert.True(Zahl(sql) == 0, t + " traegt nach dem Loeschen des Projekts noch Zeilen.");
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
+            Assert.Equal(1L + TypaufbauSaattabelle.Alle.Count, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
             Assert.Equal((long)BaustoffSchema.Saat.Count, Zahl("SELECT COUNT(*) FROM Tab_Baustoff_STAMM"));
         }
 
