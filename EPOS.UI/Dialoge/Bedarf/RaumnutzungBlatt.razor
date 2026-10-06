@@ -291,63 +291,9 @@
                             </KindInhalt>
                         </Formulargruppe>
 
-                        @* Zeilenbild und Stundenprofile: in dieser Welle NUR LESEND (Bearbeitung in NP4). *@
-                        @if (s.Zeilenbild.Count > 0 || s.Stunden.Count > 0)
-                        {
-                            <p class="epos-leisezeile epos-raumnutzung-nurlesend">@Texte.HinweisNurLesend</p>
-                        }
-                        @if (s.Zeilenbild.Count > 0)
-                        {
-                            <h3 class="epos-raumnutzung-ueberschrift">@Texte.LabelZeilenbild</h3>
-                            <div class="epos-raster-huelle epos-raster-huelle--frei">
-                                <table class="epos-raster epos-raumnutzung-zeilenbild">
-                                    <thead>
-                                        <tr>
-                                            <th>@Texte.LabelArt</th>
-                                            <th>@Texte.LabelZeile</th>
-                                            <th>@Texte.LabelWert</th>
-                                            <th>@Texte.LabelFenster</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (RaumnutzungZeilenbildDaten z in s.Zeilenbild)
-                                        {
-                                            <tr>
-                                                <td>@Groessenname(z.Groesse)</td>
-                                                <td>@z.Zeile</td>
-                                                <td>@Zellentext(z)</td>
-                                                <td>@Fenstertext(z)</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                        @if (s.Stunden.Count > 0)
-                        {
-                            <h3 class="epos-raumnutzung-ueberschrift">@Texte.LabelStunden</h3>
-                            <div class="epos-raster-huelle epos-raster-huelle--frei">
-                                <table class="epos-raster epos-raumnutzung-stunden">
-                                    <thead>
-                                        <tr>
-                                            <th>@Texte.LabelArt</th>
-                                            <th>@Texte.LabelZeile</th>
-                                            <th>@Texte.LabelWert</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (RaumnutzungStundenDaten h in s.Stunden)
-                                        {
-                                            <tr>
-                                                <td>@Groessenname(h.Groesse)</td>
-                                                <td>@(h.Tagesart == RaumnutzungTagesart.Werktag ? Texte.TagesartWerktag : Texte.TagesartFrei)</td>
-                                                <td>@Stundentext(h)</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
+                        @* NP4c: Zeitverlauf je Größe - Umschalter, Zeilenbild, Stundenprofil und Vorschau (eigene Komponente). *@
+                        <RaumnutzungBildEditor Profil="@s" Weg="@Weg.Bild" GroessenTexte="@GroessenTexte" NurLesen="@lesend"
+                                               JaText="@JaText" NeinText="@NeinText" />
 
                         <div class="epos-raumnutzung-editorknoepfe">
                             @if (Weg.ProfilAendern is not null || Weg.ProfilAnlegen is not null)

@@ -399,4 +399,10 @@ public sealed class RaumnutzungWeg
 
     /// <summary>Bietet das Bündel die Verwaltung des Katalogs an (Lesen genügt nicht)?</summary>
     public bool MitKatalog => Kategorien is not null && Profile is not null;
+
+    /// <summary>
+    /// Der Editor „Zeitverlauf je Größe" (NP4c): Umschalter, Zeilenbild, Stundenprofil und Vorschau — eigenes Bündel;
+    /// ohne es zeigt der Editor Zeilenbild und Stunden nur lesend.
+    /// </summary>
+    public RaumnutzungBildWeg? Bild { get; init; }
 }

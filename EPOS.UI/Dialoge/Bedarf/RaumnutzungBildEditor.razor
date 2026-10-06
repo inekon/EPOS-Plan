@@ -1,0 +1,315 @@
+﻿@* DER EDITOR "ZEITVERLAUF JE GROESSE" (Stufe NP4c; Konzept Nutzungsprofile 6.1 Punkt 2, 4.3, NP-F7, NP-F9) -
+   im Profileditor des Blatts "Nutzungsprofile" unter den Kennwertgruppen.
+
+   JE GROESSE EIN UMSCHALTER "aus Kennwerten | Zeilenbild | Stundenprofil". Der Generator nimmt je Groesse
+   das Zeilenbild vor dem Stundenprofil vor den Kennwerten (4.3); der Editor haelt deshalb je Groesse genau
+   EINES davon im Entwurf. Umschalten auf ein Zeilenbild bzw. Stundenprofil legt einen VORSCHLAG an (was der
+   bisherige Weg ergibt) - so aendert der Wechsel allein noch nichts am Ergebnis. Wer dabei das andere Bild
+   der Groesse verwerfen wuerde, wird gefragt; "aus Kennwerten" fragt, ob Zeilenbild und Stundenprofil der
+   Groesse geloescht werden (Vorgabe Nein).
+
+   DIE VORSCHAU FOLGT SOFORT DEM ENTWURF: eine typische Woche und das Teppichbild des Kalenders, den ein
+   leeres Ziel an einer neutralen Ferienlage bekaeme (RaumnutzungCtrl.Vorschau) - dieselben Bausteine wie
+   die Kalenderkarte (Wochenraster nur lesend, DiagrammSvg). Sie rechnet nur, wenn sich der Entwurf geaendert
+   hat (Abdruck), auch nach einer Eingabe in den Kennwertgruppen des Blatts.
+
+   GESCHRIEBEN wird nur der Entwurf; in den Katalog geht er mit "Speichern" des Blatts. Ein ausgeliefertes
+   Profil steht im Lesemodus: Umschalter weich gesperrt mit Grund, Zeilenbild und Stunden als Text.
+   OHNE GABEN (kein Weg) zeigt der Editor Zeilenbild und Stunden lesend und keine Vorschau. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using System.Text
+@using EPOS.UI.Bausteine
+
+@if (Profil is RaumnutzungProfilDaten p)
+{
+    RaumnutzungBildweg wahl = Wahl(_groesse);
+    bool lesend = NurLesen || Weg is null;
+    <section class="epos-raumnutzung-bild" aria-label="@T.Titel" data-groesse="@((int)_groesse)">
+        <h3 class="epos-raumnutzung-ueberschrift">@T.Titel</h3>
+
+        <div class="epos-raumnutzung-bild-groessen" role="tablist" aria-label="@T.Titel">
+            @foreach (KonditionierungGroesse g in RaumnutzungBild.Groessen)
+            {
+                KonditionierungGroesse groesse = g;
+                bool gewaehlt = groesse == _groesse;
+                <button type="button" role="tab" @key="groesse" data-groesse="@((int)groesse)"
+                        class="epos-knopf epos-raumnutzung-bild-groesse @(gewaehlt ? "epos-knopf--gewaehlt" : "")"
+                        aria-selected="@(gewaehlt ? "true" : "false")"
+                        @onclick="() => GroesseWaehlen(groesse)">@Groessenname(groesse) · @Wegname(Wahl(groesse))</button>
+            }
+        </div>
+
+        <div class="epos-raumnutzung-bild-weg" role="radiogroup" aria-label="@T.LabelWeg">
+            <span class="epos-raumnutzung-bild-weg-text">@T.LabelWeg</span>
+            @foreach (RaumnutzungBildweg w in WEGE)
+            {
+                RaumnutzungBildweg ziel = w;
+                bool an = ziel == wahl;
+                <button type="button" role="radio" @key="ziel" data-weg="@((int)ziel)"
+                        class="epos-knopf epos-raumnutzung-bild-wegknopf @(an ? "epos-knopf--gewaehlt" : "")"
+                        aria-checked="@(an ? "true" : "false")"
+                        aria-disabled="@(lesend && !an ? "true" : null)"
+                        title="@(lesend ? Lesegrund : Wegname(ziel))"
+                        @onclick="() => Umschalten(ziel)">@Wegname(ziel)</button>
+            }
+        </div>
+        @if (_sperrmeldung is string sperre)
+        {
+            <p class="epos-raumnutzung-bild-sperre" role="status">@sperre</p>
+        }
+
+        <p class="epos-leisezeile epos-raumnutzung-bild-hinweis">@Weghinweis(wahl)</p>
+        @if (wahl != RaumnutzungBildweg.Kennwerte && RaumnutzungBild.Weg(p, _groesse) != wahl)
+        {
+            <p class="epos-leisezeile epos-raumnutzung-bild-leer">@T.HinweisLeer</p>
+        }
+        @if (wahl == RaumnutzungBildweg.Stundenprofil && _groesse == KonditionierungGroesse.Lueftung && p.Aussenluft.HasValue)
+        {
+            <p class="epos-leisezeile epos-raumnutzung-bild-luft">@T.HinweisLuft</p>
+        }
+
+        @if (wahl == RaumnutzungBildweg.Zeilenbild)
+        {
+            <RaumnutzungZeilenbildEditor Profil="@p" Groesse="@_groesse" Grenzen="@Grenzen" GroessenTexte="@GroessenTexte"
+                                         NurLesen="@lesend" Geaendert="Geaendert_" />
+        }
+        else if (wahl == RaumnutzungBildweg.Stundenprofil)
+        {
+            <RaumnutzungStundenEditor Profil="@p" Groesse="@_groesse" Grenzen="@Grenzen" Texte="@T"
+                                      AusText="@GroessenTexte.ZelleAus" NurLesen="@lesend" Geaendert="Geaendert_" />
+        }
+
+        @if (Weg?.Vorschau is not null)
+        {
+            <section class="epos-raumnutzung-bild-vorschau" aria-label="@T.LabelVorschau">
+                <h4 class="epos-raumnutzung-ueberschrift">@T.LabelVorschau</h4>
+                @if (_vorschau is null || !_vorschau.Belegt)
+                {
+                    <p class="epos-leisezeile epos-raumnutzung-bild-nichtbelegt">@T.TextNichtBelegt</p>
+                }
+                else
+                {
+                    <h5 class="epos-raumnutzung-bild-teil">@T.LabelWoche</h5>
+                    <Wochenraster Wert="@_vorschau.Woche" Aktiv="false" MitAus="@Grenzen.MitAus" Umbrechend="true"
+                                  Min="@Grenzen.Min" Max="@Grenzen.Max" Einheit="@Grenzen.Einheit"
+                                  Kennung="@("rnp-woche-" + (int)_groesse)" Texte="@T.Raster" />
+                    @if (_vorschau.Teppich is not null)
+                    {
+                        <h5 class="epos-raumnutzung-bild-teil">@T.LabelTeppich</h5>
+                        <DiagrammSvg Modell="@_vorschau.Teppich" Kennung="@("rnp-teppich-" + (int)_groesse)"
+                                     Bezeichnung="@T.LabelTeppich" Einheit="@Grenzen.Einheit" OhneZoom="true"
+                                     LegendeSchaltbar="false" />
+                    }
+                }
+                @if (_vorschau is not null)
+                {
+                    @if (_vorschau.Hinweis.Length > 0)
+                    {
+                        <p class="epos-leisezeile epos-raumnutzung-bild-vorschauhinweis">@_vorschau.Hinweis</p>
+                    }
+                    <p class="epos-leisezeile epos-raumnutzung-bild-bezug">@_vorschau.Bezug</p>
+                }
+            </section>
+        }
+
+        <Rueckfrage Offen="@(_frage is not null)" TitelText="@T.TitelFrage" Frage="@(_frage?.Text ?? "")"
+                    VorgabeNein="true" Beantwortet="FrageBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+    </section>
+}
+
+@code {
+    /// <summary>Der Entwurf des Profileditors — der Editor setzt Zeilenbild und Stunden an Ort und Stelle.</summary>
+    [Parameter] public RaumnutzungProfilDaten? Profil { get; set; }
+
+    /// <summary>Der Weg des Editors; ohne ihn nur lesend und ohne Vorschau.</summary>
+    [Parameter] public RaumnutzungBildWeg? Weg { get; set; }
+
+    /// <summary>Die Namen der Größen und Zeilen — dasselbe Bündel wie die Vorgabe-Matrix.</summary>
+    [Parameter] public KonditionierungTexte GroessenTexte { get; set; } = new();
+
+    /// <summary>Lesemodus (ausgeliefertes Profil).</summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>„Ja" der Rückfrage.</summary>
+    [Parameter] public string JaText { get; set; } = "Ja";
+
+    /// <summary>„Nein" der Rückfrage.</summary>
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Meldet jede Änderung des Entwurfs an den Wirt.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private static readonly RaumnutzungBildweg[] WEGE =
+        { RaumnutzungBildweg.Kennwerte, RaumnutzungBildweg.Zeilenbild, RaumnutzungBildweg.Stundenprofil };
+
+    private sealed record Frage(KonditionierungGroesse Groesse, RaumnutzungBildweg Ziel, string Text);
+
+    private KonditionierungGroesse _groesse = KonditionierungGroesse.Heizen;
+    private RaumnutzungProfilDaten? _profil;
+    private readonly Dictionary<KonditionierungGroesse, RaumnutzungBildweg> _wahl = new();
+    private Frage? _frage;
+    private string? _sperrmeldung;
+    private RaumnutzungBildvorschau? _vorschau;
+    private string? _abdruck;
+
+    private RaumnutzungBildTexte T => Weg?.Texte ?? _texte;
+    private readonly RaumnutzungBildTexte _texte = new();
+
+    private RaumnutzungBildgrenzen Grenzen => Weg?.GrenzenVon(_groesse) ?? RaumnutzungBildgrenzen.Offen(_groesse);
+
+    private string Lesegrund => T.GrundNurLesen;
+
+    /// <summary>Wie oft die Vorschau gerechnet wurde. Prüfhilfe (nur bei geändertem Entwurf, nicht je Zeichenlauf).</summary>
+    public int Vorschaulaeufe { get; private set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(Profil, _profil))
+        {
+            // Ein anderes Profil (oder „Verwerfen"): die Wahl folgt wieder den Daten.
+            _profil = Profil;
+            _wahl.Clear();
+            _frage = null;
+            _sperrmeldung = null;
+        }
+        VorschauAuffrischen();
+    }
+
+    /// <summary>Die Stellung des Umschalters: die Wahl dieser Sitzung, sonst der Weg der Daten.</summary>
+    private RaumnutzungBildweg Wahl(KonditionierungGroesse g)
+        => _wahl.TryGetValue(g, out RaumnutzungBildweg w) ? w : Profil is null ? RaumnutzungBildweg.Kennwerte : RaumnutzungBild.Weg(Profil, g);
+
+    private string Groessenname(KonditionierungGroesse g) => KonditionierungBearbeitung.Groessenname(GroessenTexte, g);
+
+    private string Wegname(RaumnutzungBildweg w) => w switch
+    {
+        RaumnutzungBildweg.Zeilenbild => T.WegZeilenbild,
+        RaumnutzungBildweg.Stundenprofil => T.WegStunden,
+        _ => T.WegKennwerte,
+    };
+
+    private string Weghinweis(RaumnutzungBildweg w) => w switch
+    {
+        RaumnutzungBildweg.Zeilenbild => T.HinweisZeilenbild,
+        RaumnutzungBildweg.Stundenprofil => T.HinweisStunden,
+        _ => T.HinweisKennwerte,
+    };
+
+    private void GroesseWaehlen(KonditionierungGroesse g)
+    {
+        _groesse = g;
+        _sperrmeldung = null;
+        VorschauAuffrischen();
+    }
+
+    /// <summary>
+    /// Der Umschalter: im Lesemodus meldet er den Grund; sonst fragt er, wo der Wechsel ein Bild der Größe verwürfe,
+    /// und legt beim Wechsel auf Zeilenbild bzw. Stundenprofil den Vorschlag an.
+    /// </summary>
+    private async Task Umschalten(RaumnutzungBildweg ziel)
+    {
+        if (Profil is not RaumnutzungProfilDaten p) return;
+        RaumnutzungBildweg alt = Wahl(_groesse);
+        if (ziel == alt) return;
+        if (NurLesen || Weg is null)
+        {
+            _sperrmeldung = Lesegrund;
+            return;
+        }
+        _sperrmeldung = null;
+        bool hatZeilen = p.Zeilenbild.Any(z => z.Groesse == _groesse);
+        bool hatStunden = p.Stunden.Any(s => s.Groesse == _groesse);
+        string groesse = Groessenname(_groesse);
+        string? frage = ziel switch
+        {
+            RaumnutzungBildweg.Kennwerte when hatZeilen || hatStunden => T.FrageKennwerte,
+            RaumnutzungBildweg.Stundenprofil when hatZeilen => T.FrageStunden,
+            RaumnutzungBildweg.Zeilenbild when hatStunden => T.FrageZeilenbild,
+            _ => null,
+        };
+        if (frage is not null)
+        {
+            _frage = new Frage(_groesse, ziel, string.Format(CultureInfo.CurrentCulture, frage, groesse));
+            return;
+        }
+        await Anwenden(_groesse, ziel);
+    }
+
+    private async Task FrageBeantwortet(bool? ja)
+    {
+        Frage? f = _frage;
+        _frage = null;
+        if (ja == true && f is not null) await Anwenden(f.Groesse, f.Ziel);
+    }
+
+    /// <summary>Der Wechsel selbst: Vorschlag aus dem bisherigen Weg, dann das andere Bild der Größe entfernen.</summary>
+    private async Task Anwenden(KonditionierungGroesse g, RaumnutzungBildweg ziel)
+    {
+        if (Profil is not RaumnutzungProfilDaten p) return;
+        switch (ziel)
+        {
+            case RaumnutzungBildweg.Kennwerte:
+                RaumnutzungBild.Entfernen(p, g, zeilenbild: true, stunden: true);
+                break;
+            case RaumnutzungBildweg.Stundenprofil:
+            {
+                IReadOnlyList<RaumnutzungStundenDaten>? vorschlag = p.Stunden.Any(s => s.Groesse == g)
+                    ? null : Weg?.Stundenvorschlag?.Invoke(p, g);
+                RaumnutzungBild.Entfernen(p, g, zeilenbild: true, stunden: false);
+                if (vorschlag is { Count: > 0 }) RaumnutzungBild.StundenprofilSetzen(p, g, vorschlag);
+                break;
+            }
+            default:
+            {
+                IReadOnlyList<RaumnutzungZeilenbildDaten>? vorschlag = p.Zeilenbild.Any(z => z.Groesse == g)
+                    ? null : Weg?.Zeilenbildvorschlag?.Invoke(p, g);
+                RaumnutzungBild.Entfernen(p, g, zeilenbild: false, stunden: true);
+                if (vorschlag is { Count: > 0 }) RaumnutzungBild.ZeilenbildSetzen(p, g, vorschlag);
+                break;
+            }
+        }
+        _wahl[g] = ziel;
+        await Geaendert_();
+    }
+
+    private async Task Geaendert_()
+    {
+        VorschauAuffrischen();
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Die Vorschau rechnet nur, wenn sich Entwurf oder Größe geändert haben (Abdruck).</summary>
+    private void VorschauAuffrischen()
+    {
+        if (Profil is null || Weg?.Vorschau is null)
+        {
+            _vorschau = null;
+            _abdruck = null;
+            return;
+        }
+        string abdruck = Abdruck(Profil, _groesse);
+        if (abdruck == _abdruck) return;
+        _abdruck = abdruck;
+        Vorschaulaeufe++;
+        _vorschau = Weg.Vorschau(Profil, _groesse);
+    }
+
+    /// <summary>Der Abdruck des Entwurfs: Kennwerte, Zeilenbild, Stunden und die gewählte Größe — invariant.</summary>
+    private static string Abdruck(RaumnutzungProfilDaten p, KonditionierungGroesse g)
+    {
+        var b = new StringBuilder();
+        b.Append((int)g).Append('|').Append((int)p.LuftEinheit).Append('|');
+        foreach (object? w in p.Kennwerte()) b.Append(Convert.ToString(w, CultureInfo.InvariantCulture)).Append(';');
+        foreach (RaumnutzungZeilenbildDaten z in p.Zeilenbild)
+            b.Append('Z').Append((int)z.Groesse).Append(z.Zeile).Append(':')
+             .Append(Convert.ToString(z.Wert, CultureInfo.InvariantCulture)).Append(z.Aus ? "A" : "")
+             .Append(',').Append(z.Von).Append(',').Append(z.Bis).Append(',')
+             .Append(Convert.ToString(z.DeltaT, CultureInfo.InvariantCulture)).Append(';');
+        foreach (RaumnutzungStundenDaten s in p.Stunden)
+            b.Append('S').Append((int)s.Groesse).Append((int)s.Tagesart).Append(':')
+             .Append(string.Join(",", s.Werte.Select(w => w.ToString("R", CultureInfo.InvariantCulture)))).Append(';');
+        return b.ToString();
+    }
+}

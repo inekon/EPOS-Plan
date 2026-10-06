@@ -1007,6 +1007,14 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     /// </summary>
     public IReadOnlyList<RaumnutzungZuordnungKiZeile> Nutzungsprofilzuordnungen
         => Nutzungsprofile?.Zuordnungen ?? Array.Empty<RaumnutzungZuordnungKiZeile>();
+
+    /// <summary>Das Zeilenbild im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
+    public IReadOnlyList<RaumnutzungZeilenbildKiZeile> Nutzungsprofilzeilenbild
+        => Nutzungsprofile?.Zeilenbildzeilen ?? Array.Empty<RaumnutzungZeilenbildKiZeile>();
+
+    /// <summary>Die Stundenprofile im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
+    public IReadOnlyList<RaumnutzungStundenKiZeile> Nutzungsprofilstunden
+        => Nutzungsprofile?.Stundenzeilen ?? Array.Empty<RaumnutzungStundenKiZeile>();
 }
 
 /// <summary>

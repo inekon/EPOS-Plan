@@ -941,5 +941,139 @@ namespace WindowsFormsApplication1
 
         private static string Text(DataRow r, string spalte)
             => r[spalte] == DBNull.Value ? null : Convert.ToString(r[spalte], CultureInfo.InvariantCulture);
+
+        #region NP4c — Vorschau und Vorschläge des Profileditors (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9, 4.3)
+
+        // Rein, ohne Datenbank: Was der Editor „Zeitverlauf je Größe" zeigt und vorschlägt, rechnet derselbe Schritt wie die
+        // Übernahme (ProfilAnwenden) an einem leeren Gebäude mit einer NEUTRALEN Ferienlage — so sieht die Vorschau, was ein
+        // Ziel ohne eigene Kalender bekäme. Die Ferienlage ist ein Phantasiewert (zwei Wochen im August), keine Normangabe.
+
+        /// <summary>Erster Ferientag der neutralen Ferienlage der Vorschau (Jahrestag, 1. August im Gemeinjahr).</summary>
+        public const int VORSCHAU_FERIEN_BEGINN = 213;
+
+        /// <summary>Letzter Ferientag der neutralen Ferienlage der Vorschau (Jahrestag, 14. August im Gemeinjahr).</summary>
+        public const int VORSCHAU_FERIEN_ENDE = 226;
+
+        /// <summary>Der Tag (ab 0), ab dem die Vorschau ihre Woche sucht: der erste Montag danach liegt Mitte Januar ohne Feiertag.</summary>
+        private const int VORSCHAU_WOCHE_AB_TAG = 14;
+
+        /// <summary>
+        /// Das Ergebnis der Vorschau einer Größe: der Kalender, den ein leeres Ziel bekäme, das Bezugsjahr und eine typische
+        /// Woche (Montag 0 Uhr bis Sonntag 23 Uhr, ohne Ferien und Feiertage) samt dem Weg des Generators.
+        /// </summary>
+        /// <param name="Weg">Woher die Zeilen kamen; <see cref="Raumnutzungsweg.Keiner"/> = nicht belegt (dann ohne Kalender).</param>
+        /// <param name="Hinweis">Was der Generator benennt.</param>
+        /// <param name="Kalender">Der Kalender am Ziel oder <c>null</c>.</param>
+        /// <param name="Referenzjahr">Das Bezugsjahr der Reihe.</param>
+        /// <param name="Woche">Die 168 Werte der typischen Woche (Rohwerte, „aus" = NaN) oder <c>null</c>.</param>
+        public sealed record Profilvorschau(Raumnutzungsweg Weg, Raumnutzungshinweis Hinweis, Konditionierungskalender Kalender,
+                                            int Referenzjahr, double[] Woche);
+
+        /// <summary>Der Bestand des leeren Vorschauziels: nur die neutrale Ferienlage.</summary>
+        public static Matrixeingang Vorschaubestand()
+        {
+            var b = new Matrixeingang { Ferienmerker = 1.0 };
+            b.Ferienbeginn[0] = VORSCHAU_FERIEN_BEGINN;
+            b.Ferienende[0] = VORSCHAU_FERIEN_ENDE;
+            return b;
+        }
+
+        /// <summary>
+        /// <b>Die Vorschau einer Größe</b> (6.1 Punkt 2): das Profil wie bei der Übernahme (<see cref="ProfilAnwenden"/>) an
+        /// einem leeren Gebäude mit der neutralen Ferienlage, ohne Fläche und Höhe; daraus der Kalender des Ziels und eine
+        /// typische Woche. Eine nicht belegte Größe liefert keinen Kalender (NP-F6).
+        /// </summary>
+        public static Profilvorschau Vorschau(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
+        {
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            var leer = new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, Vorschaubestand()), null);
+            Raumnutzungsgroesse r = Raumnutzungsgenerator.Erzeugen(profil, groesse, null);
+            if (r.Weg == Raumnutzungsweg.Keiner || r.Vorlage == null)
+                return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null);
+
+            Anwendung a = ProfilAnwenden(leer, profil, null, null);
+            Konditionierungskalender k = a.Ok ? a.Stand.Ansichtskalender(groesse, null) : null;
+            if (k == null) return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null);
+
+            double[] jahr = k.Auswerten(leer.W0, leer.Referenzjahr);
+            int start = VORSCHAU_WOCHE_AB_TAG + (7 - (leer.W0 + VORSCHAU_WOCHE_AB_TAG) % 7) % 7;
+            var woche = new double[Kalenderwoche.WOCHENWERTE];
+            Array.Copy(jahr, start * 24, woche, 0, woche.Length);
+            return new Profilvorschau(r.Weg, r.Hinweis, k, leer.Referenzjahr, woche);
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag für ein neues Zeilenbild</b> (NP-F7): die Vorgabezeilen, die der Generator aus den KENNWERTEN der
+        /// Größe erzeugt (Zeilenbild und Stundenprofil der Größe bleiben dafür außen vor) — Tag, Nacht, Wochenende, Ferien.
+        /// Leer, wenn die Kennwerte die Größe nicht belegen.
+        /// </summary>
+        public static List<Vorgabezeile> Zeilenbildvorschlag(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
+        {
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            Raumnutzungsprofil k = OhneBildDerGroesse(profil, groesse);
+            if (k.IstLeer) return new List<Vorgabezeile>();
+            Raumnutzungsgroesse r = Raumnutzungsgenerator.Erzeugen(k, groesse, null);
+            if (r.Weg != Raumnutzungsweg.Kennwerte || r.Vorlage == null) return new List<Vorgabezeile>();
+            string kennwort = Konditionierungsgroessen.Kennwort(groesse);
+            return r.Vorlage.Inhalt.Vorgabezeilen()
+                    .Where(z => string.Equals(z.Groesse, kennwort, StringComparison.Ordinal) && RaumnutzungSchema.ZEILEN.Contains(z.Zeile))
+                    .Select(z => new Vorgabezeile { Groesse = z.Groesse, Zeile = z.Zeile, Wert = z.Wert, Aus = z.Aus, Von = z.Von, Bis = z.Bis, BedingtK = z.BedingtK })
+                    .ToList();
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag für ein neues Stundenprofil</b> (NP-F9): aus der typischen Woche, die das Profil OHNE Stundenprofil
+        /// der Größe ergäbe, der erste Nutzungstag als Werktag und der erste nutzungsfreie Tag als freier Tag (ohne freien Tag
+        /// derselbe). An der Lüftung mit Kennwert Außenluft in 1/h sind die Stundenwerte Anteile davon (der Generator
+        /// multipliziert). <c>null</c>, wenn die Größe dann keinen Kalender ergibt.
+        /// </summary>
+        public static List<Raumnutzungsstunden> Stundenvorschlag(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
+        {
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            Raumnutzungsprofil ohne = profil.Kopie();
+            string kennwort = Konditionierungsgroessen.Kennwort(groesse);
+            ohne.Stunden = (ohne.Stunden ?? new List<Raumnutzungsstunden>())
+                .Where(s => !string.Equals(s.Groesse, kennwort, StringComparison.Ordinal)).ToList();
+            double[] woche = ohne.IstLeer ? null : Vorschau(ohne, groesse).Woche;
+            if (woche == null) return null;
+
+            double teiler = 1.0;
+            if (groesse == Konditionierungsgroesse.Lueftung && profil.Aussenluft is double luft && luft > 0.0 &&
+                string.Equals(profil.Aussenluft_Einheit, RaumnutzungSchema.EINHEIT_JE_STUNDE, StringComparison.Ordinal))
+                teiler = luft;
+
+            string muster = string.IsNullOrEmpty(profil.Nutzungstage_Woche) || profil.Nutzungstage_Woche.Length != 7
+                ? "1111111" : profil.Nutzungstage_Woche;
+            int werktag = Math.Max(0, muster.IndexOf('1'));
+            int frei = muster.IndexOf('0');
+            if (frei < 0) frei = werktag;
+            return new List<Raumnutzungsstunden>
+            {
+                new Raumnutzungsstunden(kennwort, RaumnutzungSchema.TAGESART_WERKTAG, Tageswerte(woche, werktag, teiler)),
+                new Raumnutzungsstunden(kennwort, RaumnutzungSchema.TAGESART_FREI, Tageswerte(woche, frei, teiler)),
+            };
+        }
+
+        /// <summary>Die Kopie eines Profils ohne Zeilenbild und Stundenprofil einer Größe.</summary>
+        private static Raumnutzungsprofil OhneBildDerGroesse(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
+        {
+            Raumnutzungsprofil k = profil.Kopie();
+            string kennwort = Konditionierungsgroessen.Kennwort(groesse);
+            k.Zeilen = (k.Zeilen ?? new List<Vorgabezeile>()).Where(z => !string.Equals(z.Groesse, kennwort, StringComparison.Ordinal)).ToList();
+            k.Stunden = (k.Stunden ?? new List<Raumnutzungsstunden>()).Where(s => !string.Equals(s.Groesse, kennwort, StringComparison.Ordinal)).ToList();
+            return k;
+        }
+
+        /// <summary>Die 24 Werte eines Wochentags als Text des Stundenprofils (Semikolon, invariant, „aus" bei NaN).</summary>
+        private static string Tageswerte(double[] woche, int tag, double teiler)
+            => string.Join(";", Enumerable.Range(0, 24).Select(h =>
+            {
+                double w = woche[Kalenderwoche.Stelle(tag, h)];
+                return double.IsNaN(w)
+                    ? DbWerte.KOND_WOCHE_AUS
+                    : Math.Round(w / teiler, 4, MidpointRounding.AwayFromZero).ToString("0.####", CultureInfo.InvariantCulture);
+            }));
+
+        #endregion
     }
 }

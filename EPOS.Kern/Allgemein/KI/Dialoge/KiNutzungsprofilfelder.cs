@@ -55,7 +55,9 @@ namespace WindowsFormsApplication1
             HeizSoll, HeizAusserhalb, HeizAus, KuehlSoll, KuehlAusserhalb, KuehlAus,
             LuftEinheit, Luft, LuftAusserhalb,
             PersonenFlaeche, PersonenWaerme, PersonenAnteil, PersonenAusserhalb,
-            Geraete, GeraeteAnteil, GeraeteAusserhalb, Beleuchtung, BeleuchtungAnteil
+            Geraete, GeraeteAnteil, GeraeteAusserhalb, Beleuchtung, BeleuchtungAnteil,
+            // NP4c: der Umschalter je Größe „aus Kennwerten | Zeilenbild | Stundenprofil" (nur lesbar).
+            WegHeizen, WegKuehlen, WegLueftung, WegGeraete, WegPersonen
         }
 
         /// <summary>Ein Feld des Profileditors: Schlüssel, Kennwert, Typ, Einheit und Grenzen wie im Blatt.</summary>
@@ -136,7 +138,48 @@ namespace WindowsFormsApplication1
             new Feld("np_geraete_ausserhalb", Kennwert.GeraeteAusserhalb, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_GERAETE_AUSSERHALB, KiDialogTexte.EINHEIT_PROZENT, 0, 100),
             new Feld("np_beleuchtung", Kennwert.Beleuchtung, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_BELEUCHTUNG, EINHEIT_W_M2, 0, 500),
             new Feld("np_beleuchtung_anteil", Kennwert.BeleuchtungAnteil, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_BELEUCHTUNG_ANTEIL, KiDialogTexte.EINHEIT_PROZENT, 0, 100),
+            // NP4c: der Umschalter je Größe — nur lesbar; umgeschaltet wird im Blatt (mit Rückfrage), ein Klick des Anwenders.
+            new Feld("np_weg_heizen", Kennwert.WegHeizen, KiParameterTyp.Text, () => Wegname(MyResource.Resource.KOND_LBL_GROESSE_HEIZEN), nurLesen: true),
+            new Feld("np_weg_kuehlen", Kennwert.WegKuehlen, KiParameterTyp.Text, () => Wegname(MyResource.Resource.KOND_LBL_GROESSE_KUEHLEN), nurLesen: true),
+            new Feld("np_weg_lueftung", Kennwert.WegLueftung, KiParameterTyp.Text, () => Wegname(MyResource.Resource.KOND_LBL_GROESSE_LUEFTUNG), nurLesen: true),
+            new Feld("np_weg_geraete", Kennwert.WegGeraete, KiParameterTyp.Text, () => Wegname(MyResource.Resource.KOND_LBL_GROESSE_GERAETE), nurLesen: true),
+            new Feld("np_weg_personen", Kennwert.WegPersonen, KiParameterTyp.Text, () => Wegname(MyResource.Resource.KOND_LBL_GROESSE_PERSONEN), nurLesen: true),
         };
+
+        // =================================================================
+        //  NP4c — Umschalter, Zeilenbild und Stundenprofil (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9)
+        // =================================================================
+
+        /// <summary>Der Wert des Umschalters „aus Kennwerten".</summary>
+        public const string WEG_KENNWERTE = "kennwerte";
+
+        /// <summary>Der Wert des Umschalters „Zeilenbild".</summary>
+        public const string WEG_ZEILENBILD = "zeilenbild";
+
+        /// <summary>Der Wert des Umschalters „Stundenprofil".</summary>
+        public const string WEG_STUNDENPROFIL = "stundenprofil";
+
+        /// <summary>Die Zeilen des Zeilenbilds im Entwurf: Spalten und Eigenschaft der Zeile (Raster zum Lesen).</summary>
+        public static IReadOnlyList<(string Schluessel, string Eigenschaft)> Zeilenbildspalten { get; } = new[]
+        {
+            ("np_zeilenbild_groesse", "Groesse"),
+            ("np_zeilenbild_zeile", "Zeile"),
+            ("np_zeilenbild_wert", "Wert"),
+            ("np_zeilenbild_fenster", "Fenster"),
+            ("np_zeilenbild_deltat", "DeltaT"),
+        };
+
+        /// <summary>Die Stundenprofile im Entwurf: Spalten und Eigenschaft der Zeile (Raster zum Lesen).</summary>
+        public static IReadOnlyList<(string Schluessel, string Eigenschaft)> Stundenspalten { get; } = new[]
+        {
+            ("np_stunden_groesse", "Groesse"),
+            ("np_stunden_tagesart", "Tagesart"),
+            ("np_stunden_werte", "Werte"),
+        };
+
+        /// <summary>Die Beschriftung des Umschalters einer Größe.</summary>
+        private static string Wegname(string groesse)
+            => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RNP_ED_KI_WEG_NAME, groesse);
 
         /// <summary>Die Spalten der Zuordnungstabelle: Schlüssel und Eigenschaft der Zeile.</summary>
         public static IReadOnlyList<(string Schluessel, string Eigenschaft)> Zuordnungsspalten { get; } = new[]
@@ -203,6 +246,13 @@ namespace WindowsFormsApplication1
                     case Kennwert.Kategorie: erl = MyResource.Resource.RNP_KI_KATEGORIE_ERL; break;
                     case Kennwert.Woche: erl = MyResource.Resource.RNP_KI_WOCHE_ERL; break;
                     case Kennwert.LuftEinheit: erl = MyResource.Resource.RNP_KI_LUFT_EINHEIT_ERL; break;
+                    case Kennwert.WegHeizen:
+                    case Kennwert.WegKuehlen:
+                    case Kennwert.WegLueftung:
+                    case Kennwert.WegGeraete:
+                    case Kennwert.WegPersonen:
+                        erl = string.Format(c, MyResource.Resource.RNP_ED_KI_WEG_ERL, WEG_KENNWERTE, WEG_ZEILENBILD, WEG_STUNDENPROFIL);
+                        break;
                     default:
                         erl = string.Format(c, MyResource.Resource.RNP_KI_PROFILWERT_ERL, f.Bezeichnung);
                         if (f.Kennwert == Kennwert.Luft || f.Kennwert == Kennwert.LuftAusserhalb)
@@ -227,6 +277,18 @@ namespace WindowsFormsApplication1
                                               string.Format(c, MyResource.Resource.RNP_KI_ZUORDNUNG_ERL, namen[i]),
                                               leerErlaubt: true, zeilenkennzeichen: ZEILENKENNZEICHEN, nurLesen: true);
             }
+
+            // NP4c: Zeilenbild und Stundenprofile des Entwurfs als Raster zum Lesen.
+            foreach ((string schluessel, string eigenschaft) in Zeilenbildspalten)
+                yield return new KiDialogFeld(schluessel, sicht + ".Nutzungsprofilzeilenbild[]." + eigenschaft,
+                                              MyResource.Resource.RNP_LBL_ZEILENBILD + " · " + eigenschaft,
+                                              KiParameterTyp.Text, MyResource.Resource.RNP_ED_KI_ZEILENBILD_ERL,
+                                              leerErlaubt: true, zeilenkennzeichen: ZEILENKENNZEICHEN, nurLesen: true);
+            foreach ((string schluessel, string eigenschaft) in Stundenspalten)
+                yield return new KiDialogFeld(schluessel, sicht + ".Nutzungsprofilstunden[]." + eigenschaft,
+                                              MyResource.Resource.RNP_LBL_STUNDEN + " · " + eigenschaft,
+                                              KiParameterTyp.Text, MyResource.Resource.RNP_ED_KI_STUNDEN_ERL,
+                                              leerErlaubt: true, zeilenkennzeichen: ZEILENKENNZEICHEN, nurLesen: true);
         }
 
         private static Dictionary<string, Feld> Verzeichnis()

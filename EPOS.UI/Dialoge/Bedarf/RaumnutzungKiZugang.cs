@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using WindowsFormsApplication1;
 
@@ -106,6 +107,11 @@ public sealed class RaumnutzungKiZugang
             KiNutzungsprofilfelder.Kennwert.GeraeteAusserhalb => Prozent(s.GeraeteAnteilAusserhalb),
             KiNutzungsprofilfelder.Kennwert.Beleuchtung => s.BeleuchtungLeistung,
             KiNutzungsprofilfelder.Kennwert.BeleuchtungAnteil => Prozent(s.BeleuchtungAnteil),
+            KiNutzungsprofilfelder.Kennwert.WegHeizen => Wegwert(s, KonditionierungGroesse.Heizen),
+            KiNutzungsprofilfelder.Kennwert.WegKuehlen => Wegwert(s, KonditionierungGroesse.Kuehlen),
+            KiNutzungsprofilfelder.Kennwert.WegLueftung => Wegwert(s, KonditionierungGroesse.Lueftung),
+            KiNutzungsprofilfelder.Kennwert.WegGeraete => Wegwert(s, KonditionierungGroesse.Geraete),
+            KiNutzungsprofilfelder.Kennwert.WegPersonen => Wegwert(s, KonditionierungGroesse.Personen),
             _ => null,
         };
     }
@@ -172,6 +178,42 @@ public sealed class RaumnutzungKiZugang
         _auffrischen?.Invoke();
     }
 
+    // ------------------------------------------------------------ NP4c: Umschalter, Zeilenbild, Stundenprofil
+
+    /// <summary>Der Weg einer Größe im Entwurf als Wert des Umschalters (<c>kennwerte</c>, <c>zeilenbild</c>, <c>stundenprofil</c>).</summary>
+    private static string Wegwert(RaumnutzungProfilDaten s, KonditionierungGroesse g) => RaumnutzungBild.Weg(s, g) switch
+    {
+        RaumnutzungBildweg.Zeilenbild => KiNutzungsprofilfelder.WEG_ZEILENBILD,
+        RaumnutzungBildweg.Stundenprofil => KiNutzungsprofilfelder.WEG_STUNDENPROFIL,
+        _ => KiNutzungsprofilfelder.WEG_KENNWERTE,
+    };
+
+    /// <summary>Die Zeilen des Zeilenbilds im Entwurf (Raster zum Lesen, Werte in der Einheit des Profils); ohne Blatt keine.</summary>
+    public IReadOnlyList<RaumnutzungZeilenbildKiZeile> Zeilenbildzeilen
+        => _entwurf?.Invoke() is RaumnutzungProfilDaten s
+           ? s.Zeilenbild.Select((z, i) => new RaumnutzungZeilenbildKiZeile(
+                 (i + 1).ToString(CultureInfo.InvariantCulture), z.Groesse.ToString(), z.Zeile,
+                 z.Aus ? DbWerteAus : Text(z.Wert),
+                 z.Von.HasValue || z.Bis.HasValue ? Text(z.Von) + "-" + Text(z.Bis) : "",
+                 Text(z.DeltaT))).ToList()
+           : Array.Empty<RaumnutzungZeilenbildKiZeile>();
+
+    /// <summary>Die Stundenprofile im Entwurf (Raster zum Lesen, 24 Werte mit Semikolon); ohne Blatt keine.</summary>
+    public IReadOnlyList<RaumnutzungStundenKiZeile> Stundenzeilen
+        => _entwurf?.Invoke() is RaumnutzungProfilDaten s
+           ? s.Stunden.Select((h, i) => new RaumnutzungStundenKiZeile(
+                 (i + 1).ToString(CultureInfo.InvariantCulture), h.Groesse.ToString(),
+                 h.Tagesart == RaumnutzungTagesart.Frei ? "FREI" : "WERKTAG",
+                 string.Join(";", h.Werte.Select(w => double.IsNaN(w) ? DbWerteAus : Text(w))))).ToList()
+           : Array.Empty<RaumnutzungStundenKiZeile>();
+
+    /// <summary>„aus" wie im Stundenprofil des Kerns (<c>DbWerte.KOND_WOCHE_AUS</c>).</summary>
+    private const string DbWerteAus = "aus";
+
+    private static string Text(double? w) => w is double d ? d.ToString("0.####", CultureInfo.InvariantCulture) : "";
+
+    private static string Text(int? w) => w is int d ? d.ToString(CultureInfo.InvariantCulture) : "";
+
     /// <summary>Ein Anteil 0 … 1 in Prozent — dieselbe Rundung wie das Blatt.</summary>
     private static double? Prozent(double? anteil) => anteil is double a ? Math.Round(a * 100.0, 4) : null;
 
@@ -188,3 +230,26 @@ public sealed class RaumnutzungKiZugang
 /// <param name="Schluessel">Der Schlüssel (DIN-Nummer, IFC-Klasse, Raumtyp).</param>
 /// <param name="Profil">Der Name des zugeordneten Profils; leer = keines.</param>
 public sealed record RaumnutzungZuordnungKiZeile(string Nummer, string Art, string Schluessel, string Profil);
+
+/// <summary>
+/// EINE Zeile des Zeilenbilds im Entwurf des Blatts „Nutzungsprofile" für den Assistenten (NP4c) — nur lesbar,
+/// Kennzeichen die Nummer ab 1.
+/// </summary>
+/// <param name="Nummer">Die Nummer der Zeile ab 1 — das Kennzeichen.</param>
+/// <param name="Groesse">Die Größe (Heizen, Kuehlen, Lueftung, Geraete, Personen).</param>
+/// <param name="Zeile">Die Zeile (TAG, NACHT, WOCHENENDE, FERIEN).</param>
+/// <param name="Wert">Der Wert in der Einheit des Profils oder „aus"; leer = ohne.</param>
+/// <param name="Fenster">Das Nachtfenster „von-bis"; leer = ohne.</param>
+/// <param name="DeltaT">ΔT der Nachtauskühlung [K]; leer = ohne.</param>
+public sealed record RaumnutzungZeilenbildKiZeile(string Nummer, string Groesse, string Zeile, string Wert, string Fenster,
+                                                  string DeltaT);
+
+/// <summary>
+/// EIN Stundenprofil im Entwurf des Blatts „Nutzungsprofile" für den Assistenten (NP4c) — nur lesbar, Kennzeichen die
+/// Nummer ab 1.
+/// </summary>
+/// <param name="Nummer">Die Nummer der Zeile ab 1 — das Kennzeichen.</param>
+/// <param name="Groesse">Die Größe.</param>
+/// <param name="Tagesart">WERKTAG oder FREI.</param>
+/// <param name="Werte">Die 24 Werte in der Einheit des Profils, mit Semikolon, „aus" bei Heizen und Kühlen.</param>
+public sealed record RaumnutzungStundenKiZeile(string Nummer, string Groesse, string Tagesart, string Werte);

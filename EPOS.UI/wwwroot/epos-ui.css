@@ -14843,6 +14843,94 @@ td.epos-vorlage-katalogbeschreibung {
     gap: 6px;
 }
 
+/* NP4c: Editor "Zeitverlauf je Groesse" im Blatt "Nutzungsprofile" - Groessenreiter, Umschalter
+   (aus Kennwerten | Zeilenbild | Stundenprofil), Zeilenbild als Tabelle mit Feldern in Zellbreite,
+   Stundenprofil als umbrechendes Raster aus 24 Feldern je Tagesart, Vorschau darunter. */
+.epos-raumnutzung-bild {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.epos-raumnutzung-bild-groessen,
+.epos-raumnutzung-bild-weg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-raumnutzung-bild-groesse,
+.epos-raumnutzung-bild-wegknopf,
+.epos-raumnutzung-einfuegen-knopf {
+    min-height: var(--epos-touchziel);
+}
+
+.epos-raumnutzung-bild-weg-text {
+    color: var(--epos-text-leise);
+}
+
+.epos-raumnutzung-bild-sperre,
+.epos-raumnutzung-einfuegen-meldung {
+    margin: 0;
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-raumnutzung-bild-teil {
+    margin: 8px 0 4px;
+    font-size: 0.95em;
+}
+
+.epos-raumnutzung-zeilenbildraster {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.epos-raumnutzung-zeilenbildraster .epos-feld .epos-eingabe {
+    min-width: 0;
+    width: 100%;
+}
+
+.epos-raumnutzung-stundenraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 6px;
+}
+
+.epos-raumnutzung-stunde {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.epos-raumnutzung-stunde-kopf {
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+}
+
+.epos-raumnutzung-stunde .epos-feld-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.epos-raumnutzung-stunde .epos-eingabe {
+    min-width: 0;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-raumnutzung-einfuegen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 6px;
+}
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

@@ -46457,5 +46457,95 @@ chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Usage days per year: {0} (from weekly pattern and public holidays), minus {1} holiday-period days = {2}</value>
   </data>
+  <data name="RNP_ED_TITEL" xml:space="preserve">
+    <value>Time profile per quantity</value>
+  </data>
+  <data name="RNP_ED_LBL_WEG" xml:space="preserve">
+    <value>Source of the quantity</value>
+  </data>
+  <data name="RNP_ED_WEG_KENNWERTE" xml:space="preserve">
+    <value>from characteristic values</value>
+  </data>
+  <data name="RNP_ED_WEG_ZEILENBILD" xml:space="preserve">
+    <value>Row pattern</value>
+  </data>
+  <data name="RNP_ED_WEG_STUNDEN" xml:space="preserve">
+    <value>Hourly profile</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_KENNWERTE" xml:space="preserve">
+    <value>The characteristic values above apply; the preview shows what they produce.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_ZEILENBILD" xml:space="preserve">
+    <value>The row pattern applies literally instead of the characteristic values of this quantity; an empty row does not apply.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_STUNDEN" xml:space="preserve">
+    <value>The hourly profile yields a standard week: the working day on usage days, otherwise the non-usage day.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_LUFT" xml:space="preserve">
+    <value>With the characteristic value for outdoor air, the hourly values of ventilation are fractions of it.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_LEER" xml:space="preserve">
+    <value>No values yet — until then the next source applies (hourly profile, otherwise characteristic values).</value>
+  </data>
+  <data name="RNP_ED_TITEL_FRAGE" xml:space="preserve">
+    <value>Change source</value>
+  </data>
+  <data name="RNP_ED_FRAGE_KENNWERTE" xml:space="preserve">
+    <value>Delete the row pattern and hourly profile of the quantity “{0}”? The characteristic values then apply.</value>
+  </data>
+  <data name="RNP_ED_FRAGE_STUNDEN" xml:space="preserve">
+    <value>Delete the row pattern of the quantity “{0}”? The hourly profile then applies.</value>
+  </data>
+  <data name="RNP_ED_FRAGE_ZEILENBILD" xml:space="preserve">
+    <value>Delete the hourly profile of the quantity “{0}”? The row pattern then applies.</value>
+  </data>
+  <data name="RNP_ED_LBL_STUNDE" xml:space="preserve">
+    <value>{0} · hour {1}</value>
+  </data>
+  <data name="RNP_ED_LBL_EINFUEGEN" xml:space="preserve">
+    <value>{0} · paste row (24 values)</value>
+  </data>
+  <data name="RNP_ED_PH_EINFUEGEN" xml:space="preserve">
+    <value>24 values separated by spaces or tabs</value>
+  </data>
+  <data name="RNP_ED_BTN_EINFUEGEN" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="RNP_ED_GRUND_EINFUEGEN" xml:space="preserve">
+    <value>Enter a row of 24 values first.</value>
+  </data>
+  <data name="RNP_ED_MSG_ANZAHL" xml:space="preserve">
+    <value>Expected 24 values, found {0}.</value>
+  </data>
+  <data name="RNP_ED_MSG_WERT" xml:space="preserve">
+    <value>Hour {0}: “{1}” is not a number in the range {2} … {3} {4}.</value>
+  </data>
+  <data name="RNP_ED_LBL_VORSCHAU" xml:space="preserve">
+    <value>Preview of the quantity</value>
+  </data>
+  <data name="RNP_ED_LBL_WOCHE" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="RNP_ED_LBL_TEPPICH" xml:space="preserve">
+    <value>Carpet plot</value>
+  </data>
+  <data name="RNP_ED_TXT_BEZUG" xml:space="preserve">
+    <value>Reference year {0}, neutral holiday period 1 to 14 August; the week lies in January without a public holiday.</value>
+  </data>
+  <data name="RNP_ED_TXT_NICHT_BELEGT" xml:space="preserve">
+    <value>The quantity is not set; the target keeps its calendar.</value>
+  </data>
+  <data name="RNP_ED_KI_WEG_NAME" xml:space="preserve">
+    <value>{0} · source</value>
+  </data>
+  <data name="RNP_ED_KI_WEG_ERL" xml:space="preserve">
+    <value>Where the quantity takes its time profile from in the draft of the profile editor: {0} (characteristic values), {1} (row pattern) or {2} (hourly profile). Read-only — switching happens on the sheet with a confirmation, a click of the user.</value>
+  </data>
+  <data name="RNP_ED_KI_ZEILENBILD_ERL" xml:space="preserve">
+    <value>A row of the row pattern in the draft of the profile editor (quantity, row, value in the unit of the profile or “off”, night window, ΔT); read-only, identified by its number from 1. Editing happens on the sheet.</value>
+  </data>
+  <data name="RNP_ED_KI_STUNDEN_ERL" xml:space="preserve">
+    <value>An hourly profile in the draft of the profile editor (quantity, day type WERKTAG or FREI, 24 values separated by semicolons in the unit of the profile); read-only, identified by its number from 1. Editing happens on the sheet.</value>
+  </data>
 </root>
 

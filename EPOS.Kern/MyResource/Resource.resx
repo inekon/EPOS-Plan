@@ -46464,5 +46464,95 @@ Chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2}</value>
   </data>
+  <data name="RNP_ED_TITEL" xml:space="preserve">
+    <value>Zeitverlauf je Größe</value>
+  </data>
+  <data name="RNP_ED_LBL_WEG" xml:space="preserve">
+    <value>Quelle der Größe</value>
+  </data>
+  <data name="RNP_ED_WEG_KENNWERTE" xml:space="preserve">
+    <value>aus Kennwerten</value>
+  </data>
+  <data name="RNP_ED_WEG_ZEILENBILD" xml:space="preserve">
+    <value>Zeilenbild</value>
+  </data>
+  <data name="RNP_ED_WEG_STUNDEN" xml:space="preserve">
+    <value>Stundenprofil</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_KENNWERTE" xml:space="preserve">
+    <value>Es gelten die Kennwerte oben; die Vorschau zeigt, was daraus entsteht.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_ZEILENBILD" xml:space="preserve">
+    <value>Das Zeilenbild gilt wörtlich statt der Kennwerte dieser Größe; eine leere Zeile gilt nicht.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_STUNDEN" xml:space="preserve">
+    <value>Das Stundenprofil ergibt eine Standardwoche: der Werktag an den Nutzungstagen, sonst der nutzungsfreie Tag.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_LUFT" xml:space="preserve">
+    <value>Mit dem Kennwert Außenluft sind die Stundenwerte der Lüftung Anteile davon.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_LEER" xml:space="preserve">
+    <value>Noch ohne Werte — bis dahin gilt der nächste Weg (Stundenprofil, sonst Kennwerte).</value>
+  </data>
+  <data name="RNP_ED_TITEL_FRAGE" xml:space="preserve">
+    <value>Quelle wechseln</value>
+  </data>
+  <data name="RNP_ED_FRAGE_KENNWERTE" xml:space="preserve">
+    <value>Zeilenbild und Stundenprofil der Größe „{0}“ löschen? Danach gelten die Kennwerte.</value>
+  </data>
+  <data name="RNP_ED_FRAGE_STUNDEN" xml:space="preserve">
+    <value>Das Zeilenbild der Größe „{0}“ löschen? Danach gilt das Stundenprofil.</value>
+  </data>
+  <data name="RNP_ED_FRAGE_ZEILENBILD" xml:space="preserve">
+    <value>Das Stundenprofil der Größe „{0}“ löschen? Danach gilt das Zeilenbild.</value>
+  </data>
+  <data name="RNP_ED_LBL_STUNDE" xml:space="preserve">
+    <value>{0} · Stunde {1}</value>
+  </data>
+  <data name="RNP_ED_LBL_EINFUEGEN" xml:space="preserve">
+    <value>{0} · Zeile einfügen (24 Werte)</value>
+  </data>
+  <data name="RNP_ED_PH_EINFUEGEN" xml:space="preserve">
+    <value>24 Werte, durch Leerzeichen oder Tab getrennt</value>
+  </data>
+  <data name="RNP_ED_BTN_EINFUEGEN" xml:space="preserve">
+    <value>Einfügen</value>
+  </data>
+  <data name="RNP_ED_GRUND_EINFUEGEN" xml:space="preserve">
+    <value>Zuerst eine Zeile mit 24 Werten eintragen.</value>
+  </data>
+  <data name="RNP_ED_MSG_ANZAHL" xml:space="preserve">
+    <value>Erwartet 24 Werte, gefunden {0}.</value>
+  </data>
+  <data name="RNP_ED_MSG_WERT" xml:space="preserve">
+    <value>Stunde {0}: „{1}“ ist keine Zahl im Bereich {2} … {3} {4}.</value>
+  </data>
+  <data name="RNP_ED_LBL_VORSCHAU" xml:space="preserve">
+    <value>Vorschau der Größe</value>
+  </data>
+  <data name="RNP_ED_LBL_WOCHE" xml:space="preserve">
+    <value>Woche</value>
+  </data>
+  <data name="RNP_ED_LBL_TEPPICH" xml:space="preserve">
+    <value>Teppichbild</value>
+  </data>
+  <data name="RNP_ED_TXT_BEZUG" xml:space="preserve">
+    <value>Bezugsjahr {0}, neutrale Ferienlage 1. bis 14. August; die Woche liegt im Januar ohne Feiertag.</value>
+  </data>
+  <data name="RNP_ED_TXT_NICHT_BELEGT" xml:space="preserve">
+    <value>Die Größe ist nicht belegt; das Ziel behält seinen Kalender.</value>
+  </data>
+  <data name="RNP_ED_KI_WEG_NAME" xml:space="preserve">
+    <value>{0} · Quelle</value>
+  </data>
+  <data name="RNP_ED_KI_WEG_ERL" xml:space="preserve">
+    <value>Woher die Größe im Entwurf des Profileditors ihren Zeitverlauf nimmt: {0} (Kennwerte), {1} (Zeilenbild) oder {2} (Stundenprofil). Nur lesbar — umgeschaltet wird im Blatt mit Rückfrage, ein Klick des Anwenders.</value>
+  </data>
+  <data name="RNP_ED_KI_ZEILENBILD_ERL" xml:space="preserve">
+    <value>Eine Zeile des Zeilenbilds im Entwurf des Profileditors (Größe, Zeile, Wert in der Einheit des Profils oder „aus“, Nachtfenster, ΔT); nur lesbar, Kennzeichen die Nummer ab 1. Bearbeitet wird im Blatt.</value>
+  </data>
+  <data name="RNP_ED_KI_STUNDEN_ERL" xml:space="preserve">
+    <value>Ein Stundenprofil im Entwurf des Profileditors (Größe, Tagesart WERKTAG oder FREI, 24 Werte mit Semikolon in der Einheit des Profils); nur lesbar, Kennzeichen die Nummer ab 1. Bearbeitet wird im Blatt.</value>
+  </data>
 </root>
 
