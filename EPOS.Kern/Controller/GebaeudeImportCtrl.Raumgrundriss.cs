@@ -64,6 +64,16 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        /// <summary>HC-5c: der gespeicherte Nordwinkel einer Quelle [°]; <c>null</c> = keiner, keine Quelle oder Spalte fehlt.</summary>
+        internal static double? NordwinkelDerQuelle(int idImportquelle)
+        {
+            if (!RaumgrundrissSchema.NordwinkelVorhanden()) return null;
+            object w = DataRepository.ExecuteScalar(
+                "SELECT \"" + RaumgrundrissSchema.SPALTE_NORDWINKEL + "\" FROM \"" + RaumgrundrissSchema.TAB_QUELLE + "\" WHERE \"ID\" = ?",
+                new DbParam("@q", idImportquelle));
+            return w == null || w == DBNull.Value ? null : Convert.ToDouble(w, CultureInfo.InvariantCulture);
+        }
+
         /// <summary>
         /// HC-5c: <b>Gleicht der gespeicherte Nordwinkel dem frisch gelesenen</b> (beide normiert, auf 1e-9 °)? Ohne die Spalte
         /// (Stand vor dem Schritt) gilt er als gleich — dann ist nichts nachzutragen.

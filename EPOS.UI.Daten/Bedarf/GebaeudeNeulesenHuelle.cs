@@ -159,7 +159,7 @@ namespace WindowsFormsApplication1
             {
                 // HC-5c: auch ein fehlender oder abweichender Nordwinkel der Quelle macht das Nachtragen sinnvoll.
                 return !GebaeudeImportCtrl.Gleich(new GebaeudeImportCtrl().LesenRaumgrundrisseDerQuelle(q.ID), e.Raumgrundrisse)
-                       || !GebaeudeImportCtrl.NordwinkelGleich(q.NordwinkelGrad, e.Abbild?.NordwinkelGrad);
+                       || !GebaeudeImportCtrl.NordwinkelGleich(GebaeudeImportCtrl.NordwinkelDerQuelle(q.ID), e.Abbild?.NordwinkelGrad);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
