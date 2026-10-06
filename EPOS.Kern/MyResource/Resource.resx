@@ -45915,5 +45915,266 @@ Chart</value>
   <data name="RAUMNUTZUNG_MSG_ZONE_FEHLT" xml:space="preserve">
     <value>Die Zone {1} gehört nicht zum Gebäude {0}.</value>
   </data>
+  <data name="RNP_LBL_BLATT" xml:space="preserve">
+    <value>Nutzungsprofile</value>
+  </data>
+  <data name="RNP_BTN_VERWALTEN" xml:space="preserve">
+    <value>Nutzungsprofile verwalten…</value>
+  </data>
+  <data name="RNP_LBL_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="RNP_LBL_EDITOR" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="RNP_LBL_VORSCHAU" xml:space="preserve">
+    <value>Vorschau der Kalender</value>
+  </data>
+  <data name="RNP_LBL_REITER_KATALOG" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="RNP_LBL_REITER_ZUORDNUNG" xml:space="preserve">
+    <value>Zuordnung</value>
+  </data>
+  <data name="RNP_TXT_SOFORT" xml:space="preserve">
+    <value>Der Katalog gilt für alle Projekte; jede Handlung wird sofort gespeichert.</value>
+  </data>
+  <data name="RNP_LBL_ART_EPOS" xml:space="preserve">
+    <value>EPOS-Muster</value>
+  </data>
+  <data name="RNP_LBL_ART_DIN" xml:space="preserve">
+    <value>DIN V 18599-10</value>
+  </data>
+  <data name="RNP_LBL_ART_SIA" xml:space="preserve">
+    <value>SIA 2024</value>
+  </data>
+  <data name="RNP_LBL_ART_VDI" xml:space="preserve">
+    <value>VDI 2078</value>
+  </data>
+  <data name="RNP_LBL_ART_EIGEN" xml:space="preserve">
+    <value>Eigene</value>
+  </data>
+  <data name="RNP_LBL_ZUART_DIN" xml:space="preserve">
+    <value>DIN-Nummer</value>
+  </data>
+  <data name="RNP_LBL_ZUART_IFC" xml:space="preserve">
+    <value>IFC-Klasse</value>
+  </data>
+  <data name="RNP_LBL_ZUART_HOTTCAD" xml:space="preserve">
+    <value>HottCAD-Raumtyp</value>
+  </data>
+  <data name="RNP_BTN_KATEGORIE_NEU" xml:space="preserve">
+    <value>Neue Kategorie…</value>
+  </data>
+  <data name="RNP_BTN_UMBENENNEN" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="RNP_BTN_PROFIL_NEU" xml:space="preserve">
+    <value>Neues Profil…</value>
+  </data>
+  <data name="RNP_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplizieren</value>
+  </data>
+  <data name="RNP_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="RNP_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="RNP_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="RNP_BTN_VORSCHAU" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
+  <data name="RNP_BTN_ZEILE_NEU" xml:space="preserve">
+    <value>Zeile anlegen</value>
+  </data>
+  <data name="RNP_LBL_NUMMER" xml:space="preserve">
+    <value>Nummer</value>
+  </data>
+  <data name="RNP_LBL_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="RNP_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="RNP_LBL_QUELLE" xml:space="preserve">
+    <value>Quellenhinweis</value>
+  </data>
+  <data name="RNP_LBL_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="RNP_LBL_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="RNP_LBL_SCHLUESSEL" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="RNP_LBL_PROFIL" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="RNP_LBL_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="RNP_LBL_GRUPPE_ZEIT" xml:space="preserve">
+    <value>Nutzungszeit und Woche</value>
+  </data>
+  <data name="RNP_LBL_GRUPPE_SOLL" xml:space="preserve">
+    <value>Sollwerte Heizen und Kühlen</value>
+  </data>
+  <data name="RNP_LBL_GRUPPE_LUFT" xml:space="preserve">
+    <value>Außenluft</value>
+  </data>
+  <data name="RNP_LBL_GRUPPE_LASTEN" xml:space="preserve">
+    <value>Personen, Geräte und Beleuchtung</value>
+  </data>
+  <data name="RNP_LBL_NUTZUNG_VON" xml:space="preserve">
+    <value>Nutzung von</value>
+  </data>
+  <data name="RNP_LBL_NUTZUNG_BIS" xml:space="preserve">
+    <value>Nutzung bis</value>
+  </data>
+  <data name="RNP_LBL_BETRIEB_VON" xml:space="preserve">
+    <value>Betrieb von</value>
+  </data>
+  <data name="RNP_LBL_BETRIEB_BIS" xml:space="preserve">
+    <value>Betrieb bis</value>
+  </data>
+  <data name="RNP_LBL_WOCHE" xml:space="preserve">
+    <value>Nutzungstage der Woche</value>
+  </data>
+  <data name="RNP_LBL_TAGE_JAHR" xml:space="preserve">
+    <value>Nutzungstage je Jahr</value>
+  </data>
+  <data name="RNP_LBL_FEIERTAGE" xml:space="preserve">
+    <value>Feiertage wie Sonntag</value>
+  </data>
+  <data name="RNP_LBL_HEIZ_SOLL" xml:space="preserve">
+    <value>Heizen im Betrieb</value>
+  </data>
+  <data name="RNP_LBL_HEIZ_AUSSERHALB" xml:space="preserve">
+    <value>Heizen außerhalb</value>
+  </data>
+  <data name="RNP_LBL_HEIZ_AUS" xml:space="preserve">
+    <value>Heizen außerhalb aus</value>
+  </data>
+  <data name="RNP_LBL_KUEHL_SOLL" xml:space="preserve">
+    <value>Kühlen im Betrieb</value>
+  </data>
+  <data name="RNP_LBL_KUEHL_AUSSERHALB" xml:space="preserve">
+    <value>Kühlen außerhalb</value>
+  </data>
+  <data name="RNP_LBL_KUEHL_AUS" xml:space="preserve">
+    <value>Kühlen außerhalb aus</value>
+  </data>
+  <data name="RNP_LBL_LUFT" xml:space="preserve">
+    <value>Außenluft im Betrieb</value>
+  </data>
+  <data name="RNP_LBL_LUFT_AUSSERHALB" xml:space="preserve">
+    <value>Außenluft außerhalb</value>
+  </data>
+  <data name="RNP_LBL_LUFT_EINHEIT" xml:space="preserve">
+    <value>Einheit der Außenluft</value>
+  </data>
+  <data name="RNP_LBL_PERSONEN_FLAECHE" xml:space="preserve">
+    <value>Fläche je Person</value>
+  </data>
+  <data name="RNP_LBL_PERSONEN_WAERME" xml:space="preserve">
+    <value>Wärme je Person</value>
+  </data>
+  <data name="RNP_LBL_PERSONEN_ANTEIL" xml:space="preserve">
+    <value>Personen im Betrieb</value>
+  </data>
+  <data name="RNP_LBL_PERSONEN_AUSSERHALB" xml:space="preserve">
+    <value>Personen außerhalb</value>
+  </data>
+  <data name="RNP_LBL_GERAETE" xml:space="preserve">
+    <value>Gerätelast</value>
+  </data>
+  <data name="RNP_LBL_GERAETE_ANTEIL" xml:space="preserve">
+    <value>Geräte im Betrieb</value>
+  </data>
+  <data name="RNP_LBL_GERAETE_AUSSERHALB" xml:space="preserve">
+    <value>Geräte außerhalb</value>
+  </data>
+  <data name="RNP_LBL_BELEUCHTUNG" xml:space="preserve">
+    <value>Beleuchtung</value>
+  </data>
+  <data name="RNP_LBL_BELEUCHTUNG_ANTEIL" xml:space="preserve">
+    <value>Gleichzeitigkeit der Beleuchtung</value>
+  </data>
+  <data name="RNP_LBL_ZEILENBILD" xml:space="preserve">
+    <value>Zeilenbild</value>
+  </data>
+  <data name="RNP_LBL_STUNDEN" xml:space="preserve">
+    <value>Stundenprofile</value>
+  </data>
+  <data name="RNP_LBL_ZEILE" xml:space="preserve">
+    <value>Zeile</value>
+  </data>
+  <data name="RNP_LBL_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="RNP_LBL_FENSTER" xml:space="preserve">
+    <value>Zeitfenster</value>
+  </data>
+  <data name="RNP_LBL_WOCHENTAGE" xml:space="preserve">
+    <value>Wochentage</value>
+  </data>
+  <data name="RNP_LBL_TAGESART_WERKTAG" xml:space="preserve">
+    <value>Werktag</value>
+  </data>
+  <data name="RNP_LBL_TAGESART_FREI" xml:space="preserve">
+    <value>nutzungsfreier Tag</value>
+  </data>
+  <data name="RNP_TXT_NUR_LESEND" xml:space="preserve">
+    <value>Zeilenbild und Stundenprofile werden hier nur angezeigt.</value>
+  </data>
+  <data name="RNP_TXT_AUSGELIEFERT" xml:space="preserve">
+    <value>Gehört zur Auslieferung — nur duplizieren</value>
+  </data>
+  <data name="RNP_TXT_LEER" xml:space="preserve">
+    <value>Noch keine Kategorie im Katalog.</value>
+  </data>
+  <data name="RNP_TXT_KATEGORIE_LEER" xml:space="preserve">
+    <value>Diese Kategorie führt kein Profil.</value>
+  </data>
+  <data name="RNP_TXT_OHNE_WAHL" xml:space="preserve">
+    <value>Wählen Sie links ein Profil.</value>
+  </data>
+  <data name="RNP_TXT_OHNE_WERTE" xml:space="preserve">
+    <value>ohne Werte — Duplizieren, um Werte einzutragen</value>
+  </data>
+  <data name="RNP_TXT_NICHT_BELEGT" xml:space="preserve">
+    <value>nicht belegt — das Ziel behält seinen Kalender</value>
+  </data>
+  <data name="RNP_TXT_OHNE_TABELLEN" xml:space="preserve">
+    <value>Der Nutzungsprofilkatalog ist in dieser Datenbank nicht angelegt.</value>
+  </data>
+  <data name="RNP_TXT_HINWEIS_HOEHE" xml:space="preserve">
+    <value>Außenluft in m³/(h·m²) ohne lichte Höhe des Ziels: die Lüftung wird nicht gesetzt.</value>
+  </data>
+  <data name="RNP_TXT_HINWEIS_FREIERTAG" xml:space="preserve">
+    <value>Ein freier Einzeltag braucht einen Tageswert dieser Größe; die Matrix kennt nur das Wochenende.</value>
+  </data>
+  <data name="RNP_TXT_HINWEIS_STUNDEN" xml:space="preserve">
+    <value>Ein Stundenprofil ist nicht lesbar; die Kennwerte gelten.</value>
+  </data>
+  <data name="RNP_FRAGE_PROFIL_LOESCHEN" xml:space="preserve">
+    <value>Das Profil „{0}“ löschen?</value>
+  </data>
+  <data name="RNP_FRAGE_PROFIL_ZUORDNUNG" xml:space="preserve">
+    <value>{0} Zuordnungszeile(n) fallen dabei auf „keine“.</value>
+  </data>
+  <data name="RNP_FRAGE_KATEGORIE_LOESCHEN" xml:space="preserve">
+    <value>Die Kategorie „{0}“ samt ihren Profilen löschen?</value>
+  </data>
+  <data name="RNP_FRAGE_ZUORDNUNG_LOESCHEN" xml:space="preserve">
+    <value>Die Zuordnung „{0}“ löschen?</value>
+  </data>
+  <data name="RNP_TXT_TAGE" xml:space="preserve">
+    <value>erzeugt: {0} Nutzungstage, Quelle: {1} Tage</value>
+  </data>
 </root>
 

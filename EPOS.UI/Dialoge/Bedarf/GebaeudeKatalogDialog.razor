@@ -76,7 +76,7 @@
     @* ZWEI BLAETTER tauschen den INHALT des Editors (Baustein Blattwechsel, unten): der Zonendialog
        (Stufe KP2, Welle U4) und die Vorlagenverwaltung (Welle U2; E56 F4 (a)). Kopf, Reiter und
        Fussleiste stehen nur, solange keines steht; der Arbeitsstand bleibt dabei, wie er ist. *@
-    @if (_zoneOffen is null && _vorlagenBlatt is null)
+    @if (_zoneOffen is null && _vorlagenBlatt is null && !_nutzungsblatt)
     {
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
@@ -565,6 +565,19 @@
                                            AufgeklappteGroesse="@_kondAufgeklappt"
                                            Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
 
+                    @* NP3a (Konzept Nutzungsprofile 6.2, NP-F22): der Zugang zum Katalog der Nutzungsprofile -
+                       dasselbe Muster wie „Vorlagen verwalten..." der Kalenderkarten, als BLATT. Kein Delegat,
+                       kein Knopf: ohne Gabe steht er nicht da. *@
+                    @if (Raumnutzung is not null)
+                    {
+                        <Gruppenkopf Titel="@RaumnutzungTexte.Blatt">
+                            <KindInhalt>
+                                <button type="button" class="epos-knopf epos-kond-nutzungsprofile"
+                                        @onclick="NutzungsprofileOeffnen">@RaumnutzungTexte.KnopfVerwalten</button>
+                            </KindInhalt>
+                        </Gruppenkopf>
+                    }
+
                     @if (BrauchwasserGaben is not null)
                     {
                         <Gruppenkopf Titel="@GruppeSonstiges">
@@ -766,6 +779,19 @@
             }
         </KindInhalt>
     </Blattwechsel>
+
+    @* --- Der Katalog der NUTZUNGSPROFILE als BLATT (Stufe NP3a; Konzept Nutzungsprofile 6.1, NP-F22) --- *@
+    <Blattwechsel Offen="@_nutzungsblatt" WirtTitel="@TitelText" Titel="@RaumnutzungTexte.Blatt"
+                  Zurueck="NutzungsprofileZurueck">
+        <KindInhalt>
+            @if (_nutzungsblatt)
+            {
+                <RaumnutzungBlatt Katalogweg="@Raumnutzung" Texte="@RaumnutzungTexte"
+                                  GroessenTexte="@KonditionierungTexte"
+                                  JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
+            }
+        </KindInhalt>
+    </Blattwechsel>
 </div>
 
 @code {
@@ -880,6 +906,15 @@
 
     /// <summary>Die Rückfragen des Reiters „Konditionierung" (Bündel, Präfix <c>KOND_FRAGE_</c>).</summary>
     [Parameter] public KonditionierungFragetexte KonditionierungFragen { get; set; } = new();
+
+    /// <summary>
+    /// <b>Der Weg des Nutzungsprofilkatalogs</b> (Stufe NP3a; Konzept Nutzungsprofile 6.1, NP-F22) — die Hülle
+    /// füllt ihn aus <c>RaumnutzungCtrl</c>. <c>null</c> = kein Knopf „Nutzungsprofile verwalten…".
+    /// </summary>
+    [Parameter] public RaumnutzungWeg? Raumnutzung { get; set; }
+
+    /// <summary>Die Texte des Blatts „Nutzungsprofile".</summary>
+    [Parameter] public RaumnutzungTexte RaumnutzungTexte { get; set; } = new();
 
     /// <summary>Die Texte der Zonen im Editor (Bündel, Präfix <c>GEBZ_</c>).</summary>
     [Parameter] public GebaeudeZonenTexte ZonenTexte { get; set; } = new();
@@ -2133,7 +2168,7 @@
         // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
             || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null || _luftOffen
-            || _kond.OffeneFrage is not null || _vorlagenBlatt is not null) return Task.CompletedTask;
+            || _kond.OffeneFrage is not null || _vorlagenBlatt is not null || _nutzungsblatt) return Task.CompletedTask;
         return Abbrechen();
     }
 
@@ -2174,6 +2209,25 @@
         _reiter = REITER_KONDITIONIERUNG;
     }
 
+    /// <summary>Steht der Nutzungsprofilkatalog als Blatt (Stufe NP3a)?</summary>
+    private bool _nutzungsblatt;
+
+    /// <summary>Steht der Nutzungsprofilkatalog als Blatt? Prüfhilfe für die Tests.</summary>
+    public bool NutzungsprofilblattOffen => _nutzungsblatt;
+
+    /// <summary>„Nutzungsprofile verwalten…": das Blatt mit dem Katalog (Konzept Nutzungsprofile 6.2).</summary>
+    private void NutzungsprofileOeffnen() => _nutzungsblatt = true;
+
+    /// <summary>
+    /// „‹ Wirt" und Esc des Blattes: zurück in den Editor. Der Katalog hat sofort geschrieben (NP-F3); der
+    /// Arbeitsstand des Gebäudes ist unberührt.
+    /// </summary>
+    private void NutzungsprofileZurueck()
+    {
+        _nutzungsblatt = false;
+        _fokusNachBlatt = true;
+    }
+
     private void VorlagenVerwaltenOeffnen(KonditionierungGroesse g)
     {
         _vorlagenBlatt = g;
@@ -2194,7 +2248,7 @@
     /// <summary>Der Rückweg vom Blatt fokussiert die Wurzel, ohne zu rollen (der Blattwechsel stellt den Rollstand her).</summary>
     private async Task FokusNachBlatt()
     {
-        if (!_fokusNachBlatt || _vorlagenBlatt is not null || _zoneOffen is not null) return;
+        if (!_fokusNachBlatt || _vorlagenBlatt is not null || _zoneOffen is not null || _nutzungsblatt) return;
         _fokusNachBlatt = false;
         await _wurzel.FocusAsync(preventScroll: true);
     }

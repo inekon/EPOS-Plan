@@ -87843,6 +87843,789 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string RNP_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
+        /// </summary>
+        public static string RNP_BTN_DUPLIZIEREN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Kategorie… ähnelt.
+        /// </summary>
+        public static string RNP_BTN_KATEGORIE_NEU {
+            get {
+                return ResourceManager.GetString("RNP_BTN_KATEGORIE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string RNP_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neues Profil… ähnelt.
+        /// </summary>
+        public static string RNP_BTN_PROFIL_NEU {
+            get {
+                return ResourceManager.GetString("RNP_BTN_PROFIL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string RNP_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen ähnelt.
+        /// </summary>
+        public static string RNP_BTN_UMBENENNEN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_UMBENENNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile verwalten… ähnelt.
+        /// </summary>
+        public static string RNP_BTN_VERWALTEN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_VERWALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau ähnelt.
+        /// </summary>
+        public static string RNP_BTN_VORSCHAU {
+            get {
+                return ResourceManager.GetString("RNP_BTN_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile anlegen ähnelt.
+        /// </summary>
+        public static string RNP_BTN_ZEILE_NEU {
+            get {
+                return ResourceManager.GetString("RNP_BTN_ZEILE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie „{0}“ samt ihren Profilen löschen? ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_KATEGORIE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_KATEGORIE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Profil „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_PROFIL_LOESCHEN {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_PROFIL_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zuordnungszeile(n) fallen dabei auf „keine“. ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_PROFIL_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_PROFIL_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_ZUORDNUNG_LOESCHEN {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_ZUORDNUNG_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
+        /// </summary>
+        public static string RNP_LBL_AKTIONEN {
+            get {
+                return ResourceManager.GetString("RNP_LBL_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ART {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN V 18599-10 ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ART_DIN {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ART_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ART_EIGEN {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ART_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Muster ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ART_EPOS {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ART_EPOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SIA 2024 ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ART_SIA {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ART_SIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 2078 ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ART_VDI {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ART_VDI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beleuchtung ähnelt.
+        /// </summary>
+        public static string RNP_LBL_BELEUCHTUNG {
+            get {
+                return ResourceManager.GetString("RNP_LBL_BELEUCHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleichzeitigkeit der Beleuchtung ähnelt.
+        /// </summary>
+        public static string RNP_LBL_BELEUCHTUNG_ANTEIL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_BELEUCHTUNG_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string RNP_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("RNP_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb bis ähnelt.
+        /// </summary>
+        public static string RNP_LBL_BETRIEB_BIS {
+            get {
+                return ResourceManager.GetString("RNP_LBL_BETRIEB_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb von ähnelt.
+        /// </summary>
+        public static string RNP_LBL_BETRIEB_VON {
+            get {
+                return ResourceManager.GetString("RNP_LBL_BETRIEB_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile ähnelt.
+        /// </summary>
+        public static string RNP_LBL_BLATT {
+            get {
+                return ResourceManager.GetString("RNP_LBL_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ähnelt.
+        /// </summary>
+        public static string RNP_LBL_EDITOR {
+            get {
+                return ResourceManager.GetString("RNP_LBL_EDITOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage wie Sonntag ähnelt.
+        /// </summary>
+        public static string RNP_LBL_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitfenster ähnelt.
+        /// </summary>
+        public static string RNP_LBL_FENSTER {
+            get {
+                return ResourceManager.GetString("RNP_LBL_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätelast ähnelt.
+        /// </summary>
+        public static string RNP_LBL_GERAETE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräte im Betrieb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_GERAETE_ANTEIL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_GERAETE_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräte außerhalb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_GERAETE_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("RNP_LBL_GERAETE_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen, Geräte und Beleuchtung ähnelt.
+        /// </summary>
+        public static string RNP_LBL_GRUPPE_LASTEN {
+            get {
+                return ResourceManager.GetString("RNP_LBL_GRUPPE_LASTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft ähnelt.
+        /// </summary>
+        public static string RNP_LBL_GRUPPE_LUFT {
+            get {
+                return ResourceManager.GetString("RNP_LBL_GRUPPE_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sollwerte Heizen und Kühlen ähnelt.
+        /// </summary>
+        public static string RNP_LBL_GRUPPE_SOLL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_GRUPPE_SOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungszeit und Woche ähnelt.
+        /// </summary>
+        public static string RNP_LBL_GRUPPE_ZEIT {
+            get {
+                return ResourceManager.GetString("RNP_LBL_GRUPPE_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizen außerhalb aus ähnelt.
+        /// </summary>
+        public static string RNP_LBL_HEIZ_AUS {
+            get {
+                return ResourceManager.GetString("RNP_LBL_HEIZ_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizen außerhalb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_HEIZ_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("RNP_LBL_HEIZ_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizen im Betrieb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_HEIZ_SOLL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_HEIZ_SOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string RNP_LBL_KATALOG {
+            get {
+                return ResourceManager.GetString("RNP_LBL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string RNP_LBL_KEINE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen außerhalb aus ähnelt.
+        /// </summary>
+        public static string RNP_LBL_KUEHL_AUS {
+            get {
+                return ResourceManager.GetString("RNP_LBL_KUEHL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen außerhalb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_KUEHL_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("RNP_LBL_KUEHL_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen im Betrieb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_KUEHL_SOLL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_KUEHL_SOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft im Betrieb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_LUFT {
+            get {
+                return ResourceManager.GetString("RNP_LBL_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft außerhalb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_LUFT_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("RNP_LBL_LUFT_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Außenluft ähnelt.
+        /// </summary>
+        public static string RNP_LBL_LUFT_EINHEIT {
+            get {
+                return ResourceManager.GetString("RNP_LBL_LUFT_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string RNP_LBL_NAME {
+            get {
+                return ResourceManager.GetString("RNP_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nummer ähnelt.
+        /// </summary>
+        public static string RNP_LBL_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_LBL_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung bis ähnelt.
+        /// </summary>
+        public static string RNP_LBL_NUTZUNG_BIS {
+            get {
+                return ResourceManager.GetString("RNP_LBL_NUTZUNG_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung von ähnelt.
+        /// </summary>
+        public static string RNP_LBL_NUTZUNG_VON {
+            get {
+                return ResourceManager.GetString("RNP_LBL_NUTZUNG_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen im Betrieb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_PERSONEN_ANTEIL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_PERSONEN_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen außerhalb ähnelt.
+        /// </summary>
+        public static string RNP_LBL_PERSONEN_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("RNP_LBL_PERSONEN_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche je Person ähnelt.
+        /// </summary>
+        public static string RNP_LBL_PERSONEN_FLAECHE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_PERSONEN_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme je Person ähnelt.
+        /// </summary>
+        public static string RNP_LBL_PERSONEN_WAERME {
+            get {
+                return ResourceManager.GetString("RNP_LBL_PERSONEN_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ähnelt.
+        /// </summary>
+        public static string RNP_LBL_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellenhinweis ähnelt.
+        /// </summary>
+        public static string RNP_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profile ähnelt.
+        /// </summary>
+        public static string RNP_LBL_REITER_KATALOG {
+            get {
+                return ResourceManager.GetString("RNP_LBL_REITER_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung ähnelt.
+        /// </summary>
+        public static string RNP_LBL_REITER_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("RNP_LBL_REITER_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel ähnelt.
+        /// </summary>
+        public static string RNP_LBL_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("RNP_LBL_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenprofile ähnelt.
+        /// </summary>
+        public static string RNP_LBL_STUNDEN {
+            get {
+                return ResourceManager.GetString("RNP_LBL_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nutzungsfreier Tag ähnelt.
+        /// </summary>
+        public static string RNP_LBL_TAGESART_FREI {
+            get {
+                return ResourceManager.GetString("RNP_LBL_TAGESART_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag ähnelt.
+        /// </summary>
+        public static string RNP_LBL_TAGESART_WERKTAG {
+            get {
+                return ResourceManager.GetString("RNP_LBL_TAGESART_WERKTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage je Jahr ähnelt.
+        /// </summary>
+        public static string RNP_LBL_TAGE_JAHR {
+            get {
+                return ResourceManager.GetString("RNP_LBL_TAGE_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau der Kalender ähnelt.
+        /// </summary>
+        public static string RNP_LBL_VORSCHAU {
+            get {
+                return ResourceManager.GetString("RNP_LBL_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string RNP_LBL_WERT {
+            get {
+                return ResourceManager.GetString("RNP_LBL_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage der Woche ähnelt.
+        /// </summary>
+        public static string RNP_LBL_WOCHE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochentage ähnelt.
+        /// </summary>
+        public static string RNP_LBL_WOCHENTAGE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ZEILE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilenbild ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ZEILENBILD {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ZEILENBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN-Nummer ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ZUART_DIN {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ZUART_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die HottCAD-Raumtyp ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ZUART_HOTTCAD {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ZUART_HOTTCAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Klasse ähnelt.
+        /// </summary>
+        public static string RNP_LBL_ZUART_IFC {
+            get {
+                return ResourceManager.GetString("RNP_LBL_ZUART_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gehört zur Auslieferung — nur duplizieren ähnelt.
+        /// </summary>
+        public static string RNP_TXT_AUSGELIEFERT {
+            get {
+                return ResourceManager.GetString("RNP_TXT_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein freier Einzeltag braucht einen Tageswert dieser Größe; die Matrix kennt nur das Wochenende. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_HINWEIS_FREIERTAG {
+            get {
+                return ResourceManager.GetString("RNP_TXT_HINWEIS_FREIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft in m³/(h·m²) ohne lichte Höhe des Ziels: die Lüftung wird nicht gesetzt. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_HINWEIS_HOEHE {
+            get {
+                return ResourceManager.GetString("RNP_TXT_HINWEIS_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Stundenprofil ist nicht lesbar; die Kennwerte gelten. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_HINWEIS_STUNDEN {
+            get {
+                return ResourceManager.GetString("RNP_TXT_HINWEIS_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Kategorie führt kein Profil. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_KATEGORIE_LEER {
+            get {
+                return ResourceManager.GetString("RNP_TXT_KATEGORIE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Kategorie im Katalog. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_LEER {
+            get {
+                return ResourceManager.GetString("RNP_TXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht belegt — das Ziel behält seinen Kalender ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NICHT_BELEGT {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NICHT_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilenbild und Stundenprofile werden hier nur angezeigt. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NUR_LESEND {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NUR_LESEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Nutzungsprofilkatalog ist in dieser Datenbank nicht angelegt. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_OHNE_TABELLEN {
+            get {
+                return ResourceManager.GetString("RNP_TXT_OHNE_TABELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie links ein Profil. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_OHNE_WAHL {
+            get {
+                return ResourceManager.GetString("RNP_TXT_OHNE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Werte — Duplizieren, um Werte einzutragen ähnelt.
+        /// </summary>
+        public static string RNP_TXT_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("RNP_TXT_OHNE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog gilt für alle Projekte; jede Handlung wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_SOFORT {
+            get {
+                return ResourceManager.GetString("RNP_TXT_SOFORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die erzeugt: {0} Nutzungstage, Quelle: {1} Tage ähnelt.
+        /// </summary>
+        public static string RNP_TXT_TAGE {
+            get {
+                return ResourceManager.GetString("RNP_TXT_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
         /// </summary>
         public static string SCHLIESSKREUZ_TOOLTIP {

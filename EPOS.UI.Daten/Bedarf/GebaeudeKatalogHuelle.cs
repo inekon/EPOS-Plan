@@ -452,6 +452,10 @@ namespace WindowsFormsApplication1
                 ["KonditionierungTexte"] = KonditionierungTexteHuelle.Texte(),
                 ["KonditionierungFragen"] = KonditionierungTexteHuelle.Fragen(),
 
+                // Stufe NP3a: der Katalog der Nutzungsprofile als Blatt (Konzept Nutzungsprofile 6.1, NP-F22).
+                ["Raumnutzung"] = RaumnutzungHuelle.Weg(),
+                ["RaumnutzungTexte"] = RaumnutzungHuelle.Texte(),
+
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(
                     () => GebaeudeStammCtrl.Gebaeudetypen()),
                 ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(

@@ -1,0 +1,829 @@
+﻿@* DAS BLATT „NUTZUNGSPROFILE" (Stufe NP3a; Konzept Nutzungsprofile 6.1, NP-F3, NP-F4, NP-F6, NP-F19) -
+   aus dem Reiter „Konditionierung" des Gebaeudeeditors ("Nutzungsprofile verwalten...") als BLATT, auf
+   beiden Plattformen, kein Menuepunkt (NP-F22).
+
+   AUFBAU. Oben die leise Zeile "sofort gespeichert" (NP-F3: ein Katalog, projektuebergreifend, ohne
+   Projektkopie - er reist in keinem Feldsatz mit, deshalb schreibt jede Handlung fuer sich und es gibt
+   keine OK/Abbrechen-Leiste, die etwas anderes behaupten wuerde; dasselbe wie die Vorlagenverwaltung,
+   Festlegung 13). Darunter zwei Reiter: "Profile" und "Zuordnung".
+
+   REITER "PROFILE" - drei Spalten:
+   1. KATALOGBAUM links: Kategorien mit Art und Schloss, darunter ihre Profile (Nummer, Name). Ein Klick
+      waehlt; ausgelieferte Zeilen tragen das Kennzeichen und sind nur duplizierbar (NP-F19). Knoepfe:
+      Neue Kategorie..., Umbenennen, Duplizieren, Loeschen je Kategorie; Neues Profil..., Duplizieren,
+      Loeschen je Profil. "Kein Delegat, kein Knopf."
+   2. PROFILEDITOR Mitte: Kopf (Nummer, Name, Beschreibung) und die Kennwertgruppen aus 4.1 als Felder mit
+      Einheit und Grenzen - Nutzungszeit und Woche, Sollwerte, Aussenluft mit Einheit, Lasten. Jeder
+      Kennwert darf leer sein (NP-F6). Ein ausgeliefertes Profil steht im Lesemodus (Felder gesperrt,
+      Grund am Knopf "Speichern"); ein Normprofil ohne Werte sagt es. Zeilenbild und Stundenprofile stehen
+      NUR LESEND darunter (Bearbeitung in NP4).
+   3. VORSCHAU rechts: der Knopf "Vorschau" laesst den Generator ueber dem Feldsatz rechnen - ohne
+      Datenbank und ohne zu schreiben - und zeigt je Groesse die erzeugten Vorgabezeilen als Tabelle, dazu
+      Nennwert samt Herleitung (NP-F18), die Hinweise (NP-F10, NP-F13) und die Zeile "erzeugt: ... Tage,
+      Quelle: ... Tage" (NP-F8).
+
+   REITER "ZUORDNUNG" (NP-F12): Tabelle Art, Schluessel, Profil - die Profilwahl gruppiert nach Kategorie
+   mit dem Eintrag "keine"; ausgelieferte Zeilen tragen das Schloss, bleiben aber UMSTELLBAR (NP-F19).
+   Neue Zeilen frei, eigene Zeilen loeschbar.
+
+   OHNE GABEN zeichnet das Blatt den Grund und keinen Knopf. *@
+
+@using System.Globalization
+@using System.Linq
+
+<div class="epos-raumnutzung">
+
+    <p class="epos-leisezeile epos-raumnutzung-sofort">@Texte.HinweisSofort</p>
+
+    @if (Sperrgrund is string grund)
+    {
+        <p class="epos-raumnutzung-sperrzeile" role="status">@grund</p>
+    }
+    else
+    {
+        <div class="epos-raumnutzung-reiter" role="tablist">
+            <button type="button" class="epos-knopf epos-raumnutzung-reiter-profile" role="tab"
+                    aria-selected="@((!_zuordnungsreiter).ToString().ToLowerInvariant())"
+                    @onclick="() => _zuordnungsreiter = false">@Texte.ReiterKatalog</button>
+            <button type="button" class="epos-knopf epos-raumnutzung-reiter-zuordnung" role="tab"
+                    aria-selected="@(_zuordnungsreiter.ToString().ToLowerInvariant())"
+                    @onclick="ZuordnungsreiterWaehlen">@Texte.ReiterZuordnung</button>
+        </div>
+
+        @if (_meldung is not null)
+        {
+            <p class="epos-raumnutzung-meldung" role="alert">@_meldung</p>
+        }
+
+        @if (!_zuordnungsreiter)
+        {
+            <div class="epos-raumnutzung-spalten">
+
+                @* ------------------------------------------------ 1. Der Katalogbaum *@
+                <section class="epos-raumnutzung-baum" aria-label="@Texte.Katalog">
+                    <h2 class="epos-raumnutzung-ueberschrift">@Texte.Katalog</h2>
+
+                    @if (Kategorien.Count == 0)
+                    {
+                        <p class="epos-leisezeile epos-raumnutzung-leer">@Texte.TextLeer</p>
+                    }
+                    <ul class="epos-raumnutzung-kategorien">
+                        @foreach (RaumnutzungKategorieDaten k in Kategorien)
+                        {
+                            RaumnutzungKategorieDaten kat = k;
+                            bool offen = kat.Id == _kategorie;
+                            <li @key="kat.Id" class="epos-raumnutzung-kategorie" data-kategorie="@kat.Id">
+                                <button type="button" class="epos-textknopf epos-raumnutzung-kategorie-waehlen"
+                                        aria-expanded="@(offen ? "true" : "false")"
+                                        @onclick="() => KategorieWaehlen(kat.Id)">@kat.Bezeichner</button>
+                                <span class="epos-raumnutzung-art">@Artname(kat.Art)</span>
+                                @if (kat.Ausgeliefert)
+                                {
+                                    <Kennzeichen Kurztext="@Texte.Ausgeliefert" />
+                                }
+                                @if (offen)
+                                {
+                                    @if (Profile.Count == 0)
+                                    {
+                                        <p class="epos-leisezeile epos-raumnutzung-kategorie-leer">@Texte.TextKategorieLeer</p>
+                                    }
+                                    <ul class="epos-raumnutzung-profile">
+                                        @foreach (RaumnutzungProfilDaten p in Profile)
+                                        {
+                                            RaumnutzungProfilDaten profil = p;
+                                            bool gewaehlt = profil.Id == _profil;
+                                            <li @key="profil.Id" class="epos-raumnutzung-profil" data-profil="@profil.Id">
+                                                <button type="button" class="epos-textknopf epos-raumnutzung-profil-waehlen"
+                                                        aria-pressed="@(gewaehlt ? "true" : "false")"
+                                                        @onclick="() => ProfilWaehlen(profil.Id)">@profil.ToString()</button>
+                                                @if (profil.Ausgeliefert)
+                                                {
+                                                    <Kennzeichen Kurztext="@Texte.Ausgeliefert" />
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="epos-raumnutzung-baumknoepfe">
+                        @if (Weg.KategorieAnlegen is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-raumnutzung-kategorie-neu"
+                                    @onclick="KategorieNeu">@Texte.KnopfKategorieNeu</button>
+                        }
+                        @if (Weg.KategorieDuplizieren is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-raumnutzung-kategorie-duplizieren"
+                                    aria-disabled="@(_kategorie is null ? "true" : null)"
+                                    @onclick="KategorieDuplizieren">@Texte.KnopfDuplizieren</button>
+                        }
+                        @if (Weg.KategorieLoeschen is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-raumnutzung-kategorie-loeschen"
+                                    aria-disabled="@(KategorieSperre is null ? null : "true")"
+                                    title="@KategorieSperre" @onclick="KategorieLoeschenFragen">@Texte.KnopfLoeschen</button>
+                        }
+                        @if (Weg.ProfilAnlegen is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-raumnutzung-profil-neu"
+                                    aria-disabled="@(ProfilAnlegenSperre is null ? null : "true")"
+                                    title="@ProfilAnlegenSperre" @onclick="ProfilNeu">@Texte.KnopfProfilNeu</button>
+                        }
+                        @if (Weg.ProfilDuplizieren is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-raumnutzung-profil-duplizieren"
+                                    aria-disabled="@(_profil is null ? "true" : null)"
+                                    @onclick="ProfilDuplizieren">@Texte.KnopfDuplizieren</button>
+                        }
+                        @if (Weg.ProfilLoeschen is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-raumnutzung-profil-loeschen"
+                                    aria-disabled="@(ProfilSperre is null ? null : "true")"
+                                    title="@ProfilSperre" @onclick="ProfilLoeschenFragen">@Texte.KnopfLoeschen</button>
+                        }
+                    </div>
+                </section>
+
+                @* ------------------------------------------------ 2. Der Profileditor *@
+                <section class="epos-raumnutzung-editor" aria-label="@Texte.Editor">
+                    <h2 class="epos-raumnutzung-ueberschrift">@Texte.Editor</h2>
+
+                    @if (_stand is null)
+                    {
+                        <p class="epos-leisezeile epos-raumnutzung-ohnewahl">@Texte.TextOhneWahl</p>
+                    }
+                    else
+                    {
+                        RaumnutzungProfilDaten s = _stand;
+                        bool lesend = s.Ausgeliefert;
+                        @if (lesend)
+                        {
+                            <p class="epos-leisezeile epos-raumnutzung-lesend">@Texte.Ausgeliefert</p>
+                        }
+                        @if (s.IstLeer && s.Id > 0)
+                        {
+                            <p class="epos-leisezeile epos-raumnutzung-ohnewerte">@Texte.TextOhneWerte</p>
+                        }
+
+                        <Formularraster>
+                            <KindInhalt>
+                                <Textfeld Bezeichnung="@Texte.LabelNummer" Wert="@s.Nummer" Hoechstlaenge="20"
+                                          NurLesen="@lesend" WertChanged="@(v => { s.Nummer = v ?? ""; })" />
+                                <Textfeld Bezeichnung="@Texte.LabelName" Wert="@s.Bezeichner" Hoechstlaenge="80"
+                                          NurLesen="@lesend" WertChanged="@(v => { s.Bezeichner = v ?? ""; })" />
+                                <Textfeld Bezeichnung="@Texte.LabelBeschreibung" Wert="@s.Beschreibung" Hoechstlaenge="400"
+                                          NurLesen="@lesend" WertChanged="@(v => { s.Beschreibung = v ?? ""; })" />
+                            </KindInhalt>
+                        </Formularraster>
+
+                        <Formulargruppe Titel="@Texte.GruppeZeit">
+                            <KindInhalt>
+                                <Formularraster>
+                                    <KindInhalt>
+                                        <Ganzzahlfeld Bezeichnung="@Texte.LabelNutzungVon" Einheit="h" Min="0" Max="24"
+                                                      Wert="@s.NutzungVon" Aktiv="@(!lesend)"
+                                                      WertChanged="@(v => { s.NutzungVon = v; })" />
+                                        <Ganzzahlfeld Bezeichnung="@Texte.LabelNutzungBis" Einheit="h" Min="0" Max="24"
+                                                      Wert="@s.NutzungBis" Aktiv="@(!lesend)"
+                                                      WertChanged="@(v => { s.NutzungBis = v; })" />
+                                        <Ganzzahlfeld Bezeichnung="@Texte.LabelBetriebVon" Einheit="h" Min="0" Max="24"
+                                                      Wert="@s.BetriebVon" Aktiv="@(!lesend)"
+                                                      WertChanged="@(v => { s.BetriebVon = v; })" />
+                                        <Ganzzahlfeld Bezeichnung="@Texte.LabelBetriebBis" Einheit="h" Min="0" Max="24"
+                                                      Wert="@s.BetriebBis" Aktiv="@(!lesend)"
+                                                      WertChanged="@(v => { s.BetriebBis = v; })" />
+                                        <Textfeld Bezeichnung="@Texte.LabelWoche" Wert="@s.NutzungstageWoche" Hoechstlaenge="7"
+                                                  NurLesen="@lesend" WertChanged="@(v => { s.NutzungstageWoche = v ?? ""; })" />
+                                        <Ganzzahlfeld Bezeichnung="@Texte.LabelTageJahr" Min="0" Max="365"
+                                                      Wert="@s.NutzungstageJahr" Aktiv="@(!lesend)"
+                                                      WertChanged="@(v => { s.NutzungstageJahr = v; })" />
+                                        <Schalter Bezeichnung="@Texte.LabelFeiertage" Wert="@(s.FeiertageWieSonntag == true)"
+                                                  Aktiv="@(!lesend)" WertChanged="@(v => { s.FeiertageWieSonntag = v; })" />
+                                    </KindInhalt>
+                                </Formularraster>
+                            </KindInhalt>
+                        </Formulargruppe>
+
+                        <Formulargruppe Titel="@Texte.GruppeSollwerte">
+                            <KindInhalt>
+                                <Formularraster>
+                                    <KindInhalt>
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelHeizSoll" Einheit="°C" Min="5" Max="40"
+                                                    Wert="@s.HeizSoll" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.HeizSoll = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelHeizAusserhalb" Einheit="°C" Min="5" Max="40"
+                                                    Wert="@s.HeizSollAusserhalb" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.HeizSollAusserhalb = v; })" />
+                                        <Schalter Bezeichnung="@Texte.LabelHeizAus" Wert="@(s.HeizAusAusserhalb == true)"
+                                                  Aktiv="@(!lesend)" WertChanged="@(v => { s.HeizAusAusserhalb = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelKuehlSoll" Einheit="°C" Min="10" Max="40"
+                                                    Wert="@s.KuehlSoll" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.KuehlSoll = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelKuehlAusserhalb" Einheit="°C" Min="10" Max="40"
+                                                    Wert="@s.KuehlSollAusserhalb" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.KuehlSollAusserhalb = v; })" />
+                                        <Schalter Bezeichnung="@Texte.LabelKuehlAus" Wert="@(s.KuehlAusAusserhalb == true)"
+                                                  Aktiv="@(!lesend)" WertChanged="@(v => { s.KuehlAusAusserhalb = v; })" />
+                                    </KindInhalt>
+                                </Formularraster>
+                            </KindInhalt>
+                        </Formulargruppe>
+
+                        <Formulargruppe Titel="@Texte.GruppeLuft">
+                            <KindInhalt>
+                                <Formularraster>
+                                    <KindInhalt>
+                                        <Auswahlfeld Bezeichnung="@Texte.LabelLuftEinheit" Eintraege="@LUFTEINHEITEN"
+                                                     Auswahl="@((int)s.LuftEinheit)" Aktiv="@(!lesend)"
+                                                     AuswahlChanged="@(v => { s.LuftEinheit = (RaumnutzungLuftEinheit)(v ?? 0); })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelLuft" Einheit="@Lufteinheitstext(s)" Min="0" Max="20"
+                                                    Wert="@s.Aussenluft" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.Aussenluft = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelLuftAusserhalb" Einheit="@Lufteinheitstext(s)"
+                                                    Min="0" Max="20" Wert="@s.AussenluftAusserhalb" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.AussenluftAusserhalb = v; })" />
+                                    </KindInhalt>
+                                </Formularraster>
+                            </KindInhalt>
+                        </Formulargruppe>
+
+                        <Formulargruppe Titel="@Texte.GruppeLasten">
+                            <KindInhalt>
+                                <Formularraster>
+                                    <KindInhalt>
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelPersonenFlaeche" Einheit="m²" Min="1" Max="200"
+                                                    Wert="@s.PersonenFlaeche" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.PersonenFlaeche = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelPersonenWaerme" Einheit="W" Min="0" Max="500"
+                                                    Wert="@s.PersonenWaerme" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.PersonenWaerme = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelPersonenAnteil" Einheit="%" Min="0" Max="100"
+                                                    Wert="@Prozent(s.PersonenAnteil)" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.PersonenAnteil = Anteil(v); })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelPersonenAusserhalb" Einheit="%" Min="0" Max="100"
+                                                    Wert="@Prozent(s.PersonenAnteilAusserhalb)" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.PersonenAnteilAusserhalb = Anteil(v); })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelGeraete" Einheit="W/m²" Min="0" Max="500"
+                                                    Wert="@s.GeraeteLeistung" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.GeraeteLeistung = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelGeraeteAnteil" Einheit="%" Min="0" Max="100"
+                                                    Wert="@Prozent(s.GeraeteAnteil)" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.GeraeteAnteil = Anteil(v); })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelGeraeteAusserhalb" Einheit="%" Min="0" Max="100"
+                                                    Wert="@Prozent(s.GeraeteAnteilAusserhalb)" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.GeraeteAnteilAusserhalb = Anteil(v); })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelBeleuchtung" Einheit="W/m²" Min="0" Max="500"
+                                                    Wert="@s.BeleuchtungLeistung" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.BeleuchtungLeistung = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelBeleuchtungAnteil" Einheit="%" Min="0" Max="100"
+                                                    Wert="@Prozent(s.BeleuchtungAnteil)" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.BeleuchtungAnteil = Anteil(v); })" />
+                                    </KindInhalt>
+                                </Formularraster>
+                            </KindInhalt>
+                        </Formulargruppe>
+
+                        @* Zeilenbild und Stundenprofile: in dieser Welle NUR LESEND (Bearbeitung in NP4). *@
+                        @if (s.Zeilenbild.Count > 0 || s.Stunden.Count > 0)
+                        {
+                            <p class="epos-leisezeile epos-raumnutzung-nurlesend">@Texte.HinweisNurLesend</p>
+                        }
+                        @if (s.Zeilenbild.Count > 0)
+                        {
+                            <h3 class="epos-raumnutzung-ueberschrift">@Texte.LabelZeilenbild</h3>
+                            <div class="epos-raster-huelle epos-raster-huelle--frei">
+                                <table class="epos-raster epos-raumnutzung-zeilenbild">
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.LabelArt</th>
+                                            <th>@Texte.LabelZeile</th>
+                                            <th>@Texte.LabelWert</th>
+                                            <th>@Texte.LabelFenster</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (RaumnutzungZeilenbildDaten z in s.Zeilenbild)
+                                        {
+                                            <tr>
+                                                <td>@Groessenname(z.Groesse)</td>
+                                                <td>@z.Zeile</td>
+                                                <td>@Zellentext(z)</td>
+                                                <td>@Fenstertext(z)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        @if (s.Stunden.Count > 0)
+                        {
+                            <h3 class="epos-raumnutzung-ueberschrift">@Texte.LabelStunden</h3>
+                            <div class="epos-raster-huelle epos-raster-huelle--frei">
+                                <table class="epos-raster epos-raumnutzung-stunden">
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.LabelArt</th>
+                                            <th>@Texte.LabelZeile</th>
+                                            <th>@Texte.LabelWert</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (RaumnutzungStundenDaten h in s.Stunden)
+                                        {
+                                            <tr>
+                                                <td>@Groessenname(h.Groesse)</td>
+                                                <td>@(h.Tagesart == RaumnutzungTagesart.Werktag ? Texte.TagesartWerktag : Texte.TagesartFrei)</td>
+                                                <td>@Stundentext(h)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+
+                        <div class="epos-raumnutzung-editorknoepfe">
+                            @if (Weg.ProfilAendern is not null || Weg.ProfilAnlegen is not null)
+                            {
+                                <button type="button" class="epos-knopf epos-knopf--primaer epos-raumnutzung-speichern"
+                                        aria-disabled="@(SpeichernSperre is null ? null : "true")"
+                                        title="@SpeichernSperre" @onclick="Speichern">@Texte.KnopfSpeichern</button>
+                            }
+                            <button type="button" class="epos-knopf epos-raumnutzung-verwerfen"
+                                    @onclick="Verwerfen">@Texte.KnopfAbbrechen</button>
+                            @if (Weg.Vorschau is not null)
+                            {
+                                <button type="button" class="epos-knopf epos-raumnutzung-vorschau-knopf"
+                                        @onclick="VorschauRechnen">@Texte.KnopfVorschau</button>
+                            }
+                        </div>
+                    }
+                </section>
+
+                @* ------------------------------------------------ 3. Die Vorschau *@
+                <section class="epos-raumnutzung-vorschau" aria-label="@Texte.Vorschau">
+                    <h2 class="epos-raumnutzung-ueberschrift">@Texte.Vorschau</h2>
+                    @if (_vorschau is null)
+                    {
+                        <p class="epos-leisezeile epos-raumnutzung-vorschau-leer">@Texte.KnopfVorschau</p>
+                    }
+                    else
+                    {
+                        @if (_vorschau.Nutzungstage.Length > 0)
+                        {
+                            <Herleitungszeile Text="@_vorschau.Nutzungstage" />
+                        }
+                        @foreach (RaumnutzungVorschauGroesse g in _vorschau.Groessen)
+                        {
+                            <div class="epos-raumnutzung-vorschau-groesse" data-groesse="@((int)g.Groesse)">
+                                <h3 class="epos-raumnutzung-ueberschrift">@Groessenname(g.Groesse)</h3>
+                                @if (!g.Belegt)
+                                {
+                                    <p class="epos-leisezeile epos-raumnutzung-nichtbelegt">@Texte.TextNichtBelegt</p>
+                                }
+                                else
+                                {
+                                    <div class="epos-raster-huelle epos-raster-huelle--frei">
+                                        <table class="epos-raster epos-raumnutzung-vorschauzeilen">
+                                            <thead>
+                                                <tr>
+                                                    <th>@Texte.LabelZeile</th>
+                                                    <th>@Texte.LabelWert</th>
+                                                    <th>@Texte.LabelFenster</th>
+                                                    <th>@Texte.LabelWochentage</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (RaumnutzungVorschauzeile z in g.Zeilen)
+                                                {
+                                                    <tr>
+                                                        <td>@z.Zeile</td>
+                                                        <td>@z.Wert</td>
+                                                        <td>@z.Fenster</td>
+                                                        <td>@z.Wochentage</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    @if (g.Nennwert.Length > 0)
+                                    {
+                                        <Herleitungszeile Text="@g.Nennwert" />
+                                    }
+                                }
+                                @if (g.Hinweis.Length > 0)
+                                {
+                                    <p class="epos-leisezeile epos-raumnutzung-hinweis">@g.Hinweis</p>
+                                }
+                            </div>
+                        }
+                    }
+                </section>
+            </div>
+        }
+        else
+        {
+            @* ------------------------------------------------ Der Reiter „Zuordnung" (NP-F12) *@
+            <div class="epos-raster-huelle epos-raster-huelle--frei epos-raumnutzung-zuordnungsliste">
+                <table class="epos-raster epos-raumnutzung-zuordnungen">
+                    <thead>
+                        <tr>
+                            <th>@Texte.LabelArt</th>
+                            <th>@Texte.LabelSchluessel</th>
+                            <th>@Texte.LabelProfil</th>
+                            <th class="epos-zellenaktionen">@Texte.LabelAktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (RaumnutzungZuordnungDaten z in Zuordnungen)
+                        {
+                            RaumnutzungZuordnungDaten zu = z;
+                            <tr @key="zu.Id" data-zuordnung="@zu.Id">
+                                <td>@Zuordnungsartname(zu.Art)</td>
+                                <td>
+                                    @zu.Schluessel
+                                    @if (zu.Ausgeliefert)
+                                    {
+                                        <Kennzeichen Kurztext="@Texte.Ausgeliefert" />
+                                    }
+                                </td>
+                                <td>
+                                    <select class="epos-raumnutzung-zuordnung-profil" aria-label="@Texte.LabelProfil"
+                                            @onchange="e => ZuordnungSetzen(zu, e.Value?.ToString())">
+                                        <option value="" selected="@(zu.IdProfil is null)">@Texte.LabelKeine</option>
+                                        @foreach (RaumnutzungKategorieDaten k in Kategorien)
+                                        {
+                                            <optgroup label="@k.Bezeichner">
+                                                @foreach (RaumnutzungProfilDaten p in ProfileVon(k.Id))
+                                                {
+                                                    <option @key="p.Id" value="@p.Id.ToString(CultureInfo.InvariantCulture)"
+                                                            selected="@(zu.IdProfil == p.Id)">@p.ToString()</option>
+                                                }
+                                            </optgroup>
+                                        }
+                                    </select>
+                                </td>
+                                <td class="epos-zellenaktionen">
+                                    <span class="epos-zellenaktionen-inhalt">
+                                        @if (Weg.ZuordnungLoeschen is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-raumnutzung-zuordnung-loeschen"
+                                                    aria-disabled="@(zu.Ausgeliefert ? "true" : null)"
+                                                    title="@(zu.Ausgeliefert ? Texte.Ausgeliefert : Texte.KnopfLoeschen)"
+                                                    @onclick="() => ZuordnungLoeschenFragen(zu)">@Texte.KnopfLoeschen</button>
+                                        }
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Weg.ZuordnungSetzen is not null)
+            {
+                <div class="epos-raumnutzung-zuordnung-neu">
+                    <Formularraster>
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@Texte.LabelArt" Eintraege="@Zuordnungsarten"
+                                         Auswahl="@((int)_neueArt)"
+                                         AuswahlChanged="@(v => { _neueArt = (RaumnutzungZuordnungsart)(v ?? 0); })" />
+                            <Textfeld Bezeichnung="@Texte.LabelSchluessel" Wert="@_neuerSchluessel" Hoechstlaenge="80"
+                                      WertChanged="@(v => { _neuerSchluessel = v ?? ""; })" />
+                        </KindInhalt>
+                    </Formularraster>
+                    <button type="button" class="epos-knopf epos-raumnutzung-zuordnung-neu-knopf"
+                            @onclick="ZuordnungAnlegen">@Texte.KnopfZeileNeu</button>
+                </div>
+            }
+        }
+
+        <Rueckfrage Offen="@(_frage is not null)" TitelText="@Texte.KnopfLoeschen" Frage="@(_frage ?? "")"
+                    VorgabeNein="true" Beantwortet="FrageBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+    }
+</div>
+
+@code {
+    /// <summary>Der Weg des Katalogs — die Hülle füllt ihn aus <c>RaumnutzungCtrl</c> und dem Generator.</summary>
+    [Parameter] public RaumnutzungWeg? Katalogweg { get; set; }
+
+    /// <summary>Die Texte des Blatts.</summary>
+    [Parameter] public RaumnutzungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Namen der fünf Größen — dasselbe Bündel wie der Reiter „Konditionierung".</summary>
+    [Parameter] public KonditionierungTexte GroessenTexte { get; set; } = new();
+
+    /// <summary>„Ja" der Rückfrage.</summary>
+    [Parameter] public string JaText { get; set; } = "Ja";
+
+    /// <summary>„Nein" der Rückfrage.</summary>
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Meldet jede geschriebene Handlung — der Wirt liest Katalog und Zuordnung neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private static readonly IReadOnlyList<RaumnutzungKategorieDaten> KEINE_KATEGORIEN
+        = Array.Empty<RaumnutzungKategorieDaten>();
+    private static readonly IReadOnlyList<RaumnutzungProfilDaten> KEINE_PROFILE
+        = Array.Empty<RaumnutzungProfilDaten>();
+    private static readonly IReadOnlyList<RaumnutzungZuordnungDaten> KEINE_ZUORDNUNGEN
+        = Array.Empty<RaumnutzungZuordnungDaten>();
+
+    private static readonly IReadOnlyList<(int Id, string Text)> LUFTEINHEITEN
+        = new[] { (0, "1/h"), (1, "m³/(h·m²)") };
+
+    private IReadOnlyList<RaumnutzungKategorieDaten>? _kategorien;
+    private readonly Dictionary<long, IReadOnlyList<RaumnutzungProfilDaten>> _profile = new();
+    private IReadOnlyList<RaumnutzungZuordnungDaten>? _zuordnungen;
+
+    private long? _kategorie;
+    private long? _profil;
+    private RaumnutzungProfilDaten? _stand;
+    private RaumnutzungVorschau? _vorschau;
+    private bool _zuordnungsreiter;
+    private string? _meldung;
+    private string? _frage;
+    private Func<RaumnutzungErgebnis>? _frageHandlung;
+    private RaumnutzungZuordnungsart _neueArt;
+    private string _neuerSchluessel = "";
+
+    /// <summary>Das Bündel — ohne Gabe das leere (es bietet keinen Knopf an).</summary>
+    private RaumnutzungWeg Weg => Katalogweg ?? RaumnutzungWeg.Keiner;
+
+    /// <summary>Der Grund, warum das Blatt nichts zeigt; <c>null</c> = der Katalog ist da.</summary>
+    private string? Sperrgrund
+        => !Weg.MitKatalog ? (Weg.Sperrgrund ?? Texte.GrundOhneTabellen) : null;
+
+    /// <summary>Die gewählte Kategorie. Prüfhilfe für die Tests.</summary>
+    public long? GewaehlteKategorie => _kategorie;
+
+    /// <summary>Das gewählte Profil. Prüfhilfe für die Tests.</summary>
+    public long? GewaehltesProfil => _profil;
+
+    /// <summary>Der Feldsatz des Editors. Prüfhilfe für die Tests.</summary>
+    public RaumnutzungProfilDaten? Arbeitsstand => _stand;
+
+    private IReadOnlyList<RaumnutzungKategorieDaten> Kategorien
+        => _kategorien ??= Weg.Kategorien?.Invoke() ?? KEINE_KATEGORIEN;
+
+    private IReadOnlyList<RaumnutzungProfilDaten> Profile
+        => _kategorie is long id ? ProfileVon(id) : KEINE_PROFILE;
+
+    private IReadOnlyList<RaumnutzungProfilDaten> ProfileVon(long idKategorie)
+    {
+        if (_profile.TryGetValue(idKategorie, out IReadOnlyList<RaumnutzungProfilDaten>? liste)) return liste;
+        liste = Weg.Profile?.Invoke(idKategorie) ?? KEINE_PROFILE;
+        _profile[idKategorie] = liste;
+        return liste;
+    }
+
+    private IReadOnlyList<RaumnutzungZuordnungDaten> Zuordnungen
+        => _zuordnungen ??= Weg.Zuordnungen?.Invoke() ?? KEINE_ZUORDNUNGEN;
+
+    private IReadOnlyList<(int Id, string Text)> Zuordnungsarten => new[]
+    {
+        ((int)RaumnutzungZuordnungsart.DinNummer, Texte.ZuordnungsartDin),
+        ((int)RaumnutzungZuordnungsart.IfcKlasse, Texte.ZuordnungsartIfc),
+        ((int)RaumnutzungZuordnungsart.HottcadRaumtyp, Texte.ZuordnungsartHottcad),
+    };
+
+    private RaumnutzungKategorieDaten? Kategorie
+        => _kategorie is long id ? Kategorien.FirstOrDefault(k => k.Id == id) : null;
+
+    private string? KategorieSperre
+        => _kategorie is null ? Texte.TextOhneWahl
+           : Kategorie?.Ausgeliefert == true ? Texte.Ausgeliefert : null;
+
+    private string? ProfilAnlegenSperre
+        => _kategorie is null ? Texte.TextOhneWahl
+           : Kategorie?.Ausgeliefert == true ? Texte.Ausgeliefert : null;
+
+    private string? ProfilSperre
+        => _profil is null ? Texte.TextOhneWahl
+           : _stand?.Ausgeliefert == true ? Texte.Ausgeliefert : null;
+
+    private string? SpeichernSperre => _stand?.Ausgeliefert == true ? Texte.Ausgeliefert : null;
+
+    private string Artname(RaumnutzungArt a) => a switch
+    {
+        RaumnutzungArt.EposMuster => Texte.ArtEposMuster,
+        RaumnutzungArt.Din18599 => Texte.ArtDin,
+        RaumnutzungArt.Sia2024 => Texte.ArtSia,
+        RaumnutzungArt.Vdi2078 => Texte.ArtVdi,
+        _ => Texte.ArtEigen,
+    };
+
+    private string Zuordnungsartname(RaumnutzungZuordnungsart a) => a switch
+    {
+        RaumnutzungZuordnungsart.DinNummer => Texte.ZuordnungsartDin,
+        RaumnutzungZuordnungsart.IfcKlasse => Texte.ZuordnungsartIfc,
+        _ => Texte.ZuordnungsartHottcad,
+    };
+
+    private string Groessenname(KonditionierungGroesse g) => g switch
+    {
+        KonditionierungGroesse.Heizen => GroessenTexte.GroesseHeizen,
+        KonditionierungGroesse.Kuehlen => GroessenTexte.GroesseKuehlen,
+        KonditionierungGroesse.Lueftung => GroessenTexte.GroesseLueftung,
+        KonditionierungGroesse.Geraete => GroessenTexte.GroesseGeraete,
+        _ => GroessenTexte.GroessePersonen,
+    };
+
+    private string Lufteinheitstext(RaumnutzungProfilDaten s)
+        => s.LuftEinheit == RaumnutzungLuftEinheit.JeFlaeche ? "m³/(h·m²)" : "1/h";
+
+    private static double? Prozent(double? anteil)
+        => anteil is double a ? Math.Round(a * 100.0, 4) : null;
+
+    private static double? Anteil(double? prozent)
+        => prozent is double p ? Math.Round(p / 100.0, 6) : null;
+
+    private string Zellentext(RaumnutzungZeilenbildDaten z)
+        => z.Aus ? GroessenTexte.ZelleAus
+           : z.Wert is double w ? w.ToString("0.####", CultureInfo.CurrentCulture) : "";
+
+    private static string Fenstertext(RaumnutzungZeilenbildDaten z)
+        => z.Von is int v && z.Bis is int b
+           ? v.ToString(CultureInfo.CurrentCulture) + " – " + b.ToString(CultureInfo.CurrentCulture)
+           : "";
+
+    private static string Stundentext(RaumnutzungStundenDaten h)
+        => string.Join(" ", h.Werte.Select(w => double.IsNaN(w) ? "–" : w.ToString("0.##", CultureInfo.CurrentCulture)));
+
+    // ------------------------------------------------------------------ Wahl und Stand
+
+    private void ZuordnungsreiterWaehlen()
+    {
+        _zuordnungsreiter = true;
+        _meldung = null;
+    }
+
+    private void KategorieWaehlen(long id)
+    {
+        _kategorie = _kategorie == id ? null : id;
+        _profil = null;
+        _stand = null;
+        _vorschau = null;
+        _meldung = null;
+    }
+
+    private void ProfilWaehlen(long id)
+    {
+        _profil = id;
+        _stand = Profile.FirstOrDefault(p => p.Id == id)?.Kopie();
+        _vorschau = null;
+        _meldung = null;
+    }
+
+    private void Verwerfen()
+    {
+        if (_profil is long id) _stand = Profile.FirstOrDefault(p => p.Id == id)?.Kopie();
+        else _stand = null;
+        _vorschau = null;
+        _meldung = null;
+    }
+
+    private void NeuLaden()
+    {
+        _kategorien = null;
+        _profile.Clear();
+        _zuordnungen = null;
+    }
+
+    private async Task Melden(RaumnutzungErgebnis e)
+    {
+        _meldung = e.Ok ? null : e.Meldung;
+        if (!e.Ok) return;
+        NeuLaden();
+        if (Geaendert.HasDelegate) await Geaendert.InvokeAsync();
+    }
+
+    // ------------------------------------------------------------------ Kategorien
+
+    private async Task KategorieNeu()
+    {
+        if (Weg.KategorieAnlegen is null) return;
+        RaumnutzungErgebnis e = Weg.KategorieAnlegen(Neuname(Texte.KnopfKategorieNeu), "", "");
+        if (e.Ok && e.Id > 0) { _kategorie = e.Id; _profil = null; _stand = null; }
+        await Melden(e);
+    }
+
+    private async Task KategorieDuplizieren()
+    {
+        if (Weg.KategorieDuplizieren is null || Kategorie is not RaumnutzungKategorieDaten k) return;
+        RaumnutzungErgebnis e = Weg.KategorieDuplizieren(k.Id, Neuname(k.Bezeichner));
+        if (e.Ok && e.Id > 0) { _kategorie = e.Id; _profil = null; _stand = null; }
+        await Melden(e);
+    }
+
+    private void KategorieLoeschenFragen()
+    {
+        if (Weg.KategorieLoeschen is null || Kategorie is not RaumnutzungKategorieDaten k) return;
+        if (KategorieSperre is string sperre) { _meldung = sperre; return; }
+        _frage = string.Format(CultureInfo.CurrentCulture, Texte.FrageKategorieLoeschen, k.Bezeichner);
+        _frageHandlung = () => Weg.KategorieLoeschen!(k.Id);
+    }
+
+    // ------------------------------------------------------------------ Profile
+
+    private async Task ProfilNeu()
+    {
+        if (Weg.ProfilAnlegen is null || _kategorie is not long idKat) return;
+        if (ProfilAnlegenSperre is string sperre) { _meldung = sperre; return; }
+        var neu = new RaumnutzungProfilDaten { IdKategorie = idKat, Bezeichner = Neuname(Texte.KnopfProfilNeu) };
+        RaumnutzungErgebnis e = Weg.ProfilAnlegen(neu);
+        if (e.Ok && e.Id > 0) _profil = e.Id;
+        await Melden(e);
+        if (e.Ok && _profil is long id) _stand = Profile.FirstOrDefault(p => p.Id == id)?.Kopie();
+    }
+
+    private async Task ProfilDuplizieren()
+    {
+        if (Weg.ProfilDuplizieren is null || _profil is not long id) return;
+        RaumnutzungProfilDaten? quelle = Profile.FirstOrDefault(p => p.Id == id);
+        RaumnutzungErgebnis e = Weg.ProfilDuplizieren(id, _kategorie, Neuname(quelle?.Bezeichner ?? ""));
+        if (e.Ok && e.Id > 0) _profil = e.Id;
+        await Melden(e);
+        if (e.Ok && _profil is long neu) _stand = Profile.FirstOrDefault(p => p.Id == neu)?.Kopie();
+    }
+
+    private void ProfilLoeschenFragen()
+    {
+        if (Weg.ProfilLoeschen is null || _profil is not long id) return;
+        if (ProfilSperre is string sperre) { _meldung = sperre; return; }
+        RaumnutzungProfilDaten? p = Profile.FirstOrDefault(x => x.Id == id);
+        string frage = string.Format(CultureInfo.CurrentCulture, Texte.FrageProfilLoeschen, p?.Bezeichner ?? "");
+        int zeilen = Weg.ZuordnungenAuf?.Invoke(id) ?? 0;
+        if (zeilen > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Texte.FrageProfilZuordnung, zeilen);
+        _frage = frage;
+        _frageHandlung = () => Weg.ProfilLoeschen!(id);
+    }
+
+    private async Task Speichern()
+    {
+        if (_stand is not RaumnutzungProfilDaten s) return;
+        if (SpeichernSperre is string sperre) { _meldung = sperre; return; }
+        RaumnutzungErgebnis e = s.Id > 0
+            ? (Weg.ProfilAendern?.Invoke(s) ?? RaumnutzungErgebnis.Fehler(Texte.GrundOhneTabellen))
+            : (Weg.ProfilAnlegen?.Invoke(s) ?? RaumnutzungErgebnis.Fehler(Texte.GrundOhneTabellen));
+        if (e.Ok && e.Id > 0) _profil = e.Id;
+        await Melden(e);
+        if (e.Ok && _profil is long id) _stand = Profile.FirstOrDefault(p => p.Id == id)?.Kopie();
+    }
+
+    private void VorschauRechnen()
+    {
+        if (Weg.Vorschau is null || _stand is not RaumnutzungProfilDaten s) return;
+        _vorschau = Weg.Vorschau(s, null, null);
+        _meldung = null;
+    }
+
+    // ------------------------------------------------------------------ Zuordnung
+
+    private async Task ZuordnungSetzen(RaumnutzungZuordnungDaten zu, string? wert)
+    {
+        if (Weg.ZuordnungSetzen is null) return;
+        long? ziel = long.TryParse(wert, NumberStyles.Integer, CultureInfo.InvariantCulture, out long id) ? id : null;
+        await Melden(Weg.ZuordnungSetzen(zu.Art, zu.Schluessel, ziel));
+    }
+
+    private async Task ZuordnungAnlegen()
+    {
+        if (Weg.ZuordnungSetzen is null) return;
+        RaumnutzungErgebnis e = Weg.ZuordnungSetzen(_neueArt, _neuerSchluessel, null);
+        if (e.Ok) _neuerSchluessel = "";
+        await Melden(e);
+    }
+
+    private void ZuordnungLoeschenFragen(RaumnutzungZuordnungDaten zu)
+    {
+        if (Weg.ZuordnungLoeschen is null) return;
+        if (zu.Ausgeliefert) { _meldung = Texte.Ausgeliefert; return; }
+        _frage = string.Format(CultureInfo.CurrentCulture, Texte.FrageZuordnungLoeschen, zu.Schluessel);
+        _frageHandlung = () => Weg.ZuordnungLoeschen!(zu.Id);
+    }
+
+    // ------------------------------------------------------------------ Rückfrage
+
+    private async Task FrageBeantwortet(bool? ja)
+    {
+        Func<RaumnutzungErgebnis>? handlung = _frageHandlung;
+        _frage = null;
+        _frageHandlung = null;
+        if (ja != true || handlung is null) return;
+        RaumnutzungErgebnis e = handlung();
+        if (e.Ok) { _profil = null; _stand = null; _vorschau = null; }
+        await Melden(e);
+    }
+
+    /// <summary>Ein Name, der in der Zielliste noch frei ist — der Kern lehnt einen Doppelnamen ab (NP-F20).</summary>
+    private string Neuname(string stamm)
+    {
+        string basis = string.IsNullOrWhiteSpace(stamm) ? "Neu" : stamm.Trim();
+        if (basis.EndsWith("…", StringComparison.Ordinal)) basis = basis.TrimEnd('…').Trim();
+        return basis;
+    }
+}
