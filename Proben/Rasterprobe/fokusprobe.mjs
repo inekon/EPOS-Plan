@@ -12,7 +12,8 @@
 //  Prüfseiten des Wirts und misst nach dem Öffnen, BEVOR irgendwer rollt:
 //    - die Rollposition des Fensters und JEDES Elements (scrollTop/scrollLeft),
 //    - die Lage des obersten Dialogkopfs und der Schlussleiste,
-//    - das Fokusziel.
+//    - das Fokusziel; wo ein Fall es verlangt (`fokusAussen`), muss es die äußere
+//      Dialogwurzel sein, nicht eine eingebettete Ansicht weiter unten.
 //  Ein Verstoß ist jede Rollposition ungleich 0 und ein Dialogkopf über der
 //  Oberkante seines Fensters.
 //
@@ -52,7 +53,10 @@ const FENSTER = [
 // in der Prüffläche, Überlagerungen über ihrem Wirt.
 const FAELLE = [
   ...['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'dubletten', 'katalog']
-    .map(f => ({ name: 'fenster-' + f, pfad: `/fensterprobe?fall=${f}&kultur=de-DE` })),
+    .map(f => ({ name: 'fenster-' + f, pfad: `/fensterprobe?fall=${f}&kultur=de-DE`,
+                 // Wärmepumpen: Die eingebettete Detailansicht steht tief im Dialog; der
+                 // Erstfokus gehört auf die äußere Wurzel, damit der Tabulator oben beginnt.
+                 ...(f === 'waermepumpen' ? { fokusAussen: true } : {}) })),
   { name: 'ueberlagerung-gebaeude-simulation', pfad: '/fensterprobe?fall=gebaeude&kultur=de-DE', knopf: 'Simulation...' },
   ...['klima', 'bedarf', 'modul', 'waermebedarf', 'solar', 'projekt-heizkessel', 'stromganglinie', 'browser',
       'waermepumpe', 'gebaeude', 'projekt-gebaeude', 'gebaeudetyp', 'peak', 'tww', 'wohnungen', 'kategorien']
@@ -90,6 +94,11 @@ const messen = () => {
     fensterHoehe: window.innerHeight,
     dokumentHoehe: document.documentElement.scrollHeight,
     fokus: beschreibe(document.activeElement),
+    // Fokus auf einer Dialogwurzel, die selbst in keinem anderen Dialog steckt?
+    fokusAussen: (() => {
+      const a = document.activeElement;
+      return !!a && a.classList.contains('epos-dialog') && !a.parentElement?.closest('.epos-dialog');
+    })(),
     ueberlagerung: !!u,
   };
 };
@@ -135,6 +144,7 @@ try {
       if (m.fensterY !== 0 || m.rollende.length)
         melde(name, `beim Öffnen gerollt (Fenster-Y ${m.fensterY}${m.rollende.length ? ', ' + m.rollende.join(', ') : ''})`);
       if (m.kopfOben !== null && m.kopfOben < 0) melde(name, `Dialogkopf über dem Fenster (oben ${m.kopfOben})`);
+      if (fall.fokusAussen && !m.fokusAussen) melde(name, `Erstfokus nicht auf der äußeren Dialogwurzel (${m.fokus})`);
       if (m.fokus === 'body') console.log(`    Hinweis ${name}: kein Fokusziel`);
       await seite.close();
     }
