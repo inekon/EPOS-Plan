@@ -13,18 +13,10 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public sealed class GebaeudeBedarfAufheizungTests : EposBunitContext
 {
-    private readonly Kulturvorrichtung _kultur = new();
-
     public GebaeudeBedarfAufheizungTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing) _kultur.Dispose();
-        base.Dispose(disposing);
     }
 
     private static GebaeudeBedarfAufheizDaten Bemessen(params string[] hinweise) => new()

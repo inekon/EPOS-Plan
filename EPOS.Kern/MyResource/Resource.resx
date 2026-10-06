@@ -14731,9 +14731,6 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
     <value>Bitte einen Namen eingeben.</value>
   </data>
-  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen.</value>
-  </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>aus Projekt {0}, {1}</value>
   </data>
@@ -23322,16 +23319,16 @@ Möchten Sie das zulassen?</value>
     <value>Die Beschreibung des markierten Satzes.</value>
   </data>
   <data name="KI_DLG_GEB_WOHNFLAECHE_ERL" xml:space="preserve">
-    <value>Die Wohn- oder Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“.</value>
+    <value>Die Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“.</value>
   </data>
   <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
-    <value>Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
+    <value>Die Art der Angabe: Nutzfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
   </data>
   <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
     <value>Die Art der Angabe für dieses Gebäude; sie bestimmt Einheit und Rechenweg der Zahl daneben.</value>
   </data>
   <data name="KI_DLG_GEBW_WERT_ERL" xml:space="preserve">
-    <value>Der Wärmebedarf bzw. die Wohnfläche in der Einheit, die die Bedarfsart nennt.</value>
+    <value>Der Wärmebedarf bzw. die Nutzfläche in der Einheit, die die Bedarfsart nennt.</value>
   </data>
   <data name="KI_DLG_GEBW_NUTZUNGSGRAD_ERL" xml:space="preserve">
     <value>Der Jahresnutzungsgrad des Kessels als Anteil, z. B. 0,85 für 85 %. Er wird nur bei einer Brennstoffangabe gebraucht.</value>
@@ -23382,7 +23379,7 @@ Möchten Sie das zulassen?</value>
     <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
-    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird.</value>
+    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird.</value>
   </data>
   <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
     <value>Die gesamte Wohn- oder Nutzfläche des Gebäudes.</value>
@@ -33729,7 +33726,7 @@ Möchten Sie das zulassen?</value>
     <value>sein Katalogsatz „{0}“ ist im Gebäudekatalog nicht zu finden — ohne ihn gibt es keine Gebäudedaten, aus denen sich rechnen ließe. Bitte das Gebäude neu aus dem Katalog wählen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
-    <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+    <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit dem Speichern entstehen – nach Abschluss des Assistenten lässt sich sein Wärmebedarf berechnen.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Gebäudedatei</value>
@@ -34648,9 +34645,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
     <value>Die Gebäudedaten dieses Projektgebäudes bearbeiten, Zonen und Bauteile anlegen – geschrieben wird die Projektkopie, nicht der Katalog</value>
-  </data>
-  <data name="GEBZ_SPERRE_NEUE_ZEILE" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst mit OK entsteht seine Projektkopie, die Zonen tragen kann.</value>
   </data>
   <data name="GEBZ_TITEL_PROJEKT" xml:space="preserve">
     <value>Gebäude im Projekt: Hülle und Zonen</value>
@@ -38376,9 +38370,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
     <value>Die Daten des Gebäudes im Projekt ausgeben — als gbXML mit schematischer Raumgeometrie oder als IFC mit Zonen, Bauteilflächen und Schichtaufbauten ohne Geometrie</value>
   </data>
-  <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren.</value>
-  </data>
   <data name="GEXP_LBL_FORMAT" xml:space="preserve">
     <value>Format</value>
   </data>
@@ -38398,7 +38389,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung. Die Eingabe wird nicht gespeichert.</value>
   </data>
   <data name="GEXP_GESPEICHERTER_STAND" xml:space="preserve">
-    <value>Exportiert wird der gespeicherte Stand des Gebäudes; Änderungen in dieser Liste gelten erst nach OK.</value>
+    <value>Exportiert wird der gespeicherte Stand des Gebäudes; noch nicht gespeicherte Änderungen in dieser Liste sind darin nicht enthalten.</value>
   </data>
   <data name="GEXP_GRP_MELDUNGEN" xml:space="preserve">
     <value>Vor dem Schreiben</value>
@@ -45418,10 +45409,10 @@ Chart</value>
     <value>Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet?</value>
   </data>
   <data name="START_E_KUEHL_TITEL" xml:space="preserve">
-    <value>Kühlung</value>
+    <value>Kühlung und Kälteanlagen</value>
   </data>
   <data name="START_E_KUEHL_TEXT" xml:space="preserve">
-    <value>Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion</value>
+    <value>Kälteerzeugung mit Kältemaschinen und Wärmepumpen</value>
   </data>
   <data name="START_E_KUEHL_KM" xml:space="preserve">
     <value>Kältemaschinen</value>
@@ -45431,15 +45422,6 @@ Chart</value>
   </data>
   <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
     <value>{0} ({1} ×)</value>
-  </data>
-  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
-    <value>Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an.</value>
-  </data>
-  <data name="START_E_KUEHL_LEER" xml:space="preserve">
-    <value>Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts.</value>
-  </data>
-  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
-    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb.</value>
   </data>
   <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
     <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
@@ -47390,6 +47372,75 @@ Chart</value>
   </data>
   <data name="VF_HAT__AUFHEIZUNG" xml:space="preserve">
     <value>Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit Aufheizoptimierung gerechnet?</value>
+  </data>
+  <data name="GEB_SPERRE_IN_DB_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich in die Datenbank übernehmen.</value>
+  </data>
+  <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
+    <value>Erst nach Abschluss des Assistenten löschbar – eine übernommene Zeile stammt aus diesem Gebäude.</value>
+  </data>
+  <data name="GEB_MSG_PROJEKTKOPIE_FEHLT" xml:space="preserve">
+    <value>Zu diesem Gebäude gibt es keine Projektkopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_FLAECHE" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – „Fläche und Verbrauch“ skaliert die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_PROJEKT" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – bearbeitet wird die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_EXPORT" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – exportiert wird die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_SIMULATION" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – berechnet wird der Wärmebedarf der Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_TXT_EINHEIT_FLAECHE" xml:space="preserve">
+    <value>Nutzfläche [m²]</value>
+  </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN" xml:space="preserve">
+    <value>Das Gebäude wird aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopie.</value>
+  </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR" xml:space="preserve">
+    <value>Die Gebäude werden aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopien.</value>
+  </data>
+  <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
+    <value>Meldung ausblenden</value>
+  </data>
+  <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten entsteht seine Projektkopie, die Zonen tragen kann.</value>
+  </data>
+  <data name="GEXP_SPERRE_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich exportieren.</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_TITEL" xml:space="preserve">
+    <value>Projektdaten</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_KUNDE" xml:space="preserve">
+    <value>Kunde</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_BEARBEITER" xml:space="preserve">
+    <value>Bearbeiter</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_ERSTELLT" xml:space="preserve">
+    <value>Erstellt am</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_GEAENDERT" xml:space="preserve">
+    <value>Geändert am</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_KLIMA" xml:space="preserve">
+    <value>Klimaregion</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_VARIANTE_VON" xml:space="preserve">
+    <value>Variante von</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_SIMULATION" xml:space="preserve">
+    <value>Letzte Simulation</value>
   </data>
 </root>
 

@@ -1103,3 +1103,46 @@ ihm im Fenster steht (Dublettenprüfung: Protokoll bei 520 px unterhalb des Fens
 Die Höhen im `scroll-padding` sind gerechnet, nicht gemessen: 71 und 69 px, unter 760 px Fensterbreite eine
 Knopfzeile mehr. Die WebView2 selbst misst die Probe nicht — sie ist dasselbe Chromium; die Sichtprobe am
 Gerät bleibt ein Abnahmepunkt unter Windows.
+
+## Bannerprobe (Meldung im langen Fensterdialog) — Seite `/fensterprobe?meldung=1`
+
+**Zweck.** Die langen Dialoge zeigen ihre Meldung als `Warnbanner` oben im Inhalt. Im eigenen Fenster haftet
+der Kopf, der Inhalt rollt — wer unten arbeitet, sah die Meldung nicht. Ein `Warnbanner`, das unmittelbares
+Kind der Dialogwurzel ist, haftet deshalb unter dem Kopf und über der Schlussleiste und trägt dort ein Kreuz zum
+Ausblenden (`epos-ui.css`, „Dialog im eigenen Fenster"; Wache `EPOS.UI.Tests/FensterrahmenTests`). Der Schalter
+`meldung=1` der Fensterprobenseite lässt die Trägerwahl von Heizkessel und BHKW fehlschlagen und gibt dem
+Gebäudedialog „In DB übernehmen" (weich gesperrt, der Versuch meldet den Grund); ohne ihn steht die Seite wie
+für die Fensterprobe.
+
+```bash
+node bannerprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur heizkessel|bhkw|gebaeude] [--ohne-gegenprobe]
+```
+
+Gemessen bei **1 088 × 624** und **520 × 624**, je Fall: Katalogsatz wählen (Heizkessel, BHKW), ans Ende rollen,
+die Meldung per Skript auslösen (rollt nicht). Dann steht das Banner ganz im Fenster, unter dem Kopf und über der
+Schlussleiste, unverdeckt (`elementFromPoint` an vier Ecken); Kopf (`top 0`) und Schlussleiste (`bottom` =
+Fensterhöhe) haften; der auslösende Knopf steht, wo er stand (den Zuwachs oben gleicht der Scroll-Anker aus);
+das Kreuz ist sichtbar und blendet aus; in Ruhe (Rollstand 0) steht das Banner, wo es ohne die Haftregel stünde.
+Ohne Fenstermarke (wie Überlagerung, Blatt, iOS-Seite) ist es `static` und das Kreuz verborgen.
+
+**Gegenprobe** (läuft mit): dieselben Fälle mit `position: static` am Banner müssen das Sichtkriterium verfehlen.
+Rückgabe `0` = kein Verstoß **und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die
+Probe steht in keiner CI.
+
+**Ergebnis vom 06.10.2026** (Wirt Release, Chromium headless, `kultur=de-DE`): **kein Verstoß, Gegenprobe rot**
+(Rückgabe 0). Fensterprobe, Fokusprobe und Rollprobe „Berichte & Kosten" danach unverändert grün, ihre
+Gegenproben rot.
+
+| Fall | Fenster | Rollstand vor → nach | Banner (Kopf bis 71 px) | Schlussleiste ab | Gegenprobe `static` |
+|---|---|---|---|---|---|
+| Heizkessel | 1 088 × 624 | 761 → 813 px | 71–113 px | 555 px | −704…−662 px, 3 Verstöße |
+| BHKW | 1 088 × 624 | 761 → 813 px | 71–113 px | 555 px | −704…−662 px, 3 |
+| Gebäude | 1 088 × 624 | 629 → 681 px | 71–113 px | 555 px | −572…−530 px, 3 |
+| Heizkessel | 520 × 624 | 1 171 → 1 239 px | 71–129 px (zweizeilig) | 555 px | −1 130…−1 071 px, 3 |
+| BHKW | 520 × 624 | 1 193 → 1 261 px | 71–129 px | 555 px | −1 152…−1 093 px, 3 |
+| Gebäude | 520 × 624 | 1 093 → 1 161 px | 71–129 px | 499 px | −1 052…−993 px, 3 |
+
+In Ruhe steht das Banner bei 109–151 px (520 px: 109–168 px), mit und ohne Haftregel gleich.
+
+**Grenzen.** Stehen zwei Banner zugleich als Kinder der Wurzel, haften sie an derselben Stelle übereinander. Das
+Polster oben rechnet eine Bannerzeile; ein mehrzeiliges Banner lässt dem angesprungenen Feld weniger Luft.

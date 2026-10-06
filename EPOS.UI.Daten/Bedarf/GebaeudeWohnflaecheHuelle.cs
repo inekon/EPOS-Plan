@@ -45,7 +45,7 @@ namespace WindowsFormsApplication1
                 ["LabelBaujahr"] = Text_("GEBW_LBL_BAUALTERSKLASSE", "Baualtersklasse:"),
                 ["LabelBedarfsart"] = Text_("GEBW_LBL_BEDARFSART", "Bedarfsart:"),
                 ["LabelArtDerAngabe"] = Text_("GEBW_LBL_ART_ANGABE", "Art der Angabe:"),
-                ["LabelVerbrauch"] = Text_("GEBW_LBL_VERBRAUCH", "Wärmebedarf/Wohnfläche:"),
+                ["LabelVerbrauch"] = Text_("GEBW_LBL_VERBRAUCH", "Wärmebedarf/Nutzfläche:"),
                 ["LabelJahresnutzungsgrad"] = Text_("GEBW_LBL_NUTZUNGSGRAD", "Jahresnutzungsgrad:"),
                 ["LabelDezentralWarmwasser"] =
                     Text_("GEBW_LBL_DEZ_WARMWASSER", "Dezentrale Warmwasserbereitung"),
@@ -86,7 +86,7 @@ namespace WindowsFormsApplication1
         internal static string Titel()
         {
             return Text_("GEBW_TITEL",
-                "Eingabe der gesamten Wohn-/Nutzfläche des ausgewählten Gebäudes");
+                "Eingabe der Nutzfläche bzw. des Verbrauchs des ausgewählten Gebäudes");
         }
 
         private static string Text_(string schluessel, string rueckfall)

@@ -64,10 +64,12 @@ public class GebaeudeDialogExportTests : EposBunitContext
         Func<GebaeudeProjektZeile, bool, IReadOnlyDictionary<string, object>?>? exportGaben,
         string? knopftext = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>? wohnflaecheGaben = null,
-        List<bool>? geschlossen = null)
+        List<bool>? geschlossen = null,
+        Func<string>? listeSpeichern = null)
         => Render<GebaeudeDialog>(p =>
         {
             p.Add(x => x.Zeilen, zeilen)
+             .Add(x => x.ListeSpeichern, listeSpeichern)
              .Add(x => x.Katalogzeilen, () => Array.Empty<Katalogfilterzeile>())
              .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
              .Add(x => x.ExportGaben, exportGaben)
@@ -102,7 +104,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
     }
 
     [Fact]
-    public void Eine_ungespeicherte_Zeile_ist_weich_gesperrt_und_nennt_den_Grund()
+    public void Im_Assistenten_ist_eine_ungespeicherte_Zeile_weich_gesperrt_und_nennt_den_Grund()
     {
         int gefragt = 0;
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(100000, kopie: false) },
@@ -111,7 +113,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
         IElement knopf = Knopf(cut, KNOPF);
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         Assert.False(knopf.HasAttribute("disabled"));
-        const string GRUND = "Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren.";
+        const string GRUND = "Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich exportieren.";
         Assert.Equal(GRUND, knopf.GetAttribute("title"));
 
         knopf.Click();
@@ -119,6 +121,30 @@ public class GebaeudeDialogExportTests : EposBunitContext
         Assert.Equal(0, gefragt);
         Assert.False(cut.Instance.ExportOffen);
         Assert.Contains(GRUND, cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Mit dem stillen Speicherweg</b> (Anwenderentscheid 06.10.2026) ist die ungespeicherte Zeile
+    /// nicht gesperrt: Der Klick speichert die Liste zuerst, danach öffnet der Export für die nun
+    /// gespeicherte Zeile — als unverändert, denn ihr Stand steht jetzt in der Datenbank.
+    /// </summary>
+    [Fact]
+    public void Eine_ungespeicherte_Zeile_wird_vor_dem_Export_still_gespeichert()
+    {
+        var gereicht = new List<(int IdZ, bool Geaendert)>();
+        GebaeudeProjektZeile zeile = Zeile(100000, kopie: false);
+        int gespeichert = 0;
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { zeile },
+                           (z, g) => { gereicht.Add((z.IdZ, g)); return Exportgaben(); },
+                           listeSpeichern: () => { gespeichert++; zeile.IdZ = 4711; zeile.HatProjektkopie = true; return ""; });
+
+        IElement knopf = Knopf(cut, KNOPF);
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+
+        Assert.Equal(1, gespeichert);
+        Assert.True(cut.Instance.ExportOffen);
+        Assert.Equal(new[] { (4711, false) }, gereicht);
     }
 
     [Fact]
@@ -129,7 +155,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
         Knopf(cut, KNOPF).Click();
 
         Assert.False(cut.Instance.ExportOffen);
-        Assert.Contains("noch nicht im Projekt gespeichert", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Contains("keine Projektkopie", cut.Find(".epos-warnbanner").TextContent);
     }
 
     [Fact]
