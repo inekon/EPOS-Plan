@@ -316,7 +316,7 @@ namespace Auslieferungsvorlage.Tests
                 foreach (DataRow r in t.Rows)
                 {
                     string name = Convert.ToString(r["name"]);
-                    if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
+                    if (!name.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase)) continue;
                     if (name.StartsWith("Tab_Tww", StringComparison.Ordinal)) continue;
                     if (!DataRepository.SpalteVorhanden(name, "ReadOnly")) ohneReadOnly.Add(name);
                 }
@@ -439,7 +439,7 @@ namespace Auslieferungsvorlage.Tests
             foreach (DataRow r in tabellen.Rows)
             {
                 string t = Convert.ToString(r["name"]);
-                if (t.EndsWith("_STAMM", StringComparison.Ordinal) || t == "Tab_Applikation" || t == "Tab_Projekt")
+                if (t.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase) || t == "Tab_Applikation" || t == "Tab_Projekt")
                     continue;
                 foreach (string s in new[] { "ID_Projekt", "ProjektID" })
                     if (DataRepository.SpalteVorhanden(t, s)) { ergebnis.Add(Tuple.Create(t, s)); break; }

@@ -21,6 +21,7 @@ Erststart die Arbeitsdatenbank des Kontos anlegt.
 | `EPOS_Export.ids` | von Hand — die Exportzusage des IFC-Exports (IDS 1.0, buildingSMART): je Entität die Attribute, Eigenschaften und Mengen, die eine EPOS-Datei sicher trägt, ohne Geometrie; sie reist mit der Auslieferung nach `{app}\Vorlage\`, nicht als zweite Datei je Export (Datenaustauschkonzept 6.4). Der Wächter `EPOS.Kern.Tests/IdsWacheTests.cs` hält sie gegen eine frisch geschriebene Datei; die Exportbilanz nennt sie im Beipackzettel | **ja** |
 | `Kenndaten.sqlite` | erzeugt von `Werkzeuge/Auslieferungsvorlage` | nein |
 | `Kenndaten.sqlite.bericht.txt` | erzeugt im selben Lauf — der Prüfbericht | nein |
+| `Katalogpaket.json` | erzeugt im selben Lauf — das Katalogpaket der Fassung (Konzept Setup 6.5); `build-setup.ps1` löscht es vor jedem Lauf und prüft danach, dass es die Fassung des Laufs trägt | nein |
 
 Die frühere `Kenndaten.accdb` gibt es hier nicht mehr: Access wurde beim Kunden nie produktiv
 eingesetzt (Anwenderrahmen 09.09.2026), und mit Entscheid **#157‑E‑1** (Weg **W3**) ist die
@@ -37,6 +38,24 @@ dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- \
     --beispiele Beispiele\pakete --kataloge alle
 ```
 
+`Setup/build-setup.ps1` ruft das Werkzeug ebenso auf und gibt dazu die **Fassung des
+Katalogpakets** als `--katalogfassung` mit. Sie zählt als `JJJJMMTTnn` (Datum und Tageslauf,
+z. B. `2026100601`) und kommt aus `-Katalogfassung <n>` oder der Umgebungsvariablen
+`EPOS_KATALOGFASSUNG`. Ohne Angabe schlägt das Skript den nächsten Wert aus dem
+Freigaberegister [`Setup/Katalogfassungen.txt`](../Katalogfassungen.txt) vor. Eine Fassung muss
+größer sein als jede eingetragene und als die heutige Datumsfassung `JJJJMMTT`, sonst bricht das
+Skript ab. Ins Register schreibt es nur mit dem Schalter `-Freigabe`: Nach einem vollständig
+erfolgreichen Lauf trägt es dann Fassung, Datum und Programmversion ein. Ein Handlauf ohne
+`-Freigabe` hält die Fassung ebenso gegen das Register, schreibt aber nichts. Mit `-Probe` (so
+läuft die CI) und im Trockenlauf `-VorlageNurPruefen` hält es die Fassung nicht gegen das Register
+und schreibt nie; beide schließen `-Freigabe` aus. Die eingetragene Zeile wird nur auf Auftrag
+committet.
+
+Führt ein Registerkatalog Zeilen, aber keinen gesperrten Satz mit Schlüssel, bricht das Werkzeug
+mit Code 6 ab. Eine benannte Ausnahme je Katalog gibt `-OhnePaket <Katalog>` (mehrere mit Komma),
+das Skript reicht jede als `--ohne-paket <Katalog>` durch; der Prüfbericht nennt sie. Die CI nimmt
+die Kataloge aus, in denen die Testdatenbank keinen gesperrten Satz trägt.
+
 Rückgabe `0` heißt: erzeugt **und** abgenommen. Jeder andere Wert ist ein Abbruch mit Grund auf
 `stderr`, und dann liegt hier **keine** Datei — ein halber Auslieferungsstand soll beim nächsten
 Setup-Lauf nicht als gültig durchgehen.
@@ -48,6 +67,9 @@ Setup-Lauf nicht als gültig durchgehen.
 | 3 | Ziel liegt im Repository außerhalb von `Setup/Vorlage/` |
 | 4 | Die `ReadOnly`-Regel würde eine Katalogtabelle leeren |
 | 5 | Fachlicher Abbruch (Beispielimport oder Abnahme rot) |
+| 6 | Leerer Paketteil: Ein Registerkatalog hat Zeilen, aber keinen gesperrten Satz mit Schlüssel, und `--ohne-paket` nennt ihn nicht |
+| 7 | Das zurückgelesene Katalogpaket passt nicht zur Vorlage (Fassung, Satzzahl, Schlüssel oder Prüfsumme); Vorlage und Paket sind gelöscht |
+| 8 | Der Schemastand der Quelle ist älter als der Zielstand der Schemakette; die Quelle einmal mit der aktuellen Anwendung öffnen |
 | 1 | Unerwarteter Fehler |
 
 Was das Werkzeug tut, warum, und was `--kataloge alle` mit dem offenen Befund zur Marke
@@ -66,6 +88,19 @@ daneben und nennt je Tabelle die Zeilen vorher und nachher, die Projektliste, de
 2. **Datenschutzwächter** — „keine Zeile in einer der 47 Projekttabellen außerhalb der
    Beispiele", keine Pfadangabe (`C:\Users\…`), keine Lizenz-/KI-Tabelle.
 3. **Katalogzahlen** — plausibel, und keine `*_STAMM`-Tabelle unerwartet leer.
+
+Dazu drei Punkte zum Katalogpaket:
+
+4. **Gesperrte Sätze der Quelle** — vor jeder Auslieferungsvorlage in der produktiven Quelle
+   prüfen, dass Heizkessel (`Tab_Heizkessel_STAMM`) und PV (`Tab_PV_STAMM`) ihre ausgelieferten
+   Sätze mit `ReadOnly = 1` führen. Nur gesperrte Sätze stehen im Paket und werden beim Anwender
+   nachgeführt; ungesperrte verhalten sich dort wie eigene Sätze.
+5. **ReadOnly-Bilanz** — unter Schritt 4b nennt der Bericht je Registerkatalog „Zeilen / gesperrt
+   mit Schlüssel / ungesperrt“, darunter jede benannte Ausnahme (`--ohne-paket`) als `WARNUNG` und
+   die Sammelwarnung über die ungesperrten Zeilen. Eine Ausnahme bei einer Freigabe wird
+   begründet; die Zeile „Paket zurueckgelesen“ steht unter dem Ergebnis.
+6. **Fassung des Katalogpakets** — der Lauf mit `-Freigabe` hat die Fassung in
+   `Setup/Katalogfassungen.txt` eingetragen; die Zeile gehört mit der Freigabe ins Repository.
 
 Steht im Bericht eine Zeile mit `WARNUNG` oder `FEHLER`, wird sie erklärt, bevor die Datei in
 ein Setup wandert.
