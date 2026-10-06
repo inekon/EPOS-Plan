@@ -805,6 +805,13 @@ body {
     margin-top: var(--epos-rand);
 }
 
+/* Die Meldung einer Listenleiste steht unmittelbar unter ihr (Gebaeudedialog:
+   Katalogknoepfe aendern/loeschen) - im eigenen Fenster haftet der Kopf, ein
+   Banner oben im Dialog laege beim Arbeiten an der Liste ausserhalb des Bildes. */
+.epos-katalogmeldung {
+    margin-top: var(--epos-rand);
+}
+
 .epos-status {
     flex: 1 1 auto;
     text-align: right;

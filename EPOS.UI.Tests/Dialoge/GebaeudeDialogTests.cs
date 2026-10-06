@@ -729,6 +729,64 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal("Der Datensatz konnte nicht aus der Datenbank gelöscht werden.", cut.Instance.Meldung);
     }
 
+    /// <summary>
+    /// <b>Befund 06.10.2026 („Gebäude in DB löschen funktioniert nicht")</b>: Im eigenen
+    /// Fenster haftet der Kopf, und die Meldung stand oben im Dialog — beim Arbeiten an der
+    /// Katalogliste weit außerhalb des Bildes, der Klick schien wirkungslos. Die Meldung der
+    /// Listenleiste steht deshalb UNTER ihr, und oben steht keine zweite.
+    /// </summary>
+    [Fact]
+    public void Die_Loeschsperre_steht_unter_der_Listenleiste_nicht_oben()
+    {
+        const string GRUND = "In Projekten verwendet (Projekt A) – Löschen gesperrt; dort zuerst entfernen.";
+        var cut = Aufbauen(katalogLoeschsperre: _ => GRUND);
+
+        KatalogWaehlen(cut, "Haus 2010");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+
+        Assert.True(cut.Instance.MeldungAmKatalog);
+        var banner = cut.FindAll(".epos-warnbanner");
+        Assert.Single(banner);
+        Assert.Contains(GRUND, cut.Find(".epos-katalogmeldung .epos-warnbanner").TextContent);
+    }
+
+    /// <summary>Auch der Erfolg und der Fehlschlag stehen unter der Leiste, wo der Knopf war.</summary>
+    [Fact]
+    public void Erfolg_und_Fehlschlag_des_Loeschens_stehen_unter_der_Listenleiste()
+    {
+        var cut = Aufbauen(katalogLoeschsperre: _ => "");
+        KatalogWaehlen(cut, "Haus 2010");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Knopf(cut, "Ja").Click();
+        Assert.Contains("Gebäude gelöscht!", cut.Find(".epos-katalogmeldung").TextContent);
+
+        var abgelehnt = Aufbauen(katalogLoeschen: _ => false, katalogLoeschsperre: _ => "");
+        KatalogWaehlen(abgelehnt, "Haus 2010");
+        Knopf(abgelehnt, "Gebäude in DB löschen").Click();
+        Knopf(abgelehnt, "Ja").Click();
+        Assert.Contains("nicht aus der Datenbank gelöscht", abgelehnt.Find(".epos-katalogmeldung").TextContent);
+    }
+
+    /// <summary>
+    /// Der Grund steht schon am Knopf (<c>title</c> + <c>aria-disabled</c>), sobald der
+    /// gesperrte Satz gewählt ist; ein löschbarer Satz trägt keinen.
+    /// </summary>
+    [Fact]
+    public void Der_Loeschknopf_traegt_den_Sperrgrund_am_Bedienelement()
+    {
+        const string GRUND = "Schreibgeschützt";
+        var cut = Aufbauen(katalogLoeschsperre: n => n == "Haus 2010" ? GRUND : "");
+
+        KatalogWaehlen(cut, "Haus 2010");
+        var knopf = Knopf(cut, "Gebäude in DB löschen");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(GRUND, knopf.GetAttribute("title"));
+
+        cut.FindAll("button.epos-anlagenwahl").First().Click();   // eine Projektzeile
+        Assert.Null(Knopf(cut, "Gebäude in DB löschen").GetAttribute("aria-disabled"));
+    }
+
+
     // =================================================================================
     // Tastatur und Schlussleiste
     // =================================================================================

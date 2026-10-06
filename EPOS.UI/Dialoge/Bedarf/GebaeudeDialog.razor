@@ -92,7 +92,7 @@
 
     <p class="epos-kontextzeile">@KopfbandText</p>
 
-    @if (_meldung.Length > 0)
+    @if (_meldung.Length > 0 && !_meldungAmKatalog)
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
@@ -188,9 +188,31 @@
                 }
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
-                <button type="button" class="epos-knopf"
-                        @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
+                @if (_loeschsperre.Length > 0)
+                {
+                    @* Der Grund am Bedienelement: gesperrt (Auslieferungssatz, von einem
+                       Projekt gefuehrt), der Versuch meldet ihn unter der Leiste. *@
+                    <button type="button" class="epos-knopf epos-gebaeude-db-loeschen"
+                            aria-disabled="true" title="@_loeschsperre"
+                            @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-db-loeschen"
+                            @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
+                }
             </div>
+
+            @* Die Meldung der Listenleiste steht UNTER ihr, wo der Anwender hinsieht: Im
+               eigenen Fenster haftet der Kopf, und ein Banner oben im Dialog laege beim
+               Arbeiten an der Katalogliste weit ausserhalb des Bildes (Befund 06.10.2026,
+               „Gebaeude in DB loeschen funktioniert nicht"). *@
+            @if (_meldung.Length > 0 && _meldungAmKatalog)
+            {
+                <div class="epos-katalogmeldung">
+                    <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+                </div>
+            }
         </Rechts>
 
     </Zweispaltenauswahl>
@@ -928,6 +950,21 @@
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
+    /// <summary>
+    /// Steht die Meldung unter der Listenleiste der Katalogspalte statt oben im Dialog? So
+    /// bei jeder Meldung eines Katalogknopfs (ändern, löschen) — dort sieht der Anwender hin.
+    /// </summary>
+    private bool _meldungAmKatalog;
+
+    /// <summary>Steht die Meldung unter der Listenleiste? Prüfhilfe für die Tests.</summary>
+    public bool MeldungAmKatalog => _meldungAmKatalog;
+
+    /// <summary>
+    /// Der Löschsperrgrund des markierten Katalogsatzes, beim Wählen gelesen — leer heißt
+    /// löschbar. Er steht als <c>title</c> am Löschknopf; der Klick prüft frisch.
+    /// </summary>
+    private string _loeschsperre = "";
+
     /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
     public GebaeudeProjektZeile? Gewaehlt => _gewaehlt;
 
@@ -1130,6 +1167,7 @@
 
         _katalogzeile = Katalogsatz(_katalogGewaehlt);
         if (_katalogzeile is null) _katalogGewaehlt = "";
+        LoeschsperreLesen();
     }
 
     /// <summary>Der Katalogsatz zu einem Schlüssel; <c>null</c>, wenn es ihn nicht gibt.</summary>
@@ -1174,6 +1212,7 @@
         _gewaehlt = z;
         _katalogzeile = null;
         _katalogGewaehlt = "";
+        _loeschsperre = "";
         _detailName = z.Name;
         _detailArt = z.Art;
         _detailBeschreibung = z.Beschreibung;
@@ -1200,6 +1239,7 @@
         _katalogGewaehlt = k.Schluessel;
         _katalogzeile = k;
         _gewaehlt = null;
+        LoeschsperreLesen();
 
         GebaeudeStammDetail? detail = StammDetail?.Invoke(k.Bezeichner);
         _detailName = detail?.Name ?? k.Bezeichner;
@@ -1354,7 +1394,7 @@
     private void BeiKatalogAendern()
     {
         if (KatalogGaben is null) return;
-        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung); return; }
+        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung, amKatalog: true); return; }
 
         _meldung = "";
         _katalogGaben = KatalogGaben(_katalogzeile.Bezeichner);
@@ -1562,10 +1602,11 @@
     /// </summary>
     private void BeiKatalogLoeschen()
     {
-        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung); return; }
+        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung, amKatalog: true); return; }
 
         string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
-        if (sperre.Length > 0) { Melden(sperre, WarnStufe.Warnung); return; }
+        _loeschsperre = sperre;
+        if (sperre.Length > 0) { Melden(sperre, WarnStufe.Warnung, amKatalog: true); return; }
 
         _meldung = "";
         _loeschfrage = true;
@@ -1584,14 +1625,15 @@
         if (!KatalogLoeschen(_katalogzeile.Bezeichner))
         {
             string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
-            Melden(sperre.Length > 0 ? sperre : MeldungLoeschFehler, WarnStufe.Warnung);
+            _loeschsperre = sperre;
+            Melden(sperre.Length > 0 ? sperre : MeldungLoeschFehler, WarnStufe.Warnung, amKatalog: true);
             return;
         }
 
         _katalogzeile = null;
         _katalogGewaehlt = "";
         KatalogLaden();
-        Melden(MeldungGeloescht, WarnStufe.Hinweis);
+        Melden(MeldungGeloescht, WarnStufe.Hinweis, amKatalog: true);
     }
 
     // =================================================================================
@@ -1653,11 +1695,17 @@
         _neulesenGeschoss = null;
     }
 
-    private void Melden(string text, WarnStufe stufe)
+    private void Melden(string text, WarnStufe stufe, bool amKatalog = false)
     {
         _meldung = text ?? "";
         _meldungStufe = stufe;
+        _meldungAmKatalog = amKatalog;
     }
+
+    /// <summary>Liest den Löschsperrgrund des markierten Katalogsatzes neu.</summary>
+    private void LoeschsperreLesen()
+        => _loeschsperre = _katalogzeile is null
+            ? "" : KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
