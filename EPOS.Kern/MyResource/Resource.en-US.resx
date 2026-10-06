@@ -46241,5 +46241,8 @@ chart</value>
   <data name="RNP_LBL_NUTZUNG_VORSCHLAG" xml:space="preserve">
     <value>Suggestion from the catalogue</value>
   </data>
+  <data name="RNP_BTN_PROFILE_IMPORT" xml:space="preserve">
+    <value>Usage profiles…</value>
+  </data>
 </root>
 

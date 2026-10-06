@@ -181,6 +181,7 @@ namespace WindowsFormsApplication1
             t.TextUebernommen = Text_("RNP_TXT_UEBERNOMMEN", t.TextUebernommen);
             t.Zonenkopf = Text_("RNP_TXT_ZONENKOPF", t.Zonenkopf);
             t.LabelVorschauGroesse = Text_("RNP_LBL_VORSCHAU_GROESSE", t.LabelVorschauGroesse);
+            t.KnopfProfileImport = Text_("RNP_BTN_PROFILE_IMPORT", t.KnopfProfileImport);
             return t;
         }
 

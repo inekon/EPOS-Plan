@@ -342,6 +342,9 @@ public sealed class RaumnutzungTexte
     /// <summary>Die Kopfzeile der Zone ({0} = zuletzt übernommenes Profil) (<c>RNP_TXT_ZONENKOPF</c>).</summary>
     public string Zonenkopf { get; set; } = "Nutzungsprofil: {0}";
 
+    /// <summary>Der Knopf am Zonenbaum des Imports (<c>RNP_BTN_PROFILE_IMPORT</c>).</summary>
+    public string KnopfProfileImport { get; set; } = "Nutzungsprofile…";
+
     /// <summary>Die Reiterleiste der Wochenvorschau (aria-label) (<c>RNP_LBL_VORSCHAU_GROESSE</c>).</summary>
     public string LabelVorschauGroesse { get; set; } = "Größe der Vorschau";
 }

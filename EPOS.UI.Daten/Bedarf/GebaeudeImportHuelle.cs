@@ -205,6 +205,10 @@ namespace WindowsFormsApplication1
                 ["ProjektdateiWaehlen"] = new Func<Task<string>>(ProjektdateiWaehlenAsync),
                 ["ProjektdateiLesen"] = new Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>(ProjektdateiLesenAsync),
                 ["ProjektdateiEntfernen"] = new Action(ProjektdateiEntfernen),
+                // Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofile…" am Zonenbaum.
+                ["Raumnutzung"] = RaumnutzungHuelle.Weg(),
+                ["RaumnutzungTexte"] = RaumnutzungHuelle.Texte(),
+                ["RaumnutzungGroessen"] = KonditionierungTexteHuelle.Texte(),
             };
             if (uebernehmen != null) gaben["Uebernehmen"] = uebernehmen;
             return gaben;

@@ -87879,6 +87879,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile… ähnelt.
+        /// </summary>
+        public static string RNP_BTN_PROFILE_IMPORT {
+            get {
+                return ResourceManager.GetString("RNP_BTN_PROFILE_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neues Profil… ähnelt.
         /// </summary>
         public static string RNP_BTN_PROFIL_NEU {
