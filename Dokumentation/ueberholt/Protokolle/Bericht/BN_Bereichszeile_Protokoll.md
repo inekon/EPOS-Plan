@@ -80,4 +80,4 @@ Hervorhebung ohne neue Bedienung ist eine Kleinigkeit (Konzept Hilfesystem 13.4)
 ## 7 Offen
 
 - Sichtabnahme beim Anwender in der Windows-Anwendung (WebView2), auch im Hochkontrastmodus.
-- Push-SHA und CI-Kennung werden nach dem Push nachgetragen.
+- Gepusht `31a538492` am 06.10.2026 nach `ios_migration_september`; Nachweis: Kern-Lauf 37466422318 auf ubuntu grün.
