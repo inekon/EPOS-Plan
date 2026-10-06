@@ -38,6 +38,8 @@ Geb[0].AufheizstundenH;312
 Geb[0].AufheizzeitLaengsteH;13
 Geb[0].AufheizspruengeAus;1
 Geb[0].HeizleistungMaxStundenH;0
+Geb[0].AuslegungsheizlastKw;22.1939547
+Geb[0].AufheizzuschlagKw;3.92284564
 Em.Kessel.Co2T;0.862220152
 Em.Kessel.So2Kg;0.00107777519
 Em.Kessel.NoxKg;0.395184236
