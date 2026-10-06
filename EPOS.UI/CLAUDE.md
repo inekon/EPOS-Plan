@@ -192,6 +192,11 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   (`epos-ui.css`, „Dialog im eigenen Fenster"; nicht in Katalogdialogen, Überlagerung und Blatt).
   Deshalb steht der Kopf zuerst, und **eine Knopfzeile mitten im Inhalt trägt keinen
   Primärknopf** — Wache `FensterrahmenTests`, gemessen mit `Proben/Rasterprobe/fensterprobe.mjs`.
+- **Eine Meldung im Fensterdialog ist der `Warnbanner` als unmittelbares Kind der Dialogwurzel:**
+  Dort haftet er unter dem Kopf (und über der Schlussleiste, steht er tiefer) und trägt ein Kreuz
+  zum Ausblenden; in Überlagerung, Blatt und Seite rollt er mit. Kein eigenes Banner-Markup; eine
+  Meldung zu einer Leiste mitten im Inhalt steht in einem Block unter ihr (`.epos-katalogmeldung`)
+  und haftet nicht — Wache `FensterrahmenTests`, gemessen mit `Proben/Rasterprobe/bannerprobe.mjs`.
 - **Ein Dialog IN einem Dialog:** Unterdialoge erscheinen als `Ueberlagerung` im selben Fenster,
   nie als zweite `BlazorWebView`; der Wirt splattet ihren Parametersatz aus `Gaben()`.
 - **Ein Unterdialog mit eigenen Spalten, eigenen Überlagerungen oder mehr als einer Bildschirmhöhe
