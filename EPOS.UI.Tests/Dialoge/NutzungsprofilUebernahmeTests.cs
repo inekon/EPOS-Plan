@@ -146,7 +146,9 @@ public class NutzungsprofilUebernahmeTests : EposBunitContext
         b.Beantworten(true);
         Assert.True(b.Angelegt(KonditionierungGroesse.Heizen));
         Assert.True(b.Angelegt(KonditionierungGroesse.Geraete));
-        Assert.Equal("Büro Probe", b.Herkunft(KonditionierungGroesse.Heizen));
+        // NP2b-5c: Die Herkunft ist ein Nutzungsprofil, keine Vorlage — unterschieden über die Herkunftsart.
+        Assert.Null(b.Herkunft(KonditionierungGroesse.Heizen));
+        Assert.Equal("Nutzungsprofil Büro Probe", b.HerkunftText(KonditionierungGroesse.Heizen));
         Assert.Equal(1200, arbeit.Stand.Konditionierung!.Spalte(KonditionierungGroesse.Geraete).Kalender!.Nennwert);
 
         // Ein zweites Mal ersetzt es den Matrixbereich (P12): die Rückfrage steht mit Vorgabe „Nein".

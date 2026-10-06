@@ -891,7 +891,7 @@
         @if (_nutzungsblatt && Raumnutzung is not null)
         {
             <EPOS.UI.Dialoge.Bedarf.RaumnutzungBlatt Katalogweg="@Raumnutzung" Texte="@RaumnutzungTexte"
-                                                    GroessenTexte="@RaumnutzungGroessen" />
+                                                    GroessenTexte="@RaumnutzungGroessen" KiZugang="@RaumnutzungKi" />
         }
     </KindInhalt>
 </Ueberlagerung>
@@ -955,6 +955,12 @@
 
     /// <summary>Die Texte des Nutzungsprofilkatalogs (Präfix <c>RNP_</c>).</summary>
     [Parameter] public RaumnutzungTexte RaumnutzungTexte { get; set; } = new();
+
+    /// <summary>
+    /// Der Zugang des Assistenten zum Blatt (NP2b-5a, wie im Gebäudeeditor): Der Wirt reicht ihn, seine Sicht löst darüber
+    /// die Felder <c>np_*</c> auf; <c>null</c> = das Blatt bleibt ohne Assistenten.
+    /// </summary>
+    [Parameter] public RaumnutzungKiZugang? RaumnutzungKi { get; set; }
 
     /// <summary>Die Namen der Größen und Zeilen für die Vorschau des Blatts (Bündel der Konditionierung).</summary>
     [Parameter] public KonditionierungTexte RaumnutzungGroessen { get; set; } = new();

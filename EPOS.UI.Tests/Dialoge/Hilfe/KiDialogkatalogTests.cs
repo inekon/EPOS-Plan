@@ -392,6 +392,9 @@ public class KiDialogkatalogTests : IDisposable
         // „Vorlage" - jeder Name aus mindestens einer der fünf Listen.
         // NP3c: dazu im Editor die Einheit der Außenluft des Blatts „Nutzungsprofile" (np_luft_einheit) -
         // die Liste kommt aus der Feldkarte KiNutzungsprofilfelder, der Wirt meldet sie mit an.
+        // NP2b-5a: Der Gebäudedialog reicht das Blatt „Nutzungsprofile" über den Importdialog weiter und meldet die
+        // Einheit der Außenluft (np_luft_einheit) wie der Editor mit an.
+        KiMaskennamen.GEBAEUDE             => new[] { KiNutzungsprofilfelder.LUFT_EINHEIT },
         KiMaskennamen.GEBAEUDE_KATALOG     => new[] { "kond_vorlage_alle", "kond_heizen_vorlage", "kond_kuehlen_vorlage",
                                                       "kond_lueftung_vorlage", "kond_geraete_vorlage",
                                                       "kond_personen_vorlage", KiNutzungsprofilfelder.LUFT_EINHEIT },

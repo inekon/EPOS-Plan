@@ -17,7 +17,8 @@ public partial class GebaeudeImportZonenDialogTests
 {
     /// <summary>Der Zonenbaum mit einer Umformung jedes Stands der Hülle (der Katalog, den die Testumgebung nicht hat).</summary>
     private IRenderedComponent<GebaeudeImportDialog> ZonenbaumUmgeformt(Zonenbaumprobe p, Func<GebaeudeImportStand, GebaeudeImportStand> umformen,
-                                                                       RaumnutzungWeg? katalog = null, bool projektdatei = false)
+                                                                       RaumnutzungWeg? katalog = null, bool projektdatei = false,
+                                                                       RaumnutzungKiZugang? ki = null)
     {
         string probe = Path.Combine(Wurzel(), "Referenzlaeufe", "Importproben", "ifc4_zonen.ifc");
         var huelle = new GebaeudeImportHuelle();
@@ -34,6 +35,7 @@ public partial class GebaeudeImportZonenDialogTests
             c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)(_ => Array.Empty<GebaeudeImportMeldung>()));
             c.Add(x => x.Uebernehmen, (Func<GebaeudeImportErgebnis, Task<string?>>)(e => { p.Uebernommen.Add(e); return Task.FromResult<string?>(null); }));
             if (katalog is not null) c.Add(x => x.Raumnutzung, katalog);
+            if (ki is not null) c.Add(x => x.RaumnutzungKi, ki);
             if (projektdatei)
                 c.Add(x => x.ProjektdateiLesen, (Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>)((_, _, _) =>
                     Task.FromResult(new GebaeudeProjektdateiDaten())));
@@ -135,6 +137,36 @@ public partial class GebaeudeImportZonenDialogTests
         cut.Find("[data-aktion=\"anlegen\"]").Click();
         cut.Find(".epos-gebimport-anlegen-ok").Click();
         Assert.Empty(cut.FindAll(".epos-gebimport-sqvorschlag"));
+    }
+
+    /// <summary>
+    /// <b>Der Assistent erreicht das Blatt im Import</b> (NP2b-5a, wie im Gebäudeeditor): Der Importdialog reicht den Zugang
+    /// des Wirts an das Blatt; die Sicht des Gebäudedialogs löst darüber die Felder <c>np_*</c> auf — die Maske des
+    /// Gebäudedialogs führt sie. Nach dem Schließen ist das Blatt gelöst.
+    /// </summary>
+    [Fact]
+    public void Der_Importdialog_reicht_den_KI_Zugang_an_das_Blatt()
+    {
+        var ki = new RaumnutzungKiZugang();
+        var sicht = new GebaeudeKiSicht { Nutzungsprofile = ki };
+        IRenderedComponent<GebaeudeImportDialog> cut = ZonenbaumUmgeformt(new Zonenbaumprobe(), s => s, Nutzungskatalog(), ki: ki);
+        Assert.False(ki.Angebunden);
+        Assert.Throws<InvalidOperationException>(() => sicht.Setzen("np_name", "x"));
+
+        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").Click();
+        cut.Find("[data-kategorie=\"2\"] .epos-raumnutzung-kategorie-waehlen").Click();
+        cut.Find("[data-profil=\"12\"] .epos-raumnutzung-profil-waehlen").Click();
+        Assert.True(ki.Angebunden);
+        Assert.Equal("Mein Büro", sicht.Lesen("np_name"));
+        cut.InvokeAsync(() => sicht.Setzen("np_kuehl_soll", 25.0));
+        Assert.Equal(25.0, cut.FindComponent<RaumnutzungBlatt>().Instance.Arbeitsstand!.KuehlSoll);
+
+        KiKern.KiDialog maske = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE)!;
+        Assert.Contains(maske.Felder, f => f.Name == "np_name" && f.Eigenschaftspfad == "GebaeudeKiSicht.np_name");
+
+        cut.Find(".epos-gebimport-nutzungsblatt .epos-ueberlagerung-zu").Click();
+        Assert.False(ki.Angebunden);
+        Assert.Null(sicht.Lesen("np_name"));
     }
 
     /// <summary>
