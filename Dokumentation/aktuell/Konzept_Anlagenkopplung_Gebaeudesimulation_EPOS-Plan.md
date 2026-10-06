@@ -253,7 +253,7 @@ hier **bestätigt** (Kapitel 15 führt sie vollständig):
   Kühlkonzepts). Der **Taupunkt** kommt in diesem Papier ausschließlich als **benannte Grenze** der
   Kaltwasser-Vorlauftemperatur vor, nie als Bilanz (Kapitel 7).
 - **Sommerlicher Wärmeschutz nach DIN 4108-2**, Nachweise nach **GEG** oder **DIN V 18599**,
-  Nutzungsprofile für Nichtwohngebäude.
+  Normwerte der Nutzungsprofile für Nichtwohngebäude (E90: EPOS-Muster und eigene Profile sind zulässig, siehe [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)).
 - **Hydraulik als Gewerk** — Rohrnetz, Druckverluste, Pumpenkennlinien, hydraulischer Abgleich,
   Einrohrsysteme. Ein Massenstrom ist in diesem Papier eine **Auslegungsgröße**, keine Rechnung.
 - **Regelungstechnik als Gegenstand** — Reglerparametrierung, Totzeiten, Selbstoptimierung,
@@ -671,7 +671,7 @@ Kopierweg, kein neuer Registereintrag (**H8**).
   sicher in `TEXT(1400)` passen. Leser und Schreiber stehen einmal, bei `AnlagenkopplungSchema`,
   und dienen in AK2 auch dem Zeitprogramm des Erzeugers.
 - **Das Profil ist eine Eingabe, kein Ergebnis.** Es wird nicht aus dem Gebäudetyp hergeleitet;
-  Nutzungsprofile für Nichtwohngebäude bleiben ausgeschlossen (1.3).
+  Normwerte der Nutzungsprofile für Nichtwohngebäude (E90: EPOS-Muster und eigene Profile sind zulässig, siehe [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)) bleiben ausgeschlossen (1.3).
 
 ### 4.4 Der Raumthermostat
 
@@ -2577,7 +2577,7 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
   die stationäre Last des vorhandenen Modells, kein Normnachweis — keine Aufheizleistung, keine
   Zuschläge, keine raumweise Rechnung.
 - **Sommerlicher Wärmeschutz nach DIN 4108-2**, Nachweise nach **GEG** oder **DIN V 18599**,
-  Nutzungsprofile für Nichtwohngebäude.
+  Normwerte der Nutzungsprofile für Nichtwohngebäude (E90: EPOS-Muster und eigene Profile sind zulässig, siehe [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)).
 - **Anlagenkopplung auf dem Tagesbilanz-Weg.** Der Altweg ist der eingefrorene Bestandsweg ohne
   neue Funktion, der dauerhaft wählbar bleibt (E89); er bekommt keine Kopplung, weder jetzt noch später (E20, E23, E89,
   [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Das ist eine **Festlegung**, kein Vorbehalt — ein

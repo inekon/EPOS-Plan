@@ -385,12 +385,6 @@
     /// <summary>Die Texte der Rückfragen des Blatts „Konditionierung" (Stufe KP2, Welle U4).</summary>
     [Parameter] public KonditionierungFragetexte KonditionierungFragen { get; set; } = new();
 
-    /// <summary>
-    /// Der Weg des Nutzungsprofilkatalogs (Stufe NP3a, Konzept Nutzungsprofile 6.1) — die Hülle reicht ihn mit; das Blatt
-    /// „Konditionierung" nimmt daraus nur die Texte von „Nutzungsprofil übernehmen…" (Stufe NP3b).
-    /// </summary>
-    [Parameter] public RaumnutzungWeg? Raumnutzung { get; set; }
-
     /// <summary>Die Texte des Nutzungsprofilkatalogs (Präfix <c>RNP_</c>) — „Nutzungsprofil übernehmen…" im Blatt „Konditionierung".</summary>
     [Parameter] public RaumnutzungTexte RaumnutzungTexte { get; set; } = new();
 

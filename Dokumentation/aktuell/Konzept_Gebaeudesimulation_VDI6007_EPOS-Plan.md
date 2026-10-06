@@ -93,6 +93,9 @@ Nachgezogen am 05.10.2026 mit **E88** und **E89** (N1.70): Die Vorlaufwahl der W
 ausgewiesen (Welle VW1, ohne Rechenwirkung). Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe
 **GA — Altweg ablösen** entfällt endgültig, Q24 und Q25 sind gegenstandslos; Kapitel 0, 4.1, 6.1, 8, 10.4, 11, 13,
 14, 15 und 16 folgen.
+Nachgezogen am 06.10.2026 mit **E90** bis **E92** (N1.71): Die Nutzung der Zonen wird ein frei definierbarer Katalog
+von Nutzungsprofilen mit Kategorien (Stufe NP, [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)); der Ausschluss
+in Kapitel 15 gilt nur noch für Normwerte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -5180,3 +5183,28 @@ nur noch das Inventar der Altweg-Bestandteile. In der Reihenfolge E67 ist GA ges
 [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) (E88, E89, E26, E67, Q24, Q25, AK3, GA);
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 6.1;
 [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 12 und Register (AK3, H6).
+
+### N1.71 Entscheide E90 bis E92 — Nutzungsprofile als Katalog mit Kategorien (Stufe NP)
+
+**Entscheid E90 (Anwender, 05.10.2026), zu Q37:** Die Nutzung der Zonen (bisher drei feste Werte, beim HottCAD-Import ohne
+Wirkung) wird ein **frei definierbarer Katalog von Nutzungsprofilen** mit Katalogkategorien (EPOS-Muster, DIN V 18599-10,
+SIA 2024, VDI 2078, eigene Kataloge), dazu eine **änderbare Zuordnung** der DIN-Profilnummern, IFC-Nutzungsklassen und
+HottCAD-Raumtypen auf Profile; Zugang aus dem Gebäudeeditor, dem Zonenbaum und dem Zonendialog. Ein Profil ist ein
+Parametersatz, ein Generator macht daraus die fünf Konditionierungskalender; am Rechenweg ändert sich nichts. **Normwerte
+werden weiterhin nicht ausgeliefert** (B15, P4): Die Kategorien liefern Struktur und Nummern, die Werte trägt der Anwender
+ein oder importiert sie. Der Ausschluss „Nutzungsprofile für Nichtwohngebäude“ in Kapitel 15 gilt damit nur noch für
+Normwerte.
+
+**Entscheid E91 (Anwender, 05.10.2026):** Die Fragen **Q38 bis Q47** des Konzepts
+[Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md) sind alle nach Empfehlung entschieden; die Festlegungen NP-F1 bis
+NP-F24 gelten mit E91 und der Beauftragung von NP1. **Entscheid E92 (Anwender, 05.10.2026):** Die Sitzung
+„Gebäudesimulation“ baut die ganze Stufe NP (NP1 bis NP4).
+
+**Was gilt.** Die Nutzungsspalte der Konditionierungskalender wird freier Text (NP-F15, Schemaschritt 189); die feste Tabelle
+`Din18599Nutzung` wird mit NP2 Vorgabe im Code hinter der änderbaren Zuordnung (NP-F12). Ergebnisneutral, die
+Referenzbasis bleibt unverändert.
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) (E90 bis E92, Zeile NP);
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md); die Ausschlusskataloge in Anlagenkopplung, Umsetzungskonzept,
+Systementwurf, Softwarearchitektur, Kühlkonzept und Mehrzonenkonzept; Konditionierungsprofile 5.7;
+[Datenaustausch](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 16.
