@@ -231,7 +231,10 @@ namespace Auslieferungsvorlage.Tests
             // 173 seit dem Schemaschritt 189 (RaumnutzungSchema, NP1a): die fuenf Tabellen des Katalogs der
             // Nutzungsprofile, STRICT von ihrer ersten Zeile an; der Neubau von Kalender und Vorlage haelt STRICT.
             //
-            Assert.Equal(173, befund.Strict);
+            // 174 seit dem Schemaschritt 191 (RaumgrundrissSchema, HC-5): Tab_Raumgrundriss, STRICT von ihrer ersten Zeile
+            // an und in der Vorlage LEER.
+            //
+            Assert.Equal(174, befund.Strict);
         }
 
         // =============================================================================
