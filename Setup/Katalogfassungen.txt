@@ -1,0 +1,12 @@
+# Freigaberegister der Fassung des Katalogpakets (Setup/Vorlage/Katalogpaket.json)
+#
+# Konzept Setup, Abschnitt 6.5.4, Entscheide E1 und E4. Eine Zeile je ausgelieferter Fassung:
+#
+#   <Fassung JJJJMMTTnn>  <Datum JJJJ-MM-TT>  <Programmversion>
+#
+# Die Fassung zaehlt als Datum und Tageslauf (01 bis 99) und waechst streng von Zeile zu Zeile.
+# Setup/build-setup.ps1 liest das Register, schlaegt ohne -Katalogfassung den naechsten Wert vor
+# und bricht ab, wenn eine Fassung nicht groesser ist als jede eingetragene und als die heutige
+# Datumsfassung JJJJMMTT. Nach einem erfolgreichen Lauf ohne -Probe traegt das Skript die Zeile
+# selbst nach; committet wird sie nur auf Auftrag. Nicht dieselbe Zahl wie die Katalogfassung
+# der Word-Vorlagen. Zeilen mit # vorn und Leerzeilen sind Kommentar.
