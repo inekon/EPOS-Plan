@@ -68749,6 +68749,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string KOND_LBL_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_HERKUNFT_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Infiltration ähnelt.
         /// </summary>
         public static string KOND_LBL_INFILTRATION {
@@ -71121,6 +71130,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_ZUSTAND_MATRIX {
             get {
                 return ResourceManager.GetString("KOND_TXT_ZUSTAND_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_ZUSTAND_PROFIL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_ZUSTAND_PROFIL", resourceCulture);
             }
         }
         
@@ -88428,6 +88446,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} aus der Datei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_AUS_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_AUS_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus DIN-Nr. {0}: {1} — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_EINZONE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_EINZONE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (nicht im Katalog) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_NICHT_IM_KATALOG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_NICHT_IM_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Nutzung der Datei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus DIN-Nr. {0} der Projektdatei ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_DIN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem früheren Import ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_HAND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus IFC-Klasse {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_IFC {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Raumtyp {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMTYP {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die und ähnelt.
+        /// </summary>
+        public static string RNP_IMP_UND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_UND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie des im Blatt „Nutzungsprofile“ gewählten Profils (nur lesbar); gewechselt wird sie im Katalogbaum. ähnelt.
         /// </summary>
         public static string RNP_KI_KATEGORIE_ERL {
@@ -89202,6 +89310,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen) ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NUTZUNGSTAGE {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NUTZUNGSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2} ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NUTZUNGSTAGE_FERIEN {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NUTZUNGSTAGE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Nutzungsprofilkatalog ist in dieser Datenbank nicht angelegt. ähnelt.
         /// </summary>
         public static string RNP_TXT_OHNE_TABELLEN {
@@ -89243,15 +89369,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_TXT_SOFORT {
             get {
                 return ResourceManager.GetString("RNP_TXT_SOFORT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die erzeugt: {0} Nutzungstage, Quelle: {1} Tage ähnelt.
-        /// </summary>
-        public static string RNP_TXT_TAGE {
-            get {
-                return ResourceManager.GetString("RNP_TXT_TAGE", resourceCulture);
             }
         }
         

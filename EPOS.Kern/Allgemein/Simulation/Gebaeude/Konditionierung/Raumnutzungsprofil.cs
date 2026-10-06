@@ -46,7 +46,11 @@ namespace WindowsFormsApplication1
         /// <summary>Sieben Ziffern 0/1, Montag bis Sonntag (etwa <c>1111100</c>) — der Generatoreingang (NP-F8).</summary>
         public string Nutzungstage_Woche { get; set; }
 
-        /// <summary>Nutzungstage je Jahr — nur Vergleichswert (NP-F8, Q44).</summary>
+        /// <summary>
+        /// Nutzungstage je Jahr, wie die Spalte sie trägt — <b>nicht mehr beschrieben</b> (E93): Die Zahl wird abgeleitet
+        /// (<see cref="Raumnutzungsgenerator.Nutzungstage"/>); die Spalte bleibt nullbar stehen, <see cref="Kennwerte"/>
+        /// schreibt dort nichts.
+        /// </summary>
         public int? Nutzungstage_Jahr { get; set; }
 
         /// <summary>Die neun bundeseinheitlichen Feiertage „wie Sonntag".</summary>
@@ -115,7 +119,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die 25 Kennwerte in Schemareihenfolge (<see cref="RaumnutzungSchema.SPALTEN_KENNWERTE"/>).</summary>
         public IReadOnlyList<object> Kennwerte() => new object[]
         {
-            Nutzung_Von, Nutzung_Bis, Betrieb_Von, Betrieb_Bis, Nutzungstage_Woche, Nutzungstage_Jahr, Feiertage_Wie_Sonntag,
+            Nutzung_Von, Nutzung_Bis, Betrieb_Von, Betrieb_Bis, Nutzungstage_Woche, null /* Nutzungstage_Jahr: abgeleitet, E93 */,
+            Feiertage_Wie_Sonntag,
             Heiz_Soll, Heiz_Soll_Ausserhalb, Heiz_Aus_Ausserhalb, Kuehl_Soll, Kuehl_Soll_Ausserhalb, Kuehl_Aus_Ausserhalb,
             Aussenluft, Aussenluft_Einheit, Aussenluft_Ausserhalb,
             Personen_Flaeche, Personen_Waerme, Personen_Anteil, Personen_Anteil_Ausserhalb,

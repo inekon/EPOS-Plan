@@ -21,9 +21,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class RaumnutzungHuelle
     {
-        /// <summary>Wie viele Tage ein Jahr im festen Raster des Kerns hat (kein Schaltjahr).</summary>
-        private const int TAGE_IM_JAHR = 365;
-
         // =================================================================
         //  Der Weg
         // =================================================================
@@ -44,6 +41,7 @@ namespace WindowsFormsApplication1
                 Profile = id => ctrl.Profile(id).Select(Profil).ToList(),
                 Zuordnungen = () => ctrl.Zuordnungen().Select(Zuordnung).ToList(),
                 Vorschau = Vorschau,
+                Nutzungstage = d => d == null ? null : Raumnutzungsgenerator.Nutzungstage(Kern(d)).OhneFerien,
                 KategorieAnlegen = (bez, besch, quelle) => Ergebnis(ctrl.KategorieAnlegen(bez, besch, quelle)),
                 KategorieAendern = (id, bez, besch, quelle) => Ergebnis(ctrl.KategorieAendern(id, bez, besch, quelle)),
                 KategorieDuplizieren = (id, bez) => Ergebnis(ctrl.KategorieDuplizieren(id, bez)),
@@ -112,7 +110,6 @@ namespace WindowsFormsApplication1
             t.LabelBetriebVon = Text_("RNP_LBL_BETRIEB_VON", t.LabelBetriebVon);
             t.LabelBetriebBis = Text_("RNP_LBL_BETRIEB_BIS", t.LabelBetriebBis);
             t.LabelWoche = Text_("RNP_LBL_WOCHE", t.LabelWoche);
-            t.LabelTageJahr = Text_("RNP_LBL_TAGE_JAHR", t.LabelTageJahr);
             t.LabelFeiertage = Text_("RNP_LBL_FEIERTAGE", t.LabelFeiertage);
 
             t.LabelHeizSoll = Text_("RNP_LBL_HEIZ_SOLL", t.LabelHeizSoll);
@@ -157,7 +154,8 @@ namespace WindowsFormsApplication1
             t.FrageProfilZuordnung = Text_("RNP_FRAGE_PROFIL_ZUORDNUNG", t.FrageProfilZuordnung);
             t.FrageKategorieLoeschen = Text_("RNP_FRAGE_KATEGORIE_LOESCHEN", t.FrageKategorieLoeschen);
             t.FrageZuordnungLoeschen = Text_("RNP_FRAGE_ZUORDNUNG_LOESCHEN", t.FrageZuordnungLoeschen);
-            t.TextTage = Text_("RNP_TXT_TAGE", t.TextTage);
+            t.TextNutzungstage = Text_("RNP_TXT_NUTZUNGSTAGE", t.TextNutzungstage);
+            t.TextNutzungstageFerien = Text_("RNP_TXT_NUTZUNGSTAGE_FERIEN", t.TextNutzungstageFerien);
             t.KnopfUebernehmenProfil = Text_("RNP_BTN_PROFIL_UEBERNEHMEN", t.KnopfUebernehmenProfil);
             t.TitelUebernahme = Text_("RNP_LBL_UEBERNAHME", t.TitelUebernahme);
             t.KnopfUebernehmen = Text_("RNP_BTN_UEBERNEHMEN", t.KnopfUebernehmen);
@@ -216,7 +214,6 @@ namespace WindowsFormsApplication1
                 BetriebVon = p.Betrieb_Von,
                 BetriebBis = p.Betrieb_Bis,
                 NutzungstageWoche = p.Nutzungstage_Woche ?? "",
-                NutzungstageJahr = p.Nutzungstage_Jahr,
                 FeiertageWieSonntag = p.Feiertage_Wie_Sonntag,
                 HeizSoll = p.Heiz_Soll,
                 HeizSollAusserhalb = p.Heiz_Soll_Ausserhalb,
@@ -282,7 +279,6 @@ namespace WindowsFormsApplication1
                 Betrieb_Von = d.BetriebVon,
                 Betrieb_Bis = d.BetriebBis,
                 Nutzungstage_Woche = Leer(d.NutzungstageWoche),
-                Nutzungstage_Jahr = d.NutzungstageJahr,
                 Feiertage_Wie_Sonntag = d.FeiertageWieSonntag,
                 Heiz_Soll = d.HeizSoll,
                 Heiz_Soll_Ausserhalb = d.HeizSollAusserhalb,
@@ -363,7 +359,7 @@ namespace WindowsFormsApplication1
                     hinweis));
             }
 
-            return new RaumnutzungVorschau(d.ToString(), groessen, Tagezeile(d, t), hinweise);
+            return new RaumnutzungVorschau(d.ToString(), groessen, Nutzungstagezeile(p, null, t), hinweise);
         }
 
         /// <summary>Die Vorgabezeilen und, wo der Generator einen Kalender anlegt, die Standardwoche.</summary>
@@ -486,7 +482,11 @@ namespace WindowsFormsApplication1
             CultureInfo c = CultureInfo.CurrentCulture;
             var teile = new List<string>();
             string tage = Wochentage(p.Nutzungstage_Woche, t);
-            if (tage.Length > 0) teile.Add(tage);
+            if (tage.Length > 0)
+            {
+                teile.Add(tage);
+                teile.Add(Raumnutzungsgenerator.Nutzungstage(p).OhneFerien.ToString(c) + " d");
+            }
             if (p.Nutzung_Von.HasValue && p.Nutzung_Bis.HasValue)
                 teile.Add(p.Nutzung_Von.Value.ToString(c) + "–" + p.Nutzung_Bis.Value.ToString(c) + " h");
             if (p.Heiz_Soll.HasValue) teile.Add(p.Heiz_Soll.Value.ToString("0.#", c) + " °C");
@@ -521,17 +521,25 @@ namespace WindowsFormsApplication1
             return string.Join(", ", laeufe);
         }
 
-        /// <summary>„erzeugt: … Nutzungstage, Quelle: … Tage" (NP-F8) im festen Raster von 365 Tagen.</summary>
-        private static string Tagezeile(RaumnutzungProfilDaten d, RaumnutzungTexte t)
+        /// <summary>
+        /// <b>Die Zeile der Nutzungstage</b> (E93): „Nutzungstage im Jahr: 252 (aus Wochenmuster und Feiertagen)" — mit den
+        /// Ferien eines Ziels „…, abzüglich 22 Ferientage = 230". Abgeleitet im Kern
+        /// (<see cref="Raumnutzungsgenerator.Nutzungstage"/>), keine Eingabe.
+        /// </summary>
+        /// <param name="p">Das Profil.</param>
+        /// <param name="ziel">Die Ferienzeiträume des Ziels (die des Gebäudes); <c>null</c> = ohne Ziel.</param>
+        /// <param name="t">Die Texte.</param>
+        /// <param name="referenzjahr">Das Bezugsjahr; <c>null</c> = die Vorgabe der Konditionierung.</param>
+        internal static string Nutzungstagezeile(Raumnutzungsprofil p, Matrixeingang ziel, RaumnutzungTexte t,
+                                                 int? referenzjahr = null)
         {
-            string woche = d.NutzungstageWoche ?? "";
-            if (woche.Length != 7 || !d.NutzungstageJahr.HasValue) return "";
-            int tage = 0;
-            for (int i = 0; i < TAGE_IM_JAHR; i++)
-                if (woche[i % 7] == '1') tage++;
-            return string.Format(CultureInfo.CurrentCulture, t.TextTage,
-                                 tage.ToString(CultureInfo.CurrentCulture),
-                                 d.NutzungstageJahr.Value.ToString(CultureInfo.CurrentCulture));
+            if (p == null) return "";
+            Raumnutzungstage n = Raumnutzungsgenerator.Nutzungstage(p, ziel,
+                referenzjahr ?? Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE);
+            CultureInfo c = CultureInfo.CurrentCulture;
+            return n.Ferientage > 0
+                ? string.Format(c, t.TextNutzungstageFerien, n.OhneFerien.ToString(c), n.Ferientage.ToString(c), n.Tage.ToString(c))
+                : string.Format(c, t.TextNutzungstage, n.OhneFerien.ToString(c));
         }
 
         // =================================================================

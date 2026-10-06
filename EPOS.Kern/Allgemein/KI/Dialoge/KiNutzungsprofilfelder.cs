@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
             /// <summary>Die obere Grenze wie im Blatt; <c>null</c> = keine.</summary>
             public double? Max { get; }
 
-            /// <summary>Nur lesbar (die Kategorie).</summary>
+            /// <summary>Nur lesbar (die Kategorie; die Nutzungstage im Jahr, abgeleitet nach E93).</summary>
             public bool NurLesen { get; }
 
             /// <summary>Ein Anteil: im Profil 0 … 1, im Blatt und in der Karte in Prozent.</summary>
@@ -116,7 +116,7 @@ namespace WindowsFormsApplication1
             new Feld("np_betrieb_von", Kennwert.BetriebVon, KiParameterTyp.Ganzzahl, () => MyResource.Resource.RNP_LBL_BETRIEB_VON, KiDialogTexte.EINHEIT_STUNDE, 0, 24),
             new Feld("np_betrieb_bis", Kennwert.BetriebBis, KiParameterTyp.Ganzzahl, () => MyResource.Resource.RNP_LBL_BETRIEB_BIS, KiDialogTexte.EINHEIT_STUNDE, 0, 24),
             new Feld("np_woche", Kennwert.Woche, KiParameterTyp.Text, () => MyResource.Resource.RNP_LBL_WOCHE),
-            new Feld("np_tage_jahr", Kennwert.TageJahr, KiParameterTyp.Ganzzahl, () => MyResource.Resource.RNP_LBL_TAGE_JAHR, null, 0, 365),
+            new Feld("np_tage_jahr", Kennwert.TageJahr, KiParameterTyp.Ganzzahl, () => MyResource.Resource.RNP_LBL_TAGE_JAHR, null, 0, 365, nurLesen: true),
             new Feld("np_feiertage", Kennwert.Feiertage, KiParameterTyp.Wahrheitswert, () => MyResource.Resource.RNP_LBL_FEIERTAGE),
             new Feld("np_heiz_soll", Kennwert.HeizSoll, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_HEIZ_SOLL, KiDialogTexte.EINHEIT_GRAD_C, 5, 40),
             new Feld("np_heiz_ausserhalb", Kennwert.HeizAusserhalb, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_HEIZ_AUSSERHALB, KiDialogTexte.EINHEIT_GRAD_C, 5, 40),
@@ -184,8 +184,16 @@ namespace WindowsFormsApplication1
         /// die Sichtklasse löst ihn als FELDTAFEL auf), dazu die Spalten der Zuordnungstabelle als Raster
         /// zum Lesen.
         /// </summary>
-        public static IEnumerable<KiDialogFeld> Dialogfelder()
+        public static IEnumerable<KiDialogFeld> Dialogfelder() => Dialogfelder(SICHT);
+
+        /// <summary>
+        /// Dieselben Felder an einer anderen Sichtklasse (NP2b-5a): Der Gebäudedialog reicht das Blatt über den Importdialog
+        /// weiter und löst die Felder über seine eigene Sicht auf — Pfad = <paramref name="sicht"/> + Schlüssel, die
+        /// Zuordnungszeilen unter <c>&lt;sicht&gt;.Nutzungsprofilzuordnungen[]</c>.
+        /// </summary>
+        public static IEnumerable<KiDialogFeld> Dialogfelder(string sicht)
         {
+            string zuordnungen = sicht + ".Nutzungsprofilzuordnungen[].";
             CultureInfo c = CultureInfo.CurrentCulture;
             foreach (Feld f in Alle)
             {
@@ -201,7 +209,7 @@ namespace WindowsFormsApplication1
                             erl += " " + MyResource.Resource.RNP_KI_LUFT_ERL;
                         break;
                 }
-                yield return new KiDialogFeld(f.Schluessel, SICHT + "." + f.Schluessel, f.Bezeichnung, f.Typ, erl,
+                yield return new KiDialogFeld(f.Schluessel, sicht + "." + f.Schluessel, f.Bezeichnung, f.Typ, erl,
                                               einheit: f.Einheit, leerErlaubt: f.Typ != KiParameterTyp.Wahl,
                                               nurLesen: f.NurLesen, min: f.Min, max: f.Max);
             }
@@ -213,7 +221,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < Zuordnungsspalten.Count; i++)
             {
                 (string schluessel, string eigenschaft) = Zuordnungsspalten[i];
-                yield return new KiDialogFeld(schluessel, ZUORDNUNGEN + eigenschaft,
+                yield return new KiDialogFeld(schluessel, zuordnungen + eigenschaft,
                                               MyResource.Resource.RNP_KI_ZUORDNUNG_NAME + " · " + namen[i],
                                               KiParameterTyp.Text,
                                               string.Format(c, MyResource.Resource.RNP_KI_ZUORDNUNG_ERL, namen[i]),

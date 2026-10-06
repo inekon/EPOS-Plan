@@ -467,6 +467,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Vorschlag des Einzonenwegs</b> (NP2b-4, Anwenderentscheid 06.10.2026): Liefert die Projektdatei eine
+        /// DIN-V-18599-Nummer, nennt die Zeile das Profil der Zuordnung samt Kategorie und den Weg „Nutzungsprofil übernehmen…“
+        /// im Gebäudeeditor; automatisch wird kein Profil gesetzt. Leer ohne Nummer oder wenn die Zuordnung auf „keine“ führt.
+        /// </summary>
+        private string Einzonenvorschlag()
+        {
+            if (_ablauf.Gebaeudeprofilnummer(_gebaeudeindex) is not int nr) return "";
+            Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
+            Planprofil p = v.AusDinNummer(nr);
+            if (p == null) return "";
+            string kategorie = p.Id is long id ? v.Kategorie(id)?.Trim() : null;
+            string profil = GebaeudeImportZonen.Profiltext(p) + (string.IsNullOrEmpty(kategorie) ? "" : " · " + kategorie);
+            return Formatieren(MyResource.Resource.RNP_IMP_EINZONE_VORSCHLAG, nr.ToString(CultureInfo.CurrentCulture), profil);
+        }
+
+        /// <summary>
         /// <b>Die Projektdatei als Daten des Kopfs</b>: Datei, Fassung, Abgleich, Zonen, Zeitprofile, Abschnitte, nach der
         /// Übernahme die Zonen je Größe und Herkunft; alle Meldungen, die schwerste (Fehler vor Warnung) als Banner.
         /// <c>null</c> ohne Projektdatei.
@@ -596,7 +612,7 @@ namespace WindowsFormsApplication1
                                                              anfrage.Gebaeudeindex >= 0 && anfrage.Gebaeudeindex < (_ablauf.Abbild?.Gebaeude.Count ?? 0)
                                                                  ? _ablauf.Abbild.Gebaeude[anfrage.Gebaeudeindex] : null),
                 ProjektdateiMoeglich = GebaeudeImportAblauf.IstHottcad(_ablauf.Abbild, anfrage.Gebaeudeindex),
-                Projektdatei = ProjektdateiDaten(),
+                Projektdatei = ProjektdateiDaten() is GebaeudeProjektdateiDaten pd ? pd with { Einzonenvorschlag = Einzonenvorschlag() } : null,
             };
         }
 

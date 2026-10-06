@@ -147,8 +147,6 @@ public sealed class RaumnutzungTexte
     /// <summary>„Nutzungstage der Woche" (<c>RNP_LBL_WOCHE</c>).</summary>
     public string LabelWoche { get; set; } = "Nutzungstage der Woche";
 
-    /// <summary>„Nutzungstage je Jahr" (<c>RNP_LBL_TAGE_JAHR</c>).</summary>
-    public string LabelTageJahr { get; set; } = "Nutzungstage je Jahr";
 
     /// <summary>„Feiertage wie Sonntag" (<c>RNP_LBL_FEIERTAGE</c>).</summary>
     public string LabelFeiertage { get; set; } = "Feiertage wie Sonntag";
@@ -271,8 +269,18 @@ public sealed class RaumnutzungTexte
     /// <summary>Die Rückfrage vor dem Löschen einer Zuordnungszeile (<c>RNP_FRAGE_ZUORDNUNG_LOESCHEN</c>, {0} = Schlüssel).</summary>
     public string FrageZuordnungLoeschen { get; set; } = "Die Zuordnung „{0}“ löschen?";
 
-    /// <summary>Die Zeile des Tagesvergleichs (<c>RNP_TXT_TAGE</c>, {0} = erzeugt, {1} = Quelle).</summary>
-    public string TextTage { get; set; } = "erzeugt: {0} Nutzungstage, Quelle: {1} Tage";
+    /// <summary>
+    /// Die Lesezeile der abgeleiteten Nutzungstage (<c>RNP_TXT_NUTZUNGSTAGE</c>, {0} = Tage aus Wochenmuster und
+    /// Feiertagen; E93).
+    /// </summary>
+    public string TextNutzungstage { get; set; } = "Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen)";
+
+    /// <summary>
+    /// Dieselbe Zeile am Ziel mit seinen Ferien (<c>RNP_TXT_NUTZUNGSTAGE_FERIEN</c>, {0} = aus Wochenmuster und
+    /// Feiertagen, {1} = Ferientage, {2} = Nutzungstage am Ziel; E93).
+    /// </summary>
+    public string TextNutzungstageFerien { get; set; } =
+        "Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2}";
 
     // ------------------------------------------------------------------ Nutzungsprofil übernehmen (Stufe NP3b)
 

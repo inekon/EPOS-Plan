@@ -806,7 +806,7 @@ public sealed record KonditionierungProfilposten(KonditionierungGroesse Groesse,
 /// <param name="OhneWerte">Profil ohne einen einzigen Kennwert (NP-F13): nur der Name geht ans Ziel.</param>
 public sealed record KonditionierungProfilergebnis(bool Ok, string Meldung, KonditionierungStand? Stand, string Profilname,
                                                    IReadOnlyList<KonditionierungProfilposten> Posten, bool Aufgeteilt,
-                                                   bool OhneWerte)
+                                                   bool OhneWerte, string Nutzungstage = "")
 {
     /// <summary>Benannt abgelehnt; nichts geändert.</summary>
     public static KonditionierungProfilergebnis Fehler(string meldung)

@@ -221,5 +221,64 @@ namespace EPOS.Kern.Tests
             Assert.Equal(rein.Posten, db.Posten);
             Assert.Equal(RaumnutzungSaat.GASTRONOMIE, RaumnutzungCtrl.Kalendernutzung(gebaeude, zone));
         }
+
+        /// <summary>Ein Profil mit Geräte- und Personenkennwert (Q39, Q40) und den Anteilen, die je einen Kalender tragen.</summary>
+        private static Raumnutzungsprofil ProfilMitNennwerten() => new Raumnutzungsprofil
+        {
+            Bezeichner = "NP1c Nennwerte",
+            Nutzung_Von = 7, Nutzung_Bis = 18, Nutzungstage_Woche = "1111100",
+            Geraete_Leistung = 8.0, Geraete_Anteil = 1.0, Geraete_Anteil_Ausserhalb = 0.1,
+            Personen_Flaeche = 10.0, Personen_Anteil = 1.0, Personen_Anteil_Ausserhalb = 0.0,
+        };
+
+        /// <summary>
+        /// Rote Probe E93 (P1 im Profilweg): Trägt das Profil einen Geräte- UND einen Personennennwert, sind beide getrennt
+        /// angegeben — der eben gesetzte Gerätewert (8 W/m² × 120 m² = 960 W) bleibt, statt um das Jahresmittel der
+        /// Personenwärme zu sinken (vorher 742 W, rund 14 % zu wenig innere Gewinne). Vorschau und Schreiben sehen denselben
+        /// Stand, denn beide gehen über <see cref="RaumnutzungCtrl.ProfilAnwenden"/>.
+        /// </summary>
+        [Fact]
+        public void Profil_mit_Geraete_und_Personennennwert_behaelt_den_Geraetewert()
+        {
+            if (!_db.Vorhanden) return;
+            var (gebaeude, zone) = Kopie("NP1c P1");
+            Konditionierungsarbeitsstand stand = new KonditionierungCtrl().ArbeitsstandLesen(gebaeude, null, out string m);
+            Assert.True(stand != null, m);
+            Assert.Null(stand.GeltenderKalender(Konditionierungsgroesse.Personen, zone));   // P1 greift beim Übergang
+
+            RaumnutzungCtrl.Anwendung a = RaumnutzungCtrl.ProfilAnwenden(stand, ProfilMitNennwerten(), zone, 120.0);
+            Assert.True(a.Ok, a.Meldung);
+            Assert.True(a.Posten.Single(p => p.Groesse == Konditionierungsgroesse.Personen).Uebernommen);
+            Assert.Equal(840.0, a.Posten.Single(p => p.Groesse == Konditionierungsgroesse.Personen).Nennwert);
+            Assert.NotNull(a.Stand.GeltenderKalender(Konditionierungsgroesse.Personen, zone));
+            Konditionierungszone z = a.Stand.Zone(zone);
+            Assert.Equal(960.0, a.Stand.AufgeloesterBestand(z).InterneWaermegewinne);
+            Assert.Equal(840.0, z.Stand.Vorgabe(Konditionierungsgroesse.Personen, DbWerte.KOND_ZEILE_NENNWERT).Wert);
+        }
+
+        /// <summary>
+        /// Gegenprobe E93: Ein EPOS-Muster trägt keinen Nennwert — die Personenspalte wird wirksam, und P1 mindert den
+        /// Gerätewert um das Jahresmittel der Personenwärme wie „Vorlage übernehmen" (B5).
+        /// </summary>
+        [Fact]
+        public void Muster_ohne_Nennwert_mindert_den_Geraetewert_wie_Vorlage_uebernehmen()
+        {
+            if (!_db.Vorhanden) return;
+            var (gebaeude, zone) = Kopie("NP1c P1 Muster");
+            Konditionierungsarbeitsstand stand = new KonditionierungCtrl().ArbeitsstandLesen(gebaeude, null, out string m);
+            Assert.True(stand != null, m);
+            Assert.Null(stand.GeltenderKalender(Konditionierungsgroesse.Personen, zone));
+            double vorher = stand.AufgeloesterBestand(stand.Zone(zone)).InterneWaermegewinne.Value;
+
+            RaumnutzungCtrl.Anwendung a = RaumnutzungCtrl.ProfilAnwenden(stand, Muster(RaumnutzungSaat.BUERO), zone, 120.0);
+            Assert.True(a.Ok, a.Meldung);
+            Konditionierungskalender personen = a.Stand.GeltenderKalender(Konditionierungsgroesse.Personen, zone);
+            Assert.NotNull(personen);
+            double erwartet = Math.Round(KonditionierungCtrl.GeraeteNennwertNachPersonen(vorher, personen, a.Stand.W0, a.Stand.Referenzjahr),
+                                         4, MidpointRounding.AwayFromZero);
+            double nachher = a.Stand.AufgeloesterBestand(a.Stand.Zone(zone)).InterneWaermegewinne.Value;
+            Assert.Equal(erwartet, nachher);
+            Assert.True(nachher < vorher, nachher + " W nach, " + vorher + " W vor der Übernahme");
+        }
     }
 }

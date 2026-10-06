@@ -128,6 +128,29 @@ public class NutzungsprofilUebernahmeTests : EposBunitContext
         Assert.Null(b.OffeneFrage);
     }
 
+    /// <summary>
+    /// E93: Die Vorschau nennt die Nutzungstage am Ziel — abgeleitet aus Wochenmuster und Feiertagen (Mo–Fr ohne
+    /// Feiertagsvorgabe im Bezugsjahr 2025: 261), abzüglich der Ferientage des Gebäudes (1. bis 30. Juli: 22 Werktage).
+    /// </summary>
+    [Fact]
+    public void Die_Vorschau_nennt_die_Nutzungstage_am_Ziel_abzueglich_seiner_Ferien()
+    {
+        GebaeudeKatalogDaten satz = KalenderkarteTests.Satz();
+        satz.Ferienbeginn = new[] { 182, 0, 0, 0 };
+        satz.Ferienende = new[] { 211, 0, 0, 0 };
+        var (cut, b, _) = Aufbauen(Weg(), satz);
+        cut.Find(".epos-nutzungsuebernahme-oeffnen").Click();
+        cut.Find("[data-profil='11']").Click();
+
+        const string erwartet = "Nutzungstage im Jahr: 261 (aus Wochenmuster und Feiertagen), abzüglich 22 Ferientage = 239";
+        Assert.Equal(erwartet, b.Profilnutzungstage());
+        Assert.Equal(erwartet, cut.Find(".epos-nutzungsuebernahme-tage .epos-herleitung-text").TextContent);
+
+        // Ein Profil ohne Werte nennt keine Nutzungstage.
+        cut.Find("[data-profil='12']").Click();
+        Assert.Empty(cut.FindAll(".epos-nutzungsuebernahme-tage"));
+    }
+
     [Fact]
     public void Uebernehmen_fragt_vorher_und_traegt_mit_Ja_in_den_Arbeitsstand()
     {
@@ -146,7 +169,9 @@ public class NutzungsprofilUebernahmeTests : EposBunitContext
         b.Beantworten(true);
         Assert.True(b.Angelegt(KonditionierungGroesse.Heizen));
         Assert.True(b.Angelegt(KonditionierungGroesse.Geraete));
-        Assert.Equal("Büro Probe", b.Herkunft(KonditionierungGroesse.Heizen));
+        // NP2b-5c: Die Herkunft ist ein Nutzungsprofil, keine Vorlage — unterschieden über die Herkunftsart.
+        Assert.Null(b.Herkunft(KonditionierungGroesse.Heizen));
+        Assert.Equal("Nutzungsprofil Büro Probe", b.HerkunftText(KonditionierungGroesse.Heizen));
         Assert.Equal(1200, arbeit.Stand.Konditionierung!.Spalte(KonditionierungGroesse.Geraete).Kalender!.Nennwert);
 
         // Ein zweites Mal ersetzt es den Matrixbereich (P12): die Rückfrage steht mit Vorgabe „Nein".

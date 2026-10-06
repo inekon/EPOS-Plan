@@ -375,7 +375,7 @@
         <KindInhalt>
             @if (_importGaben is not null)
             {
-                <GebaeudeImportDialog @attributes="_importGaben" Geschlossen="ImportFertig" />
+                <GebaeudeImportDialog @attributes="_importGaben" RaumnutzungKi="@_raumnutzungKi" Geschlossen="ImportFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -981,7 +981,10 @@
         KatalogLaden();
         ProjektauswahlNachziehen();
 
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken());
+        // NP2b-5a: dazu die Einheit der Außenluft des Blatts „Nutzungsprofile" im Importdialog (np_luft_einheit).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken(),
+                                          (WindowsFormsApplication1.KiNutzungsprofilfelder.LUFT_EINHEIT,
+                                           () => WindowsFormsApplication1.KiNutzungsprofilfelder.Lufteinheiten));
     }
 
     // =================================================================================
@@ -989,6 +992,12 @@
     // =================================================================================
 
     private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Der Zugang des Assistenten zum Blatt „Nutzungsprofile" des Importdialogs (NP2b-5a): Das Blatt bindet sich beim
+    /// Erscheinen an, die Sicht beantwortet darüber die Felder <c>np_*</c>.
+    /// </summary>
+    private readonly RaumnutzungKiZugang _raumnutzungKi = new();
     private GebaeudeKiSicht? _kiSicht;
 
     /// <summary>
@@ -1001,6 +1010,7 @@
     {
         return _kiSicht ??= new GebaeudeKiSicht
         {
+            Nutzungsprofile = _raumnutzungKi,
             VerwendungLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpVerwendung),
             VerwendungSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpVerwendung, w),
             VerwendungEintraege = () => Spaltenwahl(Katalogfilterprofil.SpVerwendung),
