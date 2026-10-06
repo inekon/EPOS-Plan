@@ -241,6 +241,10 @@ public class StartseiteTests : EposBunitContext
     //  Die 21 Kacheln
     // =====================================================================
 
+    /// <summary>Die Elemente zu <paramref name="selektor"/> außerhalb der Kachel „Kühlung“ — sie steht nicht im Kachelregister.</summary>
+    private static List<IElement> Registerkacheln<T>(IRenderedComponent<T> cut, string selektor) where T : Microsoft.AspNetCore.Components.IComponent
+        => cut.FindAll(selektor).Where(e => e.Closest(".epos-startkachel-kuehlung") is null).ToList();
+
     /// <summary>
     /// <b>21 Kacheln über sechs Reiter</b> — fünf, vier, drei, sieben und zwei
     /// (ein Knopf und eine Kachel). Gezählt wird über alle Reiter hinweg, denn
@@ -263,7 +267,8 @@ public class StartseiteTests : EposBunitContext
             // Konfiguration...". Bis Auftrag #233 war der erste eine Bildkachel;
             // beide zaehlen unveraendert als Kachel der Startseite - die Zahl 21
             // haengt am Kachelregister, nicht an der Bauform.
-            int kacheln = cut.FindAll(".epos-kachel").Count;
+            // Die Kachel „Kühlung“ des Reiters Energieerzeuger steht nicht im Kachelregister.
+            int kacheln = Registerkacheln(cut, ".epos-kachel").Count;
             int knoepfe = cut.FindAll(".epos-startreiter-leiste .epos-knopf").Count
                           + cut.FindAll(".epos-simreiter-hauptknopf").Count;
 
@@ -382,7 +387,7 @@ public class StartseiteTests : EposBunitContext
         var cut = Zeige(bitmaske: 2 | 1024);
         cut.FindAll("[role='tab']")[3].Click();
 
-        var kacheln = cut.FindAll(".epos-kachel");
+        var kacheln = Registerkacheln(cut, ".epos-kachel");
         Assert.Equal(7, kacheln.Count);
 
         // Reihenfolge: WP, Heizkessel, Solarthermie, BHKW, PV, Stromspeicher, Puffer.
@@ -445,7 +450,7 @@ public class StartseiteTests : EposBunitContext
 
         Assert.True(gelesen > 1, "Die Seite hat nach dem Wechsel nicht neu gelesen.");
 
-        var punkte = cut.FindAll(".epos-kachel-statuspunkt");
+        var punkte = Registerkacheln(cut, ".epos-kachel-statuspunkt");
         Assert.Equal(7, punkte.Count);
         Assert.False(punkte[0].ClassList.Contains("epos-kachel-statuspunkt--aus"));
         Assert.False(punkte[4].ClassList.Contains("epos-kachel-statuspunkt--aus"));
@@ -1216,8 +1221,9 @@ public class StartseiteTests : EposBunitContext
 
         cut.FindAll("[role='tab']")[3].Click();
 
-        // Genau eine Karte fuehrt die Weiche, und die Weiche steht IN ihr.
-        var karten = cut.FindAll(".epos-startkachel-mit-wahl");
+        // Genau eine Karte fuehrt die Weiche, und die Weiche steht IN ihr. Die Kachel
+        // „Kühlung“ trägt denselben Wirt für ihre Auswahl (eigene Probe: ErzeugerReiterKuehlungTests).
+        var karten = cut.FindAll(".epos-startkachel-mit-wahl:not(.epos-startkachel-kuehlung)");
         Assert.Single(karten);
         Assert.NotNull(karten[0].QuerySelector(".epos-kachel"));
         Assert.NotNull(karten[0].QuerySelector(".epos-startkachel-wahl"));

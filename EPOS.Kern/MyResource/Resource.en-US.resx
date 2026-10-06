@@ -45326,8 +45326,32 @@ chart</value>
   <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
     <value>The project chillers cannot be opened — is a project open?</value>
   </data>
-  <data name="KMA_REITER_KNOPF" xml:space="preserve">
-    <value>Chillers…</value>
+  <data name="START_E_KUEHL_TITEL" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="START_E_KUEHL_TEXT" xml:space="preserve">
+    <value>Chillers of the project and heat pumps with cooling function</value>
+  </data>
+  <data name="START_E_KUEHL_KM" xml:space="preserve">
+    <value>Chillers</value>
+  </data>
+  <data name="START_E_KUEHL_WP" xml:space="preserve">
+    <value>Heat pumps in cooling mode</value>
+  </data>
+  <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
+    <value>{0} ({1} ×)</value>
+  </data>
+  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
+    <value>No chiller in the project — click the tile to add one.</value>
+  </data>
+  <data name="START_E_KUEHL_LEER" xml:space="preserve">
+    <value>The project has no chiller and no heat pump with cooling function. Clicking the tile opens the chillers of the project.</value>
+  </data>
+  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
+    <value>The project does not calculate cooling (project setting “Calculate cooling” under Simulation › Configuration is off): chillers and heat pumps in cooling mode stay out of operation in the simulation.</value>
+  </data>
+  <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
+    <value>The cooling mode of the heat pump could not be saved.</value>
   </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Chillers in the project</value>

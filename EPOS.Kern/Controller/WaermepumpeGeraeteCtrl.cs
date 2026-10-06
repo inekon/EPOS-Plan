@@ -118,6 +118,24 @@ namespace WindowsFormsApplication1
             return e.Ok ? null : e.Meldung;
         }
 
+        /// <summary>
+        /// Schaltet allein den <b>Kühlbetrieb</b> einer Projektkopie um und lässt Kaltwasser-Vorlauf und
+        /// Hilfsstromanteil, wie sie stehen — für die Auswahl „Wärmepumpen im Kühlbetrieb“ der Kachel
+        /// „Kühlung“ (Startseite, Reiter Energieerzeuger). Derselbe Schreibweg wie im
+        /// Konfigurationsdialog (<see cref="KuehlkonfigurationNachziehen"/> und damit
+        /// <see cref="WPCtrl.KuehlkonfigurationSchreiben"/> samt Sperrgründen).
+        /// </summary>
+        /// <returns><c>null</c> = geschrieben oder nichts zu tun; sonst der Grund im Klartext.</returns>
+        internal static string KuehlbetriebUmschalten(int idWp, int idProjekt, bool an)
+        {
+            if (idWp <= 0 || idProjekt <= 0) return null;
+            WPCtrl projekt = new WPCtrl();
+            projekt.ReadAll("ID=" + idWp);
+            if (projekt.items.Count == 0) return null;   // keine Projektkopie - nichts zu schreiben
+            WPModel ist = projekt.items[0];
+            return KuehlkonfigurationNachziehen(idWp, idProjekt, an, ist.KuehlVorlauf, ist.KuehlHilfsstromanteil);
+        }
+
         // =================================================================================
         // Der Schreibweg der STAMMFELDER in die Projektkopie (Anwenderentscheid 16.09.2026)
         // =================================================================================

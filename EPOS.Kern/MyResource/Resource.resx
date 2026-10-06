@@ -45333,8 +45333,32 @@ Chart</value>
   <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
     <value>Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet?</value>
   </data>
-  <data name="KMA_REITER_KNOPF" xml:space="preserve">
-    <value>Kältemaschinen…</value>
+  <data name="START_E_KUEHL_TITEL" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="START_E_KUEHL_TEXT" xml:space="preserve">
+    <value>Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion</value>
+  </data>
+  <data name="START_E_KUEHL_KM" xml:space="preserve">
+    <value>Kältemaschinen</value>
+  </data>
+  <data name="START_E_KUEHL_WP" xml:space="preserve">
+    <value>Wärmepumpen im Kühlbetrieb</value>
+  </data>
+  <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
+    <value>{0} ({1} ×)</value>
+  </data>
+  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
+    <value>Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an.</value>
+  </data>
+  <data name="START_E_KUEHL_LEER" xml:space="preserve">
+    <value>Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts.</value>
+  </data>
+  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
+    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb.</value>
+  </data>
+  <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
+    <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
   </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Kältemaschinen im Projekt</value>

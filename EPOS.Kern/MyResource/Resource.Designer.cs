@@ -66872,15 +66872,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen… ähnelt.
-        /// </summary>
-        public static string KMA_REITER_KNOPF {
-            get {
-                return ResourceManager.GetString("KMA_REITER_KNOPF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
         /// </summary>
         public static string KMA_SP_ANZAHL {
@@ -102222,6 +102213,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_E_KOPF {
             get {
                 return ResourceManager.GetString("START_E_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an. ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KEINE_KM {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KEINE_KM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} ×) ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM_ANZAHL {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts. ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_LEER {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb. ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_TEXT {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_TITEL {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen im Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_WP {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_WP", resourceCulture);
             }
         }
         
