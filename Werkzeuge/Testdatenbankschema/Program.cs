@@ -2945,8 +2945,9 @@ namespace Testdatenbankschema
             }
 
             // ---- Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E96): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
-            //      Name, Quellenhinweis, Nummern und Namen der 43 Nutzungen ohne Werte, Ids bleiben. Aus DERSELBEN Quelle,
-            //      aus der sich SchemaMigration.Schritt_RaumnutzungDinTs bedient. Wiederholbar, kein DDL.
+            //      Name, Quellenhinweis, Nummern und Namen der 43 Nutzungen ohne Werte, Ids bleiben; Zuordnung DIN 19 -> Verkehr,
+            //      20 -> Lager, wo keine Zeile steht. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_RaumnutzungDinTs
+            //      bedient. Wiederholbar, kein DDL.
             //
             //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest den Katalog.
             string nrDinTs = RaumnutzungDinTsSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);

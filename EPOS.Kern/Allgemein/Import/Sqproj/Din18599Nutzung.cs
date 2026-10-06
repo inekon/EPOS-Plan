@@ -11,6 +11,10 @@ namespace WindowsFormsApplication1
     /// <para><b>Zählung:</b> Die Schlüssel sind Nummern der Projektdatei und zählen nach DIN V 18599-10:2018-09 (28, 29
     /// Bibliothek). Die Kategorie DIN des Katalogs führt die DIN/TS 18599-10:2025-10, die ab 22 neu nummeriert (dort 30, 31);
     /// ob HottCAD wie 2018 oder wie 2025 zählt, belegt keine Datei im Repositorium (Konzept Nutzungsprofile 5.4, E96).</para>
+    /// <para><b>Gleich zur Saat:</b> Die Tabelle trägt jede Nummer der ausgelieferten Zuordnung <c>DIN_NUMMER</c>, deren Muster
+    /// eine alte Kennung hat (Büro, Schule, Wohnen). Die Nummern der Muster ohne Kennung — 12, 13 Gastronomie, 31, 35 Sport,
+    /// 19 Verkehr, 20 und 41 Lager (E96) — führt allein die Zuordnung des Katalogs (<see cref="RaumnutzungSaat.Zuordnungen"/>);
+    /// ohne Katalog gibt es diese Muster nicht, die Zone bleibt dann ohne Nutzung, und die Nummer steht im Beleg.</para>
     /// <para><b>Vorgabe im Code</b> (Konzept Nutzungsprofile NP-F12): Vorrang hat die Zuordnung <c>DIN_NUMMER</c> in
     /// <c>Tab_Raumnutzungszuordnung</c>; diese Tabelle gilt nur, wenn dort keine Zeile steht oder kein Katalog vorliegt
     /// (<see cref="Raumnutzungsvorbelegung"/>).</para>

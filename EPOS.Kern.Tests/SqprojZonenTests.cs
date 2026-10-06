@@ -148,6 +148,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Simulationszonen", "1", "DIN-V-18599-Zonen", "2" }, sim.Werte);
         }
 
+        /// <summary>Ohne Katalog gilt die Vorgabe im Code: 20 hat keine alte Kennung (mit Katalog → Muster Lager, E96).</summary>
         [Fact]
         public void Eine_Profilnummer_ohne_Entsprechung_laesst_die_Zone_ohne_Nutzung()
         {
@@ -170,6 +171,7 @@ namespace EPOS.Kern.Tests
         [InlineData(70, "WOHNEN")]
         [InlineData(71, "WOHNEN")]
         [InlineData(6, null)]
+        [InlineData(19, null)]
         [InlineData(20, null)]
         public void Die_feste_Nutzungstabelle(int nummer, string nutzung) => Assert.Equal(nutzung, Din18599Nutzung.Nutzung(nummer));
 

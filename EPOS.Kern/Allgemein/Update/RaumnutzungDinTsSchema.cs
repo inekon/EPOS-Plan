@@ -25,11 +25,15 @@ namespace WindowsFormsApplication1
     //      zuerst geparkt (Nummer leer, Hilfsname), dann gesetzt.
     //   3. Die uebrigen Nutzungen der Ausgabe 2025 (19) entstehen ohne Werte; fehlt die Kategorie, entsteht
     //      sie aus der Saat.
+    //   4. Die Zuordnung DIN_NUMMER bekommt die ausgelieferten Zeilen 19 -> EPOS-Muster Verkehr und
+    //      20 -> EPOS-Muster Lager (E96, Konzept 5.4) - nur, wenn fuer den Schluessel noch keine Zeile steht;
+    //      eine Zeile des Anwenders (auch "keine") bleibt. 19 und 20 zaehlen 2018 und 2025 gleich.
     //
     // WAS ER NICHT ANFASST: eigene Kategorien, Profile und Zuordnungen des Anwenders, jedes Profil, das
-    // nicht zur Saat 2018 gehoert, die Zuordnung DIN_NUMMER (sie schluesselt die Nummer der
-    // HottCAD-Projektdatei, deren Zaehlung kein Beleg im Repositorium entscheidet; Konzept 5.4) und die
-    // Profilnamen, die als Kopie an Zone und Kalender stehen (Q41). Trifft der Umbau auf eine fremde Zeile
+    // nicht zur Saat 2018 gehoert, jede Zeile der Zuordnung, die schon steht, und jeden Schluessel DIN_NUMMER
+    // ab 22 (er schluesselt die Nummer der HottCAD-Projektdatei, deren Zaehlung ab 22 kein Beleg im
+    // Repositorium entscheidet; Konzept 5.4) und die Profilnamen, die als Kopie an Zone und Kalender stehen
+    // (Q41). Trifft der Umbau auf eine fremde Zeile
     // gleichen Namens oder gleicher Nummer, bricht er benannt ab und nimmt alles zurueck.
     //
     // DIE SAAT EINER NEUEN DATENBANK steht schon in RaumnutzungSaat (Ausgabe 2025); Schritt 189 saet sie
@@ -45,7 +49,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>NP5b</b> — die ausgelieferte Kategorie DIN auf die DIN/TS 18599-10:2025-10: Name, Quellenhinweis,
-    /// Nummern und Namen der 43 Nutzungen, Ids bleiben (E96). EINE Quelle für Migration, Werkzeug, Testkopie und
+    /// Nummern und Namen der 43 Nutzungen, Ids bleiben, dazu die Zuordnung DIN 19 und 20 (E96). EINE Quelle für Migration,
+    /// Werkzeug, Testkopie und
     /// Nachweis (ADR-001 Option C). Anlass und Grenzen stehen im Kopf der Datei.
     /// </summary>
     public static class RaumnutzungDinTsSchema
@@ -54,6 +59,16 @@ namespace WindowsFormsApplication1
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht (angemeldet als 190).
         /// </summary>
         public const int SCHRITT = RaumnutzungSchema.SCHRITT + 1;
+
+        /// <summary>
+        /// Die Schlüssel <c>DIN_NUMMER</c>, die der Schritt der Zuordnung beifügt: 19 (Verkehrsflächen) und 20 (Lager, Technik,
+        /// Archiv) zählen in beiden Ausgaben gleich (E96, Konzept 5.4). Ihre Zeilen stehen in <see cref="RaumnutzungSaat.Zuordnungen"/>.
+        /// </summary>
+        public static readonly IReadOnlyList<string> SCHLUESSEL_ZUORDNUNG = new[] { "19", "20" };
+
+        /// <summary>Die ausgelieferten Zuordnungszeilen der <see cref="SCHLUESSEL_ZUORDNUNG"/> — aus der Saat, eine Quelle.</summary>
+        public static IReadOnlyList<RaumnutzungSaatzuordnung> Zuordnungen { get; } = RaumnutzungSaat.Zuordnungen
+            .Where(z => z.Art == RaumnutzungSchema.ZUORDNUNG_DIN && SCHLUESSEL_ZUORDNUNG.Contains(z.Schluessel)).ToList();
 
         /// <summary>Der Name der Kategorie in der Saat von Schritt 189 vor E96 (Ausgabe 2018).</summary>
         public const string KATEGORIE_DIN_2018 = "DIN V 18599-10";
@@ -146,6 +161,15 @@ namespace WindowsFormsApplication1
             " k WHERE k.\"ID\" = ? AND NOT EXISTS (SELECT 1 FROM " + P + " p WHERE p.\"ID_Katalog\" = k.\"ID\" AND " +
             "(p.\"Bezeichner\" = ? COLLATE NOCASE OR p.\"Nummer\" = ? COLLATE NOCASE))";
 
+        /// <summary>
+        /// Eine Zeile der Zuordnung auf ein ausgeliefertes EPOS-Muster — nur, wenn für (Art, Schlüssel) noch keine Zeile steht
+        /// (eindeutiger Index ohne Unterschied der Schreibung) und das Muster besteht.
+        /// </summary>
+        internal const string SQL_SAAT_ZUORDNUNG =
+            "INSERT OR IGNORE INTO \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" (\"Art\", \"Schluessel\", \"ID_Profil\", \"ReadOnly\") " +
+            "SELECT ?, ?, p.\"ID\", 1 FROM " + P + " p JOIN " + K + " k ON k.\"ID\" = p.\"ID_Katalog\" " +
+            "WHERE k.\"ReadOnly\" = 1 AND k.\"Art\" = ? AND p.\"ReadOnly\" = 1 AND p.\"Bezeichner\" = ? COLLATE NOCASE";
+
         /// <summary>Steht die Nutzung genau so (Nummer, Name, ausgeliefert) in der Kategorie?</summary>
         internal const string SQL_ZAHL_PROFIL_GENAU =
             "SELECT COUNT(*) FROM " + P + " WHERE \"ID_Katalog\" = ? AND \"ReadOnly\" = 1 AND \"Nummer\" = ? AND \"Bezeichner\" = ?";
@@ -162,14 +186,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Wie viel noch fehlt: die Kategorie unter dem Namen 2018 (1), die Kategorie 2025 fehlt (1 und je Nutzung 1) oder
-        /// trägt andere Texte (1), je Nutzung der Ausgabe 2025, die nicht genau so steht (1). −1 ohne die Tabellen von
-        /// Schritt 189.
+        /// trägt andere Texte (1), je Nutzung der Ausgabe 2025, die nicht genau so steht (1), je Schlüssel der
+        /// <see cref="SCHLUESSEL_ZUORDNUNG"/> ohne Zeile (1). −1 ohne die Tabellen von Schritt 189.
         /// </summary>
         public static int Offen()
         {
             if (!Voraussetzungen().All(DataRepository.TabelleVorhanden)) return -1;
             RaumnutzungSaatkategorie din = KategorieDin;
             int offen = 0;
+            foreach (RaumnutzungSaatzuordnung z in Zuordnungen)
+                if (Zahl(DataRepository.ExecuteScalar(RaumnutzungSchema.SQL_ZAHL_ZUORDNUNG_GESAAT,
+                                                      new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel))) == 0)
+                    offen++;
             if (Id(DataRepository.ExecuteScalar(SQL_KATEGORIE, new DbParam("@a", din.Art), new DbParam("@b", KATEGORIE_DIN_2018))) != null)
                 offen++;
             long? id = Id(DataRepository.ExecuteScalar(SQL_KATEGORIE, new DbParam("@a", din.Art), new DbParam("@b", din.Bezeichner)));
@@ -184,7 +212,7 @@ namespace WindowsFormsApplication1
             return offen;
         }
 
-        /// <summary>Steht die Kategorie DIN auf der Ausgabe 2025?</summary>
+        /// <summary>Steht die Kategorie DIN auf der Ausgabe 2025, und trägt die Zuordnung die Schlüssel 19 und 20?</summary>
         public static bool Vollstaendig() => Offen() == 0;
 
         // =================================================================
@@ -192,9 +220,11 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>
-        /// Führt den Schritt in EINEM Vorgang aus — Umbau der Fassung 2018, Kategorie und Nutzungen der Ausgabe 2025 —
+        /// Führt den Schritt in EINEM Vorgang aus — Umbau der Fassung 2018, Kategorie und Nutzungen der Ausgabe 2025, Zuordnung
+        /// DIN 19 und 20 —
         /// für Migration der Schale, <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c>. <b>Wiederholbar.</b>
-        /// Fehlt eine Voraussetzung oder belegt eine fremde Zeile Name oder Nummer, wirft er benannt und nimmt alles zurück.
+        /// Fehlt eine Voraussetzung, belegt eine fremde Zeile Name oder Nummer oder fehlt ein ausgeliefertes Muster der
+        /// Zuordnung, wirft er benannt und nimmt alles zurück.
         /// </summary>
         /// <param name="bericht">Nimmt Zeilen auf; darf <c>null</c> sein.</param>
         /// <returns>Die Zahl der geänderten oder angelegten Zeilen; 0, wenn alles stand.</returns>
@@ -207,7 +237,7 @@ namespace WindowsFormsApplication1
                                                         " ist nicht gelaufen.");
             if (Vollstaendig())
             {
-                bericht?.Add("steht bereits - Kategorie DIN/TS 18599-10 mit 43 Nutzungen; nichts zu tun");
+                bericht?.Add("steht bereits - Kategorie DIN/TS 18599-10 mit 43 Nutzungen, Zuordnung DIN 19 und 20; nichts zu tun");
                 return 0;
             }
 
@@ -217,11 +247,13 @@ namespace WindowsFormsApplication1
             {
                 zeilen.AddRange(AlteFassungUmbauen(v, ref aenderungen));
                 zeilen.AddRange(Saat(v, ref aenderungen));
+                zeilen.AddRange(ZuordnungErgaenzen(v, ref aenderungen));
                 v.Commit();
             }
             if (bericht != null)
                 foreach (string z in zeilen) bericht.Add(z);
-            bericht?.Add("KEIN Kennwert, keine Zuordnung und keine Zeile des Anwenders geaendert; der Referenzlauf bleibt byte-gleich");
+            bericht?.Add("KEIN Kennwert und keine Zeile des Anwenders geaendert, die Zuordnung nur ergaenzt; der Referenzlauf bleibt " +
+                         "byte-gleich");
             return aenderungen;
         }
 
@@ -296,6 +328,31 @@ namespace WindowsFormsApplication1
             {
                 "Saat: " + T(kategorie) + " Kategorie, " + T(texte) + " Textsatz, " + T(profile) +
                 " Nutzung(en) der Ausgabe 2025 ohne Werte angelegt",
+            };
+        }
+
+        /// <summary>
+        /// Die Zuordnung DIN 19 und 20 im laufenden Vorgang: je Schlüssel ohne Zeile die ausgelieferte Zeile auf das EPOS-Muster
+        /// (<see cref="Zuordnungen"/>); eine Zeile des Anwenders bleibt. Fehlt das Muster, wirft er benannt.
+        /// </summary>
+        private static List<string> ZuordnungErgaenzen(DbVorgang v, ref int aenderungen)
+        {
+            int neu = 0;
+            foreach (RaumnutzungSaatzuordnung z in Zuordnungen)
+            {
+                neu += v.Ausfuehren(SQL_SAAT_ZUORDNUNG, new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel),
+                                    new DbParam("@k", RaumnutzungSchema.ART_EPOS_MUSTER), new DbParam("@p", z.Profil));
+                if (Zahl(v.Skalar(RaumnutzungSchema.SQL_ZAHL_ZUORDNUNG_GESAAT, new DbParam("@a", z.Art),
+                                  new DbParam("@s", z.Schluessel))) == 0)
+                    throw new InvalidOperationException("Schemaschritt " + Nr + ": Das ausgelieferte Muster \"" + z.Profil +
+                                                        "\" der Kategorie \"" + z.Kategorie + "\" fehlt - die Zuordnung " +
+                                                        z.Art + " " + z.Schluessel + " entsteht nicht; der Schritt nimmt alles zurueck.");
+            }
+            aenderungen += neu;
+            return new List<string>
+            {
+                "Zuordnung " + RaumnutzungSchema.ZUORDNUNG_DIN + " " + string.Join(", ", SCHLUESSEL_ZUORDNUNG) + ": " + T(neu) +
+                " Zeile(n) auf die EPOS-Muster angelegt, " + T(Zuordnungen.Count - neu) + " stand(en) schon",
             };
         }
 

@@ -952,7 +952,7 @@ namespace EPOS.Kern.Tests
                 // Kalender und Vorlage (Tabellenneubau), Tab_Zone.Nutzungsprofil. Wiederholbar, ergebnisneutral.
                 RaumnutzungSchema.Ausfuehren(null);
                 // Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E96): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
-                // Nummern und Namen ohne Werte, Ids bleiben. Wiederholbar, ergebnisneutral.
+                // Nummern und Namen ohne Werte, Ids bleiben; Zuordnung DIN 19 und 20. Wiederholbar, ergebnisneutral.
                 RaumnutzungDinTsSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);

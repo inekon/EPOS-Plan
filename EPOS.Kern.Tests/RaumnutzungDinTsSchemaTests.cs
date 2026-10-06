@@ -11,8 +11,9 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Schritt 190 — Kategorie DIN nach DIN/TS 18599-10:2025-10</b> (NP5b, E96, <see cref="RaumnutzungDinTsSchema"/>):
     /// Nummer, Ziel und Register; die Umnummerierung ab 22; die Testdatenbank auf dem Schritt; der Umbau der Saat 2018 mit
-    /// bleibenden Ids, unberührter Zuordnung und unberührten Zeilen des Anwenders; Schritt 189 auf der Saat 2018 ohne zweite
-    /// Kategorie; der benannte Abbruch samt Rücknahme. Nur Nummern und Namen — kein Wert der Norm (E90).
+    /// bleibenden Ids, stehender Zuordnung und unberührten Zeilen des Anwenders; die Zuordnung DIN 19 → Verkehr und
+    /// 20 → Lager nur, wo keine Zeile steht; Schritt 189 auf der Saat 2018 ohne zweite Kategorie; der benannte Abbruch samt
+    /// Rücknahme. Nur Nummern und Namen — kein Wert der Norm (E90).
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class RaumnutzungDinTsSchemaTests : IDisposable
@@ -99,6 +100,12 @@ namespace EPOS.Kern.Tests
                                   string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte + " IS NOT NULL")) + ")"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile z JOIN Tab_Raumnutzungsprofil p ON p.ID = z.ID_Profil WHERE p.ID_Katalog = " + k));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsstunden z JOIN Tab_Raumnutzungsprofil p ON p.ID = z.ID_Profil WHERE p.ID_Katalog = " + k));
+
+            // Die Zuordnung DIN 19 und 20 steht ausgeliefert auf den EPOS-Mustern Verkehr und Lager (E96).
+            Assert.Equal(new[] { "19", "20" }, RaumnutzungDinTsSchema.Zuordnungen.Select(z => z.Schluessel).OrderBy(s => s, StringComparer.Ordinal));
+            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung WHERE ReadOnly = 1"));
+            Assert.Equal(RaumnutzungSaat.VERKEHR, ZuordnungsprofilDin("19"));
+            Assert.Equal(RaumnutzungSaat.LAGER, ZuordnungsprofilDin("20"));
         }
 
         [Fact]
@@ -117,6 +124,7 @@ namespace EPOS.Kern.Tests
             DataRepository.ExecuteNonQuery("INSERT INTO Tab_Raumnutzungszuordnung (Art, Schluessel, ID_Profil, ReadOnly) VALUES ('HOTTCAD_RAUMTYP', 'mrtProbe', ?, 0)",
                                            new DbParam("@p", buehne));
             string zuordnungVorher = Zuordnungsbild();
+            Assert.DoesNotContain(";DIN_NUMMER;19;", zuordnungVorher, StringComparison.Ordinal);
 
             Assert.False(RaumnutzungDinTsSchema.Vollstaendig());
             Assert.True(RaumnutzungDinTsSchema.Offen() > 0);
@@ -126,6 +134,7 @@ namespace EPOS.Kern.Tests
             Assert.True(n > 0);
             Assert.Contains(bericht, z => z.Contains("24 ausgelieferte(s) Profil(e)", StringComparison.Ordinal));
             Assert.Contains(bericht, z => z.Contains("19 Nutzung(en) der Ausgabe 2025", StringComparison.Ordinal));
+            Assert.Contains(bericht, z => z.Contains("DIN_NUMMER 19, 20: 2 Zeile(n)", StringComparison.Ordinal));
             Assert.True(RaumnutzungDinTsSchema.Vollstaendig());
             Assert.True(RaumnutzungSchema.Vollstaendig());
 
@@ -143,8 +152,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(43L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = " + k));
             Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE ReadOnly = 1"));
 
-            // Zuordnung (ausgeliefert und eigen) und die eigene Kategorie unverändert.
-            Assert.Equal(zuordnungVorher, Zuordnungsbild());
+            // Zuordnung (ausgeliefert und eigen) und die eigene Kategorie unverändert; dazu DIN 19 und 20 auf den Mustern.
+            Assert.Equal(zuordnungVorher, Zuordnungsbild(ohneDin1920: true));
+            Assert.Equal(RaumnutzungSaat.VERKEHR, ZuordnungsprofilDin("19"));
+            Assert.Equal(RaumnutzungSaat.LAGER, ZuordnungsprofilDin("20"));
             Assert.Equal(buehne, Zahl("SELECT ID_Profil FROM Tab_Raumnutzungszuordnung WHERE Schluessel = 'mrtProbe'"));
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = " + eigen +
                                   " AND Nummer = '25' AND Bezeichner = 'Bühne' AND ReadOnly = 0"));
@@ -156,6 +167,46 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, RaumnutzungSchema.Ausfuehren(null));
             Assert.Equal(profile, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil"));
             Assert.Equal(seq, Zahl("SELECT seq FROM sqlite_sequence WHERE name = 'Tab_Raumnutzungsprofil'"));
+            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung WHERE ReadOnly = 1"));
+        }
+
+        [Fact]
+        public void Eine_eigene_Zeile_fuer_DIN_19_bleibt_DIN_20_kommt_dazu()
+        {
+            if (!_db.Vorhanden) return;
+            // Der Anwender hat 19 auf „keine“ gestellt; die Zeile 20 fehlt (eine Datenbank, die Schritt 190 vor E96 durchlief).
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Raumnutzungszuordnung SET ID_Profil = NULL, ReadOnly = 0 WHERE Art = 'DIN_NUMMER' AND Schluessel = '19'");
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Raumnutzungszuordnung WHERE Art = 'DIN_NUMMER' AND Schluessel = '20'");
+            string vorher = Zuordnungsbild(ohneDin1920: true);
+            Assert.Equal(1, RaumnutzungDinTsSchema.Offen());
+
+            var bericht = new List<string>();
+            Assert.Equal(1, RaumnutzungDinTsSchema.Ausfuehren(bericht));
+            Assert.Contains(bericht, z => z.Contains("DIN_NUMMER 19, 20: 1 Zeile(n)", StringComparison.Ordinal) &&
+                                          z.Contains("1 stand(en) schon", StringComparison.Ordinal));
+            Assert.True(RaumnutzungDinTsSchema.Vollstaendig());
+            Assert.Equal(vorher, Zuordnungsbild(ohneDin1920: true));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung WHERE Art = 'DIN_NUMMER' AND Schluessel = '19' " +
+                                  "AND ID_Profil IS NULL AND ReadOnly = 0"));
+            Assert.Equal(RaumnutzungSaat.LAGER, ZuordnungsprofilDin("20"));
+            Assert.Equal(1L, Zahl("SELECT ReadOnly FROM Tab_Raumnutzungszuordnung WHERE Art = 'DIN_NUMMER' AND Schluessel = '20'"));
+            Assert.Equal(0, RaumnutzungDinTsSchema.Ausfuehren(null));
+        }
+
+        [Fact]
+        public void Fehlt_das_Muster_der_Zuordnung_bricht_der_Schritt_benannt_ab_und_nimmt_alles_zurueck()
+        {
+            if (!_db.Vorhanden) return;
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Raumnutzungszuordnung WHERE Art = 'DIN_NUMMER' AND Schluessel IN ('19', '20')");
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1 AND Bezeichner = ?",
+                                           new DbParam("@b", RaumnutzungSaat.VERKEHR));
+            string vorher = Zuordnungsbild();
+
+            InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => RaumnutzungDinTsSchema.Ausfuehren(null));
+            Assert.Contains("Schemaschritt 190", ex.Message, StringComparison.Ordinal);
+            Assert.Contains("\"" + RaumnutzungSaat.VERKEHR + "\"", ex.Message, StringComparison.Ordinal);
+            Assert.Equal(vorher, Zuordnungsbild());   // auch die Zeile 20 ist zurückgenommen
+            Assert.False(RaumnutzungDinTsSchema.Vollstaendig());
         }
 
         [Fact]
@@ -198,7 +249,8 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Stellt die Kategorie DIN der Saat 2018 her (Name, Texte, 24 Paare, ohne die 19 neuen Nutzungen) und liefert die Id je
+        /// Stellt die Kategorie DIN der Saat 2018 her (Name, Texte, 24 Paare, ohne die 19 neuen Nutzungen, Zuordnung ohne
+        /// DIN 19 und 20) und liefert die Id je
         /// Nummer 2018 — aus der Saat 2025 rückwärts über <see cref="RaumnutzungDinTsSchema.Nummer2025"/>.
         /// </summary>
         private static Dictionary<string, long> Fassung2018Herstellen()
@@ -220,6 +272,7 @@ namespace EPOS.Kern.Tests
             DataRepository.ExecuteNonQuery("UPDATE Tab_Raumnutzungskatalog SET Bezeichner = ?, Beschreibung = ?, Quellenhinweis = ? WHERE ID = ?",
                                            new DbParam("@b", RaumnutzungDinTsSchema.KATEGORIE_DIN_2018), new DbParam("@d", BESCHREIBUNG_2018),
                                            new DbParam("@q", QUELLE_2018), new DbParam("@i", k));
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Raumnutzungszuordnung WHERE Art = 'DIN_NUMMER' AND Schluessel IN ('19', '20')");
             Assert.Equal(24L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = " + k));
             return ids;
         }
@@ -228,8 +281,11 @@ namespace EPOS.Kern.Tests
             => Convert.ToInt64(DataRepository.ExecuteScalar("SELECT ID FROM Tab_Raumnutzungskatalog WHERE ReadOnly = 1 AND Bezeichner = ?",
                                                             new DbParam("@b", RaumnutzungSaat.KATEGORIE_DIN)), CultureInfo.InvariantCulture);
 
-        private static string Zuordnungsbild()
-            => string.Join("|", DataRepository.GetDataTable("SELECT ID, Art, Schluessel, ID_Profil, ReadOnly FROM Tab_Raumnutzungszuordnung ORDER BY ID")
+        /// <summary>Die Zeilen der Zuordnung als Text; auf Wunsch ohne die Schlüssel DIN 19 und 20.</summary>
+        private static string Zuordnungsbild(bool ohneDin1920 = false)
+            => string.Join("|", DataRepository.GetDataTable("SELECT ID, Art, Schluessel, ID_Profil, ReadOnly FROM Tab_Raumnutzungszuordnung" +
+                                                            (ohneDin1920 ? " WHERE NOT (Art = 'DIN_NUMMER' AND Schluessel IN ('19', '20'))" : "") +
+                                                            " ORDER BY ID")
                 .Rows.Cast<DataRow>().Select(r => string.Join(";", r.ItemArray.Select(o => Convert.ToString(o, CultureInfo.InvariantCulture)))));
 
         private static string Profilbild()
@@ -237,6 +293,12 @@ namespace EPOS.Kern.Tests
                 .Rows.Cast<DataRow>().Select(r => string.Join(";", r.ItemArray.Select(o => Convert.ToString(o, CultureInfo.InvariantCulture)))))
                + "#" + string.Join("|", DataRepository.GetDataTable("SELECT ID, Bezeichner, Quellenhinweis FROM Tab_Raumnutzungskatalog ORDER BY ID")
                 .Rows.Cast<DataRow>().Select(r => string.Join(";", r.ItemArray.Select(o => Convert.ToString(o, CultureInfo.InvariantCulture)))));
+
+        /// <summary>Der Name des Profils, auf das die Zeile <c>DIN_NUMMER</c> des Schlüssels zeigt; <c>null</c> ohne Zeile oder bei „keine“.</summary>
+        private static string ZuordnungsprofilDin(string schluessel)
+            => DataRepository.ExecuteScalar("SELECT p.Bezeichner FROM Tab_Raumnutzungszuordnung z JOIN Tab_Raumnutzungsprofil p ON p.ID = z.ID_Profil " +
+                                            "JOIN Tab_Raumnutzungskatalog k ON k.ID = p.ID_Katalog WHERE z.Art = 'DIN_NUMMER' AND z.Schluessel = ? " +
+                                            "AND k.Art = 'EPOS_MUSTER' AND k.ReadOnly = 1 AND z.ReadOnly = 1", new DbParam("@s", schluessel)) is string s ? s : null;
 
         private static long Zahl(string sql) => Convert.ToInt64(DataRepository.ExecuteScalar(sql), CultureInfo.InvariantCulture);
     }

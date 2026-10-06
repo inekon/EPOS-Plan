@@ -36,6 +36,8 @@ namespace EPOS.Kern.Tests
             foreach ((int n, string kennung) in Din18599Nutzung.Tabelle)
                 Assert.Equal(new Planprofil(null, kennung), v.AusDinNummer(n));
             Assert.Null(v.AusDinNummer(31));
+            Assert.Null(v.AusDinNummer(19));   // Verkehr und Lager haben keine alte Kennung: ohne Katalog keine Nutzung
+            Assert.Null(v.AusDinNummer(20));
             Assert.Null(v.AusDinNummer(null));
             foreach (string k in GebaeudeZonierung.NUTZUNGSKLASSEN)
                 Assert.Equal(Zonenplan.NutzungAusKlasse(k), v.AusKlasse(k)?.Name);
@@ -72,7 +74,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ausgeliefert_belegt_die_neuen_Muster_vor_DIN_19_und_20_nicht()
+        public void Ausgeliefert_belegt_die_neuen_Muster_vor_auch_DIN_19_und_20()
         {
             if (!_db.Vorhanden) return;
             Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
@@ -81,8 +83,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(RaumnutzungSaat.SPORT, v.AusDinNummer(31)?.Name);
             Assert.Equal(RaumnutzungSaat.GASTRONOMIE, v.AusDinNummer(12)?.Name);
             Assert.Equal(RaumnutzungSaat.LAGER, v.AusDinNummer(41)?.Name);
-            Assert.Null(v.AusDinNummer(19));
-            Assert.Null(v.AusDinNummer(20));
+            // 19 und 20 zählen 2018 und 2025 gleich (E96): Verkehrsflächen → Verkehr; Lager, Technik, Archiv → Lager.
+            Assert.Equal(new Planprofil(MusterId(RaumnutzungSaat.VERKEHR), RaumnutzungSaat.VERKEHR), v.AusDinNummer(19));
+            Assert.Equal(new Planprofil(MusterId(RaumnutzungSaat.LAGER), RaumnutzungSaat.LAGER), v.AusDinNummer(20));
+            Assert.Null(v.AusDinNummer(6));
             Assert.Null(v.AusKlasse("Sanitaer"));
             Assert.Null(v.AusKlasse(GebaeudeZonierung.NUTZUNG_SONSTIGE));
         }

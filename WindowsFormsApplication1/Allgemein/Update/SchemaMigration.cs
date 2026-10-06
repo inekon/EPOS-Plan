@@ -5187,11 +5187,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Schritt <see cref="RaumnutzungDinTsSchema.SCHRITT"/> — <b>Kategorie DIN nach DIN/TS 18599-10:2025-10</b> (NP5b,
-        /// E95): Name und Quellenhinweis der ausgelieferten Kategorie, Nummern und Namen ihrer 43 Nutzungen ohne Werte;
-        /// die Ids der ausgelieferten Profile bleiben.
+        /// E96): Name und Quellenhinweis der ausgelieferten Kategorie, Nummern und Namen ihrer 43 Nutzungen ohne Werte;
+        /// die Ids der ausgelieferten Profile bleiben. Die Zuordnung <c>DIN_NUMMER</c> bekommt 19 → Verkehr und 20 → Lager,
+        /// wo für den Schlüssel keine Zeile steht.
         ///
-        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest den Katalog; Zeilen des Anwenders und die
-        /// Zuordnung bleiben, wie sie sind.</para>
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest den Katalog; Zeilen des Anwenders und jede
+        /// stehende Zeile der Zuordnung bleiben, wie sie sind.</para>
         /// </summary>
         public const int SCHRITT_RAUMNUTZUNG_DIN_TS = RaumnutzungDinTsSchema.SCHRITT;
 
@@ -7543,8 +7544,8 @@ namespace WindowsFormsApplication1
             // KATEGORIE DIN NACH DIN/TS 18599-10:2025-10 (NP5b). Quelle ist RaumnutzungDinTsSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_RAUMNUTZUNG_DIN_TS,
                         "Tab_Raumnutzungskatalog/Tab_Raumnutzungsprofil: Kategorie DIN nach DIN/TS 18599-10:2025-10",
-                        "Die Kategorie DIN truege die Nummern und Namen der DIN V 18599-10:2018-09. KEIN Rechenergebnis " +
-                        "aendert sich.",
+                        "Die Kategorie DIN truege die Nummern und Namen der DIN V 18599-10:2018-09, DIN 19 und 20 truegen " +
+                        "keine Zuordnung. KEIN Rechenergebnis aendert sich.",
                         Schritt_RaumnutzungDinTs),
         };
 
@@ -14435,7 +14436,8 @@ namespace WindowsFormsApplication1
 
             if (!RaumnutzungDinTsSchema.Vollstaendig())
             {
-                l.LetzterFehler = "Die Kategorie DIN steht nach dem Schritt nicht auf der DIN/TS 18599-10:2025-10.";
+                l.LetzterFehler = "Die Kategorie DIN steht nach dem Schritt nicht auf der DIN/TS 18599-10:2025-10, oder der " +
+                                  "Zuordnung fehlt DIN 19 oder 20.";
                 l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
                 return false;
             }

@@ -103,6 +103,8 @@ Code (`EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`), deren Kennung auf
 | 9 | Hörsaal, Auditorium | Schule | SCHULE |
 | 12 | Kantine | Gastronomie | — |
 | 13 | Restaurant | Gastronomie | — |
+| 19 | Verkehrsflächen | Verkehr | — |
+| 20 | Lager, Technik, Archiv | Lager | — |
 | 28 | Bibliothek – Lesesaal | Schule | SCHULE |
 | 29 | Bibliothek – Freihandbereich | Schule | SCHULE |
 | 31 | Turnhalle | Sport | — |
@@ -116,7 +118,10 @@ Kategorie DIN des Katalogs führt die DIN/TS 18599-10:2025-10 (E96, Schemaschrit
 Nutzungen tragen dort 30, 31 (Bibliothek), 33 (Turnhalle), 37 (Fitnessraum) und 43 (Lagerhallen); 1 bis 21 sind gleich.
 44 bis 47, 70 und 71 sind in keiner Ausgabe eine Nummer der Norm, sondern Werte der Projektdatei. Ob HottCAD ab 22 wie 2018
 oder wie 2025 zählt, entscheiden die Proben dieses Ordners nicht — sie entstehen synthetisch mit den Nummern 1, 20 und 71
-und runden Werten —; die Zuordnung bleibt deshalb bei 2018 (Konzept Nutzungsprofile 5.4).
+und runden Werten —; die Zuordnung bleibt deshalb ab 22 bei 2018 (Konzept Nutzungsprofile 5.4). 19 und 20 sind in beiden
+Ausgaben gleich (E96): Der Keller des Zonenhauses (Nummer 20) bekommt mit Katalog das Muster Lager samt Kalender aus dem
+Profil (`SqprojDatenbankTests`); ohne Katalog bleibt er ohne Nutzung und mit Beleg (`SqprojZonenTests`), weil die Muster
+Lager und Verkehr keine alte Kennung haben.
 
 Unter der Zonenregel Z6 belegt der Zonenplan eine beheizte Zone mit dem Profil ihrer Nutzungsklasse vor (Zuordnung
 `IFC_KLASSE`, Vorgabe `Zonenplan.NutzungAusKlasse`): Büro → Büro; Wohnen, Schlafen, Küche → Wohnen; Sport, Gastronomie,

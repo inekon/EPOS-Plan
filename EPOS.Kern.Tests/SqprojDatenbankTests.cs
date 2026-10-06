@@ -74,7 +74,8 @@ namespace EPOS.Kern.Tests
 
             GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, plan.Haken, null, plan.Zonieren());
             Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler).Select(m => m.ToString())));
-            Assert.Equal(new[] { null, RaumnutzungSaat.WOHNEN, RaumnutzungSaat.BUERO }, v.Zonennutzungen);   // NP-F23: Profil aus DIN_NUMMER
+            // NP-F23: Profil aus DIN_NUMMER — Keller 20 (Lager, Technik, Archiv) → Muster Lager (E96), EG 71, OG 1.
+            Assert.Equal(new[] { RaumnutzungSaat.LAGER, RaumnutzungSaat.WOHNEN, RaumnutzungSaat.BUERO }, v.Zonennutzungen);
             Assert.All(v.Zonenkonditionierungen, k => Assert.NotNull(k));
 
             using (DbVorgang vorgang = DataRepository.Vorgang())
@@ -87,8 +88,16 @@ namespace EPOS.Kern.Tests
             List<ZoneModel> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude).ToList();
             Assert.Equal(new[] { "Keller", "Simulation EG", "Simulation OG" }, zonen.Select(z => z.Bezeichner));
 
-            // Keller: Profil 20 ohne Entsprechung, kein Wert — kein Kalender.
-            Assert.Empty(Kalender(zonen[0].ID));
+            // Keller: Profil 20 → Muster Lager (E96); die Projektdatei liefert keinen Wert — der Kalender kommt ganz aus dem
+            // Profil, ohne Beleg der Projektdatei.
+            var keller = Kalender(zonen[0].ID);
+            Assert.NotEmpty(keller);
+            Assert.All(keller, k =>
+            {
+                Assert.Equal(RaumnutzungSaat.LAGER, k.Nutzung);   // NP-F14: Profilname
+                Assert.DoesNotContain("PdProfile", k.Bemerkung ?? "");
+            });
+            Assert.Equal(RaumnutzungSaat.LAGER, ZonenplanCtrl.Nutzung(zonen[0].ID));
 
             // EG: Heizen und Personen aus der Ganglinie mit Beleg, Lüftung als Bestandswert, Rest aus der Vorlage Wohnen.
             var eg = Kalender(zonen[1].ID).ToDictionary(k => k.Groesse);

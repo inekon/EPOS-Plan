@@ -291,7 +291,8 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Das Zonenhaus</b> zur IFC-Probe <c>ifc4_zonen.ifc</c> (Lager im Keller; Wohnen, Küche im EG; Schlafen, Bad,
         /// Abstellraum im OG): Simulationszonen EG (Ganglinie Heizen und Personen, Profil 71), OG (Profil 1) und Keller
-        /// (Profil 20 ohne Entsprechung), dazu die Nutzungszonen. Gemeinsam für den Datenbanktest und die Dialogprobe 37.
+        /// (Profil 20: mit Katalog das Muster Lager, ohne Katalog keine Nutzung), dazu die Nutzungszonen. Gemeinsam für den
+        /// Datenbanktest und die Dialogprobe 37.
         /// </summary>
         internal static SqprojProbenErzeuger Zonenhaus()
             => new SqprojProbenErzeuger()

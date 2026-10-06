@@ -796,6 +796,13 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > bleibt:** Kein Rechenweg liest den Katalog, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT
 > PASS, 646 CSV byte-gleich.
 
+> **Nachtrag — Zuordnung DIN 19 und 20 in Schritt 190 (E96), Basis unverändert.** Die Zuordnung `DIN_NUMMER` bekommt
+> 19 → EPOS-Muster Verkehr und 20 → EPOS-Muster Lager (ausgeliefert, nur wo für den Schlüssel keine Zeile steht; 19 und
+> 20 zählen 2018 und 2025 gleich): Saat 27 Zuordnungen, davon 18 `DIN_NUMMER`. Die Testdatenbank steht weiter auf
+> **190** (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer): **87 801 856 Byte, LFS-SHA-256
+> `882376e1c7b99359230864c9f5bbfd162ac7b5cbcd3d1e1d0a8740891d72b57d`**. **Die Basis bleibt:** Kein Rechenweg liest die
+> Zuordnung, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT PASS, 646 CSV byte-gleich.
+
 ### Die Vorgängerbasis R37 (Fahrplan)
 
 Einundzwanzig Projekte, 646 CSV, 4 265 Skalare, auf Linux eingefroren gegen die Testdatenbank `63b0bdae…` (Schemastand

@@ -33,7 +33,9 @@ namespace WindowsFormsApplication1
     //                    Nummer der HottCAD-Projektdatei (PdProfileUsage.ProfileUsageType), nicht die Nummer
     //                    des Katalogs: Er zaehlt wie bisher nach DIN V 18599-10:2018-09 (28, 29, 31, 35, 41),
     //                    weil keine Projektdatei im Repositorium belegt, dass HottCAD wie die DIN/TS 2025
-    //                    zaehlt (Konzept 5.4, B10). DIN 19 und 20 bleiben ohne Zuordnung.
+    //                    zaehlt (Konzept 5.4, B10). DIN 19 (Verkehrsflaechen) und 20 (Lager, Technik, Archiv)
+    //                    zaehlen in beiden Ausgaben gleich und fuehren auf die Muster Verkehr und Lager (E96);
+    //                    eine Datenbank, die Schritt 189 ohne sie durchlief, bekommt sie aus Schritt 190.
     //   Z_Nutzungsprofil die Musternamen Buero und Schule unter Quelle KONDITIONIERUNG auf BUERO_SCHULE,
     //                    wie die Kennungen BUERO und SCHULE (NP-F15); Wohnen und Sonstige bleiben
     //                    Vorgabe wie WOHNEN und SONSTIGE.
@@ -449,7 +451,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die ausgelieferte Zuordnung (Konzept 5.4): die heutigen festen Paare und die der neuen Muster (Q42).
         /// Jede zeigt auf ein EPOS-Muster, nie auf ein leeres DIN-Profil (NP-F13). Der Schlüssel <c>DIN_NUMMER</c> ist die
-        /// Nummer der Projektdatei und zählt nach DIN V 18599-10:2018-09, nicht nach der Kategorie DIN/TS 18599-10 (Kopf).
+        /// Nummer der Projektdatei und zählt nach DIN V 18599-10:2018-09, nicht nach der Kategorie DIN/TS 18599-10 (Kopf);
+        /// 19 und 20 zählen in beiden Ausgaben gleich (E96, <see cref="RaumnutzungDinTsSchema.SCHLUESSEL_ZUORDNUNG"/>).
         /// </summary>
         public static IReadOnlyList<RaumnutzungSaatzuordnung> Zuordnungen { get; } =
             Paare(RaumnutzungSchema.ZUORDNUNG_DIN, BUERO, "1", "2", "3", "4", "5")
@@ -457,7 +460,8 @@ namespace WindowsFormsApplication1
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, WOHNEN, "70", "71"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SPORT, "31", "35"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, GASTRONOMIE, "12", "13"))
-            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, LAGER, "41"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, LAGER, "20", "41"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, VERKEHR, "19"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_IFC, BUERO, "Buero"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_IFC, WOHNEN, "Wohnen", "Schlafen", "Kueche"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_IFC, SPORT, "Sport"))
