@@ -2,7 +2,7 @@
 
 Nachzug zu [`BN_A_Navigation_Protokoll.md`](BN_A_Navigation_Protokoll.md) (Variante A, #590): die Reiterzeile selbst
 bleibt, sie wird hier nur deutlicher gezeichnet. Statusnummer **#757**. Der gültige Stand steht im Code und im
-Stilblatt, hier steht, wie es geworden ist. Siehe [Statusdatei](../../aktuell/Status_iOS_Migration.md).
+Stilblatt, hier steht, wie es geworden ist. Siehe [Statusdatei](../../../aktuell/Status_iOS_Migration.md).
 
 Sitzung „Berichterstellung“, 06.10.2026, Opus 5.5 im Worktree, orchestriert von Fable 5.1. Kein Schemaschritt, kein
 Rechenweg, keine Referenzbasis berührt; `EPOS.iOS/` nicht berührt.
