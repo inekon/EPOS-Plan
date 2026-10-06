@@ -162,6 +162,15 @@ namespace WindowsFormsApplication1
                || (Zonenkalender != null && Zonenkalender.Values.Any(k => k != null && k.Count > 0));
 
         /// <summary>
+        /// HC-5 (F10): die Grundrisse je Zonen-Id in der Folge der Zeilen; Zeilen ohne Zone (<c>ID_Zone</c> NULL) übergeht der Export.
+        /// </summary>
+        internal static IReadOnlyDictionary<int, IReadOnlyList<Raumgrundriss>> GrundrisseJeZone(IEnumerable<Raumgrundriss> zeilen)
+            => (zeilen ?? Array.Empty<Raumgrundriss>())
+               .Where(x => x?.IdZone != null)
+               .GroupBy(x => x.IdZone.Value)
+               .ToDictionary(x => x.Key, x => (IReadOnlyList<Raumgrundriss>)x.ToList());
+
+        /// <summary>
         /// Derselbe Satz mit einer anderen Postleitzahl — der Exportdialog bildet den Plan zu jeder
         /// Eingabe neu, ohne die Datenbank ein zweites Mal zu fragen (Stufe G7a, Welle W3).
         /// </summary>
@@ -323,10 +332,7 @@ namespace WindowsFormsApplication1
                 Zonenkalender = zonenkalender,
                 Zonenvermerke = vermerke,
                 Zonennutzungen = nutzungen,
-                Zonengrundrisse = new GebaeudeImportCtrl().LesenRaumgrundrisse(g.ID_Gebaeude)
-                    .Where(x => x.IdZone.HasValue)
-                    .GroupBy(x => x.IdZone.Value)
-                    .ToDictionary(x => x.Key, x => (IReadOnlyList<Raumgrundriss>)x.ToList()),
+                Zonengrundrisse = GrundrisseJeZone(new GebaeudeImportCtrl().LesenRaumgrundrisse(g.ID_Gebaeude)),
             };
         }
     }
