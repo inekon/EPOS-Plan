@@ -14934,6 +14934,9 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-projektdateiprofile-knoepfe {
     display: flex;
     flex-wrap: wrap;
+    gap: 6px;
+}
+
 /* NP4c: Editor "Zeitverlauf je Groesse" im Blatt "Nutzungsprofile" - Groessenreiter, Umschalter
    (aus Kennwerten | Zeilenbild | Stundenprofil), Zeilenbild als Tabelle mit Feldern in Zellbreite,
    Stundenprofil als umbrechendes Raster aus 24 Feldern je Tagesart, Vorschau darunter. */
