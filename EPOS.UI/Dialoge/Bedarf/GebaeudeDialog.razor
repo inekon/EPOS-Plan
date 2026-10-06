@@ -47,15 +47,17 @@
 
    DER GEBAEUDEEXPORT (Stufe G7a, Welle W3): der Knopf "Exportieren (gbXML)..." neben "Huelle und
    Zonen..." oeffnet den Exportdialog als siebte Ueberlagerung - fuer die Projektkopie der markierten
-   Zeile, die ohne Kopie (eben aufgenommen) weich gesperrt ist. Hat die Zeile ungespeicherte
+   Zeile; eine eben aufgenommene Zeile ohne Kopie speichert der Klick zuerst still (ListeSpeichern). Hat die Zeile ungespeicherte
    Aenderungen, sagt der Exportdialog, dass der gespeicherte Stand exportiert wird. Nach dem
    Schreiben steht die Rueckmeldung mit Pfad im Banner. Kein Delegat, kein Knopf.
 
-   DIE BAUSTOFF-ZUORDNUNGEN DES PROJEKTS (Nacharbeit G4b): der Knopf "Baustoff-Zuordnungen..." am Ende
-   des Aktionsschlitzes oeffnet die Liste der Zuordnungen von Materialnamen zu Katalogbaustoffen, die
-   sich das Projekt beim Gebaeudeimport gemerkt hat, als achte Ueberlagerung; einzelne lassen sich dort
-   entfernen, geschrieben mit deren OK (nicht mit dem OK dieses Dialogs). Die Zuordnungen gelten fuer
-   das Projekt, nicht fuer die markierte Zeile - deshalb hier und nicht im Import. Kein Delegat, kein
+   DIE BAUSTOFF-ZUORDNUNGEN DES PROJEKTS (Nacharbeit G4b): der Knopf "Baustoff-Zuordnungen..." steht
+   in der Leiste unter dem Katalog gleich neben "Importieren (gbXML, IFC)..." (Anwenderentscheid
+   06.10.2026) - die Zuordnungen von Materialnamen zu Katalogbaustoffen entstehen beim Gebaeudeimport
+   und gelten fuer das Projekt, nicht fuer die markierte Zeile; der Importdialog lebt nur waehrend
+   eines Imports, die Liste soll auch dazwischen erreichbar sein. Er oeffnet sie als achte
+   Ueberlagerung; einzelne lassen sich dort entfernen, geschrieben mit deren OK (nicht mit dem OK
+   dieses Dialogs). Die Rueckmeldung steht unter der Leiste. Im Assistenten und ohne Delegat kein
    Knopf.
 
    "IN DB UEBERNEHMEN": der dritte Knopf der Uebernahmeleiste schreibt die Projektkopie der
@@ -185,6 +187,15 @@
                 {
                     <button type="button" class="epos-knopf epos-importknopf" title="@BtnImportHinweis"
                             @onclick="BeiImport">@BtnImportText</button>
+                }
+                @* Nacharbeit G4b, Anwenderentscheid 06.10.2026: die gemerkten Baustoff-Zuordnungen
+                   des Projekts beim Import, wo sie entstehen - sie gelten fuer das ganze Projekt,
+                   nicht fuer die markierte Zeile. Im Assistenten und ohne Delegat kein Knopf. *@
+                @if (BaustoffzuordnungenGaben is not null && !Wizard)
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
+                            title="@BtnBaustoffzuordnungenHinweis"
+                            @onclick="BeiBaustoffzuordnungen">@BtnBaustoffzuordnungenText</button>
                 }
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
@@ -357,14 +368,6 @@
                             @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
                 }
 
-                @* Nacharbeit G4b: die gemerkten Baustoff-Zuordnungen des Projekts - sie gelten fuer das
-                   ganze Projekt, nicht fuer die markierte Zeile. Kein Delegat, kein Knopf. *@
-                @if (BaustoffzuordnungenGaben is not null)
-                {
-                    <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
-                            title="@BtnBaustoffzuordnungenHinweis"
-                            @onclick="BeiBaustoffzuordnungen">@BtnBaustoffzuordnungenText</button>
-                }
             </Aktionen>
         </SpeichernLeiste>
     }
@@ -1599,7 +1602,7 @@
     private void BaustoffzuordnungenFertig(int? entfernt)
     {
         _baustoffzuordnungenGaben = null;
-        if (entfernt is > 0) Melden(Format(MeldungBaustoffzuordnungenEntfernt, entfernt.Value), WarnStufe.Hinweis);
+        if (entfernt is > 0) Melden(Format(MeldungBaustoffzuordnungenEntfernt, entfernt.Value), WarnStufe.Hinweis, amKatalog: true);
     }
 
     /// <summary>
