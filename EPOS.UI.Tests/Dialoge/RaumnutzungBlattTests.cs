@@ -342,7 +342,7 @@ public class RaumnutzungBlattTests : EposBunitContext
     //  Der Zugang im Wirt (Konzept Nutzungsprofile 6.2, NP-F22)
     // =====================================================================
 
-    private IRenderedComponent<GebaeudeKatalogDialog> Wirt(RaumnutzungWeg weg)
+    private IRenderedComponent<GebaeudeKatalogDialog> Wirt(RaumnutzungWeg weg, bool gesperrt = false)
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
@@ -351,6 +351,8 @@ public class RaumnutzungBlattTests : EposBunitContext
             .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
             .Add(x => x.Konditionierung, KalenderkarteTests.Weg(null))
             .Add(x => x.Raumnutzung, weg)
+            .Add(x => x.Gesperrt, gesperrt)
+            .Add(x => x.SperrGrund, gesperrt ? "Ausgelieferter Satz" : "")
             .Add(x => x.EntprellungMs, 0));
         KonditionierungVorlagenDialogTests.ReiterWaehlen(cut, "Konditionierung");
         return cut;
@@ -538,5 +540,42 @@ public class RaumnutzungBlattTests : EposBunitContext
 
         cut.Find(".epos-blatt-zurueck").Click();
         Assert.Null(Feld("np_kuehl_soll").Lesen());
+    }
+
+    /// <summary>
+    /// <b>Das Blatt ist katalogweit</b> (NP2b-5b): Der Schreibschutz eines gesperrten Gebäudes sperrt dessen Felder für den
+    /// Assistenten, nicht die Felder <c>np_*</c> des offenen Blatts — ein eigenes Profil bleibt setzbar; ausgelieferte Profile
+    /// lehnt der Zugang selbst ab.
+    /// </summary>
+    [Fact]
+    public void Der_Schreibschutz_des_Gebaeudes_sperrt_die_Felder_des_Blatts_nicht()
+    {
+        IRenderedComponent<GebaeudeKatalogDialog> cut = Wirt(Probekatalog().Weg(), gesperrt: true);
+        Assert.True(cut.Instance.IstGesperrt);
+        string maske = WindowsFormsApplication1.KiMaskennamen.GEBAEUDE_KATALOG;
+        string? Vorbedingung(string feld, string wert)
+        {
+            var parameter = new Dictionary<string, object?> { ["maske"] = maske, ["feld"] = feld, ["wert"] = wert };
+            var schicht = new WindowsFormsApplication1.KiAusfuehrung { Schreibrecht = () => true };
+            KiKern.KiPruefErgebnis p = KiKern.KiPruefung.Pruefe(schicht.Register, "feld_setzen", parameter);
+            Assert.True(p.Gueltig, p.FehlerText());
+            return schicht.Register.Finde("feld_setzen")!.Vorbedingung!(p.Aufruf!);
+        }
+
+        cut.Find(".epos-kond-nutzungsprofile").Click();
+        cut.Find("[data-kategorie=\"2\"] .epos-raumnutzung-kategorie-waehlen").Click();
+        cut.Find("[data-profil=\"12\"] .epos-raumnutzung-profil-waehlen").Click();
+
+        Func<bool> vorher = WindowsFormsApplication1.Schreibnaht.Schreibrecht;
+        WindowsFormsApplication1.Schreibnaht.Schreibrecht = WindowsFormsApplication1.Schreibnaht.ImmerErlaubt;
+        try
+        {
+            Assert.Null(Vorbedingung("np_kuehl_soll", "25"));
+            Assert.Contains("Ausgelieferter Satz", Vorbedingung("u_aussenwand", "0.3") ?? "");
+        }
+        finally
+        {
+            WindowsFormsApplication1.Schreibnaht.Schreibrecht = vorher;
+        }
     }
 }
