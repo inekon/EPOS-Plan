@@ -134,6 +134,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // GebaeudeKatalogKiSicht); die Tabelle führt je Kind EINEN Wirt.
         new("KonditionierungReiter",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         new("KonditionierungMatrix",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP3 O2 (E59): „Aufheizzeit manuell (h)" im Reiter „Konditionierung" - nur in der Betriebsart Projekt.
+        new("AufheizzeitManuellFeld",         "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U2 (Teilkonzept 7.4): die Kalenderkarte mit der Auswahlliste der Vorlagen ihrer Größe.
         new("Kalenderkarte",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U2 (E56 F4 (a)): die Vorlagenverwaltung als Blatt im Katalogeditor.
@@ -344,6 +346,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U1: Maximalraumtemperatur, Sommerlüftung und die vier Ferienzeiträume (Katalogfelder
         // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
         new("KonditionierungReiter", 6),
+        // KP3 O2 (E59): das Feld „Aufheizzeit manuell (h)" (Katalogfeld aufheizzeit_manuell); „Übernehmen" setzt
+        // denselben Wert aus dem Vorschlag und ist keine eigene Eingabestelle.
+        new("AufheizzeitManuellFeld", 1),
         // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als
         // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,
         // Beschreibung und Nutzung der Abfrage „Als Vorlage speichern…“ (Festlegung 13: eine Handlung mit
@@ -434,7 +439,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Feldkarte führt sie als netzverlust_* und zirkulation_* (9 → 17).
         // Welle M5 (PV3): der Abschnitt „Einspeisegrenze" mit Wert und Einheit - die Feldkarte führt sie
         // als einspeisegrenze und einspeisegrenze_einheit (17 → 19).
-        new("SimulationKonfigSeite", 24),
+        // KP3 O1b (E59 (2)): der Aufschlag unter der Art in Stunden und Prozent - die Feldkarte führt
+        // ihn als aufheiz_aufschlag_h und aufheiz_aufschlag_prozent (Aufheizoptimierung 9 → 11, 24 → 26).
+        new("SimulationKonfigSeite", 26),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

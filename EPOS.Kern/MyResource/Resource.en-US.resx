@@ -46994,5 +46994,251 @@ chart</value>
   <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
     <value>All three scenarios (VALERI)</value>
   </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_LBL_H" xml:space="preserve">
+    <value>Surcharge (h)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT" xml:space="preserve">
+    <value>Surcharge (%)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL" xml:space="preserve">
+    <value>The surcharge lengthens every preheat ramp that a step of the heating calendar triggers and that already preheats: n steps (preheat time n − 1 h, n &gt; 1) become n′ = min(48, n + max(surcharge h, ⌈n · surcharge % / 100⌉)), at most up to the end of the setback. The larger of the two values applies; empty or 0 means no surcharge. It does not act on the manual preheat time of a building; the longest preheat time remains the designed time.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL_AUS" xml:space="preserve">
+    <value>A surcharge of {0} h and {1} % is stored; it only acts once preheat optimisation is switched on.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE" xml:space="preserve">
+    <value>· surcharge: longest ramp n′ = {0} instead of {1} steps</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_KI_H_ERL" xml:space="preserve">
+    <value>Surcharge on the preheat ramp in whole hours, 0 to 24; empty or 0 = no surcharge (saved as empty). The larger value of hours and percent applies: n′ = min(48, n + max(h, ⌈n · % / 100⌉)), only on ramps of a calendar step with n &gt; 1, not on the manual preheat time. Only with preheat optimisation switched on; saved immediately.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_KI_PROZENT_ERL" xml:space="preserve">
+    <value>Surcharge on the preheat ramp in percent of the step count n, 0 to 100, rounded up to whole steps; empty or 0 = no surcharge (saved as empty). The larger value of hours and percent applies. Only with preheat optimisation switched on; saved immediately.</value>
+  </data>
+  <data name="GEBB_AUFH_GRP" xml:space="preserve">
+    <value>Preheating</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_ZUSTAND" xml:space="preserve">
+    <value>Status:</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_BEMESSEN" xml:space="preserve">
+    <value>designed</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_UNERREICHBAR" xml:space="preserve">
+    <value>unattainable — no ramp of up to 48 h holds</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_GEKOPPELT" xml:space="preserve">
+    <value>coupled — not optimised</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_UNBEHEIZT" xml:space="preserve">
+    <value>unheated — no ramp</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_AUS" xml:space="preserve">
+    <value>preheat optimisation off</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_ZEIT_MAX" xml:space="preserve">
+    <value>Longest preheat time t_auf,max:</value>
+  </data>
+  <data name="GEBB_AUFH_ZEIT_BEI" xml:space="preserve">
+    <value>{0} h at {1} °C ({2})</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_AUSSEN" xml:space="preserve">
+    <value>Design outdoor temperature T_a,B:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_ART" xml:space="preserve">
+    <value>Preheat time mode:</value>
+  </data>
+  <data name="GEBB_AUFH_ART_MANUELL" xml:space="preserve">
+    <value>manual ({0} h)</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_LEISTUNG" xml:space="preserve">
+    <value>Preheat power P_auf:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_QUELLE" xml:space="preserve">
+    <value>Source of preheat power:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_TAGE" xml:space="preserve">
+    <value>Ramp days:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_STUNDEN" xml:space="preserve">
+    <value>Preheat hours Σ:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_LAENGSTE" xml:space="preserve">
+    <value>Longest ramp:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_BEGRENZT" xml:space="preserve">
+    <value>Days limited by the setback duration (W2):</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_UNERREICHBAR" xml:space="preserve">
+    <value>Days without an attainable ramp (W1):</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_NACHWEISBAND" xml:space="preserve">
+    <value>Days outside the verification band (W3):</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_SPRUENGE_AUS" xml:space="preserve">
+    <value>Steps from “off” without a ramp (W4):</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_KAPPUNG" xml:space="preserve">
+    <value>Capping hours at the heating power limit:</value>
+  </data>
+  <data name="GEBB_AUFH_W1" xml:space="preserve">
+    <value>W1 — preheat power insufficient: on {0} days no ramp of up to 48 h holds; the ramp fills the setback there.</value>
+  </data>
+  <data name="GEBB_AUFH_W1_BEMESSUNG" xml:space="preserve">
+    <value>W1 — preheat power insufficient: in the design case it does not exceed the steady-state heating load; the design is unattainable.</value>
+  </data>
+  <data name="GEBB_AUFH_W2" xml:space="preserve">
+    <value>W2 — limited by the setback duration: on {0} days the setback is largely ineffective.</value>
+  </data>
+  <data name="GEBB_AUFH_W3" xml:space="preserve">
+    <value>W3 — verification band: on {0} days the run leaves the verification band of the ramp.</value>
+  </data>
+  <data name="GEBB_AUFH_W4" xml:space="preserve">
+    <value>W4 — transition from “off” without a ramp: {0} steps, including the start of the heating period.</value>
+  </data>
+  <data name="GEBB_AUFH_W5" xml:space="preserve">
+    <value>W5 — coupled building not optimised: the heat emitter limits the output after the step.</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_AUSLEGUNG" xml:space="preserve">
+    <value>Design capacity Φ_HL + Φ_RH:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_AUSLEGUNGSHEIZLAST" xml:space="preserve">
+    <value>Design heat load Φ_HL:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_ZUSCHLAG" xml:space="preserve">
+    <value>Heating-up capacity Φ_RH:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_SPITZE_IDEAL" xml:space="preserve">
+    <value>Ideal peak (hour):</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_SPITZE" xml:space="preserve">
+    <value>With preheat optimisation switched off, the ideal peak is not a design capacity — it results from the setpoint step without a ramp.</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_AUSKUNFT" xml:space="preserve">
+    <value>Preheat optimisation is switched off: the parts of the design capacity come from the design without an annual run, using the values of the project setting.</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_FAKTOR_LAUF" xml:space="preserve">
+    <value>With a consumption input the scaling factor arises only in the annual run — preheat power and design capacity are available after the simulation.</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_MANUELL" xml:space="preserve">
+    <value>The ramps run with the manual preheat time {0} h; t_auf,max is the designed time.</value>
+  </data>
+  <data name="GEBB_AUFH_SP_ZUSTAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="GEBB_AUFH_SP_ZEIT" xml:space="preserve">
+    <value>t_auf,max (h)</value>
+  </data>
+  <data name="GEBB_AUFH_SP_LEISTUNG" xml:space="preserve">
+    <value>P_auf (kW)</value>
+  </data>
+  <data name="GEBB_AUFH_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="GEBB_AUFH_SP_TAGE" xml:space="preserve">
+    <value>Ramp days</value>
+  </data>
+  <data name="GEBB_AUFH_SP_LAENGSTE" xml:space="preserve">
+    <value>Longest ramp (h)</value>
+  </data>
+  <data name="GEBB_AUFH_SP_KAPPUNG" xml:space="preserve">
+    <value>Capping (h)</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_ZONEN" xml:space="preserve">
+    <value>Each zone has its own design; the building shows t_auf,max and the longest ramp as maximum, P_auf as sum, days and hours as union of the heated zones.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_GRP" xml:space="preserve">
+    <value>Preheating</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_LBL" xml:space="preserve">
+    <value>Manual preheat time (h)</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_PLATZHALTER" xml:space="preserve">
+    <value>project mode</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_VORSCHLAG_BEMESSEN" xml:space="preserve">
+    <value>designed: {0} h</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_BTN_TITEL" xml:space="preserve">
+    <value>Apply the designed preheat time of this building to the field</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_SPANNE" xml:space="preserve">
+    <value>sensible range: {0}–{1} h (from the time constant τ₂ = {2} h)</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_AUSSERHALB" xml:space="preserve">
+    <value>{0} h lies outside the range {1}–{2} h — the value is saved nevertheless.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_OHNE_SCHALTER" xml:space="preserve">
+    <value>Takes effect only with preheat optimisation switched on in the project setting.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_LEER" xml:space="preserve">
+    <value>Empty: the mode of the project setting applies (daily or fixed).</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_UNERREICHBAR" xml:space="preserve">
+    <value>The design is unattainable (W1) — there is no designed time.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>No design, no suggestion: no step of the heating setpoint, coupled building or daily balance.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_ZONEN" xml:space="preserve">
+    <value>The {0} zones inherit this value: {1}.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_MSG_BEREICH" xml:space="preserve">
+    <value>The manual preheat time must lie between {0} and {1} h.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_MSG_OHNE_SPALTE" xml:space="preserve">
+    <value>The database does not know the manual preheat time yet — the value was not saved.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_KI_ERL" xml:space="preserve">
+    <value>Preheat time of this building in hours, 1 to 47; empty means the mode of the project setting applies. Takes effect only with preheat optimisation switched on; the zones inherit the value. Project only.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_ZUSTAND_ERL" xml:space="preserve">
+    <value>Status of the preheat calculation: designed, unattainable, coupled or off.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_ZEIT_ERL" xml:space="preserve">
+    <value>Designed longest preheat time t_auf,max in hours; empty if the design is unattainable or without preheat optimisation.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_AUSSEN_ERL" xml:space="preserve">
+    <value>Outdoor temperature of the design case T_a,B in °C.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_LEISTUNG_ERL" xml:space="preserve">
+    <value>Preheat power P_auf in kW, scaled like the peaks.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_QUELLE_ERL" xml:space="preserve">
+    <value>Where the preheat power comes from: heating power limit, target power or mixed per zone.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_TAGE_ERL" xml:space="preserve">
+    <value>Number of days with a preheat ramp.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_STUNDEN_ERL" xml:space="preserve">
+    <value>Sum of the ramp hours of the year in hours.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_LAENGSTE_ERL" xml:space="preserve">
+    <value>Longest ramp of the year in hours.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_KAPPUNG_ERL" xml:space="preserve">
+    <value>Sum of the capping shares at the heating power limit in hours.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUSLEGUNG_ERL" xml:space="preserve">
+    <value>Design capacity of the heating: design heat load plus heating-up capacity in kW; with preheat optimisation off, from the design without an annual run.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUSLEGUNGSHEIZLAST_ERL" xml:space="preserve">
+    <value>Steady-state design heat load Φ_HL in kW.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFHEIZZUSCHLAG_ERL" xml:space="preserve">
+    <value>Heating-up capacity Φ_RH in kW: preheat power above the steady-state load.</value>
+  </data>
+  <data name="KI_DLG_GEBB_SOMMERLUEFTUNG_ERL" xml:space="preserve">
+    <value>Hours with summer ventilation; empty without summer ventilation.</value>
+  </data>
+  <data name="KI_DLG_GEBB_NACHTAUSKUEHLUNG_ERL" xml:space="preserve">
+    <value>Hours with effective night purge ventilation; empty without night purge ventilation.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_KI_NUR_PROJEKT" xml:space="preserve">
+    <value>The manual preheat time exists only for a building in the project (button “Envelope and zones…”), not for a catalogue record.</value>
+  </data>
 </root>
 

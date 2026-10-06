@@ -451,9 +451,19 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Art der Aufheizzeit | preheat time mode | „täglich" → „daily" (Vorgabe: jeder Tag nach seiner Außentemperatur), „fest" → „fixed" (jeder Tag so lange wie der Bemessungsfall); die Persistenzwerte `TAEGLICH`, `FEST` bleiben (§ 10) |
 | Aufheizzuschlag | heating-up capacity | der Teil der Aufheizleistung über der stationären Last, P_auf − Φ_stat; mit der Auslegungsheizlast die Auslegungsgröße (Muster Φ_RH der DIN EN 12831-1, englische Fassung „heating-up capacity"); nicht mit „Aufschlag" verwechseln |
 | Aufschlag (der Aufheizzeit) | surcharge | Projektvorgabe in Stunden und in Prozent, um die jede Rampe eines Kalendersprungs mit n > 1 länger wird, es gilt der größere Wert (Stufe KP3); Felder „Aufschlag (h)" → „Surcharge (h)", „Aufschlag (%)" → „Surcharge (%)" (`SIMKONF_AUFH_AUFSCHLAG_*`) |
+| Aufheizrampe, Rampe | preheat ramp, ramp | der stufenweise Anstieg des Heizsollwerts vor einem Sprung nach oben (Stufe KP3); „längste Rampe" → „longest ramp" in der Herleitungszeile mit Aufschlag |
+| Stufe, Stufenzahl n (der Rampe) | step, step count n | eine Stunde der Rampe, n = Aufheizzeit + 1; mit Aufschlag n′ (Formelzeichen bleiben); „n′ = 9 statt 6 Stufen" → „n′ = 9 instead of 6 steps" (`SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE`) |
+| Absenkung (Ende der) | setback (end of the) | die Absenkzeit vor dem Sprung, die eine Rampe höchstens füllt (D + 1); wie „Nachtabsenkung" → „night setback" |
 | Aufheizzeit manuell | manual preheat time | je Gebäude eingegebene Aufheizzeit in h, dritte Art neben „täglich" und „fest" → „manual"; Persistenzwert `MANUELL` in `Aufheiz_Art` bleibt (§ 10) |
 | Vorschlag | suggestion | Wert neben einem Feld, den der Anwender übernehmen kann, hier die bemessene Aufheizzeit und die Spanne aus der Zeitkonstante des Gebäudes; „Übernehmen" → „Apply" (§ 8); nicht „proposal" |
 | Herleitungszeile | derivation line | leise Zeile unter einem Feld oder Abschnitt, die sagt, woraus ein Wert folgt — bei der Aufheizoptimierung je Gebäude „t_auf,max … bei … · P_auf … · C_w …"; das Wort selbst steht in keiner Beschriftung |
+| Auslegungsgröße (der Heizung) | design capacity | Auslegungsheizlast plus Aufheizzuschlag, Φ_HL + Φ_RH (E60); Zeile „Auslegungsgröße Φ_HL + Φ_RH" → „Design capacity Φ_HL + Φ_RH" in der Gruppe „Aufheizung" → „Preheating" des Bedarfsdialogs (`GEBB_AUFH_*`) |
+| Auslegungsheizlast | design heat load | die stationäre Last Φ_HL am Auslegungspunkt (Muster DIN EN 12831-1); nicht „design load" allein |
+| ideale Spitze | ideal peak | die höchste Stundenlast des Laufs mit idealer Regelung; bei ausgeschalteter Aufheizoptimierung keine Auslegungsgröße |
+| Rampentage | ramp days | Tage mit einer Aufheizrampe (n > 1); dazu „längste Rampe" → „longest ramp" |
+| Kappungsstunden | capping hours | Σ der Kappungsanteile an der Heizleistungsgrenze in h |
+| Nachweisband | verification band | Band, in dem die Stundenleistung einer Rampe bleiben soll (W3) |
+| Spanne (der Aufheizzeit) | range | Vorschlag [t_u; t_o] aus der Zeitkonstante τ₂ neben „Aufheizzeit manuell (h)"; „sinnvolle Spanne" → „sensible range" (`KOND_AUFH_MANUELL_*`) |
 | Ferien | holidays | Zeile der Matrix und Art der Periode; Bestand „Holiday setpoint (all day)" (`GEBK_LBL_SOLL_FERIEN`); **nicht** „vacation" |
 | Ferienzeitraum | holiday period | datierter Zeitraum (`Ferienbeginn_1` … `Ferienende_4`) des Gebäudes, gilt für alle Spalten; Datum im Gemeinjahr; Bestand „Holiday start" / „Holiday end" |
 | Feiertag | public holiday | wie § 14 (Tagtyp: Sonn-/Feiertag); die neun bundeseinheitlichen Feiertage stehen als Regel und wirken „wie Sonntag" → „as Sunday"; Länderfeiertage sind gewöhnliche Perioden |

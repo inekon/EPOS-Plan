@@ -377,6 +377,13 @@ public sealed class GebaeudeKatalogDaten
     public KonditionierungDaten? Konditionierung { get; set; }
 
     /// <summary>
+    /// Die manuelle Aufheizzeit des Projektgebäudes [h] (<c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c>, E59; Stufe KP3,
+    /// Welle O2): 1–47, <c>null</c> = Art des Projekts. Nur in der Betriebsart Projekt; ein Katalogsatz trägt sie nicht
+    /// (Festlegung 38) — „Speichern unter" nimmt sie nicht mit. Sie geht in den Abdruck ein.
+    /// </summary>
+    public int? AufheizzeitManuellH { get; set; }
+
+    /// <summary>
     /// Eine TIEFE Kopie — der Arbeitsstand des Dialogs. Der hereingereichte Satz bleibt
     /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg"); die Konditionierung
     /// wird samt Kalendern und Perioden mitkopiert.
