@@ -454,13 +454,16 @@ sie stehen hier weiterhin, weil sie erklären, **was** geschieht:
 
 ```bash
 dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- \
-    <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--katalogpaket <ordner>] [--trocken]
+    <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--katalogpaket <ordner>] \
+    [--katalogfassung <n>] [--ohne-paket <Katalog> …] [--trocken]
 ```
 
 Rückgabe `0` = erzeugt und abgenommen. Jeder andere Wert ist ein Abbruch mit
 Grund auf `stderr`, und dann entsteht **keine** Zieldatei: `2` Aufruf oder Quelle,
 `3` Ziel im Repository außerhalb von `Setup\Vorlage\`, `4` Katalogwächter (nur bei
-`--kataloge readonly`), `5` fachlicher Abbruch, `1` unerwartet. Neben der Vorlage entsteht
+`--kataloge readonly`), `5` fachlicher Abbruch, `6` leerer Paketteil (6.5.4, E2), `7` Paket
+passt nicht zur Vorlage (6.5.3, Schritt 3), `8` Schemastand der Quelle älter als der Zielstand
+(6.5.4, E3), `1` unerwartet. Neben der Vorlage entsteht
 `<ziel>.bericht.txt` — der **Prüfbericht**, der die frühere Gegenprüfung von Hand
 ersetzt: je Tabelle die Zeilen vorher und nachher, Katalogzahlen, geleerte Felder,
 Projektliste, Größe vorher/nachher und jede Prüfzeile. Er ist vor jeder
@@ -559,7 +562,7 @@ dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle.sqlite
 `build-setup.ps1` ruft es selbst auf, unmittelbar vor `ISCC`:
 
 ```powershell
-.\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite [-Katalogfassung 2026100601] [-Probe]
+.\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite [-Katalogfassung 2026100601] [-OhnePaket <Katalog>] [-Freigabe | -Probe]
 ```
 
 Die Quelle kommt aus dem Parameter `-Quelldatenbank` oder aus der Umgebungsvariablen
@@ -660,12 +663,24 @@ und in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 8a. Hier geht es nur 
   reicht sie als `--katalogfassung` an das Werkzeug. Vor dem Lauf löscht es `Kenndaten.sqlite`
   und `Katalogpaket.json`, nach dem Lauf prüft es, dass das Paket vorhanden ist und die Fassung des
   Laufs im Kopf trägt. Im Trockenlauf (`-VorlageNurPruefen`) bleiben beide Dateien, und es prüft
-  Vorlage und Kopf des vorhandenen Pakets.
+  Vorlage und Kopf des vorhandenen Pakets. `-OhnePaket <Katalog>` (mehrere mit Komma) reicht je
+  Katalog ein `--ohne-paket` durch. Die Rückgabecodes 4, 6, 7 und 8 des Werkzeugs meldet es mit
+  eigenem Text.
+- **Prüfbericht und Abbrüche des Werkzeugs:** Unter Schritt 4b steht je Registerkatalog die
+  ReadOnly-Bilanz „Zeilen / gesperrt mit Schlüssel (im Paket) / ungesperrt“, dazu eine
+  Sammelwarnung über alle ungesperrten Zeilen. Ein Registerkatalog mit Zeilen und leerem Paketteil
+  bricht mit Code 6 ab, außer `--ohne-paket` nennt ihn; die Ausnahme steht als `WARNUNG` im Bericht.
+  Nach dem Schreiben liest das Werkzeug das Paket mit `Katalogpaket.Lesen` zurück und hält es mit
+  `Katalogpaket.Abweichungen` gegen Fassung und gesperrte Sätze der Vorlage
+  (`Katalogpaket.GesperrterStand`); eine Abweichung ergibt Code 7 und löscht beide Dateien. Eine
+  Quelle unter `SchemaStand.Zielversion` bricht vor dem ersten Schritt mit Code 8 ab.
 - **Freigaberegister:** `Setup/Katalogfassungen.txt` führt je ausgelieferter Fassung eine Zeile
   `<JJJJMMTTnn> <JJJJ-MM-TT> <Programmversion>`, streng wachsend. Außerhalb eines Probelaufs
   (`-Probe`, Trockenlauf) bricht das Skript ab, wenn die Fassung nicht größer ist als jede
-  eingetragene und als die heutige Datumsfassung `JJJJMMTT`, und trägt sie nach Übersetzen und
-  Signieren ein. Der CI-Setup-Lauf ist ein Probelauf.
+  eingetragene und als die heutige Datumsfassung `JJJJMMTT`. Eingetragen wird nur mit dem Schalter
+  `-Freigabe`, nach Übersetzen und Signieren; ein Handlauf ohne `-Freigabe` prüft die Fassung und
+  schreibt nichts. `-Probe` und der Trockenlauf schreiben nie und schließen `-Freigabe` aus. Der
+  CI-Setup-Lauf ist ein Probelauf.
 - **`Setup/EPOS-Plan.iss`:** `#define Katalogpaket` bricht mit `#error` ab, wenn die Datei fehlt.
   Die Datei steht in `[Files]` mit `DestDir: "{app}\Vorlage"`, `Flags: ignoreversion` und
   `Components: programm`. Ein Update ersetzt das Paket mit dem Programm, die Deinstallation nimmt
@@ -687,45 +702,48 @@ und in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 8a. Hier geht es nur 
 - **iOS:** Die App liefert kein Paket aus und ruft `BeimStart` nicht auf. Die Seed-Datenbank
   (`EPOS.iOS/EPOS.iOS.csproj`, `SeedDb`) wird nur beim ersten Start kopiert.
 - **Prüfung:**
-  - `Werkzeuge/Auslieferungsvorlage.Tests/KatalogpaketVorlageTests` (K1 bis K3: Paket neben der
-    Vorlage und kanonisch, Teil Prozesswärme byte-gleich mit der Probe, Vorlage trägt Fassung,
-    Schlüssel und Prüfsummen des Pakets) läuft in `kern.yml`.
+  - `Werkzeuge/Auslieferungsvorlage.Tests/KatalogpaketVorlageTests` läuft in `kern.yml`: K1 bis K3
+    (Paket neben der Vorlage und kanonisch, Teil Prozesswärme byte-gleich mit der Probe, Vorlage
+    trägt Fassung, Schlüssel und Prüfsummen des Pakets), K4 (leerer Paketteil bricht ab, benannte
+    Ausnahme im Bericht), K5 (Quelle mit gesperrten Sätzen ohne Warnung), K6 (zurückgelesenes Paket
+    passt zur Vorlage, jede Abweichung fällt auf) und K7 (älterer Schemastand bricht ab). Läufe
+    gegen die Testdatenbank tragen die benannten Ausnahmen
+    (`Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK`).
   - `EPOS.Kern.Tests/KatalogabgleichTests` und `EPOS.UI.Tests/Dialoge/KatalogabgleichDialogTests`
     halten den Abgleich.
   - `EPOS.Kern.Tests/KatalogpaketAuslieferungWacheTests` hält die Ordner der Zapfprofilpakete
     im `.iss` (`Katalogpaket_frei`, `Katalogpaket_A100`).
   - `EPOS.Kern.Tests/KatalogpaketSetupWacheTests` hält den Lieferweg von `Katalogpaket.json`:
     Define, `#error` und `[Files]`-Eintrag im `.iss`, Löschen, Durchreichen und Prüfen in
-    `build-setup.ps1`, die `.gitignore`-Zeile, das Freigaberegister samt Regel und den
-    Kopf-Schritt im Job `installer`.
+    `build-setup.ps1`, die `.gitignore`-Zeile, das Freigaberegister samt Regel und Schalter
+    `-Freigabe`, das Durchreichen von `-OhnePaket`, die Meldungen der Werkzeugcodes, den Aufruf
+    im Job `installer` samt Ausnahmeliste (gleich der Liste der Werkzeugtests) und den Kopf-Schritt.
   - `AuslieferungsvorlagenWacheTests` und `BerichtsvorlageDateiWacheTests` halten die Word- und
     Excel-Vorlagen und deren Lieferwege, nicht das Katalogpaket.
-- **ReadOnly-Sätze für Heizkessel und PV:** Das Werkzeug meldet im Prüfbericht unter Schritt 3 je
-  `*_STAMM`-Tabelle nur die Zeilen vorher und nachher. Gewarnt wird erst, wenn die ReadOnly-Regel
-  einen Katalog leert, und das gibt es nur im Modus `readonly`. Unter Schritt 4b nennt der Bericht
-  je Registerkatalog die Zahl der ausgelieferten Sätze. Gewarnt wird nur, wenn das ganze Paket leer
-  ist. In der Testdatenbank (und damit im CI-Setup-Lauf) tragen `Tab_Heizkessel_STAMM` und
-  `Tab_PV_STAMM` keinen Satz mit `ReadOnly = 1`, ihr Paketteil ist leer, und der Bericht zeigt das
-  nur als Zeile „0 ausgelieferte(r) Satz/Saetze“, ohne Warnung.
+- **Leere Paketteile der Testdatenbank:** Elf Registerkataloge der Testdatenbank führen Zeilen,
+  aber keinen Satz mit `ReadOnly = 1`: `Tab_Heizkessel_STAMM`, `Tab_PV_STAMM`,
+  `Tab_Brennstoff_Stamm`, `Tab_DBTagV_STAMM`, `Tab_Pufferspeicher_STAMM`,
+  `Tab_Solarkollektoren_STAMM`, `Tab_Solarganglinie_STAMM`, `Tab_Stromspeicher_STAMM`,
+  `Tab_Stromverbrauchertyp_STAMM`, `Tab_Stromverbraucher_STAMM` und `Tab_Stromganglinie_STAMM`.
+  Der CI-Setup-Lauf und die Werkzeugtests nehmen sie benannt aus. Im Modus `alle` gehen 601
+  ungesperrte Zeilen aus 18 Registerkatalogen ohne Schlüssel in die Vorlage; der Bericht weist sie
+  aus.
 
 #### 6.5.2 Lücke
 
 1. **Fassung ohne Freigaberegel:** geschlossen mit Schritt 4 (Freigaberegister, `JJJJMMTTnn`).
-2. **Paket und Vorlage im selben Ordner:** `build-setup.ps1` löscht ein altes Paket und prüft die
-   Fassung im Kopf (Schritt 1). Ob die Sätze des Pakets zu den gesperrten Sätzen der Vorlage
-   passen, prüft nach dem Schreiben niemand (Schritt 3).
+2. **Paket und Vorlage im selben Ordner:** geschlossen mit Schritt 1 (frisch löschen, Fassung im
+   Kopf prüfen) und Schritt 3 (zurücklesen und gegen die gesperrten Sätze der Vorlage halten).
 3. **Lieferweg nie übersetzt:** Die Wache hält ihn (Schritt 1), das `.iss` mit dem Eintrag ist aber
    noch nie übersetzt worden (Schritt 7).
-4. **Prüfbericht ohne ReadOnly-Bilanz:** Je Registerkatalog fehlen drei Angaben: „Zeilen in der
-   Vorlage, davon gesperrt mit Schlüssel (im Paket), ungesperrt (ohne Schlüssel, nie
-   abgeglichen)“. Es fehlt auch eine Warnung, wenn ein Katalog Zeilen hat, aber keinen Paketsatz,
-   der heutige Fall bei Heizkessel und PV. Im Modus `alle` gehen ungesperrte Katalogzeilen ohne
-   Schlüssel in die Vorlage. Beim Anwender verhalten sie sich wie eigene Sätze. Werden sie in einer
-   späteren Fassung gesperrt, fügt der Abgleich sie als neuen Satz mit gleichem Namen ein.
-5. **Schemastand der Quelle:** Das Werkzeug migriert die Quelle nicht. Ein Katalog-DML-Schritt, der
-   beim Anwender nach dem Kopieren der Vorlage läuft, ändert die Werte gesperrter Sätze, ohne ihre
-   gespeicherte Prüfsumme nachzuziehen. Der nächste Abgleich hält sie dann für Anpassungen des
-   Anwenders und behält sie.
+4. **Prüfbericht ohne ReadOnly-Bilanz:** geschlossen mit Schritt 2 (Bilanz je Registerkatalog,
+   Abbruch bei leerem Paketteil, Sammelwarnung über ungesperrte Zeilen). Offen bleibt die Folge
+   aus E7: Ungesperrte Katalogzeilen gehen im Modus `alle` ohne Schlüssel in die Vorlage und
+   verhalten sich beim Anwender wie eigene Sätze. Werden sie in einer späteren Fassung gesperrt,
+   fügt der Abgleich sie als neuen Satz mit gleichem Namen ein.
+5. **Schemastand der Quelle:** geschlossen mit Schritt 3 (Abbruch bei älterem Schemastand, E3).
+   Das Werkzeug migriert die Quelle nicht; ein Katalog-DML-Schritt, der erst beim Anwender liefe,
+   änderte gesperrte Sätze, ohne ihre Prüfsumme nachzuziehen.
 6. **iOS ohne Abgleich:** Ein App-Update bringt keine neuen Katalogsätze in eine bestehende
    Datenbank.
 7. **Kein Ende-zu-Ende-Nachweis:** Kein Test baut die Vorlage, startet mit einem Paket höherer
@@ -752,26 +770,33 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
    - **Abnahme:** Wache grün, `Setup/pruefe_iss_kommentare.py` grün, Windows-Schale auf Linux mit
      0 Fehlern.
    - **Setup-Lauf:** keiner.
-2. **ReadOnly-Bilanz im Prüfbericht** (`Werkzeuge/Auslieferungsvorlage/Program.cs` Schritt 4b,
-   bei Bedarf `Bericht.cs`)
+2. **ReadOnly-Bilanz im Prüfbericht** (`Werkzeuge/Auslieferungsvorlage/Program.cs` Schritt 4b) —
+   **umgesetzt**
    - **Änderung:** Je Registerkatalog eine Zeile „Zeilen / gesperrt mit Schlüssel / ungesperrt“.
-     Eine `WARNUNG` mit Katalogname, wenn ein Katalog Zeilen hat, aber keinen Paketsatz. Eine
-     Sammelwarnung über alle ungesperrten Zeilen der Registerkataloge mit dem Hinweis, dass sie
-     beim Anwender nie abgeglichen werden. Nach Entscheid E2 bricht das Werkzeug bei einem leeren Paketteil
-     mit eigenem Rückgabecode ab, außer der Katalog steht in der benannten Ausnahme (`--ohne-paket <Katalog>`).
-   - **Tests:** neue Fälle K4 und K5 in `Werkzeuge/Auslieferungsvorlage.Tests/KatalogpaketVorlageTests`.
-     Gegen die Testdatenbank melden Heizkessel und PV den leeren Paketteil und brechen ab, mit benannter Ausnahme laufen sie durch. Eine Quelle mit
-     gesperrten Sätzen ergibt keine Warnung.
+     Ein Katalog mit Zeilen und leerem Paketteil steht als `FEHLER`-Zeile im Bericht, und das
+     Werkzeug bricht mit Code 6 ab (E2), außer `--ohne-paket <Katalog>` nennt ihn (mehrfach
+     angebbar, nur Kataloge des Registers); die genutzte Ausnahme steht als `WARNUNG` mit
+     Katalogname, eine wirkungslose als eigene Zeile. Eine Sammelwarnung über alle ungesperrten
+     Zeilen der Registerkataloge mit dem Hinweis, dass sie beim Anwender nie abgeglichen werden (E7).
+   - **Tests:** K4 und K5 in `Werkzeuge/Auslieferungsvorlage.Tests/KatalogpaketVorlageTests`.
+     Gegen die Testdatenbank melden Heizkessel, PV und die übrigen neun Kataloge ohne gesperrten
+     Satz den leeren Paketteil und brechen ab, mit benannter Ausnahme laufen sie durch. Eine Quelle
+     mit gesperrten Sätzen ergibt keine Warnung.
    - **Abnahme:** Werkzeugtests grün (`kern.yml`, Schritt Auslieferungsvorlage-Tests), SQL-Dialekt
      grün.
    - **Setup-Lauf:** keiner.
-3. **Paket und Vorlage gehören zusammen** (`Werkzeuge/Auslieferungsvorlage/Program.cs`)
+3. **Paket und Vorlage gehören zusammen** (`Werkzeuge/Auslieferungsvorlage/Program.cs`,
+   `EPOS.Kern/Allgemein/Katalog/Katalogpaket.cs`) — **umgesetzt**
    - **Änderung:** Nach dem Schreiben liest das Werkzeug das Paket mit `Katalogpaket.Lesen` zurück.
-     Es vergleicht Fassung und Satzzahl mit `Tab_Applikation.Katalogfassung` und den gesperrten
-     Sätzen der Vorlage. Bei einer Abweichung liefert es einen Rückgabecode ≠ 0 und löscht beide
-     Dateien. Dazu warnt das Werkzeug, wenn der Schemastand der Quelle unter dem Zielstand der
-     Schemakette (`SchemaStand.Zielversion` im Kern) liegt (Lücke 5). Nach Entscheid E3 bricht es dann ab.
-   - **Tests:** K6 (Rücklesen) und K7 (Quelle mit älterem Schemastand) in `KatalogpaketVorlageTests`.
+     `Katalogpaket.Abweichungen` vergleicht Fassung, Tabellen, Satzzahl je Tabelle und je Schlüssel
+     die Prüfsumme mit `Tab_Applikation.Katalogfassung` und den gesperrten Sätzen der Vorlage
+     (`Katalogpaket.GesperrterStand`). Bei einer Abweichung liefert es Code 7 und löscht beide
+     Dateien. Liegt der Schemastand der Quelle unter dem Zielstand der Schemakette
+     (`SchemaStand.Zielversion` im Kern), bricht es vor dem ersten Schritt mit Code 8 ab und nennt
+     beide Stände (E3).
+   - **Tests:** K6 (Rücklesen; der Vergleich des Kerns meldet geänderte Fassung, fehlenden Satz,
+     abweichende Prüfsumme und fehlende Tabelle) und K7 (Quelle mit älterem Schemastand) in
+     `KatalogpaketVorlageTests`.
    - **Abnahme:** Werkzeugtests grün.
    - **Setup-Lauf:** keiner.
 4. **Freigaberegister der Fassung** (Entscheid E1 und E4) — **umgesetzt**
@@ -779,10 +804,12 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
      ausgelieferten Fassung, Entscheid E4: `Setup/Katalogfassungen.txt`. `build-setup.ps1` bricht ab,
      wenn `-Katalogfassung` nicht größer ist als der letzte Eintrag und als die heutige
      Datumsfassung `JJJJMMTT`; ohne Angabe schlägt es den nächsten Wert vor. Ausgenommen sind ein
-     Probelauf (Schalter `-Probe`, schreibt nichts ins Register) und der Trockenlauf. Nach einem freigegebenen Lauf trägt das
-     Skript die Zeile nach. Committet wird sie wie jede Änderung nur auf Auftrag.
-   - **Wache:** `KatalogpaketSetupWacheTests` prüft, dass das Register streng wächst und das Skript
-     es liest.
+     Probelauf (Schalter `-Probe`, schreibt nichts ins Register) und der Trockenlauf. Nur mit dem
+     Schalter `-Freigabe` trägt das Skript nach einem erfolgreichen Lauf die Zeile nach; ein Handlauf
+     ohne `-Freigabe` prüft die Fassung und schreibt nichts, `-Probe` und Trockenlauf schließen
+     `-Freigabe` aus. Committet wird die Zeile wie jede Änderung nur auf Auftrag.
+   - **Wache:** `KatalogpaketSetupWacheTests` prüft, dass das Register streng wächst, das Skript es
+     liest und nur mit `-Freigabe` schreibt.
    - **Abnahme:** Wache grün.
    - **Setup-Lauf:** keiner.
 5. **Ende-zu-Ende-Nachweis Neuinstallation und Update** (`Werkzeuge/Auslieferungsvorlage.Tests`,
@@ -839,9 +866,10 @@ Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
 - **E2 Leerer Paketteil eines Registerkatalogs mit Zeilen:** Das Werkzeug bricht mit eigenem
   Rückgabecode ab; je Katalog lässt sich das über eine benannte Ausnahme abschalten
   (`--ohne-paket Tab_PV_STAMM`). Die Testdatenbank im CI-Setup-Lauf läuft mit den benannten
-  Ausnahmen für Heizkessel und PV.
+  Ausnahmen für ihre elf Registerkataloge ohne gesperrten Satz, darunter Heizkessel und PV.
+  Umgesetzt mit Schritt 2 (Code 6).
 - **E3 Quelle mit älterem Schemastand:** Das Werkzeug bricht ab. Die Quelle wird mit der aktuellen
-  Anwendung einmal geöffnet und ist dann angehoben.
+  Anwendung einmal geöffnet und ist dann angehoben. Umgesetzt mit Schritt 3 (Code 8).
 - **E4 Ort des Freigaberegisters:** Das Register ist eine versionierte Datei unter `Setup/`, die das
   Skript maschinell prüft.
 - **E5 Paket als CI-Artefakt:** Das Artefakt trägt nur den Kopf des Pakets (`katalogpaket.txt`); das
@@ -849,8 +877,8 @@ Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
 - **E6 iOS:** Paket als App-Bestand und Abgleich beim Start (Schritt 8), als eigene Welle nach der
   Windows-Freigabe; sie braucht einen iOS-Lauf.
 - **E7 Ungesperrte Katalogzeilen im Modus `alle`:** Sie bleiben ungesperrt, der Prüfbericht weist
-  sie aus (Schritt 2). Ob ein Satz ausgeliefert und nachgeführt wird, entscheidet die Pflege der
-  Quelle, nicht das Werkzeug.
+  sie aus (Schritt 2, umgesetzt). Ob ein Satz ausgeliefert und nachgeführt wird, entscheidet die
+  Pflege der Quelle, nicht das Werkzeug.
 
 #### 6.5.5 Risiken
 
@@ -1032,8 +1060,10 @@ Windows-Installation, nicht auf dem Entwicklungsrechner:
 11. **Katalogpaket** (Abschnitt 6.5), vor dem Bau der Auslieferungsvorlage: In der
     produktiven Quelle führen Heizkessel (`Tab_Heizkessel_STAMM`) und PV (`Tab_PV_STAMM`) ihre
     ausgelieferten Sätze mit `ReadOnly = 1` — nur gesperrte Sätze stehen im Paket und werden
-    beim Anwender nachgeführt. Nach dem Lauf steht die Fassung des Pakets in
-    `Setup\Katalogfassungen.txt` und wird mit der Freigabe committet.
+    beim Anwender nachgeführt. Die ReadOnly-Bilanz unter Schritt 4b des Prüfberichts ist gelesen;
+    jede benannte Ausnahme (`-OhnePaket`) ist begründet. Der Freigabelauf läuft mit `-Freigabe`;
+    danach steht die Fassung des Pakets in `Setup\Katalogfassungen.txt` und wird mit der Freigabe
+    committet.
 
 Eine Automatisierung über GitHub Actions ist möglich (`windows-latest` bringt
 das .NET-SDK mit, Inno Setup ist per `choco install innosetup` nachrüstbar),
@@ -1064,16 +1094,19 @@ vollständigen Handlauf.
 3. Aufruf:
 
    ```powershell
-   .\build-setup.ps1 -Quelldatenbank <Pfad>\Kenndaten.sqlite -Beispiele <Ordner mit .wpx oder leer> [-Katalogfassung <JJJJMMTTnn>] [-Iscc <Pfad>]
+   .\build-setup.ps1 -Quelldatenbank <Pfad>\Kenndaten.sqlite -Beispiele <Ordner mit .wpx oder leer> [-Katalogfassung <JJJJMMTTnn>] [-OhnePaket <Katalog>] [-Freigabe] [-Iscc <Pfad>]
    ```
 
    `-Katalogfassung` (oder `EPOS_KATALOGFASSUNG`) setzt die Fassung des Katalogpakets
    (Abschnitt 6.5.4, E1). Ohne Angabe schlägt das Skript den nächsten Wert aus
    `Setup\Katalogfassungen.txt` vor: den ersten Tageslauf von heute, oder den nächsten, wenn
    heute schon freigegeben wurde. Eine Fassung, die nicht größer ist als jede eingetragene und
-   als die heutige Datumsfassung `JJJJMMTT`, bricht den Lauf vor der Veröffentlichung ab. Ein
-   Lauf, der nicht ausgeliefert wird, bekommt `-Probe`: Dann hält das Skript die Fassung nicht
-   gegen das Register und trägt nichts ein.
+   als die heutige Datumsfassung `JJJJMMTT`, bricht den Lauf vor der Veröffentlichung ab. Ins
+   Register trägt das Skript die Fassung nur mit `-Freigabe` ein; ohne den Schalter prüft es sie
+   und schreibt nichts. Ein Lauf, der nicht ausgeliefert wird, bekommt `-Probe`: Dann hält das
+   Skript die Fassung nicht gegen das Register und trägt nichts ein. `-OhnePaket <Katalog>`
+   (mehrere mit Komma) nimmt einen Registerkatalog ohne gesperrten Satz vom Abbruch mit Code 6
+   aus.
 
    Kein `-Kataloge` nötig: Seit Anwenderentscheid **#160‑E‑1a** (Befund
    #160‑F‑1, Abschnitt 6.1) ist die Vorgabe von `Werkzeuge\Auslieferungsvorlage`
@@ -1090,7 +1123,7 @@ vollständigen Handlauf.
    Veröffentlichung sowie der Vorlage. Der Prüfbericht der Vorlage entsteht
    daneben als `Setup\Vorlage\Kenndaten.sqlite.bericht.txt` (Abschnitt 6.1); das
    fertige Setup liegt danach unter `Setup\Ausgabe`. Nach dem Katalogpaket nennt der Lauf
-   dessen Fassung und Größe; ohne `-Probe` folgt am Ende der Schritt „Fassung des
+   dessen Fassung und Größe; mit `-Freigabe` folgt am Ende der Schritt „Fassung des
    Katalogpakets ins Freigaberegister eintragen".
 5. Rückgabecode von `Werkzeuge\Auslieferungsvorlage` — `build-setup.ps1` bricht
    in jedem Fall mit ab und gibt die Meldung des Werkzeugs weiter:
@@ -1103,6 +1136,14 @@ vollständigen Handlauf.
      aufrufen (siehe Schritt 3 oben).
    - **5** — fachlicher Abbruch: Meldung auf der Konsole lesen, betrifft die
      Quelle selbst (z. B. eine gescheiterte Prüfung).
+   - **6** — leerer Paketteil: Ein Registerkatalog führt Zeilen, aber keinen gesperrten Satz mit
+     Schlüssel. Gesperrte Sätze in der Quelle pflegen oder den Katalog mit `-OhnePaket <Katalog>`
+     benannt ausnehmen.
+   - **7** — das zurückgelesene Katalogpaket passt nicht zur Vorlage; Vorlage und Paket sind
+     gelöscht. Die Abweichungen stehen auf der Konsole; den Lauf wiederholen und das Ergebnis
+     melden.
+   - **8** — der Schemastand der Quelle ist älter als der Zielstand: die Quelle einmal mit der
+     aktuellen Anwendung öffnen, dann erneut aufrufen.
 
    Dazu bricht das Skript selbst ab, wenn das Katalogpaket fehlt oder eine andere Fassung
    trägt als der Lauf, und wenn das Freigaberegister unlesbar ist oder nicht streng wächst.
@@ -1139,8 +1180,9 @@ bricht deshalb ab, sobald darunter noch eine Datei mit
 `version https://git-lfs` beginnt. Er lädt den WebView2-Bootstrapper
 nach (er steht in `.gitignore` und fehlt im Klon), prüft `ISCC.exe` im
 Runner-Image und ruft dann Schritt 3 von oben mit `-Quelldatenbank
-Referenzlaeufe/Kenndaten_Test.sqlite` und `-Probe` (die Fassung des Katalogpakets
-kommt als Vorschlag aus dem Register, eingetragen wird nichts), ohne `-Kataloge` (Vorgabe seit
+Referenzlaeufe/Kenndaten_Test.sqlite`, `-Probe` (die Fassung des Katalogpakets
+kommt als Vorschlag aus dem Register, eingetragen wird nichts) und `-OhnePaket` mit den elf
+Registerkatalogen der Testdatenbank ohne gesperrten Satz (6.5.1), ohne `-Kataloge` (Vorgabe seit
 #160‑E‑1a: `alle`) und ohne `-Beispiele` — das Repository führt keinen
 gepflegten Beispielsatz, und ohne diesen Schalter bleibt die Vorlage
 projektfrei (6.1, Schritt 4). Zurück kommen drei Dinge, 14 Tage

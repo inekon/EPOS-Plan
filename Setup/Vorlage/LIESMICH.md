@@ -44,10 +44,17 @@ z. B. `2026100601`) und kommt aus `-Katalogfassung <n>` oder der Umgebungsvariab
 `EPOS_KATALOGFASSUNG`. Ohne Angabe schlägt das Skript den nächsten Wert aus dem
 Freigaberegister [`Setup/Katalogfassungen.txt`](../Katalogfassungen.txt) vor. Eine Fassung muss
 größer sein als jede eingetragene und als die heutige Datumsfassung `JJJJMMTT`, sonst bricht das
-Skript ab. Nach einem vollständig erfolgreichen Lauf trägt es Fassung, Datum und Programmversion
-ins Register ein; mit `-Probe` (so läuft die CI) und im Trockenlauf `-VorlageNurPruefen` hält es
-die Fassung nicht gegen das Register und schreibt nichts hinein. Die eingetragene Zeile wird nur
-auf Auftrag committet.
+Skript ab. Ins Register schreibt es nur mit dem Schalter `-Freigabe`: Nach einem vollständig
+erfolgreichen Lauf trägt es dann Fassung, Datum und Programmversion ein. Ein Handlauf ohne
+`-Freigabe` hält die Fassung ebenso gegen das Register, schreibt aber nichts. Mit `-Probe` (so
+läuft die CI) und im Trockenlauf `-VorlageNurPruefen` hält es die Fassung nicht gegen das Register
+und schreibt nie; beide schließen `-Freigabe` aus. Die eingetragene Zeile wird nur auf Auftrag
+committet.
+
+Führt ein Registerkatalog Zeilen, aber keinen gesperrten Satz mit Schlüssel, bricht das Werkzeug
+mit Code 6 ab. Eine benannte Ausnahme je Katalog gibt `-OhnePaket <Katalog>` (mehrere mit Komma),
+das Skript reicht jede als `--ohne-paket <Katalog>` durch; der Prüfbericht nennt sie. Die CI nimmt
+die Kataloge aus, in denen die Testdatenbank keinen gesperrten Satz trägt.
 
 Rückgabe `0` heißt: erzeugt **und** abgenommen. Jeder andere Wert ist ein Abbruch mit Grund auf
 `stderr`, und dann liegt hier **keine** Datei — ein halber Auslieferungsstand soll beim nächsten
@@ -60,6 +67,9 @@ Setup-Lauf nicht als gültig durchgehen.
 | 3 | Ziel liegt im Repository außerhalb von `Setup/Vorlage/` |
 | 4 | Die `ReadOnly`-Regel würde eine Katalogtabelle leeren |
 | 5 | Fachlicher Abbruch (Beispielimport oder Abnahme rot) |
+| 6 | Leerer Paketteil: Ein Registerkatalog hat Zeilen, aber keinen gesperrten Satz mit Schlüssel, und `--ohne-paket` nennt ihn nicht |
+| 7 | Das zurückgelesene Katalogpaket passt nicht zur Vorlage (Fassung, Satzzahl, Schlüssel oder Prüfsumme); Vorlage und Paket sind gelöscht |
+| 8 | Der Schemastand der Quelle ist älter als der Zielstand der Schemakette; die Quelle einmal mit der aktuellen Anwendung öffnen |
 | 1 | Unerwarteter Fehler |
 
 Was das Werkzeug tut, warum, und was `--kataloge alle` mit dem offenen Befund zur Marke
@@ -79,13 +89,17 @@ daneben und nennt je Tabelle die Zeilen vorher und nachher, die Projektliste, de
    Beispiele", keine Pfadangabe (`C:\Users\…`), keine Lizenz-/KI-Tabelle.
 3. **Katalogzahlen** — plausibel, und keine `*_STAMM`-Tabelle unerwartet leer.
 
-Dazu zwei Punkte zum Katalogpaket:
+Dazu drei Punkte zum Katalogpaket:
 
 4. **Gesperrte Sätze der Quelle** — vor jeder Auslieferungsvorlage in der produktiven Quelle
    prüfen, dass Heizkessel (`Tab_Heizkessel_STAMM`) und PV (`Tab_PV_STAMM`) ihre ausgelieferten
    Sätze mit `ReadOnly = 1` führen. Nur gesperrte Sätze stehen im Paket und werden beim Anwender
    nachgeführt; ungesperrte verhalten sich dort wie eigene Sätze.
-5. **Fassung des Katalogpakets** — der Lauf ohne `-Probe` hat die Fassung in
+5. **ReadOnly-Bilanz** — unter Schritt 4b nennt der Bericht je Registerkatalog „Zeilen / gesperrt
+   mit Schlüssel / ungesperrt“, darunter jede benannte Ausnahme (`--ohne-paket`) als `WARNUNG` und
+   die Sammelwarnung über die ungesperrten Zeilen. Eine Ausnahme bei einer Freigabe wird
+   begründet; die Zeile „Paket zurueckgelesen“ steht unter dem Ergebnis.
+6. **Fassung des Katalogpakets** — der Lauf mit `-Freigabe` hat die Fassung in
    `Setup/Katalogfassungen.txt` eingetragen; die Zeile gehört mit der Freigabe ins Repository.
 
 Steht im Bericht eine Zeile mit `WARNUNG` oder `FEHLER`, wird sie erklärt, bevor die Datei in
