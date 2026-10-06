@@ -23,6 +23,13 @@ Eine Variante lässt sich auch unmittelbar am Auswahlfeld ''Projekt:'' der Start
 * '''✏️ Variante umbenennen…''' – erscheint nur, wenn das geöffnete Projekt eine Variante ist. Der bestehende Bezeichner ist vorbelegt; mit dem neuen Bezeichner ändern sich auch der Projektname (''Stamm - Bezeichner''), das Kopfband und der Fenstertitel. Ein Stammprojekt bekommt seinen Namen dagegen über ''Speichern unter…''.
 * '''Umbenennen in der Übersicht''' – dieselbe Umbenennung steht im Bereich ''Berichte & Kosten'' auf dem Reiter ''Übersicht'' als vierter Knopf der Variantenzeile, hinter Anlegen, Löschen und Simulieren; frei ist er, sobald eine Variante gewählt ist.
 
+== Gebäude im Variantenvergleich ==
+{{Anker|gebaeude-vergleich}}
+
+Der Vergleich der Varianten führt die Kennzahlgruppe ''Gebäude'' mit der Abweichung je Kennzahl: Nachtauskühl-, Sommerlüftungs- und Aufheizstunden, die maximale Aufheizzeit sowie die Summen der Aufheizleistung und der Auslegungsgröße. Je Stand steht dazu die Gebäudetafel mit Rechenweg, Spitzen, Lüftungs- und Aufheizzeilen.
+
+Die Abweichungsmerkmale nennen, worin sich zwei Varianten bei der Aufheizung unterscheiden: der Schalter, die Bemessung, der Abzug, die Reserve, die Art der Aufheizzeit, ''Aufschlag (h)'' und ''Aufschlag (%)'' sowie die manuelle Aufheizzeit je Gebäude.
+
 == Siehe auch ==
 
 * [[Programm Dokumentation/Projekttransfer]] – Projekte an einen anderen Rechner geben; eine gewählte Variante nimmt ihr Stammprojekt mit
