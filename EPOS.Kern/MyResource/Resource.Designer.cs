@@ -41893,6 +41893,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die angebunden ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_ANGEBUNDEN {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_ANGEBUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die angebunden, Lieferstand übernommen ähnelt.
+        /// </summary>
+        public static string KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ausgelaufen ähnelt.
         /// </summary>
         public static string KABG_AKTION_AUSGELAUFEN {
@@ -41961,6 +41979,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KABG_BERICHT {
             get {
                 return ResourceManager.GetString("KABG_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , {0} angebunden ähnelt.
+        /// </summary>
+        public static string KABG_BERICHT_ANGEBUNDEN {
+            get {
+                return ResourceManager.GetString("KABG_BERICHT_ANGEBUNDEN", resourceCulture);
             }
         }
         
@@ -42046,6 +42073,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihr gleichnamiger Satz entspricht dem Auslieferungsstand. Er ist jetzt dem Auslieferungssatz zugeordnet, gesperrt und wird mit künftigen Fassungen nachgeführt. ähnelt.
+        /// </summary>
+        public static string KABG_HINWEIS_ANGEBUNDEN {
+            get {
+                return ResourceManager.GetString("KABG_HINWEIS_ANGEBUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihr gleichnamiger Satz weicht vom Auslieferungsstand ab. Er ist jetzt dem Auslieferungssatz zugeordnet, gesperrt und hat den Lieferstand übernommen (Ihre abweichenden Werte sind in der Sicherung); künftige Fassungen führen ihn nach. ähnelt.
+        /// </summary>
+        public static string KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz ist in der Auslieferung entfallen; er bleibt in Ihrem Katalog. ähnelt.
         /// </summary>
         public static string KABG_HINWEIS_AUSGELAUFEN {
@@ -42078,6 +42123,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KABG_HINWEIS_NAME_BELEGT {
             get {
                 return ResourceManager.GetString("KABG_HINWEIS_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ gehört schon zu einem anderen Auslieferungssatz; der Auslieferungssatz wurde weder eingefügt noch zugeordnet. ähnelt.
+        /// </summary>
+        public static string KABG_HINWEIS_NAME_FREMDER_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("KABG_HINWEIS_NAME_FREMDER_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrere eigene Sätze tragen den Namen „{0}“; der Auslieferungssatz wurde weder eingefügt noch zugeordnet. ähnelt.
+        /// </summary>
+        public static string KABG_HINWEIS_NAME_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KABG_HINWEIS_NAME_MEHRDEUTIG", resourceCulture);
             }
         }
         
