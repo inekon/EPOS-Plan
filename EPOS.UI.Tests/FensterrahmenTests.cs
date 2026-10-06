@@ -175,6 +175,60 @@ public sealed class FensterrahmenTests : EposBunitContext
                 Assert.StartsWith(ANKER, m.Groups["sel"].Value.Trim().Split('\n').Last().Trim());
     }
 
+    /// <summary>
+    /// Die Meldung steht im Bild (Anwenderentscheid 06.10.2026): Ein Warnbanner als
+    /// unmittelbares Kind der Fensterwurzel haftet unter dem Kopf und über der
+    /// Schlussleiste, trägt dort sein Kreuz zum Ausblenden, und das Polster oben rechnet
+    /// seine Höhe mit. Nirgends sonst haftet ein Banner, und das Kreuz ist außerhalb
+    /// verborgen - Überlagerung, Blatt und Seite bleiben, wie sie sind. Die Lage misst die
+    /// Bannerprobe (Proben/Rasterprobe/bannerprobe.mjs).
+    /// </summary>
+    [Fact]
+    public void Ein_Banner_der_Fensterwurzel_haftet_unter_dem_Kopf()
+    {
+        string banner = Regelblock(ANKER + " > .epos-warnbanner {");
+        Assert.Contains("position: sticky;", banner);
+        Assert.Contains("top: var(--epos-fenster-kopf);", banner);
+        Assert.Contains("bottom: var(--epos-fenster-fuss);", banner);
+        Assert.InRange(ZIndex(banner), 1, 39);
+
+        Assert.Contains("display: inline-flex;",
+            Regelblock(ANKER + " > .epos-warnbanner > .epos-warnbanner-schliessen {"));
+        Assert.Contains("display: none;", Regelblock(".epos-warnbanner-schliessen {"));
+        Assert.Contains("--epos-fenster-polster-oben:", Regelblock(
+            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner) {"));
+
+        string css = Hausblatt();
+        foreach (Match m in Regex.Matches(css, @"(?<sel>[^{}]*\.epos-warnbanner[^{}]*)\{(?<rumpf>[^}]*)\}"))
+        {
+            string rumpf = m.Groups["rumpf"].Value;
+            string sel = m.Groups["sel"].Value.Trim().Split('\n').Last().Trim();
+            if (rumpf.Contains("sticky", StringComparison.Ordinal))
+                Assert.StartsWith(ANKER, sel);
+            if (sel.Contains("epos-warnbanner-schliessen", StringComparison.Ordinal)
+                && Regex.IsMatch(rumpf, @"display:\s*(inline-)?(flex|block)"))
+                Assert.StartsWith(ANKER, sel);
+        }
+    }
+
+    /// <summary>
+    /// Die Bannerregel wirkt nur, wenn jede Meldung der Baustein ist: Kein Markup außer
+    /// <c>Warnbanner.razor</c> zeichnet selbst ein <c>epos-warnbanner</c>-Element (die
+    /// Teilklassen wie <c>epos-warnbanner-erklaeren</c> dürfen andere tragen).
+    /// </summary>
+    [Fact]
+    public void Jede_Meldung_ist_der_Baustein_und_kein_eigenes_Banner()
+    {
+        var fremd = Directory.EnumerateFiles(Path.Combine(Wurzel(), "EPOS.UI"), "*.razor", SearchOption.AllDirectories)
+            .Where(p => !p.Replace('\\', '/').Contains("/obj/", StringComparison.Ordinal))
+            .Where(p => Path.GetFileName(p) != "Warnbanner.razor")
+            .Where(p => Regex.IsMatch(Markup(File.ReadAllText(p)), @"class=""[^""]*\bepos-warnbanner(?![-\w])"))
+            .Select(p => Path.GetRelativePath(Wurzel(), p))
+            .ToList();
+
+        Assert.Empty(fremd);
+    }
+
     // =====================================================================
     //  4 - Die Fensterdialoge
     // =====================================================================

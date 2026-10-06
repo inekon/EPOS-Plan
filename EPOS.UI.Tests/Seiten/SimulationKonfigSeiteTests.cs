@@ -705,7 +705,9 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE, Gewaehlt(wahlen[0]));
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_ART_TAEGLICH, Gewaehlt(wahlen[1]));
 
-        IElement reserve = Assert.Single(Textfelder(seite));
+        // KP3 O1b: unter der Art die zwei Felder des Aufschlags.
+        Assert.Equal(3, Textfelder(seite).Count);
+        IElement reserve = Textfelder(seite)[0];
         Assert.Equal("", reserve.GetAttribute("value") ?? "");
         Assert.Equal("Vorgabe 20 %", reserve.GetAttribute("placeholder"));
         Assert.Contains("%", abschnitt.TextContent);
@@ -724,7 +726,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         var leer = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(
             true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, null, null, null!));
         List<IElement> felder = Textfelder(leer);
-        Assert.Equal(2, felder.Count);
+        Assert.Equal(4, felder.Count);   // ΔT_K, Reserve und die zwei Felder des Aufschlags (O1b)
         Assert.Equal("Vorgabe 2", felder[0].GetAttribute("placeholder"));
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_ABZUG, Aufheizabschnitt(leer).TextContent);
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG, Gewaehlt(Wahlen(leer)[0]));
@@ -842,7 +844,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         Wahlen(an)[0].Change("1");
         Assert.Null(an.Instance.Laufparameter.Aufheizung.Bemessung);
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE, Gewaehlt(Wahlen(an)[0]));
-        Assert.Single(Textfelder(an));
+        Assert.Equal(3, Textfelder(an).Count);   // Reserve und Aufschlag (O1b), kein ΔT_K
     }
 
     /// <summary>
@@ -896,7 +898,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.True(seite.Find("fieldset.epos-simkonfig-einstellungen").HasAttribute("disabled"));
         IElement abschnitt = Aufheizabschnitt(seite);
         List<IElement> bedienelemente = abschnitt.QuerySelectorAll("input, select").ToList();
-        Assert.Equal(5, bedienelemente.Count);
+        Assert.Equal(7, bedienelemente.Count);   // samt den zwei Feldern des Aufschlags (O1b)
         Assert.All(bedienelemente, e => Assert.True(e.HasAttribute("disabled")));
         Assert.Empty(_aufheizGeschrieben);
     }
@@ -908,6 +910,229 @@ public class SimulationKonfigSeiteTests : BunitContext
         var seite = SeiteMitParametern();
 
         Assert.Empty(seite.FindAll("section.epos-simkonfig-aufheizung"));
+    }
+
+    // =====================================================================
+    //  KP3 O1b (E59 (2), Festlegungen 35, 36; P16) — der Aufschlag auf die
+    //  Aufheizrampe in der Projekteinstellung
+    // =====================================================================
+
+    /// <summary>Eine gepflegte Einstellung mit Aufschlag 2 h und 50 %.</summary>
+    private static readonly WindowsFormsApplication1.Aufheizvorgabe AUFHEIZ_MIT_AUFSCHLAG =
+        new(true, null!, null, 0.25, null!, 2, 50.0);
+
+    /// <summary>
+    /// Befund (rote Probe): Jedes Feld des Abschnitts schreibt die ganze Einstellung — der gespeicherte
+    /// Aufschlag muss dabei mitgehen, ob er über die Maske, den Assistenten oder eine Projektdatei kam.
+    /// Schalter, Bemessung, ΔT_K, Reserve und Art behalten ihn.
+    /// </summary>
+    [Fact]
+    public void Jedes_Feld_behaelt_den_gespeicherten_Aufschlag()
+    {
+        var seite = SeiteMitAufheizung(AUFHEIZ_MIT_AUFSCHLAG);
+
+        Textfelder(seite)[0].Input("30");
+        Assert.Equal(0.3, _aufheizGeschrieben.Last().Reserve);
+        Assert.Equal(2, _aufheizGeschrieben.Last().AufschlagH);
+        Assert.Equal(50.0, _aufheizGeschrieben.Last().AufschlagProzent);
+
+        Wahlen(seite)[0].Change("1");
+        Textfelder(seite)[0].Input("3");
+        Wahlen(seite)[1].Change("1");
+        Aufheizabschnitt(seite).QuerySelector("input[type=checkbox]")!.Change(false);
+
+        Assert.Equal(5, _aufheizGeschrieben.Count);
+        Assert.All(_aufheizGeschrieben, v =>
+        {
+            Assert.Equal(2, v.AufschlagH);
+            Assert.Equal(50.0, v.AufschlagProzent);
+        });
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(false,
+                         WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 3.0, 0.3,
+                         WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, 2, 50.0),
+                     seite.Instance.Laufparameter.Aufheizung);
+    }
+
+    /// <summary>Die Felder des Aufschlags in einem Abschnitt mit Schalter an (ohne ΔT_K): Stunden, Prozent.</summary>
+    private static (IElement Stunden, IElement Prozent) Aufschlagfelder(IRenderedComponent<SimulationKonfigSeite> seite)
+    {
+        List<IElement> felder = Textfelder(seite);
+        return (felder[^2], felder[^1]);
+    }
+
+    /// <summary>
+    /// <b>Feldbestand</b>: Bei Schalter an stehen unter der Art „Aufschlag (h)" und „Aufschlag (%)", leer mit
+    /// „Vorgabe 0", gepflegt mit ihren Werten, dazu die Herleitungszeile der Regel (Festlegung 35); zeichnen
+    /// schreibt nichts.
+    /// </summary>
+    [Fact]
+    public void Unter_der_Art_stehen_die_zwei_Felder_des_Aufschlags()
+    {
+        var leer = SeiteMitAufheizung(AUFHEIZ_AN);
+        IElement abschnitt = Aufheizabschnitt(leer);
+        string text = abschnitt.TextContent;
+        int art = text.IndexOf(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_ART, StringComparison.Ordinal);
+        int stunden = text.IndexOf(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H, StringComparison.Ordinal);
+        int prozent = text.IndexOf(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT, StringComparison.Ordinal);
+        Assert.True(art >= 0 && stunden > art && prozent > stunden, text);
+        Assert.Equal("Aufschlag (h)", WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H);
+        Assert.Equal("Aufschlag (%)", WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_HRL, text);
+        Assert.Contains("n′ = min(48, n + max(", WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_HRL);
+
+        (IElement h, IElement p) = Aufschlagfelder(leer);
+        Assert.Equal("", h.GetAttribute("value") ?? "");
+        Assert.Equal("", p.GetAttribute("value") ?? "");
+        Assert.Equal("Vorgabe 0", h.GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 0", p.GetAttribute("placeholder"));
+        Assert.Equal("numeric", h.GetAttribute("inputmode"));   // ganze Stunden
+        Assert.Equal("decimal", p.GetAttribute("inputmode"));
+
+        var gepflegt = SeiteMitAufheizung(AUFHEIZ_MIT_AUFSCHLAG);
+        (h, p) = Aufschlagfelder(gepflegt);
+        Assert.Equal("2", h.GetAttribute("value"));
+        Assert.Equal("50", p.GetAttribute("value"));
+        Assert.Empty(_aufheizGeschrieben);
+    }
+
+    /// <summary>
+    /// <b>Schreiben</b>: Jedes der zwei Felder schreibt SOFORT die ganze Einstellung über dieselbe Naht; die
+    /// übrigen Werte und das andere Feld bleiben.
+    /// </summary>
+    [Fact]
+    public void Der_Aufschlag_schreibt_sofort_die_ganze_Einstellung()
+    {
+        var stand = new WindowsFormsApplication1.Aufheizvorgabe(true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG,
+                                                               3.0, 0.25, WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST);
+        var seite = SeiteMitAufheizung(stand);
+
+        Aufschlagfelder(seite).Stunden.Input("4");
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG,
+                         3.0, 0.25, WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, 4, null),
+                     _aufheizGeschrieben.Last());
+
+        Aufschlagfelder(seite).Prozent.Input("37,5");
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG,
+                         3.0, 0.25, WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, 4, 37.5),
+                     _aufheizGeschrieben.Last());
+        Assert.Equal(_aufheizGeschrieben.Last(), seite.Instance.Laufparameter.Aufheizung);
+        Assert.Equal(2, _aufheizGeschrieben.Count);
+    }
+
+    /// <summary>
+    /// <b>0 und leer schreiben NULL</b> (Festlegung 36): Ein gepflegter Aufschlag wird mit 0 wie mit einem
+    /// geleerten Feld NULL; 0 auf einem leeren Feld ist schon der Stand und schreibt nichts.
+    /// </summary>
+    [Fact]
+    public void Null_und_leer_schreiben_null()
+    {
+        var seite = SeiteMitAufheizung(AUFHEIZ_MIT_AUFSCHLAG);
+
+        Aufschlagfelder(seite).Stunden.Input("0");
+        Assert.Null(_aufheizGeschrieben.Last().AufschlagH);
+        Assert.Equal(50.0, _aufheizGeschrieben.Last().AufschlagProzent);
+
+        Aufschlagfelder(seite).Prozent.Input("0");
+        Assert.Null(_aufheizGeschrieben.Last().AufschlagProzent);
+        Assert.False(seite.Instance.Laufparameter.Aufheizung.HatAufschlag);
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(true, null!, null, 0.25, null!),
+                     seite.Instance.Laufparameter.Aufheizung);
+        Assert.Equal(2, _aufheizGeschrieben.Count);
+
+        var zweite = SeiteMitAufheizung(AUFHEIZ_MIT_AUFSCHLAG);
+        Aufschlagfelder(zweite).Prozent.Input("");
+        Assert.Null(_aufheizGeschrieben.Last().AufschlagProzent);
+        Assert.Equal(2, _aufheizGeschrieben.Last().AufschlagH);
+        Aufschlagfelder(zweite).Stunden.Input("");
+        Assert.Null(_aufheizGeschrieben.Last().AufschlagH);
+        Assert.Equal(4, _aufheizGeschrieben.Count);
+
+        // 0 auf leerem Feld: die Einstellung ändert sich nicht, geschrieben wird nicht.
+        Aufschlagfelder(zweite).Stunden.Input("0");
+        Assert.Equal(4, _aufheizGeschrieben.Count);
+    }
+
+    /// <summary>
+    /// <b>Bereich</b>: Stunden 0 … 24 ganzzahlig, Prozent 0 … 100 — darüber, darunter oder als Bruch in den
+    /// Stunden färbt das Feld und schreibt nicht; die Grenzwerte selbst schreiben.
+    /// </summary>
+    [Fact]
+    public void Der_Aufschlag_haelt_seinen_Bereich()
+    {
+        var seite = SeiteMitAufheizung(AUFHEIZ_AN);
+
+        Aufschlagfelder(seite).Stunden.Input("25");
+        Assert.Contains("epos-fehleingabe", Aufschlagfelder(seite).Stunden.ClassName);
+        Aufschlagfelder(seite).Stunden.Input("2,5");
+        Aufschlagfelder(seite).Stunden.Input("-1");
+        Aufschlagfelder(seite).Prozent.Input("100,5");
+        Assert.Contains("epos-fehleingabe", Aufschlagfelder(seite).Prozent.ClassName);
+        Aufschlagfelder(seite).Prozent.Input("-1");
+        Assert.Empty(_aufheizGeschrieben);
+
+        Aufschlagfelder(seite).Stunden.Input("24");
+        Assert.Equal(WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX, _aufheizGeschrieben.Last().AufschlagH);
+        Aufschlagfelder(seite).Prozent.Input("100");
+        Assert.Equal(WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX, _aufheizGeschrieben.Last().AufschlagProzent);
+    }
+
+    /// <summary>
+    /// <b>Sperre bei Schalter aus</b>: Die Felder stehen nicht da, wie alle Werte des Abschnitts; ein gespeicherter
+    /// Aufschlag bleibt (Festlegung 36) und eine Zeile nennt ihn samt dem Grund, warum er nicht wirkt — ohne
+    /// Aufschlag keine solche Zeile. Einschalten zeigt die Felder mit ihren Werten.
+    /// </summary>
+    [Fact]
+    public void Bei_Schalter_aus_nennt_eine_Zeile_den_gespeicherten_Aufschlag_und_den_Grund()
+    {
+        var ohne = SeiteMitAufheizung(WindowsFormsApplication1.Aufheizvorgabe.Aus);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H, Aufheizabschnitt(ohne).TextContent);
+        Assert.DoesNotContain("Aufschlag von", Aufheizabschnitt(ohne).TextContent);
+
+        var gespeichert = new WindowsFormsApplication1.Aufheizvorgabe(false, null!, null, null, null!, 2, 12.5);
+        var seite = SeiteMitAufheizung(gespeichert);
+        IElement abschnitt = Aufheizabschnitt(seite);
+        Assert.Single(abschnitt.QuerySelectorAll("input"));
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H, abschnitt.TextContent);
+        Assert.Contains("Gespeichert ist ein Aufschlag von 2 h und 12,5 %; er wirkt erst mit eingeschalteter Aufheizoptimierung.",
+                        abschnitt.TextContent);
+
+        abschnitt.QuerySelector("input[type=checkbox]")!.Change(true);
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(true, null!, null, null, null!, 2, 12.5), _aufheizGeschrieben.Last());
+        (IElement h, IElement p) = Aufschlagfelder(seite);
+        Assert.Equal("2", h.GetAttribute("value"));
+        Assert.Equal("12,5", p.GetAttribute("value"));
+        Assert.DoesNotContain("Aufschlag von", Aufheizabschnitt(seite).TextContent);
+    }
+
+    /// <summary>
+    /// <b>Herleitungszeile mit und ohne Aufschlag</b>: Die Seite zeigt, was die Hülle liefert (n' rechnet der
+    /// Kern, Festlegung 35); nach dem Schreiben eines Aufschlags fragt sie die Zeilen neu.
+    /// </summary>
+    [Fact]
+    public void Die_Herleitungszeilen_folgen_dem_Aufschlag()
+    {
+        string ohne = "Haus A: t_auf,max 5 h bei −9,3 °C";
+        string mit = ohne + " · Aufschlag: längste Rampe n′ = 9 statt 6 Stufen";
+        bool mitAufschlag = false;
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () => { ParameterDaten p = laden(); p.Aufheizung = AUFHEIZ_AN; return p; };
+        wege.AufheizvorgabeSchreiben = v => { _aufheizGeschrieben.Add(v); mitAufschlag = v.HatAufschlag; return true; };
+        wege.AufheizHerleitung = () => new[] { mitAufschlag ? mit : ohne };
+        var seite = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste(false))
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+
+        Assert.Contains(ohne, Aufheizabschnitt(seite).TextContent);
+        Assert.DoesNotContain("n′ = 9", Aufheizabschnitt(seite).TextContent);
+
+        Aufschlagfelder(seite).Stunden.Input("3");
+        Assert.Contains(mit, Aufheizabschnitt(seite).TextContent);
+
+        Aufschlagfelder(seite).Stunden.Input("");
+        Assert.DoesNotContain("n′ = 9", Aufheizabschnitt(seite).TextContent);
+        Assert.Contains(ohne, Aufheizabschnitt(seite).TextContent);
     }
 
     /// <summary>
@@ -931,6 +1156,13 @@ public class SimulationKonfigSeiteTests : BunitContext
 
         Textfelder(seite)[1].Input("12.5");
         Assert.Equal(0.125, _aufheizGeschrieben.Last().Reserve);
+
+        // KP3 O1b: der Aufschlag nach dem Glossar („surcharge"), die Prozente in der Kultur.
+        Assert.Contains("Surcharge (h)", abschnitt.TextContent);
+        Assert.Contains("Surcharge (%)", abschnitt.TextContent);
+        Assert.Equal("Default 0", Textfelder(seite)[2].GetAttribute("placeholder"));
+        Textfelder(seite)[3].Input("12.5");
+        Assert.Equal(12.5, _aufheizGeschrieben.Last().AufschlagProzent);
     }
 
     /// <summary>
@@ -943,7 +1175,8 @@ public class SimulationKonfigSeiteTests : BunitContext
     {
         var seite = SeiteMitAufheizung(AUFHEIZ_AN);
 
-        IElement reserve = Textfelder(seite)[^1];
+        // Die Reserve steht vor den zwei Feldern des Aufschlags (O1b).
+        IElement reserve = Textfelder(seite)[^3];
         Assert.Equal("", reserve.GetAttribute("value") ?? "");
         Assert.Equal("Vorgabe 20 %", reserve.GetAttribute("placeholder"));
         string hinweis = WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_RESERVE;
@@ -951,10 +1184,10 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Contains("Hinweis", hinweis);
         Assert.Contains(hinweis, Aufheizabschnitt(seite).TextContent);
 
-        Textfelder(seite)[^1].Input("30");
+        Textfelder(seite)[^3].Input("30");
         Assert.Equal(0.3, _aufheizGeschrieben.Last().Reserve);
 
-        Textfelder(seite)[^1].Input("");
+        Textfelder(seite)[^3].Input("");
         Assert.Null(_aufheizGeschrieben.Last().Reserve);
     }
 

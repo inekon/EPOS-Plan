@@ -14731,9 +14731,6 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_MSG_DB_UEBERNAHME_NAME_LEER" xml:space="preserve">
     <value>Bitte einen Namen eingeben.</value>
   </data>
-  <data name="GEB_SPERRE_IN_DB_NEUE_ZEILE" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach OK lässt es sich in die Datenbank übernehmen.</value>
-  </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>aus Projekt {0}, {1}</value>
   </data>
@@ -23322,16 +23319,16 @@ Möchten Sie das zulassen?</value>
     <value>Die Beschreibung des markierten Satzes.</value>
   </data>
   <data name="KI_DLG_GEB_WOHNFLAECHE_ERL" xml:space="preserve">
-    <value>Die Wohn- oder Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“.</value>
+    <value>Die Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“.</value>
   </data>
   <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
-    <value>Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
+    <value>Die Art der Angabe: Nutzfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
   </data>
   <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
     <value>Die Art der Angabe für dieses Gebäude; sie bestimmt Einheit und Rechenweg der Zahl daneben.</value>
   </data>
   <data name="KI_DLG_GEBW_WERT_ERL" xml:space="preserve">
-    <value>Der Wärmebedarf bzw. die Wohnfläche in der Einheit, die die Bedarfsart nennt.</value>
+    <value>Der Wärmebedarf bzw. die Nutzfläche in der Einheit, die die Bedarfsart nennt.</value>
   </data>
   <data name="KI_DLG_GEBW_NUTZUNGSGRAD_ERL" xml:space="preserve">
     <value>Der Jahresnutzungsgrad des Kessels als Anteil, z. B. 0,85 für 85 %. Er wird nur bei einer Brennstoffangabe gebraucht.</value>
@@ -23382,7 +23379,7 @@ Möchten Sie das zulassen?</value>
     <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
-    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird.</value>
+    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird.</value>
   </data>
   <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
     <value>Die gesamte Wohn- oder Nutzfläche des Gebäudes.</value>
@@ -33729,7 +33726,7 @@ Möchten Sie das zulassen?</value>
     <value>sein Katalogsatz „{0}“ ist im Gebäudekatalog nicht zu finden — ohne ihn gibt es keine Gebäudedaten, aus denen sich rechnen ließe. Bitte das Gebäude neu aus dem Katalog wählen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
-    <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+    <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit dem Speichern entstehen – nach Abschluss des Assistenten lässt sich sein Wärmebedarf berechnen.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Gebäudedatei</value>
@@ -34648,9 +34645,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
     <value>Die Gebäudedaten dieses Projektgebäudes bearbeiten, Zonen und Bauteile anlegen – geschrieben wird die Projektkopie, nicht der Katalog</value>
-  </data>
-  <data name="GEBZ_SPERRE_NEUE_ZEILE" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst mit OK entsteht seine Projektkopie, die Zonen tragen kann.</value>
   </data>
   <data name="GEBZ_TITEL_PROJEKT" xml:space="preserve">
     <value>Gebäude im Projekt: Hülle und Zonen</value>
@@ -38376,9 +38370,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
     <value>Die Daten des Gebäudes im Projekt ausgeben — als gbXML mit schematischer Raumgeometrie oder als IFC mit Zonen, Bauteilflächen und Schichtaufbauten ohne Geometrie</value>
   </data>
-  <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
-    <value>Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren.</value>
-  </data>
   <data name="GEXP_LBL_FORMAT" xml:space="preserve">
     <value>Format</value>
   </data>
@@ -38398,7 +38389,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung. Die Eingabe wird nicht gespeichert.</value>
   </data>
   <data name="GEXP_GESPEICHERTER_STAND" xml:space="preserve">
-    <value>Exportiert wird der gespeicherte Stand des Gebäudes; Änderungen in dieser Liste gelten erst nach OK.</value>
+    <value>Exportiert wird der gespeicherte Stand des Gebäudes; noch nicht gespeicherte Änderungen in dieser Liste sind darin nicht enthalten.</value>
   </data>
   <data name="GEXP_GRP_MELDUNGEN" xml:space="preserve">
     <value>Vor dem Schreiben</value>
@@ -45418,10 +45409,10 @@ Chart</value>
     <value>Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet?</value>
   </data>
   <data name="START_E_KUEHL_TITEL" xml:space="preserve">
-    <value>Kühlung</value>
+    <value>Kühlung und Kälteanlagen</value>
   </data>
   <data name="START_E_KUEHL_TEXT" xml:space="preserve">
-    <value>Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion</value>
+    <value>Kälteerzeugung mit Kältemaschinen und Wärmepumpen</value>
   </data>
   <data name="START_E_KUEHL_KM" xml:space="preserve">
     <value>Kältemaschinen</value>
@@ -45431,15 +45422,6 @@ Chart</value>
   </data>
   <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
     <value>{0} ({1} ×)</value>
-  </data>
-  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
-    <value>Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an.</value>
-  </data>
-  <data name="START_E_KUEHL_LEER" xml:space="preserve">
-    <value>Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts.</value>
-  </data>
-  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
-    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb.</value>
   </data>
   <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
     <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
@@ -47000,6 +46982,321 @@ Chart</value>
   </data>
   <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
     <value>Alle drei Szenarien (VALERI)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_LBL_H" xml:space="preserve">
+    <value>Aufschlag (h)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT" xml:space="preserve">
+    <value>Aufschlag (%)</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL" xml:space="preserve">
+    <value>Der Aufschlag verlängert jede Aufheizrampe, die ein Sprung des Heizkalenders auslöst und die schon vorheizt: Aus n Stufen (Aufheizzeit n − 1 h, n &gt; 1) werden n′ = min(48, n + max(Aufschlag h, ⌈n · Aufschlag % / 100⌉)), höchstens bis zum Ende der Absenkung. Es gilt der größere der beiden Werte; leer oder 0 heißt kein Aufschlag. Auf die manuelle Aufheizzeit eines Gebäudes wirkt er nicht; t_auf,max bleibt die bemessene Zeit.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL_AUS" xml:space="preserve">
+    <value>Gespeichert ist ein Aufschlag von {0} h und {1} %; er wirkt erst mit eingeschalteter Aufheizoptimierung.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE" xml:space="preserve">
+    <value>· Aufschlag: längste Rampe n′ = {0} statt {1} Stufen</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_KI_H_ERL" xml:space="preserve">
+    <value>Aufschlag auf die Aufheizrampe in ganzen Stunden, 0 bis 24; leer oder 0 = kein Aufschlag (gespeichert als leer). Es gilt der größere Wert aus Stunden und Prozent: n′ = min(48, n + max(h, ⌈n · % / 100⌉)), nur auf Rampen eines Kalendersprungs mit n &gt; 1, nicht auf die manuelle Aufheizzeit. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="SIMKONF_AUFH_AUFSCHLAG_KI_PROZENT_ERL" xml:space="preserve">
+    <value>Aufschlag auf die Aufheizrampe in Prozent der Stufenzahl n, 0 bis 100, aufgerundet auf ganze Stufen; leer oder 0 = kein Aufschlag (gespeichert als leer). Es gilt der größere Wert aus Stunden und Prozent. Nur bei eingeschalteter Aufheizoptimierung; wird sofort gespeichert.</value>
+  </data>
+  <data name="GEBB_AUFH_GRP" xml:space="preserve">
+    <value>Aufheizung</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_ZUSTAND" xml:space="preserve">
+    <value>Zustand:</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_BEMESSEN" xml:space="preserve">
+    <value>bemessen</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_UNERREICHBAR" xml:space="preserve">
+    <value>unerreichbar — keine Rampe bis 48 h hält</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_GEKOPPELT" xml:space="preserve">
+    <value>gekoppelt — nicht optimiert</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizt — ohne Rampe</value>
+  </data>
+  <data name="GEBB_AUFH_ZUSTAND_AUS" xml:space="preserve">
+    <value>Aufheizoptimierung aus</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_ZEIT_MAX" xml:space="preserve">
+    <value>längste Aufheizzeit t_auf,max:</value>
+  </data>
+  <data name="GEBB_AUFH_ZEIT_BEI" xml:space="preserve">
+    <value>{0} h bei {1} °C ({2})</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_AUSSEN" xml:space="preserve">
+    <value>Außentemperatur der Bemessung T_a,B:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_ART" xml:space="preserve">
+    <value>Art der Aufheizzeit:</value>
+  </data>
+  <data name="GEBB_AUFH_ART_MANUELL" xml:space="preserve">
+    <value>manuell ({0} h)</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_LEISTUNG" xml:space="preserve">
+    <value>Aufheizleistung P_auf:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_QUELLE" xml:space="preserve">
+    <value>Quelle der Aufheizleistung:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_TAGE" xml:space="preserve">
+    <value>Rampentage:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_STUNDEN" xml:space="preserve">
+    <value>Aufheizstunden Σ:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_LAENGSTE" xml:space="preserve">
+    <value>längste Rampe:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_BEGRENZT" xml:space="preserve">
+    <value>Tage durch die Absenkdauer begrenzt (W2):</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_UNERREICHBAR" xml:space="preserve">
+    <value>Tage ohne erreichbare Rampe (W1):</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_NACHWEISBAND" xml:space="preserve">
+    <value>Tage außerhalb des Nachweisbands (W3):</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_SPRUENGE_AUS" xml:space="preserve">
+    <value>Sprünge aus „aus“ ohne Rampe (W4):</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_KAPPUNG" xml:space="preserve">
+    <value>Kappungsstunden an der Heizleistungsgrenze:</value>
+  </data>
+  <data name="GEBB_AUFH_W1" xml:space="preserve">
+    <value>W1 — Aufheizleistung reicht nicht: An {0} Tagen hält keine Rampe bis 48 h; die Rampe füllt dort die Absenkung.</value>
+  </data>
+  <data name="GEBB_AUFH_W1_BEMESSUNG" xml:space="preserve">
+    <value>W1 — Aufheizleistung reicht nicht: Im Bemessungsfall liegt sie nicht über der stationären Heizlast, die Bemessung ist unerreichbar.</value>
+  </data>
+  <data name="GEBB_AUFH_W2" xml:space="preserve">
+    <value>W2 — durch die Absenkdauer begrenzt: An {0} Tagen ist die Absenkung weitgehend wirkungslos.</value>
+  </data>
+  <data name="GEBB_AUFH_W3" xml:space="preserve">
+    <value>W3 — Nachweisband: An {0} Tagen verlässt der Lauf das Nachweisband der Rampe.</value>
+  </data>
+  <data name="GEBB_AUFH_W4" xml:space="preserve">
+    <value>W4 — Übergang aus „aus“ ohne Rampe: {0} Sprünge, darunter der Beginn der Heizperiode.</value>
+  </data>
+  <data name="GEBB_AUFH_W5" xml:space="preserve">
+    <value>W5 — gekoppeltes Gebäude nicht optimiert: Die Übergabe begrenzt die Leistung nach dem Sprung.</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegungsgröße Φ_HL + Φ_RH:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_AUSLEGUNGSHEIZLAST" xml:space="preserve">
+    <value>Auslegungsheizlast Φ_HL:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_ZUSCHLAG" xml:space="preserve">
+    <value>Aufheizzuschlag Φ_RH:</value>
+  </data>
+  <data name="GEBB_AUFH_LBL_SPITZE_IDEAL" xml:space="preserve">
+    <value>ideale Spitze (Stunde):</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_SPITZE" xml:space="preserve">
+    <value>Die ideale Spitze ist bei ausgeschalteter Aufheizoptimierung keine Auslegungsgröße — sie folgt aus dem Sprung des Sollwerts ohne Rampe.</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_AUSKUNFT" xml:space="preserve">
+    <value>Die Aufheizoptimierung ist ausgeschaltet: Die Teile der Auslegungsgröße stammen aus der Bemessung ohne Jahreslauf mit den Werten der Projekteinstellung.</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_FAKTOR_LAUF" xml:space="preserve">
+    <value>Mit Verbrauchsangabe entsteht der Skalierungsfaktor erst im Jahreslauf — Aufheizleistung und Auslegungsgröße stehen erst nach der Simulation.</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_MANUELL" xml:space="preserve">
+    <value>Die Rampen laufen mit der manuellen Aufheizzeit {0} h; t_auf,max ist die bemessene Zeit.</value>
+  </data>
+  <data name="GEBB_AUFH_SP_ZUSTAND" xml:space="preserve">
+    <value>Zustand</value>
+  </data>
+  <data name="GEBB_AUFH_SP_ZEIT" xml:space="preserve">
+    <value>t_auf,max (h)</value>
+  </data>
+  <data name="GEBB_AUFH_SP_LEISTUNG" xml:space="preserve">
+    <value>P_auf (kW)</value>
+  </data>
+  <data name="GEBB_AUFH_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="GEBB_AUFH_SP_TAGE" xml:space="preserve">
+    <value>Rampentage</value>
+  </data>
+  <data name="GEBB_AUFH_SP_LAENGSTE" xml:space="preserve">
+    <value>längste Rampe (h)</value>
+  </data>
+  <data name="GEBB_AUFH_SP_KAPPUNG" xml:space="preserve">
+    <value>Kappung (h)</value>
+  </data>
+  <data name="GEBB_AUFH_HRL_ZONEN" xml:space="preserve">
+    <value>Je Zone eine eigene Bemessung; das Gebäude zeigt t_auf,max und die längste Rampe als Maximum, P_auf als Summe, Tage und Stunden als Vereinigung der beheizten Zonen.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_GRP" xml:space="preserve">
+    <value>Aufheizung</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_LBL" xml:space="preserve">
+    <value>Aufheizzeit manuell (h)</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_PLATZHALTER" xml:space="preserve">
+    <value>Art des Projekts</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_VORSCHLAG_BEMESSEN" xml:space="preserve">
+    <value>bemessen: {0} h</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_BTN_TITEL" xml:space="preserve">
+    <value>Die bemessene Aufheizzeit dieses Gebäudes in das Feld übernehmen</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_SPANNE" xml:space="preserve">
+    <value>sinnvolle Spanne: {0}–{1} h (aus der Zeitkonstante τ₂ = {2} h)</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_AUSSERHALB" xml:space="preserve">
+    <value>{0} h liegt außerhalb der Spanne {1}–{2} h — der Wert wird trotzdem gespeichert.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_OHNE_SCHALTER" xml:space="preserve">
+    <value>Wirkt erst mit eingeschalteter Aufheizoptimierung in der Projekteinstellung.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_LEER" xml:space="preserve">
+    <value>Leer: Es gilt die Art der Projekteinstellung (täglich oder fest).</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_UNERREICHBAR" xml:space="preserve">
+    <value>Die Bemessung ist unerreichbar (W1) — es gibt keine bemessene Zeit.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>Ohne Bemessung kein Vorschlag: kein Sprung des Heizsollwerts, gekoppeltes Gebäude oder Tagesbilanz.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_ZONEN" xml:space="preserve">
+    <value>Die {0} Zonen erben diesen Wert: {1}.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_MSG_BEREICH" xml:space="preserve">
+    <value>Die manuelle Aufheizzeit muss zwischen {0} und {1} h liegen.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_MSG_OHNE_SPALTE" xml:space="preserve">
+    <value>Die Datenbank kennt die manuelle Aufheizzeit noch nicht — der Wert wurde nicht gespeichert.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_KI_ERL" xml:space="preserve">
+    <value>Aufheizzeit dieses Gebäudes in Stunden, 1 bis 47; leer heißt: Es gilt die Art der Projekteinstellung. Wirkt nur mit eingeschalteter Aufheizoptimierung, die Zonen erben den Wert. Nur im Projekt.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_ZUSTAND_ERL" xml:space="preserve">
+    <value>Zustand der Aufheizrechnung: bemessen, unerreichbar, gekoppelt oder aus.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_ZEIT_ERL" xml:space="preserve">
+    <value>Bemessene längste Aufheizzeit t_auf,max in Stunden; leer bei unerreichbarer Bemessung oder ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_AUSSEN_ERL" xml:space="preserve">
+    <value>Außentemperatur des Bemessungsfalls T_a,B in °C.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_LEISTUNG_ERL" xml:space="preserve">
+    <value>Aufheizleistung P_auf in kW, skaliert wie die Spitzen.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_QUELLE_ERL" xml:space="preserve">
+    <value>Woher die Aufheizleistung kommt: Heizleistungsgrenze, Zielleistung oder gemischt je Zone.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_TAGE_ERL" xml:space="preserve">
+    <value>Zahl der Tage mit einer Aufheizrampe.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_STUNDEN_ERL" xml:space="preserve">
+    <value>Summe der Rampenstunden des Jahres in Stunden.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_LAENGSTE_ERL" xml:space="preserve">
+    <value>Längste Rampe des Jahres in Stunden.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFH_KAPPUNG_ERL" xml:space="preserve">
+    <value>Summe der Kappungsanteile an der Heizleistungsgrenze in Stunden.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUSLEGUNG_ERL" xml:space="preserve">
+    <value>Auslegungsgröße der Heizung: Auslegungsheizlast plus Aufheizzuschlag in kW; bei ausgeschalteter Aufheizoptimierung aus der Bemessung ohne Jahreslauf.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUSLEGUNGSHEIZLAST_ERL" xml:space="preserve">
+    <value>Stationäre Auslegungsheizlast Φ_HL in kW.</value>
+  </data>
+  <data name="KI_DLG_GEBB_AUFHEIZZUSCHLAG_ERL" xml:space="preserve">
+    <value>Aufheizzuschlag Φ_RH in kW: Aufheizleistung über der stationären Last.</value>
+  </data>
+  <data name="KI_DLG_GEBB_SOMMERLUEFTUNG_ERL" xml:space="preserve">
+    <value>Stunden mit Sommerlüftung; leer ohne Sommerlüftung.</value>
+  </data>
+  <data name="KI_DLG_GEBB_NACHTAUSKUEHLUNG_ERL" xml:space="preserve">
+    <value>Stunden mit wirksamer Nachtauskühlung; leer ohne Nachtauskühlung.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_KI_NUR_PROJEKT" xml:space="preserve">
+    <value>Die manuelle Aufheizzeit gibt es nur für ein Gebäude im Projekt (Knopf „Hülle und Zonen…“), nicht am Katalogsatz.</value>
+  </data>
+  <data name="GEB_SPERRE_IN_DB_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich in die Datenbank übernehmen.</value>
+  </data>
+  <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
+    <value>Erst nach Abschluss des Assistenten löschbar – eine übernommene Zeile stammt aus diesem Gebäude.</value>
+  </data>
+  <data name="GEB_MSG_PROJEKTKOPIE_FEHLT" xml:space="preserve">
+    <value>Zu diesem Gebäude gibt es keine Projektkopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_FLAECHE" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – „Fläche und Verbrauch“ skaliert die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_PROJEKT" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – bearbeitet wird die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_EXPORT" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – exportiert wird die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_SIMULATION" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – berechnet wird der Wärmebedarf der Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_TXT_EINHEIT_FLAECHE" xml:space="preserve">
+    <value>Nutzfläche [m²]</value>
+  </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN" xml:space="preserve">
+    <value>Das Gebäude wird aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopie.</value>
+  </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR" xml:space="preserve">
+    <value>Die Gebäude werden aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopien.</value>
+  </data>
+  <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
+    <value>Meldung ausblenden</value>
+  </data>
+  <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten entsteht seine Projektkopie, die Zonen tragen kann.</value>
+  </data>
+  <data name="GEXP_SPERRE_ASSISTENT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich exportieren.</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_TITEL" xml:space="preserve">
+    <value>Projektdaten</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_KUNDE" xml:space="preserve">
+    <value>Kunde</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_BEARBEITER" xml:space="preserve">
+    <value>Bearbeiter</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_ERSTELLT" xml:space="preserve">
+    <value>Erstellt am</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_GEAENDERT" xml:space="preserve">
+    <value>Geändert am</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_KLIMA" xml:space="preserve">
+    <value>Klimaregion</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_VARIANTE_VON" xml:space="preserve">
+    <value>Variante von</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="WIZ_STECKBRIEF_SIMULATION" xml:space="preserve">
+    <value>Letzte Simulation</value>
   </data>
 </root>
 

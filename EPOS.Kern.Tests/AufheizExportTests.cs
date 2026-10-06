@@ -107,8 +107,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Schalter an</b> (Projekt 1018, über die Projekteinstellung): Der Satz trägt Zustand, Bemessung und
-        /// Quelle als Text, die elf Zahlen der Ergebniszeile mit denselben Werten wie <c>Tab_ErgebnisGebaeude</c>
-        /// und die Sollwertreihe mit Rampe; ohne Sommerlüftung und Nachtauskühlung keinen Lüftungsschlüssel.
+        /// Quelle als Text, die dreizehn Zahlen der Ergebniszeile mit denselben Werten wie <c>Tab_ErgebnisGebaeude</c> —
+        /// zuletzt die Teile der Auslegungsgröße (E97, Festlegung 41) — und die Sollwertreihe mit Rampe; ohne
+        /// Sommerlüftung und Nachtauskühlung keinen Lüftungsschlüssel.
         /// </summary>
         [Fact]
         public void Schalter_an_schreibt_den_Satz_vollstaendig()
@@ -140,13 +141,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal((double)zeile.AufheizzeitLaengsteH, z["Geb[0].AufheizzeitLaengsteH"]);
             Assert.Equal((double)zeile.AufheizspruengeAus, z["Geb[0].AufheizspruengeAus"]);
             Assert.Equal(zeile.HeizleistungMaxStundenH, z["Geb[0].HeizleistungMaxStundenH"]);
+            // E97: die Auslegungsheizlast auch ohne Anlagenkopplung, daneben der Aufheizzuschlag.
+            Assert.True(zeile.AuslegungsheizlastKw > 0.0, "keine Auslegungsheizlast");
+            Assert.Equal(zeile.AuslegungsheizlastKw, z["Geb[0].AuslegungsheizlastKw"]);
+            Assert.Equal(zeile.AufheizzuschlagKw, z["Geb[0].AufheizzuschlagKw"]);
             Assert.True(z["Geb[0].Aufheiztage"] > 0, "keine Rampe");
             Assert.DoesNotContain(z.Keys, k => k.Contains("Nachtauskuehlstunden", StringComparison.Ordinal)
                                                || k.Contains("Sommerlueftungsstunden", StringComparison.Ordinal));
             // Die Aufheizschlüssel folgen den Kennzahlen, in der Reihenfolge der Ergebniszeile.
             List<string> schluessel = satz.Skalare.Select(p => p.Key).ToList();
             Assert.Equal(schluessel.IndexOf("Geb[0].Ueberhitzungsstunden") + 1, schluessel.IndexOf("Geb[0].AufheizzeitMaxH"));
-            Assert.Equal("Geb[0].HeizleistungMaxStundenH", schluessel.Last());
+            Assert.Equal(schluessel.IndexOf("Geb[0].HeizleistungMaxStundenH") + 1, schluessel.IndexOf("Geb[0].AuslegungsheizlastKw"));
+            Assert.Equal("Geb[0].AufheizzuschlagKw", schluessel.Last());
 
             double[] soll = Assert.Single(satz.Reihen, r => r.Key == "heizsollwert_0.csv").Value;
             Assert.Same(vdi.Heizsollwert, soll);
@@ -164,7 +170,7 @@ namespace EPOS.Kern.Tests
             GebaeudeExportsatz aus = GebaeudeErgebnisexport.Saetze(Bedarf(1018)).Single();
             Assert.Empty(OhneErdreich(aus.Texte));
             Assert.DoesNotContain(aus.Reihen, r => r.Key.StartsWith("heizsollwert_", StringComparison.Ordinal));
-            Assert.Equal(satz.Skalare.Count - 11, aus.Skalare.Count);
+            Assert.Equal(satz.Skalare.Count - 13, aus.Skalare.Count);   // elf Aufheizzahlen und die zwei Teile der Auslegungsgröße (E97)
         }
 
         /// <summary>

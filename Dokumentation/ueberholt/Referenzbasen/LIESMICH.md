@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-05_R38_Vorlaufwahl`](../../../Referenzlaeufe/2026-10-05_R38_Vorlaufwahl/);
+> [`Referenzlaeufe/2026-10-06_R39_Auslegungsheizlast`](../../../Referenzlaeufe/2026-10-06_R39_Auslegungsheizlast/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -83,6 +83,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-04_R35_Zonenuebergabe` | 04.10.2026 | Basis nach der Wärmeübergabe je Zone (AK1z, E63) und dem neuen Referenzprojekt 1054 „Zonen mit Heizkreis“, auf Linux eingefroren; Testdatenbank `905096ae…` (Schemastand 185); neunzehn Projekte, 576 CSV, 3 791 Skalare; mit R36 abgelöst. |
 | `2026-10-05_R36_Kaeltemaschine` | 05.10.2026 | Basis mit dem neuen Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“ (KU3-4b, Einfrierregel „gesäte Kältemaschinendaten“), auf Linux eingefroren; Testdatenbank `fc67a865…` (Schemastand 185), gehoben auf Schemastand 186; zwanzig Projekte, 608 CSV, 4 029 Skalare — abgelöst durch R37 am 05.10.2026 | [`2026-10-05_R36_Kaeltemaschine/protokoll.txt`](2026-10-05_R36_Kaeltemaschine/protokoll.txt) |
 | `2026-10-05_R37_Fahrplan` | 05.10.2026 | Basis mit den Komfortspalten für jedes gekoppelte Projekt (F12, E83) und dem neuen Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4), auf Linux eingefroren; Testdatenbank `63b0bdae…` (Schemastand 186), gehoben auf Schemastand 188; einundzwanzig Projekte, 646 CSV, 4 265 Skalare — abgelöst durch R38 am 05.10.2026 | [`2026-10-05_R37_Fahrplan/protokoll.txt`](2026-10-05_R37_Fahrplan/protokoll.txt) |
+| `2026-10-05_R38_Vorlaufwahl` | 05.10.2026 | Basis mit dem Ausweis der Vorlaufwahl der Wärmepumpe an 1047 und 1056 (VW1, E88), auf Linux eingefroren; Testdatenbank `69322344…` (Schemastand 188), gehoben auf Schemastand 190; einundzwanzig Projekte, 646 CSV, 4 271 Skalare — abgelöst durch R39 am 06.10.2026 | [`2026-10-05_R38_Vorlaufwahl/protokoll.txt`](2026-10-05_R38_Vorlaufwahl/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4615,6 +4616,40 @@ Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R37 beschrieben �
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
 >   --ziel Referenzlaeufe/2026-10-05_R37_Fahrplan
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R38 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R38 beschrieben — den Anlass (den Ausweis der Vorlaufwahl der Wärmepumpe, VW1 und E88) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `7fad5dc`, Testdatenbank Schemastand 190.
+
+**Abgelöst wurde R38 durch `2026-10-06_R39_Auslegungsheizlast`** (Auslegungsheizlast auch ohne Anlagenkopplung, KP3-R6, E97): Die einundzwanzig Projekte rechnen unverändert, 19 Projekte vollständig byte-gleich, 1051 und 1052 tragen nur je zwei neue Zeilen in `aggregate.csv` (`Geb[0].AuslegungsheizlastKw`, `Geb[0].AufheizzuschlagKw`).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Ausweis der Vorlaufwahl der Wärmepumpe (VW1, E88) — die Zahlen aller einundzwanzig Projekte sind unverändert, 1047 und 1056 tragen je drei neue Zeilen in `aggregate.csv`.**
+>
+> Schemaschritt 188 (`VorlaufwahlSchema`) legt an `Tab_ErgebnisWaermepumpeModul` die Spalten `Vorlaufwahl_Stunden`
+> (Paare `Vorlauf:Stunden`, im Export mit Komma getrennt), `Vorlauf_Darueber_Stunden` und `Vorlauf_Darunter_Stunden` an;
+> der Lauf füllt sie nur, wenn die Wärmepumpe ihre Kennlinie am gerechneten Vorlauf wählt (Anlagenkopplung), sonst
+> bleiben sie leer und der Referenzexport führt sie nicht. Schemaschritt 187 (freie Kühlung über die Wärmequelle) ändert
+> an keinem Referenzprojekt eine Zahl. Der Rechenweg ist unverändert: **Gegen R37 sind 19 Projekte
+> vollständig byte-gleich; 1047 und 1056 tragen allein drei neue Zeilen in `aggregate.csv`, die der Vergleich als
+> „Eintrag nur im Vergleichslauf“ meldet, alle übrigen 37 CSV beider Projekte sind byte-gleich.** Neu stehen bei 1047
+> `WaermepumpeModul[0].Vorlaufwahl_Stunden` `35:1549,45:1782,55:122`, `Vorlauf_Darunter_Stunden` 1 851 und
+> `Vorlauf_Darueber_Stunden` 0; bei 1056 `35:1122,45:1411,55:101`, 1 475 und 0. Je Projekt drei Skalare mehr
+> (gesamt 646 CSV, 4 271 Skalare). Keine gesäten Daten sind neu, darum keine neue Einfrierregel.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
+>   --ziel Referenzlaeufe/2026-10-05_R38_Vorlaufwahl
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),

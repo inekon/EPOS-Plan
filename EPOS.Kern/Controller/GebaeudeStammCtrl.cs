@@ -1045,9 +1045,9 @@ namespace WindowsFormsApplication1
         /// <c>Luftwechselrate</c> (<see cref="Konditionierungsarbeit.KatalogErneut"/>). Die Zeilen der
         /// ZONEN bleiben — sie sind eine andere Ebene; der Befund zählt sie. Eine dünne Hülle: Lesen →
         /// reiner Schritt → Schreiben, alles in EINEM Vorgang. Die Rückfrage entsteht vorher
-        /// (<see cref="KonditionierungErneutUebernehmenRueckfrage"/>). Der Katalogbau wird über den
-        /// Verweis der Kopie gesucht (<c>ID_Gebaeude_Stamm</c>), der Name ist der Rückfall — dieselbe
-        /// Regel wie <see cref="Katalogzeile"/>.
+        /// (<see cref="KonditionierungErneutUebernehmenRueckfrage"/>). Der Katalogbau wird allein über den
+        /// Verweis der Kopie gesucht (<c>ID_Gebaeude_Stamm</c>, <see cref="KatalogbauDerKopie"/>); ohne
+        /// Verweis gibt es keinen — ein gleichnamiger Satz wird nicht angebunden.
         /// </summary>
         public static Konditionierungskopie.Befund KonditionierungErneutUebernehmen(int idGebaeude)
         {
@@ -1131,15 +1131,23 @@ namespace WindowsFormsApplication1
             return new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Katalogbau(idKatalog.Value), out meldung);
         }
 
-        /// <summary>Der Katalogbau einer Projektkopie — über <c>ID_Gebaeude_Stamm</c>, sonst über den Namen; <c>null</c> = keiner.</summary>
+        /// <summary>
+        /// Der Katalogbau einer Projektkopie — allein über ihren Verweis <c>ID_Gebaeude_Stamm</c>;
+        /// <c>null</c> = keiner. <b>Kein Namensrückfall:</b> Jede Kopie trägt ihren Verweis, seit die
+        /// Übernahme ihn setzt und Schemaschritt 121 den Altbestand über eindeutige Namen nachgetragen
+        /// hat. Leer ist er nur, wenn es den Satz nicht (mehr) gibt — gelöscht („Gebäude in DB
+        /// löschen"), beim Nachtrag ohne Treffer, am Ziel eines Pakets ohne Treffer. Ein später
+        /// angelegter Satz gleichen Namens ist ein FREMDER Satz und wird nicht angebunden.
+        /// </summary>
         private static long? KatalogbauDerKopie(int idGebaeude)
         {
-            DataTable dt = DataRepository.GetDataTable(
-                "SELECT [ID_Gebaeude_Stamm], [Gebaeudename] FROM [" + TABLE_PROJ + "] WHERE ID = ?",
+            object v = DataRepository.ExecuteScalar(
+                "SELECT s.[ID] FROM [" + TABLE_PROJ + "] AS g " +
+                "INNER JOIN [" + TABLE + "] AS s ON s.[ID] = g.[ID_Gebaeude_Stamm] WHERE g.[ID] = ?",
                 new DbParam("@g", idGebaeude));
-            if (dt == null || dt.Rows.Count == 0) return null;
-            DataRow r = Katalogzeile(Ganzzahl(dt.Rows[0], "ID_Gebaeude_Stamm"), Text(dt.Rows[0], "Gebaeudename"));
-            return r == null ? (long?)null : Convert.ToInt64(r["ID"], System.Globalization.CultureInfo.InvariantCulture);
+            return v == null || v == DBNull.Value
+                ? (long?)null
+                : Convert.ToInt64(v, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -1538,93 +1546,117 @@ namespace WindowsFormsApplication1
             => Auslieferungskennzeichen.SetzenInTabelle(TABLE, ids, gesperrt);
 
         /// <summary>
-        /// <b>Welche Projekte ein Gebaeude fuehren</b> (Stufe 5, V8: die weiche Loeschsperre
-        /// nennt das Projekt) — je KATALOGNAME die Projektnamen, EINE Abfrage fuer die ganze
-        /// Liste. Ein Projekt fuehrt eine KOPIE des Katalogsatzes (<c>Tab_Gebaeude</c>).
-        ///
-        /// <para><b>Zuerst die ID, dann der Name</b> (Schemaschritt 121, Welle #468; Konzept
-        /// Administrationsdialoge 7.1 (a)). Traegt die Kopie ihren Katalogverweis
-        /// (<c>ID_Gebaeude_Stamm</c>), kommt der Schluessel aus dem KATALOGSATZ selbst — er
-        /// ueberlebt die Umbenennung des Satzes wie die der Kopie. Nur eine Kopie OHNE Verweis
-        /// (Altbestand, deren Name beim Nachtrag keinen Katalogsatz traf, ein geloeschter
-        /// Katalogsatz, ein Paket ohne Treffer am Ziel) sperrt weiter ueber ihren Namen —
-        /// gross/klein egal, wie bisher.</para>
-        /// </summary>
-        public static IReadOnlyDictionary<string, IReadOnlyList<string>> Projektverwendung()
-        {
-            var sammlung = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            DataTable dt = DataRepository.GetDataTable(
-                "SELECT COALESCE(s.Bezeichner, g.Gebaeudename) AS Katalogname, p.Projektname " +
-                "FROM [" + TABLE_PROJ + "] AS g " +
-                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt " +
-                "LEFT JOIN [" + TABLE + "] AS s ON s.ID = g.ID_Gebaeude_Stamm " +
-                "ORDER BY p.Projektname");
-            if (dt != null)
-            {
-                foreach (DataRow r in dt.Rows)
-                {
-                    string name = Spaltentext(r, "Katalogname").Trim();
-                    string projekt = Spaltentext(r, "Projektname");
-                    if (name.Length == 0) continue;
-                    if (!sammlung.TryGetValue(name, out List<string> projekte))
-                        sammlung[name] = projekte = new List<string>();
-                    if (!projekte.Contains(projekt)) projekte.Add(projekt);
-                }
-            }
-
-            var ergebnis = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, List<string>> p in sammlung) ergebnis[p.Key] = p.Value;
-            return ergebnis;
-        }
-
-        /// <summary>
-        /// <b>Die Loeschsperre eines Katalogsatzes</b>: die Projekte, die ihn fuehren — leer,
-        /// wenn keines. Dieselbe Wahrheit wie <see cref="Projektverwendung"/> (zuerst der
-        /// Katalogverweis, dann der Name); die Verwaltung nennt diese Projekte im Sperrgrund.
-        /// </summary>
-        public static IReadOnlyList<string> Loeschsperre(string bezeichner)
-        {
-            if (string.IsNullOrWhiteSpace(bezeichner)) return Array.Empty<string>();
-            return Projektverwendung().TryGetValue(bezeichner.Trim(), out IReadOnlyList<string> projekte)
-                ? projekte : Array.Empty<string>();
-        }
-
-        /// <summary>
         /// <b>Warum ein Katalogsatz nicht gelöscht wird</b> — der benannte Sperrgrund für
-        /// „Gebäude in DB löschen" des Projekt-Gebäudedialogs, aus derselben Wahrheit wie die
-        /// Gebäudeverwaltung: ein Auslieferungssatz (<c>ReadOnly</c>) oder ein Satz, den ein
-        /// Projekt führt (<see cref="Loeschsperre"/>, der Text nennt die Projekte). Leer, wenn
-        /// der Satz gelöscht werden darf (oder kein Name gewählt ist).
+        /// „Gebäude in DB löschen" des Projekt-Gebäudedialogs und für „Löschen" der
+        /// Gebäudeverwaltung (dieselbe Regel in beiden, Anwenderentscheid 06.10.2026): allein ein Auslieferungssatz
+        /// (<c>ReadOnly</c>). Ein Satz, den Projekte führen, ist löschbar (Anwenderentscheid
+        /// 06.10.2026): Jedes Projekt trägt eine VOLLSTÄNDIGE Kopie (Kopf, Zonen, Bauteile,
+        /// Luftströme, Konditionierung als eigene Zeilen), nichts davon hängt am Katalogsatz;
+        /// beim Löschen leert die Beziehung (<c>ON DELETE SET NULL</c>) nur den Verweis
+        /// <c>ID_Gebaeude_Stamm</c>. Welche Projekte ihre Kopie behalten, nennt
+        /// <see cref="Loeschhinweis"/> in der Rückfrage. Leer, wenn der Satz gelöscht werden
+        /// darf (oder kein Name gewählt ist).
         /// </summary>
         public static string Loeschsperrgrund(string bezeichner)
         {
             if (string.IsNullOrWhiteSpace(bezeichner)) return "";
-            if (new GebaeudeStammCtrl().IsReadOnly(bezeichner))
-                return MyResource.Resource.BADM_MSG_SCHREIBGESCHUETZT;
-            IReadOnlyList<string> projekte = Loeschsperre(bezeichner);
-            return projekte.Count > 0
-                ? string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                MyResource.Resource.ADM_AW_LOESCHEN_VERWENDET,
-                                string.Join(", ", projekte))
+            return new GebaeudeStammCtrl().IsReadOnly(bezeichner)
+                ? MyResource.Resource.BADM_MSG_SCHREIBGESCHUETZT
                 : "";
         }
 
         /// <summary>
+        /// <b>Die Projekte, deren Kopie auf den Katalogsatz verweist</b> — genau die, deren Verweis
+        /// <c>ID_Gebaeude_Stamm</c> das Löschen leert; nach Projektnamen geordnet, ohne Doppel.
+        /// <b>Allein über den Verweis</b>, nicht über den Namen: Eine Kopie ohne Verweis gehört zu
+        /// keinem Katalogsatz (ihr Satz ist gelöscht oder fand sich nie), auch nicht zu einem
+        /// später angelegten gleichnamigen. Schreibt nichts.
+        /// </summary>
+        public static IReadOnlyList<string> Projektkopien(string bezeichner)
+        {
+            var projekte = new List<string>();
+            if (string.IsNullOrWhiteSpace(bezeichner)) return projekte;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT DISTINCT p.Projektname FROM [" + TABLE_PROJ + "] AS g " +
+                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt " +
+                "INNER JOIN [" + TABLE + "] AS s ON s.ID = g.ID_Gebaeude_Stamm " +
+                "WHERE s.Bezeichner = ? ORDER BY p.Projektname",
+                new DbParam("@bez", bezeichner.Trim()));
+            if (dt != null)
+                foreach (DataRow r in dt.Rows)
+                {
+                    string name = Spaltentext(r, "Projektname");
+                    if (!projekte.Contains(name)) projekte.Add(name);
+                }
+            return projekte;
+        }
+
+        /// <summary>
+        /// <b>Der Zusatz der Rückfrage vor dem Löschen</b>: die Projekte, die eine Kopie des
+        /// Katalogsatzes führen (<see cref="Projektkopien"/>), und dass ihre Kopien bleiben
+        /// (<c>GEB_MSG_LOESCHHINWEIS_KOPIEN</c>). Leer, wenn kein Projekt den Satz führt.
+        /// </summary>
+        public static string Loeschhinweis(string bezeichner) => Loeschhinweis(bezeichner, null);
+
+        /// <summary>
+        /// <see cref="Loeschhinweis(string)"/> samt einem Projekt, dessen Kopie erst noch entsteht:
+        /// Der Gebäudedialog speichert eine eben übernommene, noch ungespeicherte Projektzeile des
+        /// Satzes vor dem Löschen still (Anwenderentscheid 06.10.2026) — dieses Projekt behält dann
+        /// ebenfalls seine Kopie und steht mit in der Rückfrage. <c>null</c> oder leer: keines.
+        /// </summary>
+        public static string Loeschhinweis(string bezeichner, string weiteresProjekt)
+        {
+            var projekte = new List<string>(Projektkopien(bezeichner));
+            if (!string.IsNullOrWhiteSpace(weiteresProjekt) && !projekte.Contains(weiteresProjekt))
+            {
+                projekte.Add(weiteresProjekt);
+                projekte.Sort(StringComparer.Ordinal);
+            }
+            return projekte.Count == 0
+                ? ""
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                MyResource.Resource.GEB_MSG_LOESCHHINWEIS_KOPIEN,
+                                string.Join(", ", projekte));
+        }
+
+        /// <summary>
+        /// <b>Der Zusatz der Rückfrage für mehrere Sätze</b> — der Weg der Gebäudeverwaltung, die
+        /// eine Mehrfachwahl löscht: die Projekte, die eine Kopie eines der Sätze führen, je einmal
+        /// und nach Namen geordnet (<c>GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR</c>). Ein einzelner Satz
+        /// bekommt den Text von <see cref="Loeschhinweis(string)"/>. Leer, wenn kein Projekt einen
+        /// der Sätze führt.
+        /// </summary>
+        public static string Loeschhinweis(IReadOnlyList<string> bezeichner)
+        {
+            if (bezeichner == null || bezeichner.Count == 0) return "";
+            if (bezeichner.Count == 1) return Loeschhinweis(bezeichner[0]);
+            var projekte = new SortedSet<string>(StringComparer.Ordinal);
+            foreach (string name in bezeichner)
+                foreach (string projekt in Projektkopien(name)) projekte.Add(projekt);
+            return projekte.Count == 0
+                ? ""
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                MyResource.Resource.GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR,
+                                string.Join(", ", projekte));
+        }
+
+        /// <summary>
         /// Loescht einen Katalogsatz OHNE Rueckmeldung ueber einen Kasten — der Weg der
-        /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze und
-        /// benutzte Gebaeude weich und fragt vorher zurueck; <see cref="Delete"/> meldete die
+        /// Gebaeudeverwaltung (Stufe 5) und des Projekt-Gebaeudedialogs: Die Oberflaeche sperrt
+        /// Auslieferungssaetze weich und fragt vorher zurueck; <see cref="Delete"/> meldete die
         /// Sperre ueber <c>Meldung.Hinweis</c>, und das waere in der WebView ein modaler Kasten.
         ///
-        /// <para><b>Die Sperre haelt auch hier</b> (Welle #468): Ein Satz, den ein Projekt
-        /// fuehrt (<see cref="Loeschsperre"/>), wird nicht geloescht — die Oberflaeche reicht
-        /// ihn ohnehin nicht herein, aber der Kern verlaesst sich nicht darauf.</para>
+        /// <para><b>Allein der Auslieferungssatz ist gesperrt</b> (Anwenderentscheid 06.10.2026,
+        /// <see cref="Loeschsperrgrund"/>): Ein Satz, den Projekte fuehren, wird geloescht; ihre
+        /// Kopien samt Zonen, Bauteilen, Luftstroemen und Konditionierung bleiben unberuehrt, die
+        /// Beziehung leert nur ihren Verweis <c>ID_Gebaeude_Stamm</c> (<c>SET NULL</c>). Die
+        /// Katalogkalender, Perioden und Vorgaben des Satzes fallen per <c>CASCADE</c> weg.</para>
         /// </summary>
         /// <returns><c>true</c>, wenn der Satz geloescht wurde.</returns>
         public static bool Loeschen(string bezeichner)
         {
             if (string.IsNullOrEmpty(bezeichner)) return false;
             if (new GebaeudeStammCtrl().IsReadOnly(bezeichner)) return false;
-            if (Loeschsperre(bezeichner).Count > 0) return false;
             return DataRepository.ExecuteSQL(
                 "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ? AND ReadOnly = 0",
                 new DbParam("@bez", bezeichner));

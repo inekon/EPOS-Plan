@@ -99,6 +99,52 @@ public sealed class GebaeudeBedarfKiSicht
     /// </summary>
     public double? VollbenutzungsstundenH => Satz?.VollbenutzungsstundenH;
 
+    // ---- Stufe KP3, Welle O2: Lüftungs- und Aufheizwerte (nur Anzeige) ----
+
+    /// <summary>Stunden mit Sommerlüftung [h]; <c>null</c> ohne Sommerlüftung.</summary>
+    public int? SommerlueftungsstundenH => Satz?.SommerlueftungsstundenH;
+
+    /// <summary>Stunden mit wirksamer Nachtauskühlung [h]; <c>null</c> ohne Nachtauskühlung.</summary>
+    public int? NachtauskuehlstundenH => Satz?.NachtauskuehlstundenH;
+
+    private GebaeudeBedarfAufheizDaten? Aufheizung => Satz?.Aufheizung;
+
+    /// <summary>Der Zustand der Aufheizrechnung als Anzeigetext; leer ohne Gruppe.</summary>
+    public string AufheizZustand => Aufheizung?.Zustandtext ?? "";
+
+    /// <summary>t_auf,max — die bemessene Aufheizzeit [h].</summary>
+    public int? AufheizzeitMaxH => Aufheizung?.AufheizzeitMaxH;
+
+    /// <summary>T_a,B [°C].</summary>
+    public double? AufheizAussenC => Aufheizung?.AussenC;
+
+    /// <summary>P_auf [kW].</summary>
+    public double? AufheizLeistungKw => Aufheizung?.LeistungKw;
+
+    /// <summary>Die Quelle von P_auf als Anzeigetext.</summary>
+    public string AufheizQuelle => Aufheizung?.Quelle ?? "";
+
+    /// <summary>Tage mit einer Rampe.</summary>
+    public int? Aufheiztage => Aufheizung?.Aufheiztage;
+
+    /// <summary>Σ der Rampenstunden [h].</summary>
+    public int? AufheizstundenH => Aufheizung?.AufheizstundenH;
+
+    /// <summary>Die längste Rampe [h].</summary>
+    public int? AufheizzeitLaengsteH => Aufheizung?.AufheizzeitLaengsteH;
+
+    /// <summary>Σ der Kappungsanteile an der Heizleistungsgrenze [h].</summary>
+    public double? KappungsstundenH => Aufheizung?.KappungsstundenH;
+
+    /// <summary>Die Auslegungsgröße Φ_HL + Φ_RH [kW] (E60).</summary>
+    public double? AuslegungsgroesseKw => Aufheizung?.AuslegungsgroesseKw;
+
+    /// <summary>Φ_HL [kW].</summary>
+    public double? AuslegungsheizlastKw => Aufheizung?.AuslegungsheizlastKw;
+
+    /// <summary>Φ_RH [kW].</summary>
+    public double? AufheizzuschlagKw => Aufheizung?.AufheizzuschlagKw;
+
     /// <summary>
     /// Die Zeilen der Zonentabelle (Stufe G6b; AK1z, E63) mit dem Zonennamen als Kennzeichen — nur
     /// zum Lesen; leer bei einem Gebäude mit höchstens einer Zone.

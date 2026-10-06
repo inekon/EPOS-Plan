@@ -113,12 +113,14 @@ namespace WindowsFormsApplication1
                 ["StammDetail"] = new Func<string, GebaeudeStammDetail>(Stammdetail),
                 ["StammSatz"] = new Func<string, GebaeudeProjektZeile>(
                     name => Aufnehmen(name, projektId, naechsteId)),
-                // Die Loeschsperre der Gebaeudeverwaltung gilt auch hier - eine Wahrheit im
-                // Kern (GebaeudeStammCtrl.Loeschsperrgrund): Auslieferungssatz oder von einem
-                // Projekt gefuehrt heisst benannte Absage statt Rueckfrage. Geloescht wird
-                // ueber GebaeudeStammCtrl.Loeschen, das dieselbe Sperre noch einmal haelt und
-                // keinen Meldungskasten oeffnet.
+                // Die Loeschsperre - eine Wahrheit im Kern (GebaeudeStammCtrl.Loeschsperrgrund):
+                // allein ein Auslieferungssatz heisst benannte Absage statt Rueckfrage. Ein Satz,
+                // den Projekte fuehren, ist loeschbar (Anwenderentscheid 06.10.2026); die
+                // Rueckfrage nennt sie samt ihrer bleibenden Kopie (Loeschhinweis). Geloescht
+                // wird ueber GebaeudeStammCtrl.Loeschen, das dieselbe Sperre noch einmal haelt
+                // und keinen Meldungskasten oeffnet.
                 ["KatalogLoeschsperre"] = new Func<string, string>(GebaeudeStammCtrl.Loeschsperrgrund),
+                ["KatalogLoeschhinweis"] = new Func<string, string>(GebaeudeStammCtrl.Loeschhinweis),
                 ["KatalogLoeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
                 ["MeldungLoeschFehler"] = Text_("BADM_MSG_LOESCHEN_FEHLER",
                     "Der Datensatz konnte nicht aus der Datenbank gelöscht werden."),
@@ -174,7 +176,8 @@ namespace WindowsFormsApplication1
                 // eigene Komponente (GebaeudeAdminHuelle) und kennt diesen Weg nicht.
                 // Gerechnet wird aus dem Arbeitsstand - auch eine eben übernommene Zeile ohne
                 // Projektkopie, vor dem OK; allein eine Importzeile, deren Zone mit Bauteilen erst
-                // der Speicherweg anlegt, wartet auf das OK.
+                // der Speicherweg anlegt, rechnet nicht - der Dialog speichert sie zuvor still, im
+                // Assistenten wartet sie auf dessen Abschluss.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     z =>
                     {
@@ -245,6 +248,22 @@ namespace WindowsFormsApplication1
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
 
+            // Anwenderentscheid 06.10.2026: der STILLE Speicherweg der Projektliste - derselbe wie OK
+            // (WizardCtrl.Speichere_Projekt_Gebaeudeliste, ein Abgleich), nur ohne Schliessen. Der Dialog
+            // ruft ihn vor dem Loeschen eines Katalogsatzes, aus dem eine ungespeicherte Zeile stammt,
+            // und vor "Gebaeude im Projekt bearbeiten..." / "Exportieren..." einer ungespeicherten Zeile.
+            // Das spaetere OK findet dann nichts mehr zu schreiben. Der Assistent speichert erst am
+            // Ende seiner Seiten - dort kein stiller Weg, es bleibt bei der weichen Sperre.
+            if (!wizard)
+            {
+                gaben["ListeSpeichern"] = new Func<string>(
+                    () => ListeSpeichern(projektId, zeilen, modelle, geaendert, idsNachziehen));
+                // Die Rueckfrage nennt auch DIESES Projekt, wenn seine ungespeicherte Zeile aus dem
+                // Satz stammt - ihre Kopie entsteht mit dem stillen Speichern vor dem Loeschen.
+                gaben["KatalogLoeschhinweis"] = new Func<string, string>(
+                    name => GebaeudeStammCtrl.Loeschhinweis(name, AusstehendAus(zeilen, name) ? projektName : null));
+            }
+
             // Stufe G7a (Welle W3): der Gebaeudeexport im Format gbXML - nur bei angeschaltetem
             // Freigabeschalter (vor einer Auslieferung aus); ohne Delegat kein Knopf. Eine Zeile ohne
             // Projektkopie bekommt keinen Satz, der Dialog meldet dann den Grund.
@@ -260,6 +279,41 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
+
+        /// <summary>
+        /// <b>Der stille Speicherweg</b>: die Fachliste aus den Zeilen neu aufbauen, in EINEM Vorgang
+        /// abgleichen (<see cref="WizardCtrl.Speichere_Projekt_Gebaeudeliste"/>), danach die echten Ids
+        /// und Kennwerte an die Zeilen ziehen — dieselben Objekte, die Wahl des Dialogs bleibt. Eine nun
+        /// gespeicherte Importzeile verliert ihren Schlüssel der ausstehenden Herkunft: Die Herkunft
+        /// steht an ihrer Kopie. Leer bei Erfolg, sonst die Meldung des Kerns.
+        /// </summary>
+        private static string ListeSpeichern(int projektId, List<GebaeudeProjektZeile> zeilen,
+                                             List<Z_ProjGebModel> modelle, Action geaendert, Action idsNachziehen)
+        {
+            geaendert();
+            (bool gelungen, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(projektId, modelle);
+            if (!gelungen)
+                return string.IsNullOrEmpty(meldung) ? MyResource.Resource.GEB_MSG_LISTE_NICHT_GESPEICHERT : meldung;
+            idsNachziehen();
+            foreach (GebaeudeProjektZeile z in zeilen)
+            {
+                bool neu = !z.HatProjektkopie;
+                KennwerteSetzen(z, projektId);
+                if (neu && z.HatProjektkopie) z.Herkunftsschluessel = null;
+            }
+            return "";
+        }
+
+        /// <summary>Stammt eine noch ungespeicherte Zeile aus dem Katalogsatz <paramref name="name"/>?</summary>
+        private static bool AusstehendAus(IEnumerable<GebaeudeProjektZeile> zeilen, string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            GebaeudeModel m = new GebaeudeStammCtrl().Lies(name);
+            if (m == null || m.ID <= 0) return false;
+            foreach (GebaeudeProjektZeile z in zeilen)
+                if (!z.HatProjektkopie && z.IdKatalog == m.ID) return true;
+            return false;
+        }
 
         private static GebaeudeStammDetail Stammdetail(string name)
         {

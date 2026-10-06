@@ -48,6 +48,8 @@ Geb[0].AufheizstundenH;686
 Geb[0].AufheizzeitLaengsteH;13
 Geb[0].AufheizspruengeAus;0
 Geb[0].HeizleistungMaxStundenH;0
+Geb[0].AuslegungsheizlastKw;30.0905277
+Geb[0].AufheizzuschlagKw;5.25862048
 Geb[0].Zone[0].ID_Zone;1
 Geb[0].Zone[0].IstBeheizt;1
 Geb[0].Zone[0].JahresheizwaermeMwh;35.2258081

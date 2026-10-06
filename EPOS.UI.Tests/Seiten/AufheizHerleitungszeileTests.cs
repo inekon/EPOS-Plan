@@ -107,6 +107,30 @@ public class AufheizHerleitungszeileTests
             "en-US", new AufheizHerleitungsdaten("EFH", null, null, null, null, null, null, null, null, Befund: "Grund X"),
             "EFH: no design — Grund X",
         };
+        // KP3 O1b (Festlegung 35): mit Aufschlag nennt die Zeile n' neben n — hinter Reserve und Faktor; t_auf,max
+        // bleibt die bemessene Zeit.
+        yield return new object[]
+        {
+            "de-DE", new AufheizHerleitungsdaten("Hotel", DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN, DbWerte.AUFHEIZ_BEMESSUNG_STUNDE, 5,
+                                                 -9.26, 40.0, 80.0, 0.5, DbWerte.AUFHEIZ_QUELLE_ZIEL,
+                                                 ReserveAnteil: 0.2, ReserveVorgabe: true, RampeN: 6, RampeNAufschlag: 9),
+            "Hotel: t_auf,max 5 h bei -9,3 °C (kälteste Stunde) · P_auf 40,0 kW Zielleistung · Reserve 20 % (Vorgabe) " +
+            "(Katalogbau 80,0 kW × Faktor 0,5) · Aufschlag: längste Rampe n′ = 9 statt 6 Stufen",
+        };
+        yield return new object[]
+        {
+            "en-US", new AufheizHerleitungsdaten("Hotel", DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN, DbWerte.AUFHEIZ_BEMESSUNG_STUNDE, 5,
+                                                 -9.26, 34.64, 34.64, 1.0, DbWerte.AUFHEIZ_QUELLE_ZIEL, RampeN: 6, RampeNAufschlag: 9),
+            "Hotel: longest preheat time 5 h at -9.3 °C (coldest hour) · preheat power 34.6 kW target power " +
+            "· surcharge: longest ramp n′ = 9 instead of 6 steps",
+        };
+        // Ohne Aufschlag oder ohne Wirkung (n' = n fehlt in den Angaben) bleibt die Zeile, wie sie war.
+        yield return new object[]
+        {
+            "de-DE", new AufheizHerleitungsdaten("Hotel", DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN, DbWerte.AUFHEIZ_BEMESSUNG_STUNDE, 0,
+                                                 -9.26, 34.64, 34.64, 1.0, DbWerte.AUFHEIZ_QUELLE_ZIEL),
+            "Hotel: t_auf,max 0 h bei -9,3 °C (kälteste Stunde) · P_auf 34,6 kW Zielleistung",
+        };
     }
 
     /// <summary>Je Fall die Zeile in der Kultur — Texte aus <c>SIMKONF_AUFH_*</c>, Zahlen in der Oberflächenkultur.</summary>

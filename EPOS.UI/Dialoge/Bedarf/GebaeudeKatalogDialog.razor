@@ -566,6 +566,16 @@
                                            AufgeklappteGroesse="@_kondAufgeklappt"
                                            Geaendert="KonditionierungGeaendert" FehlerZustand="FehlerMelden" />
 
+                    @* Stufe KP3, Welle O2 (E59, Festlegungen 37, 38, 40): „Aufheizzeit manuell (h)" mit den Vorschlaegen -
+                       nur im Projekt (kein Feld am Katalog); das Feld schreibt in den Arbeitsstand, gespeichert wird im
+                       OK-Weg (Schritt 1, Gebaeudedaten). Die Zonen erben den Wert. *@
+                    @if (Modus == GebaeudeKatalogModus.Projekt)
+                    {
+                        <AufheizzeitManuellFeld Wert="@_stand.AufheizzeitManuellH" WertChanged="w => _stand.AufheizzeitManuellH = w"
+                                                Vorschlag="@Aufheizzeit" Zonen="@_arbeit.Zonen.Select(z => z.Bezeichner).ToList()"
+                                                Gesperrt="@IstGesperrt" FehlerZustand="FehlerMelden" />
+                    }
+
                     @* NP3a (Konzept Nutzungsprofile 6.2, NP-F22): der Zugang zum Katalog der Nutzungsprofile -
                        dasselbe Muster wie „Vorlagen verwalten..." der Kalenderkarten, als BLATT. Kein Delegat,
                        kein Knopf: ohne Gabe steht er nicht da. *@
@@ -902,6 +912,12 @@
     /// (<see cref="GebaeudeKatalogDaten.Konditionierung"/>) und an den Zonen durch den OK-Weg.
     /// </summary>
     [Parameter] public KonditionierungWeg? Konditionierung { get; set; }
+
+    /// <summary>
+    /// Die Vorschläge des Feldes „Aufheizzeit manuell (h)" (Stufe KP3, Welle O2; E59, Festlegung 40) — nur in der
+    /// Betriebsart <see cref="GebaeudeKatalogModus.Projekt"/>; <c>null</c> = keine Vorschlagszeilen, das Feld steht trotzdem.
+    /// </summary>
+    [Parameter] public AufheizzeitManuellDaten? Aufheizzeit { get; set; }
 
     /// <summary>Die Texte des Reiters „Konditionierung" (Bündel, Präfixe <c>KOND_LBL_</c>, <c>KOND_BTN_</c>, <c>KOND_TXT_</c>).</summary>
     [Parameter] public KonditionierungTexte KonditionierungTexte { get; set; } = new();

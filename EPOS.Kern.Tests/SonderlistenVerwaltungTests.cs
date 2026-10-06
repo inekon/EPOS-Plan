@@ -68,27 +68,25 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Verwendungssperre</b>: Je Gebäudename die Projekte, die eine Kopie führen —
-        /// in EINER Abfrage, groß/klein egal.
+        /// <b>Die Projektkopien eines Katalogsatzes</b>: die Projekte, deren Kopie über den
+        /// Katalogverweis auf ihn zeigt — der Hinweis der Rückfrage in Verwaltung und Projektdialog.
         /// </summary>
         [Fact]
-        public void Die_Projektverwendung_nennt_die_Projekte_je_Gebaeude()
+        public void Die_Projektkopien_nennen_die_Projekte_je_Gebaeude()
         {
             using (var db = new TestDatenbank())
             {
                 if (!db.Vorhanden) return;
 
-                IReadOnlyDictionary<string, IReadOnlyList<string>> verwendung = GebaeudeStammCtrl.Projektverwendung();
-
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT g.Gebaeudename, p.Projektname FROM Tab_Gebaeude AS g " +
-                    "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt LIMIT 1");
+                    "SELECT s.Bezeichner, p.Projektname FROM Tab_Gebaeude AS g " +
+                    "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt " +
+                    "INNER JOIN Tab_Gebaeude_STAMM AS s ON s.ID = g.ID_Gebaeude_Stamm LIMIT 1");
                 if (dt.Rows.Count == 0) return;
                 string name = Convert.ToString(dt.Rows[0][0]);
                 string projekt = Convert.ToString(dt.Rows[0][1]);
 
-                Assert.True(verwendung.ContainsKey(name.ToUpperInvariant()));
-                Assert.Contains(projekt, verwendung[name]);
+                Assert.Contains(projekt, GebaeudeStammCtrl.Projektkopien(name));
             }
         }
 

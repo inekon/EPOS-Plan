@@ -574,8 +574,10 @@ public class GebaeudeZonenTests : EposBunitContext
     // Der Wirt: „Hülle und Zonen…"
     // =================================================================================
 
-    private IRenderedComponent<GebaeudeDialog> Wirt(bool hatKopie, Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? gaben)
+    private IRenderedComponent<GebaeudeDialog> Wirt(bool hatKopie, Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? gaben,
+                                                    Func<string>? listeSpeichern = null)
         => Render<GebaeudeDialog>(p => p
+            .Add(x => x.ListeSpeichern, listeSpeichern)
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>
             {
                 new()
@@ -602,6 +604,64 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.Equal(0, gerufen);
         Assert.False(cut.Instance.ProjekteditorOffen);
     }
+
+    /// <summary>
+    /// <b>Eine frisch übernommene Zeile: erst still speichern, dann öffnen</b> (Anwenderentscheid
+    /// 06.10.2026). Der Knopf ist nicht gesperrt; der Klick ruft den Speicherweg (wie OK ohne Schließen)
+    /// genau einmal, die Zeile trägt danach ihre echte Id und Kopie, und der Editor öffnet für sie.
+    /// </summary>
+    [Fact]
+    public void Ohne_Projektkopie_speichert_der_Klick_still_und_oeffnet_den_Editor()
+    {
+        int gespeichert = 0;
+        GebaeudeProjektZeile? geoeffnet = null;
+        IRenderedComponent<GebaeudeDialog>? cut = null;
+        cut = Wirt(false, z => { geoeffnet = z; return Editorgaben(); }, () =>
+        {
+            gespeichert++;
+            GebaeudeProjektZeile z = cut!.Instance.Zeilen[0];
+            z.IdZ = 4711;                                        // die echte Id nach dem Festschreiben
+            z.HatProjektkopie = true;
+            return "";
+        });
+
+        IElement knopf = cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+
+        Assert.Equal(1, gespeichert);
+        Assert.True(cut.Instance.ProjekteditorOffen);
+        Assert.Same(cut.Instance.Zeilen[0], geoeffnet);
+        Assert.Equal(4711, geoeffnet!.IdZ);
+        Assert.Single(cut.Instance.Zeilen);
+    }
+
+    /// <summary>Scheitert das stille Speichern, steht die Meldung da, und der Editor öffnet nicht.</summary>
+    [Fact]
+    public void Scheitert_das_stille_Speichern_oeffnet_der_Editor_nicht()
+    {
+        int gerufen = 0;
+        var cut = Wirt(false, _ => { gerufen++; return Editorgaben(); },
+                       () => "Die Gebäudeliste wurde nicht gespeichert.");
+
+        cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…").Click();
+
+        Assert.Equal(0, gerufen);
+        Assert.False(cut.Instance.ProjekteditorOffen);
+        Assert.Equal("Die Gebäudeliste wurde nicht gespeichert.", cut.Instance.Meldung);
+        Assert.Contains("Die Gebäudeliste wurde nicht gespeichert.", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    private IReadOnlyDictionary<string, object> Editorgaben() => new Dictionary<string, object>
+    {
+        ["Daten"] = Satz(),
+        ["Modus"] = GebaeudeKatalogModus.Projekt,
+        ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => TYPEN),
+        ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(() => ARTEN),
+        ["Baualtersklassen"] = (IReadOnlyList<string>)KLASSEN,
+        ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(new Weg().Speichern),
+        ["Zonen"] = new Weg().Zonenweg()
+    };
 
     [Fact]
     public void Mit_Projektkopie_oeffnet_Huelle_und_Zonen_den_Editor_als_Ueberlagerung()

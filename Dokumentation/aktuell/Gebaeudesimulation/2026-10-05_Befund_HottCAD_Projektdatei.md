@@ -718,3 +718,303 @@ bei 75 von 75 CAD-Wänden (Level 2), 31 von 32 Fenstern, 11 Platten und 8 Däche
 `IfcWall` des Exports sind also die 75 CAD-Wände plus abgeleitete Stücke mit eigenen GUIDs.
 `BmRoom.UUID` und `BIMUUID` treffen nichts. Ein Leser, der Projektdatei und IFC-Export
 zusammenführt, schlüsselt über `GId`.
+
+
+## Nachtrag BA-4a — Bauteilaufbauten (06.10.2026)
+
+**Auftrag:** Diagnose vor BA-4 nach [Konzept Bauteilaufbau](2026-10-06_Konzept_Bauteilaufbau_Import.md)
+3.2 und 5.5 (Entscheid E95 (6)): Codes von `LayerType` und `MaterialType`, Einheit von
+`HeatCapacity`, Richtung der Schichtfolge, Rolle der Zusatzdämmung `AddIns…`, Deckung der
+Zuordnung zum IFC-Export je Bauteilart, U-Abgleich, Belegung der Stoffwerte und Fassung — an den
+lokalen Projektdateien neben den sechs IFC-Dateien unter `Quellen/`.
+**Methode:** Projektdatei nur lesend geöffnet (`mode=ro&immutable=1`), Schema über `sqlite_master`
+und `PRAGMA table_info`. Ein Auswerteskript außerhalb des Repositoriums läuft über alle
+`Quellen/*.sqproj` und paart über den Dateistamm; IFC-Dateien als STEP-Text mit Regex zerlegt,
+`GlobalId` in beiden Bytefolgen zur GUID dekodiert. Dazu der Diagnosetest
+`SqprojQuelldateienDiagnoseTests`. Wiedergegeben sind nur Zählungen, Anteile, Spannweiten und
+Abweichungen — keine Material-, Produkt- oder Raumnamen.
+
+**Das Ergebnis in sechs Punkten:**
+
+1. **Eine Projektdatei:** Nur zum Sportheim gibt es eine `.sqproj`. Sie ist ein gerechneter Stand
+   mit Wänden, Fenstern und Aufbauten in Tabellen, nicht die Datei aus Kapitel 2 bis 4. Alle
+   Zahlen dieses Nachtrags stammen aus ihr.
+2. **Codes und Einheiten:** `LayerType`/`MaterialType` 3/1 = Dämmschicht, 0/0 = übrige Schicht;
+   `MaterialGroupType` 2 = Beton, 4 = Mauerwerk oder Leichtbeton, 5 = Dämmstoff. `HeatCapacity`
+   steht in **kJ/(kg·K)**; `InternalCoefficientOfHeatTransfer` und
+   `ExternalCoefficientOfHeatTransfer` des Aufbaus tragen **Rsi und Rse in m²K/W**.
+3. **Schichtfolge:** nach `SortNum` aufsteigend **von innen nach außen**; die Zeilenfolge der
+   Tabelle ist nicht die Schichtfolge.
+4. **U geht auf:** U = 1/(Rsi + Σ d/λ + Rse) mit Rsi und Rse des Aufbaus trifft alle 24
+   Aufbauten mit Schichten und das `UValue` aller 356 opaken Hüllflächen. `AddIns…` ist in keiner
+   Zeile gesetzt; seine Rolle bleibt offen.
+5. **Schlüssel zum IFC-Export ist die Eigenschaft `HSETU_BauteilAllgemein.GUID`, nicht die
+   `GlobalId`:** Sie trifft 439 von 440 Hüllflächen (Level 3) und 56 von 56 Räumen, die
+   `GlobalId` nur 3 CAD-Decken. Der Export schreibt ein IFC-Bauteil je Hüllfläche. Alle sechs
+   IFC-Dateien tragen die Eigenschaft an allen Wänden, Platten, Dächern, Fenstern, Türen und
+   Räumen.
+6. **Der U-Abgleich zeigt einen Standunterschied:** 189 von 439 Paaren stimmen auf 1 %; die
+   IFC-Datei bildet einen späteren Planungsstand mit anderen Aufbauten ab. Der Vorrang der
+   Projektdatei (E95 (6)) gilt deshalb erst nach einer Standprüfung je Bauteil.
+
+### N.1 Datenlage und Paarung
+
+| Gebäude | IFC-Datei | Projektdatei |
+|---|---|---|
+| MFH 1964 | IFC2X3 | Projektdatei nicht vorhanden |
+| MFH 1984 | IFC4 | Projektdatei nicht vorhanden |
+| Sportheim | IFC4, geschrieben am 01.10.2026 | vorhanden (34 MB), Bauteile zuletzt am 23.06.2026 bearbeitet |
+| Verwaltung | IFC2X3 | Projektdatei nicht vorhanden |
+| WG-EH55 | IFC4 | Projektdatei nicht vorhanden |
+| Produktion | IFC2X3 | Projektdatei nicht vorhanden |
+
+Zu den fünf übrigen IFC-Dateien gibt es nach Auskunft des Anwenders keine Projektdatei. Die
+Sportheim-Datei unter `Quellen/` ist nicht die Datei aus Kapitel 2 bis 4 (21,5 MB, 47
+Bauteilzeilen), sondern ein gerechneter Stand desselben Projekts:
+
+- `BmElement`: 186 CAD-Objekte (Level 2: 92 Wände, 78 Fenster, 3 Türen, 8 Geschossdecken,
+  3 Dächer, 2 Bodenplatten), 440 Hüllflächen (Level 3) und 49 Verschattungen — diese hier mit
+  `RepositoryLevel` 0, nicht 3 wie in Kapitel 6.3;
+- jede Hüllfläche zeigt auf ihr CAD-Objekt, jedes CAD-Objekt hat mindestens eine Hüllfläche;
+- ein Innenwand- oder Deckenstück zwischen zwei Räumen ist **eine** Level-3-Zeile mit **zwei**
+  `BmElementReference` (120 von 120 Innenwandstücken, 75 von 89 Deckenstücken), nicht zwei
+  Zeilen wie in Kapitel 6.2;
+- 29 Aufbauten in `TcBuildingElementDimension`: 24 mit Schichten (4 ein-, 15 zwei-,
+  5 dreischichtig, zusammen 49 Schichten) und 5 ohne Schichten (Fenster und Türen: nur U, g,
+  Rahmenanteil). Nur 8 Aufbauten sind Hüllflächen zugeordnet, 21 stehen ohne Zuordnung in der
+  Datei.
+
+### N.2 Schichtcodes und Stoffgruppen (a)
+
+Die Bedeutung folgt aus Dicke, λ und Rohdichte (Spannweiten Min–Max):
+
+| `LayerType` | `MaterialType` | `MaterialGroupType` | Schichten | Stoffgruppe | Dicke in m | λ in W/(m·K) | Rohdichte in kg/m³ |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 2 | 18 | Beton | 0,16–0,50 | 1,65–2,5 | 2 200–2 400 |
+| 0 | 0 | 4 | 6 | Mauerwerk oder Leichtbeton | 0,12–0,24 | 0,27–0,28 | 550–600 |
+| 3 | 1 | 5 | 25 | Dämmstoff | 0,04–0,20 | 0,024–0,045 | 25–60 |
+
+- `LayerType` und `MaterialType` teilen die Schichten gleich: **3/1 = Dämmschicht,
+  0/0 = übrige Schicht**. `MaterialGroupType` nennt die Stoffgruppe.
+- `ScreedType`, `VentilatedType` und `ThicknessType` sind überall 0, `MaterialClassDesc` ist
+  leer. `IsVapourDiffusionTight` ist bei 29 Schichten aus allen drei Gruppen gesetzt und kein
+  Gruppencode.
+- Putz, Estrich, Beläge, Holz, Luftschichten, Folien und Abdichtungen kommen nicht vor. Die
+  Aufbauten dieser Datei sind ein- bis dreischichtige Rechenaufbauten aus tragender Schicht und
+  Dämmung; die Codes der übrigen Stoffgruppen bleiben offen.
+
+### N.3 Einheit von `HeatCapacity` (b)
+
+| Stoffgruppe | Schichten | `HeatCapacity` Min / Median / Max | plausibel in J/(kg·K) |
+|---|---|---|---|
+| Beton | 18 | 1,0 / 1,0 / 1,0 | rund 1 000 |
+| Mauerwerk oder Leichtbeton | 6 | 1,0 / 1,0 / 1,0 | rund 1 000 |
+| Dämmstoff | 25 | 1,0 / 1,0 / 1,5 | rund 1 000 bis 1 500, je nach Dämmstoffart |
+
+- **`HeatCapacity` steht in kJ/(kg·K).** Die Spalte kennt nur 1,0 (41 Schichten) und 1,5
+  (8 Schichten, alle Dämmstoff). In J/(kg·K) gelesen wären die Werte um den Faktor 1 000 zu
+  klein; das Band 100–5 000 J/(kg·K) aus Konzept 5.5 fängt das, der Leser rechnet × 1 000.
+- Die übrigen Einheiten: Dicke in m (die Schichtdicken summieren sich bei 24 von 24 Aufbauten
+  zur `Thickness` des Aufbaus), λ in W/(m·K), Rohdichte in kg/m³, `RValue` der Schicht = d/λ
+  in m²K/W (49 von 49).
+- **`InternalCoefficientOfHeatTransfer` und `ExternalCoefficientOfHeatTransfer` tragen trotz des
+  Namens Wärmeübergangswiderstände in m²K/W:** Rsi 0,10, 0,13 oder 0,17, Rse 0, 0,04, 0,10 oder
+  0,13. Fenster- und Türaufbauten haben dort den Platzhalter −987654321,99; `WValue` und
+  `UnValue` stehen bei allen Aufbauten auf dem Platzhalter, `RawThickness` und `FinalThickness`
+  auf Platzhalter oder 0.
+
+### N.4 Richtung der Schichtfolge (c)
+
+Die Folge steht in `SortNum` (0, 1, 2 …); die Zeilenfolge der Tabelle weicht in 13 von 20
+mehrschichtigen Aufbauten davon ab. Lage der Dämmschichten in den 20 mehrschichtigen Aufbauten,
+geordnet nach Rsi und Rse des Aufbaus:
+
+| Lage (Rsi / Rse in m²K/W) | Aufbauten | Dämmung nur bei `SortNum` 0 | Dämmung nur zuletzt | Dämmung an beiden Enden |
+|---|---|---|---|---|
+| Wand gegen Außenluft (0,13 / 0,04) | 2 | – | 2 | – |
+| Dach oder Decke gegen Außenluft (0,10 / 0,04) | 5 | – | 5 | – |
+| Boden gegen Außenluft (0,17 / 0,04) | 1 | – | 1 | – |
+| Wand gegen Erdreich (0,13 / 0) | 7 | 2 | 2 | 3 |
+| Boden gegen Erdreich (0,17 / 0) | 1 | – | 1 | – |
+| Decke zwischen Innenräumen (0,10 / 0,10) | 4 | 2 | – | 2 |
+
+- **Lesart: `SortNum` 0 ist die Innenseite (Rsi), die Folge läuft nach außen (Rse).** In allen
+  8 mehrschichtigen Aufbauten gegen Außenluft steht die tragende Schicht bei `SortNum` 0 und die
+  Dämmung zuletzt: Außendämmung der Wand, Dämmung über der Dachdecke, Dämmung unter der Decke
+  über Außenluft. Umgekehrt gelesen wären alle acht innen gedämmt, das Dach mit der tragenden
+  Decke außen.
+- Erdberührte Wände tragen Dämmung außen, innen oder auf beiden Seiten (Zusatzdämmung innen vor
+  einer äußeren Dämmung); das ist mit der Lesart verträglich, belegt sie aber nicht. Bei den
+  Decken zwischen Innenräumen steht die Dämmschicht bei `SortNum` 0 — als Dämmung auf der
+  Rohdecke gelesen, ist die Decke von oben beschrieben.
+- Ein zweites Merkmal wie Innenputz oder Belag fehlt, weil die Aufbauten keine solchen Schichten
+  tragen: Die Richtung ist plausibel belegt, nicht bewiesen.
+
+### N.5 Zusatzdämmung `AddIns…` und U aus den Schichten (d)
+
+- **`AddIns…` ist in dieser Datei nicht belegt.** Dicke und λ innen und außen stehen in allen 675
+  Zeilen von `BmElement` auf dem Platzhalter −987654321,99. `AddInsInSideUUID` trägt in allen
+  Zeilen denselben Wert, `AddInsOutSideUUID` 617 verschiedene Werte ohne Treffer in
+  `TcBuildingElementDimension`; die Verweise `…CatalogInsulationDimensionUUID` treffen keinen
+  Aufbau.
+- U = 1/(Rsi + Σ d/λ + Rse) nach DIN EN ISO 6946 in drei Varianten:
+
+| Rechnung | verglichen mit | Ergebnis |
+|---|---|---|
+| Rsi und Rse des Aufbaus, ohne Zusatzdämmung | U des Aufbaus (24 Aufbauten mit Schichten) | 24 von 24, Abweichung < 10⁻¹⁴ |
+| dasselbe | `UValue` der Hüllfläche (356 opake Hüllflächen) | 356 von 356, Abweichung < 10⁻¹⁴ |
+| Rsi und Rse nach Lage (Wand 0,13/0,04, Dach 0,10/0,04, Boden 0,17/0,04, erdberührt Rse 0, zwischen Innenräumen Rse = Rsi) | `UValue` der Hüllfläche | 332 von 356 innerhalb 1 %; 24 bis 14,6 % daneben: 12 erdberührte Wandstücke mit dem Außenwandaufbau (Rse 0,04), 6 Außenwandstücke mit dem Innenwandaufbau (Rse 0,13), 6 Dachstücke mit einem Deckenaufbau (Rse 0,10) |
+| mit Zusatzdämmung | — | nicht prüfbar, keine gesetzt |
+
+- **`UValue` der Hüllfläche ist das U ihres Aufbaus** mit dessen eigenem Rsi und Rse, nicht nach
+  der Lage am Raum nachgerechnet. Das `UValue` des CAD-Objekts ist dasselbe (403 von 440
+  Hüllflächen; bei 37 steht am CAD-Objekt der Platzhalter).
+- Ob die Zusatzdämmung im Aufbau steckt oder dazukommt, lässt sich an dieser Datei nicht
+  entscheiden. Ein Hinweis: Der Beschreibungstext des CAD-Satzes im IFC-Export nennt den U-Wert
+  „inklusive der Zusatzdämmungen“ (Konzept 3.1) — das spräche für „kommt dazu“.
+
+### N.6 Zuordnung zum IFC-Export (e)
+
+| Bauteilart (Level 3) | Hüllflächen | → CAD-Objekt | → Aufbau | davon mit Schichten | → IFC über `HSETU_BauteilAllgemein.GUID` | → IFC über `GlobalId` |
+|---|---|---|---|---|---|---|
+| Außenwand (`AdjacentType` 3, 5) | 85 | 85 | 85 | 85 | 84 | 0 |
+| Innenwand (`AdjacentType` 1, 2) | 120 | 120 | 120 | 120 | 120 | 0 |
+| Dach | 40 | 40 | 40 | 40 | 40 | 0 |
+| Geschossdecke | 89 | 89 | 89 | 89 | 89 | 12 |
+| Bodenplatte | 22 | 22 | 22 | 22 | 22 | 0 |
+| Fenster | 80 | 80 | 80 | – | 80 | 0 |
+| Tür | 4 | 4 | 4 | – | 4 | 0 |
+| **Summe** | **440** | **440** | **440** | **356** | **439** | **12** |
+
+- **Die `GlobalId` trägt in diesem Export nicht:** In beiden Bytefolgen dekodiert trifft sie nur
+  3 der 112 `IfcSlab` (CAD-Decken, darüber die 12 Deckenstücke der Tabelle) und den Standort,
+  aber keine `IfcWall`, `IfcRoof`, `IfcWindow`, `IfcDoor` und keinen `IfcSpace`.
+- **Jede `IfcWall`, `IfcSlab`, `IfcRoof`, `IfcWindow`, `IfcDoor` und jeder `IfcSpace` trägt die
+  Eigenschaft `HSETU_BauteilAllgemein.GUID`** mit der GUID im Klartext (die 49
+  `IfcBuildingElementProxy` tragen sie nicht). Sie ist das `GId` der **Hüllfläche (Level 3)**,
+  nicht des CAD-Objekts: 204 von 205 `IfcWall`, 112 von 112 `IfcSlab` (89 Decken-,
+  22 Bodenplatten- und 1 Dachstück), 39 von 39 `IfcRoof`, 80 von 80 `IfcWindow`, 4 von 4
+  `IfcDoor`; an den 56 `IfcSpace` ist es `BmRoom.GId` (56 von 56). Der Export schreibt also ein
+  IFC-Bauteil je Hüllfläche: 205 Wandstücke, 205 `IfcWall`.
+- **IFC-Wandstücke ohne eigene GId (Kapitel 6.6):** über die `GlobalId` 205 von 205, über die
+  Eigenschaft 1 von 205.
+- Gegenprobe an allen sechs IFC-Dateien, ohne Projektdatei:
+
+| IFC | Schema | Wände mit Eigenschaft | davon `GlobalId` = Eigenschaft | Räume mit Eigenschaft | davon `GlobalId` = Eigenschaft | Platten, Dächer, Fenster, Türen mit Eigenschaft | davon `GlobalId` = Eigenschaft |
+|---|---|---|---|---|---|---|---|
+| MFH 1964 | IFC2X3 | 125 von 125 | 0 | 30 von 30 | 0 | 91 von 91 | 0 |
+| MFH 1984 | IFC4 | 120 von 120 | 5 | 29 von 29 | 29 | 104 von 104 | 2 |
+| Sportheim | IFC4 | 205 von 205 | 0 | 56 von 56 | 0 | 235 von 235 | 0 |
+| Verwaltung | IFC2X3 | 428 von 428 | 0 | 113 von 113 | 0 | 375 von 375 | 0 |
+| WG-EH55 | IFC4 | 117 von 117 | 0 | 20 von 20 | 20 | 95 von 95 | 1 |
+| Produktion | IFC2X3 | 269 von 269 | 0 | 49 von 49 | 0 | 246 von 246 | 0 |
+
+  Die Eigenschaft steht in allen sechs Exporten an jedem dieser Bauteile und Räume; die
+  `GlobalId` gleicht ihr nur bei den Räumen zweier IFC4-Exporte. Beim WG-EH55 trifft die
+  `GlobalId` nach Kapitel 6.6 die 75 CAD-Wände, die Eigenschaft weicht bei allen 117 Wänden von
+  der `GlobalId` ab — vermutlich ist sie auch dort das `GId` der Hüllfläche; prüfbar erst mit der
+  Projektdatei.
+- Folge für den Raumabgleich: `SqprojRaumabgleich` (`GId` ↔ `GlobalId`, dann Raumname) paart im
+  Diagnosetest 0 von 56 Räumen; über die Eigenschaft wären es 56 von 56. Weder der IFC-Leser noch
+  der Raumabgleich lesen die Eigenschaft heute.
+
+### N.7 U-Abgleich Projektdatei ↔ IFC (f)
+
+Je Paar aus N.6 (über die Eigenschaft) das `UValue` der Hüllfläche gegen das U des IFC-Bauteils:
+`Pset_*Common.ThermalTransmittance`, bei 90 Platten ohne diesen Satz
+`HSETU_Bauteilreferenzen.UValue` — wo beide stehen, sind sie gleich (350 von 350). Abweichung
+|U(IFC) / U(Projektdatei) − 1|:
+
+| Datei, Bauteilart | Paare | Median | 90-%-Wert | innerhalb 1 % |
+|---|---|---|---|---|
+| Sportheim, Außenwand | 84 | 84,8 % | 84,8 % | 5 |
+| Sportheim, Innenwand | 120 | 0 | 0 | 120 |
+| Sportheim, Dach | 40 | 72,6 % | 342 % | 0 |
+| Sportheim, Geschossdecke | 89 | 73,7 % | 342 % | 30 |
+| Sportheim, Bodenplatte | 22 | 0 | 0 | 22 |
+| Sportheim, Fenster | 80 | 52,6 % | 52,6 % | 9 |
+| Sportheim, Tür | 4 | 0 | 8,8 % | 3 |
+| **Sportheim gesamt** | **439** | **20,2 %** | **84,8 %** | **189** |
+| MFH 1964, MFH 1984, Verwaltung, WG-EH55, Produktion | – | – | – | Projektdatei nicht vorhanden |
+
+- **Die Abweichungen sind nach allen Anzeichen ein Standunterschied, kein Lesefehler.** Die
+  IFC-Datei ist am 01.10.2026 geschrieben, die Bauteile der Projektdatei wurden zuletzt am
+  23.06.2026 bearbeitet. Alle 15 verschiedenen U-Werte der IFC-Datei sind U-Werte von Aufbauten
+  der Projektdatei, 9 davon nur von Aufbauten ohne Zuordnung zu einer Hüllfläche. Außenwände,
+  Dach, Fenster und ein Teil der Decken tragen im IFC-Stand andere Aufbauten; Innenwände und
+  Bodenplatten sind unverändert.
+
+### N.8 Belegung und Innenaufbauten (g)
+
+| Größe je Schicht | Schichten mit Wert | Anteil |
+|---|---|---|
+| Dicke | 49 von 49 | 100 % |
+| λ | 49 von 49 | 100 % |
+| Rohdichte | 49 von 49 | 100 % |
+| spezifische Wärmekapazität | 49 von 49 | 100 % |
+| Emissionsgrad, Diffusionswiderstandszahl | 0 von 49 | 0 % |
+
+- **Innenaufbauten: ja.** 120 Innenwandstücke und 89 Deckenstücke tragen einen Aufbau mit
+  Schichten (ein Innenwand- und zwei Deckenaufbauten), dazu Bodenplatten und erdberührte Wände.
+- Fenster und Türen haben Aufbauten ohne Schichten (U, g, Rahmenanteil).
+
+### N.9 Fassung (h) und Diagnosetest
+
+| Projektdatei | Tabellen | `BmRoom` (Fassung des Lesers) | `BmElement` | `BmElementReference` | `TcBuildingElementDimension` | `TcBuildingElementDimensionLayer` | höchste in `XmTables` | Programmfassung |
+|---|---|---|---|---|---|---|---|---|
+| Sportheim | 686 | 15.3 | 16.7 | 16.2 | 15.5 | 15.2 | 17.3 | 12.4.3.1 |
+| MFH 1964, MFH 1984, Verwaltung, WG-EH55, Produktion | Projektdatei nicht vorhanden | – | – | – | – | – | – | – |
+
+- Der Leser nimmt die Datei an („Fassung 15.3“). Die sieben Dateien aus Kapitel 6 tragen
+  688 Tabellen bis Fassung 17.6, diese 686 bis 17.3; der Leser für BA-4 prüft daher die
+  benötigten Spalten über `PRAGMA table_info`, nicht feste Fassungsnummern.
+- Diagnosetest `SqprojQuelldateienDiagnoseTests` (grün): 56 Räume, 25 Zonen vom Typ 5 und 6
+  (24 mit Raum), 66 Zeitprofile, 66 Abschnitte. Raumabgleich mit der IFC-Datei: 0 von 56 (über
+  die Kennung 0, über den Namen 0), 56 IFC-Räume ohne Gegenstück. Zonenübernahme: keine Zone
+  übernommen, 12 Zonen leer, 56 Räume nicht zugeordnet — Folge des fehlenden Raumabgleichs.
+
+### N.10 Folgerung für den Leser (BA-4)
+
+**Die Diagnose beruht auf einer einzigen Projektdatei.** Übertragbar sind die Eigenschaften des
+Datenmodells: Schema und Verknüpfungen (Level 2 und 3, `CatalogDimUUID`, `DimensionUId`,
+`SortNum`), die Einheiten und — mit dem Vorbehalt aus N.4 — die Richtung der Schichtfolge;
+ebenso die Eigenschaft `HSETU_BauteilAllgemein.GUID`, die alle sechs Exporte tragen. **Nicht
+übertragbar** sind die Zahlen dieser Datei: die Deckungsquoten (hier 100 % Aufbau je Hüllfläche,
+439 von 440 IFC-Paaren), die U-Abweichungen (hier ein Standunterschied), die Codeliste (hier nur
+drei Stoffgruppen) und die Rolle von `AddIns…` (hier nicht belegt).
+
+1. **Einheiten:** Dicke in m, λ in W/(m·K), Rohdichte in kg/m³, c = `HeatCapacity` × 1 000 in
+   J/(kg·K); Rsi und Rse aus `InternalCoefficientOfHeatTransfer` und
+   `ExternalCoefficientOfHeatTransfer`; −987654321,99 heißt „nicht gesetzt“.
+2. **Schichtfolge:** nach `SortNum` sortieren, `SortNum` 0 ist innen.
+3. **Zuordnung:** IFC-Bauteil → Hüllfläche über `HSETU_BauteilAllgemein.GUID` = `BmElement.GId`
+   (Level 3), erst danach über die dekodierte `GlobalId` (Level 2 oder 3); der Aufbau kommt
+   direkt aus `CatalogDimUUID` der Hüllfläche. Die Vererbung über Raum und Rolle (Konzept 5.5)
+   braucht nur ein Stück ohne beide Treffer (hier 1 von 205 Wänden). Derselbe Schlüssel gehört
+   in den Raumabgleich.
+4. **Standprüfung je Paar:** Weicht das U des IFC-Bauteils um mehr als 1 % vom `UValue` der
+   Hüllfläche ab, beschreibt die Projektdatei einen anderen Stand: Der Aufbau wird nicht
+   übernommen, das Bauteil bleibt auf seiner IFC-Stufe, das Protokoll nennt es. Ein Aufbau der
+   Projektdatei mit passendem U wird nicht geraten.
+5. **Zusatzdämmung:** Ist `AddIns…` gesetzt, prüft der Leser selbst — U aus den Schichten mit und
+   ohne Zusatzdämmung gegen `UValue`; trifft genau eine Variante, gilt sie, sonst nennt das
+   Protokoll das Bauteil.
+6. **Rangfolge (E95 (6)):** bestätigt, mit Standprüfung. Die Projektdatei liefert c,
+   Innenaufbauten und Schichten, deren U exakt aufgeht. Im Sportheim-Paar bestünden 177 von 355
+   opaken Paaren die Standprüfung (Innenwände, Bodenplatten, 30 Deckenstücke, 5
+   Außenwandstücke); die übrigen blieben auf der IFC-Stufe.
+
+### N.11 Offene Punkte
+
+1. **Weitere Projektdateien im selben Stand wie ihr IFC-Export** (beide aus demselben
+   gespeicherten Stand): Deckung und U-Abgleich ohne Standunterschied, Codes weiterer
+   Stoffgruppen (Putz, Estrich, Holz, Luftschicht, Folie), Rolle von `AddIns…`, Richtung an
+   Aufbauten mit Putz.
+2. **WG-EH55:** ob `HSETU_BauteilAllgemein.GUID` dort das `GId` der Hüllfläche ist (Kapitel 6.6
+   fand die `GlobalId` gleich dem `GId` der CAD-Wand).
+3. **Raumabgleich über die Eigenschaft** (`SqprojRaumabgleich`, am Sportheim heute 0 von 56) —
+   eigener Auftrag, gehört vor BA-4.
+4. **Abweichungen gegenüber Kapitel 6:** Verschattungen mit `RepositoryLevel` 0 statt 3,
+   Innenwand- und Deckenstücke als eine Zeile mit zwei Raumbezügen, 686 statt 688 Tabellen —
+   Fassungs- oder Projektunterschied, offen.
+5. `AdjacentType` 6 und 7 (Kapitel 6.3) bleiben offen; hier an 2 und 36 Deckenstücken.
