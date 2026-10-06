@@ -14730,6 +14730,9 @@ Please check all entries!</value>
   <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
     <value>Can be deleted only after the wizard has finished – a row taken over into the project comes from this building.</value>
   </data>
+  <data name="GEB_MSG_PROJEKTKOPIE_FEHLT" xml:space="preserve">
+    <value>The building was saved but has no project copy.</value>
+  </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>from project {0}, {1}</value>
   </data>

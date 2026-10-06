@@ -14737,6 +14737,9 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_SPERRE_LOESCHEN_ASSISTENT" xml:space="preserve">
     <value>Erst nach Abschluss des Assistenten löschbar – eine übernommene Zeile stammt aus diesem Gebäude.</value>
   </data>
+  <data name="GEB_MSG_PROJEKTKOPIE_FEHLT" xml:space="preserve">
+    <value>Das Gebäude wurde gespeichert, trägt aber keine Projektkopie.</value>
+  </data>
   <data name="GEB_TEXT_HERKUNFT_PROJEKT" xml:space="preserve">
     <value>aus Projekt {0}, {1}</value>
   </data>

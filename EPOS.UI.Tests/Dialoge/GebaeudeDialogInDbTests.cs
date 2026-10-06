@@ -6,6 +6,7 @@ using EPOS.UI.Standards;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using Xunit;
+using R = WindowsFormsApplication1.MyResource.Resource;
 
 namespace EPOS.UI.Tests.Dialoge;
 
@@ -66,11 +67,14 @@ public class GebaeudeDialogInDbTests : EposBunitContext
         return new GebaeudeDbUebernahme(true, name, "Gebäude „" + name + "“ in die Datenbank übernommen.");
     }
 
-    private IRenderedComponent<GebaeudeDialog> Aufbauen(List<GebaeudeProjektZeile> zeilen, bool mitWeg = true)
+    private IRenderedComponent<GebaeudeDialog> Aufbauen(List<GebaeudeProjektZeile> zeilen, bool mitWeg = true,
+                                                         Func<string>? listeSpeichern = null)
     {
         return Render<GebaeudeDialog>(p =>
         {
             p.Add(x => x.Zeilen, zeilen)
+             .Add(x => x.ListeSpeichern, listeSpeichern)
+             .Add(x => x.Wizard, listeSpeichern is null)
              .Add(x => x.Katalogzeilen, () => _katalog.ToList())
              .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeude(
                  s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
@@ -119,17 +123,75 @@ public class GebaeudeDialogInDbTests : EposBunitContext
         Assert.True(InDbKnopf(cut)!.HasAttribute("disabled"));
     }
 
+    /// <summary>Im Assistenten (kein stiller Speicherweg) bleibt eine ungespeicherte Zeile weich gesperrt.</summary>
     [Fact]
-    public void Eine_ungespeicherte_Zeile_ist_weich_gesperrt_und_nennt_den_Grund()
+    public void Im_Assistenten_ist_eine_ungespeicherte_Zeile_weich_gesperrt_und_nennt_den_Grund()
     {
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(100000, "Neu", false) });
         IElement knopf = InDbKnopf(cut)!;
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(R.GEB_SPERRE_IN_DB_NEUE_ZEILE, knopf.GetAttribute("title"));
 
         knopf.Click();
         Assert.False(cut.Instance.InDbOffen);
         Assert.Empty(_aufrufe);
-        Assert.Contains("erst nach OK", cut.Instance.Meldung);
+        Assert.Equal(R.GEB_SPERRE_IN_DB_NEUE_ZEILE, cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Anwenderentscheid 06.10.2026: Außerhalb des Assistenten speichert der Klick eine ungespeicherte
+    /// Zeile zuerst still (derselbe Weg wie Bearbeiten und Exportieren), danach öffnet die Abfrage für
+    /// die nun gespeicherte Zeile und schreibt sie.
+    /// </summary>
+    [Fact]
+    public void Eine_ungespeicherte_Zeile_wird_vorher_still_gespeichert()
+    {
+        int gespeichert = 0;
+        GebaeudeProjektZeile neu = Zeile(100000, "Neu", false);
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { neu },
+                           listeSpeichern: () => { gespeichert++; neu.IdZ = 55; neu.HatProjektkopie = true; return ""; });
+        IElement knopf = InDbKnopf(cut)!;
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        Assert.Equal("Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen",
+                     knopf.GetAttribute("title"));
+
+        knopf.Click();
+        Assert.Equal(1, gespeichert);
+        Assert.True(cut.Instance.InDbOffen);
+        Assert.Equal("Neu (2)", cut.Instance.InDbName);
+
+        Ok(cut);
+        Assert.Single(_aufrufe);
+        Assert.Same(neu, _aufrufe[0].Zeile);
+        Assert.Equal(55, _aufrufe[0].Zeile.IdZ);
+        Assert.Equal("Gebäude „Neu (2)“ in die Datenbank übernommen.", cut.Instance.Meldung);
+    }
+
+    /// <summary>Scheitert das stille Speichern, steht seine Meldung und es wird nicht übernommen.</summary>
+    [Fact]
+    public void Scheitert_das_stille_Speichern_wird_nicht_uebernommen()
+    {
+        GebaeudeProjektZeile neu = Zeile(100000, "Neu", false);
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { neu },
+                           listeSpeichern: () => "Die Gebäudeliste wurde nicht gespeichert.");
+
+        InDbKnopf(cut)!.Click();
+        Assert.False(cut.Instance.InDbOffen);
+        Assert.Empty(_aufrufe);
+        Assert.False(neu.HatProjektkopie);
+        Assert.Equal("Die Gebäudeliste wurde nicht gespeichert.", cut.Instance.Meldung);
+    }
+
+    /// <summary>Eine gespeicherte Zeile speichert nicht erst still.</summary>
+    [Fact]
+    public void Eine_gespeicherte_Zeile_speichert_nicht_vorher()
+    {
+        int gespeichert = 0;
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) },
+                           listeSpeichern: () => { gespeichert++; return ""; });
+        InDbKnopf(cut)!.Click();
+        Assert.True(cut.Instance.InDbOffen);
+        Assert.Equal(0, gespeichert);
     }
 
     [Fact]

@@ -30115,6 +30115,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wurde gespeichert, trägt aber keine Projektkopie. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_PROJEKTKOPIE_FEHLT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_PROJEKTKOPIE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Andere Datei wählen… ähnelt.
         /// </summary>
         public static string GEB_NL_ANDERE_DATEI {
