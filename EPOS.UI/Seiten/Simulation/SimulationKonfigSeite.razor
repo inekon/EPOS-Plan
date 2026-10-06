@@ -1483,7 +1483,7 @@
     private void AufheizSchalterGesetzt(bool an)
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
     }
 
     private void AufheizBemessungGewaehlt(int? index)
@@ -1491,13 +1491,13 @@
         if (index is null) return;
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         string? bemessung = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
     }
 
     private void AufheizAbzugGesetzt(double? wert)
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
     }
 
     /// <summary>Die Reserve kommt in Prozent und wird als Anteil gespeichert (Festlegung 15).</summary>
@@ -1505,7 +1505,7 @@
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         double? anteil = prozent is double p ? p / 100.0 : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent));
     }
 
     private void AufheizArtGewaehlt(int? index)
@@ -1513,7 +1513,7 @@
         if (index is null) return;
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         string? art = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!, a.AufschlagH, a.AufschlagProzent));
     }
 
     /// <summary>

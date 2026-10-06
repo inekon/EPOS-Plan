@@ -948,6 +948,38 @@ public class KiSimulationMaskeTests : IDisposable
     }
 
     // =====================================================================
+    //  KP3 O1b — der Aufschlag auf die Aufheizrampe (E59 (2), Festlegungen 35, 36)
+    // =====================================================================
+
+    /// <summary>
+    /// Befund (rote Probe): Jede Setzung der fünf O1-Felder schreibt die ganze Einstellung — der
+    /// gespeicherte Aufschlag muss mitgehen, sonst löscht der Assistent ihn mit jeder Reserve.
+    /// </summary>
+    [Fact]
+    public void Die_Aufheizfelder_behalten_den_gespeicherten_Aufschlag()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<WindowsFormsApplication1.Aufheizvorgabe>();
+        SimulationKiSicht sicht = AufheizSicht(probe, new WindowsFormsApplication1.Aufheizvorgabe(
+            true, null, null, null, null, 2, 50.0), geschrieben);
+
+        sicht.AufheizBemessung = "STUNDE_ABZUG";
+        sicht.AufheizAbzugK = 3;
+        sicht.AufheizReserveProzent = 30;
+        sicht.AufheizArt = "FEST";
+        sicht.Aufheizoptimierung = false;
+
+        Assert.Equal(5, geschrieben.Count);
+        Assert.All(geschrieben, v =>
+        {
+            Assert.Equal(2, v.AufschlagH);
+            Assert.Equal(50.0, v.AufschlagProzent);
+        });
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(false, "STUNDE_ABZUG", 3.0, 0.3, "FEST", 2, 50.0),
+                     probe.Stand.Aufheizung);
+    }
+
+    // =====================================================================
     //  Welle #458, Stufe 2 — das Blatt als Wahl und die Anzeigeschalter
     // =====================================================================
 

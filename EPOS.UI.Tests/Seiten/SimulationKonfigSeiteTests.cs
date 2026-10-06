@@ -910,6 +910,47 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(seite.FindAll("section.epos-simkonfig-aufheizung"));
     }
 
+    // =====================================================================
+    //  KP3 O1b (E59 (2), Festlegungen 35, 36; P16) — der Aufschlag auf die
+    //  Aufheizrampe in der Projekteinstellung
+    // =====================================================================
+
+    /// <summary>Eine gepflegte Einstellung mit Aufschlag 2 h und 50 %.</summary>
+    private static readonly WindowsFormsApplication1.Aufheizvorgabe AUFHEIZ_MIT_AUFSCHLAG =
+        new(true, null!, null, 0.25, null!, 2, 50.0);
+
+    /// <summary>
+    /// Befund (rote Probe): Jedes Feld des Abschnitts schreibt die ganze Einstellung — der gespeicherte
+    /// Aufschlag muss dabei mitgehen, ob er über die Maske, den Assistenten oder eine Projektdatei kam.
+    /// Schalter, Bemessung, ΔT_K, Reserve und Art behalten ihn.
+    /// </summary>
+    [Fact]
+    public void Jedes_Feld_behaelt_den_gespeicherten_Aufschlag()
+    {
+        var seite = SeiteMitAufheizung(AUFHEIZ_MIT_AUFSCHLAG);
+
+        Textfelder(seite)[0].Input("30");
+        Assert.Equal(0.3, _aufheizGeschrieben.Last().Reserve);
+        Assert.Equal(2, _aufheizGeschrieben.Last().AufschlagH);
+        Assert.Equal(50.0, _aufheizGeschrieben.Last().AufschlagProzent);
+
+        Wahlen(seite)[0].Change("1");
+        Textfelder(seite)[0].Input("3");
+        Wahlen(seite)[1].Change("1");
+        Aufheizabschnitt(seite).QuerySelector("input[type=checkbox]")!.Change(false);
+
+        Assert.Equal(5, _aufheizGeschrieben.Count);
+        Assert.All(_aufheizGeschrieben, v =>
+        {
+            Assert.Equal(2, v.AufschlagH);
+            Assert.Equal(50.0, v.AufschlagProzent);
+        });
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(false,
+                         WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 3.0, 0.3,
+                         WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, 2, 50.0),
+                     seite.Instance.Laufparameter.Aufheizung);
+    }
+
     /// <summary>
     /// Beide Kulturen: Unter en-US stehen die englischen Texte und Platzhalter, und die Reserve
     /// schreibt dieselbe Zahl.

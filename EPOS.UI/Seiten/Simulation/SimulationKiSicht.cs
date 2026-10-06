@@ -536,7 +536,7 @@ public sealed class SimulationKiSicht
         set
         {
             WindowsFormsApplication1.Aufheizvorgabe a = Aufheizstand;
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(value, a.Bemessung, a.AbzugK, a.Reserve, a.Art));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(value, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -552,7 +552,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNGEN,
                                      WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, wert, a.AbzugK, a.Reserve, a.Art));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, wert, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -574,7 +574,7 @@ public sealed class SimulationKiSicht
                 throw new InvalidOperationException(Resource.KI_DLG_SIM_AUFH_NUR_ABZUG);
             Bereich(value, WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MIN_K,
                     WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MAX_K, Resource.SIMKONF_AUFH_LBL_ABZUG);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, value, a.Reserve, a.Art));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, value, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -590,7 +590,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             Bereich(value, 1.0, 100.0, Resource.SIMKONF_AUFH_LBL_RESERVE);
             double? anteil = value is double p ? p / 100.0 : null;
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
@@ -606,7 +606,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_ARTEN,
                                      WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, wert));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, wert, a.AufschlagH, a.AufschlagProzent));
         }
     }
 
