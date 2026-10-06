@@ -34675,7 +34675,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil {0} nach DIN V 18599 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil {0} nach DIN/TS 18599-10 ähnelt.
         /// </summary>
         public static string GIMP_DLG_SQ_PROFIL {
             get {

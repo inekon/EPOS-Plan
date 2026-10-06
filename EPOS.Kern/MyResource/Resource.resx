@@ -45934,7 +45934,7 @@ Chart</value>
     <value>aus Projektdatei</value>
   </data>
   <data name="GIMP_DLG_SQ_PROFIL" xml:space="preserve">
-    <value>Nutzungsprofil {0} nach DIN V 18599</value>
+    <value>Nutzungsprofil {0} nach DIN/TS 18599-10</value>
   </data>
   <data name="GIMP_DLG_SQ_FRAGE_TITEL" xml:space="preserve">
     <value>Zonen der Projektdatei übernehmen</value>

@@ -45927,7 +45927,7 @@ chart</value>
     <value>from project file</value>
   </data>
   <data name="GIMP_DLG_SQ_PROFIL" xml:space="preserve">
-    <value>Usage profile {0} per DIN V 18599</value>
+    <value>Usage profile {0} per DIN/TS 18599-10</value>
   </data>
   <data name="GIMP_DLG_SQ_FRAGE_TITEL" xml:space="preserve">
     <value>Take over zones of the project file</value>

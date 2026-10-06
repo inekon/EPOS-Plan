@@ -470,7 +470,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Vorschlag des Einzonenwegs</b> (NP2b-4, Anwenderentscheid 06.10.2026): Liefert die Projektdatei eine
-        /// DIN-V-18599-Nummer, nennt die Zeile das Profil der Zuordnung samt Kategorie und den Weg „Nutzungsprofil übernehmen…“
+        /// DIN-Nummer (Zählung DIN/TS 18599-10:2025), nennt die Zeile das Profil der Zuordnung samt Kategorie und den Weg „Nutzungsprofil übernehmen…“
         /// im Gebäudeeditor; automatisch wird kein Profil gesetzt. Leer ohne Nummer oder wenn die Zuordnung auf „keine“ führt.
         /// </summary>
         private string Einzonenvorschlag()

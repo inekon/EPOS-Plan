@@ -108,7 +108,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Keller", "Simulation EG", "Simulation OG" }, plan.Zonen.Select(z => z.Name));
             Assert.All(plan.Zonen, z => Assert.True(z.AusProjektdatei));
             Assert.Equal(new[] { null, DbWerte.KOND_NUTZUNG_WOHNEN, DbWerte.KOND_NUTZUNG_BUERO }, plan.Zonen.Select(z => z.Nutzung));
-            Assert.Equal("Nutzungsprofil 71 nach DIN V 18599", plan.Zonen[1].Profiltext);
+            Assert.Equal("Nutzungsprofil 71 nach DIN/TS 18599-10", plan.Zonen[1].Profiltext);
             Assert.Equal("20 °C", plan.Zonen[1].Sollwert);
             Assert.Equal("21 °C", plan.Zonen[2].Sollwert);
             Assert.Empty(plan.NichtZugeordnet);
