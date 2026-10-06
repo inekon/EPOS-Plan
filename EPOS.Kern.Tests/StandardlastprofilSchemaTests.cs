@@ -237,12 +237,25 @@ namespace EPOS.Kern.Tests
             var verwaltung = new StromverbraucherStammCtrl();
             verwaltung.ReadAll();
             Assert.Equal(KOEPFE_VORHER + 3, verwaltung.rows);
+            Assert.Equal("BDEW_G25_Gewerbe", verwaltung.items[0].m_szBezeichner);   // ORDER BY Bezeichner: „BD…" vor „Be…"
             foreach (StandardlastprofilSaat s in Saat)
             {
                 Assert.Contains(zeilen, z => z.Bezeichner == s.Bezeichner);
                 Assert.Contains(s.Bezeichner, namen);
                 Assert.Equal(1000.0, BedarfStammCtrl.Jahressumme(BedarfsArt.Stromverbraucher, s.Bezeichner), 6);
             }
+
+            // Die Dublettenprüfung der Katalogpflege: drei Sätze mehr, keine neue Namens- oder Inhaltsgruppe.
+            ScanErgebnis kopf = DublettenPruefung.ScanKatalog(KatalogRegistry.Finde("STROMVERBRAUCHER"));
+            Assert.Null(kopf.Fehler);
+            Assert.Equal(KOEPFE_VORHER + 3, kopf.Saetze.Count);
+            Assert.Empty(kopf.Namensgruppen);
+            Assert.Empty(kopf.Inhaltsgruppen);
+            ScanErgebnis typ = DublettenPruefung.ScanKatalog(KatalogRegistry.Finde("STROMVERBRAUCHERTYP"));
+            Assert.Null(typ.Fehler);
+            Assert.Equal(43, typ.Saetze.Count);
+            Assert.Empty(typ.Namensgruppen);
+            Assert.Single(typ.Inhaltsgruppen);                                         // die Gruppe des Bestands
         }
 
         /// <summary>
