@@ -43,12 +43,16 @@
    "ZUM BERICHT ›" ist ein BEREICHSWECHSEL dieses Rahmens: Die Wirtschaftlichkeitsseite
    meldet eine BerichtVorbelegung (Baustein Wirtschaftlichkeit, Vergleichsgruppe,
    Szenario), der Rahmen haelt sie, stellt den Reiter "Bericht" vorn und reicht sie der
-   Berichtsseite beim Aufbau EINMAL mit. Erzeugt wird allein dort, mit "Erstellen". *@
+   Berichtsseite beim Aufbau EINMAL mit. Erzeugt wird allein dort, mit "Erstellen".
+
+   BEREICHSZEILE. Die Wurzel traegt den Modifikator epos-reiter--bereich: Die
+   Reiterzeile steht als zweite Ebene unter den Hauptreitern deutlicher als die
+   leise Hausleiste (eigene Flaeche, groessere Titel). Nur diese Seite setzt ihn. *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @implements IDisposable
 
-<div class="epos-berichtekosten">
+<div class="epos-berichtekosten epos-reiter--bereich">
     <Reiter Kennung="@KENNUNG" @bind-Aktiv="_seite" @bind-Aktiv:after="SeiteGewechselt"
             Bezeichnung="@NavigationBezeichnung" Leistenende="@Leistenende">
         <KindInhalt>

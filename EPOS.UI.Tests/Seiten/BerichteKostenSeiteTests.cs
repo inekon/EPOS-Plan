@@ -130,6 +130,25 @@ public class BerichteKostenSeiteTests : BunitContext
     }
 
     /// <summary>
+    /// Die Reiterzeile ist die BEREICHSZEILE unter den Hauptreitern: Der Wirt des Reiters
+    /// trägt den Modifikator <c>epos-reiter--bereich</c>, und nur er — ein Reiter einer Seite
+    /// darunter bleibt bei der leisen Hausleiste.
+    /// </summary>
+    [Fact]
+    public void Der_Wirt_der_Reiterzeile_traegt_den_Modifikator_der_Bereichszeile()
+    {
+        var cut = Zeige();
+
+        IElement wirt = cut.Find(".epos-berichtekosten");
+        Assert.Contains("epos-reiter--bereich", wirt.ClassList);
+        Assert.Single(cut.FindAll(".epos-reiter--bereich"));
+        IElement leiste = Assert.Single(cut.FindAll(
+            ".epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste"));
+        Assert.Equal("tablist", leiste.GetAttribute("role"));
+        Assert.Equal(4, leiste.QuerySelectorAll("button[role='tab'][id^='bk-reiter-']").Length);
+    }
+
+    /// <summary>
     /// Die Startseite trägt selbst einen <c>Reiter</c> (und die Simulationsseite einen mit
     /// „UEBERSICHT"): Die Knöpfe und Blätter dieses Rahmens tragen den Vorsatz „bk", damit
     /// keine HTML-Kennung doppelt steht.
