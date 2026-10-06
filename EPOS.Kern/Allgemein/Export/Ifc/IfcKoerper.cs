@@ -106,6 +106,7 @@ namespace WindowsFormsApplication1
         /// <summary>Das Prisma eines Raums über seinem Rechteck; <c>null</c> = entartet.</summary>
         internal IfcProductDefinitionShape Raum(Raumkoerper k)
         {
+            if (k != null && k.AusGrundriss) return Grundriss(k);
             if (k == null || k.Schale.Count < 2 || !(k.HoeheM > 0.0)) return null;
             // Die Decke der Schale trägt die Ecken des Rechtecks in Umlaufrichtung c0, c1, c2, c3.
             IReadOnlyList<double[]> decke = k.Schale[1];
@@ -117,9 +118,95 @@ namespace WindowsFormsApplication1
             return Darstellung(Prisma(ecken, c0, new[] { 0.0, 0.0, 1.0 }, u, k.HoeheM, 0.0));
         }
 
+        /// <summary>
+        /// <b>Die Prismen aus Grundrissen</b> (HC-5, F10): je Prisma ein <c>IfcExtrudedAreaSolid</c> über einem
+        /// <c>IfcArbitraryClosedProfileDef</c> — mit Löchern <c>IfcArbitraryProfileDefWithVoids</c> —, das Profil in den Koordinaten
+        /// des Modells, die Lage im Punkt (0, 0, Boden) ohne Drehung, längs +z um die Höhe; alle als Träger derselben Darstellung
+        /// „Body“. <c>null</c> = kein Prisma.
+        /// </summary>
+        private IfcProductDefinitionShape Grundriss(Raumkoerper k)
+        {
+            var koerper = new List<IfcExtrudedAreaSolid>();
+            foreach (Grundrissprisma p in k.Prismen)
+            {
+                if (!(p.HoeheM > 0.0) || p.Aussen.Count < 3) continue;
+                IfcPolyline aussen = Linienzug(p.Aussen);
+                List<IfcPolyline> loecher = p.Loecher.Where(l => l.Count >= 3).Select(Linienzug).ToList();
+                IfcProfileDef profil = loecher.Count == 0
+                    ? Neu<IfcArbitraryClosedProfileDef>(r =>
+                    {
+                        r.ProfileType = IfcProfileTypeEnum.AREA;
+                        r.OuterCurve = aussen;
+                    })
+                    : Neu<IfcArbitraryProfileDefWithVoids>(r =>
+                    {
+                        r.ProfileType = IfcProfileTypeEnum.AREA;
+                        r.OuterCurve = aussen;
+                        foreach (IfcPolyline l in loecher) r.InnerCurves.Add(l);
+                    });
+                Koerper++;
+                double boden = p.BodenM, hoehe = p.HoeheM;
+                koerper.Add(Neu<IfcExtrudedAreaSolid>(e =>
+                {
+                    e.SweptArea = profil;
+                    e.Position = Neu<IfcAxis2Placement3D>(a => a.Location = Neu<IfcCartesianPoint>(c => c.SetXYZ(0, 0, Z(boden))));
+                    e.ExtrudedDirection = Neu<IfcDirection>(x => x.SetXYZ(0, 0, 1));
+                    e.Depth = hoehe;
+                }));
+            }
+            if (koerper.Count == 0) return null;
+            IfcShapeRepresentation darstellung = Neu<IfcShapeRepresentation>(s =>
+            {
+                s.ContextOfItems = Koerperkontext;
+                s.RepresentationIdentifier = BODY;
+                s.RepresentationType = SWEPT_SOLID;
+                foreach (IfcExtrudedAreaSolid x in koerper) s.Items.Add(x);
+            });
+            return Neu<IfcProductDefinitionShape>(p => p.Representations.Add(darstellung));
+        }
+
+        /// <summary>Ein geschlossener Linienzug in der Ebene (Schlusspunkt = Anfangspunkt).</summary>
+        private IfcPolyline Linienzug(IReadOnlyList<double[]> ring)
+            => Neu<IfcPolyline>(l =>
+            {
+                foreach (double[] p in ring.Concat(new[] { ring[0] }))
+                    l.Points.Add(Neu<IfcCartesianPoint>(c => c.SetXY(Z(p[0]), Z(p[1]))));
+            });
+
         /// <summary>Die Platte einer Wand-, Boden- oder Deckenfläche, <see cref="PLATTE_M"/> nach außen; <c>null</c> = entartet.</summary>
         internal IfcProductDefinitionShape Flaeche(Koerperflaeche f)
             => f == null ? null : Platte(f.EckenM, PLATTE_M, 0.0);
+
+        /// <summary>
+        /// HC-5c: <b>die Platten EINES Bauteils</b> an den Kanten eines Grundriss-Prismas — eine Darstellung „Body“ mit je Platte einem
+        /// <c>IfcExtrudedAreaSolid</c>. Mit einer Platte dasselbe wie <see cref="Flaeche"/>.
+        /// </summary>
+        internal IfcProductDefinitionShape Flaechen(IReadOnlyList<Koerperflaeche> flaechen)
+        {
+            if (flaechen == null || flaechen.Count == 0) return null;
+            if (flaechen.Count == 1) return Flaeche(flaechen[0]);
+            List<IfcExtrudedAreaSolid> koerper = flaechen.Select(f => Plattenkoerper(f.EckenM, PLATTE_M, 0.0)).Where(k => k != null).ToList();
+            if (koerper.Count == 0) return null;
+            IfcShapeRepresentation darstellung = Neu<IfcShapeRepresentation>(s =>
+            {
+                s.ContextOfItems = Koerperkontext;
+                s.RepresentationIdentifier = BODY;
+                s.RepresentationType = SWEPT_SOLID;
+                foreach (IfcExtrudedAreaSolid x in koerper) s.Items.Add(x);
+            });
+            return Neu<IfcProductDefinitionShape>(p => p.Representations.Add(darstellung));
+        }
+
+        /// <summary>
+        /// HC-5c: <b>Die Nordrichtung des Kontexts</b> aus der Drehung des Modells gegen Nord [°] (wahrer Azimut = Modellazimut −
+        /// Drehung): <c>TrueNorth</c> = (sin d, cos d) — die Umkehrung von <c>IfcPlatzierung.DrehungAusTrueNorth</c>.
+        /// </summary>
+        internal void Nordrichtung(double drehungGrad)
+        {
+            double r = drehungGrad * Math.PI / 180.0;
+            double x = Math.Round(Math.Sin(r), 12), y = Math.Round(Math.Cos(r), 12);
+            Kontext.TrueNorth = Neu<IfcDirection>(d => d.SetXY(Z(x), Z(y)));
+        }
 
         /// <summary>
         /// Die Platte einer Öffnung vor der Wand: der Ring aus <see cref="Zonenkoerper.Oeffnung"/>, um
@@ -130,6 +217,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine Platte über einem ebenen Ring, Normale nach außen (Umlaufsinn), versetzt um <paramref name="versatz"/>.</summary>
         private IfcProductDefinitionShape Platte(IReadOnlyList<double[]> ring, double dicke, double versatz)
+            => Darstellung(Plattenkoerper(ring, dicke, versatz));
+
+        /// <summary>Der Körper einer Platte über einem ebenen Ring (<see cref="Platte"/>); <c>null</c> = keiner.</summary>
+        private IfcExtrudedAreaSolid Plattenkoerper(IReadOnlyList<double[]> ring, double dicke, double versatz)
         {
             if (ring == null || ring.Count < 3) return null;
             double[] n = Normale(ring);
@@ -140,7 +231,7 @@ namespace WindowsFormsApplication1
             // u senkrecht zur Normalen machen (der Ring ist eben; das hält Rundungsreste aus der Achse).
             u = Einheit(Differenz(u, Mal(n, Punkt(u, n))), nurXY: false);
             if (u == null) return null;
-            return Darstellung(Prisma(ring, ring[0], n, u, dicke, versatz));
+            return Prisma(ring, ring[0], n, u, dicke, versatz);
         }
 
         /// <summary>

@@ -655,7 +655,8 @@ namespace WindowsFormsApplication1
             }
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
                                                          Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert);
-            _geometrie = GebaeudeGrundriss.Bilden(_ablauf.Abbild, index, _zonierung);
+            // HC-5: der frisch abgeleitete Grundriss je Raum vor dem Rechteckersatz (dieselben, die der Import speichert).
+            _geometrie = GebaeudeGrundriss.BildenMitGrundriss(_ablauf.Abbild, index, _zonierung, out _);
         }
 
         /// <summary>
@@ -1201,7 +1202,9 @@ namespace WindowsFormsApplication1
                                           _baustoffzuordnungen.Count > 0 ? _baustoffzuordnungen : null,
                                           // Einzonenweg mit Projektdatei (SQ-3): das Gebäude nimmt die Konditionierung der
                                           // Gebäudegruppe bzw. der einen Zone als Gebäudekalender.
-                                          !_alsZone || _vorschlag?.Mehrzonig != true ? _ablauf.Gebaeudekonditionierung(_gebaeudeindex) : null);
+                                          !_alsZone || _vorschlag?.Mehrzonig != true ? _ablauf.Gebaeudekonditionierung(_gebaeudeindex) : null,
+                                          // HC-5: der Grundriss je Raum aus Raumgrenzen bzw. Dateikörper, gespeichert an der Quelle.
+                                          GebaeudeRaumgrundrisse.Bilden(_ablauf.Abbild, _gebaeudeindex));
 
         /// <summary>
         /// Die Quelle, wie sie gemerkt wird: Kommt das Gebäude mit mehreren Zonen (Stufe G6c), trägt sie die

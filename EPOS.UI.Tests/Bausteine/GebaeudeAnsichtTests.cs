@@ -1120,4 +1120,65 @@ public class GebaeudeAnsichtTests : EposBunitContext
         Assert.Equal("Boundary condition not available: this building has no classified solids from the file.",
                      Zeige(Daten()).Find(".epos-gebansicht-farbmodus-hinweis").TextContent);
     }
+
+    // =====================================================================
+    //  HC-5: Prismen aus dem Grundriss des Dateikörpers im Exportmodell
+    // =====================================================================
+
+    private static GebaeudeAnsichtDaten GrundrissDaten()
+    {
+        GebaeudeAnsichtDaten basis = KoerperDaten();
+        return basis with
+        {
+            Koerperraeume = new[]
+            {
+                basis.Koerperraeume[0] with
+                {
+                    Herkunft = Koerperherkunft.Grundriss,
+                    Prismen = new[] { new GebaeudeAnsichtPrismenlage(1.5, 4.2) },
+                    Grundrissvermerke = new[] { "Stufen", "Dachschraege" },
+                },
+                basis.Koerperraeume[1],
+            },
+            Zonen = basis.Zonen.Select(z => z.Schluessel == ZONE_EG ? z with { AusDateikoerper = true } : z).ToList(),
+        };
+    }
+
+    [Fact]
+    public void HC5_Das_Prisma_aus_dem_Grundriss_steht_auf_seinem_Boden_mit_seiner_Hoehe()
+    {
+        GebaeudeAnsichtKoerper k = GrundrissDaten().Koerper().Single(x => x.Raum.Kennung == "r-wohnen");
+        Assert.Equal(1.5, k.UnterkanteM);
+        Assert.Equal(4.2, k.HoeheM);
+        Assert.False(k.HoeheVorgabe);
+        Assert.Equal(Koerperherkunft.Grundriss, k.Herkunft);
+        Assert.Equal(Koerperherkunft.Umriss, GrundrissDaten().Koerper().Single(x => x.Raum.Kennung == "r-kueche").Herkunft);
+        Assert.Equal("aus Dateikörper (Grundriss)", new GebaeudeAnsichtTexte().Herkunft(Koerperherkunft.Grundriss));
+    }
+
+    [Fact]
+    public void HC5_Exportmodell_nennt_aus_Dateikoerper_in_Kennzeichen_Legende_und_Raumliste()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var erzeugen = JSInterop.SetupModule(MODUL).Setup<bool>("erzeugen", _ => true);
+        erzeugen.SetResult(true);
+
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeKoerper(GrundrissDaten());
+        Reiterknopf(cut, "Körper").Click();
+        cut.WaitForAssertion(() => Assert.Single(erzeugen.Invocations));
+        Assert.Equal("exportmodell", cut.Instance.KoerperModus);
+
+        IElement zeile = cut.Find(".epos-gebansicht-kennzeichen");
+        Assert.Equal("1", zeile.GetAttribute("data-grundriss"));
+        Assert.Equal("1", zeile.GetAttribute("data-umriss"));
+        Assert.Contains("1 Räume aus Dateikörper", zeile.TextContent);
+        Assert.Contains(cut.FindAll(".epos-gebansicht-legende .epos-gebansicht-herkunft"), e => e.TextContent == "aus Dateikörper (Grundriss)");
+
+        IElement wohnen = cut.Find(".epos-gebansicht-raumherkunft li[data-raum='r-wohnen']");
+        Assert.Equal("grundriss", wohnen.GetAttribute("data-herkunft"));
+        Assert.Contains("aus Dateikörper (Grundriss)", wohnen.TextContent);
+        Assert.Contains("Stufen im Boden", wohnen.TextContent);
+        Assert.Contains("Dachschräge", wohnen.TextContent);
+        Assert.Equal("umriss", cut.Find(".epos-gebansicht-raumherkunft li[data-raum='r-kueche']").GetAttribute("data-herkunft"));
+    }
 }

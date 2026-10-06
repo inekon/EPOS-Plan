@@ -351,7 +351,8 @@ namespace EPOS.Kern.Tests
             // Je Katalogbaustoff eine Projektkopie mit Herkunft KATALOG.
             var katalog = new BaustoffCtrl();
             List<int> stamm = v.Aufbauten.SelectMany(a => a.Stammbaustoffe).Where(x => x.HasValue).Select(x => x.Value).Distinct().OrderBy(x => x).ToList();
-            Assert.Equal(new[] { 1, 2, 5, 10, 12, 13, 20, 36, 39, 48, 56 }, stamm);
+            // Die Bitumenbahn (56) des Dachs fällt unter die Relevanzregel (Folie/Abdichtung unter 2 % von R).
+            Assert.Equal(new[] { 1, 2, 5, 10, 12, 13, 20, 36, 39, 48 }, stamm);
             List<BaustoffModel> projekt = katalog.LesenProjekt(PROJEKT);
             var kopieJeStamm = new Dictionary<int, BaustoffModel>();
             foreach (int id in stamm)
@@ -388,12 +389,13 @@ namespace EPOS.Kern.Tests
 
             // Die Paarungen: je Baustoff der Datei eine, auf die Projektkopie — zwei Namen, ein Stoff, eine Kopie.
             List<GebaeudeQuellzuordnung> stoffe = e.Zuordnungen.Where(z => z.Ziel == ImportZiel.Baustoff).ToList();
-            Assert.Equal(17, stoffe.Count);
+            // 16: Die Bahn des Dachs fällt unter die Relevanzregel und braucht weder Projektkopie noch Paarung.
+            Assert.Equal(16, stoffe.Count);
             Assert.All(stoffe, z => Assert.Equal(GebaeudeBauteilvorschlag.QUELLTYP_IFC_BAUSTOFF, z.Quelltyp));
             Assert.Equal(kopieJeStamm[36].ID, stoffe.Single(z => z.Quellkennung == "Mineralwolle 102890377").ZielId);
             Assert.Equal(kopieJeStamm[36].ID, stoffe.Single(z => z.Quellkennung == "Trittschalldämmung").ZielId);
             Assert.Equal(kopieJeStamm[5].ID, stoffe.Single(z => z.Quellkennung == "Fußbodenaufbau").ZielId);
-            Assert.Equal(17L, Convert.ToInt64(DataRepository.ExecuteScalar(
+            Assert.Equal(16L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM \"Tab_Importzuordnung\" z JOIN \"Tab_Importquelle\" q ON q.\"ID\" = z.\"ID_Importquelle\" " +
                 "WHERE q.\"ID_Gebaeude\" = ? AND z.\"ID_Baustoff\" IS NOT NULL", new DbParam("@g", g.ID_Gebaeude)), CultureInfo.InvariantCulture));
 

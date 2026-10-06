@@ -45,7 +45,56 @@ namespace EPOS.Kern.Tests
                 ["ifc4_koerper_nachbarn.ifc"] = Koerpernachbarn("ifc4_koerper_nachbarn.ifc", grenzen: false),
                 ["ifc4_koerper_nachbarn_grenzen.ifc"] = Koerpernachbarn("ifc4_koerper_nachbarn_grenzen.ifc", grenzen: true),
                 ["ifc4_koerper_bauteile.ifc"] = Koerperbauteile(),
+                ["ifc4_koerper_grundriss_stufe.ifc"] = Grundrissprobe("ifc4_koerper_grundriss_stufe.ifc", 15, 45,
+                    b => b.Flaechenkoerper(STUFENKOERPER, geschlossen: true)),
+                ["ifc4_koerper_grundriss_ohne_boden.ifc"] = Grundrissprobe("ifc4_koerper_grundriss_ohne_boden.ifc", 12, 36,
+                    b => b.Flaechenkoerper(KASTEN_OHNE_BODEN, geschlossen: false)),
             };
+
+        /// <summary>
+        /// <b>L-Form mit Stufe</b> (HC-5, Konzept HottCAD-Verbund 11.2) [mm, im System des Raums]: Teil A 4 × 3 m mit Boden auf
+        /// 0, Teil B 2 × 3 m nördlich daran mit Boden auf 0,3 m, Decke durchgehend auf 3 m; Umlauf jeder Fläche nach außen.
+        /// Grundriss 18 m² gegen 15 m² des Mengensatzes (+20 %).
+        /// </summary>
+        private static readonly (double X, double Y, double Z)[][] STUFENKOERPER =
+        {
+            new[] { (0.0, 0.0, 0.0), (0.0, 3000.0, 0.0), (4000.0, 3000.0, 0.0), (4000.0, 0.0, 0.0) },          // Boden A
+            new[] { (0.0, 3000.0, 300.0), (0.0, 6000.0, 300.0), (2000.0, 6000.0, 300.0), (2000.0, 3000.0, 300.0) }, // Boden B
+            new[] { (0.0, 3000.0, 0.0), (0.0, 3000.0, 300.0), (2000.0, 3000.0, 300.0), (2000.0, 3000.0, 0.0) }, // Setzstufe
+            new[] { (0.0, 0.0, 3000.0), (4000.0, 0.0, 3000.0), (4000.0, 3000.0, 3000.0), (0.0, 3000.0, 3000.0) }, // Decke A
+            new[] { (0.0, 3000.0, 3000.0), (2000.0, 3000.0, 3000.0), (2000.0, 6000.0, 3000.0), (0.0, 6000.0, 3000.0) }, // Decke B
+            new[] { (0.0, 0.0, 0.0), (4000.0, 0.0, 0.0), (4000.0, 0.0, 3000.0), (0.0, 0.0, 3000.0) },          // Süd
+            new[] { (4000.0, 0.0, 0.0), (4000.0, 3000.0, 0.0), (4000.0, 3000.0, 3000.0), (4000.0, 0.0, 3000.0) }, // Ost A
+            new[] { (4000.0, 3000.0, 0.0), (2000.0, 3000.0, 0.0), (2000.0, 3000.0, 3000.0), (4000.0, 3000.0, 3000.0) }, // Nord A
+            new[] { (2000.0, 3000.0, 300.0), (2000.0, 6000.0, 300.0), (2000.0, 6000.0, 3000.0), (2000.0, 3000.0, 3000.0) }, // Ost B
+            new[] { (2000.0, 6000.0, 300.0), (0.0, 6000.0, 300.0), (0.0, 6000.0, 3000.0), (2000.0, 6000.0, 3000.0) }, // Nord B
+            new[] { (0.0, 3000.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 3000.0), (0.0, 3000.0, 3000.0) },          // West A
+            new[] { (0.0, 6000.0, 300.0), (0.0, 3000.0, 300.0), (0.0, 3000.0, 3000.0), (0.0, 6000.0, 3000.0) }, // West B
+        };
+
+        /// <summary>Eine Schale 4 × 3 × 3 m ohne Boden [mm] (HC-5): Wände und Decke, Umlauf nach außen.</summary>
+        private static readonly (double X, double Y, double Z)[][] KASTEN_OHNE_BODEN =
+        {
+            new[] { (0.0, 0.0, 3000.0), (4000.0, 0.0, 3000.0), (4000.0, 3000.0, 3000.0), (0.0, 3000.0, 3000.0) }, // Decke
+            new[] { (0.0, 0.0, 0.0), (4000.0, 0.0, 0.0), (4000.0, 0.0, 3000.0), (0.0, 0.0, 3000.0) },          // Süd
+            new[] { (4000.0, 0.0, 0.0), (4000.0, 3000.0, 0.0), (4000.0, 3000.0, 3000.0), (4000.0, 0.0, 3000.0) }, // Ost
+            new[] { (4000.0, 3000.0, 0.0), (0.0, 3000.0, 0.0), (0.0, 3000.0, 3000.0), (4000.0, 3000.0, 3000.0) }, // Nord
+            new[] { (0.0, 3000.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 3000.0), (0.0, 3000.0, 3000.0) },          // West
+        };
+
+        /// <summary>Ein Raum (Raumfläche und Volumen des Mengensatzes gegeben) mit einem Körper aus Flächen, ohne Raumgrenzen.</summary>
+        private static byte[] Grundrissprobe(string datei, double flaeche, double volumen, Func<Bau, IIfcRepresentationItem> koerper)
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, datei))
+            {
+                b.Anfang(null, karte: false);
+                IIfcBuilding g = b.Gebaeude("Probengebäude", null);
+                IIfcBuildingStorey s = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(s, "0.01", "Raum", 1000, 2000, flaeche, 3000, volumen, beheizt: true);
+                b.Koerper(r, "Brep", koerper(b));
+                return b.Speichern();
+            }
+        }
 
         /// <summary>
         /// <b>Körper der Hüllbauteile</b> (Konzept HottCAD-Verbund 3.2 und 4.2): ein Geschoss, Nord = +y, zwei Räume als
@@ -351,6 +400,35 @@ namespace EPOS.Kern.Tests
                     schale.CfsFaces.Add(flaeche);
                 }
                 if (offen)
+                {
+                    IIfcShellBasedSurfaceModel m = N<IIfcShellBasedSurfaceModel>("IfcShellBasedSurfaceModel");
+                    m.SbsmBoundary.Add((IIfcShell)schale);
+                    return m;
+                }
+                IIfcFacetedBrep b = N<IIfcFacetedBrep>("IfcFacetedBrep");
+                b.Outer = (IIfcClosedShell)schale;
+                return b;
+            }
+
+            /// <summary>
+            /// Ein Körper aus ebenen Flächen [mm] (HC-5): geschlossen als <c>IfcFacetedBrep</c>, sonst als
+            /// <c>IfcShellBasedSurfaceModel</c> mit <c>IfcOpenShell</c>; je Fläche ein <c>IfcPolyLoop</c> im Umlauf der Liste.
+            /// </summary>
+            public IIfcRepresentationItem Flaechenkoerper(IEnumerable<(double X, double Y, double Z)[]> flaechen, bool geschlossen)
+            {
+                IIfcConnectedFaceSet schale = N<IIfcConnectedFaceSet>(geschlossen ? "IfcClosedShell" : "IfcOpenShell");
+                foreach ((double X, double Y, double Z)[] f in flaechen)
+                {
+                    IIfcPolyLoop ring = N<IIfcPolyLoop>("IfcPolyLoop");
+                    foreach ((double x, double y, double z) in f) ring.Polygon.Add(Punkt(x, y, z));
+                    IIfcFaceOuterBound rand = N<IIfcFaceOuterBound>("IfcFaceOuterBound");
+                    rand.Bound = ring;
+                    rand.Orientation = true;
+                    IIfcFace flaeche = N<IIfcFace>("IfcFace");
+                    flaeche.Bounds.Add(rand);
+                    schale.CfsFaces.Add(flaeche);
+                }
+                if (!geschlossen)
                 {
                     IIfcShellBasedSurfaceModel m = N<IIfcShellBasedSurfaceModel>("IfcShellBasedSurfaceModel");
                     m.SbsmBoundary.Add((IIfcShell)schale);

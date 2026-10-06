@@ -575,4 +575,51 @@ public class GebaeudeDialogImportTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-gebaeude-neulesen-hinweis"));
         Assert.Equal(0, p.Geaendert);
     }
+
+    // ---------------------------------------------------------------- HC-5 (F7): Grundriss übernehmen
+
+    [Fact]
+    public void HC5_F7_Der_Knopf_steht_nur_mit_Angebot_fragt_und_meldet_danach_die_Zahl()
+    {
+        var p = new Protokoll();
+        var n = new Neulesung();
+        var antworten = new Queue<string?>(new[] { null, "Grundriss von 3 Räumen übernommen." });
+        int gerufen = 0;
+        n.Antworten.Enqueue(new GebaeudeNeulesestand { Zustand = GebaeudeNeulesezustand.Passend, Hinweis = "passt" });
+        n.Antworten.Enqueue(new GebaeudeNeulesestand
+        {
+            Zustand = GebaeudeNeulesezustand.Passend, Hinweis = "passt", GrundrissRaeume = 3,
+            GrundrissNachtragen = () => { gerufen++; return Task.FromResult(antworten.Dequeue()); },
+        });
+        var cut = MitNeulesen(p, n, ZweiZeilen());
+        Zeile(cut, 0);
+
+        // Ohne Angebot (gespeichert und gleich, abweichende Prüfsumme) kein Knopf.
+        cut.Find("button.epos-gebaeude-neulesen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.NeuLesenOffen));
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss"));
+        cut.Find(".epos-ueberlagerung[aria-label='Importdatei erneut lesen'] button.epos-ueberlagerung-zu").Click();
+
+        cut.Find("button.epos-gebaeude-neulesen").Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss")));
+        Assert.Contains("3 Räume", cut.Find(".epos-gebaeude-neulesen-grundriss-angebot").TextContent);
+        IElement knopf = cut.Find("button.epos-gebaeude-neulesen-grundriss");
+        Assert.Equal("Grundriss übernehmen", knopf.TextContent.Trim());
+
+        // Nein: nichts geschrieben, der Knopf bleibt.
+        knopf.Click();
+        cut.WaitForAssertion(() => Assert.Equal(1, gerufen));
+        Assert.NotEmpty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss"));
+        Assert.Empty(cut.FindAll(".epos-gebaeude-neulesen-grundriss-hinweis"));
+
+        // Ja: die Hinweiszeile statt des Knopfs; der Dialog bleibt unverändert.
+        cut.Find("button.epos-gebaeude-neulesen-grundriss").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, gerufen));
+        IElement hinweis = cut.Find(".epos-gebaeude-neulesen-grundriss-hinweis");
+        Assert.Equal("status", hinweis.GetAttribute("role"));
+        Assert.Equal("Grundriss von 3 Räumen übernommen.", hinweis.TextContent);
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss"));
+        Assert.Equal(0, p.Geaendert);
+        Assert.Empty(p.Geschlossen);
+    }
 }

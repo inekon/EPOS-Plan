@@ -2913,7 +2913,7 @@ namespace WindowsFormsApplication1
                 }
 
                 GebaeudeImportCtrl.Ergebnis herkunft = new GebaeudeImportCtrl().SchreibeHerkunft(
-                    idKopie, item.Importherkunft.Quelle, paarungen, Vorgangsklammer.Aktueller);
+                    idKopie, item.Importherkunft.Quelle, paarungen, Vorgangsklammer.Aktueller, item.Importherkunft.Raumgrundrisse);
                 if (!herkunft.Ok)
                 {
                     herkunftsfehler = herkunft.Meldung ?? "";
