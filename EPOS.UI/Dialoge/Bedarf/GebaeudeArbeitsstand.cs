@@ -1754,6 +1754,7 @@ public sealed class GebaeudeArbeitsstand
         {
             StandLesen = () => Stand,
             Konditionierung = wege.Konditionierung,
+            Nutzungsprofile = wege.Nutzungsprofile,
 
             NameLesen = wege.NameLesen,
             NameSetzen = wege.NameSetzen,
@@ -2015,6 +2016,12 @@ public sealed class GebaeudeKiWege
     /// und die Bestandszellen gehen über denselben Weg wie die Zellen des Reiters.
     /// </summary>
     public KonditionierungBearbeitung? Konditionierung { get; init; }
+
+    /// <summary>
+    /// Der Zugang zum Blatt „Nutzungsprofile" (NP3c) — nur der Katalogeditor trägt das Blatt; die Sicht
+    /// beantwortet darüber die Felder <c>np_*</c> und die Zuordnungszeilen.
+    /// </summary>
+    public RaumnutzungKiZugang? Nutzungsprofile { get; init; }
 
     /// <summary>Die Texte der VDI-Struktur — für die Namen der Übergabearten und die Ablehnungen der Wärmeübergabe.</summary>
     public GebaeudeHuelleTexte? Texte { get; init; }

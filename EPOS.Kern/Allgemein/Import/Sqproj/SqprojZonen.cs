@@ -49,8 +49,9 @@ namespace WindowsFormsApplication1
     /// nur für die Konditionierung: die Simulationszone nimmt das Nutzungsprofil der DIN-Zone, mit der sie die meisten Räume
     /// teilt; die DIN-Zone ihr eigenes Nutzungsprofil und die Profilgruppe der Simulationszone, mit der sie die meisten Räume
     /// teilt. Ein Raum in mehreren Zonen derselben Zonierung gehört der ersten in fester Reihenfolge; eine Zone ohne
-    /// abgeglichenen Raum wird als leer gemeldet und nicht angelegt. Die Nutzung kommt aus der Profilnummer
-    /// (<see cref="Din18599Nutzung"/>); eine Zone ohne Profil hat keine Nutzung. Die Übernahme ersetzt die Zonierung des Plans (<see cref="Zonenplan.ZonierungAufheben"/>);
+    /// abgeglichenen Raum wird als leer gemeldet und nicht angelegt. Die Nutzung kommt aus der Profilnummer über die
+    /// Zuordnung <c>DIN_NUMMER</c> vor der Vorgabe <see cref="Din18599Nutzung"/> (<see cref="Raumnutzungsvorbelegung"/>);
+    /// eine Zone ohne Profil hat keine Nutzung. Die Übernahme ersetzt die Zonierung des Plans (<see cref="Zonenplan.ZonierungAufheben"/>);
     /// IFC-Räume ohne Gegenstück bleiben nicht zugeordnet. Jede übernommene Zone trägt ihre
     /// <see cref="Zonenkonditionierung"/> (<see cref="Planzone.Projektdatei"/>).
     /// </summary>
@@ -89,7 +90,7 @@ namespace WindowsFormsApplication1
                 SqprojNutzungsprofil profil = z.Nutzungsprofil ?? GeteiltesProfil(z, projekt);
                 SqprojProfilgruppe gruppe = z.Gruppe ?? GeteilteGruppe(z, projekt);
                 int? nummer = profil?.Profilnummer ?? gruppe?.Profilnummer;
-                string nutzung = Din18599Nutzung.Nutzung(nummer);
+                Planprofil nutzung = plan.Vorbelegung.AusDinNummer(nummer);
                 if (nummer is int nr && nutzung == null)
                     e.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.NUTZUNG_OHNE_ABBILDUNG, z.Name, SqprojProtokoll.Z(nr)));
                 Planschritt angelegt = Anlegen(plan, z.Name, nutzung);
@@ -109,7 +110,7 @@ namespace WindowsFormsApplication1
                 double? flaeche = Summe(drin.Select(r => r.FlaecheM2)) ?? Summe(z.Raeume.Select(r => projekt.Raum(r)?.FlaecheM2)) ?? z.FlaecheM2;
                 double? volumen = Summe(drin.Select(r => r.VolumenM3)) ?? Summe(z.Raeume.Select(r => projekt.Raum(r)?.VolumenM3)) ?? z.VolumenM3;
                 Planzone pz = plan.Zone(angelegt.Schluessel);
-                Zonenkonditionierung k = SqprojKonditionierung.Bilden(pz.Name, nutzung, profil, gruppe, flaeche, volumen);
+                Zonenkonditionierung k = SqprojKonditionierung.Bilden(pz.Name, nutzung?.Name, profil, gruppe, flaeche, volumen);
                 k.Zonierung = wirksam;
                 pz.Projektdatei = k;
                 e.Meldungen.AddRange(k.Meldungen);
@@ -177,14 +178,15 @@ namespace WindowsFormsApplication1
                 SqprojZone z = belegt[0];
                 SqprojNutzungsprofil profil = z.Nutzungsprofil ?? GeteiltesProfil(z, projekt);
                 SqprojProfilgruppe zg = z.Gruppe ?? GeteilteGruppe(z, projekt);
-                string nutzung = Din18599Nutzung.Nutzung(profil?.Profilnummer ?? zg?.Profilnummer);
+                string nutzung = Raumnutzungsvorbelegung.Lesen().AusDinNummer(profil?.Profilnummer ?? zg?.Profilnummer)?.Name;
                 return SqprojKonditionierung.Bilden(name, nutzung, profil, zg, flaecheM2, volumenM3);
             }
             SqprojProfilgruppe gruppe = projekt.Gebaeudegruppe;
             if (gruppe == null) return null;
             SqprojNutzungsprofil gleich = gruppe.Profilnummer is int nr
                 ? projekt.Zonen.Select(z => z.Nutzungsprofil).FirstOrDefault(p => p?.Profilnummer == nr) : null;
-            return SqprojKonditionierung.Bilden(name, Din18599Nutzung.Nutzung(gruppe.Profilnummer), gleich, gruppe, flaecheM2, volumenM3);
+            return SqprojKonditionierung.Bilden(name, Raumnutzungsvorbelegung.Lesen().AusDinNummer(gruppe.Profilnummer)?.Name, gleich, gruppe,
+                                               flaecheM2, volumenM3);
         }
 
         /// <summary>Das Nutzungsprofil der Nutzungszone, mit der eine Zone die meisten Räume teilt; <c>null</c> = keine.</summary>
@@ -213,12 +215,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Legt die Zone an — bei einem vergebenen Namen mit „ (2)“, „ (3)“ … .</summary>
-        private static Planschritt Anlegen(Zonenplan plan, string name, string nutzung)
+        private static Planschritt Anlegen(Zonenplan plan, string name, Planprofil nutzung)
         {
             string basis = string.IsNullOrWhiteSpace(name) ? "Zone" : name.Trim();
-            Planschritt s = plan.ZoneAnlegen(basis, nutzung);
+            Planschritt s = plan.ProfilzoneAnlegen(basis, nutzung);
             for (int i = 2; !s.Ok && i < 100 && (s.Meldung?.Schluessel ?? "").EndsWith(Zonenplan.PLAN_NAME_DOPPELT, StringComparison.Ordinal); i++)
-                s = plan.ZoneAnlegen(basis + " (" + SqprojProtokoll.Z(i) + ")", nutzung);
+                s = plan.ProfilzoneAnlegen(basis + " (" + SqprojProtokoll.Z(i) + ")", nutzung);
             return s;
         }
 

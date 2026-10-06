@@ -129,7 +129,7 @@ namespace WindowsFormsApplication1
                     Schluessel = pz.Schluessel,
                     Ansichtsschluessel = ansicht,
                     Name = pz.Name,
-                    Nutzung = pz.Nutzung,
+                    Nutzung = pz.Profil?.Schluessel,
                     Beheizt = plan.ZoneBeheizt(pz.Schluessel),
                     Raeume = raeume.Count.ToString(CultureInfo.CurrentCulture),
                     Flaeche = MitEinheit(flaeche, "m²"),
@@ -159,12 +159,7 @@ namespace WindowsFormsApplication1
                 NichtZugeordnet = plan.NichtZugeordnet.Select(r => Planraum(plan, r)).ToList(),
                 Ausserhalb = plan.RaeumeAusserhalb.Count,
                 Geschosse = plan.Geschosse.Select(g => new GebaeudeZonenregelDaten(g, Geschosstext(plan, g))).ToList(),
-                Nutzungen = new[]
-                {
-                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_WOHNEN, MyResource.Resource.KOND_LBL_NUTZUNG_WOHNEN),
-                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_BUERO, MyResource.Resource.KOND_LBL_NUTZUNG_BUERO),
-                    new GebaeudeZonenregelDaten(DbWerte.KOND_NUTZUNG_SCHULE, MyResource.Resource.KOND_LBL_NUTZUNG_SCHULE),
-                },
+                Nutzungen = Nutzungsliste(plan),
                 Einzonig = plan.Zonen.Count(x => plan.RaeumeVon(x.Schluessel).Count > 0) <= 1,
                 NeuerName = neu,
                 Schrittmeldung = schritt.Meldung == null ? null : GebaeudeImportHuelle.MeldungDaten(schritt.Meldung),
@@ -172,6 +167,31 @@ namespace WindowsFormsApplication1
                 Verworfen = schritt.Verworfen,
             };
         }
+
+        /// <summary>
+        /// <b>Die Nutzungen der Klappliste</b> (Konzept Nutzungsprofile NP-F23): die Profile des Katalogs in der Ordnung der
+        /// Kategorien (Schlüssel <c>#&lt;Id&gt;</c>, Text der Profilname); ohne Katalog die alten Kennungen mit ihren Texten;
+        /// dazu jeder Text einer Planzone, zu dem kein Profil passt — er bleibt wählbar, solange er an der Zone steht.
+        /// </summary>
+        internal static IReadOnlyList<GebaeudeZonenregelDaten> Nutzungsliste(Zonenplan plan)
+        {
+            var liste = new List<GebaeudeZonenregelDaten>();
+            foreach ((string schluessel, string name, string art) in plan.Vorbelegung.Auswahl())
+                liste.Add(new GebaeudeZonenregelDaten(schluessel, art == null ? Kennungstext(name) : name));
+            foreach (Planprofil p in plan.Zonen.Select(z => z.Profil).Where(p => p != null && !p.Id.HasValue))
+                if (!liste.Any(x => string.Equals(x.Schluessel, p.Schluessel, StringComparison.Ordinal)))
+                    liste.Add(new GebaeudeZonenregelDaten(p.Schluessel, Kennungstext(p.Name)));
+            return liste;
+        }
+
+        /// <summary>Der Anzeigetext einer alten Kennung; jeder andere Text bleibt, wie er ist.</summary>
+        private static string Kennungstext(string kennung) => kennung switch
+        {
+            DbWerte.KOND_NUTZUNG_WOHNEN => MyResource.Resource.KOND_LBL_NUTZUNG_WOHNEN,
+            DbWerte.KOND_NUTZUNG_BUERO => MyResource.Resource.KOND_LBL_NUTZUNG_BUERO,
+            DbWerte.KOND_NUTZUNG_SCHULE => MyResource.Resource.KOND_LBL_NUTZUNG_SCHULE,
+            _ => kennung ?? "",
+        };
 
         private static string Geschosstext(Zonenplan plan, string kennung)
         {

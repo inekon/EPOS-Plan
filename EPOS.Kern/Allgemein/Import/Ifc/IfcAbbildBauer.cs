@@ -977,7 +977,9 @@ namespace WindowsFormsApplication1
             {
                 IfcSatzwert W(string n) => zone.FirstOrDefault(w => w.Name == n);
                 string nutzung = W(IfcKonditionierungssatz.NUTZUNG)?.Text?.Trim();
-                k.Nutzung = Zonenplan.NUTZUNGEN.Contains(nutzung) ? nutzung : null;
+                // Der Text bleibt, wie er steht (NP-F23): der Zonenplan löst ihn auf — Profilname → Profil, alte Kennung →
+                // EPOS-Muster, sonst „nicht im Katalog“ (Raumnutzungsvorbelegung.AusText).
+                k.Nutzung = KonditionierungNutzungSchema.Nutzungstext(nutzung);
                 k.HeizsollTagC = W(IfcKonditionierungssatz.HEIZSOLL_TAG)?.Zahl;
                 k.HeizsollNachtC = W(IfcKonditionierungssatz.HEIZSOLL_NACHT)?.Zahl;
                 k.KuehlsollC = W(IfcKonditionierungssatz.KUEHLSOLL)?.Zahl;

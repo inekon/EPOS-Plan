@@ -7,30 +7,61 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Der Datenbankweg des Zonenplans</b> (Mehrzonenkonzept 6.4): die Nutzung einer gespeicherten Zone als
-    /// Kalenderkopien der ausgelieferten Vorlagen (<see cref="NutzungUebernehmen"/>) und der gespeicherte Plan eines
-    /// früheren Imports derselben Datei (<see cref="Gespeichert"/>). Ohne Schemaschritt: Name in <c>Tab_Zone.Bezeichner</c>,
-    /// Nutzung in <c>Tab_Konditionierungskalender.Nutzung</c> der Kopien, Raum → Zone in <c>Tab_Importzuordnung</c>, die
-    /// Regel in <c>Tab_Importquelle.Zonenregel</c>. Nur über <see cref="DataRepository"/> mit <c>?</c>-Parametern.
+    /// <b>Der Datenbankweg des Zonenplans</b> (Mehrzonenkonzept 6.4, Konzept Nutzungsprofile NP-F16, NP-F23): das
+    /// Nutzungsprofil einer gespeicherten Zone über den Generator (<see cref="NutzungUebernehmen"/>), die Konditionierung der
+    /// Projektdatei davor (<see cref="ProjektdateiUebernehmen"/>, Datei vor Profil) und der gespeicherte Plan eines früheren
+    /// Imports derselben Datei (<see cref="Gespeichert"/>). Name in <c>Tab_Zone.Bezeichner</c>, Profilname in
+    /// <c>Tab_Zone.Nutzungsprofil</c> und <c>Tab_Konditionierungskalender.Nutzung</c> der Kopien, Raum → Zone in
+    /// <c>Tab_Importzuordnung</c>, die Regel in <c>Tab_Importquelle.Zonenregel</c>. Nur über <see cref="DataRepository"/> mit
+    /// <c>?</c>-Parametern.
     /// </summary>
     internal static class ZonenplanCtrl
     {
         /// <summary>
-        /// <b>Gibt einer Zone die Vorlagen ihrer Nutzung</b> über den Weg von „Vorlage übernehmen“ (KP2): je Größe die erste
-        /// ausgelieferte Vorlage dieser Nutzung in der Ordnung der Auswahlliste, als reiner Schritt
-        /// (<see cref="Konditionierungsarbeit.VorlageUebernehmen"/>: Kalenderkopie mit den Ferien der Zone, Folgen) auf dem
-        /// Arbeitsstand des Gebäudes; danach werden Gebäude- und Zonenebene geschrieben und die Kopien tragen die Nutzung.
-        /// Eine unbeheizte Zone bekommt keinen Heiz- und Kühlkalender (Zonenregel), eine Größe ohne Vorlage dieser Nutzung
-        /// keinen Kalender. Fragt die Lüftung nach dem Aufteilen der Gesamtangabe <c>Luftwechselrate</c> (F5), wird
-        /// aufgeteilt — der wirksame Luftwechsel bleibt. Läuft im Vorgang des Aufrufers, wenn einer angemeldet ist
+        /// <b>Gibt einer Zone ihr Nutzungsprofil</b> (NP-F16, NP-F17, NP-F18): ein Profil des Katalogs über
+        /// <see cref="RaumnutzungCtrl.ProfilUebernehmen"/> — je Größe der Generator, Kalenderkopie mit den Ferien der Zone,
+        /// Nennwerte nur aus der Fläche, Außenluft je Fläche mit der lichten Höhe, eine unbeheizte Zone ohne Heiz- und
+        /// Kühlkalender, eine Größe ohne Kennwert ohne Kalender; die Kopien und <c>Tab_Zone.Nutzungsprofil</c> tragen den
+        /// Profilnamen. Ohne Katalog trägt die Zone eine alte Kennung; sie geht den Vorlagenweg (je Größe die erste
+        /// ausgelieferte Vorlage dieser Nutzung). Ein Text ohne Profil („nicht im Katalog“) bleibt an der Zone
+        /// (<c>Tab_Zone.Nutzungsprofil</c>), ohne Kalender. Läuft im Vorgang des Aufrufers, wenn einer angemeldet ist
         /// (<see cref="Vorgangsklammer"/>, Sicherungspunkt).
         /// </summary>
+        /// <param name="profil">Das Profil der Zone (<see cref="Planzone.Profil"/>); <c>null</c> = keins.</param>
+        /// <param name="flaeche">Die Fläche der Zone [m²] für die Nennwerte; <c>null</c> = ohne.</param>
+        /// <param name="lichteHoehe">Die lichte Höhe der Zone [m] für Außenluft je Fläche; <c>null</c> = ohne.</param>
         /// <returns><c>null</c>, wenn alles übernommen ist; sonst die erste Ablehnung.</returns>
-        internal static string NutzungUebernehmen(int idGebaeude, int idZone, string nutzung)
+        internal static string NutzungUebernehmen(int idGebaeude, int idZone, Planprofil profil, double? flaeche = null, double? lichteHoehe = null)
         {
-            if (nutzung == null) return null;
-            if (!Zonenplan.NUTZUNGEN.Contains(nutzung))
-                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_IFC_PROT_PLAN_NUTZUNG_UNGUELTIG, nutzung);
+            if (profil == null) return null;
+            if (profil.Id is long id)
+            {
+                RaumnutzungCtrl.Uebernahme u = new RaumnutzungCtrl().ProfilUebernehmen(id, idGebaeude, idZone, flaeche, lichteHoehe);
+                return u.Ok ? null : u.Meldung ?? "";
+            }
+            if (Zonenplan.NUTZUNGEN.Contains(profil.Name)) return VorlagenUebernehmen(idGebaeude, idZone, profil.Name);
+            return NutzungsprofilSetzen(idZone, profil.Name);
+        }
+
+        /// <summary>Schreibt den Text der Nutzung an die Zone (<c>Tab_Zone.Nutzungsprofil</c>), ohne Kalender.</summary>
+        private static string NutzungsprofilSetzen(int idZone, string name)
+        {
+            string text = KonditionierungNutzungSchema.Nutzungstext(name);
+            if (text == null || !RaumnutzungSchema.ZonenspalteVorhanden()) return null;
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                v.Ausfuehren("UPDATE \"" + RaumnutzungSchema.TAB_ZONE + "\" SET \"" + RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL +
+                             "\" = ? WHERE \"ID\" = ?", new DbParam("@n", (object)text), new DbParam("@z", idZone));
+                v.Commit();
+            }
+            return null;
+        }
+
+        /// <summary>Der Vorlagenweg einer alten Kennung (ohne Katalog): je Größe die erste ausgelieferte Vorlage dieser Nutzung.</summary>
+        private static string VorlagenUebernehmen(int idGebaeude, int idZone, string nutzung)
+        {
+            if (!Zonenplan.NUTZUNGEN.Contains(nutzung)) return null;
             var vorlagen = new KonditionierungsvorlageCtrl();
             var kond = new KonditionierungCtrl();
             Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
@@ -78,20 +109,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Gibt einer Zone die Konditionierung aus der HottCAD-Projektdatei</b> (Datenaustauschkonzept 16.3, SQ-1) — nach
-        /// <see cref="NutzungUebernehmen"/> und über dieselben reinen Schritte der Konditionierung: je Größe, für die die
-        /// Projektdatei etwas liefert, weicht zuerst die Kalenderkopie der Vorlage (Rangfolge „Profil vor Vorlage“), dann
+        /// <b>Gibt einer Zone die Konditionierung aus der HottCAD-Projektdatei</b> (Datenaustauschkonzept 16.3, SQ-1) — mit
+        /// <paramref name="profil"/> zuerst das Nutzungsprofil der Zone (<see cref="NutzungUebernehmen"/>, Fläche und lichte
+        /// Höhe), dann über dieselben reinen Schritte der Konditionierung die Datei (Rangfolge „Datei vor Profil“, NP-F16):
+        /// je Größe, für die die Projektdatei etwas liefert, weicht zuerst die Kalenderkopie des Profils, dann
         /// setzt <see cref="Konditionierungsarbeit.ZelleSetzen"/> die Zellen des Nutzungsprofils (Bestand oder Vorgabetabelle,
         /// wie die Matrix es verlangt) und zuletzt tritt der Kalender der Ganglinie an (Rangfolge „Ganglinie vor Profil“) —
         /// mit dem Beleg in <c>Bemerkung</c> (≤ 200 Zeichen). Was die Projektdatei nicht liefert, bleibt bei der Vorlage der
-        /// Nutzung. Eine unbeheizte Zone bekommt keinen Heiz- und Kühlwert (Zonenregel). Läuft im Vorgang des Aufrufers, wenn
+        /// Nutzung bzw. beim Profil. Eine unbeheizte Zone bekommt keinen Heiz- und Kühlwert (Zonenregel). Läuft im Vorgang des Aufrufers, wenn
         /// einer angemeldet ist (<see cref="Vorgangsklammer"/>, Sicherungspunkt).
         /// </summary>
         /// <param name="idZone">Die Zone; <c>null</c> = das Gebäude selbst (Einzonenweg: Gebäudekalender ohne Zone,
         /// Konditionierungskonzept 5.1).</param>
         /// <returns><c>null</c>, wenn alles übernommen ist; sonst die erste Ablehnung.</returns>
-        internal static string ProjektdateiUebernehmen(int idGebaeude, int? idZone, Zonenkonditionierung konditionierung)
+        /// <param name="profil">Das Profil der Zone (<see cref="Planzone.Profil"/>); <c>null</c> = keins (auch im Einzonenweg).</param>
+        /// <param name="flaeche">Die Fläche der Zone [m²] für die Nennwerte des Profils; <c>null</c> = ohne.</param>
+        /// <param name="lichteHoehe">Die lichte Höhe der Zone [m] für Außenluft je Fläche; <c>null</c> = ohne.</param>
+        internal static string ProjektdateiUebernehmen(int idGebaeude, int? idZone, Zonenkonditionierung konditionierung,
+                                                       Planprofil profil = null, double? flaeche = null, double? lichteHoehe = null)
         {
+            if (profil != null && idZone is int zp)
+            {
+                string fehlerProfil = NutzungUebernehmen(idGebaeude, zp, profil, flaeche, lichteHoehe);
+                if (fehlerProfil != null) return fehlerProfil;
+            }
             if (konditionierung == null || !konditionierung.Liefert) return null;
             var kond = new KonditionierungCtrl();
             Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
@@ -154,7 +195,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der gespeicherte Plan derselben Datei</b> (gleicher SHA-256) in diesem Projekt: das jüngste Gebäude des Projekts
         /// aus dieser Datei, seine jüngste Quelle mit diesem Hash, deren Raumpaarungen auf Zonen, die Zonen des Gebäudes in
-        /// ihrer Reihenfolge mit Bezeichner und der Nutzung ihrer Kalenderkopien (<see cref="Zonenplan.AusGespeichert"/>).
+        /// ihrer Reihenfolge mit Bezeichner und ihrer Nutzung (<see cref="Zonennutzung"/>; <see cref="Zonenplan.AusGespeichert"/>
+        /// findet darüber das Profil wieder, NP-F23).
         /// <c>null</c>, wenn es keinen gibt oder keine Raumpaarung auf eine Zone zeigt.
         /// </summary>
         internal static Zonenplan Gespeichert(int idProjekt, string hash, GebaeudeAbbild abbild, int index,
@@ -176,8 +218,26 @@ namespace WindowsFormsApplication1
                 .Select(p => (jeKurz[p.Quellkennung], p.ID_Zone.Value)).ToList();
             if (paarungen.Count == 0) return null;
             List<(int Id, string Name, string Nutzung)> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(treffer.IdGebaeude)
-                .Select(z => (z.ID, z.Bezeichner, Nutzung(z.ID))).ToList();
+                .Select(z => (z.ID, z.Bezeichner, Zonennutzung(z.ID))).ToList();
             return Zonenplan.AusGespeichert(abbild, index, quelle.Zonenregel, haken, zonen, paarungen);
+        }
+
+        /// <summary>
+        /// <b>Die Nutzung einer Zone</b> (Konzept Nutzungsprofile Q41, NP-F23): <c>Tab_Zone.Nutzungsprofil</c>, sonst die Nutzung
+        /// ihrer Kalenderkopien (<see cref="Nutzung"/>); <c>null</c> = keine. Damit findet der erneute Import auch ein Profil
+        /// ohne Kalender (ohne Kennwerte, NP-F13) oder einen Text „nicht im Katalog“ wieder.
+        /// </summary>
+        internal static string Zonennutzung(int idZone)
+        {
+            if (RaumnutzungSchema.ZonenspalteVorhanden())
+            {
+                object w = DataRepository.ExecuteScalar(
+                    "SELECT \"" + RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL + "\" FROM \"" + RaumnutzungSchema.TAB_ZONE + "\" WHERE \"ID\" = ?",
+                    new DbParam("@z", idZone));
+                if (w != null && w != DBNull.Value && KonditionierungNutzungSchema.Nutzungstext(Convert.ToString(w, CultureInfo.InvariantCulture)) is string n)
+                    return n;
+            }
+            return Nutzung(idZone);
         }
 
         /// <summary>Die Nutzung der Kalenderkopien einer Zone: die der ersten Größe mit Nutzung; <c>null</c> = keine.</summary>

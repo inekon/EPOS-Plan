@@ -237,7 +237,7 @@ namespace WindowsFormsApplication1
             if (fehler != null) return Ebenenergebnis.Fehler(fehler);
             // B8: Die Herkunft „aus Vorlage …" bleibt; der Vermerk des letzten Werkzeugs beschreibt die
             // ersetzte Standardwoche nicht mehr und fällt.
-            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, neu, new Kalenderherkunft(ebene.Herkunft(groesse).Vorlage, null)));
+            return Ebenenergebnis.Gut(ebene.MitKalender(groesse, neu, ebene.Herkunft(groesse).MitVermerk(null)));
         }
 
         /// <summary>
@@ -336,7 +336,7 @@ namespace WindowsFormsApplication1
                 if (!r.Ok) return r;
                 e = r.Stand;
             }
-            return Ebenenergebnis.Gut(e.MitKalender(groesse, neu, new Kalenderherkunft(vorlage.Name, null)));
+            return Ebenenergebnis.Gut(e.MitKalender(groesse, neu, new Kalenderherkunft(vorlage.Name, null, vorlage.AusProfil)));
         }
 
         /// <summary>

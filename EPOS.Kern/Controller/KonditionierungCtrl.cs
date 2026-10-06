@@ -673,10 +673,14 @@ namespace WindowsFormsApplication1
             // Vorlage nach der Regel der Saat (auch im OK-Weg des Arbeitsstands), ohne Herkunft bleibt sie leer.
             // NP3b (NP-F14, NP-F15): nennt die Herkunft keine Vorlage der Groesse, aber ein Nutzungsprofil des
             // Katalogs, ist die Nutzung dessen Name - der OK-Weg nach „Nutzungsprofil uebernehmen...".
+            // NP3c: Nennt die Herkunft ihrer ART nach ein Nutzungsprofil („aus Nutzungsprofil ..."), gilt allein das
+            // Profil - eine gleichnamige Vorlage (drei EPOS-Muster heissen wie eine) gewinnt nicht mehr.
             string nutzung = BleibendeNutzung(v, eigner, groesse, zeile.Bemerkung);
             if (nutzung == null && KonditionierungNutzungSchema.SpalteDa(v))
-                nutzung = KonditionierungNutzungSchema.NutzungDerHerkunft(v, zeile.Bemerkung, groesse)
-                          ?? RaumnutzungCtrl.NutzungDesProfils(v, zeile.Bemerkung);
+                nutzung = Kalenderherkunft.AusBemerkung(zeile.Bemerkung).IstProfil
+                    ? RaumnutzungCtrl.NutzungDesProfils(v, zeile.Bemerkung)
+                    : KonditionierungNutzungSchema.NutzungDerHerkunft(v, zeile.Bemerkung, groesse)
+                      ?? RaumnutzungCtrl.NutzungDesProfils(v, zeile.Bemerkung);
 
             // Der vorhandene Kalender dieser Groesse faellt samt Perioden (Kaskade); so laeuft
             // das Ersetzen nicht in den Teilindex der Eindeutigkeit (Konzept 5.1).
@@ -723,13 +727,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Nutzung, die der neu geschriebene Kalender behält: die des bisherigen Kalenders derselben
-        /// Größe, wenn dessen Herkunft und die neue <paramref name="bemerkung"/> dieselbe Vorlage nennen;
+        /// Größe, wenn dessen Herkunft und die neue <paramref name="bemerkung"/> dieselbe Herkunft nennen (Name und Art, NP3c);
         /// sonst <c>null</c>. Ohne die Spalte (vor Schritt <see cref="KonditionierungNutzungSchema.SCHRITT"/>)
         /// ebenfalls <c>null</c>.
         /// </summary>
         private static string BleibendeNutzung(DbVorgang v, Eigner eigner, string groesse, string bemerkung)
         {
-            string vorlage = Kalenderherkunft.AusBemerkung(bemerkung).Vorlage;
+            Kalenderherkunft neu = Kalenderherkunft.AusBemerkung(bemerkung);
+            string vorlage = neu.Vorlage;
             if (string.IsNullOrEmpty(vorlage) || !KonditionierungNutzungSchema.SpalteDa(v)) return null;
             DataTable t = v.Lese("SELECT \"Bemerkung\", \"Nutzung\" FROM \"" + KonditionierungSchema.TAB_KALENDER +
                                  "\" WHERE " + eigner.Bedingung() + " AND \"Groesse\" = ? ORDER BY \"ID\"",
@@ -738,8 +743,11 @@ namespace WindowsFormsApplication1
             DataRow r = t.Rows[0];
             string alt = Text(r, "Nutzung");
             if (alt == null) return null;
-            return string.Equals(Kalenderherkunft.AusBemerkung(Text(r, "Bemerkung")).Vorlage, vorlage,
-                                 StringComparison.Ordinal) ? alt : null;
+            // NP3c: dieselbe Herkunft heisst derselbe Name UND dieselbe Art - „aus Vorlage Buero" und „aus Nutzungsprofil
+            // Buero" sind zwei Herkuenfte.
+            Kalenderherkunft bisher = Kalenderherkunft.AusBemerkung(Text(r, "Bemerkung"));
+            return string.Equals(bisher.Vorlage, vorlage, StringComparison.Ordinal) && bisher.IstProfil == neu.IstProfil
+                ? alt : null;
         }
 
         /// <summary>

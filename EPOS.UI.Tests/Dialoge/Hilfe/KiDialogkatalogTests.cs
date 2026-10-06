@@ -390,8 +390,12 @@ public class KiDialogkatalogTests : IDisposable
         // KP2 U4: ebenso die Verwaltung - ihr Blatt „Konditionierung" trägt dieselben Karten
         // (KonditionierungKiTafel.Vorlagenlisten). KP2 U5 (E57): dazu die Liste „alle Größen" der Zeile
         // „Vorlage" - jeder Name aus mindestens einer der fünf Listen.
-        KiMaskennamen.GEBAEUDE_KATALOG or KiMaskennamen.GEBAEUDE_ADMIN
-                                           => new[] { "kond_vorlage_alle", "kond_heizen_vorlage", "kond_kuehlen_vorlage",
+        // NP3c: dazu im Editor die Einheit der Außenluft des Blatts „Nutzungsprofile" (np_luft_einheit) -
+        // die Liste kommt aus der Feldkarte KiNutzungsprofilfelder, der Wirt meldet sie mit an.
+        KiMaskennamen.GEBAEUDE_KATALOG     => new[] { "kond_vorlage_alle", "kond_heizen_vorlage", "kond_kuehlen_vorlage",
+                                                      "kond_lueftung_vorlage", "kond_geraete_vorlage",
+                                                      "kond_personen_vorlage", KiNutzungsprofilfelder.LUFT_EINHEIT },
+        KiMaskennamen.GEBAEUDE_ADMIN       => new[] { "kond_vorlage_alle", "kond_heizen_vorlage", "kond_kuehlen_vorlage",
                                                       "kond_lueftung_vorlage", "kond_geraete_vorlage",
                                                       "kond_personen_vorlage" },
 
@@ -1238,6 +1242,45 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
+    /// <b>Das Blatt „Nutzungsprofile" steht in der Feldkarte</b> (NP3c; Konzept Nutzungsprofile 6.1) — aus dem
+    /// Profil <see cref="KiNutzungsprofilfelder"/>: je Kennwert des Profileditors ein Tafelfeld an der
+    /// Sichtklasse, die Kategorie nur lesbar, die Einheit der Außenluft als Wahl, die Anteile in Prozent; die
+    /// Zuordnungszeilen als Spalten eines Rasters zum Lesen, Kennzeichen die Nummer.
+    /// </summary>
+    [Fact]
+    public void Der_Gebaeudekatalog_fuehrt_die_Feldkarte_der_Nutzungsprofile()
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_KATALOG)!;
+
+        Assert.Equal(29, KiNutzungsprofilfelder.Alle.Count);
+        foreach (KiNutzungsprofilfelder.Feld f in KiNutzungsprofilfelder.Alle)
+        {
+            KiDialogFeld feld = d.FindeFeld(f.Schluessel)!;
+            Assert.True(feld is not null, f.Schluessel);
+            Assert.Equal("GebaeudeKatalogKiSicht." + f.Schluessel, feld!.Eigenschaftspfad);
+            Assert.True(IstTafelfeld(KiMaskennamen.GEBAEUDE_KATALOG, feld), f.Schluessel);
+            Assert.Equal(f.Kennwert == KiNutzungsprofilfelder.Kennwert.Kategorie, feld.NurLesen);
+            Assert.Equal(f.Typ, feld.Typ);
+            Assert.False(string.IsNullOrWhiteSpace(feld.Erlaeuterung), f.Schluessel);
+        }
+        Assert.True(d.FindeFeld("np_luft_einheit")!.IstWahl);
+        Assert.Equal(KiParameterTyp.Wahrheitswert, d.FindeFeld("np_feiertage")!.Typ);
+        Assert.True(KiNutzungsprofilfelder.Finde("np_personen_anteil")!.IstAnteil);
+        Assert.Equal(KiNutzungsprofilfelder.Finde("np_personen_anteil")!.Einheit, d.FindeFeld("np_personen_anteil")!.Einheit);
+        Assert.Equal(100.0, d.FindeFeld("np_personen_anteil")!.Max);
+        Assert.Equal(24.0, d.FindeFeld("np_nutzung_bis")!.Max);
+
+        foreach ((string schluessel, string eigenschaft) in KiNutzungsprofilfelder.Zuordnungsspalten)
+        {
+            KiDialogFeld spalte = d.FindeFeld(schluessel)!;
+            Assert.True(spalte.IstSpalte, schluessel);
+            Assert.True(spalte.NurLesen, schluessel);
+            Assert.Equal("Nummer", spalte.Zeilenkennzeichen);
+            Assert.Equal(KiNutzungsprofilfelder.ZUORDNUNGEN + eigenschaft, spalte.Eigenschaftspfad);
+        }
+    }
+
+    /// <summary>
     /// <b>Der Gebäudekatalog führt die Randbedingung des Hüll-Rasters und die Ferien als
     /// TABELLE</b> — Spalten mit dem Zeitraum als Zeilenkennzeichen und den Grenzen der
     /// Eingabefelder, keine Zahlenreihe; Kennwert und Größe der Rasterzeilen sind die
@@ -1256,8 +1299,9 @@ public class KiDialogkatalogTests : IDisposable
         // Vorgabe-Matrix aus dem Profil KiKonditionierungsfelder (Feldtafel der Sichtklasse); mit KP2 U2
         // je Größe die Vorlage (Wahl mit der Aktion des Knopfs „Übernehmen"); mit KP2 U3 je Größe die
         // Woche als Text (Karte im Einzelnen); mit KP2 U5 die Abkürzung „alle Größen" (kond_vorlage_alle, E57);
-        // mit EV1 der wirksame U-Wert der Bodenplatte (erdreich_u_wirksam, E65).
-        Assert.Equal(89 + 47, d.Felder.Count);
+        // mit EV1 der wirksame U-Wert der Bodenplatte (erdreich_u_wirksam, E65); mit NP3c die 29 Felder des
+        // Profileditors im Blatt „Nutzungsprofile" und die drei Spalten der Zuordnungstabelle (KiNutzungsprofilfelder).
+        Assert.Equal(89 + 47 + 29 + 3, d.Felder.Count);
         Assert.Equal(47, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {
@@ -1319,8 +1363,11 @@ public class KiDialogkatalogTests : IDisposable
         // + satz, − betriebsart, − die vier Spalten der Zonenliste (G6a: ein Katalogsatz trägt keine Zonen);
         // die Felder der Vorgabe-Matrix führt die Verwaltung wie der Editor (KP2 U4: das Blatt
         // „Konditionierung" am selben Arbeitsstand, dieselbe Feldtafel).
-        Assert.Equal(editor.Felder.Count - 4, verwaltung.Felder.Count);
+        // NP3c: − die Felder des Blatts „Nutzungsprofile" (nur der Editor trägt das Blatt).
+        Assert.Equal(editor.Felder.Count - 4 - KiNutzungsprofilfelder.Alle.Count
+                     - KiNutzungsprofilfelder.Zuordnungsspalten.Count, verwaltung.Felder.Count);
         Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith("zone_", StringComparison.Ordinal));
+        Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith(KiNutzungsprofilfelder.PRAEFIX, StringComparison.Ordinal));
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
             Assert.True(IstTafelfeld(KiMaskennamen.GEBAEUDE_ADMIN, verwaltung.FindeFeld(f.Schluessel)!), f.Schluessel);
 
@@ -1334,7 +1381,8 @@ public class KiDialogkatalogTests : IDisposable
 
         foreach (KiDialogFeld e in editor.Felder)
         {
-            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)) continue;
+            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)
+                || e.Name.StartsWith(KiNutzungsprofilfelder.PRAEFIX, StringComparison.Ordinal)) continue;
             KiDialogFeld? v = verwaltung.FindeFeld(e.Name);
             Assert.True(v is not null, "Das Feld " + e.Name + " fehlt in der Verwaltung.");
             Assert.Equal(e.Eigenschaftspfad, v!.Eigenschaftspfad);

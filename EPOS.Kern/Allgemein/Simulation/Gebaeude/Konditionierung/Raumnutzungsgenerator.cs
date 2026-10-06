@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
         {
             if (nennwert.HasValue)
                 inhalt = inhalt.MitVorgabe(g, DbWerte.KOND_ZEILE_NENNWERT, Matrixzelle.AusWert(nennwert.Value));
-            return new Raumnutzungsgroesse(g, weg, new Konditionierungsvorlage(p.Id, p.Bezeichner, g, inhalt),
+            return new Raumnutzungsgroesse(g, weg, new Konditionierungsvorlage(p.Id, p.Bezeichner, g, inhalt, AusProfil: true),
                                            nennwert, herleitung, hinweis);
         }
 
