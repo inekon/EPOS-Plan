@@ -273,6 +273,120 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<double[]> Quelltemperaturen { get { return wp_quelltemp; } }
 
         // ==================================================================
+        // ERDSONDENFELD (Konzept Simulationsablauf 23)
+        //
+        // Rechnet eine Anlage als Erdsonde, teilen sich ihre Module EIN Sondenfeld. Die
+        // Quelltemperatur der Stunde t entsteht am Ende der Stunde t − 1 aus dem Entzug bis
+        // dahin (Vorstunde, Zweikanalig_StundeEnde); vorbelegt ist die Reihe mit der
+        // ungestörten Temperatur abzüglich der Vorjahre.
+        // ==================================================================
+
+        /// <summary>Sondenfeld je Modul (null = Modul rechnet nicht mit einem Sondenfeld).</summary>
+        private readonly Erdsondenfeld[] _sondeJeModul = new Erdsondenfeld[MAX_WP];
+
+        /// <summary>Sondenfelder je Anlage in der Reihenfolge des Modulaufbaus.</summary>
+        private readonly List<KeyValuePair<int, Erdsondenfeld>> _sondenfelder = new List<KeyValuePair<int, Erdsondenfeld>>();
+
+        /// <summary>Bis zum Ende der Vorstunde gemeldeter Entzug je Modul (Wärme − Strom, kWh).</summary>
+        private readonly double[] _sondeEntzugBisher = new double[MAX_WP];
+
+        /// <summary>Das Sondenfeld des Moduls <paramref name="index"/>; null ohne Erdsonde.</summary>
+        public Erdsondenfeld Sondenfeld(int index)
+        {
+            return index >= 0 && index < MAX_WP ? _sondeJeModul[index] : null;
+        }
+
+        /// <summary>Die Sondenfelder des Laufs je Anlage (Anlagen-ID, Feld).</summary>
+        public IReadOnlyList<KeyValuePair<int, Erdsondenfeld>> Sondenfelder { get { return _sondenfelder; } }
+
+        /// <summary>
+        /// Meldet ein Modul an seinem Sondenfeld an (eines je Anlage) und belegt seine
+        /// Quelltemperatur mit der Reihe ohne Last des Rechenjahres vor.
+        /// </summary>
+        private void SondeAnmelden(int index, int idProjekt, string wpTyp)
+        {
+            if (index < 0 || index >= MAX_WP || index >= wp_list.Count) return;
+            int idAnlage = wp_list[index];
+
+            Erdsondenfeld feld = null;
+            foreach (var paar in _sondenfelder)
+                if (paar.Key == idAnlage) { feld = paar.Value; break; }
+
+            if (feld == null)
+            {
+                feld = WaermequelleClass.Sondenfeld(idAnlage, wpTyp, Temperatur);
+                if (feld == null) return;
+                double vorjahrKwh = VorjahreSchaetzen(feld, idProjekt, idAnlage);
+                _sondenfelder.Add(new KeyValuePair<int, Erdsondenfeld>(idAnlage, feld));
+
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "erdsonde-feld-" + idAnlage,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_ERDSONDE_FELD,
+                        idAnlage, feld.Anzahl, feld.LaengeM, feld.Lambda, feld.TUngestoert,
+                        feld.Vorjahre + 1, vorjahrKwh));
+            }
+
+            _sondeJeModul[index] = feld;
+            wp_quelltemp[index] = feld.Vorbelegung();
+        }
+
+        /// <summary>
+        /// Schätzt die Last der Vorjahre aus der VDI-4640-Vorprüfung der Anlage (Jahresentzug =
+        /// Σ Q_N · (1 − 1/COP) · Volllaststunden der Klimazone), verteilt nach Heizgradstunden.
+        /// Ohne Vorprüfung rechnet das Feld ohne Vorjahre. Liefert die geschätzte
+        /// Jahresentzugsarbeit [kWh/a] (0 ohne Schätzung).
+        /// </summary>
+        private double VorjahreSchaetzen(Erdsondenfeld feld, int idProjekt, int idAnlage)
+        {
+            VDI4640Pruefung.Pruefwerte pw = null;
+            try
+            {
+                pw = VDI4640Pruefung.Vorpruefung(
+                    ErdreichVorpruefungCtrl.Auslegungswerte(idProjekt, idAnlage),
+                    ErdreichAuswertung.KlimazoneDesProjekts(idProjekt));
+            }
+            catch { pw = null; }
+
+            if (pw == null || pw.Quelle != VDI4640Pruefung.Pruefquelle.Vorpruefung || !(pw.JahresentzugKWh > 0))
+            {
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "erdsonde-ohne-vorjahre-" + idAnlage,
+                    string.Format(MyResource.Resource.SIMENG_ERDSONDE_OHNE_VORJAHRE,
+                        idAnlage, pw != null ? pw.Fehlt : ""));
+                return 0;
+            }
+
+            feld.VorjahreSetzen(feld.MonatslastenAusJahresentzug(pw.JahresentzugKWh, Temperatur),
+                                Erdsondenfeld.BETRACHTUNGSJAHR - 1);
+            return pw.JahresentzugKWh;
+        }
+
+        /// <summary>
+        /// Stundenende der Sondenfelder: Entzug der Stunde je Feld melden (Wärme − Strom der
+        /// Module, Zuwachs seit der Vorstunde) und die Quelltemperatur der nächsten Stunde setzen.
+        /// </summary>
+        private void SondenStundeAbschliessen(int stunde)
+        {
+            foreach (var paar in _sondenfelder)
+            {
+                Erdsondenfeld feld = paar.Value;
+                double entzug = 0;
+                for (int i = 0; i < wp_list.Count && i < MAX_WP; i++)
+                {
+                    if (!ReferenceEquals(_sondeJeModul[i], feld)) continue;
+                    double kum = Modul_WP_Waermeproduktion[i] - Modul_WP_Strombedarf[i];
+                    entzug += kum - _sondeEntzugBisher[i];
+                    _sondeEntzugBisher[i] = kum;
+                }
+
+                double t = feld.StundeMelden(entzug);
+                if (stunde + 1 >= 8760) continue;
+                for (int i = 0; i < wp_list.Count && i < MAX_WP && i < wp_quelltemp.Count; i++)
+                    if (ReferenceEquals(_sondeJeModul[i], feld)) wp_quelltemp[i][stunde + 1] = t;
+            }
+        }
+
+        // ==================================================================
         // PAKET B1 — BOOSTER-TEMPERATURKOPPLUNG (Konzept 8.2, Leitentscheidung L8)
         //
         // SCHNITTSTELLENWECHSEL, kein Wertetausch: Bis P1 lieferte
@@ -979,6 +1093,9 @@ namespace WindowsFormsApplication1
                 // Wärmequelle des Moduls: Luft-Wasser = Außenluft, sonst gemäß
                 // WQ_Typ der Energieanlage (Fallback ist immer die Außenluft).
                 wp_quelltemp.Add(WaermequelleClass.Quelltemperatur(wp_list[i], model.ID_Projekt, wpTyp, Temperatur));
+
+                // Erdsonde: Sondenfeld mit Entzugsrückwirkung (Konzept 23); belegt die Reihe neu.
+                SondeAnmelden(i, model.ID_Projekt, wpTyp);
 
                 // Dient ein Pufferspeicher als Wärmequelle, muss die Quellwärme
                 // tatsächlich aus diesem gedeckt werden (Bilanz je Stunde).
@@ -1990,6 +2107,9 @@ namespace WindowsFormsApplication1
             // Welle M4, WP1: Taktverlust und Starts der Stunde.
             if (_taktIrgendein) TaktStundeAbschliessen(stunde);
 
+            // Erdsonde (Konzept 23): nach dem Takt, der den Mehrstrom der Stunde bucht.
+            if (_sondenfelder.Count > 0) SondenStundeAbschliessen(stunde);
+
             // KU2 (5.2): der Zeitanteil des Heizbetriebs dieser Stunde je Modul im Kühlbetrieb.
             if (KuehlModule != null && stunde >= 0 && stunde < 8760)
                 for (int i = 0; i < KuehlModule.Length && i < MAX_WP; i++)
@@ -2824,6 +2944,11 @@ namespace WindowsFormsApplication1
             // entsteht erst NACH dem Modulaufbau (BoosterKopplungVorbereiten) und dürfte
             // aus einem Vorlauf nie in einen Lauf mit anderer Modulliste hineinreichen.
             _quellKopplung = null;
+
+            // Erdsonde: Felder und Entzugsstand gehören zum Lauf.
+            Array.Clear(_sondeJeModul, 0, _sondeJeModul.Length);
+            Array.Clear(_sondeEntzugBisher, 0, _sondeEntzugBisher.Length);
+            _sondenfelder.Clear();
 
             // D5a: Rechenebenen und Quellentnahme-Meldungen gehören zum Laufzustand. Die
             // Kaskadenschleife setzt die Ebenen je Lauf neu; ohne Rücksetzen liefen sie

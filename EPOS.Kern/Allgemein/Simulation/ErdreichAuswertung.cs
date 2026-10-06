@@ -581,7 +581,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Klimazone (DIN 4710) der Klimaregion des Projekts; 0 = nicht zugeordnet.</summary>
-        private static int KlimazoneDesProjekts(int idProjekt)
+        internal static int KlimazoneDesProjekts(int idProjekt)
         {
             try
             {

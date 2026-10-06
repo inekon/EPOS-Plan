@@ -754,6 +754,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Baut das Sondenfeld (Konzept Simulationsablauf 23) einer Anlage, deren Quelle als
+        /// Erdsonde rechnet — dieselbe Weiche wie in <see cref="Quelltemperatur"/>: Wärmequelle
+        /// Erdreich, Bauart nicht Luft-Wasser, Quellsystem Sonde oder Kollektor mit
+        /// <c>WQ_Tiefe</c> über <see cref="MAX_KOLLEKTORTIEFE_M"/>. Ohne Sondenlänge gibt es kein
+        /// Feld; dann bleibt es bei der konstanten Quelltemperatur. Sonst null.
+        /// </summary>
+        /// <param name="idEnergieanlage">Tab_Energieanlagen.ID der WP.</param>
+        /// <param name="wpTyp">Bauart aus Tab_WP.</param>
+        /// <param name="aussentemp">Außentemperatur der Klimaregion (8760 Werte).</param>
+        public static Erdsondenfeld Sondenfeld(int idEnergieanlage, string wpTyp, double[] aussentemp)
+        {
+            if (string.IsNullOrEmpty(wpTyp) || wpTyp == DbWerte.WP_BAUART_LUFT_WASSER) return null;
+            try
+            {
+                string typ = WertLesenStill(idEnergieanlage, "WQ_Typ") as string;
+                if (typ != TYP_ERDREICH) return null;
+
+                string quellsystem = WertLesenStill(idEnergieanlage, "WQ_Quellsystem") as string;
+                object oTiefe = WertLesenStill(idEnergieanlage, "WQ_Tiefe");
+                double tiefe = oTiefe != null ? Convert.ToDouble(oTiefe) : 0;
+                bool alsSonde = string.Equals(quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE,
+                                              StringComparison.OrdinalIgnoreCase)
+                                || tiefe > MAX_KOLLEKTORTIEFE_M;
+                if (!alsSonde || !(tiefe > 0)) return null;
+
+                object oAnzahl = WertLesenStill(idEnergieanlage, "WQ_Anzahl");
+                int anzahl = oAnzahl != null ? Convert.ToInt32(oAnzahl) : 1;
+                string bodentyp = WertLesenStill(idEnergieanlage, "WQ_Bodentyp") as string;
+                ErdreichTemperatur.Bodenkennwerte boden = ErdreichTemperatur.Bodentyp(bodentyp);
+
+                double tu = ErdreichTemperatur.SondenTemperatur(aussentemp, tiefe);
+                return new Erdsondenfeld(tiefe, anzahl, boden.Lambda, boden.RhoCp, tu);
+            }
+            catch (Exception ex)
+            {
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "sondenfeld-fehlgeschlagen-" + idEnergieanlage,
+                    string.Format(MyResource.Resource.SIMENG_ERDSONDE_FELD_FEHLT, idEnergieanlage, ex.Message));
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Liefert den Quell-Pufferspeicher einer Wärmepumpe (Wärmequelle
         /// "Pufferspeicher") als einsatzbereites Speichermodell - oder null,
         /// wenn keiner konfiguriert ist bzw. die Quelle als unbegrenzt gilt.

@@ -92415,6 +92415,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde der Anlage {0}: Sondenfeld mit Entzugsrückwirkung, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), ungestörte Temperatur {4:0.00} °C, Betrachtungsjahr {5}, geschätzte Jahresentzugsarbeit der Vorjahre {6:N0} kWh. ähnelt.
+        /// </summary>
+        public static string SIMENG_ERDSONDE_FELD {
+            get {
+                return ResourceManager.GetString("SIMENG_ERDSONDE_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde der Anlage {0}: Das Sondenfeld ließ sich nicht aufbauen ({1}) — gerechnet wird mit der konstanten Quelltemperatur. ähnelt.
+        /// </summary>
+        public static string SIMENG_ERDSONDE_FELD_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_ERDSONDE_FELD_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde der Anlage {0}: Ohne Vorprüfung nach VDI 4640 ({1}) rechnet das Sondenfeld ohne Vorjahre — die Soletemperatur gilt für das erste Betriebsjahr. ähnelt.
+        /// </summary>
+        public static string SIMENG_ERDSONDE_OHNE_VORJAHRE {
+            get {
+                return ResourceManager.GetString("SIMENG_ERDSONDE_OHNE_VORJAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Simulationsergebnis konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string SIMENG_ERGEBNIS_NICHT_GESPEICHERT {
@@ -97140,7 +97167,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau zeigt die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; ihren Verlauf zeigt das Ergebnis. ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT {
             get {

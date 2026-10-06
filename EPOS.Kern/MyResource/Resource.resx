@@ -3478,7 +3478,7 @@ Jetzt Datei auswählen?</value>
   Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
-    <value>Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück.</value>
+    <value>Die Vorschau zeigt die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; ihren Verlauf zeigt das Ergebnis.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -41771,6 +41771,15 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="SIMENG_QUELLE_CSV_UNBRAUCHBAR" xml:space="preserve">
     <value>Quelltemperatur der Anlage {0}: Die CSV-Datei „{1}“ fehlt oder liefert keine 8 760 Stundenwerte — gerechnet wird mit der Außentemperatur.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD" xml:space="preserve">
+    <value>Erdsonde der Anlage {0}: Sondenfeld mit Entzugsrückwirkung, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), ungestörte Temperatur {4:0.00} °C, Betrachtungsjahr {5}, geschätzte Jahresentzugsarbeit der Vorjahre {6:N0} kWh.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_OHNE_VORJAHRE" xml:space="preserve">
+    <value>Erdsonde der Anlage {0}: Ohne Vorprüfung nach VDI 4640 ({1}) rechnet das Sondenfeld ohne Vorjahre — die Soletemperatur gilt für das erste Betriebsjahr.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD_FEHLT" xml:space="preserve">
+    <value>Erdsonde der Anlage {0}: Das Sondenfeld ließ sich nicht aufbauen ({1}) — gerechnet wird mit der konstanten Quelltemperatur.</value>
   </data>
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE" xml:space="preserve">
     <value>die Projektkopie des Gebäudes ist nicht zu finden — bitte das Gebäude aus dem Projekt entfernen und neu aus dem Katalog übernehmen.</value>

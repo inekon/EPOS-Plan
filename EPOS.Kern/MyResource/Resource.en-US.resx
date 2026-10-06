@@ -3462,7 +3462,7 @@ Select file now?</value>
   Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
-    <value>The borehole heat exchanger uses a source temperature that is constant all year, made up of the mean ground temperature and a depth allowance; the heat extraction does not act back on it.</value>
+    <value>The preview shows the undisturbed ground temperature of the borehole, made up of the mean ground temperature and a depth allowance. In the simulation the brine temperature drops with the heat extracted from the borefield; its course is shown in the result.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -41764,6 +41764,15 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="SIMENG_QUELLE_CSV_UNBRAUCHBAR" xml:space="preserve">
     <value>Source temperature of plant {0}: the CSV file “{1}” is missing or does not provide 8,760 hourly values — the outdoor temperature is used instead.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD" xml:space="preserve">
+    <value>Borehole heat exchanger of plant {0}: borefield with extraction feedback, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), undisturbed temperature {4:0.00} °C, year of assessment {5}, estimated annual heat extraction of previous years {6:N0} kWh.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_OHNE_VORJAHRE" xml:space="preserve">
+    <value>Borehole heat exchanger of plant {0}: without a VDI 4640 preliminary check ({1}) the borefield is calculated without previous years — the brine temperature applies to the first year of operation.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD_FEHLT" xml:space="preserve">
+    <value>Borehole heat exchanger of plant {0}: the borefield could not be set up ({1}) — the constant source temperature is used.</value>
   </data>
   <data name="GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE" xml:space="preserve">
     <value>the project copy of the building cannot be found — please remove the building from the project and take it over from the catalogue again.</value>
