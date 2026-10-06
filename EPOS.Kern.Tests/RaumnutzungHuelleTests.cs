@@ -43,7 +43,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Alle gesäten Profile zusammen (33, NP1b) kommen als DTO; die DIN-Profile sind leer (NP-F6, NP-F13),
+        /// Alle gesäten Profile zusammen (52, NP1b und NP5b) kommen als DTO; die DIN-Profile sind leer (NP-F6, NP-F13),
         /// die EPOS-Muster tragen Werte oder ein Zeilenbild (NP-F7).
         /// </summary>
         [Fact]
@@ -53,7 +53,7 @@ namespace EPOS.Kern.Tests
             List<RaumnutzungProfilDaten> alle = w.Kategorien()
                 .SelectMany(k => w.Profile(k.Id)).ToList();
 
-            Assert.Equal(33, alle.Count);
+            Assert.Equal(52, alle.Count);
             Assert.All(alle, p => Assert.True(p.Ausgeliefert));
 
             RaumnutzungKategorieDaten muster = w.Kategorien().Single(k => k.Art == RaumnutzungArt.EposMuster);

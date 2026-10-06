@@ -5185,6 +5185,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_RAUMNUTZUNG = RaumnutzungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="RaumnutzungDinTsSchema.SCHRITT"/> — <b>Kategorie DIN nach DIN/TS 18599-10:2025-10</b> (NP5b,
+        /// E95): Name und Quellenhinweis der ausgelieferten Kategorie, Nummern und Namen ihrer 43 Nutzungen ohne Werte;
+        /// die Ids der ausgelieferten Profile bleiben.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest den Katalog; Zeilen des Anwenders und die
+        /// Zuordnung bleiben, wie sie sind.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG_DIN_TS = RaumnutzungDinTsSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7530,6 +7540,12 @@ namespace WindowsFormsApplication1
                         "Nutzungsprofile haetten keinen Katalog, die Nutzung der Kalender bliebe auf vier Kennungen beschraenkt " +
                         "und die Zone truege ihren Profilnamen nicht. KEIN Rechenergebnis aendert sich.",
                         Schritt_Raumnutzung),
+            // KATEGORIE DIN NACH DIN/TS 18599-10:2025-10 (NP5b). Quelle ist RaumnutzungDinTsSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG_DIN_TS,
+                        "Tab_Raumnutzungskatalog/Tab_Raumnutzungsprofil: Kategorie DIN nach DIN/TS 18599-10:2025-10",
+                        "Die Kategorie DIN truege die Nummern und Namen der DIN V 18599-10:2018-09. KEIN Rechenergebnis " +
+                        "aendert sich.",
+                        Schritt_RaumnutzungDinTs),
         };
 
         /// <summary>
@@ -14372,6 +14388,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Katalog der Nutzungsprofile - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kategorie DIN nach DIN/TS 18599-10" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_RAUMNUTZUNG_DIN_TS"/>, die Anweisungen bei <see cref="RaumnutzungDinTsSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_RaumnutzungDinTs(Lauf l)
+        {
+            string nr = RaumnutzungDinTsSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungDinTsSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int zeilen;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    zeilen = RaumnutzungDinTsSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungDinTsSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kategorie DIN steht nach dem Schritt nicht auf der DIN/TS 18599-10:2025-10.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kategorie DIN nach DIN/TS 18599-10 - " +
+                    (zeilen == 0 ? "stand bereits." : zeilen + " Zeile(n) geaendert oder angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

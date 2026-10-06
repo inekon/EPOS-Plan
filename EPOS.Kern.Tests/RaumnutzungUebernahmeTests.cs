@@ -55,7 +55,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             IReadOnlyList<KonditionierungProfilwahl> liste = RaumnutzungHuelle.Profilwahl();
-            Assert.Equal(33, liste.Count);
+            Assert.Equal(52, liste.Count);
             string ohne = RaumnutzungHuelle.Texte().TextOhneWerteKurz;
             Assert.All(liste.Where(p => p.OhneWerte), p => Assert.Equal(ohne, p.Kurzform));
             Assert.All(liste.Where(p => !p.OhneWerte), p => Assert.NotEqual("", p.Kurzform));

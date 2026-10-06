@@ -1,6 +1,8 @@
 # Konzept: Nutzungsprofile — Katalog mit Kategorien, Generator der Konditionierungskalender und Zuordnung beim Import (Stufe NP)
 
 > **Stand der Stufe: NP1 bis NP4 gebaut** (Wiki-Quellen und Logbuch-Entwurf mit NP4e nachgezogen; Upload gebündelt, Version beim Anwender).
+> **NP5b gebaut:** Die Kategorie DIN führt die DIN/TS 18599-10:2025-10 — 43 Nutzungen mit Nummer und Name, ohne Werte
+> (E96, Schemaschritt 190, 5.2); die Zuordnung `DIN_NUMMER` zählt weiter nach der Projektdatei (5.4).
 
 > **Rev. 2 (vereint aus zwei Fassungen vom 05.10.2026) — Auftrag aus Entscheid E90 (Q37, 05.10.2026); Fragen
 > Q38 bis Q47 mit E91 nach Empfehlung entschieden.** Der Anwender hat entschieden: Nutzungsprofile werden ein
@@ -27,7 +29,7 @@
    **`Raumnutzung`**, weil `Tab_Nutzungsprofil_STAMM` und `Z_Nutzungsprofil` schon der Pufferauslegung gehören
    (Befund B6).
 3. **Ausgeliefert:** die Kategorie „EPOS-Muster“ mit den heutigen drei Mustern Wohnen, Büro, Schule, dazu Sonstige
-   und fünf neue runde Muster (Sport, Gastronomie, Lager, Verkehr, Technik); die Kategorie „DIN V 18599-10“ mit
+   und fünf neue runde Muster (Sport, Gastronomie, Lager, Verkehr, Technik); die Kategorie „DIN/TS 18599-10“ mit
    Nummern und Namen **ohne Werte**; die Kategorien „SIA 2024“ und „VDI 2078“ **leer** mit ihrer Struktur.
 4. **Die 14 ausgelieferten Konditionierungsvorlagen bleiben**, wie sie sind (P11 bleibt). Die drei EPOS-Muster
    Wohnen, Büro, Schule erzeugen über den Generator **bitgleich** dieselben Kalender wie heute „Vorlage übernehmen“
@@ -85,14 +87,14 @@ Welle“ vorgemerkt ([Befund HottCAD-Projektdatei](Gebaeudesimulation/2026-10-05
 |---|---|---|
 | B1 | Der Zonenbaum des Imports bietet je Zone ein `<select>` aus `plan.Nutzungen`; die Hülle füllt es aus der festen Liste `DbWerte.KOND_NUTZUNG_WOHNEN/BUERO/SCHULE`; der Kern führt dieselbe Liste als `Zonenplan.NUTZUNGEN` | `EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor:403–449`, `EPOS.UI.Daten/Bedarf/GebaeudeImportZonen.cs:154–158`, `EPOS.Kern/Allgemein/Import/Gebaeude/Zonenplan.cs:68` |
 | B2 | Vorbelegung aus der IFC-Nutzungsklasse (Regel Z6): Büro → `BUERO`; Wohnen, Schlafen, Küche → `WOHNEN`; Sanitär, Verkehr, Lager, Technik, Sport, Gastronomie, Sonstige → keine | `Zonenplan.cs:288–298` (`NutzungAusKlasse`) |
-| B3 | Vorbelegung aus der DIN-V-18599-10-Nummer der HottCAD-Projektdatei: 1–5 → `BUERO`, 8, 9, 28, 29 → `SCHULE`, 70, 71 → `WOHNEN`, jede andere → keine | `EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`; ausgewiesen in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` |
+| B3 | Vorbelegung aus der DIN-V-18599-10-Nummer der HottCAD-Projektdatei: 1–5 → `BUERO`, 8, 9, 28, 29 → `SCHULE`, 70, 71 → `WOHNEN`, jede andere → keine; die Nummern sind die der Projektdatei und zählen nach DIN V 18599-10:2018-09 (28, 29 Bibliothek) — nicht nach der Kategorie DIN/TS 18599-10 des Katalogs (5.4) | `EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`; ausgewiesen in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` |
 | B4 | Speichern: `ZonenplanCtrl.NutzungUebernehmen` legt je Größe aus `Konditionierungsgroessen.Alle` die erste ausgelieferte Vorlage dieser Nutzung als Kalenderkopie an (`Konditionierungsarbeit.VorlageUebernehmen`); `ProjektdateiUebernehmen` mit der Rangfolge Ganglinie vor DIN-Nutzungsprofil der Datei vor Vorlage — Dateiwerte verwerfen die Vorlagenkopie je Größe. Der Rechenweg liest die Nutzung nicht, nur die Kalender; Kaskade Zone vor Gebäude | `EPOS.Kern/Controller/ZonenplanCtrl.cs:29–74`, `:81–148`; `GebaeudeModellEingang.cs:1234–1258`, `:2537–2622`, `:2710–2722`; `Zonenvorgaben.cs:166–205`; `Konditionierungdatenweg.cs:46–109` |
 | B5 | Es gibt keine Spalte `Tab_Zone.Nutzung` (E81). Die Nutzung liegt nur als Kopie in `Tab_Konditionierungskalender.Nutzung` (Schritt 176), mit `CHECK` auf `WOHNEN`, `BUERO`, `SCHULE`, `SONSTIGE`; derselbe `CHECK` steht an `Tab_Konditionierungsvorlage_STAMM.Nutzung`. Eine unbeheizte Zone ohne Heiz- und Kühlkalender verliert ihre Nutzung beim erneuten Import | `EPOS.Kern/Allgemein/Update/KonditionierungNutzungSchema.cs:61`, `KonditionierungVorlagenSchema.cs:170` |
 | B6 | **Namenskollision:** `Tab_Nutzungsprofil_STAMM` (fünf Profile der Pufferauslegung: WOHNEN, BEHERBERGUNG, PFLEGE, BUERO_SCHULE, GEWERBE) und `Z_Nutzungsprofil` (Quellen `ZAPF`, `KONDITIONIERUNG`, `GEBAEUDEART` → Pufferprofil) bestehen seit Schemaschritt 178. Die Quelle `KONDITIONIERUNG` liest genau die Kalenderspalte `Nutzung` aus B5 (`BUERO`, `SCHULE` → `BUERO_SCHULE`); Schritt 176 hat die Nutzung eigens für diesen Weg an die Kalenderkopie gelegt | `EPOS.Kern/Allgemein/Update/ProzessNutzungSchema.cs`, `EPOS.Kern/Allgemein/Pufferauslegung/NutzungsprofilZuordnung.cs:44–45`, `Nutzungsprofil.cs:48–55` |
 | B7 | Ausgelieferte Vorlagen: `Tab_Konditionierungsvorlage_STAMM`, 14 Zeilen, `ReadOnly`, „EPOS-Muster mit runden Werten, weder Norm- noch Messwerte“ — Werte in 2.3 | [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.5 (F22), 5.7 |
 | B8 | Die Vorlagenverwaltung ist ein Blatt im Katalogeditor ohne Menüpunkt (E56): `KonditionierungVorlagenverwaltung.razor`, „Als Vorlage speichern…“ in `Kalenderkarte.razor` (fragt die Nutzung aus der festen Liste), „Vorlagen verwalten“ in `KonditionierungReiter.razor`; Gebäudeeditor `GebaeudeKatalogDialog.razor` Reiter Konditionierung (:554–564, Blatt :758–767); Zonendialog `ZonenDialog.razor` (Konditionierungsreiter :137); Projektliste `GebaeudeDialog.razor` (:184–187 Import, :369 Importdialog); Controller `KonditionierungsvorlageCtrl.cs`, `KonditionierungCtrl.cs` | `EPOS.UI/Dialoge/Bedarf/`, `EPOS.Kern/Controller/` |
 | B9 | DIN V 18599-10 steht im Repositorium nur als **Nutzungszeiten-Tabelle** (Beginn, Ende, Stunden je Tag, Tage je Jahr; Nummern 1–41 teils in Sammelzeilen); Sollwerte, Luftwechsel und innere Lasten stehen nicht darin | [Grundlagen 1](Grundlagen_1_Normen_Regelwerke_TWW-Zapfprofile.md) 1.1, 1.4 |
-| B10 | HottCAD-Projektdateien liefern je Zone die DIN-Profilnummer (`PdProfileUsage.ProfileUsageType`, beobachtet 1–47, 70, 71) und den Spaltensatz der Norm-Tabelle (Nutzungszeit, Personen, Raumtemperatur, Absenkung, Außenluft, Lasten, Beleuchtung); EPOS liest sie als Herkunft „Nutzungsprofil“ | `EPOS.Kern/Allgemein/Import/Sqproj/SqprojKonditionierung.cs:136–166`; [Befund HottCAD](Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md) |
+| B10 | HottCAD-Projektdateien liefern je Zone die DIN-Profilnummer (`PdProfileUsage.ProfileUsageType`, beobachtet 1–47, 70, 71) und den Spaltensatz der Norm-Tabelle (Nutzungszeit, Personen, Raumtemperatur, Absenkung, Außenluft, Lasten, Beleuchtung); EPOS liest sie als Herkunft „Nutzungsprofil“. 44–47, 70 und 71 sind in keiner Ausgabe der Norm eine Nummer (2025 endet bei 43, Wohngebäude ohne Nummer) — Werte der Projektdatei; ob die Datei ab 22 wie 2018 oder wie 2025 zählt, belegt keine Datei im Repositorium (5.4) | `EPOS.Kern/Allgemein/Import/Sqproj/SqprojKonditionierung.cs:136–166`; [Befund HottCAD](Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md) |
 | B11 | Nennwerte: Geräte tragen `Interne_Waermegewinne` [W] als Nennwert des Kalenders, Personen den Nennwert Zahl × 70 W (`Matrixeingang.PERSON_W`); die ausgelieferte Personenvorlage trägt keinen Nennwert und wirkt nur als Nutzungszeit der Komfortkennzahlen. Nennwerte haben nur Geräte und Personen (`Konditionierungsgroessen.HatNennwert`) | `EPOS.Kern/Allgemein/Simulation/Gebaeude/Konditionierung/Matrixeingang.cs:21`, `:84–88`; `Konditionierungsgroesse.cs:136` |
 
 ### 2.2 Was die Normprofile gemeinsam haben
@@ -297,34 +299,70 @@ Die fünf Muster decken das Sportheim der HottCAD-Probe (Halle, Gastraum, Lager,
 IFC-Nutzungsklassen ohne Vorbelegung (B2). Die 14 Konditionierungsvorlagen bleiben daneben bestehen; aus den neuen
 Mustern entstehen keine neuen Vorlagen (Q45).
 
-### 5.2 Kategorie „DIN V 18599-10“ (`DIN_V_18599_10`, ReadOnly, ohne Werte)
+### 5.2 Kategorie „DIN/TS 18599-10“ (`DIN_V_18599_10`, ReadOnly, ohne Werte)
 
-Ausgeliefert werden **Nummer und Name** der Nutzungsprofile — Tatsachen ohne Werte —, kein Kennwert, kein Zeilenbild,
-kein Stundenprofil. `Quellenhinweis`: „DIN V 18599-10:2018-09, Nutzungsrandbedingungen der Nichtwohn- und
-Wohngebäude. Werte nach Norm trägt der Anwender aus seiner lizenzierten Ausgabe ein oder importiert sie.“ Was das
-Repositorium schon nennt und was der Anwender ergänzen muss:
+Ausgeliefert werden **Nummer und Name** der 43 Nutzungen der DIN/TS 18599-10:2025-10, Tabelle 6 (E96) — Tatsachen ohne
+Werte —, kein Kennwert, kein Zeilenbild, kein Stundenprofil (E90). Die Technische Spezifikation ersetzt
+DIN V 18599-10:2018-09 und nummeriert ab 22 durchgehend ganzzahlig (2018: 22.1 bis 22.3 und 23 bis 41). Für EPOS gelten
+aus ihr nur die für die Simulation relevanten Größen — Zeiten, Sollwerte und Absenkung, Außenluft, Personen, Geräte und
+ihre Anteile —, keine Beleuchtung und keine weiteren Normgrößen; die Werte trägt der Anwender aus seiner lizenzierten
+Ausgabe ein oder importiert sie (CSV, 6.4), im Repositorium stehen sie nicht. `Quellenhinweis`: „DIN/TS 18599-10:2025-10,
+Energetische Bewertung von Gebäuden – Teil 10: Nutzungsrandbedingungen, Klimadaten; ersetzt DIN V 18599-10:2018-09. Werte
+trägt der Anwender aus seiner lizenzierten Ausgabe ein oder importiert sie.“ Die Art bleibt `DIN_V_18599_10`.
 
-| Nummern | Name | Herkunft im Repositorium | Stand |
-|---|---|---|---|
-| 1, 2, 3, 4, 5 | Einzelbüro, Gruppenbüro, Großraumbüro, Besprechung/Sitzung/Seminar, Schalterhalle | Importproben (Einzelnamen), Grundlagen 1 Abschnitt 1.4 | belegt |
-| 8, 9 | Klassenzimmer (Gruppenraum Kindergarten), Hörsaal/Auditorium | beide | belegt |
-| 10, 11, 12, 13 | Bettenzimmer, Hotelzimmer, Kantine, Restaurant | Grundlagen 1 | belegt |
-| 21, 25, 26, 27 | Rechenzentrum, Bühne, Messe/Kongress, Ausstellung/Museum | Grundlagen 1 | belegt |
-| 28, 29 | Bibliothek – Lesesaal, Bibliothek – Freihandbereich | Importproben | belegt |
-| 31, 32, 33, 34, 35 | Turnhalle, Parkhaus (Büro/Privat), Parkhaus (öffentlich), Saunabereich, Fitnessraum | Grundlagen 1 | belegt |
-| 40, 41 | Arztpraxen/therapeutische Praxen, Lagerhallen/Logistikhallen | Grundlagen 1 | belegt |
-| 6, 7 | Einzelhandel/Kaufhaus; Einzelhandel (Lebensmittel) | Sammelzeile „6, 7“ | **Einzelnamen vom Anwender zu bestätigen** |
-| 14, 15 | Küche; Küche – Vorbereitung, Lager | Sammelzeile „14, 15“ | **zu bestätigen** |
-| 16 bis 20 | WC/Sanitär; sonstige Aufenthaltsräume; Nebenflächen; Verkehrsflächen; Lager | Sammelzeile „16–20“ | **Paarung Nummer ↔ Name zu bestätigen** |
-| 22.1, 22.2, 22.3 | Gewerbliche/industrielle Hallen schwer, mittel, leicht | Sammelzeile | **zu bestätigen** |
-| 23, 24 | Zuschauerbereich; Foyer (Theater) | Sammelzeile | **zu bestätigen** |
-| 30 | Bibliothek – Magazin | Sammelzeile „28–30“ | **zu bestätigen** |
-| 36 bis 39 | Labor; Untersuchung und Behandlung; Spezialpflegebereiche; Flure allgemeiner Pflegebereich | Sammelzeilen | **zu bestätigen** |
-| Wohngebäude | Einfamilienhaus, Mehrfamilienhaus | Importproben (70, 71 als Werte der Projektdatei) | **Nummer in der Norm zu klären**: 70 und 71 sind Werte der Projektdatei, keine Normnummern |
-| 42 bis 47 | — | nur als Werte von `ProfileUsageType` beobachtet (B10) | **vom Anwender zu ergänzen** (oder aus einer Projektdatei übernehmen, Q46) |
+| Nr. | Name (Tabelle 6) | Nr. 2018 |
+|---|---|---|
+| 1 | Einzelbüro | 1 |
+| 2 | Gruppenbüro (zwei bis sechs Arbeitsplätze) | 2 |
+| 3 | Großraumbüro (ab sieben Arbeitsplätze) | 3 |
+| 4 | Besprechung, Sitzung, Seminar | 4 |
+| 5 | Schalterhalle | 5 |
+| 6 | Einzelhandel/Kaufhaus | 6 |
+| 7 | Einzelhandel/Kaufhaus (Lebensmittelabteilung mit Kühlprodukten) | 7 |
+| 8 | Klassenzimmer (Schule), Gruppenraum (Kindergarten) | 8 |
+| 9 | Hörsaal, Auditorium | 9 |
+| 10 | Bettenzimmer | 10 |
+| 11 | Hotelzimmer | 11 |
+| 12 | Kantine | 12 |
+| 13 | Restaurant | 13 |
+| 14 | Küchen in Nichtwohngebäuden | 14 |
+| 15 | Küche – Vorbereitung, Lager | 15 |
+| 16 | WC und Sanitärräume in Nichtwohngebäuden | 16 |
+| 17 | Sonstige Aufenthaltsräume | 17 |
+| 18 | Nebenflächen (ohne Aufenthaltsräume) | 18 |
+| 19 | Verkehrsflächen | 19 |
+| 20 | Lager, Technik, Archiv | 20 |
+| 21 | Rechenzentrum | 21 |
+| 22 | Gewerbliche und industrielle Hallen – schwere Arbeit, stehende Tätigkeit | 22.1 |
+| 23 | Gewerbliche und industrielle Hallen – mittelschwere Arbeit | 22.2 |
+| 24 | Gewerbliche und industrielle Hallen – leichte Arbeit | 22.3 |
+| 25 | Zuschauerbereich (Theater und Veranstaltungsbauten) | 23 |
+| 26 | Foyer (Theater und Veranstaltungsbauten) | 24 |
+| 27 | Bühne (Theater und Veranstaltungsbauten) | 25 |
+| 28 | Messe/Kongress | 26 |
+| 29 | Ausstellungsräume und Museum mit konservatorischen Anforderungen | 27 |
+| 30 | Bibliothek – Lesesaal | 28 |
+| 31 | Bibliothek – Freihandbereich | 29 |
+| 32 | Bibliothek – Magazin und Depot | 30 |
+| 33 | Turnhalle (ohne Zuschauerbereich) | 31 |
+| 34 | Parkhäuser (Büro- und Privatnutzung) | 32 |
+| 35 | Parkhäuser (öffentliche Nutzung) | 33 |
+| 36 | Saunabereich | 34 |
+| 37 | Fitnessraum | 35 |
+| 38 | Labor | 36 |
+| 39 | Untersuchungs- und Behandlungsräume | 37 |
+| 40 | Spezialpflegebereiche | 38 |
+| 41 | Flure des allgemeinen Pflegebereichs | 39 |
+| 42 | Arztpraxen und Therapeutische Praxen | 40 |
+| 43 | Lagerhallen, Logistikhallen | 41 |
 
-Die Importproben führen die Nummern als „Tabelle 4“, Grundlagen 1 die Nichtwohnprofile als „Tabelle 5“; NP2 gleicht
-den Vermerk in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` an der Ausgabe des Anwenders ab.
+Namen nach Tabelle 6 mit großem Anfangsbuchstaben; 23 und 24 tragen den Titel aus Anhang A, weil der Name der Tabelle 6
+länger als 80 Zeichen ist. **Wohngebäude** (Tabelle 5, Einfamilien- und Mehrfamilienhaus) tragen keine Nummer und stehen
+nicht als Profil in der Kategorie; sie führen über das Muster Wohnen und die Werte 70 und 71 der Projektdatei (5.4).
+44 bis 47 sind in keiner Ausgabe eine Nummer der Norm (B10). Schemaschritt 190 (`RaumnutzungDinTsSchema`) stellt eine
+Datenbank mit der Saat 2018 um: Kategorie umbenannt, die 24 ausgelieferten Profile auf Nummer und Namen 2025 (Ids
+bleiben, eine Zuordnung oder ein Duplikat des Anwenders zeigt danach auf dieselbe Nutzung), die übrigen 19 ohne Werte
+angelegt; Zeilen des Anwenders und die Zuordnung bleiben, wie sie sind.
 
 ### 5.3 Kategorien „SIA 2024“ und „VDI 2078“ (leer)
 
@@ -347,6 +385,17 @@ der Struktur: SIA 2024 nummeriert Raumnutzungen mit Punkten und gibt Tagesverlä
 
 Die DIN-Nummern zeigen ausgeliefert auf **EPOS-Muster**, nicht auf die leeren DIN-Profile (NP-F13); wer Normwerte
 eingetragen hat, stellt die Zuordnung auf sein Duplikat um (NP-F19).
+
+**Zählung der Schlüssel `DIN_NUMMER`.** Der Schlüssel ist die Nummer der HottCAD-Projektdatei
+(`PdProfileUsage.ProfileUsageType`), nicht die Nummer der Kategorie DIN/TS 18599-10. Er zählt wie ausgeliefert nach
+DIN V 18599-10:2018-09: 28, 29 (Bibliothek) → Schule, 31, 35 (Turnhalle, Fitnessraum) → Sport, 41 (Lagerhallen) → Lager;
+1 bis 13 sind von der Neunummerierung nicht berührt. Ob HottCAD ab 22 wie 2018 oder durchgehend wie 2025 zählt (dann
+30, 31 → Schule, 33, 37 → Sport, 43 → Lager), belegt keine Datei im Repositorium: Die Importproben entstehen synthetisch
+mit den Nummern 1, 20 und 71 und runden Werten, die Projektdateien des Anwenders liegen nur lokal. Entscheiden kann ein
+Fingerabdruck an einer echten Datei — Sollwert, Absenkung, Außenluft und Personenwärme einer Zone mit einer Nummer ab 22
+gegen die eigene Ausgabe des Anwenders. Bis dahin bleiben Saat und `Din18599Nutzung` bei 2018, und eine Nummer ab 22
+der Projektdatei trifft im Katalog DIN/TS auf eine andere Nutzung (etwa 28: Lesesaal in der Datei, Messe/Kongress im
+Katalog). 19 und 20 sind in beiden Ausgaben bestätigt (Verkehrsflächen; Lager, Technik, Archiv) und bleiben ohne Zeile.
 
 ---
 

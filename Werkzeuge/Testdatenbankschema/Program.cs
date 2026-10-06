@@ -2944,6 +2944,25 @@ namespace Testdatenbankschema
                                   RaumnutzungSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E96): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
+            //      Name, Quellenhinweis, Nummern und Namen der 43 Nutzungen ohne Werte, Ids bleiben. Aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_RaumnutzungDinTs bedient. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest den Katalog.
+            string nrDinTs = RaumnutzungDinTsSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDinTs + " - Kategorie DIN nach DIN/TS 18599-10: " +
+                              (RaumnutzungDinTsSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDinTs = new List<string>();
+                RaumnutzungDinTsSchema.Ausfuehren(berichtDinTs);
+                foreach (string zeile in berichtDinTs)
+                    Console.WriteLine("Schritt " + nrDinTs + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDinTs + " - vollstaendig: " +
+                                  RaumnutzungDinTsSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

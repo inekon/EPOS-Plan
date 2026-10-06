@@ -42,7 +42,7 @@ public sealed class RaumnutzungTexte
     public string ArtEposMuster { get; set; } = "EPOS-Muster";
 
     /// <summary>Die Art „DIN V 18599-10" (<c>RNP_LBL_ART_DIN</c>).</summary>
-    public string ArtDin { get; set; } = "DIN V 18599-10";
+    public string ArtDin { get; set; } = "DIN/TS 18599-10";
 
     /// <summary>Die Art „SIA 2024" (<c>RNP_LBL_ART_SIA</c>).</summary>
     public string ArtSia { get; set; } = "SIA 2024";
