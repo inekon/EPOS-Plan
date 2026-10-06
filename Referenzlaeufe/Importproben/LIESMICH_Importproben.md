@@ -111,6 +111,13 @@ Code (`EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`), deren Kennung auf
 | 70 | Wohnen (Einfamilienhaus) | Wohnen | WOHNEN |
 | 71 | Wohnen (Mehrfamilienhaus) | Wohnen | WOHNEN |
 
+**Zählung.** Die Schlüssel sind Nummern der Projektdatei, die Normnamen der Tabelle die der DIN V 18599-10:2018-09. Die
+Kategorie DIN des Katalogs führt die DIN/TS 18599-10:2025-10 (E95, Schemaschritt 190), die ab 22 neu nummeriert: dieselben
+Nutzungen tragen dort 30, 31 (Bibliothek), 33 (Turnhalle), 37 (Fitnessraum) und 43 (Lagerhallen); 1 bis 21 sind gleich.
+44 bis 47, 70 und 71 sind in keiner Ausgabe eine Nummer der Norm, sondern Werte der Projektdatei. Ob HottCAD ab 22 wie 2018
+oder wie 2025 zählt, entscheiden die Proben dieses Ordners nicht — sie entstehen synthetisch mit den Nummern 1, 20 und 71
+und runden Werten —; die Zuordnung bleibt deshalb bei 2018 (Konzept Nutzungsprofile 5.4).
+
 Unter der Zonenregel Z6 belegt der Zonenplan eine beheizte Zone mit dem Profil ihrer Nutzungsklasse vor (Zuordnung
 `IFC_KLASSE`, Vorgabe `Zonenplan.NutzungAusKlasse`): Büro → Büro; Wohnen, Schlafen, Küche → Wohnen; Sport, Gastronomie,
 Lager, Verkehr und Technik → das gleichnamige EPOS-Muster (ohne Katalog: keine); Sanitär und Sonstige → keine. Eine Zeile
