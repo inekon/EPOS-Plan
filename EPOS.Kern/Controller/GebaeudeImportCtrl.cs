@@ -63,6 +63,30 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// <b>Die Quellen der Projektkopie einer Zuordnung</b> (HC-4, „Datei erneut lesen“): <c>Z_ProjektGebaeude.ID</c>
+        /// → <c>Tab_Gebaeude.ID</c> der Kopie → ihre Quellen, die jüngste zuerst. Leer, wenn die Zuordnung keine
+        /// Projektkopie hat oder das Gebäude nicht importiert ist; nie <c>null</c>. Liest nur.
+        /// </summary>
+        public List<ImportquelleModel> LesenQuellenDerZuordnung(int idZ)
+        {
+            if (idZ <= 0) return new List<ImportquelleModel>();
+            int idGebaeude = GebaeudeBedarfCtrl.TabGebaeudeId(idZ);
+            return idGebaeude <= 0 ? new List<ImportquelleModel>() : LesenQuellen(idGebaeude);
+        }
+
+        /// <summary>
+        /// Die Quellkennung des Gebäudes EINER Quelle — die Paarung mit Ziel Gebäude (gbXML <c>Building/@id</c>, IFC
+        /// <c>IfcBuilding.GlobalId</c>); <c>""</c> ohne. Damit findet das erneute Lesen das Gebäude in einer Datei mit
+        /// mehreren (<see cref="GebaeudeNeulesen.Gebaeudeindex"/>).
+        /// </summary>
+        public string Gebaeudekennung(ImportquelleModel quelle)
+        {
+            if (quelle == null || quelle.ID <= 0) return "";
+            return LesenZuordnungen(quelle.ID)
+                .FirstOrDefault(z => z.ID_Gebaeude.HasValue && z.ID_Gebaeude.Value == quelle.ID_Gebaeude)?.Quellkennung ?? "";
+        }
+
         /// <summary>Die Paarungen EINER Quelle in Anlegereihenfolge; nie <c>null</c>.</summary>
         public List<ImportzuordnungModel> LesenZuordnungen(int idImportquelle)
         {

@@ -131,6 +131,12 @@ namespace WindowsFormsApplication1
                 // Stufe G4, Welle 4 (A17): der Gebaeudeimport - je Klick ein neuer Weg.
                 ["ImportGaben"] = new Func<GebaeudeImportweg>(
                     () => Importweg(projektId, naechsteId, ausstehend, Vorgemerkt(zeilen, ausstehend))),
+                // HC-4 (HottCAD-Verbund 6.5, E87 F3): "Datei erneut lesen" - die Quelle je Zeile und
+                // der Leseweg; geschrieben wird nichts, die Ansicht lebt allein im Dialog.
+                ["Importquelle"] = new Func<GebaeudeProjektZeile, GebaeudeImportquelleAngabe>(
+                    z => { idsNachziehen(); return GebaeudeNeulesenHuelle.Angabe(z); }),
+                ["DateiNeuLesen"] = new Func<GebaeudeProjektZeile, Task<GebaeudeNeulesestand>>(
+                    z => { idsNachziehen(); return new GebaeudeNeulesenHuelle().LesenAsync(z); }),
                 ["BtnImportText"] = Text_("GEB_BTN_IMPORT", "Importieren (gbXML, IFC)…"),
                 ["BtnImportHinweis"] = Text_("GEB_BTN_IMPORT_HINWEIS",
                     "Ein Gebäude aus einer gbXML- oder IFC-Datei als neuen Katalogsatz anlegen und in die Projektliste übernehmen"),

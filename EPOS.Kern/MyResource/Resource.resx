@@ -46344,6 +46344,51 @@ Chart</value>
   <data name="GANS_RAND_TREFFER_BAUTEIL" xml:space="preserve">
     <value>Gewählt: Bauteil {0} — {1}</value>
   </data>
+  <data name="GEB_BTN_NEU_LESEN" xml:space="preserve">
+    <value>Datei erneut lesen…</value>
+  </data>
+  <data name="GEB_BTN_NEU_LESEN_HINWEIS" xml:space="preserve">
+    <value>Die Importdatei des markierten Gebäudes erneut lesen und das Gebäude nach Zonen und nach Randbedingung ansehen – gespeichert wird nichts</value>
+  </data>
+  <data name="GEB_NL_TITEL" xml:space="preserve">
+    <value>Importdatei erneut lesen</value>
+  </data>
+  <data name="GEB_NL_DATEI_TITEL" xml:space="preserve">
+    <value>Importdatei „{0}“ wählen</value>
+  </data>
+  <data name="GEB_NL_QUELLE" xml:space="preserve">
+    <value>Importquelle: {0} ({1}), importiert am {2}</value>
+  </data>
+  <data name="GEB_NL_PASSEND" xml:space="preserve">
+    <value>Die Datei „{0}“ stimmt mit der Importquelle überein. Die Ansicht zeigt die Datei; gespeichert wird nichts.</value>
+  </data>
+  <data name="GEB_NL_HASH_ABWEICHEND" xml:space="preserve">
+    <value>Die Datei „{0}“ (geändert am {1}) ist nicht die Datei des Imports: SHA-256 {2}… statt {3}…. Es wird keine Ansicht gezeigt.</value>
+  </data>
+  <data name="GEB_NL_NICHT_LESBAR" xml:space="preserve">
+    <value>Die Datei „{0}“ ist nicht lesbar: {1}</value>
+  </data>
+  <data name="GEB_NL_FORMAT_UNBEKANNT" xml:space="preserve">
+    <value>Die Datei „{0}“ hat nicht das Format der Importquelle ({1}).</value>
+  </data>
+  <data name="GEB_NL_ZU_GROSS" xml:space="preserve">
+    <value>Die Datei „{0}“ ist mit {1} größer als die Grenze von {2} auf diesem Gerät.</value>
+  </data>
+  <data name="GEB_NL_KEINE_QUELLE" xml:space="preserve">
+    <value>Dieses Gebäude hat keine Importquelle.</value>
+  </data>
+  <data name="GEB_NL_NUR_GEOMETRIE" xml:space="preserve">
+    <value>Die Zonen stammen allein aus der Geometriedatei ({0}); eine Projektdatei und Zuordnungen von Hand sind in dieser Ansicht nicht enthalten.</value>
+  </data>
+  <data name="GEB_NL_ZONENREGEL" xml:space="preserve">
+    <value>Die Zonen folgen der Regel der Datei ({0}); Zuordnungen von Hand sind in dieser Ansicht nicht enthalten.</value>
+  </data>
+  <data name="GEB_NL_ANDERE_DATEI" xml:space="preserve">
+    <value>Andere Datei wählen…</value>
+  </data>
+  <data name="GEB_NL_LAEUFT" xml:space="preserve">
+    <value>Die Datei wird gelesen …</value>
+  </data>
   <data name="RNP_KI_KATEGORIE_NAME" xml:space="preserve">
     <value>Kategorie</value>
   </data>

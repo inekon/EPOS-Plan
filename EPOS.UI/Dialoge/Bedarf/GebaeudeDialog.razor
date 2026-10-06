@@ -272,6 +272,15 @@
                     }
                 }
 
+                @* HC-4 (HottCAD-Verbund 6.5, E87 F3): "Datei erneut lesen" - nur fuer ein importiertes
+                   Gebaeude (die Zeile hat eine Importquelle). Liest die Datei der Quelle und zeigt die
+                   Ansicht in einer eigenen Ueberlagerung; geschrieben wird nichts. Kein Delegat, kein Knopf. *@
+                @if (DateiNeuLesen is not null && QuelleVon(_gewaehlt) is not null)
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-neulesen"
+                            title="@BtnNeuLesenHinweis" @onclick="BeiNeuLesen">@BtnNeuLesenText</button>
+                }
+
                 @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
                    Gebaeudes, analog zum Bedarfsreiter der Ergebnisseite. Ohne
                    Delegat kein Knopf - in der Katalogverwaltung gibt es kein
@@ -404,6 +413,47 @@
                 <GebaeudeBedarfDialog @attributes="_bedarfGaben" TitelText=""
                                       Geschlossen="_ => BedarfFertig()" />
             }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 10: "Datei erneut lesen" (HC-4) ---------------------------
+       Eine reine Ansicht: Quelle, Hinweiszeile, die GebaeudeAnsicht mit beiden Farbmodi
+       ("Zonen | Randbedingung"). Kein Speichern, kein Arbeitsstand; das Kreuz und Esc
+       schliessen, der Dialog gilt danach NICHT als geaendert. *@
+    <Ueberlagerung Offen="@_neulesenOffen" Titel="@TitelNeuLesen" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="NeuLesenSchliessen">
+        <KindInhalt>
+            <div class="epos-gebaeude-neulesen-ansicht">
+                @if (_neulesenQuelle is not null)
+                {
+                    <p class="epos-leisezeile epos-gebaeude-neulesen-quelle">@_neulesenQuelle.Quellzeile</p>
+                }
+                @if (_neulesenLaeuft)
+                {
+                    <p class="epos-leisezeile epos-gebaeude-neulesen-laeuft" role="status">@TextNeuLesenLaeuft</p>
+                }
+                else if (_neulesenStand is { } stand)
+                {
+                    <p class="@(stand.Zustand == GebaeudeNeulesezustand.Passend ? "epos-leisezeile" : "epos-kond-feldmeldung") epos-gebaeude-neulesen-hinweis"
+                       role="@(stand.Zustand == GebaeudeNeulesezustand.Passend ? "status" : "alert")">@stand.Hinweis</p>
+                    @if (stand.Ansicht is not null)
+                    {
+                        @if (stand.Zonenhinweis.Length > 0)
+                        {
+                            <p class="epos-leisezeile epos-gebaeude-neulesen-zonen">@stand.Zonenhinweis</p>
+                        }
+                        <GebaeudeAnsicht Daten="@stand.Ansicht" Geschoss="@_neulesenGeschoss"
+                                         GeschossChanged="g => _neulesenGeschoss = g" Texte="@_ansichtTexte" />
+                    }
+                    @if (stand.AndereDateiAnbieten)
+                    {
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf epos-gebaeude-neulesen-andere"
+                                    @onclick="BeiNeuLesen">@BtnAndereDateiText</button>
+                        </div>
+                    }
+                }
+            </div>
         </KindInhalt>
     </Ueberlagerung>
 
@@ -556,6 +606,33 @@
     /// kein Knopf.
     /// </summary>
     [Parameter] public Func<GebaeudeImportweg>? ImportGaben { get; set; }
+
+    /// <summary>
+    /// <b>Die Importquelle einer Projektzeile</b> (HC-4): Name, Format, Zeitpunkt; <c>null</c> = nicht importiert
+    /// (kein Knopf „Datei erneut lesen…“). Je Zeile einmal gefragt und im Dialog gemerkt.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, GebaeudeImportquelleAngabe?>? Importquelle { get; set; }
+
+    /// <summary>
+    /// <b>„Datei erneut lesen“</b> (HC-4, E87 F3): Dateiwahl, Hash-Prüfung und Ansicht; <c>null</c> = die Dateiwahl
+    /// wurde abgebrochen. Schreibt nichts. Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, Task<GebaeudeNeulesestand?>>? DateiNeuLesen { get; set; }
+
+    /// <summary>GEB_BTN_NEU_LESEN</summary>
+    [Parameter] public string BtnNeuLesenText { get; set; } = Resource.GEB_BTN_NEU_LESEN;
+
+    /// <summary>GEB_BTN_NEU_LESEN_HINWEIS</summary>
+    [Parameter] public string BtnNeuLesenHinweis { get; set; } = Resource.GEB_BTN_NEU_LESEN_HINWEIS;
+
+    /// <summary>GEB_NL_TITEL</summary>
+    [Parameter] public string TitelNeuLesen { get; set; } = Resource.GEB_NL_TITEL;
+
+    /// <summary>GEB_NL_ANDERE_DATEI</summary>
+    [Parameter] public string BtnAndereDateiText { get; set; } = Resource.GEB_NL_ANDERE_DATEI;
+
+    /// <summary>GEB_NL_LAEUFT</summary>
+    [Parameter] public string TextNeuLesenLaeuft { get; set; } = Resource.GEB_NL_LAEUFT;
 
     /// <summary>
     /// <b>„Exportieren (gbXML)…"</b> (Gebäudesimulation G7a, Welle W3): der Parametersatz des
@@ -1517,6 +1594,65 @@
         Melden(MeldungGeloescht, WarnStufe.Hinweis);
     }
 
+    // =================================================================================
+    // "Datei erneut lesen" (HC-4) - Zustand allein im Dialog, nichts wird geschrieben
+    // =================================================================================
+
+    private readonly Dictionary<int, GebaeudeImportquelleAngabe?> _quellen = new();
+    private readonly GebaeudeAnsichtTexte _ansichtTexte = new();
+    private bool _neulesenOffen;
+    private bool _neulesenLaeuft;
+    private GebaeudeNeulesestand? _neulesenStand;
+    private GebaeudeImportquelleAngabe? _neulesenQuelle;
+    private string? _neulesenGeschoss;
+
+    /// <summary>Ist die Überlagerung „Datei erneut lesen“ offen?</summary>
+    public bool NeuLesenOffen => _neulesenOffen;
+
+    /// <summary>Die Quelle einer Zeile — je Zuordnung einmal gefragt; eine Zeile ohne Projektkopie hat keine.</summary>
+    private GebaeudeImportquelleAngabe? QuelleVon(GebaeudeProjektZeile? z)
+    {
+        if (z is null || Importquelle is null || !z.HatProjektkopie) return null;
+        if (!_quellen.TryGetValue(z.IdZ, out GebaeudeImportquelleAngabe? q))
+        {
+            q = Importquelle(z);
+            _quellen[z.IdZ] = q;
+        }
+        return q;
+    }
+
+    /// <summary>
+    /// Dateiwahl und Lesen; ein Abbruch der Wahl lässt den vorigen Stand stehen (beim ersten Mal bleibt die
+    /// Überlagerung zu). Kein <see cref="Geaendert"/> — das Neulesen ändert nichts am Gebäude.
+    /// </summary>
+    private async Task BeiNeuLesen()
+    {
+        GebaeudeProjektZeile? z = _gewaehlt;
+        if (z is null || DateiNeuLesen is null || _neulesenLaeuft) return;
+        _neulesenQuelle = QuelleVon(z);
+        _neulesenLaeuft = true;
+        GebaeudeNeulesestand? stand;
+        try
+        {
+            stand = await DateiNeuLesen(z);
+        }
+        finally
+        {
+            _neulesenLaeuft = false;
+        }
+        if (stand is null) return;   // Dateiwahl abgebrochen - kein Fehler
+        if (!ReferenceEquals(stand.Ansicht, _neulesenStand?.Ansicht)) _neulesenGeschoss = null;
+        _neulesenStand = stand;
+        _neulesenOffen = true;
+    }
+
+    private void NeuLesenSchliessen()
+    {
+        _neulesenOffen = false;
+        _neulesenStand = null;
+        _neulesenGeschoss = null;
+    }
+
     private void Melden(string text, WarnStufe stufe)
     {
         _meldung = text ?? "";
@@ -1534,7 +1670,7 @@
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
             _loeschfrage || _ausProjektFrage || _projektGaben is not null || _exportGaben is not null ||
-            _baustoffzuordnungenGaben is not null || _inDbOffen) return Task.CompletedTask;
+            _baustoffzuordnungenGaben is not null || _inDbOffen || _neulesenOffen) return Task.CompletedTask;
         return Abbrechen();
     }
 }

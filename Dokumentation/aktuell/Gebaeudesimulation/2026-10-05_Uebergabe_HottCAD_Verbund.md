@@ -24,7 +24,7 @@ lesen“ im Gebäudedialog).
 | HC-3, Dublette | eine zweite, parallele Umsetzung dieser Sitzung (`9612fb3a`, `06d8b4f5`, Merge `b64a5133`, Papiere `2f2797b8`) ist **verworfen**, nie gepusht. Sie bleibt auf den Zweigen `worktree-agent-aa321a7f535f499e5` (Code), `worktree-agent-ae21ef8bc37293252` (Papiere) und `sicherung-hc3-duplikat` erhalten — nicht mergen |
 | HC-1 | **umgesetzt als #740**: Teil 1 `68411baf` zweiseitige Randbedingung, Teil 2 `e6f7dce1` Rahmenanteil, Teil 3 `add95232` Bauteilkörper, Teil 4 `4670d6d7` Flächenklassifikation; Merge `3c37b6da`, Gate 740 (Abschnitt 4), [Protokoll HC-1](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_HC-1_IFC_Randbedingung_Bauteilkoerper_Flaechen.md) mit Bilanz der sechs Anwenderdateien und offenen Punkten |
 | HC-2 | **umgesetzt als #746**: Teil A `5dc3bc5d`, `b696ca49`, `b74d6db6`, Teil B `481ed1db`, `22686e53`; Merge `aa223199`, Fix `8c048d02`; [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-2_Farbmodus_Randbedingung.md). Nächste Welle: HC-4 nach Zuruf |
-| HC-4 | nicht begonnen (Konzept 6.5) |
+| HC-4 | **umgesetzt als #754**: Kern `9a1198f7`, Knopf und Hülle `afd6c9e2`; Merge `768217eb`; [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-4_Datei_erneut_lesen.md). Alle vier Wellen sind gebaut; offen bleiben Konzept 5.3 und die Sichtabnahmen HC-2 und HC-4 unter Windows |
 
 **Lehre aus der Dublette:** Eine Ankündigung per Sitzungsnachricht genügt nicht. Vor dem Start einer Welle wird ihre
 Zuständigkeit festgelegt und in der Statusdatei angemeldet (wie die Schemanummer), und vor dem Merge wird `origin` geholt
