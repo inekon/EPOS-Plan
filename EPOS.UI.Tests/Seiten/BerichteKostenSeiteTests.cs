@@ -703,4 +703,23 @@ public class BerichteKostenSeiteTests : BunitContext
         Assert.NotNull(cut.Find("#bk-blatt-KOSTEN"));
         Assert.Empty(cut.FindAll("#bk-blatt-UEBERSICHT"));
     }
+
+    /// <summary>
+    /// Jede der vier Seiten fokussiert beim ersten Zeichnen ihre Wurzel (Tastaturbedienung) —
+    /// aber mit <c>preventScroll</c>: Sonst rollt der Browser die hohe Seite ins Bild und die
+    /// Reiterleiste verschwindet aus dem Blick (Anwenderbefund 06.10.2026, gemessen mit
+    /// <c>Proben/Rasterprobe/berichtescrollprobe.mjs</c>).
+    /// </summary>
+    [Fact]
+    public void Jede_Seite_fokussiert_ihre_Wurzel_ohne_zu_rollen()
+    {
+        var cut = Zeige();
+        for (int i = 1; i < 4; i++) Navknoepfe(cut)[i].Click();
+
+        var fokusse = JSInterop.Invocations
+            .Where(a => a.Identifier == "Blazor._internal.domWrapper.focus")
+            .ToList();
+        Assert.True(fokusse.Count >= 4, $"nur {fokusse.Count} Fokusaufrufe für vier Seiten");
+        Assert.All(fokusse, a => Assert.Equal(true, a.Arguments[1]));
+    }
 }
