@@ -223,9 +223,10 @@ public class KiSimulationMaskeTests : IDisposable
     ///
     /// <para>Welle M5 (PV3): dreiundsechzig — die Einspeisegrenze mit Wert und Einheit.</para>
     /// <para>Welle M7 (BW5): achtundsechzig — die thermische Desinfektion mit fünf Feldern.</para>
+    /// <para>KP3 O1b: siebzig — der Aufschlag der Aufheizoptimierung in Stunden und Prozent.</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_achtundsechzig_Felder_an()
+    public void Die_Ansicht_meldet_siebzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -234,8 +235,8 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5).
-        Assert.Equal(68, felder.Count);
+        // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5), dazu die zwei des Aufschlags (O1b).
+        Assert.Equal(70, felder.Count);
     }
 
     /// <summary>
@@ -425,6 +426,7 @@ public class KiSimulationMaskeTests : IDisposable
             "netzverlust_brauchwasser_einheit", "netzverlust_prozess", "netzverlust_prozess_einheit",
             "zirkulation_leistung", "zirkulation_laufzeit", "anlagenkopplung",
             "aufheizoptimierung", "aufheiz_bemessung", "aufheiz_abzug", "aufheiz_reserve", "aufheiz_art",
+            "aufheiz_aufschlag_h", "aufheiz_aufschlag_prozent",
             "einspeisegrenze", "einspeisegrenze_einheit",
             "desinfektion", "desinfektion_intervall", "desinfektion_stunde",
             "desinfektion_zieltemperatur", "desinfektion_volumen",
@@ -977,6 +979,76 @@ public class KiSimulationMaskeTests : IDisposable
         });
         Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(false, "STUNDE_ABZUG", 3.0, 0.3, "FEST", 2, 50.0),
                      probe.Stand.Aufheizung);
+    }
+
+    /// <summary>
+    /// <b>Die zwei Felder des Aufschlags</b>: lesbar (leer = kein Aufschlag), setzbar über die Feldkarte — Stunden
+    /// ganzzahlig 0 bis 24, Prozent 0 bis 100 —, 0 und leer werden NULL (Festlegung 36), die übrigen Werte bleiben.
+    /// </summary>
+    [Fact]
+    public void Der_Aufschlag_ist_lesbar_und_setzbar()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<WindowsFormsApplication1.Aufheizvorgabe>();
+        SimulationKiSicht sicht = AufheizSicht(probe, new WindowsFormsApplication1.Aufheizvorgabe(
+            true, null, null, 0.25, null), geschrieben);
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        Assert.Null(sicht.AufheizAufschlagH);
+        Assert.Null(sicht.AufheizAufschlagProzent);
+        Dictionary<string, string> werte = Werte();
+        Assert.Equal("", werte["aufheiz_aufschlag_h"]);
+        Assert.Equal("", werte["aufheiz_aufschlag_prozent"]);
+
+        KiFeldzugang stunden = KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "aufheiz_aufschlag_h");
+        Assert.False(KiFeldwandler.Wandle(stunden, "25").Ok);
+        Assert.False(KiFeldwandler.Wandle(stunden, "-1").Ok);
+        KiFeldumsetzung u = KiFeldwandler.Wandle(stunden, "3");
+        Assert.True(u.Ok, u.Grund);
+        stunden.Setzen(u.Wert);
+        Assert.Equal(3, probe.Stand.Aufheizung.AufschlagH);
+
+        KiFeldzugang prozent = KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "aufheiz_aufschlag_prozent");
+        Assert.False(KiFeldwandler.Wandle(prozent, "101").Ok);
+        u = KiFeldwandler.Wandle(prozent, "37,5");
+        Assert.True(u.Ok, u.Grund);
+        prozent.Setzen(u.Wert);
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(true, null, null, 0.25, null, 3, 37.5), probe.Stand.Aufheizung);
+        Assert.Equal("3", Werte()["aufheiz_aufschlag_h"]);
+
+        sicht.AufheizAufschlagH = 0;
+        Assert.Null(probe.Stand.Aufheizung.AufschlagH);
+        sicht.AufheizAufschlagProzent = null;
+        Assert.Null(probe.Stand.Aufheizung.AufschlagProzent);
+        Assert.Equal(new WindowsFormsApplication1.Aufheizvorgabe(true, null, null, 0.25, null), probe.Stand.Aufheizung);
+        Assert.Equal(4, geschrieben.Count);
+    }
+
+    /// <summary>
+    /// <b>Die Absagen des Aufschlags</b> — benannt, der Stand bleibt: bei Schalter aus (die Maske zeigt die Felder
+    /// nicht; ein gespeicherter Aufschlag bleibt lesbar) und außerhalb der Grenzen.
+    /// </summary>
+    [Fact]
+    public void Der_Aufschlag_lehnt_benannt_ab()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<WindowsFormsApplication1.Aufheizvorgabe>();
+        SimulationKiSicht aus = AufheizSicht(probe, new WindowsFormsApplication1.Aufheizvorgabe(
+            false, null, null, null, null, 2, 50.0), geschrieben);
+
+        Assert.Equal(2, aus.AufheizAufschlagH);
+        Assert.Equal(50.0, aus.AufheizAufschlagProzent);
+        var ex = Assert.Throws<InvalidOperationException>(() => aus.AufheizAufschlagH = 4);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_SIM_AUFH_NICHT_AN, ex.Message);
+        ex = Assert.Throws<InvalidOperationException>(() => aus.AufheizAufschlagProzent = 10);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_SIM_AUFH_NICHT_AN, ex.Message);
+
+        SimulationKiSicht an = AufheizSicht(probe, new WindowsFormsApplication1.Aufheizvorgabe(true, null, null, null, null), geschrieben);
+        ex = Assert.Throws<InvalidOperationException>(() => an.AufheizAufschlagH = 25);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H, ex.Message);
+        ex = Assert.Throws<InvalidOperationException>(() => an.AufheizAufschlagProzent = -1);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT, ex.Message);
+        Assert.Empty(geschrieben);
     }
 
     // =====================================================================

@@ -617,6 +617,37 @@ public sealed class SimulationKiSicht
         new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, Resource.SIMKONF_AUFH_ART_FEST)
     };
 
+    // Der Aufschlag (Welle O1b; E59 (2), Festlegungen 35, 36): zwei Felder über denselben Delegaten,
+    // nur bei Schalter an (sonst benannt abgelehnt wie die Maske, die sie dann nicht zeigt); 0 und
+    // leer werden NULL (der Record normalisiert), die übrigen Werte gehen unverändert mit.
+
+    /// <summary>Der Aufschlag in Stunden 0 … 24; <c>null</c> = leer (kein Aufschlag).</summary>
+    public int? AufheizAufschlagH
+    {
+        get => Aufheizstand.AufschlagH;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            Bereich(value, 0, WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX, Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                        value, a.AufschlagProzent));
+        }
+    }
+
+    /// <summary>Der Aufschlag in Prozent der Stufenzahl n, 0 … 100; <c>null</c> = leer (kein Aufschlag).</summary>
+    public double? AufheizAufschlagProzent
+    {
+        get => Aufheizstand.AufschlagProzent;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            Bereich(value, 0, WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX,
+                    Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                        a.AufschlagH, value));
+        }
+    }
+
     // =====================================================================
     //  Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3)
     // =====================================================================

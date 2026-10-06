@@ -8661,6 +8661,16 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("aufheiz_art", "SimulationKiSicht.AufheizArt",
                                      KiDialogTexte.SimAufheizArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.SimAufheizArtErl, leerErlaubt: true),
+                    // Der Aufschlag (Welle O1b; E59 (2), Festlegungen 35, 36): Stunden ganzzahlig
+                    // 0 bis 24, Prozent 0 bis 100; 0 und leer werden NULL. Nur bei Schalter an.
+                    new KiDialogFeld("aufheiz_aufschlag_h", "SimulationKiSicht.AufheizAufschlagH",
+                                     KiDialogTexte.SimAufheizAufschlagHName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimAufheizAufschlagHErl,
+                                     einheit: KiDialogTexte.EINHEIT_STUNDE, leerErlaubt: true, min: 0, max: 24),
+                    new KiDialogFeld("aufheiz_aufschlag_prozent", "SimulationKiSicht.AufheizAufschlagProzent",
+                                     KiDialogTexte.SimAufheizAufschlagProzentName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizAufschlagProzentErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true, min: 0, max: 100),
 
                     // ---- Die Einspeisegrenze (Welle M5, PV3) ------------------------------------
                     //
