@@ -1788,7 +1788,7 @@ Pflege je Anlage (Abstand, R_b, Anordnung, Betrachtungsjahr) wäre ein eigener S
 
 Das Modell nimmt negative Lasten (Rückspeisung) auf. Im Lauf gehen sie noch nicht ein: Die
 Kältekaskade (Kühlbetrieb der Wärmepumpe, freie Kühlung über die Sole) rechnet nach der
-Wärmekaskade, ihre Abwärme steht erst nach dem letzten Heizstunde fest. Eine Rückspeisung verlangt
+Wärmekaskade, ihre Abwärme steht erst nach der letzten Heizstunde fest. Eine Rückspeisung verlangt
 entweder die Kälteseite stundenweise verschränkt oder einen zweiten Feldlauf mit der Kältelast des
 ersten; das ist offen.
 

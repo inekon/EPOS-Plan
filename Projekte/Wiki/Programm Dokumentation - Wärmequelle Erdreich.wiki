@@ -35,7 +35,7 @@ Die Erdreichquelle gehört zu genau einer Wärmepumpe und liefert ihr die Quellt
 {{Flusspfeil|Entzugsspitze, Jahresentzug, Volllaststunden}}
 {{Flusskasten|Auslegungsprüfung|VDI 4640 Blatt 2}}
 {{Fluss-Ende}}
-{{Diagramm-Ende|Prinzipbild. Die Quelltemperatur geht in die Kennlinie der Wärmepumpe ein; der Entzug wirkt nicht auf sie zurück, sondern wird gegen die Grenzwerte gehalten – vor dem Lauf aus den Auslegungswerten, danach aus dem Ergebnis des Laufs.}}
+{{Diagramm-Ende|Prinzipbild. Die Quelltemperatur geht in die Kennlinie der Wärmepumpe ein. Bei der Sonde senkt der Entzug jeder Stunde die Soletemperatur der folgenden Stunden; beim Kollektor wirkt er nicht auf die Temperatur zurück. Gegen die Grenzwerte gehalten wird der Entzug in beiden Fällen – vor dem Lauf aus den Auslegungswerten, danach aus dem Ergebnis des Laufs.}}
 
 == Beispiel ==
 {{Anker|beispiel}}
@@ -53,9 +53,9 @@ Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 �
 |-
 | Wärmequelle Erdreich || ''Erdsonde als Quellsystem'' || gewählt || Sonde statt Kollektor
 |-
-| Wärmequelle Erdreich || ''Länge je Sonde [m]'' / ''Anzahl Sonden'' || 100 / 1 || 100 Sondenmeter; mittlere Tiefe 50 m, geothermischer Zuschlag 0,9 K
+| Wärmequelle Erdreich || ''Länge je Sonde [m]'' / ''Anzahl Sonden'' || 100 / 1 || 100 Sondenmeter; mittlere Tiefe 50 m, geothermischer Zuschlag 0,9 K; der Entzug verteilt sich auf die 100 m
 |-
-| Wärmequelle Erdreich || ''Bodentyp'' || ''Ton/Schluff, wassergesättigt'' || <math>\lambda = 1{,}8</math>&nbsp;W/(m·K); bei der Sonde nur Größe der Prüfung
+| Wärmequelle Erdreich || ''Bodentyp'' || ''Ton/Schluff, wassergesättigt'' || <math>\lambda = 1{,}8</math>&nbsp;W/(m·K); bestimmt, wie schnell der Boden um die Sonde Wärme nachleitet, und die Prüfung
 |-
 | Wärmequelle Erdreich || ''Klimazone'' || Vorbelegung der Klimaregion || Vorprüfung und Kollektor nehmen die Volllaststunden der Zone, die Sonde nach dem Lauf die des Laufs
 |-
@@ -64,7 +64,7 @@ Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 �
 | Betriebsmodus || ''Leistungssteuerung der Wärmepumpe'' || ''Leistungsoptimiert - nur den Bedarf decken'' || die Entzugsspitze folgt dem Bedarf, nicht der vollen Leistung
 |}
 
-'''Was herauskommt und wo es steht.''' Die Vorschau zeigt eine waagerechte Linie: Die Sonde rechnet in jeder Stunde mit dem Jahresmittel der Außentemperatur plus 2,4 K, bei 9,5 °C also mit 11,9 °C; die Wärmepumpe arbeitet damit das ganze Jahr am selben Punkt ihrer Kennlinie, und eine Zeile unter der Vorschau sagt, dass der Entzug nicht auf diese Temperatur zurückwirkt. Vor dem ersten Lauf steht die Vorprüfung: Mit einem COP von 4,5 bei B0/W35 ergibt sich eine Entzugsleistung von 6&nbsp;kW · (1 − 1/4,5) ≈ 4,7&nbsp;kW, also rund 47 W/m, geprüft mit den Volllaststunden der Klimazone. Nach dem Lauf hält die Auslegungsprüfung die spezifische Entzugsleistung – Entzugsspitze geteilt durch 100 m – gegen Tabelle B2, mit der Grundlage ''<math>\lambda = 1{,}8</math>&nbsp;W/(m·K), 1 Sonde(n)'' und den Volllaststunden des Laufs. Für eine Sonde bei <math>\lambda = 1{,}8</math>&nbsp;W/(m·K) lässt die Tabelle rund 49 W/m bei 1&nbsp;200 und rund 40 W/m bei 1&nbsp;800 Volllaststunden zu; eine Entzugsspitze von 5 kW ergibt 50 W/m. Liegt der Istwert darüber, nennt der Hinweis die erforderlichen Sondenmeter.
+'''Was herauskommt und wo es steht.''' Die Vorschau zeigt eine waagerechte Linie: die ungestörte Erdreichtemperatur an der Sonde, das Jahresmittel der Außentemperatur plus 2,4 K, bei 9,5 °C also 11,9 °C. Von ihr geht die Simulation aus; mit jeder Stunde, in der die Wärmepumpe läuft, sinkt die Soletemperatur, am stärksten gegen Ende der Heizzeit, und erholt sich im Sommer. Gerechnet wird das zehnte Betriebsjahr: Die neun Jahre davor tragen den Jahresentzug der Vorprüfung. Den Verlauf zeigt das Ergebnis als Quelltemperatur der Wärmepumpe; eine Zeile unter der Vorschau weist darauf hin. Vor dem ersten Lauf steht die Vorprüfung: Mit einem COP von 4,5 bei B0/W35 ergibt sich eine Entzugsleistung von 6&nbsp;kW · (1 − 1/4,5) ≈ 4,7&nbsp;kW, also rund 47 W/m, geprüft mit den Volllaststunden der Klimazone. Nach dem Lauf hält die Auslegungsprüfung die spezifische Entzugsleistung – Entzugsspitze geteilt durch 100 m – gegen Tabelle B2, mit der Grundlage ''<math>\lambda = 1{,}8</math>&nbsp;W/(m·K), 1 Sonde(n)'' und den Volllaststunden des Laufs. Für eine Sonde bei <math>\lambda = 1{,}8</math>&nbsp;W/(m·K) lässt die Tabelle rund 49 W/m bei 1&nbsp;200 und rund 40 W/m bei 1&nbsp;800 Volllaststunden zu; eine Entzugsspitze von 5 kW ergibt 50 W/m. Liegt der Istwert darüber, nennt der Hinweis die erforderlichen Sondenmeter.
 
 == Zusammenspiel mit anderen Technologien ==
 {{Anker|zusammenspiel}}
@@ -72,7 +72,7 @@ Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 �
 {| class="wikitable"
 ! Technik !! Wirkung auf die Erdreichquelle !! Wirkung der Erdreichquelle !! So rechnet EPOS-Plan
 |-
-| Wärmepumpe || ihr Entzug, Wärmeproduktion minus Stromaufnahme je Stunde, ist die Größe der Prüfung || die Quelltemperatur bestimmt Leistung und Leistungszahl || Sonde: eine Temperatur für alle 8&nbsp;760 Stunden; Kollektor: Jahresgang nach Kusuda, mit der Tiefe gedämpft und verzögert. Der Entzug senkt die Temperatur nicht.
+| Wärmepumpe || ihr Entzug, Wärmeproduktion minus Stromaufnahme je Stunde, ist die Größe der Prüfung und senkt die Soletemperatur der Sonde || die Quelltemperatur bestimmt Leistung und Leistungszahl || Sonde: Soletemperatur des Sondenfelds je Stunde, aus dem Entzug bis zur Vorstunde; Kollektor: Jahresgang nach Kusuda, mit der Tiefe gedämpft und verzögert, ohne Rückwirkung des Entzugs.
 |-
 | Klimadaten || Jahresmittel, Amplitude und Zeitpunkt des Minimums der Außentemperatur bilden die Quelltemperatur || – || ohne verwertbare Klimareihe Ersatzwerte 9,5 °C und 8,5 K, die Vorschau nennt sie; die Klimazone nach DIN 4710 gehört zur Klimaregion des Projekts
 |-
@@ -80,7 +80,7 @@ Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 �
 |-
 | Heizstab, Heizkessel || was sie decken, entzieht dem Erdreich nichts || – || gezählt werden nur Wärme und Strom der Wärmepumpe
 |-
-| Kühlbetrieb, Solarthermie, Abwärme || keine Regeneration || – || die Quelltemperatur hängt nur an Klima, Tiefe oder Sondenlänge und Boden
+| Kühlbetrieb, Solarthermie, Abwärme || keine Regeneration || – || ihre Wärme geht nicht an Sonde oder Kollektor zurück
 |-
 | weitere Wärmepumpen || beziehen alle aus dem Erdreich: Entzug nach ihrem Jahresentzug aufgeteilt || – || als Näherung gekennzeichnet; hat eine Wärmepumpe des Projekts eine andere Quelle, bleibt die Prüfung aus
 |}
@@ -90,7 +90,7 @@ Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 �
      Kollektor: theta = 9,5 - 8,5 * exp(-z/d) * cos(omega * (t - 480) - z/d) mit z = 1,5 m,
      Sand feucht (lambda 1,4 W/(m*K), rho*cp 1,90 MJ/(m3*K), d = 2,72 m), omega = 2*pi/8760 1/h,
      Monatsmittel über die Stunden des Monats (Jahr ohne Schalttag).
-     Sonde: 9,5 + 1,5 + 0,03 * (100/2 - 20) = 11,9 °C in jeder Stunde.
+     Sonde: ungestörte Erdreichtemperatur 9,5 + 1,5 + 0,03 * (100/2 - 20) = 11,9 °C; ohne Entzug.
      Säulenhöhe in Prozent von 14,3 °C (August). -->
 {{Diagramm-Anfang|titel=Quelltemperatur je Monat: Erdkollektor 1,5 m und Erdsonde 100 m}}
 {{Säulen-Anfang|achse=Quelltemperatur in °C, größte Säule 14,3 °C|mindestbreite=400}}
@@ -107,17 +107,18 @@ Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 �
 {{Säule|Nov|umwelt=70|wert=10,1}}
 {{Säule|Dez|umwelt=53|wert=7,6}}
 {{Säule|Sonde|umwelt=83|wert=11,9}}
-{{Säulen-Ende|Monatsmittel des Erdkollektors (Sand, feucht); rechts die Erdsonde, gleich in jedem Monat}}
+{{Säulen-Ende|Monatsmittel des Erdkollektors (Sand, feucht); rechts die ungestörte Erdreichtemperatur an der Erdsonde}}
 {{Legende|umwelt=Quelltemperatur}}
-{{Diagramm-Ende|Beispielwerte, gerundet, nach den Formeln der Rechenwegseite mit den Ersatzwerten des Programms (Jahresmittel 9,5 °C, Amplitude 8,5 K); kein Ergebnis eines EPOS-Plan-Laufs. Der Kollektor ist im Februar am kältesten, die Sonde bleibt bei 11,9 °C.}}
+{{Diagramm-Ende|Beispielwerte, gerundet, nach den Formeln der Rechenwegseite mit den Ersatzwerten des Programms (Jahresmittel 9,5 °C, Amplitude 8,5 K); kein Ergebnis eines EPOS-Plan-Laufs. Der Kollektor ist im Februar am kältesten; die Sonde beginnt bei 11,9 °C, im Lauf liegt ihre Soletemperatur je nach Entzug darunter.}}
 
 == Fallstricke ==
 {{Anker|fallstricke}}
 
 * '''Quelle nicht umgestellt.''' Eine Sole-Wasser-Wärmepumpe ohne gewählte Quelle rechnet mit der Außenluft; der Chip ''Quelle:'' der Karte zeigt es. Das Erdreich gilt erst nach der Wahl ''Erdreich (VDI 4640)'' und ''OK''.
 * '''Luft-Wasser-Wärmepumpe.''' Für sie bleibt die Erdreich-Konfiguration wirkungslos und wird weder vorgeprüft noch geprüft; Dialog und Ergebnis nennen den Grund.
-* '''Keine Rückwirkung des Entzugs.''' Eine zu kurze Sonde verschlechtert weder Leistungszahl noch Jahresarbeitszahl, denn die Quelle ist im Lauf unerschöpflich. Eine Unterdimensionierung zeigt allein die Auslegungsprüfung – sie gehört zur Bewertung jeder Variante.
-* '''Länge, Anzahl und Boden ändern die Sondentemperatur kaum.''' Die Länge wirkt nur über den geothermischen Zuschlag von 0,03 K je Meter mittlerer Tiefe über 20 m, Anzahl und Bodentyp nur auf die Prüfung.
+* '''Eine zu kurze Sonde kostet Jahresarbeitszahl.''' Je weniger Sondenmeter den Entzug tragen und je schlechter der Boden leitet, desto tiefer sinkt die Soletemperatur und mit ihr die Leistungszahl. Länge, Anzahl und Bodentyp wirken deshalb auf das Ergebnis, nicht nur auf die Prüfung. Die Sonden stehen im Abstand von 6 m in einem möglichst quadratischen Feld.
+* '''Rückwirkung nur an der Sonde.''' Der Kollektor rechnet den ungestörten Jahresgang; seine Unterdimensionierung zeigt allein die Auslegungsprüfung.
+* '''Vorjahre aus der Vorprüfung.''' Die neun Jahre vor dem Rechenjahr tragen den Jahresentzug der Vorprüfung. Fehlt sie – kein Normpunkt, keine Klimazone –, rechnet die Sonde das erste Betriebsjahr und das Laufprotokoll sagt es.
 * '''Vorprüfung und Lauf.''' Ohne Lauf rechnet die Prüfung mit der Entzugsleistung aus den Auslegungswerten der Wärmepumpe; sie kennt weder Betriebsmodus noch Speicherladung, die Prüfung nach einem Lauf ersetzt sie. Fehlen Heizleistung oder COP am Normpunkt der Kennlinie oder die Klimazone, gibt es keine Vorprüfung, und die Gruppe nennt den fehlenden Wert. Sondenmeter, Fläche, Boden und Zone rechnet die Prüfzeile sofort gegen, den gerechneten Entzug erst nach ''OK'' und einem neuen Lauf; ''Simulation'' im Dialog rechnet mit den gespeicherten Quelldaten. Das Prüfergebnis wird mit dem Simulationsergebnis gespeichert: Nach einem Programmstart zeigt der Dialog die Prüfung des zuletzt gespeicherten Laufs mit „Stand des Laufs vom …“, bis ein neuer Lauf sie ersetzt.
 * '''Klimazone gehört zur Klimaregion.''' Eine andere Zone gilt für alle Erdreichquellen des Projekts. Ohne Zone gibt es weder die Vorprüfung noch die Prüfung eines Kollektors; die Sonde nimmt nach einem Lauf dessen Volllaststunden.
 * '''Tabelle B2 nur als Auszug.''' Hinterlegt sind <math>\lambda</math> von 1 bis 4 W/(m·K), 1&nbsp;200 bis 2&nbsp;400 Volllaststunden und 1 oder 5 Sonden (bei 2&nbsp;400 h 4) für den Fall „nur Heizen“; außerhalb wird geklemmt, bei der Sondenzahl nicht konservativ – das Ergebnis trägt dann einen Vorbehalt. Die übrigen Betriebsfälle der Norm sind nicht hinterlegt.

@@ -458,13 +458,14 @@ public class QuelleErdreichDialogTests : EposBunitContext
         => new[] { new WpAuslegung("WP Sole", 10, 4.5, "B0/W35") };
 
     /// <summary>
-    /// Bei der ERDSONDE sagt eine leise Zeile unter der Vorschau, dass die Quelltemperatur
-    /// konstant ist und der Entzug nicht zurückwirkt; beim Kollektor steht sie nicht.
+    /// Bei der ERDSONDE sagt eine leise Zeile unter der Vorschau, dass sie die ungestörte
+    /// Temperatur zeigt und die Soletemperatur im Lauf mit dem Entzug sinkt; beim Kollektor
+    /// steht sie nicht.
     /// </summary>
     [Fact]
-    public void Bei_der_Sonde_steht_der_Hinweis_zur_konstanten_Quelltemperatur()
+    public void Bei_der_Sonde_steht_der_Hinweis_zur_Soletemperatur_im_Lauf()
     {
-        const string kern = "ganzjährig konstanten Quelltemperatur";
+        const string kern = "sinkt die Soletemperatur mit dem Entzug";
 
         var sonde = Zeige(Sonde());
         Assert.Contains(sonde.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains(kern));

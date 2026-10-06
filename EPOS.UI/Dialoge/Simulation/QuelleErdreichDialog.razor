@@ -344,8 +344,9 @@
 
     /// <summary>Hinweis unter der Vorschau bei der Erdsonde (<c>SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT</c>).</summary>
     [Parameter] public string HinweisSondeKonstant { get; set; }
-        = "Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer " +
-          "Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück.";
+        = "Die Vorschau zeigt die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur " +
+          "und Tiefenzuschlag. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; " +
+          "ihren Verlauf zeigt das Ergebnis.";
     /// <summary>Titel der ersten Rubrik — zugleich der Name des Quellsystems.</summary>
     [Parameter] public string RbKollektor { get; set; } = "Erdkollektor";
 
