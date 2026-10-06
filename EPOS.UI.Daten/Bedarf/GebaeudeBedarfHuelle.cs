@@ -116,8 +116,12 @@ namespace WindowsFormsApplication1
 
             // Anlagenkopplung AK2 (5.5): der Restbedarf des Projekts steht neben den Komfortstunden.
             double? restbedarf = GebaeudeBedarfCtrl.RestbedarfDesProjektsMwh(projektId);
+            // Stufe KP3, Welle O2 (E60, Festlegung 41): die Gruppe „Aufheizung" - die Ergebniszeile des Laufs, bei
+            // ausgeschalteter Optimierung die Auskunft der Bemessung fuer die Auslegungsgroesse.
+            GebaeudeBedarfAufheizDaten aufheizung = Aufheizung(ergebnis,
+                ohneSchalter => AufheizauskunftCtrl.Gebaeude(projektId, projekt.m_ID_Klimaregion, modell(), ohneSchalter));
             GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser,
-                                              restbedarf);
+                                              restbedarf, aufheizung);
 
             // Das Bild „Raumtemperatur und Sollwert" (AK2, E80): die Woche mit der größten Unterschreitung -
             // nur, wenn am Gebäude Komfort erhoben ist und eine Stunde zählt.
@@ -264,7 +268,8 @@ namespace WindowsFormsApplication1
         /// Anzeigekante.
         /// </summary>
         private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich,
-                                                 double? warmwasserProjektMwh = null, double? restbedarfProjektMwh = null)
+                                                 double? warmwasserProjektMwh = null, double? restbedarfProjektMwh = null,
+                                                 GebaeudeBedarfAufheizDaten aufheizung = null)
         {
             ErgebnisGebaeudeModel zeile = ergebnis.Ergebniszeile;
             var monate = new double[12];
@@ -280,6 +285,7 @@ namespace WindowsFormsApplication1
                 MonatswerteMwh = monate,
 
                 Modelltext = Rechenweg(ergebnis),
+                Aufheizung = aufheizung,
                 WarmwasserProjektMwh = warmwasserProjektMwh,
                 IstVdi6007 = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007,
 
@@ -362,6 +368,123 @@ namespace WindowsFormsApplication1
         /// wirksamer Kopplung einer Seite (Heiz- oder Kälteseite, E37) „VDI 6007, gekoppelt (AK1)",
         /// sonst der Rechenweg allein.
         /// </summary>
+        /// <summary>
+        /// <b>Die Gruppe „Aufheizung"</b> (Entwurf KP3, Welle O2; Festlegungen 22, 25, 39, 41) — aus der Ergebniszeile des
+        /// Laufs (<see cref="GebaeudeBedarfErgebnis.Ergebniszeile"/>), dieselben Zahlen wie <c>Tab_ErgebnisGebaeude</c>.
+        /// Bei ausgeschalteter Optimierung (Zustand NULL auf dem VDI-Weg) nimmt sie die Teile der Auslegungsgröße aus der
+        /// Auskunft der Bemessung (<paramref name="auskunft"/> mit <c>true</c> = auch ohne Schalter); bei Art „manuell"
+        /// die bemessene Zeit aus der Auskunft (<c>false</c>), denn die Ergebniszeile trägt dann den manuellen Wert.
+        /// <c>null</c> auf dem Tagesbilanz-Weg und ohne Bemessung.
+        /// </summary>
+        internal static GebaeudeBedarfAufheizDaten Aufheizung(GebaeudeBedarfErgebnis e, Func<bool, Aufheizauskunft> auskunft)
+        {
+            if (e == null || e.Modell != DbWerte.GEBAEUDE_MODELL_VDI6007) return null;
+            ErgebnisGebaeudeModel z = e.Ergebniszeile;
+            double spitze = z?.SpitzeKw ?? e.MaxLastKw;
+            double? tagesmittel = z?.SpitzeTagesmittelKw ?? e.SpitzeTagesmittelKw;
+            if (z?.AufheizZustand == null)
+            {
+                Aufheizauskunft a = auskunft?.Invoke(true);
+                if (a == null || a.Zustand == null) return null;
+                return new GebaeudeBedarfAufheizDaten
+                {
+                    Zustand = GebaeudeBedarfAufheizDaten.AUS,
+                    Zustandtext = MyResource.Resource.GEBB_AUFH_ZUSTAND_AUS,
+                    AuslegungsheizlastKw = a.AuslegungsheizlastKw,
+                    AufheizzuschlagKw = a.AufheizzuschlagKw,
+                    AuslegungsgroesseKw = a.AuslegungsheizlastKw + a.AufheizzuschlagKw,
+                    SpitzeKw = spitze,
+                    SpitzeTagesmittelKw = tagesmittel,
+                    LeistungKw = a.LeistungKw,
+                    Quelle = Aufheizquelle(a.Quelle),
+                    FaktorErstImLauf = a.FaktorErstImLauf,
+                };
+            }
+
+            // Festlegung 39: bei MANUELL traegt die Zeile den manuellen Wert als t_auf,max - die bemessene Zeit
+            // nennt die Auskunft (dieselbe Bemessung, ohne Jahreslauf).
+            bool manuell = z.AufheizArt == DbWerte.AUFHEIZ_ART_MANUELL;
+            int? manuellH = manuell ? z.AufheizzeitMaxH : null;
+            int? bemessenH = manuell ? auskunft?.Invoke(false)?.AufheizzeitMaxH : z.AufheizzeitMaxH;
+            var hinweise = new List<string>();
+            CultureInfo k = CultureInfo.CurrentCulture;
+            if (z.AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR) hinweise.Add(MyResource.Resource.GEBB_AUFH_W1_BEMESSUNG);
+            if (z.AufheiztageUnerreichbar is int w1 && w1 > 0) hinweise.Add(string.Format(k, MyResource.Resource.GEBB_AUFH_W1, w1));
+            if (z.AufheiztageBegrenzt is int w2 && w2 > 0) hinweise.Add(string.Format(k, MyResource.Resource.GEBB_AUFH_W2, w2));
+            if (z.AufheiztageNachweisband is int w3 && w3 > 0) hinweise.Add(string.Format(k, MyResource.Resource.GEBB_AUFH_W3, w3));
+            if (z.AufheizspruengeAus is int w4 && w4 > 0) hinweise.Add(string.Format(k, MyResource.Resource.GEBB_AUFH_W4, w4));
+            if (z.AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT) hinweise.Add(MyResource.Resource.GEBB_AUFH_W5);
+
+            var zonen = new List<GebaeudeBedarfAufheizZoneDaten>();
+            if (e.Zonen.Count >= 2)
+                foreach (GebaeudeBedarfZone zone in e.Zonen)
+                {
+                    ErgebnisZoneModel zz = zone.Ergebniszeile;
+                    zonen.Add(new GebaeudeBedarfAufheizZoneDaten
+                    {
+                        Name = zone.Name,
+                        Zustandtext = Aufheizzustand(zz?.AufheizZustand),
+                        AufheizzeitMaxH = zz?.AufheizzeitMaxH,
+                        LeistungKw = zz?.AufheizLeistungKw,
+                        Quelle = Aufheizquelle(zz?.AufheizLeistungsquelle),
+                        Aufheiztage = zz?.Aufheiztage,
+                        AufheizzeitLaengsteH = zz?.AufheizzeitLaengsteH,
+                        KappungsstundenH = zz?.HeizleistungMaxStundenH,
+                    });
+                }
+
+            return new GebaeudeBedarfAufheizDaten
+            {
+                Zustand = z.AufheizZustand,
+                Zustandtext = Aufheizzustand(z.AufheizZustand),
+                AufheizzeitMaxH = bemessenH,
+                AussenC = z.AufheizAussenC,
+                Variante = z.AufheizBemessung == DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG
+                    ? MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG
+                    : z.AufheizBemessung == null ? "" : MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE,
+                Art = manuell ? string.Format(k, MyResource.Resource.GEBB_AUFH_ART_MANUELL, manuellH)
+                    : z.AufheizArt == DbWerte.AUFHEIZ_ART_FEST ? MyResource.Resource.SIMKONF_AUFH_ART_FEST
+                    : z.AufheizArt == DbWerte.AUFHEIZ_ART_TAEGLICH ? MyResource.Resource.SIMKONF_AUFH_ART_TAEGLICH : "",
+                AufheizzeitManuellH = manuellH,
+                LeistungKw = z.AufheizLeistungKw,
+                Quelle = Aufheizquelle(z.AufheizLeistungsquelle),
+                Aufheiztage = z.Aufheiztage,
+                AufheizstundenH = z.AufheizstundenH,
+                AufheizzeitLaengsteH = z.AufheizzeitLaengsteH,
+                TageBegrenzt = z.AufheiztageBegrenzt,
+                TageUnerreichbar = z.AufheiztageUnerreichbar,
+                TageNachweisband = z.AufheiztageNachweisband,
+                SpruengeAus = z.AufheizspruengeAus,
+                KappungsstundenH = z.HeizleistungMaxStundenH,
+                AuslegungsheizlastKw = z.AuslegungsheizlastKw,
+                AufheizzuschlagKw = z.AufheizzuschlagKw,
+                AuslegungsgroesseKw = z.AuslegungsheizlastKw + z.AufheizzuschlagKw,
+                SpitzeKw = spitze,
+                SpitzeTagesmittelKw = tagesmittel,
+                Hinweise = hinweise,
+                Zonen = zonen,
+            };
+        }
+
+        /// <summary>Der Zustand der Aufheizrechnung als Anzeigetext; leer ohne Zustand.</summary>
+        internal static string Aufheizzustand(string zustand) => zustand switch
+        {
+            DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN => MyResource.Resource.GEBB_AUFH_ZUSTAND_BEMESSEN,
+            DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR => MyResource.Resource.GEBB_AUFH_ZUSTAND_UNERREICHBAR,
+            DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT => MyResource.Resource.GEBB_AUFH_ZUSTAND_GEKOPPELT,
+            DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT => MyResource.Resource.GEBB_AUFH_ZUSTAND_UNBEHEIZT,
+            _ => "",
+        };
+
+        /// <summary>Die Quelle von P_auf als Anzeigetext; leer ohne Quelle.</summary>
+        internal static string Aufheizquelle(string quelle) => quelle switch
+        {
+            DbWerte.AUFHEIZ_QUELLE_GRENZE => MyResource.Resource.SIMKONF_AUFH_QUELLE_GRENZE,
+            DbWerte.AUFHEIZ_QUELLE_ZIEL => MyResource.Resource.SIMKONF_AUFH_QUELLE_ZIEL,
+            DbWerte.AUFHEIZ_QUELLE_GEMISCHT => MyResource.Resource.SIMKONF_AUFH_QUELLE_GEMISCHT,
+            _ => "",
+        };
+
         internal static string Rechenweg(GebaeudeBedarfErgebnis e)
         {
             string text = GebaeudeHuelle.Rechenwegtext(e.Modell, vorgabe: false);

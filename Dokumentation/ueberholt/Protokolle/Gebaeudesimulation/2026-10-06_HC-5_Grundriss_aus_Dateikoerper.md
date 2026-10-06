@@ -1,6 +1,6 @@
 # Protokoll HC-5 (+HC-5c) — Grundriss je Raum aus dem Dateikörper (06.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeile **#779**. Opus-Agenten im Worktree: Teil A `4713e25f`, `98874efb`, `4f1eb465`, `b0534049`, `8483d5a7`; Teil B `be0e5204`, `9958601f`, `eaea4a12`, `f440e1f7`, `d4d8761b`; HC-5c `6e8fac2a`, `5c647e6b`, `8bbbeae7`, `d6e65516`, `46e36465`. Merges `f1d248e9`, `e1204e9a`, `154ded7f`, `56fca129` (Schemaschritt 191 an 190 `RaumnutzungDinTsSchema` gehängt, Testdatenbank von origin auf 191 gehoben). Schemaschritt 191, Basis unverändert.
+**Sitzung:** IFC / Gebäudeimport, Statuszeile **#784**. Opus-Agenten im Worktree: Teil A `4713e25f`, `98874efb`, `4f1eb465`, `b0534049`, `8483d5a7`; Teil B `be0e5204`, `9958601f`, `eaea4a12`, `f440e1f7`, `d4d8761b`; HC-5c `6e8fac2a`, `5c647e6b`, `8bbbeae7`, `d6e65516`, `46e36465`. Merges `f1d248e9`, `e1204e9a`, `154ded7f`, `56fca129` (Schemaschritt 191 an 190 `RaumnutzungDinTsSchema` gehängt, Testdatenbank von origin auf 191 gehoben). Schemaschritt 191, Basis unverändert.
 **Entscheid:** E94 (F6–F11); Konzept [HottCAD-Verbund](../../../aktuell/Gebaeudesimulation/2026-10-05_Konzept_HottCAD_Verbund_IFC_Projektdatei_Viewer.md) Kapitel 11; Vorwelle [HC-4](2026-10-06_HC-4_Datei_erneut_lesen.md).
 
 ## 1 Auftrag

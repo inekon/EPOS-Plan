@@ -158,7 +158,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 | Werkzeug | Wofür | Aufruf |
 |---|---|---|
 | `Proben/ChartProben` | zeichnet alle Diagrammbilder aus synthetischen Reihen und prüft Maße, Farben und Determinismus, mit Gegenproben; rot, sobald der Renderer eine Windows-API braucht oder sich ein Bild ändert | `dotnet run --project Proben/ChartProben -c Release` |
-| `Proben/Rasterprobe` | misst die virtualisierte `Katalogliste` (QuickGrid `Virtualize`) im echten Browser — Zeilenhöhe, Abstandshalter, Rollbehälter, Sichtbarkeitsmelder. **Vor jeder Änderung an `Raster`, `Katalogliste` oder den `.epos-raster*`-Regeln ziehen**; bunit allein misst das nicht. Dazu `fensterprobe.mjs`: Kopf und Schlussleiste der Dialoge im eigenen Fenster (haften, Fokus, Überlagerung, Katalogdialog, mit Gegenprobe) — **vor jeder Änderung an Dialogkopf, Schlussleiste oder dem Abschnitt „Dialog im eigenen Fenster" des Hausblatts ziehen** | siehe [`Proben/Rasterprobe/LIESMICH.md`](Proben/Rasterprobe/LIESMICH.md) |
+| `Proben/Rasterprobe` | misst die virtualisierte `Katalogliste` (QuickGrid `Virtualize`) im echten Browser — Zeilenhöhe, Abstandshalter, Rollbehälter, Sichtbarkeitsmelder. **Vor jeder Änderung an `Raster`, `Katalogliste` oder den `.epos-raster*`-Regeln ziehen**; bunit allein misst das nicht. Dazu `fensterprobe.mjs`: Kopf und Schlussleiste der Dialoge im eigenen Fenster (haften, Fokus, Überlagerung, Katalogdialog, mit Gegenprobe) — **vor jeder Änderung an Dialogkopf, Schlussleiste oder dem Abschnitt „Dialog im eigenen Fenster" des Hausblatts ziehen**; `bannerprobe.mjs`: der Meldungsbanner im eigenen Fenster haftet unter dem Kopf (mit Gegenprobe) — **vor jeder Änderung an `Warnbanner` oder seiner Haftregel ziehen** | siehe [`Proben/Rasterprobe/LIESMICH.md`](Proben/Rasterprobe/LIESMICH.md) |
 | `EPOS.Referenzlauf` | plattformfreier Rechennachweis gegen die eingefrorene Basis (Linux, macOS, CI) | `dotnet run --project EPOS.Referenzlauf -- lauf …` / `… vergleich <ref> <neu>` |
 | `Referenzlauf` (Windows) | die vollständige Suite (`lauf`, `projekt`, `vergleich`, `pruefen`, `liste`, `migration`) | `Referenzlauf.exe <modus> …` |
 | `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` aus der neutralen `.resx`; wiederholbar. **Nach jedem neuen Ressourcenschlüssel ziehen** | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen) |
@@ -174,7 +174,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-05_R38_Vorlaufwahl`, einundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-06_R39_Auslegungsheizlast`, einundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -198,7 +198,7 @@ der CI-Auswahl,
 Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude und einer Zone mit eigener Übergabe (Konvektor 70/50 °C, Proportionalband 2 K) — die Übergabe je Zone am gemeinsamen Vorlauf, Rücklauf massenstromgewichtet —, gehalten von `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1056 rechnet als Kopie von 1047 mit Anlagenfahrplan — Nachtsperre der Wärmepumpe 0 bis 6 Uhr, Zeitprogramm 0 in denselben Stunden an Kessel und BHKW, `Vorlauf_Max` 50 °C — und schreibt Komfortstunden, gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
-1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus,
+1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
 allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte

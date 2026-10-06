@@ -1507,13 +1507,20 @@ namespace WindowsFormsApplication1
         /// und rechnet kein Jahr des Gebäudes (im Mehrzonenweg mit Regelpaaren nur den adiabaten Vorlauf der
         /// 4-K-Regel, den die Zonen des Laufs ebenso brauchen).</para>
         /// </summary>
-        internal Aufheizauskunft AufheizbemessungEinesGebaeudes(ProjektGebaeudeModel item)
+        /// <param name="item">Das Gebäude, gelesen wie im Lauf.</param>
+        /// <param name="auchOhneSchalter">Bemisst bei ausgeschalteter Optimierung mit den gespeicherten Werten der
+        /// Projektvorgabe, als wäre der Schalter an (<see cref="Aufheizvorgabe.Eingeschaltet"/>; Festlegung 41: der
+        /// Bedarfsdialog nimmt bei Schalter aus die Auskunft). Gilt nur für diesen Aufruf — der nächste Lauf und die
+        /// nächste Auskunft lesen wieder die Projektvorgabe (<see cref="VdiWegEinstellen"/>).</param>
+        internal Aufheizauskunft AufheizbemessungEinesGebaeudes(ProjektGebaeudeModel item, bool auchOhneSchalter = false)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             var leer = new Aufheizauskunft { ID_Gebaeude = item.ID_Gebaeude, Gebaeudename = item.Gebaeudename ?? "" };
             if (!ReferenceEquals(RechenwegWaehlen(item), _vdi6007)) return leer with { Tagesbilanz = true };
 
             VdiWegEinstellen();
+            if (auchOhneSchalter && _vdi6007.Aufheizvorgabe != null)
+                _vdi6007.Aufheizvorgabe = _vdi6007.Aufheizvorgabe.Eingeschaltet();
             Aufheizvorgabe vorgabe = _vdi6007.Aufheizvorgabe;
             if (vorgabe == null || !vorgabe.An) return leer;
             // E64: die wirksame Reserve und ob sie die Vorgabe ist - die Herleitungszeile nennt die Quelle.
@@ -1534,6 +1541,9 @@ namespace WindowsFormsApplication1
                         AufheizzeitMaxH = g.Gekoppelt ? g.AufheizzeitMaxH : g.AufheizzeitBemessenH,
                         AussenC = Endlich(g.AussenBC), LeistungUnskaliertKw = p, Skalierungsfaktor = 1.0, LeistungKw = p,
                         Quelle = g.Quelle, Art = g.Art, AufheizzeitManuellH = g.ManuellH, Tau2H = Endlich(g.Tau2S / 3600.0),
+                        // E60 (Welle O2): Φ_HL und Φ_RH wie die Ergebniszeile (Aufheizergebnis.Gebaeude), Summe der Zonen.
+                        AuslegungsheizlastKw = g.Gekoppelt ? null : Endlich(g.AuslegungsheizlastW / 1000.0),
+                        AufheizzuschlagKw = g.Gekoppelt ? null : Endlich(g.AufheizzuschlagW / 1000.0),
                     };
                 }
 
@@ -1555,6 +1565,9 @@ namespace WindowsFormsApplication1
                     AussenC = Endlich(b.Wirksam.AussenC), LeistungUnskaliertKw = unskaliert, Skalierungsfaktor = faktor,
                     LeistungKw = faktor.HasValue ? unskaliert * faktor.Value : null, Quelle = b.Quelle,
                     Art = plan.Art, AufheizzeitManuellH = plan.ManuellH, Tau2H = Endlich(b.Wirksam.Tau2S / 3600.0),
+                    // E60 (Welle O2): Φ_HL und Φ_RH wie die Ergebniszeile (Aufheizergebnis.Bilden), skaliert wie P_auf.
+                    AuslegungsheizlastKw = faktor.HasValue ? Endlich(plan.AuslegungsheizlastW / 1000.0) * faktor.Value : null,
+                    AufheizzuschlagKw = faktor.HasValue ? Endlich(plan.AufheizzuschlagW / 1000.0) * faktor.Value : null,
                 };
             }
             catch (GebaeudeModellException ex)

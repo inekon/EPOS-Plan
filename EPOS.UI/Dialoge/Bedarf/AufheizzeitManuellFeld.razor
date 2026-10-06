@@ -1,0 +1,100 @@
+﻿@* „Aufheizzeit manuell (h)" im Reiter „Konditionierung" des Gebaeudeeditors (Entwurf KP3, Welle O2; E59,
+   Festlegungen 37, 38, 40; Teilkonzept 7.6).
+
+   Nur in der Betriebsart Projekt (der Wirt entscheidet). Das Feld schreibt in den ARBEITSSTAND; geschrieben wird im
+   OK-Weg des Dialogs. 1-47 ist die harte Grenze (Ganzzahlfeld faerbt und haelt OK an), leer heisst Art des Projekts.
+   Daneben zwei Vorschlaege: die bemessene Aufheizzeit zum Uebernehmen und die Spanne aus tau2; ein Wert ausserhalb der
+   Spanne bekommt einen Hinweis und wird trotzdem gespeichert (weiche Sperre). Ohne Projektschalter sagt eine Zeile,
+   dass der Wert erst mit der Aufheizoptimierung wirkt. Die Zonen erben den Wert - eine Zeile nennt sie. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+
+<Gruppenkopf Titel="@Texte.Gruppe">
+    <KindInhalt>
+        <div class="epos-aufheizzeit-manuell" data-wert="@(Wert?.ToString(CultureInfo.InvariantCulture) ?? "")">
+            <Ganzzahlfeld Bezeichnung="@Texte.Label" Einheit="@Texte.EinheitH" Platzhalter="@Texte.Platzhalter"
+                          Min="@MIN" Max="@MAX" Aktiv="@(!Gesperrt)"
+                          Feldname="@Texte.Label" FehlerZustand="FehlerZustand"
+                          Wert="@Wert" WertChanged="Setzen" />
+            @if (Vorschlag?.BemessenH is int bemessen)
+            {
+                <div class="epos-zeilenknoepfe epos-aufheizzeit-vorschlag">
+                    <span class="epos-aufheizzeit-bemessen">@string.Format(CultureInfo.CurrentCulture, Texte.VorschlagBemessen, bemessen)</span>
+                    @if (!Gesperrt)
+                    {
+                        <button type="button" class="epos-knopf epos-aufheizzeit-uebernehmen" title="@Texte.KnopfTitel"
+                                @onclick="() => Setzen(Math.Clamp(bemessen, MIN, MAX))">@Texte.KnopfUebernehmen</button>
+                    }
+                </div>
+            }
+            @if (Vorschlag is { HatSpanne: true } v)
+            {
+                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.Spanne, v.VonH, v.BisH, Tau2Text(v.Tau2H))" />
+                @if (Wert is int w && (w < v.VonH || w > v.BisH))
+                {
+                    <p class="epos-aufheizzeit-ausserhalb" role="status">@string.Format(CultureInfo.CurrentCulture, Texte.HinweisAusserhalb, w, v.VonH, v.BisH)</p>
+                }
+            }
+            else if (Vorschlag is not null)
+            {
+                <Herleitungszeile Text="@Texte.HinweisOhneVorschlag" />
+            }
+            @if (Vorschlag is { Unerreichbar: true })
+            {
+                <Herleitungszeile Text="@Texte.HinweisUnerreichbar" />
+            }
+            @if (Wert is null)
+            {
+                <Herleitungszeile Text="@Texte.HinweisLeer" />
+            }
+            @if (Vorschlag is { SchalterAn: false })
+            {
+                <Herleitungszeile Text="@Texte.HinweisOhneSchalter" />
+            }
+            @if (Zonen.Count > 0)
+            {
+                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.HinweisZonen, Zonen.Count, Geerbt)" />
+            }
+        </div>
+    </KindInhalt>
+</Gruppenkopf>
+
+@code {
+    private const int MIN = 1;
+    private const int MAX = 47;
+
+    /// <summary>Der Wert im Arbeitsstand [h]; <c>null</c> = Art des Projekts.</summary>
+    [Parameter] public int? Wert { get; set; }
+
+    /// <summary>Schreibt in den Arbeitsstand — nicht in die Datenbank.</summary>
+    [Parameter] public EventCallback<int?> WertChanged { get; set; }
+
+    /// <summary>Die Vorschläge aus der Auskunft; <c>null</c> = keine Gabe (keine Vorschlagszeilen).</summary>
+    [Parameter] public AufheizzeitManuellDaten? Vorschlag { get; set; }
+
+    /// <summary>Die Namen der Zonen des Gebäudes — sie erben den Wert.</summary>
+    [Parameter] public IReadOnlyList<string> Zonen { get; set; } = Array.Empty<string>();
+
+    /// <summary>Lesemodus des Dialogs: Feld gesperrt, kein Übernehmen.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>Der Fehlerzustand des Feldes für die Fehlerfelder des Wirts (hält den OK-Weg an).</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    /// <summary>Die Beschriftungen.</summary>
+    [Parameter] public AufheizzeitManuellTexte Texte { get; set; } = new();
+
+    /// <summary>Was die Zonen erben: der Wert in h oder die Art des Projekts.</summary>
+    private string Geerbt
+        => Wert is int w ? w.ToString(CultureInfo.CurrentCulture) + " " + Texte.EinheitH : Texte.Platzhalter;
+
+    private static string Tau2Text(double? tau2)
+        => tau2 is double t ? t.ToString("N1", CultureInfo.CurrentCulture) : "—";
+
+    private async Task Setzen(int? wert)
+    {
+        Wert = wert;
+        await WertChanged.InvokeAsync(wert);
+    }
+}

@@ -1,6 +1,6 @@
 # Protokoll BA-1 — Bauteilaufbau beim Import, Kern (06.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeile **#780**. Ein Opus-Agent im Worktree: `115f1cb8`. Kein Schemaschritt, kein Eingriff in `Bauteilreduktion` und `ErsatzparameterRC`, Referenzlauf byte-gleich.
+**Sitzung:** IFC / Gebäudeimport, Statuszeile **#785**. Ein Opus-Agent im Worktree: `115f1cb8`. Kein Schemaschritt, kein Eingriff in `Bauteilreduktion` und `ErsatzparameterRC`, Referenzlauf byte-gleich.
 **Entscheid:** E95; Konzept [Bauteilaufbau beim Gebäudeimport](../../../aktuell/Gebaeudesimulation/2026-10-06_Konzept_Bauteilaufbau_Import.md) 5 und Welle BA-1.
 
 ## 1 Auftrag

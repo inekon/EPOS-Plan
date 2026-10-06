@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     /// Auswahlleiste, Stammblatt — und bekommt ihren eigenen Satz; der Projektdialog behält
     /// seinen unverändert.</para>
     ///
-    /// <para><b>Alles über den Kern</b>: Zeilen, Verwendung, Duplizieren, Schloss und Löschen
+    /// <para><b>Alles über den Kern</b>: Zeilen, Löschregel, Duplizieren, Schloss und Löschen
     /// stehen in <see cref="GebaeudeStammCtrl"/>. <b>Gespeichert wird über den Weg des
     /// Katalogeditors</b> (<see cref="GebaeudeKatalogHuelle.Schreiben"/>, Welle #465): Das
     /// Stammblatt führt jedes Feld des Editors auf demselben Arbeitsstand, und derselbe
@@ -54,8 +54,11 @@ namespace WindowsFormsApplication1
                     GebaeudeStammCtrl.Verwendungstext(GebaeudeStammCtrl.FILTERWERT_WOHN),
                     GebaeudeStammCtrl.Verwendungstext(GebaeudeStammCtrl.FILTERWERT_SONSTIGE)
                 },
-                ["Verwendung"] = new Func<IReadOnlyDictionary<string, IReadOnlyList<string>>>(
-                    () => GebaeudeStammCtrl.Projektverwendung()),
+                // Die Loeschregel - eine Wahrheit im Kern, dieselbe wie im Projekt-Gebaeudedialog
+                // (Anwenderentscheid 06.10.2026): gesperrt allein der Auslieferungssatz; die Rueckfrage
+                // nennt die Projekte, die ihre Kopie behalten (allein ueber den Katalogverweis).
+                ["Loeschsperre"] = new Func<string, string>(GebaeudeStammCtrl.Loeschsperrgrund),
+                ["Loeschhinweis"] = new Func<IReadOnlyList<string>, string>(GebaeudeStammCtrl.Loeschhinweis),
                 // #465: der Schreibweg des Katalogeditors - dieselbe Pruefung (im Dialog), dieselbe
                 // Ableitung und dieselbe Auslieferungssperre (in der Huelle).
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(

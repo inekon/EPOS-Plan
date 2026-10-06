@@ -4,9 +4,12 @@
    auch ein Klick auf den Text, und die Mindestgroesse von 44 px gilt fuer die
    ganze Zeile statt nur fuer das Kaestchen (M2, Touchbetrieb). *@
 
-<label class="epos-schalter">
+<label class="epos-schalter" title="@(string.IsNullOrEmpty(Grund) ? null : Grund)">
     <input class="epos-schalter-kasten" type="checkbox" checked="@Wert"
-           disabled="@(!Aktiv)" @onchange="BeiAenderung" />
+           disabled="@(!Aktiv && !WeichGesperrt)"
+           aria-disabled="@(WeichGesperrt ? "true" : null)"
+           @onclick:preventDefault="WeichGesperrt"
+           @onchange="BeiAenderung" />
     <span class="epos-feld-text">@Bezeichnung</span>
 </label>
 
@@ -23,8 +26,19 @@
     /// <summary>Bedienbar? <c>false</c> sperrt das Kaestchen.</summary>
     [Parameter] public bool Aktiv { get; set; } = true;
 
+    /// <summary>
+    /// Der Grund einer Sperre, als <c>title</c> an der Zeile (Hausregel „Grund am
+    /// Bedienelement"). Ist der Schalter gesperrt und ein Grund gesetzt, sperrt er WEICH
+    /// (<c>aria-disabled</c> statt <c>disabled</c>), damit der Tooltip erscheint; ein Klick
+    /// schaltet dann nicht.
+    /// </summary>
+    [Parameter] public string? Grund { get; set; }
+
+    private bool WeichGesperrt => !Aktiv && !string.IsNullOrEmpty(Grund);
+
     private Task BeiAenderung(ChangeEventArgs e)
     {
+        if (!Aktiv) return Task.CompletedTask;
         Wert = e.Value is bool b && b;
         return WertChanged.InvokeAsync(Wert);
     }

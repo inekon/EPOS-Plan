@@ -630,7 +630,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-05_R38_Vorlaufwahl`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-06_R39_Auslegungsheizlast`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -645,11 +645,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026**
-(54 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026**
+(55 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 54 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 55 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -659,11 +659,11 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-05_R38_Vorlaufwahl/`** — **einundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056), **646 CSV**, **4 271 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 05.10.2026, Stand `bd365fe`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **188**, 87 736 320 Byte, LFS-SHA-256
-`69322344353951b482a1bc1e5ad6aa9af2dd0e8de453324ac8cd48aa0a83b090`, mit den Projekten 1053 bis 1056; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+**`2026-10-06_R39_Auslegungsheizlast/`** — **einundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056), **646 CSV**, **4 275 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 06.10.2026, Stand `7fad5dc`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **190**, 87 801 856 Byte, LFS-SHA-256
+`2fec4f1484b7f0bf27fe25bec9b2ed00c3c00d2e9d83a66aa4d9ca9193b3ee85`, mit den Projekten 1053 bis 1056; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -685,25 +685,26 @@ und `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme
 Projekt 1056. 1050, 1052, 1054, 1055 und 1056 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
 rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Ausweis der Vorlaufwahl der Wärmepumpe (VW1, E88) — die Zahlen aller einundzwanzig Projekte sind unverändert, 1047 und 1056 tragen je drei neue Zeilen in `aggregate.csv`.**
+> **Anlass: Auslegungsheizlast auch ohne Anlagenkopplung (KP3-R6, E97) — die Zahlen aller einundzwanzig Projekte sind unverändert, 1051 und 1052 tragen je zwei neue Zeilen in `aggregate.csv`.**
 >
-> Schemaschritt 188 (`VorlaufwahlSchema`) legt an `Tab_ErgebnisWaermepumpeModul` die Spalten `Vorlaufwahl_Stunden`
-> (Paare `Vorlauf:Stunden`, im Export mit Komma getrennt), `Vorlauf_Darueber_Stunden` und `Vorlauf_Darunter_Stunden` an;
-> der Lauf füllt sie nur, wenn die Wärmepumpe ihre Kennlinie am gerechneten Vorlauf wählt (Anlagenkopplung), sonst
-> bleiben sie leer und der Referenzexport führt sie nicht. Schemaschritt 187 (freie Kühlung über die Wärmequelle) ändert
-> an keinem Referenzprojekt eine Zahl. Der Rechenweg ist unverändert: **Gegen R37 sind 19 Projekte
-> vollständig byte-gleich; 1047 und 1056 tragen allein drei neue Zeilen in `aggregate.csv`, die der Vergleich als
-> „Eintrag nur im Vergleichslauf“ meldet, alle übrigen 37 CSV beider Projekte sind byte-gleich.** Neu stehen bei 1047
-> `WaermepumpeModul[0].Vorlaufwahl_Stunden` `35:1549,45:1782,55:122`, `Vorlauf_Darunter_Stunden` 1 851 und
-> `Vorlauf_Darueber_Stunden` 0; bei 1056 `35:1122,45:1411,55:101`, 1 475 und 0. Je Projekt drei Skalare mehr
-> (gesamt 646 CSV, 4 271 Skalare). Keine gesäten Daten sind neu, darum keine neue Einfrierregel.
+> Die Auslegungsheizlast Φ_HL je Zone entsteht in `GebaeudeModellEingang.Auslegungslasten` aus einer Quelle: mit
+> Kopplung die Zahl des Kopplungswegs, ohne sie derselbe Ausdruck mit Auslegungstag und Auslegungs-Außentemperatur.
+> Damit füllt jedes ungekoppelte Gebäude mit Aufheizoptimierung `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw`
+> seiner Ergebniszeile, und der Ergebnisexport trägt beide am Gebäude als `Geb[n].AuslegungsheizlastKw` und
+> `Geb[n].AufheizzuschlagKw` (nur gesetzt). Ein gekoppeltes Gebäude bemisst nicht; 1054 bleibt darum ohne die
+> Zeilen. Die exakte innere Umkehr des Zonenmodells (ZM-F) ändert keine Zahl. Der Rechenweg ist sonst unverändert:
+> **Gegen R38 sind 19 Projekte vollständig byte-gleich; 1051 und 1052 tragen allein zwei neue Zeilen in
+> `aggregate.csv`, die der Vergleich als „Eintrag nur im Vergleichslauf“ meldet, alle übrigen 35 bzw. 24 CSV beider
+> Projekte sind byte-gleich (644 von 646 CSV).** Neu stehen bei 1051 `Geb[0].AuslegungsheizlastKw` 22,19 kW und
+> `Geb[0].AufheizzuschlagKw` 3,92 kW, bei 1052 30,09 kW und 5,26 kW. Je Projekt zwei Skalare mehr (gesamt 646 CSV,
+> 4 275 Skalare). Keine gesäten Daten sind neu, darum keine neue Einfrierregel.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
->   --ziel Referenzlaeufe/2026-10-05_R38_Vorlaufwahl
+>   --ziel Referenzlaeufe/2026-10-06_R39_Auslegungsheizlast
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
@@ -812,14 +813,14 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `2fec4f1484b7f0bf27fe25bec9b2ed00c3c00d2e9d83a66aa4d9ca9193b3ee85`**. **Die Basis bleibt:** Kein Rechenweg liest die
 > Zuordnung, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT PASS, 646 CSV byte-gleich.
 
-### Die Vorgängerbasis R37 (Fahrplan)
+### Die Vorgängerbasis R38 (Vorlaufwahl)
 
-Einundzwanzig Projekte, 646 CSV, 4 265 Skalare, auf Linux eingefroren gegen die Testdatenbank `63b0bdae…` (Schemastand
-186, mit den Projekten 1053 bis 1056), gehoben auf Schemastand 188; mit R38 aus dem Arbeitsbaum gefallen, Protokoll und
-Anlass (Komfortspalten für jedes gekoppelte Projekt, F12 und E83, und das Referenzprojekt 1056, AK2-4) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R38 ist
-der Ausweis der Vorlaufwahl der Wärmepumpe (VW1, E88); 19 Projekte sind byte-gleich, 1047 und 1056 tragen nur drei neue
-Zeilen in `aggregate.csv`.
+Einundzwanzig Projekte, 646 CSV, 4 271 Skalare, auf Linux eingefroren gegen die Testdatenbank `69322344…` (Schemastand
+188, mit den Projekten 1053 bis 1056), gehoben auf Schemastand 190; mit R39 aus dem Arbeitsbaum gefallen, Protokoll und
+Anlass (Ausweis der Vorlaufwahl der Wärmepumpe, VW1 und E88) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R39 ist
+die Auslegungsheizlast auch ohne Anlagenkopplung (KP3-R6, E97); 19 Projekte sind byte-gleich, 1051 und 1052 tragen nur
+zwei neue Zeilen in `aggregate.csv`.
 
 ## Was hier liegt
 
@@ -949,7 +950,8 @@ Aufheizzeit trägt das Gebäude nicht. Alle übrigen Zonenfelder bleiben leer (W
 Gerechnet (zwei Läufe byte-gleich, rund 2 s): Heizwärme des Gebäudes 54,00 MWh, Spitze 28,95 kW (Umfang des
 flächengleichen Quadrats, B′ 22,9 m, U_g 0,146 W/(m²K)); Gästezimmer 35,23 MWh, Spitze 18,03 kW, 52 Rampentage,
 t_auf,max 6 h; Gastronomie 18,77 MWh, Spitze 12,27 kW, 201 Rampentage, t_auf,max 16 h; Keller im Mittel der Heizzeit
-15,1 °C; 672 Rampenstunden in `heizsollwert_0.csv` (Wert vor R34, nicht neu abgelesen). 1052 steht in der Basis R35, nicht
+15,1 °C; 672 Rampenstunden in `heizsollwert_0.csv` (Wert vor R34, nicht neu abgelesen). Ab R39 weist der Lauf die Teile der
+Auslegungsgröße am Gebäude aus: Auslegungsheizlast 30,09 kW, Aufheizzuschlag 5,26 kW. 1052 steht in der Basis R35, nicht
 in der CI-Auswahl; es gilt die Einfrierregel „gesäte Zonendaten“ oben.
 
 ```bash
@@ -1045,7 +1047,7 @@ bei 4 kW; der Katalogsatz mit 200 kW taktete jede Stunde. Ein abweichender Kühl
 Kühlspitze. Gerechnet: Kältebedarf 4,08 MWh, gedeckt 100,0 % (1017 mit der Wärmepumpe: 98,2 %), Kälte der Maschine
 4,19 MWh, Kältestrom 1,26 MWh (vollständig Netzbezug über den eigenen Zähler mit Träger 58), EER-Jahreswert 3,25,
 0 Stunden freier Kühlung (der Trockenkühler erreicht 3 °C Rückkühlung an Kühltagen nicht), 166 Taktstunden;
-Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R38
+Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R39
 und nicht in der CI-Auswahl; es gilt die Einfrierregel „gesäte Kältemaschinendaten“ oben.
 
 ```bash
@@ -1087,11 +1089,11 @@ Sperrfenster), Zeilenzahlen der Kopie, die gesetzten Zellen, `foreign_key_check`
 jeder Abweichung zurück. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1055 als höchste. Nach
 einer Neufassung der Testdatenbank wird es nach 1055 gezogen.
 
-Ergebnis in R38 (unverändert seit R37): `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
+Ergebnis in R39 (unverändert seit R37): `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
 3 883,19 Kh (1047: 1 281,04), längste Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh; Überschreitungsstunden 32
 und 43 Kh wie 1047. Das Laufprotokoll trägt den Hinweis der Näherung des Profilwegs. Die Wärmepumpe wählt ihre Kennlinie
 am gerechneten Vorlauf: 35 °C 1 122 h, 45 °C 1 411 h, 55 °C 101 h, darunter 1 475 h, darüber 0 h (1047: 1 549, 1 782,
-122, darunter 1 851 h). 1056 steht in der Basis R38 und
+122, darunter 1 851 h). 1056 steht in der Basis R39 und
 nicht in der CI-Auswahl; gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`.
 
 ### Das Referenzprojekt 1051 „Konditionierung“
@@ -1120,6 +1122,8 @@ P_auf 31,62 kW bei −20,17 °C, 312 Aufheizstunden, längste Rampe 13 h, 615 Na
 Sommerlüftungsstunden; der Umfang kommt aus dem Feld (`Erdreich_Umfangsquelle` Feld, B′ 6,69 m,
 U_g 0,198 W/(m²K)). Heizwärme und Spitze ohne Rampe, die Wirkungen W1 bis W4 und die kleinste Reserve ohne W1 und W3
 sind in der Basis nicht abzulesen und stehen mit den Werten vor R34 nicht mehr hier; die gesetzte Reserve von 20 % bleibt.
+Ab R39 weist der Lauf die Teile der Auslegungsgröße am Gebäude aus: Auslegungsheizlast 22,19 kW, Aufheizzuschlag
+3,92 kW.
 
 1051 steht in der Basis R35 und in der CI-Auswahl; es gilt die Einfrierregel „gesäte Konditionierungsdaten“ oben.
 Die Auslieferungsvorlage liefert 1051 und den Referenzbau nicht aus.
@@ -1165,7 +1169,7 @@ ersten Stand ohne Lastgang zieht es nach), prüft
 Zielzellen, die Unversehrtheit von 1018, `integrity_check` und `foreign_key_check` in einer Arbeitsdatei und ersetzt
 erst dann die Datenbank. Nach einer Neufassung der Testdatenbank wird es **nach 1052** gezogen.
 
-**Die einundzwanzig Projekte der Basis R38:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
+**Die einundzwanzig Projekte der Basis R39:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055 und 1056. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1050, 1052, 1054, 1055
 und 1056 stehen nicht in der CI-Auswahl).
 

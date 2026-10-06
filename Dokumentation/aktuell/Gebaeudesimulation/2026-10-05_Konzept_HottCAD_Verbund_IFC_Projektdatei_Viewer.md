@@ -4,7 +4,7 @@
 > den Wellen SQ-1 bis SQ-3 (#731, E80, Datenaustauschkonzept Nachtrag 3) bereits gebaut; dieses
 > Papier beschreibt dazu den Nachzug nach **E87** (Wahl der Zonierung, Vorgabe
 > DIN-V-18599-Zone, Größengrenze). **E87** entscheidet die Fragen F1 bis F5 (Kapitel 7); es ist
-> nichts mehr offen. Umsetzung in den Wellen HC-1 bis HC-4 (Kapitel 6); **alle vier Wellen sind gebaut (HC-3 #736, HC-1 #740, HC-2 #746, HC-4 #754), offen bleibt nur 5.3; HC-5 (Grundriss je Raum aus dem Dateikörper, Kapitel 11) ist gebaut (#779).**
+> nichts mehr offen. Umsetzung in den Wellen HC-1 bis HC-4 (Kapitel 6); **alle vier Wellen sind gebaut (HC-3 #736, HC-1 #740, HC-2 #746, HC-4 #754), offen bleibt nur 5.3; HC-5 (Grundriss je Raum aus dem Dateikörper, Kapitel 11) ist gebaut (#784).**
 
 Der Anwender hat am 05.10.2026 drei Ziele genannt: **(2)** alle sinnvollen Informationen aus
 der IFC-Datei nutzen, nicht aus der `.sqproj`; **(3)** was in der IFC fehlt und wesentlich ist,
@@ -407,9 +407,9 @@ Hauptbaum; Merge → Gate → Statuszeile und Protokoll → Push → Nachweis; i
 Rückfrage.
 
 
-## 11. Weg 1 — Grundriss je Raum aus dem Dateikörper (HC-5, gebaut #779)
+## 11. Weg 1 — Grundriss je Raum aus dem Dateikörper (HC-5, gebaut #784)
 
-> **Gebaut (#779) nach Freigabe der Fragen F6 bis F11 (E94); Abweichungen im [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-5_Grundriss_aus_Dateikoerper.md).** E87 F3 gilt für die volle Geometrie weiter.
+> **Gebaut (#784) nach Freigabe der Fragen F6 bis F11 (E94); Abweichungen im [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-5_Grundriss_aus_Dateikoerper.md).** E87 F3 gilt für die volle Geometrie weiter.
 
 ### 11.1 Anlass und Ziel
 
@@ -613,7 +613,7 @@ die Kette hängt über `+ 1` an der Vorgängerklasse. Ohne DML, ohne Saat; die T
 - `Tab_Raumgrundriss` lesen allein der Export und die Ansicht.
 
 **Einfrierregeln: nicht berührt (nein).** Kein Referenzprojekt ist importiert; die Testdatenbank bekommt nur die
-leere Tabelle. Erwartet ist der Referenzlauf **byte-gleich** gegen `2026-10-05_R38_Vorlaufwahl`.
+leere Tabelle. Erwartet ist der Referenzlauf **byte-gleich** gegen `2026-10-06_R39_Auslegungsheizlast`.
 
 ### 11.6 Bestand
 
@@ -632,7 +632,7 @@ unverändert. Kein iOS-Lauf nötig (keine `Dienste.*`-Schnittstelle, kein Prüfm
 
 ### 11.8 Wellenzuschnitt HC-5
 
-HC-5 ist gebaut (#779), Abweichungen vom Zuschnitt im [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-5_Grundriss_aus_Dateikoerper.md).
+HC-5 ist gebaut (#784), Abweichungen vom Zuschnitt im [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-5_Grundriss_aus_Dateikoerper.md).
 
 | Teil | Agent | Inhalt | Abnahme | PT |
 |---|---|---|---|---|
