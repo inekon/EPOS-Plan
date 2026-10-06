@@ -892,7 +892,7 @@
         if (firstRender && _ersterAufbau)
         {
             _ersterAufbau = false;
-            await _wurzel.FocusAsync();
+            await _wurzel.FocusAsync(preventScroll: true);
             return;
         }
 

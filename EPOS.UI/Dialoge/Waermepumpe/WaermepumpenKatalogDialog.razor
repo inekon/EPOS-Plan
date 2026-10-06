@@ -255,7 +255,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private void Waehlen(string bezeichner) => _gewaehlt = bezeichner ?? "";
