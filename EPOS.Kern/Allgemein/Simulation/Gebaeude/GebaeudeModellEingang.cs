@@ -350,6 +350,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal double AuslegungsheizlastW { get; private set; } = double.NaN;
 
+        /// <summary>
+        /// Die Auslegungs-Außentemperatur des Gebäudes, wie eingetragen [°C] (<c>Auslegung_Aussentemperatur</c>);
+        /// <c>null</c> = aus der Klimareihe hergeleitet (H10). Gelesen auch ohne Kopplung — für die Auslegungsheizlast
+        /// eines ungekoppelten Gebäudes (<see cref="Auslegungslasten"/>, E97).
+        /// </summary>
+        internal double? AuslegungAussentemperaturFeldC { get; private set; }
+
         /// <summary>Ist die Nennleistung der Übergabe aus der Auslegungsheizlast hergeleitet (NULL, H7)?</summary>
         internal bool UebergabeNennleistungHergeleitet { get; private set; }
 
@@ -1211,6 +1218,8 @@ namespace WindowsFormsApplication1
             e.AnlagenkopplungStufe = anlagenkopplung;
             e.HeizkreisAktiv = gebaeude.Heizkreis_Aktiv;
             e.UebergabeArt = gebaeude.Uebergabe_Art;
+            // E97: das Feld des Auslegungspunkts auch ohne Kopplung - die Auslegungsheizlast (Auslegungslasten).
+            e.AuslegungAussentemperaturFeldC = gebaeude.Auslegung_Aussentemperatur;
             bool kopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung);
             // Mehrzonenweg (E63, AK1z): Schritt H je Zone. Die Art der Zone, sonst die des Gebäudes;
             // eine Zone mit IDEAL (oder leer), eine unbeheizte Zone und der adiabate Vorlauf der
@@ -1639,11 +1648,7 @@ namespace WindowsFormsApplication1
             // Rest läuft als Zusatzleitwert. OHNE Lüftungskalender steht hier wörtlich die
             // Aufrufzeile des Bestands, ohne zweites Argument (N1.61 Nr. 11).
             double eqN = aequivalentN(auslegungstag, aN);
-            AuslegungsheizlastW = LueftungZusatzleitwertWK == null
-                ? new Zonenmodell2K(Parameter, Bezeichnung)
-                    .StationaereHeizlastW(iN, aN, eqN, HeizungStrahlungsanteil)
-                : new Zonenmodell2K(Parameter, Bezeichnung)
-                    .StationaereHeizlastW(iN, aN, eqN, HeizungStrahlungsanteil, AuslegungZusatzleitwertWK);
+            AuslegungsheizlastW = StationaereLastW(iN, aN, eqN);
 
             // H7: Die Nennleistung gilt dem wirklichen Gebäude. Fest eingetragen wird sie auf den
             // Katalogbau umgerechnet; leer ist sie die Auslegungsheizlast des Katalogbaus - nach
@@ -1942,9 +1947,76 @@ namespace WindowsFormsApplication1
             double eqN = zone.AequivalentN(tag, aN, luftN);
             double zusatz = LueftungZusatzleitwertWK == null ? 0.0 : AuslegungZusatzleitwertWK;
             double zuluft = zone.ZuluftN(aN, zusatz, luftN);
-            return LueftungZusatzleitwertWK == null
-                ? new Zonenmodell2K(Parameter, Bezeichnung).StationaereHeizlastW(iN, zuluft, eqN, HeizungStrahlungsanteil)
-                : new Zonenmodell2K(Parameter, Bezeichnung).StationaereHeizlastW(iN, zuluft, eqN, HeizungStrahlungsanteil, zusatz);
+            return StationaereLastW(iN, zuluft, eqN);
+        }
+
+        /// <summary>
+        /// <b>Die stationäre Last am Auslegungspunkt</b> [W] (8.4) — der eine Ausdruck der Auslegungsheizlast in
+        /// jedem Weg: Raumluft <paramref name="iN"/>, Zuluft <paramref name="zuluftC"/> (Einzone: die
+        /// Auslegungs-Außentemperatur), äquivalente Außentemperatur <paramref name="eqN"/>, ohne solare und
+        /// innere Lasten, mit dem Strahlungsanteil der Heizung und — mit Lüftungskalender — dem höchsten
+        /// unbedingten Zusatzleitwert der Nutzungszeit (KP1b, 3.6). Ohne Lüftungskalender die Aufrufzeile des
+        /// Bestands ohne zweites Argument (N1.61 Nr. 11).
+        /// </summary>
+        private double StationaereLastW(double iN, double zuluftC, double eqN)
+            => LueftungZusatzleitwertWK == null
+                ? new Zonenmodell2K(Parameter, Bezeichnung).StationaereHeizlastW(iN, zuluftC, eqN, HeizungStrahlungsanteil)
+                : new Zonenmodell2K(Parameter, Bezeichnung)
+                    .StationaereHeizlastW(iN, zuluftC, eqN, HeizungStrahlungsanteil, AuslegungZusatzleitwertWK);
+
+        /// <summary>
+        /// <b>Die Auslegungsheizlast Φ_HL je Zone</b> [W] — die eine Quelle der Auslegungsgröße (E60, Festlegung 41;
+        /// E97, Befund O2-B1), gerufen von der Aufheizplanung (<see cref="Aufheizzone.AusZonen"/>):
+        /// <list type="bullet">
+        /// <item><b>Mit wirksamer Anlagenkopplung</b> an einer Zone des Gebäudes die Zahl des Kopplungswegs
+        /// (<see cref="KopplungAufloesen"/>, <see cref="ZonenkopplungAufloesen"/>), unverändert.</item>
+        /// <item><b>Ohne Kopplung dieselbe Bildung</b> (<see cref="StationaereAuslegungW"/>, Schritt 3 von
+        /// <see cref="ZonenkopplungAufloesen"/>): Auslegungstag und Auslegungs-Außentemperatur wie dort — das Feld
+        /// des Gebäudes, sonst das kälteste Tagesmittel abgerundet (H10) —, jede beheizte Zone an ihrer
+        /// Auslegungsraumtemperatur (höchster Heizsollwert der Nutzungszeit, 3.6), so wie der Kopplungsweg eine
+        /// Zone ohne Übergabe führt; Nachbarn fest, unbeheizte an der Auslegungs-Außentemperatur (Festlegung 14 des
+        /// Kopplungswegs). Im Einzonenweg ist das Zeichen für Zeichen der Ausdruck aus
+        /// <see cref="KopplungAufloesen"/> (ohne Nachbarn ist die Zuluft die Außenluft).</item>
+        /// </list>
+        /// Ohne Kopplung lehnt die Bildung nicht ab — die Felder des Auslegungspunkts tragen den Lauf dort nicht:
+        /// Ein Feld außerhalb seiner Grenzen, eine Auslegungs-Außentemperatur nicht unter der Raumtemperatur oder
+        /// eine Last ≤ 0 ergibt NaN (keine Zahl, die Ergebniszeile bleibt NULL). Unbeheizte Zonen: NaN.
+        /// </summary>
+        internal static double[] Auslegungslasten(IReadOnlyList<ZonenEingang> zonen)
+        {
+            if (zonen == null) throw new ArgumentNullException(nameof(zonen));
+            int n = zonen.Count;
+            var lastW = new double[n];
+            bool gekoppelt = false;
+            for (int i = 0; i < n; i++)
+            {
+                lastW[i] = zonen[i].Eingang.AuslegungsheizlastW;
+                gekoppelt |= zonen[i].Eingang.KopplungWirksam;
+            }
+            if (n == 0 || gekoppelt) return lastW;
+
+            GebaeudeModellEingang erste = zonen[0].Eingang;
+            int tag = KaeltesterTag(erste.ThetaOut, out double kaeltestesMittel);
+            double? feld = erste.AuslegungAussentemperaturFeldC;
+            double aN = feld ?? Math.Floor(kaeltestesMittel);
+            if (!Endlich(aN)
+                || (feld.HasValue && (aN < GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MIN || aN > GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MAX)))
+                return lastW;
+
+            var luftN = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                double iN = zonen[i].Eingang.AuslegungsraumtemperaturHeizC;
+                luftN[i] = zonen[i].IstBeheizt && Endlich(iN) ? iN : aN;
+            }
+            for (int i = 0; i < n; i++)
+            {
+                double iN = zonen[i].Eingang.AuslegungsraumtemperaturHeizC;
+                if (!zonen[i].IstBeheizt || !Endlich(iN) || !(aN < iN)) continue;
+                double w = zonen[i].Eingang.StationaereAuslegungW(zonen[i], tag, aN, iN, luftN);
+                if (w > 0.0 && Endlich(w)) lastW[i] = w;
+            }
+            return lastW;
         }
 
         /// <summary>Harte Prüfregel eines Werts der Zone (E63): benannter Fehler mit Zonenbezeichner.</summary>

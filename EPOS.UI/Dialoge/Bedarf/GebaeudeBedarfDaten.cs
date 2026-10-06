@@ -209,6 +209,12 @@ public sealed class GebaeudeBedarfDaten
     /// je Zone, auch unbeheizt; leer bei höchstens einer Zone.
     /// </summary>
     public IReadOnlyList<GebaeudeBedarfZoneDaten> Zonen { get; init; } = new List<GebaeudeBedarfZoneDaten>();
+
+    /// <summary>
+    /// Die Gruppe „Aufheizung" (Entwurf KP3, Welle O2; E60): Ergebniszeile des Laufs bzw. bei ausgeschalteter
+    /// Optimierung die Auslegungsgröße aus der Auskunft; <c>null</c> = keine Gruppe (Tagesbilanz-Weg, keine Bemessung).
+    /// </summary>
+    public GebaeudeBedarfAufheizDaten? Aufheizung { get; init; }
 }
 
 /// <summary>

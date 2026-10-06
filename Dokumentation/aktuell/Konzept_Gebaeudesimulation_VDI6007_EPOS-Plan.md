@@ -831,6 +831,22 @@ Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Meh
   Stundenmittel. Bei Umschaltungen innerhalb der Stunde (Sollwertsprung, Übergang
   Heizen/frei) sucht der Löser den Umschaltzeitpunkt per Bisektion (bis zu 60 Schritte);
   das ist die einzige Iteration, und sie ist deterministisch.
+- **Innere Umkehr (Abschnittsregel):** Innerhalb eines Abschnitts ist die geregelte Leistung — im
+  Totband und in den Lagen mit Leitwert die Raumluft — eine Konstante plus zwei abklingende Moden;
+  ihre Ableitung hat höchstens eine Nullstelle, und die ist geschlossen bekannt
+  (t* = ln(−α₂/α₁)/(λ₁ − λ₂), bei zusammenfallenden Eigenwerten −p/r). Diese exakte Nullstelle ist
+  der Regelweg: Liegt sie strikt im Innern des Abschnitts und verletzt der Wert dort die Grenze des
+  Falls über den Zahlenrand hinaus (Heizleistung unter null, Kühlleistung über null, Raumluft
+  außerhalb ihres Bands), endet der Abschnitt am ersten Austritt, den die Bisektion auf [0; t*]
+  findet (60 Halbierungen, Abbruch an der Maschinengenauigkeit); danach wählt die Zone ihren Fall
+  neu. Weder die Ableitung am Abschnittsende noch eine Suche über den ganzen Abschnitt entscheidet:
+  In schnellen Zonen — kleine Massen hinter kleinen Widerständen, große Glasflächen, langsame
+  Zeitkonstante unter rund τ/37, bei einer vollen Stunde also unter anderthalb Minuten — ist die
+  Ableitung am Ende nur Rundungsrauschen, und eine Suche sähe nur den Endwert. Geregelte Fälle und
+  Totband schneiden so in den ersten acht Abschnitten einer Stunde auch bei zulässigem Mittel;
+  danach und für die Lagen mit Leitwert greift derselbe Weg, sobald das Abschnittsmittel die
+  Abschnittsregel verletzen würde. Die Abschnittsregel selbst bleibt scharf: ein benannter Fehler,
+  keine Klemmung.
 - Φ_h ≥ 0, optional Φ_h ≤ `Heizleistung_Max` (NULL = unbegrenzt). Strahlungsanteil der
   Heizung `Heizung_Strahlungsanteil` (Vorgabe 0,3 für Heizkörper; 0 = rein konvektiv; der
   Prototyp lief mit 0).
