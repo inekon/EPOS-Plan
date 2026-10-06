@@ -2333,4 +2333,20 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.Null(daten.KuehlCarrierId);
         Assert.Empty(Kuehlzugang("kuehl_vorlauf").Wahleintraege());
     }
+
+    /// <summary>
+    /// <b>Allein fokussiert sich die Detailansicht selbst</b> — ohne zu rollen. Eingebettet
+    /// übernimmt das der Wirt (<c>WaermepumpenDialogTests</c>).
+    /// </summary>
+    [Fact]
+    public void Allein_fokussiert_die_Detailansicht_ihre_eigene_Wurzel()
+    {
+        var cut = Aufbauen();
+
+        var wurzel = cut.Find(".epos-wp-anlage").GetAttribute("blazor:elementReference");
+        var fokus = Assert.Single(JSInterop.Invocations,
+            a => a.Identifier == "Blazor._internal.domWrapper.focus");
+        Assert.Equal(wurzel, ((Microsoft.AspNetCore.Components.ElementReference)fokus.Arguments[0]!).Id);
+        Assert.Equal(true, fokus.Arguments[1]);
+    }
 }

@@ -650,6 +650,68 @@ public class BerichtSeiteTests : BunitContext
         Assert.Equal(1, sicht.Szenario);
     }
 
+    // =====================================================================
+    // VB‑E5: der vierte Eintrag „Alle drei Szenarien (VALERI)“ (VB‑Q1 a)
+    // =====================================================================
+
+    private const string VALERI = "Alle drei Szenarien (VALERI)";
+
+    /// <summary>Der Stand mit den vier Einträgen der Hülle; gemerkt ist <paramref name="gemerkt"/>.</summary>
+    private static BerichtStand MitVierEintraegen(int gemerkt = 0)
+    {
+        BerichtStand s = MitSzenarien(gemerkt, wirtschaft: true);
+        s.Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig"), (BerichtStand.SZENARIO_VALERI, VALERI) };
+        return s;
+    }
+
+    /// <summary>
+    /// Die Klappliste zeigt die vier Einträge der Hülle; die Wahl des vierten geht als <see cref="BerichtStand.SZENARIO_VALERI"/>
+    /// in den Auftrag, und der Neuaufbau aus dem gemerkten Stand (Rücklesen über die Darstellung) wählt ihn wieder. Der
+    /// Assistent sieht vier Werte; die Vorbelegung mit dem vierten Eintrag wählt ihn.
+    /// </summary>
+    [Fact]
+    public async Task Der_vierte_Eintrag_geht_in_den_Auftrag_und_wird_zurueckgelesen()
+    {
+        BerichtAuftrag? auftrag = null;
+        BerichtStand gemerkt = MitVierEintraegen(1);
+        var cut = Zeige(p => p.Add(x => x.Erstellen, (BerichtAuftrag a, Action<Laufschritt> m) =>
+        {
+            auftrag = a;
+            gemerkt.SzenarioId = a.SzenarioId;            // so liest die Hülle die VALERI-Darstellung zurück
+            return Task.FromResult(new LaufErgebnis { Erfolg = true });
+        }), gemerkt);
+
+        IElement liste = Szenarioliste(cut)!;
+        Assert.Equal(new[] { "Erwartet", "Günstig", "Ungünstig", VALERI },
+                     liste.QuerySelectorAll("option").Select(o => o.TextContent).ToArray());
+        liste.Change(BerichtStand.SZENARIO_VALERI.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(BerichtStand.SZENARIO_VALERI, cut.Instance.Szenariowahl);
+
+        cut.FindAll(".epos-leiste button")[2].Click();                      // „Erstellen"
+        await cut.InvokeAsync(() => cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click());   // Ja
+        Assert.Equal(BerichtStand.SZENARIO_VALERI, auftrag!.SzenarioId);
+
+        var neu = Zeige(stand: gemerkt);
+        Assert.Equal(BerichtStand.SZENARIO_VALERI, neu.Instance.Szenariowahl);
+        Assert.True(Szenarioliste(neu)!.QuerySelectorAll("option")[3].HasAttribute("selected"));
+        Assert.Equal(4, neu.Instance.Assistentensicht.SzenarioWahl.Count);
+
+        var vorbelegt = Zeige(p => p.Add(x => x.Vorbelegung,
+            new BerichtVorbelegung(true, new[] { 1030 }, BerichtStand.SZENARIO_VALERI, VALERI)), MitVierEintraegen(0));
+        Assert.Equal(BerichtStand.SZENARIO_VALERI, vorbelegt.Instance.Szenariowahl);
+        // Eigener Satz der VALERI-Darstellung (BK_BER_VORBELEGT_VALERI) statt des Satzes mit Szenarioname.
+        string[] teile = WindowsFormsApplication1.MyResource.Resource.BK_BER_VORBELEGT_VALERI.Split("{0}");
+        Assert.StartsWith(teile[0], vorbelegt.Instance.Vorbelegungszeile);
+        Assert.EndsWith(teile[1], vorbelegt.Instance.Vorbelegungszeile);
+        Assert.DoesNotContain(VALERI, vorbelegt.Instance.Vorbelegungszeile);
+
+        // Gegenprobe: ein einzelnes Szenario behält den Satz mit dem Szenarionamen.
+        var einzeln = Zeige(p => p.Add(x => x.Vorbelegung,
+            new BerichtVorbelegung(true, new[] { 1030 }, 1, "Günstig")), MitVierEintraegen(0));
+        Assert.Contains("Günstig", einzeln.Instance.Vorbelegungszeile);
+        Assert.NotEqual(vorbelegt.Instance.Vorbelegungszeile, einzeln.Instance.Vorbelegungszeile);
+    }
+
     /// <summary>Ein Stand mit angehaktem Baustein Wirtschaftlichkeit.</summary>
     private static BerichtStand Mit(BerichtStand s, bool wirtschaft)
     {

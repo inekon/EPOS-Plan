@@ -40,6 +40,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const int FASSUNG_KESSEL = 11;
 
+        /// <summary>
+        /// Die Fassung der Tafel „Kennzahlen je Szenario“ (Katalog v15, Etappe VB‑E4, Entscheid VB‑Q8 a):
+        /// <c>stand.tabelle.wirtschaft_szenarien</c>, Word und Excel.
+        /// </summary>
+        internal const int FASSUNG_WIRTSCHAFT_SZENARIEN = 15;
+
         /// <summary>Die Fassung der Pufferauslegungstafel (Katalog v12, Welle P4c): <c>tabelle.pufferauslegung</c>, Word und Excel.</summary>
         internal const int FASSUNG_PUFFERAUSLEGUNG = 12;
 
@@ -205,7 +211,8 @@ namespace WindowsFormsApplication1
             yield return Q("tabelle.anhang.simulationsstaende", B, w => Berichtstabellen.Simulationsstaende(w.Daten, w.Englisch, w.Kultur));
             yield return Q("tabelle.anhang_e.checkliste", B, w => w.Wirtschaft.Ergebnisse.Count == 0
                 ? Berichtstabellen.Leer(nameof(R.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT), w.Kultur)
-                : Berichtstabellen.AnhangE(AnhangECheckliste.AusBericht(w.Daten, w.Kapitelstellen), w.Kultur));
+                : Berichtstabellen.AnhangE(AnhangECheckliste.AusBericht(w.Daten, w.Kapitelstellen,
+                    WirtschaftlichkeitSzenario.ERWARTET, WirtschaftsBerichtswerte.IstValeri(w.Konfiguration)), w.Kultur));
 
             // ---------------- je Stand ----------------
             yield return Q(STAND_TABELLE + "kennzahlen", S, jeStand((w, v) => Berichtstabellen.Standkennzahlen(v, w.Englisch, w.Kultur)));
@@ -229,6 +236,14 @@ namespace WindowsFormsApplication1
                                       Vorlagenbedarf.Zeitreihen);
             kessel.Seit = FASSUNG_KESSEL;
             yield return kessel;
+
+            // ---------------- je Stand, Katalog v15 (VB‑E4): die Kennzahlen je Szenario (VALERI-Darstellung) ----------------
+            // Dieselbe Tafel wie im Kapitel in VALERI-Darstellung; fehlt dem Stand Günstig oder Ungünstig, steht sie allein
+            // in Erwartet, und der Hinweis darunter sagt es (VB‑Q4 a).
+            Tabellenquelle szenarien = Q(STAND_TABELLE + "wirtschaft_szenarien", S, jeStand((w, v) =>
+                Berichtstabellen.WirtschaftskennzahlenSzenarien(w.Daten, w.Wirtschaft, v, w.Englisch, w.Kultur)));
+            szenarien.Seit = FASSUNG_WIRTSCHAFT_SZENARIEN;
+            yield return szenarien;
 
             // ---------------- nur Excel (Katalog v7, BV-E9): die drei Tabellen mit reiner Excel-Quelle ----------------
             Tabellenquelle X(Tabellenquelle q) { q.Seit = FASSUNG_EXCEL_TABELLEN; q.Ausgaben = Vorlagenausgabe.Excel; return q; }

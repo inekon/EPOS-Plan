@@ -203,7 +203,7 @@ und Abnahme liegen bei der Sitzung Wirtschaftlichkeit; Registereintrag → R‑E
 Verfügbarkeit (Berichterstellung oder Wirtschaftlichkeit).
 
 **Nicht Teil dieses Auftrags:** Sensitivität je Szenario (bleibt Erwartet), Umbau des Excel-Blatts (außer der einen
-Kopfzeile), neue Diagrammbilder (ChartProben unverändert), eine dreispaltige Mehrjahrestafel (D1, nicht gewählt).
+Kopfzeile), neue Diagrammbilder (ChartProben unverändert), eine dreispaltige Mehrjahrestafel (D1, nicht gewählt), die ausführliche Excel-Vorlage (sie nimmt den Platzhalter `stand.tabelle.wirtschaft_szenarien` nicht auf — Entscheid 06.10.2026 nach Empfehlung).
 
 ### 7. Etappenplan VB‑E1 bis VB‑E6
 
@@ -339,6 +339,6 @@ Lesefolge (Varianten → Inhalt → Vorlage → Ausgabe → Erstellen → Ergebn
 | Welle | Inhalt | Stand |
 |---|---|---|
 | Konzept (dieses Papier) | Entscheide VB‑Q1–Q9, BL‑Q1–Q5 nach Empfehlung, Fachvorgabe VB, Mockups, Registereintrag R‑E32 | Statuszeile #761 |
-| Layout B | Umsetzung Teil B, Schritte 1–5 | eigene Welle, läuft, Nummern folgen |
-| VALERI VB‑E1–E5 | Umsetzung Teil A, Fachvorgabe VB | eigene Welle, läuft, Nummern folgen |
-| VB‑E6 | Wiki-Quelle Berichtsvorlagen/Wirtschaftlichkeit, Logbuchsatz | offen, nach VB‑E1–E5, Version beim Anwender erfragen |
+| Layout B | Umsetzung Teil B, Schritte 1–5 | umgesetzt #762 |
+| VALERI VB‑E1–E5 | Umsetzung Teil A, Fachvorgabe VB | umgesetzt #765 |
+| VB‑E6 | Wiki-Quelle Berichtsvorlagen/Wirtschaftlichkeit, Logbuchsatz | Wiki-Quellen und Logbuch im Repo, Upload ausstehend |

@@ -819,7 +819,7 @@
 
         // Der Vorlaeufer lud am Ende des Konstruktors - der erste Lastgang steht gleich da.
         await LastgangLaden();
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
         StateHasChanged();
     }
 

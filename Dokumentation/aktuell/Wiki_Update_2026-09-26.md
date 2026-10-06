@@ -17,7 +17,10 @@ zwölf Live-Seiten war ein Bot-Upload vom 26.09. oder 28.09. Danach sind alle Se
 Repo-Quelle. Statuszeile #614.
 
 **Nach dem Sammel-Upload #614 geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten Upload:**
-Brauchwasser-Zapfprofil (#615: Katalogimport eines Pakets ohne Spalte „Katalogversion“).
+Brauchwasser-Zapfprofil (#615: Katalogimport eines Pakets ohne Spalte „Katalogversion“);
+Berichtsvorlagen (#762: Berichtsseite in vier Karten); Wirtschaftlichkeit (#762: Berichtsseite
+in vier Karten; #765: VALERI-Darstellung mit allen drei Szenarien) — beide geändert, Upload
+ausstehend.
 
 | Seite | Revision |
 |---|---|
@@ -152,6 +155,13 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version 1.2.0.7 — nicht veröffentlicht
+
+Version vom Anwender zu bestätigen (Regel 13.4: ein Satz je Auftrag).
+
+- Seit 06.10.2026: Die Berichtsseite ordnet Varianten und Inhalt links, Vorlage und Ausgabe rechts in vier Karten an. (#762)
+- Seit 06.10.2026: Der Wirtschaftlichkeitsbericht lässt sich mit allen drei Szenarien nebeneinander erstellen (VALERI-Darstellung). (#765)
+
 ### Version 1.2.0.6 — nicht veröffentlicht
 
 Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. Ein Satz je Auftrag (Regel 13.4).
@@ -188,6 +198,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Im Reiter Energieerzeuger der Startseite ersetzt die Kachel ‚Kühlung‘ den Knopf ‚Kältemaschinen…‘; sie zeigt die Kältemaschinen des Projekts und schaltet den Kühlbetrieb der Wärmepumpen mit Kühlfunktion direkt. (#758; Version bestätigt der Anwender beim Upload)
 - Der Dialog Wärmequelle Erdreich prüft die Auslegung nach VDI 4640 Blatt 2 schon vor dem ersten Simulationslauf als Vorprüfung aus Heizleistung und COP der Wärmepumpe. (#759; Version bestätigt der Anwender beim Upload)
 - Ein ohne Schloss ausgelieferter Katalogsatz, den eine neue Programmfassung gesperrt mitbringt, wird beim Katalogabgleich an Ihren gleichnamigen Satz angebunden, übernimmt den Auslieferungsstand und wird künftig nachgeführt. (#763; Version bestätigt der Anwender beim Upload)
+- Im Gebäudedialog erscheinen Hinweise zu ‚Gebäude in DB löschen‘ und ‚Gebäude in DB ändern…‘ direkt unter den Katalogknöpfen; ein gesperrtes Gebäude nennt den Grund schon am Knopf. (#771; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

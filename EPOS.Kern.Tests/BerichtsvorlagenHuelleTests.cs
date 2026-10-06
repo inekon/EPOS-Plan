@@ -1703,8 +1703,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(R.BK_BER_LBL_SZENARIO, gaben["LabelSzenario"]);
             var laden = (Func<BerichtStand>)gaben["Laden"];
             BerichtStand vorher = laden();
-            Assert.Equal(new[] { 0, 1, 2 }, vorher.Szenarien.Select(s => s.Id).ToArray());
-            Assert.Equal(new[] { R.WIRT_SZEN_ERWARTET, R.WIRT_SZEN_BEST, R.WIRT_SZEN_WORST },
+            Assert.Equal(new[] { 0, 1, 2, BerichtStand.SZENARIO_VALERI }, vorher.Szenarien.Select(s => s.Id).ToArray());
+            Assert.Equal(new[] { R.WIRT_SZEN_ERWARTET, R.WIRT_SZEN_BEST, R.WIRT_SZEN_WORST, R.BK_BER_SZENARIO_VALERI },
                          vorher.Szenarien.Select(s => s.Text).ToArray());
             Assert.Equal(0, vorher.SzenarioId);
 
@@ -1733,6 +1733,66 @@ namespace EPOS.Kern.Tests
 
             Konfig(k => k.Szenario = WirtschaftlichkeitSzenario.WORST);
             Assert.Equal(2, laden().SzenarioId);
+        }
+
+        /// <summary>
+        /// VB‑E5 (VB‑Q1 a): Der vierte Eintrag „Alle drei Szenarien (VALERI)“ setzt die VALERI-Darstellung in die
+        /// Konfiguration des Laufs und merkt sie; das gemerkte Szenario bleibt dabei stehen. Der Neuaufbau belegt die
+        /// Klappliste mit dem vierten Eintrag vor. Ein Einzel-Eintrag setzt wieder die Einzeldarstellung, und das JSON
+        /// trägt das Feld dann nicht.
+        /// </summary>
+        [Fact]
+        public async Task Der_vierte_Eintrag_setzt_die_VALERI_Darstellung_und_laesst_das_Szenario_stehen()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig(k => k.Szenario = WirtschaftlichkeitSzenario.WORST);
+
+            var gesehen = new List<(string Szenario, bool Valeri)>();
+            var seite = new BerichtSeiteGaben(GRUPPE, "Stamm", _vorlagen, new Wegeprobe().Wege())
+            {
+                Sammler = (konfig, bedarf, melde, abbruch, sicht) =>
+                {
+                    gesehen.Add((konfig.Szenario, konfig.IstValeri));
+                    return Berichtsdatenproben.Gruppendaten(2);
+                }
+            };
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            var laden = (Func<BerichtStand>)gaben["Laden"];
+            Assert.Equal(2, laden().SzenarioId);
+
+            Vorlagenstand stand = ((Func<Vorlagenstand>)gaben["VorlagenNeuLaden"])();
+            var erstellen = (Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>)gaben["Erstellen"];
+            Task<LaufErgebnis> Lauf(int id) => erstellen(new BerichtAuftrag
+            {
+                VariantenIds = Array.Empty<int>(),
+                Bausteine = new[] { BerichtsKonfiguration.B_DECKBLATT },
+                AusgabeId = 0,
+                Zielordner = _ziel,
+                SzenarioId = id,
+                AnzahlMitStamm = 1,
+                VorlageId = stand.VorlageId,
+                Vorlagenweg = UiStartweg.Eigene
+            }, _ => { });
+
+            LaufErgebnis valeri = await Lauf(BerichtStand.SZENARIO_VALERI);
+            Assert.True(valeri.Erfolg, valeri.Fehler);
+            Assert.True(Lade().IstValeri);
+            Assert.Equal(WirtschaftlichkeitSzenario.WORST, Lade().Szenario);
+            Assert.Contains("\"Szenariodarstellung\":\"" + BerichtsKonfiguration.DARSTELLUNG_VALERI + "\"", Lade().NachJson(),
+                            StringComparison.Ordinal);
+            Assert.Equal(BerichtStand.SZENARIO_VALERI, laden().SzenarioId);
+
+            LaufErgebnis einzeln = await Lauf(1);
+            Assert.True(einzeln.Erfolg, einzeln.Fehler);
+            Assert.False(Lade().IstValeri);
+            Assert.Equal(WirtschaftlichkeitSzenario.BEST, Lade().Szenario);
+            Assert.DoesNotContain("Szenariodarstellung", Lade().NachJson(), StringComparison.Ordinal);
+            Assert.Equal(1, laden().SzenarioId);
+
+            Assert.Equal(new[] { (WirtschaftlichkeitSzenario.WORST, true), (WirtschaftlichkeitSzenario.BEST, false) },
+                         gesehen.ToArray());
         }
 
         // =====================================================================

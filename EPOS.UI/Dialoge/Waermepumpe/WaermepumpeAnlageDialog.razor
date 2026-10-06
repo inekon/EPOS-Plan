@@ -1251,7 +1251,10 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Eingebettet setzt der Wirt den Erstfokus auf seine eigene Wurzel, damit der
+        // Tabulator oben beginnt; allein fokussiert sich die Ansicht selbst.
+        if (Eingebettet) return;
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>Vorlaufstufen, Bilder, Kostenzeile und Stammfelder zum aktuellen Gerät nachziehen.</summary>

@@ -142,8 +142,25 @@ namespace WindowsFormsApplication1
         /// </param>
         public static Fahrplanlesung Erzeugen(Vorgabematrix matrix, Konditionierungsgroesse groesse,
                                               bool rundlaufPruefen)
+            => Erzeugen(matrix, groesse, rundlaufPruefen, null);
+
+        /// <summary>
+        /// <b>Erzeugt den Kalender einer Größe aus der Matrix, mit eigener Woche</b> (Befund NP4c): wie
+        /// <see cref="Erzeugen(Vorgabematrix, Konditionierungsgroesse, bool)"/>; trägt die Spalte aber keine Angabe
+        /// (weder Standardwoche noch Zeile Tag), gilt <paramref name="eigeneWoche"/> als Grundangabe — die Standardwoche,
+        /// die eine Vorlage oder ein Profil selbst mitbringt (Stundenprofil, NP-F9). Ferien, Saison und Nennwert kommen
+        /// weiter aus der Spalte. Mit <c>null</c> bitgleich zur Erzeugung ohne eigene Woche.
+        /// </summary>
+        /// <param name="matrix">Die wirksame Matrix des Eigentümers (nach der Kaskade, F2).</param>
+        /// <param name="groesse">Die Größe, deren Kalender entsteht.</param>
+        /// <param name="rundlaufPruefen">Wie bei der Erzeugung ohne eigene Woche; die eigene Woche wird mitgeprüft.</param>
+        /// <param name="eigeneWoche">Eine Grundangabe der Art <see cref="Angabeart.Woche"/> oder <c>null</c>.</param>
+        public static Fahrplanlesung Erzeugen(Vorgabematrix matrix, Konditionierungsgroesse groesse,
+                                              bool rundlaufPruefen, Kalenderangabe eigeneWoche)
         {
             if (matrix == null) throw new ArgumentNullException(nameof(matrix));
+            if (eigeneWoche != null && eigeneWoche.Art != Angabeart.Woche)
+                throw new ArgumentException("Die eigene Woche muss eine Standardwoche sein.", nameof(eigeneWoche));
             Matrixspalte s = matrix.Spalte(groesse);
             Matrixeingang b = matrix.Bestand;
 
@@ -156,6 +173,7 @@ namespace WindowsFormsApplication1
             if (woche != null) grund = Kalenderangabe.AusWoche(woche);
             else if (s.Tag.Belegt && s.Tag.Aus) grund = Kalenderangabe.Abgeschaltet;
             else if (s.Tag.Belegt) grund = Kalenderangabe.AusWert(s.Tag.Wert);
+            else if (eigeneWoche != null) grund = eigeneWoche;
             else return Kein(groesse);
 
             // ---- Ebene 3: Ferien und Saison als Perioden ----

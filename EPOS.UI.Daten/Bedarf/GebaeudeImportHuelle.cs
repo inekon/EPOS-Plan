@@ -211,6 +211,8 @@ namespace WindowsFormsApplication1
             if (_idProjekt > 0)
             {
                 gaben["Raumnutzung"] = RaumnutzungHuelle.Weg();
+                if (ProjektdateiProfileHuelle.ImportWeg(() => _ablauf.Projektdatei) is ProjektdateiProfileWeg pd)
+                    gaben["ProjektdateiProfile"] = pd;   // NP4b (Q46)
                 gaben["RaumnutzungTexte"] = RaumnutzungHuelle.Texte();
                 gaben["RaumnutzungGroessen"] = KonditionierungTexteHuelle.Texte();
             }

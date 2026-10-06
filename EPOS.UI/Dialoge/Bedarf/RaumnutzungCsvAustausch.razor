@@ -1,0 +1,342 @@
+﻿@* CSV-IMPORT UND -EXPORT DER NUTZUNGSPROFILE (Stufe NP4a; Konzept Nutzungsprofile 6.1, 6.4, NP-F11, NP-F20) - ein
+   Baustein im Kopf des Blatts "Nutzungsprofile". Der Katalog schreibt sofort (NP-F3); geschrieben wird hier erst mit
+   "Uebernehmen".
+
+   IMPORT. "CSV importieren..." laesst die Plattform eine Datei waehlen (Dienste.Datei in der Huelle) und zeigt den
+   Bereich: Dateiname, Zielkategorie (eine eigene oder "(neue Kategorie)" mit Namen - nie eine ausgelieferte), die
+   Vorschau je Profil (Zeile, Nummer, Name, Stand neu / vorhanden / nicht uebernommen, Zaehlung der Meldungen) und die
+   Liste der ignorierten Werte und Fehler mit Zeile, Spalte und Grund. "Uebernehmen" ist weich gesperrt, solange
+   kein Profil uebernehmbar ist oder der Name der neuen Kategorie fehlt; traegt die Zielkategorie gleichnamige
+   Profile, fragt die Rueckfrage "Ersetzen" / "Ueberspringen" / "Abbrechen" (Vorgabe Ueberspringen). "Abbrechen"
+   schliesst ohne zu schreiben.
+
+   EXPORT. "CSV exportieren..." zeigt die Wahl der Kategorie (auch einer ausgelieferten) und "Speichern..." - die
+   Dateiwahl gehoert der Plattform.
+
+   Kein Delegat, kein Knopf: ohne Weg steht hier nichts. *@
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using System.IO
+@using System.Linq
+
+@if (Weg is not null && (MitImport || MitExport))
+{
+    <div class="epos-raumnutzung-csv">
+        <div class="epos-zeilenknoepfe epos-raumnutzung-csv-knoepfe">
+            @if (MitImport)
+            {
+                <button type="button" class="epos-knopf epos-raumnutzung-csv-import"
+                        aria-expanded="@(_datei is not null ? "true" : "false")"
+                        @onclick="ImportOeffnen">@T.KnopfImport</button>
+            }
+            @if (MitExport)
+            {
+                <button type="button" class="epos-knopf epos-raumnutzung-csv-export"
+                        aria-expanded="@(_export ? "true" : "false")"
+                        @onclick="ExportOeffnen">@T.KnopfExport</button>
+            }
+        </div>
+
+        @if (_meldung is not null)
+        {
+            <p class="epos-leisezeile epos-raumnutzung-csv-meldung" role="status">@_meldung</p>
+        }
+        @if (_fehler is not null)
+        {
+            <p class="epos-raumnutzung-csv-fehler" role="alert">@_fehler</p>
+        }
+
+        @if (_datei is not null)
+        {
+            <section class="epos-raumnutzung-csv-bereich epos-raumnutzung-csv-importbereich" aria-label="@T.TitelImport">
+                <h3 class="epos-raumnutzung-csv-titel">@T.TitelImport</h3>
+                <p class="epos-leisezeile epos-raumnutzung-csv-datei">@string.Format(CultureInfo.CurrentCulture, T.Datei, _datei.Name)</p>
+                <p class="epos-leisezeile epos-raumnutzung-csv-format">@T.Format</p>
+                <Formularraster>
+                    <KindInhalt>
+                        <Auswahlfeld Bezeichnung="@T.Ziel" Eintraege="@Zieleintraege" Auswahl="@_ziel"
+                                     AuswahlChanged="ZielGewaehlt" />
+                        @if (_ziel == NEU)
+                        {
+                            <Textfeld Bezeichnung="@T.NameNeu" Wert="@_neuerName" Hoechstlaenge="80"
+                                      WertChanged="@(v => { _neuerName = v ?? ""; })" />
+                        }
+                    </KindInhalt>
+                </Formularraster>
+
+                @if (_vorschau?.Abbruch is string abbruch)
+                {
+                    <p class="epos-raumnutzung-csv-fehler epos-raumnutzung-csv-abbruch" role="alert">@abbruch</p>
+                }
+                else if (_vorschau is not null)
+                {
+                    <div class="epos-raster-huelle epos-raumnutzung-csv-profile">
+                        <table class="epos-raster">
+                            <thead>
+                                <tr>
+                                    <th>@T.Zeile</th>
+                                    <th>@T.Nummer</th>
+                                    <th>@T.Profil</th>
+                                    <th>@T.Stand</th>
+                                    <th>@T.Werte</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (RaumnutzungCsvProfilzeile p in _vorschau.Profile)
+                                {
+                                    <tr @key="p.Zeile" data-zeile="@p.Zeile" data-stand="@p.Stand"
+                                        class="epos-raumnutzung-csv-profil @(p.Stand == RaumnutzungCsvStand.Abgelehnt ? "epos-raumnutzung-csv-profil--abgelehnt" : "")">
+                                        <td>@p.Zeile.ToString(CultureInfo.CurrentCulture)</td>
+                                        <td>@p.Nummer</td>
+                                        <td>@p.Bezeichner</td>
+                                        <td title="@p.Grund">@Standtext(p.Stand)</td>
+                                        <td>@string.Format(CultureInfo.CurrentCulture, T.Zaehlung, p.Uebernommen, p.Ignoriert, p.Fehler)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="epos-raumnutzung-csv-untertitel">@T.Meldungen</h4>
+                    @if (!_vorschau.Hinweise.Any())
+                    {
+                        <p class="epos-leisezeile epos-raumnutzung-csv-ohnehinweise">@T.KeineHinweise</p>
+                    }
+                    else
+                    {
+                        <p class="epos-leisezeile">@T.Hinweise</p>
+                        <div class="epos-raster-huelle epos-raumnutzung-csv-meldungen">
+                            <table class="epos-raster">
+                                <thead>
+                                    <tr>
+                                        <th>@T.Zeile</th>
+                                        <th>@T.Spalte</th>
+                                        <th>@T.Art</th>
+                                        <th>@T.Grund</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ int nr = 0; }
+                                    @foreach (RaumnutzungCsvMeldungDaten m in _vorschau.Hinweise)
+                                    {
+                                        nr++;
+                                        <tr @key="nr" data-art="@m.Art"
+                                            class="epos-raumnutzung-csv-hinweis epos-raumnutzung-csv-hinweis--@(m.Art == RaumnutzungCsvMeldungsart.Fehler ? "fehler" : "ignoriert")">
+                                            <td>@m.Zeile.ToString(CultureInfo.CurrentCulture)</td>
+                                            <td>@m.Spalte</td>
+                                            <td>@Arttext(m.Art)</td>
+                                            <td>@m.Grund</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                }
+
+                <div class="epos-zeilenknoepfe epos-raumnutzung-csv-schluss">
+                    <button type="button" class="epos-knopf epos-raumnutzung-csv-uebernehmen"
+                            aria-disabled="@(Sperre is null ? null : "true")" title="@Sperre"
+                            @onclick="Uebernehmen">@T.KnopfUebernehmen</button>
+                    <button type="button" class="epos-knopf epos-raumnutzung-csv-abbrechen"
+                            @onclick="ImportSchliessen">@T.KnopfAbbrechen</button>
+                </div>
+            </section>
+        }
+
+        @if (_export)
+        {
+            <section class="epos-raumnutzung-csv-bereich epos-raumnutzung-csv-exportbereich" aria-label="@T.TitelExport">
+                <h3 class="epos-raumnutzung-csv-titel">@T.TitelExport</h3>
+                <Formularraster>
+                    <KindInhalt>
+                        <Auswahlfeld Bezeichnung="@T.Kategorie" Eintraege="@Exporteintraege" Auswahl="@_exportWahl"
+                                     AuswahlChanged="@(v => { _exportWahl = v ?? 0; })" />
+                    </KindInhalt>
+                </Formularraster>
+                <div class="epos-zeilenknoepfe epos-raumnutzung-csv-schluss">
+                    <button type="button" class="epos-knopf epos-raumnutzung-csv-speichern"
+                            @onclick="Exportieren">@T.KnopfSpeichern</button>
+                    <button type="button" class="epos-knopf epos-raumnutzung-csv-export-abbrechen"
+                            @onclick="() => _export = false">@T.KnopfAbbrechen</button>
+                </div>
+            </section>
+        }
+
+        <Rueckfrage Offen="@_frageOffen" TitelText="@T.TitelVorhanden" Frage="@Frage" MitAbbrechen="true"
+                    VorgabeNein="true" JaText="@T.KnopfErsetzen" NeinText="@T.KnopfUeberspringen"
+                    AbbrechenText="@T.KnopfAbbrechen" Beantwortet="FrageBeantwortet" />
+    </div>
+}
+
+@code {
+    /// <summary>Der Weg — die Hülle füllt ihn aus <c>RaumnutzungCtrl</c> und <c>Dienste.Datei</c>; ohne ihn steht hier nichts.</summary>
+    [Parameter] public RaumnutzungCsvWeg? Weg { get; set; }
+
+    /// <summary>Die Kategorien des Blatts — Ziel des Imports (nur eigene) und Quelle des Exports (alle).</summary>
+    [Parameter] public IReadOnlyList<RaumnutzungKategorieDaten> Kategorien { get; set; } = Array.Empty<RaumnutzungKategorieDaten>();
+
+    /// <summary>Nach jedem geschriebenen Import — der Wirt liest Katalog und Zuordnung neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die Wahl „(neue Kategorie)" in der Zielliste.</summary>
+    public const int NEU = 0;
+
+    private RaumnutzungCsvDatei? _datei;
+    private RaumnutzungCsvVorschau? _vorschau;
+    private int _ziel = NEU;
+    private string _neuerName = "";
+    private bool _export;
+    private int _exportWahl;
+    private bool _frageOffen;
+    private string? _meldung;
+    private string? _fehler;
+
+    private RaumnutzungCsvTexte T => Weg?.Texte ?? new RaumnutzungCsvTexte();
+
+    private bool MitImport => Weg is { DateiWaehlen: not null, Pruefen: not null, Uebernehmen: not null };
+
+    /// <summary>Export nur mit Delegat und mindestens einer Kategorie.</summary>
+    private bool MitExport => Weg?.Exportieren is not null && Kategorien.Count > 0;
+
+    /// <summary>Die eigenen Kategorien in der Reihenfolge des Blatts — nur sie sind Ziel (nie eine ausgelieferte).</summary>
+    private IReadOnlyList<RaumnutzungKategorieDaten> Eigene => Kategorien.Where(k => !k.Ausgeliefert).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> Zieleintraege
+        => new[] { (NEU, T.NeueKategorie) }.Concat(Eigene.Select((k, i) => (i + 1, k.Bezeichner))).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> Exporteintraege => Kategorien.Select((k, i) => (i, k.Bezeichner)).ToList();
+
+    private long? ZielId => _ziel == NEU || _ziel > Eigene.Count ? null : Eigene[_ziel - 1].Id;
+
+    /// <summary>Der Grund, aus dem „Übernehmen" nicht schreibt; <c>null</c> = frei.</summary>
+    private string? Sperre
+        => _vorschau?.Abbruch
+           ?? (_vorschau is null || _vorschau.Uebernehmbar == 0 ? T.SperreNichts : null)
+           ?? (ZielId is null && string.IsNullOrWhiteSpace(_neuerName) ? T.SperreName : null);
+
+    private string Frage => string.Format(CultureInfo.CurrentCulture, T.FrageVorhanden, _vorschau?.Vorhanden ?? 0);
+
+    /// <summary>Steht der Importbereich offen? Prüfhilfe für die Tests.</summary>
+    public bool ImportOffen => _datei is not null;
+
+    private string Standtext(RaumnutzungCsvStand s) => s switch
+    {
+        RaumnutzungCsvStand.Neu => T.StandNeu,
+        RaumnutzungCsvStand.Vorhanden => T.StandVorhanden,
+        _ => T.StandAbgelehnt,
+    };
+
+    private string Arttext(RaumnutzungCsvMeldungsart a) => a switch
+    {
+        RaumnutzungCsvMeldungsart.Uebernommen => T.ArtUebernommen,
+        RaumnutzungCsvMeldungsart.Ignoriert => T.ArtIgnoriert,
+        _ => T.ArtFehler,
+    };
+
+    private async Task ImportOeffnen()
+    {
+        if (!MitImport) return;
+        _meldung = _fehler = null;
+        _export = false;
+        RaumnutzungCsvDatei? datei;
+        try
+        {
+            datei = await Weg!.DateiWaehlen!();
+        }
+        catch (Exception ex)
+        {
+            _fehler = ex.Message;
+            return;
+        }
+        if (datei is null) return;
+        _datei = datei;
+        _ziel = NEU;
+        string stamm = Path.GetFileNameWithoutExtension(datei.Name ?? "").Trim();
+        _neuerName = stamm.Length > 80 ? stamm.Substring(0, 80).Trim() : stamm;
+        Pruefen();
+    }
+
+    private void ZielGewaehlt(int? wahl)
+    {
+        _ziel = wahl ?? NEU;
+        _fehler = null;
+        Pruefen();
+    }
+
+    private void Pruefen()
+    {
+        if (_datei is null || Weg?.Pruefen is null) return;
+        _vorschau = Weg.Pruefen(_datei, ZielId);
+    }
+
+    private void ImportSchliessen()
+    {
+        _datei = null;
+        _vorschau = null;
+        _fehler = null;
+        _frageOffen = false;
+    }
+
+    private async Task Uebernehmen()
+    {
+        if (Sperre is string sperre)
+        {
+            _fehler = sperre;
+            return;
+        }
+        _fehler = null;
+        if (ZielId is not null && (_vorschau?.Vorhanden ?? 0) > 0)
+        {
+            _frageOffen = true;
+            return;
+        }
+        await Schreiben(false);
+    }
+
+    private async Task FrageBeantwortet(bool? ersetzen)
+    {
+        _frageOffen = false;
+        if (ersetzen is null) return;
+        await Schreiben(ersetzen.Value);
+    }
+
+    private async Task Schreiben(bool ersetzen)
+    {
+        if (_datei is null || Weg?.Uebernehmen is null) return;
+        RaumnutzungErgebnis e = Weg.Uebernehmen(_datei, ZielId, ZielId is null ? _neuerName : "", ersetzen);
+        if (!e.Ok)
+        {
+            _fehler = e.Meldung;
+            Pruefen();
+            return;
+        }
+        ImportSchliessen();
+        _meldung = e.Meldung;
+        if (Geaendert.HasDelegate) await Geaendert.InvokeAsync();
+    }
+
+    private void ExportOeffnen()
+    {
+        _meldung = _fehler = null;
+        ImportSchliessen();
+        _export = true;
+        if (_exportWahl >= Kategorien.Count) _exportWahl = 0;
+    }
+
+    private async Task Exportieren()
+    {
+        if (!MitExport) return;
+        _fehler = null;
+        long id = Kategorien[Math.Clamp(_exportWahl, 0, Kategorien.Count - 1)].Id;
+        RaumnutzungErgebnis e = await Weg.Exportieren(id);
+        if (!e.Ok)
+        {
+            _fehler = e.Meldung;
+            return;
+        }
+        if (string.IsNullOrEmpty(e.Meldung)) return; // abgebrochen: der Bereich bleibt offen
+        _export = false;
+        _meldung = e.Meldung;
+    }
+}

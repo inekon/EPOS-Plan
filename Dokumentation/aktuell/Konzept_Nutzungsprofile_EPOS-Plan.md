@@ -1,5 +1,7 @@
 # Konzept: Nutzungsprofile — Katalog mit Kategorien, Generator der Konditionierungskalender und Zuordnung beim Import (Stufe NP)
 
+> **Stand der Stufe: NP1 bis NP4 gebaut** (Wiki-Quellen und Logbuch-Entwurf mit NP4e nachgezogen; Upload gebündelt, Version beim Anwender).
+
 > **Rev. 2 (vereint aus zwei Fassungen vom 05.10.2026) — Auftrag aus Entscheid E90 (Q37, 05.10.2026); Fragen
 > Q38 bis Q47 mit E91 nach Empfehlung entschieden.** Der Anwender hat entschieden: Nutzungsprofile werden ein
 > **frei definierbarer Katalog mit Katalogkategorien** — eine Kategorie für den Katalog nach DIN V 18599-10, eigene
@@ -165,7 +167,7 @@ stehen in Kapitel 9.
 | **NP-F18** | **Nennwerte** setzt die Übernahme nur nach Q39 und Q40 und nur, wenn das Profil den Kennwert trägt und das Ziel eine Fläche hat; die Rückfrage nennt Wert und Herleitung (`8 W/m² × 120 m² = 960 W`). Die EPOS-Muster tragen keinen Nennwert (bitgleich zu heute). Bringt das Profil einen Personennennwert, bleibt der Gerätewert, wie die Übernahme ihn setzt: P1 gilt nicht für die Übernahme eines Profils mit eigenem Personennennwert (E93) | E54 gilt für Vorlagen; ein Profil ist ein vollständiger Parametersatz |
 | **NP-F19** | **Eigene Profile und Kategorien** lassen sich anlegen, umbenennen, duplizieren, löschen; ausgelieferte nur duplizieren. Ein ausgeliefertes DIN-Profil wird durch **Duplizieren in eine eigene Kategorie** mit Werten befüllt; die Zuordnung lässt sich dann auf das Duplikat stellen. Löschen eines Profils, auf das die Zuordnung zeigt, fragt nach und setzt die Zuordnung auf „keine“ | Ausgelieferte Zeilen bleiben unberührt und vom Katalogabgleich ersetzbar |
 | **NP-F20** | **Namensregel:** neutrale Nutzungsnamen ohne Hersteller- und Produktdaten; Doppelname je Kategorie benannt abgelehnt; `WikiProduktdatenWacheTests` und eine neue Katalogwache halten die Saat | Regel der Kataloge und des Wikis |
-| **NP-F21** | **Auslieferungsvorlage:** `Werkzeuge/Auslieferungsvorlage` behält die ausgelieferten Zeilen (`ReadOnly = 1`) und entfernt eigene Kategorien, Profile und Zuordnungen des Anwenders; der Prüfbericht zählt je Kategorie und meldet jeden Kennwert in einer Normkategorie als Fehler | Keine Normwerte in der Auslieferung, auch nicht aus der Datenbank des Entwicklers |
+| **NP-F21** | **Auslieferungsvorlage:** `Werkzeuge/Auslieferungsvorlage` behält die ausgelieferten Zeilen (`ReadOnly = 1`) und entfernt eigene Kategorien, Profile und Zuordnungen des Anwenders in jedem Modus; der Prüfbericht zählt je Kategorie und meldet jeden Kennwert in einer Normkategorie als Fehler | Keine Normwerte in der Auslieferung, auch nicht aus der Datenbank des Entwicklers |
 | **NP-F22** | **Kein Menüpunkt:** Das Blatt „Nutzungsprofile“ öffnet aus Gebäudeeditor, Zonenbaum und Zonendialog, auf beiden Plattformen | Wie die Vorlagenverwaltung (E56) |
 | **NP-F23** | **Der Zonenplan hält das Profil als Kennung des Arbeitsstands**, nicht als Text: Die Nutzung einer Planzone wird ein Verweis auf das Profil im Arbeitsstand, beim Speichern in Name und Kopien aufgelöst. Der erneute Import derselben Datei findet die Nutzung über `Tab_Zone.Nutzungsprofil` (Q41) bzw. die Kalendernutzung wieder; ein Name, zu dem kein Profil mehr passt, erscheint als „(nicht im Katalog)“ und bleibt | Der Plan arbeitet mit Profilen; am Ziel liegt Text (NP-F14) |
 | **NP-F24** | **Keine Rückwirkung auf die Referenzbasis:** Kein Referenzprojekt bekommt neue Kalender; der Schemaschritt baut die Kalendertabelle zeilengleich neu; der Referenzlauf ist byte-gleich | Die Einfrierregeln „gesäte Konditionierungsdaten“ und „gesäte Zonendaten“ werden nicht berührt |
@@ -362,21 +364,23 @@ Vorlagenverwaltung, auf beiden Plattformen (NP-F22). Drei Bereiche:
    (Rasterprobe ziehen, wenn ihre Regeln berührt werden).
 2. **Profileditor** rechts: Kopf (Kategorie, Nummer, Name, Beschreibung), die Kennwertgruppen aus 4.1 als Felder mit
    Einheit und Grenzen, je Größe ein Umschalter „aus Kennwerten | Zeilenbild | Stundenprofil“ und die **Vorschau**:
-   Woche und Teppichbild je Größe an einer neutralen Ferienlage — dieselben Bausteine wie die Kalenderkarte. Eine
+   Woche und Teppichbild je Größe an einem neutralen Vorschauziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August) — dieselben Bausteine wie die Kalenderkarte. Das Stundenprofil kennt zwei Tagesarten: Werktag und nutzungsfreier Tag (Anwender 06.10.2026); Werte lassen sich aus der Zwischenablage einfügen. Eine
    Lesezeile „Nutzungstage im Jahr: … (aus Wochenmuster und Feiertagen)“ (NP-F8, E93). Ausgelieferte Profile sind schreibgeschützt; DIN-Profile zeigen
    „ohne Werte — Duplizieren, um Werte einzutragen“.
 3. **Zuordnung** als Reiter: Tabelle Art, Schlüssel, Profil (Auswahl gruppiert nach Kategorie, dazu „keine“),
    ausgelieferte Zeilen mit Schloss und „Zurücksetzen“; neue Zeilen frei.
 
-**CSV-Import** (NP4) im Kopf des Blatts: wählt Datei und Zielkategorie, zeigt eine Vorschau mit Zeilenmeldungen
-(NP-F11), schreibt erst nach „Übernehmen“. Format in 6.4.
+**CSV-Import** (NP4) im Kopf des Blatts („CSV…“): wählt Datei und Zielkategorie (eine eigene), zeigt eine Vorschau mit Zeilenmeldungen
+(NP-F11), schreibt erst nach „Übernehmen“; derselbe Zugang exportiert. „Aus Projektdatei…“ im Blattkopf übernimmt die Profile einer
+HottCAD-Projektdatei in eine eigene Kategorie (Ergänzen oder Ersetzen; die Beleuchtung bleibt leer, die Beleuchtungsstärke steht in der
+Beschreibung). Format in 6.4.
 
 ### 6.2 Zugänge
 
 | Ort | Bedienung |
 |---|---|
 | Gebäudeeditor, Reiter Konditionierung (`GebaeudeKatalogDialog.razor` :554–564) | „Nutzungsprofil übernehmen…“ (Liste gruppiert nach Kategorie, Vorschau, Rückfrage nach P12, Nennwertzeile nach Q39 und Q40) und „Nutzungsprofile verwalten…“ (öffnet das Blatt, Platz wie :758–767) |
-| Zonenbaum des Imports (`GebaeudeImportDialog.razor` :403–449) | Das `<select>` je Zone führt die Profile gruppiert nach Kategorie (`<optgroup>`), dazu „keine“; unter der Zone eine **Herleitungszeile** („Büro · EPOS-Muster — aus IFC-Klasse Buero“ bzw. „aus DIN-Nr. 1 der Projektdatei; Heizen und Personen aus der Datei“) mit den Kennwerten in Kurzform; „Nutzungsprofile…“ öffnet das Blatt als Überlagerung, nach dem Schließen liest der Plan Katalog und Zuordnung neu |
+| Zonenbaum des Imports (`GebaeudeImportDialog.razor` :403–449) | Das `<select>` je Zone führt die Profile gruppiert nach Kategorie (`<optgroup>`), dazu „keine“; unter der Zone eine **Herleitungszeile** („Büro · EPOS-Muster — aus IFC-Klasse Buero“ bzw. „aus DIN-Nr. 1 der Projektdatei; Heizen und Personen aus der Datei“) mit den Kennwerten in Kurzform; „Nutzungsprofile…“ öffnet das Blatt als Überlagerung, nach dem Schließen liest der Plan Katalog und Zuordnung neu; „Nutzungsprofile der Datei übernehmen…“ legt die Profile der Projektdatei in einer eigenen Kategorie an. Im Einzonenweg steht nur der Hinweis „Vorschlag aus DIN-Nr. …, zuweisbar im Gebäudeeditor“, gesetzt wird nichts |
 | Zonendialog (`ZonenDialog.razor`, Konditionierungsreiter :137) | „Nutzungsprofil übernehmen…“ wie im Gebäudeeditor, auch nach dem Import; die Kopfzeile nennt das zuletzt übernommene Profil (aus `Tab_Zone.Nutzungsprofil` bzw. der Kalendernutzung) |
 | Kalenderkarte | „Als Vorlage speichern…“ fragt die Nutzung künftig als Text mit Vorschlägen aus dem Katalog (NP-F15) |
 
@@ -399,7 +403,10 @@ Vorlagenverwaltung, auf beiden Plattformen (NP-F22). Drei Bereiche:
 UTF-8, Semikolon, Dezimalpunkt, eine Kopfzeile mit den Spaltennamen aus 4.1 (`Nummer;Bezeichner;Nutzung_Von;…`),
 eine Zeile je Profil; unbekannte Spalten werden benannt ignoriert, fehlende heißen „leer“; eine Spalte `Nutzungstage_Jahr` wird benannt ignoriert — die Zahl ist abgeleitet (E93) und wird nicht exportiert; eine Spalte
 `Heiz_Absenkung_K` wird als Alternative zu `Heiz_Soll_Ausserhalb` angenommen und umgerechnet; Stundenprofile als
-Spalten `Stunden_<Größe>_<Tagesart>` mit 24 Werten, durch Leerzeichen getrennt. Dasselbe Format exportiert ein
+Spalten `Stunden_<Größe>_<Tagesart>` mit 24 Werten, durch Leerzeichen getrennt; die Größe steht als Kennwort (`HEIZSOLL`, `KUEHLSOLL`,
+`LUEFTUNG`, `GERAETE`, `PERSONEN`), die Tagesart ist `WERKTAG` oder `FREI`. Das Zeilenbild steht in Spalten `Zeile_<Größe>_<Zeile>` mit
+`<Zeile>` = `TAG`, `NACHT`, `WOCHENENDE`, `FERIEN`; die Zelle trägt den Wert, `aus` oder `-` (nur Zeiten) und die Zusätze `von=`, `bis=`,
+`bedingt=`. Export UTF-8 mit BOM (für Tabellenprogramme), Import mit und ohne BOM. Dasselbe Format exportiert ein
 Katalog (Rundlauf). Beschrieben auf der Wiki-Seite, mit einer Beispieldatei aus runden Phantasiewerten in den
 Testdaten.
 

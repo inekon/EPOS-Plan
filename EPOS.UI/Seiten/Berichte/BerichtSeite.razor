@@ -1238,8 +1238,11 @@
         if (_stand.Szenarien.Any(z => z.Id == v.SzenarioId)) _stand.SzenarioId = v.SzenarioId;
 
         int anzahl = _gewaehlt.Count(id => gruppe.Contains(id));
-        _vorbelegt = string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT, anzahl,
-                                   string.IsNullOrEmpty(v.SzenarioText) ? Resource.WIRT_SZEN_ERWARTET : v.SzenarioText);
+        // Die VALERI-Darstellung bekommt einen eigenen Satz: Kennzahlen je Szenario, übrige Tafeln im Szenario Erwartet.
+        _vorbelegt = v.SzenarioId == BerichtStand.SZENARIO_VALERI
+            ? string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT_VALERI, anzahl)
+            : string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT, anzahl,
+                            string.IsNullOrEmpty(v.SzenarioText) ? Resource.WIRT_SZEN_ERWARTET : v.SzenarioText);
     }
 
     /// <summary>Die leise Zeile der übernommenen Vorbelegung (Prüfhilfe); leer = keine.</summary>

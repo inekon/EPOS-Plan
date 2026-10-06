@@ -109,6 +109,8 @@ namespace WindowsFormsApplication1
         internal double? VollnutzungGeraeteH { get; init; }
         internal double? PersonenWm2 { get; init; }
         internal double? GeraeteWm2 { get; init; }
+        /// <summary>Der Wartungswert der Beleuchtungsstärke [lx] (<c>MaintenanceIllumination</c>; NP4b, nur zur Beschreibung).</summary>
+        internal double? Beleuchtungsstaerke { get; init; }
 
         /// <summary>Die Nutzungsstunden des Tages aus der Betriebszeit (über Mitternacht gerechnet); <c>null</c> ohne Zeiten.</summary>
         internal int? Betriebsstunden

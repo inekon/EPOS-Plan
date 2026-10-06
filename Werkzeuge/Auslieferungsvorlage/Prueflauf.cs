@@ -123,8 +123,8 @@ namespace Auslieferungsvorlage
         /// <b>Was der Katalog der Nutzungsprofile in der Vorlage trägt.</b> Gezählt werden je Kategorie die Profile
         /// (gesperrt und eigen) und die Zuordnungen; geprüft wird dreierlei: die ausgelieferte Saat steht vollständig
         /// (<see cref="RaumnutzungSchema.OffeneSaat"/>), <b>kein Kennwert, kein Zeilenbild, kein Stundenprofil in einer
-        /// Normkategorie</b> (DIN V 18599-10, SIA 2024, VDI 2078 — Normwerte werden nie ausgeliefert) und nach
-        /// <c>--kataloge readonly</c> keine eigene Zeile mehr. Steht der Schemaschritt nicht, ist das ein Hinweis.
+        /// Normkategorie</b> (DIN V 18599-10, SIA 2024, VDI 2078 — Normwerte werden nie ausgeliefert) und in jedem Modus
+        /// keine eigene Zeile mehr (NP-F21, Q46). Steht der Schemaschritt nicht, ist das ein Hinweis.
         /// </summary>
         private bool Nutzungsprofile()
         {
@@ -167,11 +167,11 @@ namespace Auslieferungsvorlage
             long eigene = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_KATALOG + "\" WHERE \"ReadOnly\" = 0")
                           + Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ReadOnly\" = 0")
                           + Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" WHERE \"ReadOnly\" = 0");
-            if (KatalogeVollstaendig)
-                _bericht.Zeile("        eigene Zeilen des Katalogs: " + eigene +
-                               "   (Modus alle — sie bleiben; mit --kataloge readonly fielen sie)");
-            else
-                ok &= Befund(eigene == 0, "eigene Zeilen des Katalogs der Nutzungsprofile nach --kataloge readonly: " + eigene);
+            // NP-F21, Q46: Eigene Kategorien, Profile und Zuordnungen fallen in JEDEM Modus - auch eine Kategorie aus einer
+            // Projektdatei, deren Werte aus der lizenzierten Software des Anwenders stammen (NP4b).
+            ok &= Befund(eigene == 0, KatalogeVollstaendig
+                ? "eigene Zeilen des Katalogs der Nutzungsprofile: " + eigene + "   (fallen in jedem Modus, NP-F21)"
+                : "eigene Zeilen des Katalogs der Nutzungsprofile nach --kataloge readonly: " + eigene);
             return ok;
         }
 

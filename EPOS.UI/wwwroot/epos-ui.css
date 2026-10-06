@@ -805,6 +805,13 @@ body {
     margin-top: var(--epos-rand);
 }
 
+/* Die Meldung einer Listenleiste steht unmittelbar unter ihr (Gebaeudedialog:
+   Katalogknoepfe aendern/loeschen) - im eigenen Fenster haftet der Kopf, ein
+   Banner oben im Dialog laege beim Arbeiten an der Liste ausserhalb des Bildes. */
+.epos-katalogmeldung {
+    margin-top: var(--epos-rand);
+}
+
 .epos-status {
     flex: 1 1 auto;
     text-align: right;
@@ -15002,6 +15009,188 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-nutzungsuebernahme-knoepfe {
     display: flex;
     flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* CSV-IMPORT UND -EXPORT DER NUTZUNGSPROFILE (Stufe NP4a; Konzept Nutzungsprofile 6.1, 6.4)
+   Knopfzeile im Kopf des Blatts, darunter der offene Bereich (Import mit Vorschau und Meldungen
+   bzw. Export); die Tabellen stehen in .epos-raster-huelle und rollen dort. */
+.epos-raumnutzung-csv {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-raumnutzung-csv-bereich {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: var(--epos-rand);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 4px;
+}
+
+.epos-raumnutzung-csv-titel,
+.epos-raumnutzung-csv-untertitel {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.epos-raumnutzung-csv-meldung,
+.epos-raumnutzung-csv-datei,
+.epos-raumnutzung-csv-format,
+.epos-raumnutzung-csv-ohnehinweise {
+    margin: 0;
+}
+
+.epos-raumnutzung-csv-fehler {
+    margin: 0;
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-raumnutzung-csv-profil--abgelehnt td,
+.epos-raumnutzung-csv-hinweis--ignoriert td {
+    color: var(--epos-text-leise);
+}
+
+.epos-raumnutzung-csv-hinweis--fehler td {
+    color: var(--epos-stufe-fehler);
+    font-weight: 600;
+}
+
+/* NP4b (Konzept Nutzungsprofile Q46): Profile aus einer Projektdatei - Knopf, Vorschau und die Rueckfrage
+   "Ergaenzen | Ersetzen" als Knopfwahl; im Blatt "Nutzungsprofile" und im Gebaeudeimport. */
+.epos-projektdateiprofile {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.epos-projektdateiprofile-oeffnen,
+.epos-projektdateiprofile-knoepfe .epos-knopf {
+    min-height: var(--epos-touchziel);
+    align-self: flex-start;
+}
+
+.epos-projektdateiprofile-vorschau {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-projektdateiprofile-kopf,
+.epos-projektdateiprofile-meldungstitel {
+    margin: 0;
+    font-weight: 600;
+}
+
+.epos-projektdateiprofile-werte {
+    color: var(--epos-text-leise);
+    font-size: 0.85rem;
+}
+
+.epos-projektdateiprofile-meldungen {
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 0.85rem;
+}
+
+.epos-projektdateiprofile-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* NP4c: Editor "Zeitverlauf je Groesse" im Blatt "Nutzungsprofile" - Groessenreiter, Umschalter
+   (aus Kennwerten | Zeilenbild | Stundenprofil), Zeilenbild als Tabelle mit Feldern in Zellbreite,
+   Stundenprofil als umbrechendes Raster aus 24 Feldern je Tagesart, Vorschau darunter. */
+.epos-raumnutzung-bild {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.epos-raumnutzung-bild-groessen,
+.epos-raumnutzung-bild-weg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-raumnutzung-bild-groesse,
+.epos-raumnutzung-bild-wegknopf,
+.epos-raumnutzung-einfuegen-knopf {
+    min-height: var(--epos-touchziel);
+}
+
+.epos-raumnutzung-bild-weg-text {
+    color: var(--epos-text-leise);
+}
+
+.epos-raumnutzung-bild-sperre,
+.epos-raumnutzung-einfuegen-meldung {
+    margin: 0;
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-raumnutzung-bild-teil {
+    margin: 8px 0 4px;
+    font-size: 0.95em;
+}
+
+.epos-raumnutzung-zeilenbildraster {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.epos-raumnutzung-zeilenbildraster .epos-feld .epos-eingabe {
+    min-width: 0;
+    width: 100%;
+}
+
+.epos-raumnutzung-stundenraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 6px;
+}
+
+.epos-raumnutzung-stunde {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.epos-raumnutzung-stunde-kopf {
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+}
+
+.epos-raumnutzung-stunde .epos-feld-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.epos-raumnutzung-stunde .epos-eingabe {
+    min-width: 0;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-raumnutzung-einfuegen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
     gap: 6px;
 }
 

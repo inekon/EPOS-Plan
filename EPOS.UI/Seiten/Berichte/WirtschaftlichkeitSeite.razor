@@ -1932,11 +1932,13 @@
         foreach ((int Id, string Text) z in _stand.Szenarien)
             if (z.Id == _stand.SzenarioId) { szenario = z.Text; break; }
 
+        // VB‑Q6 a: Die Darstellung „ValERI-Bewertung“ belegt die VALERI-Darstellung des Berichts vor.
+        bool valeri = IstValeri;
         await ZumBericht.InvokeAsync(new BerichtVorbelegung(
             MitWirtschaftlichkeit: true,
             Varianten: new List<int>(_gewaehlt),
-            SzenarioId: _stand.SzenarioId,
-            SzenarioText: szenario));
+            SzenarioId: valeri ? BerichtStand.SZENARIO_VALERI : _stand.SzenarioId,
+            SzenarioText: valeri ? Texte.ZumBerichtValeri : szenario));
     }
 
     // =====================================================================

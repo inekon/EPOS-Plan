@@ -40524,7 +40524,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Economic scenario:</value>
   </data>
   <data name="KI_DLG_BKB_SZENARIO_ERL" xml:space="preserve">
-    <value>The scenario of the economic evaluation in the report: Expected, Favourable or Unfavourable. Key figure table, multi-year overview, bridge, cumulative present values, CHP bonus and operating costs follow it; the scenario overview and the sensitivity stay as they are. Only with the section Economic viability ticked.</value>
+    <value>The scenario of the economic evaluation in the report: Expected, Favourable or Unfavourable. Key figure table, multi-year overview, bridge, cumulative present values, CHP bonus and operating costs follow it; the scenario overview and the sensitivity stay as they are. “All three scenarios (VALERI)” shows the key figures of each case in Unfavourable, Expected and Favourable side by side, everything else in Expected. Only with the section Economic viability ticked.</value>
   </data>
   <data name="KOND_MSG_KATALOGBAU_GESPERRT" xml:space="preserve">
     <value>Catalogue building {0} belongs to the delivery (locked) — its matrix and calendars cannot be changed. Use “Duplicate…” to create your own record.</value>
@@ -46241,9 +46241,6 @@ chart</value>
   <data name="RNP_LBL_TAGESART_FREI" xml:space="preserve">
     <value>non-usage day</value>
   </data>
-  <data name="RNP_TXT_NUR_LESEND" xml:space="preserve">
-    <value>Row pattern and hourly profiles are shown here for reading only.</value>
-  </data>
   <data name="RNP_TXT_AUSGELIEFERT" xml:space="preserve">
     <value>Part of the delivery — duplicate only</value>
   </data>
@@ -46627,6 +46624,465 @@ chart</value>
   </data>
   <data name="GANS_GVERMERK_FLAECHE" xml:space="preserve">
     <value>area differs</value>
+  </data>
+  <data name="RNP_CSV_MSG_LEER" xml:space="preserve">
+    <value>The file contains no rows.</value>
+  </data>
+  <data name="RNP_CSV_MSG_KEIN_UTF8" xml:space="preserve">
+    <value>The file is not UTF-8 encoded — save it as “CSV UTF-8”.</value>
+  </data>
+  <data name="RNP_CSV_MSG_TRENNER" xml:space="preserve">
+    <value>The header row is separated by commas — the separator is the semicolon.</value>
+  </data>
+  <data name="RNP_CSV_MSG_OHNE_BEZEICHNER" xml:space="preserve">
+    <value>The header row has no “Bezeichner” column.</value>
+  </data>
+  <data name="RNP_CSV_MSG_NICHTS" xml:space="preserve">
+    <value>The file contains no profile that can be imported.</value>
+  </data>
+  <data name="RNP_CSV_MSG_ERGEBNIS" xml:space="preserve">
+    <value>{0} profiles created, {1} replaced, {2} skipped, {3} not imported.</value>
+  </data>
+  <data name="RNP_CSV_GRUND_UNBEKANNT" xml:space="preserve">
+    <value>unknown column</value>
+  </data>
+  <data name="RNP_CSV_GRUND_DOPPELSPALTE" xml:space="preserve">
+    <value>column appears twice in the header row</value>
+  </data>
+  <data name="RNP_CSV_GRUND_TAGE_JAHR" xml:space="preserve">
+    <value>derived from weekly pattern, public holidays and holidays</value>
+  </data>
+  <data name="RNP_CSV_GRUND_UEBERZAEHLIG" xml:space="preserve">
+    <value>value without a column in the header row</value>
+  </data>
+  <data name="RNP_CSV_GRUND_KOMMA" xml:space="preserve">
+    <value>decimal comma in “{0}” — the decimal separator is the point</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ZAHL" xml:space="preserve">
+    <value>“{0}” is not a number</value>
+  </data>
+  <data name="RNP_CSV_GRUND_GRENZEN" xml:space="preserve">
+    <value>{0} is outside {1} … {2}</value>
+  </data>
+  <data name="RNP_CSV_GRUND_POSITIV" xml:space="preserve">
+    <value>{0} is not greater than 0</value>
+  </data>
+  <data name="RNP_CSV_GRUND_STUNDE" xml:space="preserve">
+    <value>“{0}” is not a whole hour 0 … 24</value>
+  </data>
+  <data name="RNP_CSV_GRUND_BIT" xml:space="preserve">
+    <value>“{0}” is neither 0 nor 1</value>
+  </data>
+  <data name="RNP_CSV_GRUND_WOCHE" xml:space="preserve">
+    <value>“{0}” is not seven digits 0/1 (Monday to Sunday)</value>
+  </data>
+  <data name="RNP_CSV_GRUND_EINHEIT" xml:space="preserve">
+    <value>“{0}” is not an outdoor air unit (1/h or m3/hm2)</value>
+  </data>
+  <data name="RNP_CSV_GRUND_EINHEIT_FEHLT" xml:space="preserve">
+    <value>outdoor air without unit — both outdoor air values remain empty</value>
+  </data>
+  <data name="RNP_CSV_GRUND_TEXT_LAENGE" xml:space="preserve">
+    <value>longer than {0} characters</value>
+  </data>
+  <data name="RNP_CSV_GRUND_TEXT_ZEILE" xml:space="preserve">
+    <value>longer than {0} characters — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_NAME_LEER" xml:space="preserve">
+    <value>no name — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_NAME_DOPPELT" xml:space="preserve">
+    <value>“{0}” already appears in row {1} — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_NUMMER_DOPPELT" xml:space="preserve">
+    <value>number “{0}” already appears in row {1} — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_NUMMER_VORHANDEN" xml:space="preserve">
+    <value>number “{0}” already belongs to “{1}” in the target category — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_PROFIL" xml:space="preserve">
+    <value>{0} — row not imported</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ABSENKUNG" xml:space="preserve">
+    <value>converted to Heiz_Soll_Ausserhalb = {0} °C</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ABSENKUNG_VORRANG" xml:space="preserve">
+    <value>Heiz_Soll_Ausserhalb takes precedence</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ABSENKUNG_OHNE_SOLL" xml:space="preserve">
+    <value>cannot be converted without Heiz_Soll</value>
+  </data>
+  <data name="RNP_CSV_GRUND_STUNDEN_ZAHL" xml:space="preserve">
+    <value>{0} values instead of 24</value>
+  </data>
+  <data name="RNP_CSV_GRUND_STUNDEN" xml:space="preserve">
+    <value>hourly values not readable or outside the limits of the quantity</value>
+  </data>
+  <data name="RNP_CSV_GRUND_ZEILE" xml:space="preserve">
+    <value>row pattern not imported: {0}</value>
+  </data>
+  <data name="RNP_CSV_BTN_IMPORT" xml:space="preserve">
+    <value>Import CSV…</value>
+  </data>
+  <data name="RNP_CSV_BTN_EXPORT" xml:space="preserve">
+    <value>Export CSV…</value>
+  </data>
+  <data name="RNP_CSV_LBL_IMPORT" xml:space="preserve">
+    <value>CSV import</value>
+  </data>
+  <data name="RNP_CSV_LBL_EXPORT" xml:space="preserve">
+    <value>CSV export</value>
+  </data>
+  <data name="RNP_CSV_LBL_DATEI" xml:space="preserve">
+    <value>File: {0}</value>
+  </data>
+  <data name="RNP_CSV_LBL_ZIEL" xml:space="preserve">
+    <value>Target category</value>
+  </data>
+  <data name="RNP_CSV_LBL_NEUE" xml:space="preserve">
+    <value>(new category)</value>
+  </data>
+  <data name="RNP_CSV_LBL_NAME" xml:space="preserve">
+    <value>Name of the new category</value>
+  </data>
+  <data name="RNP_CSV_LBL_KATEGORIE" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="RNP_CSV_LBL_ZEILE" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="RNP_CSV_LBL_SPALTE" xml:space="preserve">
+    <value>Column</value>
+  </data>
+  <data name="RNP_CSV_LBL_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="RNP_CSV_LBL_GRUND" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="RNP_CSV_LBL_NUMMER" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="RNP_CSV_LBL_PROFIL" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="RNP_CSV_LBL_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="RNP_CSV_LBL_WERTE" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="RNP_CSV_LBL_MELDUNGEN" xml:space="preserve">
+    <value>Messages</value>
+  </data>
+  <data name="RNP_CSV_ART_UEBERNOMMEN" xml:space="preserve">
+    <value>imported</value>
+  </data>
+  <data name="RNP_CSV_ART_IGNORIERT" xml:space="preserve">
+    <value>ignored</value>
+  </data>
+  <data name="RNP_CSV_ART_FEHLER" xml:space="preserve">
+    <value>error</value>
+  </data>
+  <data name="RNP_CSV_STAND_NEU" xml:space="preserve">
+    <value>new</value>
+  </data>
+  <data name="RNP_CSV_STAND_VORHANDEN" xml:space="preserve">
+    <value>exists</value>
+  </data>
+  <data name="RNP_CSV_STAND_ABGELEHNT" xml:space="preserve">
+    <value>not imported</value>
+  </data>
+  <data name="RNP_CSV_TXT_ZAEHLUNG" xml:space="preserve">
+    <value>{0} imported, {1} ignored, {2} errors</value>
+  </data>
+  <data name="RNP_CSV_TXT_FORMAT" xml:space="preserve">
+    <value>UTF-8, semicolon, decimal point; one header row with the column names, one row per profile.</value>
+  </data>
+  <data name="RNP_CSV_TXT_HINWEISE" xml:space="preserve">
+    <value>Shown are the ignored values and the errors; “Apply” writes only the profiles with status “new” or “exists”.</value>
+  </data>
+  <data name="RNP_CSV_TXT_KEINE_HINWEISE" xml:space="preserve">
+    <value>All values are imported.</value>
+  </data>
+  <data name="RNP_CSV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="RNP_CSV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RNP_CSV_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save…</value>
+  </data>
+  <data name="RNP_CSV_BTN_ERSETZEN" xml:space="preserve">
+    <value>Replace</value>
+  </data>
+  <data name="RNP_CSV_BTN_UEBERSPRINGEN" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="RNP_CSV_FRAGE_VORHANDEN" xml:space="preserve">
+    <value>{0} profiles already exist in the target category. Replace or skip?</value>
+  </data>
+  <data name="RNP_CSV_TITEL_VORHANDEN" xml:space="preserve">
+    <value>Existing profiles</value>
+  </data>
+  <data name="RNP_CSV_SPERRE_NAME" xml:space="preserve">
+    <value>The name of the new category is missing.</value>
+  </data>
+  <data name="RNP_CSV_DLG_IMPORT" xml:space="preserve">
+    <value>Import usage profiles</value>
+  </data>
+  <data name="RNP_CSV_DLG_EXPORT" xml:space="preserve">
+    <value>Export usage profiles</value>
+  </data>
+  <data name="RNP_CSV_DATEIFILTER" xml:space="preserve">
+    <value>CSV files (*.csv)|*.csv|All files (*.*)|*.*</value>
+  </data>
+  <data name="RNP_CSV_MSG_GESPEICHERT" xml:space="preserve">
+    <value>{0} profiles saved: {1}</value>
+  </data>
+  <data name="RNP_CSV_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>Saved to {0}; sharing could not be opened.</value>
+  </data>
+  <data name="RNP_CSV_MSG_LESEFEHLER" xml:space="preserve">
+    <value>The file cannot be read: {0}</value>
+  </data>
+  <data name="RNP_CSV_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>The file cannot be written: {0}</value>
+  </data>
+  <data name="RNP_PD_BTN_BLATT" xml:space="preserve">
+    <value>From project file…</value>
+  </data>
+  <data name="RNP_PD_BTN_IMPORT" xml:space="preserve">
+    <value>Apply usage profiles from file…</value>
+  </data>
+  <data name="RNP_PD_TOOLTIP" xml:space="preserve">
+    <value>Reads the DIN usage profiles of a CAD project file into a custom category — nothing is written before “Apply”.</value>
+  </data>
+  <data name="RNP_PD_UEBERSCHRIFT" xml:space="preserve">
+    <value>Usage profiles from {0} → category “{1}”</value>
+  </data>
+  <data name="RNP_PD_SP_NUMMER" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="RNP_PD_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="RNP_PD_SP_WERTE" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="RNP_PD_SP_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="RNP_PD_SP_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="RNP_PD_STAND_NEU" xml:space="preserve">
+    <value>new</value>
+  </data>
+  <data name="RNP_PD_STAND_VORHANDEN" xml:space="preserve">
+    <value>existing</value>
+  </data>
+  <data name="RNP_PD_KATEGORIE_VORHANDEN" xml:space="preserve">
+    <value>The category “{0}” already exists. “Add missing” only adds numbers that are not there yet; “Replace” rewrites the values from the file and removes profiles the file no longer contains.</value>
+  </data>
+  <data name="RNP_PD_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="RNP_PD_BTN_ERGAENZEN" xml:space="preserve">
+    <value>Add missing</value>
+  </data>
+  <data name="RNP_PD_BTN_ERSETZEN" xml:space="preserve">
+    <value>Replace</value>
+  </data>
+  <data name="RNP_PD_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="RNP_PD_GRUND_KEINE" xml:space="preserve">
+    <value>The project file contains no usage profile with a DIN number — nothing to apply.</value>
+  </data>
+  <data name="RNP_PD_GRUND_ALLE_DA" xml:space="preserve">
+    <value>All numbers are already in the category — “Replace” rewrites their values.</value>
+  </data>
+  <data name="RNP_PD_GRUND_BESCHAEFTIGT" xml:space="preserve">
+    <value>The project file is being read or applied.</value>
+  </data>
+  <data name="RNP_PD_ERGEBNIS" xml:space="preserve">
+    <value>Category “{0}”: {1} new, {2} replaced, {3} unchanged, {4} removed.</value>
+  </data>
+  <data name="RNP_PD_HINWEIS_ZUORDNUNG" xml:space="preserve">
+    <value>The assignment of DIN numbers stays as it is — switch the assignment to these profiles in the “Usage profiles” sheet.</value>
+  </data>
+  <data name="RNP_PD_HINWEIS_HERKUNFT" xml:space="preserve">
+    <value>The values come from your project file and stay in this database; they are never shipped.</value>
+  </data>
+  <data name="RNP_PD_MELDUNGEN" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="RNP_PD_KATEGORIE" xml:space="preserve">
+    <value>Project file {0}</value>
+  </data>
+  <data name="RNP_PD_QUELLE" xml:space="preserve">
+    <value>Values from the user's project file {0} — only in this database, never shipped.</value>
+  </data>
+  <data name="RNP_PD_NAME_OHNE" xml:space="preserve">
+    <value>Usage profile no. {0}</value>
+  </data>
+  <data name="RNP_PD_BESCHREIBUNG" xml:space="preserve">
+    <value>From project file {0}, DIN no. {1}</value>
+  </data>
+  <data name="RNP_PD_BESCHREIBUNG_LUX" xml:space="preserve">
+    <value>; maintained illuminance {0} lx</value>
+  </data>
+  <data name="RNP_PD_KEINE" xml:space="preserve">
+    <value>The project file contains no usage profile with a DIN number.</value>
+  </data>
+  <data name="RNP_PD_MSG_ABWEICHEND" xml:space="preserve">
+    <value>No. {0}: {1} profiles in the file carry this number with different values — the first one (“{2}”) is applied.</value>
+  </data>
+  <data name="RNP_PD_MSG_OHNE_NUMMER" xml:space="preserve">
+    <value>{0} zone(s) with a usage profile without DIN number skipped.</value>
+  </data>
+  <data name="RNP_PD_MSG_BELEUCHTUNG" xml:space="preserve">
+    <value>No. {0}: illuminance {1} lx is kept in the description — the profile holds lighting as a power (W/m²), which stays empty.</value>
+  </data>
+  <data name="RNP_PD_MSG_ABSENKUNG" xml:space="preserve">
+    <value>No. {0}: setback without room temperature — not applied.</value>
+  </data>
+  <data name="RNP_PD_MSG_LUFT_PERSON" xml:space="preserve">
+    <value>No. {0}: outdoor air per person not applied — the profile has no occupancy density for it.</value>
+  </data>
+  <data name="RNP_PD_MSG_PERSONEN" xml:space="preserve">
+    <value>No. {0}: occupants {1} W/m² applied as {2} m²/person at {3} W/person.</value>
+  </data>
+  <data name="RNP_PD_MSG_PERSONENZAHL" xml:space="preserve">
+    <value>No. {0}: number of persons without area-related heat gain — occupants stay empty.</value>
+  </data>
+  <data name="RNP_PD_MSG_BEGRENZT" xml:space="preserve">
+    <value>No. {0}: {1} is outside the limits — not applied.</value>
+  </data>
+  <data name="RNP_PD_MSG_ZUORDNUNG_GELOEST" xml:space="preserve">
+    <value>{0} assignment(s) to removed profiles are now set to “none”.</value>
+  </data>
+  <data name="RNP_ED_TITEL" xml:space="preserve">
+    <value>Time profile per quantity</value>
+  </data>
+  <data name="RNP_ED_LBL_WEG" xml:space="preserve">
+    <value>Source of the quantity</value>
+  </data>
+  <data name="RNP_ED_WEG_KENNWERTE" xml:space="preserve">
+    <value>from characteristic values</value>
+  </data>
+  <data name="RNP_ED_WEG_ZEILENBILD" xml:space="preserve">
+    <value>Row pattern</value>
+  </data>
+  <data name="RNP_ED_WEG_STUNDEN" xml:space="preserve">
+    <value>Hourly profile</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_KENNWERTE" xml:space="preserve">
+    <value>The characteristic values above apply; the preview shows what they produce.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_ZEILENBILD" xml:space="preserve">
+    <value>The row pattern applies literally instead of the characteristic values of this quantity; an empty row does not apply.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_STUNDEN" xml:space="preserve">
+    <value>The hourly profile yields a standard week: the working day on usage days, otherwise the non-usage day.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_LUFT" xml:space="preserve">
+    <value>With the characteristic value for outdoor air, the hourly values of ventilation are fractions of it.</value>
+  </data>
+  <data name="RNP_ED_HINWEIS_LEER" xml:space="preserve">
+    <value>No values yet — until then the next source applies (hourly profile, otherwise characteristic values).</value>
+  </data>
+  <data name="RNP_ED_TITEL_FRAGE" xml:space="preserve">
+    <value>Change source</value>
+  </data>
+  <data name="RNP_ED_FRAGE_KENNWERTE" xml:space="preserve">
+    <value>Delete the row pattern and hourly profile of the quantity “{0}”? The characteristic values then apply.</value>
+  </data>
+  <data name="RNP_ED_FRAGE_STUNDEN" xml:space="preserve">
+    <value>Delete the row pattern of the quantity “{0}”? The hourly profile then applies.</value>
+  </data>
+  <data name="RNP_ED_FRAGE_ZEILENBILD" xml:space="preserve">
+    <value>Delete the hourly profile of the quantity “{0}”? The row pattern then applies.</value>
+  </data>
+  <data name="RNP_ED_LBL_STUNDE" xml:space="preserve">
+    <value>{0} · hour {1}</value>
+  </data>
+  <data name="RNP_ED_LBL_EINFUEGEN" xml:space="preserve">
+    <value>{0} · paste row (24 values)</value>
+  </data>
+  <data name="RNP_ED_PH_EINFUEGEN" xml:space="preserve">
+    <value>24 values separated by spaces or tabs</value>
+  </data>
+  <data name="RNP_ED_BTN_EINFUEGEN" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="RNP_ED_GRUND_EINFUEGEN" xml:space="preserve">
+    <value>Enter a row of 24 values first.</value>
+  </data>
+  <data name="RNP_ED_MSG_ANZAHL" xml:space="preserve">
+    <value>Expected 24 values, found {0}.</value>
+  </data>
+  <data name="RNP_ED_MSG_WERT" xml:space="preserve">
+    <value>Hour {0}: “{1}” is not a number in the range {2} … {3} {4}.</value>
+  </data>
+  <data name="RNP_ED_LBL_VORSCHAU" xml:space="preserve">
+    <value>Preview of the quantity</value>
+  </data>
+  <data name="RNP_ED_LBL_WOCHE" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="RNP_ED_LBL_TEPPICH" xml:space="preserve">
+    <value>Carpet plot</value>
+  </data>
+  <data name="RNP_ED_TXT_BEZUG" xml:space="preserve">
+    <value>Preview for a neutral target (heating 20 °C, cooling 26 °C, air change as default, one person, appliances 100 W, holidays 1 to 14 August), reference year {0}; the week lies in January without a public holiday.</value>
+  </data>
+  <data name="RNP_ED_TXT_NICHT_BELEGT" xml:space="preserve">
+    <value>The quantity is not set; the target keeps its calendar.</value>
+  </data>
+  <data name="RNP_ED_KI_WEG_NAME" xml:space="preserve">
+    <value>{0} · source</value>
+  </data>
+  <data name="RNP_ED_KI_WEG_ERL" xml:space="preserve">
+    <value>Where the quantity takes its time profile from in the draft of the profile editor: {0} (characteristic values), {1} (row pattern) or {2} (hourly profile). Read-only — switching happens on the sheet with a confirmation, a click of the user.</value>
+  </data>
+  <data name="RNP_ED_KI_ZEILENBILD_ERL" xml:space="preserve">
+    <value>A row of the row pattern in the draft of the profile editor (quantity, row, value in the unit of the profile or “off”, night window, ΔT); read-only, identified by its number from 1. Editing happens on the sheet.</value>
+  </data>
+  <data name="RNP_ED_KI_STUNDEN_ERL" xml:space="preserve">
+    <value>An hourly profile in the draft of the profile editor (quantity, day type WERKTAG or FREI, 24 values separated by semicolons in the unit of the profile); read-only, identified by its number from 1. Editing happens on the sheet.</value>
+  </data>
+  <data name="BK_BER_VORBELEGT_VALERI" xml:space="preserve">
+    <value>Preset from “Economics”: {0} versions selected, section Economic viability. The report shows the key figures per scenario (Unfavourable, Expected, Favourable); the other panels use the Expected scenario. The selection is saved with “Create”.</value>
+  </data>
+  <data name="WIRT_BER_KENNZAHLEN_VALERI" xml:space="preserve">
+    <value>Key figures by scenario</value>
+  </data>
+  <data name="WIRT_BER_VALERI_MAPPE" xml:space="preserve">
+    <value>Annual series and key figures of the favourable and unfavourable scenarios: workbook, sheet “Economic evaluation”.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_RUECKFALL" xml:space="preserve">
+    <value>⚠ Results missing for {0} ({1}) — the table therefore shows scenario “{2}” only.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_WORTBERICHT" xml:space="preserve">
+    <value>Word report in VALERI presentation</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>{0} › key figures by scenario</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>key figures by scenario</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>key figures by scenario, scenarios Unfavourable / Expected / Favourable</value>
+  </data>
+  <data name="VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN" xml:space="preserve">
+    <value>The economic key figures of the current case per scenario (VALERI presentation): columns unfavourable, expected and favourable; if the case lacks a scenario, the table shows expected only with a note below; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
+    <value>All three scenarios (VALERI)</value>
   </data>
 </root>
 

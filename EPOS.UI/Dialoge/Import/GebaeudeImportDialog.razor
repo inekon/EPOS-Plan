@@ -189,6 +189,12 @@
                     </select>
                 }
             </div>
+            @if (ProjektdateiProfile is not null && stand.Projektdatei is { Gelesen: true })
+            {
+                @* NP4b (Q46): die Profile der geladenen Projektdatei in eine eigene Kategorie; danach liest der Plan Katalog und Zuordnung neu. *@
+                <EPOS.UI.Dialoge.Bedarf.ProjektdateiProfile Weg="@ProjektdateiProfile" Knopftext="@ProjektdateiProfile.Texte.KnopfImport"
+                                                           Uebernommen="NeuZuordnen" />
+            }
             @if (stand.Projektdatei is GebaeudeProjektdateiDaten sq)
             {
                 @if (sq.Schwerste is GebaeudeImportMeldung sqs)
@@ -944,6 +950,9 @@
     /// <summary>„Projektdatei entfernen“ an der Datenseite.</summary>
     [Parameter] public Action? ProjektdateiEntfernen { get; set; }
 
+    /// <summary>„Nutzungsprofile der Datei übernehmen…“ (NP4b, Q46): die Profile der geladenen Projektdatei in eine eigene Kategorie.</summary>
+    [Parameter] public EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileWeg? ProjektdateiProfile { get; set; }
+
     /// <summary>Die Beschriftungen (Bündel).</summary>
     [Parameter] public GebaeudeImportTexte Texte { get; set; } = new();
 
@@ -1232,7 +1241,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private int? GueltigeKlasse(int? index)

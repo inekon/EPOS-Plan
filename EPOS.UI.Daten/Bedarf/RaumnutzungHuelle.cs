@@ -37,6 +37,7 @@ namespace WindowsFormsApplication1
             var ctrl = new RaumnutzungCtrl();
             return new RaumnutzungWeg
             {
+                Projektdatei = ProjektdateiProfileHuelle.BlattWeg(),
                 Kategorien = () => ctrl.Kategorien().Select(Kategorie).ToList(),
                 Profile = id => ctrl.Profile(id).Select(Profil).ToList(),
                 Zuordnungen = () => ctrl.Zuordnungen().Select(Zuordnung).ToList(),
@@ -54,6 +55,8 @@ namespace WindowsFormsApplication1
                 ZuordnungSetzen = (art, schluessel, idProfil)
                     => Ergebnis(ctrl.ZuordnungSetzen(Kern(art), schluessel, idProfil)),
                 ZuordnungLoeschen = id => Ergebnis(ctrl.ZuordnungLoeschen(id)),
+                Csv = RaumnutzungCsvHuelle.Weg(ctrl),
+                Bild = RaumnutzungBildHuelle.Weg(),
             };
         }
 
@@ -141,7 +144,6 @@ namespace WindowsFormsApplication1
             t.LabelWochentage = Text_("RNP_LBL_WOCHENTAGE", t.LabelWochentage);
             t.TagesartWerktag = Text_("RNP_LBL_TAGESART_WERKTAG", t.TagesartWerktag);
             t.TagesartFrei = Text_("RNP_LBL_TAGESART_FREI", t.TagesartFrei);
-            t.HinweisNurLesend = Text_("RNP_TXT_NUR_LESEND", t.HinweisNurLesend);
 
             t.Ausgeliefert = Text_("RNP_TXT_AUSGELIEFERT", t.Ausgeliefert);
             t.TextLeer = Text_("RNP_TXT_LEER", t.TextLeer);

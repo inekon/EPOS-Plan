@@ -1,11 +1,14 @@
-﻿@* DAS BLATT „NUTZUNGSPROFILE" (Stufe NP3a; Konzept Nutzungsprofile 6.1, NP-F3, NP-F4, NP-F6, NP-F19) -
+﻿@* DAS BLATT „NUTZUNGSPROFILE" (Stufen NP3a, NP4; Konzept Nutzungsprofile 6.1, 6.3, 6.4, NP-F3, NP-F4, NP-F6,
+   NP-F7, NP-F9, NP-F19, Q46) -
    aus dem Reiter „Konditionierung" des Gebaeudeeditors ("Nutzungsprofile verwalten...") als BLATT, auf
    beiden Plattformen, kein Menuepunkt (NP-F22).
 
    AUFBAU. Oben die leise Zeile "sofort gespeichert" (NP-F3: ein Katalog, projektuebergreifend, ohne
    Projektkopie - er reist in keinem Feldsatz mit, deshalb schreibt jede Handlung fuer sich und es gibt
    keine OK/Abbrechen-Leiste, die etwas anderes behaupten wuerde; dasselbe wie die Vorlagenverwaltung,
-   Festlegung 13). Darunter zwei Reiter: "Profile" und "Zuordnung".
+   Festlegung 13). Darunter der Austausch im CSV-Format 6.4 (RaumnutzungCsvAustausch, NP4a), zwei Reiter
+   "Profile" und "Zuordnung" und der Kopfknopf "Aus Projektdatei..." (ProjektdateiProfile, NP4b, Q46) -
+   beide eigene Komponenten mit eigenem Weg; danach liest das Blatt neu.
 
    REITER "PROFILE" - drei Spalten:
    1. KATALOGBAUM links: Kategorien mit Art und Schloss, darunter ihre Profile (Nummer, Name). Ein Klick
@@ -15,8 +18,10 @@
    2. PROFILEDITOR Mitte: Kopf (Nummer, Name, Beschreibung) und die Kennwertgruppen aus 4.1 als Felder mit
       Einheit und Grenzen - Nutzungszeit und Woche, Sollwerte, Aussenluft mit Einheit, Lasten. Jeder
       Kennwert darf leer sein (NP-F6). Ein ausgeliefertes Profil steht im Lesemodus (Felder gesperrt,
-      Grund am Knopf "Speichern"); ein Normprofil ohne Werte sagt es. Zeilenbild und Stundenprofile stehen
-      NUR LESEND darunter (Bearbeitung in NP4).
+      Grund am Knopf "Speichern"); ein Normprofil ohne Werte sagt es. Darunter der Editor "Zeitverlauf je
+      Groesse" (RaumnutzungBildEditor, NP4c): je Groesse der Umschalter "aus Kennwerten | Zeilenbild |
+      Stundenprofil", Zeilenbild und Stundenprofil bearbeitbar und die Vorschau ueber denselben Schritt wie
+      die Uebernahme; im Lesemodus nur lesbar.
    3. VORSCHAU rechts: der Knopf "Vorschau" laesst den Generator ueber dem Feldsatz rechnen - ohne
       Datenbank und ohne zu schreiben - und zeigt je Groesse die erzeugten Vorgabezeilen als Tabelle, dazu
       Nennwert samt Herleitung (NP-F18), die Hinweise (NP-F10, NP-F13) und die Zeile "erzeugt: ... Tage,
@@ -42,6 +47,8 @@
     }
     else
     {
+        <RaumnutzungCsvAustausch Weg="@Weg.Csv" Kategorien="@Kategorien"
+                                 Geaendert="@(async () => { NeuLaden(); if (Geaendert.HasDelegate) await Geaendert.InvokeAsync(); })" />
         <div class="epos-raumnutzung-reiter" role="tablist">
             <button type="button" class="epos-knopf epos-raumnutzung-reiter-profile" role="tab"
                     aria-selected="@((!_zuordnungsreiter).ToString().ToLowerInvariant())"
@@ -50,6 +57,10 @@
                     aria-selected="@(_zuordnungsreiter.ToString().ToLowerInvariant())"
                     @onclick="ZuordnungsreiterWaehlen">@Texte.ReiterZuordnung</button>
         </div>
+
+        @* NP4b (Q46): Kopfknopf "Aus Projektdatei..." - eigene Komponente, eigener Weg; danach liest das Blatt neu. *@
+        <ProjektdateiProfile Weg="@Weg.Projektdatei" Knopftext="@Weg.Projektdatei?.Texte.KnopfBlatt"
+                             Uebernommen="() => Melden(RaumnutzungErgebnis.Gut)" />
 
         @if (_meldung is not null)
         {
@@ -291,63 +302,9 @@
                             </KindInhalt>
                         </Formulargruppe>
 
-                        @* Zeilenbild und Stundenprofile: in dieser Welle NUR LESEND (Bearbeitung in NP4). *@
-                        @if (s.Zeilenbild.Count > 0 || s.Stunden.Count > 0)
-                        {
-                            <p class="epos-leisezeile epos-raumnutzung-nurlesend">@Texte.HinweisNurLesend</p>
-                        }
-                        @if (s.Zeilenbild.Count > 0)
-                        {
-                            <h3 class="epos-raumnutzung-ueberschrift">@Texte.LabelZeilenbild</h3>
-                            <div class="epos-raster-huelle epos-raster-huelle--frei">
-                                <table class="epos-raster epos-raumnutzung-zeilenbild">
-                                    <thead>
-                                        <tr>
-                                            <th>@Texte.LabelArt</th>
-                                            <th>@Texte.LabelZeile</th>
-                                            <th>@Texte.LabelWert</th>
-                                            <th>@Texte.LabelFenster</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (RaumnutzungZeilenbildDaten z in s.Zeilenbild)
-                                        {
-                                            <tr>
-                                                <td>@Groessenname(z.Groesse)</td>
-                                                <td>@z.Zeile</td>
-                                                <td>@Zellentext(z)</td>
-                                                <td>@Fenstertext(z)</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                        @if (s.Stunden.Count > 0)
-                        {
-                            <h3 class="epos-raumnutzung-ueberschrift">@Texte.LabelStunden</h3>
-                            <div class="epos-raster-huelle epos-raster-huelle--frei">
-                                <table class="epos-raster epos-raumnutzung-stunden">
-                                    <thead>
-                                        <tr>
-                                            <th>@Texte.LabelArt</th>
-                                            <th>@Texte.LabelZeile</th>
-                                            <th>@Texte.LabelWert</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (RaumnutzungStundenDaten h in s.Stunden)
-                                        {
-                                            <tr>
-                                                <td>@Groessenname(h.Groesse)</td>
-                                                <td>@(h.Tagesart == RaumnutzungTagesart.Werktag ? Texte.TagesartWerktag : Texte.TagesartFrei)</td>
-                                                <td>@Stundentext(h)</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
+                        @* NP4c: Zeitverlauf je Größe - Umschalter, Zeilenbild, Stundenprofil und Vorschau (eigene Komponente). *@
+                        <RaumnutzungBildEditor Profil="@s" Weg="@Weg.Bild" GroessenTexte="@GroessenTexte" NurLesen="@lesend"
+                                               JaText="@JaText" NeinText="@NeinText" />
 
                         <div class="epos-raumnutzung-editorknoepfe">
                             @if (Weg.ProfilAendern is not null || Weg.ProfilAnlegen is not null)
@@ -691,18 +648,6 @@
 
     private static double? Anteil(double? prozent)
         => prozent is double p ? Math.Round(p / 100.0, 6) : null;
-
-    private string Zellentext(RaumnutzungZeilenbildDaten z)
-        => z.Aus ? GroessenTexte.ZelleAus
-           : z.Wert is double w ? w.ToString("0.####", CultureInfo.CurrentCulture) : "";
-
-    private static string Fenstertext(RaumnutzungZeilenbildDaten z)
-        => z.Von is int v && z.Bis is int b
-           ? v.ToString(CultureInfo.CurrentCulture) + " – " + b.ToString(CultureInfo.CurrentCulture)
-           : "";
-
-    private static string Stundentext(RaumnutzungStundenDaten h)
-        => string.Join(" ", h.Werte.Select(w => double.IsNaN(w) ? "–" : w.ToString("0.##", CultureInfo.CurrentCulture)));
 
     // ------------------------------------------------------------------ Wahl und Stand
 

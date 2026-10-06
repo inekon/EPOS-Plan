@@ -941,5 +941,438 @@ namespace WindowsFormsApplication1
 
         private static string Text(DataRow r, string spalte)
             => r[spalte] == DBNull.Value ? null : Convert.ToString(r[spalte], CultureInfo.InvariantCulture);
+
+        #region CSV-Import und -Export (Stufe NP4a; Konzept Nutzungsprofile 6.1, 6.4, NP-F11, NP-F20)
+
+        /// <summary>Der Export einer Kategorie: die Bytes des CSV-Formats (<see cref="RaumnutzungCsv"/>) oder die benannte Ablehnung.</summary>
+        public sealed record CsvAusgabe(bool Ok, string Meldung, string Kategorie, int Profile, byte[] Inhalt);
+
+        /// <summary>Was „Übernehmen" geschrieben hat; <c>IdKatalog</c> ist die Zielkategorie (auch eine neu angelegte).</summary>
+        public sealed record CsvBilanz(bool Ok, string Meldung, long IdKatalog, int Angelegt, int Ersetzt, int Uebersprungen, int Abgelehnt);
+
+        /// <summary>
+        /// Schreibt eine Kategorie — auch eine ausgelieferte — im CSV-Format 6.4: alle Profile mit Kennwerten, Stundenprofilen
+        /// und Zeilenbild; <c>Nutzungstage_Jahr</c> nie (E93). Eine Kategorie ohne Profile ergibt die Kopfzeile allein.
+        /// </summary>
+        public CsvAusgabe CsvExportieren(long idKatalog)
+        {
+            string bereit = Bereit();
+            if (bereit != null) return new CsvAusgabe(false, bereit, null, 0, null);
+            Kategorie k = KategorieLesen(idKatalog);
+            if (k == null) return new CsvAusgabe(false, Fehlt(MyResource.Resource.RAUMNUTZUNG_MSG_KATEGORIE_FEHLT, idKatalog), null, 0, null);
+            List<Raumnutzungsprofil> profile = Profile(idKatalog);
+            return new CsvAusgabe(true, null, k.Bezeichner, profile.Count, RaumnutzungCsv.SchreibenBytes(profile));
+        }
+
+        /// <summary>Liest die Bytes einer Datei und gleicht sie mit der Zielkategorie ab (<c>null</c> = neue Kategorie); schreibt nichts.</summary>
+        public RaumnutzungCsvLesung CsvPruefen(byte[] inhalt, long? idKatalog)
+        {
+            RaumnutzungCsvLesung lesung = RaumnutzungCsv.Lesen(inhalt);
+            CsvAbgleichen(lesung, idKatalog);
+            return lesung;
+        }
+
+        /// <summary>
+        /// Gleicht die Zeilen mit der Zielkategorie ab: ein gleichnamiges Profil (ohne Unterschied der Schreibung) heißt
+        /// „vorhanden" — die Rückfrage ersetzen/überspringen führt der Aufrufer; eine Nummer, die dort ein anderes Profil trägt,
+        /// lehnt die Zeile benannt ab (NP-F5). Jeder Abgleich ersetzt den vorigen.
+        /// </summary>
+        public void CsvAbgleichen(RaumnutzungCsvLesung lesung, long? idKatalog)
+        {
+            if (lesung == null) throw new ArgumentNullException(nameof(lesung));
+            lesung.Zielmeldungen.Clear();
+            foreach (RaumnutzungCsvZeile z in lesung.Zeilen)
+            {
+                z.Zielablehnung = null;
+                z.Vorhanden = null;
+            }
+            if (lesung.Abbruch != null || idKatalog is not long id || !Lesbar()) return;
+            List<Raumnutzungsprofil> ziel = Profile(id);
+            foreach (RaumnutzungCsvZeile z in lesung.Zeilen.Where(x => x.Ablehnung == null))
+            {
+                Raumnutzungsprofil gleich = ziel.FirstOrDefault(p => string.Equals(p.Bezeichner, z.Profil.Bezeichner, StringComparison.OrdinalIgnoreCase));
+                z.Vorhanden = gleich?.Id;
+                if (z.Profil.Nummer == null) continue;
+                Raumnutzungsprofil andere = ziel.FirstOrDefault(p => p.Id != (gleich?.Id ?? 0) &&
+                                                                     string.Equals(p.Nummer, z.Profil.Nummer, StringComparison.OrdinalIgnoreCase));
+                if (andere == null) continue;
+                z.Zielablehnung = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RNP_CSV_GRUND_NUMMER_VORHANDEN,
+                                                z.Profil.Nummer, andere.Bezeichner);
+                lesung.Zielmeldungen.Add(new RaumnutzungCsvMeldung(z.Zeile, RaumnutzungCsv.SPALTE_NUMMER, RaumnutzungCsvArt.Fehler, z.Zielablehnung));
+            }
+        }
+
+        /// <summary>
+        /// <b>Übernehmen</b>: schreibt die übernehmbaren Zeilen in eine eigene Zielkategorie (<paramref name="idKatalog"/>) oder in
+        /// eine neue (<paramref name="neueKategorie"/>, Art <c>EIGEN</c>) — nie in eine ausgelieferte. Ein vorhandenes Profil gleichen
+        /// Namens wird nach <paramref name="ersetzen"/> an Ort und Stelle ersetzt (die Zuordnungen zeigen weiter darauf) oder
+        /// übersprungen. Ein Vorgang: Gelingt eine Zeile nicht, bleibt nichts geschrieben.
+        /// </summary>
+        public CsvBilanz CsvUebernehmen(RaumnutzungCsvLesung lesung, long? idKatalog, string neueKategorie, bool ersetzen)
+        {
+            if (lesung == null) throw new ArgumentNullException(nameof(lesung));
+            string bereit = Bereit();
+            if (bereit != null) return CsvAbgelehnt(bereit);
+            if (lesung.Abbruch != null) return CsvAbgelehnt(lesung.Abbruch);
+            string name = neueKategorie, beschreibung = null, quelle = null;
+            string m = idKatalog is long id ? ZielkategoriePruefen(id) : KategorieTexte(ref name, ref beschreibung, ref quelle, 0);
+            if (m != null) return CsvAbgelehnt(m);
+            CsvAbgleichen(lesung, idKatalog);
+            List<RaumnutzungCsvZeile> zeilen = lesung.Uebernehmbare.ToList();
+            int abgelehnt = lesung.Zeilen.Count - zeilen.Count;
+            if (zeilen.Count == 0) return CsvAbgelehnt(MyResource.Resource.RNP_CSV_MSG_NICHTS);
+
+            int angelegt = 0, ersetzt = 0, uebersprungen = 0;
+            Ergebnis e = Schreibe(v =>
+            {
+                long ziel = idKatalog ?? KategorieEinfuegen(v, name, beschreibung, quelle);
+                foreach (RaumnutzungCsvZeile z in zeilen)
+                {
+                    Raumnutzungsprofil p = z.Profil.Kopie();
+                    p.IdKatalog = ziel;
+                    p.Ausgeliefert = false;
+                    p.Id = z.Vorhanden ?? 0;
+                    string f = Profilpruefung(p);
+                    if (f != null) return Ergebnis.Fehler(f);
+                    if (z.Vorhanden.HasValue)
+                    {
+                        if (!ersetzen)
+                        {
+                            uebersprungen++;
+                            continue;
+                        }
+                        CsvErsetzen(v, p);
+                        ersetzt++;
+                        continue;
+                    }
+                    ProfilEinfuegen(v, p);
+                    angelegt++;
+                }
+                return Ergebnis.MitId(ziel);
+            });
+            if (!e.Ok) return CsvAbgelehnt(e.Meldung);
+            return new CsvBilanz(true, string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RNP_CSV_MSG_ERGEBNIS,
+                                                     angelegt, ersetzt, uebersprungen, abgelehnt),
+                                 e.Id, angelegt, ersetzt, uebersprungen, abgelehnt);
+        }
+
+        private static CsvBilanz CsvAbgelehnt(string meldung) => new CsvBilanz(false, meldung ?? "", 0, 0, 0, 0, 0);
+
+        /// <summary>Ersetzt Kopf, Kennwerte, Zeilenbild und Stunden eines eigenen Profils an Ort und Stelle (wie <see cref="ProfilAendern"/>).</summary>
+        private static void CsvErsetzen(DbVorgang v, Raumnutzungsprofil p)
+        {
+            List<DbParam> par = KopfParameter(p);
+            par.Add(new DbParam("@id", p.Id));
+            v.Ausfuehren("UPDATE \"" + RaumnutzungSchema.TAB_PROFIL + "\" SET " +
+                         string.Join(", ", SPALTEN_ALLE.Select(c => "\"" + c + "\" = ?")) + " WHERE \"ID\" = ? AND \"ReadOnly\" = 0", par.ToArray());
+            v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" = ?", new DbParam("@id", p.Id));
+            v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" = ?", new DbParam("@id", p.Id));
+            InhaltEinfuegen(v, p, p.Id);
+        }
+
+        #endregion
+
+        #region Profile aus einer Projektdatei (Stufe NP4b, Q46, NP-F21)
+
+        /// <summary>
+        /// Was die Übernahme der Profile einer Projektdatei ergab: die Kategorie, je Profil neu, ersetzt, unverändert
+        /// (vorhanden, „Ergänzen") oder übersprungen (benannt), beim „Ersetzen" entfernte Profile und die Zuordnungen, die
+        /// dadurch auf „keine" stehen.
+        /// </summary>
+        public sealed record Projektdateiuebernahme(bool Ok, string Meldung, long IdKategorie, int Neu, int Ersetzt, int Unveraendert,
+                                                    int Entfernt, int ZuordnungenGeloest, IReadOnlyList<string> Meldungen)
+        {
+            /// <summary>Die benannte Ablehnung; nichts geschrieben.</summary>
+            public static Projektdateiuebernahme Fehler(string meldung)
+                => new Projektdateiuebernahme(false, meldung ?? "", 0, 0, 0, 0, 0, 0, Array.Empty<string>());
+        }
+
+        /// <summary>Die Kategorie mit diesem Namen (ohne Unterschied der Schreibung); <c>null</c> = keine.</summary>
+        public Kategorie KategorieMitNamen(string bezeichner)
+        {
+            string name = (bezeichner ?? "").Trim();
+            return name.Length == 0 ? null
+                : Kategorien().FirstOrDefault(k => string.Equals(k.Bezeichner, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Steht ein Profil der Projektdatei schon in der Kategorie? Schlüssel ist die Nummer (ohne Unterschied der Schreibung),
+        /// ohne Nummer der Name.
+        /// </summary>
+        public static bool GleichesProjektdateiprofil(Raumnutzungsprofil vorhanden, Raumnutzungsprofil neu)
+        {
+            if (vorhanden == null || neu == null) return false;
+            return neu.Nummer != null
+                ? string.Equals(vorhanden.Nummer, neu.Nummer, StringComparison.OrdinalIgnoreCase)
+                : vorhanden.Nummer == null && string.Equals(vorhanden.Bezeichner, neu.Bezeichner, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// <b>Übernimmt die Profile einer Projektdatei in ihre eigene Kategorie</b> (Q46, NP4b) — in einem Vorgang. Gibt es die
+        /// Kategorie nicht, entsteht sie (Art <c>EIGEN</c>) mit allen Profilen. Gibt es sie, ergänzt die Übernahme nur die
+        /// Nummern, die noch fehlen (<paramref name="ersetzen"/> = <c>false</c>), oder schreibt die Werte der Datei an Ort und
+        /// Stelle (dieselben Ids, die Zuordnungen zeigen weiter darauf), legt neue an und entfernt Profile, die die Datei nicht
+        /// mehr führt — Zuordnungen darauf werden „keine" (NP-F19). Wiederholte Übernahme doppelt nichts. Die Zuordnung der
+        /// DIN-Nummern stellt die Übernahme nicht um.
+        /// </summary>
+        public Projektdateiuebernahme ProjektdateiUebernehmen(Projektdateiprofile satz, bool ersetzen)
+        {
+            if (satz == null) throw new ArgumentNullException(nameof(satz));
+            if (satz.Abgelehnt) return Projektdateiuebernahme.Fehler(satz.Ablehnung);
+            string bereit = Bereit();
+            if (bereit != null) return Projektdateiuebernahme.Fehler(bereit);
+            if (satz.Profile.Count == 0) return Projektdateiuebernahme.Fehler(MyResource.Resource.RNP_PD_KEINE);
+
+            Kategorie k = KategorieMitNamen(satz.Kategorie);
+            if (k != null && k.Ausgeliefert) return Projektdateiuebernahme.Fehler(Ausgeliefert(k.Bezeichner));
+            string bezeichner = satz.Kategorie, beschreibung = null, quelle = satz.Quellenhinweis;
+            if (k == null)
+            {
+                string m = KategorieTexte(ref bezeichner, ref beschreibung, ref quelle, 0);
+                if (m != null) return Projektdateiuebernahme.Fehler(m);
+            }
+
+            var meldungen = new List<string>();
+            var neue = new List<Raumnutzungsprofil>();
+            foreach (Projektdateiprofil q in satz.Profile)
+            {
+                Raumnutzungsprofil p = q?.Profil?.Kopie();
+                if (p == null) continue;
+                p.Id = 0;
+                p.Ausgeliefert = false;
+                string m = Profilpruefung(p);
+                if (m != null) meldungen.Add((p.Nummer ?? p.Bezeichner) + ": " + m);
+                else neue.Add(p);
+            }
+            List<Raumnutzungsprofil> vorhanden = k == null ? new List<Raumnutzungsprofil>() : Profile(k.Id);
+            int neu = 0, ersetzt = 0, gleich = 0, entfernt = 0, geloest = 0;
+            long idKategorie = k?.Id ?? 0;
+            Ergebnis e = Schreibe(v =>
+            {
+                if (idKategorie == 0) idKategorie = KategorieEinfuegen(v, bezeichner, beschreibung, quelle);
+                var namen = vorhanden.Select(x => x.Bezeichner).ToList();
+                var getroffen = new HashSet<long>();
+                foreach (Raumnutzungsprofil p in neue)
+                {
+                    p.IdKatalog = idKategorie;
+                    Raumnutzungsprofil alt = vorhanden.FirstOrDefault(x => !getroffen.Contains(x.Id) && GleichesProjektdateiprofil(x, p));
+                    if (alt == null)
+                    {
+                        p.Bezeichner = KonditionierungsvorlageCtrl.EindeutigerName(namen, p.Bezeichner);
+                        namen.Add(p.Bezeichner);
+                        ProfilEinfuegen(v, p);
+                        neu++;
+                        continue;
+                    }
+                    getroffen.Add(alt.Id);
+                    if (!ersetzen || alt.Ausgeliefert)
+                    {
+                        gleich++;
+                        continue;
+                    }
+                    namen.Remove(alt.Bezeichner);
+                    p.Id = alt.Id;
+                    p.Bezeichner = KonditionierungsvorlageCtrl.EindeutigerName(namen, p.Bezeichner);
+                    namen.Add(p.Bezeichner);
+                    ProjektdateiprofilErsetzen(v, p);
+                    ersetzt++;
+                }
+                if (ersetzen)
+                    foreach (Raumnutzungsprofil x in vorhanden.Where(x => !getroffen.Contains(x.Id) && !x.Ausgeliefert))
+                    {
+                        geloest += v.Ausfuehren("UPDATE \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" SET \"ID_Profil\" = NULL WHERE \"ID_Profil\" = ?",
+                                                new DbParam("@p", x.Id));
+                        v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ID\" = ?", new DbParam("@id", x.Id));
+                        entfernt++;
+                    }
+                return Ergebnis.MitId(idKategorie);
+            });
+            if (!e.Ok) return Projektdateiuebernahme.Fehler(e.Meldung);
+            if (geloest > 0)
+                meldungen.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RNP_PD_MSG_ZUORDNUNG_GELOEST,
+                                            geloest.ToString(CultureInfo.CurrentCulture)));
+            return new Projektdateiuebernahme(true, null, e.Id, neu, ersetzt, gleich, entfernt, geloest, meldungen);
+        }
+
+        /// <summary>Schreibt Kopf, Kennwerte, Zeilenbild und Stunden eines vorhandenen Profils an Ort und Stelle neu (dieselbe Id).</summary>
+        private static void ProjektdateiprofilErsetzen(DbVorgang v, Raumnutzungsprofil p)
+        {
+            List<DbParam> par = KopfParameter(p);
+            par.Add(new DbParam("@id", p.Id));
+            v.Ausfuehren("UPDATE \"" + RaumnutzungSchema.TAB_PROFIL + "\" SET " +
+                         string.Join(", ", SPALTEN_ALLE.Select(c => "\"" + c + "\" = ?")) + " WHERE \"ID\" = ?", par.ToArray());
+            v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" = ?", new DbParam("@id", p.Id));
+            v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" = ?", new DbParam("@id", p.Id));
+            InhaltEinfuegen(v, p, p.Id);
+        }
+
+        #endregion
+
+        #region NP4c — Vorschau und Vorschläge des Profileditors (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9, 4.3)
+
+        // Rein, ohne Datenbank: Was der Editor „Zeitverlauf je Größe" zeigt und vorschlägt, rechnet derselbe Schritt wie die
+        // Übernahme (ProfilAnwenden) an einem leeren Gebäude mit einer NEUTRALEN Ferienlage — so sieht die Vorschau, was ein
+        // Ziel ohne eigene Kalender bekäme. Die Ferienlage ist ein Phantasiewert (zwei Wochen im August), keine Normangabe.
+
+        /// <summary>Erster Ferientag der neutralen Ferienlage der Vorschau (Jahrestag, 1. August im Gemeinjahr).</summary>
+        public const int VORSCHAU_FERIEN_BEGINN = 213;
+
+        /// <summary>Letzter Ferientag der neutralen Ferienlage der Vorschau (Jahrestag, 14. August im Gemeinjahr).</summary>
+        public const int VORSCHAU_FERIEN_ENDE = 226;
+
+        /// <summary>Heizsollwert des neutralen Vorschauziels [°C] — ein runder Phantasiewert, keine Normangabe.</summary>
+        public const double VORSCHAU_SOLL_TAG = 20.0;
+
+        /// <summary>Kühlsollwert des neutralen Vorschauziels [°C] — ein runder Phantasiewert, keine Normangabe.</summary>
+        public const double VORSCHAU_KUEHL_SOLL = 26.0;
+
+        /// <summary>Gerätelast des neutralen Vorschauziels [W] — ein runder Phantasiewert, keine Normangabe.</summary>
+        public const double VORSCHAU_GERAETE_W = 100.0;
+
+        /// <summary>Der Tag (ab 0), ab dem die Vorschau ihre Woche sucht: der erste Montag danach liegt Mitte Januar ohne Feiertag.</summary>
+        private const int VORSCHAU_WOCHE_AB_TAG = 14;
+
+        /// <summary>
+        /// Das Ergebnis der Vorschau einer Größe: der Kalender, den ein leeres Ziel bekäme, das Bezugsjahr und eine typische
+        /// Woche (Montag 0 Uhr bis Sonntag 23 Uhr, ohne Ferien und Feiertage) samt dem Weg des Generators.
+        /// </summary>
+        /// <param name="Weg">Woher die Zeilen kamen; <see cref="Raumnutzungsweg.Keiner"/> = nicht belegt (dann ohne Kalender).</param>
+        /// <param name="Hinweis">Was der Generator benennt.</param>
+        /// <param name="Kalender">Der Kalender am Ziel oder <c>null</c>.</param>
+        /// <param name="Referenzjahr">Das Bezugsjahr der Reihe.</param>
+        /// <param name="Woche">Die 168 Werte der typischen Woche (Rohwerte, „aus" = NaN) oder <c>null</c>.</param>
+        /// <param name="Meldung">Warum der Schritt am leeren Ziel abgelehnt hat; <c>null</c> = nichts.</param>
+        public sealed record Profilvorschau(Raumnutzungsweg Weg, Raumnutzungshinweis Hinweis, Konditionierungskalender Kalender,
+                                            int Referenzjahr, double[] Woche, string Meldung = null);
+
+        /// <summary>
+        /// Der Bestand des neutralen Vorschauziels: was ein Gebäude ohne eigene Konditionierung mitbringt — Heiz- und
+        /// Kühlsollwert, eine Person und eine Gerätelast (runde Phantasiewerte), der Luftwechsel nach den Vorgaben des
+        /// Gebäudemodells und die neutrale Ferienlage. Eine Größe, die das Profil nur teilweise belegt (etwa nur die Nacht der Lüftung), nimmt den Rest
+        /// von hier, wie am Ziel vom Bestand.
+        /// </summary>
+        public static Matrixeingang Vorschaubestand()
+        {
+            var b = new Matrixeingang
+            {
+                Ferienmerker = 1.0,
+                SollTag = VORSCHAU_SOLL_TAG,
+                KuehlungWirksam = true,
+                KuehlSollwert = VORSCHAU_KUEHL_SOLL,
+                LuftwechselInfiltration = Gebaeudemodellvorgaben.LuftwechselInfiltration,
+                LuftwechselNutzer = Gebaeudemodellvorgaben.LuftwechselNutzer,
+                Bewohner = 1.0,
+                InterneWaermegewinne = VORSCHAU_GERAETE_W,
+            };
+            b.Ferienbeginn[0] = VORSCHAU_FERIEN_BEGINN;
+            b.Ferienende[0] = VORSCHAU_FERIEN_ENDE;
+            return b;
+        }
+
+        /// <summary>
+        /// <b>Die Vorschau einer Größe</b> (6.1 Punkt 2): die Vorlage, die der Generator für die Größe erzeugt, über denselben
+        /// Schritt wie die Übernahme (<see cref="ProfilAnwenden"/>: <see cref="Konditionierungsarbeit.VorlageUebernehmen"/>,
+        /// die Rückfrage „aufteilen" der Lüftung bejaht) an einem leeren Gebäude mit der neutralen Ferienlage, ohne Fläche und
+        /// Höhe — NUR diese Größe, damit eine andere Größe die Vorschau nicht verstellt; daraus der Kalender des Ziels und eine
+        /// typische Woche. Eine nicht belegte Größe liefert keinen Kalender (NP-F6).
+        /// </summary>
+        public static Profilvorschau Vorschau(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
+        {
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            var leer = new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, Vorschaubestand()), null);
+            Raumnutzungsgroesse r = Raumnutzungsgenerator.Erzeugen(profil, groesse, null);
+            if (r.Weg == Raumnutzungsweg.Keiner || r.Vorlage == null)
+                return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null);
+
+            var ort = new Konditionierungsort(groesse, null);
+            Konditionierungsschritt schritt = Konditionierungsarbeit.VorlageUebernehmen(leer, ort, r.Vorlage);
+            if (schritt.Rueckfrage)
+            {
+                Konditionierungsschritt geteilt = Konditionierungsarbeit.LuftwechselAufteilen(leer);
+                schritt = geteilt.Ok ? Konditionierungsarbeit.VorlageUebernehmen(geteilt.Stand, ort, r.Vorlage) : geteilt;
+            }
+            Konditionierungskalender k = schritt.Ok && !schritt.Rueckfrage ? schritt.Stand.Ansichtskalender(groesse, null) : null;
+            if (k == null) return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null, schritt.Meldung);
+
+            double[] jahr = k.Auswerten(leer.W0, leer.Referenzjahr);
+            int start = VORSCHAU_WOCHE_AB_TAG + (7 - (leer.W0 + VORSCHAU_WOCHE_AB_TAG) % 7) % 7;
+            var woche = new double[Kalenderwoche.WOCHENWERTE];
+            Array.Copy(jahr, start * 24, woche, 0, woche.Length);
+            return new Profilvorschau(r.Weg, r.Hinweis, k, leer.Referenzjahr, woche);
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag für ein neues Zeilenbild</b> (NP-F7): die Vorgabezeilen, die der Generator aus den KENNWERTEN der
+        /// Größe erzeugt (Zeilenbild und Stundenprofil der Größe bleiben dafür außen vor) — Tag, Nacht, Wochenende, Ferien.
+        /// Leer, wenn die Kennwerte die Größe nicht belegen.
+        /// </summary>
+        public static List<Vorgabezeile> Zeilenbildvorschlag(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
+        {
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            Raumnutzungsprofil k = OhneBildDerGroesse(profil, groesse);
+            if (k.IstLeer) return new List<Vorgabezeile>();
+            Raumnutzungsgroesse r = Raumnutzungsgenerator.Erzeugen(k, groesse, null);
+            if (r.Weg != Raumnutzungsweg.Kennwerte || r.Vorlage == null) return new List<Vorgabezeile>();
+            string kennwort = Konditionierungsgroessen.Kennwort(groesse);
+            return r.Vorlage.Inhalt.Vorgabezeilen()
+                    .Where(z => string.Equals(z.Groesse, kennwort, StringComparison.Ordinal) && RaumnutzungSchema.ZEILEN.Contains(z.Zeile))
+                    .Select(z => new Vorgabezeile { Groesse = z.Groesse, Zeile = z.Zeile, Wert = z.Wert, Aus = z.Aus, Von = z.Von, Bis = z.Bis, BedingtK = z.BedingtK })
+                    .ToList();
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag für ein neues Stundenprofil</b> (NP-F9): aus der typischen Woche, die das Profil OHNE Stundenprofil
+        /// der Größe ergäbe, der erste Nutzungstag als Werktag und der erste nutzungsfreie Tag als freier Tag (ohne freien Tag
+        /// derselbe). An der Lüftung mit Kennwert Außenluft in 1/h sind die Stundenwerte Anteile davon (der Generator
+        /// multipliziert). <c>null</c>, wenn die Größe dann keinen Kalender ergibt.
+        /// </summary>
+        public static List<Raumnutzungsstunden> Stundenvorschlag(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
+        {
+            if (profil == null) throw new ArgumentNullException(nameof(profil));
+            Raumnutzungsprofil ohne = profil.Kopie();
+            string kennwort = Konditionierungsgroessen.Kennwort(groesse);
+            ohne.Stunden = (ohne.Stunden ?? new List<Raumnutzungsstunden>())
+                .Where(s => !string.Equals(s.Groesse, kennwort, StringComparison.Ordinal)).ToList();
+            double[] woche = ohne.IstLeer ? null : Vorschau(ohne, groesse).Woche;
+            if (woche == null) return null;
+
+            double teiler = 1.0;
+            if (groesse == Konditionierungsgroesse.Lueftung && profil.Aussenluft is double luft && luft > 0.0 &&
+                string.Equals(profil.Aussenluft_Einheit, RaumnutzungSchema.EINHEIT_JE_STUNDE, StringComparison.Ordinal))
+                teiler = luft;
+
+            string muster = string.IsNullOrEmpty(profil.Nutzungstage_Woche) || profil.Nutzungstage_Woche.Length != 7
+                ? "1111111" : profil.Nutzungstage_Woche;
+            int werktag = Math.Max(0, muster.IndexOf('1'));
+            int frei = muster.IndexOf('0');
+            if (frei < 0) frei = werktag;
+            return new List<Raumnutzungsstunden>
+            {
+                new Raumnutzungsstunden(kennwort, RaumnutzungSchema.TAGESART_WERKTAG, Tageswerte(woche, werktag, teiler)),
+                new Raumnutzungsstunden(kennwort, RaumnutzungSchema.TAGESART_FREI, Tageswerte(woche, frei, teiler)),
+            };
+        }
+
+        /// <summary>Die Kopie eines Profils ohne Zeilenbild und Stundenprofil einer Größe.</summary>
+        private static Raumnutzungsprofil OhneBildDerGroesse(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
+        {
+            Raumnutzungsprofil k = profil.Kopie();
+            string kennwort = Konditionierungsgroessen.Kennwort(groesse);
+            k.Zeilen = (k.Zeilen ?? new List<Vorgabezeile>()).Where(z => !string.Equals(z.Groesse, kennwort, StringComparison.Ordinal)).ToList();
+            k.Stunden = (k.Stunden ?? new List<Raumnutzungsstunden>()).Where(s => !string.Equals(s.Groesse, kennwort, StringComparison.Ordinal)).ToList();
+            return k;
+        }
+
+        /// <summary>Die 24 Werte eines Wochentags als Text des Stundenprofils (Semikolon, invariant, „aus" bei NaN).</summary>
+        private static string Tageswerte(double[] woche, int tag, double teiler)
+            => string.Join(";", Enumerable.Range(0, 24).Select(h =>
+            {
+                double w = woche[Kalenderwoche.Stelle(tag, h)];
+                return double.IsNaN(w)
+                    ? DbWerte.KOND_WOCHE_AUS
+                    : Math.Round(w / teiler, 4, MidpointRounding.AwayFromZero).ToString("0.####", CultureInfo.InvariantCulture);
+            }));
+
+        #endregion
     }
 }
