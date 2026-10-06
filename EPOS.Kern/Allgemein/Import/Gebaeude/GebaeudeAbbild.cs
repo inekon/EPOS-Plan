@@ -846,6 +846,9 @@ namespace WindowsFormsApplication1
         /// <summary>Trägt die Schicht einen Wärmedurchlasswiderstand — d/λ oder den eingetragenen R-Wert?</summary>
         public bool HatWiderstand => (DickeM > 0.0 && LambdaWmK > 0.0) || RWertM2KW > 0.0;
 
+        /// <summary>Stammt die Schicht aus der HottCAD-Projektdatei (BA-4b)? Dann wird ihr Stoff als Projektkopie übernommen.</summary>
+        public bool AusProjektdatei { get; set; }
+
         /// <summary>Nur R-Wert, keine vollständigen Stoffwerte — die Schicht ist masselos (3.6, Punkt 2).</summary>
         public bool NurRWert => !Vollstaendig && RWertM2KW > 0.0 && !(DickeM > 0.0 && LambdaWmK > 0.0);
     }

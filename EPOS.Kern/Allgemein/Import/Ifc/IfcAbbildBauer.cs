@@ -2105,6 +2105,7 @@ namespace WindowsFormsApplication1
                     var t = new AbbildBauteil
                     {
                         Kennung = kennung, Quelltyp = vorlage?.Quelltyp ?? (p.Decke ? "IfcSlab" : "IfcWall"), Name = vorlage?.Name,
+                        HottcadGuid = vorlage?.HottcadGuid,   // Erbe der Mutter (BA-4b): dieselbe Vorlage trägt schon Aufbau und U
                         Quellart = vorlage?.Quellart, Art = p.Decke ? Bauteilart.Decke : Bauteilart.Innenwand,
                         Randbedingung = Randbedingung.Innen, BruttoflaecheM2 = p.FlaecheM2,
                         UWertWm2K = vorlage?.UWertWm2K, UWertQuelle = vorlage?.UWertQuelle, Aufbau = vorlage?.Aufbau,
@@ -2243,6 +2244,7 @@ namespace WindowsFormsApplication1
                                 {
                                     Kennung = (v?.Kennung ?? "TRENNDECKE") + "|" + ru.Kennung + "|" + ro.Kennung,
                                     Quelltyp = v?.Quelltyp ?? "IfcSlab", Name = v?.Name, Quellart = v?.Quellart,
+                                    HottcadGuid = v?.HottcadGuid,   // Erbe der Mutter (BA-4b), wie Aufbau und U
                                     Art = Bauteilart.Decke, Randbedingung = Randbedingung.Innen,
                                     BruttoflaecheM2 = Math.Round(f, 4), UWertWm2K = v?.UWertWm2K, UWertQuelle = v?.UWertQuelle,
                                     Aufbau = v?.Aufbau, DickeM = v?.DickeM, GeschossKennung = o.Kennung,

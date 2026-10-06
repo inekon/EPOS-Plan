@@ -47111,5 +47111,41 @@ chart</value>
   <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
     <value>All three scenarios (VALERI)</value>
   </data>
+  <data name="IMP_SQ_PROT_BAUTEILE_FEHLEN" xml:space="preserve">
+    <value>The project file has no component tables ({0}); constructions are not taken from it.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BAUTEILE_UNLESBAR" xml:space="preserve">
+    <value>The component tables of the project file cannot be read ({0}); constructions are not taken from it.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BAUTEILE" xml:space="preserve">
+    <value>Components of the project file: {0} envelope surfaces, {1} constructions, {2} of them with layers ({3} layers).</value>
+  </data>
+  <data name="IMP_SQ_AUFBAU_NAME" xml:space="preserve">
+    <value>Project file construction (U {0})</value>
+  </data>
+  <data name="IMP_SQ_STOFF_NAME" xml:space="preserve">
+    <value>Project file material (λ {0}, ρ {1})</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_ZUORDNUNG" xml:space="preserve">
+    <value>Components matched to the project file: {0} by GUID, {1} by GlobalId; {2} opaque components without counterpart, {3} ambiguous (not guessed).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG1" xml:space="preserve">
+    <value>Construction from the project file (U matches the IFC): {0} component(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG2" xml:space="preserve">
+    <value>Construction from the construction catalogue of the project file (matches the IFC U): {0} component(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG3" xml:space="preserve">
+    <value>Construction from the IFC layers: {0} component(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG4" xml:space="preserve">
+    <value>Without complete construction (substitute construction or none): {0} component(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG" xml:space="preserve">
+    <value>For {0} component(s) the U-value of the project file differs from the IFC U-value by more than 1 %; the IFC state applies (W/(m²K), project file → IFC: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG" xml:space="preserve">
+    <value>For {0} component(s) several different constructions of the project file match the IFC U-value ({1} W/(m²K)); no guess is made.</value>
+  </data>
 </root>
 

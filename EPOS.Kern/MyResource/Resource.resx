@@ -47118,5 +47118,41 @@ Chart</value>
   <data name="BK_BER_SZENARIO_VALERI" xml:space="preserve">
     <value>Alle drei Szenarien (VALERI)</value>
   </data>
+  <data name="IMP_SQ_PROT_BAUTEILE_FEHLEN" xml:space="preserve">
+    <value>Die Projektdatei trägt keine Bauteiltabellen ({0}); Aufbauten werden aus ihr nicht übernommen.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BAUTEILE_UNLESBAR" xml:space="preserve">
+    <value>Die Bauteiltabellen der Projektdatei sind nicht lesbar ({0}); Aufbauten werden aus ihr nicht übernommen.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BAUTEILE" xml:space="preserve">
+    <value>Bauteile der Projektdatei: {0} Hüllflächen, {1} Aufbauten, davon {2} mit Schichten ({3} Schichten).</value>
+  </data>
+  <data name="IMP_SQ_AUFBAU_NAME" xml:space="preserve">
+    <value>Aufbau Projektdatei (U {0})</value>
+  </data>
+  <data name="IMP_SQ_STOFF_NAME" xml:space="preserve">
+    <value>Stoff Projektdatei (λ {0}, ρ {1})</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_ZUORDNUNG" xml:space="preserve">
+    <value>Bauteile der Projektdatei zugeordnet: {0} über die GUID, {1} über die GlobalId; {2} opake Bauteile ohne Gegenstück, {3} mehrdeutig (nicht geraten).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG1" xml:space="preserve">
+    <value>Aufbau aus der Projektdatei (U passt zur IFC): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG2" xml:space="preserve">
+    <value>Aufbau aus dem Aufbaukatalog der Projektdatei (U der IFC getroffen): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG3" xml:space="preserve">
+    <value>Aufbau aus den Schichten der IFC: {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG4" xml:space="preserve">
+    <value>Ohne vollständigen Aufbau (Ersatzaufbau bzw. ohne Aufbau): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG" xml:space="preserve">
+    <value>Bei {0} Bauteil(en) weicht das U der Projektdatei um mehr als 1 % vom U der IFC ab; es gilt der Stand der IFC (W/(m²K), Projektdatei → IFC: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG" xml:space="preserve">
+    <value>Bei {0} Bauteil(en) treffen mehrere verschiedene Aufbauten der Projektdatei das U der IFC ({1} W/(m²K)); es wird nicht geraten.</value>
+  </data>
 </root>
 
