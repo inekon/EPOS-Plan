@@ -22,6 +22,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Aus Fläche und Seitenverhältnis gebildet und je Geschoss gereiht — die Anordnung ist erfunden.</summary>
         Schematisch = 1,
+
+        /// <summary>
+        /// Gestalt und Lage aus dem Raumkörper der Datei, als Prisma (HC-5, <see cref="Koerpergrundriss"/>): der Grundriss
+        /// ist abgeleitet, Dachschrägen und Höhenversprünge gehen benannt verloren.
+        /// </summary>
+        Dateikoerper = 2,
     }
 
     /// <summary>Wie ein Umriss hergeleitet ist — der Beleg zu <see cref="Geometrieherkunft"/>.</summary>
@@ -44,6 +50,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kein Umriss: weder Raumgrenzen noch eine Fläche.</summary>
         Keine = 5,
+
+        /// <summary>Aus den Bodendreiecken des Dateikörpers, in die Grundrissebene projiziert (<see cref="Koerpergrundriss"/>, Stufe 1).</summary>
+        KoerperBoden = 6,
+
+        /// <summary>Ohne Bodendreiecke aus den Deckendreiecken des Dateikörpers (<see cref="Koerpergrundriss"/>, Stufe 2).</summary>
+        KoerperDecke = 7,
+
+        /// <summary>Die konvexe Hülle aller Punkte des Dateikörpers — Einbuchtungen gehen verloren (Stufe 3).</summary>
+        KoerperHuelle = 8,
     }
 
     /// <summary>Wo eine Grenze am Raum steht.</summary>

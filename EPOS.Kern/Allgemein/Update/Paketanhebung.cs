@@ -322,6 +322,10 @@ namespace WindowsFormsApplication1
             // Kalender bleibt, wie sie ist, und der Profilname der Zone kommt leer an.
             new Stufe(RaumnutzungSchema.SCHRITT, Art.Ddl,
                       "Katalog der Nutzungsprofile, freie Nutzung an Kalender und Vorlage, Profilname an der Zone"),
+            // Ein älteres Paket führt keine Grundrisse je importiertem Raum; die Tabelle entsteht leer, die
+            // Gebäude exportieren schematisch wie vor dem Schritt.
+            new Stufe(RaumgrundrissSchema.SCHRITT, Art.Ddl,
+                      "Grundriss je importiertem Raum (Ringe, Boden, Höhe, Herleitung) an der Importquelle"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
