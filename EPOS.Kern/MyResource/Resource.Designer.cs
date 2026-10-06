@@ -104116,15 +104116,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an. ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_KEINE_KM {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_KEINE_KM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_KM {
@@ -104143,15 +104134,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts. ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_LEER {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_LEER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string START_E_KUEHL_MSG_FEHLER {
@@ -104161,16 +104143,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb. ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_PROJEKT_AUS {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_PROJEKT_AUS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung mit Kältemaschinen und Wärmepumpen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_TEXT {
             get {
@@ -104179,7 +104152,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung und Kälteanlagen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_TITEL {
             get {

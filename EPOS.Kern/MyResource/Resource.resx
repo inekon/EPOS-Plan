@@ -45418,10 +45418,10 @@ Chart</value>
     <value>Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet?</value>
   </data>
   <data name="START_E_KUEHL_TITEL" xml:space="preserve">
-    <value>Kühlung</value>
+    <value>Kühlung und Kälteanlagen</value>
   </data>
   <data name="START_E_KUEHL_TEXT" xml:space="preserve">
-    <value>Kältemaschinen des Projekts und Wärmepumpen mit Kühlfunktion</value>
+    <value>Kälteerzeugung mit Kältemaschinen und Wärmepumpen</value>
   </data>
   <data name="START_E_KUEHL_KM" xml:space="preserve">
     <value>Kältemaschinen</value>
@@ -45431,15 +45431,6 @@ Chart</value>
   </data>
   <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
     <value>{0} ({1} ×)</value>
-  </data>
-  <data name="START_E_KUEHL_KEINE_KM" xml:space="preserve">
-    <value>Keine Kältemaschine im Projekt — ein Klick auf die Kachel legt eine an.</value>
-  </data>
-  <data name="START_E_KUEHL_LEER" xml:space="preserve">
-    <value>Im Projekt gibt es keine Kältemaschine und keine Wärmepumpe mit Kühlfunktion. Ein Klick auf die Kachel öffnet die Kältemaschinen des Projekts.</value>
-  </data>
-  <data name="START_E_KUEHL_PROJEKT_AUS" xml:space="preserve">
-    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ unter Simulation › Konfiguration aus): Kältemaschinen und Wärmepumpen im Kühlbetrieb bleiben in der Simulation außer Betrieb.</value>
   </data>
   <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
     <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
