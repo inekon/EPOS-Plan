@@ -222,7 +222,9 @@ namespace Auslieferungsvorlage
                 _bericht.Zeile("nicht zur Auslieferung. Zu entscheiden ist das am Bestand, nicht vom Werkzeug.");
             }
 
-            if (!_arg.KatalogeVollstaendig) RaumnutzungBereinigen();
+            // NP-F21, Q46: Der Katalog der Nutzungsprofile traegt eine verlaessliche Auslieferungsmarke (ReadOnly = 1 nur an
+            // der Saat) - seine eigenen Zeilen fallen deshalb in JEDEM Modus, auch eine Kategorie aus einer Projektdatei (NP4b).
+            RaumnutzungBereinigen();
         }
 
         // =================================================================================
@@ -231,7 +233,8 @@ namespace Auslieferungsvorlage
 
         /// <summary>
         /// <b>Der Katalog der Nutzungsprofile</b> traegt keine <c>_STAMM</c>-Namen (NP-F2) und faellt deshalb nicht unter
-        /// die Regel von Schritt 3; mit <c>--kataloge readonly</c> folgt er derselben Regel NAMENTLICH: eigene Zuordnungen,
+        /// die Regel von Schritt 3; er folgt ihr in JEDEM Modus NAMENTLICH (NP-F21, Q46 — anders als die <c>_STAMM</c>-Kataloge
+        /// traegt er eine verlaessliche Auslieferungsmarke, und Werte aus Projektdateien gehoeren nie in die Auslieferung): eigene Zuordnungen,
         /// eigene Profile und eigene Kategorien fallen (Zeilenbild und Stundenprofile ueber die Kaskade), die
         /// ausgelieferten Zuordnungen zeigen danach wieder auf ihr Saatprofil (<see cref="RaumnutzungSaat.Zuordnungen"/>) —
         /// auch wenn der Anwender eine auf sein eigenes Profil oder auf „keine" gestellt hatte (NP-F19).

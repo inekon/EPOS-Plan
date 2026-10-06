@@ -83,6 +83,43 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("FEHLER  Werte in Normkategorien: Profile mit Kennwert 1", e.Ausgabe, StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// <b>Eine Kategorie aus einer Projektdatei fällt auch im Modus „alle"</b> (NP4b, Q46, NP-F21): Ihre Werte stammen
+        /// aus der lizenzierten Software des Anwenders und gehören nie in die Auslieferung — dieselbe Regel wie jede eigene
+        /// Kategorie, unabhängig von der Vorgabe für die <c>_STAMM</c>-Kataloge (#160-E-1a). Die Werte der Probe sind
+        /// runde Phantasiewerte.
+        /// </summary>
+        [Fact]
+        public void Modus_alle_entfernt_eine_Kategorie_aus_einer_Projektdatei()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Bearbeiten(quelle, () =>
+            {
+                Assert.True(RaumnutzungSchema.Vollstaendig(), "Die Testdatenbank steht vor Schritt " + RaumnutzungSchema.SCHRITT + ".");
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO \"Tab_Raumnutzungskatalog\" (\"Bezeichner\", \"Art\") VALUES ('Projektdatei Probe.sqproj', 'EIGEN')");
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO \"Tab_Raumnutzungsprofil\" (\"ID_Katalog\", \"Nummer\", \"Bezeichner\", \"Heiz_Soll\", \"Geraete_Leistung\") " +
+                    "SELECT \"ID\", '1', 'Probeprofil', 20, 10 FROM \"Tab_Raumnutzungskatalog\" WHERE \"Bezeichner\" = 'Projektdatei Probe.sqproj'");
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("Schritt 3d — Katalog der Nutzungsprofile", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      eigene Zeilen des Katalogs der Nutzungsprofile: 0", e.Ausgabe, StringComparison.Ordinal);
+            Lesen(ziel, () =>
+            {
+                Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\" WHERE \"Bezeichner\" = 'Projektdatei Probe.sqproj'"));
+                Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\" WHERE \"ReadOnly\" = 0"));
+                Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" WHERE \"ReadOnly\" = 0"));
+                Assert.Equal(RaumnutzungSaat.Profile.Count, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\""));
+            });
+        }
+
         private static long Zahl(string sql, params DbParam[] p)
         {
             object w = DataRepository.ExecuteScalar(sql, p);
