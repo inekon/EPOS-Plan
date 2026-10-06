@@ -46457,5 +46457,119 @@ chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Usage days per year: {0} (from weekly pattern and public holidays), minus {1} holiday-period days = {2}</value>
   </data>
+  <data name="RNP_PD_BTN_BLATT" xml:space="preserve">
+    <value>From project file…</value>
+  </data>
+  <data name="RNP_PD_BTN_IMPORT" xml:space="preserve">
+    <value>Apply usage profiles from file…</value>
+  </data>
+  <data name="RNP_PD_TOOLTIP" xml:space="preserve">
+    <value>Reads the DIN usage profiles of a CAD project file into a custom category — nothing is written before “Apply”.</value>
+  </data>
+  <data name="RNP_PD_UEBERSCHRIFT" xml:space="preserve">
+    <value>Usage profiles from {0} → category “{1}”</value>
+  </data>
+  <data name="RNP_PD_SP_NUMMER" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="RNP_PD_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="RNP_PD_SP_WERTE" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="RNP_PD_SP_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="RNP_PD_SP_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="RNP_PD_STAND_NEU" xml:space="preserve">
+    <value>new</value>
+  </data>
+  <data name="RNP_PD_STAND_VORHANDEN" xml:space="preserve">
+    <value>existing</value>
+  </data>
+  <data name="RNP_PD_KATEGORIE_VORHANDEN" xml:space="preserve">
+    <value>The category “{0}” already exists. “Add missing” only adds numbers that are not there yet; “Replace” rewrites the values from the file and removes profiles the file no longer contains.</value>
+  </data>
+  <data name="RNP_PD_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="RNP_PD_BTN_ERGAENZEN" xml:space="preserve">
+    <value>Add missing</value>
+  </data>
+  <data name="RNP_PD_BTN_ERSETZEN" xml:space="preserve">
+    <value>Replace</value>
+  </data>
+  <data name="RNP_PD_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="RNP_PD_GRUND_KEINE" xml:space="preserve">
+    <value>The project file contains no usage profile with a DIN number — nothing to apply.</value>
+  </data>
+  <data name="RNP_PD_GRUND_ALLE_DA" xml:space="preserve">
+    <value>All numbers are already in the category — “Replace” rewrites their values.</value>
+  </data>
+  <data name="RNP_PD_GRUND_BESCHAEFTIGT" xml:space="preserve">
+    <value>The project file is being read or applied.</value>
+  </data>
+  <data name="RNP_PD_ERGEBNIS" xml:space="preserve">
+    <value>Category “{0}”: {1} new, {2} replaced, {3} unchanged, {4} removed.</value>
+  </data>
+  <data name="RNP_PD_HINWEIS_ZUORDNUNG" xml:space="preserve">
+    <value>The assignment of DIN numbers stays as it is — switch the assignment to these profiles in the “Usage profiles” sheet.</value>
+  </data>
+  <data name="RNP_PD_HINWEIS_HERKUNFT" xml:space="preserve">
+    <value>The values come from your project file and stay in this database; they are never shipped.</value>
+  </data>
+  <data name="RNP_PD_MELDUNGEN" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="RNP_PD_KATEGORIE" xml:space="preserve">
+    <value>Project file {0}</value>
+  </data>
+  <data name="RNP_PD_QUELLE" xml:space="preserve">
+    <value>Values from the user's project file {0} — only in this database, never shipped.</value>
+  </data>
+  <data name="RNP_PD_NAME_OHNE" xml:space="preserve">
+    <value>Usage profile no. {0}</value>
+  </data>
+  <data name="RNP_PD_BESCHREIBUNG" xml:space="preserve">
+    <value>From project file {0}, DIN no. {1}</value>
+  </data>
+  <data name="RNP_PD_BESCHREIBUNG_LUX" xml:space="preserve">
+    <value>; maintained illuminance {0} lx</value>
+  </data>
+  <data name="RNP_PD_KEINE" xml:space="preserve">
+    <value>The project file contains no usage profile with a DIN number.</value>
+  </data>
+  <data name="RNP_PD_MSG_ABWEICHEND" xml:space="preserve">
+    <value>No. {0}: {1} profiles in the file carry this number with different values — the first one (“{2}”) is applied.</value>
+  </data>
+  <data name="RNP_PD_MSG_OHNE_NUMMER" xml:space="preserve">
+    <value>{0} zone(s) with a usage profile without DIN number skipped.</value>
+  </data>
+  <data name="RNP_PD_MSG_BELEUCHTUNG" xml:space="preserve">
+    <value>No. {0}: illuminance {1} lx is kept in the description — the profile holds lighting as a power (W/m²), which stays empty.</value>
+  </data>
+  <data name="RNP_PD_MSG_ABSENKUNG" xml:space="preserve">
+    <value>No. {0}: setback without room temperature — not applied.</value>
+  </data>
+  <data name="RNP_PD_MSG_LUFT_PERSON" xml:space="preserve">
+    <value>No. {0}: outdoor air per person not applied — the profile has no occupancy density for it.</value>
+  </data>
+  <data name="RNP_PD_MSG_PERSONEN" xml:space="preserve">
+    <value>No. {0}: occupants {1} W/m² applied as {2} m²/person at {3} W/person.</value>
+  </data>
+  <data name="RNP_PD_MSG_PERSONENZAHL" xml:space="preserve">
+    <value>No. {0}: number of persons without area-related heat gain — occupants stay empty.</value>
+  </data>
+  <data name="RNP_PD_MSG_BEGRENZT" xml:space="preserve">
+    <value>No. {0}: {1} is outside the limits — not applied.</value>
+  </data>
+  <data name="RNP_PD_MSG_ZUORDNUNG_GELOEST" xml:space="preserve">
+    <value>{0} assignment(s) to removed profiles are now set to “none”.</value>
+  </data>
 </root>
 

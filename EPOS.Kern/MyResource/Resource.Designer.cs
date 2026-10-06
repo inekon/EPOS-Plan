@@ -89220,6 +89220,348 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus der Projektdatei {0}, DIN-Nr. {1} ähnelt.
+        /// </summary>
+        public static string RNP_PD_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("RNP_PD_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; Wartungswert der Beleuchtungsstärke {0} lx ähnelt.
+        /// </summary>
+        public static string RNP_PD_BESCHREIBUNG_LUX {
+            get {
+                return ResourceManager.GetString("RNP_PD_BESCHREIBUNG_LUX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Projektdatei… ähnelt.
+        /// </summary>
+        public static string RNP_PD_BTN_BLATT {
+            get {
+                return ResourceManager.GetString("RNP_PD_BTN_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergänzen ähnelt.
+        /// </summary>
+        public static string RNP_PD_BTN_ERGAENZEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_BTN_ERGAENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersetzen ähnelt.
+        /// </summary>
+        public static string RNP_PD_BTN_ERSETZEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_BTN_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile der Datei übernehmen… ähnelt.
+        /// </summary>
+        public static string RNP_PD_BTN_IMPORT {
+            get {
+                return ResourceManager.GetString("RNP_PD_BTN_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string RNP_PD_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string RNP_PD_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie „{0}“: {1} neu, {2} ersetzt, {3} unverändert, {4} entfernt. ähnelt.
+        /// </summary>
+        public static string RNP_PD_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("RNP_PD_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Nummern stehen schon in der Kategorie — „Ersetzen“ schreibt ihre Werte neu. ähnelt.
+        /// </summary>
+        public static string RNP_PD_GRUND_ALLE_DA {
+            get {
+                return ResourceManager.GetString("RNP_PD_GRUND_ALLE_DA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei wird gelesen oder übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_PD_GRUND_BESCHAEFTIGT {
+            get {
+                return ResourceManager.GetString("RNP_PD_GRUND_BESCHAEFTIGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei führt kein Nutzungsprofil mit DIN-Nummer — nichts zu übernehmen. ähnelt.
+        /// </summary>
+        public static string RNP_PD_GRUND_KEINE {
+            get {
+                return ResourceManager.GetString("RNP_PD_GRUND_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte stammen aus Ihrer Projektdatei und bleiben in dieser Datenbank; sie werden nie ausgeliefert. ähnelt.
+        /// </summary>
+        public static string RNP_PD_HINWEIS_HERKUNFT {
+            get {
+                return ResourceManager.GetString("RNP_PD_HINWEIS_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung der DIN-Nummern bleibt, wie sie ist — Zuordnung im Blatt „Nutzungsprofile“ auf diese Profile umstellen. ähnelt.
+        /// </summary>
+        public static string RNP_PD_HINWEIS_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("RNP_PD_HINWEIS_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei {0} ähnelt.
+        /// </summary>
+        public static string RNP_PD_KATEGORIE {
+            get {
+                return ResourceManager.GetString("RNP_PD_KATEGORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie „{0}“ besteht schon. „Ergänzen“ übernimmt nur Nummern, die dort noch fehlen; „Ersetzen“ schreibt die Werte der Datei neu und entfernt Profile, die die Datei nicht mehr führt. ähnelt.
+        /// </summary>
+        public static string RNP_PD_KATEGORIE_VORHANDEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_KATEGORIE_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei führt kein Nutzungsprofil mit DIN-Nummer. ähnelt.
+        /// </summary>
+        public static string RNP_PD_KEINE {
+            get {
+                return ResourceManager.GetString("RNP_PD_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise ähnelt.
+        /// </summary>
+        public static string RNP_PD_MELDUNGEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_MELDUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Absenkung ohne Raumtemperatur — nicht übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_ABSENKUNG {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_ABSENKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: {1} Profile der Datei tragen diese Nummer mit verschiedenen Werten — übernommen ist das erste („{2}“). ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: {1} liegt außerhalb der Grenzen — nicht übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_BEGRENZT {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Beleuchtungsstärke {1} lx steht in der Beschreibung — das Profil führt die Beleuchtung als Leistung (W/m²), sie bleibt leer. ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_BELEUCHTUNG {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_BELEUCHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Außenluft je Person nicht übernommen — das Profil führt keine Belegungsdichte dazu. ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_LUFT_PERSON {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_LUFT_PERSON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zone(n) mit Nutzungsprofil ohne DIN-Nummer übersprungen. ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_OHNE_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_OHNE_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Personen {1} W/m² als {2} m²/Person bei {3} W/Person übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_PERSONEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Personenzahl ohne flächenbezogene Wärmeabgabe — Personen bleiben leer. ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_PERSONENZAHL {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_PERSONENZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zuordnung(en) auf entfernte Profile stehen jetzt auf „keine“. ähnelt.
+        /// </summary>
+        public static string RNP_PD_MSG_ZUORDNUNG_GELOEST {
+            get {
+                return ResourceManager.GetString("RNP_PD_MSG_ZUORDNUNG_GELOEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil Nr. {0} ähnelt.
+        /// </summary>
+        public static string RNP_PD_NAME_OHNE {
+            get {
+                return ResourceManager.GetString("RNP_PD_NAME_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte aus der Projektdatei {0} des Anwenders — nur in dieser Datenbank, nie in der Auslieferung. ähnelt.
+        /// </summary>
+        public static string RNP_PD_QUELLE {
+            get {
+                return ResourceManager.GetString("RNP_PD_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string RNP_PD_SP_NAME {
+            get {
+                return ResourceManager.GetString("RNP_PD_SP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. ähnelt.
+        /// </summary>
+        public static string RNP_PD_SP_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_PD_SP_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string RNP_PD_SP_STAND {
+            get {
+                return ResourceManager.GetString("RNP_PD_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte ähnelt.
+        /// </summary>
+        public static string RNP_PD_SP_WERTE {
+            get {
+                return ResourceManager.GetString("RNP_PD_SP_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string RNP_PD_SP_ZONEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_SP_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neu ähnelt.
+        /// </summary>
+        public static string RNP_PD_STAND_NEU {
+            get {
+                return ResourceManager.GetString("RNP_PD_STAND_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhanden ähnelt.
+        /// </summary>
+        public static string RNP_PD_STAND_VORHANDEN {
+            get {
+                return ResourceManager.GetString("RNP_PD_STAND_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liest die DIN-Nutzungsprofile einer Projektdatei des CAD-Programms in eine eigene Kategorie — erst mit „Übernehmen“ wird geschrieben. ähnelt.
+        /// </summary>
+        public static string RNP_PD_TOOLTIP {
+            get {
+                return ResourceManager.GetString("RNP_PD_TOOLTIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile aus {0} → Kategorie „{1}“ ähnelt.
+        /// </summary>
+        public static string RNP_PD_UEBERSCHRIFT {
+            get {
+                return ResourceManager.GetString("RNP_PD_UEBERSCHRIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gehört zur Auslieferung — nur duplizieren ähnelt.
         /// </summary>
         public static string RNP_TXT_AUSGELIEFERT {

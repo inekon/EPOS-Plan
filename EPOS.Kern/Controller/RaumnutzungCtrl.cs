@@ -941,5 +941,141 @@ namespace WindowsFormsApplication1
 
         private static string Text(DataRow r, string spalte)
             => r[spalte] == DBNull.Value ? null : Convert.ToString(r[spalte], CultureInfo.InvariantCulture);
+
+        #region Profile aus einer Projektdatei (Stufe NP4b, Q46, NP-F21)
+
+        /// <summary>
+        /// Was die Übernahme der Profile einer Projektdatei ergab: die Kategorie, je Profil neu, ersetzt, unverändert
+        /// (vorhanden, „Ergänzen") oder übersprungen (benannt), beim „Ersetzen" entfernte Profile und die Zuordnungen, die
+        /// dadurch auf „keine" stehen.
+        /// </summary>
+        public sealed record Projektdateiuebernahme(bool Ok, string Meldung, long IdKategorie, int Neu, int Ersetzt, int Unveraendert,
+                                                    int Entfernt, int ZuordnungenGeloest, IReadOnlyList<string> Meldungen)
+        {
+            /// <summary>Die benannte Ablehnung; nichts geschrieben.</summary>
+            public static Projektdateiuebernahme Fehler(string meldung)
+                => new Projektdateiuebernahme(false, meldung ?? "", 0, 0, 0, 0, 0, 0, Array.Empty<string>());
+        }
+
+        /// <summary>Die Kategorie mit diesem Namen (ohne Unterschied der Schreibung); <c>null</c> = keine.</summary>
+        public Kategorie KategorieMitNamen(string bezeichner)
+        {
+            string name = (bezeichner ?? "").Trim();
+            return name.Length == 0 ? null
+                : Kategorien().FirstOrDefault(k => string.Equals(k.Bezeichner, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Steht ein Profil der Projektdatei schon in der Kategorie? Schlüssel ist die Nummer (ohne Unterschied der Schreibung),
+        /// ohne Nummer der Name.
+        /// </summary>
+        public static bool GleichesProjektdateiprofil(Raumnutzungsprofil vorhanden, Raumnutzungsprofil neu)
+        {
+            if (vorhanden == null || neu == null) return false;
+            return neu.Nummer != null
+                ? string.Equals(vorhanden.Nummer, neu.Nummer, StringComparison.OrdinalIgnoreCase)
+                : vorhanden.Nummer == null && string.Equals(vorhanden.Bezeichner, neu.Bezeichner, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// <b>Übernimmt die Profile einer Projektdatei in ihre eigene Kategorie</b> (Q46, NP4b) — in einem Vorgang. Gibt es die
+        /// Kategorie nicht, entsteht sie (Art <c>EIGEN</c>) mit allen Profilen. Gibt es sie, ergänzt die Übernahme nur die
+        /// Nummern, die noch fehlen (<paramref name="ersetzen"/> = <c>false</c>), oder schreibt die Werte der Datei an Ort und
+        /// Stelle (dieselben Ids, die Zuordnungen zeigen weiter darauf), legt neue an und entfernt Profile, die die Datei nicht
+        /// mehr führt — Zuordnungen darauf werden „keine" (NP-F19). Wiederholte Übernahme doppelt nichts. Die Zuordnung der
+        /// DIN-Nummern stellt die Übernahme nicht um.
+        /// </summary>
+        public Projektdateiuebernahme ProjektdateiUebernehmen(Projektdateiprofile satz, bool ersetzen)
+        {
+            if (satz == null) throw new ArgumentNullException(nameof(satz));
+            if (satz.Abgelehnt) return Projektdateiuebernahme.Fehler(satz.Ablehnung);
+            string bereit = Bereit();
+            if (bereit != null) return Projektdateiuebernahme.Fehler(bereit);
+            if (satz.Profile.Count == 0) return Projektdateiuebernahme.Fehler(MyResource.Resource.RNP_PD_KEINE);
+
+            Kategorie k = KategorieMitNamen(satz.Kategorie);
+            if (k != null && k.Ausgeliefert) return Projektdateiuebernahme.Fehler(Ausgeliefert(k.Bezeichner));
+            string bezeichner = satz.Kategorie, beschreibung = null, quelle = satz.Quellenhinweis;
+            if (k == null)
+            {
+                string m = KategorieTexte(ref bezeichner, ref beschreibung, ref quelle, 0);
+                if (m != null) return Projektdateiuebernahme.Fehler(m);
+            }
+
+            var meldungen = new List<string>();
+            var neue = new List<Raumnutzungsprofil>();
+            foreach (Projektdateiprofil q in satz.Profile)
+            {
+                Raumnutzungsprofil p = q?.Profil?.Kopie();
+                if (p == null) continue;
+                p.Id = 0;
+                p.Ausgeliefert = false;
+                string m = Profilpruefung(p);
+                if (m != null) meldungen.Add((p.Nummer ?? p.Bezeichner) + ": " + m);
+                else neue.Add(p);
+            }
+            List<Raumnutzungsprofil> vorhanden = k == null ? new List<Raumnutzungsprofil>() : Profile(k.Id);
+            int neu = 0, ersetzt = 0, gleich = 0, entfernt = 0, geloest = 0;
+            long idKategorie = k?.Id ?? 0;
+            Ergebnis e = Schreibe(v =>
+            {
+                if (idKategorie == 0) idKategorie = KategorieEinfuegen(v, bezeichner, beschreibung, quelle);
+                var namen = vorhanden.Select(x => x.Bezeichner).ToList();
+                var getroffen = new HashSet<long>();
+                foreach (Raumnutzungsprofil p in neue)
+                {
+                    p.IdKatalog = idKategorie;
+                    Raumnutzungsprofil alt = vorhanden.FirstOrDefault(x => !getroffen.Contains(x.Id) && GleichesProjektdateiprofil(x, p));
+                    if (alt == null)
+                    {
+                        p.Bezeichner = KonditionierungsvorlageCtrl.EindeutigerName(namen, p.Bezeichner);
+                        namen.Add(p.Bezeichner);
+                        ProfilEinfuegen(v, p);
+                        neu++;
+                        continue;
+                    }
+                    getroffen.Add(alt.Id);
+                    if (!ersetzen || alt.Ausgeliefert)
+                    {
+                        gleich++;
+                        continue;
+                    }
+                    namen.Remove(alt.Bezeichner);
+                    p.Id = alt.Id;
+                    p.Bezeichner = KonditionierungsvorlageCtrl.EindeutigerName(namen, p.Bezeichner);
+                    namen.Add(p.Bezeichner);
+                    ProjektdateiprofilErsetzen(v, p);
+                    ersetzt++;
+                }
+                if (ersetzen)
+                    foreach (Raumnutzungsprofil x in vorhanden.Where(x => !getroffen.Contains(x.Id) && !x.Ausgeliefert))
+                    {
+                        geloest += v.Ausfuehren("UPDATE \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" SET \"ID_Profil\" = NULL WHERE \"ID_Profil\" = ?",
+                                                new DbParam("@p", x.Id));
+                        v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ID\" = ?", new DbParam("@id", x.Id));
+                        entfernt++;
+                    }
+                return Ergebnis.MitId(idKategorie);
+            });
+            if (!e.Ok) return Projektdateiuebernahme.Fehler(e.Meldung);
+            if (geloest > 0)
+                meldungen.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RNP_PD_MSG_ZUORDNUNG_GELOEST,
+                                            geloest.ToString(CultureInfo.CurrentCulture)));
+            return new Projektdateiuebernahme(true, null, e.Id, neu, ersetzt, gleich, entfernt, geloest, meldungen);
+        }
+
+        /// <summary>Schreibt Kopf, Kennwerte, Zeilenbild und Stunden eines vorhandenen Profils an Ort und Stelle neu (dieselbe Id).</summary>
+        private static void ProjektdateiprofilErsetzen(DbVorgang v, Raumnutzungsprofil p)
+        {
+            List<DbParam> par = KopfParameter(p);
+            par.Add(new DbParam("@id", p.Id));
+            v.Ausfuehren("UPDATE \"" + RaumnutzungSchema.TAB_PROFIL + "\" SET " +
+                         string.Join(", ", SPALTEN_ALLE.Select(c => "\"" + c + "\" = ?")) + " WHERE \"ID\" = ?", par.ToArray());
+            v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" = ?", new DbParam("@id", p.Id));
+            v.Ausfuehren("DELETE FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" = ?", new DbParam("@id", p.Id));
+            InhaltEinfuegen(v, p, p.Id);
+        }
+
+        #endregion
     }
 }
