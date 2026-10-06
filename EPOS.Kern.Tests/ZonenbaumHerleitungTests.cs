@@ -149,6 +149,56 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Neu lesen nach dem Blatt „Nutzungsprofile…“</b> (NP2b-3): Ändert das Blatt die Zuordnung, liest die nächste Anfrage
+        /// derselben Schritte Katalog und Zuordnung neu — die vorbelegte Zone folgt der geänderten Zuordnung, die Zone mit Wahl
+        /// von Hand behält sie.
+        /// </summary>
+        [Fact]
+        public async Task Nach_dem_Blatt_folgt_die_vorbelegte_Zone_der_Zuordnung_die_Handwahl_bleibt()
+        {
+            if (!_db.Vorhanden) return;
+            var ctrl = new RaumnutzungCtrl();
+            Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
+            long Id(string name) => long.Parse(v.Auswahl().First(a => a.Name == name).Schluessel.Substring(1), System.Globalization.CultureInfo.InvariantCulture);
+
+            foreach (string pfad in Directory.GetFiles(IfcProbenTests.Ordner(), "*.ifc").OrderBy(p => p, StringComparer.Ordinal))
+            {
+                var h = new GebaeudeImportHuelle();
+                IReadOnlyDictionary<string, object> gaben = h.Gaben();
+                var lesen = (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)gaben["Lesen"];
+                if (!(await lesen(pfad, null, CancellationToken.None)).Gelesen) continue;
+                var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)gaben["Zuordnen"];
+                GebaeudeImportStand Anfrage(params GebaeudePlanschritt[] schritte)
+                    => zuordnen(new GebaeudeZuordnungsanfrage(0, null, new Dictionary<string, bool>(), null, null, IfcImportProfil.ZONENREGEL_Z6,
+                                                              null, false, schritte.Length > 0 ? schritte : null,
+                                                              schritte.Length > 0 ? new Dictionary<string, bool>() : null));
+                GebaeudeZonenplanDaten vorher = Anfrage().Zonierung?.Plan;
+                if (vorher == null || h.Plan?.Regel != IfcImportProfil.ZONENREGEL_Z6) continue;
+                Planzone a = h.Plan.Zonen.FirstOrDefault(z => z.Profil?.Id != null && z.Quelle?.Art == RaumnutzungSchema.ZUORDNUNG_IFC);
+                Planzone b = h.Plan.Zonen.FirstOrDefault(z => a != null && z.Schluessel != a.Schluessel);
+                if (a == null || b == null) continue;
+
+                // Zone B von Hand auf Lager, dann ändert das Blatt die Zuordnung der Klasse von Zone A auf Schule.
+                long lager = Id(RaumnutzungSaat.LAGER), schule = Id(RaumnutzungSaat.SCHULE);
+                Assert.NotEqual(schule, a.Profil.Id);
+                var hand = new GebaeudePlanschritt(GebaeudePlanschrittArt.NUTZUNG, Zone: b.Schluessel, Nutzung: "#" + lager);
+                Assert.Equal("#" + lager, Anfrage(hand).Zonierung!.Plan!.Zonen.Single(z => z.Schluessel == b.Schluessel).Nutzung);
+                Assert.True(ctrl.ZuordnungSetzen(a.Quelle.Art, a.Quelle.Schluessel, schule).Ok);
+
+                GebaeudeZonenplanDaten nachher = Anfrage(hand).Zonierung!.Plan!;
+                GebaeudePlanzoneDaten za = nachher.Zonen.Single(z => z.Schluessel == a.Schluessel);
+                GebaeudePlanzoneDaten zb = nachher.Zonen.Single(z => z.Schluessel == b.Schluessel);
+                Assert.Equal("#" + schule, za.Nutzung);
+                Assert.Equal(RaumnutzungSaat.SCHULE, za.Herleitung!.Profil);
+                Assert.Equal(RaumnutzungSchema.ZUORDNUNG_IFC, za.Herleitung.Quellart);
+                Assert.Equal("#" + lager, zb.Nutzung);
+                Assert.Equal(Profilquelle.HAND, zb.Herleitung!.Quellart);
+                return;
+            }
+            Assert.Fail("Keine Z6-Probe mit zwei Zonen und einer Vorbelegung aus der Nutzungsklasse.");
+        }
+
         private string Merken(string pfad)
         {
             _dateien.Add(pfad);

@@ -548,8 +548,8 @@
                     {
                         <div class="epos-gebimport-neuezone">
                             <Textfeld Bezeichnung="@Texte.PlanName" Wert="@_neuName" WertChanged="w => _neuName = w ?? string.Empty" />
-                            <Auswahlfeld Bezeichnung="@Texte.PlanNutzung" Eintraege="@Nutzungsliste(plan)" Auswahl="@_neuNutzung"
-                                         AuswahlChanged="i => _neuNutzung = i" Platzhalter="@Texte.NutzungKeine" Aktiv="@(!Beschaeftigt)" />
+                            <Auswahlfeld Bezeichnung="@Texte.PlanNutzung" Eintraege="@Nutzungsliste(plan)" Auswahl="@NeuNutzungStelle(plan)"
+                                         AuswahlChanged="i => NeuNutzungWaehlen(plan, i)" Platzhalter="@Texte.NutzungKeine" Aktiv="@(!Beschaeftigt)" />
                             <button type="button" class="epos-knopf epos-gebimport-anlegen-ok" disabled="@Beschaeftigt"
                                     @onclick="() => BeiAnlegen(plan)">@Texte.PlanAnlegenOk</button>
                             <button type="button" class="epos-knopf epos-gebimport-anlegen-verwerfen"
@@ -1049,7 +1049,12 @@
     /// <summary>Die Zeile „Zone hinzufügen": offen, Name, Nutzung (Stelle in der Liste; <c>null</c> = keine).</summary>
     private bool _neueZone;
     private string _neuName = "";
-    private int? _neuNutzung;
+    /// <summary>
+    /// Die gewählte Nutzung der Zeile „Zone hinzufügen“ als SCHLÜSSEL (NP2b-3): Nach dem Blatt „Nutzungsprofile…“ liest der
+    /// Plan Katalog und Zuordnung neu, die Liste kann sich verschieben — die Wahl bleibt dieselbe Nutzung; fehlt sie danach,
+    /// ist keine gewählt. <c>null</c> = keine.
+    /// </summary>
+    private string? _neuNutzung;
 
     /// <summary>Die Wahl der Klapplisten „Geschoss" und „Regel für den Rest" (Stelle); <c>null</c> = die Vorgabe.</summary>
     private int? _plangeschoss, _restregel;
@@ -1774,6 +1779,17 @@
     private static IReadOnlyList<(int Id, string Text)> Nutzungsliste(GebaeudeZonenplanDaten plan)
         => plan.Nutzungen.Select((n, i) => (i, n.Text)).ToList();
 
+    /// <summary>Die Stelle der gewählten Nutzung in der Liste des Plans; <c>null</c> = keine oder nicht mehr darin.</summary>
+    private int? NeuNutzungStelle(GebaeudeZonenplanDaten plan)
+    {
+        for (int i = 0; i < plan.Nutzungen.Count; i++)
+            if (string.Equals(plan.Nutzungen[i].Schluessel, _neuNutzung, StringComparison.Ordinal)) return i;
+        return null;
+    }
+
+    private void NeuNutzungWaehlen(GebaeudeZonenplanDaten plan, int? stelle)
+        => _neuNutzung = stelle is int i && i >= 0 && i < plan.Nutzungen.Count ? plan.Nutzungen[i].Schluessel : null;
+
     /// <summary>„Zone hinzufügen": öffnet die Zeile mit Name (Vorgabe „Zone n") und Nutzung.</summary>
     private void BeiZoneHinzufuegen(GebaeudeZonenplanDaten plan)
     {
@@ -1784,7 +1800,7 @@
 
     private void BeiAnlegen(GebaeudeZonenplanDaten plan)
     {
-        string? nutzung = _neuNutzung is int i && i >= 0 && i < plan.Nutzungen.Count ? plan.Nutzungen[i].Schluessel : null;
+        string? nutzung = NeuNutzungStelle(plan) is int i ? plan.Nutzungen[i].Schluessel : null;
         if (Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.ANLEGEN, Name: _neuName, Nutzung: nutzung))) _neueZone = false;
     }
 

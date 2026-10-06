@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
 using WindowsFormsApplication1;
 using Xunit;
@@ -15,7 +16,8 @@ namespace EPOS.UI.Tests.Dialoge;
 public partial class GebaeudeImportZonenDialogTests
 {
     /// <summary>Der Zonenbaum mit einer Umformung jedes Stands der Hülle (der Katalog, den die Testumgebung nicht hat).</summary>
-    private IRenderedComponent<GebaeudeImportDialog> ZonenbaumUmgeformt(Zonenbaumprobe p, Func<GebaeudeImportStand, GebaeudeImportStand> umformen)
+    private IRenderedComponent<GebaeudeImportDialog> ZonenbaumUmgeformt(Zonenbaumprobe p, Func<GebaeudeImportStand, GebaeudeImportStand> umformen,
+                                                                       RaumnutzungWeg? katalog = null)
     {
         string probe = Path.Combine(Wurzel(), "Referenzlaeufe", "Importproben", "ifc4_zonen.ifc");
         var huelle = new GebaeudeImportHuelle();
@@ -31,6 +33,7 @@ public partial class GebaeudeImportZonenDialogTests
             c.Add(x => x.Zuordnen, (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)(a => { p.Anfragen.Add(a); return umformen(zuordnen(a)); }));
             c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)(_ => Array.Empty<GebaeudeImportMeldung>()));
             c.Add(x => x.Uebernehmen, (Func<GebaeudeImportErgebnis, Task<string?>>)(e => { p.Uebernommen.Add(e); return Task.FromResult<string?>(null); }));
+            if (katalog is not null) c.Add(x => x.Raumnutzung, katalog);
         });
         Einlesen(cut);
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-zonenbaum")));
@@ -104,5 +107,32 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.Equal("Büro · EPOS-Muster — aus DIN-Nr. 1 der Projektdatei; Heizen und Personen aus der Datei; Mo–Fr · 7–18 h · 21 °C",
                      zeile.TextContent.Trim());
         Assert.Same(zeile, cut.FindAll("tr.epos-gebimport-planzone")[0].NextElementSibling);
+    }
+
+    /// <summary>
+    /// <b>Neu lesen nach dem Blatt</b> (NP2b-3): Das Blatt hat den Katalog geändert (ein neues Profil steht vor den übrigen);
+    /// nach dem Schließen liest der Plan neu, und die schon gewählte Nutzung der offenen Zeile „Zone hinzufügen“ bleibt
+    /// dieselbe — sie hängt am Schlüssel, nicht an der Stelle in der Liste.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Blatt_bleibt_die_gewaehlte_Nutzung_der_neuen_Zone()
+    {
+        var p = new Zonenbaumprobe();
+        bool geaendert = false;
+        IRenderedComponent<GebaeudeImportDialog> cut = ZonenbaumUmgeformt(p, s => !geaendert ? s : MitPlan(s, plan => plan with
+        {
+            Nutzungen = new[] { new GebaeudeZonenregelDaten("#99", "Neues Profil") }.Concat(plan.Nutzungen).ToList(),
+        }), Nutzungskatalog());
+
+        Aktion(cut, "anlegen").Click();
+        Waehlen(Wahl(cut, "Nutzung"), t => t == "Büro");
+        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").Click();
+        geaendert = true;
+        cut.Find(".epos-gebimport-nutzungsblatt .epos-ueberlagerung-zu").Click();
+        Assert.False(cut.Instance.NutzungsprofileOffen);
+
+        cut.Find(".epos-gebimport-anlegen-ok").Click();
+        Assert.Equal(GebaeudePlanschrittArt.ANLEGEN, p.Letzter.Art);
+        Assert.Equal("BUERO", p.Letzter.Nutzung);
     }
 }
