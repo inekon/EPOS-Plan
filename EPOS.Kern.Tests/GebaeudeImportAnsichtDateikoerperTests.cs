@@ -467,8 +467,10 @@ namespace EPOS.Kern.Tests
             foreach (Randgruppe x in Enum.GetValues(typeof(Randgruppe)))
                 Assert.Equal((int)Enum.Parse<Flaechengruppe>(x.ToString()), (int)x);
             foreach (string sprache in new[] { "de-DE", "en-US" })
+            {
                 using (new Kulturvorrichtung(sprache))
                     Assert.All(new GebaeudeAnsichtTexte().Randgruppen, t => Assert.False(string.IsNullOrWhiteSpace(t)));
+            }
             Assert.Equal("R1 Wand gegen außen", new GebaeudeAnsichtTexte().Gruppenname(Randgruppe.R1));
             using (new Kulturvorrichtung("en-US"))
                 Assert.Equal("R1 wall to outside", new GebaeudeAnsichtTexte().Gruppenname(Randgruppe.R1));
