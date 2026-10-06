@@ -33,6 +33,38 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Grundrisse einer Quelle</b> (HC-5, F7: was „Grundriss übernehmen“ ersetzen würde), in der Reihenfolge des
+        /// Schreibens. Leer ohne Zeilen oder ohne die Tabelle.
+        /// </summary>
+        internal List<Raumgrundriss> LesenRaumgrundrisseDerQuelle(int idImportquelle)
+        {
+            if (!DataRepository.TabelleVorhanden(RaumgrundrissSchema.TAB)) return new List<Raumgrundriss>();
+            return Grundrisse(DataRepository.GetDataTable(
+                "SELECT " + GRUNDRISSSPALTEN + " FROM \"" + RaumgrundrissSchema.TAB + "\" g WHERE g.\"ID_Importquelle\" = ? ORDER BY g.\"ID\"",
+                new DbParam("@q", idImportquelle)));
+        }
+
+        /// <summary>
+        /// <b>Stimmen die gespeicherten Grundrisse einer Quelle mit <paramref name="frisch"/> überein</b> (F7)? Gleich heißt: dieselben
+        /// Kennungen in derselben Reihenfolge mit denselben Ringen, Böden, Höhen, Herleitungen und Vermerken — nur die
+        /// speicherbaren zählen. Sonst (keine oder ältere Zeilen) bietet „Datei erneut lesen“ das Nachtragen an.
+        /// </summary>
+        internal static bool Gleich(IReadOnlyList<Raumgrundriss> gespeichert, IReadOnlyList<Raumgrundriss> frisch)
+        {
+            List<Raumgrundriss> a = (gespeichert ?? Array.Empty<Raumgrundriss>()).ToList();
+            List<Raumgrundriss> b = (frisch ?? Array.Empty<Raumgrundriss>()).Where(Speicherbar).ToList();
+            if (a.Count != b.Count) return false;
+            for (int i = 0; i < a.Count; i++)
+                if (!string.Equals(a[i].Quellkennung, b[i].Quellkennung, StringComparison.Ordinal)
+                    || !string.Equals(a[i].RingeText, b[i].RingeText, StringComparison.Ordinal)
+                    || Math.Abs(a[i].BodenM - b[i].BodenM) > 1e-9 || Math.Abs(a[i].HoeheM - b[i].HoeheM) > 1e-9
+                    || a[i].Herleitung != b[i].Herleitung
+                    || !string.Equals(a[i].VermerkeText, b[i].VermerkeText, StringComparison.Ordinal))
+                    return false;
+            return true;
+        }
+
+        /// <summary>
         /// <b>Die Grundrisse einer Zone</b> — die Räume, die beim Import dieser Zone zugeordnet wurden, aus der jüngsten
         /// Importquelle ihres Gebäudes. Leer ohne Zeilen oder ohne die Tabelle.
         /// </summary>

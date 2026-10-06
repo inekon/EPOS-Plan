@@ -111,6 +111,10 @@ namespace WindowsFormsApplication1
         internal const string PROJEKT_SCHEMATISCH = "GEXP_IFC_PROJEKT_SCHEMATISCH";
         internal const string ELEMENT_SCHEMATISCH = "GEXP_IFC_ELEMENT_SCHEMATISCH";
         internal const string KENNZEICHNUNG_SCHEMATISCH = "GEXP_IFC_KENNZEICHNUNG_SCHEMATISCH";
+        /// <summary>HC-5: die Stufenzeile, wenn jeder Körper ein Prisma aus dem Grundriss der Importdatei ist.</summary>
+        internal const string DATEI_STUFE_S3_GRUNDRISS = "GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS";
+        /// <summary>HC-5: die Kennzeichnung eines Raums mit Prismen aus dem Grundriss; {0} = Vermerke (leer = keine).</summary>
+        internal const string ELEMENT_GRUNDRISS = "GEXP_IFC_ELEMENT_GRUNDRISS";
         internal const string GEOMETRIE_ABGELEHNT_TEXT = "GEXP_IFC_GEOMETRIE_ABGELEHNT";
 
         /// <summary>Der Name der <c>IfcAnnotation</c>, die die Datei als schematisch kennzeichnet.</summary>
@@ -352,7 +356,7 @@ namespace WindowsFormsApplication1
                 Zeitstempel = _profil.Uhr();
                 // Die Raumgeometrie nach derselben Regel wie gbXML Stufe 2: Körper nur aus schematischen Rechtecken.
                 (_geometrie, _koerper) = GbxmlSchreiber.Raumgeometrie(_abbild);
-                Dateibeschreibung.Add(T(_profil, _koerper != null ? DATEI_STUFE_S3 : DATEI_STUFE_S1));
+                Dateibeschreibung.Add(T(_profil, _koerper == null ? DATEI_STUFE_S1 : _koerper.Schematisch ? DATEI_STUFE_S3 : DATEI_STUFE_S3_GRUNDRISS));
                 if (_geometrie.AnordnungAbgelehnt) Dateibeschreibung.Add(T(_profil, DATEI_ABGELEHNT));
                 Geschichte();
                 if (_koerper != null) _form = new IfcKoerper(_m);
@@ -407,14 +411,24 @@ namespace WindowsFormsApplication1
             private string Vermerk => T(_profil, ELEMENT_SCHEMATISCH);
 
             /// <summary>Hängt Platzierung und, soweit vorhanden, Körper samt Vermerk an ein Bauteil (nur Stufe S3).</summary>
-            private void Koerper(IfcProduct e, IfcProductDefinitionShape form)
+            /// <param name="vermerk">Der Vermerk; <c>null</c> = der schematische.</param>
+            private void Koerper(IfcProduct e, IfcProductDefinitionShape form, string vermerk = null)
             {
                 if (_form == null) return;
                 e.ObjectPlacement = Lage();
                 if (form == null) return;
                 e.Representation = form;
+                vermerk ??= Vermerk;
                 string bisher = e.Description?.Value?.ToString();
-                e.Description = Text(string.IsNullOrWhiteSpace(bisher) ? Vermerk : bisher.Trim() + " – " + Vermerk);
+                e.Description = Text(string.IsNullOrWhiteSpace(bisher) ? vermerk : bisher.Trim() + " – " + vermerk);
+            }
+
+            /// <summary>HC-5: der Vermerk eines Raums mit Prismen aus dem Grundriss, samt den Vermerken der Grundrisse.</summary>
+            private string Grundrissvermerk(string kennung)
+            {
+                Raumumriss u = _geometrie.Raum(kennung);
+                string vermerke = u == null || u.Grundrissvermerke.Count == 0 ? "" : " (" + string.Join(", ", u.Grundrissvermerke.Select(v => v.ToString())) + ")";
+                return string.Format(_profil.Sprache, T(_profil, ELEMENT_GRUNDRISS), vermerke).Trim();
             }
 
             /// <summary>
@@ -423,7 +437,7 @@ namespace WindowsFormsApplication1
             /// </summary>
             private IfcAnnotation Kennzeichnung(AbbildGebaeude g)
             {
-                if (_form == null) return null;
+                if (_form == null || !_koerper.Schematisch) return null;
                 return Wurzel<IfcAnnotation>(g.Kennung, "Kennzeichnung", a =>
                 {
                     a.Name = Label(KENNZEICHNUNG_NAME);
@@ -505,10 +519,10 @@ namespace WindowsFormsApplication1
                                   new IfcEnergyMeasure(3.6e6), Si(IfcUnitEnum.ENERGYUNIT, IfcSIUnitName.JOULE));
                 _grad = Umrechnung(IfcUnitEnum.PLANEANGLEUNIT, GRAD, Exponenten(0, 0, 0),
                                    new IfcPlaneAngleMeasure(Math.PI / 180.0), Si(IfcUnitEnum.PLANEANGLEUNIT, IfcSIUnitName.RADIAN));
-                string name = _form == null || string.IsNullOrWhiteSpace(g.Anzeigename)
+                string name = _form == null || !_koerper.Schematisch || string.IsNullOrWhiteSpace(g.Anzeigename)
                     ? g.Anzeigename
                     : string.Format(_profil.Sprache, T(_profil, PROJEKT_SCHEMATISCH), g.Anzeigename.Trim());
-                string beschreibung = T(_profil, _form != null ? DATEI_STUFE_S3 : DATEI_STUFE_S1);
+                string beschreibung = T(_profil, _form == null ? DATEI_STUFE_S1 : _koerper.Schematisch ? DATEI_STUFE_S3 : DATEI_STUFE_S3_GRUNDRISS);
                 if (_geometrie.AnordnungAbgelehnt)
                     beschreibung += " " + string.Format(_profil.Sprache, T(_profil, GEOMETRIE_ABGELEHNT_TEXT), GbxmlSchreiber.Widersprueche(_geometrie));
                 return Wurzel<IfcProject>(wurzel, "Projekt", p =>
@@ -605,7 +619,8 @@ namespace WindowsFormsApplication1
                     x.CompositionType = IfcElementCompositionEnum.ELEMENT;
                     x.PredefinedType = IfcSpaceTypeEnum.SPACE;
                 });
-                Koerper(s, (_form?.Raum(_koerper.Raum(r.Kennung))));
+                Raumkoerper raumkoerper = _koerper?.Raum(r.Kennung);
+                Koerper(s, _form?.Raum(raumkoerper), raumkoerper?.AusGrundriss == true ? Grundrissvermerk(r.Kennung) : null);
                 Mengen(s, r.Kennung, "Qto_SpaceBaseQuantities",
                        Flaeche("NetFloorArea", r.FlaecheM2), Laenge("Height", r.HoeheM), Volumen("NetVolume", r.VolumenM3));
                 if (r.Beheizt)

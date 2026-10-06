@@ -100,7 +100,14 @@ namespace WindowsFormsApplication1
             if (z.AnordnungAbgelehnt)
                 meldungen.Add(new PruefMeldung(PruefStufe.Warnung, GEOMETRIE_ABGELEHNT, Widersprueche(z)));
             else if (k != null)
-                meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_SCHEMATISCH, k.Raeume.Count.ToString(CultureInfo.InvariantCulture)));
+            {
+                // HC-5: „schematisch“ zählt nur die Rechtecke; die Prismen aus dem Grundriss nennt eine eigene Info.
+                int grundriss = k.ZahlAusGrundriss;
+                if (k.Raeume.Count > grundriss)
+                    meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_SCHEMATISCH, (k.Raeume.Count - grundriss).ToString(CultureInfo.InvariantCulture)));
+                if (grundriss > 0)
+                    meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_DATEIKOERPER, grundriss.ToString(CultureInfo.InvariantCulture)));
+            }
             return meldungen;
         }
 
@@ -123,6 +130,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>I — {0} Zahl der Räume mit Körper: Die Datei trägt schematische Raumgeometrie (Kennzeichnung 8.4).</summary>
         internal const string GEOMETRIE_SCHEMATISCH = "GEXP_PROT_GEOMETRIE_SCHEMATISCH";
+        /// <summary>I — {0} Zahl der Räume mit Prismen aus dem Grundriss der Importdatei (HC-5).</summary>
+        internal const string GEOMETRIE_DATEIKOERPER = "GEXP_PROT_GEOMETRIE_DATEIKOERPER";
         /// <summary>W — {0} Paare: widersprüchliche Anordnung — keine Raumgeometrie (Stufe 2 benannt abgelehnt).</summary>
         internal const string GEOMETRIE_ABGELEHNT = "GEXP_PROT_GEOMETRIE_ABGELEHNT";
         /// <summary>I — Die Datei trägt Daten ohne Raumgeometrie (Stufe 1; Vorschau).</summary>
@@ -315,7 +324,7 @@ namespace WindowsFormsApplication1
             /// <summary>Die Stufenzeile in <c>Campus/Description</c>: Ersatzmodell, benannte Ablehnung oder Stufe 1.</summary>
             private string Stufenzeile()
             {
-                if (_koerper != null) return T("GEXP_DATEI_SCHEMATISCH");
+                if (_koerper != null) return T(_koerper.Schematisch ? "GEXP_DATEI_SCHEMATISCH" : "GEXP_DATEI_DATEIKOERPER");
                 if (_geometrie.AnordnungAbgelehnt)
                     return string.Format(_profil.Sprache, T("GEXP_DATEI_GEOMETRIE_ABGELEHNT"), Widersprueche(_geometrie));
                 return T("GEXP_DATEI_OHNE_GEOMETRIE");
@@ -366,7 +375,7 @@ namespace WindowsFormsApplication1
                     new XAttribute("id", Kennung(g.Kennung, "Building")),
                     new XAttribute("buildingType", art));
                 Text(building, "Name", g.Name);
-                if (_koerper != null) Text(building, "Description", T("GEXP_DATEI_SCHEMATISCH"));
+                if (_koerper != null) Text(building, "Description", T(_koerper.Schematisch ? "GEXP_DATEI_SCHEMATISCH" : "GEXP_DATEI_DATEIKOERPER"));
                 double flaeche = g.Raeume.Where(r => r.FlaecheM2.HasValue).Sum(r => r.FlaecheM2.Value);
                 building.Add(new XElement(NS + "Area", Zahl(flaeche)));
 

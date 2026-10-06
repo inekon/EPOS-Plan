@@ -108,6 +108,13 @@ namespace WindowsFormsApplication1
         internal IReadOnlyDictionary<int, string> Zonennutzungen { get; init; } = new Dictionary<int, string>();
 
         /// <summary>
+        /// Die gespeicherten Grundrisse je Zonen-Id (HC-5, F10; <see cref="GebaeudeImportCtrl.LesenRaumgrundrisse"/>, jüngste Quelle):
+        /// Gestalt und Lage des Exportmodells. Zeilen ohne Zone fehlen; leer = keine (Export wie ohne Grundriss).
+        /// </summary>
+        internal IReadOnlyDictionary<int, IReadOnlyList<Raumgrundriss>> Zonengrundrisse { get; init; }
+            = new Dictionary<int, IReadOnlyList<Raumgrundriss>>();
+
+        /// <summary>
         /// <b>Die Konditionierung einer Zone für die <c>EPOS_*</c>-Sätze des IFC-Exports</b>: Nutzung, die angelegten Kalender
         /// der Zone mit Bemerkung (in der Reihenfolge der Größen) — ohne die Matrixzellen, die der Ablauf ergänzt.
         /// </summary>
@@ -176,6 +183,7 @@ namespace WindowsFormsApplication1
             Zonenkalender = Zonenkalender,
             Zonenvermerke = Zonenvermerke,
             Zonennutzungen = Zonennutzungen,
+            Zonengrundrisse = Zonengrundrisse,
             Ergebnis = Ergebnis,
             Rechenzeitpunkt = Rechenzeitpunkt,
             Wetterdatensatz = Wetterdatensatz,
@@ -205,6 +213,7 @@ namespace WindowsFormsApplication1
             Zonenkalender = Zonenkalender,
             Zonenvermerke = Zonenvermerke,
             Zonennutzungen = Zonennutzungen,
+            Zonengrundrisse = Zonengrundrisse,
             Ergebnis = ergebnis,
             Rechenzeitpunkt = ergebnis != null ? rechenzeitpunkt : null,
             Wetterdatensatz = ergebnis != null ? wetterdatensatz : null,
@@ -314,6 +323,10 @@ namespace WindowsFormsApplication1
                 Zonenkalender = zonenkalender,
                 Zonenvermerke = vermerke,
                 Zonennutzungen = nutzungen,
+                Zonengrundrisse = new GebaeudeImportCtrl().LesenRaumgrundrisse(g.ID_Gebaeude)
+                    .Where(x => x.IdZone.HasValue)
+                    .GroupBy(x => x.IdZone.Value)
+                    .ToDictionary(x => x.Key, x => (IReadOnlyList<Raumgrundriss>)x.ToList()),
             };
         }
     }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -103,6 +105,37 @@ namespace WindowsFormsApplication1
             return Raumgrundriss.Bilden(r.Kennung, name, geschoss, lage, r.FlaecheM2, r.VolumenM3, k.Herleitung.Value, k.Ringe,
                                         k.BodenM, k.HoeheM, k.Vermerke, ohneBeschnitt);
         }
+
+        /// <summary>W — {0} Zahl, {1} Beispiele: Grundrissfläche weicht mehr als 10 % von der Raumfläche ab (F8; gespeichert wird trotzdem).</summary>
+        internal const string PROT_FLAECHE = GebaeudeImportAblauf.MELDUNG + "GRUNDRISS_FLAECHE";
+
+        /// <summary>I — {0} Grundrisse, {1} aus Bodendreiecken, {2} aus Deckendreiecken, {3} als konvexe Hülle, {4} aus Raumgrenzen.</summary>
+        internal const string PROT_HERLEITUNG = GebaeudeImportAblauf.MELDUNG + "GRUNDRISS_HERLEITUNG";
+
+        /// <summary>
+        /// <b>Die Zeilen des Importprotokolls zu den Grundrissen</b> (HC-5): die Räume mit Flächenabweichung über 10 % (F8) und die
+        /// Summe der Herleitungen; ohne Grundriss keine.
+        /// </summary>
+        internal static IReadOnlyList<PruefMeldung> Meldungen(IReadOnlyList<Raumgrundriss> grundrisse)
+        {
+            var meldungen = new List<PruefMeldung>();
+            if (grundrisse == null || grundrisse.Count == 0) return meldungen;
+            List<string> abweichend = grundrisse.Where(g => g.Vermerke.Contains(Grundrissvermerk.Flaeche))
+                                                .Select(g => (g.Raumname ?? g.Quellkennung) + " (" + Prozent(g.Abweichung) + ")").ToList();
+            if (abweichend.Count > 0)
+                meldungen.Add(new PruefMeldung(PruefStufe.Warnung, PROT_FLAECHE, abweichend.Count.ToString(CultureInfo.InvariantCulture),
+                                               abweichend.Count <= 5 ? string.Join(", ", abweichend) : string.Join(", ", abweichend.Take(5)) + ", …"));
+            string Zahl(Func<Raumgrundriss, bool> wo) => grundrisse.Count(wo).ToString(CultureInfo.InvariantCulture);
+            meldungen.Add(new PruefMeldung(PruefStufe.Info, PROT_HERLEITUNG, grundrisse.Count.ToString(CultureInfo.InvariantCulture),
+                                           Zahl(g => g.Herleitung == Umrissherleitung.KoerperBoden),
+                                           Zahl(g => g.Herleitung == Umrissherleitung.KoerperDecke),
+                                           Zahl(g => g.Herleitung == Umrissherleitung.KoerperHuelle),
+                                           Zahl(g => g.Herkunft == Geometrieherkunft.Raumgrenzen)));
+            return meldungen;
+        }
+
+        private static string Prozent(double? abweichung)
+            => abweichung is double a ? (a >= 0 ? "+" : "") + Math.Round(a * 100.0).ToString(CultureInfo.InvariantCulture) + " %" : "–";
 
         /// <summary>Name und Lage des Geschosses: am Raum (gbXML), sonst aus der Geschossliste des Gebäudes (IFC).</summary>
         private static (string Name, double? LageM) Geschoss(AbbildGebaeude g, AbbildRaum r)
