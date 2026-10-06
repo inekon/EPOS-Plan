@@ -200,6 +200,20 @@ namespace EPOS.Kern.Tests
             Assert.Equal(a, b);
         }
 
+        /// <summary>Rückspeisung in den Vorjahren hebt das Rechenjahr (Regeneration über die Stundenlast).</summary>
+        [Fact]
+        public void Rueckspeisung_der_Vorjahre_hebt_das_Rechenjahr()
+        {
+            double[] entzug = Heizlast(20.0), netto = Heizlast(20.0, 8.0);
+            double Mittel(double[] vorjahre)
+            {
+                var f = new Erdsondenfeld(90, 4, LAMBDA, RHOCP, TU);
+                f.VorjahreSetzenStuendlich(vorjahre, 9);
+                return f.Durchrechnen(netto).Average();
+            }
+            Assert.True(Mittel(netto) > Mittel(entzug) + 0.1);
+        }
+
         /// <summary>Die Vorjahre aus der Stundenlast kosten eine Faltung über ein Jahr — unter einer festen Grenze.</summary>
         [Fact]
         public void Stundenlast_der_Vorjahre_rechnet_unter_1500_ms()
@@ -329,6 +343,7 @@ namespace EPOS.Kern.Tests
         private static Feldlauf Rechnen(int projekt, bool regeneration)
         {
             var laeufer = new SimulationRunner();
+            laeufer.sim.RegenerationRechnen = regeneration;
             var uhr = Stopwatch.StartNew();
             Assert.True(laeufer.Simuliere(projekt, out string fehler), "Lauf gescheitert: " + fehler);
             uhr.Stop();
@@ -376,21 +391,24 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Zweiter Feldlauf an Projekt 1029 (ohne Kühlbetrieb): Das Rechenjahr ist Jahr 10 nach neun
-        /// Vorjahren mit der eigenen Stundenlast, und es liegt unter Jahr 1 derselben Last.
+        /// Vorjahren mit der eigenen Stundenlast, es liegt unter Jahr 1 derselben Last, und die
+        /// Regeneration ändert ohne Kühlbetrieb nichts — bitgleich.
         /// </summary>
         [Fact]
-        public void Projekt_1029_rechnet_Jahr_zehn_mit_eigener_Last()
+        public void Projekt_1029_rechnet_Jahr_zehn_mit_eigener_Last_und_ohne_Kuehlung_ohne_Regeneration()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
             Feldlauf mit = Rechnen(1029, true);
+            Feldlauf ohne = Rechnen(1029, false);
             _aus.WriteLine("1029: " + mit);
             Assert.Equal(Erdsondenfeld.BETRACHTUNGSJAHR - 1, mit.Vorjahre);
             Assert.Equal(0.0, mit.RueckspeisungKwh);
             Assert.True(mit.Mittel < mit.Jahr1Mittel && mit.Min < mit.Jahr1Min, "Jahr 10 unter Jahr 1");
             // die Vorjahre tragen die Last des ersten Laufs derselben Anlage, also nahe am Rechenjahr
             Assert.InRange(mit.VorjahrNettoKwh, 0.8 * mit.EntzugKwh, 1.25 * mit.EntzugKwh);
+            Assert.Equal(mit.Soletemperatur, ohne.Soletemperatur);
         }
 
         /// <summary>
@@ -430,6 +448,48 @@ namespace EPOS.Kern.Tests
                            $"zwei Feldläufe (Jahr 10): min {zwei.min:0.00}, Mittel {zwei.mittel:0.00} °C, {zwei.ms} ms");
             Assert.True(zwei.mittel < eins.mittel && zwei.min < eins.min, "Jahr 10 unter Jahr 1");
             Assert.True(zwei.ms < 2 * eins.ms + 2000, $"{zwei.ms} ms gegen {eins.ms} ms");
+        }
+
+        /// <summary>
+        /// Regeneration an einer Kopie von Projekt 1017 (Kälte mit der Wärmepumpe im Kühlbetrieb) mit
+        /// eingesetzter Sonde 6 × 100 m: Die Kühlwärme speist zurück und hebt die Soletemperatur.
+        /// </summary>
+        [Fact]
+        public void Projekt_1017_mit_Sonde_hebt_die_Soletemperatur_durch_Rueckspeisung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            SondeEinsetzen(10211, 6, 100.0);
+
+            Feldlauf mit = Rechnen(1017, true);
+            Feldlauf ohne = Rechnen(1017, false);
+            _aus.WriteLine("1017 mit Regeneration:  " + mit);
+            _aus.WriteLine("1017 ohne Regeneration: " + ohne);
+            Assert.True(mit.KaelteWpKwh > 0 && mit.RueckspeisungKwh > mit.KaelteWpKwh, "Kühlwärme samt Verdichterarbeit speist zurück");
+            Assert.Equal(0.0, ohne.RueckspeisungKwh);
+            Assert.True(mit.Mittel > ohne.Mittel, "Rückspeisung hebt die mittlere Soletemperatur");
+            Assert.True(mit.Min >= ohne.Min, "und den Tiefstwert nicht ab");
+        }
+
+        /// <summary>
+        /// Kopie von Projekt 1055 (Kälte mit Kältemaschine und Trocken-Rückkühler, die Wärmepumpe heizt nur)
+        /// mit eingesetzter Sonde: Die Kältemaschine speist nicht ins Erdreich — bitgleich mit und ohne
+        /// Regeneration.
+        /// </summary>
+        [Fact]
+        public void Projekt_1055_Kaeltemaschine_mit_Trockenkuehler_speist_nicht_zurueck()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            SondeEinsetzen(23726, 6, 100.0);
+
+            Feldlauf mit = Rechnen(1055, true);
+            Feldlauf ohne = Rechnen(1055, false);
+            _aus.WriteLine("1055: " + mit);
+            Assert.True(mit.KaelteMaschineKwh > 0, "die Kältemaschine rechnet");
+            Assert.Equal(0.0, mit.KaelteWpKwh);
+            Assert.Equal(0.0, mit.RueckspeisungKwh);
+            Assert.Equal(mit.Soletemperatur, ohne.Soletemperatur);
         }
     }
 }

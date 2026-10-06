@@ -357,6 +357,8 @@ namespace WindowsFormsApplication1
                 {
                     // Zweiter Feldlauf: n − 1 Vorjahre tragen die Stundenlast des ersten Laufs.
                     feld.VorjahreSetzenStuendlich(v.VorjahrLastKw, feld.Betrachtungsjahr - 1);
+                    if (v.RueckspeisungKw != null && v.RueckspeisungKw.Length >= 8760)
+                        _sondeRueckspeisung[idAnlage] = v.RueckspeisungKw;
                     for (int s = 0; s < 8760; s++)
                     {
                         double r = v.RueckspeisungKw != null && s < v.RueckspeisungKw.Length ? v.RueckspeisungKw[s] : 0.0;
@@ -424,6 +426,10 @@ namespace WindowsFormsApplication1
                     entzug += kum - _sondeEntzugBisher[i];
                     _sondeEntzugBisher[i] = kum;
                 }
+
+                // Regeneration (Konzept 23.5): die Kühlwärme des ersten Laufs als negative Last.
+                if (_sondeRueckspeisung.TryGetValue(paar.Key, out double[] rueck) && stunde >= 0 && stunde < rueck.Length)
+                    entzug -= rueck[stunde];
 
                 double t = feld.StundeMelden(entzug);
                 if (stunde + 1 >= 8760) continue;

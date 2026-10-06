@@ -92415,7 +92415,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde der Anlage {0}: Sondenfeld mit Entzugsrückwirkung, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), ungestörte Temperatur {4:0.00} °C, Betrachtungsjahr {5} nach {7} Vorjahren mit der Stundenlast des ersten Feldlaufs: Entzug {6:N0} kWh/a. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde der Anlage {0}: Sondenfeld mit Entzugsrückwirkung, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), ungestörte Temperatur {4:0.00} °C, Betrachtungsjahr {5} nach {7} Vorjahren mit der Stundenlast des ersten Feldlaufs: Entzug {6:N0} kWh/a, davon zurückgespeist {8:N0} kWh/a. ähnelt.
         /// </summary>
         public static string SIMENG_ERDSONDE_FELD {
             get {

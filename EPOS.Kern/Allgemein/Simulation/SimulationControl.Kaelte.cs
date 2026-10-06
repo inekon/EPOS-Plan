@@ -305,6 +305,12 @@ namespace WindowsFormsApplication1
         /// ein Kühlwerk (<see cref="Kaelteerzeuger.Maschine"/> gesetzt, kein Wärmepumpenmodul).
         /// </summary>
         /// <summary>
+        /// Regeneration des Sondenfeldes durch Kühlwärme (Konzept 23.5); nur Tests schalten sie ab, um
+        /// ihre Wirkung zu messen.
+        /// </summary>
+        internal bool RegenerationRechnen = true;
+
+        /// <summary>
         /// Zweiter Feldlauf der Erdsonde (Konzept 23.4); nur Tests schalten ihn ab, um Jahr 1 der
         /// Startschätzung und die Rechenzeit daneben zu legen.
         /// </summary>
@@ -319,6 +325,19 @@ namespace WindowsFormsApplication1
             foreach (KeyValuePair<int, Erdsondenfeld> paar in simulation_wp.Sondenfelder)
             {
                 double[] rueck = new double[Kanalsatz.STUNDEN_JAHR];
+                if (_kaelteerzeuger != null && RegenerationRechnen)
+                    foreach (Kaelteerzeuger e in _kaelteerzeuger)
+                    {
+                        if (e.Maschine != null || e.Modulindex < 0) continue;
+                        if (!ReferenceEquals(simulation_wp.Sondenfeld(e.Modulindex), paar.Value)) continue;
+                        double zuschlag = 1.0 + e.Hilfsstromanteil;
+                        for (int h = 0; h < rueck.Length; h++)
+                        {
+                            double kaelte = e.Kaelte_stuendlich[h];
+                            if (!(kaelte > 0)) continue;
+                            rueck[h] += kaelte + e.Strom_stuendlich[h] / zuschlag;
+                        }
+                    }
 
                 double[] entzug = paar.Value.LastKw();
                 double[] netto = new double[entzug.Length];
