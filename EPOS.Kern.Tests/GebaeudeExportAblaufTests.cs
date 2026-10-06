@@ -137,7 +137,8 @@ namespace EPOS.Kern.Tests
 
             // Ohne Namensabgleich: Kandidat (i) ist ein masseloser Aufbau — die Zeile trägt nur U.
             GebaeudeBauteilvorschlag ohne = GebaeudeBauteilvorschlag.Bilden(abbildI, 0, 'E', null, new GbxmlImportProfil());
-            Assert.False(ohne.Zeilen.Single(x => x.Kennung == "epos-bauteil-1001").Bauteil.ID_Aufbau.HasValue);
+            GebaeudeBauteilzeile zOhne = ohne.Zeilen.Single(x => x.Kennung == "epos-bauteil-1001");
+            Assert.True(!zOhne.Bauteil.ID_Aufbau.HasValue || zOhne.Typaufbau != null);   // BA-2: höchstens ein Ersatzaufbau
             _ausgabe.WriteLine("Luftschicht-Rückweg: (i) mit Namensabgleich vollständig als Luftschicht (ρ leer), U = "
                                + uI.ToString("R", CultureInfo.InvariantCulture) + "; (ii) vollständig als Schicht mit ρ = 5, U gleich; "
                                + "(i) ohne Namensabgleich masselos. Festgeschrieben: (i).");

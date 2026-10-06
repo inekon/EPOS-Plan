@@ -37656,6 +37656,27 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_BAUTEIL_PROT_STUFE_C" xml:space="preserve">
     <value>Zuordnungsstufe C (nur Geometrie): {0} Bauteil(e), {1} m².</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZAUFBAU" xml:space="preserve">
+    <value>{0} Außenbauteil(e) ohne vollständigen Aufbau, {1} m², tragen einen Ersatzaufbau aus {2} Typaufbau(ten) statt masselos zu rechnen (Zuordnungsstufe bleibt B bzw. C).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL" xml:space="preserve">
+    <value>{0} Ersatzaufbau(ten) mit dem Typ nach dem U-Wert statt nach der Baualtersklasse: {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG" xml:space="preserve">
+    <value>{0} Ersatzaufbau(ten) ohne Dämmschicht — der U-Wert liegt über dem des Typaufbaus ohne Dämmung: {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_BAND" xml:space="preserve">
+    <value>{0} Ersatzaufbau(ten) außerhalb des Abgleichbands (Dämmdicke bis 40 cm, λ das 0,5- bis 3-Fache) — Typaufbau ohne Abgleich: {1}.</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_DICKE" xml:space="preserve">
+    <value>Ersatzaufbau aus „{0}“: Dämmschicht {1} cm, abgeglichen auf U = {2} W/(m²K).</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_LAMBDA" xml:space="preserve">
+    <value>Ersatzaufbau aus „{0}“: λ der tragenden Schicht {1} W/(mK), abgeglichen auf U = {2} W/(m²K).</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_OHNE" xml:space="preserve">
+    <value>Ersatzaufbau aus „{0}“ ohne Abgleich; U = {1} W/(m²K) gilt in der Transmission.</value>
+  </data>
   <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
     <value>{0} Luftschicht(en) rechnen als ruhende Luftschicht nach DIN EN ISO 6946.</value>
   </data>

@@ -27,7 +27,7 @@ namespace EPOS.Kern.Tests
             // Vorläufig über RaumnutzungSchema.SCHRITT + 2: Schritt 190 (NP5) ist angemeldet, aber noch nicht gebaut.
             Assert.Equal(191, RaumgrundrissSchema.SCHRITT);
             Assert.True(RaumgrundrissSchema.SCHRITT > RaumnutzungSchema.SCHRITT);
-            Assert.Equal(SchemaStand.Zielversion, RaumgrundrissSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= RaumgrundrissSchema.SCHRITT);   // danach Schritt 192 (BA-2)
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == RaumgrundrissSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);

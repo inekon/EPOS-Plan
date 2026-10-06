@@ -53,6 +53,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Keine Schicht mit bekannter Kapazität ≥ <see cref="Bauteilzuordnung.SPEICHERND_KAPAZITAET_MIN"/>.</summary>
         SpeicherndeSchicht = 64,
+
+        /// <summary>Vermerk, keine Lücke: Das Bauteil trägt statt des fehlenden Aufbaus einen Ersatzaufbau (BA-2, Kennzeichen <c>Typaufbau</c>).</summary>
+        Ersatzaufbau = 128,
     }
 
     /// <summary>Die Werte einer Schicht nach Datei und Namensabgleich; <c>null</c> = fehlt.</summary>
@@ -71,9 +74,9 @@ namespace WindowsFormsApplication1
     /// <item><see cref="Summen"/> Zahl und Fläche je Stufe (Protokoll, Legende);</item>
     /// <item><see cref="Luecken"/> was einem Aufbau fehlt.</item>
     /// </list>
-    /// Regel: transparent → <see cref="Bauteilzuordnungsstufe.Transparent"/>; mit Aufbau → A; sonst mit U der
-    /// Datei → B; sonst C. Den Ersatzaufbau der Stufen B und C (Kennzeichen <c>Typaufbau</c>) unterscheidet
-    /// erst BA-2 — bis dahin ist ein Aufbau immer Stufe A.
+    /// Regel: transparent → <see cref="Bauteilzuordnungsstufe.Transparent"/>; mit echtem Aufbau → A; sonst (ohne
+    /// Aufbau oder mit Ersatzaufbau, Kennzeichen <c>Typaufbau</c>, BA-2) mit U der Datei → B; sonst C. Ein
+    /// Ersatzaufbau hebt ein Bauteil nie auf A.
     /// </summary>
     internal static class Bauteilzuordnung
     {
@@ -93,7 +96,7 @@ namespace WindowsFormsApplication1
         {
             if (z == null) throw new ArgumentNullException(nameof(z));
             if (IstTransparent(z.Bauteil.Bauteilart)) return Bauteilzuordnungsstufe.Transparent;
-            if (z.Bauteil.ID_Aufbau.HasValue) return Bauteilzuordnungsstufe.A;
+            if (z.Bauteil.ID_Aufbau.HasValue && z.Typaufbau == null) return Bauteilzuordnungsstufe.A;
             if (z.UDatei.HasValue
                 || (z.HerkunftU != Importherkunft.Leer && !ImportherkunftWerte.IstVorgabe(z.HerkunftU)))
                 return Bauteilzuordnungsstufe.B;
@@ -101,14 +104,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Stufe einer gespeicherten Zeile: mit Aufbau A; mit U-Wert, der nicht aus der Vorgabe stammt
-        /// (<c>Herkunft</c> ≠ VORGABE), B; sonst C.
+        /// Die Stufe einer gespeicherten Zeile: mit echtem Aufbau A; mit U-Wert, der nicht aus der Vorgabe stammt
+        /// (<c>Herkunft</c> ≠ VORGABE), B; sonst C. <paramref name="aufbauten"/> sind die Aufbauten des Projekts
+        /// nach Id: Trägt der Aufbau der Zeile das Kennzeichen <c>Typaufbau</c>, ist er ein Ersatzaufbau (BA-2), und
+        /// die Zeile bleibt B bzw. C. Ein Aufbau, der dort fehlt, gilt als echt.
         /// </summary>
-        internal static Bauteilzuordnungsstufe Stufe(BauteilModel b)
+        internal static Bauteilzuordnungsstufe Stufe(BauteilModel b, IReadOnlyDictionary<int, BauteilaufbauModel> aufbauten)
         {
             if (b == null) throw new ArgumentNullException(nameof(b));
             if (IstTransparent(b.Bauteilart)) return Bauteilzuordnungsstufe.Transparent;
-            if (b.ID_Aufbau.HasValue) return Bauteilzuordnungsstufe.A;
+            if (b.ID_Aufbau is int id
+                && !(aufbauten != null && aufbauten.TryGetValue(id, out BauteilaufbauModel a) && !string.IsNullOrEmpty(a?.Typaufbau)))
+                return Bauteilzuordnungsstufe.A;
             if (b.U_Wert.HasValue && !string.Equals(b.Herkunft, DbWerte.HERKUNFT_VORGABE, StringComparison.Ordinal))
                 return Bauteilzuordnungsstufe.B;
             return Bauteilzuordnungsstufe.C;
