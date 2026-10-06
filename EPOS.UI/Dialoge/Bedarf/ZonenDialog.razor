@@ -595,6 +595,10 @@
             ProportionalbandLesen = () => _stand.ReglerProportionalband,
             ProportionalbandSetzen = w => Setzen(() => _stand.ReglerProportionalband = w),
             UebergabeWirksamLesen = () => UebergabeWirksam,
+            // Stufe NP3b: das zuletzt übernommene Nutzungsprofil, sonst die Nutzung der Kalender (alte Kennungen übersetzt).
+            NutzungsprofilLesen = () => !string.IsNullOrWhiteSpace(_stand.Nutzungsprofil)
+                ? _stand.Nutzungsprofil!.Trim()
+                : string.IsNullOrWhiteSpace(_stand.Kalendernutzung) ? "" : KonditionierungTexte.Nutzungsanzeige(_stand.Kalendernutzung),
             BauteileLesen = () => _stand.Bauteile,
             ArtText = ArtText,
             RandText = RandText,

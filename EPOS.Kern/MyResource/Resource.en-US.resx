@@ -46244,5 +46244,11 @@ chart</value>
   <data name="RNP_BTN_PROFILE_IMPORT" xml:space="preserve">
     <value>Usage profiles…</value>
   </data>
+  <data name="RNP_KI_ZONE_PROFIL_NAME" xml:space="preserve">
+    <value>Usage profile of the zone</value>
+  </data>
+  <data name="RNP_KI_ZONE_PROFIL_ERL" xml:space="preserve">
+    <value>The usage profile last applied to the zone (a copied name, not a link to the catalogue); empty = none. It is applied via “Apply usage profile…” with a confirmation and saved with OK.</value>
+  </data>
 </root>
 

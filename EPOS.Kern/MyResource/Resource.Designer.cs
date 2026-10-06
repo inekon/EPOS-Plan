@@ -88104,6 +88104,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das zuletzt übernommene Nutzungsprofil der Zone (Name als Kopie, keine Verknüpfung zum Katalog); leer = keines. Übernommen wird über „Nutzungsprofil übernehmen…“ mit Rückfrage, geschrieben mit OK. ähnelt.
+        /// </summary>
+        public static string RNP_KI_ZONE_PROFIL_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_ZONE_PROFIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil der Zone ähnelt.
+        /// </summary>
+        public static string RNP_KI_ZONE_PROFIL_NAME {
+            get {
+                return ResourceManager.GetString("RNP_KI_ZONE_PROFIL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
         /// </summary>
         public static string RNP_LBL_AKTIONEN {

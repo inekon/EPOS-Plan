@@ -46251,5 +46251,11 @@ Chart</value>
   <data name="RNP_BTN_PROFILE_IMPORT" xml:space="preserve">
     <value>Nutzungsprofile…</value>
   </data>
+  <data name="RNP_KI_ZONE_PROFIL_NAME" xml:space="preserve">
+    <value>Nutzungsprofil der Zone</value>
+  </data>
+  <data name="RNP_KI_ZONE_PROFIL_ERL" xml:space="preserve">
+    <value>Das zuletzt übernommene Nutzungsprofil der Zone (Name als Kopie, keine Verknüpfung zum Katalog); leer = keines. Übernommen wird über „Nutzungsprofil übernehmen…“ mit Rückfrage, geschrieben mit OK.</value>
+  </data>
 </root>
 
