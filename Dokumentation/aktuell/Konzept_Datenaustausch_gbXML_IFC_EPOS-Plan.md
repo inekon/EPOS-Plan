@@ -1868,7 +1868,7 @@ Architekturpapier — es führt das Modell als `Zonengeometrie` mit `Zonenumriss
    10-%-Probe gegen die Nutzfläche und Rückfall auf das Quadrat.
 3. **Im Einzonenmodell** (E7) ist das ein Quader je Gebäude.
 
-Entwurf HC-5, nach Freigabe: ohne Raumgrenzen der Grundriss je Raum aus dem Dateikörper, beim Import gespeichert —
+Gebaut (#779): ohne Raumgrenzen der Grundriss je Raum aus dem Dateikörper, beim Import gespeichert —
 [HottCAD-Verbund Kapitel 11](Gebaeudesimulation/2026-10-05_Konzept_HottCAD_Verbund_IFC_Projektdatei_Viewer.md).
 
 Die **Anordnung** der Zonen zueinander folgt weiter 5.5, Punkt 3: keine Stapelung, Zonen mit
@@ -1978,7 +1978,7 @@ lässt dessen Regeln, die Exporte (5.5, 6.7) und [`ADR-003`](ADR-003_IFC_xBIM_oh
 | die Körper der Hüllbauteile (`IfcWall`, `IfcSlab`, `IfcRoof`, `IfcWindow`, `IfcDoor`) als Anzeige, mit gemeinsamer Dreiecksgrenze mit den Räumen (HottCAD-Verbund HC-1, #740) | der Bauteilkörper als Rechengröße: Dicke, Schichten und Flächen kommen weiter aus Mengen und Katalog |
 | die Hüllflächen der Raumkörper in acht Gruppen R0–R7 als Farbmodus „Randbedingung“ der Ansicht, mit Legende und Flächensummen (HottCAD-Verbund HC-2, #746) | die Gruppe als Rechengröße oder Persistenz: Anzeige am Abbild, die Berechnung liest sie nicht |
 | die Ansicht eines importierten Gebäudes erneut aus der Importdatei, nach Prüfung der Prüfsumme, im Gebäudedialog (HottCAD-Verbund HC-4, #754) | die Geometrie im Projekt: nichts wird gespeichert, der Zonenplan und die Zuordnung bleiben, wie sie sind |
-| Entwurf HC-5, nach Freigabe: der Grundriss je Raum aus dem Dateikörper, gespeichert, als Prisma in Exportmodell und Exporten ([HottCAD-Verbund Kapitel 11](Gebaeudesimulation/2026-10-05_Konzept_HottCAD_Verbund_IFC_Projektdatei_Viewer.md)) | die Dreiecksnetze im Projekt und Dachschrägen im Export |
+| Gebaut (#779): der Grundriss je Raum aus dem Dateikörper, gespeichert, als Prisma in Exportmodell und Exporten ([HottCAD-Verbund Kapitel 11](Gebaeudesimulation/2026-10-05_Konzept_HottCAD_Verbund_IFC_Projektdatei_Viewer.md)) | die Dreiecksnetze im Projekt und Dachschrägen im Export |
 
 **Die Datei bleibt Quelle.** Nichts am Körper wird gerechnet, geschlossen oder ausgeglichen; was der Leser nicht
 lesen kann, fällt benannt auf den Umriss zurück. **„Schematisch“ bleibt der benannte Rückfall** für jeden Raum ohne

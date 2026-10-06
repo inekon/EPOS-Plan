@@ -4,7 +4,7 @@
 > den Wellen SQ-1 bis SQ-3 (#731, E80, Datenaustauschkonzept Nachtrag 3) bereits gebaut; dieses
 > Papier beschreibt dazu den Nachzug nach **E87** (Wahl der Zonierung, Vorgabe
 > DIN-V-18599-Zone, Größengrenze). **E87** entscheidet die Fragen F1 bis F5 (Kapitel 7); es ist
-> nichts mehr offen. Umsetzung in den Wellen HC-1 bis HC-4 (Kapitel 6); **alle vier Wellen sind gebaut (HC-3 #736, HC-1 #740, HC-2 #746, HC-4 #754), offen bleibt nur 5.3; Entwurf HC-5 (Grundriss je Raum aus dem Dateikörper) in Kapitel 11.**
+> nichts mehr offen. Umsetzung in den Wellen HC-1 bis HC-4 (Kapitel 6); **alle vier Wellen sind gebaut (HC-3 #736, HC-1 #740, HC-2 #746, HC-4 #754), offen bleibt nur 5.3; HC-5 (Grundriss je Raum aus dem Dateikörper, Kapitel 11) ist gebaut (#779).**
 
 Der Anwender hat am 05.10.2026 drei Ziele genannt: **(2)** alle sinnvollen Informationen aus
 der IFC-Datei nutzen, nicht aus der `.sqproj`; **(3)** was in der IFC fehlt und wesentlich ist,
@@ -407,9 +407,9 @@ Hauptbaum; Merge → Gate → Statuszeile und Protokoll → Push → Nachweis; i
 Rückfrage.
 
 
-## 11. Weg 1 — Grundriss je Raum aus dem Dateikörper (HC-5, Entwurf)
+## 11. Weg 1 — Grundriss je Raum aus dem Dateikörper (HC-5, gebaut #779)
 
-> **Entwurf vom 06.10.2026, Bau nach Freigabe der Fragen F6 bis F11 (11.9).** Bis dahin gilt E87 F3 unverändert.
+> **Gebaut (#779) nach Freigabe der Fragen F6 bis F11 (E94); Abweichungen im [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-5_Grundriss_aus_Dateikoerper.md).** E87 F3 gilt für die volle Geometrie weiter.
 
 ### 11.1 Anlass und Ziel
 
@@ -631,6 +631,8 @@ auf beiden Plattformen unkritisch (Kilobyte je Gebäude); die Dreiecksgrenze aus
 unverändert. Kein iOS-Lauf nötig (keine `Dienste.*`-Schnittstelle, kein Prüfmodus berührt).
 
 ### 11.8 Wellenzuschnitt HC-5
+
+HC-5 ist gebaut (#779), Abweichungen vom Zuschnitt im [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-5_Grundriss_aus_Dateikoerper.md).
 
 | Teil | Agent | Inhalt | Abnahme | PT |
 |---|---|---|---|---|

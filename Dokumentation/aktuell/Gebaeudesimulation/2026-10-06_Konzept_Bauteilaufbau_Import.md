@@ -297,7 +297,7 @@ heute den ganzen Aufbau. Künftig gilt:
 
 1. **Stufe A behält den U-Wert der Datei** in `Tab_Bauteil.U_Wert` neben `ID_Aufbau`. Der Kern
    kann das schon (eingetragener U-Wert hat Vorrang, R_Rest gleicht ab). Die Abweichungsmeldung des
-   Imports bleibt bei 5 %, die Herleitung zeigt sie ab 10 %. Damit gilt der energetische U-Wert des
+   Imports bleibt bei 5 %, die Herleitung zeigt sie ab 10 %. Gebaut (#780) ist die Protokollmeldung der U-Abweichung ab 10 % statt 5 %. Damit gilt der energetische U-Wert des
    CAD-Programms, und die Schichten liefern die Dynamik.
 2. **Stufe B und C tragen einen Ersatzaufbau statt masselos zu rechnen.** Damit verschwindet die
    Lücke aus 1.3 für importierte Gebäude, ohne den Kern zu ändern: Der Ersatzaufbau ist Daten, keine
@@ -363,6 +363,7 @@ Herkunft je Wert in `GebaeudeBauteilzeile`.
   der Legende.
 - **Legende:** Fläche und Zahl je Stufe, getrennt nach AW und IW, Schalter je Stufe, Klick auf einen
   Eintrag hebt die Bauteile hervor. Der Zustand lebt im Dialog, gespeichert wird nichts.
+- **Bauteilsteckbrief (E97):** Klick auf ein Bauteil oder eine Raumfläche zeigt Stufe, Fläche, Orientierung, Randbedingung, U mit Herkunft, R₁/C₁, flächenbezogene Wärmekapazität, Schichtliste mit Herkunft, Ersatzaufbau und Fensterwerte. Nur Anzeige, gespeichert wird nichts.
 - Wählbar nur, wenn ein Bauteilvorschlag vorliegt. Ohne Vorschlag ist der Modus grau mit Grund, wie
   „Randbedingung“ ohne Klassifikation.
 
@@ -401,6 +402,7 @@ Flächenanteile der drei Stufen.
 - **Rangfolge**, wenn beide Quellen etwas liefern: Projektdatei vor IFC-Schichtsatz für Aufbau und
   Stoffwerte, weil sie c trägt und den energetischen Aufbau beschreibt. U der Datei bleibt wie in
   Stufe A. Die Projektdatei liefert auch Innenaufbauten.
+- **Rangfolge nach E97:** Bei abweichenden Aufbauten gilt der IFC-Stand: Aufbau der Projektdatei, wenn U auf 1 % gleich ist, sonst Katalogaufbau der Projektdatei mit dem U der IFC, sonst IFC-Schichten, sonst Ersatzaufbau. Der Raumabgleich läuft über die HottCAD-Eigenschaft `GUID`.
 - **Stoffe:** Projektkopie `Tab_Baustoff` mit Herkunft `IFC` und `Quelle` „Projektdatei“ (die Projektdatei ergänzt den IFC-Import; kein neuer Herkunftswert, kein `CHECK` zu ändern). Materialnamen aus der
   Datei (Herstellerprodukte) bleiben Projektdaten und kommen nie in Katalog, Wiki oder Repositorium.
 - **Vorab Diagnose** (0,5 PT) an den lokalen Projektdateien neben den IFC-Dateien:
@@ -442,9 +444,9 @@ Flächenanteile der drei Stufen.
 
 | Welle | Inhalt | PT | Schema | hängt an |
 |---|---|---|---|---|
-| **BA-1** Kern: Relevanzregel und Datei-U | Relevanzregel 5.1 in `GebaeudeBauteilvorschlag`; U der Datei neben dem Aufbau speichern; Stufe A/B/C als abgeleitete Größe (`Bauteilzuordnungsstufe`) mit Herkunft je Wert im Vorschlag; Protokollzeilen; Tests mit den Proben in 4.1 als Sollwerten | 1–1,5 | nein | — |
+| **BA-1** Kern: Relevanzregel und Datei-U (**gebaut #780**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_BA-1_Bauteilaufbau_Kern.md)) | Relevanzregel 5.1 in `GebaeudeBauteilvorschlag`; U der Datei neben dem Aufbau speichern; Stufe A/B/C als abgeleitete Größe (`Bauteilzuordnungsstufe`) mit Herkunft je Wert im Vorschlag; Protokollzeilen; Tests mit den Proben in 4.1 als Sollwerten | 1–1,5 | nein | — |
 | **BA-2** Kern: Typaufbauten und Ersatzaufbau | Typkatalog (rund 14 Aufbauten) als Saat, Spalte `Typaufbau`, Wahl und U-Abgleich 5.3, Stufen B/C schreiben Ersatzaufbauten; erweiterte Stofftafel für λ/ρ; Katalogfassung; SQL-Dialekt-Prüfer | 2–3 | **ja** | BA-1 |
-| **BA-3** Oberfläche | Farbmodus „Aufbau“ (3D, 2D, Legende), Liste „Bauteilaufbauten“ im Import, Spalte und Filter im `ZonenDialog`, Texte in beiden Sprachen; Rasterprobe unberührt, bunit | 2 | nein | BA-1 (BA-2 für Typwahl) |
+| **BA-3** Oberfläche | Farbmodus „Aufbau“ (3D, 2D, Legende), Liste „Bauteilaufbauten“ im Import, mit Bauteilsteckbrief (E97), Spalte und Filter im `ZonenDialog`, Texte in beiden Sprachen; Rasterprobe unberührt, bunit | 2 | nein | BA-1 (BA-2 für Typwahl) |
 | **BA-4** Projektdatei: Aufbauten | Diagnose (0,5 PT, Nachtrag Befund), Leser der vier Tabellen, Zuordnung über `GId`, Rangfolge 5.5, Proben mit synthetischer Projektdatei (keine Anwenderdatei im Repositorium) | 3–4 | nein | BA-1 |
 | **BA-5** Wiki und Logbuch | Seite Gebäudeimport um Stufen und Farbmodus, Logbuch-Entwurf | 0,5 | nein | BA-3 |
 
