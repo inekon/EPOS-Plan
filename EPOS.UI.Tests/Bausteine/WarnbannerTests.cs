@@ -190,4 +190,52 @@ public class WarnbannerTests : EposBunitContext
         Assert.Null(uhr.Frist);
         Assert.NotNull(cut.Find("div.epos-warnbanner"));
     }
+
+    /// <summary>
+    /// Das Kreuz zum Ausblenden (Anwenderentscheid 06.10.2026): Es steht in jedem Banner,
+    /// sichtbar macht es das Hausblatt nur dort, wo das Banner haftet. Ein Klick blendet
+    /// aus und meldet <see cref="Warnbanner.Verfallen"/>; ein neuer Text zeigt es wieder.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_blendet_aus_und_ein_neuer_Text_zeigt_wieder()
+    {
+        using var kultur = new Kulturvorrichtung("de-DE");
+        int verfallen = 0;
+        var cut = Render<Warnbanner>(p => p
+            .Add(x => x.Stufe, WarnStufe.Fehler)
+            .Add(x => x.Text, "Gebäude kann nicht gelöscht werden.")
+            .Add(x => x.Verfallen, () => verfallen++));
+
+        var kreuz = cut.Find("div.epos-warnbanner > button.epos-warnbanner-schliessen");
+        Assert.Equal("Meldung ausblenden", kreuz.GetAttribute("title"));
+        Assert.Equal("Meldung ausblenden", kreuz.GetAttribute("aria-label"));
+        Assert.Equal("button", kreuz.GetAttribute("type"));
+
+        kreuz.Click();
+
+        Assert.Empty(cut.FindAll("div.epos-warnbanner"));
+        Assert.Equal(1, verfallen);
+
+        cut.Render(p => p.Add(x => x.Text, "Zweite Meldung"));
+        Assert.Equal("Zweite Meldung", cut.Find(".epos-warnbanner-text").TextContent);
+    }
+
+    /// <summary>Das Kreuz bricht einen laufenden Selbstverfall ab - er meldet nicht doppelt.</summary>
+    [Fact]
+    public void Das_Kreuz_beendet_den_Selbstverfall()
+    {
+        int verfallen = 0;
+        var uhr = new Handuhr();
+        var cut = Render<Warnbanner>(p => p
+            .Add(x => x.Text, "Projekt geöffnet")
+            .Add(x => x.Verfaellt, TimeSpan.FromSeconds(3))
+            .Add(x => x.Uhr, uhr.Warten)
+            .Add(x => x.Verfallen, () => verfallen++));
+
+        cut.Find(".epos-warnbanner-schliessen").Click();
+        uhr.Ablaufen();
+
+        Assert.Empty(cut.FindAll("div.epos-warnbanner"));
+        Assert.Equal(1, verfallen);
+    }
 }

@@ -154,7 +154,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     private IRenderedComponent<GebaeudeAdminDialog> Aufbauen(
         Protokoll? p = null,
         Katalogfilterstand? filterstand = null,
-        IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null,
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? kopien = null,
         bool mitEditor = true,
         bool mitTypen = true,
         EPOS.UI.Bausteine.Schlossweg? schloss = null,
@@ -186,7 +186,15 @@ public class GebaeudeAdminDialogTests : EposBunitContext
             .Add(x => x.Gebaeudearten, () => new[] { "Einfamilienhaus", "Mehrfamilienhaus", "Hotel", "Schule" })
             .Add(x => x.Baualtersklassen, KLASSEN)
             .Add(x => x.Verwendungen, new[] { "Wohngebäude", "Gewerbe+Sonstige" })
-            .Add(x => x.Verwendung, () => verwendung ?? new Dictionary<string, IReadOnlyList<string>>())
+            // Die Loeschregel des Kerns, nachgebildet: gesperrt allein der Auslieferungssatz; der Hinweis
+            // nennt die Projekte, deren Kopie bleibt (kopien: je Satz die Projekte).
+            .Add(x => x.Loeschsperre, n => pr.Katalog.Find(h => h.Name == n)?.Geschuetzt == true ? "Auslieferungssatz" : "")
+            .Add(x => x.Loeschhinweis, namen =>
+            {
+                var projekte = namen.SelectMany(n => kopien is not null && kopien.TryGetValue(n, out var k) ? k : Array.Empty<string>())
+                                    .Distinct().OrderBy(x => x, StringComparer.Ordinal).ToList();
+                return projekte.Count == 0 ? "" : "Die Projekte " + string.Join(", ", projekte) + " behalten ihre Kopie.";
+            })
             .Add(x => x.Speichern, (d, neu, name) =>
             {
                 pr.Gespeichert.Add((d.Kopie(), neu, name));
@@ -702,57 +710,63 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>
-    /// <b>Die Verwendungssperre</b>: Ein Gebäude, das ein Projekt führt, ist weich gegen
-    /// Löschen gesperrt, und der Kurztext nennt das Projekt.
+    /// <b>Dieselbe Löschregel wie im Gebäudedialog</b> (Anwenderentscheid 06.10.2026): Ein Gebäude, das
+    /// ein Projekt führt, ist NICHT gesperrt. Die Rückfrage nennt die Projekte, die ihre Kopie behalten,
+    /// und nach dem „Ja" wird gelöscht.
     /// </summary>
     [Fact]
-    public void Loeschen_ist_gesperrt_wenn_ein_Projekt_das_Gebaeude_fuehrt()
+    public void Loeschen_trotz_Projektkopie_die_Rueckfrage_nennt_die_Projekte()
     {
         var p = new Protokoll();
-        var cut = Aufbauen(p, verwendung: new Dictionary<string, IReadOnlyList<string>>
-        {
-            ["Haus A"] = new[] { "Projekt Nord" }
-        });
-
-        IElement loeschen = Handlung(cut, "Löschen");
-        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
-        Assert.Contains("Projekt Nord", loeschen.GetAttribute("title"));
-
-        loeschen.Click();
-        Assert.Contains("Projekt Nord", cut.Instance.Meldung);
-        Assert.Empty(p.Geloescht);
-    }
-
-    /// <summary>
-    /// <b>Der Sperrgrund nennt jedes Projekt</b> (Welle #468): Führen zwei Projekte das
-    /// Gebäude — der Kern findet sie über den Katalogverweis, auch nach einer Umbenennung
-    /// (<c>GebaeudeStammCtrl.Projektverwendung</c>) —, stehen beide im Kurztext. In einer
-    /// Mehrfachwahl mit einem freien Satz geht Löschen; das benutzte Gebäude bleibt stehen,
-    /// und die Rückfrage sagt es.
-    /// </summary>
-    [Fact]
-    public void Der_Sperrgrund_nennt_alle_Projekte_und_die_Mehrfachwahl_laesst_das_benutzte_stehen()
-    {
-        var p = new Protokoll();
-        var cut = Aufbauen(p, verwendung: new Dictionary<string, IReadOnlyList<string>>
+        var cut = Aufbauen(p, kopien: new Dictionary<string, IReadOnlyList<string>>
         {
             ["Haus A"] = new[] { "Projekt Nord", "Projekt Süd" }
         });
 
         IElement loeschen = Handlung(cut, "Löschen");
-        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
-        Assert.Contains("Projekt Nord, Projekt Süd", loeschen.GetAttribute("title"));
+        Assert.NotEqual("true", loeschen.GetAttribute("aria-disabled"));
+        loeschen.Click();
 
-        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[0].Change(true);   // Haus A
+        string frage = cut.Find(".epos-rueckfrage").TextContent;
+        Assert.Contains("Haus A", frage);
+        Assert.Contains("Die Projekte Projekt Nord, Projekt Süd behalten ihre Kopie.", frage);
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(new[] { "Haus A" }, p.Geloescht);
+    }
+
+    /// <summary>
+    /// <b>Der Auslieferungssatz bleibt gesperrt</b> — die Antwort des Kerns: allein gewählt ist der
+    /// Knopf weich gesperrt; in einer Mehrfachwahl mit einem freien und einem benutzten Satz gehen
+    /// beide, der Auslieferungssatz bleibt stehen, und die Rückfrage sagt es samt den Projekten.
+    /// </summary>
+    [Fact]
+    public void Der_Auslieferungssatz_bleibt_gesperrt_und_die_Mehrfachwahl_loescht_den_Rest()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p, kopien: new Dictionary<string, IReadOnlyList<string>>
+        {
+            ["Haus A"] = new[] { "Projekt Nord" }
+        });
+        Zeilenklick.Zeile(cut, 3);                               // Schule D, Auslieferung
+        IElement loeschen = Handlung(cut, "Löschen");
+        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
+        Assert.Contains("Auslieferungssatz", loeschen.GetAttribute("title"));
+
+        IReadOnlyList<IElement> kaestchen = cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input");
+        kaestchen[0].Change(true);                               // Haus A
         cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[1].Change(true);   // Haus B
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[3].Change(true);   // Schule D
         Handlung(cut, "Löschen").Click();
 
         string frage = cut.Find(".epos-rueckfrage").TextContent;
-        Assert.Contains("Haus B", frage);
         Assert.Contains("Haus A", frage);
+        Assert.Contains("Haus B", frage);
+        Assert.Contains("Schule D", frage);
+        Assert.Contains("Projekt Nord", frage);
         Knopf(cut, "Ja").Click();
 
-        Assert.Equal(new[] { "Haus B" }, p.Geloescht);
+        Assert.Equal(new[] { "Haus A", "Haus B" }, p.Geloescht);
     }
 
     /// <summary>Löschen fragt zurück, schreibt nach dem „Ja" und nennt es in der Statuszeile.</summary>

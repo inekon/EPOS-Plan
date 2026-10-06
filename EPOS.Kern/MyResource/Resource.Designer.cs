@@ -30115,6 +30115,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wird aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopie. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LOESCHHINWEIS_KOPIEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LOESCHHINWEIS_KOPIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäude werden aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopien. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Andere Datei wählen… ähnelt.
         /// </summary>
         public static string GEB_NL_ANDERE_DATEI {
@@ -30295,6 +30313,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – exportiert wird die Kopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_WAHL_EXPORT {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_WAHL_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – „Fläche und Verbrauch“ skaliert die Kopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_WAHL_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_WAHL_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – bearbeitet wird die Kopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_WAHL_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_WAHL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst ein Gebäude im Projekt wählen – berechnet wird der Wärmebedarf der Kopie im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_WAHL_SIMULATION {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_WAHL_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg ähnelt.
         /// </summary>
         public static string GEB_SP_RECHENWEG {
@@ -30345,6 +30399,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_TITEL_IN_DB {
             get {
                 return ResourceManager.GetString("GEB_TITEL_IN_DB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzfläche [m²] ähnelt.
+        /// </summary>
+        public static string GEB_TXT_EINHEIT_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEB_TXT_EINHEIT_FLAECHE", resourceCulture);
             }
         }
         
@@ -50610,7 +50673,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUART_ERL {
             get {
@@ -51402,7 +51465,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebedarf bzw. die Wohnfläche in der Einheit, die die Bedarfsart nennt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebedarf bzw. die Nutzfläche in der Einheit, die die Bedarfsart nennt. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBW_WERT_ERL {
             get {
@@ -51447,7 +51510,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe: Nutzfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_ANGABEART_ERL {
             get {
@@ -51519,7 +51582,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohn- oder Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_WOHNFLAECHE_ERL {
             get {
@@ -112204,6 +112267,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VPOS_TITEL {
             get {
                 return ResourceManager.GetString("VPOS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ausblenden ähnelt.
+        /// </summary>
+        public static string WARNBANNER_SCHLIESSEN_TOOLTIP {
+            get {
+                return ResourceManager.GetString("WARNBANNER_SCHLIESSEN_TOOLTIP", resourceCulture);
             }
         }
         

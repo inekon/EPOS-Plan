@@ -74,6 +74,14 @@
             <button type="button" class="epos-warnbanner-erklaeren"
                     title="@ErklaerenKurztext" @onclick="Erklaeren">@ErklaerenText</button>
         }
+        @* MELDUNG AUSBLENDEN (Anwenderentscheid vom 06.10.2026: Meldungen in langen
+           Dialogen im eigenen Fenster muessen sichtbar sein). Dort haftet das Banner
+           unter dem Kopf (epos-ui.css, „Dialog im eigenen Fenster") - damit es nicht
+           dauerhaft Platz nimmt, laesst es sich wegklicken. Der Knopf steht immer im
+           Markup, sichtbar ist er nur, wo das Banner haftet; in Ueberlagerung, Blatt
+           und Seite rollt das Banner mit und braucht ihn nicht. *@
+        <button type="button" class="epos-warnbanner-schliessen" title="@SchliessenKurztext"
+                aria-label="@SchliessenKurztext" @onclick="Schliessen">✕</button>
     </div>
 }
 
@@ -237,6 +245,22 @@
         if (alt is null) return;
         try { alt.Cancel(); } catch (ObjectDisposedException) { }
         alt.Dispose();
+    }
+
+    /// <summary>Kurztext und <c>aria-label</c> des Ausblendknopfs (<c>WARNBANNER_SCHLIESSEN_TOOLTIP</c>).</summary>
+    [Parameter] public string SchliessenKurztext { get; set; } =
+        Ressource("WARNBANNER_SCHLIESSEN_TOOLTIP", "Meldung ausblenden");
+
+    /// <summary>
+    /// Der Anwender blendet die Meldung aus: wie der Selbstverfall - das Banner
+    /// verschwindet, der Wirt erfaehrt es ueber <see cref="Verfallen"/> und darf seine
+    /// Meldung vergessen. Ein neuer Text zeigt es wieder.
+    /// </summary>
+    private async Task Schliessen()
+    {
+        Abbrechen();
+        _verfallen = true;
+        await Verfallen.InvokeAsync();
     }
 
     /// <inheritdoc/>

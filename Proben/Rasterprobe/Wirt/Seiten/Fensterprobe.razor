@@ -25,6 +25,10 @@
       ?fall=gebaeude       GebaeudeDialog mit "Simulation..." (Waermebedarf als Ueberlagerung)
       ?fall=dubletten      KatalogDublettenDialog - das Protokoll steht UNTER der Schlussleiste
       ?fall=katalog        BedarfAdminDialog (Katalogdialog, .epos-katalog-dialog)
+      ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
+                           "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
+                           "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
+                           ohne den Schalter steht alles wie fuer die Fensterprobe
       ?marke=0             OHNE Fenstermarke - die Gegenprobe: der Dialog steht wie ohne die Regel
       ?zeilen=40           Katalogzeilen
       ?kultur=de-DE|en-US  Kultur und Sprache; Program.cs setzt sie. *@
@@ -40,7 +44,7 @@
                               KatalogDetail="@(n => Detail(n))"
                               ProjektDetail="@(n => Detail("Kessel " + n))"
                               Varianten="@(_ => new[] { (5, "Erdgas E Variante"), (6, "Erdgas LL Variante") })"
-                              Vorbereiten="@(_ => new TraegerVorbereitung(new[] { (3, "Erdgas E") }, 3))"
+                              Vorbereiten="@Vorbereitung"
                               TraegerGaben="@(_ => new Dictionary<string, object> { ["Energietraeger"] = new[] { (3, "Erdgas E") } })"
                               KostenOeffnen="@((_, _) => Task.CompletedTask)"
                               EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
@@ -56,7 +60,7 @@
                         KatalogDetail="@(n => Detail(n))"
                         ProjektDetail="@(n => Detail(n))"
                         Varianten="@(_ => new[] { (5, "Erdgas E Variante") })"
-                        Vorbereiten="@(_ => new TraegerVorbereitung(new[] { (3, "Erdgas E") }, 3))"
+                        Vorbereiten="@Vorbereitung"
                         TraegerGaben="@(_ => new Dictionary<string, object> { ["Energietraeger"] = new[] { (3, "Erdgas E") } })"
                         SummePtherm="@(() => "80")"
                         KostenOeffnen="@((_, _) => Task.CompletedTask)"
@@ -82,6 +86,7 @@
                             StammDetail="@GebaeudeStammdetail"
                             StammSatz="@GebaeudeStammsatz"
                             BedarfGaben="@GebaeudeBedarfGaben"
+                            InDbUebernehmen="@(_meldung ? (_, _) => null! : null)"
                             Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -116,6 +121,7 @@
 @code {
     private string _fall = "heizkessel";
     private bool _marke = true;
+    private bool _meldung;
     private int _anzahl = 40;
     private string _ausgang = "";
     private readonly Katalogfilterstand _filterstand = new();
@@ -125,8 +131,14 @@
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
         if (abfrage.TryGetValue("marke", out var m)) _marke = m.ToString() != "0";
+        if (abfrage.TryGetValue("meldung", out var g)) _meldung = g.ToString() == "1";
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
     }
+
+    /// <summary>Die Traegerwahl der Erzeugerdialoge; mit ?meldung=1 schlaegt sie fehl.</summary>
+    private TraegerVorbereitung Vorbereitung(int _) => _meldung
+        ? new TraegerVorbereitung(Array.Empty<(int, string)>(), null, "Bannerprobe: Der Energieträger des Katalogsatzes wurde in den Stammdaten nicht gefunden.")
+        : new TraegerVorbereitung(new[] { (3, "Erdgas E") }, 3);
 
     private void Beendet(bool ok) => _ausgang = ok ? "ok" : "abbrechen";
 

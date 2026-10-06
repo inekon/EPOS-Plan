@@ -14776,6 +14776,27 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_MSG_LOESCHFRAGE" xml:space="preserve">
     <value>Soll {0} wirklich gelöscht werden ?</value>
   </data>
+  <data name="GEB_SPERRE_WAHL_FLAECHE" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – „Fläche und Verbrauch“ skaliert die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_PROJEKT" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – bearbeitet wird die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_EXPORT" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – exportiert wird die Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_SPERRE_WAHL_SIMULATION" xml:space="preserve">
+    <value>Erst ein Gebäude im Projekt wählen – berechnet wird der Wärmebedarf der Kopie im Projekt.</value>
+  </data>
+  <data name="GEB_TXT_EINHEIT_FLAECHE" xml:space="preserve">
+    <value>Nutzfläche [m²]</value>
+  </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN" xml:space="preserve">
+    <value>Das Gebäude wird aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopie.</value>
+  </data>
+  <data name="GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR" xml:space="preserve">
+    <value>Die Gebäude werden aus der Datenbank gelöscht. Die Projekte {0} behalten ihre Kopien.</value>
+  </data>
   <data name="GEB_MSG_LISTE_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Die Gebäudeliste wurde nicht gespeichert. Das Projekt behält seine bisherigen Gebäude.</value>
   </data>
@@ -19796,6 +19817,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="KI_BANNER_ERKLAEREN_TOOLTIP" xml:space="preserve">
     <value>Diese Meldung vom Hilfe-Assistenten erklären lassen</value>
   </data>
+  <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
+    <value>Meldung ausblenden</value>
+  </data>
   <data name="KI_CHAT_DIALOGNAME" xml:space="preserve">
     <value>Dialog: {0}</value>
   </data>
@@ -23322,16 +23346,16 @@ Möchten Sie das zulassen?</value>
     <value>Die Beschreibung des markierten Satzes.</value>
   </data>
   <data name="KI_DLG_GEB_WOHNFLAECHE_ERL" xml:space="preserve">
-    <value>Die Wohn- oder Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“.</value>
+    <value>Die Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“.</value>
   </data>
   <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
-    <value>Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
+    <value>Die Art der Angabe: Nutzfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
   </data>
   <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
     <value>Die Art der Angabe für dieses Gebäude; sie bestimmt Einheit und Rechenweg der Zahl daneben.</value>
   </data>
   <data name="KI_DLG_GEBW_WERT_ERL" xml:space="preserve">
-    <value>Der Wärmebedarf bzw. die Wohnfläche in der Einheit, die die Bedarfsart nennt.</value>
+    <value>Der Wärmebedarf bzw. die Nutzfläche in der Einheit, die die Bedarfsart nennt.</value>
   </data>
   <data name="KI_DLG_GEBW_NUTZUNGSGRAD_ERL" xml:space="preserve">
     <value>Der Jahresnutzungsgrad des Kessels als Anteil, z. B. 0,85 für 85 %. Er wird nur bei einer Brennstoffangabe gebraucht.</value>
@@ -23382,7 +23406,7 @@ Möchten Sie das zulassen?</value>
     <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
-    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird.</value>
+    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird.</value>
   </data>
   <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
     <value>Die gesamte Wohn- oder Nutzfläche des Gebäudes.</value>

@@ -457,6 +457,33 @@ body {
     white-space: nowrap;
 }
 
+/* Das Kreuz zum Ausblenden: nur dort sichtbar, wo das Banner haftet (Abschnitt
+   „Dialog im eigenen Fenster"); sonst rollt das Banner mit und braucht es nicht.
+   Das Beruehrungsziel haelt --epos-touchziel, der negative Rand nimmt ihm die
+   Hoehe in der Zeile - das Banner bleibt so niedrig wie ohne Kreuz. */
+.epos-warnbanner-schliessen {
+    display: none;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    margin-block: -12px;
+    margin-inline-end: -8px;
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    color: inherit;
+    background: transparent;
+    border: none;
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-warnbanner-schliessen:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
 /* Hinweis: der Ton der Hinweisflaechen der Startmaske (KARTE_FLAECHE_HOVER). */
 .epos-warnbanner--hinweis {
     border-color: var(--epos-karte-rahmen-hover);
@@ -2479,6 +2506,32 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     margin-bottom: calc(-1 * var(--epos-karte-rand));
 }
 
+/* DIE MELDUNG STEHT IM BILD (Anwenderentscheid 06.10.2026, Befund „Gebaeude in DB
+   loeschen funktioniert nicht"). Die Dialoge zeigen ihre Meldung als Warnbanner oben
+   im Inhalt, direkt nach Kopf und Kontextzeile; wer unten arbeitet, sah sie nicht -
+   der Klick schien nichts zu tun. Ein Banner, das unmittelbares Kind der Wurzel ist,
+   haftet deshalb unter dem Kopf (top = Kopfhoehe) und, steht es tiefer als das Bild,
+   ueber der Schlussleiste (bottom = Fusshoehe): Es erscheint dort, wo der Anwender
+   gerade ist, und nichts rollt. Ein Banner in einem Block (Katalogmeldung unter der
+   Listenleiste, Warnband im Fussblock) haftet nicht - es steht schon am Ort.
+   Die Seitenschatten in der Kartenflaeche decken den Rand der Wurzel, durch den sonst
+   der Inhalt neben dem Banner durchliefe. z-index 2 wie Kopf und Fuss; der Fuss steht
+   im Markup spaeter und deckt das Banner, falls beide sich treffen. Damit es nicht
+   dauerhaft Platz nimmt, traegt das haftende Banner das Kreuz zum Ausblenden.
+   Gemessen: Bannerprobe (Proben/Rasterprobe/LIESMICH.md). */
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner {
+    position: sticky;
+    top: var(--epos-fenster-kopf);
+    bottom: var(--epos-fenster-fuss);
+    z-index: 2;
+    box-shadow: calc(-1 * var(--epos-karte-rand)) 0 0 var(--epos-karte-flaeche),
+                var(--epos-karte-rand) 0 0 var(--epos-karte-flaeche);
+}
+
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner > .epos-warnbanner-schliessen {
+    display: inline-flex;
+}
+
 /* DAS ANGESPRUNGENE FELD BLEIBT SICHTBAR. Ein Feld, das der Tabulator (oder
    ein Fokus aus dem Code) anspringt, rollt der Browser um die Hoehe von Kopf
    und Fuss weiter herein: scroll-padding am Rollbehaelter, und der ist hier
@@ -2503,6 +2556,13 @@ html:has(> body > #app > .epos-fenstermarke) {
     html:has(> body > #app > .epos-fenstermarke) {
         --epos-fenster-polster-unten: calc(var(--epos-fenster-fuss) + var(--epos-touchziel) + 12px + var(--epos-rand));
     }
+}
+
+/* Haftet ein Banner unter dem Kopf, rechnet das Polster oben seine Hoehe mit: eine
+   Textzeile (20 px) + Polster 2 x --epos-rand + Rahmen 2 px. Ein mehrzeiliges Banner
+   laesst entsprechend weniger Luft. */
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner) {
+    --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + 22px + 3 * var(--epos-rand));
 }
 
 /* WAS IN KOPF ODER FUSS DEN FOKUS BEKOMMT, STEHT SCHON IM BILD - dann gilt

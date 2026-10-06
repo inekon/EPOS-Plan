@@ -77,13 +77,16 @@ public class GebaeudeDialogTests : EposBunitContext
         Func<string, bool>? katalogLoeschen = null,
         Func<string, IReadOnlyDictionary<string, object>>? katalogGaben = null,
         Func<string, string>? katalogLoeschsperre = null,
+        Func<string, string>? katalogLoeschhinweis = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>? wohnflaecheGaben = null,
         Func<IReadOnlyDictionary<string, object>>? gebaeudetypGaben = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? bedarfGaben = null,
         Action? geaendert = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Func<string>? listeSpeichern = null)
     {
         return Render<GebaeudeDialog>(p => p
+            .Add(x => x.ListeSpeichern, listeSpeichern)
             .Add(x => x.Zeilen, zeilen ?? new List<GebaeudeProjektZeile> { Zeile(1) })
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Katalogzeilen, () => Katalog())
@@ -94,6 +97,7 @@ public class GebaeudeDialogTests : EposBunitContext
             .Add(x => x.StammSatz, n => Zeile(100000, n))
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
             .Add(x => x.KatalogLoeschsperre, katalogLoeschsperre)
+            .Add(x => x.KatalogLoeschhinweis, katalogLoeschhinweis)
             .Add(x => x.KatalogGaben, katalogGaben)
             .Add(x => x.WohnflaecheGaben, wohnflaecheGaben)
             .Add(x => x.GebaeudetypGaben, gebaeudetypGaben)
@@ -453,7 +457,10 @@ public class GebaeudeDialogTests : EposBunitContext
 
         Assert.Contains("Haus 1990", cut.Markup);
         Assert.Contains("Ein Haus", cut.Markup);
-        Assert.Contains("Wohnfläche [m²]", cut.Markup);
+        // Die Art der Angabe heisst in der Anzeige „Nutzfläche [m²]"; gespeichert bleibt der Steuerwert.
+        Assert.Contains("Nutzfläche [m²]", cut.Markup);
+        Assert.DoesNotContain("Wohnfläche [m²]", cut.Markup);
+        Assert.Equal("Wohnfläche [m²]", cut.Instance.Zeilen[0].Einheit);
     }
 
     [Fact]
@@ -517,7 +524,91 @@ public class GebaeudeDialogTests : EposBunitContext
         cut.FindAll("button.epos-anlagenwahl").Last().Click();
 
         Assert.Null(cut.Instance.Gewaehlt);
-        Assert.True(Knopf(cut, "Simulation...").HasAttribute("disabled"));
+        var knopf = Knopf(cut, "Simulation...");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_SIMULATION, knopf.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// <b>Grund am Bedienelement</b> (Anwenderentscheid 06.10.2026): Ist in der Projektliste kein
+    /// Gebäude gewählt — etwa weil der Anwender ein Modellgebäude in der DB-Liste markiert hat —,
+    /// sind „Fläche und Verbrauch…", „Gebäude im Projekt bearbeiten…", „Exportieren…" und
+    /// „Simulation…" weich gesperrt: <c>aria-disabled</c>, nicht <c>disabled</c>, der Kurztext nennt
+    /// den Grund, und der Versuch meldet ihn, ohne etwas zu öffnen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Projektwahl_nennen_die_Knoepfe_der_Fussleiste_den_Grund()
+    {
+        int geoeffnet = 0;
+        var cut = Render<GebaeudeDialog>(p => p
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile> { Zeile(1) })
+            .Add(x => x.Katalogzeilen, () => Katalog())
+            .Add(x => x.Katalogprofil, Profil())
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "Katalogtext", "150,00"))
+            .Add(x => x.StammSatz, n => Zeile(100000, n))
+            .Add(x => x.WohnflaecheGaben, _ => { geoeffnet++; return new Dictionary<string, object>(); })
+            .Add(x => x.ProjektGaben, _ => { geoeffnet++; return null; })
+            .Add(x => x.ExportGaben, (_, _) => { geoeffnet++; return null; })
+            .Add(x => x.BedarfGaben, _ => { geoeffnet++; return null; }));
+
+        KatalogWaehlen(cut, "Hotel Sonne");      // die Wahl in der DB-Liste nimmt die Projektwahl weg
+        Assert.Null(cut.Instance.Gewaehlt);
+
+        var faelle = new[]
+        {
+            ("button.epos-gebaeude-flaeche", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_FLAECHE),
+            ("button.epos-gebaeude-projekt", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_PROJEKT),
+            ("button.epos-gebaeude-export", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_EXPORT),
+            ("button.epos-gebaeude-simulation", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_SIMULATION),
+        };
+        foreach ((string waehler, string grund) in faelle)
+        {
+            var knopf = cut.Find(waehler);
+            Assert.False(knopf.HasAttribute("disabled"), waehler);
+            Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+            Assert.Equal(grund, knopf.GetAttribute("title"));
+            Assert.StartsWith("Erst ein Gebäude im Projekt wählen", grund);
+            knopf.Click();
+            Assert.Equal(grund, cut.Instance.Meldung);
+        }
+        Assert.Equal(0, geoeffnet);
+        Assert.False(cut.Instance.WohnflaecheOffen);
+
+        // Mit Projektwahl: frei, ohne Sperrgrund.
+        cut.FindAll("button.epos-anlagenwahl").First().Click();
+        Assert.NotNull(cut.Instance.Gewaehlt);
+        Assert.Null(cut.Find("button.epos-gebaeude-flaeche").GetAttribute("aria-disabled"));
+        Assert.Null(cut.Find("button.epos-gebaeude-simulation").GetAttribute("aria-disabled"));
+        cut.Find("button.epos-gebaeude-flaeche").Click();
+        Assert.True(cut.Instance.WohnflaecheOffen);
+    }
+
+    /// <summary>
+    /// Nach „In das Projekt übernehmen" ist das neue Projektgebäude gewählt — „Fläche und
+    /// Verbrauch…" ist sofort bedienbar und öffnet die Angabe für genau diese Zeile; die
+    /// Detailanzeige zeigt die Art der Angabe als „Nutzfläche [m²]".
+    /// </summary>
+    [Fact]
+    public void Nach_der_Uebernahme_ist_das_neue_Projektgebaeude_gewaehlt()
+    {
+        GebaeudeProjektZeile? skaliert = null;
+        var zeilen = new List<GebaeudeProjektZeile> { Zeile(1) };
+        var cut = Aufbauen(zeilen: zeilen,
+                           wohnflaecheGaben: z => { skaliert = z; return new Dictionary<string, object>(); });
+
+        KatalogWaehlen(cut, "Hotel Sonne");
+        Assert.Null(cut.Instance.Gewaehlt);
+        Uebernehmen(cut).Click();
+
+        Assert.Equal(2, zeilen.Count);
+        Assert.Same(zeilen[1], cut.Instance.Gewaehlt);
+        Assert.Equal("Hotel Sonne", cut.Instance.Gewaehlt!.Name);
+        var knopf = cut.Find("button.epos-gebaeude-flaeche");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+        Assert.Same(zeilen[1], skaliert);
+        Assert.Contains("Nutzfläche [m²]", cut.Markup);
     }
 
     [Fact]
@@ -682,14 +773,14 @@ public class GebaeudeDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Löschsperre der Verwaltung gilt auch hier</b> (#487): Führt ein Projekt den
-    /// Satz (oder ist er ein Auslieferungssatz), steht der benannte Grund als Warnung — ohne
-    /// Rückfrage, ohne Löschversuch.
+    /// <b>Ein Auslieferungssatz ist gesperrt</b>: Der benannte Grund steht als Warnung — ohne
+    /// Rückfrage, ohne Löschversuch. Ein Satz, den Projekte führen, ist es nicht mehr
+    /// (Anwenderentscheid 06.10.2026, <see cref="Loeschen_nennt_die_Projekte_die_ihre_Kopie_behalten"/>).
     /// </summary>
     [Fact]
     public void Loeschen_eines_gesperrten_Satzes_nennt_den_Grund()
     {
-        const string GRUND = "In Projekten verwendet (Projekt A) – Löschen gesperrt; dort zuerst entfernen.";
+        const string GRUND = "Dieser Datensatz ist schreibgeschützt und kann nicht gelöscht werden.";
         bool gerufen = false;
         string gefragt = "";
         var cut = Aufbauen(katalogLoeschen: _ => { gerufen = true; return true; },
@@ -702,6 +793,135 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(GRUND, cut.Instance.Meldung);
         Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
         Assert.False(gerufen);
+    }
+
+    /// <summary>
+    /// <b>Anwenderentscheid 06.10.2026:</b> Ein Satz, den Projekte führen, ist löschbar — der
+    /// Knopf trägt keine Sperre, die Rückfrage nennt die Projekte samt ihrer bleibenden Kopie.
+    /// Nach dem Löschen trägt die Projektzeile, die auf den Satz verwies, keinen Verweis mehr
+    /// (die Datenbank leert ihn per <c>SET NULL</c>); eine fremde Zeile behält ihren.
+    /// </summary>
+    [Fact]
+    public void Loeschen_nennt_die_Projekte_die_ihre_Kopie_behalten()
+    {
+        const string HINWEIS = "Das Gebäude wird aus der Datenbank gelöscht. Die Projekte P1, P2 behalten ihre Kopie.";
+        GebaeudeProjektZeile kopie = Zeile(1, "Haus 2010");
+        kopie.IdKatalog = 2;
+        GebaeudeProjektZeile fremd = Zeile(2, "Haus 1990");
+        kopie.HatProjektkopie = true;
+        fremd.IdKatalog = 1;
+        string gefragt = "";
+        string geloescht = "";
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { kopie, fremd },
+                           katalogLoeschen: n => { geloescht = n; return true; },
+                           katalogLoeschsperre: _ => "",
+                           katalogLoeschhinweis: n => { gefragt = n; return HINWEIS; });
+
+        KatalogWaehlen(cut, "Haus 2010");
+        var knopf = Knopf(cut, "Gebäude in DB löschen");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+
+        Assert.Equal("Haus 2010", gefragt);
+        Assert.Contains("wirklich gelöscht", cut.Instance.Loeschfrage);
+        Assert.EndsWith(HINWEIS, cut.Instance.Loeschfrage);
+        Assert.Contains("P1, P2 behalten ihre Kopie", cut.Markup);
+
+        Knopf(cut, "Ja").Click();
+        Assert.Equal("Haus 2010", geloescht);
+        Assert.Null(kopie.IdKatalog);
+        Assert.Equal(1, fremd.IdKatalog);
+        Assert.Contains(kopie, cut.Instance.Zeilen);
+        Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// <b>Ungespeicherte Zeile aus dem zu löschenden Satz: erst still speichern</b> (Anwenderentscheid
+    /// 06.10.2026). Die Rückfrage nennt das Projekt (der Hinweis kommt aus der Hülle), nach dem „Ja"
+    /// läuft der Speicherweg genau einmal VOR dem Löschen; die Zeile trägt danach ihre Kopie, ihr
+    /// Verweis ist geleert, Auswahl und Liste bleiben.
+    /// </summary>
+    [Fact]
+    public void Loeschen_mit_ungespeicherter_Zeile_speichert_zuerst()
+    {
+        var ablauf = new List<string>();
+        GebaeudeProjektZeile neu = Zeile(100000, "Haus 2010");
+        neu.IdKatalog = 2;
+        GebaeudeProjektZeile alt = Zeile(1, "Haus 1990");
+        alt.HatProjektkopie = true;
+        alt.IdKatalog = 1;
+        var zeilen = new List<GebaeudeProjektZeile> { alt, neu };
+        var cut = Aufbauen(zeilen: zeilen,
+                           katalogLoeschen: n => { ablauf.Add("loeschen " + n); return true; },
+                           katalogLoeschsperre: _ => "",
+                           katalogLoeschhinweis: _ => "Das Gebäude wird aus der Datenbank gelöscht. Die Projekte Projekt X behalten ihre Kopie.",
+                           listeSpeichern: () => { ablauf.Add("speichern"); neu.IdZ = 77; neu.HatProjektkopie = true; return ""; });
+
+        KatalogWaehlen(cut, "Haus 2010");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Assert.Contains("Projekt X", cut.Instance.Loeschfrage);
+        Assert.Empty(ablauf);                                   // „Nein" speichert nichts
+
+        Knopf(cut, "Ja").Click();
+        Assert.Equal(new[] { "speichern", "loeschen Haus 2010" }, ablauf);
+        Assert.Equal(77, neu.IdZ);
+        Assert.Null(neu.IdKatalog);
+        Assert.Equal(1, alt.IdKatalog);
+        Assert.Same(zeilen, cut.Instance.Zeilen);
+        Assert.Equal(2, cut.Instance.Zeilen.Count);
+        Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
+    }
+
+    /// <summary>Scheitert das stille Speichern, wird nicht gelöscht; die Meldung steht unter der Katalogleiste.</summary>
+    [Fact]
+    public void Scheitert_das_stille_Speichern_wird_nicht_geloescht()
+    {
+        int geloescht = 0;
+        GebaeudeProjektZeile neu = Zeile(100000, "Haus 2010");
+        neu.IdKatalog = 2;
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { neu },
+                           katalogLoeschen: _ => { geloescht++; return true; },
+                           katalogLoeschsperre: _ => "",
+                           katalogLoeschhinweis: _ => "",
+                           listeSpeichern: () => "Die Gebäudeliste wurde nicht gespeichert.");
+
+        KatalogWaehlen(cut, "Haus 2010");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(0, geloescht);
+        Assert.Equal(2, neu.IdKatalog);
+        Assert.Equal("Die Gebäudeliste wurde nicht gespeichert.", cut.Instance.Meldung);
+        Assert.True(cut.Instance.MeldungAmKatalog);
+    }
+
+    /// <summary>Stammt keine ungespeicherte Zeile aus dem Satz, wird nicht gespeichert.</summary>
+    [Fact]
+    public void Loeschen_ohne_ungespeicherte_Zeile_des_Satzes_speichert_nicht()
+    {
+        int gespeichert = 0;
+        GebaeudeProjektZeile neu = Zeile(100000, "Haus 1990");
+        neu.IdKatalog = 1;
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { neu },
+                           katalogLoeschsperre: _ => "", katalogLoeschhinweis: _ => "",
+                           listeSpeichern: () => { gespeichert++; return ""; });
+
+        KatalogWaehlen(cut, "Hotel Sonne");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(0, gespeichert);
+        Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
+    }
+
+    /// <summary>Ohne Projekt, das den Satz führt, bleibt die Rückfrage die alte — ohne Zusatz.</summary>
+    [Fact]
+    public void Loeschen_ohne_Projektkopie_fragt_ohne_Zusatz()
+    {
+        var cut = Aufbauen(katalogLoeschsperre: _ => "", katalogLoeschhinweis: _ => "");
+        KatalogWaehlen(cut, "Hotel Sonne");
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Assert.Equal("Soll Hotel Sonne wirklich gelöscht werden ?", cut.Instance.Loeschfrage);
     }
 
     /// <summary>Ohne markierten Katalogsatz: die Bitte um eine Wahl statt einer leeren Rückfrage.</summary>
@@ -738,7 +958,7 @@ public class GebaeudeDialogTests : EposBunitContext
     [Fact]
     public void Die_Loeschsperre_steht_unter_der_Listenleiste_nicht_oben()
     {
-        const string GRUND = "In Projekten verwendet (Projekt A) – Löschen gesperrt; dort zuerst entfernen.";
+        const string GRUND = "Dieser Datensatz ist schreibgeschützt und kann nicht gelöscht werden.";
         var cut = Aufbauen(katalogLoeschsperre: _ => GRUND);
 
         KatalogWaehlen(cut, "Haus 2010");

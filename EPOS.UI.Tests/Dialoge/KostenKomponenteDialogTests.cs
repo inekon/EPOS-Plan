@@ -177,7 +177,7 @@ public class KostenKomponenteDialogTests : BunitContext
         var cut = Zeige(p => p.Add(x => x.BannerText, "Alle Beträge sind NETTO."));
 
         Assert.Single(cut.FindAll(".epos-bannerzeile"));
-        cut.Find(".epos-bannerzeile button").Click();
+        cut.Find(".epos-bannerzeile > button").Click();
         Assert.Empty(cut.FindAll(".epos-bannerzeile"));
     }
 
