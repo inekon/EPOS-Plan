@@ -42731,6 +42731,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KABG_BERICHT" xml:space="preserve">
     <value>{0} new, {1} updated, {2} kept, {3} discontinued</value>
   </data>
+  <data name="KABG_BERICHT_ANGEBUNDEN" xml:space="preserve">
+    <value>, {0} linked</value>
+  </data>
   <data name="KABG_HINWEIS_BEHALTEN_GEAENDERT" xml:space="preserve">
     <value>Your changes are kept; the new delivered state is available for comparison.</value>
   </data>
@@ -42742,6 +42745,18 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KABG_HINWEIS_AUSGELAUFEN" xml:space="preserve">
     <value>The entry is no longer delivered; it stays in your catalogue.</value>
+  </data>
+  <data name="KABG_HINWEIS_ANGEBUNDEN" xml:space="preserve">
+    <value>Your entry of the same name matches the delivered state. It is now linked to the delivered entry, locked and kept up to date by future versions.</value>
+  </data>
+  <data name="KABG_HINWEIS_ANGEBUNDEN_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Your entry of the same name differs from the delivered state. It is now linked to the delivered entry, locked and has taken over the delivered state (your differing values are in the backup); future versions keep it up to date.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Several entries of your own are named “{0}”; the delivered entry was neither added nor linked.</value>
+  </data>
+  <data name="KABG_HINWEIS_NAME_FREMDER_SCHLUESSEL" xml:space="preserve">
+    <value>The name “{0}” already belongs to another delivered entry; the delivered entry was neither added nor linked.</value>
   </data>
   <data name="KABG_SATZ_NICHT_IM_PAKET" xml:space="preserve">
     <value>The entry is not part of the catalogue package.</value>
@@ -42787,6 +42802,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KABG_AKTION_BERICHT" xml:space="preserve">
     <value>Update</value>
+  </data>
+  <data name="KABG_AKTION_ANGEBUNDEN" xml:space="preserve">
+    <value>linked</value>
+  </data>
+  <data name="KABG_AKTION_ANGEBUNDEN_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>linked, delivered state applied</value>
   </data>
   <data name="KABG_KATALOG_WP" xml:space="preserve">
     <value>Heat pumps</value>
