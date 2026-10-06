@@ -155,6 +155,13 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version 1.2.0.8 — nicht veröffentlicht
+
+Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.7); veröffentlicht wird der Satz erst, wenn der
+Schemaschritt der Standardlastprofile ausgeliefert ist.
+
+- Seit 06.10.2026: Der Katalog „Datenbank Strombedarf“ enthält die BDEW-Standardlastprofile Strom 2025 für Haushalt (H25), Gewerbe (G25) und Landwirtschaft (L25), normiert auf 1.000 MWh im Jahr. (SLP25)
+
 ### Version 1.2.0.7 — nicht veröffentlicht
 
 Version vom Anwender zu bestätigen (Regel 13.4: ein Satz je Auftrag).
