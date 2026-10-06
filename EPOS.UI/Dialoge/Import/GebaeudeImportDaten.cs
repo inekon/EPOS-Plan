@@ -115,7 +115,8 @@ public sealed record GebaeudeZuordnungsanfrage(
     IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null,
     bool RaumtemperaturAlsSollwert = false,
     IReadOnlyList<GebaeudePlanschritt>? Planschritte = null,
-    IReadOnlyDictionary<string, bool>? Plangrundhaken = null)
+    IReadOnlyDictionary<string, bool>? Plangrundhaken = null,
+    IReadOnlyDictionary<string, string>? Typwahl = null)
 {
     /// <summary>Dieselbe Anfrage mit einem Schritt am Zonenplan hinter den bisherigen (Zonenbaum).</summary>
     /// <param name="schritt">Der Schritt — nur Schlüssel und Kennungen, nie ein Anzeigetext.</param>
@@ -371,6 +372,61 @@ public sealed record GebaeudeBauteileDaten
 
     /// <summary>Die Meldungen des Vorschlags.</summary>
     public IReadOnlyList<GebaeudeImportMeldung> Meldungen { get; init; } = Array.Empty<GebaeudeImportMeldung>();
+}
+
+/// <summary>
+/// <b>Eine Zeile der Liste „Bauteilaufbauten"</b> (Konzept Bauteilaufbau 5.4 b, BA-3) — je Aufbau, nicht je Bauteil, als
+/// fertige Anzeigetexte; Bauteile ohne Aufbau je Art und Stufe in einer Zeile „ohne Aufbau".
+/// </summary>
+public sealed record GebaeudeAufbaulistenzeileDaten
+{
+    /// <summary>Der stabile Schlüssel der Zeile (Id des Aufbaus bzw. Art und Stufe).</summary>
+    public string Schluessel { get; init; } = "";
+
+    /// <summary>Name des Aufbaus bzw. „ohne Aufbau".</summary>
+    public string Aufbau { get; init; } = "";
+
+    /// <summary>Bauteilart als Anzeigetext.</summary>
+    public string Art { get; init; } = "";
+
+    /// <summary>Die schwächste Stufe der Bauteile dieses Aufbaus.</summary>
+    public EPOS.UI.Dialoge.Bedarf.Aufbaustufe Stufe { get; init; }
+
+    /// <summary>Zahl der Bauteile.</summary>
+    public int Bauteile { get; init; }
+
+    /// <summary>Fläche der Bauteile [m²] als Text.</summary>
+    public string Flaeche { get; init; } = "";
+
+    /// <summary>U der Datei [W/(m²K)]; leer = keiner.</summary>
+    public string UDatei { get; init; } = "";
+
+    /// <summary>U aus den Schichten [W/(m²K)]; leer = keiner.</summary>
+    public string USchichten { get; init; } = "";
+
+    /// <summary>C₁,korr je m² [kJ/(m²K)], nur zur Anzeige über die Bauteilreduktion; leer = nicht bestimmbar.</summary>
+    public string C1korr { get; init; } = "";
+
+    /// <summary>Was fehlt; leer = nichts.</summary>
+    public string Fehlt { get; init; } = "";
+
+    /// <summary>Bei einem Ersatzaufbau Typ und Abgleich; leer sonst.</summary>
+    public string Typaufbau { get; init; } = "";
+
+    /// <summary>Die Schichten (ausgeklappt), innen → außen, weggelassene markiert.</summary>
+    public IReadOnlyList<EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht> Schichten { get; init; } = Array.Empty<EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht>();
+
+    /// <summary>Der Sprung in den Abschnitt „Baustoffe": Schlüssel des Materialnamens; <c>null</c> = kein Sprung.</summary>
+    public string? Materialschluessel { get; init; }
+
+    /// <summary>Der Schlüssel der Typwahl eines Ersatzaufbaus (E95-4); <c>null</c> = keine Typwahl (echter Aufbau, ohne Aufbau).</summary>
+    public string? Typschluessel { get; init; }
+
+    /// <summary>Der Code des gewählten Typaufbaus; leer = keiner.</summary>
+    public string Typcode { get; init; } = "";
+
+    /// <summary>Die wählbaren Typaufbauten derselben Familie (Code, Name); leer = keine Wahl.</summary>
+    public IReadOnlyList<GebaeudeZonenregelDaten> Typen { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
 }
 
 /// <summary>Ein Katalogbaustoff der Klappliste im Abschnitt „Baustoffe".</summary>
@@ -866,6 +922,9 @@ public sealed record GebaeudeImportStand
     /// <summary>Die Materialnamen der Datei mit ihrem Abgleich; <c>null</c> = keine (dann steht der Abschnitt nicht).</summary>
     public GebaeudeBaustoffeDaten? Baustoffe { get; init; }
 
+    /// <summary>Die Liste „Bauteilaufbauten" (BA-3) — je Aufbau eine Zeile; leer = keine.</summary>
+    public IReadOnlyList<GebaeudeAufbaulistenzeileDaten> Aufbauten { get; init; } = Array.Empty<GebaeudeAufbaulistenzeileDaten>();
+
     /// <summary>Die Zonierung; <c>null</c>, wenn die Datei nur eine Zone je Gebäude trägt (Einzonenweg wie gehabt).</summary>
     public GebaeudeZonierungDaten? Zonierung { get; init; }
 
@@ -922,7 +981,8 @@ public sealed record GebaeudeImportErgebnis(
     IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null,
     bool RaumtemperaturAlsSollwert = false,
     IReadOnlyList<GebaeudePlanschritt>? Planschritte = null,
-    IReadOnlyDictionary<string, bool>? Plangrundhaken = null)
+    IReadOnlyDictionary<string, bool>? Plangrundhaken = null,
+    IReadOnlyDictionary<string, string>? Typwahl = null)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)
@@ -1313,6 +1373,57 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_BAUSTOFFE_HINWEIS</summary>
     public string BaustoffeHinweis { get; set; } = Resource.GIMP_DLG_BAUSTOFFE_HINWEIS;
+
+    /// <summary>GIMP_GRP_AUFBAUTEN — Kopf der Liste „Bauteilaufbauten" (BA-3).</summary>
+    public string GruppeAufbauten { get; set; } = Resource.GIMP_GRP_AUFBAUTEN;
+
+    /// <summary>GIMP_AB_SP_AUFBAU</summary>
+    public string AbSpalteAufbau { get; set; } = Resource.GIMP_AB_SP_AUFBAU;
+
+    /// <summary>GIMP_AB_SP_ART</summary>
+    public string AbSpalteArt { get; set; } = Resource.GIMP_AB_SP_ART;
+
+    /// <summary>GIMP_AB_SP_BAUTEILE</summary>
+    public string AbSpalteBauteile { get; set; } = Resource.GIMP_AB_SP_BAUTEILE;
+
+    /// <summary>GIMP_AB_SP_FLAECHE</summary>
+    public string AbSpalteFlaeche { get; set; } = Resource.GIMP_AB_SP_FLAECHE;
+
+    /// <summary>GIMP_AB_SP_UDATEI</summary>
+    public string AbSpalteUDatei { get; set; } = Resource.GIMP_AB_SP_UDATEI;
+
+    /// <summary>GIMP_AB_SP_USCHICHTEN</summary>
+    public string AbSpalteUSchichten { get; set; } = Resource.GIMP_AB_SP_USCHICHTEN;
+
+    /// <summary>GIMP_AB_SP_C1</summary>
+    public string AbSpalteC1 { get; set; } = Resource.GIMP_AB_SP_C1;
+
+    /// <summary>GIMP_AB_SP_STUFE</summary>
+    public string AbSpalteStufe { get; set; } = Resource.GIMP_AB_SP_STUFE;
+
+    /// <summary>GIMP_AB_SP_FEHLT</summary>
+    public string AbSpalteFehlt { get; set; } = Resource.GIMP_AB_SP_FEHLT;
+
+    /// <summary>GIMP_AB_SP_HANDLUNG</summary>
+    public string AbSpalteHandlung { get; set; } = Resource.GIMP_AB_SP_HANDLUNG;
+
+    /// <summary>GIMP_AB_NUR_BC — Filter „nur B und C".</summary>
+    public string AbNurBC { get; set; } = Resource.GIMP_AB_NUR_BC;
+
+    /// <summary>GIMP_AB_ZUR_BAUSTOFF — Sprung in den Abschnitt „Baustoffe".</summary>
+    public string AbZurBaustoff { get; set; } = Resource.GIMP_AB_ZUR_BAUSTOFF;
+
+    /// <summary>GIMP_AB_SCHICHTEN — klappt die Schichten einer Zeile auf.</summary>
+    public string AbSchichten { get; set; } = Resource.GIMP_AB_SCHICHTEN;
+
+    /// <summary>GIMP_AB_TYPWAHL — Beschriftung der Typwahl je Ersatzaufbau.</summary>
+    public string AbTyp { get; set; } = Resource.GIMP_AB_TYPWAHL;
+
+    /// <summary>GIMP_AB_LEER</summary>
+    public string AbLeer { get; set; } = Resource.GIMP_AB_LEER;
+
+    /// <summary>GIMP_AB_HINWEIS</summary>
+    public string AbHinweis { get; set; } = Resource.GIMP_AB_HINWEIS;
 
     /// <summary>GIMP_DLG_SP_MATERIALNAME</summary>
     public string SpalteMaterialname { get; set; } = Resource.GIMP_DLG_SP_MATERIALNAME;

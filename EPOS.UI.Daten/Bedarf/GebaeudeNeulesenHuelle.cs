@@ -120,7 +120,7 @@ namespace WindowsFormsApplication1
                         Zustand = GebaeudeNeulesezustand.Passend,
                         Hinweis = Formatieren(MyResource.Resource.GEB_NL_PASSEND, name),
                         Zonenhinweis = Formatieren(e.Hottcad ? MyResource.Resource.GEB_NL_NUR_GEOMETRIE : MyResource.Resource.GEB_NL_ZONENREGEL, regel),
-                        Ansicht = GebaeudeImportAnsicht.AnsichtDaten(e.Geometrie, false, null, e.Gebaeude),
+                        Ansicht = AufbauAusProjekt(GebaeudeImportAnsicht.AnsichtDaten(e.Geometrie, false, null, e.Gebaeude), q),
                         GrundrissRaeume = Nachtragbar(e, q) ? e.Raumgrundrisse.Count(GebaeudeImportCtrl.Speicherbar) : 0,
                         GrundrissNachtragen = Nachtragbar(e, q) ? () => GrundrissNachtragenAsync(e, q) : null,
                     };
@@ -144,6 +144,62 @@ namespace WindowsFormsApplication1
                     return Fehlstand(GebaeudeNeulesezustand.NichtLesbar,
                         Formatieren(MyResource.Resource.GEB_NL_NICHT_LESBAR, name, grund).Trim());
             }
+        }
+
+        /// <summary>
+        /// <b>BA-3: Stufen und Steckbriefe aus den gespeicherten Bauteilen</b> der Quelle — die Paare aus Kennung der Datei und
+        /// Bauteil über <c>Tab_Importzuordnung</c> (Rückfall: <c>Tab_Bauteil.Quellkennung</c>), die Aufbauten und die Namen
+        /// der Baustoffe als Projektsätze. Liest nur; ohne gespeicherte Quelle oder ohne Datenbank bleibt die Ansicht, wie sie ist.
+        /// </summary>
+        internal static GebaeudeAnsichtDaten AufbauAusProjekt(GebaeudeAnsichtDaten ansicht, ImportquelleModel q)
+        {
+            if (ansicht == null || q == null || q.ID <= 0 || q.ID_Gebaeude <= 0) return ansicht;
+            try
+            {
+                Dictionary<int, string> kurz = new GebaeudeImportCtrl().LesenZuordnungen(q.ID)
+                    .Where(z => z.ID_Bauteil.HasValue && !string.IsNullOrEmpty(z.Quellkennung))
+                    .GroupBy(z => z.ID_Bauteil.Value).ToDictionary(g => g.Key, g => g.First().Quellkennung);
+                List<BauteilModel> bauteile = new GebaeudeZonenCtrl().LesenJeGebaeude(q.ID_Gebaeude).SelectMany(z => z.Bauteile).ToList();
+                var aufbauCtrl = new BauteilaufbauCtrl();
+                var baustoffCtrl = new BaustoffCtrl();
+                return AufbauAusBauteilen(ansicht, bauteile, kurz, id => aufbauCtrl.LesenProjektsatz(id),
+                                          id => baustoffCtrl.LesenProjektsatz(id)?.Bezeichner);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                // Ohne lesbare Projektdaten bleibt die Ansicht ohne Stufen — „Aufbau" ist dann benannt gesperrt.
+                return ansicht;
+            }
+        }
+
+        /// <summary>
+        /// Der datenbankfreie Teil von <see cref="AufbauAusProjekt"/>: je Bauteilkennung der Ansicht (Raumflächen und
+        /// Bauteilkörper) das gespeicherte Bauteil mit derselben gekürzten Kennung (<see cref="Quellkennung.Kuerzen(string)"/>).
+        /// </summary>
+        internal static GebaeudeAnsichtDaten AufbauAusBauteilen(GebaeudeAnsichtDaten ansicht, IReadOnlyList<BauteilModel> bauteile,
+                                                                IReadOnlyDictionary<int, string> kurzJeBauteil,
+                                                                Func<int, BauteilaufbauModel> aufbau, Func<int, string> baustoffname)
+        {
+            if (ansicht == null || bauteile == null || bauteile.Count == 0) return ansicht;
+            var jeKurz = new Dictionary<string, BauteilModel>(StringComparer.Ordinal);
+            foreach (BauteilModel b in bauteile)
+            {
+                string k = kurzJeBauteil != null && kurzJeBauteil.TryGetValue(b.ID, out string z) ? z : b.Quellkennung;
+                if (!string.IsNullOrEmpty(k)) jeKurz.TryAdd(k, b);
+            }
+            var kennungen = ansicht.Koerperraeume.SelectMany(k => k.Dreiecksbauteile ?? Array.Empty<string>())
+                                   .Concat(ansicht.Bauteilkoerper.Select(b => b.Bauteil))
+                                   .Where(k => !string.IsNullOrEmpty(k)).Distinct(StringComparer.Ordinal).ToList();
+            var paare = new List<(string Kennung, BauteilModel Bauteil)>();
+            foreach (string k in kennungen)
+                if (jeKurz.TryGetValue(Quellkennung.Kuerzen(k), out BauteilModel b)) paare.Add((k, b));
+            var aufbauten = new Dictionary<int, BauteilaufbauModel>();
+            foreach (int id in paare.Select(p => p.Bauteil.ID_Aufbau).Where(i => i.HasValue).Select(i => i.Value).Distinct())
+                if (aufbau?.Invoke(id) is BauteilaufbauModel a) aufbauten[id] = a;
+            var namen = new Dictionary<int, string>();
+            foreach (int id in aufbauten.Values.SelectMany(a => a.Schichten).Where(s => s.ID_Baustoff.HasValue).Select(s => s.ID_Baustoff.Value).Distinct())
+                if (baustoffname?.Invoke(id) is string n) namen[id] = n;
+            return GebaeudeAufbauHuelle.MitAufbau(ansicht, paare, aufbauten, namen);
         }
 
         /// <summary>

@@ -47447,5 +47447,260 @@ chart</value>
   <data name="IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG" xml:space="preserve">
     <value>For {0} component(s) several different constructions of the project file match the IFC U-value ({1} W/(m²K)); no guess is made.</value>
   </data>
+  <data name="GANS_FARBMODUS_AUFBAU" xml:space="preserve">
+    <value>Construction</value>
+  </data>
+  <data name="GANS_AUFBAU_OHNE_STUFEN" xml:space="preserve">
+    <value>“Construction” is unavailable: there are no assignment levels for the components (no component proposal).</value>
+  </data>
+  <data name="GANS_AUFBAU_LEGENDE" xml:space="preserve">
+    <value>Construction assignment levels</value>
+  </data>
+  <data name="GANS_AUFBAU_AUSSEN" xml:space="preserve">
+    <value>Envelope</value>
+  </data>
+  <data name="GANS_AUFBAU_INNEN" xml:space="preserve">
+    <value>Interior</value>
+  </data>
+  <data name="GANS_AUFBAU_ZAHL" xml:space="preserve">
+    <value>{0} · {1} m²</value>
+  </data>
+  <data name="GANS_AUFBAU_SCHALTER" xml:space="preserve">
+    <value>Show or hide {0}</value>
+  </data>
+  <data name="GANS_AUFBAU_TREFFER" xml:space="preserve">
+    <value>Selected: {0} — level {1}</value>
+  </data>
+  <data name="GANS_STUFE_A" xml:space="preserve">
+    <value>A – complete construction</value>
+  </data>
+  <data name="GANS_STUFE_B" xml:space="preserve">
+    <value>B – U from file, substitute construction</value>
+  </data>
+  <data name="GANS_STUFE_C" xml:space="preserve">
+    <value>C – geometry only, default U</value>
+  </data>
+  <data name="GANS_STUFE_TRANSPARENT" xml:space="preserve">
+    <value>Transparent (not rated)</value>
+  </data>
+  <data name="GANS_STUFE_OHNE" xml:space="preserve">
+    <value>Without component</value>
+  </data>
+  <data name="BTSB_TITEL" xml:space="preserve">
+    <value>Component profile</value>
+  </data>
+  <data name="BTSB_SCHLIESSEN" xml:space="preserve">
+    <value>Close profile</value>
+  </data>
+  <data name="BTSB_KENNUNG" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
+  <data name="BTSB_STUFE" xml:space="preserve">
+    <value>Assignment level</value>
+  </data>
+  <data name="BTSB_GRP_RECHNUNG" xml:space="preserve">
+    <value>Calculation values</value>
+  </data>
+  <data name="BTSB_FLAECHE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="BTSB_AZIMUT" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="BTSB_NEIGUNG" xml:space="preserve">
+    <value>Tilt</value>
+  </data>
+  <data name="BTSB_RAND" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="BTSB_UWERT" xml:space="preserve">
+    <value>U-value</value>
+  </data>
+  <data name="BTSB_R1" xml:space="preserve">
+    <value>R₁ (equivalent resistance)</value>
+  </data>
+  <data name="BTSB_C1" xml:space="preserve">
+    <value>C₁ (effective capacity)</value>
+  </data>
+  <data name="BTSB_KAPAZITAET" xml:space="preserve">
+    <value>Areal heat capacity</value>
+  </data>
+  <data name="BTSB_ANZEIGE" xml:space="preserve">
+    <value>R₁ and C₁ are calculated for this display only, using the component reduction to VDI 6007; the simulation is unchanged.</value>
+  </data>
+  <data name="BTSB_GRP_AUFBAU" xml:space="preserve">
+    <value>Construction (inside → outside)</value>
+  </data>
+  <data name="BTSB_SP_SCHICHT" xml:space="preserve">
+    <value>Layer</value>
+  </data>
+  <data name="BTSB_SP_DICKE" xml:space="preserve">
+    <value>Thickness</value>
+  </data>
+  <data name="BTSB_SP_LAMBDA" xml:space="preserve">
+    <value>λ</value>
+  </data>
+  <data name="BTSB_SP_RHO" xml:space="preserve">
+    <value>ρ</value>
+  </data>
+  <data name="BTSB_SP_CP" xml:space="preserve">
+    <value>c</value>
+  </data>
+  <data name="BTSB_SP_HERKUNFT" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="BTSB_WEGGELASSEN" xml:space="preserve">
+    <value>omitted: {0}</value>
+  </data>
+  <data name="BTSB_ERSATZ" xml:space="preserve">
+    <value>Substitute construction: {0}</value>
+  </data>
+  <data name="BTSB_KEIN_AUFBAU" xml:space="preserve">
+    <value>No construction</value>
+  </data>
+  <data name="BTSB_FEHLT" xml:space="preserve">
+    <value>Missing: {0}</value>
+  </data>
+  <data name="BTSB_GWERT" xml:space="preserve">
+    <value>g-value</value>
+  </data>
+  <data name="BTSB_RAHMEN" xml:space="preserve">
+    <value>Frame fraction</value>
+  </data>
+  <data name="BTSB_ZUR_BAUSTOFFZUORDNUNG" xml:space="preserve">
+    <value>Go to material assignment</value>
+  </data>
+  <data name="BTSB_ZUM_BAUTEIL" xml:space="preserve">
+    <value>Edit component</value>
+  </data>
+  <data name="BTSB_NUR_ANZEIGE" xml:space="preserve">
+    <value>The profile is for display only; changes are made in the material assignment or in the component dialog.</value>
+  </data>
+  <data name="BTSB_HK_DATEI" xml:space="preserve">
+    <value>from file</value>
+  </data>
+  <data name="BTSB_HK_SCHICHTEN" xml:space="preserve">
+    <value>from layers</value>
+  </data>
+  <data name="BTSB_HK_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="BTSB_HK_PROJEKTDATEI" xml:space="preserve">
+    <value>from project file</value>
+  </data>
+  <data name="BTSB_HK_KATALOG" xml:space="preserve">
+    <value>from catalogue</value>
+  </data>
+  <data name="BTSB_HK_MANUELL" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="BTSB_U_ABWEICHUNG" xml:space="preserve">
+    <value>The file U {0} deviates by {1} % from the U of the layers {2}; the file U applies, the layers provide R₁ and C₁.</value>
+  </data>
+  <data name="BTSB_ERSATZ_DICKE" xml:space="preserve">
+    <value>{0}, insulation thickness {1} cm</value>
+  </data>
+  <data name="BTSB_ERSATZ_LAMBDA" xml:space="preserve">
+    <value>{0}, λ of the load-bearing layer {1} W/(mK)</value>
+  </data>
+  <data name="BTSB_ERSATZ_OHNE" xml:space="preserve">
+    <value>{0}, not adjusted</value>
+  </data>
+  <data name="BTSB_GRUND_DUENN" xml:space="preserve">
+    <value>thinner than 5 mm and negligible for R and C</value>
+  </data>
+  <data name="BTSB_GRUND_SPERRE" xml:space="preserve">
+    <value>foil, barrier or sealing below 2 % of R</value>
+  </data>
+  <data name="BTSB_LUECKE_SCHICHTEN" xml:space="preserve">
+    <value>no layers</value>
+  </data>
+  <data name="BTSB_LUECKE_DICKE" xml:space="preserve">
+    <value>thickness of a layer</value>
+  </data>
+  <data name="BTSB_LUECKE_LAMBDA" xml:space="preserve">
+    <value>λ of a layer</value>
+  </data>
+  <data name="BTSB_LUECKE_RHO" xml:space="preserve">
+    <value>ρ of a layer</value>
+  </data>
+  <data name="BTSB_LUECKE_CP" xml:space="preserve">
+    <value>c of a layer</value>
+  </data>
+  <data name="BTSB_LUECKE_DAEMMUNG" xml:space="preserve">
+    <value>an insulation layer</value>
+  </data>
+  <data name="BTSB_LUECKE_SPEICHER" xml:space="preserve">
+    <value>a heat-storing layer</value>
+  </data>
+  <data name="BTSB_OHNE_RECHNUNG" xml:space="preserve">
+    <value>R₁ and C₁ cannot be determined without a complete construction.</value>
+  </data>
+  <data name="GIMP_GRP_AUFBAUTEN" xml:space="preserve">
+    <value>Component constructions</value>
+  </data>
+  <data name="GIMP_AB_SP_AUFBAU" xml:space="preserve">
+    <value>Construction</value>
+  </data>
+  <data name="GIMP_AB_SP_ART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="GIMP_AB_SP_BAUTEILE" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="GIMP_AB_SP_FLAECHE" xml:space="preserve">
+    <value>Area [m²]</value>
+  </data>
+  <data name="GIMP_AB_SP_UDATEI" xml:space="preserve">
+    <value>U file [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_USCHICHTEN" xml:space="preserve">
+    <value>U layers [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_C1" xml:space="preserve">
+    <value>C₁,corr [kJ/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_STUFE" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="GIMP_AB_SP_FEHLT" xml:space="preserve">
+    <value>Missing</value>
+  </data>
+  <data name="GIMP_AB_SP_HANDLUNG" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="GIMP_AB_NUR_BC" xml:space="preserve">
+    <value>Only levels B and C</value>
+  </data>
+  <data name="GIMP_AB_ZUR_BAUSTOFF" xml:space="preserve">
+    <value>Assign material</value>
+  </data>
+  <data name="GIMP_AB_LEER" xml:space="preserve">
+    <value>No constructions in the proposal.</value>
+  </data>
+  <data name="GIMP_AB_OHNE_AUFBAU" xml:space="preserve">
+    <value>without construction</value>
+  </data>
+  <data name="GIMP_AB_HINWEIS" xml:space="preserve">
+    <value>One row per construction; C₁,corr per m² is calculated for display only, using the component reduction to VDI 6007. Click “Layers” to show the construction.</value>
+  </data>
+  <data name="GIMP_AB_SCHICHTEN" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="GIMP_AB_TYP" xml:space="preserve">
+    <value>Type construction: {0}</value>
+  </data>
+  <data name="ZOND_SP_AUFBAU" xml:space="preserve">
+    <value>Construction</value>
+  </data>
+  <data name="ZOND_FILTER_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Without complete assignment</value>
+  </data>
+  <data name="ZOND_AUFBAU_TITEL" xml:space="preserve">
+    <value>Assignment level {0}: {1}</value>
+  </data>
+  <data name="GIMP_AB_TYPWAHL" xml:space="preserve">
+    <value>Choose type construction</value>
+  </data>
 </root>
 
