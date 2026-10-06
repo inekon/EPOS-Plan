@@ -44072,6 +44072,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>fixed list 100 … 10,000 l, above that a 1,000 l grid</value>
   </data>
+  <data name="PAUS_HERK_NENNINHALTE_OHNE_KATALOG" xml:space="preserve">
+    <value>draw-off profile catalogue not loaded: fixed list 100 … 10,000 l, above that a 1,000 l grid</value>
+  </data>
   <data name="PAUS_HERK_RANG1_KEINER" xml:space="preserve">
     <value>no heat generator in the project</value>
   </data>

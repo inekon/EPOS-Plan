@@ -963,24 +963,35 @@ namespace WindowsFormsApplication1
 
         // ---- Nenninhalte, Katalog, Nutzungen ----
 
+        /// <summary>
+        /// Die Nenninhalte des Vorschlags: Katalogdaten des Zapfprofil-Paketteils
+        /// (<c>Speicherauslegung.Nenninhalt.*</c>) bzw. die Einstellung, keine Projektwahl — sie gelten
+        /// für jeden Puffer, gleich wie das Projekt sein Brauchwasser rechnet. Ohne geladenen
+        /// Paketteil (keine Katalogversion) wird nichts geworfen: Es gilt die Einstellung, sonst die
+        /// feste Liste des Rechenkerns, und die Herkunft nennt den Grund. Ein unvollständiger
+        /// Parametersatz ist die benannte <see cref="ParametersatzException"/> und führt ebenso
+        /// auf die feste Liste.
+        /// </summary>
         private static IReadOnlyList<double> Nenninhalte(List<PufferAuslegungHerkunft> h)
         {
-            try
+            string version = ZapfprofilCtrl.AktuelleKatalogversion();
+            Parametersatz ps = null;
+            if (version != null)
             {
-                Nenninhaltswahl w = ZapfprofilCtrl.Nenninhalte(ZapfprofilCtrl.Parameter());
-                if (w.Liste != null)
-                {
-                    h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.PARAMETER,
-                                                      T("PAUS_HERK_NENNINHALTE_PARAMETER", "Speicherauslegung.Nenninhalt.* ({0})", w.Quelle)));
-                    return w.Liste.WerteL;
-                }
+                try { ps = ZapfprofilCtrl.Parameter(version); }
+                catch (ParametersatzException) { ps = null; }
             }
-            catch (Exception)
+            Nenninhaltswahl w = ZapfprofilCtrl.Nenninhalte(ps);
+            if (w.Liste != null)
             {
-                // ohne Katalogversion der Tww-Parameter: die feste Liste des Rechenkerns
+                h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.PARAMETER,
+                                                  T("PAUS_HERK_NENNINHALTE_PARAMETER", "Speicherauslegung.Nenninhalt.* ({0})", w.Quelle)));
+                return w.Liste.WerteL;
             }
             h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.VORGABE,
-                                              T("PAUS_HERK_NENNINHALTE_VORGABE", "feste Liste 100 … 10 000 l, darüber Raster 1 000 l")));
+                                              version == null
+                                                  ? T("PAUS_HERK_NENNINHALTE_OHNE_KATALOG", "Zapfprofil-Katalog nicht geladen: feste Liste 100 … 10 000 l, darüber Raster 1 000 l")
+                                                  : T("PAUS_HERK_NENNINHALTE_VORGABE", "feste Liste 100 … 10 000 l, darüber Raster 1 000 l")));
             return null;
         }
 

@@ -75878,6 +75878,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil-Katalog nicht geladen: feste Liste 100 … 10 000 l, darüber Raster 1 000 l ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NENNINHALTE_OHNE_KATALOG {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NENNINHALTE_OHNE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung.Nenninhalt.* ({0}) ähnelt.
         /// </summary>
         public static string PAUS_HERK_NENNINHALTE_PARAMETER {
