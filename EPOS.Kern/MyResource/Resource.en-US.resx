@@ -45845,6 +45845,12 @@ chart</value>
   <data name="IMP_SQ_PROT_RAUM_OHNE_TREFFER" xml:space="preserve">
     <value>{0} rooms of the project file find no IFC room (neither by name and storey nor by identifier): {1}.</value>
   </data>
+  <data name="IMP_SQ_PROT_RAUM_HERKUNFT" xml:space="preserve">
+    <value>{0} rooms matched by the HottCAD identifier GUID ({1} by IFC identifier, {2} by name and storey).</value>
+  </data>
+  <data name="IMP_SQ_PROT_GUID_MEHRDEUTIG" xml:space="preserve">
+    <value>{0} rooms carry a HottCAD identifier GUID that is not unique and are not matched by it: {1}.</value>
+  </data>
   <data name="IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>{0} IFC rooms have no counterpart in the project file: {1}.</value>
   </data>

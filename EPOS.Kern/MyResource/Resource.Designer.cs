@@ -41911,6 +41911,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen eine HottCAD-Kennung GUID, die nicht eindeutig ist, und werden nicht über sie zugeordnet: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_GUID_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_GUID_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} IFC-Räume haben kein Gegenstück in der Projektdatei: {1}. ähnelt.
         /// </summary>
         public static string IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK {
@@ -41988,6 +41997,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_RAUM_BEHEIZUNG {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_RAUM_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume über die HottCAD-Kennung GUID abgeglichen ({1} über die IFC-Kennung, {2} über Name und Geschoss). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUM_HERKUNFT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUM_HERKUNFT", resourceCulture);
             }
         }
         
