@@ -178,6 +178,37 @@ namespace WindowsFormsApplication1
             => f == null ? null : Platte(f.EckenM, PLATTE_M, 0.0);
 
         /// <summary>
+        /// HC-5c: <b>die Platten EINES Bauteils</b> an den Kanten eines Grundriss-Prismas — eine Darstellung „Body“ mit je Platte einem
+        /// <c>IfcExtrudedAreaSolid</c>. Mit einer Platte dasselbe wie <see cref="Flaeche"/>.
+        /// </summary>
+        internal IfcProductDefinitionShape Flaechen(IReadOnlyList<Koerperflaeche> flaechen)
+        {
+            if (flaechen == null || flaechen.Count == 0) return null;
+            if (flaechen.Count == 1) return Flaeche(flaechen[0]);
+            List<IfcExtrudedAreaSolid> koerper = flaechen.Select(f => Plattenkoerper(f.EckenM, PLATTE_M, 0.0)).Where(k => k != null).ToList();
+            if (koerper.Count == 0) return null;
+            IfcShapeRepresentation darstellung = Neu<IfcShapeRepresentation>(s =>
+            {
+                s.ContextOfItems = Koerperkontext;
+                s.RepresentationIdentifier = BODY;
+                s.RepresentationType = SWEPT_SOLID;
+                foreach (IfcExtrudedAreaSolid x in koerper) s.Items.Add(x);
+            });
+            return Neu<IfcProductDefinitionShape>(p => p.Representations.Add(darstellung));
+        }
+
+        /// <summary>
+        /// HC-5c: <b>Die Nordrichtung des Kontexts</b> aus der Drehung des Modells gegen Nord [°] (wahrer Azimut = Modellazimut −
+        /// Drehung): <c>TrueNorth</c> = (sin d, cos d) — die Umkehrung von <c>IfcPlatzierung.DrehungAusTrueNorth</c>.
+        /// </summary>
+        internal void Nordrichtung(double drehungGrad)
+        {
+            double r = drehungGrad * Math.PI / 180.0;
+            double x = Math.Round(Math.Sin(r), 12), y = Math.Round(Math.Cos(r), 12);
+            Kontext.TrueNorth = Neu<IfcDirection>(d => d.SetXY(Z(x), Z(y)));
+        }
+
+        /// <summary>
         /// Die Platte einer Öffnung vor der Wand: der Ring aus <see cref="Zonenkoerper.Oeffnung"/>, um
         /// <see cref="PLATTE_M"/> nach außen versetzt (vor der Wandplatte), <see cref="OEFFNUNG_M"/> dick.
         /// </summary>
@@ -186,6 +217,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine Platte über einem ebenen Ring, Normale nach außen (Umlaufsinn), versetzt um <paramref name="versatz"/>.</summary>
         private IfcProductDefinitionShape Platte(IReadOnlyList<double[]> ring, double dicke, double versatz)
+            => Darstellung(Plattenkoerper(ring, dicke, versatz));
+
+        /// <summary>Der Körper einer Platte über einem ebenen Ring (<see cref="Platte"/>); <c>null</c> = keiner.</summary>
+        private IfcExtrudedAreaSolid Plattenkoerper(IReadOnlyList<double[]> ring, double dicke, double versatz)
         {
             if (ring == null || ring.Count < 3) return null;
             double[] n = Normale(ring);
@@ -196,7 +231,7 @@ namespace WindowsFormsApplication1
             // u senkrecht zur Normalen machen (der Ring ist eben; das hält Rundungsreste aus der Achse).
             u = Einheit(Differenz(u, Mal(n, Punkt(u, n))), nurXY: false);
             if (u == null) return null;
-            return Darstellung(Prisma(ring, ring[0], n, u, dicke, versatz));
+            return Prisma(ring, ring[0], n, u, dicke, versatz);
         }
 
         /// <summary>

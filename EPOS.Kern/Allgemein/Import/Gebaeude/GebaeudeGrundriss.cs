@@ -146,6 +146,7 @@ namespace WindowsFormsApplication1
                     RandpunkteM = s.Grenze != null ? s.Grenze.RandpunkteM : b.RandpunkteM,
                     FlaecheM2 = s.Grenze?.FlaecheM2 ?? Anteil(b.BruttoflaecheM2, lage, raeume),
                     Sektor = stellung == Grenzstellung.Wand ? Sektor(b, s.Grenze, pos, drehung) : null,
+                    AzimutGrad = stellung == Grenzstellung.Wand ? Azimut(b, s.Grenze, pos, drehung) : null,
                 });
             }
         }
@@ -201,6 +202,18 @@ namespace WindowsFormsApplication1
                 return GebaeudeAggregation.Sektor(Zonengeometrie.ModellAzimut(n[0], n[1]) - drehung);
             if (b.AzimutGrad is double a) return GebaeudeAggregation.Sektor(pos > 0 ? a + 180.0 : a);
             return null;
+        }
+
+        /// <summary>HC-5c: der wahre Azimut einer Wand aus Sicht des Raums [°] — dieselbe Quelle wie <see cref="Sektor"/>, in [0, 360).</summary>
+        private static double? Azimut(AbbildBauteil b, AbbildGrenze grenze, int pos, double drehung)
+        {
+            double? a = null;
+            if (grenze?.Normale is double[] n && n.Length >= 2 && Math.Sqrt(n[0] * n[0] + n[1] * n[1]) > 1e-6)
+                a = Zonengeometrie.ModellAzimut(n[0], n[1]) - drehung;
+            else if (b.AzimutGrad is double w) a = pos > 0 ? w + 180.0 : w;
+            if (!a.HasValue) return null;
+            double r = a.Value % 360.0;
+            return r < 0.0 ? r + 360.0 : r + 0.0;
         }
 
         /// <summary>
