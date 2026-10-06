@@ -12,8 +12,8 @@ namespace EPOS.UI.Tests.Seiten;
 
 /// <summary>
 /// Das linke Band des Projektassistenten nach dem Anwenderwunsch vom 06.10.2026:
-/// Die Projektliste füllt die Höhe des Bandes, und unter ihr steht der Steckbrief des
-/// markierten Projekts. bunit misst keine Höhe — die Höhe wird als STILREGEL geprüft,
+/// Die Projektliste füllt die Höhe des Bandes, und über den Kacheln steht der Steckbrief
+/// des markierten Projekts. bunit misst keine Höhe — die Höhe wird als STILREGEL geprüft,
 /// die Struktur am Markup.
 /// </summary>
 public class AssistentSteckbriefTests : EposBunitContext
@@ -50,7 +50,7 @@ public class AssistentSteckbriefTests : EposBunitContext
             .Add(x => x.SteckbriefLaden, laden));
 
     [Fact]
-    public void Ohne_Markierung_steht_kein_Steckbrief_im_Band()
+    public void Ohne_Markierung_steht_kein_Steckbrief()
     {
         var cut = Zeige(Voll);
 
@@ -59,21 +59,32 @@ public class AssistentSteckbriefTests : EposBunitContext
     }
 
     [Fact]
-    public void Bei_Markierung_erscheint_der_Steckbrief_zwischen_Liste_und_Projekt_oeffnen()
+    public void Bei_Markierung_erscheint_der_Steckbrief_ueber_den_Kacheln_nicht_im_Band()
     {
         var geholt = new List<int>();
         var cut = Zeige(id => { geholt.Add(id); return Voll(id); });
 
         cut.Find(".epos-assistent-band tbody tr button").Click();
 
-        var block = cut.Find(".epos-assistent-band > .epos-projektsteckbrief");
+        var block = cut.Find(".epos-assistent-inhalt .epos-projektsteckbrief");
         Assert.Equal("Laurentiuskirche", block.QuerySelector(".epos-projektsteckbrief-name")!.TextContent);
-        Assert.Equal("epos-projektliste", block.PreviousElementSibling!.ClassName);
-        Assert.Contains("epos-leiste", block.NextElementSibling!.ClassName);
+        Assert.Null(block.PreviousElementSibling);
+        Assert.Empty(cut.FindAll(".epos-assistent-band .epos-projektsteckbrief"));
 
-        // Je Projekt EINMAL geholt, auch wenn das Band neu zeichnet.
+        // Im Band bleiben nur Ueberschrift, Liste und „Projekt öffnen".
+        var band = cut.Find(".epos-assistent-band");
+        Assert.Contains(band.Children, k => k.ClassName == "epos-projektliste");
+        Assert.Contains("epos-leiste", band.LastElementChild!.ClassName);
+
+        // Je Projekt EINMAL geholt, auch wenn neu gezeichnet wird.
         cut.Render();
         Assert.Equal(new[] { 1007 }, geholt);
+
+        // Eine andere Markierung holt das andere Projekt.
+        cut.FindAll(".epos-assistent-band tbody tr button")[1].Click();
+        Assert.Equal("Referenz BHKW-Kaskade",
+            cut.Find(".epos-assistent-inhalt .epos-projektsteckbrief-name").TextContent);
+        Assert.Equal(new[] { 1007, 1030 }, geholt);
     }
 
     [Fact]
@@ -137,7 +148,7 @@ public class AssistentSteckbriefTests : EposBunitContext
 
         string liste = Regel(css, ".epos-assistentseite .epos-assistent-band > .epos-projektliste");
         Assert.Contains("flex: 1 1 0", liste);
-        Assert.Contains("min-height: 0", liste);
+        Assert.Contains("min-height: 14rem", liste);
 
         string huelle = Regel(css, ".epos-assistentseite .epos-assistent-band > .epos-projektliste > .epos-raster-huelle");
         Assert.Contains("max-height: none", huelle);
