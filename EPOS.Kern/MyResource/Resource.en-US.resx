@@ -46526,5 +46526,8 @@ chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Usage days per year: {0} (from weekly pattern and public holidays), minus {1} holiday-period days = {2}</value>
   </data>
+  <data name="VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN" xml:space="preserve">
+    <value>The economic key figures of the current case per scenario (VALERI presentation): columns unfavourable, expected and favourable; if the case lacks a scenario, the table shows expected only with a note below; only in the block {{#je stand}}.</value>
+  </data>
 </root>
 

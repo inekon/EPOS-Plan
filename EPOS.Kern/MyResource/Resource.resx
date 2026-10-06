@@ -46533,5 +46533,8 @@ Chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2}</value>
   </data>
+  <data name="VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN" xml:space="preserve">
+    <value>Die Kennzahlen der Wirtschaftlichkeit des laufenden Stands je Szenario (VALERI-Darstellung): Spalten Ungünstig, Erwartet und Günstig; fehlt dem Stand ein Szenario, steht die Tafel allein in Erwartet mit einem Hinweis darunter; nur im Block {{#je stand}}.</value>
+  </data>
 </root>
 

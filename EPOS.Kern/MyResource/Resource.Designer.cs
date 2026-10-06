@@ -110147,6 +110147,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennzahlen der Wirtschaftlichkeit des laufenden Stands je Szenario (VALERI-Darstellung): Spalten Ungünstig, Erwartet und Günstig; fehlt dem Stand ein Szenario, steht die Tafel allein in Erwartet mit einem Hinweis darunter; nur im Block {{#je stand}}. ähnelt.
+        /// </summary>
+        public static string VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN {
+            get {
+                return ResourceManager.GetString("VF_STAND__TABELLE__WIRTSCHAFT_SZENARIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: Ist das Ergebnis des laufenden Stands älter als die letzte Projektänderung? ähnelt.
         /// </summary>
         public static string VF_STAND__VERALTET {

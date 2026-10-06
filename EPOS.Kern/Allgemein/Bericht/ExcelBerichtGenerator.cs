@@ -271,7 +271,9 @@ namespace WindowsFormsApplication1
             // ETAPPE E8b (U43, Konzept V‑G12): die Anhang-E-Checkliste als letztes Blatt —
             // nur mit dem Baustein „Wirtschaftlichkeit", auf dessen Blöcke sie verweist.
             if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
-                blatt(Blattart.Checkliste, null, () => AnhangECheckliste.SchreibeExcel(wb, AnhangECheckliste.AusBericht(daten)));
+                blatt(Blattart.Checkliste, null, () => AnhangECheckliste.SchreibeExcel(wb,
+                    // VB‑E4: in VALERI-Darstellung nennen die Punkte 1, 7 und 9 die Tafel „Kennzahlen je Szenario“ des Wortberichts.
+                    AnhangECheckliste.AusBericht(daten, null, WirtschaftlichkeitSzenario.ERWARTET, WirtschaftsBerichtswerte.IstValeri(konfig))));
         }
 
         /// <summary>

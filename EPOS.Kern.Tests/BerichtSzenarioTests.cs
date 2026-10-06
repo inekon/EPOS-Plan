@@ -378,6 +378,69 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  VB‑E4: der Platzhalter stand.tabelle.wirtschaft_szenarien (Katalog v15)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Platzhalter <c>stand.tabelle.wirtschaft_szenarien</c> (VB‑Q8 a) trägt je Stand dieselbe Tafel wie das
+        /// Kapitel in VALERI-Darstellung, steht mit seinem Schalter in Fassung 15, je Stand in Word und Excel; fehlt einem
+        /// Stand Ungünstig, trägt seine Tafel den Rückfallhinweis. Die Anhang-E-Tafel des Vorlagenwegs nennt in
+        /// VALERI-Darstellung die neue Tafel, sonst wie bisher die Kennzahlen im Szenario.
+        /// </summary>
+        [Fact]
+        public void Der_Platzhalter_der_Kennzahlen_je_Szenario_gleicht_der_Tafel_des_Kapitels()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Vorlagenfeld feld = Vorlagenfeldkatalog.Finde("stand.tabelle.wirtschaft_szenarien");
+            Assert.NotNull(feld);
+            Assert.Equal(15, feld.Seit);
+            Assert.Equal(Vorlagenfeldart.Tabelle, feld.Art);
+            Assert.Equal(Vorlagenfeldkontext.Stand, feld.Kontext);
+            Assert.Equal(Vorlagenausgabe.Beide, feld.Ausgaben);
+            Vorlagenfeld schalter = Vorlagenfeldkatalog.Finde("hat.tabelle.wirtschaft_szenarien");
+            Assert.NotNull(schalter);
+            Assert.Equal(15, schalter.Seit);
+            Assert.True(Berichtsbedarf.IstWirtschaftswert(feld.Schluessel));
+
+            BerichtsDaten daten = Gesammelt(BerichtVorlagenMesslatteTests.PROBE_GRUPPE, d =>
+            {
+                VariantenDaten s = d.Varianten.First(v => v.IstStamm);
+                d.Wirtschaftlichkeit.RemoveAll(e => e.IdProjekt == s.IdProjekt && e.Szenario == WirtschaftlichkeitSzenario.WORST);
+            });
+            Berichtswerte w = Berichtswerte.Aus(daten, KonfigValeri(WirtschaftlichkeitSzenario.ERWARTET), false, null);
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                Berichtstabelle soll = Berichtstabellen.WirtschaftskennzahlenSzenarien(daten, daten.Wirtschaft, v, false, w.Kultur);
+                Berichtstabelle ist = Vorlagenfeldkatalog.Loese(feld, w.MitStand(v), Array.Empty<Formatangabe>()).Tabelle;
+                Assert.NotNull(ist);
+                Assert.Equal(Text(soll), Text(ist));
+                Assert.Equal(soll.Hinweise, ist.Hinweise);
+                if (v.IstStamm)
+                    Assert.Equal(string.Format(R.WIRT_BER_VALERI_RUECKFALL, "Stamm", R.WIRT_SZEN_WORST, R.WIRT_SZEN_ERWARTET),
+                                 ist.Hinweise[0]);
+                else Assert.Equal(4, ist.Kopf.Zellen.Count);
+            }
+
+            // Anhang E im Vorlagenweg: VALERI nennt die Tafel „Kennzahlen je Szenario“, die Einzeldarstellung nicht.
+            Vorlagenfeld anhang = Vorlagenfeldkatalog.Finde("tabelle.anhang_e.checkliste");
+            string valeri = Text(Vorlagenfeldkatalog.Loese(anhang, w, Array.Empty<Formatangabe>()).Tabelle);
+            Berichtswerte einzeln = Berichtswerte.Aus(daten, Konfig(WirtschaftlichkeitSzenario.ERWARTET), false, null);
+            string einzelText = Text(Vorlagenfeldkatalog.Loese(anhang, einzeln, Array.Empty<Formatangabe>()).Tabelle);
+            Assert.Contains("„" + KENNZAHLEN_VALERI + "“", valeri);
+            Assert.DoesNotContain("„" + KENNZAHLEN_VALERI + "“", einzelText);
+            Assert.Contains("„" + KENNZAHLEN_ERWARTET + "“", einzelText);
+        }
+
+        /// <summary>Kopf und Zeilen einer Tafel als Text, Zellen mit „ | “ getrennt.</summary>
+        private static string Text(Berichtstabelle t)
+        {
+            IEnumerable<Tabellenzeile> zeilen = (t.Kopf == null ? Enumerable.Empty<Tabellenzeile>() : new[] { t.Kopf }).Concat(t.Zeilen);
+            return string.Join("\n", zeilen.Select(z => string.Join(" | ", z.Zellen.Select(c => c.Text))));
+        }
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 
