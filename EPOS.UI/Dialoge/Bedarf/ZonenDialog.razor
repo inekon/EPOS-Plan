@@ -267,11 +267,13 @@
                             <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@RandText(b)</span></div>
                             <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@NachbarText(b)</span></div>
                             <div class="epos-zr-zelle" role="cell">
-                                <button type="button" class="epos-textknopf epos-zonen-aufbaustufe" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)"
-                                        title="@Stufentitel(stufe)" @onclick="() => BauteilOeffnen(index)">
+                                @* BA-3: die Stufe als Farbfeld mit Kurztext; ein Klick öffnet den Bauteildialog wie ✎ (der bleibt der
+                                   Tastaturweg). *@
+                                <span class="epos-zonen-aufbaustufe" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)"
+                                      title="@Stufentitel(stufe)" @onclick="() => BauteilOeffnen(index)">
                                     <span class="epos-gebansicht-farbfeld" style="@("background:" + GebaeudeAnsichtAufbaustufen.Farbe(stufe))" aria-hidden="true"></span>
                                     <span class="epos-zr-text">@(b.AufbauText.Length > 0 ? b.AufbauText : "—")</span>
-                                </button>
+                                </span>
                             </div>
                             <div class="epos-zr-zelle" role="cell">
                                 <span class="epos-zr-aktionen">

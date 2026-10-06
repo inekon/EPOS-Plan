@@ -115,7 +115,8 @@ public sealed record GebaeudeZuordnungsanfrage(
     IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null,
     bool RaumtemperaturAlsSollwert = false,
     IReadOnlyList<GebaeudePlanschritt>? Planschritte = null,
-    IReadOnlyDictionary<string, bool>? Plangrundhaken = null)
+    IReadOnlyDictionary<string, bool>? Plangrundhaken = null,
+    IReadOnlyDictionary<string, string>? Typwahl = null)
 {
     /// <summary>Dieselbe Anfrage mit einem Schritt am Zonenplan hinter den bisherigen (Zonenbaum).</summary>
     /// <param name="schritt">Der Schritt — nur Schlüssel und Kennungen, nie ein Anzeigetext.</param>
@@ -417,6 +418,15 @@ public sealed record GebaeudeAufbaulistenzeileDaten
 
     /// <summary>Der Sprung in den Abschnitt „Baustoffe": Schlüssel des Materialnamens; <c>null</c> = kein Sprung.</summary>
     public string? Materialschluessel { get; init; }
+
+    /// <summary>Der Schlüssel der Typwahl eines Ersatzaufbaus (E95-4); <c>null</c> = keine Typwahl (echter Aufbau, ohne Aufbau).</summary>
+    public string? Typschluessel { get; init; }
+
+    /// <summary>Der Code des gewählten Typaufbaus; leer = keiner.</summary>
+    public string Typcode { get; init; } = "";
+
+    /// <summary>Die wählbaren Typaufbauten derselben Familie (Code, Name); leer = keine Wahl.</summary>
+    public IReadOnlyList<GebaeudeZonenregelDaten> Typen { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
 }
 
 /// <summary>Ein Katalogbaustoff der Klappliste im Abschnitt „Baustoffe".</summary>
@@ -971,7 +981,8 @@ public sealed record GebaeudeImportErgebnis(
     IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null,
     bool RaumtemperaturAlsSollwert = false,
     IReadOnlyList<GebaeudePlanschritt>? Planschritte = null,
-    IReadOnlyDictionary<string, bool>? Plangrundhaken = null)
+    IReadOnlyDictionary<string, bool>? Plangrundhaken = null,
+    IReadOnlyDictionary<string, string>? Typwahl = null)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)
@@ -1404,6 +1415,9 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_AB_SCHICHTEN — klappt die Schichten einer Zeile auf.</summary>
     public string AbSchichten { get; set; } = Resource.GIMP_AB_SCHICHTEN;
+
+    /// <summary>GIMP_AB_TYPWAHL — Beschriftung der Typwahl je Ersatzaufbau.</summary>
+    public string AbTyp { get; set; } = Resource.GIMP_AB_TYPWAHL;
 
     /// <summary>GIMP_AB_LEER</summary>
     public string AbLeer { get; set; } = Resource.GIMP_AB_LEER;

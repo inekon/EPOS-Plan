@@ -295,10 +295,22 @@ namespace WindowsFormsApplication1
                                                               .Select(s => s.Materialschluessel).FirstOrDefault()
                                          ?? steckbrief.Schichten.Where(s => !s.Weggelassen).Select(s => s.Materialschluessel)
                                                                 .FirstOrDefault(m => !string.IsNullOrEmpty(m)),
+                    Typschluessel = a?.Ersatzschluessel,
+                    Typcode = a?.Ersatz?.Typ.Code ?? "",
+                    Typen = a?.Ersatz != null ? Typen(a.Ersatz.Typ.Code) : Array.Empty<GebaeudeZonenregelDaten>(),
                 });
             }
             return liste.OrderBy(z => z.Stufe == Aufbaustufe.A ? 1 : 0).ThenByDescending(z => z.Stufe).ThenBy(z => z.Art, StringComparer.CurrentCulture)
                         .ThenBy(z => z.Aufbau, StringComparer.CurrentCulture).ToList();
+        }
+
+        /// <summary>Die Typaufbauten derselben Familie (Außenwand, Dach, Boden — Vorsatz des Codes) zur Wahl (E95-4).</summary>
+        internal static IReadOnlyList<GebaeudeZonenregelDaten> Typen(string code)
+        {
+            int strich = (code ?? "").IndexOf('_');
+            string familie = strich > 0 ? code.Substring(0, strich + 1) : code ?? "";
+            return TypaufbauSaattabelle.Alle.Where(t => t.Code.StartsWith(familie, StringComparison.Ordinal))
+                                       .Select(t => new GebaeudeZonenregelDaten(t.Code, t.Bezeichner)).ToList();
         }
 
         // ------------------------------------------------------------------

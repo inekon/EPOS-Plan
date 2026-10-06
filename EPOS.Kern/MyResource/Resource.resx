@@ -47370,5 +47370,8 @@ Chart</value>
   <data name="ZOND_AUFBAU_TITEL" xml:space="preserve">
     <value>Zuordnungsstufe {0}: {1}</value>
   </data>
+  <data name="GIMP_AB_TYPWAHL" xml:space="preserve">
+    <value>Typaufbau wählen</value>
+  </data>
 </root>
 

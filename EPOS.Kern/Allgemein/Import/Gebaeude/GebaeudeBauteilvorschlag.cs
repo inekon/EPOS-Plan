@@ -179,6 +179,12 @@ namespace WindowsFormsApplication1
         /// Bauteilsteckbrief (BA-3); leer = keiner bekannt (etwa beim Ersatzaufbau, dessen Schichten Katalogbaustoffe tragen).
         /// </summary>
         internal IReadOnlyList<string> Schichtnamen { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Der Schlüssel eines Ersatzaufbaus (Bauteilart, Rand, Neigung, Ziel-U) — der Schlüssel der Typwahl je Aufbau (E95-4,
+        /// BA-3); <c>null</c> bei einem Aufbau der Datei.
+        /// </summary>
+        internal string Ersatzschluessel { get; init; }
     }
 
     /// <summary>Eine Schicht der Datei, die die Relevanzregel weggelassen hat: Stoffname, Dicke [m], Grund, Anteile an R und C [–].</summary>
@@ -663,9 +669,10 @@ namespace WindowsFormsApplication1
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeImportAblauf ablauf, int gebaeudeIndex, char? baualtersklasse,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
                                                         Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null,
-                                                        bool raumtemperaturAlsSollwert = false)
+                                                        bool raumtemperaturAlsSollwert = false,
+                                                        IReadOnlyDictionary<string, string> typwahl = null)
             => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich, zonierung,
-                      raumtemperaturAlsSollwert);
+                      raumtemperaturAlsSollwert, typwahl);
 
         /// <summary>
         /// <b>Der Vorschlag mehrerer Zonen</b> (Stufe G6c) aus dem gelesenen Ablauf: die Zonierung nach
@@ -697,11 +704,14 @@ namespace WindowsFormsApplication1
         /// <param name="raumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen"
         /// (<see cref="GebaeudeCadSollwert"/>): im Mehrzonenweg trägt dann jede beheizte Zone das Mittel ihrer Räume als
         /// <c>Raumsolltemperatur_Tag</c>; aus (Vorgabe) bleiben die Sollwerte der Zonen leer und erben das Gebäude.</param>
+        /// <param name="typwahl">Die Typwahl des Anwenders je Ersatzaufbau (<see cref="GebaeudeAufbauzeile.Ersatzschluessel"/> →
+        /// Code des Typaufbaus, E95-4); <c>null</c> = die Vorgabe nach Bauart und Klasse.</param>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeAbbild abbild, int gebaeudeIndex, char? baualtersklasse,
                                                         GebaeudeQuelle quelle, GebaeudeImportProfil profil,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
                                                         Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null,
-                                                        bool raumtemperaturAlsSollwert = false)
+                                                        bool raumtemperaturAlsSollwert = false,
+                                                        IReadOnlyDictionary<string, string> typwahl = null)
         {
             var v = new GebaeudeBauteilvorschlag { AbgleichAktiv = abgleich != null };
             if (abbild == null || profil == null || gebaeudeIndex < 0 || gebaeudeIndex >= abbild.Gebaeude.Count)
@@ -714,6 +724,7 @@ namespace WindowsFormsApplication1
             {
                 Zonierung = zonierung != null && !zonierung.Einzonig ? zonierung : null,
                 CadSollwert = raumtemperaturAlsSollwert,
+                Typwahl = typwahl,
             }.Bauen();
             return v;
         }
@@ -791,6 +802,9 @@ namespace WindowsFormsApplication1
 
             /// <summary>Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen".</summary>
             internal bool CadSollwert { get; init; }
+
+            /// <summary>Die Typwahl je Ersatzaufbau (Schlüssel → Code); <c>null</c> = die Vorgabe.</summary>
+            internal IReadOnlyDictionary<string, string> Typwahl { get; init; }
 
             // Der Mehrzonenweg: die Zone, an die Abschliessen die Zeile hängt.
             private ZoneModel _aktuelleZone;
@@ -2093,14 +2107,18 @@ namespace WindowsFormsApplication1
                                     + u.ToString("R", CultureInfo.InvariantCulture);
                 if (!_ersatzJeSchluessel.TryGetValue(schluessel, out GebaeudeAufbauzeile zeile))
                 {
-                    Ersatzergebnis e = Ersatzaufbau.Bilden(art, rand, neigung, _bauart, _klasse, u);
+                    // E95-4: die Typwahl des Anwenders je Aufbau überschreibt die Vorgabe (abgeglichen, ohne Typwechsel).
+                    Ersatzergebnis e = Typwahl != null && Typwahl.TryGetValue(schluessel, out string code)
+                                       && TypaufbauSaattabelle.Alle.Any(t => string.Equals(t.Code, code, StringComparison.Ordinal))
+                        ? Ersatzaufbau.Abgleichen(TypaufbauSaattabelle.Zu(code), rand, neigung, u)
+                        : Ersatzaufbau.Bilden(art, rand, neigung, _bauart, _klasse, u);
                     BauteilaufbauModel m = e.Aufbau;
                     m.ID = _naechsterAufbau--;
                     m.Bezeichner = FreierName(e.Typ.Bezeichner + ", U " + Zahl(Math.Round(u, 3)));
                     m.Bauteilart = b.Bauteilart;
                     m.Beschreibung = Kuerzen(Ersatzbeschreibung(e), 250);
                     zeile = new GebaeudeAufbauzeile(m, null, null, false, false, Importherkunft.Vorgabe,
-                                                    m.Schichten.Select(x => x.ID_Baustoff).ToArray()) { Ersatz = e };
+                                                    m.Schichten.Select(x => x.ID_Baustoff).ToArray()) { Ersatz = e, Ersatzschluessel = schluessel };
                     _ersatzJeSchluessel[schluessel] = zeile;
                     _v._aufbauten.Add(zeile);
                     if ((e.Vermerk & Ersatzvermerk.TypNachU) != 0) Merken(_ersatzTypwechsel, m.Bezeichner);

@@ -586,6 +586,7 @@ namespace WindowsFormsApplication1
             satz.FolgevorgabenNachziehen();
             _satz = satz;
             _gebaeudeindex = anfrage.Gebaeudeindex;
+            _typwahl = anfrage.Typwahl;
 
             // Zonierung und Bauteilvorschlag mit derselben Klasse und denselben Raumhaken — jede
             // Anfrage (Regel, Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung, Zuordnung von
@@ -655,7 +656,7 @@ namespace WindowsFormsApplication1
                 }
             }
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
-                                                         Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert);
+                                                         Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert, _typwahl);
             // HC-5: der frisch abgeleitete Grundriss je Raum vor dem Rechteckersatz (dieselben, die der Import speichert).
             _geometrie = GebaeudeGrundriss.BildenMitGrundriss(_ablauf.Abbild, index, _zonierung, out _);
         }
@@ -835,7 +836,8 @@ namespace WindowsFormsApplication1
             _gebaeudeindex = ergebnis.Gebaeudeindex;
 
             // Zonierung und Bauteilvorschlag zum Ergebnis — mit Regel und Baustoffzuordnungen des
-            // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt.
+            // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt. BA-3: die Typwahl je Ersatzaufbau reist mit.
+            _typwahl = ergebnis.Typwahl;
             VorschlagBilden(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse), ergebnis.Zonenregel,
                             ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen, ergebnis.Umhaengungen,
                             ergebnis.RaumtemperaturAlsSollwert, ergebnis.Planschritte, ergebnis.Plangrundhaken);
@@ -1027,6 +1029,9 @@ namespace WindowsFormsApplication1
         /// Kopfzeile der Zone, die Zeilen, die Zeile zur inneren Masse und die Meldungen; <c>null</c>
         /// ohne Vorschlag.
         /// </summary>
+        /// <summary>BA-3: die Typwahl je Ersatzaufbau der letzten Anfrage (E95-4); <c>null</c> = die Vorgabe.</summary>
+        private IReadOnlyDictionary<string, string> _typwahl;
+
         internal static GebaeudeBauteileDaten BauteileDaten(GebaeudeBauteilvorschlag v)
         {
             if (v == null) return null;

@@ -172,5 +172,30 @@ namespace EPOS.Kern.Tests
             int ersteA = liste.ToList().FindIndex(z => z.Stufe == Aufbaustufe.A);
             if (ersteA > 0) Assert.All(liste.Take(ersteA), z => Assert.NotEqual(Aufbaustufe.A, z.Stufe));
         }
-    }
+    
+        [Fact]
+        public void Die_Typwahl_je_Ersatzaufbau_ueberschreibt_die_Vorgabe()
+        {
+            GebaeudeBauteilvorschlag v = ZuordnungsstufeTests.SyntheseMitVierWaenden();
+            GebaeudeBauteilzeile c = BauteilvorschlagProbe.Zeile(v, "w-c");
+            Assert.Equal(TypaufbauSaattabelle.AW_MASSIV_UNGEDAEMMT, c.Typaufbau);
+            GebaeudeAufbauzeile ersatz = v.Aufbauten.Single(a => a.Aufbau.ID == c.Bauteil.ID_Aufbau);
+            Assert.NotNull(ersatz.Ersatzschluessel);
+
+            var zeile = GebaeudeAufbauHuelle.Aufbauliste(v).Single(z => z.Typschluessel == ersatz.Ersatzschluessel);
+            Assert.Equal(TypaufbauSaattabelle.AW_MASSIV_UNGEDAEMMT, zeile.Typcode);
+            Assert.Contains(zeile.Typen, t => t.Schluessel == TypaufbauSaattabelle.AW_HOLZLEICHTBAU);
+            Assert.All(zeile.Typen, t => Assert.StartsWith("AW_", t.Schluessel));
+
+            var wahl = new Dictionary<string, string> { [ersatz.Ersatzschluessel] = TypaufbauSaattabelle.AW_HOLZLEICHTBAU };
+            GebaeudeBauteilvorschlag w = ZuordnungsstufeTests.SyntheseMitVierWaenden(wahl);
+            GebaeudeBauteilzeile c2 = BauteilvorschlagProbe.Zeile(w, "w-c");
+            Assert.Equal(TypaufbauSaattabelle.AW_HOLZLEICHTBAU, c2.Typaufbau);
+            Assert.Equal(Bauteilzuordnungsstufe.C, c2.Stufe);
+            // Ein unbekannter Code fällt auf die Vorgabe zurück.
+            var falsch = new Dictionary<string, string> { [ersatz.Ersatzschluessel] = "GIBT_ES_NICHT" };
+            Assert.Equal(TypaufbauSaattabelle.AW_MASSIV_UNGEDAEMMT,
+                         BauteilvorschlagProbe.Zeile(ZuordnungsstufeTests.SyntheseMitVierWaenden(falsch), "w-c").Typaufbau);
+        }
+}
 }

@@ -1202,6 +1202,9 @@ public class GebaeudeImportDialogTests : EposBunitContext
                 Schluessel = "A-2", Aufbau = "Dach (Ersatz)", Art = "Dach", Stufe = EPOS.UI.Dialoge.Bedarf.Aufbaustufe.B, Bauteile = 1, Flaeche = "80",
                 UDatei = "0,2", C1korr = "41,3", Typaufbau = "Typaufbau: Dach gedämmt, Dämmdicke 18 cm", Fehlt = "keine Schichten",
                 Materialschluessel = "fussbodenaufbau",
+                Typschluessel = "Dach|Aussenluft|0|0.2", Typcode = "DA_STAHLBETON_GEDAEMMT",
+                Typen = new[] { new GebaeudeZonenregelDaten("DA_STAHLBETON_GEDAEMMT", "Dach Stahlbeton gedämmt"),
+                                new GebaeudeZonenregelDaten("DA_SPARRENDACH", "Sparrendach") },
             },
             new GebaeudeAufbaulistenzeileDaten
             {
@@ -1250,6 +1253,22 @@ public class GebaeudeImportDialogTests : EposBunitContext
         cut.Find(".epos-gebimport-aufbauten tr[data-schluessel='A-2'] .epos-gebimport-aufbaubaustoff").Click();
         Assert.Equal("fussbodenaufbau", cut.Instance.Baustoffziel);
         Assert.Contains("epos-gebimport-baustoff--ziel", Baustoffzeile(cut, "fussbodenaufbau").ClassList);
+    }
+
+    [Fact]
+    public void BA3_Die_Typwahl_je_Ersatzaufbau_reist_in_der_Anfrage()
+    {
+        var p = new Protokoll();
+        var cut = Bauen(p, zuordnen: MitAufbauten);
+        Einlesen(cut);
+        IElement wahl = cut.Find(".epos-gebimport-aufbauten tr[data-schluessel='A-2'] select.epos-gebimport-typwahl");
+        Assert.Equal(new[] { "DA_STAHLBETON_GEDAEMMT", "DA_SPARRENDACH" }, wahl.QuerySelectorAll("option").Select(o => o.GetAttribute("value")));
+        Assert.Empty(cut.FindAll(".epos-gebimport-aufbauten tr[data-schluessel='A-1'] select"));
+        int anfragen = p.Anfragen.Count;
+        wahl.Change("DA_SPARRENDACH");
+        Assert.Equal("DA_SPARRENDACH", cut.Instance.Typwahl["Dach|Aussenluft|0|0.2"]);
+        Assert.True(p.Anfragen.Count > anfragen);
+        Assert.Equal("DA_SPARRENDACH", p.Anfragen[^1].Typwahl!["Dach|Aussenluft|0|0.2"]);
     }
 
     [Fact]

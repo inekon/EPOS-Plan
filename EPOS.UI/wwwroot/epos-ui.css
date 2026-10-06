@@ -5944,6 +5944,19 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     border-bottom: 0;
 }
 
+.epos-zonen-aufbaustufe {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.epos-gebimport-aufbauhandlungen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
 @media (forced-colors: active) {
     .epos-gebansicht-raum polygon { fill: Canvas; stroke: CanvasText; }
     .epos-gebansicht-raum:focus-visible polygon { stroke: Highlight; }

@@ -33172,6 +33172,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typaufbau wählen ähnelt.
+        /// </summary>
+        public static string GIMP_AB_TYPWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_AB_TYPWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff zuordnen ähnelt.
         /// </summary>
         public static string GIMP_AB_ZUR_BAUSTOFF {

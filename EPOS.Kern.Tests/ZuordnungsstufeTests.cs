@@ -15,7 +15,7 @@ namespace EPOS.Kern.Tests
     /// </summary>
     public sealed class ZuordnungsstufeTests
     {
-        internal static GebaeudeBauteilvorschlag SyntheseMitVierWaenden()
+        internal static GebaeudeBauteilvorschlag SyntheseMitVierWaenden(IReadOnlyDictionary<string, string> typwahl = null)
         {
             GbxmlAbbild a = BauteilvorschlagProbe.Synthetisch();   // Dach und Boden mit U der Datei, ohne Schichten
             AbbildBauteil voll = BauteilvorschlagProbe.Flaeche("w-a", Bauteilart.Aussenwand, Randbedingung.Aussenluft, 20, null, 90, 180, "R1");
@@ -38,7 +38,8 @@ namespace EPOS.Kern.Tests
 
             AbbildBauteil fenster = BauteilvorschlagProbe.Flaeche("f-1", Bauteilart.Fenster, Randbedingung.Aussenluft, 2, 1.1, 90, 180, "R1");
             a.Gebaeude[0].Bauteile.Add(fenster);
-            return BauteilvorschlagProbe.Bilden(a, 'E');
+            return typwahl == null ? BauteilvorschlagProbe.Bilden(a, 'E')
+                : GebaeudeBauteilvorschlag.Bilden(a, 0, 'E', null, new GbxmlImportProfil(), typwahl: typwahl);
         }
 
         [Fact]

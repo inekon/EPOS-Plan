@@ -1375,7 +1375,8 @@
                new Dictionary<string, double?>(_handwerte, StringComparer.Ordinal),
                new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
                _regel, null, CadSollwertWirksam,
-               _planschritte.Count > 0 ? _planschritte.ToList() : null, _planschritte.Count > 0 ? _plangrundhaken : null);
+               _planschritte.Count > 0 ? _planschritte.ToList() : null, _planschritte.Count > 0 ? _plangrundhaken : null,
+               _typwahl.Count > 0 ? new Dictionary<string, string>(_typwahl, StringComparer.Ordinal) : null);
 
     private void StandUebernehmen(GebaeudeImportStand stand)
     {
@@ -2202,7 +2203,8 @@
                _zeilen.ToList(), AlsZoneWirksam,
                new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
                Zonenregel, null, CadSollwertWirksam,
-               _planschritte.Count > 0 ? _planschritte.ToList() : null, _planschritte.Count > 0 ? _plangrundhaken : null);
+               _planschritte.Count > 0 ? _planschritte.ToList() : null, _planschritte.Count > 0 ? _plangrundhaken : null,
+               _typwahl.Count > 0 ? new Dictionary<string, string>(_typwahl, StringComparer.Ordinal) : null);
 
     private async Task BeiLeiste(bool ok)
     {
@@ -2302,6 +2304,22 @@
     /// <summary>Zeigt die Liste nur die Stufen B und C?</summary>
     private bool _nurBC;
 
+    /// <summary>Die Typwahl je Ersatzaufbau (E95-4): Schlüssel → Code; reist in Anfrage und Ergebnis, gespeichert wird nichts.</summary>
+    private readonly Dictionary<string, string> _typwahl = new(StringComparer.Ordinal);
+
+    /// <summary>Die Typwahl des Dialogs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyDictionary<string, string> Typwahl => _typwahl;
+
+    /// <summary>Eine andere Typwahl: Der Vorschlag wird neu gebildet, der Ersatzaufbau auf den gewählten Typ abgeglichen.</summary>
+    private void BeiTyp(GebaeudeAufbaulistenzeileDaten zeile, ChangeEventArgs e)
+    {
+        if (Beschaeftigt || zeile.Typschluessel is not { } schluessel || e.Value?.ToString() is not { Length: > 0 } code) return;
+        if (string.Equals(code, zeile.Typcode, StringComparison.Ordinal)) return;
+        _typwahl[schluessel] = code;
+        _meldung = "";
+        NeuZuordnen();
+    }
+
     /// <summary>Die aufgeklappten Zeilen (Schlüssel).</summary>
     private readonly HashSet<string> _aufbauOffen = new(StringComparer.Ordinal);
 
@@ -2381,6 +2399,16 @@
                             <td class="epos-gebimport-aufbaufehlt">@z.Fehlt</td>
                             <td>
                                 <div class="epos-gebimport-aufbauhandlungen">
+                                    @if (z.Typschluessel is not null && z.Typen.Count > 1)
+                                    {
+                                        <select class="epos-eingabe epos-gebimport-typwahl" aria-label="@Texte.AbTyp" title="@Texte.AbTyp" disabled="@Beschaeftigt"
+                                                value="@z.Typcode" @onchange="e => BeiTyp(z, e)">
+                                            @foreach (GebaeudeZonenregelDaten t in z.Typen)
+                                            {
+                                                <option @key="t.Schluessel" value="@t.Schluessel" selected="@(t.Schluessel == z.Typcode)">@t.Text</option>
+                                            }
+                                        </select>
+                                    }
                                     @if (z.Schichten.Count > 0)
                                     {
                                         <button type="button" class="epos-knopf epos-gebimport-aufbauschichten" aria-expanded="@(offen ? "true" : "false")"
