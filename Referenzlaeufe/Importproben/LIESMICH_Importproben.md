@@ -73,6 +73,8 @@ KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
 | `ifc4_koerper_platzierung.ifc` | Raumkörper hinter einer Placement-Kette: Gebäude um 90° gedreht und versetzt, Geschoss 3 m höher, Raum versetzt; Längen in mm | selbst erzeugt | eigenes Werk |
 | `ifc4_koerper_nachbarn.ifc` | Trennflächen aus Raumkörpern (G7f-4): drei Räume als `IfcFacetedBrep` auf zwei Geschossen ohne Raumgrenzen, mit Raumbezügen — „Büro“ und „Flur“ (EG) durch eine Wand von 0,24 m (`Pset_WallCommon.ThermalTransmittance` 1,2) getrennt, „Büro 2“ (OG) 0,3 m über dem Büro; zwei Temperaturen für Z6 | selbst erzeugt | eigenes Werk |
 | `ifc4_koerper_nachbarn_grenzen.ifc` | Gegenprobe zu `ifc4_koerper_nachbarn.ifc`: dieselben Räume mit Raumgrenzen der 2. Ebene für Wand und Decke (Gegenstücke) — die Raumgrenzen gehen vor, die Körperpaare werden nur gezählt | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_grundriss_stufe.ifc` | Grundriss je Raum aus dem Dateikörper (HC-5): ein Raum als `IfcFacetedBrep` in L-Form (4 × 3 m mit Boden auf 0, 2 × 3 m mit Boden auf 0,3 m, Decke auf 3 m), Mengensatz 15 m² — Herleitung `KoerperBoden`, 18 m², Vermerke `Stufen` und `Flaeche` (+20 %) | selbst erzeugt | eigenes Werk |
+| `ifc4_koerper_grundriss_ohne_boden.ifc` | Grundriss je Raum aus dem Dateikörper (HC-5): eine Schale 4 × 3 × 3 m ohne Boden als `IfcShellBasedSurfaceModel` mit `IfcOpenShell` — Herleitung `KoerperDecke`, 12 m² | selbst erzeugt | eigenes Werk |
 | `ifc4_verlust.ifc` | von Hand geschriebene Kleinstdatei (< 5 KB), absichtlich beschädigt: ein unbekannter Entitätstyp und ein Verweis ins Leere — beide Verlustkanäle | von Hand geschrieben | eigenes Werk |
 
 ## HottCAD-Projektdatei (Stufe SQ-1, Proben 33–36, Zonierungswahl HC-3)

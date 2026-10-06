@@ -1199,7 +1199,9 @@ namespace WindowsFormsApplication1
                                           _baustoffzuordnungen.Count > 0 ? _baustoffzuordnungen : null,
                                           // Einzonenweg mit Projektdatei (SQ-3): das Gebäude nimmt die Konditionierung der
                                           // Gebäudegruppe bzw. der einen Zone als Gebäudekalender.
-                                          !_alsZone || _vorschlag?.Mehrzonig != true ? _ablauf.Gebaeudekonditionierung(_gebaeudeindex) : null);
+                                          !_alsZone || _vorschlag?.Mehrzonig != true ? _ablauf.Gebaeudekonditionierung(_gebaeudeindex) : null,
+                                          // HC-5: der Grundriss je Raum aus Raumgrenzen bzw. Dateikörper, gespeichert an der Quelle.
+                                          GebaeudeRaumgrundrisse.Bilden(_ablauf.Abbild, _gebaeudeindex));
 
         /// <summary>
         /// Die Quelle, wie sie gemerkt wird: Kommt das Gebäude mit mehreren Zonen (Stufe G6c), trägt sie die
