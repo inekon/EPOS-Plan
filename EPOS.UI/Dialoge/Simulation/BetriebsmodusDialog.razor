@@ -199,7 +199,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>Der Steuerwert zum gewählten Listenplatz — <c>GewaehlterModus</c>:44-52.</summary>

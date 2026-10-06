@@ -804,7 +804,7 @@
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         // Steht der Konstruktor schon beim Öffnen, behält seine Überlagerung den Fokus.
-        if (!_konstruktorOffen) await _wurzel.FocusAsync();
+        if (!_konstruktorOffen) await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <inheritdoc/>

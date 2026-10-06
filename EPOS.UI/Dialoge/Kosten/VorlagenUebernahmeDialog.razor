@@ -441,7 +441,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private static int? ErsteId(IReadOnlyList<(int Id, string Text)> liste)

@@ -332,6 +332,7 @@
         // SchemaAnsicht.SichtbarMachen, ohne JS-Schicht.
         if (_kaesten.TryGetValue(Gewaehlt, out ElementReference r))
         {
+            // Rollen gewollt: gezielter Sprung, der gewählte Kasten des Schemas soll ins Bild.
             try { await r.FocusAsync(); } catch { /* das Element ist gerade weg */ }
         }
     }

@@ -127,14 +127,14 @@
     {
         if (!_fokusNoetig || !Offen) return;
         _fokusNoetig = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
         await Geoeffnet.InvokeAsync();
     }
 
     private async Task ZurWurzel()
     {
         // Der Tabulator hat den Bereich verlassen wollen - er kommt zurueck.
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private Task BeiHintergrund()

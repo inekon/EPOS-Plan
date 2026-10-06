@@ -416,4 +416,24 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.Contains("WP Neu", cut.FindAll(".epos-raster")[0].TextContent);
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);            // die Innenliste steht nicht
     }
+
+    /// <summary>
+    /// <b>Der Erstfokus liegt auf der äußeren Wurzel</b>: Die eingebettete Detailansicht
+    /// steht weit unten im Dialog; fokussierte sie sich selbst, begänne der Tabulator dort,
+    /// unsichtbar. Genau ein Fokusaufruf, auf die Wurzel des Wirts, ohne zu rollen.
+    /// Im echten Chromium misst das <c>Proben/Rasterprobe/fokusprobe.mjs</c>.
+    /// </summary>
+    [Fact]
+    public void Der_Erstfokus_liegt_auf_der_aeusseren_Wurzel_nicht_auf_der_Detailansicht()
+    {
+        var cut = Aufbauen();
+
+        var wurzel = cut.Find(".epos-dialog").GetAttribute("blazor:elementReference");
+        var detail = cut.Find(".epos-wp-anlage").GetAttribute("blazor:elementReference");
+        Assert.NotEqual(wurzel, detail);
+        var fokus = Assert.Single(JSInterop.Invocations,
+            a => a.Identifier == "Blazor._internal.domWrapper.focus");
+        Assert.Equal(wurzel, ((Microsoft.AspNetCore.Components.ElementReference)fokus.Arguments[0]!).Id);
+        Assert.Equal(true, fokus.Arguments[1]);
+    }
 }

@@ -789,6 +789,47 @@ node berichtescrollprobe.mjs --gegenprobe   # Fokus ohne preventScroll nachgeste
 Rückgabe `0` = kein Verstoß. Gegenprobe rot bei Wirtschaftlichkeit und Bericht (Fenster gerollt um
 153 bis 253 px), Übersicht und Kosten passen mit den synthetischen Ständen ganz ins Fenster.
 
+## Fokusprobe — springt ein Dialog beim Öffnen? — Seiten `/fensterprobe`, `/katalogprobe`, `/konditionierungsprobe`, `/gebaeudeimport`
+
+Fast jeder Dialog, jede Überlagerung und jede Seite fokussiert beim ersten Zeichnen ihre Wurzel. Ein
+`FocusAsync()` ohne `preventScroll` rollt Chromium so, dass das Element sichtbar wird: Ist der Dialog höher als
+sein Rollbehälter oder steht er nicht oben darin, rollt Chromium ihn ins Bild und schiebt Dialogkopf, Reiter oder
+Schlussleiste hinaus. Die Probe öffnet 30 Fälle bei 1 280 × 600 und 820 × 700 und misst nach dem Öffnen, bevor
+irgendwer rollt, die Rollposition des Fensters und **jedes** Elements, die Lage des obersten Dialogkopfs (in einer
+Überlagerung deren Kopf) und des Primärknopfs und das Fokusziel. Verstoß: eine Rollposition ungleich 0 oder ein
+Kopf über der Oberkante des Fensters.
+
+| Fälle | Seite |
+|---|---|
+| `fenster-*` (6) | `/fensterprobe`: Heizkessel, BHKW, Wärmepumpen, Gebäude, Dubletten, Katalog — als Wurzel in `#app` wie im eigenen Fenster |
+| `ueberlagerung-gebaeude-simulation` | `/fensterprobe?fall=gebaeude`, Knopf „Simulation...": der Wärmebedarf als Überlagerung |
+| `katalog-*` (16) | `/katalogprobe`, alle Masken außer `rahmen`, 40 Zeilen, volle Spalten |
+| `konditionierung-*` (6) | `/konditionierungsprobe`: Gebäudekatalog als breite Überlagerung (projekt, gesamt, neu, vorlagen), Bausteine, Verwaltung in der Seite |
+| `gebaeudeimport` | `/gebaeudeimport`: Zuordnungsdialog über dem Gebäudedialog |
+
+```bash
+node fokusprobe.mjs --url http://127.0.0.1:5299 [--nur <präfix>] [--fotos <ordner außerhalb des Repositorys>]
+node fokusprobe.mjs --gegenprobe   # dasselbe Fokusziel ohne preventScroll neu fokussiert: muss rot sein
+```
+
+Rückgabe `0` = kein Verstoß (mit `--gegenprobe`: mindestens einer), `1` = sonst, `2` = Aufbaufehler. Die Probe
+steht in keiner CI; die Quelltextwache dazu ist `EPOS.UI.Tests/FokusOhneRollenWacheTests` (jeder `FocusAsync(`
+unter `EPOS.UI` trägt `preventScroll: true` oder einen Vermerk `Rollen gewollt: <Grund>`).
+
+**Ergebnis vom 06.10.2026** (Wirt Release, Chromium headless, `kultur=de-DE`):
+
+| Fall | Fenster | vorher (Bestand ohne `preventScroll`) | nachher |
+|---|---|---|---|
+| Wärmepumpen im eigenen Fenster | 1 280 × 600 / 820 × 700 | Fenster gerollt um 1 059 / 1 315 px — der Fokus der eingebetteten Detailansicht zieht das Dokument fast bis ans Ende | 0 |
+| Gebäude → „Simulation..." (Überlagerung) | beide | Überlagerung gerollt um 70 px, ihr Kopf bei −23 / −18 px | 0, Kopf bei 47 / 52 px |
+| Verwaltung Gebäude in der Seite | beide | Fenster gerollt um 153 px (Probenkopf aus dem Bild) | 0 |
+| Gebäudeimport | beide | Fenster gerollt um 6 / 24 px | 0 |
+| übrige 26 Fälle | beide | 0 | 0 |
+
+Vorher 10 Verstöße, nachher 0. Gegenprobe rot mit 26 Verstößen: zusätzlich zu den vier Fällen oben die vier
+Gebäudekatalog-Überlagerungen der Konditionierungsprobe (70 px, Kopf bei −35 / −32 px) — im Bestand rollte deren
+Erstfokus beim Öffnen nicht, ein erneuter Fokus ohne Schutz rollt sie.
+
 ## Konditionierungsprobe (Stufe KP2) — Seite `/konditionierungsprobe`
 
 **Zweck.** Die Cloud-Vorabnahme der Oberflächenwellen von KP2 (Entwurf KP2, Abschnitt 7): der echte

@@ -693,7 +693,7 @@
         _ersterAufbau = false;
         await KatalogLaden();
         if (_gewaehlt is not null) await GrafikLaden(WahlZu(_gewaehlt));
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
         StateHasChanged();
     }
 

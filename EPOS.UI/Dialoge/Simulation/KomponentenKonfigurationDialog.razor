@@ -341,7 +341,7 @@
     {
         // Der Fokus gehoert dem Dialog, sobald er steht - sonst liefe Esc an ihm
         // vorbei (Muster der Nachbardialoge).
-        if (ersteAnzeige) await _wurzel.FocusAsync();
+        if (ersteAnzeige) await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
