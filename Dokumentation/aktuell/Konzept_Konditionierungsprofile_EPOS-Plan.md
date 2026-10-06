@@ -1504,6 +1504,14 @@ ein Testdatenbankschritt und nur der Vollständigkeit halber genannt:
 
 Version vom Anwender: offen.
 
+Oberfläche und Bericht der Aufheizoptimierung (Wellen O1b, O2, O3; Statuszeilen #779, #780 und die der Welle O3), je ein Satz, Version vom Anwender:
+
+| Welle | Satz |
+|---|---|
+| O1b, O2 (Aufschlag, manuell) | „Die Aufheizoptimierung lässt sich um einen Aufschlag in Stunden oder Prozent verlängern, und im Gebäudedialog kann die Aufheizzeit je Gebäude von Hand vorgegeben werden, mit der bemessenen Zeit als Vorschlag.“ |
+| O2 (Gruppe „Aufheizung“) | „Der Bedarfsdialog zeigt in der Gruppe „Aufheizung“ die Aufheizzeit, die Aufheizleistung, die Rampentage und die Hinweise des Laufs und weist die Auslegungsgröße der Heizung aus Auslegungsheizlast und Aufheizzuschlag aus.“ |
+| O3 (Bericht, Vergleich) | „Bericht und Variantenvergleich weisen die Aufheizung je Gebäude aus: Gebäudetafel, Aufheizabsatz im Kurzbericht, neue Vorlagenfelder und die Kennzahlgruppe „Gebäude“ mit der Abweichung je Kennzahl.“ |
+
 Die Sätze der Oberfläche aus KP2 stehen im [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Abschnitt 7.
 
 ## 11. Risiken
