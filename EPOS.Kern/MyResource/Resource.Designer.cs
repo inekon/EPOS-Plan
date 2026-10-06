@@ -38878,6 +38878,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenbauteil(e) ohne vollständigen Aufbau, {1} m², tragen einen Ersatzaufbau aus {2} Typaufbau(ten) statt masselos zu rechnen (Zuordnungsstufe bleibt B bzw. C). ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ERSATZAUFBAU {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ERSATZAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ersatzaufbau(ten) außerhalb des Abgleichbands (Dämmdicke bis 40 cm, λ das 0,5- bis 3-Fache) — Typaufbau ohne Abgleich: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ERSATZ_BAND {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ERSATZ_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ersatzaufbau(ten) ohne Dämmschicht — der U-Wert liegt über dem des Typaufbaus ohne Dämmung: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ersatzaufbau(ten) mit dem Typ nach dem U-Wert statt nach der Baualtersklasse: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster oder Vorhangfassaden an Erdreich rechnen an Außenluft. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_FENSTER_ERDREICH {
@@ -39234,6 +39270,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzaufbau aus „{0}“: Dämmschicht {1} cm, abgeglichen auf U = {2} W/(m²K). ähnelt.
+        /// </summary>
+        public static string IMP_ERSATZAUFBAU_DICKE {
+            get {
+                return ResourceManager.GetString("IMP_ERSATZAUFBAU_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzaufbau aus „{0}“: λ der tragenden Schicht {1} W/(mK), abgeglichen auf U = {2} W/(m²K). ähnelt.
+        /// </summary>
+        public static string IMP_ERSATZAUFBAU_LAMBDA {
+            get {
+                return ResourceManager.GetString("IMP_ERSATZAUFBAU_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzaufbau aus „{0}“ ohne Abgleich; U = {1} W/(m²K) gilt in der Transmission. ähnelt.
+        /// </summary>
+        public static string IMP_ERSATZAUFBAU_OHNE {
+            get {
+                return ResourceManager.GetString("IMP_ERSATZAUFBAU_OHNE", resourceCulture);
             }
         }
         

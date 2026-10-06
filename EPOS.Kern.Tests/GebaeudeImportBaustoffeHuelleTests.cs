@@ -68,7 +68,7 @@ namespace EPOS.Kern.Tests
             GebaeudeBaustoffeDaten b = Assert.IsType<GebaeudeBaustoffeDaten>(stand.Baustoffe);
             Assert.Equal(20, b.Zeilen.Count);
             Assert.Equal("16 von 20 zugeordnet, 1 ohne Treffer", b.Zusammenfassung);
-            Assert.Equal(6, h.Vorschlag.Aufbauten.Count);
+            Assert.Equal(6, h.Vorschlag.Dateiaufbauten().Count);
 
             GebaeudeMaterialzeileDaten fb = Zeile(stand, "Fußbodenaufbau");
             Assert.True(fb.OhneTreffer);
@@ -131,12 +131,12 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeImportHuelle h = await Gelesen(MATERIALHAUS);
             GebaeudeImportStand vorher = Zuordnen(h);
-            Assert.Equal(6, h.Vorschlag.Aufbauten.Count);
-            Assert.Null(h.Vorschlag.Zeilen.Single(z => z.Bauteil.Bezeichner == "Kellerdecke").Bauteil.ID_Aufbau);
+            Assert.Equal(6, h.Vorschlag.Dateiaufbauten().Count);
+            Assert.NotNull(h.Vorschlag.Zeilen.Single(z => z.Bauteil.Bezeichner == "Kellerdecke").Typaufbau);   // BA-2: Ersatzaufbau
 
             // „Fußbodenaufbau" → Zementestrich: die Kellerdecke bekommt ihren Aufbau, kein Name bleibt ohne Treffer.
             GebaeudeImportStand mit = Zuordnen(h, Zuordnungen(("fussbodenaufbau", ZEMENTESTRICH)));
-            Assert.Equal(7, h.Vorschlag.Aufbauten.Count);
+            Assert.Equal(7, h.Vorschlag.Dateiaufbauten().Count);
             Assert.NotNull(h.Vorschlag.Zeilen.Single(z => z.Bauteil.Bezeichner == "Kellerdecke").Bauteil.ID_Aufbau);
             GebaeudeMaterialzeileDaten fb = Zeile(mit, "Fußbodenaufbau");
             Assert.Equal((GebaeudeAbgleichSchluessel.EigeneZuordnung, "eigene Zuordnung", (int?)ZEMENTESTRICH), (fb.AbgleichSchluessel, fb.Abgleich, fb.IdBaustoff));
@@ -146,7 +146,8 @@ namespace EPOS.Kern.Tests
             Assert.False(fb.Gemerkt);
             Assert.False(fb.OhneTreffer);
             Assert.Equal("17 von 20 zugeordnet, 0 ohne Treffer", mit.Baustoffe!.Zusammenfassung);
-            Assert.NotEqual(vorher.Bauteile!.Kopftext, mit.Bauteile!.Kopftext);
+            // Der Kopf zählt alle Aufbauten: vorher 6 aus der Datei und der Ersatzaufbau der Kellerdecke (BA-2), jetzt 7 aus der Datei.
+            Assert.Equal(vorher.Bauteile!.Kopftext, mit.Bauteile!.Kopftext);
             Assert.Contains("7", mit.Bauteile.Kopftext, StringComparison.Ordinal);
 
             // Ein automatischer Treffer lässt sich überstimmen (N7 vor N5).
@@ -156,7 +157,7 @@ namespace EPOS.Kern.Tests
 
             // Ohne die Zuordnung (entfernt) ist der Vorschlag wieder der alte.
             GebaeudeImportStand zurueck = Zuordnen(h, Zuordnungen());
-            Assert.Equal(6, h.Vorschlag.Aufbauten.Count);
+            Assert.Equal(6, h.Vorschlag.Dateiaufbauten().Count);
             Assert.Equal(vorher.Baustoffe!.Zusammenfassung, zurueck.Baustoffe!.Zusammenfassung);
             Assert.True(Zeile(zurueck, "Fußbodenaufbau").OhneTreffer);
         }
@@ -173,7 +174,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportHerkunft herkunft = h.Herkunft;
             Assert.Equal<KeyValuePair<string, int?>>(new[] { new KeyValuePair<string, int?>("fussbodenaufbau", ZEMENTESTRICH) },
                                                      herkunft.Baustoffzuordnungen);
-            Assert.Equal(7, herkunft.Vorschlag.Aufbauten.Count);
+            Assert.Equal(7, herkunft.Vorschlag.Dateiaufbauten().Count);
 
             // Ohne Bauteilschalter: kein Vorschlag, die Zuordnungen reisen trotzdem (sie gelten für das Projekt).
             h.SatzAusErgebnis(mitZone with { AlsZone = false });
@@ -198,7 +199,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeAbgleichSchluessel.EigeneZuordnung, fb.AbgleichSchluessel);
             Assert.True(fb.Gemerkt);
             Assert.False(fb.Vorgemerkt);
-            Assert.Equal(7, h.Vorschlag.Aufbauten.Count);
+            Assert.Equal(7, h.Vorschlag.Dateiaufbauten().Count);
 
             // Entfernen: null nimmt sie weg — der Name ist wieder ohne Treffer, das Entfernen reist mit.
             Dictionary<string, int?> weg = Zuordnungen(("fussbodenaufbau", null));
@@ -206,7 +207,7 @@ namespace EPOS.Kern.Tests
             Assert.True(ohne.OhneTreffer);
             Assert.True(ohne.Gemerkt);
             Assert.True(ohne.Vorgemerkt);
-            Assert.Equal(6, h.Vorschlag.Aufbauten.Count);
+            Assert.Equal(6, h.Vorschlag.Dateiaufbauten().Count);
             GebaeudeImportStand stand = Zuordnen(h, weg);
             h.SatzAusErgebnis(new GebaeudeImportErgebnis(0, 4, "Haus", Keine, stand.Zeilen.ToList(), false, weg, h.Quelle.Zonenregel));
             Assert.Equal<KeyValuePair<string, int?>>(new[] { new KeyValuePair<string, int?>("fussbodenaufbau", null) },
@@ -279,16 +280,16 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeImportHuelle h = await Gelesen(probe);
             GebaeudeImportStand vorher = Zuordnen(h);
-            int aufbautenVorher = h.Vorschlag.Aufbauten.Count;
+            int aufbautenVorher = h.Vorschlag.Dateiaufbauten().Count;
             GebaeudeBaustoffeDaten b = vorher.Baustoffe;
             List<GebaeudeMaterialzeileDaten> ohne = b?.Zeilen.Where(z => z.OhneTreffer).ToList() ?? new List<GebaeudeMaterialzeileDaten>();
             GebaeudeImportStand nachher = Zuordnen(h, ohne.ToDictionary(z => z.Schluessel, _ => (int?)ZEMENTESTRICH, StringComparer.Ordinal));
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0}: {1} | ohne Treffer: {2} | Aufbauten vorher {3}, nach Handzuordnung {4} | {5}",
                 probe, b?.Zusammenfassung ?? "(kein Abschnitt)", ohne.Count == 0 ? "keine" : string.Join(", ", ohne.Select(z => z.Name)),
-                aufbautenVorher, h.Vorschlag.Aufbauten.Count, nachher.Baustoffe?.Zusammenfassung ?? ""));
+                aufbautenVorher, h.Vorschlag.Dateiaufbauten().Count, nachher.Baustoffe?.Zusammenfassung ?? ""));
             foreach (GebaeudeMaterialzeileDaten z in b?.Zeilen ?? Array.Empty<GebaeudeMaterialzeileDaten>())
                 _aus.WriteLine("  " + z.Name + " · " + z.Schichten + " · " + z.Abgleich + " · " + z.Baustoff + " · " + z.Werte);
-            Assert.True(h.Vorschlag.Aufbauten.Count >= aufbautenVorher);
+            Assert.True(h.Vorschlag.Dateiaufbauten().Count >= aufbautenVorher);
         }
     }
 }

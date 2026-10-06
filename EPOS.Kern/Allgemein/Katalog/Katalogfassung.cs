@@ -316,7 +316,7 @@ namespace WindowsFormsApplication1
                 { GesperrtEinfuegen = true })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUSTOFF" },
             new Katalogtabelle("Tab_Bauteilaufbau_STAMM", "BTA",
-                new[] { "Bezeichner", "Beschreibung", "Bauteilart", "Quelle", "Herkunft", "Quellkennung" },
+                new[] { "Bezeichner", "Beschreibung", "Bauteilart", "Quelle", "Herkunft", "Quellkennung", "Typaufbau" },
                 new Katalogkind("Tab_Bauteilschicht_STAMM", "ID_Aufbau",
                     new[] { "Reihenfolge", "ID_Baustoff", "Dicke", "IstLuftschicht", "Lambda", "Rho", "cp" })
                 { Verweise = new[] { new Katalogverweis("ID_Baustoff", "Tab_Baustoff_STAMM", SPALTE_SCHLUESSEL) } })

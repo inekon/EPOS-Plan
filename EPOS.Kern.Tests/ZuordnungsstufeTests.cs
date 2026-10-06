@@ -15,7 +15,7 @@ namespace EPOS.Kern.Tests
     /// </summary>
     public sealed class ZuordnungsstufeTests
     {
-        private static GebaeudeBauteilvorschlag SyntheseMitVierWaenden()
+        internal static GebaeudeBauteilvorschlag SyntheseMitVierWaenden()
         {
             GbxmlAbbild a = BauteilvorschlagProbe.Synthetisch();   // Dach und Boden mit U der Datei, ohne Schichten
             AbbildBauteil voll = BauteilvorschlagProbe.Flaeche("w-a", Bauteilart.Aussenwand, Randbedingung.Aussenluft, 20, null, 90, 180, "R1");
@@ -53,7 +53,7 @@ namespace EPOS.Kern.Tests
 
             GebaeudeBauteilzeile b = BauteilvorschlagProbe.Zeile(v, "w-b");
             Assert.Equal(Bauteilzuordnungsstufe.B, b.Stufe);
-            Assert.Equal(Aufbauluecke.KeineSchichten, b.Fehlt);
+            Assert.Equal(Aufbauluecke.KeineSchichten | Aufbauluecke.Ersatzaufbau, b.Fehlt);
             Assert.Equal(0.28, b.Bauteil.U_Wert);
 
             GebaeudeBauteilzeile b2 = BauteilvorschlagProbe.Zeile(v, "w-b2");
@@ -65,7 +65,7 @@ namespace EPOS.Kern.Tests
 
             GebaeudeBauteilzeile c = BauteilvorschlagProbe.Zeile(v, "w-c");
             Assert.Equal(Bauteilzuordnungsstufe.C, c.Stufe);
-            Assert.Equal(Aufbauluecke.KeineSchichten, c.Fehlt);
+            Assert.Equal(Aufbauluecke.KeineSchichten | Aufbauluecke.Ersatzaufbau, c.Fehlt);
             Assert.True(ImportherkunftWerte.IstVorgabe(c.HerkunftU));
 
             Assert.Equal(Bauteilzuordnungsstufe.Transparent, BauteilvorschlagProbe.Zeile(v, "f-1").Stufe);
@@ -95,11 +95,11 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Gespeicherte_Zeilen_bekommen_ihre_Stufe_aus_Aufbau_U_und_Herkunft()
         {
-            Assert.Equal(Bauteilzuordnungsstufe.A, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_AUSSENWAND, ID_Aufbau = 5, U_Wert = 0.3 }));
-            Assert.Equal(Bauteilzuordnungsstufe.B, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_DACH, U_Wert = 0.2, Herkunft = DbWerte.HERKUNFT_IFC }));
-            Assert.Equal(Bauteilzuordnungsstufe.C, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_DACH, U_Wert = 0.2, Herkunft = DbWerte.HERKUNFT_VORGABE }));
-            Assert.Equal(Bauteilzuordnungsstufe.C, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_INNENWAND }));
-            Assert.Equal(Bauteilzuordnungsstufe.Transparent, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_FENSTER, U_Wert = 1.1 }));
+            Assert.Equal(Bauteilzuordnungsstufe.A, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_AUSSENWAND, ID_Aufbau = 5, U_Wert = 0.3 }, null));
+            Assert.Equal(Bauteilzuordnungsstufe.B, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_DACH, U_Wert = 0.2, Herkunft = DbWerte.HERKUNFT_IFC }, null));
+            Assert.Equal(Bauteilzuordnungsstufe.C, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_DACH, U_Wert = 0.2, Herkunft = DbWerte.HERKUNFT_VORGABE }, null));
+            Assert.Equal(Bauteilzuordnungsstufe.C, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_INNENWAND }, null));
+            Assert.Equal(Bauteilzuordnungsstufe.Transparent, Bauteilzuordnung.Stufe(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_FENSTER, U_Wert = 1.1 }, null));
         }
 
         [Fact]

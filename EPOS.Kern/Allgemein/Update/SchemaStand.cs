@@ -925,7 +925,10 @@ namespace WindowsFormsApplication1
         /// Danach, mit dem GRUNDRISS JE IMPORTIERTEM RAUM (HC-5), steht das Ziel auf <see cref="RaumgrundrissSchema.SCHRITT"/>:
         /// <c>Tab_Raumgrundriss</c>, eine Kindliste der Importquelle (<see cref="RaumgrundrissSchema"/>).
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; sie entsteht leer.
-        public const int Zielversion = RaumgrundrissSchema.SCHRITT;
+        /// Danach, mit den TYPAUFBAUTEN (BA-2), steht das Ziel auf <see cref="TypaufbauSchema.SCHRITT"/>: Spalte
+        /// <c>Typaufbau</c> an Projekt- und Katalogaufbau und die Saat der neun Typaufbauten (<see cref="TypaufbauSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte; kein Referenzprojekt trägt einen Aufbau.
+        public const int Zielversion = TypaufbauSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
