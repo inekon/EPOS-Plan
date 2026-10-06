@@ -111362,6 +111362,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} › „Kennzahlen je Szenario“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_1_STELLE_WORT_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_AE_1_STELLE_WORT_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzen und Lasten ähnelt.
         /// </summary>
         public static string WIRT_AE_1_THEMA {
@@ -111695,6 +111704,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Kennzahlen je Szenario“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_7_STELLE_WORT_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_AE_7_STELLE_WORT_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung ähnelt.
         /// </summary>
         public static string WIRT_AE_7_THEMA {
@@ -111808,6 +111826,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_AE_9_STELLE_WORT {
             get {
                 return ResourceManager.GetString("WIRT_AE_9_STELLE_WORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Kennzahlen je Szenario“, „Szenarien Ungünstig / Erwartet / Günstig“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_STELLE_WORT_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_STELLE_WORT_VALERI", resourceCulture);
             }
         }
         
@@ -112271,6 +112298,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen je Szenario ähnelt.
+        /// </summary>
+        public static string WIRT_BER_KENNZAHLEN_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_BER_KENNZAHLEN_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Für {0} fehlt das Ergebnis im Szenario „{1}“ — die Wirtschaftlichkeit steht deshalb im Szenario „{2}“. ähnelt.
         /// </summary>
         public static string WIRT_BER_SZENARIO_RUECKFALL {
@@ -112285,6 +112321,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BER_SZENARIO_WORTBERICHT {
             get {
                 return ResourceManager.GetString("WIRT_BER_SZENARIO_WORTBERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresreihen und Kennzahlen von Günstig und Ungünstig: Tabellenbericht, Blatt „Wirtschaftlichkeit“. ähnelt.
+        /// </summary>
+        public static string WIRT_BER_VALERI_MAPPE {
+            get {
+                return ResourceManager.GetString("WIRT_BER_VALERI_MAPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Für {0} fehlen Ergebnisse ({1}) — die Tafel steht deshalb allein im Szenario „{2}“. ähnelt.
+        /// </summary>
+        public static string WIRT_BER_VALERI_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_BER_VALERI_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht in VALERI-Darstellung ähnelt.
+        /// </summary>
+        public static string WIRT_BER_VALERI_WORTBERICHT {
+            get {
+                return ResourceManager.GetString("WIRT_BER_VALERI_WORTBERICHT", resourceCulture);
             }
         }
         

@@ -40503,6 +40503,27 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="WIRT_BER_SZENARIO_WORTBERICHT" xml:space="preserve">
     <value>Szenario des Wortberichts: {0}</value>
   </data>
+  <data name="WIRT_BER_KENNZAHLEN_VALERI" xml:space="preserve">
+    <value>Kennzahlen je Szenario</value>
+  </data>
+  <data name="WIRT_BER_VALERI_MAPPE" xml:space="preserve">
+    <value>Jahresreihen und Kennzahlen von Günstig und Ungünstig: Tabellenbericht, Blatt „Wirtschaftlichkeit“.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_RUECKFALL" xml:space="preserve">
+    <value>⚠ Für {0} fehlen Ergebnisse ({1}) — die Tafel steht deshalb allein im Szenario „{2}“.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_WORTBERICHT" xml:space="preserve">
+    <value>Wortbericht in VALERI-Darstellung</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>{0} › „Kennzahlen je Szenario“</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>„Kennzahlen je Szenario“</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>„Kennzahlen je Szenario“, „Szenarien Ungünstig / Erwartet / Günstig“</value>
+  </data>
   <data name="BK_BER_LBL_SZENARIO" xml:space="preserve">
     <value>Szenario der Wirtschaftlichkeit:</value>
   </data>

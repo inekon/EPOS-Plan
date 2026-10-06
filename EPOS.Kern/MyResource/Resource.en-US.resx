@@ -40496,6 +40496,27 @@ This folder holds the standard template, the short report, the detailed template
   <data name="WIRT_BER_SZENARIO_WORTBERICHT" xml:space="preserve">
     <value>Scenario of the Word report: {0}</value>
   </data>
+  <data name="WIRT_BER_KENNZAHLEN_VALERI" xml:space="preserve">
+    <value>Key figures by scenario</value>
+  </data>
+  <data name="WIRT_BER_VALERI_MAPPE" xml:space="preserve">
+    <value>Annual series and key figures of the favourable and unfavourable scenarios: workbook, sheet “Economic evaluation”.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_RUECKFALL" xml:space="preserve">
+    <value>⚠ Results missing for {0} ({1}) — the table therefore shows scenario “{2}” only.</value>
+  </data>
+  <data name="WIRT_BER_VALERI_WORTBERICHT" xml:space="preserve">
+    <value>Word report in VALERI presentation</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>{0} › key figures by scenario</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>key figures by scenario</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE_WORT_VALERI" xml:space="preserve">
+    <value>key figures by scenario, scenarios Unfavourable / Expected / Favourable</value>
+  </data>
   <data name="BK_BER_LBL_SZENARIO" xml:space="preserve">
     <value>Economic scenario:</value>
   </data>

@@ -78,6 +78,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Szenario = WirtschaftlichkeitSzenario.ERWARTET;
 
+        /// <summary>
+        /// Steht der Wortbericht in VALERI-Darstellung (Etappe VB‑E2, Entscheid VB‑Q7 a)? Dann nennen die Stellen der
+        /// Punkte 1, 7 und 9 die Tafel „Kennzahlen je Szenario“; der Stand von Punkt 9 bleibt unberührt.
+        /// </summary>
+        public bool Valeri;
+
         /// <summary>Nicht monetäre Wirkungen sind erfasst — ETAPPE E17: mindestens eine Wirkung
         /// der Liste trägt eine Beschreibung.</summary>
         public bool NichtMonetaerErfasst;
@@ -231,7 +237,9 @@ namespace WindowsFormsApplication1
                 Punkt("0.2", g0, MyResource.Resource.WIRT_AE_02_THEMA, MyResource.Resource.WIRT_AE_02_ANF,
                       Stelle(nameof(MyResource.Resource.WIRT_AE_02_STELLE), null, st, BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_KOMPONENTEN), ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_02_STAND),
                 Punkt("1", gA, MyResource.Resource.WIRT_AE_1_THEMA, MyResource.Resource.WIRT_AE_1_ANF,
-                      StelleImSzenario(nameof(MyResource.Resource.WIRT_AE_1_STELLE), nameof(MyResource.Resource.WIRT_AE_1_STELLE_WORT), st, szenarioname, w),
+                      StelleImSzenario(nameof(MyResource.Resource.WIRT_AE_1_STELLE),
+                                       lage.Valeri ? nameof(MyResource.Resource.WIRT_AE_1_STELLE_WORT_VALERI)
+                                                   : nameof(MyResource.Resource.WIRT_AE_1_STELLE_WORT), st, szenarioname, w),
                       lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
                       lage.Gerechnet ? MyResource.Resource.WIRT_AE_1_STAND : ohneRechnung),
                 Punkt("2a", gA, MyResource.Resource.WIRT_AE_2A_THEMA, MyResource.Resource.WIRT_AE_2A_ANF,
@@ -263,7 +271,9 @@ namespace WindowsFormsApplication1
                           ? MyResource.Resource.WIRT_AE_6_STAND
                           : string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_AE_6_STAND_RISIKO, lage.Risiko)),
                 Punkt("7", gB, MyResource.Resource.WIRT_AE_7_THEMA, MyResource.Resource.WIRT_AE_7_ANF,
-                      StelleImSzenario(nameof(MyResource.Resource.WIRT_AE_7_STELLE), nameof(MyResource.Resource.WIRT_AE_7_STELLE_WORT), st, szenarioname, w),
+                      StelleImSzenario(nameof(MyResource.Resource.WIRT_AE_7_STELLE),
+                                       lage.Valeri ? nameof(MyResource.Resource.WIRT_AE_7_STELLE_WORT_VALERI)
+                                                   : nameof(MyResource.Resource.WIRT_AE_7_STELLE_WORT), st, szenarioname, w),
                       lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
                       lage.Gerechnet ? MyResource.Resource.WIRT_AE_7_STAND : ohneRechnung),
                 Punkt("8", gB, MyResource.Resource.WIRT_AE_8_THEMA, MyResource.Resource.WIRT_AE_8_ANF,
@@ -271,7 +281,9 @@ namespace WindowsFormsApplication1
                       lage.SensitivitaetGerechnet ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
                       lage.SensitivitaetGerechnet ? MyResource.Resource.WIRT_AE_8_TEILWEISE : MyResource.Resource.WIRT_AE_8_OFFEN),
                 Punkt("9", gB, MyResource.Resource.WIRT_AE_9_THEMA, MyResource.Resource.WIRT_AE_9_ANF,
-                      Stelle(nameof(MyResource.Resource.WIRT_AE_9_STELLE), nameof(MyResource.Resource.WIRT_AE_9_STELLE_WORT), st, w),
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_9_STELLE),
+                             lage.Valeri ? nameof(MyResource.Resource.WIRT_AE_9_STELLE_WORT_VALERI)
+                                         : nameof(MyResource.Resource.WIRT_AE_9_STELLE_WORT), st, w),
                       StandPunkt9(lage), StandTextPunkt9(lage)),
                 Punkt("10", gC, MyResource.Resource.WIRT_AE_10_THEMA, MyResource.Resource.WIRT_AE_10_ANF,
                       Stelle(nameof(MyResource.Resource.WIRT_AE_10_STELLE), nameof(MyResource.Resource.WIRT_AE_10_STELLE_WORT), st, w),
@@ -421,6 +433,17 @@ namespace WindowsFormsApplication1
         public static List<ChecklistenPunkt> AusBericht(BerichtsDaten daten, IReadOnlyDictionary<string, string> kapitelstellen,
                                                         string szenario)
         {
+            return AusBericht(daten, kapitelstellen, szenario, false);
+        }
+
+        /// <summary>
+        /// Die Punkte eines Berichtslaufs wie <see cref="AusBericht(BerichtsDaten, IReadOnlyDictionary{string, string}, string)"/>;
+        /// in VALERI-Darstellung (<paramref name="valeri"/>, VB‑Q7 a) nennen die Stellen der Punkte 1, 7 und 9 die Tafel
+        /// „Kennzahlen je Szenario“.
+        /// </summary>
+        public static List<ChecklistenPunkt> AusBericht(BerichtsDaten daten, IReadOnlyDictionary<string, string> kapitelstellen,
+                                                        string szenario, bool valeri)
+        {
             // BV-E3 (Konzept Berichtsvorlagen 5.1): aus dem Wertesatz des Laufs — Ergebnisse, Parameter,
             // Bewertung und Wirkungsliste hat der Sammler über dieselben Aufrufe ermittelt.
             WirtschaftsBerichtswerte w = WirtschaftsBerichtswerte.Von(daten);
@@ -434,6 +457,7 @@ namespace WindowsFormsApplication1
             }
             ChecklistenLage lage = ChecklistenLage.AusBericht(alle, p, bewertung);
             lage.Szenario = WirtschaftlichkeitSzenario.Normiere(szenario);
+            lage.Valeri = valeri;
             if (bewertung == null || bewertung.Wirkungen == null)
             {
                 // ETAPPE E17: auch ohne Bewertung zählt die Wirkungsliste, nicht der Freitext.
@@ -533,7 +557,9 @@ namespace WindowsFormsApplication1
             // bisherige Weg führt keine — dann die eigenen Überschriften.
             // Fachvorgabe E31: Die Punkte 1 und 7 nennen die Kennzahlen im Szenario des Berichts.
             string szenario = WirtschaftsBerichtswerte.Von(daten).Berichtsszenario(konfig, out _);
-            List<ChecklistenPunkt> punkte = AnhangECheckliste.AusBericht(daten, k.Kapitelstellen, szenario);
+            // VB‑Q7 a: in VALERI-Darstellung nennen die Punkte 1, 7 und 9 die Tafel „Kennzahlen je Szenario“.
+            List<ChecklistenPunkt> punkte = AnhangECheckliste.AusBericht(daten, k.Kapitelstellen, szenario,
+                                                                         WirtschaftsBerichtswerte.IstValeri(konfig));
             if (punkte.Count == 0) return;
 
             k.Seitenumbruch();
