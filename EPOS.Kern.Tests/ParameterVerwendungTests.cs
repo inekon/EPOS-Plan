@@ -21,7 +21,7 @@ namespace EPOS.Kern.Tests
     /// <para><b>Und die Belegpflicht.</b> Eine Einstufung ohne Fundstelle ist eine
     /// Behauptung. <see cref="Jede_gerechnete_Spalte_nennt_eine_Fundstelle"/> faellt rot
     /// aus, sobald eine als <c>Simulation</c> oder <c>Wirtschaftlichkeit</c> gefuehrte
-    /// Spalte keine Datei und Zeile nennt.</para>
+    /// Spalte keine Datei samt Symbol nennt.</para>
     ///
     /// <para><b>Nur lesend, eine Arbeitskopie je Klasse</b> (Regel seit iU9-W11a).
     /// Fehlt die Datei, schweigen die Faelle.</para>
@@ -127,6 +127,61 @@ namespace EPOS.Kern.Tests
                     }
                 }
             Assert.NotEqual(0, belege);
+        }
+
+        /// <summary>
+        /// <b>Eine Fundstelle nennt das Symbol, nicht die Zeile</b> (KP3-A1c): Zeilenverweise „Datei.cs:NN“
+        /// veralteten mit jeder Änderung der Datei. Die Fundstelle nennt „Datei.Methode“ (oder
+        /// „Klasse.Eigenschaft“); keine Fundstelle enthält „.cs:“ mit Zeilennummer, und jeder Verweis
+        /// „Name.Symbol“, dessen <c>Name.cs</c> unter <c>EPOS.Kern</c> oder <c>SpeicherEngine</c> liegt, nennt
+        /// ein Symbol, das als Bezeichner in dieser Datei vorkommt.
+        /// </summary>
+        [Fact]
+        public void Fundstellen_nennen_ein_vorhandenes_Symbol_statt_einer_Zeile()
+        {
+            string wurzel = RepoWurzel();
+            var quellen = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (string ordner in new[] { "EPOS.Kern", "SpeicherEngine" })
+                foreach (string datei in System.IO.Directory.EnumerateFiles(
+                             System.IO.Path.Combine(wurzel, ordner), "*.cs", System.IO.SearchOption.AllDirectories))
+                {
+                    string rel = datei.Substring(wurzel.Length).Replace('\\', '/');
+                    if (rel.Contains("/obj/") || rel.Contains("/bin/")) continue;
+                    string name = System.IO.Path.GetFileNameWithoutExtension(datei);
+                    if (!quellen.ContainsKey(name)) quellen[name] = System.IO.File.ReadAllText(datei);
+                }
+
+            var zeilenverweis = new System.Text.RegularExpressions.Regex(@"\.cs:\d+");
+            var verweis = new System.Text.RegularExpressions.Regex(@"\b([A-Z][A-Za-z0-9]*)\.([A-Za-z_][A-Za-z0-9_]*)");
+            int belege = 0;
+            foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+                foreach (ParameterEintrag e in ParameterVerwendung.Katalog(art))
+                {
+                    string fundstelle = e.Fundstelle ?? "";
+                    Assert.False(zeilenverweis.IsMatch(fundstelle),
+                                 art + "." + e.Spalte + " nennt eine Zeilennummer: " + fundstelle);
+                    foreach (System.Text.RegularExpressions.Match m in verweis.Matches(fundstelle))
+                    {
+                        if (m.Groups[2].Value is "cs" or "razor") continue;   // Dateiname ohne Symbol
+                        if (!quellen.TryGetValue(m.Groups[1].Value, out string text)) continue;
+                        belege++;
+                        Assert.True(System.Text.RegularExpressions.Regex.IsMatch(
+                                        text, @"\b" + System.Text.RegularExpressions.Regex.Escape(m.Groups[2].Value) + @"\b"),
+                                    art + "." + e.Spalte + " nennt " + m.Value + ", das in " + m.Groups[1].Value + ".cs nicht vorkommt");
+                    }
+                }
+            Assert.True(belege >= 60, "Zu wenige Symbolverweise geprüft: " + belege);
+        }
+
+        private static string RepoWurzel()
+        {
+            System.IO.DirectoryInfo d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+            while (d != null &&
+                   !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.Kern", "EPOS.Kern.csproj")))
+                d = d.Parent;
+
+            Assert.True(d != null, "Die Repowurzel ist vom Ausgabeordner aus nicht zu finden.");
+            return d.FullName;
         }
 
         /// <summary>
