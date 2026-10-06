@@ -299,7 +299,7 @@ als Startplan, Ziehen mit der Maus, Windows-Sichtabnahme, iOS-Lauf für den Date
 |---|---|---|---|---|---|
 | 1 | **HC-3** Nachzug E87 an SQ | Wahl „DIN-Zonen \| Simulationszonen“ mit Vorgabe 5, Protokoll, Quelle im Zonenplan, Größengrenze 250/100 MB, Nachtrag 3 berichtigt | 0,5–1 | nein | keine |
 | 2 | **HC-1** Kern: IFC vollenden und Flächen klassifizieren | zweiseitige Randbedingung, Bauteilkörper, Rahmenanteil; Flächengruppen R0–R7 je Raumkörper mit Bilanz — **HC-1 umgesetzt (#740)**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_HC-1_IFC_Randbedingung_Bauteilkoerper_Flaechen.md) | 2–3 | nein | keine |
-| 3 | **HC-2** Ansicht: Farbmodus Randbedingung | Umschalter, Legende, 2D-Kanten und Schraffur, 3D-Dreiecksfarben und Bauteilkörper | 1–2 | nein | keine |
+| 3 | **HC-2** Ansicht: Farbmodus Randbedingung | Umschalter, Legende, 2D-Kanten und Schraffur, 3D-Dreiecksfarben und Bauteilkörper — **HC-2 umgesetzt (#746)**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-2_Farbmodus_Randbedingung.md) | 1–2 | nein | keine |
 | 4 | **HC-4** „Datei erneut lesen“ | Ansicht im Gebäudedialog aus der gespeicherten Importquelle, Hashprüfung, beide Farbmodi | 1 | nein | keine |
 
 HC-3 geht vor, weil der Anwender die Projektdateien jetzt importiert und die Vorgabe
@@ -327,6 +327,8 @@ die Sichtabnahme auf Windows, die iPad-Sichtprobe hängt an der offenen Probe 31
 | Flächengruppen | Opus | Klasse `Flaechenklassifikation` in `Import/Gebaeude/`: gepaart/ungepaart aus `Koerpernachbarschaft`, Bauteilzuordnung über Raumbezug und Normale, Rückfälle, Bilanz je Gruppe, Gegenprobe 5 % | `FlaechenklassifikationTests` an `ifc4_koerper_nachbarn*.ifc` und der neuen Probe; Gegenprobe an den sechs Anwenderdateien als Diagnose |
 
 ### 6.4 HC-2 — Ansicht: Farbmodus Randbedingung
+
+**Gebauter Stand (#746):** Umschalter, Legende, Grundrisskanten und Bodenschraffur, Dreiecksfarben je Gruppe in Geometriegruppen mit eigenem Material, R0 halbtransparent, Bauteilkörper in Gruppenfarbe und Klick sind umgesetzt; die Abweichungen vom Entwurf unten (Farbtafel als Konstante, Geometriegruppen statt Farbattribut, schematische Umrisse, neutrale Prismen) stehen im [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-2_Farbmodus_Randbedingung.md).
 
 | Teil | Agent | Inhalt | Abnahme |
 |---|---|---|---|
