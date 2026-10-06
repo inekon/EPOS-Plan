@@ -123,7 +123,7 @@ namespace WindowsFormsApplication1
         //  Zuordnung mit Vorgabe
         // ------------------------------------------------------------------
 
-        /// <summary>Das Profil einer DIN-V-18599-10-Nummer: Zeile <c>DIN_NUMMER</c>, sonst <see cref="Din18599Nutzung"/>.</summary>
+        /// <summary>Das Profil einer DIN-Nummer der Projektdatei (Zählung DIN/TS 18599-10:2025, E96): Zeile <c>DIN_NUMMER</c>, sonst <see cref="Din18599Nutzung"/>.</summary>
         internal Planprofil AusDinNummer(int? nummer)
             => nummer is int n ? Aufloesen(RaumnutzungSchema.ZUORDNUNG_DIN, n.ToString(CultureInfo.InvariantCulture)) : null;
 

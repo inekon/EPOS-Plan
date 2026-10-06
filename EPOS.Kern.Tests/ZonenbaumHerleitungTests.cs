@@ -114,7 +114,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Zonen der Projektdatei nennen die DIN-Nummer, aus der ihr Profil folgt, und die Größen, die die Datei liefert
-        /// („… aus der Datei“, Datei vor Profil).
+        /// („… aus der Datei“, Datei vor Profil). Am Zonenhaus liefert die Datei für EG (DIN-Nr. 71: Ganglinie Heizen und Personen)
+        /// und OG (DIN-Nr. 1: Raumtemperatur, Absenkung) Größen; der Keller trägt nur die DIN-Nr. 20 ohne einen Wert — er bekommt
+        /// über die Zuordnung das Muster Lager, und seine Zeile nennt keine Dateigrößen (leerer Text, kein „; … aus der Datei“).
         /// </summary>
         [Fact]
         public async Task Die_Zonen_der_Projektdatei_nennen_DIN_Nummer_und_Groessen_aus_der_Datei()
@@ -136,17 +138,30 @@ namespace EPOS.Kern.Tests
             GebaeudeZonenplanDaten plan = zuordnen(new GebaeudeZuordnungsanfrage(0, null, haken, null, null, "Z4", null, false, schritte, haken))
                 .Zonierung!.Plan!;
             List<GebaeudePlanzoneDaten> mitProfil = plan.Zonen.Where(z => z.Herleitung != null).ToList();
-            Assert.NotEmpty(mitProfil);
+            var nummern = new List<int>();
             foreach (GebaeudePlanzoneDaten z in mitProfil)
             {
                 Planzone pz = h.Plan.Zone(z.Schluessel);
                 Assert.Equal(RaumnutzungSchema.ZUORDNUNG_DIN, z.Herleitung.Quellart);
                 Assert.Equal("aus DIN-Nr. " + pz.Quelle.Schluessel + " der Projektdatei", z.Herleitung.Quelle);
                 Assert.Equal(pz.Projektdatei.Profilnummer?.ToString(System.Globalization.CultureInfo.InvariantCulture), pz.Quelle.Schluessel);
+                int nummer = pz.Projektdatei.Profilnummer!.Value;
+                nummern.Add(nummer);
+                if (nummer == 20)
+                {
+                    // Der Keller: Die Datei nennt nur die Nummer — das Profil kommt aus der Zuordnung, Größen liefert sie keine.
+                    Assert.Equal(RaumnutzungSaat.LAGER, z.Herleitung.Profil);
+                    Assert.False(pz.Projektdatei.Liefert);
+                    Assert.Equal("", z.Herleitung.Dateigroessen);
+                    Assert.DoesNotContain(" aus der Datei", z.Herleitung.Text);
+                    continue;
+                }
+                Assert.True(pz.Projektdatei.Liefert, "DIN-Nr. " + nummer + ": die Datei liefert keine Größe.");
                 Assert.EndsWith(" aus der Datei", z.Herleitung.Dateigroessen);
                 Assert.Contains(Konditionierungsarbeit.Groessenname(Konditionierungsgroesse.Heizsoll), z.Herleitung.Dateigroessen);
                 Assert.Contains("; " + z.Herleitung.Dateigroessen, z.Herleitung.Text);
             }
+            Assert.Equal(new[] { 1, 20, 71 }, nummern.OrderBy(n => n));
         }
 
         /// <summary>

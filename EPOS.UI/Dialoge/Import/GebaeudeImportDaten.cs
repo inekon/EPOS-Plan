@@ -555,7 +555,7 @@ public sealed record GebaeudePlanzoneDaten
     /// <summary>Die Herkunft als Anzeigetext („aus Projektdatei (DIN-Zonen)“); leer = nicht aus der Projektdatei.</summary>
     public string HerkunftText { get; init; } = "";
 
-    /// <summary>Das Nutzungsprofil der Projektdatei als Tooltip („Nutzungsprofil 1 nach DIN V 18599“); leer = keines.</summary>
+    /// <summary>Das Nutzungsprofil der Projektdatei als Tooltip („Nutzungsprofil 1 nach DIN/TS 18599-10“); leer = keines.</summary>
     public string Profiltext { get; init; } = "";
 
     /// <summary>Die Herleitungszeile unter der Zone (Profil, Quelle, Größen aus der Datei, Kennwerte); <c>null</c> = keine.</summary>

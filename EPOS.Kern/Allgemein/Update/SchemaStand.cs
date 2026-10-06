@@ -918,6 +918,10 @@ namespace WindowsFormsApplication1
         /// Danach, mit dem KATALOG DER NUTZUNGSPROFILE (NP1a), steht das Ziel auf <see cref="RaumnutzungSchema.SCHRITT"/>:
         /// fünf Katalogtabellen samt Saat, freie Nutzung an Kalender und Vorlage (Tabellenneubau), Profilname an der Zone
         /// (<see cref="RaumnutzungSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest Katalog oder Zonenspalte.
+        /// Danach, mit der KATEGORIE DIN NACH DIN/TS 18599-10:2025-10 (NP5b, E96), steht das Ziel auf
+        /// <see cref="RaumnutzungDinTsSchema.SCHRITT"/>: Name und Quellenhinweis der Kategorie, Nummern und Namen der
+        /// 43 Nutzungen ohne Werte, Ids bleiben (<see cref="RaumnutzungDinTsSchema"/>). <b>Ergebnisneutral:</b> Kein
+        /// Rechenweg liest den Katalog.
         /// Danach, mit dem GRUNDRISS JE IMPORTIERTEM RAUM (HC-5), steht das Ziel auf <see cref="RaumgrundrissSchema.SCHRITT"/>:
         /// <c>Tab_Raumgrundriss</c>, eine Kindliste der Importquelle (<see cref="RaumgrundrissSchema"/>).
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; sie entsteht leer.

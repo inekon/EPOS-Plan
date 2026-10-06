@@ -56,22 +56,25 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_Saat_zaehlt_vier_Kategorien_33_Profile_50_Zeilen_25_Zuordnungen()
+        public void Die_Saat_zaehlt_vier_Kategorien_52_Profile_50_Zeilen_27_Zuordnungen()
         {
-            Assert.Equal(new[] { "EPOS-Muster", "DIN V 18599-10", "SIA 2024", "VDI 2078" },
+            Assert.Equal(new[] { "EPOS-Muster", "DIN/TS 18599-10", "SIA 2024", "VDI 2078" },
                          RaumnutzungSaat.Kategorien.Select(k => k.Bezeichner));
             Assert.Equal(9, RaumnutzungSaat.Muster.Count);
-            Assert.Equal(24, RaumnutzungSaat.Din.Count);
-            Assert.Equal(33, RaumnutzungSaat.Profile.Count);
+            Assert.Equal(43, RaumnutzungSaat.Din.Count);
+            Assert.Equal(52, RaumnutzungSaat.Profile.Count);
             Assert.Equal(KonditionierungsvorlagenSaattabelle.VORGABEZEILEN + 4, RaumnutzungSaat.Profile.Sum(p => p.Zeilen.Count));
-            Assert.Equal(25, RaumnutzungSaat.Zuordnungen.Count);
-            Assert.Equal(16, RaumnutzungSaat.Zuordnungen.Count(z => z.Art == RaumnutzungSchema.ZUORDNUNG_DIN));
+            Assert.Equal(27, RaumnutzungSaat.Zuordnungen.Count);
+            Assert.Equal(18, RaumnutzungSaat.Zuordnungen.Count(z => z.Art == RaumnutzungSchema.ZUORDNUNG_DIN));
             Assert.Equal(9, RaumnutzungSaat.Zuordnungen.Count(z => z.Art == RaumnutzungSchema.ZUORDNUNG_IFC));
 
-            // Die DIN-Profile tragen nichts als Nummer und Name (Konzept 5.2, Q47); unbestätigte Nummern fehlen.
+            // Die DIN-Profile tragen nichts als Nummer und Name (Konzept 5.2, E90, E96): die Nummern 1 bis 43 der
+            // DIN/TS 18599-10:2025-10 durchgehend ganzzahlig, keine Nummer der Ausgabe 2018 (22.1 bis 22.3), keine
+            // Wohnzeile der Projektdatei (70, 71), Namen eindeutig und höchstens 80 Zeichen.
             Assert.All(RaumnutzungSaat.Din, p => Assert.True(p.IstLeer, p.ToString()));
-            foreach (string offen in new[] { "6", "7", "14", "15", "16", "19", "20", "22.1", "23", "24", "30", "36", "39", "42", "70", "71" })
-                Assert.DoesNotContain(RaumnutzungSaat.Din, p => p.Nummer == offen);
+            Assert.Equal(Enumerable.Range(1, 43).Select(n => n.ToString(CultureInfo.InvariantCulture)), RaumnutzungSaat.Din.Select(p => p.Nummer));
+            Assert.All(RaumnutzungSaat.Din, p => Assert.InRange(p.Bezeichner.Length, 1, RaumnutzungSchema.BEZEICHNER_MAX_ZEICHEN));
+            Assert.Equal(43, RaumnutzungSaat.Din.Select(p => p.Bezeichner.ToUpperInvariant()).Distinct().Count());
             // Sonstige ohne Kennwert; jedes andere Muster mit; keines mit Nennwert (NP-F18).
             Assert.True(RaumnutzungSaat.Muster.Single(p => p.Bezeichner == RaumnutzungSaat.SONSTIGE).IstLeer);
             Assert.All(RaumnutzungSaat.Muster.Where(p => p.Bezeichner != RaumnutzungSaat.SONSTIGE), p => Assert.False(p.IstLeer));
@@ -117,10 +120,10 @@ namespace EPOS.Kern.Tests
             Assert.True(RaumnutzungSchema.Vollstaendig());
             Assert.Equal(0, RaumnutzungSchema.OffeneSaat());
             Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE ReadOnly = 1"));
-            Assert.Equal(33L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1"));
+            Assert.Equal(52L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1"));
             Assert.Equal(50L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsstunden"));
-            Assert.Equal(25L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung WHERE ReadOnly = 1 AND ID_Profil IS NOT NULL"));
+            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung WHERE ReadOnly = 1 AND ID_Profil IS NOT NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE Nutzungsprofil IS NOT NULL"));
             // Kein Wert in einer Normkategorie (NP-F21); SIA und VDI leer.
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil p JOIN Tab_Raumnutzungskatalog k ON k.ID = p.ID_Katalog " +
@@ -322,7 +325,7 @@ namespace EPOS.Kern.Tests
             int n = RaumnutzungSchema.Ausfuehren(bericht);
             Assert.Equal(5 + RaumnutzungSchema.INDIZES.Count + 2 + 1, n);
             Assert.Contains(bericht, z => z.Contains("KEIN DML", StringComparison.Ordinal));
-            Assert.Contains(bericht, z => z.Contains("Saat: 4 Kategorie(n), 33 Profil(e), 50 Zeile(n)", StringComparison.Ordinal));
+            Assert.Contains(bericht, z => z.Contains("Saat: 4 Kategorie(n), 52 Profil(e), 50 Zeile(n)", StringComparison.Ordinal));
             Assert.True(RaumnutzungSchema.Vollstaendig());
             Assert.True(GebaeudeZonenanschluss.NutzungsprofilVorhanden());
 
@@ -356,9 +359,9 @@ namespace EPOS.Kern.Tests
             Assert.True(RaumnutzungSchema.OffeneSaat() > 0);
             Assert.Equal(0, RaumnutzungSchema.Ausfuehren(null));
             Assert.True(RaumnutzungSchema.Vollstaendig());
-            Assert.Equal(25L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung"));
+            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung"));
             Assert.Equal(50L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile"));
-            Assert.Equal(33L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil"));
+            Assert.Equal(52L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil"));
             Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog"));
         }
 

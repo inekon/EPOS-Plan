@@ -38,8 +38,12 @@ namespace WindowsFormsApplication1
     //   Tab_Zone.Nutzungsprofil   TEXT nullbar, 1..120 Zeichen - der Profilname als Kopie (Q41), nie eine ID.
     //
     // DIE SAAT (RaumnutzungSaat, INSERT ... WHERE NOT EXISTS / OR IGNORE - wiederholbar): vier Kategorien,
-    // neun EPOS-Muster samt Zeilenbild, die bestaetigten DIN-Profile ohne Werte, die Zuordnung und in
-    // Z_Nutzungsprofil die Musternamen Buero und Schule unter Quelle KONDITIONIERUNG (NP-F15).
+    // neun EPOS-Muster samt Zeilenbild, die 43 Nutzungen der DIN/TS 18599-10:2025-10 ohne Werte (E96), die
+    // Zuordnung und in Z_Nutzungsprofil die Musternamen Buero und Schule unter Quelle KONDITIONIERUNG
+    // (NP-F15). Steht noch die Kategorie DIN der Saat 2018, stellt RaumnutzungDinTsSchema.AlteFassungUmbauen
+    // sie vor der Saat auf die Ausgabe 2025 (Schritt 190) - sonst entstuende eine zweite Kategorie -, und
+    // RaumnutzungDinTsSchema.ZuordnungUmstellen die Zuordnung DIN_NUMMER auf die Zaehlung 2025 - sonst saete
+    // die Saat 30, 33, 37, 43 neben 28, 29, 35, 41.
     //
     // ALLES IN EINEM VORGANG ohne Fremdschluessel (DROP einer Elterntabelle loest sonst die Kaskade aus);
     // vor dem Commit: foreign_key_check leer und die Kindtabellen verweisen namentlich auf die
@@ -119,7 +123,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>Art der Kategorie: EPOS-Muster.</summary>
         public const string ART_EPOS_MUSTER = "EPOS_MUSTER";
-        /// <summary>Art der Kategorie: DIN V 18599-10.</summary>
+        /// <summary>Art der Kategorie: DIN 18599-10 — die Kennung nennt die Ausgabe 2018, die Kategorie führt seit Schritt
+        /// <see cref="RaumnutzungDinTsSchema.SCHRITT"/> die DIN/TS 18599-10:2025-10.</summary>
         public const string ART_DIN_V_18599_10 = "DIN_V_18599_10";
         /// <summary>Art der Kategorie: SIA 2024.</summary>
         public const string ART_SIA_2024 = "SIA_2024";
@@ -576,7 +581,11 @@ namespace WindowsFormsApplication1
                         zeilen.Add(TAB_ZONE + "." + SPALTE_ZONE_NUTZUNGSPROFIL + " angelegt (leer)");
                     }
 
-                    // ---- 4. Die Saat.
+                    // ---- 4. Die Saat - vorher eine Kategorie DIN der Saat 2018 auf die Ausgabe 2025 und die Zuordnung
+                    //      DIN_NUMMER auf die Zaehlung 2025 (Schritt 190), sonst legte die Saat neben ihnen zweite an.
+                    int umbau = 0;
+                    zeilen.AddRange(RaumnutzungDinTsSchema.AlteFassungUmbauen(v, ref umbau));
+                    zeilen.AddRange(RaumnutzungDinTsSchema.ZuordnungUmstellen(v, ref umbau));
                     zeilen.AddRange(Saat(v));
 
                     // ---- Die Zeugen, noch INNERHALB der Transaktion.

@@ -141,7 +141,7 @@ public class GebaeudeImportProjektdateiDialogTests : EposBunitContext
         IElement eg = Zone(cut, "Nutzung EG");
         Assert.Equal(GebaeudeZonierungSchluessel.HERKUNFT_DIN, eg.GetAttribute("data-herkunft"));
         Assert.Equal("WOHNEN", eg.QuerySelector("select.epos-gebimport-nutzung")!.GetAttribute("value"));
-        Assert.Equal("Nutzungsprofil 71 nach DIN V 18599", eg.QuerySelector(".epos-gebimport-sqherkunft")!.GetAttribute("title"));
+        Assert.Equal("Nutzungsprofil 71 nach DIN/TS 18599-10", eg.QuerySelector(".epos-gebimport-sqherkunft")!.GetAttribute("title"));
         Assert.Equal("aus Projektdatei (DIN-Zonen)", eg.QuerySelector(".epos-gebimport-sqherkunft")!.TextContent);
         Assert.Equal("20 °C", eg.QuerySelector(".epos-gebimport-zonensollwert")!.TextContent.Trim());
         IElement og = Zone(cut, "Nutzung OG");

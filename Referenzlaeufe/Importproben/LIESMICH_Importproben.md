@@ -88,8 +88,8 @@ Abschnitte mit Wochentagsschaltern und über den Jahreswechsel, übersprungene K
 `Unvollstaendig()` (eine Simulationszone mit einem Teil der Räume). Probe 36 (`SqprojZonenTests`) hält die Zonierungswahl: beide Zonierungen mit der Vorgabe DIN-V-18599-Zonen und der Wahl Simulationszonen, nur eine Zonierung ohne Wahl und den Protokollsatz, der beide Zonierungen nennt. Probe 33 (`SqprojLeserTests`) hält die eigene Größengrenze der Projektdatei: 250 MB Windows, 100 MB iOS (`SqprojProfil.MAX_BYTES`, `MAX_BYTES_IOS`). Anwenderdateien liegen nur lokal unter
 `Quellen/*.sqproj` (`.gitignore`) und laufen allein in `SqprojQuelldateienDiagnoseTests`.
 
-**Zuordnung Profilnummer → Nutzungsprofil** (Konzept Nutzungsprofile 5.4, NP-F12): Die Nummer nach DIN V 18599-10
-Tabelle 4 (70 und 71 die Wohnzeilen der Projektdatei) führt über die Zuordnung `DIN_NUMMER` in
+**Zuordnung Profilnummer → Nutzungsprofil** (Konzept Nutzungsprofile 5.4, NP-F12): Die Nummer nach DIN/TS 18599-10:2025-10
+(70 und 71 die Wohnzeilen der Projektdatei) führt über die Zuordnung `DIN_NUMMER` in
 `Tab_Raumnutzungszuordnung` auf ein Profil des Katalogs; fehlt die Zeile oder liegt kein Katalog vor, gilt die Vorgabe im
 Code (`EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`), deren Kennung auf das EPOS-Muster gleicher Nutzung führt
 (`Raumnutzungsvorbelegung`). Jede andere Nummer ergibt keine Nutzung und steht im Beleg. Ausgeliefert:
@@ -105,13 +105,24 @@ Code (`EPOS.Kern/Allgemein/Import/Sqproj/Din18599Nutzung.cs`), deren Kennung auf
 | 9 | Hörsaal, Auditorium | Schule | SCHULE |
 | 12 | Kantine | Gastronomie | — |
 | 13 | Restaurant | Gastronomie | — |
-| 28 | Bibliothek – Lesesaal | Schule | SCHULE |
-| 29 | Bibliothek – Freihandbereich | Schule | SCHULE |
-| 31 | Turnhalle | Sport | — |
-| 35 | Fitnessraum | Sport | — |
-| 41 | Lagerhallen, Logistikhallen | Lager | — |
+| 19 | Verkehrsflächen | Verkehr | — |
+| 20 | Lager, Technik, Archiv | Lager | — |
+| 30 | Bibliothek – Lesesaal | Schule | SCHULE |
+| 31 | Bibliothek – Freihandbereich | Schule | SCHULE |
+| 33 | Turnhalle (ohne Zuschauerbereich) | Sport | — |
+| 37 | Fitnessraum | Sport | — |
+| 43 | Lagerhallen, Logistikhallen | Lager | — |
 | 70 | Wohnen (Einfamilienhaus) | Wohnen | WOHNEN |
 | 71 | Wohnen (Mehrfamilienhaus) | Wohnen | WOHNEN |
+
+**Zählung.** Die Schlüssel sind Nummern der Projektdatei. HottCAD zählt nach der DIN/TS 18599-10:2025-10 wie die
+Kategorie DIN des Katalogs (Anwender, 06.10.2026, E96; in HottCAD hat „Turnhalle“ die Nummer 33): Die Tabelle nennt ab 22
+Nummer und Namen der Ausgabe 2025 (in der DIN V 18599-10:2018-09 trugen dieselben Nutzungen 28, 29, 31, 35 und 41), 1 bis 21
+zählen in beiden Ausgaben gleich. 44 bis 47 sind in keiner Ausgabe eine Nummer der Norm und bleiben ohne Zuordnung; 70 und
+71 sind die Wohnzeilen der Projektdatei. Die Proben dieses Ordners entstehen synthetisch mit den Nummern 1, 20 und 71 und
+runden Werten (Konzept Nutzungsprofile 5.4). 19 und 20 sind in beiden Ausgaben gleich (E96): Der Keller des Zonenhauses (Nummer 20) bekommt mit Katalog das Muster Lager samt Kalender aus dem
+Profil (`SqprojDatenbankTests`); ohne Katalog bleibt er ohne Nutzung und mit Beleg (`SqprojZonenTests`), weil die Muster
+Lager und Verkehr keine alte Kennung haben.
 
 Unter der Zonenregel Z6 belegt der Zonenplan eine beheizte Zone mit dem Profil ihrer Nutzungsklasse vor (Zuordnung
 `IFC_KLASSE`, Vorgabe `Zonenplan.NutzungAusKlasse`): Büro → Büro; Wohnen, Schlafen, Küche → Wohnen; Sport, Gastronomie,

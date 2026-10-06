@@ -4,6 +4,8 @@
 
 **Nachgezogen 06.10.2026 — E90 bis E92 (Konzept N1.71):** E90 (05.10.2026) beantwortet Q37 (Nutzung der Zonen): frei definierbare Nutzungsprofile als Katalog mit Kategorien, dazu eine änderbare Zuordnung; E91 (05.10.2026) entscheidet **Q38 bis Q47** des Konzepts [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md) nach Empfehlung; E92 legt die Zuständigkeit der Stufe NP fest; E93 (06.10.2026) zieht den Befund der Fachprüfung nach — P1 gilt nicht für die Übernahme eines Profils mit eigenem Personennennwert, Lager und Verkehr nehmen die Feiertage wie Sonntag wie Büro und Schule, die Nutzungstage im Jahr sind abgeleitet. Alle vier standen nicht als offener Punkt in diesem Register und berühren keinen Registerpunkt; die Zählung der offenen Punkte (2) bleibt. Der Ausschluss „Nutzungsprofile für Nichtwohngebäude“ gilt nur noch für Normwerte (P4, E90).
 
+**Nachgezogen 06.10.2026 — E96:** E96 (06.10.2026) liefert für die Kategorie DIN der Nutzungsprofile Nummern und Namen der 43 Nutzungen der DIN/TS 18599-10:2025-10 statt der DIN V 18599-10:2018-09 aus (Schemaschritt 190), weiter ohne Werte; aus der DIN/TS gelten für EPOS nur die für die Simulation relevanten Größen. E96 stand nicht als offener Punkt in diesem Register und berührt keinen Registerpunkt; die Zählung der offenen Punkte (2) bleibt.
+
 **Stand 25.09.2026, nach den Entscheiden E16–E38 sowie der Prüfung vom 17.09.2026; mit dem Abschluss
 von G3 (25.09.2026) die Vermerke unter A1, A14 und F-M1. E39 und E40 (Konzept N1.44, N1.45) berühren
 keinen Registerpunkt. E48 (26.09.2026, Konzept N1.53) ist unter D2 und D17 vermerkt. E49 (26.09.2026,

@@ -106,6 +106,7 @@ namespace EPOS.Kern.Tests
         [InlineData("Wizard_WPItem.btn_Help", KiChatKontext.B_WAERMEPUMPE)]
         [InlineData("Form_GebWohnflaeche.btn_Help", KiChatKontext.B_GEBAEUDE)]
         [InlineData("Form_Gebaeude.btn_Help", KiChatKontext.B_GEBAEUDE)]
+        [InlineData("Nutzungsprofile.btn_Help", KiChatKontext.B_GEBAEUDE)]
         public void Der_Bereich_folgt_aus_dem_Maskenpraefix(string schluessel, string erwartet)
         {
             Assert.Equal(erwartet, KiChatKontext.BereichFuerHilfeschluessel(schluessel));

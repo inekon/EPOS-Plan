@@ -20,7 +20,7 @@ Nach dem Schließen liest die aufrufende Maske Katalog und Zuordnung neu.
 Links stehen die Kategorien mit ihren Profilen, nach Nummer und Name sortiert. Die Suche findet Nummer und Name.
 
 * '''EPOS-Muster''' – ausgelieferte Muster zum Einstieg, schreibgeschützt (Schloss).
-* '''DIN V 18599-10''' – ausgeliefert sind Nummern und Namen, ohne Werte. Zum Eintragen von Werten ''Duplizieren''.
+* '''DIN/TS 18599-10''' – ausgeliefert sind Nummern und Namen der 43 Nutzungen der Ausgabe 2025-10, ohne Werte. Zum Eintragen von Werten ''Duplizieren''.
 * '''SIA 2024''' und '''VDI 2078''' – ausgelieferte, zunächst leere Kategorien.
 * '''Eigene Kategorien''' – Ihre eigenen Kataloge, frei bearbeitbar.
 

@@ -31,6 +31,10 @@
    mit dem Eintrag "keine"; ausgelieferte Zeilen tragen das Schloss, bleiben aber UMSTELLBAR (NP-F19).
    Neue Zeilen frei, eigene Zeilen loeschbar.
 
+   HILFE. Die Hilfepille traegt das Blatt selbst (HilfeSchluessel, Seite "Nutzungsprofile"): Keiner seiner
+   zwei Wirte zeichnet eine - der Blattwechsel im Katalogeditor nicht, weil der Dialog darin seine eigene
+   traegt, die Ueberlagerung im Gebaeudeimport nie (EPOS.UI/CLAUDE.md, Blattwechsel).
+
    OHNE GABEN zeichnet das Blatt den Grund und keinen Knopf. *@
 
 @using System.Globalization
@@ -39,7 +43,10 @@
 
 <div class="epos-raumnutzung">
 
-    <p class="epos-leisezeile epos-raumnutzung-sofort">@Texte.HinweisSofort</p>
+    <div class="epos-dialog-kopf epos-raumnutzung-kopf">
+        <p class="epos-leisezeile epos-raumnutzung-sofort">@Texte.HinweisSofort</p>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Blatt" />
+    </div>
 
     @if (Sperrgrund is string grund)
     {
@@ -482,6 +489,12 @@
 
     /// <summary>„Nein" der Rückfrage.</summary>
     [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>
+    /// Schlüssel der Hilfepille im Kopf des Blatts — links in <c>help_mapping.txt</c>, Ziel die Seite
+    /// „Programm Dokumentation/Nutzungsprofile".
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Nutzungsprofile.btn_Help";
 
     /// <summary>Meldet jede geschriebene Handlung — der Wirt liest Katalog und Zuordnung neu.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }

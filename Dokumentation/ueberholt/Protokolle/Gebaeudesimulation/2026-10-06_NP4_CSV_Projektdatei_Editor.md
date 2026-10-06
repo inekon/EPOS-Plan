@@ -23,4 +23,4 @@ CI für #755/#756: Kern-Lauf 37464573513 auf `77ba5e6b` grün; der Lauf 37464569
 - Hilfeschlüssel des Blatts fehlt (Hilfezuordnung ohne Zeile); Wiki-Upload gebündelt, Logbuch-Version beim Anwender erfragen.
 - Sichtabnahme unter Windows: CSV-Austausch, Projektdatei, Editor, Übernahme mit Personen-Stundenprofil.
 - `GebaeudeImportZonenDialogTests` (Zeile 106) lief bei zwei Agenten je einmal sporadisch rot, einzeln und im Gesamtlauf grün.
-- Folgewelle NP5 (DIN/TS 18599-10:2025, Schemaschritt 190, E95) in Arbeit.
+- Folgewelle NP5 (DIN/TS 18599-10:2025, Schemaschritt 190, E96) in Arbeit.

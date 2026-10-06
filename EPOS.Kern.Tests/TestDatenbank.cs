@@ -951,6 +951,10 @@ namespace EPOS.Kern.Tests
                 // Schritt RaumnutzungSchema.SCHRITT (NP1a): Katalog der Nutzungsprofile samt Saat, freie Nutzung an
                 // Kalender und Vorlage (Tabellenneubau), Tab_Zone.Nutzungsprofil. Wiederholbar, ergebnisneutral.
                 RaumnutzungSchema.Ausfuehren(null);
+                // Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E96): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
+                // Nummern und Namen ohne Werte, Ids bleiben; Zuordnung DIN nach der Zaehlung 2025 samt 19 und 20. Wiederholbar.
+                RaumnutzungDinTsSchema.Ausfuehren(null);
+
                 // Schritt RaumgrundrissSchema.SCHRITT (HC-5): Tab_Raumgrundriss an der Importquelle. Ohne Saat, leer.
                 RaumgrundrissSchema.Ausfuehren(null);
 

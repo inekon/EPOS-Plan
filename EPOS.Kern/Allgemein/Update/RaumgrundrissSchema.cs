@@ -43,9 +43,7 @@ namespace WindowsFormsApplication1
     // Datei schreibt ihre Azimute selbst, Datenaustauschkonzept 3.2). Der Export dreht damit die Kanten der
     // Grundriss-Prismen in wahre Azimute und ordnet ihnen die Wandplatten zu (Konzept 11.4 "Koerper").
     //
-    // DIE KETTE. Schritt 190 (NP5, Sitzung Gebaeudesimulation) ist angemeldet, lag beim Bau aber nicht auf
-    // origin. Die Nummer haengt deshalb VORLAEUFIG ueber RaumnutzungSchema.SCHRITT + 2 an 189; beim
-    // Zusammenfuehren mit Schritt 190 wird diese EINE Zeile auf "<Klasse von 190>.SCHRITT + 1" umgehaengt.
+    // DIE KETTE. Der Schritt haengt ueber RaumnutzungDinTsSchema.SCHRITT + 1 an seinem Vorgaenger (NP5b).
     //
     // KEIN DML, KEINE SAAT. Kein Rechenweg liest die Tabelle (Konzept 11.5); die Testdatenbank bekommt sie
     // leer, der Referenzlauf bleibt byte-gleich. Wiederholbar (IF NOT EXISTS).
@@ -62,11 +60,10 @@ namespace WindowsFormsApplication1
     public static class RaumgrundrissSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Vorläufig über
-        /// <see cref="RaumnutzungSchema.SCHRITT"/> + 2, weil Schritt 190 (NP5) angemeldet, aber noch nicht gebaut ist;
-        /// beim Zusammenführen auf „Klasse von 190“.SCHRITT + 1 umhängen (Kopf der Datei).
+        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Er hängt über
+        /// <see cref="RaumnutzungDinTsSchema.SCHRITT"/> + 1 an seinem Vorgänger.
         /// </summary>
-        public const int SCHRITT = RaumnutzungSchema.SCHRITT + 2; // Kette: beim Merge auf <Klasse von 190>.SCHRITT + 1 umhängen
+        public const int SCHRITT = RaumnutzungDinTsSchema.SCHRITT + 1;
 
         // =================================================================
         //  Namen — sprachneutral und EINMAL

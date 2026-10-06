@@ -368,7 +368,7 @@ namespace WindowsFormsApplication1
         /// <c>null</c> ohne gelesene Projektdatei oder wenn sie nichts liefert.
         /// </summary>
         /// <summary>
-        /// Die DIN-V-18599-Nummer des Gebäudes im Einzonenweg aus der dazugeladenen Projektdatei
+        /// Die DIN-Nummer (Zählung DIN/TS 18599-10:2025) des Gebäudes im Einzonenweg aus der dazugeladenen Projektdatei
         /// (<see cref="SqprojZonen.Gebaeudeprofilnummer"/>) — nur der Vorschlag, gesetzt wird kein Profil; <c>null</c> ohne.
         /// </summary>
         internal int? Gebaeudeprofilnummer(int gebaeudeIndex)

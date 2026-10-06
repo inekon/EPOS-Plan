@@ -787,6 +787,31 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `e90fc05f95d9ab45ce68e39dbbf332c0839b7ff4c0c8a9a90da57c4238586228`**. **Die Basis bleibt:** Kein Rechenweg liest Katalog oder
 > Zonenspalte, keine Einfrierregel ist berührt; 1047, 1051, 1052 und 1054 rechnen gegen R38 byte-gleich (127 CSV).
 
+> **Nachtrag — Schemaschritt 190 (Kategorie DIN nach DIN/TS 18599-10:2025-10, E96), Basis unverändert.**
+> `RaumnutzungDinTsSchema` (190 = `RaumnutzungSchema.SCHRITT + 1`) benennt die ausgelieferte Kategorie in
+> „DIN/TS 18599-10“ um (Quellenhinweis der Ausgabe 2025-10), stellt ihre 24 Profile auf Nummer und Namen der Ausgabe 2025
+> (Ids bleiben) und legt die übrigen 19 Nutzungen der Tabelle 6 ohne Werte an: 43 DIN-Profile, zusammen 52 ausgelieferte
+> Profile, Zuordnung unverändert (25). Die Testdatenbank steht auf **190** (`integrity_check` ok, `foreign_key_check`
+> leer): **87 801 856 Byte, LFS-SHA-256 `65b7828289d7ab3058e5764db535bcb9a027d7db6947ff4cab79b62e553d2141`**. **Die Basis
+> bleibt:** Kein Rechenweg liest den Katalog, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT
+> PASS, 646 CSV byte-gleich.
+
+> **Nachtrag — Zuordnung DIN 19 und 20 in Schritt 190 (E96), Basis unverändert.** Die Zuordnung `DIN_NUMMER` bekommt
+> 19 → EPOS-Muster Verkehr und 20 → EPOS-Muster Lager (ausgeliefert, nur wo für den Schlüssel keine Zeile steht; 19 und
+> 20 zählen 2018 und 2025 gleich): Saat 27 Zuordnungen, davon 18 `DIN_NUMMER`. Die Testdatenbank steht weiter auf
+> **190** (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer): **87 801 856 Byte, LFS-SHA-256
+> `882376e1c7b99359230864c9f5bbfd162ac7b5cbcd3d1e1d0a8740891d72b57d`**. **Die Basis bleibt:** Kein Rechenweg liest die
+> Zuordnung, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT PASS, 646 CSV byte-gleich.
+
+> **Nachtrag — Zuordnung DIN nach der Zählung 2025 in Schritt 190 (E96), Basis unverändert.** HottCAD zählt die
+> DIN-Profile nach der DIN/TS 18599-10:2025-10 (Anwender, 06.10.2026): Die ausgelieferte Zuordnung `DIN_NUMMER` führt
+> 30, 31 → Schule, 33, 37 → Sport und 43 → Lager; Schritt 190 stellt die Zeilen der Zählung 2018 (28, 29, 31, 35, 41) auf
+> den Schlüssel derselben Nutzung in 2025 (Ids und Profile bleiben). Saat weiter 27 Zuordnungen, davon 18 `DIN_NUMMER`.
+> Die Testdatenbank steht weiter auf **190** (`Werkzeuge/Testdatenbankschema`, die Umstellung lief über Schritt 189;
+> `integrity_check` ok, `foreign_key_check` leer): **87 801 856 Byte, LFS-SHA-256
+> `2fec4f1484b7f0bf27fe25bec9b2ed00c3c00d2e9d83a66aa4d9ca9193b3ee85`**. **Die Basis bleibt:** Kein Rechenweg liest die
+> Zuordnung, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT PASS, 646 CSV byte-gleich.
+
 ### Die Vorgängerbasis R37 (Fahrplan)
 
 Einundzwanzig Projekte, 646 CSV, 4 265 Skalare, auf Linux eingefroren gegen die Testdatenbank `63b0bdae…` (Schemastand

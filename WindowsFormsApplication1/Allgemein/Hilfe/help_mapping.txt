@@ -309,6 +309,10 @@ Luftaustausch.btn_Help = Gebäude#zonen
 # und Bauteilaufbauten.wiki), je Maske ein Abschnitt.
 BaustoffKatalog.btn_Help = Baustoffe und Bauteilaufbauten#baustoffe
 Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
+# Das Blatt "Nutzungsprofile" (Katalog und Zuordnung der Nutzungsprofile, aus dem Gebaeudeeditor und
+# dem Gebaeudeimport): Razor-Komponente ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente
+# (HilfeSchluessel); die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Nutzungsprofile.wiki).
+Nutzungsprofile.btn_Help = Nutzungsprofile
 # Gebaeudeimport (gbXML, IFC): der Zuordnungsdialog hat eine eigene Seite mit
 # Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki); beide
 # Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).

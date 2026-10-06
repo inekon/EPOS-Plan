@@ -24,9 +24,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Schritt_haengt_an_der_Kette_und_der_Zielstand_traegt_ihn()
         {
-            // Vorläufig über RaumnutzungSchema.SCHRITT + 2: Schritt 190 (NP5) ist angemeldet, aber noch nicht gebaut.
             Assert.Equal(191, RaumgrundrissSchema.SCHRITT);
-            Assert.True(RaumgrundrissSchema.SCHRITT > RaumnutzungSchema.SCHRITT);
+            Assert.Equal(RaumnutzungDinTsSchema.SCHRITT + 1, RaumgrundrissSchema.SCHRITT);
             Assert.Equal(SchemaStand.Zielversion, RaumgrundrissSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == RaumgrundrissSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);

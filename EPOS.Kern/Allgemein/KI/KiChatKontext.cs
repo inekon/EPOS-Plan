@@ -274,6 +274,8 @@ namespace WindowsFormsApplication1
             { "KiWerkzeugliste",               B_HILFE },
             { "Luftaustausch",                 B_GEBAEUDE },
             { "Main_PV_Test",                  B_PHOTOVOLTAIK },
+            // Das Blatt "Nutzungsprofile" (Katalog der Nutzungsprofile) gehoert zum Gebaeude.
+            { "Nutzungsprofile",               B_GEBAEUDE },
             { "UcBericht",                     B_BERICHT },
             { "UcBkKosten",                    B_KOSTEN },
             { "UcBkUebersicht",                B_VARIANTEN },

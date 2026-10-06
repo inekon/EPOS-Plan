@@ -194,7 +194,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die DIN-V-18599-Nummer des Einzonenwegs</b> (NP2b-4): dieselbe Wahl wie <see cref="Gebaeudekonditionierung"/> —
+        /// <b>Die DIN-Nummer des Einzonenwegs</b> (Zählung DIN/TS 18599-10:2025, E96) (NP2b-4): dieselbe Wahl wie <see cref="Gebaeudekonditionierung"/> —
         /// trägt genau eine Zone abgeglichene Räume, die Nummer ihres Nutzungsprofils bzw. ihrer Gruppe, sonst die der
         /// Gebäudegruppe; <c>null</c> ohne. Ein Vorschlag für den Gebäudeeditor, gesetzt wird nichts.
         /// </summary>

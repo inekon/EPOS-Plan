@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Bedarf;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -285,6 +286,7 @@ public class RaumnutzungCsvTests : EposBunitContext
             Csv = w.Weg(),
         };
         int geaendert = 0;
+        Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());   // die Hilfepille des Blatts
         IRenderedComponent<RaumnutzungBlatt> blatt = Render<RaumnutzungBlatt>(p => p
             .Add(x => x.Katalogweg, weg)
             .Add(x => x.Geaendert, () => geaendert++));

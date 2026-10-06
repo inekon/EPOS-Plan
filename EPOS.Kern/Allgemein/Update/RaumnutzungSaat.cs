@@ -6,7 +6,7 @@ namespace WindowsFormsApplication1
 {
     // ====================================================================================
     // DIE SAAT DES NUTZUNGSPROFIL-KATALOGS (Schritt 189, RaumnutzungSchema; Konzept Nutzungsprofile
-    // Kapitel 5, Entscheide E90 und E91).
+    // Kapitel 5, Entscheide E90, E91 und E96; die Kategorie DIN nach Schritt 190, RaumnutzungDinTsSchema).
     //
     // EINE QUELLE IM CODE. Aus diesen Konstanten saet der Schemaschritt, gegen sie pruefen die Wache und
     // der Generator (NP1b). Saatschluessel sind Namen, keine Ids: die Kategorie ueber ihren Bezeichner,
@@ -20,13 +20,24 @@ namespace WindowsFormsApplication1
     //                    (Sport, Gastronomie, Lager, Verkehr, Technik) tragen die runden Vorschlagswerte
     //                    aus Konzept 5.1 (Q43); "Kuehlen aus" durchgehend steht als Zeilenbild TAG aus.
     //                    Kein Muster traegt einen Nennwert (NP-F18).
-    //   DIN V 18599-10   Nummer und Name der vom Anwender bestaetigten Profile (Konzept 5.2, Stand
-    //                    "belegt"; Q47) - ohne Kennwert, ohne Zeilenbild, ohne Stundenprofil.
+    //   DIN/TS 18599-10  Nummer und Name der 43 Nutzungen der DIN/TS 18599-10:2025-10, Tabelle 6 (E96;
+    //                    Konzept 5.2) - Tatsachen ohne Kennwert, ohne Zeilenbild, ohne Stundenprofil (E90).
+    //                    Die Namen nach Tabelle 6 mit grossem Anfangsbuchstaben; 23 und 24 tragen den Titel
+    //                    aus Anhang A (der Name der Tabelle 6 ist laenger als 80 Zeichen). Die Wohngebaeude
+    //                    (Tabelle 5, ohne Nummer) fuehrt der Katalog nicht als Profil, sondern ueber das
+    //                    Muster Wohnen und die Werte 70 und 71 der Projektdatei.
     //   SIA 2024,
     //   VDI 2078         leer, nur Beschreibung und Quellenhinweis (Konzept 5.3).
     //   Zuordnung        die heutigen festen Paare (Din18599Nutzung, Zonenplan.NutzungAusKlasse) und
-    //                    die Paare der neuen Muster (Konzept 5.4, Q42); DIN 19 und 20 fehlen, bis ihre
-    //                    Namen bestaetigt sind.
+    //                    die Paare der neuen Muster (Konzept 5.4, Q42). Der Schluessel DIN_NUMMER ist die
+    //                    Nummer der HottCAD-Projektdatei (PdProfileUsage.ProfileUsageType); HottCAD zaehlt
+    //                    nach der DIN/TS 18599-10:2025-10 wie die Kategorie DIN (E96, Anwender 06.10.2026;
+    //                    Konzept 5.4, B10): 30, 31 Bibliothek, 33 Turnhalle, 37 Fitnessraum, 43 Lagerhallen.
+    //                    44 bis 47 der Datei sind keine Normnummern und bleiben ohne Zeile; 70 und 71 sind
+    //                    die Wohnzeilen der Datei. DIN 19 (Verkehrsflaechen) und 20 (Lager, Technik, Archiv)
+    //                    fuehren auf die Muster Verkehr und Lager (E96). Eine Datenbank, die Schritt 189 mit
+    //                    der Zaehlung 2018 (28, 29, 31, 35, 41) oder ohne 19 und 20 durchlief, stellt
+    //                    Schritt 190 um bzw. ergaenzt sie.
     //   Z_Nutzungsprofil die Musternamen Buero und Schule unter Quelle KONDITIONIERUNG auf BUERO_SCHULE,
     //                    wie die Kennungen BUERO und SCHULE (NP-F15); Wohnen und Sonstige bleiben
     //                    Vorgabe wie WOHNEN und SONSTIGE.
@@ -226,8 +237,8 @@ namespace WindowsFormsApplication1
         /// <summary>Der Name der Kategorie der EPOS-Muster.</summary>
         public const string KATEGORIE_EPOS = "EPOS-Muster";
 
-        /// <summary>Der Name der Kategorie DIN V 18599-10.</summary>
-        public const string KATEGORIE_DIN = "DIN V 18599-10";
+        /// <summary>Der Name der Kategorie DIN/TS 18599-10 (Ausgabe 2025-10, E96).</summary>
+        public const string KATEGORIE_DIN = "DIN/TS 18599-10";
 
         /// <summary>Der Name der Kategorie SIA 2024.</summary>
         public const string KATEGORIE_SIA = "SIA 2024";
@@ -268,10 +279,14 @@ namespace WindowsFormsApplication1
         /// <summary>Die Beschreibung des Musters Sonstige.</summary>
         public const string BESCHREIBUNG_SONSTIGE = "Ohne Kennwerte: nur der Name an der Zone";
 
-        /// <summary>Der Quellenhinweis der Kategorie DIN V 18599-10 (Konzept 5.2).</summary>
+        /// <summary>Der Quellenhinweis der Kategorie DIN/TS 18599-10 (Konzept 5.2, E96).</summary>
         public const string QUELLE_DIN =
-            "DIN V 18599-10:2018-09, Nutzungsrandbedingungen der Nichtwohn- und Wohngebäude. Werte nach Norm trägt " +
-            "der Anwender aus seiner lizenzierten Ausgabe ein oder importiert sie.";
+            "DIN/TS 18599-10:2025-10, Energetische Bewertung von Gebäuden – Teil 10: Nutzungsrandbedingungen, " +
+            "Klimadaten; ersetzt DIN V 18599-10:2018-09. Werte trägt der Anwender aus seiner lizenzierten Ausgabe ein " +
+            "oder importiert sie.";
+
+        /// <summary>Die Beschreibung der Kategorie DIN/TS 18599-10.</summary>
+        public const string BESCHREIBUNG_DIN = "Nutzungsprofile nach DIN/TS 18599-10 mit Nummer und Name, ohne Werte";
 
         /// <summary>Die vier ausgelieferten Kategorien in Anzeigereihenfolge.</summary>
         public static IReadOnlyList<RaumnutzungSaatkategorie> Kategorien { get; } = new[]
@@ -279,9 +294,7 @@ namespace WindowsFormsApplication1
             new RaumnutzungSaatkategorie(RaumnutzungSchema.ART_EPOS_MUSTER, KATEGORIE_EPOS,
                 "Muster von EPOS-Plan mit runden Werten, weder Norm- noch Messwerte",
                 "EPOS-Plan", 1),
-            new RaumnutzungSaatkategorie(RaumnutzungSchema.ART_DIN_V_18599_10, KATEGORIE_DIN,
-                "Nutzungsprofile nach DIN V 18599-10 mit Nummer und Name, ohne Werte",
-                QUELLE_DIN, 2),
+            new RaumnutzungSaatkategorie(RaumnutzungSchema.ART_DIN_V_18599_10, KATEGORIE_DIN, BESCHREIBUNG_DIN, QUELLE_DIN, 2),
             new RaumnutzungSaatkategorie(RaumnutzungSchema.ART_SIA_2024, KATEGORIE_SIA,
                 "Raumnutzungen nach SIA 2024, nummeriert mit Punkten, mit Tagesverläufen je Stunde " +
                 "(Stundenprofile); ausgeliefert ohne Profile",
@@ -401,21 +414,34 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// Die bestätigten Profile der DIN V 18599-10 (Konzept 5.2, Stand „belegt", Q47): Nummer und Name, keine Werte.
-        /// Unbestätigte Nummern (6, 7, 14 bis 20, 22.1 bis 22.3, 23, 24, 30, 36 bis 39, 42 bis 47, Wohngebäude)
-        /// fehlen, bis der Anwender sie an seiner Ausgabe bestätigt.
+        /// Die 43 Nutzungen der DIN/TS 18599-10:2025-10, Tabelle 6 (E96, Konzept 5.2): Nummer und Name, keine Werte.
+        /// Durchgehend ganzzahlig 1 bis 43 — die Ausgabe 2018 zählte 22.1 bis 22.3 und 23 bis 41 (Umbau in
+        /// <see cref="RaumnutzungDinTsSchema"/>). Die Wohngebäude (Tabelle 5) tragen keine Nummer und fehlen hier.
         /// </summary>
         public static IReadOnlyList<RaumnutzungSaatprofil> Din { get; } = new (string Nummer, string Name)[]
         {
-            ("1", "Einzelbüro"), ("2", "Gruppenbüro"), ("3", "Großraumbüro"),
-            ("4", "Besprechung, Sitzung, Seminar"), ("5", "Schalterhalle"),
-            ("8", "Klassenzimmer, Gruppenraum (Kindergarten)"), ("9", "Hörsaal, Auditorium"),
+            ("1", "Einzelbüro"), ("2", "Gruppenbüro (zwei bis sechs Arbeitsplätze)"),
+            ("3", "Großraumbüro (ab sieben Arbeitsplätze)"), ("4", "Besprechung, Sitzung, Seminar"),
+            ("5", "Schalterhalle"), ("6", "Einzelhandel/Kaufhaus"),
+            ("7", "Einzelhandel/Kaufhaus (Lebensmittelabteilung mit Kühlprodukten)"),
+            ("8", "Klassenzimmer (Schule), Gruppenraum (Kindergarten)"), ("9", "Hörsaal, Auditorium"),
             ("10", "Bettenzimmer"), ("11", "Hotelzimmer"), ("12", "Kantine"), ("13", "Restaurant"),
-            ("21", "Rechenzentrum"), ("25", "Bühne"), ("26", "Messe/Kongress"), ("27", "Ausstellung/Museum"),
-            ("28", "Bibliothek – Lesesaal"), ("29", "Bibliothek – Freihandbereich"),
-            ("31", "Turnhalle"), ("32", "Parkhaus (Büro/Privat)"), ("33", "Parkhaus (öffentlich)"),
-            ("34", "Saunabereich"), ("35", "Fitnessraum"),
-            ("40", "Arztpraxen, therapeutische Praxen"), ("41", "Lagerhallen, Logistikhallen"),
+            ("14", "Küchen in Nichtwohngebäuden"), ("15", "Küche – Vorbereitung, Lager"),
+            ("16", "WC und Sanitärräume in Nichtwohngebäuden"), ("17", "Sonstige Aufenthaltsräume"),
+            ("18", "Nebenflächen (ohne Aufenthaltsräume)"), ("19", "Verkehrsflächen"), ("20", "Lager, Technik, Archiv"),
+            ("21", "Rechenzentrum"),
+            ("22", "Gewerbliche und industrielle Hallen – schwere Arbeit, stehende Tätigkeit"),
+            ("23", "Gewerbliche und industrielle Hallen – mittelschwere Arbeit"),
+            ("24", "Gewerbliche und industrielle Hallen – leichte Arbeit"),
+            ("25", "Zuschauerbereich (Theater und Veranstaltungsbauten)"), ("26", "Foyer (Theater und Veranstaltungsbauten)"),
+            ("27", "Bühne (Theater und Veranstaltungsbauten)"), ("28", "Messe/Kongress"),
+            ("29", "Ausstellungsräume und Museum mit konservatorischen Anforderungen"),
+            ("30", "Bibliothek – Lesesaal"), ("31", "Bibliothek – Freihandbereich"), ("32", "Bibliothek – Magazin und Depot"),
+            ("33", "Turnhalle (ohne Zuschauerbereich)"), ("34", "Parkhäuser (Büro- und Privatnutzung)"),
+            ("35", "Parkhäuser (öffentliche Nutzung)"), ("36", "Saunabereich"), ("37", "Fitnessraum"), ("38", "Labor"),
+            ("39", "Untersuchungs- und Behandlungsräume"), ("40", "Spezialpflegebereiche"),
+            ("41", "Flure des allgemeinen Pflegebereichs"), ("42", "Arztpraxen und Therapeutische Praxen"),
+            ("43", "Lagerhallen, Logistikhallen"),
         }.Select(p => new RaumnutzungSaatprofil { Kategorie = KATEGORIE_DIN, Nummer = p.Nummer, Bezeichner = p.Name }).ToList();
 
         /// <summary>Alle ausgelieferten Profile: die Muster, dann die DIN-Profile.</summary>
@@ -426,15 +452,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die ausgelieferte Zuordnung (Konzept 5.4): die heutigen festen Paare und die der neuen Muster (Q42).
-        /// Jede zeigt auf ein EPOS-Muster, nie auf ein leeres DIN-Profil (NP-F13).
+        /// Jede zeigt auf ein EPOS-Muster, nie auf ein leeres DIN-Profil (NP-F13). Der Schlüssel <c>DIN_NUMMER</c> ist die
+        /// Nummer der Projektdatei; sie zählt wie die Kategorie DIN/TS 18599-10 nach der Ausgabe 2025 (E96, Kopf;
+        /// die Zeilen der Zählung 2018 stellt <see cref="RaumnutzungDinTsSchema.ZuordnungUmstellen"/> um).
         /// </summary>
         public static IReadOnlyList<RaumnutzungSaatzuordnung> Zuordnungen { get; } =
             Paare(RaumnutzungSchema.ZUORDNUNG_DIN, BUERO, "1", "2", "3", "4", "5")
-            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SCHULE, "8", "9", "28", "29"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SCHULE, "8", "9", "30", "31"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, WOHNEN, "70", "71"))
-            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SPORT, "31", "35"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, SPORT, "33", "37"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, GASTRONOMIE, "12", "13"))
-            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, LAGER, "41"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, LAGER, "20", "43"))
+            .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_DIN, VERKEHR, "19"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_IFC, BUERO, "Buero"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_IFC, WOHNEN, "Wohnen", "Schlafen", "Kueche"))
             .Concat(Paare(RaumnutzungSchema.ZUORDNUNG_IFC, SPORT, "Sport"))
