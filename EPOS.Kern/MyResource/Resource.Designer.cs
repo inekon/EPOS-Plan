@@ -94503,6 +94503,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück. ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 
         ///  Hinweis: {0} ähnelt.
         /// </summary>

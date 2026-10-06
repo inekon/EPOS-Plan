@@ -3477,6 +3477,9 @@ Jetzt Datei auswählen?</value>
     <value>
   Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.</value>
   </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
+    <value>Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück.</value>
+  </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
   Hinweis: {0}</value>

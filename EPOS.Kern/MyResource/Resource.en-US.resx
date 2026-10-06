@@ -3461,6 +3461,9 @@ Select file now?</value>
     <value>
   Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
   </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
+    <value>The borehole heat exchanger uses a source temperature that is constant all year, made up of the mean ground temperature and a depth allowance; the heat extraction does not act back on it.</value>
+  </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
   Note: {0}</value>

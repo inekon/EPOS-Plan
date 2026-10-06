@@ -207,6 +207,12 @@
                          FarbeGewaehlt="FarbeUebernehmen"
                          FarbeZurueckgesetzt="FarbeVerwerfen" />
             <Herleitungszeile Text="@_kennwertzeile" />
+            @* Die Erdsonde rechnet ohne Jahresgang und ohne Rueckwirkung des Entzugs -
+               das sagt die Vorschau, sonst liest man die waagrechte Linie als Fehler. *@
+            @if (_sonde && !string.IsNullOrEmpty(HinweisSondeKonstant))
+            {
+                <Herleitungszeile Text="@HinweisSondeKonstant" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -325,6 +331,11 @@
     [Parameter] public string GbStandort { get; set; } = "Standort und Boden";
     [Parameter] public string GbVorschau { get; set; } = "Jahresgang der Quelltemperatur";
     [Parameter] public string GbPruefung { get; set; } = "Auslegungsprüfung nach VDI 4640 Blatt 2";
+
+    /// <summary>Hinweis unter der Vorschau bei der Erdsonde (<c>SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT</c>).</summary>
+    [Parameter] public string HinweisSondeKonstant { get; set; }
+        = "Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer " +
+          "Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück.";
     /// <summary>Titel der ersten Rubrik — zugleich der Name des Quellsystems.</summary>
     [Parameter] public string RbKollektor { get; set; } = "Erdkollektor";
 

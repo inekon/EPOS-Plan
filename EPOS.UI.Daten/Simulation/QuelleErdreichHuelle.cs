@@ -69,6 +69,7 @@ namespace WindowsFormsApplication1
                 ["GbStandort"] = MyResource.Resource.SIMQ_ERDREICH_GB_STANDORT,
                 ["GbVorschau"] = MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU,
                 ["GbPruefung"] = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG,
+                ["HinweisSondeKonstant"] = MyResource.Resource.SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT,
                 ["RbKollektor"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR,
                 ["RbSonde"] = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE,
                 ["RbKollektorWahl"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL,

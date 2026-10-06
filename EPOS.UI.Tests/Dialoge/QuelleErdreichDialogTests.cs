@@ -451,6 +451,24 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Empty(Zeige(Kollektor(), lauf: MitLauf()).FindAll(".epos-erdreich-laufstand"));
     }
 
+    // ================================================================== Sondenhinweis
+
+    /// <summary>
+    /// Bei der ERDSONDE sagt eine leise Zeile unter der Vorschau, dass die Quelltemperatur
+    /// konstant ist und der Entzug nicht zurückwirkt; beim Kollektor steht sie nicht.
+    /// </summary>
+    [Fact]
+    public void Bei_der_Sonde_steht_der_Hinweis_zur_konstanten_Quelltemperatur()
+    {
+        const string kern = "ganzjährig konstanten Quelltemperatur";
+
+        var sonde = Zeige(Sonde());
+        Assert.Contains(sonde.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains(kern));
+
+        var kollektor = Zeige(Kollektor());
+        Assert.DoesNotContain(kollektor.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains(kern));
+    }
+
     // ================================================================== Änderungshinweis
 
     /// <summary>
