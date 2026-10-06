@@ -209,6 +209,12 @@ namespace EPOS.Kern.Tests
                 Assert.All(g, x => Assert.True(x.RingflaecheM2 > 0, datei));
                 Assert.Equal(g.Count, g.Select(x => x.Quellkennung).Distinct().Count());
             }
+            // Ohne Raumgrenzen: jeder Raum aus seinem Körper — nicht aus dem Ring der Decke des Raumbezugs.
+            IReadOnlyList<Raumgrundriss> k = Grundrisse("ifc4_koerper_nachbarn.ifc");
+            Assert.Equal(new[] { "0,0;5000,0;5000,4000;0,4000", "5240,0;8240,0;8240,4000;5240,4000", "0,0;5000,0;5000,4000;0,4000" },
+                         k.Select(x => x.RingeText));
+            Assert.All(k, x => Assert.Equal(Umrissherleitung.KoerperBoden, x.Herleitung));
+            Assert.Equal(new[] { 0.0, 0.0, 3.3 }, k.Select(x => Math.Round(x.BodenM, 6)));
             IReadOnlyList<Raumgrundriss> n = Grundrisse("ifc4_koerper_nachbarn_grenzen.ifc");
             Assert.Equal(3, n.Count);
             Assert.Equal(new[] { 0.0, 0.0, 3.3 }, n.Select(x => Math.Round(x.BodenM, 6)));

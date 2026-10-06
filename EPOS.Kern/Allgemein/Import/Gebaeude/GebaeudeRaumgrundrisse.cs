@@ -10,8 +10,11 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Rangfolge je Raum:</b> Trägt der Raum einen Umriss aus Raumgrenzen bzw. aus den <c>PolyLoop</c>s der
     /// gbXML-Flächen (<see cref="Geometrieherkunft.Raumgrenzen"/>, Herleitung <c>Boden</c>/<c>Decke</c>), wird dieser
-    /// gespeichert, nicht neu abgeleitet (F6, E73). Sonst leitet <see cref="Koerpergrundriss"/> ihn aus dem Dateikörper ab.
-    /// Ohne beides bleibt der Raum ohne Zeile (Rechteck wie heute).</para>
+    /// gespeichert, nicht neu abgeleitet (F6, E73). In IFC gilt das nur für echte Raumgrenzen
+    /// (<see cref="Grenzherkunft.Raumgrenze"/>): Ein Umriss aus dem Ring eines Bauteils des Raumbezugs oder aus einer
+    /// Grenze eines Körperpaars (CAD-Export ohne <c>IfcRelSpaceBoundary</c>) ist der Umriss des ganzen Bauteils bzw. nur
+    /// die gemeinsame Fläche zweier Räume — hat der Raum einen Körper, geht dieser vor. Sonst leitet <see cref="Koerpergrundriss"/> den Grundriss aus dem
+    /// Dateikörper ab. Ohne beides bleibt der Raum ohne Zeile (Rechteck wie heute).</para>
     ///
     /// <para><b>Höhenlage und Höhe:</b> mit Körper dessen tiefster Punkt (Stufe 1: der Bodendreiecke) und seine Spanne (F9);
     /// ohne Körper aus der Ebene der Boden- bzw. Deckengrenzen und der Höhe des Umrisses (V/A, sonst der Datei).</para>
@@ -27,6 +30,11 @@ namespace WindowsFormsApplication1
             var liste = new List<Raumgrundriss>();
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return liste;
             AbbildGebaeude g = abbild.Gebaeude[index];
+            bool ifc = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal);
+            // Die echten Raumgrenzen der Datei (IfcRelSpaceBoundary) - nicht die aus Körperpaaren oder Raumbezügen.
+            var echte = new HashSet<string>(g.Bauteile.SelectMany(b => b.Grenzen)
+                                             .Where(x => x.Herkunft == Grenzherkunft.Raumgrenze && x.Kennung != null)
+                                             .Select(x => x.Kennung), StringComparer.Ordinal);
             Zonengeometrie geo;
             try
             {
@@ -46,22 +54,28 @@ namespace WindowsFormsApplication1
                 string kennung = Quellkennung.Kuerzen(r.Kennung ?? "");
                 if (kennung.Length == 0 || !gesehen.Add(kennung)) continue;
                 umrisse.TryGetValue(r.Kennung, out Raumumriss u);
-                Raumgrundriss gr = Raum(g, r, u);
+                Raumgrundriss gr = Raum(g, r, u, ifc ? echte : null);
                 if (gr != null) liste.Add(gr);
             }
             return liste;
         }
 
         /// <summary>Der Grundriss eines Raums (Regeln: Klassenkopf); <c>null</c> = keiner.</summary>
-        internal static Raumgrundriss Raum(AbbildGebaeude g, AbbildRaum r, Raumumriss u)
+        /// <param name="echteGrenzen">IFC: die Kennungen der echten Raumgrenzen der Datei; <c>null</c> = gbXML (jeder Umriss zählt).</param>
+        internal static Raumgrundriss Raum(AbbildGebaeude g, AbbildRaum r, Raumumriss u, ISet<string> echteGrenzen)
         {
             if (r == null) return null;
             (string geschoss, double? lage) = Geschoss(g, r);
             string name = string.IsNullOrWhiteSpace(r.Name) ? null : r.Name;
             bool ohneBeschnitt = r.Koerper != null && r.Koerper.Vermerke.Contains(Koerpervermerk.OhneBeschnitt);
 
-            // F6: Umriss aus Raumgrenzen bzw. gbXML-PolyLoops - gespeichert, nicht neu abgeleitet.
-            if (u != null && u.Herkunft == Geometrieherkunft.Raumgrenzen && u.Polygone.Count > 0
+            // F6: Umriss aus Raumgrenzen bzw. gbXML-PolyLoops - gespeichert, nicht neu abgeleitet. In IFC zählt nur eine
+            // echte Raumgrenze (IfcRelSpaceBoundary): Der Ring eines Bauteils aus dem Raumbezug ist der ganze Bauteilumriss
+            // (eine Bodenplatte unter mehreren Räumen), eine Grenze aus einem Körperpaar nur die gemeinsame Fläche zweier
+            // Räume - dort geht der Körper vor.
+            bool echteGrenze = u != null && (echteGrenzen == null || r.Koerper == null
+                                             || u.Polygone.Any(p => p.Quelle != null && echteGrenzen.Contains(p.Quelle.Kennung)));
+            if (u != null && echteGrenze && u.Herkunft == Geometrieherkunft.Raumgrenzen && u.Polygone.Count > 0
                 && (u.Herleitung == Umrissherleitung.Boden || u.Herleitung == Umrissherleitung.Decke))
             {
                 List<Grundrissring> ringe = u.Polygone.Select(p => Ring(p.Punkte)).Where(x => x != null).ToList();

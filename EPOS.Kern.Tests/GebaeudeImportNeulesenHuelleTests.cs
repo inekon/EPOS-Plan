@@ -162,7 +162,7 @@ namespace EPOS.Kern.Tests
         }
 
         private static long[] Zaehlen()
-            => new[] { "Tab_Importquelle", "Tab_Importzuordnung", "Tab_Gebaeude", "Tab_Zone", "Tab_Bauteil" }
+            => new[] { "Tab_Importquelle", "Tab_Importzuordnung", "Tab_Raumgrundriss", "Tab_Gebaeude", "Tab_Zone", "Tab_Bauteil" }
                .Select(t => Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + t + "\""), CultureInfo.InvariantCulture))
                .ToArray();
 
