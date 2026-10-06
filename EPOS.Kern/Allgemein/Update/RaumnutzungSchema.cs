@@ -38,7 +38,7 @@ namespace WindowsFormsApplication1
     //   Tab_Zone.Nutzungsprofil   TEXT nullbar, 1..120 Zeichen - der Profilname als Kopie (Q41), nie eine ID.
     //
     // DIE SAAT (RaumnutzungSaat, INSERT ... WHERE NOT EXISTS / OR IGNORE - wiederholbar): vier Kategorien,
-    // neun EPOS-Muster samt Zeilenbild, die 43 Nutzungen der DIN/TS 18599-10:2025-10 ohne Werte (E94), die
+    // neun EPOS-Muster samt Zeilenbild, die 43 Nutzungen der DIN/TS 18599-10:2025-10 ohne Werte (E95), die
     // Zuordnung und in Z_Nutzungsprofil die Musternamen Buero und Schule unter Quelle KONDITIONIERUNG
     // (NP-F15). Steht noch die Kategorie DIN der Saat 2018, stellt RaumnutzungDinTsSchema.AlteFassungUmbauen
     // sie vor der Saat auf die Ausgabe 2025 (Schritt 190) - sonst entstuende eine zweite Kategorie.

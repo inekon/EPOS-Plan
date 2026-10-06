@@ -6,7 +6,7 @@ namespace WindowsFormsApplication1
 {
     // ====================================================================================
     // DIE SAAT DES NUTZUNGSPROFIL-KATALOGS (Schritt 189, RaumnutzungSchema; Konzept Nutzungsprofile
-    // Kapitel 5, Entscheide E90, E91 und E94; die Kategorie DIN nach Schritt 190, RaumnutzungDinTsSchema).
+    // Kapitel 5, Entscheide E90, E91 und E95; die Kategorie DIN nach Schritt 190, RaumnutzungDinTsSchema).
     //
     // EINE QUELLE IM CODE. Aus diesen Konstanten saet der Schemaschritt, gegen sie pruefen die Wache und
     // der Generator (NP1b). Saatschluessel sind Namen, keine Ids: die Kategorie ueber ihren Bezeichner,
@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
     //                    (Sport, Gastronomie, Lager, Verkehr, Technik) tragen die runden Vorschlagswerte
     //                    aus Konzept 5.1 (Q43); "Kuehlen aus" durchgehend steht als Zeilenbild TAG aus.
     //                    Kein Muster traegt einen Nennwert (NP-F18).
-    //   DIN/TS 18599-10  Nummer und Name der 43 Nutzungen der DIN/TS 18599-10:2025-10, Tabelle 6 (E94;
+    //   DIN/TS 18599-10  Nummer und Name der 43 Nutzungen der DIN/TS 18599-10:2025-10, Tabelle 6 (E95;
     //                    Konzept 5.2) - Tatsachen ohne Kennwert, ohne Zeilenbild, ohne Stundenprofil (E90).
     //                    Die Namen nach Tabelle 6 mit grossem Anfangsbuchstaben; 23 und 24 tragen den Titel
     //                    aus Anhang A (der Name der Tabelle 6 ist laenger als 80 Zeichen). Die Wohngebaeude
@@ -233,7 +233,7 @@ namespace WindowsFormsApplication1
         /// <summary>Der Name der Kategorie der EPOS-Muster.</summary>
         public const string KATEGORIE_EPOS = "EPOS-Muster";
 
-        /// <summary>Der Name der Kategorie DIN/TS 18599-10 (Ausgabe 2025-10, E94).</summary>
+        /// <summary>Der Name der Kategorie DIN/TS 18599-10 (Ausgabe 2025-10, E95).</summary>
         public const string KATEGORIE_DIN = "DIN/TS 18599-10";
 
         /// <summary>Der Name der Kategorie SIA 2024.</summary>
@@ -275,7 +275,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Beschreibung des Musters Sonstige.</summary>
         public const string BESCHREIBUNG_SONSTIGE = "Ohne Kennwerte: nur der Name an der Zone";
 
-        /// <summary>Der Quellenhinweis der Kategorie DIN/TS 18599-10 (Konzept 5.2, E94).</summary>
+        /// <summary>Der Quellenhinweis der Kategorie DIN/TS 18599-10 (Konzept 5.2, E95).</summary>
         public const string QUELLE_DIN =
             "DIN/TS 18599-10:2025-10, Energetische Bewertung von Gebäuden – Teil 10: Nutzungsrandbedingungen, " +
             "Klimadaten; ersetzt DIN V 18599-10:2018-09. Werte trägt der Anwender aus seiner lizenzierten Ausgabe ein " +
@@ -410,7 +410,7 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// Die 43 Nutzungen der DIN/TS 18599-10:2025-10, Tabelle 6 (E94, Konzept 5.2): Nummer und Name, keine Werte.
+        /// Die 43 Nutzungen der DIN/TS 18599-10:2025-10, Tabelle 6 (E95, Konzept 5.2): Nummer und Name, keine Werte.
         /// Durchgehend ganzzahlig 1 bis 43 — die Ausgabe 2018 zählte 22.1 bis 22.3 und 23 bis 41 (Umbau in
         /// <see cref="RaumnutzungDinTsSchema"/>). Die Wohngebäude (Tabelle 5) tragen keine Nummer und fehlen hier.
         /// </summary>

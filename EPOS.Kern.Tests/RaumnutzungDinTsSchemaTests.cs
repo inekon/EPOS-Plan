@@ -9,7 +9,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Schritt 190 — Kategorie DIN nach DIN/TS 18599-10:2025-10</b> (NP5b, E94, <see cref="RaumnutzungDinTsSchema"/>):
+    /// <b>Schritt 190 — Kategorie DIN nach DIN/TS 18599-10:2025-10</b> (NP5b, E95, <see cref="RaumnutzungDinTsSchema"/>):
     /// Nummer, Ziel und Register; die Umnummerierung ab 22; die Testdatenbank auf dem Schritt; der Umbau der Saat 2018 mit
     /// bleibenden Ids, unberührter Zuordnung und unberührten Zeilen des Anwenders; Schritt 189 auf der Saat 2018 ohne zweite
     /// Kategorie; der benannte Abbruch samt Rücknahme. Nur Nummern und Namen — kein Wert der Norm (E90).
@@ -21,10 +21,10 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _db.Dispose();
 
-        /// <summary>Beschreibung der Kategorie in der Saat 2018 (Schritt 189 vor E94).</summary>
+        /// <summary>Beschreibung der Kategorie in der Saat 2018 (Schritt 189 vor E95).</summary>
         private const string BESCHREIBUNG_2018 = "Nutzungsprofile nach DIN V 18599-10 mit Nummer und Name, ohne Werte";
 
-        /// <summary>Quellenhinweis der Kategorie in der Saat 2018 (Schritt 189 vor E94).</summary>
+        /// <summary>Quellenhinweis der Kategorie in der Saat 2018 (Schritt 189 vor E95).</summary>
         private const string QUELLE_2018 =
             "DIN V 18599-10:2018-09, Nutzungsrandbedingungen der Nichtwohn- und Wohngebäude. Werte nach Norm trägt " +
             "der Anwender aus seiner lizenzierten Ausgabe ein oder importiert sie.";

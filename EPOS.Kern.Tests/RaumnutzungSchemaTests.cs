@@ -68,7 +68,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(16, RaumnutzungSaat.Zuordnungen.Count(z => z.Art == RaumnutzungSchema.ZUORDNUNG_DIN));
             Assert.Equal(9, RaumnutzungSaat.Zuordnungen.Count(z => z.Art == RaumnutzungSchema.ZUORDNUNG_IFC));
 
-            // Die DIN-Profile tragen nichts als Nummer und Name (Konzept 5.2, E90, E94): die Nummern 1 bis 43 der
+            // Die DIN-Profile tragen nichts als Nummer und Name (Konzept 5.2, E90, E95): die Nummern 1 bis 43 der
             // DIN/TS 18599-10:2025-10 durchgehend ganzzahlig, keine Nummer der Ausgabe 2018 (22.1 bis 22.3), keine
             // Wohnzeile der Projektdatei (70, 71), Namen eindeutig und höchstens 80 Zeichen.
             Assert.All(RaumnutzungSaat.Din, p => Assert.True(p.IstLeer, p.ToString()));

@@ -5187,7 +5187,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Schritt <see cref="RaumnutzungDinTsSchema.SCHRITT"/> — <b>Kategorie DIN nach DIN/TS 18599-10:2025-10</b> (NP5b,
-        /// E94): Name und Quellenhinweis der ausgelieferten Kategorie, Nummern und Namen ihrer 43 Nutzungen ohne Werte;
+        /// E95): Name und Quellenhinweis der ausgelieferten Kategorie, Nummern und Namen ihrer 43 Nutzungen ohne Werte;
         /// die Ids der ausgelieferten Profile bleiben.
         ///
         /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest den Katalog; Zeilen des Anwenders und die

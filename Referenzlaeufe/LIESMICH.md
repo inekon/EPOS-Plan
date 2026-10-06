@@ -787,7 +787,7 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `e90fc05f95d9ab45ce68e39dbbf332c0839b7ff4c0c8a9a90da57c4238586228`**. **Die Basis bleibt:** Kein Rechenweg liest Katalog oder
 > Zonenspalte, keine Einfrierregel ist berührt; 1047, 1051, 1052 und 1054 rechnen gegen R38 byte-gleich (127 CSV).
 
-> **Nachtrag — Schemaschritt 190 (Kategorie DIN nach DIN/TS 18599-10:2025-10, E94), Basis unverändert.**
+> **Nachtrag — Schemaschritt 190 (Kategorie DIN nach DIN/TS 18599-10:2025-10, E95), Basis unverändert.**
 > `RaumnutzungDinTsSchema` (190 = `RaumnutzungSchema.SCHRITT + 1`) benennt die ausgelieferte Kategorie in
 > „DIN/TS 18599-10“ um (Quellenhinweis der Ausgabe 2025-10), stellt ihre 24 Profile auf Nummer und Namen der Ausgabe 2025
 > (Ids bleiben) und legt die übrigen 19 Nutzungen der Tabelle 6 ohne Werte an: 43 DIN-Profile, zusammen 52 ausgelieferte

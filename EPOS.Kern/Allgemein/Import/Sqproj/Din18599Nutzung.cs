@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
     /// <c>Referenzlaeufe/Importproben/LIESMICH_Importproben.md</c>.
     /// <para><b>Zählung:</b> Die Schlüssel sind Nummern der Projektdatei und zählen nach DIN V 18599-10:2018-09 (28, 29
     /// Bibliothek). Die Kategorie DIN des Katalogs führt die DIN/TS 18599-10:2025-10, die ab 22 neu nummeriert (dort 30, 31);
-    /// ob HottCAD wie 2018 oder wie 2025 zählt, belegt keine Datei im Repositorium (Konzept Nutzungsprofile 5.4, E94).</para>
+    /// ob HottCAD wie 2018 oder wie 2025 zählt, belegt keine Datei im Repositorium (Konzept Nutzungsprofile 5.4, E95).</para>
     /// <para><b>Vorgabe im Code</b> (Konzept Nutzungsprofile NP-F12): Vorrang hat die Zuordnung <c>DIN_NUMMER</c> in
     /// <c>Tab_Raumnutzungszuordnung</c>; diese Tabelle gilt nur, wenn dort keine Zeile steht oder kein Katalog vorliegt
     /// (<see cref="Raumnutzungsvorbelegung"/>).</para>

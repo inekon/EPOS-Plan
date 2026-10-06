@@ -7,7 +7,7 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     // ====================================================================================
-    // NP5b - DIE KATEGORIE DIN AUF DIE DIN/TS 18599-10:2025-10 (Schritt 190; Entscheid E94; Konzept
+    // NP5b - DIE KATEGORIE DIN AUF DIE DIN/TS 18599-10:2025-10 (Schritt 190; Entscheid E95; Konzept
     // Nutzungsprofile 5.2 und 5.4).
     //
     // ANLASS. Die DIN/TS 18599-10:2025-10 ersetzt die DIN V 18599-10:2018-09 und nummeriert die Nutzungen
@@ -45,7 +45,7 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>NP5b</b> — die ausgelieferte Kategorie DIN auf die DIN/TS 18599-10:2025-10: Name, Quellenhinweis,
-    /// Nummern und Namen der 43 Nutzungen, Ids bleiben (E94). EINE Quelle für Migration, Werkzeug, Testkopie und
+    /// Nummern und Namen der 43 Nutzungen, Ids bleiben (E95). EINE Quelle für Migration, Werkzeug, Testkopie und
     /// Nachweis (ADR-001 Option C). Anlass und Grenzen stehen im Kopf der Datei.
     /// </summary>
     public static class RaumnutzungDinTsSchema
@@ -55,11 +55,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT = RaumnutzungSchema.SCHRITT + 1;
 
-        /// <summary>Der Name der Kategorie in der Saat von Schritt 189 vor E94 (Ausgabe 2018).</summary>
+        /// <summary>Der Name der Kategorie in der Saat von Schritt 189 vor E95 (Ausgabe 2018).</summary>
         public const string KATEGORIE_DIN_2018 = "DIN V 18599-10";
 
         /// <summary>
-        /// Die 24 Paare Nummer/Name der Saat von Schritt 189 vor E94 (DIN V 18599-10:2018-09) — eingefroren, damit
+        /// Die 24 Paare Nummer/Name der Saat von Schritt 189 vor E95 (DIN V 18599-10:2018-09) — eingefroren, damit
         /// der Umbau sie erkennt; ohne Werte.
         /// </summary>
         public static readonly IReadOnlyList<(string Nummer, string Name)> SAAT_2018 = new (string, string)[]

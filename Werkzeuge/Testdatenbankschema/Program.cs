@@ -2944,7 +2944,7 @@ namespace Testdatenbankschema
                                   RaumnutzungSchema.Vollstaendig() + " (erwartet True).");
             }
 
-            // ---- Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E94): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
+            // ---- Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E95): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
             //      Name, Quellenhinweis, Nummern und Namen der 43 Nutzungen ohne Werte, Ids bleiben. Aus DERSELBEN Quelle,
             //      aus der sich SchemaMigration.Schritt_RaumnutzungDinTs bedient. Wiederholbar, kein DDL.
             //
