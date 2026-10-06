@@ -80,7 +80,7 @@ namespace EPOS.Kern.Tests
                 foreach (string w in ergebnis.Warnungen.Concat(ergebnis.Fehler)) _ausgabe.WriteLine("Lauf: " + w);
                 Assert.Empty(ergebnis.Unbekannte.Select(u => u.Normalform + " @ " + u.Fundort));
                 Assert.Empty(ergebnis.Fehler);
-                Assert.Equal(9, ergebnis.EntfernteKommentare);
+                Assert.Equal(10, ergebnis.EntfernteKommentare); // KP3 Welle O3a: dazu der Kommentar des Aufheizabsatzes
 
                 using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
                 MainDocumentPart main = doc.MainDocumentPart;

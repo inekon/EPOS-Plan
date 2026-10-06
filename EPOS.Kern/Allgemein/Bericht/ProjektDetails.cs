@@ -124,6 +124,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public DataTable Zonenmerkmale;
 
+        /// <summary>
+        /// Der Konditionierungsstand je Projektgebäude (<c>Tab_Gebaeude.ID</c>; Entwurf KP3, Welle O3a, B19) — nur für ein
+        /// Gebäude, das Vorgabezeilen oder Kalender trägt; die Kurzform je Größe bildet daraus <see cref="Aufheizbericht.Konditionierung"/>.
+        /// Leer, wenn die Datenbank die Konditionierungstabellen noch nicht kennt.
+        /// </summary>
+        public Dictionary<int, Konditionierungsstand> Konditionierung = new Dictionary<int, Konditionierungsstand>();
+
         /// <summary>Die Zonen eines Projektgebäudes (<c>Tab_Gebaeude.ID</c>); leer = keine.</summary>
         public List<ZoneModel> ZonenVon(int idGebaeude)
             => Zonen != null && Zonen.TryGetValue(idGebaeude, out List<ZoneModel> z) ? z : new List<ZoneModel>();
@@ -173,6 +180,28 @@ namespace WindowsFormsApplication1
                 d.AufbauU = new Dictionary<int, double?>();
             }
             d.Zonenmerkmale = BildeZonenmerkmale(d);
+        }
+
+        /// <summary>
+        /// Liest je Gebäude des Projekts den Konditionierungsstand der Gebäudeebene (<see cref="KonditionierungCtrl.StandLesen"/>)
+        /// und legt ihn ab, wenn das Gebäude Vorgabezeilen oder Kalender trägt. Ein Fehler beim Lesen lässt das Gebäude ohne
+        /// Kurzform — der Bericht entsteht trotzdem.
+        /// </summary>
+        private static void LadeKonditionierung(ProjektDetails d)
+        {
+            if (d?.Gebaeude == null) return;
+            var ctrl = new KonditionierungCtrl();
+            foreach (DataRow g in d.Gebaeude.Rows)
+            {
+                int id = (int)(D(g, "ID") ?? 0);
+                if (id <= 0) continue;
+                try
+                {
+                    Konditionierungsstand stand = ctrl.StandLesen(KonditionierungCtrl.Eigner.Gebaeude(id), out _);
+                    if (stand != null && !stand.TabellenLeer) d.Konditionierung[id] = stand;
+                }
+                catch { /* ohne Kurzform */ }
+            }
         }
 
         /// <summary>
@@ -257,6 +286,9 @@ namespace WindowsFormsApplication1
 
             // PW1 Stufe 1: das Temperaturniveau des Prozesskanals.
             LadeProzesstemperatur(d);
+
+            // KP3 Welle O3a (B19): der Konditionierungsstand je Gebaeude fuer die Kurzform im Bericht.
+            LadeKonditionierung(d);
 
             // BW4: Netzverluste je Kanal und Zirkulation im Bestandsweg.
             d.Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(d.IdProjekt);
