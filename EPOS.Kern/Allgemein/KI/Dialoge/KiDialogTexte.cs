@@ -1305,6 +1305,38 @@
         internal static string GebbZoneRuecklaufErl => MyResource.Resource.KI_DLG_GEBB_ZONE_RUECKLAUF_ERL;
         internal static string GebbZoneBegrenztName => MyResource.Resource.GEBB_SP_ZONE_BEGRENZT;
         internal static string GebbZoneBegrenztErl => MyResource.Resource.KI_DLG_GEBB_ZONE_BEGRENZT_ERL;
+        // KP3 Welle O2: Lüftungs- und Aufheizwerte, die Auslegungsgröße (E60)
+        internal static string GebbSommerlueftungName => MyResource.Resource.GEBB_LBL_SOMMERLUEFTUNG;
+        internal static string GebbSommerlueftungErl => MyResource.Resource.KI_DLG_GEBB_SOMMERLUEFTUNG_ERL;
+        internal static string GebbNachtauskuehlungName => MyResource.Resource.KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG;
+        internal static string GebbNachtauskuehlungErl => MyResource.Resource.KI_DLG_GEBB_NACHTAUSKUEHLUNG_ERL;
+        internal static string GebbAufhZustandName => MyResource.Resource.GEBB_AUFH_LBL_ZUSTAND;
+        internal static string GebbAufhZustandErl => MyResource.Resource.KI_DLG_GEBB_AUFH_ZUSTAND_ERL;
+        internal static string GebbAufhZeitName => MyResource.Resource.GEBB_AUFH_LBL_ZEIT_MAX;
+        internal static string GebbAufhZeitErl => MyResource.Resource.KI_DLG_GEBB_AUFH_ZEIT_ERL;
+        internal static string GebbAufhAussenName => MyResource.Resource.GEBB_AUFH_LBL_AUSSEN;
+        internal static string GebbAufhAussenErl => MyResource.Resource.KI_DLG_GEBB_AUFH_AUSSEN_ERL;
+        internal static string GebbAufhLeistungName => MyResource.Resource.GEBB_AUFH_LBL_LEISTUNG;
+        internal static string GebbAufhLeistungErl => MyResource.Resource.KI_DLG_GEBB_AUFH_LEISTUNG_ERL;
+        internal static string GebbAufhQuelleName => MyResource.Resource.GEBB_AUFH_LBL_QUELLE;
+        internal static string GebbAufhQuelleErl => MyResource.Resource.KI_DLG_GEBB_AUFH_QUELLE_ERL;
+        internal static string GebbAufhTageName => MyResource.Resource.GEBB_AUFH_LBL_TAGE;
+        internal static string GebbAufhTageErl => MyResource.Resource.KI_DLG_GEBB_AUFH_TAGE_ERL;
+        internal static string GebbAufhStundenName => MyResource.Resource.GEBB_AUFH_LBL_STUNDEN;
+        internal static string GebbAufhStundenErl => MyResource.Resource.KI_DLG_GEBB_AUFH_STUNDEN_ERL;
+        internal static string GebbAufhLaengsteName => MyResource.Resource.GEBB_AUFH_LBL_LAENGSTE;
+        internal static string GebbAufhLaengsteErl => MyResource.Resource.KI_DLG_GEBB_AUFH_LAENGSTE_ERL;
+        internal static string GebbAufhKappungName => MyResource.Resource.GEBB_AUFH_LBL_KAPPUNG;
+        internal static string GebbAufhKappungErl => MyResource.Resource.KI_DLG_GEBB_AUFH_KAPPUNG_ERL;
+        internal static string GebbAuslegungName => MyResource.Resource.GEBB_AUFH_LBL_AUSLEGUNG;
+        internal static string GebbAuslegungErl => MyResource.Resource.KI_DLG_GEBB_AUSLEGUNG_ERL;
+        internal static string GebbAuslegungsheizlastName => MyResource.Resource.GEBB_AUFH_LBL_AUSLEGUNGSHEIZLAST;
+        internal static string GebbAuslegungsheizlastErl => MyResource.Resource.KI_DLG_GEBB_AUSLEGUNGSHEIZLAST_ERL;
+        internal static string GebbAufheizzuschlagName => MyResource.Resource.GEBB_AUFH_LBL_ZUSCHLAG;
+        internal static string GebbAufheizzuschlagErl => MyResource.Resource.KI_DLG_GEBB_AUFHEIZZUSCHLAG_ERL;
+        // KP3 Welle O2 (E59): die manuelle Aufheizzeit im Gebäudeeditor
+        internal static string GebkAufheizzeitManuellName => MyResource.Resource.KOND_AUFH_MANUELL_LBL;
+        internal static string GebkAufheizzeitManuellErl => MyResource.Resource.KOND_AUFH_MANUELL_KI_ERL;
 
         internal static string GtypTypName => MyResource.Resource.GTYP_LBL_NAME;
         internal static string GtypTypErl => MyResource.Resource.KI_DLG_GTYP_TYP_ERL;

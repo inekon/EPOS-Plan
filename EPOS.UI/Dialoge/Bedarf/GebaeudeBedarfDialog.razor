@@ -185,6 +185,10 @@
             }
         </div>
     }
+
+    @* ---- Stufe KP3, Welle O2 (E59, E60): die Gruppe „Aufheizung" - Bemessung, Zaehlungen, Hinweise W1-W5,
+       Zonen und die Auslegungsgroesse mit ihren Teilen; ohne Daten steht sie nicht da. *@
+    <GebaeudeBedarfAufheizung Daten="@Daten.Aufheizung" Texte="@AufheizTexte" />
     </section>
 
     @* ---- Die Zonen (Stufe G6b, Anwenderentscheid A2): eine Zeile je Zone, auch unbeheizt -
@@ -540,6 +544,9 @@
 
     /// <summary>Die Texte der Zonentabelle und der Diagrammwahl (Stufe G6b).</summary>
     [Parameter] public GebaeudeBedarfZonenTexte ZonenTexte { get; set; } = new();
+
+    /// <summary>Die Beschriftungen der Gruppe „Aufheizung" (Stufe KP3, Welle O2).</summary>
+    [Parameter] public GebaeudeBedarfAufheizTexte AufheizTexte { get; set; } = new();
 
     /// <summary>
     /// Liefert das Wärmelastbild EINER Zone (Stufe G6b) — Parameter der Platz der Zone in
