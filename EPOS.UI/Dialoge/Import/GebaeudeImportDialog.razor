@@ -399,6 +399,15 @@
                Knopf ist ein Schritt am Zonenplan des Kerns; lehnt er ab, steht seine Meldung als Banner, bei
                ungleicher Beheizung mit dem Raumhaken als Ausweg. *@
             <Gruppenkopf Titel="@Texte.GruppeZonen" />
+            @* Stufe NP3b (Konzept Nutzungsprofile 6.2, NP-F22): der Katalog der Nutzungsprofile als Überlagerung; nach dem
+               Schließen liest der Plan Katalog und Zuordnung neu. Kein Delegat, kein Knopf. *@
+            @if (Raumnutzung is not null)
+            {
+                <div class="epos-zeilenknoepfe epos-gebimport-nutzungsprofile">
+                    <button type="button" class="epos-knopf epos-gebimport-nutzungsprofile-oeffnen"
+                            @onclick="() => _nutzungsblatt = true">@RaumnutzungTexte.KnopfProfileImport</button>
+                </div>
+            }
             @if (_konflikt is Umhaengkonflikt k)
             {
                 @Konfliktbanner(k)
@@ -838,6 +847,18 @@
                 Beantwortet="SqZonierungBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
 </div>
 
+
+@* Stufe NP3b: der Katalog der Nutzungsprofile als Überlagerung des Zonenbaums. *@
+<Ueberlagerung Offen="@_nutzungsblatt" Titel="@RaumnutzungTexte.Blatt" Zusatzklasse="epos-gebimport-nutzungsblatt"
+               Geschlossen="NutzungsprofileGeschlossen">
+    <KindInhalt>
+        @if (_nutzungsblatt && Raumnutzung is not null)
+        {
+            <EPOS.UI.Dialoge.Bedarf.RaumnutzungBlatt Katalogweg="@Raumnutzung" Texte="@RaumnutzungTexte"
+                                                    GroessenTexte="@RaumnutzungGroessen" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
 @code {
     // =====================================================================
     // Gaben — die Datenseite liegt in der Huelle
@@ -889,6 +910,34 @@
 
     /// <summary>Die Beschriftungen (Bündel).</summary>
     [Parameter] public GebaeudeImportTexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Der Weg des Nutzungsprofilkatalogs (Stufe NP3b; Konzept Nutzungsprofile 6.2) — „Nutzungsprofile…" am Zonenbaum
+    /// öffnet das Blatt als Überlagerung. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public RaumnutzungWeg? Raumnutzung { get; set; }
+
+    /// <summary>Die Texte des Nutzungsprofilkatalogs (Präfix <c>RNP_</c>).</summary>
+    [Parameter] public RaumnutzungTexte RaumnutzungTexte { get; set; } = new();
+
+    /// <summary>Die Namen der Größen und Zeilen für die Vorschau des Blatts (Bündel der Konditionierung).</summary>
+    [Parameter] public KonditionierungTexte RaumnutzungGroessen { get; set; } = new();
+
+    /// <summary>Steht der Katalog der Nutzungsprofile als Überlagerung (Stufe NP3b)?</summary>
+    private bool _nutzungsblatt;
+
+    /// <summary>Steht der Katalog der Nutzungsprofile offen? Prüfhilfe für die Tests.</summary>
+    public bool NutzungsprofileOffen => _nutzungsblatt;
+
+    /// <summary>
+    /// Das Schließen der Überlagerung „Nutzungsprofile": Der Katalog hat sofort geschrieben (NP-F3); der Plan liest
+    /// Katalog und Zuordnung neu, Handänderungen bleiben (dieselbe Anfrage).
+    /// </summary>
+    private void NutzungsprofileGeschlossen()
+    {
+        _nutzungsblatt = false;
+        NeuZuordnen();
+    }
 
     /// <summary>
     /// Der Hilfeschlüssel, solange das Profil keinen nennt — die eigene Seite „Gebäudeimport",
@@ -2124,6 +2173,7 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
+        if (_nutzungsblatt) return Task.CompletedTask;   // die Überlagerung der Nutzungsprofile schließt selbst
         if (_regelFrage is not null || _aufhebenFrage) return Task.CompletedTask;   // die Rückfrage antwortet „Nein"
         if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
         if (_schreibt) return Task.CompletedTask;

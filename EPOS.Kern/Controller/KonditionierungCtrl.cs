@@ -671,9 +671,12 @@ namespace WindowsFormsApplication1
             // Die Nutzung der Herkunftsvorlage (Schemaschritt KonditionierungNutzungSchema) reist mit,
             // solange die Herkunft dieselbe Vorlage nennt; eine neue Herkunft nimmt die Nutzung ihrer
             // Vorlage nach der Regel der Saat (auch im OK-Weg des Arbeitsstands), ohne Herkunft bleibt sie leer.
+            // NP3b (NP-F14, NP-F15): nennt die Herkunft keine Vorlage der Groesse, aber ein Nutzungsprofil des
+            // Katalogs, ist die Nutzung dessen Name - der OK-Weg nach „Nutzungsprofil uebernehmen...".
             string nutzung = BleibendeNutzung(v, eigner, groesse, zeile.Bemerkung);
             if (nutzung == null && KonditionierungNutzungSchema.SpalteDa(v))
-                nutzung = KonditionierungNutzungSchema.NutzungDerHerkunft(v, zeile.Bemerkung, groesse);
+                nutzung = KonditionierungNutzungSchema.NutzungDerHerkunft(v, zeile.Bemerkung, groesse)
+                          ?? RaumnutzungCtrl.NutzungDesProfils(v, zeile.Bemerkung);
 
             // Der vorhandene Kalender dieser Groesse faellt samt Perioden (Kaskade); so laeuft
             // das Ersetzen nicht in den Teilindex der Eindeutigkeit (Konzept 5.1).

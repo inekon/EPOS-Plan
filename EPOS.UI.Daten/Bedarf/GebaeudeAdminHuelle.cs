@@ -68,6 +68,8 @@ namespace WindowsFormsApplication1
                 ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Katalogbau, 0),
                 ["KonditionierungTexte"] = KonditionierungTexteHuelle.Texte(),
                 ["KonditionierungFragen"] = KonditionierungTexteHuelle.Fragen(),
+                // Stufe NP3b: die Texte von „Nutzungsprofil übernehmen…" im Blatt „Konditionierung".
+                ["RaumnutzungTexte"] = RaumnutzungHuelle.Texte(),
                 // Stufe AK1 (Anlagenkopplung 8.4, 9.1): die hergeleiteten Vorgaben der
                 // Waermeuebergabe - mit der Klimareihe des geoeffneten Projekts; ohne Projekt
                 // steht die Regel ohne Zahl - und das Vorschaubild des Zeitprogramms.

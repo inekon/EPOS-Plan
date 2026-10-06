@@ -105,8 +105,17 @@
                         </div>
                         <Textfeld Bezeichnung="@Texte.LabelVorlageBeschreibung" Wert="@_beschreibung"
                                   WertChanged="w => _beschreibung = w" Mehrzeilig="true" Zeilen="2" Hoechstlaenge="400" />
-                        <Auswahlfeld Bezeichnung="@Texte.LabelVorlageNutzung" Eintraege="@Nutzungen" Auswahl="@_nutzung"
-                                     AuswahlChanged="w => _nutzung = w ?? 0" />
+                        @* NP3b (NP-F15): die Nutzung ist freier Text (höchstens 120 Zeichen); die Vorschläge kommen aus
+                           dem Katalog der Nutzungsprofile und setzen den Text - eine Suchauswahl, kein datalist. *@
+                        <div class="epos-kond-vorlage-nutzung">
+                            <Textfeld Bezeichnung="@Texte.LabelVorlageNutzung" Wert="@_nutzung" Hoechstlaenge="120"
+                                      WertChanged="w => _nutzung = w ?? string.Empty" />
+                        </div>
+                        @if (Nutzungsvorschlaege is { Count: > 0 } vorschlaege)
+                        {
+                            <Suchauswahl Bezeichnung="@LabelNutzungVorschlag" Eintraege="@Vorschlagseintraege"
+                                         Auswahl="@((int?)null)" AuswahlChanged="VorschlagGewaehlt" />
+                        }
                     </KindInhalt>
                 </Formularraster>
                 <p class="epos-leisezeile epos-kond-vorlage-sofort">@Texte.HinweisVorlageSofort @Texte.HinweisVorlageSpeichern</p>
@@ -327,19 +336,26 @@
     private bool _speichernOffen;
     private string _name = "";
     private string _beschreibung = "";
-    private int? _nutzung = 0;
+    private string _nutzung = "";
     private string? _nameFehler;
     private string? _gespeichert;
 
-    /// <summary>Die Nutzungen der Abfrage: „ohne Angabe", Wohnen, Büro, Schule, Sonstige (Anzeigewerte).</summary>
-    private IReadOnlyList<(int Id, string Text)> Nutzungen => new[]
+    /// <summary>
+    /// Die Vorschläge der Nutzung (Stufe NP3b, NP-F15): die Namen des Katalogs der Nutzungsprofile; <c>null</c> = keine —
+    /// dann bleibt der freie Text.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string>? Nutzungsvorschlaege { get; set; }
+
+    /// <summary>Die Beschriftung der Vorschläge (<c>RNP_LBL_NUTZUNG_VORSCHLAG</c>, Bündel des Nutzungsprofilkatalogs).</summary>
+    [Parameter] public string LabelNutzungVorschlag { get; set; } = "Vorschlag aus dem Katalog";
+
+    private IReadOnlyList<(int Id, string Text)> Vorschlagseintraege
+        => (Nutzungsvorschlaege ?? Array.Empty<string>()).Select((t, i) => (i, t)).ToList();
+
+    private void VorschlagGewaehlt(int? i)
     {
-        ((int)KonditionierungNutzung.Keine, Texte.NutzungKeine),
-        ((int)KonditionierungNutzung.Wohnen, Texte.NutzungWohnen),
-        ((int)KonditionierungNutzung.Buero, Texte.NutzungBuero),
-        ((int)KonditionierungNutzung.Schule, Texte.NutzungSchule),
-        ((int)KonditionierungNutzung.Sonstige, Texte.NutzungSonstige),
-    };
+        if (i is int k && Nutzungsvorschlaege is { } v && k >= 0 && k < v.Count) _nutzung = v[k];
+    }
 
     private void SpeichernUmschalten()
     {
@@ -360,7 +376,7 @@
         _nameFehler = null;
         _name = "";
         _beschreibung = "";
-        _nutzung = 0;
+        _nutzung = "";
     }
 
     /// <summary>
@@ -371,7 +387,7 @@
     {
         if (AlsVorlageSpeichern is null) return;
         var eingabe = new KonditionierungVorlageEingabe(_name, _beschreibung,
-                                                         (KonditionierungNutzung)(_nutzung ?? 0));
+                                                         string.IsNullOrWhiteSpace(_nutzung) ? null : _nutzung.Trim());
         KonditionierungVorlageErgebnis e = AlsVorlageSpeichern(eingabe);
         if (!e.Ok)
         {

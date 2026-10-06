@@ -290,14 +290,8 @@
         _ => "°C"
     };
 
-    private string Nutzungstext(KonditionierungNutzung n) => n switch
-    {
-        KonditionierungNutzung.Wohnen => Texte.NutzungWohnen,
-        KonditionierungNutzung.Buero => Texte.NutzungBuero,
-        KonditionierungNutzung.Schule => Texte.NutzungSchule,
-        KonditionierungNutzung.Sonstige => Texte.NutzungSonstige,
-        _ => Texte.NutzungKeine
-    };
+    /// <summary>Die Nutzung als Anzeige — die vier alten Kennungen übersetzt, ein Profilname wie er ist (NP-F15).</summary>
+    private string Nutzungstext(string? n) => Texte.Nutzungsanzeige(n);
 
     private string Loeschfrage
         => _loeschen is null

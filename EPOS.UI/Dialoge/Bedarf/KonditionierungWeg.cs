@@ -102,6 +102,26 @@ public sealed class KonditionierungWeg
     /// </summary>
     public Func<KonditionierungStand, KonditionierungErgebnis>? LuftwechselAufteilen { get; init; }
 
+    // ------------------------------------------------------------------ Nutzungsprofile (Stufe NP3b)
+
+    /// <summary>
+    /// <b>Die Nutzungsprofile des Katalogs</b> für „Nutzungsprofil übernehmen…" (Konzept Nutzungsprofile 6.2) — in der
+    /// Ordnung des Katalogs (Kategorie, Nummer, Name), mit den Kennwerten in Kurzform.
+    /// <para>Kern: <c>RaumnutzungCtrl.Kategorien</c>/<c>Profile</c>, getragen von <c>KonditionierungHuelle.Weg</c>.</para>
+    /// </summary>
+    public Func<IReadOnlyList<KonditionierungProfilwahl>>? Nutzungsprofile { get; init; }
+
+    /// <summary>
+    /// <b>„Nutzungsprofil übernehmen…"</b> (Konzept Nutzungsprofile 6.2, NP-F6, NP-F10, NP-F13, NP-F17, NP-F18): je
+    /// belegter Größe die Zeilen des Profils in den Arbeitsstand — am angelegten Kalender nur den Matrixbereich (P12), an
+    /// einer unbeheizten Zone ohne Heizen und Kühlen, Nennwerte aus der Fläche des Ziels, Außenluft in m³/(h·m²) mit
+    /// seiner lichten Höhe. Geschrieben wird mit dem OK des Editors; die Rückfrage stellt der Reiter VOR dem Eintragen aus
+    /// den Posten eines Probelaufs.
+    /// <para>Kern: <c>RaumnutzungCtrl.ProfilAnwenden</c> (rein: <c>Raumnutzungsgenerator</c> und
+    /// <c>Konditionierungsarbeit.VorlageUebernehmen</c>) mit dem Profil aus <c>RaumnutzungCtrl.ProfilLesen</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungProfilanfrage, KonditionierungProfilergebnis>? ProfilUebernehmen { get; init; }
+
     // ------------------------------------------------------------------ Zonen (Stufe KP2, Welle U4)
 
     /// <summary>
@@ -361,6 +381,7 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.Verwerfen => Verwerfen is not null,
             KonditionierungHandlung.MatrixErneut => MatrixErneut is not null,
             KonditionierungHandlung.VorlageUebernehmen => VorlageUebernehmen is not null && Vorlagen is not null,
+            KonditionierungHandlung.ProfilUebernehmen => ProfilUebernehmen is not null && Nutzungsprofile is not null,
             KonditionierungHandlung.AlsVorlageSpeichern => AlsVorlageSpeichern is not null,
             KonditionierungHandlung.VorlageUmbenennen => VorlageUmbenennen is not null,
             KonditionierungHandlung.VorlageLoeschen => VorlageLoeschen is not null,

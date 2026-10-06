@@ -46176,5 +46176,86 @@ Chart</value>
   <data name="RNP_TXT_TAGE" xml:space="preserve">
     <value>erzeugt: {0} Nutzungstage, Quelle: {1} Tage</value>
   </data>
+  <data name="RNP_BTN_PROFIL_UEBERNEHMEN" xml:space="preserve">
+    <value>Nutzungsprofil übernehmen…</value>
+  </data>
+  <data name="RNP_LBL_UEBERNAHME" xml:space="preserve">
+    <value>Nutzungsprofil übernehmen</value>
+  </data>
+  <data name="RNP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="RNP_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="RNP_TXT_UEBERNAHME_OK" xml:space="preserve">
+    <value>Das Profil geht in den Arbeitsstand; gespeichert wird mit OK. Eigene Perioden und Ausnahmetage bleiben.</value>
+  </data>
+  <data name="RNP_TXT_KEIN_PROFIL" xml:space="preserve">
+    <value>Der Katalog führt kein Nutzungsprofil.</value>
+  </data>
+  <data name="RNP_TXT_OHNE_WERTE_KURZ" xml:space="preserve">
+    <value>ohne Werte</value>
+  </data>
+  <data name="RNP_TXT_TAGE_KURZ" xml:space="preserve">
+    <value>Mo,Di,Mi,Do,Fr,Sa,So</value>
+  </data>
+  <data name="RNP_TXT_NENNWERT" xml:space="preserve">
+    <value>Nennwert {0}: {1}</value>
+  </data>
+  <data name="RNP_FRAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>Das Nutzungsprofil „{0}“ übernehmen?</value>
+  </data>
+  <data name="RNP_FRAGE_ZEILE" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="RNP_FRAGE_UEBERNIMMT" xml:space="preserve">
+    <value>wird übernommen</value>
+  </data>
+  <data name="RNP_FRAGE_ERSETZT" xml:space="preserve">
+    <value>ersetzt den Matrixbereich des Kalenders; eigene Perioden und Ausnahmetage bleiben</value>
+  </data>
+  <data name="RNP_FRAGE_BLEIBT" xml:space="preserve">
+    <value>nicht belegt — bleibt, wie es ist</value>
+  </data>
+  <data name="RNP_FRAGE_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizte Zone — übersprungen</value>
+  </data>
+  <data name="RNP_FRAGE_AUFTEILEN" xml:space="preserve">
+    <value>Die Gesamtangabe des Luftwechsels wird in Infiltration und Nutzerlüftung aufgeteilt; der wirksame Luftwechsel bleibt.</value>
+  </data>
+  <data name="RNP_FRAGE_OHNE_WERTE" xml:space="preserve">
+    <value>Profil ohne Werte: kein Kalender, die Zone trägt nur den Namen.</value>
+  </data>
+  <data name="RNP_FRAGE_NAME" xml:space="preserve">
+    <value>Die Zone trägt danach das Nutzungsprofil „{0}“.</value>
+  </data>
+  <data name="RNP_GRUND_OHNE_WERTE" xml:space="preserve">
+    <value>Profil ohne Werte — hier gibt es nichts zu übernehmen; Duplizieren, um Werte einzutragen.</value>
+  </data>
+  <data name="RNP_GRUND_OHNE_WAHL" xml:space="preserve">
+    <value>Zuerst ein Profil wählen.</value>
+  </data>
+  <data name="RNP_TXT_UEBERNOMMEN" xml:space="preserve">
+    <value>Nutzungsprofil „{0}“ übernommen — gespeichert wird mit OK.</value>
+  </data>
+  <data name="RNP_TXT_ZONENKOPF" xml:space="preserve">
+    <value>Nutzungsprofil: {0}</value>
+  </data>
+  <data name="RNP_LBL_VORSCHAU_GROESSE" xml:space="preserve">
+    <value>Größe der Vorschau</value>
+  </data>
+  <data name="RNP_LBL_NUTZUNG_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag aus dem Katalog</value>
+  </data>
+  <data name="RNP_BTN_PROFILE_IMPORT" xml:space="preserve">
+    <value>Nutzungsprofile…</value>
+  </data>
+  <data name="RNP_KI_ZONE_PROFIL_NAME" xml:space="preserve">
+    <value>Nutzungsprofil der Zone</value>
+  </data>
+  <data name="RNP_KI_ZONE_PROFIL_ERL" xml:space="preserve">
+    <value>Das zuletzt übernommene Nutzungsprofil der Zone (Name als Kopie, keine Verknüpfung zum Katalog); leer = keines. Übernommen wird über „Nutzungsprofil übernehmen…“ mit Rückfrage, geschrieben mit OK.</value>
+  </data>
 </root>
 

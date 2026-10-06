@@ -87879,6 +87879,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile… ähnelt.
+        /// </summary>
+        public static string RNP_BTN_PROFILE_IMPORT {
+            get {
+                return ResourceManager.GetString("RNP_BTN_PROFILE_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neues Profil… ähnelt.
         /// </summary>
         public static string RNP_BTN_PROFIL_NEU {
@@ -87888,11 +87897,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil übernehmen… ähnelt.
+        /// </summary>
+        public static string RNP_BTN_PROFIL_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_PROFIL_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string RNP_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
         public static string RNP_BTN_SPEICHERN {
             get {
                 return ResourceManager.GetString("RNP_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string RNP_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("RNP_BTN_UEBERNEHMEN", resourceCulture);
             }
         }
         
@@ -87933,11 +87969,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gesamtangabe des Luftwechsels wird in Infiltration und Nutzerlüftung aufgeteilt; der wirksame Luftwechsel bleibt. ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_AUFTEILEN {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_AUFTEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht belegt — bleibt, wie es ist ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_BLEIBT {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ersetzt den Matrixbereich des Kalenders; eigene Perioden und Ausnahmetage bleiben ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_ERSETZT {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie „{0}“ samt ihren Profilen löschen? ähnelt.
         /// </summary>
         public static string RNP_FRAGE_KATEGORIE_LOESCHEN {
             get {
                 return ResourceManager.GetString("RNP_FRAGE_KATEGORIE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone trägt danach das Nutzungsprofil „{0}“. ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_NAME {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ohne Werte: kein Kalender, die Zone trägt nur den Namen. ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_OHNE_WERTE", resourceCulture);
             }
         }
         
@@ -87960,11 +88041,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Nutzungsprofil „{0}“ übernehmen? ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wird übernommen ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_UEBERNIMMT {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_UEBERNIMMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizte Zone — übersprungen ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string RNP_FRAGE_ZEILE {
+            get {
+                return ResourceManager.GetString("RNP_FRAGE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung „{0}“ löschen? ähnelt.
         /// </summary>
         public static string RNP_FRAGE_ZUORDNUNG_LOESCHEN {
             get {
                 return ResourceManager.GetString("RNP_FRAGE_ZUORDNUNG_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuerst ein Profil wählen. ähnelt.
+        /// </summary>
+        public static string RNP_GRUND_OHNE_WAHL {
+            get {
+                return ResourceManager.GetString("RNP_GRUND_OHNE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ohne Werte — hier gibt es nichts zu übernehmen; Duplizieren, um Werte einzutragen. ähnelt.
+        /// </summary>
+        public static string RNP_GRUND_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("RNP_GRUND_OHNE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das zuletzt übernommene Nutzungsprofil der Zone (Name als Kopie, keine Verknüpfung zum Katalog); leer = keines. Übernommen wird über „Nutzungsprofil übernehmen…“ mit Rückfrage, geschrieben mit OK. ähnelt.
+        /// </summary>
+        public static string RNP_KI_ZONE_PROFIL_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_ZONE_PROFIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil der Zone ähnelt.
+        /// </summary>
+        public static string RNP_KI_ZONE_PROFIL_NAME {
+            get {
+                return ResourceManager.GetString("RNP_KI_ZONE_PROFIL_NAME", resourceCulture);
             }
         }
         
@@ -88311,6 +88464,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus dem Katalog ähnelt.
+        /// </summary>
+        public static string RNP_LBL_NUTZUNG_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("RNP_LBL_NUTZUNG_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Personen im Betrieb ähnelt.
         /// </summary>
         public static string RNP_LBL_PERSONEN_ANTEIL {
@@ -88428,11 +88590,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil übernehmen ähnelt.
+        /// </summary>
+        public static string RNP_LBL_UEBERNAHME {
+            get {
+                return ResourceManager.GetString("RNP_LBL_UEBERNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau der Kalender ähnelt.
         /// </summary>
         public static string RNP_LBL_VORSCHAU {
             get {
                 return ResourceManager.GetString("RNP_LBL_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe der Vorschau ähnelt.
+        /// </summary>
+        public static string RNP_LBL_VORSCHAU_GROESSE {
+            get {
+                return ResourceManager.GetString("RNP_LBL_VORSCHAU_GROESSE", resourceCulture);
             }
         }
         
@@ -88554,11 +88734,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt kein Nutzungsprofil. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_KEIN_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_TXT_KEIN_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Kategorie im Katalog. ähnelt.
         /// </summary>
         public static string RNP_TXT_LEER {
             get {
                 return ResourceManager.GetString("RNP_TXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennwert {0}: {1} ähnelt.
+        /// </summary>
+        public static string RNP_TXT_NENNWERT {
+            get {
+                return ResourceManager.GetString("RNP_TXT_NENNWERT", resourceCulture);
             }
         }
         
@@ -88608,6 +88806,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Werte ähnelt.
+        /// </summary>
+        public static string RNP_TXT_OHNE_WERTE_KURZ {
+            get {
+                return ResourceManager.GetString("RNP_TXT_OHNE_WERTE_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog gilt für alle Projekte; jede Handlung wird sofort gespeichert. ähnelt.
         /// </summary>
         public static string RNP_TXT_SOFORT {
@@ -88622,6 +88829,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_TXT_TAGE {
             get {
                 return ResourceManager.GetString("RNP_TXT_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mo,Di,Mi,Do,Fr,Sa,So ähnelt.
+        /// </summary>
+        public static string RNP_TXT_TAGE_KURZ {
+            get {
+                return ResourceManager.GetString("RNP_TXT_TAGE_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Profil geht in den Arbeitsstand; gespeichert wird mit OK. Eigene Perioden und Ausnahmetage bleiben. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_UEBERNAHME_OK {
+            get {
+                return ResourceManager.GetString("RNP_TXT_UEBERNAHME_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil „{0}“ übernommen — gespeichert wird mit OK. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("RNP_TXT_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil: {0} ähnelt.
+        /// </summary>
+        public static string RNP_TXT_ZONENKOPF {
+            get {
+                return ResourceManager.GetString("RNP_TXT_ZONENKOPF", resourceCulture);
             }
         }
         

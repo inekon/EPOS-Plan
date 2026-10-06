@@ -111,25 +111,6 @@ public enum KonditionierungAngabe
     WieWochentag = 3
 }
 
-/// <summary>Die Nutzung einer Vorlage (<c>DbWerte.KOND_NUTZUNGEN</c>; <see cref="Keine"/> = ohne Angabe).</summary>
-public enum KonditionierungNutzung
-{
-    /// <summary>Ohne Angabe (Spalte leer).</summary>
-    Keine = 0,
-
-    /// <summary>Wohnen.</summary>
-    Wohnen = 1,
-
-    /// <summary>Büro.</summary>
-    Buero = 2,
-
-    /// <summary>Schule.</summary>
-    Schule = 3,
-
-    /// <summary>Sonstige.</summary>
-    Sonstige = 4
-}
-
 /// <summary>Die Quelle des Werkzeugs „Zeitstruktur übernehmen" (Entwurf KP2, Festlegung 11).</summary>
 public enum KonditionierungZeitstruktur
 {
@@ -224,7 +205,13 @@ public enum KonditionierungHandlung
     /// „Kopieren nach …" (Vorlagenverwaltung, Teilkonzept 3.5, 7.4): eine Vorlage als eigene Vorlage einer
     /// anderen Größe — Heizen → Kühlen, Geräte ↔ Personen; schreibt sofort.
     /// </summary>
-    VorlageKopieren = 21
+    VorlageKopieren = 21,
+
+    /// <summary>
+    /// „Nutzungsprofil übernehmen…" (Konzept Nutzungsprofile 6.2, NP-F17, NP-F18; Stufe NP3b): ein Profil des Katalogs
+    /// in allen belegten Größen an Gebäude, Katalogbau oder Zone — in den Arbeitsstand, geschrieben mit dem OK des Editors.
+    /// </summary>
+    ProfilUebernehmen = 22
 }
 
 /// <summary>
@@ -603,10 +590,10 @@ public sealed record KonditionierungErgebnis(bool Ok, string Meldung, Konditioni
 /// <param name="Groesse">Die eine Größe der Vorlage (P11).</param>
 /// <param name="Name">Der Name, eindeutig je Größe; Daten, nicht übersetzt (Glossar § 10).</param>
 /// <param name="Beschreibung">Die Beschreibung; leer = ohne.</param>
-/// <param name="Nutzung">Die Nutzung.</param>
+/// <param name="Nutzung">Die Nutzung als Text (NP-F15) — ein Profilname oder eine der vier alten Kennungen; <c>null</c> = ohne Angabe.</param>
 /// <param name="Ausgeliefert">Gehört die Vorlage zur Auslieferung (Schloss)?</param>
 public sealed record KonditionierungVorlageDaten(long Id, KonditionierungGroesse Groesse, string Name,
-                                                 string Beschreibung, KonditionierungNutzung Nutzung,
+                                                 string Beschreibung, string? Nutzung,
                                                  bool Ausgeliefert);
 
 /// <summary>
@@ -618,7 +605,9 @@ public sealed record KonditionierungVorlageDaten(long Id, KonditionierungGroesse
 public sealed record KonditionierungFeiertag(string Regel, string Name);
 
 /// <summary>Was „Als Vorlage speichern…" erfragt (Teilkonzept 7.4): Name, Beschreibung, Nutzung.</summary>
-public sealed record KonditionierungVorlageEingabe(string Name, string Beschreibung, KonditionierungNutzung Nutzung);
+/// <remarks>Die Nutzung ist freier Text, höchstens 120 Zeichen (Konzept Nutzungsprofile NP-F15) — ein Profilname, eine
+/// der vier alten Kennungen oder leer (<c>null</c> = ohne Angabe).</remarks>
+public sealed record KonditionierungVorlageEingabe(string Name, string Beschreibung, string? Nutzung);
 
 /// <summary>
 /// Ein erlaubtes Ziel von „Kopieren nach …" (Teilkonzept 3.5, 7.4) — der Dialog zeigt nur diese. Wo die
@@ -762,3 +751,58 @@ public sealed record KonditionierungRueckfrage(IReadOnlyList<KonditionierungPost
 public sealed record KonditionierungLasten(double? Personenzahl, double LeistungJePersonW, double PersonenNennwertW,
                                            double PersonenJahresmittelW, double GeraeteNennwertW,
                                            double GeraeteJahresmittelW, double? NutzflaecheM2);
+
+/// <summary>
+/// <b>Ein Nutzungsprofil in der Liste „Nutzungsprofil übernehmen…"</b> (Konzept Nutzungsprofile 6.2; Stufe NP3b) —
+/// gruppiert nach Kategorie, mit den Kennwerten in Kurzform.
+/// </summary>
+/// <param name="Id">Die Id des Profils (<c>Tab_Raumnutzungsprofil.ID</c>).</param>
+/// <param name="Kategorie">Der Name der Kategorie — die Gruppe der Liste.</param>
+/// <param name="Nummer">Die Nummer in der Quelle; leer = ohne.</param>
+/// <param name="Name">Der Name des Profils.</param>
+/// <param name="Kurzform">Die Kennwerte in Kurzform („Mo–Fr · 7–18 h · 21 °C · 10 W/m²"); leer = ohne Werte.</param>
+/// <param name="OhneWerte">Trägt das Profil keinen einzigen Kennwert (NP-F13)? Dann gibt es keinen Kalender, nur den Namen.</param>
+public sealed record KonditionierungProfilwahl(long Id, string Kategorie, string Nummer, string Name, string Kurzform,
+                                               bool OhneWerte)
+{
+    /// <summary>Der Anzeigename: „Nummer · Name" bzw. der Name.</summary>
+    public string Anzeige => string.IsNullOrWhiteSpace(Nummer) ? Name : Nummer + " · " + Name;
+}
+
+/// <summary>Was „Nutzungsprofil übernehmen…" anfragt: das Profil, das Ziel und dessen Maße (NP-F10, Q39, Q40).</summary>
+/// <param name="IdProfil">Die Id des Profils.</param>
+/// <param name="Zone">Die Zone im Arbeitsstand; <c>null</c> = das Gebäude bzw. der Katalogbau.</param>
+/// <param name="Flaeche">Die Fläche des Ziels [m²] für die Nennwerte; <c>null</c> = der Nennwert des Ziels bleibt.</param>
+/// <param name="LichteHoehe">Die lichte Höhe des Ziels [m] für Außenluft in m³/(h·m²); <c>null</c> = ohne.</param>
+public sealed record KonditionierungProfilanfrage(long IdProfil, int? Zone, double? Flaeche, double? LichteHoehe);
+
+/// <summary>Was die Übernahme eines Profils an einer Größe tut — die Zeile der Rückfrage (NP-F17, NP-F18).</summary>
+/// <param name="Groesse">Die Größe.</param>
+/// <param name="Belegt">Trägt das Profil die Größe? <c>false</c> = das Ziel behält seinen Kalender (NP-F6).</param>
+/// <param name="Uebernommen">Wird ein Kalender eingetragen?</param>
+/// <param name="Ersetzt">Trägt das Ziel schon einen Kalender dieser Größe, dessen Matrixbereich ersetzt wird (P12)?</param>
+/// <param name="Unbeheizt">Heizen bzw. Kühlen an einer unbeheizten Zone: übersprungen.</param>
+/// <param name="Nennwert">Die Herleitung des Nennwerts („8 W/m² × 120 m² = 960 W"); leer = ohne.</param>
+/// <param name="Hinweis">Was benannt wird, ohne abzulehnen; leer = nichts.</param>
+public sealed record KonditionierungProfilposten(KonditionierungGroesse Groesse, bool Belegt, bool Uebernommen, bool Ersetzt,
+                                                 bool Unbeheizt, string Nennwert, string Hinweis);
+
+/// <summary>
+/// <b>Das Ergebnis von „Nutzungsprofil übernehmen…"</b> über dem Arbeitsstand — der neue Stand oder die benannte
+/// Ablehnung, dazu je Größe ein Posten. Geschrieben wird nichts; das tut das OK des Editors.
+/// </summary>
+/// <param name="Ok">Hat die Übernahme gegriffen?</param>
+/// <param name="Meldung">Der Grund einer Ablehnung; leer = keiner.</param>
+/// <param name="Stand">Der neue Stand; <c>null</c> bei einer Ablehnung.</param>
+/// <param name="Profilname">Der Name, den das Ziel trägt (NP-F14).</param>
+/// <param name="Posten">Je Größe, was geschieht.</param>
+/// <param name="Aufgeteilt">Wurde die Gesamtangabe der Lüftung aufgeteilt (E56 F5 (a))?</param>
+/// <param name="OhneWerte">Profil ohne einen einzigen Kennwert (NP-F13): nur der Name geht ans Ziel.</param>
+public sealed record KonditionierungProfilergebnis(bool Ok, string Meldung, KonditionierungStand? Stand, string Profilname,
+                                                   IReadOnlyList<KonditionierungProfilposten> Posten, bool Aufgeteilt,
+                                                   bool OhneWerte)
+{
+    /// <summary>Benannt abgelehnt; nichts geändert.</summary>
+    public static KonditionierungProfilergebnis Fehler(string meldung)
+        => new(false, meldung ?? "", null, "", Array.Empty<KonditionierungProfilposten>(), false, false);
+}

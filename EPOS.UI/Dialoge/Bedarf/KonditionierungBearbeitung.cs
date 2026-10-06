@@ -1253,6 +1253,234 @@ public sealed class KonditionierungBearbeitung
     }
 
     // =================================================================================
+    // Nutzungsprofil übernehmen (Stufe NP3b; Konzept Nutzungsprofile 6.2, NP-F13, NP-F17, NP-F18)
+    // =================================================================================
+
+    private static readonly IReadOnlyList<KonditionierungProfilwahl> KEINE_PROFILE = Array.Empty<KonditionierungProfilwahl>();
+
+    /// <summary>Die Liste des Katalogs, einmal gelesen; <c>null</c> = noch nicht.</summary>
+    private IReadOnlyList<KonditionierungProfilwahl>? _profile;
+
+    /// <summary>Der Probelauf des gewählten Profils am Arbeitsstand; <c>null</c> = noch keiner.</summary>
+    private (long Id, KonditionierungProfilergebnis Ergebnis)? _profilprobe;
+
+    /// <summary>Bietet der Weg „Nutzungsprofil übernehmen…" an („kein Delegat, kein Knopf")?</summary>
+    public bool MitProfilen => Bietet(KonditionierungHandlung.ProfilUebernehmen);
+
+    /// <summary>Die Profile des Katalogs in seiner Ordnung — leer ohne den Weg oder bei einem Lesefehler (gemeldet).</summary>
+    public IReadOnlyList<KonditionierungProfilwahl> Profile()
+    {
+        if (!MitProfilen) return KEINE_PROFILE;
+        if (_profile is not null) return _profile;
+        try
+        {
+            _profile = Weg.Nutzungsprofile!() ?? KEINE_PROFILE;
+        }
+        catch (Exception ex)
+        {
+            Fehler(ex.Message);
+            _profile = KEINE_PROFILE;
+        }
+        return _profile;
+    }
+
+    /// <summary>
+    /// <b>Die Vorschläge der Nutzung</b> für „Als Vorlage speichern…" (NP-F15): die Namen des Katalogs der Nutzungsprofile,
+    /// jeder einmal; <c>null</c> ohne den Katalog — dann bleibt der freie Text.
+    /// </summary>
+    public IReadOnlyList<string>? Nutzungsvorschlaege()
+        => MitProfilen ? Profile().Select(p => p.Name).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().ToList() : null;
+
+    /// <summary>Liest die Liste beim nächsten Zugriff neu — nach dem Blatt „Nutzungsprofile".</summary>
+    public void ProfileNeuLaden()
+    {
+        _profile = null;
+        _profilprobe = null;
+    }
+
+    /// <summary>Das gewählte Profil der Auswahl; <c>null</c> = keines.</summary>
+    public long? GewaehltesProfil { get; private set; }
+
+    /// <summary>Der Eintrag des gewählten Profils; <c>null</c> = keiner.</summary>
+    public KonditionierungProfilwahl? Profilwahl
+        => GewaehltesProfil is long id ? Profile().FirstOrDefault(p => p.Id == id) : null;
+
+    /// <summary>Wählt ein Profil der Liste (Vorschau und Nennwertzeile folgen); <c>false</c> = nicht in der Liste.</summary>
+    public bool ProfilWaehlen(long? id)
+    {
+        if (id is long w && Profile().All(p => p.Id != w)) return false;
+        GewaehltesProfil = id;
+        _profilprobe = null;
+        return true;
+    }
+
+    /// <summary>
+    /// <b>Die Fläche des Ziels</b> für die Nennwerte (Q39, Q40): an der Zone ihre Nutzfläche, am Gebäude und Katalogbau
+    /// die Nutzfläche des Feldsatzes (<see cref="GebaeudeKatalogDaten.WohnflaecheGesamt"/>); <c>null</c> = ohne.
+    /// </summary>
+    public double? Zielflaeche => Positiv(_zone is ZoneDaten z ? z.Nutzflaeche : Stand.WohnflaecheGesamt);
+
+    /// <summary>
+    /// <b>Die lichte Höhe des Ziels</b> für Außenluft in m³/(h·m²) (NP-F10): an der Zone ihre Raumhöhe, leer die des
+    /// Gebäudes, am Gebäude und Katalogbau die Raumhöhe des Feldsatzes; <c>null</c> = ohne — dann setzt die Übernahme die
+    /// Lüftung eines flächenbezogenen Profils benannt nicht.
+    /// </summary>
+    public double? Zielhoehe => Positiv(_zone is ZoneDaten z ? z.Raumhoehe ?? Stand.Raumhoehe : Stand.Raumhoehe);
+
+    private static double? Positiv(double? w) => w is double x && double.IsFinite(x) && x > 0.0 ? x : null;
+
+    /// <summary>Die Anfrage an den Weg für das Profil <paramref name="id"/> am Ort dieser Bearbeitung.</summary>
+    public KonditionierungProfilanfrage Profilanfrage(long id) => new(id, _zone?.Id, Zielflaeche, Zielhoehe);
+
+    /// <summary>
+    /// <b>Der Probelauf</b> des gewählten Profils am Arbeitsstand — was „Übernehmen" eintrüge, ohne etwas zu ändern;
+    /// Grundlage von Vorschau, Nennwertzeile und Rückfrage. <c>null</c> ohne Wahl.
+    /// </summary>
+    public KonditionierungProfilergebnis? Profilprobe()
+    {
+        if (!MitProfilen || GewaehltesProfil is not long id) return null;
+        if (_profilprobe is { } p && p.Id == id) return p.Ergebnis;
+        KonditionierungProfilergebnis e;
+        try
+        {
+            e = Weg.ProfilUebernehmen!(Eingabestand(), Profilanfrage(id)) ?? KonditionierungProfilergebnis.Fehler("");
+        }
+        catch (Exception ex)
+        {
+            e = KonditionierungProfilergebnis.Fehler(ex.Message);
+        }
+        _profilprobe = (id, e);
+        return e;
+    }
+
+    /// <summary>
+    /// <b>Die Nennwertzeilen</b> des Probelaufs (NP-F18): je Größe mit Nennwert „Nennwert Geräte: 8 W/m² × 120 m² =
+    /// 960 W". Leer ohne Wahl, ohne Fläche des Ziels oder ohne einen Kennwert dafür.
+    /// </summary>
+    public IReadOnlyList<string> Profilnennwerte(RaumnutzungTexte t)
+        => (Profilprobe() is { Ok: true } e ? e.Posten : Array.Empty<KonditionierungProfilposten>())
+           .Where(p => p.Uebernommen && !string.IsNullOrEmpty(p.Nennwert))
+           .Select(p => string.Format(CultureInfo.CurrentCulture, t.Nennwertzeile, Groessenname(p.Groesse), p.Nennwert))
+           .ToList();
+
+    /// <summary>Die Hinweise des Probelaufs, jeder einmal (NP-F10: Außenluft ohne Höhe, …).</summary>
+    public IReadOnlyList<string> Profilhinweise()
+        => (Profilprobe() is { Ok: true } e ? e.Posten : Array.Empty<KonditionierungProfilposten>())
+           .Select(p => p.Hinweis).Where(h => !string.IsNullOrEmpty(h)).Distinct().ToList();
+
+    /// <summary>
+    /// <b>Warum „Übernehmen" nicht geht</b> (weiche Sperre mit Grund): ohne Wahl; die benannte Ablehnung des Probelaufs;
+    /// ein Profil ohne Werte am Gebäude oder Katalogbau (NP-F13 — an einer Zone geht wenigstens der Name ans Ziel).
+    /// <c>null</c> = es geht.
+    /// </summary>
+    public string? Profilsperre(RaumnutzungTexte t)
+    {
+        if (GewaehltesProfil is null) return t.GrundOhneWahl;
+        KonditionierungProfilergebnis? e = Profilprobe();
+        if (e is null) return t.GrundOhneWahl;
+        if (!e.Ok) return string.IsNullOrEmpty(e.Meldung) ? t.GrundOhneWahl : e.Meldung;
+        if (!IstZone && !e.Posten.Any(p => p.Uebernommen))
+            return e.OhneWerte ? t.GrundOhneWerte : Profilhinweise().FirstOrDefault() ?? t.GrundOhneWerte;
+        return null;
+    }
+
+    /// <summary>
+    /// <b>Die Woche der Vorschau</b> einer Größe aus dem Probelauf — der Kalender, den „Übernehmen" am Ort anlegte;
+    /// <c>null</c> = die Größe bekommt keinen (nicht belegt, übersprungen, ohne Werte).
+    /// </summary>
+    public double[]? Profilwoche(KonditionierungGroesse g)
+    {
+        if (Profilprobe() is not { Ok: true, Stand: KonditionierungStand neu } e) return null;
+        if (!e.Posten.Any(p => p.Groesse == g && p.Uebernommen)) return null;
+        KonditionierungDaten? daten = _zone is ZoneDaten z
+            ? neu.Zonen.FirstOrDefault(x => x.Id == z.Id)?.Konditionierung
+            : neu.Gebaeude.Konditionierung;
+        return Wochenwerte(daten?.Spalte(g).Kalender);
+    }
+
+    /// <summary>Das Bild der Wochenvorschau aus dem Probelauf (<see cref="KonditionierungWeg.WochenVorschau"/>); <c>null</c> = keines.</summary>
+    public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Profilvorschau(KonditionierungGroesse g) => Bild(g, Profilwoche(g));
+
+    /// <summary>
+    /// <b>„Übernehmen"</b> der Auswahl (NP-F17, P12): stellt EINE Rückfrage aus dem Probelauf — je Größe „wird
+    /// übernommen", „ersetzt den Matrixbereich …" (Vorgabe „Nein", sobald ein Kalender ersetzt wird), „nicht belegt —
+    /// bleibt" oder „unbeheizte Zone — übersprungen", dazu Hinweise und die Nennwertzeilen mit Herleitung (NP-F18).
+    /// „Ja" trägt das Profil als EIN Schritt in den Arbeitsstand; geschrieben wird mit dem OK des Editors.
+    /// <c>false</c> = gesperrt (<see cref="Profilsperre"/>, gemeldet).
+    /// </summary>
+    public bool ProfilUebernehmenFragen(RaumnutzungTexte t)
+    {
+        if (Profilsperre(t) is string sperre)
+        {
+            Melden?.Invoke(sperre, WarnStufe.Hinweis);
+            return false;
+        }
+        long id = GewaehltesProfil!.Value;
+        KonditionierungProfilergebnis e = Profilprobe()!;
+        OffeneFrage = new Rueckfrage(t.TitelUebernahme, Profilfragetext(e, t), e.Posten.Any(p => p.Ersetzt),
+                                     () => ProfilEintragen(id, t));
+        return true;
+    }
+
+    /// <summary>Der Text der Rückfrage aus einem Probelauf (siehe <see cref="ProfilUebernehmenFragen"/>).</summary>
+    public string Profilfragetext(KonditionierungProfilergebnis e, RaumnutzungTexte t)
+    {
+        CultureInfo c = CultureInfo.CurrentCulture;
+        var zeilen = new List<string> { string.Format(c, t.FrageUebernehmen, e.Profilname) };
+        if (e.OhneWerte) zeilen.Add(t.FrageOhneWerte);
+        else
+        {
+            foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            {
+                if (e.Posten.FirstOrDefault(p => p.Groesse == g) is not KonditionierungProfilposten p) continue;
+                var teile = new List<string>
+                {
+                    p.Unbeheizt ? t.FrageUnbeheizt
+                    : !p.Uebernommen ? t.FrageBleibt
+                    : p.Ersetzt ? t.FrageErsetzt
+                    : t.FrageUebernimmt,
+                };
+                if (!string.IsNullOrEmpty(p.Hinweis)) teile.Add(p.Hinweis);
+                if (p.Uebernommen && !string.IsNullOrEmpty(p.Nennwert))
+                    teile.Add(string.Format(c, t.Nennwertzeile, Groessenname(g), p.Nennwert));
+                zeilen.Add(string.Format(c, t.FrageZeile, Groessenname(g), string.Join("; ", teile)));
+            }
+            if (e.Aufgeteilt) zeilen.Add(t.FrageAufteilen);
+        }
+        if (IstZone) zeilen.Add(string.Format(c, t.FrageName, e.Profilname));
+        return string.Join("\n", zeilen);
+    }
+
+    /// <summary>
+    /// „Ja" der Rückfrage: das Profil als EIN Schritt in den Arbeitsstand (Schlüssel <c>NP|id</c> für „Zurücknehmen"),
+    /// an einer Zone samt ihrem Profilnamen (<see cref="ZoneDaten.Nutzungsprofil"/>); eine Ablehnung des Wegs wird
+    /// gemeldet, der Arbeitsstand bleibt.
+    /// </summary>
+    private void ProfilEintragen(long id, RaumnutzungTexte t)
+    {
+        KonditionierungStand vor = Eingabestand();
+        KonditionierungProfilergebnis e;
+        try
+        {
+            e = Weg.ProfilUebernehmen!(vor, Profilanfrage(id)) ?? KonditionierungProfilergebnis.Fehler("");
+        }
+        catch (Exception ex)
+        {
+            Fehler(ex.Message);
+            return;
+        }
+        if (!e.Ok || e.Stand is null)
+        {
+            Fehler(e.Meldung);
+            return;
+        }
+        Uebernehmen(vor, e.Stand);
+        Merken("NP|" + id.ToString(CultureInfo.InvariantCulture), vor, Eingabestand());
+        _profilprobe = null;
+        Melden?.Invoke(string.Format(CultureInfo.CurrentCulture, t.TextUebernommen, e.Profilname), WarnStufe.Hinweis);
+    }
+
+    // =================================================================================
     // Rückfragen
     // =================================================================================
 
@@ -1682,6 +1910,8 @@ public sealed class KonditionierungBearbeitung
         new(z => z.LuftwechselInfiltration, (z, w) => z.LuftwechselInfiltration = (double?)w),
         new(z => z.LuftwechselNutzer, (z, w) => z.LuftwechselNutzer = (double?)w),
         new(z => z.InterneWaermegewinne, (z, w) => z.InterneWaermegewinne = (double?)w),
+        // NP3b: der Name des übernommenen Nutzungsprofils (Tab_Zone.Nutzungsprofil) reist mit dem Schritt.
+        new(z => z.Nutzungsprofil, (z, w) => z.Nutzungsprofil = (string?)w),
     };
 
     private static bool Gleich(object? a, object? b) => Equals(a, b);
