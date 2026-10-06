@@ -813,14 +813,20 @@ betroffenen Tests mit `--filter`. Das Gate fährt die Orchestrierung nach dem Me
    - **Abnahme:** Wache grün.
    - **Setup-Lauf:** keiner.
 5. **Ende-zu-Ende-Nachweis Neuinstallation und Update** (`Werkzeuge/Auslieferungsvorlage.Tests`,
-   neue Klasse `KatalogpaketUpdateTests`)
-   - **Ablauf:** Vorlage aus der Testdatenbank mit Fassung n bauen. Auf einer Kopie ruft
-     `Katalogabgleich.BeimStart` nichts ab (Neuinstallation). Danach eine zweite Vorlage mit Fassung
-     n + 1 und einem geänderten gesperrten Satz bauen. `BeimStart` gegen die erste Kopie, in der ein
-     Anwendersatz und eine Projektkopie liegen, aktualisiert nur den Paketsatz, behält den
-     Anwendersatz, lässt die Projektkopie byte-gleich und schreibt das Protokoll. Ein zweiter Lauf
-     ändert nichts.
-   - **Abnahme:** Test grün, Referenzlauf unberührt (kein Rechenweg).
+   Klasse `KatalogpaketUpdateTests`) — **umgesetzt**
+   - **Ablauf:** Das Werkzeug baut aus Kopien der Testdatenbank Vorlage und Paket der Fassung n und
+     der Fassung n + 1 (zwei gesperrte Sätze geändert, ein ungesperrter Satz gesperrt), im Modus `alle`
+     mit den benannten Ausnahmen. Der Startweg des Kerns läuft auf Anwenderkopien wie in
+     `Program.Main`: `Erstbereitstellung`, Schemastand, `Katalogabgleich.BeimStart` mit dem Paket neben
+     der Vorlage. Die Schemamigration liegt in der Windows-Schale; die Probe hält stattdessen fest, dass
+     die bereitgestellte Vorlage auf dem Zielstand der Schemakette steht.
+   - **Fälle:** U1 Neuinstallation: kein Abgleich, keine Sicherung, Fassung n, gesperrter Stand gleich
+     dem Paket. U2 Update mit älterer Fassung: Sicherung in `DB-Backup`, der unveränderte Paketsatz
+     nachgeführt, die Anpassung eines gesperrten Satzes behalten, eigene Zeile und Projektdaten
+     unverändert, Protokoll und Fassung n + 1; ein zweiter Start mit gleicher Fassung gleicht nicht ab
+     und ändert die Datei nicht. U3 hält die bekannte Grenze „später gesperrter Satz“ (6.5.5).
+   - **Abnahme:** Werkzeugtests grün (`kern.yml`, Schritt Auslieferungsvorlage-Tests), Referenzlauf
+     unberührt (kein Rechenweg).
    - **Setup-Lauf:** keiner.
 6. **CI-Artefakt** (`.github/workflows/windows.yml`, Job `installer`) — **umgesetzt**
    - **Änderung:** Den Kopf des Pakets (Format, Fassung, Satzzahl je Tabelle) als
@@ -866,8 +872,14 @@ Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
 - **E2 Leerer Paketteil eines Registerkatalogs mit Zeilen:** Das Werkzeug bricht mit eigenem
   Rückgabecode ab; je Katalog lässt sich das über eine benannte Ausnahme abschalten
   (`--ohne-paket Tab_PV_STAMM`). Die Testdatenbank im CI-Setup-Lauf läuft mit den benannten
-  Ausnahmen für ihre elf Registerkataloge ohne gesperrten Satz, darunter Heizkessel und PV.
-  Umgesetzt mit Schritt 2 (Code 6).
+  Ausnahmen für ihre elf Registerkataloge ohne gesperrten Satz, darunter Heizkessel und PV. Die CI
+  behält diese elf benannten Ausnahmen; die gesperrten Sätze der Testdatenbank werden dafür nicht
+  gepflegt. Die Liste der Werkzeugtests (`Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK`) und die
+  des Jobs `installer` bleiben deckungsgleich (`KatalogpaketSetupWacheTests`). Gebraucht wird sie nur
+  im Modus `alle`; im Modus `readonly` leert die ReadOnly-Regel diese Kataloge, auch
+  `Tab_Brennstoff_Stamm` (die Endung `_Stamm` zählt wie `_STAMM`). Umgesetzt mit Schritt 2 (Code 6).
+- **Code 7 ohne Prüfschalter:** Für den Abbruch „Paket passt nicht zur Vorlage“ gibt es keinen
+  Schalter, der ihn abschaltet oder erzwingt; den Vergleich hält K6 in `KatalogpaketVorlageTests`.
 - **E3 Quelle mit älterem Schemastand:** Das Werkzeug bricht ab. Die Quelle wird mit der aktuellen
   Anwendung einmal geöffnet und ist dann angehoben. Umgesetzt mit Schritt 3 (Code 8).
 - **E4 Ort des Freigaberegisters:** Das Register ist eine versionierte Datei unter `Setup/`, die das
@@ -894,6 +906,15 @@ Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
     vergibt die Kollisionsfolge einen anderen Zusatz, fügt der Abgleich einen zweiten Satz ein,
     statt zu aktualisieren.
   - **Gegenmittel:** Freigabeprobe 7 (b) mit einer echten Altdatenbank.
+- **Später gesperrter Satz (bekannte Grenze).**
+  - **Lage:** Ein Satz, den die Quelle im Modus `alle` ungesperrt ausgeliefert hat, liegt beim
+    Anwender ohne Schlüssel. Sperrt die Quelle ihn für eine spätere Fassung, trägt das Paket ihn mit
+    einem neu gebildeten Schlüssel. Weil sein Name im Katalog belegt ist, fügt der Abgleich ihn nicht
+    ein (kein Doppel), sondern behält die vorhandene Zeile mit dem Hinweis „Name belegt“. Die Zeile
+    bleibt ungesperrt und ohne Schlüssel und wird auch von späteren Fassungen nie nachgeführt.
+  - **Nachweis:** `KatalogpaketUpdateTests.U3` in `Werkzeuge/Auslieferungsvorlage.Tests`.
+  - **Gegenmittel:** Pflege der Quelle (E7): Ein Satz, der nachgeführt werden soll, wird gesperrt
+    ausgeliefert, bevor eine Installation ihn ungesperrt erhält.
 - **Downgrade.** Ein älteres Setup über ein neueres bringt ein Paket kleinerer Fassung mit. Der
   Kern gleicht dann nicht ab (`BeimStart`: Fassung der Datenbank ≥ Paket), der Katalog bleibt auf
   dem neueren Stand. Das ist gewollt und gehört in die Laufanleitung.
