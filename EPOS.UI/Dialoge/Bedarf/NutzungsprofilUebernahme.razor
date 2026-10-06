@@ -3,7 +3,8 @@
 
    Der Knopf "Nutzungsprofil uebernehmen..." oeffnet die Auswahl: die Profile des Katalogs gruppiert nach Kategorie,
    je Zeile Name und Kennwerte in Kurzform; ein Profil ohne Werte heisst so und bekommt keine Vorschau (NP-F13). Zum
-   gewaehlten Profil die Vorschau der Woche je Groesse und die Nennwertzeilen mit Herleitung (NP-F18) - beides aus
+   gewaehlten Profil die Vorschau der Woche je Groesse, die Nennwertzeilen mit Herleitung (NP-F18) und die Nutzungstage
+   am Ziel (abgeleitet, abzueglich der Ferientage des Gebaeudes; E93) - alles aus
    einem PROBELAUF am Arbeitsstand, der nichts aendert. "Uebernehmen" stellt die Rueckfrage nach P12 (Vorgabe "Nein",
    sobald ein Kalender ersetzt wird); "Ja" traegt das Profil in den Arbeitsstand, GESCHRIEBEN WIRD MIT DEM OK des
    Editors. Die Rueckfrage zeigt der Wirt (Reiter bzw. Zonenmatrix) ueber Bearbeitung.OffeneFrage.
@@ -89,6 +90,12 @@
                         @foreach (string zeile in Bearbeitung.Profilnennwerte(Texte))
                         {
                             <Herleitungszeile Text="@zeile" />
+                        }
+                        @if (Bearbeitung.Profilnutzungstage() is { Length: > 0 } tage)
+                        {
+                            <div class="epos-nutzungsuebernahme-tage">
+                                <Herleitungszeile Text="@tage" />
+                            </div>
                         }
                         @foreach (string hinweis in Bearbeitung.Profilhinweise())
                         {

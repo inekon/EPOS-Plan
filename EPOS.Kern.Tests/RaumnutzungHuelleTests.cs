@@ -152,6 +152,32 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// E93: Die Nutzungstage im Jahr sind abgeleitet — Kurzform der Kennwertliste („· 252 d"), Lesezeile des Blatts
+        /// über den Weg, Vorschau und die Zeile am Ziel mit seinen Ferien („…, abzüglich 22 Ferientage = 230").
+        /// </summary>
+        [Fact]
+        public void Die_Nutzungstage_sind_abgeleitet_in_Kurzform_Weg_Vorschau_und_am_Ziel()
+        {
+            using var kultur = new Kulturvorrichtung();
+            RaumnutzungTexte t = RaumnutzungHuelle.Texte();
+            var p = new Raumnutzungsprofil
+            {
+                Bezeichner = "Büro E93", Nutzungstage_Woche = "1111100", Feiertage_Wie_Sonntag = true,
+                Nutzung_Von = 7, Nutzung_Bis = 18, Heiz_Soll = 21.0,
+            };
+            Assert.StartsWith("Mo–Fr · 252 d · 7–18 h", RaumnutzungHuelle.Kurzform(p, t));
+            Assert.Equal(252, RaumnutzungHuelle.Weg().Nutzungstage(RaumnutzungHuelle.Profil(p)));
+            Assert.Equal("Nutzungstage im Jahr: 252 (aus Wochenmuster und Feiertagen)",
+                         RaumnutzungHuelle.Vorschau(RaumnutzungHuelle.Profil(p), null, null).Nutzungstage);
+
+            var ziel = new Matrixeingang();
+            ziel.Ferienbeginn[0] = 182;   // 1. bis 30. Juli 2025: 22 Werktage
+            ziel.Ferienende[0] = 211;
+            Assert.Equal("Nutzungstage im Jahr: 252 (aus Wochenmuster und Feiertagen), abzüglich 22 Ferientage = 230",
+                         RaumnutzungHuelle.Nutzungstagezeile(p, ziel, t));
+        }
+
+        /// <summary>
         /// Ein ausgeliefertes Profil lässt sich nicht ändern — die Ablehnung kommt als Text (NP-F19), und ein
         /// Duplikat in einer eigenen Kategorie geht; danach steht der Katalog wieder wie gesät.
         /// </summary>
@@ -234,8 +260,10 @@ namespace EPOS.Kern.Tests
             Assert.Contains("{0}", t.FrageProfilZuordnung);
             Assert.Contains("{0}", t.FrageKategorieLoeschen);
             Assert.Contains("{0}", t.FrageZuordnungLoeschen);
-            Assert.Contains("{0}", t.TextTage);
-            Assert.Contains("{1}", t.TextTage);
+            Assert.Contains("{0}", t.TextNutzungstage);
+            Assert.Contains("{0}", t.TextNutzungstageFerien);
+            Assert.Contains("{1}", t.TextNutzungstageFerien);
+            Assert.Contains("{2}", t.TextNutzungstageFerien);
         }
     }
 }

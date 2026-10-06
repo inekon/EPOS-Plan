@@ -60,6 +60,12 @@ public sealed class RaumnutzungKiZugang
     public IReadOnlyList<RaumnutzungZuordnungKiZeile> Zuordnungen
         => _zeilen?.Invoke() ?? Array.Empty<RaumnutzungZuordnungKiZeile>();
 
+    /// <summary>
+    /// Die abgeleiteten Nutzungstage im Jahr eines Feldsatzes (E93) — das Blatt reicht den Weg seiner Hülle herein;
+    /// das Feld ist nur lesbar. <c>null</c> = ohne Blatt.
+    /// </summary>
+    public Func<RaumnutzungProfilDaten, int?>? Nutzungstage { get; set; }
+
     /// <summary>Ist der Schlüssel ein Feld des Profileditors?</summary>
     public static bool IstFeld(string schluessel) => KiNutzungsprofilfelder.Finde(schluessel) is not null;
 
@@ -79,7 +85,7 @@ public sealed class RaumnutzungKiZugang
             KiNutzungsprofilfelder.Kennwert.BetriebVon => s.BetriebVon,
             KiNutzungsprofilfelder.Kennwert.BetriebBis => s.BetriebBis,
             KiNutzungsprofilfelder.Kennwert.Woche => s.NutzungstageWoche,
-            KiNutzungsprofilfelder.Kennwert.TageJahr => s.NutzungstageJahr,
+            KiNutzungsprofilfelder.Kennwert.TageJahr => Nutzungstage?.Invoke(s),
             KiNutzungsprofilfelder.Kennwert.Feiertage => s.FeiertageWieSonntag == true,
             KiNutzungsprofilfelder.Kennwert.HeizSoll => s.HeizSoll,
             KiNutzungsprofilfelder.Kennwert.HeizAusserhalb => s.HeizSollAusserhalb,
@@ -136,7 +142,6 @@ public sealed class RaumnutzungKiZugang
                     throw new InvalidOperationException(KiNutzungsprofilfelder.GrundWoche);
                 s.NutzungstageWoche = text;
                 break;
-            case KiNutzungsprofilfelder.Kennwert.TageJahr: s.NutzungstageJahr = ganz; break;
             case KiNutzungsprofilfelder.Kennwert.Feiertage: s.FeiertageWieSonntag = ja; break;
             case KiNutzungsprofilfelder.Kennwert.HeizSoll: s.HeizSoll = zahl; break;
             case KiNutzungsprofilfelder.Kennwert.HeizAusserhalb: s.HeizSollAusserhalb = zahl; break;

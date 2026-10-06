@@ -1363,6 +1363,13 @@ public sealed class KonditionierungBearbeitung
            .Select(p => string.Format(CultureInfo.CurrentCulture, t.Nennwertzeile, Groessenname(p.Groesse), p.Nennwert))
            .ToList();
 
+    /// <summary>
+    /// <b>Die Nutzungstage am Ziel</b> aus dem Probelauf (E93): abgeleitet aus Wochenmuster und Feiertagen, abzüglich der
+    /// Ferientage des Gebäudes („…, abzüglich 30 Ferientage = 222"). Leer ohne Wahl oder für ein Profil ohne Werte.
+    /// </summary>
+    public string Profilnutzungstage()
+        => Profilprobe() is { Ok: true } e ? e.Nutzungstage ?? "" : "";
+
     /// <summary>Die Hinweise des Probelaufs, jeder einmal (NP-F10: Außenluft ohne Höhe, …).</summary>
     public IReadOnlyList<string> Profilhinweise()
         => (Profilprobe() is { Ok: true } e ? e.Posten : Array.Empty<KonditionierungProfilposten>())

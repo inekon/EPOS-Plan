@@ -149,9 +149,6 @@ public sealed class RaumnutzungProfilDaten
     /// <summary>Sieben Ziffern 0/1, Montag bis Sonntag — der Generatoreingang (NP-F8).</summary>
     public string NutzungstageWoche { get; set; } = "";
 
-    /// <summary>Nutzungstage je Jahr — nur Vergleichswert (NP-F8).</summary>
-    public int? NutzungstageJahr { get; set; }
-
     /// <summary>Die neun bundeseinheitlichen Feiertage „wie Sonntag".</summary>
     public bool? FeiertageWieSonntag { get; set; }
 
@@ -229,7 +226,8 @@ public sealed class RaumnutzungProfilDaten
     public IReadOnlyList<object?> Kennwerte() => new object?[]
     {
         NutzungVon, NutzungBis, BetriebVon, BetriebBis,
-        string.IsNullOrEmpty(NutzungstageWoche) ? null : NutzungstageWoche, NutzungstageJahr, FeiertageWieSonntag,
+        string.IsNullOrEmpty(NutzungstageWoche) ? null : NutzungstageWoche, null /* Nutzungstage im Jahr: abgeleitet, E93 */,
+        FeiertageWieSonntag,
         HeizSoll, HeizSollAusserhalb, HeizAusAusserhalb, KuehlSoll, KuehlSollAusserhalb, KuehlAusAusserhalb,
         Aussenluft, AussenluftAusserhalb,
         PersonenFlaeche, PersonenWaerme, PersonenAnteil, PersonenAnteilAusserhalb,
@@ -359,6 +357,12 @@ public sealed class RaumnutzungWeg
     /// Ziels für die Nennwertzeile, dritter die lichte Höhe für die Außenluft in m³/(h·m²).
     /// </summary>
     public Func<RaumnutzungProfilDaten, double?, double?, RaumnutzungVorschau>? Vorschau { get; init; }
+
+    /// <summary>
+    /// Die Nutzungstage im Jahr des Feldsatzes, abgeleitet aus Wochenmuster und Feiertagen (E93) — keine Eingabe; der
+    /// Kern zählt sie im Raster von 365 Tagen. <c>null</c> = ohne Feldsatz.
+    /// </summary>
+    public Func<RaumnutzungProfilDaten, int?>? Nutzungstage { get; init; }
 
     /// <summary>Eine eigene Kategorie anlegen (NP-F19).</summary>
     public Func<string, string, string, RaumnutzungErgebnis>? KategorieAnlegen { get; init; }
