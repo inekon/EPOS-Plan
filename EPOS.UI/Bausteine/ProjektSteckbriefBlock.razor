@@ -1,4 +1,4 @@
-﻿@* Der Steckbrief des gewaehlten Projekts unter der Projektliste des Assistenten
+﻿@* Der Steckbrief des gewaehlten Projekts ueber den Kacheln des Assistenten
    (Anwenderwunsch 06.10.2026: „Projektdaten wie Erstellungs- und Aenderungsdatum,
    erstellt, ... koennten mit angezeigt werden bei Auswahl Projekt").
 
@@ -24,8 +24,10 @@
             <dl class="epos-projektsteckbrief-felder">
                 @foreach ((string bezeichnung, string wert, string klasse) in Felder)
                 {
-                    <dt>@bezeichnung</dt>
-                    <dd class="@klasse" title="@(klasse.Length > 0 ? wert : null)">@wert</dd>
+                    <div class="epos-projektsteckbrief-feld @klasse">
+                        <dt>@bezeichnung</dt>
+                        <dd title="@(klasse.Length > 0 ? wert : null)">@wert</dd>
+                    </div>
                 }
             </dl>
         }

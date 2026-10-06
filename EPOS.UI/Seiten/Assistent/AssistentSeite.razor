@@ -215,7 +215,7 @@
     [Parameter] public Action<int, string>? ProjektMarkiert { get; set; }
 
     /// <summary>
-    /// Der Steckbrief eines Projekts für den Block unter der Liste (Anwenderwunsch
+    /// Der Steckbrief eines Projekts für den Block über den Kacheln (Anwenderwunsch
     /// 06.10.2026; <c>ProjektCtrl.Steckbrief</c> über die Hülle). <c>null</c> = kein Block.
     /// </summary>
     [Parameter] public Func<int, ProjektSteckbrief?>? SteckbriefLaden { get; set; }
@@ -587,10 +587,22 @@
 
         if (gaben is not null)
         {
+            // DER STECKBRIEF DES MARKIERTEN PROJEKTS (Anwenderwunsch 06.10.2026) steht
+            // ueber den Kacheln, nicht im Band: Das Band ist 280 px schmal, und jede
+            // Zeile darin ginge der Projektliste ab - deren Groesse war der Wunsch.
+            // Nur dort, wo das Band steht (BEARBEITEN, Schritt 0).
+            bool mitSteckbrief = nr == 0 && Betriebsart == BEARBEITEN;
             _inhalt = builder =>
             {
-                builder.OpenComponent(0, Seitentyp(nr));
-                builder.AddMultipleAttributes(1, gaben!);
+                if (mitSteckbrief)
+                {
+                    builder.OpenComponent<ProjektSteckbriefBlock>(0);
+                    builder.AddComponentParameter(1, nameof(ProjektSteckbriefBlock.Steckbrief), MarkierterSteckbrief());
+                    builder.AddComponentParameter(2, nameof(ProjektSteckbriefBlock.Texte), SteckbriefTexte);
+                    builder.CloseComponent();
+                }
+                builder.OpenComponent(3, Seitentyp(nr));
+                builder.AddMultipleAttributes(4, gaben!);
                 builder.CloseComponent();
             };
         }
@@ -685,13 +697,6 @@
         // uebersetzten Worte.
         builder.AddComponentParameter(i++, nameof(ProjektListe.ArtVarianteText), ArtVarianteText);
         builder.AddComponentParameter(i++, nameof(ProjektListe.VarianteVonFormat), VarianteVonFormat);
-        builder.CloseComponent();
-
-        // Der Steckbrief des markierten Projekts (Anwenderwunsch 06.10.2026) - zwischen
-        // Liste und „Projekt öffnen", damit er beim Waehlen dort steht, wo der Blick ist.
-        builder.OpenComponent<ProjektSteckbriefBlock>(i++);
-        builder.AddComponentParameter(i++, nameof(ProjektSteckbriefBlock.Steckbrief), MarkierterSteckbrief());
-        builder.AddComponentParameter(i++, nameof(ProjektSteckbriefBlock.Texte), SteckbriefTexte);
         builder.CloseComponent();
 
         builder.OpenElement(i++, "div");

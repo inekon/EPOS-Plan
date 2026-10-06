@@ -196,7 +196,7 @@ namespace WindowsFormsApplication1
                 ["ArtVarianteText"] = Text_("PRJ_LIST_ART_VARIANTE", "Variante"),
                 ["VarianteVonFormat"] = Text_("PRJ_LIST_VARIANTE_VON", "Variante von {0}"),
 
-                // Der Steckbrief unter der Projektliste (Anwenderwunsch 06.10.2026).
+                // Der Steckbrief des markierten Projekts (Anwenderwunsch 06.10.2026).
                 ["SteckbriefLaden"] = new Func<int, ProjektSteckbrief>(Steckbrief),
                 ["SteckbriefTexte"] = new ProjektSteckbriefTexte
                 {
