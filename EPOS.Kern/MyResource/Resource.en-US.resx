@@ -46530,7 +46530,7 @@ chart</value>
     <value>Carpet plot</value>
   </data>
   <data name="RNP_ED_TXT_BEZUG" xml:space="preserve">
-    <value>Reference year {0}, neutral holiday period 1 to 14 August; the week lies in January without a public holiday.</value>
+    <value>Preview for a neutral target (heating 20 °C, cooling 26 °C, air change as default, one person, appliances 100 W, holidays 1 to 14 August), reference year {0}; the week lies in January without a public holiday.</value>
   </data>
   <data name="RNP_ED_TXT_NICHT_BELEGT" xml:space="preserve">
     <value>The quantity is not set; the target keeps its calendar.</value>

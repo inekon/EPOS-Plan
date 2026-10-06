@@ -85,11 +85,12 @@
         {
             <section class="epos-raumnutzung-bild-vorschau" aria-label="@T.LabelVorschau">
                 <h4 class="epos-raumnutzung-ueberschrift">@T.LabelVorschau</h4>
-                @if (_vorschau is null || !_vorschau.Belegt)
+                @* Ohne Kalender: "nicht belegt" - oder der Schritt am neutralen Ziel lehnt ab, dann steht sein Grund unten. *@
+                @if (_vorschau is null || (!_vorschau.Belegt && _vorschau.Hinweis.Length == 0))
                 {
                     <p class="epos-leisezeile epos-raumnutzung-bild-nichtbelegt">@T.TextNichtBelegt</p>
                 }
-                else
+                else if (_vorschau.Belegt)
                 {
                     <h5 class="epos-raumnutzung-bild-teil">@T.LabelWoche</h5>
                     <Wochenraster Wert="@_vorschau.Woche" Aktiv="false" MitAus="@Grenzen.MitAus" Umbrechend="true"

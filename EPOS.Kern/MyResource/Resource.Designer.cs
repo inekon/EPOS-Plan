@@ -88536,7 +88536,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsjahr {0}, neutrale Ferienlage 1. bis 14. August; die Woche liegt im Januar ohne Feiertag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Bezugsjahr {0}; die Woche liegt im Januar ohne Feiertag. ähnelt.
         /// </summary>
         public static string RNP_ED_TXT_BEZUG {
             get {

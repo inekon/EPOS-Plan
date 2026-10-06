@@ -53,8 +53,10 @@ namespace WindowsFormsApplication1
                 RaumnutzungCtrl.Profilvorschau v = RaumnutzungCtrl.Vorschau(RaumnutzungHuelle.Kern(d), k);
                 string hinweis = RaumnutzungHuelle.Hinweistext(v.Hinweis, RaumnutzungHuelle.Texte());
                 string bezug = string.Format(CultureInfo.CurrentCulture, t.TextBezug, v.Referenzjahr.ToString(CultureInfo.InvariantCulture));
+                // Ohne Kalender: nicht belegt — oder der Schritt hat am Ziel benannt abgelehnt; dann steht sein Grund da.
                 if (v.Kalender == null)
-                    return new RaumnutzungBildvorschau(false, Weg(v.Weg), null, null, hinweis, bezug);
+                    return new RaumnutzungBildvorschau(false, Weg(v.Weg), null, null,
+                                                       string.IsNullOrEmpty(v.Meldung) ? hinweis : v.Meldung, bezug);
                 double f = Kalenderteppich.Anzeigefaktor(k);
                 double[] woche = v.Woche?.Select(w => double.IsNaN(w) ? w : Math.Round(w * f, 4, MidpointRounding.AwayFromZero)).ToArray();
                 var teppich = ChartRenderer.KalenderteppichModell(Kalenderteppich.Bilden(v.Kalender, v.Referenzjahr), null,

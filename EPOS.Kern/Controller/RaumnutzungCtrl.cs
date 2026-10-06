@@ -954,6 +954,15 @@ namespace WindowsFormsApplication1
         /// <summary>Letzter Ferientag der neutralen Ferienlage der Vorschau (Jahrestag, 14. August im Gemeinjahr).</summary>
         public const int VORSCHAU_FERIEN_ENDE = 226;
 
+        /// <summary>Heizsollwert des neutralen Vorschauziels [°C] — ein runder Phantasiewert, keine Normangabe.</summary>
+        public const double VORSCHAU_SOLL_TAG = 20.0;
+
+        /// <summary>Kühlsollwert des neutralen Vorschauziels [°C] — ein runder Phantasiewert, keine Normangabe.</summary>
+        public const double VORSCHAU_KUEHL_SOLL = 26.0;
+
+        /// <summary>Gerätelast des neutralen Vorschauziels [W] — ein runder Phantasiewert, keine Normangabe.</summary>
+        public const double VORSCHAU_GERAETE_W = 100.0;
+
         /// <summary>Der Tag (ab 0), ab dem die Vorschau ihre Woche sucht: der erste Montag danach liegt Mitte Januar ohne Feiertag.</summary>
         private const int VORSCHAU_WOCHE_AB_TAG = 14;
 
@@ -966,21 +975,39 @@ namespace WindowsFormsApplication1
         /// <param name="Kalender">Der Kalender am Ziel oder <c>null</c>.</param>
         /// <param name="Referenzjahr">Das Bezugsjahr der Reihe.</param>
         /// <param name="Woche">Die 168 Werte der typischen Woche (Rohwerte, „aus" = NaN) oder <c>null</c>.</param>
+        /// <param name="Meldung">Warum der Schritt am leeren Ziel abgelehnt hat; <c>null</c> = nichts.</param>
         public sealed record Profilvorschau(Raumnutzungsweg Weg, Raumnutzungshinweis Hinweis, Konditionierungskalender Kalender,
-                                            int Referenzjahr, double[] Woche);
+                                            int Referenzjahr, double[] Woche, string Meldung = null);
 
-        /// <summary>Der Bestand des leeren Vorschauziels: nur die neutrale Ferienlage.</summary>
+        /// <summary>
+        /// Der Bestand des neutralen Vorschauziels: was ein Gebäude ohne eigene Konditionierung mitbringt — Heiz- und
+        /// Kühlsollwert, eine Person und eine Gerätelast (runde Phantasiewerte), der Luftwechsel nach den Vorgaben des
+        /// Gebäudemodells und die neutrale Ferienlage. Eine Größe, die das Profil nur teilweise belegt (etwa nur die Nacht der Lüftung), nimmt den Rest
+        /// von hier, wie am Ziel vom Bestand.
+        /// </summary>
         public static Matrixeingang Vorschaubestand()
         {
-            var b = new Matrixeingang { Ferienmerker = 1.0 };
+            var b = new Matrixeingang
+            {
+                Ferienmerker = 1.0,
+                SollTag = VORSCHAU_SOLL_TAG,
+                KuehlungWirksam = true,
+                KuehlSollwert = VORSCHAU_KUEHL_SOLL,
+                LuftwechselInfiltration = Gebaeudemodellvorgaben.LuftwechselInfiltration,
+                LuftwechselNutzer = Gebaeudemodellvorgaben.LuftwechselNutzer,
+                Bewohner = 1.0,
+                InterneWaermegewinne = VORSCHAU_GERAETE_W,
+            };
             b.Ferienbeginn[0] = VORSCHAU_FERIEN_BEGINN;
             b.Ferienende[0] = VORSCHAU_FERIEN_ENDE;
             return b;
         }
 
         /// <summary>
-        /// <b>Die Vorschau einer Größe</b> (6.1 Punkt 2): das Profil wie bei der Übernahme (<see cref="ProfilAnwenden"/>) an
-        /// einem leeren Gebäude mit der neutralen Ferienlage, ohne Fläche und Höhe; daraus der Kalender des Ziels und eine
+        /// <b>Die Vorschau einer Größe</b> (6.1 Punkt 2): die Vorlage, die der Generator für die Größe erzeugt, über denselben
+        /// Schritt wie die Übernahme (<see cref="ProfilAnwenden"/>: <see cref="Konditionierungsarbeit.VorlageUebernehmen"/>,
+        /// die Rückfrage „aufteilen" der Lüftung bejaht) an einem leeren Gebäude mit der neutralen Ferienlage, ohne Fläche und
+        /// Höhe — NUR diese Größe, damit eine andere Größe die Vorschau nicht verstellt; daraus der Kalender des Ziels und eine
         /// typische Woche. Eine nicht belegte Größe liefert keinen Kalender (NP-F6).
         /// </summary>
         public static Profilvorschau Vorschau(Raumnutzungsprofil profil, Konditionierungsgroesse groesse)
@@ -991,9 +1018,15 @@ namespace WindowsFormsApplication1
             if (r.Weg == Raumnutzungsweg.Keiner || r.Vorlage == null)
                 return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null);
 
-            Anwendung a = ProfilAnwenden(leer, profil, null, null);
-            Konditionierungskalender k = a.Ok ? a.Stand.Ansichtskalender(groesse, null) : null;
-            if (k == null) return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null);
+            var ort = new Konditionierungsort(groesse, null);
+            Konditionierungsschritt schritt = Konditionierungsarbeit.VorlageUebernehmen(leer, ort, r.Vorlage);
+            if (schritt.Rueckfrage)
+            {
+                Konditionierungsschritt geteilt = Konditionierungsarbeit.LuftwechselAufteilen(leer);
+                schritt = geteilt.Ok ? Konditionierungsarbeit.VorlageUebernehmen(geteilt.Stand, ort, r.Vorlage) : geteilt;
+            }
+            Konditionierungskalender k = schritt.Ok && !schritt.Rueckfrage ? schritt.Stand.Ansichtskalender(groesse, null) : null;
+            if (k == null) return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null, schritt.Meldung);
 
             double[] jahr = k.Auswerten(leer.W0, leer.Referenzjahr);
             int start = VORSCHAU_WOCHE_AB_TAG + (7 - (leer.W0 + VORSCHAU_WOCHE_AB_TAG) % 7) % 7;

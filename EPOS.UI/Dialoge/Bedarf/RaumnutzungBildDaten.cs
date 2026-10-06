@@ -56,7 +56,7 @@ public sealed record RaumnutzungBildgrenzen(KonditionierungGroesse Groesse, stri
 /// <param name="Weg">Woher der Generator die Größe nimmt.</param>
 /// <param name="Woche">Die 168 Werte der Woche in der Einheit der Anzeige („aus" = NaN) oder <c>null</c>.</param>
 /// <param name="Teppich">Das Teppichbild oder <c>null</c>.</param>
-/// <param name="Hinweis">Was der Generator benennt; leer = nichts.</param>
+/// <param name="Hinweis">Was der Generator benennt oder warum der Schritt am Ziel ablehnt; leer = nichts.</param>
 /// <param name="Bezug">Die Zeile zu Bezugsjahr und Ferienlage.</param>
 public sealed record RaumnutzungBildvorschau(bool Belegt, RaumnutzungBildweg Weg, double[]? Woche, Zeichenmodell? Teppich,
                                              string Hinweis, string Bezug);
@@ -145,8 +145,8 @@ public sealed class RaumnutzungBildTexte
     /// <summary>Überschrift des Teppichbilds.</summary>
     public string LabelTeppich { get; set; } = "Teppichbild";
 
-    /// <summary>Die Zeile zu Bezugsjahr und Ferienlage ({0} = Jahr).</summary>
-    public string TextBezug { get; set; } = "Bezugsjahr {0}, neutrale Ferienlage 1. bis 14. August; die Woche liegt im Januar ohne Feiertag.";
+    /// <summary>Die Zeile zum neutralen Vorschauziel und Bezugsjahr ({0} = Jahr).</summary>
+    public string TextBezug { get; set; } = "Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Bezugsjahr {0}; die Woche liegt im Januar ohne Feiertag.";
 
     /// <summary>Die Größe ist nicht belegt.</summary>
     public string TextNichtBelegt { get; set; } = "Die Größe ist nicht belegt; das Ziel behält seinen Kalender.";
