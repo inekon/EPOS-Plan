@@ -426,6 +426,28 @@ namespace WindowsFormsApplication1
                 Fragezeichen(BaustoffSchema.Fachspalten.Count) + ")", ps.ToArray());
         }
 
+        /// <summary>
+        /// <b>Die Projektkopie eines Stoffes aus einer Importquelle</b> (BA-4b: Schichtstoffe der HottCAD-Projektdatei, Herkunft
+        /// <c>IFC</c>, Quelle „Projektdatei“) im Vorgang <paramref name="v"/>. Eine Zeile desselben Projekts mit gleichem Namen,
+        /// gleicher Quelle und Herkunft und gleichen λ, ρ, c wird genommen; sonst wird eine angelegt. Wirft bei einem Fehler —
+        /// der Vorgang rollt dann ganz zurück.
+        /// </summary>
+        internal static int ImportstoffEinfuegen(DbVorgang v, int idProjekt, BaustoffModel m)
+        {
+            if (m == null || string.IsNullOrWhiteSpace(m.Bezeichner) || idProjekt <= 0) return -1;
+            string herkunft = m.Herkunft ?? DbWerte.HERKUNFT_MANUELL;
+            object vorhanden = v.Skalar(
+                "SELECT \"ID\" FROM \"" + TAB_PROJEKT + "\" WHERE \"ID_Projekt\" = ? AND \"Bezeichner\" = ? AND \"Quelle\" IS ? " +
+                "AND \"Herkunft\" = ? AND \"Lambda\" IS ? AND \"Rho\" IS ? AND \"cp\" IS ? ORDER BY \"ID\" LIMIT 1",
+                new DbParam("@p", idProjekt), new DbParam("@b", m.Bezeichner.Trim()), Text("@q", m.Quelle), new DbParam("@hk", herkunft),
+                Zahl("@l", m.Lambda), Zahl("@r", m.Rho), Zahl("@c", m.Cp));
+            if (vorhanden != null) return Convert.ToInt32(vorhanden, CultureInfo.InvariantCulture);
+            return v.EinfuegenUndId(
+                "INSERT INTO \"" + TAB_PROJEKT + "\" (\"ID_Projekt\", \"Bezeichner\", " + Spaltenliste() + ") VALUES (?, ?, " +
+                Fragezeichen(BaustoffSchema.Fachspalten.Count) + ")",
+                new[] { new DbParam("@p", idProjekt), new DbParam("@b", m.Bezeichner.Trim()) }.Concat(Fachwerte(m, herkunft)).ToArray());
+        }
+
         // =================================================================
         //  intern
         // =================================================================

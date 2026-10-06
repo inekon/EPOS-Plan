@@ -39112,6 +39112,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei {0} Bauteil(en) treffen mehrere verschiedene Aufbauten der Projektdatei das U der IFC ({1} W/(m²K)); es wird nicht geraten. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau aus der Projektdatei (U passt zur IFC): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_RANG1 {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_RANG1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau aus dem Aufbaukatalog der Projektdatei (U der IFC getroffen): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_RANG2 {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_RANG2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau aus den Schichten der IFC: {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_RANG3 {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_RANG3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne vollständigen Aufbau (Ersatzaufbau bzw. ohne Aufbau): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_RANG4 {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_RANG4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei {0} Bauteil(en) weicht das U der Projektdatei um mehr als 1 % vom U der IFC ab; es gilt der Stand der IFC (W/(m²K), Projektdatei → IFC: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile der Projektdatei zugeordnet: {0} über die GUID, {1} über die GlobalId; {2} opake Bauteile ohne Gegenstück, {3} mehrdeutig (nicht geraten). ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schicht(en) unter der Relevanzschwelle weggelassen (bis 5 mm und je unter 2 % von Widerstand und Wärmekapazität, Folien und Abdichtungen unter 2 % des Widerstands): {1}. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH {
@@ -42406,11 +42469,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau Projektdatei (U {0}) ähnelt.
+        /// </summary>
+        public static string IMP_SQ_AUFBAU_NAME {
+            get {
+                return ResourceManager.GetString("IMP_SQ_AUFBAU_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Abschnitte tragen eine unbekannte Abschnittsart — sie gelten als Zeitraum. ähnelt.
         /// </summary>
         public static string IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile der Projektdatei: {0} Hüllflächen, {1} Aufbauten, davon {2} mit Schichten ({3} Schichten). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_BAUTEILE {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei trägt keine Bauteiltabellen ({0}); Aufbauten werden aus ihr nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_BAUTEILE_FEHLEN {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_BAUTEILE_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauteiltabellen der Projektdatei sind nicht lesbar ({0}); Aufbauten werden aus ihr nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_BAUTEILE_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_BAUTEILE_UNLESBAR", resourceCulture);
             }
         }
         
@@ -42447,6 +42546,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_FASSUNG_UNBEKANNT {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_FASSUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen eine HottCAD-Kennung GUID, die nicht eindeutig ist, und werden nicht über sie zugeordnet: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_GUID_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_GUID_MEHRDEUTIG", resourceCulture);
             }
         }
         
@@ -42528,6 +42636,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_RAUM_BEHEIZUNG {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_RAUM_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume über die HottCAD-Kennung GUID abgeglichen ({1} über die IFC-Kennung, {2} über Name und Geschoss). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUM_HERKUNFT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUM_HERKUNFT", resourceCulture);
             }
         }
         
@@ -42627,6 +42744,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_ZU_GROSS {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stoff Projektdatei (λ {0}, ρ {1}) ähnelt.
+        /// </summary>
+        public static string IMP_SQ_STOFF_NAME {
+            get {
+                return ResourceManager.GetString("IMP_SQ_STOFF_NAME", resourceCulture);
             }
         }
         

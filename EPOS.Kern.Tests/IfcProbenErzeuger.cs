@@ -761,6 +761,39 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die HottCAD-Kennung</b> (<c>HSETU_BauteilAllgemein.GUID</c>, Befund HottCAD-Projektdatei N.6): EG „Wohnen“ mit der
+        /// GUID in Klammern und Großbuchstaben, „Küche“ in Kleinbuchstaben, „Bad“ mit einem Text, der keine GUID ist, „Flur“ ohne
+        /// den Satz; die Außenwand mit GUID, die Bodenplatte ohne.
+        /// </summary>
+        public static byte[] HottcadKennung()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_hottcad_guid.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Gebäude", null);
+                IIfcBuildingStorey eg = b.GeschossEnthalten(g, "EG", 0);
+                (string Name, string Guid)[] raeume =
+                {
+                    ("Wohnen", "{3B6425E5-4435-40C6-8821-6F4E16E47855}"),
+                    ("Küche", "adef8666-4b52-4f84-b45f-6fc96a684d24"),
+                    ("Bad", "keine GUID"),
+                    ("Flur", null),
+                };
+                double x = 0;
+                foreach (var r in raeume)
+                {
+                    IIfcSpace raum = b.RaumEnthalten(eg, r.Name, x, 0, 20, 50, 2500, zerlegt: false);
+                    if (r.Guid != null) b.Eigenschaften(raum, "HSETU_BauteilAllgemein", ("GUID", new IfcLabel(r.Guid)));
+                    x += 5000;
+                }
+                IIfcWall wand = b.CadBauteil<IIfcWall>(eg, "IfcWall", "Außenwand", "btaOutside", true, 0.3, null, 180, 30, 30, null, null);
+                b.Eigenschaften(wand, "HSETU_BauteilAllgemein", ("GUID", new IfcLabel("EF9BA72C-B7C1-4D90-8D1F-B7F0EE884795")));
+                b.CadBauteil<IIfcSlab>(eg, "IfcSlab", "Bodenplatte", "btaGround", true, 0.4, null, null, 80, 80, null, null);
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
         /// <b>Die Befunde der Importproben 13–18</b> (Mehrzonenkonzept 6.1, 6.2, 6.5) in einer Datei: EG „Wohnen“ 30 m² mit
         /// Flächenmenge und einem Grundriss von 36 m², „Arbeitsraum“ ohne Flächenmenge mit Grundriss 4 × 5 m, „Büro“ mit
         /// <c>PredefinedType = INTERNAL</c> und <c>IsExternal = TRUE</c>, „Terrasse“ nur mit <c>IsExternal = TRUE</c>; OG
