@@ -57,7 +57,7 @@ namespace Auslieferungsvorlage.Tests
 
             QuelleVorher = Pruefsumme(Quelle);
             Ziel = _ordner.Datei("Kenndaten.sqlite");
-            Lauf = Werkzeuglauf.Starten(Quelle, Ziel, "--beispiele", Beispielpaket, "--kataloge", "alle");
+            Lauf = Werkzeuglauf.StartenMitAusnahmen(Quelle, Ziel, "--beispiele", Beispielpaket, "--kataloge", "alle");
             QuelleNachher = Pruefsumme(Quelle);
         }
 

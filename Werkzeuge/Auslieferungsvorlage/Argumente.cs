@@ -59,6 +59,13 @@ namespace Auslieferungsvorlage
             int.Parse(DateTime.Now.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
                       System.Globalization.CultureInfo.InvariantCulture);
 
+        /// <summary>
+        /// Die benannten Ausnahmen vom Abbruch bei leerem Paketteil (<c>--ohne-paket &lt;Katalog&gt;</c>, mehrfach,
+        /// Konzept Setup 6.5.4 E2): Registerkataloge, die Zeilen, aber keinen gesperrten Satz mit Schluessel
+        /// fuehren duerfen. Gespeichert in der Schreibweise des Registers; der Bericht nennt jede.
+        /// </summary>
+        internal List<string> OhnePaket { get; } = new List<string>();
+
         /// <summary>Der Grund, warum die Zeile nicht taugt; <c>null</c> = in Ordnung.</summary>
         internal string Fehler { get; private set; }
 
@@ -95,6 +102,11 @@ namespace Auslieferungsvorlage
             Console.WriteLine("                    Die Fassung des Katalogpakets (ganze Zahl ab 1), das neben der");
             Console.WriteLine("                    Vorlage als Katalogpaket.json entsteht (KU1 Stufe 1). Vorgabe:");
             Console.WriteLine("                    das Datum des Laufs als JJJJMMTT.");
+            Console.WriteLine("  --ohne-paket <Katalog>");
+            Console.WriteLine("                    Benannte Ausnahme vom Abbruch bei leerem Paketteil (Code 6): Der");
+            Console.WriteLine("                    Registerkatalog (Tabellenname, etwa Tab_PV_STAMM) darf Zeilen, aber");
+            Console.WriteLine("                    keinen gesperrten Satz mit Schluessel fuehren. Mehrfach angebbar;");
+            Console.WriteLine("                    jede Ausnahme steht im Pruefbericht.");
             Console.WriteLine("  --katalogpaket <ordner>");
             Console.WriteLine("                    Das Tww-Katalogpaket des Zapfprofilgenerators: je Tabelle eine");
             Console.WriteLine("                    Datei <Tab_Tww..._STAMM>.csv (UTF-8, Kopfzeile, Status AUSLIEFERUNG).");
@@ -119,6 +131,12 @@ namespace Auslieferungsvorlage
             Console.WriteLine("  4  Nur bei --kataloge readonly: Die ReadOnly-Regel wuerde eine Katalogtabelle");
             Console.WriteLine("     leeren.");
             Console.WriteLine("  5  Fachlicher Abbruch (Beispielimport oder Abnahme fehlgeschlagen).");
+            Console.WriteLine("  6  Leerer Paketteil: Ein Registerkatalog hat Zeilen, aber keinen gesperrten Satz");
+            Console.WriteLine("     (ReadOnly = 1) mit Schluessel, und --ohne-paket nennt ihn nicht.");
+            Console.WriteLine("  7  Das zurueckgelesene Katalogpaket passt nicht zur Vorlage (Fassung, Satzzahl,");
+            Console.WriteLine("     Schluessel oder Pruefsumme); Vorlage und Paket sind geloescht.");
+            Console.WriteLine("  8  Der Schemastand der Quelle ist aelter als der Zielstand der Schemakette;");
+            Console.WriteLine("     die Quelle einmal mit der aktuellen Anwendung oeffnen.");
             Console.WriteLine("  1  Unerwarteter Fehler; die Ausnahme steht auf stderr.");
             Console.WriteLine();
             Console.WriteLine("Jeder Abbruch ungleich 0 nennt seinen Grund auf stderr.");
@@ -156,6 +174,14 @@ namespace Auslieferungsvorlage
                                           System.Globalization.CultureInfo.InvariantCulture, out int fassung) || fassung < 1)
                             return a.Mit("--katalogfassung braucht eine ganze Zahl ab 1: " + args[i]);
                         a.Katalogfassung = fassung;
+                        break;
+                    case "--ohne-paket":
+                        if (++i >= args.Length) return a.Mit("--ohne-paket braucht den Tabellennamen eines Registerkatalogs.");
+                        WindowsFormsApplication1.Katalogtabelle kat = WindowsFormsApplication1.Katalogfassung.Tabelle(args[i].Trim());
+                        if (kat == null)
+                            return a.Mit("--ohne-paket: " + args[i] + " ist kein Katalog des Registers (erwartet: " +
+                                         string.Join(", ", WindowsFormsApplication1.Katalogfassung.Alle.Select(t => t.Tabelle)) + ").");
+                        if (!a.OhnePaket.Contains(kat.Tabelle, StringComparer.Ordinal)) a.OhnePaket.Add(kat.Tabelle);
                         break;
                     case "--kesselkatalog":
                         if (++i >= args.Length) return a.Mit("--kesselkatalog braucht einen Ordner.");

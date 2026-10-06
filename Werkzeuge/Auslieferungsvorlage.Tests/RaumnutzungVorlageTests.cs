@@ -78,7 +78,7 @@ namespace Auslieferungsvorlage.Tests
                 "UPDATE \"Tab_Raumnutzungsprofil\" SET \"Heiz_Soll\" = 21 WHERE \"Nummer\" = '1' AND \"ID_Katalog\" = " +
                 "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
             Assert.True(e.Code != 0, e.Alles);
             Assert.Contains("FEHLER  Werte in Normkategorien: Profile mit Kennwert 1", e.Ausgabe, StringComparison.Ordinal);
         }

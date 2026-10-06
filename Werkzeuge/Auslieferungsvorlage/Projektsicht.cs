@@ -40,15 +40,13 @@ namespace Auslieferungsvorlage
     ///   demselben Grund aus.</item>
     /// </list></para>
     ///
-    /// <para><b>Der Vergleich ist ORDINAL, und das ist der Punkt.</b>
-    /// <c>Tab_Brennstoff_Stamm</c> endet auf <c>_Stamm</c> in gemischter Schreibweise und
-    /// ist KEIN <c>*_STAMM</c>-Katalog im Sinne der Namenskonvention, sondern ein
-    /// gewoehnlicher Katalog ohne Projektbezug - <c>Reduziere-Testdatenbank.sql</c>
-    /// fuehrt ihn unter „Alle uebrigen Kataloge ohne Projektbezug". Ein Vergleich ohne
-    /// Ruecksicht auf Gross-/Kleinschreibung wuerde ihn unter die ReadOnly-Regel der
-    /// Kataloge ziehen und damit alle 25 Brennstoffe loeschen (alle tragen
-    /// <c>ReadOnly = 0</c>) - und mit ihnen die Aufloesung der Energietraeger beim
-    /// Beispielimport.</para>
+    /// <para><b>Die Endung zaehlt ohne Ruecksicht auf Gross-/Kleinschreibung.</b>
+    /// <c>Tab_Brennstoff_Stamm</c> endet auf <c>_Stamm</c> und ist Katalog des Registers
+    /// (<c>Katalogfassung.Alle</c>) mit eigenem Paketteil. Er faellt deshalb wie jeder
+    /// <c>*_STAMM</c>-Katalog unter die ReadOnly-Regel des Modus <c>readonly</c>; im Modus
+    /// <c>alle</c> bleibt jede Zeile. Die Kaskade von <c>Tab_Brennstoff_Stamm</c> auf die
+    /// Umrechnungsfaktoren (<c>energy_conversion</c>) nimmt im Modus <c>readonly</c> die
+    /// Faktoren ungesperrter Brennstoffe mit - wie jede Katalogkaskade dieses Modus.</para>
     /// </summary>
     internal sealed class Projektsicht
     {
@@ -68,7 +66,7 @@ namespace Auslieferungsvorlage
         /// <summary>Alle Tabellen der Datei in Namensreihenfolge (ohne Sichten, ohne sqlite_*).</summary>
         internal IReadOnlyList<string> AlleTabellen { get; private set; }
 
-        /// <summary>Die Auslieferungskataloge — Tabellennamen auf <c>_STAMM</c> (ordinal).</summary>
+        /// <summary>Die Auslieferungskataloge — Tabellennamen auf <c>_STAMM</c> (ohne Ruecksicht auf Gross-/Kleinschreibung).</summary>
         internal IReadOnlyList<string> Stammtabellen { get; private set; }
 
         /// <summary>
@@ -106,9 +104,9 @@ namespace Auslieferungsvorlage
         internal bool Hat(string tabelle, string spalte) =>
             Spalten(tabelle).Any(s => string.Equals(s, spalte, StringComparison.OrdinalIgnoreCase));
 
-        /// <summary>Ist der Name ein Auslieferungskatalog (<c>*_STAMM</c>, ordinal)?</summary>
+        /// <summary>Ist der Name ein Auslieferungskatalog (<c>*_STAMM</c>, auch <c>*_Stamm</c>)?</summary>
         internal static bool IstStamm(string tabelle) =>
-            tabelle != null && tabelle.EndsWith("_STAMM", StringComparison.Ordinal);
+            tabelle != null && tabelle.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>Liest das Schema der aktuell eingestellten Datenbank aus.</summary>
         internal static Projektsicht Lesen()

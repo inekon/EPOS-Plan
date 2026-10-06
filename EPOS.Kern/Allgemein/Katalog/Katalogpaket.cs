@@ -404,6 +404,79 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================================
+        // Paket und Vorlage gehören zusammen (Konzept Setup 6.5.3, Schritt 3)
+        // =================================================================================
+
+        /// <summary>
+        /// Der Stand der gesperrten Sätze der geöffneten Datenbank, gegen den ein zurückgelesenes Paket
+        /// gehalten wird: je Tabelle des Registers, die die Katalogspalten führt, Schlüssel → gespeicherte
+        /// Prüfsumme aller Sätze mit <c>ReadOnly = 1</c> und Schlüssel. Ein doppelter Schlüssel zählt einmal
+        /// und fällt damit im Vergleich der Satzzahl auf.
+        /// </summary>
+        public static SortedDictionary<string, SortedDictionary<string, string>> GesperrterStand()
+        {
+            var stand = new SortedDictionary<string, SortedDictionary<string, string>>(StringComparer.Ordinal);
+            foreach (Katalogtabelle t in Katalogfassung.Alle)
+            {
+                if (!DataRepository.TabelleVorhanden(t.Tabelle) || !Katalogfassung.SpaltenVorhanden(t.Tabelle)) continue;
+                var saetze = new SortedDictionary<string, string>(StringComparer.Ordinal);
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT \"" + Katalogfassung.SPALTE_SCHLUESSEL + "\", \"" + Katalogfassung.SPALTE_PRUEFSUMME +
+                    "\" FROM \"" + t.Tabelle + "\" WHERE \"ReadOnly\" = 1 AND \"" + Katalogfassung.SPALTE_SCHLUESSEL +
+                    "\" IS NOT NULL");
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                        saetze[Convert.ToString(r[0], CultureInfo.InvariantCulture)] = r[1] as string ?? "";
+                stand[t.Tabelle] = saetze;
+            }
+            return stand;
+        }
+
+        /// <summary>
+        /// Die Abweichungen zwischen <paramref name="paket"/> und der Vorlage, aus der es stammen soll — leer,
+        /// wenn beide zusammengehören: die Fassung des Pakets gleich <paramref name="fassungDerVorlage"/>
+        /// (<c>Tab_Applikation.Katalogfassung</c>), dieselben Tabellen, je Tabelle dieselbe Satzzahl und je
+        /// Schlüssel dieselbe Prüfsumme wie im <paramref name="stand"/> (<see cref="GesperrterStand"/>).
+        /// </summary>
+        public static List<string> Abweichungen(Katalogpaket paket, int? fassungDerVorlage,
+                                                IReadOnlyDictionary<string, SortedDictionary<string, string>> stand)
+        {
+            if (paket == null) throw new ArgumentNullException(nameof(paket));
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            var befund = new List<string>();
+            string Zahl(int n) => n.ToString(CultureInfo.InvariantCulture);
+
+            if (fassungDerVorlage != paket.Fassung)
+                befund.Add("Fassung: Paket " + Zahl(paket.Fassung) + ", Vorlage " +
+                           (fassungDerVorlage.HasValue ? Zahl(fassungDerVorlage.Value) : "leer"));
+
+            var imPaket = new HashSet<string>(StringComparer.Ordinal);
+            foreach (Katalogpakettabelle pt in paket.Tabellen)
+            {
+                imPaket.Add(pt.Tabelle);
+                if (!stand.TryGetValue(pt.Tabelle, out SortedDictionary<string, string> vorlage))
+                {
+                    befund.Add(pt.Tabelle + ": steht im Paket, aber nicht in der Vorlage");
+                    continue;
+                }
+                if (pt.Saetze.Count != vorlage.Count)
+                    befund.Add(pt.Tabelle + ": " + Zahl(pt.Saetze.Count) + " Satz/Saetze im Paket, " + Zahl(vorlage.Count) +
+                               " gesperrt mit Schluessel in der Vorlage");
+                foreach (Katalogpaketsatz s in pt.Saetze)
+                {
+                    if (!vorlage.TryGetValue(s.Schluessel, out string summe))
+                        befund.Add(pt.Tabelle + ": Schluessel „" + s.Schluessel + "“ fehlt in der Vorlage");
+                    else if (!string.Equals(summe, s.Pruefsumme, StringComparison.Ordinal))
+                        befund.Add(pt.Tabelle + ": Pruefsumme von „" + s.Schluessel + "“ weicht ab");
+                }
+            }
+            foreach (var kv in stand)
+                if (!imPaket.Contains(kv.Key))
+                    befund.Add(kv.Key + ": fehlt im Paket (" + Zahl(kv.Value.Count) + " gesperrte(r) Satz/Saetze in der Vorlage)");
+            return befund;
+        }
+
         /// <summary>Schreibt das Paket nach <paramref name="pfad"/> (überschreibt).</summary>
         public void Speichern(string pfad)
         {
