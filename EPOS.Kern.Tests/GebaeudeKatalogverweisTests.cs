@@ -183,7 +183,7 @@ namespace EPOS.Kern.Tests
             Assert.True(neu > 0, "Duplizieren fehlgeschlagen.");
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?", neu));
             Assert.Equal((long)STAMM_EFH, Zahl("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID_Projekt = ?", neu));
-            Assert.Contains(PROJEKTNAME + " #468", GebaeudeStammCtrl.Loeschsperre(NAME_EFH));
+            Assert.Contains(PROJEKTNAME + " #468", GebaeudeStammCtrl.Projektkopien(NAME_EFH));
         }
 
         /// <summary>
@@ -259,14 +259,9 @@ namespace EPOS.Kern.Tests
             string neuerName = NAME_EFH + " umbenannt";
             Sql("UPDATE Tab_Gebaeude_STAMM SET Bezeichner = ? WHERE ID = ?", neuerName, STAMM_EFH);
 
-            IReadOnlyDictionary<string, IReadOnlyList<string>> verwendung = GebaeudeStammCtrl.Projektverwendung();
-            Assert.True(verwendung.ContainsKey(neuerName));
-            Assert.False(verwendung.ContainsKey(NAME_EFH));
-            IReadOnlyList<string> projekte = GebaeudeStammCtrl.Loeschsperre(neuerName);
+            IReadOnlyList<string> projekte = GebaeudeStammCtrl.Projektkopien(neuerName);
             Assert.Equal(5, projekte.Count);
             Assert.Contains(PROJEKTNAME, projekte);
-            Assert.Equal(projekte.OrderBy(p => p, StringComparer.Ordinal),
-                         GebaeudeStammCtrl.Projektkopien(neuerName).OrderBy(p => p, StringComparer.Ordinal));
             Assert.Empty(GebaeudeStammCtrl.Projektkopien(NAME_EFH));
 
             long kopien = Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Gebaeude_Stamm = ?", STAMM_EFH);
@@ -287,31 +282,76 @@ namespace EPOS.Kern.Tests
 
             Sql("UPDATE Tab_Gebaeude SET ID_Gebaeude_Stamm = ? WHERE ID = ?", STAMM_GMH, GEBAEUDE_1007);
 
-            Assert.Contains(PROJEKTNAME, GebaeudeStammCtrl.Loeschsperre(NAME_GMH));
-            Assert.DoesNotContain(PROJEKTNAME, GebaeudeStammCtrl.Loeschsperre(NAME_EFH));
-            Assert.Equal(4, GebaeudeStammCtrl.Loeschsperre(NAME_EFH).Count);
+            Assert.Contains(PROJEKTNAME, GebaeudeStammCtrl.Projektkopien(NAME_GMH));
+            Assert.DoesNotContain(PROJEKTNAME, GebaeudeStammCtrl.Projektkopien(NAME_EFH));
+            Assert.Equal(4, GebaeudeStammCtrl.Projektkopien(NAME_EFH).Count);
         }
 
         /// <summary>
-        /// <b>Rückfall Name nur in der Verwendung:</b> Eine Kopie OHNE Verweis (Altbestand) steht
-        /// in der Verwendung der Verwaltung weiter unter ihrem Namen — groß/klein egal. Die
-        /// Rückfrage des Projektdialogs nennt sie nicht (<see cref="GebaeudeStammCtrl.Projektkopien"/>
-        /// geht allein über den Verweis), und das Löschen hält sie nicht auf.
+        /// <b>„Benutzt" allein über den Verweis, nie über den Namen</b> (Anwenderentscheid 06.10.2026):
+        /// Eine Kopie OHNE Verweis (Altbestand, oder ihr Satz ist gelöscht) gehört zu keinem Katalogsatz
+        /// — auch nicht groß/klein-gleich. Weder Verwaltung noch Projektdialog nennen sie, und das
+        /// Löschen hält sie nicht auf.
         /// </summary>
         [Fact]
-        public void Ohne_Verweis_sperrt_weiter_der_Name()
+        public void Ohne_Verweis_gilt_kein_Satz_als_benutzt()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
             Sql("UPDATE Tab_Gebaeude SET ID_Gebaeude_Stamm = NULL");
-            IReadOnlyList<string> projekte = GebaeudeStammCtrl.Loeschsperre(NAME_EFH.ToLowerInvariant());
-            Assert.Equal(5, projekte.Count);
             Assert.Empty(GebaeudeStammCtrl.Projektkopien(NAME_EFH));
+            Assert.Empty(GebaeudeStammCtrl.Projektkopien(NAME_EFH.ToLowerInvariant()));
+            Assert.Equal("", GebaeudeStammCtrl.Loeschhinweis(new[] { NAME_EFH, NAME_GMH }));
 
             // Ein Satz, den kein Projekt fuehrt (und der kein Auslieferungssatz ist), geht.
-            Assert.Empty(GebaeudeStammCtrl.Loeschsperre("AltenH-95-EnEV2016"));
+            Assert.Equal("", GebaeudeStammCtrl.Loeschsperrgrund("AltenH-95-EnEV2016"));
             Assert.True(GebaeudeStammCtrl.Loeschen("AltenH-95-EnEV2016"));
+        }
+
+        /// <summary>
+        /// <b>Ein später angelegter gleichnamiger Satz gilt nicht als benutzt:</b> Nach dem Löschen
+        /// des Katalogsatzes tragen seine Kopien keinen Verweis mehr. Ein neuer Satz desselben Namens
+        /// erbt sie nicht — keine Projektkopien, kein Hinweis, kein Sperrgrund; er lässt sich löschen,
+        /// und die Kopien bleiben.
+        /// </summary>
+        [Fact]
+        public void Ein_spaeter_gleichnamiger_Satz_gilt_nicht_als_benutzt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            long kopien = Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Gebaeude_Stamm = ?", STAMM_EFH);
+            Assert.True(kopien > 0);
+            Sql("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 0 WHERE ID = ?", STAMM_EFH);
+            Assert.True(GebaeudeStammCtrl.Loeschen(NAME_EFH));
+
+            Sql("INSERT INTO Tab_Gebaeude_STAMM (Bezeichner) VALUES (?)", NAME_EFH);
+            Assert.Empty(GebaeudeStammCtrl.Projektkopien(NAME_EFH));
+            Assert.Equal("", GebaeudeStammCtrl.Loeschhinweis(NAME_EFH));
+            Assert.Equal("", GebaeudeStammCtrl.Loeschsperrgrund(NAME_EFH));
+            Assert.True(GebaeudeStammCtrl.Loeschen(NAME_EFH));
+            Assert.Equal(kopien, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Gebaeudename = ? AND ID_Gebaeude_Stamm IS NULL", NAME_EFH));
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis der Verwaltung für mehrere Sätze</b> nennt jedes Projekt einmal und
+        /// geordnet; ein einzelner Satz bekommt den Text des Projektdialogs. Ein noch ungespeichertes
+        /// Projekt (stilles Speichern vor dem Löschen) steht mit im Hinweis.
+        /// </summary>
+        [Fact]
+        public void Der_Loeschhinweis_vereint_die_Projekte_mehrerer_Saetze()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Sql("UPDATE Tab_Gebaeude SET ID_Gebaeude_Stamm = ? WHERE ID = ?", STAMM_GMH, GEBAEUDE_1007);
+            string mehr = GebaeudeStammCtrl.Loeschhinweis(new[] { NAME_EFH, NAME_GMH });
+            foreach (string projekt in GebaeudeStammCtrl.Projektkopien(NAME_EFH).Concat(GebaeudeStammCtrl.Projektkopien(NAME_GMH)))
+                Assert.Contains(projekt, mehr);
+            Assert.Equal(GebaeudeStammCtrl.Loeschhinweis(NAME_GMH), GebaeudeStammCtrl.Loeschhinweis(new[] { NAME_GMH }));
+            Assert.Contains("Neues Projekt", GebaeudeStammCtrl.Loeschhinweis(NAME_GMH, "Neues Projekt"));
+            Assert.Contains("Neues Projekt", GebaeudeStammCtrl.Loeschhinweis("AltenH-95-EnEV2016", "Neues Projekt"));
         }
 
         /// <summary>

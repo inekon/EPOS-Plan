@@ -209,6 +209,40 @@ namespace EPOS.Kern.Tests
             Assert.Equal(kalender, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungskalender WHERE ID_Gebaeude = ?", GEBAEUDE_1051));
         }
 
+        /// <summary>
+        /// <b>Die Gebäudeverwaltung löscht nach derselben Regel</b> (Anwenderentscheid 06.10.2026): Ihre
+        /// Hülle reicht die Sperre, den Hinweis und das Löschen des Kerns. Ein Satz, den Projekte führen,
+        /// hat keinen Sperrgrund, der Hinweis nennt die Projekte, gelöscht wird er, ihre Kopien bleiben;
+        /// der Auslieferungssatz bleibt gesperrt.
+        /// </summary>
+        [Fact]
+        public void Die_Verwaltung_loescht_trotz_Projektkopie_und_sperrt_den_Auslieferungssatz()
+        {
+            using var db = new TestDatenbank();
+            using var kultur = new Kulturvorrichtung();
+            IReadOnlyDictionary<string, object> gaben = GebaeudeAdminHuelle.Gaben();
+            Assert.False(gaben.ContainsKey("Verwendung"));
+            var sperre = (Func<string, string>)gaben["Loeschsperre"];
+            var hinweis = (Func<IReadOnlyList<string>, string>)gaben["Loeschhinweis"];
+            var loeschen = (Func<string, bool>)gaben["Loeschen"];
+
+            IReadOnlyList<string> projekte = GebaeudeStammCtrl.Projektkopien(NAME_GEFUEHRT);
+            Assert.Contains("Laurentiuskirche", projekte);
+            Assert.Equal("", sperre(NAME_GEFUEHRT));
+            Assert.Contains("Laurentiuskirche", hinweis(new[] { NAME_GEFUEHRT, NAME_FREI }));
+            Assert.Equal(GebaeudeStammCtrl.Loeschhinweis(NAME_GEFUEHRT), hinweis(new[] { NAME_GEFUEHRT }));
+
+            long kopien = Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Gebaeude_Stamm = 142");
+            Assert.True(kopien > 0);
+            Assert.True(loeschen(NAME_GEFUEHRT));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE ID = 142"));
+            Assert.Equal(kopien, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Gebaeudename = ? AND ID_Gebaeude_Stamm IS NULL", NAME_GEFUEHRT));
+
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BADM_MSG_SCHREIBGESCHUETZT, sperre(NAME_AUSLIEFERUNG));
+            Assert.False(loeschen(NAME_AUSLIEFERUNG));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", NAME_AUSLIEFERUNG));
+        }
+
         [Fact]
         public void Ein_Auslieferungssatz_wird_benannt_abgelehnt()
         {

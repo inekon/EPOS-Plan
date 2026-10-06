@@ -45,11 +45,11 @@
    Zeilenwechsel, Neu..., die Ueberlagerungen und Beenden an.
 
    AUSWAHLLEISTE (V8): Vergleichen, Duplizieren..., Schloss aufheben.../setzen...,
-   Loeschen - Loeschen ist weich gesperrt fuer Auslieferungssaetze und fuer
-   Gebaeude, die ein Projekt fuehrt (der Kurztext nennt das Projekt; erkannt an
-   der Projektkopie in Tab_Gebaeude ueber ihren Katalogverweis ID_Gebaeude_Stamm,
-   der Name nur als Rueckfall fuer Altbestand ohne Verweis -
-   GebaeudeStammCtrl.Projektverwendung).
+   Loeschen - Loeschen ist allein fuer Auslieferungssaetze weich gesperrt, dieselbe
+   Regel wie im Projekt-Gebaeudedialog (GebaeudeStammCtrl.Loeschsperrgrund, der
+   Dialog fragt nur). Ein Gebaeude, das Projekte fuehren, wird geloescht; die
+   Rueckfrage nennt die Projekte, die ihre Kopie behalten (Loeschhinweis, allein
+   ueber den Katalogverweis ID_Gebaeude_Stamm, nie ueber den Namen).
 
    DER HILFE-ASSISTENT (#465): eigene Maske Form_Gebaeude_Admin - das Wahlfeld
    "satz" und die Feldliste des Katalogeditors an derselben Sichtklasse;
@@ -349,11 +349,17 @@
         = new[] { Resource.GEBK_VERWENDUNG_WOHN, Resource.GEB_TEXT_SONSTIGE };
 
     /// <summary>
-    /// <b>Welche Projekte welches Gebäude führen</b> — je Bezeichner die Projektnamen, EINE
-    /// Abfrage je Liste (<c>GebaeudeStammCtrl.Projektverwendung</c>). Daran hängt die weiche
-    /// Löschsperre samt Projektnamen.
+    /// <b>Warum ein Satz nicht gelöscht wird</b> — der Kern (<c>GebaeudeStammCtrl.Loeschsperrgrund</c>):
+    /// allein ein Auslieferungssatz; leer, wenn er gelöscht werden darf. Dieselbe Regel wie im
+    /// Projekt-Gebäudedialog. Je Liste einmal je Satz gefragt.
     /// </summary>
-    [Parameter] public Func<IReadOnlyDictionary<string, IReadOnlyList<string>>>? Verwendung { get; set; }
+    [Parameter] public Func<string, string>? Loeschsperre { get; set; }
+
+    /// <summary>
+    /// <b>Der Zusatz der Rückfrage</b> — die Projekte, die eine Kopie der zu löschenden Sätze führen
+    /// und behalten (<c>GebaeudeStammCtrl.Loeschhinweis</c>); leer, wenn keines.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<string>, string>? Loeschhinweis { get; set; }
 
     /// <summary>
     /// <b>„Speichern" — der Schreibweg des Katalogeditors</b> (<c>GebaeudeKatalogHuelle.Schreiben</c>,
@@ -486,8 +492,8 @@
 
     private IReadOnlyList<string> _typen = Array.Empty<string>();
     private IReadOnlyList<string> _arten = Array.Empty<string>();
-    private IReadOnlyDictionary<string, IReadOnlyList<string>> _verwendung =
-        new Dictionary<string, IReadOnlyList<string>>();
+    // Die Antworten des Kerns auf „gesperrt?" je Satz - je Liste einmal gefragt (KatalogLaden leert).
+    private readonly Dictionary<string, string> _sperren = new(StringComparer.Ordinal);
 
     // ---- der ARBEITSSTAND des Stammblatts (#465) --------------------------
     /// <summary>
@@ -771,7 +777,7 @@
     public void KatalogLaden()
     {
         _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
-        _verwendung = Verwendung?.Invoke() ?? new Dictionary<string, IReadOnlyList<string>>();
+        _sperren.Clear();
 
         _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
         if (_auswahl.Vergleich) VergleichBauen();
@@ -1208,12 +1214,19 @@
     private bool Geschuetzt(string schluessel)
         => _katalog.FirstOrDefault(z => z.Schluessel == schluessel)?.Geschuetzt == true;
 
-    private IReadOnlyList<string>? Projekte(string name)
-        => _verwendung.TryGetValue(name, out IReadOnlyList<string>? p) && p.Count > 0 ? p : null;
+    /// <summary>Ist der Satz gegen Löschen gesperrt? Die Antwort gibt der Kern (<see cref="Loeschsperre"/>).</summary>
+    private bool Gesperrt(string name)
+    {
+        if (Loeschsperre is null) return false;
+        if (!_sperren.TryGetValue(name, out string? grund))
+            _sperren[name] = grund = Loeschsperre(name) ?? "";
+        return grund.Length > 0;
+    }
 
     /// <summary>
-    /// Warum „Löschen" gerade nicht geht: Ist JEDE Zielzeile ein Auslieferungssatz oder in
-    /// einem Projekt verwendet, ist der Knopf weich gesperrt; der Grund nennt das Projekt.
+    /// Warum „Löschen" gerade nicht geht: Ist JEDE Zielzeile gesperrt (Auslieferungssatz), ist der
+    /// Knopf weich gesperrt. Ein Gebäude, das Projekte führen, sperrt nicht (Anwenderentscheid
+    /// 06.10.2026) — die Rückfrage nennt sie.
     /// </summary>
     private string LoeschSperrgrund
     {
@@ -1221,13 +1234,7 @@
         {
             IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
             if (ziele.Count == 0) return "";
-            foreach (string z in ziele)
-                if (!Geschuetzt(z) && Projekte(z) is null) return "";
-            IReadOnlyList<string>? projekte = ziele.Select(Projekte).FirstOrDefault(p => p is not null);
-            return projekte is not null
-                ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_AW_LOESCHEN_VERWENDET,
-                                string.Join(", ", projekte))
-                : Resource.ADM_AW_LOESCHEN_GESPERRT;
+            return ziele.All(Gesperrt) ? Resource.ADM_AW_LOESCHEN_GESPERRT : "";
         }
     }
 
@@ -1316,8 +1323,8 @@
 
     /// <summary>
     /// <b>„Löschen" aus der Auswahlleiste</b> (V8, AD-Q9): wirkt auf die gewählten Zeilen,
-    /// sonst auf die Fokuszeile; Auslieferungssätze und Gebäude, die ein Projekt führt,
-    /// bleiben stehen — die Rückfrage nennt sie.
+    /// sonst auf die Fokuszeile; Auslieferungssätze bleiben stehen — die Rückfrage nennt sie,
+    /// dazu die Projekte, die ihre Kopie behalten.
     /// </summary>
     private void BeiLoeschen()
     {
@@ -1325,13 +1332,12 @@
         IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
         if (ziele.Count == 0) return;
 
-        var loeschbar = ziele.Where(z => !Geschuetzt(z) && Projekte(z) is null).ToList();
-        var geschuetzt = ziele.Where(Geschuetzt).ToList();
-        var verwendet = ziele.Where(z => !Geschuetzt(z) && Projekte(z) is not null).ToList();
+        var loeschbar = ziele.Where(z => !Gesperrt(z)).ToList();
+        var geschuetzt = ziele.Where(Gesperrt).ToList();
         if (loeschbar.Count == 0) { Warnen(LoeschSperrgrund); return; }
 
         _loeschziele = loeschbar;
-        _loeschBleiben = geschuetzt.Count + verwendet.Count;
+        _loeschBleiben = geschuetzt.Count;
 
         string frage = loeschbar.Count == 1
             ? string.Format(VorlageLoeschfrage, loeschbar[0])
@@ -1340,9 +1346,8 @@
         if (geschuetzt.Count > 0)
             frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
                                          string.Join(", ", geschuetzt));
-        if (verwendet.Count > 0)
-            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN_VERWENDET,
-                                         string.Join(", ", verwendet));
+        string hinweis = Loeschhinweis?.Invoke(loeschbar) ?? "";
+        if (hinweis.Length > 0) frage += " " + hinweis;
         _loeschfrageText = frage;
         _loeschfrage = true;
     }
