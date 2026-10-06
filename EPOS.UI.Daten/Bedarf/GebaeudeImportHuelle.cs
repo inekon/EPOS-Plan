@@ -584,7 +584,9 @@ namespace WindowsFormsApplication1
                 KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
                 Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken, _plan, _schritt),
                 Ansicht = GebaeudeImportAnsicht.AnsichtDaten(_geometrie, umhaengbar,
-                                                             GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag)),
+                                                             GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag),
+                                                             anfrage.Gebaeudeindex >= 0 && anfrage.Gebaeudeindex < (_ablauf.Abbild?.Gebaeude.Count ?? 0)
+                                                                 ? _ablauf.Abbild.Gebaeude[anfrage.Gebaeudeindex] : null),
                 ProjektdateiMoeglich = GebaeudeImportAblauf.IstHottcad(_ablauf.Abbild, anfrage.Gebaeudeindex),
                 Projektdatei = ProjektdateiDaten(),
             };
