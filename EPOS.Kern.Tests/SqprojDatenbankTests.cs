@@ -74,7 +74,7 @@ namespace EPOS.Kern.Tests
 
             GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, plan.Haken, null, plan.Zonieren());
             Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler).Select(m => m.ToString())));
-            Assert.Equal(new[] { null, DbWerte.KOND_NUTZUNG_WOHNEN, DbWerte.KOND_NUTZUNG_BUERO }, v.Zonennutzungen);
+            Assert.Equal(new[] { null, RaumnutzungSaat.WOHNEN, RaumnutzungSaat.BUERO }, v.Zonennutzungen);   // NP-F23: Profil aus DIN_NUMMER
             Assert.All(v.Zonenkonditionierungen, k => Assert.NotNull(k));
 
             using (DbVorgang vorgang = DataRepository.Vorgang())
@@ -94,7 +94,7 @@ namespace EPOS.Kern.Tests
             var eg = Kalender(zonen[1].ID).ToDictionary(k => k.Groesse);
             Assert.Contains("PdProfileTimeCurve.Temperature", eg[DbWerte.KOND_GROESSE_HEIZSOLL].Bemerkung);
             Assert.Equal(168, eg[DbWerte.KOND_GROESSE_HEIZSOLL].Woche.Split(';').Length);
-            Assert.Equal(DbWerte.KOND_NUTZUNG_WOHNEN, eg[DbWerte.KOND_GROESSE_HEIZSOLL].Nutzung);
+            Assert.Equal(RaumnutzungSaat.WOHNEN, eg[DbWerte.KOND_GROESSE_HEIZSOLL].Nutzung);   // NP-F14: Profilname
             Assert.Contains("PdProfileTimeCurve.Ratio", eg[DbWerte.KOND_GROESSE_PERSONEN].Bemerkung);
             Assert.False(eg.ContainsKey(DbWerte.KOND_GROESSE_LUEFTUNG));
             foreach (string gr in Vorlagengroessen(DbWerte.KOND_NUTZUNG_WOHNEN)
@@ -102,7 +102,7 @@ namespace EPOS.Kern.Tests
             {
                 Assert.True(eg.ContainsKey(gr), gr);
                 Assert.DoesNotContain("PdProfile", eg[gr].Bemerkung ?? "");
-                Assert.Equal(DbWerte.KOND_NUTZUNG_WOHNEN, eg[gr].Nutzung);
+                Assert.Equal(RaumnutzungSaat.WOHNEN, eg[gr].Nutzung);   // NP-F14: Profilname
             }
             Konditionierungsarbeitsstand ks = new KonditionierungCtrl().ArbeitsstandLesen(g.ID_Gebaeude, null, out string m);
             Assert.Null(m);
@@ -114,7 +114,7 @@ namespace EPOS.Kern.Tests
             Matrixeingang b = ks.Zone(zonen[2].ID).Stand.Bestand;
             Assert.Equal(21.0, Konditionierungsarbeit.Bestandswert(b, Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_TAG));
             Assert.Equal(17.0, Konditionierungsarbeit.Bestandswert(b, Konditionierungsgroesse.Heizsoll, DbWerte.KOND_ZEILE_NACHT));
-            Assert.Equal(DbWerte.KOND_NUTZUNG_BUERO, ZonenplanCtrl.Nutzung(zonen[2].ID));
+            Assert.Equal(RaumnutzungSaat.BUERO, ZonenplanCtrl.Nutzung(zonen[2].ID));
         }
     }
 }

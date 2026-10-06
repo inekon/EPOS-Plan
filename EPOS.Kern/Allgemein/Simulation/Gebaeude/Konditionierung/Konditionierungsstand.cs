@@ -34,15 +34,30 @@ namespace WindowsFormsApplication1
         /// <summary>Keine Herkunft, kein Vermerk.</summary>
         public static Kalenderherkunft Keine { get; } = new Kalenderherkunft(null, null);
 
-        /// <summary>Baut die Herkunft; leere Texte heißen „keine".</summary>
-        public Kalenderherkunft(string vorlage, string vermerk)
+        /// <summary>
+        /// Baut die Herkunft; leere Texte heißen „keine". <paramref name="istProfil"/> = die Herkunft ist ein
+        /// Nutzungsprofil des Katalogs (NP3c), nicht eine Konditionierungsvorlage gleichen Namens.
+        /// </summary>
+        public Kalenderherkunft(string vorlage, string vermerk, bool istProfil = false)
         {
             Vorlage = string.IsNullOrWhiteSpace(vorlage) ? null : vorlage.Trim();
             Vermerk = string.IsNullOrWhiteSpace(vermerk) ? null : vermerk.Trim();
+            IstProfil = istProfil && Vorlage != null;
         }
 
-        /// <summary>Der Name der zuletzt übernommenen Vorlage; <c>null</c> = keine.</summary>
+        /// <summary>
+        /// Der Name der zuletzt übernommenen Vorlage — bei <see cref="IstProfil"/> der Name des übernommenen
+        /// Nutzungsprofils; <c>null</c> = keine.
+        /// </summary>
         public string Vorlage { get; }
+
+        /// <summary>
+        /// <b>Die Art der Herkunft</b> (NP3c): <c>true</c> = ein übernommenes Nutzungsprofil („aus Nutzungsprofil …"),
+        /// <c>false</c> = eine Konditionierungsvorlage („aus Vorlage …"). Drei EPOS-Muster tragen mit Absicht den Namen
+        /// einer Vorlage; erst die Art bezeichnet die Herkunft eindeutig — der OK-Weg nimmt danach die Nutzung des
+        /// Profils, nicht die der gleichnamigen Vorlage.
+        /// </summary>
+        public bool IstProfil { get; }
 
         /// <summary>Der Vermerk des zuletzt angewandten Werkzeugs; <c>null</c> = keiner.</summary>
         public string Vermerk { get; }
@@ -51,7 +66,7 @@ namespace WindowsFormsApplication1
         public bool IstLeer => Vorlage == null && Vermerk == null;
 
         /// <summary>Dieselbe Herkunft mit einem neuen Vermerk — der Weg der Werkzeuge (B8).</summary>
-        public Kalenderherkunft MitVermerk(string vermerk) => new Kalenderherkunft(Vorlage, vermerk);
+        public Kalenderherkunft MitVermerk(string vermerk) => new Kalenderherkunft(Vorlage, vermerk, IstProfil);
 
         /// <summary>
         /// <b>Die Spalte <c>Bemerkung</c></b>: „aus Vorlage Büro · Zeitfenster …", nur die Herkunft,
@@ -61,7 +76,9 @@ namespace WindowsFormsApplication1
         {
             string herkunft = Vorlage == null
                 ? null
-                : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_HERKUNFT_VORLAGE, Vorlage);
+                : string.Format(CultureInfo.CurrentCulture,
+                                IstProfil ? MyResource.Resource.RNP_MSG_HERKUNFT_PROFIL : MyResource.Resource.KOND_MSG_HERKUNFT_VORLAGE,
+                                Vorlage);
             string text = herkunft == null ? Vermerk : Vermerk == null ? herkunft : herkunft + TRENNER + Vermerk;
             if (text == null) return null;
             return text.Length <= KonditionierungSchema.BEMERKUNG_MAX_ZEICHEN
@@ -78,7 +95,7 @@ namespace WindowsFormsApplication1
         public static Kalenderherkunft AusBemerkung(string bemerkung)
         {
             if (string.IsNullOrWhiteSpace(bemerkung)) return Keine;
-            foreach (string satz in Herkunftssaetze())
+            foreach ((string satz, bool profil) in Herkunftssaetze())
             {
                 int platz = satz.IndexOf("{0}", StringComparison.Ordinal);
                 if (platz < 0) continue;
@@ -96,38 +113,43 @@ namespace WindowsFormsApplication1
                 }
                 if (nach.Length > 0 && rest.EndsWith(nach, StringComparison.Ordinal))
                     rest = rest.Substring(0, rest.Length - nach.Length);
-                return new Kalenderherkunft(rest, vermerk);
+                return new Kalenderherkunft(rest, vermerk, profil);
             }
             return new Kalenderherkunft(null, bemerkung);
         }
 
-        /// <summary>Der Satz der Herkunft in beiden Sprachen der Oberfläche — die aktuelle zuerst.</summary>
-        private static IEnumerable<string> Herkunftssaetze()
+        /// <summary>
+        /// Die Sätze der Herkunft in beiden Sprachen der Oberfläche — die aktuelle zuerst; je Sprache der Satz des
+        /// Nutzungsprofils (NP3c) vor dem der Vorlage.
+        /// </summary>
+        private static IEnumerable<(string Satz, bool Profil)> Herkunftssaetze()
         {
             var gesehen = new HashSet<string>(StringComparer.Ordinal);
             foreach (CultureInfo k in new[]
                      {
                          CultureInfo.CurrentUICulture, CultureInfo.GetCultureInfo("de-DE"), CultureInfo.GetCultureInfo("en-US")
                      })
-            {
-                string s = null;
-                try { s = MyResource.Resource.ResourceManager.GetString("KOND_MSG_HERKUNFT_VORLAGE", k); }
-                catch (Exception) { s = null; }
-                if (!string.IsNullOrEmpty(s) && gesehen.Add(s)) yield return s;
-            }
+                foreach ((string schluessel, bool profil) in new[] { ("RNP_MSG_HERKUNFT_PROFIL", true), ("KOND_MSG_HERKUNFT_VORLAGE", false) })
+                {
+                    string s = null;
+                    try { s = MyResource.Resource.ResourceManager.GetString(schluessel, k); }
+                    catch (Exception) { s = null; }
+                    if (!string.IsNullOrEmpty(s) && gesehen.Add(s)) yield return (s, profil);
+                }
         }
 
         /// <inheritdoc/>
         public bool Equals(Kalenderherkunft other)
             => other != null && string.Equals(Vorlage, other.Vorlage, StringComparison.Ordinal)
-               && string.Equals(Vermerk, other.Vermerk, StringComparison.Ordinal);
+               && string.Equals(Vermerk, other.Vermerk, StringComparison.Ordinal) && IstProfil == other.IstProfil;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => Equals(obj as Kalenderherkunft);
 
         /// <inheritdoc/>
         public override int GetHashCode()
-            => StringComparer.Ordinal.GetHashCode(Vorlage ?? "") ^ StringComparer.Ordinal.GetHashCode(Vermerk ?? "");
+            => StringComparer.Ordinal.GetHashCode(Vorlage ?? "") ^ StringComparer.Ordinal.GetHashCode(Vermerk ?? "")
+               ^ (IstProfil ? 0x5f3759df : 0);
 
         /// <summary>Die Bemerkung als Kurzfassung.</summary>
         public override string ToString() => Bemerkung() ?? "—";
@@ -651,8 +673,12 @@ namespace WindowsFormsApplication1
     /// <param name="Name">Der Name — er wird Herkunft („aus Vorlage …").</param>
     /// <param name="Groesse">Die eine Größe der Vorlage.</param>
     /// <param name="Inhalt">Vorgabezellen und höchstens ein Kalender der Größe.</param>
+    /// <param name="AusProfil">
+    /// Die Vorlage hat der Generator aus einem Nutzungsprofil erzeugt (NP3c): Die Herkunft des übernommenen Kalenders
+    /// nennt dann das Profil („aus Nutzungsprofil …", <see cref="Kalenderherkunft.IstProfil"/>), nicht eine Vorlage.
+    /// </param>
     public sealed record Konditionierungsvorlage(long Id, string Name, Konditionierungsgroesse Groesse,
-                                                 Konditionierungsstand Inhalt);
+                                                 Konditionierungsstand Inhalt, bool AusProfil = false);
 
     /// <summary>Was ein Rückfragebefund zählt — dieselbe Reihenfolge wie <c>KonditionierungPostenart</c> der Oberfläche.</summary>
     public enum Konditionierungspostenart

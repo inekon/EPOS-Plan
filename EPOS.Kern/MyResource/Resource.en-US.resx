@@ -46385,5 +46385,38 @@ chart</value>
   <data name="GEB_NL_LAEUFT" xml:space="preserve">
     <value>Reading the file …</value>
   </data>
+  <data name="RNP_KI_KATEGORIE_NAME" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="RNP_KI_KATEGORIE_ERL" xml:space="preserve">
+    <value>The category of the profile selected on the “Usage profiles” sheet (read-only); it is changed in the catalogue tree.</value>
+  </data>
+  <data name="RNP_KI_PROFILWERT_ERL" xml:space="preserve">
+    <value>{0} of the profile selected on the “Usage profiles” sheet; empty = no value. The draft in the editor is set; it reaches the catalogue only with “Save”. A profile that is part of the delivery is read-only.</value>
+  </data>
+  <data name="RNP_KI_WOCHE_ERL" xml:space="preserve">
+    <value>The days of use per week of the selected profile as seven digits 0/1, Monday to Sunday (for example 1111100); empty = not given. The draft in the editor is set; it reaches the catalogue only with “Save”.</value>
+  </data>
+  <data name="RNP_KI_LUFT_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the outdoor air of the selected profile: 1/h (air change rate) or m³/(h·m²) (volume flow per area, converted with the clear height of the target). The draft in the editor is set; it reaches the catalogue only with “Save”.</value>
+  </data>
+  <data name="RNP_KI_LUFT_ERL" xml:space="preserve">
+    <value>The unit is given by the field “Outdoor air unit” (np_luft_einheit).</value>
+  </data>
+  <data name="RNP_KI_LUFT_EINHEIT_FALSCH" xml:space="preserve">
+    <value>Outdoor air is given in {0} or {1}.</value>
+  </data>
+  <data name="RNP_KI_ZUORDNUNG_NAME" xml:space="preserve">
+    <value>Assignment</value>
+  </data>
+  <data name="RNP_KI_ZUORDNUNG_ERL" xml:space="preserve">
+    <value>{0} of a row of the assignment table on the “Usage profiles” sheet (read-only, identified by its number from 1). Choosing a profile, adding and deleting rows write to the catalogue at once and remain clicks of the user.</value>
+  </data>
+  <data name="RNP_KI_OHNE_BLATT" xml:space="preserve">
+    <value>The “Usage profiles” sheet is not open — choose the “Usage profiles…” button first.</value>
+  </data>
+  <data name="RNP_MSG_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>from usage profile {0}</value>
+  </data>
 </root>
 

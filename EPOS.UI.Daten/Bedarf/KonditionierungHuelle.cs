@@ -110,6 +110,7 @@ namespace WindowsFormsApplication1
                 Nennwert = k.Nennwert,
                 Vorlage = h?.Vorlage,
                 Vermerk = h?.Vermerk,
+                HerkunftProfil = h?.IstProfil == true,
             };
             Angabe(k.Grundangabe, anteil, out KonditionierungAngabe art, out double? wert, out double[] woche, out _);
             d.Angabe = art;
@@ -258,7 +259,8 @@ namespace WindowsFormsApplication1
                     e = e.MitVorgabe(g, zeile, c);
                 }
                 if (s.Kalender?.Zustand == KonditionierungZustand.Angelegt)
-                    e = e.MitKalender(g, Kalender(s.Kalender, g), new Kalenderherkunft(s.Kalender.Vorlage, s.Kalender.Vermerk));
+                    e = e.MitKalender(g, Kalender(s.Kalender, g), new Kalenderherkunft(s.Kalender.Vorlage, s.Kalender.Vermerk,
+                                                                                         s.Kalender.HerkunftProfil));
             }
             return e;
         }

@@ -8,6 +8,9 @@ namespace WindowsFormsApplication1
     /// Büroprofile → BUERO, Schulprofile → SCHULE, Wohnprofile → WOHNEN, jede andere Nummer → keine Nutzung (die Nummer
     /// steht im Beleg). Sprachneutral; ausgewiesen mit Nummer und Normname in
     /// <c>Referenzlaeufe/Importproben/LIESMICH_Importproben.md</c>.
+    /// <para><b>Vorgabe im Code</b> (Konzept Nutzungsprofile NP-F12): Vorrang hat die Zuordnung <c>DIN_NUMMER</c> in
+    /// <c>Tab_Raumnutzungszuordnung</c>; diese Tabelle gilt nur, wenn dort keine Zeile steht oder kein Katalog vorliegt
+    /// (<see cref="Raumnutzungsvorbelegung"/>).</para>
     /// </summary>
     internal static class Din18599Nutzung
     {

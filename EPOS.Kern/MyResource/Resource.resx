@@ -46392,5 +46392,38 @@ Chart</value>
   <data name="GEB_NL_LAEUFT" xml:space="preserve">
     <value>Die Datei wird gelesen …</value>
   </data>
+  <data name="RNP_KI_KATEGORIE_NAME" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="RNP_KI_KATEGORIE_ERL" xml:space="preserve">
+    <value>Die Kategorie des im Blatt „Nutzungsprofile“ gewählten Profils (nur lesbar); gewechselt wird sie im Katalogbaum.</value>
+  </data>
+  <data name="RNP_KI_PROFILWERT_ERL" xml:space="preserve">
+    <value>{0} des im Blatt „Nutzungsprofile“ gewählten Profils; leer = kein Wert. Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“. Ein ausgeliefertes Profil ist schreibgeschützt.</value>
+  </data>
+  <data name="RNP_KI_WOCHE_ERL" xml:space="preserve">
+    <value>Die Nutzungstage der Woche des gewählten Profils als sieben Ziffern 0/1, Montag bis Sonntag (etwa 1111100); leer = keine Angabe. Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“.</value>
+  </data>
+  <data name="RNP_KI_LUFT_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der Außenluft des gewählten Profils: 1/h (Luftwechsel) oder m³/(h·m²) (Volumenstrom je Fläche, mit der lichten Höhe des Ziels umgerechnet). Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“.</value>
+  </data>
+  <data name="RNP_KI_LUFT_ERL" xml:space="preserve">
+    <value>Die Einheit nennt das Feld „Einheit der Außenluft“ (np_luft_einheit).</value>
+  </data>
+  <data name="RNP_KI_LUFT_EINHEIT_FALSCH" xml:space="preserve">
+    <value>Die Außenluft steht in {0} oder {1}.</value>
+  </data>
+  <data name="RNP_KI_ZUORDNUNG_NAME" xml:space="preserve">
+    <value>Zuordnung</value>
+  </data>
+  <data name="RNP_KI_ZUORDNUNG_ERL" xml:space="preserve">
+    <value>{0} einer Zeile der Zuordnungstabelle im Blatt „Nutzungsprofile“ (nur lesbar, Kennzeichen die Nummer ab 1). Profilwahl, neue Zeile und Löschen schreiben sofort in den Katalog und bleiben Klicks des Anwenders.</value>
+  </data>
+  <data name="RNP_KI_OHNE_BLATT" xml:space="preserve">
+    <value>Das Blatt „Nutzungsprofile“ ist nicht geöffnet — zuerst den Knopf „Nutzungsprofile…“ wählen.</value>
+  </data>
+  <data name="RNP_MSG_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>aus Nutzungsprofil {0}</value>
+  </data>
 </root>
 

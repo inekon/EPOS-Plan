@@ -267,7 +267,7 @@ namespace WindowsFormsApplication1
                         if (stand?.Herkunft(groesse)?.Bemerkung() is string text) b[groesse] = text;
                     vermerke[z.ID] = b;
                 }
-                if (ZonenplanCtrl.Nutzung(z.ID) is string nutzung) nutzungen[z.ID] = nutzung;
+                if (ZonenplanCtrl.Zonennutzung(z.ID) is string nutzung) nutzungen[z.ID] = nutzung;
             }
 
             // Die Ergebnisse des letzten Laufs (G7c, Teil 2) über den Leser der Ergebnisseite.

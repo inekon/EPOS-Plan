@@ -464,6 +464,19 @@ namespace EPOS.Kern.Tests
                                    ? x.Substring(0, x.Length - kennung.Length) + profil
                                    : x);
 
+        /// <summary>
+        /// Die Herkunft der Kalender am Ziel (NP3c): „aus Vorlage X" → „aus Nutzungsprofil X" — die Herkunft nennt ihrer
+        /// Art nach das Profil; alle übrigen Zeilen bleiben, wie sie sind.
+        /// </summary>
+        private static List<string> HerkunftUmbenannt(IEnumerable<string> zeilen, string ziel, string profil)
+        {
+            string vorlage = "|" + new Kalenderherkunft(profil, null).Bemerkung();
+            string ausProfil = "|" + new Kalenderherkunft(profil, null, istProfil: true).Bemerkung();
+            return zeilen.Select(x => x.StartsWith("K " + ziel + "|", StringComparison.Ordinal) && x.EndsWith(vorlage, StringComparison.Ordinal)
+                                      ? x.Substring(0, x.Length - vorlage.Length) + ausProfil
+                                      : x).ToList();
+        }
+
         [Theory]
         [InlineData(RaumnutzungSaat.WOHNEN, DbWerte.KOND_NUTZUNG_WOHNEN)]
         [InlineData(RaumnutzungSaat.BUERO, DbWerte.KOND_NUTZUNG_BUERO)]
@@ -484,7 +497,7 @@ namespace EPOS.Kern.Tests
             Assert.All(u.Posten.Where(x => x.Uebernommen), x => Assert.Equal(Raumnutzungsweg.Zeilenbild, x.Weg));
             var va = Konditionierung(a.Gebaeude);
             var vb = Konditionierung(b.Gebaeude);
-            Gleich(va.Zeilen, vb.Zeilen, profil + " an der Zone");
+            Gleich(HerkunftUmbenannt(va.Zeilen, ZONE, profil), vb.Zeilen, profil + " an der Zone");
             Assert.Equal(Umbenannt(va.Nutzung, ZONE, kennung, profil), vb.Nutzung);
             Assert.Contains(vb.Nutzung, x => x.StartsWith(ZONE + "|", StringComparison.Ordinal) && x.EndsWith("|" + profil, StringComparison.Ordinal));
             Assert.Equal(profil, Convert.ToString(DataRepository.ExecuteScalar("SELECT Nutzungsprofil FROM Tab_Zone WHERE ID = ?",
@@ -497,7 +510,7 @@ namespace EPOS.Kern.Tests
             Assert.True(u.Ok, u.Meldung);
             var ka = Konditionierung(ga.Gebaeude);
             var kb = Konditionierung(gb.Gebaeude);
-            Gleich(ka.Zeilen, kb.Zeilen, profil + " am Gebäude");
+            Gleich(HerkunftUmbenannt(ka.Zeilen, "—", profil), kb.Zeilen, profil + " am Gebäude");
             Assert.Equal(Umbenannt(ka.Nutzung, "—", kennung, profil), kb.Nutzung);
         }
 

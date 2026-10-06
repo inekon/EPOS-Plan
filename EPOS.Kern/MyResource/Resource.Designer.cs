@@ -88428,6 +88428,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie des im Blatt „Nutzungsprofile“ gewählten Profils (nur lesbar); gewechselt wird sie im Katalogbaum. ähnelt.
+        /// </summary>
+        public static string RNP_KI_KATEGORIE_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_KATEGORIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie ähnelt.
+        /// </summary>
+        public static string RNP_KI_KATEGORIE_NAME {
+            get {
+                return ResourceManager.GetString("RNP_KI_KATEGORIE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit der Außenluft des gewählten Profils: 1/h (Luftwechsel) oder m³/(h·m²) (Volumenstrom je Fläche, mit der lichten Höhe des Ziels umgerechnet). Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“. ähnelt.
+        /// </summary>
+        public static string RNP_KI_LUFT_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_LUFT_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Außenluft steht in {0} oder {1}. ähnelt.
+        /// </summary>
+        public static string RNP_KI_LUFT_EINHEIT_FALSCH {
+            get {
+                return ResourceManager.GetString("RNP_KI_LUFT_EINHEIT_FALSCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit nennt das Feld „Einheit der Außenluft“ (np_luft_einheit). ähnelt.
+        /// </summary>
+        public static string RNP_KI_LUFT_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_LUFT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt „Nutzungsprofile“ ist nicht geöffnet — zuerst den Knopf „Nutzungsprofile…“ wählen. ähnelt.
+        /// </summary>
+        public static string RNP_KI_OHNE_BLATT {
+            get {
+                return ResourceManager.GetString("RNP_KI_OHNE_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} des im Blatt „Nutzungsprofile“ gewählten Profils; leer = kein Wert. Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“. Ein ausgeliefertes Profil ist schreibgeschützt. ähnelt.
+        /// </summary>
+        public static string RNP_KI_PROFILWERT_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_PROFILWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungstage der Woche des gewählten Profils als sieben Ziffern 0/1, Montag bis Sonntag (etwa 1111100); leer = keine Angabe. Gesetzt wird der Entwurf im Editor, in den Katalog geht er erst mit „Speichern“. ähnelt.
+        /// </summary>
+        public static string RNP_KI_WOCHE_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_WOCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das zuletzt übernommene Nutzungsprofil der Zone (Name als Kopie, keine Verknüpfung zum Katalog); leer = keines. Übernommen wird über „Nutzungsprofil übernehmen…“ mit Rückfrage, geschrieben mit OK. ähnelt.
         /// </summary>
         public static string RNP_KI_ZONE_PROFIL_ERL {
@@ -88442,6 +88514,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_KI_ZONE_PROFIL_NAME {
             get {
                 return ResourceManager.GetString("RNP_KI_ZONE_PROFIL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} einer Zeile der Zuordnungstabelle im Blatt „Nutzungsprofile“ (nur lesbar, Kennzeichen die Nummer ab 1). Profilwahl, neue Zeile und Löschen schreiben sofort in den Katalog und bleiben Klicks des Anwenders. ähnelt.
+        /// </summary>
+        public static string RNP_KI_ZUORDNUNG_ERL {
+            get {
+                return ResourceManager.GetString("RNP_KI_ZUORDNUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung ähnelt.
+        /// </summary>
+        public static string RNP_KI_ZUORDNUNG_NAME {
+            get {
+                return ResourceManager.GetString("RNP_KI_ZUORDNUNG_NAME", resourceCulture);
             }
         }
         
@@ -89009,6 +89099,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_LBL_ZUART_IFC {
             get {
                 return ResourceManager.GetString("RNP_LBL_ZUART_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Nutzungsprofil {0} ähnelt.
+        /// </summary>
+        public static string RNP_MSG_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_MSG_HERKUNFT_PROFIL", resourceCulture);
             }
         }
         

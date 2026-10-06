@@ -1,6 +1,6 @@
 # Protokoll HC-4 — „Datei erneut lesen…“ im Gebäudedialog (06.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeile **#749**. Ein Opus-Agent im Worktree: `9a1198f7` Kern liest die Importdatei erneut, ohne zu schreiben; `afd6c9e2` Knopf im Gebäudedialog samt Hülle. Merge `768217eb` (ohne Konflikt; Designerprüfung danach grün). Kein Schemaschritt, keine Persistenz der Geometrie, Basis unverändert.
+**Sitzung:** IFC / Gebäudeimport, Statuszeile **#754**. Ein Opus-Agent im Worktree: `9a1198f7` Kern liest die Importdatei erneut, ohne zu schreiben; `afd6c9e2` Knopf im Gebäudedialog samt Hülle. Merge `768217eb` (ohne Konflikt; Designerprüfung danach grün). Kein Schemaschritt, keine Persistenz der Geometrie, Basis unverändert.
 **Entscheid:** E87 (F3); Konzept [HottCAD-Verbund](../../../aktuell/Gebaeudesimulation/2026-10-05_Konzept_HottCAD_Verbund_IFC_Projektdatei_Viewer.md) 4 und Welle 6.5; Vorwelle [HC-2](2026-10-06_HC-2_Farbmodus_Randbedingung.md).
 
 ## 1 Auftrag
@@ -38,7 +38,7 @@ Die Ansicht eines importierten Gebäudes soll sich aus der Importdatei erneut ze
 
 Kern-Filter und Windows-Schale (Linux) je 0 Fehler. Filter samt Wachen: EPOS.Kern.Tests 361/361, EPOS.UI.Tests 339/339. 23 neue Tests: 8 Kern ohne Datenbank, 2 Kern mit Datenbank, 9 Hülle, 4 bunit.
 
-## 6 Gate 749
+## 6 Gate 754
 
 Hauptbaum, Kopf `768217eb`: 19 815 Tests, 19 811 grün, 4 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 582, EPOS.Kern 11 259 mit 3 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-05_R38_Vorlaufwahl` PASS, 0 Abweichungen, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 432 Texte, 0 Fundstellen (gefahren als Ablage GATE748, 48 min).
 

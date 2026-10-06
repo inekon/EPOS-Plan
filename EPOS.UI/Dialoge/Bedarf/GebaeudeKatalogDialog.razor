@@ -789,7 +789,7 @@
             @if (_nutzungsblatt)
             {
                 <RaumnutzungBlatt Katalogweg="@Raumnutzung" Texte="@RaumnutzungTexte"
-                                  GroessenTexte="@KonditionierungTexte"
+                                  GroessenTexte="@KonditionierungTexte" KiZugang="@_raumnutzungKi"
                                   JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
             }
         </KindInhalt>
@@ -1677,6 +1677,12 @@
     private GebaeudeKatalogKiSicht? _kiSicht;
 
     /// <summary>
+    /// Der Zugang des Assistenten zum Blatt „Nutzungsprofile" (NP3c): Das Blatt bindet sich beim Erscheinen
+    /// an und löst sich beim Schließen; die Sicht beantwortet darüber die Felder <c>np_*</c>.
+    /// </summary>
+    private readonly RaumnutzungKiZugang _raumnutzungKi = new();
+
+    /// <summary>
     /// Die Sicht des Assistenten. Beide Reiterblätter greifen auf den ARBEITSSTAND zu — er
     /// wird beim Namenswechsel ausgetauscht, deshalb Delegaten und keine Instanz. Gebaut
     /// wird sie vom Arbeitsstand selbst (<see cref="GebaeudeArbeitsstand.KiSicht"/>) —
@@ -1707,7 +1713,9 @@
             Ferienname = Ferienname,
             Texte = Texte,
             // Stufe KP2, Welle U1: die Vorgabe-Matrix über die Bearbeitung des Reiters.
-            Konditionierung = _kond
+            Konditionierung = _kond,
+            // NP3c: das Blatt „Nutzungsprofile" - Entwurf des Profileditors und Zuordnungszeilen.
+            Nutzungsprofile = _raumnutzungKi
         });
     }
 
@@ -1728,7 +1736,10 @@
     /// die Listen mit an.
     /// </summary>
     private (string Feld, Func<IReadOnlyList<KiWahleintrag>> Eintraege)[] KiVorlagenlisten()
-        => KonditionierungKiTafel.Vorlagenlisten(() => _kond);
+        => KonditionierungKiTafel.Vorlagenlisten(() => _kond)
+           .Append((KiNutzungsprofilfelder.LUFT_EINHEIT,
+                    (Func<IReadOnlyList<KiWahleintrag>>)(() => KiNutzungsprofilfelder.Lufteinheiten)))
+           .ToArray();
 
     /// <summary>Der Name BENENNT den Satz, der geschrieben wird.</summary>
     private void KiNameSetzen(string wert) => _stand.Name = wert ?? "";
