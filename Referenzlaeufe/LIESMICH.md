@@ -803,6 +803,15 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `882376e1c7b99359230864c9f5bbfd162ac7b5cbcd3d1e1d0a8740891d72b57d`**. **Die Basis bleibt:** Kein Rechenweg liest die
 > Zuordnung, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT PASS, 646 CSV byte-gleich.
 
+> **Nachtrag — Zuordnung DIN nach der Zählung 2025 in Schritt 190 (E96), Basis unverändert.** HottCAD zählt die
+> DIN-Profile nach der DIN/TS 18599-10:2025-10 (Anwender, 06.10.2026): Die ausgelieferte Zuordnung `DIN_NUMMER` führt
+> 30, 31 → Schule, 33, 37 → Sport und 43 → Lager; Schritt 190 stellt die Zeilen der Zählung 2018 (28, 29, 31, 35, 41) auf
+> den Schlüssel derselben Nutzung in 2025 (Ids und Profile bleiben). Saat weiter 27 Zuordnungen, davon 18 `DIN_NUMMER`.
+> Die Testdatenbank steht weiter auf **190** (`Werkzeuge/Testdatenbankschema`, die Umstellung lief über Schritt 189;
+> `integrity_check` ok, `foreign_key_check` leer): **87 801 856 Byte, LFS-SHA-256
+> `2fec4f1484b7f0bf27fe25bec9b2ed00c3c00d2e9d83a66aa4d9ca9193b3ee85`**. **Die Basis bleibt:** Kein Rechenweg liest die
+> Zuordnung, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT PASS, 646 CSV byte-gleich.
+
 ### Die Vorgängerbasis R37 (Fahrplan)
 
 Einundzwanzig Projekte, 646 CSV, 4 265 Skalare, auf Linux eingefroren gegen die Testdatenbank `63b0bdae…` (Schemastand
