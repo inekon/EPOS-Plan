@@ -187,6 +187,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Die Berichtskennzahl Jahresarbeitszahl rechnet die Heizstabwärme mit. (#749; Version bestätigt der Anwender beim Upload)
 - Im Reiter Energieerzeuger der Startseite ersetzt die Kachel ‚Kühlung‘ den Knopf ‚Kältemaschinen…‘; sie zeigt die Kältemaschinen des Projekts und schaltet den Kühlbetrieb der Wärmepumpen mit Kühlfunktion direkt. (#758; Version bestätigt der Anwender beim Upload)
 - Der Dialog Wärmequelle Erdreich prüft die Auslegung nach VDI 4640 Blatt 2 schon vor dem ersten Simulationslauf als Vorprüfung aus Heizleistung und COP der Wärmepumpe. (#759; Version bestätigt der Anwender beim Upload)
+- Ein ohne Schloss ausgelieferter Katalogsatz, den eine neue Programmfassung gesperrt mitbringt, wird beim Katalogabgleich an Ihren gleichnamigen Satz angebunden, übernimmt den Auslieferungsstand und wird künftig nachgeführt. (#763; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
