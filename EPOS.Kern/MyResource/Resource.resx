@@ -46380,5 +46380,41 @@ Chart</value>
   <data name="RNP_MSG_HERKUNFT_PROFIL" xml:space="preserve">
     <value>aus Nutzungsprofil {0}</value>
   </data>
+  <data name="RNP_IMP_NICHT_IM_KATALOG" xml:space="preserve">
+    <value>{0} (nicht im Katalog)</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_IFC" xml:space="preserve">
+    <value>aus IFC-Klasse {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_DIN" xml:space="preserve">
+    <value>aus DIN-Nr. {0} der Projektdatei</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMTYP" xml:space="preserve">
+    <value>aus Raumtyp {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_DATEI" xml:space="preserve">
+    <value>aus der Nutzung der Datei</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_GESPEICHERT" xml:space="preserve">
+    <value>aus dem früheren Import</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="RNP_IMP_AUS_DATEI" xml:space="preserve">
+    <value>{0} aus der Datei</value>
+  </data>
+  <data name="RNP_IMP_UND" xml:space="preserve">
+    <value>und</value>
+  </data>
+  <data name="RNP_IMP_EINZONE_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag aus DIN-Nr. {0}: {1} — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“</value>
+  </data>
+  <data name="KOND_LBL_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>Nutzungsprofil {0}</value>
+  </data>
+  <data name="KOND_TXT_ZUSTAND_PROFIL" xml:space="preserve">
+    <value>aus Nutzungsprofil {0}</value>
+  </data>
 </root>
 
