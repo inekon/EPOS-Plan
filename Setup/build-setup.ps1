@@ -61,6 +61,27 @@
 .PARAMETER VorlageNurPruefen
     Ruft das Vorlagenwerkzeug mit --trocken auf: Es rechnet und meldet, schreibt
     aber nichts. Nur sinnvoll zusammen mit einer bereits vorhandenen Vorlage.
+    Geprueft werden dann auch das vorhandene Katalogpaket (Setup\Vorlage\
+    Katalogpaket.json: Format und Fassung im Kopf) und die Fassung des
+    Katalogpakets gegen das Freigaberegister; ins Register schreibt er nichts.
+
+.PARAMETER Katalogfassung
+    Die Fassung des Katalogpakets als JJJJMMTTnn (Datum und Tageslauf, Konzept
+    Setup 6.5.4 E1), z. B. 2026100601. Ersatzweise die Umgebungsvariable
+    EPOS_KATALOGFASSUNG. Ohne Angabe schlaegt das Skript den naechsten Wert aus dem
+    Freigaberegister Setup\Katalogfassungen.txt vor: den ersten Tageslauf des
+    heutigen Datums oder, wenn heute schon freigegeben wurde, den naechsten. Die
+    Fassung geht als --katalogfassung an Werkzeuge\Auslieferungsvorlage. Sie muss
+    groesser sein als jede Fassung im Register und als die heutige Datumsfassung
+    JJJJMMTT; sonst bricht das Skript ab (ausser mit -Probe).
+
+.PARAMETER Probe
+    Probelauf: Die Fassung des Katalogpakets wird nicht gegen das Register
+    gehalten, und ins Register wird nichts geschrieben. Ohne -Probe traegt das
+    Skript nach einem vollstaendig erfolgreichen Lauf (Setup uebersetzt und, wenn
+    verlangt, signiert) Fassung, Datum und Programmversion als neue Zeile in
+    Setup\Katalogfassungen.txt ein. Committet wird die Zeile wie jede Aenderung
+    nur auf Auftrag. Der CI-Setup-Lauf ist immer ein Probelauf.
 
 .PARAMETER SkipPublish
     Überspringt die Veröffentlichung und übersetzt nur das Setup — praktisch,
@@ -116,6 +137,8 @@ param(
     [string[]] $Beispiele,
     [ValidateSet('readonly', 'alle')] [string] $Kataloge = 'alle',
     [switch] $VorlageNurPruefen,
+    [string] $Katalogfassung,
+    [switch] $Probe,
     [switch] $SkipPublish,
     [switch] $Schnell,
     [string] $Iscc,
@@ -138,6 +161,8 @@ $PublishDir = Join-Path $RepoDir 'artifacts\publish\win-x64'   # muss zu #define
 $IssDatei   = Join-Path $SetupDir 'EPOS-Plan.iss'
 $AusgabeDir = Join-Path $SetupDir 'Ausgabe'
 $VorlageDb  = Join-Path $SetupDir 'Vorlage\Kenndaten.sqlite'   # muss zu #define VorlageDb passen
+$Katalogpaket = Join-Path $SetupDir 'Vorlage\Katalogpaket.json' # muss zu #define Katalogpaket passen
+$Freigaberegister = Join-Path $SetupDir 'Katalogfassungen.txt' # Fassungen des Katalogpakets (Konzept 6.5.4 E4)
 $VorlageWerkzeug = Join-Path $RepoDir 'Werkzeuge\Auslieferungsvorlage'
 $VdiOrdner  = Join-Path $RepoDir  'VDI-3805-Daten'            # muss zu #define HerstellerdatenDir passen
 $WvZiel     = Join-Path $SetupDir 'Voraussetzungen\MicrosoftEdgeWebview2Setup.exe'
@@ -208,6 +233,144 @@ Datei, die das Setup nach {app}\Vorlage legt (Konzept, Abschnitt 6.1).
 "@
 }
 Hinweis "Vorlagenquelle: $Quelldatenbank"
+
+# ---------------------------------------------------------------------------
+#  Fassung des Katalogpakets und Freigaberegister (Konzept 6.5.4, E1 und E4)
+# ---------------------------------------------------------------------------
+#
+# Die Fassung des Katalogpakets zaehlt als JJJJMMTTnn (Datum und Tageslauf). Sie
+# ist eine andere Zahl als die Katalogfassung der Word-Vorlagen. Das Register
+# Setup\Katalogfassungen.txt haelt jede freigegebene Fassung; eine neue muss
+# groesser sein als jede eingetragene und als die heutige Datumsfassung JJJJMMTT
+# (die Vorgabe des Werkzeugs ohne --katalogfassung), damit der Abgleich beim
+# Anwender sie als neuer erkennt.
+
+function FreigaberegisterLesen([string] $Datei) {
+    # Eine Zeile je Freigabe: "<JJJJMMTTnn> <JJJJ-MM-TT> <Programmversion>"; Leerzeilen
+    # und Zeilen mit # vorn sind Kommentar. Die Fassungen wachsen streng.
+    if (-not (Test-Path $Datei)) { throw "Freigaberegister der Katalogfassung nicht gefunden: $Datei" }
+    $fassungen = New-Object System.Collections.Generic.List[long]
+    $nr = 0
+    foreach ($zeile in (Get-Content $Datei -Encoding UTF8)) {
+        $nr++
+        $z = $zeile.Trim()
+        if ($z -eq '' -or $z.StartsWith('#')) { continue }
+        if ($z -notmatch '^(\d{10})\s+(\d{4}-\d{2}-\d{2})\s+(\S+)$') {
+            throw "Freigaberegister ${Datei}, Zeile ${nr}: unlesbar ('$z'), erwartet '<JJJJMMTTnn> <JJJJ-MM-TT> <Programmversion>'."
+        }
+        $f = [long] $Matches[1]
+        if ($fassungen.Count -gt 0 -and $f -le $fassungen[$fassungen.Count - 1]) {
+            throw "Freigaberegister ${Datei}, Zeile ${nr}: Fassung $f ist nicht groesser als die vorige ($($fassungen[$fassungen.Count - 1]))."
+        }
+        $fassungen.Add($f)
+    }
+    return ,$fassungen
+}
+
+function KatalogfassungLesen([string] $Roh) {
+    # JJJJMMTTnn: gueltiges Datum, Tageslauf 01 bis 99, passt in den Ganzzahltyp von
+    # Werkzeug und Kern (Tab_Applikation.Katalogfassung, int).
+    if ($Roh -notmatch '^\d{10}$') {
+        throw "Fassung des Katalogpakets '$Roh' ist nicht von der Form JJJJMMTTnn (z. B. 2026100601)."
+    }
+    $datum = [datetime]::MinValue
+    if (-not [datetime]::TryParseExact($Roh.Substring(0, 8), 'yyyyMMdd',
+            [System.Globalization.CultureInfo]::InvariantCulture,
+            [System.Globalization.DateTimeStyles]::None, [ref] $datum)) {
+        throw "Fassung des Katalogpakets '$Roh': '$($Roh.Substring(0, 8))' ist kein Datum JJJJMMTT."
+    }
+    if ([int] $Roh.Substring(8, 2) -lt 1) {
+        throw "Fassung des Katalogpakets '$Roh': der Tageslauf zaehlt ab 01."
+    }
+    $wert = [long] $Roh
+    if ($wert -gt [int]::MaxValue) {
+        throw "Fassung des Katalogpakets '$Roh' ist groesser als $([int]::MaxValue) und passt nicht in den Ganzzahltyp."
+    }
+    return [int] $wert
+}
+
+function NaechsteKatalogfassung($Fassungen, [string] $Heute) {
+    # Erster Tageslauf von heute, oder der naechste nach der letzten Freigabe.
+    [long] $kandidat = ([long] $Heute) * 100 + 1
+    if ($Fassungen.Count -gt 0 -and $Fassungen[$Fassungen.Count - 1] -ge $kandidat) {
+        $kandidat = $Fassungen[$Fassungen.Count - 1] + 1
+        if (($kandidat % 100) -eq 0) {
+            throw "Der Tageslauf der Fassung des Katalogpakets laeuft ueber 99 (letzte Freigabe $($Fassungen[$Fassungen.Count - 1]))."
+        }
+    }
+    return KatalogfassungLesen ([string] $kandidat)
+}
+
+function KatalogfassungGegenRegister([int] $Fassung, $Fassungen, [string] $Heute) {
+    # Die Regel der Freigabe: groesser als jede eingetragene Fassung und als die
+    # heutige Datumsfassung JJJJMMTT.
+    if ($Fassungen.Count -gt 0 -and $Fassung -le $Fassungen[$Fassungen.Count - 1]) {
+        throw @"
+Die Fassung des Katalogpakets $Fassung ist nicht groesser als die zuletzt
+freigegebene ($($Fassungen[$Fassungen.Count - 1]), Setup\Katalogfassungen.txt).
+Eine Installation mit der freigegebenen Fassung gliche damit nie ab. Ohne
+-Katalogfassung schlaegt das Skript den naechsten Wert vor; fuer einen Lauf, der
+nicht ausgeliefert wird, gibt es -Probe.
+"@
+    }
+    if ([long] $Fassung -le [long] $Heute) {
+        throw "Die Fassung des Katalogpakets $Fassung ist nicht groesser als die heutige Datumsfassung $Heute."
+    }
+}
+
+function KatalogpaketKopf([string] $Datei) {
+    # Der Kopf des Pakets steht vorn (Format, Formatversion, Katalogfassung; das Werkzeug
+    # schreibt deterministisch) - gelesen werden nur die ersten 64 KB, nicht das ganze Paket.
+    $leser = [System.IO.StreamReader]::new($Datei, [System.Text.UTF8Encoding]::new($false))
+    try {
+        $puffer = [char[]]::new(65536)
+        $n = $leser.Read($puffer, 0, $puffer.Length)
+        $anfang = [string]::new($puffer, 0, $n)
+    }
+    finally { $leser.Dispose() }
+    if ($anfang -notmatch '"Format"\s*:\s*"EPOS-Katalogpaket"') {
+        throw "Das Katalogpaket $Datei traegt nicht das Format EPOS-Katalogpaket."
+    }
+    if ($anfang -notmatch '"Katalogfassung"\s*:\s*(\d+)') {
+        throw "Das Katalogpaket $Datei nennt keine Katalogfassung."
+    }
+    $fassung = [long] $Matches[1]
+    $formatversion = if ($anfang -match '"Formatversion"\s*:\s*(\d+)') { [int] $Matches[1] } else { 0 }
+    return [pscustomobject] @{ Fassung = $fassung; Formatversion = $formatversion }
+}
+
+function FreigabeEintragen([string] $Datei, [int] $Fassung, [string] $Programmversion) {
+    # Erst nach einem vollstaendig erfolgreichen Lauf. Das Register wird vorher noch einmal
+    # gelesen, damit ein Lauf dazwischen die Regel nicht unterlaeuft; die Zeilenenden der
+    # Datei bleiben, wie sie sind.
+    $vorher = FreigaberegisterLesen $Datei
+    KatalogfassungGegenRegister $Fassung $vorher '0'
+    $text = [System.IO.File]::ReadAllText($Datei)
+    $nl = if ($text.Contains("`r`n")) { "`r`n" } else { "`n" }
+    $datum = (Get-Date).ToString('yyyy-MM-dd', [System.Globalization.CultureInfo]::InvariantCulture)
+    $zeile = '{0}  {1}  {2}' -f $Fassung, $datum, $Programmversion
+    $vorsatz = if ($text.Length -gt 0 -and -not $text.EndsWith("`n")) { $nl } else { '' }
+    [System.IO.File]::AppendAllText($Datei, $vorsatz + $zeile + $nl, [System.Text.UTF8Encoding]::new($false))
+}
+
+$Heute = (Get-Date).ToString('yyyyMMdd', [System.Globalization.CultureInfo]::InvariantCulture)
+$RegisterFassungen = FreigaberegisterLesen $Freigaberegister
+if (-not $Katalogfassung) { $Katalogfassung = $env:EPOS_KATALOGFASSUNG }
+if ($Katalogfassung) {
+    $KatalogfassungWert = KatalogfassungLesen $Katalogfassung
+    $herkunft = 'angegeben'
+}
+else {
+    $KatalogfassungWert = NaechsteKatalogfassung $RegisterFassungen $Heute
+    $herkunft = 'aus dem Register vorgeschlagen'
+}
+if ($Probe -or $VorlageNurPruefen) {
+    Hinweis "Fassung des Katalogpakets: $KatalogfassungWert ($herkunft; Probelauf - nicht gegen das Register gehalten, kein Eintrag)"
+}
+else {
+    KatalogfassungGegenRegister $KatalogfassungWert $RegisterFassungen $Heute
+    Hinweis "Fassung des Katalogpakets: $KatalogfassungWert ($herkunft; wird nach erfolgreichem Lauf ins Register eingetragen)"
+}
 
 # Herstellerdaten (VDI 3805 und die zwei CEC-Listen). Anwenderentscheid W6-O-9 vom
 # 06.09.2026: Sie werden als eigene, vorgewaehlte Komponente ausgeliefert. Fehlt der
@@ -616,12 +779,16 @@ Schritt 'Auslieferungsvorlage erzeugen'
 
 New-Item -ItemType Directory -Force -Path (Split-Path $VorlageDb) | Out-Null
 
-# Der Trockenlauf schreibt nichts und braucht die vorhandene Datei noch.
+# Der Trockenlauf schreibt nichts und braucht die vorhandenen Dateien noch. Sonst gehen
+# Vorlage UND Katalogpaket vorher weg: Ein liegengebliebenes Paket aus einem frueheren
+# Lauf bestuende die Pruefung "vorhanden" unten sonst ebenso (Konzept 6.5.5).
 if ((-not $VorlageNurPruefen) -and (Test-Path $VorlageDb)) { Remove-Item $VorlageDb -Force }
+if ((-not $VorlageNurPruefen) -and (Test-Path $Katalogpaket)) { Remove-Item $Katalogpaket -Force }
 
 $vorlageArgs = @($Quelldatenbank, $VorlageDb)
 if ($Beispiele)          { $vorlageArgs += '--beispiele'; $vorlageArgs += $Beispiele }
 if ($Kataloge)           { $vorlageArgs += '--kataloge'; $vorlageArgs += $Kataloge }
+$vorlageArgs += '--katalogfassung'; $vorlageArgs += $KatalogfassungWert.ToString([System.Globalization.CultureInfo]::InvariantCulture)
 if ($VorlageNurPruefen)  { $vorlageArgs += '--trocken' }
 
 & dotnet run --project $VorlageWerkzeug -c Release -- @vorlageArgs
@@ -650,18 +817,28 @@ Ohne sie laesst sich das Setup nicht uebersetzen (#define VorlageDb im .iss).
     Hinweis "Auslieferungsvorlage: $vorlageMb MB in $VorlageDb"
 
     # Das Katalogpaket (KU1 Stufe 1) schreibt dasselbe Werkzeug neben die Vorlage; das .iss
-    # prueft es mit #if !FileExists(Katalogpaket).
-    $Katalogpaket = Join-Path (Split-Path $VorlageDb) 'Katalogpaket.json'
+    # prueft es mit #if !FileExists(Katalogpaket). Es muss frisch sein und die Fassung
+    # dieses Laufs tragen.
     if (-not (Test-Path $Katalogpaket)) {
         throw "Das Werkzeug meldete Erfolg, aber das Katalogpaket fehlt: $Katalogpaket"
     }
-    Hinweis "Katalogpaket: $Katalogpaket"
+    $paketKopf = KatalogpaketKopf $Katalogpaket
+    if ($paketKopf.Fassung -ne $KatalogfassungWert) {
+        throw "Das Katalogpaket traegt die Fassung $($paketKopf.Fassung), dieser Lauf aber $KatalogfassungWert - kein Setup gebaut."
+    }
+    $paketMb = [math]::Round(((Get-Item $Katalogpaket).Length / 1MB), 1)
+    Hinweis "Katalogpaket: Fassung $($paketKopf.Fassung), Formatversion $($paketKopf.Formatversion), $paketMb MB in $Katalogpaket"
 }
 else {
-    Hinweis 'Trockenlauf - die vorhandene Vorlage bleibt, wie sie ist.'
+    Hinweis 'Trockenlauf - die vorhandene Vorlage und das vorhandene Katalogpaket bleiben, wie sie sind.'
     if (-not (Test-Path $VorlageDb)) {
         throw "Trockenlauf ohne vorhandene Vorlage: $VorlageDb - ISCC braeuchte sie."
     }
+    if (-not (Test-Path $Katalogpaket)) {
+        throw "Trockenlauf ohne vorhandenes Katalogpaket: $Katalogpaket - ISCC braeuchte es."
+    }
+    $paketKopf = KatalogpaketKopf $Katalogpaket
+    Hinweis "Vorhandenes Katalogpaket: Fassung $($paketKopf.Fassung), Formatversion $($paketKopf.Formatversion)"
 }
 
 
@@ -711,6 +888,14 @@ if ($Sign) {
 # ---------------------------------------------------------------------------
 #  Ergebnis
 # ---------------------------------------------------------------------------
+
+# Freigabe der Fassung des Katalogpakets (Konzept 6.5.4 E4): erst hier, nach Uebersetzen
+# und Signieren - ein gescheiterter Lauf traegt nichts ein. Probe- und Trockenlaeufe nie.
+if (-not ($Probe -or $VorlageNurPruefen)) {
+    Schritt 'Fassung des Katalogpakets ins Freigaberegister eintragen'
+    FreigabeEintragen $Freigaberegister $KatalogfassungWert $Version
+    Hinweis "$KatalogfassungWert in $Freigaberegister eingetragen - committen nur auf Auftrag."
+}
 
 $Setup.Refresh()
 $mb = [math]::Round($Setup.Length / 1MB, 1)
