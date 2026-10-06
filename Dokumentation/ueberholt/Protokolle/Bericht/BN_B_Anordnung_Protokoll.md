@@ -130,6 +130,6 @@ Auswahl an.“ Beides folgt gebündelt mit der nächsten Sammelwelle (Konzept Hi
   vier Karten.
 - Wiki-Quelle „Berichtsvorlagen“ (Abschnitt „Vorlage auf der Berichtsseite“) und Logbuch-Satz, gebündelt mit der
   VALERI-Welle.
-- Push-SHA und CI-Kennung nach dem Push nachtragen.
+- Gepusht `ae3a48990` am 06.10.2026 im Sammelstand mit #761; Nachweis: Kern-Lauf 37503127843 auf ubuntu grün (Stand `cc9faeffc` enthält den Push).
 - Der Verweis auf `Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md` oben ist zu prüfen, sobald dieses Papier im
   Baum steht — es entstand parallel in einer anderen Sitzung.
