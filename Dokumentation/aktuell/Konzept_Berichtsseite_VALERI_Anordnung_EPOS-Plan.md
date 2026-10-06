@@ -338,7 +338,7 @@ Lesefolge (Varianten → Inhalt → Vorlage → Ausgabe → Erstellen → Ergebn
 
 | Welle | Inhalt | Stand |
 |---|---|---|
-| Konzept (dieses Papier) | Entscheide VB‑Q1–Q9, BL‑Q1–Q5 nach Empfehlung, Fachvorgabe VB, Mockups, Registereintrag R‑E32 | Statuszeile #760 |
+| Konzept (dieses Papier) | Entscheide VB‑Q1–Q9, BL‑Q1–Q5 nach Empfehlung, Fachvorgabe VB, Mockups, Registereintrag R‑E32 | Statuszeile #761 |
 | Layout B | Umsetzung Teil B, Schritte 1–5 | eigene Welle, läuft, Nummern folgen |
 | VALERI VB‑E1–E5 | Umsetzung Teil A, Fachvorgabe VB | eigene Welle, läuft, Nummern folgen |
 | VB‑E6 | Wiki-Quelle Berichtsvorlagen/Wirtschaftlichkeit, Logbuchsatz | offen, nach VB‑E1–E5, Version beim Anwender erfragen |
