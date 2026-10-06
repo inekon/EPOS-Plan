@@ -219,6 +219,12 @@
     @* --- Auslegungsprüfung -------------------------------------------------- *@
     <Gruppenkopf Titel="@GbPruefung">
         <KindInhalt>
+            @* Ohne Lauf: die VORPRUEFUNG aus Auslegungswerten, deutlich gekennzeichnet.
+               Ein Lauf ersetzt sie. *@
+            @if (_vorpruefung)
+            {
+                <p class="epos-erdreich-vorpruefung"><strong>@VorpruefungKopf</strong></p>
+            }
             @if (_pruefungWarnt)
             {
                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@_pruefung" />
@@ -332,6 +338,10 @@
     [Parameter] public string GbVorschau { get; set; } = "Jahresgang der Quelltemperatur";
     [Parameter] public string GbPruefung { get; set; } = "Auslegungsprüfung nach VDI 4640 Blatt 2";
 
+    /// <summary>Kennzeichnung der Vorprüfung ohne Lauf (<c>SIMQ_ERDREICH_VORPRUEFUNG_KOPF</c>).</summary>
+    [Parameter] public string VorpruefungKopf { get; set; }
+        = "Vorprüfung aus Auslegungswerten (noch kein Simulationslauf)";
+
     /// <summary>Hinweis unter der Vorschau bei der Erdsonde (<c>SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT</c>).</summary>
     [Parameter] public string HinweisSondeKonstant { get; set; }
         = "Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer " +
@@ -388,8 +398,8 @@
         = "   (ohne Klimadaten — Ersatzwerte 9,5 °C / 8,5 K)";
 
     [Parameter] public string PruefungKeinLauf { get; set; }
-        = "(noch kein Simulationslauf)\n\nDie Prüfung braucht maximale Entzugsleistung, " +
-          "Jahresentzugsarbeit und\nJahresvolllaststunden aus einem Simulationslauf.";
+        = "(noch kein Simulationslauf)\n\nOhne Lauf rechnet die Prüfung aus Auslegungswerten; " +
+          "nach einem Simulationslauf\nprüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden.";
 
     /// <summary>
     /// Die Zeile unter einer GESPEICHERTEN Prüfung (EQ1, <c>SIMQ_ERDREICH_STAND_LAUF</c>);
@@ -492,6 +502,7 @@
     private string _kennwertzeile = "";
     private string _pruefung = "";
     private bool _pruefungWarnt;
+    private bool _vorpruefung;
     private string _aenderungshinweis = "";
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
@@ -518,6 +529,9 @@
 
     /// <summary>Warnt die Prüfung (im Vorläufer: Firebrick)?</summary>
     public bool PruefungWarnt => _pruefungWarnt;
+
+    /// <summary>Zeigt die Prüfung die Vorprüfung aus Auslegungswerten (kein Lauf)?</summary>
+    public bool IstVorpruefung => _vorpruefung;
 
     /// <summary>Der Änderungshinweis; leer = keiner.</summary>
     public string Aenderungshinweis => _aenderungshinweis;
@@ -841,14 +855,28 @@
 
     /// <summary>
     /// Der Bereich der Auslegungsprüfung (<c>PruefungAktualisieren</c>:863-909).
-    /// Ohne Lauf steht der Hinweis da und NICHTS wird gerechnet.
+    /// Ein Lauf mit belastbarem Ergebnis hat Vorrang; ein Lauf ohne belastbares Ergebnis
+    /// zeigt seinen Hinweis. Ohne Lauf rechnet die VORPRÜFUNG aus Auslegungswerten
+    /// (<see cref="VDI4640Pruefung.Pruefgroessen"/>); fehlt ein Wert, sagt der Bereich welcher.
     /// </summary>
     private void PruefungAktualisieren(string boden)
     {
-        if (!_lauf.ErgebnisseVorhanden)
+        _vorpruefung = false;
+        _pruefungWarnt = false;
+
+        if (_lauf.Vorhanden && !_lauf.ErgebnisseVorhanden)
         {
             _pruefung = _lauf.HinweisErgebnis.Length > 0 ? _lauf.HinweisErgebnis : PruefungKeinLauf;
-            _pruefungWarnt = false;
+            return;
+        }
+
+        VDI4640Pruefung.Pruefwerte werte = VDI4640Pruefung.Pruefgroessen(
+            _lauf.ErgebnisseVorhanden, _lauf.MaxEntzugW, _lauf.JahresentzugKWh,
+            _lauf.VolllastStunden, Auslegungswerte(), Klimazone);
+
+        if (werte.Quelle == VDI4640Pruefung.Pruefquelle.Keine)
+        {
+            _pruefung = PruefungKeinLauf + "\n\n" + werte.Fehlt;
             return;
         }
 
@@ -859,15 +887,15 @@
             erg = VDI4640Pruefung.PruefeSonde(
                 ErdreichTemperatur.Bodentyp(boden).Lambda,
                 (int)Math.Max(1, anzahl),
-                VDI4640Pruefung.Volllaststunden(_lauf.VolllastStunden, Klimazone),
+                werte.VolllastStunden,
                 VDI4640Pruefung.Sondenmeter(_laenge ?? 0, anzahl),
-                _lauf.MaxEntzugW, boden);
+                werte.MaxEntzugW, boden);
         }
         else
         {
             erg = VDI4640Pruefung.PruefeKollektor(
                 Klimazone, VDI4640Pruefung.BodenartAusBodentyp(boden),
-                _flaeche ?? 0, _lauf.MaxEntzugW, _lauf.JahresentzugKWh, boden);
+                _flaeche ?? 0, werte.MaxEntzugW, werte.JahresentzugKWh, boden);
         }
 
         string text = erg.Anzeigetext();
@@ -876,10 +904,25 @@
             text += string.Format(HinweisVorbehalt, _lauf.HinweisVorbehalt);
         if (_lauf.HinweisFrost.Length > 0) text += "\n  " + _lauf.HinweisFrost;
 
-        _pruefung = text;
+        _vorpruefung = werte.Quelle == VDI4640Pruefung.Pruefquelle.Vorpruefung;
+        _pruefung = _vorpruefung ? werte.Herleitung + "\n" + text : text;
 
         // Firebrick des Vorlaeufers (:908) - hier die Warnstufe des Banners.
         _pruefungWarnt = erg.Moeglich && erg.Warnung;
+    }
+
+    /// <summary>Die Auslegungswerte der Hülle als Eingang der Kernrechnung.</summary>
+    private IEnumerable<VDI4640Pruefung.Auslegungswert> Auslegungswerte()
+    {
+        if (Daten.Auslegung is null) yield break;
+        foreach (WpAuslegung a in Daten.Auslegung)
+            yield return new VDI4640Pruefung.Auslegungswert
+            {
+                Modul = a.Modul ?? "",
+                NennheizleistungKw = a.NennheizleistungKw,
+                Cop = a.Cop,
+                Normpunkt = a.Normpunkt ?? ""
+            };
     }
 
     /// <summary>

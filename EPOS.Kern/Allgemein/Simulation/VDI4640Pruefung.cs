@@ -463,6 +463,170 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------------
+        // Vorprüfung aus Auslegungswerten (ohne Simulationslauf)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Die Auslegungswerte EINES Wärmepumpenmoduls an der Quelle: Heizleistung und
+        /// COP am Normpunkt seiner Kennlinie (Sole/Wasser B0/W35). Ein Wert &lt;= 0 heißt
+        /// „fehlt".
+        /// </summary>
+        public sealed class Auslegungswert
+        {
+            /// <summary>Bezeichnung des Geräts — sie steht im Hinweis, wenn ein Wert fehlt.</summary>
+            public string Modul = "";
+
+            /// <summary>Nennheizleistung am Normpunkt [kW].</summary>
+            public double NennheizleistungKw;
+
+            /// <summary>Leistungszahl am Normpunkt.</summary>
+            public double Cop;
+
+            /// <summary>Kurzname des Normpunkts, z. B. „B0/W35"; leer, wenn er fehlt.</summary>
+            public string Normpunkt = "";
+        }
+
+        /// <summary>Woher die Größen der Prüfung stammen.</summary>
+        public enum Pruefquelle
+        {
+            /// <summary>Weder Lauf noch vollständige Auslegungswerte — keine Prüfung.</summary>
+            Keine,
+
+            /// <summary>Vorprüfung aus Auslegungswerten nach Tabelle B2.</summary>
+            Vorpruefung,
+
+            /// <summary>Ergebnis eines Simulationslaufs.</summary>
+            Lauf
+        }
+
+        /// <summary>
+        /// Die Eingangsgrößen der Prüfung samt Herkunft. Bei
+        /// <see cref="Pruefquelle.Keine"/> nennt <see cref="Fehlt"/> den fehlenden Wert.
+        /// </summary>
+        public sealed class Pruefwerte
+        {
+            public Pruefquelle Quelle;
+
+            /// <summary>Maximale Entzugsleistung [W].</summary>
+            public double MaxEntzugW;
+
+            /// <summary>Jahresentzugsarbeit [kWh/a].</summary>
+            public double JahresentzugKWh;
+
+            /// <summary>Jahresvolllaststunden [h/a].</summary>
+            public double VolllastStunden;
+
+            /// <summary>Herleitung der Vorprüfung (eine Zeile je Modul und die Summe); sonst leer.</summary>
+            public string Herleitung = "";
+
+            /// <summary>Hinweis, welcher Wert für die Vorprüfung fehlt; sonst leer.</summary>
+            public string Fehlt = "";
+        }
+
+        /// <summary>
+        /// Entzugsleistung eines Moduls aus seinen Auslegungswerten nach VDI 4640 Blatt 2:
+        /// <c>Q_E ≈ Q_N · (1 − 1/COP)</c> [W]. Ohne Heizleistung oder mit COP &lt;= 1 ist
+        /// sie 0 — ein solches Modul entzieht der Quelle nichts Berechenbares.
+        /// </summary>
+        /// <param name="nennheizleistungKw">Nennheizleistung [kW].</param>
+        /// <param name="cop">Leistungszahl am Normpunkt.</param>
+        public static double EntzugsleistungW(double nennheizleistungKw, double cop)
+        {
+            if (!(nennheizleistungKw > 0) || !(cop > 1)) return 0;
+            return nennheizleistungKw * (1.0 - 1.0 / cop) * 1000.0;
+        }
+
+        /// <summary>
+        /// Die VORPRÜFUNG aus Auslegungswerten: Entzugsleistung als Summe über die Module
+        /// (<see cref="EntzugsleistungW"/>), Jahresentzugsarbeit = Entzugsleistung ·
+        /// Volllaststunden der Klimazone nach DIN 4710 (<see cref="Volllaststunden"/>
+        /// ohne Laufwert). Fehlt ein Wert — kein Modul, Heizleistung oder COP eines
+        /// Moduls, die Klimazone —, gibt es keine Vorprüfung, und
+        /// <see cref="Pruefwerte.Fehlt"/> nennt den Wert.
+        /// </summary>
+        public static Pruefwerte Vorpruefung(IEnumerable<Auslegungswert> module, int klimazone)
+        {
+            CultureInfo ci = CultureInfo.CurrentCulture;
+            var w = new Pruefwerte { Quelle = Pruefquelle.Keine };
+
+            var liste = new List<Auslegungswert>();
+            if (module != null)
+                foreach (Auslegungswert m in module)
+                    if (m != null) liste.Add(m);
+
+            if (liste.Count == 0)
+            {
+                w.Fehlt = string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_FEHLT,
+                                        MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP);
+                return w;
+            }
+
+            foreach (Auslegungswert m in liste)
+            {
+                if (!(m.NennheizleistungKw > 0) || !(m.Cop > 1))
+                {
+                    w.Fehlt = string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_FEHLT,
+                        string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT,
+                                      m.Modul ?? ""));
+                    return w;
+                }
+            }
+
+            double volllast = Volllaststunden(0, klimazone);
+            if (!(volllast > 0))
+            {
+                w.Fehlt = string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_FEHLT,
+                                        MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE);
+                return w;
+            }
+
+            double summeW = 0;
+            var sb = new StringBuilder();
+            foreach (Auslegungswert m in liste)
+            {
+                double qe = EntzugsleistungW(m.NennheizleistungKw, m.Cop);
+                summeW += qe;
+                sb.AppendLine(string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_MODUL,
+                    m.Modul ?? "",
+                    m.NennheizleistungKw.ToString("#,##0.0", ci),
+                    m.Cop.ToString("0.00", ci),
+                    m.Normpunkt ?? "",
+                    qe.ToString("N0", ci)));
+            }
+
+            w.Quelle = Pruefquelle.Vorpruefung;
+            w.MaxEntzugW = summeW;
+            w.VolllastStunden = volllast;
+            w.JahresentzugKWh = summeW * volllast / 1000.0;
+            sb.Append(string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_SUMME,
+                summeW.ToString("N0", ci), volllast.ToString("N0", ci),
+                w.JahresentzugKWh.ToString("N0", ci)));
+            w.Herleitung = sb.ToString();
+            return w;
+        }
+
+        /// <summary>
+        /// Der VORRANG der Prüfgrößen: Ein Simulationslauf mit belastbarem Ergebnis
+        /// ersetzt die Vorprüfung; ohne Lauf rechnet die Vorprüfung aus Auslegungswerten.
+        /// Die Volllaststunden des Laufs fallen wie bisher auf den Zonenwert zurück.
+        /// </summary>
+        /// <param name="laufErgebnisVorhanden">Der Lauf hat belastbare Größen geliefert.</param>
+        public static Pruefwerte Pruefgroessen(bool laufErgebnisVorhanden, double maxEntzugW,
+                                                double jahresentzugKWh, double volllastAusLauf,
+                                                IEnumerable<Auslegungswert> module, int klimazone)
+        {
+            if (laufErgebnisVorhanden)
+                return new Pruefwerte
+                {
+                    Quelle = Pruefquelle.Lauf,
+                    MaxEntzugW = maxEntzugW,
+                    JahresentzugKWh = jahresentzugKWh,
+                    VolllastStunden = Volllaststunden(volllastAusLauf, klimazone)
+                };
+            return Vorpruefung(module, klimazone);
+        }
+
+        // ------------------------------------------------------------------
         // Sondenprüfung (Tabelle B2, Auszug)
         // ------------------------------------------------------------------
 

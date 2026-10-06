@@ -94457,7 +94457,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsprüfung nach VDI 4640 Blatt 2 ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_GB_PRUEFUNG {
             get {
@@ -94688,8 +94688,8 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (noch kein Simulationslauf)
         ///
-        ///Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und
-        ///Jahresvolllaststunden aus einem Simulationslauf. ähnelt.
+        ///Ohne Lauf rechnet die Prüfung aus Auslegungswerten; nach einem Simulationslauf
+        ///prüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden. ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF {
             get {
@@ -94820,6 +94820,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_VERLEGETIEFE {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_VERLEGETIEFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Vorprüfung aus Auslegungswerten möglich — es fehlt {0}. ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Heizleistung oder der COP am Normpunkt der Kennlinie von „{0}“ ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_NORMPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eine Wärmepumpe an der Anlage ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Klimazone (Volllaststunden nach DIN 4710) ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_FEHLT_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorprüfung aus Auslegungswerten (noch kein Simulationslauf) ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_KOPF {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die   {0}: Q_N = {1} kW, COP = {2} ({3}) → Entzugsleistung ≈ {4} W ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_MODUL {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die   Entzugsleistung ≈ Q_N · (1 − 1/COP) = {0} W; Jahresentzugsarbeit ≈ {0} W · {1} h/a (Klimazone nach DIN 4710) = {2} kWh/a ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORPRUEFUNG_SUMME {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORPRUEFUNG_SUMME", resourceCulture);
             }
         }
         
