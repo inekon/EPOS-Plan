@@ -368,6 +368,7 @@ namespace WindowsFormsApplication1
                 VollnutzungGeraeteH = Positiv(Zahl(n, "DailyEffectiveLoadHoursOfDevices")),
                 PersonenWm2 = Positiv(Zahl(n, "SpecificThermalOutputPowerOfPersons")),
                 GeraeteWm2 = Positiv(Zahl(n, "SpecificThermalOutputOfDevices")),
+                Beleuchtungsstaerke = Positiv(Zahl(n, "MaintenanceIllumination")),
             };
 
         private static SqprojAbschnitt Abschnitt(Dictionary<string, object> s)

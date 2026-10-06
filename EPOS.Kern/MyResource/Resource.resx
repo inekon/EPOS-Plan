@@ -46689,5 +46689,119 @@ Chart</value>
   <data name="RNP_CSV_MSG_SCHREIBFEHLER" xml:space="preserve">
     <value>Die Datei lässt sich nicht schreiben: {0}</value>
   </data>
+  <data name="RNP_PD_BTN_BLATT" xml:space="preserve">
+    <value>Aus Projektdatei…</value>
+  </data>
+  <data name="RNP_PD_BTN_IMPORT" xml:space="preserve">
+    <value>Nutzungsprofile der Datei übernehmen…</value>
+  </data>
+  <data name="RNP_PD_TOOLTIP" xml:space="preserve">
+    <value>Liest die DIN-Nutzungsprofile einer Projektdatei des CAD-Programms in eine eigene Kategorie — erst mit „Übernehmen“ wird geschrieben.</value>
+  </data>
+  <data name="RNP_PD_UEBERSCHRIFT" xml:space="preserve">
+    <value>Nutzungsprofile aus {0} → Kategorie „{1}“</value>
+  </data>
+  <data name="RNP_PD_SP_NUMMER" xml:space="preserve">
+    <value>Nr.</value>
+  </data>
+  <data name="RNP_PD_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="RNP_PD_SP_WERTE" xml:space="preserve">
+    <value>Werte</value>
+  </data>
+  <data name="RNP_PD_SP_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="RNP_PD_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="RNP_PD_STAND_NEU" xml:space="preserve">
+    <value>neu</value>
+  </data>
+  <data name="RNP_PD_STAND_VORHANDEN" xml:space="preserve">
+    <value>vorhanden</value>
+  </data>
+  <data name="RNP_PD_KATEGORIE_VORHANDEN" xml:space="preserve">
+    <value>Die Kategorie „{0}“ besteht schon. „Ergänzen“ übernimmt nur Nummern, die dort noch fehlen; „Ersetzen“ schreibt die Werte der Datei neu und entfernt Profile, die die Datei nicht mehr führt.</value>
+  </data>
+  <data name="RNP_PD_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="RNP_PD_BTN_ERGAENZEN" xml:space="preserve">
+    <value>Ergänzen</value>
+  </data>
+  <data name="RNP_PD_BTN_ERSETZEN" xml:space="preserve">
+    <value>Ersetzen</value>
+  </data>
+  <data name="RNP_PD_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="RNP_PD_GRUND_KEINE" xml:space="preserve">
+    <value>Die Projektdatei führt kein Nutzungsprofil mit DIN-Nummer — nichts zu übernehmen.</value>
+  </data>
+  <data name="RNP_PD_GRUND_ALLE_DA" xml:space="preserve">
+    <value>Alle Nummern stehen schon in der Kategorie — „Ersetzen“ schreibt ihre Werte neu.</value>
+  </data>
+  <data name="RNP_PD_GRUND_BESCHAEFTIGT" xml:space="preserve">
+    <value>Die Projektdatei wird gelesen oder übernommen.</value>
+  </data>
+  <data name="RNP_PD_ERGEBNIS" xml:space="preserve">
+    <value>Kategorie „{0}“: {1} neu, {2} ersetzt, {3} unverändert, {4} entfernt.</value>
+  </data>
+  <data name="RNP_PD_HINWEIS_ZUORDNUNG" xml:space="preserve">
+    <value>Die Zuordnung der DIN-Nummern bleibt, wie sie ist — Zuordnung im Blatt „Nutzungsprofile“ auf diese Profile umstellen.</value>
+  </data>
+  <data name="RNP_PD_HINWEIS_HERKUNFT" xml:space="preserve">
+    <value>Die Werte stammen aus Ihrer Projektdatei und bleiben in dieser Datenbank; sie werden nie ausgeliefert.</value>
+  </data>
+  <data name="RNP_PD_MELDUNGEN" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="RNP_PD_KATEGORIE" xml:space="preserve">
+    <value>Projektdatei {0}</value>
+  </data>
+  <data name="RNP_PD_QUELLE" xml:space="preserve">
+    <value>Werte aus der Projektdatei {0} des Anwenders — nur in dieser Datenbank, nie in der Auslieferung.</value>
+  </data>
+  <data name="RNP_PD_NAME_OHNE" xml:space="preserve">
+    <value>Nutzungsprofil Nr. {0}</value>
+  </data>
+  <data name="RNP_PD_BESCHREIBUNG" xml:space="preserve">
+    <value>Aus der Projektdatei {0}, DIN-Nr. {1}</value>
+  </data>
+  <data name="RNP_PD_BESCHREIBUNG_LUX" xml:space="preserve">
+    <value>; Wartungswert der Beleuchtungsstärke {0} lx</value>
+  </data>
+  <data name="RNP_PD_KEINE" xml:space="preserve">
+    <value>Die Projektdatei führt kein Nutzungsprofil mit DIN-Nummer.</value>
+  </data>
+  <data name="RNP_PD_MSG_ABWEICHEND" xml:space="preserve">
+    <value>Nr. {0}: {1} Profile der Datei tragen diese Nummer mit verschiedenen Werten — übernommen ist das erste („{2}“).</value>
+  </data>
+  <data name="RNP_PD_MSG_OHNE_NUMMER" xml:space="preserve">
+    <value>{0} Zone(n) mit Nutzungsprofil ohne DIN-Nummer übersprungen.</value>
+  </data>
+  <data name="RNP_PD_MSG_BELEUCHTUNG" xml:space="preserve">
+    <value>Nr. {0}: Beleuchtungsstärke {1} lx steht in der Beschreibung — das Profil führt die Beleuchtung als Leistung (W/m²), sie bleibt leer.</value>
+  </data>
+  <data name="RNP_PD_MSG_ABSENKUNG" xml:space="preserve">
+    <value>Nr. {0}: Absenkung ohne Raumtemperatur — nicht übernommen.</value>
+  </data>
+  <data name="RNP_PD_MSG_LUFT_PERSON" xml:space="preserve">
+    <value>Nr. {0}: Außenluft je Person nicht übernommen — das Profil führt keine Belegungsdichte dazu.</value>
+  </data>
+  <data name="RNP_PD_MSG_PERSONEN" xml:space="preserve">
+    <value>Nr. {0}: Personen {1} W/m² als {2} m²/Person bei {3} W/Person übernommen.</value>
+  </data>
+  <data name="RNP_PD_MSG_PERSONENZAHL" xml:space="preserve">
+    <value>Nr. {0}: Personenzahl ohne flächenbezogene Wärmeabgabe — Personen bleiben leer.</value>
+  </data>
+  <data name="RNP_PD_MSG_BEGRENZT" xml:space="preserve">
+    <value>Nr. {0}: {1} liegt außerhalb der Grenzen — nicht übernommen.</value>
+  </data>
+  <data name="RNP_PD_MSG_ZUORDNUNG_GELOEST" xml:space="preserve">
+    <value>{0} Zuordnung(en) auf entfernte Profile stehen jetzt auf „keine“.</value>
+  </data>
 </root>
 
