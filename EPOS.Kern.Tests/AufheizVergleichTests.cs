@@ -74,6 +74,26 @@ namespace EPOS.Kern.Tests
             Assert.Single(liste);
         }
 
+        /// <summary>
+        /// <b>Rote Probe (KP3-A1):</b> Der Ermittler schrieb Wahrheitswerte als festes deutsches „Ja/Nein“ — auch im
+        /// englischen Bericht. Sie folgen jetzt der Berichtssprache (<see cref="BerichtTexte.ImLauf"/>): „Yes/No“ im
+        /// englischen, „Ja/Nein“ im deutschen Lauf.
+        /// </summary>
+        [Theory]
+        [InlineData(true, "No", "Yes")]
+        [InlineData(false, "Nein", "Ja")]
+        public void Wahrheitswerte_folgen_der_Berichtssprache(bool englisch, string aus, string an)
+        {
+            using (BerichtTexte.ImLauf(englisch))
+            {
+                List<Abweichung> liste = AbweichungsErmittler.Vergleiche(Details(false), Details(true));
+                Abweichung schalter = Finde(liste, R.ABW_MERKMAL_AUFH_SCHALTER);
+                Assert.NotNull(schalter);
+                Assert.Equal(aus, schalter.WertStamm);
+                Assert.Equal(an, schalter.WertVariante);
+            }
+        }
+
         /// <summary>NULL und die Vorgabe heißen dasselbe — Bemessung „kälteste Stunde“, Abzug 2 K, Reserve 20 %, Art täglich, kein Aufschlag.</summary>
         [Fact]
         public void NULL_und_Vorgabe_sind_keine_Abweichung()

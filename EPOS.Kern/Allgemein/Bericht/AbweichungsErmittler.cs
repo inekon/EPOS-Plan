@@ -555,7 +555,9 @@ namespace WindowsFormsApplication1
             if (f.Dez == JN)
             {
                 bool? b = ProjektDetails.B(r, f.Spalte);
-                return !b.HasValue ? "—" : (b.Value ? "Ja" : "Nein");
+                // Der Wahrheitswert in der Anzeigesprache (im Bericht: der Laufsprache, BerichtTexte.ImLauf) —
+                // dieselben Texte wie der Ja/Nein-Wert der Parameterübersicht und des Katalogfilters.
+                return !b.HasValue ? "—" : (b.Value ? MyResource.Resource.ALLG_BTN_JA : MyResource.Resource.ALLG_BTN_NEIN);
             }
             double? d = Zahl(r, f);
             if (!d.HasValue) return "—";
