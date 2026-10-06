@@ -22,9 +22,9 @@ Das U der Datei bleibt neben dem Aufbau stehen, unerhebliche Schichten werden na
 
 Die Protokollmeldung zur U-Abweichung gilt ab 10 % statt ab 5 % (Konzept 5.2).
 
-## 5 Gate 779
+## 5 Gate 775
 
-Gemeinsam mit HC-5: ⟨GATE779⟩
+Gemeinsam mit HC-5: Gate 775 (Hauptbaum, `56fca129`, 60 min): 20 181 Tests, 20 177 grün, 4 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 687, EPOS.Kern 11 520 mit 3 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-05_R38_Vorlaufwahl` PASS, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 460 Texte, 0 Fundstellen; Auslieferungsvorlage-Tests 60/60
 
 ## 6 Offen
 
