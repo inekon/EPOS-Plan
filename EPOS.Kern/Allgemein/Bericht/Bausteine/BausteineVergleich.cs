@@ -222,6 +222,23 @@ namespace WindowsFormsApplication1
                     k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Brennstoffmengen(v, true, BerichtTexte.Englisch, k.Kultur)));
                 }
             }
+
+            // ---------------- Gebäude je Projekt (KP3 Welle O3b, E58 F3 (c)) ----------------
+            // Dieselbe Tafel wie {{stand.tabelle.gebaeude}} (Berichtstabellen.Gebaeudeergebnisse) je Stand, ohne Δ — das Δ
+            // trägt die Kennzahlgruppe „Gebäude“ darüber. Nur mit Varianten und nur, wenn ein Stand Lüftungs- oder
+            // Aufheizwerte trägt; sonst stünde die Tafel des Stamms aus der Projektbeschreibung ein zweites Mal da.
+            if (varianten.Count > 0 && Berichtstabellen.Gruppenzeilen(daten, KennzahlenKatalog.GR_GEBAEUDE).Count > 0)
+            {
+                k.Ueberschrift2Roh(Berichtstabellen.Grund(nameof(MyResource.Resource.BV_VGL_AUFH_GEBAEUDE), k.Kultur));
+                k.HinweisRoh(Berichtstabellen.Grund(nameof(MyResource.Resource.BV_VGL_AUFH_GEBAEUDE_HINWEIS), k.Kultur));
+                foreach (VariantenDaten v in daten.Varianten)
+                {
+                    k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
+                    Berichtstabelle tafel = Berichtstabellen.Gebaeudeergebnisse(v, BerichtTexte.Englisch, k.Kultur);
+                    if (tafel.IstLeer) k.HinweisRoh(tafel.Leergrund);
+                    else k.Fuege(WordTabellenschreiber.Direkt(k, tafel));
+                }
+            }
         }
 
         private static double? Wert(VariantenDaten v, string schluessel)

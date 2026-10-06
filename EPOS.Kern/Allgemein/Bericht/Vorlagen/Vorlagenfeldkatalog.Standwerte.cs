@@ -332,7 +332,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.kennzahl." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Kennzahlwert(w, v, s)))
                 {
-                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(s)),
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Bedarf = bedarf,
@@ -346,7 +346,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.delta." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Abweichung(w, v, s, false)))
                 {
-                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(s)),
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Bedarf = bedarf,
@@ -355,7 +355,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.delta_prozent." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Abweichung(w, v, s, true)))
                 {
-                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(s)),
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = "N1",
                     Einheit = "%",
                     Bedarf = bedarf,
@@ -385,7 +385,7 @@ namespace WindowsFormsApplication1
                     yield return new Vorlagenfeld(a.Vorsilbe + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Gruppe,
                         w => UeberStaende(w, s, wert))
                     {
-                        Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(s)),
+                        Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                         Format = k.Format,
                         Einheit = k.Einheit,
                         Bedarf = s == KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN ? Vorlagenbedarf.Zeitreihen : Vorlagenbedarf.Keiner,

@@ -123,7 +123,7 @@ namespace EPOS.Kern.Tests
         public void Katalog_v2_zaehlt_52_handgepflegte_und_je_Kennzahl_drei_erzeugte_Eintraege()
         {
             // Die Kennzahlen der Kältemaschine (Schritt 183) stehen erst ab Fassung 12.
-            int kennzahlen = KennzahlenKatalog.Alle().Count(k => Vorlagenfeldkatalog.SeitDerKennzahl(k.Schluessel) <= 2);
+            int kennzahlen = KennzahlenKatalog.Alle().Count(k => Vorlagenfeldkatalog.SeitDerKennzahl(k) <= 2);
             List<Vorlagenfeld> v2 = Vorlagenfeldkatalog.Alle.Where(f => f.Seit <= 2).ToList();
             Assert.Equal(52, v2.Count(f => f.Handgepflegt));
             Assert.Equal(27, v2.Count(f => f.Handgepflegt && f.Seit == 1));

@@ -721,6 +721,7 @@ namespace Berichtsvorlage
                 ("energiebilanz", "Energiebilanz", "Energy balance"),
                 ("effizienz", "Effizienz", "Efficiency"),
                 ("kaelte", "Kälte", "Cooling"),
+                ("gebaeude", "Gebäude", "Buildings"),          // Katalog v16 (KP3 Welle O3b, E58 F3 (c))
                 ("emissionen", "Emissionen", "Emissions"),
                 ("kosten", "Kosten", "Costs"),
             };
@@ -852,6 +853,22 @@ namespace Berichtsvorlage
                 r.Add(Marke("stand.tabelle.brennstoffmengen"));
                 r.Add(Marke("/wenn"));
                 r.Add(Marke("/je"));
+
+                // Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Gebäudetafel je Stand, ohne Δ — nur mit Varianten und nur, wenn die
+                // Kennzahlgruppe „Gebäude“ Werte trägt (wie der Standardbericht); je Stand nur mit Gebäudezeilen.
+                r.Add(Marke("#wenn hat.varianten"));
+                r.Add(Marke("#wenn hat.tabelle.vergleich.gebaeude"));
+                r.Add(H2("Gebäude je Projekt", "Buildings per project"));
+                r.Add(Hinweis("Je Projekt die Gebäudetafel mit Lüftungs- und Aufheizwerten; die Abweichung zum Stamm zeigt die Kennzahlgruppe „Gebäude“.",
+                              "The building table with ventilation and preheat values per project; the key figure group “Buildings” shows the deviation from the base."));
+                r.Add(Marke("#je stand"));
+                r.Add(Marke("#wenn hat.tabelle.gebaeude"));
+                r.Add(Standkopf());
+                r.Add(Marke("stand.tabelle.gebaeude"));
+                r.Add(Marke("/wenn"));
+                r.Add(Marke("/je"));
+                r.Add(Marke("/wenn"));
+                r.Add(Marke("/wenn"));
             }
 
             /// <summary>Kopf aus Beschriftung und Einheit je Kennzahl, darunter eine Musterzeile je Stand.</summary>

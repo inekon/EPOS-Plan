@@ -851,7 +851,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stamm.kennzahl." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stamm,
                     w => StammKennzahl(w, s))
                 {
-                    Seit = SeitDerKennzahl(s),
+                    Seit = SeitDerKennzahl(k),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Ableitung = new Vorlagenfeldableitung(MUSTER_STAMM_KENNZAHL, nameof(R.VF_MUSTER_STAMM_KENNZAHL), s),
@@ -865,13 +865,13 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("kennzahl." + s + ".beschriftung", Vorlagenfeldart.Text, Vorlagenfeldkontext.Bericht,
                     w => w.FindeKennzahl(s)?.Label(w.Englisch))
                 {
-                    Seit = SeitDerKennzahl(s),
+                    Seit = SeitDerKennzahl(k),
                     Ableitung = new Vorlagenfeldableitung(MUSTER_KENNZAHL_BESCHRIFTUNG, nameof(R.VF_MUSTER_KENNZAHL_BESCHRIFTUNG), s),
                 };
                 yield return new Vorlagenfeld("kennzahl." + s + ".einheit", Vorlagenfeldart.Text, Vorlagenfeldkontext.Bericht,
                     w => w.FindeKennzahl(s)?.Einheit)
                 {
-                    Seit = SeitDerKennzahl(s),
+                    Seit = SeitDerKennzahl(k),
                     Leerwert = "",
                     Ableitung = new Vorlagenfeldableitung(MUSTER_KENNZAHL_EINHEIT, nameof(R.VF_MUSTER_KENNZAHL_EINHEIT), s),
                 };

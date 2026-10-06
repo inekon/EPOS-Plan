@@ -79,6 +79,12 @@ namespace WindowsFormsApplication1
             : KennzahlenFreieKuehlungWp.Contains(schluessel) ? FASSUNG_FREIE_KUEHLUNG_WP
             : KennzahlenStromKaelte.Contains(schluessel) ? FASSUNG_STROM_KAELTE : 1;
 
+        /// <summary>
+        /// Die Fassung, seit der die erzeugten Einträge einer Kennzahl im Katalog stehen: ihr <see cref="Kennzahl.Seit"/>
+        /// (Gruppe „Gebäude“: Katalog v16, KP3 Welle O3b) oder die Fassung ihrer Schlüsselgruppe, die spätere gilt.
+        /// </summary>
+        internal static int SeitDerKennzahl(Kennzahl k) => k == null ? 1 : Math.Max(k.Seit, SeitDerKennzahl(k.Schluessel));
+
         /// <summary>Die Einträge der Fassung 10 in Katalogfolge.</summary>
         private static IEnumerable<Vorlagenfeld> Ergebnisse()
         {
