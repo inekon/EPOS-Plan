@@ -43,7 +43,7 @@ namespace Auslieferungsvorlage.Tests
             string ziel = o.Datei("Kenndaten.sqlite");
             Bearbeiten(quelle, EigenesAnlegen);
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Schritt 3d — Katalog der Nutzungsprofile", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("entfernt: 1 eigene Zuordnung(en), 1 eigene(s) Profil(e), 1 eigene Kategorie(n); 1 ausgelieferte",

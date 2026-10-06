@@ -413,7 +413,7 @@ namespace Auslieferungsvorlage.Tests
                 foreach (DataRow r in t.Rows)
                 {
                     string name = Convert.ToString(r["name"]);
-                    if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
+                    if (!name.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase)) continue;
                     d[name] = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + name + "\""));
                 }
                 return d;
@@ -526,7 +526,7 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(
                 quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
 
@@ -541,7 +541,7 @@ namespace Auslieferungsvorlage.Tests
                 foreach (DataRow r in t.Rows)
                 {
                     string name = Convert.ToString(r["name"]);
-                    if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
+                    if (!name.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase)) continue;
                     if (!DataRepository.SpalteVorhanden(name, "ReadOnly")) continue;
                     // Tww-Kataloge: eigene Regel ueber Status (TwwVorlageTests.T1).
                     if (name.StartsWith("Tab_Tww", StringComparison.Ordinal)) continue;
@@ -552,6 +552,42 @@ namespace Auslieferungsvorlage.Tests
                 }
                 Assert.True(gepruefte.Count >= 20,
                             "Es wurden nur " + gepruefte.Count + " Katalogtabellen geprueft — zu wenige.");
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Endung <c>_Stamm</c> zaehlt wie <c>_STAMM</c>.</b> <c>Tab_Brennstoff_Stamm</c> ist Katalog des
+        /// Registers (<see cref="Katalogfassung.Alle"/>) und faellt unter die ReadOnly-Regel: Im Modus
+        /// <c>readonly</c> bleibt dort keine ungesperrte Zeile, und weil damit kein Registerkatalog mit Zeilen
+        /// ohne gesperrten Satz uebrig ist, laeuft der Modus gegen die Testdatenbank OHNE benannte Ausnahme
+        /// durch (kein Code 6).
+        /// </summary>
+        [Fact]
+        public void K2_Die_Endung_Stamm_in_gemischter_Schreibweise_faellt_unter_die_ReadOnly_Regel()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+
+            Assert.Contains(Katalogfassung.Alle, t => t.Tabelle == "Tab_Brennstoff_Stamm");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.DoesNotContain("leerer Paketteil", e.Ausgabe);
+
+            string vorher = DataRepository.PfadUeberschreibung;
+            try
+            {
+                DataRepository.PfadUeberschreibung = ziel;
+                long ungesperrt = Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Brennstoff_Stamm\" WHERE \"ReadOnly\" IS NULL OR \"ReadOnly\" = 0"));
+                Assert.Equal(0L, ungesperrt);
             }
             finally
             {

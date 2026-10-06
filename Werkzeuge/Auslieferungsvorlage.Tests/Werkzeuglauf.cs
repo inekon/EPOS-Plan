@@ -90,7 +90,9 @@ namespace Auslieferungsvorlage.Tests
         /// Satz mit <c>ReadOnly = 1</c>, und brechen ohne benannte Ausnahme mit Code 6 ab (Konzept Setup 6.5.4
         /// E2). Dieselbe Liste nimmt der CI-Setup-Lauf (<c>windows.yml</c>, Job <c>installer</c>); die Wache
         /// <c>KatalogpaketSetupWacheTests</c> haelt beide gleich. Waechst die Pflege der Testdatenbank, wird
-        /// die Liste kuerzer - nie laenger, ohne dass ein Katalog dazukommt.
+        /// die Liste kuerzer - nie laenger, ohne dass ein Katalog dazukommt. Gebraucht wird sie nur im Modus
+        /// <c>alle</c>: Im Modus <c>readonly</c> leert die ReadOnly-Regel jeden dieser Kataloge, ein Lauf dort
+        /// kommt ohne Ausnahme aus (<c>KatalogregelTests.K2</c>).
         /// </summary>
         internal static readonly string[] LEERE_PAKETTEILE_DER_TESTDATENBANK =
         {

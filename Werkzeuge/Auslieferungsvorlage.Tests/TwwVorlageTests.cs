@@ -56,7 +56,7 @@ namespace Auslieferungsvorlage.Tests
                     "INSERT INTO Tab_TwwWohnungstyp (ID_Zone, Anzahl, Reihenfolge) VALUES (?, 2, 1)", new DbParam("?", zone)));
             });
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
 
             Assert.Contains("Schritt 3c — Zapfprofil-Kataloge (Tww)", e.Ausgabe);
@@ -175,7 +175,7 @@ namespace Auslieferungsvorlage.Tests
                 KategorieAnlegen(import, "Mit Import", TwwSchema.STATUS_AUSLIEFERUNG, TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
             });
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
             Assert.Contains("ok      nur Status AUSLIEFERUNG", e.Ausgabe);
@@ -309,7 +309,7 @@ namespace Auslieferungsvorlage.Tests
                     new DbParam("?", VERSION), new DbParam("?", QUELLE), new DbParam("?", VERSION)));
             });
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Katalogversion der Paketteil-Zeilen: " + VERSION + " (die des Katalogs)", e.Ausgabe);
             // Die zwei Nutzungsarten der Quelle ohne eigene Kategorien und die abgeleiteten des Paketteils.
