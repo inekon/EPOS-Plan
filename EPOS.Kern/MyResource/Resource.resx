@@ -46176,5 +46176,68 @@ Chart</value>
   <data name="RNP_TXT_TAGE" xml:space="preserve">
     <value>erzeugt: {0} Nutzungstage, Quelle: {1} Tage</value>
   </data>
+  <data name="GANS_FARBMODUS" xml:space="preserve">
+    <value>Farbmodus</value>
+  </data>
+  <data name="GANS_FARBMODUS_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GANS_FARBMODUS_RAND" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="GANS_RAND_OHNE_KLASSIFIKATION" xml:space="preserve">
+    <value>Randbedingung nicht wählbar: Für dieses Gebäude liegen keine klassifizierten Körper aus der Datei vor.</value>
+  </data>
+  <data name="GANS_RAND_ZU_GROSS" xml:space="preserve">
+    <value>Randbedingung nicht wählbar: Die Körper überschreiten die Dreiecksgrenze, die Räume stehen als Prismen ohne Gruppen da.</value>
+  </data>
+  <data name="GANS_RAND_LEGENDE" xml:space="preserve">
+    <value>Flächen nach Randbedingung</value>
+  </data>
+  <data name="GANS_RAND_FLAECHE" xml:space="preserve">
+    <value>{0} m²</value>
+  </data>
+  <data name="GANS_RAND_SCHALTER" xml:space="preserve">
+    <value>{0} anzeigen</value>
+  </data>
+  <data name="GANS_RAND_NUR_LEGENDE" xml:space="preserve">
+    <value>nur Legende und Bilanz</value>
+  </data>
+  <data name="GANS_RAND_R0" xml:space="preserve">
+    <value>innen, thermisch neutral</value>
+  </data>
+  <data name="GANS_RAND_R1" xml:space="preserve">
+    <value>Wand gegen außen</value>
+  </data>
+  <data name="GANS_RAND_R2" xml:space="preserve">
+    <value>Wand gegen unbeheizt</value>
+  </data>
+  <data name="GANS_RAND_R3" xml:space="preserve">
+    <value>Wand oder Boden gegen Erdreich</value>
+  </data>
+  <data name="GANS_RAND_R4" xml:space="preserve">
+    <value>Boden gegen unbeheizt oder außen</value>
+  </data>
+  <data name="GANS_RAND_R5" xml:space="preserve">
+    <value>Decke oder Dach gegen außen</value>
+  </data>
+  <data name="GANS_RAND_R6" xml:space="preserve">
+    <value>Decke gegen unbeheizt</value>
+  </data>
+  <data name="GANS_RAND_R7" xml:space="preserve">
+    <value>Fenster und Türen</value>
+  </data>
+  <data name="GANS_RAND_BAUTEILKOERPER" xml:space="preserve">
+    <value>Bauteilkörper</value>
+  </data>
+  <data name="GANS_RAND_KEINE" xml:space="preserve">
+    <value>ohne Gruppe</value>
+  </data>
+  <data name="GANS_RAND_TREFFER_RAUM" xml:space="preserve">
+    <value>Gewählt: Raum {0} — {1}</value>
+  </data>
+  <data name="GANS_RAND_TREFFER_BAUTEIL" xml:space="preserve">
+    <value>Gewählt: Bauteil {0} — {1}</value>
+  </data>
 </root>
 

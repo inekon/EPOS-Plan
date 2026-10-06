@@ -116,8 +116,41 @@ public sealed record GebaeudeAnsichtDaten
     /// <summary>Trägt mindestens ein Raum einen Körper aus der Datei? Ohne einen einzigen entfällt der Umschalter.</summary>
     public bool HatDateikoerper => Koerperraeume.Any(k => k.Dateikoerper is not null);
 
-    /// <summary>Die Dreiecke aller Dateikörper.</summary>
+    /// <summary>Die Dreiecke aller Dateikörper der Räume (ohne die Bauteilkörper).</summary>
     public long DateikoerperDreiecke => Koerperraeume.Sum(k => (long)(k.Dateikoerper?.DreieckZahl ?? 0));
+
+    /// <summary>
+    /// Die Flächengruppen nach Randbedingung (HottCAD-Verbund 4.1, 4.3) in der Reihenfolge R0 bis R7, alle acht, je Gruppe
+    /// die Flächensumme der Bilanz und die Zahl der Dreiecke der Raumkörper; leer = keine Klassifikation (gbXML ohne Körper,
+    /// Prismenrückfall). Anzeige, keine Rechengröße.
+    /// </summary>
+    public IReadOnlyList<GebaeudeAnsichtFlaechengruppe> Flaechengruppen { get; init; } = Array.Empty<GebaeudeAnsichtFlaechengruppe>();
+
+    /// <summary>Die Körper der Hüllbauteile, Fenster und Türen mit ihrer Gruppe (3.2, 4.3); Punkte relativ zum <see cref="Bezugspunkt"/>.</summary>
+    public IReadOnlyList<GebaeudeAnsichtBauteilkoerper> Bauteilkoerper { get; init; } = Array.Empty<GebaeudeAnsichtBauteilkoerper>();
+
+    /// <summary>
+    /// Hat die Hülle die Gruppen verworfen, weil Raum- und Bauteilkörper zusammen die <see cref="Dreiecksgrenze"/> überschreiten?
+    /// Dann ist „Randbedingung“ benannt nicht wählbar (4.4: Prismenrückfall ohne Gruppen).
+    /// </summary>
+    public bool RandgruppenZuGross { get; init; }
+
+    /// <summary>Trägt das Gebäude eine Klassifikation nach Randbedingung?</summary>
+    public bool HatRandgruppen => Flaechengruppen.Count > 0;
+
+    /// <summary>
+    /// Ist der Farbmodus „Randbedingung“ wählbar? Nur mit Klassifikation und unter der Dreiecksgrenze — sonst stehen die
+    /// Räume als Prismen ohne Gruppen da, und der Umschalter nennt den Grund.
+    /// </summary>
+    public bool RandbedingungWaehlbar => HatRandgruppen && !RandgruppenZuGross && !DateikoerperZuGross;
+
+    /// <summary>Die Gruppe <paramref name="g"/> der Legende; <c>null</c> ohne Klassifikation.</summary>
+    public GebaeudeAnsichtFlaechengruppe? Flaechengruppe(Randgruppe g)
+    {
+        foreach (GebaeudeAnsichtFlaechengruppe x in Flaechengruppen)
+            if (x.Gruppe == g) return x;
+        return null;
+    }
 
     /// <summary>Überschreiten die Dateikörper die <see cref="Dreiecksgrenze"/>? Dann zeigt die Ansicht die Prismen.</summary>
     public bool DateikoerperZuGross => DateikoerperDreiecke > Dreiecksgrenze;
@@ -129,27 +162,63 @@ public sealed record GebaeudeAnsichtDaten
     /// auf vier Byte ausgerichtet. Daneben das Verzeichnis mit den Byte-Offsets und Zahlen je Raum. Dieselben Daten
     /// geben dasselbe Feld, byteweise.
     /// </summary>
+    /// <remarks>
+    /// <b>Aufbau mit Randgruppen</b> (HottCAD-Verbund 4.3, HC-2) — der Vertrag mit dem Modul. Das Feld hat drei Teile,
+    /// Little-Endian:
+    /// <list type="number">
+    /// <item><b>Raumkörper</b>, unverändert: je Raum mit Dateikörper Punkte (float32 ×3), Dreiecke (int32 ×3), Randkanten
+    /// (int32 ×2) — <see cref="GebaeudeAnsichtKoerperfeld.Verzeichnis"/>.</item>
+    /// <item><b>Bauteilkörper</b> in der Reihenfolge von <see cref="Bauteilkoerper"/>, gleich gebaut —
+    /// <see cref="GebaeudeAnsichtKoerperfeld.Bauteile"/> mit Bauteilkennung und Gruppe (0–7) je Eintrag.</item>
+    /// <item><b>Gruppenbytes</b>: je Raum des Verzeichnisses mit Gruppen ein Byte je Dreieck in der Reihenfolge seiner
+    /// Dreiecke — 0 bis 7 = R0 bis R7, <see cref="GebaeudeAnsichtRandgruppen.KEINE"/> = ohne Gruppe (entartetes Dreieck);
+    /// der Byte-Offset steht in <see cref="GebaeudeAnsichtKoerperfeldEintrag.GruppenAb"/> (−1 = keine). Das Feld endet auf
+    /// vier Byte aufgefüllt.</item>
+    /// </list>
+    /// Teil 2 und 3 stehen hinter allen Abschnitten des ersten: Jeder Leser, der über die Offsets des Verzeichnisses geht, liest
+    /// unverändert; ohne Klassifikation sind beide leer und das Feld ist byteweise das bisherige.
+    /// </remarks>
     public GebaeudeAnsichtKoerperfeld Koerperfeld()
     {
         long laenge = 0;
         foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
-            if (k.Dateikoerper is { } d) laenge += 4L * (d.Punkte.Count + d.Dreiecke.Count + d.Randkanten.Count);
+            if (k.Dateikoerper is { } d) laenge += 4L * (d.Punkte.Count + d.Dreiecke.Count + d.Randkanten.Count) + (d.Gruppen?.Count ?? 0);
+        foreach (GebaeudeAnsichtBauteilkoerper b in Bauteilkoerper)
+            laenge += 4L * (b.Koerper.Punkte.Count + b.Koerper.Dreiecke.Count + b.Koerper.Randkanten.Count);
+        laenge = (laenge + 3) / 4 * 4;
         var bytes = new byte[checked((int)laenge)];
         var verzeichnis = new List<GebaeudeAnsichtKoerperfeldEintrag>();
+        var raeume = new List<GebaeudeAnsichtDateikoerper>();
         int stelle = 0;
         foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
         {
             if (k.Dateikoerper is not { } d) continue;
-            int punkteAb = stelle;
-            foreach (float f in d.Punkte) { BinaryPrimitives.WriteSingleLittleEndian(bytes.AsSpan(stelle, 4), f); stelle += 4; }
-            int dreieckeAb = stelle;
-            foreach (int i in d.Dreiecke) { BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(stelle, 4), i); stelle += 4; }
-            int kantenAb = stelle;
-            foreach (int i in d.Randkanten) { BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(stelle, 4), i); stelle += 4; }
-            verzeichnis.Add(new GebaeudeAnsichtKoerperfeldEintrag(
-                k.Kennung, punkteAb, d.Punkte.Count / 3, dreieckeAb, d.Dreiecke.Count / 3, kantenAb, d.Randkanten.Count / 2));
+            verzeichnis.Add(Abschnitte(bytes, ref stelle, k.Kennung, d));
+            raeume.Add(d);
         }
-        return new GebaeudeAnsichtKoerperfeld(bytes, verzeichnis);
+        var bauteile = new List<GebaeudeAnsichtKoerperfeldEintrag>();
+        foreach (GebaeudeAnsichtBauteilkoerper b in Bauteilkoerper)
+            bauteile.Add(Abschnitte(bytes, ref stelle, "", b.Koerper) with { Bauteil = b.Bauteil, Gruppe = (int)b.Gruppe });
+        for (int i = 0; i < raeume.Count; i++)
+        {
+            if (raeume[i].Gruppen is not { } gruppen) continue;
+            verzeichnis[i] = verzeichnis[i] with { GruppenAb = stelle };
+            foreach (byte x in gruppen) bytes[stelle++] = x;
+        }
+        return new GebaeudeAnsichtKoerperfeld(bytes, verzeichnis) { Bauteile = bauteile };
+    }
+
+    /// <summary>Schreibt Punkte, Dreiecke und Randkanten eines Körpers ab <paramref name="stelle"/> und gibt den Eintrag.</summary>
+    private static GebaeudeAnsichtKoerperfeldEintrag Abschnitte(byte[] bytes, ref int stelle, string raum, GebaeudeAnsichtDateikoerper d)
+    {
+        int punkteAb = stelle;
+        foreach (float f in d.Punkte) { BinaryPrimitives.WriteSingleLittleEndian(bytes.AsSpan(stelle, 4), f); stelle += 4; }
+        int dreieckeAb = stelle;
+        foreach (int i in d.Dreiecke) { BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(stelle, 4), i); stelle += 4; }
+        int kantenAb = stelle;
+        foreach (int i in d.Randkanten) { BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(stelle, 4), i); stelle += 4; }
+        return new GebaeudeAnsichtKoerperfeldEintrag(
+            raum, punkteAb, d.Punkte.Count / 3, dreieckeAb, d.Dreiecke.Count / 3, kantenAb, d.Randkanten.Count / 2);
     }
 
     /// <summary>Die Raumhöhe, wenn die Datei keine nennt [m] — der Körper ist dann schematisch.</summary>
@@ -279,7 +348,89 @@ public sealed record GebaeudeAnsichtKoerperraum(
 
     /// <summary>Woher der Körper des Raums stammt — als Wert, nie als Text.</summary>
     public Koerperherkunft Herkunft { get; init; } = Koerperherkunft.Umriss;
+
+    /// <summary>
+    /// Je Polygon je Kante die Gruppe ihrer senkrechten Flächen (R0 bis R3, HottCAD-Verbund 4.3) — die flächengrößte, wenn
+    /// mehrere an der Kante liegen; <c>null</c> = keine Fläche des Körpers an der Kante. <c>null</c> insgesamt = ohne Gruppen.
+    /// </summary>
+    public IReadOnlyList<IReadOnlyList<Randgruppe?>>? Kantengruppen { get; init; }
+
+    /// <summary>Die Fenster und Türen (R7) als Marken auf den Kanten; leer = keine.</summary>
+    public IReadOnlyList<GebaeudeAnsichtKantenmarke> Kantenmarken { get; init; } = Array.Empty<GebaeudeAnsichtKantenmarke>();
+
+    /// <summary>Die Gruppe der Bodenfläche (die flächengrößte der Flächen nach unten); <c>null</c> = keine bekannt.</summary>
+    public Randgruppe? Bodengruppe { get; init; }
 }
+
+/// <summary>
+/// Die Gruppe einer Fläche nach Randbedingung (HottCAD-Verbund 4.1) — Spiegel der <c>Flaechengruppe</c> des Kerns mit denselben
+/// Zahlen; der Zahlwert ist der Gruppenindex im Bytefeld und die Stelle in <see cref="GebaeudeAnsichtRandgruppen.FARBEN"/>.
+/// </summary>
+public enum Randgruppe : byte
+{
+    /// <summary>Innen, thermisch neutral.</summary>
+    R0 = 0,
+    /// <summary>Wand beheizt gegen außen.</summary>
+    R1 = 1,
+    /// <summary>Wand beheizt gegen unbeheizt.</summary>
+    R2 = 2,
+    /// <summary>Wand oder Boden gegen Erdreich.</summary>
+    R3 = 3,
+    /// <summary>Boden gegen unbeheizt oder außen.</summary>
+    R4 = 4,
+    /// <summary>Decke oder Dach gegen außen.</summary>
+    R5 = 5,
+    /// <summary>Decke gegen unbeheizt.</summary>
+    R6 = 6,
+    /// <summary>Fenster und Türen nach außen oder gegen unbeheizt.</summary>
+    R7 = 7,
+}
+
+/// <summary>
+/// <b>Die Farbtafel der Gruppen</b> — die eine Stelle, an der die Farben R0 bis R7 stehen (HottCAD-Verbund 4.1). Der Grundriss
+/// zeichnet mit ihr, die Szene des Moduls trägt sie als <c>randfarben</c> mit. Gut unterscheidbar, auf hellem und dunklem
+/// Grund lesbar; R0 grau (in 3D halbtransparent).
+/// </summary>
+public static class GebaeudeAnsichtRandgruppen
+{
+    /// <summary>Die Zahl der Gruppen.</summary>
+    public const int ZAHL = 8;
+
+    /// <summary>Das Gruppenbyte eines Dreiecks ohne Gruppe.</summary>
+    public const byte KEINE = 255;
+
+    /// <summary>Die Farben nach dem Gruppenindex: grau, rot, orange, braun, gelb, blau, hellblau, türkis.</summary>
+    public static readonly IReadOnlyList<string> FARBEN = new[]
+    {
+        "#9e9e9e", "#d62728", "#ff7f0e", "#8c564b", "#e5c100", "#1f5fbf", "#7ec8f2", "#17becf",
+    };
+
+    /// <summary>Die Farbe einer Gruppe.</summary>
+    public static string Farbe(Randgruppe g) => FARBEN[(int)g];
+
+    /// <summary>Steht die Gruppe im Grundriss nur in Legende und Bilanz (Decken R5, R6)?</summary>
+    public static bool NurLegende(Randgruppe g) => g is Randgruppe.R5 or Randgruppe.R6;
+}
+
+/// <summary>Eine Gruppe der Legende: Gruppe, Flächensumme der Bilanz [m²] und Zahl der Dreiecke der Raumkörper.</summary>
+/// <param name="Gruppe">Die Gruppe.</param>
+/// <param name="FlaecheM2">Die Flächensumme der Bilanz [m²] (R7 aus den Öffnungsflächen des Mengensatzes).</param>
+/// <param name="DreieckZahl">Die Zahl der Dreiecke der Raumkörper in dieser Gruppe.</param>
+public sealed record GebaeudeAnsichtFlaechengruppe(Randgruppe Gruppe, double FlaecheM2, int DreieckZahl);
+
+/// <summary>Der Körper eines Bauteils, Fensters oder einer Tür mit seiner Gruppe (Punkte relativ zum Bezugspunkt).</summary>
+/// <param name="Bauteil">Die Bauteilkennung der Datei.</param>
+/// <param name="Gruppe">Die Gruppe des Bauteils.</param>
+/// <param name="Koerper">Der Körper.</param>
+public sealed record GebaeudeAnsichtBauteilkoerper(string Bauteil, Randgruppe Gruppe, GebaeudeAnsichtDateikoerper Koerper);
+
+/// <summary>Eine Öffnung (R7) als Marke auf einer Kante des Grundrisses: Polygon, Kante und der Abschnitt als Anteil 0…1.</summary>
+/// <param name="Polygon">Die Stelle des Polygons im Raum.</param>
+/// <param name="Kante">Die Kante (von Punkt <c>Kante</c> nach <c>Kante + 1</c>).</param>
+/// <param name="Von">Anfang der Marke als Anteil der Kantenlänge.</param>
+/// <param name="Bis">Ende der Marke als Anteil der Kantenlänge.</param>
+/// <param name="Bauteil">Die Kennung der Öffnung.</param>
+public sealed record GebaeudeAnsichtKantenmarke(int Polygon, int Kante, double Von, double Bis, string Bauteil);
 
 /// <summary>Die Herkunft des Körpers eines Raums (Datenaustauschkonzept 15.4) — der Steuerwert der Kennzeichen.</summary>
 public enum Koerperherkunft
@@ -310,6 +461,12 @@ public sealed record GebaeudeAnsichtDateikoerper(
     IReadOnlyList<float> Punkte, IReadOnlyList<int> Dreiecke, IReadOnlyList<int> Randkanten, int DreieckZahl,
     string Art, IReadOnlyList<string> Vermerke)
 {
+    /// <summary>
+    /// Je Dreieck der Gruppenindex (0–7 = <see cref="Randgruppe"/>, <see cref="GebaeudeAnsichtRandgruppen.KEINE"/> = ohne);
+    /// <c>null</c> = ohne Klassifikation. Geht als dritter Teil ins <see cref="GebaeudeAnsichtDaten.Koerperfeld"/>.
+    /// </summary>
+    public IReadOnlyList<byte>? Gruppen { get; init; }
+
     /// <summary>Die Schlüssel der Vermerke in ihrer Reihenfolge — die Namen von <c>Koerpervermerk</c> des Kerns.</summary>
     public static readonly string[] VERMERKE = { "Bogen", "Loch", "Uneben", "OhneBeschnitt", "Offen", "Mehrschale" };
 }
@@ -328,7 +485,11 @@ public sealed record GebaeudeAnsichtDateiraum(
 /// <summary>Die Dateikörper eines Gebäudes als ein Bytefeld samt Verzeichnis (<see cref="GebaeudeAnsichtDaten.Koerperfeld"/>).</summary>
 /// <param name="Bytes">Das Feld: je Raum Punkte (float32), Dreiecke und Kanten (int32), Little-Endian.</param>
 /// <param name="Verzeichnis">Je Raum mit Dateikörper Kennung, Byte-Offsets und Zahlen.</param>
-public sealed record GebaeudeAnsichtKoerperfeld(byte[] Bytes, IReadOnlyList<GebaeudeAnsichtKoerperfeldEintrag> Verzeichnis);
+public sealed record GebaeudeAnsichtKoerperfeld(byte[] Bytes, IReadOnlyList<GebaeudeAnsichtKoerperfeldEintrag> Verzeichnis)
+{
+    /// <summary>Je Bauteilkörper Bauteilkennung, Gruppe, Byte-Offsets und Zahlen (zweiter Teil des Felds).</summary>
+    public IReadOnlyList<GebaeudeAnsichtKoerperfeldEintrag> Bauteile { get; init; } = Array.Empty<GebaeudeAnsichtKoerperfeldEintrag>();
+}
 
 /// <summary>Ein Eintrag des Verzeichnisses im Bytefeld: Raumkennung, je Abschnitt Byte-Offset und Zahl.</summary>
 /// <param name="Raum">Die Raumkennung.</param>
@@ -339,7 +500,17 @@ public sealed record GebaeudeAnsichtKoerperfeld(byte[] Bytes, IReadOnlyList<Geba
 /// <param name="KantenAb">Byte-Offset der Randkanten.</param>
 /// <param name="KantenZahl">Zahl der Randkanten (je zwei int32).</param>
 public sealed record GebaeudeAnsichtKoerperfeldEintrag(
-    string Raum, int PunkteAb, int PunktZahl, int DreieckeAb, int DreieckZahl, int KantenAb, int KantenZahl);
+    string Raum, int PunkteAb, int PunktZahl, int DreieckeAb, int DreieckZahl, int KantenAb, int KantenZahl)
+{
+    /// <summary>Byte-Offset der Gruppenbytes (ein Byte je Dreieck); −1 = keine.</summary>
+    public int GruppenAb { get; init; } = -1;
+
+    /// <summary>Die Bauteilkennung (Einträge der Bauteilkörper); <c>null</c> bei Räumen.</summary>
+    public string? Bauteil { get; init; }
+
+    /// <summary>Die Gruppe des Bauteilkörpers (0–7); −1 bei Räumen.</summary>
+    public int Gruppe { get; init; } = -1;
+}
 
 /// <summary>Die Höhenlage eines Geschosses für die Körper; <c>null</c> = unbekannt (dann gestapelt).</summary>
 /// <param name="Kennung">Kennung des Geschosses (<see cref="GebaeudeAnsichtGeschoss.Kennung"/>).</param>
@@ -494,6 +665,56 @@ public sealed class GebaeudeAnsichtTexte
         ["Offen"] = Resource.GANS_VERMERK_OFFEN,
         ["Mehrschale"] = Resource.GANS_VERMERK_MEHRSCHALE,
     };
+
+    /// <summary>GANS_FARBMODUS — Beschriftung des Umschalters „Zonen | Randbedingung" für die Sprachausgabe.</summary>
+    public string Farbmodus { get; set; } = Resource.GANS_FARBMODUS;
+
+    /// <summary>GANS_FARBMODUS_ZONEN</summary>
+    public string FarbmodusZonen { get; set; } = Resource.GANS_FARBMODUS_ZONEN;
+
+    /// <summary>GANS_FARBMODUS_RAND</summary>
+    public string FarbmodusRand { get; set; } = Resource.GANS_FARBMODUS_RAND;
+
+    /// <summary>GANS_RAND_OHNE_KLASSIFIKATION — „Randbedingung" ist nicht wählbar: keine Klassifikation.</summary>
+    public string RandOhneKlassifikation { get; set; } = Resource.GANS_RAND_OHNE_KLASSIFIKATION;
+
+    /// <summary>GANS_RAND_ZU_GROSS — „Randbedingung" ist nicht wählbar: über der Dreiecksgrenze.</summary>
+    public string RandZuGross { get; set; } = Resource.GANS_RAND_ZU_GROSS;
+
+    /// <summary>GANS_RAND_LEGENDE — Beschriftung der Gruppenlegende.</summary>
+    public string RandLegende { get; set; } = Resource.GANS_RAND_LEGENDE;
+
+    /// <summary>GANS_RAND_FLAECHE — {0} = Flächensumme.</summary>
+    public string RandFlaeche { get; set; } = Resource.GANS_RAND_FLAECHE;
+
+    /// <summary>GANS_RAND_SCHALTER — Beschriftung des Schalters je Gruppe, {0} = Gruppe.</summary>
+    public string RandSchalter { get; set; } = Resource.GANS_RAND_SCHALTER;
+
+    /// <summary>GANS_RAND_NUR_LEGENDE — Decken (R5, R6) stehen im Grundriss nur in Legende und Bilanz.</summary>
+    public string RandNurLegende { get; set; } = Resource.GANS_RAND_NUR_LEGENDE;
+
+    /// <summary>GANS_RAND_BAUTEILKOERPER — Name des Legendenschalters für die Bauteilkörper (Körperansicht).</summary>
+    public string RandBauteilkoerper { get; set; } = Resource.GANS_RAND_BAUTEILKOERPER;
+
+    /// <summary>GANS_RAND_KEINE — ein getroffenes Dreieck ohne Gruppe (entartet).</summary>
+    public string RandKeine { get; set; } = Resource.GANS_RAND_KEINE;
+
+    /// <summary>GANS_RAND_TREFFER_RAUM — Infozeile nach dem Klick auf einen Raumkörper, {0} = Raum, {1} = Gruppe.</summary>
+    public string RandTrefferRaum { get; set; } = Resource.GANS_RAND_TREFFER_RAUM;
+
+    /// <summary>GANS_RAND_TREFFER_BAUTEIL — Infozeile nach dem Klick auf einen Bauteilkörper, {0} = Bauteil, {1} = Gruppe.</summary>
+    public string RandTrefferBauteil { get; set; } = Resource.GANS_RAND_TREFFER_BAUTEIL;
+
+    /// <summary>GANS_RAND_R0 … GANS_RAND_R7 — die Namen der Gruppen nach dem Gruppenindex.</summary>
+    public IReadOnlyList<string> Randgruppen { get; set; } = new[]
+    {
+        Resource.GANS_RAND_R0, Resource.GANS_RAND_R1, Resource.GANS_RAND_R2, Resource.GANS_RAND_R3,
+        Resource.GANS_RAND_R4, Resource.GANS_RAND_R5, Resource.GANS_RAND_R6, Resource.GANS_RAND_R7,
+    };
+
+    /// <summary>Der Name einer Gruppe, mit ihrem Kürzel davor („R1 Wand gegen außen").</summary>
+    public string Gruppenname(Randgruppe g)
+        => g + " " + ((int)g < Randgruppen.Count ? Randgruppen[(int)g] : "");
 
     /// <summary>Die Herkunft eines Körpers als Text.</summary>
     public string Herkunft(Koerperherkunft herkunft) => herkunft switch

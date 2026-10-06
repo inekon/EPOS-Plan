@@ -264,5 +264,214 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("open shell", new GebaeudeAnsichtTexte().Vermerk("Offen"));
             Assert.Equal("offene Schale", new GebaeudeAnsichtTexte().Vermerk("Offen"));
         }
+
+        // =====================================================================
+        //  HC-2 Teil A — Gruppen nach Randbedingung (HottCAD-Verbund 4.3)
+        // =====================================================================
+
+        /// <summary>Liest eine Körperprobe und gibt Abbild, Gebäude und die Daten der Ansicht mit Gruppen.</summary>
+        private static (GebaeudeAbbild Abbild, AbbildGebaeude Gebaeude, Zonengeometrie Geometrie, GebaeudeAnsichtDaten Daten) MitGruppen(string datei)
+        {
+            string pfad = Path.Combine(IfcProbenTests.Ordner(), datei);
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            Zonengeometrie zg = GebaeudeGrundriss.Bilden(a.Abbild, 0);
+            AbbildGebaeude g = a.Abbild.Gebaeude[0];
+            return (a.Abbild, g, zg, GebaeudeImportAnsicht.AnsichtDaten(zg, true, null, g));
+        }
+
+        [Theory]
+        [InlineData("ifc4_koerper_bauteile.ifc")]
+        [InlineData("ifc4_koerper_nachbarn.ifc")]
+        [InlineData("ifc4_koerper_nachbarn_grenzen.ifc")]
+        public void HC2_Gruppenbyte_je_Dreieck_und_Gruppenliste_gegen_die_Bilanz(string datei)
+        {
+            (_, AbbildGebaeude g, Zonengeometrie zg, GebaeudeAnsichtDaten d) = MitGruppen(datei);
+
+            Assert.True(d.HatRandgruppen);
+            Assert.True(d.RandbedingungWaehlbar);
+            Assert.Equal(Enumerable.Range(0, 8).Select(x => (Randgruppe)x), d.Flaechengruppen.Select(x => x.Gruppe));
+            foreach (GebaeudeAnsichtFlaechengruppe x in d.Flaechengruppen)
+                Assert.Equal(g.FlaechengruppenBilanzM2[(Flaechengruppe)(int)x.Gruppe], x.FlaecheM2, 9);
+
+            // Je Raumkörper ein Byte je Dreieck, gleich der Gruppe seiner Zeile; die Zählung der Liste geht über alle Bytes.
+            int[] zahl = new int[8];
+            foreach (AbbildRaum r in g.Raeume.Where(x => x.Koerper != null))
+            {
+                IReadOnlyList<byte> gruppen = d.Koerperraum(r.Kennung)!.Dateikoerper!.Gruppen!;
+                Assert.Equal(r.Koerper.DreieckZahl, gruppen.Count);
+                foreach (Flaechengruppenzeile z in g.Flaechengruppen.Where(z => z.Raumkennung == r.Kennung))
+                    Assert.All(z.Dreiecksindizes, t => Assert.Equal((byte)z.Gruppe, gruppen[t]));
+                foreach (byte b in gruppen) zahl[b]++;
+            }
+            Assert.Equal(zahl, d.Flaechengruppen.Select(x => x.DreieckZahl));
+
+            // Das Bytefeld: der erste Teil ist byteweise der ohne Gruppen, dahinter Bauteilkörper und Gruppenbytes.
+            GebaeudeAnsichtKoerperfeld f = d.Koerperfeld();
+            byte[] ohne = GebaeudeImportAnsicht.AnsichtDaten(zg, true).Koerperfeld().Bytes;
+            Assert.Equal(ohne, f.Bytes.Take(ohne.Length));
+            Assert.Equal(0, f.Bytes.Length % 4);
+            foreach (GebaeudeAnsichtKoerperfeldEintrag e in f.Verzeichnis)
+            {
+                IReadOnlyList<byte> gruppen = d.Koerperraum(e.Raum)!.Dateikoerper!.Gruppen!;
+                Assert.True(e.GruppenAb >= ohne.Length);
+                Assert.Equal(gruppen, f.Bytes.Skip(e.GruppenAb).Take(e.DreieckZahl));
+            }
+            Assert.Equal(d.Bauteilkoerper.Select(b => (b.Bauteil, (int)b.Gruppe)), f.Bauteile.Select(e => (e.Bauteil!, e.Gruppe)));
+            Assert.All(f.Bauteile, e => Assert.True(e.PunkteAb >= ohne.Length && e.KantenAb + 8 * e.KantenZahl <= f.Verzeichnis.Min(v => v.GruppenAb)));
+            Assert.Equal(f.Bytes, MitGruppen(datei).Daten.Koerperfeld().Bytes);
+            _aus.WriteLine(datei + ": " + string.Join(", ", d.Flaechengruppen.Select(x => x.Gruppe + " " + x.FlaecheM2.ToString("0.##", CultureInfo.InvariantCulture)
+                                                                                       + " m² / " + x.DreieckZahl))
+                           + "; Bauteilkörper " + d.Bauteilkoerper.Count + ", Bytefeld " + f.Bytes.Length + " Byte (ohne Gruppen " + ohne.Length + ")");
+        }
+
+        [Fact]
+        public void HC2_Bauteilkoerper_tragen_Gruppe_und_Kennung_relativ_zum_Bezugspunkt()
+        {
+            (_, AbbildGebaeude g, _, GebaeudeAnsichtDaten d) = MitGruppen("ifc4_koerper_bauteile.ifc");
+            AbbildBauteil sued = g.Bauteile.Single(b => b.Name == "Außenwand Süd");
+            AbbildBauteil fenster = sued.Oeffnungen.Single();
+
+            Assert.Equal(g.Flaechengruppen.Count(z => z.Raumkennung == null), d.Bauteilkoerper.Count);
+            Assert.Contains(d.Bauteilkoerper, b => b.Bauteil == sued.Kennung && b.Gruppe == Randgruppe.R1);
+            GebaeudeAnsichtBauteilkoerper f = d.Bauteilkoerper.Single(b => b.Bauteil == fenster.Kennung);
+            Assert.Equal(Randgruppe.R7, f.Gruppe);
+            Assert.Equal(fenster.Koerper.DreieckZahl, f.Koerper.DreieckZahl);
+            for (int a = 0; a < 3; a++)
+                Assert.Equal(fenster.Koerper.PunkteM[0][a] - d.Bezugspunkt[a], f.Koerper.Punkte[a], 4);
+            Assert.Null(f.Koerper.Gruppen);
+        }
+
+        private static string Kantentext(GebaeudeAnsichtKoerperraum k)
+            => "Kanten " + string.Join(" ", k.Kantengruppen!.SelectMany(p => p).Select(x => x?.ToString() ?? "-")) + ", Boden " + k.Bodengruppe
+               + ", Marken " + string.Join(" ", k.Kantenmarken.Select(m => m.Polygon + ":" + m.Kante + " "
+                                              + m.Von.ToString("0.###", CultureInfo.InvariantCulture) + "–"
+                                              + m.Bis.ToString("0.###", CultureInfo.InvariantCulture)));
+
+        [Fact]
+        public void HC2_Grundriss_schematisch_Kanten_nach_Richtung_Boden_ohne_erfundene_Marke()
+        {
+            // HottCAD ohne Raumgrenzen: die Umrisse sind schematisch, ihre Lage erfunden — die Kanten gehen nach ihrer Richtung.
+            (_, AbbildGebaeude g, Zonengeometrie zg, GebaeudeAnsichtDaten d) = MitGruppen("ifc4_koerper_bauteile.ifc");
+            string wohnen = g.Raeume.Single(r => r.Name == "Wohnen").Kennung;
+            Assert.Equal(Geometrieherkunft.Schematisch, zg.Raeume.Single(r => r.RaumKennung == wohnen).Herkunft);
+            GebaeudeAnsichtKoerperraum k = d.Koerperraum(wohnen)!;
+            List<Randgruppe?> kanten = k.Kantengruppen!.SelectMany(p => p).ToList();
+            _aus.WriteLine("Wohnen: " + Kantentext(k));
+
+            // Vier Kanten: drei gegen außen (R1), die zur Kammer gegen unbeheizt (R2); der Boden auf dem Erdreich (R3).
+            Assert.Equal(4, kanten.Count);
+            Assert.Equal(3, kanten.Count(x => x == Randgruppe.R1));
+            Assert.Equal(1, kanten.Count(x => x == Randgruppe.R2));
+            Assert.Equal(Randgruppe.R3, k.Bodengruppe);
+            // Die Lage des Fensters auf einer erfundenen Kante wäre erfunden: keine Marke, R7 steht in der Legende.
+            Assert.Empty(k.Kantenmarken);
+            Assert.True(d.Flaechengruppe(Randgruppe.R7)!.FlaecheM2 > 0);
+
+            // Die Kammer: ihre Trennfläche zu Wohnen ist aus ihrer Sicht R0.
+            GebaeudeAnsichtKoerperraum kammer = d.Koerperraum(g.Raeume.Single(r => r.Name == "Kammer").Kennung)!;
+            _aus.WriteLine("Kammer: " + Kantentext(kammer));
+            Assert.Contains(Randgruppe.R0, kammer.Kantengruppen!.SelectMany(p => p));
+        }
+
+        [Fact]
+        public void HC2_Grundriss_aus_Raumgrenzen_Kanten_nach_Lage()
+        {
+            (_, AbbildGebaeude g, Zonengeometrie zg, GebaeudeAnsichtDaten d) = MitGruppen("ifc4_koerper_nachbarn_grenzen.ifc");
+            foreach (AbbildRaum r in g.Raeume.Where(x => x.Koerper != null))
+            {
+                Raumumriss u = zg.Raeume.Single(x => x.RaumKennung == r.Kennung);
+                GebaeudeAnsichtKoerperraum k = d.Koerperraum(r.Kennung)!;
+                _aus.WriteLine(r.Name + " (" + u.Herkunft + "): " + Kantentext(k) + "; Polygon "
+                               + string.Join(" ", u.Polygone.SelectMany(p => p.Punkte).Select(p => p[0].ToString("0.###", CultureInfo.InvariantCulture) + "," + p[1].ToString("0.###", CultureInfo.InvariantCulture))));
+            }
+            // Büro: die Wand zum beheizten Nachbarn neutral (R0), die übrigen gegen außen, der Boden auf dem Erdreich.
+            GebaeudeAnsichtKoerperraum buero = d.Koerperraum(g.Raeume.Single(r => r.Name == "Büro").Kennung)!;
+            Assert.Equal(new Randgruppe?[] { Randgruppe.R1, Randgruppe.R0, Randgruppe.R1, Randgruppe.R1 }, buero.Kantengruppen!.Single());
+            Assert.Equal(Randgruppe.R3, buero.Bodengruppe);
+            Assert.Equal(Geometrieherkunft.Raumgrenzen, zg.Raeume.Single(x => x.RaumKennung == g.Raeume.Single(r => r.Name == "Büro").Kennung).Herkunft);
+            // Büro 2 liegt darüber (Umriss schematisch, Kanten nach Richtung): alle Wände gegen außen, sein Boden ist die
+            // Trenndecke zum beheizten Büro (R0, weiß).
+            GebaeudeAnsichtKoerperraum buero2 = d.Koerperraum(g.Raeume.Single(r => r.Name == "Büro 2").Kennung)!;
+            Assert.All(buero2.Kantengruppen!.Single(), x => Assert.Equal(Randgruppe.R1, x));
+            Assert.Equal(Randgruppe.R0, buero2.Bodengruppe);
+        }
+
+        [Fact]
+        public void HC2_Ohne_Gebaeude_oder_Koerper_keine_Gruppen_und_Randbedingung_nicht_waehlbar()
+        {
+            (_, _, Zonengeometrie zg, _) = MitGruppen("ifc4_koerper_bauteile.ifc");
+            GebaeudeAnsichtDaten ohne = GebaeudeImportAnsicht.AnsichtDaten(zg, true);
+            Assert.False(ohne.HatRandgruppen);
+            Assert.False(ohne.RandbedingungWaehlbar);
+            Assert.Empty(ohne.Bauteilkoerper);
+            Assert.All(ohne.Koerperraeume, k => Assert.Null(k.Kantengruppen));
+
+            // Ein Gebäude ohne Raumkörper (die CAD-Probe): keine Klassifikation, keine Gruppen.
+            string pfad = Path.Combine(IfcProbenTests.Ordner(), "ifc4_z6_cad.ifc");
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            GebaeudeAnsichtDaten cad = GebaeudeImportAnsicht.AnsichtDaten(GebaeudeGrundriss.Bilden(a.Abbild, 0), true, null, a.Abbild.Gebaeude[0]);
+            Assert.False(cad.HatRandgruppen);
+            Assert.False(cad.RandbedingungWaehlbar);
+        }
+
+        [Fact]
+        public void HC2_Prismenrueckfall_ueber_der_Dreiecksgrenze_ohne_Gruppen()
+        {
+            (_, _, _, GebaeudeAnsichtDaten d) = MitGruppen("ifc4_koerper_bauteile.ifc");
+            // Über der Grenze der Ansicht: die Gruppen bleiben in den Daten, wählbar ist „Randbedingung“ nicht.
+            GebaeudeAnsichtDaten klein = d with { Dreiecksgrenze = 1 };
+            Assert.True(klein.DateikoerperZuGross);
+            Assert.True(klein.HatRandgruppen);
+            Assert.False(klein.RandbedingungWaehlbar);
+
+            // Über der Grenze der Hülle (Raum- und Bauteilkörper zusammen): keine Gruppen, benannt.
+            GebaeudeAnsichtDaten gross = Gross();
+            Assert.True(gross.RandgruppenZuGross);
+            Assert.False(gross.HatRandgruppen);
+            Assert.False(gross.RandbedingungWaehlbar);
+            Assert.Empty(gross.Bauteilkoerper);
+            Assert.All(gross.Koerperraeume, k => Assert.Null(k.Dateikoerper?.Gruppen));
+        }
+
+        /// <summary>
+        /// Die Bauteilprobe mit einem Fenster, dessen Körper die Dreiecksgrenze allein übersteigt (die Raumkörper bleiben darunter).
+        /// </summary>
+        private static GebaeudeAnsichtDaten Gross()
+        {
+            string pfad = Path.Combine(IfcProbenTests.Ordner(), "ifc4_koerper_bauteile.ifc");
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            AbbildGebaeude g = a.Abbild.Gebaeude[0];
+            AbbildBauteil fenster = g.Bauteile.Single(b => b.Name == "Außenwand Süd").Oeffnungen.Single();
+            Dateikoerper k = fenster.Koerper;
+            fenster.Koerper = new Dateikoerper
+            {
+                PunkteM = k.PunkteM, Normalen = k.Normalen, Randkanten = k.Randkanten, Art = k.Art, Vermerke = k.Vermerke,
+                Dreiecke = Enumerable.Repeat(k.Dreiecke[0], Dateikoerper.DREIECKSGRENZE + 1).ToList(),
+            };
+            return GebaeudeImportAnsicht.AnsichtDaten(GebaeudeGrundriss.Bilden(a.Abbild, 0), true, null, g);
+        }
+
+        [Fact]
+        public void HC2_Jede_Gruppe_hat_Farbe_und_Namen_in_beiden_Sprachen()
+        {
+            Assert.Equal(GebaeudeAnsichtRandgruppen.ZAHL, GebaeudeAnsichtRandgruppen.FARBEN.Count);
+            Assert.Equal(GebaeudeAnsichtRandgruppen.ZAHL, GebaeudeAnsichtRandgruppen.FARBEN.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+            Assert.All(GebaeudeAnsichtRandgruppen.FARBEN, f => Assert.Matches("^#[0-9a-f]{6}$", f));
+            Assert.Equal(Enum.GetNames(typeof(Flaechengruppe)).OrderBy(x => x), Enum.GetNames(typeof(Randgruppe)).OrderBy(x => x));
+            foreach (Randgruppe x in Enum.GetValues(typeof(Randgruppe)))
+                Assert.Equal((int)Enum.Parse<Flaechengruppe>(x.ToString()), (int)x);
+            foreach (string sprache in new[] { "de-DE", "en-US" })
+                using (new Kulturvorrichtung(sprache))
+                    Assert.All(new GebaeudeAnsichtTexte().Randgruppen, t => Assert.False(string.IsNullOrWhiteSpace(t)));
+            Assert.Equal("R1 Wand gegen außen", new GebaeudeAnsichtTexte().Gruppenname(Randgruppe.R1));
+            using (new Kulturvorrichtung("en-US"))
+                Assert.Equal("R1 wall to outside", new GebaeudeAnsichtTexte().Gruppenname(Randgruppe.R1));
+        }
     }
 }
