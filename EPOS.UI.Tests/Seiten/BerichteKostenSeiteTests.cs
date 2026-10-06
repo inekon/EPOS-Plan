@@ -571,8 +571,9 @@ public class BerichteKostenSeiteTests : BunitContext
         BerichtSeite bericht = cut.FindComponent<BerichtSeite>().Instance;
         Assert.Equal(BerichtStand.SZENARIO_VALERI, bericht.Szenariowahl);
         Assert.Contains(WIRTSCHAFT, bericht.AktiveBausteine);
-        // Der Text der Vorbelegung kommt aus der Ressource der Oberflächensprache (BK_BER_SZENARIO_VALERI).
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.BK_BER_SZENARIO_VALERI, cut.Find(".epos-bericht-vorbelegt").TextContent);
+        // Die leise Zeile trägt den eigenen Satz der VALERI-Darstellung aus der Oberflächensprache (BK_BER_VORBELEGT_VALERI).
+        Assert.Equal(bericht.Vorbelegungszeile.Trim(), cut.Find(".epos-bericht-vorbelegt").TextContent.Trim());
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.BK_BER_VORBELEGT_VALERI.Split("{0}")[0], bericht.Vorbelegungszeile);
 
         // Gegenprobe: aus der Darstellung „Kennzahlen“ das Szenario der Einzelheiten (Günstig).
         var kennzahlen = Render<BerichteKostenSeite>(p => p

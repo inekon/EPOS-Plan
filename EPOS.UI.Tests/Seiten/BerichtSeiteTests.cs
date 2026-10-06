@@ -699,7 +699,17 @@ public class BerichtSeiteTests : BunitContext
         var vorbelegt = Zeige(p => p.Add(x => x.Vorbelegung,
             new BerichtVorbelegung(true, new[] { 1030 }, BerichtStand.SZENARIO_VALERI, VALERI)), MitVierEintraegen(0));
         Assert.Equal(BerichtStand.SZENARIO_VALERI, vorbelegt.Instance.Szenariowahl);
-        Assert.Contains(VALERI, vorbelegt.Instance.Vorbelegungszeile);
+        // Eigener Satz der VALERI-Darstellung (BK_BER_VORBELEGT_VALERI) statt des Satzes mit Szenarioname.
+        string[] teile = WindowsFormsApplication1.MyResource.Resource.BK_BER_VORBELEGT_VALERI.Split("{0}");
+        Assert.StartsWith(teile[0], vorbelegt.Instance.Vorbelegungszeile);
+        Assert.EndsWith(teile[1], vorbelegt.Instance.Vorbelegungszeile);
+        Assert.DoesNotContain(VALERI, vorbelegt.Instance.Vorbelegungszeile);
+
+        // Gegenprobe: ein einzelnes Szenario behält den Satz mit dem Szenarionamen.
+        var einzeln = Zeige(p => p.Add(x => x.Vorbelegung,
+            new BerichtVorbelegung(true, new[] { 1030 }, 1, "Günstig")), MitVierEintraegen(0));
+        Assert.Contains("Günstig", einzeln.Instance.Vorbelegungszeile);
+        Assert.NotEqual(vorbelegt.Instance.Vorbelegungszeile, einzeln.Instance.Vorbelegungszeile);
     }
 
     /// <summary>Ein Stand mit angehaktem Baustein Wirtschaftlichkeit.</summary>

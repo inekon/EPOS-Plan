@@ -8265,6 +8265,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit. Der Bericht zeigt die Kennzahlen je Szenario (Ungünstig, Erwartet, Günstig); die übrigen Tafeln stehen im Szenario Erwartet. Gemerkt wird die Auswahl mit „Erstellen“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORBELEGT_VALERI {
+            get {
+                return ResourceManager.GetString("BK_BER_VORBELEGT_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die anzeigen ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_BTN_ANZEIGEN {
