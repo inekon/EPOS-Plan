@@ -40,7 +40,7 @@ Kern-Filter und Windows-Schale (Linux) je 0 Fehler. Filter samt Wachen: EPOS.Ker
 
 ## 6 Gate 749
 
-Hauptbaum, Kopf `768217eb`: ⟨GATE749⟩.
+Hauptbaum, Kopf `768217eb`: 19 815 Tests, 19 811 grün, 4 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 582, EPOS.Kern 11 259 mit 3 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-05_R38_Vorlaufwahl` PASS, 0 Abweichungen, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 432 Texte, 0 Fundstellen (gefahren als Ablage GATE748, 48 min).
 
 ## 7 Offen
 
