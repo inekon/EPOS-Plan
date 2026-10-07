@@ -279,7 +279,13 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 - gesäte Erdreichdaten der Referenzgebäude: Grundfläche und `k_Wert_Grundflaeche` sowie die U-Werte der Bauteile am
   Erdreich, die Randbedingung der Grundfläche, das Umfangsfeld `Abmessung_Anschluß_Außenwand_Kellerdecke` und die
   Wände am Erdreich (Neigung 45° bis 135°); dazu die Festwerte λ_Erd, w und R_se und die Abschnittsobergrenze 8 in
-  `GebaeudeFestwerte`.
+  `GebaeudeFestwerte`;
+- gesäte Erdreichquellen der Referenzprojekte: an ihren Wärmepumpen-Anlagen in `Tab_Energieanlagen` die Quellfelder
+  `WQ_Typ`, `WQ_Quellsystem`, `WQ_Tiefe`, `WQ_Anzahl`, `WQ_Flaeche`, `WQ_Bodentyp`, `WQ_Spreizung`; die Klimazone
+  `Tab_Klimaregion.Klimazone_DIN4710` ihrer Klimaregion; der Bodenkatalog (λ, ρ·c_p) der benutzten Bodentypen; die
+  Normgeometrie von `Sondenfeldgeometrie` samt den Festwerten in `Erdsondenfeld` (Abstand 6 m, Bohrlochradius
+  0,075 m, R_b 0,10 m·K/W, Kopfüberdeckung 2 m, Betrachtungsjahr 10, Heizgrenze 15 °C der Startschätzung,
+  quadratische Anordnung); dazu das Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
