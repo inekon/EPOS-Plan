@@ -30901,6 +30901,12 @@ Do you want to allow this?</value>
   <data name="SIMENG_WP_VORLAUF_KENNLINIENWAHL" xml:space="preserve">
     <value>{0}: characteristic curve chosen per hour at the calculated flow temperature of the heating circuit — hours per support point: {1}.</value>
   </data>
+  <data name="SIMENG_WP_VORLAUF_INTERPOLIERT" xml:space="preserve">
+    <value>{0}: characteristic curve interpolated between two support points at the calculated flow temperature (the hours per support point name the nearest one) — {1}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_VORLAUF_INTERPOLIERT" xml:space="preserve">
+    <value>Heat pump "{0}": the cooling flow temperature {1} °C lies between the data points {2} °C and {3} °C of the cooling characteristic — cooling capacity and EER are interpolated between both.</value>
+  </data>
   <data name="SIMENG_WP_VORLAUF_AUSSERHALB_HINWEIS" xml:space="preserve">
     <value>{0}: the calculated flow temperature of the heating circuit was above the highest support point {2} °C of the characteristic curves in {1} hours (calculated up to {3} °C); the highest curve was used — the performance factor of these hours therefore tends to be too high (extrapolation permitted).</value>
   </data>

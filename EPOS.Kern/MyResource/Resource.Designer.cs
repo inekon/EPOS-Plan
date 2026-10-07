@@ -95538,6 +95538,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühl-Vorlauf {1} °C liegt zwischen den Stützstellen {2} °C und {3} °C der Kühlkennlinie — Kälteleistung und EER werden zwischen beiden interpoliert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_VORLAUF_INTERPOLIERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_VORLAUF_INTERPOLIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Im Betriebskalender „{2}“ hat mindestens ein Monat keine Stunde mit Bedarf; dieser Monat rechnet ohne Betriebsferien. ähnelt.
         /// </summary>
         public static string SIMENG_KALENDER_MONAT_OHNE_BETRIEB {
@@ -96641,6 +96650,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN {
             get {
                 return ResourceManager.GetString("SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Kennlinie am gerechneten Vorlauf zwischen zwei Stützstellen interpoliert (die Stunden je Stützstelle nennen die nächstgelegene) — {1}. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_VORLAUF_INTERPOLIERT {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_VORLAUF_INTERPOLIERT", resourceCulture);
             }
         }
         
