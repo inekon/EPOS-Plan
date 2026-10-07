@@ -38,7 +38,7 @@ Keine der echten Dateien trägt eine Nordrichtung (IFC `TrueNorth`, gbXML `CADMo
 
 ## 4 Gate 809
 
-⟨GATE809⟩
+Hauptbaum `6f61bfabd`, 93 min: 20 809 Tests, 20 802 grün, 6 übersprungen, 1 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 804, EPOS.Kern 12 031 mit 5 übersprungen); rot war die Formularraster-Wache (der Stilblock der Nordrichtungswahl stand am Dateiende hinter dem Formularraster), behoben in `ba614ff0a` (Block vor den Abschnitt Konditionierung), EPOS.UI danach vollständig 7 804/7 804; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R41_Erdreichpruefung` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 504 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
 
 ## 5 Offen
 
