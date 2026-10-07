@@ -66,3 +66,14 @@ Was G5 dort ablegt, muss diese Größen tragen:
 - Braucht G5 eine Änderung am Rechenweg, meldet die Sitzung IFC sie hier an; die Sitzung Gebäudesimulation baut sie oder gibt sie frei.
 - Beide Sitzungen melden Schemaschritte in der Kopfzeile der Statusdatei an und prüfen Status- und Entscheidnummern vor jedem Push
   gegen origin.
+
+## 6 Stand
+
+| Teil | Stand |
+|---|---|
+| G5-1 Bauteilkörper | gebaut (#801) |
+| G5-2 Öffnungen | gebaut (#802) |
+| G5-0 Schemaschritt 197 (`Tab_Bauteil.Flaechenherkunft`) | wartet auf 196 |
+| G5-3 | offen |
+
+A1 bis A5 halten aus Sicht von G5-1 und G5-2; der Rechenweg ist unverändert, der Referenzlauf der CI-Projekte gegen R40 ohne Abweichung.

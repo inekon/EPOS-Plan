@@ -377,19 +377,19 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ohne_Mengen_wird_gemeldet_und_nicht_aus_Geometrie_abgeleitet()
+        public void Ohne_Mengen_kommt_die_Flaeche_aus_dem_Bauteilkoerper()
         {
+            // Stufe G5-1: Die Wände tragen keinen Mengensatz, aber ihren Körper — die Fläche folgt aus ihm, benannt.
             GebaeudeImportAblauf a = Lesen("ifc4_ohne_mengen.ifc");
-            PruefMeldung m = a.Meldungen.Single(x => x.Schluessel == P + "KEINE_MENGEN");
-            Assert.Equal(PruefStufe.Warnung, m.Stufe);
+            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "KEINE_MENGEN");
+            PruefMeldung m = a.Meldungen.Single(x => x.Schluessel == P + "FLAECHE_KOERPER");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
             Assert.Equal("4", m.Werte[0]);
             Assert.True(Hat(a.Abbild.Gebaeude[0].Meldungen, P + "KEINE_RAEUME", PruefStufe.Warnung));
 
             GebaeudeImportSatz s = a.Zuordnen(0, 'E');
             Assert.Null(Wert(s, GebaeudeZielfelder.NUTZFLAECHE));
-            GebaeudeFeldzeile wand = s.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND);
-            Assert.Equal(0.0, wand.Wert);
-            Assert.Equal(PruefStufe.Warnung, wand.Markierung);
+            Nah(90.0, Wert(s, GebaeudeZielfelder.FLAECHE_AUSSENWAND));
             Assert.Contains(GebaeudeImportAblauf.Pruefen(s), x => x.Schluessel == G + "PFLICHT_FEHLT");
         }
 
