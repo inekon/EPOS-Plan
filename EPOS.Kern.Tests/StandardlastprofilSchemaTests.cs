@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -13,16 +15,18 @@ namespace EPOS.Kern.Tests
     /// Der Schemaschritt der <b>BDEW-Standardlastprofile Strom 2025</b> (<see cref="StandardlastprofilSchema"/>,
     /// Welle SLP25) auf einer Arbeitskopie der Testdatenbank.
     ///
-    /// <para><b>Geprüft wird:</b> die Nummer und die Anweisungen; dass der Schritt drei gesperrte Köpfe in
-    /// <c>Tab_Stromverbraucher_STAMM</c> mit je einem gesperrten Typprofil in <c>Tab_Stromverbrauchertyp_STAMM</c>
-    /// anlegt, über den Typnamen verknüpft, mit Katalogschlüssel und der Prüfsumme der gelieferten Werte; dass
-    /// ein zweiter Lauf nichts ändert und <c>foreign_key_check</c> leer bleibt; dass er nur anlegt, was fehlt,
-    /// nie überschreibt und eigene Sätze des Anwenders meldet; dass der Katalogdialog 44 statt 41 Sätze
-    /// zeigt; dass eine Projektkopie über <c>ProfilBedarf</c> und <c>BhkwPlan.StromWocheToJahr</c> 8 760
-    /// Stundenwerte mit der gepflegten Jahressumme rechnet.</para>
+    /// <para><b>Geprüft wird:</b> die Kette (<c>TypaufbauSchema.SCHRITT + 1</c>), der Zielstand und die Anweisungen;
+    /// dass der Schritt drei gesperrte Köpfe in <c>Tab_Stromverbraucher_STAMM</c> mit je einem gesperrten Typprofil in
+    /// <c>Tab_Stromverbrauchertyp_STAMM</c> anlegt, über den Typnamen verknüpft, mit Katalogschlüssel und der Prüfsumme
+    /// der gelieferten Werte; dass ein Lauf auf dem gelieferten Stand nichts ändert und <c>foreign_key_check</c> leer
+    /// bleibt; dass er nur anlegt, was fehlt, nie überschreibt und eigene Sätze des Anwenders meldet; dass der
+    /// Katalogdialog 44 Sätze zeigt; dass eine Projektkopie über <c>ProfilBedarf</c> und
+    /// <c>BhkwPlan.StromWocheToJahr</c> 8 760 Stundenwerte mit der gepflegten Jahressumme rechnet; dass Repo-Datei,
+    /// Werkzeug, Migration und Testkopie den Schritt hinter 192 führen.</para>
     ///
-    /// <para><b>Phase 1:</b> Der Schritt ist noch nicht registriert — die Testdatenbank trägt die Sätze nicht,
-    /// jeder Fall führt den Schritt selbst aus. <b>Eigene Arbeitskopie je Fall</b> — die Fälle schreiben.</para>
+    /// <para><b>Vom gelieferten Stand aus:</b> Die Testdatenbank trägt die drei Sätze. Fälle, die das Säen prüfen,
+    /// löschen sie zuerst (<see cref="SaetzeLoeschen"/>) und säen dann. <b>Eigene Arbeitskopie je Fall</b> — die Fälle
+    /// schreiben.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class StandardlastprofilSchemaTests : IDisposable
@@ -38,8 +42,11 @@ namespace EPOS.Kern.Tests
 
         private static IReadOnlyList<StandardlastprofilSaat> Saat => StandardlastprofilSchema.Saat;
 
-        /// <summary>Die Sätze des Strombedarfskatalogs in der Testdatenbank vor dem Schritt.</summary>
+        /// <summary>Die Köpfe des Strombedarfskatalogs in der Testdatenbank ohne die drei BDEW-Sätze (Stand 192).</summary>
         private const int KOEPFE_VORHER = 41;
+
+        /// <summary>Die Typprofile des Strombedarfskatalogs in der Testdatenbank ohne die drei BDEW-Sätze (Stand 192).</summary>
+        private const int TYPEN_VORHER = 40;
 
         /// <summary>Referenzprojekt ohne Stromverbraucher-Zuordnung.</summary>
         private const int PROJEKT = 1030;
@@ -49,17 +56,17 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Die Nummer ist die angemeldete 193 hinter der Kategorie DIN (190) und den Schritten 191/192 der Sitzung
-        /// IFC. <b>Phase 1:</b> noch nicht eingehängt — der Zielstand liegt darunter. Phase 2 prüft hier die Kette
-        /// (<c>TypaufbauSchema.SCHRITT + 1</c>) und <c>SchemaStand.Zielversion &gt;= SCHRITT</c>.
+        /// Die Nummer folgt lückenlos auf die Typaufbauten (192, Sitzung IFC); der Zielstand reicht bis zu ihr, und das
+        /// Register der Paketanhebung führt sie als reinen Katalogschritt.
         /// </summary>
         [Fact]
-        public void Die_Nummer_ist_193_und_noch_nicht_eingehaengt()
+        public void Die_Nummer_folgt_auf_die_Typaufbauten_und_ist_das_Ziel()
         {
-            Assert.Equal(193, StandardlastprofilSchema.SCHRITT);
-            Assert.True(StandardlastprofilSchema.SCHRITT > RaumnutzungDinTsSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion < StandardlastprofilSchema.SCHRITT,
-                        "Der Schritt ist eingehängt (Zielstand " + SchemaStand.Zielversion + ") - Phase 2: Kette und Zielstand hier prüfen.");
+            Assert.Equal(TypaufbauSchema.SCHRITT + 1, StandardlastprofilSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= StandardlastprofilSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + StandardlastprofilSchema.SCHRITT + ".");
+            Assert.Contains(Paketanhebung.Stufen, s => s.Nr == StandardlastprofilSchema.SCHRITT &&
+                                                       s.Wirkung == Paketanhebung.Art.Katalog);
         }
 
         /// <summary>Die Anweisungen tragen nur Platzhalter — 170 beim Typprofil, 15 beim Kopf — und die Parameter passen.</summary>
@@ -85,15 +92,20 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Drei gesperrte Köpfe mit den Monatswerten der Konstanten, je ein gesperrtes Typprofil mit den 168
         /// Wochenwerten, verknüpft über den Typnamen; Schlüssel aus dem Namen und die Prüfsumme der gelieferten
-        /// Werte (KU1); <c>foreign_key_check</c> leer.
+        /// Werte (KU1); <c>foreign_key_check</c> leer. Vom gelieferten Stand aus: erst gelöscht, dann gesät.
         /// </summary>
         [Fact]
         public void Der_Schritt_saet_drei_gesperrte_Saetze_mit_Typprofil_und_Katalogschluessel()
         {
             if (!_db.Vorhanden) return;
 
+            Assert.True(StandardlastprofilSchema.Vollstaendig());
+            Assert.Equal(KOEPFE_VORHER + 3L, Zahl("SELECT COUNT(*) FROM Tab_Stromverbraucher_STAMM"));
+            Assert.Equal(TYPEN_VORHER + 3L, Zahl("SELECT COUNT(*) FROM Tab_Stromverbrauchertyp_STAMM"));
+            SaetzeLoeschen();
             Assert.Equal((long)KOEPFE_VORHER, Zahl("SELECT COUNT(*) FROM Tab_Stromverbraucher_STAMM"));
             long typenVorher = Zahl("SELECT COUNT(*) FROM Tab_Stromverbrauchertyp_STAMM");
+            Assert.Equal((long)TYPEN_VORHER, typenVorher);
             Assert.False(StandardlastprofilSchema.Vollstaendig());
 
             var bericht = new List<string>();
@@ -149,13 +161,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_foreign_key_check"));
         }
 
-        /// <summary>Ein zweiter Lauf legt nichts an, vergibt keinen Schlüssel und ändert keine Zelle beider Tabellen.</summary>
+        /// <summary>
+        /// Ein Lauf auf dem gelieferten Stand — der zweite nach dem Werkzeug — legt nichts an, vergibt keinen Schlüssel und
+        /// ändert keine Zelle beider Tabellen.
+        /// </summary>
         [Fact]
         public void Ein_zweiter_Lauf_aendert_nichts()
         {
             if (!_db.Vorhanden) return;
 
-            StandardlastprofilSchema.Ausfuehren(null);
+            Assert.True(StandardlastprofilSchema.Vollstaendig());
             string vorher = Abzug();
 
             StandardlastprofilSchema.Bericht b = StandardlastprofilSchema.Ausfuehren(null);
@@ -179,6 +194,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             StandardlastprofilSaat h25 = Saat[0], g25 = Saat[1], l25 = Saat[2];
+            SaetzeLoeschen();
             Assert.True(DataRepository.ExecuteSQL("INSERT INTO Tab_Stromverbraucher_STAMM (Bezeichner, Typ, Beschreibung, Monat_1, ReadOnly) " +
                                                   "VALUES (?, 'Konst', 'eigen', 5, 0)", new DbParam("?", g25.Bezeichner)));
             Assert.True(DataRepository.ExecuteSQL("INSERT INTO Tab_Stromverbrauchertyp_STAMM (Typname, Beschreibung, \"1\", ReadOnly) " +
@@ -219,16 +235,15 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Katalog des Dialogs „Standard Stromprofil" („Datenbank Strombedarf") zeigt nach dem Schritt 44 statt
-        /// 41 Sätze; die Jahressumme jedes BDEW-Satzes ist 1.000 MWh, und die Liste der Verwaltung führt dieselben Namen.
+        /// Der Katalog des Dialogs „Standard Stromprofil" („Datenbank Strombedarf") zeigt auf dem gelieferten Stand 44
+        /// statt 41 Sätze; die Jahressumme jedes BDEW-Satzes ist 1.000 MWh, und die Liste der Verwaltung führt dieselben Namen.
         /// </summary>
         [Fact]
         public void Der_Katalogdialog_zeigt_44_Saetze_mit_1000_MWh()
         {
             if (!_db.Vorhanden) return;
 
-            Assert.Equal(KOEPFE_VORHER, BedarfStammCtrl.Katalogfilterzeilen(BedarfsArt.Stromverbraucher).Count);
-            StandardlastprofilSchema.Ausfuehren(null);
+            Assert.True(StandardlastprofilSchema.Vollstaendig());
 
             IReadOnlyList<Katalogfilterzeile> zeilen = BedarfStammCtrl.Katalogfilterzeilen(BedarfsArt.Stromverbraucher);
             Assert.Equal(KOEPFE_VORHER + 3, zeilen.Count);
@@ -269,7 +284,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            StandardlastprofilSchema.Ausfuehren(null);
+            Assert.True(StandardlastprofilSchema.Vollstaendig());
             Assert.Empty(Z_ProjektStromverbraucherCtrl.LiesProjekt(PROJEKT));
 
             double[] summen = { 4.5, 120.0, 30.0 };
@@ -309,9 +324,82 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // =============================================================================
+        //  Teil 3 - Repo-Datei, Werkzeug und Migration
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Die Werkzeug-Wache.</b> Migration der Schale, Werkzeug <c>Testdatenbankschema</c> und Testkopie führen den
+        /// Schritt aus derselben Quelle NACH den Typaufbauten (192); die Repo-Datei trägt ihn — Schemastand und die drei
+        /// gesperrten Sätze samt Typprofil und Katalogschlüssel (lesend geprüft, ohne Spuren).
+        /// </summary>
+        [Fact]
+        public void Repo_Datei_Werkzeug_und_Migration_fuehren_den_Schritt()
+        {
+            string wurzel = Repowurzel();
+            if (wurzel == null) return;
+
+            string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
+            int wSaat = werkzeug.IndexOf("StandardlastprofilSchema.Ausfuehren(", StringComparison.Ordinal);
+            Assert.True(wSaat > 0 && wSaat > werkzeug.IndexOf("TypaufbauSchema.Ausfuehren(", StringComparison.Ordinal),
+                        "Die Saat steht im Werkzeug nicht hinter den Typaufbauten.");
+
+            string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
+                                                             "Update", "SchemaMigration.cs"));
+            Assert.Contains("SCHRITT_STANDARDLASTPROFIL = StandardlastprofilSchema.SCHRITT", migration, StringComparison.Ordinal);
+            int ortVorher = migration.IndexOf("new Schritt(SCHRITT_TYPAUFBAU", StringComparison.Ordinal);
+            int ortSaat = migration.IndexOf("new Schritt(SCHRITT_STANDARDLASTPROFIL", StringComparison.Ordinal);
+            Assert.True(ortVorher > 0 && ortSaat > ortVorher, "Der Schritt steht nicht hinter 192.");
+            Assert.Contains("StandardlastprofilSchema.Ausfuehren(bericht)", migration, StringComparison.Ordinal);
+
+            string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
+            int vSaat = vorrichtung.IndexOf("StandardlastprofilSchema.Ausfuehren(null)", StringComparison.Ordinal);
+            Assert.True(vSaat > 0 && vSaat > vorrichtung.IndexOf("TypaufbauSchema.Ausfuehren(null)", StringComparison.Ordinal),
+                        "Die Saat steht in der Testkopie nicht hinter den Typaufbauten.");
+
+            string pfad = Path.Combine(wurzel, "Referenzlaeufe", "Kenndaten_Test.sqlite");
+            if (!File.Exists(pfad)) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+
+            string uri = "file:" + pfad.Replace('\\', '/').Replace("?", "%3f") + "?mode=ro&immutable=1";
+            using var verbindung = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = uri }.ToString());
+            verbindung.Open();
+            using SqliteCommand cmd = verbindung.CreateCommand();
+            cmd.CommandText = "SELECT SchemaVersion FROM Tab_Applikation";
+            Assert.True(Convert.ToInt64(cmd.ExecuteScalar(), CultureInfo.InvariantCulture) >= StandardlastprofilSchema.SCHRITT);
+            cmd.CommandText = "SELECT COUNT(*) FROM Tab_Stromverbraucher_STAMM k JOIN Tab_Stromverbrauchertyp_STAMM t ON t.Typname = k.Typ " +
+                              "WHERE k.Bezeichner = $b AND t.Typname = $t AND k.ReadOnly = 1 AND t.ReadOnly = 1 " +
+                              "AND k.Katalog_Schluessel IS NOT NULL AND t.Katalog_Schluessel IS NOT NULL";
+            foreach (StandardlastprofilSaat s in Saat)
+            {
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("$b", s.Bezeichner);
+                cmd.Parameters.AddWithValue("$t", s.Typname);
+                Assert.Equal(1L, Convert.ToInt64(cmd.ExecuteScalar(), CultureInfo.InvariantCulture));
+            }
+        }
+
         // -----------------------------------------------------------------------------
         //  Hilfen
         // -----------------------------------------------------------------------------
+
+        /// <summary>Löscht die drei gelieferten Sätze (Köpfe und Typprofile) unter ihren Namen — der Stand vor dem Schritt.</summary>
+        private static void SaetzeLoeschen()
+        {
+            foreach (StandardlastprofilSaat s in Saat)
+            {
+                Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_Stromverbraucher_STAMM WHERE Bezeichner = ?", new DbParam("?", s.Bezeichner)));
+                Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_Stromverbrauchertyp_STAMM WHERE Typname = ?", new DbParam("?", s.Typname)));
+            }
+        }
+
+        /// <summary>Die Wurzel des Repositoriums, aufwärts gesucht; sonst <c>null</c>.</summary>
+        private static string Repowurzel()
+        {
+            for (DirectoryInfo d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent)
+                if (File.Exists(Path.Combine(d.FullName, "WP-Plan.sln"))) return d.FullName;
+            return null;
+        }
 
         private static void Nah(double erwartet, double ist, double relativ, string was)
             => Assert.True(Math.Abs(erwartet - ist) <= relativ * Math.Max(1.0, Math.Abs(erwartet)),
