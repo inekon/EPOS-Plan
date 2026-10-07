@@ -188,6 +188,19 @@ namespace EPOS.Kern.Tests
                 s => s + " " + Convert.ToString(Kennzahl(PROJEKT, s), CultureInfo.InvariantCulture))), sekunden);
             // Der Puffer überbrückt die Sperre: höchstens eine Sperrstunde je Woche ohne entnehmbaren Vorrat.
             Assert.True(leer <= 52, "Speicher leer in " + leer + " Stunden");
+
+            // AK3-W5c: der Fahrplan wirkt über die Schranke des Kreises - die Zeile trägt die Komfortkennzahlen mit genau
+            // den Werten von KomfortProjekt(), Fahrplan_Begrenzt_Stunden bleibt NULL (Entsprechung Ak3_Schranke_Stunden).
+            (Komfortkennzahlen heizen, Komfortkennzahlen kuehlen) = r.simulation_Waermebedarf.KomfortProjekt();
+            Assert.NotNull(heizen);
+            Assert.True(Kennzahl(PROJEKT, AnlagenfahrplanSchema.SPALTE_FAHRPLAN_BEGRENZT) is null or DBNull);
+            Assert.Equal((long)heizen.Stunden, Convert.ToInt64(Kennzahl(PROJEKT, AnlagenfahrplanSchema.SPALTE_UNTERSCHREITUNGSSTUNDEN), CultureInfo.InvariantCulture));
+            // Die Ergebnistabelle legt Kelvinstunden auf eine Nachkommastelle ab.
+            Assert.Equal(heizen.Kelvinstunden, Convert.ToDouble(Kennzahl(PROJEKT, AnlagenfahrplanSchema.SPALTE_KELVINSTUNDEN), CultureInfo.InvariantCulture), 0.0501);
+            Assert.Equal((long)heizen.LaengsteStrecke, Convert.ToInt64(Kennzahl(PROJEKT, AnlagenfahrplanSchema.SPALTE_LAENGSTE_STRECKE), CultureInfo.InvariantCulture));
+            object ueber = Kennzahl(PROJEKT, AnlagenfahrplanSchema.SPALTE_UEBERSCHREITUNGSSTUNDEN);
+            if (kuehlen == null) Assert.True(ueber is null or DBNull);
+            else Assert.Equal((long)kuehlen.Stunden, Convert.ToInt64(ueber, CultureInfo.InvariantCulture));
         }
 
         /// <summary>
