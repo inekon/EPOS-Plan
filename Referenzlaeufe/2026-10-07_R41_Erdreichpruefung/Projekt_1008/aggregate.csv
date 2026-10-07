@@ -21,16 +21,16 @@ Erdreich.Anzahl;1
 Erdreich[0].ID_Anlage;10132
 Erdreich[0].Modul;CS7800iLW 16
 Erdreich[0].Unwirksam;False
-Erdreich[0].MaxEntzugBelastbar;False
+Erdreich[0].MaxEntzugBelastbar;True
 Erdreich[0].MaxEntzugGeschaetzt;False
 Erdreich[0].InklSpeicherladung;False
-Erdreich[0].JahresentzugKWh;0
-Erdreich[0].MaxEntzugW;0
-Erdreich[0].VolllastStunden;0
+Erdreich[0].JahresentzugKWh;52486.874
+Erdreich[0].MaxEntzugW;15251.034
+Erdreich[0].VolllastStunden;3441.52887
 Erdreich[0].BetriebsStunden;8760
 Erdreich[0].FrostStunden;4610
 Erdreich[0].FrostWarnung;True
-Erdreich[0].Pruefung_Moeglich;False
+Erdreich[0].Pruefung_Moeglich;True
 Erdreich[0].Pruefung_Warnung;False
 Geb[0].ID_Gebaeude;10576
 Geb[0].Modell;VDI6007
