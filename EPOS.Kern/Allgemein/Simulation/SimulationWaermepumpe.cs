@@ -75,24 +75,61 @@ namespace WindowsFormsApplication1
             /// </summary>
             internal Vorlauflage Zaehlen(double vorlauf, bool extrapolationErlaubt, out int stelle)
             {
+                Vorlauflage lage = Abfragen(vorlauf, extrapolationErlaubt, out stelle);
+                Festschreiben();
+                return lage;
+            }
+
+            // AK3-W2 (Befund L1, 8): die vorgemerkte Wahl der laufenden Stunde - gezählt erst
+            // beim Festschreiben, damit eine mehrfach abgefragte Stunde nur einmal zählt.
+            private bool _vorgemerkt;
+            private Vorlauflage _lageVorgemerkt;
+            private int _stelleVorgemerkt;
+            private double _vorlaufVorgemerkt;
+
+            /// <summary>
+            /// Wählt die Stützstelle am gerechneten Vorlauf <paramref name="vorlauf"/> OHNE zu zählen
+            /// (AK3-W2): Die Wahl wird für die laufende Stunde vorgemerkt; eine weitere Abfrage derselben
+            /// Stunde ersetzt die Vormerkung. Gezählt wird erst in <see cref="Festschreiben"/>, einmal je
+            /// Stunde. Bei <see cref="Vorlauflage.Verboten"/> wird nichts vorgemerkt.
+            /// </summary>
+            internal Vorlauflage Abfragen(double vorlauf, bool extrapolationErlaubt, out int stelle)
+            {
                 int[] vorlaeufe = new int[Kurven.Length];
                 for (int k = 0; k < vorlaeufe.Length; k++) vorlaeufe[k] = Kurven[k].Vorlauf;
                 Vorlauflage lage = VorlaufAuswerten(vorlaeufe, vorlauf, extrapolationErlaubt, out stelle);
-                switch (lage)
+                if (lage == Vorlauflage.Verboten)
                 {
-                    case Vorlauflage.Verboten:
-                        return lage;
+                    _vorgemerkt = false;
+                    return lage;
+                }
+                _vorgemerkt = true;
+                _lageVorgemerkt = lage;
+                _stelleVorgemerkt = stelle;
+                _vorlaufVorgemerkt = vorlauf;
+                return lage;
+            }
+
+            /// <summary>
+            /// Zählt die vorgemerkte Wahl der Stunde (AK3-W2): die gewählte Stützstelle und, falls außerhalb,
+            /// darüber oder darunter. Ohne Vormerkung (keine Abfrage, oder schon festgeschrieben) zählt es nichts.
+            /// </summary>
+            internal void Festschreiben()
+            {
+                if (!_vorgemerkt) return;
+                _vorgemerkt = false;
+                switch (_lageVorgemerkt)
+                {
                     case Vorlauflage.Darueber:
                         Darueber++;
-                        if (vorlauf > DarueberMax) DarueberMax = vorlauf;
+                        if (_vorlaufVorgemerkt > DarueberMax) DarueberMax = _vorlaufVorgemerkt;
                         break;
                     case Vorlauflage.Darunter:
                         Darunter++;
-                        if (vorlauf < DarunterMin) DarunterMin = vorlauf;
+                        if (_vorlaufVorgemerkt < DarunterMin) DarunterMin = _vorlaufVorgemerkt;
                         break;
                 }
-                Stunden[stelle]++;
-                return lage;
+                Stunden[_stelleVorgemerkt]++;
             }
 
             /// <summary>
@@ -1178,7 +1215,8 @@ namespace WindowsFormsApplication1
             double v = Heizkreisvorlauf[stunde];
             if (double.IsNaN(v) || double.IsInfinity(v)) return fest;
 
-            if (wahl.Zaehlen(v, Extrapolation_Erlaubt, out int stelle) == Vorlauflage.Verboten)
+            // AK3-W2: abfragen, nicht zählen - gezählt wird einmal je Stunde in Zweikanalig_StundeEnde.
+            if (wahl.Abfragen(v, Extrapolation_Erlaubt, out int stelle) == Vorlauflage.Verboten)
             {
                 string bezeichner = wp_model[index]?.Bezeichner ?? "";
                 Fehlertext = string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN,
@@ -1987,6 +2025,10 @@ namespace WindowsFormsApplication1
         {
             waermerestbedarf_stuendlich[stunde] = (double)Kaskadenschleife.RestSumme(rest);
 
+            // AK3-W2 (Befund L1, 8): die Kennlinienwahl der Stunde EINMAL festschreiben -
+            // auch wenn sie in der Stunde mehrfach abgefragt wurde.
+            KennlinienwahlFestschreiben();
+
             // Welle M4, WP1: Taktverlust und Starts der Stunde.
             if (_taktIrgendein) TaktStundeAbschliessen(stunde);
 
@@ -1997,6 +2039,15 @@ namespace WindowsFormsApplication1
                     if (!KuehlModule[i] || Heizzeitanteil_stuendlich[i] == null) continue;
                     Heizzeitanteil_stuendlich[i][stunde] = Heizzeitanteil(_heizWaermeStunde[i], _heizLeistungStunde[i]);
                 }
+        }
+
+        /// <summary>
+        /// Schreibt die vorgemerkte Kennlinienwahl jedes Moduls fest (AK3-W2): einmal je Stunde gezählt,
+        /// gleich wie oft <see cref="KenndatenDerStunde"/> die Stunde abgefragt hat.
+        /// </summary>
+        private void KennlinienwahlFestschreiben()
+        {
+            for (int i = 0; i < wp_kennlinienwahl.Count; i++) wp_kennlinienwahl[i]?.Festschreiben();
         }
 
         /// <summary>
@@ -2029,7 +2080,9 @@ namespace WindowsFormsApplication1
             // PAKET B1 (F13): dieselbe Stelle für die Kappung nach unten am Booster.
             KappungUntenMelden();
 
-            // ANLAGENKOPPLUNG (AK1): die Kennlinienwahl am gerechneten Vorlauf.
+            // ANLAGENKOPPLUNG (AK1): die Kennlinienwahl am gerechneten Vorlauf. AK3-W2: eine
+            // noch vorgemerkte Wahl zuvor festschreiben (ohne Stundenende ist sie sonst verloren).
+            KennlinienwahlFestschreiben();
             VorlaufwahlMelden();
 
             // PW1 Stufe 1: die Kennlinie am Prozessvorlauf und die Stunden ohne Prozessdeckung.
