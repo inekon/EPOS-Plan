@@ -237,9 +237,10 @@ namespace EPOS.Kern.Tests
         [InlineData("TWW_NUTZUNGSART", 12, 0, 0)]
         [InlineData("TWW_TAGESGANGSATZ", 9, 0, 0)]
         [InlineData("TWW_BEDARFSTAG", 12, 0, 0)]
-        // Schritt 193 (StandardlastprofilSchema): die drei BDEW-Standardlastprofile H25, G25, L25 je mit Typprofil dazu.
-        [InlineData("STROMVERBRAUCHER", 44, 0, 0)]
-        [InlineData("STROMVERBRAUCHERTYP", 43, 0, 1)]
+        // Schritt 193 (StandardlastprofilSchema): die drei BDEW-Standardlastprofile H25, G25, L25 je mit Typprofil dazu;
+        // Schritt 196 (StandardlastprofilPvSchema): die zwei BDEW-Netzbezugsprofile P25, S25 je mit Typprofil dazu.
+        [InlineData("STROMVERBRAUCHER", 46, 0, 0)]
+        [InlineData("STROMVERBRAUCHERTYP", 45, 0, 1)]
         [InlineData("PROZESSWAERME", 40, 0, 1)]   // 32 + acht Betriebsweisen (PW5)
         [InlineData("PROZESSTYP", 28, 0, 2)]      // 20 + acht Wochenprofile (PW5)
         [InlineData("STROMGANGLINIE", 3, 0, 0)]

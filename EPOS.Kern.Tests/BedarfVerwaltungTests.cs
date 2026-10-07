@@ -169,7 +169,7 @@ namespace EPOS.Kern.Tests
 
             var sv = new StromverbraucherStammCtrl();
             sv.ReadAll();
-            Assert.Equal(44, sv.rows);              // 41 + drei BDEW-Standardlastprofile (Schritt 193)
+            Assert.Equal(46, sv.rows);              // 41 + drei BDEW-Standardlastprofile (Schritt 193) + P25, S25 (Schritt 196)
             Assert.Equal("BDEW_G25_Gewerbe", sv.items[0].m_szBezeichner);   // ORDER BY Bezeichner: „BD…" vor „Be…"
         }
 
@@ -224,7 +224,7 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(16, BedarfStammCtrl.Bezeichner(BedarfsArt.Brauchwasser).Count);
             Assert.Equal(40, BedarfStammCtrl.Bezeichner(BedarfsArt.Prozesswaerme).Count);
-            Assert.Equal(44, BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher).Count);   // dazu die drei BDEW-Sätze
+            Assert.Equal(46, BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher).Count);   // dazu die fünf BDEW-Sätze
         }
 
         /// <summary>
