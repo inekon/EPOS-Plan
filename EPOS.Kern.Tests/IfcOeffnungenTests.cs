@@ -262,6 +262,61 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
+        //  Probe: Aussparungshaus — kein doppelter Abzug, Teile nicht doppelt (G5-N)
+        // ==================================================================
+
+        [Fact]
+        public void Im_Koerper_ausgesparte_Oeffnungen_werden_nicht_doppelt_abgezogen()
+        {
+            GebaeudeImportAblauf a = Lesen("ifc4_g5_aussparung.ifc");
+
+            // Südwand: Körper 25 − 1,8 (Fenster A ausgespart) = 23,2; brutto 25; netto 25 − 1,8 − 1,2 = 22.
+            AbbildBauteil sued = Bauteil(a, "Wand Süd");
+            Assert.Equal(Flaechenherkunft.Koerper, sued.Flaechenherkunft);
+            Nah(23.2, sued.Koerperflaeche.FlaecheM2, "Süd Körper");
+            Nah(25.0, sued.BruttoflaecheM2, "Süd brutto");
+            Nah(22.0, sued.NettoflaecheM2, "Süd netto");
+            Nah(1.8, Oeffnung(a, "Fenster A").BruttoflaecheM2, "Fenster A");
+            Nah(1.2, Oeffnung(a, "Fenster B").BruttoflaecheM2, "Fenster B");
+
+            // Ostwand: ein ausgespartes Loch 1 × 1 m — Körper 19, brutto 20, netto 19.
+            AbbildBauteil ost = Bauteil(a, "Wand Ost");
+            Nah(19.0, ost.Koerperflaeche.FlaecheM2, "Ost Körper");
+            Nah(20.0, ost.BruttoflaecheM2, "Ost brutto");
+            Nah(19.0, ost.NettoflaecheM2, "Ost netto");
+            Nah(1.0, ost.LochflaecheM2, "Ost Loch");
+
+            // Westwand ohne Öffnung: unverändert.
+            Nah(20.0, Bauteil(a, "Wand West").BruttoflaecheM2, "West");
+            Assert.Null(Bauteil(a, "Wand West").NettoflaecheM2);
+
+            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_AUSGESPART");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "2", "2.8", "Öffnung Loch, Fenster A" }, m.Werte);
+            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_NETTO_NULL");
+        }
+
+        [Fact]
+        public void Teile_mit_Mengensatz_neben_einem_Koerper_ohne_Mengensatz_zaehlen_nicht_doppelt()
+        {
+            GebaeudeImportAblauf a = Lesen("ifc4_g5_aussparung.ifc");
+            AbbildBauteil nord = Bauteil(a, "Wand Nord");
+            Nah(25.0, nord.Koerperflaeche.FlaecheM2, "Nord Körper");
+            Nah(2.0, nord.BruttoflaecheM2, "Nord Rest");
+            Assert.Equal(Flaechenherkunft.Koerper, nord.Flaechenherkunft);
+            foreach ((string name, double brutto) in new[] { ("Wand Nord-1", 15.0), ("Wand Nord-2", 8.0) })
+            {
+                AbbildBauteil teil = Bauteil(a, name);
+                Nah(brutto, teil.BruttoflaecheM2, name);
+                Assert.Equal(Flaechenherkunft.Mengensatz, teil.Flaechenherkunft);
+            }
+            // Körper, Teile und Rest zusammen: genau die Körperfläche, keine Fläche doppelt.
+            Nah(25.0, new[] { "Wand Nord", "Wand Nord-1", "Wand Nord-2" }.Sum(n => Bauteil(a, n).BruttoflaecheM2.Value), "Summe");
+            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "KOERPER_REST");
+            Assert.Equal(new[] { "1", "Wand Nord" }, m.Werte);
+        }
+
+        // ==================================================================
         //  Proben
         // ==================================================================
 

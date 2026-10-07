@@ -33934,6 +33934,45 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG" xml:space="preserve">
     <value>Component {0}: the area from the component body ({2} m²) deviates by {3} % from the quantity set ({1} m²) (limit {4} %); the quantity set applies.</value>
   </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG_TEILE" xml:space="preserve">
+    <value>Component {0} with {1} parts without own representation: the area from the component body ({3} m²) deviates by {4} % from the sum of the quantity sets ({2} m²) (limit {5} %); the quantity sets apply.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_AUSSENWAND" xml:space="preserve">
+    <value>{0} external walls: the area from the component body deviates by a median of {1} % from the quantity set (largest deviation {2} %, {3}; counted from {4} %); the quantity set applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_INNENWAND" xml:space="preserve">
+    <value>{0} internal walls: the area from the component body deviates by a median of {1} % from the quantity set (largest deviation {2} %, {3}; counted from {4} %); the quantity set applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_DACH" xml:space="preserve">
+    <value>{0} roofs: the area from the component body deviates by a median of {1} % from the quantity set (largest deviation {2} %, {3}; counted from {4} %); the quantity set applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_BODEN_DECKE" xml:space="preserve">
+    <value>{0} floors and ceilings: the area from the component body deviates by a median of {1} % from the quantity set (largest deviation {2} %, {3}; counted from {4} %); the quantity set applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_SONSTIGE" xml:space="preserve">
+    <value>{0} other components: the area from the component body deviates by a median of {1} % from the quantity set (largest deviation {2} %, {3}; counted from {4} %); the quantity set applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_TEILE_AUSSENWAND" xml:space="preserve">
+    <value>{0} external walls are split in the file into an element with a body and parts without own representation; their body was compared with the sum of all quantity sets.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_TEILE_INNENWAND" xml:space="preserve">
+    <value>{0} internal walls are split in the file into an element with a body and parts without own representation; their body was compared with the sum of all quantity sets.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_TEILE_DACH" xml:space="preserve">
+    <value>{0} roofs are split in the file into an element with a body and parts without own representation; their body was compared with the sum of all quantity sets.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_TEILE_BODEN_DECKE" xml:space="preserve">
+    <value>{0} floors and ceilings are split in the file into an element with a body and parts without own representation; their body was compared with the sum of all quantity sets.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_TEILE_SONSTIGE" xml:space="preserve">
+    <value>{0} other components are split in the file into an element with a body and parts without own representation; their body was compared with the sum of all quantity sets.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_REST" xml:space="preserve">
+    <value>{0} components carry their body without own quantity set and parts without representation with a quantity set; the body covers the whole component, the element with the body carries only the remainder beside the parts: {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_AUSGESPART" xml:space="preserve">
+    <value>{0} openings are already cut out of the component body ({1} m²); the gross area is body plus openings, each opening is deducted once: {2}</value>
+  </data>
   <data name="IMP_IFC_PROT_KOERPER_GEGLIEDERT" xml:space="preserve">
     <value>{0} components from the body are articulated ({1}): area as the sum of the planar partial faces, orientation of the largest partial face.</value>
   </data>

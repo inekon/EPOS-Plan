@@ -42730,6 +42730,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenwände: Die Fläche aus dem Bauteilkörper weicht im Median {1} % vom Mengensatz ab (größte Abweichung {2} %, {3}; gezählt ab {4} %); es gilt der Mengensatz. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Böden und Decken: Die Fläche aus dem Bauteilkörper weicht im Median {1} % vom Mengensatz ab (größte Abweichung {2} %, {3}; gezählt ab {4} %); es gilt der Mengensatz. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_BODEN_DECKE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_BODEN_DECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Dächer: Die Fläche aus dem Bauteilkörper weicht im Median {1} % vom Mengensatz ab (größte Abweichung {2} %, {3}; gezählt ab {4} %); es gilt der Mengensatz. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_DACH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Innenwände: Die Fläche aus dem Bauteilkörper weicht im Median {1} % vom Mengensatz ab (größte Abweichung {2} %, {3}; gezählt ab {4} %); es gilt der Mengensatz. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_INNENWAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} sonstige Bauteile: Die Fläche aus dem Bauteilkörper weicht im Median {1} % vom Mengensatz ab (größte Abweichung {2} %, {3}; gezählt ab {4} %); es gilt der Mengensatz. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_SONSTIGE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNGEN_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0} mit {1} Teilen ohne eigene Darstellung: Die Fläche aus dem Bauteilkörper ({3} m²) weicht um {4} % von der Summe der Mengensätze ({2} m²) ab (Grenze {5} %); es gelten die Mengensätze. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNG_TEILE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNG_TEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumkörper der Art {1} sind nicht lesbar; die Räume werden aus Umriss bzw. schematisch dargestellt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPER_ART {
@@ -42771,6 +42825,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_KOERPER_OHNE_PAAR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_OHNE_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile tragen ihren Körper ohne eigenen Mengensatz und Teile ohne Darstellung mit Mengensatz; der Körper deckt das ganze Bauteil, das Element mit Körper trägt nur den Rest neben den Teilen: {1} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_REST {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenwände sind in der Datei in ein Element mit Körper und Teile ohne eigene Darstellung gegliedert; ihr Körper wurde mit der Summe aller Mengensätze verglichen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_TEILE_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_TEILE_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Böden und Decken sind in der Datei in ein Element mit Körper und Teile ohne eigene Darstellung gegliedert; ihr Körper wurde mit der Summe aller Mengensätze verglichen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_TEILE_BODEN_DECKE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_TEILE_BODEN_DECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Dächer sind in der Datei in ein Element mit Körper und Teile ohne eigene Darstellung gegliedert; ihr Körper wurde mit der Summe aller Mengensätze verglichen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_TEILE_DACH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_TEILE_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Innenwände sind in der Datei in ein Element mit Körper und Teile ohne eigene Darstellung gegliedert; ihr Körper wurde mit der Summe aller Mengensätze verglichen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_TEILE_INNENWAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_TEILE_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} sonstige Bauteile sind in der Datei in ein Element mit Körper und Teile ohne eigene Darstellung gegliedert; ihr Körper wurde mit der Summe aller Mengensätze verglichen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_TEILE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_TEILE_SONSTIGE", resourceCulture);
             }
         }
         
@@ -42879,6 +42987,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_NUR_1STLEVEL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_NUR_1STLEVEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen sind im Bauteilkörper schon ausgespart ({1} m²); die Bruttofläche ist Körper plus Öffnungen, abgezogen wird jede Öffnung einmal: {2} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_AUSGESPART {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_AUSGESPART", resourceCulture);
             }
         }
         
