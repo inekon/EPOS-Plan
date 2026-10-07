@@ -901,7 +901,8 @@ rechnet alle zweiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `Flaechenherkunft` mit Prüfklausel an (`MENGENSATZ`, `RAUMGRENZE`, `KOERPER`, `SCHEMATISCH`; reines ADD COLUMN). An allen 62
 > Bauteilzeilen der Testdatenbank ist sie NULL; der Zellvergleich gegen den Stand 196 zeigt sonst nur
 > `Tab_Applikation.SchemaVersion` und `sqlite_sequence`. Die Testdatenbank steht auf **197**
-> (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer): 89 698 304 Byte wie vorher. **Die Basis
+> (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer): **89 698 304 Byte, LFS-SHA-256
+> `78b62ac35c57bafe4513dedf9030be09ee93def247eb7ad649117e20c618781c`** (Größe wie vorher). **Die Basis
 > bleibt** — kein Rechenweg, keine Einfrierregel berührt; der Referenzlauf der acht CI-Projekte gegen R40 ist PASS.
 
 ### Die Vorgängerbasis R39 (Auslegungsheizlast)
