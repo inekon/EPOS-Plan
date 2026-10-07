@@ -877,7 +877,10 @@ namespace EPOS.Kern.Tests
             }
         }
 
-        /// <summary>Ein Gebäude mit Raum und Außenwänden, aber ohne jeden Mengensatz (3.5 Nr. 5).</summary>
+        /// <summary>
+        /// Ein Gebäude mit Raum und Außenwänden, aber ohne jeden Mengensatz (3.5 Nr. 5); die Wände tragen ihren Körper
+        /// (Stufe G5-1: Fläche aus dem Bauteilkörper).
+        /// </summary>
         public static byte[] OhneMengen()
         {
             using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_ohne_mengen.ifc"))
@@ -887,8 +890,13 @@ namespace EPOS.Kern.Tests
                 IIfcBuildingStorey s = b.Geschoss(g, "Erdgeschoss", 0);
                 IIfcSpace r = b.Raum(s, "0.01", "Wohnen", 150, 150, null, null, null, beheizt: true);
                 IIfcWallType typ = b.Wandtyp("Außenwand Typ C", 0.3);
+                // Die Wände tragen nur ihren Körper (Rechteckprofil 0,3 m außen, 2,5 m hoch) — die Fläche folgt aus ihm (G5-1).
                 foreach (Wandlage l in Wandlage.Alle)
-                    b.Wand(s, "EG " + l.Name, l, typ, null, null, null, null, null, new[] { r });
+                {
+                    IIfcWall w = b.Wand(s, "EG " + l.Name, l, typ, null, null, null, null, null, new[] { r });
+                    double laenge = l.Lang ? 10000 : 8000;
+                    b.Koerper(w, "SweptSolid", b.Extrusion(b.Rechteckprofil(laenge, 300, laenge / 2.0, -150), 2500));
+                }
                 return b.Speichern();
             }
         }

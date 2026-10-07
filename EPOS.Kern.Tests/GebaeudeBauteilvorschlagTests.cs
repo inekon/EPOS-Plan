@@ -600,8 +600,12 @@ namespace EPOS.Kern.Tests
             Assert.True(kalt.Abgelehnt);
             Assert.Equal(new[] { GebaeudeBauteilvorschlag.KEINE_BEHEIZTEN_RAEUME }, BauteilvorschlagProbe.Schluessel(kalt, PruefStufe.Fehler));
 
-            // Keine Fläche mit Mengen: kein Außenbauteil.
-            GebaeudeBauteilvorschlag leer = Vorschlag("ifc4_ohne_mengen.ifc", 0, 'E');
+            // Keine Fläche — weder Mengen noch ein lesbarer Körper: kein Außenbauteil. Die Probe trägt Wandkörper (G5-1, die
+            // Flächen kommen aus ihnen); ohne sie, wie bei unlesbaren Körpern, bleibt die Ablehnung.
+            Assert.False(Vorschlag("ifc4_ohne_mengen.ifc", 0, 'E').Abgelehnt);
+            GebaeudeImportAblauf ohneKoerper = BauteilvorschlagProbe.Lesen("ifc4_ohne_mengen.ifc");
+            foreach (AbbildBauteil b in ohneKoerper.Abbild.Gebaeude[0].Bauteile) { b.BruttoflaecheM2 = null; b.Flaechenherkunft = null; }
+            GebaeudeBauteilvorschlag leer = GebaeudeBauteilvorschlag.Bilden(ohneKoerper, 0, 'E');
             Assert.True(leer.Abgelehnt);
             Assert.Contains(GebaeudeBauteilvorschlag.KEINE_AUSSENBAUTEILE, BauteilvorschlagProbe.Schluessel(leer, PruefStufe.Fehler));
             Assert.Contains(leer.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.OHNE_FLAECHE && m.Werte[0] == "4");

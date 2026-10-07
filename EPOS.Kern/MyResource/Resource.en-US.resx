@@ -33910,6 +33910,21 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_KEINE_RAEUME" xml:space="preserve">
     <value>Building {0}: no space with quantities found ({1} spaces) — usable area and room height remain empty.</value>
   </data>
+  <data name="IMP_IFC_PROT_FLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} building components without base quantities: area taken from the component body (gross; outer side of walls facing away from the building centroid) ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG" xml:space="preserve">
+    <value>Component {0}: the area from the component body ({2} m²) deviates by {3} % from the quantity set ({1} m²) (limit {4} %); the quantity set applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_GEGLIEDERT" xml:space="preserve">
+    <value>{0} components from the body are articulated ({1}): area as the sum of the planar partial faces, orientation of the largest partial face.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ZUSAMMENGEFASST" xml:space="preserve">
+    <value>{0} components from the body: partial faces differing by less than {2}° in direction merged, weighted by area ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_AUSSENSEITE" xml:space="preserve">
+    <value>{0} walls from the body: the outer side cannot be told apart at the building centroid; the normal of the largest face in the file applies ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
     <value>{0} building components without base quantities (Qto_…); their areas are missing ({1}).</value>
   </data>

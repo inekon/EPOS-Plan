@@ -33917,6 +33917,21 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_KEINE_RAEUME" xml:space="preserve">
     <value>Gebäude {0}: kein Raum mit Mengenangaben gefunden ({1} Räume) — Nutzfläche und Raumhöhe bleiben leer.</value>
   </data>
+  <data name="IMP_IFC_PROT_FLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} Bauteile ohne Mengenangaben: Fläche aus dem Bauteilkörper (brutto; Außenseite der Wände vom Gebäudeschwerpunkt weg) ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG" xml:space="preserve">
+    <value>Bauteil {0}: Die Fläche aus dem Bauteilkörper ({2} m²) weicht um {3} % vom Mengensatz ({1} m²) ab (Grenze {4} %); es gilt der Mengensatz.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_GEGLIEDERT" xml:space="preserve">
+    <value>{0} Bauteile aus dem Körper sind gegliedert ({1}): Fläche als Summe der ebenen Teilflächen, Richtung der größten Teilfläche.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ZUSAMMENGEFASST" xml:space="preserve">
+    <value>{0} Bauteile aus dem Körper: Teilflächen unter {2}° Richtungsunterschied flächengewichtet zusammengefasst ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_AUSSENSEITE" xml:space="preserve">
+    <value>{0} Wände aus dem Körper: Die Außenseite ist am Gebäudeschwerpunkt nicht zu unterscheiden; es gilt die Normale der größten Fläche der Datei ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
     <value>{0} Bauteile ohne Mengenangaben (Qto_…); ihre Flächen fehlen ({1}).</value>
   </data>
