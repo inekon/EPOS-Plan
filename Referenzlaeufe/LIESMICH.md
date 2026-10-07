@@ -813,6 +813,19 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `2fec4f1484b7f0bf27fe25bec9b2ed00c3c00d2e9d83a66aa4d9ca9193b3ee85`**. **Die Basis bleibt:** Kein Rechenweg liest die
 > Zuordnung, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R38 GESAMT PASS, 646 CSV byte-gleich.
 
+> **Nachtrag — Schemaschritt 193 (BDEW-Standardlastprofile Strom 2025), Basis unverändert.**
+> `StandardlastprofilSchema` (193 = `TypaufbauSchema.SCHRITT + 1`, hinter 191 `RaumgrundrissSchema` und 192
+> `TypaufbauSchema`) sät die BDEW-Standardlastprofile Strom 2025 H25, G25 und L25 als gesperrte Sätze der „Datenbank
+> Strombedarf“: je einen Kopf in `Tab_Stromverbraucher_STAMM` (zwölf Monatswerte, normiert auf 1.000 MWh/a; 41 → 44
+> Sätze) und ein Typprofil in `Tab_Stromverbrauchertyp_STAMM` (168 Wochenstunden; 40 → 43 Sätze), `ReadOnly = 1`, mit
+> Katalogschlüssel (`SV:…`, `SVT:…`) und Prüfsumme. Der Zellvergleich gegen den Stand 192 (87 818 240 Byte, LFS-SHA-256
+> `6999c3c9207e1821db09a373f9b114196b724564f1382324efcb934c774a9c70`) zeigt sonst nur `Tab_Applikation.SchemaVersion` und
+> `sqlite_sequence`; ein zweiter Lauf sät nichts und vergibt keinen Schlüssel. Die Testdatenbank steht auf **193**
+> (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer): **87 822 336 Byte, LFS-SHA-256
+> `7bc44eb8a3d460d794ff5ac24f62860396b9f7fc2adb7a806e1c68a3ae751a91`**. **Die Basis bleibt** — Katalogsaat ohne
+> Projektbezug: Kein Referenzprojekt führt einen der Sätze, keine Einfrierregel ist berührt; den Referenzlauf fährt die
+> Orchestrierung im Gate.
+
 ### Die Vorgängerbasis R38 (Vorlaufwahl)
 
 Einundzwanzig Projekte, 646 CSV, 4 271 Skalare, auf Linux eingefroren gegen die Testdatenbank `69322344…` (Schemastand

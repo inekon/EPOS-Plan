@@ -5214,6 +5214,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_TYPAUFBAU = TypaufbauSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="StandardlastprofilSchema.SCHRITT"/> — <b>BDEW-Standardlastprofile Strom 2025</b> (SLP25): die
+        /// drei gesperrten Sätze H25, G25 und L25 der „Datenbank Strombedarf", je ein Kopf in <c>Tab_Stromverbraucher_STAMM</c>
+        /// (Monatswerte, normiert auf 1.000 MWh/a) und ein Typprofil in <c>Tab_Stromverbrauchertyp_STAMM</c> (168 Wochenstunden),
+        /// mit Katalogschlüssel und Prüfsumme. Nur was unter seinem Namen fehlt, nie überschreibend; eigene Sätze des
+        /// Anwenders unter einem der Namen nennt das Protokoll.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze; Projekte rechnen mit ihren Kopien.</para>
+        /// </summary>
+        public const int SCHRITT_STANDARDLASTPROFIL = StandardlastprofilSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7577,6 +7588,12 @@ namespace WindowsFormsApplication1
                         "Ein Ersatzaufbau des Gebaeudeimports waere von einem gepflegten Aufbau nicht zu unterscheiden, und der " +
                         "Katalog truege keine Typaufbauten. KEIN Rechenergebnis aendert sich.",
                         Schritt_Typaufbau),
+            // BDEW-STANDARDLASTPROFILE STROM 2025 (SLP25). Quelle ist StandardlastprofilSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_STANDARDLASTPROFIL,
+                        "Tab_Stromverbraucher_STAMM/Tab_Stromverbrauchertyp_STAMM: BDEW-Standardlastprofile Strom 2025",
+                        "Der Katalog des Strombedarfs truege die BDEW-Standardlastprofile H25, G25 und L25 nicht. " +
+                        "KEIN Rechenergebnis aendert sich.",
+                        Schritt_Standardlastprofil),
         };
 
         /// <summary>
@@ -14580,6 +14597,63 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Typaufbauten - " + (angelegt == 0 ? "standen bereits." : angelegt + " gesaet.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „BDEW-Standardlastprofile Strom 2025" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_STANDARDLASTPROFIL"/>, die Anweisungen und die Saat bei <see cref="StandardlastprofilSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Standardlastprofil(Lauf l)
+        {
+            string nr = StandardlastprofilSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in StandardlastprofilSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            StandardlastprofilSchema.Bericht ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ergebnis = StandardlastprofilSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!StandardlastprofilSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die BDEW-Standardlastprofile oder ihre Katalogschluessel stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": BDEW-Standardlastprofile - " +
+                    (ergebnis.KoepfeGesaet == 0 && ergebnis.TypenGesaet == 0 && ergebnis.Schluessel == 0
+                        ? "standen bereits."
+                        : ergebnis.KoepfeGesaet + " gesaet.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

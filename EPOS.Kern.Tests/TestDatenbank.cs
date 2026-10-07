@@ -959,6 +959,9 @@ namespace EPOS.Kern.Tests
                 RaumgrundrissSchema.Ausfuehren(null);
                 // Schritt TypaufbauSchema.SCHRITT (BA-2): Spalte Typaufbau an Projekt und Katalog, Saat der Typaufbauten.
                 TypaufbauSchema.Ausfuehren(null);
+                // Schritt StandardlastprofilSchema.SCHRITT (SLP25): die BDEW-Standardlastprofile Strom 2025 als gesperrte
+                // Saetze der Datenbank Strombedarf, Katalogschluessel und Pruefsumme. Wiederholbar.
+                StandardlastprofilSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -25,7 +25,8 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(192, TypaufbauSchema.SCHRITT);
             Assert.Equal(RaumgrundrissSchema.SCHRITT + 1, TypaufbauSchema.SCHRITT);
-            Assert.Equal(SchemaStand.Zielversion, TypaufbauSchema.SCHRITT);
+            Assert.Equal(TypaufbauSchema.SCHRITT + 1, StandardlastprofilSchema.SCHRITT);   // danach Schritt 193 (SLP25)
+            Assert.True(SchemaStand.Zielversion >= TypaufbauSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == TypaufbauSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);
