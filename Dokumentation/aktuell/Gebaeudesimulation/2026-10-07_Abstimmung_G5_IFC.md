@@ -98,3 +98,15 @@ kennt keine `IfcMapConversion`, und die Projektdatei (`BmElement.Orientation`) l
 | N6 | **Herkunft:** neue Spalte `Tab_Importquelle.Nordwinkel_Herkunft` (`DATEI`, `EINGABE`, `ANNAHME`), Schemaschritt 199; Gebäudedialog und Bericht nennen sie. |
 | N7 | **Rechenweg:** unverändert; er liest den Azimut aus `Tab_Bauteil`. Eine Drehung ändert die Ergebnisse (Solargewinne, Fensterflächen je Himmelsrichtung) — gewollt. Keine Einfrierregel berührt: kein Referenzprojekt hat eine Importquelle. |
 
+## 8 G5-3 mit Farbmodus „Befund“ (Zuschnitt)
+
+Anwenderauftrag vom 07.10.2026: Die Gebäudeansicht zeigt Bauteile, die für die Rechnung unvollständig oder fehlerhaft sind;
+Bauteile mit Nettofläche 0 entstehen gar nicht.
+
+| Nr. | Regel |
+|---|---|
+| B1 | **Farbmodus „Befund“** als vierter Knopf neben Zonen, Randbedingung und Aufbau: **rot** — Bauteil ohne U-Wert oder ohne die Eigenschaften, die die Rechnung braucht (kein U aus Datei, Projektdatei, Katalog oder Ersatzaufbau; Fläche fehlt); **orange** — Bauteil mit unlesbarem Körper (Darstellungsart nicht lesbar, offene oder entartete Schale, nur teilweise gelesen; die Fläche kommt dann aus dem Mengensatz oder fehlt); **grau** — ohne Befund. Legende mit Anzahl und Fläche je Stufe, Schalter je Stufe, Klick öffnet den Steckbrief mit der Meldung des Bauteils. |
+| B2 | **Nettofläche 0:** Bleibt nach dem Abzug der Öffnungen keine Fläche, legt der Import das Bauteil nicht an; das Protokoll nennt die entfallenen Bauteile in einer Zeile (Anzahl, Namen). Die Warnung „Nettofläche null“ entfällt damit. |
+| B3 | **G5-3 Kern:** Flächen je Raum und Zone aus Raumkörper ↔ Bauteilkörper (Muster `Koerpernachbarschaft`), gegliederte Wände je Teilfläche als eigene Zeile, Löcher nach Lage statt nach Flächenanteil, Fenster und Türen mit eigener Raumzuordnung, Richtung bei Wänden gegen Erdreich, Dachneigung aus dem Körper bei Dach mit Mengensatz. |
+| B4 | **G5-3 Oberfläche:** Herkunft der Fläche (`Tab_Bauteil.Flaechenherkunft`) im Zuordnungsdialog und im Bauteilsteckbrief; Farbmodus „Befund“ (B1). |
+
