@@ -1029,9 +1029,10 @@ namespace WindowsFormsApplication1
         /// (<see cref="AnlagenFachspalten.AnlagenkinderUebertragen"/>) für eine übernommene
         /// Anlage. Maßgeblich sind die Abbildungen, die die Übernahme selbst kennt: die eben
         /// angelegten Gerätekopien des Gewerks (Strang → PV-Modul) und die Pufferabbildung
-        /// (<see cref="PufferAbbildung"/>, Bezeichner im verbauten Bestand). Alle übrigen
-        /// Projektverweise (Wechselrichter, Preisreihe, Kostenprofil) gehen auf die
-        /// gleichnamige Zeile des Zielprojekts. Die Kostenpositionen (<c>Tab_ProjektWerte</c>)
+        /// (<see cref="PufferAbbildung"/>, Bezeichner im verbauten Bestand — für Puffer gilt
+        /// allein sie). Alle übrigen Projektverweise (Wechselrichter, ein Strangmodul außerhalb
+        /// der Gerätekopien, Preisreihe, Kostenprofil) gehen auf die eindeutige gleichnamige
+        /// Zeile des Zielprojekts. Die Kostenpositionen (<c>Tab_ProjektWerte</c>)
         /// bleiben stehen — Nutzerentscheidung 4 vom 18.08.2026, Schritt 10.
         /// </summary>
         private static AnlagenFachspalten.KinderAuftrag KinderAuftrag(GewerkPlan plan, DataTable quellGeraete,
@@ -1052,6 +1053,7 @@ namespace WindowsFormsApplication1
             {
                 Ohne = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Tab_ProjektWerte" },
                 Abbildung = abbildung,
+                NurAbbildung = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { TAB_PUFFER },
                 FehlerMelden = true
             };
         }

@@ -472,7 +472,7 @@ namespace WindowsFormsApplication1
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Tab_ProjektWerte.StammID", "Tab_ProjektWerte.KomponentenID", "Tab_ProjektWerte.KategorieID",
-                "Tab_ProjektWerte.VorlageID", "Tab_ProjektWerte.NutzungsdauerID"
+                "Tab_ProjektWerte.VorlageID", "Tab_ProjektWerte.NutzungsdauerID", "Tab_ProjektWerte.Gruppe"
             };
 
         /// <summary>
@@ -504,10 +504,15 @@ namespace WindowsFormsApplication1
             /// <summary>
             /// Maßgebliche Abbildung „Zieltabelle → (Quell-ID → Ziel-ID)“ für Projektverweise
             /// (<see cref="ANLAGENKIND_PROJEKTBEZUG"/>), etwa die eben angelegten Gerätekopien
-            /// oder die Pufferabbildung der Übernahme. Steht eine Zieltabelle hier, gilt allein
-            /// sie; sonst die gleichnamige Zeile gleicher Art.
+            /// oder die Pufferabbildung der Übernahme. Sie geht vor; was sie nicht kennt, geht auf
+            /// die eindeutige gleichnamige Zeile gleicher Art — außer für die Tabellen aus
+            /// <see cref="NurAbbildung"/>.
             /// </summary>
             public IReadOnlyDictionary<string, IReadOnlyDictionary<int, int>> Abbildung;
+
+            /// <summary>Zieltabellen, für die allein <see cref="Abbildung"/> gilt (die Pufferabbildung
+            /// der Übernahme kennt nur den VERBAUTEN Bestand; ein gleichnamiger Altbestand zählt nicht).</summary>
+            public ISet<string> NurAbbildung;
 
             /// <summary>
             /// false (Vorgabe): eine scheiternde Kindzeile wirft und rollt mit dem Vorgang zurück
@@ -600,7 +605,8 @@ namespace WindowsFormsApplication1
                     foreach (DataRow zeile in quelle.Rows)
                     {
                         if (KindzeileKopieren(v, tabelle, fk, spalten, zeile, idZiel, projektZiel, fremd, kostenfaktor,
-                                              anker, zuordnung, gegenstellen, auftrag.Abbildung, fehlend, out long neu))
+                                              anker, zuordnung, gegenstellen, auftrag.Abbildung, auftrag.NurAbbildung,
+                                              fehlend, out long neu))
                         {
                             karte[Convert.ToInt64(zeile["ID"], CultureInfo.InvariantCulture)] = neu;
                             kopiert++;
@@ -635,7 +641,7 @@ namespace WindowsFormsApplication1
                                               Dictionary<string, Dictionary<long, long>> zuordnung,
                                               Dictionary<string, Dictionary<long, long?>> gegenstellen,
                                               IReadOnlyDictionary<string, IReadOnlyDictionary<int, int>> abbildung,
-                                              List<string> fehlend, out long neueId)
+                                              ISet<string> nurAbbildung, List<string> fehlend, out long neueId)
         {
             neueId = 0;
             long alteId = Convert.ToInt64(zeile["ID"], CultureInfo.InvariantCulture);
@@ -674,7 +680,7 @@ namespace WindowsFormsApplication1
                     if (alt != DBNull.Value)
                     {
                         long quellId = Convert.ToInt64(alt, CultureInfo.InvariantCulture);
-                        long? gegen = Gegenstelle(v, zieltabelle, quellId, projektZiel, gegenstellen, abbildung);
+                        long? gegen = Gegenstelle(v, zieltabelle, quellId, projektZiel, gegenstellen, abbildung, nurAbbildung);
                         if (gegen.HasValue) neu = gegen.Value;
                         else
                         {
@@ -723,12 +729,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Gegenstelle der Quellzeile <paramref name="quellId"/> von <paramref name="tabelle"/>
-        /// im Zielprojekt: nach der Abbildung des Aufrufers, sonst die EINE Zeile gleichen
-        /// Bezeichners und gleicher Art (<see cref="PROJEKTBEZUG_ART"/>); null ohne eindeutige.
+        /// im Zielprojekt: nach der Abbildung des Aufrufers, sonst (außer für
+        /// <paramref name="nurAbbildung"/>) die EINE Zeile gleichen Bezeichners und gleicher Art
+        /// (<see cref="PROJEKTBEZUG_ART"/>); null ohne eindeutige.
         /// </summary>
         private static long? Gegenstelle(DbVorgang v, string tabelle, long quellId, long projektZiel,
                                          Dictionary<string, Dictionary<long, long?>> cache,
-                                         IReadOnlyDictionary<string, IReadOnlyDictionary<int, int>> abbildung)
+                                         IReadOnlyDictionary<string, IReadOnlyDictionary<int, int>> abbildung,
+                                         ISet<string> nurAbbildung)
         {
             if (!cache.TryGetValue(tabelle, out Dictionary<long, long?> karte))
                 cache[tabelle] = karte = new Dictionary<long, long?>();
@@ -736,11 +744,11 @@ namespace WindowsFormsApplication1
 
             long? ergebnis = null;
             if (abbildung != null && abbildung.TryGetValue(tabelle, out IReadOnlyDictionary<int, int> vorgabe) &&
-                vorgabe != null)
+                vorgabe != null && quellId <= int.MaxValue && vorgabe.TryGetValue((int)quellId, out int z))
             {
-                if (quellId <= int.MaxValue && vorgabe.TryGetValue((int)quellId, out int z)) ergebnis = z;
+                ergebnis = z;
             }
-            else
+            else if (nurAbbildung == null || !nurAbbildung.Contains(tabelle))
             {
                 string art = PROJEKTBEZUG_ART.TryGetValue(tabelle, out string a) &&
                              SpaltenImVorgang(v, tabelle).Contains(a, StringComparer.OrdinalIgnoreCase)
