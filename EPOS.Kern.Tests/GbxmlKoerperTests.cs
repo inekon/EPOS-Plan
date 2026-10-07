@@ -233,7 +233,7 @@ namespace EPOS.Kern.Tests
             Assert.All(g.Raeume, r => Assert.NotNull(r.Koerper));
             Assert.Equal(mitSchale ? GbxmlKoerper.ART_CLOSEDSHELL : GbxmlKoerper.ART_RAUMFLAECHEN, g.Raeume[0].Koerper.Art);
             double beste = double.MaxValue;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 20; i++)
             {
                 var uhr = Stopwatch.StartNew();
                 GbxmlKoerper.Bilden(abbild, d.Root);
@@ -245,14 +245,14 @@ namespace EPOS.Kern.Tests
             var je = g.Raeume.Select(r => g.Bauteile.Where(b => b.Nachbarn.Any(x => x.Kennung == r.Kennung))
                                                     .Select(b => new Quellflaeche { Kennung = b.Kennung, Aussen = b.RandpunkteM }).ToList()).ToList();
             double huelle = double.MaxValue;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 20; i++)
             {
                 var uhr = Stopwatch.StartNew();
                 foreach (List<Quellflaeche> q in je) Assert.True(Koerperbildner.Huelle(q).Gebildet);
                 huelle = Math.Min(huelle, uhr.Elapsed.TotalMilliseconds);
             }
             double extrusion = double.MaxValue;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 20; i++)
             {
                 var uhr = Stopwatch.StartNew();
                 foreach (AbbildBauteil b in g.Bauteile)
