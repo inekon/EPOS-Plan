@@ -433,7 +433,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Kennzahlen der Zonensperre dieser Zone (Entwurf AK3-K 3.5; Welle KZ) — nur mit Kernschalter
-        /// <see cref="Zonensperre.An"/> und wirksamer Kühlung, sonst <c>null</c>. Bis S1 (K4) allein Laufhinweis.
+        /// <see cref="Zonensperre.An"/> und wirksamer Kühlung, sonst <c>null</c>; am Mehrzonengebäude die Summe der Zonen.
         /// </summary>
         internal Zonensperrkennzahl Zonensperre { get; set; }
 
@@ -465,7 +465,7 @@ namespace WindowsFormsApplication1
                 Erdreich = Erdreich,
                 FahrplanBegrenzt = FahrplanBegrenzt,
                 Kuehlsollwertreihe = Kuehlsollwertreihe,
-                Zonensperre = Zonensperre,
+                Zonensperre = Zonensperre?.Skaliert(faktor),
             };
         }
     }

@@ -560,6 +560,31 @@ namespace WindowsFormsApplication1
         /// <summary><c>Ak3_Restbedarf_Stunden</c> [h]: Stunden mit Restbedarf der Kaskade (Festlegung 15).</summary>
         public int? Ak3RestbedarfStundenH;
 
+        // ---- AK3-K, Zonensperre und Kälteseite im Kreis (Ak3KSchema; Entwurf AK3-K 3.5, Festlegung 20) ----
+        //
+        // null heißt „nicht erhoben": die Zonensperre lief nicht bzw. der Kreis rechnete keine Kälteseite.
+
+        /// <summary><c>Zonensperre_Tage</c> [d]: Zonentage mit Sperre der Gegenseite (Summe über die Zonen).</summary>
+        public int? ZonensperreTage;
+
+        /// <summary><c>Zonensperre_Heizen_Gesperrt_MWh</c> [MWh]: Raumheizung des Probetags an Kühltagen.</summary>
+        public double? ZonensperreHeizenGesperrtMwh;
+
+        /// <summary><c>Zonensperre_Kuehlen_Gesperrt_MWh</c> [MWh]: Raumkühlung des Probetags an Heiztagen.</summary>
+        public double? ZonensperreKuehlenGesperrtMwh;
+
+        /// <summary><c>Ak3_Kaelteschranke_Stunden</c> [h]: Stunden, in denen die Kälteschranke des Kreises griff.</summary>
+        public int? Ak3KaelteschrankeStundenH;
+
+        /// <summary><c>Ak3_Umschalt_Stunden</c> [h]: Stunden mit Umschaltung der Wärmepumpe zwischen Heizen und Kühlen.</summary>
+        public int? Ak3UmschaltStundenH;
+
+        /// <summary><c>Ak3_Kaelterest_Stunden</c> [h]: Stunden mit Kälte-Restbedarf (Festlegung 14).</summary>
+        public int? Ak3KaelterestStundenH;
+
+        /// <summary><c>Ak3_Kaelterest_MWh</c> [MWh]: Kälte-Restbedarf im Jahr.</summary>
+        public double? Ak3KaelterestMwh;
+
         /// <summary>
         /// <b>Komfort und Restbedarf nebeneinander</b> (Anlagenkopplung 5.5, F8): Wo Komfortstunden ausgewiesen
         /// werden, steht der Restbedarf daneben — mit Kopplung ist ein Teil der Unterdeckung eine gesunkene

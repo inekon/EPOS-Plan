@@ -201,6 +201,9 @@ namespace WindowsFormsApplication1
             {
                 GebaeudeModellErgebnis e = Zonenrechnung.Abschluss(g.Stepper, g.Index, g.Zeile.ID_Gebaeude);
                 if (g.Skaliert) e = e.Skaliert(g.Faktor);
+                // AK3-K (Festlegung 20): Die Tagesart der Zonensperre entschied Pass 1, der Kreis übernimmt sie als
+                // Vorgabe - seine Kennzahlen bleiben die des Pass 1.
+                if (e.Zonensperre == null) e.Zonensperre = GebaeudeErgebnisse.Ergebnis(g.Index)?.Zonensperre;
                 GebaeudeErgebnisse.Setzen(g.Index, e);
                 if (g.Index < GebaeudeKennzahlenListe.Count)
                 {

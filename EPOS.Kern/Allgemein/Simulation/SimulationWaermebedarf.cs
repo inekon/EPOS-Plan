@@ -1242,6 +1242,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Kennzahlen der Zonensperre des Projekts</b> (Entwurf AK3-K 3.5, Festlegung 20): die Summe über alle
+        /// Zonen aller Gebäude des VDI-Wegs im Maßstab des wirklichen Gebäudes; <c>null</c>, wenn die Sperre nirgends lief.
+        /// </summary>
+        internal Zonensperrkennzahl ZonensperreProjekt()
+            => Zonensperrkennzahl.Summe(GebaeudeErgebnisse.Alle.Select(e => e?.Zonensperre));
+
+        /// <summary>
         /// <b>Die Komfortkennzahlen des Projekts</b> (AK2-2b, 5.5, F8, F9) über die gekoppelten Gebäude
         /// (<see cref="GebaeudeKennzahlen.KomfortErhoben"/>): Stunden = Stunden, in denen mindestens ein Gebäude
         /// zählt; Kelvinstunden = Summe; längste Strecke = Maximum. <c>Heizen</c>/<c>Kuehlen</c> <c>null</c>, wenn

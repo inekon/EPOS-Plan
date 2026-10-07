@@ -101,8 +101,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Die Kennzahlen der Zonensperre einer Zone</b> (Entwurf AK3-K 3.5, Festlegung 20): die Tage mit Sperre der
-    /// Gegenseite (der Probetag zeigte beide Seiten) und die gesperrte Energie des Probetags. Bis S1 (K4) nur im Lauf
-    /// erhoben und als Hinweis gemeldet; keine Ergebnisspalte.
+    /// Gegenseite (der Probetag zeigte beide Seiten) und die gesperrte Energie des Probetags — im Lauf als Hinweis
+    /// gemeldet und als Projektsumme über die Zonen im Ergebnis (<see cref="Ak3KSchema.SPALTEN_ZONENSPERRE"/>).
     /// </summary>
     /// <param name="Kuehltage">Mischtage, die als Kühltag gerechnet wurden (Raumheizung gesperrt).</param>
     /// <param name="Heiztage">Mischtage, die als Heiztag gerechnet wurden (Raumkühlung gesperrt).</param>
@@ -122,5 +122,28 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die gesperrte Energie des Probetags [kWh].</summary>
         public double GesperrtKwh => HeizenGesperrtKwh + KuehlenGesperrtKwh;
+
+        /// <summary>Die Kennzahlen im Maßstab des wirklichen Gebäudes: die Energien mal <paramref name="faktor"/>.</summary>
+        public Zonensperrkennzahl Skaliert(double faktor)
+            => this with { HeizenGesperrtKwh = HeizenGesperrtKwh * faktor, KuehlenGesperrtKwh = KuehlenGesperrtKwh * faktor };
+
+        /// <summary>
+        /// Die Summe über Zonen bzw. Gebäude (Tage, Stunden und Energien addiert; Zonentage); <c>null</c>, wenn keiner
+        /// der Einträge eine Kennzahl trägt (die Sperre lief nirgends).
+        /// </summary>
+        public static Zonensperrkennzahl Summe(IEnumerable<Zonensperrkennzahl> teile)
+        {
+            Zonensperrkennzahl s = null;
+            if (teile == null) return null;
+            foreach (Zonensperrkennzahl t in teile)
+            {
+                if (t == null) continue;
+                s = s == null ? t : new Zonensperrkennzahl(s.Kuehltage + t.Kuehltage, s.Heiztage + t.Heiztage,
+                                                           s.StundenHeizen + t.StundenHeizen, s.StundenKuehlen + t.StundenKuehlen,
+                                                           s.HeizenGesperrtKwh + t.HeizenGesperrtKwh,
+                                                           s.KuehlenGesperrtKwh + t.KuehlenGesperrtKwh, s.TageBeides + t.TageBeides);
+            }
+            return s;
+        }
     }
 }

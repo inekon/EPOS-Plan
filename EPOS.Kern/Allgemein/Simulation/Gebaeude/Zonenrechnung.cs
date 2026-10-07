@@ -174,6 +174,8 @@ namespace WindowsFormsApplication1
             GebaeudeModellErgebnis summe = Gebaeudeergebnis(zonen, ergebnisse, schleife, index, idGebaeude,
                                                             aufheiz == null ? null : Aufheizergebnis.Gebaeude(aufheiz, ergebnisse));
             summe.ZonenAnhaengen(Zonenergebnisse(zonen, ergebnisse, schleife));
+            // AK3-K (Festlegung 20): die Kennzahlen der Zonensperre am Gebäude als Summe der Zonen; null ohne Sperre.
+            summe.Zonensperre = Zonensperrkennzahl.Summe(ergebnisse.Select(e => e?.Zonensperre));
             return summe;
         }
 
