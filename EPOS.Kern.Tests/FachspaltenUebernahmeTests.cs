@@ -383,25 +383,27 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Das zweite Stück bekommt die Kostenpositionen der vertretenen Anlage, Beträge und
-        /// Menge mit Faktor nutzbare Kapazität Stück ÷ vertretene Anlage (hier 15 ÷ 20 = 0,75,
-        /// gleiches SoC-Band); Satz und Nutzungsdauer bleiben, der Geräteanker zeigt auf das
-        /// neue Gerät, die Quelle bleibt unverändert, der Hinweis nennt den Faktor.
+        /// Beide Stücke tragen die Kostenpositionen nach der neuen Kapazität: Beträge und
+        /// Menge mit Faktor neue ÷ alte nutzbare Kapazität (hier 15 ÷ 20 = 0,75, gleiches
+        /// SoC-Band) — das erste Stück (die vertretene Anlage) an Ort und Stelle, das zweite
+        /// als Kopie davon; Satz und Nutzungsdauer bleiben, der Geräteanker zeigt auf das
+        /// neue Gerät, der Hinweis nennt den Faktor und beide Stücke.
         /// </summary>
         [Fact]
-        public void Kostenpositionen_werden_nach_Kapazitaet_skaliert_kopiert()
+        public void Kostenpositionen_folgen_der_Kapazitaet_an_beiden_Stuecken()
         {
             if (!_db.Vorhanden) return;
 
             KostenquelleAnlegen(20.0);
-            string quelleVorher = KostenText(SPEICHERANLAGE);
 
             FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
                 FLOTTENPROJEKT, new[] { Einheit(15.0) }, new[] { 2 });
             Assert.True(e.Erfolg, e.Meldung);
             FlottenUebernahmeAnlage neu = Assert.Single(e.Anlagen, a => a.Neu);
+            FlottenUebernahmeAnlage erstes = Assert.Single(e.Anlagen, a => !a.Neu);
 
-            Assert.Equal(quelleVorher, KostenText(SPEICHERANLAGE));
+            Assert.Equal(KostenText(SPEICHERANLAGE, ohneAnker: true), KostenText(neu.AnlageId, ohneAnker: true));
+            Assert.Equal(750.0, Zahl(Kosten(SPEICHERANLAGE).Rows[0]["EingegebenerWert"]), 9);
             DataTable k = Kosten(neu.AnlageId);
             Assert.Equal(2, k.Rows.Count);
             DataRow betrag = k.Rows[0], prozent = k.Rows[1];
@@ -423,9 +425,92 @@ namespace EPOS.Kern.Tests
             string hinweis = Assert.Single(e.Hinweise);
             Assert.Contains(0.75.ToString("0.00", CultureInfo.CurrentCulture), hinweis);
             Assert.Contains(neu.Bezeichner, hinweis);
+            Assert.Contains(erstes.Bezeichner, hinweis);
         }
 
-        /// <summary>Gleiche Kapazität: Faktor 1, die Kopie trägt dieselben Werte.</summary>
+        /// <summary>
+        /// Das erste Stück allein: Schreibt die Übernahme eine neue Kapazität zurück
+        /// (20 → 30 kWh, Faktor 1,5), wachsen die eigenen Kostenpositionen der Anlage mit;
+        /// Satz und Nutzungsdauer bleiben, der Hinweis nennt den Faktor.
+        /// </summary>
+        [Fact]
+        public void Das_erste_Stueck_skaliert_seine_Kostenpositionen_bei_neuer_Kapazitaet()
+        {
+            if (!_db.Vorhanden) return;
+
+            KostenquelleAnlegen(20.0);
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit(30.0) });
+            Assert.True(e.Erfolg, e.Meldung);
+            FlottenUebernahmeAnlage erstes = Assert.Single(e.Anlagen);
+            Assert.False(erstes.Neu);
+
+            DataTable k = Kosten(SPEICHERANLAGE);
+            Assert.Equal(2, k.Rows.Count);
+            DataRow betrag = k.Rows[0], prozent = k.Rows[1];
+            Assert.Equal(1500.0, Zahl(betrag["EingegebenerWert"]), 9);
+            Assert.Equal(1800.0, Zahl(betrag["Worstcase"]), 9);
+            Assert.Equal(1350.0, Zahl(betrag["Bestcase"]), 9);
+            Assert.Equal(15.0, Zahl(betrag["Nutzungsdauer"]), 9);
+            Assert.Equal(6000.0, Zahl(prozent["Menge"]), 9);
+            Assert.Equal(2.0, Zahl(prozent["Einheitpreis"]), 9);
+            Assert.Equal(120.0, Zahl(prozent["EingegebenerWert"]), 9);
+
+            string hinweis = Assert.Single(e.Hinweise);
+            Assert.Contains(1.5.ToString("0.00", CultureInfo.CurrentCulture), hinweis);
+            Assert.Contains(erstes.Bezeichner, hinweis);
+        }
+
+        /// <summary>
+        /// Im selben Lauf: Die Betragsart wächst mit der Kapazität, die Prozentart mit
+        /// Energiekostenbezug (% des Endenergiebedarfs) bleibt unverändert — an der
+        /// vertretenen Anlage wie an der Kopie.
+        /// </summary>
+        [Fact]
+        public void Prozentart_mit_Energiekostenbezug_bleibt_Betragsart_wird_skaliert()
+        {
+            if (!_db.Vorhanden) return;
+
+            KostenquelleAnlegen(20.0, mitEnergiekostenart: true);
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit(10.0) }, new[] { 2 });
+            Assert.True(e.Erfolg, e.Meldung);
+            FlottenUebernahmeAnlage neu = Assert.Single(e.Anlagen, a => a.Neu);
+
+            foreach (int anlage in new[] { SPEICHERANLAGE, neu.AnlageId })
+            {
+                DataTable k = Kosten(anlage);
+                Assert.Equal(3, k.Rows.Count);
+                Assert.Equal(500.0, Zahl(k.Rows[0]["EingegebenerWert"]), 9);       // BETRAG × 0,5
+                DataRow energie = k.Rows[2];
+                Assert.Equal(DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
+                             Convert.ToString(energie["Bemessung"], CultureInfo.InvariantCulture));
+                Assert.Equal(150.0, Zahl(energie["EingegebenerWert"]), 9);
+                Assert.Equal(5000.0, Zahl(energie["Menge"]), 9);
+                Assert.Equal(3.0, Zahl(energie["Einheitpreis"]), 9);
+                Assert.Equal(160.0, Zahl(energie["Worstcase"]), 9);
+            }
+            Assert.Contains(0.5.ToString("0.00", CultureInfo.CurrentCulture), Assert.Single(e.Hinweise));
+        }
+
+        /// <summary>Der Katalog nennt genau die vier Arten mit Energiekostenbezug als nicht skalierbar.</summary>
+        [Fact]
+        public void Nur_Arten_mit_Energiekostenbezug_skalieren_nicht()
+        {
+            List<string> nicht = BemessungKatalog.Alle.Select(i => i.Persistenz)
+                .Where(p => !BemessungKatalog.NachKapazitaetSkalierbar(p))
+                .OrderBy(p => p, StringComparer.Ordinal).ToList();
+            List<string> erwartet = new[]
+            {
+                DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
+                DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN, DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN
+            }.OrderBy(p => p, StringComparer.Ordinal).ToList();
+            Assert.Equal(erwartet, nicht);
+            Assert.True(BemessungKatalog.NachKapazitaetSkalierbar(null));
+            Assert.True(BemessungKatalog.NachKapazitaetSkalierbar(DbWerte.BEMESSUNG_PROZENT_INVESTITION));
+        }
+
+        /// <summary>Gleiche Kapazität: Faktor 1, die Kopie trägt dieselben Werte, kein Hinweis.</summary>
         [Fact]
         public void Gleiche_Kapazitaet_kopiert_die_Kostenpositionen_unveraendert()
         {
@@ -441,10 +526,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, neue.Count);
             foreach (FlottenUebernahmeAnlage a in neue)
                 Assert.Equal(quelle, KostenText(a.AnlageId, ohneAnker: true));
-            // EIN Hinweis je Einheit, beide Stücke darin.
-            string hinweis = Assert.Single(e.Hinweise);
-            Assert.Contains(1.0.ToString("0.00", CultureInfo.CurrentCulture), hinweis);
-            Assert.All(neue, a => Assert.Contains(a.Bezeichner, hinweis));
+            Assert.Equal(1000.0, Zahl(Kosten(SPEICHERANLAGE).Rows[0]["EingegebenerWert"]), 9);
+            // Faktor 1: still.
+            Assert.Empty(e.Hinweise);
         }
 
         /// <summary>
@@ -463,6 +547,7 @@ namespace EPOS.Kern.Tests
             Assert.True(e.Erfolg, e.Meldung);
 
             Assert.Equal(quelle, KostenText(Assert.Single(e.Anlagen, a => a.Neu).AnlageId, ohneAnker: true));
+            Assert.Equal(quelle, KostenText(SPEICHERANLAGE, ohneAnker: true));
             string erwartet = string.Format(CultureInfo.CurrentCulture,
                 WindowsFormsApplication1.MyResource.Resource.FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET, "§", "¶");
             Assert.StartsWith(erwartet.Substring(0, erwartet.IndexOf('§')), Assert.Single(e.Hinweise));
@@ -516,7 +601,7 @@ namespace EPOS.Kern.Tests
         /// das Band 10/90 % und zwei Kostenpositionen: einen festen Betrag (1.000 €, Band
         /// 900/1.200 €, 15 a) und „% der Investition" (Menge 4.000 €, Satz 2 %, erfasst 80 €).
         /// </summary>
-        private static void KostenquelleAnlegen(double energie)
+        private static void KostenquelleAnlegen(double energie, bool mitEnergiekostenart = false)
         {
             Assert.True(DataRepository.ExecuteSQL(
                 "UPDATE Tab_Stromspeicher SET Energie = ? WHERE ID = (SELECT ID_SP FROM Tab_Energieanlagen WHERE ID = ?)",
@@ -539,6 +624,14 @@ namespace EPOS.Kern.Tests
                 "Kostenart, Bemessung, Menge, Einheitpreis, ID_Anlage, ID_AnlageGeraet) " +
                 "VALUES (?, ?, 1, 80, 1, 'BETRIEBSGEBUNDEN', 'PROZENT_INVESTITION', 4000, 2, ?, ?)",
                 new DbParam("@p", FLOTTENPROJEKT), new DbParam("@k", komponente ?? DBNull.Value),
+                new DbParam("@a", SPEICHERANLAGE), new DbParam("@g", geraet)));
+            if (!mitEnergiekostenart) return;
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_ProjektWerte (ProjektID, KomponentenID, KategorieID, EingegebenerWert, Worstcase, " +
+                "Nutzungsdauer, Kostenart, Bemessung, Menge, Einheitpreis, ID_Anlage, ID_AnlageGeraet) " +
+                "VALUES (?, ?, 1, 150, 160, 1, 'BETRIEBSGEBUNDEN', ?, 5000, 3, ?, ?)",
+                new DbParam("@p", FLOTTENPROJEKT), new DbParam("@k", komponente ?? DBNull.Value),
+                new DbParam("@b", DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF),
                 new DbParam("@a", SPEICHERANLAGE), new DbParam("@g", geraet)));
         }
 

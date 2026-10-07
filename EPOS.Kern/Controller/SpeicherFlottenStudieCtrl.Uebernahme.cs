@@ -187,16 +187,19 @@ public static partial class SpeicherFlottenStudieCtrl
                 bool quelleGueltig = vorhandeneAnlage > 0 &&
                                      Geraetezeile(v, projektId, vorhandeneAnlage) is { } g0 && g0 > 0;
 
-                // Kostenpositionen der vertretenen Anlage gehen mit (Anwenderentscheid
-                // 07.10.2026), Betraege und Mengen nach Kapazitaet skaliert: Faktor =
-                // nutzbarer Energieinhalt des Stuecks / der vertretenen Anlage - die Quelle
-                // VOR dem Rueckschreiben des ersten Stuecks gelesen, denn ihre Kosten gelten
-                // fuer ihre bisherige Groesse. Fehlt eine Kapazitaet: Faktor 1 und Hinweis.
+                // Kostenpositionen der vertretenen Anlage folgen der Kapazitaet
+                // (Anwenderentscheide 07.10.2026): Faktor = neue nutzbare Kapazitaet / alte
+                // der vertretenen Anlage - die alte VOR dem Rueckschreiben des ersten Stuecks
+                // gelesen, denn ihre Kosten gelten fuer ihre bisherige Groesse. Das ERSTE
+                // Stueck skaliert seine eigenen Positionen an Ort und Stelle; jedes weitere
+                // kopiert die dann schon skalierten Positionen unveraendert. Positionen mit
+                // Energiekostenbezug bleiben (BemessungKatalog.ENERGIEKOSTEN_BEZUG). Ein Hinweis
+                // nur bei Faktor <> 1 oder fehlender Kapazitaet (dann Faktor 1).
                 double kostenfaktor = 1.0;
                 bool ohneKapazitaet = false;
                 int kostenpositionen = 0;
                 var kostenStuecke = new List<string>();
-                if (quelleGueltig && stueck > 1)
+                if (quelleGueltig)
                 {
                     kostenpositionen = Convert.ToInt32(v.Skalar(
                         "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_Anlage = ?",
@@ -205,7 +208,9 @@ public static partial class SpeicherFlottenStudieCtrl
                     double ziel = NutzbarerInhalt(e);
                     if (quelle > 0.0 && ziel > 0.0) kostenfaktor = ziel / quelle;
                     else ohneKapazitaet = true;
+                    if (Math.Abs(kostenfaktor - 1.0) <= KOSTENFAKTOR_RAND) kostenfaktor = 1.0;
                 }
+                bool kostenMelden = kostenpositionen > 0 && (ohneKapazitaet || kostenfaktor != 1.0);
 
                 for (int n = 1; n <= stueck; n++)
                 {
@@ -215,6 +220,9 @@ public static partial class SpeicherFlottenStudieCtrl
                         Geraetezeile(v, projektId, vorhandeneAnlage) is { } geraet && geraet > 0)
                     {
                         v.Ausfuehren(SQL_GERAET_AENDERN, Geraetewerte(e, geraet));
+                        if (kostenpositionen > 0)
+                            AnlagenFachspalten.KostenpositionenSkalieren(v, vorhandeneAnlage, kostenfaktor);
+                        if (kostenMelden) kostenStuecke.Add(Bezeichner(v, projektId, geraet));
                         angelegt.Add(new FlottenUebernahmeAnlage(e.Id ?? "", vorhandeneAnlage, geraet,
                             Bezeichner(v, projektId, geraet), false, n));
                         continue;
@@ -245,14 +253,16 @@ public static partial class SpeicherFlottenStudieCtrl
                     if (quelleGueltig)
                     {
                         AnlagenFachspalten.Uebertragen(v, kopieSpalten, vorhandeneAnlage, neueAnlageId);
-                        AnlagenFachspalten.AnlagenkinderKopieren(v, vorhandeneAnlage, neueAnlageId, kostenfaktor);
-                        kostenStuecke.Add(name);
+                        // Die Positionen der Quelle tragen schon die neue Kapazitaet (erstes
+                        // Stueck, oben): unveraendert kopieren.
+                        AnlagenFachspalten.AnlagenkinderKopieren(v, vorhandeneAnlage, neueAnlageId, 1.0);
+                        if (kostenMelden) kostenStuecke.Add(name);
                     }
                     angelegt.Add(new FlottenUebernahmeAnlage(e.Id ?? "", neueAnlageId, neueGeraeteId,
                                                              name, true, n));
                 }
 
-                if (kostenpositionen > 0 && kostenStuecke.Count > 0)
+                if (kostenMelden && kostenStuecke.Count > 0)
                 {
                     string quellName = Bezeichner(v, projektId, Geraetezeile(v, projektId, vorhandeneAnlage));
                     string stuecke = string.Join(", ", kostenStuecke.Select(x => "„" + x + "“"));
@@ -290,6 +300,10 @@ public static partial class SpeicherFlottenStudieCtrl
     // =====================================================================
     //  Innenleben
     // =====================================================================
+
+    /// <summary>Ein Kostenfaktor, der um höchstens so viel von 1 abweicht, gilt als 1 —
+    /// keine Änderung, kein Hinweis (gleiche Kapazität aus getrennten Rechenketten).</summary>
+    private const double KOSTENFAKTOR_RAND = 1e-9;
 
     private static int Stueckzahl(IReadOnlyList<int> stueckzahlen, int stelle)
     {

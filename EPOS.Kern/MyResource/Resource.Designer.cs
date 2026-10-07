@@ -26118,7 +26118,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ wurden für {1} mit Faktor {2} nach Kapazität übernommen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ wurden mit Faktor {2} nach Kapazität angepasst und gelten für {1}; Anteile an Energiekosten bleiben unverändert. ähnelt.
         /// </summary>
         public static string FLOTTE_UEBERNAHME_HINW_KOSTEN {
             get {
@@ -26127,7 +26127,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ wurden für {1} unverändert übernommen — ohne Kapazität lässt sich kein Faktor bilden; bitte prüfen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ gelten unverändert für {1} — ohne Kapazität lässt sich kein Faktor bilden; bitte prüfen. ähnelt.
         /// </summary>
         public static string FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET {
             get {

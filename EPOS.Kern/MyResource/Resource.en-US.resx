@@ -19337,10 +19337,10 @@ Please go through the project page again so that the data of the selected projec
     <value>The transfer failed; nothing was written: {0}</value>
   </data>
   <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN" xml:space="preserve">
-    <value>Cost items of “{0}” were transferred to {1} scaled by capacity with factor {2}.</value>
+    <value>Cost items of “{0}” were scaled by capacity with factor {2} and apply to {1}; shares of energy costs remain unchanged.</value>
   </data>
   <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET" xml:space="preserve">
-    <value>Cost items of “{0}” were transferred to {1} unchanged — without a capacity no factor can be formed; please check.</value>
+    <value>Cost items of “{0}” apply unchanged to {1} — without a capacity no factor can be formed; please check.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE" xml:space="preserve">
     <value>Search for the size</value>

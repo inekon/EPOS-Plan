@@ -336,7 +336,8 @@ namespace WindowsFormsApplication1
         /// <item><c>Tab_Sperrfenster</c> — Sperrprofil;</item>
         /// <item><c>Tab_ProjektWerte</c> — Kostenpositionen der Anlage (Anwenderentscheid
         /// 07.10.2026): Beträge und Mengen nach Kapazität skaliert
-        /// (<see cref="ANLAGENKIND_SKALIERT"/>), der Geräteanker auf das Gerät der Kopie
+        /// (<see cref="ANLAGENKIND_SKALIERT"/>) — außer Positionen mit Energiekostenbezug
+        /// (<c>BemessungKatalog.ENERGIEKOSTEN_BEZUG</c>), die unverändert mitgehen —, der Geräteanker auf das Gerät der Kopie
         /// umgeschlüsselt (<see cref="ANLAGENKIND_GERAETEANKER"/>).</item>
         /// </list>
         /// Verweise der Kindzeilen auf andere projekteigene Zeilen (Puffer, Wechselrichter,
@@ -363,6 +364,10 @@ namespace WindowsFormsApplication1
         /// Rückfallbetrag) und die Bezugsgröße <c>Menge</c>; der SATZ
         /// (<c>Einheitpreis</c>) und die Nutzungsdauern bleiben (<see cref="ANLAGENKIND_UNSKALIERT"/>).
         /// So wächst der Betrag jeder Art mit demselben Faktor.</para>
+        /// <para><b>Ausnahme.</b> Positionen, deren Bemessungsart die Energiekosten bzw. den
+        /// Endenergieeinsatz zur Bezugsgröße hat (<c>BemessungKatalog.ENERGIEKOSTEN_BEZUG</c>),
+        /// bleiben unskaliert (Anwenderentscheid 07.10.2026): ihre Bezugsgröße hängt nicht an
+        /// der Baugröße der Anlage.</para>
         /// </summary>
         public static readonly HashSet<string> ANLAGENKIND_SKALIERT =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -480,7 +485,8 @@ namespace WindowsFormsApplication1
                             werte.Add("?");
                             ps.Add(new DbParam("@u", neu));
                         }
-                        else if (kostenfaktor != 1.0 && ANLAGENKIND_SKALIERT.Contains(tabelle + "." + spalte))
+                        else if (kostenfaktor != 1.0 && ANLAGENKIND_SKALIERT.Contains(tabelle + "." + spalte) &&
+                                 ZeileSkalierbar(tabelle, zeile))
                         {
                             // NULL bleibt NULL (nicht gepflegt), sonst Wert × Faktor.
                             werte.Add("[" + spalte + "] * ?");
@@ -508,6 +514,62 @@ namespace WindowsFormsApplication1
                 }
             }
             return anzahl;
+        }
+
+        /// <summary>
+        /// Skaliert die Kostenpositionen (<c>Tab_ProjektWerte</c>) der Anlage
+        /// <paramref name="anlageId"/> AN ORT UND STELLE mit <paramref name="faktor"/> — die
+        /// <see cref="ANLAGENKIND_SKALIERT"/>-Spalten, nach derselben Regel wie die Kopie
+        /// (<see cref="AnlagenkinderKopieren"/>): Positionen mit Energiekostenbezug
+        /// (<c>BemessungKatalog.NachKapazitaetSkalierbar</c>) bleiben, NULL bleibt NULL.
+        /// Gerufen, wenn eine Übernahme der Anlage eine neue Kapazität zurückschreibt
+        /// (Anwenderentscheid 07.10.2026). Läuft im Vorgang der Übernahme.
+        /// </summary>
+        /// <param name="v">Der offene Vorgang.</param>
+        /// <param name="anlageId">Die Anlage, deren Positionen wachsen oder schrumpfen.</param>
+        /// <param name="faktor">Neue ÷ alte nutzbare Kapazität; 1 oder ungültig = nichts.</param>
+        /// <returns>Die Zahl der skalierten Positionen.</returns>
+        public static int KostenpositionenSkalieren(DbVorgang v, int anlageId, double faktor)
+        {
+            const string KOSTENTABELLE = "Tab_ProjektWerte";
+            if (v == null || anlageId <= 0 || !double.IsFinite(faktor) || faktor <= 0.0 || faktor == 1.0) return 0;
+            var vorhanden = new HashSet<string>(SpaltenImVorgang(v, KOSTENTABELLE), StringComparer.OrdinalIgnoreCase);
+            List<string> spalten = ANLAGENKIND_SKALIERT
+                .Where(s => s.StartsWith(KOSTENTABELLE + ".", StringComparison.OrdinalIgnoreCase))
+                .Select(s => s.Substring(KOSTENTABELLE.Length + 1))
+                .Where(vorhanden.Contains)
+                .OrderBy(s => s, StringComparer.Ordinal)
+                .ToList();
+            if (spalten.Count == 0 || !vorhanden.Contains("ID_Anlage")) return 0;
+
+            var ps = new List<DbParam>();
+            foreach (string _ in spalten) ps.Add(new DbParam("@f", faktor));
+            ps.Add(new DbParam("@a", anlageId));
+            string bedingung = "";
+            if (vorhanden.Contains("Bemessung"))
+            {
+                bedingung = " AND (Bemessung IS NULL OR Bemessung NOT IN (" +
+                            string.Join(", ", BemessungKatalog.ENERGIEKOSTEN_BEZUG.Select(_ => "?")) + "))";
+                foreach (string art in BemessungKatalog.ENERGIEKOSTEN_BEZUG) ps.Add(new DbParam("@b", art));
+            }
+            return v.Ausfuehren("UPDATE [" + KOSTENTABELLE + "] SET " +
+                                string.Join(", ", spalten.Select(s => "[" + s + "] = [" + s + "] * ?")) +
+                                " WHERE ID_Anlage = ?" + bedingung, ps.ToArray());
+        }
+
+        /// <summary>
+        /// Darf die Kopie diese Kindzeile skalieren? Eine Kostenposition mit
+        /// Energiekostenbezug nicht (Anwenderentscheid 07.10.2026) — ihre Bezugsgröße hängt
+        /// nicht an der Baugröße; jede andere Zeile ja.
+        /// </summary>
+        private static bool ZeileSkalierbar(string tabelle, DataRow zeile)
+        {
+            if (!string.Equals(tabelle, "Tab_ProjektWerte", StringComparison.OrdinalIgnoreCase) ||
+                !zeile.Table.Columns.Contains("Bemessung"))
+                return true;
+            object art = zeile["Bemessung"];
+            return art == DBNull.Value ||
+                   BemessungKatalog.NachKapazitaetSkalierbar(Convert.ToString(art, CultureInfo.InvariantCulture));
         }
 
         /// <summary>
