@@ -896,6 +896,15 @@ rechnet alle zweiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Projektbezug: Kein Referenzprojekt führt einen der Sätze, keine Einfrierregel ist berührt; den Referenzlauf fährt die
 > Orchestrierung im Gate.
 
+> **Nachtrag — Schemaschritt 197 (Herkunft der Bauteilfläche), Basis unverändert.**
+> `FlaechenherkunftSchema` (197 = `StandardlastprofilPvSchema.SCHRITT + 1`) legt an `Tab_Bauteil` die nullbare Spalte
+> `Flaechenherkunft` mit Prüfklausel an (`MENGENSATZ`, `RAUMGRENZE`, `KOERPER`, `SCHEMATISCH`; reines ADD COLUMN). An allen 62
+> Bauteilzeilen der Testdatenbank ist sie NULL; der Zellvergleich gegen den Stand 196 zeigt sonst nur
+> `Tab_Applikation.SchemaVersion` und `sqlite_sequence`. Die Testdatenbank steht auf **197**
+> (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer): **89 698 304 Byte, LFS-SHA-256
+> `78b62ac35c57bafe4513dedf9030be09ee93def247eb7ad649117e20c618781c`** (Größe wie vorher). **Die Basis
+> bleibt** — kein Rechenweg, keine Einfrierregel berührt; der Referenzlauf der acht CI-Projekte gegen R40 ist PASS.
+
 ### Die Vorgängerbasis R39 (Auslegungsheizlast)
 
 Einundzwanzig Projekte, 646 CSV, 4 275 Skalare, auf Linux eingefroren gegen die Testdatenbank `2fec4f14…` (Schemastand
