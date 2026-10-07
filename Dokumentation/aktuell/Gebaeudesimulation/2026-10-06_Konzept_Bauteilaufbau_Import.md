@@ -345,6 +345,7 @@ Herkunft je Wert in `GebaeudeBauteilzeile`.
   sprachneutralen Code des Typs (`TEXT`, `CHECK` auf die Codes, nullbar, NULL = echter Aufbau) —
   eine Kopie, kein ID-Verweis auf den Katalog, damit Katalogpflege den Aufbau nicht ändert.
   Schemaschritt, siehe 5.6.
+- **Gebaut (BA-2, #786) mit Abweichungen:** neun statt rund 14 Typen (die Innentypen entfallen nach E95-5); der Namensabgleich von Schichtsätzen auf Typgruppen und der U-Abgleich der Dämmschicht bei fehlendem λ (5.1) sind nicht gebaut.
 - **Ein Ersatzaufbau je Kombination aus Typ und Ziel-U je Projekt**, nicht je Bauteil. Hunderte
   Wandstücke mit gleichem U teilen einen Aufbau.
 
@@ -445,7 +446,7 @@ Flächenanteile der drei Stufen.
 | Welle | Inhalt | PT | Schema | hängt an |
 |---|---|---|---|---|
 | **BA-1** Kern: Relevanzregel und Datei-U (**gebaut #785**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_BA-1_Bauteilaufbau_Kern.md)) | Relevanzregel 5.1 in `GebaeudeBauteilvorschlag`; U der Datei neben dem Aufbau speichern; Stufe A/B/C als abgeleitete Größe (`Bauteilzuordnungsstufe`) mit Herkunft je Wert im Vorschlag; Protokollzeilen; Tests mit den Proben in 4.1 als Sollwerten | 1–1,5 | nein | — |
-| **BA-2** Kern: Typaufbauten und Ersatzaufbau | Typkatalog (rund 14 Aufbauten) als Saat, Spalte `Typaufbau`, Wahl und U-Abgleich 5.3, Stufen B/C schreiben Ersatzaufbauten; erweiterte Stofftafel für λ/ρ; Katalogfassung; SQL-Dialekt-Prüfer | 2–3 | **ja** | BA-1 |
+| **BA-2** Kern: Typaufbauten und Ersatzaufbau (**gebaut #786**, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_BA-2_Typaufbauten_Ersatzaufbau.md)) | Typkatalog (rund 14 Aufbauten) als Saat, Spalte `Typaufbau`, Wahl und U-Abgleich 5.3, Stufen B/C schreiben Ersatzaufbauten; erweiterte Stofftafel für λ/ρ; Katalogfassung; SQL-Dialekt-Prüfer | 2–3 | **ja** | BA-1 |
 | **BA-3** Oberfläche | Farbmodus „Aufbau“ (3D, 2D, Legende), Liste „Bauteilaufbauten“ im Import, mit Bauteilsteckbrief (E98), Spalte und Filter im `ZonenDialog`, Texte in beiden Sprachen; Rasterprobe unberührt, bunit | 2 | nein | BA-1 (BA-2 für Typwahl) |
 | **BA-4** Projektdatei: Aufbauten | Diagnose (0,5 PT, Nachtrag Befund), Leser der vier Tabellen, Zuordnung über `GId`, Rangfolge 5.5, Proben mit synthetischer Projektdatei (keine Anwenderdatei im Repositorium) | 3–4 | nein | BA-1 |
 | **BA-5** Wiki und Logbuch | Seite Gebäudeimport um Stufen und Farbmodus, Logbuch-Entwurf | 0,5 | nein | BA-3 |

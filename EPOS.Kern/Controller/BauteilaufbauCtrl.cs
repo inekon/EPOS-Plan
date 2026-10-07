@@ -652,19 +652,25 @@ namespace WindowsFormsApplication1
         {
             if (v == null) throw new ArgumentNullException(nameof(v));
             if (m == null) throw new ArgumentNullException(nameof(m));
+            // Das Kennzeichen des Ersatzaufbaus (Schritt 192) nur, wenn es gesetzt ist — ein echter Aufbau
+            // schreibt die Spalte nicht und braucht sie nicht.
+            bool typ = !string.IsNullOrEmpty(m.Typaufbau);
+            var werte = new List<DbParam>
+            {
+                new DbParam("@p", idProjekt),
+                new DbParam("@b", m.Bezeichner.Trim()),
+                BaustoffCtrl.Text("@be", m.Beschreibung),
+                BaustoffCtrl.Text("@art", m.Bauteilart),
+                BaustoffCtrl.Text("@q", m.Quelle),
+                BaustoffCtrl.Text("@h", m.Herkunft),
+                BaustoffCtrl.Text("@qk", m.Quellkennung)
+            };
+            if (typ) werte.Add(BaustoffCtrl.Text("@t", m.Typaufbau));
             int id = v.EinfuegenUndId(
                 "INSERT INTO \"" + BauteilaufbauSchema.TAB_AUFBAU + "\" (\"ID_Projekt\", \"Bezeichner\", \"Beschreibung\", " +
-                "\"Bauteilart\", \"Quelle\", \"Herkunft\", \"Quellkennung\") VALUES (?, ?, ?, ?, ?, ?, ?)",
-                new[]
-                {
-                    new DbParam("@p", idProjekt),
-                    new DbParam("@b", m.Bezeichner.Trim()),
-                    BaustoffCtrl.Text("@be", m.Beschreibung),
-                    BaustoffCtrl.Text("@art", m.Bauteilart),
-                    BaustoffCtrl.Text("@q", m.Quelle),
-                    BaustoffCtrl.Text("@h", m.Herkunft),
-                    BaustoffCtrl.Text("@qk", m.Quellkennung)
-                });
+                "\"Bauteilart\", \"Quelle\", \"Herkunft\", \"Quellkennung\"" + (typ ? ", \"" + TypaufbauSchema.SPALTE + "\"" : "") +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?" + (typ ? ", ?" : "") + ")",
+                werte.ToArray());
             m.ID = id;
             m.ID_Projekt = idProjekt;
             m.Bezeichner = m.Bezeichner.Trim();
@@ -750,6 +756,7 @@ namespace WindowsFormsApplication1
                     Quelle = BaustoffCtrl.TextAus(r, "Quelle"),
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                     Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
+                    Typaufbau = BaustoffCtrl.TextAus(r, TypaufbauSchema.SPALTE),
                     ReadOnly = (BaustoffCtrl.GanzAus(r, "ReadOnly") ?? 0) != 0
                 };
                 liste.Add(a);

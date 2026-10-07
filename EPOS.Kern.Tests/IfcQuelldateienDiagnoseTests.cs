@@ -724,9 +724,21 @@ namespace EPOS.Kern.Tests
                 var fehlt = v.Zeilen.Where(z => z.Stufe == Bauteilzuordnungsstufe.B || z.Stufe == Bauteilzuordnungsstufe.C)
                                     .GroupBy(z => z.Fehlt).OrderByDescending(g => g.Count())
                                     .Select(g => g.Key + "×" + g.Count());
+                // BA-2: opake Außenfläche ohne echten Aufbau (vor dem Ersatzaufbau masselos) und ohne jeden Aufbau (nachher).
+                var aussen = v.Zeilen.Where(z => z.Summenfeld != null && z.Stufe != Bauteilzuordnungsstufe.Transparent).ToList();
+                double opak = aussen.Sum(z => z.Bauteil.Flaeche);
+                double vorher = aussen.Where(z => !z.Bauteil.ID_Aufbau.HasValue || z.Typaufbau != null).Sum(z => z.Bauteil.Flaeche);
+                double nachher = aussen.Where(z => !z.Bauteil.ID_Aufbau.HasValue).Sum(z => z.Bauteil.Flaeche);
+                string Pz(double x) => Z(opak > 0.0 ? 100.0 * x / opak : 0.0) + " %";
+                var typen = v.Aufbauten.Where(x => x.Ersatz != null).GroupBy(x => x.Ersatz.Typ.Code).Select(g => g.Key + "×" + g.Count());
                 _aus.WriteLine("STUFEN " + datei + " [" + gi + "]: " + string.Join(", ", summen.Select(Anteil))
                                + "; weggelassene Schichten " + weg + "; U-Hinweis (>10 %) " + hinweis
                                + "; fehlt: " + string.Join(", ", fehlt));
+                _aus.WriteLine("MASSELOS " + datei + " [" + gi + "]: opake Außenfläche " + Z(opak) + " m², ohne echten Aufbau (vorher masselos) "
+                               + Z(vorher) + " m² = " + Pz(vorher) + ", ohne jeden Aufbau (nachher) " + Z(nachher) + " m² = " + Pz(nachher)
+                               + "; Ersatzaufbauten " + string.Join(", ", typen));
+                // Ohne Aufbau bleiben allein die Türen (sie bekommen keinen Ersatzaufbau).
+                Assert.All(aussen.Where(z => !z.Bauteil.ID_Aufbau.HasValue), z => Assert.Equal(DbWerte.BAUTEILART_TUER, z.Bauteil.Bauteilart));
             }
         }
     }
@@ -878,16 +890,19 @@ namespace EPOS.Kern.Tests
         /// Trennflächen aus den Raumkörpern die Nachbarschaft der Räume (Mehrzonenkonzept 6.2): Alle sechs Dateien haben Z4
         /// als Vorgabe, die Flächen gegen unbeheizte Räume sind vollständig. Bauteile mit vollständigem Aufbau behalten den
         /// U-Wert der Datei neben den Schichten (E95-1, BA-1) — das verschiebt MFH mittel, Sportheim und Verwaltung.
+        /// Außenbauteile der Stufen B und C tragen einen Ersatzaufbau statt masselos zu rechnen (E95-3, BA-2): Die
+        /// Speichermasse der Hülle wächst, Jahresheizwärme und Spitze sinken (Jahresheizwärme Z4 −0,6 bis −2,0 %,
+        /// Spitze −0,8 bis −9,3 %); die Auslegungsheizlast ist stationär und bleibt.
         /// </summary>
         private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen, double Q, double Spitze, double Tagesmittel, double QVergleich, double Auslegung)> SOLL
             = new Dictionary<string, (string, int, double, double, double, double, double)>(StringComparer.Ordinal)
             {
-                ["MFH_mittel_1984.ifc"] = ("Z4", 5, 46.27, 27.05, 16.73, 51.20, 19.85),
-                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 41.36, 29.94, 17.46, 53.86, 22.03),
-                ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 59.15, 52.58, 28.02, 71.23, 37.17),
-                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 238.31, 263.26, 132.95, 230.10, 185.56),
-                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 17.67, 21.77, 9.76, 17.47, 14.13),
-                ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 3, 1856.82, 1273.75, 862.81, 1867.99, 1012.48),
+                ["MFH_mittel_1984.ifc"] = ("Z4", 5, 46.01, 24.80, 16.55, 50.66, 19.85),
+                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 41.09, 27.16, 17.29, 52.91, 22.03),
+                ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 58.69, 49.28, 27.43, 69.68, 37.17),
+                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 233.59, 261.22, 131.53, 221.66, 185.56),
+                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 17.53, 20.83, 9.53, 17.22, 14.13),
+                ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 3, 1828.57, 1251.39, 864.66, 1824.81, 1012.47),
             };
 
         /// <summary>

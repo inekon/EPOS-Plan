@@ -37643,6 +37643,27 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_BAUTEIL_PROT_STUFE_C" xml:space="preserve">
     <value>Assignment level C (geometry only): {0} element(s), {1} m².</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZAUFBAU" xml:space="preserve">
+    <value>{0} exterior element(s) without a complete construction, {1} m², carry a substitute construction from {2} type construction(s) instead of being calculated without mass (assignment level stays B or C).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL" xml:space="preserve">
+    <value>{0} substitute construction(s) with the type chosen by U-value instead of construction age class: {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG" xml:space="preserve">
+    <value>{0} substitute construction(s) without insulation layer — the U-value lies above that of the type construction without insulation: {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_BAND" xml:space="preserve">
+    <value>{0} substitute construction(s) outside the matching band (insulation up to 40 cm, λ 0.5 to 3 times) — type construction without matching: {1}.</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_DICKE" xml:space="preserve">
+    <value>Substitute construction from “{0}”: insulation layer {1} cm, matched to U = {2} W/(m²K).</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_LAMBDA" xml:space="preserve">
+    <value>Substitute construction from “{0}”: λ of the load-bearing layer {1} W/(mK), matched to U = {2} W/(m²K).</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_OHNE" xml:space="preserve">
+    <value>Substitute construction from “{0}” without matching; U = {1} W/(m²K) applies to transmission.</value>
+  </data>
   <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
     <value>{0} air layer(s) are calculated as unventilated air layers to EN ISO 6946.</value>
   </data>
