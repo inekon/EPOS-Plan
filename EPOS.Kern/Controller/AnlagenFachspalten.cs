@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -332,7 +333,11 @@ namespace WindowsFormsApplication1
         /// kopierte Senke umgeschlüsselt (<see cref="ANLAGENKIND_UMSCHLUESSEL"/>), deshalb NACH den Senken;</item>
         /// <item><c>Z_AnlageStrang</c> — Stränge; sie gehören der Anlage (Gruppierung je Anlage,
         /// Wechselrichter, Gerätenummer), die Kopie bekommt eigene Stränge mit denselben Namen;</item>
-        /// <item><c>Tab_Sperrfenster</c> — Sperrprofil.</item>
+        /// <item><c>Tab_Sperrfenster</c> — Sperrprofil;</item>
+        /// <item><c>Tab_ProjektWerte</c> — Kostenpositionen der Anlage (Anwenderentscheid
+        /// 07.10.2026): Beträge und Mengen nach Kapazität skaliert
+        /// (<see cref="ANLAGENKIND_SKALIERT"/>), der Geräteanker auf das Gerät der Kopie
+        /// umgeschlüsselt (<see cref="ANLAGENKIND_GERAETEANKER"/>).</item>
         /// </list>
         /// Verweise der Kindzeilen auf andere projekteigene Zeilen (Puffer, Wechselrichter,
         /// PV-Modul) bleiben gleich — die Kopie liegt im selben Projekt.
@@ -343,8 +348,54 @@ namespace WindowsFormsApplication1
             ("Z_AnlageSenke", "ID_Anlage"),
             ("Z_AnlagePufferVerbund", "ID_Anlage"),
             ("Z_AnlageStrang", "ID_Anlage"),
-            ("Tab_Sperrfenster", "ID_Energieanlage")
+            ("Tab_Sperrfenster", "ID_Energieanlage"),
+            ("Tab_ProjektWerte", "ID_Anlage")
         };
+
+        /// <summary>
+        /// Zahlenspalten einer Kindzeile („Tabelle.Spalte“), die die Kopie mit dem
+        /// KOSTENFAKTOR (Kapazität des Stücks ÷ Kapazität der vertretenen Anlage) skaliert.
+        /// <para><b>Welche.</b> Der Bestand kennzeichnet keine Pauschalen; die Bemessungsart
+        /// (<c>BemessungKatalog</c>) unterscheidet nur FESTE Arten (Betrag in
+        /// <c>EingegebenerWert</c>) von ABGELEITETEN (Betrag = <c>Menge</c> × Satz). Skaliert
+        /// werden deshalb alle Beträge (<c>EingegebenerWert</c> samt Bandbreite
+        /// <c>Worstcase</c>/<c>Bestcase</c> — bei abgeleiteten Arten der erfasste
+        /// Rückfallbetrag) und die Bezugsgröße <c>Menge</c>; der SATZ
+        /// (<c>Einheitpreis</c>) und die Nutzungsdauern bleiben (<see cref="ANLAGENKIND_UNSKALIERT"/>).
+        /// So wächst der Betrag jeder Art mit demselben Faktor.</para>
+        /// </summary>
+        public static readonly HashSet<string> ANLAGENKIND_SKALIERT =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Tab_ProjektWerte.EingegebenerWert", "Tab_ProjektWerte.Worstcase",
+                "Tab_ProjektWerte.Bestcase", "Tab_ProjektWerte.Menge"
+            };
+
+        /// <summary>
+        /// Zahlenspalten (REAL) einer skalierten Kindtabelle, die die Kopie bewusst
+        /// UNVERÄNDERT übernimmt: Satz und Nutzungsdauern hängen nicht von der Größe ab.
+        /// Jede REAL-Spalte von <c>Tab_ProjektWerte</c> steht hier oder in
+        /// <see cref="ANLAGENKIND_SKALIERT"/> (Wache <c>FachspaltenEinordnungWacheTests</c>).
+        /// </summary>
+        public static readonly HashSet<string> ANLAGENKIND_UNSKALIERT =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Tab_ProjektWerte.Einheitpreis", "Tab_ProjektWerte.Nutzungsdauer",
+                "Tab_ProjektWerte.Worstcase_Nutzungsdauer", "Tab_ProjektWerte.Bestcase_Nutzungsdauer"
+            };
+
+        /// <summary>
+        /// Geräteanker einer Kindzeile („Tabelle.Spalte“): Er zeigt auf den Gerätedatensatz
+        /// der Anlage (<see cref="GERAETESPALTEN"/>). In der Kopie zeigt er auf das Gerät der
+        /// KOPIE, wo es ein anderes ist (Stromspeicher: neue Gerätezeile); sonst bleibt er.
+        /// </summary>
+        public static readonly HashSet<string> ANLAGENKIND_GERAETEANKER =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Tab_ProjektWerte.ID_AnlageGeraet" };
+
+        /// <summary>Die Geräteverweise einer Anlagenzeile — dieselben wie im
+        /// Ankernachzug der Kostenpositionen (<c>KostenProjektPositionenCtrl.AnkerNachziehen</c>).</summary>
+        public static readonly string[] GERAETESPALTEN =
+            { "ID_WP", "ID_Kessel", "ID_BHKW", "ID_PV", "ID_Solar", "ID_SP", "ID_PUFFER" };
 
         /// <summary>
         /// Verweise einer Kindzeile auf eine ANDERE Kindzeile derselben Anlage
@@ -362,13 +413,12 @@ namespace WindowsFormsApplication1
         /// Ergebnisse des Laufs (<c>Tab_ErgebnisErdreich</c>, <c>Tab_ErgebnisPufferspeicher</c>,
         /// <c>Tab_ErgebnisStromspeicher</c>), die gespeicherte Auslegungsstudie
         /// (<c>Tab_SpeicherAuslegung</c>, eindeutig je Projekt, Anlage und Bezeichner — die Studie
-        /// gehört der vertretenen Anlage) und die Kostenpositionen (<c>Tab_ProjektWerte</c>,
-        /// eigener Pflegeweg über Komponente und Gerät).
+        /// gehört der vertretenen Anlage).
         /// </summary>
         public static readonly HashSet<string> ANLAGENKIND_AUSSCHLUSS =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { "Tab_ErgebnisErdreich", "Tab_ErgebnisPufferspeicher", "Tab_ErgebnisStromspeicher",
-              "Tab_SpeicherAuslegung", "Tab_ProjektWerte" };
+              "Tab_SpeicherAuslegung" };
 
         /// <summary>Spaltennamen, die ohne Fremdschlüssel auf eine Anlagenzeile zeigen.</summary>
         public static readonly HashSet<string> ANLAGENVERWEIS_SPALTEN =
@@ -381,10 +431,17 @@ namespace WindowsFormsApplication1
         /// Läuft im Vorgang der Übernahme; ein scheiterndes INSERT wirft und rollt mit ihr zurück.
         /// Eine Tabelle, die das Schema (noch) nicht kennt, wird übergangen.
         /// </summary>
+        /// <param name="v">Der offene Vorgang.</param>
+        /// <param name="idQuelle">Die vertretene Anlage.</param>
+        /// <param name="idZiel">Die eben angelegte Kopie.</param>
+        /// <param name="kostenfaktor">Faktor der <see cref="ANLAGENKIND_SKALIERT"/>-Spalten;
+        /// 1 (oder ein ungültiger Wert) = unverändert.</param>
         /// <returns>Die Zahl der kopierten Kindzeilen.</returns>
-        public static int AnlagenkinderKopieren(DbVorgang v, int idQuelle, int idZiel)
+        public static int AnlagenkinderKopieren(DbVorgang v, int idQuelle, int idZiel, double kostenfaktor = 1.0)
         {
             if (v == null || idQuelle <= 0 || idZiel <= 0 || idQuelle == idZiel) return 0;
+            if (!double.IsFinite(kostenfaktor) || kostenfaktor <= 0.0) kostenfaktor = 1.0;
+            Dictionary<long, long> anker = Geraeteanker(v, idQuelle, idZiel);
 
             int anzahl = 0;
             // Kindtabelle → (alte ID → neue ID), für die Umschlüsselung späterer Kinder.
@@ -423,6 +480,22 @@ namespace WindowsFormsApplication1
                             werte.Add("?");
                             ps.Add(new DbParam("@u", neu));
                         }
+                        else if (kostenfaktor != 1.0 && ANLAGENKIND_SKALIERT.Contains(tabelle + "." + spalte))
+                        {
+                            // NULL bleibt NULL (nicht gepflegt), sonst Wert × Faktor.
+                            werte.Add("[" + spalte + "] * ?");
+                            ps.Add(new DbParam("@f", kostenfaktor));
+                        }
+                        else if (ANLAGENKIND_GERAETEANKER.Contains(tabelle + "." + spalte))
+                        {
+                            object alt = zeile[spalte];
+                            object neu = alt;
+                            if (alt != DBNull.Value &&
+                                anker.TryGetValue(Convert.ToInt64(alt, CultureInfo.InvariantCulture), out long n))
+                                neu = n;
+                            werte.Add("?");
+                            ps.Add(new DbParam("@g", neu));
+                        }
                         else werte.Add("[" + spalte + "]");
                     }
                     ps.Add(new DbParam("@id", alteId));
@@ -435,6 +508,31 @@ namespace WindowsFormsApplication1
                 }
             }
             return anzahl;
+        }
+
+        /// <summary>
+        /// Geräteverweis der Quelle → Geräteverweis der Kopie, nur wo sie sich unterscheiden
+        /// (<see cref="GERAETESPALTEN"/>, die das Schema kennt).
+        /// </summary>
+        private static Dictionary<long, long> Geraeteanker(DbVorgang v, int idQuelle, int idZiel)
+        {
+            var karte = new Dictionary<long, long>();
+            var vorhanden = new HashSet<string>(SpaltenImVorgang(v, "Tab_Energieanlagen"), StringComparer.OrdinalIgnoreCase);
+            List<string> spalten = GERAETESPALTEN.Where(vorhanden.Contains).ToList();
+            if (spalten.Count == 0) return karte;
+            string liste = string.Join(", ", spalten.Select(sp => "[" + sp + "]"));
+            DataTable q = v.Lese("SELECT " + liste + " FROM Tab_Energieanlagen WHERE ID = ?", new DbParam("@q", idQuelle));
+            DataTable z = v.Lese("SELECT " + liste + " FROM Tab_Energieanlagen WHERE ID = ?", new DbParam("@z", idZiel));
+            if (q.Rows.Count != 1 || z.Rows.Count != 1) return karte;
+            foreach (string sp in spalten)
+            {
+                object a = q.Rows[0][sp], b = z.Rows[0][sp];
+                if (a == DBNull.Value || b == DBNull.Value) continue;
+                long alt = Convert.ToInt64(a, CultureInfo.InvariantCulture);
+                long neu = Convert.ToInt64(b, CultureInfo.InvariantCulture);
+                if (alt > 0 && alt != neu && !karte.ContainsKey(alt)) karte[alt] = neu;
+            }
+            return karte;
         }
 
         /// <summary>Die Spalten einer Tabelle — auf der Verbindung des Vorgangs gelesen.</summary>

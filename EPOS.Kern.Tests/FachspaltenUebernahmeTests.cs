@@ -379,16 +379,198 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Kostenpositionen nach Kapazität (Anwenderentscheid 07.10.2026)
+        // =============================================================================
+
+        /// <summary>
+        /// Das zweite Stück bekommt die Kostenpositionen der vertretenen Anlage, Beträge und
+        /// Menge mit Faktor nutzbare Kapazität Stück ÷ vertretene Anlage (hier 15 ÷ 20 = 0,75,
+        /// gleiches SoC-Band); Satz und Nutzungsdauer bleiben, der Geräteanker zeigt auf das
+        /// neue Gerät, die Quelle bleibt unverändert, der Hinweis nennt den Faktor.
+        /// </summary>
+        [Fact]
+        public void Kostenpositionen_werden_nach_Kapazitaet_skaliert_kopiert()
+        {
+            if (!_db.Vorhanden) return;
+
+            KostenquelleAnlegen(20.0);
+            string quelleVorher = KostenText(SPEICHERANLAGE);
+
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit(15.0) }, new[] { 2 });
+            Assert.True(e.Erfolg, e.Meldung);
+            FlottenUebernahmeAnlage neu = Assert.Single(e.Anlagen, a => a.Neu);
+
+            Assert.Equal(quelleVorher, KostenText(SPEICHERANLAGE));
+            DataTable k = Kosten(neu.AnlageId);
+            Assert.Equal(2, k.Rows.Count);
+            DataRow betrag = k.Rows[0], prozent = k.Rows[1];
+            Assert.Equal(750.0, Zahl(betrag["EingegebenerWert"]), 9);
+            Assert.Equal(900.0, Zahl(betrag["Worstcase"]), 9);
+            Assert.Equal(675.0, Zahl(betrag["Bestcase"]), 9);
+            Assert.Equal(15.0, Zahl(betrag["Nutzungsdauer"]), 9);
+            Assert.Equal(3000.0, Zahl(prozent["Menge"]), 9);
+            Assert.Equal(2.0, Zahl(prozent["Einheitpreis"]), 9);
+            Assert.Equal(60.0, Zahl(prozent["EingegebenerWert"]), 9);
+            Assert.Equal(0.0, Zahl(prozent["Worstcase"]), 9);   // Vorgabe 0 bleibt 0
+            Assert.Equal("PROZENT_INVESTITION", Convert.ToString(prozent["Bemessung"], CultureInfo.InvariantCulture));
+            foreach (DataRow r in k.Rows)
+            {
+                Assert.Equal((long)neu.GeraeteId, Ganzzahl(r["ID_AnlageGeraet"]));
+                Assert.Equal((long)FLOTTENPROJEKT, Ganzzahl(r["ProjektID"]));
+            }
+
+            string hinweis = Assert.Single(e.Hinweise);
+            Assert.Contains(0.75.ToString("0.00", CultureInfo.CurrentCulture), hinweis);
+            Assert.Contains(neu.Bezeichner, hinweis);
+        }
+
+        /// <summary>Gleiche Kapazität: Faktor 1, die Kopie trägt dieselben Werte.</summary>
+        [Fact]
+        public void Gleiche_Kapazitaet_kopiert_die_Kostenpositionen_unveraendert()
+        {
+            if (!_db.Vorhanden) return;
+
+            KostenquelleAnlegen(20.0);
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit(20.0) }, new[] { 3 });
+            Assert.True(e.Erfolg, e.Meldung);
+
+            string quelle = KostenText(SPEICHERANLAGE, ohneAnker: true);
+            List<FlottenUebernahmeAnlage> neue = e.Anlagen.Where(a => a.Neu).ToList();
+            Assert.Equal(2, neue.Count);
+            foreach (FlottenUebernahmeAnlage a in neue)
+                Assert.Equal(quelle, KostenText(a.AnlageId, ohneAnker: true));
+            // EIN Hinweis je Einheit, beide Stücke darin.
+            string hinweis = Assert.Single(e.Hinweise);
+            Assert.Contains(1.0.ToString("0.00", CultureInfo.CurrentCulture), hinweis);
+            Assert.All(neue, a => Assert.Contains(a.Bezeichner, hinweis));
+        }
+
+        /// <summary>
+        /// Fehlt die Kapazität der vertretenen Anlage, gehen die Positionen unverändert mit
+        /// und der Hinweis sagt, dass kein Faktor gebildet wurde.
+        /// </summary>
+        [Fact]
+        public void Ohne_Kapazitaet_unveraendert_kopiert_mit_Hinweis()
+        {
+            if (!_db.Vorhanden) return;
+
+            KostenquelleAnlegen(0.0);
+            string quelle = KostenText(SPEICHERANLAGE, ohneAnker: true);
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit(15.0) }, new[] { 2 });
+            Assert.True(e.Erfolg, e.Meldung);
+
+            Assert.Equal(quelle, KostenText(Assert.Single(e.Anlagen, a => a.Neu).AnlageId, ohneAnker: true));
+            string erwartet = string.Format(CultureInfo.CurrentCulture,
+                WindowsFormsApplication1.MyResource.Resource.FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET, "§", "¶");
+            Assert.StartsWith(erwartet.Substring(0, erwartet.IndexOf('§')), Assert.Single(e.Hinweise));
+        }
+
+        /// <summary>Eine Anlage ohne Kostenpositionen: kein Hinweis.</summary>
+        [Fact]
+        public void Ohne_Kostenpositionen_kein_Hinweis()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_Anlage = ?", SPEICHERANLAGE));
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit(15.0) }, new[] { 2 });
+            Assert.True(e.Erfolg, e.Meldung);
+            Assert.Empty(e.Hinweise);
+        }
+
+        /// <summary>
+        /// Scheitert die Kostenkopie, rollt die ganze Übernahme zurück: keine neue Anlage,
+        /// keine neue Kostenposition, Quelle und Gerät unverändert.
+        /// </summary>
+        [Fact]
+        public void Scheitert_die_Kostenkopie_rollt_die_ganze_Uebernahme_zurueck()
+        {
+            if (!_db.Vorhanden) return;
+
+            KostenquelleAnlegen(20.0);
+            int anlagen = Anzahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", FLOTTENPROJEKT);
+            int positionen = Anzahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ?", FLOTTENPROJEKT);
+            string quelle = KostenText(SPEICHERANLAGE);
+            string geraet = Geraetetext(SPEICHERANLAGE);
+            Assert.True(DataRepository.ExecuteSQL(
+                "CREATE TRIGGER Probe_Kosten BEFORE INSERT ON Tab_ProjektWerte " +
+                "WHEN NEW.ID_Anlage <> " + SPEICHERANLAGE.ToString(CultureInfo.InvariantCulture) +
+                " BEGIN SELECT RAISE(ABORT, 'Probe'); END"));
+
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit(15.0) }, new[] { 2 });
+
+            Assert.False(e.Erfolg);
+            Assert.Empty(e.Hinweise);
+            Assert.Equal(anlagen, Anzahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", FLOTTENPROJEKT));
+            Assert.Equal(positionen, Anzahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ?", FLOTTENPROJEKT));
+            Assert.Equal(quelle, KostenText(SPEICHERANLAGE));
+            Assert.Equal(geraet, Geraetetext(SPEICHERANLAGE));
+        }
+
+        /// <summary>
+        /// Gibt der Speicheranlage die Kapazität <paramref name="energie"/> (0 = keine, NULL),
+        /// das Band 10/90 % und zwei Kostenpositionen: einen festen Betrag (1.000 €, Band
+        /// 900/1.200 €, 15 a) und „% der Investition" (Menge 4.000 €, Satz 2 %, erfasst 80 €).
+        /// </summary>
+        private static void KostenquelleAnlegen(double energie)
+        {
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_Stromspeicher SET Energie = ? WHERE ID = (SELECT ID_SP FROM Tab_Energieanlagen WHERE ID = ?)",
+                new DbParam("@e", energie > 0.0 ? energie : DBNull.Value), new DbParam("@a", SPEICHERANLAGE)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_StromspeicherVariante SET SoC_Min_Prozent = 10, SoC_Max_Prozent = 90 WHERE ID_Energieanlage = ?",
+                new DbParam("@a", SPEICHERANLAGE)));
+            long geraet = Ganzzahl(DataRepository.ExecuteScalar(
+                "SELECT ID_SP FROM Tab_Energieanlagen WHERE ID = ?", new DbParam("@a", SPEICHERANLAGE)));
+            object komponente = DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_KostenKomponente WHERE Komponente = ?", new DbParam("@k", DbWerte.ERZEUGER_STROMSPEICHER));
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_ProjektWerte (ProjektID, KomponentenID, KategorieID, EingegebenerWert, Worstcase, " +
+                "Bestcase, Nutzungsdauer, Kostenart, Bemessung, ID_Anlage, ID_AnlageGeraet) " +
+                "VALUES (?, ?, 1, 1000, 1200, 900, 15, 'KAPITALGEBUNDEN', 'BETRAG', ?, ?)",
+                new DbParam("@p", FLOTTENPROJEKT), new DbParam("@k", komponente ?? DBNull.Value),
+                new DbParam("@a", SPEICHERANLAGE), new DbParam("@g", geraet)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_ProjektWerte (ProjektID, KomponentenID, KategorieID, EingegebenerWert, Nutzungsdauer, " +
+                "Kostenart, Bemessung, Menge, Einheitpreis, ID_Anlage, ID_AnlageGeraet) " +
+                "VALUES (?, ?, 1, 80, 1, 'BETRIEBSGEBUNDEN', 'PROZENT_INVESTITION', 4000, 2, ?, ?)",
+                new DbParam("@p", FLOTTENPROJEKT), new DbParam("@k", komponente ?? DBNull.Value),
+                new DbParam("@a", SPEICHERANLAGE), new DbParam("@g", geraet)));
+        }
+
+        private static DataTable Kosten(int anlage) => DataRepository.GetDataTable(
+            "SELECT * FROM Tab_ProjektWerte WHERE ID_Anlage = ? ORDER BY ID", new DbParam("@a", anlage));
+
+        /// <summary>Die Kostenpositionen der Anlage als Text — ohne ID und Anlagenverweis,
+        /// auf Wunsch ohne Geräteanker.</summary>
+        private static string KostenText(int anlage, bool ohneAnker = false)
+        {
+            DataTable dt = Kosten(anlage);
+            return string.Join("\n", dt.Rows.Cast<DataRow>().Select(r => string.Join("|",
+                dt.Columns.Cast<DataColumn>()
+                  .Where(c => c.ColumnName != "ID" && c.ColumnName != "ID_Anlage" &&
+                              !(ohneAnker && c.ColumnName == "ID_AnlageGeraet"))
+                  .Select(c => c.ColumnName + "=" + Convert.ToString(r[c], CultureInfo.InvariantCulture)))));
+        }
+
+        private static double Zahl(object o) => Convert.ToDouble(o, CultureInfo.InvariantCulture);
+
+
+        // =============================================================================
         //  Prüfstand
         // =============================================================================
 
         /// <summary>Ein Puffer des Flottenprojekts (Senke der Probe).</summary>
         private const long PUFFER = 1007007;
 
-        private static FlottenEinheit Einheit() => new FlottenEinheit
+        private static FlottenEinheit Einheit(double kapazitaet = 20.0) => new FlottenEinheit
         {
             Id = "e1", Name = "Speicher", AnlageId = SPEICHERANLAGE.ToString(CultureInfo.InvariantCulture),
-            KapazitaetKWh = 20.0, LadeleistungKw = 10.0, EntladeleistungKw = 10.0,
+            KapazitaetKWh = kapazitaet, LadeleistungKw = 10.0, EntladeleistungKw = 10.0,
             Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95, SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
         };
 
@@ -418,11 +600,15 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL(
                 "INSERT INTO Tab_Sperrfenster (ID_Energieanlage, Von_h, Dauer_h, Wochentage, Heizstab_gesperrt, Reihenfolge) " +
                 "VALUES (?, 11.5, 2, 31, 0, 1)", new DbParam("@a", SPEICHERANLAGE)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_ProjektWerte (ProjektID, KategorieID, EingegebenerWert, Kostenart, Bemessung, ID_Anlage) " +
+                "VALUES (?, 1, 500, 'KAPITALGEBUNDEN', 'BETRAG', ?)",
+                new DbParam("@p", FLOTTENPROJEKT), new DbParam("@a", SPEICHERANLAGE)));
         }
 
         /// <summary>
-        /// Je Kindtabelle die Zeilen der Anlage als Text — ohne ID, ohne Anlagenverweis und ohne
-        /// umgeschlüsselte Spalten (die prüft der Fall gesondert).
+        /// Je Kindtabelle die Zeilen der Anlage als Text — ohne ID, ohne Anlagenverweis, ohne
+        /// umgeschlüsselte, skalierte und Ankerspalten (die prüfen eigene Fälle).
         /// </summary>
         private static SortedDictionary<string, List<string>> AnlagenkinderStand(int anlage)
         {
@@ -435,7 +621,9 @@ namespace EPOS.Kern.Tests
                 foreach (DataRow r in dt.Rows)
                     zeilen.Add(string.Join("|", dt.Columns.Cast<DataColumn>()
                         .Where(c => c.ColumnName != "ID" && c.ColumnName != fk &&
-                                    !AnlagenFachspalten.ANLAGENKIND_UMSCHLUESSEL.ContainsKey(tabelle + "." + c.ColumnName))
+                                    !AnlagenFachspalten.ANLAGENKIND_UMSCHLUESSEL.ContainsKey(tabelle + "." + c.ColumnName) &&
+                                    !AnlagenFachspalten.ANLAGENKIND_SKALIERT.Contains(tabelle + "." + c.ColumnName) &&
+                                    !AnlagenFachspalten.ANLAGENKIND_GERAETEANKER.Contains(tabelle + "." + c.ColumnName))
                         .Select(c => c.ColumnName + "=" + Convert.ToString(r[c], CultureInfo.InvariantCulture))));
                 stand[tabelle] = zeilen;
             }

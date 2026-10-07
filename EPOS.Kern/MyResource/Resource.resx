@@ -19325,6 +19325,12 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="FLOTTE_UEBERNAHME_FEHLER" xml:space="preserve">
     <value>Die Übernahme ist fehlgeschlagen; es wurde nichts geschrieben: {0}</value>
   </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN" xml:space="preserve">
+    <value>Kostenpositionen von „{0}“ wurden für {1} mit Faktor {2} nach Kapazität übernommen.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET" xml:space="preserve">
+    <value>Kostenpositionen von „{0}“ wurden für {1} unverändert übernommen — ohne Kapazität lässt sich kein Faktor bilden; bitte prüfen.</value>
+  </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE" xml:space="preserve">
     <value>Größe suchen</value>
   </data>

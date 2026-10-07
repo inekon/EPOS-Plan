@@ -25011,6 +25011,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ wurden für {1} mit Faktor {2} nach Kapazität übernommen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_HINW_KOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_HINW_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ wurden für {1} unverändert übernommen — ohne Kapazität lässt sich kein Faktor bilden; bitte prüfen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Einheit ausgewählt. ähnelt.
         /// </summary>
         public static string FLOTTE_UEBERNAHME_KEINE_EINHEIT {
