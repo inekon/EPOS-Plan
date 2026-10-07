@@ -46,6 +46,8 @@ namespace WindowsFormsApplication1
         private static bool? _nutzungsprofilVorhanden;
         private static string _pfadFlaechenherkunft;
         private static bool? _flaechenherkunftVorhanden;
+        private static string _pfadNordherkunft;
+        private static bool? _nordherkunftVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -93,6 +95,8 @@ namespace WindowsFormsApplication1
                 _nutzungsprofilVorhanden = null;
                 _pfadFlaechenherkunft = null;
                 _flaechenherkunftVorhanden = null;
+                _pfadNordherkunft = null;
+                _nordherkunftVorhanden = null;
             }
         }
 
@@ -210,6 +214,28 @@ namespace WindowsFormsApplication1
             {
                 _pfadFlaechenherkunft = pfad;
                 _flaechenherkunftVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Importquelle</c> die Spalte <c>Nordwinkel_Herkunft</c> (Schritt <see cref="NordrichtungSchema.SCHRITT"/>)?
+        /// Gemerkt je Datenbankpfad wie <see cref="FlaechenherkunftVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool NordherkunftVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_nordherkunftVorhanden.HasValue && string.Equals(pfad, _pfadNordherkunft, StringComparison.OrdinalIgnoreCase))
+                    return _nordherkunftVorhanden.Value;
+            }
+
+            bool da = NordrichtungSchema.Vollstaendig();
+            lock (_sperre)
+            {
+                _pfadNordherkunft = pfad;
+                _nordherkunftVorhanden = da;
             }
             return da;
         }

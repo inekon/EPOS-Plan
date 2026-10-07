@@ -5,8 +5,9 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// <b>Woher der Nordwinkel eines Imports stammt</b> (Abstimmungspapier G5, Abschnitt 7, N6): aus der Datei, aus der
-    /// Eingabe des Anwenders oder als Annahme „Planoberseite = Nord“ (Nordwinkel 0°). Die Spalte dazu an der Quelle folgt
-    /// mit einem eigenen Schemaschritt; bis dahin lebt die Herkunft nur im Speicher.
+    /// Eingabe des Anwenders oder als Annahme „Planoberseite = Nord“ (Nordwinkel 0°). Gespeichert an der Quelle in
+    /// <c>Tab_Importquelle.Nordwinkel_Herkunft</c> (<see cref="NordrichtungSchema"/>); die Werte stehen in
+    /// <see cref="NordwinkelherkunftWerte"/>.
     /// </summary>
     public enum Nordwinkelherkunft
     {
@@ -18,6 +19,34 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Anwender hat die Richtung der Planoberseite eingegeben.</summary>
         Eingabe = 2,
+    }
+
+    /// <summary>
+    /// <b>Die gespeicherten Werte der Nordwinkelherkunft</b> — die EINE Quelle der Wertliste für Schemaschritt
+    /// (<see cref="NordrichtungSchema.WERTE"/>), Schreiben und Lesen.
+    /// </summary>
+    internal static class NordwinkelherkunftWerte
+    {
+        internal const string ANNAHME = "ANNAHME";
+        internal const string DATEI = "DATEI";
+        internal const string EINGABE = "EINGABE";
+
+        /// <summary>Der gespeicherte Wert einer Herkunft.</summary>
+        internal static string Wert(Nordwinkelherkunft h) => h switch
+        {
+            Nordwinkelherkunft.Datei => DATEI,
+            Nordwinkelherkunft.Eingabe => EINGABE,
+            _ => ANNAHME,
+        };
+
+        /// <summary>Die Herkunft eines gespeicherten Werts; <c>null</c> = leer oder unbekannt.</summary>
+        internal static Nordwinkelherkunft? Aus(string wert) => (wert ?? "").Trim() switch
+        {
+            DATEI => Nordwinkelherkunft.Datei,
+            EINGABE => Nordwinkelherkunft.Eingabe,
+            ANNAHME => Nordwinkelherkunft.Annahme,
+            _ => null,
+        };
     }
 
     /// <summary>

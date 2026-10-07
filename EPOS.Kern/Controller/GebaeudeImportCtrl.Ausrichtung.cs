@@ -15,16 +15,18 @@ namespace WindowsFormsApplication1
     /// Neigung bleibt. Die Raumgrundrisse stehen in Modellkoordinaten und folgen dem neuen Nordwinkel der Quelle von selbst
     /// (<see cref="Nordangabe"/>). Bauteile und Quelle ändern sich in <b>einem</b> Vorgang.</para>
     ///
-    /// <para><b>Herkunft (N6):</b> Die Spalte <see cref="SPALTE_NORDWINKEL_HERKUNFT"/> kommt mit einem eigenen Schemaschritt.
-    /// Steht sie, wird sie gelesen und geschrieben; ohne sie gilt: Wert vorhanden → Datei, NULL → Annahme.</para>
+    /// <para><b>Herkunft (N6):</b> Die Spalte <see cref="SPALTE_NORDWINKEL_HERKUNFT"/> legt Schritt
+    /// <see cref="NordrichtungSchema.SCHRITT"/> an. Steht sie, wird sie gelesen und geschrieben; ohne sie (Stand davor) gilt:
+    /// Wert vorhanden → Datei, NULL → Annahme.</para>
     /// </summary>
     public sealed partial class GebaeudeImportCtrl
     {
         /// <summary>G5-N (N6): die Herkunftsspalte des Nordwinkels an <c>Tab_Importquelle</c> — <c>DATEI</c>, <c>EINGABE</c>, <c>ANNAHME</c>.</summary>
-        internal const string SPALTE_NORDWINKEL_HERKUNFT = "Nordwinkel_Herkunft";
+        internal const string SPALTE_NORDWINKEL_HERKUNFT = NordrichtungSchema.SPALTE;
 
-        /// <summary>Die Werte der Herkunftsspalte.</summary>
-        internal const string HERKUNFT_DATEI = "DATEI", HERKUNFT_EINGABE = "EINGABE", HERKUNFT_ANNAHME = "ANNAHME";
+        /// <summary>Die Werte der Herkunftsspalte (<see cref="NordwinkelherkunftWerte"/>).</summary>
+        internal const string HERKUNFT_DATEI = NordwinkelherkunftWerte.DATEI, HERKUNFT_EINGABE = NordwinkelherkunftWerte.EINGABE,
+                              HERKUNFT_ANNAHME = NordwinkelherkunftWerte.ANNAHME;
 
         /// <summary>Prüfhaken: läuft im Vorgang nach dem Drehen der Bauteile, vor dem Schreiben der Quelle (Abbruchprobe).</summary>
         internal static Action AusrichtungPruefhaken;
@@ -39,25 +41,18 @@ namespace WindowsFormsApplication1
         /// <summary>Ergebnis einer Änderung der Ausrichtung: gedrehte Bauteile und der neue Nordwinkel.</summary>
         public sealed record Ausrichtungsergebnis(bool Ok, string Meldung, int GedrehteBauteile, double NordwinkelGrad);
 
-        /// <summary>Steht die Herkunftsspalte an der Quelle?</summary>
-        internal static bool NordherkunftVorhanden()
-            => DataRepository.SpalteVorhanden(RaumgrundrissSchema.TAB_QUELLE, SPALTE_NORDWINKEL_HERKUNFT);
+        /// <summary>Steht die Herkunftsspalte an der Quelle? Gemerkt je Datenbankpfad (<see cref="GebaeudeZonenanschluss.NordherkunftVorhanden"/>).</summary>
+        internal static bool NordherkunftVorhanden() => GebaeudeZonenanschluss.NordherkunftVorhanden();
 
         /// <summary>Die Herkunft aus Wert und Spaltentext (N6): ein bekannter Text gilt, sonst Wert → Datei, NULL → Annahme.</summary>
         internal static Nordwinkelherkunft Nordherkunft(double? nordwinkelGrad, string spaltenwert)
         {
-            switch ((spaltenwert ?? "").Trim())
-            {
-                case HERKUNFT_DATEI: return Nordwinkelherkunft.Datei;
-                case HERKUNFT_EINGABE: return Nordwinkelherkunft.Eingabe;
-                case HERKUNFT_ANNAHME: return Nordwinkelherkunft.Annahme;
-                default: return nordwinkelGrad.HasValue ? Nordwinkelherkunft.Datei : Nordwinkelherkunft.Annahme;
-            }
+            return NordwinkelherkunftWerte.Aus(spaltenwert)
+                   ?? (nordwinkelGrad.HasValue ? Nordwinkelherkunft.Datei : Nordwinkelherkunft.Annahme);
         }
 
         /// <summary>Der Spaltentext einer Herkunft.</summary>
-        internal static string HerkunftWert(Nordwinkelherkunft h)
-            => h == Nordwinkelherkunft.Eingabe ? HERKUNFT_EINGABE : h == Nordwinkelherkunft.Datei ? HERKUNFT_DATEI : HERKUNFT_ANNAHME;
+        internal static string HerkunftWert(Nordwinkelherkunft h) => NordwinkelherkunftWerte.Wert(h);
 
         /// <summary>
         /// <b>Die Ausrichtung eines Gebäudes</b> — aus seiner jüngsten Importquelle; <c>null</c> = das Gebäude hat keine Quelle.

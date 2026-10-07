@@ -3124,6 +3124,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrAk3 + " - vollstaendig: " + Ak3Schema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt NordrichtungSchema.SCHRITT (G5-N): Tab_Importquelle.Nordwinkel_Herkunft, die Herkunft des
+            //      Nordwinkels (ANNAHME, DATEI, EINGABE), Bestand nachgefuellt (Nordwinkel vorhanden -> DATEI, NULL ->
+            //      ANNAHME). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Nordrichtung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Rechenweg liest die Spalte nicht; kein Referenzprojekt hat eine Importquelle.
+            string nrNordrichtung = NordrichtungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNordrichtung + " - Herkunft des Nordwinkels (Tab_Importquelle): " +
+                              (NordrichtungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNordrichtung = new List<string>();
+                angelegt += NordrichtungSchema.Ausfuehren(berichtNordrichtung);
+                foreach (string zeile in berichtNordrichtung)
+                    Console.WriteLine("Schritt " + nrNordrichtung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNordrichtung + " - vollstaendig: " + NordrichtungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

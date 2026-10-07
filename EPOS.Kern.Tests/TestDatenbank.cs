@@ -977,6 +977,9 @@ namespace EPOS.Kern.Tests
                 // Gebaeudetabellen samt zehntem Sichtneubau, die Kennzahlen des Kreises an Tab_ErgebnisEnergiebedarf,
                 // leer. ZULETZT, weil er die Sicht in seiner Form baut. Wiederholbar.
                 Ak3Schema.Ausfuehren(null);
+                // Schritt NordrichtungSchema.SCHRITT (G5-N): Tab_Importquelle.Nordwinkel_Herkunft, Bestand nachgefuellt
+                // (Nordwinkel vorhanden -> DATEI, NULL -> ANNAHME). Wiederholbar.
+                NordrichtungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
