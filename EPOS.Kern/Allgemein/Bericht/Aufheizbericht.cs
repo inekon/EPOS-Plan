@@ -14,7 +14,8 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Gerechnet wird hier nichts.</b> Die Zahlen sind die der Ergebniszeile des Laufs (<c>Tab_ErgebnisGebaeude</c>,
     /// dieselben wie im Bedarfsdialog); die Kurzform liest den Konditionierungsstand, den der Sammler je Gebäude ablegt
-    /// (<see cref="ProjektDetails.Konditionierung"/>), den Aufschlag die Projekteinstellung (<see cref="ProjektDetails.Einstellungen"/>).
+    /// (<see cref="ProjektDetails.Konditionierung"/>); verwendeter Aufschlag und bemessene Aufheizzeit stehen in der Ergebniszeile
+    /// (E99), nur eine ältere Zeile ohne sie nennt den Aufschlag der Projekteinstellung (<see cref="ProjektDetails.Einstellungen"/>).
     /// Eine Zeile steht nur mit Wert — ein Projekt ohne Aufheizoptimierung, Nachtauskühlung und Sommerlüftung behält seine
     /// Tafel, wie sie war. Ohne Datenbank; die Texte in der Kultur des Berichts.</para>
     /// </summary>
@@ -37,11 +38,13 @@ namespace WindowsFormsApplication1
         /// <b>Die Lüftungs-, Aufheiz- und Auslegungszeilen eines Gebäudes</b> — nach den Kühl- und Raumkennzahlen der
         /// Gebäudetafel, jede nur mit Wert (Festlegung 30): Nachtauskühl- und Sommerlüftungsstunden; mit Aufheizrechnung
         /// (Zustand gesetzt) Zustand, Art, t_auf,max mit T_a,B und Variante (bei Art „manuell“ die manuelle Aufheizzeit),
-        /// P_auf mit Quelle, Rampentage, Σ, längste Rampe, die Tage W2 und W1, die Kappungsstunden und der Aufschlag der
-        /// Projekteinstellung (nur bei Art täglich oder fest); mit Auslegungsheizlast die Auslegungsgröße Φ_HL + Φ_RH mit
+        /// P_auf mit Quelle, Rampentage, Σ, längste Rampe, die Tage W2 und W1, die Kappungsstunden, der verwendete Aufschlag
+        /// und die bemessene Aufheizzeit der Ergebniszeile (nur bei Art täglich oder fest, E99; eine ältere Zeile ohne die
+        /// Werte nennt den Aufschlag der Projekteinstellung benannt); mit Auslegungsheizlast die Auslegungsgröße Φ_HL + Φ_RH mit
         /// ihren Teilen (E60). Die ideale Spitze und das Tagesmittel stehen schon darüber in der Tafel.
         /// </summary>
-        /// <param name="aufschlag">Der Aufschlag der Projekteinstellung (<see cref="Aufschlag"/>); <c>null</c> = keiner.</param>
+        /// <param name="aufschlag">Der Aufschlag der Projekteinstellung (<see cref="Aufschlag"/>) — nur für eine Ergebniszeile
+        /// ohne verwendeten Aufschlag; <c>null</c> = keiner.</param>
         public static IEnumerable<(string Beschriftung, Tabellenzelle Wert)> Zeilen(ErgebnisGebaeudeModel g,
             (double? H, double? Prozent)? aufschlag, CultureInfo kultur)
         {
@@ -77,9 +80,17 @@ namespace WindowsFormsApplication1
                 if (g.AufheiztageUnerreichbar.HasValue) yield return (T(nameof(RR.BV_AUFH_UNERREICHBAR), kultur), Zahl(g.AufheiztageUnerreichbar, 0, null, kultur));
                 if (g.HeizleistungMaxStundenH.HasValue) yield return (T(nameof(RR.BV_AUFH_KAPPUNG), kultur), Zahl(g.HeizleistungMaxStundenH, 1, "h/a", kultur));
                 // Festlegung 35: Der Aufschlag wirkt nur auf ermittelte Rampen (täglich, fest), nie auf den manuellen Wert.
-                string a = Aufschlagtext(aufschlag, kultur);
-                if (a != null && (g.AufheizArt == DbWerte.AUFHEIZ_ART_TAEGLICH || g.AufheizArt == DbWerte.AUFHEIZ_ART_FEST))
-                    yield return (T(nameof(RR.BV_AUFH_AUFSCHLAG), kultur), Zellen.Text(a));
+                // E99 (Schritt 194): verwendeter Aufschlag und bemessene Aufheizzeit kommen aus der Ergebniszeile; eine
+                // ältere Zeile ohne die Werte zeigt „—“ und nennt den Aufschlag benannt als Projekteinstellung.
+                if (g.AufheizArt == DbWerte.AUFHEIZ_ART_TAEGLICH || g.AufheizArt == DbWerte.AUFHEIZ_ART_FEST)
+                {
+                    if (g.AufheizAufschlagVerwendetH.HasValue)
+                        yield return (T(nameof(RR.BV_AUFH_A3_AUFSCHLAG_VERWENDET), kultur), Zahl(g.AufheizAufschlagVerwendetH, 0, "h", kultur));
+                    else if (Aufschlagtext(aufschlag, kultur) is string a)
+                        yield return (T(nameof(RR.BV_AUFH_AUFSCHLAG), kultur),
+                                      Zellen.Text(string.Format(kultur, T(nameof(RR.BV_AUFH_A3_AUFSCHLAG_ALT_WERT), kultur), a)));
+                    yield return (T(nameof(RR.BV_AUFH_A3_ZEIT_BEMESSEN), kultur), Zahl(g.AufheizzeitBemessenH, 0, "h", kultur));
+                }
             }
 
             if (Auslegungsgroesse(g) is double auslegung)
@@ -167,7 +178,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Aufschlag der Projekteinstellung (<c>Aufheiz_Aufschlag_H</c>, <c>Aufheiz_Aufschlag_Prozent</c>, E59) aus der
         /// geladenen Zeile von <c>Tab_Einstellungen</c>; <c>null</c>, wenn keiner gesetzt ist (0 und NULL heißen keiner,
-        /// Festlegung 36). Die Ergebniszeile trägt den Aufschlag nicht — der Bericht nennt ihn deshalb als Projekteinstellung.
+        /// Festlegung 36). Gebraucht nur für eine Ergebniszeile ohne verwendeten Aufschlag (vor Schritt 194, E99) — der Bericht
+        /// nennt ihn dann benannt als Projekteinstellung.
         /// </summary>
         public static (double? H, double? Prozent)? Aufschlag(ProjektDetails d)
         {

@@ -5225,6 +5225,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_STANDARDLASTPROFIL = StandardlastprofilSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="AufheizAufschlagErgebnisSchema.SCHRITT"/> — <b>verwendeter Aufschlag und bemessene Aufheizzeit
+        /// im Ergebnis</b> (KP3 Welle A, E99): <c>Aufheiz_Aufschlag_Verwendet_H</c> und <c>Aufheizzeit_Bemessen_H</c> an
+        /// <c>Tab_ErgebnisGebaeude</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten entstehen leer.</para>
+        /// </summary>
+        public const int SCHRITT_AUFHEIZ_AUFSCHLAG_ERGEBNIS = AufheizAufschlagErgebnisSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7594,6 +7603,12 @@ namespace WindowsFormsApplication1
                         "Der Katalog des Strombedarfs truege die BDEW-Standardlastprofile H25, G25 und L25 nicht. " +
                         "KEIN Rechenergebnis aendert sich.",
                         Schritt_Standardlastprofil),
+            // VERWENDETER AUFSCHLAG UND BEMESSENE AUFHEIZZEIT (KP3 Welle A, E99). Quelle ist AufheizAufschlagErgebnisSchema.
+            new Schritt(SCHRITT_AUFHEIZ_AUFSCHLAG_ERGEBNIS,
+                        "Tab_ErgebnisGebaeude.Aufheiz_Aufschlag_Verwendet_H/Aufheizzeit_Bemessen_H",
+                        "Der Bericht naennte den Aufschlag der heutigen Projekteinstellung statt des gerechneten. KEIN " +
+                        "Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_AufheizAufschlagErgebnis),
         };
 
         /// <summary>
@@ -14219,6 +14234,61 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Kaeltespitze je Zone - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „verwendeter Aufschlag und bemessene Aufheizzeit" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_AUFHEIZ_AUFSCHLAG_ERGEBNIS"/>, die Anweisungen bei <see cref="AufheizAufschlagErgebnisSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_AufheizAufschlagErgebnis(Lauf l)
+        {
+            string nr = AufheizAufschlagErgebnisSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in AufheizAufschlagErgebnisSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = AufheizAufschlagErgebnisSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!AufheizAufschlagErgebnisSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Verwendeter Aufschlag und bemessene Aufheizzeit stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Aufschlag und bemessene Aufheizzeit im Ergebnis - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

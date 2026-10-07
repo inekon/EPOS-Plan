@@ -609,6 +609,9 @@ namespace WindowsFormsApplication1
                 Zahl("aufheiztage", e => e.Aufheiztage, "N0", null),
                 Zahl("aufheizstunden", e => e.AufheizstundenH, "N0", "h/a"),
                 Zahl("aufheizzeit_laengste", e => e.AufheizzeitLaengsteH, "N0", "h"),
+                // E99 (Schritt 194): verwendeter Aufschlag und bemessene Aufheizzeit aus der Ergebniszeile.
+                Zahl("aufschlag_verwendet", e => e.AufheizAufschlagVerwendetH, "N0", "h"),
+                Zahl("aufheizzeit_bemessen", e => e.AufheizzeitBemessenH, "N0", "h"),
                 Zahl("aufheiztage_begrenzt", e => e.AufheiztageBegrenzt, "N0", null),
                 Zahl("aufheiztage_unerreichbar", e => e.AufheiztageUnerreichbar, "N0", null),
                 Zahl("kappungsstunden", e => e.HeizleistungMaxStundenH, "N1", "h/a"),

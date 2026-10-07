@@ -13154,6 +13154,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}; nicht im gespeicherten Ergebnis ähnelt.
+        /// </summary>
+        public static string BV_AUFH_A3_AUFSCHLAG_ALT_WERT {
+            get {
+                return ResourceManager.GetString("BV_AUFH_A3_AUFSCHLAG_ALT_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag (verwendet) ähnelt.
+        /// </summary>
+        public static string BV_AUFH_A3_AUFSCHLAG_VERWENDET {
+            get {
+                return ResourceManager.GetString("BV_AUFH_A3_AUFSCHLAG_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessene Aufheizzeit (mit Aufschlag) ähnelt.
+        /// </summary>
+        public static string BV_AUFH_A3_ZEIT_BEMESSEN {
+            get {
+                return ResourceManager.GetString("BV_AUFH_A3_ZEIT_BEMESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit ähnelt.
         /// </summary>
         public static string BV_AUFH_ART {
@@ -109337,6 +109364,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessene Aufheizzeit des laufenden Gebäudes in Stunden: t_auf,max nach dem Aufschlag, bei Art manuell der manuelle Wert; leer ohne Aufheizoptimierung, bei unerreichbarer Bemessung oder bei einem älteren Ergebnis. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_BEMESSEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_BEMESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Längste Rampe des Jahres des laufenden Gebäudes in Stunden; leer ohne Aufheizoptimierung. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_LAENGSTE {
@@ -109378,6 +109414,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZ_AUSSENTEMPERATUR {
             get {
                 return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZ_AUSSENTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendeter Aufschlag des laufenden Gebäudes in Stunden: was der Aufschlag der längsten Rampe im Lauf hinzugefügt hat; 0 ohne Rampe mit mehr als einer Stufe, leer bei Art manuell, ohne Aufheizoptimierung oder bei einem älteren Ergebnis. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFSCHLAG_VERWENDET {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFSCHLAG_VERWENDET", resourceCulture);
             }
         }
         

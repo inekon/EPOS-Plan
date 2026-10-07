@@ -1651,6 +1651,11 @@ namespace WindowsFormsApplication1
             Text<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_ART, g => g.AufheizArt, (g, w) => g.AufheizArt = w),
             Zahl<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_AUSLEGUNGSHEIZLAST, g => g.AuslegungsheizlastKw, (g, w) => g.AuslegungsheizlastKw = w),
             Zahl<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_AUFHEIZZUSCHLAG, g => g.AufheizzuschlagKw, (g, w) => g.AufheizzuschlagKw = w),
+            // Schritt 194 (E99): verwendeter Aufschlag und bemessene Aufheizzeit.
+            Ganz<ErgebnisGebaeudeModel>(AufheizAufschlagErgebnisSchema.SPALTE_AUFSCHLAG_VERWENDET,
+                g => g.AufheizAufschlagVerwendetH, (g, w) => g.AufheizAufschlagVerwendetH = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizAufschlagErgebnisSchema.SPALTE_ZEIT_BEMESSEN,
+                g => g.AufheizzeitBemessenH, (g, w) => g.AufheizzeitBemessenH = w),
         };
 
         /// <summary>Die Spalten der Liste, die <paramref name="tabelle"/> trägt (ohne Unterschied von Groß- und Kleinschreibung).</summary>

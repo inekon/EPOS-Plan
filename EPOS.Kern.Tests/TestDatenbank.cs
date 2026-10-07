@@ -962,6 +962,9 @@ namespace EPOS.Kern.Tests
                 // Schritt StandardlastprofilSchema.SCHRITT (SLP25): die BDEW-Standardlastprofile Strom 2025 als gesperrte
                 // Saetze der Datenbank Strombedarf, Katalogschluessel und Pruefsumme. Wiederholbar.
                 StandardlastprofilSchema.Ausfuehren(null);
+                // Schritt AufheizAufschlagErgebnisSchema.SCHRITT (KP3 Welle A, E99): verwendeter Aufschlag und bemessene
+                // Aufheizzeit an Tab_ErgebnisGebaeude, leer. Wiederholbar.
+                AufheizAufschlagErgebnisSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

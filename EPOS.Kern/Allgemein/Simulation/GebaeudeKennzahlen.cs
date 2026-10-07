@@ -214,6 +214,9 @@ namespace WindowsFormsApplication1
                 AufheizzeitLaengsteH = a.AufheizzeitLaengsteH,
                 AufheizspruengeAus = a.AufheizspruengeAus,
                 HeizleistungMaxStundenH = Endlich(a.HeizleistungMaxStundenH),
+                // E99 (Schritt 194): nur am Gebäude; die Zone erbt die Aufheizzeit, der Bericht liest die Gebäudezeile.
+                AufheizAufschlagVerwendetH = zone ? null : a.AufheizAufschlagVerwendetH,
+                AufheizzeitBemessenH = zone || zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR ? null : a.AufheizzeitBemessenH,
             };
         }
 
@@ -239,6 +242,8 @@ namespace WindowsFormsApplication1
             e.AufheiztageNachweisband = a.AufheiztageNachweisband;
             e.AufheizstundenH = a.AufheizstundenH;
             e.AufheizzeitLaengsteH = a.AufheizzeitLaengsteH;
+            e.AufheizAufschlagVerwendetH = a.AufheizAufschlagVerwendetH;
+            e.AufheizzeitBemessenH = a.AufheizzeitBemessenH;
             e.AufheizspruengeAus = a.AufheizspruengeAus;
             e.HeizleistungMaxStundenH = a.HeizleistungMaxStundenH;
             return e;
@@ -325,6 +330,12 @@ namespace WindowsFormsApplication1
         internal int? AufheizzeitLaengsteH { get; init; }
         internal int? AufheizspruengeAus { get; init; }
         internal double? HeizleistungMaxStundenH { get; init; }
+
+        /// <summary>E99: verwendeter Aufschlag [h] — nur Gebäude, nicht im Ergebnisexport.</summary>
+        internal int? AufheizAufschlagVerwendetH { get; init; }
+
+        /// <summary>E99: bemessene Aufheizzeit [h] — nur Gebäude, nicht im Ergebnisexport.</summary>
+        internal int? AufheizzeitBemessenH { get; init; }
 
         /// <summary>
         /// Die Zahlen der Zeile in fester Reihenfolge, nur die gesetzten — Schlüssel = Feldname (Ergebnisexport,

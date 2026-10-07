@@ -336,6 +336,10 @@ namespace WindowsFormsApplication1
             // Projektkopien seiner Stromverbraucher bleiben, wie sie sind.
             new Stufe(StandardlastprofilSchema.SCHRITT, Art.Katalog,
                       "BDEW-Standardlastprofile Strom 2025 (H25, G25, L25) im Katalog des Strombedarfs"),
+            // Ein älteres Paket führt weder verwendeten Aufschlag noch bemessene Aufheizzeit im Ergebnis; die Spalten
+            // kommen leer an (der Bericht nennt dann den Aufschlag der Projekteinstellung).
+            new Stufe(AufheizAufschlagErgebnisSchema.SCHRITT, Art.Ddl,
+                      "Verwendeter Aufschlag und bemessene Aufheizzeit in der Ergebniszeile des Gebäudes"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
