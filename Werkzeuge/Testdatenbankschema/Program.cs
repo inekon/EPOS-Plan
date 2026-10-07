@@ -3086,6 +3086,25 @@ namespace Testdatenbankschema
                                   StandardlastprofilPvSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt Ak3Schema.SCHRITT (AK3, Festlegungen 22 und 23): Heizkurve_Raumeinfluss an Tab_Gebaeude und
+            //      Tab_Gebaeude_STAMM samt zehntem Sichtneubau (Abfrage_Projektgebaeude, 105 Spalten) und sechs
+            //      Kennzahlen des geschlossenen Kreises an Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_Ak3 bedient; ZULETZT, weil er die Sicht in seiner Form baut.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; kein Referenzprojekt rechnet AK3.
+            string nrAk3 = Ak3Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAk3 + " - Stufe AK3 (Raumeinfluss, Kennzahlen des Kreises): " +
+                              (Ak3Schema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAk3 = new List<string>();
+                angelegt += Ak3Schema.Ausfuehren(berichtAk3);
+                foreach (string zeile in berichtAk3)
+                    Console.WriteLine("Schritt " + nrAk3 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAk3 + " - vollstaendig: " + Ak3Schema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

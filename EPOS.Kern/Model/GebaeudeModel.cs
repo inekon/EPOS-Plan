@@ -149,6 +149,11 @@ namespace WindowsFormsApplication1
         // Erdreichkorrektur nach DIN EN ISO 13370. Name: GebaeudeSchema.SPALTE_ERDREICH_U_WIRKSAM.
         public double? Erdreich_U_Wirksam;
 
+        // ---- Der Raumeinfluss der Heizkurve (AK3, Ak3Schema.SCHRITT) -------------------------------------
+        // k_R [K/K], NULL-ERHALTEND: null oder 0 heisst aus. Wirkt nur mit Heizkurve und Stufe AK3.
+        // Name: GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS.
+        public double? Heizkurve_Raumeinfluss;
+
         public GebaeudeModel()
         {
             ID = 0;

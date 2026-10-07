@@ -235,6 +235,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? Erdreich_U_Wirksam;
 
+        /// <summary>
+        /// Der Raumeinfluss der Heizkurve k_R [K/K] (<c>Tab_Gebaeude.Heizkurve_Raumeinfluss</c>, Entwurf AK3 Festlegung 23):
+        /// Mit Stufe AK3 und <see cref="Heizkurve_Aktiv"/> hebt der Kreis den Vorlauf um k_R · (θ_soll − θ_i) der Zone mit
+        /// der größten Unterschreitung an. <c>null</c> oder 0 = aus.
+        /// </summary>
+        public double? Heizkurve_Raumeinfluss;
+
         // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der

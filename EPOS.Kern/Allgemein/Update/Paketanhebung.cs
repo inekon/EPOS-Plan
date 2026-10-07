@@ -347,6 +347,10 @@ namespace WindowsFormsApplication1
             // Projektkopien seiner Stromverbraucher bleiben, wie sie sind.
             new Stufe(StandardlastprofilPvSchema.SCHRITT, Art.Katalog,
                       "BDEW-Netzbezugsprofile Strom 2025 (P25, S25) im Katalog des Strombedarfs"),
+            // Ein älteres Paket führt keinen Raumeinfluss der Heizkurve und keine Kennzahlen des Kreises; die Spalten
+            // kommen leer an (Raumeinfluss aus, „nicht erhoben").
+            new Stufe(Ak3Schema.SCHRITT, Art.Ddl,
+                      "Stufe AK3: Raumeinfluss der Heizkurve am Gebäude, Kennzahlen des geschlossenen Kreises im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
