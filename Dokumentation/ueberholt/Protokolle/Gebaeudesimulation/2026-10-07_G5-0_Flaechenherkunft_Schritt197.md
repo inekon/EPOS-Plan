@@ -1,6 +1,6 @@
 # Protokoll G5-0 — Schemaschritt 197 `FlaechenherkunftSchema`: Herkunft der Bauteilfläche in `Tab_Bauteil` (07.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeile **#803**. Commits: `d18b9f163` (Merge origin mit Schritt 196), `907afcb8c` (Schritt, Schreib- und Leseweg), `25948fa64` (Testdatenbank 197), `87d9c7e1e` (Tests), `b10315524` (Spaltenliste in `GebaeudeG3SchemaTests`); zusammengeführt in `e25217ad8`.
+**Sitzung:** IFC / Gebäudeimport, Statuszeile **#804**. Commits: `d18b9f163` (Merge origin mit Schritt 196), `907afcb8c` (Schritt, Schreib- und Leseweg), `25948fa64` (Testdatenbank 197), `87d9c7e1e` (Tests), `b10315524` (Spaltenliste in `GebaeudeG3SchemaTests`); zusammengeführt in `e25217ad8`.
 **Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md).
 
 ## 1 Auftrag
@@ -23,7 +23,7 @@ Die Herkunft der Bauteilfläche (Mengensatz, Raumgrenze, Körper, schematisch), 
 - Gefilterter Lauf 2 437 bestanden, 4 übersprungen; Auslieferungsvorlage 61/61; Kern-Filter und Windows-Schale 0 Fehler; SQL-Dialekt-Prüfer 2 483 Texte, 0 Fundstellen.
 - Referenzlauf der acht CI-Projekte gegen `2026-10-07_R40_Erdreichquellen` PASS. Kein Rechenweg geändert, keine Basis und keine Einfrierregel berührt.
 
-## 4 Gate 803
+## 4 Gate 804
 
 Hauptbaum `e25217ad8`, 93 min: 20 610 Tests, 20 602 grün, 6 übersprungen, 2 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 775, EPOS.Kern 11 861 mit 5 übersprungen); rot waren zwei Folgen der neuen Spalte — die Verlustliste des Gebäudeexports kannte `BauteilModel.Flaechenherkunft` nicht, die Spaltenprobe der Zonenkopplung las die letzten zwei Spalten —, behoben in `dafcac611`, die betroffenen Klassen 223/223 nachgeprüft; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R40_Erdreichquellen` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 483 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
 
