@@ -48497,5 +48497,35 @@ Chart</value>
   <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
     <value>{0} Raumbezüge der Hüllflächen zeigen auf einen Raum, den die Projektdatei nicht führt.</value>
   </data>
+  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
+    <value>Vorgabedicke</value>
+  </data>
+  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
+    <value>Bezugsebene angenommen</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_GEOMETRIE" xml:space="preserve">
+    <value>Geometrie der Projektdatei: {0} von {1} Raumkörpern und {2} von {3} Bauteilkörpern aus den Flächen der Datei gebildet; {4} mit Vorgabedicke, {5} mit angenommener Bezugsebene.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
+    <value>Die Projektdatei führt keine lesbare Geometrie (Raumpolygone, Flächenschleifen) — die Ansicht zeigt Umrissprismen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_RAUM_OHNE_POLYGON" xml:space="preserve">
+    <value>Raum „{0}“: kein lesbares Raumpolygon ({1}) — Rückfall Umrissprisma.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KOERPER_RAUM" xml:space="preserve">
+    <value>Raum „{0}“: Raumkörper nicht gebildet ({1}: {2}) — Rückfall Umrissprisma.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KOERPER_BAUTEIL" xml:space="preserve">
+    <value>Bauteilkörper nicht gebildet ({0}: {1}) — Rückfall Umrissprisma.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OHNE_GEOMETRIE" xml:space="preserve">
+    <value>Keine lesbare Flächenschleife (GeoDesc) — kein Bauteilkörper.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Die Öffnung liegt in keiner Wandfläche desselben Raums — Körper ohne Aussparung.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_RAND" xml:space="preserve">
+    <value>Die Öffnung reicht an den Rand ihrer Wandfläche — die Aussparung entfällt.</value>
+  </data>
 </root>
 

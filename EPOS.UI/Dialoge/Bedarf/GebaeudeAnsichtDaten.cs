@@ -565,7 +565,7 @@ public sealed record GebaeudeAnsichtDateikoerper(
     public IReadOnlyList<byte>? Gruppen { get; init; }
 
     /// <summary>Die Schlüssel der Vermerke in ihrer Reihenfolge — die Namen von <c>Koerpervermerk</c> des Kerns.</summary>
-    public static readonly string[] VERMERKE = { "Bogen", "Loch", "Uneben", "OhneBeschnitt", "Offen", "Mehrschale" };
+    public static readonly string[] VERMERKE = { "Bogen", "Loch", "Uneben", "OhneBeschnitt", "Offen", "Mehrschale", "Vorgabedicke", "Bezugsebene_angenommen" };
 }
 
 /// <summary>
@@ -792,6 +792,8 @@ public sealed class GebaeudeAnsichtTexte
         ["OhneBeschnitt"] = Resource.GANS_VERMERK_OHNEBESCHNITT,
         ["Offen"] = Resource.GANS_VERMERK_OFFEN,
         ["Mehrschale"] = Resource.GANS_VERMERK_MEHRSCHALE,
+        ["Vorgabedicke"] = Resource.GANS_VERMERK_VORGABEDICKE,
+        ["Bezugsebene_angenommen"] = Resource.GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN,
     };
 
     /// <summary>GANS_FARBMODUS — Beschriftung des Umschalters „Zonen | Randbedingung" für die Sprachausgabe.</summary>

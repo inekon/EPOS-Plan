@@ -48490,5 +48490,35 @@ chart</value>
   <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
     <value>{0} room references of envelope surfaces point to a room the project file does not contain.</value>
   </data>
+  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
+    <value>default thickness</value>
+  </data>
+  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
+    <value>reference plane assumed</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_GEOMETRIE" xml:space="preserve">
+    <value>Project file geometry: {0} of {1} room bodies and {2} of {3} element bodies built from the surfaces of the file; {4} with default thickness, {5} with assumed reference plane.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
+    <value>The project file carries no readable geometry (room polygons, surface loops) — the view shows outline prisms.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_RAUM_OHNE_POLYGON" xml:space="preserve">
+    <value>Room “{0}”: no readable room polygon ({1}) — fallback outline prism.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KOERPER_RAUM" xml:space="preserve">
+    <value>Room “{0}”: room body not built ({1}: {2}) — fallback outline prism.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KOERPER_BAUTEIL" xml:space="preserve">
+    <value>Element body not built ({0}: {1}) — fallback outline prism.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OHNE_GEOMETRIE" xml:space="preserve">
+    <value>No readable surface loop (GeoDesc) — no element body.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>The opening lies in no wall surface of the same room — body without recess.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_RAND" xml:space="preserve">
+    <value>The opening reaches the edge of its wall surface — the recess is omitted.</value>
+  </data>
 </root>
 

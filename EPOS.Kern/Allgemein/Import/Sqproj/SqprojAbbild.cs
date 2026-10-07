@@ -84,7 +84,7 @@ namespace WindowsFormsApplication1
     /// Tagesganglinien und Abschnitten — samt den Zählern des Übersprungenen und den Meldungen. Formatfrei bis auf die
     /// Belegtexte; ohne Datenbank, ohne Verbindung (der Leser hält keine über das Lesen hinaus).
     /// </summary>
-    internal sealed class SqprojAbbild
+    internal sealed partial class SqprojAbbild
     {
         /// <summary>Der belegte Code der Nutzungszone nach DIN V 18599 (Befund 3.2).</summary>
         internal const int ZONENTYP_NUTZUNG = 5;
