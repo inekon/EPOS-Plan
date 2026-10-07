@@ -1170,8 +1170,8 @@ das. **H2 (Raumeinfluss der Heizkurve):** Spalte am Gebäude `Heizkurve_Raumeinf
 leer oder 0 = aus); Vorlauf = Heizkurve + k_R × Unterschreitung der kältesten Zone derselben Stunde,
 gekappt am Auslegungsvorlauf und an `Vorlauf_Max`; wirkt nur in Stufe AK3. **Interpolation der
 Wärmepumpenkennlinie über den Vorlauf** (Wärme- und Kälteseite, AK3-I): gilt, ohne Schalter; zwischen zwei Stützstellen linear im
-Vorlauf, auf einer Stützstelle und außerhalb wie die Stützstellenwahl (Entwurf AK3 3, I-1 bis I-5; Normstelle als
-EPOS-Lesart benannt, Normtext nicht geprüft).
+Vorlauf, auf einer Stützstelle und außerhalb wie die Stützstellenwahl (Entwurf AK3 3, I-1 bis I-5;
+Normstelle: EPOS-Lesart in Anlehnung an VDI 4650 Blatt 1 (Ausgabe 2024) Abschnitt 5 und DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6; Q-AK3-I1 beantwortet 07.10.2026 (Normtext geprüft); das Halten über der obersten Stützstelle benennt der Lauf je Gerät).
 
 ### 6.4 Was nichts davon berührt
 
@@ -2551,8 +2551,8 @@ ebenfalls. **Sie ist mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_V
 Empfehlung: AK1 nach G2; AK2 nach abgenommenem AK1 und einer Feldphase; AK3 danach (12.3). Damit
 hat dieses Papier keine offene Frage mehr; **H6** ist mit **E100** (07.10.2026) aufgehoben — AK3 wird
 jetzt gebaut —, **H-F4** mit **E102** (Q-AK3-6) durch AK3-I abgelöst. Die Fragen zu AK3 selbst
-(Q-AK3-1 bis -7) stehen im [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) und sind mit E102 entschieden; offen ist dort allein
-Q-AK3-I1 (Normtext).
+(Q-AK3-1 bis -7) stehen im [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) und sind mit E102 entschieden;
+Q-AK3-I1 (Normstelle) ist am 07.10.2026 am Normtext beantwortet.
 
 ### 13.1 Jetzt zu entscheiden
 

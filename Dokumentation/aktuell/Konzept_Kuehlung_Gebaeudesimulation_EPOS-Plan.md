@@ -1331,7 +1331,7 @@ dem Muster der Heizseite. In der Testdatenbank stehen heute **zwei** Stützstell
 mit Interpolation** gibt es nicht: **K21** ist mit E33 nach Empfehlung entschieden — Auswahl aus
 den Stützstellen, keine Interpolation über den Vorlauf, eine Stützstellenprobe je Vorlauf (10.2).
 **K21 ist mit AK3-I geändert (E102) und gilt so:** Ein Kühl-Vorlauf zwischen zwei Stützstellen rechnet linear
-interpoliert, auf einer Stützstelle mit ihr, außerhalb mit dem Randwert ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 3, Festlegung I-3).
+interpoliert, auf einer Stützstelle mit ihr, außerhalb mit dem Randwert ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 3, Festlegung I-3; Normstelle: EPOS-Lesart in Anlehnung an VDI 4650 Blatt 1 (Ausgabe 2024) Abschnitt 5 und DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6; Q-AK3-I1 beantwortet 07.10.2026 (Normtext geprüft)).
 Ein `Kuehl_Vorlauf`, der keine Stützstelle ist (etwa nach einem Kennlinientausch), wird einmal je Gerät
 und Vorlauf als Hinweis benannt; ist ein Block nicht rechenbar, rechnet er mit der nächsten Stützstelle — bei
 gleichem Abstand der kälteren.
