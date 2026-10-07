@@ -166,7 +166,7 @@ namespace WindowsFormsApplication1
             t.FreigabeKuehlen = Text_("KOND_LBL_FREIGABE_KUEHLEN", t.FreigabeKuehlen);
             t.FreigabeBeides = Text_("KOND_LBL_FREIGABE_BEIDES", t.FreigabeBeides);
             t.FreigabeKeine = Text_("KOND_LBL_FREIGABE_KEINE", t.FreigabeKeine);
-            t.FreigabeZeile = Text_("KOND_TXT_FREIGABE_ZEILE", t.FreigabeZeile);
+            t.TextFreigabeZeile = Text_("KOND_TXT_FREIGABE_ZEILE", t.TextFreigabeZeile);
             t.HinweisFreigabe = Text_("KOND_TXT_HINWEIS_FREIGABE", t.HinweisFreigabe);
             t.GrundKuehlenGesperrt = Text_("KOND_TXT_KUEHLEN_GESPERRT", t.GrundKuehlenGesperrt);
             t.HinweisTagesbilanz = Text_("KOND_TXT_HINWEIS_TAGESBILANZ", t.HinweisTagesbilanz);

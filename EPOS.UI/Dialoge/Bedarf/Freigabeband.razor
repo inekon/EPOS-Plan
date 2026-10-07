@@ -44,7 +44,7 @@
     [Parameter] public KonditionierungTexte Texte { get; set; } = new();
 
     private string Zeile(KonditionierungFreigabeband b)
-        => string.Format(CultureInfo.CurrentCulture, Texte.FreigabeZeile, b.Ort, b.TageHeizen, b.TageKuehlen, b.TageBeides, b.TageKeine);
+        => string.Format(CultureInfo.CurrentCulture, Texte.TextFreigabeZeile, b.Ort, b.TageHeizen, b.TageKuehlen, b.TageBeides, b.TageKeine);
 
     /// <summary>Die Läufe gleicher Freigabe (Anfangstag, Länge, Art) — ein Rechteck je Lauf statt je Tag.</summary>
     internal static IEnumerable<(int Von, int Laenge, int Art)> Abschnitte(IReadOnlyList<int> tage)

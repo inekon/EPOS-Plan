@@ -555,7 +555,7 @@ public sealed class KonditionierungTexte
     public string FreigabeKeine { get; set; } = "keines";
 
     /// <summary><c>KOND_TXT_FREIGABE_ZEILE</c> — {0} Ort, {1} Heizen, {2} Kühlen, {3} beides, {4} keines (Tage)</summary>
-    public string FreigabeZeile { get; set; }
+    public string TextFreigabeZeile { get; set; }
         = "{0}: Heizen frei {1} Tage, Kühlen frei {2} Tage, beides {3} Tage, keines {4} Tage";
 
     /// <summary><c>KOND_TXT_HINWEIS_FREIGABE</c> — unter dem Jahresband</summary>
