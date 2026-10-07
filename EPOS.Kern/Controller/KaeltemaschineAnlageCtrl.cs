@@ -166,10 +166,14 @@ namespace WindowsFormsApplication1
         {
             KaeltemaschineAnlageModel a = Laden(anlagenId);
             if (a == null) return;
+            // Die Kostenpositionen der Anlage gehen mit (Anwenderentscheid 07.10.2026, wie
+            // WizardCtrl.Del_Projekt_ID_Waermeerzeuger). Die Spaltenvorsorge VOR dem Vorgang.
+            KostenPositionCtrl.StelleSpaltenSicher();
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
+                    AnlagenKostenpositionen.Loeschen(v, a.IdProjekt, anlagenId);
                     v.Ausfuehren("DELETE FROM Tab_Energieanlagen WHERE ID = ? AND ID_Type = ?",
                         new DbParam("?", anlagenId), new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
                     if (a.IdKaeltemaschine.HasValue)

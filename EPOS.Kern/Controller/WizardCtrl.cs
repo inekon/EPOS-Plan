@@ -183,14 +183,7 @@ namespace WindowsFormsApplication1
             // Kosten hinterlassen). NUR hier — die Typ-/Alle-Löschwege sind auch
             // der destruktive Wizard-Neuaufbau; dort heilt die Zuordnung über den
             // Geräteanker (KostenProjektPositionenCtrl.ZuordnungReparieren).
-            try
-            {
-                if (KostenPositionCtrl.StelleSpaltenSicher())
-                    DataRepository.ExecuteSQL(
-                        "DELETE FROM Tab_ProjektWerte WHERE ProjektID = ? AND ID_Anlage = ?",
-                        new DbParam("@p", projektID),
-                        new DbParam("@a", ID_Waermeerzeuger));
-            }
+            try { AnlagenKostenpositionen.Loeschen(null, projektID, ID_Waermeerzeuger); }
             catch { }
 
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID = ?",
