@@ -113,6 +113,11 @@ Energiebedarf.Uebergabe_Begrenzt_Stunden;669.76
 Energiebedarf.Kuehl_Vorlauf_Mittel;18
 Energiebedarf.Kuehl_Ruecklauf_Mittel;18.81
 Energiebedarf.Kuehl_Uebergabe_Begrenzt_Stunden;0
+Energiebedarf.Komfort_Unterschreitungsstunden;683
+Energiebedarf.Komfort_Kelvinstunden;931.7
+Energiebedarf.Komfort_Laengste_Strecke;6
+Energiebedarf.Komfort_Ueberschreitungsstunden;32
+Energiebedarf.Komfort_Kelvinstunden_Kuehlung;43
 Energiebedarf.Ak3_Durchlaeufe_Mittel;3.21
 Energiebedarf.Ak3_Durchlaeufe_Max;7
 Energiebedarf.Ak3_Fallwechsel;407

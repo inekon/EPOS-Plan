@@ -212,7 +212,7 @@ Projekt 1058 "Referenzprojekt AK3" wird gerechnet ...
 Simulation startet fuer Projekt 1058 ...
 Simulation beendet, Ergebnis-Kopf-ID 235.
 Projekt 1058: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
-Projekt 1058: 41 CSV-Dateien, 273 Skalare.
+Projekt 1058: 41 CSV-Dateien, 278 Skalare.
   OK - 41 Dateien in 00:00
 
 Fertig. Gesamtdauer 00:00:12

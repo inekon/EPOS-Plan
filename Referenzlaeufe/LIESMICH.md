@@ -689,7 +689,7 @@ danach im Wegweiser desselben Ordners.
 ## Aktuelle Basis
 
 **`2026-10-07_R42_Vorlaufinterpolation_AK3/`** — **dreiundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058), **718 CSV**, **4 857 Skalare**, gerechnet mit dem
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058), **718 CSV**, **4 862 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 07.10.2026, Stand `a1ce23b`)
 gegen `Kenndaten_Test.sqlite` (Schemastand **198**, 90 525 696 Byte, LFS-SHA-256
 `e09fceedc334a57647aac0c69d126c1f9793cdd2a41fd6f8d98bc4da366747f6`, mit den Projekten 1053 bis 1058; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
@@ -740,9 +740,9 @@ rechnet alle dreiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Die Messung mit Schalter vor dem Basiswechsel (auf R39, Wärmepumpe noch ohne Erdsonde) zeigte −0,59 % und −1,14 %.
 >
 > **RP-AK3 (1058):** die Kopie von 1056 auf Stufe AK3 mit Heizungspuffer an der Wärmepumpe und Raumeinfluss der Heizkurve
-> (unten „Das Referenzprojekt 1058“) — 41 CSV, 273 Skalare. Neu sind die Einfrierregeln zur Heizkennlinie der
+> (unten „Das Referenzprojekt 1058“) — 41 CSV, 278 Skalare. Neu sind die Einfrierregeln zur Heizkennlinie der
 > Projektwärmepumpe, zu `Ptherm` der Projektkessel und -BHKW und zu Puffer, Raumeinfluss und Stufe eines gekoppelten
-> Referenzprojekts (Abschnitt „gesäte Auslegungsdaten der Übergabe“ oben). Gesamt 718 CSV, 4 857 Skalare. Zwei Läufe
+> Referenzprojekts (Abschnitt „gesäte Auslegungsdaten der Übergabe“ oben). Gesamt 718 CSV, 4 862 Skalare. Zwei Läufe
 > sind byte-gleich (718/718 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
 >
 > ```bash
@@ -1321,7 +1321,9 @@ python3 Referenzlaeufe/Skripte/referenzprojekt_1058_ak3.py Referenzlaeufe/Kennda
 Gerechnet: Wärme der Wärmepumpe 56,28 MWh bei 13,19 MWh Strom (JAZ 4,27; 1056: 12,12 MWh), Deckung Wärmepumpe 78,0 %,
 BHKW 18,5 %, Kessel 3,5 %; Puffer geladen 72,05 MWh, entladen 70,15 MWh, Verluste 1,73 MWh, 414 Vollzyklen. Kreis:
 im Mittel 3,21 Durchläufe je Stunde (höchstens 7), 407 Fallwechsel, 1 Stunde an der Schranke, 1 Stunde mit leerem
-Speicher, 0 Stunden Restbedarf. 1058 steht in der Basis R42 und in der CI-Auswahl; gehalten von
+Speicher, 0 Stunden Restbedarf. 1058 schreibt die Komfortkennzahlen und die sechs Kennzahlen des Kreises: 683
+Unterschreitungsstunden, 931,7 Kh, längste Strecke 6 h, Kühlseite 32 Überschreitungsstunden und 43 Kh;
+`Fahrplan_Begrenzt_Stunden` bleibt leer, seine Entsprechung auf AK3 ist `Ak3_Schranke_Stunden`. 1058 steht in der Basis R42 und in der CI-Auswahl; gehalten von
 `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests`; es gilt die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben.
 
 **Die dreiundzwanzig Projekte der Basis R42:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
