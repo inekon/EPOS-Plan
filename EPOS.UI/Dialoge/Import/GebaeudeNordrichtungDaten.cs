@@ -42,6 +42,7 @@ public sealed record GebaeudeNordrichtungDaten(
 /// <param name="Titel">„Ausrichtung“.</param>
 /// <param name="Beschriftung">„Planoberseite zeigt nach“.</param>
 /// <param name="Schnellwahl">Die acht Himmelsrichtungen.</param>
+/// <param name="Bauteile">Die Zahl der Bauteile mit Azimut, die „Ausrichtung ändern“ dreht (für die Rückfrage); 0 ohne Quelle.</param>
 public sealed record GebaeudeAusrichtungDaten(
     bool Aenderbar,
     string Hinweis,
@@ -51,7 +52,8 @@ public sealed record GebaeudeAusrichtungDaten(
     string HerkunftText,
     string Titel,
     string Beschriftung,
-    IReadOnlyList<GebaeudeNordSchnellwahl> Schnellwahl);
+    IReadOnlyList<GebaeudeNordSchnellwahl> Schnellwahl,
+    int Bauteile = 0);
 
 /// <summary>Das Ergebnis von „Ausrichtung ändern“: Erfolg, Meldung, Zahl der gedrehten Bauteile und die neue Richtung.</summary>
 public sealed record GebaeudeAusrichtungErgebnis(bool Ok, string Meldung, int GedrehteBauteile, double PlanoberseiteGrad);

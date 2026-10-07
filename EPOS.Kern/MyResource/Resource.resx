@@ -48332,5 +48332,68 @@ Chart</value>
   <data name="GEB_AUSRICHTUNG_NW" xml:space="preserve">
     <value>Nordwest</value>
   </data>
+  <data name="GEB_AUSRICHTUNG_NORDRICHTUNG" xml:space="preserve">
+    <value>Nordrichtung</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_FRAGE_FELD" xml:space="preserve">
+    <value>Wohin zeigt die Planoberseite (+y der Datei)? In Grad, 0° = Nord, im Uhrzeigersinn.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_SCHNELLWAHL" xml:space="preserve">
+    <value>Schnellwahl der Himmelsrichtung</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_VORSCHAU" xml:space="preserve">
+    <value>Vorschau: Die Planoberseite zeigt nach {0}°.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_VORSCHLAG" xml:space="preserve">
+    <value>aus der Datei, noch nicht angewandt</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_BEREICH" xml:space="preserve">
+    <value>Zulässig sind 0° bis unter 360°.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_LAEUFT" xml:space="preserve">
+    <value>Die Datei wird mit der neuen Nordrichtung neu gelesen …</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_AENDERN" xml:space="preserve">
+    <value>Ausrichtung ändern…</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_AENDERN_HINWEIS" xml:space="preserve">
+    <value>Dreht alle Bauteile des Gebäudes auf die eingegebene Richtung der Planoberseite und speichert sofort.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_FRAGE" xml:space="preserve">
+    <value>Alle {0} Bauteile des Gebäudes werden um {1}° gedreht. Fortfahren?</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_UNVERAENDERT" xml:space="preserve">
+    <value>Die eingegebene Richtung entspricht der gespeicherten — es gibt nichts zu drehen.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_HERKUNFT" xml:space="preserve">
+    <value>Herkunft: {0}</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_N" xml:space="preserve">
+    <value>N</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_NO" xml:space="preserve">
+    <value>NO</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_O" xml:space="preserve">
+    <value>O</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_SO" xml:space="preserve">
+    <value>SO</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_S" xml:space="preserve">
+    <value>S</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_SW" xml:space="preserve">
+    <value>SW</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_W" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
+    <value>NW</value>
+  </data>
 </root>
 

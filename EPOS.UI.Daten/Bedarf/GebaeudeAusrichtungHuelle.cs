@@ -66,7 +66,8 @@ namespace WindowsFormsApplication1
                     0.0, null, HerkunftSchluessel(Nordwinkelherkunft.Annahme), HerkunftText(Nordwinkelherkunft.Annahme),
                     titel, beschriftung, Schnellwahl());
             return new GebaeudeAusrichtungDaten(true, "", a.PlanoberseiteGrad, a.NordwinkelGrad, HerkunftSchluessel(a.Herkunft),
-                                                HerkunftText(a.Herkunft), titel, beschriftung, Schnellwahl());
+                                                HerkunftText(a.Herkunft), titel, beschriftung, Schnellwahl(),
+                                                new GebaeudeImportCtrl().DrehbareBauteile(idGebaeude));
         }
 
         /// <summary>

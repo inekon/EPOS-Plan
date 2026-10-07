@@ -205,6 +205,9 @@ namespace WindowsFormsApplication1
                 ["ProjektdateiWaehlen"] = new Func<Task<string>>(ProjektdateiWaehlenAsync),
                 ["ProjektdateiLesen"] = new Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>(ProjektdateiLesenAsync),
                 ["ProjektdateiEntfernen"] = new Action(ProjektdateiEntfernen),
+                // G5-N (N1-N3): die Nordrichtung des gelesenen Imports und ihr Setzen samt Neulesen.
+                ["NordrichtungDaten"] = new Func<GebaeudeNordrichtungDaten>(NordrichtungDaten),
+                ["NordrichtungSetzen"] = new Func<double?, CancellationToken, Task<GebaeudeLesestand>>(NordrichtungSetzenAsync),
             };
             // Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofile…" am Zonenbaum - nur mit Projekt, denn ohne
             // Projekt fragt die Hülle keine Datenbank (Prüfstand ohne Datenbank).
