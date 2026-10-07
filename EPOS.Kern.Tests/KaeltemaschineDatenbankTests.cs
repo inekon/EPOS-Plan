@@ -60,6 +60,9 @@ namespace EPOS.Kern.Tests
         public void Waermepumpe_vor_Kaeltemaschine_und_der_Rest_sinkt()
         {
             if (!_db.Vorhanden) return;
+            // Fallbildung: Mit der Zonensperre deckt die Wärmepumpe von 1017 die Kälte ganz (Basis R43); die
+            // Unterdeckung kommt aus ihrer geminderten Leistungsgrenze.
+            KaelteUnterdeckung.WaermepumpeMindern(PROJEKT);
 
             Kaeltekaskade ohne = Rechnen().simulation_Kaeltebedarf.Kaskade;
             Assert.NotNull(ohne);
@@ -117,6 +120,9 @@ namespace EPOS.Kern.Tests
         public void Zu_kleine_Maschine_meldet_die_Unterdeckung_mit_Grund()
         {
             if (!_db.Vorhanden) return;
+            // Fallbildung: Mit der Zonensperre deckt die Wärmepumpe von 1017 die Kälte ganz (Basis R43); die
+            // Unterdeckung kommt aus ihrer geminderten Leistungsgrenze.
+            KaelteUnterdeckung.WaermepumpeMindern(PROJEKT);
 
             int id = Anlegen(LUFTGEKUEHLT);
             DataRepository.ExecuteNonQuery("UPDATE " + KaeltemaschineSchema.TAB_KENNDATEN + " SET " +

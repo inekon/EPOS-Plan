@@ -58,6 +58,9 @@ namespace EPOS.Kern.Tests
             // Die Wärmepumpe von 1017 an der Außenluft: Mit der gesäten Erdsonde deckte sie die Kälte fast ganz,
             // und die Maschine hinter ihr bekäme keinen Kältestrom für die Endenergiezeile.
             DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET WQ_Typ = NULL WHERE ID = 10211");
+            // Fallbildung: Mit der Zonensperre deckt die Wärmepumpe von 1017 die Kälte ganz (Basis R43); die
+            // Unterdeckung kommt aus ihrer geminderten Leistungsgrenze.
+            KaelteUnterdeckung.WaermepumpeMindern(PROJEKT);
             int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, Stamm(LUFTGEKUEHLT), "KM Halle");
             Assert.True(anlage > 0);
             KaeltemaschineAnlageModel a = KaeltemaschineAnlageCtrl.Laden(anlage);

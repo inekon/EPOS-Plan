@@ -514,6 +514,9 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Einrichten();
+            // Fallbildung: Mit der Zonensperre deckt die eingerichtete Wärmepumpe die Kälte von 1045 ganz (R43); die
+            // Legende braucht den ungedeckten Rest, er kommt aus ihrer geminderten Leistungsgrenze.
+            KaelteUnterdeckung.WaermepumpeMindern(PROJEKT);
             Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
                 new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: KUEHLTRAEGER)).Ok);
             Stand s = Rechnen();
