@@ -754,6 +754,86 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Geometrie und Bohrlochkennwerte des Sondenfeldes einer Anlage (Konzept Simulationsablauf
+        /// 23.3) aus den Spalten von <see cref="ErdsondenfeldSchema"/>. Eine leere Spalte, eine
+        /// Datenbank vor dem Schritt und ein unbekannter Anordnungstext heißen Norm
+        /// (<see cref="Sondenfeldgeometrie.Norm"/>); der Bohrlochdurchmesser steht in mm, der Radius
+        /// des Feldes in m. Mit allen Spalten leer ist das Ergebnis die Norm selbst.
+        /// </summary>
+        public static Sondenfeldgeometrie SondenfeldgeometrieDerAnlage(int idEnergieanlage)
+        {
+            var g = Sondenfeldgeometrie.Norm;
+            if (idEnergieanlage <= 0 || !ErdsondenfeldSchema.Vollstaendig()) return g;
+
+            double? abstand = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_ABSTAND));
+            double? durchmesserMm = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_BOHRLOCHDURCHMESSER));
+            double? widerstand = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_BOHRLOCHWIDERSTAND));
+            double? kopf = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_KOPFUEBERDECKUNG));
+            double? jahr = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_BETRACHTUNGSJAHR));
+            string anordnung = WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_ANORDNUNG) as string;
+
+            if (abstand.HasValue) g.AbstandM = abstand.Value;
+            if (durchmesserMm.HasValue) g.BohrlochradiusM = durchmesserMm.Value / 2000.0;
+            if (widerstand.HasValue) g.Bohrlochwiderstand = widerstand.Value;
+            if (kopf.HasValue) g.KopfueberdeckungM = kopf.Value;
+            if (jahr.HasValue) g.Betrachtungsjahr = (int)Math.Round(jahr.Value);
+            Sondenanordnung? a = Sondenfeldgeometrie.AnordnungAusText(anordnung);
+            if (a.HasValue) g.Anordnung = a.Value;
+            return g.Bereinigt();
+        }
+
+        private static double? SondenfeldZahl(object o)
+        {
+            if (o == null || o is DBNull) return null;
+            try { return Convert.ToDouble(o, System.Globalization.CultureInfo.InvariantCulture); }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Baut das Sondenfeld (Konzept Simulationsablauf 23) einer Anlage, deren Quelle als
+        /// Erdsonde rechnet — dieselbe Weiche wie in <see cref="Quelltemperatur"/>: Wärmequelle
+        /// Erdreich, Bauart nicht Luft-Wasser, Quellsystem Sonde oder Kollektor mit
+        /// <c>WQ_Tiefe</c> über <see cref="MAX_KOLLEKTORTIEFE_M"/>. Ohne Sondenlänge gibt es kein
+        /// Feld; dann bleibt es bei der konstanten Quelltemperatur. Sonst null.
+        /// </summary>
+        /// <param name="idEnergieanlage">Tab_Energieanlagen.ID der WP.</param>
+        /// <param name="wpTyp">Bauart aus Tab_WP.</param>
+        /// <param name="aussentemp">Außentemperatur der Klimaregion (8760 Werte).</param>
+        public static Erdsondenfeld Sondenfeld(int idEnergieanlage, string wpTyp, double[] aussentemp)
+        {
+            if (string.IsNullOrEmpty(wpTyp) || wpTyp == DbWerte.WP_BAUART_LUFT_WASSER) return null;
+            try
+            {
+                string typ = WertLesenStill(idEnergieanlage, "WQ_Typ") as string;
+                if (typ != TYP_ERDREICH) return null;
+
+                string quellsystem = WertLesenStill(idEnergieanlage, "WQ_Quellsystem") as string;
+                object oTiefe = WertLesenStill(idEnergieanlage, "WQ_Tiefe");
+                double tiefe = oTiefe != null ? Convert.ToDouble(oTiefe) : 0;
+                bool alsSonde = string.Equals(quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE,
+                                              StringComparison.OrdinalIgnoreCase)
+                                || tiefe > MAX_KOLLEKTORTIEFE_M;
+                if (!alsSonde || !(tiefe > 0)) return null;
+
+                object oAnzahl = WertLesenStill(idEnergieanlage, "WQ_Anzahl");
+                int anzahl = oAnzahl != null ? Convert.ToInt32(oAnzahl) : 1;
+                string bodentyp = WertLesenStill(idEnergieanlage, "WQ_Bodentyp") as string;
+                ErdreichTemperatur.Bodenkennwerte boden = ErdreichTemperatur.Bodentyp(bodentyp);
+
+                double tu = ErdreichTemperatur.SondenTemperatur(aussentemp, tiefe);
+                return new Erdsondenfeld(tiefe, anzahl, boden.Lambda, boden.RhoCp, tu,
+                                         SondenfeldgeometrieDerAnlage(idEnergieanlage));
+            }
+            catch (Exception ex)
+            {
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "sondenfeld-fehlgeschlagen-" + idEnergieanlage,
+                    string.Format(MyResource.Resource.SIMENG_ERDSONDE_FELD_FEHLT, idEnergieanlage, ex.Message));
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Liefert den Quell-Pufferspeicher einer Wärmepumpe (Wärmequelle
         /// "Pufferspeicher") als einsatzbereites Speichermodell - oder null,
         /// wenn keiner konfiguriert ist bzw. die Quelle als unbegrenzt gilt.

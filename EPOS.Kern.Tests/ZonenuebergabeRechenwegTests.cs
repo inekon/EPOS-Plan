@@ -222,7 +222,7 @@ namespace EPOS.Kern.Tests
             for (int h = 0; h < 8760; h++)
             {
                 if (double.IsNaN(eins.VorlaufC[h])) Assert.True(double.IsNaN(geb.RuecklaufC[h]));
-                else Assert.Equal(eins.RuecklaufC[h], geb.RuecklaufC[h], 9);
+                else Assert.Equal(eins.RuecklaufC[h], geb.RuecklaufC[h], 1e-9);
             }
 
             ErgebnisGebaeudeModel zeile = GebaeudeKennzahlen.Bilden(1, g.ID_Gebaeude, "Probe", DbWerte.GEBAEUDE_MODELL_VDI6007,

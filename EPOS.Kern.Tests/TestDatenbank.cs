@@ -965,6 +965,9 @@ namespace EPOS.Kern.Tests
                 // Schritt AufheizAufschlagErgebnisSchema.SCHRITT (KP3 Welle A, E99): verwendeter Aufschlag und bemessene
                 // Aufheizzeit an Tab_ErgebnisGebaeude, leer. Wiederholbar.
                 AufheizAufschlagErgebnisSchema.Ausfuehren(null);
+                // Schritt ErdsondenfeldSchema.SCHRITT: Geometrie und Bohrlochkennwerte des Sondenfeldes an
+                // Tab_Energieanlagen, leer (= Normvorgabe). Wiederholbar.
+                ErdsondenfeldSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -139,8 +139,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Vorlauf_Max IS NOT NULL"));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ANLAGEN);
             List<string> ergebnis = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ERGEBNIS);
-            // Hinter den zwei Spalten stehen allein die drei der freien Kühlung (Schritt 187).
-            int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count;
+            // Hinter den zwei Spalten stehen allein die drei der freien Kühlung (Schritt 187) und die sechs des
+            // Erdsondenfeldes (Schritt 195).
+            int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count + ErdsondenfeldSchema.SPALTEN.Count;
             Assert.Equal(new[] { "Zeitprogramm", "Vorlauf_Max" }, anlagen.Skip(anlagen.Count - frei - 2).Take(2).ToArray());
             Assert.Equal(AnlagenfahrplanSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - 6).ToArray());
             Assert.Equal(21 + 6, ergebnis.Count);

@@ -103,10 +103,20 @@ namespace WindowsFormsApplication1
                 if (k.Dateikoerper == null || r?.Koerper == null) { raeume.Add(k); continue; }
                 bool schematisch = r.Herkunft == Geometrieherkunft.Schematisch;
                 byte[] gruppen = Enumerable.Repeat(GebaeudeAnsichtRandgruppen.KEINE, r.Koerper.DreieckZahl).ToArray();
+                var jeDreieck = new string[r.Koerper.DreieckZahl];
                 foreach (Flaechengruppenzeile z in g.Flaechengruppen)
                     if (string.Equals(z.Raumkennung, k.Kennung, StringComparison.Ordinal))
                         foreach (int t in z.Dreiecksindizes)
-                            if (t >= 0 && t < gruppen.Length) gruppen[t] = (byte)z.Gruppe;
+                            if (t >= 0 && t < gruppen.Length)
+                            {
+                                gruppen[t] = (byte)z.Gruppe;
+                                jeDreieck[t] = z.Bauteilkennung;
+                            }
+                // BA-3: das Bauteil je Kante — dieselbe Gewichtung wie die Gruppe, nach Bauteil statt nach Gruppe.
+                var bauteilliste = jeDreieck.Where(x => x != null).Distinct(StringComparer.Ordinal).ToList();
+                var bauteilIndex = new Dictionary<string, int>(StringComparer.Ordinal);
+                for (int i = 0; i < bauteilliste.Count; i++) bauteilIndex[bauteilliste[i]] = i;
+                int[] schluessel = jeDreieck.Select((x, t) => x != null && gruppen[t] < GebaeudeAnsichtRandgruppen.ZAHL ? bauteilIndex[x] : -1).ToArray();
                 foreach (byte x in gruppen)
                     if (x < GebaeudeAnsichtRandgruppen.ZAHL) zaehler[x]++;
                 raeume.Add(k with
@@ -114,6 +124,10 @@ namespace WindowsFormsApplication1
                     Dateikoerper = k.Dateikoerper with { Gruppen = gruppen },
                     Kantengruppen = r.Polygone.Select(p => (IReadOnlyList<Randgruppe?>)Enumerable.Range(0, p.Punkte.Count)
                                                         .Select(e => Kantengruppe(r.Koerper, gruppen, p.Punkte, e, schematisch)).ToList()).ToList(),
+                    Dreiecksbauteile = jeDreieck,
+                    Kantenbauteile = r.Polygone.Select(p => (IReadOnlyList<string>)Enumerable.Range(0, p.Punkte.Count)
+                                                        .Select(e => Groesster(Kantengewichte(r.Koerper, schluessel, bauteilliste.Count, p.Punkte, e, schematisch)) is int b
+                                                                     ? bauteilliste[b] : null).ToList()).ToList(),
                     Kantenmarken = schematisch ? Array.Empty<GebaeudeAnsichtKantenmarke>() : Kantenmarken(r, oeffnungen),
                     Bodengruppe = Bodengruppe(r.Koerper, gruppen),
                 });
@@ -141,22 +155,41 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Randgruppe? Kantengruppe(Dateikoerper k, byte[] gruppen, IReadOnlyList<double[]> punkte, int e, bool schematisch)
         {
+            int[] schluessel = gruppen.Select(x => x < GebaeudeAnsichtRandgruppen.ZAHL ? (int)x : -1).ToArray();
+            return Groesster(Kantengewichte(k, schluessel, GebaeudeAnsichtRandgruppen.ZAHL, punkte, e, schematisch)) is int g ? (Randgruppe)g : null;
+        }
+
+        /// <summary>Der Schlüssel mit dem größten Gewicht; ohne Gewicht <c>null</c>, bei Gleichstand der kleinere.</summary>
+        private static int? Groesster(double[] gewicht)
+        {
+            int beste = -1;
+            for (int i = 0; i < gewicht.Length; i++)
+                if (gewicht[i] > 1e-9 && (beste < 0 || gewicht[i] > gewicht[beste] + 1e-9)) beste = i;
+            return beste < 0 ? null : beste;
+        }
+
+        /// <summary>
+        /// Die Gewichte der Kante <paramref name="e"/> je Schlüssel (0 … <paramref name="zahl"/> − 1; −1 = ohne) nach der Regel von
+        /// <see cref="Kantengruppe"/> — die Gruppe (HC-2) bzw. das Bauteil (BA-3) teilen dieselbe Geometrie.
+        /// </summary>
+        private static double[] Kantengewichte(Dateikoerper k, int[] schluessel, int zahl, IReadOnlyList<double[]> punkte, int e, bool schematisch)
+        {
+            var gewicht = new double[zahl];
             double[] a = punkte[e], b = punkte[(e + 1) % punkte.Count];
             double dx = b[0] - a[0], dy = b[1] - a[1], laenge = Math.Sqrt(dx * dx + dy * dy);
-            if (laenge < 1e-9) return null;
+            if (laenge < 1e-9) return gewicht;
             double ux = dx / laenge, uy = dy / laenge, nx = uy, ny = -ux;
             double sinWand = Math.Sin(Koerpernachbarschaft.WAND_NEIGUNG_GRAD * Math.PI / 180.0);
             double cosKante = Math.Cos(KANTE_WINKEL_GRAD * Math.PI / 180.0);
-            var gewicht = new double[GebaeudeAnsichtRandgruppen.ZAHL];
             for (int t = 0; t < k.Dreiecke.Count; t++)
             {
-                if (gruppen[t] >= GebaeudeAnsichtRandgruppen.ZAHL) continue;
+                if (t >= schluessel.Length || schluessel[t] < 0 || schluessel[t] >= zahl) continue;
                 if (!Normale(k, t, out double[] n, out double flaeche) || Math.Abs(n[2]) > sinWand) continue;
                 double h = Math.Sqrt(n[0] * n[0] + n[1] * n[1]);
                 double richtung = (n[0] * nx + n[1] * ny) / h;
                 if (schematisch)
                 {
-                    if (richtung >= cosKante) gewicht[gruppen[t]] += flaeche;
+                    if (richtung >= cosKante) gewicht[schluessel[t]] += flaeche;
                     continue;
                 }
                 if (Math.Abs(richtung) < cosKante) continue;
@@ -174,9 +207,9 @@ namespace WindowsFormsApplication1
                 double ueber = Math.Min(tMax, laenge) - Math.Max(tMin, 0.0);
                 if (ueber <= 1e-9) continue;
                 double spanne = tMax - tMin;
-                gewicht[gruppen[t]] += flaeche * (spanne < 1e-9 ? 1.0 : ueber / spanne);
+                gewicht[schluessel[t]] += flaeche * (spanne < 1e-9 ? 1.0 : ueber / spanne);
             }
-            return Groesste(gewicht);
+            return gewicht;
         }
 
         /// <summary>Die Gruppe des Bodens: die flächengrößte unter den Dreiecken mit Normale nach unten.</summary>

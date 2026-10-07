@@ -32,6 +32,7 @@ namespace EPOS.Kern.Tests
             "EPOS.Kern/Allgemein/Simulation/Gebaeude/Matrix2.cs",
             "EPOS.Kern/Allgemein/SolarPVGISCalculator.cs",
             "EPOS.Kern/Allgemein/Simulation/ErdreichTemperatur.cs",
+            "EPOS.Kern/Allgemein/Simulation/Erdsondenfeld.cs",
             "EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs",
             "EPOS.Kern/Allgemein/Simulation/Altweg/TagesbilanzPhysik.cs",
         };

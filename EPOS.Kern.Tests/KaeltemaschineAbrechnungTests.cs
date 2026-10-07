@@ -158,6 +158,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Eine Kältemaschine mit kleiner Leistung, damit sie neben der Wärmepumpe läuft.</summary>
         private static KaeltemaschineAnlageModel Maschine()
         {
+            // Die Wärmepumpe von 1017 an der Außenluft: Mit der gesäten Erdsonde deckte sie die Kälte fast ganz,
+            // und die Maschine hinter ihr bekäme keinen Kältestrom, den der Fall abrechnen kann.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET WQ_Typ = NULL WHERE ID = 10211");
             int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, Stamm(LUFTGEKUEHLT), "KM Halle");
             KaeltemaschineAnlageModel a = KaeltemaschineAnlageCtrl.Laden(anlage);
             DataRepository.ExecuteNonQuery("UPDATE " + KaeltemaschineSchema.TAB_KENNDATEN + " SET " +

@@ -55,6 +55,9 @@ namespace EPOS.Kern.Tests
         public void Die_Anlagenzeile_traegt_Anzahl_Vorlauf_Hilfsstrom_und_das_Ergebnis_wird_gespeichert()
         {
             if (!_db.Vorhanden) return;
+            // Die Wärmepumpe von 1017 an der Außenluft: Mit der gesäten Erdsonde deckte sie die Kälte fast ganz,
+            // und die Maschine hinter ihr bekäme keinen Kältestrom für die Endenergiezeile.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET WQ_Typ = NULL WHERE ID = 10211");
             int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, Stamm(LUFTGEKUEHLT), "KM Halle");
             Assert.True(anlage > 0);
             KaeltemaschineAnlageModel a = KaeltemaschineAnlageCtrl.Laden(anlage);

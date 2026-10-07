@@ -166,6 +166,8 @@ Anwender zu bestätigen). Upload ausstehend, folgt gebündelt mit der nächsten 
 13.3).
 
 
+**Nachtrag 07.10.2026:** Die zehn unter Windows fremd roten Kern-Tests sind mit #795 (`614df781`, Kern-Lauf 37600003737 grün) behoben — Windows-Prüfsummen des Einzonennetzes nachgezogen, Toleranz 1e-9 in der Zonenübergabe, Hüllenfälle „ohne Datenbank“ mit festem Pfad. Windows-Nachweis durch die Sitzung Berichterstellung am 07.10.2026: die vier Klassen `GebaeudeEinzonennetzTests`, `ZonenuebergabeRechenwegTests`, `GebaeudeImportHuelleTests`, `GebaeudeImportBaustoffeHuelleTests` 47/47 grün auf origin `95570cc39` (enthält #795 `614df781`).
+
 ## 8 Offen
 
 - Sichtabnahme unter Windows (WebView2): Word-Bericht 1030 in VALERI-Darstellung, Excel-Kopfzeile, Klappliste,

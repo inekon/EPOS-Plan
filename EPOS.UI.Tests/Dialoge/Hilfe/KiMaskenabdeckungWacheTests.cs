@@ -246,7 +246,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Zellen sind die Felder kond_* der Zonenkarte, Feldtafel ZonenKiSicht): 16 → 9.
         // E63 (AK1z): der Abschnitt „Übergabe“ - Art und sechs Zahlenfelder (Katalogfelder uebergabe_*,
         // auslegung_*, proportionalband): 9 → 16.
-        new("ZonenDialog", 18),
+        // BA-3: der Filter „Ohne vollständige Zuordnung“ der Bauteiltabelle - eine Ansichtswahl, kein Wert der Zone
+        // (bewusst draußen): 18 → 19.
+        new("ZonenDialog", 19),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
@@ -428,7 +430,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
         new("PufferSpProjektDialog", 25),
         new("PvModellFelder", 4),
-        new("QuelleErdreichDialog", 9),
+        new("QuelleErdreichDialog", 15),
         new("QuellePufferspeicherDialog", 8),
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
             "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),

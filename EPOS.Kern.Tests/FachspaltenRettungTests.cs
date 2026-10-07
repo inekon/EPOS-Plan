@@ -321,6 +321,10 @@ namespace EPOS.Kern.Tests
                 SchemaTypKatalog.BoolSpalten.Contains(name))
                 return vorgabe == "1" ? 0L : 1L;
 
+            // Die Anordnung des Sondenfeldes (Schritt 195) nimmt nur ihre Schreibweisen an.
+            if (string.Equals(name, ErdsondenfeldSchema.SPALTE_ANORDNUNG, StringComparison.OrdinalIgnoreCase))
+                return ErdsondenfeldSchema.ANORDNUNGEN[(zeile + 1) % ErdsondenfeldSchema.ANORDNUNGEN.Count];
+
             object wert;
             if (SchemaTypKatalog.DatumSpalten.Contains(name))
                 wert = new DateTime(2030, 1, 1).AddDays(40 * zeile + nr)

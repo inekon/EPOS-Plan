@@ -3462,7 +3462,7 @@ Select file now?</value>
   Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
-    <value>The borehole heat exchanger uses a source temperature that is constant all year, made up of the mean ground temperature and a depth allowance; the heat extraction does not act back on it.</value>
+    <value>The preview shows the undisturbed ground temperature of the borehole, made up of the mean ground temperature and a depth allowance. In the simulation the brine temperature drops with the heat extracted from the borefield; its course is shown in the result.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -45851,6 +45851,12 @@ chart</value>
   <data name="IMP_SQ_PROT_RAUM_OHNE_TREFFER" xml:space="preserve">
     <value>{0} rooms of the project file find no IFC room (neither by name and storey nor by identifier): {1}.</value>
   </data>
+  <data name="IMP_SQ_PROT_RAUM_HERKUNFT" xml:space="preserve">
+    <value>{0} rooms matched by the HottCAD identifier GUID ({1} by IFC identifier, {2} by name and storey).</value>
+  </data>
+  <data name="IMP_SQ_PROT_GUID_MEHRDEUTIG" xml:space="preserve">
+    <value>{0} rooms carry a HottCAD identifier GUID that is not unique and are not matched by it: {1}.</value>
+  </data>
   <data name="IMP_SQ_PROT_IFC_RAUM_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>{0} IFC rooms have no counterpart in the project file: {1}.</value>
   </data>
@@ -47549,6 +47555,309 @@ chart</value>
   <data name="WIZ_STECKBRIEF_SIMULATION" xml:space="preserve">
     <value>Last simulation</value>
   </data>
+  <data name="IMP_SQ_PROT_BAUTEILE_FEHLEN" xml:space="preserve">
+    <value>The project file has no component tables ({0}); constructions are not taken from it.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BAUTEILE_UNLESBAR" xml:space="preserve">
+    <value>The component tables of the project file cannot be read ({0}); constructions are not taken from it.</value>
+  </data>
+  <data name="IMP_SQ_PROT_BAUTEILE" xml:space="preserve">
+    <value>Components of the project file: {0} envelope surfaces, {1} constructions, {2} of them with layers ({3} layers).</value>
+  </data>
+  <data name="IMP_SQ_AUFBAU_NAME" xml:space="preserve">
+    <value>Project file construction (U {0})</value>
+  </data>
+  <data name="IMP_SQ_STOFF_NAME" xml:space="preserve">
+    <value>Project file material (λ {0}, ρ {1})</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_ZUORDNUNG" xml:space="preserve">
+    <value>Components matched to the project file: {0} by GUID, {1} by GlobalId; {2} opaque components without counterpart, {3} ambiguous (not guessed).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG1" xml:space="preserve">
+    <value>Construction from the project file (U matches the IFC): {0} component(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG2" xml:space="preserve">
+    <value>Construction from the construction catalogue of the project file (matches the IFC U): {0} component(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG3" xml:space="preserve">
+    <value>Construction from the IFC layers: {0} component(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_RANG4" xml:space="preserve">
+    <value>Without complete construction (substitute construction or none): {0} component(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG" xml:space="preserve">
+    <value>For {0} component(s) the U-value of the project file differs from the IFC U-value by more than 1 %; the IFC state applies (W/(m²K), project file → IFC: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG" xml:space="preserve">
+    <value>For {0} component(s) several different constructions of the project file match the IFC U-value ({1} W/(m²K)); no guess is made.</value>
+  </data>
+  <data name="GANS_FARBMODUS_AUFBAU" xml:space="preserve">
+    <value>Construction</value>
+  </data>
+  <data name="GANS_AUFBAU_OHNE_STUFEN" xml:space="preserve">
+    <value>“Construction” is unavailable: there are no assignment levels for the components (no component proposal).</value>
+  </data>
+  <data name="GANS_AUFBAU_LEGENDE" xml:space="preserve">
+    <value>Construction assignment levels</value>
+  </data>
+  <data name="GANS_AUFBAU_AUSSEN" xml:space="preserve">
+    <value>Envelope</value>
+  </data>
+  <data name="GANS_AUFBAU_INNEN" xml:space="preserve">
+    <value>Interior</value>
+  </data>
+  <data name="GANS_AUFBAU_ZAHL" xml:space="preserve">
+    <value>{0} · {1} m²</value>
+  </data>
+  <data name="GANS_AUFBAU_SCHALTER" xml:space="preserve">
+    <value>Show or hide {0}</value>
+  </data>
+  <data name="GANS_AUFBAU_TREFFER" xml:space="preserve">
+    <value>Selected: {0} — level {1}</value>
+  </data>
+  <data name="GANS_STUFE_A" xml:space="preserve">
+    <value>A – complete construction</value>
+  </data>
+  <data name="GANS_STUFE_B" xml:space="preserve">
+    <value>B – U from file, substitute construction</value>
+  </data>
+  <data name="GANS_STUFE_C" xml:space="preserve">
+    <value>C – geometry only, default U</value>
+  </data>
+  <data name="GANS_STUFE_TRANSPARENT" xml:space="preserve">
+    <value>Transparent (not rated)</value>
+  </data>
+  <data name="GANS_STUFE_OHNE" xml:space="preserve">
+    <value>Without component</value>
+  </data>
+  <data name="BTSB_TITEL" xml:space="preserve">
+    <value>Component profile</value>
+  </data>
+  <data name="BTSB_SCHLIESSEN" xml:space="preserve">
+    <value>Close profile</value>
+  </data>
+  <data name="BTSB_KENNUNG" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
+  <data name="BTSB_STUFE" xml:space="preserve">
+    <value>Assignment level</value>
+  </data>
+  <data name="BTSB_GRP_RECHNUNG" xml:space="preserve">
+    <value>Calculation values</value>
+  </data>
+  <data name="BTSB_FLAECHE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="BTSB_AZIMUT" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="BTSB_NEIGUNG" xml:space="preserve">
+    <value>Tilt</value>
+  </data>
+  <data name="BTSB_RAND" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="BTSB_UWERT" xml:space="preserve">
+    <value>U-value</value>
+  </data>
+  <data name="BTSB_R1" xml:space="preserve">
+    <value>R₁ (equivalent resistance)</value>
+  </data>
+  <data name="BTSB_C1" xml:space="preserve">
+    <value>C₁ (effective capacity)</value>
+  </data>
+  <data name="BTSB_KAPAZITAET" xml:space="preserve">
+    <value>Areal heat capacity</value>
+  </data>
+  <data name="BTSB_ANZEIGE" xml:space="preserve">
+    <value>R₁ and C₁ are calculated for this display only, using the component reduction to VDI 6007; the simulation is unchanged.</value>
+  </data>
+  <data name="BTSB_GRP_AUFBAU" xml:space="preserve">
+    <value>Construction (inside → outside)</value>
+  </data>
+  <data name="BTSB_SP_SCHICHT" xml:space="preserve">
+    <value>Layer</value>
+  </data>
+  <data name="BTSB_SP_DICKE" xml:space="preserve">
+    <value>Thickness</value>
+  </data>
+  <data name="BTSB_SP_LAMBDA" xml:space="preserve">
+    <value>λ</value>
+  </data>
+  <data name="BTSB_SP_RHO" xml:space="preserve">
+    <value>ρ</value>
+  </data>
+  <data name="BTSB_SP_CP" xml:space="preserve">
+    <value>c</value>
+  </data>
+  <data name="BTSB_SP_HERKUNFT" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="BTSB_WEGGELASSEN" xml:space="preserve">
+    <value>omitted: {0}</value>
+  </data>
+  <data name="BTSB_ERSATZ" xml:space="preserve">
+    <value>Substitute construction: {0}</value>
+  </data>
+  <data name="BTSB_KEIN_AUFBAU" xml:space="preserve">
+    <value>No construction</value>
+  </data>
+  <data name="BTSB_FEHLT" xml:space="preserve">
+    <value>Missing: {0}</value>
+  </data>
+  <data name="BTSB_GWERT" xml:space="preserve">
+    <value>g-value</value>
+  </data>
+  <data name="BTSB_RAHMEN" xml:space="preserve">
+    <value>Frame fraction</value>
+  </data>
+  <data name="BTSB_ZUR_BAUSTOFFZUORDNUNG" xml:space="preserve">
+    <value>Go to material assignment</value>
+  </data>
+  <data name="BTSB_ZUM_BAUTEIL" xml:space="preserve">
+    <value>Edit component</value>
+  </data>
+  <data name="BTSB_NUR_ANZEIGE" xml:space="preserve">
+    <value>The profile is for display only; changes are made in the material assignment or in the component dialog.</value>
+  </data>
+  <data name="BTSB_HK_DATEI" xml:space="preserve">
+    <value>from file</value>
+  </data>
+  <data name="BTSB_HK_SCHICHTEN" xml:space="preserve">
+    <value>from layers</value>
+  </data>
+  <data name="BTSB_HK_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="BTSB_HK_PROJEKTDATEI" xml:space="preserve">
+    <value>from project file</value>
+  </data>
+  <data name="BTSB_HK_KATALOG" xml:space="preserve">
+    <value>from catalogue</value>
+  </data>
+  <data name="BTSB_HK_MANUELL" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="BTSB_U_ABWEICHUNG" xml:space="preserve">
+    <value>The file U {0} deviates by {1} % from the U of the layers {2}; the file U applies, the layers provide R₁ and C₁.</value>
+  </data>
+  <data name="BTSB_ERSATZ_DICKE" xml:space="preserve">
+    <value>{0}, insulation thickness {1} cm</value>
+  </data>
+  <data name="BTSB_ERSATZ_LAMBDA" xml:space="preserve">
+    <value>{0}, λ of the load-bearing layer {1} W/(mK)</value>
+  </data>
+  <data name="BTSB_ERSATZ_OHNE" xml:space="preserve">
+    <value>{0}, not adjusted</value>
+  </data>
+  <data name="BTSB_GRUND_DUENN" xml:space="preserve">
+    <value>thinner than 5 mm and negligible for R and C</value>
+  </data>
+  <data name="BTSB_GRUND_SPERRE" xml:space="preserve">
+    <value>foil, barrier or sealing below 2 % of R</value>
+  </data>
+  <data name="BTSB_LUECKE_SCHICHTEN" xml:space="preserve">
+    <value>no layers</value>
+  </data>
+  <data name="BTSB_LUECKE_DICKE" xml:space="preserve">
+    <value>thickness of a layer</value>
+  </data>
+  <data name="BTSB_LUECKE_LAMBDA" xml:space="preserve">
+    <value>λ of a layer</value>
+  </data>
+  <data name="BTSB_LUECKE_RHO" xml:space="preserve">
+    <value>ρ of a layer</value>
+  </data>
+  <data name="BTSB_LUECKE_CP" xml:space="preserve">
+    <value>c of a layer</value>
+  </data>
+  <data name="BTSB_LUECKE_DAEMMUNG" xml:space="preserve">
+    <value>an insulation layer</value>
+  </data>
+  <data name="BTSB_LUECKE_SPEICHER" xml:space="preserve">
+    <value>a heat-storing layer</value>
+  </data>
+  <data name="BTSB_OHNE_RECHNUNG" xml:space="preserve">
+    <value>R₁ and C₁ cannot be determined without a complete construction.</value>
+  </data>
+  <data name="GIMP_GRP_AUFBAUTEN" xml:space="preserve">
+    <value>Component constructions</value>
+  </data>
+  <data name="GIMP_AB_SP_AUFBAU" xml:space="preserve">
+    <value>Construction</value>
+  </data>
+  <data name="GIMP_AB_SP_ART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="GIMP_AB_SP_BAUTEILE" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="GIMP_AB_SP_FLAECHE" xml:space="preserve">
+    <value>Area [m²]</value>
+  </data>
+  <data name="GIMP_AB_SP_UDATEI" xml:space="preserve">
+    <value>U file [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_USCHICHTEN" xml:space="preserve">
+    <value>U layers [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_C1" xml:space="preserve">
+    <value>C₁,corr [kJ/(m²K)]</value>
+  </data>
+  <data name="GIMP_AB_SP_STUFE" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="GIMP_AB_SP_FEHLT" xml:space="preserve">
+    <value>Missing</value>
+  </data>
+  <data name="GIMP_AB_SP_HANDLUNG" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="GIMP_AB_NUR_BC" xml:space="preserve">
+    <value>Only levels B and C</value>
+  </data>
+  <data name="GIMP_AB_ZUR_BAUSTOFF" xml:space="preserve">
+    <value>Assign material</value>
+  </data>
+  <data name="GIMP_AB_LEER" xml:space="preserve">
+    <value>No constructions in the proposal.</value>
+  </data>
+  <data name="GIMP_AB_OHNE_AUFBAU" xml:space="preserve">
+    <value>without construction</value>
+  </data>
+  <data name="GIMP_AB_HINWEIS" xml:space="preserve">
+    <value>One row per construction; C₁,corr per m² is calculated for display only, using the component reduction to VDI 6007. Click “Layers” to show the construction.</value>
+  </data>
+  <data name="GIMP_AB_SCHICHTEN" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="GIMP_AB_TYP" xml:space="preserve">
+    <value>Type construction: {0}</value>
+  </data>
+  <data name="ZOND_SP_AUFBAU" xml:space="preserve">
+    <value>Construction</value>
+  </data>
+  <data name="ZOND_FILTER_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Without complete assignment</value>
+  </data>
+  <data name="ZOND_AUFBAU_TITEL" xml:space="preserve">
+    <value>Assignment level {0}: {1}</value>
+  </data>
+  <data name="GIMP_AB_TYPWAHL" xml:space="preserve">
+    <value>Choose type construction</value>
+  </data>
+  <data name="BTSB_RANG_1" xml:space="preserve">
+    <value>Rank 1 – construction from the project file</value>
+  </data>
+  <data name="BTSB_RANG_2" xml:space="preserve">
+    <value>Rank 2 – construction catalogue of the project file</value>
+  </data>
+  <data name="BTSB_RANG_3" xml:space="preserve">
+    <value>Rank 3 – IFC layers</value>
+  </data>
+  <data name="BTSB_RANG_4" xml:space="preserve">
+    <value>Rank 4 – substitute construction or none</value>
+  </data>
   <data name="ABW_MERKMAL_AUFH_SCHALTER" xml:space="preserve">
     <value>Preheat optimisation</value>
   </data>
@@ -47606,6 +47915,271 @@ chart</value>
   </data>
   <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_BEMESSEN" xml:space="preserve">
     <value>Design preheat time of the current building in hours: t_auf,max after the surcharge, with the manual mode the manual value; empty without preheat optimisation, with an unattainable design or with an older result.</value>
+  </data>
+  <!-- KP3-A1d: Variantenvergleich und Nachweiszeile der Wirtschaftlichkeit in der Berichtssprache -->
+  <data name="BV_A1D_MERKMAL_ABSCHALTPUNKT" xml:space="preserve">
+    <value>Bivalence point</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_APERTURFLAECHE" xml:space="preserve">
+    <value>Aperture area</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_AZIMUT" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BAUART" xml:space="preserve">
+    <value>Design type</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BETRIEBSART" xml:space="preserve">
+    <value>Operating mode</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BIVALENT" xml:space="preserve">
+    <value>Bivalent operation</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BRENNWERT" xml:space="preserve">
+    <value>Condensing mode</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_GESAMT" xml:space="preserve">
+    <value>Total efficiency</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_GESAMTVOLUMEN" xml:space="preserve">
+    <value>Total volume</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_GRENZLEISTUNG" xml:space="preserve">
+    <value>Lower output limit</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KAPAZITAET" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KOLLEKTORMODULE" xml:space="preserve">
+    <value>Number of collector modules</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KOLLEKTORTYP" xml:space="preserve">
+    <value>Collector type</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KOMPONENTE" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_LEISTUNG" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_LUFTWECHSEL" xml:space="preserve">
+    <value>Air exchange rate</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_MODULLEISTUNG" xml:space="preserve">
+    <value>Module power</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_MOTORTYP" xml:space="preserve">
+    <value>Engine type</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_NEIGUNG" xml:space="preserve">
+    <value>Tilt</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated output</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_PV_LEISTUNG" xml:space="preserve">
+    <value>PV power</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_PV_MODELL" xml:space="preserve">
+    <value>PV calculation model</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_REGELUNG" xml:space="preserve">
+    <value>Control</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_RUECKLAUF" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_RUECKLAUFTEMP" xml:space="preserve">
+    <value>Return temperature</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_SOLARANTEIL" xml:space="preserve">
+    <value>Solar coverage</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_SPEICHERTYP" xml:space="preserve">
+    <value>Storage type</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_SPEICHERVOLUMEN" xml:space="preserve">
+    <value>Storage volume (plant)</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_SYSTEMVERLUSTE" xml:space="preserve">
+    <value>System losses</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_TYP" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_VORLAUF" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_VORLAUFTEMP" xml:space="preserve">
+    <value>Flow temperature</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WW_BEDARF" xml:space="preserve">
+    <value>DHW demand</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_NENNLEISTUNG" xml:space="preserve">
+    <value>Inverter rated output</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_WG" xml:space="preserve">
+    <value>Inverter efficiency</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_WG10" xml:space="preserve">
+    <value>Inverter efficiency at 10 %</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_WG50" xml:space="preserve">
+    <value>Inverter efficiency at 50 %</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_WG100" xml:space="preserve">
+    <value>Inverter efficiency at 100 %</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG" xml:space="preserve">
+    <value>Efficiency</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_GAS" xml:space="preserve">
+    <value>Gas efficiency</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_OEL" xml:space="preserve">
+    <value>Oil efficiency</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_NUTZFLAECHE" xml:space="preserve">
+    <value>Floor area</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WAERMEQUELLE" xml:space="preserve">
+    <value>Heat source</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_ZELLTECHNIK" xml:space="preserve">
+    <value>Cell technology</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_LEISTUNG_EL" xml:space="preserve">
+    <value>El. output</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_EL" xml:space="preserve">
+    <value>El. efficiency</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_LEISTUNG_TH" xml:space="preserve">
+    <value>Therm. output</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_TH" xml:space="preserve">
+    <value>Therm. efficiency</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BESTAND" xml:space="preserve">
+    <value>Inventory</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_ANZAHL" xml:space="preserve">
+    <value>Number of components</value>
+  </data>
+  <data name="BV_A1D_BESTAND_VORHANDEN" xml:space="preserve">
+    <value>present</value>
+  </data>
+  <data name="BV_A1D_BESTAND_FEHLT" xml:space="preserve">
+    <value>not present</value>
+  </data>
+  <data name="BV_A1D_GEWERK_ANLAGE" xml:space="preserve">
+    <value>Plant</value>
+  </data>
+  <data name="BV_A1D_GEWERK_SPITZENKESSEL" xml:space="preserve">
+    <value>Peak-load boiler</value>
+  </data>
+  <data name="BV_A1D_GEWERK_PUFFERSPEICHER" xml:space="preserve">
+    <value>Buffer storage</value>
+  </data>
+  <data name="BV_A1D_GEWERK_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KOPF" xml:space="preserve">
+    <value>i = {0} % · T = {1} a · Energy price increase {2} %/a, operation {3} %/a, investment/replacement {4} %/a ({5}) · Feed-in tariff {6} €/kWh</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG" xml:space="preserve">
+    <value> · KWKG (rates per plant</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_NEGATIV" xml:space="preserve">
+    <value>, negative-price deduction {0} %</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_STICHTAG" xml:space="preserve">
+    <value>, reference date {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT" xml:space="preserve">
+    <value>, reference date unchecked</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN" xml:space="preserve">
+    <value>, start of funding {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_ENERGIESTEUER" xml:space="preserve">
+    <value> · Energy tax: {0}, {1}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_NUTZUNGSGRAD" xml:space="preserve">
+    <value>, annual utilisation rate {0} %</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_UNTERNEHMENSART" xml:space="preserve">
+    <value> · Type of business: {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_EINSPEISUNG_KWK" xml:space="preserve">
+    <value> · CHP feed-in tariff {0} €/kWh</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD" xml:space="preserve">
+    <value>Borehole heat exchanger of plant {0}: borefield with extraction feedback, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), undisturbed temperature {4:0.00} °C, year of assessment {5} after {7} previous years carrying the hourly load of the first borefield pass: extraction {6:N0} kWh/a, of which recharged {8:N0} kWh/a.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD_FEHLT" xml:space="preserve">
+    <value>Borehole heat exchanger of plant {0}: the borefield could not be set up ({1}) — the constant source temperature is used.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENABSTAND" xml:space="preserve">
+    <value>Borehole spacing:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BOHRLOCHDURCHMESSER" xml:space="preserve">
+    <value>Borehole diameter:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BOHRLOCHWIDERSTAND" xml:space="preserve">
+    <value>Borehole thermal resistance:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KOPFUEBERDECKUNG" xml:space="preserve">
+    <value>Depth of borehole head:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BETRACHTUNGSJAHR" xml:space="preserve">
+    <value>Year of operation considered:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENANORDNUNG" xml:space="preserve">
+    <value>Arrangement:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ANORDNUNG_QUADRATISCH" xml:space="preserve">
+    <value>Square</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ANORDNUNG_REIHE" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORGABE" xml:space="preserve">
+    <value>Default {0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENFELD_HINWEIS" xml:space="preserve">
+    <value>(empty field: the default according to VDI 4640 Part 2 applies)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SONDENFELD" xml:space="preserve">
+    <value>Borehole spacing, borehole diameter and borehole thermal resistance must be greater than 0, the depth of the borehole head at least 0 and the year of operation at least 1. An empty field stands for the default.</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDENABSTAND_ERL" xml:space="preserve">
+    <value>Spacing of neighbouring borehole heat exchangers in metres, greater than 0; empty = default 6 m.</value>
+  </data>
+  <data name="KI_DLG_QERD_BOHRLOCHDURCHMESSER_ERL" xml:space="preserve">
+    <value>Borehole diameter in millimetres, greater than 0; empty = default 150 mm.</value>
+  </data>
+  <data name="KI_DLG_QERD_BOHRLOCHWIDERSTAND_ERL" xml:space="preserve">
+    <value>Borehole thermal resistance in m·K/W, greater than 0; empty = default 0.10 m·K/W.</value>
+  </data>
+  <data name="KI_DLG_QERD_KOPFUEBERDECKUNG_ERL" xml:space="preserve">
+    <value>Depth of the borehole head below ground in metres, at least 0; empty = default 2 m.</value>
+  </data>
+  <data name="KI_DLG_QERD_BETRACHTUNGSJAHR_ERL" xml:space="preserve">
+    <value>Year of operation for which the borehole field is calculated, at least 1; empty = default 10.</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDENANORDNUNG_ERL" xml:space="preserve">
+    <value>Arrangement of the borehole heat exchangers: square grid or row; empty = default square.</value>
   </data>
 </root>
 

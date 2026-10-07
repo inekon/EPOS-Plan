@@ -3044,6 +3044,26 @@ namespace Testdatenbankschema
                                   AufheizAufschlagErgebnisSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ErdsondenfeldSchema.SCHRITT: Geometrie und Bohrlochkennwerte des Sondenfeldes an
+            //      Tab_Energieanlagen (WQ_Sondenabstand, WQ_Bohrlochdurchmesser, WQ_Bohrlochwiderstand,
+            //      WQ_Kopfueberdeckung, WQ_Betrachtungsjahr, WQ_Sondenanordnung), reines ADD COLUMN, leer. Aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Erdsondenfeld bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Spalten heissen Normvorgabe (Sondenfeldgeometrie.Norm).
+            string nrSondenfeld = ErdsondenfeldSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSondenfeld + " - Erdsondenfeld je Anlage: " +
+                              (ErdsondenfeldSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSondenfeld = new List<string>();
+                angelegt += ErdsondenfeldSchema.Ausfuehren(berichtSondenfeld);
+                foreach (string zeile in berichtSondenfeld)
+                    Console.WriteLine("Schritt " + nrSondenfeld + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSondenfeld + " - vollstaendig: " +
+                                  ErdsondenfeldSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

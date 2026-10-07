@@ -7,7 +7,11 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Der Raumabgleich Projektdatei ↔ IFC-Abbild</b> (Datenaustauschkonzept 16.3, Befund Kapitel 6): zuerst über die
+    /// <b>Der Raumabgleich Projektdatei ↔ IFC-Abbild</b> (Datenaustauschkonzept 16.3, Befund Kapitel 6 und N.6): zuerst über
+    /// die HottCAD-Kennung <c>BmRoom.GId</c> ↔ <c>HSETU_BauteilAllgemein.GUID</c> am <c>IfcSpace</c>
+    /// (<see cref="AbbildRaum.HottcadGuid"/>, beide in der <see cref="IfcAbbildBauer.GuidNormalform"/>; trägt sie der Export, ist
+    /// sie der Schlüssel, auch wo die <c>GlobalId</c> neu vergeben ist — eine GUID, die auf einer Seite mehrfach vorkommt, trifft
+    /// nicht und wird benannt, <c>IMP_SQ_PROT_GUID_MEHRDEUTIG</c>), dann über die
     /// Kennung <c>BmRoom.GId</c> ↔ <c>IfcSpace.GlobalId</c> (die GUID umkodiert in die 22-stellige IFC-Form,
     /// <see cref="IfcKennung"/>; <c>BIMUUID</c> ist die Gebäude-GUID und trifft nichts), zweitens über den <b>Raumnamen je
     /// Geschoss</b> (Geschossname aus <c>BmFloor</c> gegen <c>IfcBuildingStorey.Name</c>; Groß- und Kleinschreibung und
@@ -18,9 +22,21 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class SqprojRaumabgleich
     {
+        /// <summary>Über welchen Schlüssel ein Raum getroffen hat.</summary>
+        internal enum Herkunft
+        {
+            /// <summary><c>GId</c> ↔ <c>HSETU_BauteilAllgemein.GUID</c>.</summary>
+            Guid = 0,
+            /// <summary><c>GId</c> ↔ dekodierte <c>GlobalId</c>.</summary>
+            Kennung = 1,
+            /// <summary>Raumname je Geschoss.</summary>
+            Name = 2,
+        }
+
         private const string ZEICHEN = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_$";
 
         private readonly Dictionary<string, string> _ifcJeRaum = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Herkunft> _herkunftJeRaum = new Dictionary<string, Herkunft>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>Die Paarungen Raumkennung der Projektdatei → Raumkennung des IFC-Abbilds, in Raumreihenfolge der Projektdatei.</summary>
         internal IReadOnlyDictionary<string, string> Paarungen => _ifcJeRaum;
@@ -34,8 +50,14 @@ namespace WindowsFormsApplication1
         /// <summary>Über <c>GId</c> ↔ <c>GlobalId</c> abgeglichen.</summary>
         internal int UeberKennung { get; private set; }
 
+        /// <summary>Über <c>GId</c> ↔ HottCAD-<c>GUID</c> abgeglichen.</summary>
+        internal int UeberGuid { get; private set; }
+
         /// <summary>Abgeglichene Räume zusammen.</summary>
-        internal int Abgeglichen => UeberName + UeberKennung;
+        internal int Abgeglichen => UeberGuid + UeberName + UeberKennung;
+
+        /// <summary>Räume der Projektdatei, deren <c>GId</c> eine auf einer Seite mehrdeutige GUID ist, in Raumreihenfolge.</summary>
+        internal List<SqprojRaum> GuidMehrdeutig { get; } = new List<SqprojRaum>();
 
         /// <summary>Räume der Projektdatei ohne Treffer, in Raumreihenfolge.</summary>
         internal List<SqprojRaum> OhneTreffer { get; } = new List<SqprojRaum>();
@@ -49,6 +71,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die IFC-Raumkennung eines Raums der Projektdatei; <c>null</c> = ohne Treffer.</summary>
         internal string IfcRaum(string raum) => raum != null && _ifcJeRaum.TryGetValue(raum, out string k) ? k : null;
 
+        /// <summary>Über welchen Schlüssel ein Raum der Projektdatei getroffen hat; <c>null</c> = ohne Treffer.</summary>
+        internal Herkunft? HerkunftVon(string raum) => raum != null && _herkunftJeRaum.TryGetValue(raum, out Herkunft h) ? h : null;
+
         /// <summary><b>Gleicht die Räume ab</b> — deterministisch: die Räume der Projektdatei in ihrer festen Reihenfolge.</summary>
         internal static SqprojRaumabgleich Bilden(SqprojAbbild projekt, AbbildGebaeude ifc)
         {
@@ -61,17 +86,38 @@ namespace WindowsFormsApplication1
 
             var vergeben = new HashSet<string>(StringComparer.Ordinal);
             var paar = new Dictionary<string, AbbildRaum>(StringComparer.OrdinalIgnoreCase);
-            // 1) GId ↔ GlobalId.
+            // 1) GId ↔ HottCAD-GUID: nur GUIDs, die auf beiden Seiten genau einmal vorkommen.
+            var ifcJeGuid = ifc.Raeume.Where(r => r.HottcadGuid != null).GroupBy(r => r.HottcadGuid, StringComparer.Ordinal)
+                                      .ToDictionary(g => g.Key, g => g.Count() == 1 ? g.Single() : null, StringComparer.Ordinal);
+            var projektGuidZahl = projekt.Raeume.Select(r => IfcAbbildBauer.GuidNormalform(r.Gid)).Where(k => k != null)
+                                         .GroupBy(k => k, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
+            foreach (SqprojRaum r in projekt.Raeume)
+            {
+                string k = IfcAbbildBauer.GuidNormalform(r.Gid);
+                if (k == null || !ifcJeGuid.TryGetValue(k, out AbbildRaum treffer)) continue;
+                if (treffer == null || projektGuidZahl[k] > 1)
+                {
+                    a.GuidMehrdeutig.Add(r);
+                    continue;
+                }
+                if (!vergeben.Add(treffer.Kennung)) continue;
+                paar[r.Uuid] = treffer;
+                a._herkunftJeRaum[r.Uuid] = Herkunft.Guid;
+                a.UeberGuid++;
+            }
+            // 2) GId ↔ GlobalId für die übrigen.
             var ifcJeKennung = new Dictionary<string, AbbildRaum>(StringComparer.Ordinal);
             foreach (AbbildRaum r in ifc.Raeume) ifcJeKennung.TryAdd(r.Kennung ?? "", r);
             foreach (SqprojRaum r in projekt.Raeume)
             {
+                if (paar.ContainsKey(r.Uuid)) continue;
                 string k = IfcKennung(r.Gid);
                 if (k == null || !ifcJeKennung.TryGetValue(k, out AbbildRaum treffer) || !vergeben.Add(treffer.Kennung)) continue;
                 paar[r.Uuid] = treffer;
+                a._herkunftJeRaum[r.Uuid] = Herkunft.Kennung;
                 a.UeberKennung++;
             }
-            // 2) Name je Geschoss für die übrigen: nur eindeutige Schlüssel auf beiden Seiten treffen.
+            // 3) Name je Geschoss für die übrigen: nur eindeutige Schlüssel auf beiden Seiten treffen.
             var ifcJeSchluessel = ifc.Raeume.Where(r => !vergeben.Contains(r.Kennung))
                                             .GroupBy(r => Schluessel(Geschoss(r), r.Name), StringComparer.Ordinal)
                                             .Where(g => g.Key != null && g.Count() == 1).ToDictionary(g => g.Key, g => g.Single(), StringComparer.Ordinal);
@@ -84,6 +130,7 @@ namespace WindowsFormsApplication1
                 if (s != null && !doppelt.Contains(s) && ifcJeSchluessel.TryGetValue(s, out AbbildRaum treffer) && vergeben.Add(treffer.Kennung))
                 {
                     paar[r.Uuid] = treffer;
+                    a._herkunftJeRaum[r.Uuid] = Herkunft.Name;
                     a.UeberName++;
                 }
             }
@@ -95,12 +142,18 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 a._ifcJeRaum[r.Uuid] = t.Kennung;
-                // 3) Die Raumart als Beleg: nur wenn beide Seiten eine mrt-Angabe tragen.
+                // Die Raumart als Beleg: nur wenn beide Seiten eine mrt-Angabe tragen.
                 if (r.Raumart is int code && SqprojProtokoll.RAUMARTEN.TryGetValue(code, out string mrt)
                     && t.Raumtyp is string it && it.StartsWith("mrt", StringComparison.Ordinal) && !string.Equals(it.Trim(), mrt, StringComparison.Ordinal))
                     a.RaumartAbweichend.Add(r);
             }
             a.IfcOhneGegenstueck.AddRange(ifc.Raeume.Where(r => !vergeben.Contains(r.Kennung)));
+            if (a.UeberGuid > 0)
+                a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.RAUM_HERKUNFT, SqprojProtokoll.Z(a.UeberGuid),
+                    SqprojProtokoll.Z(a.UeberKennung), SqprojProtokoll.Z(a.UeberName)));
+            if (a.GuidMehrdeutig.Count > 0)
+                a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.GUID_MEHRDEUTIG, SqprojProtokoll.Z(a.GuidMehrdeutig.Count),
+                    SqprojProtokoll.Namen(a.GuidMehrdeutig.Select(r => r.Name))));
             if (a.OhneTreffer.Count > 0)
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.RAUM_OHNE_TREFFER, SqprojProtokoll.Z(a.OhneTreffer.Count),
                     SqprojProtokoll.Namen(a.OhneTreffer.Select(r => r.Name))));

@@ -6,9 +6,9 @@ Das '''Erdreich''' ist neben der Außenluft die wichtigste Wärmequelle für Wä
 == Funktionsprinzip ==
 {{Anker|funktionsprinzip}}
 
-Die {{Anker|erdwaermesonde}}'''Erdwärmesonde''' reicht meist 40 bis 100 m tief in den Untergrund; unterhalb von etwa 20 m ist der jahreszeitliche Einfluss der Oberfläche abgeklungen, sodass ihre Quelltemperatur über das Jahr nahezu konstant bleibt und mit der Tiefe langsam durch den geothermischen Gradienten ansteigt. Der {{Anker|erdwaermekollektor}}'''Erdwärmekollektor''' verlegt dagegen Rohrschlangen flächig in 1 bis 2 m Tiefe; dort folgt die Temperatur, gedämpft und zeitversetzt, noch dem Jahresgang der Außenluft – im Winter kälter, im Sommer wärmer als die Sonde, dafür ohne Bohrung und mit geringeren Erschließungskosten. Beide Systeme entziehen dem Untergrund über den Winter Wärme, die sich im Sommer aus Niederschlag, Sonneneinstrahlung und – bei tieferen Sonden – aus der Erdwärme selbst wieder auffüllt: die {{Anker|regeneration}}'''Regeneration'''.
+Die {{Anker|erdwaermesonde}}'''Erdwärmesonde''' reicht meist 40 bis 100 m tief in den Untergrund; unterhalb von etwa 20 m ist der jahreszeitliche Einfluss der Oberfläche abgeklungen, sodass das ungestörte Erdreich an ihr über das Jahr nahezu dieselbe Temperatur hat, die mit der Tiefe langsam durch den geothermischen Gradienten ansteigt. Die Soletemperatur liegt im Betrieb darunter: Jeder Entzug kühlt den Boden um die Bohrung ab, umso stärker, je kürzer die Sonde, je dichter das Sondenfeld und je schlechter der Boden die Wärme nachleitet; über viele Betriebsjahre sinkt sie weiter, wenn der Boden nicht regeneriert. Der {{Anker|erdwaermekollektor}}'''Erdwärmekollektor''' verlegt dagegen Rohrschlangen flächig in 1 bis 2 m Tiefe; dort folgt die Temperatur, gedämpft und zeitversetzt, noch dem Jahresgang der Außenluft – im Winter kälter, im Sommer wärmer als die Sonde, dafür ohne Bohrung und mit geringeren Erschließungskosten. Beide Systeme entziehen dem Untergrund über den Winter Wärme, die sich im Sommer aus Niederschlag, Sonneneinstrahlung und – bei tieferen Sonden – aus der Erdwärme selbst wieder auffüllt: die {{Anker|regeneration}}'''Regeneration'''.
 
-<!-- Modell Kollektor: Kusuda-Gleichung nach VDI 4640 Blatt 1, Jahresmittel 9,5 °C und Amplitude 8,5 K (Ersatzwerte der Norm), Verlegetiefe 1,5 m, Bodenart Sand feucht (Dämpfungstiefe 2,72 m). Modell Sonde: Jahresmittel + 1,5 K Oberflächenoffset + 0,03 K/m geothermischer Gradient ab 20 m Tiefe, Sondenlänge 100 m, deshalb ganzjährig konstant. Außenluft zum Vergleich: Jahresmittel ± Amplitude. Rechenbeispiel, keine Messreihe. -->
+<!-- Modell Kollektor: Kusuda-Gleichung nach VDI 4640 Blatt 1, Jahresmittel 9,5 °C und Amplitude 8,5 K (Ersatzwerte der Norm), Verlegetiefe 1,5 m, Bodenart Sand feucht (Dämpfungstiefe 2,72 m). Modell Sonde: ungestörte Erdreichtemperatur ohne Entzug, Jahresmittel + 1,5 K Oberflächenoffset + 0,03 K/m geothermischer Gradient ab 20 m Tiefe, Sondenlänge 100 m, deshalb ganzjährig konstant. Außenluft zum Vergleich: Jahresmittel ± Amplitude. Rechenbeispiel, keine Messreihe. -->
 {{Diagramm-Anfang|titel=Quelltemperatur im Jahresverlauf (Prinzip)}}
 {{Säulen-Anfang|achse=Quelltemperatur in °C, Prinzipwerte}}
 {{Säule|Sonde, Winter|umwelt=66|wert=11,9 °C}}
@@ -18,7 +18,7 @@ Die {{Anker|erdwaermesonde}}'''Erdwärmesonde''' reicht meist 40 bis 100 m tief 
 {{Säule|Außenluft, Winter|umwelt=6|wert=1,0 °C}}
 {{Säule|Außenluft, Sommer|umwelt=100|wert=18,0 °C}}
 {{Säulen-Ende|je System und Jahreszeit}}
-{{Diagramm-Ende|Rechenbeispiel nach VDI 4640 Blatt 1 mit den Ersatzwerten der Norm; keine Messreihe.}}
+{{Diagramm-Ende|Rechenbeispiel nach VDI 4640 Blatt 1 mit den Ersatzwerten der Norm; keine Messreihe. Für die Sonde ist die ungestörte Erdreichtemperatur ohne Entzug dargestellt.}}
 
 == Kennzahlen ==
 {{Anker|kennzahlen}}

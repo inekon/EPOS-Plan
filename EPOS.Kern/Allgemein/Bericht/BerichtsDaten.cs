@@ -796,7 +796,12 @@ namespace WindowsFormsApplication1
     public class Abweichung
     {
         public string Gewerk = "";      // z. B. "Wärmepumpe", "Gebäude", "Anlage"
-        public string Merkmal = "";     // z. B. "Vorlauftemperatur"
+        public string Merkmal = "";     // Anzeigetext in der Anzeige-/Berichtssprache, z. B. "Vorlauftemperatur"
+
+        /// <summary>Der sprachfreie Schlüssel der Zeile: <see cref="AbweichungsErmittler.SCHLUESSEL_BESTAND"/>,
+        /// <see cref="AbweichungsErmittler.SCHLUESSEL_ANZAHL"/> oder „Tabelle.Spalte“ des Merkmals
+        /// (<see cref="AbweichungsErmittler.Schluessel"/>). Zuordnen über ihn, nie über <see cref="Merkmal"/>.</summary>
+        public string Schluessel = "";
         public string WertStamm = "";
         public string WertVariante = "";
     }

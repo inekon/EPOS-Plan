@@ -1188,4 +1188,95 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.NotNull(d);
         return d!.FullName;
     }
+
+    // =====================================================================
+    //  BA-3: Liste „Bauteilaufbauten"
+    // =====================================================================
+
+    private static GebaeudeImportStand MitAufbauten(GebaeudeZuordnungsanfrage a) => MitBaustoffen(a) with
+    {
+        Aufbauten = new[]
+        {
+            new GebaeudeAufbaulistenzeileDaten
+            {
+                Schluessel = "A-2", Aufbau = "Dach (Ersatz)", Art = "Dach", Stufe = EPOS.UI.Dialoge.Bedarf.Aufbaustufe.B, Bauteile = 1, Flaeche = "80",
+                UDatei = "0,2", C1korr = "41,3", Typaufbau = "Typaufbau: Dach gedämmt, Dämmdicke 18 cm", Fehlt = "keine Schichten",
+                Materialschluessel = "fussbodenaufbau",
+                Typschluessel = "Dach|Aussenluft|0|0.2", Typcode = "DA_STAHLBETON_GEDAEMMT",
+                Typen = new[] { new GebaeudeZonenregelDaten("DA_STAHLBETON_GEDAEMMT", "Dach Stahlbeton gedämmt"),
+                                new GebaeudeZonenregelDaten("DA_SPARRENDACH", "Sparrendach") },
+            },
+            new GebaeudeAufbaulistenzeileDaten
+            {
+                Schluessel = "OAussenwand|C", Aufbau = "ohne Aufbau", Art = "Außenwand", Stufe = EPOS.UI.Dialoge.Bedarf.Aufbaustufe.C, Bauteile = 2,
+                Flaeche = "30",
+            },
+            new GebaeudeAufbaulistenzeileDaten
+            {
+                Schluessel = "A-1", Aufbau = "AW massiv", Art = "Außenwand", Stufe = EPOS.UI.Dialoge.Bedarf.Aufbaustufe.A, Bauteile = 4, Flaeche = "120",
+                UDatei = "0,28", USchichten = "0,3", C1korr = "61,2", Materialschluessel = "gipsputz",
+                Schichten = new[]
+                {
+                    new EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht("Gipsputz", "15 mm", "0,51 W/(mK)", "1200 kg/m³", "1000 J/(kgK)", "aus Katalog", "katalog"),
+                    new EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht("Folie", "0,2 mm", "–", "–", "–", "aus Datei", "datei") { Weggelassen = true, Grund = "dünn" },
+                },
+            },
+        },
+    };
+
+    [Fact]
+    public void BA3_Die_Liste_Bauteilaufbauten_steht_je_Aufbau_mit_Spalten_Filter_Schichten_und_Sprung()
+    {
+        var cut = Bauen(new Protokoll(), zuordnen: MitAufbauten);
+        Einlesen(cut);
+        Assert.Contains(cut.FindAll("h2, h3, .epos-gruppenkopf"), k => k.TextContent.Trim() == "Bauteilaufbauten");
+        IReadOnlyList<IElement> zeilen = cut.FindAll(".epos-gebimport-aufbauten tr.epos-gebimport-aufbauzeile").ToList();
+        Assert.Equal(new[] { "b", "c", "a" }, zeilen.Select(z => z.GetAttribute("data-stufe")));
+        Assert.Equal(new[] { "Stufe", "Aufbau", "Bauteilart", "Bauteile", "Fläche [m²]", "U Datei [W/(m²K)]", "U Schichten [W/(m²K)]",
+                             "C₁,korr [kJ/(m²K)]", "Es fehlt", "Handlung" },
+                     cut.FindAll(".epos-gebimport-aufbauten thead th").Select(t => t.TextContent.Trim()));
+        List<string> a = zeilen[2].QuerySelectorAll("td").Select(t => t.TextContent.Trim()).ToList();
+        Assert.Equal(("AW massiv", "4", "120", "0,28", "0,3", "61,2"), (a[1], a[3], a[4], a[5], a[6], a[7]));
+        Assert.Contains("Typaufbau: Dach gedämmt", zeilen[0].TextContent);
+        Assert.Equal("keine Schichten", zeilen[0].QuerySelector(".epos-gebimport-aufbaufehlt")!.TextContent.Trim());
+
+        // Schichten aufklappen: die weggelassene Schicht steht markiert darin.
+        zeilen[2].QuerySelector(".epos-gebimport-aufbauschichten")!.Click();
+        Assert.Equal(2, cut.FindAll(".epos-gebimport-aufbauschichtliste li").Count);
+        Assert.Single(cut.FindAll(".epos-gebimport-aufbauschichtliste li.epos-steckbrief-schicht--weggelassen"));
+
+        // Filter „nur B und C".
+        cut.Find(".epos-gebimport-aufbaufilter input").Change(true);
+        Assert.Equal(new[] { "b", "c" }, cut.FindAll(".epos-gebimport-aufbauten tr.epos-gebimport-aufbauzeile").Select(z => z.GetAttribute("data-stufe")));
+
+        // Sprung in die Baustoffe: die Zeile des Materialnamens ist markiert.
+        cut.Find(".epos-gebimport-aufbauten tr[data-schluessel='A-2'] .epos-gebimport-aufbaubaustoff").Click();
+        Assert.Equal("fussbodenaufbau", cut.Instance.Baustoffziel);
+        Assert.Contains("epos-gebimport-baustoff--ziel", Baustoffzeile(cut, "fussbodenaufbau").ClassList);
+    }
+
+    [Fact]
+    public void BA3_Die_Typwahl_je_Ersatzaufbau_reist_in_der_Anfrage()
+    {
+        var p = new Protokoll();
+        var cut = Bauen(p, zuordnen: MitAufbauten);
+        Einlesen(cut);
+        IElement wahl = cut.Find(".epos-gebimport-aufbauten tr[data-schluessel='A-2'] select.epos-gebimport-typwahl");
+        Assert.Equal(new[] { "DA_STAHLBETON_GEDAEMMT", "DA_SPARRENDACH" }, wahl.QuerySelectorAll("option").Select(o => o.GetAttribute("value")));
+        Assert.Empty(cut.FindAll(".epos-gebimport-aufbauten tr[data-schluessel='A-1'] select"));
+        int anfragen = p.Anfragen.Count;
+        wahl.Change("DA_SPARRENDACH");
+        Assert.Equal("DA_SPARRENDACH", cut.Instance.Typwahl["Dach|Aussenluft|0|0.2"]);
+        Assert.True(p.Anfragen.Count > anfragen);
+        Assert.Equal("DA_SPARRENDACH", p.Anfragen[^1].Typwahl!["Dach|Aussenluft|0|0.2"]);
+    }
+
+    [Fact]
+    public void BA3_Ohne_Aufbauten_nennt_die_Liste_den_Leerzustand()
+    {
+        var cut = Bauen(new Protokoll(), zuordnen: MitBauteilen);
+        Einlesen(cut);
+        Assert.Equal("Keine Aufbauten im Vorschlag.", cut.Find(".epos-gebimport-aufbauten-leer").TextContent.Trim());
+        Assert.Empty(cut.FindAll(".epos-gebimport-aufbauten"));
+    }
 }

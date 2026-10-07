@@ -34,6 +34,12 @@
 // daten.bauteilesichtbar. Prismen ohne Gruppen stehen neutral und ohne Platten da. Der Klick meldet zusaetzlich Gruppe und
 // Bauteilkennung. Im Modus "zonen" bleibt alles wie oben; der Rueckruf traegt dann Gruppe und Bauteil als null.
 //
+// FARBMODUS "aufbau" (Konzept Bauteilaufbau 5.4, BA-3): derselbe Bauplan mit den Stufenbytes statt der Gruppenbytes - je
+// Raum ab e.stufenAb (vierter Teil des Bytefelds), je Bauteilkoerper e.stufe -, der Farbtafel daten.aufbaufarben
+// (GebaeudeAnsichtAufbaustufen.FARBEN) und den Schaltern daten.aufbausichtbar. Halbtransparent ist hier die neutrale
+// Innenflaeche (Byte 5), nicht 0. Der Klick meldet als fuenften Wert das Dreieck des Netzes (Index der Datei, vor dem
+// Umsortieren) - daran haengt in der Komponente das Bauteil der Raumflaeche (Steckbrief); in "zonen" ist es null.
+//
 // DETERMINISTISCH. Keine Zufallsfarben, keine Animation: gezeichnet wird bei Aenderung (Kamera,
 // Groesse, Daten). Kann die Umgebung kein WebGL, wirft erzeugen() nicht, sondern gibt false zurueck -
 // der Baustein meldet das benannt statt eines leeren Bildes.
@@ -86,8 +92,27 @@ function entsorgeGruppe(gruppe) {
 /** Ist der Farbmodus "randbedingung" gewaehlt? */
 function imRandmodus(daten) { return daten.farbmodus === 'randbedingung'; }
 
-/** Ist die Gruppe eingeblendet? Ohne Schalter oder fuer entartete Dreiecke (255) immer. */
+/** Ist der Farbmodus "aufbau" gewaehlt (BA-3)? */
+function imAufbaumodus(daten) { return daten.farbmodus === 'aufbau'; }
+
+/** Ist ein Modus mit Gruppen je Dreieck gewaehlt? */
+function imGruppenmodus(daten) { return imRandmodus(daten) || imAufbaumodus(daten); }
+
+/** Die Zahl der Stufen mit Schalter (A, B, C, transparent, ohne Bauteil). */
+const STUFEN = 5;
+/** Das Stufenbyte der neutralen Innenflaeche (R0) - halbtransparent. */
+const STUFE_INNEN = 5;
+
+/** Der halbtransparente Wert des Modus: R0 im Randmodus, die neutrale Innenflaeche im Aufbaumodus. */
+function durchsichtigerWert(daten) { return imAufbaumodus(daten) ? STUFE_INNEN : 0; }
+
+/** Ist die Gruppe (bzw. im Aufbaumodus die Stufe) eingeblendet? Ohne Schalter oder fuer entartete Dreiecke (255) immer. */
 function gruppeSichtbar(daten, gruppe) {
+    if (imAufbaumodus(daten)) {
+        if (gruppe < 0 || gruppe >= STUFEN) return true;
+        const a = daten.aufbausichtbar;
+        return !Array.isArray(a) || a[gruppe] !== false;
+    }
     if (gruppe < 0 || gruppe >= GRUPPEN) return true;
     const s = daten.randsichtbar;
     return !Array.isArray(s) || s[gruppe] !== false;
@@ -97,7 +122,8 @@ function gruppeSichtbar(daten, gruppe) {
  * Ordnet die Dreiecke eines Netzes nach ihrer Gruppe (reine Funktion, ohne three.js - der node-Lauf prueft sie).
  * dreiecke: Indextripel (Int32Array/Uint32Array), gruppen: ein Byte je Dreieck oder null, sichtbar: (gruppe) => bool.
  * Gibt den umsortierten Index (Uint32Array), je vorkommender und sichtbarer Gruppe einen Abschnitt {gruppe, ab, zahl}
- * (ab und zahl in Indizes, aufsteigend nach Gruppe, 255 zuletzt) und je umsortiertem Dreieck seine Gruppe zurueck.
+ * (ab und zahl in Indizes, aufsteigend nach Gruppe, 255 zuletzt), je umsortiertem Dreieck seine Gruppe und sein Index in der
+ * uebergebenen Folge (dreieckUrsprung) zurueck.
  * Ausgeblendete Gruppen fallen ganz heraus - so trifft sie auch der Klick nicht. Ohne Gruppenbytes ist jedes Dreieck 255.
  */
 export function randaufbau(dreiecke, gruppen, sichtbar) {
@@ -117,6 +143,7 @@ export function randaufbau(dreiecke, gruppen, sichtbar) {
     }
     const index = new Uint32Array(summe * 3);
     const dreieckGruppe = new Uint8Array(summe);
+    const dreieckUrsprung = new Uint32Array(summe);
     const stelle = start.slice();
     for (let i = 0; i < zahl; i++) {
         const g = gruppeVon(i);
@@ -127,8 +154,9 @@ export function randaufbau(dreiecke, gruppen, sichtbar) {
         index[d * 3 + 1] = dreiecke[i * 3 + 1];
         index[d * 3 + 2] = dreiecke[i * 3 + 2];
         dreieckGruppe[d] = g;
+        dreieckUrsprung[d] = i;
     }
-    return { index, abschnitte, dreieckGruppe };
+    return { index, abschnitte, dreieckGruppe, dreieckUrsprung };
 }
 
 /**
@@ -141,12 +169,15 @@ export function randaufbau(dreiecke, gruppen, sichtbar) {
  */
 function randmaterial(daten, gruppe, bauteil) {
     const z = zustand;
-    const schluessel = gruppe + (bauteil ? '|b' : '|r');
+    const aufbau = imAufbaumodus(daten);
+    const schluessel = (aufbau ? 'a' : 'g') + gruppe + (bauteil ? '|b' : '|r');
     let m = z.randmaterial.get(schluessel);
     if (m) return m;
-    const tafel = Array.isArray(daten.randfarben) ? daten.randfarben : [];
-    const farbwert = gruppe >= 0 && gruppe < GRUPPEN && tafel[gruppe] ? tafel[gruppe] : farbe(z.canvas, -1);
-    const r0 = gruppe === 0;
+    const tafel = aufbau ? (Array.isArray(daten.aufbaufarben) ? daten.aufbaufarben : [])
+        : (Array.isArray(daten.randfarben) ? daten.randfarben : []);
+    const grenze = aufbau ? tafel.length : GRUPPEN;
+    const farbwert = gruppe >= 0 && gruppe < grenze && tafel[gruppe] ? tafel[gruppe] : farbe(z.canvas, -1);
+    const r0 = gruppe === durchsichtigerWert(daten);
     m = new THREE.MeshLambertMaterial({
         color: new THREE.Color(farbwert), side: THREE.DoubleSide, flatShading: true,
         transparent: r0, opacity: r0 ? R0_DECKUNG : 1, depthWrite: !r0,
@@ -260,7 +291,8 @@ function abschnitt(feld, ab, zahl, Art) {
 /** Der Dateikoerper eines Raums: Netz relativ zum Bezugspunkt, Mesh am Bezugspunkt, Randkanten als Linien. */
 function dateinetz(e, feld, bezug, ziel, box, daten) {
     const z = zustand;
-    const rand = imRandmodus(daten);
+    const rand = imGruppenmodus(daten);
+    const aufbaumodus = imAufbaumodus(daten);
     const roh = abschnitt(feld, e.punkteAb, e.punktZahl * 3, Float32Array);
     // Achsen wie v3: (x, y, z) -> (x, z, -y); eine Drehung, der Umlauf der Dreiecke bleibt.
     const lage = new Float32Array(roh.length);
@@ -276,14 +308,20 @@ function dateinetz(e, feld, bezug, ziel, box, daten) {
     let g, mesh;
     if (rand) {
         // Gruppen je Dreieck: Raeume aus dem dritten Teil des Felds, ein Bauteilkoerper traegt seine eine Gruppe.
+        // Im Aufbaumodus die Stufen: Raeume ab stufenAb, ein Bauteilkoerper traegt seine Stufe.
         let gruppen = null;
-        if (bauteil !== null) gruppen = new Uint8Array(e.dreieckZahl).fill(e.gruppe);
-        else if (Number.isInteger(e.gruppenAb) && e.gruppenAb >= 0) gruppen = feld.slice(e.gruppenAb, e.gruppenAb + e.dreieckZahl);
+        const ab = aufbaumodus ? e.stufenAb : e.gruppenAb;
+        const eine = aufbaumodus ? e.stufe : e.gruppe;
+        if (bauteil !== null) gruppen = new Uint8Array(e.dreieckZahl).fill(Number.isInteger(eine) && eine >= 0 ? eine : KEINE);
+        else if (Number.isInteger(ab) && ab >= 0) gruppen = feld.slice(ab, ab + e.dreieckZahl);
         const aufbau = randaufbau(dreiecke, gruppen, gr => gruppeSichtbar(daten, gr));
         const netz = randgeometrie(position, aufbau, daten, bauteil !== null);
         g = netz.geometrie;
         mesh = new THREE.Mesh(g, netz.materialien);
-        mesh.userData = { zone: e.zone ?? null, raum: e.raum ?? null, gruppen: aufbau.dreieckGruppe, bauteil };
+        mesh.userData = {
+            zone: e.zone ?? null, raum: e.raum ?? null, gruppen: aufbau.dreieckGruppe, bauteil,
+            ursprung: aufbau.dreieckUrsprung, durchsichtig: durchsichtigerWert(daten),
+        };
     } else {
         g = new THREE.BufferGeometry();
         g.setAttribute('position', position);
@@ -322,7 +360,7 @@ function bauen(daten, feld) {
     const ziel = daten.ziel ?? null;
     const dateimodus = daten.modus === 'dateikoerper';
 
-    const rand = imRandmodus(daten);
+    const rand = imGruppenmodus(daten);
     for (const k of daten.koerper ?? []) prisma(k, ziel, !dateimodus && !rand, box, rand);
     if (dateimodus && feld) {
         const bezug = daten.bezugspunkt ?? [0, 0, 0];
@@ -330,7 +368,7 @@ function bauen(daten, feld) {
         // Die Bauteilkoerper nur im Randmodus, nur mit Schalter und nur, wo ihre Gruppe eingeblendet ist.
         if (rand && daten.bauteilesichtbar !== false) {
             for (const b of daten.bauteile ?? []) {
-                if (!gruppeSichtbar(daten, b.gruppe) || !(b.dreieckZahl > 0)) continue;
+                if (!gruppeSichtbar(daten, imAufbaumodus(daten) ? b.stufe : b.gruppe) || !(b.dreieckZahl > 0)) continue;
                 dateinetz({ ...b, raum: null, zone: null }, feld, bezug, ziel, box, daten);
             }
         }
@@ -397,7 +435,8 @@ function beiZeigerOben(e) {
     const t = trefferWahl(treffer);
     const d = t.object.userData;
     const gruppe = d.gruppen && t.faceIndex !== undefined && t.faceIndex < d.gruppen.length ? d.gruppen[t.faceIndex] : null;
-    z.rueckruf.invokeMethodAsync('ZoneGewaehlt', d.zone ?? null, d.raum ?? null, gruppe, d.bauteil ?? null).catch(() => { });
+    const dreieck = d.ursprung && t.faceIndex !== undefined && t.faceIndex < d.ursprung.length ? d.ursprung[t.faceIndex] : null;
+    z.rueckruf.invokeMethodAsync('ZoneGewaehlt', d.zone ?? null, d.raum ?? null, gruppe, d.bauteil ?? null, dreieck).catch(() => { });
 }
 
 /**
@@ -407,7 +446,8 @@ function beiZeigerOben(e) {
 export function trefferWahl(treffer) {
     for (const t of treffer) {
         const g = t.object.userData.gruppen;
-        if (!g || t.faceIndex === undefined || g[t.faceIndex] !== 0) return t;
+        const durchsichtig = t.object.userData.durchsichtig ?? 0;
+        if (!g || t.faceIndex === undefined || g[t.faceIndex] !== durchsichtig) return t;
     }
     return treffer[0];
 }

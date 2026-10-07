@@ -132,7 +132,7 @@ namespace EPOS.Kern.Tests
         [InlineData(1017, 8.17)]
         [InlineData(1018, 0.0)]
         [InlineData(1030, 4790.09)]
-        [InlineData(1047, 9.25)]
+        [InlineData(1047, 9.16)]   // mit der gesäten Erdsonde der Wärmepumpe
         public void Die_Kesselzeile_der_BHKW_Projekte_bleibt_bitgleich(int idProjekt, double strombedarfMwh)
         {
             if (!_db.Vorhanden) return;
