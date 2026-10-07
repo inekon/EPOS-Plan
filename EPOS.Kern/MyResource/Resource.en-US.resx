@@ -33922,6 +33922,12 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG" xml:space="preserve">
     <value>Component {0}: the area from the component body ({2} m²) deviates by {3} % from the quantity set ({1} m²) (limit {4} %); the quantity set applies.</value>
   </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG_TEILE" xml:space="preserve">
+    <value>Component {0} with {1} parts without own representation: the area from the component body ({3} m²) deviates by {4} % from the sum of the quantity sets ({2} m²) (limit {5} %); the quantity sets apply.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_TEILE" xml:space="preserve">
+    <value>{0} components are split in the file into an element with a body and parts without own representation; their body was compared with the sum of all quantity sets: {1}</value>
+  </data>
   <data name="IMP_IFC_PROT_KOERPER_GEGLIEDERT" xml:space="preserve">
     <value>{0} components from the body are articulated ({1}): area as the sum of the planar partial faces, orientation of the largest partial face.</value>
   </data>

@@ -298,6 +298,49 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
+        //  Probe: Flachdach mit Oberlichtern und Teilen ohne Darstellung
+        // ==================================================================
+
+        [Fact]
+        public void Flachdach_mit_Oberlichtern_netto_und_mit_Teilen_ohne_Darstellung_verglichen()
+        {
+            GebaeudeImportAblauf a = Lesen("ifc4_g5_flachdach_teile.ifc");
+
+            // Der Körper: Oberseite 20 × 12 m ohne drei Oberlichter 2 × 2 m — jedes Dreieck nach oben, keines doppelt.
+            AbbildBauteil dach = Bauteil(a, "Dach A");
+            Nah(240.0 - 3 * 4.0, dach.Koerperflaeche.FlaecheM2, FLAECHE_TOL, "Dach A");
+            Nah(0.0, dach.Koerperflaeche.NeigungGrad, WINKEL_TOL, "Dach A");
+            Assert.Single(dach.Koerperflaeche.Teile);
+            Nah(100.0, dach.BruttoflaecheM2, 1e-12, "Dach A");
+            Assert.Equal(Flaechenherkunft.Mengensatz, dach.Flaechenherkunft);
+            foreach ((string name, double brutto) in new[] { ("Dach A-1", 80.0), ("Dach A-2", 60.0) })
+            {
+                AbbildBauteil teil = Bauteil(a, name);
+                Assert.Null(teil.Koerperflaeche);
+                Nah(brutto, teil.BruttoflaecheM2, 1e-12, name);
+            }
+
+            // Verglichen wird der Körper mit der Summe der drei Mengensätze (brutto 240, netto 228): keine Abweichung.
+            Assert.DoesNotContain(a.Meldungen, m => m.Schluessel == P + "KOERPER_ABWEICHUNG_TEILE");
+            PruefMeldung teile = Assert.Single(a.Meldungen, m => m.Schluessel == P + "KOERPER_TEILE");
+            Assert.Equal(new[] { "1", "Dach A" }, teile.Werte);
+
+            // Ohne Teile bleibt der Einzelvergleich: Dach B 41 m² gegen 40 m² aus dem Kasten.
+            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNG");
+            Assert.Equal(new[] { "Dach B", "41", "40", "2.4", "2" }, m.Werte);
+        }
+
+        [Fact]
+        public void Namensstamm_streicht_nur_eine_angehaengte_Teilnummer()
+        {
+            Assert.Equal("Dach 001", IfcAbbildBauer.Namensstamm("Dach 001-4"));
+            Assert.Equal("Dach 001", IfcAbbildBauer.Namensstamm("Dach 001"));
+            Assert.Equal("AW-Nord", IfcAbbildBauer.Namensstamm("AW-Nord"));
+            Assert.Equal("Dach-", IfcAbbildBauer.Namensstamm("Dach-"));
+            Assert.Equal("-3", IfcAbbildBauer.Namensstamm("-3"));
+        }
+
+        // ==================================================================
         //  Proben
         // ==================================================================
 

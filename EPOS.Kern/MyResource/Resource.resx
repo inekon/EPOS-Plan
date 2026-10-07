@@ -33929,6 +33929,12 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG" xml:space="preserve">
     <value>Bauteil {0}: Die Fläche aus dem Bauteilkörper ({2} m²) weicht um {3} % vom Mengensatz ({1} m²) ab (Grenze {4} %); es gilt der Mengensatz.</value>
   </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG_TEILE" xml:space="preserve">
+    <value>Bauteil {0} mit {1} Teilen ohne eigene Darstellung: Die Fläche aus dem Bauteilkörper ({3} m²) weicht um {4} % von der Summe der Mengensätze ({2} m²) ab (Grenze {5} %); es gelten die Mengensätze.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_TEILE" xml:space="preserve">
+    <value>{0} Bauteile sind in der Datei in ein Element mit Körper und Teile ohne eigene Darstellung gegliedert; ihr Körper wurde mit der Summe aller Mengensätze verglichen: {1}</value>
+  </data>
   <data name="IMP_IFC_PROT_KOERPER_GEGLIEDERT" xml:space="preserve">
     <value>{0} Bauteile aus dem Körper sind gegliedert ({1}): Fläche als Summe der ebenen Teilflächen, Richtung der größten Teilfläche.</value>
   </data>

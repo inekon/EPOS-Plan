@@ -42541,6 +42541,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0} mit {1} Teilen ohne eigene Darstellung: Die Fläche aus dem Bauteilkörper ({3} m²) weicht um {4} % von der Summe der Mengensätze ({2} m²) ab (Grenze {5} %); es gelten die Mengensätze. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNG_TEILE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNG_TEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumkörper der Art {1} sind nicht lesbar; die Räume werden aus Umriss bzw. schematisch dargestellt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPER_ART {
@@ -42582,6 +42591,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_KOERPER_OHNE_PAAR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_OHNE_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile sind in der Datei in ein Element mit Körper und Teile ohne eigene Darstellung gegliedert; ihr Körper wurde mit der Summe aller Mengensätze verglichen: {1} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_TEILE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_TEILE", resourceCulture);
             }
         }
         
