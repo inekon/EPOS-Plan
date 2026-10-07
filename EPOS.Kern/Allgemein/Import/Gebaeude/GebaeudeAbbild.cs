@@ -585,6 +585,19 @@ namespace WindowsFormsApplication1
         public double? NettoflaecheM2 { get; set; }
 
         /// <summary>
+        /// Auf welchem Weg <see cref="BruttoflaecheM2"/> entstanden ist (Abstimmung G5, A4): <see cref="WindowsFormsApplication1.Flaechenherkunft.Mengensatz"/>
+        /// oder <see cref="WindowsFormsApplication1.Flaechenherkunft.Koerper"/>; <c>null</c> = keine Fläche oder nicht bestimmt (gbXML).
+        /// Die Polygone der Raumgrenzen nennt erst der Teil der Zonierung (<see cref="Zonenflaeche.Flaechenherkunft"/>).
+        /// </summary>
+        public Flaechenherkunft? Flaechenherkunft { get; set; }
+
+        /// <summary>
+        /// Fläche, Neigung, Azimut und Teilflächen aus dem Bauteilkörper (Stufe G5-1, <see cref="IfcBauteilkoerper"/>);
+        /// <c>null</c> = kein lesbarer Körper. Quelle nur ohne Mengensatz, sonst Gegenprobe (A5).
+        /// </summary>
+        public Bauteilkoerperflaeche Koerperflaeche { get; set; }
+
+        /// <summary>
         /// Gehört das Bauteil ohne jeden Nachbarraum zur Hülle seines Gebäudes? Der IFC-Leser setzt es
         /// für ein Außenbauteil ohne Raumgrenze (<c>IsExternal = true</c> oder die Angrenzung eines
         /// CAD-Exports: außen, Erdreich, unbeheizt), das über die räumliche Struktur einem Gebäude

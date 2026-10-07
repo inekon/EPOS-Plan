@@ -43,6 +43,13 @@ namespace WindowsFormsApplication1
         /// <summary>Herkunft der Fläche.</summary>
         internal Importherkunft HerkunftFlaeche { get; set; }
 
+        /// <summary>
+        /// Der Weg der Fläche (Abstimmung G5, A4): Mengensatz, Raumgrenze, Körper oder schematisch; <c>null</c> = nicht
+        /// bestimmt (gbXML, Bestand). Gespeichert erst mit dem Schemaschritt <c>FlaechenherkunftSchema</c>
+        /// (<see cref="FlaechenherkunftWerte.Wert"/> nach <c>Tab_Bauteil.Flaechenherkunft</c>).
+        /// </summary>
+        internal Flaechenherkunft? Flaechenherkunft { get; set; }
+
         /// <summary>Herkunft des U-Werts — auch, wenn er aus den Schichten folgt (die Schichten stammen aus der Datei).</summary>
         internal Importherkunft HerkunftU { get; set; }
 
@@ -1012,6 +1019,7 @@ namespace WindowsFormsApplication1
 
                 GebaeudeBauteilzeile z = NeueZeile(Name(s), art, flaeche, rand, p.Summenfeld, s.Quelltyp, s.Kennung, null);
                 z.HerkunftFlaeche = herkunftFlaeche;
+                z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
                 Opak(z, s, art, rand, gespiegelt, p.Summenfeld);
                 if (rand == Bauteilrand.Unbeheizt) { _unbeheizt++; _unbeheiztM2 += flaeche; }
@@ -1046,6 +1054,7 @@ namespace WindowsFormsApplication1
                 GebaeudeBauteilzeile z = NeueZeile(Name(s), Bauteilart.Vorhangfassade, flaeche, rand, p.Summenfeld,
                                                    s.Quelltyp, s.Kennung, null);
                 z.HerkunftFlaeche = herkunftFlaeche;
+                z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
 
                 z.UDatei = s.UWertWm2K;
@@ -1074,6 +1083,7 @@ namespace WindowsFormsApplication1
                 GebaeudeBauteilzeile z = NeueZeile(Name(f), Bauteilart.Fenster, f.BruttoflaecheM2.Value, rand,
                                                    GebaeudeZielfelder.FENSTER_GESAMT, f.Quelltyp, f.Kennung, null);
                 z.HerkunftFlaeche = _datei;
+                z.Flaechenherkunft = f.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
 
                 z.UDatei = f.UWertWm2K;
@@ -1096,6 +1106,7 @@ namespace WindowsFormsApplication1
                 GebaeudeBauteilzeile z = NeueZeile(Name(t), Bauteilart.Tuer, t.BruttoflaecheM2.Value, rand,
                                                    GebaeudeZielfelder.FLAECHE_SONSTIGE, t.Quelltyp, t.Kennung, null);
                 z.HerkunftFlaeche = _datei;
+                z.Flaechenherkunft = t.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
                 Opak(z, t, Bauteilart.Tuer, rand, gespiegelt, GebaeudeZielfelder.FLAECHE_SONSTIGE);
                 Abschliessen(z);
@@ -1382,7 +1393,7 @@ namespace WindowsFormsApplication1
                     _v._meldungen.Add(new PruefMeldung(PruefStufe.Fehler, _profil.Meldung("NETTOFLAECHE_NEGATIV"),
                         s.Kennung, Zahl(f.GroessereM2 ?? 0.0), Zahl(f.AusschnittM2 > 0.0 ? f.AusschnittM2 : f.Oeffnungen.Sum(o => o.BruttoflaecheM2 ?? 0.0))));
                 if (!netto.HasValue) _ohneFlaeche.Add(s.Kennung);
-                else if (netto.Value > 0.0) Teilzeile(s, netto.Value, rand, nachbar, gespiegelt, boden, feld);
+                else if (netto.Value > 0.0) Teilzeile(s, netto.Value, rand, nachbar, gespiegelt, boden, feld, f.Flaechenherkunft);
                 else if (!negativ) Info(NETTOFLAECHE_NULL, s.Kennung);
 
                 foreach (AbbildBauteil o in f.Oeffnungen)
@@ -1393,7 +1404,8 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            private void Teilzeile(AbbildBauteil s, double flaeche, Bauteilrand rand, int? nachbar, bool gespiegelt, bool? boden, string feld)
+            private void Teilzeile(AbbildBauteil s, double flaeche, Bauteilrand rand, int? nachbar, bool gespiegelt, bool? boden, string feld,
+                                   Flaechenherkunft? weg)
             {
                 Bauteilart art = s.Art;
                 bool transparent = art == Bauteilart.Vorhangfassade;
@@ -1408,6 +1420,7 @@ namespace WindowsFormsApplication1
                 GebaeudeBauteilzeile z = NeueZeile(Name(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
+                z.Flaechenherkunft = weg;
                 Setzen(z, neigung, hn, azimut, ha);
                 // Trennfläche aus den Raumkörpern: Herkunft „aus Datei (Körper)“ mit Raumpaar und Fläche als Beleg.
                 if (s.Grenzen.Count == 2 && s.Grenzen.All(g => g.Herkunft == Grenzherkunft.Koerper))
@@ -1443,6 +1456,7 @@ namespace WindowsFormsApplication1
                 GebaeudeBauteilzeile z = NeueZeile(Name(o), o.Art, o.BruttoflaecheM2.Value, rand, feld, o.Quelltyp, o.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
+                z.Flaechenherkunft = o.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
                 z.UDatei = o.UWertWm2K;
                 if (fenster)
@@ -1497,9 +1511,10 @@ namespace WindowsFormsApplication1
                         bool gespiegelt = Gespiegelt(f.Bauteil, f.Raum);
                         if (!f.Beidseitig && !f.Bauteil.InnenEinseitig) trenn++;
                         Innenteil(f.Bauteil, netto.Value, art, gespiegelt, art == Bauteilart.Decke ? Boden(f.Bauteil, f.Raum, f.AndererRaum) : null,
-                                  f.Beidseitig ? "A" : null);
+                                  f.Beidseitig ? "A" : null, f.Flaechenherkunft);
                         if (f.Beidseitig)
-                            Innenteil(f.Bauteil, netto.Value, art, !gespiegelt, art == Bauteilart.Decke ? Boden(f.Bauteil, f.AndererRaum, f.Raum) : null, "B");
+                            Innenteil(f.Bauteil, netto.Value, art, !gespiegelt, art == Bauteilart.Decke ? Boden(f.Bauteil, f.AndererRaum, f.Raum) : null, "B",
+                                      f.Flaechenherkunft);
                     }
                     Info(INNEN_BAUTEILE, Ganz(flaechen.Count), Ganz(_v._zeilen.Count(z => z.Summenfeld == null)),
                          Zahl(innenflaeche), Zahl(Math.Round(faktor, 4)));
@@ -1516,7 +1531,8 @@ namespace WindowsFormsApplication1
                             Zahl(INNENFLAECHE_FAKTOR_MIN), Zahl(INNENFLAECHE_FAKTOR_MAX));
             }
 
-            private void Innenteil(AbbildBauteil s, double flaeche, Bauteilart art, bool gespiegelt, bool? boden, string seite)
+            private void Innenteil(AbbildBauteil s, double flaeche, Bauteilart art, bool gespiegelt, bool? boden, string seite,
+                                   Flaechenherkunft? weg)
             {
                 (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
                 if (!neigung.HasValue && boden.HasValue)
@@ -1527,6 +1543,7 @@ namespace WindowsFormsApplication1
                 string name = Name(s) + (seite == null ? "" : " (Seite " + seite + ")");
                 GebaeudeBauteilzeile z = NeueZeile(name, art, flaeche, Bauteilrand.Innen, null, s.Quelltyp, s.Kennung, seite);
                 z.HerkunftFlaeche = _datei;
+                z.Flaechenherkunft = weg;
                 Setzen(z, neigung, hn, null, Importherkunft.Leer);
                 z.UDatei = s.UWertWm2K;
                 GebaeudeAufbauzeile aufbau = Wirksam(z, s, art, gespiegelt);
@@ -1657,6 +1674,7 @@ namespace WindowsFormsApplication1
                 string name = Name(s) + (seite == null ? "" : " (Seite " + seite + ")");
                 GebaeudeBauteilzeile z = NeueZeile(name, art, p.NettoM2.Value, Bauteilrand.Innen, null, s.Quelltyp, s.Kennung, seite);
                 z.HerkunftFlaeche = _datei;
+                z.Flaechenherkunft = s.Flaechenherkunft;
                 Setzen(z, neigung, hn, null, Importherkunft.Leer);
                 z.UDatei = s.UWertWm2K;
                 // Ein Innenbauteil braucht keinen U-Wert: mit Aufbau die Masse aus den Schichten, ohne
@@ -1723,6 +1741,7 @@ namespace WindowsFormsApplication1
                     GebaeudeBauteilzeile z = NeueZeile(dach ? VORGABEZEILE_DACH : VORGABEZEILE_GRUND,
                                                        dach ? Bauteilart.Dach : Bauteilart.Bodenplatte, flaeche, rand, feld, null, null, null);
                     z.HerkunftFlaeche = Importherkunft.Vorgabe;
+                    z.Flaechenherkunft = Flaechenherkunft.Schematisch;
                     Setzen(z, dach ? GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_OBEN : GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_UNTEN,
                            Importherkunft.Vorgabe, null, Importherkunft.Leer);
                     UVorgabe(z, UFeld(feld));
