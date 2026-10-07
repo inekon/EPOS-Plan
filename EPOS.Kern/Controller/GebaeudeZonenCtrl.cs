@@ -801,10 +801,14 @@ namespace WindowsFormsApplication1
                                              Bauteilwerte(b, kopplung, flaechenherkunft).Append(new DbParam("@id", b.ID)).ToArray());
                             }
                             else
+                            {
+                                // Von Hand angelegt (auch als Kopie einer Zeile): die Flaeche stammt nicht aus der Datei.
+                                b.Flaechenherkunft = null;
                                 b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
                                                         string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\"")) +
                                                         ") VALUES (" + BaustoffCtrl.Fragezeichen(bauteilspalten.Count) + ")",
                                                         Bauteilwerte(b, kopplung, flaechenherkunft).ToArray());
+                            }
                         }
                         z.Bauteile = z.Bauteile.Where(x => x != null).ToList();
                     }
