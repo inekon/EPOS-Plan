@@ -1018,3 +1018,5 @@ drei Stoffgruppen) und die Rolle von `AddIns…` (hier nicht belegt).
    Innenwand- und Deckenstücke als eine Zeile mit zwei Raumbezügen, 686 statt 688 Tabellen —
    Fassungs- oder Projektunterschied, offen.
 5. `AdjacentType` 6 und 7 (Kapitel 6.3) bleiben offen; hier an 2 und 36 Deckenstücken.
+
+Umgesetzt in BA-4b (#792) und Fix Raumabgleich (#792), siehe [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-07_BA-4b_Aufbauten_Projektdatei.md).

@@ -12929,6 +12929,492 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R₁ und C₁ sind nur für diese Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet; die Simulation bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string BTSB_ANZEIGE {
+            get {
+                return ResourceManager.GetString("BTSB_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut ähnelt.
+        /// </summary>
+        public static string BTSB_AZIMUT {
+            get {
+                return ResourceManager.GetString("BTSB_AZIMUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C₁ (wirksame Kapazität) ähnelt.
+        /// </summary>
+        public static string BTSB_C1 {
+            get {
+                return ResourceManager.GetString("BTSB_C1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzaufbau: {0} ähnelt.
+        /// </summary>
+        public static string BTSB_ERSATZ {
+            get {
+                return ResourceManager.GetString("BTSB_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Dämmdicke {1} cm ähnelt.
+        /// </summary>
+        public static string BTSB_ERSATZ_DICKE {
+            get {
+                return ResourceManager.GetString("BTSB_ERSATZ_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, λ der tragenden Schicht {1} W/(mK) ähnelt.
+        /// </summary>
+        public static string BTSB_ERSATZ_LAMBDA {
+            get {
+                return ResourceManager.GetString("BTSB_ERSATZ_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, ohne Abgleich ähnelt.
+        /// </summary>
+        public static string BTSB_ERSATZ_OHNE {
+            get {
+                return ResourceManager.GetString("BTSB_ERSATZ_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es fehlt: {0} ähnelt.
+        /// </summary>
+        public static string BTSB_FEHLT {
+            get {
+                return ResourceManager.GetString("BTSB_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
+        /// </summary>
+        public static string BTSB_FLAECHE {
+            get {
+                return ResourceManager.GetString("BTSB_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau (innen → außen) ähnelt.
+        /// </summary>
+        public static string BTSB_GRP_AUFBAU {
+            get {
+                return ResourceManager.GetString("BTSB_GRP_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechengrößen ähnelt.
+        /// </summary>
+        public static string BTSB_GRP_RECHNUNG {
+            get {
+                return ResourceManager.GetString("BTSB_GRP_RECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dünner als 5 mm und ohne Gewicht an R und C ähnelt.
+        /// </summary>
+        public static string BTSB_GRUND_DUENN {
+            get {
+                return ResourceManager.GetString("BTSB_GRUND_DUENN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Folie, Sperre oder Abdichtung unter 2 % an R ähnelt.
+        /// </summary>
+        public static string BTSB_GRUND_SPERRE {
+            get {
+                return ResourceManager.GetString("BTSB_GRUND_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die g-Wert ähnelt.
+        /// </summary>
+        public static string BTSB_GWERT {
+            get {
+                return ResourceManager.GetString("BTSB_GWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Datei ähnelt.
+        /// </summary>
+        public static string BTSB_HK_DATEI {
+            get {
+                return ResourceManager.GetString("BTSB_HK_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Katalog ähnelt.
+        /// </summary>
+        public static string BTSB_HK_KATALOG {
+            get {
+                return ResourceManager.GetString("BTSB_HK_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die manuell ähnelt.
+        /// </summary>
+        public static string BTSB_HK_MANUELL {
+            get {
+                return ResourceManager.GetString("BTSB_HK_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Projektdatei ähnelt.
+        /// </summary>
+        public static string BTSB_HK_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("BTSB_HK_PROJEKTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Schichten ähnelt.
+        /// </summary>
+        public static string BTSB_HK_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("BTSB_HK_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string BTSB_HK_VORGABE {
+            get {
+                return ResourceManager.GetString("BTSB_HK_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächenbezogene Wärmekapazität ähnelt.
+        /// </summary>
+        public static string BTSB_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("BTSB_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Aufbau ähnelt.
+        /// </summary>
+        public static string BTSB_KEIN_AUFBAU {
+            get {
+                return ResourceManager.GetString("BTSB_KEIN_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennung ähnelt.
+        /// </summary>
+        public static string BTSB_KENNUNG {
+            get {
+                return ResourceManager.GetString("BTSB_KENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die c einer Schicht ähnelt.
+        /// </summary>
+        public static string BTSB_LUECKE_CP {
+            get {
+                return ResourceManager.GetString("BTSB_LUECKE_CP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eine Dämmschicht ähnelt.
+        /// </summary>
+        public static string BTSB_LUECKE_DAEMMUNG {
+            get {
+                return ResourceManager.GetString("BTSB_LUECKE_DAEMMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dicke einer Schicht ähnelt.
+        /// </summary>
+        public static string BTSB_LUECKE_DICKE {
+            get {
+                return ResourceManager.GetString("BTSB_LUECKE_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die λ einer Schicht ähnelt.
+        /// </summary>
+        public static string BTSB_LUECKE_LAMBDA {
+            get {
+                return ResourceManager.GetString("BTSB_LUECKE_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ρ einer Schicht ähnelt.
+        /// </summary>
+        public static string BTSB_LUECKE_RHO {
+            get {
+                return ResourceManager.GetString("BTSB_LUECKE_RHO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Schichten ähnelt.
+        /// </summary>
+        public static string BTSB_LUECKE_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("BTSB_LUECKE_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eine speichernde Schicht ähnelt.
+        /// </summary>
+        public static string BTSB_LUECKE_SPEICHER {
+            get {
+                return ResourceManager.GetString("BTSB_LUECKE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung ähnelt.
+        /// </summary>
+        public static string BTSB_NEIGUNG {
+            get {
+                return ResourceManager.GetString("BTSB_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Steckbrief zeigt nur an; geändert wird in der Baustoffzuordnung bzw. im Bauteildialog. ähnelt.
+        /// </summary>
+        public static string BTSB_NUR_ANZEIGE {
+            get {
+                return ResourceManager.GetString("BTSB_NUR_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R₁ und C₁ ohne vollständigen Aufbau nicht bestimmbar. ähnelt.
+        /// </summary>
+        public static string BTSB_OHNE_RECHNUNG {
+            get {
+                return ResourceManager.GetString("BTSB_OHNE_RECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R₁ (Ersatzwiderstand) ähnelt.
+        /// </summary>
+        public static string BTSB_R1 {
+            get {
+                return ResourceManager.GetString("BTSB_R1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rahmenanteil ähnelt.
+        /// </summary>
+        public static string BTSB_RAHMEN {
+            get {
+                return ResourceManager.GetString("BTSB_RAHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randbedingung ähnelt.
+        /// </summary>
+        public static string BTSB_RAND {
+            get {
+                return ResourceManager.GetString("BTSB_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 1 – Aufbau der Projektdatei ähnelt.
+        /// </summary>
+        public static string BTSB_RANG_1 {
+            get {
+                return ResourceManager.GetString("BTSB_RANG_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 2 – Aufbaukatalog der Projektdatei ähnelt.
+        /// </summary>
+        public static string BTSB_RANG_2 {
+            get {
+                return ResourceManager.GetString("BTSB_RANG_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 3 – Schichten der IFC ähnelt.
+        /// </summary>
+        public static string BTSB_RANG_3 {
+            get {
+                return ResourceManager.GetString("BTSB_RANG_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 4 – Ersatzaufbau bzw. ohne Aufbau ähnelt.
+        /// </summary>
+        public static string BTSB_RANG_4 {
+            get {
+                return ResourceManager.GetString("BTSB_RANG_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steckbrief schließen ähnelt.
+        /// </summary>
+        public static string BTSB_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("BTSB_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die c ähnelt.
+        /// </summary>
+        public static string BTSB_SP_CP {
+            get {
+                return ResourceManager.GetString("BTSB_SP_CP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dicke ähnelt.
+        /// </summary>
+        public static string BTSB_SP_DICKE {
+            get {
+                return ResourceManager.GetString("BTSB_SP_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string BTSB_SP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("BTSB_SP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die λ ähnelt.
+        /// </summary>
+        public static string BTSB_SP_LAMBDA {
+            get {
+                return ResourceManager.GetString("BTSB_SP_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ρ ähnelt.
+        /// </summary>
+        public static string BTSB_SP_RHO {
+            get {
+                return ResourceManager.GetString("BTSB_SP_RHO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht ähnelt.
+        /// </summary>
+        public static string BTSB_SP_SCHICHT {
+            get {
+                return ResourceManager.GetString("BTSB_SP_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufe ähnelt.
+        /// </summary>
+        public static string BTSB_STUFE {
+            get {
+                return ResourceManager.GetString("BTSB_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilsteckbrief ähnelt.
+        /// </summary>
+        public static string BTSB_TITEL {
+            get {
+                return ResourceManager.GetString("BTSB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert ähnelt.
+        /// </summary>
+        public static string BTSB_UWERT {
+            get {
+                return ResourceManager.GetString("BTSB_UWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U der Datei {0} weicht um {1} % vom U aus den Schichten {2} ab; es gilt das U der Datei, die Schichten liefern R₁ und C₁. ähnelt.
+        /// </summary>
+        public static string BTSB_U_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("BTSB_U_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weggelassen: {0} ähnelt.
+        /// </summary>
+        public static string BTSB_WEGGELASSEN {
+            get {
+                return ResourceManager.GetString("BTSB_WEGGELASSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil bearbeiten ähnelt.
+        /// </summary>
+        public static string BTSB_ZUM_BAUTEIL {
+            get {
+                return ResourceManager.GetString("BTSB_ZUM_BAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zur Baustoffzuordnung ähnelt.
+        /// </summary>
+        public static string BTSB_ZUR_BAUSTOFFZUORDNUNG {
+            get {
+                return ResourceManager.GetString("BTSB_ZUR_BAUSTOFFZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
         /// </summary>
         public static string BTYP_BTN_BEENDEN {
@@ -13168,6 +13654,627 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_A1B_NACHWEIS_STROMSTEUER {
             get {
                 return ResourceManager.GetString("BV_A1B_NACHWEIS_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht vorhanden ähnelt.
+        /// </summary>
+        public static string BV_A1D_BESTAND_FEHLT {
+            get {
+                return ResourceManager.GetString("BV_A1D_BESTAND_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhanden ähnelt.
+        /// </summary>
+        public static string BV_A1D_BESTAND_VORHANDEN {
+            get {
+                return ResourceManager.GetString("BV_A1D_BESTAND_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_ANLAGE {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_PUFFERSPEICHER {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_PUFFERSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenkessel ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_SPITZENKESSEL {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_SPITZENKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschaltpunkt ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_ABSCHALTPUNKT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_ABSCHALTPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl Komponenten ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_ANZAHL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_APERTURFLAECHE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_APERTURFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_AZIMUT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_AZIMUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BAUART {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestand ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BESTAND {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenter Betrieb ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BIVALENT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BIVALENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertnutzung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BRENNWERT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_GESAMTVOLUMEN {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_GESAMTVOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grenzleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_GRENZLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektormodulanzahl ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KOLLEKTORMODULE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KOLLEKTORMODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektortyp ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KOLLEKTORTYP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KOLLEKTORTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KUEHLLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die el. Leistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_LEISTUNG_EL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_LEISTUNG_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die therm. Leistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_LEISTUNG_TH {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_LEISTUNG_TH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_MODULLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_MODULLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Motortyp ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_MOTORTYP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_MOTORTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_NEIGUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohn-/Nutzfläche ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_NUTZFLAECHE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Leistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_PV_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_PV_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Rechenmodell ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_PV_MODELL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_PV_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regelung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_REGELUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_REGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_RUECKLAUFTEMP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_RUECKLAUFTEMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solaranteil ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_SOLARANTEIL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_SOLARANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_SPEICHERTYP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_SPEICHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervolumen (Anlage) ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_SPEICHERVOLUMEN {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_SPEICHERVOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Systemverluste ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_SYSTEMVERLUSTE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_SYSTEMVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_TYP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_VORLAUF {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_VORLAUFTEMP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_VORLAUFTEMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WAERMEQUELLE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WAERMEQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die el. Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_EL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Gas ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_GAS {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_GAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ges. Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_GESAMT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Öl ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_OEL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_OEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die therm. Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_TH {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_TH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Nennleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_WG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_WG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Wirkungsgrad bei 10 % ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_WG10 {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_WG10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Wirkungsgrad bei 100 % ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_WG100 {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_WG100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Wirkungsgrad bei 50 % ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_WG50 {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_WG50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasserbedarf ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WW_BEDARF {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WW_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelltechnologie ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_ZELLTECHNIK {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_ZELLTECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Einspeisevergütung KWK {0} €/kWh ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_EINSPEISUNG_KWK {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_EINSPEISUNG_KWK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Energiesteuer: {0}, {1} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die i = {0} % · T = {1} a · Preissteigerung Energie {2} %/a, Betrieb {3} %/a, Investition/Ersatz {4} %/a ({5}) · Einspeisevergütung {6} €/kWh ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KOPF {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · KWKG (Sätze je Anlage ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Förderbeginn {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Negativpreis-Abschlag {0} % ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_NEGATIV {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Stichtag {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_STICHTAG {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_STICHTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Stichtag ungeprüft ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Nutzungsgrad {0} % ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_NUTZUNGSGRAD {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Unternehmensart: {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_UNTERNEHMENSART {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_UNTERNEHMENSART", resourceCulture);
             }
         }
         
@@ -25299,6 +26406,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außen ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_AUSSEN {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innen ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_INNEN {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_INNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufen des Aufbaus ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_LEGENDE {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Aufbau“ ist gesperrt: Es liegen keine Zuordnungsstufen der Bauteile vor (kein Bauteilvorschlag). ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_OHNE_STUFEN {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_OHNE_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ein- oder ausblenden ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_SCHALTER {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: {0} — Stufe {1} ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_TREFFER {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} m² ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_ZAHL {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dateikörper ähnelt.
         /// </summary>
         public static string GANS_DATEIKOERPER {
@@ -25322,6 +26492,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_FARBMODUS {
             get {
                 return ResourceManager.GetString("GANS_FARBMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau ähnelt.
+        /// </summary>
+        public static string GANS_FARBMODUS_AUFBAU {
+            get {
+                return ResourceManager.GetString("GANS_FARBMODUS_AUFBAU", resourceCulture);
             }
         }
         
@@ -25646,6 +26825,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_RAUM_HERKUNFT {
             get {
                 return ResourceManager.GetString("GANS_RAUM_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A – vollständiger Aufbau ähnelt.
+        /// </summary>
+        public static string GANS_STUFE_A {
+            get {
+                return ResourceManager.GetString("GANS_STUFE_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die B – U aus Datei, Ersatzaufbau ähnelt.
+        /// </summary>
+        public static string GANS_STUFE_B {
+            get {
+                return ResourceManager.GetString("GANS_STUFE_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C – nur Geometrie, U aus Vorgabe ähnelt.
+        /// </summary>
+        public static string GANS_STUFE_C {
+            get {
+                return ResourceManager.GetString("GANS_STUFE_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Bauteil ähnelt.
+        /// </summary>
+        public static string GANS_STUFE_OHNE {
+            get {
+                return ResourceManager.GetString("GANS_STUFE_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Transparent (nicht bewertet) ähnelt.
+        /// </summary>
+        public static string GANS_STUFE_TRANSPARENT {
+            get {
+                return ResourceManager.GetString("GANS_STUFE_TRANSPARENT", resourceCulture);
             }
         }
         
@@ -33361,6 +34585,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau. ähnelt.
+        /// </summary>
+        public static string GIMP_AB_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_AB_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Aufbauten im Vorschlag. ähnelt.
+        /// </summary>
+        public static string GIMP_AB_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_AB_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Stufe B und C ähnelt.
+        /// </summary>
+        public static string GIMP_AB_NUR_BC {
+            get {
+                return ResourceManager.GetString("GIMP_AB_NUR_BC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Aufbau ähnelt.
+        /// </summary>
+        public static string GIMP_AB_OHNE_AUFBAU {
+            get {
+                return ResourceManager.GetString("GIMP_AB_OHNE_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilart ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_ART {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_AUFBAU {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_BAUTEILE {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C₁,korr [kJ/(m²K)] ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_C1 {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_C1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es fehlt ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_FEHLT {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche [m²] ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_FLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Handlung ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_HANDLUNG {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_HANDLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_STUFE {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U Datei [W/(m²K)] ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_UDATEI {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_UDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U Schichten [W/(m²K)] ähnelt.
+        /// </summary>
+        public static string GIMP_AB_SP_USCHICHTEN {
+            get {
+                return ResourceManager.GetString("GIMP_AB_SP_USCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typaufbau: {0} ähnelt.
+        /// </summary>
+        public static string GIMP_AB_TYP {
+            get {
+                return ResourceManager.GetString("GIMP_AB_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typaufbau wählen ähnelt.
+        /// </summary>
+        public static string GIMP_AB_TYPWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_AB_TYPWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_AB_ZUR_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("GIMP_AB_ZUR_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Antippen trennt als eigene Zone ab ähnelt.
         /// </summary>
         public static string GIMP_ANS_ABTRENNEN {
@@ -36417,6 +37803,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FORMAT_IFC {
             get {
                 return ResourceManager.GetString("GIMP_FORMAT_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbauten ähnelt.
+        /// </summary>
+        public static string GIMP_GRP_AUFBAUTEN {
+            get {
+                return ResourceManager.GetString("GIMP_GRP_AUFBAUTEN", resourceCulture);
             }
         }
         
@@ -39531,6 +40926,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_BAUTEIL_PROT_OHNE_NACHBAR {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_OHNE_NACHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei {0} Bauteil(en) treffen mehrere verschiedene Aufbauten der Projektdatei das U der IFC ({1} W/(m²K)); es wird nicht geraten. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau aus der Projektdatei (U passt zur IFC): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_RANG1 {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_RANG1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau aus dem Aufbaukatalog der Projektdatei (U der IFC getroffen): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_RANG2 {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_RANG2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau aus den Schichten der IFC: {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_RANG3 {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_RANG3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne vollständigen Aufbau (Ersatzaufbau bzw. ohne Aufbau): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_RANG4 {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_RANG4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei {0} Bauteil(en) weicht das U der Projektdatei um mehr als 1 % vom U der IFC ab; es gilt der Stand der IFC (W/(m²K), Projektdatei → IFC: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile der Projektdatei zugeordnet: {0} über die GUID, {1} über die GlobalId; {2} opake Bauteile ohne Gegenstück, {3} mehrdeutig (nicht geraten). ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_PD_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_PD_ZUORDNUNG", resourceCulture);
             }
         }
         
@@ -42829,11 +44287,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau Projektdatei (U {0}) ähnelt.
+        /// </summary>
+        public static string IMP_SQ_AUFBAU_NAME {
+            get {
+                return ResourceManager.GetString("IMP_SQ_AUFBAU_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Abschnitte tragen eine unbekannte Abschnittsart — sie gelten als Zeitraum. ähnelt.
         /// </summary>
         public static string IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_ABSCHNITTSART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile der Projektdatei: {0} Hüllflächen, {1} Aufbauten, davon {2} mit Schichten ({3} Schichten). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_BAUTEILE {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei trägt keine Bauteiltabellen ({0}); Aufbauten werden aus ihr nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_BAUTEILE_FEHLEN {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_BAUTEILE_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauteiltabellen der Projektdatei sind nicht lesbar ({0}); Aufbauten werden aus ihr nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_BAUTEILE_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_BAUTEILE_UNLESBAR", resourceCulture);
             }
         }
         
@@ -42870,6 +44364,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_FASSUNG_UNBEKANNT {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_FASSUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen eine HottCAD-Kennung GUID, die nicht eindeutig ist, und werden nicht über sie zugeordnet: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_GUID_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_GUID_MEHRDEUTIG", resourceCulture);
             }
         }
         
@@ -42951,6 +44454,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_RAUM_BEHEIZUNG {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_RAUM_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume über die HottCAD-Kennung GUID abgeglichen ({1} über die IFC-Kennung, {2} über Name und Geschoss). ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUM_HERKUNFT {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUM_HERKUNFT", resourceCulture);
             }
         }
         
@@ -43050,6 +44562,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_ZU_GROSS {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stoff Projektdatei (λ {0}, ρ {1}) ähnelt.
+        /// </summary>
+        public static string IMP_SQ_STOFF_NAME {
+            get {
+                return ResourceManager.GetString("IMP_SQ_STOFF_NAME", resourceCulture);
             }
         }
         
@@ -125753,6 +127274,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_ZEILE_VORGABEN {
             get {
                 return ResourceManager.GetString("ZONDLG_ZEILE_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufe {0}: {1} ähnelt.
+        /// </summary>
+        public static string ZOND_AUFBAU_TITEL {
+            get {
+                return ResourceManager.GetString("ZOND_AUFBAU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne vollständige Zuordnung ähnelt.
+        /// </summary>
+        public static string ZOND_FILTER_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZOND_FILTER_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau ähnelt.
+        /// </summary>
+        public static string ZOND_SP_AUFBAU {
+            get {
+                return ResourceManager.GetString("ZOND_SP_AUFBAU", resourceCulture);
             }
         }
         

@@ -1022,14 +1022,19 @@ namespace WindowsFormsApplication1
                     //    Die Schichten aus dem Namensabgleich zeigen auf die Projektkopie ihres
                     //    Katalogbaustoffs — über den vorhandenen Kopierweg (eine vorhandene Kopie gleichen
                     //    Namens und Herstellers wird genommen), im selben Vorgang.
+                    //    Die Schichten aus der HottCAD-Projektdatei (BA-4b) zeigen auf eine Projektkopie ihres Stoffes
+                    //    (Herkunft IFC, Quelle „Projektdatei“) — je Name und Stoffwerten einmal.
                     var aufbauJeVorlaeufig = new Dictionary<int, int>();
                     for (int j = 0; j < aufbauten.Count; j++)
                     {
                         BauteilaufbauModel a = aufbauten[j];
                         IReadOnlyList<int?> stamm = vorschlag.Aufbauten[j].Stammbaustoffe;
+                        IReadOnlyList<BaustoffModel> pd = vorschlag.Aufbauten[j].Projektstoffe;
                         for (int i = 0; i < a.Schichten.Count && i < stamm.Count; i++)
                             if (stamm[i] is int idStamm)
                                 a.Schichten[i].ID_Baustoff = Projektbaustoff(v, idStamm, idProjekt, stoffJeStamm);
+                            else if (i < pd.Count && pd[i] != null)
+                                a.Schichten[i].ID_Baustoff = BaustoffCtrl.ImportstoffEinfuegen(v, idProjekt, pd[i]);
                         int vorlaeufig = a.ID;
                         a.Bezeichner = BauteilaufbauCtrl.FreierName(vergeben, a.Bezeichner);
                         aufbauJeVorlaeufig[vorlaeufig] = BauteilaufbauCtrl.ProjektaufbauEinfuegen(v, idProjekt, a);

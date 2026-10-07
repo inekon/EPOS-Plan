@@ -241,6 +241,13 @@
 
     <Gruppenkopf Titel="@Texte.GruppeBauteile">
         <KindInhalt>
+            @if (_stand.Bauteile.Count > 0)
+            {
+                <label class="epos-zonen-aufbaufilter">
+                    <input type="checkbox" checked="@_nurUnvollstaendig" @onchange="e => _nurUnvollstaendig = e.Value is true" />
+                    @Texte.FilterUnvollstaendig
+                </label>
+            }
             <Zeilenraster Bezeichnung="@Texte.GruppeBauteile" Spalten="@Spalten" Spaltenmass="@SPALTENMASS"
                           Summen="@Summen">
                 <KindInhalt>
@@ -248,7 +255,9 @@
                     {
                         int index = i;
                         BauteilDaten b = _stand.Bauteile[index];
-                        <div class="epos-zr-zeile epos-zonenbauteil" role="row" @key="b.Id">
+                        Aufbaustufe stufe = StufeVon(b);
+                        if (_nurUnvollstaendig && !GebaeudeAnsichtAufbaustufen.Unvollstaendig(stufe)) continue;
+                        <div class="epos-zr-zeile epos-zonenbauteil" role="row" @key="b.Id" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)">
                             <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@ArtText(b.Bauteilart)</span></div>
                             <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@b.Bezeichner</span></div>
                             <div class="epos-zr-zelle epos-zahl" role="cell">@Zahl(b.Flaeche, 2)</div>
@@ -257,7 +266,15 @@
                             <div class="epos-zr-zelle epos-zahl" role="cell">@NeigungText(b)</div>
                             <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@RandText(b)</span></div>
                             <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@NachbarText(b)</span></div>
-                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@(b.AufbauText.Length > 0 ? b.AufbauText : "—")</span></div>
+                            <div class="epos-zr-zelle" role="cell">
+                                @* BA-3: die Stufe als Farbfeld mit Kurztext; ein Klick öffnet den Bauteildialog wie ✎ (der bleibt der
+                                   Tastaturweg). *@
+                                <span class="epos-zonen-aufbaustufe" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)"
+                                      title="@Stufentitel(stufe)" @onclick="() => BauteilOeffnen(index)">
+                                    <span class="epos-gebansicht-farbfeld" style="@("background:" + GebaeudeAnsichtAufbaustufen.Farbe(stufe))" aria-hidden="true"></span>
+                                    <span class="epos-zr-text">@(b.AufbauText.Length > 0 ? b.AufbauText : "—")</span>
+                                </span>
+                            </div>
                             <div class="epos-zr-zelle" role="cell">
                                 <span class="epos-zr-aktionen">
                                     <button type="button" class="epos-knopf epos-zr-knopf" title="@Texte.KnopfOeffnen"
@@ -635,6 +652,18 @@
     // =================================================================================
     // Anzeige
     // =================================================================================
+
+    /// <summary>BA-3: Zeigt die Bauteiltabelle nur Bauteile der Stufen B und C?</summary>
+    private bool _nurUnvollstaendig;
+
+    /// <summary>Die Zuordnungsstufe eines Bauteils im Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public Aufbaustufe StufeVon(BauteilDaten b)
+        => GebaeudeAnsichtAufbaustufen.Stufe(b, b.IdAufbau is int id && Projektaufbauten.Any(a => a.Id == id && !a.Katalog && a.Ersatz));
+
+    /// <summary>Der Kurztext der Stufe: Buchstabe und Name.</summary>
+    private string Stufentitel(Aufbaustufe s)
+        => string.Format(CultureInfo.CurrentCulture, Texte.AufbauTitel, GebaeudeAnsichtAufbaustufen.Schluessel(s).ToUpperInvariant(),
+                         (int)s < Texte.Aufbaustufen.Count ? Texte.Aufbaustufen[(int)s] : s.ToString());
 
     private IReadOnlyList<string> Spalten => new[]
     {

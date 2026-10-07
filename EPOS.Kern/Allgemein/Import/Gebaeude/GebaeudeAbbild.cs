@@ -336,6 +336,13 @@ namespace WindowsFormsApplication1
         /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Die HottCAD-Kennung (<c>HSETU_BauteilAllgemein.GUID</c> am <c>IfcSpace</c>) in der Normalform
+        /// <see cref="IfcAbbildBauer.GuidNormalform"/>; sie gleicht <c>BmRoom.GId</c> der Projektdatei, auch wo die
+        /// <c>GlobalId</c> neu vergeben ist. <c>null</c> = keine oder keine GUID.
+        /// </summary>
+        public string HottcadGuid { get; set; }
+
         /// <summary>Fläche [m²]; <c>null</c> = nicht gelesen.</summary>
         public double? FlaecheM2 { get; set; }
 
@@ -517,6 +524,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Die HottCAD-Kennung (<c>HSETU_BauteilAllgemein.GUID</c>, Vorkommnis) in der Normalform
+        /// <see cref="IfcAbbildBauer.GuidNormalform"/>; sie gleicht der Level-3-<c>GId</c> der Projektdatei, auch wo die
+        /// <c>GlobalId</c> neu vergeben ist. <c>null</c> = keine oder keine GUID.
+        /// </summary>
+        public string HottcadGuid { get; set; }
 
         /// <summary>Die Art, wie die Datei sie nennt (gbXML <c>@surfaceType</c> bzw. <c>@openingType</c>).</summary>
         public string Quellart { get; set; }
@@ -831,6 +845,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Trägt die Schicht einen Wärmedurchlasswiderstand — d/λ oder den eingetragenen R-Wert?</summary>
         public bool HatWiderstand => (DickeM > 0.0 && LambdaWmK > 0.0) || RWertM2KW > 0.0;
+
+        /// <summary>Stammt die Schicht aus der HottCAD-Projektdatei (BA-4b)? Dann wird ihr Stoff als Projektkopie übernommen.</summary>
+        public bool AusProjektdatei { get; set; }
 
         /// <summary>Nur R-Wert, keine vollständigen Stoffwerte — die Schicht ist masselos (3.6, Punkt 2).</summary>
         public bool NurRWert => !Vollstaendig && RWertM2KW > 0.0 && !(DickeM > 0.0 && LambdaWmK > 0.0);

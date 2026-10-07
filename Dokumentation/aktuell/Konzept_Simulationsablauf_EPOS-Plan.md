@@ -1851,17 +1851,23 @@ Die Vorschau zeigt die ungestörte Erdreichtemperatur T_u (Gl. 5) als Linie; der
 dass die Soletemperatur im Lauf mit dem Entzug sinkt und ihr Verlauf im Ergebnis steht. Den Verlauf
 des letzten Laufs zeigt der Dialog nicht.
 
-### 23.7 Plan für die echten Erdreichquellen der Referenzprojekte
+### 23.7 Erdreichquellen der Referenzprojekte
 
 - Die Sole-Wärmepumpen der Referenzprojekte 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 (dazu
-  1019 und 1027) bekommen `WQ_Typ` = Erdreich. Je Projekt Sonde, wo die Heizleistung über rund 10 kW
-  liegt oder keine Fläche plausibel ist, sonst Kollektor; ausgelegt nach VDI 4640 Blatt 2: Sonde
-  mit spezifischer Entzugsleistung nach Tabelle B2 (λ des gewählten Bodens, 1800 h/a), Länge =
-  Entzugsleistung / (q_spez · N), N so, dass H zwischen 60 und 120 m liegt; Kollektor mit Fläche =
-  Entzugsleistung / Tabellenwert A2 der Klimazone.
-- Ein neues Sonden-Referenzprojekt als Kopie von 1029 (90 m, 4 Sonden, Mergel/Lehm).
-- Einfrierregeln: Die Quellfelder `WQ_Typ`, `WQ_Quellsystem`, `WQ_Tiefe`, `WQ_Flaeche`,
-  `WQ_Anzahl`, `WQ_Bodentyp` der Referenzprojekte kommen in die Liste, dazu die Festwerte der
-  Klasse `Erdsondenfeld` und das Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
-- Erwartete Verschiebung: Die Sole-Wärmepumpen rechnen mit 5…12 °C statt der Außenluft, die JAZ
-  steigt im Winter, die Erdreichprüfung bekommt Zeilen; die Kältemaschine von 1055 bleibt unberührt.
+  die Beispielprojekte 1019 und 1027) führen `WQ_Typ` = Erdreich mit einer Sonde in Mergel/Lehm,
+  ausgelegt nach VDI 4640 Blatt 2: spezifische Entzugsleistung nach Tabelle B2 (λ des Bodens) mit
+  Energiegrenze, Länge = Entzugsleistung / (q_spez · N), N so, dass H zwischen 60 und 120 m liegt;
+  ihre Klimaregion liegt in Klimazone 6. Die Saat steht in
+  `Referenzlaeufe/Skripte/erdreichquellen_referenzprojekte.py`.
+- Das Sonden-Referenzprojekt 1057 ist eine Kopie von 1029 (4 Sonden zu 90 m, Mergel/Lehm,
+  Klimazone 6), gehalten von `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests`.
+- Einfrierregel „gesäte Erdreichquellen der Referenzprojekte“: die Quellfelder und Sondenfeldspalten
+  der Referenzanlagen, die Klimazone, der Bodenkatalog, die Normgeometrie und die Festwerte der
+  Klasse `Erdsondenfeld` sowie das Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
+- Wirkung in der Basis `2026-10-07_R40_Erdreichquellen`: Bei den Kühlprojekten 1047 und 1056 steigt
+  die JAZ (3,86 → 4,45 bzw. 3,73 → 4,33), die Kälte-EER mit ihr (4,6 → 5,2). Bei den
+  Grundlastanlagen 1008 und 1039 fällt sie (4,15 → 3,94 bzw. 3,25 → 3,06), weil das Erdreich unter
+  der Last der Sonde auskühlt (Sole im Mittel 4,5 bzw. 1,0 °C gegen 9,9 °C Außenluft). Bei 1023 und
+  1050 bleibt sie praktisch gleich (2,38). 1057 rechnet JAZ 3,07 bei 22,12 MWh Strom. Die
+  Erdreichprüfung führt je Projekt einen Block `Erdreich[n].*`; die Kältemaschine von 1055 bleibt
+  unberührt.

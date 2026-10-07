@@ -291,7 +291,7 @@ namespace WindowsFormsApplication1
             foreach (Abweichung a in v.Abweichungen)
                 t.Zeile(new[]
                 {
-                    Zellen.Text(a.Gewerk),
+                    Zellen.Text(AbweichungsErmittler.Gewerkname(a.Gewerk)),
                     Zellen.Text(a.Merkmal),
                     Zellen.Text(a.WertStamm, Tabellenausrichtung.Mitte, Tabellenrolle.Stamm, h: Tabellenhinterlegung.Stamm),
                     Zellen.Text(a.WertVariante, Tabellenausrichtung.Mitte),

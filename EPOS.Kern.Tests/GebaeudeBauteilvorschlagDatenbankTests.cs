@@ -43,7 +43,7 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>Das erste Gebäude des Projekts so, wie Lauf und Auskunft es lesen — samt Zonen.</summary>
-        private static ProjektGebaeudeModel Zeile(int idProjekt)
+        internal static ProjektGebaeudeModel Zeile(int idProjekt)
         {
             var ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(idProjekt);
@@ -52,7 +52,7 @@ namespace EPOS.Kern.Tests
             return item;
         }
 
-        private static SimulationWaermebedarf NeueRechnung(int idProjekt)
+        internal static SimulationWaermebedarf NeueRechnung(int idProjekt)
         {
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(idProjekt);
@@ -452,7 +452,7 @@ namespace EPOS.Kern.Tests
         /// Die Summenfelder der Zuordnung auf eine Gebäudezeile (der Klassenweg des Imports), Faktor 1;
         /// dazu der Innenflächenfaktor des Vorschlags, wie ihn die Zielfelder schreiben (Welle B).
         /// </summary>
-        private static void MitImport(ProjektGebaeudeModel x, GebaeudeImportSatz s, double? innenflaechenfaktor)
+        internal static void MitImport(ProjektGebaeudeModel x, GebaeudeImportSatz s, double? innenflaechenfaktor)
         {
             x.Innenflaechenfaktor = innenflaechenfaktor;
             double W(string feld) => s.Zeile(feld).Wert ?? 0.0;
