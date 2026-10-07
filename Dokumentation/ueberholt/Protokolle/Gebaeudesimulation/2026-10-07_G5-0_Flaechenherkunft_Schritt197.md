@@ -25,7 +25,7 @@ Die Herkunft der Bauteilfläche (Mengensatz, Raumgrenze, Körper, schematisch), 
 
 ## 4 Gate 803
 
-⟨GATE803⟩
+Hauptbaum `e25217ad8`, 93 min: 20 610 Tests, 20 602 grün, 6 übersprungen, 2 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 775, EPOS.Kern 11 861 mit 5 übersprungen); rot waren zwei Folgen der neuen Spalte — die Verlustliste des Gebäudeexports kannte `BauteilModel.Flaechenherkunft` nicht, die Spaltenprobe der Zonenkopplung las die letzten zwei Spalten —, behoben in `dafcac611`, die betroffenen Klassen 223/223 nachgeprüft; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R40_Erdreichquellen` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 483 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
 
 ## 5 Offen
 
