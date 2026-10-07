@@ -287,7 +287,7 @@ namespace WindowsFormsApplication1
         /// <summary>Sondenfelder je Anlage in der Reihenfolge des Modulaufbaus.</summary>
         private readonly List<KeyValuePair<int, Erdsondenfeld>> _sondenfelder = new List<KeyValuePair<int, Erdsondenfeld>>();
 
-        /// <summary>Bis zum Ende der Vorstunde gemeldeter Entzug je Modul (Wärme − Strom, kWh).</summary>
+        /// <summary>Bis zum Ende der Vorstunde gemeldeter Entzug je Modul (Wärme − Strom ohne Taktanteil, kWh).</summary>
         private readonly double[] _sondeEntzugBisher = new double[MAX_WP];
 
         /// <summary>Das Sondenfeld des Moduls <paramref name="index"/>; null ohne Erdsonde.</summary>
@@ -411,7 +411,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Stundenende der Sondenfelder: Entzug der Stunde je Feld melden (Wärme − Strom der
-        /// Module, Zuwachs seit der Vorstunde) und die Quelltemperatur der nächsten Stunde setzen.
+        /// Module ohne Taktanteil, Zuwachs seit der Vorstunde) und die Quelltemperatur der nächsten
+        /// Stunde setzen. Der Mehrstrom aus Taktverlust (<see cref="Taktstrom_KWh_WP"/>) ist
+        /// elektrische Arbeit beim Anfahren und geht nicht als Wärme aus dem Erdreich in den Kreis
+        /// (Konzept 23.2) — er mindert den Entzug nicht.
         /// </summary>
         private void SondenStundeAbschliessen(int stunde)
         {
@@ -422,7 +425,7 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < wp_list.Count && i < MAX_WP; i++)
                 {
                     if (!ReferenceEquals(_sondeJeModul[i], feld)) continue;
-                    double kum = Modul_WP_Waermeproduktion[i] - Modul_WP_Strombedarf[i];
+                    double kum = Modul_WP_Waermeproduktion[i] - (Modul_WP_Strombedarf[i] - Taktstrom_KWh_WP[i]);
                     entzug += kum - _sondeEntzugBisher[i];
                     _sondeEntzugBisher[i] = kum;
                 }

@@ -491,5 +491,91 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, mit.RueckspeisungKwh);
             Assert.Equal(mit.Soletemperatur, ohne.Soletemperatur);
         }
+
+        /// <summary>
+        /// Taktverlust und Entzug (Konzept 23.2): Projekt 1039 rechnet seine Wärmepumpe an der Erdsonde. Mit
+        /// 12 kW Mindestleistung taktet sie in der Übergangszeit; der Mehrstrom ist elektrische Arbeit beim
+        /// Anfahren und geht nicht als Wärme aus dem Erdreich in den Kreis. Der gemeldete Entzug ist deshalb
+        /// Wärme − (Strom − Taktstrom), also um den Taktanteil höher als Wärme − Strom, und gleich dem Entzug
+        /// ohne Takten — Soletemperatur und Wärme bleiben Stunde für Stunde dieselben.
+        /// </summary>
+        [Fact]
+        public void Projekt_1039_Taktstrom_mindert_den_Entzug_nicht()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_WP SET Mindestleistung_kW = NULL WHERE ID_Projekt = ?", new DbParam("@p", 1039)));
+
+            var ohneLauf = new SimulationRunner();
+            Assert.True(ohneLauf.Simuliere(1039, out string fehler), "Lauf gescheitert: " + fehler);
+            SimulationWaermepumpe ohne = ohneLauf.sim.simulation_wp;
+            Assert.False(ohne.RechnetMitTakt(0));
+            Erdsondenfeld feldOhne = ohne.Sondenfeld(0);
+            Assert.NotNull(feldOhne);
+            Assert.Equal(ohne.Modul_WP_Waermeproduktion[0] - ohne.Modul_WP_Strombedarf[0], feldOhne.EntzugKwh, 6);
+            double entzugOhne = feldOhne.EntzugKwh;
+            double[] soleOhne = (double[])ohne.Quelltemperaturen[0].Clone();
+            double[] waermeOhne = (double[])ohne.WP_Waermeproduktion_stuendlich.Clone();
+
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_WP SET Mindestleistung_kW = 12 WHERE ID_Projekt = ?", new DbParam("@p", 1039)));
+            var mitLauf = new SimulationRunner();
+            Assert.True(mitLauf.Simuliere(1039, out fehler), "Lauf gescheitert: " + fehler);
+            SimulationWaermepumpe mit = mitLauf.sim.simulation_wp;
+            Assert.True(mit.RechnetMitTakt(0));
+            double takt = mit.Taktstrom_KWh_WP[0];
+            Assert.True(takt > 0, "die Wärmepumpe taktet");
+            Erdsondenfeld feldMit = mit.Sondenfeld(0);
+            double waermeMinusStrom = mit.Modul_WP_Waermeproduktion[0] - mit.Modul_WP_Strombedarf[0];
+            _aus.WriteLine($"1039: Entzug ohne Takt {entzugOhne:0.000} kWh, mit Takt {feldMit.EntzugKwh:0.000} kWh, " +
+                           $"Wärme − Strom {waermeMinusStrom:0.000} kWh, Taktstrom {takt:0.000} kWh");
+
+            Assert.Equal(waermeMinusStrom + takt, feldMit.EntzugKwh, 6);
+            Assert.Equal(entzugOhne, feldMit.EntzugKwh, 6);
+            // Gleich bis auf die Rundung der Summenfolge (W − (S − T) gegen W − S).
+            double soleAbw = 0, waermeAbw = 0;
+            for (int h = 0; h < 8760; h++)
+            {
+                soleAbw = Math.Max(soleAbw, Math.Abs(soleOhne[h] - mit.Quelltemperaturen[0][h]));
+                waermeAbw = Math.Max(waermeAbw, Math.Abs(waermeOhne[h] - mit.WP_Waermeproduktion_stuendlich[h]));
+            }
+            _aus.WriteLine($"größte Abweichung: Sole {soleAbw:E2} K, Wärme {waermeAbw:E2} kWh");
+            Assert.True(soleAbw < 1e-9, "Soletemperatur wie ohne Takten");
+            Assert.True(waermeAbw < 1e-9, "Wärme wie ohne Takten");
+        }
+
+        /// <summary>
+        /// Rückspeisung ohne Taktanteil (Konzept 23.5): Kopie von Projekt 1017 mit Sonde und Mindestleistung —
+        /// die Wärmepumpe taktet auch im Kühlbetrieb. Die Kühlwärme, die ins Feld zurückgeht, ist Kälte +
+        /// Verdichterarbeit ohne Hilfsstromzuschlag und ohne den Mehrstrom aus Taktverlust.
+        /// </summary>
+        [Fact]
+        public void Projekt_1017_Rueckspeisung_rechnet_ohne_Taktstrom()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            SondeEinsetzen(10211, 6, 100.0);
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_WP SET Mindestleistung_kW = 12 WHERE ID_Projekt = ?", new DbParam("@p", 1017)));
+
+            var laeufer = new SimulationRunner();
+            Assert.True(laeufer.Simuliere(1017, out string fehler), "Lauf gescheitert: " + fehler);
+            SimulationWaermepumpe wp = laeufer.sim.simulation_wp;
+            Assert.True(wp.ZweiterFeldlauf);
+            double rueck = wp.FeldvorgabeAktuell[wp.Sondenfelder[0].Key].RueckspeisungKw.Sum();
+
+            double kaelte = 0, verdichter = 0, takt = 0;
+            foreach (Kaelteerzeuger e in laeufer.sim.simulation_Waermebedarf.Kaelteseite.Kaskade.Erzeuger)
+            {
+                if (e.Maschine != null || e.Modulindex < 0) continue;
+                kaelte += e.KaelteGesamtKwh;
+                verdichter += e.StromGesamtKwh - e.HilfsstromGesamtKwh;
+                takt += e.TaktstromKwh;
+            }
+            _aus.WriteLine($"1017: Rückspeisung {rueck:0.0} kWh, Kälte {kaelte:0.0}, Verdichter {verdichter:0.0}, Takt {takt:0.0} kWh");
+            Assert.True(takt > 0, "die Wärmepumpe taktet im Kühlbetrieb");
+            Assert.Equal(kaelte + verdichter - takt, rueck, 6);
+        }
     }
 }
