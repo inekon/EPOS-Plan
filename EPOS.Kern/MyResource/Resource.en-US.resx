@@ -48487,5 +48487,8 @@ chart</value>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE" xml:space="preserve">
     <value>{0} other components: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
   </data>
+  <data name="IMP_IFC_PROT_RAUMFLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} spaces without area quantity and without footprint take the floor area of their body as space area, {1} m² in total ({2}); without a volume quantity the body volume applies.</value>
+  </data>
 </root>
 

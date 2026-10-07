@@ -43720,6 +43720,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Flächenmenge und ohne Grundriss tragen die Bodenfläche ihres Körpers als Raumfläche, zusammen {1} m² ({2}); ohne Volumenmenge gilt das Volumen des Körpers. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAUMFLAECHE_KOERPER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAUMFLAECHE_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_RAUM_ABGETRENNT {

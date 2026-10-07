@@ -94,9 +94,9 @@ namespace WindowsFormsApplication1
     /// Ebenenabstands, Rundung 1e-3). Am Bauteil entfallen die Stirnflächen: Flächen, deren Breite (Fläche ÷ Diagonale)
     /// höchstens das 1,5-fache der Dicke ist (wie <see cref="IfcBauteilkoerper"/>).</item>
     /// <item><b>Ebenenabgleich:</b> Eine Fläche des Raums fällt mit einer Seite des Bauteils zusammen, wenn ihre Normalen bis
-    /// <see cref="PARALLEL_GRAD"/> gegenläufig sind und die Raumfläche höchstens <see cref="TOLERANZ_M"/> vor der Seite bzw.
-    /// höchstens die halbe Bauteildicke + <see cref="TOLERANZ_M"/> in ihr liegt (Räume bis an die Wandoberfläche oder bis zur
-    /// Achse gezeichnet).</item>
+    /// <see cref="PARALLEL_GRAD"/> gegenläufig sind und die Mitte der Raumfläche höchstens die halbe Bauteildicke +
+    /// <see cref="TOLERANZ_M"/> vor oder hinter der Seite liegt (Räume bis an die Wandoberfläche, bis zur Achse oder mit einer
+    /// Fuge gezeichnet).</item>
     /// <item><b>Polygonschnitt:</b> Die Fläche des Stücks ist die Überlappung in der Ebene der Seite — die Summe der Schnitte
     /// der Dreiecke beider Flächen (konvex gegen konvex, Sutherland–Hodgman), exakt für jede Form; unter
     /// <see cref="FLAECHE_MIN_M2"/> entfällt sie.</item>
@@ -117,7 +117,7 @@ namespace WindowsFormsApplication1
         /// <summary>Größte Abweichung der Normalen von der Gegenrichtung [°].</summary>
         internal const double PARALLEL_GRAD = 5.0;
 
-        /// <summary>Lage der Raumfläche vor der Bauteilseite bzw. über die halbe Dicke hinaus [m].</summary>
+        /// <summary>Zuschlag zur halben Bauteildicke für den Abstand der Raumfläche zur Bauteilseite [m].</summary>
         internal const double TOLERANZ_M = 0.05;
 
         /// <summary>Kleinste Fläche eines Stücks [m²]; kleinere Schnitte entfallen.</summary>
@@ -185,9 +185,9 @@ namespace WindowsFormsApplication1
                     {
                         if (Punkt(rf.N, f.N) > -cosMax) continue;
                         if (!Ueberlappt3(rf.Min, rf.Max, f.Min, f.Max, fenster)) continue;
-                        // Lage der Raumfläche zur Seite: vor ihr (> 0) bis zur Toleranz, in ihr bis zur halben Dicke + Toleranz.
+                        // Abstand der Raumfläche (Mitte) zur Seite, davor (> 0) oder in der Wand (< 0): höchstens halbe Dicke + Toleranz.
                         double t = Punkt(f.N, Mitte(rf)) - f.S;
-                        if (t > TOLERANZ_M || t < -(dicke / 2.0 + TOLERANZ_M)) continue;
+                        if (Math.Abs(t) > dicke / 2.0 + TOLERANZ_M) continue;
                         List<double[][]> stuecke = Schnitt(f, rf);
                         if (stuecke.Count == 0) continue;
                         if (!treffer.TryGetValue((s, r), out var alt)) treffer[(s, r)] = alt = (t, new List<double[][]>());

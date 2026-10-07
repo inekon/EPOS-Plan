@@ -43,11 +43,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Koerperflaechenzuordnung()
         {
-            if (KoerperflaechenAus) return;
             for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
             {
                 AbbildGebaeude g = _abbild.Gebaeude[gi];
                 if (g.ZahlGrenzen > 0 || !g.Raeume.Any(r => r.Koerper != null)) continue;
+                Raumflaechen(g);
+                if (KoerperflaechenAus) continue;
 
                 var mitBezug = new HashSet<string>(StringComparer.Ordinal);
                 foreach (int label in _raumbezug.Keys)
@@ -146,6 +147,43 @@ namespace WindowsFormsApplication1
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, ZUORDNUNG_SCHLUESSEL[gruppe], Ganz(liste.Count),
                     Zahl(Math.Round(groesste.Abweichung * 100.0, 1)), groesste.Name, Zahl(IfcBauteilkoerper.ABWEICHUNG_GRENZE * 100.0)));
             }
+        }
+
+        /// <summary>
+        /// <b>Raumfläche und Volumen aus dem Raumkörper</b> (G5-3): Ein Raum mit Körper ohne Flächenmenge und ohne
+        /// Grundriss (etwa ein Körper als <c>IfcFacetedBrep</c> unter einem geneigten Dach) bekommt als Fläche die waagerechte
+        /// Projektion der Bodenflächen seines Körpers (Normale bis 45° nach unten), gekennzeichnet wie der Grundriss
+        /// (<see cref="AbbildRaum.FlaecheAusGrundriss"/>); ohne Volumenmenge das Volumen des geschlossenen Körpers
+        /// (Divergenzsatz über die Dreiecke). Meldung <c>IMP_IFC_PROT_RAUMFLAECHE_KOERPER</c> (I).
+        /// </summary>
+        private void Raumflaechen(AbbildGebaeude g)
+        {
+            var namen = new List<string>();
+            double summe = 0.0;
+            foreach (AbbildRaum r in g.Raeume)
+            {
+                if (r.Koerper == null || r.FlaecheM2.HasValue) continue;
+                double boden = 0.0, volumen = 0.0;
+                foreach (int[] d in r.Koerper.Dreiecke)
+                {
+                    double[] a = r.Koerper.PunkteM[d[0]], b = r.Koerper.PunkteM[d[1]], c = r.Koerper.PunkteM[d[2]];
+                    double[] k = IfcPlatzierung.Kreuz(IfcPlatzierung.Minus(b, a), IfcPlatzierung.Minus(c, a));
+                    double l = Math.Sqrt(k[0] * k[0] + k[1] * k[1] + k[2] * k[2]);
+                    if (l <= 1e-12) continue;
+                    if (k[2] / l < -0.7071) boden += -k[2] / 2.0;
+                    volumen += (a[0] * (b[1] * c[2] - b[2] * c[1]) + a[1] * (b[2] * c[0] - b[0] * c[2]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6.0;
+                }
+                if (!(boden > 0.0)) continue;
+                r.FlaecheM2 = Math.Round(boden, 6);
+                r.FlaecheAusGrundriss = true;
+                if (!r.VolumenM3.HasValue && volumen > 0.0) r.VolumenM3 = Math.Round(volumen, 6);
+                summe += boden;
+                namen.Add(string.IsNullOrWhiteSpace(r.Name) ? r.Kennung : r.Name.Trim());
+            }
+            if (namen.Count == 0) return;
+            // Die Warnung „kein Raum mit Mengenangaben“ trifft nicht mehr zu: Die Räume tragen nun eine Fläche.
+            g.Meldungen.RemoveAll(m => m.Schluessel == P + "KEINE_RAEUME");
+            g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "RAUMFLAECHE_KOERPER", Ganz(namen.Count), Zahl(Math.Round(summe, 1)), Beispiele(namen)));
         }
 
         /// <summary>

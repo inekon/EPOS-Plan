@@ -48494,5 +48494,8 @@ Chart</value>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE" xml:space="preserve">
     <value>{0} sonstige Bauteile: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
   </data>
+  <data name="IMP_IFC_PROT_RAUMFLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} Räume ohne Flächenmenge und ohne Grundriss tragen die Bodenfläche ihres Körpers als Raumfläche, zusammen {1} m² ({2}); ohne Volumenmenge gilt das Volumen des Körpers.</value>
+  </data>
 </root>
 
