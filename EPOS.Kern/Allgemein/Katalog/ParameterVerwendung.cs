@@ -114,11 +114,14 @@ namespace WindowsFormsApplication1
     /// steht allein.
     /// </param>
     /// <param name="Fundstelle">
-    /// Der BELEG: Datei und Zeile, an der der Wert gelesen wird — leer nur bei
+    /// Der BELEG: Datei und Symbol („Datei.Methode“, keine Zeilennummer), an dem der Wert gelesen wird — leer nur bei
     /// <see cref="WindowsFormsApplication1.Verwendung.Keine"/>. Die Kern-Probe
     /// <c>ParameterVerwendungTests</c> faellt rot aus, sobald eine als
     /// <see cref="WindowsFormsApplication1.Verwendung.Simulation"/> eingestufte Spalte
-    /// keine Fundstelle nennt.
+    /// keine Fundstelle nennt. Der Variantenvergleich wird über sein Merkmal belegt
+    /// („AbweichungsErmittler.Felder (Tabelle.Spalte)“), nicht über eine Zeilennummer;
+    /// <c>ParameterVerwendungTests</c> prüft, dass der Ermittler dieses Merkmal führt
+    /// und dass jedes genannte Symbol in seiner Datei vorkommt.
     /// </param>
     public sealed record ParameterEintrag(string Spalte, string Anzeigetext, string Einheit,
                                           Verwendung[] Verwendung, string Fundstelle)
@@ -305,28 +308,28 @@ namespace WindowsFormsApplication1
             return new[]
             {
                 E("ID", "ID:", "", SIM,
-                  "Tab_Energieanlagen.ID_Kessel → SimulationControl.cs:3886"),
+                  "Tab_Energieanlagen.ID_Kessel → SimulationControl.KesselTemperaturpaar"),
                 E("Bezeichner", t("HZKK_LBL_NAME"), "", SIM_BER,
-                  "SimulationSPK.cs:131; AbweichungsErmittler.cs:95"),
+                  "SimulationSPK.Kesseldaten_Einlesen; AbweichungsErmittler.Felder (Tab_Heizkessel.Bezeichner)"),
                 E("Firma", t("HZKK_LBL_HERSTELLER"), "", BER,
-                  "AbweichungsErmittler.cs:96"),
+                  "AbweichungsErmittler.Felder (Tab_Heizkessel.Firma)"),
                 E("Beschreibung", t("HZKK_LBL_BESCHREIBUNG"), "", SIM,
                   "HeizkesselKatalogDialog.razor (Feld Beschreibung); SimulationSPK.Kesseldaten_Einlesen " +
                   "(Kesselkennlinie.Bauart: VDI-Bauart „Standard…“ fuer die Normvorgabe von eta30)"),
                 E("Ptherm", t("HZKK_LBL_PTHERM"), "kW", SIM_WIRT_BER,
-                  "SimulationSPK.cs:148; WirtschaftlichkeitCtrl.cs:723; AbweichungsErmittler.cs:97"),
+                  "SimulationSPK.Kesseldaten_Einlesen; WirtschaftlichkeitCtrl.LiesReferenzkessel; AbweichungsErmittler.Felder (Tab_Heizkessel.Ptherm)"),
                 E("Brennstoff", t("HZKK_LBL_ENERGIETRAEGER"), "", SIM_WIRT,
-                  "SimulationSPK.cs:175; WirtschaftlichkeitCtrl.cs:721"),
+                  "SimulationSPK.Kesseldaten_Einlesen; WirtschaftlichkeitCtrl.LiesReferenzkessel"),
                 E("Wirkungsgrad_Gas", t("HZKK_LBL_WG_GAS"), "", SIM_WIRT_BER,
-                  "SimulationSPK.cs:162; WirtschaftlichkeitCtrl.cs:736; AbweichungsErmittler.cs:98"),
+                  "SimulationSPK.Kesseldaten_Einlesen; WirtschaftlichkeitCtrl.LiesReferenzkessel; AbweichungsErmittler.Felder (Tab_Heizkessel.Wirkungsgrad_Gas)"),
                 E("Wirkungsgrad_Öl", t("HZKK_LBL_WG_OEL"), "", SIM_WIRT_BER,
-                  "SimulationSPK.cs:163; WirtschaftlichkeitCtrl.cs:737; AbweichungsErmittler.cs:99"),
+                  "SimulationSPK.Kesseldaten_Einlesen; WirtschaftlichkeitCtrl.LiesReferenzkessel; AbweichungsErmittler.Felder (Tab_Heizkessel.Wirkungsgrad_Öl)"),
                 E("Investitionskosten", t("HZKK_LBL_INVEST"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:357 (BasenFuellen, ERZEUGER_HEIZKESSEL)"),
+                  "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_HEIZKESSEL)"),
                 E("Raumbedarf", t("HZKK_LBL_RAUMBEDARF"), "m³", DLG,
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ des HeizkesselDialog"),
                 E("Wartungskosten", t("KESSEL_WARTUNG_LBL"), "", WIRT,
-                  "TechnikPlanwertCtrl.cs:823 (Betriebskosten-Planwert)"),
+                  "TechnikPlanwertCtrl.KesselPlanwert (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("HZKK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ des HeizkesselDialog" +
                   " — Geraetedaten, nicht rechenwirksam; massgeblich ist die Nutzungsdauertabelle (A8, E10)"),
@@ -344,16 +347,16 @@ namespace WindowsFormsApplication1
                   "SimulationSPK.cs (BereitschaftsleistungKw, Stunde_Abschluss) - Leistung je Stillstandsstunde, " +
                   "in der Einheit Bereitschaft_Einheit (KesselBereitschaft.LeistungKw)"),
                 E("Brennwert", t("HZKK_LBL_BRENNWERT"), "", SIM_BER,
-                  "AbweichungsErmittler.cs:100; SimulationSPK.Kesseldaten_Einlesen " +
+                  "AbweichungsErmittler.Felder (Tab_Heizkessel.Brennwert); SimulationSPK.Kesseldaten_Einlesen " +
                   "(Kesselkennlinie.Bauart: Brennwertkessel fuer die Normvorgabe von eta30)"),
                 E("Vorlauf", t("HZKK_LBL_VORLAUF"), "°C", SIM,
-                  "SimulationControl.cs:3890 (KesselTemperaturpaarGepflegt); Warnkriterien.cs:1258"),
+                  "SimulationControl.KesselTemperaturpaarGepflegt; Warnkriterien.KesselVorlauf"),
                 E("Ruecklauf", t("HZKK_LBL_RUECKLAUF"), "°C", SIM,
-                  "SimulationControl.cs:3890 (KesselTemperaturpaarGepflegt); Warnkriterien.cs:1258"),
+                  "SimulationControl.KesselTemperaturpaarGepflegt; Warnkriterien.KesselVorlauf"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "HeizkesselStammCtrl.Ueberschreiben (Schreibschutz der Auslieferung)"),
                 E("Wartungskosten_Einheit", t("KESSEL_WARTUNG_EINHEIT_LBL"), "", WIRT,
-                  "TechnikPlanwertCtrl.cs:823 (Bezugsgroesse der Wartungskosten)"),
+                  "TechnikPlanwertCtrl.KesselPlanwert (Bezugsgroesse der Wartungskosten)"),
 
                 // Die Kennlinie (Konzept Kesselkennlinie 3.1): gepflegt in Editor und Aufklapper,
                 // gelesen vom Import (Satz 710.01). eta30 rechnet mit der Teillastkennlinie (E2), der
@@ -393,7 +396,7 @@ namespace WindowsFormsApplication1
         /// Nutzerentscheid vom 22.08.2026 ABGELEITET (<c>BHKWKosten.JeKWel</c> aus den
         /// fuenf Einzelposten) und hat im Rechenweg keinen Leser — die Kostenplanung
         /// rechnet mit <c>Kosten_Modul</c> und den vier Nebenposten
-        /// (<c>TechnikPlanwertCtrl.cs:317-325</c>). Seit dem Anwenderentscheid
+        /// (<c>TechnikPlanwertCtrl.BasenFuellen</c>). Seit dem Anwenderentscheid
         /// <b>W14a-E-8-B3</b> vom 07.09.2026 ist er aber keine Dublette mehr, sondern
         /// die AUSGERECHNETE ANZEIGE der fuenf Posten; gespeichert wird immer nur, was
         /// in den Posten steht. Seit dem Anwenderentscheid vom 15.09.2026 steht er im
@@ -423,21 +426,21 @@ namespace WindowsFormsApplication1
             return new[]
             {
                 E("ID", "ID:", "", SIM_WIRT,
-                  "Tab_Energieanlagen.ID_BHKW → WirtschaftlichkeitCtrl.cs:4265; TechnikPlanwertCtrl.cs:160"),
+                  "Tab_Energieanlagen.ID_BHKW → WirtschaftlichkeitCtrl.AnlagenTabelle; TechnikPlanwertCtrl.Plaene"),
                 E("Bezeichner", t("BHKWK_LBL_NAME"), "", SIM_BER,
-                  "SimulationBHKW.cs:281 (ReadSingle); AbweichungsErmittler.cs:85"),
+                  "SimulationBHKW.Moduldaten_Einlesen (ReadSingle); AbweichungsErmittler.Felder (Tab_BHKW.Bezeichner)"),
                 E("Firma", t("BHKWK_LBL_HERSTELLER"), "", BER,
-                  "AbweichungsErmittler.cs:86"),
+                  "AbweichungsErmittler.Felder (Tab_BHKW.Firma)"),
                 E("Beschreibung", t("BHKWK_LBL_BESCHREIBUNG"), "", DLG,
                   "BhkwKatalogDialog.razor (Feld Beschreibung)"),
                 E("Ptherm", t("BHKWK_LBL_PTHERM"), "kW", SIM_WIRT_BER,
-                  "SimulationBHKW.cs:282; KostenEmissionRechner.cs:352; AbweichungsErmittler.cs:88"),
+                  "SimulationBHKW.Moduldaten_Einlesen; KostenEmissionRechner.AnschlussleistungKW; AbweichungsErmittler.Felder (Tab_BHKW.Ptherm)"),
                 E("Pel", t("BHKWK_LBL_PEL"), "kW", SIM_WIRT_BER,
-                  "SimulationBHKW.cs:283; WirtschaftlichkeitCtrl.cs:3585 (KWKG-Deckel); AbweichungsErmittler.cs:89"),
+                  "SimulationBHKW.Moduldaten_Einlesen; WirtschaftlichkeitCtrl.LiesBhkwLeistungKW (KWKG-Deckel); AbweichungsErmittler.Felder (Tab_BHKW.Pel)"),
                 E("Brennstoff", t("BHKWK_LBL_ENERGIETRAEGER"), "", SIM_WIRT,
-                  "SimulationBHKW.cs:286; WirtschaftlichkeitCtrl.cs:4263"),
+                  "SimulationBHKW.Moduldaten_Einlesen; WirtschaftlichkeitCtrl.AnlagenTabelle"),
                 E("Wirkungsgrad", t("BHKWK_LBL_WIRKUNGSGRAD"), "", SIM_WIRT_BER,
-                  "SimulationBHKW.cs:287; KostenEmissionRechner.cs:352; AbweichungsErmittler.cs:90"),
+                  "SimulationBHKW.Moduldaten_Einlesen; KostenEmissionRechner.AnschlussleistungKW; AbweichungsErmittler.Felder (Tab_BHKW.Wirkungsgrad)"),
                 E("Investition_kwel", t("BHKWK_LBL_INVEST"), "€ / kWel", DLG,
                   "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige " +
                   "(W14a-E-8-B3): abgeleitet aus den fuenf Posten (BHKWKosten.JeKWel) und " +
@@ -445,7 +448,7 @@ namespace WindowsFormsApplication1
                 E("Raumbedarf", t("BHKWK_LBL_RAUMBEDARF"), "m³", DLG,
                   "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ des BhkwDialog"),
                 E("Wartungskosten_kwhel", t("BHKWK_LBL_WARTUNG"), "€ / kWhel", WIRT,
-                  "TechnikPlanwertCtrl.cs:706 (Betriebskosten-Planwert)"),
+                  "TechnikPlanwertCtrl.LiesBetriebsplanwert (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("BHKWK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
                   "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ des BhkwDialog" +
                   " — Geraetedaten, nicht rechenwirksam; massgeblich ist die Nutzungsdauertabelle (A8, E10)"),
@@ -460,23 +463,23 @@ namespace WindowsFormsApplication1
                 E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", DLG,
                   "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("Motortyp", t("BHKWK_LBL_MOTORTYP"), "", BER,
-                  "AbweichungsErmittler.cs:87"),
+                  "AbweichungsErmittler.Felder (Tab_BHKW.Motortyp)"),
                 E("Grenzleistung", t("BHKWK_LBL_GRENZLEISTUNG"), "%", SIM,
-                  "SimulationBHKW.cs:312 (Teillastgrenze, Prozent → Faktor)"),
+                  "SimulationBHKW.Moduldaten_Einlesen (Teillastgrenze, Prozent → Faktor)"),
                 E("Kosten_Modul", t("BHKWK_LBL_MODUL"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:317"),
+                  "TechnikPlanwertCtrl.BasenFuellen"),
                 E("Kosten_Montage", t("BHKWK_LBL_MONTAGE"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:322"),
+                  "TechnikPlanwertCtrl.BasenFuellen"),
                 E("Kosten_Lieferung", t("BHKWK_LBL_LIEFERUNG"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:323"),
+                  "TechnikPlanwertCtrl.BasenFuellen"),
                 E("Kosten_Schallschutzhaube", t("BHKWK_LBL_SCHALLSCHUTZ"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:324"),
+                  "TechnikPlanwertCtrl.BasenFuellen"),
                 E("Kosten_Abgasreinigung", t("BHKWK_LBL_ABGASREINIGUNG"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:325"),
+                  "TechnikPlanwertCtrl.BasenFuellen"),
                 E("Vorlauf", t("BHKWK_LBL_VORLAUF"), "°C", BER,
-                  "AbweichungsErmittler.cs:91 — der Lauf nimmt Tab_Energieanlagen.Vorlauf"),
+                  "AbweichungsErmittler.Felder (Tab_BHKW.Vorlauf) — der Lauf nimmt Tab_Energieanlagen.Vorlauf"),
                 E("Ruecklauf", t("BHKWK_LBL_RUECKLAUF"), "°C", BER,
-                  "AbweichungsErmittler.cs:92 — der Lauf nimmt Tab_Energieanlagen.[Rücklauf]"),
+                  "AbweichungsErmittler.Felder (Tab_BHKW.Ruecklauf) — der Lauf nimmt Tab_Energieanlagen.[Rücklauf]"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "BHKWStammCtrl.IstSchreibgeschuetzt (Rueckfrage beim Ueberschreiben)"),
                 // SCHEMASCHRITT 99, und deshalb ZULETZT: Die Reihenfolge dieser Liste
@@ -515,13 +518,13 @@ namespace WindowsFormsApplication1
         /// <b>Die Kennfelder stehen nicht hier.</b> COP und Leistung je Vorlauf und
         /// Quelltemperatur fuehrt <c>Tab_Kenndaten_STAMM</c> (Kopie
         /// <c>Tab_Kenndaten</c>); der Lauf liest sie in
-        /// <c>SimulationWaermepumpe.cs:611</c>, gepflegt werden sie im
+        /// <c>SimulationWaermepumpe.KennlinienwahlLaden</c>, gepflegt werden sie im
         /// <c>KennlinienEditorDialog</c> (W7.2). Sie sind KEINE Spalten dieser Tabelle
         /// und stehen deshalb nicht in diesem Katalog.
         ///
         /// <para><b>Der Befund dieser Tabelle:</b> <c>Modulkosten</c> ist der einzige
         /// Kostenwert der Waermepumpe, den die Kostenplanung liest
-        /// (<c>TechnikPlanwertCtrl.cs:345</c>) — und der einzige gerechnete Parameter
+        /// (<c>TechnikPlanwertCtrl.BasenFuellen</c>) — und der einzige gerechnete Parameter
         /// aller sieben Kataloge, den seine Verwaltung nicht zur PFLEGE fuehrt.
         /// <b>Seit dem Anwenderentscheid W14a-O-1 vom 06.09.2026 zeigt sie ihn
         /// wenigstens</b>: als Lesewert mit Herleitungszeile im Stammdialog. Ä19
@@ -540,30 +543,30 @@ namespace WindowsFormsApplication1
             return new[]
             {
                 E("ID", "ID:", "", SIM,
-                  "Tab_Energieanlagen.ID_WP → SimulationWaermepumpe.cs:538; Hydraulikbild.cs:175"),
+                  "Tab_Energieanlagen.ID_WP → SimulationWaermepumpe.ModuleAufbauen; Hydraulikbild.Lesen"),
                 E("Bezeichner", t("WPS_LBL_NAME"), "", SIM_BER,
-                  "SimulationWaermepumpe.cs:538 (ID_WP der Anlage); AbweichungsErmittler.cs:75"),
+                  "SimulationWaermepumpe.ModuleAufbauen (ID_WP der Anlage); AbweichungsErmittler.Felder (Tab_WP.Bezeichner)"),
                 E("Firma", t("WPS_LBL_HERSTELLER"), "", BER,
-                  "AbweichungsErmittler.cs:76"),
+                  "AbweichungsErmittler.Felder (Tab_WP.Firma)"),
                 E("Beschreibung", t("WPS_LBL_BESCHREIBUNG"), "", DLG,
                   "WaermepumpeStammDialog.razor (Feld Beschreibung)"),
                 E("Typ", t("WPS_LBL_TYP"), "", SIM_BER,
-                  "SimulationWaermepumpe.cs:543 (Bauart → Quellenwahl); Warnkriterien.cs:669; AbweichungsErmittler.cs:77"),
+                  "SimulationWaermepumpe.ModuleAufbauen (Bauart → Quellenwahl); Warnkriterien.SoleOhneQuellePruefen; AbweichungsErmittler.Felder (Tab_WP.Typ)"),
                 E("Baujahr", t("WPS_LBL_BAUJAHR"), "", DLG,
                   "WaermepumpeStammDialog.razor (Feld Baujahr)"),
                 E("Aufstellung", t("WPS_LBL_AUFSTELLUNG"), "", DLG,
-                  "WaermepumpenKatalogFilter.cs:98 (Katalogfilter W7.1)"),
+                  "WaermepumpenKatalogFilter.Anwenden (Katalogfilter W7.1)"),
                 E("Nennleistung", t("WPS_LBL_NENNLEISTUNG"), "kW", SIM_BER,
-                  "SimulationWaermepumpe.cs:541 (Grenzleistung des Moduls); AbweichungsErmittler.cs:79"),
+                  "SimulationWaermepumpe.ModuleAufbauen (Grenzleistung des Moduls); AbweichungsErmittler.Felder (Tab_WP.Nennleistung)"),
                 // Kein Leser mehr: Der Bericht fuehrt die Spalte nicht (Anwenderentscheid
                 // 29.09.2026); im Stammdialog nicht sichtbar, laeuft verborgen mit.
                 E("maxPtherm", t("PARV_LBL_MAXPTHERM"), "kW", NIX),
                 E("Heizung", t("WPS_LBL_HEIZSTAB"), "kW", SIM,
-                  "SimulationWaermepumpe.cs:542 (WP_Heizung, Heizstabphase :1553)"),
+                  "SimulationWaermepumpe.ModuleAufbauen (WP_Heizung, Heizstabphase)"),
                 E("Regelung", t("WPS_LBL_REGELUNG"), "", BER,
-                  "AbweichungsErmittler.cs:82; WaermepumpenKatalogFilter.cs:96"),
+                  "AbweichungsErmittler.Felder (Tab_WP.Regelung); WaermepumpenKatalogFilter.Anwenden"),
                 E("Modulkosten", t("MODK_LBL_MODULKOSTEN"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:345 (BasenFuellen, ERZEUGER_WAERMEPUMPE) — " +
+                  "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_WAERMEPUMPE) — " +
                   "im Stammdialog nur lesend (W14a-O-1); geschrieben wird die Spalte " +
                   "heute von KEINEM Importweg (Befund W14a-O-2)"),
                 E("Laenge", t("MODK_LBL_LAENGE"), "mm", NIX),
@@ -572,9 +575,9 @@ namespace WindowsFormsApplication1
                 E("Gewicht", t("PARV_LBL_GEWICHT"), "kg", NIX),
                 E("Raum", t("HZKK_LBL_RAUMBEDARF"), "m³", NIX),
                 E("Kuehlleistung", t("WPS_LBL_KUEHLLEISTUNG"), "kW", BER,
-                  "AbweichungsErmittler.cs:81"),
+                  "AbweichungsErmittler.Felder (Tab_WP.Kuehlleistung)"),
                 E("Bauart", t("WPK_LBL_BAUART"), "", BER,
-                  "AbweichungsErmittler.cs:78; WaermepumpenKatalogFilter.cs:98"),
+                  "AbweichungsErmittler.Felder (Tab_WP.Bauart); WaermepumpenKatalogFilter.Anwenden"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "WPStammCtrl.Speichern (Auslieferungssatz, Liste gedimmt)"),
                 // KU-S3 (Schemaschritt 114; Kuehlkonzept 7.3, E33): der Kuehlbetrieb am
@@ -620,30 +623,30 @@ namespace WindowsFormsApplication1
             return new[]
             {
                 E("ID", "ID:", "", SIM_WIRT,
-                  "Tab_Energieanlagen.ID_Solar → SimulationSolarthermie.cs:230; TechnikPlanwertCtrl.cs:163"),
+                  "Tab_Energieanlagen.ID_Solar → SimulationSolarthermie.Kollektorfelder_Lesen; TechnikPlanwertCtrl.Plaene"),
                 E("Bezeichner", t("SKK_LBL_NAME"), "", SIM_BER,
-                  "SimulationSolarthermie.cs:251; AbweichungsErmittler.cs:103"),
+                  "SimulationSolarthermie.Kollektorfelder_Lesen; AbweichungsErmittler.Felder (Tab_Solarkollektoren.Bezeichner)"),
                 E("Firma", t("SKK_LBL_HERSTELLER"), "", DLG,
                   "SolarkollektorKatalogDialog.razor (Feld Hersteller)"),
                 E("Beschreibung", t("SKK_LBL_BESCHREIBUNG"), "", DLG,
                   "SolarkollektorKatalogDialog.razor (Feld Beschreibung)"),
                 E("Kollektortyp", t("SKK_LBL_TYP"), "", BER,
-                  "AbweichungsErmittler.cs:104"),
+                  "AbweichungsErmittler.Felder (Tab_Solarkollektoren.Kollektortyp)"),
                 E("Modulflaeche", t("SKK_LBL_MODULFLAECHE"), "m²", SIM,
                   "Solarkreis.Modulbezugsflaeche (Bruttoflaeche, rechnet bei Bezugsflaeche = brutto); " +
                   "SolarkollektorKatalogDialog.razor (Feld Kollektorflaeche)"),
                 E("Aperturflaeche", t("SKK_LBL_APERTURFLAECHE"), "m²", SIM_BER,
                   "Solarkreis.Modulbezugsflaeche (rechnet bei Bezugsflaeche = apertur, der Vorgabe); " +
-                  "AbweichungsErmittler.cs:105"),
-                E("h0", "h0:", "", SIM, "SimulationSolarthermie.cs:242 (Konversionsfaktor)"),
-                E("k1", "k1:", "W/(m²*K)", SIM, "SimulationSolarthermie.cs:243"),
-                E("k2", "k2:", "W/(m²*K²)", SIM, "SimulationSolarthermie.cs:244"),
-                E("Kdir", "Kdir:", "", SIM, "SimulationSolarthermie.cs:245 (IAM, direkt)"),
+                  "AbweichungsErmittler.Felder (Tab_Solarkollektoren.Aperturflaeche)"),
+                E("h0", "h0:", "", SIM, "SimulationSolarthermie.Kollektorfelder_Lesen (Konversionsfaktor)"),
+                E("k1", "k1:", "W/(m²*K)", SIM, "SimulationSolarthermie.Kollektorfelder_Lesen"),
+                E("k2", "k2:", "W/(m²*K²)", SIM, "SimulationSolarthermie.Kollektorfelder_Lesen"),
+                E("Kdir", "Kdir:", "", SIM, "SimulationSolarthermie.Kollektorfelder_Lesen (IAM, direkt)"),
                 E("Kdfu", "Kdiff:", "", SIM,
                   "Solarkreis.LeistungJeQm (K_d der Diffus- und Bodenreflexstrahlung, ST5; 0 = K_b(θ)); " +
                   "SolarkollektorKatalogDialog.razor (Feld Kdiff)"),
                 E("Investitionskosten", t("SKK_LBL_KOSTEN"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:341 (Stueckpreis, ERZEUGER_SOLARTHERMIE)"),
+                  "TechnikPlanwertCtrl.BasenFuellen (Stueckpreis, ERZEUGER_SOLARTHERMIE)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "SolarkollektorenStammCtrl (Auslieferungssatz)"),
 
@@ -674,17 +677,17 @@ namespace WindowsFormsApplication1
             return new[]
             {
                 E("ID", "ID:", "", SIM_WIRT,
-                  "Tab_Energieanlagen.ID_PV → SimulationPV.cs:179; TechnikPlanwertCtrl.cs:162"),
+                  "Tab_Energieanlagen.ID_PV → SimulationPV.Berechnung; TechnikPlanwertCtrl.Plaene"),
                 E("Bezeichner", t("MODK_LBL_BEZEICHNER_PV"), "", SIM_BER,
-                  "SimulationPV.cs:467 (Modulname der Meldungen); AbweichungsErmittler.cs:108"),
+                  "SimulationPV.Berechnung (Modulname der Meldungen); AbweichungsErmittler.Felder (Tab_PV.Bezeichner)"),
                 E("Firma", t("MODK_LBL_FIRMA"), "", BER,
-                  "AbweichungsErmittler.cs:109"),
+                  "AbweichungsErmittler.Felder (Tab_PV.Firma)"),
                 E("Beschreibung", t("MODK_LBL_BESCHREIBUNG"), "", DLG,
                   "ModulKatalogDialog.razor (Feld Beschreibung)"),
                 E("Leistung", t("MODK_LBL_PMAX"), "W", SIM_BER,
-                  "SimulationPV.cs:497 (P_STC der Anlage); AbweichungsErmittler.cs:110"),
+                  "SimulationPV.Berechnung (P_STC der Anlage); AbweichungsErmittler.Felder (Tab_PV.Leistung)"),
                 E("Wirkungsgrad", t("MODK_LBL_WIRKUNGSGRAD"), "%", SIM_BER,
-                  "SimulationPV.cs:184/480; AbweichungsErmittler.cs:111"),
+                  "SimulationPV.Berechnung; AbweichungsErmittler.Felder (Tab_PV.Wirkungsgrad)"),
                 E("U_Mpp", t("MODK_LBL_UMPP"), "V", DLG,
                   "PhotovoltaikStammCtrl.Parameterzeilen (W6-E-1); ModulKatalogDialog"),
                 E("U_Leerlauf", t("MODK_LBL_ULEERLAUF"), "V", DLG,
@@ -698,19 +701,19 @@ namespace WindowsFormsApplication1
                 E("beta_OC", t("PVIMP_LBL_BETA_VOC"), "", DLG,
                   "PhotovoltaikStammCtrl.Parameterzeilen (W6-E-1) — nur Anzeige, Quelle CEC/PAN-Import"),
                 E("gamma_PMP", t("MODK_LBL_TEMPKOEFF"), "%/K", SIM,
-                  "SimulationPV.cs:535 (Temperaturkoeffizient des Huld-Modells)"),
+                  "SimulationPV.Berechnung (Temperaturkoeffizient des Huld-Modells)"),
                 E("T_NOCT", t("PV_MODUL_LABEL_TNOCT"), "°C", SIM,
-                  "SimulationPV.cs:508 (Zelltemperatur)"),
+                  "SimulationPV.NoctDesModuls (Zelltemperatur)"),
                 E("Laenge", t("MODK_LBL_LAENGE"), "m", SIM,
-                  "SimulationPV.cs:183/480 (Modulflaeche)"),
+                  "SimulationPV.Berechnung (Modulflaeche)"),
                 E("Breite", t("MODK_LBL_BREITE"), "m", SIM,
-                  "SimulationPV.cs:183/480 (Modulflaeche)"),
+                  "SimulationPV.Berechnung (Modulflaeche)"),
                 E("Modulkosten", t("MODK_LBL_MODULKOSTEN_PV"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:349 (Stueckpreis, ERZEUGER_PHOTOVOLTAIK)"),
+                  "TechnikPlanwertCtrl.BasenFuellen (Stueckpreis, ERZEUGER_PHOTOVOLTAIK)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "PhotovoltaikStammCtrl.SpeichernAus (Auslieferungssatz)"),
                 E("Technologie", t("PVM_MODUL_LABEL_TECHNOLOGIE"), "", SIM_BER,
-                  "SimulationPV.cs:590 (Huld-Satz je Zelltechnologie); AbweichungsErmittler.cs:112")
+                  "SimulationPV.HuldSatzDerAnlage (Huld-Satz je Zelltechnologie); AbweichungsErmittler.Felder (Tab_PV.Technologie)")
             }.Concat(Katalogspalten(t)).ToList();
         }
 
@@ -720,43 +723,43 @@ namespace WindowsFormsApplication1
 
         /// <remarks>
         /// <b>Der Befund dieser Tabelle:</b> Sie ist die einzige der sieben, in der
-        /// JEDE Fachspalte gerechnet wird — <c>StromspeicherSimCtrl.cs:1109-1122</c>
+        /// JEDE Fachspalte gerechnet wird — <c>StromspeicherSimCtrl.LeseParameter</c>
         /// liest alle elf und reicht sie als <c>SpeicherParameter</c> an die
         /// <c>SpeicherEngine</c>. Vier davon sind Kostengroessen und gehen ausserdem in
-        /// den Kostenplanwert (<c>TechnikPlanwertCtrl.cs:330-340</c>).
+        /// den Kostenplanwert (<c>TechnikPlanwertCtrl.BasenFuellen</c>).
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Stromspeicher(Func<string, string> t)
         {
             return new[]
             {
                 E("ID", "ID:", "", SIM_WIRT,
-                  "Tab_Energieanlagen.ID_SP → StromspeicherSimCtrl.cs:1055; TechnikPlanwertCtrl.cs:164"),
+                  "Tab_Energieanlagen.ID_SP → StromspeicherSimCtrl.Speicheranlagen; TechnikPlanwertCtrl.Plaene"),
                 E("Bezeichner", t("MODK_LBL_BEZEICHNER"), "", SIM_BER,
-                  "StromspeicherSimCtrl.cs:1054; AbweichungsErmittler.cs:120"),
+                  "StromspeicherSimCtrl.LeseParameter; AbweichungsErmittler.Felder (Tab_Stromspeicher.Bezeichner)"),
                 E("Typ", t("MODK_LBL_TYP"), "", BER,
-                  "AbweichungsErmittler.cs:121"),
+                  "AbweichungsErmittler.Felder (Tab_Stromspeicher.Typ)"),
                 E("Leistung", t("MODK_LBL_LEISTUNG"), "kW", SIM_WIRT_BER,
-                  "StromspeicherSimCtrl.cs:1110; TechnikPlanwertCtrl.cs:333; AbweichungsErmittler.cs:122"),
+                  "StromspeicherSimCtrl.LeseParameter; TechnikPlanwertCtrl.BasenFuellen; AbweichungsErmittler.Felder (Tab_Stromspeicher.Leistung)"),
                 E("Energie", t("SP_LABEL_ENERGIE_KURZ"), "kWh", SIM_WIRT_BER,
-                  "StromspeicherSimCtrl.cs:1109; TechnikPlanwertCtrl.cs:331; AbweichungsErmittler.cs:123"),
+                  "StromspeicherSimCtrl.LeseParameter; TechnikPlanwertCtrl.BasenFuellen; AbweichungsErmittler.Felder (Tab_Stromspeicher.Energie)"),
                 E("Degradation", t("MODK_LBL_DEGRADATION"), "%", SIM,
-                  "StromspeicherSimCtrl.cs:1118 (SpeicherParameter.DegradationProA)"),
+                  "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.DegradationProA)"),
                 E("Ladezustand", t("MODK_LBL_LADEZUSTAND"), "%", SIM,
-                  "StromspeicherSimCtrl.cs:1117 (nutzbarer Hub)"),
+                  "StromspeicherSimCtrl.LeseParameter (nutzbarer Hub)"),
                 E("Modulkosten", t("MODK_LBL_MODULKOSTEN"), "€/kWh", WIRT,
-                  "TechnikPlanwertCtrl.cs:330 (spezifischer Kapazitaetspreis)"),
+                  "TechnikPlanwertCtrl.BasenFuellen (spezifischer Kapazitaetspreis)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "StromspeicherStammCtrl.SpeichernAus (Auslieferungssatz)"),
                 E("Wirkungsgrad_RT", t("SP_LABEL_WIRKUNGSGRAD_RT"), "-", SIM,
-                  "StromspeicherSimCtrl.cs:1120 (Umlaufwirkungsgrad der SpeicherEngine)"),
+                  "StromspeicherSimCtrl.LeseParameter (Umlaufwirkungsgrad der SpeicherEngine)"),
                 E("Zyklen_Zugesichert", t("SP_LABEL_ZYKLEN"), "-", SIM_WIRT,
-                  "StromspeicherSimCtrl.cs:1122; SpeicherEngine/ArbitragePlaner.cs:198 (Zyklenbudget)"),
+                  "StromspeicherSimCtrl.LeseParameter; ArbitragePlaner.Lauf (Zyklenbudget)"),
                 E("Verschleisskosten", t("SP_LABEL_VERSCHLEISSKOSTEN"), t("SP_EINHEIT_ZYKLUSKOSTEN"), WIRT,
-                  "StromspeicherSimCtrl.cs:1121; SpeicherEngine/ArbitrageOptionen.cs:178"),
+                  "StromspeicherSimCtrl.LeseParameter; ArbitrageOptionen.VerschleissCtKwh"),
                 E("Leistungskosten", t("SP_LABEL_LEISTUNGSKOSTEN"), "€/kW", WIRT,
-                  "TechnikPlanwertCtrl.cs:332"),
+                  "TechnikPlanwertCtrl.BasenFuellen"),
                 E("Investition_Fix", t("SP_LABEL_INVESTITION_FIX"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:334; StromspeicherSimCtrl.cs:1114"),
+                  "TechnikPlanwertCtrl.BasenFuellen; StromspeicherSimCtrl.LeseParameter"),
                 E("Standby_Verbrauch", t("SP_LABEL_STANDBY"), "W", SIM,
                   "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.StandbyKw); " +
                   "SpeicherEngine/Speichersystem.Standby (aus PV-Überschuss, sonst Netz; Welle M5, SP1)"),
@@ -800,19 +803,19 @@ namespace WindowsFormsApplication1
             return new[]
             {
                 E("ID", "ID:", "", SIM_WIRT,
-                  "Tab_Energieanlagen.ID_PUFFER → WaermesenkeClass.cs:574; TechnikPlanwertCtrl.cs:165"),
+                  "Tab_Energieanlagen.ID_PUFFER → WaermesenkeClass.PufferLesen; TechnikPlanwertCtrl.Plaene"),
                 E("Bezeichner", t("PSPK_LBL_NAME"), "", SIM_BER,
-                  "WaermesenkeClass.cs:1284/1561; AbweichungsErmittler.cs:115"),
+                  "WaermesenkeClass.ProjektPufferListe; AbweichungsErmittler.Felder (Tab_Pufferspeicher.Bezeichner)"),
                 E("Hersteller", t("PSPK_LBL_HERSTELLER"), "", DLG,
                   "PufferSpKatalogDialog.razor (Feld Hersteller); Herstellerfilter des Browsers"),
                 E("Speichertyp", t("PSPK_LBL_SPEICHERTYP"), "", SIM_BER,
-                  "Warnkriterien.cs:1307/984 (Kriterium W4, Kombi- und Solarspeicher); AbweichungsErmittler.cs:116"),
+                  "Warnkriterien.BauformAnzeige, Warnkriterien.SpeicherPruefen (Kriterium W4, Kombi- und Solarspeicher); AbweichungsErmittler.Felder (Tab_Pufferspeicher.Speichertyp)"),
                 E("Bereitschaftsverluste", t("PSPK_LBL_VERLUSTE"), "kWh/d", SIM,
-                  "SimulationControl.cs:1681 (SimulationPufferspeicher.Init); WaermequelleClass.cs:805"),
+                  "SimulationControl.SpeicherRegistryAufbauen (SimulationPufferspeicher.Init); WaermequelleClass.Quellspeicher"),
                 E("Gesamtvolumen", t("PSPK_LBL_VOLUMEN"), "l", SIM_BER,
-                  "SimulationControl.cs:1681; WaermequelleClass.cs:803; AbweichungsErmittler.cs:117"),
+                  "SimulationControl.SpeicherRegistryAufbauen; WaermequelleClass.Quellspeicher; AbweichungsErmittler.Felder (Tab_Pufferspeicher.Gesamtvolumen)"),
                 E("Investitionskosten", t("PSPK_LBL_INVEST"), "€", WIRT,
-                  "TechnikPlanwertCtrl.cs:357 (KOSTEN_KOMPONENTE_PUFFERSPEICHER)"),
+                  "TechnikPlanwertCtrl.BasenFuellen (KOSTEN_KOMPONENTE_PUFFERSPEICHER)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "PufferSpStammCtrl.Ueberschreiben (Auslieferungssatz)")
             }.Concat(Katalogspalten(t)).ToList();

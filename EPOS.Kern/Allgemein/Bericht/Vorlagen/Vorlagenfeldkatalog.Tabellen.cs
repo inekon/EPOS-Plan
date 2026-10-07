@@ -189,6 +189,8 @@ namespace WindowsFormsApplication1
                 {
                     Bezeichnung = k => BerichtTexte.T(gr, k.Name.StartsWith("en", StringComparison.OrdinalIgnoreCase)),
                 };
+                // Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Kennzahlgruppe „Gebäude“ kam mit dieser Fassung.
+                if (gr == KennzahlenKatalog.GR_GEBAEUDE) q.Seit = FASSUNG_AUFHEIZUNG;
                 yield return q;
             }
             yield return Q("tabelle.vergleich.delta_prozent", G, w => Berichtstabellen.DeltaProzent(w.Daten, w.Englisch, w.Kultur));
@@ -236,6 +238,14 @@ namespace WindowsFormsApplication1
                                       Vorlagenbedarf.Zeitreihen);
             kessel.Seit = FASSUNG_KESSEL;
             yield return kessel;
+
+            // ---------------- je Stand, Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Gebäudetafel je Stand, ohne Δ ----------------
+            // Dieselbe Tafel wie tabelle.gebaeude.ergebnis (Berichtstabellen.Gebaeudeergebnisse) für den laufenden Stand: je Gebäude
+            // Rechenweg, Spitzen, Lüftungs- und Aufheizzeilen, Hinweise W1–W5 — keine zweite Quelle. Das Δ trägt die Kennzahlgruppe
+            // „Gebäude“ (tabelle.vergleich.gebaeude).
+            Tabellenquelle gebaeude = Q(STAND_TABELLE + "gebaeude", S, jeStand((w, v) => Berichtstabellen.Gebaeudeergebnisse(v, w.Englisch, w.Kultur)));
+            gebaeude.Seit = FASSUNG_AUFHEIZUNG;
+            yield return gebaeude;
 
             // ---------------- je Stand, Katalog v15 (VB‑E4): die Kennzahlen je Szenario (VALERI-Darstellung) ----------------
             // Dieselbe Tafel wie im Kapitel in VALERI-Darstellung; fehlt dem Stand Günstig oder Ungünstig, steht sie allein

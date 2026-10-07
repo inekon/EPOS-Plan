@@ -1019,4 +1019,4 @@ drei Stoffgruppen) und die Rolle von `AddIns…` (hier nicht belegt).
    Fassungs- oder Projektunterschied, offen.
 5. `AdjacentType` 6 und 7 (Kapitel 6.3) bleiben offen; hier an 2 und 36 Deckenstücken.
 
-Umgesetzt in BA-4b (#788) und Fix Raumabgleich (#788), siehe [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-07_BA-4b_Aufbauten_Projektdatei.md).
+Umgesetzt in BA-4b (#791) und Fix Raumabgleich (#791), siehe [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-07_BA-4b_Aufbauten_Projektdatei.md).

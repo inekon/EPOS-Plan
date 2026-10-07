@@ -76,15 +76,19 @@ namespace WindowsFormsApplication1
         /// Wärmebedarf, die drei Spitzenwerte und auf dem VDI-Weg die Kühl- und Raumkennzahlen; die Tafel, die das
         /// Kapitel „Projektbeschreibung“ je Gebäude schreibt.
         /// </summary>
-        public static Berichtstabelle Gebaeudeergebnis(ErgebnisGebaeudeModel g, bool englisch, CultureInfo kultur)
+        /// <param name="aufschlag">KP3 Welle O3a: der Aufschlag der Projekteinstellung (<see cref="Aufheizbericht.Aufschlag"/>);
+        /// <c>null</c> = keiner.</param>
+        public static Berichtstabelle Gebaeudeergebnis(ErgebnisGebaeudeModel g, bool englisch, CultureInfo kultur,
+                                                       (double? H, double? Prozent)? aufschlag = null)
         {
             if (g == null) return Leer(nameof(RR.BV_GRUND_KEIN_GEBAEUDE), kultur);
-            return Eigenschaftstabelle(Gebaeudepaare(g, kultur), englisch);
+            return Eigenschaftstabelle(Gebaeudepaare(g, kultur).Concat(Aufheizbericht.Zeilen(g, aufschlag, kultur)), englisch);
         }
 
         /// <summary>
         /// <b><c>tabelle.gebaeude.ergebnis</c></b> — die Kennzahlen aller Gebäude des Stamms in einer Tafel: je Gebäude eine
-        /// Gruppenzeile mit seinem Namen, darunter seine Zeilen wie in <see cref="Gebaeudeergebnis"/>.
+        /// Gruppenzeile mit seinem Namen, darunter seine Zeilen wie in <see cref="Gebaeudeergebnis"/>; mit Anlass die
+        /// benannten Hinweise W1–W5 als Zeile „Hinweise“ (KP3 Welle O3a, Muster der Warnliste der Pufferauslegung).
         /// </summary>
         public static Berichtstabelle Gebaeudeergebnisse(VariantenDaten stamm, bool englisch, CultureInfo kultur)
         {
@@ -93,6 +97,7 @@ namespace WindowsFormsApplication1
             if (zeilen.Count == 0) return Leer(nameof(RR.BV_GRUND_KEIN_GEBAEUDE), kultur);
 
             var t = new Berichtstabelle().Feste(2800, 0);
+            (double? H, double? Prozent)? aufschlag = Aufheizbericht.Aufschlag(stamm.Details);
             foreach (ErgebnisGebaeudeModel g in zeilen)
             {
                 t.Zeile(new[]
@@ -101,7 +106,14 @@ namespace WindowsFormsApplication1
                                 rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
                     Zellen.Text("", rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
                 }, Tabellenrolle.Gruppe);
-                foreach (Tabellenzeile z in Gebaeudeergebnis(g, englisch, kultur).Zeilen) t.Zeile(z.Zellen, z.Rolle);
+                foreach (Tabellenzeile z in Gebaeudeergebnis(g, englisch, kultur, aufschlag).Zeilen) t.Zeile(z.Zellen, z.Rolle);
+                List<string> hinweise = Aufheizbericht.Hinweise(g, kultur);
+                if (hinweise.Count > 0)
+                    t.Zeile(new[]
+                    {
+                        Zellen.Text(Grund(nameof(RR.BV_AUFH_HINWEISE), kultur), fett: true, h: Tabellenhinterlegung.Stamm),
+                        Zellen.Text(string.Join("\n", hinweise)),
+                    });
             }
             return t;
         }

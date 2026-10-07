@@ -22,6 +22,13 @@ namespace WindowsFormsApplication1
         /// <summary>Wertzugriff; null = für dieses Projekt nicht verfügbar (Anzeige „—").</summary>
         public Func<VariantenDaten, double?> Wert;
 
+        /// <summary>
+        /// Die Katalogfassung der Berichtsvorlagen, seit der die erzeugten Vorlagenfelder dieser Kennzahl im Katalog stehen
+        /// (Vorgabe 1; Konzept Berichtsvorlagen 5.6, Entwurf KP3 Festlegung 30) — eine neue Kennzahl trägt die Fassung, in der
+        /// sie kam, damit die eingefrorenen Listen früherer Fassungen bleiben, wie sie ausgeliefert sind.
+        /// </summary>
+        public int Seit = 1;
+
         public Kennzahl(string schluessel, string de, string en, string einheit,
                         string gruppe, string format, bool delta, Func<VariantenDaten, double?> wert)
         {
@@ -48,8 +55,59 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string GR_KAELTE = "Kälte";
 
+        /// <summary>
+        /// Die Gruppe der Gebäudekennzahlen (Entwurf KP3 Welle O3b, E58 F3 (c)): Nachtauskühl- und Sommerlüftungsstunden und
+        /// die Werte der Aufheizoptimierung aus den Ergebniszeilen der Gebäude, mit Δ. Ein Projekt ohne diese Werte führt in der
+        /// Gruppe keinen Wert — die Gruppe entfällt.
+        /// </summary>
+        public const string GR_GEBAEUDE = "Gebäude";
+
         /// <summary>Die Gruppen in der Reihenfolge der Kennzahlentabellen (Word und Excel).</summary>
-        public static readonly string[] GRUPPEN = { GR_ENERGIE, GR_EFFIZIENZ, GR_KAELTE, GR_EMISSION, GR_KOSTEN };
+        public static readonly string[] GRUPPEN = { GR_ENERGIE, GR_EFFIZIENZ, GR_KAELTE, GR_GEBAEUDE, GR_EMISSION, GR_KOSTEN };
+
+        // ------------------------------------------------------------------
+        // KP3 WELLE O3b (E58 F3 (c)) — die Gebäudekennzahlen
+        // ------------------------------------------------------------------
+
+        /// <summary>Nachtauskühlstunden [h/a], Höchstwert über die Gebäude.</summary>
+        public const string SCHLUESSEL_GEB_NACHTAUSKUEHLSTUNDEN = "geb.nachtauskuehlstunden";
+
+        /// <summary>Sommerlüftungsstunden [h/a], Höchstwert über die Gebäude nach VDI 6007.</summary>
+        public const string SCHLUESSEL_GEB_SOMMERLUEFTUNGSSTUNDEN = "geb.sommerlueftungsstunden";
+
+        /// <summary>Längste Aufheizzeit t_auf,max [h] (bei Art „manuell“ der manuelle Wert), Höchstwert über die Gebäude.</summary>
+        public const string SCHLUESSEL_GEB_AUFHEIZZEIT = "geb.aufheizzeit";
+
+        /// <summary>Aufheizstunden Σ [h/a], Höchstwert über die Gebäude.</summary>
+        public const string SCHLUESSEL_GEB_AUFHEIZSTUNDEN = "geb.aufheizstunden";
+
+        /// <summary>Aufheizleistung P_auf [kW], Summe über die Gebäude.</summary>
+        public const string SCHLUESSEL_GEB_AUFHEIZLEISTUNG = "geb.aufheizleistung";
+
+        /// <summary>Auslegungsgröße Φ_HL + Φ_RH [kW] (E60), Summe über die Gebäude.</summary>
+        public const string SCHLUESSEL_GEB_AUSLEGUNGSGROESSE = "geb.auslegungsgroesse";
+
+        /// <summary>
+        /// Der Höchstwert einer Größe über die Gebäude des Stands — dieselben Ergebniszeilen wie die Gebäudetafel
+        /// (<see cref="ProjektbeschreibungBaustein.GebaeudeZeilen"/>); <c>null</c>, wenn kein Gebäude sie trägt. Stunden und Zeiten
+        /// lassen sich über Gebäude nicht addieren (E58 F3).
+        /// </summary>
+        public static double? Gebaeudehoechstwert(VariantenDaten v, Func<ErgebnisGebaeudeModel, double?> wert)
+        {
+            double? m = null;
+            foreach (ErgebnisGebaeudeModel g in ProjektbeschreibungBaustein.GebaeudeZeilen(v))
+                if (wert(g) is double x && (!m.HasValue || x > m.Value)) m = x;
+            return m;
+        }
+
+        /// <summary>Die Summe einer Leistung über die Gebäude des Stands, die sie tragen; <c>null</c>, wenn keines sie trägt (P_auf als Summe, E58 F3).</summary>
+        public static double? Gebaeudesumme(VariantenDaten v, Func<ErgebnisGebaeudeModel, double?> wert)
+        {
+            double? s = null;
+            foreach (ErgebnisGebaeudeModel g in ProjektbeschreibungBaustein.GebaeudeZeilen(v))
+                if (wert(g) is double x) s = (s ?? 0.0) + x;
+            return s;
+        }
 
         // Kurzzugriffe (null-tolerant) --------------------------------------
 
@@ -607,6 +665,31 @@ namespace WindowsFormsApplication1
                 EmissionsAusweis.KennzahlKaeltestrom(modus, true),
                 "t/a", GR_KAELTE, "N2", true,
                 v => MitKaelteerzeugung(v) ? v.KaeltestromCO2t : null));
+
+            // ---------------- Gebäude (KP3 Welle O3b; E58 F3 (c), Festlegung 30) ----------------
+            // Die Lüftungs- und Aufheizwerte der Gebäudetafel (Aufheizbericht) als Kennzahlen mit Δ: Stunden und Zeiten als
+            // Höchstwert über die Gebäude, Leistungen als Summe — dieselben Ergebniszeilen und dieselben Bedingungen wie die
+            // Tafel (Sommerlüftung nur nach VDI 6007, Aufheizwerte nur mit Aufheizrechnung). Seit Katalog v16: Die erzeugten
+            // Vorlagenfelder stehen erst ab dieser Fassung, die Listen v1–v15 bleiben.
+            Kennzahl G(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_AUFHEIZUNG; return k; }
+            l.Add(G(new Kennzahl(SCHLUESSEL_GEB_NACHTAUSKUEHLSTUNDEN, "Nachtauskühlstunden (Höchstwert der Gebäude)",
+                "Night purge ventilation hours (building maximum)", "h/a", GR_GEBAEUDE, "N0", true,
+                v => Gebaeudehoechstwert(v, g => g.NachtauskuehlstundenH))));
+            l.Add(G(new Kennzahl(SCHLUESSEL_GEB_SOMMERLUEFTUNGSSTUNDEN, "Sommerlüftungsstunden (Höchstwert der Gebäude)",
+                "Summer ventilation hours (building maximum)", "h/a", GR_GEBAEUDE, "N0", true,
+                v => Gebaeudehoechstwert(v, g => g.IstVdi6007 ? g.SommerlueftungsstundenH : null))));
+            l.Add(G(new Kennzahl(SCHLUESSEL_GEB_AUFHEIZZEIT, "Längste Aufheizzeit t_auf,max (Höchstwert der Gebäude)",
+                "Longest preheat time t_auf,max (building maximum)", "h", GR_GEBAEUDE, "N0", true,
+                v => Gebaeudehoechstwert(v, g => g.AufheizZustand != null ? g.AufheizzeitMaxH : null))));
+            l.Add(G(new Kennzahl(SCHLUESSEL_GEB_AUFHEIZSTUNDEN, "Aufheizstunden Σ (Höchstwert der Gebäude)",
+                "Preheat hours Σ (building maximum)", "h/a", GR_GEBAEUDE, "N0", true,
+                v => Gebaeudehoechstwert(v, g => g.AufheizZustand != null ? g.AufheizstundenH : null))));
+            l.Add(G(new Kennzahl(SCHLUESSEL_GEB_AUFHEIZLEISTUNG, "Aufheizleistung P_auf (Summe der Gebäude)",
+                "Preheat power P_auf (sum of buildings)", "kW", GR_GEBAEUDE, "N1", true,
+                v => Gebaeudesumme(v, g => g.AufheizZustand != null ? g.AufheizLeistungKw : null))));
+            l.Add(G(new Kennzahl(SCHLUESSEL_GEB_AUSLEGUNGSGROESSE, "Auslegungsgröße Φ_HL + Φ_RH (Summe der Gebäude)",
+                "Design capacity Φ_HL + Φ_RH (sum of buildings)", "kW", GR_GEBAEUDE, "N1", true,
+                v => Gebaeudesumme(v, Aufheizbericht.Auslegungsgroesse))));
 
             // ---------------- Emissionen (KostenEmissionRechner; null = Faktoren fehlen) ----------------
             // Die Beschriftung NENNT DEN MODUS (Etappe E5, Konzept F7): „CO₂-Emissionen"
