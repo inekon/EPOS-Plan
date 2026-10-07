@@ -582,6 +582,20 @@ namespace WindowsFormsApplication1
         internal double Ak3KaelteRestKwh { get; private set; }
 
         /// <summary>
+        /// Prüfauftrag K3 (Entwurf 4.5): true, solange die Kälteschranke nach der Wärmestunde mit dem wirklichen
+        /// Heizzeitanteil nachgerechnet wird — nur zum Vergleich mit der Vorrangschätzung, ohne Wirkung auf den Lauf.
+        /// </summary>
+        private bool _ak3HeizzeitanteilEcht;
+
+        /// <summary>Der wirkliche Heizzeitanteil des Moduls <paramref name="modul"/> in der eben gerechneten Wärmestunde.</summary>
+        private double EchterHeizzeitanteil(int modul, int stunde)
+        {
+            double[] heiz = simulation_wp?.Heizzeitanteil_stuendlich != null && modul < simulation_wp.Heizzeitanteil_stuendlich.Length
+                ? simulation_wp.Heizzeitanteil_stuendlich[modul] : null;
+            return heiz != null && stunde < heiz.Length ? heiz[stunde] : 0.0;
+        }
+
+        /// <summary>
         /// <b>Die Kälteschranke des Kreises</b> (AK3-K 4.2, 4.3, Festlegung 11): die Kälteerzeuger der Kältestunde als
         /// Kapazitäten — Wärmepumpen im Kühlbetrieb mit Erzeugertagesart, Sperrmaske und der Vorrangschätzung aus ihrer
         /// Heizkapazität im Kreis, Kältemaschinen aus ihrer Kennlinie —, die Kältespeicher der Kältestunde über den
@@ -618,8 +632,10 @@ namespace WindowsFormsApplication1
                 if (heiz != null)
                 {
                     WaermepumpeKapazitaet h = heiz;
-                    wp.Heizzeitanteil = stunde => Kaelteschranke.Heizzeitanteil(schranke.VorrangDerStunde,
-                                                                                 h.Abfragen(stunde, double.NaN).KapazitaetKw);
+                    int modul = e.Modulindex;
+                    wp.Heizzeitanteil = stunde => _ak3HeizzeitanteilEcht
+                        ? EchterHeizzeitanteil(modul, stunde)
+                        : Kaelteschranke.Heizzeitanteil(schranke.VorrangDerStunde, h.Abfragen(stunde, double.NaN).KapazitaetKw);
                 }
                 erzeuger.Add(wp);
             }
@@ -673,10 +689,25 @@ namespace WindowsFormsApplication1
                         ? simulation_wp.Heizzeitanteil_stuendlich[z.Key.Modulindex] : null;
                     z.Key.Zeitanteil[h] = Kaeltekaskade.ZeitanteilDerStunde(_kuehltage, heiz, z.Value, h);
                 }
+                // Prüfauftrag K3 (4.5): die Kälteschranke mit dem wirklichen Heizzeitanteil gegen die Vorrangschätzung —
+                // am Zustand des Stundenbeginns (Kältespeicher erst in der Kältestunde geschrieben), ohne Wirkung.
+                Anlagenkopplung kreis = weg.Kreis;
+                Kopplungsstunde ks = kreis?.LetzteStunde;
+                if (ks != null && ks.Jahresstunde == h && ks.KaelteschrankeGreift && kreis.Kaelteschranke != null)
+                {
+                    _ak3HeizzeitanteilEcht = true;
+                    try
+                    {
+                        Kaelteschranke ksr = kreis.Kaelteschranke;
+                        kreis.VorrangschaetzungPruefen(ks, ksr.Angebot(h, ksr.VorrangDerStunde).LeistungKw);
+                    }
+                    finally { _ak3HeizzeitanteilEcht = false; }
+                }
                 double d = weg.KaelteDeltaKwh[h];
                 kaskade.StundeRechnen(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h]);
                 // Festlegung 14: der Rest der echten Kältestunde ist die Abweichung zur Schätzung der Kälteschranke.
                 double rest = kaskade.Rest_stuendlich[h];
+                kreis?.KaelteRestZaehlen(rest);
                 if (rest > 0.0)
                 {
                     Ak3KaelteRestStunden++;

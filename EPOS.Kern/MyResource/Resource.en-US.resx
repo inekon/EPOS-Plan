@@ -30907,6 +30907,9 @@ Do you want to allow this?</value>
   <data name="SIMENG_AK3K_KREIS_MIT_KAELTESEITE" xml:space="preserve">
     <value>System coupling AK3 (core level): building and cascade are calculated hour by hour in a closed loop with the cooling side — the cooling channel follows the loop, the cooling cascade is calculated each hour after the heating hour.</value>
   </data>
+  <data name="SIMENG_AK3K_KREISZAEHLER" xml:space="preserve">
+    <value>System coupling AK3 with cooling side: cooling limit reached in {0} h, changeover hours {1} h, unmet cooling demand {2:0.###} kWh in {3} h, case changes {4}; priority estimate too tight in {5} h ({6:0.###} kWh), too wide in {7} h.</value>
+  </data>
   <data name="SIMENG_AK_UEBERGABE_BEGRENZT" xml:space="preserve">
     <value>System coupling: {0} — the heat emitter is insufficient in {1} hours; the room temperature there is up to {2} K below the set point.</value>
   </data>

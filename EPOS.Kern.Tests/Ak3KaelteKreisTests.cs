@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -187,9 +188,45 @@ namespace EPOS.Kern.Tests
             WaermepumpeKaeltekapazitaet wp = kreis.Kaelteschranke.Erzeuger.OfType<WaermepumpeKaeltekapazitaet>().Single();
             Assert.NotNull(wp.Heizzeitanteil);
             Assert.False(double.IsNaN(kreis.Kaelteschranke.KuehlVorlaufC));
-            _aus.WriteLine("1058 mit Schalter: Kälteschranke gegriffen {0} h, Kälte-Restbedarf {1} h / {2:0.###} kWh, Fallwechsel {3}",
-                           kreis.StundenAnDerKaelteschranke, r.sim.Ak3KaelteRestStunden, r.sim.Ak3KaelteRestKwh, kreis.FallWechsel);
+            _aus.WriteLine("1058 mit Schalter: Kälteschranke gegriffen {0} h, Kälte-Restbedarf {1} h / {2:0.###} kWh, Fallwechsel {3}; " +
+                           "Vorrangschätzung geprüft {4} h, zu knapp {5} h / {6:0.###} kWh, zu weit {7} h, |Δ| max {8:0.######} kW",
+                           kreis.StundenAnDerKaelteschranke, r.sim.Ak3KaelteRestStunden, r.sim.Ak3KaelteRestKwh, kreis.FallWechsel,
+                           kreis.KaelteschrankeGeprueftStunden, kreis.KaelteschrankeZuKnappStunden, kreis.KaelteschrankeZuKnappKwh,
+                           kreis.KaelteschrankeZuWeitStunden, kreis.KaelteschrankeAbweichungMaxKw);
             Assert.True(r.sim.Ak3KaelteRestKwh >= 0.0);
+        }
+
+        /// <summary>
+        /// <b>K3: die Kreiszähler der Kälteseite</b> (Festlegung 20, bis K4 als Laufhinweis) mit beiden Schaltern —
+        /// Kernschalter AK3-K und Zonensperre: Stunden an der Kälteschranke, Umschaltstunden, Kälte-Restbedarf am Kreis
+        /// (gleich dem der Kältestunde), Vorrangschätzung gegen die echte Kältestunde; der Laufhinweis steht im Protokoll.
+        /// </summary>
+        [Fact]
+        public void K3_Kreiszaehler_mit_beiden_Schaltern_als_Laufhinweis()
+        {
+            if (!_db.Vorhanden) return;
+            SimulationRunner r;
+            IList<string> hinweise;
+            using (Zonensperre.Schalten(true))
+            {
+                r = Rechnen(PROJEKT, true);
+                hinweise = SimulationProtokoll.Aktuell.Hinweise;
+            }
+            Anlagenkopplung kreis = r.simulation_Waermebedarf.Ak3.Kreis;
+            _aus.WriteLine("1058 mit beiden Schaltern: Kälteschranke gegriffen {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2} h / " +
+                           "{3:0.###} kWh, Fallwechsel {4} (Stützstelle {5}), Durchläufe Mittel {6:0.000} max {7}, Festgehalten {8}; " +
+                           "Vorrangschätzung geprüft {12} h, zu knapp {9} h / {10:0.###} kWh, zu weit {11} h, |Δ| max {13:0.######} kW",
+                           kreis.StundenAnDerKaelteschranke, kreis.StundenUmschaltung, kreis.KaelteRestStunden, kreis.KaelteRestKwh,
+                           kreis.FallWechsel, kreis.StuetzstellenWechsel, kreis.DurchlaeufeMittel, kreis.DurchlaeufeMax,
+                           kreis.StundenFestgehalten, kreis.KaelteschrankeZuKnappStunden, kreis.KaelteschrankeZuKnappKwh,
+                           kreis.KaelteschrankeZuWeitStunden, kreis.KaelteschrankeGeprueftStunden, kreis.KaelteschrankeAbweichungMaxKw);
+            // Jede Stunde an der Kälteschranke wird nach der Wärmestunde gegen die echte Kältestunde geprüft.
+            Assert.Equal(kreis.StundenAnDerKaelteschranke, kreis.KaelteschrankeGeprueftStunden);
+            Assert.Equal(r.sim.Ak3KaelteRestStunden, kreis.KaelteRestStunden);
+            Assert.Equal(r.sim.Ak3KaelteRestKwh, kreis.KaelteRestKwh);
+            Assert.True(kreis.KaelteschrankeZuKnappStunden + kreis.KaelteschrankeZuWeitStunden <= kreis.StundenAnDerKaelteschranke);
+            Assert.Contains(hinweise, t => t.Contains(string.Format(CultureInfo.CurrentCulture, "{0}", kreis.StundenAnDerKaelteschranke))
+                                           && t.Contains("AK3"));
         }
     }
 }

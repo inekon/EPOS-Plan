@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -174,7 +175,25 @@ namespace WindowsFormsApplication1
             }
             if (!ok) return false;
             simulation_Waermebedarf.Ak3Nachfuehren();
-            return Ak3KaelteUebernehmen(kanaele);
+            if (!Ak3KaelteUebernehmen(kanaele)) return false;
+            Ak3KreiszaehlerMelden();
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Die Kreiszähler der Kälteseite als Laufhinweis</b> (AK3-K K3, Festlegung 20; die Ergebnisspalten folgen mit
+        /// S1 in K4): Stunden an der Kälteschranke, Umschaltstunden, Kälte-Restbedarf, Fallwechsel und der Vergleich der
+        /// Vorrangschätzung mit der echten Kältestunde. Nur mit Kälteseite im Kreis; je Feldlauf gilt der letzte.
+        /// </summary>
+        private void Ak3KreiszaehlerMelden()
+        {
+            Ak3Weg weg = simulation_Waermebedarf.Ak3;
+            Anlagenkopplung k = weg?.Kreis;
+            if (weg == null || !weg.Kaelte || k == null || k.Kaelteschranke == null) return;
+            SimulationProtokoll.Aktuell.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK3K_KREISZAEHLER,
+                k.StundenAnDerKaelteschranke, k.StundenUmschaltung, k.KaelteRestKwh, k.KaelteRestStunden,
+                k.StuetzstellenWechsel + k.FallWechsel, k.KaelteschrankeZuKnappStunden, k.KaelteschrankeZuKnappKwh,
+                k.KaelteschrankeZuWeitStunden));
         }
 
         /// <summary>

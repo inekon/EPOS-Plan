@@ -80,6 +80,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>true: Die Kälteschranke hat die Kühlleistung einer Zone der Lösung gekappt (AK3-K).</summary>
         internal bool KaelteschrankeGreift { get; set; }
+
+        /// <summary>Die Jahresstunde (AK3-K: Zuordnung zur Kältestunde danach).</summary>
+        internal int Jahresstunde { get; set; } = -1;
     }
 
     /// <summary>
@@ -88,6 +91,16 @@ namespace WindowsFormsApplication1
     /// <paramref name="loesung"/> (Raumtemperaturen derselben Stunde; <c>null</c> vor dem ersten Schritt).
     /// </summary>
     internal delegate double Vorlaufnaht(int stunde, double vorlaufC, IReadOnlyList<IReadOnlyList<Stundenergebnis>> loesung);
+
+    /// <summary>
+    /// <b>Die Naht der Kälteschranke</b> (AK3-K 4.1, 4.4): das Kälteangebot des nächsten Durchlaufs aus dem Angebot am
+    /// Stundenbeginn <paramref name="angebot"/> und der Lösung des letzten Durchlaufs <paramref name="loesung"/>
+    /// (<c>null</c> vor dem ersten Schritt) — die nachgezogene Kälteschranke. Im Lauf ohne Naht (die Schranke liest
+    /// nur den Zustand am Stundenbeginn) bleibt sie über die Durchläufe gleich; das Orakel O1k setzt hier eine stetige
+    /// Testkennlinie ein (Muster <see cref="Vorlaufnaht"/> für O1).
+    /// </summary>
+    internal delegate Kaeltestundenangebot Kaeltenaht(int stunde, Kaeltestundenangebot angebot,
+                                                      IReadOnlyList<IReadOnlyList<Stundenergebnis>> loesung);
 
     /// <summary>
     /// <b>Benannter Fehler des Kreises</b> (Entwurf AK3 2.4, F-A15): Höchstzahl der Durchläufe oder
@@ -157,6 +170,8 @@ namespace WindowsFormsApplication1
         internal const double ABBRUCH_VORLAUF_K = 0.05;
         /// <summary>Abbruchmaß Schranke [W].</summary>
         internal const double ABBRUCH_SCHRANKE_W = 0.1;
+        /// <summary>Abbruchmaß Kälteschranke [W] (AK3-K 4.4, Festlegung 15; ADR-005 wie die Heizlast).</summary>
+        internal const double ABBRUCH_KAELTESCHRANKE_W = 0.1;
         /// <summary>Höchstzahl der Anlagendurchläufe je Stunde (H-F9).</summary>
         internal const int HOECHSTZAHL = 20;
         /// <summary>Höchstes Produkt Zonen × Anlagendurchläufe im Mehrzonenfall.</summary>
@@ -238,6 +253,75 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen die Kälteschranke gegriffen hat („Kälteschranke gegriffen“, AK3-K).</summary>
         internal int StundenAnDerKaelteschranke { get; private set; }
 
+        /// <summary>
+        /// Die nachgezogene Kälteschranke je Durchlauf (<see cref="Kaeltenaht"/>); <c>null</c> = das Angebot am
+        /// Stundenbeginn gilt für alle Durchläufe (Vorgabe).
+        /// </summary>
+        internal Kaeltenaht Kaeltekorrektur { get; set; }
+
+        /// <summary>
+        /// <b>Umschaltstunden</b> (AK3-K 4.5, Festlegung 20): Stunden, in denen eine Schranke — Wärme oder Kälte — mit dem
+        /// Anlagengrund <see cref="Verfuegbarkeitsgrund.Umschaltung"/> eine Zone begrenzt: gerade der Wegfall der reversiblen
+        /// Wärmepumpe an die Gegenseite bindet.
+        /// </summary>
+        internal int StundenUmschaltung { get; private set; }
+
+        /// <summary>
+        /// <b>Kälte-Restbedarf</b> (AK3-K, Festlegung 14): Stunden, in denen die Kältestunde nach der Wärmestunde einen Rest
+        /// lässt (<see cref="KaelteRestZaehlen"/>); gezählt, nicht nachiteriert.
+        /// </summary>
+        internal int KaelteRestStunden { get; private set; }
+
+        /// <summary>Der Kälte-Restbedarf dieser Stunden [kWh].</summary>
+        internal double KaelteRestKwh { get; private set; }
+
+        /// <summary>
+        /// Stunden an der Kälteschranke, in denen die echte Kältestunde (wirklicher Heizzeitanteil nach der Wärmestunde) eine
+        /// höhere Kälteschranke ergeben hätte als die Vorrangschätzung am Stundenbeginn (Entwurf 4.5, Prüfauftrag K3).
+        /// </summary>
+        internal int KaelteschrankeZuKnappStunden { get; private set; }
+
+        /// <summary>Σ (echte − geschätzte Kälteschranke) dieser Stunden [kWh].</summary>
+        internal double KaelteschrankeZuKnappKwh { get; private set; }
+
+        /// <summary>Stunden an der Kälteschranke, deren Vorrangschätzung gegen die echte Kältestunde geprüft wurde.</summary>
+        internal int KaelteschrankeGeprueftStunden { get; private set; }
+
+        /// <summary>Größte |echte − geschätzte Kälteschranke| der geprüften Stunden [kW].</summary>
+        internal double KaelteschrankeAbweichungMaxKw { get; private set; }
+
+        /// <summary>Stunden mit Vorrangschätzung über der echten Kältestunde (Schranke zu weit).</summary>
+        internal int KaelteschrankeZuWeitStunden { get; private set; }
+
+        /// <summary>Die zuletzt abgeschlossene Stunde des Kreises (für die Kältestunde danach).</summary>
+        internal Kopplungsstunde LetzteStunde { get; private set; }
+
+        /// <summary>Zählt den Rest der Kältestunde <paramref name="restKwh"/> (Festlegung 14).</summary>
+        internal void KaelteRestZaehlen(double restKwh)
+        {
+            if (!(restKwh > 0.0)) return;
+            KaelteRestStunden++;
+            KaelteRestKwh += restKwh;
+        }
+
+        /// <summary>
+        /// Vergleicht die Kälteschranke der Stunde mit der, die der wirkliche Heizzeitanteil ergeben hätte
+        /// <paramref name="echtKw"/> (Prüfauftrag K3 zur Vorrangschätzung); zählt nur Stunden an der Kälteschranke.
+        /// </summary>
+        internal void VorrangschaetzungPruefen(Kopplungsstunde k, double echtKw)
+        {
+            if (k?.Kaelteangebot == null || !k.KaelteschrankeGreift) return;
+            KaelteschrankeGeprueftStunden++;
+            double d = echtKw - k.Kaelteangebot.Value.LeistungKw;
+            if (Math.Abs(d) > KaelteschrankeAbweichungMaxKw) KaelteschrankeAbweichungMaxKw = Math.Abs(d);
+            if (d * 1000.0 > ABBRUCH_KAELTESCHRANKE_W)
+            {
+                KaelteschrankeZuKnappStunden++;
+                KaelteschrankeZuKnappKwh += d;
+            }
+            else if (-d * 1000.0 > ABBRUCH_KAELTESCHRANKE_W) KaelteschrankeZuWeitStunden++;
+        }
+
         /// <summary>Gezählte Wechsel der Stützstelle zwischen zwei Durchläufen.</summary>
         internal int StuetzstellenWechsel { get; private set; }
 
@@ -276,6 +360,9 @@ namespace WindowsFormsApplication1
             Stundenangebot s = Angebotsfunktion.Angebot(h, v, _erzeuger, _speicher, vorrang);
             // AK3-K (4.2): das Kälteangebot am festen Kühlvorlauf — es hängt nicht am Durchlauf.
             Kaeltestundenangebot? kaelte = Kaelteschranke?.Angebot(h, vorrang);
+            // K3 (4.1): die nachgezogene Kälteschranke — ohne Naht gilt das Angebot am Stundenbeginn in jedem Durchlauf.
+            Kaeltestundenangebot kaelteBasis = kaelte ?? default;
+            if (kaelte != null && Kaeltekorrektur != null) kaelte = Kaeltekorrektur(h, kaelteBasis, null);
 
             // Der Verteilschlüssel (Festlegung 9): der unbegrenzte Probeschritt — nur, wenn es etwas zu verteilen gibt
             // (mehrere Gebäude oder Zonen). Er zählt nicht als Durchlauf.
@@ -328,11 +415,19 @@ namespace WindowsFormsApplication1
             Stundenangebot sEins = s;
             bool festgehalten = false;
             double dTheta = double.NaN, dPhi = double.NaN, dV = double.NaN, dS = double.NaN;
+            // K3 (4.4): die Kälteseite im selben Rahmen — Pendeln der nachgezogenen Kälteschranke, ihr Abbruchmaß.
+            Kaeltestundenangebot? kaelteEins = kaelte;
+            HashSet<long> kaelteBesucht = null;
+            if (kaelte != null && Kaeltekorrektur != null)
+                kaelteBesucht = new HashSet<long> { BitConverter.DoubleToInt64Bits(kaelte.Value.LeistungKw) };
+            double dPhiK = double.NaN, dSK = double.NaN;
             double[] heizW = new double[n];
             for (int k = 1; ; k++)
             {
                 if (GrenzeErreicht(zonenMax, k))
-                    throw Fehler(h, k - 1, v, s, dTheta, dPhi, dV, dS, zonenMax > 1 && k <= HOECHSTZAHL);
+                    throw Fehler(h, k - 1, v, s, dTheta, dPhi, dV, dS, zonenMax > 1 && k <= HOECHSTZAHL, kaelte, dPhiK, dSK);
+                if (kaelteBesucht != null && k > 1)
+                    kaelteVerteilt = Stundenverteilung.Verteilen(kaelte.Value.AlsVerfuegbarkeit(), _ids, _alle, kaelteSchluessel, kaelteZonen);
 
                 // Durchlauf k: S_k verteilt, je Gebäude der Schritt mit der Schranke (wie AK2 mit Schranke = S_k).
                 Anlagenverfuegbarkeit[][] verteilt = Stundenverteilung.Verteilen(s.AlsVerfuegbarkeit(), _ids, _alle, schluessel, probeZonen);
@@ -362,13 +457,40 @@ namespace WindowsFormsApplication1
                 if (vorher != null)
                 {
                     FaelleZaehlen(vorher, jetzt);
-                    wechselnd = Abweichung(vorher, jetzt, out dTheta, out dPhi);
+                    wechselnd = kaelte != null
+                        ? AbweichungMitKaelte(vorher, jetzt, out dTheta, out dPhi, out dPhiK)
+                        : Abweichung(vorher, jetzt, out dTheta, out dPhi);
                 }
                 if (festgehalten)
                 {
                     StundenFestgehalten++;
-                    return Abschliessen(k, jetzt, heizW, s, v, true, kaelte);
+                    return Abschliessen(h, k, jetzt, heizW, s, v, true, kaelte);
                 }
+
+                // K3 (4.1): die Kälteschranke des nächsten Durchlaufs aus der Lösung dieses Durchlaufs.
+                Kaeltestundenangebot? kaelteNeu = kaelte;
+                bool kaelteGleich = true;
+                if (kaelteBesucht != null)
+                {
+                    kaelteNeu = Kaeltekorrektur(h, kaelteBasis, jetzt);
+                    dSK = Math.Abs(kaelteNeu.Value.LeistungKw - kaelte.Value.LeistungKw) * 1000.0;
+                    kaelteGleich = kaelteNeu.Value.LeistungKw.Equals(kaelte.Value.LeistungKw) && kaelteNeu.Value.Grund == kaelte.Value.Grund;
+                    long bits = BitConverter.DoubleToInt64Bits(kaelteNeu.Value.LeistungKw);
+                    if (!kaelteGleich && dSK > ABBRUCH_KAELTESCHRANKE_W && StuetzstelleHalten && kaelteBesucht.Contains(bits))
+                    {
+                        // Pendeln der Kälteschranke (Pendelregel 2.4 für beide Seiten): ein letzter Durchlauf am ersten.
+                        FallWechsel++;
+                        festgehalten = true;
+                        vorher = jetzt;
+                        v = vEins;
+                        s = sEins;
+                        kaelte = kaelteEins;
+                        stelleVorher = stelleEins;
+                        continue;
+                    }
+                    kaelteBesucht.Add(bits);
+                }
+                else if (kaelte != null) dSK = 0.0;
 
                 (double vNeu, _) = Kreis(jetzt, Faktoren());
                 if (double.IsNaN(vNeu)) vNeu = v;
@@ -398,19 +520,21 @@ namespace WindowsFormsApplication1
                     stelleVorher = stelle;
                 }
 
-                dV = Math.Abs(vNeu - v);
+                // K3: in einer reinen Kühlstunde bleibt der Vorlauf unbekannt (NaN) — gleich unbekannt heißt „kein Wechsel“.
+                dV = kaelte != null && Gleich(vNeu, v) ? 0.0 : Math.Abs(vNeu - v);
                 dS = Math.Abs(sNeu.LeistungKw - s.LeistungKw) * 1000.0;
                 // Gleiches Angebot ⇒ der nächste Schritt wäre derselbe (der Vorlauf wirkt nur über das Angebot).
                 bool gleich = sNeu.LeistungKw.Equals(s.LeistungKw) && Gleich(sNeu.VorlaufC, s.VorlaufC) && sNeu.Grund == s.Grund
-                              && dH2 == 0.0;
+                              && dH2 == 0.0 && kaelteGleich;
                 bool klein = dV <= ABBRUCH_VORLAUF_K && dS <= ABBRUCH_SCHRANKE_W && vorher != null && wechselnd == 0
-                             && dH2 <= ABBRUCH_VORLAUF_K;
+                             && dH2 <= ABBRUCH_VORLAUF_K && (kaelteGleich || dSK <= ABBRUCH_KAELTESCHRANKE_W);
                 if (gleich || klein)
-                    return Abschliessen(k, jetzt, heizW, s, vNeu, false, kaelte);
+                    return Abschliessen(h, k, jetzt, heizW, s, vNeu, false, kaelte);
 
                 vorher = jetzt;
                 v = vNeu;
                 s = sNeu;
+                kaelte = kaelteNeu;
             }
         }
 
@@ -457,13 +581,14 @@ namespace WindowsFormsApplication1
             return false;
         }
 
-        private Kopplungsstunde Abschliessen(int durchlaeufe, IReadOnlyList<Stundenergebnis>[] loesung, double[] heizW,
+        private Kopplungsstunde Abschliessen(int h, int durchlaeufe, IReadOnlyList<Stundenergebnis>[] loesung, double[] heizW,
                                              Stundenangebot s, double vorlaufKreisC, bool festgehalten,
                                              Kaeltestundenangebot? kaelte)
         {
             bool schranke = Begrenzt(loesung);
             bool kaelteSchranke = kaelte != null && KaelteBegrenzt(loesung);
             if (kaelteSchranke) StundenAnDerKaelteschranke++;
+            if (kaelte != null && Umschaltung(loesung)) StundenUmschaltung++;
             Stunden++;
             DurchlaeufeVerteilung[durchlaeufe]++;
             if (durchlaeufe > DurchlaeufeMax) DurchlaeufeMax = durchlaeufe;
@@ -472,7 +597,7 @@ namespace WindowsFormsApplication1
             _letzteLoesung = loesung;
             // Die offenen Schritte der Stepper sind die Lösung; Vorlauf und Rücklauf aus ihnen (Festlegung 12).
             (double vor, double rueck) = Kreis(loesung, Faktoren());
-            return new Kopplungsstunde
+            var stunde = new Kopplungsstunde
             {
                 Durchlaeufe = durchlaeufe,
                 HeizlastW = (double[])heizW.Clone(),
@@ -486,7 +611,24 @@ namespace WindowsFormsApplication1
                 AnhebungK = _anhebungLoesung,
                 Kaelteangebot = kaelte,
                 KaelteschrankeGreift = kaelteSchranke,
+                Jahresstunde = h,
             };
+            if (kaelte != null) LetzteStunde = stunde;
+            return stunde;
+        }
+
+        /// <summary>Begrenzt eine Schranke eine Zone mit dem Anlagengrund Umschaltung (AK3-K 4.5)?</summary>
+        private static bool Umschaltung(IReadOnlyList<Stundenergebnis>[] e)
+        {
+            foreach (IReadOnlyList<Stundenergebnis> g in e)
+                foreach (Stundenergebnis z in g)
+                {
+                    if (z.Begrenzungsgrund == Begrenzungsgrund.Verfuegbarkeit && z.Verfuegbarkeitsgrund == Verfuegbarkeitsgrund.Umschaltung)
+                        return true;
+                    if (z.KaelteverfuegbarkeitBegrenzt && z.Kaelteverfuegbarkeitsgrund == Verfuegbarkeitsgrund.Umschaltung)
+                        return true;
+                }
+            return false;
         }
 
         /// <summary>Heizleistung eines Gebäudes [W] im Maßstab des wirklichen Gebäudes: Σ max(Φ_h,z, 0) × Faktor.</summary>
@@ -555,6 +697,32 @@ namespace WindowsFormsApplication1
             return zahl;
         }
 
+        /// <summary>
+        /// <see cref="Abweichung"/> mit der Kälteseite (AK3-K 4.4, Festlegung 15): je Zone dazu die Kühlleistung über dem
+        /// Abbruchmaß und der Wechsel des Kühlgrunds.
+        /// </summary>
+        private static int AbweichungMitKaelte(IReadOnlyList<Stundenergebnis>[] a, IReadOnlyList<Stundenergebnis>[] b,
+                                               out double dTheta, out double dPhi, out double dPhiK)
+        {
+            int zahl = 0;
+            dTheta = 0.0;
+            dPhi = 0.0;
+            dPhiK = 0.0;
+            for (int i = 0; i < a.Length; i++)
+                for (int z = 0; z < a[i].Count && z < b[i].Count; z++)
+                {
+                    double t = Math.Abs(a[i][z].ThetaAirMittel - b[i][z].ThetaAirMittel);
+                    double p = Math.Abs(a[i][z].HeizleistungW - b[i][z].HeizleistungW);
+                    double c = Math.Abs(a[i][z].KuehlleistungW - b[i][z].KuehlleistungW);
+                    if (t > dTheta) dTheta = t;
+                    if (p > dPhi) dPhi = p;
+                    if (c > dPhiK) dPhiK = c;
+                    if (t > ABBRUCH_THETA_K || p > ABBRUCH_PHI_W || c > ABBRUCH_PHI_W
+                        || a[i][z].KuehlBegrenzungsgrund != b[i][z].KuehlBegrenzungsgrund) zahl++;
+                }
+            return zahl;
+        }
+
         private void FaelleZaehlen(IReadOnlyList<Stundenergebnis>[] vorher, IReadOnlyList<Stundenergebnis>[] jetzt)
         {
             for (int i = 0; i < vorher.Length; i++)
@@ -568,7 +736,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der benannte Fehler mit der größten Abweichung zwischen den letzten beiden Durchläufen.</summary>
         private AnlagenkopplungException Fehler(int h, int durchlaeufe, double v, Stundenangebot s,
-                                                double dTheta, double dPhi, double dV, double dS, bool produkt)
+                                                double dTheta, double dPhi, double dV, double dS, bool produkt,
+                                                Kaeltestundenangebot? kaelte = null, double dPhiK = double.NaN,
+                                                double dSK = double.NaN)
         {
             string gebaeude = string.Join(", ", _gebaeude.Select(g => g.Bezeichnung + " (" + g.Id.ToString(CultureInfo.InvariantCulture) + ")"));
             string beteiligte = string.Join(", ", _erzeuger.Select(e => e.Bezeichner)) + (_speicher != null && _speicher.Vorhanden ? ", Speicher" : "");
@@ -577,6 +747,12 @@ namespace WindowsFormsApplication1
                                        produkt ? " (Produkt Zonen × Durchläufe > " + PRODUKT_MEHRZONEN + ")" : "");
             string stand = string.Format(CultureInfo.InvariantCulture, "{0} Durchläufe, Vorlauf {1:0.##} °C, Schranke {2:0.###} kW",
                                          durchlaeufe, v, s.LeistungKw);
+            if (kaelte != null)
+            {
+                // K3 (4.4): die Kälteseite im benannten Fehler — Kühlleistung und Kälteschranke.
+                abw += string.Format(CultureInfo.InvariantCulture, ", Kühlleistung {0:0.###} W, Kälteschranke {1:0.###} W", dPhiK, dSK);
+                stand += string.Format(CultureInfo.InvariantCulture, ", Kälteschranke {0:0.###} kW", kaelte.Value.LeistungKw);
+            }
             return new AnlagenkopplungException(gebaeude, h, beteiligte, abw, stand);
         }
     }
