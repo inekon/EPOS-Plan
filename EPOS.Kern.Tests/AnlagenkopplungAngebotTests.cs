@@ -256,11 +256,51 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ohne_Erzeuger_heisst_der_Grund_kein_Erzeuger()
+        public void Ohne_Erzeuger_heisst_der_Grund_kein_Erzeuger_und_der_Speicher_traegt_nichts_wie_im_Fahrplan()
         {
             Stundenangebot a = Angebotsfunktion.Angebot(0, 45.0, Array.Empty<IErzeugerkapazitaet>(), new FesterSpeicher(3.0), OhneVorrang);
             Assert.Equal(Verfuegbarkeitsgrund.KeinErzeuger, a.Grund);
-            Assert.Equal(3.0, a.LeistungKw);
+            Assert.Equal(0.0, a.LeistungKw);
+            Assert.Equal(0.0, a.SpeicherKw);
+
+            // Gegenprobe Fahrplan: ohne Erzeuger Leistung 0 trotz Vorrat.
+            Anlagenfahrplan f = Anlagenfahrplan.Rechnen(Array.Empty<Fahrplanerzeuger>(), 3.0);
+            Assert.Equal(f.Stunde(0).LeistungKw, a.LeistungKw);
+            Assert.Equal(f.Stunde(0).Grund, a.Grund);
+        }
+
+        [Fact]
+        public void Zeitprogramm_und_Abschaltpunkt_in_derselben_Stunde_teilen_den_Grund_wie_der_Fahrplan()
+        {
+            // Zwei Erzeuger: A mit Zeitprogramm 0,7 und Abschaltpunkt (Ausfall 0,3·10 Zeitprogramm, 0,7·10 Abschalt),
+            // B mit Zeitprogramm 0,2 (Ausfall 0,8·10 Zeitprogramm). Summe Zeitprogramm 11 > Abschaltpunkt 7.
+            var a = new Fahrplanerzeuger { Bezeichner = "A", NennleistungKw = 10.0, Zeitprogramm = Programm(_ => 0.7), Abgeschaltet = Nur(0) };
+            var b = new Fahrplanerzeuger { Bezeichner = "B", NennleistungKw = 10.0, Zeitprogramm = Programm(_ => 0.2) };
+            Anlagenfahrplan f = Anlagenfahrplan.Rechnen(new[] { a, b }, 0.0);
+            Stundenangebot s = Angebotsfunktion.Angebot(0, double.NaN, new IErzeugerkapazitaet[] { new FesteKapazitaet(a), new FesteKapazitaet(b) },
+                                                        null, OhneVorrang);
+            Assert.Equal(Verfuegbarkeitsgrund.Zeitprogramm, f.Stunde(0).Grund);
+            Assert.Equal(f.Stunde(0).Grund, s.Grund);
+            Assert.Equal(f.Stunde(0).LeistungKw, s.LeistungKw, 12);
+
+            // Gegenprobe: ohne B überwiegt der Abschaltpunkt (7 gegen 3) — in beiden.
+            Anlagenfahrplan f1 = Anlagenfahrplan.Rechnen(new[] { a }, 0.0);
+            Stundenangebot s1 = Angebotsfunktion.Angebot(0, double.NaN, new IErzeugerkapazitaet[] { new FesteKapazitaet(a) }, null, OhneVorrang);
+            Assert.Equal(Verfuegbarkeitsgrund.Abschaltpunkt, f1.Stunde(0).Grund);
+            Assert.Equal(f1.Stunde(0).Grund, s1.Grund);
+        }
+
+        [Fact]
+        public void Verbotene_Extrapolation_verlaengert_die_Quellachse_nicht()
+        {
+            // Quelle −20 °C unter der untersten Stützstelle (−10 °C): erlaubt linear verlängert, verboten gekappt.
+            double erlaubt = Wp(quelle: -20.0, extrapolation: true).Abfragen(0, 35.0).VerfuegbarKw;
+            double verboten = Wp(quelle: -20.0, extrapolation: false).Abfragen(0, 35.0).VerfuegbarKw;
+            Assert.Equal(6.0, erlaubt, 12);
+            Assert.Equal(8.0, verboten, 12);
+            // Gegenprobe: über der untersten Stützstelle rechnen beide gleich.
+            Assert.Equal(Wp(quelle: -5.0, extrapolation: true).Abfragen(0, 35.0).VerfuegbarKw,
+                         Wp(quelle: -5.0, extrapolation: false).Abfragen(0, 35.0).VerfuegbarKw);
         }
 
         [Fact]

@@ -34,7 +34,8 @@ namespace WindowsFormsApplication1
     internal readonly struct Erzeugerangebot
     {
         internal Erzeugerangebot(double kapazitaetKw, double verfuegbarKw, Verfuegbarkeitsgrund grund,
-                                 bool freigegeben, double vorlaufAngebotC, bool vorlaufNichtErreicht)
+                                 bool freigegeben, double vorlaufAngebotC, bool vorlaufNichtErreicht,
+                                 double ausfallZeitprogrammKw = double.NaN)
         {
             KapazitaetKw = kapazitaetKw;
             VerfuegbarKw = verfuegbarKw;
@@ -42,7 +43,16 @@ namespace WindowsFormsApplication1
             Freigegeben = freigegeben;
             VorlaufAngebotC = vorlaufAngebotC;
             VorlaufNichtErreicht = vorlaufNichtErreicht;
+            AusfallZeitprogrammKw = ausfallZeitprogrammKw;
         }
+
+        /// <summary>
+        /// AK3-W3b (offener Punkt aus W3a): der Teil des Ausfalls, den das Zeitprogramm verursacht [kW], wenn in
+        /// derselben Stunde auch der Abschaltpunkt greift — der Rest des Ausfalls gehört dann dem Abschaltpunkt,
+        /// dieselbe Grundaufteilung wie <see cref="Anlagenfahrplan"/>. NaN = der ganze Ausfall gehört
+        /// <see cref="Grund"/> (Testdoubles, eine Ursache).
+        /// </summary>
+        internal double AusfallZeitprogrammKw { get; }
 
         /// <summary>Kapazität beim Vorlauf, ohne Fahrplan [kW], ≥ 0.</summary>
         internal double KapazitaetKw { get; }
@@ -92,7 +102,7 @@ namespace WindowsFormsApplication1
 
         public Erzeugerangebot Abfragen(int stunde, double vorlaufC)
         {
-            double faktor = Verfuegbarkeit(Fahrplan, stunde, out Verfuegbarkeitsgrund grund);
+            double faktor = Verfuegbarkeit(Fahrplan, stunde, out Verfuegbarkeitsgrund grund, out double zeitprogrammAnteil);
             double angebot = VorlaufAngebotC;
             bool nichtErreicht = false;
             double kapazitaet;
@@ -106,7 +116,8 @@ namespace WindowsFormsApplication1
                 kapazitaet = KapazitaetBei(stunde, vorlaufC, out nichtErreicht);
                 if (!(kapazitaet > 0.0) || double.IsInfinity(kapazitaet)) kapazitaet = 0.0;
             }
-            return new Erzeugerangebot(kapazitaet, faktor * kapazitaet, grund, faktor > 0.0, angebot, nichtErreicht);
+            return new Erzeugerangebot(kapazitaet, faktor * kapazitaet, grund, faktor > 0.0, angebot, nichtErreicht,
+                                       zeitprogrammAnteil * kapazitaet);
         }
 
         /// <summary>
@@ -115,19 +126,34 @@ namespace WindowsFormsApplication1
         /// des Zeitprogramms (Grund Zeitprogramm unter 1), 0 unter dem Abschaltpunkt (Grund Abschaltpunkt).
         /// </summary>
         internal static double Verfuegbarkeit(Fahrplanerzeuger e, int stunde, out Verfuegbarkeitsgrund grund)
+            => Verfuegbarkeit(e, stunde, out grund, out _);
+
+        /// <summary>
+        /// Wie <see cref="Verfuegbarkeit(Fahrplanerzeuger, int, out Verfuegbarkeitsgrund)"/>, dazu der Anteil der
+        /// Kapazität, den das Zeitprogramm wegnimmt (0 … 1): Greifen Zeitprogramm und Abschaltpunkt in derselben
+        /// Stunde, zählt <c>1 − f</c> beim Zeitprogramm und <c>f</c> beim Abschaltpunkt — die Grundaufteilung des
+        /// <see cref="Anlagenfahrplan"/>; die Angebotsfunktion summiert beide Teile je Grund über die Erzeuger.
+        /// </summary>
+        internal static double Verfuegbarkeit(Fahrplanerzeuger e, int stunde, out Verfuegbarkeitsgrund grund,
+                                              out double zeitprogrammAnteil)
         {
             grund = Verfuegbarkeitsgrund.KeineBegrenzung;
+            zeitprogrammAnteil = 0.0;
             if (e.Gesperrt != null && e.Gesperrt[stunde])
             {
                 grund = Verfuegbarkeitsgrund.Sperrzeit;
                 return 0.0;
             }
             double faktor = e.Zeitprogramm != null ? e.Zeitprogramm.Faktor(stunde) : 1.0;
-            if (faktor < 1.0) grund = Verfuegbarkeitsgrund.Zeitprogramm;
+            if (faktor < 1.0)
+            {
+                grund = Verfuegbarkeitsgrund.Zeitprogramm;
+                zeitprogrammAnteil = 1.0 - faktor;
+            }
             if (faktor > 0.0 && e.Abgeschaltet != null && e.Abgeschaltet[stunde])
             {
                 // Wie im Fahrplan: der freigegebene Teil fällt unter dem Abschaltpunkt aus; der größere
-                // Ausfallteil benennt den Grund.
+                // Ausfallteil benennt den Grund des Erzeugers.
                 if (faktor >= 1.0 - faktor) grund = Verfuegbarkeitsgrund.Abschaltpunkt;
                 faktor = 0.0;
             }
@@ -252,8 +278,12 @@ namespace WindowsFormsApplication1
         {
             vorlaufNichtErreicht = false;
             double tq = _quelle.TemperaturAmStundenbeginn(stunde);
+            // AK3-W3b (offener Punkt aus W3a): an der Quellachse wie die Kaskade — ist die Extrapolation
+            // verboten, wird unter der untersten Quelltemperatur nicht verlängert (der Lauf bricht dort ohnehin
+            // benannt ab); die gekoppelte Pufferquelle kappt immer.
+            bool kappen = _quelle.KapptUnten || !_extrapolationErlaubt;
             if (double.IsNaN(vorlaufC) || double.IsInfinity(vorlaufC))
-                return Anzahl * Leistung(_fest, tq, _quelle.KapptUnten);
+                return Anzahl * Leistung(_fest, tq, kappen);
 
             var lage = SimulationWaermepumpe.VorlaufAuswerten(_vorlaeufe, vorlaufC, _extrapolationErlaubt, out int stelle);
             if (lage == SimulationWaermepumpe.Vorlauflage.Verboten)
@@ -264,11 +294,11 @@ namespace WindowsFormsApplication1
             if (Interpolieren && lage == SimulationWaermepumpe.Vorlauflage.Innerhalb
                 && VorlaufInterpolation.Einschliessend(_vorlaeufe, vorlaufC, out int unten, out double gewicht))
             {
-                double pu = Leistung(_kurven[unten], tq, _quelle.KapptUnten);
-                double po = Leistung(_kurven[unten + 1], tq, _quelle.KapptUnten);
+                double pu = Leistung(_kurven[unten], tq, kappen);
+                double po = Leistung(_kurven[unten + 1], tq, kappen);
                 return Anzahl * (pu + gewicht * (po - pu));
             }
-            return Anzahl * Leistung(_kurven[stelle], tq, _quelle.KapptUnten);
+            return Anzahl * Leistung(_kurven[stelle], tq, kappen);
         }
 
         /// <summary>
@@ -434,8 +464,10 @@ namespace WindowsFormsApplication1
             if (!(speicherKw > 0.0)) speicherKw = 0.0;
             double vorrangKw = vorrang.SummeKw;
 
+            // AK3-W3b (offener Punkt aus W3a): ohne Erzeuger wie der Fahrplan — Leistung 0, kein Speicheranteil
+            // (der Vorrat füllt dort nur die Sperrlücke eines Erzeugers).
             if (erzeuger == null || erzeuger.Count == 0)
-                return new Stundenangebot(0.0, speicherKw, vorrangKw, double.NaN, Verfuegbarkeitsgrund.KeinErzeuger);
+                return new Stundenangebot(0.0, 0.0, vorrangKw, double.NaN, Verfuegbarkeitsgrund.KeinErzeuger);
 
             int gruende = Enum.GetValues(typeof(Verfuegbarkeitsgrund)).Length;
             var ausfall = new double[gruende];
@@ -446,7 +478,17 @@ namespace WindowsFormsApplication1
                 Erzeugerangebot a = e.Abfragen(stunde, vorlaufC);
                 summe += a.VerfuegbarKw;
                 double weg = a.KapazitaetKw - a.VerfuegbarKw;
-                if (weg > 0.0) ausfall[(int)a.Grund] += weg;
+                if (weg > 0.0)
+                {
+                    // Zeitprogramm und Abschaltpunkt in derselben Stunde: Aufteilung wie im Fahrplan.
+                    double zp = a.AusfallZeitprogrammKw;
+                    if (a.Grund != Verfuegbarkeitsgrund.Sperrzeit && zp > 0.0 && zp < weg)
+                    {
+                        ausfall[(int)Verfuegbarkeitsgrund.Zeitprogramm] += zp;
+                        ausfall[(int)Verfuegbarkeitsgrund.Abschaltpunkt] += weg - zp;
+                    }
+                    else ausfall[(int)a.Grund] += weg;
+                }
                 if (a.Freigegeben)
                 {
                     if (double.IsNaN(a.VorlaufAngebotC)) ohneAngebot = true;
