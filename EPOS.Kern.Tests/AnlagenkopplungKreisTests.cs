@@ -131,7 +131,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ohne_Erzeuger_liefert_der_Kreis_nichts_und_bleibt_bei_zwei_Durchlaeufen()
+        public void Ohne_Erzeuger_liefert_der_Kreis_nichts_und_bleibt_bei_einem_Durchlauf()
         {
             GebaeudeStepper s = GebaeudeStepper.Einzone(ZonenEingang.Einzeln(Gekoppelt()));
             s.Beginnen();
@@ -140,7 +140,7 @@ namespace EPOS.Kern.Tests
             Kopplungsstunde k = kreis.Stunde(0, double.NaN, default);
             Assert.Equal(Verfuegbarkeitsgrund.KeinErzeuger, k.Angebot.Grund);
             Assert.True(k.HeizlastW[0] <= 1e-9);
-            Assert.Equal(2, k.Durchlaeufe);
+            Assert.Equal(1, k.Durchlaeufe);
         }
     }
 

@@ -132,7 +132,11 @@ namespace WindowsFormsApplication1
             var kreis = new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()));
             // Fallwechsel (2.4): die Stützstelle der ersten Wärmepumpe am Vorlauf jedes Durchlaufs.
             WaermepumpeKapazitaet erste = erzeuger.OfType<WaermepumpeKapazitaet>().FirstOrDefault();
-            if (erste != null) kreis.Stuetzstelle = erste.Stuetzstelle;
+            if (erste != null)
+            {
+                kreis.Stuetzstelle = erste.Stuetzstelle;
+                kreis.StuetzstelleHalten = !erste.Interpolieren;
+            }
             return kreis;
         }
 

@@ -39,7 +39,10 @@ namespace WindowsFormsApplication1
     /// <summary>Das Ergebnis einer gekoppelten Stunde (AK3-W3b).</summary>
     internal sealed class Kopplungsstunde
     {
-        /// <summary>Durchläufe der Stunde (1 = der unbegrenzte Probeschritt passte unter die Schranke).</summary>
+        /// <summary>
+        /// Begrenzte Durchläufe der Stunde (≥ 1). Der unbegrenzte Probeschritt, der bei mehreren Gebäuden oder Zonen den
+        /// Verteilschlüssel liefert, zählt nicht mit.
+        /// </summary>
         internal int Durchlaeufe { get; set; }
 
         /// <summary>Heizleistung je Gebäude [W], Maßstab des wirklichen Gebäudes (Reihenfolge der Gebäude).</summary>
@@ -54,9 +57,28 @@ namespace WindowsFormsApplication1
         /// <summary>Das Angebot des letzten Durchlaufs.</summary>
         internal Stundenangebot Angebot { get; set; }
 
-        /// <summary>true: Die Schranke des Angebots (Leistung oder Vorlauf) hat gegriffen.</summary>
+        /// <summary>true: Die Schranke des Angebots (Leistung oder Vorlauf) begrenzt eine Zone der Lösung.</summary>
         internal bool SchrankeGreift { get; set; }
+
+        /// <summary>
+        /// Der Projektvorlauf V des Kreises [°C] aus der Lösung (bedarfsgewichtet, nach der H2-Naht); beim Festhalten der
+        /// Vorlauf des ersten Durchlaufs; NaN, wenn er unbekannt blieb. Gegenstand des Orakels O1 (AK3-W3c).
+        /// </summary>
+        internal double VorlaufKreisC { get; set; }
+
+        /// <summary>true: Die Stützstelle pendelte; gerechnet wurde mit der Stützstelle des ersten Durchlaufs (2.4).</summary>
+        internal bool Festgehalten { get; set; }
+
+        /// <summary>Die Stundenergebnisse der Lösung je Gebäude und Zone (unskaliert; der offene Schritt der Stepper).</summary>
+        internal IReadOnlyList<Stundenergebnis>[] Loesung { get; set; }
     }
+
+    /// <summary>
+    /// <b>Die Naht H2</b> (Q-AK3-2 (a), Welle W4): der Projektvorlauf der Stunde aus dem Vorlauf
+    /// <paramref name="vorlaufC"/> (Heizkurve bzw. bedarfsgewichtet) und der Lösung des letzten Durchlaufs
+    /// <paramref name="loesung"/> (Raumtemperaturen derselben Stunde; <c>null</c> vor dem ersten Schritt).
+    /// </summary>
+    internal delegate double Vorlaufnaht(int stunde, double vorlaufC, IReadOnlyList<IReadOnlyList<Stundenergebnis>> loesung);
 
     /// <summary>
     /// <b>Benannter Fehler des Kreises</b> (Entwurf AK3 2.4, F-A15): Höchstzahl der Durchläufe oder
@@ -90,20 +112,27 @@ namespace WindowsFormsApplication1
     /// — je Stunde der geschlossene Kreis zwischen den Gebäude-Steppern und der befragbaren Kaskade
     /// (<see cref="Angebotsfunktion"/>). Die echte Kaskadenstunde läuft danach einmal (Festlegung 4).
     /// <list type="number">
-    /// <item><b>Durchlauf 1</b> — der unbegrenzte Probeschritt jedes Gebäudes am Projektvorlauf V₀
-    /// (Pass 1 bzw. Heizkurve, mit der H2-Naht <see cref="Vorlaufkorrektur"/>). Er ist zugleich der
-    /// Verteilschlüssel (Festlegung 9). Liegt sein Bedarf unter dem Angebot S₀ = Angebot(h, V₀) und
-    /// verlangt kein Gebäude mehr Vorlauf, als angeboten wird, ist er die Lösung: ein Durchlauf, Zeichen für
-    /// Zeichen der Schritt ohne Kopplung (Gate „ohne Grenzen bitgleich zu AK1“).</item>
-    /// <item><b>Durchlauf k ≥ 2</b> — S_k verteilt mit <see cref="Stundenverteilung"/> auf Gebäude und
-    /// Zonen, je Gebäude <see cref="GebaeudeStepper.Schritt"/> mit der Schranke (Rand
-    /// <see cref="Stundenrand.MitVerfuegbarkeit"/>), V_k+1 bedarfsgewichtet (Festlegung 12), S_k+1 neu.</item>
-    /// <item><b>Abbruch</b>: |Δθ_i| ≤ 0,01 K, |ΔΦ| ≤ 0,1 W, |ΔV| ≤ 0,05 K, |ΔS| ≤ 0,1 W — oder V und S
-    /// unverändert (der nächste Schritt wäre derselbe). Höchstzahl 20, Mehrzonen Zonenzahl × Durchläufe ≤ 120;
-    /// darüber <see cref="AnlagenkopplungException"/>.</item>
-    /// <item><b>Fallwechsel</b> (2.4): die Stützstelle der Wärmepumpe am Vorlauf und der Betriebsfall je Zone
-    /// (<see cref="Stundenergebnis.Begrenzungsgrund"/>) des ersten begrenzten Durchlaufs werden festgehalten;
-    /// jeder Wechsel zwischen zwei Durchläufen wird gezählt.</item>
+    /// <item><b>Verteilschlüssel</b> (Festlegung 9) — bei mehreren Gebäuden oder Zonen der unbegrenzte Probeschritt
+    /// jedes Gebäudes; er zählt nicht als Durchlauf.</item>
+    /// <item><b>Durchlauf k ≥ 1</b> — V₀ der Projektvorlauf (Pass 1 bzw. Heizkurve, mit der H2-Naht
+    /// <see cref="Vorlaufkorrektur"/>), S_k = Angebot(h, V_k) verteilt mit <see cref="Stundenverteilung"/> auf
+    /// Gebäude und Zonen, je Gebäude <see cref="GebaeudeStepper.Schritt"/> mit der Schranke (Rand
+    /// <see cref="Stundenrand.MitVerfuegbarkeit"/>, Zeichen für Zeichen AK2 mit Schranke = S_k), V_k+1
+    /// bedarfsgewichtet (Festlegung 12), S_k+1 neu. AK3-W3c: Auch der erste Durchlauf rechnet begrenzt — der
+    /// unbegrenzte Schritt ist keine Lösung, selbst wenn sein Stundenmittel unter S liegt (innerhalb der Stunde
+    /// kann die Schranke dennoch greifen; Orakel O2). Eine Schranke ohne Grenze (1 GW) rechnet Bit für Bit wie
+    /// ohne Schranke (Gate „ohne Grenzen bitgleich zu AK1“).</item>
+    /// <item><b>Abbruch</b>: |Δθ_i| ≤ 0,01 K, |ΔΦ| ≤ 0,1 W, |ΔV| ≤ 0,05 K, |ΔS| ≤ 0,1 W — oder das Angebot S
+    /// Bit für Bit unverändert (der Vorlauf wirkt nur über S; der nächste Schritt wäre derselbe). Höchstzahl 20,
+    /// Mehrzonen Zonenzahl × Durchläufe ≤ 120 (<see cref="GrenzeErreicht"/>); darüber
+    /// <see cref="AnlagenkopplungException"/> mit der größten Abweichung der letzten beiden Durchläufe.</item>
+    /// <item><b>Fallwechsel</b> (2.4): Wechsel der Stützstelle der Wärmepumpe am Vorlauf und des Betriebsfalls je
+    /// Zone (<see cref="Stundenergebnis.Begrenzungsgrund"/>) zwischen zwei Durchläufen werden gezählt. Kehrt die
+    /// Stützstelle zu einer schon besuchten zurück (Pendeln), wird die des ersten Durchlaufs festgehalten: ein letzter
+    /// Durchlauf mit Vorlauf und Angebot des ersten (<see cref="StundenFestgehalten"/>). Den Betriebsfall der Zonen
+    /// hält im Mehrzonenfall die Zonenschleife (Mustertreue).</item>
+    /// <item><b>H2-Naht</b> <see cref="Vorlaufkorrektur"/> (W4): mit ihr wird der Vorlauf aus der Lösung jedes
+    /// Durchlaufs neu gebildet, schon nach dem Probeschritt.</item>
     /// </list>
     /// <para>Übernahme mit <see cref="Festschreiben"/>; den Heizbedarf gibt der Aufrufer über die Naht
     /// <see cref="IStundenbedarf"/> an die Kaskadenstunde. Ohne Datenbank, ohne Protokoll, deterministisch.</para>
@@ -148,13 +177,22 @@ namespace WindowsFormsApplication1
         internal IReadOnlyList<Kopplungsgebaeude> Gebaeude => _gebaeude;
 
         /// <summary>
-        /// <b>Naht H2</b> (Q-AK3-2, Welle W4): korrigiert den Projektvorlauf V der Stunde (aus den Raumtemperaturen
-        /// derselben Stunde). <c>null</c> = keine Korrektur (bis W4).
+        /// <b>Naht H2</b> (Q-AK3-2, Welle W4): korrigiert den Projektvorlauf V der Stunde aus den Raumtemperaturen
+        /// derselben Stunde. <c>null</c> = keine Korrektur (bis W4; die Orakel O1/O1p setzen ein Testdouble ein).
         /// </summary>
-        internal Func<int, double, double> Vorlaufkorrektur { get; set; }
+        internal Vorlaufnaht Vorlaufkorrektur { get; set; }
+
+        /// <summary>Stunden, in denen die Stützstelle pendelte und die des ersten Durchlaufs festgehalten wurde.</summary>
+        internal int StundenFestgehalten { get; private set; }
 
         /// <summary>Stützstelle der Wärmepumpe zum Vorlauf (Fallwechsel); <c>null</c> = nicht gezählt.</summary>
         internal Func<double, int> Stuetzstelle { get; set; }
+
+        /// <summary>
+        /// Hält die Stützstelle des ersten Durchlaufs fest, wenn sie pendelt (Vorgabe <c>true</c>). Mit der
+        /// Interpolation über den Vorlauf (I-1) ist die Kapazität stetig; dann wird nur gezählt (Entwurf 3, O3 entfällt).
+        /// </summary>
+        internal bool StuetzstelleHalten { get; set; } = true;
 
         /// <summary>Zahl der Stunden je Durchlaufzahl (Index = Durchläufe).</summary>
         internal int[] DurchlaeufeVerteilung { get; }
@@ -197,42 +235,47 @@ namespace WindowsFormsApplication1
         {
             int n = _gebaeude.Length;
             double v = vorlaufStartC;
-            if (Vorlaufkorrektur != null) v = Vorlaufkorrektur(h, v);
+            if (Vorlaufkorrektur != null) v = Vorlaufkorrektur(h, v, null);
             Stundenangebot s = Angebotsfunktion.Angebot(h, v, _erzeuger, _speicher, vorrang);
 
-            // Durchlauf 1: der unbegrenzte Probeschritt — Lösung, wenn er unter die Schranke passt.
-            var probeW = new double[n];
-            var probe = new IReadOnlyList<Stundenergebnis>[n];
-            var probeZonen = new IReadOnlyList<double>[n];
+            // Der Verteilschlüssel (Festlegung 9): der unbegrenzte Probeschritt — nur, wenn es etwas zu verteilen gibt
+            // (mehrere Gebäude oder Zonen). Er zählt nicht als Durchlauf.
             int zonenMax = 1;
-            bool vorlaufZuHoch = false;
-            for (int i = 0; i < n; i++)
+            foreach (Kopplungsgebaeude g in _gebaeude) zonenMax = Math.Max(zonenMax, g.Stepper.Zonenzahl);
+            double[] schluessel = null;
+            IReadOnlyList<double>[] probeZonen = null;
+            if (n > 1 || zonenMax > 1)
             {
-                Kopplungsgebaeude g = _gebaeude[i];
-                IReadOnlyList<Stundenergebnis> e = Kopie(g.Stepper.Schritt(h));
-                probe[i] = e;
-                probeW[i] = HeizlastW(e, g.Faktor);
-                if (e.Count > 1) probeZonen[i] = e.Select(z => Math.Max(z.HeizleistungW, 0.0)).ToArray();
-                if (e.Count > zonenMax) zonenMax = e.Count;
-                foreach (Stundenergebnis z in e)
-                    if (!double.IsNaN(s.VorlaufC) && !double.IsNaN(z.VorlaufC) && z.HeizleistungW > 0.0 && s.VorlaufC < z.VorlaufC)
-                        vorlaufZuHoch = true;
+                schluessel = new double[n];
+                probeZonen = new IReadOnlyList<double>[n];
+                for (int i = 0; i < n; i++)
+                {
+                    Kopplungsgebaeude g = _gebaeude[i];
+                    IReadOnlyList<Stundenergebnis> e = g.Stepper.Schritt(h);
+                    schluessel[i] = HeizlastW(e, g.Faktor);
+                    if (e.Count > 1) probeZonen[i] = e.Select(z => Math.Max(z.HeizleistungW, 0.0)).ToArray();
+                }
+                if (n == 1) schluessel = null;
             }
-            double bedarfKw = 0.0;
-            for (int i = 0; i < n; i++) bedarfKw += probeW[i] / 1000.0;
-            if (!vorlaufZuHoch && bedarfKw <= s.LeistungKw)
-                return Abschliessen(1, probe, probeW, s, false);
 
-            // Durchläufe 2 …: die Schranke verteilt nach dem Schlüssel des Probeschritts.
-            double[] schluessel = n > 1 ? probeW : null;
+            // Fallwechsel (2.4): die Stützstelle des ersten Durchlaufs wird festgehalten, sobald sie pendelt — also zu
+            // einer schon besuchten Stützstelle zurückkehrt; jeder Wechsel wird gezählt.
             IReadOnlyList<Stundenergebnis>[] vorher = null;
-            int stelleVorher = Stuetzstelle != null && !double.IsNaN(v) ? Stuetzstelle(v) : int.MinValue;
+            int stelleEins = Stuetzstelle != null && !double.IsNaN(v) ? Stuetzstelle(v) : int.MinValue;
+            int stelleVorher = stelleEins;
+            var besucht = new HashSet<int>();
+            if (stelleEins != int.MinValue) besucht.Add(stelleEins);
+            double vEins = v;
+            Stundenangebot sEins = s;
+            bool festgehalten = false;
+            double dTheta = double.NaN, dPhi = double.NaN, dV = double.NaN, dS = double.NaN;
             double[] heizW = new double[n];
-            for (int k = 2; ; k++)
+            for (int k = 1; ; k++)
             {
-                if (k > HOECHSTZAHL || (zonenMax > 1 && zonenMax * k > PRODUKT_MEHRZONEN))
-                    throw Fehler(h, k - 1, v, s, vorher, zonenMax > 1 && k <= HOECHSTZAHL);
+                if (GrenzeErreicht(zonenMax, k))
+                    throw Fehler(h, k - 1, v, s, dTheta, dPhi, dV, dS, zonenMax > 1 && k <= HOECHSTZAHL);
 
+                // Durchlauf k: S_k verteilt, je Gebäude der Schritt mit der Schranke (wie AK2 mit Schranke = S_k).
                 Anlagenverfuegbarkeit[][] verteilt = Stundenverteilung.Verteilen(s.AlsVerfuegbarkeit(), _ids, _alle, schluessel, probeZonen);
                 var jetzt = new IReadOnlyList<Stundenergebnis>[n];
                 for (int i = 0; i < n; i++)
@@ -248,25 +291,50 @@ namespace WindowsFormsApplication1
                     heizW[i] = HeizlastW(jetzt[i], faktor);
                 }
 
-                if (vorher != null) FaelleZaehlen(vorher, jetzt);
+                int wechselnd = 0;
+                if (vorher != null)
+                {
+                    FaelleZaehlen(vorher, jetzt);
+                    wechselnd = Abweichung(vorher, jetzt, out dTheta, out dPhi);
+                }
+                if (festgehalten)
+                {
+                    StundenFestgehalten++;
+                    return Abschliessen(k, jetzt, heizW, s, v, true);
+                }
+
                 (double vNeu, _) = Kreis(jetzt, Faktoren());
                 if (double.IsNaN(vNeu)) vNeu = v;
-                if (Vorlaufkorrektur != null) vNeu = Vorlaufkorrektur(h, vNeu);
+                if (Vorlaufkorrektur != null) vNeu = Vorlaufkorrektur(h, vNeu, jetzt);
                 Stundenangebot sNeu = Angebotsfunktion.Angebot(h, vNeu, _erzeuger, _speicher, vorrang);
                 if (Stuetzstelle != null && !double.IsNaN(vNeu))
                 {
                     int stelle = Stuetzstelle(vNeu);
-                    if (stelleVorher != int.MinValue && stelle != stelleVorher) StuetzstellenWechsel++;
+                    if (stelleVorher != int.MinValue && stelle != stelleVorher)
+                    {
+                        StuetzstellenWechsel++;
+                        if (StuetzstelleHalten && besucht.Contains(stelle))
+                        {
+                            // Pendeln: ein letzter Durchlauf an Vorlauf und Angebot des ersten (deterministisch).
+                            festgehalten = true;
+                            vorher = jetzt;
+                            v = vEins;
+                            s = sEins;
+                            stelleVorher = stelleEins;
+                            continue;
+                        }
+                    }
+                    besucht.Add(stelle);
                     stelleVorher = stelle;
                 }
 
-                bool gleich = Gleich(v, vNeu) && sNeu.LeistungKw == s.LeistungKw && Gleich(sNeu.VorlaufC, s.VorlaufC)
-                              && sNeu.Grund == s.Grund;
-                bool klein = Math.Abs(vNeu - v) <= ABBRUCH_VORLAUF_K
-                             && Math.Abs(sNeu.LeistungKw - s.LeistungKw) * 1000.0 <= ABBRUCH_SCHRANKE_W
-                             && vorher != null && Abweichung(vorher, jetzt, out _, out _) == 0;
+                dV = Math.Abs(vNeu - v);
+                dS = Math.Abs(sNeu.LeistungKw - s.LeistungKw) * 1000.0;
+                // Gleiches Angebot ⇒ der nächste Schritt wäre derselbe (der Vorlauf wirkt nur über das Angebot).
+                bool gleich = sNeu.LeistungKw.Equals(s.LeistungKw) && Gleich(sNeu.VorlaufC, s.VorlaufC) && sNeu.Grund == s.Grund;
+                bool klein = dV <= ABBRUCH_VORLAUF_K && dS <= ABBRUCH_SCHRANKE_W && vorher != null && wechselnd == 0;
                 if (gleich || klein)
-                    return Abschliessen(k, jetzt, heizW, s, true);
+                    return Abschliessen(k, jetzt, heizW, s, vNeu, false);
 
                 vorher = jetzt;
                 v = vNeu;
@@ -284,9 +352,28 @@ namespace WindowsFormsApplication1
 
         private double[] Faktoren() => _gebaeude.Select(g => g.Faktor).ToArray();
 
-        private Kopplungsstunde Abschliessen(int durchlaeufe, IReadOnlyList<Stundenergebnis>[] loesung, double[] heizW,
-                                             Stundenangebot s, bool schranke)
+        /// <summary>
+        /// Die Schutzgrenze der Durchläufe (2.4): Höchstzahl <see cref="HOECHSTZAHL"/>, im Mehrzonenfall dazu
+        /// Zonen × Durchläufe ≤ <see cref="PRODUKT_MEHRZONEN"/>. true = Durchlauf <paramref name="durchlauf"/> ist
+        /// nicht mehr erlaubt.
+        /// </summary>
+        internal static bool GrenzeErreicht(int zonen, int durchlauf)
+            => durchlauf > HOECHSTZAHL || (zonen > 1 && zonen * durchlauf > PRODUKT_MEHRZONEN);
+
+        /// <summary>Greift die Schranke in der Lösung — begrenzt sie eine Zone an der Leistung oder am Vorlauf?</summary>
+        private static bool Begrenzt(IReadOnlyList<Stundenergebnis>[] e)
         {
+            foreach (IReadOnlyList<Stundenergebnis> g in e)
+                foreach (Stundenergebnis z in g)
+                    if (z.Begrenzungsgrund == Begrenzungsgrund.Verfuegbarkeit || z.Begrenzungsgrund == Begrenzungsgrund.VorlaufAnlage)
+                        return true;
+            return false;
+        }
+
+        private Kopplungsstunde Abschliessen(int durchlaeufe, IReadOnlyList<Stundenergebnis>[] loesung, double[] heizW,
+                                             Stundenangebot s, double vorlaufKreisC, bool festgehalten)
+        {
+            bool schranke = Begrenzt(loesung);
             Stunden++;
             DurchlaeufeVerteilung[durchlaeufe]++;
             if (durchlaeufe > DurchlaeufeMax) DurchlaeufeMax = durchlaeufe;
@@ -301,6 +388,9 @@ namespace WindowsFormsApplication1
                 SchrankeGreift = schranke,
                 VorlaufC = vor,
                 RuecklaufC = rueck,
+                VorlaufKreisC = vorlaufKreisC,
+                Festgehalten = festgehalten,
+                Loesung = loesung,
             };
         }
 
@@ -368,14 +458,14 @@ namespace WindowsFormsApplication1
                     if (vorher[i][z].Begrenzungsgrund != jetzt[i][z].Begrenzungsgrund) FallWechsel++;
         }
 
+        /// <summary>Der benannte Fehler mit der größten Abweichung zwischen den letzten beiden Durchläufen.</summary>
         private AnlagenkopplungException Fehler(int h, int durchlaeufe, double v, Stundenangebot s,
-                                                IReadOnlyList<Stundenergebnis>[] letzte, bool produkt)
+                                                double dTheta, double dPhi, double dV, double dS, bool produkt)
         {
             string gebaeude = string.Join(", ", _gebaeude.Select(g => g.Bezeichnung + " (" + g.Id.ToString(CultureInfo.InvariantCulture) + ")"));
             string beteiligte = string.Join(", ", _erzeuger.Select(e => e.Bezeichner)) + (_speicher != null && _speicher.Vorhanden ? ", Speicher" : "");
-            double dt = 0.0, dp = 0.0;
-            if (letzte != null) Abweichung(letzte, letzte, out dt, out dp);
-            string abw = string.Format(CultureInfo.InvariantCulture, "θ {0:0.###} K, Φ {1:0.###} W{2}", dt, dp,
+            string abw = string.Format(CultureInfo.InvariantCulture, "θ {0:0.###} K, Φ {1:0.###} W, Vorlauf {2:0.###} K, Schranke {3:0.###} W{4}",
+                                       dTheta, dPhi, dV, dS,
                                        produkt ? " (Produkt Zonen × Durchläufe > " + PRODUKT_MEHRZONEN + ")" : "");
             string stand = string.Format(CultureInfo.InvariantCulture, "{0} Durchläufe, Vorlauf {1:0.##} °C, Schranke {2:0.###} kW",
                                          durchlaeufe, v, s.LeistungKw);
