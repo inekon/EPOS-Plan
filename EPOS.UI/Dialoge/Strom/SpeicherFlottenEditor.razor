@@ -912,8 +912,11 @@
 
         _gewaehlt.Clear();
         await Melden();
-        await Melde(string.Format(CultureInfo.CurrentCulture, Texte.UebernahmeErfolg,
-                                  ergebnis.Angelegt, ergebnis.Geaendert));
+        // Die Hinweise des Kerns (übernommene Kostenpositionen samt Faktor) folgen der
+        // Erfolgsmeldung in derselben Meldung.
+        string erfolg = string.Format(CultureInfo.CurrentCulture, Texte.UebernahmeErfolg,
+                                      ergebnis.Angelegt, ergebnis.Geaendert);
+        await Melde(string.Join(" ", new[] { erfolg }.Concat(ergebnis.Hinweise ?? Array.Empty<string>())));
     }
 
     private Task Melde(string text)

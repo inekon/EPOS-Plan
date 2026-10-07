@@ -6228,6 +6228,12 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_PUFFERVERWEIS" xml:space="preserve">
     <value>{0} reference(s) to a buffer storage could not be resolved in the target and were left empty.</value>
   </data>
+  <data name="BK_KOMP_HINW_PROJEKTBEZUG" xml:space="preserve">
+    <value>{0} reference(s) to a source profile or chiller of the source project could neither be matched nor copied in the target and were left empty.</value>
+  </data>
+  <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
+    <value>{0} source profile(s) or chiller(s) of the source project were copied into the target project.</value>
+  </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Table {0} could not be read — its data is missing from the copy.</value>
   </data>
@@ -19329,6 +19335,12 @@ Please go through the project page again so that the data of the selected projec
   </data>
   <data name="FLOTTE_UEBERNAHME_FEHLER" xml:space="preserve">
     <value>The transfer failed; nothing was written: {0}</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN" xml:space="preserve">
+    <value>Cost items of “{0}” were scaled by capacity with factor {2} and apply to {1}; shares of energy costs remain unchanged.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET" xml:space="preserve">
+    <value>Cost items of “{0}” apply unchanged to {1} — without a capacity no factor can be formed; please check.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE" xml:space="preserve">
     <value>Search for the size</value>
