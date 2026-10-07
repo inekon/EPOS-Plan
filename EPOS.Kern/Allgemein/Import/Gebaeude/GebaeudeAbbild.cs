@@ -321,6 +321,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Jahresergebnisse der Zone dieses Raums (nur Export); <c>null</c> = keine.</summary>
         public AbbildErgebnis Ergebnis { get; set; }
 
+        /// <summary>
+        /// Nur Export (HC-5, F10): die gespeicherten Grundrisse aller Räume der Zone (<c>Tab_Raumgrundriss</c>) — Gestalt und Lage
+        /// des Exportmodells, keine Rechengröße (<see cref="GrundrissM"/> bleibt unberührt); leer = keine.
+        /// </summary>
+        public IReadOnlyList<Raumgrundriss> Grundrisse { get; set; } = Array.Empty<Raumgrundriss>();
+
         /// <summary>Kennung aus der Datei.</summary>
         public string Kennung { get; set; } = "";
 

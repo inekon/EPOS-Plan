@@ -68,6 +68,33 @@ namespace WindowsFormsApplication1
         internal double? USchichten { get; set; }
 
         /// <summary>
+        /// Wahr, wenn U der Datei und U aus den Schichten beide da sind und um mehr als
+        /// <see cref="GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS"/> (10 %) auseinanderliegen — der Hinweis am
+        /// Bauteil (E95-1). Es gilt das U der Datei; die Schichten liefern R₁ und C₁.
+        /// </summary>
+        internal bool UAbweichungHinweis
+            => UDatei is double ud && USchichten is double us && us > 0.0
+               && Math.Abs(ud / us - 1.0) > GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS;
+
+        /// <summary>
+        /// Was dem Bauteil zum vollständigen Aufbau fehlt (<see cref="Aufbauluecke"/>); <see cref="Aufbauluecke.Keine"/>
+        /// mit Aufbau, <see cref="Aufbauluecke.KeineSchichten"/> ohne Schichten in der Datei.
+        /// </summary>
+        internal Aufbauluecke Fehlt { get; set; } = Aufbauluecke.KeineSchichten;
+
+        /// <summary>
+        /// Der Ersatzaufbau der Zeile (BA-2, Konzept 5.3): Typ, Abgleich und Vermerke; <c>null</c> = keiner (echter
+        /// Aufbau oder ohne Aufbau). Mit Ersatzaufbau bleibt die Zeile in Stufe B bzw. C.
+        /// </summary>
+        internal Ersatzergebnis Ersatz { get; set; }
+
+        /// <summary>Der Code des Typaufbaus des Ersatzaufbaus; <c>null</c> = kein Ersatzaufbau.</summary>
+        internal string Typaufbau => Ersatz?.Typ.Code;
+
+        /// <summary>Die Zuordnungsstufe der Zeile (abgeleitet, <see cref="Bauteilzuordnung.Stufe(GebaeudeBauteilzeile)"/>).</summary>
+        internal Bauteilzuordnungsstufe Stufe => Bauteilzuordnung.Stufe(this);
+
+        /// <summary>
         /// Der Beleg der Zeile; gesetzt für Trennflächen aus den Raumkörpern (<see cref="BELEG_KOERPER"/>: Raum A, Raum B,
         /// Fläche) — die Herkunft lautet dann „aus Datei (Körper)“. <c>null</c> = keiner.
         /// </summary>
@@ -134,7 +161,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ist die Schichtrichtung nur angenommen (gbXML: „erste Schicht außen", Datenaustauschkonzept 3.7)?</summary>
         internal bool RichtungAngenommen { get; }
+
+        /// <summary>
+        /// Die Schichten der Datei, die die Relevanzregel (<see cref="Schichtrelevanz"/>) aus dem Aufbau genommen
+        /// hat — benannt, nicht still verworfen; leer = keine.
+        /// </summary>
+        internal IReadOnlyList<GebaeudeWeggelasseneSchicht> Weggelassen { get; set; } = Array.Empty<GebaeudeWeggelasseneSchicht>();
+
+        /// <summary>
+        /// Bei einem Ersatzaufbau (BA-2) Typ, Ziel-U, Abgleich und Vermerke — die Herkunft je Wert; <c>null</c> = ein
+        /// Aufbau der Datei. Ein Ersatzaufbau hat keine Quellentität (<see cref="Quelltyp"/> und <see cref="Kennung"/> leer).
+        /// </summary>
+        internal Ersatzergebnis Ersatz { get; init; }
     }
+
+    /// <summary>Eine Schicht der Datei, die die Relevanzregel weggelassen hat: Stoffname, Dicke [m], Grund, Anteile an R und C [–].</summary>
+    internal sealed record GebaeudeWeggelasseneSchicht(string Name, double Dicke_M, Schichtrelevanzgrund Grund, double AnteilR, double AnteilC);
 
     /// <summary>
     /// Ein Baustoff der Datei, der über den Namensabgleich einen Katalogbaustoff trägt — Quellentität
@@ -318,7 +360,7 @@ namespace WindowsFormsApplication1
         internal const string OHNE_FLAECHE = "IMP_BAUTEIL_PROT_OHNE_FLAECHE";
         /// <summary>W — {0} Zahl, {1} Beispiele: Flächen ohne Nachbarraum — keinem Gebäude zugeordnet, nicht übernommen.</summary>
         internal const string OHNE_NACHBAR = "IMP_BAUTEIL_PROT_OHNE_NACHBAR";
-        /// <summary>W — {0} Aufbau, {1} U der Datei, {2} U aus den Schichten, {3} Abweichung [%]: Es rechnet der Aufbau.</summary>
+        /// <summary>W — {0} Aufbau, {1} U der Datei, {2} U aus den Schichten, {3} Abweichung [%]: Es gilt das U der Datei, die Schichten liefern R₁ und C₁.</summary>
         internal const string U_ABWEICHUNG = "IMP_BAUTEIL_PROT_U_ABWEICHUNG";
         /// <summary>W — {0} Aufbau, {1} Grund: Stoffwerte unvollständig oder außerhalb des Bandes — kein Aufbau, nur U-Wert.</summary>
         internal const string STOFFWERTE_UNVOLLSTAENDIG = "IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG";
@@ -372,6 +414,26 @@ namespace WindowsFormsApplication1
         internal const string STOFFWERT_UNGUELTIG = "IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG";
         /// <summary>W — {0} Zahl, {1} Namen: Schichten ohne Stoff (Schraffur, leer) verworfen (N6).</summary>
         internal const string SCHICHT_VERWORFEN = "IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN";
+        /// <summary>I — {0} Zahl, {1} Liste „Aufbau: Stoff (Dicke mm)": Schichten unter der Relevanzschwelle weggelassen.</summary>
+        internal const string SCHICHT_UNERHEBLICH = "IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH";
+        /// <summary>I — {0} Zahl der Bauteile, {1} Fläche [m²]: Zuordnungsstufe A.</summary>
+        internal const string STUFE_A = "IMP_BAUTEIL_PROT_STUFE_A";
+
+        /// <summary>I — {0} Zahl, {1} Fläche [m²], {2} Zahl der Ersatzaufbauten: Außenbauteile mit Ersatzaufbau (BA-2).</summary>
+        internal const string ERSATZAUFBAU = "IMP_BAUTEIL_PROT_ERSATZAUFBAU";
+
+        /// <summary>I — {0} Zahl, {1} Namen: Ersatzaufbauten mit dem Typ nach dem U-Wert statt nach der Klasse.</summary>
+        internal const string ERSATZ_TYPWECHSEL = "IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL";
+
+        /// <summary>I — {0} Zahl, {1} Namen: Ersatzaufbauten, deren Dämmschicht entfällt.</summary>
+        internal const string ERSATZ_OHNE_DAEMMUNG = "IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG";
+
+        /// <summary>W — {0} Zahl, {1} Namen: Ersatzaufbauten außerhalb des Abgleichbands, Typaufbau ohne Abgleich.</summary>
+        internal const string ERSATZ_BAND = "IMP_BAUTEIL_PROT_ERSATZ_BAND";
+        /// <summary>I — {0} Zahl der Bauteile, {1} Fläche [m²]: Zuordnungsstufe B.</summary>
+        internal const string STUFE_B = "IMP_BAUTEIL_PROT_STUFE_B";
+        /// <summary>I — {0} Zahl der Bauteile, {1} Fläche [m²]: Zuordnungsstufe C.</summary>
+        internal const string STUFE_C = "IMP_BAUTEIL_PROT_STUFE_C";
         /// <summary>I — {0} Zahl: Luftschichten als ruhende Luftschicht nach DIN EN ISO 6946 (N6).</summary>
         internal const string LUFTSCHICHT = "IMP_BAUTEIL_PROT_LUFTSCHICHT";
         /// <summary>W — {0} Name, {1} λ der Datei, {2} Baustoff, {3} λ des Katalogs, {4} Abweichung [%]: die Gegenprobe; es rechnen die Werte der Datei.</summary>
@@ -404,8 +466,11 @@ namespace WindowsFormsApplication1
         /// <summary>Typ der Quellentität eines gbXML-Baustoffs.</summary>
         internal const string QUELLTYP_GBXML_BAUSTOFF = "Material";
 
-        /// <summary>Relative Abweichung zwischen U-Wert der Datei und U-Wert aus den Schichten, ab der gemeldet wird.</summary>
-        internal const double U_ABWEICHUNG_GRENZE = 0.05;
+        /// <summary>
+        /// Relative Abweichung zwischen U-Wert der Datei und U-Wert aus den Schichten, ab der gemeldet wird —
+        /// dieselbe Schwelle wie der Hinweis der Herleitung (E95-1: 10 %).
+        /// </summary>
+        internal const double U_ABWEICHUNG_GRENZE = GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS;
 
         /// <summary>
         /// <b>Untere Grenze der plausiblen Innenfläche</b> beider Seiten je Nutzfläche [–]. Das Band
@@ -687,8 +752,18 @@ namespace WindowsFormsApplication1
             private readonly Dictionary<string, GebaeudeMaterialzeile> _materialJeName = new Dictionary<string, GebaeudeMaterialzeile>(StringComparer.Ordinal);
             private readonly List<string> _ungueltig = new List<string>();
             private readonly List<string> _verworfen = new List<string>();
+            private readonly List<string> _unerheblich = new List<string>();
             private readonly HashSet<string> _gegenprobe = new HashSet<string>(StringComparer.Ordinal);
             private int _luftschichten, _katalogschichten;
+
+            // Ersatzaufbauten (BA-2): je Art, Rand, Neigung und Ziel-U EINER (Konzept 5.3, nicht je Bauteil).
+            private string _bauart;
+            private readonly Dictionary<string, GebaeudeAufbauzeile> _ersatzJeSchluessel = new Dictionary<string, GebaeudeAufbauzeile>(StringComparer.Ordinal);
+            private readonly List<string> _ersatzTypwechsel = new List<string>();
+            private readonly List<string> _ersatzOhneDaemmung = new List<string>();
+            private readonly List<string> _ersatzBand = new List<string>();
+            private int _ersatzZahl;
+            private double _ersatzM2;
 
             internal Bauer(GebaeudeBauteilvorschlag v, GebaeudeAbbild abbild, int index, char? klasse, GebaeudeQuelle quelle,
                            GebaeudeImportProfil profil, IReadOnlyDictionary<string, bool> uebersteuert, Baustoffabgleich abgleich = null)
@@ -733,6 +808,7 @@ namespace WindowsFormsApplication1
                 _v.Satz = satz;
                 _klasse = satz.Baualtersklasse;
                 _v.Baualtersklasse = _klasse;
+                _bauart = satz.Zeile(GebaeudeZielfelder.BAUART)?.Textwert;
 
                 _raeume = new Dictionary<string, AbbildRaum>(StringComparer.Ordinal);
                 foreach (AbbildGebaeude geb in _abbild.Gebaeude)
@@ -965,6 +1041,14 @@ namespace WindowsFormsApplication1
                     z.HerkunftAufbau = aufbau.Herkunft;
                     z.HerkunftU = aufbau.Herkunft;
                     z.USchichten = UAusAufbau(aufbau.Aufbau, z.Bauteil.Neigung ?? BauteilEingang.VorgabeNeigung(art), rand);
+                    z.Fehlt = Aufbauluecke.Keine;
+                    // E95-1: Das U der Datei bleibt neben dem Aufbau stehen und gilt in Gl. (27); die Schichten
+                    // liefern R₁ und C₁ (ErsatzparameterRC.AusBauteilweg: eingetragener U-Wert hat Vorrang).
+                    if (z.UDatei is double ud && ud >= GebaeudeFestwerte.U_MIN && ud <= GebaeudeFestwerte.U_MAX)
+                    {
+                        z.Bauteil.U_Wert = ud;
+                        z.HerkunftU = _datei;
+                    }
                     if (z.UDatei.HasValue && z.USchichten > 0.0
                         && Math.Abs(z.UDatei.Value / z.USchichten.Value - 1.0) > U_ABWEICHUNG_GRENZE
                         && _gemeldeteAufbauten.Add("U|" + aufbau.Kennung))
@@ -973,6 +1057,7 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
+                z.Fehlt = Luecken(s.Aufbau, rand != Bauteilrand.Innen);
                 if (s.UWertWm2K.HasValue)
                 {
                     z.Bauteil.U_Wert = s.UWertWm2K;
@@ -1307,7 +1392,7 @@ namespace WindowsFormsApplication1
             {
                 List<(Zonenflaeche F, double? Netto)> flaechen = teile.Where(x => !(x.Netto.HasValue && x.Netto.Value <= 0.0)).ToList();
                 double innenflaeche = flaechen.Where(x => x.Netto.HasValue).Sum(x => x.Netto.Value * (x.F.Beidseitig ? 2.0 : 1.0));
-                int unvollstaendig = flaechen.Count(x => !x.Netto.HasValue || Schichtfolge(x.F.Bauteil.Aufbau, false, out _) == null);
+                int unvollstaendig = flaechen.Count(x => !x.Netto.HasValue || Schichtfolge(x.F.Bauteil.Aufbau, false, out _, out _) == null);
                 _v.Innenflaechen = flaechen.Count;
                 _v.InnenflaecheDateiM2 = innenflaeche;
                 _v.InnenflaechenUnvollstaendig = unvollstaendig;
@@ -1378,7 +1463,9 @@ namespace WindowsFormsApplication1
                     z.HerkunftAufbau = aufbau.Herkunft;
                     z.USchichten = UAusAufbau(aufbau.Aufbau, neigung ?? BauteilEingang.VorgabeNeigung(art), Bauteilrand.Innen);
                     z.HerkunftU = aufbau.Herkunft;
+                    z.Fehlt = Aufbauluecke.Keine;
                 }
+                else z.Fehlt = Luecken(s.Aufbau, false);
                 Abschliessen(z);
             }
 
@@ -1435,7 +1522,7 @@ namespace WindowsFormsApplication1
                 // Messung ist die der Einordnung — dieselbe, aus der die Zuordnung ihr Zielfeld bildet.
                 IReadOnlyList<Innenposten> flaechen = einordnung.Innenflaechen;
                 double innenflaeche = einordnung.InnenflaecheM2;
-                int unvollstaendig = flaechen.Count(p => !p.NettoM2.HasValue || Schichtfolge(p.Bauteil.Aufbau, false, out _) == null);
+                int unvollstaendig = flaechen.Count(p => !p.NettoM2.HasValue || Schichtfolge(p.Bauteil.Aufbau, false, out _, out _) == null);
                 _v.Innenflaechen = flaechen.Count;
                 _v.InnenflaecheDateiM2 = innenflaeche;
                 _v.InnenflaechenUnvollstaendig = unvollstaendig;
@@ -1508,7 +1595,9 @@ namespace WindowsFormsApplication1
                     z.HerkunftAufbau = aufbau.Herkunft;
                     z.USchichten = UAusAufbau(aufbau.Aufbau, neigung ?? BauteilEingang.VorgabeNeigung(art), Bauteilrand.Innen);
                     z.HerkunftU = aufbau.Herkunft;
+                    z.Fehlt = Aufbauluecke.Keine;
                 }
+                else z.Fehlt = Luecken(s.Aufbau, false);
                 Abschliessen(z);
             }
 
@@ -1586,12 +1675,16 @@ namespace WindowsFormsApplication1
             /// <summary>Eine Schicht mit ihrem Katalogbaustoff (<c>null</c> = Werte der Datei) und ihrer Quelle.</summary>
             private readonly struct Schichteintrag
             {
-                internal Schichteintrag(Schicht schicht, int? stamm, AbbildSchicht quelle)
+                internal Schichteintrag(Schicht schicht, int? stamm, AbbildSchicht quelle, bool sperre = false)
                 {
                     Schicht = schicht;
                     Stamm = stamm;
                     Quelle = quelle;
+                    Sperre = sperre;
                 }
+
+                /// <summary>Folie, Sperre oder Abdichtung (der Namensabgleich trifft die Stoffgruppe „Abdichtungen").</summary>
+                internal bool Sperre { get; }
 
                 internal Schicht Schicht { get; }
 
@@ -1604,6 +1697,8 @@ namespace WindowsFormsApplication1
             private sealed class Ergaenzung
             {
                 internal readonly List<Schichteintrag> Schichten = new List<Schichteintrag>();
+                /// <summary>Je Schicht der Datei (ohne verworfene) die Werte nach Datei und Abgleich — für <see cref="Bauteilzuordnung.Luecken"/>.</summary>
+                internal readonly List<Schichtwerte> Werte = new List<Schichtwerte>();
                 internal bool Vollstaendig;
                 internal bool Katalog;
                 internal string Grund;
@@ -1619,7 +1714,7 @@ namespace WindowsFormsApplication1
             private GebaeudeAufbauzeile AufbauFuer(AbbildAufbau a, Bauteilart art, bool gespiegelt)
             {
                 if (a == null || a.Schichten.Count == 0) return null;
-                List<Schichteintrag> schichten = Schichtfolge(a, gespiegelt, out string grund);
+                List<Schichteintrag> schichten = Schichtfolge(a, gespiegelt, out string grund, out List<GebaeudeWeggelasseneSchicht> weggelassen);
                 if (schichten == null)
                 {
                     if (_gemeldeteAufbauten.Add("S|" + a.Kennung))
@@ -1671,6 +1766,10 @@ namespace WindowsFormsApplication1
                                                     a.Kennung, gegenseite, a.RichtungAngenommen,
                                                     katalog ? Importherkunft.Katalog : _datei,
                                                     schichten.Select(x => x.Stamm).ToArray(), quellen);
+                zeile.Weggelassen = weggelassen;
+                foreach (GebaeudeWeggelasseneSchicht w in weggelassen)
+                    Merken(_unerheblich, stamm + ": " + w.Name + " ("
+                                         + Zahl(Math.Round(1000.0 * w.Dicke_M, 2)) + " mm)");
                 _aufbauJeSignatur[signatur] = zeile;
                 _v._aufbauten.Add(zeile);
                 return zeile;
@@ -1682,11 +1781,14 @@ namespace WindowsFormsApplication1
             /// Abgleich die Namen der Schichten, die ohne Werte bleiben) oder eine Schicht außerhalb des
             /// Stoffwertbands liegt (Grund: die Meldung von <see cref="Bauteilreduktion.Pruefen"/>). Die Folge
             /// des Abbilds gilt aus Sicht des ERSTEN Nachbarn; die andere Seite (<paramref name="gespiegelt"/>)
-            /// liest sie rückwärts. Meldet nichts.
+            /// liest sie rückwärts. Danach fallen die Schichten unter der Relevanzschwelle weg
+            /// (<see cref="Schichtrelevanz"/>, <paramref name="weggelassen"/>). Meldet nichts.
             /// </summary>
-            private List<Schichteintrag> Schichtfolge(AbbildAufbau a, bool gespiegelt, out string grund)
+            private List<Schichteintrag> Schichtfolge(AbbildAufbau a, bool gespiegelt, out string grund,
+                                                      out List<GebaeudeWeggelasseneSchicht> weggelassen)
             {
                 grund = null;
+                weggelassen = new List<GebaeudeWeggelasseneSchicht>();
                 if (a == null || a.Schichten.Count == 0)
                 {
                     grund = Aufbaustatus.OhneAufbau.ToString();
@@ -1715,6 +1817,19 @@ namespace WindowsFormsApplication1
                 }
                 if (a.Richtung != Schichtrichtung.InnenNachAussen) folge.Reverse();
                 if (gespiegelt) folge.Reverse();
+
+                // Die Relevanzregel (Konzept Bauteilaufbau 5.1, E95-2): nur hier, beim Bilden des Vorschlags, und vor
+                // der Bandprüfung — eine Folie unter der kleinsten Schichtdicke verwirft so nicht den ganzen Aufbau.
+                IReadOnlyList<SchichtrelevanzBefund> befunde = Schichtrelevanz.Unerheblich(
+                    folge.Select(x => x.Schicht).ToList(), folge.Select(x => x.Sperre).ToList());
+                if (befunde.Count > 0)
+                {
+                    var weg = new HashSet<int>(befunde.Select(b => b.Stelle));
+                    foreach (SchichtrelevanzBefund b in befunde)
+                        weggelassen.Add(new GebaeudeWeggelasseneSchicht(Stoffname(folge[b.Stelle].Quelle), folge[b.Stelle].Schicht.Dicke_M,
+                                                                         b.Grund, b.AnteilR, b.AnteilC));
+                    folge = folge.Where((_, i) => !weg.Contains(i)).ToList();
+                }
                 try
                 {
                     Bauteilreduktion.Pruefen(folge.Select(x => x.Schicht).ToList(), a.Kennung);
@@ -1722,9 +1837,28 @@ namespace WindowsFormsApplication1
                 catch (GebaeudeModellException ex)
                 {
                     grund = ex.Message;
+                    weggelassen.Clear();
                     return null;
                 }
                 return folge;
+            }
+
+            /// <summary>
+            /// Was dem Aufbau der Datei fehlt (<see cref="Bauteilzuordnung.Luecken"/>) — mit dem Namensabgleich aus
+            /// den ergänzten Werten, sonst aus den Werten der Datei im Stoffwertband.
+            /// </summary>
+            private Aufbauluecke Luecken(AbbildAufbau a, bool huelle)
+            {
+                if (a == null || a.Schichten.Count == 0) return Aufbauluecke.KeineSchichten;
+                if (_abgleich != null) return Bauteilzuordnung.Luecken(Ergaenzen(a).Werte, huelle);
+                var werte = a.Schichten.Select(x =>
+                {
+                    double? l = Baustoffabgleich.AusserhalbDesBands(x.LambdaWmK, Baustoffabgleich.LambdaImBand) ? null : x.LambdaWmK;
+                    double? r = Baustoffabgleich.AusserhalbDesBands(x.RhoKgM3, Baustoffabgleich.RhoImBand) ? null : x.RhoKgM3;
+                    double? c = Baustoffabgleich.AusserhalbDesBands(x.CpJkgK, Baustoffabgleich.CpImBand) ? null : x.CpJkgK;
+                    return new Schichtwerte(x.DickeM > 0.0 ? x.DickeM : null, l, r, c);
+                }).ToList();
+                return Bauteilzuordnung.Luecken(werte, huelle);
             }
 
             /// <summary>
@@ -1761,12 +1895,14 @@ namespace WindowsFormsApplication1
                     Abgleichtreffer t = _abgleich.Abgleichen(s.Name);
                     if (m != null) m.Treffer = t;
 
+                    bool sperre = string.Equals(t?.Baustoff?.Gruppe, Schichtrelevanz.GRUPPE_ABDICHTUNGEN, StringComparison.Ordinal);
                     if (d.HasValue && l.HasValue && r.HasValue && c.HasValue)
                     {
                         // Vollständige Werte der Datei: sie rechnen, der Abgleich ist die Gegenprobe.
                         if (m != null) m.SchichtenAusDatei++;
                         Gegenprobe(s, l.Value, t);
-                        e.Schichten.Add(new Schichteintrag(new Schicht(d.Value, l.Value, r.Value, c.Value), null, s));
+                        e.Werte.Add(new Schichtwerte(d, l, r, c));
+                        e.Schichten.Add(new Schichteintrag(new Schicht(d.Value, l.Value, r.Value, c.Value), null, s, sperre));
                         continue;
                     }
 
@@ -1777,6 +1913,7 @@ namespace WindowsFormsApplication1
                     }
                     if (t.Sonderfall == Abgleichsonderfall.Luftschicht)
                     {
+                        e.Werte.Add(new Schichtwerte(d, l, r, c, true));
                         if (!d.HasValue)
                         {
                             e.Vollstaendig = false;
@@ -1794,6 +1931,7 @@ namespace WindowsFormsApplication1
                     double? lw = l ?? (Baustoffabgleich.LambdaImBand(b?.Lambda) ? b.Lambda : null);
                     double? rw = r ?? (Baustoffabgleich.RhoImBand(b?.Rho) ? b.Rho : null);
                     double? cw = c ?? (Baustoffabgleich.CpImBand(b?.Cp) ? b.Cp : null);
+                    e.Werte.Add(new Schichtwerte(d, lw, rw, cw));
                     if (b == null || !d.HasValue || !lw.HasValue || !rw.HasValue || !cw.HasValue)
                     {
                         e.Vollstaendig = false;
@@ -1802,7 +1940,7 @@ namespace WindowsFormsApplication1
                     }
                     e.Katalog = true;
                     if (m != null) ausKatalog.Add(m);
-                    e.Schichten.Add(new Schichteintrag(new Schicht(d.Value, lw.Value, rw.Value, cw.Value), b.ID, s));
+                    e.Schichten.Add(new Schichteintrag(new Schicht(d.Value, lw.Value, rw.Value, cw.Value), b.ID, s, sperre));
                 }
                 if (e.Schichten.Count == 0) e.Vollstaendig = false;
                 if (e.Vollstaendig)
@@ -1920,6 +2058,7 @@ namespace WindowsFormsApplication1
             private void Abschliessen(GebaeudeBauteilzeile z)
             {
                 BauteilModel b = z.Bauteil;
+                ErsatzSetzen(z);
                 b.Herkunft = ImportherkunftWerte.IstVorgabe(z.HerkunftFlaeche) || ImportherkunftWerte.IstVorgabe(z.HerkunftU)
                     ? DbWerte.HERKUNFT_VORGABE : _herkunftWert;
                 if (!b.Azimut.HasValue && GebaeudeZonenCtrl.BrauchtAzimut(b))
@@ -1927,6 +2066,60 @@ namespace WindowsFormsApplication1
                 z.Zone = _aktuelleZone == null ? 0 : _aktuelleStelle;
                 _v._zeilen.Add(z);
                 (_aktuelleZone ?? _v.Zone).Bauteile.Add(b);
+            }
+
+            /// <summary>
+            /// <b>Der Ersatzaufbau</b> (BA-2, Konzept 5.3, E95-3): Ein opakes Außenbauteil ohne Aufbau, aber mit U-Wert
+            /// (Stufe B aus der Datei, Stufe C aus der Vorgabe der Klasse) bekommt die Projektkopie eines Typaufbaus,
+            /// abgeglichen auf sein U (<see cref="Ersatzaufbau.Bilden"/>). Das U der Zeile bleibt und gilt in Gl. (27);
+            /// die Schichten liefern R₁ und C₁. Innenbauteile (ohne Summenfeld) bleiben im Klassenweg (E95-5).
+            /// </summary>
+            private void ErsatzSetzen(GebaeudeBauteilzeile z)
+            {
+                BauteilModel b = z.Bauteil;
+                if (b.ID_Aufbau.HasValue || z.Summenfeld == null || !(b.U_Wert is double u) || !(u > 0.0)) return;
+                if (!(GebaeudeZonenabbildung.ArtAusZeile(b.Bauteilart) is Bauteilart art)
+                    || !(GebaeudeZonenabbildung.RandAusZeile(b.Bauteilart, b.Randbedingung) is Bauteilrand rand)
+                    || !Ersatzaufbau.Erhaelt(art, rand)) return;
+                double neigung = b.Neigung ?? BauteilEingang.VorgabeNeigung(art);
+                string schluessel = b.Bauteilart + "|" + rand + "|" + Math.Round(neigung).ToString(CultureInfo.InvariantCulture) + "|"
+                                    + u.ToString("R", CultureInfo.InvariantCulture);
+                if (!_ersatzJeSchluessel.TryGetValue(schluessel, out GebaeudeAufbauzeile zeile))
+                {
+                    Ersatzergebnis e = Ersatzaufbau.Bilden(art, rand, neigung, _bauart, _klasse, u);
+                    BauteilaufbauModel m = e.Aufbau;
+                    m.ID = _naechsterAufbau--;
+                    m.Bezeichner = FreierName(e.Typ.Bezeichner + ", U " + Zahl(Math.Round(u, 3)));
+                    m.Bauteilart = b.Bauteilart;
+                    m.Beschreibung = Kuerzen(Ersatzbeschreibung(e), 250);
+                    zeile = new GebaeudeAufbauzeile(m, null, null, false, false, Importherkunft.Vorgabe,
+                                                    m.Schichten.Select(x => x.ID_Baustoff).ToArray()) { Ersatz = e };
+                    _ersatzJeSchluessel[schluessel] = zeile;
+                    _v._aufbauten.Add(zeile);
+                    if ((e.Vermerk & Ersatzvermerk.TypNachU) != 0) Merken(_ersatzTypwechsel, m.Bezeichner);
+                    if ((e.Vermerk & Ersatzvermerk.DaemmungEntfaellt) != 0) Merken(_ersatzOhneDaemmung, m.Bezeichner);
+                    if ((e.Vermerk & Ersatzvermerk.AusserhalbBand) != 0) Merken(_ersatzBand, m.Bezeichner);
+                }
+                b.ID_Aufbau = zeile.Aufbau.ID;
+                z.HerkunftAufbau = Importherkunft.Vorgabe;
+                z.USchichten = zeile.Ersatz.USchichten;
+                z.Ersatz = zeile.Ersatz;
+                z.Fehlt |= Aufbauluecke.Ersatzaufbau;
+                _ersatzZahl++;
+                _ersatzM2 += b.Flaeche;
+            }
+
+            /// <summary>Die Beschreibung eines Ersatzaufbaus: Typ und abgeglichener Wert (Herkunft je Wert).</summary>
+            private static string Ersatzbeschreibung(Ersatzergebnis e)
+            {
+                string u = Zahl(Math.Round(e.UZiel, 3));
+                if (e.Wert is double w && e.Abgleich == Typabgleich.Daemmdicke)
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_ERSATZAUFBAU_DICKE, e.Typ.Bezeichner,
+                                         Zahl(Math.Round(100.0 * w, 1)), u);
+                if (e.Wert is double l)
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_ERSATZAUFBAU_LAMBDA, e.Typ.Bezeichner,
+                                         Zahl(Math.Round(l, 3)), u);
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_ERSATZAUFBAU_OHNE, e.Typ.Bezeichner, u);
             }
 
             /// <summary>Neigung aus Sicht des beheizten Raums: gespiegelt ist sie 180° − Neigung.</summary>
@@ -1961,6 +2154,16 @@ namespace WindowsFormsApplication1
                 if (_unbeheizt > 0) Info(UNBEHEIZT, Ganz(_unbeheizt), Zahl(_unbeheiztM2));
                 if (_vorhangfassaden > 0) Info(VORHANGFASSADE, Ganz(_vorhangfassaden));
                 if (_fensterErdreich > 0) Info(FENSTER_ERDREICH, Ganz(_fensterErdreich));
+                if (_unerheblich.Count > 0) Info(SCHICHT_UNERHEBLICH, Ganz(_unerheblich.Count), Liste(_unerheblich));
+                if (_ersatzZahl > 0) Info(ERSATZAUFBAU, Ganz(_ersatzZahl), Zahl(Math.Round(_ersatzM2, 2)), Ganz(_ersatzJeSchluessel.Count));
+                if (_ersatzTypwechsel.Count > 0) Info(ERSATZ_TYPWECHSEL, Ganz(_ersatzTypwechsel.Count), Liste(_ersatzTypwechsel));
+                if (_ersatzOhneDaemmung.Count > 0) Info(ERSATZ_OHNE_DAEMMUNG, Ganz(_ersatzOhneDaemmung.Count), Liste(_ersatzOhneDaemmung));
+                if (_ersatzBand.Count > 0) Warnung(ERSATZ_BAND, Ganz(_ersatzBand.Count), Liste(_ersatzBand));
+                // Die Summenzeile je Zuordnungsstufe (Konzept Bauteilaufbau 5.2): Zahl und Fläche.
+                foreach (Zuordnungssumme su in Bauteilzuordnung.Summen(_v._zeilen))
+                    if (su.Zahl > 0)
+                        Info(su.Stufe == Bauteilzuordnungsstufe.A ? STUFE_A : su.Stufe == Bauteilzuordnungsstufe.B ? STUFE_B : STUFE_C,
+                             Ganz(su.Zahl), Zahl(Math.Round(su.Flaeche_M2, 2)));
                 if (_abgleich == null) return;
 
                 // Der Namensabgleich: was er ergänzt hat, was ohne Treffer bleibt, was verworfen oder

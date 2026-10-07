@@ -231,7 +231,10 @@ namespace Auslieferungsvorlage.Tests
             // 173 seit dem Schemaschritt 189 (RaumnutzungSchema, NP1a): die fuenf Tabellen des Katalogs der
             // Nutzungsprofile, STRICT von ihrer ersten Zeile an; der Neubau von Kalender und Vorlage haelt STRICT.
             //
-            Assert.Equal(173, befund.Strict);
+            // 174 seit dem Schemaschritt 191 (RaumgrundrissSchema, HC-5): Tab_Raumgrundriss, STRICT von ihrer ersten Zeile
+            // an und in der Vorlage LEER.
+            //
+            Assert.Equal(174, befund.Strict);
         }
 
         // =============================================================================
@@ -285,7 +288,7 @@ namespace Auslieferungsvorlage.Tests
 
             Assert.True(befund.Tabellen, "Die Tabellen der Importherkunft fehlen in der Vorlage.");
             Assert.Equal(0L, befund.Zeilen);
-            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0)",
+            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0, Tab_Raumgrundriss 0)",
                             File.ReadAllText(_v.Ziel + ".bericht.txt"));
         }
 
@@ -325,17 +328,23 @@ namespace Auslieferungsvorlage.Tests
                         "SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\" WHERE \"ReadOnly\" = 1")),
                     Katalog: Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\"")),
                     Leer: Convert.ToInt64(DataRepository.ExecuteScalar(
-                        "SELECT (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\") + (SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\") + " +
+                        // Die Typaufbauten (Schritt 192, BA-2) sind Auslieferung und zählen nicht als Projektrest.
+                        "SELECT (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"Typaufbau\" IS NULL) + " +
+                        "(SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\" WHERE \"ID_Aufbau\" NOT IN " +
+                        "(SELECT \"ID\" FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"Typaufbau\" IS NOT NULL)) + " +
                         "(SELECT COUNT(*) FROM \"Tab_Baustoff\") + (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau\") + " +
                         "(SELECT COUNT(*) FROM \"Tab_Bauteilschicht\") + (SELECT COUNT(*) FROM \"Tab_Zone\") + " +
                         "(SELECT COUNT(*) FROM \"Tab_Bauteil\") + (SELECT COUNT(*) FROM \"Tab_Zonenluftstrom\") + " +
                         "(SELECT COUNT(*) FROM \"Tab_ErgebnisZone\")")),
+                    Typaufbauten: Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"ReadOnly\" = 1 AND \"Typaufbau\" IS NOT NULL")),
                     OhneReadOnly: ohneReadOnly);
             });
 
             Assert.Equal(BaustoffSchema.Saat.Count, befund.Saat);
             Assert.Equal(befund.Saat, befund.Katalog);
             Assert.Equal(0, befund.Leer);
+            Assert.Equal(TypaufbauSaattabelle.Alle.Count, befund.Typaufbauten);   // die Saat der Typaufbauten bleibt
 
             Assert.Contains("Tab_Bauteilschicht_STAMM", befund.OhneReadOnly);
             string pruefbericht = File.ReadAllText(_v.Ziel + ".bericht.txt");

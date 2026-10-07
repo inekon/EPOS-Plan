@@ -378,7 +378,7 @@
                     <li class="@Legendenklasse(z)" data-zone="@z.Schluessel">
                         <span class="@("epos-gebansicht-farbfeld " + Zonenklasse(daten, z.Schluessel))" aria-hidden="true"></span>
                         <span class="epos-gebansicht-zonenname">@z.Name</span>
-                        <span class="epos-gebansicht-herkunft">@(z.Schematisch ? Texte.Schematisch : Texte.Raumgrenzen)</span>
+                        <span class="epos-gebansicht-herkunft">@(z.Schematisch ? Texte.Schematisch : z.AusDateikoerper ? Texte.HerkunftGrundriss : Texte.Raumgrenzen)</span>
                         @if (!z.Beheizt)
                         {
                             <span class="epos-gebansicht-marke">@Texte.Unbeheizt</span>
@@ -636,8 +636,7 @@
     private IReadOnlyList<GebaeudeAnsichtDateiraum> GezeigteKoerper(GebaeudeAnsichtDaten daten)
         => ImDateimodus
             ? daten.Dateiansicht()
-            : daten.Koerper().Select(k => new GebaeudeAnsichtDateiraum(
-                k.Raum, k.Schematisch ? Koerperherkunft.Schematisch : Koerperherkunft.Umriss, null, k)).ToList();
+            : daten.Koerper().Select(k => new GebaeudeAnsichtDateiraum(k.Raum, k.Herkunft, null, k)).ToList();
 
     private RenderFragment Koerperbild(GebaeudeAnsichtDaten daten) => __builder =>
     {
@@ -678,6 +677,16 @@
                     <p class="epos-gebansicht-vereinfacht" data-vermerke="@string.Join(",", vermerke)">@Format(Texte.Vereinfacht, string.Join(", ", vermerke.Select(Texte.Vermerk)))</p>
                 }
             }
+            else if (koerper.Any(k => k.Herkunft == Koerperherkunft.Grundriss))
+            {
+                @* HC-5: das Exportmodell nennt die Räume aus dem Grundriss des Dateikörpers - je Raum einmal gezählt. *@
+                int ausGrundriss = Raumzahl(koerper, Koerperherkunft.Grundriss);
+                int ausUmriss = Raumzahl(koerper, Koerperherkunft.Umriss);
+                int schematisch = Raumzahl(koerper, Koerperherkunft.Schematisch);
+                <p class="epos-gebansicht-kennzeichen" data-grundriss="@ausGrundriss.ToString(CultureInfo.InvariantCulture)"
+                   data-umriss="@ausUmriss.ToString(CultureInfo.InvariantCulture)"
+                   data-schematisch="@schematisch.ToString(CultureInfo.InvariantCulture)">@Format(Texte.KennzeichenExport, ausGrundriss, ausUmriss, schematisch)</p>
+            }
             @if (ImDateimodus ? koerper.Any(k => k.Herkunft == Koerperherkunft.Schematisch) : daten.Schematisch || koerper.Any(k => k.Prisma!.Schematisch))
             {
                 <p class="epos-gebansicht-schematisch">
@@ -716,7 +725,7 @@
                     <li class="@Legendenklasse(z)" data-zone="@z.Schluessel">
                         <span class="@("epos-gebansicht-farbfeld " + Zonenklasse(daten, z.Schluessel))" aria-hidden="true"></span>
                         <span class="epos-gebansicht-zonenname">@z.Name</span>
-                        <span class="epos-gebansicht-herkunft">@(z.Schematisch ? Texte.Schematisch : Texte.Raumgrenzen)</span>
+                        <span class="epos-gebansicht-herkunft">@(z.Schematisch ? Texte.Schematisch : z.AusDateikoerper ? Texte.HerkunftGrundriss : Texte.Raumgrenzen)</span>
                         @if (koerper.Any(k => k.Prisma is { HoeheVorgabe: true } && string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal)))
                         {
                             <span class="epos-gebansicht-marke epos-gebansicht-marke--hoehe">@Texte.HoeheVorgabe</span>
@@ -740,7 +749,7 @@
                 }
             </ul>
             }
-            @if (ImDateimodus && koerper.Count > 0)
+            @if (koerper.Count > 0 && (ImDateimodus || koerper.Any(k => k.Herkunft == Koerperherkunft.Grundriss)))
             {
                 <details class="epos-gebansicht-raumherkunft">
                     <summary>@Texte.Raeume</summary>
@@ -750,6 +759,8 @@
                             string text = Format(Texte.RaumHerkunft, k.Raum.Name, Texte.Herkunft(k.Herkunft));
                             if (k.Datei is { Vermerke.Count: > 0 } d)
                                 text += " — " + Format(Texte.Vereinfacht, string.Join(", ", d.Vermerke.Select(Texte.Vermerk)));
+                            else if (k.Herkunft == Koerperherkunft.Grundriss && k.Prisma?.Angaben is { Grundrissvermerke.Count: > 0 } a)
+                                text += " — " + Format(Texte.Vereinfacht, string.Join(", ", a.Grundrissvermerke.Select(Texte.Grundrissvermerk)));
                             <li data-raum="@k.Raum.Kennung" data-zone="@k.Raum.Zone" data-herkunft="@Herkunftsschluessel(k.Herkunft)" title="@text">
                                 <span class="@("epos-gebansicht-farbfeld " + Zonenklasse(daten, k.Raum.Zone))" aria-hidden="true"></span>
                                 <span>@text</span>
@@ -766,6 +777,10 @@
         => koerper.Where(k => k.Datei is not null).SelectMany(k => k.Datei!.Vermerke).Distinct(StringComparer.Ordinal)
                   .OrderBy(v => Reihe(v)).ThenBy(v => v, StringComparer.Ordinal).ToList();
 
+    /// <summary>HC-5: die Zahl der Räume einer Herkunft — ein Raum mit mehreren Prismen zählt einmal.</summary>
+    private static int Raumzahl(IReadOnlyList<GebaeudeAnsichtDateiraum> koerper, Koerperherkunft herkunft)
+        => koerper.Where(k => k.Herkunft == herkunft).Select(k => k.Raum.Kennung).Distinct(StringComparer.Ordinal).Count();
+
     private static int Reihe(string vermerk)
     {
         int i = Array.IndexOf(GebaeudeAnsichtDateikoerper.VERMERKE, vermerk);
@@ -777,6 +792,7 @@
     {
         Koerperherkunft.Datei => "datei",
         Koerperherkunft.Schematisch => "schematisch",
+        Koerperherkunft.Grundriss => "grundriss",
         _ => "umriss",
     };
 
@@ -1021,6 +1037,7 @@
         GebaeudeAnsichtZone? zone = daten.Zone(r.Zone);
         string text = zone is null ? Format(Texte.RaumOhneZone, r.Name, r.Flaeche) : Format(Texte.Raum, r.Name, r.Flaeche, zone.Name);
         if (r.Schematisch) text += ", " + Texte.Schematisch;
+        else if (r.AusDateikoerper) text += ", " + Texte.HerkunftGrundriss;
         if (Bedienbar)
             text += " — " + (GewaehlteZone is null
                 ? Texte.Abtrennen

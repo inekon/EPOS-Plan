@@ -95,14 +95,14 @@ namespace EPOS.Kern.Tests
             Assert.Null(e.Befund);
             Assert.True(e.IdZone > 0);
             long[] nachher = Bestand();
-            int schichten = v.Aufbauten.Sum(a => a.Aufbau.Schichten.Count);
+            int schichten = v.Dateiaufbauten().Sum(a => a.Aufbau.Schichten.Count);
             Assert.Equal(17, schichten);
             Assert.Equal(new[] { vorher[0] + 1, vorher[1] + 34, vorher[2] + 6, vorher[3] + schichten }, nachher);
 
             // Der Vorschlag selbst bleibt, wie er war.
             Assert.Equal(-1, v.Zone.ID);
             Assert.All(v.Zone.Bauteile, b => Assert.True(b.ID < 0));
-            Assert.Equal("Flachdach", v.Aufbauten[1].Aufbau.Bezeichner);
+            Assert.Equal("Flachdach", v.Dateiaufbauten()[1].Aufbau.Bezeichner);
 
             // Zurücklesen — die Zeilen der Zone.
             ZoneModel zone = Assert.Single(new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude));
@@ -334,7 +334,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportAblauf ablauf = BauteilvorschlagProbe.Lesen(MATERIALHAUS);
             GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, null, new BaustoffabgleichCtrl(PROJEKT).Abgleich());
             Assert.False(v.Abgelehnt);
-            Assert.Equal(7, v.Aufbauten.Count);
+            Assert.Equal(7, v.Dateiaufbauten().Count);
             long quellenVorher = Zahl(ImportzuordnungSchema.TAB_QUELLE);
 
             GebaeudeZonenCtrl.Vorschlagsergebnis e;
@@ -350,8 +350,9 @@ namespace EPOS.Kern.Tests
 
             // Je Katalogbaustoff eine Projektkopie mit Herkunft KATALOG.
             var katalog = new BaustoffCtrl();
-            List<int> stamm = v.Aufbauten.SelectMany(a => a.Stammbaustoffe).Where(x => x.HasValue).Select(x => x.Value).Distinct().OrderBy(x => x).ToList();
-            Assert.Equal(new[] { 1, 2, 5, 10, 12, 13, 20, 36, 39, 48, 56 }, stamm);
+            List<int> stamm = v.Dateiaufbauten().SelectMany(a => a.Stammbaustoffe).Where(x => x.HasValue).Select(x => x.Value).Distinct().OrderBy(x => x).ToList();
+            // Die Bitumenbahn (56) des Dachs fällt unter die Relevanzregel (Folie/Abdichtung unter 2 % von R).
+            Assert.Equal(new[] { 1, 2, 5, 10, 12, 13, 20, 36, 39, 48 }, stamm);
             List<BaustoffModel> projekt = katalog.LesenProjekt(PROJEKT);
             var kopieJeStamm = new Dictionary<int, BaustoffModel>();
             foreach (int id in stamm)
@@ -384,16 +385,17 @@ namespace EPOS.Kern.Tests
                 mitStoff++;
             }
             Assert.Equal(1, luft);
-            Assert.Equal(v.Aufbauten.Sum(a => a.Stammbaustoffe.Count(x => x.HasValue)), mitStoff);
+            Assert.Equal(v.Dateiaufbauten().Sum(a => a.Stammbaustoffe.Count(x => x.HasValue)), mitStoff);
 
             // Die Paarungen: je Baustoff der Datei eine, auf die Projektkopie — zwei Namen, ein Stoff, eine Kopie.
             List<GebaeudeQuellzuordnung> stoffe = e.Zuordnungen.Where(z => z.Ziel == ImportZiel.Baustoff).ToList();
-            Assert.Equal(17, stoffe.Count);
+            // 16: Die Bahn des Dachs fällt unter die Relevanzregel und braucht weder Projektkopie noch Paarung.
+            Assert.Equal(16, stoffe.Count);
             Assert.All(stoffe, z => Assert.Equal(GebaeudeBauteilvorschlag.QUELLTYP_IFC_BAUSTOFF, z.Quelltyp));
             Assert.Equal(kopieJeStamm[36].ID, stoffe.Single(z => z.Quellkennung == "Mineralwolle 102890377").ZielId);
             Assert.Equal(kopieJeStamm[36].ID, stoffe.Single(z => z.Quellkennung == "Trittschalldämmung").ZielId);
             Assert.Equal(kopieJeStamm[5].ID, stoffe.Single(z => z.Quellkennung == "Fußbodenaufbau").ZielId);
-            Assert.Equal(17L, Convert.ToInt64(DataRepository.ExecuteScalar(
+            Assert.Equal(16L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM \"Tab_Importzuordnung\" z JOIN \"Tab_Importquelle\" q ON q.\"ID\" = z.\"ID_Importquelle\" " +
                 "WHERE q.\"ID_Gebaeude\" = ? AND z.\"ID_Baustoff\" IS NOT NULL", new DbParam("@g", g.ID_Gebaeude)), CultureInfo.InvariantCulture));
 
@@ -420,8 +422,8 @@ namespace EPOS.Kern.Tests
             GebaeudeImportAblauf ablauf = BauteilvorschlagProbe.Lesen(MATERIALHAUS);
             GebaeudeBauteilvorschlag ohne = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null);
             GebaeudeBauteilvorschlag mit = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, null, new BaustoffabgleichCtrl(PROJEKT).Abgleich());
-            Assert.Empty(ohne.Aufbauten);
-            Assert.Equal(6, mit.Aufbauten.Count);
+            Assert.Empty(ohne.Dateiaufbauten());
+            Assert.Equal(6, mit.Dateiaufbauten().Count);
             SimulationWaermebedarf sim = NeueRechnung(PROJEKT);
 
             double Rechnen(GebaeudeBauteilvorschlag v, bool mitZone)
@@ -442,7 +444,7 @@ namespace EPOS.Kern.Tests
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
                 "{0}, Projekt {1}: Jahresheizwärme Klassenweg {2:F3} MWh; Bauteilweg ohne Abgleich {3:F3} MWh (Aufbauten 0, Innenweg {4}); " +
                 "mit Abgleich {5:F3} MWh (Aufbauten {6}, Innenweg {7}); Verhältnis nachher/vorher {8:F4}",
-                MATERIALHAUS, PROJEKT, klasse, vorher, ohne.Innenweg, nachher, mit.Aufbauten.Count, mit.Innenweg, nachher / vorher));
+                MATERIALHAUS, PROJEKT, klasse, vorher, ohne.Innenweg, nachher, mit.Dateiaufbauten().Count, mit.Innenweg, nachher / vorher));
             Assert.True(klasse > 0.0 && vorher > 0.0 && nachher > 0.0);
         }
 

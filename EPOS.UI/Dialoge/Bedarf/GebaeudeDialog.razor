@@ -498,6 +498,19 @@
                 {
                     <p class="@(stand.Zustand == GebaeudeNeulesezustand.Passend ? "epos-leisezeile" : "epos-kond-feldmeldung") epos-gebaeude-neulesen-hinweis"
                        role="@(stand.Zustand == GebaeudeNeulesezustand.Passend ? "status" : "alert")">@stand.Hinweis</p>
+                    @* HC-5 (F7): Grundriss übernehmen - nur bei passender Prüfsumme und ohne oder mit älteren gespeicherten Grundrissen. *@
+                    @if (stand.GrundrissNachtragen is not null && _neulesenGrundrissHinweis is null)
+                    {
+                        <p class="epos-leisezeile epos-gebaeude-neulesen-grundriss-angebot">@string.Format(System.Globalization.CultureInfo.CurrentCulture, TextGrundrissAngebot, stand.GrundrissRaeume)</p>
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf epos-gebaeude-neulesen-grundriss" disabled="@_neulesenGrundrissLaeuft"
+                                    @onclick="BeiGrundrissNachtragen">@BtnGrundrissText</button>
+                        </div>
+                    }
+                    @if (_neulesenGrundrissHinweis is not null)
+                    {
+                        <p class="epos-leisezeile epos-gebaeude-neulesen-grundriss-hinweis" role="status">@_neulesenGrundrissHinweis</p>
+                    }
                     @if (stand.Ansicht is not null)
                     {
                         @if (stand.Zonenhinweis.Length > 0)
@@ -711,6 +724,12 @@
 
     /// <summary>GEB_NL_ANDERE_DATEI</summary>
     [Parameter] public string BtnAndereDateiText { get; set; } = Resource.GEB_NL_ANDERE_DATEI;
+
+    /// <summary>GEB_NL_GRUNDRISS_KNOPF — HC-5 (F7).</summary>
+    [Parameter] public string BtnGrundrissText { get; set; } = Resource.GEB_NL_GRUNDRISS_KNOPF;
+
+    /// <summary>GEB_NL_GRUNDRISS_ANGEBOT — HC-5 (F7), {0} = Räume.</summary>
+    [Parameter] public string TextGrundrissAngebot { get; set; } = Resource.GEB_NL_GRUNDRISS_ANGEBOT;
 
     /// <summary>GEB_NL_LAEUFT</summary>
     [Parameter] public string TextNeuLesenLaeuft { get; set; } = Resource.GEB_NL_LAEUFT;
@@ -1759,6 +1778,8 @@
     private GebaeudeNeulesestand? _neulesenStand;
     private GebaeudeImportquelleAngabe? _neulesenQuelle;
     private string? _neulesenGeschoss;
+    private bool _neulesenGrundrissLaeuft;
+    private string? _neulesenGrundrissHinweis;
 
     /// <summary>Ist die Überlagerung „Datei erneut lesen“ offen?</summary>
     public bool NeuLesenOffen => _neulesenOffen;
@@ -1797,7 +1818,26 @@
         if (stand is null) return;   // Dateiwahl abgebrochen - kein Fehler
         if (!ReferenceEquals(stand.Ansicht, _neulesenStand?.Ansicht)) _neulesenGeschoss = null;
         _neulesenStand = stand;
+        _neulesenGrundrissHinweis = null;
         _neulesenOffen = true;
+    }
+
+    /// <summary>
+    /// HC-5 (F7): „Grundriss übernehmen“ — die Hülle fragt zurück und schreibt; danach die Hinweiszeile statt des Knopfs.
+    /// Ein Nein lässt den Knopf stehen. Kein <see cref="Geaendert"/>: Der Grundriss ändert nichts an den Daten des Dialogs.
+    /// </summary>
+    private async Task BeiGrundrissNachtragen()
+    {
+        if (_neulesenStand?.GrundrissNachtragen is not { } nachtragen || _neulesenGrundrissLaeuft) return;
+        _neulesenGrundrissLaeuft = true;
+        try
+        {
+            _neulesenGrundrissHinweis = await nachtragen();
+        }
+        finally
+        {
+            _neulesenGrundrissLaeuft = false;
+        }
     }
 
     private void NeuLesenSchliessen()
@@ -1805,6 +1845,7 @@
         _neulesenOffen = false;
         _neulesenStand = null;
         _neulesenGeschoss = null;
+        _neulesenGrundrissHinweis = null;
     }
 
     /// <summary>

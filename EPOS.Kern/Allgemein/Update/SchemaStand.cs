@@ -922,7 +922,13 @@ namespace WindowsFormsApplication1
         /// <see cref="RaumnutzungDinTsSchema.SCHRITT"/>: Name und Quellenhinweis der Kategorie, Nummern und Namen der
         /// 43 Nutzungen ohne Werte, Ids bleiben (<see cref="RaumnutzungDinTsSchema"/>). <b>Ergebnisneutral:</b> Kein
         /// Rechenweg liest den Katalog.
-        public const int Zielversion = RaumnutzungDinTsSchema.SCHRITT;
+        /// Danach, mit dem GRUNDRISS JE IMPORTIERTEM RAUM (HC-5), steht das Ziel auf <see cref="RaumgrundrissSchema.SCHRITT"/>:
+        /// <c>Tab_Raumgrundriss</c>, eine Kindliste der Importquelle (<see cref="RaumgrundrissSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; sie entsteht leer.
+        /// Danach, mit den TYPAUFBAUTEN (BA-2), steht das Ziel auf <see cref="TypaufbauSchema.SCHRITT"/>: Spalte
+        /// <c>Typaufbau</c> an Projekt- und Katalogaufbau und die Saat der neun Typaufbauten (<see cref="TypaufbauSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte; kein Referenzprojekt trägt einen Aufbau.
+        public const int Zielversion = TypaufbauSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

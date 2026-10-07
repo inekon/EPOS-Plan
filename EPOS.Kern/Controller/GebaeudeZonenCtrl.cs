@@ -1116,6 +1116,7 @@ namespace WindowsFormsApplication1
             for (int j = 0; j < vorschlag.Aufbauten.Count; j++)
             {
                 GebaeudeAufbauzeile a = vorschlag.Aufbauten[j];
+                if (a.Quelltyp == null) continue;   // Ersatzaufbau (BA-2): keine Quellentität
                 zuordnungen.Add(new GebaeudeQuellzuordnung(a.Quelltyp, a.Kennung, ImportZiel.Aufbau, aufbauten[j].ID));
             }
             // Die Baustoffe der Datei, die über den Namensabgleich einen Katalogbaustoff tragen, auf dessen

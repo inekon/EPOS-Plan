@@ -677,7 +677,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, KatalogSchluesselSaat.Ausfuehren(null, Katalogfassung.Stufe2));
 
             Katalogpaket paket = Katalogpaket.AusBytes(Katalogpaket.AusDatenbank(2).Bytes());
-            Katalogpaketsatz satz = paket.Tabellen.Single(t => t.Tabelle == "Tab_Bauteilaufbau_STAMM").Saetze.Single();
+            Katalogpaketsatz satz = paket.Tabellen.Single(t => t.Tabelle == "Tab_Bauteilaufbau_STAMM").Saetze.Single(s => s.Schluessel == "BTA:PROBEWAND");
             Assert.Equal("BTA:PROBEWAND", satz.Schluessel);
             Assert.Equal(schluessel, satz.Kinder["Tab_Bauteilschicht_STAMM"].Single()["ID_Baustoff"]);
 

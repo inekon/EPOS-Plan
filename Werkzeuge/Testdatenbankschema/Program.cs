@@ -2965,6 +2965,44 @@ namespace Testdatenbankschema
                                   RaumnutzungDinTsSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt RaumgrundrissSchema.SCHRITT (HC-5): Tab_Raumgrundriss, der Grundriss je importiertem Raum
+            //      als Kindliste der Importquelle. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Raumgrundriss bedient. Wiederholbar, ohne Saat - die Tabelle bleibt leer.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Tabelle; kein Referenzprojekt ist importiert.
+            string nrRaumgrundriss = RaumgrundrissSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrRaumgrundriss + " - Grundriss je importiertem Raum: " +
+                              (RaumgrundrissSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtRaumgrundriss = new List<string>();
+                tabellen += RaumgrundrissSchema.Ausfuehren(berichtRaumgrundriss);
+                foreach (string zeile in berichtRaumgrundriss)
+                    Console.WriteLine("Schritt " + nrRaumgrundriss + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrRaumgrundriss + " - vollstaendig: " +
+                                  RaumgrundrissSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt TypaufbauSchema.SCHRITT (BA-2): Spalte Typaufbau an Tab_Bauteilaufbau und
+            //      Tab_Bauteilaufbau_STAMM, Saat der neun Typaufbauten samt Schichten, Katalogschluessel.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Typaufbau bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Spalte; kein Referenzprojekt traegt einen Aufbau.
+            string nrTypaufbau = TypaufbauSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrTypaufbau + " - Typaufbauten: " +
+                              (TypaufbauSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtTypaufbau = new List<string>();
+                angelegt += TypaufbauSchema.Ausfuehren(berichtTypaufbau) > 0 ? 2 : 0;
+                foreach (string zeile in berichtTypaufbau)
+                    Console.WriteLine("Schritt " + nrTypaufbau + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrTypaufbau + " - vollstaendig: " +
+                                  TypaufbauSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

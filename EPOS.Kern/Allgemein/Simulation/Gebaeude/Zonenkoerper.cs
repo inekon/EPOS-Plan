@@ -52,6 +52,34 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Flächen der Grenzen: erst die Wände je Kante und Strecke, dann Boden- und Deckenstreifen.</summary>
         internal IReadOnlyList<Koerperflaeche> Flaechen { get; init; } = Array.Empty<Koerperflaeche>();
+
+        /// <summary>
+        /// HC-5: die Prismen aus den Grundrissen des Raums bzw. der Zone (je Außenring eines, mit Löchern); leer = der Körper ist
+        /// das schematische Prisma über dem Rechteck.
+        /// </summary>
+        internal IReadOnlyList<Grundrissprisma> Prismen { get; init; } = Array.Empty<Grundrissprisma>();
+
+        /// <summary>Stammt der Körper aus Grundrissen (HC-5) statt aus dem schematischen Rechteck?</summary>
+        internal bool AusGrundriss => Prismen.Count > 0;
+    }
+
+    /// <summary>
+    /// Ein Prisma aus einem Grundrissring (HC-5): Außenring gegen den Uhrzeigersinn, Löcher im Uhrzeigersinn, je Punkt (x, y) [m]
+    /// im Modellsystem, gerundet wie der Körper; Boden und Höhe [m].
+    /// </summary>
+    internal sealed class Grundrissprisma
+    {
+        /// <summary>Der Außenring.</summary>
+        internal IReadOnlyList<double[]> Aussen { get; init; } = Array.Empty<double[]>();
+
+        /// <summary>Die Löcher.</summary>
+        internal IReadOnlyList<IReadOnlyList<double[]>> Loecher { get; init; } = Array.Empty<IReadOnlyList<double[]>>();
+
+        /// <summary>Der Boden [m].</summary>
+        internal double BodenM { get; init; }
+
+        /// <summary>Die Höhe [m].</summary>
+        internal double HoeheM { get; init; }
     }
 
     /// <summary>
@@ -83,9 +111,20 @@ namespace WindowsFormsApplication1
         /// <summary>Die Räume mit Umriss, aber ohne Körper (Umriss aus Raumgrenzen, kein Rechteck, weder Raum- noch Zonenhöhe).</summary>
         internal IReadOnlyList<string> OhneKoerper { get; private set; } = Array.Empty<string>();
 
+        /// <summary>Trägt mindestens ein Raum das schematische Prisma über dem Rechteck (nicht aus einem Grundriss)?</summary>
+        internal bool Schematisch => Raeume.Any(r => !r.AusGrundriss);
+
+        /// <summary>Die Zahl der Körper aus Grundrissen (HC-5).</summary>
+        internal int ZahlAusGrundriss => Raeume.Count(r => r.AusGrundriss);
+
         /// <summary>Der Körper eines Raums; <c>null</c> = keiner.</summary>
         internal Raumkoerper Raum(string kennung)
             => Raeume.FirstOrDefault(r => string.Equals(r.RaumKennung, kennung, StringComparison.Ordinal));
+
+        /// <summary>HC-5c: alle Flächen eines Bauteils aus Sicht eines Raums (an Prismen je Kante eine, die größte zuerst); leer = keine.</summary>
+        internal IReadOnlyList<Koerperflaeche> Flaechen(string raumKennung, string bauteilKennung)
+            => Raum(raumKennung)?.Flaechen.Where(f => string.Equals(f.Verweis?.BauteilKennung, bauteilKennung, StringComparison.Ordinal)).ToList()
+               ?? new List<Koerperflaeche>();
 
         /// <summary>Die Fläche eines Bauteils aus Sicht eines Raums; <c>null</c> = keine (mehrere: die erste).</summary>
         internal Koerperflaeche Flaeche(string raumKennung, string bauteilKennung)
@@ -101,6 +140,11 @@ namespace WindowsFormsApplication1
             foreach (Raumumriss r in z.Raeume)
             {
                 if (r.Polygone.Count == 0) continue;
+                if (r.AusGrundriss)
+                {
+                    raeume.Add(AusGrundriss(r));
+                    continue;
+                }
                 bool rechteck = r.Herkunft == Geometrieherkunft.Schematisch && r.Polygone.Count == 1 && r.Polygone[0].Punkte.Count == 4
                                 && r.Polygone[0].Kanten.Count == 4;
                 // Die Höhe: die des Raums, sonst die seiner Zone — dieselbe Regel wie die Ansicht.
@@ -171,6 +215,78 @@ namespace WindowsFormsApplication1
                 schale.Add(new[] { P(c[i], z0), P(c[(i + 1) % 4], z0), P(c[(i + 1) % 4], z1), P(c[i], z1) });
 
             return new Raumkoerper { RaumKennung = r.RaumKennung, BodenM = R(z0), HoeheM = R(h), HoeheAusZone = ausZone, Schale = schale, Flaechen = ergebnis };
+        }
+
+        /// <summary>
+        /// <b>Der Körper aus Grundrissen</b> (HC-5): je Polygon ein Prisma von seinem Boden um seine Höhe. Die Schale trägt je Prisma
+        /// Boden und Decke — mit Löchern als ein Ring mit Steg zum nächsten Punkt des Außenrings — und je Kante eines Rings eine
+        /// Seitenfläche, Normale nach außen. Die Flächen sind die Bauteilplatten der Kantenzuordnung (HC-5c, <see cref="Raumumriss.Platten"/>).
+        /// </summary>
+        private static Raumkoerper AusGrundriss(Raumumriss r)
+        {
+            var prismen = new List<Grundrissprisma>();
+            var schale = new List<IReadOnlyList<double[]>>();
+            foreach (Umrisspolygon p in r.Polygone)
+            {
+                double z0 = p.PrismaBodenM.Value, z1 = z0 + p.PrismaHoeheM.Value;
+                List<double[]> aussen = p.Punkte.Select(q => new[] { R(q[0]), R(q[1]) }).ToList();
+                List<List<double[]>> loecher = p.Loecher.Select(l => l.Select(q => new[] { R(q[0]), R(q[1]) }).ToList()).ToList();
+                prismen.Add(new Grundrissprisma { Aussen = aussen, Loecher = loecher, BodenM = R(z0), HoeheM = R(z1 - z0) });
+
+                List<double[]> flaeche = MitStegen(aussen, loecher);
+                schale.Add(Enumerable.Reverse(flaeche).Select(q => P(q, z0)).ToList());
+                schale.Add(flaeche.Select(q => P(q, z1)).ToList());
+                foreach (List<double[]> ring in new[] { aussen }.Concat(loecher))
+                    for (int i = 0; i < ring.Count; i++)
+                    {
+                        double[] a = ring[i], b = ring[(i + 1) % ring.Count];
+                        schale.Add(new[] { P(a, z0), P(b, z0), P(b, z1), P(a, z1) });
+                    }
+            }
+            double boden = prismen.Min(x => x.BodenM), oben = prismen.Max(x => x.BodenM + x.HoeheM);
+
+            // HC-5c: die Bauteilplatten an den Prismen (Zonengeometrie, Kantenzuordnung) — kantenschlüssig wie am Rechteck.
+            List<double[][]> ecken = r.Platten.Select(x => x.EckenM.Select(q => P(q, q[2])).ToArray()).ToList();
+            List<double[]> alle = ecken.SelectMany(x => x).ToList();
+            var flaechen = r.Platten.Select((x, i) => new Koerperflaeche
+            {
+                RaumKennung = r.RaumKennung,
+                Verweis = x.Verweis,
+                Stellung = x.Stellung,
+                EckenM = ecken[i],
+                PunkteM = x.Stellung == Grenzstellung.Wand ? Kantenschluessig(ecken[i], alle) : ecken[i].ToList(),
+            }).ToList();
+            return new Raumkoerper
+            {
+                RaumKennung = r.RaumKennung, BodenM = R(boden), HoeheM = R(oben - boden), Schale = schale, Prismen = prismen, Flaechen = flaechen,
+            };
+        }
+
+        /// <summary>
+        /// Ein Ring mit Löchern als ein Ring (für <c>PolyLoop</c>, das keine Löcher kennt): je Loch ein Steg vom nächsten Punkt des
+        /// bisherigen Rings zum nächsten Punkt des Lochs und zurück. Ohne Loch der Außenring selbst.
+        /// </summary>
+        internal static List<double[]> MitStegen(IReadOnlyList<double[]> aussen, IReadOnlyList<IReadOnlyList<double[]>> loecher)
+        {
+            var ring = aussen.ToList();
+            foreach (IReadOnlyList<double[]> loch in loecher)
+            {
+                if (loch.Count < 3) continue;
+                int bi = 0, bj = 0;
+                double best = double.PositiveInfinity;
+                for (int i = 0; i < ring.Count; i++)
+                    for (int j = 0; j < loch.Count; j++)
+                    {
+                        double dx = ring[i][0] - loch[j][0], dy = ring[i][1] - loch[j][1], d2 = dx * dx + dy * dy;
+                        if (d2 < best) { best = d2; bi = i; bj = j; }
+                    }
+                var neu = new List<double[]>(ring.Count + loch.Count + 2);
+                neu.AddRange(ring.Take(bi + 1));
+                for (int k = 0; k <= loch.Count; k++) neu.Add(loch[(bj + k) % loch.Count]);
+                neu.AddRange(ring.Skip(bi));
+                ring = neu;
+            }
+            return ring;
         }
 
         /// <summary>

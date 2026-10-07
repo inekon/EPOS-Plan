@@ -566,7 +566,12 @@ namespace WindowsFormsApplication1
                 {
                     Abschnitte = k.Abschnitte.Select(x => x with { Verweis = Neu(neu, x.Verweis) }).ToList(),
                 }).ToList(),
-                p.FlaecheM2, p.EbeneM, Neu(neu, p.Quelle))).ToList();
+                p.FlaecheM2, p.EbeneM, Neu(neu, p.Quelle))
+            {
+                Loecher = p.Loecher,
+                PrismaBodenM = p.PrismaBodenM,
+                PrismaHoeheM = p.PrismaHoeheM,
+            }).ToList();
         }
 
         private static IEnumerable<PruefMeldung> Paarmeldungen(List<Paarentwurf> paare)

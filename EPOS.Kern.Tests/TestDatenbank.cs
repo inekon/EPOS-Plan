@@ -955,6 +955,11 @@ namespace EPOS.Kern.Tests
                 // Nummern und Namen ohne Werte, Ids bleiben; Zuordnung DIN nach der Zaehlung 2025 samt 19 und 20. Wiederholbar.
                 RaumnutzungDinTsSchema.Ausfuehren(null);
 
+                // Schritt RaumgrundrissSchema.SCHRITT (HC-5): Tab_Raumgrundriss an der Importquelle. Ohne Saat, leer.
+                RaumgrundrissSchema.Ausfuehren(null);
+                // Schritt TypaufbauSchema.SCHRITT (BA-2): Spalte Typaufbau an Projekt und Katalog, Saat der Typaufbauten.
+                TypaufbauSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
