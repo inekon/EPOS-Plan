@@ -114,6 +114,12 @@ namespace WindowsFormsApplication1
         /// <summary>Kältestrom je Stunde [kWh] = Kälte / EER · (1 + Hilfsstromanteil) (6.1).</summary>
         public double[] Strom_stuendlich = new double[Kaeltekaskade.STUNDEN];
 
+        /// <summary>
+        /// Davon Mehrstrom aus Taktverlust je Stunde [kWh] (ohne Hilfsstromzuschlag) — die
+        /// Rückspeisung ins Sondenfeld rechnet ohne ihn (Konzept Simulationsablauf 23.5).
+        /// </summary>
+        public double[] Taktstrom_stuendlich = new double[Kaeltekaskade.STUNDEN];
+
         /// <summary>Gedeckte Kälte im Jahr [kWh].</summary>
         public double KaelteGesamtKwh;
 
@@ -208,6 +214,7 @@ namespace WindowsFormsApplication1
             LetzteKuehlstunde = -2;
             Array.Clear(Kaelte_stuendlich, 0, Kaelte_stuendlich.Length);
             Array.Clear(Strom_stuendlich, 0, Strom_stuendlich.Length);
+            Array.Clear(Taktstrom_stuendlich, 0, Taktstrom_stuendlich.Length);
             KaelteGesamtKwh = 0;
             StromGesamtKwh = 0;
             HilfsstromGesamtKwh = 0;
@@ -751,6 +758,7 @@ namespace WindowsFormsApplication1
                 e.Taktstunden++;
                 mehr = Waermepumpentakt.Mehrstrom(verdichterKwh, kaelteKwh, mindestleistungKw, e.Cd);
                 e.TaktstromKwh += mehr;
+                if (h >= 0 && h < e.Taktstrom_stuendlich.Length) e.Taktstrom_stuendlich[h] += mehr;
             }
             else if (e.LetzteKuehlstunde != h - 1)
             {
