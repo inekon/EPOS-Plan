@@ -76,6 +76,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// G5-N (N5): <b>Die Zahl der Bauteile, die „Ausrichtung ändern“ dreht</b> — alle Bauteile der Zonen des Gebäudes mit
+        /// Azimut (ein Azimut NULL bleibt NULL). Die Rückfrage nennt sie, bevor gedreht wird.
+        /// </summary>
+        internal int DrehbareBauteile(int idGebaeude)
+        {
+            object n = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM \"" + SchemaKatalog.TAB_BAUTEIL + "\" b " +
+                "INNER JOIN \"" + SchemaKatalog.TAB_ZONE + "\" z ON z.\"ID\" = b.\"ID_Zone\" " +
+                "WHERE z.\"ID_Gebaeude\" = ? AND b.\"Azimut\" IS NOT NULL",
+                new DbParam("@g", idGebaeude));
+            return n == null || n == DBNull.Value ? 0 : Convert.ToInt32(n, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
         /// <b>Ändert die Ausrichtung eines importierten Gebäudes</b> (N5): dreht den Azimut aller Bauteile des Gebäudes um den
         /// Unterschied zwischen neuem und gespeichertem Nordwinkel und schreibt den neuen Nordwinkel (Herkunft Eingabe) an die
         /// jüngste Quelle — in einem Vorgang; ein Fehler lässt nichts halb gedreht. Ein Gebäude ohne Quelle wird benannt
