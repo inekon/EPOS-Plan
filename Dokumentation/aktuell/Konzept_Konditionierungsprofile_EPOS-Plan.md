@@ -46,6 +46,11 @@
 > nachgezogen: Rechenschritte 7.5 und 7.6, Leitkonzept 4.4, 4.5 und N1.69, Softwarearchitektur; hier der Kopf, 4.4,
 > 4.6, 5.4 und 8.
 
+> **Nachgezogen 07.10.2026 — AK3-K (E103, E104) in Umsetzung** ([Register](Status_Gebaeudesimulation_VDI6007.md),
+> [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)): Das „aus“ der Heiz- und Kühlsollwertkalender samt
+> Heiz- und Kühlperiode ist die **Freigabe** der Raumheizung und Raumkühlung je Zone und Tag; die Karte zeigt sie als
+> Jahresband im Reiter Konditionierung. Kein Schemaschritt, keine Kopierwege. Nachgezogen ist 3.1.
+
 **Stand:** 06.10.2026. **Fassung:** Rev. 3 mit E54 bis E60 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
 entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55), fünf
 Fragen des KP2-Entwurfs entschieden (E56), die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" aufgenommen
@@ -257,6 +262,16 @@ Personenwärme; die Karte zeigt die Rechnung und beide Jahresmittel. **Personen:
 (EPOS-Vorgabe, passt zum Katalog), sensibel, je zur Hälfte konvektiv und radiativ; die Personenzahl kommt aus
 `Bewohner` (Gebäude und Zone), sonst aus Nutzfläche ÷ `Flaeche_Nutzer`. **„aus"** heißt beim Heizen NaN, beim Kühlen
 +∞, bei der Lüftung 0 1/h Nutzerlüftung, bei Anteilen 0.
+
+**„aus“ ist die Freigabe (E104).** Das „aus“ des Heiz- und des Kühlsollwerts — als Grundangabe, in der
+Standardwoche, je Periode und als Heiz- bzw. Kühlperiode (außerhalb „aus“, E53) — entscheidet je Zone und Tag, ob
+Raumheizung und Raumkühlung **freigegeben** sind: frei ist eine Seite, wenn ihr Sollwert an mindestens einer Stunde
+des Tags nicht „aus“ ist (die Kühlung zusätzlich nur mit Kühlbetrieb und `Kuehlung_Aktiv`). Innerhalb dieser Freigabe
+wählt die Simulation die Tagesart der Zone ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.5):
+sind beide frei, nach den Tagessummen des Probetags; ist nur eine frei, diese. Am Kühltag steht der Heizsollwert den
+ganzen Tag auf „aus“, am Heiztag der Kühlsollwert. Die Kalenderkarte im Reiter Konditionierung zeigt je Zone ein
+**Jahresband** „Heizen frei / Kühlen frei / beides / keines“ und die Zahl der Tage, an denen die Tagesart nach Bedarf
+entscheidet. Für die Freigabe gibt es keine neue Spalte, keinen Schemaschritt und keine Kopierwege.
 
 ### 3.2 Kalendermodell
 
