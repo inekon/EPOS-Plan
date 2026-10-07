@@ -66,6 +66,75 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Vor jedem Durchgang der Kaskade</b> (AK3-W3d; Konzept Simulationsablauf 23.4): Der zweite Feldlauf der
+        /// Erdsonde wiederholt den ganzen Durchgang an derselben Instanz, die Bedarfsrechnung läuft nicht neu. Vor dem
+        /// ersten Durchgang sichert diese Methode den Stand von Pass 1 (Heizkanal-, Summen-, Monats- und
+        /// Dauerlinienreihen, Heizkreis samt Vorlauf und Rücklauf je Stunde, Gebäudeergebnisse und Kennzahlen der
+        /// gekoppelten Gebäude); vor jedem weiteren stellt sie ihn Zeichen für Zeichen wieder her und legt den Kreis neu
+        /// an — frische Stepper, Abweichung null, kein Kreis. So rechnet jeder Feldlauf ein volles Jahr aus Pass 1, keine
+        /// Abweichung wird doppelt nachgeführt, und das Ergebnis ist das des letzten Feldlaufs. Ohne AK3-Weg: nichts.
+        /// </summary>
+        internal void Ak3FeldlaufBeginnen()
+        {
+            if (_ak3 == null || _ak3.Gebaeude.Count == 0) return;
+            if (_ak3.Pass1Stand == null)
+            {
+                _ak3.Pass1Stand = Ak3Pass1Sichern();
+                return;
+            }
+            Ak3Pass1Herstellen(_ak3.Pass1Stand);
+            _ak3.NeuerFeldlauf();
+        }
+
+        private Ak3Weg.Pass1Sicherung Ak3Pass1Sichern()
+        {
+            var s = new Ak3Weg.Pass1Sicherung
+            {
+                Waermebedarf = (double[])Waermebedarf.Clone(),
+                Heizkanal = (double[])Waermebedarf_Heizkanal_Stunde.Clone(),
+                GebaeudeMonat = (double[])Waermebedarf_Gebaeude_Monat.Clone(),
+                Sortiert = (double[])Waermebedarf_sortiert.Clone(),
+                DauerlinieNichtSortiert = (double[])Dauerlinie_nicht_sortiert.Clone(),
+                Dauerlinie = (double[])Dauerlinie.Clone(),
+                Max = Waermebedarf_Max,
+                Gesamt = Waermebedarf_Gesamt,
+                GebaeudeGesamt = Waermebedarf_Gebaeude_Gesamt,
+                Heizkreis = Heizkreis,
+                VorlaufC = Heizkreis != null ? (double[])Heizkreis.VorlaufC.Clone() : null,
+                RuecklaufC = Heizkreis != null ? (double[])Heizkreis.RuecklaufC.Clone() : null,
+            };
+            foreach (Ak3Weg.Eintrag g in _ak3.Gebaeude)
+            {
+                s.Ergebnisse[g.Index] = GebaeudeErgebnisse.Ergebnis(g.Index);
+                if (g.Index < GebaeudeKennzahlenListe.Count) s.Kennzahlen[g.Index] = GebaeudeKennzahlenListe[g.Index];
+            }
+            return s;
+        }
+
+        private void Ak3Pass1Herstellen(Ak3Weg.Pass1Sicherung s)
+        {
+            Array.Copy(s.Waermebedarf, Waermebedarf, s.Waermebedarf.Length);
+            Array.Copy(s.Heizkanal, Waermebedarf_Heizkanal_Stunde, s.Heizkanal.Length);
+            Array.Copy(s.GebaeudeMonat, Waermebedarf_Gebaeude_Monat, s.GebaeudeMonat.Length);
+            Array.Copy(s.Sortiert, Waermebedarf_sortiert, s.Sortiert.Length);
+            Array.Copy(s.DauerlinieNichtSortiert, Dauerlinie_nicht_sortiert, s.DauerlinieNichtSortiert.Length);
+            Array.Copy(s.Dauerlinie, Dauerlinie, s.Dauerlinie.Length);
+            Waermebedarf_Max = s.Max;
+            Waermebedarf_Gesamt = s.Gesamt;
+            Waermebedarf_Gebaeude_Gesamt = s.GebaeudeGesamt;
+            Heizkreis = s.Heizkreis;
+            if (Heizkreis != null)
+            {
+                Array.Copy(s.VorlaufC, Heizkreis.VorlaufC, s.VorlaufC.Length);
+                Array.Copy(s.RuecklaufC, Heizkreis.RuecklaufC, s.RuecklaufC.Length);
+            }
+            foreach (KeyValuePair<int, GebaeudeModellErgebnis> e in s.Ergebnisse)
+                if (e.Value != null) GebaeudeErgebnisse.Setzen(e.Key, e.Value);
+            foreach (KeyValuePair<int, ErgebnisGebaeudeModel> k in s.Kennzahlen)
+                if (k.Key < GebaeudeKennzahlenListe.Count) GebaeudeKennzahlenListe[k.Key] = k.Value;
+        }
+
+        /// <summary>
         /// <b>Nach der Kaskadenschleife</b> (Entwurf AK3 2.1 Schritt 5): Stepper abschließen und skalieren, Heizkreis neu
         /// bilden, Heizkanal-, Summen-, Monats- und Dauerlinienreihen um die Abweichung der Naht nachführen
         /// (Festlegung 14, gekoppelte Reihen). Netzverluste, Brauchwasser und Prozess bleiben Pass 1 (Festlegung 10).
@@ -131,6 +200,7 @@ namespace WindowsFormsApplication1
         {
             internal int Index;
             internal ProjektGebaeudeModel Zeile;
+            internal Func<GebaeudeStepper> Fabrik;
             internal GebaeudeStepper Stepper;
             internal double Faktor = 1.0;
             internal bool Skaliert;
@@ -152,10 +222,48 @@ namespace WindowsFormsApplication1
         /// <summary>Der Kreis des Laufs (nach der ersten Kaskadenstunde gebaut); für Proben und Kennzahlen.</summary>
         internal Anlagenkopplung Kreis { get; set; }
 
-        internal void Erfassen(int index, ProjektGebaeudeModel zeile, GebaeudeStepper stepper)
+        /// <summary>Der Stand von Pass 1 vor dem ersten Feldlauf (<see cref="SimulationWaermebedarf.Ak3FeldlaufBeginnen"/>).</summary>
+        internal sealed class Pass1Sicherung
         {
+            internal double[] Waermebedarf, Heizkanal, GebaeudeMonat, Sortiert, DauerlinieNichtSortiert, Dauerlinie;
+            internal double Max, Gesamt, GebaeudeGesamt;
+            internal HeizkreisProjekt Heizkreis;
+            internal double[] VorlaufC, RuecklaufC;
+            internal readonly Dictionary<int, GebaeudeModellErgebnis> Ergebnisse = new Dictionary<int, GebaeudeModellErgebnis>();
+            internal readonly Dictionary<int, ErgebnisGebaeudeModel> Kennzahlen = new Dictionary<int, ErgebnisGebaeudeModel>();
+        }
+
+        /// <summary>Gesicherter Stand von Pass 1; <c>null</c> bis zum ersten Durchgang der Kaskade.</summary>
+        internal Pass1Sicherung Pass1Stand { get; set; }
+
+        /// <summary>Der laufende Feldlauf (1 = erster Durchgang, 2 = zweiter Feldlauf der Erdsonde).</summary>
+        internal int Feldlauf { get; private set; } = 1;
+
+        /// <summary>Die Kreise der früheren Feldläufe in ihrer Reihenfolge (Proben und Messung); der letzte ist <see cref="Kreis"/>.</summary>
+        internal List<Anlagenkopplung> FruehereKreise { get; } = new List<Anlagenkopplung>();
+
+        /// <summary>
+        /// Legt den Kreis für einen weiteren Feldlauf neu an (AK3-W3d): je Gebäude ein frischer Stepper aus seiner
+        /// Fabrik, Kreisreihen und Abweichung null, der Kreis des vorigen Feldlaufs wandert nach <see cref="FruehereKreise"/>.
+        /// </summary>
+        internal void NeuerFeldlauf()
+        {
+            if (Kreis != null) FruehereKreise.Add(Kreis);
+            Kreis = null;
+            Array.Clear(DeltaKw, 0, DeltaKw.Length);
+            foreach (Eintrag e in _gebaeude)
+            {
+                e.Stepper = e.Fabrik();
+                Array.Clear(e.KreisW, 0, e.KreisW.Length);
+            }
+            Feldlauf++;
+        }
+
+        internal void Erfassen(int index, ProjektGebaeudeModel zeile, Func<GebaeudeStepper> fabrik)
+        {
+            if (fabrik == null) throw new ArgumentNullException(nameof(fabrik));
             _gebaeude.RemoveAll(e => e.Index == index);
-            _gebaeude.Add(new Eintrag { Index = index, Zeile = zeile, Stepper = stepper });
+            _gebaeude.Add(new Eintrag { Index = index, Zeile = zeile, Fabrik = fabrik, Stepper = fabrik() });
             _gebaeude.Sort((a, b) => a.Index.CompareTo(b.Index));
         }
 

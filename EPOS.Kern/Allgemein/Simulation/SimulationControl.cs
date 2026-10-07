@@ -444,6 +444,8 @@ namespace WindowsFormsApplication1
                 // keinen eigenen Zustand. Ohne Sondenfeld bleibt es bei einem Lauf.
                 simulation_wp.FeldvorgabeSetzen(null);
                 SimulationProtokoll.Meldestand stand = SimulationProtokoll.Aktuell.Merken();
+                // AK3-W3d: Jeder Durchgang beginnt im AK3-Weg bei Pass 1 mit frischem Kreis (sonst nichts).
+                simulation_Waermebedarf?.Ak3FeldlaufBeginnen();
                 Do_Simulation_Intern(ID_Projekt, fortschritt, abbruch);
 
                 Dictionary<int, SimulationWaermepumpe.Feldvorgabe> vorgabe = FeldvorgabeAusLauf();
@@ -451,6 +453,7 @@ namespace WindowsFormsApplication1
                 {
                     SimulationProtokoll.Aktuell.ZuruecksetzenAuf(stand);
                     simulation_wp.FeldvorgabeSetzen(vorgabe);
+                    simulation_Waermebedarf?.Ak3FeldlaufBeginnen();
                     Do_Simulation_Intern(ID_Projekt, null, abbruch);
                 }
                 DbFehlerUebernehmen();
