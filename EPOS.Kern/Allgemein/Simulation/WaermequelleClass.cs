@@ -755,13 +755,38 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Geometrie und Bohrlochkennwerte des Sondenfeldes einer Anlage (Konzept Simulationsablauf
-        /// 23.3). Bis die Anlagenzeile eigene Spalten dafür trägt, gilt für jede Anlage die Norm
-        /// (<see cref="Sondenfeldgeometrie.Norm"/>); die vorgesehenen Spalten nennt
-        /// <see cref="Sondenfeldgeometrie"/>.
+        /// 23.3) aus den Spalten von <see cref="ErdsondenfeldSchema"/>. Eine leere Spalte, eine
+        /// Datenbank vor dem Schritt und ein unbekannter Anordnungstext heißen Norm
+        /// (<see cref="Sondenfeldgeometrie.Norm"/>); der Bohrlochdurchmesser steht in mm, der Radius
+        /// des Feldes in m. Mit allen Spalten leer ist das Ergebnis die Norm selbst.
         /// </summary>
         public static Sondenfeldgeometrie SondenfeldgeometrieDerAnlage(int idEnergieanlage)
         {
-            return Sondenfeldgeometrie.Norm;
+            var g = Sondenfeldgeometrie.Norm;
+            if (idEnergieanlage <= 0 || !ErdsondenfeldSchema.Vollstaendig()) return g;
+
+            double? abstand = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_ABSTAND));
+            double? durchmesserMm = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_BOHRLOCHDURCHMESSER));
+            double? widerstand = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_BOHRLOCHWIDERSTAND));
+            double? kopf = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_KOPFUEBERDECKUNG));
+            double? jahr = SondenfeldZahl(WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_BETRACHTUNGSJAHR));
+            string anordnung = WertLesenStill(idEnergieanlage, ErdsondenfeldSchema.SPALTE_ANORDNUNG) as string;
+
+            if (abstand.HasValue) g.AbstandM = abstand.Value;
+            if (durchmesserMm.HasValue) g.BohrlochradiusM = durchmesserMm.Value / 2000.0;
+            if (widerstand.HasValue) g.Bohrlochwiderstand = widerstand.Value;
+            if (kopf.HasValue) g.KopfueberdeckungM = kopf.Value;
+            if (jahr.HasValue) g.Betrachtungsjahr = (int)Math.Round(jahr.Value);
+            Sondenanordnung? a = Sondenfeldgeometrie.AnordnungAusText(anordnung);
+            if (a.HasValue) g.Anordnung = a.Value;
+            return g.Bereinigt();
+        }
+
+        private static double? SondenfeldZahl(object o)
+        {
+            if (o == null || o is DBNull) return null;
+            try { return Convert.ToDouble(o, System.Globalization.CultureInfo.InvariantCulture); }
+            catch { return null; }
         }
 
         /// <summary>
