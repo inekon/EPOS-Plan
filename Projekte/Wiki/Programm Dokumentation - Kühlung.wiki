@@ -138,8 +138,8 @@ In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe he
 * '''Ein Glied fehlt.''' Ohne ''Kühlung rechnen'', Haken und Kühlsollwert am Gebäude, ''Maschine auch zum Kühlen benutzen'' und Kaskadenplatz bleibt die Kälte aus oder ungedeckt; das Laufprotokoll nennt, was fehlt.
 * '''Übergangszeit.''' Die Betriebsart gilt je Tag für das Projekt und alle Wärmepumpen im Kühlbetrieb: Kälte an einem Heiztag bleibt ungedeckt, auch mit einer zweiten Wärmepumpe; Heizbedarf am Kühltag braucht einen weiteren Wärmeerzeuger. Die Sperrzeit des Energieversorgers sperrt auch das Kühlen.
 * '''Kühlsollwert und Zeitprogramm.''' Der Dialog prüft den Kühlsollwert gegen die vier Heizsollwerte, ein Sollwert-Zeitprogramm erst der Lauf: Liegt eine Stunde darin weniger als 1 K unter dem Kühlsollwert, bricht er ab.
-* '''Kühl-Vorlauf.''' Nur Stützstellen, keine Interpolation, leer die kälteste. Kälter als die Vorlaufgrenze mischt das Gebäude hoch, die Wärmepumpe rechnet aber mit der Leistungszahl ihres Vorlaufs; wärmer als die Auslegung erreicht die Kühlübergabe ihre Nennleistung nicht.
-* '''Rand der Kennlinie.''' Über der obersten Stützstelle wird mit ''Extrapolation der WP-Kennlinie erlauben'' verlängert, sonst gilt ihr Wert, unter der untersten deren Wert; das Laufprotokoll zählt die Stunden. Ein Kühlblock in Heizlage oder mit vertauschten Achsen steht unter ''Kühl-Vorlauf'' gesperrt.
+* '''Kühl-Vorlauf.''' Zur Wahl stehen die Stützstellen der Kühlkennlinie, leer die kälteste. Ein Kühl-Vorlauf zwischen zwei Stützstellen rechnet Kälteleistung und Leistungszahl linear zwischen beiden, ein Wert außerhalb mit der nächsten Stützstelle; das Laufprotokoll nennt das je Gerät. Kälter als die Vorlaufgrenze mischt das Gebäude hoch, die Wärmepumpe rechnet aber mit der Leistungszahl ihres Vorlaufs; wärmer als die Auslegung erreicht die Kühlübergabe ihre Nennleistung nicht.
+* '''Rand der Kennlinie.''' Auf der Achse der Außen- bzw. Quellentemperatur wird über der obersten Stützstelle mit ''Extrapolation der WP-Kennlinie erlauben'' verlängert, sonst gilt ihr Wert, unter der untersten deren Wert; das Laufprotokoll zählt die Stunden. Den Kühl-Vorlauf betrifft der Schalter nicht. Ein Kühlblock in Heizlage oder mit vertauschten Achsen steht unter ''Kühl-Vorlauf'' gesperrt.
 * '''Mehrere Zonen.''' Dann rechnet die Kühlung je Zone ideal, ohne Kühlübergabe; der Lauf sagt es.
 * '''Regeneration der Sonde.''' Kühlt eine Wärmepumpe mit Erdwärmesonde, geht ihre Kühlwärme in das Sondenfeld zurück und hebt die Soletemperatur ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]).
 * '''Nicht abgebildet:''' Entfeuchtung und Taupunkt (die Vorlaufgrenze ist eine Vorgabe); weitere [[#grenzen|Grenzen]]. Die freie Kühlung über die Sonde ist abgebildet ([[#freie-kuehlung-waermequelle|Freie Kühlung über die Wärmequelle]]).
@@ -212,7 +212,7 @@ Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' 
 |-
 | Maschine auch zum Kühlen benutzen || aus || schaltet den Kühlbetrieb dieser Wärmepumpe ein; ohne den Projektschalter ''Kühlung rechnen'' wirkt er nicht
 |-
-| Kühl-Vorlauf || kleinster Stützwert || Vorlauftemperatur des Kaltwassers; zur Wahl stehen die Vorlauftemperaturen, für die die Kühlkennlinie Werte führt. Zwischenwerte werden nicht interpoliert
+| Kühl-Vorlauf || kleinster Stützwert || Vorlauftemperatur des Kaltwassers; zur Wahl stehen die Vorlauftemperaturen, für die die Kühlkennlinie Werte führt. zwischen zwei Stützstellen wird linear interpoliert, außerhalb gilt die nächste
 |-
 | Hilfsstromanteil || kein Zuschlag || Strom für Pumpen und Ventilatoren des Kältekreises in Prozent der Verdichterarbeit; mindestens 0 % und weniger als 100 %
 |-
