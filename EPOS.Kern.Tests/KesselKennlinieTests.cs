@@ -688,8 +688,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(50.0, spk.RuecklaufMittel(0), 9);
             Assert.Equal(erwartet, spk.WirkungsgradBetrieb(0), 9);
             // Etappe E4: dazu der Anfahrverlust der Starts (gepflegt 0,1 kWh je Start).
-            // Rechenweg RP2a (Erdreichwiderstand nach DIN EN ISO 13370): gemessen 74,98 MWh, vorher 80,8 … 80,9.
-            Assert.InRange(spk.Kessel_Verbrauch_MWh_Spk[0], 74.93, 75.03);
+            // Erdreichwiderstand nach DIN EN ISO 13370 und gesäte Erdsonde der Wärmepumpe (3 × 100 m): gemessen 75,66 MWh.
+            Assert.InRange(spk.Kessel_Verbrauch_MWh_Spk[0], 75.61, 75.71);
 
             // Die Ergebnisseite ruft dieselben Zahlen.
             var erg = SimulationErgebnisCtrl.Heizkessel(laeufer.sim, laeufer.sim.simulation_Waermebedarf);

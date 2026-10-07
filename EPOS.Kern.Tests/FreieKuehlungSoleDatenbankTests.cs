@@ -151,6 +151,8 @@ namespace EPOS.Kern.Tests
         public void Ohne_tragende_Quelle_bleibt_der_Schalter_wirkungslos_mit_Warnung()
         {
             if (!_db.Vorhanden) return;
+            // Die gesäte Erdsonde der Wärmepumpe von 1047 abnehmen: die Außenluft trägt keine freie Kühlung.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET WQ_Typ = NULL WHERE ID = ?", new DbParam("@p", WP_1047));
             SchalterSetzen(1);
 
             SimulationRunner lauf = Rechnen();
