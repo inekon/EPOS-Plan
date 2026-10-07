@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Leitet aus den BDEW-Standardlastprofilen Strom 2025 die Katalogsaat der „Datenbank Strombedarf"
-ab (H25, G25, L25) und schreibt sie als C#-Konstanten nach
-EPOS.Kern/Allgemein/Update/StandardlastprofilSaat.cs.
+ab (H25, G25, L25; dazu die Netzbezugsprofile P25 und S25, keine Verbrauchsprofile) und schreibt sie
+als C#-Konstanten nach EPOS.Kern/Allgemein/Update/StandardlastprofilSaat.cs.
 
 Aufruf aus der Repowurzel (Windows: py mit PYTHONIOENCODING=utf-8 davor, sonst python3):
     ableiten.py               prüft nur, ob die Konstantendatei dem Stand der Excel entspricht
@@ -30,11 +30,16 @@ WURZEL = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)
 EXCEL_REL = 'Quellen/Standardlastprofile/BDEW_Repraesentative_Profile_H25_G25_L25_P25_S25.xlsx'
 ZIEL_REL = 'EPOS.Kern/Allgemein/Update/StandardlastprofilSaat.cs'
 
-# Blatt, Titel in A1, Katalogsatz (Bezeichner), Typprofil (Typname), Dynamisierung nach PDF S. 3-4
+# Blatt (= Kürzel in C1), Titel in A1, Katalogsatz (Bezeichner), Typprofil (Typname), Dynamisierung nach PDF S. 3-5,
+# Netzbezug: bei P25 und S25 die Lieferstelle, deren Bezug aus dem Netz nach dem Eigenverbrauch das Profil beschreibt
+# (PDF S. 4-5; KEIN Verbrauchsprofil, eigene Liste und eigener Schemaschritt), sonst None
 PROFILE = (
-    ('H25', 'Haushalt', 'BDEW_H25_Haushalt', 'BDEW_H25', True),
-    ('G25', 'Gewerbe allgemein', 'BDEW_G25_Gewerbe', 'BDEW_G25', False),
-    ('L25', 'Landwirtschaftsbetriebe', 'BDEW_L25_Landwirtschaft', 'BDEW_L25', False),
+    ('H25', 'Haushalt', 'BDEW_H25_Haushalt', 'BDEW_H25', True, None),
+    ('G25', 'Gewerbe allgemein', 'BDEW_G25_Gewerbe', 'BDEW_G25', False, None),
+    ('L25', 'Landwirtschaftsbetriebe', 'BDEW_L25_Landwirtschaft', 'BDEW_L25', False, None),
+    ('P25', 'Kombinationsprofil', 'BDEW_P25_Haushalt_PV', 'BDEW_P25', True, 'eines Haushalts mit PV-Anlage'),
+    ('S25', 'Kombinationsprofil', 'BDEW_S25_Haushalt_PV_Speicher', 'BDEW_S25', True,
+     'eines Haushalts mit PV-Anlage und Batteriespeicher'),
 )
 TYPTAGE = ('SA', 'FT', 'WT')                     # Spaltenfolge je Monat in der Excel
 SA, FT, WT = 0, 1, 2
@@ -100,7 +105,7 @@ def viertelstunde(q):
 
 
 def excel_lesen(pfad):
-    """{Blatt: werte[monat][typtag][viertel]} der drei Profile, Typtag in der Folge SA, FT, WT."""
+    """{Blatt: werte[monat][typtag][viertel]} der fünf Profile, Typtag in der Folge SA, FT, WT."""
     if not os.path.isfile(pfad):
         raise Fehler('Excel nicht gefunden: ' + pfad)
     ergebnis = {}
@@ -114,15 +119,18 @@ def excel_lesen(pfad):
         for s in ET.fromstring(z.read('xl/workbook.xml')).find(NS + 'sheets'):
             ziel = ziele[s.get(NSR + 'id')]
             blaetter[s.get('name')] = ziel.lstrip('/') if ziel.startswith('/') else 'xl/' + ziel
-        for blatt, titel, _, _, dyn in PROFILE:
+        for blatt, titel, _, _, dyn, netz in PROFILE:
             if blatt not in blaetter:
                 raise Fehler('Blatt ' + blatt + ' fehlt')
             zellen = blatt_zellen(z, blaetter[blatt], texte)
             kopf = ' '.join(str(v) for (r, _), v in sorted(zellen.items()) if r == 1)
-            if zellen.get((1, 1)) != titel or '1 Mio kWh' not in kopf:
+            # P25 und S25 tragen beide den Titel „Kombinationsprofil " (mit Leerzeichen); das Kürzel in C1 trennt sie.
+            if str(zellen.get((1, 1), '')).strip() != titel or zellen.get((1, 3)) != blatt or '1 Mio kWh' not in kopf:
                 raise Fehler(blatt + ': Kopfzeile unerwartet: ' + kopf)
             if ('nicht anzuwenden' not in kopf) != dyn or 'Dynamisierungsfunktion' not in kopf:
                 raise Fehler(blatt + ': Hinweis zur Dynamisierung passt nicht: ' + kopf)
+            if ('SOT-Zeitreihe' in kopf) != (netz is not None):
+                raise Fehler(blatt + ': Hinweis zur SOT-Zeitreihe (Netzbezug mit PV) passt nicht: ' + kopf)
             if zellen.get((4, 2)) != '[kWh]':
                 raise Fehler(blatt + ': Einheit in B4 ist nicht [kWh]')
             werte = [[[0.0] * 96 for _ in range(3)] for _ in range(12)]
@@ -221,11 +229,11 @@ def ableiten(pfad):
     """Je Profil ein Satz mit Monatswerten, Wochenwerten und Kennzahlen."""
     saetze = []
     excel = excel_lesen(pfad)
-    for blatt, titel, bezeichner, typname, dyn in PROFILE:
+    for blatt, titel, bezeichner, typname, dyn, netz in PROFILE:
         roh = monatsenergien(excel[blatt], dyn)
         saetze.append({
             'kuerzel': blatt, 'titel': titel, 'bezeichner': bezeichner, 'typname': typname, 'dyn': dyn,
-            'roh': roh, 'monate': monatswerte(roh), 'woche': wochenwerte(excel[blatt]),
+            'netz': netz, 'roh': roh, 'monate': monatswerte(roh), 'woche': wochenwerte(excel[blatt]),
         })
     return saetze
 
@@ -235,11 +243,19 @@ def ableiten(pfad):
 # ---------------------------------------------------------------------------------------------
 
 def beschreibung(s):
+    if s['netz']:
+        return ('BDEW-Standardlastprofil 2025 %s: Netzbezug %s — kein Verbrauchsprofil; normiert auf 1.000 MWh/a '
+                'Netzbezug, im Projekt auf den Jahresnetzbezug skalieren; nicht mit einer eigenen PV-Rechnung von '
+                'EPOS-Plan kombinieren (PV zählte doppelt); Feiertage über den Betriebskalender' % (s['kuerzel'], s['netz']))
     return ('BDEW-Standardlastprofil 2025 %s (%s), normiert auf 1.000 MWh/a; im Projekt auf den '
             'Jahresverbrauch skalieren; Feiertage über den Betriebskalender' % (s['kuerzel'], s['titel']))
 
 
 def typbeschreibung(s):
+    if s['netz']:
+        return ('BDEW-Standardlastprofil 2025 %s (Netzbezug %s, kein Verbrauchsprofil): Wochenprofil aus dem '
+                'Jahresmittel je Typtag (Mo–Fr Werktag, Sa Samstag, So Sonn- und Feiertag), kWh je Stunde bei '
+                '1.000 MWh/a Netzbezug' % (s['kuerzel'], s['netz']))
     return ('BDEW-Standardlastprofil 2025 %s (%s): Wochenprofil aus dem Jahresmittel je Typtag (Mo–Fr Werktag, '
             'Sa Samstag, So Sonn- und Feiertag), kWh je Stunde bei 1.000 MWh/a' % (s['kuerzel'], s['titel']))
 
@@ -249,7 +265,30 @@ def zahlen(werte, einzug):
                                  for i in range(0, len(werte), 12))
 
 
+def saetze_cs(a, saetze):
+    """Die Konstruktoraufrufe einer Liste von Sätzen, durch Kommas getrennt."""
+    for n, s in enumerate(saetze):
+        e = ' ' * 16
+        a('            new StandardlastprofilSaat(')
+        a('                "%s", "%s", "%s",' % (s['kuerzel'], s['bezeichner'], s['typname']))
+        a('                "%s",' % beschreibung(s))
+        a('                "%s",' % typbeschreibung(s))
+        a('                new[]')
+        a('                {')
+        a('                    // Januar bis Dezember [MWh]')
+        a('                    ' + zahlen(s['monate'], e + '    ') + ',')
+        a('                },')
+        a('                new[]')
+        a('                {')
+        for tag in range(7):
+            a('                    // ' + WOCHENTAGE[tag] + ' 0 bis 23 Uhr (' + ('Werktag' if tag < 5 else ('Samstag' if tag == 5 else 'Sonn- und Feiertag')) + ')')
+            a('                    ' + zahlen(s['woche'][24 * tag:24 * tag + 24], e + '    ') + ',')
+        a('                })' + (',' if n < len(saetze) - 1 else ''))
+
+
 def cs_text(saetze, sha):
+    verbrauch = [s for s in saetze if not s['netz']]
+    netzbezug = [s for s in saetze if s['netz']]
     z = []
     a = z.append
     a('using System;')
@@ -263,6 +302,7 @@ def cs_text(saetze, sha):
     a('    //')
     a('    // DIE BDEW-STANDARDLASTPROFILE STROM 2025 als Katalogsaat der "Datenbank Strombedarf",')
     a('    // gesaet mit dem Schemaschritt StandardlastprofilSchema.SCHRITT.')
+    a('    // Die Netzbezugsprofile P25 und S25 saet StandardlastprofilPvSchema.SCHRITT.')
     a('    //')
     a('    // QUELLE. ' + QUELLE.replace('ö', 'oe') + '; Datei')
     a('    // ' + EXCEL_REL)
@@ -278,7 +318,12 @@ def cs_text(saetze, sha):
     a('    //   Monatswerte: Monatsenergie [MWh] der Abrollung ueber 365 Tage, gemittelt ueber die sieben')
     a('    //   Wochentage des 1. Januar (28-Jahre-Zyklus), ohne Feiertage; H25 mit der Dynamisierung')
     a('    //   F(t) je Tag des Jahres (PDF S. 4), G25 und L25 ohne; danach exakt auf 1.000 MWh skaliert.')
+    a('    //   P25 und S25 wie H25 mit F(t) (PDF S. 4-5).')
     a('    //   Feiertage legt ein Betriebskalender an der Zuordnung auf den Sonntag (BDEW: Feiertag = FT).')
+    a('    //')
+    a('    // NETZBEZUG. P25 und S25 beschreiben den Bezug eines Haushalts mit PV-Anlage bzw. mit PV-Anlage und')
+    a('    // Batteriespeicher aus dem Netz nach dem Eigenverbrauch (PDF S. 4-5) - KEIN VERBRAUCHSPROFIL; die')
+    a('    // 1.000 MWh/a sind Netzbezug. Mit einer eigenen PV-Rechnung des Projekts zaehlte die PV doppelt.')
     a('    // ====================================================================================')
     a('')
     a('    /// <summary>')
@@ -300,6 +345,7 @@ def cs_text(saetze, sha):
     a('        }')
     a('')
     a('        /// <summary>Das Kürzel des BDEW (H25, G25, L25).</summary>')
+    a('        /// <remarks>Die Netzbezugsprofile tragen P25 und S25 (<see cref="StandardlastprofilSaattabelle.Netzbezug"/>).</remarks>')
     a('        public string Kuerzel { get; }')
     a('')
     a('        /// <summary>Der Name des Katalogsatzes (<c>Tab_Stromverbraucher_STAMM.Bezeichner</c>).</summary>')
@@ -324,6 +370,7 @@ def cs_text(saetze, sha):
     a('    /// <summary>')
     a('    /// <b>Die drei Sätze der Saat</b> (H25, G25, L25) mit Quelle und Prüfsumme der Excel, aus der sie')
     a('    /// abgeleitet sind.')
+    a('    /// Dazu die zwei Netzbezugsprofile P25 und S25 (<see cref="StandardlastprofilSaattabelle.Netzbezug"/>) — keine Verbrauchsprofile.')
     a('    /// </summary>')
     a('    public static class StandardlastprofilSaattabelle')
     a('    {')
@@ -340,25 +387,20 @@ def cs_text(saetze, sha):
     a('        public const double JAHRESSUMME_MWH = %d.0;' % JAHRESSUMME_MWH)
     a('')
     a('        /// <summary>Die Sätze in der Folge H25, G25, L25.</summary>')
+    a('        /// <remarks>Die Verbrauchsprofile, gesät von <see cref="StandardlastprofilSchema"/>; die Netzbezugsprofile P25 und S25 stehen in <see cref="StandardlastprofilSaattabelle.Netzbezug"/>.</remarks>')
     a('        public static IReadOnlyList<StandardlastprofilSaat> Alle { get; } = new[]')
     a('        {')
-    for n, s in enumerate(saetze):
-        e = ' ' * 16
-        a('            new StandardlastprofilSaat(')
-        a('                "%s", "%s", "%s",' % (s['kuerzel'], s['bezeichner'], s['typname']))
-        a('                "%s",' % beschreibung(s))
-        a('                "%s",' % typbeschreibung(s))
-        a('                new[]')
-        a('                {')
-        a('                    // Januar bis Dezember [MWh]')
-        a('                    ' + zahlen(s['monate'], e + '    ') + ',')
-        a('                },')
-        a('                new[]')
-        a('                {')
-        for tag in range(7):
-            a('                    // ' + WOCHENTAGE[tag] + ' 0 bis 23 Uhr (' + ('Werktag' if tag < 5 else ('Samstag' if tag == 5 else 'Sonn- und Feiertag')) + ')')
-            a('                    ' + zahlen(s['woche'][24 * tag:24 * tag + 24], e + '    ') + ',')
-        a('                })' + (',' if n < len(saetze) - 1 else ''))
+    saetze_cs(a, verbrauch)
+    a('        };')
+    a('')
+    a('        /// <summary>')
+    a('        /// <b>Die Netzbezugsprofile</b> in der Folge P25, S25 — der Bezug eines Haushalts mit PV-Anlage bzw. mit PV-Anlage')
+    a('        /// und Batteriespeicher aus dem Netz nach dem Eigenverbrauch (BDEW-Veröffentlichung S. 4–5): <b>kein')
+    a('        /// Verbrauchsprofil</b>, die 1.000 MWh/a sind Netzbezug. Gesät von <see cref="StandardlastprofilPvSchema"/>.')
+    a('        /// </summary>')
+    a('        public static IReadOnlyList<StandardlastprofilSaat> Netzbezug { get; } = new[]')
+    a('        {')
+    saetze_cs(a, netzbezug)
     a('        };')
     a('    }')
     a('}')
@@ -375,11 +417,15 @@ def kennzahlen(saetze):
         w = s['woche']
         mittel = math.fsum(w) / 168
         wt, sa, so = math.fsum(w[0:24]), math.fsum(w[120:144]), math.fsum(w[144:168])
-        print('\n%s %s (%s, Typ %s)%s' % (s['kuerzel'], s['titel'], s['bezeichner'], s['typname'],
-                                           ', dynamisiert' if s['dyn'] else ''))
+        print('\n%s %s (%s, Typ %s)%s%s' % (s['kuerzel'], s['titel'], s['bezeichner'], s['typname'],
+                                             ', dynamisiert' if s['dyn'] else '',
+                                             ', NETZBEZUG ' + s['netz'] + ' (kein Verbrauchsprofil)' if s['netz'] else ''))
         print('  Jahressumme der Konstanten %.6f; Abrollung vor der Skalierung %.3f MWh' %
               (math.fsum(s['monate']), math.fsum(s['roh'])))
         print('  Monate: ' + ' | '.join('%.3f' % v for v in s['monate']))
+        m = s['monate']
+        print('  Monatsanteil Januar / Juni / Dezember: %.2f / %.2f / %.2f %%' %
+              tuple(100 * m[i] / math.fsum(m) for i in (0, 5, 11)))
         print('  Spitzenfaktor der Woche (Höchstwert / Mittel): %.3f (Höchstwert %.3f, Mittel %.3f, Tiefstwert %.3f)' %
               (max(w) / mittel, max(w), mittel, min(w)))
         print('  Tagessummen Werktag / Samstag / Sonntag: %.1f / %.1f / %.1f kWh, Verhältnis 1 : %.3f : %.3f' %

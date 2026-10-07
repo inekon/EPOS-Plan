@@ -880,6 +880,22 @@ rechnet alle zweiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **89 690 112 Byte, LFS-SHA-256 `29dbf1dd08e329196c74ee73604892d8b3e9e9852f0a8efc988172687cacf382`**. Der Referenzlauf
 > der 21 Basisprojekte und 1057 ist vor und nach dem Schritt byte-gleich.
 
+> **Nachtrag — Schemaschritt 196 (BDEW-Netzbezugsprofile P25 und S25), Basis unverändert.**
+> `StandardlastprofilPvSchema` (196 = `ErdsondenfeldSchema.SCHRITT + 1`) sät die BDEW-Profile P25 (Haushalt mit
+> PV-Anlage) und S25 (Haushalt mit PV-Anlage und Batteriespeicher) — Netzbezug nach dem Eigenverbrauch, keine
+> Verbrauchsprofile — als gesperrte Sätze der „Datenbank Strombedarf“, mit derselben Mechanik wie Schritt 193: je einen
+> Kopf in `Tab_Stromverbraucher_STAMM` (zwölf Monatswerte, 1.000 MWh/a Netzbezug; 44 → 46 Sätze) und ein Typprofil in
+> `Tab_Stromverbrauchertyp_STAMM` (168 Wochenstunden; 43 → 45 Sätze), `ReadOnly = 1`, mit Katalogschlüssel
+> (`SV:BDEW_P25_HAUSHALT_PV`, `SV:BDEW_S25_HAUSHALT_PV_SPEICHER`, `SVT:BDEW_P25`, `SVT:BDEW_S25`) und Prüfsumme. Der
+> Zellvergleich gegen den Stand 195 (89 690 112 Byte, LFS-SHA-256
+> `29dbf1dd08e329196c74ee73604892d8b3e9e9852f0a8efc988172687cacf382`) zeigt sonst nur `Tab_Applikation.SchemaVersion` und
+> `sqlite_sequence` (die beiden eigenen Zähler und drei fremde, die die Wiederholung früherer Saatschritte weiterzählt;
+> keine Zeile geändert); ein zweiter Lauf sät nichts und vergibt keinen Schlüssel. Die Testdatenbank steht auf **196**
+> (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer): **89 698 304 Byte, LFS-SHA-256
+> `6f83f95faf13496f43f172f89e5366c6983cb64dae50bc77764a6acb1d7af318`**. **Die Basis bleibt** — Katalogsaat ohne
+> Projektbezug: Kein Referenzprojekt führt einen der Sätze, keine Einfrierregel ist berührt; den Referenzlauf fährt die
+> Orchestrierung im Gate.
+
 ### Die Vorgängerbasis R39 (Auslegungsheizlast)
 
 Einundzwanzig Projekte, 646 CSV, 4 275 Skalare, auf Linux eingefroren gegen die Testdatenbank `2fec4f14…` (Schemastand
