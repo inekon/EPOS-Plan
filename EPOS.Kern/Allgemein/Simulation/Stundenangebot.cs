@@ -256,6 +256,16 @@ namespace WindowsFormsApplication1
         /// <summary>Zahl gleicher Module.</summary>
         internal int Anzahl { get; }
 
+        /// <summary>
+        /// Die Stützstelle zum Vorlauf (Index in die Kennlinien, <c>StuetzstelleWaehlen</c>, ohne Zählung) — für den
+        /// Fallwechsel des Kreises (Entwurf AK3 2.4); −1 bei verbotener Extrapolation über der obersten.
+        /// </summary>
+        internal int Stuetzstelle(double vorlaufC)
+        {
+            var lage = SimulationWaermepumpe.VorlaufAuswerten(_vorlaeufe, vorlaufC, _extrapolationErlaubt, out int stelle);
+            return lage == SimulationWaermepumpe.Vorlauflage.Verboten ? -1 : stelle;
+        }
+
         /// <summary>Ob über den Vorlauf interpoliert wird (I-1).</summary>
         internal bool Interpolieren { get; }
 

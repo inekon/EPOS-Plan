@@ -210,7 +210,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein Heizerzeuger des Projekts mit Anlagentyp, Anlagenzeile und Fahrplanteil (AK3-W3b).</summary>
-        internal readonly struct Erzeugerzeile
+        internal sealed class Erzeugerzeile
         {
             internal Erzeugerzeile(int typ, WErzeugerModel modell, Fahrplanerzeuger fahrplan)
             {

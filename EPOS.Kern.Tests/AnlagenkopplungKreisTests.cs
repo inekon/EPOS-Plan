@@ -192,6 +192,30 @@ namespace EPOS.Kern.Tests
             Assert.Equal(8760, weg.Kreis.Stunden);
             Assert.True(ak3.Sim.KesselInSchleife || ak3.Sim.BhkwInSchleife, "Vektorstufen nicht im Kreis");
 
+            // Gate „ohne Grenzen“ aus der Datenbank: 1047 hat keine Sperre und kein Zeitprogramm — jede Stunde ein
+            // Durchlauf, der Heizkanal ist Bit für Bit Pass 1 und die Gebäudereihen die des AK1-Laufs.
+            if (projekt == 1047)
+            {
+                Assert.Equal(8760, weg.Kreis.DurchlaeufeVerteilung[1]);
+                Assert.All(weg.DeltaKw, d => Assert.Equal(0.0, d));
+                double[] a = ak1.Sim.simulation_Waermebedarf.Waermebedarf, b = ak3.Sim.simulation_Waermebedarf.Waermebedarf;
+                for (int h = 0; h < 8760; h++) Assert.Equal(BitConverter.DoubleToInt64Bits(a[h]), BitConverter.DoubleToInt64Bits(b[h]));
+                GebaeudeModellErgebnis g1 = ak1.Sim.simulation_Waermebedarf.GebaeudeErgebnisse.Alle.First(e => e != null);
+                GebaeudeModellErgebnis g3 = ak3.Sim.simulation_Waermebedarf.GebaeudeErgebnisse.Alle.First(e => e != null);
+                for (int h = 0; h < 8760; h++)
+                {
+                    Assert.Equal(BitConverter.DoubleToInt64Bits(g1.HeizlastW[h]), BitConverter.DoubleToInt64Bits(g3.HeizlastW[h]));
+                    Assert.Equal(BitConverter.DoubleToInt64Bits(g1.Raumtemperatur[h]), BitConverter.DoubleToInt64Bits(g3.Raumtemperatur[h]));
+                }
+                // Anlagenergebnisse bitgleich, wo der AK1-Lauf schon alle Heizerzeuger in der Schleife hat.
+                if (ak1.Sim.KesselInSchleife == ak3.Sim.KesselInSchleife && ak1.Sim.BhkwInSchleife == ak3.Sim.BhkwInSchleife)
+                {
+                    Assert.Equal(BitConverter.DoubleToInt64Bits(ak1.Sim.simulation_wp.WpStrombedarfGesamtKwh),
+                                 BitConverter.DoubleToInt64Bits(ak3.Sim.simulation_wp.WpStrombedarfGesamtKwh));
+                    Assert.Equal(BitConverter.DoubleToInt64Bits(ak1.Sim.RestwaermeMwh), BitConverter.DoubleToInt64Bits(ak3.Sim.RestwaermeMwh));
+                }
+            }
+
             // Restbedarf 0 (Festlegung 15): Was der Kreis anbietet, deckt die Kaskade.
             Assert.True(ak3.Sim.RestwaermeMwh <= ak1.Sim.RestwaermeMwh + 1e-9,
                         "Restwärme AK3 " + ak3.Sim.RestwaermeMwh + " MWh gegen AK1 " + ak1.Sim.RestwaermeMwh);
@@ -205,13 +229,14 @@ namespace EPOS.Kern.Tests
             File.AppendAllText(ziel, string.Format(c,
                 "{0}|AK1 {1:0.000} s|AK3 {2:0.000} s|Faktor {3:0.00}|Durchläufe {4} (Mittel {5:0.000}, max {6})|Schranke {7} h|" +
                 "Stützstellenwechsel {8}|Fallwechsel {9}|Heizwärme Gebäude {10:0.000}/{11:0.000} MWh|Unterdeckung {12:0.000}/{13:0.000} MWh|" +
-                "WP-Strom {14:0.000}/{15:0.000} MWh|Abweichungsstunden {16}\n",
+                "WP-Strom {14:0.000}/{15:0.000} MWh|Abweichungsstunden {16}|Schleife AK1 K{17} B{18}, AK3 K{19} B{20}\n",
                 projekt, ak1.Sekunden, ak3.Sekunden, ak3.Sekunden / ak1.Sekunden, verteilung, k.DurchlaeufeMittel, k.DurchlaeufeMax,
                 k.StundenAnDerSchranke, k.StuetzstellenWechsel, k.FallWechsel,
                 ak1.Sim.simulation_Waermebedarf.Waermebedarf_Gebaeude_Gesamt, ak3.Sim.simulation_Waermebedarf.Waermebedarf_Gebaeude_Gesamt,
                 ak1.Sim.RestwaermeMwh, ak3.Sim.RestwaermeMwh,
                 ak1.Sim.simulation_wp.WpStrombedarfGesamtKwh / 1000.0, ak3.Sim.simulation_wp.WpStrombedarfGesamtKwh / 1000.0,
-                weg.DeltaKw.Count(d => d != 0.0)));
+                weg.DeltaKw.Count(d => d != 0.0), ak1.Sim.KesselInSchleife ? 1 : 0, ak1.Sim.BhkwInSchleife ? 1 : 0,
+                ak3.Sim.KesselInSchleife ? 1 : 0, ak3.Sim.BhkwInSchleife ? 1 : 0));
         }
     }
 }

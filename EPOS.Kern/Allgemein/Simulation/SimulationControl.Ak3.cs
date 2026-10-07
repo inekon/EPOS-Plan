@@ -129,7 +129,11 @@ namespace WindowsFormsApplication1
                     ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan) : null;
                 erzeuger.Add(wp ?? (IErzeugerkapazitaet)new FesteKapazitaet(z.Fahrplan));
             }
-            return new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()));
+            var kreis = new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()));
+            // Fallwechsel (2.4): die Stützstelle der ersten Wärmepumpe am Vorlauf jedes Durchlaufs.
+            WaermepumpeKapazitaet erste = erzeuger.OfType<WaermepumpeKapazitaet>().FirstOrDefault();
+            if (erste != null) kreis.Stuetzstelle = erste.Stuetzstelle;
+            return kreis;
         }
 
         /// <summary>
