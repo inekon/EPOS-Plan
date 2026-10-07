@@ -245,6 +245,8 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             foreach ((string spalte, object wert) in FACHWERTE) Setzen(SPEICHERANLAGE, spalte, wert);
+            Setzen(SPEICHERANLAGE, "Prioritaet", 7L);
+            Setzen(SPEICHERANLAGE, "BM_Typ", "Probe");
 
             var einheit = new FlottenEinheit
             {
@@ -261,8 +263,17 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(SPEICHERANLAGE, neu.AnlageId);
             Assert.Equal(FLOTTENPROJEKT, Ganzzahl(z["ID_Projekt"]));
             Assert.Equal((long)neu.GeraeteId, Ganzzahl(z["ID_SP"]));
-            Assert.NotEqual(q["Bezeichner"], z["Bezeichner"]);
-            foreach (string spalte in AnlagenFachspalten.UebertragbareSpalten())
+            Assert.NotEqual(Ganzzahl(q["ID_SP"]), Ganzzahl(z["ID_SP"]));
+            Assert.Equal("Speicher 2", z["Bezeichner"]);
+
+            // Vollständige Kopie (Anwenderentscheid 07.10.2026): jede Spalte ausser ID,
+            // Projekt, Bezeichner und ID_SP - Modell- wie Fachspalten.
+            List<string> kopie = AnlagenFachspalten.KopieSpalten("ID_SP");
+            Assert.Contains("Prioritaet", kopie);
+            Assert.Contains("WQ_Sondenanordnung", kopie);
+            Assert.DoesNotContain("Bezeichner", kopie);
+            Assert.DoesNotContain("ID_SP", kopie);
+            foreach (string spalte in kopie)
                 Assert.True(Gleich(q[spalte], z[spalte]),
                     spalte + ": Quelle " + q[spalte] + ", Ziel " + z[spalte]);
         }

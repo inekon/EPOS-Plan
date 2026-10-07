@@ -161,9 +161,10 @@ public static partial class SpeicherFlottenStudieCtrl
         bool mitFahrplan = AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
         // KU3-6a: ebenso der Stand der Spalten der freien Kuehlung (FreieKuehlungSoleSchema).
         bool mitFreierKuehlung = FreieKuehlungSoleSchema.AnlagenspaltenVorhanden();
-        // Die Fachspalten der vertretenen Anlage (Sondenfeld, KWKG, Steuer, Quellangaben),
-        // VOR dem Vorgang aus dem Schema erfragt (AnlagenFachspalten).
-        List<string> fachspalten = AnlagenFachspalten.UebertragbareSpalten();
+        // Jedes weitere Stueck einer vertretenen Anlage ist eine VOLLSTAENDIGE KOPIE ihrer
+        // Zeile (Anwenderentscheid 07.10.2026): alle Spalten ausser ID, Projekt, Bezeichner
+        // und Geraeteverweis ID_SP - VOR dem Vorgang aus dem Schema erfragt (AnlagenFachspalten).
+        List<string> kopieSpalten = AnlagenFachspalten.KopieSpalten("ID_SP");
         try
         {
             v = DataRepository.Vorgang();
@@ -207,11 +208,12 @@ public static partial class SpeicherFlottenStudieCtrl
                     int neueAnlageId = v.EinfuegenUndId(sqlAnlage, werteAnlage);
 
                     // Jedes weitere Stueck einer vertretenen Anlage ist eine Kopie DIESER
-                    // Anlage: Was das Modell nicht traegt, kommt aus ihrer Zeile nach -
-                    // derselbe Kernweg wie bei der Komponentenuebernahme. Eine freie Einheit
-                    // (Katalog, ohne Anlagenzeile) hat nichts zu retten und traegt die Vorgaben.
+                    // Anlagenzeile - Modell- wie Fachspalten, nur Bezeichner (laufende
+                    // Nummer) und Geraet (die neue Gerätezeile) eigen; derselbe Kernweg wie
+                    // bei der Komponentenuebernahme. Eine freie Einheit (Katalog, ohne
+                    // Anlagenzeile) hat nichts zu kopieren und traegt die Vorgaben.
                     if (quelleGueltig)
-                        AnlagenFachspalten.Uebertragen(v, fachspalten, vorhandeneAnlage, neueAnlageId);
+                        AnlagenFachspalten.Uebertragen(v, kopieSpalten, vorhandeneAnlage, neueAnlageId);
                     angelegt.Add(new FlottenUebernahmeAnlage(e.Id ?? "", neueAnlageId, neueGeraeteId,
                                                              name, true, n));
                 }
