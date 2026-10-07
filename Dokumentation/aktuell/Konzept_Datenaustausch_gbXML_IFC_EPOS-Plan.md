@@ -2111,7 +2111,7 @@ ergänzt Kapitel 15 und das Mehrzonenkonzept 6.4 (Zonenplan, E79) und lässt Les
 
 | Gehört dazu | Gehört nicht dazu |
 |---|---|
-| die Projektdatei (`.sqproj`, SQLite 3) **zusätzlich** zur IFC-Datei desselben Projekts lesen | ein Import allein aus der Projektdatei: Wände, Fenster, Türen und Aufbauten liegen dort nur in Binär- und XML-Strömen (Befund 3.5) |
+| die Projektdatei (`.sqproj`, SQLite 3) **zusätzlich** zur IFC-Datei desselben Projekts lesen — oder **allein** als eigene Importoption „nur Projektdatei“ neben „IFC“ und „IFC + Projektdatei“: Hülle aus den Hüllflächen mit ihren Raumbezügen, Format und Herkunft `SQPROJ` (Kapitel 17) | die Geometrie der Wände, Fenster und Türen aus den Binär- und XML-Strömen (Befund 3.5) — die Körper der Ansicht entstehen abgeleitet (Kapitel 17) |
 | Zonen (`BmZone`, `BmZoneReference`) in den Zonenplan übernehmen | Klimareihen (`SmDiagram`), Standort, Ergebnisse, Anlage, Katalog |
 | je Zone die Konditionierung aus den Profilen: Heizsollwert, Kühlsollwert, Lüftung, Geräte, Personen als Kalender mit Standardwoche und Perioden | Beleuchtung, Elektro, Trinkwasser, Feuchte, Sonnenschutz (keine Größe in EPOS-Plan — benannt übersprungen) |
 | das DIN-V-18599-Nutzungsprofil (`PdProfileUsage`) als Vorgabe-Matrix und als Nutzung der Zone | das Nachtippen der Normtabelle: ohne Projektdatei gelten die Vorlagen wie heute |
