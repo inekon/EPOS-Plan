@@ -42694,11 +42694,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen ohne Mengenangaben und ohne Gesamtmaße: Fläche aus dem Körper der Öffnung bzw. des Bauteils in der Ebene des Wirts ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_KOERPER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne Fenster oder Tür durchdringen ihr Bauteil und werden mit zusammen {1} m² von seiner Fläche abgezogen ({2}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_LOCH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_LOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Die Öffnungen ({2} m²) sind nicht kleiner als die Bruttofläche ({1} m²); die Nettofläche wird 0. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_NETTO_NULL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_NETTO_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen durchdringen ihr Bauteil nicht (Nische) und werden nicht abgezogen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_NISCHE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_NISCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen hängen als Teile eines Bauteils (IfcRelAggregates, etwa Dachfenster am Dach) statt über eine Öffnung — sie werden als Öffnungen dieses Bauteils übernommen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_OEFFNUNG_TEIL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne Fenster oder Tür haben weder Mengenangaben noch einen lesbaren Körper und werden nicht abgezogen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN", resourceCulture);
             }
         }
         

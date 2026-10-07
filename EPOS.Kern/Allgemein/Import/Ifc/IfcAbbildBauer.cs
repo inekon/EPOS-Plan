@@ -653,7 +653,7 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                // G5-2 hängt hier den Abzug der Öffnungen ein: der Körper liefert die Bruttofläche, die Nettofläche bleibt leer.
+                // Der Körper liefert die Bruttofläche; die Nettofläche setzt der Abzug der Öffnungen (Oeffnungsabzug, G5-2).
                 b.BruttoflaecheM2 = kf.FlaecheM2;
                 b.Flaechenherkunft = Flaechenherkunft.Koerper;
                 _ohneMengen.Remove(b.Kennung);
@@ -691,6 +691,122 @@ namespace WindowsFormsApplication1
             if (_koerperAussenUnbestimmt.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_AUSSENSEITE", Ganz(_koerperAussenUnbestimmt.Count),
                     Beispiele(_koerperAussenUnbestimmt)));
+        }
+
+        // ==================================================================
+        //  Abzug der Öffnungen (Abstimmung G5, Teil G5-2)
+        // ==================================================================
+
+        /// <summary>Die Öffnungen ohne Füllung: Wirt im Abbild, Öffnung, Wirt in der Datei.</summary>
+        private readonly List<(AbbildBauteil Wirt, IIfcOpeningElement Oeffnung, IIfcElement WirtElement)> _loecher
+            = new List<(AbbildBauteil, IIfcOpeningElement, IIfcElement)>();
+
+        /// <summary>Fenster und Türen ohne erklärte Fläche: Abbild, ihre Öffnung (oder <c>null</c>), das Element, der Wirt.</summary>
+        private readonly List<(AbbildBauteil Bauteil, IIfcOpeningElement Oeffnung, IIfcElement Element, AbbildBauteil Wirt)> _oeffnungOhneFlaeche
+            = new List<(AbbildBauteil, IIfcOpeningElement, IIfcElement, AbbildBauteil)>();
+
+        /// <summary>Der Mengensatz einer Öffnung (<c>Qto_OpeningElementBaseQuantities</c>): <c>Area</c>, sonst Breite × Höhe.</summary>
+        private double? Oeffnungsmenge(IIfcOpeningElement oeffnung)
+            => Positiv(IfcEigenschaften.Menge(_bezuege, oeffnung, "OpeningElement", "Area", _einheiten))
+               ?? Produkt(IfcEigenschaften.Menge(_bezuege, oeffnung, "OpeningElement", "Width", _einheiten),
+                          IfcEigenschaften.Menge(_bezuege, oeffnung, "OpeningElement", "Height", _einheiten));
+
+        /// <summary>
+        /// Die Ebene des Wirts: die Normale der größten Teilfläche seines ausgewerteten Körpers, sonst die größte Fläche des
+        /// Wirtskörpers, sonst die des Öffnungskörpers <paramref name="ersatz"/> (ein flacher Körper liegt in der Wandebene).
+        /// </summary>
+        private double[] Wirtsnormale(AbbildBauteil wirt, IIfcElement wirtElement, Dateikoerper ersatz)
+            => IfcOeffnungen.Hauptnormale(wirt.Koerperflaeche)
+               ?? IfcOeffnungen.Hauptnormale(wirt.Koerper ?? (wirtElement != null ? Rechenkoerper(wirtElement) : null))
+               ?? IfcOeffnungen.Hauptnormale(ersatz);
+
+        /// <summary>
+        /// <b>Der Abzug der Öffnungen</b> (Abstimmung G5, A1), nach den Körperflächen aus G5-1:
+        /// <list type="number">
+        /// <item>Fenster und Türen ohne erklärte Fläche bekommen die Profilfläche ihrer Öffnung in der Ebene des Wirts,
+        /// sonst die ihres eigenen Körpers (Herkunft <see cref="Flaechenherkunft.Koerper"/>, Meldung <c>OEFFNUNG_KOERPER</c>).</item>
+        /// <item>Öffnungen ohne Füllung: durchdringt eine den Wirt, ist sie ein Loch (<see cref="AbbildBauteil.LochflaecheM2"/>,
+        /// Meldung <c>OEFFNUNG_LOCH</c>); ist sie weniger tief als der Wirt dick oder als <c>RECESS</c> erklärt, eine Nische
+        /// ohne Abzug (<c>OEFFNUNG_NISCHE</c>); ohne jede Fläche <c>OEFFNUNG_UNBEMESSEN</c>.</item>
+        /// <item>Ein Wirt ohne Nettofläche der Datei bekommt Brutto − Öffnungen; ≤ 0 wird 0 mit <c>OEFFNUNG_NETTO_NULL</c>.
+        /// Eine Nettofläche aus dem Mengensatz (<c>NetSideArea</c>, <c>NetArea</c>) bleibt.</item>
+        /// <item>Fenster und Türen tragen Neigung und Azimut ihres Wirts, wo sie selbst keine haben.</item>
+        /// </list>
+        /// </summary>
+        private void Oeffnungsabzug()
+        {
+            var ausKoerper = new List<string>();
+            foreach ((AbbildBauteil o, IIfcOpeningElement oeffnung, IIfcElement element, AbbildBauteil wirt) in _oeffnungOhneFlaeche)
+            {
+                Dateikoerper ko = oeffnung != null ? Rechenkoerper(oeffnung) : null;
+                double? flaeche = Positiv(IfcOeffnungen.Profilflaeche(ko, Wirtsnormale(wirt, null, ko)));
+                if (!flaeche.HasValue)
+                {
+                    Dateikoerper ke = o.Koerper ?? Rechenkoerper(element);
+                    flaeche = Positiv(IfcOeffnungen.Profilflaeche(ke, Wirtsnormale(wirt, null, ke)));
+                }
+                if (!flaeche.HasValue) continue;
+                o.BruttoflaecheM2 = Math.Round(flaeche.Value, 6);
+                o.Flaechenherkunft = Flaechenherkunft.Koerper;
+                _ohneMengen.Remove(o.Kennung);
+                ausKoerper.Add(o.Name ?? o.Kennung);
+            }
+
+            var loecher = new List<string>();
+            var nischen = new List<string>();
+            var unbemessen = new List<string>();
+            double lochsumme = 0.0;
+            foreach ((AbbildBauteil wirt, IIfcOpeningElement oeffnung, IIfcElement wirtElement) in _loecher)
+            {
+                string name = IfcEigenschaften.Text(oeffnung.Name) ?? oeffnung.GlobalId.ToString();
+                Dateikoerper ko = Rechenkoerper(oeffnung);
+                double[] n = Wirtsnormale(wirt, wirtElement, ko);
+                double? tiefe = Positiv(IfcEigenschaften.Menge(_bezuege, oeffnung, "OpeningElement", "Depth", _einheiten))
+                                ?? Positiv(IfcOeffnungen.Tiefe(ko, n));
+                double? dicke = wirt.DickeM
+                                ?? Positiv(IfcOeffnungen.Tiefe(wirt.Koerper ?? Rechenkoerper(wirtElement), n));
+                if (oeffnung.PredefinedType == IfcOpeningElementTypeEnum.RECESS || IfcOeffnungen.Nische(tiefe, dicke))
+                {
+                    nischen.Add(name);
+                    continue;
+                }
+                double? flaeche = Oeffnungsmenge(oeffnung) ?? Positiv(IfcOeffnungen.Profilflaeche(ko, n));
+                if (!flaeche.HasValue)
+                {
+                    unbemessen.Add(name);
+                    continue;
+                }
+                double f = Math.Round(flaeche.Value, 6);
+                wirt.LochflaecheM2 += f;
+                lochsumme += f;
+                loecher.Add(name);
+            }
+
+            foreach (AbbildBauteil b in _abbild.Gebaeude.SelectMany(g => g.Bauteile).Concat(_abbild.BauteileOhneGebaeude))
+            {
+                foreach (AbbildBauteil o in b.Oeffnungen)
+                {
+                    if (!o.NeigungGrad.HasValue) o.NeigungGrad = b.NeigungGrad;
+                    if (!o.AzimutGrad.HasValue) o.AzimutGrad = b.AzimutGrad;
+                }
+                double abzug = b.Oeffnungen.Where(o => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer)
+                                           .Sum(o => o.BruttoflaecheM2 ?? 0.0) + b.LochflaecheM2;
+                if (b.NettoflaecheM2.HasValue || !(b.BruttoflaecheM2 is double brutto) || !(abzug > 0.0)) continue;
+                b.NettoflaecheM2 = Math.Round(IfcOeffnungen.Netto(brutto, abzug, out bool nichtPositiv), 6);
+                if (nichtPositiv)
+                    _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "OEFFNUNG_NETTO_NULL", b.Name ?? b.Kennung,
+                        Zahl(Math.Round(brutto, 2)), Zahl(Math.Round(abzug, 2))));
+            }
+
+            if (ausKoerper.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_KOERPER", Ganz(ausKoerper.Count), Beispiele(ausKoerper)));
+            if (loecher.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_LOCH", Ganz(loecher.Count),
+                    Zahl(Math.Round(lochsumme, 2)), Beispiele(loecher)));
+            if (nischen.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_NISCHE", Ganz(nischen.Count), Beispiele(nischen)));
+            if (unbemessen.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "OEFFNUNG_UNBEMESSEN", Ganz(unbemessen.Count), Beispiele(unbemessen)));
         }
 
         /// <summary>Der Gebäudeschwerpunkt [m]: das Mittel der Raumkörper, ohne sie der vorgemerkten Bauteilkörper (alle Gebäude bei −1).</summary>
@@ -1435,6 +1551,7 @@ namespace WindowsFormsApplication1
                 Bauteil(e, klasse);
             }
             Koerperflaechen();
+            Oeffnungsabzug();
 
             // Fenster und Türen, die keine Öffnung füllen: kein Wirt, keine Himmelsrichtung, nicht gezählt.
             List<string> ohneWirt = Sortiert<IIfcWindow>().Cast<IIfcElement>().Concat(Sortiert<IIfcDoor>())
@@ -1843,13 +1960,16 @@ namespace WindowsFormsApplication1
             foreach (IIfcRelVoidsElement rel in _bezuege.Oeffnungen(e))
             {
                 if (!(rel.RelatedOpeningElement is IIfcOpeningElement oeffnung)) continue;
+                bool gefuellt = false;
                 foreach (IIfcRelFillsElement fuellung in _bezuege.Fuellungen(oeffnung))
                 {
                     IIfcElement f = fuellung.RelatedBuildingElement;
-                    if (f is IIfcWindow fenster) b.Oeffnungen.Add(Oeffnung(fenster, "Window", Bauteilart.Fenster, b, gi));
-                    else if (f is IIfcDoor tuer) b.Oeffnungen.Add(Oeffnung(tuer, "Door", Bauteilart.Tuer, b, gi));
-                    if (f != null) _gefuellt.Add(f.EntityLabel);
+                    if (f is IIfcWindow fenster) b.Oeffnungen.Add(Oeffnung(fenster, "Window", Bauteilart.Fenster, b, gi, oeffnung));
+                    else if (f is IIfcDoor tuer) b.Oeffnungen.Add(Oeffnung(tuer, "Door", Bauteilart.Tuer, b, gi, oeffnung));
+                    if (f != null) { _gefuellt.Add(f.EntityLabel); gefuellt = true; }
                 }
+                // G5-2: eine Öffnung ohne Füllung — Loch oder Nische, entschieden nach den Körpern des Wirts.
+                if (!gefuellt) _loecher.Add((b, oeffnung, e));
             }
             // Fenster und Türen als Teile des Bauteils (IfcRelAggregates — Dachfenster eines CAD-Exports):
             // Öffnungen wie die einer Füllung, wenn keine Füllung sie schon trägt (Mehrzonenkonzept 6.5).
@@ -2645,7 +2765,8 @@ namespace WindowsFormsApplication1
             _seiteUnbestimmt.Add(b.Kennung);
         }
 
-        private AbbildBauteil Oeffnung(IIfcElement o, string klasse, Bauteilart art, AbbildBauteil wirt, int gi = -1)
+        private AbbildBauteil Oeffnung(IIfcElement o, string klasse, Bauteilart art, AbbildBauteil wirt, int gi = -1,
+                                       IIfcOpeningElement oeffnung = null)
         {
             var b = new AbbildBauteil
             {
@@ -2657,9 +2778,12 @@ namespace WindowsFormsApplication1
                 Randbedingung = wirt.Randbedingung,
                 NeigungGrad = wirt.NeigungGrad,
             };
+            // Rangfolge der Fläche (G5-2): Mengensatz des Fensters bzw. der Tür, Mengensatz der Öffnung,
+            // OverallWidth × OverallHeight, ein Flächenname aus einem beliebigen Satz — danach erst die Körper.
             double? flaeche = Positiv(IfcEigenschaften.Menge(_bezuege, o, klasse, "Area", _einheiten))
                               ?? Produkt(IfcEigenschaften.Menge(_bezuege, o, klasse, "Width", _einheiten),
                                          IfcEigenschaften.Menge(_bezuege, o, klasse, "Height", _einheiten));
+            if (!flaeche.HasValue && oeffnung != null) flaeche = Oeffnungsmenge(oeffnung);
             if (!flaeche.HasValue)
             {
                 double breite = double.NaN, hoehe = double.NaN;
@@ -2678,8 +2802,12 @@ namespace WindowsFormsApplication1
             // Zuletzt ein Flächenname aus einem beliebigen Mengensatz — nie Breite × Höhe eines fremden Satzes.
             if (!flaeche.HasValue) flaeche = FlaecheRueckfall(o, RUECKFALL_OEFFNUNG, "Area");
             b.BruttoflaecheM2 = flaeche;
-            if (!flaeche.HasValue) _ohneMengen.Add(b.Kennung);
-            else b.Flaechenherkunft = Flaechenherkunft.Mengensatz;   // G5-2: die Fläche aus dem Körper der Öffnung
+            if (!flaeche.HasValue)
+            {
+                _ohneMengen.Add(b.Kennung);
+                _oeffnungOhneFlaeche.Add((b, oeffnung, o, wirt));   // G5-2: die Körper nach allen Bauteilen
+            }
+            else b.Flaechenherkunft = Flaechenherkunft.Mengensatz;
 
             Seiten(o).Uebertragen(b);
             UWert(o, "Pset_" + klasse + "Common", b);

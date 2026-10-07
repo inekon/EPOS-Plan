@@ -197,7 +197,7 @@ namespace EPOS.Kern.Tests
                 Nah(flaeche, b.BruttoflaecheM2, FLAECHE_TOL, name);
                 Nah(azimut, b.AzimutGrad, WINKEL_TOL, name);
                 Assert.Equal(Flaechenherkunft.Koerper, b.Flaechenherkunft);
-                Assert.Null(b.NettoflaecheM2);   // brutto; den Abzug der Öffnungen bringt G5-2
+                Assert.Null(b.NettoflaecheM2);   // ohne Öffnungen keine eigene Nettofläche (G5-2)
                 Assert.False(b.Koerperflaeche.AussenseiteUnbestimmt, name);
             }
 

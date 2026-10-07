@@ -580,9 +580,17 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Nettofläche [m²], wie die Datei sie selbst angibt (IFC: <c>NetSideArea</c>); <c>null</c> = keine.
         /// Sie ist allein der Rückfall des Fensterabzugs (U14), wenn Brutto − Öffnungen negativ wird —
-        /// die Fläche selbst kommt immer aus <see cref="BruttoflaecheM2"/>.
+        /// die Fläche selbst kommt immer aus <see cref="BruttoflaecheM2"/>. Nennt die Datei keine, setzt der IFC-Import
+        /// für einen Wirt mit Öffnungen Brutto − Öffnungen, nie negativ (Abstimmung G5, Teil G5-2).
         /// </summary>
         public double? NettoflaecheM2 { get; set; }
+
+        /// <summary>
+        /// Die Fläche der Öffnungen ohne Füllung (Löcher, <c>IfcOpeningElement</c> ohne Fenster oder Tür) [m²], die den
+        /// Wirt durchdringen (Abstimmung G5, Teil G5-2): Sie gehen in den Abzug wie Fenster und Türen, ohne eigenes
+        /// Bauteil zu werden. 0 = keine; Nischen zählen nicht.
+        /// </summary>
+        public double LochflaecheM2 { get; set; }
 
         /// <summary>
         /// Auf welchem Weg <see cref="BruttoflaecheM2"/> entstanden ist (Abstimmung G5, A4): <see cref="WindowsFormsApplication1.Flaechenherkunft.Mengensatz"/>

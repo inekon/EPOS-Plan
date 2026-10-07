@@ -73,8 +73,8 @@ namespace WindowsFormsApplication1
     /// <item><b>Gliederung:</b> Flächen der maßgeblichen Seite unter 5° Richtungsunterschied werden flächengewichtet zu einem
     /// Teil zusammengefasst (<see cref="Bauteilkoerperflaeche.Zusammengefasst"/>), ab 5° bleiben sie getrennte Teile.</item>
     /// </list>
-    /// <para><b>Brutto:</b> Öffnungen sind nicht abgezogen. <i>Hier hängt G5-2 den Abzug der Öffnungen ein</i>
-    /// (<see cref="Auswerten"/> liefert die Bruttofläche, der Aufrufer zieht ab).</para>
+    /// <para><b>Brutto:</b> Öffnungen sind nicht abgezogen: <see cref="Auswerten"/> liefert die Bruttofläche, den Abzug
+    /// der Öffnungen macht der Aufrufer (G5-2, <see cref="IfcOeffnungen"/>).</para>
     /// <para><b>Deterministisch:</b> Dreiecke in der Reihenfolge des Netzes, Teile nach Fläche absteigend, bei Gleichstand
     /// in der Reihenfolge ihres ersten Dreiecks.</para>
     /// </summary>
