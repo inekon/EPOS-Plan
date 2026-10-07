@@ -2210,9 +2210,16 @@ namespace WindowsFormsApplication1
             object oAnzahl = WaermequelleClass.WertLesen(idAnlage, "WQ_Anzahl");
             string bodentyp = WaermequelleClass.WertLesen(idAnlage, "WQ_Bodentyp") as string;
             object oSpreiz = WaermequelleClass.WertLesen(idAnlage, "WQ_Spreizung");
+            ErdsondenfeldEingabe feld = ErdsondenfeldCtrl.Lesen(idAnlage);
 
             var daten = new EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten
             {
+                Sondenabstand = feld.AbstandM,
+                Bohrlochdurchmesser = feld.BohrlochdurchmesserMm,
+                Bohrlochwiderstand = feld.Bohrlochwiderstand,
+                Kopfueberdeckung = feld.KopfueberdeckungM,
+                Betrachtungsjahr = feld.Betrachtungsjahr,
+                Sondenanordnung = feld.Anordnung?.ToString(),
                 WPName = info.Bezeichner,
                 IdProjekt = m_ID_Projekt,
                 IdAnlage = idAnlage,
@@ -2255,6 +2262,18 @@ namespace WindowsFormsApplication1
                 Bodentyp = e.Bodentyp,
                 SpreizungErdreich = e.Spreizung
             });
+
+            // Das Sondenfeld je Anlage (Konzept 23.3) - nur beim Quellsystem Sonde; leer heisst Vorgabe.
+            if (string.Equals(e.Quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE, StringComparison.OrdinalIgnoreCase))
+                ErdsondenfeldCtrl.Schreiben(idAnlage, new ErdsondenfeldEingabe
+                {
+                    AbstandM = e.Sondenabstand,
+                    BohrlochdurchmesserMm = e.Bohrlochdurchmesser,
+                    Bohrlochwiderstand = e.Bohrlochwiderstand,
+                    KopfueberdeckungM = e.Kopfueberdeckung,
+                    Betrachtungsjahr = e.Betrachtungsjahr,
+                    Anordnung = ErdsondenfeldCtrl.AnordnungAusText(e.Sondenanordnung)
+                });
         }
 
         /// <summary>

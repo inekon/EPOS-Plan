@@ -20,7 +20,7 @@ namespace EPOS.Kern.Tests
     /// Kühlkennlinie — zwei Vorläufe, fünf Außentemperaturen, Laststufe 100.</para>
     ///
     /// <para><b>Die Rechenprobe gegen die Handrechnung je Vorlauf</b> (10.3; Abnahme KU2 in 11.1):
-    /// je Stunde Kapazität = Zeitanteil × Pkühl(Außentemperatur), Kälte = min(Bedarf, Kapazität),
+    /// je Stunde Kapazität = Zeitanteil × Pkühl(Quelltemperatur — die Sole der gesäten Erdsonde), Kälte = min(Bedarf, Kapazität),
     /// Kältestrom = Kälte / EER × (1 + Hilfsstromanteil) — EER und Pkühl von Hand aus den gesäten
     /// Stützstellen (linear dazwischen, zur kalten Seite gekappt, zur warmen verlängert, wie die
     /// Projekteinstellung von 1017 es erlaubt).</para>
@@ -84,7 +84,8 @@ namespace EPOS.Kern.Tests
             Assert.True(Leer(Skalar("SELECT Kuehlleistung FROM Tab_WP WHERE ID = 1017033")));
             Assert.True(Leer(Skalar("SELECT Kuehl_ID_Carrier FROM Tab_Energieanlagen WHERE ID = 10211")));
             Assert.True(Leer(Skalar("SELECT Kuehl_EigenerZaehler FROM Tab_Energieanlagen WHERE ID = 10211")));
-            Assert.True(Leer(Skalar("SELECT WQ_Typ FROM Tab_Energieanlagen WHERE ID = 10211")));
+            // Die Quelle ist die gesäte Erdsonde (Einfrierregel „gesäte Erdreichquellen der Referenzprojekte").
+            Assert.Equal(DbWerte.WQ_TYP_ERDREICH, Skalar("SELECT WQ_Typ FROM Tab_Energieanlagen WHERE ID = 10211"));
 
             // Die Kühlkennlinien der Projektseite - die Saat an 1017 und ihre Kopie im Referenzprojekt
             // der Anlagenkopplung 1047 (anlagenkopplung_1047_referenzprojekt.py) und im Referenzprojekt der
@@ -188,15 +189,17 @@ namespace EPOS.Kern.Tests
                 double[] t = lauf.simulation_Waermebedarf.Stundentemperatur;
                 bool verlaengern = lauf.sim.simulation_wp.Extrapolation_Erlaubt;
                 double kaelte = 0, strom = 0;
-                int stunden = 0;
+                int stunden = 0, ausserluft = 0;
                 for (int h = 0; h < Kaeltekaskade.STUNDEN; h++)
                 {
-                    Assert.Equal(t[h], e.Quelltemperatur[h]);   // Wärmequelle leer: die Außenluft
+                    // Die Quelle ist die gesäte Erdsonde: Die Kennlinie liest die Soletemperatur des Feldlaufs.
+                    double q = e.Quelltemperatur[h];
+                    if (q == t[h]) ausserluft++;
                     double anteil = e.Zeitanteil[h];
                     Assert.InRange(anteil, 0.0, 1.0);
                     if (!kaskade.Kuehltage[h / 24]) Assert.Equal(0.0, anteil);
 
-                    (double eer, double pk) = Hand(vorlauf, t[h], verlaengern);
+                    (double eer, double pk) = Hand(vorlauf, q, verlaengern);
                     double kapazitaet = anteil * pk;
                     double soll = kapazitaet > 0 && eer > 0 ? Math.Min(kaskade.Bedarf_stuendlich[h], kapazitaet) : 0.0;
                     double sollStrom = soll > 0 ? soll / eer * (1.0 + HILFSSTROM) : 0.0;
@@ -207,6 +210,7 @@ namespace EPOS.Kern.Tests
                     if (soll > 0) stunden++;
                 }
                 Assert.True(kaelte > 0 && strom > 0);
+                Assert.True(ausserluft < Kaeltekaskade.STUNDEN / 10, "Die Quelle ist die Außenluft statt der Sonde.");
                 Nahe(kaelte, e.KaelteGesamtKwh, "Kälte im Jahr");
                 Nahe(strom, e.StromGesamtKwh, "Kältestrom im Jahr");
                 Nahe(strom - strom / (1.0 + HILFSSTROM), e.HilfsstromGesamtKwh, "Hilfsstrom im Jahr");

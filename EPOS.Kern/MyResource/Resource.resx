@@ -3478,7 +3478,7 @@ Jetzt Datei auswählen?</value>
   Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
-    <value>Die Erdsonde rechnet mit einer ganzjährig konstanten Quelltemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag; der Entzug wirkt nicht auf sie zurück.</value>
+    <value>Die Vorschau zeigt die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; ihren Verlauf zeigt das Ergebnis.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -48130,6 +48130,63 @@ Chart</value>
   </data>
   <data name="BV_A1D_NACHWEIS_EINSPEISUNG_KWK" xml:space="preserve">
     <value> · Einspeisevergütung KWK {0} €/kWh</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD" xml:space="preserve">
+    <value>Erdsonde der Anlage {0}: Sondenfeld mit Entzugsrückwirkung, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), ungestörte Temperatur {4:0.00} °C, Betrachtungsjahr {5} nach {7} Vorjahren mit der Stundenlast des ersten Feldlaufs: Entzug {6:N0} kWh/a, davon zurückgespeist {8:N0} kWh/a.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD_FEHLT" xml:space="preserve">
+    <value>Erdsonde der Anlage {0}: Das Sondenfeld ließ sich nicht aufbauen ({1}) — gerechnet wird mit der konstanten Quelltemperatur.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENABSTAND" xml:space="preserve">
+    <value>Sondenabstand:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BOHRLOCHDURCHMESSER" xml:space="preserve">
+    <value>Bohrlochdurchmesser:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BOHRLOCHWIDERSTAND" xml:space="preserve">
+    <value>Bohrlochwiderstand:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KOPFUEBERDECKUNG" xml:space="preserve">
+    <value>Kopfüberdeckung:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BETRACHTUNGSJAHR" xml:space="preserve">
+    <value>Betrachtungsjahr:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENANORDNUNG" xml:space="preserve">
+    <value>Anordnung:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ANORDNUNG_QUADRATISCH" xml:space="preserve">
+    <value>Quadratisch</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ANORDNUNG_REIHE" xml:space="preserve">
+    <value>Reihe</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORGABE" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENFELD_HINWEIS" xml:space="preserve">
+    <value>(leeres Feld: es gilt die Vorgabe nach VDI 4640 Blatt 2)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SONDENFELD" xml:space="preserve">
+    <value>Sondenabstand, Bohrlochdurchmesser und Bohrlochwiderstand müssen größer als 0 sein, die Kopfüberdeckung mindestens 0 und das Betrachtungsjahr mindestens 1. Ein leeres Feld steht für die Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDENABSTAND_ERL" xml:space="preserve">
+    <value>Abstand benachbarter Erdsonden in Metern, größer als 0; leer = Vorgabe 6 m.</value>
+  </data>
+  <data name="KI_DLG_QERD_BOHRLOCHDURCHMESSER_ERL" xml:space="preserve">
+    <value>Durchmesser des Bohrlochs in Millimetern, größer als 0; leer = Vorgabe 150 mm.</value>
+  </data>
+  <data name="KI_DLG_QERD_BOHRLOCHWIDERSTAND_ERL" xml:space="preserve">
+    <value>Thermischer Bohrlochwiderstand in m·K/W, größer als 0; leer = Vorgabe 0,10 m·K/W.</value>
+  </data>
+  <data name="KI_DLG_QERD_KOPFUEBERDECKUNG_ERL" xml:space="preserve">
+    <value>Tiefe des Sondenkopfs unter Gelände in Metern, mindestens 0; leer = Vorgabe 2 m.</value>
+  </data>
+  <data name="KI_DLG_QERD_BETRACHTUNGSJAHR_ERL" xml:space="preserve">
+    <value>Betriebsjahr, für das das Sondenfeld gerechnet wird, mindestens 1; leer = Vorgabe 10.</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDENANORDNUNG_ERL" xml:space="preserve">
+    <value>Anordnung der Erdsonden: quadratisches Raster oder Reihe; leer = Vorgabe quadratisch.</value>
   </data>
 </root>
 

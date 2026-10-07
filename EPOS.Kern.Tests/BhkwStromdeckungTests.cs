@@ -31,11 +31,11 @@ namespace EPOS.Kern.Tests
         }
 
         [Theory]
-        [InlineData(1017, 49.98)]
+        [InlineData(1017, 50.12)]   // R40: die Kälte der Wärmepumpe an der Erdsonde braucht weniger Strom (R39 49,98)
         [InlineData(1018, 0.0)]
         [InlineData(1024, 19.88)]
         [InlineData(1030, 9.02)]
-        [InlineData(1047, 49.54)]
+        [InlineData(1047, 48.95)]   // R40: Wärmepumpe an der Erdsonde (R39 49,54)
         public void Die_Stromdeckung_ist_der_Eigenverbrauch_am_Gesamtbedarf(int projekt, double gerundet)
         {
             if (!_db.Vorhanden) return;

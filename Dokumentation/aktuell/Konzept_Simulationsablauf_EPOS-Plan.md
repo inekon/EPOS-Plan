@@ -1708,3 +1708,166 @@ byte-gleich. Gehalten von `EPOS.Kern.Tests/ProjektkopienKatalogeTests` (Saat je 
 zweiter Lauf, Sicht, Emissionsquelle, Abgleich mit Paket, Jahressummen von 1030 und 1017 vor und nach
 einer Katalogänderung, Übernehmen und Zurücksetzen, Duplizieren und Projektpaket) und
 `EPOS.UI.Tests/Dialoge/ProjektBrennstoffeDialogTests`.
+
+## 23. Erdsonde: Sondenfeld mit Entzugsrückwirkung
+
+Die Wärmequelle „Erdreich" mit dem Quellsystem Sonde (`Tab_Energieanlagen.WQ_Typ` = Erdreich,
+`WQ_Quellsystem` = Sonde, oder ein Kollektor mit `WQ_Tiefe` über 10 m) rechnet die mittlere
+Soletemperatur je Stunde aus dem Entzug des Laufs. Der Erdkollektor bleibt beim Jahresgang nach
+Kusuda (Abschnitt Erdreichmodell, `ErdreichTemperatur.JahresprofilKollektor`); ein Entzugsabschlag
+für ihn entfällt, weil seine Tabellenwerte nach VDI 4640 Blatt 2 Anhang A Leistung **und** Arbeit
+begrenzen und der Kusuda-Gang die Jahresdynamik der oberflächennahen Schicht schon trägt — ein
+Rückwirkungsmodell für die Fläche bräuchte Rohrabstand und Verlegeschema, die nicht erfasst sind.
+
+### 23.1 Modell
+
+Mittlere Fluidtemperatur zu Beginn der Stunde *t* (Lasten je Sondenmeter *q* in W/m, Entzug positiv):
+
+(1) T_f(t) = T_u − ΔT_V(t) − Σ_{i<t} q_i · [G(t−i) − G(t−i−1)] − R_b · q_{t−1}
+
+(2) G(τ) = 1/(4πλ) · (1/N) · Σ_j Σ_k h(r_jk, τ),  r_jj = r_b
+
+(3) h(r, τ) = ∫_{s₀}^{∞} e^{−r²s²} · Y(Hs, Ds) / (H s²) ds,  s₀ = 1/√(4aτ)
+
+(4) Y(x, d) = 2·ierf(x) + 2·ierf(x+2d) − ierf(2x+2d) − ierf(2d),  ierf(X) = X·erf(X) − (1 − e^{−X²})/√π
+
+(5) T_u = T_m + 1,5 K + 0,03 K/m · max(0, H/2 − 20 m)
+
+- **g-Funktion:** mittlere Wandtemperatur der endlichen Linienquelle mit Spiegelquelle nach
+  Claesson und Javed (Gl. 3, 4), über das Feld gemittelt bei gleicher Last je Sonde (Gl. 2). Für
+  H → ∞ geht (3) in die unendliche Linienquelle E₁(r²/4aτ) über. Gewählt, weil sie Kurz- und
+  Langzeitverhalten in **einer** Formel trägt, Sondenzahl und Abstand über die Paarabstände
+  r_jk direkt abbildet und keine Tabellen der Eskilson-Funktionen braucht; das Monatsverfahren nach
+  VDI 4640 Blatt 2 liefert nur Monatswerte und taugt nicht für die Stundenkopplung an die
+  Kennlinie. Die Auslegungsprüfung nach Tabelle B2 bleibt unverändert daneben stehen.
+- **Rechenzeit:** G wird beim Aufbau einmal auf einem logarithmischen Zeitraster (1 h bis
+  Betrachtungsjahr · 8760 h, 25 Punkte je Dekade, Simpson in ln s) berechnet und daraus für jede
+  ganze Stunde 0…8760 tabelliert. Die Faltung (1) läuft damit über ganze Stundenabstände als
+  Tabellenzugriff: 8760 · 8759 / 2 ≈ 38 Mio. Multiplikationen je Feld und Jahr, ohne
+  Aggregationsfehler. Eine Lastaggregation (Tages- und Monatsblöcke) ist nur nötig, wenn die
+  Messung die Grenze von 200 ms je Feld überschreitet.
+- **Vorjahre:** Das Rechenjahr ist das Betrachtungsjahr *n* (Vorgabe 10). Die n − 1 Vorjahre
+  tragen die Stundenlast des Feldes aus einem ersten Feldlauf (Abschnitt 23.4, Gl. 6 und 7).
+
+### 23.2 Kopplung im Stundenschritt
+
+Der Entzug der Stunde ist Wärme minus Strom der Module an der Anlage (dieselbe Größe wie in der
+Erdreichprüfung); mehrere Module derselben Anlage teilen ein Feld. Die Quelltemperatur der Stunde
+*t* entsteht am Ende der Stunde *t − 1* (`Zweikanalig_StundeEnde`) aus den Lasten bis *t − 1*
+(**Vorstunde**). Ein Fixpunkt in der Stunde hieße, die Kaskade der Stunde mehrfach zu rechnen —
+Speicher, Ebenen und Takt ändern dabei ihren Zustand. Die thermische Zeitkonstante des Bohrlochs
+liegt bei Stunden, die Vorstunde verfehlt nur den Widerstandsanteil R_b · q in der ersten Stunde nach
+einem Einschalten. Die Reihe steht in `SimulationWaermepumpe.Quelltemperaturen` und damit in
+`wp_quellentemperatur.csv`, in der Kälteseite und in der Erdreichprüfung.
+
+### 23.3 Eingaben
+
+| Größe | Quelle |
+|---|---|
+| λ, ρ·c_p (a = λ/ρc_p) | Bodentyp `WQ_Bodentyp` aus dem Katalog nach VDI 4640 Blatt 1, Tabelle 1 (`ErdreichTemperatur.Katalog`) |
+| T_m | Jahresmittel der Außentemperatur (wie bisher) |
+| H, N | `WQ_Tiefe` (Länge je Sonde), `WQ_Anzahl` (mindestens 1) |
+| Abstand B | `WQ_Sondenabstand`, Vorgabe 6 m (Bezug der Tabelle B2) |
+| Anordnung | `WQ_Sondenanordnung`: `Quadratisch` (Vorgabe, möglichst quadratisches Raster, zeilenweise gefüllt) oder `Reihe` (alle Sonden in einer Linie) |
+| r_b | `WQ_Bohrlochdurchmesser` / 2, Vorgabe 150 mm (r_b = 0,075 m, Bezug der Tabelle B2) |
+| R_b | `WQ_Bohrlochwiderstand`, Vorgabe 0,10 m·K/W (Doppel-U 32 × 3,0, Verfüllung λ = 0,8 W/(m·K), turbulent) |
+| D | `WQ_Kopfueberdeckung`, Vorgabe 2 m |
+| n | `WQ_Betrachtungsjahr`, Vorgabe 10 |
+
+Abstand, r_b, R_b, D, n und die Anordnung stehen im Parameterobjekt `Sondenfeldgeometrie` mit den
+Normwerten als Vorgabe; `WaermequelleClass.SondenfeldgeometrieDerAnlage` liest sie je Anlage aus den
+Spalten von `Tab_Energieanlagen` (Schemaschritt 195, `ErdsondenfeldSchema`):
+
+| Spalte | Typ und Prüfung | Vorgabe |
+|---|---|---|
+| `WQ_Sondenabstand` | REAL, m, `CHECK` > 0 | 6,0 |
+| `WQ_Bohrlochdurchmesser` | REAL, mm, `CHECK` > 0 | 150 |
+| `WQ_Bohrlochwiderstand` | REAL, m·K/W, `CHECK` > 0 | 0,10 |
+| `WQ_Kopfueberdeckung` | REAL, m, `CHECK` ≥ 0 | 2,0 |
+| `WQ_Betrachtungsjahr` | INTEGER, `CHECK` ≥ 1 | 10 |
+| `WQ_Sondenanordnung` | TEXT, `CHECK` in (`Quadratisch`, `Reihe`) | Quadratisch |
+
+NULL heißt Vorgabe; mit allen Spalten leer rechnet das Feld bitgleich mit der Norm. Ein unbrauchbarer Wert
+fällt auf die Norm (`Sondenfeldgeometrie.Bereinigt`). Gepflegt werden die Werte im Erdreichdialog (Zweig
+Erdsonde, leeres Feld = Vorgabe, der Platzhalter nennt sie) über `ErdsondenfeldCtrl`; die Spalten sind
+Fachspalten und überstehen den Speicherweg des Assistenten über dessen Rettung.
+
+### 23.4 Zweiter Feldlauf: Vorjahre aus der eigenen Last
+
+Die Last der Vorjahre ist unbekannt, bevor der Lauf rechnet. Deshalb rechnet ein Projekt mit
+Sondenfeld den Simulationsdurchgang (`SimulationControl.Do_Simulation_Intern`) zweimal:
+
+1. **Erster Lauf** mit einer Startschätzung der Vorjahre: aus der VDI-4640-Vorprüfung der Anlage
+   (Jahresentzug = Σ Q_N · (1 − 1/COP) · Volllaststunden der Klimazone), nach Heizgradstunden der
+   Außentemperatur (Heizgrenze 15 °C) auf zwölf Monatsblöcke verteilt; ohne Vorprüfung (kein
+   Normpunkt, keine Klimazone) ohne Vorjahre. Der Lauf sammelt je Feld die stündliche Nettolast
+   q_V,i = Entzug minus Rückspeisung (Abschnitt 23.5).
+2. **Zweiter Lauf** über denselben Durchgang: Die n − 1 Vorjahre tragen genau diese Stundenlast,
+   das Rechenjahr ist Jahr n. Das gilt auch für Projekte ohne Klimazone.
+
+Weil alle Vorjahre dieselbe Reihe tragen, fassen sich ihre Pulsantworten zu einem Kern über
+Stundenabstände m = −8760 … 8758 zusammen, und der Beitrag der Vorjahre ist eine einzige Faltung
+über ein Jahr:
+
+(6) S(m) = Σ_{y=1}^{n−1} [G(m + 1 + 8760y) − G(m + 8760y)]
+
+(7) ΔT_V(t) = Σ_{i=0}^{8759} q_V,i · S(t − 1 − i)
+
+- **Keine Aggregation:** (7) ist stundengenau und kostet 8760² ≈ 77 Mio. Multiplikationen je Feld,
+  gemessen rund 50 ms. Monats- oder Tagesblöcke der Vorjahre sparen dagegen nichts, was zählt, und
+  verschmieren die Stundenspitzen der letzten Vorjahreswochen vor dem Rechenjahr.
+- **Wo der zweite Lauf ansetzt:** am ganzen Durchgang nach Wärme- und Strombedarf, die unverändert
+  bleiben. Die Wärmepumpe rechnet in der Stundenschleife der Speicherstufe zusammen mit Speichern,
+  Kessel und BHKW; ein Durchgang nur der Wärmepumpe hätte keinen eigenen Zustand. Der Durchgang ist
+  wiederholbar: Mit erzwungenem zweitem Lauf rechnen alle Projekte der Referenzbasis byte-gleich.
+- **Protokoll:** Die Meldungen des ersten Laufs verwirft der Lauf (`SimulationProtokoll.Merken`,
+  `ZuruecksetzenAuf`); stehen bleiben die des zweiten. Die Zeile je Feld nennt Betrachtungsjahr,
+  Zahl der Vorjahre, Jahresentzug und Rückspeisung der Vorjahreslast.
+- **Rechenzeit Projekt 1029:** 511 ms mit einem, 705 ms mit zwei Feldläufen (warmer Prozess, ganzer
+  `Simuliere`-Aufruf samt Bedarf); im kalten Prozess 1045 ms gegen 1310 ms.
+
+### 23.5 Regeneration
+
+Kühlwärme, die eine Wärmepumpe mit Erdreichquelle im Kühlbetrieb abgibt, geht als negative Last in
+das Feld ihrer Anlage:
+
+(8) Q_R,h = Σ_e [Q_K,e,h + P_e,h / (1 + h_e)]
+
+mit der gedeckten Kälte Q_K (Verdichter und freie Kühlung über die Sole), dem Kältestrom P samt
+Hilfsstromzuschlag und dem Hilfsstromanteil h (`Kuehl_Hilfsstromanteil`); P / (1 + h) ist die
+Verdichterarbeit, bei freier Kühlung die Pumpenarbeit. Gezählt werden die Kälteerzeuger e, deren
+Modul am Feld hängt (`Tab_WP.Kuehlbetrieb` gesetzt, Kühlkennlinie im Projekt). Weil die
+Kältekaskade nach der Wärmekaskade rechnet, liefert der erste Lauf Q_R; der zweite meldet sie in
+jeder Stunde mit dem Entzug, q_i = (Entzug_i − Q_R,i) / (N·H), und die Vorjahre tragen die
+Nettolast (Gl. 7). Die Kälteseite des zweiten Laufs liest ihre Quelltemperatur aus diesem Feld.
+
+Kältemaschinen speisen nicht ins Erdreich: Ihre Rückkühlung (Luft, Trocken-, Nass- oder
+Wasserkühlwerk) arbeitet gegen die Umgebung. Ein Projekt ohne Kühlbetrieb rechnet bitgleich wie
+ohne Regeneration.
+
+### 23.6 Vorschau im Erdreichdialog
+
+Die Vorschau zeigt die ungestörte Erdreichtemperatur T_u (Gl. 5) als Linie; der Hinweis darunter sagt,
+dass die Soletemperatur im Lauf mit dem Entzug sinkt und ihr Verlauf im Ergebnis steht. Den Verlauf
+des letzten Laufs zeigt der Dialog nicht.
+
+### 23.7 Erdreichquellen der Referenzprojekte
+
+- Die Sole-Wärmepumpen der Referenzprojekte 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 (dazu
+  die Beispielprojekte 1019 und 1027) führen `WQ_Typ` = Erdreich mit einer Sonde in Mergel/Lehm,
+  ausgelegt nach VDI 4640 Blatt 2: spezifische Entzugsleistung nach Tabelle B2 (λ des Bodens) mit
+  Energiegrenze, Länge = Entzugsleistung / (q_spez · N), N so, dass H zwischen 60 und 120 m liegt;
+  ihre Klimaregion liegt in Klimazone 6. Die Saat steht in
+  `Referenzlaeufe/Skripte/erdreichquellen_referenzprojekte.py`.
+- Das Sonden-Referenzprojekt 1057 ist eine Kopie von 1029 (4 Sonden zu 90 m, Mergel/Lehm,
+  Klimazone 6), gehalten von `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests`.
+- Einfrierregel „gesäte Erdreichquellen der Referenzprojekte“: die Quellfelder und Sondenfeldspalten
+  der Referenzanlagen, die Klimazone, der Bodenkatalog, die Normgeometrie und die Festwerte der
+  Klasse `Erdsondenfeld` sowie das Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
+- Wirkung in der Basis `2026-10-07_R40_Erdreichquellen`: Bei den Kühlprojekten 1047 und 1056 steigt
+  die JAZ (3,86 → 4,45 bzw. 3,73 → 4,33), die Kälte-EER mit ihr (4,6 → 5,2). Bei den
+  Grundlastanlagen 1008 und 1039 fällt sie (4,15 → 3,94 bzw. 3,25 → 3,06), weil das Erdreich unter
+  der Last der Sonde auskühlt (Sole im Mittel 4,5 bzw. 1,0 °C gegen 9,9 °C Außenluft). Bei 1023 und
+  1050 bleibt sie praktisch gleich (2,38). 1057 rechnet JAZ 3,07 bei 22,12 MWh Strom. Die
+  Erdreichprüfung führt je Projekt einen Block `Erdreich[n].*`; die Kältemaschine von 1055 bleibt
+  unberührt.
