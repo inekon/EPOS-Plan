@@ -1,6 +1,6 @@
 # Konzept: Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur (Anlagenkopplung)
 
-> **Stand 07.10.2026 — AK3 wie gebaut (W0–W4b), W5/W6 offen.** Gebaut sind der Gebäude-Stepper, die Kaskadenstunde mit Bedarfsnaht, die Interpolation über den Vorlauf (AK3-I, Schalter aus), der geschlossene Kreis im Kern, die Stufe in der Projekteinstellung, der Raumeinfluss der Heizkurve (H2) und die Oberfläche samt Bericht (Status #796, #799, #804). Offen sind Referenzprojekt und neue Basis (W5) sowie das Wiki mit Logbuch (W6, Quellen und Entwürfe liegen). Abweichungen der Umsetzung vom Entwurf stehen in 6.3, 10.6 und 11.2.
+> **Stand 07.10.2026 — AK3 wie gebaut: W0–W5 gebaut, Basis R42; W6 Papiere gebaut, offen: Sichtabnahme unter Windows, AK3-K (Kälteseite).** Gebaut sind der Gebäude-Stepper, die Kaskadenstunde mit Bedarfsnaht, die Interpolation über den Vorlauf (AK3-I, gilt ohne Schalter), der geschlossene Kreis im Kern, die Stufe in der Projekteinstellung, der Raumeinfluss der Heizkurve (H2) und die Oberfläche samt Bericht (Status #796, #799, #804), dazu Referenzprojekt, Basis R42 und Komfortkennzahlen auf AK3 (W5) sowie Wiki-Quellen und Logbuch-Entwürfe (W6). Abweichungen der Umsetzung vom Entwurf stehen in 6.3, 10.6 und 11.2.
 
 > **Nachgezogen 07.10.2026 — Entscheide E100 und E102** ([Register](Status_Gebaeudesimulation_VDI6007.md)): AK3 wird jetzt gebaut (E100; H6 aufgehoben), nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) mit den Antworten E102. AK3 ist eine **eigene, wählbare Stufe** (Vorgabe AK1), die Kaskade wird **befragt, nicht zurückgenommen**, die Interpolation der Wärmepumpenkennlinie über den Vorlauf ist der eigene Gegenstand **AK3-I** (H-F4 abgelöst). Kapitel 0, 6.3, 11.2, 12, 13 und 14 tragen diesen Stand; Architektur, Festlegungen und Wellenplan stehen im Entwurf.
 
@@ -1171,7 +1171,9 @@ leer oder 0 = aus); Vorlauf = Heizkurve + k_R × Unterschreitung der kältesten 
 gekappt am Auslegungsvorlauf und an `Vorlauf_Max`; wirkt nur in Stufe AK3. **Interpolation der
 Wärmepumpenkennlinie über den Vorlauf** (Wärme- und Kälteseite, AK3-I): gilt, ohne Schalter; zwischen zwei Stützstellen linear im
 Vorlauf, auf einer Stützstelle und außerhalb wie die Stützstellenwahl (Entwurf AK3 3, I-1 bis I-5;
-Normstelle: EPOS-Lesart in Anlehnung an VDI 4650 Blatt 1 (Ausgabe 2024) Abschnitt 5 und DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6; Q-AK3-I1 beantwortet 07.10.2026 (Normtext geprüft); das Halten über der obersten Stützstelle benennt der Lauf je Gerät).
+Normstelle: EPOS-Lesart in Anlehnung an VDI 4650 Blatt 1 (Ausgabe 2024) Abschnitt 5 und DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6; Q-AK3-I1 beantwortet 07.10.2026 (Normtext geprüft); das Halten über der obersten Stützstelle benennt der Lauf je Gerät). **Komfortkennzahlen auf AK3 (W5):** Ergebnis und
+Bericht zeigen Unterschreitungsstunden, Kelvinstunden und längste Strecke (Kühlseite Überschreitungsstunden und Kelvinstunden) auch
+auf Stufe AK3; `Fahrplan_Begrenzt_Stunden` bleibt dort leer, die Entsprechung sind die Stunden an der Schranke (`Ak3_Schranke_Stunden`).
 
 ### 6.4 Was nichts davon berührt
 
