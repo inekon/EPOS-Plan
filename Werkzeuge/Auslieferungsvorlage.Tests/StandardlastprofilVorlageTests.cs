@@ -14,10 +14,9 @@ namespace Auslieferungsvorlage.Tests
     /// Das Werkzeug läuft ohne die beiden benannten Ausnahmen durch, die ReadOnly-Bilanz zählt je drei gesperrte Sätze,
     /// das Katalogpaket führt sie mit dem Schlüssel aus dem Namen, und die Vorlage trägt sie gesperrt.
     ///
-    /// <para><b>Phase 1:</b> Die Testdatenbank trägt die Sätze noch nicht; der Fall sät sie auf einer KOPIE und nimmt die
-    /// beiden Stromtabellen nur für diesen Lauf aus der Liste <see cref="Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK"/>.
-    /// Phase 2 (Testdatenbank auf dem Schritt) streicht sie dort und in der Liste des CI-Laufs (<c>windows.yml</c>, Job
-    /// <c>installer</c>); dann prüft dieser Fall die Testdatenbank selbst.</para>
+    /// <para>Die Testdatenbank steht auf dem Schritt und trägt die Sätze selbst; die beiden Stromtabellen stehen deshalb
+    /// weder in <see cref="Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK"/> noch in der Liste des CI-Laufs
+    /// (<c>windows.yml</c>, Job <c>installer</c>). Der Fall läuft auf einer unveränderten Kopie der Testdatenbank.</para>
     /// </summary>
     [Collection("Auslieferungsvorlage")]
     public sealed class StandardlastprofilVorlageTests
@@ -31,13 +30,11 @@ namespace Auslieferungsvorlage.Tests
             using var o = new Arbeitsordner();
             string quelle = o.Datei("quelle.sqlite");
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
-            Bearbeiten(quelle, () => Assert.Equal(3, StandardlastprofilSchema.Ausfuehren(null).KoepfeGesaet));
+            Lesen(quelle, () => Assert.True(StandardlastprofilSchema.Vollstaendig(), "Die Testdatenbank traegt die BDEW-Saetze nicht."));
 
-            Assert.All(STROM, t => Assert.Contains(t, Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK));
-            string[] ausnahmen = Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK.Where(t => !STROM.Contains(t))
-                                            .SelectMany(t => new[] { "--ohne-paket", t }).ToArray();
+            Assert.All(STROM, t => Assert.DoesNotContain(t, Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK));
             string ziel = o.Datei("Kenndaten.sqlite");
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(new[] { quelle, ziel }.Concat(ausnahmen).ToArray());
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
             Assert.True(e.Code == 0, e.Alles);
             foreach (string t in STROM)
                 Assert.DoesNotContain("leerer Paketteil " + t, e.Ausgabe, StringComparison.Ordinal);
@@ -77,24 +74,6 @@ namespace Auslieferungsvorlage.Tests
         {
             object w = DataRepository.ExecuteScalar(sql, p);
             return w == null || w == DBNull.Value ? 0 : Convert.ToInt64(w, CultureInfo.InvariantCulture);
-        }
-
-        private static void Bearbeiten(string datei, Action aktion)
-        {
-            string vorher = DataRepository.PfadUeberschreibung;
-            Func<bool> schreibrecht = Schreibnaht.Schreibrecht;
-            try
-            {
-                DataRepository.PfadUeberschreibung = datei;
-                Schreibnaht.WerkzeugFreigabe("Auslieferungsvorlage.Tests (Standardlastprofile saeen)");
-                aktion();
-            }
-            finally
-            {
-                DataRepository.PfadUeberschreibung = vorher;
-                Schreibnaht.Schreibrecht = schreibrecht;
-                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
-            }
         }
 
         private static void Lesen(string datei, Action aktion)
