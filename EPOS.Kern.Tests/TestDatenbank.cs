@@ -971,6 +971,8 @@ namespace EPOS.Kern.Tests
                 // Schritt StandardlastprofilPvSchema.SCHRITT (SLP25b): die BDEW-Netzbezugsprofile P25 und S25 als gesperrte
                 // Saetze der Datenbank Strombedarf, Katalogschluessel und Pruefsumme. Wiederholbar.
                 StandardlastprofilPvSchema.Ausfuehren(null);
+                // Schritt FlaechenherkunftSchema.SCHRITT (G5-0): Tab_Bauteil.Flaechenherkunft, leer. Wiederholbar.
+                FlaechenherkunftSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

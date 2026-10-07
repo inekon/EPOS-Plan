@@ -3086,6 +3086,25 @@ namespace Testdatenbankschema
                                   StandardlastprofilPvSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt FlaechenherkunftSchema.SCHRITT (G5-0): Tab_Bauteil.Flaechenherkunft, der Weg der importierten
+            //      Bauteilflaeche (MENGENSATZ, RAUMGRENZE, KOERPER, SCHEMATISCH). Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Flaechenherkunft bedient. Reines ADD COLUMN, wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalte entsteht leer, der Rechenweg liest sie nicht.
+            string nrFlaechenherkunft = FlaechenherkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFlaechenherkunft + " - Herkunft der Bauteilflaeche: " +
+                              (FlaechenherkunftSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtFlaechenherkunft = new List<string>();
+                angelegt += FlaechenherkunftSchema.Ausfuehren(berichtFlaechenherkunft);
+                foreach (string zeile in berichtFlaechenherkunft)
+                    Console.WriteLine("Schritt " + nrFlaechenherkunft + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFlaechenherkunft + " - vollstaendig: " +
+                                  FlaechenherkunftSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
