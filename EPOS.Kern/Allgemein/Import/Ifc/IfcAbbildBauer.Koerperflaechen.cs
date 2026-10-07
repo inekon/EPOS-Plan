@@ -76,6 +76,7 @@ namespace WindowsFormsApplication1
                     Koerperflaechenergebnis e = KF.Zuordnen(raeume, koerper, b.DickeM, innen);
                     if (e.Stuecke.Count == 0) continue;
                     bauteile++;
+                    double[] massgeblich = b.Koerperflaeche?.Teile.FirstOrDefault()?.Normale;
                     foreach (Koerperflaechenstueck s in e.Stuecke)
                     {
                         b.Grenzen.Add(new AbbildGrenze
@@ -84,6 +85,9 @@ namespace WindowsFormsApplication1
                             FlaecheM2 = s.FlaecheM2, SchwerpunktM = s.SchwerpunktM, Normale = s.Normale,
                             GegenstueckKennung = s.Gegenschluessel == null ? null : b.Kennung + "|KF|" + s.Gegenschluessel,
                             Herkunft = Grenzherkunft.Bauteilkoerper,
+                            NeigungGrad = Math.Round(IfcBauteilkoerper.Neigung(s.Normale), 6),
+                            AzimutGrad = IfcBauteilkoerper.Azimut(s.Normale, _drehung) is double az ? Math.Round(az, 6) : (double?)null,
+                            Gegenseite = massgeblich != null && KF.Punkt(massgeblich, s.Normale) < 0.0,
                         });
                         flaechen++;
                         summe += s.FlaecheM2;
@@ -116,6 +120,20 @@ namespace WindowsFormsApplication1
                             _zuordnungAbweichungen.Add((b.Art, string.IsNullOrWhiteSpace(b.Name) ? b.Kennung : b.Name.Trim(), abweichung));
                     }
                 }
+                // Die Trennflächen koppeln die Räume wie Flächenpaare der Raumkörper; über Geschosse hinweg die Geschosse.
+                var paare = new List<(string Unten, string Oben)>();
+                var geschossJeRaum = g.Raeume.GroupBy(r => r.Kennung, StringComparer.Ordinal).ToDictionary(x => x.Key, x => x.First().GeschossKennung, StringComparer.Ordinal);
+                foreach (AbbildBauteil b in g.Bauteile)
+                    foreach (AbbildGrenze x in b.Grenzen.Where(x => x.Herkunft == Grenzherkunft.Bauteilkoerper && x.GegenstueckKennung != null))
+                    {
+                        AbbildGrenze y = b.Grenzen.FirstOrDefault(z => z.Kennung == x.GegenstueckKennung);
+                        if (y == null) continue;
+                        g.KoerperpaareGebildet = true;
+                        string gx = geschossJeRaum.TryGetValue(x.RaumKennung, out string a) ? a : null, gy = geschossJeRaum.TryGetValue(y.RaumKennung, out string c) ? c : null;
+                        if (gx != null && gy != null && gx != gy) paare.Add((gx, gy));
+                    }
+                List<string> warm = g.Raeume.Where(r => r.Beheizt && r.GeschossKennung != null).Select(r => r.GeschossKennung).Distinct(StringComparer.Ordinal).ToList();
+                g.KoerperflaechenGekoppelt = warm.Count > 1 && Gekoppelt(warm, paare);
                 if (bauteile > 0)
                     g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPERFLAECHEN", g.Anzeigename, Ganz(bauteile), Ganz(flaechen),
                         Zahl(Math.Round(summe, 2))));

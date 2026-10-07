@@ -413,13 +413,17 @@ namespace WindowsFormsApplication1
             => a.Min(p => p[0]) < b.Max(p => p[0]) - 1e-9 && b.Min(p => p[0]) < a.Max(p => p[0]) - 1e-9
                && a.Min(p => p[1]) < b.Max(p => p[1]) - 1e-9 && b.Min(p => p[1]) < a.Max(p => p[1]) - 1e-9;
 
-        /// <summary>Sutherland–Hodgman: ein konvexes Vieleck gegen ein konvexes Vieleck, beide gegen den Uhrzeigersinn.</summary>
+        /// <summary>
+        /// Sutherland–Hodgman: ein konvexes Vieleck gegen ein konvexes Vieleck, beide gegen den Uhrzeigersinn. Kanten der Klinge
+        /// unter 1e-9 m bleiben unbeachtet (ihre Richtung ist Rundungsrauschen), das Ergebnis ohne doppelte Folgepunkte.
+        /// </summary>
         private static List<double[]> Klippen(List<double[]> subjekt, List<double[]> klinge)
         {
             var aus = new List<double[]>(subjekt);
             for (int k = 0; k < klinge.Count && aus.Count > 0; k++)
             {
                 double[] a = klinge[k], b = klinge[(k + 1) % klinge.Count];
+                if (Math.Abs(b[0] - a[0]) + Math.Abs(b[1] - a[1]) < 1e-9) continue;
                 double Seite(double[] p) => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
                 List<double[]> ein = aus;
                 aus = new List<double[]>();
@@ -435,7 +439,12 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
-            return aus;
+            var ohne = new List<double[]>(aus.Count);
+            foreach (double[] p in aus)
+                if (ohne.Count == 0 || Math.Abs(p[0] - ohne[ohne.Count - 1][0]) + Math.Abs(p[1] - ohne[ohne.Count - 1][1]) >= 1e-9) ohne.Add(p);
+            while (ohne.Count > 1 && Math.Abs(ohne[0][0] - ohne[ohne.Count - 1][0]) + Math.Abs(ohne[0][1] - ohne[ohne.Count - 1][1]) < 1e-9)
+                ohne.RemoveAt(ohne.Count - 1);
+            return ohne;
         }
 
         /// <summary>Liegt <paramref name="p"/> im konvexen Vieleck (gegen den Uhrzeigersinn, Rand eingeschlossen bis 1 mm)?</summary>

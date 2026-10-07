@@ -1440,7 +1440,10 @@ namespace WindowsFormsApplication1
             {
                 AbbildBauteil s = f.Bauteil;
                 Bauteilrand rand = ZonenrandAus(f.Rand);
-                bool gespiegelt = Gespiegelt(s, f.Raum);
+                // Körperweg (G5-3): die Seite des Raums trägt Orientierung und Spiegelung selbst.
+                AbbildGrenze seite = f.Raum == null ? null
+                    : s.Grenzen.FirstOrDefault(x => x.Herkunft == Grenzherkunft.Bauteilkoerper && x.RaumKennung == f.Raum && x.NeigungGrad.HasValue);
+                bool gespiegelt = seite?.Gegenseite ?? Gespiegelt(s, f.Raum);
                 bool? boden = GebaeudeHuelleneinordnung.IstWaagerechteArt(s.Art) ? Boden(s, f.Raum, f.AndererRaum) : null;
                 string feld = Summenfeld(rand, s.Art, boden);
                 int? nachbar = f.Rand == Zonenrand.Zone ? _v._zonen[f.Nachbarzone].ID : (int?)null;
@@ -1450,30 +1453,30 @@ namespace WindowsFormsApplication1
                     _v._meldungen.Add(new PruefMeldung(PruefStufe.Fehler, _profil.Meldung("NETTOFLAECHE_NEGATIV"),
                         s.Kennung, Zahl(f.GroessereM2 ?? 0.0), Zahl(f.AusschnittM2 > 0.0 ? f.AusschnittM2 : f.Oeffnungen.Sum(o => o.BruttoflaecheM2 ?? 0.0))));
                 if (!netto.HasValue) _ohneFlaeche.Add(s.Kennung);
-                else if (netto.Value > 0.0) Teilzeile(s, netto.Value, rand, nachbar, gespiegelt, boden, feld, f.Flaechenherkunft);
+                else if (netto.Value > 0.0) Teilzeile(s, netto.Value, rand, nachbar, gespiegelt, boden, feld, f.Flaechenherkunft, seite);
                 else Entfallen(s);
 
                 foreach (AbbildBauteil o in f.Oeffnungen)
                 {
                     if (o.Art != Bauteilart.Fenster && o.Art != Bauteilart.Tuer) continue;
                     if (!(o.BruttoflaecheM2 > 0.0)) { _ohneFlaeche.Add(o.Kennung); continue; }
-                    Oeffnungszeile(s, o, rand, nachbar, gespiegelt);
+                    Oeffnungszeile(s, o, rand, nachbar, gespiegelt, seite);
                 }
             }
 
             private void Teilzeile(AbbildBauteil s, double flaeche, Bauteilrand rand, int? nachbar, bool gespiegelt, bool? boden, string feld,
-                                   Flaechenherkunft? weg)
+                                   Flaechenherkunft? weg, AbbildGrenze seite = null)
             {
                 Bauteilart art = s.Art;
                 bool transparent = art == Bauteilart.Vorhangfassade;
                 if (transparent && rand == Bauteilrand.Erdreich) { rand = Bauteilrand.Aussenluft; _fensterErdreich++; }
-                (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
+                (double? neigung, Importherkunft hn) = seite != null ? Neigung(seite.NeigungGrad, false) : Neigung(s.NeigungGrad, gespiegelt);
                 if (!neigung.HasValue && boden.HasValue)
                 {
                     neigung = boden.Value ? GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_UNTEN : GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_OBEN;
                     hn = _datei;
                 }
-                (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
+                (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(s.AzimutGrad, gespiegelt);
                 GebaeudeBauteilzeile z = NeueZeile(Name(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
@@ -1503,12 +1506,12 @@ namespace WindowsFormsApplication1
                 return r == null || string.IsNullOrWhiteSpace(r.Name) ? kennung : r.Name.Trim();
             }
 
-            private void Oeffnungszeile(AbbildBauteil wirt, AbbildBauteil o, Bauteilrand rand, int? nachbar, bool gespiegelt)
+            private void Oeffnungszeile(AbbildBauteil wirt, AbbildBauteil o, Bauteilrand rand, int? nachbar, bool gespiegelt, AbbildGrenze seite = null)
             {
                 bool fenster = o.Art == Bauteilart.Fenster;
                 if (fenster && rand == Bauteilrand.Erdreich) { rand = Bauteilrand.Aussenluft; _fensterErdreich++; }
-                (double? neigung, Importherkunft hn) = Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
-                (double? azimut, Importherkunft ha) = Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
+                (double? neigung, Importherkunft hn) = seite != null ? Neigung(seite.NeigungGrad, false) : Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
+                (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
                 string feld = fenster ? GebaeudeZielfelder.FENSTER_GESAMT : GebaeudeZielfelder.FLAECHE_SONSTIGE;
                 GebaeudeBauteilzeile z = NeueZeile(Name(o), o.Art, o.BruttoflaecheM2.Value, rand, feld, o.Quelltyp, o.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
