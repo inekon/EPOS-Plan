@@ -230,9 +230,11 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(Flaechenherkunft.Mengensatz, b.Flaechenherkunft);
                 Nah(koerper, b.Koerperflaeche.FlaecheM2, FLAECHE_TOL, name);
             }
-            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNG");
-            Assert.Equal(PruefStufe.Warnung, m.Stufe);
-            Assert.Equal(new[] { "Wand Nord", "26.25", "25", "4.8", "2" }, m.Werte);
+            // G5-N: 4,8 % liegt unter der Grenze der Einzelwarnung (25 %) — nur die Zusammenfassung der Außenwände.
+            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNG");
+            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNGEN_AUSSENWAND");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "1", "4.8", "4.8", "Wand Nord", "2" }, m.Werte);
             Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "FLAECHE_KOERPER");
         }
 
@@ -322,12 +324,61 @@ namespace EPOS.Kern.Tests
 
             // Verglichen wird der Körper mit der Summe der drei Mengensätze (brutto 240, netto 228): keine Abweichung.
             Assert.DoesNotContain(a.Meldungen, m => m.Schluessel == P + "KOERPER_ABWEICHUNG_TEILE");
-            PruefMeldung teile = Assert.Single(a.Meldungen, m => m.Schluessel == P + "KOERPER_TEILE");
-            Assert.Equal(new[] { "1", "Dach A" }, teile.Werte);
+            PruefMeldung teile = Assert.Single(a.Meldungen, m => m.Schluessel == P + "KOERPER_TEILE_DACH");
+            Assert.Equal(new[] { "1" }, teile.Werte);
 
-            // Ohne Teile bleibt der Einzelvergleich: Dach B 41 m² gegen 40 m² aus dem Kasten.
-            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNG");
-            Assert.Equal(new[] { "Dach B", "41", "40", "2.4", "2" }, m.Werte);
+            // Ohne Teile bleibt der Einzelvergleich: Dach B 41 m² gegen 40 m² aus dem Kasten — 2,4 % nur in der
+            // Zusammenfassung der Dächer (G5-N), keine Einzelwarnung unter 25 %.
+            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNG");
+            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNGEN_DACH");
+            Assert.Equal(new[] { "1", "2.4", "2.4", "Dach B", "2" }, m.Werte);
+        }
+
+        // ==================================================================
+        //  Probe: Abweichungshaus — Zusammenfassung je Bauteilart, Einzelwarnung ab 25 % (G5-N)
+        // ==================================================================
+
+        [Fact]
+        public void Abweichungen_je_Bauteilart_zusammengefasst_Einzelwarnung_erst_ab_25_Prozent()
+        {
+            GebaeudeImportAblauf a = Lesen("ifc4_g5_abweichungen.ifc");
+            foreach ((string name, double menge) in new[] { ("Wand Süd", 26.5), ("Wand Ost", 21.0), ("Wand Nord", 35.0), ("Wand West", 20.2) })
+            {
+                AbbildBauteil b = Bauteil(a, name);
+                Nah(menge, b.BruttoflaecheM2, 1e-12, name);
+                Assert.Equal(Flaechenherkunft.Mengensatz, b.Flaechenherkunft);
+            }
+
+            // Drei Außenwände über 2 % (4,8 %, 5,7 %, 28,6 %): Median 5,7 %, größte Wand Nord; West (1,0 %) bleibt still.
+            PruefMeldung summe = Assert.Single(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNGEN_AUSSENWAND");
+            Assert.Equal(PruefStufe.Info, summe.Stufe);
+            Assert.Equal(new[] { "3", "5.7", "28.6", "Wand Nord", "2" }, summe.Werte);
+
+            // Einzeln gewarnt wird nur Wand Nord (≥ 25 %), mit der Grenze der Einzelwarnung.
+            PruefMeldung w = Assert.Single(a.Meldungen, x => x.Schluessel == P + "KOERPER_ABWEICHUNG");
+            Assert.Equal(PruefStufe.Warnung, w.Stufe);
+            Assert.Equal(new[] { "Wand Nord", "35", "25", "28.6", "25" }, w.Werte);
+            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel.StartsWith(P + "KOERPER_ABWEICHUNGEN_", StringComparison.Ordinal)
+                                                    && x.Schluessel != P + "KOERPER_ABWEICHUNGEN_AUSSENWAND");
+        }
+
+        [Theory]
+        [InlineData(new[] { 0.05 }, 0.05)]
+        [InlineData(new[] { 0.3, 0.05, 0.07 }, 0.07)]
+        [InlineData(new[] { 0.08, 0.04, 0.06, 0.5 }, 0.07)]
+        public void Median_ungerade_mittlerer_Wert_gerade_Mittel_der_beiden(double[] werte, double median)
+            => Nah(median, IfcAbbildBauer.Median(werte), 1e-12);
+
+        [Fact]
+        public void Koerpergruppen_Aussenwand_Innenwand_Dach_Boden_und_Decke_sonstige()
+        {
+            Assert.Equal(0, IfcAbbildBauer.Koerpergruppe(Bauteilart.Aussenwand));
+            Assert.Equal(1, IfcAbbildBauer.Koerpergruppe(Bauteilart.Innenwand));
+            Assert.Equal(2, IfcAbbildBauer.Koerpergruppe(Bauteilart.Dach));
+            Assert.Equal(3, IfcAbbildBauer.Koerpergruppe(Bauteilart.Decke));
+            Assert.Equal(3, IfcAbbildBauer.Koerpergruppe(Bauteilart.Bodenplatte));
+            Assert.Equal(4, IfcAbbildBauer.Koerpergruppe(Bauteilart.Vorhangfassade));
+            Assert.Equal(4, IfcAbbildBauer.Koerpergruppe(Bauteilart.Sonstiges));
         }
 
         [Fact]

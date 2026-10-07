@@ -84,6 +84,95 @@ namespace WindowsFormsApplication1
             return Math.Max(0.0, netto);
         }
 
+        /// <summary>
+        /// Die Toleranz der Aussparung [m]: Liegt die Mitte einer Öffnung näher als diese an einem Dreieck der Wirtsebene,
+        /// gilt sie als bedeckt (nicht ausgespart).
+        /// </summary>
+        internal const double AUSSPARUNG_TOLERANZ_M = 0.01;
+        /// <summary>
+        /// Der größte Abstand [m] der Öffnungsmitte von den Ebenen der maßgeblichen Wirtsfläche (längs ihrer Normalen) —
+        /// weiter weg liegt die Öffnung nicht in dieser Fläche (etwa im anderen Schenkel einer gegliederten Wand).
+        /// </summary>
+        internal const double AUSSPARUNG_ABSTAND_M = 0.5;
+
+        /// <summary>
+        /// <b>Ist die Öffnung im Körper des Wirts schon ausgespart?</b> (G5-N) Die Mitte <paramref name="mitte"/> der Öffnung
+        /// wird längs der Wirtsnormalen <paramref name="n"/> auf die Dreiecke der Wirtskörper projiziert, deren Normale unter
+        /// 5° parallel zu <paramref name="n"/> liegt (beide Seiten). Ausgespart ist sie, wenn ihre Mitte im Umriss dieser
+        /// Dreiecke liegt (Toleranz <see cref="AUSSPARUNG_TOLERANZ_M"/>), höchstens <see cref="AUSSPARUNG_ABSTAND_M"/> vor
+        /// oder hinter ihren Ebenen, und kein Dreieck sie bedeckt — eine Fläche mit innerer Begrenzung (<c>IfcFaceBound</c>)
+        /// oder ein Profil mit Löchern (<c>IfcArbitraryProfileDefWithVoids</c>). Ohne Körper, Normale oder Mitte: nein.
+        /// </summary>
+        internal static bool Ausgespart(IEnumerable<Dateikoerper> wirt, double[] n, double[] mitte)
+        {
+            if (wirt == null || n == null || mitte == null) return false;
+            double betragN = Math.Sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+            if (betragN <= 1e-12) return false;
+            double[] e = { n[0] / betragN, n[1] / betragN, n[2] / betragN };
+            double[] hilfe = Math.Abs(e[2]) < 0.9 ? new[] { 0.0, 0.0, 1.0 } : new[] { 1.0, 0.0, 0.0 };
+            double[] u = Einheit(Kreuz(hilfe, e)), v = Kreuz(e, u);
+            double grenze = Math.Cos(IfcBauteilkoerper.ZUSAMMENFASSEN_GRAD * Math.PI / 180.0);
+            double pu = Punkt(mitte, u), pv = Punkt(mitte, v), ps = Punkt(mitte, e);
+            double umin = double.PositiveInfinity, umax = double.NegativeInfinity, vmin = double.PositiveInfinity, vmax = double.NegativeInfinity;
+            double smin = double.PositiveInfinity, smax = double.NegativeInfinity;
+            bool gefunden = false, bedeckt = false;
+            foreach (Dateikoerper k in wirt)
+            {
+                if (k == null) continue;
+                foreach (int[] d in k.Dreiecke)
+                {
+                    double[] a = Flaechenvektor(k, d);
+                    double betrag = Math.Sqrt(Punkt(a, a));
+                    if (betrag <= 1e-12 || Math.Abs(Punkt(a, e)) / betrag < grenze) continue;
+                    var ecken = new double[3][];
+                    for (int i = 0; i < 3; i++)
+                    {
+                        double[] q = k.PunkteM[d[i]];
+                        ecken[i] = new[] { Punkt(q, u), Punkt(q, v) };
+                        umin = Math.Min(umin, ecken[i][0]); umax = Math.Max(umax, ecken[i][0]);
+                        vmin = Math.Min(vmin, ecken[i][1]); vmax = Math.Max(vmax, ecken[i][1]);
+                        double sq = Punkt(q, e);
+                        smin = Math.Min(smin, sq); smax = Math.Max(smax, sq);
+                    }
+                    gefunden = true;
+                    if (!bedeckt && AbstandZumDreieck(pu, pv, ecken) <= AUSSPARUNG_TOLERANZ_M) bedeckt = true;
+                }
+            }
+            if (!gefunden || bedeckt) return false;
+            const double T = AUSSPARUNG_TOLERANZ_M;
+            return pu >= umin - T && pu <= umax + T && pv >= vmin - T && pv <= vmax + T
+                   && ps >= smin - AUSSPARUNG_ABSTAND_M && ps <= smax + AUSSPARUNG_ABSTAND_M;
+        }
+
+        /// <summary>Der Abstand eines Punkts der Ebene vom Dreieck <paramref name="ecken"/> [m]; 0 = innen oder auf dem Rand.</summary>
+        private static double AbstandZumDreieck(double x, double y, double[][] ecken)
+        {
+            double Seite(double[] p, double[] q) => (q[0] - p[0]) * (y - p[1]) - (q[1] - p[1]) * (x - p[0]);
+            double s0 = Seite(ecken[0], ecken[1]), s1 = Seite(ecken[1], ecken[2]), s2 = Seite(ecken[2], ecken[0]);
+            if ((s0 >= 0 && s1 >= 0 && s2 >= 0) || (s0 <= 0 && s1 <= 0 && s2 <= 0)) return 0.0;
+            double best = double.PositiveInfinity;
+            for (int i = 0; i < 3; i++)
+            {
+                double[] p = ecken[i], q = ecken[(i + 1) % 3];
+                double dx = q[0] - p[0], dy = q[1] - p[1], l2 = dx * dx + dy * dy;
+                double t = l2 <= 1e-24 ? 0.0 : Math.Max(0.0, Math.Min(1.0, ((x - p[0]) * dx + (y - p[1]) * dy) / l2));
+                double ex = p[0] + t * dx - x, ey = p[1] + t * dy - y;
+                best = Math.Min(best, Math.Sqrt(ex * ex + ey * ey));
+            }
+            return best;
+        }
+
+        private static double Punkt(double[] a, double[] b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+
+        private static double[] Kreuz(double[] a, double[] b)
+            => new[] { a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] };
+
+        private static double[] Einheit(double[] a)
+        {
+            double l = Math.Sqrt(Punkt(a, a));
+            return new[] { a[0] / l, a[1] / l, a[2] / l };
+        }
+
         /// <summary>Der doppelte Flächenvektor eines Dreiecks (b − a) × (c − a).</summary>
         private static double[] Flaechenvektor(Dateikoerper k, int[] d)
         {

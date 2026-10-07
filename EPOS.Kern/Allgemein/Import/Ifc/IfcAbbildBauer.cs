@@ -586,7 +586,16 @@ namespace WindowsFormsApplication1
         private readonly List<(AbbildBauteil Bauteil, int Gebaeude)> _teileOhneDarstellung = new List<(AbbildBauteil, int)>();
 
         private readonly List<string> _flaecheAusKoerper = new List<string>();
-        private readonly List<string> _koerperMitTeilen = new List<string>();
+        /// <summary>Die Gruppen aus Körper und Teilen ohne Darstellung, die verglichen wurden: Bauteilart je Gruppe.</summary>
+        private readonly List<Bauteilart> _koerperMitTeilen = new List<Bauteilart>();
+        /// <summary>Die Abweichungen Körper gegen Mengensatz über <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/>.</summary>
+        private readonly List<(Bauteilart Art, string Name, double Abweichung)> _koerperAbweichungen
+            = new List<(Bauteilart, string, double)>();
+        /// <summary>Körperelemente ohne Mengensatz mit Teilen ohne Darstellung: sie tragen nur den Rest neben den Teilen.</summary>
+        private readonly HashSet<AbbildBauteil> _koerperRest = new HashSet<AbbildBauteil>();
+        /// <summary>Je Fenster bzw. Tür ihre Öffnung (oder <c>null</c>) und ihr Element — für die Aussparung im Wirtskörper.</summary>
+        private readonly Dictionary<AbbildBauteil, (IIfcOpeningElement Oeffnung, IIfcElement Element)> _oeffnungsquelle
+            = new Dictionary<AbbildBauteil, (IIfcOpeningElement, IIfcElement)>();
         private readonly List<string> _koerperGegliedert = new List<string>();
         private readonly List<string> _koerperZusammengefasst = new List<string>();
         private readonly List<string> _koerperAussenUnbestimmt = new List<string>();
@@ -647,7 +656,19 @@ namespace WindowsFormsApplication1
         /// Elemente ohne Darstellung desselben Gebäudes, deren Name der des Körpers ist oder ihn um „-n“ ergänzt (HottCAD
         /// schreibt so je Raum einen Teil mit eigenem Mengensatz, der Körper trägt das ganze Bauteil), werden die Körper
         /// gegen die Summe aller Mengensätze verglichen (Meldung <c>KOERPER_ABWEICHUNG_TEILE</c>, Info
-        /// <c>KOERPER_TEILE</c>).</item>
+        /// <c>KOERPER_TEILE_*</c> je Bauteilart).</item>
+        /// <item><b>Zusammenfassung</b> (G5-N): Jede Abweichung über <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> zählt in
+        /// eine Info je Bauteilart (Außenwand, Innenwand, Dach, Boden und Decke, sonstige; <c>KOERPER_ABWEICHUNGEN_*</c>):
+        /// Anzahl, Median und größte Abweichung samt Bauteil. Eine Warnung je Bauteil steht erst ab
+        /// <see cref="IfcBauteilkoerper.EINZELWARNUNG_GRENZE"/> — CAD-Programme messen Außenwände oft nach Außenmaß und
+        /// Innenwände in der Achse, der Körper zeigt die Wandseite; die üblichen Abweichungen von wenigen Prozent machten
+        /// das Protokoll sonst unlesbar.</item>
+        /// <item><b>Körper ohne Mengensatz mit Teilen</b> (G5-N): Trägt das Element mit Körper keinen eigenen Mengensatz, wohl
+        /// aber Teile ohne Darstellung derselben Gruppe, deckt der Körper das ganze Bauteil. Die Teile behalten ihre
+        /// Mengensätze (sie sind die Quelle der Rangfolge und tragen die Raumzuordnung); das Körperelement bekommt nur den
+        /// Rest max(0, Körper − Σ Brutto der Teile), auf mehrere Körper der Gruppe im Verhältnis ihrer Körperflächen
+        /// verteilt. Ein Rest bis <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> des Körpers ist Messunschärfe und wird 0
+        /// (Info <c>KOERPER_REST</c>). So zählt keine Fläche doppelt.</item>
         /// </list>
         /// Außen ist bei Wänden die Seite, die vom Gebäudeschwerpunkt weg zeigt — dem Mittel der Raumkörper des Gebäudes,
         /// ohne sie der vorgemerkten Bauteilkörper.
@@ -657,6 +678,7 @@ namespace WindowsFormsApplication1
             ILookup<(int, string, string), AbbildBauteil> teile = _teileOhneDarstellung.Where(t => t.Bauteil.Name != null)
                 .ToLookup(t => (t.Gebaeude, t.Bauteil.Quelltyp, Namensstamm(t.Bauteil.Name)), t => t.Bauteil);
             var gruppen = new Dictionary<(int, string, string), List<AbbildBauteil>>();
+            var restgruppen = new Dictionary<(int, string, string), List<AbbildBauteil>>();
             var schwerpunkte = new Dictionary<int, double[]>();
             foreach ((AbbildBauteil b, List<Dateikoerper> koerper, Bauteilkoerperart art, int gi) in _koerperVormerkung)
             {
@@ -674,8 +696,17 @@ namespace WindowsFormsApplication1
                         mitKoerper.Add(b);
                         continue;
                     }
-                    KoerperVergleichen(P + "KOERPER_ABWEICHUNG", name, new[] { b }, kf.FlaecheM2);
+                    KoerperVergleichen(P + "KOERPER_ABWEICHUNG", name, b.Art, new[] { b }, kf.FlaecheM2);
                     continue;
+                }
+                if (b.Name != null)
+                {
+                    var schluessel = (gi, b.Quelltyp, Namensstamm(b.Name));
+                    if (teile[schluessel].Any(t => t.BruttoflaecheM2.HasValue))
+                    {
+                        if (!restgruppen.TryGetValue(schluessel, out List<AbbildBauteil> ohneMenge)) restgruppen[schluessel] = ohneMenge = new List<AbbildBauteil>();
+                        ohneMenge.Add(b);
+                    }
                 }
 
                 // Der Körper liefert die Bruttofläche; die Nettofläche setzt der Abzug der Öffnungen (Oeffnungsabzug, G5-2).
@@ -711,11 +742,30 @@ namespace WindowsFormsApplication1
             {
                 List<AbbildBauteil> alle = gr.Value.Concat(teile[gr.Key]).ToList();
                 string stamm = gr.Key.Item3;
-                _koerperMitTeilen.Add(stamm);
-                KoerperVergleichen(P + "KOERPER_ABWEICHUNG_TEILE", stamm, alle, gr.Value.Sum(b => b.Koerperflaeche.FlaecheM2), alle.Count - gr.Value.Count);
+                _koerperMitTeilen.Add(gr.Value[0].Art);
+                KoerperVergleichen(P + "KOERPER_ABWEICHUNG_TEILE", stamm, gr.Value[0].Art, alle, gr.Value.Sum(b => b.Koerperflaeche.FlaecheM2),
+                                   alle.Count - gr.Value.Count);
             }
-            if (_koerperMitTeilen.Count > 0)
-                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_TEILE", Ganz(_koerperMitTeilen.Count), Beispiele(_koerperMitTeilen)));
+            // Körper ohne Mengensatz mit Teilen: der Körper deckt das ganze Bauteil, das Körperelement trägt nur den Rest.
+            var rest = new List<string>();
+            foreach (KeyValuePair<(int, string, string), List<AbbildBauteil>> gr in restgruppen)
+            {
+                double koerper = gr.Value.Sum(b => b.Koerperflaeche.FlaecheM2);
+                double teilsumme = teile[gr.Key].Sum(t => t.BruttoflaecheM2 ?? 0.0);
+                double r = Math.Max(0.0, koerper - teilsumme);
+                if (r <= IfcBauteilkoerper.ABWEICHUNG_GRENZE * koerper) r = 0.0;
+                foreach (AbbildBauteil b in gr.Value)
+                {
+                    double anteil = koerper > 0.0 ? Math.Round(b.Koerperflaeche.FlaecheM2 * r / koerper, 6) : 0.0;
+                    if (b.InnenEinseitig) _innenEinseitigM2 -= b.BruttoflaecheM2.Value - anteil;
+                    b.BruttoflaecheM2 = anteil;
+                    _koerperRest.Add(b);
+                }
+                rest.Add(gr.Key.Item3);
+            }
+            if (rest.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_REST", Ganz(rest.Count), Beispiele(rest)));
+            KoerperZusammenfassen();
             if (_flaecheAusKoerper.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "FLAECHE_KOERPER", Ganz(_flaecheAusKoerper.Count), Beispiele(_flaecheAusKoerper)));
             if (_koerperGegliedert.Count > 0)
@@ -741,18 +791,76 @@ namespace WindowsFormsApplication1
         /// und meldet über <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/>. Fehlt einem Teil der Mengensatz, unterbleibt
         /// der Vergleich.
         /// </summary>
-        private void KoerperVergleichen(string schluessel, string name, IReadOnlyCollection<AbbildBauteil> mengen, double koerperM2, int? teileZahl = null)
+        private void KoerperVergleichen(string schluessel, string name, Bauteilart art, IReadOnlyCollection<AbbildBauteil> mengen,
+                                        double koerperM2, int? teileZahl = null)
         {
             if (mengen.Any(x => !x.BruttoflaecheM2.HasValue)) return;
             double brutto = mengen.Sum(x => x.BruttoflaecheM2.Value);
             double netto = mengen.Sum(x => x.NettoflaecheM2 ?? x.BruttoflaecheM2.Value);
             double abweichung = Math.Min(IfcBauteilkoerper.Abweichung(brutto, koerperM2), IfcBauteilkoerper.Abweichung(netto, koerperM2));
             if (abweichung <= IfcBauteilkoerper.ABWEICHUNG_GRENZE) return;
+            _koerperAbweichungen.Add((art, name, abweichung));
+            if (abweichung < IfcBauteilkoerper.EINZELWARNUNG_GRENZE) return;
             var werte = new List<string> { name };
             if (teileZahl.HasValue) werte.Add(Ganz(teileZahl.Value));
             werte.AddRange(new[] { Zahl(Math.Round(brutto, 2)), Zahl(Math.Round(koerperM2, 2)), Zahl(Math.Round(abweichung * 100.0, 1)),
-                                   Zahl(IfcBauteilkoerper.ABWEICHUNG_GRENZE * 100.0) });
+                                   Zahl(IfcBauteilkoerper.EINZELWARNUNG_GRENZE * 100.0) });
             _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, schluessel, werte.ToArray()));
+        }
+
+        /// <summary>Die Gruppe der Zusammenfassung: 0 Außenwand, 1 Innenwand, 2 Dach, 3 Boden und Decke, 4 sonstige.</summary>
+        internal static int Koerpergruppe(Bauteilart art)
+        {
+            switch (art)
+            {
+                case Bauteilart.Aussenwand: return 0;
+                case Bauteilart.Innenwand: return 1;
+                case Bauteilart.Dach: return 2;
+                case Bauteilart.Decke:
+                case Bauteilart.Bodenplatte: return 3;
+                default: return 4;
+            }
+        }
+
+        /// <summary>Die Schlüssel der Zusammenfassung je Gruppe (<see cref="Koerpergruppe"/>): Abweichungen, Teile.</summary>
+        private static readonly (string Abweichungen, string Teile)[] KOERPER_SCHLUESSEL =
+        {
+            (P + "KOERPER_ABWEICHUNGEN_AUSSENWAND", P + "KOERPER_TEILE_AUSSENWAND"),
+            (P + "KOERPER_ABWEICHUNGEN_INNENWAND", P + "KOERPER_TEILE_INNENWAND"),
+            (P + "KOERPER_ABWEICHUNGEN_DACH", P + "KOERPER_TEILE_DACH"),
+            (P + "KOERPER_ABWEICHUNGEN_BODEN_DECKE", P + "KOERPER_TEILE_BODEN_DECKE"),
+            (P + "KOERPER_ABWEICHUNGEN_SONSTIGE", P + "KOERPER_TEILE_SONSTIGE"),
+        };
+
+        /// <summary>
+        /// Je Gruppe eine Info über die Abweichungen — Anzahl, Median, größte samt Bauteil (bei Gleichstand das erste),
+        /// Grenze — und eine über die verglichenen Gruppen aus Körper und Teilen (Anzahl).
+        /// </summary>
+        private void KoerperZusammenfassen()
+        {
+            for (int g = 0; g < KOERPER_SCHLUESSEL.Length; g++)
+            {
+                var liste = _koerperAbweichungen.Where(x => Koerpergruppe(x.Art) == g).ToList();
+                if (liste.Count > 0)
+                {
+                    var groesste = liste.Aggregate((a, b) => b.Abweichung > a.Abweichung ? b : a);
+                    _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, KOERPER_SCHLUESSEL[g].Abweichungen, Ganz(liste.Count),
+                        Zahl(Math.Round(Median(liste.Select(x => x.Abweichung)) * 100.0, 1)), Zahl(Math.Round(groesste.Abweichung * 100.0, 1)),
+                        groesste.Name, Zahl(IfcBauteilkoerper.ABWEICHUNG_GRENZE * 100.0)));
+                }
+                int teile = _koerperMitTeilen.Count(a => Koerpergruppe(a) == g);
+                if (teile > 0)
+                    _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, KOERPER_SCHLUESSEL[g].Teile, Ganz(teile)));
+            }
+        }
+
+        /// <summary>Der Median; bei gerader Zahl das Mittel der beiden mittleren Werte; leer = NaN.</summary>
+        internal static double Median(IEnumerable<double> werte)
+        {
+            List<double> w = werte.OrderBy(x => x).ToList();
+            if (w.Count == 0) return double.NaN;
+            int m = w.Count / 2;
+            return w.Count % 2 == 1 ? w[m] : (w[m - 1] + w[m]) / 2.0;
         }
 
         // ==================================================================
@@ -792,11 +900,32 @@ namespace WindowsFormsApplication1
         /// ohne Abzug (<c>OEFFNUNG_NISCHE</c>); ohne jede Fläche <c>OEFFNUNG_UNBEMESSEN</c>.</item>
         /// <item>Ein Wirt ohne Nettofläche der Datei bekommt Brutto − Öffnungen; ≤ 0 wird 0 mit <c>OEFFNUNG_NETTO_NULL</c>.
         /// Eine Nettofläche aus dem Mengensatz (<c>NetSideArea</c>, <c>NetArea</c>) bleibt.</item>
+        /// <item><b>Ausgesparte Öffnungen</b> (G5-N): Kommt die Fläche des Wirts aus seinem Körper und spart der Körper eine
+        /// Öffnung schon aus (<see cref="IfcOeffnungen.Ausgespart"/>: die Mitte der Öffnung liegt in einer Aussparung der
+        /// maßgeblichen Fläche — <c>IfcFaceBound</c>, <c>IfcArbitraryProfileDefWithVoids</c>), ist die Körperfläche um sie
+        /// schon netto. Die Bruttofläche wird dann Körper + ausgesparte Öffnungen und der Abzug wie oben — so wird jede
+        /// Öffnung genau einmal abgezogen (Info <c>OEFFNUNG_AUSGESPART</c>). Ohne Körper der Öffnung bleibt der Abzug.</item>
         /// <item>Fenster und Türen tragen Neigung und Azimut ihres Wirts, wo sie selbst keine haben.</item>
         /// </list>
         /// </summary>
         private void Oeffnungsabzug()
         {
+            // G5-N: die Körper der Wirte, deren Fläche aus dem Körper kommt — dort kann eine Öffnung schon ausgespart sein.
+            var wirtskoerper = new Dictionary<AbbildBauteil, List<Dateikoerper>>();
+            foreach (var v in _koerperVormerkung) wirtskoerper.TryAdd(v.Bauteil, v.Koerper);
+            var ausgespart = new Dictionary<AbbildBauteil, double>();
+            var ausgespartNamen = new List<string>();
+            double ausgespartSumme = 0.0;
+            bool KoerperNetto(AbbildBauteil w)
+                => w.Flaechenherkunft == Flaechenherkunft.Koerper && w.Koerperflaeche != null && !w.NettoflaecheM2.HasValue
+                   && !_koerperRest.Contains(w) && wirtskoerper.ContainsKey(w);
+            void Aussparen(AbbildBauteil w, double flaecheM2, string name)
+            {
+                ausgespart[w] = (ausgespart.TryGetValue(w, out double bisher) ? bisher : 0.0) + flaecheM2;
+                ausgespartSumme += flaecheM2;
+                ausgespartNamen.Add(name);
+            }
+
             var ausKoerper = new List<string>();
             foreach ((AbbildBauteil o, IIfcOpeningElement oeffnung, IIfcElement element, AbbildBauteil wirt) in _oeffnungOhneFlaeche)
             {
@@ -842,6 +971,8 @@ namespace WindowsFormsApplication1
                 wirt.LochflaecheM2 += f;
                 lochsumme += f;
                 loecher.Add(name);
+                if (KoerperNetto(wirt) && IfcOeffnungen.Ausgespart(wirtskoerper[wirt], IfcOeffnungen.Hauptnormale(wirt.Koerperflaeche), Mitte(ko)))
+                    Aussparen(wirt, f, name);
             }
 
             foreach (AbbildBauteil b in _abbild.Gebaeude.SelectMany(g => g.Bauteile).Concat(_abbild.BauteileOhneGebaeude))
@@ -850,10 +981,20 @@ namespace WindowsFormsApplication1
                 {
                     if (!o.NeigungGrad.HasValue) o.NeigungGrad = b.NeigungGrad;
                     if (!o.AzimutGrad.HasValue) o.AzimutGrad = b.AzimutGrad;
+                    if (KoerperNetto(b) && (o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer) && o.BruttoflaecheM2 > 0.0
+                        && _oeffnungsquelle.TryGetValue(o, out var quelle))
+                    {
+                        Dateikoerper k = (quelle.Oeffnung != null ? Rechenkoerper(quelle.Oeffnung) : null) ?? o.Koerper ?? Rechenkoerper(quelle.Element);
+                        if (IfcOeffnungen.Ausgespart(wirtskoerper[b], IfcOeffnungen.Hauptnormale(b.Koerperflaeche), Mitte(k)))
+                            Aussparen(b, o.BruttoflaecheM2.Value, o.Name ?? o.Kennung);
+                    }
                 }
+                // Die Körperfläche ist schon netto: Brutto = Körper + ausgesparte Öffnungen, abgezogen wird dann alles.
+                if (ausgespart.TryGetValue(b, out double aus)) b.BruttoflaecheM2 = Math.Round(b.BruttoflaecheM2.Value + aus, 6);
                 double abzug = b.Oeffnungen.Where(o => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer)
                                            .Sum(o => o.BruttoflaecheM2 ?? 0.0) + b.LochflaecheM2;
                 if (b.NettoflaecheM2.HasValue || !(b.BruttoflaecheM2 is double brutto) || !(abzug > 0.0)) continue;
+                if (_koerperRest.Contains(b) && !(brutto > 0.0)) continue;   // kein Rest neben den Teilen: nichts abzuziehen
                 b.NettoflaecheM2 = Math.Round(IfcOeffnungen.Netto(brutto, abzug, out bool nichtPositiv), 6);
                 if (nichtPositiv)
                     _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "OEFFNUNG_NETTO_NULL", b.Name ?? b.Kennung,
@@ -867,9 +1008,15 @@ namespace WindowsFormsApplication1
                     Zahl(Math.Round(lochsumme, 2)), Beispiele(loecher)));
             if (nischen.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_NISCHE", Ganz(nischen.Count), Beispiele(nischen)));
+            if (ausgespartNamen.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_AUSGESPART", Ganz(ausgespartNamen.Count),
+                    Zahl(Math.Round(ausgespartSumme, 2)), Beispiele(ausgespartNamen)));
             if (unbemessen.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "OEFFNUNG_UNBEMESSEN", Ganz(unbemessen.Count), Beispiele(unbemessen)));
         }
+
+        /// <summary>Die Mitte eines Körpers (umschließender Quader) [m]; <c>null</c> ohne Körper.</summary>
+        private static double[] Mitte(Dateikoerper k) => k == null || k.PunkteM.Count == 0 ? null : IfcBauteilkoerper.Mitte(k);
 
         /// <summary>Der Gebäudeschwerpunkt [m]: das Mittel der Raumkörper, ohne sie der vorgemerkten Bauteilkörper (alle Gebäude bei −1).</summary>
         private double[] Gebaeudeschwerpunkt(int gi)
@@ -2864,6 +3011,7 @@ namespace WindowsFormsApplication1
             // Zuletzt ein Flächenname aus einem beliebigen Mengensatz — nie Breite × Höhe eines fremden Satzes.
             if (!flaeche.HasValue) flaeche = FlaecheRueckfall(o, RUECKFALL_OEFFNUNG, "Area");
             b.BruttoflaecheM2 = flaeche;
+            _oeffnungsquelle[b] = (oeffnung, o);
             if (!flaeche.HasValue)
             {
                 _ohneMengen.Add(b.Kennung);

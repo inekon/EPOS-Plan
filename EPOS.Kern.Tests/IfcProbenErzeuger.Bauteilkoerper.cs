@@ -35,7 +35,29 @@ namespace EPOS.Kern.Tests
                 ["ifc4_g5_mengen_gegenprobe.ifc"] = Wandhaus("ifc4_g5_mengen_gegenprobe.ifc", mengen: true),
                 ["ifc4_g5_wand_brep_mapped.ifc"] = Koerperhaus(),
                 ["ifc4_g5_flachdach_teile.ifc"] = Flachdachhaus(),
+                ["ifc4_g5_abweichungen.ifc"] = Abweichungshaus(),
             };
+
+        /// <summary>
+        /// <b>Das Abweichungshaus</b> (G5-N, Zusammenfassung der Abweichungen): ein Raum 10 × 8 m, vier Außenwände als
+        /// Extrusion (2,5 m hoch, Körper 25 bzw. 20 m²) mit Mengensatz, der vom Körper abweicht — Süd 26,5 m² (5,7 %), Ost
+        /// 21 m² (4,8 %), Nord 35 m² (28,6 %, über der Grenze der Einzelwarnung), West 20,2 m² (1,0 %, still).
+        /// </summary>
+        private static byte[] Abweichungshaus()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_g5_abweichungen.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuildingStorey s = b.Geschoss(b.Gebaeude("Abweichungshaus", null), "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(s, "0.01", "Wohnen", 0, 0, null, null, null, beheizt: true);
+                b.Grundriss(r, (0, 0), (10000, 0), (10000, 8000), (0, 8000));
+                b.Oeffnungswand(s, "Wand Süd", 0, 0, 1, 0, 10000, 2500, (26.5, 26.5));
+                b.Oeffnungswand(s, "Wand Ost", 10000, 0, 0, 1, 8000, 2500, (21.0, 21.0));
+                b.Oeffnungswand(s, "Wand Nord", 10000, 8000, -1, 0, 10000, 2500, (35.0, 35.0));
+                b.Oeffnungswand(s, "Wand West", 0, 8000, 0, -1, 8000, 2500, (20.2, 20.2));
+                return b.Speichern();
+            }
+        }
 
         /// <summary>Die Oberlichter des Flachdachs [mm]: eine Spalte x = 8 … 10 m, drei Löcher 2 × 2 m.</summary>
         internal static readonly (double X0, double Y0, double X1, double Y1)[] OBERLICHTER =
