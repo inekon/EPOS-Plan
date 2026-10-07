@@ -933,7 +933,11 @@ namespace WindowsFormsApplication1
         /// Strombedarf" — je ein Kopf in <c>Tab_Stromverbraucher_STAMM</c> (Monatswerte, normiert auf 1.000 MWh/a) und ein
         /// Typprofil in <c>Tab_Stromverbrauchertyp_STAMM</c> (168 Wochenstunden), mit Katalogschlüssel und Prüfsumme
         /// (<see cref="StandardlastprofilSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze.
-        public const int Zielversion = StandardlastprofilSchema.SCHRITT;
+        /// Danach, mit VERWENDETEM AUFSCHLAG UND BEMESSENER AUFHEIZZEIT IM ERGEBNIS (KP3 Welle A, E99), steht das Ziel auf
+        /// <see cref="AufheizAufschlagErgebnisSchema.SCHRITT"/>: <c>Aufheiz_Aufschlag_Verwendet_H</c> und
+        /// <c>Aufheizzeit_Bemessen_H</c> an <c>Tab_ErgebnisGebaeude</c> (<see cref="AufheizAufschlagErgebnisSchema"/>).
+        /// <b>Ergebnisneutral:</b> Der Referenzlauf liest die Ergebnistabelle nicht.
+        public const int Zielversion = AufheizAufschlagErgebnisSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

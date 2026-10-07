@@ -588,6 +588,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die längste Rampe, größtes n − 1 [h].</summary>
         internal int? AufheizzeitLaengsteH { get; init; }
 
+        /// <summary>
+        /// E99 (Schritt 194): die Stunden, die der Aufschlag der längsten Rampe hinzugefügt hat [h]; 0 ohne Rampe mit n &gt; 1
+        /// oder ohne Aufschlag, <c>null</c> bei MANUELL, GEKOPPELT und UNBEHEIZT. Nicht skaliert.
+        /// </summary>
+        internal int? AufheizAufschlagVerwendetH { get; init; }
+
+        /// <summary>
+        /// E99 (Schritt 194): die bemessene Aufheizzeit [h] — bei MANUELL der manuelle Wert, sonst t_auf,max nach dem Aufschlag;
+        /// <c>null</c> bei UNERREICHBAR, GEKOPPELT und UNBEHEIZT. Nicht skaliert.
+        /// </summary>
+        internal int? AufheizzeitBemessenH { get; init; }
+
         /// <summary>W4: Übergänge aus „aus" ohne Rampe, darunter der Beginn der Heizperiode.</summary>
         internal int? AufheizspruengeAus { get; init; }
 
@@ -682,6 +694,8 @@ namespace WindowsFormsApplication1
                 AufheiztageNachweisband = Zaehlen(w3),
                 AufheizstundenH = plan.AufheizstundenH,
                 AufheizzeitLaengsteH = plan.LaengsteRampeH,
+                AufheizAufschlagVerwendetH = plan.AufschlagVerwendetH,
+                AufheizzeitBemessenH = plan.AufheizzeitMitAufschlagH,
                 AufheizspruengeAus = plan.SpruengeAus,
                 HeizleistungMaxStundenH = kappungsstundenH,
                 TageUnterStationaer = plan.TageUnterStationaer,
@@ -734,6 +748,8 @@ namespace WindowsFormsApplication1
                 AufheiztageNachweisband = Zaehlen(w3),
                 AufheizstundenH = g.AufheizstundenH,
                 AufheizzeitLaengsteH = g.LaengsteRampeH,
+                AufheizAufschlagVerwendetH = g.AufschlagVerwendetH,
+                AufheizzeitBemessenH = g.AufheizzeitMitAufschlagH,
                 AufheizspruengeAus = g.SpruengeAus,
                 HeizleistungMaxStundenH = kappung,
                 TageUnterStationaer = g.TageUnterStationaer,

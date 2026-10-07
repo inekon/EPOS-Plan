@@ -220,8 +220,8 @@ namespace EPOS.Kern.Tests
                          PufferOptionenSchema.EINSTELLUNGSSPALTEN.Length + AufheizManuellSchema.EINSTELLUNGSSPALTEN, einst.Count);
             Assert.Equal(SPALTEN_VORGABE, einst.Skip(AufheizvorgabeSchema.SPALTENZAHL_VORHER).Take(SPALTEN_VORGABE.Length).ToArray());
             List<string> geb = DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude");
-            // Hinter den vierzehn Spalten folgen die drei bzw. eine des Schritts KP-S4.
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
+            // Hinter den vierzehn Spalten folgen die drei bzw. eine des Schritts KP-S4 und die zwei des Schritts 194.
+            Assert.Equal(AufheizAufschlagErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, geb.Count);
             Assert.Equal(SPALTEN_GEBAEUDE, geb.Skip(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE - 14).Take(14).ToArray());
             List<string> zone = DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone");
             Assert.Equal(ZonenKaeltespitzeSchema.SPALTENZAHL_ERGEBNIS_ZONE, zone.Count);
@@ -340,7 +340,9 @@ namespace EPOS.Kern.Tests
             foreach ((string tabelle, string spalte, string _) in ZonenUebergabeSchema.SPALTEN)
                 if (tabelle == ZonenUebergabeSchema.TAB_ERGEBNIS_ZONE)
                     DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
-            // Der Stand VOR KP-S3 kennt die Spalten des späteren Schritts KP-S4 nicht.
+            // Der Stand VOR KP-S3 kennt die Spalten der späteren Schritte KP-S4 und 194 (E99) nicht.
+            foreach ((string tabelle, string spalte, string _) in AufheizAufschlagErgebnisSchema.SPALTEN)
+                DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
             foreach ((string tabelle, string spalte, string _) in AufheizManuellSchema.SPALTEN)
                 if (tabelle == "Tab_ErgebnisGebaeude" || tabelle == "Tab_ErgebnisZone")
                     DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" DROP COLUMN \"" + spalte + "\"");
