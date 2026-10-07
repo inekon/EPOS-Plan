@@ -9,7 +9,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Die Angebotsfunktion und der Speicherleser</b> (AK3-W3a; Entwurf AK3 2.3 bis 2.5, Festlegungen 5 bis 8,
     /// E102 Q-AK3-3) — ohne Datenbank, mit Phantasiewerten: Angebot = Summe der Teile an Handfällen, Kapazität der
-    /// Wärmepumpe am Vorlauf auf und zwischen den Stützstellen (Schalter an und aus), der Speicherleser verändert
+    /// Wärmepumpe am Vorlauf auf und zwischen den Stützstellen (Interpolation gilt, an den Stützstellen gleich der Stützstellenwahl), der Speicherleser verändert
     /// nichts, Determinismus.
     /// </summary>
     public class AnlagenkopplungAngebotTests
@@ -50,7 +50,7 @@ namespace EPOS.Kern.Tests
         private static double[] Konstant(double wert) => Enumerable.Repeat(wert, H).ToArray();
 
         private static WaermepumpeKapazitaet Wp(Fahrplanerzeuger f = null, double quelle = 0.0, bool extrapolation = true,
-                                                bool? interpolieren = false, int anzahl = 1)
+                                                bool interpolieren = true, int anzahl = 1)
             => new WaermepumpeKapazitaet(f ?? new Fahrplanerzeuger { Bezeichner = "WP" }, DreiKurven(), null,
                                          new Quellprofil(Konstant(quelle)), extrapolation, anzahl, interpolieren);
 
@@ -90,33 +90,28 @@ namespace EPOS.Kern.Tests
         [InlineData(35.0, 10.0)]
         [InlineData(45.0, 9.0)]
         [InlineData(55.0, 8.0)]
-        public void Auf_der_Stuetzstelle_liefert_die_Kennlinie_ihr_Ptherm_mit_Schalter_an_und_aus(double vorlauf, double erwartet)
+        public void Auf_der_Stuetzstelle_liefert_die_Kennlinie_ihr_Ptherm_wie_die_Stuetzstellenwahl(double vorlauf, double erwartet)
         {
             Assert.Equal(erwartet, Wp(interpolieren: false).Abfragen(100, vorlauf).VerfuegbarKw);
             Assert.Equal(erwartet, Wp(interpolieren: true).Abfragen(100, vorlauf).VerfuegbarKw);
         }
 
         [Fact]
-        public void Zwischen_den_Stuetzstellen_naechste_Stuetzstelle_ohne_und_linear_mit_Schalter()
+        public void Zwischen_den_Stuetzstellen_linear_im_Vorlauf()
         {
-            // 40 °C: Gleichstand → die höhere Stützstelle (H-F4), 9 kW; mit Schalter 10 + 0,5 · (9 − 10) = 9,5 kW.
-            Assert.Equal(9.0, Wp(interpolieren: false).Abfragen(0, 40.0).VerfuegbarKw);
-            Assert.Equal(9.5, Wp(interpolieren: true).Abfragen(0, 40.0).VerfuegbarKw, 12);
-            // 48 °C: nächste 45 °C → 9 kW; linear 9 + 0,3 · (8 − 9) = 8,7 kW.
-            Assert.Equal(9.0, Wp(interpolieren: false).Abfragen(0, 48.0).VerfuegbarKw);
-            Assert.Equal(8.7, Wp(interpolieren: true).Abfragen(0, 48.0).VerfuegbarKw, 12);
+            // 40 °C: linear 10 + 0,5 · (9 − 10) = 9,5 kW.
+            Assert.Equal(9.5, Wp().Abfragen(0, 40.0).VerfuegbarKw, 12);
+            // 48 °C: linear 9 + 0,3 · (8 − 9) = 8,7 kW.
+            Assert.Equal(8.7, Wp().Abfragen(0, 48.0).VerfuegbarKw, 12);
         }
 
         [Fact]
-        public void Der_Kernschalter_wird_beim_Aufbau_gelesen()
+        public void Die_Interpolation_gilt_ohne_Schalter()
         {
-            WaermepumpeKapazitaet ein;
-            using (VorlaufInterpolation.Schalten(true)) ein = Wp(interpolieren: null);
-            WaermepumpeKapazitaet aus;
-            using (VorlaufInterpolation.Schalten(false)) aus = Wp(interpolieren: null);
-            Assert.True(ein.Interpolieren);
-            Assert.False(aus.Interpolieren);
-            Assert.Equal(9.5, ein.Abfragen(0, 40.0).VerfuegbarKw, 12);
+            var wp = new WaermepumpeKapazitaet(new Fahrplanerzeuger { Bezeichner = "WP" }, DreiKurven(), null,
+                                               new Quellprofil(Konstant(0.0)), true);
+            Assert.True(wp.Interpolieren);
+            Assert.Equal(9.5, wp.Abfragen(0, 40.0).VerfuegbarKw, 12);
         }
 
         [Fact]
@@ -155,7 +150,7 @@ namespace EPOS.Kern.Tests
         {
             var reihe = Konstant(0.0);
             reihe[7] = 10.0;
-            var wp = new WaermepumpeKapazitaet(new Fahrplanerzeuger(), DreiKurven(), null, new Quellprofil(reihe), true, 2, false);
+            var wp = new WaermepumpeKapazitaet(new Fahrplanerzeuger(), DreiKurven(), null, new Quellprofil(reihe), true, 2);
             Assert.Equal(18.0, wp.Abfragen(6, 45.0).VerfuegbarKw);
             Assert.Equal(22.0, wp.Abfragen(7, 45.0).VerfuegbarKw);
         }
@@ -164,7 +159,7 @@ namespace EPOS.Kern.Tests
         public void Ohne_Vorlauf_rechnet_die_projektierte_Kennlinie()
         {
             SimulationWaermepumpe._Kenndaten[] k = DreiKurven();
-            var wp = new WaermepumpeKapazitaet(new Fahrplanerzeuger(), k, k[2], new Quellprofil(Konstant(0.0)), true, 1, false);
+            var wp = new WaermepumpeKapazitaet(new Fahrplanerzeuger(), k, k[2], new Quellprofil(Konstant(0.0)), true, 1);
             Assert.Equal(8.0, wp.Abfragen(0, double.NaN).VerfuegbarKw);
         }
 

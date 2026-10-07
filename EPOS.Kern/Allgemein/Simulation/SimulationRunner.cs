@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Linq;
 using System.Threading;
 
@@ -294,14 +294,17 @@ namespace WindowsFormsApplication1
         /// auf dem VDI-Weg (F12, E83) —, auch ohne greifende Schranke: dann steht <c>Fahrplan_Begrenzt_Stunden</c>
         /// auf 0, nicht NULL. Ein Projekt ohne Fahrplan schreibt alle NULL und damit dieselbe Zeile wie vorher
         /// (Referenzlauf byte-gleich, <c>SpaltenNurMitWert</c>). Eine Seite ohne erhobenes Gebäude bleibt NULL.
+        /// Auf Stufe AK3 (Entwurf AK3) wirkt der Fahrplan über die Schranke des Kreises, nicht über das Fahrplanobjekt:
+        /// dort stehen die Komfortkennzahlen (<paramref name="komfortErhoben"/>), <c>Fahrplan_Begrenzt_Stunden</c>
+        /// bleibt NULL — seine Entsprechung ist <c>Ak3_Schranke_Stunden</c>.
         /// </summary>
         internal static void AnlagenfahrplanSpaltenSetzen(ErgebnisEnergiebedarfModel e, bool fahrplanWirksam,
-                                                          int fahrplanStunden,
+                                                          int fahrplanStunden, bool komfortErhoben,
                                                           Komfortkennzahlen heizen, Komfortkennzahlen kuehlen)
         {
             if (e == null) throw new ArgumentNullException(nameof(e));
-            if (!fahrplanWirksam) return;
-            e.FahrplanBegrenztStundenH = Math.Max(0, fahrplanStunden);
+            if (fahrplanWirksam) e.FahrplanBegrenztStundenH = Math.Max(0, fahrplanStunden);
+            if (!fahrplanWirksam && !komfortErhoben) return;
             if (heizen != null)
             {
                 e.KomfortUnterschreitungsstundenH = heizen.Stunden;
@@ -469,12 +472,15 @@ namespace WindowsFormsApplication1
             // gekappt hat, und die Komfortkennzahlen - fuer jedes Projekt, dessen Fahrplan lief (Kopplung ab AK1,
             // ein gekoppeltes Gebaeude auf dem VDI-Weg), auch ohne greifende Schranke (dann 0 Stunden). Ein
             // Projekt ohne Fahrplan schreibt NULL und dieselbe Zeile wie vorher (SpaltenNurMitWert).
+            // AK3 (Entwurf AK3): der Fahrplan wirkt ueber die Schranke des Kreises - die Komfortkennzahlen stehen auch
+            // dann, wenn der Kreis gerechnet hat; Fahrplan_Begrenzt_Stunden bleibt NULL (Entsprechung Ak3_Schranke_Stunden).
             bool fahrplanWirksam = simulation_Waermebedarf.FahrplanWirksam;
+            bool komfortErhoben = fahrplanWirksam || simulation_Waermebedarf.Ak3?.Kreis != null;
             int fahrplanStunden = fahrplanWirksam ? simulation_Waermebedarf.FahrplanBegrenztStunden() : 0;
-            (Komfortkennzahlen komfortHeizen, Komfortkennzahlen komfortKuehlen) = fahrplanWirksam
+            (Komfortkennzahlen komfortHeizen, Komfortkennzahlen komfortKuehlen) = komfortErhoben
                 ? simulation_Waermebedarf.KomfortProjekt()
                 : (null, null);
-            AnlagenfahrplanSpaltenSetzen(m.Energiebedarf, fahrplanWirksam, fahrplanStunden, komfortHeizen, komfortKuehlen);
+            AnlagenfahrplanSpaltenSetzen(m.Energiebedarf, fahrplanWirksam, fahrplanStunden, komfortErhoben, komfortHeizen, komfortKuehlen);
 
             // ANLAGENKOPPLUNG AK3 (Entwurf AK3, Festlegung 22): die Kennzahlen des geschlossenen Kreises - nur, wenn der
             // Kreis gerechnet hat, sonst NULL ("nicht erhoben") und dieselbe Zeile wie vorher (SpaltenNurMitWert).

@@ -57,11 +57,12 @@ namespace EPOS.Kern.Tests
             // Zonen mit Heizkreis 1054 (AK1z): eine Zeile „Nm³" (Erdgas, Kopie von 1052). Das Referenzprojekt
             // Kältemaschine 1055 (KU3-4b, Kopie von 1017): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt
             // Fahrplan 1056 (AK2-4, Kopie von 1047): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt
-            // Erdsonde 1057 (Kopie von 1029): eine Zeile „Nm³".
-            Assert.Equal(14, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
+            // Erdsonde 1057 (Kopie von 1029): eine Zeile „Nm³". Das Referenzprojekt AK3 1058 (AK3-W5a, Kopie von
+            // 1056): zwei Zeilen „kWh" und eine „kg".
+            Assert.Equal(16, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
             Assert.Equal(25,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
             Assert.Equal(4, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'L'"));
-            Assert.Equal(4, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
+            Assert.Equal(5, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
 
             // Die Regel nach kWh (51: kWh → kWh am Stromträger) trägt „kWh", die
             // Identitätsregel des Erdgases die Abrechnungseinheit.

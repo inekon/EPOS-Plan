@@ -688,11 +688,14 @@ namespace WindowsFormsApplication1
             "Gezählt werden Stunden der Nutzungszeit, in denen die Raumtemperatur mehr als 1,0 K unter dem Sollwert liegt; mit Kopplung ist ein Teil der Unterdeckung eine gesunkene Raumtemperatur, deshalb steht der Restbedarf daneben.";
 
         /// <summary>
-        /// Hatte der Lauf einen Fahrplan, der gegriffen hat? Die Projektspalte <c>Fahrplan_Begrenzt_Stunden</c> ist
-        /// dann gesetzt (sonst NULL), oder eine Gebäudezeile trägt ihren <see cref="Bedarfsbegriff"/>.
+        /// Steht die Komforttafel? Ja, wenn der Fahrplan gegriffen hat — die Projektspalte
+        /// <c>Fahrplan_Begrenzt_Stunden</c> ist dann gesetzt (sonst NULL), oder eine Gebäudezeile trägt ihren
+        /// <see cref="Bedarfsbegriff"/> — oder wenn der Lauf die Komfortkennzahlen erhoben hat (Stufe AK3: Kreis
+        /// gerechnet, <c>Fahrplan_Begrenzt_Stunden</c> bleibt leer und steht in der Tafel als „—").
         /// </summary>
-        internal static bool LaufMitFahrplan(VariantenDaten v, List<ErgebnisGebaeudeModel> zeilen)
+        internal static bool LaufMitKomfort(VariantenDaten v, List<ErgebnisGebaeudeModel> zeilen)
             => v?.Ergebnis?.Energiebedarf?.FahrplanBegrenztStundenH.HasValue == true
+               || v?.Ergebnis?.Energiebedarf?.KomfortUnterschreitungsstundenH.HasValue == true
                || (zeilen != null && zeilen.Any(g => g.Bedarfsbegriff.HasValue));
 
         /// <summary>
@@ -715,12 +718,13 @@ namespace WindowsFormsApplication1
         /// Fahrplan; darunter die Projektzeile mit dem Wärmerestbedarf daneben, die Zahl der Gebäude als feste Last
         /// und der Hinweis zum Profilweg. Ein Wert, den der Lauf nicht erhoben hat, steht als „—".
         ///
-        /// <para><b>Der Abschnitt entfällt</b>, wenn der Lauf keinen greifenden Fahrplan hatte — jedes Projekt ohne
-        /// Kopplung und jedes Referenzprojekt ohne Zeitprogramm.</para>
+        /// <para><b>Der Abschnitt entfällt</b>, wenn der Lauf weder einen greifenden Fahrplan hatte noch die
+        /// Komfortkennzahlen erhoben hat (<see cref="LaufMitKomfort"/>) — jedes Projekt ohne Kopplung und jedes
+        /// Referenzprojekt ohne Zeitprogramm unterhalb der Stufe AK3.</para>
         /// </summary>
         private static void KomfortSchreiben(WordKontext k, VariantenDaten stamm, List<ErgebnisGebaeudeModel> zeilen)
         {
-            if (!LaufMitFahrplan(stamm, zeilen)) return;
+            if (!LaufMitKomfort(stamm, zeilen)) return;
             ErgebnisEnergiebedarfModel e = stamm?.Ergebnis?.Energiebedarf;
 
             int[] b = { 2300, 1700, 1300, 1300, 1200, 1200, k.Inhaltsbreite - 9000 };
