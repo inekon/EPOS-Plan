@@ -23,6 +23,9 @@ namespace WindowsFormsApplication1
         /// <summary>Persistenzwert des Formats IFC (<c>Tab_Importquelle.Format</c>).</summary>
         public const string FORMAT_IFC = "IFC";
 
+        /// <summary>Persistenzwert des Formats Projektdatei (<c>.sqproj</c>, <see cref="DbWerte.IMPORT_FORMAT_SQPROJ"/>).</summary>
+        public const string FORMAT_SQPROJ = DbWerte.IMPORT_FORMAT_SQPROJ;
+
         /// <summary>Legt eine Quelle an; <paramref name="dateiname"/> darf einen Pfad tragen, er wird abgeschnitten.</summary>
         public GebaeudeQuelle(string format, string dateiname, string hash, long groesse, string schemastand,
                               string zeitpunkt, string programmfassung, string zonenregel, int fehlendeEntitaeten)
