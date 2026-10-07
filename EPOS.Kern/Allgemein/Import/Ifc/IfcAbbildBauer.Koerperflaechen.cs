@@ -186,6 +186,221 @@ namespace WindowsFormsApplication1
             g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "RAUMFLAECHE_KOERPER", Ganz(namen.Count), Zahl(Math.Round(summe, 1)), Beispiele(namen)));
         }
 
+        /// <summary>Die Toleranz [m] der Deckenlage: so weit darf der Plattenkörper neben Höhe und Grundriss eines Körperpaars liegen.</summary>
+        internal const double DECKENLAGE_TOLERANZ_M = 0.05;
+
+        /// <summary>Die Geschosspaare (Gebäude, unten, oben), deren Körperdecken eine Hülldecke der Datei schon trägt (G5-3d).</summary>
+        private readonly HashSet<(int Gebaeude, string Unten, string Oben)> _huelldeckenpaare = new HashSet<(int, string, string)>();
+
+        /// <summary>Je Gebäude die Körperdecken, die einer Hülldecke der Datei weichen: Zahl und Fläche.</summary>
+        private readonly Dictionary<int, (int Zahl, double FlaecheM2)> _huelldeckenErsetzt = new Dictionary<int, (int, double)>();
+
+        /// <summary>Die Körper der vorgemerkten Platten (nicht der Wände), einmal gesammelt.</summary>
+        private Dictionary<AbbildBauteil, List<Dateikoerper>> _plattenkoerper;
+
+        private Dictionary<AbbildBauteil, List<Dateikoerper>> Plattenkoerper()
+        {
+            if (_plattenkoerper != null) return _plattenkoerper;
+            _plattenkoerper = new Dictionary<AbbildBauteil, List<Dateikoerper>>();
+            foreach (var v in _koerperVormerkung)
+                if (v.Art != Bauteilkoerperart.Wand) _plattenkoerper.TryAdd(v.Bauteil, v.Koerper);
+            return _plattenkoerper;
+        }
+
+        /// <summary>
+        /// <b>Die Lage einer Platte gegen ein Körperpaar</b> (G5-3d): Kann <paramref name="b"/> die Decke zwischen den beiden
+        /// Raumkörpern des Paars sein? Mit Körper zählt die Lage: Sein Höhenbereich muss die Höhen beider Körperflächen des
+        /// Paars berühren und sein Grundriss (umschließendes Rechteck) die Mitte des Paars enthalten, je mit
+        /// <see cref="DECKENLAGE_TOLERANZ_M"/> — 2 = getroffen, −1 = liegt woanders (etwa die Decke des Geschosses darüber).
+        /// Ohne Körper zählt das Geschoss: 1 = Geschoss eines der beiden Räume, −1 = ein anderes, 0 = keines bekannt.
+        /// Ein Wandpaar gibt immer 1.
+        /// </summary>
+        private int Deckenlage(AbbildBauteil b, Koerperpaar p, AbbildGebaeude g)
+        {
+            if (!p.Decke || p.Oben < 0) return 1;
+            AbbildRaum oben = g.Raeume[p.Oben], unten = g.Raeume[p.Oben == p.RaumA ? p.RaumB : p.RaumA];
+            if (Plattenkoerper().TryGetValue(b, out List<Dateikoerper> koerper) && koerper.Any(k => k != null && k.PunkteM.Count > 0))
+            {
+                List<double[]> punkte = koerper.Where(k => k != null).SelectMany(k => k.PunkteM).ToList();
+                const double T = DECKENLAGE_TOLERANZ_M;
+                double zu = Math.Min(p.SchwerpunktA[2], p.SchwerpunktB[2]) - T, zo = Math.Max(p.SchwerpunktA[2], p.SchwerpunktB[2]) + T;
+                double x = (p.SchwerpunktA[0] + p.SchwerpunktB[0]) / 2.0, y = (p.SchwerpunktA[1] + p.SchwerpunktB[1]) / 2.0;
+                bool hoehe = punkte.Max(q => q[2]) >= zu && punkte.Min(q => q[2]) <= zo;
+                bool grundriss = x >= punkte.Min(q => q[0]) - T && x <= punkte.Max(q => q[0]) + T
+                                 && y >= punkte.Min(q => q[1]) - T && y <= punkte.Max(q => q[1]) + T;
+                return hoehe && grundriss ? 2 : -1;
+            }
+            if (b.GeschossKennung == null) return 0;
+            return b.GeschossKennung == oben.GeschossKennung || b.GeschossKennung == unten.GeschossKennung ? 1 : -1;
+        }
+
+        /// <summary>
+        /// <b>Trägt eine Platte der Datei die Körperdecke schon als Hüllfläche?</b> (G5-3d) Eine Körperdecke zwischen einem
+        /// beheizten und einem unbeheizten Raum entfällt, wenn eine Platte (<c>IfcSlab</c>, kein Dach) gegen unbeheizt
+        /// (<see cref="Randbedingung.Unbeheizt"/>) ohne Raumgrenze, ohne Nachbarn oder mit dem beheizten Raum als einzigem
+        /// Nachbarn an ihrer Stelle liegt (<see cref="Deckenlage"/>: getroffen; ohne Körper im Geschoss eines der beiden Räume
+        /// bzw. ohne Geschoss mit dem beheizten Raum als Nachbarn). Die Seite muss passen: eine Kellerdecke bzw. ein Zonenboden
+        /// nur unter, eine oberste Geschossdecke nur über dem beheizten Raum. Was die Datei sagt, geht vor; der Körper
+        /// ergänzt nur. Das Geschosspaar merkt sich <see cref="_huelldeckenpaare"/> — dort bildet auch
+        /// <see cref="GrundrissTrenndecken"/> keine Decke.
+        /// </summary>
+        private bool DurchHuelldeckeGedeckt(int gi, AbbildGebaeude g, Koerperpaar p)
+        {
+            if (!p.Decke || p.Oben < 0) return false;
+            AbbildRaum oben = g.Raeume[p.Oben], unten = g.Raeume[p.Oben == p.RaumA ? p.RaumB : p.RaumA];
+            if (oben.Beheizt == unten.Beheizt) return false;
+            AbbildRaum warm = oben.Beheizt ? oben : unten;
+            bool warmOben = warm == oben;
+            foreach (AbbildBauteil b in g.Bauteile)
+            {
+                if (!string.Equals(b.Quelltyp, "IfcSlab", StringComparison.OrdinalIgnoreCase) || b.Quellart == nameof(IfcSlabTypeEnum.ROOF)) continue;
+                if (b.Randbedingung != Randbedingung.Unbeheizt || b.Grenzen.Count > 0 || b.Nachbarn.Count > 1) continue;
+                bool einraum = b.Nachbarn.Count == 1;
+                if (einraum && b.Nachbarn[0].Kennung != warm.Kennung) continue;
+                if (b.RandbedingungBeleg == AbbildBauteil.BELEG_KELLERDECKE && !warmOben) continue;
+                if (b.RandbedingungBeleg == AbbildBauteil.BELEG_OBERSTE_DECKE && warmOben) continue;
+                if (b.ZonenbodenOhneNachbar is bool boden && boden != warmOben) continue;
+                int lage = Deckenlage(b, p, g);
+                if (lage == 2 || lage == 1 || (lage == 0 && einraum))
+                {
+                    if (oben.GeschossKennung != null && unten.GeschossKennung != null && oben.GeschossKennung != unten.GeschossKennung)
+                        _huelldeckenpaare.Add((gi, unten.GeschossKennung, oben.GeschossKennung));
+                    (int zahl, double flaeche) = _huelldeckenErsetzt.TryGetValue(gi, out var bisher) ? bisher : (0, 0.0);
+                    _huelldeckenErsetzt[gi] = (zahl + 1, flaeche + p.FlaecheM2);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>Die Meldung <c>IMP_IFC_PROT_KOERPERDECKE_HUELLE</c> (I) je Gebäude, dessen Körperdecken Hülldecken der Datei wichen.</summary>
+        private void HuelldeckenMelden(int gi, AbbildGebaeude g)
+        {
+            if (!_huelldeckenErsetzt.TryGetValue(gi, out var e) || e.Zahl == 0) return;
+            g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPERDECKE_HUELLE", g.Anzeigename, Ganz(e.Zahl), Zahl(Math.Round(e.FlaecheM2, 2))));
+        }
+
+        /// <summary>Die Toleranz [m²], um die die Öffnungen einer Wand ihre Bruttofläche übersteigen dürfen (Rundung der Mengen).</summary>
+        internal const double OEFFNUNG_UEBERSTAND_M2 = 0.01;
+
+        /// <summary>
+        /// <b>Öffnungen an der Wand, in der sie liegen</b> (G5-3d): Trägt eine Wand mit Körper laut Datei mehr Fenster- und
+        /// Türfläche, als sie brutto groß ist, fiele die Hülle still auf die Nettofläche der Datei ohne Abzug zurück. Dann wird
+        /// jede ihrer Öffnungen nach Lage geprüft (<see cref="IfcOeffnungen.AbstandZurWand"/>; Mitte des Öffnungskörpers,
+        /// sonst des Füllkörpers):
+        /// <list type="bullet">
+        /// <item><b>In der eigenen Wand:</b> Sie bleibt, solange die Wand sie trägt. Ist die Wand zu klein, geht sie an einen
+        /// Teil ohne Darstellung derselben Wand (gleicher Typ und Namensstamm, siehe <see cref="Koerperflaechen"/> — der Körper
+        /// deckt diese Teile mit) mit Platz für sie, die Seite gleicher Richtung zuerst, sonst der Teil mit der größten freien
+        /// Fläche; sonst an eine andere Wand mit Körper, in deren Ebene und Umriss sie auch liegt; zuletzt an eine Wand gleicher
+        /// Art desselben Geschosses an derselben Fassade (gleiche Randbedingung, Himmelsrichtung bis 45°) mit Platz, die größte
+        /// freie Fläche zuerst.</item>
+        /// <item><b>Nicht in der eigenen Wand:</b> Sie geht an die nächstgelegene Wand mit Körper, in deren Ebene und Umriss sie
+        /// liegt und auf der sie Platz hat; findet sich keine, bleibt sie und wird benannt.</item>
+        /// </list>
+        /// Öffnungen ohne Lage bleiben, wo die Datei sie hinhängt. Meldungen: <c>IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT</c> (I) mit
+        /// der Zahl der zu kleinen Wände, der umgehängten Öffnungen und ihrer neuen Wände; <c>IMP_IFC_PROT_OEFFNUNG_OHNE_WAND</c>
+        /// (W) für Öffnungen, die in keiner Wand liegen; <c>IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN</c> (W) für Wände, die danach
+        /// noch kleiner sind als ihre Öffnungen (dort gilt weiter die Nettofläche der Datei).
+        /// </summary>
+        private void OeffnungenNachLage()
+        {
+            var koerper = new Dictionary<AbbildBauteil, List<Dateikoerper>>();
+            foreach (var v in _koerperVormerkung)
+                if (v.Art == Bauteilkoerperart.Wand) koerper.TryAdd(v.Bauteil, v.Koerper);
+            if (koerper.Count == 0) return;
+            ILookup<(int, string, string), AbbildBauteil> teile = _teileOhneDarstellung.Where(t => t.Bauteil.Name != null)
+                .ToLookup(t => (t.Gebaeude, t.Bauteil.Quelltyp, Namensstamm(t.Bauteil.Name)), t => t.Bauteil);
+            static bool IstOeffnung(AbbildBauteil o) => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer;
+            static double Summe(AbbildBauteil b) => b.Oeffnungen.Where(IstOeffnung).Sum(o => o.BruttoflaecheM2 ?? 0.0);
+            static double Frei(AbbildBauteil b) => (b.BruttoflaecheM2 ?? 0.0) - Summe(b);
+            static bool ZuKlein(AbbildBauteil b) => b.BruttoflaecheM2 is double br && Summe(b) > br + OEFFNUNG_UEBERSTAND_M2;
+            static string Name(AbbildBauteil b) => string.IsNullOrWhiteSpace(b.Name) ? b.Kennung : b.Name.Trim();
+            double? Abstand(AbbildBauteil w, double[] mitte, out double[] n)
+                => IfcOeffnungen.AbstandZurWand(koerper[w], w.Koerperflaeche.Teile.Select(t => t.Normale), mitte, out n);
+            bool GleicheRichtung(AbbildBauteil teil, double[] n)
+            {
+                if (n == null || !teil.AzimutGrad.HasValue || !(IfcBauteilkoerper.Azimut(n, _drehung) is double az)) return false;
+                double d = Math.Abs(((teil.AzimutGrad.Value - az) % 180.0 + 180.0) % 180.0);
+                return Math.Min(d, 180.0 - d) <= 45.0;
+            }
+
+            int zuKlein = 0, zielwaende = 0;
+            var umgehaengt = new List<string>();
+            var ohneWand = new List<string>();
+            var weiterZuKlein = new List<string>();
+            for (int gi = -1; gi < _abbild.Gebaeude.Count; gi++)
+            {
+                List<AbbildBauteil> liste = gi < 0 ? _abbild.BauteileOhneGebaeude : _abbild.Gebaeude[gi].Bauteile;
+                List<AbbildBauteil> waende = liste.Where(b => koerper.ContainsKey(b) && b.Koerperflaeche != null && b.Koerperflaeche.Teile.Count > 0).ToList();
+                var ziele = new HashSet<AbbildBauteil>();
+                foreach (AbbildBauteil b in waende.Where(ZuKlein).ToList())
+                {
+                    zuKlein++;
+                    List<AbbildBauteil> eigeneTeile = b.Name == null ? new List<AbbildBauteil>()
+                        : teile[(gi, b.Quelltyp, Namensstamm(b.Name))].Where(t => t != b && liste.Contains(t) && t.BruttoflaecheM2 > 0.0).ToList();
+                    var lagen = new List<(AbbildBauteil Oeffnung, double[] Mitte, double? Eigen, double[] Normale)>();
+                    foreach (AbbildBauteil o in b.Oeffnungen.Where(IstOeffnung))
+                    {
+                        double[] mitte = Oeffnungsmitte(o);
+                        if (mitte == null) continue;   // ohne Lage gilt die Zuordnung der Datei
+                        double? eigen = Abstand(b, mitte, out double[] n);
+                        lagen.Add((o, mitte, eigen, n));
+                    }
+                    // Erst die Öffnungen außerhalb der eigenen Wand, dann die großen zuerst.
+                    foreach ((AbbildBauteil o, double[] mitte, double? eigen, double[] n) in
+                             lagen.OrderBy(x => x.Eigen.HasValue).ThenByDescending(x => x.Oeffnung.BruttoflaecheM2 ?? 0.0).ToList())
+                    {
+                        if (eigen.HasValue && !ZuKlein(b)) continue;
+                        double flaeche = o.BruttoflaecheM2 ?? 0.0;
+                        AbbildBauteil ziel = null;
+                        if (eigen.HasValue)
+                            ziel = eigeneTeile.Where(t => Frei(t) + OEFFNUNG_UEBERSTAND_M2 >= flaeche)
+                                              .OrderByDescending(t => GleicheRichtung(t, n)).ThenByDescending(Frei).FirstOrDefault();
+                        ziel ??= waende.Where(w => w != b && Frei(w) + OEFFNUNG_UEBERSTAND_M2 >= flaeche)
+                                       .Select(w => (Wand: w, Abstand: Abstand(w, mitte, out _))).Where(x => x.Abstand.HasValue)
+                                       .OrderBy(x => x.Abstand.Value).Select(x => x.Wand).FirstOrDefault();
+                        // Zuletzt, für eine Öffnung in der eigenen Wand: eine Wand desselben Geschosses an derselben Fassade
+                        // (gleiche Randbedingung, Himmelsrichtung bis 45°) mit Platz, die größte freie Fläche zuerst.
+                        if (ziel == null && eigen.HasValue && b.AzimutGrad is double richtung)
+                            ziel = liste.Where(w => w != b && w.Art == b.Art && w.Randbedingung == b.Randbedingung && w.GeschossKennung == b.GeschossKennung
+                                                    && w.AzimutGrad is double aw && Math.Abs(((aw - richtung) % 360.0 + 540.0) % 360.0 - 180.0) <= 45.0
+                                                    && Frei(w) + OEFFNUNG_UEBERSTAND_M2 >= flaeche)
+                                        .OrderByDescending(Frei).FirstOrDefault();
+                        if (ziel == null)
+                        {
+                            if (!eigen.HasValue) ohneWand.Add(Name(o));
+                            continue;
+                        }
+                        b.Oeffnungen.Remove(o);
+                        ziel.Oeffnungen.Add(o);
+                        o.Randbedingung = ziel.Randbedingung;
+                        if (o.NeigungGrad == b.NeigungGrad) o.NeigungGrad = ziel.NeigungGrad;
+                        ziele.Add(ziel);
+                        umgehaengt.Add(Name(o));
+                    }
+                    if (ZuKlein(b)) weiterZuKlein.Add(Name(b));
+                }
+                zielwaende += ziele.Count;
+            }
+            if (umgehaengt.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_UMGEHAENGT", Ganz(zuKlein), Ganz(umgehaengt.Count),
+                    Ganz(zielwaende), Beispiele(umgehaengt)));
+            if (ohneWand.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "OEFFNUNG_OHNE_WAND", Ganz(ohneWand.Count), Beispiele(ohneWand)));
+            if (weiterZuKlein.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "WAND_KLEINER_OEFFNUNGEN", Ganz(weiterZuKlein.Count), Beispiele(weiterZuKlein)));
+        }
+
+        /// <summary>Die Mitte einer Öffnung: ihr Öffnungskörper, sonst ihr Füllkörper; <c>null</c> ohne Körper.</summary>
+        private double[] Oeffnungsmitte(AbbildBauteil o)
+        {
+            if (_oeffnungsquelle.TryGetValue(o, out (IIfcOpeningElement Oeffnung, IIfcElement Element) q))
+                return (q.Oeffnung != null ? Mitte(Rechenkoerper(q.Oeffnung)) : null)
+                       ?? Mitte(o.Koerper ?? (q.Element != null ? Rechenkoerper(q.Element) : null));
+            return Mitte(o.Koerper);
+        }
+
         /// <summary>
         /// Ist das Raumpaar <paramref name="p"/> schon über ein Bauteil des Körperwegs verbunden (zwei Gegenstücke der Herkunft
         /// <see cref="Grenzherkunft.Bauteilkoerper"/> an diesen Räumen, Normale bis <see cref="KF.PARALLEL_GRAD"/>

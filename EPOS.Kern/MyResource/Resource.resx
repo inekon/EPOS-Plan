@@ -34088,6 +34088,18 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} Öffnungen ohne Fenster oder Tür haben weder Mengenangaben noch einen lesbaren Körper und werden nicht abgezogen ({1}).</value>
   </data>
+  <data name="IMP_IFC_PROT_KOERPERDECKE_HUELLE" xml:space="preserve">
+    <value>Im Gebäude „{0}“ entfallen {1} Trenndecken aus den Raumkörpern ({2} m²): Die Datei führt an ihrer Stelle schon Platten gegen unbeheizte Räume, die als Hüllfläche zählen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT" xml:space="preserve">
+    <value>{0} Wände tragen laut Datei mehr Fenster- und Türfläche, als sie groß sind; {1} Öffnungen gehen nach ihrer Lage an {2} andere Wände bzw. Teile derselben Wand ({3}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>{0} Öffnungen liegen in keiner Wand, an der sie Platz hätten, und bleiben an der Wand der Datei ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN" xml:space="preserve">
+    <value>{0} Wände bleiben kleiner als ihre Öffnungen; für sie gilt die Nettofläche der Datei, ihre Öffnungen werden nicht voll abgezogen ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} Fenster und Türen füllen keine Öffnung eines Bauteils und werden nicht gezählt ({1}).</value>
   </data>

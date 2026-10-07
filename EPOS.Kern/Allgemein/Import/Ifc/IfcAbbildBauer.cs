@@ -1794,6 +1794,7 @@ namespace WindowsFormsApplication1
                 Bauteil(e, klasse);
             }
             Koerperflaechen();
+            OeffnungenNachLage();
             Oeffnungsabzug();
 
             // Fenster und Türen, die keine Öffnung füllen: kein Wirt, keine Himmelsrichtung, nicht gezählt.
@@ -2558,6 +2559,9 @@ namespace WindowsFormsApplication1
                         string.Join(", ", ohne.Take(KOERPER_OHNE_PAAR_NAMEN)) + (ohne.Count > KOERPER_OHNE_PAAR_NAMEN ? ", …" : "")));
                 // G5-3: Ein Raumpaar, das der Körperweg der Bauteilflächen schon verbindet, bekommt kein zweites Trennbauteil.
                 paare = paare.Where(p => !Abgedeckt(g, p)).ToList();
+                // G5-3d: Eine Körperdecke, die eine Platte der Datei schon als Hüllfläche gegen unbeheizt trägt, entfällt.
+                paare = paare.Where(p => !DurchHuelldeckeGedeckt(gi, g, p)).ToList();
+                HuelldeckenMelden(gi, g);
                 if (paare.Count == 0) continue;
                 g.KoerperpaareGebildet = true;
 
@@ -2593,18 +2597,20 @@ namespace WindowsFormsApplication1
                     Func<AbbildBauteil, bool> art = p.Decke ? (Func<AbbildBauteil, bool>)IstDecke : IstWand;
                     bool Beide(AbbildBauteil b) { HashSet<string> r = Bezug(b); return r != null && r.Contains(ra.Kennung) && r.Contains(rb.Kennung); }
                     bool Einer(AbbildBauteil b) { HashSet<string> r = Bezug(b); return r != null && (r.Contains(ra.Kennung) || r.Contains(rb.Kennung)); }
-                    List<AbbildBauteil> beide = bestand.Where(b => Innen(b) && art(b) && Beide(b) && Richtung(b, p)).ToList();
-                    AbbildBauteil vorlage = beide.OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault()
-                        ?? bestand.Where(b => Innen(b) && art(b) && Einer(b) && Richtung(b, p)
+                    // G5-3d: Eine Decke muss in der Höhe des Paars liegen können (Deckenlage); die getroffene geht vor.
+                    List<AbbildBauteil> beide = bestand.Where(b => Innen(b) && art(b) && Beide(b) && Richtung(b, p) && Deckenlage(b, p, g) >= 0).ToList();
+                    AbbildBauteil vorlage = beide.OrderByDescending(b => Deckenlage(b, p, g)).ThenBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault()
+                        ?? bestand.Where(b => Innen(b) && art(b) && Einer(b) && Richtung(b, p) && Deckenlage(b, p, g) >= 0
                                               && (p.Decke ? b.Art == Bauteilart.Decke : b.Art == Bauteilart.Innenwand))
-                                  .OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault();
+                                  .OrderByDescending(b => Deckenlage(b, p, g)).ThenBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault();
                     // Eine Decke ohne Bezug: die größte freie Decke des Geschosspaars, im oberen Geschoss vor dem unteren
                     // (wie die Trenndecke aus dem Grundriss).
                     if (vorlage == null && p.Decke)
                     {
                         string o = (p.Oben == p.RaumA ? ra : rb).GeschossKennung, u = (p.Oben == p.RaumA ? rb : ra).GeschossKennung;
-                        vorlage = bestand.Where(b => FreieDecke(b) && b.GeschossKennung != null && (b.GeschossKennung == o || b.GeschossKennung == u))
-                                         .OrderByDescending(b => b.GeschossKennung == o).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).FirstOrDefault();
+                        vorlage = bestand.Where(b => FreieDecke(b) && b.GeschossKennung != null && (b.GeschossKennung == o || b.GeschossKennung == u)
+                                                     && Deckenlage(b, p, g) >= 0)
+                                         .OrderByDescending(b => Deckenlage(b, p, g)).ThenByDescending(b => b.GeschossKennung == o).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).FirstOrDefault();
                     }
                     var abgedeckt = new List<AbbildBauteil>(beide);
                     if (vorlage != null && !abgedeckt.Contains(vorlage)) abgedeckt.Add(vorlage);
@@ -2740,6 +2746,7 @@ namespace WindowsFormsApplication1
                     var o = geschosse[i];
                     if (u.Lage.Value == o.Lage.Value) continue;
                     if (paare != null && paare.ContainsKey((u.Kennung, o.Kennung))) continue;
+                    if (_huelldeckenpaare.Contains((gi, u.Kennung, o.Kennung))) continue;   // G5-3d: Hülldecke der Datei
                     List<AbbildBauteil> vorlagen = g.Bauteile.Where(b => FreieDecke(b) && !verbraucht.Contains(b)
                                                                          && (b.GeschossKennung == o.Kennung || b.GeschossKennung == u.Kennung))
                         .OrderByDescending(b => b.GeschossKennung == o.Kennung).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).ToList();

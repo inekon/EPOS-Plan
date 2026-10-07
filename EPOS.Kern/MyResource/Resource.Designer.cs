@@ -43306,6 +43306,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Gebäude „{0}“ entfallen {1} Trenndecken aus den Raumkörpern ({2} m²): Die Datei führt an ihrer Stelle schon Platten gegen unbeheizte Räume, die als Hüllfläche zählen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERDECKE_HUELLE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERDECKE_HUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPERFLAECHEN {
@@ -43684,11 +43693,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen liegen in keiner Wand, an der sie Platz hätten, und bleiben an der Wand der Datei ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_OHNE_WAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_OHNE_WAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen hängen als Teile eines Bauteils (IfcRelAggregates, etwa Dachfenster am Dach) statt über eine Öffnung — sie werden als Öffnungen dieses Bauteils übernommen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_OEFFNUNG_TEIL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände tragen laut Datei mehr Fenster- und Türfläche, als sie groß sind; {1} Öffnungen gehen nach ihrer Lage an {2} andere Wände bzw. Teile derselben Wand ({3}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT", resourceCulture);
             }
         }
         
@@ -44112,6 +44139,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände bleiben kleiner als ihre Öffnungen; für sie gilt die Nettofläche der Datei, ihre Öffnungen werden nicht voll abgezogen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN", resourceCulture);
             }
         }
         

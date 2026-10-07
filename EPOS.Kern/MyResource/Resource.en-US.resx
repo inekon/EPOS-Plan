@@ -34081,6 +34081,18 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} openings without window or door have neither base quantities nor a readable body and are not deducted ({1}).</value>
   </data>
+  <data name="IMP_IFC_PROT_KOERPERDECKE_HUELLE" xml:space="preserve">
+    <value>In building "{0}", {1} separating slabs from the space bodies are dropped ({2} m²): the file already has slabs against unheated spaces at their location, which count as envelope areas.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT" xml:space="preserve">
+    <value>{0} walls carry more window and door area in the file than their own size; {1} openings move by their location to {2} other walls or parts of the same wall ({3}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>{0} openings lie in no wall with room for them and stay on the wall given by the file ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN" xml:space="preserve">
+    <value>{0} walls remain smaller than their openings; the net area of the file applies to them, their openings are not fully deducted ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} windows and doors fill no opening of a building component and are not counted ({1}).</value>
   </data>
