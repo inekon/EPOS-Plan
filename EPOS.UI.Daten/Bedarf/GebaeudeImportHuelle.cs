@@ -1136,8 +1136,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Spalten der Bauteilliste (eine Zone) in der Katalogliste mit Suche, Sortierung und
-        /// Trichter je Spalte: Bauteil (die elastische Spalte), Art, Fläche, ihre Herkunft („Fläche aus", G5-3), U-Wert,
-        /// Azimut, Neigung, Randbedingung und Herkunft; die Einheit steht im Spaltenkopf. Bauteil, Fläche,
+        /// Trichter je Spalte: Bauteil (die elastische Spalte), Art, Fläche, U-Wert,
+        /// Azimut, Neigung, Randbedingung, Herkunft und zuletzt die Herkunft der Fläche („Fläche aus", G5-3); die Einheit steht im Spaltenkopf. Bauteil, Fläche,
         /// U-Wert und Randbedingung stehen immer, die übrigen weichen, wenn die Liste schmal wird.
         /// </summary>
         internal static Katalogfilterprofil Bauteilprofil()
@@ -1147,8 +1147,6 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(Katalogfilterprofil.SpBezeichner, MyResource.Resource.GIMP_DLG_SP_BAUTEIL),
                 new Katalogspalte(GebaeudeImportZonen.SP_ART, MyResource.Resource.GIMP_DLG_SP_ART, rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(GebaeudeImportZonen.SP_FLAECHE, MyResource.Resource.GIMP_DLG_SP_FLAECHE, "m²", Katalogspaltenart.Zahl),
-                new Katalogspalte(GebaeudeImportZonen.SP_FLAECHENHERKUNFT, MyResource.Resource.GIMP_FL_SP_FLAECHENHERKUNFT,
-                                  rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(GebaeudeImportZonen.SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²K)", Katalogspaltenart.Zahl),
                 new Katalogspalte(GebaeudeImportZonen.SP_AZIMUT, MyResource.Resource.GIMP_DLG_SP_AZIMUT, "°", Katalogspaltenart.Zahl,
                                   rang: Katalogspaltenrang.BeiPlatz),
@@ -1156,6 +1154,8 @@ namespace WindowsFormsApplication1
                                   rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(GebaeudeImportZonen.SP_RAND, MyResource.Resource.GIMP_DLG_SP_RAND),
                 new Katalogspalte(GebaeudeImportZonen.SP_HERKUNFT, MyResource.Resource.GIMP_DLG_SP_HERKUNFT, rang: Katalogspaltenrang.Breit),
+                new Katalogspalte(GebaeudeImportZonen.SP_FLAECHENHERKUNFT, MyResource.Resource.GIMP_FL_SP_FLAECHENHERKUNFT,
+                                  rang: Katalogspaltenrang.BeiPlatz),
             });
         }
 

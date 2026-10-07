@@ -83,5 +83,49 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", d.Steckbriefe["k-mit-u"].Befundgrund);
             Assert.Equal(new[] { (2, 50.0), (0, 0.0), (1, 2.0), (0, 0.0) }, d.Befundsummen.Select(x => (x.Zahl, x.FlaecheM2)));
         }
+
+        // ------------------------------------------------------------------
+        //  G5-3b: Herkunft der Fläche und Filter „Nur Bauteile mit Befund“
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void Flaechenherkunft_als_kurzer_Text_leer_bei_Handeingabe()
+        {
+            using (new Kulturvorrichtung("de-DE"))
+            {
+                Assert.Equal(new[] { "Mengensatz", "Raumgrenze", "Körper", "schematisch", "", "" },
+                             new[] { FlaechenherkunftWerte.MENGENSATZ, FlaechenherkunftWerte.RAUMGRENZE, FlaechenherkunftWerte.KOERPER,
+                                     FlaechenherkunftWerte.SCHEMATISCH, null, "" }.Select(GebaeudeAufbauHuelle.FlaechenherkunftText));
+            }
+            using (new Kulturvorrichtung("en-US"))
+                Assert.Equal("Solid", GebaeudeAufbauHuelle.FlaechenherkunftText(FlaechenherkunftWerte.KOERPER));
+        }
+
+        [Fact]
+        public void Steckbrief_Bauteilliste_und_Flaechenliste_tragen_Herkunft_und_Befund()
+        {
+            GebaeudeImportAblauf a = BauteilbefundTests.Lesen("ifc4_g5_befund.ifc");
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(a, 0, 'E');
+            GebaeudeAnsichtDaten d = GebaeudeAufbauHuelle.MitAufbau(new GebaeudeAnsichtDaten(), v);
+            Assert.Contains(v.Zeilen, z => !string.IsNullOrEmpty(z.Bauteil.Flaechenherkunft));
+
+            var liste = GebaeudeImportHuelle.BauteileDaten(v).Liste;
+            IReadOnlyList<EPOS.UI.Dialoge.Import.GebaeudeFlaechenzeileDaten> flaechen = GebaeudeImportZonen.Flaechen(new GebaeudeZonierung(), v);
+            Assert.Equal(v.Zeilen.Count, flaechen.Count);
+            for (int i = 0; i < v.Zeilen.Count; i++)
+            {
+                GebaeudeBauteilzeile z = v.Zeilen[i];
+                string text = GebaeudeAufbauHuelle.FlaechenherkunftText(z.Bauteil.Flaechenherkunft);
+                Assert.Equal(text, liste[i].Text(GebaeudeImportZonen.SP_FLAECHENHERKUNFT) is var t && t == ParameterVerwendung.LEER ? "" : t);
+                Assert.Equal(text, flaechen[i].Zeile.Text(GebaeudeImportZonen.SP_FLAECHENHERKUNFT) is var f && f == ParameterVerwendung.LEER ? "" : f);
+                Assert.Equal(z.Befund != Bauteilbefund.Ohne, flaechen[i].MitBauteilbefund);
+                if (z.Kennung != null && d.Steckbriefe.TryGetValue(z.Kennung, out BauteilsteckbriefDaten s))
+                    Assert.Equal((z.Bauteil.Flaechenherkunft ?? "", text), (s.FlaechenherkunftSchluessel, s.Flaechenherkunft));
+            }
+            // Die Probe trägt fünf Bauteile mit unlesbarem Körper — der Filter findet sie.
+            Assert.Equal(5, flaechen.Count(f => f.MitBauteilbefund));
+            Assert.Contains(GebaeudeImportZonen.Flaechenprofil().Spalten, sp => sp.Schluessel == GebaeudeImportZonen.SP_FLAECHENHERKUNFT);
+            Assert.Contains(GebaeudeImportHuelle.Bauteilprofil().Spalten, sp => sp.Schluessel == GebaeudeImportZonen.SP_FLAECHENHERKUNFT);
+        }
     }
 }

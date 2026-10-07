@@ -421,8 +421,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Spalten der Liste „Flächen je Zone": Zone, Bauteil (die elastische Spalte), Art, Fläche,
-        /// Azimut, Neigung, Randbedingung, Nachbarzone, U-Wert, Aufbau, Herkunft und Befund, nach der Fläche ihre Herkunft
-        /// („Fläche aus", G5-3). Zone,
+        /// Azimut, Neigung, Randbedingung, Nachbarzone, U-Wert, Aufbau, Herkunft und Befund, zuletzt die Herkunft der
+        /// Fläche („Fläche aus", G5-3). Zone,
         /// Bauteil, Fläche, Randbedingung, U-Wert und Befund stehen immer; die übrigen weichen, wenn die
         /// Liste schmal wird.
         /// </summary>
@@ -434,7 +434,6 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(Katalogfilterprofil.SpBezeichner, MyResource.Resource.GIMP_DLG_SP_BAUTEIL),
                 new Katalogspalte(SP_ART, MyResource.Resource.GIMP_DLG_SP_ART, rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(SP_FLAECHE, MyResource.Resource.GIMP_DLG_SP_FLAECHE, "m²", Katalogspaltenart.Zahl),
-                new Katalogspalte(SP_FLAECHENHERKUNFT, MyResource.Resource.GIMP_FL_SP_FLAECHENHERKUNFT, rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(SP_AZIMUT, MyResource.Resource.GIMP_DLG_SP_AZIMUT, "°", Katalogspaltenart.Zahl,
                                   rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(SP_NEIGUNG, MyResource.Resource.GIMP_DLG_SP_NEIGUNG, "°", Katalogspaltenart.Zahl,
@@ -445,6 +444,7 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(SP_AUFBAU, MyResource.Resource.GIMP_FL_SP_AUFBAU, rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_HERKUNFT, MyResource.Resource.GIMP_DLG_SP_HERKUNFT, rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_BEFUND, MyResource.Resource.GIMP_FL_SP_BEFUND),
+                new Katalogspalte(SP_FLAECHENHERKUNFT, MyResource.Resource.GIMP_FL_SP_FLAECHENHERKUNFT, rang: Katalogspaltenrang.BeiPlatz),
             });
         }
 
