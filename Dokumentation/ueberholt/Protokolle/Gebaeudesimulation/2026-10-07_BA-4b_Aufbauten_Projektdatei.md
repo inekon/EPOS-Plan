@@ -50,9 +50,9 @@ Einzonenweg, Arbeitskopie von Projekt 1045.
 
 Proben mit synthetischer Projektdatei (keine Anwenderdatei im Repositorium); Referenzlauf unberührt, keine Einfrierregel betroffen.
 
-## 6 Gate 789
+## 6 Gate 792
 
-Gemeinsam mit BA-3, Hauptbaum auf `10c23a85` nach dem Merge mit SLP25 (Schritt 193), 71 min: 20 404 Tests, 20 400 grün, 4 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 772, EPOS.Kern 11 658 mit 3 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-06_R39_Auslegungsheizlast` PASS, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 479 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61. Im Vorlauf Gate 787 auf `ea4dd254` war einzig die Einheitenwache rot (J→kJ der Wärmekapazität im Steckbrief), behoben in `26242e21`.
+Gemeinsam mit BA-3, Hauptbaum auf `be23afc2` nach den Merges mit SLP25 (Schritt 193) und KP3, 75 min: 20 436 Tests, 20 432 grün, 4 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 772, EPOS.Kern 11 690 mit 3 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-06_R39_Auslegungsheizlast` PASS, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 479 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61. Vorläufe: Gate 787 auf `ea4dd254` (einzig die Einheitenwache rot, J→kJ der Wärmekapazität im Steckbrief, behoben in `26242e21`) und Gate 789 auf `10c23a85` nach dem Merge mit SLP25 (grün).
 
 ## 7 Offen
 
