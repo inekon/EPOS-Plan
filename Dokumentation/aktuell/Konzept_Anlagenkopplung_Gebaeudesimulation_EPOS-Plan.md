@@ -1,5 +1,7 @@
 # Konzept: Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur (Anlagenkopplung)
 
+> **Stand 07.10.2026 — AK3 wie gebaut (W0–W4b), W5/W6 offen.** Gebaut sind der Gebäude-Stepper, die Kaskadenstunde mit Bedarfsnaht, die Interpolation über den Vorlauf (AK3-I, Schalter aus), der geschlossene Kreis im Kern, die Stufe in der Projekteinstellung, der Raumeinfluss der Heizkurve (H2) und die Oberfläche samt Bericht (Status #796, #799, #804). Offen sind Referenzprojekt und neue Basis (W5) sowie das Wiki mit Logbuch (W6, Quellen und Entwürfe liegen). Abweichungen der Umsetzung vom Entwurf stehen in 6.3, 10.6 und 11.2.
+
 > **Nachgezogen 07.10.2026 — Entscheide E100 und E102** ([Register](Status_Gebaeudesimulation_VDI6007.md)): AK3 wird jetzt gebaut (E100; H6 aufgehoben), nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) mit den Antworten E102. AK3 ist eine **eigene, wählbare Stufe** (Vorgabe AK1), die Kaskade wird **befragt, nicht zurückgenommen**, die Interpolation der Wärmepumpenkennlinie über den Vorlauf ist der eigene Gegenstand **AK3-I** (H-F4 abgelöst). Kapitel 0, 6.3, 11.2, 12, 13 und 14 tragen diesen Stand; Architektur, Festlegungen und Wellenplan stehen im Entwurf.
 
 > **Nachgezogen 05.10.2026 — Entscheid E89** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.70): Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe **GA — Altweg ablösen** entfällt, Q24 und Q25 sind gegenstandslos. Wo dieses Papier GA, „bis zur Ablösung“ oder die Löschliste nennt, gilt: Der Sonderfall „feste Last“ samt Hinweis und Ausweis bleibt dauerhaft und steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
@@ -1150,6 +1152,26 @@ Fall mit großem Abstand (6 × 6 = 36) und hält den schlechtesten Fall bei 50 Z
 6 000 Zonenjahre, mit den gemessenen 11–29 ms also rund **70–175 s** je Gebäude und Jahr. **Die Laufzeit ist vor der Abnahme von
 AK3 an einem echten Mehrzonengebäude zu messen, nicht zu schätzen** (N-A4).
 
+**Wie gebaut (AK3, W3 bis W4b).** Die Stufe ist in der Projekteinstellung wählbar (Vorgabe AK1). Je Stunde
+wirkt die verfügbare Leistung auf die Gebäude zurück: Kapazität der verfügbaren Erzeuger am Vorlauf
+(Wärmepumpe aus der Kennlinie am Vorlauf und an der Quelle, Kessel, BHKW), plus aus den Heizungspuffern
+Entnehmbares, minus Vorrang für Brauchwasser, Prozess und Netzverlust. Die Iteration bricht bei 0,01 K
+Raumluft, 0,1 W Leistung und 0,05 K Vorlauf ab, höchstens 20 Durchläufe, im Mehrzonenfall Produkt
+≤ 120; sonst endet der Lauf mit einem benannten Fehler samt Gebäude und Stunde. Bei Erdsonden rechnet
+der Kreis je Feldlauf neu aus Pass 1 (W3d); die Quellentemperatur der Sonde kommt am Stundenbeginn aus
+dem Sondenfeld. **Abweichungen vom Entwurf:** (a) Der Kurzweg „der unbegrenzte Schritt unter der
+Schranke ist die Lösung" hielt in 91 Stunden nicht; **jeder Durchlauf rechnet begrenzt** (W3c).
+(b) Der Kreis wird **je Feldlauf** neu angelegt, nicht einmal je Projektlauf (W3d). (c) Die
+**Kennzahlen des Kreises** (Durchläufe Mittel und Höchstwert, Fallwechsel, Stunden an der Schranke, Stunden
+mit leerem Speicher, Stunden mit Restbedarf) hängen am **Projektergebnis**, nicht am Gebäude; der
+Bedarfsdialog zeigt sie als Kacheln, der Bericht als Tafel „Anlagenkopplung AK3 – geschlossener Kreis".
+Auskünfte (Bedarfsdialog eines Gebäudes, Aufheizauskunft) rechnen ohne Kreis auf dem Profilweg und sagen
+das. **H2 (Raumeinfluss der Heizkurve):** Spalte am Gebäude `Heizkurve_Raumeinfluss` (k_R in K/K, 0 bis 10,
+leer oder 0 = aus); Vorlauf = Heizkurve + k_R × Unterschreitung der kältesten Zone derselben Stunde,
+gekappt am Auslegungsvorlauf und an `Vorlauf_Max`; wirkt nur in Stufe AK3. **Interpolation der
+Wärmepumpenkennlinie über den Vorlauf** (Wärme- und Kälteseite, AK3-I): gebaut, Kernschalter aus; sie
+schaltet mit der neuen Basis (W5) ein.
+
 ### 6.4 Was nichts davon berührt
 
 - **Den Altweg.** `Altweg/` bekommt keine Zeile — nicht in AK1, nicht in AK2, nicht in AK3 und auch
@@ -2180,6 +2202,15 @@ werden je Seite geführt; in einer Umschaltstunde tragen Heiz- und Kälteseite j
 
 ---
 
+### 10.6 Schritt H im AK3-Weg — wie gebaut
+
+Im AK3-Weg läuft die Stunde über den `GebaeudeStepper` (Probeschritt mit Sicherung des Stundenanfangs,
+`Zuruecksetzen`, `Festschreiben`); die Kaskadenstunde (`Kaskadenschleife.StundeRechnen`) wird nach der
+Konvergenz **einmal** gerechnet, die Vektorstufen sind Schleifenmitglieder, die Bedarfsnaht
+`IStundenbedarf` liefert den Bedarf der Stunde. Die Angebotsfunktion (`Stundenangebot`) und die Verteilung
+je Stunde (`Stundenverteilung`) sind zustandsfrei; über 8760 Stunden ist die Verteilung bitgleich zum
+Zweipass von AK2. Ohne Grenzen ist das Ergebnis bitgleich zu AK1 (Gate).
+
 ## 11. Tests, Nachweis, Referenzbasis
 
 ### 11.1 Reine Rechenproben (ohne Datenbank)
@@ -2240,6 +2271,11 @@ Dazu, wie in ADR-005, die **Vergleichsrechnung** mit dem einfacheren Weg: AK2 (P
 AK3 (echte Kopplung) am selben Projekt, damit der Gewinn eine Zahl ist und keine Behauptung. Und
 die Probe **„ein Erzeuger ohne Grenzen ist bitgleich zu AK1"** als Gate — dasselbe Muster wie
 „eine Zone bitgleich zum Einzonenmodell".
+
+**Wie gebaut:** O1, O1p und O2 sind als Proben gebaut (Abweichung zur Bisektion ≤ 0,00003 K); dazu
+Fallwechsel, benannter Fehler, Laufzeitprobe (Einzone Faktor 1,16 zu AK1) und ein Mehrzonengebäude. Laufzeit
+mit Kernstufe AK3: 1047 Faktor 1,04, 1054 Faktor 1,21, 1056 Faktor 1,43 (Grenze 3). Die Abnahme am Rechenweg
+(Referenzlauf 22 von 22 gegen R40 byte-gleich) ist geführt; RP-AK3 und der Vergleich AK2/AK3 folgen mit W5.
 
 ### 11.3 Datenbankfälle
 
@@ -2390,7 +2426,7 @@ eingeschalteter Kopplung rechnen wollte, würde die Referenz verlassen** — die
 | **AK0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 15, Kühlkonzept 1.3/14, Systementwurf 12 und Umsetzungskonzept auf E22, E23 und **E26**; die Fragen **H1–H12** sind mit **E24** entschieden (13.1), der Stufenplan **Q26** mit **E27** (12.3) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
 | **AK1** | **Heizkreis als Randbedingung.** Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) samt Sichtneubau und NULL-erhaltender Katalogkopie; Klasse `Waermeuebergabe`; Heizkurve und Sollwertvektor in `GebaeudeModellEingang`; vierter Betriebsfall in `Zonenmodell2K` samt Sekantenleitwert; `Stundenrand`/`Stundenergebnis` erweitert; Gruppe „Wärmeübergabe" im Gebäudedialog samt Wochenraster-Baustein; Hülle nach `EPOS.UI.Daten`; zwei Kennzahlkacheln, Bild „Vorlauf und Rücklauf", Berichtsabschnitt; drei bedingte Reihen im Export; **Kennlinienwahl der Wärmepumpe am gerechneten Vorlauf** (6.1, Erzeugerseite); Texte, Meldungen, Wiki-Abschnitt | **G1 und G2 stehen** — AK1 kommt nach G2 (Q26, E27); ohne Stundenmodell im Produkt keine stündliche Raumtemperatur; das Gebäudeschema mit `Heizleistung_Max` und `Heizung_Strahlungsanteil` ist ausgerollt | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kopplung byte-gleich; die beiden Grenzfallproben aus 11.1; `ChartProben` grün | **ja** | **10–15** |
 | **AK2** | **Erzeugerfahrplan als Verfügbarkeit.** Schemaschritt `AK-S2` (Zeitprogramm, `Vorlauf_Max`) und der Komfortteil von `AK-S3`; Klasse `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` (Profilweg, mit Speichervorrat über die Sperrdauer); **Zweipass der Verteilung** samt Randfall, Rundungsrest und zweiter Stufe auf die Zonen (6.2); Wochenraster im Erzeugerdialog; vierte Grenze in der Kette (4.5); Komfortkennzahlen, Bild „Raumtemperatur und Sollwert", Berichtszeile; Meldungen; Eintrag der neuen Klasse in die `Modultrennungswache` | **AK1 abgenommen und eine Feldphase** (B-A6; Q26, E27); Gebäude auf dem Altweg gehen als feste Last ein (E23, E26, 6.2) | Kern-Gate grün; Referenzlauf gegen die neue Basis; die AK2-Proben aus 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander (5.5) | **ja** | **11–15** |
-| **AK3** | **Der geschlossene Kreis, eigene wählbare Stufe (E102, Vorgabe AK1).** Gebäude-Stepper (W1); Kaskadenstunde herausgelöst, Bedarfsnaht, Inventar der Jahresvektor-Leser (W2); **AK3-I**: Interpolation der Kennlinie über den Vorlauf, Wärme- und Kälteseite (W-I); Angebotsfunktion, Klasse `Anlagenkopplung` (Abbruchmaße, Höchstzahl 20, Produktschranke 120, benannter Fehler), Prüforakel (W3); Schema, H2, Oberfläche (W4); Referenzprojekt RP-AK3 (Kopie von 1056 mit Puffer) und Basis (W5); Papiere und Wiki (W6) — [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 6 | AK2 abgenommen; **mit E100 jetzt** statt nach der Feldphase; Basiswechsel erst nach R40 | O1, O1p, O2 getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; W1–W4 und W-I byte-gleich (W-I hinter Kernschalter); Laufzeit nach E102 (Faktor 3, Einzone ≤ 100 ms) an 1054 gemessen; Referenzlauf in W5: 1047/1056 neu (AK3-I), RP-AK3 neu, übrige byte-gleich | **ja** (einmal, W5) | **20,5–33,5** |
+| **AK3** | **Der geschlossene Kreis, eigene wählbare Stufe (E102, Vorgabe AK1).** **Stand: W0–W4b gebaut, W5/W6 offen.** Gebäude-Stepper (W1); Kaskadenstunde herausgelöst, Bedarfsnaht, Inventar der Jahresvektor-Leser (W2); **AK3-I**: Interpolation der Kennlinie über den Vorlauf, Wärme- und Kälteseite (W-I); Angebotsfunktion, Klasse `Anlagenkopplung` (Abbruchmaße, Höchstzahl 20, Produktschranke 120, benannter Fehler), Prüforakel (W3); Schema, H2, Oberfläche (W4); Referenzprojekt RP-AK3 (Kopie von 1056 mit Puffer) und Basis (W5); Papiere und Wiki (W6) — [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 6 | AK2 abgenommen; **mit E100 jetzt** statt nach der Feldphase; Basiswechsel erst nach R40 | O1, O1p, O2 getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; W1–W4 und W-I byte-gleich (W-I hinter Kernschalter); Laufzeit nach E102 (Faktor 3, Einzone ≤ 100 ms) an 1054 gemessen; Referenzlauf in W5: 1047/1056 neu (AK3-I), RP-AK3 neu, übrige byte-gleich | **ja** (einmal, W5) | **20,5–33,5** |
 
 **Summen:** AK0 + AK1 = 11–17 PT; AK0–AK2 = 22–32 PT; AK0–AK3 = **42,5–65,5 PT** mit dem Aufwand
 von AK3 nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) (vorher 45–70 PT, Stufenplan Q26/E27), jeweils zuzüglich rund 0,5 PT je
