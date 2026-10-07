@@ -48523,6 +48523,26 @@ Chart</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
     <value>Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND" xml:space="preserve">
+    <value>{0} Außenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND" xml:space="preserve">
+    <value>{0} Innenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH" xml:space="preserve">
+    <value>{0} Dächer: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE" xml:space="preserve">
+    <value>{0} Böden und Decken: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE" xml:space="preserve">
+    <value>{0} sonstige Bauteile: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUMFLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} Räume ohne Flächenmenge und ohne Grundriss tragen die Bodenfläche ihres Körpers als Raumfläche, zusammen {1} m² ({2}); ohne Volumenmenge gilt das Volumen des Körpers.</value>
   </data>
 </root>
 

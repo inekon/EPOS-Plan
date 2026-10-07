@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1
     /// ohne lesbaren Körper bleibt die Fläche leer (<c>IMP_IFC_PROT_KEINE_MENGEN</c>). <c>IfcZone</c> wird
     /// nicht gelesen (3.5 Nr. 8), <c>Pset_SpaceThermalLoad.AirExchangeRate</c> nicht benutzt (3.4).</para>
     /// </summary>
-    internal sealed class IfcAbbildBauer
+    internal sealed partial class IfcAbbildBauer
     {
         private const string P = IfcImportProfil.MELDUNGSPRAEFIX;
         private const int BEISPIELE = 5;
@@ -152,6 +152,7 @@ namespace WindowsFormsApplication1
 
             Raumbezuege();
             Bauteile();
+            Koerperflaechenzuordnung();
             Koerpertrennflaechen();
             GrundrissTrenndecken();
             // Die Flächen der Körper nach Randbedingung (Konzept HottCAD-Verbund 4.2) — Anzeige und Gegenprobe.
@@ -2555,6 +2556,8 @@ namespace WindowsFormsApplication1
                 if (ohne.Count > 0)
                     g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_OHNE_PAAR", Ganz(ohne.Count),
                         string.Join(", ", ohne.Take(KOERPER_OHNE_PAAR_NAMEN)) + (ohne.Count > KOERPER_OHNE_PAAR_NAMEN ? ", …" : "")));
+                // G5-3: Ein Raumpaar, das der Körperweg der Bauteilflächen schon verbindet, bekommt kein zweites Trennbauteil.
+                paare = paare.Where(p => !Abgedeckt(g, p)).ToList();
                 if (paare.Count == 0) continue;
                 g.KoerperpaareGebildet = true;
 

@@ -70,7 +70,7 @@ namespace WindowsFormsApplication1
             using (modell as IDisposable)
             {
                 abbruch.ThrowIfCancellationRequested();
-                new IfcAbbildBauer(modell, abbild, melder, abbruch, ANTEIL_PARSEN) { NordwinkelVorgabe = profil?.NordwinkelVorgabeGrad }.Bauen();
+                new IfcAbbildBauer(modell, abbild, melder, abbruch, ANTEIL_PARSEN) { NordwinkelVorgabe = profil?.NordwinkelVorgabeGrad, KoerperflaechenAus = profil?.KoerperflaechenAus ?? false }.Bauen();
             }
 
             Verluste(abbild, protokoll);

@@ -43306,6 +43306,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Böden und Decken: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Dächer: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Innenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} sonstige Bauteile: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt Raumgrenzen; sie gehen vor. Die Raumkörper zeigen {1} Trennflächen (Trennwände {2} m², Trenndecken {3} m²), die nur gezählt werden. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT {
@@ -43806,6 +43851,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Flächenmenge und ohne Grundriss tragen die Bodenfläche ihres Körpers als Raumfläche, zusammen {1} m² ({2}); ohne Volumenmenge gilt das Volumen des Körpers. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAUMFLAECHE_KOERPER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAUMFLAECHE_KOERPER", resourceCulture);
             }
         }
         
