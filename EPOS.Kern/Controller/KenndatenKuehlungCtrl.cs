@@ -194,7 +194,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die Kühlkennlinie eines Projektgeräts für seinen Kühl-Vorlauf (NULL = kleinster Stützwert).</summary>
         public static Kuehlkennlinie KennlinieProjekt(int idProjektWp, int? kuehlVorlauf)
         {
-            return Kuehlkennlinie.Bilden(ZeilenProjekt(idProjektWp), kuehlVorlauf);
+            // AK3-I (I-3): Interpolation über den Kühl-Vorlauf nur mit dem Kernschalter (Vorgabe aus).
+            return Kuehlkennlinie.Bilden(ZeilenProjekt(idProjektWp), kuehlVorlauf, VorlaufInterpolation.Ein);
         }
 
         private static List<KuehlkennlinienZeile> Zeilen(string tabelle, int idWp)
