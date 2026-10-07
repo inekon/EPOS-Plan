@@ -184,6 +184,16 @@ namespace WindowsFormsApplication1
 
                 GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude, LetzterAufheizplan);
 
+                // AK3-W3b (Entwurf AK3 2.1 Schritt 3): Im AK3-Weg ist dieser Lauf Pass 1; daneben entsteht aus
+                // DEMSELBEN Eingang ein zweiter, noch nicht eingeschwungener Stepper für den Kreis. Ohne Erfassung
+                // (jeder Lauf außer AK3) und im Probelauf geschieht nichts.
+                if (Ak3Erfassen != null && !Probelauf && eingang.KopplungWirksam)
+                {
+                    ZonenEingang kreis = ZonenEingang.Einzeln(eingang);
+                    if (LetzterAufheizplan != null) kreis.AufheizplanSetzen(LetzterAufheizplan);
+                    Ak3Erfassen(index, gebaeude, GebaeudeStepper.Einzone(kreis));
+                }
+
                 Array.Copy(ergebnis.HeizlastW, ziel, 8760);
                 verbrauchAltKwh = ergebnis.VerbrauchAltKwh;
                 _traeger.Setzen(index, ergebnis);
@@ -669,6 +679,13 @@ namespace WindowsFormsApplication1
         /// Ergebnis die Aufheizwerte samt W3 und Rampenmaske; <c>null</c> = Schalter aus, das Ergebnis bleibt,
         /// wie es war.</param>
         /// <exception cref="GebaeudeModellException">bei jedem Fehler des Lösers oder der Plausibilität.</exception>
+        /// <summary>
+        /// <b>Erfassung des AK3-Wegs</b> (AK3-W3b): gesetzt nur während der Bedarfsrechnung eines Laufs mit
+        /// Stufe AK3; bekommt je gekoppeltem Einzonengebäude (Zeilenindex, Zeile) den Stepper des Kreises.
+        /// <c>null</c> = der heutige Lauf.
+        /// </summary>
+        internal Action<int, ProjektGebaeudeModel, GebaeudeStepper> Ak3Erfassen { get; set; }
+
         internal static GebaeudeModellErgebnis Laufen(GebaeudeModellEingang eingang, int index, int idGebaeude,
                                                      Aufheizplan aufheizplan = null)
         {

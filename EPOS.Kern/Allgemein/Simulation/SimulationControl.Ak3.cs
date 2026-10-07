@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -73,6 +74,87 @@ namespace WindowsFormsApplication1
                 else if (tool[i] == DbWerte.ERZEUGER_SOLARTHERMIE) _solarInSchleife = true;
                 else if (tool[i] == DbWerte.ERZEUGER_BHKW) _bhkwInSchleife = true;
             }
+        }
+
+        // =========================================================================================
+        //  AK3-W3b — der AK3-Weg an der Kaskade (Entwurf AK3 2.1 Schritte 3 bis 5)
+        // =========================================================================================
+
+        /// <summary>Hat <see cref="Ak3Einrichten"/> Naht und Schalter für den letzten Lauf gesetzt?</summary>
+        private bool _ak3Eingerichtet;
+
+        /// <summary>
+        /// Richtet vor der Kaskade den AK3-Weg ein, wenn die Bedarfsseite ihn erfasst hat
+        /// (<see cref="SimulationWaermebedarf.Ak3"/>): die Bedarfsnaht <see cref="Ak3Stundenbedarf"/> und die
+        /// Vektorstufen als Schleifenmitglieder (Festlegung 13). Ohne AK3-Weg bleibt alles, wie es ist; Naht und
+        /// Schalter eines früheren AK3-Laufs derselben Instanz werden zurückgenommen.
+        /// </summary>
+        private void Ak3Einrichten()
+        {
+            if (_ak3Eingerichtet)
+            {
+                Stundenbedarf = null;
+                Ak3VektorstufenInSchleife = false;
+                _ak3Eingerichtet = false;
+            }
+            Ak3Weg weg = simulation_Waermebedarf?.Ak3;
+            if (weg == null || weg.Gebaeude.Count == 0 || weg.Gebaeude.Any(g => g.Pass1W == null)) return;
+
+            Ak3VektorstufenInSchleife = true;
+            Stundenbedarf = new Ak3Stundenbedarf(weg, () => Ak3KreisBauen(weg), simulation_Waermebedarf.Heizkreis,
+                (h, d) =>
+                {
+                    if (_wpInSchleife && simulation_wp?.Waermebedarf_stuendlich != null) simulation_wp.Waermebedarf_stuendlich[h] += d;
+                });
+            _ak3Eingerichtet = true;
+        }
+
+        /// <summary>
+        /// Baut den Kreis bei der ersten Kaskadenstunde — dann sind die Module aufgebaut: Stepper einschwingen
+        /// (720 h ohne Kaskade, Festlegung 16), Wärmepumpen aus ihren Modulen (Kennlinien, Quelle, Kappung), Kessel
+        /// und BHKW mit <c>Ptherm</c> der Projektkopie (Festlegung 5), Speicherleser über die Puffer der Registry.
+        /// </summary>
+        private Anlagenkopplung Ak3KreisBauen(Ak3Weg weg)
+        {
+            var gebaeude = new List<Kopplungsgebaeude>();
+            foreach (Ak3Weg.Eintrag e in weg.Gebaeude)
+            {
+                e.Stepper.Beginnen();
+                gebaeude.Add(new Kopplungsgebaeude(e.Index, e.Zeile.ID_Gebaeude, e.Zeile.Gebaeudename, e.Stepper, e.Faktor));
+            }
+            var erzeuger = new List<IErzeugerkapazitaet>();
+            foreach (Anlagenfahrplan.Erzeugerzeile z in weg.Erzeuger)
+            {
+                WaermepumpeKapazitaet wp = z.Typ == WizardItemClass.WP_TYP && _wpInSchleife
+                    ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan) : null;
+                erzeuger.Add(wp ?? (IErzeugerkapazitaet)new FesteKapazitaet(z.Fahrplan));
+            }
+            return new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()));
+        }
+
+        /// <summary>
+        /// Die Stundenschleife im AK3-Weg: ein Fehler des Kreises oder des Gebäudemodells bricht den Lauf benannt
+        /// ab (F-A15, keine stille Näherung); danach führt die Bedarfsseite ihre Reihen nach.
+        /// </summary>
+        private bool Ak3Rechnen(Kaskadenschleife schleife, Kanalsatz kanaele)
+        {
+            bool ok;
+            try
+            {
+                ok = schleife.Rechnen(kanaele);
+            }
+            catch (AnlagenkopplungException ex)
+            {
+                SimulationProtokoll.Aktuell.Fehlermeldung(ex.Message);
+                return false;
+            }
+            catch (GebaeudeModellException ex)
+            {
+                SimulationProtokoll.Aktuell.Fehlermeldung("Anlagenkopplung AK3, Gebäudemodell VDI 6007 [" + ex.Grund + "]: " + ex.Message);
+                return false;
+            }
+            if (ok) simulation_Waermebedarf.Ak3Nachfuehren();
+            return ok;
         }
 
         /// <summary>Ist der Heizkessel Mitglied der Stundenschleife des letzten Laufs? (Proben)</summary>
