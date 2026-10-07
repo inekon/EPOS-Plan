@@ -764,6 +764,16 @@ namespace WindowsFormsApplication1
                 "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " + projektId + ")");
             if (n == null || n == DBNull.Value || Convert.ToInt32(n) == 0) return;
 
+            // Die Heilung ist Pflege, keine Kostenänderung: Sie stellt nur nach, was das
+            // Löschen oder Neuanlegen der Anlage (selbst gestempelt) verursacht hat. Sie läuft
+            // vor jeder Rechnung und vor dem Aufbau der Kostenseite - stempelte sie, hinge das
+            // Band „bitte neu berechnen" davon ab, ob die Kostenseite geöffnet wurde.
+            KostenAenderungsstempel.OhneProjektstempel(projektId, () => ZuordnungUmschluesseln(projektId));
+        }
+
+        /// <summary>Der schreibende Teil von <see cref="ZuordnungReparieren"/>.</summary>
+        private static void ZuordnungUmschluesseln(int projektId)
+        {
             // Landkarte Komponente -> Verweisspalte (dieselbe wie Migration 45/46).
             var verweise = new Dictionary<int, string>();
             try

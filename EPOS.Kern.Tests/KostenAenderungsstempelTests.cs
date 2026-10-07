@@ -289,6 +289,114 @@ namespace EPOS.Kern.Tests
             Assert.StartsWith(R.WIRT_STATUS_VERALTET_KATALOG, wirt.Statuszeile, StringComparison.Ordinal);
         }
 
+        // =============================================================================
+        //  Teil 4 - was NICHT stempelt: Selbstheilung der Zuordnung, Simulationsfelder
+        // =============================================================================
+
+        /// <summary>Eine Position des Stamms 1019 auf der Wärmepumpe (Anlage 14922, Anker 1020022).</summary>
+        private const long POSITION_WP = 101600051L;
+        private const int ANLAGE_WP = 14922;
+
+        /// <summary>
+        /// <b>Die Selbstheilung der Anlagenzuordnung stempelt nicht.</b> Eine Position zeigt auf eine
+        /// Anlage, die es nicht mehr gibt; <c>ZuordnungReparieren</c> schlüsselt sie über ihren Anker
+        /// auf die Anlage desselben Geräts um (Gegenprobe: die Zeile ist geschrieben) — der
+        /// Projektstempel bleibt, wie er stand: ein gesetzter Stempel mit seinem Text, ein leerer leer.
+        /// </summary>
+        [Fact]
+        public void Die_Selbstheilung_der_Zuordnung_laesst_den_Stempel_stehen()
+        {
+            if (!_db.Vorhanden) return;
+
+            Verwaisen();
+            Projektstempel(STAMM, ERGEBNIS);
+            KostenProjektPositionenCtrl.ZuordnungReparieren(STAMM);
+            Assert.Equal(ANLAGE_WP, (int)Zahl("SELECT \"ID_Anlage\" FROM \"Tab_ProjektWerte\" WHERE \"ID\" = " + POSITION_WP));
+            Assert.Equal(ERGEBNIS.ToString(KostenStempelSchema.FORMAT, CultureInfo.InvariantCulture), StempelText(STAMM));
+
+            Verwaisen();
+            StempelLeeren();
+            KostenProjektPositionenCtrl.ZuordnungReparieren(STAMM);
+            Assert.Equal(ANLAGE_WP, (int)Zahl("SELECT \"ID_Anlage\" FROM \"Tab_ProjektWerte\" WHERE \"ID\" = " + POSITION_WP));
+            Assert.Null(StempelText(STAMM));
+        }
+
+        /// <summary>
+        /// Gegenprobe zur Selbstheilung: Dieselbe Umschlüsselung von Hand (ohne die Klammer des Kerns)
+        /// stempelt — der Trigger an <c>Tab_ProjektWerte</c> ist also scharf.
+        /// </summary>
+        [Fact]
+        public void Dieselbe_Umschluesselung_von_Hand_stempelt()
+        {
+            if (!_db.Vorhanden) return;
+            Verwaisen();
+            StempelLeeren();
+            Schreibe("UPDATE \"Tab_ProjektWerte\" SET \"ID_Anlage\" = ? WHERE \"ID\" = ?",
+                     new DbParam("?", ANLAGE_WP), new DbParam("?", POSITION_WP));
+            Assert.NotNull(StempelText(STAMM));
+        }
+
+        /// <summary>
+        /// <b>Nach der Rechnung öffnet der Anwender die Kostenseite</b>, und eine verwaiste Zuordnung
+        /// ist zu heilen (etwa aus einem Bestand vor den Stempeln): Die Seite heilt beim Laden und
+        /// zeigt trotzdem kein Band — die Heilung ist keine Kostenänderung.
+        /// </summary>
+        [Fact]
+        public async Task Die_Kostenseite_heilt_beim_Laden_ohne_Band()
+        {
+            if (!_db.Vorhanden) return;
+            BerichteKostenHuelle huelle = GruppeGeladen();
+            Verwaisen();
+            await Rechnen(huelle);
+
+            // Wieder verwaist, der Stempel davon zurück auf leer - wie in einem Bestand, dessen
+            // Waise älter ist als die Stempel. Dann eine Sekunde später die Seite laden.
+            Verwaisen();
+            StempelLeeren();
+            Thread.Sleep(1100);
+
+            // Das erste Laden urteilt vor der Heilung; das zweite sähe einen Stempel der Heilung.
+            KostenLaden(huelle);
+            Assert.Equal(ANLAGE_WP, (int)Zahl("SELECT \"ID_Anlage\" FROM \"Tab_ProjektWerte\" WHERE \"ID\" = " + POSITION_WP));
+            KostenStand kosten = KostenLaden(huelle);
+            Assert.False(kosten.Nachrechnen);
+            Assert.Equal(Ergebnisveraltung.Keine, kosten.NachrechnenGrund);
+        }
+
+        /// <summary>
+        /// <b>Die Simulation macht die Gruppe nicht veraltet:</b> Sie schreibt an der Anlage die
+        /// Quell- und Sondenfelder (<c>WQ_*</c>); diese stehen nicht in der Spaltenliste des Triggers.
+        /// </summary>
+        [Fact]
+        public void Die_Quellfelder_der_Simulation_stempeln_nicht()
+        {
+            if (!_db.Vorhanden) return;
+            StempelLeeren();
+            Schreibe("UPDATE \"Tab_Energieanlagen\" SET \"WQ_Tiefe\" = COALESCE(\"WQ_Tiefe\", 0) + 1 WHERE \"ID_Projekt\" = ?",
+                     new DbParam("?", TEST1));
+            Assert.Null(StempelText(TEST1));
+            foreach (int id in new[] { STAMM, TEST1, TEST2 })
+                Assert.Equal(Ergebnisveraltung.Keine, KostenAenderungsstempel.Pruefe(id, ERGEBNIS));
+        }
+
+        /// <summary>Die Position des Stamms zeigt auf eine Anlage, die es nicht gibt.</summary>
+        private static void Verwaisen()
+        {
+            Schreibe("UPDATE \"Tab_ProjektWerte\" SET \"ID_Anlage\" = 999999 WHERE \"ID\" = ?",
+                     new DbParam("?", POSITION_WP));
+        }
+
+        /// <summary>Der Projektstempel als gespeicherter Text; <c>null</c> = leer.</summary>
+        private static string StempelText(int projekt)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT \"Kosten_Geaendert\" FROM \"Tab_Projekt\" WHERE \"ID\" = ?", new DbParam("@p", projekt));
+            if (o == null || o == DBNull.Value) return null;
+            return o is DateTime d
+                ? d.ToString(KostenStempelSchema.FORMAT, CultureInfo.InvariantCulture)
+                : Convert.ToString(o, CultureInfo.InvariantCulture);
+        }
+
         // -----------------------------------------------------------------------------
         //  Hilfen
         // -----------------------------------------------------------------------------
