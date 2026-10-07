@@ -1,10 +1,10 @@
-# Abstimmung G5 — Sitzung Gebäudesimulation und Sitzung IFC / Gebäudeimport
+# Abstimmung G5 — Auftrag an die Sitzung IFC / Gebäudeimport, Anforderungen der Sitzung Gebäudesimulation
 
-Stufe **G5** (Geometrieableitung aus IFC-Körpern) folgt nach **E101** (Anwender, 07.10.2026) auf AK3 und ist nicht mehr
-„nur bei Bedarf“. Gebaut wird sie von der Sitzung Gebäudesimulation. Der Gegenstand liegt zum Teil in Dateien, die die Sitzung
-IFC / Gebäudeimport fortlaufend bearbeitet (HC-*, BA-*, G6c). Der Anwender hat verlangt, G5 mit dieser Sitzung abzustimmen,
-damit sich die Wellen nicht überschneiden. Dieses Papier ist der Ort der Abstimmung: Die Sitzung IFC trägt ihre Antwort in die
-Spalte „IFC-Sitzung“ ein und pusht sie; erst danach entsteht der Entwurf G5.
+Stufe **G5** (Geometrieableitung aus IFC-Körpern) ist nach **E101** (Anwender, 07.10.2026) nicht mehr „nur bei Bedarf“. Der
+Geometrieteil gehört in den Auftrag der **Sitzung IFC / Gebäudeimport**: Sie baut G5, weil die Dateien des Imports, der
+Körper-Leser und die Bauteilstufen bei ihr liegen. Die **Sitzung Gebäudesimulation** baut an G5 nichts; sie nennt hier, was der
+Rechenweg von G5 braucht, und nimmt das Ergebnis am Rechenweg ab. Damit überschneiden sich die Wellen beider Sitzungen nicht. Die
+Sitzung IFC trägt ihre Antwort in die Spalte „IFC-Sitzung“ ein und pusht sie.
 
 ## 1 Was G5 umfasst
 
@@ -18,37 +18,51 @@ G5 ergänzt drei Teile:
 
 | Teil | Inhalt |
 |---|---|
-| G5-1 | **Bauteilkörper als Rechengröße:** Fläche und Orientierung von `IfcWall`, `IfcSlab`, `IfcRoof` (und `IfcCovering`, soweit Hülle) aus Extrusion, BRep und `IfcMappedItem` samt Placement-Kette — als Quelle, wenn die Datei keine Mengensätze oder Raumgrenzen für das Bauteil liefert |
+| G5-1 | **Bauteilkörper als Rechengröße:** Fläche und Orientierung von `IfcWall`, `IfcSlab`, `IfcRoof` (und `IfcCovering`, soweit Hülle) aus Extrusion, BRep und `IfcMappedItem` samt Placement-Kette — als Quelle, wenn die Datei für das Bauteil keine Mengensätze oder Raumgrenzen liefert |
 | G5-2 | **Abzug der Öffnungen:** Fläche der Fenster und Türen aus `IfcOpeningElement`, `IfcWindow`, `IfcDoor` und ihr Abzug von der Wand- bzw. Dachfläche, wo die Mengensätze die Nettofläche nicht nennen |
 | G5-3 | **Rückfall für Dateien ohne Mengensätze und Raumgrenzen:** Bauteilflächen je Raum und Zone aus den Körpern statt des Rückfalls „schematisch“; Herkunft je Fläche sichtbar (Mengensatz / Raumgrenze / Körper / schematisch) |
 
 Nicht Teil von G5: Reparatur offener oder überlappender Netze, Dachschrägen im Export, Anlagentechnik, der gbXML-Weg
 (`Space/ShellGeometry`, eigener Zuruf).
 
-## 2 Dateien und Zuständigkeit
+## 2 Anforderungen des Rechenwegs (Sitzung Gebäudesimulation)
 
-| Bereich | Dateien (Stand 07.10.2026) | Gebäudesimulation (G5) | IFC-Sitzung |
+Der Rechenweg nach VDI 6007 (Bauteilweg, Zonenmodell, Erdreich nach DIN EN ISO 13370) liest je Zone Bauteile aus `Tab_Bauteil`.
+Was G5 dort ablegt, muss diese Größen tragen:
+
+| Nr. | Größe | Anforderung |
+|---|---|---|
+| A1 | Fläche | Nettofläche des Bauteils je Zone in m² (opake Fläche ohne Öffnungen); Öffnungen als eigene Bauteile (Fenster/Tür) mit ihrer Fläche, wie es der Bauteilweg heute aus Mengensätzen erhält |
+| A2 | Orientierung | Azimut (0° = Nord, im Uhrzeigersinn, nach `TrueNorth` bzw. `IfcMapConversion`) und Neigung (0° = waagrecht nach oben, 90° = senkrecht) je Bauteilfläche; bei gegliederten Wänden je ebener Teilfläche oder flächengewichtet zusammengefasst, benannt |
+| A3 | Randbedingung | Außenluft, Erdreich, Nachbarzone (mit Trennflächenzuordnung), unbeheizt — wie der heutige Importweg (Raumgrenzen, R0–R7) |
+| A4 | Herkunft | je Fläche sichtbar und gespeichert, damit Prüfregeln und Bericht sie nennen können |
+| A5 | Abweichung | wo Mengensätze vorliegen, bleiben sie Quelle; der Körperwert wird nur verglichen und bei Abweichung über einer Schwelle gemeldet (Vorschlag: 2 %, wie die Gegenprobe der Trennflächen) |
+| A6 | Abnahme am Rechenweg | Referenzlauf aller 21 Projekte gegen die geltende Basis byte-gleich (G5 berührt keine Referenzprojekte); an den Importproben mit Mengensätzen Körperfläche gegen Mengensatz innerhalb A5; an einer Probe ohne Mengensätze Heizwärme gegenüber dem Rückfall „schematisch“ benannt |
+
+## 3 Dateien und Zuständigkeit
+
+| Bereich | Dateien (Stand 07.10.2026) | Gebäudesimulation | IFC-Sitzung |
 |---|---|---|---|
-| Körper-Leser | `EPOS.Kern/Allgemein/Import/Ifc/IfcRaumkoerper.cs`, `IfcRaumgrundriss.cs`, `EPOS.Kern/Allgemein/Simulation/Gebaeude/Dateikoerper.cs` | liest und nutzt; Erweiterung um Bauteil- und Öffnungskörper nur nach Absprache, sonst neue Klassen daneben | — |
-| Importablauf und Bauteilvorschlag | `EPOS.Kern/Allgemein/Import/Ifc/IfcImportAblauf.cs`, Bauteilvorschlag und Schreibweg der Zonen (G6c), Bauteilstufen und Aufbauten (BA-1 bis BA-4) | eine benannte Naht für die Flächenquelle „Körper“; sonst keine Änderung | — |
-| Export | `EPOS.Kern/Allgemein/Export/Ifc/*`, Exportmodell | nur lesend | — |
-| Oberfläche | Gebäudeansicht, Zuordnungsdialog, Bauteilsteckbrief (BA-3) | Herkunft „Körper“ als Farbmodus bzw. Steckbriefzeile nur nach Absprache | — |
-| Schema | Schritte nach Anmeldung in der Kopfzeile der Statusdatei | Anmeldung vor dem Bau | — |
-| Testdatenbank, Importproben | `Referenzlaeufe/Kenndaten_Test.sqlite`, `Referenzlaeufe/Importproben/` | neue Proben ohne Mengensätze nur nach Absprache | — |
+| Körper-Leser und IFC-Abbild | `EPOS.Kern/Allgemein/Import/Ifc/` (`IfcRaumkoerper.cs`, `IfcRaumgrundriss.cs`, `IfcGrenzgeometrie.cs`, `IfcPlatzierung.cs`, `IfcAbbildBauer.cs`, `IfcGebaeudeAbbild.cs`), `EPOS.Kern/Allgemein/Simulation/Gebaeude/Dateikoerper.cs` | keine Änderung | — |
+| Importablauf, Bauteilvorschlag, Aufbauten | `EPOS.Kern/Allgemein/Import/Gebaeude/` (`GebaeudeImportAblauf.cs`, `GebaeudeBauteilvorschlag.cs`, `Bauteilzuordnung.cs`, `Ersatzaufbau.cs`, `GebaeudeZuordnungsModell.cs`, `GebaeudeNeulesen.cs`), `EPOS.Kern/Allgemein/Import/Sqproj/` | keine Änderung | — |
+| Rechenweg | `EPOS.Kern/Allgemein/Simulation/Gebaeude/` außer `Dateikoerper.cs` (Bauteilweg, Zonenmodell, Erdreich) | ändert nur bei Bedarf aus A1–A4, nach Absprache | — |
+| Export | `EPOS.Kern/Allgemein/Export/Ifc/*`, Exportmodell | keine Änderung | — |
+| Oberfläche | Gebäudeansicht, Zuordnungsdialog, Bauteilsteckbrief | keine Änderung | — |
+| Schema | Schritte nach Anmeldung in der Kopfzeile der Statusdatei | — | — |
+| Testdatenbank, Importproben | `Referenzlaeufe/Kenndaten_Test.sqlite`, `Referenzlaeufe/Importproben/` | Referenzprojekte bleiben unberührt | — |
 
-## 3 Fragen an die Sitzung IFC
+## 4 Fragen an die Sitzung IFC
 
 | Nr. | Frage | IFC-Sitzung |
 |---|---|---|
-| F1 | Welche laufenden oder geplanten Wellen berühren dieselben Dateien oder denselben Gegenstand (offen sind laut Statusdatei u. a. Konzept 5.3 des HottCAD-Verbunds, Codes für Putz, Folie und Luftschicht, Richtung bei Wänden gegen Erdreich)? | — |
-| F2 | Gibt es Teile von G5-1 bis G5-3, die die Sitzung IFC ohnehin plant oder lieber selbst baut? | — |
-| F3 | Welche Dateien bleiben während G5 allein bei der Sitzung IFC? | — |
-| F4 | Gibt es Importproben ohne Mengensätze oder Raumgrenzen, an denen G5 gemessen werden kann? | — |
+| F1 | Übernehmt ihr G5 in euren Auftrag, und wann (nach welchen laufenden Wellen — offen sind laut Statusdatei u. a. Konzept 5.3 des HottCAD-Verbunds, Codes für Putz, Folie und Luftschicht, Richtung bei Wänden gegen Erdreich)? | — |
+| F2 | Wellenzuschnitt und Aufwand für G5-1 bis G5-3; braucht G5 einen Schemaschritt (Herkunft je Fläche, A4)? | — |
+| F3 | Sind die Anforderungen A1–A6 erfüllbar, oder braucht es Änderungen am Rechenweg (dann Absprache nach Abschnitt 3)? | — |
+| F4 | Welche Importproben ohne Mengensätze oder Raumgrenzen gibt es oder werden beschafft? | — |
 
-## 4 Regeln bis zur Antwort
+## 5 Regeln
 
-- G5 ändert nichts unter `EPOS.Kern/Allgemein/Import/Ifc/`, bevor die Spalte „IFC-Sitzung“ gefüllt ist; vor dem Abschluss von AK3
-  beginnt ohnehin kein Bau.
-- Leser und Entwurf G5 dürfen den Code lesen und an Kopien messen.
-- Beide Sitzungen melden Schemaschritte wie üblich in der Kopfzeile der Statusdatei an und prüfen Status- und Entscheidnummern vor
-  jedem Push gegen origin.
+- Die Sitzung Gebäudesimulation ändert nichts unter `EPOS.Kern/Allgemein/Import/Ifc/` und `EPOS.Kern/Allgemein/Import/Gebaeude/`.
+- Braucht G5 eine Änderung am Rechenweg, meldet die Sitzung IFC sie hier an; die Sitzung Gebäudesimulation baut sie oder gibt sie frei.
+- Beide Sitzungen melden Schemaschritte in der Kopfzeile der Statusdatei an und prüfen Status- und Entscheidnummern vor jedem Push
+  gegen origin.
