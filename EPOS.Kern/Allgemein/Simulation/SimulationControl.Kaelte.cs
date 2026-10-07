@@ -296,6 +296,58 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Vorgabe des zweiten Feldlaufs</b> (Konzept Simulationsablauf 23.4, 23.5) aus dem eben
+        /// beendeten Lauf — null, wenn kein Sondenfeld gerechnet hat, der Lauf gescheitert ist oder er
+        /// selbst schon der zweite war. Je Sondenfeld: die gemeldete Entzugsreihe und die Kühlwärme,
+        /// die Wärmepumpen dieses Feldes im Kühlbetrieb abgegeben haben, Q_ab = Kälte + Verdichterarbeit
+        /// (Kältestrom ohne Hilfsstromzuschlag; bei freier Kühlung die Kälte samt Pumpenarbeit).
+        /// Kältemaschinen speisen nicht ins Erdreich — ihre Rückkühlung arbeitet gegen die Luft oder
+        /// ein Kühlwerk (<see cref="Kaelteerzeuger.Maschine"/> gesetzt, kein Wärmepumpenmodul).
+        /// </summary>
+        /// <summary>
+        /// Regeneration des Sondenfeldes durch Kühlwärme (Konzept 23.5); nur Tests schalten sie ab, um
+        /// ihre Wirkung zu messen.
+        /// </summary>
+        internal bool RegenerationRechnen = true;
+
+        /// <summary>
+        /// Zweiter Feldlauf der Erdsonde (Konzept 23.4); nur Tests schalten ihn ab, um Jahr 1 der
+        /// Startschätzung und die Rechenzeit daneben zu legen.
+        /// </summary>
+        internal bool ZweitenFeldlaufRechnen = true;
+
+        private Dictionary<int, SimulationWaermepumpe.Feldvorgabe> FeldvorgabeAusLauf()
+        {
+            if (!ZweitenFeldlaufRechnen || m_bError || !string.IsNullOrEmpty(Sperrgrund) || !_wpInSchleife) return null;
+            if (simulation_wp.ZweiterFeldlauf || simulation_wp.Sondenfelder.Count == 0) return null;
+
+            var vorgabe = new Dictionary<int, SimulationWaermepumpe.Feldvorgabe>();
+            foreach (KeyValuePair<int, Erdsondenfeld> paar in simulation_wp.Sondenfelder)
+            {
+                double[] rueck = new double[Kanalsatz.STUNDEN_JAHR];
+                if (_kaelteerzeuger != null && RegenerationRechnen)
+                    foreach (Kaelteerzeuger e in _kaelteerzeuger)
+                    {
+                        if (e.Maschine != null || e.Modulindex < 0) continue;
+                        if (!ReferenceEquals(simulation_wp.Sondenfeld(e.Modulindex), paar.Value)) continue;
+                        double zuschlag = 1.0 + e.Hilfsstromanteil;
+                        for (int h = 0; h < rueck.Length; h++)
+                        {
+                            double kaelte = e.Kaelte_stuendlich[h];
+                            if (!(kaelte > 0)) continue;
+                            rueck[h] += kaelte + e.Strom_stuendlich[h] / zuschlag;
+                        }
+                    }
+
+                double[] entzug = paar.Value.LastKw();
+                double[] netto = new double[entzug.Length];
+                for (int h = 0; h < netto.Length; h++) netto[h] = entzug[h] - rueck[h];
+                vorgabe[paar.Key] = new SimulationWaermepumpe.Feldvorgabe { VorjahrLastKw = netto, RueckspeisungKw = rueck };
+            }
+            return vorgabe;
+        }
+
+        /// <summary>
         /// <b>Trägt die Wärmequelle die freie Kühlung?</b> (KU3-6, F2): Bauart Sole-Wasser oder Wasser-Wasser
         /// und eine gepflegte Quelle — <c>WQ_Typ</c> Erdreich, Konstant, Profil oder CSV. Luft-Wasser, die
         /// leere Quelle (Außenluft-Rückfall), Außenluft und der Pufferspeicher scheiden aus.

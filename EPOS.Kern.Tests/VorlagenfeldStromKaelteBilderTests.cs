@@ -161,7 +161,7 @@ namespace EPOS.Kern.Tests
             double bedarf = z.Hole(ZeitreihenSatz.BedarfSchluessel(Kanal.KUEHLUNG)).Sum();
             // Jahressummen der Basis [MWh/a], im Band gehalten (Befund: gedeckt = 0).
             (double sollBedarf, double sollGedeckt, double sollRest) =
-                projekt == PROJEKT_KAELTE ? (4.0826, 4.0075, 0.0751) : (3.8498, 3.7822, 0.0677);
+                projekt == PROJEKT_KAELTE ? (4.0826, 4.0704, 0.0122) : (3.8498, 3.8355, 0.0143);
             Assert.InRange(bedarf / 1000.0, 0.98 * sollBedarf, 1.02 * sollBedarf);
             Assert.InRange(gedeckt / 1000.0, 0.98 * sollGedeckt, 1.02 * sollGedeckt);
             Assert.InRange(ungedeckt / 1000.0, 0.5 * sollRest, 1.5 * sollRest);

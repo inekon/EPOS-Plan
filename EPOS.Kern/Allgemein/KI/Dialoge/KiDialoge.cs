@@ -6643,6 +6643,28 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.QerdSpreizungErl,
                                      einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
 
+                    // ---- Das Sondenfeld je Anlage (Konzept Simulationsablauf 23.3); leer = Vorgabe ----
+                    new KiDialogFeld("sondenabstand", "QuelleErdreichKiSicht.Sondenabstand",
+                                     KiDialogTexte.QerdSondenabstandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdSondenabstandErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("bohrlochdurchmesser", "QuelleErdreichKiSicht.Bohrlochdurchmesser",
+                                     KiDialogTexte.QerdBohrlochdurchmesserName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdBohrlochdurchmesserErl, leerErlaubt: true),
+                    new KiDialogFeld("bohrlochwiderstand", "QuelleErdreichKiSicht.Bohrlochwiderstand",
+                                     KiDialogTexte.QerdBohrlochwiderstandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdBohrlochwiderstandErl, leerErlaubt: true),
+                    new KiDialogFeld("kopfueberdeckung", "QuelleErdreichKiSicht.Kopfueberdeckung",
+                                     KiDialogTexte.QerdKopfueberdeckungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdKopfueberdeckungErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("betrachtungsjahr", "QuelleErdreichKiSicht.Betrachtungsjahr",
+                                     KiDialogTexte.QerdBetrachtungsjahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QerdBetrachtungsjahrErl, leerErlaubt: true),
+                    new KiDialogFeld("sondenanordnung", "QuelleErdreichKiSicht.Sondenanordnung",
+                                     KiDialogTexte.QerdSondenanordnungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.QerdSondenanordnungErl, leerErlaubt: true),
+
                     // ---- Die zwei Klapplisten des Standorts (KI-F1b, KI-D-Q6) ----
                     new KiDialogFeld("bodentyp", "QuelleErdreichKiSicht.Bodentyp",
                                      KiDialogTexte.QerdBodentypName, KiParameterTyp.Wahl,

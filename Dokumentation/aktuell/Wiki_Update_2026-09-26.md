@@ -211,6 +211,8 @@ Meldungen in langen Dialogen bleiben beim Rollen unter der Kopfzeile sichtbar un
 Ein Gebäude lässt sich aus der Datenbank löschen, auch wenn Projekte eine Kopie davon führen; die Projekte behalten ihre Kopie. (#776; Version bestätigt der Anwender beim Upload)
 Im Gebäudedialog speichern Löschen, ‚Gebäude im Projekt bearbeiten…‘, ‚Exportieren…‘, ‚In DB übernehmen‘ und ‚Simulation…‘ eine eben übernommene Zeile vorher selbst; im Assistenten lässt sich ein Katalogsatz, aus dem eine noch nicht gespeicherte Zeile stammt, erst nach Abschluss löschen; ‚Baustoff-Zuordnungen…‘ steht neben ‚Importieren (gbXML, IFC)…‘, und die Flächenangabe heißt Nutzfläche. (#776; Version bestätigt der Anwender beim Upload)
 Im Projektassistenten nutzt die Projektliste die volle Fensterhöhe, und über den Kacheln stehen die Daten des gewählten Projekts. (#778; Version bestätigt der Anwender beim Upload)
+Die Erdwärmesonde rechnet ihre Soletemperatur stündlich aus dem Entzug im zehnten Betriebsjahr, mit Rückspeisung der Kühlwärme. (#797; Version bestätigt der Anwender beim Upload)
+Im Dialog Wärmequelle Erdreich lassen sich Abstand, Anordnung, Bohrlochdurchmesser, Bohrlochwiderstand, Kopfüberdeckung und Betrachtungsjahr des Sondenfelds je Anlage eingeben. (#797; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

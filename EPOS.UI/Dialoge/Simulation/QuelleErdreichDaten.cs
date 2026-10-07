@@ -69,6 +69,24 @@ public sealed record QuelleErdreichDaten
     /// <summary><c>WQ_Spreizung</c> — die nutzbare Spreizung der Quelle [K].</summary>
     public double Spreizung { get; init; }
 
+    /// <summary><c>WQ_Sondenabstand</c> [m]; <c>null</c> = Vorgabe.</summary>
+    public double? Sondenabstand { get; init; }
+
+    /// <summary><c>WQ_Bohrlochdurchmesser</c> [mm]; <c>null</c> = Vorgabe.</summary>
+    public double? Bohrlochdurchmesser { get; init; }
+
+    /// <summary><c>WQ_Bohrlochwiderstand</c> [m·K/W]; <c>null</c> = Vorgabe.</summary>
+    public double? Bohrlochwiderstand { get; init; }
+
+    /// <summary><c>WQ_Kopfueberdeckung</c> [m]; <c>null</c> = Vorgabe.</summary>
+    public double? Kopfueberdeckung { get; init; }
+
+    /// <summary><c>WQ_Betrachtungsjahr</c>; <c>null</c> = Vorgabe.</summary>
+    public int? Betrachtungsjahr { get; init; }
+
+    /// <summary><c>WQ_Sondenanordnung</c> (Quadratisch, Reihe); <c>null</c> = Vorgabe.</summary>
+    public string? Sondenanordnung { get; init; }
+
     /// <summary>
     /// Der Außentemperaturvektor des Projekts (8 760 Stunden) oder <c>null</c>.
     /// Er ist die Grundlage BEIDER Kurven der Vorschau; ohne ihn rechnet
