@@ -653,7 +653,7 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                // G5-2 hängt hier den Abzug der Öffnungen ein: der Körper liefert die Bruttofläche, die Nettofläche bleibt leer.
+                // Der Körper liefert die Bruttofläche; die Nettofläche setzt der Abzug der Öffnungen (Oeffnungsabzug, G5-2).
                 b.BruttoflaecheM2 = kf.FlaecheM2;
                 b.Flaechenherkunft = Flaechenherkunft.Koerper;
                 _ohneMengen.Remove(b.Kennung);

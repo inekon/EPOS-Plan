@@ -19,7 +19,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Toleranz der Tiefe gegen die Dicke des Wirts [m]: darunter gilt eine Öffnung als durchgehend.</summary>
         internal const double TIEFE_TOLERANZ_M = 0.001;
 
-        /// <summary>Die Projektion des Körpers auf die Ebene mit der Normalen <paramref name="n"/> [m²]; <c>null</c> ohne Körper.</summary>
+        /// <summary>Die Projektion des geschlossenen Körpers auf die Ebene mit der Normalen <paramref name="n"/> [m²]; <c>null</c> ohne Körper.</summary>
         internal static double? Profilflaeche(Dateikoerper k, double[] n)
         {
             if (k == null || n == null || k.Dreiecke.Count == 0) return null;
@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
                 double[] a = Flaechenvektor(k, d);
                 summe += Math.Abs(a[0] * n[0] + a[1] * n[1] + a[2] * n[2]);
             }
-            return summe / 2.0;
+            return summe / 4.0;   // je Dreieck die halbe Kreuzproduktlänge, Vorder- und Rückseite zusammen doppelt
         }
 
         /// <summary>Die Ausdehnung des Körpers längs der Normalen <paramref name="n"/> [m]; <c>null</c> ohne Körper.</summary>
