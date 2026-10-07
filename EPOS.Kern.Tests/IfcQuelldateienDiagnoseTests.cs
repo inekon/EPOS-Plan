@@ -892,12 +892,15 @@ namespace EPOS.Kern.Tests
         /// U-Wert der Datei neben den Schichten (E95-1, BA-1) — das verschiebt MFH mittel, Sportheim und Verwaltung.
         /// Außenbauteile der Stufen B und C tragen einen Ersatzaufbau statt masselos zu rechnen (E95-3, BA-2): Die
         /// Speichermasse der Hülle wächst, Jahresheizwärme und Spitze sinken (Jahresheizwärme Z4 −0,6 bis −2,0 %,
-        /// Spitze −0,8 bis −9,3 %); die Auslegungsheizlast ist stationär und bleibt.
+        /// Spitze −0,8 bis −9,3 %); die Auslegungsheizlast ist stationär und bleibt. Der Körperweg der Bauteilflächen (G5-3)
+        /// ordnet in MFH mittel die Bauteile ohne Raumbezug über ihre Körper den Räumen und Zonen zu, statt sie der Zone ihres
+        /// Geschosses zu geben: unter Z4 Jahresheizwärme 46,01 → 47,51 MWh/a (+3,3 %), Spitze 24,80 → 25,41 kW, Tagesmittel
+        /// 16,55 → 17,09 kW; Z5 und die übrigen fünf Dateien bleiben.
         /// </summary>
         private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen, double Q, double Spitze, double Tagesmittel, double QVergleich, double Auslegung)> SOLL
             = new Dictionary<string, (string, int, double, double, double, double, double)>(StringComparer.Ordinal)
             {
-                ["MFH_mittel_1984.ifc"] = ("Z4", 5, 46.01, 24.80, 16.55, 50.66, 19.85),
+                ["MFH_mittel_1984.ifc"] = ("Z4", 5, 47.51, 25.41, 17.09, 50.66, 19.85),
                 ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 41.09, 27.16, 17.29, 52.91, 22.03),
                 ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 58.69, 49.28, 27.43, 69.68, 37.17),
                 ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 233.59, 261.22, 131.53, 221.66, 185.56),
