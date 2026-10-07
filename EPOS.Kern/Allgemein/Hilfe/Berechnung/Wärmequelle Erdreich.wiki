@@ -68,7 +68,7 @@ Was in die Rechnung hereinkommt:
 |-
 | <math>\Delta\vartheta</math> || nutzbare Spreizung der Quelle || K || Dialog „Wärmequelle Erdreich", Feld „Nutzbare Spreizung"; Vorgabe: 5 K
 |-
-| <math>P_{\mathrm{th,WP}}(t), P_{\mathrm{el,WP}}(t)</math> || Waermeproduktion und Stromaufnahme der Waermepumpe || kW || Ergebnis des Simulationslaufs
+| <math>P_{\mathrm{th,WP}}(t), P_{\mathrm{el,WP}}(t), P_{\mathrm{T,WP}}(t)</math> || Waermeproduktion, Stromaufnahme und Mehrstrom aus Taktverlust der Waermepumpe || kW || Ergebnis des Simulationslaufs
 |-
 | <math>n_{\mathrm{Betrieb}}</math> || Betriebsstunden der Waermepumpe im Lauf || h/a || Ergebnis des Simulationslaufs
 |-
@@ -280,10 +280,11 @@ Fuer eine Waermepumpe vom Typ '''Luft-Wasser''' bleibt das Erdreich wirkungslos:
 
 === 6. Nach dem Lauf: die Entzugsgroessen ===
 
-: <math>\displaystyle P_{\mathrm{Q}}(t) = P_{\mathrm{th,WP}}(t) - P_{\mathrm{el,WP}}(t)</math> &nbsp;&nbsp;(8)
+: <math>\displaystyle P_{\mathrm{Q}}(t) = P_{\mathrm{th,WP}}(t) - \left( P_{\mathrm{el,WP}}(t) - P_{\mathrm{T,WP}}(t) \right)</math> &nbsp;&nbsp;(8)
 :: <math>P_{\mathrm{Q}}(t)</math> – Entzugsleistung der Stunde [kW]
-:: <math>P_{\mathrm{th,WP}}(t)</math> – Waermeproduktion der Waermepumpe in der Stunde [kW]
-:: <math>P_{\mathrm{el,WP}}(t)</math> – Stromaufnahme der Waermepumpe in derselben Stunde [kW]
+:: <math>P_{\mathrm{th,WP}}(t)</math> – Waermeproduktion der Waermepumpen an der Anlage in der Stunde [kW]
+:: <math>P_{\mathrm{el,WP}}(t)</math> – Stromaufnahme derselben Waermepumpen in der Stunde [kW]
+:: <math>P_{\mathrm{T,WP}}(t)</math> – davon Mehrstrom aus Taktverlust; er ist elektrische Arbeit beim Anfahren und geht nicht als Waerme aus dem Erdreich in den Kreis [kW]
 : <math>\displaystyle Q_{\mathrm{Q,a}} = \sum_{t=1}^{8\,760} \max\left( 0, P_{\mathrm{Q}}(t) \right)</math> &nbsp;&nbsp;(9)
 :: <math>Q_{\mathrm{Q,a}}</math> – Jahresentzugsarbeit [kWh/a]
 :: <math>P_{\mathrm{Q}}(t)</math> – Entzugsleistung der Stunde nach (8) [kW]
@@ -301,11 +302,7 @@ Fuer eine Waermepumpe vom Typ '''Luft-Wasser''' bleibt das Erdreich wirkungslos:
 
 Alle drei Groessen kommen aus '''derselben''' Basis — der Stundenganglinie <math>P_{\mathrm{Q}}(t)</math>. Das ist wichtig: Die Waerme, die die Waermepumpe zum '''Laden''' eines Senkenspeichers erzeugt, steckt nur in der Ganglinie — Jahresentzug aus Modul-Jahressummen gegen eine Spitze aus der Ganglinie zu halten, fiele zu milde aus.
 
-'''Mehrere Waermepumpen.''' Die Ganglinie liegt nur global vor, also fuer alle Waermepumpen-Module zusammen. Daraus die Stufung:
-
-* '''genau ein Modul''' → exakt, die globale Ganglinie IST die des Moduls;
-* '''mehrere Module, alle mit Erdreich''' → <math>Q_{\mathrm{Q,a}}</math> und <math>P_{\mathrm{Q,max}}</math> werden proportional zur Modul-Jahresentzugsarbeit verteilt und als Naeherung gekennzeichnet; in (11) kuerzt sich der Anteil heraus, <math>t_{\mathrm{V}}</math> ist also modulunabhaengig;
-* '''gemischte Quellen''' → nicht je Modul trennbar, die Pruefung bleibt aus und der Hinweis sagt warum.
+'''Mehrere Waermepumpen.''' Die Simulation fuehrt (8) je Waermepumpe und Stunde. Die Pruefung rechnet je Anlage mit Erdreichquelle aus den Waermepumpen dieser Anlage allein: Eine Luft-Wasser-Waermepumpe daneben geht weder in (9) bis (11) noch in die Betriebsstunden der Frostpruefung ein, und stehen mehrere Erdreichanlagen im Projekt, wird jede fuer sich geprueft.
 
 === 6a. Ohne Lauf: die Vorpruefung aus Auslegungswerten ===
 {{Anker|vorpruefung}}
@@ -445,9 +442,10 @@ Die Absenkung (27) ist stundengenau; die Vorjahre werden nicht zu Monats- oder T
 
 '''Regeneration.''' Gibt eine Waermepumpe mit Erdreichquelle im Kuehlbetrieb Waerme ab, speist sie in das Feld ihrer Anlage zurueck:
 
-: <math>\displaystyle P_{\mathrm{R}}(t) = \sum_{e} \left( Q_{\mathrm{K},e}(t) + \frac{P_{\mathrm{el,K},e}(t)}{1 + h_{e}} \right)</math> &nbsp;&nbsp;(28)
+: <math>\displaystyle P_{\mathrm{R}}(t) = \sum_{e} \left( Q_{\mathrm{K},e}(t) + \frac{P_{\mathrm{el,K},e}(t)}{1 + h_{e}} - P_{\mathrm{T,K},e}(t) \right)</math> &nbsp;&nbsp;(28)
 :: <math>Q_{\mathrm{K},e}(t)</math> – Kaelte, die die Waermepumpe e in der Stunde deckt, ueber den Verdichter oder als freie Kuehlung ueber die Sole [kWh]
 :: <math>P_{\mathrm{el,K},e}(t)</math> – Kaeltestrom der Waermepumpe e samt Hilfsstrom [kWh]
+:: <math>P_{\mathrm{T,K},e}(t)</math> – davon Mehrstrom aus Taktverlust im Kuehlbetrieb; er geht wie in (8) nicht als Waerme ueber die Sonde [kWh]
 :: <math>h_{e}</math> – Hilfsstromanteil des Kaeltekreises [–] Der Bruch in (28) ist die Verdichterarbeit (bei freier Kuehlung die Pumpenarbeit); sie geht mit der Kaelte in die Sole. Die Kaelte steht erst nach der Waermeseite fest; deshalb liefert der erste Lauf <math>P_{\mathrm{R}}(t)</math>, und der zweite zieht sie in (23) Stunde fuer Stunde vom Entzug ab — im Rechenjahr wie in den Vorjahren nach (27). Kaeltemaschinen speisen nicht ins Erdreich; ihre Rueckkuehlung arbeitet gegen die Aussenluft oder ein Kuehlwerk.
 
 == Grenzen und Annahmen ==
