@@ -15,6 +15,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Aus den Raumbezügen der Datei (<c>IfcRelReferencedInSpatialStructure</c>).</summary>
         Raumbezug = 2,
+
+        /// <summary>
+        /// Aus der Überlappung eines Raumkörpers mit dem Körper des Bauteils (<see cref="Koerperflaechen"/>, Abstimmung G5,
+        /// Teil G5-3) — nur, wo die Datei weder Raumgrenzen noch Raumbezüge liefert.
+        /// </summary>
+        Bauteilkoerper = 3,
     }
 
     /// <summary>

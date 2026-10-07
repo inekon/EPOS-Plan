@@ -48476,5 +48476,23 @@ Chart</value>
   <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
     <value>NW</value>
   </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND" xml:space="preserve">
+    <value>{0} Außenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND" xml:space="preserve">
+    <value>{0} Innenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH" xml:space="preserve">
+    <value>{0} Dächer: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE" xml:space="preserve">
+    <value>{0} Böden und Decken: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE" xml:space="preserve">
+    <value>{0} sonstige Bauteile: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
 </root>
 

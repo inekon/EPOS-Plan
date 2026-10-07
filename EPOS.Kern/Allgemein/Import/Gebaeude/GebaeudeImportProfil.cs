@@ -151,6 +151,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? NordwinkelVorgabeGrad { get; set; }
 
+        /// <summary>
+        /// G5-3: den Körperweg der Bauteilflächen ausschalten (IFC ohne Raumgrenzen und Raumbezüge) — dann gilt der Rückfall
+        /// ohne Zuordnung zu den Räumen. Nur für den Vergleich beider Wege (Abstimmung G5, A6); die Oberfläche setzt ihn nie.
+        /// </summary>
+        public bool KoerperflaechenAus { get; set; }
+
         /// <summary>Die Leserfabrik: ein neuer Leser je Lauf.</summary>
         public abstract IGebaeudeLeser LeserErzeugen();
     }

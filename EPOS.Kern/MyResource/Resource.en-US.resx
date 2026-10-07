@@ -48469,5 +48469,23 @@ chart</value>
   <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
     <value>NW</value>
   </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
+    <value>Building "{0}" has neither space boundaries nor spatial references; {1} components are assigned to the spaces through their bodies — {2} areas per space totalling {3} m² (origin: body).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND" xml:space="preserve">
+    <value>{0} external walls: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND" xml:space="preserve">
+    <value>{0} internal walls: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH" xml:space="preserve">
+    <value>{0} roofs: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE" xml:space="preserve">
+    <value>{0} floors and slabs: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE" xml:space="preserve">
+    <value>{0} other components: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
 </root>
 
