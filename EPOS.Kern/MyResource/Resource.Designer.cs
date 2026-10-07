@@ -38464,6 +38464,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_FORMAT_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_FORMAT_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbauten ähnelt.
         /// </summary>
         public static string GIMP_GRP_AUFBAUTEN {
@@ -38604,6 +38613,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_HERKUNFT_MANUELL {
             get {
                 return ResourceManager.GetString("GIMP_HERKUNFT_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_HERKUNFT_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_HERKUNFT_SQPROJ", resourceCulture);
             }
         }
         

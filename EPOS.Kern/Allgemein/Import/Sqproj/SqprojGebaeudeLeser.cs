@@ -547,7 +547,10 @@ namespace WindowsFormsApplication1
                         return Bauteilart.Fenster;
                     case SqprojBauteilcodes.ELEMENT_DECKE:
                         if (raeume >= 2 || !aussen) return Bauteilart.Decke;
-                        return rolle == SqprojBauteilcodes.ROLLE_BODEN || rand == Randbedingung.Erdreich ? Bauteilart.Bodenplatte : Bauteilart.Dach;
+                        if (rand == Randbedingung.Erdreich) return Bauteilart.Bodenplatte;
+                        // Eine Decke gegen Außenluft, die ihr Raum als Boden sieht (Rolle 8), ist eine Decke über Außenluft — wie der
+                        // IFC-Weg sie einordnet (Platte FLOOR außen); keine Bodenplatte, die zur Grundfläche zählte.
+                        return rolle == SqprojBauteilcodes.ROLLE_BODEN ? Bauteilart.Decke : Bauteilart.Dach;
                     case SqprojBauteilcodes.ELEMENT_DACH:
                         return Bauteilart.Dach;
                     case SqprojBauteilcodes.ELEMENT_BODENPLATTE:

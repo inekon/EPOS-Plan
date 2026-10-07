@@ -72,6 +72,7 @@ namespace WindowsFormsApplication1
         internal static string Herkunftsschluessel(Importherkunft h) => h switch
         {
             Importherkunft.Ifc or Importherkunft.GbXml => SteckbriefHerkunft.Datei,
+            Importherkunft.Sqproj => SteckbriefHerkunft.Projektdatei,
             Importherkunft.Katalog => SteckbriefHerkunft.Katalog,
             Importherkunft.Vorgabe or Importherkunft.VorgabeFrei => SteckbriefHerkunft.Vorgabe,
             Importherkunft.Manuell => SteckbriefHerkunft.Manuell,

@@ -48583,5 +48583,11 @@ chart</value>
   <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
     <value>{0} room references of envelope surfaces point to a room the project file does not contain.</value>
   </data>
+  <data name="GIMP_HERKUNFT_SQPROJ" xml:space="preserve">
+    <value>Project file</value>
+  </data>
+  <data name="GIMP_FORMAT_SQPROJ" xml:space="preserve">
+    <value>Project file</value>
+  </data>
 </root>
 

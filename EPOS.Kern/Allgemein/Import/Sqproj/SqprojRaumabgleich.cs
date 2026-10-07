@@ -79,6 +79,7 @@ namespace WindowsFormsApplication1
         {
             var a = new SqprojRaumabgleich();
             if (projekt == null || ifc == null) return a;
+            if (string.Equals(ifc.Quelltyp, SqprojGebaeudeLeser.QUELLTYP_GEBAEUDE, StringComparison.Ordinal)) return Selbstbezug(projekt, ifc);
             var geschossName = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (AbbildGeschoss g in ifc.Geschosse) geschossName.TryAdd(g.Kennung ?? "", g.Name);
             string Geschoss(AbbildRaum r) => r.GeschossName
@@ -163,6 +164,31 @@ namespace WindowsFormsApplication1
             if (a.IfcOhneGegenstueck.Count > 0)
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.IFC_RAUM_OHNE_GEGENSTUECK, SqprojProtokoll.Z(a.IfcOhneGegenstueck.Count),
                     SqprojProtokoll.Namen(a.IfcOhneGegenstueck.Select(Zonenplan.Raumname))));
+            return a;
+        }
+
+        /// <summary>
+        /// <b>Der Selbstbezug</b> beim Import allein aus der Projektdatei: Das Abbild stammt aus derselben Datei, sein Raum trägt
+        /// die Kennung des Raums der Projektdatei (<c>BmRoom.UUID</c>) und dessen <c>GId</c> — jeder Raum des Gebäudes trifft sich
+        /// selbst (Herkunft <see cref="Herkunft.Guid"/>), ohne Meldung. Räume anderer Gebäude der Datei bleiben ohne Treffer.
+        /// </summary>
+        private static SqprojRaumabgleich Selbstbezug(SqprojAbbild projekt, AbbildGebaeude gebaeude)
+        {
+            var a = new SqprojRaumabgleich();
+            var eigene = new Dictionary<string, AbbildRaum>(StringComparer.OrdinalIgnoreCase);
+            foreach (AbbildRaum r in gebaeude.Raeume)
+                if (r.Kennung != null) eigene.TryAdd(r.Kennung, r);
+            foreach (SqprojRaum r in projekt.Raeume)
+            {
+                if (r.Uuid == null || !eigene.TryGetValue(r.Uuid, out AbbildRaum treffer))
+                {
+                    a.OhneTreffer.Add(r);
+                    continue;
+                }
+                a._ifcJeRaum[r.Uuid] = treffer.Kennung;
+                a._herkunftJeRaum[r.Uuid] = Herkunft.Guid;
+                a.UeberGuid++;
+            }
             return a;
         }
 

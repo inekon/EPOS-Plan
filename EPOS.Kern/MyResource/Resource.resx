@@ -48590,5 +48590,11 @@ Chart</value>
   <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
     <value>{0} Raumbezüge der Hüllflächen zeigen auf einen Raum, den die Projektdatei nicht führt.</value>
   </data>
+  <data name="GIMP_HERKUNFT_SQPROJ" xml:space="preserve">
+    <value>Projektdatei</value>
+  </data>
+  <data name="GIMP_FORMAT_SQPROJ" xml:space="preserve">
+    <value>Projektdatei</value>
+  </data>
 </root>
 

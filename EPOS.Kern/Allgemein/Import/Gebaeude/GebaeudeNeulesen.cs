@@ -130,6 +130,9 @@ namespace WindowsFormsApplication1
             if (inhalt == null)
                 return new NeulesenErgebnis(NeulesenZustand.NichtLesbar, name) { HashQuelle = hashQuelle, Grenze = grenze };
 
+            if (profil is SqprojImportProfil)
+                return ProjektdateiLesen(inhalt, name, profil, quelle, gebaeudekennung, hashQuelle, grenze, abbruch);
+
             byte[] puffer;
             try
             {
@@ -164,6 +167,51 @@ namespace WindowsFormsApplication1
             int zahl;
             using (var strom = new MemoryStream(puffer, false))
                 zahl = ablauf.Lesen(strom, name, profil, null, abbruch);
+            return Auswerten(ablauf, zahl, ergebnis, quelle, gebaeudekennung, abbruch);
+        }
+
+        /// <summary>
+        /// <b>Die Projektdatei neu lesen</b> — ohne Puffer: Der Ablauf reicht den Strom an den Leser durch und hasht unterwegs
+        /// (eine Projektdatei kann groß sein); weicht der Hash von dem der Quelle ab, gilt <see cref="NeulesenZustand.HashAbweichend"/>.
+        /// </summary>
+        private static NeulesenErgebnis ProjektdateiLesen(Stream inhalt, string name, GebaeudeImportProfil profil, ImportquelleModel quelle,
+                                                          string gebaeudekennung, string hashQuelle, long grenze, CancellationToken abbruch)
+        {
+            if (inhalt.CanSeek && !GebaeudeImportAblauf.GroesseZulaessig(inhalt.Length - inhalt.Position, profil))
+                return new NeulesenErgebnis(NeulesenZustand.ZuGross, name)
+                {
+                    HashQuelle = hashQuelle, Groesse = inhalt.Length - inhalt.Position, Grenze = grenze
+                };
+            var ablauf = new GebaeudeImportAblauf();
+            int zahl;
+            try
+            {
+                zahl = ablauf.Lesen(inhalt, name, profil, null, abbruch);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is NotSupportedException)
+            {
+                return new NeulesenErgebnis(NeulesenZustand.NichtLesbar, name)
+                {
+                    HashQuelle = hashQuelle, Grenze = grenze,
+                    Meldungen = new[] { new PruefMeldung(PruefStufe.Fehler, profil.Meldung("LESEFEHLER"), ex.Message) }
+                };
+            }
+            (string hash, long bytes) = ablauf.GeleseneDatei;
+            if (ablauf.Meldungen.Any(m => m.Schluessel == profil.Meldung("ZU_GROSS")))
+                return new NeulesenErgebnis(NeulesenZustand.ZuGross, name) { HashQuelle = hashQuelle, Groesse = Math.Max(bytes, grenze + 1), Grenze = grenze };
+            var ergebnis = new NeulesenErgebnis(NeulesenZustand.Passend, name)
+            {
+                HashDatei = hash, HashQuelle = hashQuelle, Groesse = bytes, Grenze = grenze
+            };
+            if (!string.Equals(hash, hashQuelle, StringComparison.OrdinalIgnoreCase))
+                return Mit(ergebnis, NeulesenZustand.HashAbweichend);
+            return Auswerten(ablauf, zahl, ergebnis, quelle, gebaeudekennung, abbruch);
+        }
+
+        /// <summary>Der gemeinsame Rest nach dem Lesen: Nordwinkel, Gebäude, Zonierung, Geometrie.</summary>
+        private static NeulesenErgebnis Auswerten(GebaeudeImportAblauf ablauf, int zahl, NeulesenErgebnis ergebnis, ImportquelleModel quelle,
+                                                  string gebaeudekennung, CancellationToken abbruch)
+        {
             // G5-N (N5/N6): Der gespeicherte Nordwinkel ersetzt den Dateiwert nur, wenn ihn der Anwender eingegeben hat (beim
             // Import oder über „Ausrichtung ändern“) — weicht der frisch gelesene ab, wird mit ihm noch einmal gelesen. Stammt er
             // aus der Datei, gilt der frisch gelesene Dateiwert; war er eine Annahme, gilt der Dateiwert, falls die Datei jetzt

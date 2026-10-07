@@ -38,6 +38,9 @@
         /// unterschieden wird danach über den Beleg (<see cref="GebaeudeVorgaben.BELEG_FREI"/>).
         /// </summary>
         VorgabeFrei = 6,
+
+        /// <summary>Aus der Projektdatei eines Gebäudemodells (<c>.sqproj</c>) gelesen — beim Import allein aus der Projektdatei.</summary>
+        Sqproj = 7,
     }
 
     /// <summary>
@@ -85,6 +88,7 @@
             {
                 case Importherkunft.GbXml: return GBXML;
                 case Importherkunft.Ifc: return IFC;
+                case Importherkunft.Sqproj: return SQPROJ;
                 case Importherkunft.Katalog: return KATALOG;
                 case Importherkunft.Manuell: return MANUELL;
                 case Importherkunft.Vorgabe:
@@ -108,6 +112,24 @@
                 default: return null;
             }
         }
+
+        /// <summary>
+        /// Die Herkunft der Zahlen einer Datei des Formats <paramref name="format"/> — <see cref="Importherkunft.Ifc"/>,
+        /// <see cref="Importherkunft.GbXml"/> oder <see cref="Importherkunft.Sqproj"/>; ein unbekanntes Format zählt wie gbXML.
+        /// </summary>
+        public static Importherkunft AusFormat(string format)
+        {
+            switch (format)
+            {
+                case DbWerte.IMPORT_FORMAT_IFC: return Importherkunft.Ifc;
+                case DbWerte.IMPORT_FORMAT_SQPROJ: return Importherkunft.Sqproj;
+                default: return Importherkunft.GbXml;
+            }
+        }
+
+        /// <summary>Stammt die Zahl aus der gelesenen Datei (IFC, gbXML oder Projektdatei)?</summary>
+        public static bool IstDatei(Importherkunft herkunft)
+            => herkunft == Importherkunft.Ifc || herkunft == Importherkunft.GbXml || herkunft == Importherkunft.Sqproj;
 
         /// <summary>Ist die Herkunft eine Vorgabe — aus dem Katalog oder der freie Wert (E51)?</summary>
         public static bool IstVorgabe(Importherkunft herkunft)

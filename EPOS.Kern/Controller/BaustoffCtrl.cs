@@ -180,6 +180,7 @@ namespace WindowsFormsApplication1
                 case DbWerte.HERKUNFT_KATALOG: return MyResource.Resource.GIMP_HERKUNFT_KATALOG;
                 case DbWerte.HERKUNFT_IFC: return MyResource.Resource.GIMP_HERKUNFT_IFC;
                 case DbWerte.HERKUNFT_GBXML: return MyResource.Resource.GIMP_HERKUNFT_GBXML;
+                case DbWerte.HERKUNFT_SQPROJ: return MyResource.Resource.GIMP_HERKUNFT_SQPROJ;
                 case DbWerte.HERKUNFT_VORGABE: return MyResource.Resource.GIMP_HERKUNFT_VORGABE;
                 default: return herkunft;
             }
