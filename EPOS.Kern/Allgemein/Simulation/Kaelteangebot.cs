@@ -288,15 +288,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Vorrangschätzung des Heizzeitanteils</b> (4.5, Festlegung 14): (Brauchwasser + Prozess) der Stunde durch
-        /// die Heizkapazität der Wärmepumpe, höchstens 1 — eine benannte Näherung am Stundenbeginn (der ganze Vorrang
-        /// fällt der Wärmepumpe zu). Die echte Kältestunde rechnet mit dem wirklichen Heizzeitanteil.
+        /// <b>Die Vorrangschätzung des Heizzeitanteils</b> (4.5, Festlegung 14): der Teil von (Brauchwasser + Prozess) der
+        /// Stunde, den die Erzeuger vor der Wärmepumpe in der Kaskade nicht schon tragen (<paramref name="vorgelagertKw"/>,
+        /// ihr Angebot am Stundenbeginn), durch die Heizkapazität der Wärmepumpe, höchstens 1 — eine benannte Näherung am
+        /// Stundenbeginn, zustandsfrei und ohne Nachiteration (der Speicher zählt nicht). Die echte Kältestunde rechnet
+        /// mit dem wirklichen Heizzeitanteil.
         /// </summary>
-        internal static double Heizzeitanteil(Stundenvorrang vorrang, double heizkapazitaetKw)
+        /// <param name="vorrang">Der Vorrang der Wärmeseite der Stunde.</param>
+        /// <param name="heizkapazitaetKw">Die Heizkapazität der Wärmepumpe [kW].</param>
+        /// <param name="vorgelagertKw">Das verfügbare Angebot der Erzeuger vor der Wärmepumpe in der Kaskade [kW]; 0 = sie
+        /// steht vorn.</param>
+        internal static double Heizzeitanteil(Stundenvorrang vorrang, double heizkapazitaetKw, double vorgelagertKw = 0.0)
         {
             double bw = vorrang.BrauchwasserKw > 0.0 && !double.IsInfinity(vorrang.BrauchwasserKw) ? vorrang.BrauchwasserKw : 0.0;
             double pz = vorrang.ProzessKw > 0.0 && !double.IsInfinity(vorrang.ProzessKw) ? vorrang.ProzessKw : 0.0;
-            double last = bw + pz;
+            double vor = vorgelagertKw > 0.0 && !double.IsInfinity(vorgelagertKw) ? vorgelagertKw : 0.0;
+            double last = bw + pz - vor;
             if (!(last > 0.0)) return 0.0;
             if (!(heizkapazitaetKw > 0.0)) return 1.0;
             double a = last / heizkapazitaetKw;

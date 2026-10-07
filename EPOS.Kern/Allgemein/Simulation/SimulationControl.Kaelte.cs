@@ -618,6 +618,8 @@ namespace WindowsFormsApplication1
                 var wp = new WaermepumpeKaeltekapazitaet(e, _kuehltage, maske, extrapolation);
                 // Die Heizkapazität derselben Maschine im Kreis (Modul der Anlagenzeile); ohne sie keine Schätzung.
                 WaermepumpeKapazitaet heiz = null;
+                // Die Erzeuger vor der Wärmepumpe in der Kaskade: Sie tragen den Vorrang der Stunde zuerst (K5a).
+                var vorgelagert = new List<IErzeugerkapazitaet>();
                 if (simulation_wp != null && e.Modulindex >= 0 && e.Modulindex < simulation_wp.wp_list.Count)
                 {
                     int id = simulation_wp.wp_list[e.Modulindex];
@@ -626,6 +628,7 @@ namespace WindowsFormsApplication1
                     {
                         if (k is WaermepumpeKapazitaet w && _ak3WaermeAnlagen != null && stelle < _ak3WaermeAnlagen.Count
                             && _ak3WaermeAnlagen[stelle] == id) { heiz = w; break; }
+                        vorgelagert.Add(k);
                         stelle++;
                     }
                 }
@@ -633,9 +636,17 @@ namespace WindowsFormsApplication1
                 {
                     WaermepumpeKapazitaet h = heiz;
                     int modul = e.Modulindex;
-                    wp.Heizzeitanteil = stunde => _ak3HeizzeitanteilEcht
-                        ? EchterHeizzeitanteil(modul, stunde)
-                        : Kaelteschranke.Heizzeitanteil(schranke.VorrangDerStunde, h.Abfragen(stunde, double.NaN).KapazitaetKw);
+                    wp.Heizzeitanteil = stunde =>
+                    {
+                        if (_ak3HeizzeitanteilEcht) return EchterHeizzeitanteil(modul, stunde);
+                        // Gibt der Fahrplan die Heizseite nicht frei (Sperrzeit, Zeitprogramm, Umschaltung am Kühltag),
+                        // heizt die Wärmepumpe in der Stunde nicht - sie trägt keinen Vorrang (K5a).
+                        Erzeugerangebot eigen = h.Abfragen(stunde, double.NaN);
+                        if (!(eigen.VerfuegbarKw > 0.0)) return 0.0;
+                        double vor = 0.0;
+                        foreach (IErzeugerkapazitaet k in vorgelagert) vor += k.Abfragen(stunde, double.NaN).VerfuegbarKw;
+                        return Kaelteschranke.Heizzeitanteil(schranke.VorrangDerStunde, eigen.KapazitaetKw, vor);
+                    };
                 }
                 erzeuger.Add(wp);
             }
