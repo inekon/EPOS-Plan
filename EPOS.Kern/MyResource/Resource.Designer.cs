@@ -38662,6 +38662,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei, Fassung {0} ähnelt.
+        /// </summary>
+        public static string GIMP_SCHEMA_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_SCHEMA_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus dem Import: Datei {0}, Format {1}. ähnelt.
         /// </summary>
         public static string GIMP_VORBELEGT {
@@ -45025,6 +45034,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beheizungscode {0} an {1} Räumen ist nicht belegt — angenommen beheizt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_BEHEIZUNG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_BEHEIZUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elementart {0} an {1} Flächen ist nicht belegt — gelesen als sonstiges Bauteil. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_ELEMENTTYP_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_ELEMENTTYP_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hülle aus der Projektdatei: {0} Flächen, {1} Öffnungen, {2} Seitenpaare zusammengeführt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_HUELLE {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_HUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hülle unvollständig: Die Projektdatei führt keine raumbezogenen Hüllflächen — das Gebäude lässt sich aus ihr allein nicht bilden. Bitte die IFC-Datei dazunehmen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_HUELLE_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_HUELLE_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist keine lesbare Projektdatei (SQLite) — sie wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_KEINE_DATEI {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_KEINE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei nennt keine verlässliche Nordrichtung — angenommen ist: Die Planoberseite zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_KEIN_NORDEN {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_KEIN_NORDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei ließ sich nicht lesen: {0} ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angrenzungscode {0} an {1} Flächen ist nicht belegt; die Randbedingung folgt aus der Beheizung der beiden Räume. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_NACHBARART_HERGELEITET {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_NACHBARART_HERGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angrenzungscode {0} an {1} Flächen ist nicht belegt und kein zweiter Raum bekannt — die Randbedingung bleibt unbestimmt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_NACHBARART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_NACHBARART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumbezüge der Hüllflächen zeigen auf einen Raum, den die Projektdatei nicht führt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne lesbare Wand — als eigene Bauteile gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektdatei fehlen Tabellen ({0}) — sie wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_TABELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau Projektdatei (U {0}) ähnelt.
         /// </summary>
         public static string IMP_SQ_AUFBAU_NAME {
@@ -45147,6 +45273,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lage, Öffnungen oder Standort der Hüllflächen sind in der Projektdatei nicht lesbar ({0}); Aufbauten und Nettoflächen bleiben. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_LAGE_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_LAGE_UNLESBAR", resourceCulture);
             }
         }
         

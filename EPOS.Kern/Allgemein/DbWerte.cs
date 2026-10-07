@@ -2576,6 +2576,12 @@ namespace WindowsFormsApplication1
         /// <summary>Format eines Gebäudeimports: gbXML (<c>Tab_Importquelle.Format</c>).</summary>
         public const string IMPORT_FORMAT_GBXML = "GBXML";
 
+        /// <summary>
+        /// Format eines Gebäudeimports allein aus der HottCAD-Projektdatei (<c>.sqproj</c>). Noch nicht in
+        /// <see cref="IMPORT_FORMATE"/>: Den <c>CHECK</c> von <c>Tab_Importquelle.Format</c> erweitert erst ein Schemaschritt.
+        /// </summary>
+        public const string IMPORT_FORMAT_SQPROJ = "SQPROJ";
+
         /// <summary>Die zwei Importformate in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
         public static readonly System.Collections.Generic.IReadOnlyList<string> IMPORT_FORMATE = new[]
         {

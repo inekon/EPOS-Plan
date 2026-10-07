@@ -48452,5 +48452,50 @@ Chart</value>
   <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
     <value>NW</value>
   </data>
+  <data name="GIMP_SCHEMA_SQPROJ" xml:space="preserve">
+    <value>Projektdatei, Fassung {0}</value>
+  </data>
+  <data name="IMP_SQ_PROT_LAGE_UNLESBAR" xml:space="preserve">
+    <value>Lage, Öffnungen oder Standort der Hüllflächen sind in der Projektdatei nicht lesbar ({0}); Aufbauten und Nettoflächen bleiben.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_ZU_GROSS" xml:space="preserve">
+    <value>Die Projektdatei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_LESEFEHLER" xml:space="preserve">
+    <value>Die Projektdatei ließ sich nicht lesen: {0}</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KEINE_DATEI" xml:space="preserve">
+    <value>Die Datei ist keine lesbare Projektdatei (SQLite) — sie wird nicht übernommen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_TABELLE_FEHLT" xml:space="preserve">
+    <value>Der Projektdatei fehlen Tabellen ({0}) — sie wird nicht übernommen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_HUELLE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Hülle unvollständig: Die Projektdatei führt keine raumbezogenen Hüllflächen — das Gebäude lässt sich aus ihr allein nicht bilden. Bitte die IFC-Datei dazunehmen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KEIN_NORDEN" xml:space="preserve">
+    <value>Die Projektdatei nennt keine verlässliche Nordrichtung — angenommen ist: Die Planoberseite zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_HUELLE" xml:space="preserve">
+    <value>Hülle aus der Projektdatei: {0} Flächen, {1} Öffnungen, {2} Seitenpaare zusammengeführt.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBARART_HERGELEITET" xml:space="preserve">
+    <value>Angrenzungscode {0} an {1} Flächen ist nicht belegt; die Randbedingung folgt aus der Beheizung der beiden Räume.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBARART_UNBEKANNT" xml:space="preserve">
+    <value>Angrenzungscode {0} an {1} Flächen ist nicht belegt und kein zweiter Raum bekannt — die Randbedingung bleibt unbestimmt.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_ELEMENTTYP_UNBEKANNT" xml:space="preserve">
+    <value>Elementart {0} an {1} Flächen ist nicht belegt — gelesen als sonstiges Bauteil.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_BEHEIZUNG_UNBEKANNT" xml:space="preserve">
+    <value>Beheizungscode {0} an {1} Räumen ist nicht belegt — angenommen beheizt.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT" xml:space="preserve">
+    <value>{0} Öffnungen ohne lesbare Wand — als eigene Bauteile gelesen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
+    <value>{0} Raumbezüge der Hüllflächen zeigen auf einen Raum, den die Projektdatei nicht führt.</value>
+  </data>
 </root>
 

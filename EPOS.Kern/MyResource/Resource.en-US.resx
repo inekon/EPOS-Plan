@@ -48445,5 +48445,50 @@ chart</value>
   <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
     <value>NW</value>
   </data>
+  <data name="GIMP_SCHEMA_SQPROJ" xml:space="preserve">
+    <value>Project file, version {0}</value>
+  </data>
+  <data name="IMP_SQ_PROT_LAGE_UNLESBAR" xml:space="preserve">
+    <value>Position, openings or site of the envelope surfaces cannot be read from the project file ({0}); constructions and net areas remain.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_ZU_GROSS" xml:space="preserve">
+    <value>The project file has {0} bytes and exceeds the limit of {1} bytes — it is not read.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The project file could not be read: {0}</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KEINE_DATEI" xml:space="preserve">
+    <value>The file is not a readable project file (SQLite) — it is not imported.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_TABELLE_FEHLT" xml:space="preserve">
+    <value>The project file lacks tables ({0}) — it is not imported.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_HUELLE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Envelope incomplete: the project file holds no room-related envelope surfaces — the building cannot be built from it alone. Please add the IFC file.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KEIN_NORDEN" xml:space="preserve">
+    <value>The project file states no reliable north direction — assumed: the top of the plan points north (north angle 0°). The assumption can be changed in the building dialog under “Orientation”.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_HUELLE" xml:space="preserve">
+    <value>Envelope from the project file: {0} surfaces, {1} openings, {2} side pairs merged.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBARART_HERGELEITET" xml:space="preserve">
+    <value>Adjacency code {0} on {1} surfaces is not documented; the boundary condition follows from the heating of both rooms.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBARART_UNBEKANNT" xml:space="preserve">
+    <value>Adjacency code {0} on {1} surfaces is not documented and no second room is known — the boundary condition remains undetermined.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_ELEMENTTYP_UNBEKANNT" xml:space="preserve">
+    <value>Element type {0} on {1} surfaces is not documented — read as other component.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_BEHEIZUNG_UNBEKANNT" xml:space="preserve">
+    <value>Heating code {0} on {1} rooms is not documented — assumed heated.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT" xml:space="preserve">
+    <value>{0} openings without a readable wall — read as separate components.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
+    <value>{0} room references of envelope surfaces point to a room the project file does not contain.</value>
+  </data>
 </root>
 
