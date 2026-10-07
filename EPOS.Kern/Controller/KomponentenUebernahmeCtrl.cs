@@ -315,7 +315,6 @@ namespace WindowsFormsApplication1
             // Die Kindzeilen jeder Anlage (Kernweg AnlagenFachspalten.AnlagenkinderUebertragen);
             // ihre Hinweise gehen erst nach dem Commit in den Kanal.
             var kinderHinweise = new List<string>();
-            var neueAnlagenIds = new List<int>();     // Reihenfolge = quellAnlagen
             var neueGeraeteIds = new List<int>();     // Reihenfolge = quellGeraete
             var neuePufferNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
