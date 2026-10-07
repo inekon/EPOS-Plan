@@ -1751,8 +1751,15 @@ Mittlere Fluidtemperatur zu Beginn der Stunde *t* (Lasten je Sondenmeter *q* in 
 
 ### 23.2 Kopplung im Stundenschritt
 
-Der Entzug der Stunde ist Wärme minus Strom der Module an der Anlage (dieselbe Größe wie in der
-Erdreichprüfung); mehrere Module derselben Anlage teilen ein Feld. Die Quelltemperatur der Stunde
+Der Entzug der Stunde ist Wärme minus Strom der Module an der Anlage **ohne den Mehrstrom aus
+Taktverlust** (`Taktstrom_KWh_WP`): Der Taktverlust ist elektrische Arbeit beim Anfahren und geht
+nicht als Wärme aus dem Erdreich in den Kreis, er mindert den Entzug also nicht. Mehrere Module
+derselben Anlage teilen ein Feld. Der Lauf bucht diesen Entzug je Modul und Stunde
+(`SimulationWaermepumpe.ModulEntzugStuendlich`, dazu die Betriebsstunden je Modul); das Sondenfeld
+und die Erdreichprüfung lesen dieselbe Reihe. Die Prüfung rechnet damit **je Anlage mit
+Erdreichquelle** — Jahresentzug, Spitze, Volllast-, Betriebs- und Froststunden aus der Summe der
+Reihen ihrer Module, eine Zeile je Anlage; eine Luft-Wasser-Wärmepumpe daneben geht nicht ein, und
+stehen mehrere Erdreichanlagen im Projekt, wird jede für sich geprüft. Die Quelltemperatur der Stunde
 *t* entsteht am Ende der Stunde *t − 1* (`Zweikanalig_StundeEnde`) aus den Lasten bis *t − 1*
 (**Vorstunde**). Ein Fixpunkt in der Stunde hieße, die Kaskade der Stunde mehrfach zu rechnen —
 Speicher, Ebenen und Takt ändern dabei ihren Zustand. Die thermische Zeitkonstante des Bohrlochs
@@ -1831,11 +1838,13 @@ Stundenabstände m = −8760 … 8758 zusammen, und der Beitrag der Vorjahre ist
 Kühlwärme, die eine Wärmepumpe mit Erdreichquelle im Kühlbetrieb abgibt, geht als negative Last in
 das Feld ihrer Anlage:
 
-(8) Q_R,h = Σ_e [Q_K,e,h + P_e,h / (1 + h_e)]
+(8) Q_R,h = Σ_e [Q_K,e,h + P_e,h / (1 + h_e) − P_T,e,h]
 
 mit der gedeckten Kälte Q_K (Verdichter und freie Kühlung über die Sole), dem Kältestrom P samt
 Hilfsstromzuschlag und dem Hilfsstromanteil h (`Kuehl_Hilfsstromanteil`); P / (1 + h) ist die
-Verdichterarbeit, bei freier Kühlung die Pumpenarbeit. Gezählt werden die Kälteerzeuger e, deren
+Verdichterarbeit, bei freier Kühlung die Pumpenarbeit. P_T ist der Mehrstrom aus Taktverlust im
+Kühlbetrieb (`Kaelteerzeuger.Taktstrom_stuendlich`); er geht wie im Heizbetrieb nicht als Wärme über
+die Sonde. Gezählt werden die Kälteerzeuger e, deren
 Modul am Feld hängt (`Tab_WP.Kuehlbetrieb` gesetzt, Kühlkennlinie im Projekt). Weil die
 Kältekaskade nach der Wärmekaskade rechnet, liefert der erste Lauf Q_R; der zweite meldet sie in
 jeder Stunde mit dem Entzug, q_i = (Entzug_i − Q_R,i) / (N·H), und die Vorjahre tragen die
@@ -1864,10 +1873,12 @@ des letzten Laufs zeigt der Dialog nicht.
 - Einfrierregel „gesäte Erdreichquellen der Referenzprojekte“: die Quellfelder und Sondenfeldspalten
   der Referenzanlagen, die Klimazone, der Bodenkatalog, die Normgeometrie und die Festwerte der
   Klasse `Erdsondenfeld` sowie das Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
-- Wirkung in der Basis `2026-10-07_R40_Erdreichquellen`: Bei den Kühlprojekten 1047 und 1056 steigt
+- Wirkung in der Basis `2026-10-07_R41_Erdreichpruefung`: Bei den Kühlprojekten 1047 und 1056 steigt
   die JAZ (3,86 → 4,45 bzw. 3,73 → 4,33), die Kälte-EER mit ihr (4,6 → 5,2). Bei den
   Grundlastanlagen 1008 und 1039 fällt sie (4,15 → 3,94 bzw. 3,25 → 3,06), weil das Erdreich unter
   der Last der Sonde auskühlt (Sole im Mittel 4,5 bzw. 1,0 °C gegen 9,9 °C Außenluft). Bei 1023 und
   1050 bleibt sie praktisch gleich (2,38). 1057 rechnet JAZ 3,07 bei 22,12 MWh Strom. Die
-  Erdreichprüfung führt je Projekt einen Block `Erdreich[n].*`; die Kältemaschine von 1055 bleibt
-  unberührt.
+  Erdreichprüfung führt je Anlage mit Erdreichquelle einen Block `Erdreich[n].*`; neben der
+  Luft-Wasser-Wärmepumpe von 1008, 1023 und 1050 prüft sie die Sole-Wärmepumpe für sich (1008:
+  Jahresentzug 52 487 kWh/a, größter Entzug 15,25 kW; 1023 und 1050: 24 283 kWh/a, 6,93 kW). Die
+  Kältemaschine von 1055 bleibt unberührt.

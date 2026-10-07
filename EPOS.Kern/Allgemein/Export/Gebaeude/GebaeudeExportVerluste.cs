@@ -62,7 +62,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Felder eines Bauteils.</summary>
         internal static readonly IReadOnlyDictionary<string, Exporteinstufung> Bauteil = new Dictionary<string, Exporteinstufung>
         {
-            ["ID"] = N, ["ID_Zone"] = N, ["Rang"] = N, ["Herkunft"] = N, ["Quellkennung"] = N,
+            ["ID"] = N, ["ID_Zone"] = N, ["Rang"] = N, ["Herkunft"] = N, ["Quellkennung"] = N, ["Flaechenherkunft"] = N,
             ["Bezeichner"] = R, ["Bauteilart"] = R, ["Flaeche"] = R, ["Randbedingung"] = R,
             ["ID_Aufbau"] = R, ["U_Wert"] = R, ["g_Wert"] = R, ["Neigung"] = R, ["Azimut"] = R,
             ["Rahmenanteil"] = V, ["Verschattungsfaktor"] = V, ["Psi_L"] = V,

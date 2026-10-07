@@ -244,9 +244,9 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            // Die Wärmepumpe von 1039 rechnet an ihrer Erdsonde; deren Entzug (Wärme − Strom) nimmt den
-            // Taktstrom mit und verschiebt so die Quelltemperatur. Die Taktregel selbst lässt die Wärme
-            // unberührt — geprüft wird sie darum an der Außenluft (Quelle leer in der Arbeitskopie).
+            // Die Wärmepumpe von 1039 rechnet an ihrer Erdsonde; deren Entzug rechnet ohne Taktstrom
+            // (ErdsondenfeldLaufTests). Die Taktregel selbst wird hier an der Außenluft geprüft (Quelle
+            // leer in der Arbeitskopie), damit die Stunde ohne Sondenfeld rechnet.
             Assert.True(DataRepository.ExecuteSQL(
                 "UPDATE Tab_Energieanlagen SET WQ_Typ = NULL WHERE ID_Projekt = ?", new DbParam("@p", PROJEKT_WP)));
 
