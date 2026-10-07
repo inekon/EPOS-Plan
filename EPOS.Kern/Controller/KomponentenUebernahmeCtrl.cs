@@ -420,7 +420,6 @@ namespace WindowsFormsApplication1
                     AnlagenFachspalten.Ausgang aus = AnlagenFachspalten.Uebertragen(v, fachspalten, a.ID, neueAnlage);
                     bezuegeVerloren += aus.Verloren;
                     bezuegeKopiert += aus.Kopiert;
-                    neueAnlagenIds.Add(neueAnlage);
 
                     // Die Kindzeilen der Anlage (Betriebsfuehrung, Senken, Pufferverbund,
                     // Straenge, Sperrfenster) - DERSELBE Kernweg wie bei der Flottenstudie,
