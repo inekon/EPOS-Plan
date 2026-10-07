@@ -1423,7 +1423,7 @@ namespace WindowsFormsApplication1
         /// <see cref="CopyFromStamm(int?, string, int, int)"/>.
         ///
         /// <list type="bullet">
-        /// <item><b>Kopf:</b> alle 95 Fachspalten (<see cref="KOPFSPALTEN"/>) wörtlich aus
+        /// <item><b>Kopf:</b> alle 96 Fachspalten (<see cref="KOPFSPALTEN"/>) wörtlich aus
         /// <c>Tab_Gebaeude</c> — NULL bleibt NULL, Schalter bleiben 0/1. Neue Id, <c>ReadOnly = 0</c>;
         /// Projekt, Zuordnung und Katalogverweis der Kopie gehören nicht zum Katalog.</item>
         /// <item><b>Beschreibung:</b> die der Kopie, darunter die Herkunft „aus Projekt …, Datum"

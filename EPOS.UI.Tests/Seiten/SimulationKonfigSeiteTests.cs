@@ -509,8 +509,8 @@ public class SimulationKonfigSeiteTests : BunitContext
         => Kopplungswahl(seite).QuerySelectorAll("option").First(o => o.GetAttribute("value") == wert);
 
     /// <summary>
-    /// Die Wahl führt die vier Stufen der Wertliste; nur „aus" und „Heizkreis (AK1)" sind wählbar,
-    /// Fahrplan (AK2) und geschlossener Kreis (AK3) stehen gesperrt mit ihrem Grund — kein
+    /// Die Wahl führt die vier Stufen der Wertliste; „aus", „Heizkreis (AK1)" und der geschlossene Kreis (AK3) sind wählbar,
+    /// Fahrplan (AK2) steht gesperrt mit seinem Grund — kein
     /// Persistenzwert ohne Rechenweg (Kühlkonzept K7). Zeichnen schreibt nichts.
     /// </summary>
     [Fact]
@@ -528,9 +528,10 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.False(optionen[0].HasAttribute("disabled"));
         Assert.False(optionen[1].HasAttribute("disabled"));
         Assert.True(optionen[2].HasAttribute("disabled"));
-        Assert.True(optionen[3].HasAttribute("disabled"));
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR, optionen[2].TextContent);
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR, optionen[3].TextContent);
+        // AK3 ist gebaut und wählbar (E102 Q-AK3-1, AK3-W4a).
+        Assert.False(optionen[3].HasAttribute("disabled"));
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR, optionen[3].TextContent);
 
         Assert.True(optionen[0].HasAttribute("selected"));
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AUS, abschnitt.TextContent);

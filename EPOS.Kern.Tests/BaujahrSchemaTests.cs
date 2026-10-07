@@ -95,7 +95,7 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("Tab_Gebaeude.Baujahr", GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, StringComparison.Ordinal);
             // Die GELTENDE Sicht (der manuellen Aufheizzeit, E59) beginnt mit der Sicht des Baujahrs an denselben Stellen.
             Assert.Equal(GebaeudeSchema.SICHT_BAUJAHR, GebaeudeSchema.SICHT_AKTUELL.Take(99));
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_ERDREICH_VORGABE, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_AK3, GebaeudeSchema.SQL_VIEW_AKTUELL);
         }
 
         // =============================================================================
