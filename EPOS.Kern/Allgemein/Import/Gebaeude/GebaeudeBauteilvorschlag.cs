@@ -1316,7 +1316,8 @@ namespace WindowsFormsApplication1
                 double? brutto = f.Rand == Zonenrand.Zone ? f.GroessereM2 : f.BruttoM2;
                 if (!brutto.HasValue) return null;
                 double abzug = f.AusschnittM2 > 0.0 ? f.AusschnittM2
-                             : f.Oeffnungen.Where(o => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer).Sum(o => o.BruttoflaecheM2 ?? 0.0);
+                             : f.Oeffnungen.Where(o => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer).Sum(o => o.BruttoflaecheM2 ?? 0.0)
+                               + Lochanteil(f.Bauteil, brutto.Value);
                 double netto = brutto.Value - abzug;
                 if (netto >= 0.0) return netto;
                 AbbildBauteil s = f.Bauteil;
@@ -1325,6 +1326,17 @@ namespace WindowsFormsApplication1
                     return eigen;
                 negativ = f.Rand != Zonenrand.Innen && f.Rand != Zonenrand.Gebaeudetrennung;
                 return 0.0;
+            }
+
+            /// <summary>
+            /// Der Anteil der Löcher ohne Füllung (G5-2) an einem Teil: im Verhältnis seiner Fläche zur Bruttofläche des
+            /// Bauteils, das ganze Bauteil trägt alle.
+            /// </summary>
+            private static double Lochanteil(AbbildBauteil s, double bruttoTeil)
+            {
+                if (!(s.LochflaecheM2 > 0.0)) return 0.0;
+                if (!(s.BruttoflaecheM2 is double ganz) || ganz <= 0.0) return s.LochflaecheM2;
+                return s.LochflaecheM2 * Math.Min(1.0, bruttoTeil / ganz);
             }
 
             /// <summary>Liegt der Raum an zweiter Stelle der Nachbarn — gilt die Richtung der Datei gespiegelt?</summary>
