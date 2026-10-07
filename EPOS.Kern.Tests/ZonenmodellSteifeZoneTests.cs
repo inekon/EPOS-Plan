@@ -98,6 +98,38 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Dieselbe Stunde über die Versuchsform, mit der die Zonenschleife fragt, ob ein Muster hält: Sie meldet den
+        /// Bruch der Abschnittsregel mit demselben Text als <c>false</c>, wirft dabei keine Ausnahme (auch keine, die
+        /// gleich wieder gefangen würde — ein Debugger, der bei geworfenen Ausnahmen hält, stünde sonst mitten in einer
+        /// gewöhnlichen Rechnung), und der Zustand bleibt unverändert.
+        /// </summary>
+        [Fact]
+        public void Die_Versuchsform_meldet_den_Bruch_der_Abschnittsregel_ohne_Ausnahme()
+        {
+            var m = new Zonenmodell2K(SteifeZone(), "Steife Zone") { InnenpruefungObergrenzeFuerProbe = 0 };
+            m.Zuruecksetzen(AW, IW);
+            Stundenrand r = Stunde();
+            var muster = new Stundenmuster(new[] { Betriebsfall.HeizenGeregelt }, new[] { Zonenmodell2K.STUNDE_S });
+
+            int geworfen = 0;
+            EventHandler<System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs> zaehler =
+                (_, e) => { if (e.Exception is GebaeudeModellException) System.Threading.Interlocked.Increment(ref geworfen); };
+            AppDomain.CurrentDomain.FirstChanceException += zaehler;
+            bool gehalten;
+            string bruch;
+            try { gehalten = m.VersucheSchrittMitMuster(in r, muster, out _, out bruch); }
+            finally { AppDomain.CurrentDomain.FirstChanceException -= zaehler; }
+
+            Assert.False(gehalten);
+            Assert.Equal(0, geworfen);
+            Assert.Contains("HeizenGeregelt", bruch);
+            Assert.Equal(AW, m.ThetaMAw);
+            Assert.Equal(IW, m.ThetaMIw);
+            var ex = Assert.Throws<GebaeudeModellException>(() => m.SchrittMitMuster(in r, muster));
+            Assert.Equal(bruch, ex.Message);
+        }
+
+        /// <summary>
         /// Der Übergabeweg (Anlagenkopplung, Schritt H): Auch eine Lage mit Leitwert kann im Innern umkehren. In
         /// dieser Stunde (Übergabe 3,8 kW, Vorlauf 38,5 °C, Reglerband 0,8 K, warme Innenbauteilmasse) steigt die
         /// Raumluft im Regelbereich binnen Minuten über θ_H und fällt bis zum Ende wieder darunter; Endpunkt und

@@ -447,8 +447,23 @@ namespace WindowsFormsApplication1
             _last[_gemeldet] = q;
             EntzugKwh += double.IsFinite(entzugKw) ? entzugKw : 0.0;
             _gemeldet++;
-            return Temperatur(Math.Min(_gemeldet, STUNDEN - 1));
+            _naechsteStart = Temperatur(Math.Min(_gemeldet, STUNDEN - 1));
+            return _naechsteStart;
         }
+
+        private double _naechsteStart;             // Rückgabe der letzten Meldung (AK3-W3d)
+
+        /// <summary>
+        /// Zahl der lückenlos gemeldeten Stunden (AK3-W3d): Den Zustand am Beginn genau dieser Stunde kennt das Feld.
+        /// </summary>
+        internal int GemeldeteStunden => _gemeldet;
+
+        /// <summary>
+        /// Mittlere Soletemperatur T_f [°C] zu Beginn der Stunde <see cref="GemeldeteStunden"/> (AK3-W3d), ohne
+        /// Nebenwirkung: vor der ersten Meldung <see cref="Temperatur"/>(0), danach der Wert, den
+        /// <see cref="StundeMelden"/> zuletzt geliefert hat — Zeichen für Zeichen der Wert der Quellreihe.
+        /// </summary>
+        internal double TemperaturAmBeginnDerOffenenStunde => _gemeldet == 0 ? Temperatur(0) : _naechsteStart;
 
         /// <summary>
         /// Mittlere Soletemperatur T_f [°C] zu Beginn der Stunde <paramref name="stunde"/> aus den

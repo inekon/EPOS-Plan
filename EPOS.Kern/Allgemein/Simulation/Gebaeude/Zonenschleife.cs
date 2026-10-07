@@ -435,14 +435,15 @@ namespace WindowsFormsApplication1
                     if (k == 1) _muster[z] = m.LetztesMuster;
                     else if (!m.LetzteFolgeGleich(_muster[z]))
                     {
-                        // Das Muster des ersten Durchlaufs festhalten (Mehrzonenkonzept 2.4).
+                        // Das Muster des ersten Durchlaufs festhalten (Mehrzonenkonzept 2.4). Hält es nicht, ist das
+                        // ein regulärer Ausgang, keine Ausnahme: die Stunde rechnet dann frei.
                         m.Zuruecksetzen(_sicherAw[z], _sicherIw[z]);
-                        try
+                        if (m.VersucheSchrittMitMuster(in r, _muster[z], out Stundenergebnis gehalten, out _))
                         {
-                            s = m.SchrittMitMuster(in r, _muster[z]);
+                            s = gehalten;
                             _gehalten[z] = true;
                         }
-                        catch (GebaeudeModellException ex) when (ex.Grund == GebaeudeModellFehler.AbschnittsregelVerletzt)
+                        else
                         {
                             m.Zuruecksetzen(_sicherAw[z], _sicherIw[z]);
                             s = m.Schritt(in r);

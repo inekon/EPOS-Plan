@@ -152,18 +152,41 @@ namespace WindowsFormsApplication1
                 paare.Add(new Zonenpaarzuordnung(a, b, deltaVorlauf[(a, b)], zuordnung[(a, b)], d));
             }
 
-            // Stufe KP3 (Festlegung 22): die Gebaeudewerte aus den Plaenen der Zonen - nur mit Schalter; die
-            // Aufheizwerte des Gebaeudes (Welle R4) mit W3 und Kappung aus den Zonenlaeufen, vor dem Bau des
-            // Gebaeudeergebnisses, weil seine Nutzungszeit die vereinigte Rampenmaske ausnimmt (Festlegung 10).
-            Aufheizgebaeude aufheiz = zonen[0].Aufheizplan == null
+            GebaeudeModellErgebnis summe = Summe(zonen, ergebnisse, schleife, index, idGebaeude, out Aufheizgebaeude aufheiz);
+            uhr.Stop();
+            return new Mehrzonenergebnis(summe, ergebnisse, zonen, schleife, paare,
+                                         uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf, aufheiz);
+        }
+
+        /// <summary>
+        /// <b>Das Gebäudeergebnis aus den Zonenergebnissen</b> (Schritt 3 von <see cref="Rechnen"/>): die Summe der Zonen
+        /// samt angehängten Zonenergebnissen. Stufe KP3 (Festlegung 22): die Gebäudewerte aus den Plänen der Zonen — nur
+        /// mit Schalter; die Aufheizwerte des Gebäudes (Welle R4) mit W3 und Kappung aus den Zonenläufen, vor dem Bau des
+        /// Gebäudeergebnisses, weil seine Nutzungszeit die vereinigte Rampenmaske ausnimmt (Festlegung 10). Auch der
+        /// Abschluss des Kreises AK3 (<see cref="Abschluss"/>) baut so.
+        /// </summary>
+        internal static GebaeudeModellErgebnis Summe(IReadOnlyList<ZonenEingang> zonen, GebaeudeModellErgebnis[] ergebnisse,
+                                                    Zonenschleife schleife, int index, int idGebaeude, out Aufheizgebaeude aufheiz)
+        {
+            aufheiz = zonen[0].Aufheizplan == null
                 ? null
                 : Aufheizoptimierung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan).ToList());
             GebaeudeModellErgebnis summe = Gebaeudeergebnis(zonen, ergebnisse, schleife, index, idGebaeude,
                                                             aufheiz == null ? null : Aufheizergebnis.Gebaeude(aufheiz, ergebnisse));
             summe.ZonenAnhaengen(Zonenergebnisse(zonen, ergebnisse, schleife));
-            uhr.Stop();
-            return new Mehrzonenergebnis(summe, ergebnisse, zonen, schleife, paare,
-                                         uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf, aufheiz);
+            return summe;
+        }
+
+        /// <summary>
+        /// <b>Das unskalierte Gebäudeergebnis eines Steppers nach dem Jahr</b> (AK3-W3c): Einzone das Ergebnis der Zone,
+        /// Mehrzonen die Summe wie <see cref="Rechnen"/> (<see cref="Summe"/>).
+        /// </summary>
+        internal static GebaeudeModellErgebnis Abschluss(GebaeudeStepper stepper, int index, int idGebaeude)
+        {
+            GebaeudeModellErgebnis[] e = stepper.Abschluss(index, idGebaeude);
+            Zonenschleife s = stepper.Schleife;
+            if (s == null) return e[0];
+            return Summe(s.Laeufe.Select(l => l.Zone).ToList(), e, s, index, idGebaeude, out _);
         }
 
         /// <summary>

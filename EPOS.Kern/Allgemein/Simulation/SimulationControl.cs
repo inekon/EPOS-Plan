@@ -444,6 +444,8 @@ namespace WindowsFormsApplication1
                 // keinen eigenen Zustand. Ohne Sondenfeld bleibt es bei einem Lauf.
                 simulation_wp.FeldvorgabeSetzen(null);
                 SimulationProtokoll.Meldestand stand = SimulationProtokoll.Aktuell.Merken();
+                // AK3-W3d: Jeder Durchgang beginnt im AK3-Weg bei Pass 1 mit frischem Kreis (sonst nichts).
+                simulation_Waermebedarf?.Ak3FeldlaufBeginnen();
                 Do_Simulation_Intern(ID_Projekt, fortschritt, abbruch);
 
                 Dictionary<int, SimulationWaermepumpe.Feldvorgabe> vorgabe = FeldvorgabeAusLauf();
@@ -451,6 +453,7 @@ namespace WindowsFormsApplication1
                 {
                     SimulationProtokoll.Aktuell.ZuruecksetzenAuf(stand);
                     simulation_wp.FeldvorgabeSetzen(vorgabe);
+                    simulation_Waermebedarf?.Ak3FeldlaufBeginnen();
                     Do_Simulation_Intern(ID_Projekt, null, abbruch);
                 }
                 DbFehlerUebernehmen();
@@ -639,6 +642,8 @@ namespace WindowsFormsApplication1
 
 
             Phase(fortschritt, abbruch, Laufphase.Kaskade, 0.10);
+            // AK3-W3b: der AK3-Weg an der Kaskade (Naht, Vektorstufen als Schleifenmitglieder); sonst nichts.
+            Ak3Einrichten();
             Kaskade_Zweikanalig();
 
             // E26 (Befund N3): der Bedarf aller Verbraucher vor jeder Eigenerzeugung — der
@@ -1786,7 +1791,8 @@ namespace WindowsFormsApplication1
             if (_wpInSchleife) KaelteerzeugerVorbereiten();
 
             // --- 5. Stundenschleife A–G ------------------------------------------------
-            m_bError = !schleife.Rechnen(kanaele);
+            // AK3-W3b: im AK3-Weg mit benanntem Abbruch des Kreises und Nachführen der Bedarfsseite.
+            m_bError = !(Stundenbedarf is Ak3Stundenbedarf ? Ak3Rechnen(schleife, kanaele) : schleife.Rechnen(kanaele));
 
             // PW1 Stufe 1: was das Temperaturniveau des Prozesskanals am Kessel und an den
             // Speichern bewirkt hat (die Wärmepumpe meldet selbst). Ohne Niveau still.

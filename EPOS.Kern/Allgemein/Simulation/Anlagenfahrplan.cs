@@ -199,7 +199,46 @@ namespace WindowsFormsApplication1
         internal static Anlagenfahrplan AusProjekt(int idProjekt, double[] aussentemperatur, int wochentagDesErstenTags,
                                                    int idKlimaregion)
         {
-            var liste = new List<Fahrplanerzeuger>();
+            var liste = ErzeugerAusProjekt(idProjekt, aussentemperatur, wochentagDesErstenTags, idKlimaregion)
+                .Select(z => z.Fahrplan).ToList();
+
+            double vorrat = 0.0;
+            foreach (WaermesenkeClass.PufferInfo p in WaermesenkeClass.ProjektPufferListe(
+                         idProjekt, WaermesenkeClass.VERWENDUNG_HEIZUNG, true))
+                vorrat += p.Q_max;
+            return Rechnen(liste, vorrat);
+        }
+
+        /// <summary>Ein Heizerzeuger des Projekts mit Anlagentyp, Anlagenzeile und Fahrplanteil (AK3-W3b).</summary>
+        internal sealed class Erzeugerzeile
+        {
+            internal Erzeugerzeile(int typ, WErzeugerModel modell, Fahrplanerzeuger fahrplan)
+            {
+                Typ = typ;
+                Modell = modell;
+                Fahrplan = fahrplan;
+            }
+
+            /// <summary>Anlagentyp nach <see cref="WizardItemClass"/> (WP, Kessel, BHKW).</summary>
+            internal int Typ { get; }
+
+            /// <summary>Die Anlagenzeile (<c>Tab_Energieanlagen</c>).</summary>
+            internal WErzeugerModel Modell { get; }
+
+            /// <summary>Masken, Zeitprogramm, Vorlaufangebot und Nennleistung des Erzeugers.</summary>
+            internal Fahrplanerzeuger Fahrplan { get; }
+        }
+
+        /// <summary>
+        /// <b>Die Heizerzeuger des Projekts</b> in der Ordnung des Fahrplans (belegte Kaskadenplätze, je Typ nach
+        /// Anlagen-Id) — der eine Lader für <see cref="AusProjekt"/> (AK2) und die Angebotsfunktion (AK3-W3b). Je
+        /// Anlagenzeile ein Modul: <c>Tab_Energieanlagen</c> führt keine Modulzahl (die Kapazität trägt Anzahl 1).
+        /// </summary>
+        /// <exception cref="AnlagenzeitprogrammFehler">ein ungültiges Zeitprogramm — benannt, nie still.</exception>
+        internal static List<Erzeugerzeile> ErzeugerAusProjekt(int idProjekt, double[] aussentemperatur,
+                                                               int wochentagDesErstenTags, int idKlimaregion)
+        {
+            var liste = new List<Erzeugerzeile>();
             KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(idProjekt);
             int wt = wochentagDesErstenTags >= 0 && wochentagDesErstenTags <= 6 ? wochentagDesErstenTags : 0;
             foreach (string platz in Kaskade.Belegt(konfig))
@@ -210,7 +249,7 @@ namespace WindowsFormsApplication1
                 foreach (WErzeugerModel m in WErzeugerCtrl.ModelleJeTyp(idProjekt, typ).OrderBy(x => x.ID))
                 {
                     if (!BedientHeizung(m.WS_Typ)) continue;
-                    liste.Add(new Fahrplanerzeuger
+                    liste.Add(new Erzeugerzeile(typ, m, new Fahrplanerzeuger
                     {
                         Bezeichner = m.Bezeichner ?? "",
                         NennleistungKw = Nennleistung(typ, m),
@@ -219,15 +258,10 @@ namespace WindowsFormsApplication1
                         Abgeschaltet = typ == WizardItemClass.WP_TYP ? Abschaltmaske(m, aussentemperatur) : null,
                         VorlaufAngebotC = m.Vorlauf_Max.HasValue ? m.Vorlauf_Max.Value
                                           : m.Vorlauf > 0 ? m.Vorlauf : double.NaN,
-                    });
+                    }));
                 }
             }
-
-            double vorrat = 0.0;
-            foreach (WaermesenkeClass.PufferInfo p in WaermesenkeClass.ProjektPufferListe(
-                         idProjekt, WaermesenkeClass.VERWENDUNG_HEIZUNG, true))
-                vorrat += p.Q_max;
-            return Rechnen(liste, vorrat);
+            return liste;
         }
 
         private static bool BedientHeizung(string wsTyp)

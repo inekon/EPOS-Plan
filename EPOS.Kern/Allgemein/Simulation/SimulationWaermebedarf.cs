@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace WindowsFormsApplication1
 {
-    public class SimulationWaermebedarf
+    public partial class SimulationWaermebedarf
     {
         public bool DBGelesen = false;
         public int Anzahl_Gebaeude = 0;
@@ -531,6 +531,10 @@ namespace WindowsFormsApplication1
 
             // ANLAGENKOPPLUNG (AK2, 6.2; F4, F10): Fahrplan und Zweipass - nur mit Projektstufe und
             // mindestens einem gekoppelten Gebaeude auf dem VDI-Weg; sonst ohne jede Wirkung.
+            // AK3-W3b (Entwurf AK3 2.1): mit Stufe AK3 im Kern ist der Gebäudelauf Pass 1 und erfasst die Stepper
+            // des Kreises; sonst ohne jede Wirkung.
+            if (!Ak3Vorbereiten(ID_Projekt, ID_Klimaregion, ctrl)) return;
+
             if (!FahrplanVorbereiten(ID_Projekt, ID_Klimaregion, ctrl)) return;
 
             for (int i = 0; i < ctrl.rows; i++)
@@ -545,7 +549,12 @@ namespace WindowsFormsApplication1
                 // Bedarfsrechnung bleibt an derselben Stelle wie bisher.
                 bool gerechnet = HeizwaermeEinesGebaeudes(ctrl.items[i], i, Waermebedarf_EinGebaeude);
                 _schrankeAktuell = null;
-                if (!gerechnet) return;
+                if (!gerechnet)
+                {
+                    _vdi6007.Ak3Erfassen = null;
+                    return;
+                }
+                _ak3?.Pass1Merken(i, Waermebedarf_EinGebaeude);
 
                 // E30: die Kennzahlen des Gebaeudes fuer Tab_ErgebnisGebaeude - aus einer
                 // KOPIE der Einzelreihe, nach derselben Umrechnung W -> kW wie der Heizkanal
@@ -571,6 +580,7 @@ namespace WindowsFormsApplication1
             }
 
             Anzahl_Gebaeude = ctrl.rows;
+            _vdi6007.Ak3Erfassen = null;
 
             // ANLAGENKOPPLUNG (AK1, 6.1): der Heizkreis des Projekts aus den skalierten
             // Ergebnissen - bedarfsgewichteter Vorlauf je Stunde für die Kennlinienwahl der
@@ -1330,7 +1340,8 @@ namespace WindowsFormsApplication1
             FahrplanMitPass1 = false;
 
             string stufe = AnlagenkopplungProjekt;
-            if (FahrplanUnterdrueckt || !Waermeuebergabe.StufeAn(stufe) || ctrl.rows == 0) return true;
+            // AK3-W3b: Im AK3-Weg ersetzt der Kreis den Profilweg — Pass 1 rechnet unbegrenzt.
+            if (FahrplanUnterdrueckt || _ak3 != null || !Waermeuebergabe.StufeAn(stufe) || ctrl.rows == 0) return true;
             var gekoppelt = new bool[ctrl.rows];
             bool irgendeins = false, zonenschleife = false;
             for (int i = 0; i < ctrl.rows; i++)
@@ -1705,6 +1716,7 @@ namespace WindowsFormsApplication1
             }
 
             for (int h = 0; h < 8760; h++) ziel[h] *= faktor;
+            _ak3?.FaktorSetzen(index, faktor);
             GebaeudeModellErgebnis ergebnis = GebaeudeErgebnisse.Ergebnis(index);
             if (ergebnis != null) GebaeudeErgebnisse.Setzen(index, ergebnis.Skaliert(faktor));
             if (!vorbereitung.IstFlaeche) HinweisAufheizungVerbrauch(item, ergebnis?.Aufheizung);
