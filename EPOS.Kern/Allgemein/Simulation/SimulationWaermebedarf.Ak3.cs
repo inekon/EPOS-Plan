@@ -22,6 +22,26 @@ namespace WindowsFormsApplication1
         internal Ak3Weg Ak3 => _ak3;
 
         /// <summary>
+        /// <b>Ist diese Bedarfsrechnung der Projektlauf</b> (mit Kaskade, <see cref="SimulationRunner"/>)? Nur er rechnet
+        /// mit Stufe AK3 den geschlossenen Kreis; Vorgabe <c>false</c> = eine Auskunft (Festlegung 20).
+        /// </summary>
+        internal bool Projektlauf { get; set; }
+
+        /// <summary>
+        /// Hat diese Auskunft mit Stufe AK3 auf den Profilweg zurückgestuft (Festlegung 20)? Der Hinweis
+        /// <see cref="Ak3Kernstufe.RUECKSTUFE_TEXT"/> steht dann im Laufprotokoll.
+        /// </summary>
+        internal bool Ak3Rueckstufe { get; private set; }
+
+        /// <summary>Nennt die Rückstufe einer Auskunft, wenn der Projektlauf den Kreis rechnen würde (Festlegung 20).</summary>
+        internal void Ak3RueckstufeNennen()
+        {
+            if (Projektlauf || !Ak3Kernstufe.Rueckstufe(AnlagenkopplungProjekt)) return;
+            Ak3Rueckstufe = true;
+            SimulationProtokoll.Aktuell.HinweisEinmal("ak3-rueckstufe", Ak3Kernstufe.RUECKSTUFE_TEXT);
+        }
+
+        /// <summary>
         /// Legt den AK3-Weg an, wenn die Kernstufe für die Projektstufe wirkt und mindestens ein Gebäude gekoppelt
         /// auf dem VDI-Weg rechnet — Einzonen- wie Mehrzonengebäude (Entwurf 2.6: Anlage außen, Zonen innen);
         /// Altweg-Gebäude sind feste Last (Festlegung 17).
@@ -33,6 +53,13 @@ namespace WindowsFormsApplication1
             _vdi6007.Ak3Erfassen = null;
             string stufe = AnlagenkopplungProjekt;
             if (FahrplanUnterdrueckt || !Ak3Kernstufe.Wirksam(stufe) || ctrl == null || ctrl.rows == 0) return true;
+            // Festlegung 20: Nur der Projektlauf (mit Kaskade) rechnet den Kreis; jede andere Bedarfsrechnung ist eine
+            // Auskunft und rechnet auf dem Profilweg — benannt.
+            if (!Projektlauf)
+            {
+                Ak3RueckstufeNennen();
+                return true;
+            }
 
             bool gekoppelt = false;
             for (int i = 0; i < ctrl.rows; i++)

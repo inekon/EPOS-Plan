@@ -538,6 +538,28 @@ namespace WindowsFormsApplication1
         /// <summary><c>Komfort_Kelvinstunden_Kuehlung</c> [Kh]: Summe der Überschreitungen des Kühlsollwerts.</summary>
         public double? KomfortKelvinstundenKuehlungKh;
 
+        // ---- Anlagenkopplung AK3, Kennzahlen des geschlossenen Kreises (Ak3Schema; Entwurf AK3 Festlegung 22) ----
+        //
+        // null heißt „nicht erhoben" — jede Stufe außer AK3. Der Referenzlauf-Export nimmt eine NULL-Spalte nicht auf.
+
+        /// <summary><c>Ak3_Durchlaeufe_Mittel</c> [–]: Mittel der begrenzten Durchläufe je Stunde.</summary>
+        public double? Ak3DurchlaeufeMittel;
+
+        /// <summary><c>Ak3_Durchlaeufe_Max</c> [–]: die größte Zahl der Durchläufe einer Stunde.</summary>
+        public int? Ak3DurchlaeufeMax;
+
+        /// <summary><c>Ak3_Fallwechsel</c> [–]: Wechsel der Stützstelle der Wärmepumpe und des Betriebsfalls je Zone.</summary>
+        public int? Ak3Fallwechsel;
+
+        /// <summary><c>Ak3_Schranke_Stunden</c> [h]: Stunden, in denen die Schranke des Angebots eine Zone begrenzte.</summary>
+        public int? Ak3SchrankeStundenH;
+
+        /// <summary><c>Ak3_Speicher_Leer_Stunden</c> [h]: Stunden mit Heizungspuffer am Kreis und nichts entnehmbar.</summary>
+        public int? Ak3SpeicherLeerStundenH;
+
+        /// <summary><c>Ak3_Restbedarf_Stunden</c> [h]: Stunden mit Restbedarf der Kaskade (Festlegung 15).</summary>
+        public int? Ak3RestbedarfStundenH;
+
         /// <summary>
         /// <b>Komfort und Restbedarf nebeneinander</b> (Anlagenkopplung 5.5, F8): Wo Komfortstunden ausgewiesen
         /// werden, steht der Restbedarf daneben — mit Kopplung ist ein Teil der Unterdeckung eine gesunkene

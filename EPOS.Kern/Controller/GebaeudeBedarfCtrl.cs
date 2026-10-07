@@ -36,6 +36,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Gebäudename der Projektkopie.</summary>
         internal string Name = "";
 
+        /// <summary>
+        /// Die benannte Rückstufe (Entwurf AK3 Festlegung 20): Mit Stufe AK3 rechnet die Auskunft ohne geschlossenen
+        /// Kreis auf dem Profilweg (<see cref="Ak3Kernstufe.RUECKSTUFE_TEXT"/>); <c>null</c> ohne Rückstufe.
+        /// </summary>
+        internal string Rueckstufe;
+
         /// <summary>Die 8 760 Stundenwerte der Heizwärme in <b>kW</b>.</summary>
         internal double[] Stundenwerte = new double[8760];
 
@@ -455,6 +461,8 @@ namespace WindowsFormsApplication1
 
             ergebnis.Name = gebaeude.Gebaeudename ?? "";
             ergebnis.Stundenwerte = werte;
+            // Festlegung 20: mit Stufe AK3 rechnet die Auskunft auf dem Profilweg - benannt.
+            ergebnis.Rueckstufe = sim.Ak3Rueckstufe ? Ak3Kernstufe.RUECKSTUFE_TEXT : null;
 
             // ZEICHENGLEICH zum Lauf: dort steht "kanalHeizung.Sum() / 1000" - eine
             // double-Summe durch eine GANZE Zahl, also eine double-Division. Ein
