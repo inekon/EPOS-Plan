@@ -85,10 +85,14 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            _ak3 = new Ak3Weg { Erzeuger = erzeuger };
+            // AK3-K (Festlegung 21): die Kälteseite des Kreises nur mit dem Kernschalter.
+            _ak3 = new Ak3Weg { Erzeuger = erzeuger, Kaelte = Ak3KKernschalter.Wirksam(stufe) };
             _vdi6007.Ak3Erfassen = _ak3.Erfassen;
-            SimulationProtokoll.Aktuell.HinweisEinmal("ak3-kernstufe",
-                "Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis.");
+            if (_ak3.Kaelte)
+                SimulationProtokoll.Aktuell.HinweisEinmal("ak3-kernstufe", MyResource.Resource.SIMENG_AK3K_KREIS_MIT_KAELTESEITE);
+            else
+                SimulationProtokoll.Aktuell.HinweisEinmal("ak3-kernstufe",
+                    "Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis.");
             return true;
         }
 
@@ -135,6 +139,17 @@ namespace WindowsFormsApplication1
                 s.Ergebnisse[g.Index] = GebaeudeErgebnisse.Ergebnis(g.Index);
                 if (g.Index < GebaeudeKennzahlenListe.Count) s.Kennzahlen[g.Index] = GebaeudeKennzahlenListe[g.Index];
             }
+            // AK3-K (Fehler 1.1 (a)): die Kälteseite nach Pass 1 und je gebuchtem Gebäude seine Kühlreihe aus Pass 1.
+            if (_ak3.Kaelte)
+            {
+                s.Kuehlkreis = Kuehlkreis;
+                s.Kaelte = Kaelteseite.Sichern();
+                foreach (Ak3Weg.Eintrag g in _ak3.Gebaeude)
+                {
+                    GebaeudeModellErgebnis e = GebaeudeErgebnisse.Ergebnis(g.Index);
+                    g.Pass1KuehlKwh = Kaelteseite.Bucht(g.Zeile, e) ? (double[])e.KuehlbedarfKwh.Clone() : null;
+                }
+            }
             return s;
         }
 
@@ -159,6 +174,11 @@ namespace WindowsFormsApplication1
                 if (e.Value != null) GebaeudeErgebnisse.Setzen(e.Key, e.Value);
             foreach (KeyValuePair<int, ErgebnisGebaeudeModel> k in s.Kennzahlen)
                 if (k.Key < GebaeudeKennzahlenListe.Count) GebaeudeKennzahlenListe[k.Key] = k.Value;
+            if (s.Kaelte != null)
+            {
+                Kuehlkreis = s.Kuehlkreis;
+                Kaelteseite.Herstellen(s.Kaelte);
+            }
         }
 
         /// <summary>
@@ -190,6 +210,7 @@ namespace WindowsFormsApplication1
                 }
             }
             Heizkreis = HeizkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
+            if (_ak3.Kaelte) Ak3KaelteNachfuehren();
 
             double[] d = _ak3.DeltaKw;
             if (d.All(x => x == 0.0)) return true;
@@ -219,6 +240,22 @@ namespace WindowsFormsApplication1
         }
     }
 
+    public partial class SimulationWaermebedarf
+    {
+        /// <summary>
+        /// <b>Die Kälteseite folgt dem Kreis</b> (Entwurf AK3-K 1.1 (a), nur mit <see cref="Ak3KKernschalter"/>): Der
+        /// Kühlkreis wird aus den Gebäudeergebnissen des Kreises neu gebildet, Kühlkanal, <c>Kaeltebedarf</c>,
+        /// <c>Kaeltebedarf_Gebaeude</c> und die Bedarfsprobe nehmen die Abweichung der Kühlreihe je Stunde auf
+        /// (<see cref="SimulationKaeltebedarf.KreisNachfuehren"/>). Eine verletzte Bedarfsprobe steht danach in
+        /// <see cref="SimulationKaeltebedarf.Fehlertext"/>; der Erzeugerlauf bricht dann benannt ab.
+        /// </summary>
+        private void Ak3KaelteNachfuehren()
+        {
+            Kuehlkreis = KuehlkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
+            Kaelteseite.KreisNachfuehren(_ak3.KaelteDeltaKwh, mo_anfang, mo_ende);
+        }
+    }
+
     /// <summary>Die Erfassung des AK3-Wegs je Lauf: die Stepper der gekoppelten Gebäude, Pass 1 und die Abweichung je Stunde.</summary>
     internal sealed class Ak3Weg
     {
@@ -233,6 +270,42 @@ namespace WindowsFormsApplication1
             internal bool Skaliert;
             internal double[] Pass1W;
             internal double[] KreisW = new double[8760];
+
+            /// <summary>Kühlreihe aus Pass 1 [kWh], wie sie in den Kühlkanal ging; <c>null</c> = nicht gebucht (AK3-K).</summary>
+            internal double[] Pass1KuehlKwh;
+
+            /// <summary>Kühlreihe des Kreises je Stunde [kWh], skaliert wie das Gebäudeergebnis (AK3-K).</summary>
+            internal double[] KreisKuehlKwh = new double[8760];
+        }
+
+        /// <summary>Rechnet der Lauf die Kälteseite des Kreises (AK3-K, <see cref="Ak3KKernschalter"/>)?</summary>
+        internal bool Kaelte { get; set; }
+
+        /// <summary>Abweichung des Kühlkanals je Stunde gegen Pass 1 [kWh] (0 = Zeichen für Zeichen Pass 1; AK3-K).</summary>
+        internal double[] KaelteDeltaKwh { get; } = new double[8760];
+
+        /// <summary>
+        /// <b>Die Kühlreihe der festgeschriebenen Stunde</b> (AK3-K, Fehler 1.1 (a)): je gebuchtem Gebäude die Kühlreihe
+        /// des Steppers (skaliert wie <see cref="GebaeudeModellErgebnis.Skaliert"/>); weicht ein Gebäude Bit für Bit von
+        /// Pass 1 ab, steht die Summe der Abweichungen in <see cref="KaelteDeltaKwh"/>.
+        /// </summary>
+        /// <returns>Die Abweichung der Stunde [kWh]; 0 ohne Abweichung oder ohne Kälteseite.</returns>
+        internal double KaelteStundeErfassen(int h)
+        {
+            if (!Kaelte) return 0.0;
+            bool gleich = true;
+            double delta = 0.0;
+            foreach (Eintrag e in _gebaeude)
+            {
+                if (e.Pass1KuehlKwh == null) continue;
+                double v = e.Stepper.KuehlKwh(h);
+                if (e.Skaliert) v = v * e.Faktor;
+                e.KreisKuehlKwh[h] = v;
+                if (!v.Equals(e.Pass1KuehlKwh[h])) gleich = false;
+                delta += v - e.Pass1KuehlKwh[h];
+            }
+            KaelteDeltaKwh[h] = gleich ? 0.0 : delta;
+            return KaelteDeltaKwh[h];
         }
 
         private readonly List<Eintrag> _gebaeude = new List<Eintrag>();
@@ -256,6 +329,8 @@ namespace WindowsFormsApplication1
             internal double Max, Gesamt, GebaeudeGesamt;
             internal HeizkreisProjekt Heizkreis;
             internal double[] VorlaufC, RuecklaufC;
+            internal KuehlkreisProjekt Kuehlkreis;
+            internal SimulationKaeltebedarf.Stand Kaelte;
             internal readonly Dictionary<int, GebaeudeModellErgebnis> Ergebnisse = new Dictionary<int, GebaeudeModellErgebnis>();
             internal readonly Dictionary<int, ErgebnisGebaeudeModel> Kennzahlen = new Dictionary<int, ErgebnisGebaeudeModel>();
         }
@@ -278,10 +353,12 @@ namespace WindowsFormsApplication1
             if (Kreis != null) FruehereKreise.Add(Kreis);
             Kreis = null;
             Array.Clear(DeltaKw, 0, DeltaKw.Length);
+            Array.Clear(KaelteDeltaKwh, 0, KaelteDeltaKwh.Length);
             foreach (Eintrag e in _gebaeude)
             {
                 e.Stepper = e.Fabrik();
                 Array.Clear(e.KreisW, 0, e.KreisW.Length);
+                Array.Clear(e.KreisKuehlKwh, 0, e.KreisKuehlKwh.Length);
             }
             Feldlauf++;
         }
@@ -360,6 +437,7 @@ namespace WindowsFormsApplication1
 
             Kopplungsstunde k = _kreis.Stunde(stunde, v0, vorrang);
             _kreis.Festschreiben(stunde);
+            _weg.KaelteStundeErfassen(stunde);
 
             bool gleich = true;
             double kreisW = 0.0;

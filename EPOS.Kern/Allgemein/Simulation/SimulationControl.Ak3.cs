@@ -165,8 +165,33 @@ namespace WindowsFormsApplication1
                 SimulationProtokoll.Aktuell.Fehlermeldung("Anlagenkopplung AK3, Gebäudemodell VDI 6007 [" + ex.Grund + "]: " + ex.Message);
                 return false;
             }
-            if (ok) simulation_Waermebedarf.Ak3Nachfuehren();
-            return ok;
+            if (!ok) return false;
+            simulation_Waermebedarf.Ak3Nachfuehren();
+            return Ak3KaelteUebernehmen(kanaele);
+        }
+
+        /// <summary>
+        /// <b>AK3-K (Fehler 1.1 (a))</b>, nur mit <see cref="Ak3KKernschalter"/>: Der Kühlkanal des Kanalsatzes der
+        /// Kaskade nimmt dieselbe Abweichung je Stunde auf wie der Kühlkanal der Bedarfsseite — die Deckungsprobe Kälte
+        /// vergleicht beide. Eine verletzte Bedarfsprobe Kälte bricht den Lauf benannt ab.
+        /// </summary>
+        private bool Ak3KaelteUebernehmen(Kanalsatz kanaele)
+        {
+            Ak3Weg weg = simulation_Waermebedarf.Ak3;
+            if (weg == null || !weg.Kaelte) return true;
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf.Kaelteseite;
+            if (!string.IsNullOrEmpty(kaelte.Fehlertext))
+            {
+                FehlertextAufnehmen(kaelte.Fehlertext);
+                return false;
+            }
+            if (kanaele != null && kaelte.Gerechnet)
+            {
+                double[] kanal = kanaele.Kuehlung;
+                for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++)
+                    if (weg.KaelteDeltaKwh[h] != 0.0) kanal[h] += weg.KaelteDeltaKwh[h];
+            }
+            return true;
         }
 
         /// <summary>Ist der Heizkessel Mitglied der Stundenschleife des letzten Laufs? (Proben)</summary>

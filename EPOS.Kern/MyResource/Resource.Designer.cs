@@ -94530,6 +94530,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis mit Kälteseite — der Kühlkanal folgt dem Kreis, die Kältekaskade rechnet je Stunde nach der Wärmestunde. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK3K_KREIS_MIT_KAELTESEITE {
+            get {
+                return ResourceManager.GetString("SIMENG_AK3K_KREIS_MIT_KAELTESEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung; die Eingaben der Wärmeübergabe gelten, sobald das Gebäude auf VDI 6007 rechnet. ähnelt.
         /// </summary>
         public static string SIMENG_AK_ALTWEG_OHNE_KOPPLUNG {

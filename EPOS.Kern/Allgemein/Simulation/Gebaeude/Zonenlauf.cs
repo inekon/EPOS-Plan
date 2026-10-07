@@ -121,6 +121,9 @@ namespace WindowsFormsApplication1
         internal void Uebernehmen(int h, bool sommer, in Stundenergebnis s)
             => Uebernehmen(h, sommer, false, in s);
 
+        /// <summary>Die übernommene Kühlreihe der Stunde <paramref name="h"/> [kWh] (AK3-K, Fehler 1.1 (a)); 0 vor der Übernahme.</summary>
+        internal double KuehlKwh(int h) => _kuehl[h];
+
         /// <summary>
         /// Wie <see cref="Uebernehmen(int, bool, in Stundenergebnis)"/>, dazu der Zustand der
         /// Nachtauskühlung <paramref name="nacht"/> (Stufe KP1b): Die Stunde zählt, wenn die Regel
