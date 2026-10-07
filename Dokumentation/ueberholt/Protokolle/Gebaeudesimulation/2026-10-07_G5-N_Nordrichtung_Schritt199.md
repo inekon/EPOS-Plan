@@ -1,6 +1,6 @@
 # Protokoll G5-N — Nordrichtung abfragen und nachträglich ändern, Schemaschritt 199 `NordrichtungSchema` (07.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeile **#811**. Commits Kern: `fd362170c`, `c29b52856`; Schema: `fc8740334`, `a8004cee2`, `fc734fe2f`; Oberfläche: `2419f3de2`, `8bb3bed9d`, `aa20f70db`, `f175d90f0`, `e66fea08a`, `6f61bfabd`.
+**Sitzung:** IFC / Gebäudeimport, Statuszeile **#813**. Commits Kern: `fd362170c`, `c29b52856`; Schema: `fc8740334`, `a8004cee2`, `fc734fe2f`; Oberfläche: `2419f3de2`, `8bb3bed9d`, `aa20f70db`, `f175d90f0`, `e66fea08a`, `6f61bfabd`.
 **Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md), Abschnitt 7.
 
 ## 1 Anlass
@@ -36,9 +36,9 @@ Keine der echten Dateien trägt eine Nordrichtung (IFC `TrueNorth`, gbXML `CADMo
 - `NordrichtungTests` (Kern, mit Theorie Neulesen je Herkunft), `NordrichtungSchemaTests` 14, `NordrichtungswahlTests` (bunit) 15, `GebaeudeImportNordrichtungHuelleTests` 2.
 - Filterläufe: UI 743/743; Kern 957/957 (Oberfläche) bzw. 1 558 bestanden, 4 übersprungen (Schema); Auslieferungsvorlage 61/61; SQL-Dialekt-Prüfer 2 504 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Referenzlauf der acht CI-Projekte gegen R41 PASS. Kein Rechenweg geändert, keine Einfrierregel berührt.
 
-## 4 Gate 811
+## 4 Gate 813
 
-Hauptbaum `6f61bfabd`, 93 min: 20 809 Tests, 20 802 grün, 6 übersprungen, 1 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 804, EPOS.Kern 12 031 mit 5 übersprungen); rot war die Formularraster-Wache (der Stilblock der Nordrichtungswahl stand am Dateiende hinter dem Formularraster), behoben in `ba614ff0a` (Block vor den Abschnitt Konditionierung), EPOS.UI danach vollständig 7 804/7 804; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R41_Erdreichpruefung` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 504 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
+Gate 809 auf `6f61bfabd` (93 min, gegen R41): 20 809 Tests, 1 rot (Formularraster-Wache: Stilblock der Nordrichtungswahl am Dateiende), behoben in `ba614ff0a`. **Gate 813** auf dem zusammengeführten Stand `be8ba088c` (Merge #809/#810, Basis R42, Testdatenbank auf 199 gehoben): KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 804, EPOS.Kern 12 043 mit 5 übersprungen, 0 rot (der erste Lauf der Kern-Tests brach an vollem Speicher der Sitzung ab — Excel-Tests, Windows-Schale und Auslieferungsvorlage —, Nachlauf nach Aufräumen grün); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 23/23 gegen `2026-10-07_R42_Vorlaufinterpolation_AK3` PASS (7 643 582 Werte), 718/718 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 506 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
 
 ## 5 Offen
 
