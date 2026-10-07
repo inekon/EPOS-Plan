@@ -48332,5 +48332,8 @@ Chart</value>
   <data name="AK3_KI_GEBB_RUECKSTUFE_ERL" xml:space="preserve">
     <value>Bei der Anlagenkopplung AK3 rechnet die Auskunft ohne geschlossenen Kreis auf dem Profilweg; leer sonst. Nur Anzeige.</value>
   </data>
+  <data name="SIMENG_ZONENSPERRE" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – Tagesbetriebsart je Zone: an {1} Tagen wurde die Gegenseite gesperrt ({2} Kühltage ohne Raumheizung, {3} Heiztage ohne Raumkühlung); der Probetag zeigte dort {4} Stunden und {5} kWh auf der gesperrten Seite (Raumheizung {6} kWh, Raumkühlung {7} kWh). An {8} Tagen waren Heizen und Kühlen freigegeben.</value>
+  </data>
 </root>
 

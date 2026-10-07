@@ -431,6 +431,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal double[] Kuehlsollwertreihe { get; init; }
 
+        /// <summary>
+        /// Die Kennzahlen der Zonensperre dieser Zone (Entwurf AK3-K 3.5; Welle KZ) — nur mit Kernschalter
+        /// <see cref="Zonensperre.An"/> und wirksamer Kühlung, sonst <c>null</c>. Bis S1 (K4) allein Laufhinweis.
+        /// </summary>
+        internal Zonensperrkennzahl Zonensperre { get; set; }
+
         /// <summary>Der Kühlsollwert der Stunde [°C]: aus <see cref="Kuehlsollwertreihe"/>, sonst der Skalar; +∞ ohne Kühlung.</summary>
         internal double KuehlsollwertBei(int h)
             => Kuehlsollwertreihe != null ? Kuehlsollwertreihe[h] : KuehlSollwert ?? double.PositiveInfinity;
@@ -459,6 +465,7 @@ namespace WindowsFormsApplication1
                 Erdreich = Erdreich,
                 FahrplanBegrenzt = FahrplanBegrenzt,
                 Kuehlsollwertreihe = Kuehlsollwertreihe,
+                Zonensperre = Zonensperre,
             };
         }
     }
@@ -511,6 +518,17 @@ namespace WindowsFormsApplication1
         /// <summary>Die Messung des Laufs (J → kWh, K·s → K·h).</summary>
         internal Innenumkehrmessung Ergebnis()
             => new Innenumkehrmessung(_stundenUmkehr, _abschnitteUmkehr, _umkehrJ / 3.6e6, _stundenBand, _abschnitteBand, _bandKs / 3600.0);
+
+        /// <summary>Eine Kopie des Stands (Tagesstand der Zonensperre).</summary>
+        internal Innenumkehrzaehler Kopie() => (Innenumkehrzaehler)MemberwiseClone();
+
+        /// <summary>Übernimmt den Stand einer <see cref="Kopie"/>.</summary>
+        internal void Herstellen(Innenumkehrzaehler q)
+        {
+            _stundenUmkehr = q._stundenUmkehr; _abschnitteUmkehr = q._abschnitteUmkehr;
+            _stundenBand = q._stundenBand; _abschnitteBand = q._abschnitteBand;
+            _umkehrJ = q._umkehrJ; _bandKs = q._bandKs;
+        }
     }
 
     /// <summary>

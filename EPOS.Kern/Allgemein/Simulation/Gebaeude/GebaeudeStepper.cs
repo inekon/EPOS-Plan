@@ -172,9 +172,18 @@ namespace WindowsFormsApplication1
             _naechste++;
         }
 
-        /// <summary>Das (restliche) Jahr: je Stunde ein <see cref="Schritt"/> ohne Anpassung und <see cref="Festschreiben"/>.</summary>
+        /// <summary>
+        /// Das (restliche) Jahr: je Stunde ein <see cref="Schritt"/> ohne Anpassung und <see cref="Festschreiben"/>. Mit
+        /// Kernschalter <see cref="Zonensperre.An"/> und einer Zone mit wirksamer Kühlung tageweise mit Zonensperre
+        /// (<see cref="TageMitZonensperre"/>); sonst Zeichen für Zeichen der Bestand.
+        /// </summary>
         internal void Jahr()
         {
+            if (Zonensperre.An && _naechste % 24 == 0 && !_offen && KuehlungIrgendwo())
+            {
+                TageMitZonensperre();
+                return;
+            }
             for (int h = _naechste; h < 8760; h++)
             {
                 Schritt(h);
@@ -182,14 +191,148 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Die Kennzahlen der Zonensperre je Zone nach <see cref="Jahr"/>; <c>null</c> ohne Sperre im Lauf.</summary>
+        internal IReadOnlyList<Zonensperrkennzahl> Zonensperrkennzahlen => _sperre;
+
+        private Zonensperrkennzahl[] _sperre;
+
+        /// <summary>Der Eingang der Zone <paramref name="z"/> (Rechenreihenfolge).</summary>
+        private GebaeudeModellEingang Eingang(int z) => _schleife == null ? _zone.Eingang : _schleife.Laeufe[z].Zone.Eingang;
+
+        private bool KuehlungIrgendwo()
+        {
+            for (int z = 0; z < Zonenzahl; z++)
+                if (Eingang(z).KuehlungWirksam) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// <b>Das Jahr mit Zonensperre</b> (Entwurf AK3-K 3.1, 3.2; Festlegungen 1–5). Je Tag: Zeigt keine Zone beide
+        /// Freigaben (<see cref="Zonenfreigabe"/>), rechnet der Tag wie im Bestand. Sonst wird der Stand am Tagesbeginn
+        /// gesichert und der Tag unbegrenzt gerechnet (der <b>Probetag</b>). Hat danach keine Zone mit beiden Freigaben
+        /// geheizt <em>und</em> gekühlt, ist der Probetag die Lösung. Sonst trägt jede solche Zone ihre Tagesart aus den
+        /// Tagessummen des Probetags — Kühltag, wenn Σ Kühlen &gt; Σ Heizen, Gleichstand ist ein Heiztag (K8a je Zone) —,
+        /// die Gegenseite wird für den ganzen Tag „aus" gesetzt (Heizsollwert NaN bzw. Kühlsollwert +∞, in der Reihe des
+        /// Eingangs, sodass auch der Kreis von AK3 sie sieht), und der Tag wird für alle Zonen gemeinsam neu gerechnet
+        /// (ADR-005). Prozesswärme, Prozesskälte und Brauchwasser rechnet das Gebäude nicht; sie bleiben unberührt.
+        /// </summary>
+        private void TageMitZonensperre()
+        {
+            int n = Zonenzahl;
+            var heiz = new double[n];
+            var kuehl = new double[n];
+            var stundenHeiz = new int[n];
+            var stundenKuehl = new int[n];
+            var beide = new bool[n];
+            var kuehltage = new int[n];
+            var heiztage = new int[n];
+            var sperrHeizStunden = new int[n];
+            var sperrKuehlStunden = new int[n];
+            var sperrHeizKwh = new double[n];
+            var sperrKuehlKwh = new double[n];
+            var tageBeides = new int[n];
+
+            for (int tag = _naechste / 24; tag < 365; tag++)
+            {
+                int t0 = tag * 24;
+                bool irgendwo = false;
+                for (int z = 0; z < n; z++)
+                {
+                    GebaeudeModellEingang e = Eingang(z);
+                    beide[z] = Zonenfreigabe.Tag(e.ThetaSoll, e.ThetaMax, e.KuehlungWirksam, tag) == Freigabeart.Beides;
+                    if (beide[z]) { irgendwo = true; tageBeides[z]++; }
+                }
+                if (!irgendwo)
+                {
+                    TagRechnen(t0);
+                    continue;
+                }
+
+                object stand = TagSichern();
+                Array.Clear(heiz, 0, n);
+                Array.Clear(kuehl, 0, n);
+                Array.Clear(stundenHeiz, 0, n);
+                Array.Clear(stundenKuehl, 0, n);
+                for (int h = t0; h < t0 + 24; h++)
+                {
+                    IReadOnlyList<Stundenergebnis> r = Schritt(h);
+                    for (int z = 0; z < n; z++)
+                    {
+                        double ph = r[z].HeizleistungW, pk = r[z].KuehlleistungW;
+                        if (ph > 0.0) { heiz[z] += ph; stundenHeiz[z]++; }
+                        if (pk > 0.0) { kuehl[z] += pk; stundenKuehl[z]++; }
+                    }
+                    Festschreiben(h);
+                }
+
+                bool misch = false;
+                for (int z = 0; z < n; z++)
+                {
+                    if (!beide[z] || !(heiz[z] > 0.0) || !(kuehl[z] > 0.0)) continue;
+                    misch = true;
+                    GebaeudeModellEingang e = Eingang(z);
+                    if (kuehl[z] > heiz[z])
+                    {
+                        // Kühltag: die Raumheizung der Zone ist den ganzen Tag gesperrt.
+                        for (int h = t0; h < t0 + 24; h++) e.ThetaSoll[h] = double.NaN;
+                        kuehltage[z]++;
+                        sperrHeizStunden[z] += stundenHeiz[z];
+                        sperrHeizKwh[z] += heiz[z] / 1000.0;
+                    }
+                    else
+                    {
+                        // Heiztag (auch Gleichstand): die Raumkühlung der Zone ist den ganzen Tag gesperrt.
+                        for (int h = t0; h < t0 + 24; h++) e.ThetaMax[h] = double.PositiveInfinity;
+                        heiztage[z]++;
+                        sperrKuehlStunden[z] += stundenKuehl[z];
+                        sperrKuehlKwh[z] += kuehl[z] / 1000.0;
+                    }
+                }
+                if (!misch) continue;
+
+                TagHerstellen(stand, t0);
+                TagRechnen(t0);
+            }
+
+            _sperre = new Zonensperrkennzahl[n];
+            for (int z = 0; z < n; z++)
+                _sperre[z] = Eingang(z).KuehlungWirksam
+                    ? new Zonensperrkennzahl(kuehltage[z], heiztage[z], sperrHeizStunden[z], sperrKuehlStunden[z],
+                                             sperrHeizKwh[z], sperrKuehlKwh[z], tageBeides[z])
+                    : null;
+        }
+
+        private void TagRechnen(int t0)
+        {
+            for (int h = t0; h < t0 + 24; h++)
+            {
+                Schritt(h);
+                Festschreiben(h);
+            }
+        }
+
+        private object TagSichern() => _schleife != null ? _schleife.TagSichern() : _lauf.Sichern();
+
+        private void TagHerstellen(object stand, int t0)
+        {
+            if (_schleife != null) _schleife.TagHerstellen((Zonenschleife.Tagesstand)stand, t0, 24);
+            else _lauf.Herstellen((Zonenlauf.Tagesstand)stand);
+            _naechste = t0;
+            _offen = false;
+            _gerechnet = false;
+        }
+
         /// <summary>Die <b>unskalierten</b> Ergebnisse je Zone nach dem Jahr. Einmal zu rufen.</summary>
         /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.ErgebnisUnplausibel"/>.</exception>
         internal GebaeudeModellErgebnis[] Abschluss(int index, int idGebaeude)
         {
             if (_naechste != 8760) throw new InvalidOperationException("Das Jahr ist nicht fertig (Stunde " + _naechste + ").");
-            return _schleife != null
+            GebaeudeModellErgebnis[] e = _schleife != null
                 ? _schleife.Zonenergebnisse(index, idGebaeude)
                 : new[] { _lauf.Ergebnis(index, idGebaeude) };
+            if (_sperre != null)
+                for (int z = 0; z < e.Length && z < _sperre.Length; z++) e[z].Zonensperre = _sperre[z];
+            return e;
         }
 
         private void Oeffnen(int h)

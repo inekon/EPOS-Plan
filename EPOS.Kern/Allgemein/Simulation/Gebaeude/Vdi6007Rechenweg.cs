@@ -399,6 +399,7 @@ namespace WindowsFormsApplication1
                 HinweisNutzungsmaske(m.Eingaenge[z].Eingang, werZone);
                 HinweisUntertemperatur(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
                 HinweisAbschnitte(m.Zonen[z], werZone);
+                HinweisZonensperre(m.Zonen[z].Zonensperre, werZone);
                 HinweisKuehlNachtwert(m.Eingaenge[z].Eingang, werZone);
                 HinweisNachtauskuehlung(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
                 // E63: die begrenzte Wärmeübergabe je gekoppelter Zone, benannt wie im Einzonenweg.
@@ -606,6 +607,22 @@ namespace WindowsFormsApplication1
             SimulationProtokoll.Aktuell.HinweisEinmal("aufh-reserve-vorgabe",
                 "Gebäudemodell VDI 6007: " + string.Format(k, MyResource.Resource.SIMENG_AUFH_RESERVE_VORGABE,
                                                             (AufheizvorgabeSchema.RESERVE_VORGABE * 100.0).ToString("0.#", k)));
+        }
+
+        /// <summary>
+        /// <b>Die Kennzahlen der Zonensperre</b> (Entwurf AK3-K 3.5; Welle KZ): Tage mit Sperre der Gegenseite, Stunden und
+        /// gesperrte Energie des Probetags, Tage mit beiden Freigaben — nur mit Kernschalter und wirksamer Kühlung. Bis S1
+        /// (K4) allein dieser Laufhinweis.
+        /// </summary>
+        internal static void HinweisZonensperre(Zonensperrkennzahl z, string wer)
+        {
+            if (z == null) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("zonensperre-" + wer,
+                string.Format(k, MyResource.Resource.SIMENG_ZONENSPERRE, wer, z.Tage.ToString(k), z.Kuehltage.ToString(k),
+                              z.Heiztage.ToString(k), z.Stunden.ToString(k), z.GesperrtKwh.ToString("0.0", k),
+                              z.HeizenGesperrtKwh.ToString("0.0", k), z.KuehlenGesperrtKwh.ToString("0.0", k),
+                              z.TageBeides.ToString(k)));
         }
 
         /// <summary>
@@ -858,6 +875,7 @@ namespace WindowsFormsApplication1
             HinweisAbschnitte(r, wer);
             HinweisErdreichumfang(r.Erdreich, wer);
             HinweisAufheizung(r.Aufheizung, wer);
+            HinweisZonensperre(r.Zonensperre, wer);
             if (e.Bauteilweg)
             {
                 // Stufe G3: welcher Weg rechnet, und jeder eingetragene U-Wert, der um mehr als

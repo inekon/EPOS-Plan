@@ -48325,5 +48325,8 @@ chart</value>
   <data name="AK3_KI_GEBB_RUECKSTUFE_ERL" xml:space="preserve">
     <value>With system coupling AK3 the information calculates without the closed loop on the profile path; empty otherwise. Display only.</value>
   </data>
+  <data name="SIMENG_ZONENSPERRE" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – daily operating mode per zone: on {1} days the opposite side was locked ({2} cooling days without space heating, {3} heating days without space cooling); the trial day showed {4} hours and {5} kWh on the locked side there (space heating {6} kWh, space cooling {7} kWh). On {8} days heating and cooling were both released.</value>
+  </data>
 </root>
 

@@ -325,6 +325,57 @@ namespace WindowsFormsApplication1
             MusterNichtHaltbar = _stundeMusterNichtHaltbar;
         }
 
+        /// <summary>Der Tagesstand der Schleife (Zonensperre, Entwurf AK3-K 3.2): die Läufe, die Lufttemperaturen und die Zähler.</summary>
+        internal sealed class Tagesstand
+        {
+            internal Zonenlauf.Tagesstand[] Laeufe;
+            internal double[] Luft;
+            internal int[] MusterJeZone, DurchlaeufeMaxJeZone;
+            internal long Iterierte, DurchlaeufeSumme;
+            internal int DurchlaeufeMax, Musterwechsel, MusterNichtHaltbar;
+        }
+
+        /// <summary>Sichert den Stand am Tagesbeginn (zwischen zwei Stunden, keine Stunde geöffnet).</summary>
+        internal Tagesstand TagSichern()
+        {
+            int n = _laeufe.Length;
+            var t = new Tagesstand
+            {
+                Laeufe = new Zonenlauf.Tagesstand[n],
+                Luft = (double[])_luft.Clone(),
+                MusterJeZone = (int[])_musterJeZone.Clone(),
+                DurchlaeufeMaxJeZone = (int[])_durchlaeufeMaxJeZone.Clone(),
+                Iterierte = IterierteStunden, DurchlaeufeSumme = DurchlaeufeSumme, DurchlaeufeMax = DurchlaeufeMax,
+                Musterwechsel = Musterwechsel, MusterNichtHaltbar = MusterNichtHaltbar,
+            };
+            for (int z = 0; z < n; z++) t.Laeufe[z] = _laeufe[z].Sichern();
+            return t;
+        }
+
+        /// <summary>
+        /// Stellt einen mit <see cref="TagSichern"/> gesicherten Stand wieder her und löscht die Stundenmerkmale des
+        /// Gebäudes ab Stunde <paramref name="t0"/> für <paramref name="stunden"/> Stunden (sie werden nur gesetzt, nie gelöscht).
+        /// </summary>
+        internal void TagHerstellen(Tagesstand t, int t0, int stunden)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            int n = _laeufe.Length;
+            for (int z = 0; z < n; z++) _laeufe[z].Herstellen(t.Laeufe[z]);
+            Array.Copy(t.Luft, _luft, n);
+            Array.Copy(t.MusterJeZone, _musterJeZone, n);
+            Array.Copy(t.DurchlaeufeMaxJeZone, _durchlaeufeMaxJeZone, n);
+            IterierteStunden = t.Iterierte;
+            DurchlaeufeSumme = t.DurchlaeufeSumme;
+            DurchlaeufeMax = t.DurchlaeufeMax;
+            Musterwechsel = t.Musterwechsel;
+            MusterNichtHaltbar = t.MusterNichtHaltbar;
+            Array.Clear(_umschaltung, t0, stunden);
+            Array.Clear(_heizen, t0, stunden);
+            Array.Clear(_kuehlen, t0, stunden);
+            Array.Clear(_sommerStunde, t0, stunden);
+            Array.Clear(_nachtStunde, t0, stunden);
+        }
+
         /// <summary>
         /// <b>Rechnet die geöffnete Stunde <paramref name="h"/></b> — je Teilgruppe der Löser bzw. der
         /// Gauß-Seidel, nichts übernommen. <paramref name="anpassung"/> passt den Rand jeder Zone an
