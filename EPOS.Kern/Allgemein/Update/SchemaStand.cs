@@ -946,7 +946,11 @@ namespace WindowsFormsApplication1
         /// Netzbezug eines Haushalts mit PV-Anlage (P25) bzw. mit PV-Anlage und Batteriespeicher (S25), keine
         /// Verbrauchsprofile —, je Kopf und Typprofil mit Katalogschlüssel und Prüfsumme
         /// (<see cref="StandardlastprofilPvSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze.
-        public const int Zielversion = StandardlastprofilPvSchema.SCHRITT;
+        /// Danach, mit der HERKUNFT DER BAUTEILFLÄCHE (G5-0), steht das Ziel auf <see cref="FlaechenherkunftSchema.SCHRITT"/>:
+        /// <c>Tab_Bauteil.Flaechenherkunft</c> — der Weg der importierten Fläche (Mengensatz, Raumgrenze, Körper,
+        /// schematisch; <see cref="FlaechenherkunftSchema"/>). <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der
+        /// Rechenweg liest sie nicht.
+        public const int Zielversion = FlaechenherkunftSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -76,6 +76,14 @@
 
         /// <summary>IFC-GUID oder gbXML-id der Quellentität; <c>null</c> = keine.</summary>
         public string Quellkennung;
+        /// <summary>
+        /// Der Weg, auf dem die Fläche entstand (<c>Tab_Bauteil.Flaechenherkunft</c>, Schemaschritt
+        /// <see cref="FlaechenherkunftSchema"/>; Werte <see cref="FlaechenherkunftSchema.WERTE"/>): Mengensatz,
+        /// Raumgrenze, Körper oder schematisch. <c>null</c> = Bestand, von Hand angelegt oder die Fläche von Hand
+        /// geändert. Setzt nur der Gebäudeimport; der Schreibweg der Pflege setzt den Wert auf <c>null</c>, sobald
+        /// die gespeicherte Fläche sich ändert.
+        /// </summary>
+        public string Flaechenherkunft;
 
         /// <summary>Eine entkoppelte Kopie.</summary>
         public BauteilModel Kopie() => (BauteilModel)MemberwiseClone();

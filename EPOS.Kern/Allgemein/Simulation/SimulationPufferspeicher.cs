@@ -1772,6 +1772,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Entnehmbar am Stundenbeginn</b> [kWh] für einen Kanal (Entwurf AK3 2.5, Festlegung 6) — der
+        /// Speicheranteil der Angebotsfunktion: das Minimum aus <see cref="SOC"/>, dem Entladebudget der
+        /// Stunde <paramref name="stunde"/>, <see cref="EntnahmeObergrenze"/> und
+        /// <see cref="EntladefaehigkeitKanal"/>, nie unter 0.
+        ///
+        /// <para><b>Rein lesend:</b> Die Methode ändert weder Ladezustand noch Budget noch Schichten. Gelesen
+        /// wird der Stand nach <see cref="StundeAbschliessen"/> der Vorstunde; hat die Stunde ihr Budget noch
+        /// nicht begonnen (<see cref="StundeBeginnen"/>), gilt das volle Budget der Stunde
+        /// (<see cref="EntladeleistungMax"/>, sonst unbegrenzt), wie <see cref="StundeBeginnen"/> es setzen
+        /// würde, sonst der verbleibende Rest (<see cref="Entnahmefaehigkeit"/>). Die Entnahmetemperatur folgt
+        /// <see cref="TNutz"/> des Kanals, nicht dem Vorlauf der Stunde (benannt, Festlegung 6).</para>
+        /// </summary>
+        public double EntnehmbarAmStundenbeginn(int stunde, int kanal = Kanal.HEIZUNG)
+        {
+            double budget = _budgetStunde == stunde
+                ? Entnahmefaehigkeit()
+                : (EntladeleistungMax > 0 ? EntladeleistungMax : double.MaxValue);
+            double m = Math.Min(Math.Min(SOC, budget), Math.Min(EntnahmeObergrenze(), EntladefaehigkeitKanal(kanal)));
+            return m > 0 ? m : 0;
+        }
+
+        /// <summary>
         /// Schichtindex zu einer Anschlusshöhe 0…1 (1 = oben ⇒ Index 0, 0 = unten ⇒
         /// Index N−1). Werte außerhalb gelten als oben — dieselbe Auslegung wie NULL in
         /// der Datenbank.

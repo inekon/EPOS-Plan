@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             Console.WriteLine("EPOS.Referenzlauf - Referenzlauf ohne Windows (iU3)");
             Console.WriteLine();
-            Console.WriteLine("  EPOS.Referenzlauf lauf --quelle <sqlite> [--projekte 1030,1007] [--ziel <ordner>] [--stoerung ulp] [--vorlaufinterpolation ein]");
+            Console.WriteLine("  EPOS.Referenzlauf lauf --quelle <sqlite> [--projekte 1030,1007] [--ziel <ordner>] [--stoerung ulp] [--vorlaufinterpolation ein] [--ak3 ein|alle]");
             Console.WriteLine("  EPOS.Referenzlauf projekt <id> <zielordner>");
             Console.WriteLine("  EPOS.Referenzlauf vergleich <refOrdner> <neuOrdner> [--ohne <a,b>]");
             Console.WriteLine("  EPOS.Referenzlauf pruefen <ordner>");
@@ -147,6 +147,21 @@ namespace WindowsFormsApplication1.Referenzlauf
                 VorlaufInterpolation.Ein = string.Equals(interpolation, "ein", StringComparison.OrdinalIgnoreCase);
                 Console.WriteLine("Vorlaufinterpolation (AK3-I): " + (VorlaufInterpolation.Ein ? "ein" : "aus") +
                                   " (Messlauf, keine Basis)");
+            }
+
+            // --- 0b. Kernstufe AK3 (AK3-W3b; Messlauf, nie fuer eine Basis) -----------------------
+            string ak3 = Argument(args, "--ak3");
+            if (ak3 != null)
+            {
+                if (string.Equals(ak3, "aus", StringComparison.OrdinalIgnoreCase)) Ak3Kernstufe.Modus = Ak3Kernmodus.Aus;
+                else if (string.Equals(ak3, "ein", StringComparison.OrdinalIgnoreCase)) Ak3Kernstufe.Modus = Ak3Kernmodus.GespeicherteStufe;
+                else if (string.Equals(ak3, "alle", StringComparison.OrdinalIgnoreCase)) Ak3Kernstufe.Modus = Ak3Kernmodus.AlleGekoppelten;
+                else
+                {
+                    Console.WriteLine("ABBRUCH: --ak3 kennt nur \"aus\", \"ein\" (gespeicherte Stufe AK3) und \"alle\" (jedes gekoppelte Projekt).");
+                    return 2;
+                }
+                Console.WriteLine("Kernstufe AK3: " + Ak3Kernstufe.Modus + " (Messlauf, keine Basis)");
             }
 
             string wurzel = ProjektWurzelFinden();

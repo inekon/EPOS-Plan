@@ -105,12 +105,39 @@ namespace WindowsFormsApplication1
         /// Die Spalten des Bauteils: die von <see cref="ZonenSchema.Bauteilspalten"/> und — mit dem
         /// Schemaschritt S-G (<see cref="ZonenkopplungSchema.SpaltenBauteil"/>) — Nachbarzone und
         /// Trennflächenzuordnung; ohne S-G (iOS migriert nicht nach) nur die ersten. Festgestellt
-        /// über die gemerkte Probe <see cref="GebaeudeZonenanschluss.KopplungVorhanden"/>.
+        /// über die gemerkte Probe <see cref="GebaeudeZonenanschluss.KopplungVorhanden"/>. Mit dem Schritt
+        /// <see cref="FlaechenherkunftSchema.SCHRITT"/> zuletzt dazu <c>Flaechenherkunft</c>
+        /// (<see cref="GebaeudeZonenanschluss.FlaechenherkunftVorhanden"/>).
         /// </summary>
         private static IReadOnlyList<string> Bauteilspalten()
-            => GebaeudeZonenanschluss.KopplungVorhanden()
-                ? ZonenSchema.Bauteilspalten.Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key)).ToList()
+        {
+            IEnumerable<string> spalten = GebaeudeZonenanschluss.KopplungVorhanden()
+                ? ZonenSchema.Bauteilspalten.Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key))
                 : ZonenSchema.Bauteilspalten;
+            if (GebaeudeZonenanschluss.FlaechenherkunftVorhanden()) spalten = spalten.Append(FlaechenherkunftSchema.SPALTE);
+            return spalten.ToList();
+        }
+
+        /// <summary>Führt die Spaltenliste <paramref name="bauteilspalten"/> die zwei Spalten von S-G?</summary>
+        private static bool MitKopplung(IReadOnlyList<string> bauteilspalten)
+            => bauteilspalten.Contains(ZonenkopplungSchema.SPALTE_ID_NACHBARZONE);
+
+        /// <summary>Führt die Spaltenliste <paramref name="bauteilspalten"/> die Flächenherkunft (Schritt 197)?</summary>
+        private static bool MitFlaechenherkunft(IReadOnlyList<string> bauteilspalten)
+            => bauteilspalten.Contains(FlaechenherkunftSchema.SPALTE);
+
+        /// <summary>
+        /// <b>Die Flächenherkunft nach einer Änderung in der Pflege</b> (Abstimmung G5, A4): Bleibt die gespeicherte
+        /// Fläche, bleibt ihre gespeicherte Herkunft; ändert sich die Fläche von Hand, stammt sie nicht mehr aus der
+        /// Datei — die Herkunft wird <c>null</c>. Verglichen mit dem Rand von <c>1e-9</c> relativ zur Fläche
+        /// (mindestens <c>1e-9</c> m²), damit ein unveränderter Wert nach dem Weg über die Oberfläche nicht kippt.
+        /// </summary>
+        internal static string FlaechenherkunftNachPflege(string gespeichert, double? gespeicherteFlaeche, double neueFlaeche)
+        {
+            if (gespeichert == null || !gespeicherteFlaeche.HasValue) return null;
+            double rand = Math.Max(1e-9, 1e-9 * Math.Abs(gespeicherteFlaeche.Value));
+            return Math.Abs(gespeicherteFlaeche.Value - neueFlaeche) <= rand ? gespeichert : null;
+        }
 
         // =================================================================
         //  Lesen
@@ -641,6 +668,7 @@ namespace WindowsFormsApplication1
             List<string> spalten = ZonenSchema.Zonenspalten.Concat(zusatz).ToList();
             IEnumerable<DbParam> Werte(ZoneModel z) => Zonenwerte(z).Concat(Zusatzwerte(z, zusatz));
             IReadOnlyList<string> bauteilspalten = Bauteilspalten();
+            bool flaechenherkunft = MitFlaechenherkunft(bauteilspalten);
 
             try
             {
@@ -659,10 +687,19 @@ namespace WindowsFormsApplication1
                     var zonenBestand = new HashSet<int>(v.Lese(
                         "SELECT \"ID\" FROM \"" + ZonenSchema.TAB_ZONE + "\" WHERE \"ID_Gebaeude\" = ?", new DbParam("@g", idGebaeude))
                         .Rows.Cast<DataRow>().Select(r => Convert.ToInt32(r[0], CultureInfo.InvariantCulture)));
-                    var bauteilBestand = new HashSet<int>(v.Lese(
-                        "SELECT b.\"ID\" FROM \"" + ZonenSchema.TAB_BAUTEIL + "\" b INNER JOIN \"" + ZonenSchema.TAB_ZONE + "\" z " +
-                        "ON z.\"ID\" = b.\"ID_Zone\" WHERE z.\"ID_Gebaeude\" = ?", new DbParam("@g", idGebaeude))
+                    DataTable bauteilTabelle = v.Lese(
+                        "SELECT b.\"ID\", b.\"Flaeche\"" + (flaechenherkunft ? ", b.\"" + FlaechenherkunftSchema.SPALTE + "\"" : "") +
+                        " FROM \"" + ZonenSchema.TAB_BAUTEIL + "\" b INNER JOIN \"" + ZonenSchema.TAB_ZONE + "\" z " +
+                        "ON z.\"ID\" = b.\"ID_Zone\" WHERE z.\"ID_Gebaeude\" = ?", new DbParam("@g", idGebaeude));
+                    var bauteilBestand = new HashSet<int>(bauteilTabelle
                         .Rows.Cast<DataRow>().Select(r => Convert.ToInt32(r[0], CultureInfo.InvariantCulture)));
+                    // Schritt 197: die gespeicherte Flaeche und ihre Herkunft je Bauteil - eine Flaeche, die sich von Hand
+                    // aendert, verliert ihre Herkunft (FlaechenherkunftNachPflege).
+                    var herkunftBestand = new Dictionary<int, (double? Flaeche, string Herkunft)>();
+                    if (flaechenherkunft)
+                        foreach (DataRow r in bauteilTabelle.Rows)
+                            herkunftBestand[Convert.ToInt32(r[0], CultureInfo.InvariantCulture)] =
+                                (BaustoffCtrl.ZahlAus(r, "Flaeche"), BaustoffCtrl.TextAus(r, FlaechenherkunftSchema.SPALTE));
 
                     // Fremde Ids und fremde Aufbauten weist der Abgleich ab, bevor er schreibt.
                     var aufbauten = new HashSet<int>(v.Lese(
@@ -755,14 +792,23 @@ namespace WindowsFormsApplication1
                             b.Bezeichner = b.Bezeichner.Trim();
                             if (kopplung && b.ID_Nachbarzone.HasValue) b.ID_Nachbarzone = Endgueltig(b.ID_Nachbarzone.Value);
                             if (b.ID > 0)
+                            {
+                                if (flaechenherkunft && herkunftBestand.TryGetValue(b.ID, out var alt))
+                                    b.Flaechenherkunft = FlaechenherkunftNachPflege(alt.Herkunft, alt.Flaeche, b.Flaeche);
                                 v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_BAUTEIL + "\" SET " +
                                              string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\" = ?")) +
-                                             " WHERE \"ID\" = ?", Bauteilwerte(b, kopplung).Append(new DbParam("@id", b.ID)).ToArray());
+                                             " WHERE \"ID\" = ?",
+                                             Bauteilwerte(b, kopplung, flaechenherkunft).Append(new DbParam("@id", b.ID)).ToArray());
+                            }
                             else
+                            {
+                                // Von Hand angelegt (auch als Kopie einer Zeile): die Flaeche stammt nicht aus der Datei.
+                                b.Flaechenherkunft = null;
                                 b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
                                                         string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\"")) +
                                                         ") VALUES (" + BaustoffCtrl.Fragezeichen(bauteilspalten.Count) + ")",
-                                                        Bauteilwerte(b, kopplung).ToArray());
+                                                        Bauteilwerte(b, kopplung, flaechenherkunft).ToArray());
+                            }
                         }
                         z.Bauteile = z.Bauteile.Where(x => x != null).ToList();
                     }
@@ -979,7 +1025,8 @@ namespace WindowsFormsApplication1
             IReadOnlyList<string> zusatz = Zusatzspalten();
             List<string> spalten = ZonenSchema.Zonenspalten.Concat(zusatz).ToList();
             IReadOnlyList<string> bauteilspalten = Bauteilspalten();
-            bool kopplung = bauteilspalten.Count > ZonenSchema.Bauteilspalten.Count;
+            bool kopplung = MitKopplung(bauteilspalten);
+            bool flaechenherkunft = MitFlaechenherkunft(bauteilspalten);
             // Ohne Schritt S-G keine Trennfläche — benannt, bevor etwas geschrieben ist.
             if (!kopplung && zonen.SelectMany(z => z.Bauteile).Any(b => b.ID_Nachbarzone.HasValue || b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE))
                 return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.NICHT_GESCHRIEBEN,
@@ -1076,7 +1123,7 @@ namespace WindowsFormsApplication1
                             b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
                                                     string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\"")) +
                                                     ") VALUES (" + BaustoffCtrl.Fragezeichen(bauteilspalten.Count) + ")",
-                                                    Bauteilwerte(b, kopplung).ToArray());
+                                                    Bauteilwerte(b, kopplung, flaechenherkunft).ToArray());
                         }
                     }
 
@@ -1246,14 +1293,18 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Werte eines Bauteils in der Reihenfolge von <see cref="ZonenSchema.Bauteilspalten"/>,
         /// mit <paramref name="kopplung"/> dazu die zwei Spalten von S-G
-        /// (<see cref="ZonenkopplungSchema.SpaltenBauteil"/>); NULL bleibt NULL.
+        /// (<see cref="ZonenkopplungSchema.SpaltenBauteil"/>), mit <paramref name="flaechenherkunft"/> zuletzt
+        /// <c>Flaechenherkunft</c> (Schritt <see cref="FlaechenherkunftSchema.SCHRITT"/>); NULL bleibt NULL.
         /// </summary>
-        private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b, bool kopplung)
+        private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b, bool kopplung, bool flaechenherkunft)
         {
             foreach (DbParam p in Bauteilwerte(b)) yield return p;
-            if (!kopplung) yield break;
-            yield return new DbParam("@nz", DbParamTyp.Integer) { Wert = b.ID_Nachbarzone.HasValue ? (object)b.ID_Nachbarzone.Value : DBNull.Value };
-            yield return BaustoffCtrl.Text("@tz", b.Trennflaeche_Zuordnung);
+            if (kopplung)
+            {
+                yield return new DbParam("@nz", DbParamTyp.Integer) { Wert = b.ID_Nachbarzone.HasValue ? (object)b.ID_Nachbarzone.Value : DBNull.Value };
+                yield return BaustoffCtrl.Text("@tz", b.Trennflaeche_Zuordnung);
+            }
+            if (flaechenherkunft) yield return BaustoffCtrl.Text("@fh", b.Flaechenherkunft);
         }
 
         /// <summary>Die Werte eines Bauteils in der Reihenfolge von <see cref="ZonenSchema.Bauteilspalten"/>; NULL bleibt NULL.</summary>
@@ -1350,7 +1401,8 @@ namespace WindowsFormsApplication1
                         Trennflaeche_Zuordnung = BaustoffCtrl.TextAus(r, ZonenkopplungSchema.SPALTE_TRENNFLAECHE_ZUORDNUNG),
                         Psi_L = BaustoffCtrl.ZahlAus(r, "Psi_L"),
                         Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
-                        Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung")
+                        Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
+                        Flaechenherkunft = BaustoffCtrl.TextAus(r, FlaechenherkunftSchema.SPALTE)
                     };
                     if (jeId.TryGetValue(b.ID_Zone, out ZoneModel z)) z.Bauteile.Add(b);
                 }

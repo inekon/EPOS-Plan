@@ -6244,6 +6244,12 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_KOMP_HINW_PUFFERVERWEIS" xml:space="preserve">
     <value>{0} Verweis(e) auf einen Pufferspeicher ließen sich im Ziel nicht auflösen und bleiben leer.</value>
   </data>
+  <data name="BK_KOMP_HINW_PROJEKTBEZUG" xml:space="preserve">
+    <value>{0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts ließen sich im Ziel weder zuordnen noch kopieren und bleiben leer.</value>
+  </data>
+  <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
+    <value>{0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen.</value>
+  </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>
   </data>
@@ -19318,6 +19324,12 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="FLOTTE_UEBERNAHME_FEHLER" xml:space="preserve">
     <value>Die Übernahme ist fehlgeschlagen; es wurde nichts geschrieben: {0}</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN" xml:space="preserve">
+    <value>Kostenpositionen von „{0}“ wurden mit Faktor {2} nach Kapazität angepasst und gelten für {1}; Anteile an Energiekosten bleiben unverändert.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET" xml:space="preserve">
+    <value>Kostenpositionen von „{0}“ gelten unverändert für {1} — ohne Kapazität lässt sich kein Faktor bilden; bitte prüfen.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE" xml:space="preserve">
     <value>Größe suchen</value>
