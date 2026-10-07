@@ -154,6 +154,9 @@ namespace WindowsFormsApplication1
 
         private readonly Kopplungsgebaeude[] _gebaeude;
         private readonly IReadOnlyList<IErzeugerkapazitaet> _erzeuger;
+
+        /// <summary>Die Erzeuger des Kreises in Kaskadenreihenfolge (Proben).</summary>
+        internal IReadOnlyList<IErzeugerkapazitaet> Erzeuger => _erzeuger;
         private readonly ISpeicherangebot _speicher;
         private readonly long[] _ids;
         private readonly bool[] _alle;

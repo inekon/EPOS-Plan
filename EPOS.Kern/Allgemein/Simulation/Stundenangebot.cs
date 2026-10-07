@@ -180,9 +180,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Die Quelltemperatur einer Wärmepumpe am Stundenbeginn</b> (Festlegung 21, Naht für R40): ohne
-    /// Nebenwirkung gelesen. Heute liefert sie das Jahresprofil der Quelle (<see cref="Quellprofil"/>); das
-    /// Sondenmodell mit Entzugsrückwirkung (R40, Sitzung Dialoge und Korrekturen) setzt hier seinen
-    /// Quellzustand am Stundenbeginn ein — die Naht ist benannt, nicht gebaut.
+    /// Nebenwirkung gelesen. Das Jahresprofil der Quelle liefert <see cref="Quellprofil"/>; eine Sole-Wärmepumpe am
+    /// Erdsondenfeld (R40) liest den Feldzustand am Stundenbeginn über <see cref="Sondenquelle"/> (AK3-W3d).
     /// </summary>
     internal interface IQuellzustand
     {
@@ -255,6 +254,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zahl gleicher Module.</summary>
         internal int Anzahl { get; }
+
+        /// <summary>Die Quelle der Stunde (Jahresprofil oder Feldzustand der Erdsonde); für Proben.</summary>
+        internal IQuellzustand Quelle => _quelle;
 
         /// <summary>
         /// Die Stützstelle zum Vorlauf (Index in die Kennlinien, <c>StuetzstelleWaehlen</c>, ohne Zählung) — für den

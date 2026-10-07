@@ -1355,8 +1355,12 @@ namespace WindowsFormsApplication1
                 IReadOnlyList<_Kenndaten> kurven = wahl != null && wahl.Kurven != null && wahl.Kurven.Length > 0
                     ? wahl.Kurven : new[] { fest };
                 bool kappt = _quellKopplung != null && i < _quellKopplung.Length && _quellKopplung[i];
-                return new WaermepumpeKapazitaet(fahrplan, kurven, fest, new Quellprofil(wp_quelltemp[i], kappt),
-                                                 Extrapolation_Erlaubt);
+                // AK3-W3d: am Erdsondenfeld der Feldzustand am Stundenbeginn, sonst das Jahresprofil der Quelle.
+                Erdsondenfeld feld = Sondenfeld(i);
+                IQuellzustand quelle = feld != null
+                    ? new Sondenquelle(feld, wp_quelltemp[i], kappt)
+                    : (IQuellzustand)new Quellprofil(wp_quelltemp[i], kappt);
+                return new WaermepumpeKapazitaet(fahrplan, kurven, fest, quelle, Extrapolation_Erlaubt);
             }
             return null;
         }

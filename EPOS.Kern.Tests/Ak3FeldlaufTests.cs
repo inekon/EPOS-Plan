@@ -67,6 +67,13 @@ namespace EPOS.Kern.Tests
             Assert.All(weg.Gebaeude, g => Assert.Equal(8760, g.Stepper.NaechsteStunde));
             Assert.All(weg.DeltaKw, d => Assert.Equal(0.0, d));
 
+            // Quellzustand (W3a-Naht): Die Wärmepumpe des Kreises liest am Sondenfeld den Feldzustand, nie das Profil.
+            WaermepumpeKapazitaet wp = weg.Kreis.Erzeuger.OfType<WaermepumpeKapazitaet>().FirstOrDefault();
+            Assert.NotNull(wp);
+            Sondenquelle quelle = Assert.IsType<Sondenquelle>(wp.Quelle);
+            Assert.True(quelle.AbfragenAusFeld > 0, "Die Angebotsfunktion hat die Quelle nicht gelesen.");
+            Assert.Equal(0, quelle.AbfragenAusProfil);
+
             Bitgleich(ak1.simulation_Waermebedarf.Waermebedarf, ak3.simulation_Waermebedarf.Waermebedarf, "Wärmebedarf");
             GebaeudeModellErgebnis g1 = ak1.simulation_Waermebedarf.GebaeudeErgebnisse.Alle.First(e => e != null);
             GebaeudeModellErgebnis g3 = ak3.simulation_Waermebedarf.GebaeudeErgebnisse.Alle.First(e => e != null);
@@ -80,6 +87,38 @@ namespace EPOS.Kern.Tests
                              BitConverter.DoubleToInt64Bits(ak3.simulation_wp.WpStrombedarfGesamtKwh));
                 Assert.Equal(BitConverter.DoubleToInt64Bits(ak1.RestwaermeMwh), BitConverter.DoubleToInt64Bits(ak3.RestwaermeMwh));
             }
+        }
+
+        /// <summary>
+        /// <b>Quellzustand der Sonde ohne Datenbank</b>: In der Stunde, deren Beginn das Feld kennt, liefert die
+        /// <see cref="Sondenquelle"/> Zeichen für Zeichen den Wert, den die Quellreihe des Laufs dort trägt (Vorbelegung in
+        /// Stunde 0, danach die Rückgabe der Vorstunde) — und nicht die ungestörte Vorbelegung (Gegenprobe). Für eine
+        /// Stunde außer der Reihe bleibt sie beim Jahresprofil und zählt das.
+        /// </summary>
+        [Fact]
+        public void Sondenquelle_liest_den_Feldzustand_am_Stundenbeginn_sonst_das_Profil()
+        {
+            var feld = new Erdsondenfeld(100.0, 2, 2.0, 2.4, 10.0);
+            double[] reihe = feld.Vorbelegung();
+            double[] ungestoert = (double[])reihe.Clone();
+            var quelle = new Sondenquelle(feld, reihe);
+            bool abweichung = false;
+            for (int h = 0; h < 72; h++)
+            {
+                Assert.True(quelle.FeldKennt(h));
+                double t = quelle.TemperaturAmStundenbeginn(h);
+                Assert.Equal(BitConverter.DoubleToInt64Bits(reihe[h]), BitConverter.DoubleToInt64Bits(t));
+                if (t != ungestoert[h]) abweichung = true;
+                double naechste = feld.StundeMelden(8.0);
+                reihe[h + 1] = naechste;
+            }
+            Assert.True(abweichung, "Gegenprobe: Der Entzug senkt die Soletemperatur nicht.");
+            Assert.Equal(72, quelle.AbfragenAusFeld);
+            Assert.Equal(0, quelle.AbfragenAusProfil);
+
+            Assert.False(quelle.FeldKennt(100));
+            Assert.Equal(ungestoert[100], quelle.TemperaturAmStundenbeginn(100));
+            Assert.Equal(1, quelle.AbfragenAusProfil);
         }
 
         /// <summary>
