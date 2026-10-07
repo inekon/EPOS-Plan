@@ -47785,5 +47785,35 @@ chart</value>
   <data name="BV_A1D_GEWERK_GEBAEUDE" xml:space="preserve">
     <value>Building</value>
   </data>
+  <data name="BV_A1D_NACHWEIS_KOPF" xml:space="preserve">
+    <value>i = {0} % · T = {1} a · Energy price increase {2} %/a, operation {3} %/a, investment/replacement {4} %/a ({5}) · Feed-in tariff {6} €/kWh</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG" xml:space="preserve">
+    <value> · KWKG (rates per plant</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_NEGATIV" xml:space="preserve">
+    <value>, negative-price deduction {0} %</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_STICHTAG" xml:space="preserve">
+    <value>, reference date {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT" xml:space="preserve">
+    <value>, reference date unchecked</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN" xml:space="preserve">
+    <value>, start of funding {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_ENERGIESTEUER" xml:space="preserve">
+    <value> · Energy tax {0} ({1})</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_NUTZUNGSGRAD" xml:space="preserve">
+    <value>, annual utilisation rate {0} %</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_UNTERNEHMENSART" xml:space="preserve">
+    <value> · Type of business {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_EINSPEISUNG_KWK" xml:space="preserve">
+    <value> · CHP feed-in tariff {0} €/kWh</value>
+  </data>
 </root>
 

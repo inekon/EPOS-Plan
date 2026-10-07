@@ -47792,5 +47792,35 @@ Chart</value>
   <data name="BV_A1D_GEWERK_GEBAEUDE" xml:space="preserve">
     <value>Gebäude</value>
   </data>
+  <data name="BV_A1D_NACHWEIS_KOPF" xml:space="preserve">
+    <value>i = {0} % · T = {1} a · Preissteigerung Energie {2} %/a, Betrieb {3} %/a, Investition/Ersatz {4} %/a ({5}) · Einspeisevergütung {6} €/kWh</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG" xml:space="preserve">
+    <value> · KWKG (Sätze je Anlage</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_NEGATIV" xml:space="preserve">
+    <value>, Negativpreis-Abschlag {0} %</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_STICHTAG" xml:space="preserve">
+    <value>, Stichtag {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT" xml:space="preserve">
+    <value>, Stichtag ungeprüft</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN" xml:space="preserve">
+    <value>, Förderbeginn {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_ENERGIESTEUER" xml:space="preserve">
+    <value> · Energiesteuer {0} ({1})</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_NUTZUNGSGRAD" xml:space="preserve">
+    <value>, Nutzungsgrad {0} %</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_UNTERNEHMENSART" xml:space="preserve">
+    <value> · Unternehmensart {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_EINSPEISUNG_KWK" xml:space="preserve">
+    <value> · Einspeisevergütung KWK {0} €/kWh</value>
+  </data>
 </root>
 

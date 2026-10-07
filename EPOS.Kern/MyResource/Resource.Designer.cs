@@ -13685,6 +13685,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Einspeisevergütung KWK {0} €/kWh ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_EINSPEISUNG_KWK {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_EINSPEISUNG_KWK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Energiesteuer {0} ({1}) ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die i = {0} % · T = {1} a · Preissteigerung Energie {2} %/a, Betrieb {3} %/a, Investition/Ersatz {4} %/a ({5}) · Einspeisevergütung {6} €/kWh ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KOPF {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · KWKG (Sätze je Anlage ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Förderbeginn {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Negativpreis-Abschlag {0} % ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_NEGATIV {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Stichtag {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_STICHTAG {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_STICHTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Stichtag ungeprüft ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Nutzungsgrad {0} % ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_NUTZUNGSGRAD {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Unternehmensart {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_UNTERNEHMENSART {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_UNTERNEHMENSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}; nicht im gespeicherten Ergebnis ähnelt.
         /// </summary>
         public static string BV_AUFH_A3_AUFSCHLAG_ALT_WERT {
