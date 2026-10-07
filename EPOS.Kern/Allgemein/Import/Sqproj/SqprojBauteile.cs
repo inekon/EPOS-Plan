@@ -156,6 +156,17 @@ namespace WindowsFormsApplication1
             return k == null || string.Equals(k, NULLKENNUNG, StringComparison.OrdinalIgnoreCase) ? null : k;
         }
 
+        /// <summary>
+        /// Ein Verweis auf eine Zeile der Datei, wie geschrieben (verglichen wird ohne Rücksicht auf Groß- und Kleinschreibung);
+        /// <c>null</c> = leer oder die Null-Kennung.
+        /// </summary>
+        internal static string Verweis(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            string k = IfcAbbildBauer.GuidNormalform(text);
+            return k != null && string.Equals(k, NULLKENNUNG, StringComparison.OrdinalIgnoreCase) ? null : text.Trim();
+        }
+
         /// <summary>c in J/(kg·K): ein Wert unter <see cref="CP_KJ_GRENZE"/> steht in kJ/(kg·K) (Befund N.3).</summary>
         internal static double? CpJkgK(double? roh) => roh is double c && c > 0.0 ? (c < CP_KJ_GRENZE ? c * 1000.0 : c) : null;
     }

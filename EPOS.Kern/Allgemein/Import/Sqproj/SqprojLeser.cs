@@ -176,7 +176,7 @@ namespace WindowsFormsApplication1
                     a.Gebaeude.Add(new SqprojGebaeude
                     {
                         Uuid = u, Name = Name(z), BaujahrText = Text(z, "YearOfConstruction"),
-                        Baujahr = Baujahr(z), StandortUuid = SqprojBauteilcodes.Kennung(Text(z, "SiteUUID")) == null ? null : Text(z, "SiteUUID"),
+                        Baujahr = Baujahr(z), StandortUuid = SqprojBauteilcodes.Verweis(Text(z, "SiteUUID")),
                     });
             a.Gebaeude.Sort((x, y) => string.CompareOrdinal(x.Name, y.Name) is int n && n != 0 ? n : string.CompareOrdinal(x.Uuid, y.Uuid));
             var geschosse = new Dictionary<string, SqprojGeschoss>(StringComparer.OrdinalIgnoreCase);
@@ -511,8 +511,8 @@ namespace WindowsFormsApplication1
                     h.BruttoM2 = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "GrossArea")));
                     h.OrientierungGrad = SqprojBauteilcodes.Gesetzt(Zahl(z, "Orientation"));
                     h.NeigungGrad = SqprojBauteilcodes.Gesetzt(Zahl(z, "Slope"));
-                    h.Eltern = SqprojBauteilcodes.Kennung(Text(z, "ParentUUID")) == null ? null : Text(z, "ParentUUID");
-                    h.CadObjekt = SqprojBauteilcodes.Kennung(Text(z, "RepositoryElementUUID")) == null ? null : Text(z, "RepositoryElementUUID");
+                    h.Eltern = SqprojBauteilcodes.Verweis(Text(z, "ParentUUID"));
+                    h.CadObjekt = SqprojBauteilcodes.Verweis(Text(z, "RepositoryElementUUID"));
                 }
                 if (vorhanden.Contains("BmElementWindow"))
                     foreach (Dictionary<string, object> z in Zeilen(c, SQL_FENSTER))
