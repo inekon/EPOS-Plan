@@ -112,7 +112,7 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(R.ResourceManager.GetString(p.Meldung("ZU_GROSS")));
             Assert.NotNull(R.ResourceManager.GetString(p.Meldung("LESEFEHLER")));
             Assert.NotNull(R.ResourceManager.GetString(p.SchemaanzeigeSchluessel));
-            Assert.DoesNotContain(DbWerte.IMPORT_FORMAT_SQPROJ, DbWerte.IMPORT_FORMATE);
+            Assert.Contains(DbWerte.IMPORT_FORMAT_SQPROJ, DbWerte.IMPORT_FORMATE);   // Schritt 200 erlaubt das Format
         }
 
         // ------------------------------------------------------------------
