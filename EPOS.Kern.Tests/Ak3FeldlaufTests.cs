@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
@@ -119,6 +122,49 @@ namespace EPOS.Kern.Tests
             Assert.False(quelle.FeldKennt(100));
             Assert.Equal(ungestoert[100], quelle.TemperaturAmStundenbeginn(100));
             Assert.Equal(1, quelle.AbfragenAusProfil);
+        }
+
+        /// <summary>
+        /// <b>Messung</b> (nur mit <c>AK3_MESSUNG</c>): 1047, 1054, 1056, 1057 mit Stufe AK3 gegen ohne Kreis — Feldläufe,
+        /// Durchläufe je Feldlauf, Laufzeit (bester von zwei Läufen), Heizwärme der Gebäude, WP-Strom.
+        /// </summary>
+        [Theory]
+        [InlineData(1047)]
+        [InlineData(1054)]
+        [InlineData(1056)]
+        [InlineData(1057)]
+        public void Messung_mit_Kernstufe_AK3(int projekt)
+        {
+            string ziel = Environment.GetEnvironmentVariable("AK3_MESSUNG");
+            if (!_db.Vorhanden || string.IsNullOrEmpty(ziel)) return;
+            (SimulationControl sim, double s) Bester(Ak3Kernmodus modus)
+            {
+                SimulationControl letzte = null;
+                double beste = double.MaxValue;
+                for (int k = 0; k < 2; k++)
+                {
+                    var uhr = Stopwatch.StartNew();
+                    letzte = Rechnen(projekt, modus, true);
+                    beste = Math.Min(beste, uhr.Elapsed.TotalSeconds);
+                }
+                return (letzte, beste);
+            }
+            var ak1 = Bester(Ak3Kernmodus.Aus);
+            var ak3 = Bester(Ak3Kernmodus.AlleGekoppelten);
+            Ak3Weg weg = ak3.sim.simulation_Waermebedarf.Ak3;
+            CultureInfo c = CultureInfo.InvariantCulture;
+            string kreise = weg == null ? "kein gekoppeltes Gebäude" : string.Join("; ",
+                weg.FruehereKreise.Concat(new[] { weg.Kreis }).Select((k, i) => string.Format(c,
+                    "FL{0}: {1} h, Mittel {2:0.000}, max {3}, Schranke {4} h, Fallwechsel {5}",
+                    i + 1, k.Stunden, k.DurchlaeufeMittel, k.DurchlaeufeMax, k.StundenAnDerSchranke, k.FallWechsel)));
+            File.AppendAllText(ziel, string.Format(c,
+                "{0}|Sonde {1}|Feldläufe {2}|{3}|AK1 {4:0.000} s|AK3 {5:0.000} s|Faktor {6:0.00}|Heizwärme {7:0.000}/{8:0.000} MWh|" +
+                "WP-Strom {9:0.000}/{10:0.000} MWh|Abweichungsstunden {11}\n",
+                projekt, ak3.sim.simulation_wp.Sondenfelder.Count, ak3.sim.simulation_wp.ZweiterFeldlauf ? 2 : 1, kreise,
+                ak1.s, ak3.s, ak3.s / ak1.s,
+                ak1.sim.simulation_Waermebedarf.Waermebedarf_Gebaeude_Gesamt, ak3.sim.simulation_Waermebedarf.Waermebedarf_Gebaeude_Gesamt,
+                ak1.sim.simulation_wp.WpStrombedarfGesamtKwh / 1000.0, ak3.sim.simulation_wp.WpStrombedarfGesamtKwh / 1000.0,
+                weg == null ? 0 : weg.DeltaKw.Count(d => d != 0.0)));
         }
 
         /// <summary>
