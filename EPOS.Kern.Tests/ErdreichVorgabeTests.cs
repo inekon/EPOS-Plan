@@ -55,8 +55,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(104, GebaeudeSchema.SICHT_ERDREICH_VORGABE.Length);
             Assert.Equal("Erdreich_U_Wirksam", GebaeudeSchema.SICHT_ERDREICH_VORGABE[103]);
             Assert.Equal(GebaeudeSchema.SICHT_AUFHEIZ_MANUELL, GebaeudeSchema.SICHT_ERDREICH_VORGABE.Take(103));
-            Assert.Equal(GebaeudeSchema.SICHT_ERDREICH_VORGABE, GebaeudeSchema.SICHT_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_ERDREICH_VORGABE, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            // Die geltende Sicht (seit dem zehnten Durchgang die des Raumeinflusses, Ak3Schema) beginnt mit dieser Form.
+            Assert.Equal(GebaeudeSchema.SICHT_ERDREICH_VORGABE, GebaeudeSchema.SICHT_AKTUELL.Take(104));
             Assert.Contains("Tab_Gebaeude.Erdreich_U_Wirksam", GebaeudeSchema.SQL_VIEW_AKTUELL, StringComparison.Ordinal);
         }
 
@@ -186,7 +186,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, ErdreichVorgabeSchema.Ausfuehren(bericht));
             Assert.Contains(bericht, z => z.Contains("104 Spalten", StringComparison.Ordinal));
             Assert.True(ErdreichVorgabeSchema.Vollstaendig());
-            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
+            Assert.Equal(GebaeudeSchema.SICHT_ERDREICH_VORGABE, GebaeudeSchema.SichtSpalten());
             Assert.Equal(zeilen, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Erdreich_U_Wirksam IS NOT NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_foreign_key_check"));

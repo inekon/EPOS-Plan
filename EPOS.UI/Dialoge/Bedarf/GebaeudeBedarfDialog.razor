@@ -91,6 +91,13 @@
                                 <td colspan="2">@Daten.Modelltext</td>
                             </tr>
                         }
+                        @* Anlagenkopplung AK3 (Festlegung 20): die Auskunft rechnet ohne geschlossenen Kreis - benannt. *@
+                        @if (Daten.Rueckstufe.Length > 0)
+                        {
+                            <tr class="gebb-rueckstufe">
+                                <td colspan="3">@Daten.Rueckstufe</td>
+                            </tr>
+                        }
                         @* Stufe G2 (Konzept 4.6, 8.2): die Kennzahlen, die es nur auf dem
                            VDI-Weg gibt - auf dem Altweg stehen sie nicht da, statt "—" zu zeigen.
                            Kuehlbedarf, Kuehlstunden und Ueberhitzung stehen seit KU1 im Abschnitt
@@ -183,6 +190,23 @@
             {
                 <Herleitungszeile Text="@HinweisKomfortOhne" />
             }
+        </div>
+    }
+
+    @* ---- Anlagenkopplung AK3 (Entwurf AK3 Festlegung 22): die Kennzahlen des geschlossenen Kreises aus dem letzten
+       Projektlauf - nur, wenn er den Kreis rechnete. *@
+    @if (Daten.Ak3Erhoben)
+    {
+        <div class="gebb-ak3">
+            <Kachelraster>
+                <KindInhalt>
+                    <Kennzahlkachel Titel="@KachelAk3Durchlaeufe" Wert="@Ak3DurchlaeufeWert" Quelle="@QuelleAk3" />
+                    <Kennzahlkachel Titel="@KachelAk3Fallwechsel" Wert="@Anzahl(Daten.Ak3Fallwechsel)" />
+                    <Kennzahlkachel Titel="@KachelAk3Schranke" Wert="@Stunden(Daten.Ak3SchrankeStundenH)" />
+                    <Kennzahlkachel Titel="@KachelAk3SpeicherLeer" Wert="@Stunden(Daten.Ak3SpeicherLeerStundenH)" />
+                    <Kennzahlkachel Titel="@KachelAk3Restbedarf" Wert="@Stunden(Daten.Ak3RestbedarfStundenH)" />
+                </KindInhalt>
+            </Kachelraster>
         </div>
     }
 
@@ -626,6 +650,35 @@
 
     /// <summary><c>GEBB_HRL_KOMFORT_OHNE</c></summary>
     [Parameter] public string HinweisKomfortOhne { get; set; } = "Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude.";
+
+    /// <summary><c>AK3_GEBB_KACHEL_DURCHLAEUFE</c></summary>
+    [Parameter] public string KachelAk3Durchlaeufe { get; set; } = "Durchläufe je Stunde (Mittel / Höchstwert)";
+
+    /// <summary><c>AK3_GEBB_KACHEL_FALLWECHSEL</c></summary>
+    [Parameter] public string KachelAk3Fallwechsel { get; set; } = "Fallwechsel";
+
+    /// <summary><c>AK3_GEBB_KACHEL_SCHRANKE</c></summary>
+    [Parameter] public string KachelAk3Schranke { get; set; } = "Stunden an der Schranke";
+
+    /// <summary><c>AK3_GEBB_KACHEL_SPEICHER_LEER</c></summary>
+    [Parameter] public string KachelAk3SpeicherLeer { get; set; } = "Stunden mit leerem Speicher";
+
+    /// <summary><c>AK3_GEBB_KACHEL_RESTBEDARF</c></summary>
+    [Parameter] public string KachelAk3Restbedarf { get; set; } = "Stunden mit Restbedarf";
+
+    /// <summary><c>AK3_GEBB_QUELLE</c></summary>
+    [Parameter] public string QuelleAk3 { get; set; } = "Geschlossener Kreis (AK3), Projekt, letzter Lauf";
+
+    /// <summary>„1,84 / 6" — Mittel und Höchstwert der Durchläufe je Stunde; ohne Wert der Leertext.</summary>
+    private string Ak3DurchlaeufeWert
+        => Daten.Ak3DurchlaeufeMittel is double m
+            ? m.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " / " +
+              (Daten.Ak3DurchlaeufeMax is int x ? x.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) : LeerText)
+            : LeerText;
+
+    /// <summary>Eine Zahl ohne Einheit („12"); ohne Wert der Leertext.</summary>
+    private string Anzahl(int? n)
+        => n is int w ? w.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) : LeerText;
 
     /// <summary>„273 h" — eine Stundenzahl; ohne Wert der Leertext („—").</summary>
     private string Stunden(int? h)

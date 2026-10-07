@@ -1320,8 +1320,9 @@ public class KiDialogkatalogTests : IDisposable
         // mit EV1 der wirksame U-Wert der Bodenplatte (erdreich_u_wirksam, E65); mit NP3c die 29 Felder des
         // Profileditors im Blatt „Nutzungsprofile" und die drei Spalten der Zuordnungstabelle (KiNutzungsprofilfelder).
         // Mit NP4c die fünf Umschalter je Größe (nur lesbar) und die Spalten von Zeilenbild (5) und Stundenprofil (3).
-        // Mit KP3 O2 (E59) die manuelle Aufheizzeit (aufheizzeit_manuell, nur im Projekt).
-        Assert.Equal(89 + 47 + 34 + 3 + 5 + 3 + 1, d.Felder.Count);
+        // Mit KP3 O2 (E59) die manuelle Aufheizzeit (aufheizzeit_manuell, nur im Projekt). Mit AK3-W4b der Raumeinfluss
+        // der Heizkurve (heizkurve_raumeinfluss, Festlegung 23).
+        Assert.Equal(89 + 47 + 34 + 3 + 5 + 3 + 1 + 1, d.Felder.Count);
         Assert.Equal(47, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {

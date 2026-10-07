@@ -75,6 +75,25 @@ Was G5 dort ablegt, muss diese Größen tragen:
 | G5-2 Öffnungen | gebaut (#802) |
 | Abnahme am Rechenweg (Gebäudesimulation) | G5-1 und G5-2: Referenzlauf 22/22 gegen R40 byte-gleich nach dem Merge (#804); A6 für G5-3 offen |
 | G5-0 Schemaschritt 197 (`Tab_Bauteil.Flaechenherkunft`) | gebaut (#805, Schritt 197) |
+| G5-Nachbesserung (Körpervergleich) | gebaut (#808) |
 | G5-3 | offen |
 
 A1 bis A5 halten aus Sicht von G5-1 und G5-2; der Rechenweg ist unverändert, der Referenzlauf der CI-Projekte gegen R40 ohne Abweichung.
+
+## 7 Nordrichtung abfragen und nachträglich ändern (G5-N)
+
+Anwenderauftrag vom 07.10.2026: Nennt die Datei keine Nordrichtung, fragt der Import sie ab; ohne Eingabe gilt eine Annahme
+mit Bemerkung; die Ausrichtung lässt sich nachträglich ändern. Befund an drei HottCAD-Dateien: keine trägt `TrueNorth`, IFC2X3
+kennt keine `IfcMapConversion`, und die Projektdatei (`BmElement.Orientation`) liegt im selben ungedrehten System wie die IFC
+(19 von 22 vergleichbaren Wänden Differenz 0°) — ein Nordwinkel lässt sich aus ihr nicht ableiten, er muss vom Anwender kommen.
+
+| Nr. | Regel |
+|---|---|
+| N1 | **Eingabe:** Wohin zeigt die Planoberseite (+y der Datei)? Winkel in Grad, 0° = Nord, im Uhrzeigersinn, mit Schnellwahl N, NO, O, SO, S, SW, W, NW und einer Nordpfeil-Vorschau am Grundriss. Intern gilt die vorhandene Beziehung wahrer Azimut = Modellazimut − Nordwinkel (`Tab_Importquelle.Nordwinkel_Grad`, Schritt 191); die Eingabe „Planoberseite zeigt nach α“ entspricht Nordwinkel = (360° − α) mod 360°. |
+| N2 | **Wann gefragt wird:** Im Zuordnungsdialog, wenn die Datei keine Nordrichtung nennt (IFC: `TrueNorth`/`IfcMapConversion`, gbXML: `CADModelAzimuth`). Nennt die Datei eine, steht sie als Vorgabe im Feld und lässt sich überschreiben. |
+| N3 | **Ohne Eingabe:** Annahme Planoberseite = Nord (Nordwinkel 0°); die Meldung sagt, dass es eine Annahme ist und wo sie sich ändern lässt. |
+| N4 | **Wirkung:** Azimut aller Bauteile mit Azimut (Wände, Fenster, Türen, geneigte Dächer), die Raumgrundrisse und die Gebäudeansicht folgen dem Nordwinkel; Neigungen bleiben. |
+| N5 | **Nachträglich:** Im Gebäudedialog steht bei Gebäuden mit Importquelle das Feld „Ausrichtung“ mit derselben Eingabe. Eine Änderung dreht nach Rückfrage alle Bauteile des Gebäudes um den Unterschied (auch von Hand angelegte — das Gebäude dreht sich als Ganzes) und speichert den neuen Winkel an der Quelle; „Datei erneut lesen“ übernimmt den gespeicherten Winkel. |
+| N6 | **Herkunft:** neue Spalte `Tab_Importquelle.Nordwinkel_Herkunft` (`DATEI`, `EINGABE`, `ANNAHME`), Schemaschritt 199; Gebäudedialog und Bericht nennen sie. |
+| N7 | **Rechenweg:** unverändert; er liest den Azimut aus `Tab_Bauteil`. Eine Drehung ändert die Ergebnisse (Solargewinne, Fensterflächen je Himmelsrichtung) — gewollt. Keine Einfrierregel berührt: kein Referenzprojekt hat eine Importquelle. |
+

@@ -249,7 +249,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Kopplungsstufen des Projekts in Anzeigereihenfolge (<c>Tab_Einstellungen.Anlagenkopplung</c>):
-        /// aus, AK1, AK2, AK3. Gebaut und damit wählbar sind nur aus und AK1 (<see cref="StufeGebaut"/>).
+        /// aus, AK1, AK2, AK3. Gebaut und damit wählbar sind aus, AK1 und AK3 (<see cref="StufeGebaut"/>).
         /// </summary>
         public static readonly IReadOnlyList<string> Stufen = new[]
         {
@@ -257,12 +257,14 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// <b>Ist die Stufe gebaut?</b> Nur „aus" (auch NULL) und AK1 — ein Wert, dessen Rechenweg nicht
-        /// gebaut ist, wird nicht angeboten (Konzept Anlagenkopplung 9.4, Kühlkonzept K7). Steht AK2 oder
-        /// AK3 schon in der Datenbank, rechnet der Lauf AK1 und nennt es.
+        /// <b>Ist die Stufe gebaut?</b> „aus" (auch NULL), AK1 und AK3 (geschlossener Kreis; E102 Q-AK3-1) — ein Wert,
+        /// dessen Rechenweg nicht gebaut ist, wird nicht angeboten (Konzept Anlagenkopplung 9.4, Kühlkonzept K7). AK2
+        /// bleibt „AK1 mit Fahrplan" ohne eigenen Stufenwert (Entwurf AK3 Festlegung 1); steht es in der Datenbank,
+        /// rechnet der Lauf AK1 mit Fahrplan.
         /// </summary>
         public static bool StufeGebaut(string stufe)
-            => string.IsNullOrEmpty(stufe) || stufe == DbWerte.ANLAGENKOPPLUNG_AUS || stufe == DbWerte.ANLAGENKOPPLUNG_AK1;
+            => string.IsNullOrEmpty(stufe) || stufe == DbWerte.ANLAGENKOPPLUNG_AUS || stufe == DbWerte.ANLAGENKOPPLUNG_AK1
+               || stufe == DbWerte.ANLAGENKOPPLUNG_AK3;
 
         /// <summary>Rechnet diese Art eine Übergabe (Radiator, Flächenheizung, Konvektor)? NULL und „ideal" nicht.</summary>
         public static bool ArtRechnet(string art) => Waermeuebergabe.ArtBekannt(art);

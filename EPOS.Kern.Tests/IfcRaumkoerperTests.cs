@@ -248,6 +248,33 @@ namespace EPOS.Kern.Tests
         //  Ohrenschnitt und Proben
         // ==================================================================
 
+        /// <summary>
+        /// Löcher mit gleicher größter x-Koordinate: Die Brücke des zweiten Lochs endet an einem Punkt, an dem schon die
+        /// erste Brücke hängt; sie muss an der Stelle eingefügt werden, deren Innenwinkel sie aufnimmt, sonst verdreht sich
+        /// das Vieleck und der Ohrenschnitt fällt auf den Fächer zurück (Flächen doppelt, Dreiecke verkehrt).
+        /// </summary>
+        [Theory]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(5)]
+        public void Ohrenschnitt_mit_Loechern_gleicher_groesster_x_Koordinate(int zahl)
+        {
+            var p = new List<double[]> { new[] { 10.0, 0.0 }, new[] { 10.0, 36.0 }, new[] { 0.0, 36.0 }, new[] { 0.0, 0.0 } };
+            var ringe = new List<List<int>> { new List<int> { 0, 1, 2, 3 } };
+            for (int i = 0; i < zahl; i++)
+            {
+                double y0 = 1.0 + 6.5 * i;
+                int s = p.Count;
+                p.Add(new[] { 1.0, y0 + 5.5 }); p.Add(new[] { 3.0, y0 + 5.5 }); p.Add(new[] { 3.0, y0 }); p.Add(new[] { 1.0, y0 });
+                ringe.Add(new List<int> { s, s + 1, s + 2, s + 3 });
+            }
+            List<int[]> d = IfcRaumkoerper.Dreiecke2D(p, ringe, out List<int> verloren);
+            Assert.Empty(verloren);
+            double Kreuz(int[] t) => (p[t[1]][0] - p[t[0]][0]) * (p[t[2]][1] - p[t[0]][1]) - (p[t[1]][1] - p[t[0]][1]) * (p[t[2]][0] - p[t[0]][0]);
+            Assert.All(d, t => Assert.True(Kreuz(t) > 0, "verkehrtes Dreieck"));
+            Assert.Equal(360.0 - zahl * 11.0, d.Sum(t => Kreuz(t) / 2.0), 9);
+        }
+
         [Fact]
         public void Ohrenschnitt_mit_Loch_und_kollinearer_Ecke_deterministisch()
         {

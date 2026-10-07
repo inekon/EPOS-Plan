@@ -718,14 +718,44 @@ namespace WindowsFormsApplication1
                                  .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
                                  .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM }));
 
+        // ---- der zehnte Durchgang: der Raumeinfluss der Heizkurve (Entwurf AK3, Festlegung 23) ----
+
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der Erdreichvorgabe).
+        /// Der Raumeinfluss der Heizkurve k_R [K/K] (Entwurf AK3 Festlegung 23, Q-AK3-2): Mit Stufe AK3 und
+        /// <c>Heizkurve_Aktiv</c> = 1 hebt der Kreis den Vorlauf der Heizkurve um k_R · (θ_soll − θ_i) der Zone mit der
+        /// größten Unterschreitung an, gekappt am Auslegungsvorlauf und am Vorlaufangebot (<c>Vorlauf_Max</c>).
+        /// NULL oder 0 = aus. An <c>Tab_Gebaeude</c> UND <c>Tab_Gebaeude_STAMM</c>.
+        /// </summary>
+        public const string SPALTE_HEIZKURVE_RAUMEINFLUSS = "Heizkurve_Raumeinfluss";
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt des Raumeinflusses (<see cref="Ak3Schema.SCHRITT"/>, der zehnte
+        /// Durchgang): die 104 aus <see cref="SICHT_ERDREICH_VORGABE"/>, dahinter der Raumeinfluss - an der Stelle 104.
+        /// </summary>
+        public static readonly string[] SICHT_AK3 =
+            SICHT_ERDREICH_VORGABE.Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS }).ToArray();
+
+        /// <summary>Die Sichtdefinition des Raumeinflusses: alle neun Durchgänge davor und dahinter der Raumeinfluss der Heizkurve.</summary>
+        public static readonly string SQL_VIEW_AK3 =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
+                                 .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM })
+                                 .Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS }));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der des Raumeinflusses, AK3).
         /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_ERDREICH_VORGABE;
+        public static string[] SICHT_AKTUELL => SICHT_AK3;
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der Erdreichvorgabe).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_ERDREICH_VORGABE;
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der des Raumeinflusses, AK3).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_AK3;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)

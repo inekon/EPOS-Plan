@@ -1271,6 +1271,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal bool HeizwaermeEinesGebaeudesWieImLauf(int idProjekt, int idKlimaregion, ProjektGebaeudeModel item, double[] ziel)
         {
+            // Festlegung 20: die Auskunft rechnet mit Stufe AK3 auf dem Profilweg (AK2) und nennt es.
+            Ak3RueckstufeNennen();
             if (item != null && item.ID_Gebaeude > 0 && idProjekt > 0)
             {
                 var ctrl = new ProjektGebaeudeCtrl();
@@ -1528,6 +1530,8 @@ namespace WindowsFormsApplication1
             if (item == null) throw new ArgumentNullException(nameof(item));
             var leer = new Aufheizauskunft { ID_Gebaeude = item.ID_Gebaeude, Gebaeudename = item.Gebaeudename ?? "" };
             if (!ReferenceEquals(RechenwegWaehlen(item), _vdi6007)) return leer with { Tagesbilanz = true };
+            // Festlegung 20: die Auskunft rechnet mit Stufe AK3 auf dem Profilweg und nennt es.
+            Ak3RueckstufeNennen();
 
             VdiWegEinstellen();
             if (auchOhneSchalter && _vdi6007.Aufheizvorgabe != null)

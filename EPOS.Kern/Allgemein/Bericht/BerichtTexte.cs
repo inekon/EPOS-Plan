@@ -148,6 +148,16 @@ namespace WindowsFormsApplication1
             { "Restbedarf [MWh/a]", "Residual demand [MWh/a]" },
             { "Gezählt werden Stunden der Nutzungszeit, in denen die Raumtemperatur mehr als 1,0 K unter dem Sollwert liegt; mit Kopplung ist ein Teil der Unterdeckung eine gesunkene Raumtemperatur, deshalb steht der Restbedarf daneben.",
               "Counted are hours of the occupancy period in which the room temperature is more than 1.0 K below the set point; with coupling, part of the shortfall is a lower room temperature, which is why the residual demand is shown alongside." },
+            // Anlagenkopplung AK3 (Entwurf AK3 Festlegung 22): die Kennzahlen des geschlossenen Kreises
+            { "Anlagenkopplung AK3 – geschlossener Kreis (Simulationsergebnis Stamm)", "System coupling AK3 – closed loop (base simulation result)" },
+            { "Durchläufe Mittel [–]", "Mean iterations [–]" },
+            { "Durchläufe Höchstwert [–]", "Maximum iterations [–]" },
+            { "Fallwechsel [–]", "Case changes [–]" },
+            { "An der Schranke [h/a]", "At the capacity limit [h/a]" },
+            { "Speicher leer [h/a]", "Storage empty [h/a]" },
+            { "Restbedarf [h/a]", "Residual demand [h/a]" },
+            { "Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück. Gezählt werden die Durchläufe des Kreises je Stunde, die Wechsel des Betriebsfalls, die Stunden, in denen die Schranke des Angebots eine Zone begrenzte, die Stunden mit leerem Heizungspuffer und die Stunden mit Restbedarf der Kaskade.",
+              "Each hour, the available output of the generators and storage acts back on the buildings. Counted are the iterations of the loop per hour, the changes of operating case, the hours in which the limit of the supply restricted a zone, the hours with an empty heating buffer and the hours with residual demand of the cascade." },
             // KU3-3: der Kaeltebedarf je Zone
             { "Kältebedarf je Zone", "Cooling demand per zone" },
             { "Kältebedarf [MWh/a]", "Cooling demand [MWh/a]" },

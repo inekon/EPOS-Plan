@@ -902,6 +902,16 @@ rechnet alle zweiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `78b62ac35c57bafe4513dedf9030be09ee93def247eb7ad649117e20c618781c`** (Größe wie vorher). **Die Basis
 > bleibt** — kein Rechenweg, keine Einfrierregel berührt; der Referenzlauf der acht CI-Projekte gegen R40 ist PASS.
 
+> **Nachtrag — Schemaschritt 198 (Stufe AK3: Raumeinfluss der Heizkurve, Kennzahlen des Kreises), Basis unverändert.**
+> `Ak3Schema` (198 = `FlaechenherkunftSchema.SCHRITT + 1`) legt die nullbare Spalte `Heizkurve_Raumeinfluss` an
+> `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` an, baut die Sicht `Abfrage_Projektgebaeude` zum zehnten Mal neu (105 Spalten)
+> und legt sechs Kennzahlen des geschlossenen Kreises an `Tab_ErgebnisEnergiebedarf` an (`Ak3_Durchlaeufe_Mittel`,
+> `Ak3_Durchlaeufe_Max`, `Ak3_Fallwechsel`, `Ak3_Schranke_Stunden`, `Ak3_Speicher_Leer_Stunden`,
+> `Ak3_Restbedarf_Stunden`); alle Spalten entstehen leer, kein DML an Bestandsdaten. Gehoben aus dem Stand 197
+> (LFS-SHA-256 `78b62ac35c57bafe4513dedf9030be09ee93def247eb7ad649117e20c618781c`). Die Testdatenbank steht auf **198**
+> (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer): **89 698 304 Byte, LFS-SHA-256
+> `b4d6a95afa78c842f976e1c1c152bc21e2c1626c02723b4c80b65d43f42b0f61`** (Größe wie vorher). **Die Basis bleibt** — kein
+> Referenzprojekt rechnet AK3, keine Einfrierregel berührt; den Referenzlauf fährt die Orchestrierung im Gate.
 
 ### Die Vorgängerbasis R40 (Erdreichquellen)
 

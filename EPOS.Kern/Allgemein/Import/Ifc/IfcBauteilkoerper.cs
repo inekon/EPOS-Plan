@@ -84,6 +84,12 @@ namespace WindowsFormsApplication1
         internal const double ZUSAMMENFASSEN_GRAD = 5.0;
         /// <summary>Die relative Abweichung Körper gegen Mengensatz, über der gemeldet wird (A5, wie die Trennflächen).</summary>
         internal const double ABWEICHUNG_GRENZE = 0.02;
+        /// <summary>
+        /// Die relative Abweichung Körper gegen Mengensatz, ab der je Bauteil eine Warnung steht (G5-N). Zwischen
+        /// <see cref="ABWEICHUNG_GRENZE"/> und dieser Grenze zählt die Abweichung nur in der Zusammenfassung je Bauteilart:
+        /// CAD-Programme messen Außenwände oft nach Außenmaß, Innenwände in der Achse, der Körper zeigt die Wandseite.
+        /// </summary>
+        internal const double EINZELWARNUNG_GRENZE = 0.25;
         /// <summary>|n<sub>z</sub>| unter dieser Grenze: senkrechte Fläche (Wand).</summary>
         private const double SENKRECHT_NZ = 0.5;
         /// <summary>|n<sub>z</sub>| über dieser Grenze: Ober- bzw. Unterseite einer Platte (Neigung bis rund 80°).</summary>

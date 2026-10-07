@@ -857,6 +857,7 @@ namespace WindowsFormsApplication1
             {
                 double[] q = p[poly[k]];
                 if (Abstand2(q, m) < 1e-24) continue;
+                if (!ImKeil(p, poly, k, m)) continue;
                 if (!Sichtbar(p, poly, ringe, loch, offen, m, q)) continue;
                 // Einfügen: … Q, M, Loch ab M …, M, Q, …
                 var einschub = new List<int>(loch.Count + 2);
@@ -866,6 +867,18 @@ namespace WindowsFormsApplication1
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Liegt die Richtung zu <paramref name="m"/> im Innenwinkel des Vielecks (gegen den Uhrzeigersinn) an der Stelle
+        /// <paramref name="k"/>? Ein Punkt, an dem schon eine Brücke hängt, steht mehrfach im Vieleck; nur an der Stelle,
+        /// deren Innenwinkel die neue Brücke aufnimmt, bleibt das Vieleck einfach. Die Ränder des Winkels zählen dazu.
+        /// </summary>
+        private static bool ImKeil(List<double[]> p, List<int> poly, int k, double[] m)
+        {
+            double[] a = p[poly[(k + poly.Count - 1) % poly.Count]], q = p[poly[k]], b = p[poly[(k + 1) % poly.Count]];
+            bool linksVonA = Kreuz2(a, q, m) >= 0.0, linksVonB = Kreuz2(q, b, m) >= 0.0;
+            return Kreuz2(a, q, b) >= 0.0 ? linksVonA && linksVonB : linksVonA || linksVonB;
         }
 
         private static bool Sichtbar(List<double[]> p, List<int> poly, List<List<int>> ringe, List<int> loch, List<int> offen, double[] m, double[] q)

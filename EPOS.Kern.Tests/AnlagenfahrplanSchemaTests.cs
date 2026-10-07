@@ -143,8 +143,11 @@ namespace EPOS.Kern.Tests
             // Erdsondenfeldes (Schritt 195).
             int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count + ErdsondenfeldSchema.SPALTEN.Count;
             Assert.Equal(new[] { "Zeitprogramm", "Vorlauf_Max" }, anlagen.Skip(anlagen.Count - frei - 2).Take(2).ToArray());
-            Assert.Equal(AnlagenfahrplanSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - 6).ToArray());
-            Assert.Equal(21 + 6, ergebnis.Count);
+            // Dahinter stehen allein die sechs Kennzahlen des Kreises (Ak3Schema).
+            int ak3 = Ak3Schema.SPALTEN_ERGEBNIS.Count;
+            Assert.Equal(AnlagenfahrplanSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3 - 6).Take(6).ToArray());
+            Assert.Equal(Ak3Schema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3).ToArray());
+            Assert.Equal(21 + 6 + ak3, ergebnis.Count);
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",
                                                                        new DbParam("@n", AnlagenfahrplanSchema.TAB_ERGEBNIS)));
             Assert.Contains("\"Komfort_Unterschreitungsstunden\" INTEGER CHECK", ddl, StringComparison.Ordinal);

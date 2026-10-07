@@ -362,7 +362,8 @@ namespace WindowsFormsApplication1
                     "Regler_Proportionalband", "Sollwertprofil", "Kuehluebergabe_Aktiv", "Kuehl_Uebergabe_Art",
                     "Kuehl_Uebergabe_Exponent", "Kuehl_Uebergabe_Leistung_Nenn", "Kuehl_Auslegung_Vorlauf",
                     "Kuehl_Auslegung_Ruecklauf", "Kuehl_Auslegung_Raumtemperatur", "Kuehl_Vorlaufgrenze",
-                    "Baujahr", "Nachtabsenkung_Beginn", "Nachtabsenkung_Ende", "Energiestandard", "Erdreich_U_Wirksam"
+                    "Baujahr", "Nachtabsenkung_Beginn", "Nachtabsenkung_Ende", "Energiestandard", "Erdreich_U_Wirksam",
+                    "Heizkurve_Raumeinfluss"
                 },
                 Konditionierung("ID_Gebaeude_Stamm", "ID_Vorlage"))
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_GEBAEUDE" },

@@ -32,7 +32,41 @@ namespace EPOS.Kern.Tests
             {
                 ["ifc4_g5_oeffnungen.ifc"] = Oeffnungshaus("ifc4_g5_oeffnungen.ifc", mengen: false),
                 ["ifc4_g5_oeffnungen_mengen.ifc"] = Oeffnungshaus("ifc4_g5_oeffnungen_mengen.ifc", mengen: true),
+                ["ifc4_g5_aussparung.ifc"] = Aussparungshaus(),
             };
+
+        /// <summary>
+        /// <b>Das Aussparungshaus</b> (G5-N): ein Raum 10 × 8 m, vier Außenwände ohne Mengensatz, 2,5 m hoch, 0,3 m dick.
+        /// Die Südwand ist eine Extrusion ihrer Ansicht (<c>IfcArbitraryProfileDefWithVoids</c>) mit ausgesparter Öffnung
+        /// für Fenster A (1,5 × 1,2 m, Gesamtmaße) — Fenster B (1,2 × 1,0 m) sitzt in einer Öffnung, die der Körper nicht
+        /// ausspart; die Ostwand spart ein Loch ohne Füllung (1,0 × 1,0 m) aus. Die Nordwand hat einen Körper ohne Mengensatz
+        /// und zwei Teile ohne Darstellung mit Mengensatz („Wand Nord-1“ 15 m², „Wand Nord-2“ 8 m²); die Westwand ist eine
+        /// schlichte Extrusion ohne Öffnung.
+        /// </summary>
+        private static byte[] Aussparungshaus()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_g5_aussparung.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuildingStorey s = b.Geschoss(b.Gebaeude("Aussparungshaus", null), "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(s, "0.01", "Wohnen", 0, 0, null, null, null, beheizt: true);
+                b.Grundriss(r, (0, 0), (10000, 0), (10000, 8000), (0, 8000));
+
+                IIfcWall sued = b.Aussparungswand(s, "Wand Süd", 0, 0, 1, 0, 10000, 2500, (1000, 900, 1500, 1200));
+                IIfcWall ost = b.Aussparungswand(s, "Wand Ost", 10000, 0, 0, 1, 8000, 2500, (3000, 1000, 1000, 1000));
+                b.Oeffnungswand(s, "Wand Nord", 10000, 8000, -1, 0, 10000, 2500, null);
+                b.Huellwand(s, "Wand Nord-1", 10000, 8000, -1, 0, 15.0);
+                b.Huellwand(s, "Wand Nord-2", 4000, 8000, -1, 0, 8.0);
+                b.Oeffnungswand(s, "Wand West", 0, 8000, 0, -1, 8000, 2500, null);
+
+                IIfcOpeningElement oa = b.Wandoeffnung(sued, "Fenster A", 1000, 900, 1500, 1200, 300, null);
+                b.Oeffnungsfenster(s, sued, oa, "Fenster A", (1500, 1200), null, null);
+                IIfcOpeningElement ob = b.Wandoeffnung(sued, "Fenster B", 6000, 1000, 1200, 1000, 300, null);
+                b.Oeffnungsfenster(s, sued, ob, "Fenster B", (1200, 1000), null, null);
+                b.Wandoeffnung(ost, "Loch", 3000, 1000, 1000, 1000, 300, null);
+                return b.Speichern();
+            }
+        }
 
         private static byte[] Oeffnungshaus(string datei, bool mengen)
         {
@@ -82,6 +116,33 @@ namespace EPOS.Kern.Tests
 
         private sealed partial class Bau
         {
+            /// <summary>
+            /// Eine Außenwand <paramref name="laenge"/> × <paramref name="hoehe"/> [mm] ohne Mengensatz, 300 mm dick (lokal
+            /// y = −300 … 0), als Extrusion ihrer Ansicht nach außen: Profil mit den <paramref name="aussparungen"/>
+            /// (x0, z0, Breite, Höhe [mm]) als Löcher (<c>IfcArbitraryProfileDefWithVoids</c>).
+            /// </summary>
+            public IIfcWall Aussparungswand(IIfcBuildingStorey s, string name, double x, double y, double rx, double ry,
+                                            double laenge, double hoehe, params (double X0, double Z0, double B, double H)[] aussparungen)
+            {
+                IIfcWall w = Huellwand(s, name, x, y, rx, ry, null);
+                IIfcArbitraryProfileDefWithVoids p = N<IIfcArbitraryProfileDefWithVoids>("IfcArbitraryProfileDefWithVoids");
+                p.ProfileType = IfcProfileTypeEnum.AREA;
+                p.OuterCurve = Linienzug(new[] { (0.0, 0.0), (laenge, 0.0), (laenge, hoehe), (0.0, hoehe), (0.0, 0.0) });
+                foreach ((double x0, double z0, double br, double h) in aussparungen)
+                    p.InnerCurves.Add(Linienzug(new[] { (x0, z0), (x0, z0 + h), (x0 + br, z0 + h), (x0 + br, z0), (x0, z0) }));
+                IIfcAxis2Placement3D lage = N<IIfcAxis2Placement3D>("IfcAxis2Placement3D");
+                lage.Location = Punkt(0, 0, 0);
+                lage.Axis = Richtung(0, -1, 0);
+                lage.RefDirection = Richtung(1, 0, 0);
+                IIfcExtrudedAreaSolid e = N<IIfcExtrudedAreaSolid>("IfcExtrudedAreaSolid");
+                e.SweptArea = p;
+                e.Position = lage;
+                e.ExtrudedDirection = Richtung(0, 0, 1);
+                e.Depth = new IfcPositiveLengthMeasure(300);
+                Koerper(w, "SweptSolid", e);
+                return w;
+            }
+
             /// <summary>
             /// Eine Außenwand <paramref name="laenge"/> × <paramref name="hoehe"/> [mm], 300 mm dick (lokal y = −300 … 0, außen
             /// bei −y), als Extrusion; mit <paramref name="mengen"/> Brutto- und Nettofläche in <c>Qto_WallBaseQuantities</c>.

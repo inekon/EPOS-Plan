@@ -23,6 +23,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Name der Projektkopie.</summary>
         internal string Gebaeudename { get; init; } = "";
 
+        /// <summary>
+        /// Die benannte Rückstufe (Entwurf AK3 Festlegung 20): Mit der Stufe AK3 rechnet die Auskunft ohne geschlossenen
+        /// Kreis auf dem Profilweg (<see cref="Ak3Kernstufe.Rueckstufetext"/>); <c>null</c> ohne Rückstufe.
+        /// </summary>
+        internal string Rueckstufe { get; init; }
+
         /// <summary>Rechnet das Gebäude auf dem Tagesbilanz-Weg? Dann gibt es keine Aufheizoptimierung.</summary>
         internal bool Tagesbilanz { get; init; }
 

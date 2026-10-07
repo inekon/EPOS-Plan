@@ -131,6 +131,11 @@
                 {
                     <Herleitungszeile Text="@Texte.HinweisAuskunft" />
                 }
+                @* Anlagenkopplung AK3 (Festlegung 20): die Auskunft rechnet ohne geschlossenen Kreis - benannt. *@
+                @if (Daten.Rueckstufe.Length > 0)
+                {
+                    <Herleitungszeile Text="@Daten.Rueckstufe" />
+                }
                 @if (Daten.FaktorErstImLauf)
                 {
                     <Herleitungszeile Text="@Texte.HinweisFaktorLauf" />
