@@ -41830,6 +41830,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_GRENZE {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gbXML-Datei konnte nicht gelesen werden: {0} ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_LESEFEHLER {
@@ -41880,6 +41907,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_NUR_1STLEVEL {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_NUR_1STLEVEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND", resourceCulture);
             }
         }
         

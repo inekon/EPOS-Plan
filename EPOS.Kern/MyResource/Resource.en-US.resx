@@ -33193,6 +33193,18 @@ Do you want to allow this?</value>
   <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
     <value>The outline of surface {0} is not planar (deviation {1} mm) — it is not shown in the floor plan; area, azimuth and tilt still apply.</value>
   </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
+    <value>Space {0}: the surfaces of route {1} do not close a solid ({2} open edges) — the outline prism is shown.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
+    <value>{0}: route {1} yields no solid ({2}) — the fallback is shown.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Opening {0} does not lie within surface {1} — it is shown as a solid of its own without a cut-out.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
+    <value>{0} component solids omitted: space and component solids together exceeded the limit of {1} triangles ({2} up to then).</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>The file contains no constructions — the U-values are taken from the building age class.</value>
   </data>
@@ -33576,6 +33588,12 @@ Do you want to allow this?</value>
   </data>
   <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
     <value>outer shell only</value>
+  </data>
+  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
+    <value>default thickness</value>
+  </data>
+  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
+    <value>reference plane assumed</value>
   </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Storeys</value>
@@ -48489,12 +48507,6 @@ chart</value>
   </data>
   <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
     <value>{0} room references of envelope surfaces point to a room the project file does not contain.</value>
-  </data>
-  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
-    <value>default thickness</value>
-  </data>
-  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
-    <value>reference plane assumed</value>
   </data>
   <data name="IMP_SQPROJ_PROT_GEOMETRIE" xml:space="preserve">
     <value>Project file geometry: {0} of {1} room bodies and {2} of {3} element bodies built from the surfaces of the file; {4} with default thickness, {5} with assumed reference plane.</value>

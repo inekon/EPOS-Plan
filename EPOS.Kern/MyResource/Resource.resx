@@ -33200,6 +33200,18 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
     <value>Der Umriss der Fläche {0} liegt nicht in einer Ebene (Abweichung {1} mm) — er steht nicht im Grundriss; Fläche, Azimut und Neigung gelten weiter.</value>
   </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
+    <value>Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
+    <value>{0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
+    <value>{0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}).</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>Die Datei enthält keine Konstruktionen — die U-Werte kommen aus der Baualtersklasse.</value>
   </data>
@@ -33583,6 +33595,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
     <value>nur Außenschale</value>
+  </data>
+  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
+    <value>Vorgabedicke</value>
+  </data>
+  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
+    <value>Bezugsebene angenommen</value>
   </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Geschosse</value>
@@ -48496,12 +48514,6 @@ Chart</value>
   </data>
   <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
     <value>{0} Raumbezüge der Hüllflächen zeigen auf einen Raum, den die Projektdatei nicht führt.</value>
-  </data>
-  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
-    <value>Vorgabedicke</value>
-  </data>
-  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
-    <value>Bezugsebene angenommen</value>
   </data>
   <data name="IMP_SQPROJ_PROT_GEOMETRIE" xml:space="preserve">
     <value>Geometrie der Projektdatei: {0} von {1} Raumkörpern und {2} von {3} Bauteilkörpern aus den Flächen der Datei gebildet; {4} mit Vorgabedicke, {5} mit angenommener Bezugsebene.</value>
