@@ -144,6 +144,33 @@
             <Ganzzahlfeld Bezeichnung="@LblAnzahlSonden" Aktiv="@_sonde"
                           Feldname="@LblAnzahlSonden" Wert="@_anzahl"
                           WertChanged="w => Setzen(() => _anzahl = w)" />
+
+            @* Das Sondenfeld je Anlage (Konzept Simulationsablauf 23.3): leer heisst Vorgabe,
+               der Platzhalter nennt sie. *@
+            <Zahlenfeld Bezeichnung="@LblSondenabstand" Einheit="m" Aktiv="@_sonde"
+                        Feldname="@LblSondenabstand" Wert="@_sondenabstand"
+                        Platzhalter="@Vorgabetext(Sondenfeldgeometrie.Norm.AbstandM)"
+                        WertChanged="w => Setzen(() => _sondenabstand = w)" />
+            <Auswahlfeld Bezeichnung="@LblSondenanordnung" Eintraege="@Anordnungen" Aktiv="@_sonde"
+                         Platzhalter="@Vorgabetext(AnordnungText(Sondenfeldgeometrie.Norm.Anordnung))"
+                         Auswahl="@_anordnung" AuswahlChanged="w => Setzen(() => _anordnung = w)" />
+            <Zahlenfeld Bezeichnung="@LblBohrlochdurchmesser" Einheit="mm" Aktiv="@_sonde"
+                        Feldname="@LblBohrlochdurchmesser" Wert="@_bohrlochdurchmesser"
+                        Platzhalter="@Vorgabetext(Sondenfeldgeometrie.NormBohrlochdurchmesserMm)"
+                        WertChanged="w => Setzen(() => _bohrlochdurchmesser = w)" />
+            <Zahlenfeld Bezeichnung="@LblBohrlochwiderstand" Einheit="m·K/W" Aktiv="@_sonde"
+                        Feldname="@LblBohrlochwiderstand" Wert="@_bohrlochwiderstand"
+                        Platzhalter="@Vorgabetext(Sondenfeldgeometrie.Norm.Bohrlochwiderstand)"
+                        WertChanged="w => Setzen(() => _bohrlochwiderstand = w)" />
+            <Zahlenfeld Bezeichnung="@LblKopfueberdeckung" Einheit="m" Aktiv="@_sonde"
+                        Feldname="@LblKopfueberdeckung" Wert="@_kopfueberdeckung"
+                        Platzhalter="@Vorgabetext(Sondenfeldgeometrie.Norm.KopfueberdeckungM)"
+                        WertChanged="w => Setzen(() => _kopfueberdeckung = w)" />
+            <Ganzzahlfeld Bezeichnung="@LblBetrachtungsjahr" Aktiv="@_sonde"
+                          Feldname="@LblBetrachtungsjahr" Wert="@_betrachtungsjahr"
+                          Platzhalter="@Vorgabetext(Sondenfeldgeometrie.Norm.Betrachtungsjahr)"
+                          WertChanged="w => Setzen(() => _betrachtungsjahr = w)" />
+            <Herleitungszeile Text="@LblSondenfeldHinweis" />
                     </KindInhalt>
                 </Formularraster>
             </div>
@@ -372,6 +399,16 @@
     [Parameter] public string LblKlimazoneHinweis { get; set; } = "";
     [Parameter] public string LblSpreizung { get; set; } = "Nutzbare Spreizung:";
     [Parameter] public string LblSpreizungHinweis { get; set; } = "";
+    [Parameter] public string LblSondenabstand { get; set; } = "Sondenabstand:";
+    [Parameter] public string LblBohrlochdurchmesser { get; set; } = "Bohrlochdurchmesser:";
+    [Parameter] public string LblBohrlochwiderstand { get; set; } = "Bohrlochwiderstand:";
+    [Parameter] public string LblKopfueberdeckung { get; set; } = "Kopfüberdeckung:";
+    [Parameter] public string LblBetrachtungsjahr { get; set; } = "Betrachtungsjahr:";
+    [Parameter] public string LblSondenanordnung { get; set; } = "Anordnung:";
+    [Parameter] public string LblAnordnungQuadratisch { get; set; } = "Quadratisch";
+    [Parameter] public string LblAnordnungReihe { get; set; } = "Reihe";
+    [Parameter] public string LblVorgabe { get; set; } = "Vorgabe {0}";
+    [Parameter] public string LblSondenfeldHinweis { get; set; } = "";
     /// <summary>
     /// Beschriftung des Kartenknopfes. Der Vorläufer trug „…" — ein SYMBOL, kein Text;
     /// was der Knopf tut, sagt <see cref="KarteKnopfTip"/>.
@@ -440,6 +477,8 @@
         = "Die Sondenlänge muss größer als 0 m sein!";
     [Parameter] public string MsgAnzahlMin { get; set; }
         = "Es muss mindestens eine Sonde vorhanden sein!";
+    [Parameter] public string MsgSondenfeld { get; set; } =
+        "Sondenabstand, Bohrlochdurchmesser und Bohrlochwiderstand müssen größer als 0 sein, die Kopfüberdeckung mindestens 0 und das Betrachtungsjahr mindestens 1.";
     [Parameter] public string MsgSpreizung { get; set; }
         = "Bitte eine nutzbare Spreizung größer als 0 K eintragen!\n" +
           "Sie ist Eingangsgröße der Frostprüfung der Quelle.";
@@ -484,6 +523,14 @@
     private double? _laenge;
     private int? _anzahl;
     private double? _spreizung;
+
+    // Das Sondenfeld je Anlage: null heisst Vorgabe (Sondenfeldgeometrie.Norm).
+    private double? _sondenabstand;
+    private double? _bohrlochdurchmesser;
+    private double? _bohrlochwiderstand;
+    private double? _kopfueberdeckung;
+    private int? _betrachtungsjahr;
+    private int? _anordnung;
     private int? _bodenIndex;
     private int? _zone;
 
@@ -659,6 +706,14 @@
 
         _spreizung = Daten.Spreizung > 0 ? Daten.Spreizung : ErdreichAuswertung.SPREIZUNG_DEFAULT;
 
+        _sondenabstand = Daten.Sondenabstand;
+        _bohrlochdurchmesser = Daten.Bohrlochdurchmesser;
+        _bohrlochwiderstand = Daten.Bohrlochwiderstand;
+        _kopfueberdeckung = Daten.Kopfueberdeckung;
+        _betrachtungsjahr = Daten.Betrachtungsjahr;
+        Sondenanordnung? anordnung = Sondenfeldgeometrie.AnordnungAusText(Daten.Sondenanordnung);
+        _anordnung = anordnung.HasValue ? (int)anordnung.Value : null;
+
         // Ausgangsstand festhalten, BEVOR der Anwender etwas aendern kann (Befund 4
         // des Bestands). Er ist der Stand der Datenbank.
         _standGeladen = Eingabestand();
@@ -712,6 +767,19 @@
         AnzahlSondenSetzen = w => Setzen(() => _anzahl = w),
         SpreizungLesen = () => _spreizung,
         SpreizungSetzen = w => Setzen(() => _spreizung = w),
+        SondenabstandLesen = () => _sondenabstand,
+        SondenabstandSetzen = w => Setzen(() => _sondenabstand = w),
+        BohrlochdurchmesserLesen = () => _bohrlochdurchmesser,
+        BohrlochdurchmesserSetzen = w => Setzen(() => _bohrlochdurchmesser = w),
+        BohrlochwiderstandLesen = () => _bohrlochwiderstand,
+        BohrlochwiderstandSetzen = w => Setzen(() => _bohrlochwiderstand = w),
+        KopfueberdeckungLesen = () => _kopfueberdeckung,
+        KopfueberdeckungSetzen = w => Setzen(() => _kopfueberdeckung = w),
+        BetrachtungsjahrLesen = () => _betrachtungsjahr,
+        BetrachtungsjahrSetzen = w => Setzen(() => _betrachtungsjahr = w),
+        SondenanordnungLesen = () => AnordnungSchluessel(),
+        SondenanordnungSetzen = KiAnordnungSetzen,
+        SondenanordnungEintraege = () => KiMaskenanmeldung.Eintraege(Anordnungen, a => ((Sondenanordnung)a.Id).ToString(), a => a.Text),
         BodentypLesen = () => Bodentyp,
         BodentypSetzen = KiBodentypSetzen,
         BodentypEintraege = Bodentypeintraege,
@@ -936,7 +1004,9 @@
     private string Eingabestand()
         => (_sonde ? "S" : "K") + "" + _tiefe + "" + _flaeche + "" +
            _laenge + "" + _anzahl + "" + _bodenIndex + "" +
-           _zone + "" + _spreizung;
+           _zone + "" + _spreizung + "" + _sondenabstand + "" +
+           _bohrlochdurchmesser + "" + _bohrlochwiderstand + "" + _kopfueberdeckung + "" +
+           _betrachtungsjahr + "" + _anordnung;
 
     /// <summary>
     /// Die drei Zustände des Änderungshinweises
@@ -1061,6 +1131,8 @@
             if (anzahl < 1) return Meldet(MsgAnzahlMin);
         }
 
+        if (_sonde && !Sondenfeld().Zulaessig()) return Meldet(MsgSondenfeld);
+
         if (_spreizung is null || _spreizung.Value <= 0) return Meldet(MsgSpreizung);
 
         _meldung = "";
@@ -1075,9 +1147,56 @@
             Flaeche = _sonde ? 0 : flaeche,
             Anzahl = _sonde ? anzahl : 0,
             Spreizung = _spreizung.Value,
+            Sondenabstand = _sondenabstand,
+            Bohrlochdurchmesser = _bohrlochdurchmesser,
+            Bohrlochwiderstand = _bohrlochwiderstand,
+            Kopfueberdeckung = _kopfueberdeckung,
+            Betrachtungsjahr = _betrachtungsjahr,
+            Sondenanordnung = _anordnung.HasValue ? ((Sondenanordnung)_anordnung.Value).ToString() : null,
             Bodentyp = Bodentyp,
             Klimazone = Klimazone
         });
+    }
+
+    /// <summary>Die Eingaben des Sondenfeldes als Satz des Kerns (null = Vorgabe).</summary>
+    private ErdsondenfeldEingabe Sondenfeld() => new ErdsondenfeldEingabe
+    {
+        AbstandM = _sondenabstand,
+        BohrlochdurchmesserMm = _bohrlochdurchmesser,
+        Bohrlochwiderstand = _bohrlochwiderstand,
+        KopfueberdeckungM = _kopfueberdeckung,
+        Betrachtungsjahr = _betrachtungsjahr,
+        Anordnung = _anordnung.HasValue ? (Sondenanordnung)_anordnung.Value : null
+    };
+
+    /// <summary>Die Anordnungen des Sondenfeldes; die Id ist der Wert von <see cref="Sondenanordnung"/>.</summary>
+    private IReadOnlyList<(int Id, string Text)> Anordnungen => new[]
+    {
+        ((int)Sondenanordnung.Quadratisch, AnordnungText(Sondenanordnung.Quadratisch)),
+        ((int)Sondenanordnung.Reihe, AnordnungText(Sondenanordnung.Reihe)),
+    };
+
+    private string AnordnungText(Sondenanordnung a)
+        => a == Sondenanordnung.Reihe ? LblAnordnungReihe : LblAnordnungQuadratisch;
+
+    /// <summary>Der Platzhalter eines leeren Feldes: „Vorgabe 6" in der Kultur der Oberfläche.</summary>
+    private string Vorgabetext(double wert)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, LblVorgabe,
+                         wert.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture));
+
+    private string Vorgabetext(string text)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, LblVorgabe, text);
+
+    /// <summary>Der Schlüssel der gewählten Anordnung für den Assistenten; leer = Vorgabe.</summary>
+    private string AnordnungSchluessel()
+        => _anordnung.HasValue ? ((Sondenanordnung)_anordnung.Value).ToString() : "";
+
+    /// <summary>Die Anordnung über ihren Schlüssel; leer heißt Vorgabe, ein unbekannter Schlüssel wird abgewiesen.</summary>
+    private void KiAnordnungSetzen(string? schluessel)
+    {
+        if (string.IsNullOrWhiteSpace(schluessel)) { Setzen(() => _anordnung = null); return; }
+        Sondenanordnung? a = Sondenfeldgeometrie.AnordnungAusText(schluessel);
+        if (a.HasValue) Setzen(() => _anordnung = (int)a.Value);
     }
 
     private Task Meldet(string text)

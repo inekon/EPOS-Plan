@@ -121,11 +121,11 @@ public class QuelleErdreichDialogTests : EposBunitContext
         // Zwei Wahlknoepfe (Kollektor/Sonde), je einer in seiner Rubrik.
         Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
 
-        // Vier Zweigfelder + Spreizung = fuenf Zahlenfelder (davon eins ganzzahlig).
-        Assert.Equal(5, cut.FindAll("input.epos-eingabe").Count);
+        // Vier Zweigfelder + fuenf Felder des Sondenfeldes + Spreizung = zehn Zahlenfelder.
+        Assert.Equal(10, cut.FindAll("input.epos-eingabe").Count);
 
-        // Zwei Klapplisten: Bodentyp und Klimazone.
-        Assert.Equal(2, cut.FindAll("select").Count);
+        // Drei Klapplisten: Anordnung des Sondenfeldes, Bodentyp und Klimazone.
+        Assert.Equal(3, cut.FindAll("select").Count);
 
         Assert.NotNull(cut.Find("button.epos-infoknopf"));
         Assert.Equal(2, cut.FindAll(".epos-leiste button").Count);
@@ -139,7 +139,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
     public void Die_Klimazonenliste_traegt_die_Null_und_fuenfzehn_Zonen()
     {
         var cut = Zeige(Kollektor());
-        var zonen = cut.FindAll("select")[1].QuerySelectorAll("option");
+        var zonen = cut.FindAll("select")[2].QuerySelectorAll("option");
 
         Assert.Equal(1 + VDI4640Pruefung.KLIMAZONEN, zonen.Length);
         Assert.Equal("0 — nicht zugeordnet", zonen[0].TextContent);
@@ -255,7 +255,11 @@ public class QuelleErdreichDialogTests : EposBunitContext
         // Rubrik 2: ein Optionsfeld, dann Laenge je Sonde und Anzahl Sonden.
         Assert.Single(rubriken[1].QuerySelectorAll("input[type=radio]"));
         string[] sonde = Feldnamen(rubriken[1]);
-        Assert.Equal(new[] { "Länge je Sonde:", "Anzahl Sonden:" }, sonde);
+        Assert.Equal(new[]
+            {
+                "Länge je Sonde:", "Anzahl Sonden:", "Sondenabstand:", "Anordnung:", "Bohrlochdurchmesser:",
+                "Bohrlochwiderstand:", "Kopfüberdeckung:", "Betrachtungsjahr:",
+            }, sonde);
     }
 
     /// <summary>Die Beschriftungen der Felder einer Rubrik, in Anzeigereihenfolge.</summary>
@@ -312,7 +316,8 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.True(zweige[1].ClassList.Contains("epos-erdreich-zweig--ruht"));
 
         // Die Felder der ruhenden Rubrik stehen weiter da - gesperrt, nicht verborgen.
-        Assert.Equal(2, zweige[1].QuerySelectorAll("input.epos-eingabe").Length);
+        // Laenge, Anzahl und die fuenf Zahlenfelder des Sondenfeldes.
+        Assert.Equal(7, zweige[1].QuerySelectorAll("input.epos-eingabe").Length);
         foreach (var feld in zweige[1].QuerySelectorAll("input.epos-eingabe"))
             Assert.True(feld.HasAttribute("disabled"));
 
@@ -347,7 +352,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
         // Ein anderer Katalogeintrag - der Schluessel folgt der Auswahl, nicht der
         // Anzeigeposition.
         int anderer = index == 0 ? 1 : 0;
-        cut.FindAll("select")[0].Change(anderer.ToString());
+        cut.FindAll("select")[1].Change(anderer.ToString());
         Assert.Equal(ErdreichTemperatur.Katalog[anderer].Schluessel, cut.Instance.Bodentyp);
     }
 
@@ -361,7 +366,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
 
         string vorher = cut.Instance.Bodenkennwerte;
         int index = ErdreichTemperatur.KatalogIndex(ErdreichTemperatur.BODENTYP_DEFAULT);
-        cut.FindAll("select")[0].Change((index == 0 ? 1 : 0).ToString());
+        cut.FindAll("select")[1].Change((index == 0 ? 1 : 0).ToString());
         Assert.NotEqual(vorher, cut.Instance.Bodenkennwerte);
     }
 
@@ -752,9 +757,103 @@ public class QuelleErdreichDialogTests : EposBunitContext
 
         // Beide: Spreizung 0
         cut = Zeige(Kollektor());
-        cut.FindAll("input.epos-eingabe")[4].Input("0");
+        cut.FindAll("input.epos-eingabe")[9].Input("0");
         cut.Find("button.epos-knopf--primaer").Click();
         Assert.Contains("nutzbare Spreizung größer als 0 K", cut.Instance.Meldung);
+
+        // Sonde: ein Wert des Sondenfeldes ausserhalb seiner Pruefklausel
+        cut = Zeige(Sonde());
+        cut.FindAll("input.epos-eingabe")[4].Input("0");
+        cut.Find("button.epos-knopf--primaer").Click();
+        Assert.Contains("Sondenabstand, Bohrlochdurchmesser und Bohrlochwiderstand", cut.Instance.Meldung);
+    }
+
+    // ---------------------------------------------------------------------
+    //  Das Sondenfeld je Anlage (Schemaschritt 195): leer = Vorgabe
+    // ---------------------------------------------------------------------
+
+    /// <summary>Die sechs Felder des Sondenfeldes sind nur beim Quellsystem Sonde frei; leer zeigen sie die Vorgabe.</summary>
+    [Fact]
+    public void Die_Sondenfeldfelder_gelten_nur_bei_der_Sonde_und_zeigen_die_Vorgabe()
+    {
+        var kollektor = Zeige(Kollektor());
+        var felder = kollektor.FindAll("input.epos-eingabe");
+        for (int i = 4; i <= 8; i++)
+            Assert.True(felder[i].HasAttribute("disabled"), "Feld " + i);
+        Assert.True(kollektor.FindAll("select")[0].HasAttribute("disabled"));
+
+        var sonde = Zeige(Sonde());
+        felder = sonde.FindAll("input.epos-eingabe");
+        for (int i = 4; i <= 8; i++)
+        {
+            Assert.False(felder[i].HasAttribute("disabled"), "Feld " + i);
+            Assert.Equal("", felder[i].GetAttribute("value") ?? "");
+        }
+        Assert.False(sonde.FindAll("select")[0].HasAttribute("disabled"));
+        Assert.Equal("Vorgabe 6", felder[4].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 150", felder[5].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 0,1", felder[6].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 2", felder[7].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 10", felder[8].GetAttribute("placeholder"));
+        Assert.Contains("Vorgabe Quadratisch", sonde.FindAll("select")[0].TextContent);
+    }
+
+    /// <summary>Leere Felder kommen als null (Vorgabe) zurück, gepflegte als Wert.</summary>
+    [Fact]
+    public void OK_schreibt_das_Sondenfeld_leer_als_Vorgabe_zurueck()
+    {
+        QuelleErdreichDaten? ergebnis = null;
+        var cut = Zeige(Sonde(), d => ergebnis = d);
+        cut.Find("button.epos-knopf--primaer").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Null(ergebnis!.Sondenabstand);
+        Assert.Null(ergebnis.Bohrlochdurchmesser);
+        Assert.Null(ergebnis.Bohrlochwiderstand);
+        Assert.Null(ergebnis.Kopfueberdeckung);
+        Assert.Null(ergebnis.Betrachtungsjahr);
+        Assert.Null(ergebnis.Sondenanordnung);
+
+        ergebnis = null;
+        cut = Zeige(Sonde(), d => ergebnis = d);
+        var felder = cut.FindAll("input.epos-eingabe");
+        felder[4].Input("8");
+        cut.FindAll("input.epos-eingabe")[5].Input("180");
+        cut.FindAll("input.epos-eingabe")[6].Input("0,08");
+        cut.FindAll("input.epos-eingabe")[7].Input("0");
+        cut.FindAll("input.epos-eingabe")[8].Input("25");
+        cut.FindAll("select")[0].Change(((int)Sondenanordnung.Reihe).ToString(CultureInfo.InvariantCulture));
+        cut.Find("button.epos-knopf--primaer").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Equal(8.0, ergebnis!.Sondenabstand);
+        Assert.Equal(180.0, ergebnis.Bohrlochdurchmesser);
+        Assert.Equal(0.08, ergebnis.Bohrlochwiderstand);
+        Assert.Equal(0.0, ergebnis.Kopfueberdeckung);
+        Assert.Equal(25, ergebnis.Betrachtungsjahr);
+        Assert.Equal("Reihe", ergebnis.Sondenanordnung);
+    }
+
+    /// <summary>Gespeicherte Werte stehen beim Öffnen in den Feldern; der Assistent setzt sie über die Sichtklasse.</summary>
+    [Fact]
+    public void Gespeicherte_Sondenfeldwerte_stehen_im_Feld_und_der_Assistent_setzt_sie()
+    {
+        var cut = Zeige(Sonde() with { Sondenabstand = 7.5, Betrachtungsjahr = 20, Sondenanordnung = "Reihe" });
+        var felder = cut.FindAll("input.epos-eingabe");
+        Assert.Equal("7,5", felder[4].GetAttribute("value"));
+        Assert.Equal("20", felder[8].GetAttribute("value"));
+
+        WindowsFormsApplication1.KiFeldzugang abstand =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "sondenabstand");
+        Assert.NotNull(abstand);
+        Assert.Equal(7.5, abstand.Lesen());
+        abstand.Setzen(9.0);
+        Assert.Equal(9.0, abstand.Lesen());
+
+        WindowsFormsApplication1.KiFeldzugang anordnung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "sondenanordnung");
+        Assert.NotNull(anordnung);
+        Assert.Equal("Reihe", anordnung.Lesen());
+        anordnung.Setzen("Quadratisch");
+        Assert.Equal("Quadratisch", anordnung.Lesen());
     }
 
     /// <summary>

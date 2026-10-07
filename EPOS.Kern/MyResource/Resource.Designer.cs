@@ -56685,11 +56685,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsjahr, für das das Sondenfeld gerechnet wird, mindestens 1; leer = Vorgabe 10. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_BETRACHTUNGSJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_BETRACHTUNGSJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Untergrund am Standort. Er liefert Wärmeleitfähigkeit und Wärmekapazität des Bodens und bestimmt damit die Quelltemperatur und die Auslegung nach VDI 4640. ähnelt.
         /// </summary>
         public static string KI_DLG_QERD_BODENTYP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_QERD_BODENTYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchmesser des Bohrlochs in Millimetern, größer als 0; leer = Vorgabe 150 mm. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_BOHRLOCHDURCHMESSER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_BOHRLOCHDURCHMESSER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermischer Bohrlochwiderstand in m·K/W, größer als 0; leer = Vorgabe 0,10 m·K/W. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_BOHRLOCHWIDERSTAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_BOHRLOCHWIDERSTAND_ERL", resourceCulture);
             }
         }
         
@@ -56712,11 +56739,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tiefe des Sondenkopfs unter Gelände in Metern, mindestens 0; leer = Vorgabe 2 m. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_KOPFUEBERDECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_KOPFUEBERDECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Länge JE Erdsonde in Metern — nicht die Summe aller Sonden. ähnelt.
         /// </summary>
         public static string KI_DLG_QERD_LAENGE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_QERD_LAENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abstand benachbarter Erdsonden in Metern, größer als 0; leer = Vorgabe 6 m. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_SONDENABSTAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_SONDENABSTAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anordnung der Erdsonden: quadratisches Raster oder Reihe; leer = Vorgabe quadratisch. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_SONDENANORDNUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_SONDENANORDNUNG_ERL", resourceCulture);
             }
         }
         
@@ -97751,11 +97805,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quadratisch ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_ANORDNUNG_QUADRATISCH {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_ANORDNUNG_QUADRATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_ANORDNUNG_REIHE {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_ANORDNUNG_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl Sonden: ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_ANZAHL_SONDEN {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_ANZAHL_SONDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungsjahr: ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_BETRACHTUNGSJAHR {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_BETRACHTUNGSJAHR", resourceCulture);
             }
         }
         
@@ -97792,6 +97873,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_BODENTYP_HINWEIS {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_BODENTYP_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bohrlochdurchmesser: ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_BOHRLOCHDURCHMESSER {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_BOHRLOCHDURCHMESSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bohrlochwiderstand: ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_BOHRLOCHWIDERSTAND {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_BOHRLOCHWIDERSTAND", resourceCulture);
             }
         }
         
@@ -97917,6 +98016,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopfüberdeckung: ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_KOPFUEBERDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_KOPFUEBERDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erdreich {0}:  ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_KURZTEXT_KOPF {
@@ -97992,6 +98100,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_MSG_SIM_OHNE_PROJEKT {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_MSG_SIM_OHNE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sondenabstand, Bohrlochdurchmesser und Bohrlochwiderstand müssen größer als 0 sein, die Kopfüberdeckung mindestens 0 und das Betrachtungsjahr mindestens 1. Ein leeres Feld steht für die Vorgabe. ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_MSG_SONDENFELD {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_MSG_SONDENFELD", resourceCulture);
             }
         }
         
@@ -98118,6 +98235,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sondenabstand: ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_SONDENABSTAND {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_SONDENABSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anordnung: ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_SONDENANORDNUNG {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_SONDENANORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (leeres Feld: es gilt die Vorgabe nach VDI 4640 Blatt 2) ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_SONDENFELD_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_SONDENFELD_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entzugsarbeit und Spitze enthalten die Wärme, mit der die Wärmepumpe den Pufferspeicher lädt. ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_SPEICHERLADUNG {
@@ -98186,6 +98330,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_VERLEGETIEFE {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_VERLEGETIEFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_VORGABE", resourceCulture);
             }
         }
         
