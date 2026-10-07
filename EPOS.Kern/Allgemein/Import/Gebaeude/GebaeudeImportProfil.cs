@@ -145,6 +145,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public virtual bool FlaechenRueckfaelle => false;
 
+        /// <summary>
+        /// G5-N (N1/N2): der vom Anwender vorgegebene Nordwinkel [°] für den nächsten Lauf; <c>null</c> = der Dateiwert bzw. die
+        /// Annahme Planoberseite = Nord. Der Leser dreht die Azimute damit genau einmal (<see cref="GebaeudeAbbild.NordwinkelVorgabeGrad"/>).
+        /// </summary>
+        public double? NordwinkelVorgabeGrad { get; set; }
+
         /// <summary>Die Leserfabrik: ein neuer Leser je Lauf.</summary>
         public abstract IGebaeudeLeser LeserErzeugen();
     }

@@ -164,6 +164,13 @@ namespace WindowsFormsApplication1
             int zahl;
             using (var strom = new MemoryStream(puffer, false))
                 zahl = ablauf.Lesen(strom, name, profil, null, abbruch);
+            // G5-N (N5/N6): Der gespeicherte Nordwinkel ersetzt den Dateiwert nur, wenn ihn der Anwender eingegeben hat (beim
+            // Import oder über „Ausrichtung ändern“) — weicht der frisch gelesene ab, wird mit ihm noch einmal gelesen. Stammt er
+            // aus der Datei, gilt der frisch gelesene Dateiwert; war er eine Annahme, gilt der Dateiwert, falls die Datei jetzt
+            // einen nennt, sonst wieder die Annahme.
+            if (zahl > 0 && ablauf.Abbild != null && GespeicherterWinkelGilt(quelle) is double gespeichert
+                && !(Nordrichtung.Normiert(ablauf.Abbild.NordwinkelWirksamGrad) is double frisch && Math.Abs(frisch - gespeichert) <= 1e-9))
+                zahl = ablauf.NordwinkelVorgeben(gespeichert, null, abbruch);
             if (zahl <= 0 || ablauf.Abbild == null)
             {
                 NeulesenErgebnis f = Mit(ergebnis, NeulesenZustand.NichtLesbar);
@@ -187,6 +194,13 @@ namespace WindowsFormsApplication1
             ergebnis.Hottcad = GebaeudeImportAblauf.IstHottcad(abbild, index);
             return ergebnis;
         }
+
+        /// <summary>
+        /// G5-N (N6): <b>Der gespeicherte Nordwinkel, der beim Neulesen den Dateiwert ersetzt</b> — nur einer mit der Herkunft
+        /// <see cref="Nordwinkelherkunft.Eingabe"/>; <c>null</c> = der frisch gelesene Dateiwert bzw. die Annahme gilt.
+        /// </summary>
+        internal static double? GespeicherterWinkelGilt(ImportquelleModel quelle)
+            => quelle != null && quelle.NordwinkelHerkunft == Nordwinkelherkunft.Eingabe ? Nordrichtung.Normiert(quelle.NordwinkelGrad) : null;
 
         /// <summary>
         /// Das Gebäude der Paarung: gleiche (gekürzte) Kennung, sonst das erste der Datei — eine Datei mit

@@ -103,6 +103,25 @@ namespace WindowsFormsApplication1
         /// <summary>Die Drehung des Modells gegen Nord [°], wie gelesen; <c>null</c> = die Datei sagt nichts (Annahme 0°).</summary>
         public double? NordwinkelGrad { get; set; }
 
+        /// <summary>
+        /// G5-N: der vom Anwender vorgegebene Nordwinkel [°] (N1/N2, aus „Planoberseite zeigt nach α“); <c>null</c> = keine
+        /// Vorgabe. Der Leser hat die Azimute damit gedreht — statt mit dem Dateiwert bzw. der Annahme.
+        /// </summary>
+        public double? NordwinkelVorgabeGrad { get; set; }
+
+        /// <summary>
+        /// G5-N: <b>Der Nordwinkel, um den die Azimute dieses Abbilds gedreht sind</b> — die Vorgabe, sonst beim IFC-Weg der
+        /// Dateiwert; <c>null</c> = keiner (Annahme Planoberseite = Nord; beim gbXML-Weg stehen die Azimute wie in der Datei).
+        /// Diesen Wert trägt die Quelle (<see cref="GebaeudeQuelle.NordwinkelGrad"/>).
+        /// </summary>
+        public double? NordwinkelWirksamGrad
+            => NordwinkelVorgabeGrad ?? (string.Equals(Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) ? NordwinkelGrad : null);
+
+        /// <summary>G5-N (N6): die Herkunft des wirksamen Nordwinkels.</summary>
+        public Nordwinkelherkunft NordwinkelHerkunft
+            => NordwinkelVorgabeGrad.HasValue ? Nordwinkelherkunft.Eingabe
+             : NordwinkelWirksamGrad.HasValue ? Nordwinkelherkunft.Datei : Nordwinkelherkunft.Annahme;
+
         /// <summary>Ortsangabe der Datei, nur zur Anzeige.</summary>
         public string Ort { get; set; }
 

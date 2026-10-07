@@ -954,7 +954,10 @@ namespace WindowsFormsApplication1
         /// <c>Heizkurve_Raumeinfluss</c> an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt zehntem Sichtneubau und
         /// sechs Kennzahlen des geschlossenen Kreises an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3Schema"/>).
         /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer; kein Referenzprojekt rechnet AK3.
-        public const int Zielversion = Ak3Schema.SCHRITT;
+        /// Danach, mit der HERKUNFT DES NORDWINKELS (G5-N), steht das Ziel auf <see cref="NordrichtungSchema.SCHRITT"/>:
+        /// <c>Tab_Importquelle.Nordwinkel_Herkunft</c> (Datei, Eingabe, Annahme; <see cref="NordrichtungSchema"/>), Bestand
+        /// nachgefüllt aus dem Nordwinkel. <b>Ergebnisneutral:</b> Der Rechenweg liest die Spalte nicht.
+        public const int Zielversion = NordrichtungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -31681,6 +31681,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei nennt die Nordrichtung: Planoberseite nach {0}°. ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_DATEI_NENNT {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_DATEI_NENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei nennt keine Nordrichtung. ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_DATEI_OHNE {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_DATEI_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung geändert: {0} Bauteile gedreht, die Planoberseite zeigt jetzt nach {1}°. ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_GEDREHT {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_GEDREHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die angenommen (Planoberseite = Nord) ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_HERKUNFT_ANNAHME {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_HERKUNFT_ANNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Datei ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_HERKUNFT_DATEI {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_HERKUNFT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingegeben ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_HERKUNFT_EINGABE {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_HERKUNFT_EINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude stammt aus keiner Importdatei — seine Ausrichtung lässt sich nur an den einzelnen Bauteilen ändern. ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nord ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_N {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nordost ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_NO {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_NO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nordwest ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_NW {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_NW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ost ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_O {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_O", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Planoberseite zeigt nach ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_PLANOBERSEITE {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_PLANOBERSEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Süd ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_S {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_S", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Südost ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_SO {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_SO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Südwest ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_SW {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_SW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Richtung der Planoberseite ist keine gültige Zahl. ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die West ähnelt.
+        /// </summary>
+        public static string GEB_AUSRICHTUNG_W {
+            get {
+                return ResourceManager.GetString("GEB_AUSRICHTUNG_W", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die bis 1859 ähnelt.
         /// </summary>
         public static string GEB_BAK_A {
@@ -41416,7 +41578,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei nennt keine Nordrichtung (CADModelAzimuth) — angenommen wird 0°. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei nennt keine Nordrichtung (CADModelAzimuth) — angenommen ist: Die Planoberseite zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_KEIN_NORDEN {
             get {
@@ -41470,7 +41632,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei dreht das Modell um {0}° gegen Nord (CADModelAzimuth) — der Wert wird nicht eingerechnet; bitte die Himmelsrichtungen der Fenster prüfen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei dreht das Modell um {0}° gegen Nord (CADModelAzimuth) — der Wert wird nicht eingerechnet, angenommen ist Nordwinkel 0°; die Richtung der Planoberseite lässt sich beim Import vorgeben oder im Gebäudedialog unter „Ausrichtung“ ändern. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_NORDDREHUNG {
             get {
@@ -42118,6 +42280,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nordrichtung nach Eingabe: Die Planoberseite (+y der Datei) zeigt nach {0}°, der Nordwinkel ist {1}°; die Himmelsrichtungen aller Bauteile und Grundrisse folgen ihm. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_NORD_VORGABE {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_NORD_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Räume nennen eine Personenzahl, {1} nicht — die Fläche je Nutzer bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_GEB_PROT_PERSONEN_UNVOLLSTAENDIG {
@@ -42685,7 +42856,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei nennt keine Nordrichtung (TrueNorth); angenommen wird die Schemavorgabe (+y = Nord). Ein falsch genordetes Modell vertauscht die Fensterflächen der Himmelsrichtungen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei nennt keine Nordrichtung (TrueNorth) — angenommen ist: Die Planoberseite (+y der Datei) zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KEIN_NORDEN {
             get {

@@ -354,6 +354,10 @@ namespace WindowsFormsApplication1
             // kommen leer an (Raumeinfluss aus, „nicht erhoben").
             new Stufe(Ak3Schema.SCHRITT, Art.Ddl,
                       "Stufe AK3: Raumeinfluss der Heizkurve am Gebäude, Kennzahlen des geschlossenen Kreises im Ergebnis"),
+            // Ein älteres Paket führt keine Herkunft des Nordwinkels; die Spalte kommt leer an, der Leseweg nimmt dann
+            // Nordwinkel vorhanden → Datei, NULL → Annahme.
+            new Stufe(NordrichtungSchema.SCHRITT, Art.Ddl,
+                      "Herkunft des Nordwinkels an der Importquelle (Datei, Eingabe, Annahme)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

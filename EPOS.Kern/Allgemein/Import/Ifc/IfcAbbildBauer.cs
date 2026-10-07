@@ -62,6 +62,9 @@ namespace WindowsFormsApplication1
 
         private IfcEinheiten _einheiten = new IfcEinheiten();
         private double _drehung;
+
+        /// <summary>G5-N: der vorgegebene Nordwinkel [°] (Eingabe des Anwenders); <c>null</c> = der Dateiwert bzw. die Annahme gilt.</summary>
+        internal double? NordwinkelVorgabe { get; init; }
         private IfcRahmen _wurzel = IfcRahmen.Welt;
 
         private readonly Dictionary<int, AbbildRaum> _raum = new Dictionary<int, AbbildRaum>();
@@ -208,14 +211,18 @@ namespace WindowsFormsApplication1
             }
 
             _drehung = IfcPlatzierung.Drehung(_abbild.TrueNorthGrad, _abbild.MapConversionGrad);
-            if (!_abbild.TrueNorthGrad.HasValue && !_abbild.MapConversionVorhanden)
-                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KEIN_NORDEN"));
-            else
+            bool dateiNennt = _abbild.TrueNorthGrad.HasValue || _abbild.MapConversionVorhanden;
+            if (dateiNennt) _abbild.NordwinkelGrad = _drehung;
+            // G5-N (N2): Eine Vorgabe des Anwenders ersetzt Dateiwert und Annahme — die Meldung dazu gibt der Ablauf.
+            if (RaumgrundrissSchema.Normiert(NordwinkelVorgabe) is double vorgabe)
             {
-                _abbild.NordwinkelGrad = _drehung;
-                if (Math.Abs(_drehung) > 1e-9)
-                    _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "NORDDREHUNG", Zahl(Math.Round(_drehung, 3))));
+                _drehung = vorgabe;
+                _abbild.NordwinkelVorgabeGrad = vorgabe;
             }
+            else if (!dateiNennt)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "KEIN_NORDEN"));
+            else if (Math.Abs(_drehung) > 1e-9)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "NORDDREHUNG", Zahl(Math.Round(_drehung, 3))));
         }
 
         // ==================================================================

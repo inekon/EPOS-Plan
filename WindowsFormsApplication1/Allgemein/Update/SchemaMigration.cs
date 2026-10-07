@@ -5272,6 +5272,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_AK3 = Ak3Schema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="NordrichtungSchema.SCHRITT"/> — <b>Herkunft des Nordwinkels</b> (Abstimmungspapier G5, N6):
+        /// <c>Tab_Importquelle.Nordwinkel_Herkunft</c> (ANNAHME, DATEI, EINGABE), Bestand nachgefüllt (Nordwinkel vorhanden →
+        /// DATEI, NULL → ANNAHME).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Rechenweg liest die Spalte nicht.</para>
+        /// </summary>
+        public const int SCHRITT_NORDRICHTUNG = NordrichtungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7673,6 +7682,13 @@ namespace WindowsFormsApplication1
                         "Der Raumeinfluss der Heizkurve liesse sich nicht pflegen und die Kennzahlen des geschlossenen Kreises " +
                         "nicht speichern. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_Ak3),
+            // HERKUNFT DES NORDWINKELS (G5-N). Quelle ist NordrichtungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_NORDRICHTUNG,
+                        "Tab_Importquelle.Nordwinkel_Herkunft",
+                        "Der Gebaeudeimport koennte nicht speichern, ob der Nordwinkel aus der Datei, aus einer Eingabe oder " +
+                        "aus der Annahme stammt; Datei erneut lesen behielte jeden gespeicherten Winkel. KEIN Rechenergebnis " +
+                        "aendert sich.",
+                        Schritt_Nordrichtung),
         };
 
         /// <summary>
@@ -14408,6 +14424,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Stufe AK3 - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Herkunft des Nordwinkels" — Anlass und Wirkung stehen bei <see cref="SCHRITT_NORDRICHTUNG"/>, die Anweisungen bei
+        /// <see cref="NordrichtungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Nordrichtung(Lauf l)
+        {
+            string nr = NordrichtungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in NordrichtungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = NordrichtungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!NordrichtungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tab_Importquelle.Nordwinkel_Herkunft steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Herkunft des Nordwinkels - " +
+                    (handgriffe == 0 ? "stand bereits, Bestand nachgefuellt." : "Spalte angelegt, Bestand nachgefuellt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
