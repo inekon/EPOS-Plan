@@ -110,6 +110,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Desinfektionsdeckung Desinfektion;
 
+        /// <summary>
+        /// <b>Bedarfsnaht der Kaskadenstunde</b> (AK3-W2, Entwurf AK3 2.1 Schritt 4): liefert
+        /// am Kopf von <see cref="StundeRechnen"/> den Bedarf der Stunde je Wärmekanal.
+        /// <c>null</c> = Vorgabe <see cref="VektorStundenbedarf"/>, der Jahresvektor des
+        /// Kanalsatzes — der heutige Lauf, bitgleich. Mit AK3 rechnet die Naht die gekoppelte
+        /// Stunde und gibt den Heizbedarf zurück (W3).
+        /// </summary>
+        internal IStundenbedarf Stundenbedarf;
+
+        // AK3-W2: Stundenzustand der Schleife, je Lauf in Rechnen angelegt und von
+        // StundeRechnen fortgeschrieben (vorher lokale Felder der Stundenschleife).
+        private double[] _rest = new double[Kanal.ANZAHL];
+        private double[] _absehbar = new double[Kanal.ANZAHL];
+        private List<double> _biv = new List<double>();
+        private double[] _pvUeberschussVektor;
+
         /// <summary>PS5 (a): Stunden je Speicher, in denen das Frischwassermodul die Entnahme begrenzte.</summary>
         private readonly Dictionary<SimulationPufferspeicher, int> _fwmStunden =
             new Dictionary<SimulationPufferspeicher, int>();
@@ -888,7 +904,7 @@ namespace WindowsFormsApplication1
             // Durchläufe C und D.
             _maxRang = Kontext.MaxLaderang();
 
-            List<double> biv = new List<double>();
+            _biv = new List<double>();
 
             // N2: Zurechnung der Speicherentladung auf den Laufanfang.
             _inhaltsanteile.Clear();
@@ -912,7 +928,7 @@ namespace WindowsFormsApplication1
                     if (sp != null && !sp.IstQuelle) sp.Reset();
             }
 
-            double[] pvUeberschussVektor = MitWP ? WP.PV_Ueberschuss_stuendlich : null;
+            _pvUeberschussVektor = MitWP ? WP.PV_Ueberschuss_stuendlich : null;
 
             // Paket 6: Das BHKW braucht seine Ladeaufträge schon in Phase B — die
             // Ladefähigkeit seiner (Ersatz-)Zweitsenke ist der Speicherraum, mit dem die
@@ -933,7 +949,7 @@ namespace WindowsFormsApplication1
             // EINMAL vergeben: Zwei Speicher desselben Kanals dürfen nicht beide dieselbe
             // Entnahme durchreichen, sonst bliebe nach Phase E Wärme im Speicher stehen,
             // die niemand angefordert hat.
-            double[] absehbar = new double[Kanal.ANZAHL];
+            _absehbar = new double[Kanal.ANZAHL];
 
             // STUNDENZUSTAND der Kanäle [kWh] — der Restbedarf, den die Phasen A bis F
             // fortschreiben. EIN Feld statt der beiden ref-Parameter rest_heiz/rest_ww:
@@ -948,253 +964,12 @@ namespace WindowsFormsApplication1
             // Kältebedarf, RestSumme(rest) trägt nur offene Wärme, und der Bivalenzpunkt
             // bleibt die Größe, die er vor dem vierten Kanal war. Im Kanalsatz selbst bleibt
             // der Kühlkanal unberührt stehen: Er gehört der Kälteseite.
-            double[] rest = new double[Kanal.ANZAHL];
+            _rest = new double[Kanal.ANZAHL];
 
             for (int stunde = 0; stunde < 8760; stunde++)
-            {
-                foreach (int k in Kanal.KANAELE_WAERME) rest[k] = kanaele.Bedarf[k][stunde];
+                if (!StundeRechnen(stunde, kanaele)) return false;
 
-                // N4: Zurechnung der Entladung auf den Anfang DIESER Stunde.
-                ZeilenNullen(_entladungJeArtStunde);
-
-                // PAKET E2: dieselbe Stunde für die Kanalganglinie der Zurechnung
-                // (siehe _stundeAktuell).
-                _stundeAktuell = stunde;
-
-                // N3: Reservierungen der Vorstunde verfallen. Sie gelten nur innerhalb
-                // einer Stunde - zwischen Phase B (Motorzuschaltung) und Phase C/D
-                // (Einlagerung). Eine nicht eingelöste Reservierung darf sich nicht in
-                // die nächste Stunde schleppen und dort Ladefähigkeit sperren.
-                //
-                // PAKET P1 (Befund K2-O6): An DERSELBEN Stelle beginnt das
-                // LEISTUNGSBUDGET der Stunde neu. Es muss hier stehen und nicht im
-                // Speicher selbst: Ein Puffer, der Heizung UND Prozesswärme bedient,
-                // wird in derselben Stunde zweimal entladen (Zwei-Pass) - bekäme er die
-                // Grenze je Aufruf, hätte er sie zweimal. Ohne gepflegte Grenze ist das
-                // Budget unbegrenzt und der Aufruf wirkungslos.
-                foreach (SimulationPufferspeicher sp in Kontext.AlleSpeicher)
-                    if (sp != null) { sp.Reserviert = 0; sp.StundeBeginnen(stunde); }
-
-                // STUFENEINGANG je Erzeugerstufe (N1): der Kanalstand VOR Phase A.
-                if (MitWP) WP.Zweikanalig_StundeStart(stunde);
-                if (MitSolar) Solar.Stunde_Start(stunde, rest);
-                if (MitKessel) Kessel.Stunde_Start(stunde, rest);
-                if (MitBHKW) BHKW.Stunde_Start(stunde, rest);
-
-                double pvRest = (pvUeberschussVektor != null && stunde < pvUeberschussVektor.Length)
-                    ? pvUeberschussVektor[stunde] : 0;
-
-                // Kriterium der zeitabhängigen Ladepriorität (Konzept 3.5): der
-                // PV-Überschuss VOR seinem Verbrauch in dieser Stunde.
-                bool pvUeberschuss = pvRest > 0;
-
-                // Regeneration der Quellspeicher — EINMAL je Speicher und Stunde. Im
-                // Altpfad steht sie in der Modulschleife; mit der gemeinsamen Instanz
-                // (QuellspeicherZusammenfuehren) würde sie dort mehrfach gutgeschrieben.
-                foreach (SimulationPufferspeicher q in Kontext.AlleSpeicher)
-                    if (q != null && q.IstQuelle && q.RegenerationProStunde > 0)
-                        q.Laden(q.RegenerationProStunde, stunde);
-
-                // PAKET B2 (Nutzerauftrag 28.08.2026, Vorbelegung): LESEPUNKT „DAVOR" —
-                // die Quelltemperatur ALLER gekoppelten Module, EINMAL am Stundenanfang.
-                //
-                // Der Ort ist die Aussage: VOR Phase A und damit vor jeder Bewegung an
-                // einem geteilten Puffer in dieser Stunde. Was oberhalb steht, rührt ihn
-                // nicht an - die Regeneration trifft ausschließlich EIGENSTÄNDIGE
-                // Quellspeicher (IstQuelle), und ein geteilter Puffer ist per Definition
-                // keiner. Gelesen wird also der Zustand am ENDE DER VORSTUNDE, nach deren
-                // Phase G. Das ist die konservative Lesart: Der Booster bekommt nicht
-                // gutgeschrieben, was ein vorgelagerter Erzeuger erst in dieser Stunde
-                // nachlädt (Ticket B1-O2).
-                //
-                // ALLE EBENEN auf einmal (der zweite Parameter): Ein gekoppeltes Modul
-                // rechnet zwangsläufig auf einer Ebene > 0 - sein Quellpuffer wird ja von
-                // einem anderen Erzeuger geladen. Ohne den Schalter bliebe es hier
-                // ungelesen, weil die Ebenenschleife noch gar nicht begonnen hat.
-                //
-                // Ohne gekoppeltes Modul kehren beide Aufrufe sofort zurück.
-                if (_lesepunktDavor)
-                {
-                    if (MitWP) WP.Quelltemperatur_Stunde(stunde, true);
-                    if (MitKessel) Kessel.Quelltemperatur_Stunde(stunde, true);
-                }
-
-                // --- A) Vorabentladung ------------------------------------------------
-                Entladephase(stunde, true, rest);
-
-                // --- B/C/D je RECHENEBENE (Etappe D5a) ---------------------------------
-                // Mit genau einer Ebene - jedes Bestandsprojekt - läuft der Rumpf einmal
-                // und ist die bisherige Folge B, Budget, C, D.
-                for (int ebene = 0; ebene <= _maxEbene; ebene++)
-                {
-                    // --- B) Bedarfsdeckung in Kaskadenreihenfolge ----------------------
-                    List<int> arten = BedarfsreihenfolgeDerEbene(ebene);
-                    ModulEbeneSetzen(ebene);
-
-                    // PAKET B1 (Konzept 8.2/8.4, Leitentscheidung L8): QUELLTEMPERATUR
-                    // der temperaturgekoppelten Module dieser Ebene — hier und nur hier.
-                    //
-                    // Der Ort ist die Aussage: unmittelbar VOR Phase B der Rechenebene
-                    // der beziehenden Anlage, also NACH allem, was die vorigen Ebenen in
-                    // dieser Stunde in den Quellpuffer geladen haben, und VOR jeder
-                    // eigenen Entnahme. Der Wert gilt danach für die GANZE Stunde dieser
-                    // Ebene — Bedarfsphase und alle Ladephasen lesen denselben. Eine
-                    // zweite Abfrage innerhalb der Stunde wäre nicht reproduzierbar
-                    // spezifiziert: Der SOC des Puffers ändert sich zwischen den Phasen
-                    // mehrfach.
-                    //
-                    // Ohne gekoppeltes Modul kehren beide Aufrufe sofort zurück - der
-                    // Bestand sieht von dieser Zeile nichts.
-                    //
-                    // PAKET B2: Dieser Lesepunkt gilt nur noch im Modus „Danach" - der
-                    // Vorbelegung von Paket B1, die der Nutzerentscheid vom 28.08.2026
-                    // abgelöst hat. Im Modus „Davor" hat die Stundenschleife oben schon
-                    // gelesen, und ein zweiter Aufruf hier machte aus dem EINEN
-                    // definierten Lesezeitpunkt zwei.
-                    if (!_lesepunktDavor)
-                    {
-                        if (MitWP) WP.Quelltemperatur_Stunde(stunde);
-                        if (MitKessel) Kessel.Quelltemperatur_Stunde(stunde);
-                    }
-
-                    for (int s = 0; s < arten.Count; s++)
-                    {
-                        int art = arten[s];
-
-                        // BW5: Erreicht die Art die Zieltemperatur, sieht sie den Zusatzbedarf der
-                        // Desinfektion; sonst steht er zurück. Ohne Desinfektion falsch.
-                        bool desinfektion = Desinfektion != null && Desinfektion.Offen[stunde] > 0 &&
-                                            Desinfektion.FaehigJeArt.TryGetValue(art, out bool faehig) && faehig;
-                        double desinfektionVorher = desinfektion ? Desinfektion.Freigeben(stunde, rest) : 0;
-
-                        if (art == ProjektPuffer.TYP_WP && MitWP)
-                        {
-                            if (!WP.Zweikanalig_Bedarfsphase(stunde, Kontext, pvUeberschuss, pvRest,
-                                                             rest))
-                                return false;
-                            QuellentnahmenVerbuchen(WP.Quellentnahmen);
-                        }
-                        else if (art == ProjektPuffer.TYP_SOLARTHERMIE && MitSolar)
-                        {
-                            Solar.Stunde_Bedarf(stunde, rest);
-                        }
-                        else if (art == ProjektPuffer.TYP_KESSEL && MitKessel)
-                        {
-                            Kessel.Stunde_Bedarf(stunde, rest);
-                            QuellentnahmenVerbuchen(Kessel.Quellentnahmen);
-                        }
-                        else if (art == ProjektPuffer.TYP_BHKW && MitBHKW)
-                        {
-                            BHKW.Stunde_Bedarf(stunde, pvUeberschuss, rest);
-                        }
-
-                        if (desinfektion) Desinfektion.Zurueckhalten(stunde, rest, desinfektionVorher, ArtName(art));
-                    }
-
-                    // Durchsatzbudget der Stunde festhalten — Stand NACH der
-                    // Bedarfsdeckung. Genau diesen Rest kann Phase E aus den Speichern
-                    // ziehen; zwischen C und E verändert ihn nichts. Nur Wärme: Ein
-                    // Speicher reicht keine Kälte durch (K7).
-                    foreach (int k in Kanal.KANAELE_WAERME)
-                        absehbar[k] = rest[k] > 0 ? rest[k] : 0;
-
-                    // --- C…) LADEPHASEN JE RANG (Paket S1, Konzept 5.2) -------------------
-                    // Rang für Rang aufsteigend, jede Ebene kaskadenübergreifend nach
-                    // Ladeordnung. Mit den migrierten Bestandsdaten (Rang 1 = bisherige
-                    // Hauptsenke, Rang 2 = bisherige Zweitsenke) sind das Anweisung für
-                    // Anweisung die bisherigen Phasen C und D.
-                    for (int rang = 1; rang <= _maxRang; rang++)
-                        Ladephase(stunde, rang, pvUeberschuss, ref pvRest, absehbar, ebene);
-
-                    // ZWISCHENSCHRITT DER KASKADE (Etappe D5a): Was die Speicher dieser
-                    // Ebene gerade DURCHGEREICHT haben, gehört dem Verbraucher — nicht dem
-                    // Erzeuger der nächsten Ebene. Ohne diese Rückgabe sähe die nächste
-                    // Ebene einen Bedarf, den die vorige Ebene bereits über ihre
-                    // hydraulische Weiche bedient hat, und deckte ihn ein zweites Mal.
-                    // Der gespeicherte INHALT bleibt liegen — ihn holt Phase E am Ende der
-                    // Stunde, nachdem alle Ebenen ihre Quellentnahme hatten.
-                    if (ebene < _maxEbene)
-                        DurchsatzPhase(stunde, rest);
-                }
-
-                // --- E) Nachentladung -----------------------------------------------------
-                Entladephase(stunde, false, rest);
-
-                // BW5: Ein Speicher, den eine fähige Anlage lädt und dessen Vorlauf die Zieltemperatur
-                // erreicht, gibt den Zusatzbedarf der Desinfektion ab. Ohne Desinfektion übersprungen.
-                if (Desinfektion != null && Desinfektion.Offen[stunde] > 0 && Desinfektion.FaehigeSpeicher.Count > 0)
-                    DesinfektionAusSpeichern(stunde, rest);
-
-                // Bivalenzpunkt — dieselbe Stelle wie im Altpfad: nach der Entladung,
-                // vor dem Heizstab. Maßgeblich ist der offene GESAMTbedarf; welcher Kanal
-                // ihn trägt, spielt für die Bivalenztemperatur keine Rolle.
-                if (MitWP && RestSumme(rest) > 0) biv.Add(WP.Temperatur[stunde]);
-
-                // --- F) Heizstab ----------------------------------------------------------
-                if (MitWP)
-                {
-                    // BW5: Der Heizstab erreicht die Zieltemperatur der Desinfektion.
-                    bool desinfektionStab = Desinfektion != null && Desinfektion.HeizstabFaehig &&
-                                            Desinfektion.Offen[stunde] > 0;
-                    double stabVorher = desinfektionStab ? Desinfektion.Freigeben(stunde, rest) : 0;
-                    WP.Heizstabphase(stunde, rest);
-                    if (desinfektionStab)
-                        Desinfektion.Zurueckhalten(stunde, rest, stabVorher, MyResource.Resource.SIMENG_DESINF_HEIZSTAB);
-                }
-
-                // --- G) StundeAbschliessen je Registry-Speicher, GENAU EINMAL -------------
-                foreach (SimulationPufferspeicher sp in Kontext.AlleSpeicher)
-                {
-                    if (sp == null) continue;
-
-                    // Abschaltprüfung VOR den Bereitschaftsverlusten (wie im Altpfad),
-                    // sonst wird der Vollstand nie erreicht. Mit Zahlenrand, dieselbe
-                    // Prüfung wie in HystereseFortschreiben (Plattformbefund PB-1): Die
-                    // Nachentladung der Phase E steuert den Füllstand auf genau diese Marke.
-                    if (!sp.IstQuelle && sp.Q_max > 0 && sp.LaedtGerade &&
-                        sp.AbschaltschwelleErreicht())
-                        sp.LaedtGerade = false;
-
-                    sp.StundeAbschliessen(stunde);
-
-                    // N2: Die Bereitschaftsverluste dieser Stunde tragen alle Erzeuger
-                    // anteilig - der Speicherinhalt bleibt eine Mischung.
-                    Anteil_Angleichen(sp);
-                }
-
-                // Brennstoffbilanz der Kessel — ebenfalls GENAU EINMAL je Stunde und
-                // Kessel, und erst jetzt: Vorher steht nicht fest, ob der Kessel in
-                // dieser Stunde gelaufen ist (Bedarfsdeckung ODER Speicherladung) oder
-                // ob ihm der Bereitschaftsverlust anzulasten ist (Konzept 6.5).
-                if (MitKessel) Kessel.Stunde_Abschluss(stunde);
-
-                // Restbedarf in die Kanäle zurückschreiben — Eingang der nächsten Stufe
-                // der Kaskade. Nur die Wärmekanäle: Der Kühlkanal des Kanalsatzes gehört
-                // der Kälteseite und bleibt, wie er ist (Kühlkonzept 4.2).
-                foreach (int k in Kanal.KANAELE_WAERME)
-                {
-                    if (rest[k] < 0) rest[k] = 0;
-                    kanaele.Bedarf[k][stunde] = (double)rest[k];
-                }
-
-                if (MitWP) WP.Zweikanalig_StundeEnde(stunde, rest);
-
-                // Solarthermie: Was weder gedeckt noch gespeichert wurde, ist verworfen.
-                if (MitSolar) Solar.Stunde_Ende(stunde);
-
-                // BHKW: Was weder gedeckt noch gespeichert wurde, ist Wärmeüberschuss
-                // (Paket 6 — im Altpfad kannte nur die stromgeführte Fahrweise diese
-                // Größe, als Überlauf des Pendelspeichers). Dazu die Ganglinie seines
-                // Restwärmebedarfs, gebildet an der BHKW-Position aus Stufeneingang,
-                // Direktdeckung und der ihm in dieser Stunde zugerechneten Entladung (N4).
-                // Die Ganglinie des BHKW-Restwärmebedarfs ist eine KANALLOSE Größe
-                // („Stufeneingang − Direktdeckung − zugerechnete Entladung", N4); sie
-                // bekommt deshalb die Kanalsumme der Stundenzurechnung.
-                if (MitBHKW) BHKW.Stunde_Ende(stunde, ZeilenSumme(_entladungJeArtStunde[ART_BHKW]));
-
-            } // end alle Stunden
-
-            if (MitWP) WP.Zweikanalig_Ende(biv);
+            if (MitWP) WP.Zweikanalig_Ende(_biv);
             if (MitSolar) Solar.Abschluss_Zweikanalig();
             if (MitKessel) Kessel.Abschluss_Zweikanalig();
             if (MitBHKW) BHKW.Abschluss_Zweikanalig();
@@ -1252,6 +1027,275 @@ namespace WindowsFormsApplication1
                 KanalzeileUebergeben(ART_BHKW, BHKW.Speicherentladung_Kanal);
                 BHKW.Speicherentladung_KanalStuendlich.Uebernehmen(_entladungKanalStuendlich[ART_BHKW]);
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Eine Kaskadenstunde</b> (AK3-W2, Entwurf AK3 2.1 Schritt 4): der Rumpf der
+        /// Stundenschleife von <see cref="Rechnen"/>, herausgelöst und unverändert. Am Kopf
+        /// liest die Stunde ihren Bedarf je Wärmekanal über die Bedarfsnaht
+        /// <see cref="Stundenbedarf"/> (Vorgabe <see cref="VektorStundenbedarf"/>: der
+        /// Jahresvektor des Kanalsatzes, wie bisher); danach die Phasen A bis G und das
+        /// Rückschreiben des Restbedarfs in <paramref name="kanaele"/>.
+        ///
+        /// <para>Der Stundenzustand (<see cref="_rest"/>, <see cref="_absehbar"/>,
+        /// <see cref="_biv"/>, <see cref="_pvUeberschussVektor"/>) wird in
+        /// <see cref="Rechnen"/> EINMAL je Lauf angelegt — dieselbe Konvention wie vorher
+        /// mit den lokalen Feldern der Schleife. Die Stunde ist NICHT rücknahmefähig: Jeder
+        /// Aufruf schreibt Speicher, Module und Zähler fort; sie läuft je Stunde genau
+        /// einmal (Festlegung 4 des Entwurfs: befragbar über eine Angebotsfunktion, nicht
+        /// wiederholbar).</para>
+        /// </summary>
+        /// <returns>false = Abbruch (Kennlinienauswertung der Wärmepumpe).</returns>
+        internal bool StundeRechnen(int stunde, Kanalsatz kanaele)
+        {
+            double[] rest = _rest;
+            double[] absehbar = _absehbar;
+
+            // AK3-W2: der Bedarf der Stunde je Wärmekanal über die Bedarfsnaht. Die Vorgabe
+            // liest den Jahresvektor - Zeichen für Zeichen die bisherige Zeile
+            // „rest[k] = kanaele.Bedarf[k][stunde]".
+            (Stundenbedarf ?? VektorStundenbedarf.Instanz).BedarfDerStunde(stunde, kanaele, rest);
+
+
+            // N4: Zurechnung der Entladung auf den Anfang DIESER Stunde.
+            ZeilenNullen(_entladungJeArtStunde);
+
+            // PAKET E2: dieselbe Stunde für die Kanalganglinie der Zurechnung
+            // (siehe _stundeAktuell).
+            _stundeAktuell = stunde;
+
+            // N3: Reservierungen der Vorstunde verfallen. Sie gelten nur innerhalb
+            // einer Stunde - zwischen Phase B (Motorzuschaltung) und Phase C/D
+            // (Einlagerung). Eine nicht eingelöste Reservierung darf sich nicht in
+            // die nächste Stunde schleppen und dort Ladefähigkeit sperren.
+            //
+            // PAKET P1 (Befund K2-O6): An DERSELBEN Stelle beginnt das
+            // LEISTUNGSBUDGET der Stunde neu. Es muss hier stehen und nicht im
+            // Speicher selbst: Ein Puffer, der Heizung UND Prozesswärme bedient,
+            // wird in derselben Stunde zweimal entladen (Zwei-Pass) - bekäme er die
+            // Grenze je Aufruf, hätte er sie zweimal. Ohne gepflegte Grenze ist das
+            // Budget unbegrenzt und der Aufruf wirkungslos.
+            foreach (SimulationPufferspeicher sp in Kontext.AlleSpeicher)
+                if (sp != null) { sp.Reserviert = 0; sp.StundeBeginnen(stunde); }
+
+            // STUFENEINGANG je Erzeugerstufe (N1): der Kanalstand VOR Phase A.
+            if (MitWP) WP.Zweikanalig_StundeStart(stunde);
+            if (MitSolar) Solar.Stunde_Start(stunde, rest);
+            if (MitKessel) Kessel.Stunde_Start(stunde, rest);
+            if (MitBHKW) BHKW.Stunde_Start(stunde, rest);
+
+            double pvRest = (_pvUeberschussVektor != null && stunde < _pvUeberschussVektor.Length)
+                ? _pvUeberschussVektor[stunde] : 0;
+
+            // Kriterium der zeitabhängigen Ladepriorität (Konzept 3.5): der
+            // PV-Überschuss VOR seinem Verbrauch in dieser Stunde.
+            bool pvUeberschuss = pvRest > 0;
+
+            // Regeneration der Quellspeicher — EINMAL je Speicher und Stunde. Im
+            // Altpfad steht sie in der Modulschleife; mit der gemeinsamen Instanz
+            // (QuellspeicherZusammenfuehren) würde sie dort mehrfach gutgeschrieben.
+            foreach (SimulationPufferspeicher q in Kontext.AlleSpeicher)
+                if (q != null && q.IstQuelle && q.RegenerationProStunde > 0)
+                    q.Laden(q.RegenerationProStunde, stunde);
+
+            // PAKET B2 (Nutzerauftrag 28.08.2026, Vorbelegung): LESEPUNKT „DAVOR" —
+            // die Quelltemperatur ALLER gekoppelten Module, EINMAL am Stundenanfang.
+            //
+            // Der Ort ist die Aussage: VOR Phase A und damit vor jeder Bewegung an
+            // einem geteilten Puffer in dieser Stunde. Was oberhalb steht, rührt ihn
+            // nicht an - die Regeneration trifft ausschließlich EIGENSTÄNDIGE
+            // Quellspeicher (IstQuelle), und ein geteilter Puffer ist per Definition
+            // keiner. Gelesen wird also der Zustand am ENDE DER VORSTUNDE, nach deren
+            // Phase G. Das ist die konservative Lesart: Der Booster bekommt nicht
+            // gutgeschrieben, was ein vorgelagerter Erzeuger erst in dieser Stunde
+            // nachlädt (Ticket B1-O2).
+            //
+            // ALLE EBENEN auf einmal (der zweite Parameter): Ein gekoppeltes Modul
+            // rechnet zwangsläufig auf einer Ebene > 0 - sein Quellpuffer wird ja von
+            // einem anderen Erzeuger geladen. Ohne den Schalter bliebe es hier
+            // ungelesen, weil die Ebenenschleife noch gar nicht begonnen hat.
+            //
+            // Ohne gekoppeltes Modul kehren beide Aufrufe sofort zurück.
+            if (_lesepunktDavor)
+            {
+                if (MitWP) WP.Quelltemperatur_Stunde(stunde, true);
+                if (MitKessel) Kessel.Quelltemperatur_Stunde(stunde, true);
+            }
+
+            // --- A) Vorabentladung ------------------------------------------------
+            Entladephase(stunde, true, rest);
+
+            // --- B/C/D je RECHENEBENE (Etappe D5a) ---------------------------------
+            // Mit genau einer Ebene - jedes Bestandsprojekt - läuft der Rumpf einmal
+            // und ist die bisherige Folge B, Budget, C, D.
+            for (int ebene = 0; ebene <= _maxEbene; ebene++)
+            {
+                // --- B) Bedarfsdeckung in Kaskadenreihenfolge ----------------------
+                List<int> arten = BedarfsreihenfolgeDerEbene(ebene);
+                ModulEbeneSetzen(ebene);
+
+                // PAKET B1 (Konzept 8.2/8.4, Leitentscheidung L8): QUELLTEMPERATUR
+                // der temperaturgekoppelten Module dieser Ebene — hier und nur hier.
+                //
+                // Der Ort ist die Aussage: unmittelbar VOR Phase B der Rechenebene
+                // der beziehenden Anlage, also NACH allem, was die vorigen Ebenen in
+                // dieser Stunde in den Quellpuffer geladen haben, und VOR jeder
+                // eigenen Entnahme. Der Wert gilt danach für die GANZE Stunde dieser
+                // Ebene — Bedarfsphase und alle Ladephasen lesen denselben. Eine
+                // zweite Abfrage innerhalb der Stunde wäre nicht reproduzierbar
+                // spezifiziert: Der SOC des Puffers ändert sich zwischen den Phasen
+                // mehrfach.
+                //
+                // Ohne gekoppeltes Modul kehren beide Aufrufe sofort zurück - der
+                // Bestand sieht von dieser Zeile nichts.
+                //
+                // PAKET B2: Dieser Lesepunkt gilt nur noch im Modus „Danach" - der
+                // Vorbelegung von Paket B1, die der Nutzerentscheid vom 28.08.2026
+                // abgelöst hat. Im Modus „Davor" hat die Stundenschleife oben schon
+                // gelesen, und ein zweiter Aufruf hier machte aus dem EINEN
+                // definierten Lesezeitpunkt zwei.
+                if (!_lesepunktDavor)
+                {
+                    if (MitWP) WP.Quelltemperatur_Stunde(stunde);
+                    if (MitKessel) Kessel.Quelltemperatur_Stunde(stunde);
+                }
+
+                for (int s = 0; s < arten.Count; s++)
+                {
+                    int art = arten[s];
+
+                    // BW5: Erreicht die Art die Zieltemperatur, sieht sie den Zusatzbedarf der
+                    // Desinfektion; sonst steht er zurück. Ohne Desinfektion falsch.
+                    bool desinfektion = Desinfektion != null && Desinfektion.Offen[stunde] > 0 &&
+                                        Desinfektion.FaehigJeArt.TryGetValue(art, out bool faehig) && faehig;
+                    double desinfektionVorher = desinfektion ? Desinfektion.Freigeben(stunde, rest) : 0;
+
+                    if (art == ProjektPuffer.TYP_WP && MitWP)
+                    {
+                        if (!WP.Zweikanalig_Bedarfsphase(stunde, Kontext, pvUeberschuss, pvRest,
+                                                         rest))
+                            return false;
+                        QuellentnahmenVerbuchen(WP.Quellentnahmen);
+                    }
+                    else if (art == ProjektPuffer.TYP_SOLARTHERMIE && MitSolar)
+                    {
+                        Solar.Stunde_Bedarf(stunde, rest);
+                    }
+                    else if (art == ProjektPuffer.TYP_KESSEL && MitKessel)
+                    {
+                        Kessel.Stunde_Bedarf(stunde, rest);
+                        QuellentnahmenVerbuchen(Kessel.Quellentnahmen);
+                    }
+                    else if (art == ProjektPuffer.TYP_BHKW && MitBHKW)
+                    {
+                        BHKW.Stunde_Bedarf(stunde, pvUeberschuss, rest);
+                    }
+
+                    if (desinfektion) Desinfektion.Zurueckhalten(stunde, rest, desinfektionVorher, ArtName(art));
+                }
+
+                // Durchsatzbudget der Stunde festhalten — Stand NACH der
+                // Bedarfsdeckung. Genau diesen Rest kann Phase E aus den Speichern
+                // ziehen; zwischen C und E verändert ihn nichts. Nur Wärme: Ein
+                // Speicher reicht keine Kälte durch (K7).
+                foreach (int k in Kanal.KANAELE_WAERME)
+                    absehbar[k] = rest[k] > 0 ? rest[k] : 0;
+
+                // --- C…) LADEPHASEN JE RANG (Paket S1, Konzept 5.2) -------------------
+                // Rang für Rang aufsteigend, jede Ebene kaskadenübergreifend nach
+                // Ladeordnung. Mit den migrierten Bestandsdaten (Rang 1 = bisherige
+                // Hauptsenke, Rang 2 = bisherige Zweitsenke) sind das Anweisung für
+                // Anweisung die bisherigen Phasen C und D.
+                for (int rang = 1; rang <= _maxRang; rang++)
+                    Ladephase(stunde, rang, pvUeberschuss, ref pvRest, absehbar, ebene);
+
+                // ZWISCHENSCHRITT DER KASKADE (Etappe D5a): Was die Speicher dieser
+                // Ebene gerade DURCHGEREICHT haben, gehört dem Verbraucher — nicht dem
+                // Erzeuger der nächsten Ebene. Ohne diese Rückgabe sähe die nächste
+                // Ebene einen Bedarf, den die vorige Ebene bereits über ihre
+                // hydraulische Weiche bedient hat, und deckte ihn ein zweites Mal.
+                // Der gespeicherte INHALT bleibt liegen — ihn holt Phase E am Ende der
+                // Stunde, nachdem alle Ebenen ihre Quellentnahme hatten.
+                if (ebene < _maxEbene)
+                    DurchsatzPhase(stunde, rest);
+            }
+
+            // --- E) Nachentladung -----------------------------------------------------
+            Entladephase(stunde, false, rest);
+
+            // BW5: Ein Speicher, den eine fähige Anlage lädt und dessen Vorlauf die Zieltemperatur
+            // erreicht, gibt den Zusatzbedarf der Desinfektion ab. Ohne Desinfektion übersprungen.
+            if (Desinfektion != null && Desinfektion.Offen[stunde] > 0 && Desinfektion.FaehigeSpeicher.Count > 0)
+                DesinfektionAusSpeichern(stunde, rest);
+
+            // Bivalenzpunkt — dieselbe Stelle wie im Altpfad: nach der Entladung,
+            // vor dem Heizstab. Maßgeblich ist der offene GESAMTbedarf; welcher Kanal
+            // ihn trägt, spielt für die Bivalenztemperatur keine Rolle.
+            if (MitWP && RestSumme(rest) > 0) _biv.Add(WP.Temperatur[stunde]);
+
+            // --- F) Heizstab ----------------------------------------------------------
+            if (MitWP)
+            {
+                // BW5: Der Heizstab erreicht die Zieltemperatur der Desinfektion.
+                bool desinfektionStab = Desinfektion != null && Desinfektion.HeizstabFaehig &&
+                                        Desinfektion.Offen[stunde] > 0;
+                double stabVorher = desinfektionStab ? Desinfektion.Freigeben(stunde, rest) : 0;
+                WP.Heizstabphase(stunde, rest);
+                if (desinfektionStab)
+                    Desinfektion.Zurueckhalten(stunde, rest, stabVorher, MyResource.Resource.SIMENG_DESINF_HEIZSTAB);
+            }
+
+            // --- G) StundeAbschliessen je Registry-Speicher, GENAU EINMAL -------------
+            foreach (SimulationPufferspeicher sp in Kontext.AlleSpeicher)
+            {
+                if (sp == null) continue;
+
+                // Abschaltprüfung VOR den Bereitschaftsverlusten (wie im Altpfad),
+                // sonst wird der Vollstand nie erreicht. Mit Zahlenrand, dieselbe
+                // Prüfung wie in HystereseFortschreiben (Plattformbefund PB-1): Die
+                // Nachentladung der Phase E steuert den Füllstand auf genau diese Marke.
+                if (!sp.IstQuelle && sp.Q_max > 0 && sp.LaedtGerade &&
+                    sp.AbschaltschwelleErreicht())
+                    sp.LaedtGerade = false;
+
+                sp.StundeAbschliessen(stunde);
+
+                // N2: Die Bereitschaftsverluste dieser Stunde tragen alle Erzeuger
+                // anteilig - der Speicherinhalt bleibt eine Mischung.
+                Anteil_Angleichen(sp);
+            }
+
+            // Brennstoffbilanz der Kessel — ebenfalls GENAU EINMAL je Stunde und
+            // Kessel, und erst jetzt: Vorher steht nicht fest, ob der Kessel in
+            // dieser Stunde gelaufen ist (Bedarfsdeckung ODER Speicherladung) oder
+            // ob ihm der Bereitschaftsverlust anzulasten ist (Konzept 6.5).
+            if (MitKessel) Kessel.Stunde_Abschluss(stunde);
+
+            // Restbedarf in die Kanäle zurückschreiben — Eingang der nächsten Stufe
+            // der Kaskade. Nur die Wärmekanäle: Der Kühlkanal des Kanalsatzes gehört
+            // der Kälteseite und bleibt, wie er ist (Kühlkonzept 4.2).
+            foreach (int k in Kanal.KANAELE_WAERME)
+            {
+                if (rest[k] < 0) rest[k] = 0;
+                kanaele.Bedarf[k][stunde] = (double)rest[k];
+            }
+
+            if (MitWP) WP.Zweikanalig_StundeEnde(stunde, rest);
+
+            // Solarthermie: Was weder gedeckt noch gespeichert wurde, ist verworfen.
+            if (MitSolar) Solar.Stunde_Ende(stunde);
+
+            // BHKW: Was weder gedeckt noch gespeichert wurde, ist Wärmeüberschuss
+            // (Paket 6 — im Altpfad kannte nur die stromgeführte Fahrweise diese
+            // Größe, als Überlauf des Pendelspeichers). Dazu die Ganglinie seines
+            // Restwärmebedarfs, gebildet an der BHKW-Position aus Stufeneingang,
+            // Direktdeckung und der ihm in dieser Stunde zugerechneten Entladung (N4).
+            // Die Ganglinie des BHKW-Restwärmebedarfs ist eine KANALLOSE Größe
+            // („Stufeneingang − Direktdeckung − zugerechnete Entladung", N4); sie
+            // bekommt deshalb die Kanalsumme der Stundenzurechnung.
+            if (MitBHKW) BHKW.Stunde_Ende(stunde, ZeilenSumme(_entladungJeArtStunde[ART_BHKW]));
 
             return true;
         }

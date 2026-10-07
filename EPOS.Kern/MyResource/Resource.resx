@@ -30908,6 +30908,12 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_WP_VORLAUF_KENNLINIENWAHL" xml:space="preserve">
     <value>{0}: Kennlinie je Stunde am gerechneten Vorlauf des Heizkreises — Stunden je Stützstelle: {1}.</value>
   </data>
+  <data name="SIMENG_WP_VORLAUF_INTERPOLIERT" xml:space="preserve">
+    <value>{0}: Kennlinie am gerechneten Vorlauf zwischen zwei Stützstellen interpoliert (die Stunden je Stützstelle nennen die nächstgelegene) — {1}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_VORLAUF_INTERPOLIERT" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Kühl-Vorlauf {1} °C liegt zwischen den Stützstellen {2} °C und {3} °C der Kühlkennlinie — Kälteleistung und EER werden zwischen beiden interpoliert.</value>
+  </data>
   <data name="SIMENG_WP_VORLAUF_AUSSERHALB_HINWEIS" xml:space="preserve">
     <value>{0}: Der gerechnete Vorlauf des Heizkreises lag in {1} Stunden über der obersten Kennlinien-Stützstelle {2} °C (gerechnet bis {3} °C); verwendet wurde die oberste Kennlinie — die Arbeitszahl dieser Stunden ist damit eher zu hoch (Extrapolation erlaubt).</value>
   </data>

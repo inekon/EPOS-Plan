@@ -135,12 +135,14 @@ namespace WindowsFormsApplication1
                     zonen[z].Eingang.Verfuegbarkeit = verfuegbarkeitJeZone[z];
 
             // Die Schleife.
+            // Der Jahreslauf über den Gebäude-Stepper (Entwurf AK3 2.2): Vorlauf, dann je Stunde Schritt und Festschreiben.
             var schleife = new Zonenschleife(zonen, wer);
+            GebaeudeStepper stepper = GebaeudeStepper.Mehrzonen(schleife);
             double vorBeginn = uhr.Elapsed.TotalMilliseconds;
-            schleife.Vorlauf();
+            stepper.Beginnen();
             double zeitVorlauf = uhr.Elapsed.TotalMilliseconds - vorBeginn;
-            schleife.Jahr();
-            GebaeudeModellErgebnis[] ergebnisse = schleife.Zonenergebnisse(index, idGebaeude);
+            stepper.Jahr();
+            GebaeudeModellErgebnis[] ergebnisse = stepper.Abschluss(index, idGebaeude);
 
             // 3. Die 4-K-Regel nach dem Lauf: das erreichte Δϑ (benannt, nicht umgeschaltet).
             var paare = new List<Zonenpaarzuordnung>();
