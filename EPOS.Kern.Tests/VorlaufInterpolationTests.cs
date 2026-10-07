@@ -87,9 +87,8 @@ namespace EPOS.Kern.Tests
         private static (double cop, double ptherm) VonHand(int idWp, int vorlauf, double temperatur)
         {
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT Temperatur, COP, Ptherm FROM Tab_Kenndaten WHERE ID_WP = " +
-                idWp.ToString(CultureInfo.InvariantCulture) + " AND Vorlauf = " +
-                vorlauf.ToString(CultureInfo.InvariantCulture) + " ORDER BY Temperatur");
+                "SELECT Temperatur, COP, Ptherm FROM Tab_Kenndaten WHERE ID_WP = ? AND Vorlauf = ? ORDER BY Temperatur",
+                new DbParam("@wp", idWp), new DbParam("@vorlauf", vorlauf));
             var p = dt.Rows.Cast<DataRow>()
                       .Select(r => (t: Convert.ToDouble(r["Temperatur"], CultureInfo.InvariantCulture),
                                     c: Convert.ToDouble(r["COP"], CultureInfo.InvariantCulture),
