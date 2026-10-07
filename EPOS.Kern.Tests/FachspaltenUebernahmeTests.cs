@@ -305,9 +305,165 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0L, Ganzzahl(z["KWKG_Abwaermeabfuhr"]));
         }
 
+        /// <summary>
+        /// Anwenderentscheid 07.10.2026: Das weitere Stück bekommt auch die ZUGEHÖRIGEN Zeilen
+        /// der vertretenen Anlage (<see cref="AnlagenFachspalten.ANLAGENKINDER"/>) — Betriebs-
+        /// führung, Senke, Parallelverbund (auf die kopierte Senke umgeschlüsselt), Strang und
+        /// Sperrfenster — mit neuen IDs; die Quelle bleibt unverändert.
+        /// </summary>
+        [Fact]
+        public void Das_zweite_Stueck_traegt_die_Kindzeilen_der_vertretenen_Anlage()
+        {
+            if (!_db.Vorhanden) return;
+
+            KindzeilenAnlegen();
+            var vorher = AnlagenkinderStand(SPEICHERANLAGE);
+            List<string> quellIds = KindIds(SPEICHERANLAGE);
+
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit() }, new[] { 2 });
+            Assert.True(e.Erfolg, e.Meldung);
+            int neu = Assert.Single(e.Anlagen, a => a.Neu).AnlageId;
+
+            // Dieselben Werte (ohne ID und Anlagenverweis), die Quelle unverändert.
+            var kopie = AnlagenkinderStand(neu);
+            Assert.Equal(vorher.Keys, kopie.Keys);
+            foreach (string tabelle in vorher.Keys)
+            {
+                Assert.True(vorher[tabelle].Count > 0, tabelle + " ohne Probezeile");
+                Assert.Equal(vorher[tabelle], kopie[tabelle]);
+            }
+            var danach = AnlagenkinderStand(SPEICHERANLAGE);
+            foreach (string tabelle in vorher.Keys) Assert.Equal(vorher[tabelle], danach[tabelle]);
+            Assert.Equal(quellIds, KindIds(SPEICHERANLAGE));
+            Assert.Empty(KindIds(neu).Intersect(quellIds));
+
+            // Der Verbund zeigt auf die KOPIERTE Senke, der Puffer bleibt geteilt.
+            long senkeNeu = Ganzzahl(DataRepository.ExecuteScalar(
+                "SELECT ID FROM Z_AnlageSenke WHERE ID_Anlage = ?", new DbParam("@a", neu)));
+            Assert.Equal(senkeNeu, Ganzzahl(DataRepository.ExecuteScalar(
+                "SELECT ID_Senke FROM Z_AnlagePufferVerbund WHERE ID_Anlage = ?", new DbParam("@a", neu))));
+            Assert.Equal(PUFFER, Ganzzahl(DataRepository.ExecuteScalar(
+                "SELECT ID_Puffer FROM Z_AnlageSenke WHERE ID = ?", new DbParam("@s", senkeNeu))));
+        }
+
+        /// <summary>
+        /// Scheitert ein Kindzeilen-INSERT, rollt die ganze Übernahme zurück: keine neue
+        /// Anlage, kein neues Gerät, keine halbe Kindzeile, das erste Stück unverändert.
+        /// </summary>
+        [Fact]
+        public void Scheitert_eine_Kindzeile_rollt_die_ganze_Uebernahme_zurueck()
+        {
+            if (!_db.Vorhanden) return;
+
+            KindzeilenAnlegen();
+            int anlagen = Anzahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", FLOTTENPROJEKT);
+            int geraete = Anzahl("SELECT COUNT(*) FROM Tab_Stromspeicher WHERE ID_Projekt = ?", FLOTTENPROJEKT);
+            int senken = Anzahl("SELECT COUNT(*) FROM Z_AnlageSenke WHERE ID_Anlage > ?", 0);
+            string geraet = Geraetetext(SPEICHERANLAGE);
+
+            // Das Sperrfenster der Kopie scheitert (die Senke davor ist schon geschrieben).
+            Assert.True(DataRepository.ExecuteSQL(
+                "CREATE TRIGGER Probe_Sperrfenster BEFORE INSERT ON Tab_Sperrfenster " +
+                "WHEN NEW.ID_Energieanlage <> " + SPEICHERANLAGE.ToString(CultureInfo.InvariantCulture) +
+                " BEGIN SELECT RAISE(ABORT, 'Probe'); END"));
+
+            FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
+                FLOTTENPROJEKT, new[] { Einheit() }, new[] { 2 });
+
+            Assert.False(e.Erfolg);
+            Assert.Equal(anlagen, Anzahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", FLOTTENPROJEKT));
+            Assert.Equal(geraete, Anzahl("SELECT COUNT(*) FROM Tab_Stromspeicher WHERE ID_Projekt = ?", FLOTTENPROJEKT));
+            Assert.Equal(senken, Anzahl("SELECT COUNT(*) FROM Z_AnlageSenke WHERE ID_Anlage > ?", 0));
+            Assert.Equal(geraet, Geraetetext(SPEICHERANLAGE));
+        }
+
         // =============================================================================
         //  Prüfstand
         // =============================================================================
+
+        /// <summary>Ein Puffer des Flottenprojekts (Senke der Probe).</summary>
+        private const long PUFFER = 1007007;
+
+        private static FlottenEinheit Einheit() => new FlottenEinheit
+        {
+            Id = "e1", Name = "Speicher", AnlageId = SPEICHERANLAGE.ToString(CultureInfo.InvariantCulture),
+            KapazitaetKWh = 20.0, LadeleistungKw = 10.0, EntladeleistungKw = 10.0,
+            Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95, SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
+        };
+
+        /// <summary>
+        /// Gibt der Speicheranlage je Kindtabelle mindestens eine gepflegte Zeile: die
+        /// vorhandene Betriebsführung mit eigenen Werten, eine Senke, einen Verbund an dieser
+        /// Senke, einen Strang und ein Sperrfenster.
+        /// </summary>
+        private static void KindzeilenAnlegen()
+        {
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_StromspeicherVariante SET Betriebsart = ?, SoC_Min_Prozent = ?, Netzentladung = 1 " +
+                "WHERE ID_Energieanlage = ?",
+                new DbParam("@b", "Probe"), new DbParam("@s", 12.5), new DbParam("@a", SPEICHERANLAGE)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Z_AnlageSenke (ID_Anlage, Rang, Ziel, Bedarfsart, ID_Puffer, Ladeprio, Ladegrenze) " +
+                "VALUES (?, 1, 'Puffer', 'Heizung', ?, 3, 0.8)",
+                new DbParam("@a", SPEICHERANLAGE), new DbParam("@p", PUFFER)));
+            long senke = Ganzzahl(DataRepository.ExecuteScalar(
+                "SELECT MAX(ID) FROM Z_AnlageSenke WHERE ID_Anlage = ?", new DbParam("@a", SPEICHERANLAGE)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Z_AnlagePufferVerbund (ID_Anlage, ID_Puffer, ID_Senke) VALUES (?, ?, ?)",
+                new DbParam("@a", SPEICHERANLAGE), new DbParam("@p", PUFFER), new DbParam("@s", senke)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Z_AnlageStrang (ID_Anlage, Rang, Bezeichner, Module_Reihe, Neigung, Azimut) " +
+                "VALUES (?, 1, 'Dach Süd', 8, 30, 0)", new DbParam("@a", SPEICHERANLAGE)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_Sperrfenster (ID_Energieanlage, Von_h, Dauer_h, Wochentage, Heizstab_gesperrt, Reihenfolge) " +
+                "VALUES (?, 11.5, 2, 31, 0, 1)", new DbParam("@a", SPEICHERANLAGE)));
+        }
+
+        /// <summary>
+        /// Je Kindtabelle die Zeilen der Anlage als Text — ohne ID, ohne Anlagenverweis und ohne
+        /// umgeschlüsselte Spalten (die prüft der Fall gesondert).
+        /// </summary>
+        private static SortedDictionary<string, List<string>> AnlagenkinderStand(int anlage)
+        {
+            var stand = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
+            foreach ((string tabelle, string fk) in AnlagenFachspalten.ANLAGENKINDER)
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT * FROM [" + tabelle + "] WHERE [" + fk + "] = ? ORDER BY ID", new DbParam("@a", anlage));
+                var zeilen = new List<string>();
+                foreach (DataRow r in dt.Rows)
+                    zeilen.Add(string.Join("|", dt.Columns.Cast<DataColumn>()
+                        .Where(c => c.ColumnName != "ID" && c.ColumnName != fk &&
+                                    !AnlagenFachspalten.ANLAGENKIND_UMSCHLUESSEL.ContainsKey(tabelle + "." + c.ColumnName))
+                        .Select(c => c.ColumnName + "=" + Convert.ToString(r[c], CultureInfo.InvariantCulture))));
+                stand[tabelle] = zeilen;
+            }
+            return stand;
+        }
+
+        /// <summary>Die Gerätezeile der Anlage als Text (Probe auf das Zurückschreiben des ersten Stücks).</summary>
+        private static string Geraetetext(int anlage)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT s.* FROM Tab_Stromspeicher s JOIN Tab_Energieanlagen a ON a.ID_SP = s.ID WHERE a.ID = ?",
+                new DbParam("@a", anlage));
+            Assert.Equal(1, dt.Rows.Count);
+            return string.Join("|", dt.Rows[0].ItemArray.Select(o => Convert.ToString(o, CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>Die Kindzeilen der Anlage als „Tabelle:ID“ (über alle Kindtabellen).</summary>
+        private static List<string> KindIds(int anlage)
+        {
+            var ids = new List<string>();
+            foreach ((string tabelle, string fk) in AnlagenFachspalten.ANLAGENKINDER)
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID FROM [" + tabelle + "] WHERE [" + fk + "] = ? ORDER BY ID", new DbParam("@a", anlage));
+                ids.AddRange(dt.Rows.Cast<DataRow>().Select(r => tabelle + ":" + Ganzzahl(r["ID"])));
+            }
+            return ids;
+        }
 
         private static List<int> Anlagen(int projekt)
         {

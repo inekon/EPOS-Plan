@@ -212,8 +212,14 @@ public static partial class SpeicherFlottenStudieCtrl
                     // Nummer) und Geraet (die neue Gerätezeile) eigen; derselbe Kernweg wie
                     // bei der Komponentenuebernahme. Eine freie Einheit (Katalog, ohne
                     // Anlagenzeile) hat nichts zu kopieren und traegt die Vorgaben.
+                    // Dazu die zugehoerigen Zeilen der Quelle (Anwenderentscheid 07.10.2026):
+                    // Betriebsfuehrung, Senken, Verbund, Straenge, Sperrfenster - im selben
+                    // Vorgang; scheitert eine, rollt die ganze Uebernahme zurueck.
                     if (quelleGueltig)
+                    {
                         AnlagenFachspalten.Uebertragen(v, kopieSpalten, vorhandeneAnlage, neueAnlageId);
+                        AnlagenFachspalten.AnlagenkinderKopieren(v, vorhandeneAnlage, neueAnlageId);
+                    }
                     angelegt.Add(new FlottenUebernahmeAnlage(e.Id ?? "", neueAnlageId, neueGeraeteId,
                                                              name, true, n));
                 }

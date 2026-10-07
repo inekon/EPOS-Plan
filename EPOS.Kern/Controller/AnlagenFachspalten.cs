@@ -320,6 +320,123 @@ namespace WindowsFormsApplication1
             return neu;
         }
 
+        /// <summary>
+        /// Die KINDTABELLEN einer Anlagenzeile, die eine vollständige Kopie der Anlage
+        /// mitnimmt (Anwenderentscheid 07.10.2026, weitere Stücke der Flottenstudie), in
+        /// Kopierreihenfolge: Tabelle → Spalte des Verweises auf <c>Tab_Energieanlagen</c>.
+        /// <list type="bullet">
+        /// <item><c>Tab_StromspeicherVariante</c> — Betriebsführung des Stromspeichers;</item>
+        /// <item><c>Z_AnlageSenke</c> — Senken samt Lade-Prioritäten. Den Puffer TEILT die Kopie
+        /// mit der Quelle (mehrere Erzeuger an einem Puffer sind die Regel);</item>
+        /// <item><c>Z_AnlagePufferVerbund</c> — Parallelverbund; <c>ID_Senke</c> wird auf die
+        /// kopierte Senke umgeschlüsselt (<see cref="ANLAGENKIND_UMSCHLUESSEL"/>), deshalb NACH den Senken;</item>
+        /// <item><c>Z_AnlageStrang</c> — Stränge; sie gehören der Anlage (Gruppierung je Anlage,
+        /// Wechselrichter, Gerätenummer), die Kopie bekommt eigene Stränge mit denselben Namen;</item>
+        /// <item><c>Tab_Sperrfenster</c> — Sperrprofil.</item>
+        /// </list>
+        /// Verweise der Kindzeilen auf andere projekteigene Zeilen (Puffer, Wechselrichter,
+        /// PV-Modul) bleiben gleich — die Kopie liegt im selben Projekt.
+        /// </summary>
+        public static readonly (string Tabelle, string Fk)[] ANLAGENKINDER =
+        {
+            ("Tab_StromspeicherVariante", "ID_Energieanlage"),
+            ("Z_AnlageSenke", "ID_Anlage"),
+            ("Z_AnlagePufferVerbund", "ID_Anlage"),
+            ("Z_AnlageStrang", "ID_Anlage"),
+            ("Tab_Sperrfenster", "ID_Energieanlage")
+        };
+
+        /// <summary>
+        /// Verweise einer Kindzeile auf eine ANDERE Kindzeile derselben Anlage
+        /// („Tabelle.Spalte“ → Kindtabelle): Sie zeigen in der Kopie auf die kopierte Zeile.
+        /// Ein Wert ohne Entsprechung (fremde Anlage) bleibt unverändert.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> ANLAGENKIND_UMSCHLUESSEL =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Z_AnlagePufferVerbund.ID_Senke", "Z_AnlageSenke" }
+            };
+
+        /// <summary>
+        /// Tabellen mit Verweis auf eine Anlagenzeile, die eine Kopie NICHT mitnimmt:
+        /// Ergebnisse des Laufs (<c>Tab_ErgebnisErdreich</c>, <c>Tab_ErgebnisPufferspeicher</c>,
+        /// <c>Tab_ErgebnisStromspeicher</c>), die gespeicherte Auslegungsstudie
+        /// (<c>Tab_SpeicherAuslegung</c>, eindeutig je Projekt, Anlage und Bezeichner — die Studie
+        /// gehört der vertretenen Anlage) und die Kostenpositionen (<c>Tab_ProjektWerte</c>,
+        /// eigener Pflegeweg über Komponente und Gerät).
+        /// </summary>
+        public static readonly HashSet<string> ANLAGENKIND_AUSSCHLUSS =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "Tab_ErgebnisErdreich", "Tab_ErgebnisPufferspeicher", "Tab_ErgebnisStromspeicher",
+              "Tab_SpeicherAuslegung", "Tab_ProjektWerte" };
+
+        /// <summary>Spaltennamen, die ohne Fremdschlüssel auf eine Anlagenzeile zeigen.</summary>
+        public static readonly HashSet<string> ANLAGENVERWEIS_SPALTEN =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "ID_Anlage", "ID_Energieanlage" };
+
+        /// <summary>
+        /// Kopiert die <see cref="ANLAGENKINDER"/> der Anlage <paramref name="idQuelle"/> auf die
+        /// eben angelegte Anlage <paramref name="idZiel"/> — je Zeile ein INSERT … SELECT mit
+        /// neuer ID, Verweis auf die neue Anlage und <see cref="ANLAGENKIND_UMSCHLUESSEL"/>.
+        /// Läuft im Vorgang der Übernahme; ein scheiterndes INSERT wirft und rollt mit ihr zurück.
+        /// Eine Tabelle, die das Schema (noch) nicht kennt, wird übergangen.
+        /// </summary>
+        /// <returns>Die Zahl der kopierten Kindzeilen.</returns>
+        public static int AnlagenkinderKopieren(DbVorgang v, int idQuelle, int idZiel)
+        {
+            if (v == null || idQuelle <= 0 || idZiel <= 0 || idQuelle == idZiel) return 0;
+
+            int anzahl = 0;
+            // Kindtabelle → (alte ID → neue ID), für die Umschlüsselung späterer Kinder.
+            var zuordnung = new Dictionary<string, Dictionary<long, long>>(StringComparer.OrdinalIgnoreCase);
+            foreach ((string tabelle, string fk) in ANLAGENKINDER)
+            {
+                List<string> spalten = SpaltenImVorgang(v, tabelle);
+                if (spalten.Count == 0) continue;
+                var karte = new Dictionary<long, long>();
+                zuordnung[tabelle] = karte;
+
+                DataTable quelle = v.Lese("SELECT * FROM [" + tabelle + "] WHERE [" + fk + "] = ? ORDER BY ID",
+                                          new DbParam("@a", idQuelle));
+                foreach (DataRow zeile in quelle.Rows)
+                {
+                    long alteId = Convert.ToInt64(zeile["ID"], CultureInfo.InvariantCulture);
+                    var ziel = new List<string>();
+                    var werte = new List<string>();
+                    var ps = new List<DbParam>();
+                    foreach (string spalte in spalten)
+                    {
+                        if (string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)) continue;
+                        ziel.Add("[" + spalte + "]");
+                        if (string.Equals(spalte, fk, StringComparison.OrdinalIgnoreCase))
+                        {
+                            werte.Add("?");
+                            ps.Add(new DbParam("@fk", idZiel));
+                        }
+                        else if (ANLAGENKIND_UMSCHLUESSEL.TryGetValue(tabelle + "." + spalte, out string bezug))
+                        {
+                            object alt = zeile[spalte];
+                            object neu = alt;
+                            if (alt != DBNull.Value && zuordnung.TryGetValue(bezug, out Dictionary<long, long> k) &&
+                                k.TryGetValue(Convert.ToInt64(alt, CultureInfo.InvariantCulture), out long n))
+                                neu = n;
+                            werte.Add("?");
+                            ps.Add(new DbParam("@u", neu));
+                        }
+                        else werte.Add("[" + spalte + "]");
+                    }
+                    ps.Add(new DbParam("@id", alteId));
+                    if (v.Ausfuehren("INSERT INTO [" + tabelle + "] (" + string.Join(", ", ziel) + ") SELECT " +
+                                     string.Join(", ", werte) + " FROM [" + tabelle + "] WHERE ID = ?",
+                                     ps.ToArray()) != 1)
+                        throw new InvalidOperationException("Kindzeile " + tabelle + " " + alteId + " nicht kopiert.");
+                    karte[alteId] = Convert.ToInt64(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
+                    anzahl++;
+                }
+            }
+            return anzahl;
+        }
+
         /// <summary>Die Spalten einer Tabelle — auf der Verbindung des Vorgangs gelesen.</summary>
         private static List<string> SpaltenImVorgang(DbVorgang v, string tabelle)
         {
