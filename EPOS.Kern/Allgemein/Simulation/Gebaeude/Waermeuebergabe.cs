@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
     /// Welche Grenze die Heiz- bzw. Kühlleistung im Raum gekappt hat — die Gebäudeseite der
     /// beiden Aufzählungen aus Anlagenkopplung 5.3, soweit sie in der Stufe AK1 entstehen (4.5,
     /// Schritt H4 in 10.2, Schritt K in 10.5). Die Anlagenseite ist <see cref="Verfuegbarkeitsgrund"/>;
-    /// <c>VORLAUF_ANLAGE</c> und <c>VERFUEGBARKEIT</c> kommen mit AK2 und stehen am Ende, <c>UMSCHALTUNG</c> ist offen.
+    /// <c>VORLAUF_ANLAGE</c> und <c>VERFUEGBARKEIT</c> kommen mit AK2, <c>UMSCHALTUNG</c> mit AK3-K; sie stehen am Ende.
     /// Die Gründe der Kälteseite (E37) stehen <b>am Ende</b>, damit die Heizseite ihre Werte
     /// behält; je Seite gilt dieselbe Rangfolge (Spiegel: Heizgrenze ↔ KeineKaelte,
     /// Uebergabe ↔ KuehlUebergabe, HeizleistungMax ↔ KuehlleistungMax).
@@ -50,9 +50,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <c>VERFUEGBARKEIT</c> (AK2, 4.5): Die Schranke der Anlagenverfügbarkeit hat die Leistung gekappt; der
-        /// Anlagengrund (<see cref="Verfuegbarkeitsgrund"/>) reist daneben mit (Paarungsregel 5.3).
+        /// Anlagengrund (<see cref="Verfuegbarkeitsgrund"/>) reist daneben mit (Paarungsregel 5.3). Auf der Kälteseite
+        /// (AK3-K) ebenso für die Kälteschranke (<see cref="Stundenrand.MitKaelteverfuegbarkeit"/>).
         /// </summary>
         Verfuegbarkeit,
+
+        /// <summary>
+        /// <c>UMSCHALTUNG</c> (Anlagenkopplung 5.3, AK3-K Festlegung 13): Die reversible Wärmepumpe steht der Seite an
+        /// diesem Tag nicht zur Verfügung. Der Wert gehört zur Aufzählung der Gebäudeseite; nach der Paarungsregel trägt
+        /// eine gekappte Stunde gebäudeseitig <see cref="Verfuegbarkeit"/>, und <see cref="Verfuegbarkeitsgrund.Umschaltung"/>
+        /// reist als Anlagengrund daneben — der Löser setzt diesen Wert daher nicht selbst.
+        /// </summary>
+        Umschaltung,
     }
 
     /// <summary>
