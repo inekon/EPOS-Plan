@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             Console.WriteLine("EPOS.Referenzlauf - Referenzlauf ohne Windows (iU3)");
             Console.WriteLine();
-            Console.WriteLine("  EPOS.Referenzlauf lauf --quelle <sqlite> [--projekte 1030,1007] [--ziel <ordner>] [--stoerung ulp] [--vorlaufinterpolation ein] [--ak3 ein|alle]");
+            Console.WriteLine("  EPOS.Referenzlauf lauf --quelle <sqlite> [--projekte 1030,1007] [--ziel <ordner>] [--stoerung ulp] [--ak3 ein|alle]");
             Console.WriteLine("  EPOS.Referenzlauf projekt <id> <zielordner>");
             Console.WriteLine("  EPOS.Referenzlauf vergleich <refOrdner> <neuOrdner> [--ohne <a,b>]");
             Console.WriteLine("  EPOS.Referenzlauf pruefen <ordner>");
@@ -133,21 +133,6 @@ namespace WindowsFormsApplication1.Referenzlauf
             // --- 0. Stoerung (nur fuer den Plattformnachweis, nie fuer eine Basis) ---------
             string stoerung = StoerungEinschalten(Argument(args, "--stoerung"));
             if (stoerung == null) return 2;
-
-            // --- 0a. Kernschalter AK3-I (Messlauf, nie fuer eine Basis) --------------------
-            string interpolation = Argument(args, "--vorlaufinterpolation");
-            if (interpolation != null)
-            {
-                if (!string.Equals(interpolation, "ein", StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(interpolation, "aus", StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine("ABBRUCH: --vorlaufinterpolation kennt nur \"ein\" und \"aus\".");
-                    return 2;
-                }
-                VorlaufInterpolation.Ein = string.Equals(interpolation, "ein", StringComparison.OrdinalIgnoreCase);
-                Console.WriteLine("Vorlaufinterpolation (AK3-I): " + (VorlaufInterpolation.Ein ? "ein" : "aus") +
-                                  " (Messlauf, keine Basis)");
-            }
 
             // --- 0b. Kernstufe AK3 (AK3-W3b; Messlauf, nie fuer eine Basis) -----------------------
             string ak3 = Argument(args, "--ak3");

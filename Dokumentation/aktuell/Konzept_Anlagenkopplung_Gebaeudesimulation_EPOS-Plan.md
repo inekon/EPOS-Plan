@@ -1169,8 +1169,9 @@ Auskünfte (Bedarfsdialog eines Gebäudes, Aufheizauskunft) rechnen ohne Kreis a
 das. **H2 (Raumeinfluss der Heizkurve):** Spalte am Gebäude `Heizkurve_Raumeinfluss` (k_R in K/K, 0 bis 10,
 leer oder 0 = aus); Vorlauf = Heizkurve + k_R × Unterschreitung der kältesten Zone derselben Stunde,
 gekappt am Auslegungsvorlauf und an `Vorlauf_Max`; wirkt nur in Stufe AK3. **Interpolation der
-Wärmepumpenkennlinie über den Vorlauf** (Wärme- und Kälteseite, AK3-I): gebaut, Kernschalter aus; sie
-schaltet mit der neuen Basis (W5) ein.
+Wärmepumpenkennlinie über den Vorlauf** (Wärme- und Kälteseite, AK3-I): gilt, ohne Schalter; zwischen zwei Stützstellen linear im
+Vorlauf, auf einer Stützstelle und außerhalb wie die Stützstellenwahl (Entwurf AK3 3, I-1 bis I-5; Normstelle als
+EPOS-Lesart benannt, Normtext nicht geprüft).
 
 ### 6.4 Was nichts davon berührt
 
@@ -2613,7 +2614,7 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
 | **Der Profilweg ist zu pessimistisch** (5.4) | Ein Speicher, der die Sperrzeit überbrückt, erzeugt in der Rechnung Komfortstunden, die es nicht gibt | Speichervorrat über die Sperrdauer wird berücksichtigt; die Näherung steht **im Bericht**, nicht im Kleingedruckten |
 | **AK3 wächst zum Anlagensimulator** | Ein Vorhaben, das nicht endet: Rohrnetz, Pumpen, Regelkreise, Taktverhalten | Kapitel 15 und „Nicht in AK3“ des Entwurfs (9) sind die Grenze; die Kälteseite ist als AK3-K vertagt (E102) |
 | **Leser des Jahresvektors vor und nach der Kaskadenschleife** (AK3, Hauptrisiko) | Ein übersehener Leser rechnet im AK3-Weg still mit dem unbegrenzten statt dem gekoppelten Bedarf | Inventar als erster Schritt von W2; befragbare Kaskade statt Rücknahme; Gate je Welle „21/21 byte-gleich“; „ein Erzeuger ohne Grenzen bitgleich zu AK1"; Prüforakel 11.2 ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 8) |
-| **AK3-I bewegt 1047/1056 vor dem Basiswechsel** | CI rot, Byte-Gates der späteren Wellen nicht haltbar | Interpolation hinter einem Kernschalter ohne Schema bis W5; ein Basiswechsel nach R40 |
+| **AK3-I bewegt 1047/1056 vor dem Basiswechsel** | CI rot, Byte-Gates der späteren Wellen nicht haltbar | Interpolation gilt ohne Schalter (W5); ein Basiswechsel für 1047/1056 |
 | **Iteration in Iteration** (AK3 mit Mehrzonen) | gemessen 11–29 ms je Zone, Durchlauf und Jahr: typisch 2–9 s für 50 Zonen, an der Produktschranke 70–175 s — ein Lauf, der „nur langsam" ist und den niemand als Fehler erkennt; Laufzeitgrenze nach E102 Faktor 3 gegenüber ohne Kreis | Höchstzahlen benannt, Reihenfolge festgelegt (Anlage außen, Zonen innen); **Iterationsschranke:** Produkt der Durchläufe je Stunde ≤ 120, darüber benannter Fehler mit dem letzten Stand statt stiller Näherung (6.3); **Laufzeit gemessen** vor der Abnahme (N-A4) |
 | **Zwei Vorlaufbegriffe** (N-A8) | Anlage und Gebäude führen beide einen Vorlauf; ohne Regel entsteht eine zweite Wahrheit, und zwar still | **Die kleinere Zahl gewinnt, und die Stunde trägt den Grund** (5.2); der Selbsttest der Naht prüft es |
 | **Kessel- und BHKW-Wirkungsgrad ohne Temperaturbezug** (AK3) | Der Vorlauf wirkt auf die Wärmepumpe zurück, auf Kessel und BHKW nicht — ein Vergleich zweier Erzeuger wird schief | **Benannte Ablehnung statt stiller Gleichbehandlung:** Der Bericht sagt, für welche Erzeuger die Rückwirkung gerechnet wird und für welche nicht |

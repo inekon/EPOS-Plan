@@ -62,8 +62,8 @@ namespace WindowsFormsApplication1
             internal double DarunterMin = double.PositiveInfinity;
 
             /// <summary>
-            /// AK3-I (I-1): true, wenn der Lauf über den Vorlauf interpoliert
-            /// (<see cref="VorlaufInterpolation.Ein"/> beim Laden). Aus = Bestand.
+            /// AK3-I (I-1): true, wenn über den Vorlauf interpoliert wird — im Lauf immer
+            /// (<see cref="SimulationWaermepumpe.KennlinienwahlLaden"/>); false allein für Proben der Stützstellenwahl.
             /// </summary>
             internal bool Interpolieren;
 
@@ -1450,7 +1450,7 @@ namespace WindowsFormsApplication1
             {
                 Kurven = kurven.ToArray(),
                 Stunden = new int[kurven.Count],
-                Interpolieren = VorlaufInterpolation.Ein,   // AK3-I: Vorgabe aus = Bestand
+                Interpolieren = true,   // AK3-I: Interpolation über den Vorlauf gilt (I-1)
             };
         }
 

@@ -9,22 +9,20 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Interpolation über den Vorlauf</b> (AK3-I, Festlegungen I-1 bis I-5, Kernschalter
-    /// <see cref="VorlaufInterpolation"/>): (a) die Lage zwischen den Stützstellen; (b) O1p — der Produktweg mit
+    /// <b>Interpolation über den Vorlauf</b> (AK3-I, Festlegungen I-1 bis I-5, <see cref="VorlaufInterpolation"/>,
+    /// gilt ohne Schalter): (a) die Lage zwischen den Stützstellen; (b) O1p — der Produktweg mit
     /// einer echten Kennlinie aus der Testdatenbank, Leistung und COP an Zwischenvorläufen gegen eine Handrechnung;
-    /// (c) Randwerte und Stützstellen bitgleich zum Bestand, Schalter aus bitgleich; (d) Zählung der Vorlaufwahl (I-4);
-    /// (e) Kälteseite zwischen 7 und 18 °C (I-3); (f) das gekoppelte Referenzprojekt 1047 mit Schalter ein.
+    /// (c) Randwerte und Stützstellen bitgleich zur Stützstellenwahl; (d) Zählung der Vorlaufwahl (I-4);
+    /// (e) Kälteseite zwischen 7 und 18 °C (I-3); (f) das gekoppelte Referenzprojekt 1047 interpoliert im Lauf.
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class VorlaufInterpolationTests : IDisposable
     {
         private readonly TestDatenbank _db = new TestDatenbank();
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
-        private readonly IDisposable _schalter = VorlaufInterpolation.Schalten(false);
 
         public void Dispose()
         {
-            _schalter.Dispose();
             _kultur.Dispose();
             _db.Dispose();
         }
@@ -46,14 +44,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(unten >= 0, zwischen);
             Assert.Equal(unten, u);
             Assert.Equal(gewicht, g, 12);
-        }
-
-        [Fact]
-        public void Der_Schalter_steht_vorgegeben_auf_aus_und_stellt_zurueck()
-        {
-            Assert.False(VorlaufInterpolation.Ein);
-            using (VorlaufInterpolation.Schalten(true)) Assert.True(VorlaufInterpolation.Ein);
-            Assert.False(VorlaufInterpolation.Ein);
         }
 
         [Fact]
@@ -122,7 +112,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             int id = GeraetMitDreiStuetzstellen();
             SimulationWaermepumpe.Kennlinienwahl wahl;
-            using (VorlaufInterpolation.Schalten(true)) wahl = SimulationWaermepumpe.KennlinienwahlLaden(id, null);
+            wahl = SimulationWaermepumpe.KennlinienwahlLaden(id, null);
             Assert.True(wahl.Interpolieren);
 
             Assert.Equal(SimulationWaermepumpe.Vorlauflage.Innerhalb,
@@ -157,13 +147,15 @@ namespace EPOS.Kern.Tests
         [InlineData(45.0)]   // auf der Stützstelle (I-2)
         [InlineData(30.0)]   // darunter: unterste Kennlinie (F-A8)
         [InlineData(70.0)]   // darüber, Extrapolation erlaubt: oberste Kennlinie (F-A8)
-        public void Auf_der_Stuetzstelle_und_ausserhalb_rechnet_die_Stuetzstelle_wie_im_Bestand(double vorlauf)
+        public void Auf_der_Stuetzstelle_und_ausserhalb_rechnet_die_Stuetzstelle_wie_die_Stuetzstellenwahl(double vorlauf)
         {
             if (!_db.Vorhanden) return;
             int id = GeraetMitDreiStuetzstellen();
             SimulationWaermepumpe.Kennlinienwahl ein, aus;
-            using (VorlaufInterpolation.Schalten(true)) ein = SimulationWaermepumpe.KennlinienwahlLaden(id, null);
+            ein = SimulationWaermepumpe.KennlinienwahlLaden(id, null);
             aus = SimulationWaermepumpe.KennlinienwahlLaden(id, null);
+            aus.Interpolieren = false;   // Stützstellenwahl als Gegenprobe
+            Assert.True(ein.Interpolieren);
 
             SimulationWaermepumpe.Vorlauflage lageEin = ein.Abfragen(vorlauf, true, out int stelleEin, out int unten, out _);
             SimulationWaermepumpe.Vorlauflage lageAus = aus.Abfragen(vorlauf, true, out int stelleAus);
@@ -175,21 +167,6 @@ namespace EPOS.Kern.Tests
             double t = InnereQuelltemperatur(ein.Kurven[0], ein.Kurven[ein.Kurven.Length - 1]);
             Assert.Equal(sim.berechne_wptherm(t, null, aus.Kurven[stelleAus], -1),
                          sim.berechne_wptherm(t, null, ein.Kurven[stelleEin], -1));
-        }
-
-        [Fact]
-        public void Schalter_aus_waehlt_zwischen_den_Stuetzstellen_die_naechste_wie_im_Bestand()
-        {
-            if (!_db.Vorhanden) return;
-            int id = GeraetMitDreiStuetzstellen();
-            SimulationWaermepumpe.Kennlinienwahl aus = SimulationWaermepumpe.KennlinienwahlLaden(id, null);
-            Assert.False(aus.Interpolieren);
-            aus.Abfragen(41.0, true, out int stelle, out int unten, out double gewicht);
-            Assert.Equal(-1, unten);
-            Assert.Equal(0.0, gewicht);
-            Assert.Equal(SimulationWaermepumpe.StuetzstelleWaehlen(aus.Kurven.Select(k => k.Vorlauf).ToArray(), 41.0), stelle);
-            aus.Festschreiben();
-            Assert.Null(aus.Interpoliert);
         }
 
         // =============================================================================
@@ -204,7 +181,7 @@ namespace EPOS.Kern.Tests
             double[] reihe = { 30.0, 36.0, 40.0, 41.0, 45.0, 47.0, 52.0, 55.0, 60.0 };
             foreach (double v in reihe) wahl.Zaehlen(v, true, out _);
 
-            Assert.Equal(new[] { 2, 4, 3 }, wahl.Stunden);   // wie ohne Schalter: nächste Stützstelle
+            Assert.Equal(new[] { 2, 4, 3 }, wahl.Stunden);   // Zählung: nächste Stützstelle
             Assert.Equal(1, wahl.Darueber);
             Assert.Equal(1, wahl.Darunter);
             Assert.Equal(new[] { 3, 2 }, wahl.Interpoliert);  // 36, 40, 41 | 47, 52
@@ -264,7 +241,7 @@ namespace EPOS.Kern.Tests
         [InlineData(22)]    // darüber: Randwert 18 wie bisher
         [InlineData(3)]     // darunter: Randwert 7 wie bisher
         [InlineData(null)]  // NULL: kleinster Stützwert
-        public void Kaelte_auf_der_Stuetzstelle_und_ausserhalb_wie_im_Bestand(int? kuehlVorlauf)
+        public void Kaelte_auf_der_Stuetzstelle_und_ausserhalb_wie_die_Stuetzstellenwahl(int? kuehlVorlauf)
         {
             Kuehlkennlinie ein = Kuehlkennlinie.Bilden(Kuehlzeilen(), kuehlVorlauf, true);
             Kuehlkennlinie aus = Kuehlkennlinie.Bilden(Kuehlzeilen(), kuehlVorlauf);
@@ -278,18 +255,8 @@ namespace EPOS.Kern.Tests
             }
         }
 
-        [Fact]
-        public void Kaelte_mit_Schalter_aus_weicht_auf_die_naechste_Stuetzstelle_aus()
-        {
-            Kuehlkennlinie aus = Kuehlkennlinie.Bilden(Kuehlzeilen(), 12, false);
-            Assert.False(aus.Interpoliert);
-            Assert.True(aus.VorlaufAusgewichen);
-            Assert.Equal(7, aus.Vorlauf);
-            Assert.Equal(EER_7[0], aus.Auswerten(20.0, true).Eer);
-        }
-
         // =============================================================================
-        //  (f) Gekoppeltes Referenzprojekt 1047 mit Schalter ein
+        //  (f) Gekoppeltes Referenzprojekt 1047 interpoliert im Lauf
         // =============================================================================
 
         private static ErgebnisWaermepumpeModel LaufUndLesen(int projekt)
@@ -303,30 +270,20 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Referenzprojekt_1047_interpoliert_mit_Schalter_ein_und_spart_Strom()
+        public void Referenzprojekt_1047_interpoliert_im_Lauf_und_weist_die_Vorlaufwahl_aus()
         {
             if (!_db.Vorhanden) return;
-            ErgebnisWaermepumpeModel aus = LaufUndLesen(1047);
             string kopf = WindowsFormsApplication1.MyResource.Resource.SIMENG_WP_VORLAUF_INTERPOLIERT;
             string kennung = kopf.Substring(kopf.IndexOf("{0}", StringComparison.Ordinal) + 3);
             kennung = kennung.Substring(0, kennung.IndexOf("{1}", StringComparison.Ordinal));
-            Assert.DoesNotContain(SimulationProtokoll.Aktuell.Hinweise, h => h.Contains(kennung, StringComparison.Ordinal));
 
-            ErgebnisWaermepumpeModel ein;
-            using (VorlaufInterpolation.Schalten(true)) ein = LaufUndLesen(1047);
+            ErgebnisWaermepumpeModel w = LaufUndLesen(1047);
             Assert.Contains(SimulationProtokoll.Aktuell.Hinweise, h => h.Contains(kennung, StringComparison.Ordinal));
 
             // Die Ausweisspalten bleiben die Zählung der nächsten Stützstelle (I-4).
-            ErgebnisWaermepumpeModulModel ma = Assert.Single(aus.Module, m => m.Vorlaufwahl_Stunden != null);
-            ErgebnisWaermepumpeModulModel me = Assert.Single(ein.Module, m => m.Vorlaufwahl_Stunden != null);
-            Assert.Equal(ma.Vorlaufwahl_Stunden, me.Vorlaufwahl_Stunden);
-            Assert.Equal(ma.Vorlauf_Darueber_Stunden, me.Vorlauf_Darueber_Stunden);
-            Assert.Equal(ma.Vorlauf_Darunter_Stunden, me.Vorlauf_Darunter_Stunden);
-
-            // Die Messung der Welle: weniger WP-Strom bei gleicher Erzeugung (L2: rund −0,6 %).
-            Assert.True(ein.Stromverbrauch_WP < aus.Stromverbrauch_WP,
-                        ein.Stromverbrauch_WP + " < " + aus.Stromverbrauch_WP);
-            Assert.Equal(aus.Waermeproduktion_WP, ein.Waermeproduktion_WP);
+            ErgebnisWaermepumpeModulModel m = Assert.Single(w.Module, x => x.Vorlaufwahl_Stunden != null);
+            Assert.False(string.IsNullOrEmpty(m.Vorlaufwahl_Stunden));
+            Assert.True(w.Stromverbrauch_WP > 0 && w.Waermeproduktion_WP > 0);
         }
     }
 }
