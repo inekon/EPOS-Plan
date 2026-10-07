@@ -514,7 +514,7 @@ namespace WindowsFormsApplication1
             // AK3-K (Festlegung 20): Zonensperre und Kaelteseite im Kreis - nur, wenn sie liefen, sonst NULL und dieselbe
             // Zeile wie vorher (SpaltenNurMitWert).
             Ak3KSpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.ZonensperreProjekt(), simulation_Waermebedarf.Ak3?.Kreis,
-                              simulation_Waermebedarf.Ak3?.Kaelte == true);
+                              simulation_Waermebedarf.Ak3 != null);
 
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.

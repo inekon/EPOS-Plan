@@ -410,8 +410,7 @@ namespace WindowsFormsApplication1
                && ergebnis != null && ergebnis.KuehlungWirksam && ergebnis.KuehlbedarfKwh != null;
 
         /// <summary>
-        /// <b>Führt die Kälteseite um die Abweichung des Kreises nach</b> (Entwurf AK3-K 1.1 (a), nur mit
-        /// <see cref="Ak3KKernschalter"/>): Kühlkanal, <see cref="Kaeltebedarf_Gebaeude"/> und der Prüfakkumulator der
+        /// <b>Führt die Kälteseite um die Abweichung des Kreises nach</b> (Entwurf AK3-K 1.1 (a)): Kühlkanal, <see cref="Kaeltebedarf_Gebaeude"/> und der Prüfakkumulator der
         /// Bedarfsprobe nehmen in jeder Stunde mit Abweichung dieselbe Abweichung auf; danach laufen die Bedarfsprobe
         /// ein zweites Mal und Summe, Spitze, Stunden, Monatswerte und Dauerlinie neu — ohne Meldungen, die stehen
         /// schon aus Pass 1. Stunden ohne Abweichung bleiben Zeichen für Zeichen Pass 1.

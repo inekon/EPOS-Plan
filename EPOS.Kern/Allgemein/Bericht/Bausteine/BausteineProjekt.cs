@@ -647,7 +647,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>AK3-K — die Tafel „Kälteseite im Kreis"</b> (Entwurf AK3-K 3.5, Festlegung 20): die Projektzeile mit den
         /// Kennzahlen der Zonensperre und der Kälteseite im Kreis, eine nicht erhobene Seite als „—". <b>Der Abschnitt
-        /// entfällt</b>, wenn keine der beiden Seiten erhoben ist — jedes Projekt, solange die Kernschalter aus stehen.
+        /// entfällt</b>, wenn keine der beiden Seiten erhoben ist — jedes Projekt ohne wirksame Kühlung.
         /// </summary>
         private static void Ak3KSchreiben(WordKontext k, VariantenDaten stamm)
         {

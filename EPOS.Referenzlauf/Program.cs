@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             Console.WriteLine("EPOS.Referenzlauf - Referenzlauf ohne Windows (iU3)");
             Console.WriteLine();
-            Console.WriteLine("  EPOS.Referenzlauf lauf --quelle <sqlite> [--projekte 1030,1007] [--ziel <ordner>] [--stoerung ulp] [--ak3 ein|alle] [--zonensperre ein|aus] [--ak3k ein|aus]");
+            Console.WriteLine("  EPOS.Referenzlauf lauf --quelle <sqlite> [--projekte 1030,1007] [--ziel <ordner>] [--stoerung ulp] [--ak3 ein|alle]");
             Console.WriteLine("  EPOS.Referenzlauf projekt <id> <zielordner>");
             Console.WriteLine("  EPOS.Referenzlauf vergleich <refOrdner> <neuOrdner> [--ohne <a,b>]");
             Console.WriteLine("  EPOS.Referenzlauf pruefen <ordner>");
@@ -147,34 +147,6 @@ namespace WindowsFormsApplication1.Referenzlauf
                     return 2;
                 }
                 Console.WriteLine("Kernstufe AK3: " + Ak3Kernstufe.Modus + " (Messlauf, keine Basis)");
-            }
-
-            // --- 0c. Zonensperre (AK3-K Welle KZ; Messlauf, nie fuer eine Basis bis K5) ----------------
-            string zonensperre = Argument(args, "--zonensperre");
-            if (zonensperre != null)
-            {
-                if (string.Equals(zonensperre, "ein", StringComparison.OrdinalIgnoreCase)) Zonensperre.An = true;
-                else if (string.Equals(zonensperre, "aus", StringComparison.OrdinalIgnoreCase)) Zonensperre.An = false;
-                else
-                {
-                    Console.WriteLine("ABBRUCH: --zonensperre kennt nur \"ein\" und \"aus\".");
-                    return 2;
-                }
-                Console.WriteLine("Zonensperre: " + (Zonensperre.An ? "ein" : "aus") + " (Messlauf, keine Basis)");
-            }
-
-            // --- 0d. Kernschalter AK3-K (Festlegung 21; Messlauf, nie fuer eine Basis) ------------------
-            string ak3k = Argument(args, "--ak3k");
-            if (ak3k != null)
-            {
-                if (string.Equals(ak3k, "ein", StringComparison.OrdinalIgnoreCase)) Ak3KKernschalter.Ein = true;
-                else if (string.Equals(ak3k, "aus", StringComparison.OrdinalIgnoreCase)) Ak3KKernschalter.Ein = false;
-                else
-                {
-                    Console.WriteLine("ABBRUCH: --ak3k kennt nur \"aus\" und \"ein\".");
-                    return 2;
-                }
-                Console.WriteLine("Kernschalter AK3-K: " + (Ak3KKernschalter.Ein ? "ein" : "aus") + " (Messlauf, keine Basis)");
             }
 
             string wurzel = ProjektWurzelFinden();

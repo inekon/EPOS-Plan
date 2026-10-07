@@ -85,14 +85,10 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            // AK3-K (Festlegung 21): die Kälteseite des Kreises nur mit dem Kernschalter.
-            _ak3 = new Ak3Weg { Erzeuger = erzeuger, Kaelte = Ak3KKernschalter.Wirksam(stufe) };
+            // AK3-K (Festlegung 21): der Kreis rechnet seine Kälteseite mit.
+            _ak3 = new Ak3Weg { Erzeuger = erzeuger };
             _vdi6007.Ak3Erfassen = _ak3.Erfassen;
-            if (_ak3.Kaelte)
-                SimulationProtokoll.Aktuell.HinweisEinmal("ak3-kernstufe", MyResource.Resource.SIMENG_AK3K_KREIS_MIT_KAELTESEITE);
-            else
-                SimulationProtokoll.Aktuell.HinweisEinmal("ak3-kernstufe",
-                    "Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis.");
+            SimulationProtokoll.Aktuell.HinweisEinmal("ak3-kernstufe", MyResource.Resource.SIMENG_AK3K_KREIS_MIT_KAELTESEITE);
             return true;
         }
 
@@ -140,15 +136,12 @@ namespace WindowsFormsApplication1
                 if (g.Index < GebaeudeKennzahlenListe.Count) s.Kennzahlen[g.Index] = GebaeudeKennzahlenListe[g.Index];
             }
             // AK3-K (Fehler 1.1 (a)): die Kälteseite nach Pass 1 und je gebuchtem Gebäude seine Kühlreihe aus Pass 1.
-            if (_ak3.Kaelte)
+            s.Kuehlkreis = Kuehlkreis;
+            s.Kaelte = Kaelteseite.Sichern();
+            foreach (Ak3Weg.Eintrag g in _ak3.Gebaeude)
             {
-                s.Kuehlkreis = Kuehlkreis;
-                s.Kaelte = Kaelteseite.Sichern();
-                foreach (Ak3Weg.Eintrag g in _ak3.Gebaeude)
-                {
-                    GebaeudeModellErgebnis e = GebaeudeErgebnisse.Ergebnis(g.Index);
-                    g.Pass1KuehlKwh = Kaelteseite.Bucht(g.Zeile, e) ? (double[])e.KuehlbedarfKwh.Clone() : null;
-                }
+                GebaeudeModellErgebnis e = GebaeudeErgebnisse.Ergebnis(g.Index);
+                g.Pass1KuehlKwh = Kaelteseite.Bucht(g.Zeile, e) ? (double[])e.KuehlbedarfKwh.Clone() : null;
             }
             return s;
         }
@@ -213,7 +206,7 @@ namespace WindowsFormsApplication1
                 }
             }
             Heizkreis = HeizkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
-            if (_ak3.Kaelte) Ak3KaelteNachfuehren();
+            Ak3KaelteNachfuehren();
 
             double[] d = _ak3.DeltaKw;
             if (d.All(x => x == 0.0)) return true;
@@ -246,7 +239,7 @@ namespace WindowsFormsApplication1
     public partial class SimulationWaermebedarf
     {
         /// <summary>
-        /// <b>Die Kälteseite folgt dem Kreis</b> (Entwurf AK3-K 1.1 (a), nur mit <see cref="Ak3KKernschalter"/>): Der
+        /// <b>Die Kälteseite folgt dem Kreis</b> (Entwurf AK3-K 1.1 (a)): Der
         /// Kühlkreis wird aus den Gebäudeergebnissen des Kreises neu gebildet, Kühlkanal, <c>Kaeltebedarf</c>,
         /// <c>Kaeltebedarf_Gebaeude</c> und die Bedarfsprobe nehmen die Abweichung der Kühlreihe je Stunde auf
         /// (<see cref="SimulationKaeltebedarf.KreisNachfuehren"/>). Eine verletzte Bedarfsprobe steht danach in
@@ -281,9 +274,6 @@ namespace WindowsFormsApplication1
             internal double[] KreisKuehlKwh = new double[8760];
         }
 
-        /// <summary>Rechnet der Lauf die Kälteseite des Kreises (AK3-K, <see cref="Ak3KKernschalter"/>)?</summary>
-        internal bool Kaelte { get; set; }
-
         /// <summary>Abweichung des Kühlkanals je Stunde gegen Pass 1 [kWh] (0 = Zeichen für Zeichen Pass 1; AK3-K).</summary>
         internal double[] KaelteDeltaKwh { get; } = new double[8760];
 
@@ -295,7 +285,6 @@ namespace WindowsFormsApplication1
         /// <returns>Die Abweichung der Stunde [kWh]; 0 ohne Abweichung oder ohne Kälteseite.</returns>
         internal double KaelteStundeErfassen(int h)
         {
-            if (!Kaelte) return 0.0;
             bool gleich = true;
             double delta = 0.0;
             foreach (Eintrag e in _gebaeude)

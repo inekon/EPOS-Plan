@@ -11,8 +11,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Proben der Welle AK3-K-K1</b> (Entwurf AK3-K 1.1, Festlegungen 9, 16, 21) am Referenzprojekt 1058 (Stufe AK3,
-    /// reversible Wärmepumpe mit Kühlbetrieb). Alle Proben schalten den <see cref="Ak3KKernschalter"/> ein; ohne Schalter
-    /// rechnet 1058 wie in der Basis R42 (Gate: Referenzlauf byte-gleich).
+    /// reversible Wärmepumpe mit Kühlbetrieb); der Kreis rechnet seine Kälteseite fest mit (Basis R43).
     /// <list type="bullet">
     /// <item><b>Kühlkanal = Kreisreihe, Bedarfsprobe grün</b> (Fehler 1.1 (a)): Kühlkanal, <c>Kaeltebedarf</c>,
     /// <c>Kaeltebedarf_Gebaeude</c> und Jahressumme folgen der Kühlreihe des Steppers; die Kaskade deckt dieselbe Reihe.</item>
@@ -32,24 +31,21 @@ namespace EPOS.Kern.Tests
 
         private const int PROJEKT = 1058;
 
-        private static SimulationRunner Rechnen(int projekt, bool schalter)
+        private static SimulationRunner Rechnen(int projekt)
         {
-            using (Ak3KKernschalter.Schalten(schalter))
-            {
-                SimulationProtokoll.NeuStarten();
-                var r = new SimulationRunner();
-                bool ok = r.SimuliereUndSpeichere(projekt, out string fehler) > 0;
-                Assert.True(ok, "Lauf " + projekt + " gescheitert: " + fehler);
-                Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
-                return r;
-            }
+            SimulationProtokoll.NeuStarten();
+            var r = new SimulationRunner();
+            bool ok = r.SimuliereUndSpeichere(projekt, out string fehler) > 0;
+            Assert.True(ok, "Lauf " + projekt + " gescheitert: " + fehler);
+            Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
+            return r;
         }
 
         [Fact]
-        public void Mit_Schalter_folgt_der_Kuehlkanal_der_Kreisreihe_und_die_Bedarfsprobe_bleibt_gruen()
+        public void Im_Kreis_folgt_der_Kuehlkanal_der_Kreisreihe_und_die_Bedarfsprobe_bleibt_gruen()
         {
             if (!_db.Vorhanden) return;
-            SimulationRunner r = Rechnen(PROJEKT, true);
+            SimulationRunner r = Rechnen(PROJEKT);
             SimulationWaermebedarf w = r.simulation_Waermebedarf;
             Assert.NotNull(w.Ak3);
             SimulationKaeltebedarf k = w.Kaelteseite;
@@ -60,7 +56,7 @@ namespace EPOS.Kern.Tests
             int abweichend = 0;
             for (int h = 0; h < 8760; h++)
                 if (Math.Abs(k.Kaeltebedarf_Gebaeude[h] - e.KuehlbedarfKwh[h]) > 1e-9) abweichend++;
-            _aus.WriteLine("1058 mit Schalter: Gebäude {0:0.00000} MWh, Kaeltebedarf_Gesamt {1:0.00000} MWh, abweichende Stunden {2}",
+            _aus.WriteLine("1058: Gebäude {0:0.00000} MWh, Kaeltebedarf_Gesamt {1:0.00000} MWh, abweichende Stunden {2}",
                            e.KuehlenergieMwh, k.Kaeltebedarf_Gesamt, abweichend);
             Assert.Equal(0, abweichend);
             Assert.Equal(e.KuehlenergieMwh.Value, k.Kaeltebedarf_Gesamt, 9);
@@ -78,8 +74,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Kältestunde bitgleich zum Jahreslauf</b> (Festlegung 16): Je Kälteprojekt ohne Schalter und für 1058 mit
-        /// Schalter (Kältestunde im Kreis nach der Wärmestunde) rechnet die Kaskade des Laufs ein zweites Mal als Jahreslauf
+        /// <b>Kältestunde bitgleich zum Jahreslauf</b> (Festlegung 16): Je Kälteprojekt im Jahreslauf und für 1058
+        /// (Kältestunde im Kreis nach der Wärmestunde) rechnet die Kaskade des Laufs ein zweites Mal als Jahreslauf
         /// über den Kältebedarf des Laufs — Deckung, Rest, Strom, Speicher und Erzeugerreihen Zeichen für Zeichen gleich.
         /// </summary>
         [Theory]
@@ -87,12 +83,12 @@ namespace EPOS.Kern.Tests
         [InlineData(1047, false)]
         [InlineData(1055, false)]
         [InlineData(1056, false)]
-        [InlineData(1058, false)]
         [InlineData(1058, true)]
         public void Kaeltestunde_bitgleich_zum_Jahreslauf(int projekt, bool schalter)
         {
             if (!_db.Vorhanden) return;
-            SimulationRunner r = Rechnen(projekt, schalter);
+            // schalter = rechnet die Kältekaskade im Kreis (nur die Stufe AK3).
+            SimulationRunner r = Rechnen(projekt);
             SimulationKaeltebedarf k = r.simulation_Waermebedarf.Kaelteseite;
             Kaeltekaskade kaskade = k.Kaskade;
             Assert.NotNull(kaskade);
@@ -119,8 +115,8 @@ namespace EPOS.Kern.Tests
             for (int i = 0; i < erzeuger.Length; i++) Assert.Equal(erzeuger[i], erzeugerNach[i]);
             Assert.Equal(deckung, kaskade.DeckungGesamtKwh);
             Assert.Equal(strom, kaskade.StromGesamtKwh);
-            _aus.WriteLine("{0} Schalter {1}: Deckung {2:0.000} MWh, Strom {3:0.000} MWh, Rest {4:0.000} MWh — bitgleich",
-                           projekt, schalter ? "ein" : "aus", deckung / 1000.0, strom / 1000.0, kaskade.RestGesamtKwh / 1000.0);
+            _aus.WriteLine("{0} {1}: Deckung {2:0.000} MWh, Strom {3:0.000} MWh, Rest {4:0.000} MWh — bitgleich",
+                           projekt, schalter ? "im Kreis" : "Jahreslauf", deckung / 1000.0, strom / 1000.0, kaskade.RestGesamtKwh / 1000.0);
         }
 
         [Fact]
@@ -129,23 +125,17 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             string nichtGebaut = string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT,
                                                DbWerte.ANLAGENKOPPLUNG_AK3);
-            Rechnen(PROJEKT, false);
-            var ohne = SimulationProtokoll.Aktuell.Hinweise.ToList();
-            Assert.DoesNotContain(nichtGebaut, ohne);
-            Assert.Contains(ohne, t => t.StartsWith("Anlagenkopplung AK3 (Kernstufe)", StringComparison.Ordinal));
-            Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMENG_AK3K_KREIS_MIT_KAELTESEITE, ohne);
-
-            Rechnen(PROJEKT, true);
+            Rechnen(PROJEKT);
             var mit = SimulationProtokoll.Aktuell.Hinweise.ToList();
             Assert.DoesNotContain(nichtGebaut, mit);
             Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMENG_AK3K_KREIS_MIT_KAELTESEITE, mit);
         }
 
         [Fact]
-        public void Mit_Schalter_bietet_die_reversible_Waermepumpe_am_Kuehltag_keine_Heizleistung_an()
+        public void Im_Kreis_bietet_die_reversible_Waermepumpe_am_Kuehltag_keine_Heizleistung_an()
         {
             if (!_db.Vorhanden) return;
-            SimulationRunner r = Rechnen(PROJEKT, true);
+            SimulationRunner r = Rechnen(PROJEKT);
             Anlagenkopplung kreis = r.simulation_Waermebedarf.Ak3.Kreis;
             Assert.NotNull(kreis);
             WaermepumpeKapazitaet wp = kreis.Erzeuger.OfType<WaermepumpeKapazitaet>().Single();
@@ -171,24 +161,20 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// AK3-K-K2 (4.2, 4.3, Festlegung 14): Mit Schalter trägt der Kreis von 1058 die Kälteschranke — die reversible
+        /// AK3-K-K2 (4.2, 4.3, Festlegung 14): Der Kreis von 1058 trägt die Kälteschranke — die reversible
         /// Wärmepumpe als Kälteerzeuger mit Vorrangschätzung —, zählt die Stunden an der Schranke und den Kälte-Restbedarf.
-        /// Ohne Schalter hat der Kreis keine Kälteschranke.
         /// </summary>
         [Fact]
-        public void Mit_Schalter_traegt_der_Kreis_die_Kaelteschranke()
+        public void Der_Kreis_traegt_die_Kaelteschranke()
         {
             if (!_db.Vorhanden) return;
-            SimulationRunner ohne = Rechnen(PROJEKT, false);
-            Assert.Null(ohne.simulation_Waermebedarf.Ak3.Kreis.Kaelteschranke);
-
-            SimulationRunner r = Rechnen(PROJEKT, true);
+            SimulationRunner r = Rechnen(PROJEKT);
             Anlagenkopplung kreis = r.simulation_Waermebedarf.Ak3.Kreis;
             Assert.NotNull(kreis.Kaelteschranke);
             WaermepumpeKaeltekapazitaet wp = kreis.Kaelteschranke.Erzeuger.OfType<WaermepumpeKaeltekapazitaet>().Single();
             Assert.NotNull(wp.Heizzeitanteil);
             Assert.False(double.IsNaN(kreis.Kaelteschranke.KuehlVorlaufC));
-            _aus.WriteLine("1058 mit Schalter: Kälteschranke gegriffen {0} h, Kälte-Restbedarf {1} h / {2:0.###} kWh, Fallwechsel {3}; " +
+            _aus.WriteLine("1058: Kälteschranke gegriffen {0} h, Kälte-Restbedarf {1} h / {2:0.###} kWh, Fallwechsel {3}; " +
                            "Vorrangschätzung geprüft {4} h, zu knapp {5} h / {6:0.###} kWh, zu weit {7} h, |Δ| max {8:0.######} kW",
                            kreis.StundenAnDerKaelteschranke, r.sim.Ak3KaelteRestStunden, r.sim.Ak3KaelteRestKwh, kreis.FallWechsel,
                            kreis.KaelteschrankeGeprueftStunden, kreis.KaelteschrankeZuKnappStunden, kreis.KaelteschrankeZuKnappKwh,
@@ -197,23 +183,20 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>K3: die Kreiszähler der Kälteseite</b> (Festlegung 20, bis K4 als Laufhinweis) mit beiden Schaltern —
-        /// Kernschalter AK3-K und Zonensperre: Stunden an der Kälteschranke, Umschaltstunden, Kälte-Restbedarf am Kreis
+        /// <b>K3: die Kreiszähler der Kälteseite</b> (Festlegung 20) —
+        /// mit Zonensperre: Stunden an der Kälteschranke, Umschaltstunden, Kälte-Restbedarf am Kreis
         /// (gleich dem der Kältestunde), Vorrangschätzung gegen die echte Kältestunde; der Laufhinweis steht im Protokoll.
         /// </summary>
         [Fact]
-        public void K3_Kreiszaehler_mit_beiden_Schaltern_als_Laufhinweis()
+        public void K3_Kreiszaehler_als_Laufhinweis()
         {
             if (!_db.Vorhanden) return;
             SimulationRunner r;
             IList<string> hinweise;
-            using (Zonensperre.Schalten(true))
-            {
-                r = Rechnen(PROJEKT, true);
-                hinweise = SimulationProtokoll.Aktuell.Hinweise;
-            }
+            r = Rechnen(PROJEKT);
+            hinweise = SimulationProtokoll.Aktuell.Hinweise;
             Anlagenkopplung kreis = r.simulation_Waermebedarf.Ak3.Kreis;
-            _aus.WriteLine("1058 mit beiden Schaltern: Kälteschranke gegriffen {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2} h / " +
+            _aus.WriteLine("1058: Kälteschranke gegriffen {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2} h / " +
                            "{3:0.###} kWh, Fallwechsel {4} (Stützstelle {5}), Durchläufe Mittel {6:0.000} max {7}, Festgehalten {8}; " +
                            "Vorrangschätzung geprüft {12} h, zu knapp {9} h / {10:0.###} kWh, zu weit {11} h, |Δ| max {13:0.######} kW",
                            kreis.StundenAnDerKaelteschranke, kreis.StundenUmschaltung, kreis.KaelteRestStunden, kreis.KaelteRestKwh,

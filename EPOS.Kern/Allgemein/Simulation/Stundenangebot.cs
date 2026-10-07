@@ -271,7 +271,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Heizsperre am Kühltag</b> (AK3-K, Fehler 1.1 (b); Kühlkonzept 5.2, K8a): true in einer Stunde, in der
         /// das Modul im Kühlbetrieb Kältemaschine ist (<see cref="SimulationWaermepumpe.HeizkanalGesperrt"/>). <c>null</c> =
-        /// keine Sperre (ohne <see cref="Ak3KKernschalter"/>).
+        /// keine Sperre.
         /// </summary>
         internal Func<int, bool> Kuehltag { get; set; }
 

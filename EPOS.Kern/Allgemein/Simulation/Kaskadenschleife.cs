@@ -120,7 +120,7 @@ namespace WindowsFormsApplication1
         internal IStundenbedarf Stundenbedarf;
 
         /// <summary>
-        /// <b>Nach jeder Kaskadenstunde</b> (AK3-K, Festlegung 16): im AK3-Weg mit <see cref="Ak3KKernschalter"/> die
+        /// <b>Nach jeder Kaskadenstunde</b> (AK3-K, Festlegung 16): im AK3-Weg die
         /// Kältestunde (<see cref="Kaeltekaskade.StundeRechnen"/>) nach der Wärmestunde. <c>null</c> = nichts (Vorgabe).
         /// </summary>
         internal Action<int> NachStunde;

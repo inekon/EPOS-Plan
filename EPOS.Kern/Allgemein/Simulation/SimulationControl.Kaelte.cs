@@ -498,7 +498,7 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // AK3-K (Festlegung 16): Im AK3-Weg mit Kernschalter hat der Kreis die Kältestunden schon gerechnet.
+            // AK3-K (Festlegung 16): Im AK3-Weg hat der Kreis die Kältestunden schon gerechnet.
             Kaeltekaskade stuendlich = _kaeltestunde;
             _kaeltestunde = null;
             foreach (Kaelteerzeuger e in stuendlich != null ? new List<Kaelteerzeuger>() : _kaelteerzeuger)
@@ -645,8 +645,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Kältestunde im Kreis</b> (AK3-K, Entwurf 4.1 Schritt 5, Festlegung 16), nur im AK3-Weg mit
-        /// <see cref="Ak3KKernschalter"/>: Kälteerzeuger (ohne Wärmepumpe in der Schleife hier statt nach der Wärme),
+        /// <b>Die Kältestunde im Kreis</b> (AK3-K, Entwurf 4.1 Schritt 5, Festlegung 16), nur im AK3-Weg: Kälteerzeuger (ohne Wärmepumpe in der Schleife hier statt nach der Wärme),
         /// Kältespeicher und die Kältekaskade werden vor der Stundenschleife angelegt; die zurückgegebene Aktion rechnet je
         /// Stunde nach der Wärmestunde den Kühlzeitanteil der Wärmepumpen aus ihrem eben gerechneten Heizzeitanteil und
         /// die Kältestunde mit dem Kältebedarf des Kreises (Pass 1 plus Abweichung der Stunde). Danach schließt
@@ -656,7 +655,7 @@ namespace WindowsFormsApplication1
         {
             _kaeltestunde = null;
             Ak3Weg weg = Stundenbedarf is Ak3Stundenbedarf ? simulation_Waermebedarf?.Ak3 : null;
-            if (weg == null || !weg.Kaelte || m_bError) return null;
+            if (weg == null || m_bError) return null;
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf.Kaelteseite;
             if (kaelte == null || !kaelte.Gerechnet) return null;
             if (!_wpInSchleife) KaelteerzeugerVorbereiten();

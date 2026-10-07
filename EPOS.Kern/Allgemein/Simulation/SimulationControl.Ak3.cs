@@ -132,7 +132,7 @@ namespace WindowsFormsApplication1
             {
                 _ak3WaermeAnlagen.Add(z.Modell.ID);
                 WaermepumpeKapazitaet wp = z.Typ == WizardItemClass.WP_TYP && _wpInSchleife
-                    ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan, weg.Kaelte) : null;
+                    ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan, true) : null;
                 erzeuger.Add(wp ?? (IErzeugerkapazitaet)new FesteKapazitaet(z.Fahrplan));
             }
             var kreis = new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()))
@@ -140,8 +140,8 @@ namespace WindowsFormsApplication1
                 // H2 (Festlegung 23, Q-AK3-2): nur Gebäude mit Heizkurve und k_R > 0; ohne solches kein Raumeinfluss.
                 Raumeinfluss = Raumeinfluss.AusGebaeuden(weg.Gebaeude.Select(e => e.Zeile).ToList()),
             };
-            // AK3-K (4.2): die Kälteschranke, nur mit Kältestunde im Kreis (Kernschalter); sonst keine.
-            if (weg.Kaelte) kreis.Kaelteschranke = Ak3KaelteschrankeBauen(erzeuger);
+            // AK3-K (4.2): die Kälteschranke der Kältestunde im Kreis.
+            kreis.Kaelteschranke = Ak3KaelteschrankeBauen(erzeuger);
             // Fallwechsel (2.4): die Stützstelle der ersten Wärmepumpe am Vorlauf jedes Durchlaufs.
             WaermepumpeKapazitaet erste = erzeuger.OfType<WaermepumpeKapazitaet>().FirstOrDefault();
             if (erste != null)
@@ -189,7 +189,7 @@ namespace WindowsFormsApplication1
         {
             Ak3Weg weg = simulation_Waermebedarf.Ak3;
             Anlagenkopplung k = weg?.Kreis;
-            if (weg == null || !weg.Kaelte || k == null || k.Kaelteschranke == null) return;
+            if (weg == null || k == null || k.Kaelteschranke == null) return;
             SimulationProtokoll.Aktuell.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK3K_KREISZAEHLER,
                 k.StundenAnDerKaelteschranke, k.StundenUmschaltung, k.KaelteRestKwh, k.KaelteRestStunden,
                 k.StuetzstellenWechsel + k.FallWechsel, k.KaelteschrankeZuKnappStunden, k.KaelteschrankeZuKnappKwh,
@@ -197,14 +197,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>AK3-K (Fehler 1.1 (a))</b>, nur mit <see cref="Ak3KKernschalter"/>: Der Kühlkanal des Kanalsatzes der
+        /// <b>AK3-K (Fehler 1.1 (a))</b>: Der Kühlkanal des Kanalsatzes der
         /// Kaskade nimmt dieselbe Abweichung je Stunde auf wie der Kühlkanal der Bedarfsseite — die Deckungsprobe Kälte
         /// vergleicht beide. Eine verletzte Bedarfsprobe Kälte bricht den Lauf benannt ab.
         /// </summary>
         private bool Ak3KaelteUebernehmen(Kanalsatz kanaele)
         {
             Ak3Weg weg = simulation_Waermebedarf.Ak3;
-            if (weg == null || !weg.Kaelte) return true;
+            if (weg == null) return true;
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf.Kaelteseite;
             if (!string.IsNullOrEmpty(kaelte.Fehlertext))
             {

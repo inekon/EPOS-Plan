@@ -173,13 +173,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Das (restliche) Jahr: je Stunde ein <see cref="Schritt"/> ohne Anpassung und <see cref="Festschreiben"/>. Mit
-        /// Kernschalter <see cref="Zonensperre.An"/> und einer Zone mit wirksamer Kühlung tageweise mit Zonensperre
+        /// Das (restliche) Jahr: je Stunde ein <see cref="Schritt"/> ohne Anpassung und <see cref="Festschreiben"/>. Mit einer
+        /// Zone mit wirksamer Kühlung tageweise mit Zonensperre
         /// (<see cref="TageMitZonensperre"/>); sonst Zeichen für Zeichen der Bestand.
         /// </summary>
         internal void Jahr()
         {
-            if (Zonensperre.An && _naechste % 24 == 0 && !_offen && KuehlungIrgendwo())
+            if (_naechste % 24 == 0 && !_offen && KuehlungIrgendwo())
             {
                 TageMitZonensperre();
                 return;

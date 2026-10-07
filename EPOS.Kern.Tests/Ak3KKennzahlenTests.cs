@@ -12,7 +12,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Die Kennzahlen von AK3-K im Ergebnis</b> (Entwurf AK3-K 3.5, Festlegung 20; Schemaschritt S1): Zonensperre und
     /// Kälteseite im Kreis in der Projektzeile, im Leser des Bedarfsdialogs und in der Tafel „Kälteseite im Kreis" des
-    /// Berichts — jede Seite nur mit Wert, mit Schaltern aus überall NULL.
+    /// Berichts — jede Seite nur mit Wert, ohne Kühlung bzw. ohne Kreis NULL.
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class Ak3KKennzahlenTests : IDisposable
@@ -71,19 +71,18 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// 1047 mit Zonensperre: die Projektzeile trägt Tage und gesperrte Energie, die Kälteseite des Kreises bleibt NULL
-        /// (AK1); der Leser des Bedarfsdialogs liest dieselben Werte. Schalter aus: alle sieben Spalten NULL.
+        /// (AK1); der Leser des Bedarfsdialogs liest dieselben Werte. Ohne wirksame Kühlung (1030): alle sieben Spalten NULL.
         /// </summary>
         [Fact]
-        public void Der_Lauf_schreibt_die_Zonensperre_nur_mit_Schalter()
+        public void Der_Lauf_schreibt_die_Zonensperre_nur_mit_Kuehlung()
         {
             if (!_db.Vorhanden) return;
-            Rechnen(1047);
+            Rechnen(1030);
             foreach (string s in Ak3KSchema.SPALTEN_ERGEBNIS)
-                Assert.True(Kennzahl(1047, s) is null or DBNull, s + " ist mit Schaltern aus nicht NULL");
-            Assert.Null(GebaeudeBedarfCtrl.Ak3KKennzahlenDesProjekts(1047));
+                Assert.True(Kennzahl(1030, s) is null or DBNull, s + " ist ohne Kühlung nicht NULL");
+            Assert.Null(GebaeudeBedarfCtrl.Ak3KKennzahlenDesProjekts(1030));
 
-            using (Zonensperre.Schalten(true))
-                Rechnen(1047);
+            Rechnen(1047);
             Ak3KKennzahlen k = GebaeudeBedarfCtrl.Ak3KKennzahlenDesProjekts(1047);
             Assert.NotNull(k);
             Assert.True(k.ZonensperreTage > 0);
@@ -97,14 +96,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(k.ZonensperreTage, m?.Energiebedarf.ZonensperreTage);
         }
 
-        /// <summary>1058 auf AK3 mit beiden Schaltern: die Kälteseite des Kreises steht in der Projektzeile.</summary>
+        /// <summary>1058 auf AK3: Zonensperre und Kälteseite des Kreises stehen in der Projektzeile.</summary>
         [Fact]
-        public void Der_Kreis_schreibt_die_Kaelteseite_mit_beiden_Schaltern()
+        public void Der_Kreis_schreibt_die_Kaelteseite()
         {
             if (!_db.Vorhanden) return;
-            using (Zonensperre.Schalten(true))
-            using (Ak3KKernschalter.Schalten(true))
-                Rechnen(1058);
+            Rechnen(1058);
             Ak3KKennzahlen k = GebaeudeBedarfCtrl.Ak3KKennzahlenDesProjekts(1058);
             Assert.NotNull(k);
             Assert.True(k.ZonensperreErhoben);

@@ -1789,7 +1789,7 @@ namespace WindowsFormsApplication1
             // Tagesbetriebsart - VOR der Stundenschleife, denn am Kühltag ist ihr Heizkanal
             // gesperrt. Ohne Kühlbetrieb bleibt das Wärmepumpenmodul unberührt.
             if (_wpInSchleife) KaelteerzeugerVorbereiten();
-            // AK3-K (Festlegung 16): im AK3-Weg mit Kernschalter die Kältestunde je Stunde nach der Wärmestunde.
+            // AK3-K (Festlegung 16): im AK3-Weg die Kältestunde je Stunde nach der Wärmestunde.
             schleife.NachStunde = Ak3KaeltestundeEinrichten();
 
             // --- 5. Stundenschleife A–G ------------------------------------------------

@@ -9,16 +9,15 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Tagesbetriebsart je Zone und Kalenderfreigabe</b> (Entwurf AK3-K, Abschnitt 3, Festlegungen 1–7; Welle KZ) —
-    /// die Proben des Kernschalters <see cref="Zonensperre"/>:
+    /// die Proben der Zonensperre im Gebäude-Stepper:
     /// <list type="number">
     /// <item>die Regel der Freigabe (<see cref="Zonenfreigabe"/>, 3.1, 3.3);</item>
-    /// <item><b>ohne Kühlung bitgleich</b> — Einzone und Mehrzonen, Schalter ein gegen aus;</item>
-    /// <item><b>nur eine Freigabe bitgleich</b> — ein Kalender, der je Tag nur eine Seite freigibt, rechnet wie heute;</item>
-    /// <item><b>der Mischtag wird neu gerechnet</b> — kein Tag heizt und kühlt, die Sperre steht als „aus" in der Reihe,
-    /// bis zum ersten Mischtag Bit für Bit der Bestand;</item>
+    /// <item><b>ohne Kühlung keine Sperre</b> — Einzone und Mehrzonen tragen keine Kennzahl;</item>
+    /// <item><b>nur eine Freigabe</b> — ein Kalender, der je Tag nur eine Seite freigibt, sperrt keinen Tag;</item>
+    /// <item><b>der Mischtag wird neu gerechnet</b> — kein Tag heizt und kühlt, die Sperre steht als „aus" in der Reihe;</item>
     /// <item>Mehrzonen: jede Zone ihre eigene Tagesart;</item>
     /// <item>die Erzeugertagesart (K8a) aus den Kanälen nach der Sperre;</item>
-    /// <item><b>Brauchwasser und Prozess frei</b> — im Projektlauf bleiben ihre Kanäle Bit für Bit.</item>
+    /// <item><b>Brauchwasser und Prozess frei</b> — im Projektlauf bleiben ihre Kanäle mit und ohne Kühlung Bit für Bit.</item>
     /// </list>
     /// </summary>
     [Collection("Testdatenbank")]
@@ -37,7 +36,7 @@ namespace EPOS.Kern.Tests
 
         public ZonentagesartTests(ITestOutputHelper aus) { _aus = aus; }
 
-        public void Dispose() => Zonensperre.An = false;
+        public void Dispose() { }
 
         private static GebaeudeModellEingang Eingang(bool kuehlbetrieb)
         {
@@ -48,24 +47,7 @@ namespace EPOS.Kern.Tests
                                                GebaeudeKlimaweg.ZEITBEZUG_VORGABE, kuehlbetrieb);
         }
 
-        private static GebaeudeModellErgebnis Lauf(GebaeudeModellEingang e, bool an)
-        {
-            using (Zonensperre.Schalten(an)) return Vdi6007Rechenweg.Laufen(e, 0, 1);
-        }
-
-        private static void Bitgleich(string wer, GebaeudeModellEingang e1, GebaeudeModellErgebnis r1,
-                                      GebaeudeModellEingang e2, GebaeudeModellErgebnis r2)
-        {
-            List<(string Name, double[] Werte)> a = GebaeudeEinzonennetzTests.Reihen(e1, r1);
-            List<(string Name, double[] Werte)> b = GebaeudeEinzonennetzTests.Reihen(e2, r2);
-            Assert.Equal(a.Select(x => x.Name), b.Select(x => x.Name));
-            for (int i = 0; i < a.Count; i++)
-                Assert.True(GebaeudeEinzonennetzTests.Bilden(a[i].Werte).Sha256 == GebaeudeEinzonennetzTests.Bilden(b[i].Werte).Sha256,
-                            wer + ": Reihe " + a[i].Name + " weicht ab.");
-            Assert.Equal(r1.StundenMitUmschaltung, r2.StundenMitUmschaltung);
-            Assert.Equal(r1.StundenHeizenUndKuehlen, r2.StundenHeizenUndKuehlen);
-            Assert.Equal(r1.StundenMitSommerlueftung, r2.StundenMitSommerlueftung);
-        }
+        private static GebaeudeModellErgebnis Lauf(GebaeudeModellEingang e) => Vdi6007Rechenweg.Laufen(e, 0, 1);
 
         /// <summary>Die Tage, an denen eine Zone heizt und kühlt (Heizlast W, Kühlbedarf kWh).</summary>
         private static List<int> Mischtage(GebaeudeModellErgebnis r)
@@ -117,42 +99,33 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         [Fact]
-        public void Ohne_Kuehlung_rechnet_der_Schalter_bitgleich()
+        public void Ohne_Kuehlung_sperrt_kein_Tag()
         {
-            GebaeudeModellEingang e1 = Eingang(false), e2 = Eingang(false);
-            Assert.False(e1.KuehlungWirksam);
-            GebaeudeModellErgebnis aus = Lauf(e1, false), ein = Lauf(e2, true);
-            Bitgleich("Einzone", e1, aus, e2, ein);
+            GebaeudeModellEingang e = Eingang(false);
+            Assert.False(e.KuehlungWirksam);
+            GebaeudeModellErgebnis ein = Lauf(e);
             Assert.Null(ein.Zonensperre);
+            Assert.True(ein.HeizlastW.Sum() > 0.0);
 
             ProjektGebaeudeModel g = AufheizMehrzonenTests.Dreizonen();
-            Mehrzonenergebnis m1, m2;
-            using (Zonensperre.Schalten(false)) m1 = Zonenrechnung.Rechnen(g, ZonenschleifeTests.KlimaDes(), false, null, 0, g.ID_Gebaeude);
-            using (Zonensperre.Schalten(true)) m2 = Zonenrechnung.Rechnen(g, ZonenschleifeTests.KlimaDes(), false, null, 0, g.ID_Gebaeude);
-            for (int z = 0; z < m1.Zonen.Count; z++)
-            {
-                Assert.Equal(ZonenschleifeTests.Abdruck(m1.Zonen[z].HeizlastW), ZonenschleifeTests.Abdruck(m2.Zonen[z].HeizlastW));
-                Assert.Equal(ZonenschleifeTests.Abdruck(m1.Zonen[z].Raumtemperatur), ZonenschleifeTests.Abdruck(m2.Zonen[z].Raumtemperatur));
-                Assert.Null(m2.Zonen[z].Zonensperre);
-            }
-            Assert.Equal(m1.Schleife.IterierteStunden, m2.Schleife.IterierteStunden);
+            Mehrzonenergebnis m = Zonenrechnung.Rechnen(g, ZonenschleifeTests.KlimaDes(), false, null, 0, g.ID_Gebaeude);
+            foreach (GebaeudeModellErgebnis z in m.Zonen) Assert.Null(z.Zonensperre);
         }
 
         [Fact]
         public void Nur_eine_Freigabe_je_Tag_rechnet_bitgleich()
         {
-            GebaeudeModellEingang e1 = Eingang(true), e2 = Eingang(true);
-            foreach (GebaeudeModellEingang e in new[] { e1, e2 })
-                for (int h = 0; h < 8760; h++)
+            GebaeudeModellEingang e = Eingang(true);
+            for (int h = 0; h < 8760; h++)
                 {
                     // Heizperiode im Winterhalbjahr, Kühlperiode im Sommerhalbjahr (Tag 120 bis 272).
                     int d = h / 24;
-                    if (d >= 120 && d < 273) e.ThetaSoll[h] = double.NaN;
-                    else e.ThetaMax[h] = double.PositiveInfinity;
-                }
-            Assert.True(e1.KuehlungWirksam);
-            GebaeudeModellErgebnis aus = Lauf(e1, false), ein = Lauf(e2, true);
-            Bitgleich("eine Freigabe", e1, aus, e2, ein);
+                if (d >= 120 && d < 273) e.ThetaSoll[h] = double.NaN;
+                else e.ThetaMax[h] = double.PositiveInfinity;
+            }
+            Assert.True(e.KuehlungWirksam);
+            GebaeudeModellErgebnis ein = Lauf(e);
+            Assert.Empty(Mischtage(ein));
             Assert.NotNull(ein.Zonensperre);
             Assert.Equal(0, ein.Zonensperre.TageBeides);
             Assert.Equal(0, ein.Zonensperre.Tage);
@@ -166,11 +139,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Mischtag_wird_mit_gesperrter_Gegenseite_neu_gerechnet()
         {
-            GebaeudeModellEingang e1 = Eingang(true), e2 = Eingang(true);
-            GebaeudeModellErgebnis aus = Lauf(e1, false), ein = Lauf(e2, true);
-            List<int> mischAus = Mischtage(aus);
-            _aus.WriteLine("Mischtage ohne Sperre: " + mischAus.Count + ", Sperre: " + ein.Zonensperre);
-            Assert.NotEmpty(mischAus);
+            GebaeudeModellEingang e2 = Eingang(true);
+            GebaeudeModellErgebnis ein = Lauf(e2);
+            _aus.WriteLine("Sperre: " + ein.Zonensperre);
             Assert.Empty(Mischtage(ein));
 
             Zonensperrkennzahl k = ein.Zonensperre;
@@ -192,22 +163,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(k.Heiztage, kuehlAus);
             Assert.Equal(heizAus, Enumerable.Range(0, 365).Count(d => double.IsNaN(ein.Heizsollwert[d * 24])));
 
-            // Bis zum ersten Mischtag rechnet der Lauf Bit für Bit wie ohne Sperre.
-            int erste = mischAus[0] * 24;
-            for (int s = 0; s < erste; s++)
-            {
-                Assert.Equal(BitConverter.DoubleToInt64Bits(aus.HeizlastW[s]), BitConverter.DoubleToInt64Bits(ein.HeizlastW[s]));
-                Assert.Equal(BitConverter.DoubleToInt64Bits(aus.Raumtemperatur[s]), BitConverter.DoubleToInt64Bits(ein.Raumtemperatur[s]));
-            }
-            // Die Tagesart folgt den Tagessummen des Probetags: Kühltag ⇔ Σ Kühlen > Σ Heizen (Gleichstand: Heiztag).
-            int d0 = mischAus[0];
-            double heiz = 0.0, kuehl = 0.0;
-            for (int s = d0 * 24; s < d0 * 24 + 24; s++) { heiz += aus.HeizlastW[s]; kuehl += aus.KuehlbedarfKwh[s] * 1000.0; }
-            bool kuehltag = kuehl > heiz;
-            for (int s = d0 * 24; s < d0 * 24 + 24; s++)
-                Assert.True(kuehltag ? ein.HeizlastW[s] == 0.0 : ein.KuehlbedarfKwh[s] == 0.0);
             // Deterministisch.
-            GebaeudeModellErgebnis noch = Lauf(Eingang(true), true);
+            GebaeudeModellErgebnis noch = Lauf(Eingang(true));
             Assert.Equal(ZonenschleifeTests.Abdruck(ein.HeizlastW), ZonenschleifeTests.Abdruck(noch.HeizlastW));
             Assert.Equal(ZonenschleifeTests.Abdruck(ein.KuehlbedarfKwh), ZonenschleifeTests.Abdruck(noch.KuehlbedarfKwh));
         }
@@ -218,13 +175,9 @@ namespace EPOS.Kern.Tests
             ProjektGebaeudeModel g = AufheizMehrzonenTests.Dreizonen();
             g.Kuehlung_Aktiv = true;
             g.Kuehl_Sollwert = 22.0;
-            Mehrzonenergebnis aus, ein;
-            using (Zonensperre.Schalten(false)) aus = Zonenrechnung.Rechnen(g, Mehrzonenklima(), true, null, 0, g.ID_Gebaeude);
-            using (Zonensperre.Schalten(true)) ein = Zonenrechnung.Rechnen(g, Mehrzonenklima(), true, null, 0, g.ID_Gebaeude);
-            int mischAus = aus.Zonen.Sum(z => Mischtage(z).Count);
-            _aus.WriteLine("Zonen: " + string.Join("; ", aus.Zonen.Select(z => z.HeizlastW.Sum().ToString("F0") + " W·h / " +
+            Mehrzonenergebnis ein = Zonenrechnung.Rechnen(g, Mehrzonenklima(), true, null, 0, g.ID_Gebaeude);
+            _aus.WriteLine("Zonen: " + string.Join("; ", ein.Zonen.Select(z => z.HeizlastW.Sum().ToString("F0") + " W·h / " +
                                                                               (z.KuehlbedarfKwh?.Sum() ?? -1).ToString("F1") + " kWh")));
-            Assert.True(mischAus > 0, "Die Mehrzonenprobe zeigt keinen Mischtag.");
             int gegenlaeufig = 0;
             for (int z = 0; z < ein.Zonen.Count; z++)
             {
@@ -245,7 +198,7 @@ namespace EPOS.Kern.Tests
                 }
                 if (heizt && kuehlt) gegenlaeufig++;
             }
-            _aus.WriteLine("Mischtage ohne Sperre (Summe der Zonen): " + mischAus + ", Tage mit heizender und kühlender Zone: " +
+            _aus.WriteLine("Tage mit heizender und kühlender Zone: " +
                            gegenlaeufig + ", Sperrtage je Zone: " + string.Join(", ", ein.Zonen.Select(z => z.Zonensperre?.Tage)));
             Assert.True(ein.Zonen.Sum(z => z.Zonensperre?.Tage ?? 0) > 0);
         }
@@ -253,7 +206,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Erzeugertagesart_folgt_der_Zone_nach_der_Sperre()
         {
-            GebaeudeModellErgebnis ein = Lauf(Eingang(true), true);
+            GebaeudeModellErgebnis ein = Lauf(Eingang(true));
             var heiz = new double[8760];
             for (int h = 0; h < 8760; h++) heiz[h] = ein.HeizlastW[h] / 1000.0;
             bool[] kuehltag = Kaeltekaskade.TagesbetriebsartBestimmen(heiz, ein.KuehlbedarfKwh);
@@ -275,31 +228,29 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
-            const int PROJEKT = 1007;   // Bürobau mit Brauchwasserzuordnung; hier mit Kühlung
+            const int PROJEKT = 1007;   // Bürobau mit Brauchwasserzuordnung; ohne und mit Kühlung
+            Kanalsatz aus = Kanaele(PROJEKT);
             DataRepository.ExecuteNonQuery("UPDATE Tab_Einstellungen SET Kuehlbetrieb = 1 WHERE ID_Projekt = ?", new DbParam("@p", PROJEKT));
             DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET Kuehlung_Aktiv = 1, Kuehl_Sollwert = 24 WHERE ID_Projekt = ?",
                                            new DbParam("@p", PROJEKT));
 
-            Kanalsatz aus = Kanaele(PROJEKT, false), ein = Kanaele(PROJEKT, true);
+            Kanalsatz ein = Kanaele(PROJEKT);
             Assert.Equal(ZonenschleifeTests.Abdruck(aus.Brauchwasser), ZonenschleifeTests.Abdruck(ein.Brauchwasser));
             Assert.Equal(ZonenschleifeTests.Abdruck(aus.Prozess), ZonenschleifeTests.Abdruck(ein.Prozess));
             Assert.True(aus.Brauchwasser.Sum() > 0.0, "Projekt 1007 trägt kein Brauchwasser.");
-            Assert.True(aus.Kuehlung.Sum() > 0.0, "Projekt 1007 kühlt nicht.");
+            Assert.True(ein.Kuehlung.Sum() > 0.0, "Projekt 1007 kühlt nicht.");
             _aus.WriteLine("Raumheizung " + aus.Heizung.Sum().ToString("F1") + " → " + ein.Heizung.Sum().ToString("F1") +
                            " kWh, Kühlung " + aus.Kuehlung.Sum().ToString("F1") + " → " + ein.Kuehlung.Sum().ToString("F1") + " kWh");
             Assert.NotEqual(ZonenschleifeTests.Abdruck(aus.Heizung), ZonenschleifeTests.Abdruck(ein.Heizung));
         }
 
-        private static Kanalsatz Kanaele(int projekt, bool an)
+        private static Kanalsatz Kanaele(int projekt)
         {
-            using (Zonensperre.Schalten(an))
-            {
-                SimulationProtokoll.NeuStarten();
-                var lauf = new SimulationRunner();
-                int kopf = lauf.SimuliereUndSpeichere(projekt, out string fehler);
-                Assert.True(kopf > 0, fehler);
-                return lauf.simulation_Waermebedarf.KanaeleDrei();
-            }
+            SimulationProtokoll.NeuStarten();
+            var lauf = new SimulationRunner();
+            int kopf = lauf.SimuliereUndSpeichere(projekt, out string fehler);
+            Assert.True(kopf > 0, fehler);
+            return lauf.simulation_Waermebedarf.KanaeleDrei();
         }
     }
 }

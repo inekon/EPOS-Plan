@@ -432,8 +432,8 @@ namespace WindowsFormsApplication1
         internal double[] Kuehlsollwertreihe { get; init; }
 
         /// <summary>
-        /// Die Kennzahlen der Zonensperre dieser Zone (Entwurf AK3-K 3.5; Welle KZ) — nur mit Kernschalter
-        /// <see cref="Zonensperre.An"/> und wirksamer Kühlung, sonst <c>null</c>; am Mehrzonengebäude die Summe der Zonen.
+        /// Die Kennzahlen der Zonensperre dieser Zone (Entwurf AK3-K 3.5; Welle KZ) — nur mit wirksamer
+        /// Kühlung, sonst <c>null</c>; am Mehrzonengebäude die Summe der Zonen.
         /// </summary>
         internal Zonensperrkennzahl Zonensperre { get; set; }
 

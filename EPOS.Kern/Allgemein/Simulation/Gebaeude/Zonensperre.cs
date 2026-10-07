@@ -3,44 +3,6 @@ using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>
-    /// <b>Der Kernschalter der Zonensperre</b> (Entwurf AK3-K, Abschnitt 3, Festlegungen 1–7 und 21; Welle KZ): In einer
-    /// Zone wird an einem Tag nie geheizt und gekühlt. Bis zur Basiswelle K5 rechnet die Sperre nur mit diesem Schalter
-    /// (ohne Schema, <b>Vorgabe aus</b>, Muster <see cref="Ak3Kernstufe"/>); aus heißt Zeichen für Zeichen der Bestand.
-    /// Die Proben und der Referenzlauf (<c>--zonensperre ein</c>) schalten ein.
-    /// <para>Die Sperre wirkt in Pass 1 im Jahreslauf des Gebäude-Steppers (<see cref="GebaeudeStepper.Jahr"/>) und damit
-    /// auf allen Stufen (ohne Kopplung, AK1, AK2, AK3); der Kreis von AK3 rechnet aus demselben Eingang und übernimmt
-    /// die Tagesart als feste Vorgabe. Der Tagesbilanz-Weg rechnet keine Kühlung und bleibt unberührt.</para>
-    /// </summary>
-    public static class Zonensperre
-    {
-        /// <summary>Ist die Zonensperre an? Vorgabe <c>false</c>.</summary>
-        public static bool An { get; set; }
-
-        /// <summary>Setzt den Schalter für die Dauer eines <c>using</c>-Blocks und stellt danach den vorherigen zurück.</summary>
-        public static IDisposable Schalten(bool an)
-        {
-            bool vorher = An;
-            An = an;
-            return new Rueckstellung(vorher);
-        }
-
-        private sealed class Rueckstellung : IDisposable
-        {
-            private readonly bool _vorher;
-            private bool _erledigt;
-
-            internal Rueckstellung(bool vorher) { _vorher = vorher; }
-
-            public void Dispose()
-            {
-                if (_erledigt) return;
-                _erledigt = true;
-                An = _vorher;
-            }
-        }
-    }
-
     /// <summary>Die Freigabe der Raumkonditionierung einer Zone an einem Tag (Entwurf AK3-K 3.1, 3.3).</summary>
     public enum Freigabeart
     {

@@ -611,7 +611,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Kennzahlen der Zonensperre</b> (Entwurf AK3-K 3.5; Welle KZ): Tage mit Sperre der Gegenseite, Stunden und
-        /// gesperrte Energie des Probetags, Tage mit beiden Freigaben — nur mit Kernschalter und wirksamer Kühlung. Bis S1
+        /// gesperrte Energie des Probetags, Tage mit beiden Freigaben — nur mit wirksamer Kühlung. Bis S1
         /// (K4) allein dieser Laufhinweis.
         /// </summary>
         internal static void HinweisZonensperre(Zonensperrkennzahl z, string wer)

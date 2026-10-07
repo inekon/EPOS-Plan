@@ -21,7 +21,7 @@ namespace WindowsFormsApplication1
     //                              Ak3_Kaelterest_Stunden            INTEGER 0..8760   Stunden mit Kaelte-Restbedarf (F. 14)
     //                              Ak3_Kaelterest_MWh                REAL >= 0         Kaelte-Restbedarf im Jahr
     //
-    // GELTUNGSBEREICH. Die Zonensperre-Spalten stehen nur, wenn die Sperre lief (Kernschalter und eine
+    // GELTUNGSBEREICH. Die Zonensperre-Spalten stehen nur, wenn die Sperre lief (eine
     // Zone mit wirksamer Kuehlung) - Projektsumme ueber alle Zonen aller Gebaeude; die Ak3_*-Spalten
     // nur, wenn der Kreis auf AK3 die Kaelteseite rechnete. Sonst NULL = "nicht erhoben"; der
     // Referenzlauf-Export nimmt eine NULL-Spalte nicht auf und bleibt byte-gleich.

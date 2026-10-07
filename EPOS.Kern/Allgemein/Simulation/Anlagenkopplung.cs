@@ -246,7 +246,7 @@ namespace WindowsFormsApplication1
         /// <b>Die Kälteschranke</b> (AK3-K 4.2): das Kälteangebot am festen Kühlvorlauf, einmal am Stundenbeginn befragt,
         /// verteilt wie die Wärmeschranke (bei mehreren Gebäuden oder Zonen nach dem unbegrenzten Kühlbedarf des
         /// Probeschritts) und je Zone über <see cref="Stundenrand.MitKaelteverfuegbarkeit"/> in den Schritt gegeben.
-        /// <c>null</c> = keine Kälteschranke (Vorgabe; ohne <see cref="Ak3KKernschalter"/>) — Zeichen für Zeichen wie zuvor.
+        /// <c>null</c> = keine Kälteschranke (ohne Kälteseite) — Zeichen für Zeichen wie zuvor.
         /// </summary>
         internal Kaelteschranke Kaelteschranke { get; set; }
 
