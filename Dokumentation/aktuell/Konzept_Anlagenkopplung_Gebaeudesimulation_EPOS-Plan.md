@@ -1,5 +1,7 @@
 # Konzept: Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur (Anlagenkopplung)
 
+> **Nachgezogen 07.10.2026 — Entscheide E100 und E102** ([Register](Status_Gebaeudesimulation_VDI6007.md)): AK3 wird jetzt gebaut (E100; H6 aufgehoben), nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) mit den Antworten E102. AK3 ist eine **eigene, wählbare Stufe** (Vorgabe AK1), die Kaskade wird **befragt, nicht zurückgenommen**, die Interpolation der Wärmepumpenkennlinie über den Vorlauf ist der eigene Gegenstand **AK3-I** (H-F4 abgelöst). Kapitel 0, 6.3, 11.2, 12, 13 und 14 tragen diesen Stand; Architektur, Festlegungen und Wellenplan stehen im Entwurf.
+
 > **Nachgezogen 05.10.2026 — Entscheid E89** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.70): Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe **GA — Altweg ablösen** entfällt, Q24 und Q25 sind gegenstandslos. Wo dieses Papier GA, „bis zur Ablösung“ oder die Löschliste nennt, gilt: Der Sonderfall „feste Last“ samt Hinweis und Ausweis bleibt dauerhaft und steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
 
 > **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Altweg ist
@@ -179,8 +181,9 @@ Quelltextbelege tragen `Datei:Zeile` und sind für dieses Papier **selbst nachge
    für das Neu-Einfrieren. **Vorgabe ist überall „aus"**, und ein Bestandsprojekt rechnet
    unverändert, solange sie aus ist (Kapitel 12). **Die Fragen H1–H12 sind mit E24 entschieden**
 (Konzept N1.29), **und der Stufenplan ist es mit E27 (Q26, (a))**: AK1 nach G2, AK2 nach
-abgenommenem AK1 und einer Feldphase, AK3 danach und — nach H6 — erst nach der Feldphase von AK1
-und AK2 zugesagt (E23; 12.1, 12.3).
+abgenommenem AK1 und einer Feldphase, AK3 danach. **AK3 wird mit E100 jetzt gebaut** (H6 aufgehoben),
+als eigene, wählbare Stufe nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) und den Antworten **E102**: acht Wellen W0–W6 und
+W-I, **20,5–33,5 PT** statt 23–38 PT (12.1, 12.2).
 
 ---
 
@@ -1079,10 +1082,15 @@ ohne Fahrplan.
 
 ### 6.3 AK3 — der geschlossene Kreis
 
-AK3 ist die einzige Stufe, die den Bestandsrumpf berührt, und sie berührt ihn an der teuersten
-Stelle: **„erst Bedarf, dann Deckung" gilt nicht mehr.** Heute rechnet `SimulationWaermebedarf`
-den vollständigen Jahresvektor, `SimulationControl` fährt danach die Kaskade darüber. Mit AK3
-rechnen beide **je Stunde**, und zwar mehrfach.
+AK3 ist die einzige Stufe, die den Bestandsrumpf berührt: **„erst Bedarf, dann Deckung" gilt nicht
+mehr.** Die Wärmedeckung hat schon eine Stundenschleife über alle Schleifenmitglieder
+(`Kaskadenschleife.Rechnen`); den fertigen Jahresvektor lesen die Bedarfsnaht am Kopf der Stunde, die
+Vektorstufen und eine Reihe von Lesern vor und nach der Schleife. AK3 lässt die **Kaskadenstunde die
+Gebäudestunde treiben**: Ein Gebäude-Stepper rechnet innen je Stunde, eine zustandsfreie
+**Angebotsfunktion** sagt vor dem Gebäudeschritt, was die Anlage bei Vorlauf V liefern kann (Kapazität
+der verfügbaren Erzeuger, aus dem Speicher entnehmbar, abzüglich Vorrang; E102, Q-AK3-3), und die echte
+Kaskadenstunde läuft **einmal** nach der Konvergenz. **Die Kaskade wird befragt, nicht
+zurückgenommen** — der Zustand der Anlagenseite bleibt unberührt ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 2.1–2.5).
 
 **Das Muster ist nicht neu — es steht in [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md)** und
 wird Zeichen für Zeichen übernommen:
@@ -1104,29 +1112,33 @@ scheitern. **Regel: früh scheitern und benennen**, statt spät zu scheitern.
 
 **Was in den Kreis wirkt:**
 
-- **Vorlauf → Wirkungsgrad.** Die Wärmepumpe liest die Kennlinie **je Stunde** zu dem Vorlauf, den
-  das Gebäude verlangt, statt zu einem Festwert (3.4). Für Kessel und BHKW gibt es heute **keinen**
-  Temperaturbezug des Wirkungsgrads (`SimulationBHKW.cs:158`, `:332`) — er müsste als Kennlinie
-  hinzukommen, und **das ist ein eigener Gegenstand, kein Nebenprodukt**: AK3 führt ihn für die
-  Wärmepumpe (die Daten liegen vor) und weist ihn für Kessel und BHKW **benannt** als nicht
-  gerechnet aus.
-- **Regelung → Vorlauf.** Eine raumgeführte Korrektur der Heizkurve (Absenkung, wenn alle Räume
-  zufrieden sind) ist erst hier sinnvoll — in AK1 wäre sie ein Kreis ohne Iteration (**H2**).
+- **Vorlauf → Kapazität und Wirkungsgrad.** Die Wärmepumpe liest die Kennlinie je Stunde am
+  gerechneten Vorlauf — gebaut seit AK1 (3.4); neu ist, die **Kapazität** dort als Schranke zu lesen.
+  Mit **AK3-I** (E102) wird die Kennlinie zwischen zwei Vorlauf-Stützstellen linear interpoliert,
+  auf Wärme- und Kälteseite (H-F4 abgelöst). Der Brennwertkessel rechnet seine Kennlinie am
+  gerechneten Rücklauf; BHKW und Niedertemperaturkessel haben keinen Temperaturbezug. Beides wirkt
+  auf Brennstoff bzw. Wirkungsgrad, **nicht** auf die Kapazität, also nicht in den Kreis; der Bericht
+  benennt es.
+- **Regelung → Vorlauf.** Ohne Korrektur ist der Vorlauf in Schritt H eine **Vorgabe** (Heizkurve,
+  Außentemperatur, Sollwert, `Vorlauf_Max`); ein Einzelgebäude hat dann in der Stunde keinen
+  Fixpunkt, die Stunde ist explizit lösbar. Den Kreis innerhalb der Stunde schließen die
+  raumgeführte Korrektur der Heizkurve (**H2**; nach E102 je Stunde, Raumtemperatur derselben Stunde,
+  Führungsgröße die Zone mit der größten Unterschreitung), der bedarfsgewichtete Projektvorlauf
+  mehrerer Gebäude und die Verteilung der Schranke.
 - **Speicher → Verfügbarkeit.** Der Ladezustand je Stunde ersetzt den Vorrats-Näherungswert des
   Profilwegs (5.4).
 
-**Rechenzeit.** Die Gebäudeseite kostet rund 5 ms je Zone und Jahr
-([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 4.8); bei drei bis sechs Durchläufen
-je Stunde sind das **15 bis 30 ms je Einzonengebäude und Jahr** — gegenüber dem heutigen
-Gesamtlauf von rund 4 s unerheblich. Kritisch wird erst die Verbindung mit dem Mehrzonenfall: 50
-Zonen × 6 Zonendurchläufe × 6 Anlagendurchläufe sind 1 800 Zonenjahre, also rund **9 s** je Gebäude
-und Jahr. **Festlegung: Bei mehr als einer Zone wird die Anlageniteration außen und die
+**Rechenzeit — gemessen.** Ein gekoppeltes Einzonengebäude kostet **27,6 ms** je Durchlauf und Jahr
+(1047, samt Vorbereitung; ungekoppelt 13,3 ms bei 1017), je Zone, Durchlauf und Jahr gekoppelt
+11–29 ms. Erwartet werden 1 bis 2 Durchläufe je Stunde, mit H2 bis 4; der typische Fall eines
+50-Zonen-Gebäudes liegt bei rund **2–9 s** ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 2.7). **Grenze nach E102 (Q-AK3-5):**
+AK3 höchstens das Dreifache desselben Gebäudes ohne Kreis, Einzone zusätzlich ≤ 100 ms (E36). **Festlegung: Bei mehr als einer Zone wird die Anlageniteration außen und die
 Zonenkopplung innen geführt** — und dann multiplizieren sich die Höchstzahlen.
 
 **Der Grenzfall gehört ausgerechnet, nicht nur benannt.** Die Höchstzahlen sind 50 Zonendurchläufe
 ([ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md)) und 20 Anlagendurchläufe (oben); bei 50 Zonen
-ergibt das im schlechtesten Fall 50 × 50 × 20 = **50 000 Zonenjahre**, also rund **250 s** — gut
-vier Minuten je Gebäude und Jahr, das Sechzigfache des heutigen Gesamtlaufs. Das ist keine
+ergibt das im schlechtesten Fall 50 × 50 × 20 = **50 000 Zonenjahre** — ohne Schranke ein Lauf von
+vielen Minuten je Gebäude und Jahr. Das ist keine
 Laufzeit, die eine Abnahme trägt, und es ist auch keine, die jemand als Fehler erkennt: Der Lauf
 bleibt „nur langsam".
 
@@ -1135,7 +1147,7 @@ beschränkt.** Wird es überschritten, gilt die Stunde als **nicht konvergiert**
 dem benannten Fehler aus F-A15 (Gebäude, Stunde, Beteiligte, größte verbleibende Abweichung) und
 dem zuletzt erreichten Stand, nicht mit einer stillen Näherung. Die Schranke deckt den typischen
 Fall mit großem Abstand (6 × 6 = 36) und hält den schlechtesten Fall bei 50 Zonen auf 50 × 120 =
-6 000 Zonenjahre, also rund **30 s** je Gebäude und Jahr. **Die Laufzeit ist vor der Abnahme von
+6 000 Zonenjahre, mit den gemessenen 11–29 ms also rund **70–175 s** je Gebäude und Jahr. **Die Laufzeit ist vor der Abnahme von
 AK3 an einem echten Mehrzonengebäude zu messen, nicht zu schätzen** (N-A4).
 
 ### 6.4 Was nichts davon berührt
@@ -2212,10 +2224,17 @@ Es gibt für die Anlagenkopplung **keinen Normtestfall** — genauso wenig wie f
 ([ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md), „Nachweisbarkeit"). Der Nachweis muss aus
 einem **exakt lösbaren Sonderfall** kommen, und es gibt einen:
 
-> **Ein Gebäude, ein Erzeuger, kein Speicher, keine Sperrzeit, Wärmepumpe mit linear über dem
-> Vorlauf interpolierter Leistung.** Dann ist die gekoppelte Lösung einer Stunde eine **skalare
-> Fixpunktgleichung** in `theta_V` und geschlossen lösbar — ohne Iteration. Die iterative Lösung
-> muss sie auf die Abbruchschwelle treffen.
+> **Ein Gebäude, eine Zone, ein Erzeuger, kein Speicher, keine Sperrzeit, H2 an, Wärmepumpe mit
+> linear über dem Vorlauf interpolierter Leistung.** Dann ist die gekoppelte Lösung einer Stunde
+> die Nullstelle einer streng monotonen skalaren Funktion g(θ_V) und durch Bisektion eindeutig
+> bestimmt. Die iterative Lösung muss sie auf die Abbruchschwelle treffen (Vorlauf 0,05 K,
+> Raumluft 0,01 K, Leistung 0,1 W).
+
+**Ohne H2 ist der Vorlauf Vorgabe** und die Stunde explizit lösbar — das Orakel braucht H2. Mit
+**AK3-I** (E102) ist die Interpolation über den Vorlauf auch im Produkt die Regel; das Orakel prüft
+daher **den Produktweg selbst** (O1 mit Testkennlinie, O1p mit echter Kennlinie aus drei
+Stützstellen). Erzeuger konstanter Leistung (Geräte mit einer Kennlinie, Kessel) prüft **O2**; die
+Sprungstellenprobe des Entwurfs (O3) entfällt ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 3).
 
 Dazu, wie in ADR-005, die **Vergleichsrechnung** mit dem einfacheren Weg: AK2 (Profilweg) neben
 AK3 (echte Kopplung) am selben Projekt, damit der Gewinn eine Zahl ist und keine Behauptung. Und
@@ -2371,10 +2390,11 @@ eingeschalteter Kopplung rechnen wollte, würde die Referenz verlassen** — die
 | **AK0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 15, Kühlkonzept 1.3/14, Systementwurf 12 und Umsetzungskonzept auf E22, E23 und **E26**; die Fragen **H1–H12** sind mit **E24** entschieden (13.1), der Stufenplan **Q26** mit **E27** (12.3) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
 | **AK1** | **Heizkreis als Randbedingung.** Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) samt Sichtneubau und NULL-erhaltender Katalogkopie; Klasse `Waermeuebergabe`; Heizkurve und Sollwertvektor in `GebaeudeModellEingang`; vierter Betriebsfall in `Zonenmodell2K` samt Sekantenleitwert; `Stundenrand`/`Stundenergebnis` erweitert; Gruppe „Wärmeübergabe" im Gebäudedialog samt Wochenraster-Baustein; Hülle nach `EPOS.UI.Daten`; zwei Kennzahlkacheln, Bild „Vorlauf und Rücklauf", Berichtsabschnitt; drei bedingte Reihen im Export; **Kennlinienwahl der Wärmepumpe am gerechneten Vorlauf** (6.1, Erzeugerseite); Texte, Meldungen, Wiki-Abschnitt | **G1 und G2 stehen** — AK1 kommt nach G2 (Q26, E27); ohne Stundenmodell im Produkt keine stündliche Raumtemperatur; das Gebäudeschema mit `Heizleistung_Max` und `Heizung_Strahlungsanteil` ist ausgerollt | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kopplung byte-gleich; die beiden Grenzfallproben aus 11.1; `ChartProben` grün | **ja** | **10–15** |
 | **AK2** | **Erzeugerfahrplan als Verfügbarkeit.** Schemaschritt `AK-S2` (Zeitprogramm, `Vorlauf_Max`) und der Komfortteil von `AK-S3`; Klasse `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` (Profilweg, mit Speichervorrat über die Sperrdauer); **Zweipass der Verteilung** samt Randfall, Rundungsrest und zweiter Stufe auf die Zonen (6.2); Wochenraster im Erzeugerdialog; vierte Grenze in der Kette (4.5); Komfortkennzahlen, Bild „Raumtemperatur und Sollwert", Berichtszeile; Meldungen; Eintrag der neuen Klasse in die `Modultrennungswache` | **AK1 abgenommen und eine Feldphase** (B-A6; Q26, E27); Gebäude auf dem Altweg gehen als feste Last ein (E23, E26, 6.2) | Kern-Gate grün; Referenzlauf gegen die neue Basis; die AK2-Proben aus 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander (5.5) | **ja** | **11–15** |
-| **AK3** | **Der geschlossene Kreis.** Iterationsrahmen `Anlagenkopplung` nach dem Muster von ADR-005 (feste Reihenfolge, drei Abbruchmaße, Höchstzahl 20, im Mehrzonenfall Produktschranke 120, benannter Fehler); Umkehr der Laufordnung in `SimulationWaermebedarf`/`SimulationControl`; Vorlaufabhängige Kennlinienauswertung je Stunde für die Wärmepumpe (**E86/E88:** die Kennlinienwahl am Vorlauf ist seit AK1 gebaut, 3.4; der Ausweis der Vorlaufwahl, Welle VW1, liefert den Messwert der Feldphase); Ladezustand des Speichers in der Verfügbarkeit; raumgeführte Korrektur der Heizkurve (H2); Prüforakel, Vergleichsrechnung gegen AK2, **gemessene** Laufzeit | **AK2 abgenommen und eine Feldphase**; AK3 folgt nach dem Stufenplan (Q26, E27) danach, zugesagt wird es aber erst nach der Feldphase von AK1 und AK2 (**H6**, mit E24 so festgelegt, mit E27 zur Kenntnis genommen) | Prüforakel getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; Laufzeit an einem Mehrzonengebäude gemessen (N-A4); Referenzlauf gegen die neue Basis | **ja** | **23–38** |
+| **AK3** | **Der geschlossene Kreis, eigene wählbare Stufe (E102, Vorgabe AK1).** Gebäude-Stepper (W1); Kaskadenstunde herausgelöst, Bedarfsnaht, Inventar der Jahresvektor-Leser (W2); **AK3-I**: Interpolation der Kennlinie über den Vorlauf, Wärme- und Kälteseite (W-I); Angebotsfunktion, Klasse `Anlagenkopplung` (Abbruchmaße, Höchstzahl 20, Produktschranke 120, benannter Fehler), Prüforakel (W3); Schema, H2, Oberfläche (W4); Referenzprojekt RP-AK3 (Kopie von 1056 mit Puffer) und Basis (W5); Papiere und Wiki (W6) — [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 6 | AK2 abgenommen; **mit E100 jetzt** statt nach der Feldphase; Basiswechsel erst nach R40 | O1, O1p, O2 getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; W1–W4 und W-I byte-gleich (W-I hinter Kernschalter); Laufzeit nach E102 (Faktor 3, Einzone ≤ 100 ms) an 1054 gemessen; Referenzlauf in W5: 1047/1056 neu (AK3-I), RP-AK3 neu, übrige byte-gleich | **ja** (einmal, W5) | **20,5–33,5** |
 
-**Summen:** AK0 + AK1 = 11–17 PT; AK0–AK2 = 22–32 PT; AK0–AK3 = **45–70 PT**, jeweils zuzüglich
-rund 0,5 PT je Einfrierschritt — so mit dem Stufenplan (Q26) am 22.09.2026 entschieden (E27). Aufwände sind Größenordnungen für Entwicklung **und** Nachweis;
+**Summen:** AK0 + AK1 = 11–17 PT; AK0–AK2 = 22–32 PT; AK0–AK3 = **42,5–65,5 PT** mit dem Aufwand
+von AK3 nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) (vorher 45–70 PT, Stufenplan Q26/E27), jeweils zuzüglich rund 0,5 PT je
+Einfrierschritt. Aufwände sind Größenordnungen für Entwicklung **und** Nachweis;
 Agentenarbeit verkürzt die Kalenderzeit, nicht die Prüfzeit.
 
 ### 12.2 Der Aufwand, hergeleitet
@@ -2404,7 +2424,8 @@ Bestandsaufnahme auf 10–15 / 11–15 / 23–38 PT und begründet die drei Abwe
 | | Speicherstand in den Kreis (Schichtung, Schwellen, Lade- und Entladegrenzen) | 2,0–4,0 | |
 | | Prüforakel, Vergleichsrechnung gegen AK2, Laufzeitmessung am Mehrzonengebäude | 3,0–5,0 | |
 | | Referenzprojekt, Einfrierschritt, Papiere und Wiki | 2,0–2,0 | |
-| | **AK3 zusammen** | **23–38** | |
+| | **AK3 zusammen** (Schätzung des Konzepts) | **23–38** | |
+| | **AK3 nach dem Entwurf** (gilt): W0 0,5–1, W1 3–5, W2 4–6,5, W-I 1,5–2,5, W3 5–8, W4 3–5, W5 2,5–3,5, W6 1–2 | **20,5–33,5** | Kennlinienwahl am Vorlauf gebaut (−3 bis −4), Kaskade schon je Stunde und Kreis schmaler (−4 bis −7); dazu H2 mit Spalte, Dialog und Ressourcen, Stufe, Kennzahlen, Bericht (+3 bis +5), Vektorstufen (+1 bis +1,5) und AK3-I (+1,5 bis +2,5) |
 
 **Die drei Abweichungen von der Vorgabe in einem Satz:** AK1 kostet zwei bis drei PT mehr — einen
 halben bis einen ganzen wegen des **Wochenraster-Bausteins**, ein bis zwei für die
@@ -2491,7 +2512,10 @@ Stufe wann beauftragt wird**, ist **Q26** und wird im
 das [Register der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) führt sie
 ebenfalls. **Sie ist mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32) entschieden** — Option (a) nach
 Empfehlung: AK1 nach G2; AK2 nach abgenommenem AK1 und einer Feldphase; AK3 danach (12.3). Damit
-hat dieses Papier keine offene Frage mehr; **H6** ist mit E27 zur Kenntnis genommen.
+hat dieses Papier keine offene Frage mehr; **H6** ist mit **E100** (07.10.2026) aufgehoben — AK3 wird
+jetzt gebaut —, **H-F4** mit **E102** (Q-AK3-6) durch AK3-I abgelöst. Die Fragen zu AK3 selbst
+(Q-AK3-1 bis -7) stehen im [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) und sind mit E102 entschieden; offen ist dort allein
+Q-AK3-I1 (Normtext).
 
 ### 13.1 Jetzt zu entscheiden
 
@@ -2508,7 +2532,7 @@ erst nach der Feldphase von AK1 und AK2.
 | **H3** | **Übergabe je Gebäude oder je Zone?** | **entschieden (E24)** — **Je Zone ab G6, je Gebäude davor; ein Vorlauf je Gebäude** (6.5). Mehrere Heizkreise mit getrennten Kurven werden benannt abgelehnt | Spaltenzahl in `Tab_Zone`; und die Aussage „eine Zone bleibt kalt", die es sonst nicht gibt |
 | **H4** | **Profilweg oder echte Kopplung in AK2?** | **entschieden (E24)** — **Profilweg**, mit dem Speicher als **Vorrat über die Sperrdauer**, nicht als Ladezustand je Stunde (5.4). Die Näherung steht im Bericht | ob AK2 ohne die Umkehr der Laufordnung auskommt — und damit die ganze Stufung |
 | **H5** | **Komfortstunden-Schwelle** und was gezählt wird | **entschieden (E24)** — **1,0 K Unterschreitung in der Nutzungszeit**, dazu **Kelvinstunden** und die **längste zusammenhängende Strecke** — drei Zahlen, nicht eine (5.5) | die Aussagekraft der einzigen neuen Kennzahl dieses Vorhabens |
-| **H6** | **Wird AK3 überhaupt gebaut?** | **entschieden (E24)** — **AK3 jetzt nicht zusagen; der Entscheid fällt nach einer Feldphase von AK1 und AK2.** AK3 ist 23–38 PT und kehrt die Laufordnung um; die Frage gehört **nach einer Feldphase von AK1 und AK2** gestellt, wenn man weiß, wie oft die Vorlaufrückwirkung in der Praxis den Ausschlag gibt. Dieses Papier beschreibt sie vollständig, damit die Entscheidung dann eine Grundlage hat. **E86/E88:** Die Kennlinienwahl am Vorlauf ist seit AK1 gebaut (3.4, H-F4); der Ausweis der Vorlaufwahl (Welle VW1) liefert den Messwert der Feldphase. **Widerspruch, benannt, nicht entschieden:** Das Prüforakel 11.2 setzt eine über den Vorlauf linear interpolierte Leistung der Wärmepumpe voraus, H-F4 schließt die Interpolation über den Vorlauf aus; vor AK3 ist zu klären, ob das Orakel auf die Stützstellenwahl umgestellt oder die Interpolation für den Sonderfall zugelassen wird | der größte Einzelposten; und der einzige, der den Bestandsrumpf berührt |
+| **H6** | **Wird AK3 überhaupt gebaut?** | **aufgehoben durch E100 (07.10.2026): AK3 jetzt**; der Widerspruch Orakel ↔ H-F4 ist mit E102 aufgelöst (11.2, AK3-I). Wortlaut von E24: **AK3 jetzt nicht zusagen; der Entscheid fällt nach einer Feldphase von AK1 und AK2.** AK3 ist 23–38 PT und kehrt die Laufordnung um; die Frage gehört **nach einer Feldphase von AK1 und AK2** gestellt, wenn man weiß, wie oft die Vorlaufrückwirkung in der Praxis den Ausschlag gibt. Dieses Papier beschreibt sie vollständig, damit die Entscheidung dann eine Grundlage hat. **E86/E88:** Die Kennlinienwahl am Vorlauf ist seit AK1 gebaut (3.4, H-F4); der Ausweis der Vorlaufwahl (Welle VW1) liefert den Messwert der Feldphase. **Widerspruch, benannt, nicht entschieden:** Das Prüforakel 11.2 setzt eine über den Vorlauf linear interpolierte Leistung der Wärmepumpe voraus, H-F4 schließt die Interpolation über den Vorlauf aus; vor AK3 ist zu klären, ob das Orakel auf die Stützstellenwahl umgestellt oder die Interpolation für den Sonderfall zugelassen wird | der größte Einzelposten; und der einzige, der den Bestandsrumpf berührt |
 | **H7** | **Verhältnis zur Skalierung E8:** Die Verbrauchs-Rückrechnung ist eine Verhältnisrechnung mit einem Kataloglauf. Mit begrenzter Übergabe ist das Modell **nicht mehr proportional** | **entschieden (E24)** — **Die Kopplung wirkt in beiden Läufen der Verhältnisrechnung**, und `Uebergabe_Leistung_Nenn` wird bei NULL aus der **skalierten** Auslegungslast gebildet (8.4). Damit skaliert die Heizfläche mit dem Gebäude, und das Verhältnis bleibt belastbar. Wo der Anwender eine feste Nennleistung einträgt, ist es das **nicht** — und der Bericht sagt es | die Belastbarkeit jeder Verbrauchs-Rückrechnung mit aktiver Kopplung |
 | **H8** | **Zeitprogramm-Quelle:** Spalte je Gebäude bzw. Anlage (168 Werte als Text), eigene Profiltabelle, oder Ausbau der Sperrzeitfelder? | **entschieden (E24)** — **Spalte je Gebäude bzw. Anlage**, nach dem Muster `WQ_Wochenwerte` (`sql/schema/001_grundschema.sql:738`). Eine eigene Tabelle nach dem Muster `Tab_Quellprofil` (`:2136-2151`) käme erst in Frage, wenn Profile **wiederverwendbar** werden sollen — das ist heute nicht verlangt | zwei Spalten gegen zwei Tabellen mit Kopierwegen, Katalogpflege und Registereinträgen |
 | **H9** | **Kälteseite in AK1 oder erst in AK2?** | **entschieden (E24)** — **In AK1 — aber nur, wenn KU2 steht** (7.4). Der Löser ist derselbe, der Zusatz klein; ohne `Kuehl_Vorlauf` aus `KU-S3` fehlt ihr jedoch der Auslegungspunkt. Steht KU2 nicht, wird die Kälteseite **benannt vertagt**, nicht still weggelassen. **Umgesetzt mit E37** (24.09.2026, Konzept N1.42): eigene Spalten der Kühlübergabe am Gebäude (8.1), Schritt K (10.5), gebaut mit der vierten Welle von AK1 | die Symmetriezusage aus E21 — und ob sie beim ersten Anlauf eingehalten wird |
@@ -2526,7 +2550,7 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
 | **H-F1** | **Arithmetisches Mittel** der Heizmitteltemperatur, nicht logarithmisch | an `theta_V = theta_R` unstetig zu programmieren; der Unterschied ist bei 5 bis 10 K Spreizung kleiner als die Unsicherheit des Exponenten (3.1) |
 | **H-F2** | **Konstanter Massenstrom**, Spreizung folgt der Last | braucht keine zusätzliche Eingabe und bildet Thermostatventile ab (3.2); konstante Spreizung wird benannt abgelehnt |
 | **H-F3** | **Sekantenleitwert** statt fester Leistung je Abschnitt | hält „Endwert und Stundenmittel exakt" aufrecht; die Kopplung ist mit 0,348 gegen 0,313 kW/K ein Hauptglied, kein Korrekturglied (10.3) |
-| **H-F4** | **Stützstellenwahl statt Interpolation über den Vorlauf** — nächstgelegene, bei Gleichstand die höhere | dieselbe Regel wie auf der Heizseite heute und auf der Kälteseite nach K21; **eine** Regel für beide Seiten (3.4); das Prüforakel 11.2 setzt dagegen eine Interpolation über den Vorlauf voraus — Widerspruch benannt, nicht entschieden (H6) |
+| **H-F4** | ~~Stützstellenwahl statt Interpolation über den Vorlauf~~ — **abgelöst durch E102 (Q-AK3-6): AK3-I**, lineare Interpolation zwischen den beiden einschließenden Vorlauf-Stützstellen, außerhalb die Regel F-A8, Wärme- und Kälteseite (K21 neu); bis zum Basiswechsel von W5 gilt die Stützstellenwahl weiter | **eine** Regel für beide Seiten bleibt; das Prüforakel 11.2 prüft damit den Produktweg ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 3, Festlegungen I-1 bis I-5) |
 | **H-F5** | **Reihenfolge der Grenzen:** Übergabe, dann `Heizleistung_Max`, dann Verfügbarkeit; jede greifende Grenze trägt einen **Grund** | eine Leistung, die aus unbenanntem Grund kleiner ist als der Bedarf, ist der Fehler, den dieses Papier überall ausschließt (4.5) |
 | **H-F6** | **Verteilung auf mehrere Gebäude proportional zum unbegrenzten Bedarf** der Stunde | Muster `Kanalsatz.NetzverlusteVerteilen` (`SimulationKanaele.cs:686-715`); eine Reihenfolge nach Gebäude wäre nicht determinierbar (6.2) |
 | **H-F7** | **`Nutzungszeit` bleibt wirkungslos** und erscheint nicht im Dialog „Betriebszeiten" | Das Feld wird gepflegt und von keiner Zeile der Simulation gelesen (5.1); es nachträglich wirksam zu machen wäre eine stille Änderung an jedem Bestandsprojekt (8.2) |
@@ -2551,9 +2575,10 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
 | **Komfortstunden verdecken den Restbedarf** (5.5) | Ein Variantenvergleich sieht aus, als wäre ein Deckungsproblem verschwunden, obwohl es nur die Kennzahl gewechselt hat | **Regel: Wo Komfortstunden stehen, steht der Restbedarf daneben** — und umgekehrt; die Berichtsprobe prüft beides |
 | **Zwei Bedarfsbegriffe nebeneinander** (E23, E89 — dauerhaft) | In einem Projekt mit beiden Rechenwegen stammt ein Teil des Bedarfs aus der Tagesbilanz ohne Rückwirkung und ein Teil aus dem VDI-Weg mit Rückwirkung; eine fehlende Komfortstunde liest sich dann wie ein gutes Ergebnis | **Der Bericht nennt je Gebäude den Rechenweg** (9.4), und die Komfortkennzahlen weisen aus, für wie viele Gebäude sie gar nicht entstehen können; die Probe „Altweg-Gebäude als feste Last" hält beide Seiten fest (11.1) |
 | **Der Profilweg ist zu pessimistisch** (5.4) | Ein Speicher, der die Sperrzeit überbrückt, erzeugt in der Rechnung Komfortstunden, die es nicht gibt | Speichervorrat über die Sperrdauer wird berücksichtigt; die Näherung steht **im Bericht**, nicht im Kleingedruckten |
-| **AK3 wächst zum Anlagensimulator** | Ein Vorhaben, das nicht endet: Rohrnetz, Pumpen, Regelkreise, Taktverhalten | Kapitel 15 ist die Grenze, und sie wird nicht stillschweigend verschoben; **H6** stellt AK3 ausdrücklich unter Vorbehalt |
-| **Die Umkehr der Laufordnung bricht Bestandsverhalten** (AK3) | `SimulationControl` ist der älteste Rumpf im Kern; eine Stundenschleife daraus zu machen berührt Kaskade, Speicher, Strombilanz und Wirtschaftlichkeit auf einmal | AK3 **erst nach AK2 und nach einer Feldphase** (E23); „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; das Prüforakel aus 11.2 |
-| **Iteration in Iteration** (AK3 mit Mehrzonen) | 50 Zonen × 6 × 6 Durchläufe sind rund 9 s je Gebäude und Jahr; im Grenzfall der Höchstzahlen (50 × 50 × 20) wären es rund 250 s — ein Lauf, der „nur langsam" ist und den niemand als Fehler erkennt | Höchstzahlen benannt, Reihenfolge festgelegt (Anlage außen, Zonen innen); **Iterationsschranke:** Produkt der Durchläufe je Stunde ≤ 120, darüber benannter Fehler mit dem letzten Stand statt stiller Näherung (6.3); **Laufzeit gemessen** vor der Abnahme (N-A4) |
+| **AK3 wächst zum Anlagensimulator** | Ein Vorhaben, das nicht endet: Rohrnetz, Pumpen, Regelkreise, Taktverhalten | Kapitel 15 und „Nicht in AK3“ des Entwurfs (9) sind die Grenze; die Kälteseite ist als AK3-K vertagt (E102) |
+| **Leser des Jahresvektors vor und nach der Kaskadenschleife** (AK3, Hauptrisiko) | Ein übersehener Leser rechnet im AK3-Weg still mit dem unbegrenzten statt dem gekoppelten Bedarf | Inventar als erster Schritt von W2; befragbare Kaskade statt Rücknahme; Gate je Welle „21/21 byte-gleich“; „ein Erzeuger ohne Grenzen bitgleich zu AK1"; Prüforakel 11.2 ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 8) |
+| **AK3-I bewegt 1047/1056 vor dem Basiswechsel** | CI rot, Byte-Gates der späteren Wellen nicht haltbar | Interpolation hinter einem Kernschalter ohne Schema bis W5; ein Basiswechsel nach R40 |
+| **Iteration in Iteration** (AK3 mit Mehrzonen) | gemessen 11–29 ms je Zone, Durchlauf und Jahr: typisch 2–9 s für 50 Zonen, an der Produktschranke 70–175 s — ein Lauf, der „nur langsam" ist und den niemand als Fehler erkennt; Laufzeitgrenze nach E102 Faktor 3 gegenüber ohne Kreis | Höchstzahlen benannt, Reihenfolge festgelegt (Anlage außen, Zonen innen); **Iterationsschranke:** Produkt der Durchläufe je Stunde ≤ 120, darüber benannter Fehler mit dem letzten Stand statt stiller Näherung (6.3); **Laufzeit gemessen** vor der Abnahme (N-A4) |
 | **Zwei Vorlaufbegriffe** (N-A8) | Anlage und Gebäude führen beide einen Vorlauf; ohne Regel entsteht eine zweite Wahrheit, und zwar still | **Die kleinere Zahl gewinnt, und die Stunde trägt den Grund** (5.2); der Selbsttest der Naht prüft es |
 | **Kessel- und BHKW-Wirkungsgrad ohne Temperaturbezug** (AK3) | Der Vorlauf wirkt auf die Wärmepumpe zurück, auf Kessel und BHKW nicht — ein Vergleich zweier Erzeuger wird schief | **Benannte Ablehnung statt stiller Gleichbehandlung:** Der Bericht sagt, für welche Erzeuger die Rückwirkung gerechnet wird und für welche nicht |
 | **Drei zusätzliche Einfrierschritte** | Das Regressionsnetz steht zeitweise ohne belastbare Basis | Jeder Schritt einzeln begründet in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md); Schema und Rechnung getrennt, mit `--ohne` für die neuen Schlüssel (11.4) |
