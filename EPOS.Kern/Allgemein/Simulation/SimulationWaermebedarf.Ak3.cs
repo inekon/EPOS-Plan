@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Hat diese Auskunft mit Stufe AK3 auf den Profilweg zurückgestuft (Festlegung 20)? Der Hinweis
-        /// <see cref="Ak3Kernstufe.RUECKSTUFE_TEXT"/> steht dann im Laufprotokoll.
+        /// <see cref="Ak3Kernstufe.Rueckstufetext"/> steht dann im Laufprotokoll.
         /// </summary>
         internal bool Ak3Rueckstufe { get; private set; }
 
@@ -38,7 +38,7 @@ namespace WindowsFormsApplication1
         {
             if (Projektlauf || !Ak3Kernstufe.Rueckstufe(AnlagenkopplungProjekt)) return;
             Ak3Rueckstufe = true;
-            SimulationProtokoll.Aktuell.HinweisEinmal("ak3-rueckstufe", Ak3Kernstufe.RUECKSTUFE_TEXT);
+            SimulationProtokoll.Aktuell.HinweisEinmal("ak3-rueckstufe", Ak3Kernstufe.Rueckstufetext);
         }
 
         /// <summary>

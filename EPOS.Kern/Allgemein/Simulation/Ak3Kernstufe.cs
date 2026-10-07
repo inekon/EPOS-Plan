@@ -25,17 +25,16 @@ namespace WindowsFormsApplication1
     /// <c>--ak3</c>); die Testdatenbank führt kein AK3-Projekt, jeder andere Lauf rechnet Zeichen für Zeichen wie zuvor.
     /// <para><b>Rückstufe der Auskünfte</b> (Festlegung 20): Eine Auskunft, die je Abfrage einen Projektlauf bräuchte
     /// (Bedarfsdialog, Aufheizauskunft, Verhältnisrechnung E8), rechnet bei Stufe AK3 auf dem Profilweg (AK1/AK2) und nennt
-    /// die Rückstufe (<see cref="Rueckstufe"/>, <see cref="RUECKSTUFE_TEXT"/>).</para>
+    /// die Rückstufe (<see cref="Rueckstufe"/>, <see cref="Rueckstufetext"/>).</para>
     /// </summary>
     public static class Ak3Kernstufe
     {
         /// <summary>Der Modus des Prozesses; Vorgabe <see cref="Ak3Kernmodus.GespeicherteStufe"/>.</summary>
         public static Ak3Kernmodus Modus { get; set; } = Ak3Kernmodus.GespeicherteStufe;
 
-        /// <summary>Der benannte Hinweis der Rückstufe einer Auskunft (Festlegung 20; Ressource folgt mit W4b).</summary>
-        public const string RUECKSTUFE_TEXT =
-            "Anlagenkopplung AK3: Diese Auskunft rechnet ohne geschlossenen Kreis auf dem Profilweg (AK2); " +
-            "der Projektlauf rechnet AK3.";
+        /// <summary>Der benannte Hinweis der Rückstufe einer Auskunft (Festlegung 20) aus den Ressourcen
+        /// (<c>AK3_RUECKSTUFE</c>, beide Sprachen).</summary>
+        public static string Rueckstufetext => MyResource.Resource.AK3_RUECKSTUFE;
 
         /// <summary>Rechnet ein Projekt mit der Kopplungsstufe <paramref name="stufe"/> im AK3-Weg?</summary>
         internal static bool Wirksam(string stufe)

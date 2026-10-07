@@ -38,7 +38,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die benannte Rückstufe (Entwurf AK3 Festlegung 20): Mit Stufe AK3 rechnet die Auskunft ohne geschlossenen
-        /// Kreis auf dem Profilweg (<see cref="Ak3Kernstufe.RUECKSTUFE_TEXT"/>); <c>null</c> ohne Rückstufe.
+        /// Kreis auf dem Profilweg (<see cref="Ak3Kernstufe.Rueckstufetext"/>); <c>null</c> ohne Rückstufe.
         /// </summary>
         internal string Rueckstufe;
 
@@ -462,7 +462,7 @@ namespace WindowsFormsApplication1
             ergebnis.Name = gebaeude.Gebaeudename ?? "";
             ergebnis.Stundenwerte = werte;
             // Festlegung 20: mit Stufe AK3 rechnet die Auskunft auf dem Profilweg - benannt.
-            ergebnis.Rueckstufe = sim.Ak3Rueckstufe ? Ak3Kernstufe.RUECKSTUFE_TEXT : null;
+            ergebnis.Rueckstufe = sim.Ak3Rueckstufe ? Ak3Kernstufe.Rueckstufetext : null;
 
             // ZEICHENGLEICH zum Lauf: dort steht "kanalHeizung.Sum() / 1000" - eine
             // double-Summe durch eine GANZE Zahl, also eine double-Division. Ein
@@ -647,6 +647,44 @@ namespace WindowsFormsApplication1
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// <b>Die Kennzahlen des geschlossenen Kreises aus dem letzten gespeicherten Lauf</b> (Anlagenkopplung AK3,
+        /// Festlegung 22; W4b): sie stehen im Bedarfsdialog neben Komfort und Restbedarf. Gelesen, nicht gerechnet;
+        /// <c>null</c> ohne Projekt, ohne Lauf, vor dem Schemaschritt oder wenn der letzte Lauf den Kreis nicht rechnete.
+        /// </summary>
+        internal static Ak3Kennzahlen Ak3KennzahlenDesProjekts(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                if (!Ak3Schema.ErgebnisspaltenVorhanden()) return null;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + string.Join(", ", Ak3Schema.SPALTEN_ERGEBNIS.Select(sp => "e." + sp)) + " FROM " +
+                    ErgebnisCtrl.TAB_ENERGIE + " e INNER JOIN " + ErgebnisCtrl.TAB_KOPF +
+                    " k ON k.ID = e.ID_Ergebnis WHERE k.ID_Projekt = ? ORDER BY k.ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+                return Ak3Kennzahlen.Aus(new ErgebnisEnergiebedarfModel
+                {
+                    Ak3DurchlaeufeMittel = r[Ak3Schema.SPALTE_DURCHLAEUFE_MITTEL] is DBNull ? null
+                        : Convert.ToDouble(r[Ak3Schema.SPALTE_DURCHLAEUFE_MITTEL], CultureInfo.InvariantCulture),
+                    Ak3DurchlaeufeMax = Ganz(r, Ak3Schema.SPALTE_DURCHLAEUFE_MAX),
+                    Ak3Fallwechsel = Ganz(r, Ak3Schema.SPALTE_FALLWECHSEL),
+                    Ak3SchrankeStundenH = Ganz(r, Ak3Schema.SPALTE_SCHRANKE_STUNDEN),
+                    Ak3SpeicherLeerStundenH = Ganz(r, Ak3Schema.SPALTE_SPEICHER_LEER_STUNDEN),
+                    Ak3RestbedarfStundenH = Ganz(r, Ak3Schema.SPALTE_RESTBEDARF_STUNDEN),
+                });
+            }
+            catch
+            {
+                return null;
+            }
+
+            static int? Ganz(DataRow r, string spalte)
+                => r[spalte] is DBNull ? null : Convert.ToInt32(r[spalte], CultureInfo.InvariantCulture);
         }
 
         /// <summary>

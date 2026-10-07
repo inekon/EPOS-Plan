@@ -32645,7 +32645,7 @@ Do you want to allow this?</value>
     <value>The system coupling level could not be saved.</value>
   </data>
   <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_ERL" xml:space="preserve">
-    <value>Project setting system coupling: AUS (ideal control) or AK1 (heating circuit as boundary condition); AK2 and AK3 are not yet available. Saved immediately.</value>
+    <value>Project setting system coupling: AUS (ideal control), AK1 (heating circuit as boundary condition) or AK3 (closed loop: the available output acts back on the buildings each hour, longer calculation time); AK2 is not yet available. Saved immediately.</value>
   </data>
   <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT" xml:space="preserve">
     <value>The level “{0}” does not exist; known levels are AUS, AK1, AK2 and AK3.</value>
@@ -32750,7 +32750,7 @@ Do you want to allow this?</value>
     <value>Proportional band: quick choice 0.5 / 1 / 2 K or custom from 0 to {1} K; 0 K is ideal control with a limit. Empty means the default {0} K.</value>
   </data>
   <data name="GEBK_ZEILE_UEBERGABE_PROJEKT" xml:space="preserve">
-    <value>Heat emission is only calculated in projects with the project setting system coupling “Heating circuit (AK1)” (simulation configuration).</value>
+    <value>Heat emission is only calculated in projects with the project setting system coupling “Heating circuit (AK1)” or “Closed loop (AK3)” (simulation configuration).</value>
   </data>
   <data name="GEBK_ZEILE_UEBERGABE_BESTANDSWEG" xml:space="preserve">
     <value>The daily balance (legacy method) does not calculate system coupling — these inputs take effect once the building is calculated to VDI 6007.</value>
@@ -48228,6 +48228,57 @@ chart</value>
   </data>
   <data name="KI_DLG_QERD_SONDENANORDNUNG_ERL" xml:space="preserve">
     <value>Arrangement of the borehole heat exchangers: square grid or row; empty = default square.</value>
+  </data>
+  <data name="AK3_SIMKONF_HRL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Closed loop (AK3): each hour, the available output of the generators and storage acts back on the buildings — room temperature, demand and flow temperature are balanced in the loop. Buildings with heat emission switched on calculate the heating circuit as with AK1. The calculation time is longer; information views (demand of a building, preheating) calculate without the closed loop. The setting applies to the whole project.</value>
+  </data>
+  <data name="AK3_RUECKSTUFE" xml:space="preserve">
+    <value>Calculated without the closed loop (profile path): this information calculates system coupling AK3 like AK2; the project run calculates the closed loop.</value>
+  </data>
+  <data name="AK3_MSG_KONVERGENZ" xml:space="preserve">
+    <value>System coupling AK3: the closed loop finds no stable solution in hour {1} of the year (building {0}; involved {2}; largest deviation {3}; last state {4}). The run stops instead of approximating. Check the output and characteristic curves of the generators, the room influence of the heating curve and the heat emission — or calculate the project with system coupling “Heating circuit (AK1)”.</value>
+  </data>
+  <data name="AK3_GEBK_LBL_RAUMEINFLUSS" xml:space="preserve">
+    <value>Room influence of heating curve :</value>
+  </data>
+  <data name="AK3_GEBK_HRL_RAUMEINFLUSS" xml:space="preserve">
+    <value>Room influence: the flow temperature rises by the entered value for each kelvin the room temperature lies below the set point (0 to {0} K/K; empty or 0 = off). It only acts with system coupling “Closed loop (AK3)”.</value>
+  </data>
+  <data name="AK3_KI_GEBK_RAUMEINFLUSS_ERL" xml:space="preserve">
+    <value>Room influence of the heating curve in K/K, 0 to 10; empty or 0 = off. Only acts with the heating curve switched on and system coupling AK3.</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_DURCHLAEUFE" xml:space="preserve">
+    <value>Iterations per hour (mean / maximum)</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_FALLWECHSEL" xml:space="preserve">
+    <value>Case changes</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_SCHRANKE" xml:space="preserve">
+    <value>Hours at the capacity limit</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_SPEICHER_LEER" xml:space="preserve">
+    <value>Hours with empty storage</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_RESTBEDARF" xml:space="preserve">
+    <value>Hours with residual demand</value>
+  </data>
+  <data name="AK3_GEBB_QUELLE" xml:space="preserve">
+    <value>Closed loop (AK3), project, last run</value>
+  </data>
+  <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
+    <value>Mean iterations per hour (AK3)</value>
+  </data>
+  <data name="AK3_KI_GEBB_DURCHLAEUFE_MAX" xml:space="preserve">
+    <value>Maximum iterations per hour (AK3)</value>
+  </data>
+  <data name="AK3_KI_GEBB_ERL" xml:space="preserve">
+    <value>Indicator of the closed loop (system coupling AK3) from the last project run; empty without a run with AK3. Display only.</value>
+  </data>
+  <data name="AK3_KI_GEBB_RUECKSTUFE" xml:space="preserve">
+    <value>Fallback note (AK3)</value>
+  </data>
+  <data name="AK3_KI_GEBB_RUECKSTUFE_ERL" xml:space="preserve">
+    <value>With system coupling AK3 the information calculates without the closed loop on the profile path; empty otherwise. Display only.</value>
   </data>
 </root>
 

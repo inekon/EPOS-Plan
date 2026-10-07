@@ -554,6 +554,20 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Null(seite.Instance.Laufparameter.Anlagenkopplung);
     }
 
+    /// <summary>„geschlossener Kreis (AK3)" schreibt sofort und zeigt seinen Erklärtext (E102 Q-AK3-1, AK3-W4b).</summary>
+    [Fact]
+    public void AK3_schreibt_sofort_und_zeigt_den_Erklaertext()
+    {
+        var seite = SeiteMitKopplung(null);
+
+        Kopplungswahl(seite).Change("3");
+        Assert.Equal(new string?[] { WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK3 }, _kopplungGeschrieben);
+        Assert.Equal(WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK3, seite.Instance.Laufparameter.Anlagenkopplung);
+        string abschnitt = seite.Find("section.epos-simkonfig-anlagenkopplung").TextContent;
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.AK3_SIMKONF_HRL_ANLAGENKOPPLUNG, abschnitt);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AK1, abschnitt);
+    }
+
     /// <summary>Eine gesperrte Stufe lässt das Feld nicht zu: Es wird nichts geschrieben.</summary>
     [Fact]
     public void Eine_nicht_gebaute_Stufe_schreibt_nicht()

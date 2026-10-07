@@ -92,9 +92,10 @@ namespace WindowsFormsApplication1
     {
         internal AnlagenkopplungException(string gebaeude, int stunde, string beteiligte, string abweichung,
                                           string letzterStand)
-            : base(string.Format(CultureInfo.InvariantCulture,
-                "Anlagenkopplung AK3: Der Kreis konvergiert nicht — Gebäude {0}, Stunde {1}, Beteiligte {2}, " +
-                "größte Abweichung {3}, letzter Stand {4}.", gebaeude, stunde, beteiligte, abweichung, letzterStand))
+            // W4b: die Meldung aus den Ressourcen (AK3_MSG_KONVERGENZ, beide Sprachen) - was geschah, wo, und was der
+            // Anwender prüfen kann; die Zahlen invariant wie im Laufprotokoll.
+            : base(string.Format(CultureInfo.InvariantCulture, MyResource.Resource.AK3_MSG_KONVERGENZ,
+                                 gebaeude, stunde, beteiligte, abweichung, letzterStand))
         {
             Gebaeude = gebaeude;
             Stunde = stunde;
