@@ -1104,7 +1104,7 @@ namespace WindowsFormsApplication1
             // Stufenrechnung des Stroms. Ohne Kältemaschine im Projekt ein sofortiger Rücksprung.
             if (!_wpInSchleife && !m_bError)
             {
-                KaelteerzeugerVorbereiten();
+                if (_kaeltestunde == null) KaelteerzeugerVorbereiten();
                 KaeltekaskadeRechnen(kanaele);
             }
 
@@ -1789,6 +1789,8 @@ namespace WindowsFormsApplication1
             // Tagesbetriebsart - VOR der Stundenschleife, denn am Kühltag ist ihr Heizkanal
             // gesperrt. Ohne Kühlbetrieb bleibt das Wärmepumpenmodul unberührt.
             if (_wpInSchleife) KaelteerzeugerVorbereiten();
+            // AK3-K (Festlegung 16): im AK3-Weg mit Kernschalter die Kältestunde je Stunde nach der Wärmestunde.
+            schleife.NachStunde = Ak3KaeltestundeEinrichten();
 
             // --- 5. Stundenschleife A–G ------------------------------------------------
             // AK3-W3b: im AK3-Weg mit benanntem Abbruch des Kreises und Nachführen der Bedarfsseite.

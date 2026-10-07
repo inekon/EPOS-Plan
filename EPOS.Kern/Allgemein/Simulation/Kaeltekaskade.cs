@@ -414,17 +414,25 @@ namespace WindowsFormsApplication1
             if (kuehltage == null) return anteil;
 
             for (int h = 0; h < STUNDEN; h++)
-            {
-                int tag = h / 24;
-                if (tag >= kuehltage.Length || !kuehltage[tag]) continue;
-
-                if (sperrmaske != null && h < sperrmaske.Length && sperrmaske[h]) continue;
-
-                double heiz = (heizzeitanteil != null && h < heizzeitanteil.Length) ? heizzeitanteil[h] : 0.0;
-                if (heiz < 0) heiz = 0;
-                anteil[h] = heiz >= 1.0 ? 0.0 : 1.0 - heiz;
-            }
+                anteil[h] = ZeitanteilDerStunde(kuehltage, heizzeitanteil, sperrmaske, h);
             return anteil;
+        }
+
+        /// <summary>
+        /// Der Kühlzeitanteil einer Stunde <paramref name="h"/> nach <see cref="ZeitanteilBilden(bool[], double[], bool[])"/>
+        /// (AK3-K: im Kreis nach der Wärmestunde, wenn der Heizzeitanteil der Stunde feststeht).
+        /// </summary>
+        public static double ZeitanteilDerStunde(bool[] kuehltage, double[] heizzeitanteil, bool[] sperrmaske, int h)
+        {
+            if (kuehltage == null) return 0.0;
+            int tag = h / 24;
+            if (tag >= kuehltage.Length || !kuehltage[tag]) return 0.0;
+
+            if (sperrmaske != null && h < sperrmaske.Length && sperrmaske[h]) return 0.0;
+
+            double heiz = (heizzeitanteil != null && h < heizzeitanteil.Length) ? heizzeitanteil[h] : 0.0;
+            if (heiz < 0) heiz = 0;
+            return heiz >= 1.0 ? 0.0 : 1.0 - heiz;
         }
 
         // =====================================================================
@@ -438,6 +446,34 @@ namespace WindowsFormsApplication1
         /// <param name="extrapolationErlaubt">Projekteinstellung für die ungünstige Seite der Kennlinie.</param>
         public void Rechnen(double[] bedarf, bool extrapolationErlaubt)
         {
+            Beginnen(extrapolationErlaubt);
+            for (int h = 0; h < STUNDEN; h++)
+                StundeRechnen(h, (bedarf != null && h < bedarf.Length) ? bedarf[h] : 0.0);
+            Abschliessen();
+        }
+
+        // AK3-K (Festlegung 16): der Zustand des Jahreslaufs zwischen den Stunden.
+        private bool _extrapolation;
+        private bool _mitSpeicher;
+        private bool _mitFreierKuehlung;
+        private int _naechsteStunde = -1;
+
+        /// <summary>true: Der Kreis hat die Stunden je Stunde nach der Wärmestunde gerechnet (AK3-K); false = Jahreslauf.</summary>
+        internal bool ImKreis { get; set; }
+
+        /// <summary>Die nächste zu rechnende Stunde (8760 = das Jahr ist gerechnet; −1 = nicht begonnen).</summary>
+        public int NaechsteStunde => _naechsteStunde;
+
+        /// <summary>
+        /// <b>Beginn des Jahres</b> (AK3-K, Festlegung 16): alle Reihen, Summen, Erzeugerzähler und Kältespeicher auf
+        /// null. Danach je Stunde <see cref="StundeRechnen"/> in Jahresfolge, am Ende <see cref="Abschliessen"/> —
+        /// der Jahreslauf <see cref="Rechnen"/> ist genau diese Folge.
+        /// </summary>
+        /// <param name="extrapolationErlaubt">Projekteinstellung für die ungünstige Seite der Kennlinie.</param>
+        public void Beginnen(bool extrapolationErlaubt)
+        {
+            _extrapolation = extrapolationErlaubt;
+            _naechsteStunde = 0;
             Array.Clear(Bedarf_stuendlich, 0, STUNDEN);
             Array.Clear(Deckung_stuendlich, 0, STUNDEN);
             Array.Clear(Stromverbrauch_Kuehlung_stuendlich, 0, STUNDEN);
@@ -455,21 +491,36 @@ namespace WindowsFormsApplication1
             Array.Clear(Speicherladung_stuendlich, 0, STUNDEN);
             SpeicherentladungKwh = 0;
             SpeicherladungKwh = 0;
-            bool mitSpeicher = Speicher != null && Speicher.Count > 0;
-            if (mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.Reset();
+            _mitSpeicher = Speicher != null && Speicher.Count > 0;
+            if (_mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.Reset();
 
             // KU3-2 (Kühlkonzept 5.5): Kältemaschinen mit Trocken- oder Nasskühler kühlen in einer
             // Stunde mit kaltem Rückkühler frei - dann decken sie VOR allen anderen. Ohne eine solche
             // Maschine bleibt die Reihenfolge Zeichen für Zeichen die der Liste.
-            bool mitFreierKuehlung = false;
+            _mitFreierKuehlung = false;
             foreach (Kaelteerzeuger e in Erzeuger)
-                if (e.Maschine != null && e.Maschine.FreieKuehlungMoeglich) mitFreierKuehlung = true;
+                if (e.Maschine != null && e.Maschine.FreieKuehlungMoeglich) _mitFreierKuehlung = true;
+        }
 
-            for (int h = 0; h < STUNDEN; h++)
+        /// <summary>
+        /// <b>Eine Kältestunde</b> (AK3-K, Festlegung 16): Ladewunsch der Kältespeicher, freie Kühlung, Entladung, Erzeuger
+        /// in Listenfolge mit Taktverlust, Bereitschaftsverlust — in Jahresfolge nach <see cref="Beginnen"/> zu rufen.
+        /// Der Jahreslauf ruft dieselbe Stunde; im AK3-Weg ruft sie der Kreis nach der Wärmestunde.
+        /// </summary>
+        /// <param name="h">Die Stunde; muss <see cref="NaechsteStunde"/> sein.</param>
+        /// <param name="bedarfKwh">Kältebedarf der Stunde [kWh] (<c>SimulationKaeltebedarf.Kaeltebedarf[h]</c>).</param>
+        public void StundeRechnen(int h, double bedarfKwh)
+        {
+            if (h != _naechsteStunde)
+                throw new InvalidOperationException("Die Kältekaskade erwartet die Stunde " + _naechsteStunde + ", nicht " + h + ".");
+            _naechsteStunde++;
+            bool mitSpeicher = _mitSpeicher;
+            bool mitFreierKuehlung = _mitFreierKuehlung;
+            bool extrapolationErlaubt = _extrapolation;
             {
                 // Der Kühlkanal führt positive Mengen (K2); ein negativer Wert wäre ein Fehler der
                 // Bedarfsseite und wird hier nicht zu einer „Kältelieferung".
-                double b = (bedarf != null && h < bedarf.Length && bedarf[h] > 0) ? bedarf[h] : 0.0;
+                double b = bedarfKwh > 0 ? bedarfKwh : 0.0;
                 Bedarf_stuendlich[h] = b;
                 BedarfGesamtKwh += b;
 
@@ -589,8 +640,14 @@ namespace WindowsFormsApplication1
                 if (Kuehltage != null && h / 24 < Kuehltage.Length && Kuehltage[h / 24]) RestAnKuehltagenKwh += rest;
                 else RestAnHeiztagenKwh += rest;
             }
+        }
 
-            if (mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.KennzahlenBerechnen();
+        /// <summary>Abschluss des Jahres (AK3-K, Festlegung 16): die Kennzahlen der Kältespeicher.</summary>
+        public void Abschliessen()
+        {
+            if (_naechsteStunde != STUNDEN)
+                throw new InvalidOperationException("Die Kältekaskade ist bei Stunde " + _naechsteStunde + ", nicht am Jahresende.");
+            if (_mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.KennzahlenBerechnen();
         }
 
         // =====================================================================

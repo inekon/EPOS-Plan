@@ -498,7 +498,10 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+            // AK3-K (Festlegung 16): Im AK3-Weg mit Kernschalter hat der Kreis die Kältestunden schon gerechnet.
+            Kaeltekaskade stuendlich = _kaeltestunde;
+            _kaeltestunde = null;
+            foreach (Kaelteerzeuger e in stuendlich != null ? new List<Kaelteerzeuger>() : _kaelteerzeuger)
             {
                 if (e.Maschine != null) continue;   // KU3-2: die Kältemaschine kennt keinen Heizzeitanteil
                 WErzeugerModel m = simulation_wp.wp_model[e.Modulindex];
@@ -520,9 +523,18 @@ namespace WindowsFormsApplication1
                 foreach (int k in Kanal.KANAELE_WAERME) vorher[k] = (double[])kanaele.Bedarf[k].Clone();
             }
 
-            var kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
+            Kaeltekaskade kaskade;
+            if (stuendlich != null)
+            {
+                kaskade = stuendlich;
+                kaskade.Abschliessen();
+            }
+            else
+            {
+                kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
                                               Speicher = KaeltespeicherLesen() };
-            kaskade.Rechnen(kaelte.Kaeltebedarf, simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+                kaskade.Rechnen(kaelte.Kaeltebedarf, simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+            }
             kaelte.DeckungUebernehmen(kaskade);
 
             _waermekanalAbweichungen = 0;
@@ -552,6 +564,56 @@ namespace WindowsFormsApplication1
                     (sp.Ladung_gesamt / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
                     (sp.Verluste_gesamt / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
                     sp.Vollzyklen.ToString("N1", CultureInfo.CurrentCulture)));
+        }
+
+        /// <summary>Die Kältekaskade, die der Kreis je Stunde rechnet (AK3-K); <c>null</c> = Jahreslauf nach der Wärme.</summary>
+        private Kaeltekaskade _kaeltestunde;
+
+        /// <summary>
+        /// <b>Die Kältestunde im Kreis</b> (AK3-K, Entwurf 4.1 Schritt 5, Festlegung 16), nur im AK3-Weg mit
+        /// <see cref="Ak3KKernschalter"/>: Kälteerzeuger (ohne Wärmepumpe in der Schleife hier statt nach der Wärme),
+        /// Kältespeicher und die Kältekaskade werden vor der Stundenschleife angelegt; die zurückgegebene Aktion rechnet je
+        /// Stunde nach der Wärmestunde den Kühlzeitanteil der Wärmepumpen aus ihrem eben gerechneten Heizzeitanteil und
+        /// die Kältestunde mit dem Kältebedarf des Kreises (Pass 1 plus Abweichung der Stunde). Danach schließt
+        /// <see cref="KaeltekaskadeRechnen"/> das Jahr ab, statt es zu rechnen. <c>null</c> = der Jahreslauf.
+        /// </summary>
+        private Action<int> Ak3KaeltestundeEinrichten()
+        {
+            _kaeltestunde = null;
+            Ak3Weg weg = Stundenbedarf is Ak3Stundenbedarf ? simulation_Waermebedarf?.Ak3 : null;
+            if (weg == null || !weg.Kaelte || m_bError) return null;
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf.Kaelteseite;
+            if (kaelte == null || !kaelte.Gerechnet) return null;
+            if (!_wpInSchleife) KaelteerzeugerVorbereiten();
+            if (_kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return null;
+
+            var masken = new Dictionary<Kaelteerzeuger, bool[]>();
+            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+            {
+                if (e.Maschine != null) continue;
+                WErzeugerModel m = simulation_wp.wp_model[e.Modulindex];
+                Sperrprofil sperre = simulation_wp.SperrprofilDesModuls(e.Modulindex);
+                masken[e] = sperre != null
+                    ? sperre.Verdichter
+                    : Sperrprofil.Bilden(m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis, null, 0).Verdichter;
+                e.Zeitanteil = new double[Kanalsatz.STUNDEN_JAHR];
+            }
+            var kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
+                                              Speicher = KaeltespeicherLesen(), ImKreis = true };
+            kaskade.Beginnen(simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+            _kaeltestunde = kaskade;
+            return h =>
+            {
+                foreach (KeyValuePair<Kaelteerzeuger, bool[]> z in masken)
+                {
+                    double[] heiz = simulation_wp.Heizzeitanteil_stuendlich != null &&
+                                    z.Key.Modulindex < simulation_wp.Heizzeitanteil_stuendlich.Length
+                        ? simulation_wp.Heizzeitanteil_stuendlich[z.Key.Modulindex] : null;
+                    z.Key.Zeitanteil[h] = Kaeltekaskade.ZeitanteilDerStunde(_kuehltage, heiz, z.Value, h);
+                }
+                double d = weg.KaelteDeltaKwh[h];
+                kaskade.StundeRechnen(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h]);
+            };
         }
 
         /// <summary>

@@ -149,6 +149,20 @@ namespace WindowsFormsApplication1.Referenzlauf
                 Console.WriteLine("Kernstufe AK3: " + Ak3Kernstufe.Modus + " (Messlauf, keine Basis)");
             }
 
+            // --- 0c. Kernschalter AK3-K (Festlegung 21; Messlauf, nie fuer eine Basis) ------------------
+            string ak3k = Argument(args, "--ak3k");
+            if (ak3k != null)
+            {
+                if (string.Equals(ak3k, "ein", StringComparison.OrdinalIgnoreCase)) Ak3KKernschalter.Ein = true;
+                else if (string.Equals(ak3k, "aus", StringComparison.OrdinalIgnoreCase)) Ak3KKernschalter.Ein = false;
+                else
+                {
+                    Console.WriteLine("ABBRUCH: --ak3k kennt nur \"aus\" und \"ein\".");
+                    return 2;
+                }
+                Console.WriteLine("Kernschalter AK3-K: " + (Ak3KKernschalter.Ein ? "ein" : "aus") + " (Messlauf, keine Basis)");
+            }
+
             string wurzel = ProjektWurzelFinden();
             string basis = Path.Combine(wurzel, ORDNER_REFERENZLAEUFE);
             string zielWurzel = Argument(args, "--ziel") ??
