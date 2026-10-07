@@ -29,6 +29,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ein Körper mit Hohlräumen ist allein mit seiner Außenschale gelesen.</summary>
         Mehrschale,
+
+        /// <summary>Die Datei nennt keine Dicke; extrudiert ist mit der Vorgabedicke der Bauteilart (17.3 Nr. 2).</summary>
+        Vorgabedicke,
+
+        /// <summary>Die Bezugsebene ließ sich nicht am Raumkörper messen; extrudiert ist beidseitig um die Achse (17.3 Nr. 3).</summary>
+        Bezugsebene_angenommen,
     }
 
     /// <summary>

@@ -29,6 +29,8 @@ Die Fuß- und die UTF-16-Datei entstanden aus derselben Gebäudedefinition wie d
 | `gbxml_nettoflaeche_negativ.xml` | ein Fenster größer als seine Wand — Nettofläche 0 (U14) | selbst erzeugt | eigenes Werk |
 | `gbxml_innenflaechen_teilweise.xml` | drei beheizte Räume (60 m², 3 m hoch) mit vollständigen Außenaufbauten, zwei massiven Innenwänden und einer Ständerwand nur mit R-Wert — die Innenflächen sind nicht vollständig (Bauteilvorschlag G4b, innere Masse nach Datenlage) | selbst erzeugt | eigenes Werk |
 | `gbxml_zonen_viele.xml` | 60 beheizte Räume zu je 10 m² auf zwei Geschossen, je eine Außenwand und Bodenplatte bzw. Dach, keine Innenflächen — je Raum eine Zone (X3) ergibt 60 Zonen über der Obergrenze 50: Warnung mit dem Vorschlag der Geschossregel X2 (Zonenimport G6c, M12) | selbst erzeugt | eigenes Werk |
+| `gbxml_g5_closedshell.xml` | zwei beheizte Räume mit gemeinsamer Innenwand (Achse), Raum B mit Pultdach (3 auf 4 m), ein Fenster als `PlanarGeometry` in der Südwand, `ShellGeometry/ClosedShell` je Raum in der Innenoberfläche, Außenwände im Außenmaß, Schichtdicken in mm (eine Schicht in m nach dem Dokumentkopf), eine Giebelfläche ohne Aufbau — Raum- und Bauteilkörper aus der Datei (Körperbildung K3, Probe 41) | selbst erzeugt | eigenes Werk |
+| `gbxml_g5_flaechen.xml` | dasselbe Gebäude ohne `ClosedShell`, nur mit `AdjacentSpaceId` — Raumkörper aus den Flächen je Raum (Körperbildung K3, Probe 41) | selbst erzeugt | eigenes Werk |
 
 ## Gebäudeimport IFC (Stufe G4a)
 
