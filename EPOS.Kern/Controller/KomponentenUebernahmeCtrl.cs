@@ -327,6 +327,10 @@ namespace WindowsFormsApplication1
             bool mitFahrplan = AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
             // KU3-6a: ebenso der Stand der Spalten der freien Kuehlung (FreieKuehlungSoleSchema).
             bool mitFreierKuehlung = FreieKuehlungSoleSchema.AnlagenspaltenVorhanden();
+            // Die Fachspalten, die das Modell nicht traegt (Sondenfeld, KWKG, Steuer,
+            // Quellangaben) - aus dem Schema, VOR dem Vorgang erfragt (AnlagenFachspalten).
+            List<string> fachspalten = AnlagenFachspalten.UebertragbareSpalten();
+            int bezuegeVerloren = 0;
             var neueGeraeteIds = new List<int>();     // Reihenfolge = quellGeraete
             var neuePufferNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -423,10 +427,18 @@ namespace WindowsFormsApplication1
                     GeraetefkSetzen(plan, a, fkZiel);
 
                     (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(idZiel, a, pufferCache, mitFahrplan, mitFreierKuehlung);
-                    Ausfuehren(v, sqlAnlage, werteAnlage);
+                    int neueAnlage = v.EinfuegenUndId(sqlAnlage, werteAnlage);
+
+                    // Was das Modell nicht traegt, kommt aus der Quellzeile nach - derselbe
+                    // Kernweg wie bei der Flottenstudie (AnlagenFachspalten.Uebertragen).
+                    bezuegeVerloren += AnlagenFachspalten.Uebertragen(v, fachspalten, a.ID, neueAnlage);
                 }
 
                 v.Commit();
+
+                if (bezuegeVerloren > 0)
+                    warnungen.Add(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.BK_KOMP_HINW_PROJEKTBEZUG, bezuegeVerloren));
             }
             catch (Exception ex)
             {

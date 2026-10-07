@@ -161,6 +161,9 @@ public static partial class SpeicherFlottenStudieCtrl
         bool mitFahrplan = AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
         // KU3-6a: ebenso der Stand der Spalten der freien Kuehlung (FreieKuehlungSoleSchema).
         bool mitFreierKuehlung = FreieKuehlungSoleSchema.AnlagenspaltenVorhanden();
+        // Die Fachspalten der vertretenen Anlage (Sondenfeld, KWKG, Steuer, Quellangaben),
+        // VOR dem Vorgang aus dem Schema erfragt (AnlagenFachspalten).
+        List<string> fachspalten = AnlagenFachspalten.UebertragbareSpalten();
         try
         {
             v = DataRepository.Vorgang();
@@ -172,6 +175,9 @@ public static partial class SpeicherFlottenStudieCtrl
                 if (e == null) continue;
                 int stueck = Stueckzahl(stueckzahlen, i);
                 int vorhandeneAnlage = Anlagenbezug(e);
+                // Nur eine Anlage DIESES Projekts mit Geraetezeile ist Quelle der weiteren Stuecke.
+                bool quelleGueltig = vorhandeneAnlage > 0 &&
+                                     Geraetezeile(v, projektId, vorhandeneAnlage) is { } g0 && g0 > 0;
 
                 for (int n = 1; n <= stueck; n++)
                 {
@@ -199,6 +205,13 @@ public static partial class SpeicherFlottenStudieCtrl
                     };
                     (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(projektId, zeile, null, mitFahrplan, mitFreierKuehlung);
                     int neueAnlageId = v.EinfuegenUndId(sqlAnlage, werteAnlage);
+
+                    // Jedes weitere Stueck einer vertretenen Anlage ist eine Kopie DIESER
+                    // Anlage: Was das Modell nicht traegt, kommt aus ihrer Zeile nach -
+                    // derselbe Kernweg wie bei der Komponentenuebernahme. Eine freie Einheit
+                    // (Katalog, ohne Anlagenzeile) hat nichts zu retten und traegt die Vorgaben.
+                    if (quelleGueltig)
+                        AnlagenFachspalten.Uebertragen(v, fachspalten, vorhandeneAnlage, neueAnlageId);
                     angelegt.Add(new FlottenUebernahmeAnlage(e.Id ?? "", neueAnlageId, neueGeraeteId,
                                                              name, true, n));
                 }

@@ -9210,6 +9210,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts haben im Ziel keine gleichnamige Entsprechung und bleiben leer. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_PROJEKTBEZUG {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_PROJEKTBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf einen Pufferspeicher ließen sich im Ziel nicht auflösen und bleiben leer. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_PUFFERVERWEIS {
