@@ -199,7 +199,8 @@ namespace EPOS.Kern.Tests
                 "SELECT Baualtersklasse, COUNT(*) AS Anzahl FROM Tab_Gebaeude GROUP BY Baualtersklasse ORDER BY Baualtersklasse")
                 .Rows.Cast<DataRow>()
                 .Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture) + Convert.ToString(r[1], CultureInfo.InvariantCulture));
-            Assert.Equal(new[] { "B19", "E5", "G5", "H6", "I2", "J1" }, kopien);
+            // E6: dazu die Gebäudekopie des Referenzprojekts AK3-K 1059 (Vorlage 1058, AK3-K-K5a).
+            Assert.Equal(new[] { "B19", "E6", "G5", "H6", "I2", "J1" }, kopien);
         }
 
         /// <summary>

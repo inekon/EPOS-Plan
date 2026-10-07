@@ -201,6 +201,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Das Gebäude der Kopie von 1056 im Referenzprojekt AK3 1058 (AK3-W5a): dieselbe Kühlübergabe.</summary>
         private const int GEBAEUDE_REFERENZ_AK3 = 10664;
 
+        /// <summary>Das Gebäude der Kopie von 1058 im Referenzprojekt AK3-K 1059 (AK3-K-K5a): dieselbe Kühlübergabe.</summary>
+        private const int GEBAEUDE_REFERENZ_AK3K = 10665;
+
         /// <summary>
         /// Alle Strukturen stehen, die Sicht ist die geltende, alle neuen Spalten sind leer (der
         /// Schalter 0) — bis auf die gesäte Kühlübergabe des Referenzprojekts der Anlagenkopplung
@@ -234,13 +237,14 @@ namespace EPOS.Kern.Tests
                 string ausser = s.Tabelle == "Tab_Gebaeude"
                     ? " AND ID NOT IN (" + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", " +
                       GEBAEUDE_REFERENZ_FAHRPLAN.ToString(CultureInfo.InvariantCulture) + ", " +
-                      GEBAEUDE_REFERENZ_AK3.ToString(CultureInfo.InvariantCulture) + ")" : "";
+                      GEBAEUDE_REFERENZ_AK3.ToString(CultureInfo.InvariantCulture) + ", " +
+                      GEBAEUDE_REFERENZ_AK3K.ToString(CultureInfo.InvariantCulture) + ")" : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));
                 if (!GebaeudeSchema.KUEHLUEBERGABE_SCHALTER.Contains(s.Name))
                     Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" + ausser));
             }
-            foreach (int gebaeude in new[] { GEBAEUDE_REFERENZ_KOPPLUNG, GEBAEUDE_REFERENZ_FAHRPLAN, GEBAEUDE_REFERENZ_AK3 })
+            foreach (int gebaeude in new[] { GEBAEUDE_REFERENZ_KOPPLUNG, GEBAEUDE_REFERENZ_FAHRPLAN, GEBAEUDE_REFERENZ_AK3, GEBAEUDE_REFERENZ_AK3K })
             {
                 DataRow referenz = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
                                                                new DbParam("?", gebaeude)).Rows[0];
