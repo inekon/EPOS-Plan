@@ -3143,6 +3143,26 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt ProjektdateiImportSchema.SCHRITT: Format und Herkunft SQPROJ fuer den Gebaeudeimport aus der
+            //      Projektdatei (.sqproj) - Neubau von Tab_Importquelle und der sechs Herkunftstabellen (Baustoff, Aufbau,
+            //      je mit Katalog, Zone, Bauteil) mit erweiterter Pruefklausel. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ProjektdateiImport bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Keine Zeile aendert sich; der Rechenweg liest weder Format noch Herkunft.
+            string nrProjektdatei = ProjektdateiImportSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrProjektdatei + " - Format und Herkunft SQPROJ (Import aus der Projektdatei): " +
+                              (ProjektdateiImportSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtProjektdatei = new List<string>();
+                ProjektdateiImportSchema.Ausfuehren(berichtProjektdatei);
+                foreach (string zeile in berichtProjektdatei)
+                    Console.WriteLine("Schritt " + nrProjektdatei + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrProjektdatei + " - vollstaendig: " + ProjektdateiImportSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

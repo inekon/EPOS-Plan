@@ -358,6 +358,10 @@ namespace WindowsFormsApplication1
             // Nordwinkel vorhanden → Datei, NULL → Annahme.
             new Stufe(NordrichtungSchema.SCHRITT, Art.Ddl,
                       "Herkunft des Nordwinkels an der Importquelle (Datei, Eingabe, Annahme)"),
+            // Ein älteres Paket führt nur die Formate IFC und gbXML und die fünf alten Herkünfte; seine Zeilen bleiben gültig,
+            // die Prüfklauseln nehmen danach auch SQPROJ an.
+            new Stufe(ProjektdateiImportSchema.SCHRITT, Art.Ddl,
+                      "Format und Herkunft SQPROJ für den Gebäudeimport aus der Projektdatei"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

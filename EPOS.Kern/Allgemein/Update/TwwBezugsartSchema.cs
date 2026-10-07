@@ -191,9 +191,14 @@ namespace WindowsFormsApplication1
         /// Zeilen ziehen namentlich um, der AUTOINCREMENT-Stand reist mit, die alte fällt, Indizes und
         /// Trigger stehen wieder. Liefert die Zahl der wieder angelegten Indizes und Trigger.
         /// </summary>
-        internal static int Neubau(DbVorgang v, string tabelle, string ziel)
+        internal static int Neubau(DbVorgang v, string tabelle, string ziel) => Neubau(v, tabelle, ziel, Hilfsname(tabelle));
+
+        /// <summary>
+        /// Dasselbe Rezept mit einem Hilfsnamen des Aufrufers — für Schritte, die es mitbenutzen
+        /// (<see cref="ProjektdateiImportSchema"/>), damit der Hilfsname ihren eigenen Anlass trägt.
+        /// </summary>
+        internal static int Neubau(DbVorgang v, string tabelle, string ziel, string alt)
         {
-            string alt = Hilfsname(tabelle);
 
             // Spalten NAMENTLICH - "SELECT *" haengt an der Reihenfolge zweier Schemastaende.
             var namen = new List<string>();
