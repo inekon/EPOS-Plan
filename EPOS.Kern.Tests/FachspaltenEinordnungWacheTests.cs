@@ -254,5 +254,93 @@ namespace EPOS.Kern.Tests
             Assert.True(fehlend.Count == 0, "Kindtabelle ohne Einordnung: " + string.Join(", ", fehlend) +
                 ". Einordnen in AnlagenFachspalten.PROJEKTKINDER (wird mitkopiert) oder KIND_AUSSCHLUSS.");
         }
+
+        /// <summary>
+        /// Jede Tabelle mit Verweis auf eine Anlagenzeile — Fremdschlüssel auf
+        /// <c>Tab_Energieanlagen</c> oder eine Spalte aus
+        /// <see cref="AnlagenFachspalten.ANLAGENVERWEIS_SPALTEN"/> ohne Fremdschlüssel — ist für die
+        /// vollständige Kopie einer Anlage eingeordnet: mitkopiert
+        /// (<see cref="AnlagenFachspalten.ANLAGENKINDER"/>) oder ausgenommen
+        /// (<see cref="AnlagenFachspalten.ANLAGENKIND_AUSSCHLUSS"/>, Ergebnisse nie mitkopiert).
+        /// </summary>
+        [Fact]
+        public void Jede_Tabelle_mit_Anlagenverweis_ist_eingeordnet()
+        {
+            if (!_db.Vorhanden) return;
+
+            List<string> fehlend = UneingeordneteAnlagenkinder();
+            Assert.True(fehlend.Count == 0, "Tabelle mit Anlagenverweis ohne Einordnung: " +
+                string.Join(", ", fehlend) + ". Einordnen in AnlagenFachspalten.ANLAGENKINDER (wird bei " +
+                "der Kopie einer Anlage mitkopiert) oder ANLAGENKIND_AUSSCHLUSS (Ergebnisse, Studien).");
+
+            // Die Liste ist sauber: kein Kind zugleich ausgenommen, keine Ergebnistabelle kopiert,
+            // jedes Kind trägt seinen Verweis wirklich.
+            foreach ((string tabelle, string fk) in AnlagenFachspalten.ANLAGENKINDER)
+            {
+                Assert.DoesNotContain(tabelle, AnlagenFachspalten.ANLAGENKIND_AUSSCHLUSS);
+                Assert.DoesNotContain("Ergebnis", tabelle, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains(fk, DataRepository.SpaltenVonTabelle(tabelle), StringComparer.OrdinalIgnoreCase);
+            }
+            foreach (string bezug in AnlagenFachspalten.ANLAGENKIND_UMSCHLUESSEL.Values)
+                Assert.Contains(AnlagenFachspalten.ANLAGENKINDER, k => string.Equals(k.Tabelle, bezug, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Gegenprobe: eine neue Tabelle mit Fremdschlüssel auf die Anlagenzeile und eine mit
+        /// <c>ID_Anlage</c> ohne Fremdschlüssel fallen auf, eingeordnet nicht mehr.
+        /// </summary>
+        [Fact]
+        public void Gegenprobe_eine_neue_Tabelle_mit_Anlagenverweis_faellt_auf()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.True(DataRepository.ExecuteSQL(
+                "CREATE TABLE Probe_AnlageKind (ID INTEGER PRIMARY KEY, ID_Energieanlage INTEGER " +
+                "REFERENCES Tab_Energieanlagen (ID) ON DELETE CASCADE, Wert REAL) STRICT"));
+            Assert.True(DataRepository.ExecuteSQL(
+                "CREATE TABLE Probe_AnlageOhneFk (ID INTEGER PRIMARY KEY, ID_Anlage INTEGER, Wert REAL) STRICT"));
+
+            List<string> fehlend = UneingeordneteAnlagenkinder();
+            Assert.Contains("Probe_AnlageKind.ID_Energieanlage", fehlend);
+            Assert.Contains("Probe_AnlageOhneFk.ID_Anlage", fehlend);
+            Assert.Equal(2, fehlend.Count);
+
+            Assert.True(DataRepository.ExecuteSQL("DROP TABLE Probe_AnlageKind"));
+            Assert.True(DataRepository.ExecuteSQL("DROP TABLE Probe_AnlageOhneFk"));
+            Assert.Empty(UneingeordneteAnlagenkinder());
+        }
+
+        /// <summary>Die Verweise „Tabelle.Spalte“ auf eine Anlagenzeile ohne Einordnung.</summary>
+        private static List<string> UneingeordneteAnlagenkinder()
+        {
+            DataTable tabellen = DataRepository.GetDataTable(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite%'");
+            var fehlend = new List<string>();
+            foreach (DataRow t in tabellen.Rows)
+            {
+                string name = Convert.ToString(t["name"], CultureInfo.InvariantCulture);
+                if (string.Equals(name, "Tab_Energieanlagen", StringComparison.OrdinalIgnoreCase)) continue;
+                var verweise = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                DataTable fks = DataRepository.GetDataTable(
+                    "SELECT \"from\" AS Spalte, \"table\" AS Ziel FROM pragma_foreign_key_list(?)",
+                    new DbParam("@t", name));
+                foreach (DataRow f in fks.Rows)
+                    if (string.Equals(Convert.ToString(f["Ziel"], CultureInfo.InvariantCulture), "Tab_Energieanlagen",
+                                      StringComparison.OrdinalIgnoreCase))
+                        verweise.Add(Convert.ToString(f["Spalte"], CultureInfo.InvariantCulture));
+                foreach (string spalte in DataRepository.SpaltenVonTabelle(name))
+                    if (AnlagenFachspalten.ANLAGENVERWEIS_SPALTEN.Contains(spalte)) verweise.Add(spalte);
+
+                foreach (string spalte in verweise)
+                {
+                    bool eingeordnet = AnlagenFachspalten.ANLAGENKIND_AUSSCHLUSS.Contains(name) ||
+                        AnlagenFachspalten.ANLAGENKINDER.Any(k =>
+                            string.Equals(k.Tabelle, name, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(k.Fk, spalte, StringComparison.OrdinalIgnoreCase));
+                    if (!eingeordnet) fehlend.Add(name + "." + spalte);
+                }
+            }
+            return fehlend;
+        }
     }
 }
