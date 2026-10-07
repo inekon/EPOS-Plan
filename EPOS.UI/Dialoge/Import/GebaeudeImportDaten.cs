@@ -413,6 +413,12 @@ public sealed record GebaeudeAufbaulistenzeileDaten
     /// <summary>Bei einem Ersatzaufbau Typ und Abgleich; leer sonst.</summary>
     public string Typaufbau { get; init; } = "";
 
+    /// <summary>Die Herkunft des Aufbaus als Schlüssel (<see cref="EPOS.UI.Dialoge.Bedarf.SteckbriefHerkunft"/>), etwa „Projektdatei".</summary>
+    public string AufbauHerkunftSchluessel { get; init; } = "";
+
+    /// <summary>Der Rang des Aufbaus nach der Rangfolge mit Projektdatei als Anzeigetext; leer = ohne Projektdatei bzw. ohne Rang.</summary>
+    public string Aufbaurang { get; init; } = "";
+
     /// <summary>Die Schichten (ausgeklappt), innen → außen, weggelassene markiert.</summary>
     public IReadOnlyList<EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht> Schichten { get; init; } = Array.Empty<EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht>();
 

@@ -292,6 +292,19 @@ public class GebaeudeAufbauTests : EposBunitContext
     }
 
     [Fact]
+    public void BA4b_Der_Steckbrief_zeigt_einen_Aufbau_der_Projektdatei_mit_Rang()
+    {
+        IRenderedComponent<Bauteilsteckbrief> cut = Render<Bauteilsteckbrief>(c => c.Add(x => x.Daten,
+            SteckbriefWand with { Aufbaurang = "Rang 1 – Aufbau der Projektdatei" }));
+        Assert.Equal(SteckbriefHerkunft.Projektdatei, cut.Find(".epos-steckbrief-aufbau").GetAttribute("data-herkunft"));
+        Assert.Equal("aus Projektdatei", cut.Find(".epos-steckbrief-aufbau .epos-steckbrief-herkunft").TextContent.Trim());
+        Assert.Equal("Rang 1 – Aufbau der Projektdatei", cut.Find(".epos-steckbrief-rang").TextContent.Trim());
+        // Ohne Rang (Lauf ohne Projektdatei) bleibt die Zeile weg.
+        IRenderedComponent<Bauteilsteckbrief> ohne = Render<Bauteilsteckbrief>(c => c.Add(x => x.Daten, SteckbriefBoden));
+        Assert.Empty(ohne.FindAll(".epos-steckbrief-rang"));
+    }
+
+    [Fact]
     public void BA3_Der_Steckbrief_zeichnet_allein_ohne_Delegaten_ohne_Knoepfe()
     {
         IRenderedComponent<Bauteilsteckbrief> cut = Render<Bauteilsteckbrief>(c => c.Add(x => x.Daten, SteckbriefWand));

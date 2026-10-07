@@ -2389,6 +2389,10 @@
                                 {
                                     <span class="epos-leisezeile epos-gebimport-typaufbau">@z.Typaufbau</span>
                                 }
+                                @if (z.Aufbaurang.Length > 0)
+                                {
+                                    <span class="epos-leisezeile epos-gebimport-aufbaurang" data-herkunft="@z.AufbauHerkunftSchluessel">@z.Aufbaurang</span>
+                                }
                             </td>
                             <td>@z.Art</td>
                             <td class="epos-gebimport-zahl">@z.Bauteile.ToString(CultureInfo.CurrentCulture)</td>

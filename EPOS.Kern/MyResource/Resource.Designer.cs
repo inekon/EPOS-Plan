@@ -13154,6 +13154,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 1 – Aufbau der Projektdatei ähnelt.
+        /// </summary>
+        public static string BTSB_RANG_1 {
+            get {
+                return ResourceManager.GetString("BTSB_RANG_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 2 – Aufbaukatalog der Projektdatei ähnelt.
+        /// </summary>
+        public static string BTSB_RANG_2 {
+            get {
+                return ResourceManager.GetString("BTSB_RANG_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 3 – Schichten der IFC ähnelt.
+        /// </summary>
+        public static string BTSB_RANG_3 {
+            get {
+                return ResourceManager.GetString("BTSB_RANG_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 4 – Ersatzaufbau bzw. ohne Aufbau ähnelt.
+        /// </summary>
+        public static string BTSB_RANG_4 {
+            get {
+                return ResourceManager.GetString("BTSB_RANG_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Steckbrief schließen ähnelt.
         /// </summary>
         public static string BTSB_SCHLIESSEN {

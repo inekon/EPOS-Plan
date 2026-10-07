@@ -47702,5 +47702,17 @@ chart</value>
   <data name="GIMP_AB_TYPWAHL" xml:space="preserve">
     <value>Choose type construction</value>
   </data>
+  <data name="BTSB_RANG_1" xml:space="preserve">
+    <value>Rank 1 – construction from the project file</value>
+  </data>
+  <data name="BTSB_RANG_2" xml:space="preserve">
+    <value>Rank 2 – construction catalogue of the project file</value>
+  </data>
+  <data name="BTSB_RANG_3" xml:space="preserve">
+    <value>Rank 3 – IFC layers</value>
+  </data>
+  <data name="BTSB_RANG_4" xml:space="preserve">
+    <value>Rank 4 – substitute construction or none</value>
+  </data>
 </root>
 

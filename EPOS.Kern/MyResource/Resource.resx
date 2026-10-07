@@ -47709,5 +47709,17 @@ Chart</value>
   <data name="GIMP_AB_TYPWAHL" xml:space="preserve">
     <value>Typaufbau wählen</value>
   </data>
+  <data name="BTSB_RANG_1" xml:space="preserve">
+    <value>Rang 1 – Aufbau der Projektdatei</value>
+  </data>
+  <data name="BTSB_RANG_2" xml:space="preserve">
+    <value>Rang 2 – Aufbaukatalog der Projektdatei</value>
+  </data>
+  <data name="BTSB_RANG_3" xml:space="preserve">
+    <value>Rang 3 – Schichten der IFC</value>
+  </data>
+  <data name="BTSB_RANG_4" xml:space="preserve">
+    <value>Rang 4 – Ersatzaufbau bzw. ohne Aufbau</value>
+  </data>
 </root>
 

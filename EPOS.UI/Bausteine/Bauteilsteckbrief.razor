@@ -67,6 +67,10 @@
                 @Daten.Aufbau <span class="epos-steckbrief-herkunft">@Daten.AufbauHerkunft</span>
             </p>
         }
+        @if (Daten.Aufbaurang.Length > 0)
+        {
+            <p class="epos-leisezeile epos-steckbrief-rang">@Daten.Aufbaurang</p>
+        }
         @if (Daten.Ersatz.Length > 0)
         {
             <p class="epos-leisezeile epos-steckbrief-ersatz">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Ersatz, Daten.Ersatz)</p>

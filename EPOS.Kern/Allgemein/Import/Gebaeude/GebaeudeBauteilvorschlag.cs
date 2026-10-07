@@ -688,6 +688,9 @@ namespace WindowsFormsApplication1
         /// <summary>Lief der Namensabgleich der Baustoffe (ein <see cref="Baustoffabgleich"/> war übergeben)?</summary>
         internal bool AbgleichAktiv { get; private set; }
 
+        /// <summary>Hat der Lauf die Aufbauten einer Projektdatei betrachtet (Rangfolge E97/E98, BA-4b)? Ohne sie bleibt der Rang der Zeilen ohne Anzeige.</summary>
+        internal bool MitProjektdatei { get; private set; }
+
         /// <summary>
         /// <b>Die Materialnamen der Datei</b> in der Reihenfolge ihres ersten Auftretens — je Name Stufe,
         /// Baustoff oder „ohne Treffer" und die Zahl der Schichten; der Eingang der Anwenderzuordnung.
@@ -878,6 +881,7 @@ namespace WindowsFormsApplication1
 
                 if (Projektdatei != null)
                     _wahl = SqprojAufbauwahl.Bilden(Projektdatei.Abbild, Projektdatei.Abgleich, _g);
+                _v.MitProjektdatei = _wahl != null;
 
                 _raeume = new Dictionary<string, AbbildRaum>(StringComparer.Ordinal);
                 foreach (AbbildGebaeude geb in _abbild.Gebaeude)

@@ -197,5 +197,74 @@ namespace EPOS.Kern.Tests
             Assert.Equal(TypaufbauSaattabelle.AW_MASSIV_UNGEDAEMMT,
                          BauteilvorschlagProbe.Zeile(ZuordnungsstufeTests.SyntheseMitVierWaenden(falsch), "w-c").Typaufbau);
         }
+
+        [Fact]
+        public void Steckbrief_und_Liste_zeigen_Projektdatei_und_Rang_die_Typwahl_trifft_nur_Rang_4()
+        {
+            GebaeudeBauteilvorschlag v = SqprojAufbauTests.Vorschlag(true);
+            Assert.True(v.MitProjektdatei);
+            GebaeudeBauteilzeile Z(string k) => v.Zeilen.Single(z => z.Kennung == k);
+            BauteilsteckbriefDaten S(string k) => GebaeudeAufbauHuelle.Steckbrief(Z(k), Aufbau(v, Z(k)), v.MitProjektdatei);
+
+            // Rang 1: Aufbau der Projektdatei — Herkunft „Projektdatei" am Aufbau und an den Stoffen ohne Katalogbaustoff.
+            BauteilsteckbriefDaten dach = S("dach");
+            Assert.Equal(SteckbriefHerkunft.Projektdatei, dach.AufbauHerkunftSchluessel);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTSB_HK_PROJEKTDATEI, dach.AufbauHerkunft);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTSB_RANG_1, dach.Aufbaurang);
+            Assert.Equal(2, dach.Schichten.Count(x => !x.Weggelassen));
+            Assert.All(dach.Schichten, x => Assert.Equal(SteckbriefHerkunft.Projektdatei, x.HerkunftSchluessel));
+            // Rang 2: Aufbaukatalog der Projektdatei.
+            BauteilsteckbriefDaten boden = S("boden");
+            Assert.Equal(SteckbriefHerkunft.Projektdatei, boden.AufbauHerkunftSchluessel);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTSB_RANG_2, boden.Aufbaurang);
+            // Rang 3 und 4: die Schichten der Datei bzw. der Ersatzaufbau.
+            Assert.Equal(SteckbriefHerkunft.Datei, S("wand3").AufbauHerkunftSchluessel);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTSB_RANG_3, S("wand3").Aufbaurang);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTSB_RANG_4, S("wand4").Aufbaurang);
+
+            // Die Liste trägt Herkunft und Rang je Aufbau; einen Typschlüssel hat nur der Ersatzaufbau (Rang 4).
+            var liste = GebaeudeAufbauHuelle.Aufbauliste(v);
+            var zeileDach = liste.Single(z => z.Schluessel == "A" + Z("dach").Bauteil.ID_Aufbau.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Assert.Equal(SteckbriefHerkunft.Projektdatei, zeileDach.AufbauHerkunftSchluessel);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTSB_RANG_1, zeileDach.Aufbaurang);
+            Assert.Null(zeileDach.Typschluessel);
+            var mitTyp = liste.Where(z => z.Typschluessel != null).ToList();
+            var ersatz = Assert.Single(mitTyp);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTSB_RANG_4, ersatz.Aufbaurang);
+
+            // Die Typwahl ändert den Ersatzaufbau, Rang 1 und 2 bleiben der Projektdatei.
+            string anderer = ersatz.Typen.Select(t => t.Schluessel).First(c => c != ersatz.Typcode);
+            GebaeudeBauteilvorschlag w = SqprojAufbauTests.Vorschlag(true, new Dictionary<string, string> { [ersatz.Typschluessel] = anderer });
+            Assert.Equal(anderer, w.Zeilen.Single(z => z.Kennung == "wand4").Typaufbau);
+            Assert.Equal(Aufbaurang.Projektdatei, w.Zeilen.Single(z => z.Kennung == "dach").Aufbaurang);
+            Assert.Equal(Aufbaurang.Projektkatalog, w.Zeilen.Single(z => z.Kennung == "boden").Aufbaurang);
+            Assert.True(Aufbau(w, w.Zeilen.Single(z => z.Kennung == "dach")).AusProjektdatei);
+        }
+
+        [Fact]
+        public void Ohne_Projektdatei_zeigt_der_Steckbrief_keinen_Rang()
+        {
+            GebaeudeBauteilvorschlag v = SqprojAufbauTests.Vorschlag(false);
+            Assert.False(v.MitProjektdatei);
+            GebaeudeBauteilzeile z = v.Zeilen.Single(x => x.Kennung == "wand3");
+            BauteilsteckbriefDaten d = GebaeudeAufbauHuelle.Steckbrief(z, Aufbau(v, z), v.MitProjektdatei);
+            Assert.Equal("", d.Aufbaurang);
+            Assert.Equal(SteckbriefHerkunft.Datei, d.AufbauHerkunftSchluessel);
+            Assert.All(GebaeudeAufbauHuelle.Aufbauliste(v), x => Assert.Equal("", x.Aufbaurang));
+        }
+
+        [Fact]
+        public void Ein_gespeicherter_Aufbau_der_Projektdatei_traegt_ihre_Herkunft()
+        {
+            Assert.Equal(SteckbriefHerkunft.Projektdatei,
+                         GebaeudeAufbauHuelle.Aufbauherkunft(new BauteilaufbauModel { Herkunft = DbWerte.HERKUNFT_IFC, Quelle = "Sportheim.sqproj" }));
+            Assert.Equal(SteckbriefHerkunft.Datei,
+                         GebaeudeAufbauHuelle.Aufbauherkunft(new BauteilaufbauModel { Herkunft = DbWerte.HERKUNFT_IFC, Quelle = "Sportheim.ifc" }));
+            Assert.Equal(SteckbriefHerkunft.Vorgabe,
+                         GebaeudeAufbauHuelle.Aufbauherkunft(new BauteilaufbauModel { Herkunft = DbWerte.HERKUNFT_IFC, Quelle = "x.sqproj", Typaufbau = "AW_MASSIV_UNGEDAEMMT" }));
+        }
+
+        private static GebaeudeAufbauzeile Aufbau(GebaeudeBauteilvorschlag v, GebaeudeBauteilzeile z)
+            => z.Bauteil.ID_Aufbau is int id ? v.Aufbauten.First(a => a.Aufbau.ID == id) : null;
 }
 }

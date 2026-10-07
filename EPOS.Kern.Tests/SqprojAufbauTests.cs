@@ -242,7 +242,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Der Vorschlag eines Raums mit Dach (Rang 1), Boden (Rang 2), Wand mit IFC-Schichten (Rang 3) und Wand ohne Aufbau (Rang 4).</summary>
-        internal static GebaeudeBauteilvorschlag Vorschlag(bool mitProjektdatei)
+        internal static GebaeudeBauteilvorschlag Vorschlag(bool mitProjektdatei, IReadOnlyDictionary<string, string> typwahl = null)
         {
             SqprojAbbild pd = Lesen();
             var a = new GbxmlAbbild();
@@ -260,7 +260,7 @@ namespace EPOS.Kern.Tests
             a.Gebaeude.Add(g);
             SqprojStand stand = mitProjektdatei
                 ? new SqprojStand("probe.sqproj", null, 0, pd, SqprojRaumabgleich.Bilden(pd, g), pd.Meldungen, null) : null;
-            return GebaeudeBauteilvorschlag.Bilden(a, 0, 'F', null, new GbxmlImportProfil(), projektdatei: stand);
+            return GebaeudeBauteilvorschlag.Bilden(a, 0, 'F', null, new GbxmlImportProfil(), projektdatei: stand, typwahl: typwahl);
         }
 
         [Fact]

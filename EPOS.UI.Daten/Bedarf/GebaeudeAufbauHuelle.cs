@@ -63,17 +63,47 @@ namespace WindowsFormsApplication1
             _ => MyResource.Resource.GIMP_WERT_LEER,
         };
 
-        /// <summary>Die Herkunft eines Aufbaus des Vorschlags: Ersatzaufbau = Vorgabe, Projektdatei (BA-4) über Herkunft oder Quelltyp.</summary>
+        /// <summary>
+        /// Die Herkunft eines Aufbaus des Vorschlags: Ersatzaufbau = Vorgabe; ein Aufbau der HottCAD-Projektdatei (BA-4b:
+        /// <see cref="GebaeudeAufbauzeile.AusProjektdatei"/>, Quelltyp <see cref="GebaeudeBauteilvorschlag.QUELLTYP_PD_AUFBAU"/>)
+        /// = Projektdatei; sonst Katalog bzw. Datei.
+        /// </summary>
         internal static string Aufbauherkunft(GebaeudeAufbauzeile a)
         {
             if (a == null) return SteckbriefHerkunft.Leer;
             if (a.Ersatz != null) return SteckbriefHerkunft.Vorgabe;
-            if (string.Equals(a.Herkunft.ToString(), "Projektdatei", StringComparison.Ordinal)
-                || (a.Quelltyp ?? "").IndexOf("Sqproj", StringComparison.OrdinalIgnoreCase) >= 0
-                || (a.Quelltyp ?? "").IndexOf("Projektdatei", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (a.AusProjektdatei || string.Equals(a.Quelltyp, GebaeudeBauteilvorschlag.QUELLTYP_PD_AUFBAU, StringComparison.Ordinal))
                 return SteckbriefHerkunft.Projektdatei;
             return a.Herkunft == Importherkunft.Katalog ? SteckbriefHerkunft.Katalog : SteckbriefHerkunft.Datei;
         }
+
+        /// <summary>
+        /// Die Herkunft eines gespeicherten Aufbaus: Typaufbau = Vorgabe; ein Aufbau der Projektdatei trägt deren Dateinamen
+        /// (<c>*.sqproj</c>) als Quelle (BA-4b) = Projektdatei; sonst nach dem Herkunftswert.
+        /// </summary>
+        internal static string Aufbauherkunft(BauteilaufbauModel a)
+        {
+            if (a == null) return SteckbriefHerkunft.Leer;
+            if (!string.IsNullOrEmpty(a.Typaufbau)) return SteckbriefHerkunft.Vorgabe;
+            if (a.Quelle != null && a.Quelle.Trim().EndsWith(".sqproj", StringComparison.OrdinalIgnoreCase))
+                return SteckbriefHerkunft.Projektdatei;
+            return Herkunftsschluessel(a.Herkunft);
+        }
+
+        /// <summary>
+        /// Der Rang des Aufbaus nach der Rangfolge E97/E98 (BA-4b) als Anzeigetext; leer ohne Rang oder wenn der Lauf keine
+        /// Projektdatei betrachtet hat (<paramref name="mitProjektdatei"/>) — dann ist Rang 3/4 keine Auskunft.
+        /// </summary>
+        internal static string Rangtext(Aufbaurang r, bool mitProjektdatei) => !mitProjektdatei && r != Aufbaurang.Projektdatei && r != Aufbaurang.Projektkatalog
+            ? ""
+            : r switch
+            {
+                Aufbaurang.Projektdatei => MyResource.Resource.BTSB_RANG_1,
+                Aufbaurang.Projektkatalog => MyResource.Resource.BTSB_RANG_2,
+                Aufbaurang.IfcSchichten => MyResource.Resource.BTSB_RANG_3,
+                Aufbaurang.Ersatz => MyResource.Resource.BTSB_RANG_4,
+                _ => "",
+            };
 
         // ------------------------------------------------------------------
         //  Kennwerte für die Anzeige (Bauteilreduktion)
@@ -140,7 +170,7 @@ namespace WindowsFormsApplication1
                 if (string.IsNullOrEmpty(z.Kennung) || stufen.ContainsKey(z.Kennung)) continue;
                 stufen[z.Kennung] = Stufe(z.Stufe);
                 GebaeudeAufbauzeile a = z.Bauteil.ID_Aufbau is int id && aufbauJeId.TryGetValue(id, out GebaeudeAufbauzeile x) ? x : null;
-                steckbriefe[z.Kennung] = Steckbrief(z, a);
+                steckbriefe[z.Kennung] = Steckbrief(z, a, v.MitProjektdatei);
             }
             return daten with
             {
@@ -163,8 +193,11 @@ namespace WindowsFormsApplication1
             }).ToList();
         }
 
-        /// <summary>Der Steckbrief einer Zeile des Vorschlags mit ihrem Aufbau (<c>null</c> = keiner).</summary>
-        internal static BauteilsteckbriefDaten Steckbrief(GebaeudeBauteilzeile z, GebaeudeAufbauzeile a)
+        /// <summary>
+        /// Der Steckbrief einer Zeile des Vorschlags mit ihrem Aufbau (<c>null</c> = keiner); mit
+        /// <paramref name="mitProjektdatei"/> trägt er den Rang der Zeile (E97/E98).
+        /// </summary>
+        internal static BauteilsteckbriefDaten Steckbrief(GebaeudeBauteilzeile z, GebaeudeAufbauzeile a, bool mitProjektdatei = false)
         {
             BauteilModel b = z.Bauteil;
             Aufbaustufe stufe = Stufe(z.Stufe);
@@ -181,6 +214,7 @@ namespace WindowsFormsApplication1
                 UHinweis = z.UAbweichungHinweis && z.UDatei is double ud && z.USchichten is double us
                     ? Format(MyResource.Resource.BTSB_U_ABWEICHUNG, UText(ud), Zahl(Math.Round(100.0 * Math.Abs(ud / us - 1.0), 0)), UText(us)) : "",
                 Fehlt = LueckenText(z.Fehlt),
+                Aufbaurang = transparent ? "" : Rangtext(z.Aufbaurang, mitProjektdatei),
             };
             if (transparent || a == null) return d with { Rechengrund = transparent ? "" : MyResource.Resource.BTSB_OHNE_RECHNUNG };
 
@@ -275,7 +309,7 @@ namespace WindowsFormsApplication1
                     }
                 }
                 Aufbauluecke fehlt = zeilen.Aggregate(Aufbauluecke.Keine, (s, z) => s | z.Fehlt) & ~Aufbauluecke.Ersatzaufbau;
-                BauteilsteckbriefDaten steckbrief = Steckbrief(erste, a);
+                BauteilsteckbriefDaten steckbrief = Steckbrief(erste, a, v.MitProjektdatei);
                 liste.Add(new GebaeudeAufbaulistenzeileDaten
                 {
                     Schluessel = gruppe.Key,
@@ -289,6 +323,8 @@ namespace WindowsFormsApplication1
                     C1korr = c1,
                     Fehlt = LueckenText(fehlt),
                     Typaufbau = a?.Ersatz != null ? Format(MyResource.Resource.GIMP_AB_TYP, Ersatztext(a.Ersatz)) : "",
+                    AufbauHerkunftSchluessel = steckbrief.AufbauHerkunftSchluessel,
+                    Aufbaurang = steckbrief.Aufbaurang,
                     Schichten = steckbrief.Schichten,
                     Materialschluessel = steckbrief.Schichten.Where(s => !s.Weggelassen && !string.IsNullOrEmpty(s.Materialschluessel)
                                                                          && (s.Lambda == "–" || s.Rohdichte == "–" || s.Cp == "–"))
@@ -363,7 +399,7 @@ namespace WindowsFormsApplication1
                 IdBauteil = b.ID > 0 ? b.ID : null,
             };
             if (transparent || a == null) return d with { Rechengrund = transparent ? "" : MyResource.Resource.BTSB_OHNE_RECHNUNG };
-            string aufbauSchluessel = string.IsNullOrEmpty(a.Typaufbau) ? Herkunftsschluessel(a.Herkunft) : SteckbriefHerkunft.Vorgabe;
+            string aufbauSchluessel = Aufbauherkunft(a);
             var schichten = a.Schichten.Select(s => Schichtzeile(s,
                     s.ID_Baustoff is int id && baustoffnamen != null && baustoffnamen.TryGetValue(id, out string n) ? n ?? "" : "", aufbauSchluessel))
                 .ToList();

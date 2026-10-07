@@ -203,6 +203,9 @@ public sealed record BauteilsteckbriefDaten
     /// <summary>Die Herkunft des Aufbaus als Schlüssel (<see cref="SteckbriefHerkunft"/>).</summary>
     public string AufbauHerkunftSchluessel { get; init; } = SteckbriefHerkunft.Leer;
 
+    /// <summary>Der Rang des Aufbaus nach der Rangfolge mit Projektdatei (Rang 1 bis 4) als Anzeigetext; leer = ohne Projektdatei bzw. ohne Rang.</summary>
+    public string Aufbaurang { get; init; } = "";
+
     /// <summary>Die Schichten innen → außen, weggelassene eingereiht und markiert.</summary>
     public IReadOnlyList<BauteilsteckbriefSchicht> Schichten { get; init; } = Array.Empty<BauteilsteckbriefSchicht>();
 
