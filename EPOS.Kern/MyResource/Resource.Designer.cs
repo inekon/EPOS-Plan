@@ -37348,6 +37348,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} + Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLE_MIT_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLE_MIT_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Projektdatei (.sqproj) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLE_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLE_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Formate (nach Dateiendung) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLWAHL_ALLE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLWAHL_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: {0} ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLZEILE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nur beheizte Räume bilden die Zone; ein geänderter Haken ordnet neu zu. ähnelt.
         /// </summary>
         public static string GIMP_DLG_RAEUME_HINWEIS {
@@ -37722,6 +37767,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_ZONE {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone der Projektdatei enthält unbeheizte Räume; die Zuordnung bleibt unvollständig, bis ihre Beheizung entschieden ist. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQNUR_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQNUR_UNBEHEIZT", resourceCulture);
             }
         }
         
