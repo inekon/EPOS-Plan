@@ -81,6 +81,8 @@ namespace WindowsFormsApplication1
 
             new Lesung(abbild, melder, abbruch).Lesen(dokument);
             NordwinkelVorgeben(abbild, profil?.NordwinkelVorgabeGrad);
+            // Die Flächen der gebildeten Körper nach Randbedingung (17.4) — formatfrei, nach der Drehung der Azimute.
+            Flaechenklassifikation.KlassifizierenAlle(abbild);
             return abbild;
         }
 

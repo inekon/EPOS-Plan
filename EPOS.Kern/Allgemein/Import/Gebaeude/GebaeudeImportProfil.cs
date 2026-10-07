@@ -160,6 +160,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool KoerperflaechenAus { get; set; }
 
+        /// <summary>
+        /// Prüfnaht der Sperren gebildeter Körper (Datenaustauschkonzept 17.5, Probe 43): stempelt die gelesenen IFC-Körper mit
+        /// dieser Quelle. Die Oberfläche setzt sie nie; Vorgabe <see cref="Koerperquelle.Datei"/>.
+        /// </summary>
+        internal Koerperquelle KoerperquellePruefung { get; set; } = Koerperquelle.Datei;
+
         /// <summary>Die Leserfabrik: ein neuer Leser je Lauf.</summary>
         public abstract IGebaeudeLeser LeserErzeugen();
     }

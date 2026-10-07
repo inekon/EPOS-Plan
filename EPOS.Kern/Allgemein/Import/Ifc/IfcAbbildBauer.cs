@@ -65,6 +65,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>G5-N: der vorgegebene Nordwinkel [°] (Eingabe des Anwenders); <c>null</c> = der Dateiwert bzw. die Annahme gilt.</summary>
         internal double? NordwinkelVorgabe { get; init; }
+
+        /// <summary>
+        /// Prüfnaht der Sperren (Datenaustauschkonzept 17.5, Probe 43): die Quelle, mit der jeder gelesene Körper gestempelt
+        /// wird. Vorgabe <see cref="WindowsFormsApplication1.Koerperquelle.Datei"/> — dann ist alles wie gelesen; mit
+        /// <see cref="WindowsFormsApplication1.Koerperquelle.AusFlaechen"/> greifen die Sperren gebildeter Körper.
+        /// </summary>
+        internal Koerperquelle KoerperquellePruefung { get; init; } = Koerperquelle.Datei;
+
+        /// <summary>Der Körper mit der Quelle der Prüfnaht (<see cref="KoerperquellePruefung"/>).</summary>
+        private Dateikoerper Gestempelt(Dateikoerper k) => k?.MitQuelle(KoerperquellePruefung);
         private IfcRahmen _wurzel = IfcRahmen.Welt;
 
         private readonly Dictionary<int, AbbildRaum> _raum = new Dictionary<int, AbbildRaum>();
@@ -532,7 +542,7 @@ namespace WindowsFormsApplication1
             _gebaeudeMitDarstellung.Add(gi);
             if (!rahmen.HasValue) return;
             var nichtLesbar = new List<string>();
-            r.Koerper = IfcRaumkoerper.Lesen(s, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar);
+            r.Koerper = Gestempelt(IfcRaumkoerper.Lesen(s, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar));
             foreach (string art in nichtLesbar)
                 _koerperNichtLesbar[art] = _koerperNichtLesbar.TryGetValue(art, out int z) ? z + 1 : 1;
         }
@@ -570,7 +580,7 @@ namespace WindowsFormsApplication1
             IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(e.ObjectPlacement, _wurzel, out _);
             if (!rahmen.HasValue) { _bauteilkoerper[gi] = stand; return; }
             var nichtLesbar = new List<string>();
-            Dateikoerper k = IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar);
+            Dateikoerper k = Gestempelt(IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar));
             foreach (string art in nichtLesbar) Zaehlen(_bauteilkoerperNichtLesbar, art);
             b.Koerpergrund = Bauteilbefunde.Koerpergrund(IfcRaumkoerper.Darstellung(e) != null, k, nichtLesbar);
             if (k == null) { _bauteilkoerper[gi] = stand; return; }
@@ -657,7 +667,7 @@ namespace WindowsFormsApplication1
             if (!rahmen.HasValue) return null;
             var nichtLesbar = new List<string>();
             Dateikoerper k;
-            try { k = IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar); }
+            try { k = Gestempelt(IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar)); }
             catch (Exception) { k = null; }   // ein unlesbarer Körper ist keine Fläche — und ein Befund
             grund = Bauteilbefunde.Koerpergrund(IfcRaumkoerper.Darstellung(e) != null, k, nichtLesbar);
             return k;
@@ -669,7 +679,7 @@ namespace WindowsFormsApplication1
             if (e.Representation == null) return null;
             IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(e.ObjectPlacement, _wurzel, out _);
             if (!rahmen.HasValue) return null;
-            try { return IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, new List<string>()); }
+            try { return Gestempelt(IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, new List<string>())); }
             catch (Exception) { return null; }   // ein unlesbarer Körper ist keine Fläche
         }
 
@@ -713,8 +723,11 @@ namespace WindowsFormsApplication1
             var schwerpunkte = new Dictionary<int, double[]>();
             foreach ((AbbildBauteil b, List<Dateikoerper> koerper, Bauteilkoerperart art, int gi) in _koerperVormerkung)
             {
+                // 17.5: Ein aus Flächen gebildeter Körper ist kein unabhängiger Beleg — kein Körpervergleich gegen den Mengensatz
+                // (KOERPER_ABWEICHUNG*), keine Fläche aus dem Körper (Herkunft KOERPER).
+                if (!koerper.Any(Dateikoerper.Beleg)) continue;
                 if (!schwerpunkte.TryGetValue(gi, out double[] g)) schwerpunkte[gi] = g = Gebaeudeschwerpunkt(gi);
-                Bauteilkoerperflaeche kf = Vereinigt(koerper.Select(k => IfcBauteilkoerper.Auswerten(k, art, g, _drehung)).Where(x => x != null).ToList());
+                Bauteilkoerperflaeche kf = Vereinigt(koerper.Where(Dateikoerper.Beleg).Select(k => IfcBauteilkoerper.Auswerten(k, art, g, _drehung)).Where(x => x != null).ToList());
                 if (kf == null)
                 {
                     // G5-3: ein Körper mit Dreiecken, aber ohne maßgebliche Fläche ist entartet.
@@ -967,10 +980,12 @@ namespace WindowsFormsApplication1
             foreach ((AbbildBauteil o, IIfcOpeningElement oeffnung, IIfcElement element, AbbildBauteil wirt) in _oeffnungOhneFlaeche)
             {
                 Dateikoerper ko = oeffnung != null ? Rechenkoerper(oeffnung) : null;
+                if (!Dateikoerper.Beleg(ko)) ko = null;   // 17.5: ein gebildeter Körper gibt keine Fläche
                 double? flaeche = Positiv(IfcOeffnungen.Profilflaeche(ko, Wirtsnormale(wirt, null, ko)));
                 if (!flaeche.HasValue)
                 {
                     Dateikoerper ke = o.Koerper ?? Rechenkoerper(element);
+                    if (!Dateikoerper.Beleg(ke)) ke = null;
                     flaeche = Positiv(IfcOeffnungen.Profilflaeche(ke, Wirtsnormale(wirt, null, ke)));
                 }
                 if (!flaeche.HasValue) continue;
@@ -2538,7 +2553,8 @@ namespace WindowsFormsApplication1
             for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
             {
                 AbbildGebaeude g = _abbild.Gebaeude[gi];
-                if (g.Raeume.Count(r => r.Koerper != null) < 2) continue;
+                // 17.5: Körperpaare und Körpertrennflächen nur aus Körpern der Datei, nie aus gebildeten.
+                if (g.Raeume.Count(r => Dateikoerper.Beleg(r.Koerper)) < 2) continue;
                 List<Koerperpaar> paare = Koerpernachbarschaft.Paare(g.Raeume);
                 g.ZahlKoerperpaare = paare.Count;
                 g.KoerperTrennwandM2 = Math.Round(paare.Where(p => !p.Decke).Sum(p => p.FlaecheM2), 6);
@@ -2551,7 +2567,7 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 var mitPaar = new HashSet<int>(paare.SelectMany(p => new[] { p.RaumA, p.RaumB }));
-                List<string> ohne = Enumerable.Range(0, g.Raeume.Count).Where(i => g.Raeume[i].Koerper != null && !mitPaar.Contains(i))
+                List<string> ohne = Enumerable.Range(0, g.Raeume.Count).Where(i => Dateikoerper.Beleg(g.Raeume[i].Koerper) && !mitPaar.Contains(i))
                                               .Select(i => string.IsNullOrWhiteSpace(g.Raeume[i].Name) ? g.Raeume[i].Kennung : g.Raeume[i].Name.Trim()).ToList();
                 if (ohne.Count > 0)
                     g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_OHNE_PAAR", Ganz(ohne.Count),

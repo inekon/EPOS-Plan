@@ -179,6 +179,8 @@ namespace WindowsFormsApplication1
             lauf.Bilden();
             SqprojGeometrie.Bilden(abbild, p);
             NordwinkelVorgeben(abbild, nordwinkelVorgabe);
+            // Die Flächen der gebildeten Körper nach Randbedingung (17.4) — formatfrei, nach der Drehung der Azimute.
+            Flaechenklassifikation.KlassifizierenAlle(abbild);
         }
 
         /// <summary>Die Ablehnung des Lesers unter dem Schlüssel dieses Formats (die Texte des IFC-Wegs nennen die IFC-Daten).</summary>

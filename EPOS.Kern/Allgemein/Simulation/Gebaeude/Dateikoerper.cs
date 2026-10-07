@@ -106,6 +106,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal IReadOnlyList<string> Quellflaechen { get; init; } = Array.Empty<string>();
 
+        /// <summary>
+        /// Ist der Körper ein <b>unabhängiger Beleg</b> (Quelle <see cref="Koerperquelle.Datei"/>)? Nur dann darf er Flächen,
+        /// Körpervergleich, Körperpaare und Körpertrennflächen speisen (17.5); ein gebildeter Körper zeigt nur.
+        /// </summary>
+        internal bool IstBeleg => Quelle == Koerperquelle.Datei;
+
+        /// <summary>Ist <paramref name="k"/> vorhanden und ein unabhängiger Beleg (<see cref="IstBeleg"/>)?</summary>
+        internal static bool Beleg(Dateikoerper k) => k != null && k.IstBeleg;
+
+        /// <summary>
+        /// Derselbe Körper mit der Quelle <paramref name="quelle"/> (Prüfnaht der Sperren, Probe 43); die Quellflächen bleiben.
+        /// </summary>
+        internal Dateikoerper MitQuelle(Koerperquelle quelle)
+            => quelle == Quelle ? this : new Dateikoerper
+            {
+                PunkteM = PunkteM, Dreiecke = Dreiecke, Normalen = Normalen, Randkanten = Randkanten, Art = Art,
+                Vermerke = Vermerke, Quelle = quelle, Quellflaechen = Quellflaechen,
+            };
+
         /// <summary>Die Zahl der Dreiecke.</summary>
         internal int DreieckZahl => Dreiecke.Count;
 
