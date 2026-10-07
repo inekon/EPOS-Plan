@@ -95997,7 +95997,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühl-Vorlauf {1} °C ist keine Stützstelle der Kühlkennlinie ({2} °C) — gerechnet wird mit {3} °C; über den Vorlauf wird nicht interpoliert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühl-Vorlauf {1} °C liegt außerhalb der Stützstellen der Kühlkennlinie ({2} °C) — gerechnet wird mit der nächsten Stützstelle {3} °C; über die Stützstellen hinaus wird nicht extrapoliert. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN {
             get {

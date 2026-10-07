@@ -199,7 +199,7 @@ namespace WindowsFormsApplication1
                 }
                 if (!k.Rechenbar) continue;
 
-                // K21: keine Stützstelle - die nächste, einmal je Gerät und Vorlauf benannt.
+                // K21: außerhalb der Stützstellen - die nächste, einmal je Gerät und Vorlauf benannt.
                 if (k.VorlaufAusgewichen)
                     Protokoll.HinweisEinmal("kuehl-wp-vorlauf-" + m.ID_WP + "-" + k.VorlaufGewuenscht.Value.ToString(CultureInfo.InvariantCulture),
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN,
