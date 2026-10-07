@@ -20,7 +20,7 @@ namespace EPOS.Kern.Tests
     /// <c>Tab_Stromverbrauchertyp_STAMM</c> anlegt, über den Typnamen verknüpft, mit Katalogschlüssel und der Prüfsumme
     /// der gelieferten Werte; dass ein Lauf auf dem gelieferten Stand nichts ändert und <c>foreign_key_check</c> leer
     /// bleibt; dass er nur anlegt, was fehlt, nie überschreibt und eigene Sätze des Anwenders meldet; dass der
-    /// Katalogdialog 44 Sätze zeigt; dass eine Projektkopie über <c>ProfilBedarf</c> und
+    /// Katalogdialog 46 Sätze zeigt (mit den zwei Netzbezugsprofilen des Schritts 196); dass eine Projektkopie über <c>ProfilBedarf</c> und
     /// <c>BhkwPlan.StromWocheToJahr</c> 8 760 Stundenwerte mit der gepflegten Jahressumme rechnet; dass Repo-Datei,
     /// Werkzeug, Migration und Testkopie den Schritt hinter 192 führen.</para>
     ///
@@ -42,11 +42,14 @@ namespace EPOS.Kern.Tests
 
         private static IReadOnlyList<StandardlastprofilSaat> Saat => StandardlastprofilSchema.Saat;
 
-        /// <summary>Die Köpfe des Strombedarfskatalogs in der Testdatenbank ohne die drei BDEW-Sätze (Stand 192).</summary>
-        private const int KOEPFE_VORHER = 41;
+        /// <summary>
+        /// Die Köpfe des Strombedarfskatalogs in der gelieferten Testdatenbank ohne die drei BDEW-Verbrauchsprofile: 41 des
+        /// Bestands und die zwei Netzbezugsprofile P25, S25 (<see cref="StandardlastprofilPvSchema"/>).
+        /// </summary>
+        private const int KOEPFE_VORHER = 43;
 
-        /// <summary>Die Typprofile des Strombedarfskatalogs in der Testdatenbank ohne die drei BDEW-Sätze (Stand 192).</summary>
-        private const int TYPEN_VORHER = 40;
+        /// <summary>Die Typprofile des Strombedarfskatalogs in der gelieferten Testdatenbank ohne die drei BDEW-Verbrauchsprofile (40 und P25, S25).</summary>
+        private const int TYPEN_VORHER = 42;
 
         /// <summary>Referenzprojekt ohne Stromverbraucher-Zuordnung.</summary>
         private const int PROJEKT = 1030;
@@ -235,11 +238,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Katalog des Dialogs „Standard Stromprofil" („Datenbank Strombedarf") zeigt auf dem gelieferten Stand 44
-        /// statt 41 Sätze; die Jahressumme jedes BDEW-Satzes ist 1.000 MWh, und die Liste der Verwaltung führt dieselben Namen.
+        /// Der Katalog des Dialogs „Standard Stromprofil" („Datenbank Strombedarf") zeigt auf dem gelieferten Stand 46
+        /// statt 43 Sätze; die Jahressumme jedes BDEW-Satzes ist 1.000 MWh, und die Liste der Verwaltung führt dieselben Namen.
         /// </summary>
         [Fact]
-        public void Der_Katalogdialog_zeigt_44_Saetze_mit_1000_MWh()
+        public void Der_Katalogdialog_zeigt_46_Saetze_mit_1000_MWh()
         {
             if (!_db.Vorhanden) return;
 
@@ -268,7 +271,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(kopf.Inhaltsgruppen);
             ScanErgebnis typ = DublettenPruefung.ScanKatalog(KatalogRegistry.Finde("STROMVERBRAUCHERTYP"));
             Assert.Null(typ.Fehler);
-            Assert.Equal(43, typ.Saetze.Count);
+            Assert.Equal(TYPEN_VORHER + 3, typ.Saetze.Count);
             Assert.Empty(typ.Namensgruppen);
             Assert.Single(typ.Inhaltsgruppen);                                         // die Gruppe des Bestands
         }

@@ -33,6 +33,10 @@ namespace WindowsFormsApplication1
     // NUMMER. 193 = TypaufbauSchema.SCHRITT + 1, hinter 191 (RaumgrundrissSchema) und 192 (TypaufbauSchema)
     // der Sitzung IFC. Eingetragen in SchemaStand.Zielversion, im Register der Paketanhebung (Art Katalog),
     // in der SchemaMigration der Schale, in Werkzeuge/Testdatenbankschema und in EPOS.Kern.Tests/TestDatenbank.
+    //
+    // EINE MECHANIK FUER ZWEI SCHRITTE. Saatlauf und Vollstaendigkeit je Profilliste stehen einmal hier
+    // (SaatAusfuehren, SaatVollstaendig); dieser Schritt ruft sie mit den Verbrauchsprofilen H25, G25, L25,
+    // StandardlastprofilPvSchema mit den Netzbezugsprofilen P25 und S25.
     // ====================================================================================
 
     /// <summary>
@@ -125,9 +129,23 @@ namespace WindowsFormsApplication1
             return p.ToArray();
         }
 
+        /// <summary>Die Art der Sätze dieses Schritts in der Protokollzeile (<see cref="Bericht.Zeile"/>).</summary>
+        private const string ART = "BDEW-Standardlastprofil(en)";
+
         /// <summary>Was ein Lauf getan hat.</summary>
         public sealed class Bericht
         {
+            /// <param name="gesamt">Zahl der Profile der gesäten Liste.</param>
+            /// <param name="art">Die Art der Sätze in der Protokollzeile, etwa „BDEW-Standardlastprofil(en)".</param>
+            internal Bericht(int gesamt, string art)
+            {
+                _gesamt = gesamt;
+                _art = art;
+            }
+
+            private readonly int _gesamt;
+            private readonly string _art;
+
             /// <summary>Zahl der in diesem Lauf angelegten Köpfe.</summary>
             public int KoepfeGesaet { get; internal set; }
 
@@ -145,8 +163,8 @@ namespace WindowsFormsApplication1
 
             /// <summary>Die Zeile für Protokoll und Werkzeug.</summary>
             public string Zeile()
-                => KoepfeGesaet.ToString(CultureInfo.InvariantCulture) + " von " + Saat.Count.ToString(CultureInfo.InvariantCulture) +
-                   " BDEW-Standardlastprofil(en) gesaet (ReadOnly = 1), " + TypenGesaet.ToString(CultureInfo.InvariantCulture) +
+                => KoepfeGesaet.ToString(CultureInfo.InvariantCulture) + " von " + _gesamt.ToString(CultureInfo.InvariantCulture) +
+                   " " + _art + " gesaet (ReadOnly = 1), " + TypenGesaet.ToString(CultureInfo.InvariantCulture) +
                    " Typprofil(e), " + Schluessel.ToString(CultureInfo.InvariantCulture) + " Satz/Saetze mit Katalogschluessel, " +
                    Vorhanden.Count.ToString(CultureInfo.InvariantCulture) + " stand(en) bereits";
         }
@@ -156,11 +174,17 @@ namespace WindowsFormsApplication1
         /// Satz des Anwenders (dann ist das Profil benannt übergangen) —, und trägt jeder gesperrte Satz beider
         /// Tabellen Schlüssel und Prüfsumme?
         /// </summary>
-        public static bool Vollstaendig()
+        public static bool Vollstaendig() => SaatVollstaendig(Saat);
+
+        /// <summary>
+        /// <see cref="Vollstaendig"/> für eine beliebige Liste von Sätzen — die EINE Prüfung beider Schritte
+        /// (dieser mit H25, G25, L25, <see cref="StandardlastprofilPvSchema"/> mit P25 und S25).
+        /// </summary>
+        internal static bool SaatVollstaendig(IReadOnlyList<StandardlastprofilSaat> saat)
         {
             foreach (string t in Voraussetzungen())
                 if (!DataRepository.TabelleVorhanden(t)) return false;
-            foreach (StandardlastprofilSaat s in Saat)
+            foreach (StandardlastprofilSaat s in saat)
             {
                 if (Anzahl(null, "SELECT COUNT(*) FROM \"Tab_Stromverbrauchertyp_STAMM\" WHERE \"Typname\" = ?",
                            new DbParam("@t", s.Typname)) == 0)
@@ -179,10 +203,18 @@ namespace WindowsFormsApplication1
         /// Katalogspalten der Stufe 2 voraus (<see cref="KatalogfassungStufe2Schema"/>). Fehler werfen — der
         /// Aufrufer meldet sie.
         /// </summary>
-        public static Bericht Ausfuehren(IList<string> bericht)
+        public static Bericht Ausfuehren(IList<string> bericht) => SaatAusfuehren(Saat, ART, bericht);
+
+        /// <summary>
+        /// <see cref="Ausfuehren"/> für eine beliebige Liste von Sätzen — der EINE Saatlauf beider Schritte (dieser
+        /// mit H25, G25, L25, <see cref="StandardlastprofilPvSchema"/> mit P25 und S25); <paramref name="art"/> benennt
+        /// die Sätze in der Protokollzeile. Schlüssel und Prüfsumme belegt er für jeden noch offenen gesperrten Satz
+        /// beider Tabellen.
+        /// </summary>
+        internal static Bericht SaatAusfuehren(IReadOnlyList<StandardlastprofilSaat> saat, string art, IList<string> bericht)
         {
-            var b = new Bericht();
-            foreach (StandardlastprofilSaat s in Saat)
+            var b = new Bericht(saat.Count, art);
+            foreach (StandardlastprofilSaat s in saat)
             {
                 using (DbVorgang v = DataRepository.Vorgang())
                 {
