@@ -261,7 +261,8 @@ namespace EPOS.Kern.Tests
         /// <see cref="AnlagenFachspalten.ANLAGENVERWEIS_SPALTEN"/> ohne Fremdschlüssel — ist für die
         /// vollständige Kopie einer Anlage eingeordnet: mitkopiert
         /// (<see cref="AnlagenFachspalten.ANLAGENKINDER"/>) oder ausgenommen
-        /// (<see cref="AnlagenFachspalten.ANLAGENKIND_AUSSCHLUSS"/>, Ergebnisse nie mitkopiert).
+        /// (<see cref="AnlagenFachspalten.ANLAGENKIND_AUSSCHLUSS"/>, Ergebnisse nie mitkopiert);
+        /// Kostenpositionen gehen mit, nach Kapazität skaliert (siehe nächster Fall).
         /// </summary>
         [Fact]
         public void Jede_Tabelle_mit_Anlagenverweis_ist_eingeordnet()
@@ -308,6 +309,101 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL("DROP TABLE Probe_AnlageKind"));
             Assert.True(DataRepository.ExecuteSQL("DROP TABLE Probe_AnlageOhneFk"));
             Assert.Empty(UneingeordneteAnlagenkinder());
+        }
+
+        /// <summary>
+        /// Die Sonderspalten der Anlagenkopie (Anwenderentscheid 07.10.2026, Kostenpositionen nach
+        /// Kapazität) sind eingeordnet: Jede skalierte, bewusst unskalierte und Ankerspalte
+        /// gehört zu einer Tabelle aus <see cref="AnlagenFachspalten.ANLAGENKINDER"/> und
+        /// besteht; keine ist zugleich skaliert und unskaliert; und JEDE Zahlenspalte (REAL)
+        /// einer skalierten Tabelle ist entschieden — eine neue Betragsspalte von
+        /// <c>Tab_ProjektWerte</c> fällt auf, statt still unskaliert mitzugehen.
+        /// </summary>
+        [Fact]
+        public void Jede_Zahlenspalte_einer_skalierten_Kindtabelle_ist_eingeordnet()
+        {
+            if (!_db.Vorhanden) return;
+
+            List<string> fehler = UneingeordneteKostenspalten(AnlagenFachspalten.ANLAGENKIND_SKALIERT,
+                AnlagenFachspalten.ANLAGENKIND_UNSKALIERT, AnlagenFachspalten.ANLAGENKIND_GERAETEANKER);
+            Assert.True(fehler.Count == 0, "Sonderspalten der Anlagenkopie nicht eingeordnet: " +
+                string.Join(", ", fehler) + ". Eine Betrags- oder Mengenspalte gehört in " +
+                "AnlagenFachspalten.ANLAGENKIND_SKALIERT, ein Satz oder eine Dauer in ANLAGENKIND_UNSKALIERT.");
+            Assert.Contains("Tab_ProjektWerte.EingegebenerWert", AnlagenFachspalten.ANLAGENKIND_SKALIERT);
+            Assert.Contains("Tab_ProjektWerte.Einheitpreis", AnlagenFachspalten.ANLAGENKIND_UNSKALIERT);
+            Assert.Contains("Tab_ProjektWerte", AnlagenFachspalten.ANLAGENKINDER.Select(k => k.Tabelle));
+            Assert.DoesNotContain("Tab_ProjektWerte", AnlagenFachspalten.ANLAGENKIND_AUSSCHLUSS);
+        }
+
+        /// <summary>
+        /// Gegenprobe: eine neue REAL-Spalte an <c>Tab_ProjektWerte</c>, eine verwaiste
+        /// Sonderspalte, eine Spalte einer nicht kopierten Tabelle und ein Doppeleintrag fallen auf.
+        /// </summary>
+        [Fact]
+        public void Gegenprobe_eine_neue_Betragsspalte_und_falsche_Eintraege_fallen_auf()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.True(DataRepository.ExecuteSQL("ALTER TABLE Tab_ProjektWerte ADD COLUMN Probe_Betrag REAL"));
+            var skaliert = new HashSet<string>(AnlagenFachspalten.ANLAGENKIND_SKALIERT, StringComparer.OrdinalIgnoreCase)
+            {
+                "Tab_ProjektWerte.GibtEsNicht", "Tab_ErgebnisStromspeicher.ID", "Tab_ProjektWerte.Einheitpreis"
+            };
+            List<string> fehler = UneingeordneteKostenspalten(skaliert,
+                AnlagenFachspalten.ANLAGENKIND_UNSKALIERT, AnlagenFachspalten.ANLAGENKIND_GERAETEANKER);
+            Assert.Contains("Tab_ProjektWerte.Probe_Betrag", fehler);
+            Assert.Contains("Tab_ProjektWerte.GibtEsNicht", fehler);
+            Assert.Contains("Tab_ErgebnisStromspeicher.ID", fehler);
+            Assert.Contains("Tab_ProjektWerte.Einheitpreis", fehler);
+            Assert.Equal(4, fehler.Count);
+
+            Assert.True(DataRepository.ExecuteSQL("ALTER TABLE Tab_ProjektWerte DROP COLUMN Probe_Betrag"));
+            Assert.Empty(UneingeordneteKostenspalten(AnlagenFachspalten.ANLAGENKIND_SKALIERT,
+                AnlagenFachspalten.ANLAGENKIND_UNSKALIERT, AnlagenFachspalten.ANLAGENKIND_GERAETEANKER));
+        }
+
+        /// <summary>Die Fehler der Sonderspalten als „Tabelle.Spalte“ (je Spalte einmal).</summary>
+        private static List<string> UneingeordneteKostenspalten(ISet<string> skaliert, ISet<string> unskaliert,
+                                                                 ISet<string> anker)
+        {
+            var fehler = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+            var kinder = new HashSet<string>(AnlagenFachspalten.ANLAGENKINDER.Select(k => k.Tabelle),
+                                             StringComparer.OrdinalIgnoreCase);
+            var spaltenJeTabelle = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> Spalten(string tabelle)
+            {
+                if (!spaltenJeTabelle.TryGetValue(tabelle, out Dictionary<string, string> d))
+                {
+                    d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    DataTable dt = DataRepository.GetDataTable(
+                        "SELECT name, type FROM pragma_table_info(?)", new DbParam("@t", tabelle));
+                    foreach (DataRow r in dt.Rows)
+                        d[Convert.ToString(r["name"], CultureInfo.InvariantCulture)] =
+                            Convert.ToString(r["type"], CultureInfo.InvariantCulture);
+                    spaltenJeTabelle[tabelle] = d;
+                }
+                return d;
+            }
+
+            foreach (string eintrag in skaliert.Concat(unskaliert).Concat(anker))
+            {
+                int punkt = eintrag.IndexOf('.');
+                string tabelle = punkt > 0 ? eintrag.Substring(0, punkt) : eintrag;
+                string spalte = punkt > 0 ? eintrag.Substring(punkt + 1) : "";
+                if (!kinder.Contains(tabelle) || !Spalten(tabelle).ContainsKey(spalte)) fehler.Add(eintrag);
+            }
+            foreach (string doppelt in skaliert.Where(unskaliert.Contains)) fehler.Add(doppelt);
+
+            foreach (string tabelle in skaliert.Select(x => x.Split('.')[0]).Where(kinder.Contains)
+                                              .Distinct(StringComparer.OrdinalIgnoreCase))
+                foreach (KeyValuePair<string, string> sp in Spalten(tabelle))
+                {
+                    string name = tabelle + "." + sp.Key;
+                    if (string.Equals(sp.Value, "REAL", StringComparison.OrdinalIgnoreCase) &&
+                        !skaliert.Contains(name) && !unskaliert.Contains(name))
+                        fehler.Add(name);
+                }
+            return fehler.ToList();
         }
 
         /// <summary>Die Verweise „Tabelle.Spalte“ auf eine Anlagenzeile ohne Einordnung.</summary>
